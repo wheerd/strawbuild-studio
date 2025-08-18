@@ -1,12 +1,12 @@
 // Export all model types
-export * from '../types/model';
-export * from '../types/ids';
+export * from '../types/model'
+export * from '../types/ids'
 
 // Export model operations
-export * from './operations';
+export * from './operations'
 
 // Export Zustand store
-export * from './store';
+export * from './store'
 
 // Export model utilities
-export * from './utils';
+export * from './utils'

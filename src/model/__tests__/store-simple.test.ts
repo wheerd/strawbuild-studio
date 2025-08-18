@@ -1,150 +1,150 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { useModelStore } from '../store';
+import { describe, it, expect, beforeEach } from 'vitest'
+import { useModelStore } from '../store'
 
 // Simple store tests without React hooks to avoid rendering issues
 describe('ModelStore - Basic Operations', () => {
   beforeEach(() => {
     // Reset store state
-    useModelStore.getState().reset();
-  });
+    useModelStore.getState().reset()
+  })
 
   describe('Initial State', () => {
     it('should have correct initial state', () => {
-      const state = useModelStore.getState();
-      
-      expect(state.building.floors.size).toBe(1);
-      const groundFloor = Array.from(state.building.floors.values())[0];
-      expect(groundFloor.name).toBe('Ground Floor');
-      expect(state.selectedEntityIds).toEqual([]);
-      expect(state.viewMode).toBe('plan');
-      expect(state.gridSize).toBe(50);
-      expect(state.snapToGrid).toBe(true);
-    });
-  });
+      const state = useModelStore.getState()
+
+      expect(state.building.floors.size).toBe(1)
+      const groundFloor = Array.from(state.building.floors.values())[0]
+      expect(groundFloor.name).toBe('Ground Floor')
+      expect(state.selectedEntityIds).toEqual([])
+      expect(state.viewMode).toBe('plan')
+      expect(state.gridSize).toBe(50)
+      expect(state.snapToGrid).toBe(true)
+    })
+  })
 
   describe('Building Operations', () => {
     it('should reset store state', () => {
-      const { reset } = useModelStore.getState();
-      
-      reset();
-      
-      const state = useModelStore.getState();
-      expect(state.building.floors.size).toBe(1);
-      expect(state.selectedEntityIds).toEqual([]);
-      expect(state.viewMode).toBe('plan');
-      expect(state.gridSize).toBe(50);
-      expect(state.snapToGrid).toBe(true);
-    });
+      const { reset } = useModelStore.getState()
+
+      reset()
+
+      const state = useModelStore.getState()
+      expect(state.building.floors.size).toBe(1)
+      expect(state.selectedEntityIds).toEqual([])
+      expect(state.viewMode).toBe('plan')
+      expect(state.gridSize).toBe(50)
+      expect(state.snapToGrid).toBe(true)
+    })
 
     it('should add floor', () => {
-      const { addFloor } = useModelStore.getState();
-      
-      addFloor('First Floor', 1, 3000);
-      
-      const state = useModelStore.getState();
-      expect(state.building.floors.size).toBe(2);
-      expect(Array.from(state.building.floors.values())[1].name).toBe('First Floor');
-    });
+      const { addFloor } = useModelStore.getState()
+
+      addFloor('First Floor', 1, 3000)
+
+      const state = useModelStore.getState()
+      expect(state.building.floors.size).toBe(2)
+      expect(Array.from(state.building.floors.values())[1].name).toBe('First Floor')
+    })
 
     it('should add connection points and walls', () => {
-      const { addConnectionPoint, addWall } = useModelStore.getState();
-      const point1 = addConnectionPoint({ x: 0, y: 0 });
-      const point2 = addConnectionPoint({ x: 1000, y: 0 });
-      
-      let state = useModelStore.getState();
-      expect(state.building.connectionPoints.size).toBe(2);
-      
-      addWall(point1.id, point2.id);
-      
-      state = useModelStore.getState();
-      expect(state.building.walls.size).toBe(1);
-      expect(state.building.bounds).toBeDefined();
-    });
+      const { addConnectionPoint, addWall } = useModelStore.getState()
+      const point1 = addConnectionPoint({ x: 0, y: 0 })
+      const point2 = addConnectionPoint({ x: 1000, y: 0 })
+
+      let state = useModelStore.getState()
+      expect(state.building.connectionPoints.size).toBe(2)
+
+      addWall(point1.id, point2.id)
+
+      state = useModelStore.getState()
+      expect(state.building.walls.size).toBe(1)
+      expect(state.building.bounds).toBeDefined()
+    })
 
     it('should validate openings before adding', () => {
-      const { addConnectionPoint, addWall, addOpening } = useModelStore.getState();
-      
+      const { addConnectionPoint, addWall, addOpening } = useModelStore.getState()
+
       // Setup wall
-      const point1 = addConnectionPoint({ x: 0, y: 0 });
-      const point2 = addConnectionPoint({ x: 1000, y: 0 });
-      const wall = addWall(point1.id, point2.id);
-      
+      const point1 = addConnectionPoint({ x: 0, y: 0 })
+      const point2 = addConnectionPoint({ x: 1000, y: 0 })
+      const wall = addWall(point1.id, point2.id)
+
       // Valid opening
-      expect(() => addOpening(wall.id, 'door', 100, 800, 2100)).not.toThrow();
-      
+      expect(() => addOpening(wall.id, 'door', 100, 800, 2100)).not.toThrow()
+
       // Invalid opening
-      expect(() => addOpening(wall.id, 'window', 500, 800, 1200)).toThrow('Invalid opening position');
-    });
-  });
+      expect(() => addOpening(wall.id, 'window', 500, 800, 1200)).toThrow('Invalid opening position')
+    })
+  })
 
   describe('Selection Operations', () => {
     it('should manage entity selection', () => {
-      const { setSelectedEntities, toggleEntitySelection, clearSelection } = useModelStore.getState();
-      
-      setSelectedEntities(['wall_1', 'room_2']);
-      expect(useModelStore.getState().selectedEntityIds).toEqual(['wall_1', 'room_2']);
-      
-      toggleEntitySelection('wall_3');
-      expect(useModelStore.getState().selectedEntityIds).toContain('wall_3');
-      
-      toggleEntitySelection('wall_1');
-      expect(useModelStore.getState().selectedEntityIds).not.toContain('wall_1');
-      
-      clearSelection();
-      expect(useModelStore.getState().selectedEntityIds).toEqual([]);
-    });
-  });
+      const { setSelectedEntities, toggleEntitySelection, clearSelection } = useModelStore.getState()
+
+      setSelectedEntities(['wall_1', 'room_2'])
+      expect(useModelStore.getState().selectedEntityIds).toEqual(['wall_1', 'room_2'])
+
+      toggleEntitySelection('wall_3')
+      expect(useModelStore.getState().selectedEntityIds).toContain('wall_3')
+
+      toggleEntitySelection('wall_1')
+      expect(useModelStore.getState().selectedEntityIds).not.toContain('wall_1')
+
+      clearSelection()
+      expect(useModelStore.getState().selectedEntityIds).toEqual([])
+    })
+  })
 
   describe('View Operations', () => {
     it('should manage view state', () => {
-      const { setViewMode, setGridSize, setSnapToGrid } = useModelStore.getState();
-      
-      setViewMode('3d');
-      expect(useModelStore.getState().viewMode).toBe('3d');
-      
-      setGridSize(25);
-      expect(useModelStore.getState().gridSize).toBe(25);
-      
-      setSnapToGrid(false);
-      expect(useModelStore.getState().snapToGrid).toBe(false);
-    });
+      const { setViewMode, setGridSize, setSnapToGrid } = useModelStore.getState()
+
+      setViewMode('3d')
+      expect(useModelStore.getState().viewMode).toBe('3d')
+
+      setGridSize(25)
+      expect(useModelStore.getState().gridSize).toBe(25)
+
+      setSnapToGrid(false)
+      expect(useModelStore.getState().snapToGrid).toBe(false)
+    })
 
     it('should switch active floor', () => {
-      const { addFloor, setActiveFloor, getActiveFloor } = useModelStore.getState();
-      
-      const floor = addFloor('Second Floor', 1, 3000);
-      
-      setActiveFloor(floor.id);
-      
-      const activeFloor = getActiveFloor();
-      expect(activeFloor?.name).toBe('Second Floor');
-      expect(useModelStore.getState().activeFloorId).toBe(floor.id);
-    });
-  });
+      const { addFloor, setActiveFloor, getActiveFloor } = useModelStore.getState()
+
+      const floor = addFloor('Second Floor', 1, 3000)
+
+      setActiveFloor(floor.id)
+
+      const activeFloor = getActiveFloor()
+      expect(activeFloor?.name).toBe('Second Floor')
+      expect(useModelStore.getState().activeFloorId).toBe(floor.id)
+    })
+  })
 
   describe('Wall Removal', () => {
     it('should remove wall and clean up related entities', () => {
-      const { addConnectionPoint, addWall, addOpening, removeWall, setSelectedEntities } = useModelStore.getState();
-      
+      const { addConnectionPoint, addWall, addOpening, removeWall, setSelectedEntities } = useModelStore.getState()
+
       // Setup
-      const point1 = addConnectionPoint({ x: 0, y: 0 });
-      const point2 = addConnectionPoint({ x: 1000, y: 0 });
-      const wall = addWall(point1.id, point2.id);
-      addOpening(wall.id, 'door', 100, 800, 2100);
-      setSelectedEntities([wall.id]);
-      
-      let state = useModelStore.getState();
-      expect(state.building.walls.size).toBe(1);
-      expect(state.building.openings.size).toBe(1);
-      expect(state.selectedEntityIds).toContain(wall.id);
-      
+      const point1 = addConnectionPoint({ x: 0, y: 0 })
+      const point2 = addConnectionPoint({ x: 1000, y: 0 })
+      const wall = addWall(point1.id, point2.id)
+      addOpening(wall.id, 'door', 100, 800, 2100)
+      setSelectedEntities([wall.id])
+
+      let state = useModelStore.getState()
+      expect(state.building.walls.size).toBe(1)
+      expect(state.building.openings.size).toBe(1)
+      expect(state.selectedEntityIds).toContain(wall.id)
+
       // Remove wall
-      removeWall(wall.id);
-      
-      state = useModelStore.getState();
-      expect(state.building.walls.size).toBe(0);
-      expect(state.building.openings.size).toBe(0);
-      expect(state.selectedEntityIds).not.toContain(wall.id);
-    });
-  });
-});
+      removeWall(wall.id)
+
+      state = useModelStore.getState()
+      expect(state.building.walls.size).toBe(0)
+      expect(state.building.openings.size).toBe(0)
+      expect(state.selectedEntityIds).not.toContain(wall.id)
+    })
+  })
+})
