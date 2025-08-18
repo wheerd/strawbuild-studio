@@ -1,11 +1,13 @@
 # Agent Guidelines for Strawbaler
 
 ## Commands
-- `npm run dev` - Start development server
-- `npm run build` - Build production (runs TypeScript check then Vite build)
-- `npm run lint` - Run ESLint
-- `npm run test` - Run all tests with Vitest
-- `npm run preview` - Preview production build
+- `pnpm dev` - Start development server
+- `pnpm build` - Build production (runs TypeScript check then Vite build)  
+- `pnpm lint` - Run ESLint
+- `pnpm test` - Run all tests with Vitest
+- `pnpm preview` - Preview production build
+- `pnpm add <package>` - Add dependency
+- `npx tsc --noEmit --skipLibCheck` - TypeScript check only
 
 ## Code Style
 - **TypeScript**: Use strict mode with all safety checks enabled
