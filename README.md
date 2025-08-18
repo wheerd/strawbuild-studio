@@ -67,3 +67,9 @@ export default tseslint.config([
   },
 ])
 ```
+
+TODO:
+Check immutable properties of store
+createBuilding is not needed
+Refactor walls, rooms etc -> into floor
+

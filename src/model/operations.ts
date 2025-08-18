@@ -21,12 +21,11 @@ import {
   createFloorId
 } from '../types/ids';
 
-export function createEmptyBuilding(name: string): Building {
+export function createEmptyBuilding(): Building {
   const groundFloor = createFloor("Ground Floor", 0, 3000);
   
   return {
-    name,
-    floors: [groundFloor],
+    floors: new Map([[groundFloor.id, groundFloor]]),
     walls: new Map(),
     rooms: new Map(),
     connectionPoints: new Map(),
@@ -106,7 +105,8 @@ export function createOpening(
 
 export function addFloorToBuilding(building: Building, floor: Floor): Building {
   const updatedBuilding = { ...building };
-  updatedBuilding.floors = [...building.floors, floor];
+  updatedBuilding.floors = new Map(building.floors);
+  updatedBuilding.floors.set(floor.id, floor);
   updatedBuilding.updatedAt = new Date();
   return updatedBuilding;
 }
@@ -381,7 +381,7 @@ export function findNearestConnectionPoint(
 }
 
 export function getWallsOnFloor(building: Building, floorId: FloorId): Wall[] {
-  const floor = building.floors.find(f => f.id === floorId);
+  const floor = building.floors.get(floorId);
   if (!floor) return [];
   
   return floor.wallIds
@@ -390,10 +390,10 @@ export function getWallsOnFloor(building: Building, floorId: FloorId): Wall[] {
 }
 
 export function getRoomsOnFloor(building: Building, floorId: FloorId): Room[] {
-  const floor = building.floors.find(f => f.id === floorId);
+  const floor = building.floors.get(floorId);
   if (!floor) return [];
   
   return floor.roomIds
-    .map(id => building.rooms.get(id))
-    .filter((room): room is Room => room !== undefined);
+    .map((id: any) => building.rooms.get(id))
+    .filter((room: any): room is Room => room !== undefined);
 }

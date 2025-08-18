@@ -68,8 +68,7 @@ export interface Floor {
 
 // Complete building model
 export interface Building {
-  name: string;
-  floors: Floor[];
+  floors: Map<FloorId, Floor>;
   walls: Map<WallId, Wall>;
   rooms: Map<RoomId, Room>;
   connectionPoints: Map<ConnectionPointId, ConnectionPoint>;

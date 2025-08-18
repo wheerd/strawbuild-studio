@@ -16,7 +16,7 @@ import {
 
 interface ModelActions {
   // Building operations
-  createBuilding: (name: string) => void;
+  reset: () => void;
   
   // Entity operations
   addFloor: (floor: Floor) => void;
@@ -41,9 +41,9 @@ interface ModelActions {
 
 type ModelStore = ModelState & ModelActions;
 
-function createInitialState(buildingName: string = "New Building"): ModelState {
-  const building = createEmptyBuilding(buildingName);
-  const groundFloor = building.floors[0];
+function createInitialState(): ModelState {
+  const building = createEmptyBuilding();
+  const groundFloor = Array.from(building.floors.values())[0];
   
   return {
     building,
@@ -62,15 +62,18 @@ export const useModelStore = create<ModelStore>()(
       ...createInitialState(),
       
       // Building operations
-      createBuilding: (name: string) => {
-        const building = createEmptyBuilding(name);
-        const groundFloor = building.floors[0];
+      reset: () => {
+        const building = createEmptyBuilding();
+        const groundFloor = Array.from(building.floors.values())[0];
         
         set({
           building,
           activeFloorId: groundFloor.id,
-          selectedEntityIds: []
-        }, false, 'createBuilding');
+          selectedEntityIds: [],
+          viewMode: 'plan',
+          gridSize: 50,
+          snapToGrid: true
+        }, false, 'reset');
       },
       
       // Entity operations
@@ -195,7 +198,7 @@ export const useModelStore = create<ModelStore>()(
       // Computed getters
       getActiveFloor: () => {
         const state = get();
-        return state.building.floors.find(f => f.id === state.activeFloorId) || null;
+        return state.building.floors.get(state.activeFloorId) || null;
       }
     }),
     {
@@ -217,7 +220,7 @@ export const useGridSettings = () => useModelStore(state => ({
 
 // Action selectors
 export const useModelActions = () => useModelStore(state => ({
-  createBuilding: state.createBuilding,
+  reset: state.reset,
   addFloor: state.addFloor,
   addWall: state.addWall,
   addRoom: state.addRoom,
