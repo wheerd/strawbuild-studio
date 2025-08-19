@@ -396,3 +396,57 @@ export function getRoomsOnFloor (building: Building, floorId: FloorId): Room[] {
     .map((id: any) => building.rooms.get(id))
     .filter((room: any): room is Room => room !== undefined)
 }
+
+// Helper function to add room to active floor
+export function addRoomToFloor (building: Building, room: Room, floorId: FloorId): Building {
+  const updatedBuilding = addRoomToBuilding(building, room)
+  const updatedFloors = new Map(updatedBuilding.floors)
+  const floor = updatedFloors.get(floorId)
+  
+  if (floor != null) {
+    const updatedFloor = {
+      ...floor,
+      roomIds: [...floor.roomIds, room.id]
+    }
+    updatedFloors.set(floorId, updatedFloor)
+    updatedBuilding.floors = updatedFloors
+  }
+  
+  return updatedBuilding
+}
+
+// Helper function to add wall to active floor
+export function addWallToFloor (building: Building, wall: Wall, floorId: FloorId): Building {
+  const updatedBuilding = addWallToBuilding(building, wall)
+  const updatedFloors = new Map(updatedBuilding.floors)
+  const floor = updatedFloors.get(floorId)
+  
+  if (floor != null) {
+    const updatedFloor = {
+      ...floor,
+      wallIds: [...floor.wallIds, wall.id]
+    }
+    updatedFloors.set(floorId, updatedFloor)
+    updatedBuilding.floors = updatedFloors
+  }
+  
+  return updatedBuilding
+}
+
+// Helper function to add connection point to active floor
+export function addConnectionPointToFloor (building: Building, point: ConnectionPoint, floorId: FloorId): Building {
+  const updatedBuilding = addConnectionPointToBuilding(building, point)
+  const updatedFloors = new Map(updatedBuilding.floors)
+  const floor = updatedFloors.get(floorId)
+  
+  if (floor != null) {
+    const updatedFloor = {
+      ...floor,
+      connectionPointIds: [...floor.connectionPointIds, point.id]
+    }
+    updatedFloors.set(floorId, updatedFloor)
+    updatedBuilding.floors = updatedFloors
+  }
+  
+  return updatedBuilding
+}

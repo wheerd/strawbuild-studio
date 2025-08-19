@@ -101,7 +101,7 @@ export const useModelStore = create<ModelStore>()(
 
         // Update building bounds
         const bounds = calculateBuildingBounds(updatedBuilding)
-        updatedBuilding = { ...updatedBuilding, bounds: (bounds != null) || undefined }
+        updatedBuilding = { ...updatedBuilding, bounds: bounds ?? undefined }
 
         set({
           building: updatedBuilding
@@ -157,7 +157,7 @@ export const useModelStore = create<ModelStore>()(
 
         // Update building bounds
         const bounds = calculateBuildingBounds(updatedBuilding)
-        updatedBuilding = { ...updatedBuilding, bounds: (bounds != null) || undefined }
+        updatedBuilding = { ...updatedBuilding, bounds: bounds ?? undefined }
 
         set({
           building: updatedBuilding,
@@ -253,5 +253,6 @@ export const useModelActions = (): ModelActions => useModelStore(state => ({
   clearSelection: state.clearSelection,
   setViewMode: state.setViewMode,
   setGridSize: state.setGridSize,
-  setSnapToGrid: state.setSnapToGrid
+  setSnapToGrid: state.setSnapToGrid,
+  getActiveFloor: state.getActiveFloor
 }))
