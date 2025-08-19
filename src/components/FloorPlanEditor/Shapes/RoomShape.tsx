@@ -1,22 +1,21 @@
 import { Line, Text } from 'react-konva'
-import type { Room, Building } from '../../../types/model'
-import { useModelStore } from '../../../model/store'
-import { useEditorStore } from '../hooks/useEditorStore'
+import type { Room } from '../../../types/model'
+import { useSelectedEntities, useEditorStore } from '../hooks/useEditorStore'
+import { useWalls, useConnectionPoints } from '../../../model/store'
 
 interface RoomShapeProps {
   room: Room
-  building: Building
 }
 
-function getRoomPolygonPoints (room: Room, building: Building): number[] {
+function getRoomPolygonPoints (room: Room, walls: ReturnType<typeof useWalls>, connectionPoints: ReturnType<typeof useConnectionPoints>): number[] {
   const points: number[] = []
 
   for (const wallId of room.wallIds) {
-    const wall = building.walls.get(wallId)
+    const wall = walls.get(wallId)
     if (wall == null) continue
 
-    const startPoint = building.connectionPoints.get(wall.startPointId)
-    const endPoint = building.connectionPoints.get(wall.endPointId)
+    const startPoint = connectionPoints.get(wall.startPointId)
+    const endPoint = connectionPoints.get(wall.endPointId)
 
     if (startPoint == null || endPoint == null) continue
 
@@ -47,14 +46,16 @@ function getRoomCenter (points: number[]): { x: number, y: number } {
   }
 }
 
-export function RoomShape ({ room, building }: RoomShapeProps): React.JSX.Element | null {
+export function RoomShape ({ room }: RoomShapeProps): React.JSX.Element | null {
   // Use individual selectors to avoid object creation
-  const selectedEntities = useModelStore(state => state.selectedEntityIds)
-  const toggleEntitySelection = useModelStore(state => state.toggleEntitySelection)
+  const selectedEntities = useSelectedEntities()
+  const toggleEntitySelection = useEditorStore(state => state.toggleEntitySelection)
   const showRoomLabels = useEditorStore(state => state.showRoomLabels)
+  const walls = useWalls()
+  const connectionPoints = useConnectionPoints()
 
   const isSelected = selectedEntities.includes(room.id)
-  const points = getRoomPolygonPoints(room, building)
+  const points = getRoomPolygonPoints(room, walls, connectionPoints)
 
   if (points.length < 6) {
     return null

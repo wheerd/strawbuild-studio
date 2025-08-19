@@ -1,5 +1,5 @@
 import type {
-  Building,
+  ModelState,
   Wall,
   Room,
   ConnectionPoint,
@@ -21,7 +21,7 @@ import {
   createFloorId
 } from '../types/ids'
 
-export function createEmptyBuilding (): Building {
+export function createEmptyModelState (): ModelState {
   const groundFloor = createFloor('Ground Floor', 0, 3000)
 
   return {
@@ -103,39 +103,39 @@ export function createOpening (
   }
 }
 
-export function addFloorToBuilding (building: Building, floor: Floor): Building {
-  const updatedBuilding = { ...building }
-  updatedBuilding.floors = new Map(building.floors)
-  updatedBuilding.floors.set(floor.id, floor)
-  updatedBuilding.updatedAt = new Date()
-  return updatedBuilding
+export function addFloorToState (state: ModelState, floor: Floor): ModelState {
+  const updatedState = { ...state }
+  updatedState.floors = new Map(state.floors)
+  updatedState.floors.set(floor.id, floor)
+  updatedState.updatedAt = new Date()
+  return updatedState
 }
 
-export function addWallToBuilding (building: Building, wall: Wall): Building {
-  const updatedBuilding = { ...building }
-  updatedBuilding.walls = new Map(building.walls)
-  updatedBuilding.walls.set(wall.id, wall)
-  updatedBuilding.updatedAt = new Date()
-  return updatedBuilding
+export function addWallToState (state: ModelState, wall: Wall): ModelState {
+  const updatedState = { ...state }
+  updatedState.walls = new Map(state.walls)
+  updatedState.walls.set(wall.id, wall)
+  updatedState.updatedAt = new Date()
+  return updatedState
 }
 
-export function addConnectionPointToBuilding (building: Building, connectionPoint: ConnectionPoint): Building {
-  const updatedBuilding = { ...building }
-  updatedBuilding.connectionPoints = new Map(building.connectionPoints)
-  updatedBuilding.connectionPoints.set(connectionPoint.id, connectionPoint)
-  updatedBuilding.updatedAt = new Date()
-  return updatedBuilding
+export function addConnectionPointToState (state: ModelState, connectionPoint: ConnectionPoint): ModelState {
+  const updatedState = { ...state }
+  updatedState.connectionPoints = new Map(state.connectionPoints)
+  updatedState.connectionPoints.set(connectionPoint.id, connectionPoint)
+  updatedState.updatedAt = new Date()
+  return updatedState
 }
 
-export function calculateBuildingBounds (building: Building): Bounds | null {
-  if (building.connectionPoints.size === 0) return null
+export function calculateStateBounds (state: ModelState): Bounds | null {
+  if (state.connectionPoints.size === 0) return null
 
   let minX = Infinity
   let minY = Infinity
   let maxX = -Infinity
   let maxY = -Infinity
 
-  for (const point of building.connectionPoints.values()) {
+  for (const point of state.connectionPoints.values()) {
     minX = Math.min(minX, point.position.x)
     minY = Math.min(minY, point.position.y)
     maxX = Math.max(maxX, point.position.x)
@@ -145,9 +145,9 @@ export function calculateBuildingBounds (building: Building): Bounds | null {
   return { minX, minY, maxX, maxY }
 }
 
-export function getWallLength (wall: Wall, building: Building): number {
-  const startPoint = building.connectionPoints.get(wall.startPointId)
-  const endPoint = building.connectionPoints.get(wall.endPointId)
+export function getWallLength (wall: Wall, state: ModelState): number {
+  const startPoint = state.connectionPoints.get(wall.startPointId)
+  const endPoint = state.connectionPoints.get(wall.endPointId)
 
   if ((startPoint == null) || (endPoint == null)) return 0
 
@@ -157,9 +157,9 @@ export function getWallLength (wall: Wall, building: Building): number {
   return Math.sqrt(dx * dx + dy * dy)
 }
 
-export function getWallAngle (wall: Wall, building: Building): number {
-  const startPoint = building.connectionPoints.get(wall.startPointId)
-  const endPoint = building.connectionPoints.get(wall.endPointId)
+export function getWallAngle (wall: Wall, state: ModelState): number {
+  const startPoint = state.connectionPoints.get(wall.startPointId)
+  const endPoint = state.connectionPoints.get(wall.endPointId)
 
   if ((startPoint == null) || (endPoint == null)) return 0
 
@@ -169,19 +169,18 @@ export function getWallAngle (wall: Wall, building: Building): number {
   return Math.atan2(dy, dx)
 }
 
-export function getOpeningPosition (opening: Opening, building: Building): Point2D | null {
-  const wall = building.walls.get(opening.wallId)
+export function getOpeningPosition (opening: Opening, state: ModelState): Point2D | null {
+  const wall = state.walls.get(opening.wallId)
   if (wall == null) return null
 
-  const startPoint = building.connectionPoints.get(wall.startPointId)
-  const endPoint = building.connectionPoints.get(wall.endPointId)
+  const startPoint = state.connectionPoints.get(wall.startPointId)
+  const endPoint = state.connectionPoints.get(wall.endPointId)
 
   if ((startPoint == null) || (endPoint == null)) return null
 
-  const wallLength = getWallLength(wall, building)
+  const wallLength = getWallLength(wall, state)
   if (wallLength === 0) return startPoint.position
 
-  // Calculate position along wall using offset
   const t = opening.offsetFromStart / wallLength
 
   return {
@@ -190,20 +189,18 @@ export function getOpeningPosition (opening: Opening, building: Building): Point
   }
 }
 
-export function isOpeningValidOnWall (opening: Opening, building: Building): boolean {
-  const wall = building.walls.get(opening.wallId)
+export function isOpeningValidOnWall (opening: Opening, state: ModelState): boolean {
+  const wall = state.walls.get(opening.wallId)
   if (wall == null) return false
 
-  const wallLength = getWallLength(wall, building)
+  const wallLength = getWallLength(wall, state)
 
-  // Check if opening fits within wall bounds
   if (opening.offsetFromStart < 0 || opening.offsetFromStart + opening.width > wallLength) {
     return false
   }
 
-  // Check for overlaps with other openings on the same wall
   for (const otherOpeningId of wall.openingIds) {
-    const otherOpening = building.openings.get(otherOpeningId)
+    const otherOpening = state.openings.get(otherOpeningId)
     if ((otherOpening == null) || otherOpening.id === opening.id) continue
 
     const startA = opening.offsetFromStart
@@ -211,7 +208,6 @@ export function isOpeningValidOnWall (opening: Opening, building: Building): boo
     const startB = otherOpening.offsetFromStart
     const endB = otherOpening.offsetFromStart + otherOpening.width
 
-    // Check for overlap
     if (startA < endB && endA > startB) {
       return false
     }
@@ -220,121 +216,111 @@ export function isOpeningValidOnWall (opening: Opening, building: Building): boo
   return true
 }
 
-export function removeWallFromBuilding (building: Building, wallId: WallId): Building {
-  const wall = building.walls.get(wallId)
-  if (wall == null) return building
+export function removeWallFromState (state: ModelState, wallId: WallId): ModelState {
+  const wall = state.walls.get(wallId)
+  if (wall == null) return state
 
-  const updatedBuilding = { ...building }
-  updatedBuilding.walls = new Map(building.walls)
-  updatedBuilding.connectionPoints = new Map(building.connectionPoints)
-  updatedBuilding.openings = new Map(building.openings)
+  const updatedState = { ...state }
+  updatedState.walls = new Map(state.walls)
+  updatedState.connectionPoints = new Map(state.connectionPoints)
+  updatedState.openings = new Map(state.openings)
 
-  updatedBuilding.walls.delete(wallId)
+  updatedState.walls.delete(wallId)
 
-  // Remove wall from connection points
-  const startPoint = updatedBuilding.connectionPoints.get(wall.startPointId)
-  const endPoint = updatedBuilding.connectionPoints.get(wall.endPointId)
+  const startPoint = updatedState.connectionPoints.get(wall.startPointId)
+  const endPoint = updatedState.connectionPoints.get(wall.endPointId)
 
   if (startPoint != null) {
     startPoint.connectedWallIds = startPoint.connectedWallIds.filter(id => id !== wallId)
     if (startPoint.connectedWallIds.length === 0) {
-      updatedBuilding.connectionPoints.delete(wall.startPointId)
+      updatedState.connectionPoints.delete(wall.startPointId)
     }
   }
 
   if (endPoint != null) {
     endPoint.connectedWallIds = endPoint.connectedWallIds.filter(id => id !== wallId)
     if (endPoint.connectedWallIds.length === 0) {
-      updatedBuilding.connectionPoints.delete(wall.endPointId)
+      updatedState.connectionPoints.delete(wall.endPointId)
     }
   }
 
-  // Remove openings associated with this wall
   for (const openingId of wall.openingIds) {
-    updatedBuilding.openings.delete(openingId)
+    updatedState.openings.delete(openingId)
   }
 
-  updatedBuilding.updatedAt = new Date()
-  return updatedBuilding
+  updatedState.updatedAt = new Date()
+  return updatedState
 }
 
-export function addRoomToBuilding (building: Building, room: Room): Building {
-  const updatedBuilding = { ...building }
-  updatedBuilding.rooms = new Map(building.rooms)
-  updatedBuilding.rooms.set(room.id, room)
-  updatedBuilding.updatedAt = new Date()
-  return updatedBuilding
+export function addRoomToState (state: ModelState, room: Room): ModelState {
+  const updatedState = { ...state }
+  updatedState.rooms = new Map(state.rooms)
+  updatedState.rooms.set(room.id, room)
+  updatedState.updatedAt = new Date()
+  return updatedState
 }
 
-export function addOpeningToBuilding (building: Building, opening: Opening): Building {
-  // Validate opening before adding
-  if (!isOpeningValidOnWall(opening, building)) {
+export function addOpeningToState (state: ModelState, opening: Opening): ModelState {
+  if (!isOpeningValidOnWall(opening, state)) {
     throw new Error('Invalid opening position: would overlap with existing opening or exceed wall bounds')
   }
 
-  const updatedBuilding = { ...building }
-  updatedBuilding.openings = new Map(building.openings)
-  updatedBuilding.walls = new Map(building.walls)
+  const updatedState = { ...state }
+  updatedState.openings = new Map(state.openings)
+  updatedState.walls = new Map(state.walls)
 
-  updatedBuilding.openings.set(opening.id, opening)
+  updatedState.openings.set(opening.id, opening)
 
-  // Add opening to wall's opening list
-  const wall = updatedBuilding.walls.get(opening.wallId)
+  const wall = updatedState.walls.get(opening.wallId)
   if (wall != null) {
     const updatedWall = { ...wall }
     updatedWall.openingIds = [...wall.openingIds, opening.id]
-    updatedBuilding.walls.set(wall.id, updatedWall)
+    updatedState.walls.set(wall.id, updatedWall)
   }
 
-  updatedBuilding.updatedAt = new Date()
-  return updatedBuilding
+  updatedState.updatedAt = new Date()
+  return updatedState
 }
 
-export function connectWalls (building: Building, wallId1: WallId, wallId2: WallId): Building {
-  const wall1 = building.walls.get(wallId1)
-  const wall2 = building.walls.get(wallId2)
+export function connectWalls (state: ModelState, wallId1: WallId, wallId2: WallId): ModelState {
+  const wall1 = state.walls.get(wallId1)
+  const wall2 = state.walls.get(wallId2)
 
-  if ((wall1 == null) || (wall2 == null)) return building
+  if ((wall1 == null) || (wall2 == null)) return state
 
-  const updatedBuilding = { ...building }
-  updatedBuilding.connectionPoints = new Map(building.connectionPoints)
-  updatedBuilding.walls = new Map(building.walls)
+  const updatedState = { ...state }
+  updatedState.connectionPoints = new Map(state.connectionPoints)
+  updatedState.walls = new Map(state.walls)
 
-  // Find connection points to merge
-  const wall1End = updatedBuilding.connectionPoints.get(wall1.endPointId)
-  const wall2Start = updatedBuilding.connectionPoints.get(wall2.startPointId)
+  const wall1End = updatedState.connectionPoints.get(wall1.endPointId)
+  const wall2Start = updatedState.connectionPoints.get(wall2.startPointId)
 
-  // Connect walls at shared connection points
   if ((wall1End != null) && (wall2Start != null) &&
       Math.abs(wall1End.position.x - wall2Start.position.x) < 0.01 &&
       Math.abs(wall1End.position.y - wall2Start.position.y) < 0.01) {
-    // Merge connection points
     wall1End.connectedWallIds = [...new Set([...wall1End.connectedWallIds, ...wall2Start.connectedWallIds])]
 
-    // Update wall2 to use wall1's end point
     const updatedWall2 = { ...wall2, startPointId: wall1.endPointId }
-    updatedBuilding.walls.set(wallId2, updatedWall2)
+    updatedState.walls.set(wallId2, updatedWall2)
 
-    // Remove redundant connection point
-    updatedBuilding.connectionPoints.delete(wall2.startPointId)
+    updatedState.connectionPoints.delete(wall2.startPointId)
   }
 
-  updatedBuilding.updatedAt = new Date()
-  return updatedBuilding
+  updatedState.updatedAt = new Date()
+  return updatedState
 }
 
-export function calculateRoomArea (room: Room, building: Building): number {
+export function calculateRoomArea (room: Room, state: ModelState): number {
   if (room.wallIds.length < 3) return 0
 
   const points: Point2D[] = []
 
-  // Get all connection points from room walls to form polygon
   for (const wallId of room.wallIds) {
-    const wall = building.walls.get(wallId)
+    const wall = state.walls.get(wallId)
     if (wall == null) continue
 
-    const startPoint = building.connectionPoints.get(wall.startPointId)
-    const endPoint = building.connectionPoints.get(wall.endPointId)
+    const startPoint = state.connectionPoints.get(wall.startPointId)
+    const endPoint = state.connectionPoints.get(wall.endPointId)
 
     if ((startPoint != null) && (points.find(p => p.x === startPoint.position.x && p.y === startPoint.position.y) == null)) {
       points.push(startPoint.position)
@@ -346,7 +332,6 @@ export function calculateRoomArea (room: Room, building: Building): number {
 
   if (points.length < 3) return 0
 
-  // Calculate polygon area using shoelace formula
   let area = 0
   for (let i = 0; i < points.length; i++) {
     const j = (i + 1) % points.length
@@ -358,14 +343,14 @@ export function calculateRoomArea (room: Room, building: Building): number {
 }
 
 export function findNearestConnectionPoint (
-  building: Building,
+  state: ModelState,
   target: Point2D,
   maxDistance: number = 50
 ): ConnectionPoint | null {
   let nearest: ConnectionPoint | null = null
   let minDistance = maxDistance
 
-  for (const point of building.connectionPoints.values()) {
+  for (const point of state.connectionPoints.values()) {
     const dx = point.position.x - target.x
     const dy = point.position.y - target.y
     const distance = Math.sqrt(dx * dx + dy * dy)
@@ -379,28 +364,27 @@ export function findNearestConnectionPoint (
   return nearest
 }
 
-export function getWallsOnFloor (building: Building, floorId: FloorId): Wall[] {
-  const floor = building.floors.get(floorId)
+export function getWallsOnFloor (state: ModelState, floorId: FloorId): Wall[] {
+  const floor = state.floors.get(floorId)
   if (floor == null) return []
 
   return floor.wallIds
-    .map(id => building.walls.get(id))
+    .map(id => state.walls.get(id))
     .filter((wall): wall is Wall => wall !== undefined)
 }
 
-export function getRoomsOnFloor (building: Building, floorId: FloorId): Room[] {
-  const floor = building.floors.get(floorId)
+export function getRoomsOnFloor (state: ModelState, floorId: FloorId): Room[] {
+  const floor = state.floors.get(floorId)
   if (floor == null) return []
 
   return floor.roomIds
-    .map((id: any) => building.rooms.get(id))
-    .filter((room: any): room is Room => room !== undefined)
+    .map(id => state.rooms.get(id))
+    .filter((room): room is Room => room !== undefined)
 }
 
-// Helper function to add room to active floor
-export function addRoomToFloor (building: Building, room: Room, floorId: FloorId): Building {
-  const updatedBuilding = addRoomToBuilding(building, room)
-  const updatedFloors = new Map(updatedBuilding.floors)
+export function addRoomToFloor (state: ModelState, room: Room, floorId: FloorId): ModelState {
+  const updatedState = addRoomToState(state, room)
+  const updatedFloors = new Map(updatedState.floors)
   const floor = updatedFloors.get(floorId)
   
   if (floor != null) {
@@ -409,16 +393,15 @@ export function addRoomToFloor (building: Building, room: Room, floorId: FloorId
       roomIds: [...floor.roomIds, room.id]
     }
     updatedFloors.set(floorId, updatedFloor)
-    updatedBuilding.floors = updatedFloors
+    updatedState.floors = updatedFloors
   }
   
-  return updatedBuilding
+  return updatedState
 }
 
-// Helper function to add wall to active floor
-export function addWallToFloor (building: Building, wall: Wall, floorId: FloorId): Building {
-  const updatedBuilding = addWallToBuilding(building, wall)
-  const updatedFloors = new Map(updatedBuilding.floors)
+export function addWallToFloor (state: ModelState, wall: Wall, floorId: FloorId): ModelState {
+  const updatedState = addWallToState(state, wall)
+  const updatedFloors = new Map(updatedState.floors)
   const floor = updatedFloors.get(floorId)
   
   if (floor != null) {
@@ -427,16 +410,15 @@ export function addWallToFloor (building: Building, wall: Wall, floorId: FloorId
       wallIds: [...floor.wallIds, wall.id]
     }
     updatedFloors.set(floorId, updatedFloor)
-    updatedBuilding.floors = updatedFloors
+    updatedState.floors = updatedFloors
   }
   
-  return updatedBuilding
+  return updatedState
 }
 
-// Helper function to add connection point to active floor
-export function addConnectionPointToFloor (building: Building, point: ConnectionPoint, floorId: FloorId): Building {
-  const updatedBuilding = addConnectionPointToBuilding(building, point)
-  const updatedFloors = new Map(updatedBuilding.floors)
+export function addConnectionPointToFloor (state: ModelState, point: ConnectionPoint, floorId: FloorId): ModelState {
+  const updatedState = addConnectionPointToState(state, point)
+  const updatedFloors = new Map(updatedState.floors)
   const floor = updatedFloors.get(floorId)
   
   if (floor != null) {
@@ -445,8 +427,8 @@ export function addConnectionPointToFloor (building: Building, point: Connection
       connectionPointIds: [...floor.connectionPointIds, point.id]
     }
     updatedFloors.set(floorId, updatedFloor)
-    updatedBuilding.floors = updatedFloors
+    updatedState.floors = updatedFloors
   }
   
-  return updatedBuilding
+  return updatedState
 }

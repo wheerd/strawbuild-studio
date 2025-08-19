@@ -1,23 +1,26 @@
 import { Layer } from 'react-konva'
-import { useActiveFloor, useBuilding } from '../../../model/store'
+import { useFloors, useWalls, getActiveFloor } from '../../../model/store'
+import { useActiveFloorId } from '../hooks/useEditorStore'
 import { WallShape } from '../Shapes/WallShape'
 
 export function WallLayer (): React.JSX.Element {
-  const building = useBuilding()
-  const activeFloor = useActiveFloor()
+  const floors = useFloors()
+  const allWalls = useWalls()
+  const activeFloorId = useActiveFloorId()
+  const activeFloor = getActiveFloor(floors, activeFloorId)
 
   if (activeFloor == null || !Array.isArray(activeFloor.wallIds)) {
     return <Layer name='walls' />
   }
 
   const walls = activeFloor.wallIds
-    .map(wallId => building.walls.get(wallId))
+    .map(wallId => allWalls.get(wallId))
     .filter((wall): wall is NonNullable<typeof wall> => wall !== undefined)
 
   return (
     <Layer name='walls'>
       {walls.map(wall => (
-        <WallShape key={wall.id} wall={wall} building={building} />
+        <WallShape key={wall.id} wall={wall} />
       ))}
     </Layer>
   )

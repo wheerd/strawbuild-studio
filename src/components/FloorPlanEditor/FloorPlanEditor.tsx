@@ -1,11 +1,25 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { FloorPlanStage } from './Canvas/FloorPlanStage'
 import { Toolbar } from './Tools/Toolbar'
+import { useFloors } from '../../model/store'
+import { useEditorStore } from './hooks/useEditorStore'
 import './FloorPlanEditor.css'
 
 export function FloorPlanEditor (): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null)
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 })
+  const floors = useFloors()
+  const setActiveFloor = useEditorStore(state => state.setActiveFloor)
+
+  // Sync editor store with model store's default floor
+  useEffect(() => {
+    if (floors.size > 0) {
+      const groundFloor = Array.from(floors.values())[0]
+      if (groundFloor != null) {
+        setActiveFloor(groundFloor.id)
+      }
+    }
+  }, [floors, setActiveFloor])
 
   const updateDimensions = useCallback(() => {
     if (containerRef.current != null) {

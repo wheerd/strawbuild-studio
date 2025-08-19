@@ -1,19 +1,20 @@
 import { Line } from 'react-konva'
-import type { Wall, Building } from '../../../types/model'
-import { useModelStore } from '../../../model/store'
+import type { Wall } from '../../../types/model'
+import { useSelectedEntities, useEditorStore } from '../hooks/useEditorStore'
+import { useConnectionPoints } from '../../../model/store'
 
 interface WallShapeProps {
   wall: Wall
-  building: Building
 }
 
-export function WallShape ({ wall, building }: WallShapeProps): React.JSX.Element | null {
-  // Use individual selectors instead of useSelectedEntities() and useModelActions()
-  const selectedEntities = useModelStore(state => state.selectedEntityIds)
-  const toggleEntitySelection = useModelStore(state => state.toggleEntitySelection)
+export function WallShape ({ wall }: WallShapeProps): React.JSX.Element | null {
+  // Use individual selectors to avoid object creation
+  const selectedEntities = useSelectedEntities()
+  const toggleEntitySelection = useEditorStore(state => state.toggleEntitySelection)
+  const connectionPoints = useConnectionPoints()
 
-  const startPoint = building.connectionPoints.get(wall.startPointId)
-  const endPoint = building.connectionPoints.get(wall.endPointId)
+  const startPoint = connectionPoints.get(wall.startPointId)
+  const endPoint = connectionPoints.get(wall.endPointId)
 
   if (startPoint == null || endPoint == null) {
     return null

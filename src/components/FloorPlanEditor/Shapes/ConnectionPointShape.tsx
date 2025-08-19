@@ -1,15 +1,15 @@
 import { Circle } from 'react-konva'
 import type { ConnectionPoint } from '../../../types/model'
-import { useModelStore } from '../../../model/store'
+import { useSelectedEntities, useEditorStore } from '../hooks/useEditorStore'
 
 interface ConnectionPointShapeProps {
   point: ConnectionPoint
 }
 
 export function ConnectionPointShape ({ point }: ConnectionPointShapeProps): React.JSX.Element {
-  // Use individual selectors instead of useSelectedEntities() and useModelActions()
-  const selectedEntities = useModelStore(state => state.selectedEntityIds)
-  const toggleEntitySelection = useModelStore(state => state.toggleEntitySelection)
+  // Use individual selectors to avoid object creation
+  const selectedEntities = useSelectedEntities()
+  const toggleEntitySelection = useEditorStore(state => state.toggleEntitySelection)
 
   const isSelected = selectedEntities.includes(point.id)
 

@@ -1,18 +1,20 @@
 import { useMemo, useCallback } from 'react'
-import { useBuilding, useActiveFloorId, useModelStore } from '../../../model/store'
+import { useFloors } from '../../../model/store'
+import { useActiveFloorId, useEditorStore } from '../hooks/useEditorStore'
+import { useModelStore } from '../../../model/store'
 import type { FloorId } from '../../../types/ids'
 
 export function FloorSelector (): React.JSX.Element {
-  const building = useBuilding()
+  const allFloors = useFloors()
   const activeFloorId = useActiveFloorId()
-  
-  // Use individual selectors instead of useModelActions() to avoid object creation
-  const setActiveFloor = useModelStore(state => state.setActiveFloor)
+
+  // Use individual selectors to avoid object creation
+  const setActiveFloor = useEditorStore(state => state.setActiveFloor)
   const addFloor = useModelStore(state => state.addFloor)
 
   const floors = useMemo(() => {
-    return Array.from(building.floors.values()).sort((a, b) => a.level - b.level)
-  }, [building.floors])
+    return Array.from(allFloors.values()).sort((a, b) => a.level - b.level)
+  }, [allFloors])
 
   const handleFloorChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     const floorId = e.target.value as FloorId

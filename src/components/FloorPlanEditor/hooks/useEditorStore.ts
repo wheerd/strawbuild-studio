@@ -1,8 +1,10 @@
 import { create } from 'zustand'
 import type { Point2D } from '../../../types/model'
+import type { FloorId } from '../../../types/ids'
 
 export type EditorTool = 'select' | 'wall' | 'room'
 export type DragType = 'pan' | 'wall' | 'point' | 'selection'
+export type ViewMode = 'plan' | '3d' | 'elevation'
 
 export interface DragState {
   isDragging: boolean
@@ -20,7 +22,11 @@ export interface EditorState {
   snapPreviewPoint?: Point2D
   showGrid: boolean
   gridSize: number
+  snapToGrid: boolean
   showRoomLabels: boolean
+  activeFloorId: FloorId
+  selectedEntityIds: string[]
+  viewMode: ViewMode
 }
 
 export interface EditorActions {
@@ -32,13 +38,19 @@ export interface EditorActions {
   setSnapPreview: (point?: Point2D) => void
   setShowGrid: (show: boolean) => void
   setGridSize: (size: number) => void
+  setSnapToGrid: (snapToGrid: boolean) => void
   setShowRoomLabels: (show: boolean) => void
+  setActiveFloor: (floorId: FloorId) => void
+  setSelectedEntities: (entityIds: string[]) => void
+  toggleEntitySelection: (entityId: string) => void
+  clearSelection: () => void
+  setViewMode: (viewMode: ViewMode) => void
   reset: () => void
 }
 
 type EditorStore = EditorState & EditorActions
 
-function createInitialState (): EditorState {
+function createInitialState (defaultFloorId: FloorId): EditorState {
   return {
     activeTool: 'select',
     isDrawing: false,
@@ -51,12 +63,17 @@ function createInitialState (): EditorState {
     showSnapPreview: false,
     showGrid: true,
     gridSize: 50,
-    showRoomLabels: true
+    snapToGrid: true,
+    showRoomLabels: true,
+    activeFloorId: defaultFloorId,
+    selectedEntityIds: [],
+    viewMode: 'plan'
   }
 }
 
-export const useEditorStore = create<EditorStore>()((set) => ({
-  ...createInitialState(),
+export const useEditorStore = create<EditorStore>()((set, get) => ({
+  // Initialize with temporary floor ID - will be reset when model loads
+  ...createInitialState('ground-floor' as FloorId),
 
   setActiveTool: (tool: EditorTool) => {
     set({ activeTool: tool, isDrawing: false })
@@ -106,15 +123,50 @@ export const useEditorStore = create<EditorStore>()((set) => ({
     set({ gridSize: size })
   },
 
+  setSnapToGrid: (snapToGrid: boolean) => {
+    set({ snapToGrid })
+  },
+
   setShowRoomLabels: (show: boolean) => {
     set({ showRoomLabels: show })
   },
 
-  reset: () => {
-    set(createInitialState())
+  setActiveFloor: (floorId: FloorId) => {
+    set({
+      activeFloorId: floorId,
+      selectedEntityIds: []
+    })
+  },
+
+  setSelectedEntities: (entityIds: string[]) => {
+    set({ selectedEntityIds: entityIds })
+  },
+
+  toggleEntitySelection: (entityId: string) => {
+    const state = get()
+    const isSelected = state.selectedEntityIds.includes(entityId)
+    const selectedEntityIds = isSelected
+      ? state.selectedEntityIds.filter(id => id !== entityId)
+      : [...state.selectedEntityIds, entityId]
+
+    set({ selectedEntityIds })
+  },
+
+  clearSelection: () => {
+    set({ selectedEntityIds: [] })
+  },
+
+  setViewMode: (viewMode: ViewMode) => {
+    set({ viewMode })
+  },
+
+  reset: (defaultFloorId?: FloorId) => {
+    const floorId = defaultFloorId ?? ('ground-floor' as FloorId)
+    set(createInitialState(floorId))
   }
 }))
 
+// Selector hooks for optimized re-renders
 export const useActiveTool = (): EditorTool => useEditorStore(state => state.activeTool)
 export const useIsDrawing = (): boolean => useEditorStore(state => state.isDrawing)
 export const useDragState = (): DragState => useEditorStore(state => state.dragState)
@@ -122,6 +174,9 @@ export const useSnapDistance = (): number => useEditorStore(state => state.snapD
 export const useShowSnapPreview = (): boolean => useEditorStore(state => state.showSnapPreview)
 export const useSnapPreviewPoint = (): Point2D | undefined => useEditorStore(state => state.snapPreviewPoint)
 export const useShowGrid = (): boolean => useEditorStore(state => state.showGrid)
-export const useGridSize = (): number => useEditorStore(state => state.gridSize)
-
-
+export const useEditorGridSize = (): number => useEditorStore(state => state.gridSize)
+export const useSnapToGrid = (): boolean => useEditorStore(state => state.snapToGrid)
+export const useShowRoomLabels = (): boolean => useEditorStore(state => state.showRoomLabels)
+export const useActiveFloorId = (): FloorId => useEditorStore(state => state.activeFloorId)
+export const useSelectedEntities = (): string[] => useEditorStore(state => state.selectedEntityIds)
+export const useViewMode = (): ViewMode => useEditorStore(state => state.viewMode)

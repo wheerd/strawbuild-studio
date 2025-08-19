@@ -66,8 +66,8 @@ export interface Floor {
   openingIds: OpeningId[]
 }
 
-// Complete building model
-export interface Building {
+// Model state for the application
+export interface ModelState {
   floors: Map<FloorId, Floor>
   walls: Map<WallId, Wall>
   rooms: Map<RoomId, Room>
@@ -76,14 +76,4 @@ export interface Building {
   bounds?: Bounds
   createdAt: Date
   updatedAt: Date
-}
-
-// Model state for the application
-export interface ModelState {
-  building: Building
-  activeFloorId: FloorId
-  selectedEntityIds: string[]
-  viewMode: 'plan' | '3d' | 'elevation'
-  gridSize: number
-  snapToGrid: boolean
 }
