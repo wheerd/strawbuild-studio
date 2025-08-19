@@ -1,14 +1,15 @@
 import React from 'react'
 import { Layer, Circle } from 'react-konva'
-import { useShowSnapPreview, useSnapPreviewPoint } from '../hooks/useEditorStore'
+import { useShowSnapPreview, useSnapPreviewPoint, useActiveTool } from '../hooks/useEditorStore'
 
 export function SelectionLayer (): React.JSX.Element {
   const showSnapPreview = useShowSnapPreview()
   const snapPreviewPoint = useSnapPreviewPoint()
+  const activeTool = useActiveTool()
 
   return (
     <Layer name='selection'>
-      {showSnapPreview && (snapPreviewPoint != null) && (
+      {showSnapPreview && (snapPreviewPoint != null) && activeTool === 'wall' && (
         <Circle
           x={snapPreviewPoint.x}
           y={snapPreviewPoint.y}

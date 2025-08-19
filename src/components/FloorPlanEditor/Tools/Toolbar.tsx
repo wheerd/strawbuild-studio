@@ -93,7 +93,6 @@ export function Toolbar (): React.JSX.Element {
           >
             <span style={{ marginRight: '8px' }}>{tool.icon}</span>
             {tool.label}
-            {activeTool === tool.id && tool.id === 'wall' && ' (ACTIVE - Click on canvas to draw)'}
           </button>
         ))}
       </div>

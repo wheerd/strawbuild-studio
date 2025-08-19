@@ -97,7 +97,13 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
   ...createInitialState('ground-floor' as FloorId),
 
   setActiveTool: (tool: EditorTool) => {
-    set({ activeTool: tool, isDrawing: false })
+    set({
+      activeTool: tool,
+      isDrawing: false,
+      // Clear snap preview when switching away from wall tool
+      showSnapPreview: tool === 'wall' ? get().showSnapPreview : false,
+      snapPreviewPoint: tool === 'wall' ? get().snapPreviewPoint : undefined
+    })
   },
 
   setIsDrawing: (isDrawing: boolean) => {
