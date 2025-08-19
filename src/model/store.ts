@@ -17,7 +17,9 @@ import {
   removeWallFromState,
   calculateStateBounds,
   calculateFloorBounds,
-  calculateRoomArea
+  calculateRoomArea,
+  moveConnectionPoint,
+  moveWall
 } from './operations'
 
 interface ModelActions {
@@ -29,6 +31,8 @@ interface ModelActions {
   addConnectionPoint: (position: Point2D, floorId: FloorId) => ConnectionPoint
   addOpening: (wallId: WallId, type: Opening['type'], offsetFromStart: number, width: number, height: number, sillHeight?: number) => Opening
   removeWall: (wallId: WallId) => void
+  moveConnectionPoint: (pointId: ConnectionPointId, position: Point2D) => void
+  moveWall: (wallId: WallId, deltaX: number, deltaY: number) => void
   getActiveFloorBounds: (floorId: FloorId) => Bounds | null
 }
 
@@ -133,6 +137,18 @@ export const useModelStore = create<ModelStore>()(
         updatedState = { ...updatedState, bounds: bounds ?? undefined }
 
         set(updatedState, false, 'removeWall')
+      },
+
+      moveConnectionPoint: (pointId: ConnectionPointId, position: Point2D) => {
+        const state = get()
+        const updatedState = moveConnectionPoint(state, pointId, position)
+        set(updatedState, false, 'moveConnectionPoint')
+      },
+
+      moveWall: (wallId: WallId, deltaX: number, deltaY: number) => {
+        const state = get()
+        const updatedState = moveWall(state, wallId, deltaX, deltaY)
+        set(updatedState, false, 'moveWall')
       },
 
       getActiveFloorBounds: (floorId: FloorId): Bounds | null => {

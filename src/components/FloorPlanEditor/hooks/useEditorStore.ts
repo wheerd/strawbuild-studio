@@ -24,6 +24,7 @@ export interface ViewportState {
 export interface EditorState {
   activeTool: EditorTool
   isDrawing: boolean
+  wallDrawingStart?: Point2D
   dragState: DragState
   snapDistance: number
   showSnapPreview: boolean
@@ -41,6 +42,7 @@ export interface EditorState {
 export interface EditorActions {
   setActiveTool: (tool: EditorTool) => void
   setIsDrawing: (isDrawing: boolean) => void
+  setWallDrawingStart: (point?: Point2D) => void
   startDrag: (dragType: DragType, startPos: Point2D, entityId?: string) => void
   endDrag: () => void
   setSnapDistance: (distance: number) => void
@@ -100,6 +102,10 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
 
   setIsDrawing: (isDrawing: boolean) => {
     set({ isDrawing })
+  },
+
+  setWallDrawingStart: (point?: Point2D) => {
+    set({ wallDrawingStart: point })
   },
 
   startDrag: (dragType: DragType, startPos: Point2D, entityId?: string) => {
@@ -208,6 +214,7 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
 // Selector hooks for optimized re-renders
 export const useActiveTool = (): EditorTool => useEditorStore(state => state.activeTool)
 export const useIsDrawing = (): boolean => useEditorStore(state => state.isDrawing)
+export const useWallDrawingStart = (): Point2D | undefined => useEditorStore(state => state.wallDrawingStart)
 export const useDragState = (): DragState => useEditorStore(state => state.dragState)
 export const useSnapDistance = (): number => useEditorStore(state => state.snapDistance)
 export const useShowSnapPreview = (): boolean => useEditorStore(state => state.showSnapPreview)

@@ -9,7 +9,7 @@
     "lint": "ts-standard -p tsconfig.app.json src/",
     "lint:fix": "ts-standard --fix -p tsconfig.app.json src/",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest run"
   },
   "dependencies": {
     "@types/jest": "^30.0.0",

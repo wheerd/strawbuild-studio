@@ -466,6 +466,55 @@ export function findNearestConnectionPoint (
   return nearest
 }
 
+export function moveConnectionPoint (
+  state: ModelState, 
+  pointId: ConnectionPointId, 
+  newPosition: Point2D
+): ModelState {
+  const point = state.connectionPoints.get(pointId)
+  if (!point) return state
+
+  const updatedState = { ...state }
+  updatedState.connectionPoints = new Map(state.connectionPoints)
+  
+  const updatedPoint = { ...point, position: newPosition }
+  updatedState.connectionPoints.set(pointId, updatedPoint)
+  
+  updatedState.updatedAt = new Date()
+  return updatedState
+}
+
+export function moveWall (
+  state: ModelState,
+  wallId: WallId,
+  deltaX: number,
+  deltaY: number
+): ModelState {
+  const wall = state.walls.get(wallId)
+  if (!wall) return state
+
+  const startPoint = state.connectionPoints.get(wall.startPointId)
+  const endPoint = state.connectionPoints.get(wall.endPointId)
+  
+  if (!startPoint || !endPoint) return state
+
+  let updatedState = state
+
+  // Move start point
+  updatedState = moveConnectionPoint(updatedState, wall.startPointId, {
+    x: startPoint.position.x + deltaX,
+    y: startPoint.position.y + deltaY
+  })
+
+  // Move end point  
+  updatedState = moveConnectionPoint(updatedState, wall.endPointId, {
+    x: endPoint.position.x + deltaX,
+    y: endPoint.position.y + deltaY
+  })
+
+  return updatedState
+}
+
 export function getWallsOnFloor (state: ModelState, floorId: FloorId): Wall[] {
   const floor = state.floors.get(floorId)
   if (floor == null) return []

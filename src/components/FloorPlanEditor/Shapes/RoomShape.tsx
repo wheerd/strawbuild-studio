@@ -1,6 +1,6 @@
 import { Line, Text } from 'react-konva'
 import type { Room } from '../../../types/model'
-import { useSelectedEntities, useEditorStore } from '../hooks/useEditorStore'
+import { useSelectedEntities, useEditorStore, useActiveTool } from '../hooks/useEditorStore'
 import { useWalls, useConnectionPoints } from '../../../model/store'
 
 interface RoomShapeProps {
@@ -51,6 +51,7 @@ export function RoomShape ({ room }: RoomShapeProps): React.JSX.Element | null {
   const selectedEntities = useSelectedEntities()
   const toggleEntitySelection = useEditorStore(state => state.toggleEntitySelection)
   const showRoomLabels = useEditorStore(state => state.showRoomLabels)
+  const activeTool = useActiveTool()
   const walls = useWalls()
   const connectionPoints = useConnectionPoints()
 
@@ -64,6 +65,11 @@ export function RoomShape ({ room }: RoomShapeProps): React.JSX.Element | null {
   const center = getRoomCenter(points)
 
   const handleClick = (): void => {
+    // In wall creation mode, don't handle room selection
+    if (activeTool === 'wall') {
+      return
+    }
+    
     toggleEntitySelection(room.id)
   }
 
@@ -75,8 +81,9 @@ export function RoomShape ({ room }: RoomShapeProps): React.JSX.Element | null {
         stroke={isSelected ? '#007acc' : '#cccccc'}
         strokeWidth={1}
         closed
-        onClick={handleClick}
-        onTap={handleClick}
+        onClick={activeTool === 'wall' ? undefined : handleClick}
+        onTap={activeTool === 'wall' ? undefined : handleClick}
+        listening={activeTool !== 'wall'}
       />
       {showRoomLabels && (
         <Text

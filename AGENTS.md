@@ -4,7 +4,7 @@
 - `pnpm dev` - Start development server
 - `pnpm build` - Build production (runs TypeScript check then Vite build)  
 - `pnpm lint` - Run ESLint
-- `pnpm test -- run` - Run all tests with Vitest
+- `pnpm test` - Run all tests with Vitest
 - `pnpm preview` - Preview production build
 - `pnpm add <package>` - Add dependency
 - `npx tsc --noEmit --skipLibCheck` - TypeScript check only
