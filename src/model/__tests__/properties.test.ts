@@ -13,9 +13,9 @@ import { createAbsoluteOffset, createLength } from '@/types/geometry'
 describe('Model Properties', () => {
   describe('Connection Points', () => {
     it('should create connection point with position', () => {
-      const point = createPoint({ 
-        x: createAbsoluteOffset(100), 
-        y: createAbsoluteOffset(200) 
+      const point = createPoint({
+        x: createAbsoluteOffset(100),
+        y: createAbsoluteOffset(200)
       })
 
       expect(Number(point.position.x)).toBe(100)
@@ -25,19 +25,19 @@ describe('Model Properties', () => {
 
   describe('Walls', () => {
     it('should create wall between points', () => {
-      const p1 = createPoint({ 
-        x: createAbsoluteOffset(0), 
-        y: createAbsoluteOffset(0) 
+      const p1 = createPoint({
+        x: createAbsoluteOffset(0),
+        y: createAbsoluteOffset(0)
       })
-      const p2 = createPoint({ 
-        x: createAbsoluteOffset(100), 
-        y: createAbsoluteOffset(0) 
+      const p2 = createPoint({
+        x: createAbsoluteOffset(100),
+        y: createAbsoluteOffset(0)
       })
       const wall = createWall(
-        p1.id, 
-        p2.id, 
-        createLength(3000), 
-        createLength(3000), 
+        p1.id,
+        p2.id,
+        createLength(3000),
+        createLength(3000),
         createLength(200)
       )
 
@@ -51,19 +51,19 @@ describe('Model Properties', () => {
     it('should calculate wall length', () => {
       let state = createEmptyModelState()
       const groundFloorId = Array.from(state.floors.keys())[0]
-      const p1 = createPoint({ 
-        x: createAbsoluteOffset(0), 
-        y: createAbsoluteOffset(0) 
+      const p1 = createPoint({
+        x: createAbsoluteOffset(0),
+        y: createAbsoluteOffset(0)
       })
-      const p2 = createPoint({ 
-        x: createAbsoluteOffset(300), 
-        y: createAbsoluteOffset(400) 
+      const p2 = createPoint({
+        x: createAbsoluteOffset(300),
+        y: createAbsoluteOffset(400)
       })
       const wall = createWall(
-        p1.id, 
-        p2.id, 
-        createLength(2700), 
-        createLength(2700), 
+        p1.id,
+        p2.id,
+        createLength(2700),
+        createLength(2700),
         createLength(200)
       )
 
@@ -79,23 +79,23 @@ describe('Model Properties', () => {
     it('should calculate bounds from connection points', () => {
       let state = createEmptyModelState()
       const groundFloorId = Array.from(state.floors.keys())[0]
-      const p1 = createPoint({ 
-        x: createAbsoluteOffset(10), 
-        y: createAbsoluteOffset(20) 
+      const p1 = createPoint({
+        x: createAbsoluteOffset(10),
+        y: createAbsoluteOffset(20)
       })
-      const p2 = createPoint({ 
-        x: createAbsoluteOffset(100), 
-        y: createAbsoluteOffset(50) 
+      const p2 = createPoint({
+        x: createAbsoluteOffset(100),
+        y: createAbsoluteOffset(50)
       })
 
       state = addPointToFloor(state, p1, groundFloorId)
       state = addPointToFloor(state, p2, groundFloorId)
 
       const bounds = calculateStateBounds(state)
-      expect(bounds && Number(bounds.minX)).toBe(10)
-      expect(bounds && Number(bounds.minY)).toBe(20)
-      expect(bounds && Number(bounds.maxX)).toBe(100)
-      expect(bounds && Number(bounds.maxY)).toBe(50)
+      expect((bounds != null) && Number(bounds.minX)).toBe(10)
+      expect((bounds != null) && Number(bounds.minY)).toBe(20)
+      expect((bounds != null) && Number(bounds.maxX)).toBe(100)
+      expect((bounds != null) && Number(bounds.maxY)).toBe(50)
     })
   })
 })

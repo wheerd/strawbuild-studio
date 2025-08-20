@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useEditorStore } from '@/components/FloorPlanEditor/hooks/useEditorStore'
+import { createAbsoluteOffset } from '@/types/geometry'
 
 describe('Selection Persistence After Drag', () => {
   beforeEach(() => {
@@ -15,7 +16,7 @@ describe('Selection Persistence After Drag', () => {
     expect(useEditorStore.getState().selectedEntityId).toBe('wall-1')
 
     // Start drag operation (this happens on mouseDown)
-    startDrag('wall', { x: 100, y: 200 }, 'wall-1')
+    startDrag('wall', { x: createAbsoluteOffset(100), y: createAbsoluteOffset(200) }, 'wall-1')
 
     // Verify still selected during drag
     expect(useEditorStore.getState().selectedEntityId).toBe('wall-1')
@@ -37,7 +38,7 @@ describe('Selection Persistence After Drag', () => {
     expect(useEditorStore.getState().selectedEntityId).toBe('point-1')
 
     // Start drag operation
-    startDrag('point', { x: 150, y: 250 }, 'point-1')
+    startDrag('point', { x: createAbsoluteOffset(150), y: createAbsoluteOffset(250) }, 'point-1')
 
     // Verify still selected during drag
     expect(useEditorStore.getState().selectedEntityId).toBe('point-1')
@@ -65,7 +66,7 @@ describe('Selection Persistence After Drag', () => {
     expect(useEditorStore.getState().selectedEntityId).toBe('wall-1')
 
     // Now start drag operation
-    startDrag('wall', { x: 100, y: 200 }, 'wall-1')
+    startDrag('wall', { x: createAbsoluteOffset(100), y: createAbsoluteOffset(200) }, 'wall-1')
     expect(useEditorStore.getState().selectedEntityId).toBe('wall-1')
 
     // End drag
@@ -81,17 +82,17 @@ describe('Selection Persistence After Drag', () => {
     expect(useEditorStore.getState().selectedEntityId).toBe('point-1')
 
     // First drag operation
-    startDrag('point', { x: 100, y: 200 }, 'point-1')
+    startDrag('point', { x: createAbsoluteOffset(100), y: createAbsoluteOffset(200) }, 'point-1')
     endDrag()
     expect(useEditorStore.getState().selectedEntityId).toBe('point-1')
 
     // Second drag operation on same entity
-    startDrag('point', { x: 200, y: 300 }, 'point-1')
+    startDrag('point', { x: createAbsoluteOffset(200), y: createAbsoluteOffset(300) }, 'point-1')
     endDrag()
     expect(useEditorStore.getState().selectedEntityId).toBe('point-1')
 
     // Third drag operation
-    startDrag('point', { x: 300, y: 400 }, 'point-1')
+    startDrag('point', { x: createAbsoluteOffset(300), y: createAbsoluteOffset(400) }, 'point-1')
     endDrag()
     expect(useEditorStore.getState().selectedEntityId).toBe('point-1')
   })
@@ -101,7 +102,7 @@ describe('Selection Persistence After Drag', () => {
 
     // Select first entity and drag it
     selectEntity('wall-1')
-    startDrag('wall', { x: 100, y: 200 }, 'wall-1')
+    startDrag('wall', { x: createAbsoluteOffset(100), y: createAbsoluteOffset(200) }, 'wall-1')
     endDrag()
     expect(useEditorStore.getState().selectedEntityId).toBe('wall-1')
 
@@ -109,7 +110,7 @@ describe('Selection Persistence After Drag', () => {
     selectEntity('point-1')
     expect(useEditorStore.getState().selectedEntityId).toBe('point-1')
 
-    startDrag('point', { x: 150, y: 250 }, 'point-1')
+    startDrag('point', { x: createAbsoluteOffset(150), y: createAbsoluteOffset(250) }, 'point-1')
     endDrag()
     expect(useEditorStore.getState().selectedEntityId).toBe('point-1')
   })

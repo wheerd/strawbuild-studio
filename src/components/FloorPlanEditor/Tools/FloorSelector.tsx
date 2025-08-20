@@ -2,6 +2,7 @@ import { useMemo, useCallback } from 'react'
 import { useFloors, useModelStore } from '@/model/store'
 import { useActiveFloorId, useEditorStore } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 import type { FloorId } from '@/types/ids'
+import { createFloorLevel } from '@/model'
 
 export function FloorSelector (): React.JSX.Element {
   const allFloors = useFloors()
@@ -24,7 +25,7 @@ export function FloorSelector (): React.JSX.Element {
 
   const handleAddFloor = useCallback(() => {
     const maxLevel = floors.length > 0 ? Math.max(...floors.map(f => f.level)) : -1
-    const newFloor = addFloor(`Floor ${maxLevel + 2}`, maxLevel + 1)
+    const newFloor = addFloor(`Floor ${maxLevel + 2}`, createFloorLevel(maxLevel + 1))
     setActiveFloor(newFloor.id)
   }, [floors, addFloor, setActiveFloor])
 

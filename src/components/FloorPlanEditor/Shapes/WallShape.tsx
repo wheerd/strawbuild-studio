@@ -4,6 +4,7 @@ import { useCallback, useRef } from 'react'
 import type { Wall } from '@/types/model'
 import { useSelectedEntity, useEditorStore, useDragState, useActiveTool } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 import { usePoints } from '@/model/store'
+import type { Point2D } from '@/types/geometry'
 
 interface WallShapeProps {
   wall: Wall
@@ -65,7 +66,7 @@ export function WallShape ({ wall }: WallShapeProps): React.JSX.Element | null {
     const stage = e.target.getStage()
     const pointer = stage?.getPointerPosition()
     if (pointer != null) {
-      startDrag('wall', pointer, wall.id)
+      startDrag('wall', pointer as Point2D, wall.id)
       // Mark that we started a drag operation
       hasDraggedRef.current = true
     }

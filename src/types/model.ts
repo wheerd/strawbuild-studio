@@ -9,6 +9,17 @@ import type {
   PolygonWithHoles2D
 } from '@/types/geometry'
 
+// Floor level branded type
+export type FloorLevel = number & { __brand: 'FloorLevel' }
+
+// Floor level validation and creation
+export const createFloorLevel = (value: number): FloorLevel => {
+  if (!Number.isInteger(value)) {
+    throw new Error(`Floor level must be an integer, got ${value}`)
+  }
+  return value as FloorLevel
+}
+
 // Connection point for wall endpoints
 export interface Point {
   id: PointId
@@ -93,6 +104,7 @@ export interface Room {
 export interface Floor {
   id: FloorId
   name: string
+  level: FloorLevel // Floor level (0 = ground floor, 1 = first floor, etc.)
   height: Length
   wallIds: WallId[]
   roomIds: RoomId[]

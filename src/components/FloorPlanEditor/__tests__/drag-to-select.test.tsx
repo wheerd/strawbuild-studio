@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useEditorStore } from '@/components/FloorPlanEditor/hooks/useEditorStore'
+import { createAbsoluteOffset } from '@/types/geometry'
 
 describe('Drag to Select', () => {
   beforeEach(() => {
@@ -19,7 +20,7 @@ describe('Drag to Select', () => {
     expect(useEditorStore.getState().selectedEntityId).toBe('point-1')
 
     // Simulate starting drag operation
-    startDrag('point', { x: 100, y: 200 }, 'point-1')
+    startDrag('point', { x: createAbsoluteOffset(100), y: createAbsoluteOffset(200) }, 'point-1')
 
     // Verify drag state is set
     const dragState = useEditorStore.getState().dragState
@@ -75,7 +76,7 @@ describe('Drag to Select', () => {
     expect(useEditorStore.getState().dragState.isDragging).toBe(false)
 
     // Start drag
-    startDrag('wall', { x: 100, y: 200 }, 'wall-1')
+    startDrag('wall', { x: createAbsoluteOffset(100), y: createAbsoluteOffset(200) }, 'wall-1')
     let dragState = useEditorStore.getState().dragState
     expect(dragState.isDragging).toBe(true)
     expect(dragState.dragType).toBe('wall')

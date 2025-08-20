@@ -16,6 +16,7 @@ import {
   removeWallFromFloor
 } from '@/model/operations'
 import { createLength, createAbsoluteOffset } from '@/types/geometry'
+import { createFloorLevel } from '@/types/model'
 
 describe('Model Operations', () => {
   describe('Factory Functions', () => {
@@ -25,6 +26,7 @@ describe('Model Operations', () => {
       expect(state.floors.size).toBe(1)
       const groundFloor = Array.from(state.floors.values())[0]
       expect(groundFloor.name).toBe('Ground Floor')
+      expect(Number(groundFloor.level)).toBe(0)
       expect(Number(groundFloor.height)).toBe(3000)
       expect(state.walls.size).toBe(0)
       expect(state.rooms.size).toBe(0)
@@ -34,9 +36,10 @@ describe('Model Operations', () => {
     })
 
     it('should create floor with correct properties', () => {
-      const floor = createFloor('First Floor', createLength(2800))
+      const floor = createFloor('First Floor', createFloorLevel(1), createLength(2800))
 
       expect(floor.name).toBe('First Floor')
+      expect(Number(floor.level)).toBe(1)
       expect(Number(floor.height)).toBe(2800)
       expect(floor.wallIds).toEqual([])
       expect(floor.roomIds).toEqual([])
@@ -45,10 +48,25 @@ describe('Model Operations', () => {
       expect(floor.roofIds).toEqual([])
     })
 
+    it('should validate floor level is integer', () => {
+      // Valid levels (any integers)
+      expect(() => createFloorLevel(0)).not.toThrow()
+      expect(() => createFloorLevel(-10)).not.toThrow()
+      expect(() => createFloorLevel(20)).not.toThrow()
+      expect(() => createFloorLevel(5)).not.toThrow()
+      expect(() => createFloorLevel(-100)).not.toThrow()
+      expect(() => createFloorLevel(100)).not.toThrow()
+
+      // Invalid levels - non-integers
+      expect(() => createFloorLevel(1.5)).toThrow('Floor level must be an integer')
+      expect(() => createFloorLevel(-2.3)).toThrow('Floor level must be an integer')
+      expect(() => createFloorLevel(0.1)).toThrow('Floor level must be an integer')
+    })
+
     it('should create connection point at position', () => {
-      const point = createPoint({ 
-        x: createAbsoluteOffset(100), 
-        y: createAbsoluteOffset(200) 
+      const point = createPoint({
+        x: createAbsoluteOffset(100),
+        y: createAbsoluteOffset(200)
       })
 
       expect(Number(point.position.x)).toBe(100)
@@ -56,19 +74,19 @@ describe('Model Operations', () => {
     })
 
     it('should create wall between connection points', () => {
-      const point1 = createPoint({ 
-        x: createAbsoluteOffset(0), 
-        y: createAbsoluteOffset(0) 
+      const point1 = createPoint({
+        x: createAbsoluteOffset(0),
+        y: createAbsoluteOffset(0)
       })
-      const point2 = createPoint({ 
-        x: createAbsoluteOffset(100), 
-        y: createAbsoluteOffset(0) 
+      const point2 = createPoint({
+        x: createAbsoluteOffset(100),
+        y: createAbsoluteOffset(0)
       })
       const wall = createWall(
-        point1.id, 
-        point2.id, 
-        createLength(2700), 
-        createLength(2700), 
+        point1.id,
+        point2.id,
+        createLength(2700),
+        createLength(2700),
         createLength(150)
       )
 
@@ -80,19 +98,19 @@ describe('Model Operations', () => {
     })
 
     it('should create room with wall references', () => {
-      const point1 = createPoint({ 
-        x: createAbsoluteOffset(0), 
-        y: createAbsoluteOffset(0) 
+      const point1 = createPoint({
+        x: createAbsoluteOffset(0),
+        y: createAbsoluteOffset(0)
       })
-      const point2 = createPoint({ 
-        x: createAbsoluteOffset(100), 
-        y: createAbsoluteOffset(0) 
+      const point2 = createPoint({
+        x: createAbsoluteOffset(100),
+        y: createAbsoluteOffset(0)
       })
       const wall = createWall(
-        point1.id, 
-        point2.id, 
-        createLength(2700), 
-        createLength(2700), 
+        point1.id,
+        point2.id,
+        createLength(2700),
+        createLength(2700),
         createLength(200)
       )
       const room = createRoom('Living Room', [wall.id])
@@ -104,9 +122,9 @@ describe('Model Operations', () => {
 
     it('should create opening on wall', () => {
       const opening = createOpening(
-        'door', 
-        createLength(200), 
-        createLength(800), 
+        'door',
+        createLength(200),
+        createLength(800),
         createLength(2100)
       )
 
@@ -120,7 +138,7 @@ describe('Model Operations', () => {
   describe('State Operations', () => {
     it('should add floor to state', () => {
       const state = createEmptyModelState()
-      const floor = createFloor('First Floor', createLength(3000))
+      const floor = createFloor('First Floor', createFloorLevel(1), createLength(3000))
       const newState = addFloorToState(state, floor)
 
       expect(newState.floors.size).toBe(2)
@@ -131,22 +149,22 @@ describe('Model Operations', () => {
     it('should add wall to floor', () => {
       let state = createEmptyModelState()
       const groundFloorId = Array.from(state.floors.keys())[0]
-      const point1 = createPoint({ 
-        x: createAbsoluteOffset(0), 
-        y: createAbsoluteOffset(0) 
+      const point1 = createPoint({
+        x: createAbsoluteOffset(0),
+        y: createAbsoluteOffset(0)
       })
-      const point2 = createPoint({ 
-        x: createAbsoluteOffset(100), 
-        y: createAbsoluteOffset(0) 
+      const point2 = createPoint({
+        x: createAbsoluteOffset(100),
+        y: createAbsoluteOffset(0)
       })
       state = addPointToFloor(state, point1, groundFloorId)
       state = addPointToFloor(state, point2, groundFloorId)
 
       const wall = createWall(
-        point1.id, 
-        point2.id, 
-        createLength(2700), 
-        createLength(2700), 
+        point1.id,
+        point2.id,
+        createLength(2700),
+        createLength(2700),
         createLength(200)
       )
       const newState = addWallToFloor(state, wall, groundFloorId)
@@ -158,19 +176,19 @@ describe('Model Operations', () => {
     it('should remove wall from floor', () => {
       let state = createEmptyModelState()
       const groundFloorId = Array.from(state.floors.keys())[0]
-      const point1 = createPoint({ 
-        x: createAbsoluteOffset(0), 
-        y: createAbsoluteOffset(0) 
+      const point1 = createPoint({
+        x: createAbsoluteOffset(0),
+        y: createAbsoluteOffset(0)
       })
-      const point2 = createPoint({ 
-        x: createAbsoluteOffset(1000), 
-        y: createAbsoluteOffset(0) 
+      const point2 = createPoint({
+        x: createAbsoluteOffset(1000),
+        y: createAbsoluteOffset(0)
       })
       const wall = createWall(
-        point1.id, 
-        point2.id, 
-        createLength(2700), 
-        createLength(2700), 
+        point1.id,
+        point2.id,
+        createLength(2700),
+        createLength(2700),
         createLength(200)
       )
 
@@ -190,19 +208,19 @@ describe('Model Operations', () => {
     it('should calculate wall length', () => {
       let state = createEmptyModelState()
       const groundFloorId = Array.from(state.floors.keys())[0]
-      const point1 = createPoint({ 
-        x: createAbsoluteOffset(0), 
-        y: createAbsoluteOffset(0) 
+      const point1 = createPoint({
+        x: createAbsoluteOffset(0),
+        y: createAbsoluteOffset(0)
       })
-      const point2 = createPoint({ 
-        x: createAbsoluteOffset(300), 
-        y: createAbsoluteOffset(400) 
+      const point2 = createPoint({
+        x: createAbsoluteOffset(300),
+        y: createAbsoluteOffset(400)
       })
       const wall = createWall(
-        point1.id, 
-        point2.id, 
-        createLength(2700), 
-        createLength(2700), 
+        point1.id,
+        point2.id,
+        createLength(2700),
+        createLength(2700),
         createLength(200)
       )
 
@@ -217,23 +235,23 @@ describe('Model Operations', () => {
     it('should calculate state bounds', () => {
       let state = createEmptyModelState()
       const groundFloorId = Array.from(state.floors.keys())[0]
-      const point1 = createPoint({ 
-        x: createAbsoluteOffset(10), 
-        y: createAbsoluteOffset(20) 
+      const point1 = createPoint({
+        x: createAbsoluteOffset(10),
+        y: createAbsoluteOffset(20)
       })
-      const point2 = createPoint({ 
-        x: createAbsoluteOffset(100), 
-        y: createAbsoluteOffset(150) 
+      const point2 = createPoint({
+        x: createAbsoluteOffset(100),
+        y: createAbsoluteOffset(150)
       })
 
       state = addPointToFloor(state, point1, groundFloorId)
       state = addPointToFloor(state, point2, groundFloorId)
 
       const bounds = calculateStateBounds(state)
-      expect(bounds && Number(bounds.minX)).toBe(10)
-      expect(bounds && Number(bounds.minY)).toBe(20)
-      expect(bounds && Number(bounds.maxX)).toBe(100)
-      expect(bounds && Number(bounds.maxY)).toBe(150)
+      expect((bounds != null) && Number(bounds.minX)).toBe(10)
+      expect((bounds != null) && Number(bounds.minY)).toBe(20)
+      expect((bounds != null) && Number(bounds.maxX)).toBe(100)
+      expect((bounds != null) && Number(bounds.maxY)).toBe(150)
     })
 
     it('should return null bounds for empty state', () => {
@@ -247,21 +265,21 @@ describe('Model Operations', () => {
       const groundFloorId = Array.from(state.floors.keys())[0]
 
       // Create a simple square room
-      const p1 = createPoint({ 
-        x: createAbsoluteOffset(0), 
-        y: createAbsoluteOffset(0) 
+      const p1 = createPoint({
+        x: createAbsoluteOffset(0),
+        y: createAbsoluteOffset(0)
       })
-      const p2 = createPoint({ 
-        x: createAbsoluteOffset(100), 
-        y: createAbsoluteOffset(0) 
+      const p2 = createPoint({
+        x: createAbsoluteOffset(100),
+        y: createAbsoluteOffset(0)
       })
-      const p3 = createPoint({ 
-        x: createAbsoluteOffset(100), 
-        y: createAbsoluteOffset(100) 
+      const p3 = createPoint({
+        x: createAbsoluteOffset(100),
+        y: createAbsoluteOffset(100)
       })
-      const p4 = createPoint({ 
-        x: createAbsoluteOffset(0), 
-        y: createAbsoluteOffset(100) 
+      const p4 = createPoint({
+        x: createAbsoluteOffset(0),
+        y: createAbsoluteOffset(100)
       })
 
       const w1 = createWall(p1.id, p2.id, createLength(2700), createLength(2700), createLength(200))
@@ -287,19 +305,19 @@ describe('Model Operations', () => {
     it('should validate opening placement', () => {
       let state = createEmptyModelState()
       const groundFloorId = Array.from(state.floors.keys())[0]
-      const point1 = createPoint({ 
-        x: createAbsoluteOffset(0), 
-        y: createAbsoluteOffset(0) 
+      const point1 = createPoint({
+        x: createAbsoluteOffset(0),
+        y: createAbsoluteOffset(0)
       })
-      const point2 = createPoint({ 
-        x: createAbsoluteOffset(1000), 
-        y: createAbsoluteOffset(0) 
+      const point2 = createPoint({
+        x: createAbsoluteOffset(1000),
+        y: createAbsoluteOffset(0)
       })
       const wall = createWall(
-        point1.id, 
-        point2.id, 
-        createLength(2700), 
-        createLength(2700), 
+        point1.id,
+        point2.id,
+        createLength(2700),
+        createLength(2700),
         createLength(200)
       )
 
@@ -308,17 +326,17 @@ describe('Model Operations', () => {
       state = addWallToFloor(state, wall, groundFloorId)
 
       const validOpening = createOpening(
-        'door', 
-        createLength(100), 
-        createLength(800), 
+        'door',
+        createLength(100),
+        createLength(800),
         createLength(2100)
       )
       expect(isOpeningValidOnWall(wall, validOpening, state)).toBe(true)
 
       const invalidOpening = createOpening(
-        'window', 
-        createLength(900), 
-        createLength(800), 
+        'window',
+        createLength(900),
+        createLength(800),
         createLength(1200)
       )
       expect(isOpeningValidOnWall(wall, invalidOpening, state)).toBe(false)

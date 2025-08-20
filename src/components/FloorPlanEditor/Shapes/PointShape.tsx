@@ -3,6 +3,7 @@ import type Konva from 'konva'
 import { useCallback, useRef } from 'react'
 import type { Point } from '@/types/model'
 import { useSelectedEntity, useEditorStore, useDragState, useActiveTool } from '@/components/FloorPlanEditor/hooks/useEditorStore'
+import type { Point2D } from '@/types/geometry'
 
 interface PointShapeProps {
   point: Point
@@ -57,7 +58,7 @@ export function PointShape ({ point }: PointShapeProps): React.JSX.Element {
     const stage = e.target.getStage()
     const pointer = stage?.getPointerPosition()
     if (pointer != null) {
-      startDrag('point', pointer, point.id)
+      startDrag('point', pointer as Point2D, point.id)
       // Mark that we started a drag operation
       hasDraggedRef.current = true
     }

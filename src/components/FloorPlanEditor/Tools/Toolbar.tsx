@@ -3,6 +3,7 @@ import { useActiveTool, useEditorStore, useActiveFloorId, useViewport } from '@/
 import { useModelStore } from '@/model/store'
 import { FloorSelector } from './FloorSelector'
 import { calculateFloorBounds } from '@/model/operations'
+import { createAbsoluteOffset, createLength } from '@/types/geometry'
 
 export function Toolbar (): React.JSX.Element {
   const activeTool = useActiveTool()
@@ -27,15 +28,15 @@ export function Toolbar (): React.JSX.Element {
   ]
 
   const createSampleBuilding = useCallback(() => {
-    const point1 = addPoint({ x: 100, y: 100 }, activeFloorId)
-    const point2 = addPoint({ x: 400, y: 100 }, activeFloorId)
-    const point3 = addPoint({ x: 400, y: 300 }, activeFloorId)
-    const point4 = addPoint({ x: 100, y: 300 }, activeFloorId)
+    const point1 = addPoint({ x: createAbsoluteOffset(100), y: createAbsoluteOffset(100) }, activeFloorId)
+    const point2 = addPoint({ x: createAbsoluteOffset(400), y: createAbsoluteOffset(100) }, activeFloorId)
+    const point3 = addPoint({ x: createAbsoluteOffset(400), y: createAbsoluteOffset(300) }, activeFloorId)
+    const point4 = addPoint({ x: createAbsoluteOffset(100), y: createAbsoluteOffset(300) }, activeFloorId)
 
-    const wall1 = addWall(point1.id, point2.id, activeFloorId, 200, 3000)
-    const wall2 = addWall(point2.id, point3.id, activeFloorId, 200, 3000)
-    const wall3 = addWall(point3.id, point4.id, activeFloorId, 200, 3000)
-    const wall4 = addWall(point4.id, point1.id, activeFloorId, 200, 3000)
+    const wall1 = addWall(point1.id, point2.id, activeFloorId, createLength(200), createLength(3000))
+    const wall2 = addWall(point2.id, point3.id, activeFloorId, createLength(200), createLength(3000))
+    const wall3 = addWall(point3.id, point4.id, activeFloorId, createLength(200), createLength(3000))
+    const wall4 = addWall(point4.id, point1.id, activeFloorId, createLength(200), createLength(3000))
 
     addRoom('Living Room', activeFloorId, [wall1.id, wall2.id, wall3.id, wall4.id])
   }, [addPoint, addWall, addRoom, activeFloorId])

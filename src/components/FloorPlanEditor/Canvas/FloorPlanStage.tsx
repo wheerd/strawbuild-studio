@@ -4,7 +4,7 @@ import type Konva from 'konva'
 import { useEditorStore, useViewport, useActiveTool, useIsDrawing, useActiveFloorId, useWallDrawingStart } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 import { useModelStore } from '@/model/store'
 import { findNearestPoint } from '@/model/operations'
-import type { Point2D } from '@/types/model'
+import { createAbsoluteOffset, createLength, type Point2D } from '@/types/geometry'
 import { GridLayer } from './GridLayer'
 import { WallLayer } from './WallLayer'
 import { WallPreviewLayer } from './WallPreviewLayer'
@@ -53,20 +53,20 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
   // Helper function to get stage coordinates from pointer
   const getStageCoordinates = useCallback((pointer: { x: number, y: number }): Point2D => {
     return {
-      x: (pointer.x - viewport.panX) / viewport.zoom,
-      y: (pointer.y - viewport.panY) / viewport.zoom
+      x: createAbsoluteOffset((pointer.x - viewport.panX) / viewport.zoom),
+      y: createAbsoluteOffset((pointer.y - viewport.panY) / viewport.zoom)
     }
   }, [viewport])
 
   // Helper function to find snap point
   const findSnapPoint = useCallback((point: Point2D): Point2D => {
-    const nearest = findNearestPoint(modelState, point, snapDistance / viewport.zoom)
+    const nearest = findNearestPoint(modelState, point, createLength(snapDistance / viewport.zoom))
     return (nearest != null) ? nearest.position : point
   }, [modelState, snapDistance, viewport.zoom])
 
   // Helper function to create or find connection point at position
   const getOrCreatePoint = useCallback((position: Point2D) => {
-    const nearest = findNearestPoint(modelState, position, snapDistance / viewport.zoom)
+    const nearest = findNearestPoint(modelState, position, createLength(snapDistance / viewport.zoom))
     if (nearest != null) {
       return nearest
     }
@@ -107,7 +107,7 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
     // Handle panning (middle mouse or shift+left click)
     if (e.evt.button === 1 || (e.evt.button === 0 && e.evt.shiftKey)) {
       setDragStart({ pos: pointer, viewport: { ...viewport } })
-      startDrag('pan', pointer)
+      startDrag('pan', pointer as Point2D)
       return
     }
 
@@ -138,7 +138,7 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
 
     // Only start selection drag when clicking on empty space (Stage or Grid)
     if (e.target === stage || e.target.getClassName() === 'Stage' || e.target.getClassName() === 'Line') {
-      startDrag('selection', pointer)
+      startDrag('selection', pointer as Point2D)
     }
   }, [viewport, startDrag, activeTool, isDrawing, wallDrawingStart, getStageCoordinates, findSnapPoint,
     getOrCreatePoint, setWallDrawingStart, setIsDrawing, addWall, activeFloorId, setSnapPreview])

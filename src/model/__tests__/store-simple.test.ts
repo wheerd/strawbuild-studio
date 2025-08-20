@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useModelStore } from '@/model/store'
 import { createLength, createAbsoluteOffset } from '@/types/geometry'
+import { createFloorLevel } from '@/types/model'
 import type { FloorId } from '@/types/ids'
 
 // Simple store tests without React hooks to avoid rendering issues
@@ -33,7 +34,7 @@ describe('ModelStore - Basic Operations', () => {
     it('should add floor', () => {
       const { addFloor } = useModelStore.getState()
 
-      addFloor('First Floor', createLength(3000))
+      addFloor('First Floor', createFloorLevel(1), createLength(3000))
 
       const state = useModelStore.getState()
       expect(state.floors.size).toBe(2)
@@ -45,13 +46,13 @@ describe('ModelStore - Basic Operations', () => {
       const state = useModelStore.getState()
       const groundFloorId = Array.from(state.floors.keys())[0]
 
-      const point1 = addPoint({ 
-        x: createAbsoluteOffset(0), 
-        y: createAbsoluteOffset(0) 
+      const point1 = addPoint({
+        x: createAbsoluteOffset(0),
+        y: createAbsoluteOffset(0)
       }, groundFloorId)
-      const point2 = addPoint({ 
-        x: createAbsoluteOffset(1000), 
-        y: createAbsoluteOffset(0) 
+      const point2 = addPoint({
+        x: createAbsoluteOffset(1000),
+        y: createAbsoluteOffset(0)
       }, groundFloorId)
 
       let updatedState = useModelStore.getState()
@@ -68,19 +69,19 @@ describe('ModelStore - Basic Operations', () => {
       const { addFloor, addPoint, addWall, addRoom } = useModelStore.getState()
 
       // Create a second floor
-      const firstFloor = addFloor('First Floor', createLength(3000))
+      const firstFloor = addFloor('First Floor', createFloorLevel(1), createLength(3000))
 
       let state = useModelStore.getState()
       const groundFloorId = Array.from(state.floors.keys())[0]
 
       // Add entities to the first floor by passing the active floor ID
-      const point1 = addPoint({ 
-        x: createAbsoluteOffset(0), 
-        y: createAbsoluteOffset(0) 
+      const point1 = addPoint({
+        x: createAbsoluteOffset(0),
+        y: createAbsoluteOffset(0)
       }, firstFloor.id)
-      const point2 = addPoint({ 
-        x: createAbsoluteOffset(1000), 
-        y: createAbsoluteOffset(0) 
+      const point2 = addPoint({
+        x: createAbsoluteOffset(1000),
+        y: createAbsoluteOffset(0)
       }, firstFloor.id)
       const wall = addWall(point1.id, point2.id, firstFloor.id, createLength(3000), createLength(3000), createLength(200))
       const room = addRoom('Test Room', firstFloor.id, [wall.id])
@@ -106,13 +107,13 @@ describe('ModelStore - Basic Operations', () => {
       const groundFloorId = Array.from(state.floors.keys())[0]
 
       // Setup wall
-      const point1 = addPoint({ 
-        x: createAbsoluteOffset(0), 
-        y: createAbsoluteOffset(0) 
+      const point1 = addPoint({
+        x: createAbsoluteOffset(0),
+        y: createAbsoluteOffset(0)
       }, groundFloorId)
-      const point2 = addPoint({ 
-        x: createAbsoluteOffset(1000), 
-        y: createAbsoluteOffset(0) 
+      const point2 = addPoint({
+        x: createAbsoluteOffset(1000),
+        y: createAbsoluteOffset(0)
       }, groundFloorId)
       const wall = addWall(point1.id, point2.id, groundFloorId)
 
@@ -141,13 +142,13 @@ describe('ModelStore - Basic Operations', () => {
       const groundFloorId = Array.from(state.floors.keys())[0]
 
       // Setup
-      const point1 = addPoint({ 
-        x: createAbsoluteOffset(0), 
-        y: createAbsoluteOffset(0) 
+      const point1 = addPoint({
+        x: createAbsoluteOffset(0),
+        y: createAbsoluteOffset(0)
       }, groundFloorId)
-      const point2 = addPoint({ 
-        x: createAbsoluteOffset(1000), 
-        y: createAbsoluteOffset(0) 
+      const point2 = addPoint({
+        x: createAbsoluteOffset(1000),
+        y: createAbsoluteOffset(0)
       }, groundFloorId)
       const wall = addWall(point1.id, point2.id, groundFloorId)
       addOpeningToWall(wall.id, {
@@ -174,22 +175,22 @@ describe('ModelStore - Basic Operations', () => {
       const invalidFloorId = 'invalid-floor-id' as FloorId
 
       // Should throw for connection points
-      expect(() => addPoint({ 
-        x: createAbsoluteOffset(0), 
-        y: createAbsoluteOffset(0) 
+      expect(() => addPoint({
+        x: createAbsoluteOffset(0),
+        y: createAbsoluteOffset(0)
       }, invalidFloorId))
         .toThrow('Floor invalid-floor-id not found')
 
       // Should throw for walls (after creating valid connection points first)
       const state = useModelStore.getState()
       const validFloorId = Array.from(state.floors.keys())[0]
-      const point1 = addPoint({ 
-        x: createAbsoluteOffset(0), 
-        y: createAbsoluteOffset(0) 
+      const point1 = addPoint({
+        x: createAbsoluteOffset(0),
+        y: createAbsoluteOffset(0)
       }, validFloorId)
-      const point2 = addPoint({ 
-        x: createAbsoluteOffset(100), 
-        y: createAbsoluteOffset(0) 
+      const point2 = addPoint({
+        x: createAbsoluteOffset(100),
+        y: createAbsoluteOffset(0)
       }, validFloorId)
 
       expect(() => addWall(point1.id, point2.id, invalidFloorId))
@@ -198,6 +199,20 @@ describe('ModelStore - Basic Operations', () => {
       // Should throw for rooms
       expect(() => addRoom('Test Room', invalidFloorId))
         .toThrow('Floor invalid-floor-id not found')
+    })
+  })
+
+  describe('Floor Level Validation', () => {
+    it('should throw error for invalid floor levels', () => {
+      const { addFloor } = useModelStore.getState()
+
+      // Should throw for non-integers
+      expect(() => addFloor('Mezzanine', createFloorLevel(1.5)))
+        .toThrow('Floor level must be an integer')
+
+      // Should work for valid levels
+      expect(() => addFloor('Basement', createFloorLevel(-1))).not.toThrow()
+      expect(() => addFloor('Top Floor', createFloorLevel(20))).not.toThrow()
     })
   })
 })

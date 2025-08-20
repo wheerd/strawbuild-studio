@@ -1,13 +1,15 @@
-import type {
-  ModelState,
-  Wall,
-  Room,
-  Point,
-  Opening,
-  Floor,
-  Corner,
-  Slab,
-  Roof
+import {
+  type ModelState,
+  type Wall,
+  type Room,
+  type Point,
+  type Opening,
+  type Floor,
+  type Corner,
+  type Slab,
+  type Roof,
+  createFloorLevel,
+  type FloorLevel
 } from '@/types/model'
 import type {
   WallId,
@@ -42,7 +44,7 @@ import {
 
 // Create empty model state with default ground floor
 export function createEmptyModelState (): ModelState {
-  const groundFloor = createFloor('Ground Floor', createLength(3000))
+  const groundFloor = createFloor('Ground Floor', createFloorLevel(0), createLength(3000))
 
   return {
     floors: new Map([[groundFloor.id, groundFloor]]),
@@ -58,10 +60,11 @@ export function createEmptyModelState (): ModelState {
 }
 
 // Factory functions for creating entities
-export function createFloor (name: string, height: Length): Floor {
+export function createFloor (name: string, level: FloorLevel, height: Length): Floor {
   return {
     id: createFloorId(),
     name,
+    level,
     height,
     wallIds: [],
     roomIds: [],

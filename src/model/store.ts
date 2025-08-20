@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
-import type { ModelState, Wall, Room, Point, Opening, Floor, Slab, Roof } from '@/types/model'
+import type { ModelState, Wall, Room, Point, Opening, Floor, Slab, Roof, FloorLevel } from '@/types/model'
 import type { WallId, PointId, FloorId, RoomId, SlabId, RoofId } from '@/types/ids'
 import type { Point2D, Bounds2D, Length } from '@/types/geometry'
 import {
@@ -30,7 +30,7 @@ import { createLength } from '@/types/geometry'
 interface ModelActions {
   reset: () => void
 
-  addFloor: (name: string, height?: Length) => Floor
+  addFloor: (name: string, level: FloorLevel, height?: Length) => Floor
   addWall: (startPointId: PointId, endPointId: PointId, floorId: FloorId, heightAtStart?: Length, heightAtEnd?: Length, thickness?: Length) => Wall
   addRoom: (name: string, floorId: FloorId, wallIds?: WallId[]) => Room
   addPoint: (position: Point2D, floorId: FloorId) => Point
@@ -58,9 +58,9 @@ export const useModelStore = create<ModelStore>()(
         set(newState, false, 'reset')
       },
 
-      addFloor: (name: string, height: Length = createLength(3000)): Floor => {
+      addFloor: (name: string, level: FloorLevel, height: Length = createLength(3000)): Floor => {
         const state = get()
-        const floor = createFloor(name, height)
+        const floor = createFloor(name, level, height)
         const updatedState = addFloorToState(state, floor)
 
         set(updatedState, false, 'addFloor')

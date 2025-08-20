@@ -1,7 +1,7 @@
 import { Layer, Line, Circle } from 'react-konva'
 import { useActiveTool, useIsDrawing, useShowSnapPreview, useSnapPreviewPoint } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 import { usePoints } from '@/model/store'
-import type { Point2D } from '@/types/model'
+import type { Point2D } from '@/types/geometry'
 
 interface WallPreviewLayerProps {
   wallDrawingStart: Point2D | null
