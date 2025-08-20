@@ -1,36 +1,13 @@
 import type { WallId, PointId, RoomId, FloorId, CornerId, SlabId, RoofId } from '@/types/ids'
-
-// Core geometric types
-type AbsoluteOffset = number & { __brand: 'AbsoluteOffset' }
-type Length = number & { __brand: 'Length' }
-type Area = number & { __brand: 'Area' }
-type Angle = number & { __brand: 'Angle' }
-
-export interface Point2D {
-  x: AbsoluteOffset
-  y: AbsoluteOffset
-}
-
-export interface Vector2D {
-  x: Length
-  y: Length
-}
-
-export interface Bounds2D {
-  minX: AbsoluteOffset
-  minY: AbsoluteOffset
-  maxX: AbsoluteOffset
-  maxY: AbsoluteOffset
-}
-
-export interface Polygon2D {
-  points: Point2D[]
-}
-
-export interface PolygonWithHoles2D {
-  outer: Polygon2D
-  holes: Polygon2D[]
-}
+import type { 
+  Length, 
+  Area, 
+  Angle, 
+  Point2D, 
+  Bounds2D, 
+  Polygon2D, 
+  PolygonWithHoles2D 
+} from '@/types/geometry'
 
 // Connection point for wall endpoints
 export interface Point {
