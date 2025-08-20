@@ -1,14 +1,14 @@
 import { Circle } from 'react-konva'
 import type Konva from 'konva'
 import { useCallback, useRef } from 'react'
-import type { ConnectionPoint } from '../../../types/model'
+import type { Point } from '../../../types/model'
 import { useSelectedEntity, useEditorStore, useDragState, useActiveTool } from '../hooks/useEditorStore'
 
-interface ConnectionPointShapeProps {
-  point: ConnectionPoint
+interface PointShapeProps {
+  point: Point
 }
 
-export function ConnectionPointShape ({ point }: ConnectionPointShapeProps): React.JSX.Element {
+export function PointShape ({ point }: PointShapeProps): React.JSX.Element {
   // Use individual selectors to avoid object creation
   const selectedEntity = useSelectedEntity()
   const selectEntity = useEditorStore(state => state.selectEntity)

@@ -9,7 +9,7 @@ Building a 2D architecture plan editor using React-Konva for complex canvas inte
 ### Technology Stack
 - **Canvas**: React-Konva for declarative canvas rendering
 - **State**: Existing Zustand store + editor-specific state
-- **Model**: Existing Building/Wall/Room/ConnectionPoint types
+- **Model**: Existing Building/Wall/Room/Point types
 - **Styling**: CSS modules or styled-components
 - **Testing**: Vitest + React Testing Library
 
@@ -22,12 +22,12 @@ src/components/FloorPlanEditor/
 │   ├── GridLayer.tsx            # Background grid layer
 │   ├── RoomLayer.tsx            # Room shapes layer
 │   ├── WallLayer.tsx            # Wall shapes layer
-│   ├── ConnectionPointLayer.tsx # Connection points layer
+│   ├── PointLayer.tsx # Connection points layer
 │   └── SelectionLayer.tsx       # Selection indicators
 ├── Shapes/
 │   ├── WallShape.tsx            # Individual wall component
 │   ├── RoomShape.tsx            # Room polygon component
-│   └── ConnectionPointShape.tsx # Connection point circle
+│   └── PointShape.tsx # Connection point circle
 ├── Tools/
 │   ├── Toolbar.tsx              # Main toolbar
 │   ├── WallTool.tsx             # Wall drawing tool
@@ -57,7 +57,7 @@ src/components/FloorPlanEditor/
   </Layer>
   
   <Layer name="points">         {/* Connection points */}
-    {points.map(point => <ConnectionPointShape key={point.id} point={point} />)}
+    {points.map(point => <PointShape key={point.id} point={point} />)}
   </Layer>
   
   <Layer name="selection">      {/* Selection indicators */}

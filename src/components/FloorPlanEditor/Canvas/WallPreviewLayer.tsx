@@ -1,6 +1,6 @@
 import { Layer, Line, Circle } from 'react-konva'
 import { useActiveTool, useIsDrawing, useShowSnapPreview, useSnapPreviewPoint } from '../hooks/useEditorStore'
-import { useConnectionPoints } from '../../../model/store'
+import { usePoints } from '../../../model/store'
 import type { Point2D } from '../../../types/model'
 
 interface WallPreviewLayerProps {
@@ -12,7 +12,7 @@ export function WallPreviewLayer ({ wallDrawingStart }: WallPreviewLayerProps): 
   const isDrawing = useIsDrawing()
   const showSnapPreview = useShowSnapPreview()
   const snapPreviewPoint = useSnapPreviewPoint()
-  const connectionPoints = useConnectionPoints()
+  const points = usePoints()
 
   if (activeTool !== 'wall') {
     return <Layer name='wall-preview' />
@@ -50,7 +50,7 @@ export function WallPreviewLayer ({ wallDrawingStart }: WallPreviewLayerProps): 
       )}
 
       {/* Show connection points as snap targets */}
-      {Array.from(connectionPoints.values()).map(point => (
+      {Array.from(points.values()).map(point => (
         <Circle
           key={point.id}
           x={point.position.x}

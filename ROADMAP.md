@@ -34,7 +34,7 @@ interface MeasurementConstraint {
 
 interface AngleConstraint {
   id: string
-  pointId: ConnectionPointId
+  pointId: PointId
   angle: number // degrees
   isLocked: boolean
   referenceType: 'absolute' | 'relative' | 'perpendicular'

@@ -1,21 +1,21 @@
 import { Line, Text } from 'react-konva'
 import type { Room } from '../../../types/model'
 import { useSelectedEntity, useEditorStore, useActiveTool } from '../hooks/useEditorStore'
-import { useWalls, useConnectionPoints } from '../../../model/store'
+import { useWalls, usePoints } from '../../../model/store'
 
 interface RoomShapeProps {
   room: Room
 }
 
-function getRoomPolygonPoints (room: Room, walls: ReturnType<typeof useWalls>, connectionPoints: ReturnType<typeof useConnectionPoints>): number[] {
+function getRoomPolygonPoints (room: Room, walls: ReturnType<typeof useWalls>, pointMap: ReturnType<typeof usePoints>): number[] {
   const points: number[] = []
 
   for (const wallId of room.wallIds) {
     const wall = walls.get(wallId)
     if (wall == null) continue
 
-    const startPoint = connectionPoints.get(wall.startPointId)
-    const endPoint = connectionPoints.get(wall.endPointId)
+    const startPoint = pointMap.get(wall.startPointId)
+    const endPoint = pointMap.get(wall.endPointId)
 
     if (startPoint == null || endPoint == null) continue
 
@@ -53,10 +53,10 @@ export function RoomShape ({ room }: RoomShapeProps): React.JSX.Element | null {
   const showRoomLabels = useEditorStore(state => state.showRoomLabels)
   const activeTool = useActiveTool()
   const walls = useWalls()
-  const connectionPoints = useConnectionPoints()
+  const pointMap = usePoints()
 
   const isSelected = selectedEntity === room.id
-  const points = getRoomPolygonPoints(room, walls, connectionPoints)
+  const points = getRoomPolygonPoints(room, walls, pointMap)
 
   if (points.length < 6) {
     return null

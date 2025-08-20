@@ -1,4 +1,4 @@
-import type { WallId, ConnectionPointId, RoomId, OpeningId, FloorId } from './ids'
+import type { WallId, PointId, RoomId, OpeningId, FloorId } from './ids'
 
 // Core geometric types
 export interface Point2D {
@@ -11,7 +11,7 @@ export interface Vector2D {
   y: number
 }
 
-export interface Bounds {
+export interface Bounds2D {
   minX: number
   minY: number
   maxX: number
@@ -19,8 +19,8 @@ export interface Bounds {
 }
 
 // Connection point for wall endpoints
-export interface ConnectionPoint {
-  id: ConnectionPointId
+export interface Point {
+  id: PointId
   floorId: FloorId
   position: Point2D
   connectedWallIds: WallId[]
@@ -30,8 +30,8 @@ export interface ConnectionPoint {
 export interface Wall {
   id: WallId
   floorId: FloorId
-  startPointId: ConnectionPointId
-  endPointId: ConnectionPointId
+  startPointId: PointId
+  endPointId: PointId
   thickness: number
   height: number
   openingIds: OpeningId[]
@@ -66,9 +66,9 @@ export interface Floor {
   height: number
   wallIds: WallId[]
   roomIds: RoomId[]
-  connectionPointIds: ConnectionPointId[]
+  pointIds: PointId[]
   openingIds: OpeningId[]
-  bounds?: Bounds
+  bounds?: Bounds2D
 }
 
 // Model state for the application
@@ -76,9 +76,9 @@ export interface ModelState {
   floors: Map<FloorId, Floor>
   walls: Map<WallId, Wall>
   rooms: Map<RoomId, Room>
-  connectionPoints: Map<ConnectionPointId, ConnectionPoint>
+  points: Map<PointId, Point>
   openings: Map<OpeningId, Opening>
-  bounds?: Bounds
+  bounds?: Bounds2D
   createdAt: Date
   updatedAt: Date
 }

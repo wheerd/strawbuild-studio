@@ -4,7 +4,7 @@ import {
   createFloor,
   createWall,
   createRoom,
-  createConnectionPoint,
+  createPoint,
   createOpening,
   isOpeningValidOnWall,
   calculateRoomArea,
@@ -12,7 +12,7 @@ import {
   calculateStateBounds,
   addFloorToState,
   addWallToState,
-  addConnectionPointToState,
+  addPointToState,
   addOpeningToState,
   removeWallFromState
 } from '../operations'
@@ -29,7 +29,7 @@ describe('Model Operations', () => {
       expect(groundFloor.height).toBe(3000)
       expect(state.walls.size).toBe(0)
       expect(state.rooms.size).toBe(0)
-      expect(state.connectionPoints.size).toBe(0)
+      expect(state.points.size).toBe(0)
       expect(state.openings.size).toBe(0)
       expect(state.createdAt).toBeInstanceOf(Date)
       expect(state.updatedAt).toBeInstanceOf(Date)
@@ -43,14 +43,14 @@ describe('Model Operations', () => {
       expect(floor.height).toBe(2800)
       expect(floor.wallIds).toEqual([])
       expect(floor.roomIds).toEqual([])
-      expect(floor.connectionPointIds).toEqual([])
+      expect(floor.pointIds).toEqual([])
       expect(floor.openingIds).toEqual([])
     })
 
     it('should create connection point at position', () => {
       const state = createEmptyModelState()
       const groundFloorId = Array.from(state.floors.keys())[0]
-      const point = createConnectionPoint({ x: 100, y: 200 }, groundFloorId)
+      const point = createPoint({ x: 100, y: 200 }, groundFloorId)
 
       expect(point.position).toEqual({ x: 100, y: 200 })
       expect(point.connectedWallIds).toEqual([])
@@ -60,8 +60,8 @@ describe('Model Operations', () => {
     it('should create wall between connection points', () => {
       const state = createEmptyModelState()
       const groundFloorId = Array.from(state.floors.keys())[0]
-      const point1 = createConnectionPoint({ x: 0, y: 0 }, groundFloorId)
-      const point2 = createConnectionPoint({ x: 100, y: 0 }, groundFloorId)
+      const point1 = createPoint({ x: 0, y: 0 }, groundFloorId)
+      const point2 = createPoint({ x: 100, y: 0 }, groundFloorId)
       const wall = createWall(point1.id, point2.id, groundFloorId, 150, 2700)
 
       expect(wall.startPointId).toBe(point1.id)
@@ -75,8 +75,8 @@ describe('Model Operations', () => {
     it('should create room with wall references', () => {
       const state = createEmptyModelState()
       const groundFloorId = Array.from(state.floors.keys())[0]
-      const point1 = createConnectionPoint({ x: 0, y: 0 }, groundFloorId)
-      const point2 = createConnectionPoint({ x: 100, y: 0 }, groundFloorId)
+      const point1 = createPoint({ x: 0, y: 0 }, groundFloorId)
+      const point2 = createPoint({ x: 100, y: 0 }, groundFloorId)
       const wall = createWall(point1.id, point2.id, groundFloorId)
       const room = createRoom('Living Room', groundFloorId, [wall.id])
 
@@ -89,8 +89,8 @@ describe('Model Operations', () => {
     it('should create opening on wall', () => {
       const state = createEmptyModelState()
       const groundFloorId = Array.from(state.floors.keys())[0]
-      const point1 = createConnectionPoint({ x: 0, y: 0 }, groundFloorId)
-      const point2 = createConnectionPoint({ x: 1000, y: 0 }, groundFloorId)
+      const point1 = createPoint({ x: 0, y: 0 }, groundFloorId)
+      const point2 = createPoint({ x: 1000, y: 0 }, groundFloorId)
       const wall = createWall(point1.id, point2.id, groundFloorId)
       const opening = createOpening(wall.id, groundFloorId, 'door', 200, 800, 2100)
 
@@ -117,10 +117,10 @@ describe('Model Operations', () => {
     it('should add wall to state', () => {
       let state = createEmptyModelState()
       const groundFloorId = Array.from(state.floors.keys())[0]
-      const point1 = createConnectionPoint({ x: 0, y: 0 }, groundFloorId)
-      const point2 = createConnectionPoint({ x: 100, y: 0 }, groundFloorId)
-      state = addConnectionPointToState(state, point1)
-      state = addConnectionPointToState(state, point2)
+      const point1 = createPoint({ x: 0, y: 0 }, groundFloorId)
+      const point2 = createPoint({ x: 100, y: 0 }, groundFloorId)
+      state = addPointToState(state, point1)
+      state = addPointToState(state, point2)
 
       const wall = createWall(point1.id, point2.id, groundFloorId)
       const newState = addWallToState(state, wall)
@@ -132,13 +132,13 @@ describe('Model Operations', () => {
     it('should remove wall and cleanup', () => {
       let state = createEmptyModelState()
       const groundFloorId = Array.from(state.floors.keys())[0]
-      const point1 = createConnectionPoint({ x: 0, y: 0 }, groundFloorId)
-      const point2 = createConnectionPoint({ x: 1000, y: 0 }, groundFloorId)
+      const point1 = createPoint({ x: 0, y: 0 }, groundFloorId)
+      const point2 = createPoint({ x: 1000, y: 0 }, groundFloorId)
       const wall = createWall(point1.id, point2.id, groundFloorId)
       const opening = createOpening(wall.id, groundFloorId, 'door', 200, 800, 2100)
 
-      state = addConnectionPointToState(state, point1)
-      state = addConnectionPointToState(state, point2)
+      state = addPointToState(state, point1)
+      state = addPointToState(state, point2)
       state = addWallToState(state, wall)
       state = addOpeningToState(state, opening)
 
@@ -156,12 +156,12 @@ describe('Model Operations', () => {
     it('should calculate wall length', () => {
       let state = createEmptyModelState()
       const groundFloorId = Array.from(state.floors.keys())[0]
-      const point1 = createConnectionPoint({ x: 0, y: 0 }, groundFloorId)
-      const point2 = createConnectionPoint({ x: 300, y: 400 }, groundFloorId)
+      const point1 = createPoint({ x: 0, y: 0 }, groundFloorId)
+      const point2 = createPoint({ x: 300, y: 400 }, groundFloorId)
       const wall = createWall(point1.id, point2.id, groundFloorId)
 
-      state = addConnectionPointToState(state, point1)
-      state = addConnectionPointToState(state, point2)
+      state = addPointToState(state, point1)
+      state = addPointToState(state, point2)
       state = addWallToState(state, wall)
 
       const length = getWallLength(wall, state)
@@ -171,11 +171,11 @@ describe('Model Operations', () => {
     it('should calculate state bounds', () => {
       let state = createEmptyModelState()
       const groundFloorId = Array.from(state.floors.keys())[0]
-      const point1 = createConnectionPoint({ x: 10, y: 20 }, groundFloorId)
-      const point2 = createConnectionPoint({ x: 100, y: 150 }, groundFloorId)
+      const point1 = createPoint({ x: 10, y: 20 }, groundFloorId)
+      const point2 = createPoint({ x: 100, y: 150 }, groundFloorId)
 
-      state = addConnectionPointToState(state, point1)
-      state = addConnectionPointToState(state, point2)
+      state = addPointToState(state, point1)
+      state = addPointToState(state, point2)
 
       const bounds = calculateStateBounds(state)
       expect(bounds).toEqual({
@@ -197,10 +197,10 @@ describe('Model Operations', () => {
       const groundFloorId = Array.from(state.floors.keys())[0]
 
       // Create a simple square room
-      const p1 = createConnectionPoint({ x: 0, y: 0 }, groundFloorId)
-      const p2 = createConnectionPoint({ x: 100, y: 0 }, groundFloorId)
-      const p3 = createConnectionPoint({ x: 100, y: 100 }, groundFloorId)
-      const p4 = createConnectionPoint({ x: 0, y: 100 }, groundFloorId)
+      const p1 = createPoint({ x: 0, y: 0 }, groundFloorId)
+      const p2 = createPoint({ x: 100, y: 0 }, groundFloorId)
+      const p3 = createPoint({ x: 100, y: 100 }, groundFloorId)
+      const p4 = createPoint({ x: 0, y: 100 }, groundFloorId)
 
       const w1 = createWall(p1.id, p2.id, groundFloorId)
       const w2 = createWall(p2.id, p3.id, groundFloorId)
@@ -209,10 +209,10 @@ describe('Model Operations', () => {
 
       const room = createRoom('Square Room', groundFloorId, [w1.id, w2.id, w3.id, w4.id])
 
-      state = addConnectionPointToState(state, p1)
-      state = addConnectionPointToState(state, p2)
-      state = addConnectionPointToState(state, p3)
-      state = addConnectionPointToState(state, p4)
+      state = addPointToState(state, p1)
+      state = addPointToState(state, p2)
+      state = addPointToState(state, p3)
+      state = addPointToState(state, p4)
       state = addWallToState(state, w1)
       state = addWallToState(state, w2)
       state = addWallToState(state, w3)
@@ -225,12 +225,12 @@ describe('Model Operations', () => {
     it('should validate opening placement', () => {
       let state = createEmptyModelState()
       const groundFloorId = Array.from(state.floors.keys())[0]
-      const point1 = createConnectionPoint({ x: 0, y: 0 }, groundFloorId)
-      const point2 = createConnectionPoint({ x: 1000, y: 0 }, groundFloorId)
+      const point1 = createPoint({ x: 0, y: 0 }, groundFloorId)
+      const point2 = createPoint({ x: 1000, y: 0 }, groundFloorId)
       const wall = createWall(point1.id, point2.id, groundFloorId)
 
-      state = addConnectionPointToState(state, point1)
-      state = addConnectionPointToState(state, point2)
+      state = addPointToState(state, point1)
+      state = addPointToState(state, point2)
       state = addWallToState(state, wall)
 
       const validOpening = createOpening(wall.id, groundFloorId, 'door', 100, 800, 2100)

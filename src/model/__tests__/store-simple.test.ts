@@ -40,15 +40,15 @@ describe('ModelStore - Basic Operations', () => {
     })
 
     it('should add connection points and walls', () => {
-      const { addConnectionPoint, addWall } = useModelStore.getState()
+      const { addPoint, addWall } = useModelStore.getState()
       const state = useModelStore.getState()
       const groundFloorId = Array.from(state.floors.keys())[0]
 
-      const point1 = addConnectionPoint({ x: 0, y: 0 }, groundFloorId)
-      const point2 = addConnectionPoint({ x: 1000, y: 0 }, groundFloorId)
+      const point1 = addPoint({ x: 0, y: 0 }, groundFloorId)
+      const point2 = addPoint({ x: 1000, y: 0 }, groundFloorId)
 
       let updatedState = useModelStore.getState()
-      expect(updatedState.connectionPoints.size).toBe(2)
+      expect(updatedState.points.size).toBe(2)
 
       addWall(point1.id, point2.id, groundFloorId)
 
@@ -58,7 +58,7 @@ describe('ModelStore - Basic Operations', () => {
     })
 
     it('should use active floor ID when provided', () => {
-      const { addFloor, addConnectionPoint, addWall, addRoom } = useModelStore.getState()
+      const { addFloor, addPoint, addWall, addRoom } = useModelStore.getState()
 
       // Create a second floor
       const firstFloor = addFloor('First Floor', 1, 3000)
@@ -67,8 +67,8 @@ describe('ModelStore - Basic Operations', () => {
       const groundFloorId = Array.from(state.floors.keys())[0]
 
       // Add entities to the first floor by passing the active floor ID
-      const point1 = addConnectionPoint({ x: 0, y: 0 }, firstFloor.id)
-      const point2 = addConnectionPoint({ x: 1000, y: 0 }, firstFloor.id)
+      const point1 = addPoint({ x: 0, y: 0 }, firstFloor.id)
+      const point2 = addPoint({ x: 1000, y: 0 }, firstFloor.id)
       const wall = addWall(point1.id, point2.id, firstFloor.id, 200, 3000)
       const room = addRoom('Test Room', firstFloor.id, [wall.id])
 
@@ -81,26 +81,26 @@ describe('ModelStore - Basic Operations', () => {
       expect(room.floorId).toBe(firstFloor.id)
 
       // Verify entities are in the floor's collections
-      expect(state.floors.get(firstFloor.id)!.connectionPointIds).toContain(point1.id)
-      expect(state.floors.get(firstFloor.id)!.connectionPointIds).toContain(point2.id)
+      expect(state.floors.get(firstFloor.id)!.pointIds).toContain(point1.id)
+      expect(state.floors.get(firstFloor.id)!.pointIds).toContain(point2.id)
       expect(state.floors.get(firstFloor.id)!.wallIds).toContain(wall.id)
       expect(state.floors.get(firstFloor.id)!.roomIds).toContain(room.id)
 
       // Verify ground floor is empty
       const groundFloor = state.floors.get(groundFloorId)!
-      expect(groundFloor.connectionPointIds).toHaveLength(0)
+      expect(groundFloor.pointIds).toHaveLength(0)
       expect(groundFloor.wallIds).toHaveLength(0)
       expect(groundFloor.roomIds).toHaveLength(0)
     })
 
     it('should validate openings before adding', () => {
-      const { addConnectionPoint, addWall, addOpening } = useModelStore.getState()
+      const { addPoint, addWall, addOpening } = useModelStore.getState()
       const state = useModelStore.getState()
       const groundFloorId = Array.from(state.floors.keys())[0]
 
       // Setup wall
-      const point1 = addConnectionPoint({ x: 0, y: 0 }, groundFloorId)
-      const point2 = addConnectionPoint({ x: 1000, y: 0 }, groundFloorId)
+      const point1 = addPoint({ x: 0, y: 0 }, groundFloorId)
+      const point2 = addPoint({ x: 1000, y: 0 }, groundFloorId)
       const wall = addWall(point1.id, point2.id, groundFloorId)
 
       // Valid opening
@@ -113,13 +113,13 @@ describe('ModelStore - Basic Operations', () => {
 
   describe('Wall Removal', () => {
     it('should remove wall and clean up related entities', () => {
-      const { addConnectionPoint, addWall, addOpening, removeWall } = useModelStore.getState()
+      const { addPoint, addWall, addOpening, removeWall } = useModelStore.getState()
       const state = useModelStore.getState()
       const groundFloorId = Array.from(state.floors.keys())[0]
 
       // Setup
-      const point1 = addConnectionPoint({ x: 0, y: 0 }, groundFloorId)
-      const point2 = addConnectionPoint({ x: 1000, y: 0 }, groundFloorId)
+      const point1 = addPoint({ x: 0, y: 0 }, groundFloorId)
+      const point2 = addPoint({ x: 1000, y: 0 }, groundFloorId)
       const wall = addWall(point1.id, point2.id, groundFloorId)
       addOpening(wall.id, 'door', 100, 800, 2100)
 
@@ -138,18 +138,18 @@ describe('ModelStore - Basic Operations', () => {
 
   describe('Floor ID Validation', () => {
     it('should throw error when creating entities with invalid floor ID', () => {
-      const { addConnectionPoint, addWall, addRoom } = useModelStore.getState()
+      const { addPoint, addWall, addRoom } = useModelStore.getState()
       const invalidFloorId = 'invalid-floor-id' as FloorId
 
       // Should throw for connection points
-      expect(() => addConnectionPoint({ x: 0, y: 0 }, invalidFloorId))
+      expect(() => addPoint({ x: 0, y: 0 }, invalidFloorId))
         .toThrow('Floor invalid-floor-id not found')
 
       // Should throw for walls (after creating valid connection points first)
       const state = useModelStore.getState()
       const validFloorId = Array.from(state.floors.keys())[0]
-      const point1 = addConnectionPoint({ x: 0, y: 0 }, validFloorId)
-      const point2 = addConnectionPoint({ x: 100, y: 0 }, validFloorId)
+      const point1 = addPoint({ x: 0, y: 0 }, validFloorId)
+      const point2 = addPoint({ x: 100, y: 0 }, validFloorId)
 
       expect(() => addWall(point1.id, point2.id, invalidFloorId))
         .toThrow('Floor invalid-floor-id not found')

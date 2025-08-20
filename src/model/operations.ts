@@ -2,20 +2,20 @@ import type {
   ModelState,
   Wall,
   Room,
-  ConnectionPoint,
+  Point,
   Opening,
   Floor,
   Point2D,
-  Bounds
+  Bounds2D
 } from '../types/model'
 import type {
   WallId,
-  ConnectionPointId,
+  PointId,
   FloorId
 } from '../types/ids'
 import {
   createWallId,
-  createConnectionPointId,
+  createPointId,
   createRoomId,
   createOpeningId,
   createFloorId
@@ -28,7 +28,7 @@ export function createEmptyModelState (): ModelState {
     floors: new Map([[groundFloor.id, groundFloor]]),
     walls: new Map(),
     rooms: new Map(),
-    connectionPoints: new Map(),
+    points: new Map(),
     openings: new Map(),
     createdAt: new Date(),
     updatedAt: new Date()
@@ -43,14 +43,14 @@ export function createFloor (name: string, level: number, height: number = 3000)
     height,
     wallIds: [],
     roomIds: [],
-    connectionPointIds: [],
+    pointIds: [],
     openingIds: []
   }
 }
 
-export function createConnectionPoint (position: Point2D, floorId: FloorId): ConnectionPoint {
+export function createPoint (position: Point2D, floorId: FloorId): Point {
   return {
-    id: createConnectionPointId(),
+    id: createPointId(),
     floorId,
     position,
     connectedWallIds: []
@@ -58,8 +58,8 @@ export function createConnectionPoint (position: Point2D, floorId: FloorId): Con
 }
 
 export function createWall (
-  startPointId: ConnectionPointId,
-  endPointId: ConnectionPointId,
+  startPointId: PointId,
+  endPointId: PointId,
   floorId: FloorId,
   thickness: number = 200,
   height: number = 3000
@@ -146,23 +146,23 @@ export function addWallToState (state: ModelState, wall: Wall): ModelState {
   return updatedState
 }
 
-export function addConnectionPointToState (state: ModelState, connectionPoint: ConnectionPoint): ModelState {
+export function addPointToState (state: ModelState, point: Point): ModelState {
   const updatedState = { ...state }
-  updatedState.connectionPoints = new Map(state.connectionPoints)
-  updatedState.connectionPoints.set(connectionPoint.id, connectionPoint)
+  updatedState.points = new Map(state.points)
+  updatedState.points.set(point.id, point)
   updatedState.updatedAt = new Date()
   return updatedState
 }
 
-export function calculateStateBounds (state: ModelState): Bounds | null {
-  if (state.connectionPoints.size === 0) return null
+export function calculateStateBounds (state: ModelState): Bounds2D | null {
+  if (state.points.size === 0) return null
 
   let minX = Infinity
   let minY = Infinity
   let maxX = -Infinity
   let maxY = -Infinity
 
-  for (const point of state.connectionPoints.values()) {
+  for (const point of state.points.values()) {
     minX = Math.min(minX, point.position.x)
     minY = Math.min(minY, point.position.y)
     maxX = Math.max(maxX, point.position.x)
@@ -172,17 +172,17 @@ export function calculateStateBounds (state: ModelState): Bounds | null {
   return { minX, minY, maxX, maxY }
 }
 
-export function calculateFloorBounds (floorId: FloorId, state: ModelState): Bounds | null {
+export function calculateFloorBounds (floorId: FloorId, state: ModelState): Bounds2D | null {
   const floor = state.floors.get(floorId)
-  if ((floor == null) || floor.connectionPointIds.length === 0) return null
+  if ((floor == null) || floor.pointIds.length === 0) return null
 
   let minX = Infinity
   let minY = Infinity
   let maxX = -Infinity
   let maxY = -Infinity
 
-  for (const pointId of floor.connectionPointIds) {
-    const point = state.connectionPoints.get(pointId)
+  for (const pointId of floor.pointIds) {
+    const point = state.points.get(pointId)
     if (point != null) {
       minX = Math.min(minX, point.position.x)
       minY = Math.min(minY, point.position.y)
@@ -196,8 +196,8 @@ export function calculateFloorBounds (floorId: FloorId, state: ModelState): Boun
 }
 
 export function getWallLength (wall: Wall, state: ModelState): number {
-  const startPoint = state.connectionPoints.get(wall.startPointId)
-  const endPoint = state.connectionPoints.get(wall.endPointId)
+  const startPoint = state.points.get(wall.startPointId)
+  const endPoint = state.points.get(wall.endPointId)
 
   if ((startPoint == null) || (endPoint == null)) return 0
 
@@ -208,8 +208,8 @@ export function getWallLength (wall: Wall, state: ModelState): number {
 }
 
 export function getWallAngle (wall: Wall, state: ModelState): number {
-  const startPoint = state.connectionPoints.get(wall.startPointId)
-  const endPoint = state.connectionPoints.get(wall.endPointId)
+  const startPoint = state.points.get(wall.startPointId)
+  const endPoint = state.points.get(wall.endPointId)
 
   if ((startPoint == null) || (endPoint == null)) return 0
 
@@ -223,8 +223,8 @@ export function getOpeningPosition (opening: Opening, state: ModelState): Point2
   const wall = state.walls.get(opening.wallId)
   if (wall == null) return null
 
-  const startPoint = state.connectionPoints.get(wall.startPointId)
-  const endPoint = state.connectionPoints.get(wall.endPointId)
+  const startPoint = state.points.get(wall.startPointId)
+  const endPoint = state.points.get(wall.endPointId)
 
   if ((startPoint == null) || (endPoint == null)) return null
 
@@ -272,25 +272,25 @@ export function removeWallFromState (state: ModelState, wallId: WallId): ModelSt
 
   const updatedState = { ...state }
   updatedState.walls = new Map(state.walls)
-  updatedState.connectionPoints = new Map(state.connectionPoints)
+  updatedState.points = new Map(state.points)
   updatedState.openings = new Map(state.openings)
 
   updatedState.walls.delete(wallId)
 
-  const startPoint = updatedState.connectionPoints.get(wall.startPointId)
-  const endPoint = updatedState.connectionPoints.get(wall.endPointId)
+  const startPoint = updatedState.points.get(wall.startPointId)
+  const endPoint = updatedState.points.get(wall.endPointId)
 
   if (startPoint != null) {
     startPoint.connectedWallIds = startPoint.connectedWallIds.filter(id => id !== wallId)
     if (startPoint.connectedWallIds.length === 0) {
-      updatedState.connectionPoints.delete(wall.startPointId)
+      updatedState.points.delete(wall.startPointId)
     }
   }
 
   if (endPoint != null) {
     endPoint.connectedWallIds = endPoint.connectedWallIds.filter(id => id !== wallId)
     if (endPoint.connectedWallIds.length === 0) {
-      updatedState.connectionPoints.delete(wall.endPointId)
+      updatedState.points.delete(wall.endPointId)
     }
   }
 
@@ -307,9 +307,9 @@ export function removeWallFromState (state: ModelState, wallId: WallId): ModelSt
       ...floor,
       wallIds: floor.wallIds.filter(id => id !== wallId),
       openingIds: floor.openingIds.filter(id => !wall.openingIds.includes(id)),
-      connectionPointIds: floor.connectionPointIds.filter(id => {
+      pointIds: floor.pointIds.filter(id => {
         // Keep connection points that are still connected to other walls
-        const point = updatedState.connectionPoints.get(id)
+        const point = updatedState.points.get(id)
         return point != null && point.connectedWallIds.length > 0
       })
     }
@@ -391,11 +391,11 @@ export function connectWalls (state: ModelState, wallId1: WallId, wallId2: WallI
   if ((wall1 == null) || (wall2 == null)) return state
 
   const updatedState = { ...state }
-  updatedState.connectionPoints = new Map(state.connectionPoints)
+  updatedState.points = new Map(state.points)
   updatedState.walls = new Map(state.walls)
 
-  const wall1End = updatedState.connectionPoints.get(wall1.endPointId)
-  const wall2Start = updatedState.connectionPoints.get(wall2.startPointId)
+  const wall1End = updatedState.points.get(wall1.endPointId)
+  const wall2Start = updatedState.points.get(wall2.startPointId)
 
   if ((wall1End != null) && (wall2Start != null) &&
       Math.abs(wall1End.position.x - wall2Start.position.x) < 0.01 &&
@@ -405,7 +405,7 @@ export function connectWalls (state: ModelState, wallId1: WallId, wallId2: WallI
     const updatedWall2 = { ...wall2, startPointId: wall1.endPointId }
     updatedState.walls.set(wallId2, updatedWall2)
 
-    updatedState.connectionPoints.delete(wall2.startPointId)
+    updatedState.points.delete(wall2.startPointId)
   }
 
   updatedState.updatedAt = new Date()
@@ -421,8 +421,8 @@ export function calculateRoomArea (room: Room, state: ModelState): number {
     const wall = state.walls.get(wallId)
     if (wall == null) continue
 
-    const startPoint = state.connectionPoints.get(wall.startPointId)
-    const endPoint = state.connectionPoints.get(wall.endPointId)
+    const startPoint = state.points.get(wall.startPointId)
+    const endPoint = state.points.get(wall.endPointId)
 
     if ((startPoint != null) && (points.find(p => p.x === startPoint.position.x && p.y === startPoint.position.y) == null)) {
       points.push(startPoint.position)
@@ -444,15 +444,15 @@ export function calculateRoomArea (room: Room, state: ModelState): number {
   return Math.abs(area) / 2
 }
 
-export function findNearestConnectionPoint (
+export function findNearestPoint (
   state: ModelState,
   target: Point2D,
   maxDistance: number = 50
-): ConnectionPoint | null {
-  let nearest: ConnectionPoint | null = null
+): Point | null {
+  let nearest: Point | null = null
   let minDistance = maxDistance
 
-  for (const point of state.connectionPoints.values()) {
+  for (const point of state.points.values()) {
     const dx = point.position.x - target.x
     const dy = point.position.y - target.y
     const distance = Math.sqrt(dx * dx + dy * dy)
@@ -466,19 +466,19 @@ export function findNearestConnectionPoint (
   return nearest
 }
 
-export function moveConnectionPoint (
+export function movePoint (
   state: ModelState,
-  pointId: ConnectionPointId,
+  pointId: PointId,
   newPosition: Point2D
 ): ModelState {
-  const point = state.connectionPoints.get(pointId)
+  const point = state.points.get(pointId)
   if (point == null) return state
 
   const updatedState = { ...state }
-  updatedState.connectionPoints = new Map(state.connectionPoints)
+  updatedState.points = new Map(state.points)
 
   const updatedPoint = { ...point, position: newPosition }
-  updatedState.connectionPoints.set(pointId, updatedPoint)
+  updatedState.points.set(pointId, updatedPoint)
 
   updatedState.updatedAt = new Date()
   return updatedState
@@ -493,21 +493,21 @@ export function moveWall (
   const wall = state.walls.get(wallId)
   if (wall == null) return state
 
-  const startPoint = state.connectionPoints.get(wall.startPointId)
-  const endPoint = state.connectionPoints.get(wall.endPointId)
+  const startPoint = state.points.get(wall.startPointId)
+  const endPoint = state.points.get(wall.endPointId)
 
   if ((startPoint == null) || (endPoint == null)) return state
 
   let updatedState = state
 
   // Move start point
-  updatedState = moveConnectionPoint(updatedState, wall.startPointId, {
+  updatedState = movePoint(updatedState, wall.startPointId, {
     x: startPoint.position.x + deltaX,
     y: startPoint.position.y + deltaY
   })
 
   // Move end point
-  updatedState = moveConnectionPoint(updatedState, wall.endPointId, {
+  updatedState = movePoint(updatedState, wall.endPointId, {
     x: endPoint.position.x + deltaX,
     y: endPoint.position.y + deltaY
   })
@@ -573,15 +573,15 @@ export function addWallToFloor (state: ModelState, wall: Wall, floorId: FloorId)
   return updatedState
 }
 
-export function addConnectionPointToFloor (state: ModelState, point: ConnectionPoint, floorId: FloorId): ModelState {
-  const updatedState = addConnectionPointToState(state, point)
+export function addPointToFloor (state: ModelState, point: Point, floorId: FloorId): ModelState {
+  const updatedState = addPointToState(state, point)
   const updatedFloors = new Map(updatedState.floors)
   const floor = updatedFloors.get(floorId)
 
   if (floor != null) {
     const updatedFloor = {
       ...floor,
-      connectionPointIds: [...floor.connectionPointIds, point.id]
+      pointIds: [...floor.pointIds, point.id]
     }
 
     // Calculate new bounds for the floor
@@ -601,12 +601,12 @@ export function validateFloorConsistency (state: ModelState): { valid: boolean, 
   const errors: string[] = []
 
   // Check that all connection points reference valid floors and are listed in their floors
-  for (const [pointId, point] of state.connectionPoints.entries()) {
+  for (const [pointId, point] of state.points.entries()) {
     const floor = state.floors.get(point.floorId)
     if (floor == null) {
       errors.push(`Connection point ${pointId} references non-existent floor ${point.floorId}`)
-    } else if (!floor.connectionPointIds.includes(pointId)) {
-      errors.push(`Floor ${point.floorId} missing connection point ${pointId} in its connectionPointIds array`)
+    } else if (!floor.pointIds.includes(pointId)) {
+      errors.push(`Floor ${point.floorId} missing connection point ${pointId} in its pointIds array`)
     }
   }
 
@@ -620,8 +620,8 @@ export function validateFloorConsistency (state: ModelState): { valid: boolean, 
     }
 
     // Check that wall's connection points are on the same floor
-    const startPoint = state.connectionPoints.get(wall.startPointId)
-    const endPoint = state.connectionPoints.get(wall.endPointId)
+    const startPoint = state.points.get(wall.startPointId)
+    const endPoint = state.points.get(wall.endPointId)
     if ((startPoint != null) && startPoint.floorId !== wall.floorId) {
       errors.push(`Wall ${wallId} start point is on floor ${startPoint.floorId} but wall is on floor ${wall.floorId}`)
     }
@@ -666,8 +666,8 @@ export function validateFloorConsistency (state: ModelState): { valid: boolean, 
 
   // Check that floors don't reference non-existent entities
   for (const [floorId, floor] of state.floors.entries()) {
-    for (const pointId of floor.connectionPointIds) {
-      if (!state.connectionPoints.has(pointId)) {
+    for (const pointId of floor.pointIds) {
+      if (!state.points.has(pointId)) {
         errors.push(`Floor ${floorId} references non-existent connection point ${pointId}`)
       }
     }

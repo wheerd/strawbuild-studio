@@ -3,12 +3,12 @@ import { Stage } from 'react-konva'
 import type Konva from 'konva'
 import { useEditorStore, useViewport, useActiveTool, useIsDrawing, useActiveFloorId, useWallDrawingStart } from '../hooks/useEditorStore'
 import { useModelStore } from '../../../model/store'
-import { findNearestConnectionPoint } from '../../../model/operations'
+import { findNearestPoint } from '../../../model/operations'
 import type { Point2D } from '../../../types/model'
 import { GridLayer } from './GridLayer'
 import { WallLayer } from './WallLayer'
 import { WallPreviewLayer } from './WallPreviewLayer'
-import { ConnectionPointLayer } from './ConnectionPointLayer'
+import { PointLayer } from './PointLayer'
 import { RoomLayer } from './RoomLayer'
 import { SelectionLayer } from './SelectionLayer'
 
@@ -40,10 +40,10 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
 
   // Model store actions
   const modelState = useModelStore()
-  const addConnectionPoint = useModelStore(state => state.addConnectionPoint)
+  const addPoint = useModelStore(state => state.addPoint)
   const addWall = useModelStore(state => state.addWall)
   const moveWallAction = useModelStore(state => state.moveWall)
-  const moveConnectionPointAction = useModelStore(state => state.moveConnectionPoint)
+  const movePointAction = useModelStore(state => state.movePoint)
 
   // Update stage dimensions in the store when they change
   useEffect(() => {
@@ -60,18 +60,18 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
 
   // Helper function to find snap point
   const findSnapPoint = useCallback((point: Point2D): Point2D => {
-    const nearest = findNearestConnectionPoint(modelState, point, snapDistance / viewport.zoom)
+    const nearest = findNearestPoint(modelState, point, snapDistance / viewport.zoom)
     return (nearest != null) ? nearest.position : point
   }, [modelState, snapDistance, viewport.zoom])
 
   // Helper function to create or find connection point at position
-  const getOrCreateConnectionPoint = useCallback((position: Point2D) => {
-    const nearest = findNearestConnectionPoint(modelState, position, snapDistance / viewport.zoom)
+  const getOrCreatePoint = useCallback((position: Point2D) => {
+    const nearest = findNearestPoint(modelState, position, snapDistance / viewport.zoom)
     if (nearest != null) {
       return nearest
     }
-    return addConnectionPoint(position, activeFloorId)
-  }, [modelState, snapDistance, viewport.zoom, addConnectionPoint, activeFloorId])
+    return addPoint(position, activeFloorId)
+  }, [modelState, snapDistance, viewport.zoom, addPoint, activeFloorId])
 
   const handleWheel = useCallback((e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault()
@@ -124,8 +124,8 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
       } else if (wallDrawingStart != null) {
         // Finish drawing wall - use existing connection points where possible
         const snapCoords = findSnapPoint(stageCoords)
-        const startPoint = getOrCreateConnectionPoint(wallDrawingStart)
-        const endPoint = getOrCreateConnectionPoint(snapCoords)
+        const startPoint = getOrCreatePoint(wallDrawingStart)
+        const endPoint = getOrCreatePoint(snapCoords)
 
         addWall(startPoint.id, endPoint.id, activeFloorId)
 
@@ -141,7 +141,7 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
       startDrag('selection', pointer)
     }
   }, [viewport, startDrag, activeTool, isDrawing, wallDrawingStart, getStageCoordinates, findSnapPoint,
-    getOrCreateConnectionPoint, setWallDrawingStart, setIsDrawing, addWall, activeFloorId, setSnapPreview])
+    getOrCreatePoint, setWallDrawingStart, setIsDrawing, addWall, activeFloorId, setSnapPreview])
 
   // Handle drag initiation from wall shapes
   useEffect(() => {
@@ -187,7 +187,7 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
       const currentPos = getStageCoordinates(pointer)
       const snapPos = findSnapPoint(currentPos)
 
-      moveConnectionPointAction(dragState.dragEntityId as import('../../../types/ids').ConnectionPointId, snapPos)
+      movePointAction(dragState.dragEntityId as import('../../../types/ids').PointId, snapPos)
       return
     }
 
@@ -198,7 +198,7 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
       setSnapPreview(snapCoords)
     }
   }, [dragStart, setViewport, activeTool, getStageCoordinates, findSnapPoint, setSnapPreview,
-    dragState, dragStartPos, moveWallAction, moveConnectionPointAction])
+    dragState, dragStartPos, moveWallAction, movePointAction])
 
   const handleMouseUp = useCallback(() => {
     setDragStart(null)
@@ -238,7 +238,7 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
       <GridLayer width={width} height={height} viewport={{ zoom: viewport.zoom, panX: viewport.panX, panY: viewport.panY }} />
       <RoomLayer />
       <WallLayer />
-      <ConnectionPointLayer />
+      <PointLayer />
       <WallPreviewLayer wallDrawingStart={wallDrawingStart ?? null} />
       <SelectionLayer />
     </Stage>

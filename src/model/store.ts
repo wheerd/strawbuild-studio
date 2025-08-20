@@ -1,24 +1,24 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
-import type { ModelState, Wall, Room, ConnectionPoint, Opening, Floor, Point2D, Bounds } from '../types/model'
-import type { WallId, ConnectionPointId, FloorId, RoomId, OpeningId } from '../types/ids'
+import type { ModelState, Wall, Room, Point, Opening, Floor, Point2D, Bounds2D } from '../types/model'
+import type { WallId, PointId, FloorId, RoomId, OpeningId } from '../types/ids'
 import {
   createEmptyModelState,
   createFloor,
   createWall,
   createRoom,
-  createConnectionPoint,
+  createPoint,
   createOpening,
   addFloorToState,
   addWallToState,
   addRoomToState,
-  addConnectionPointToFloor,
+  addPointToFloor,
   addOpeningToState,
   removeWallFromState,
   calculateStateBounds,
   calculateFloorBounds,
   calculateRoomArea,
-  moveConnectionPoint,
+  movePoint,
   moveWall
 } from './operations'
 
@@ -26,14 +26,14 @@ interface ModelActions {
   reset: () => void
 
   addFloor: (name: string, level: number, height?: number) => Floor
-  addWall: (startPointId: ConnectionPointId, endPointId: ConnectionPointId, floorId: FloorId, thickness?: number, height?: number) => Wall
+  addWall: (startPointId: PointId, endPointId: PointId, floorId: FloorId, thickness?: number, height?: number) => Wall
   addRoom: (name: string, floorId: FloorId, wallIds?: WallId[]) => Room
-  addConnectionPoint: (position: Point2D, floorId: FloorId) => ConnectionPoint
+  addPoint: (position: Point2D, floorId: FloorId) => Point
   addOpening: (wallId: WallId, type: Opening['type'], offsetFromStart: number, width: number, height: number, sillHeight?: number) => Opening
   removeWall: (wallId: WallId) => void
-  moveConnectionPoint: (pointId: ConnectionPointId, position: Point2D) => void
+  movePoint: (pointId: PointId, position: Point2D) => void
   moveWall: (wallId: WallId, deltaX: number, deltaY: number) => void
-  getActiveFloorBounds: (floorId: FloorId) => Bounds | null
+  getActiveFloorBounds: (floorId: FloorId) => Bounds2D | null
 }
 
 type ModelStore = ModelState & ModelActions
@@ -61,7 +61,7 @@ export const useModelStore = create<ModelStore>()(
         return floor
       },
 
-      addWall: (startPointId: ConnectionPointId, endPointId: ConnectionPointId, floorId: FloorId, thickness: number = 200, height: number = 3000): Wall => {
+      addWall: (startPointId: PointId, endPointId: PointId, floorId: FloorId, thickness: number = 200, height: number = 3000): Wall => {
         const state = get()
 
         // Validate floor exists
@@ -98,7 +98,7 @@ export const useModelStore = create<ModelStore>()(
         return roomWithArea
       },
 
-      addConnectionPoint: (position: Point2D, floorId: FloorId): ConnectionPoint => {
+      addPoint: (position: Point2D, floorId: FloorId): Point => {
         const state = get()
 
         // Validate floor exists
@@ -106,11 +106,11 @@ export const useModelStore = create<ModelStore>()(
           throw new Error(`Floor ${floorId} not found`)
         }
 
-        const connectionPoint = createConnectionPoint(position, floorId)
-        const updatedState = addConnectionPointToFloor(state, connectionPoint, floorId)
+        const point = createPoint(position, floorId)
+        const updatedState = addPointToFloor(state, point, floorId)
 
-        set(updatedState, false, 'addConnectionPoint')
-        return connectionPoint
+        set(updatedState, false, 'addPoint')
+        return point
       },
 
       addOpening: (wallId: WallId, type: Opening['type'], offsetFromStart: number, width: number, height: number, sillHeight?: number): Opening => {
@@ -139,10 +139,10 @@ export const useModelStore = create<ModelStore>()(
         set(updatedState, false, 'removeWall')
       },
 
-      moveConnectionPoint: (pointId: ConnectionPointId, position: Point2D) => {
+      movePoint: (pointId: PointId, position: Point2D) => {
         const state = get()
-        const updatedState = moveConnectionPoint(state, pointId, position)
-        set(updatedState, false, 'moveConnectionPoint')
+        const updatedState = movePoint(state, pointId, position)
+        set(updatedState, false, 'movePoint')
       },
 
       moveWall: (wallId: WallId, deltaX: number, deltaY: number) => {
@@ -151,7 +151,7 @@ export const useModelStore = create<ModelStore>()(
         set(updatedState, false, 'moveWall')
       },
 
-      getActiveFloorBounds: (floorId: FloorId): Bounds | null => {
+      getActiveFloorBounds: (floorId: FloorId): Bounds2D | null => {
         const state = get()
         // Validate floor exists
         if (!state.floors.has(floorId)) {
@@ -169,7 +169,7 @@ export const useModelStore = create<ModelStore>()(
 export const useFloors = (): Map<FloorId, Floor> => useModelStore(state => state.floors)
 export const useWalls = (): Map<WallId, Wall> => useModelStore(state => state.walls)
 export const useRooms = (): Map<RoomId, Room> => useModelStore(state => state.rooms)
-export const useConnectionPoints = (): Map<ConnectionPointId, ConnectionPoint> => useModelStore(state => state.connectionPoints)
+export const usePoints = (): Map<PointId, Point> => useModelStore(state => state.points)
 export const useOpenings = (): Map<OpeningId, Opening> => useModelStore(state => state.openings)
 
 export const getActiveFloor = (floors: Map<FloorId, Floor>, activeFloorId: FloorId): Floor | null => {

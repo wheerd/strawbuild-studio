@@ -86,7 +86,7 @@ actions.createBuilding('My Building');
 // Add entities
 actions.addWall(wall);
 actions.addRoom(room);
-actions.addConnectionPoint(point);
+actions.addPoint(point);
 actions.addOpening(opening);  // Will validate position
 actions.addFloor(floor);
 

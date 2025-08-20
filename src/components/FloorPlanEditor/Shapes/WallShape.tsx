@@ -3,7 +3,7 @@ import type Konva from 'konva'
 import { useCallback, useRef } from 'react'
 import type { Wall } from '../../../types/model'
 import { useSelectedEntity, useEditorStore, useDragState, useActiveTool } from '../hooks/useEditorStore'
-import { useConnectionPoints } from '../../../model/store'
+import { usePoints } from '../../../model/store'
 
 interface WallShapeProps {
   wall: Wall
@@ -14,13 +14,13 @@ export function WallShape ({ wall }: WallShapeProps): React.JSX.Element | null {
   const selectedEntity = useSelectedEntity()
   const selectEntity = useEditorStore(state => state.selectEntity)
   const startDrag = useEditorStore(state => state.startDrag)
-  const connectionPoints = useConnectionPoints()
+  const points = usePoints()
   const dragState = useDragState()
   const activeTool = useActiveTool()
   const hasDraggedRef = useRef(false)
 
-  const startPoint = connectionPoints.get(wall.startPointId)
-  const endPoint = connectionPoints.get(wall.endPointId)
+  const startPoint = points.get(wall.startPointId)
+  const endPoint = points.get(wall.endPointId)
 
   if (startPoint == null || endPoint == null) {
     return null

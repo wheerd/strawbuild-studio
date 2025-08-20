@@ -1,4 +1,4 @@
-import type { Point2D, Vector2D, Bounds } from '../types/model'
+import type { Point2D, Vector2D, Bounds2D } from '../types/model'
 
 export function distance (p1: Point2D, p2: Point2D): number {
   const dx = p2.x - p1.x
@@ -53,7 +53,7 @@ export function snapToGrid (point: Point2D, gridSize: number): Point2D {
   }
 }
 
-export function expandBounds (bounds: Bounds, padding: number): Bounds {
+export function expandBounds (bounds: Bounds2D, padding: number): Bounds2D {
   return {
     minX: bounds.minX - padding,
     minY: bounds.minY - padding,
@@ -62,14 +62,14 @@ export function expandBounds (bounds: Bounds, padding: number): Bounds {
   }
 }
 
-export function pointInBounds (point: Point2D, bounds: Bounds): boolean {
+export function pointInBounds (point: Point2D, bounds: Bounds2D): boolean {
   return point.x >= bounds.minX &&
          point.x <= bounds.maxX &&
          point.y >= bounds.minY &&
          point.y <= bounds.maxY
 }
 
-export function boundsFromPoints (points: Point2D[]): Bounds | null {
+export function boundsFromPoints (points: Point2D[]): Bounds2D | null {
   if (points.length === 0) return null
 
   let minX = Infinity

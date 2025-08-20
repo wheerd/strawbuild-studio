@@ -16,7 +16,7 @@ export function Toolbar (): React.JSX.Element {
   const setViewport = useEditorStore(state => state.setViewport)
 
   // Use individual selectors for model actions
-  const addConnectionPoint = useModelStore(state => state.addConnectionPoint)
+  const addPoint = useModelStore(state => state.addPoint)
   const addWall = useModelStore(state => state.addWall)
   const addRoom = useModelStore(state => state.addRoom)
 
@@ -27,10 +27,10 @@ export function Toolbar (): React.JSX.Element {
   ]
 
   const createSampleBuilding = useCallback(() => {
-    const point1 = addConnectionPoint({ x: 100, y: 100 }, activeFloorId)
-    const point2 = addConnectionPoint({ x: 400, y: 100 }, activeFloorId)
-    const point3 = addConnectionPoint({ x: 400, y: 300 }, activeFloorId)
-    const point4 = addConnectionPoint({ x: 100, y: 300 }, activeFloorId)
+    const point1 = addPoint({ x: 100, y: 100 }, activeFloorId)
+    const point2 = addPoint({ x: 400, y: 100 }, activeFloorId)
+    const point3 = addPoint({ x: 400, y: 300 }, activeFloorId)
+    const point4 = addPoint({ x: 100, y: 300 }, activeFloorId)
 
     const wall1 = addWall(point1.id, point2.id, activeFloorId, 200, 3000)
     const wall2 = addWall(point2.id, point3.id, activeFloorId, 200, 3000)
@@ -38,7 +38,7 @@ export function Toolbar (): React.JSX.Element {
     const wall4 = addWall(point4.id, point1.id, activeFloorId, 200, 3000)
 
     addRoom('Living Room', activeFloorId, [wall1.id, wall2.id, wall3.id, wall4.id])
-  }, [addConnectionPoint, addWall, addRoom, activeFloorId])
+  }, [addPoint, addWall, addRoom, activeFloorId])
 
   const fitToView = useCallback(() => {
     // Get the current model state to calculate floor bounds
