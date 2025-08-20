@@ -1,9 +1,9 @@
 import { Line } from 'react-konva'
 import type Konva from 'konva'
 import { useCallback, useRef } from 'react'
-import type { Wall } from '../../../types/model'
-import { useSelectedEntity, useEditorStore, useDragState, useActiveTool } from '../hooks/useEditorStore'
-import { usePoints } from '../../../model/store'
+import type { Wall } from '@/types/model'
+import { useSelectedEntity, useEditorStore, useDragState, useActiveTool } from '@/components/FloorPlanEditor/hooks/useEditorStore'
+import { usePoints } from '@/model/store'
 
 interface WallShapeProps {
   wall: Wall

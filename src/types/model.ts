@@ -1,4 +1,4 @@
-import type { WallId, PointId, RoomId, OpeningId, FloorId } from './ids'
+import type { WallId, PointId, RoomId, OpeningId, FloorId } from '@/types/ids'
 
 // Core geometric types
 export interface Point2D {

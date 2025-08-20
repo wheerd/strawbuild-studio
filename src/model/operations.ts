@@ -7,19 +7,19 @@ import type {
   Floor,
   Point2D,
   Bounds2D
-} from '../types/model'
+} from '@/types/model'
 import type {
   WallId,
   PointId,
   FloorId
-} from '../types/ids'
+} from '@/types/ids'
 import {
   createWallId,
   createPointId,
   createRoomId,
   createOpeningId,
   createFloorId
-} from '../types/ids'
+} from '@/types/ids'
 
 export function createEmptyModelState (): ModelState {
   const groundFloor = createFloor('Ground Floor', 0, 3000)

@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
-import type { ModelState, Wall, Room, Point, Opening, Floor, Point2D, Bounds2D } from '../types/model'
-import type { WallId, PointId, FloorId, RoomId, OpeningId } from '../types/ids'
+import type { ModelState, Wall, Room, Point, Opening, Floor, Point2D, Bounds2D } from '@/types/model'
+import type { WallId, PointId, FloorId, RoomId, OpeningId } from '@/types/ids'
 import {
   createEmptyModelState,
   createFloor,
@@ -20,7 +20,7 @@ import {
   calculateRoomArea,
   movePoint,
   moveWall
-} from './operations'
+} from '@/model/operations'
 
 interface ModelActions {
   reset: () => void

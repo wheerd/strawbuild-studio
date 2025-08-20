@@ -7,7 +7,7 @@ import {
   addWallToState,
   getWallLength,
   calculateStateBounds
-} from '../operations'
+} from '@/model/operations'
 
 describe('Model Properties', () => {
   describe('Connection Points', () => {

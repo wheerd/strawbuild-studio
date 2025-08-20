@@ -1,6 +1,6 @@
 import React from 'react'
 import { Layer, Line } from 'react-konva'
-import { useEditorStore } from '../hooks/useEditorStore'
+import { useEditorStore } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 
 interface ViewportState {
   zoom: number

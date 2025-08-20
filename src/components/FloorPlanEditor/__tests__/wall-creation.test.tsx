@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { FloorPlanEditor } from '../FloorPlanEditor'
-import { useModelStore } from '../../../model/store'
+import { FloorPlanEditor } from '@/components/FloorPlanEditor/FloorPlanEditor'
+import { useModelStore } from '@/model/store'
 
 describe('Wall Creation', () => {
   beforeEach(() => {

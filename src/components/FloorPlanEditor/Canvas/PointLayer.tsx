@@ -1,7 +1,7 @@
 import { Layer } from 'react-konva'
-import { useFloors, usePoints, getActiveFloor } from '../../../model/store'
-import { useActiveFloorId } from '../hooks/useEditorStore'
-import { PointShape } from '../Shapes/PointShape'
+import { useFloors, usePoints, getActiveFloor } from '@/model/store'
+import { useActiveFloorId } from '@/components/FloorPlanEditor/hooks/useEditorStore'
+import { PointShape } from '@/components/FloorPlanEditor/Shapes/PointShape'
 
 export function PointLayer (): React.JSX.Element {
   const floors = useFloors()

@@ -14,6 +14,17 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
+    
+    /* Path mapping */
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["./*"],
+      "@/components/*": ["./components/*"],
+      "@/model/*": ["./model/*"],
+      "@/types/*": ["./types/*"],
+      "@/assets/*": ["./assets/*"],
+      "@/test/*": ["./test/*"]
+    },
 
     /* Linting */
     "strict": true,

@@ -1,8 +1,8 @@
 import { Circle } from 'react-konva'
 import type Konva from 'konva'
 import { useCallback, useRef } from 'react'
-import type { Point } from '../../../types/model'
-import { useSelectedEntity, useEditorStore, useDragState, useActiveTool } from '../hooks/useEditorStore'
+import type { Point } from '@/types/model'
+import { useSelectedEntity, useEditorStore, useDragState, useActiveTool } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 
 interface PointShapeProps {
   point: Point

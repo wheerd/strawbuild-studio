@@ -1,6 +1,6 @@
 import { create } from 'zustand'
-import type { Point2D } from '../../../types/model'
-import type { FloorId } from '../../../types/ids'
+import type { Point2D } from '@/types/model'
+import type { FloorId } from '@/types/ids'
 
 export type EditorTool = 'select' | 'wall' | 'room'
 export type DragType = 'pan' | 'wall' | 'point' | 'selection'

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Layer, Circle } from 'react-konva'
-import { useShowSnapPreview, useSnapPreviewPoint, useActiveTool } from '../hooks/useEditorStore'
+import { useShowSnapPreview, useSnapPreviewPoint, useActiveTool } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 
 export function SelectionLayer (): React.JSX.Element {
   const showSnapPreview = useShowSnapPreview()

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render } from '@testing-library/react'
-import { SelectionLayer } from '../Canvas/SelectionLayer'
-import { useEditorStore } from '../hooks/useEditorStore'
+import { SelectionLayer } from '@/components/FloorPlanEditor/Canvas/SelectionLayer'
+import { useEditorStore } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 
 // Mock Konva components
 vi.mock('react-konva', () => ({

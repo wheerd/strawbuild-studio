@@ -15,7 +15,7 @@ import {
   addPointToState,
   addOpeningToState,
   removeWallFromState
-} from '../operations'
+} from '@/model/operations'
 
 describe('Model Operations', () => {
   describe('Factory Functions', () => {

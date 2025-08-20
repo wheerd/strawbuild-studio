@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
-import { useActiveTool, useEditorStore, useActiveFloorId, useViewport } from '../hooks/useEditorStore'
-import { useModelStore } from '../../../model/store'
+import { useActiveTool, useEditorStore, useActiveFloorId, useViewport } from '@/components/FloorPlanEditor/hooks/useEditorStore'
+import { useModelStore } from '@/model/store'
 import { FloorSelector } from './FloorSelector'
-import { calculateFloorBounds } from '../../../model/operations'
+import { calculateFloorBounds } from '@/model/operations'
 
 export function Toolbar (): React.JSX.Element {
   const activeTool = useActiveTool()

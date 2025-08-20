@@ -1,7 +1,7 @@
 import { useMemo, useCallback } from 'react'
-import { useFloors, useModelStore } from '../../../model/store'
-import { useActiveFloorId, useEditorStore } from '../hooks/useEditorStore'
-import type { FloorId } from '../../../types/ids'
+import { useFloors, useModelStore } from '@/model/store'
+import { useActiveFloorId, useEditorStore } from '@/components/FloorPlanEditor/hooks/useEditorStore'
+import type { FloorId } from '@/types/ids'
 
 export function FloorSelector (): React.JSX.Element {
   const allFloors = useFloors()

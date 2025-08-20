@@ -1,7 +1,7 @@
 import { Line, Text } from 'react-konva'
-import type { Room } from '../../../types/model'
-import { useSelectedEntity, useEditorStore, useActiveTool } from '../hooks/useEditorStore'
-import { useWalls, usePoints } from '../../../model/store'
+import type { Room } from '@/types/model'
+import { useSelectedEntity, useEditorStore, useActiveTool } from '@/components/FloorPlanEditor/hooks/useEditorStore'
+import { useWalls, usePoints } from '@/model/store'
 
 interface RoomShapeProps {
   room: Room

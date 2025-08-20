@@ -1,7 +1,7 @@
 import { Layer } from 'react-konva'
-import { useFloors, useWalls, getActiveFloor } from '../../../model/store'
-import { useActiveFloorId } from '../hooks/useEditorStore'
-import { WallShape } from '../Shapes/WallShape'
+import { useFloors, useWalls, getActiveFloor } from '@/model/store'
+import { useActiveFloorId } from '@/components/FloorPlanEditor/hooks/useEditorStore'
+import { WallShape } from '@/components/FloorPlanEditor/Shapes/WallShape'
 
 export function WallLayer (): React.JSX.Element {
   const floors = useFloors()

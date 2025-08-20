@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useEditorStore } from '../hooks/useEditorStore'
+import { useEditorStore } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 
 describe('Selection Persistence After Drag', () => {
   beforeEach(() => {

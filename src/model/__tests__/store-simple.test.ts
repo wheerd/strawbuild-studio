@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useModelStore } from '../store'
-import type { FloorId } from '../../types/ids'
+import { useModelStore } from '@/model/store'
+import type { FloorId } from '@/types/ids'
 
 // Simple store tests without React hooks to avoid rendering issues
 describe('ModelStore - Basic Operations', () => {

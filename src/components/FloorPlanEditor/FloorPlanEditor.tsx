@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { FloorPlanStage } from './Canvas/FloorPlanStage'
 import { Toolbar } from './Tools/Toolbar'
-import { useFloors } from '../../model/store'
+import { useFloors } from '@/model/store'
 import { useEditorStore } from './hooks/useEditorStore'
 import './FloorPlanEditor.css'
 

@@ -1,4 +1,4 @@
-import type { Point2D, Vector2D, Bounds2D } from '../types/model'
+import type { Point2D, Vector2D, Bounds2D } from '@/types/model'
 
 export function distance (p1: Point2D, p2: Point2D): number {
   const dx = p2.x - p1.x
