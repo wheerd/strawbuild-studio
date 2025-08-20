@@ -8,7 +8,9 @@ beforeAll(() => {
   // Mock the problematic canvas module completely
   vi.mock('canvas', () => ({
     default: {},
-    Canvas: class MockCanvas {},
+    Canvas: function MockCanvas () {
+      return {}
+    },
     createCanvas: () => ({}),
     loadImage: async () => await Promise.resolve({})
   }))
