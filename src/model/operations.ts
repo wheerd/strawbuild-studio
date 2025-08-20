@@ -14,7 +14,8 @@ import {
 import type {
   WallId,
   PointId,
-  FloorId
+  FloorId,
+  CornerId
 } from '@/types/ids'
 import {
   createWallId,
@@ -38,7 +39,9 @@ import {
   type Angle,
   distance,
   boundsFromPoints,
-  calculatePolygonArea
+  calculatePolygonArea,
+  calculateCornerAngle,
+  determineCornerType
 
 } from '@/types/geometry'
 
@@ -601,4 +604,395 @@ export function addOpeningToWall (wall: Wall, opening: Opening, state: ModelStat
     ...wall,
     openings: (wall.openings != null) ? [...wall.openings, opening] : [opening]
   }
+}
+
+// Corner management operations
+export function findWallsConnectedToPoint (state: ModelState, pointId: PointId): Wall[] {
+  const connectedWalls: Wall[] = []
+
+  for (const wall of state.walls.values()) {
+    if (wall.startPointId === pointId || wall.endPointId === pointId) {
+      connectedWalls.push(wall)
+    }
+  }
+
+  return connectedWalls
+}
+
+export function shouldCreateCorner (connectedWalls: Wall[]): boolean {
+  return connectedWalls.length >= 2
+}
+
+export function findExistingCornerAtPoint (state: ModelState, pointId: PointId): Corner | null {
+  for (const corner of state.corners.values()) {
+    if (corner.pointId === pointId) {
+      return corner
+    }
+  }
+  return null
+}
+
+export function calculateCornerData (
+  state: ModelState,
+  pointId: PointId,
+  connectedWalls: Wall[]
+): { angle: Angle, type: Corner['type'], wall1Id: WallId, wall2Id: WallId, otherWallIds?: WallId[] } {
+  if (connectedWalls.length < 2) {
+    throw new Error('Cannot create corner with less than 2 walls')
+  }
+
+  // Get the corner point
+  const cornerPoint = state.points.get(pointId)
+  if (cornerPoint == null) {
+    throw new Error(`Point ${pointId} not found`)
+  }
+
+  // Sort walls by their angle from the corner point to determine primary walls
+  const wallAngles = connectedWalls.map(wall => {
+    const otherPointId = wall.startPointId === pointId ? wall.endPointId : wall.startPointId
+    const otherPoint = state.points.get(otherPointId)
+    if (otherPoint == null) {
+      throw new Error(`Point ${otherPointId} not found`)
+    }
+
+    return {
+      wall,
+      angle: Math.atan2(otherPoint.position.y - cornerPoint.position.y, otherPoint.position.x - cornerPoint.position.x)
+    }
+  }).sort((a, b) => a.angle - b.angle)
+
+  // Primary walls are typically the first two in angle-sorted order
+  const wall1 = wallAngles[0].wall
+  const wall2 = wallAngles[1].wall
+  const otherWalls = wallAngles.slice(2).map(wa => wa.wall)
+
+  // Calculate angle between the two primary walls
+  const wall1OtherPointId = wall1.startPointId === pointId ? wall1.endPointId : wall1.startPointId
+  const wall2OtherPointId = wall2.startPointId === pointId ? wall2.endPointId : wall2.startPointId
+
+  const wall1OtherPoint = state.points.get(wall1OtherPointId)
+  const wall2OtherPoint = state.points.get(wall2OtherPointId)
+
+  if (wall1OtherPoint == null || wall2OtherPoint == null) {
+    throw new Error('Wall end points not found')
+  }
+
+  const angle = calculateCornerAngle(
+    wall1OtherPoint.position,
+    cornerPoint.position,
+    wall2OtherPoint.position
+  )
+
+  const type = determineCornerType(connectedWalls.length, angle)
+
+  return {
+    angle,
+    type,
+    wall1Id: wall1.id,
+    wall2Id: wall2.id,
+    otherWallIds: otherWalls.length > 0 ? otherWalls.map(w => w.id) : undefined
+  }
+}
+
+export function createCornerFromWalls (
+  state: ModelState,
+  pointId: PointId,
+  connectedWalls: Wall[]
+): Corner {
+  const cornerData = calculateCornerData(state, pointId, connectedWalls)
+
+  // Create simple corner area (for now, just a small square at the corner point)
+  const cornerPoint = state.points.get(pointId)
+  if (cornerPoint == null) {
+    throw new Error(`Point ${pointId} not found`)
+  }
+  const cornerSize = 50 // 50mm corner area
+
+  const area: Polygon2D = {
+    points: [
+      { x: createAbsoluteOffset(cornerPoint.position.x - cornerSize / 2), y: createAbsoluteOffset(cornerPoint.position.y - cornerSize / 2) },
+      { x: createAbsoluteOffset(cornerPoint.position.x + cornerSize / 2), y: createAbsoluteOffset(cornerPoint.position.y - cornerSize / 2) },
+      { x: createAbsoluteOffset(cornerPoint.position.x + cornerSize / 2), y: createAbsoluteOffset(cornerPoint.position.y + cornerSize / 2) },
+      { x: createAbsoluteOffset(cornerPoint.position.x - cornerSize / 2), y: createAbsoluteOffset(cornerPoint.position.y + cornerSize / 2) }
+    ]
+  }
+
+  return {
+    id: createCornerId(),
+    pointId,
+    wall1Id: cornerData.wall1Id,
+    wall2Id: cornerData.wall2Id,
+    otherWallIds: cornerData.otherWallIds,
+    angle: cornerData.angle,
+    type: cornerData.type,
+    area
+  }
+}
+
+export function updateCornerReferences (state: ModelState, corner: Corner): ModelState {
+  const updatedState = { ...state }
+  updatedState.walls = new Map(state.walls)
+
+  // Update wall references to include corner touches
+  const updateWallTouch = (wallId: WallId, isStart: boolean): void => {
+    const wall = updatedState.walls.get(wallId)
+    if (wall == null) return
+
+    const updatedWall = { ...wall }
+    if (isStart) {
+      updatedWall.startTouches = corner.id
+    } else {
+      updatedWall.endTouches = corner.id
+    }
+
+    updatedState.walls.set(wallId, updatedWall)
+  }
+
+  // Update primary walls
+  const wall1 = state.walls.get(corner.wall1Id)
+  const wall2 = state.walls.get(corner.wall2Id)
+
+  if (wall1 != null) {
+    updateWallTouch(corner.wall1Id, wall1.startPointId === corner.pointId)
+  }
+  if (wall2 != null) {
+    updateWallTouch(corner.wall2Id, wall2.startPointId === corner.pointId)
+  }
+
+  // Update other walls
+  if (corner.otherWallIds != null) {
+    for (const wallId of corner.otherWallIds) {
+      const wall = state.walls.get(wallId)
+      if (wall != null) {
+        updateWallTouch(wallId, wall.startPointId === corner.pointId)
+      }
+    }
+  }
+
+  return updatedState
+}
+
+export function removeCornerReferences (state: ModelState, corner: Corner): ModelState {
+  const updatedState = { ...state }
+  updatedState.walls = new Map(state.walls)
+
+  // Remove corner references from walls
+  const removeWallTouch = (wallId: WallId, isStart: boolean): void => {
+    const wall = updatedState.walls.get(wallId)
+    if (wall == null) return
+
+    const updatedWall = { ...wall }
+    if (isStart) {
+      updatedWall.startTouches = undefined
+    } else {
+      updatedWall.endTouches = undefined
+    }
+
+    updatedState.walls.set(wallId, updatedWall)
+  }
+
+  // Remove from primary walls
+  const wall1 = state.walls.get(corner.wall1Id)
+  const wall2 = state.walls.get(corner.wall2Id)
+
+  if (wall1 != null) {
+    removeWallTouch(corner.wall1Id, wall1.startPointId === corner.pointId)
+  }
+  if (wall2 != null) {
+    removeWallTouch(corner.wall2Id, wall2.startPointId === corner.pointId)
+  }
+
+  // Remove from other walls
+  if (corner.otherWallIds != null) {
+    for (const wallId of corner.otherWallIds) {
+      const wall = state.walls.get(wallId)
+      if (wall != null) {
+        removeWallTouch(wallId, wall.startPointId === corner.pointId)
+      }
+    }
+  }
+
+  return updatedState
+}
+
+export function updateOrCreateCorner (state: ModelState, pointId: PointId): ModelState {
+  const connectedWalls = findWallsConnectedToPoint(state, pointId)
+
+  if (!shouldCreateCorner(connectedWalls)) {
+    // Remove existing corner if it exists
+    const existingCorner = findExistingCornerAtPoint(state, pointId)
+    if (existingCorner != null) {
+      let updatedState = removeCornerReferences(state, existingCorner)
+      updatedState = { ...updatedState }
+      updatedState.corners = new Map(updatedState.corners)
+      updatedState.corners.delete(existingCorner.id)
+      updatedState.updatedAt = new Date()
+      return updatedState
+    }
+    return state
+  }
+
+  const existingCorner = findExistingCornerAtPoint(state, pointId)
+
+  if (existingCorner != null) {
+    // Update existing corner - but preserve main walls unless they're no longer connected
+    const currentMainWalls = [existingCorner.wall1Id, existingCorner.wall2Id]
+    const stillConnectedMainWalls = currentMainWalls.filter(wallId =>
+      connectedWalls.some(wall => wall.id === wallId)
+    )
+
+    let wall1Id: WallId, wall2Id: WallId, otherWallIds: WallId[] | undefined
+
+    if (stillConnectedMainWalls.length >= 2) {
+      // Keep existing main walls if they're still connected
+      wall1Id = stillConnectedMainWalls[0]
+      wall2Id = stillConnectedMainWalls[1]
+      otherWallIds = connectedWalls
+        .filter(wall => !stillConnectedMainWalls.includes(wall.id))
+        .map(wall => wall.id)
+    } else if (stillConnectedMainWalls.length === 1) {
+      // One main wall is still connected, choose another as the second main wall
+      wall1Id = stillConnectedMainWalls[0]
+      const remainingWalls = connectedWalls.filter(wall => wall.id !== wall1Id)
+      wall2Id = remainingWalls[0].id
+      otherWallIds = remainingWalls.slice(1).map(wall => wall.id)
+    } else {
+      // Neither main wall is connected anymore, recalculate from scratch
+      const updatedCornerData = calculateCornerData(state, pointId, connectedWalls)
+      wall1Id = updatedCornerData.wall1Id
+      wall2Id = updatedCornerData.wall2Id
+      otherWallIds = updatedCornerData.otherWallIds
+    }
+
+    // Calculate angle and type with current configuration
+    const cornerPoint = state.points.get(pointId)
+    if (cornerPoint == null) {
+      throw new Error(`Point ${pointId} not found`)
+    }
+
+    const wall1 = connectedWalls.find(w => w.id === wall1Id)
+    const wall2 = connectedWalls.find(w => w.id === wall2Id)
+    if (wall1 == null || wall2 == null) {
+      throw new Error('Wall not found in connected walls')
+    }
+
+    const wall1OtherPointId = wall1.startPointId === pointId ? wall1.endPointId : wall1.startPointId
+    const wall2OtherPointId = wall2.startPointId === pointId ? wall2.endPointId : wall2.startPointId
+
+    const wall1OtherPoint = state.points.get(wall1OtherPointId)
+    const wall2OtherPoint = state.points.get(wall2OtherPointId)
+    if (wall1OtherPoint == null || wall2OtherPoint == null) {
+      throw new Error('Wall end points not found')
+    }
+
+    const angle = calculateCornerAngle(
+      wall1OtherPoint.position,
+      cornerPoint.position,
+      wall2OtherPoint.position
+    )
+
+    const type = determineCornerType(connectedWalls.length, angle)
+
+    const updatedCorner: Corner = {
+      ...existingCorner,
+      wall1Id,
+      wall2Id,
+      otherWallIds: (otherWallIds != null && otherWallIds.length > 0) ? otherWallIds : undefined,
+      angle,
+      type
+    }
+
+    // Remove old references and add new ones
+    let updatedState = removeCornerReferences(state, existingCorner)
+    updatedState = updateCornerReferences(updatedState, updatedCorner)
+    updatedState = { ...updatedState }
+    updatedState.corners = new Map(updatedState.corners)
+    updatedState.corners.set(updatedCorner.id, updatedCorner)
+    updatedState.updatedAt = new Date()
+    return updatedState
+  } else {
+    // Create new corner - use first two walls as main walls
+    const newCorner = createCornerFromWalls(state, pointId, connectedWalls)
+    let updatedState = updateCornerReferences(state, newCorner)
+    updatedState = { ...updatedState }
+    updatedState.corners = new Map(updatedState.corners)
+    updatedState.corners.set(newCorner.id, newCorner)
+    updatedState.updatedAt = new Date()
+    return updatedState
+  }
+}
+
+export function switchCornerMainWalls (
+  state: ModelState,
+  cornerId: CornerId,
+  newWall1Id: WallId,
+  newWall2Id: WallId
+): ModelState {
+  const corner = state.corners.get(cornerId)
+  if (corner == null) {
+    throw new Error(`Corner ${cornerId} not found`)
+  }
+
+  const connectedWalls = findWallsConnectedToPoint(state, corner.pointId)
+  const wallIds = connectedWalls.map(w => w.id)
+
+  // Validate that the new main walls are actually connected to this corner
+  if (!wallIds.includes(newWall1Id) || !wallIds.includes(newWall2Id)) {
+    throw new Error('New main walls must be connected to the corner point')
+  }
+
+  if (newWall1Id === newWall2Id) {
+    throw new Error('Main walls must be different')
+  }
+
+  // Calculate other walls (all connected walls except the new main walls)
+  const otherWallIds = wallIds.filter(id => id !== newWall1Id && id !== newWall2Id)
+
+  // Recalculate angle and type with new main walls
+  const cornerPoint = state.points.get(corner.pointId)
+  if (cornerPoint == null) {
+    throw new Error(`Point ${corner.pointId} not found`)
+  }
+
+  const wall1 = connectedWalls.find(w => w.id === newWall1Id)
+  const wall2 = connectedWalls.find(w => w.id === newWall2Id)
+  if (wall1 == null || wall2 == null) {
+    throw new Error('Wall not found in connected walls')
+  }
+
+  const wall1OtherPointId = wall1.startPointId === corner.pointId ? wall1.endPointId : wall1.startPointId
+  const wall2OtherPointId = wall2.startPointId === corner.pointId ? wall2.endPointId : wall2.startPointId
+
+  const wall1OtherPoint = state.points.get(wall1OtherPointId)
+  const wall2OtherPoint = state.points.get(wall2OtherPointId)
+  if (wall1OtherPoint == null || wall2OtherPoint == null) {
+    throw new Error('Wall end points not found')
+  }
+
+  const angle = calculateCornerAngle(
+    wall1OtherPoint.position,
+    cornerPoint.position,
+    wall2OtherPoint.position
+  )
+
+  const type = determineCornerType(connectedWalls.length, angle)
+
+  const updatedCorner: Corner = {
+    ...corner,
+    wall1Id: newWall1Id,
+    wall2Id: newWall2Id,
+    otherWallIds: otherWallIds.length > 0 ? otherWallIds : undefined,
+    angle,
+    type
+  }
+
+  // Remove old references and add new ones
+  let updatedState = removeCornerReferences(state, corner)
+  updatedState = updateCornerReferences(updatedState, updatedCorner)
+  updatedState = { ...updatedState }
+  updatedState.corners = new Map(updatedState.corners)
+  updatedState.corners.set(cornerId, updatedCorner)
+  updatedState.updatedAt = new Date()
+
+  return updatedState
 }

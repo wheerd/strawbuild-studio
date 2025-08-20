@@ -231,3 +231,60 @@ export function calculatePolygonWithHolesArea (polygon: PolygonWithHoles2D): Are
 
   return totalArea
 }
+
+// Corner angle calculation utilities
+export function calculateCornerAngle (wall1Start: Point2D, cornerPoint: Point2D, wall2End: Point2D): Angle {
+  // Vector from corner to wall1 start
+  const vec1 = {
+    x: wall1Start.x - cornerPoint.x,
+    y: wall1Start.y - cornerPoint.y
+  }
+
+  // Vector from corner to wall2 end
+  const vec2 = {
+    x: wall2End.x - cornerPoint.x,
+    y: wall2End.y - cornerPoint.y
+  }
+
+  // Calculate angle between vectors using dot product
+  const dot = vec1.x * vec2.x + vec1.y * vec2.y
+  const mag1 = Math.sqrt(vec1.x * vec1.x + vec1.y * vec1.y)
+  const mag2 = Math.sqrt(vec2.x * vec2.x + vec2.y * vec2.y)
+
+  if (mag1 === 0 || mag2 === 0) return createAngle(0)
+
+  const cosAngle = dot / (mag1 * mag2)
+  // Clamp to prevent NaN from floating point precision issues
+  const clampedCos = Math.max(-1, Math.min(1, cosAngle))
+  const angleRad = Math.acos(clampedCos)
+
+  return createAngle(angleRad)
+}
+
+export function determineCornerType (wallCount: number, angle: Angle): 'corner' | 'straight' | 'tee' | 'cross' {
+  const angleInRadians = Number(angle)
+  // Use a very small tolerance to handle only floating point precision errors
+  const tolerance = 1e-10 // ~0.0000000057 degrees
+
+  if (wallCount === 2) {
+    // Check if angle is very close to π (180 degrees)
+    if (Math.abs(angleInRadians - Math.PI) < tolerance) {
+      return 'straight'
+    }
+    return 'corner'
+  } else if (wallCount === 3) {
+    return 'tee'
+  } else if (wallCount > 3) {
+    return 'cross'
+  }
+
+  return 'corner'
+}
+
+export function radiansToDegrees (angle: Angle): number {
+  return (Number(angle) * 180) / Math.PI
+}
+
+export function degreesToRadians (degrees: number): Angle {
+  return createAngle((degrees * Math.PI) / 180)
+}

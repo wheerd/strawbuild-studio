@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
-import type { ModelState, Wall, Room, Point, Opening, Floor, Slab, Roof, FloorLevel } from '@/types/model'
-import type { WallId, PointId, FloorId, RoomId, SlabId, RoofId } from '@/types/ids'
+import type { ModelState, Wall, Room, Point, Opening, Floor, Slab, Roof, FloorLevel, Corner } from '@/types/model'
+import type { WallId, PointId, FloorId, RoomId, SlabId, RoofId, CornerId } from '@/types/ids'
 import type { Point2D, Bounds2D, Length } from '@/types/geometry'
 import {
   createEmptyModelState,
@@ -24,7 +24,9 @@ import {
   calculateRoomArea,
   movePoint,
   moveWall,
-  addOpeningToWall
+  addOpeningToWall,
+  updateOrCreateCorner,
+  switchCornerMainWalls
 } from '@/model/operations'
 import { createLength } from '@/types/geometry'
 
@@ -41,6 +43,7 @@ interface ModelActions {
   removeWall: (wallId: WallId, floorId: FloorId) => void
   movePoint: (pointId: PointId, position: Point2D) => void
   moveWall: (wallId: WallId, deltaX: number, deltaY: number) => void
+  switchCornerMainWalls: (cornerId: CornerId, newWall1Id: WallId, newWall2Id: WallId) => void
   getActiveFloorBounds: (floorId: FloorId) => Bounds2D | null
 }
 
@@ -86,6 +89,10 @@ export const useModelStore = create<ModelStore>()(
 
         const wall = createWall(startPointId, endPointId, heightAtStart, heightAtEnd, thickness)
         let updatedState = addWallToFloor(state, wall, floorId)
+
+        // Update corners for both endpoints
+        updatedState = updateOrCreateCorner(updatedState, startPointId)
+        updatedState = updateOrCreateCorner(updatedState, endPointId)
 
         const bounds = calculateStateBounds(updatedState)
         if (bounds != null) {
@@ -188,7 +195,21 @@ export const useModelStore = create<ModelStore>()(
 
       removeWall: (wallId: WallId, floorId: FloorId) => {
         const state = get()
+
+        // Get wall before removing to update corners at its endpoints
+        const wall = state.walls.get(wallId)
+        const startPointId = wall?.startPointId
+        const endPointId = wall?.endPointId
+
         let updatedState = removeWallFromFloor(state, wallId, floorId)
+
+        // Update corners for both endpoints after wall removal
+        if (startPointId != null) {
+          updatedState = updateOrCreateCorner(updatedState, startPointId)
+        }
+        if (endPointId != null) {
+          updatedState = updateOrCreateCorner(updatedState, endPointId)
+        }
 
         const bounds = calculateStateBounds(updatedState)
         if (bounds != null) {
@@ -200,14 +221,33 @@ export const useModelStore = create<ModelStore>()(
 
       movePoint: (pointId: PointId, position: Point2D) => {
         const state = get()
-        const updatedState = movePoint(state, pointId, position)
+        let updatedState = movePoint(state, pointId, position)
+
+        // Update corners at this point after moving
+        updatedState = updateOrCreateCorner(updatedState, pointId)
+
         set(updatedState, false, 'movePoint')
       },
 
       moveWall: (wallId: WallId, deltaX: number, deltaY: number) => {
         const state = get()
-        const updatedState = moveWall(state, wallId, deltaX, deltaY)
+        const wall = state.walls.get(wallId)
+
+        if (wall == null) return
+
+        let updatedState = moveWall(state, wallId, deltaX, deltaY)
+
+        // Update corners at both endpoints after moving
+        updatedState = updateOrCreateCorner(updatedState, wall.startPointId)
+        updatedState = updateOrCreateCorner(updatedState, wall.endPointId)
+
         set(updatedState, false, 'moveWall')
+      },
+
+      switchCornerMainWalls: (cornerId: CornerId, newWall1Id: WallId, newWall2Id: WallId) => {
+        const state = get()
+        const updatedState = switchCornerMainWalls(state, cornerId, newWall1Id, newWall2Id)
+        set(updatedState, false, 'switchCornerMainWalls')
       },
 
       getActiveFloorBounds: (floorId: FloorId): Bounds2D | null => {
@@ -230,6 +270,7 @@ export const useFloors = (): Map<FloorId, Floor> => useModelStore(state => state
 export const useWalls = (): Map<WallId, Wall> => useModelStore(state => state.walls)
 export const useRooms = (): Map<RoomId, Room> => useModelStore(state => state.rooms)
 export const usePoints = (): Map<PointId, Point> => useModelStore(state => state.points)
+export const useCorners = (): Map<CornerId, Corner> => useModelStore(state => state.corners)
 export const useSlabs = (): Map<SlabId, Slab> => useModelStore(state => state.slabs)
 export const useRoofs = (): Map<RoofId, Roof> => useModelStore(state => state.roofs)
 
