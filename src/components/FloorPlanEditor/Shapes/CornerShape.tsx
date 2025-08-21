@@ -64,8 +64,8 @@ export function CornerShape ({ corner }: CornerShapeProps): React.JSX.Element | 
     <Group
       x={cornerPoint.position.x}
       y={cornerPoint.position.y}
-      // Make the group non-interactive by default to not block point interactions
-      listening={false}
+      // Allow group to listen for interactions on specific children
+      listening={true}
     >
       {/* Background circle for better visibility - much larger */}
       <Circle
@@ -80,8 +80,8 @@ export function CornerShape ({ corner }: CornerShapeProps): React.JSX.Element | 
         onTap={handleClick}
       />
 
-      {/* Combined symbol and angle text - always visible for corners, tees, and crosses */}
-      {corner.type !== 'straight' && (
+      {/* Combined symbol and angle text - only visible when selected */}
+      {isSelected && corner.type !== 'straight' && (
         <Text
           text={`${config.symbol} ${angleInDegrees}°`}
           fontSize={12}
