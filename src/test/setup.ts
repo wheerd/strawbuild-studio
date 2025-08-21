@@ -33,15 +33,27 @@ beforeAll(() => {
   }))
 })
 
-// Mock React-Konva components to return simple mock functions
-vi.mock('react-konva', () => ({
-  Stage: vi.fn(({ children }) => children),
-  Layer: vi.fn(({ children }) => children),
-  Line: vi.fn(() => null),
-  Circle: vi.fn(() => null),
-  Text: vi.fn(() => null),
-  Group: vi.fn(({ children }) => children)
-}))
+// Mock React-Konva components with test-friendly implementations
+vi.mock('react-konva', () => {
+  const React = require('react')
+  return {
+    Stage: ({ children, ...props }: any) => React.createElement('div', { 'data-testid': 'stage', ...props }, children),
+    Layer: ({ children, ...props }: any) => React.createElement('div', { 'data-testid': 'layer', ...props }, children),
+    Line: ({ points, ...props }: any) => React.createElement('div', { 
+      'data-testid': 'wall-line',
+      'data-points': JSON.stringify(points),
+      ...props
+    }),
+    Group: ({ children, ...props }: any) => React.createElement('div', { 'data-testid': 'group', ...props }, children),
+    Arrow: ({ points, ...props }: any) => React.createElement('div', { 
+      'data-testid': 'direction-arrow',
+      'data-points': JSON.stringify(points),
+      ...props
+    }),
+    Circle: ({ ...props }: any) => React.createElement('div', { 'data-testid': 'circle', ...props }),
+    Text: ({ text, ...props }: any) => React.createElement('div', { 'data-testid': 'text', ...props }, text)
+  }
+})
 
 // Mock ResizeObserver
 global.ResizeObserver = vi.fn().mockImplementation(() => ({

@@ -1,4 +1,4 @@
-import { Line } from 'react-konva'
+import { Line, Group, Arrow } from 'react-konva'
 import type Konva from 'konva'
 import { useCallback, useRef } from 'react'
 import type { Wall } from '@/types/model'
@@ -14,6 +14,7 @@ export function WallShape ({ wall }: WallShapeProps): React.JSX.Element | null {
   // Use individual selectors to avoid object creation
   const selectedEntity = useSelectedEntity()
   const selectEntity = useEditorStore(state => state.selectEntity)
+  const setSelectedEntity = useEditorStore(state => state.setSelectedEntity)
   const startDrag = useEditorStore(state => state.startDrag)
   const points = usePoints()
   const corners = useCorners()
@@ -66,8 +67,8 @@ export function WallShape ({ wall }: WallShapeProps): React.JSX.Element | null {
     // Reset drag flag
     hasDraggedRef.current = false
 
-    // Select the wall when starting to drag
-    selectEntity(wall.id)
+    // Select the wall when starting to drag (use setSelectedEntity to avoid toggle)
+    setSelectedEntity(wall.id)
 
     const stage = e.target.getStage()
     const pointer = stage?.getPointerPosition()
@@ -76,7 +77,7 @@ export function WallShape ({ wall }: WallShapeProps): React.JSX.Element | null {
       // Mark that we started a drag operation
       hasDraggedRef.current = true
     }
-  }, [startDrag, selectEntity, wall.id, activeTool])
+  }, [startDrag, setSelectedEntity, wall.id, activeTool])
 
   // Determine wall color based on state
   const getWallColor = (): string => {
@@ -93,17 +94,63 @@ export function WallShape ({ wall }: WallShapeProps): React.JSX.Element | null {
     return baseWidth
   }
 
+  // Calculate wall perpendicular direction for arrows
+  const wallDx = endPoint.position.x - startPoint.position.x
+  const wallDy = endPoint.position.y - startPoint.position.y
+  const wallLength = Math.sqrt(wallDx * wallDx + wallDy * wallDy)
+  
+  // Get perpendicular vector (normal to wall)
+  const normalX = wallLength > 0 ? -wallDy / wallLength : 0
+  const normalY = wallLength > 0 ? wallDx / wallLength : 0
+  
+  // Calculate wall midpoint
+  const midX = (startPoint.position.x + endPoint.position.x) / 2
+  const midY = (startPoint.position.y + endPoint.position.y) / 2
+  
+  // Arrow positions offset from wall center
+  const arrowOffset = 30
+  const arrow1X = midX + normalX * arrowOffset
+  const arrow1Y = midY + normalY * arrowOffset
+  const arrow2X = midX - normalX * arrowOffset
+  const arrow2Y = midY - normalY * arrowOffset
+
   return (
-    <Line
-      points={[startPoint.position.x, startPoint.position.y, endPoint.position.x, endPoint.position.y]}
-      stroke={getWallColor()}
-      strokeWidth={getStrokeWidth()}
-      lineCap='round'
-      onClick={activeTool === 'wall' ? undefined : handleClick}
-      onTap={activeTool === 'wall' ? undefined : handleClick}
-      onMouseDown={activeTool === 'wall' ? undefined : handleMouseDown}
-      listening={activeTool !== 'wall'}
-      draggable={false}
-    />
+    <Group>
+      <Line
+        points={[startPoint.position.x, startPoint.position.y, endPoint.position.x, endPoint.position.y]}
+        stroke={getWallColor()}
+        strokeWidth={getStrokeWidth()}
+        lineCap='round'
+        onClick={activeTool === 'wall' ? undefined : handleClick}
+        onTap={activeTool === 'wall' ? undefined : handleClick}
+        onMouseDown={activeTool === 'wall' ? undefined : handleMouseDown}
+        listening={activeTool !== 'wall'}
+        draggable={false}
+      />
+      
+      {/* Direction arrows when selected */}
+      {isSelected && wallLength > 0 && (
+        <>
+          <Arrow
+            points={[arrow1X, arrow1Y, arrow1X + normalX * 20, arrow1Y + normalY * 20]}
+            stroke='#007acc'
+            fill='#007acc'
+            strokeWidth={2}
+            pointerLength={8}
+            pointerWidth={8}
+            listening={false}
+          />
+          <Arrow
+            points={[arrow2X, arrow2Y, arrow2X - normalX * 20, arrow2Y - normalY * 20]}
+            stroke='#007acc'
+            fill='#007acc'
+            strokeWidth={2}
+            pointerLength={8}
+            pointerWidth={8}
+            listening={false}
+          />
+        </>
+      )}
+    </Group>
   )
 }

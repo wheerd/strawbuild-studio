@@ -433,17 +433,35 @@ export function moveWall (
   const endPoint = state.points.get(wall.endPointId)
   if (startPoint == null || endPoint == null) return state
 
+  // Calculate wall direction vector
+  const wallDx = endPoint.position.x - startPoint.position.x
+  const wallDy = endPoint.position.y - startPoint.position.y
+  const wallLength = Math.sqrt(wallDx * wallDx + wallDy * wallDy)
+  
+  if (wallLength === 0) return state // Degenerate wall
+
+  // Calculate perpendicular (normal) vector to the wall
+  const normalX = -wallDy / wallLength
+  const normalY = wallDx / wallLength
+
+  // Project the drag delta onto the perpendicular direction
+  const projectedDistance = deltaX * normalX + deltaY * normalY
+
+  // Apply movement only in the perpendicular direction
+  const moveX = projectedDistance * normalX
+  const moveY = projectedDistance * normalY
+
   const updatedState = { ...state }
   updatedState.points = new Map(state.points)
 
   const newStartPosition: Point2D = {
-    x: createAbsoluteOffset(startPoint.position.x + deltaX),
-    y: createAbsoluteOffset(startPoint.position.y + deltaY)
+    x: createAbsoluteOffset(startPoint.position.x + moveX),
+    y: createAbsoluteOffset(startPoint.position.y + moveY)
   }
 
   const newEndPosition: Point2D = {
-    x: createAbsoluteOffset(endPoint.position.x + deltaX),
-    y: createAbsoluteOffset(endPoint.position.y + deltaY)
+    x: createAbsoluteOffset(endPoint.position.x + moveX),
+    y: createAbsoluteOffset(endPoint.position.y + moveY)
   }
 
   const updatedStartPoint = { ...startPoint, position: newStartPosition }
