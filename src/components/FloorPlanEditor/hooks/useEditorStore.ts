@@ -77,7 +77,7 @@ function createInitialState (defaultFloorId: FloorId): EditorState {
     showSnapPreview: false,
     showGrid: true,
     gridSize: 500, // 500mm (0.5m) grid for real-world scale
-    snapToGrid: true,
+    snapToGrid: false, // Disabled in favor of 90-degree angle snapping
     showRoomLabels: true,
     activeFloorId: defaultFloorId,
     selectedEntityId: undefined,

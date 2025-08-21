@@ -3,8 +3,8 @@ import { Stage } from 'react-konva'
 import type Konva from 'konva'
 import { useEditorStore, useViewport, useActiveTool, useIsDrawing, useActiveFloorId, useWallDrawingStart } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 import { useModelStore } from '@/model/store'
-import { findNearestPoint } from '@/model/operations'
-import { createPoint2D, createLength, type Point2D } from '@/types/geometry'
+import { findNearestPoint, findSnapPoint as findModelSnapPoint } from '@/model/operations'
+import { createPoint2D, createLength, distance, type Point2D } from '@/types/geometry'
 import { GridLayer } from './GridLayer'
 import { WallLayer } from './WallLayer'
 import { WallPreviewLayer } from './WallPreviewLayer'
@@ -59,11 +59,17 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
     )
   }, [viewport])
 
-  // Helper function to find snap point
-  const findSnapPoint = useCallback((point: Point2D): Point2D => {
-    const nearest = findNearestPoint(modelState, point, createLength(snapDistance / viewport.zoom))
-    return (nearest != null) ? nearest.position : point
-  }, [modelState, snapDistance, viewport.zoom])
+  // Helper function to find snap point with two-step snapping
+  const findSnapPoint = useCallback((point: Point2D, fromPoint?: Point2D): Point2D => {
+    // Use the new two-step snapping system
+    const snapResult = findModelSnapPoint(modelState, point, fromPoint ?? point, activeFloorId, fromPoint == null)
+
+    if (snapResult != null) {
+      return snapResult.position
+    }
+
+    return point
+  }, [modelState, activeFloorId])
 
   // Helper function to create or find connection point at position
   const getOrCreatePoint = useCallback((position: Point2D) => {
@@ -123,16 +129,24 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
         setIsDrawing(true)
         setSnapPreview(snapCoords)
       } else if (wallDrawingStart != null) {
-        // Finish drawing wall - use existing connection points where possible
-        const snapCoords = findSnapPoint(stageCoords)
-        const startPoint = getOrCreatePoint(wallDrawingStart)
-        const endPoint = getOrCreatePoint(snapCoords)
+        // Finish drawing wall with architectural snapping
+        const snapCoords = findSnapPoint(stageCoords, wallDrawingStart)
 
-        addWall(startPoint.id, endPoint.id, activeFloorId)
+        // Check minimum wall length to prevent degenerate walls
+        const wallLength = distance(wallDrawingStart, snapCoords)
+        const minLength = createLength(50) // 50mm minimum length
 
-        setWallDrawingStart(undefined)
-        setIsDrawing(false)
-        setSnapPreview(undefined)
+        if (wallLength >= minLength) {
+          const startPoint = getOrCreatePoint(wallDrawingStart)
+          const endPoint = getOrCreatePoint(snapCoords)
+
+          addWall(startPoint.id, endPoint.id, activeFloorId)
+
+          setWallDrawingStart(undefined)
+          setIsDrawing(false)
+          setSnapPreview(undefined)
+        }
+        // If wall is too short, just ignore the click (don't create wall)
       }
       return
     }
@@ -192,10 +206,10 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
       return
     }
 
-    // Handle wall tool preview
+    // Handle wall tool preview with architectural snapping
     if (activeTool === 'wall') {
       const stageCoords = getStageCoordinates(pointer)
-      const snapCoords = findSnapPoint(stageCoords)
+      const snapCoords = findSnapPoint(stageCoords, wallDrawingStart ?? undefined)
       setSnapPreview(snapCoords)
     }
   }, [dragStart, setViewport, activeTool, getStageCoordinates, findSnapPoint, setSnapPreview,

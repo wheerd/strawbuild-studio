@@ -409,6 +409,257 @@ export function findNearestPoint (
   return nearest
 }
 
+// Snap configuration constants
+export const SNAP_CONFIG = {
+  pointSnapDistance: createLength(200), // Distance for point-to-point snapping
+  lineSnapDistance: createLength(100), // Distance for snapping to alignment lines
+  minWallLength: createLength(50) // Minimum wall length to prevent degenerate walls
+}
+
+export interface SnapPosition {
+  position: Point2D
+  type: 'existing_point'
+  priority: number // Lower number = higher priority
+}
+
+export interface SnapLine {
+  type: 'horizontal' | 'vertical' | 'extension' | 'perpendicular'
+  position: Point2D // Point on the line (for horizontal/vertical: the reference point)
+  direction: Point2D // Direction vector for the line
+  priority: number
+}
+
+export interface SnapResult {
+  position: Point2D
+  type: 'point' | 'line'
+  snapType: SnapPosition['type'] | SnapLine['type']
+  line?: SnapLine // Present if type is 'line'
+}
+
+// Step 1: Find existing points for direct point snapping
+export function findPointSnapPositions (
+  state: ModelState,
+  target: Point2D,
+  fromPoint: Point2D,
+  activeFloorId: FloorId
+): SnapPosition[] {
+  const snapPositions: SnapPosition[] = []
+  const activeFloor = state.floors.get(activeFloorId)
+  if (activeFloor == null) return snapPositions
+
+  // Only check points on the active floor
+  for (const pointId of activeFloor.pointIds) {
+    const point = state.points.get(pointId)
+    if (point == null) continue
+
+    // Skip if this is the start point (prevent snapping end to start)
+    const fromDistSq = (point.position.x - fromPoint.x) ** 2 + (point.position.y - fromPoint.y) ** 2
+    if (fromDistSq < 100) continue // 10mm squared
+
+    // Check if target is close enough to this point (using squared distances)
+    const targetDistSq = (target.x - point.position.x) ** 2 + (target.y - point.position.y) ** 2
+    const snapDistSq = Number(SNAP_CONFIG.pointSnapDistance) ** 2
+
+    if (targetDistSq <= snapDistSq) {
+      snapPositions.push({
+        position: point.position,
+        type: 'existing_point',
+        priority: 1
+      })
+    }
+  }
+
+  return snapPositions
+}
+
+// Step 2: Generate snap lines for architectural alignment
+export function generateSnapLines (
+  state: ModelState,
+  fromPoint: Point2D,
+  activeFloorId: FloorId,
+  forStartPoint: boolean = false
+): SnapLine[] {
+  const snapLines: SnapLine[] = []
+  const activeFloor = state.floors.get(activeFloorId)
+  if (activeFloor == null) return snapLines
+
+  // 1. Horizontal lines through existing points
+  // 2. Vertical lines through existing points
+  for (const pointId of activeFloor.pointIds) {
+    const point = state.points.get(pointId)
+    if (point == null) continue
+
+    // Skip the current start point unless we're generating lines for start point snapping
+    const fromDistSq = (point.position.x - fromPoint.x) ** 2 + (point.position.y - fromPoint.y) ** 2
+    if (!forStartPoint && fromDistSq < 100) continue // 10mm squared
+
+    // Horizontal line through this point
+    snapLines.push({
+      type: 'horizontal',
+      position: point.position,
+      direction: createPoint2D(1, 0), // Horizontal direction
+      priority: 3
+    })
+
+    // Vertical line through this point
+    snapLines.push({
+      type: 'vertical',
+      position: point.position,
+      direction: createPoint2D(0, 1), // Vertical direction
+      priority: 3
+    })
+  }
+
+  // 3. Extension lines from walls connected to the start point
+  // 4. Perpendicular lines to walls connected to the start point
+  if (!forStartPoint) {
+    // Find walls that have an endpoint at the fromPoint
+    for (const wallId of activeFloor.wallIds) {
+      const wall = state.walls.get(wallId)
+      if (wall == null) continue
+
+      const startPoint = state.points.get(wall.startPointId)
+      const endPoint = state.points.get(wall.endPointId)
+
+      if (startPoint == null || endPoint == null) continue
+
+      // Check if either end of the wall is at the fromPoint
+      const startDistSq = (startPoint.position.x - fromPoint.x) ** 2 + (startPoint.position.y - fromPoint.y) ** 2
+      const endDistSq = (endPoint.position.x - fromPoint.x) ** 2 + (endPoint.position.y - fromPoint.y) ** 2
+
+      // Only generate lines if fromPoint is at one of the wall's endpoints
+      if (startDistSq < 100 || endDistSq < 100) { // 10mm squared tolerance
+        // Calculate wall direction vector
+        const wallDx = endPoint.position.x - startPoint.position.x
+        const wallDy = endPoint.position.y - startPoint.position.y
+        const wallLengthSq = wallDx * wallDx + wallDy * wallDy
+
+        if (wallLengthSq === 0) continue
+
+        const wallLength = Math.sqrt(wallLengthSq)
+        const wallDirection = createPoint2D(wallDx / wallLength, wallDy / wallLength)
+        const wallPerpendicular = createPoint2D(-wallDy / wallLength, wallDx / wallLength)
+
+        // Extension line (in line with wall) through start point
+        snapLines.push({
+          type: 'extension',
+          position: fromPoint,
+          direction: wallDirection,
+          priority: 2
+        })
+
+        // Perpendicular line through start point
+        snapLines.push({
+          type: 'perpendicular',
+          position: fromPoint,
+          direction: wallPerpendicular,
+          priority: 2
+        })
+      }
+    }
+  }
+
+  return snapLines
+}
+
+// Calculate squared distance from point to line (for performance)
+function distanceToLineSquared (point: Point2D, linePosition: Point2D, lineDirection: Point2D): number {
+  // Vector from line position to point
+  const toPointX = point.x - linePosition.x
+  const toPointY = point.y - linePosition.y
+
+  // Project toPoint onto line direction to get the closest point on line
+  const projection = toPointX * lineDirection.x + toPointY * lineDirection.y
+  const closestOnLineX = linePosition.x + projection * lineDirection.x
+  const closestOnLineY = linePosition.y + projection * lineDirection.y
+
+  // Squared distance from point to closest point on line
+  return (point.x - closestOnLineX) ** 2 + (point.y - closestOnLineY) ** 2
+}
+
+// Project point onto line
+function projectOntoLine (point: Point2D, linePosition: Point2D, lineDirection: Point2D): Point2D {
+  // Vector from line position to point
+  const toPoint = createPoint2D(point.x - linePosition.x, point.y - linePosition.y)
+
+  // Project toPoint onto line direction
+  const projection = toPoint.x * lineDirection.x + toPoint.y * lineDirection.y
+
+  return createPoint2D(
+    linePosition.x + projection * lineDirection.x,
+    linePosition.y + projection * lineDirection.y
+  )
+}
+
+// Step 3: Find line snaps for target position
+export function findLineSnapPosition (
+  target: Point2D,
+  fromPoint: Point2D,
+  snapLines: SnapLine[]
+): SnapResult | null {
+  let bestSnap: SnapResult | null = null
+  let bestDistanceSquared = Number(SNAP_CONFIG.lineSnapDistance) ** 2
+
+  for (const line of snapLines) {
+    const distToLineSquared = distanceToLineSquared(target, line.position, line.direction)
+
+    if (distToLineSquared <= bestDistanceSquared) {
+      const projectedPosition = projectOntoLine(target, line.position, line.direction)
+
+      // Check minimum wall length using squared distance
+      const wallLengthSquared = (projectedPosition.x - fromPoint.x) ** 2 + (projectedPosition.y - fromPoint.y) ** 2
+      const minLengthSquared = Number(SNAP_CONFIG.minWallLength) ** 2
+
+      if (wallLengthSquared >= minLengthSquared) {
+        bestDistanceSquared = distToLineSquared
+        bestSnap = {
+          position: projectedPosition,
+          type: 'line',
+          snapType: line.type,
+          line
+        }
+      }
+    }
+  }
+
+  return bestSnap
+}
+
+// Main snapping function that combines both steps
+export function findSnapPoint (
+  state: ModelState,
+  target: Point2D,
+  fromPoint: Point2D,
+  activeFloorId: FloorId,
+  forStartPoint: boolean = false
+): SnapResult | null {
+  // Step 1: Check for point snapping (highest priority)
+  const pointSnaps = findPointSnapPositions(state, target, fromPoint, activeFloorId)
+  if (pointSnaps.length > 0) {
+    // Return the closest point snap using squared distances
+    let bestPoint = pointSnaps[0]
+    let bestDistanceSquared = (target.x - bestPoint.position.x) ** 2 + (target.y - bestPoint.position.y) ** 2
+
+    for (const snap of pointSnaps) {
+      const distSquared = (target.x - snap.position.x) ** 2 + (target.y - snap.position.y) ** 2
+      if (distSquared < bestDistanceSquared) {
+        bestDistanceSquared = distSquared
+        bestPoint = snap
+      }
+    }
+
+    return {
+      position: bestPoint.position,
+      type: 'point',
+      snapType: bestPoint.type
+    }
+  }
+
+  // Step 2: Check for line snapping
+  const snapLines = generateSnapLines(state, fromPoint, activeFloorId, forStartPoint)
+  return findLineSnapPosition(target, fromPoint, snapLines)
+}
+
 export function movePoint (
   state: ModelState,
   pointId: PointId,
