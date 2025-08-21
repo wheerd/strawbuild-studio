@@ -8,8 +8,9 @@ interface RoomShapeProps {
 }
 
 function getRoomPolygonPoints (room: Room, walls: ReturnType<typeof useWalls>, pointMap: ReturnType<typeof usePoints>): number[] {
-  const points: number[] = []
+  const uniquePoints = new Map<string, { x: number, y: number }>()
 
+  // Collect all unique points from the room's walls
   for (const wallId of room.wallIds) {
     const wall = walls.get(wallId)
     if (wall == null) continue
@@ -19,10 +20,15 @@ function getRoomPolygonPoints (room: Room, walls: ReturnType<typeof useWalls>, p
 
     if (startPoint == null || endPoint == null) continue
 
-    if (points.length === 0) {
-      points.push(startPoint.position.x, startPoint.position.y)
-    }
-    points.push(endPoint.position.x, endPoint.position.y)
+    // Add points with their IDs as keys to ensure uniqueness
+    uniquePoints.set(wall.startPointId, startPoint.position)
+    uniquePoints.set(wall.endPointId, endPoint.position)
+  }
+
+  // Convert to flat array of coordinates
+  const points: number[] = []
+  for (const point of uniquePoints.values()) {
+    points.push(point.x, point.y)
   }
 
   return points
@@ -96,8 +102,10 @@ export function RoomShape ({ room }: RoomShapeProps): React.JSX.Element | null {
           fill='#333333'
           align='center'
           verticalAlign='middle'
-          offsetX={room.name.length * 20} // Adjust offset for larger font
-          offsetY={40} // Adjust vertical offset for larger font
+          width={room.name.length * 50} // Approximate width for proper centering
+          height={100} // Height for proper vertical centering
+          offsetX={(room.name.length * 50) / 2} // Center horizontally
+          offsetY={50} // Center vertically
           // Add shadow for better readability
           shadowColor='white'
           shadowBlur={10}

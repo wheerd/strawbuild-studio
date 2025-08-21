@@ -87,12 +87,6 @@ export function WallShape ({ wall }: WallShapeProps): React.JSX.Element | null {
     return '#333333' // Default gray
   }
 
-  // Determine stroke width based on state - show actual thickness
-  const getStrokeWidth = (): number => {
-    const baseWidth = wall.thickness // Use actual thickness in mm
-    if (isSelected || isMainWallOfSelectedCorner) return baseWidth + 20 // Add 20mm highlight
-    return baseWidth
-  }
 
   // Calculate wall perpendicular direction for arrows
   const wallDx = endPoint.position.x - startPoint.position.x
@@ -119,7 +113,7 @@ export function WallShape ({ wall }: WallShapeProps): React.JSX.Element | null {
       <Line
         points={[startPoint.position.x, startPoint.position.y, endPoint.position.x, endPoint.position.y]}
         stroke={getWallColor()}
-        strokeWidth={getStrokeWidth()}
+        strokeWidth={wall.thickness}
         lineCap='round'
         onClick={activeTool === 'wall' ? undefined : handleClick}
         onTap={activeTool === 'wall' ? undefined : handleClick}
