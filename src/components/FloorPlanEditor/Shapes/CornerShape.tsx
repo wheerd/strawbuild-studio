@@ -10,31 +10,31 @@ interface CornerShapeProps {
   corner: Corner
 }
 
-// Define corner type symbols and colors
+// Define corner type symbols and colors - much larger for real-world scale
 const cornerTypeConfig = {
   corner: {
     symbol: '⌐', // Corner symbol
     color: '#007acc',
-    symbolSize: 16,
-    bgRadius: 12
+    symbolSize: 120, // Much larger
+    bgRadius: 80    // Much larger background
   },
   straight: {
     symbol: '━', // Straight line symbol
     color: '#666666',
-    symbolSize: 18,
-    bgRadius: 12
+    symbolSize: 140, // Much larger
+    bgRadius: 80     // Much larger background
   },
   tee: {
     symbol: '┬', // T-junction symbol
     color: '#ff6b35',
-    symbolSize: 16,
-    bgRadius: 12
+    symbolSize: 120, // Much larger
+    bgRadius: 80     // Much larger background
   },
   cross: {
     symbol: '┼', // Cross/intersection symbol
     color: '#ff0000',
-    symbolSize: 16,
-    bgRadius: 12
+    symbolSize: 120, // Much larger
+    bgRadius: 80     // Much larger background
   }
 }
 
@@ -72,7 +72,7 @@ export function CornerShape ({ corner }: CornerShapeProps): React.JSX.Element | 
         radius={config.bgRadius}
         fill='white'
         stroke={config.color}
-        strokeWidth={isSelected ? 3 : 2}
+        strokeWidth={isSelected ? 15 : 8} // Much thicker stroke
         opacity={0.95}
         // Allow clicking only on the background circle
         listening
@@ -84,30 +84,30 @@ export function CornerShape ({ corner }: CornerShapeProps): React.JSX.Element | 
       {isSelected && corner.type !== 'straight' && (
         <Text
           text={`${config.symbol} ${angleInDegrees}°`}
-          fontSize={12}
+          fontSize={60} // Much larger font
           fill={config.color}
           fontFamily='Arial'
           fontStyle='bold'
           align='center'
           x={0}
-          y={-30}
+          y={-150} // Positioned further away
           offsetX={0}
           offsetY={0}
           // Strong background for readability
           shadowColor='white'
-          shadowBlur={4}
+          shadowBlur={20} // Larger shadow
           shadowOpacity={1}
           listening={false}
         />
       )}
 
-      {/* Selection indicator - larger */}
+      {/* Selection indicator - much larger */}
       {isSelected && (
         <Circle
-          radius={18}
+          radius={120} // Much larger selection ring
           stroke='#007acc'
-          strokeWidth={3}
-          dash={[4, 4]}
+          strokeWidth={15} // Thicker selection stroke
+          dash={[20, 20]} // Larger dash pattern
           listening={false}
         />
       )}

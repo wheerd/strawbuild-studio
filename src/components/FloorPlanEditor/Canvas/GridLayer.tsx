@@ -35,8 +35,8 @@ export function GridLayer ({ width = 800, height = 600, viewport }: GridLayerPro
       <Line
         key={`v-${x}`}
         points={[x, startY, x, endY]}
-        stroke='#e0e0e0'
-        strokeWidth={0.5}
+        stroke='#cccccc' // Darker for better visibility
+        strokeWidth={3}   // Much thicker for visibility at real-world scale
         listening={false}
       />
     )
@@ -47,8 +47,8 @@ export function GridLayer ({ width = 800, height = 600, viewport }: GridLayerPro
       <Line
         key={`h-${y}`}
         points={[startX, y, endX, y]}
-        stroke='#e0e0e0'
-        strokeWidth={0.5}
+        stroke='#cccccc' // Darker for better visibility  
+        strokeWidth={3}   // Much thicker for visibility at real-world scale
         listening={false}
       />
     )

@@ -68,10 +68,10 @@ export function PointShape ({ point }: PointShapeProps): React.JSX.Element {
     <Circle
       x={point.position.x}
       y={point.position.y}
-      radius={6}
+      radius={50} // Much larger radius for visibility at real-world scale
       fill={isSelected ? '#007acc' : isDragging ? '#ff6b35' : '#666666'}
       stroke='#333333'
-      strokeWidth={1}
+      strokeWidth={10} // Thicker stroke for visibility
       onClick={activeTool === 'wall' ? undefined : handleClick}
       onTap={activeTool === 'wall' ? undefined : handleClick}
       onMouseDown={activeTool === 'wall' ? undefined : handleMouseDown}

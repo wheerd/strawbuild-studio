@@ -79,7 +79,7 @@ export function RoomShape ({ room }: RoomShapeProps): React.JSX.Element | null {
         points={points}
         fill={isSelected ? 'rgba(0, 122, 204, 0.2)' : 'rgba(200, 200, 200, 0.1)'}
         stroke={isSelected ? '#007acc' : '#cccccc'}
-        strokeWidth={1}
+        strokeWidth={8} // Thicker stroke for visibility
         closed
         onClick={activeTool === 'wall' ? undefined : handleClick}
         onTap={activeTool === 'wall' ? undefined : handleClick}
@@ -90,13 +90,18 @@ export function RoomShape ({ room }: RoomShapeProps): React.JSX.Element | null {
           x={center.x}
           y={center.y}
           text={room.name}
-          fontSize={14}
+          fontSize={80} // Much larger font for real-world scale
           fontFamily='Arial'
+          fontStyle='bold' // Make text bold for better visibility
           fill='#333333'
           align='center'
           verticalAlign='middle'
-          offsetX={room.name.length * 4}
-          offsetY={7}
+          offsetX={room.name.length * 20} // Adjust offset for larger font
+          offsetY={40} // Adjust vertical offset for larger font
+          // Add shadow for better readability
+          shadowColor='white'
+          shadowBlur={10}
+          shadowOpacity={0.8}
           listening={false}
         />
       )}

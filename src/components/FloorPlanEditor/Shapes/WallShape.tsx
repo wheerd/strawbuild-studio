@@ -87,10 +87,10 @@ export function WallShape ({ wall }: WallShapeProps): React.JSX.Element | null {
     return '#333333' // Default gray
   }
 
-  // Determine stroke width based on state
+  // Determine stroke width based on state - show actual thickness
   const getStrokeWidth = (): number => {
-    const baseWidth = wall.thickness / 10
-    if (isSelected || isMainWallOfSelectedCorner) return baseWidth + 2
+    const baseWidth = wall.thickness // Use actual thickness in mm
+    if (isSelected || isMainWallOfSelectedCorner) return baseWidth + 20 // Add 20mm highlight
     return baseWidth
   }
 
@@ -107,8 +107,8 @@ export function WallShape ({ wall }: WallShapeProps): React.JSX.Element | null {
   const midX = (startPoint.position.x + endPoint.position.x) / 2
   const midY = (startPoint.position.y + endPoint.position.y) / 2
 
-  // Arrow positions offset from wall center
-  const arrowOffset = 30
+  // Arrow positions offset from wall center - much larger for visibility
+  const arrowOffset = 200 // Much larger offset
   const arrow1X = midX + normalX * arrowOffset
   const arrow1Y = midY + normalY * arrowOffset
   const arrow2X = midX - normalX * arrowOffset
@@ -128,25 +128,25 @@ export function WallShape ({ wall }: WallShapeProps): React.JSX.Element | null {
         draggable={false}
       />
 
-      {/* Direction arrows when selected */}
+      {/* Direction arrows when selected - much larger for visibility */}
       {isSelected && wallLength > 0 && (
         <>
           <Arrow
-            points={[arrow1X, arrow1Y, arrow1X + normalX * 20, arrow1Y + normalY * 20]}
+            points={[arrow1X, arrow1Y, arrow1X + normalX * 150, arrow1Y + normalY * 150]} // Much longer arrows
             stroke='#007acc'
             fill='#007acc'
-            strokeWidth={2}
-            pointerLength={8}
-            pointerWidth={8}
+            strokeWidth={15} // Much thicker stroke
+            pointerLength={60} // Much larger pointer
+            pointerWidth={60}  // Much wider pointer
             listening={false}
           />
           <Arrow
-            points={[arrow2X, arrow2Y, arrow2X - normalX * 20, arrow2Y - normalY * 20]}
+            points={[arrow2X, arrow2Y, arrow2X - normalX * 150, arrow2Y - normalY * 150]} // Much longer arrows
             stroke='#007acc'
             fill='#007acc'
-            strokeWidth={2}
-            pointerLength={8}
-            pointerWidth={8}
+            strokeWidth={15} // Much thicker stroke
+            pointerLength={60} // Much larger pointer
+            pointerWidth={60}  // Much wider pointer
             listening={false}
           />
         </>

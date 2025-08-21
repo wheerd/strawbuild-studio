@@ -73,19 +73,19 @@ function createInitialState (defaultFloorId: FloorId): EditorState {
       dragType: 'selection',
       startPos: createPoint2D(0, 0)
     },
-    snapDistance: 20,
+    snapDistance: 100, // 100mm snap distance for real-world scale
     showSnapPreview: false,
     showGrid: true,
-    gridSize: 100,
+    gridSize: 500, // 500mm (0.5m) grid for real-world scale
     snapToGrid: true,
     showRoomLabels: true,
     activeFloorId: defaultFloorId,
     selectedEntityId: undefined,
     viewMode: 'plan',
     viewport: {
-      zoom: 1,
-      panX: 0,
-      panY: 0,
+      zoom: 0.15, // Better default zoom for real-world scale (3m room ≈ 450px)
+      panX: 100,  // Small offset from edge
+      panY: 100,  // Small offset from edge  
       stageWidth: 800,
       stageHeight: 600
     }

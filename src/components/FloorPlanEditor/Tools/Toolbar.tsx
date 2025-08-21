@@ -28,15 +28,17 @@ export function Toolbar (): React.JSX.Element {
   ]
 
   const createSampleBuilding = useCallback(() => {
-    const point1 = addPoint(createPoint2D(100, 100), activeFloorId)
-    const point2 = addPoint(createPoint2D(400, 100), activeFloorId)
-    const point3 = addPoint(createPoint2D(400, 300), activeFloorId)
-    const point4 = addPoint(createPoint2D(100, 300), activeFloorId)
+    // Create a 3m x 4m room (3000mm x 4000mm) with realistic dimensions
+    const point1 = addPoint(createPoint2D(0, 0), activeFloorId)      // Bottom-left
+    const point2 = addPoint(createPoint2D(4000, 0), activeFloorId)   // Bottom-right (4m wide)
+    const point3 = addPoint(createPoint2D(4000, 3000), activeFloorId) // Top-right (3m deep)
+    const point4 = addPoint(createPoint2D(0, 3000), activeFloorId)   // Top-left
 
-    const wall1 = addWall(point1.id, point2.id, activeFloorId, createLength(200), createLength(3000))
-    const wall2 = addWall(point2.id, point3.id, activeFloorId, createLength(200), createLength(3000))
-    const wall3 = addWall(point3.id, point4.id, activeFloorId, createLength(200), createLength(3000))
-    const wall4 = addWall(point4.id, point1.id, activeFloorId, createLength(200), createLength(3000))
+    // Create walls with realistic thickness (200mm = 20cm) and height (2700mm = 2.7m)
+    const wall1 = addWall(point1.id, point2.id, activeFloorId, createLength(200), createLength(2700))
+    const wall2 = addWall(point2.id, point3.id, activeFloorId, createLength(200), createLength(2700))
+    const wall3 = addWall(point3.id, point4.id, activeFloorId, createLength(200), createLength(2700))
+    const wall4 = addWall(point4.id, point1.id, activeFloorId, createLength(200), createLength(2700))
 
     addRoom('Living Room', activeFloorId, [wall1.id, wall2.id, wall3.id, wall4.id])
   }, [addPoint, addWall, addRoom, activeFloorId])
@@ -118,24 +120,24 @@ export function Toolbar (): React.JSX.Element {
         </button>
         <button
           className='tool-button'
-          onClick={() => setGridSize(100)}
-          title='Small Grid'
+          onClick={() => setGridSize(250)}
+          title='Fine Grid - 250mm'
         >
-          25mm
+          250mm
         </button>
         <button
           className='tool-button'
           onClick={() => setGridSize(500)}
-          title='Medium Grid'
+          title='Medium Grid - 500mm'
         >
-          50mm
+          500mm
         </button>
         <button
           className='tool-button'
           onClick={() => setGridSize(1000)}
-          title='Large Grid'
+          title='Large Grid - 1m'
         >
-          100mm
+          1m
         </button>
       </div>
 
