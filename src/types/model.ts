@@ -60,6 +60,7 @@ export interface Wall {
   outsideDirection?: 'left' | 'right' // Relative to the wall's start point
 
   readonly shape: Polygon2D // Computed
+  readonly length: Length // Computed
 }
 
 // Opening in a wall (door, window, etc.)

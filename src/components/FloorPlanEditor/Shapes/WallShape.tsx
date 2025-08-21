@@ -1,4 +1,4 @@
-import { Line, Group, Arrow } from 'react-konva'
+import { Line, Group, Arrow, Text } from 'react-konva'
 import type Konva from 'konva'
 import { useCallback, useRef } from 'react'
 import type { Wall } from '@/types/model'
@@ -87,7 +87,6 @@ export function WallShape ({ wall }: WallShapeProps): React.JSX.Element | null {
     return '#333333' // Default gray
   }
 
-
   // Calculate wall perpendicular direction for arrows
   const wallDx = endPoint.position.x - startPoint.position.x
   const wallDy = endPoint.position.y - startPoint.position.y
@@ -100,6 +99,17 @@ export function WallShape ({ wall }: WallShapeProps): React.JSX.Element | null {
   // Calculate wall midpoint
   const midX = (startPoint.position.x + endPoint.position.x) / 2
   const midY = (startPoint.position.y + endPoint.position.y) / 2
+
+  // Calculate wall angle for text rotation, keeping text as horizontal as possible
+  const wallAngle = wallLength > 0 ? Math.atan2(wallDy, wallDx) : 0
+  let wallAngleDegrees = (wallAngle * 180) / Math.PI
+
+  // Normalize angle to keep text readable (between -90 and +90 degrees)
+  if (wallAngleDegrees > 90) {
+    wallAngleDegrees -= 180
+  } else if (wallAngleDegrees < -90) {
+    wallAngleDegrees += 180
+  }
 
   // Arrow positions offset from wall center - much larger for visibility
   const arrowOffset = 200 // Much larger offset
@@ -131,7 +141,7 @@ export function WallShape ({ wall }: WallShapeProps): React.JSX.Element | null {
             fill='#007acc'
             strokeWidth={15} // Much thicker stroke
             pointerLength={60} // Much larger pointer
-            pointerWidth={60}  // Much wider pointer
+            pointerWidth={60} // Much wider pointer
             listening={false}
           />
           <Arrow
@@ -140,7 +150,27 @@ export function WallShape ({ wall }: WallShapeProps): React.JSX.Element | null {
             fill='#007acc'
             strokeWidth={15} // Much thicker stroke
             pointerLength={60} // Much larger pointer
-            pointerWidth={60}  // Much wider pointer
+            pointerWidth={60} // Much wider pointer
+            listening={false}
+          />
+          {/* Wall length label */}
+          <Text
+            x={midX}
+            y={midY}
+            text={`${(Number(wall.length) / 1000).toFixed(2)}m`} // Use model's computed length in meters
+            fontSize={60}
+            fontFamily='Arial'
+            fontStyle='bold'
+            fill='white'
+            align='center'
+            verticalAlign='middle'
+            width={200}
+            offsetX={100} // Center horizontally
+            offsetY={30} // Center vertically
+            rotation={wallAngleDegrees} // Rotate text to align with wall
+            shadowColor='black'
+            shadowBlur={8}
+            shadowOpacity={0.6}
             listening={false}
           />
         </>

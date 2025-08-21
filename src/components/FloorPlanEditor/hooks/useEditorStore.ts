@@ -84,8 +84,8 @@ function createInitialState (defaultFloorId: FloorId): EditorState {
     viewMode: 'plan',
     viewport: {
       zoom: 0.15, // Better default zoom for real-world scale (3m room ≈ 450px)
-      panX: 100,  // Small offset from edge
-      panY: 100,  // Small offset from edge  
+      panX: 100, // Small offset from edge
+      panY: 100, // Small offset from edge
       stageWidth: 800,
       stageHeight: 600
     }

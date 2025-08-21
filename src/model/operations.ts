@@ -114,7 +114,8 @@ export function createWall (
     thickness,
     type,
     outsideDirection,
-    shape
+    shape,
+    length: createLength(0) // Will be computed when wall is added to state
   }
 }
 
@@ -249,7 +250,13 @@ export function addWallToFloor (state: ModelState, wall: Wall, floorId: FloorId)
   updatedState.walls = new Map(state.walls)
   updatedState.floors = new Map(state.floors)
 
-  updatedState.walls.set(wall.id, wall)
+  // Compute the actual wall length before adding it
+  const wallWithLength = {
+    ...wall,
+    length: getWallLength(wall, updatedState)
+  }
+
+  updatedState.walls.set(wall.id, wallWithLength)
 
   const updatedFloor = {
     ...floor,
@@ -412,9 +419,21 @@ export function movePoint (
 
   const updatedState = { ...state }
   updatedState.points = new Map(state.points)
+  updatedState.walls = new Map(state.walls)
 
   const updatedPoint = { ...point, position: newPosition }
   updatedState.points.set(pointId, updatedPoint)
+
+  // Find and update all walls connected to this point
+  for (const [wallId, wall] of state.walls) {
+    if (wall.startPointId === pointId || wall.endPointId === pointId) {
+      const updatedWall = {
+        ...wall,
+        length: getWallLength(wall, updatedState)
+      }
+      updatedState.walls.set(wallId, updatedWall)
+    }
+  }
 
   updatedState.updatedAt = new Date()
   return updatedState
@@ -453,6 +472,7 @@ export function moveWall (
 
   const updatedState = { ...state }
   updatedState.points = new Map(state.points)
+  updatedState.walls = new Map(state.walls)
 
   const newStartPosition: Point2D = createPoint2D(
     startPoint.position.x + moveX,
@@ -469,6 +489,23 @@ export function moveWall (
 
   updatedState.points.set(wall.startPointId, updatedStartPoint)
   updatedState.points.set(wall.endPointId, updatedEndPoint)
+
+  // Moving a wall perpendicular doesn't change its own length,
+  // but it affects other walls connected to its endpoints.
+  // Update lengths of all OTHER walls connected to the moved wall's endpoints
+  for (const [otherWallId, otherWall] of state.walls) {
+    if (otherWallId !== wallId &&
+        (otherWall.startPointId === wall.startPointId ||
+         otherWall.endPointId === wall.startPointId ||
+         otherWall.startPointId === wall.endPointId ||
+         otherWall.endPointId === wall.endPointId)) {
+      const updatedOtherWall = {
+        ...otherWall,
+        length: getWallLength(otherWall, updatedState)
+      }
+      updatedState.walls.set(otherWallId, updatedOtherWall)
+    }
+  }
 
   updatedState.updatedAt = new Date()
   return updatedState

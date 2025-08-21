@@ -16,25 +16,25 @@ const cornerTypeConfig = {
     symbol: '⌐', // Corner symbol
     color: '#007acc',
     symbolSize: 120, // Much larger
-    bgRadius: 80    // Much larger background
+    bgRadius: 80 // Much larger background
   },
   straight: {
     symbol: '━', // Straight line symbol
     color: '#666666',
     symbolSize: 140, // Much larger
-    bgRadius: 80     // Much larger background
+    bgRadius: 80 // Much larger background
   },
   tee: {
     symbol: '┬', // T-junction symbol
     color: '#ff6b35',
     symbolSize: 120, // Much larger
-    bgRadius: 80     // Much larger background
+    bgRadius: 80 // Much larger background
   },
   cross: {
     symbol: '┼', // Cross/intersection symbol
     color: '#ff0000',
     symbolSize: 120, // Much larger
-    bgRadius: 80     // Much larger background
+    bgRadius: 80 // Much larger background
   }
 }
 
