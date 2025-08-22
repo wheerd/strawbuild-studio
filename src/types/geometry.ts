@@ -56,6 +56,12 @@ export function distance (p1: Point2D, p2: Point2D): Length {
   return createLength(Math.sqrt(dx * dx + dy * dy))
 }
 
+export function distanceSquared (p1: Point2D, p2: Point2D): number {
+  const dx = p2.x - p1.x
+  const dy = p2.y - p1.y
+  return dx * dx + dy * dy
+}
+
 export function midpoint (p1: Point2D, p2: Point2D): Point2D {
   return createPoint2D((p1.x + p2.x) / 2, (p1.y + p2.y) / 2)
 }
@@ -89,6 +95,12 @@ export function vectorFromAngle (angle: Angle, length: Length = createLength(1))
 
 export function addVector (point: Point2D, vector: Vector2D): Point2D {
   return createPoint2D(point.x + vector.x, point.y + vector.y)
+}
+
+export function normalizeVector (vector: Vector2D): Vector2D {
+  const len = Math.sqrt(vector.x * vector.x + vector.y * vector.y)
+  if (len === 0) return createVector2D(0, 0)
+  return createVector2D(vector.x / len, vector.y / len)
 }
 
 export function snapToGrid (point: Point2D, gridSize: Length): Point2D {
@@ -301,25 +313,31 @@ export interface Line2D {
   direction: Vector2D // Normalized direction vector
 }
 
+export interface LineSegment2D {
+  start: Point2D
+  end: Point2D
+}
+
 // Calculate intersection of two infinite lines
 export function lineIntersection (line1: Line2D, line2: Line2D): Point2D | null {
   const { point: p1, direction: d1 } = line1
   const { point: p2, direction: d2 } = line2
 
   // Check if lines are parallel (cross product of directions is zero)
-  const crossProduct = d1.x * d2.y - d1.y * d2.x
-  if (Math.abs(crossProduct) < 1e-10) {
+  const cross = Number(d1.x) * Number(d2.y) - Number(d1.y) * Number(d2.x)
+  if (Math.abs(cross) < 1e-10) {
     return null // Lines are parallel
   }
 
-  // Calculate parameter t for line1: p1 + t * d1
-  const dp = createPoint2D(p2.x - p1.x, p2.y - p1.y)
-  const t = (dp.x * d2.y - dp.y * d2.x) / crossProduct
+  // Calculate intersection using parametric form
+  // Line1: p1 + t1 * d1
+  // Line2: p2 + t2 * d2
+  const dp = createVector2D(Number(p2.x) - Number(p1.x), Number(p2.y) - Number(p1.y))
+  const t1 = (Number(dp.x) * Number(d2.y) - Number(dp.y) * Number(d2.x)) / cross
 
-  // Calculate intersection point
   return createPoint2D(
-    p1.x + t * d1.x,
-    p1.y + t * d1.y
+    Number(p1.x) + t1 * Number(d1.x),
+    Number(p1.y) + t1 * Number(d1.y)
   )
 }
 
@@ -354,4 +372,25 @@ export function distanceToInfiniteLine (point: Point2D, line: Line2D): Length {
   // Calculate perpendicular distance using cross product
   const crossProduct = Math.abs(dx * line.direction.y - dy * line.direction.x)
   return createLength(crossProduct)
+}
+
+// Project a point onto a line (returns closest point on the line)
+export function projectPointOntoLine (point: Point2D, line: Line2D): Point2D {
+  // Vector from line point to target point
+  const toPoint = createVector2D(point.x - line.point.x, point.y - line.point.y)
+
+  // Project toPoint onto line direction
+  const projection = Number(toPoint.x) * Number(line.direction.x) + Number(toPoint.y) * Number(line.direction.y)
+
+  return createPoint2D(
+    Number(line.point.x) + projection * Number(line.direction.x),
+    Number(line.point.y) + projection * Number(line.direction.y)
+  )
+}
+
+export function lineFromSegment (segment: LineSegment2D): Line2D {
+  return {
+    point: segment.start,
+    direction: normalizeVector(createVector2D((segment.end.x - segment.start.x), (segment.end.y - segment.start.y)))
+  }
 }

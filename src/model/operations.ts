@@ -46,6 +46,7 @@ import {
   determineCornerType,
   lineIntersection,
   distanceToInfiniteLine,
+  projectPointOntoLine,
   type Line2D
 } from '@/types/geometry'
 
@@ -555,20 +556,6 @@ export function generateSnapLines (
   return snapLines
 }
 
-// Helper function to project point onto line
-function projectOntoLine (point: Point2D, line: Line2D): Point2D {
-  // Vector from line point to target point
-  const toPoint = createVector2D(point.x - line.point.x, point.y - line.point.y)
-
-  // Project toPoint onto line direction
-  const projection = Number(toPoint.x) * Number(line.direction.x) + Number(toPoint.y) * Number(line.direction.y)
-
-  return createPoint2D(
-    Number(line.point.x) + projection * Number(line.direction.x),
-    Number(line.point.y) + projection * Number(line.direction.y)
-  )
-}
-
 // New simplified snapping function: filter nearby lines first, then check intersections
 export function findLineSnapPosition (
   target: Point2D,
@@ -585,7 +572,7 @@ export function findLineSnapPosition (
   for (const line of snapLines) {
     const distance = Number(distanceToInfiniteLine(target, line.line2D))
     if (distance <= lineSnapDistance) {
-      const projectedPosition = projectOntoLine(target, line.line2D)
+      const projectedPosition = projectPointOntoLine(target, line.line2D)
 
       // Check minimum wall length
       const wallLengthSquared = (projectedPosition.x - fromPoint.x) ** 2 + (projectedPosition.y - fromPoint.y) ** 2

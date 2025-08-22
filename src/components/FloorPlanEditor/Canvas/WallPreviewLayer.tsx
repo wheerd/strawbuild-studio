@@ -90,7 +90,7 @@ export function WallPreviewLayer ({ wallDrawingStart, stageWidth, stageHeight }:
           x={snapResult.position.x}
           y={snapResult.position.y}
           radius={15}
-          fill={(snapResult.lines?.length === 2) ? '#ff00ff' : (snapResult.lines?.length === 1) ? '#0066ff' : '#ff6600'}
+          fill='#0066ff'
           stroke='#ffffff'
           strokeWidth={3}
           opacity={0.9}
@@ -109,15 +109,7 @@ export function WallPreviewLayer ({ wallDrawingStart, stageWidth, stageHeight }:
                line.line2D.point.x + lineExtent * line.line2D.direction.x,
                line.line2D.point.y + lineExtent * line.line2D.direction.y
              ]}
-             stroke={(() => {
-               const colors = {
-                 horizontal: '#0066ff',
-                 vertical: '#6600ff',
-                 extension: '#ff6600',
-                 perpendicular: '#00ff00'
-               }
-               return colors[line.type] ?? '#666666'
-             })()}
+             stroke='#0066ff'
              strokeWidth={20}
              dash={[10, 5]}
              opacity={0.7}

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { createPoint2D, type Point2D } from '@/types/geometry'
 import type { FloorId } from '@/types/ids'
+import { type SnapResult } from '@/model/snapping'
 
 export type EditorTool = 'select' | 'wall' | 'room'
 export type DragType = 'pan' | 'wall' | 'point' | 'selection'
@@ -29,6 +30,10 @@ export interface EditorState {
   snapDistance: number
   showSnapPreview: boolean
   snapPreviewPoint?: Point2D
+  // Unified snap state
+  currentSnapTarget?: Point2D
+  currentSnapFromPoint?: Point2D
+  currentSnapResult?: SnapResult | null
   showGrid: boolean
   gridSize: number
   snapToGrid: boolean
@@ -47,6 +52,9 @@ export interface EditorActions {
   endDrag: () => void
   setSnapDistance: (distance: number) => void
   setSnapPreview: (point?: Point2D) => void
+  // Unified snap actions
+  updateSnapState: (target: Point2D, fromPoint: Point2D | null, result: SnapResult | null) => void
+  clearSnapState: () => void
   setShowGrid: (show: boolean) => void
   setGridSize: (size: number) => void
   setSnapToGrid: (snapToGrid: boolean) => void
@@ -208,6 +216,28 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
     console.log('fitToView called - implementation will be in the component')
   },
 
+  // Unified snap state management
+  updateSnapState: (target: Point2D, fromPoint: Point2D | null, result: SnapResult | null) => {
+    set({
+      currentSnapTarget: target,
+      currentSnapFromPoint: fromPoint ?? undefined,
+      currentSnapResult: result,
+      // Update legacy preview state for backward compatibility
+      showSnapPreview: result != null,
+      snapPreviewPoint: result?.position ?? target
+    })
+  },
+
+  clearSnapState: () => {
+    set({
+      currentSnapTarget: undefined,
+      currentSnapFromPoint: undefined,
+      currentSnapResult: undefined,
+      showSnapPreview: false,
+      snapPreviewPoint: undefined
+    })
+  },
+
   reset: (defaultFloorId?: FloorId) => {
     const floorId = defaultFloorId ?? ('ground-floor' as FloorId)
     set(createInitialState(floorId))
@@ -222,6 +252,10 @@ export const useDragState = (): DragState => useEditorStore(state => state.dragS
 export const useSnapDistance = (): number => useEditorStore(state => state.snapDistance)
 export const useShowSnapPreview = (): boolean => useEditorStore(state => state.showSnapPreview)
 export const useSnapPreviewPoint = (): Point2D | undefined => useEditorStore(state => state.snapPreviewPoint)
+// Unified snap state selectors
+export const useCurrentSnapResult = (): SnapResult | null | undefined => useEditorStore(state => state.currentSnapResult)
+export const useCurrentSnapTarget = (): Point2D | undefined => useEditorStore(state => state.currentSnapTarget)
+export const useCurrentSnapFromPoint = (): Point2D | undefined => useEditorStore(state => state.currentSnapFromPoint)
 export const useShowGrid = (): boolean => useEditorStore(state => state.showGrid)
 export const useEditorGridSize = (): number => useEditorStore(state => state.gridSize)
 export const useSnapToGrid = (): boolean => useEditorStore(state => state.snapToGrid)
