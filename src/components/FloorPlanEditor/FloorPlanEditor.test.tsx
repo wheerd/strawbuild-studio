@@ -1,10 +1,9 @@
-import { render, screen, act } from '@testing-library/react'
+import { render, screen, act, fireEvent } from '@testing-library/react'
 import { describe, test, expect, beforeEach, it } from 'vitest'
 import { FloorPlanEditor } from './FloorPlanEditor'
 import { useModelStore } from '@/model/store'
 import { useEditorStore } from './hooks/useEditorStore'
 import { createLength, createPoint2D } from '@/types/geometry'
-import { fireEvent } from '@testing-library/react'
 import { moveWall } from '@/model/operations'
 
 describe('FloorPlanEditor', () => {
@@ -116,7 +115,7 @@ describe('FloorPlanEditor', () => {
         // Test that moveWall function works for any wall orientation
         // Since we already verified the horizontal case works correctly,
         // this test just ensures the function doesn't break with different inputs
-        
+
         const initialState = useModelStore.getState()
         const wall = Array.from(initialState.walls.values())[0]
 
@@ -253,47 +252,47 @@ describe('FloorPlanEditor', () => {
 
     test('should show toolbar with sample button', () => {
       render(<FloorPlanEditor />)
-      
+
       const sampleButton = screen.getByText('Sample')
       expect(sampleButton).toBeTruthy()
     })
 
     test('should show toolbar with wall button', () => {
       render(<FloorPlanEditor />)
-      
+
       const wallButton = screen.getByText('Wall')
       expect(wallButton).toBeTruthy()
     })
 
     test('should initialize with default state', () => {
       render(<FloorPlanEditor />)
-      
+
       // Should have no selection initially
       expect(useEditorStore.getState().selectedEntityId).toBeUndefined()
     })
 
     test('should allow tool selection', () => {
       render(<FloorPlanEditor />)
-      
+
       const wallButton = screen.getByText('Wall')
       act(() => {
         fireEvent.click(wallButton)
       })
-      
+
       // Tool should be active
       expect(wallButton.className).toContain('active')
     })
 
     test('should create sample data', () => {
       render(<FloorPlanEditor />)
-      
+
       const initialWallCount = useModelStore.getState().walls.size
-      
+
       const sampleButton = screen.getByText('Sample')
       act(() => {
         fireEvent.click(sampleButton)
       })
-      
+
       const finalWallCount = useModelStore.getState().walls.size
       expect(finalWallCount).toBeGreaterThan(initialWallCount)
     })
@@ -302,7 +301,7 @@ describe('FloorPlanEditor', () => {
   describe('Drag to Select', () => {
     test('should render floor plan stage', () => {
       const { container } = render(<FloorPlanEditor />)
-      
+
       // Check that the stage is rendered
       const stage = container.querySelector('[data-testid="stage"]')
       expect(stage).toBeTruthy()
@@ -310,7 +309,7 @@ describe('FloorPlanEditor', () => {
 
     test('should render toolbar', () => {
       render(<FloorPlanEditor />)
-      
+
       // Check that toolbar buttons are present
       expect(screen.getByText('Sample')).toBeTruthy()
       expect(screen.getByText('Wall')).toBeTruthy()
@@ -318,30 +317,30 @@ describe('FloorPlanEditor', () => {
 
     test('should handle sample button click', () => {
       render(<FloorPlanEditor />)
-      
+
       const sampleButton = screen.getByText('Sample')
       act(() => {
         fireEvent.click(sampleButton)
       })
-      
+
       // Should create sample data
       expect(useModelStore.getState().walls.size).toBeGreaterThan(0)
     })
 
     test('should handle wall tool selection', () => {
       render(<FloorPlanEditor />)
-      
+
       const wallButton = screen.getByText('Wall')
       act(() => {
         fireEvent.click(wallButton)
       })
-      
+
       expect(wallButton.className).toContain('active')
     })
 
     test('should initialize editor store', () => {
       render(<FloorPlanEditor />)
-      
+
       // Editor store should be initialized
       const editorState = useEditorStore.getState()
       expect(editorState).toBeDefined()
@@ -374,65 +373,65 @@ describe('FloorPlanEditor', () => {
 
     test('should maintain selection state', () => {
       render(<FloorPlanEditor />)
-      
+
       act(() => {
         useEditorStore.getState().setSelectedEntity(wallId)
       })
-      
+
       expect(useEditorStore.getState().selectedEntityId).toBe(wallId)
     })
 
     test('should clear selection', () => {
       render(<FloorPlanEditor />)
-      
+
       act(() => {
         useEditorStore.getState().setSelectedEntity(wallId)
       })
-      
+
       act(() => {
         useEditorStore.getState().clearSelection()
       })
-      
+
       expect(useEditorStore.getState().selectedEntityId).toBeUndefined()
     })
 
     test('should handle multiple selection attempts', () => {
       render(<FloorPlanEditor />)
-      
+
       act(() => {
         useEditorStore.getState().setSelectedEntity(wallId)
         useEditorStore.getState().setSelectedEntity(wallId)
       })
-      
+
       expect(useEditorStore.getState().selectedEntityId).toBe(wallId)
     })
 
     test('should handle selection during drag', () => {
       render(<FloorPlanEditor />)
-      
+
       act(() => {
         useEditorStore.getState().setSelectedEntity(wallId)
         useEditorStore.getState().startDrag('wall', createPoint2D(150, 100), wallId)
       })
-      
+
       expect(useEditorStore.getState().selectedEntityId).toBe(wallId)
-      
+
       act(() => {
         useEditorStore.getState().endDrag()
       })
-      
+
       expect(useEditorStore.getState().selectedEntityId).toBe(wallId)
     })
 
     test('should maintain selection across re-renders', () => {
       const { rerender } = render(<FloorPlanEditor />)
-      
+
       act(() => {
         useEditorStore.getState().setSelectedEntity(wallId)
       })
-      
+
       rerender(<FloorPlanEditor />)
-      
+
       expect(useEditorStore.getState().selectedEntityId).toBe(wallId)
     })
   })

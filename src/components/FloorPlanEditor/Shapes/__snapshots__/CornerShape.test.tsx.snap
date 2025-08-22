@@ -1,0 +1,192 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CornerShape > snapshots > renders selected corner 1`] = `
+<div>
+  <div
+    data-testid="group"
+    data-x="100"
+    data-y="100"
+    listening="true"
+  >
+    <div
+      data-fill="white"
+      data-opacity="0.95"
+      data-radius="80"
+      data-stroke="#007acc"
+      data-stroke-width="15"
+      data-testid="circle"
+      listening="true"
+    />
+    <div
+      data-align="center"
+      data-fill="#007acc"
+      data-font-family="Arial"
+      data-font-size="60"
+      data-font-style="bold"
+      data-offset-x="0"
+      data-offset-y="0"
+      data-shadow-blur="20"
+      data-shadow-color="white"
+      data-shadow-opacity="1"
+      data-testid="text"
+      data-x="0"
+      data-y="-150"
+      listening="false"
+    >
+      ⌐ 90°
+    </div>
+    <div
+      data-dash="[20,20]"
+      data-radius="120"
+      data-stroke="#007acc"
+      data-stroke-width="15"
+      data-testid="circle"
+      listening="false"
+    />
+  </div>
+</div>
+`;
+
+exports[`CornerShape > snapshots > renders selected cross corner 1`] = `
+<div>
+  <div
+    data-testid="group"
+    data-x="100"
+    data-y="100"
+    listening="true"
+  >
+    <div
+      data-fill="white"
+      data-opacity="0.95"
+      data-radius="80"
+      data-stroke="#ff0000"
+      data-stroke-width="15"
+      data-testid="circle"
+      listening="true"
+    />
+    <div
+      data-align="center"
+      data-fill="#ff0000"
+      data-font-family="Arial"
+      data-font-size="60"
+      data-font-style="bold"
+      data-offset-x="0"
+      data-offset-y="0"
+      data-shadow-blur="20"
+      data-shadow-color="white"
+      data-shadow-opacity="1"
+      data-testid="text"
+      data-x="0"
+      data-y="-150"
+      listening="false"
+    >
+      ┼ 45°
+    </div>
+    <div
+      data-dash="[20,20]"
+      data-radius="120"
+      data-stroke="#007acc"
+      data-stroke-width="15"
+      data-testid="circle"
+      listening="false"
+    />
+  </div>
+</div>
+`;
+
+exports[`CornerShape > snapshots > renders selected straight corner (no angle text) 1`] = `
+<div>
+  <div
+    data-testid="group"
+    data-x="100"
+    data-y="100"
+    listening="true"
+  >
+    <div
+      data-fill="white"
+      data-opacity="0.95"
+      data-radius="80"
+      data-stroke="#666666"
+      data-stroke-width="15"
+      data-testid="circle"
+      listening="true"
+    />
+    <div
+      data-dash="[20,20]"
+      data-radius="120"
+      data-stroke="#007acc"
+      data-stroke-width="15"
+      data-testid="circle"
+      listening="false"
+    />
+  </div>
+</div>
+`;
+
+exports[`CornerShape > snapshots > renders selected tee corner with angle display 1`] = `
+<div>
+  <div
+    data-testid="group"
+    data-x="100"
+    data-y="100"
+    listening="true"
+  >
+    <div
+      data-fill="white"
+      data-opacity="0.95"
+      data-radius="80"
+      data-stroke="#ff6b35"
+      data-stroke-width="15"
+      data-testid="circle"
+      listening="true"
+    />
+    <div
+      data-align="center"
+      data-fill="#ff6b35"
+      data-font-family="Arial"
+      data-font-size="60"
+      data-font-style="bold"
+      data-offset-x="0"
+      data-offset-y="0"
+      data-shadow-blur="20"
+      data-shadow-color="white"
+      data-shadow-opacity="1"
+      data-testid="text"
+      data-x="0"
+      data-y="-150"
+      listening="false"
+    >
+      ┬ 60°
+    </div>
+    <div
+      data-dash="[20,20]"
+      data-radius="120"
+      data-stroke="#007acc"
+      data-stroke-width="15"
+      data-testid="circle"
+      listening="false"
+    />
+  </div>
+</div>
+`;
+
+exports[`CornerShape > snapshots > renders unselected corner 1`] = `
+<div>
+  <div
+    data-testid="group"
+    data-x="100"
+    data-y="100"
+    listening="true"
+  >
+    <div
+      data-fill="white"
+      data-opacity="0.95"
+      data-radius="80"
+      data-stroke="#007acc"
+      data-stroke-width="8"
+      data-testid="circle"
+      listening="true"
+    />
+  </div>
+</div>
+`;
