@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import { FloorPlanEditor } from '@/components/FloorPlanEditor/FloorPlanEditor'
 import { useModelStore } from '@/model/store'
 
@@ -21,7 +21,9 @@ describe('Wall Creation', () => {
     render(<FloorPlanEditor />)
 
     const wallButton = screen.getByText('Wall')
-    fireEvent.click(wallButton)
+    act(() => {
+      fireEvent.click(wallButton)
+    })
 
     // Check if the button has the active class
     expect(wallButton.className).toContain('active')
@@ -33,7 +35,9 @@ describe('Wall Creation', () => {
     const initialWallCount = useModelStore.getState().walls.size
 
     const sampleButton = screen.getByText('Sample')
-    fireEvent.click(sampleButton)
+    act(() => {
+      fireEvent.click(sampleButton)
+    })
 
     const finalWallCount = useModelStore.getState().walls.size
     expect(finalWallCount).toBeGreaterThan(initialWallCount)

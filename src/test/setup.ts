@@ -33,25 +33,40 @@ beforeAll(() => {
   }))
 })
 
+const propsAttrs = (props: any) => {
+  return Object.entries(props).reduce((acc, [key, value]) => {
+    if (typeof value === 'function') return acc
+    
+    // Handle special attributes
+    if (key === 'listening') {
+      acc[key] = String(value)
+      return acc
+    }
+    
+    // Convert camelCase to kebab-case for data attributes
+    const kebabKey = key.replace(/([A-Z])/g, '-$1').toLowerCase()
+    acc[`data-${kebabKey}`] = typeof value === 'object' ? JSON.stringify(value) : value
+    return acc
+  }, {} as Record<string, any>)
+}
+
 // Mock React-Konva components with test-friendly implementations
 vi.mock('react-konva', async () => {
   const React = await import('react')
   return {
-    Stage: ({ children, ...props }: any) => React.createElement('div', { 'data-testid': 'stage', ...props }, children),
-    Layer: ({ children, ...props }: any) => React.createElement('div', { 'data-testid': 'layer', ...props }, children),
+    Stage: ({ children, ...props }: any) => React.createElement('div', { 'data-testid': 'stage', ...propsAttrs(props) }, children),
+    Layer: ({ children, ...props }: any) => React.createElement('div', { 'data-testid': 'layer', ...propsAttrs(props) }, children),
     Line: ({ points, ...props }: any) => React.createElement('div', {
       'data-testid': 'wall-line',
-      'data-points': JSON.stringify(points),
-      ...props
+      ...propsAttrs(props)
     }),
-    Group: ({ children, ...props }: any) => React.createElement('div', { 'data-testid': 'group', ...props }, children),
+    Group: ({ children, ...props }: any) => React.createElement('div', { 'data-testid': 'group', ...propsAttrs(props) }, children),
     Arrow: ({ points, ...props }: any) => React.createElement('div', {
       'data-testid': 'direction-arrow',
-      'data-points': JSON.stringify(points),
-      ...props
+      ...propsAttrs(props)
     }),
-    Circle: ({ ...props }: any) => React.createElement('div', { 'data-testid': 'circle', ...props }),
-    Text: ({ text, ...props }: any) => React.createElement('div', { 'data-testid': 'text', ...props }, text)
+    Circle: ({ ...props }: any) => React.createElement('div', { 'data-testid': 'circle', ...propsAttrs(props) }),
+    Text: ({ text, ...props }: any) => React.createElement('div', { 'data-testid': 'text', ...propsAttrs(props) }, text)
   }
 })
 

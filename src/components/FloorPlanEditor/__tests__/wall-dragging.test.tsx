@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import { describe, test, expect, beforeEach } from 'vitest'
 import { FloorPlanEditor } from '@/components/FloorPlanEditor/FloorPlanEditor'
 import { useModelStore } from '@/model/store'
@@ -141,7 +141,9 @@ describe('Wall Dragging Features', () => {
       render(<FloorPlanEditor />)
 
       // Ensure no wall is selected
-      useEditorStore.getState().clearSelection()
+      act(() => {
+        useEditorStore.getState().clearSelection()
+      })
 
       // Check that no direction arrows are rendered
       const arrows = screen.queryAllByTestId('direction-arrow')
@@ -154,16 +156,22 @@ describe('Wall Dragging Features', () => {
       render(<FloorPlanEditor />)
 
       // Select the wall first (as WallShape handleMouseDown would do)
-      useEditorStore.getState().setSelectedEntity(wallId)
+      act(() => {
+        useEditorStore.getState().setSelectedEntity(wallId)
+      })
 
       // Simulate starting a drag operation
-      useEditorStore.getState().startDrag('wall', createPoint2D(150, 100), wallId)
+      act(() => {
+        useEditorStore.getState().startDrag('wall', createPoint2D(150, 100), wallId)
+      })
 
       // Wall should be selected
       expect(useEditorStore.getState().selectedEntityId).toBe(wallId)
 
       // Simulate ending the drag
-      useEditorStore.getState().endDrag()
+      act(() => {
+        useEditorStore.getState().endDrag()
+      })
 
       // Wall should still be selected after drag ends
       expect(useEditorStore.getState().selectedEntityId).toBe(wallId)
@@ -176,7 +184,9 @@ describe('Wall Dragging Features', () => {
       expect(useEditorStore.getState().selectedEntityId).toBeUndefined()
 
       // Select the wall (as WallShape handleMouseDown would do)
-      useEditorStore.getState().setSelectedEntity(wallId)
+      act(() => {
+        useEditorStore.getState().setSelectedEntity(wallId)
+      })
 
       // Wall should be selected
       expect(useEditorStore.getState().selectedEntityId).toBe(wallId)
@@ -186,11 +196,15 @@ describe('Wall Dragging Features', () => {
       render(<FloorPlanEditor />)
 
       // Select the wall first
-      useEditorStore.getState().setSelectedEntity(wallId)
+      act(() => {
+        useEditorStore.getState().setSelectedEntity(wallId)
+      })
       expect(useEditorStore.getState().selectedEntityId).toBe(wallId)
 
       // Select the same wall again (should not change)
-      useEditorStore.getState().setSelectedEntity(wallId)
+      act(() => {
+        useEditorStore.getState().setSelectedEntity(wallId)
+      })
 
       // Wall should remain selected
       expect(useEditorStore.getState().selectedEntityId).toBe(wallId)
@@ -202,10 +216,14 @@ describe('Wall Dragging Features', () => {
       render(<FloorPlanEditor />)
 
       // Select wall (as WallShape handleMouseDown would do)
-      useEditorStore.getState().setSelectedEntity(wallId)
+      act(() => {
+        useEditorStore.getState().setSelectedEntity(wallId)
+      })
 
       // Start drag
-      useEditorStore.getState().startDrag('wall', createPoint2D(150, 100), wallId)
+      act(() => {
+        useEditorStore.getState().startDrag('wall', createPoint2D(150, 100), wallId)
+      })
 
       // Wall should be selected
       expect(useEditorStore.getState().selectedEntityId).toBe(wallId)
@@ -213,10 +231,14 @@ describe('Wall Dragging Features', () => {
       // Perform wall movement
       const modelStore = useModelStore.getState()
       const wall = Array.from(modelStore.walls.values())[0]
-      modelStore.moveWall(wall.id, 0, 25) // Move perpendicular to wall
+      act(() => {
+        modelStore.moveWall(wall.id, 0, 25) // Move perpendicular to wall
+      })
 
       // End drag
-      useEditorStore.getState().endDrag()
+      act(() => {
+        useEditorStore.getState().endDrag()
+      })
 
       // Wall should still be selected
       expect(useEditorStore.getState().selectedEntityId).toBe(wallId)
