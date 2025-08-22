@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { createPoint2D, type Point2D } from '@/types/geometry'
-import type { FloorId } from '@/types/ids'
+import type { FloorId, PointId } from '@/types/ids'
 import { type SnapResult } from '@/model/snapping'
 
 export type EditorTool = 'select' | 'wall' | 'room'
@@ -27,16 +27,13 @@ export interface EditorState {
   isDrawing: boolean
   wallDrawingStart?: Point2D
   dragState: DragState
-  snapDistance: number
-  showSnapPreview: boolean
-  snapPreviewPoint?: Point2D
   // Unified snap state
   currentSnapTarget?: Point2D
   currentSnapFromPoint?: Point2D
-  currentSnapResult?: SnapResult | null
+  currentSnapFromPointId?: PointId // Store the ID to avoid expensive lookups
+  currentSnapResult?: SnapResult
   showGrid: boolean
   gridSize: number
-  snapToGrid: boolean
   showRoomLabels: boolean
   activeFloorId: FloorId
   selectedEntityId?: string
@@ -50,14 +47,13 @@ export interface EditorActions {
   setWallDrawingStart: (point?: Point2D) => void
   startDrag: (dragType: DragType, startPos: Point2D, entityId?: string) => void
   endDrag: () => void
-  setSnapDistance: (distance: number) => void
-  setSnapPreview: (point?: Point2D) => void
   // Unified snap actions
-  updateSnapState: (target: Point2D, fromPoint: Point2D | null, result: SnapResult | null) => void
+  updateSnapReference: (fromPoint: Point2D | null, fromPointId: PointId | null) => void
+  updateSnapTarget: (target: Point2D) => void
+  updateSnapResult: (result: SnapResult | null) => void
   clearSnapState: () => void
   setShowGrid: (show: boolean) => void
   setGridSize: (size: number) => void
-  setSnapToGrid: (snapToGrid: boolean) => void
   setShowRoomLabels: (show: boolean) => void
   setActiveFloor: (floorId: FloorId) => void
   setSelectedEntity: (entityId?: string) => void
@@ -81,11 +77,8 @@ function createInitialState (defaultFloorId: FloorId): EditorState {
       dragType: 'selection',
       startPos: createPoint2D(0, 0)
     },
-    snapDistance: 100, // 100mm snap distance for real-world scale
-    showSnapPreview: false,
     showGrid: true,
     gridSize: 500, // 500mm (0.5m) grid for real-world scale
-    snapToGrid: false, // Disabled in favor of 90-degree angle snapping
     showRoomLabels: true,
     activeFloorId: defaultFloorId,
     selectedEntityId: undefined,
@@ -108,9 +101,10 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
     set({
       activeTool: tool,
       isDrawing: false,
-      // Clear snap preview when switching away from wall tool
-      showSnapPreview: tool === 'wall' ? get().showSnapPreview : false,
-      snapPreviewPoint: tool === 'wall' ? get().snapPreviewPoint : undefined
+      currentSnapTarget: undefined,
+      currentSnapFromPoint: undefined,
+      currentSnapFromPointId: undefined,
+      currentSnapResult: undefined
     })
   },
 
@@ -143,27 +137,12 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
     })
   },
 
-  setSnapDistance: (distance: number) => {
-    set({ snapDistance: distance })
-  },
-
-  setSnapPreview: (point?: Point2D) => {
-    set({
-      snapPreviewPoint: point,
-      showSnapPreview: point !== undefined
-    })
-  },
-
   setShowGrid: (show: boolean) => {
     set({ showGrid: show })
   },
 
   setGridSize: (size: number) => {
     set({ gridSize: size })
-  },
-
-  setSnapToGrid: (snapToGrid: boolean) => {
-    set({ snapToGrid })
   },
 
   setShowRoomLabels: (show: boolean) => {
@@ -216,25 +195,27 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
     console.log('fitToView called - implementation will be in the component')
   },
 
-  // Unified snap state management
-  updateSnapState: (target: Point2D, fromPoint: Point2D | null, result: SnapResult | null) => {
+  updateSnapReference (fromPoint, fromPointId) {
     set({
-      currentSnapTarget: target,
       currentSnapFromPoint: fromPoint ?? undefined,
-      currentSnapResult: result,
-      // Update legacy preview state for backward compatibility
-      showSnapPreview: result != null,
-      snapPreviewPoint: result?.position ?? target
+      currentSnapFromPointId: fromPointId ?? undefined
     })
+  },
+
+  updateSnapResult (result) {
+    set({ currentSnapResult: result ?? undefined })
+  },
+
+  updateSnapTarget (target) {
+    set({ currentSnapTarget: target })
   },
 
   clearSnapState: () => {
     set({
       currentSnapTarget: undefined,
       currentSnapFromPoint: undefined,
-      currentSnapResult: undefined,
-      showSnapPreview: false,
-      snapPreviewPoint: undefined
+      currentSnapFromPointId: undefined,
+      currentSnapResult: undefined
     })
   },
 
@@ -249,16 +230,13 @@ export const useActiveTool = (): EditorTool => useEditorStore(state => state.act
 export const useIsDrawing = (): boolean => useEditorStore(state => state.isDrawing)
 export const useWallDrawingStart = (): Point2D | undefined => useEditorStore(state => state.wallDrawingStart)
 export const useDragState = (): DragState => useEditorStore(state => state.dragState)
-export const useSnapDistance = (): number => useEditorStore(state => state.snapDistance)
-export const useShowSnapPreview = (): boolean => useEditorStore(state => state.showSnapPreview)
-export const useSnapPreviewPoint = (): Point2D | undefined => useEditorStore(state => state.snapPreviewPoint)
 // Unified snap state selectors
-export const useCurrentSnapResult = (): SnapResult | null | undefined => useEditorStore(state => state.currentSnapResult)
+export const useCurrentSnapResult = (): SnapResult | undefined => useEditorStore(state => state.currentSnapResult)
 export const useCurrentSnapTarget = (): Point2D | undefined => useEditorStore(state => state.currentSnapTarget)
 export const useCurrentSnapFromPoint = (): Point2D | undefined => useEditorStore(state => state.currentSnapFromPoint)
+export const useCurrentSnapFromPointId = (): PointId | undefined => useEditorStore(state => state.currentSnapFromPointId)
 export const useShowGrid = (): boolean => useEditorStore(state => state.showGrid)
 export const useEditorGridSize = (): number => useEditorStore(state => state.gridSize)
-export const useSnapToGrid = (): boolean => useEditorStore(state => state.snapToGrid)
 export const useShowRoomLabels = (): boolean => useEditorStore(state => state.showRoomLabels)
 export const useActiveFloorId = (): FloorId => useEditorStore(state => state.activeFloorId)
 export const useSelectedEntity = (): string | undefined => useEditorStore(state => state.selectedEntityId)

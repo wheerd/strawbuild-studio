@@ -25,7 +25,7 @@ export interface SnapConfig {
 
 // Default snapping configuration
 export const DEFAULT_SNAP_CONFIG: SnapConfig = {
-  pointSnapDistance: 500 as Length, // 500mm
+  pointSnapDistance: 200 as Length, // 500mm
   lineSnapDistance: 100 as Length, // 100mm
   minDistance: 50 as Length // 50mm
 }

@@ -1,17 +1,18 @@
 import { useRef, useState, useCallback, useEffect } from 'react'
 import { Stage } from 'react-konva'
 import type Konva from 'konva'
-import { useEditorStore, useViewport, useActiveTool, useIsDrawing, useActiveFloorId, useWallDrawingStart } from '@/components/FloorPlanEditor/hooks/useEditorStore'
+import { useEditorStore, useViewport, useActiveTool, useIsDrawing, useActiveFloorId, useWallDrawingStart, useCurrentSnapFromPointId } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 import { useModelStore } from '@/model/store'
-import { findNearestPoint, findSnapPoint as findModelSnapPoint } from '@/model/operations'
-import { createPoint2D, createLength, distance, type Point2D } from '@/types/geometry'
+import { defaultSnappingService } from '@/model/snapping/SnappingService'
+import { useSnappingContext } from '@/components/FloorPlanEditor/hooks/useSnappingContext'
+import { createPoint2D, type Point2D, distanceSquared } from '@/types/geometry'
 import { GridLayer } from './GridLayer'
 import { WallLayer } from './WallLayer'
 import { WallPreviewLayer } from './WallPreviewLayer'
 import { PointLayer } from './PointLayer'
 import { RoomLayer } from './RoomLayer'
 import { CornerLayer } from './CornerLayer'
-import { SelectionLayer } from './SelectionLayer'
+import type { SnapResult } from '@/model/snapping'
 
 interface FloorPlanStageProps {
   width: number
@@ -35,9 +36,12 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
   const setStageDimensions = useEditorStore(state => state.setStageDimensions)
   const setIsDrawing = useEditorStore(state => state.setIsDrawing)
   const setWallDrawingStart = useEditorStore(state => state.setWallDrawingStart)
-  const setSnapPreview = useEditorStore(state => state.setSnapPreview)
-  const snapDistance = useEditorStore(state => state.snapDistance)
+  const updateSnapReference = useEditorStore(state => state.updateSnapReference)
+  const updateSnapResult = useEditorStore(state => state.updateSnapResult)
+  const updateSnapTarget = useEditorStore(state => state.updateSnapTarget)
+  const clearSnapState = useEditorStore(state => state.clearSnapState)
   const dragState = useEditorStore(state => state.dragState)
+  const snappingContext = useSnappingContext()
 
   // Model store actions
   const modelState = useModelStore()
@@ -59,26 +63,16 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
     )
   }, [viewport])
 
-  // Helper function to find snap point with two-step snapping
-  const findSnapPoint = useCallback((point: Point2D, fromPoint?: Point2D): Point2D => {
-    // Use the new two-step snapping system
-    const snapResult = findModelSnapPoint(modelState, point, fromPoint ?? point, activeFloorId, fromPoint == null)
+  const currentSnapFromPointId = useCurrentSnapFromPointId()
 
-    if (snapResult != null) {
-      return snapResult.position
-    }
-
-    return point
-  }, [modelState, activeFloorId])
-
-  // Helper function to create or find connection point at position
-  const getOrCreatePoint = useCallback((position: Point2D) => {
-    const nearest = findNearestPoint(modelState, position, createLength(snapDistance / viewport.zoom))
-    if (nearest != null) {
-      return nearest
-    }
-    return addPoint(position, activeFloorId)
-  }, [modelState, snapDistance, viewport.zoom, addPoint, activeFloorId])
+  // Helper function to find snap point and update unified snap state
+  // Now much more efficient with memoized context and point ID tracking
+  const findSnapPoint = useCallback((point: Point2D): SnapResult | null => {
+    updateSnapTarget(point)
+    const snapResult = defaultSnappingService.findSnapResult(point, snappingContext)
+    updateSnapResult(snapResult)
+    return snapResult
+  }, [snappingContext, wallDrawingStart, currentSnapFromPointId, updateSnapTarget, modelState, updateSnapResult, viewport.zoom])
 
   const handleWheel = useCallback((e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault()
@@ -121,30 +115,28 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
     // Handle wall tool
     if (activeTool === 'wall') {
       const stageCoords = getStageCoordinates(pointer)
+      const snapResult = findSnapPoint(stageCoords)
+      const snapCoords = snapResult?.position ?? stageCoords
 
       if (!isDrawing) {
         // Start drawing wall - use snapped coordinates which might be an existing point
-        const snapCoords = findSnapPoint(stageCoords)
         setWallDrawingStart(snapCoords)
+        console.log('setting snap reference', stageCoords, snapResult?.pointId ?? null, snapCoords)
+        updateSnapReference(snapCoords, snapResult?.pointId ?? null)
         setIsDrawing(true)
-        setSnapPreview(snapCoords)
       } else if (wallDrawingStart != null) {
-        // Finish drawing wall with architectural snapping
-        const snapCoords = findSnapPoint(stageCoords, wallDrawingStart)
+        const wallLength = distanceSquared(wallDrawingStart, snapCoords)
+        if (wallLength >= 50 ** 2) {
+          const startPoint = (snappingContext.referencePointId != null) ? modelState.points.get(snappingContext.referencePointId) : addPoint(wallDrawingStart, activeFloorId)
+          const endPoint = ((snapResult?.pointId) != null) ? modelState.points.get(snapResult.pointId) : addPoint(snapCoords, activeFloorId)
 
-        // Check minimum wall length to prevent degenerate walls
-        const wallLength = distance(wallDrawingStart, snapCoords)
-        const minLength = createLength(50) // 50mm minimum length
-
-        if (wallLength >= minLength) {
-          const startPoint = getOrCreatePoint(wallDrawingStart)
-          const endPoint = getOrCreatePoint(snapCoords)
-
-          addWall(startPoint.id, endPoint.id, activeFloorId)
+          if ((startPoint != null) && (endPoint != null)) {
+            addWall(startPoint.id, endPoint.id, activeFloorId)
+          }
 
           setWallDrawingStart(undefined)
           setIsDrawing(false)
-          setSnapPreview(undefined)
+          clearSnapState()
         }
         // If wall is too short, just ignore the click (don't create wall)
       }
@@ -156,7 +148,7 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
       startDrag('selection', pointer as Point2D)
     }
   }, [viewport, startDrag, activeTool, isDrawing, wallDrawingStart, getStageCoordinates, findSnapPoint,
-    getOrCreatePoint, setWallDrawingStart, setIsDrawing, addWall, activeFloorId, setSnapPreview])
+    setWallDrawingStart, setIsDrawing, addWall, activeFloorId, updateSnapReference])
 
   // Handle drag initiation from wall shapes
   useEffect(() => {
@@ -202,17 +194,17 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
       const currentPos = getStageCoordinates(pointer)
       const snapPos = findSnapPoint(currentPos)
 
-      movePoint(dragState.dragEntityId as import('../../../types/ids').PointId, snapPos)
+      movePoint(dragState.dragEntityId as import('../../../types/ids').PointId, snapPos?.position ?? currentPos)
       return
     }
 
     // Handle wall tool preview with architectural snapping
     if (activeTool === 'wall') {
       const stageCoords = getStageCoordinates(pointer)
-      const snapCoords = findSnapPoint(stageCoords, wallDrawingStart ?? undefined)
-      setSnapPreview(snapCoords)
+      // findSnapPoint will automatically update unified snap state for preview
+      findSnapPoint(stageCoords)
     }
-  }, [dragStart, setViewport, activeTool, getStageCoordinates, findSnapPoint, setSnapPreview,
+  }, [dragStart, setViewport, activeTool, getStageCoordinates, findSnapPoint,
     dragState, dragStartPos, moveWall, movePoint])
 
   const handleMouseUp = useCallback((): void => {
@@ -227,13 +219,13 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
       if (e.key === 'Escape' && activeTool === 'wall' && isDrawing) {
         setWallDrawingStart(undefined)
         setIsDrawing(false)
-        setSnapPreview(undefined)
+        clearSnapState()
       }
     }
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [activeTool, isDrawing, setWallDrawingStart, setIsDrawing, setSnapPreview])
+  }, [activeTool, isDrawing, setWallDrawingStart, setIsDrawing])
 
   return (
     <Stage
@@ -256,7 +248,6 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
       <CornerLayer />
       <PointLayer />
       <WallPreviewLayer wallDrawingStart={wallDrawingStart ?? null} stageWidth={width} stageHeight={height} />
-      <SelectionLayer />
     </Stage>
   )
 }
