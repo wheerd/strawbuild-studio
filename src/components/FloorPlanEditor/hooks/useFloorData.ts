@@ -67,7 +67,7 @@ export function useWallsConnectedToPoint (pointId?: PointId): Wall[] {
  * Combined hook that provides all commonly needed floor data in one object.
  * Useful when components need multiple types of floor data.
  */
-export function useActiveFloorData () {
+export function useActiveFloorData (): { points: Point[], walls: Wall[], rooms: Room[] } {
   const points = usePointsOfActiveFloor()
   const walls = useWallsOfActiveFloor()
   const rooms = useRoomsOfActiveFloor()
