@@ -215,11 +215,11 @@ describe('Point Merging', () => {
       const wall4 = createWall(point4.id, point1.id, createLength(3000), createLength(3000), createLength(200))
       const wall5 = createWall(point5.id, point1.id, createLength(3000), createLength(3000), createLength(200)) // Will become degenerate
 
-      state = addWallToFloor(state, wall1, floorId)
-      state = addWallToFloor(state, wall2, floorId)
-      state = addWallToFloor(state, wall3, floorId)
-      state = addWallToFloor(state, wall4, floorId)
-      state = addWallToFloor(state, wall5, floorId)
+      state = addWallToFloor(state, wall1, floorId, false)
+      state = addWallToFloor(state, wall2, floorId, false)
+      state = addWallToFloor(state, wall3, floorId, false)
+      state = addWallToFloor(state, wall4, floorId, false)
+      state = addWallToFloor(state, wall5, floorId, false)
 
       // Create room using all walls including wall5
       const room = createRoom('Test Room', [wall1.id, wall2.id, wall3.id, wall4.id, wall5.id])
@@ -232,8 +232,18 @@ describe('Point Merging', () => {
       // Merge point5 into point1 - this should remove wall5 and the room
       const updatedState = mergePoints(state, point1.id, point5.id, floorId)
 
-      // Room containing the removed wall should be deleted
-      expect(updatedState.rooms.size).toBe(0)
+      // The original room containing the removed wall should be deleted, 
+      // but a new room should be created from the remaining walls (1-4) which form a complete loop
+      expect(updatedState.rooms.size).toBe(1)
+      
+      // The new room should contain the 4 walls that form the rectangle
+      const remainingRoom = Array.from(updatedState.rooms.values())[0]
+      expect(remainingRoom.wallIds).toHaveLength(4)
+      expect(remainingRoom.wallIds).toContain(wall1.id)
+      expect(remainingRoom.wallIds).toContain(wall2.id)
+      expect(remainingRoom.wallIds).toContain(wall3.id)
+      expect(remainingRoom.wallIds).toContain(wall4.id)
+      expect(remainingRoom.wallIds).not.toContain(wall5.id)
     })
   })
 })

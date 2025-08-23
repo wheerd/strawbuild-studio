@@ -1,5 +1,6 @@
 import { Line, Text } from 'react-konva'
 import type { Room } from '@/types/model'
+import type { PointId } from '@/types/ids'
 import { useSelectedEntity, useEditorStore, useActiveTool } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 import { useWalls, usePoints } from '@/model/store'
 
@@ -8,30 +9,43 @@ interface RoomShapeProps {
 }
 
 function getRoomPolygonPoints (room: Room, walls: ReturnType<typeof useWalls>, pointMap: ReturnType<typeof usePoints>): number[] {
-  const uniquePoints = new Map<string, { x: number, y: number }>()
+  if (room.wallIds.length === 0) return []
 
-  // Collect all unique points from the room's walls
-  for (const wallId of room.wallIds) {
-    const wall = walls.get(wallId)
-    if (wall == null) continue
-
-    const startPoint = pointMap.get(wall.startPointId)
-    const endPoint = pointMap.get(wall.endPointId)
-
-    if (startPoint == null || endPoint == null) continue
-
-    // Add points with their IDs as keys to ensure uniqueness
-    uniquePoints.set(wall.startPointId, startPoint.position)
-    uniquePoints.set(wall.endPointId, endPoint.position)
+  // Use the same approach as the face detection algorithm to get properly ordered points
+  const orderedPoints: number[] = []
+  
+  // Find the polygon points by tracing the walls in order  
+  for (let i = 0; i < room.wallIds.length; i++) {
+    const currentWallId = room.wallIds[i]
+    const nextWallId = room.wallIds[(i + 1) % room.wallIds.length]
+    
+    const currentWall = walls.get(currentWallId)
+    const nextWall = walls.get(nextWallId)
+    
+    if (currentWall == null || nextWall == null) continue
+    
+    // Find the connection point between current and next wall
+    let connectionPointId: PointId | null = null
+    
+    if (currentWall.endPointId === nextWall.startPointId) {
+      connectionPointId = currentWall.endPointId
+    } else if (currentWall.endPointId === nextWall.endPointId) {
+      connectionPointId = currentWall.endPointId
+    } else if (currentWall.startPointId === nextWall.startPointId) {
+      connectionPointId = currentWall.startPointId
+    } else if (currentWall.startPointId === nextWall.endPointId) {
+      connectionPointId = currentWall.startPointId
+    }
+    
+    if (connectionPointId != null) {
+      const connectionPoint = pointMap.get(connectionPointId)
+      if (connectionPoint != null) {
+        orderedPoints.push(connectionPoint.position.x, connectionPoint.position.y)
+      }
+    }
   }
-
-  // Convert to flat array of coordinates
-  const points: number[] = []
-  for (const point of uniquePoints.values()) {
-    points.push(point.x, point.y)
-  }
-
-  return points
+  
+  return orderedPoints
 }
 
 function getRoomCenter (points: number[]): { x: number, y: number } {

@@ -89,7 +89,7 @@ describe('Deletion Operations', () => {
         createLength(3000),
         createLength(200)
       )
-      state = addWallToFloor(state, wall3, floor.id)
+      state = addWallToFloor(state, wall3, floor.id, false)
 
       const roomsWithWall3 = findRoomsContainingWall(state, wall3.id)
       expect(roomsWithWall3).toHaveLength(0)

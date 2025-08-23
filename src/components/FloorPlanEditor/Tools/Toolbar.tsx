@@ -21,7 +21,6 @@ export function Toolbar (): React.JSX.Element {
   // Use individual selectors for model actions
   const addPoint = useModelStore(state => state.addPoint)
   const addWall = useModelStore(state => state.addWall)
-  const addRoom = useModelStore(state => state.addRoom)
 
   const tools = [
     { id: 'select' as const, label: 'Select', icon: '↖' },
@@ -37,13 +36,14 @@ export function Toolbar (): React.JSX.Element {
     const point4 = addPoint(createPoint2D(0, 3000), activeFloorId) // Top-left
 
     // Create walls with realistic thickness (200mm = 20cm) and height (2700mm = 2.7m)
-    const wall1 = addWall(point1.id, point2.id, activeFloorId, createLength(200), createLength(2700))
-    const wall2 = addWall(point2.id, point3.id, activeFloorId, createLength(200), createLength(2700))
-    const wall3 = addWall(point3.id, point4.id, activeFloorId, createLength(200), createLength(2700))
-    const wall4 = addWall(point4.id, point1.id, activeFloorId, createLength(200), createLength(2700))
+    // The room will be automatically created when the wall loop is completed
+    addWall(point1.id, point2.id, activeFloorId, createLength(200), createLength(2700))
+    addWall(point2.id, point3.id, activeFloorId, createLength(200), createLength(2700))
+    addWall(point3.id, point4.id, activeFloorId, createLength(200), createLength(2700))
+    addWall(point4.id, point1.id, activeFloorId, createLength(200), createLength(2700))
 
-    addRoom('Living Room', activeFloorId, [wall1.id, wall2.id, wall3.id, wall4.id])
-  }, [addPoint, addWall, addRoom, activeFloorId])
+    // No need to manually add room - it will be automatically created by the loop detection
+  }, [addPoint, addWall, activeFloorId])
 
   const fitToView = useCallback(() => {
     // Get the current model state to calculate floor bounds
