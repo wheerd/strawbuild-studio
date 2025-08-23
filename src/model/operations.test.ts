@@ -244,7 +244,7 @@ describe('Model Operations', () => {
       const w3 = createWall(p3.id, p4.id, createLength(2700), createLength(2700), createLength(200))
       const w4 = createWall(p4.id, p1.id, createLength(2700), createLength(2700), createLength(200))
 
-      const room = createRoom('Square Room', [w1.id, w2.id, w3.id, w4.id])
+      const room = createRoom('Square Room', [w1.id, w2.id, w3.id, w4.id], [p1.id, p2.id, p3.id, p4.id])
 
       state = addPointToFloor(state, p1, groundFloorId)
       state = addPointToFloor(state, p2, groundFloorId)

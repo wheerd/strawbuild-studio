@@ -24,6 +24,7 @@ export const createFloorLevel = (value: number): FloorLevel => {
 export interface Point {
   id: PointId
   position: Point2D
+  roomIds: Set<RoomId> // Rooms that this point belongs to
 }
 
 export type WallOrCornerId = WallId | CornerId
@@ -58,6 +59,10 @@ export interface Wall {
 
   type: 'outer' | 'structural' | 'partition' | 'other'
   outsideDirection?: 'left' | 'right' // Relative to the wall's start point
+
+  // Room tracking - left and right relative to wall direction (start -> end)
+  leftRoomId?: RoomId
+  rightRoomId?: RoomId
 
   readonly shape: Polygon2D // Computed
   readonly length: Length // Computed
@@ -97,7 +102,8 @@ export interface Roof {
 export interface Room {
   id: RoomId
   name: string
-  wallIds: WallId[]
+  wallIds: Set<WallId>
+  pointIds: PointId[] // Ordered clockwise
   readonly area: Area
 }
 

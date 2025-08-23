@@ -72,7 +72,7 @@ describe('ModelStore - Basic Operations', () => {
       const point1 = addPoint(createPoint2D(0, 0), firstFloor.id)
       const point2 = addPoint(createPoint2D(1000, 0), firstFloor.id)
       const wall = addWall(point1.id, point2.id, firstFloor.id, createLength(3000), createLength(3000), createLength(200))
-      const room = addRoom('Test Room', firstFloor.id, [wall.id])
+      const room = addRoom('Test Room', firstFloor.id, [wall.id], [point1.id, point2.id])
 
       state = useModelStore.getState()
 
@@ -164,7 +164,7 @@ describe('ModelStore - Basic Operations', () => {
         .toThrow('Floor invalid-floor-id not found')
 
       // Should throw for rooms
-      expect(() => addRoom('Test Room', invalidFloorId))
+      expect(() => addRoom('Test Room', invalidFloorId, [], []))
         .toThrow('Floor invalid-floor-id not found')
     })
   })

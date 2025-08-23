@@ -39,7 +39,7 @@ interface ModelActions {
 
   addFloor: (name: string, level: FloorLevel, height?: Length) => Floor
   addWall: (startPointId: PointId, endPointId: PointId, floorId: FloorId, heightAtStart?: Length, heightAtEnd?: Length, thickness?: Length) => Wall
-  addRoom: (name: string, floorId: FloorId, wallIds?: WallId[]) => Room
+  addRoom: (name: string, floorId: FloorId, wallIds: WallId[], pointIds: PointId[]) => Room
   addPoint: (position: Point2D, floorId: FloorId) => Point
   addSlab: (polygon: Point2D[], thickness: Length, floorId: FloorId) => Slab
   addRoof: (polygon: Point2D[], thickness: Length, overhang: Length, floorId: FloorId) => Roof
@@ -111,7 +111,7 @@ export const useModelStore = create<ModelStore>()(
         return wall
       },
 
-      addRoom: (name: string, floorId: FloorId, wallIds: WallId[] = []): Room => {
+      addRoom: (name: string, floorId: FloorId, wallIds: WallId[], pointIds: PointId[]): Room => {
         const state = get()
 
         // Validate floor exists
@@ -119,7 +119,7 @@ export const useModelStore = create<ModelStore>()(
           throw new Error(`Floor ${floorId} not found`)
         }
 
-        const room = createRoom(name, wallIds)
+        const room = createRoom(name, wallIds, pointIds)
         const roomWithArea = {
           ...room,
           area: calculateRoomArea(room, state)
