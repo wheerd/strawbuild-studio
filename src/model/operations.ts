@@ -271,12 +271,12 @@ export function addWallToFloor (state: ModelState, wall: Wall, floorId: FloorId,
 
   updatedState.floors.set(floorId, updatedFloor)
   updatedState.updatedAt = new Date()
-  
+
   // Update rooms after adding the wall (if enabled)
   if (updateRooms) {
     return updateRoomsAfterWallChange(updatedState, floorId, wall.id)
   }
-  
+
   return updatedState
 }
 
@@ -691,7 +691,7 @@ export function mergePoints (
     if (updatedWall.startPointId === updatedWall.endPointId) {
       // Find rooms containing this wall before removing it
       const roomsWithWall = findRoomsContainingWall(updatedState, wall.id)
-      
+
       // Remove degenerate wall
       updatedState = removeWallFromFloor(updatedState, wall.id, floorId)
 
@@ -710,7 +710,7 @@ export function mergePoints (
       if (isDuplicate) {
         // Find rooms containing this wall before removing it
         const roomsWithWall = findRoomsContainingWall(updatedState, wall.id)
-        
+
         // Remove duplicate wall
         updatedState = removeWallFromFloor(updatedState, wall.id, floorId)
 
@@ -856,6 +856,9 @@ export function removeWallFromFloor (state: ModelState, wallId: WallId, floorId:
 
   if (wall == null || floor == null) return state
 
+  // Find rooms that contained the deleted wall before removing it
+  const roomsContainingWall = findRoomsContainingWall(state, wallId)
+
   const updatedState = { ...state }
   updatedState.walls = new Map(state.walls)
   updatedState.floors = new Map(state.floors)
@@ -869,9 +872,9 @@ export function removeWallFromFloor (state: ModelState, wallId: WallId, floorId:
 
   updatedState.floors.set(floorId, updatedFloor)
   updatedState.updatedAt = new Date()
-  
-  // Update rooms after removing the wall
-  return updateRoomsAfterWallChange(updatedState, floorId)
+
+  // Handle room merging after wall deletion
+  return handleRoomMergingAfterWallDeletion(updatedState, floorId, roomsContainingWall)
 }
 
 export function removePointFromFloor (state: ModelState, pointId: PointId, floorId: FloorId): ModelState {
@@ -975,15 +978,8 @@ export function deleteWall (state: ModelState, wallId: WallId, floorId: FloorId)
     return { ...state, updatedAt: new Date() }
   }
 
-  // Find rooms that contain this wall and remove them
-  const roomsWithWall = findRoomsContainingWall(state, wallId)
-
+  // Remove wall from floor (this now handles room merging automatically)
   let updatedState = removeWallFromFloor(state, wallId, floorId)
-
-  // Remove rooms that contained this wall
-  for (const room of roomsWithWall) {
-    updatedState = removeRoomFromFloor(updatedState, room.id, floorId)
-  }
 
   // Update corners at both endpoints
   if (updatedState.points.has(wall.startPointId)) {
@@ -1547,7 +1543,7 @@ export function findWallLoops (state: ModelState, floorId: FloorId): WallId[][] 
 
   // Build adjacency map for wall connections at each point
   const wallConnections = new Map<PointId, WallId[]>()
-  
+
   for (const wallId of wallIds) {
     const wall = state.walls.get(wallId)
     if (wall == null) continue
@@ -1559,8 +1555,10 @@ export function findWallLoops (state: ModelState, floorId: FloorId): WallId[][] 
       wallConnections.set(wall.endPointId, [])
     }
 
-    wallConnections.get(wall.startPointId)!.push(wallId)
-    wallConnections.get(wall.endPointId)!.push(wallId)
+    const startConnections = wallConnections.get(wall.startPointId)
+    const endConnections = wallConnections.get(wall.endPointId)
+    if (startConnections != null) startConnections.push(wallId)
+    if (endConnections != null) endConnections.push(wallId)
   }
 
   const faces: WallId[][] = []
@@ -1590,28 +1588,28 @@ export function findWallLoops (state: ModelState, floorId: FloorId): WallId[][] 
           return sortedExisting.length === sortedFace.length &&
                  sortedExisting.every((wallId, index) => wallId === sortedFace[index])
         })
-        
+
         if (!isDuplicate) {
           faces.push(face)
         }
-        
+
         // Mark all edges in this face as used
         for (let i = 0; i < face.length; i++) {
           const wallId = face[i]
           const wall = state.walls.get(wallId)
           if (wall == null) continue
-          
+
           const nextWallId = face[(i + 1) % face.length]
           const nextWall = state.walls.get(nextWallId)
           if (nextWall == null) continue
-          
+
           // Find the shared point between these walls
           let sharedPoint: PointId | null = null
           if (wall.endPointId === nextWall.startPointId) sharedPoint = wall.endPointId
           else if (wall.endPointId === nextWall.endPointId) sharedPoint = wall.endPointId
           else if (wall.startPointId === nextWall.startPointId) sharedPoint = wall.startPointId
           else if (wall.startPointId === nextWall.endPointId) sharedPoint = wall.startPointId
-          
+
           if (sharedPoint != null) {
             const edgeFrom = wall.startPointId === sharedPoint ? wall.endPointId : wall.startPointId
             usedEdges.add(`${wallId}:${edgeFrom}->${sharedPoint}`)
@@ -1628,45 +1626,45 @@ export function findWallLoops (state: ModelState, floorId: FloorId): WallId[][] 
 // Filter faces to keep only interior faces (rooms), not exterior boundaries
 function filterInteriorFaces (faces: WallId[][], state: ModelState): WallId[][] {
   if (faces.length <= 1) return faces
-  
+
   const interiorFaces: WallId[][] = []
-  
+
   // Sort faces by area - smaller faces are more likely to be interior rooms
   const facesWithAreas = faces.map(face => ({
     face,
     area: calculateFaceArea(face, state)
   })).filter(item => item.area > 0) // Only keep valid faces with positive area
-  
+
   facesWithAreas.sort((a, b) => a.area - b.area)
-  
+
   // For each face, check if it's contained within any larger face
   for (const faceItem of facesWithAreas) {
     let isInterior = false
-    
+
     // Check if this face is contained within any other face
     for (const otherFaceItem of facesWithAreas) {
       if (faceItem === otherFaceItem) continue
       if (otherFaceItem.area <= faceItem.area) continue // Only check larger faces
-      
+
       if (isFaceContainedWithin(faceItem.face, otherFaceItem.face, state)) {
         isInterior = true
         break
       }
     }
-    
+
     // If not contained in any larger face, it might be an exterior face
     // Interior faces should be contained within some larger boundary
     if (isInterior || facesWithAreas.length === 1) {
       interiorFaces.push(faceItem.face)
     }
   }
-  
+
   // If no faces were deemed interior, return the smallest faces (most likely to be rooms)
   if (interiorFaces.length === 0 && facesWithAreas.length > 0) {
     const minArea = facesWithAreas[0].area
     return facesWithAreas.filter(item => item.area === minArea).map(item => item.face)
   }
-  
+
   return interiorFaces
 }
 
@@ -1674,7 +1672,7 @@ function filterInteriorFaces (faces: WallId[][], state: ModelState): WallId[][] 
 function calculateFaceArea (wallIds: WallId[], state: ModelState): number {
   const points = getFacePolygonPoints(wallIds, state)
   if (points.length < 3) return 0
-  
+
   return Number(calculatePolygonArea({ points }))
 }
 
@@ -1682,34 +1680,34 @@ function calculateFaceArea (wallIds: WallId[], state: ModelState): number {
 function isFaceContainedWithin (innerFace: WallId[], outerFace: WallId[], state: ModelState): boolean {
   const innerPoints = getFacePolygonPoints(innerFace, state)
   const outerPoints = getFacePolygonPoints(outerFace, state)
-  
+
   if (innerPoints.length === 0 || outerPoints.length === 0) return false
-  
+
   // Check if all inner points are inside the outer polygon
   for (const innerPoint of innerPoints) {
     if (!isPointInPolygon(innerPoint, outerPoints)) {
       return false
     }
   }
-  
+
   return true
 }
 
 // Get the ordered polygon points for a face
 function getFacePolygonPoints (wallIds: WallId[], state: ModelState): Point2D[] {
   if (wallIds.length === 0) return []
-  
+
   const points: Point2D[] = []
-  
+
   for (let i = 0; i < wallIds.length; i++) {
     const currentWall = state.walls.get(wallIds[i])
     const nextWall = state.walls.get(wallIds[(i + 1) % wallIds.length])
-    
+
     if (currentWall == null || nextWall == null) continue
-    
+
     // Find the connection point between current and next wall
     let connectionPoint: PointId | null = null
-    
+
     if (currentWall.endPointId === nextWall.startPointId) {
       connectionPoint = currentWall.endPointId
     } else if (currentWall.endPointId === nextWall.endPointId) {
@@ -1719,7 +1717,7 @@ function getFacePolygonPoints (wallIds: WallId[], state: ModelState): Point2D[] 
     } else if (currentWall.startPointId === nextWall.endPointId) {
       connectionPoint = currentWall.startPointId
     }
-    
+
     if (connectionPoint != null) {
       const point = state.points.get(connectionPoint)
       if (point != null) {
@@ -1727,16 +1725,16 @@ function getFacePolygonPoints (wallIds: WallId[], state: ModelState): Point2D[] 
       }
     }
   }
-  
+
   return points
 }
 
 // Find the minimal face starting from a specific wall and direction
 function findMinimalFace (
-  startWallId: WallId, 
-  _startFrom: PointId, 
-  startTo: PointId, 
-  wallConnections: Map<PointId, WallId[]>, 
+  startWallId: WallId,
+  _startFrom: PointId,
+  startTo: PointId,
+  wallConnections: Map<PointId, WallId[]>,
   state: ModelState
 ): WallId[] | null {
   const face: WallId[] = [startWallId]
@@ -1744,22 +1742,22 @@ function findMinimalFace (
   let previousWall = startWallId
 
   while (face.length < 20) { // Prevent infinite loops
-    const connectedWalls = wallConnections.get(currentPoint) || []
+    const connectedWalls = wallConnections.get(currentPoint) ?? []
     if (connectedWalls.length < 2) return null // Dead end
-    
+
     // Find the next wall by taking the rightmost turn (clockwise)
     let nextWall: WallId | null = null
     let bestAngle = -Math.PI * 2 // Start with worst possible angle
-    
+
     const currentWall = state.walls.get(previousWall)
     if (currentWall == null) return null
-    
+
     // Direction we came from
     const prevPoint = currentWall.startPointId === currentPoint ? currentWall.endPointId : currentWall.startPointId
     const prevPointPos = state.points.get(prevPoint)
     const currentPointPos = state.points.get(currentPoint)
     if (prevPointPos == null || currentPointPos == null) return null
-    
+
     const incomingAngle = Math.atan2(
       currentPointPos.position.y - prevPointPos.position.y,
       currentPointPos.position.x - prevPointPos.position.x
@@ -1767,51 +1765,51 @@ function findMinimalFace (
 
     for (const wallId of connectedWalls) {
       if (wallId === previousWall) continue // Don't go back
-      
+
       const wall = state.walls.get(wallId)
       if (wall == null) continue
-      
+
       const otherPoint = wall.startPointId === currentPoint ? wall.endPointId : wall.startPointId
       const otherPointPos = state.points.get(otherPoint)
       if (otherPointPos == null) continue
-      
+
       const outgoingAngle = Math.atan2(
         otherPointPos.position.y - currentPointPos.position.y,
         otherPointPos.position.x - currentPointPos.position.x
       )
-      
+
       // Calculate the angle difference (turn angle)
       let turnAngle = outgoingAngle - incomingAngle
       while (turnAngle <= -Math.PI) turnAngle += 2 * Math.PI
       while (turnAngle > Math.PI) turnAngle -= 2 * Math.PI
-      
+
       // We want the rightmost turn (most clockwise, which is the smallest turn angle)
       if (turnAngle > bestAngle) {
         bestAngle = turnAngle
         nextWall = wallId
       }
     }
-    
+
     if (nextWall == null) return null
-    
+
     // Check if we've completed the face
     if (nextWall === startWallId) {
       return face
     }
-    
+
     // Check if we've hit another wall in our path (not a minimal face)
     if (face.includes(nextWall)) {
       return null
     }
-    
+
     face.push(nextWall)
     previousWall = nextWall
-    
+
     const nextWallObj = state.walls.get(nextWall)
     if (nextWallObj == null) return null
     currentPoint = nextWallObj.startPointId === currentPoint ? nextWallObj.endPointId : nextWallObj.startPointId
   }
-  
+
   return null
 }
 
@@ -1821,20 +1819,24 @@ export function isValidRoomLoop (wallIds: WallId[], state: ModelState): boolean 
 
   // Check that all walls connect properly to form a closed loop
   const points: PointId[] = []
-  
+
   for (let i = 0; i < wallIds.length; i++) {
     const currentWall = state.walls.get(wallIds[i])
     const nextWall = state.walls.get(wallIds[(i + 1) % wallIds.length])
-    
+
     if (currentWall == null || nextWall == null) return false
 
     // Check if walls connect properly
-    const connectionPoint = 
-      currentWall.endPointId === nextWall.startPointId ? currentWall.endPointId :
-      currentWall.endPointId === nextWall.endPointId ? currentWall.endPointId :
-      currentWall.startPointId === nextWall.startPointId ? currentWall.startPointId :
-      currentWall.startPointId === nextWall.endPointId ? currentWall.startPointId :
-      null
+    const connectionPoint =
+      currentWall.endPointId === nextWall.startPointId
+        ? currentWall.endPointId
+        : currentWall.endPointId === nextWall.endPointId
+          ? currentWall.endPointId
+          : currentWall.startPointId === nextWall.startPointId
+            ? currentWall.startPointId
+            : currentWall.startPointId === nextWall.endPointId
+              ? currentWall.startPointId
+              : null
 
     if (connectionPoint == null) return false
 
@@ -1857,13 +1859,13 @@ export function isValidRoomLoop (wallIds: WallId[], state: ModelState): boolean 
 
 // Create a room from a valid wall loop
 export function createRoomFromWallLoop (wallIds: WallId[], name?: string): Room {
-  return createRoom(name || `Room ${Date.now()}`, wallIds)
+  return createRoom(name ?? `Room ${Date.now()}`, wallIds)
 }
 
 // Find existing rooms that would be affected by adding a new wall
 export function findRoomsIntersectedByWall (
-  state: ModelState, 
-  startPointId: PointId, 
+  state: ModelState,
+  startPointId: PointId,
   endPointId: PointId,
   floorId: FloorId
 ): Room[] {
@@ -1873,7 +1875,7 @@ export function findRoomsIntersectedByWall (
   const intersectedRooms: Room[] = []
   const startPoint = state.points.get(startPointId)
   const endPoint = state.points.get(endPointId)
-  
+
   if (startPoint == null || endPoint == null) return []
 
   for (const roomId of floor.roomIds) {
@@ -1898,14 +1900,14 @@ function isWallInsideRoom (
 ): boolean {
   // Get room polygon points
   const roomPoints: Point2D[] = []
-  
+
   for (const wallId of room.wallIds) {
     const wall = state.walls.get(wallId)
     if (wall == null) continue
 
     const startPoint = state.points.get(wall.startPointId)
     const endPoint = state.points.get(wall.endPointId)
-    
+
     if (startPoint != null && !roomPoints.some(p => p.x === startPoint.position.x && p.y === startPoint.position.y)) {
       roomPoints.push(startPoint.position)
     }
@@ -1921,24 +1923,24 @@ function isWallInsideRoom (
     (wallStart.x + wallEnd.x) / 2,
     (wallStart.y + wallEnd.y) / 2
   )
-  
+
   return isPointInPolygon(wallMidPoint, roomPoints)
 }
 
 // Simple point-in-polygon test using ray casting
 function isPointInPolygon (point: Point2D, polygon: Point2D[]): boolean {
   let inside = false
-  
+
   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
     const pi = polygon[i]
     const pj = polygon[j]
-    
+
     if (((pi.y > point.y) !== (pj.y > point.y)) &&
         (point.x < (pj.x - pi.x) * (point.y - pi.y) / (pj.y - pi.y) + pi.x)) {
       inside = !inside
     }
   }
-  
+
   return inside
 }
 
@@ -1956,16 +1958,16 @@ export function splitRoomWithWall (
 
   // Find new wall loops after adding the dividing wall
   const wallLoops = findWallLoops(updatedState, floorId)
-  
+
   // Create new rooms from the resulting loops
   for (const wallLoop of wallLoops) {
     if (!isValidRoomLoop(wallLoop, updatedState)) continue
 
     // Only create rooms that include walls from the original room or the new dividing wall
-    const includesOriginalWalls = wallLoop.some(wallId => 
+    const includesOriginalWalls = wallLoop.some(wallId =>
       room.wallIds.includes(wallId) || wallId === dividingWallId
     )
-    
+
     if (includesOriginalWalls) {
       const roomName = `Room ${updatedState.rooms.size + 1}`
       const newRoom = createRoomFromWallLoop(wallLoop, roomName)
@@ -1983,28 +1985,28 @@ export function updateRoomsAfterWallChange (
   addedWallId?: WallId
 ): ModelState {
   let updatedState = { ...state }
-  
+
   // If a wall was added, check if it splits any existing rooms
   if (addedWallId != null) {
     const addedWall = updatedState.walls.get(addedWallId)
     if (addedWall != null) {
       const intersectedRooms = findRoomsIntersectedByWall(
-        updatedState, 
-        addedWall.startPointId, 
-        addedWall.endPointId, 
+        updatedState,
+        addedWall.startPointId,
+        addedWall.endPointId,
         floorId
       )
-      
+
       // Split any intersected rooms
       for (const room of intersectedRooms) {
         updatedState = splitRoomWithWall(updatedState, room.id, addedWallId, floorId)
       }
     }
   }
-  
+
   // Find all current wall loops
   const wallLoops = findWallLoops(updatedState, floorId)
-  
+
   // Remove existing rooms on this floor that are no longer valid
   const floor = updatedState.floors.get(floorId)
   if (floor == null) return updatedState
@@ -2035,6 +2037,63 @@ export function updateRoomsAfterWallChange (
       const roomName = `Room ${updatedState.rooms.size + 1}`
       const newRoom = createRoomFromWallLoop(wallLoop, roomName)
       updatedState = addRoomToFloor(updatedState, newRoom, floorId)
+    }
+  }
+
+  return updatedState
+}
+
+// Handle room merging after a wall is deleted
+export function handleRoomMergingAfterWallDeletion (
+  state: ModelState,
+  floorId: FloorId,
+  roomsContainingDeletedWall: Room[]
+): ModelState {
+  let updatedState = { ...state }
+
+  // Remove the affected rooms first
+  for (const room of roomsContainingDeletedWall) {
+    updatedState = removeRoomFromFloor(updatedState, room.id, floorId)
+  }
+
+  // If no rooms were affected, just return
+  if (roomsContainingDeletedWall.length === 0) {
+    return updatedState
+  }
+
+  // Get all walls that were part of the deleted rooms (excluding the deleted wall which is already gone)
+  const affectedWallIds = new Set<WallId>()
+  for (const room of roomsContainingDeletedWall) {
+    for (const wallId of room.wallIds) {
+      // Only include walls that still exist
+      if (updatedState.walls.has(wallId)) {
+        affectedWallIds.add(wallId)
+      }
+    }
+  }
+
+  // Find new wall loops that include the affected walls
+  // This naturally handles merging - if two rooms should merge, there will be one larger loop
+  const wallLoops = findWallLoops(updatedState, floorId)
+
+  for (const wallLoop of wallLoops) {
+    if (!isValidRoomLoop(wallLoop, updatedState)) continue
+
+    // Only create rooms for loops that include walls from the affected area
+    const includesAffectedWalls = wallLoop.some(wallId => affectedWallIds.has(wallId))
+
+    if (includesAffectedWalls) {
+      // Check if a room already exists for this exact wall combination
+      const existingRoom = Array.from(updatedState.rooms.values()).find(room => {
+        if (room.wallIds.length !== wallLoop.length) return false
+        return wallLoop.every(wallId => room.wallIds.includes(wallId))
+      })
+
+      if (existingRoom == null) {
+        const roomName = `Room ${updatedState.rooms.size + 1}`
+        const newRoom = createRoomFromWallLoop(wallLoop, roomName)
+        updatedState = addRoomToFloor(updatedState, newRoom, floorId)
+      }
     }
   }
 

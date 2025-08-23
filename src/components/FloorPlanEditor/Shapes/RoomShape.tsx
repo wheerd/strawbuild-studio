@@ -13,20 +13,20 @@ function getRoomPolygonPoints (room: Room, walls: ReturnType<typeof useWalls>, p
 
   // Use the same approach as the face detection algorithm to get properly ordered points
   const orderedPoints: number[] = []
-  
-  // Find the polygon points by tracing the walls in order  
+
+  // Find the polygon points by tracing the walls in order
   for (let i = 0; i < room.wallIds.length; i++) {
     const currentWallId = room.wallIds[i]
     const nextWallId = room.wallIds[(i + 1) % room.wallIds.length]
-    
+
     const currentWall = walls.get(currentWallId)
     const nextWall = walls.get(nextWallId)
-    
+
     if (currentWall == null || nextWall == null) continue
-    
+
     // Find the connection point between current and next wall
     let connectionPointId: PointId | null = null
-    
+
     if (currentWall.endPointId === nextWall.startPointId) {
       connectionPointId = currentWall.endPointId
     } else if (currentWall.endPointId === nextWall.endPointId) {
@@ -36,7 +36,7 @@ function getRoomPolygonPoints (room: Room, walls: ReturnType<typeof useWalls>, p
     } else if (currentWall.startPointId === nextWall.endPointId) {
       connectionPointId = currentWall.startPointId
     }
-    
+
     if (connectionPointId != null) {
       const connectionPoint = pointMap.get(connectionPointId)
       if (connectionPoint != null) {
@@ -44,7 +44,7 @@ function getRoomPolygonPoints (room: Room, walls: ReturnType<typeof useWalls>, p
       }
     }
   }
-  
+
   return orderedPoints
 }
 

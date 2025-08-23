@@ -86,7 +86,7 @@ describe('Room Management Operations', () => {
       const point2 = createPoint(createPoint2D(2000, 0))
       const point3 = createPoint(createPoint2D(2000, 1000))
       const point4 = createPoint(createPoint2D(0, 1000))
-      
+
       // Points for the dividing wall
       const point5 = createPoint(createPoint2D(1000, 0))
       const point6 = createPoint(createPoint2D(1000, 1000))
@@ -116,25 +116,25 @@ describe('Room Management Operations', () => {
       updatedState = addWallToFloor(updatedState, wall7, floorId, false)
 
       const loops = findWallLoops(updatedState, floorId)
-      
+
       // Should find exactly 2 minimal loops (left and right rooms), not the large outer loop
       expect(loops).toHaveLength(2)
-      
+
       // Each loop should have 4 walls
       for (const loop of loops) {
         expect(loop).toHaveLength(4)
       }
-      
+
       // One loop should be the left room: wall1, wall7, wall5, wall6
-      const leftRoom = loops.find(loop => 
-        loop.includes(wall1.id) && loop.includes(wall7.id) && 
+      const leftRoom = loops.find(loop =>
+        loop.includes(wall1.id) && loop.includes(wall7.id) &&
         loop.includes(wall5.id) && loop.includes(wall6.id)
       )
       expect(leftRoom).toBeDefined()
-      
+
       // Other loop should be the right room: wall2, wall3, wall4, wall7
-      const rightRoom = loops.find(loop => 
-        loop.includes(wall2.id) && loop.includes(wall3.id) && 
+      const rightRoom = loops.find(loop =>
+        loop.includes(wall2.id) && loop.includes(wall3.id) &&
         loop.includes(wall4.id) && loop.includes(wall7.id)
       )
       expect(rightRoom).toBeDefined()

@@ -232,10 +232,10 @@ describe('Point Merging', () => {
       // Merge point5 into point1 - this should remove wall5 and the room
       const updatedState = mergePoints(state, point1.id, point5.id, floorId)
 
-      // The original room containing the removed wall should be deleted, 
+      // The original room containing the removed wall should be deleted,
       // but a new room should be created from the remaining walls (1-4) which form a complete loop
       expect(updatedState.rooms.size).toBe(1)
-      
+
       // The new room should contain the 4 walls that form the rectangle
       const remainingRoom = Array.from(updatedState.rooms.values())[0]
       expect(remainingRoom.wallIds).toHaveLength(4)
