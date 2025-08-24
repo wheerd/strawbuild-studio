@@ -106,10 +106,10 @@ describe('Model Operations', () => {
         createLength(2700),
         createLength(200)
       )
-      const room = createRoom('Living Room', [wall.id])
+      const room = createRoom('Living Room', [wall.id], [point1.id, point2.id])
 
       expect(room.name).toBe('Living Room')
-      expect(room.wallIds).toEqual([wall.id])
+      expect(Array.from(room.wallIds)).toEqual([wall.id])
       expect(Number(room.area)).toBe(0)
     })
 

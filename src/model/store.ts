@@ -30,7 +30,9 @@ import {
   switchCornerMainWalls,
   deletePoint,
   deleteWall,
-  deleteRoom
+  deleteRoom,
+  cleanupModelConsistency,
+  updateRoomsAfterWallChange
 } from '@/model/operations'
 import { createLength } from '@/types/geometry'
 
@@ -53,6 +55,8 @@ interface ModelActions {
   deletePoint: (pointId: PointId, floorId: FloorId) => void
   deleteWall: (wallId: WallId, floorId: FloorId) => void
   deleteRoom: (roomId: RoomId, floorId: FloorId) => void
+  cleanupModel: () => void
+  validateRoomsOnFloor: (floorId: FloorId) => void
 }
 
 type ModelStore = ModelState & ModelActions
@@ -289,6 +293,18 @@ export const useModelStore = create<ModelStore>()(
         const state = get()
         const updatedState = mergePoints(state, targetPointId, sourcePointId, floorId)
         set(updatedState, false, 'mergePoints')
+      },
+
+      cleanupModel: () => {
+        const state = get()
+        const updatedState = cleanupModelConsistency(state)
+        set(updatedState, false, 'cleanupModel')
+      },
+
+      validateRoomsOnFloor: (floorId: FloorId) => {
+        const state = get()
+        const updatedState = updateRoomsAfterWallChange(state, floorId)
+        set(updatedState, false, 'validateRoomsOnFloor')
       }
     }),
     {

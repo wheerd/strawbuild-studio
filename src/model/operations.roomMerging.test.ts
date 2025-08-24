@@ -57,8 +57,8 @@ describe('Room Merging Operations', () => {
       updatedState = addWallToFloor(updatedState, wallDivider, floorId, false)
 
       // Create two rooms
-      const leftRoom = createRoom('Left Room', [wallTop1.id, wallDivider.id, wallBottom1.id, wallLeft.id])
-      const rightRoom = createRoom('Right Room', [wallTop2.id, wallRight.id, wallBottom2.id, wallDivider.id])
+      const leftRoom = createRoom('Left Room', [wallTop1.id, wallDivider.id, wallBottom1.id, wallLeft.id], [p1.id, p2.id, p5.id, p6.id])
+      const rightRoom = createRoom('Right Room', [wallTop2.id, wallRight.id, wallBottom2.id, wallDivider.id], [p2.id, p3.id, p4.id, p5.id])
 
       updatedState = addRoomToFloor(updatedState, leftRoom, floorId)
       updatedState = addRoomToFloor(updatedState, rightRoom, floorId)
@@ -140,9 +140,9 @@ describe('Room Merging Operations', () => {
       updatedState = addWallToFloor(updatedState, wallBC, floorId, false)
 
       // Create three rooms
-      const roomA = createRoom('Room A', [wall1.id, wallAB.id, wallAC.id, wall8.id])
-      const roomB = createRoom('Room B', [wallAB.id, wall3.id, wall4.id, wallBC.id])
-      const roomC = createRoom('Room C', [wallAC.id, wallBC.id, wall5.id, wall6.id, wall7.id])
+      const roomA = createRoom('Room A', [wall1.id, wallAB.id, wallAC.id, wall8.id], [p1.id, p2.id, p8.id])
+      const roomB = createRoom('Room B', [wallAB.id, wall3.id, wall4.id, wallBC.id], [p2.id, p3.id, p4.id, p5.id])
+      const roomC = createRoom('Room C', [wallAC.id, wallBC.id, wall5.id, wall6.id, wall7.id], [p2.id, p5.id, p6.id, p7.id, p8.id])
 
       updatedState = addRoomToFloor(updatedState, roomA, floorId)
       updatedState = addRoomToFloor(updatedState, roomB, floorId)
@@ -215,7 +215,7 @@ describe('Room Merging Operations', () => {
       updatedState = addWallToFloor(updatedState, extraWall, floorId, false)
 
       // Create one room (rectangular)
-      const room = createRoom('Test Room', [wall1.id, wall2.id, wall3.id, wall4.id])
+      const room = createRoom('Test Room', [wall1.id, wall2.id, wall3.id, wall4.id], [p1.id, p2.id, p3.id, p4.id])
       updatedState = addRoomToFloor(updatedState, room, floorId)
 
       // Verify initial state: 1 room exists
@@ -262,7 +262,7 @@ describe('Room Merging Operations', () => {
       updatedState = addWallToFloor(updatedState, wall4, floorId, false)
 
       // Create room
-      const room = createRoom('Test Room', [wall1.id, wall2.id, wall3.id, wall4.id])
+      const room = createRoom('Test Room', [wall1.id, wall2.id, wall3.id, wall4.id], [p1.id, p2.id, p3.id, p4.id])
       updatedState = addRoomToFloor(updatedState, room, floorId)
 
       // Verify initial state: 1 room exists
@@ -312,8 +312,8 @@ describe('Room Merging Operations', () => {
       }
 
       // Create two rooms
-      const leftRoom = createRoom('Left', [walls[0].id, walls[6].id, walls[4].id, walls[5].id])
-      const rightRoom = createRoom('Right', [walls[1].id, walls[2].id, walls[3].id, walls[6].id])
+      const leftRoom = createRoom('Left', [walls[0].id, walls[6].id, walls[4].id, walls[5].id], [p1.id, p2.id, p5.id, p6.id])
+      const rightRoom = createRoom('Right', [walls[1].id, walls[2].id, walls[3].id, walls[6].id], [p2.id, p3.id, p4.id, p5.id])
 
       updatedState = addRoomToFloor(updatedState, leftRoom, floorId)
       updatedState = addRoomToFloor(updatedState, rightRoom, floorId)

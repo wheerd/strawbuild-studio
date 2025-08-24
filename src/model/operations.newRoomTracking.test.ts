@@ -32,9 +32,9 @@ describe('New Room Tracking System', () => {
       let updatedState = addPointToFloor(state, p1, floorId)
       updatedState = addPointToFloor(updatedState, p2, floorId)
 
-      // Points should have empty room arrays
-      expect(p1.roomIds).toEqual([])
-      expect(p2.roomIds).toEqual([])
+      // Points should have empty room sets
+      expect(Array.from(p1.roomIds)).toEqual([])
+      expect(Array.from(p2.roomIds)).toEqual([])
 
       const wall = createWall(p1.id, p2.id, createLength(3000), createLength(3000), createLength(200))
       
@@ -91,7 +91,7 @@ describe('New Room Tracking System', () => {
         [p1.id, p2.id, p3.id, p4.id]
       )
 
-      expect(room.wallIds).toEqual([w1.id, w2.id, w3.id, w4.id])
+      expect(Array.from(room.wallIds)).toEqual([w1.id, w2.id, w3.id, w4.id])
       expect(room.pointIds).toEqual([p1.id, p2.id, p3.id, p4.id])
     })
   })

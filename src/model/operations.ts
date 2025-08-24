@@ -293,8 +293,44 @@ export function addRoomToFloor(state: ModelState, room: Room, floorId: FloorId):
   const updatedState = { ...state }
   updatedState.rooms = new Map(state.rooms)
   updatedState.floors = new Map(state.floors)
+  updatedState.walls = new Map(state.walls)
 
   updatedState.rooms.set(room.id, room)
+
+  // Update wall references to include this room with proper left/right determination
+  for (const wallId of room.wallIds) {
+    const wall = updatedState.walls.get(wallId)
+    if (wall != null) {
+      const updatedWall = { ...wall }
+      
+      // Determine which side of the wall this room should be on
+      if (room.pointIds != null) {
+        const roomSide = determineRoomSideOfWall(room, wall, updatedState)
+        
+        if (roomSide === 'left' && updatedWall.leftRoomId == null) {
+          updatedWall.leftRoomId = room.id
+        } else if (roomSide === 'right' && updatedWall.rightRoomId == null) {
+          updatedWall.rightRoomId = room.id
+        } else {
+          // Fallback: use any available side
+          if (updatedWall.leftRoomId == null) {
+            updatedWall.leftRoomId = room.id
+          } else if (updatedWall.rightRoomId == null) {
+            updatedWall.rightRoomId = room.id
+          }
+        }
+      } else {
+        // Simple fallback when no point information
+        if (updatedWall.leftRoomId == null) {
+          updatedWall.leftRoomId = room.id
+        } else if (updatedWall.rightRoomId == null) {
+          updatedWall.rightRoomId = room.id
+        }
+      }
+      
+      updatedState.walls.set(wallId, updatedWall)
+    }
+  }
 
   const updatedFloor = {
     ...floor,
@@ -2149,14 +2185,37 @@ export function deleteWallWithRoomMerging(state: ModelState, wallId: WallId, flo
 
     if (room != null) {
       const updatedWallIds = Array.from(room.wallIds).filter(id => id !== wallId)
-      if (updatedWallIds.length < 3) {
-        // Room is no longer valid, remove it
+      
+      // Create temporary room for validation
+      const tempRoom = {
+        ...room,
+        wallIds: new Set(updatedWallIds)
+      }
+      
+      // Check if the room is still valid after wall removal
+      if (!isRoomValid(tempRoom, updatedState)) {
+        // Room is no longer valid, remove it completely
         updatedState.rooms.delete(roomId)
         const finalUpdatedFloor = {
           ...updatedState.floors.get(floorId)!,
           roomIds: updatedState.floors.get(floorId)!.roomIds.filter(id => id !== roomId)
         }
         updatedState.floors.set(floorId, finalUpdatedFloor)
+
+        // Remove room references from walls
+        for (const wId of room.wallIds) {
+          const w = updatedState.walls.get(wId)
+          if (w != null) {
+            const updatedWall = { ...w }
+            if (updatedWall.leftRoomId === roomId) {
+              updatedWall.leftRoomId = undefined
+            }
+            if (updatedWall.rightRoomId === roomId) {
+              updatedWall.rightRoomId = undefined
+            }
+            updatedState.walls.set(wId, updatedWall)
+          }
+        }
 
         // Remove room references from points
         if (room.pointIds != null) {
@@ -2375,4 +2434,337 @@ export function createOrderedRoomFromLoop(
   const pointIds = loopResult.pointIds.slice(0, -1)
 
   return createRoomFromWallsAndPoints(roomName, loopResult.wallIds, pointIds)
+}
+
+// Check if a room is valid (forms a closed loop and has proper connectivity)
+export function isRoomValid(room: Room, state: ModelState): boolean {
+  // Must have at least 3 walls
+  if (room.wallIds.size < 3) {
+    return false
+  }
+
+  // Check if walls form a connected loop
+  const wallIds = Array.from(room.wallIds)
+  
+  // Build connectivity map
+  const pointToWalls = new Map<PointId, WallId[]>()
+  
+  for (const wallId of wallIds) {
+    const wall = state.walls.get(wallId)
+    if (wall == null) return false // Wall doesn't exist
+    
+    if (!pointToWalls.has(wall.startPointId)) {
+      pointToWalls.set(wall.startPointId, [])
+    }
+    if (!pointToWalls.has(wall.endPointId)) {
+      pointToWalls.set(wall.endPointId, [])
+    }
+    
+    pointToWalls.get(wall.startPointId)!.push(wallId)
+    pointToWalls.get(wall.endPointId)!.push(wallId)
+  }
+  
+  // Each point should connect to exactly 2 walls (for a closed loop)
+  for (const [, connectedWalls] of pointToWalls) {
+    if (connectedWalls.length !== 2) {
+      return false // Not a closed loop
+    }
+  }
+  
+  // Check if all walls are connected in a single loop
+  const visited = new Set<WallId>()
+  const startWallId = wallIds[0]
+  let currentWallId = startWallId
+  let currentPoint = state.walls.get(startWallId)?.startPointId
+  
+  if (currentPoint == null) return false
+  
+  while (true) {
+    visited.add(currentWallId)
+    
+    // Find the next wall connected to the current point
+    const connectedWalls = pointToWalls.get(currentPoint!) || []
+    const nextWallId = connectedWalls.find(wId => wId !== currentWallId && !visited.has(wId))
+    
+    if (nextWallId == null) {
+      // No unvisited wall - check if we've visited all walls and returned to start
+      if (visited.size === wallIds.length && connectedWalls.includes(startWallId)) {
+        return true // Valid closed loop
+      }
+      return false // Broken chain
+    }
+    
+    const nextWall = state.walls.get(nextWallId)
+    if (nextWall == null) return false
+    
+    // Move to the other end of the next wall
+    currentPoint = nextWall.startPointId === currentPoint ? nextWall.endPointId : nextWall.startPointId
+    currentWallId = nextWallId
+    
+    // Safety check to prevent infinite loops
+    if (visited.size > wallIds.length) return false
+  }
+}
+
+// Determine which side of a wall a room should be on based on room geometry
+export function determineRoomSideOfWall(room: Room, wall: Wall, state: ModelState): 'left' | 'right' {
+  // Get wall direction vector (start -> end)
+  const startPoint = state.points.get(wall.startPointId)
+  const endPoint = state.points.get(wall.endPointId)
+  
+  if (startPoint == null || endPoint == null || room.pointIds == null) {
+    return 'left' // Default fallback
+  }
+  
+  const wallVector = {
+    x: endPoint.position.x - startPoint.position.x,
+    y: endPoint.position.y - startPoint.position.y
+  }
+  
+  // Find the room's centroid
+  const roomPoints = room.pointIds
+    .map(id => state.points.get(id))
+    .filter((p): p is Point => p !== undefined)
+    .map(p => p.position)
+  
+  if (roomPoints.length === 0) return 'left'
+  
+  const centroid = {
+    x: roomPoints.reduce((sum, p) => sum + p.x, 0) / roomPoints.length,
+    y: roomPoints.reduce((sum, p) => sum + p.y, 0) / roomPoints.length
+  }
+  
+  // Vector from wall start to room centroid
+  const toCentroid = {
+    x: centroid.x - startPoint.position.x,
+    y: centroid.y - startPoint.position.y
+  }
+  
+  // Cross product to determine which side of the wall the room is on
+  // Positive cross product means room is to the left of wall direction
+  const crossProduct = wallVector.x * toCentroid.y - wallVector.y * toCentroid.x
+  
+  return crossProduct > 0 ? 'left' : 'right'
+}
+
+// Find rooms that contain a specific wall
+export function findRoomsContainingWall(state: ModelState, wallId: WallId): Room[] {
+  const rooms: Room[] = []
+  
+  for (const room of state.rooms.values()) {
+    if (room.wallIds.has(wallId)) {
+      rooms.push(room)
+    }
+  }
+  
+  return rooms
+}
+
+// Update rooms after wall changes (addition or removal)
+export function updateRoomsAfterWallChange(state: ModelState, floorId: FloorId): ModelState {
+  let updatedState = { ...state }
+  
+  const floor = updatedState.floors.get(floorId)
+  if (floor == null) return state
+  
+  updatedState.rooms = new Map(state.rooms)
+  updatedState.floors = new Map(state.floors)
+  updatedState.walls = new Map(state.walls)
+  updatedState.points = new Map(state.points)
+  
+  const invalidRoomIds: RoomId[] = []
+  
+  // Check each room for validity
+  for (const roomId of floor.roomIds) {
+    const room = updatedState.rooms.get(roomId)
+    if (room == null || !isRoomValid(room, updatedState)) {
+      invalidRoomIds.push(roomId)
+    }
+  }
+  
+  // Remove invalid rooms and clean up all references
+  updatedState = cleanupInvalidRooms(updatedState, invalidRoomIds)
+  
+  // Ensure all remaining rooms have correct wall assignments based on direction
+  updatedState = ensureCorrectWallRoomAssignments(updatedState, floorId)
+  
+  updatedState.updatedAt = new Date()
+  return updatedState
+}
+
+// Clean up invalid rooms and all their references
+export function cleanupInvalidRooms(state: ModelState, invalidRoomIds: RoomId[]): ModelState {
+  let updatedState = { ...state }
+  updatedState.rooms = new Map(state.rooms)
+  updatedState.floors = new Map(state.floors)
+  updatedState.walls = new Map(state.walls)
+  updatedState.points = new Map(state.points)
+  
+  for (const roomId of invalidRoomIds) {
+    const room = updatedState.rooms.get(roomId)
+    if (room != null) {
+      // Remove room from floors
+      for (const [fId, floor] of updatedState.floors) {
+        if (floor.roomIds.includes(roomId)) {
+          const updatedFloor = {
+            ...floor,
+            roomIds: floor.roomIds.filter(id => id !== roomId)
+          }
+          updatedState.floors.set(fId, updatedFloor)
+        }
+      }
+      
+      // Remove room references from walls
+      for (const wallId of room.wallIds) {
+        const wall = updatedState.walls.get(wallId)
+        if (wall != null) {
+          const updatedWall = { ...wall }
+          if (updatedWall.leftRoomId === roomId) {
+            updatedWall.leftRoomId = undefined
+          }
+          if (updatedWall.rightRoomId === roomId) {
+            updatedWall.rightRoomId = undefined
+          }
+          updatedState.walls.set(wallId, updatedWall)
+        }
+      }
+      
+      // Remove room references from points
+      if (room.pointIds != null) {
+        for (const pointId of room.pointIds) {
+          updatedState = updatePointRoomReferences(updatedState, pointId, undefined, roomId)
+        }
+      }
+      
+      // Remove the room itself
+      updatedState.rooms.delete(roomId)
+    }
+  }
+  
+  return updatedState
+}
+
+// Ensure all walls have correct left/right room assignments based on wall direction
+export function ensureCorrectWallRoomAssignments(state: ModelState, floorId: FloorId): ModelState {
+  const floor = state.floors.get(floorId)
+  if (floor == null) return state
+  
+  let updatedState = { ...state }
+  updatedState.walls = new Map(state.walls)
+  
+  // For each wall, verify room assignments are correct based on wall direction
+  for (const wallId of floor.wallIds) {
+    const wall = updatedState.walls.get(wallId)
+    if (wall == null) continue
+    
+    // Find rooms that contain this wall
+    const roomsWithThisWall = Array.from(updatedState.rooms.values())
+      .filter(room => room.wallIds.has(wallId))
+    
+    if (roomsWithThisWall.length === 0) {
+      // No rooms contain this wall, clear both sides
+      if (wall.leftRoomId != null || wall.rightRoomId != null) {
+        const updatedWall = { ...wall, leftRoomId: undefined, rightRoomId: undefined }
+        updatedState.walls.set(wallId, updatedWall)
+      }
+    } else if (roomsWithThisWall.length === 1) {
+      // Only one room contains this wall, determine correct side
+      const room = roomsWithThisWall[0]
+      const correctSide = determineRoomSideOfWall(room, wall, updatedState)
+      
+      const updatedWall = { ...wall }
+      if (correctSide === 'left') {
+        updatedWall.leftRoomId = room.id
+        updatedWall.rightRoomId = undefined
+      } else {
+        updatedWall.leftRoomId = undefined
+        updatedWall.rightRoomId = room.id
+      }
+      
+      updatedState.walls.set(wallId, updatedWall)
+    } else if (roomsWithThisWall.length === 2) {
+      // Two rooms share this wall, assign based on geometry
+      const room1 = roomsWithThisWall[0]
+      const room2 = roomsWithThisWall[1]
+      
+      const room1Side = determineRoomSideOfWall(room1, wall, updatedState)
+      const room2Side = determineRoomSideOfWall(room2, wall, updatedState)
+      
+      const updatedWall = { ...wall }
+      
+      // Assign rooms to correct sides
+      if (room1Side === 'left') {
+        updatedWall.leftRoomId = room1.id
+        updatedWall.rightRoomId = room2Side === 'right' ? room2.id : undefined
+      } else {
+        updatedWall.rightRoomId = room1.id
+        updatedWall.leftRoomId = room2Side === 'left' ? room2.id : undefined
+      }
+      
+      updatedState.walls.set(wallId, updatedWall)
+    }
+  }
+  
+  return updatedState
+}
+
+// Comprehensive model cleanup function - validates and cleans up all inconsistencies
+export function cleanupModelConsistency(state: ModelState): ModelState {
+  let updatedState = { ...state }
+  
+  // Process each floor
+  for (const floorId of updatedState.floors.keys()) {
+    updatedState = updateRoomsAfterWallChange(updatedState, floorId)
+  }
+  
+  // Additional cleanup: remove orphaned references
+  updatedState = removeOrphanedReferences(updatedState)
+  
+  updatedState.updatedAt = new Date()
+  return updatedState
+}
+
+// Remove orphaned references between entities
+export function removeOrphanedReferences(state: ModelState): ModelState {
+  let updatedState = { ...state }
+  updatedState.walls = new Map(state.walls)
+  updatedState.points = new Map(state.points)
+  
+  // Clean up wall references to non-existent rooms
+  for (const [wallId, wall] of updatedState.walls) {
+    let needsUpdate = false
+    const updatedWall = { ...wall }
+    
+    if (wall.leftRoomId != null && !updatedState.rooms.has(wall.leftRoomId)) {
+      updatedWall.leftRoomId = undefined
+      needsUpdate = true
+    }
+    
+    if (wall.rightRoomId != null && !updatedState.rooms.has(wall.rightRoomId)) {
+      updatedWall.rightRoomId = undefined
+      needsUpdate = true
+    }
+    
+    if (needsUpdate) {
+      updatedState.walls.set(wallId, updatedWall)
+    }
+  }
+  
+  // Clean up point references to non-existent rooms
+  for (const [pointId, point] of updatedState.points) {
+    const validRoomIds = new Set<RoomId>()
+    
+    for (const roomId of point.roomIds) {
+      if (updatedState.rooms.has(roomId)) {
+        validRoomIds.add(roomId)
+      }
+    }
+    
+    if (validRoomIds.size !== point.roomIds.size) {
+      const updatedPoint = { ...point, roomIds: validRoomIds }
+      updatedState.points.set(pointId, updatedPoint)
+    }
+  }
+  
+  return updatedState
 }
