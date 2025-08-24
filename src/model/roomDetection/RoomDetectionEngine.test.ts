@@ -228,7 +228,11 @@ describe('RoomDetectionEngine', () => {
       const roomDef: RoomDefinition = {
         name: 'Test Room',
         wallIds: [wall1.id, wall2.id, wall3.id, wall4.id],
-        pointIds: [point1.id, point2.id, point3.id, point4.id]
+        outerBoundary: {
+          wallIds: [wall1.id, wall2.id, wall3.id, wall4.id],
+          pointIds: [point1.id, point2.id, point3.id, point4.id]
+        },
+        holes: []
       }
 
       expect(engine.validateRoom(roomDef, updatedState)).toBe(true)
@@ -251,7 +255,11 @@ describe('RoomDetectionEngine', () => {
       const roomDef: RoomDefinition = {
         name: 'Invalid Room',
         wallIds: [wall1.id],
-        pointIds: [point1.id, point2.id]
+        outerBoundary: {
+          wallIds: [wall1.id],
+          pointIds: [point1.id, point2.id]
+        },
+        holes: []
       }
 
       expect(engine.validateRoom(roomDef, updatedState)).toBe(false)
@@ -282,7 +290,11 @@ describe('RoomDetectionEngine', () => {
       const roomDef: RoomDefinition = {
         name: 'Invalid Room',
         wallIds: [wall1.id, wall2.id],
-        pointIds: [point1.id, point2.id, point3.id, point4.id]
+        outerBoundary: {
+          wallIds: [wall1.id, wall2.id],
+          pointIds: [point1.id, point2.id, point3.id, point4.id]
+        },
+        holes: []
       }
 
       expect(engine.validateRoom(roomDef, updatedState)).toBe(false)
@@ -310,7 +322,11 @@ describe('RoomDetectionEngine', () => {
       const roomDef: RoomDefinition = {
         name: 'Test Room',
         wallIds: [wall.id],
-        pointIds: [point1.id, point2.id, point3.id] // Triangle with point3 above the wall
+        outerBoundary: {
+          wallIds: [wall.id],
+          pointIds: [point1.id, point2.id, point3.id] // Triangle with point3 above the wall
+        },
+        holes: []
       }
 
       const side = engine.determineRoomSide(roomDef, wall, updatedState)
@@ -337,7 +353,11 @@ describe('RoomDetectionEngine', () => {
       const roomDef: RoomDefinition = {
         name: 'Test Room',
         wallIds: [wall.id],
-        pointIds: [point1.id, point2.id, point3.id] // Triangle with point3 below the wall
+        outerBoundary: {
+          wallIds: [wall.id],
+          pointIds: [point1.id, point2.id, point3.id] // Triangle with point3 below the wall
+        },
+        holes: []
       }
 
       const side = engine.determineRoomSide(roomDef, wall, updatedState)
@@ -378,7 +398,7 @@ describe('RoomDetectionEngine', () => {
       expect(roomDef).not.toBeNull()
       expect(roomDef?.name).toBe('Test Room')
       expect(roomDef?.wallIds).toHaveLength(4)
-      expect(roomDef?.pointIds).toHaveLength(4)
+      expect(roomDef?.outerBoundary.pointIds).toHaveLength(4)
     })
 
     it('should return null for invalid wall loops', () => {

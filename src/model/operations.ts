@@ -36,6 +36,7 @@ import {
   type Point2D,
   type Bounds2D,
   type Polygon2D,
+  type PolygonWithHoles2D,
   type Length,
   type Area,
   type Angle,
@@ -43,6 +44,7 @@ import {
   distance,
   boundsFromPoints,
   calculatePolygonArea,
+  calculatePolygonWithHolesArea,
   calculateCornerAngle,
   determineCornerType,
   lineIntersection,
@@ -1333,8 +1335,8 @@ export function updateOrCreateCorner(state: ModelState, pointId: PointId): Model
       updatedState.corners = new Map(updatedState.corners)
       updatedState.corners.delete(existingCorner.id)
       updatedState.updatedAt = new Date()
-      return updatedState
-    }
+  return updatedState
+}
     return state
   }
 

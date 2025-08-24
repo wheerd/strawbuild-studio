@@ -114,7 +114,14 @@ export class RoomDetectionService implements IRoomDetectionService {
       const roomDef: RoomDefinition = {
         name: room.name,
         wallIds: updatedWallIds,
-        pointIds: room.pointIds ?? []
+        outerBoundary: {
+          wallIds: updatedWallIds,
+          pointIds: room.outerBoundary.pointIds
+        },
+        holes: room.holes.map(hole => ({
+          wallIds: Array.from(hole.wallIds),
+          pointIds: hole.pointIds
+        }))
       }
       
       if (!this.engine.validateRoom(roomDef, state)) {
@@ -162,7 +169,14 @@ export class RoomDetectionService implements IRoomDetectionService {
       const roomDef: RoomDefinition = {
         name: room.name,
         wallIds: Array.from(room.wallIds),
-        pointIds: room.pointIds ?? []
+        outerBoundary: {
+          wallIds: Array.from(room.outerBoundary.wallIds),
+          pointIds: room.outerBoundary.pointIds
+        },
+        holes: room.holes.map(hole => ({
+          wallIds: Array.from(hole.wallIds),
+          pointIds: hole.pointIds
+        }))
       }
 
       if (this.engine.validateRoom(roomDef, state)) {
@@ -194,7 +208,8 @@ export class RoomDetectionService implements IRoomDetectionService {
 
       const hasValidRoom = validRooms.some(roomId => {
         const room = state.rooms.get(roomId)
-        return room?.pointIds?.includes(pointId) === true
+        return room?.outerBoundary.pointIds.includes(pointId) === true ||
+               room?.holes.some(hole => hole.pointIds.includes(pointId)) === true
       })
 
       if (!hasValidRoom) {
@@ -218,13 +233,36 @@ export class RoomDetectionService implements IRoomDetectionService {
     // Find all wall loops on the floor
     const wallLoops = this.engine.findWallLoops(state, context.floorId)
 
-    // Convert loops to room definitions
-    for (const wallLoop of wallLoops) {
+    // Detect rooms with holes by finding nested loops
+    const roomsWithHoles = this.detectRoomsWithHoles(wallLoops, state)
+    const usedLoops = new Set<string>()
+
+    // Create room definitions with holes
+    for (const { outerLoop, holeLoops } of roomsWithHoles) {
       const roomName = this.generateRoomName(result.roomsToCreate.length + 1)
-      const roomDef = this.engine.createRoomFromLoop(wallLoop, roomName, state)
+      const roomDef = this.engine.createRoomWithHoles(outerLoop, holeLoops, roomName, state)
       
       if (roomDef != null) {
         result.roomsToCreate.push(roomDef)
+        
+        // Mark loops as used
+        usedLoops.add(outerLoop.join(','))
+        for (const holeLoop of holeLoops) {
+          usedLoops.add(holeLoop.join(','))
+        }
+      }
+    }
+
+    // Create simple rooms from remaining unused loops
+    for (const wallLoop of wallLoops) {
+      const loopKey = wallLoop.join(',')
+      if (!usedLoops.has(loopKey)) {
+        const roomName = this.generateRoomName(result.roomsToCreate.length + 1)
+        const roomDef = this.engine.createRoomFromLoop(wallLoop, roomName, state)
+        
+        if (roomDef != null) {
+          result.roomsToCreate.push(roomDef)
+        }
       }
     }
 
@@ -434,7 +472,8 @@ export class RoomDetectionService implements IRoomDetectionService {
       
       // Find which room definitions include this point
       for (const roomDef of result.roomsToCreate) {
-        if (roomDef.pointIds.includes(pointId)) {
+        if (roomDef.outerBoundary.pointIds.includes(pointId) ||
+            roomDef.holes.some(hole => hole.pointIds.includes(pointId))) {
           // Use temporary room ID - will be replaced when rooms are actually created
           roomIds.add(createRoomId())
         }
@@ -445,6 +484,59 @@ export class RoomDetectionService implements IRoomDetectionService {
         roomIds
       })
     }
+  }
+
+  private detectRoomsWithHoles (wallLoops: WallId[][], state: ModelState): Array<{ outerLoop: WallId[], holeLoops: WallId[][] }> {
+    const roomsWithHoles: Array<{ outerLoop: WallId[], holeLoops: WallId[][] }> = []
+    const processedLoops = new Set<string>()
+
+    // Sort loops by area (largest first to find outer boundaries first)
+    const loopsWithAreas = wallLoops.map(loop => ({
+      loop,
+      area: this.calculateLoopArea(loop, state)
+    })).filter(item => item.area > 0)
+
+    loopsWithAreas.sort((a, b) => b.area - a.area)
+
+    for (const { loop: outerLoop } of loopsWithAreas) {
+      const outerKey = outerLoop.join(',')
+      if (processedLoops.has(outerKey)) continue
+
+      const holeLoops: WallId[][] = []
+
+      // Find all smaller loops that are inside this one
+      for (const { loop: potentialHole } of loopsWithAreas) {
+        const holeKey = potentialHole.join(',')
+        if (processedLoops.has(holeKey) || holeKey === outerKey) continue
+
+        if (this.engine.isLoopInsideLoop(potentialHole, outerLoop, state)) {
+          holeLoops.push(potentialHole)
+          processedLoops.add(holeKey)
+        }
+      }
+
+      if (holeLoops.length > 0) {
+        roomsWithHoles.push({ outerLoop, holeLoops })
+        processedLoops.add(outerKey)
+      }
+    }
+
+    return roomsWithHoles
+  }
+
+  private calculateLoopArea (wallIds: WallId[], state: ModelState): number {
+    const points = this.engine.getLoopPolygonPoints(wallIds, state)
+    if (points.length < 3) return 0
+
+    // Use shoelace formula for polygon area
+    let area = 0
+    for (let i = 0; i < points.length; i++) {
+      const j = (i + 1) % points.length
+      area += points[i].x * points[j].y
+      area -= points[j].x * points[i].y
+    }
+
+    return Math.abs(area) / 2
   }
 
   private updateAssignmentsAfterWallRemoval (result: RoomDetectionResult, wallId: WallId, state: ModelState): void {

@@ -51,7 +51,7 @@ describe('RoomDetectionService', () => {
 
       const room = result.roomsToCreate[0]
       expect(room.wallIds).toHaveLength(4)
-      expect(room.pointIds).toHaveLength(4)
+      expect(room.outerBoundary.pointIds).toHaveLength(4)
       expect(room.name).toMatch(/Room \d+/)
 
       // Should have wall assignments
@@ -117,7 +117,7 @@ describe('RoomDetectionService', () => {
       // Each room should have 4 walls
       for (const room of result.roomsToCreate) {
         expect(room.wallIds).toHaveLength(4)
-        expect(room.pointIds).toHaveLength(4)
+        expect(room.outerBoundary.pointIds).toHaveLength(4)
       }
     })
 

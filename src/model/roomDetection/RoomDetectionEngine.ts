@@ -163,20 +163,20 @@ export class RoomDetectionEngine {
     const startPoint = state.points.get(wall.startPointId)
     const endPoint = state.points.get(wall.endPointId)
 
-    if (startPoint == null || endPoint == null || roomDef.pointIds.length === 0) {
+    if (startPoint == null || endPoint == null || roomDef.outerBoundary.pointIds.length === 0) {
       return 'left' // Default fallback
     }
 
-    // Get all room points that are NOT on the wall
-    const roomPoints = roomDef.pointIds
+    // Get all room points that are NOT on the wall (from outer boundary first)
+    let roomPoints = roomDef.outerBoundary.pointIds
       .filter(pointId => pointId !== wall.startPointId && pointId !== wall.endPointId)
       .map(id => state.points.get(id))
       .filter((p): p is Point => p !== undefined)
       .map(p => p.position)
 
     if (roomPoints.length === 0) {
-      // If no other points in room, fall back to checking first non-wall point or centroid
-      const allRoomPoints = roomDef.pointIds
+      // If no other points in outer boundary, fall back to checking all points or centroid
+      const allRoomPoints = roomDef.outerBoundary.pointIds
         .map(id => state.points.get(id))
         .filter((p): p is Point => p !== undefined)
         .map(p => p.position)
@@ -226,8 +226,107 @@ export class RoomDetectionEngine {
     return {
       name,
       wallIds,
-      pointIds
+      outerBoundary: {
+        wallIds,
+        pointIds
+      },
+      holes: []
     }
+  }
+
+  /**
+   * Create a complete room definition with holes from multiple wall loops
+   */
+  createRoomWithHoles (
+    outerWallIds: WallId[], 
+    holeWallIds: WallId[][], 
+    name: string, 
+    state: ModelState
+  ): RoomDefinition | null {
+    // Validate outer boundary
+    if (!this.isValidWallLoop(outerWallIds, state)) {
+      return null
+    }
+
+    const outerPointIds = this.extractOrderedPointsFromWalls(outerWallIds, state)
+    if (outerPointIds.length === 0) {
+      return null
+    }
+
+    // Process holes
+    const holes: import('./types').RoomBoundaryDefinition[] = []
+    const allWallIds = [...outerWallIds]
+
+    for (const holeWalls of holeWallIds) {
+      if (!this.isValidWallLoop(holeWalls, state)) {
+        continue // Skip invalid holes
+      }
+
+      const holePointIds = this.extractOrderedPointsFromWalls(holeWalls, state)
+      if (holePointIds.length === 0) {
+        continue
+      }
+
+      // Verify hole is inside the outer boundary
+      if (this.isLoopInsideLoop(holeWalls, outerWallIds, state)) {
+        holes.push({
+          wallIds: holeWalls,
+          pointIds: holePointIds
+        })
+        allWallIds.push(...holeWalls)
+      }
+    }
+
+    return {
+      name,
+      wallIds: allWallIds,
+      outerBoundary: {
+        wallIds: outerWallIds,
+        pointIds: outerPointIds
+      },
+      holes
+    }
+  }
+
+  /**
+   * Check if one wall loop is completely inside another
+   */
+  isLoopInsideLoop (innerWallIds: WallId[], outerWallIds: WallId[], state: ModelState): boolean {
+    const innerPoints = this.getLoopPolygonPoints(innerWallIds, state)
+    const outerPoints = this.getLoopPolygonPoints(outerWallIds, state)
+
+    if (innerPoints.length < 3 || outerPoints.length < 3) {
+      return false
+    }
+
+    // Check if all inner points are inside the outer polygon
+    return innerPoints.every(point => this.isPointInPolygon(point, outerPoints))
+  }
+
+  /**
+   * Get polygon points for a wall loop
+   */
+  getLoopPolygonPoints (wallIds: WallId[], state: ModelState): import('@/types/geometry').Point2D[] {
+    return this.getFacePolygonPoints(wallIds, state)
+  }
+
+  /**
+   * Point-in-polygon test using ray casting algorithm
+   */
+  private isPointInPolygon (point: import('@/types/geometry').Point2D, polygon: import('@/types/geometry').Point2D[]): boolean {
+    let inside = false
+
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      const pi = polygon[i]
+      const pj = polygon[j]
+
+      if (((pi.y > point.y) !== (pj.y > point.y)) &&
+        (point.x < (pj.x - pi.x) * (point.y - pi.y) / (pj.y - pi.y) + pi.x)) {
+        inside = !inside
+      }
+    }
+
+    return inside
   }
 
   /**

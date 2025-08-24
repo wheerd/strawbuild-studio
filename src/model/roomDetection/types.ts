@@ -10,11 +10,18 @@ export interface RoomDetectionResult {
   pointAssignments: PointRoomAssignment[]
 }
 
+// Definition of a room boundary (before it becomes a RoomBoundary entity)
+export interface RoomBoundaryDefinition {
+  wallIds: WallId[]
+  pointIds: PointId[]
+}
+
 // Definition of a room (before it becomes a Room entity)
 export interface RoomDefinition {
   name: string
-  wallIds: WallId[]
-  pointIds: PointId[]
+  wallIds: WallId[] // All walls for backward compatibility
+  outerBoundary: RoomBoundaryDefinition
+  holes: RoomBoundaryDefinition[]
 }
 
 // Assignment of rooms to wall sides

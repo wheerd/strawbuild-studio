@@ -98,13 +98,25 @@ export interface Roof {
   readonly area: Area // Computed
 }
 
+// Room/space boundary definition
+export interface RoomBoundary {
+  pointIds: PointId[] // Ordered clockwise for outer boundary, counter-clockwise for holes
+  wallIds: Set<WallId> // Walls that form this boundary
+}
+
 // Room/space
 export interface Room {
   id: RoomId
   name: string
-  wallIds: Set<WallId>
-  pointIds: PointId[] // Ordered clockwise
-  readonly area: Area
+  wallIds: Set<WallId> // All walls (outer + holes) for backward compatibility
+  
+  // Geometric structure supporting holes
+  outerBoundary: RoomBoundary
+  holes: RoomBoundary[] // Inner boundaries (holes) like courtyards, atriums, etc.
+  
+  // Computed properties
+  readonly area: Area // Total area minus hole areas
+  readonly polygon: PolygonWithHoles2D // Computed geometric representation
 }
 
 // Floor/level
