@@ -34,6 +34,11 @@ import {
   cleanupModelConsistency,
   updateRoomsAfterWallChange
 } from '@/model/operations'
+import { 
+  defaultRoomDetectionService, 
+  type IRoomDetectionService, 
+  type RoomDetectionResult 
+} from '@/model/roomDetection'
 import { createLength } from '@/types/geometry'
 
 interface ModelActions {
@@ -57,6 +62,10 @@ interface ModelActions {
   deleteRoom: (roomId: RoomId, floorId: FloorId) => void
   cleanupModel: () => void
   validateRoomsOnFloor: (floorId: FloorId) => void
+  
+  // New room detection service methods
+  detectAndUpdateRooms: (floorId: FloorId) => void
+  getRoomDetectionService: () => IRoomDetectionService
 }
 
 type ModelStore = ModelState & ModelActions
@@ -65,10 +74,104 @@ function createInitialState (): ModelState {
   return createEmptyModelState()
 }
 
+// Helper function to apply room detection results to the model state
+function applyRoomDetectionResult(state: ModelState, result: RoomDetectionResult): ModelState {
+  let updatedState = { ...state }
+  updatedState.rooms = new Map(state.rooms)
+  updatedState.walls = new Map(state.walls)
+  updatedState.points = new Map(state.points)
+  updatedState.floors = new Map(state.floors)
+
+  // Remove deleted rooms
+  for (const roomId of result.roomsToDelete) {
+    updatedState.rooms.delete(roomId)
+    
+    // Remove from floors
+    for (const [floorId, floor] of updatedState.floors) {
+      if (floor.roomIds.includes(roomId)) {
+        const updatedFloor = {
+          ...floor,
+          roomIds: floor.roomIds.filter(id => id !== roomId)
+        }
+        updatedState.floors.set(floorId, updatedFloor)
+      }
+    }
+  }
+
+  // Update existing rooms
+    for (const { roomId, definition } of result.roomsToUpdate) {
+      const existingRoom = updatedState.rooms.get(roomId)
+      if (existingRoom != null) {
+        const updatedRoom = {
+          ...existingRoom,
+          name: definition.name,
+          wallIds: new Set(definition.wallIds),
+          pointIds: definition.pointIds
+        }
+        updatedRoom.area = calculateRoomArea(updatedRoom, updatedState)
+        updatedState.rooms.set(roomId, updatedRoom)
+      }
+    }
+
+  // Create new rooms
+  for (const definition of result.roomsToCreate) {
+    const newRoom = createRoom(definition.name, definition.wallIds, definition.pointIds)
+    const roomWithArea = {
+      ...newRoom,
+      area: calculateRoomArea(newRoom, updatedState)
+    }
+    updatedState.rooms.set(newRoom.id, roomWithArea)
+    
+    // Add to appropriate floor (find floor that contains these walls)
+    for (const [floorId, floor] of updatedState.floors) {
+      const wallsInFloor = definition.wallIds.some(wallId => floor.wallIds.includes(wallId))
+      if (wallsInFloor) {
+        const updatedFloor = {
+          ...floor,
+          roomIds: [...floor.roomIds, newRoom.id]
+        }
+        updatedState.floors.set(floorId, updatedFloor)
+        break
+      }
+    }
+  }
+
+  // Apply wall assignments
+  for (const assignment of result.wallAssignments) {
+    const wall = updatedState.walls.get(assignment.wallId)
+    if (wall != null) {
+      const updatedWall = {
+        ...wall,
+        leftRoomId: assignment.leftRoomId,
+        rightRoomId: assignment.rightRoomId
+      }
+      updatedState.walls.set(assignment.wallId, updatedWall)
+    }
+  }
+
+  // Apply point assignments
+  for (const assignment of result.pointAssignments) {
+    const point = updatedState.points.get(assignment.pointId)
+    if (point != null) {
+      const updatedPoint = {
+        ...point,
+        roomIds: assignment.roomIds
+      }
+      updatedState.points.set(assignment.pointId, updatedPoint)
+    }
+  }
+
+  updatedState.updatedAt = new Date()
+  return updatedState
+}
+
 export const useModelStore = create<ModelStore>()(
   devtools(
     (set, get) => ({
       ...createInitialState(),
+      
+      // Room detection service instance
+      _roomDetectionService: defaultRoomDetectionService,
 
       reset: () => {
         const newState = createEmptyModelState()
@@ -305,6 +408,22 @@ export const useModelStore = create<ModelStore>()(
         const state = get()
         const updatedState = updateRoomsAfterWallChange(state, floorId)
         set(updatedState, false, 'validateRoomsOnFloor')
+      },
+
+      detectAndUpdateRooms: (floorId: FloorId) => {
+        const state = get()
+        const service = (state as any)._roomDetectionService
+        const result = service.detectRooms(state, floorId)
+        
+        // Apply room detection results to state
+        let updatedState = applyRoomDetectionResult(state, result)
+        
+        set(updatedState, false, 'detectAndUpdateRooms')
+      },
+
+      getRoomDetectionService: () => {
+        const state = get()
+        return (state as any)._roomDetectionService
       }
     }),
     {
