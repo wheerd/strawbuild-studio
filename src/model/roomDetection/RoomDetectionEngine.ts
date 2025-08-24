@@ -230,7 +230,8 @@ export class RoomDetectionEngine {
         wallIds,
         pointIds
       },
-      holes: []
+      holes: [],
+      interiorWallIds: []
     }
   }
 
@@ -284,7 +285,8 @@ export class RoomDetectionEngine {
         wallIds: outerWallIds,
         pointIds: outerPointIds
       },
-      holes
+      holes,
+      interiorWallIds: []
     }
   }
 
@@ -306,14 +308,14 @@ export class RoomDetectionEngine {
   /**
    * Get polygon points for a wall loop
    */
-  getLoopPolygonPoints (wallIds: WallId[], state: ModelState): import('@/types/geometry').Point2D[] {
+  getLoopPolygonPoints (wallIds: WallId[], state: ModelState): Point2D[] {
     return this.getFacePolygonPoints(wallIds, state)
   }
 
   /**
    * Point-in-polygon test using ray casting algorithm
    */
-  private isPointInPolygon (point: import('@/types/geometry').Point2D, polygon: import('@/types/geometry').Point2D[]): boolean {
+  private isPointInPolygon (point: Point2D, polygon: Point2D[]): boolean {
     let inside = false
 
     for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
@@ -327,6 +329,83 @@ export class RoomDetectionEngine {
     }
 
     return inside
+  }
+
+  /**
+   * Identify interior walls that are completely inside a room
+   */
+  findInteriorWalls (roomDefinition: RoomDefinition, floorWallIds: WallId[], state: ModelState): WallId[] {
+    const interiorWalls: WallId[] = []
+    
+    // Get room polygon (outer boundary minus holes)
+    const outerPoints = this.getLoopPolygonPoints(roomDefinition.outerBoundary.wallIds, state)
+    if (outerPoints.length < 3) return []
+
+    // Get hole polygons
+    const holePolygons = roomDefinition.holes.map(hole => 
+      this.getLoopPolygonPoints(hole.wallIds, state)
+    ).filter(points => points.length >= 3)
+
+    // Check each wall on the floor
+    for (const wallId of floorWallIds) {
+      // Skip if wall is already part of room boundaries
+      if (roomDefinition.wallIds.includes(wallId)) continue
+
+      const wall = state.walls.get(wallId)
+      if (wall == null) continue
+
+      // Check if wall is completely inside the room
+      if (this.isWallInsideRoom(wall, outerPoints, holePolygons, state)) {
+        interiorWalls.push(wallId)
+      }
+    }
+
+    return interiorWalls
+  }
+
+  /**
+   * Check if a wall is completely inside a room (considering holes)
+   */
+  private isWallInsideRoom (
+    wall: Wall, 
+    outerPolygon: Point2D[],
+    holePolygons: Point2D[][],
+    state: ModelState
+  ): boolean {
+    const startPoint = state.points.get(wall.startPointId)
+    const endPoint = state.points.get(wall.endPointId)
+    
+    if (startPoint == null || endPoint == null) return false
+
+    // Check if both endpoints are inside the outer boundary
+    const startInOuter = this.isPointInPolygon(startPoint.position, outerPolygon)
+    const endInOuter = this.isPointInPolygon(endPoint.position, outerPolygon)
+    
+    if (!startInOuter || !endInOuter) return false
+
+    // Check if wall is NOT inside any holes
+    for (const holePolygon of holePolygons) {
+      const startInHole = this.isPointInPolygon(startPoint.position, holePolygon)
+      const endInHole = this.isPointInPolygon(endPoint.position, holePolygon)
+      
+      if (startInHole || endInHole) return false
+    }
+
+    // Additional check: wall midpoint should also be inside room
+    const midpoint = createPoint2D(
+      (startPoint.position.x + endPoint.position.x) / 2,
+      (startPoint.position.y + endPoint.position.y) / 2
+    )
+
+    const midInOuter = this.isPointInPolygon(midpoint, outerPolygon)
+    if (!midInOuter) return false
+
+    for (const holePolygon of holePolygons) {
+      const midInHole = this.isPointInPolygon(midpoint, holePolygon)
+      if (midInHole) return false
+    }
+
+    return true
   }
 
   /**

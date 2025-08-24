@@ -108,11 +108,14 @@ export interface RoomBoundary {
 export interface Room {
   id: RoomId
   name: string
-  wallIds: Set<WallId> // All walls (outer + holes) for backward compatibility
+  wallIds: Set<WallId> // All walls (boundary + interior) for backward compatibility
   
   // Geometric structure supporting holes
   outerBoundary: RoomBoundary
   holes: RoomBoundary[] // Inner boundaries (holes) like courtyards, atriums, etc.
+  
+  // Interior walls that are inside the room (not part of boundaries)
+  interiorWallIds: Set<WallId>
   
   // Computed properties
   readonly area: Area // Total area minus hole areas

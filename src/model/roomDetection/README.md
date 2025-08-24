@@ -44,6 +44,13 @@ Supports complex room geometries including O-shaped rooms and courtyards:
 - **Multi-Boundary Rooms**: Creates room definitions with outer boundary + multiple holes
 - **Area Calculations**: Computes net room area (outer area - hole areas)
 
+### Interior Wall Detection
+Handles walls that are completely inside rooms (not part of boundaries):
+- **Geometric Containment**: Checks if wall endpoints and midpoint are inside room polygon
+- **Hole Awareness**: Ensures interior walls are not inside room holes
+- **Dual Assignment**: Interior walls reference the same room on both left and right sides
+- **Peninsula Support**: Handles partial dividers, islands, and free-standing walls within rooms
+
 ### Loop Validation
 Ensures detected loops form valid rooms:
 - Each point connects to exactly 2 walls (closed loop requirement)
@@ -57,6 +64,7 @@ Determines how rooms relate to walls and points:
 - **Point Membership**: Tracks which rooms contain each geometric point
 - **Boundary Sharing**: Handles walls shared between adjacent rooms
 - **Hole Boundaries**: Manages relationships between outer boundaries and inner holes
+- **Interior Wall Assignment**: Assigns same room to both sides of interior walls
 
 ## Usage
 
@@ -92,6 +100,23 @@ const roomWithHole = result.roomsToCreate.find(room => room.holes.length > 0)
 
 console.log(`Room has ${roomWithHole.holes.length} holes`)
 console.log(`Outer area minus hole areas = net room area`)
+```
+
+### Interior Walls (Peninsulas, Islands)
+```typescript
+// Interior walls are automatically detected and assigned
+const result = service.detectRooms(modelState, floorId)
+const roomWithInteriorWalls = result.roomsToCreate[0]
+
+console.log(`Boundary walls: ${roomWithInteriorWalls.outerBoundary.wallIds.length}`)
+console.log(`Interior walls: ${roomWithInteriorWalls.interiorWallIds.length}`)
+console.log(`Total walls: ${roomWithInteriorWalls.wallIds.length}`) // boundary + interior
+
+// Interior walls get both leftRoomId and rightRoomId set to the same room
+const interiorWallAssignment = result.wallAssignments.find(
+  assignment => roomWithInteriorWalls.interiorWallIds.includes(assignment.wallId)
+)
+console.log(interiorWallAssignment.leftRoomId === interiorWallAssignment.rightRoomId) // true
 ```
 
 ### Handling Wall Changes

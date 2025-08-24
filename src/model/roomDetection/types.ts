@@ -19,9 +19,10 @@ export interface RoomBoundaryDefinition {
 // Definition of a room (before it becomes a Room entity)
 export interface RoomDefinition {
   name: string
-  wallIds: WallId[] // All walls for backward compatibility
+  wallIds: WallId[] // All walls (boundary + interior) for backward compatibility
   outerBoundary: RoomBoundaryDefinition
   holes: RoomBoundaryDefinition[]
+  interiorWallIds: WallId[] // Walls inside the room that don't form boundaries
 }
 
 // Assignment of rooms to wall sides

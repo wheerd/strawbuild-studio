@@ -1,5 +1,6 @@
-import type { ModelState, Room } from '@/types/model'
+import type { ModelState, Room, Wall } from '@/types/model'
 import type { WallId, PointId, FloorId, RoomId } from '@/types/ids'
+import type { Point2D } from '@/types/geometry'
 import { createRoomId } from '@/types/ids'
 import { createPoint2D } from '@/types/geometry'
 import { RoomDetectionEngine } from './RoomDetectionEngine'
@@ -121,7 +122,8 @@ export class RoomDetectionService implements IRoomDetectionService {
         holes: room.holes.map(hole => ({
           wallIds: Array.from(hole.wallIds),
           pointIds: hole.pointIds
-        }))
+        })),
+        interiorWallIds: Array.from(room.interiorWallIds)
       }
       
       if (!this.engine.validateRoom(roomDef, state)) {
@@ -176,7 +178,8 @@ export class RoomDetectionService implements IRoomDetectionService {
         holes: room.holes.map(hole => ({
           wallIds: Array.from(hole.wallIds),
           pointIds: hole.pointIds
-        }))
+        })),
+        interiorWallIds: Array.from(room.interiorWallIds)
       }
 
       if (this.engine.validateRoom(roomDef, state)) {
@@ -266,6 +269,9 @@ export class RoomDetectionService implements IRoomDetectionService {
       }
     }
 
+    // Detect interior walls for each room
+    this.detectInteriorWalls(result, state, context.floorId)
+
     // Generate wall and point assignments
     this.generateWallAssignments(result, state, context.floorId)
     this.generatePointAssignments(result, state, context.floorId)
@@ -287,7 +293,7 @@ export class RoomDetectionService implements IRoomDetectionService {
     return this.config.roomNamePattern.replace('{index}', index.toString())
   }
 
-  private findRoomsIntersectedByWall (state: ModelState, wall: import('@/types/model').Wall, floorId: FloorId): Room[] {
+  private findRoomsIntersectedByWall (state: ModelState, wall: Wall, floorId: FloorId): Room[] {
     const floor = state.floors.get(floorId)
     if (floor == null) return []
 
@@ -311,13 +317,13 @@ export class RoomDetectionService implements IRoomDetectionService {
   }
 
   private isWallInsideRoom (
-    wallStart: import('@/types/geometry').Point2D,
-    wallEnd: import('@/types/geometry').Point2D,
+    wallStart: Point2D,
+    wallEnd: Point2D,
     room: Room,
     state: ModelState
   ): boolean {
     // Get room polygon points
-    const roomPoints: import('@/types/geometry').Point2D[] = []
+    const roomPoints: Point2D[] = []
 
     for (const wallId of room.wallIds) {
       const wall = state.walls.get(wallId)
@@ -345,7 +351,7 @@ export class RoomDetectionService implements IRoomDetectionService {
     return this.isPointInPolygon(wallMidPoint, roomPoints)
   }
 
-  private isPointInPolygon (point: import('@/types/geometry').Point2D, polygon: import('@/types/geometry').Point2D[]): boolean {
+  private isPointInPolygon (point: Point2D, polygon: Point2D[]): boolean {
     let inside = false
 
     for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
@@ -416,17 +422,32 @@ export class RoomDetectionService implements IRoomDetectionService {
       }
     }
 
+    // Create a map for interior walls (walls inside rooms)
+    const interiorWallsByRoom = new Map<WallId, RoomDefinition>()
+    
+    for (const roomDef of result.roomsToCreate) {
+      for (const interiorWallId of roomDef.interiorWallIds) {
+        interiorWallsByRoom.set(interiorWallId, roomDef)
+      }
+    }
+
     // Generate assignments for each wall
     for (const wallId of floor.wallIds) {
       const wall = state.walls.get(wallId)
       if (wall == null) continue
 
       const roomDefs = roomDefsByWall.get(wallId) ?? []
+      const interiorRoomDef = interiorWallsByRoom.get(wallId)
       
       let leftRoomId: RoomId | undefined
       let rightRoomId: RoomId | undefined
 
-      if (roomDefs.length === 1) {
+      if (interiorRoomDef != null) {
+        // Interior wall - both sides reference the same room
+        const tempRoomId = createRoomId() // Temporary ID for assignment
+        leftRoomId = tempRoomId
+        rightRoomId = tempRoomId
+      } else if (roomDefs.length === 1) {
         // Single room - determine which side
         const roomDef = roomDefs[0]
         const side = this.engine.determineRoomSide(roomDef, wall, state)
@@ -537,6 +558,21 @@ export class RoomDetectionService implements IRoomDetectionService {
     }
 
     return Math.abs(area) / 2
+  }
+
+  private detectInteriorWalls (result: RoomDetectionResult, state: ModelState, floorId: FloorId): void {
+    const floor = state.floors.get(floorId)
+    if (floor == null) return
+
+    for (const roomDef of result.roomsToCreate) {
+      const interiorWalls = this.engine.findInteriorWalls(roomDef, floor.wallIds, state)
+      
+      // Add interior walls to room definition
+      roomDef.interiorWallIds = interiorWalls
+      
+      // Add to total wallIds for backward compatibility
+      roomDef.wallIds = [...roomDef.wallIds, ...interiorWalls]
+    }
   }
 
   private updateAssignmentsAfterWallRemoval (result: RoomDetectionResult, wallId: WallId, state: ModelState): void {

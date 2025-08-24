@@ -232,7 +232,8 @@ describe('RoomDetectionEngine', () => {
           wallIds: [wall1.id, wall2.id, wall3.id, wall4.id],
           pointIds: [point1.id, point2.id, point3.id, point4.id]
         },
-        holes: []
+        holes: [],
+        interiorWallIds: []
       }
 
       expect(engine.validateRoom(roomDef, updatedState)).toBe(true)
@@ -259,7 +260,8 @@ describe('RoomDetectionEngine', () => {
           wallIds: [wall1.id],
           pointIds: [point1.id, point2.id]
         },
-        holes: []
+        holes: [],
+        interiorWallIds: []
       }
 
       expect(engine.validateRoom(roomDef, updatedState)).toBe(false)
@@ -294,7 +296,8 @@ describe('RoomDetectionEngine', () => {
           wallIds: [wall1.id, wall2.id],
           pointIds: [point1.id, point2.id, point3.id, point4.id]
         },
-        holes: []
+        holes: [],
+        interiorWallIds: []
       }
 
       expect(engine.validateRoom(roomDef, updatedState)).toBe(false)
@@ -326,7 +329,8 @@ describe('RoomDetectionEngine', () => {
           wallIds: [wall.id],
           pointIds: [point1.id, point2.id, point3.id] // Triangle with point3 above the wall
         },
-        holes: []
+        holes: [],
+        interiorWallIds: []
       }
 
       const side = engine.determineRoomSide(roomDef, wall, updatedState)
@@ -357,7 +361,8 @@ describe('RoomDetectionEngine', () => {
           wallIds: [wall.id],
           pointIds: [point1.id, point2.id, point3.id] // Triangle with point3 below the wall
         },
-        holes: []
+        holes: [],
+        interiorWallIds: []
       }
 
       const side = engine.determineRoomSide(roomDef, wall, updatedState)
@@ -418,6 +423,109 @@ describe('RoomDetectionEngine', () => {
 
       const roomDef = engine.createRoomFromLoop([wall1.id], 'Invalid Room', updatedState)
       expect(roomDef).toBeNull()
+    })
+  })
+
+  describe('findInteriorWalls', () => {
+    it('should identify walls inside a room', () => {
+      const engine = new RoomDetectionEngine()
+      const state = createEmptyModelState()
+      const floorId = Array.from(state.floors.keys())[0]
+
+      // Create a rectangular room: (0,0) -> (2000,0) -> (2000,2000) -> (0,2000) -> (0,0)
+      const roomPoints = [
+        createPoint(createPoint2D(0, 0)),
+        createPoint(createPoint2D(2000, 0)),
+        createPoint(createPoint2D(2000, 2000)),
+        createPoint(createPoint2D(0, 2000))
+      ]
+
+      // Create an interior wall in the middle of the room
+      const interiorPoint1 = createPoint(createPoint2D(500, 1000))
+      const interiorPoint2 = createPoint(createPoint2D(1500, 1000))
+
+      let updatedState = state
+      for (const point of [...roomPoints, interiorPoint1, interiorPoint2]) {
+        updatedState = addPointToFloor(updatedState, point, floorId)
+      }
+
+      // Create room boundary walls
+      const boundaryWalls = [
+        createWall(roomPoints[0].id, roomPoints[1].id, createLength(3000), createLength(3000), createLength(200)),
+        createWall(roomPoints[1].id, roomPoints[2].id, createLength(3000), createLength(3000), createLength(200)),
+        createWall(roomPoints[2].id, roomPoints[3].id, createLength(3000), createLength(3000), createLength(200)),
+        createWall(roomPoints[3].id, roomPoints[0].id, createLength(3000), createLength(3000), createLength(200))
+      ]
+
+      // Create interior wall
+      const interiorWall = createWall(interiorPoint1.id, interiorPoint2.id, createLength(3000), createLength(3000), createLength(200))
+
+      for (const wall of [...boundaryWalls, interiorWall]) {
+        updatedState = addWallToFloor(updatedState, wall, floorId, false)
+      }
+
+      const roomDef: RoomDefinition = {
+        name: 'Test Room',
+        wallIds: boundaryWalls.map(w => w.id),
+        outerBoundary: {
+          wallIds: boundaryWalls.map(w => w.id),
+          pointIds: roomPoints.map(p => p.id)
+        },
+        holes: [],
+        interiorWallIds: []
+      }
+
+      const floor = updatedState.floors.get(floorId)!
+      const interiorWalls = engine.findInteriorWalls(roomDef, floor.wallIds, updatedState)
+
+      expect(interiorWalls).toContain(interiorWall.id)
+      expect(interiorWalls).toHaveLength(1)
+    })
+
+    it('should not identify boundary walls as interior walls', () => {
+      const engine = new RoomDetectionEngine()
+      const state = createEmptyModelState()
+      const floorId = Array.from(state.floors.keys())[0]
+
+      // Create a simple rectangular room
+      const roomPoints = [
+        createPoint(createPoint2D(0, 0)),
+        createPoint(createPoint2D(1000, 0)),
+        createPoint(createPoint2D(1000, 1000)),
+        createPoint(createPoint2D(0, 1000))
+      ]
+
+      let updatedState = state
+      for (const point of roomPoints) {
+        updatedState = addPointToFloor(updatedState, point, floorId)
+      }
+
+      const boundaryWalls = [
+        createWall(roomPoints[0].id, roomPoints[1].id, createLength(3000), createLength(3000), createLength(200)),
+        createWall(roomPoints[1].id, roomPoints[2].id, createLength(3000), createLength(3000), createLength(200)),
+        createWall(roomPoints[2].id, roomPoints[3].id, createLength(3000), createLength(3000), createLength(200)),
+        createWall(roomPoints[3].id, roomPoints[0].id, createLength(3000), createLength(3000), createLength(200))
+      ]
+
+      for (const wall of boundaryWalls) {
+        updatedState = addWallToFloor(updatedState, wall, floorId, false)
+      }
+
+      const roomDef: RoomDefinition = {
+        name: 'Test Room',
+        wallIds: boundaryWalls.map(w => w.id),
+        outerBoundary: {
+          wallIds: boundaryWalls.map(w => w.id),
+          pointIds: roomPoints.map(p => p.id)
+        },
+        holes: [],
+        interiorWallIds: []
+      }
+
+      const floor = updatedState.floors.get(floorId)!
+      const interiorWalls = engine.findInteriorWalls(roomDef, floor.wallIds, updatedState)
+
+      expect(interiorWalls).toHaveLength(0)
     })
   })
 
