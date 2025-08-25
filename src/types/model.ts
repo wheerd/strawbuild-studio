@@ -1,4 +1,4 @@
-import type { WallId, PointId, RoomId, FloorId, CornerId, SlabId, RoofId } from '@/types/ids'
+import type { WallId, PointId, RoomId, FloorId, SlabId, RoofId } from '@/types/ids'
 import type {
   Length,
   Area,
@@ -27,18 +27,14 @@ export interface Point {
   roomIds: Set<RoomId> // Rooms that this point belongs to
 }
 
-export type WallOrCornerId = WallId | CornerId
+export type WallOrCornerId = WallId | PointId
 
 // Connection point for wall endpoints
 export interface Corner {
-  id: CornerId
   pointId: PointId
   wall1Id: WallId // Depending on the construction type, this is the dominant wall which "owns" the corner
   wall2Id: WallId
   otherWallIds?: WallId[]
-  readonly angle: Angle
-  readonly type: 'corner' | 'straight' | 'tee' | 'cross'
-  readonly area: Polygon2D
 }
 
 // Wall entity
@@ -143,7 +139,7 @@ export interface ModelState {
   walls: Map<WallId, Wall>
   rooms: Map<RoomId, Room>
   points: Map<PointId, Point>
-  corners: Map<CornerId, Corner>
+  corners: Map<PointId, Corner>
   slabs: Map<SlabId, Slab>
   roofs: Map<RoofId, Roof>
   readonly bounds?: Bounds2D
