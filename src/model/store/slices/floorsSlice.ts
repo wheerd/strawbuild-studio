@@ -36,7 +36,7 @@ export type FloorsSlice = FloorsState & FloorsActions
 
 // Validation functions
 const validateFloorName = (name: string): void => {
-  if (!name || name.trim().length === 0) {
+  if (name.trim().length === 0) {
     throw new Error('Floor name cannot be empty')
   }
 }

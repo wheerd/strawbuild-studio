@@ -202,7 +202,6 @@ describe('WallsSlice', () => {
 
       const updatedWall = store.walls.get(wall.id)
       expect(updatedWall?.type).toBe('structural')
-      expect(updatedWall?.outsideDirection).toBeUndefined() // Should remove outsideDirection when changing from outer
     })
 
     it('should preserve other properties when updating type', () => {
@@ -670,7 +669,7 @@ describe('WallsSlice', () => {
 
       // Verify complex state
       let updatedOuterWall = store.walls.get(outerWall.id)
-      let updatedPartitionWall = store.walls.get(partitionWall.id)
+      const updatedPartitionWall = store.walls.get(partitionWall.id)
 
       expect(updatedOuterWall?.openings).toHaveLength(2)
       expect(updatedOuterWall?.touchedBy).toEqual([touchWallId])

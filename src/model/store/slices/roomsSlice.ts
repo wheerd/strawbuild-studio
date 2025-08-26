@@ -32,7 +32,7 @@ export type RoomsSlice = RoomsState & RoomsActions
 
 // Validation helpers
 const validateRoomName = (name: string): void => {
-  if (!name.trim()) {
+  if (name.trim() === '') {
     throw new Error('Room name must not be empty')
   }
 }
@@ -103,7 +103,7 @@ RoomsSlice
 
     set(state => {
       const room = state.rooms.get(roomId)
-      if (!room) return state
+      if (room == null) return state
 
       const updatedRoom = { ...room, name: name.trim() }
       return {
@@ -117,7 +117,7 @@ RoomsSlice
 
     set(state => {
       const room = state.rooms.get(roomId)
-      if (!room) return state
+      if (room == null) return state
 
       const updatedRoom = {
         ...room,
@@ -137,7 +137,7 @@ RoomsSlice
 
     set(state => {
       const room = state.rooms.get(roomId)
-      if (!room) return state
+      if (room == null) return state
 
       const hole = {
         pointIds,
@@ -156,7 +156,7 @@ RoomsSlice
   removeHoleFromRoom: (roomId: RoomId, holeIndex: number) => {
     set(state => {
       const room = state.rooms.get(roomId)
-      if (!room || holeIndex < 0 || holeIndex >= room.holes.length) return state
+      if ((room == null) || holeIndex < 0 || holeIndex >= room.holes.length) return state
 
       const updatedHoles = room.holes.filter((_, index) => index !== holeIndex)
       const updatedRoom = {
@@ -176,7 +176,7 @@ RoomsSlice
   getRoomsContainingWall: (wallId: WallId) => {
     const { rooms } = get()
     const result: Room[] = []
-    
+
     for (const room of rooms.values()) {
       if (room.outerBoundary.wallIds.has(wallId) ||
           room.holes.some(hole => hole.wallIds.has(wallId)) ||
@@ -184,32 +184,32 @@ RoomsSlice
         result.push(room)
       }
     }
-    
+
     return result
   },
 
   getRoomsContainingPoint: (pointId: PointId) => {
     const { rooms } = get()
     const result: Room[] = []
-    
+
     for (const room of rooms.values()) {
       if (room.outerBoundary.pointIds.includes(pointId) ||
           room.holes.some(hole => hole.pointIds.includes(pointId))) {
         result.push(room)
       }
     }
-    
+
     return result
   },
 
   addInteriorWallToRoom: (roomId: RoomId, wallId: WallId) => {
     set(state => {
       const room = state.rooms.get(roomId)
-      if (!room) return state
+      if (room == null) return state
 
       const newInteriorWallIds = new Set(room.interiorWallIds)
       newInteriorWallIds.add(wallId)
-      
+
       const updatedRoom = {
         ...room,
         interiorWallIds: newInteriorWallIds
@@ -223,11 +223,11 @@ RoomsSlice
   removeInteriorWallFromRoom: (roomId: RoomId, wallId: WallId) => {
     set(state => {
       const room = state.rooms.get(roomId)
-      if (!room) return state
+      if (room == null) return state
 
       const newInteriorWallIds = new Set(room.interiorWallIds)
       newInteriorWallIds.delete(wallId)
-      
+
       const updatedRoom = {
         ...room,
         interiorWallIds: newInteriorWallIds

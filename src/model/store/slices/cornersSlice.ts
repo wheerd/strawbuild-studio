@@ -85,7 +85,7 @@ CornersSlice
       }
 
       // Get all connected walls
-      const allWallIds = [corner.wall1Id, corner.wall2Id, ...((corner.otherWallIds != null) || [])]
+      const allWallIds = [corner.wall1Id, corner.wall2Id, ...((corner.otherWallIds != null) ? corner.otherWallIds : [])]
 
       // Validate that both new main walls are already connected to this corner
       if (!allWallIds.includes(newWall1Id) || !allWallIds.includes(newWall2Id)) {
@@ -121,7 +121,7 @@ CornersSlice
       }
 
       // Add to otherWallIds if not already present
-      const otherWallIds = (corner.otherWallIds != null) || []
+      const otherWallIds = (corner.otherWallIds != null) ? corner.otherWallIds : []
       if (!otherWallIds.includes(wallId)) {
         const updatedCorner: Corner = {
           ...corner,
@@ -143,7 +143,7 @@ CornersSlice
       const corner = state.corners.get(pointId)
       if (corner == null) return state
 
-      const otherWallIds = (corner.otherWallIds != null) || []
+      const otherWallIds = (corner.otherWallIds != null) ? corner.otherWallIds : []
       let newWall1Id = corner.wall1Id
       let newWall2Id = corner.wall2Id
       let newOtherWallIds = [...otherWallIds]
@@ -198,7 +198,7 @@ CornersSlice
 
   getCorner: (pointId: PointId) => {
     const state = get()
-    return (state.corners.get(pointId) != null) || null
+    return state.corners.get(pointId) ?? null
   },
 
   getAllCorners: () => {

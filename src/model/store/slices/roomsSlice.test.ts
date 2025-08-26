@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createRoomsSlice, type RoomsSlice } from './roomsSlice'
 import { createRoomId, createWallId, createPointId } from '@/types/ids'
 
-
 // Mock Zustand following the official testing guide
 vi.mock('zustand')
 
@@ -343,7 +342,7 @@ describe('roomsSlice', () => {
       const hole1WallIds = [createWallId(), createWallId(), createWallId()]
       const hole2PointIds = [createPointId(), createPointId(), createPointId()]
       const hole2WallIds = [createWallId(), createWallId(), createWallId()]
-      
+
       store.addHoleToRoom(room.id, hole1PointIds, hole1WallIds)
       store.addHoleToRoom(room.id, hole2PointIds, hole2WallIds)
 
@@ -391,7 +390,7 @@ describe('roomsSlice', () => {
 
       // Get the room
       const result = store.getRoomById(addedRoom.id)
-      
+
       expect(result).toBeDefined()
       expect(result?.name).toBe('Test Room')
       expect(result?.id).toBe(addedRoom.id)
@@ -680,7 +679,7 @@ describe('roomsSlice', () => {
     it('should handle search operations correctly', () => {
       const wallId = createWallId()
       const pointId = createPointId()
-      
+
       // Create room with specific wall and point
       const pointIds = [pointId, createPointId(), createPointId()]
       const wallIds = [wallId, createWallId(), createWallId()]

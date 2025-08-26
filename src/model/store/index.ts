@@ -45,10 +45,10 @@ export const useModelStore = create<Store>()(
 )
 
 // Undo/redo hooks
-export const useUndo = () => useModelStore.temporal.getState().undo
-export const useRedo = () => useModelStore.temporal.getState().redo
-export const useCanUndo = () => useModelStore.temporal.getState().pastStates.length > 0
-export const useCanRedo = () => useModelStore.temporal.getState().futureStates.length > 0
+export const useUndo = (): (() => void) => useModelStore.temporal.getState().undo
+export const useRedo = (): (() => void) => useModelStore.temporal.getState().redo
+export const useCanUndo = (): boolean => useModelStore.temporal.getState().pastStates.length > 0
+export const useCanRedo = (): boolean => useModelStore.temporal.getState().futureStates.length > 0
 
 // Entity selector hooks (same as before)
 export const useFloors = (): Map<FloorId, Floor> => useModelStore(state => state.floors)

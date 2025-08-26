@@ -68,7 +68,7 @@ const createWall = (startPointId: PointId, endPointId: PointId, type: 'outer' | 
     endPointId,
     thickness,
     type,
-    ...(outsideDirection && { outsideDirection })
+    ...(outsideDirection !== undefined && { outsideDirection })
   }
 
   return wall
@@ -81,9 +81,9 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
   // CRUD operations
   addOuterWall: (startPointId: PointId, endPointId: PointId, outsideDirection: 'left' | 'right', thickness?: Length) => {
     const wallThickness = thickness ?? DEFAULT_OUTER_WALL_THICKNESS
-    
+
     const wall = createWall(startPointId, endPointId, 'outer', wallThickness, outsideDirection)
-    
+
     set(state => ({
       walls: new Map(state.walls).set(wall.id, wall)
     }))
@@ -93,9 +93,9 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
 
   addStructuralWall: (startPointId: PointId, endPointId: PointId, thickness?: Length) => {
     const wallThickness = thickness ?? DEFAULT_STRUCTURAL_WALL_THICKNESS
-    
+
     const wall = createWall(startPointId, endPointId, 'structural', wallThickness)
-    
+
     set(state => ({
       walls: new Map(state.walls).set(wall.id, wall)
     }))
@@ -105,9 +105,9 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
 
   addPartitionWall: (startPointId: PointId, endPointId: PointId, thickness?: Length) => {
     const wallThickness = thickness ?? DEFAULT_PARTITION_WALL_THICKNESS
-    
+
     const wall = createWall(startPointId, endPointId, 'partition', wallThickness)
-    
+
     set(state => ({
       walls: new Map(state.walls).set(wall.id, wall)
     }))
@@ -117,9 +117,9 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
 
   addOtherWall: (startPointId: PointId, endPointId: PointId, thickness?: Length) => {
     const wallThickness = thickness ?? DEFAULT_OTHER_WALL_THICKNESS
-    
+
     const wall = createWall(startPointId, endPointId, 'other', wallThickness)
-    
+
     set(state => ({
       walls: new Map(state.walls).set(wall.id, wall)
     }))
@@ -139,13 +139,13 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
   updateWallType: (wallId: WallId, type: 'outer' | 'structural' | 'partition' | 'other') => {
     set(state => {
       const wall = state.walls.get(wallId)
-      if (!wall) return state
+      if (wall == null) return state
 
-      const updatedWall = { 
-        ...wall, 
+      const updatedWall = {
+        ...wall,
         type,
         // Remove outsideDirection if changing from outer wall to another type
-        ...(type !== 'outer' && wall.outsideDirection && { outsideDirection: undefined })
+        ...(type !== 'outer' && { outsideDirection: undefined })
       }
 
       const newWalls = new Map(state.walls)
@@ -157,11 +157,11 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
   updateWallOutsideDirection: (wallId: WallId, outsideDirection: 'left' | 'right' | null) => {
     set(state => {
       const wall = state.walls.get(wallId)
-      if (!wall) return state
+      if (wall == null) return state
 
-      const updatedWall = { 
-        ...wall, 
-        ...(outsideDirection ? { outsideDirection } : { outsideDirection: undefined })
+      const updatedWall = {
+        ...wall,
+        outsideDirection: outsideDirection ?? undefined
       }
 
       const newWalls = new Map(state.walls)
@@ -177,7 +177,7 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
 
     set(state => {
       const wall = state.walls.get(wallId)
-      if (!wall) return state
+      if (wall == null) return state
 
       const updatedWall = { ...wall, thickness }
 
@@ -201,7 +201,7 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
 
     set(state => {
       const wall = state.walls.get(wallId)
-      if (!wall) return state
+      if (wall == null) return state
 
       const newOpening: Opening = {
         type: 'door',
@@ -210,7 +210,7 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
         height
       }
 
-      const openings = wall.openings ? [...wall.openings] : []
+      const openings = (wall.openings != null) ? [...wall.openings] : []
       openings.push(newOpening)
 
       const updatedWall = { ...wall, openings }
@@ -237,7 +237,7 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
 
     set(state => {
       const wall = state.walls.get(wallId)
-      if (!wall) return state
+      if (wall == null) return state
 
       const newOpening: Opening = {
         type: 'window',
@@ -247,7 +247,7 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
         sillHeight
       }
 
-      const openings = wall.openings ? [...wall.openings] : []
+      const openings = (wall.openings != null) ? [...wall.openings] : []
       openings.push(newOpening)
 
       const updatedWall = { ...wall, openings }
@@ -271,7 +271,7 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
 
     set(state => {
       const wall = state.walls.get(wallId)
-      if (!wall) return state
+      if (wall == null) return state
 
       const newOpening: Opening = {
         type: 'passage',
@@ -280,7 +280,7 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
         height
       }
 
-      const openings = wall.openings ? [...wall.openings] : []
+      const openings = (wall.openings != null) ? [...wall.openings] : []
       openings.push(newOpening)
 
       const updatedWall = { ...wall, openings }
@@ -294,7 +294,7 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
   removeOpeningFromWall: (wallId: WallId, openingIndex: number) => {
     set(state => {
       const wall = state.walls.get(wallId)
-      if (!wall || !wall.openings) return state
+      if ((wall == null) || (wall.openings == null)) return state
 
       if (openingIndex < 0 || openingIndex >= wall.openings.length) {
         return state // Invalid index, do nothing
@@ -303,8 +303,8 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
       const openings = [...wall.openings]
       openings.splice(openingIndex, 1)
 
-      const updatedWall = { 
-        ...wall, 
+      const updatedWall = {
+        ...wall,
         ...(openings.length > 0 ? { openings } : { openings: undefined })
       }
 
@@ -318,11 +318,11 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
   updateWallStartTouches: (wallId: WallId, touches: WallId | PointId | null) => {
     set(state => {
       const wall = state.walls.get(wallId)
-      if (!wall) return state
+      if (wall == null) return state
 
-      const updatedWall = { 
-        ...wall, 
-        ...(touches ? { startTouches: touches } : { startTouches: undefined })
+      const updatedWall = {
+        ...wall,
+        ...((touches != null) ? { startTouches: touches } : { startTouches: undefined })
       }
 
       const newWalls = new Map(state.walls)
@@ -334,11 +334,11 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
   updateWallEndTouches: (wallId: WallId, touches: WallId | PointId | null) => {
     set(state => {
       const wall = state.walls.get(wallId)
-      if (!wall) return state
+      if (wall == null) return state
 
-      const updatedWall = { 
-        ...wall, 
-        ...(touches ? { endTouches: touches } : { endTouches: undefined })
+      const updatedWall = {
+        ...wall,
+        ...((touches != null) ? { endTouches: touches } : { endTouches: undefined })
       }
 
       const newWalls = new Map(state.walls)
@@ -350,10 +350,10 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
   addWallTouchedBy: (wallId: WallId, touchedByWallId: WallId) => {
     set(state => {
       const wall = state.walls.get(wallId)
-      if (!wall) return state
+      if (wall == null) return state
 
-      const touchedBy = wall.touchedBy ? [...wall.touchedBy] : []
-      
+      const touchedBy = (wall.touchedBy != null) ? [...wall.touchedBy] : []
+
       // Don't add duplicates
       if (!touchedBy.includes(touchedByWallId)) {
         touchedBy.push(touchedByWallId)
@@ -370,12 +370,12 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
   removeWallTouchedBy: (wallId: WallId, touchedByWallId: WallId) => {
     set(state => {
       const wall = state.walls.get(wallId)
-      if (!wall || !wall.touchedBy) return state
+      if ((wall == null) || (wall.touchedBy == null)) return state
 
       const touchedBy = wall.touchedBy.filter(id => id !== touchedByWallId)
 
-      const updatedWall = { 
-        ...wall, 
+      const updatedWall = {
+        ...wall,
         ...(touchedBy.length > 0 ? { touchedBy } : { touchedBy: undefined })
       }
 
@@ -389,11 +389,11 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
   updateWallLeftRoom: (wallId: WallId, roomId: RoomId | null) => {
     set(state => {
       const wall = state.walls.get(wallId)
-      if (!wall) return state
+      if (wall == null) return state
 
-      const updatedWall = { 
-        ...wall, 
-        ...(roomId ? { leftRoomId: roomId } : { leftRoomId: undefined })
+      const updatedWall = {
+        ...wall,
+        ...((roomId != null) ? { leftRoomId: roomId } : { leftRoomId: undefined })
       }
 
       const newWalls = new Map(state.walls)
@@ -405,11 +405,11 @@ export const createWallsSlice: StateCreator<WallsSlice, [], [], WallsSlice> = (s
   updateWallRightRoom: (wallId: WallId, roomId: RoomId | null) => {
     set(state => {
       const wall = state.walls.get(wallId)
-      if (!wall) return state
+      if (wall == null) return state
 
-      const updatedWall = { 
-        ...wall, 
-        ...(roomId ? { rightRoomId: roomId } : { rightRoomId: undefined })
+      const updatedWall = {
+        ...wall,
+        ...((roomId != null) ? { rightRoomId: roomId } : { rightRoomId: undefined })
       }
 
       const newWalls = new Map(state.walls)
