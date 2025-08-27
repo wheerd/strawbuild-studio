@@ -15,7 +15,7 @@ import type {
   WallId,
   PointId,
   FloorId,
-  CornerId,
+  PointId,
   RoomId
 } from '@/types/ids'
 import {
@@ -23,7 +23,6 @@ import {
   createPointId,
   createRoomId,
   createFloorId,
-  createCornerId,
   createSlabId,
   createRoofId
 } from '@/types/ids'
@@ -52,7 +51,7 @@ import {
 } from '@/types/geometry'
 
 // Create empty model state with default ground floor
-export function createEmptyModelState(): ModelState {
+export function createEmptyModelState (): ModelState {
   const groundFloor = createFloor('Ground Floor', createFloorLevel(0), createLength(3000))
 
   return {
@@ -69,7 +68,7 @@ export function createEmptyModelState(): ModelState {
 }
 
 // Factory functions for creating entities
-export function createFloor(name: string, level: FloorLevel, height: Length): Floor {
+export function createFloor (name: string, level: FloorLevel, height: Length): Floor {
   return {
     id: createFloorId(),
     name,
@@ -84,7 +83,7 @@ export function createFloor(name: string, level: FloorLevel, height: Length): Fl
   }
 }
 
-export function createPoint(position: Point2D): Point {
+export function createPoint (position: Point2D): Point {
   return {
     id: createPointId(),
     position,
@@ -92,7 +91,7 @@ export function createPoint(position: Point2D): Point {
   }
 }
 
-export function createWall(
+export function createWall (
   startPointId: PointId,
   endPointId: PointId,
   heightAtStart: Length,
@@ -128,7 +127,7 @@ export function createWall(
   }
 }
 
-export function createRoom(name: string, wallIds: WallId[], pointIds: PointId[]): Room {
+export function createRoom (name: string, wallIds: WallId[], pointIds: PointId[]): Room {
   return {
     id: createRoomId(),
     name,
@@ -144,7 +143,7 @@ export function createRoom(name: string, wallIds: WallId[], pointIds: PointId[])
   }
 }
 
-export function createOpening(
+export function createOpening (
   type: Opening['type'],
   offsetFromStart: Length,
   width: Length,
@@ -160,7 +159,7 @@ export function createOpening(
   }
 }
 
-export function createCorner(
+export function createCorner (
   pointId: PointId,
   wall1Id: WallId,
   wall2Id: WallId,
@@ -181,7 +180,7 @@ export function createCorner(
   }
 }
 
-export function createSlab(polygon: Polygon2D, thickness: Length): Slab {
+export function createSlab (polygon: Polygon2D, thickness: Length): Slab {
   return {
     id: createSlabId(),
     polygon: { outer: polygon, holes: [] },
@@ -190,7 +189,7 @@ export function createSlab(polygon: Polygon2D, thickness: Length): Slab {
   }
 }
 
-export function createRoof(
+export function createRoof (
   polygon: Polygon2D,
   thickness: Length,
   overhang: Length,
@@ -212,7 +211,7 @@ export function createRoof(
 }
 
 // State manipulation functions
-export function addFloorToState(state: ModelState, floor: Floor): ModelState {
+export function addFloorToState (state: ModelState, floor: Floor): ModelState {
   const updatedState = { ...state }
   updatedState.floors = new Map(state.floors)
   updatedState.floors.set(floor.id, floor)
@@ -220,7 +219,7 @@ export function addFloorToState(state: ModelState, floor: Floor): ModelState {
   return updatedState
 }
 
-export function addPointToFloor(state: ModelState, point: Point, floorId: FloorId): ModelState {
+export function addPointToFloor (state: ModelState, point: Point, floorId: FloorId): ModelState {
   const floor = state.floors.get(floorId)
   if (floor == null) {
     throw new Error(`Floor ${floorId} not found`)
@@ -256,7 +255,7 @@ export function addPointToFloor(state: ModelState, point: Point, floorId: FloorI
   return updatedState
 }
 
-export function addWallToFloor(state: ModelState, wall: Wall, floorId: FloorId): ModelState {
+export function addWallToFloor (state: ModelState, wall: Wall, floorId: FloorId): ModelState {
   const floor = state.floors.get(floorId)
   if (floor == null) {
     throw new Error(`Floor ${floorId} not found`)
@@ -285,7 +284,7 @@ export function addWallToFloor(state: ModelState, wall: Wall, floorId: FloorId):
   return updatedState
 }
 
-export function addRoomToFloor(state: ModelState, room: Room, floorId: FloorId): ModelState {
+export function addRoomToFloor (state: ModelState, room: Room, floorId: FloorId): ModelState {
   const floor = state.floors.get(floorId)
   if (floor == null) {
     throw new Error(`Floor ${floorId} not found`)
@@ -303,14 +302,14 @@ export function addRoomToFloor(state: ModelState, room: Room, floorId: FloorId):
     const wall = updatedState.walls.get(wallId)
     if (wall != null) {
       const updatedWall = { ...wall }
-      
+
       // Simple assignment - prefer left side, fallback to right
       if (updatedWall.leftRoomId == null) {
         updatedWall.leftRoomId = room.id
       } else if (updatedWall.rightRoomId == null) {
         updatedWall.rightRoomId = room.id
       }
-      
+
       updatedState.walls.set(wallId, updatedWall)
     }
   }
@@ -325,7 +324,7 @@ export function addRoomToFloor(state: ModelState, room: Room, floorId: FloorId):
   return updatedState
 }
 
-export function addSlabToFloor(state: ModelState, slab: Slab, floorId: FloorId): ModelState {
+export function addSlabToFloor (state: ModelState, slab: Slab, floorId: FloorId): ModelState {
   const floor = state.floors.get(floorId)
   if (floor == null) {
     throw new Error(`Floor ${floorId} not found`)
@@ -347,7 +346,7 @@ export function addSlabToFloor(state: ModelState, slab: Slab, floorId: FloorId):
   return updatedState
 }
 
-export function addRoofToFloor(state: ModelState, roof: Roof, floorId: FloorId): ModelState {
+export function addRoofToFloor (state: ModelState, roof: Roof, floorId: FloorId): ModelState {
   const floor = state.floors.get(floorId)
   if (floor == null) {
     throw new Error(`Floor ${floorId} not found`)
@@ -370,14 +369,14 @@ export function addRoofToFloor(state: ModelState, roof: Roof, floorId: FloorId):
 }
 
 // Utility functions
-export function calculateStateBounds(state: ModelState): Bounds2D | null {
+export function calculateStateBounds (state: ModelState): Bounds2D | null {
   if (state.points.size === 0) return null
 
   const allPoints = Array.from(state.points.values()).map(point => point.position)
   return boundsFromPoints(allPoints)
 }
 
-export function calculateFloorBounds(floorId: FloorId, state: ModelState): Bounds2D | null {
+export function calculateFloorBounds (floorId: FloorId, state: ModelState): Bounds2D | null {
   const floor = state.floors.get(floorId)
   if (floor == null || floor.pointIds.length === 0) return null
 
@@ -389,7 +388,7 @@ export function calculateFloorBounds(floorId: FloorId, state: ModelState): Bound
   return boundsFromPoints(floorPoints)
 }
 
-export function getWallLength(wall: Wall, state: ModelState): Length {
+export function getWallLength (wall: Wall, state: ModelState): Length {
   const startPoint = state.points.get(wall.startPointId)
   const endPoint = state.points.get(wall.endPointId)
 
@@ -398,7 +397,7 @@ export function getWallLength(wall: Wall, state: ModelState): Length {
   return distance(startPoint.position, endPoint.position)
 }
 
-export function calculateRoomArea(room: Room, state: ModelState): Area {
+export function calculateRoomArea (room: Room, state: ModelState): Area {
   const pointIds = room.outerBoundary?.pointIds || []
   const points = pointIds
     .map(id => state.points.get(id))
@@ -407,7 +406,7 @@ export function calculateRoomArea(room: Room, state: ModelState): Area {
   return calculatePolygonArea({ points })
 }
 
-export function findNearestPoint(
+export function findNearestPoint (
   state: ModelState,
   target: Point2D,
   maxDistance: Length = createLength(50)
@@ -444,7 +443,7 @@ export interface SnapResult {
 }
 
 // Find existing points for direct point snapping
-function findPointSnapPosition(
+function findPointSnapPosition (
   state: ModelState,
   target: Point2D,
   fromPoint: Point2D,
@@ -478,7 +477,7 @@ function findPointSnapPosition(
 }
 
 // Step 2: Generate snap lines for architectural alignment
-export function generateSnapLines(
+export function generateSnapLines (
   state: ModelState,
   fromPoint: Point2D,
   activeFloorId: FloorId,
@@ -569,7 +568,7 @@ export function generateSnapLines(
 }
 
 // New simplified snapping function: filter nearby lines first, then check intersections
-export function findLineSnapPosition(
+export function findLineSnapPosition (
   target: Point2D,
   fromPoint: Point2D,
   snapLines: SnapLine[]
@@ -642,7 +641,7 @@ export function findLineSnapPosition(
 }
 
 // Main snapping function that combines all snap types
-export function findSnapPoint(
+export function findSnapPoint (
   state: ModelState,
   target: Point2D,
   fromPoint: Point2D,
@@ -658,7 +657,7 @@ export function findSnapPoint(
   return findLineSnapPosition(target, fromPoint, snapLines)
 }
 
-export function mergePoints(
+export function mergePoints (
   state: ModelState,
   targetPointId: PointId,
   sourcePointId: PointId,
@@ -737,7 +736,7 @@ export function mergePoints(
   return updatedState
 }
 
-export function movePoint(
+export function movePoint (
   state: ModelState,
   pointId: PointId,
   newPosition: Point2D
@@ -767,7 +766,7 @@ export function movePoint(
   return updatedState
 }
 
-export function moveWall(
+export function moveWall (
   state: ModelState,
   wallId: WallId,
   deltaX: number,
@@ -839,7 +838,7 @@ export function moveWall(
   return updatedState
 }
 
-export function removeWallFromFloor(state: ModelState, wallId: WallId, floorId: FloorId): ModelState {
+export function removeWallFromFloor (state: ModelState, wallId: WallId, floorId: FloorId): ModelState {
   const wall = state.walls.get(wallId)
   const floor = state.floors.get(floorId)
 
@@ -862,7 +861,7 @@ export function removeWallFromFloor(state: ModelState, wallId: WallId, floorId: 
   return updatedState
 }
 
-export function removePointFromFloor(state: ModelState, pointId: PointId, floorId: FloorId): ModelState {
+export function removePointFromFloor (state: ModelState, pointId: PointId, floorId: FloorId): ModelState {
   const point = state.points.get(pointId)
   const floor = state.floors.get(floorId)
 
@@ -884,7 +883,7 @@ export function removePointFromFloor(state: ModelState, pointId: PointId, floorI
   return updatedState
 }
 
-export function removeRoomFromFloor(state: ModelState, roomId: RoomId, floorId: FloorId): ModelState {
+export function removeRoomFromFloor (state: ModelState, roomId: RoomId, floorId: FloorId): ModelState {
   const room = state.rooms.get(roomId)
   const floor = state.floors.get(floorId)
 
@@ -906,7 +905,7 @@ export function removeRoomFromFloor(state: ModelState, roomId: RoomId, floorId: 
   return updatedState
 }
 
-export function deletePoint(state: ModelState, pointId: PointId, floorId: FloorId): ModelState {
+export function deletePoint (state: ModelState, pointId: PointId, floorId: FloorId): ModelState {
   const point = state.points.get(pointId)
   const floor = state.floors.get(floorId)
 
@@ -926,10 +925,10 @@ export function deletePoint(state: ModelState, pointId: PointId, floorId: FloorI
     updatedState = removeWallFromFloor(updatedState, wall.id, floorId)
 
     // Find rooms that contain this wall and remove them too
-    if (wall.leftRoomId) {
+    if (wall.leftRoomId != null) {
       updatedState = removeRoomFromFloor(updatedState, wall.leftRoomId, floorId)
     }
-    if (wall.rightRoomId && wall.rightRoomId !== wall.leftRoomId) {
+    if ((wall.rightRoomId != null) && wall.rightRoomId !== wall.leftRoomId) {
       updatedState = removeRoomFromFloor(updatedState, wall.rightRoomId, floorId)
     }
 
@@ -956,7 +955,7 @@ export function deletePoint(state: ModelState, pointId: PointId, floorId: FloorI
   return updatedState
 }
 
-export function deleteWall(state: ModelState, wallId: WallId, floorId: FloorId): ModelState {
+export function deleteWall (state: ModelState, wallId: WallId, floorId: FloorId): ModelState {
   const wall = state.walls.get(wallId)
   const floor = state.floors.get(floorId)
 
@@ -983,12 +982,12 @@ export function deleteWall(state: ModelState, wallId: WallId, floorId: FloorId):
   return updatedState
 }
 
-export function deleteRoom(state: ModelState, roomId: RoomId, floorId: FloorId): ModelState {
+export function deleteRoom (state: ModelState, roomId: RoomId, floorId: FloorId): ModelState {
   return removeRoomFromFloor(state, roomId, floorId)
 }
 
 // Wall shape calculation (computed property implementation)
-export function calculateWallShape(wall: Wall, state: ModelState): Polygon2D {
+export function calculateWallShape (wall: Wall, state: ModelState): Polygon2D {
   const startPoint = state.points.get(wall.startPointId)
   const endPoint = state.points.get(wall.endPointId)
 
@@ -1025,35 +1024,21 @@ export function calculateWallShape(wall: Wall, state: ModelState): Polygon2D {
   }
 }
 
-// Helper function to get entities on a floor
-export function getWallsOnFloor(state: ModelState, floorId: FloorId): Wall[] {
-  const floor = state.floors.get(floorId)
-  if (floor == null) return []
-
-  return floor.wallIds
-    .map(id => state.walls.get(id))
-    .filter((wall): wall is Wall => wall !== undefined)
+// COMPATIBILITY LAYER: Helper functions to get entities on a floor
+// These now filter by entity floorId instead of floor entity arrays
+export function getWallsOnFloor (state: { walls: Map<WallId, Wall> }, floorId: FloorId): Wall[] {
+  return Array.from(state.walls.values()).filter(wall => wall.floorId === floorId)
 }
 
-export function getRoomsOnFloor(state: ModelState, floorId: FloorId): Room[] {
-  const floor = state.floors.get(floorId)
-  if (floor == null) return []
-
-  return floor.roomIds
-    .map(id => state.rooms.get(id))
-    .filter((room): room is Room => room !== undefined)
+export function getRoomsOnFloor (state: { rooms: Map<RoomId, Room> }, floorId: FloorId): Room[] {
+  return Array.from(state.rooms.values()).filter(room => room.floorId === floorId)
 }
 
-export function getPointsOnFloor(state: ModelState, floorId: FloorId): Point[] {
-  const floor = state.floors.get(floorId)
-  if (floor == null) return []
-
-  return floor.pointIds
-    .map(id => state.points.get(id))
-    .filter((point): point is Point => point !== undefined)
+export function getPointsOnFloor (state: { points: Map<PointId, Point> }, floorId: FloorId): Point[] {
+  return Array.from(state.points.values()).filter(point => point.floorId === floorId)
 }
 
-export function getSlabsOnFloor(state: ModelState, floorId: FloorId): Slab[] {
+export function getSlabsOnFloor (state: ModelState, floorId: FloorId): Slab[] {
   const floor = state.floors.get(floorId)
   if (floor == null) return []
 
@@ -1062,7 +1047,7 @@ export function getSlabsOnFloor(state: ModelState, floorId: FloorId): Slab[] {
     .filter((slab): slab is Slab => slab !== undefined)
 }
 
-export function getRoofsOnFloor(state: ModelState, floorId: FloorId): Roof[] {
+export function getRoofsOnFloor (state: ModelState, floorId: FloorId): Roof[] {
   const floor = state.floors.get(floorId)
   if (floor == null) return []
 
@@ -1072,7 +1057,7 @@ export function getRoofsOnFloor(state: ModelState, floorId: FloorId): Roof[] {
 }
 
 // Opening validation for walls
-export function isOpeningValidOnWall(
+export function isOpeningValidOnWall (
   wall: Wall,
   opening: Opening,
   state: ModelState
@@ -1104,7 +1089,7 @@ export function isOpeningValidOnWall(
 }
 
 // Helper function to add opening to wall
-export function addOpeningToWall(wall: Wall, opening: Opening, state: ModelState): Wall {
+export function addOpeningToWall (wall: Wall, opening: Opening, state: ModelState): Wall {
   if (!isOpeningValidOnWall(wall, opening, state)) {
     throw new Error('Invalid opening position: would overlap with existing opening or exceed wall bounds')
   }
@@ -1116,7 +1101,7 @@ export function addOpeningToWall(wall: Wall, opening: Opening, state: ModelState
 }
 
 // Corner management operations
-export function findWallsConnectedToPoint(state: ModelState, pointId: PointId): Wall[] {
+export function findWallsConnectedToPoint (state: ModelState, pointId: PointId): Wall[] {
   const connectedWalls: Wall[] = []
 
   for (const wall of state.walls.values()) {
@@ -1128,11 +1113,11 @@ export function findWallsConnectedToPoint(state: ModelState, pointId: PointId): 
   return connectedWalls
 }
 
-export function shouldCreateCorner(connectedWalls: Wall[]): boolean {
+export function shouldCreateCorner (connectedWalls: Wall[]): boolean {
   return connectedWalls.length >= 2
 }
 
-export function findExistingCornerAtPoint(state: ModelState, pointId: PointId): Corner | null {
+export function findExistingCornerAtPoint (state: ModelState, pointId: PointId): Corner | null {
   for (const corner of state.corners.values()) {
     if (corner.pointId === pointId) {
       return corner
@@ -1141,7 +1126,7 @@ export function findExistingCornerAtPoint(state: ModelState, pointId: PointId): 
   return null
 }
 
-export function calculateCornerData(
+export function calculateCornerData (
   state: ModelState,
   pointId: PointId,
   connectedWalls: Wall[]
@@ -1203,7 +1188,7 @@ export function calculateCornerData(
   }
 }
 
-export function createCornerFromWalls(
+export function createCornerFromWalls (
   state: ModelState,
   pointId: PointId,
   connectedWalls: Wall[]
@@ -1238,7 +1223,7 @@ export function createCornerFromWalls(
   }
 }
 
-export function updateCornerReferences(state: ModelState, corner: Corner): ModelState {
+export function updateCornerReferences (state: ModelState, corner: Corner): ModelState {
   const updatedState = { ...state }
   updatedState.walls = new Map(state.walls)
 
@@ -1281,7 +1266,7 @@ export function updateCornerReferences(state: ModelState, corner: Corner): Model
   return updatedState
 }
 
-export function removeCornerReferences(state: ModelState, corner: Corner): ModelState {
+export function removeCornerReferences (state: ModelState, corner: Corner): ModelState {
   const updatedState = { ...state }
   updatedState.walls = new Map(state.walls)
 
@@ -1324,7 +1309,7 @@ export function removeCornerReferences(state: ModelState, corner: Corner): Model
   return updatedState
 }
 
-export function updateOrCreateCorner(state: ModelState, pointId: PointId): ModelState {
+export function updateOrCreateCorner (state: ModelState, pointId: PointId): ModelState {
   const connectedWalls = findWallsConnectedToPoint(state, pointId)
 
   if (!shouldCreateCorner(connectedWalls)) {
@@ -1336,8 +1321,8 @@ export function updateOrCreateCorner(state: ModelState, pointId: PointId): Model
       updatedState.corners = new Map(updatedState.corners)
       updatedState.corners.delete(existingCorner.id)
       updatedState.updatedAt = new Date()
-  return updatedState
-}
+      return updatedState
+    }
     return state
   }
 
@@ -1431,15 +1416,15 @@ export function updateOrCreateCorner(state: ModelState, pointId: PointId): Model
   }
 }
 
-export function switchCornerMainWalls(
+export function switchCornerMainWalls (
   state: ModelState,
-  cornerId: CornerId,
+  pointId: PointId,
   newWall1Id: WallId,
   newWall2Id: WallId
 ): ModelState {
-  const corner = state.corners.get(cornerId)
+  const corner = state.corners.get(pointId)
   if (corner == null) {
-    throw new Error(`Corner ${cornerId} not found`)
+    throw new Error(`Corner ${pointId} not found`)
   }
 
   const connectedWalls = findWallsConnectedToPoint(state, corner.pointId)
@@ -1500,22 +1485,10 @@ export function switchCornerMainWalls(
   updatedState = updateCornerReferences(updatedState, updatedCorner)
   updatedState = { ...updatedState }
   updatedState.corners = new Map(updatedState.corners)
-  updatedState.corners.set(cornerId, updatedCorner)
+  updatedState.corners.set(pointId, updatedCorner)
   updatedState.updatedAt = new Date()
 
   return updatedState
 }
 
 // Room operations
-
-
-
-
-
-
-
-
-
-
-
-

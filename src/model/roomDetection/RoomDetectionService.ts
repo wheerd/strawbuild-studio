@@ -70,14 +70,14 @@ export class RoomDetectionService implements IRoomDetectionService {
 
     // Check if this wall intersects any existing rooms (room splitting case)
     const intersectedRooms = this.findRoomsIntersectedByWall(state, wall, floorId)
-    
+
     const result = this.performRoomDetection(state, context)
 
     // Handle room splitting
     if (intersectedRooms.length > 0) {
       for (const room of intersectedRooms) {
         result.roomsToDelete.push(room.id)
-        
+
         // Try to create new rooms from the split
         const splitRooms = this.createRoomsFromSplitWall(state, wallId, room)
         result.roomsToCreate.push(...splitRooms)
@@ -102,7 +102,7 @@ export class RoomDetectionService implements IRoomDetectionService {
       // Two rooms share this wall - merge them
       const [room1, room2] = affectedRooms
       result.roomsToDelete.push(room1.id, room2.id)
-      
+
       const mergedRoom = this.createMergedRoom(room1, room2, wallId, state)
       if (mergedRoom != null) {
         result.roomsToCreate.push(mergedRoom)
@@ -111,7 +111,7 @@ export class RoomDetectionService implements IRoomDetectionService {
       // One room contains this wall - check if room is still valid
       const room = affectedRooms[0]
       const updatedWallIds = Array.from(room.wallIds).filter(id => id !== wallId)
-      
+
       const roomDef: RoomDefinition = {
         name: room.name,
         wallIds: updatedWallIds,
@@ -125,7 +125,7 @@ export class RoomDetectionService implements IRoomDetectionService {
         })),
         interiorWallIds: Array.from(room.interiorWallIds || new Set())
       }
-      
+
       if (!this.engine.validateRoom(roomDef, state)) {
         // Room becomes invalid, remove it
         result.roomsToDelete.push(room.id)
@@ -209,11 +209,11 @@ export class RoomDetectionService implements IRoomDetectionService {
       const point = state.points.get(pointId)
       if (point == null) continue
 
-       const hasValidRoom = validRooms.some(roomId => {
-         const room = state.rooms.get(roomId)
-         return room?.outerBoundary?.pointIds.includes(pointId) === true ||
+      const hasValidRoom = validRooms.some(roomId => {
+        const room = state.rooms.get(roomId)
+        return room?.outerBoundary?.pointIds.includes(pointId) === true ||
                 room?.holes?.some(hole => hole.pointIds.includes(pointId)) === true
-       })
+      })
 
       if (!hasValidRoom) {
         orphanedPoints.push(pointId)
@@ -244,10 +244,10 @@ export class RoomDetectionService implements IRoomDetectionService {
     for (const { outerLoop, holeLoops } of roomsWithHoles) {
       const roomName = this.generateRoomName(result.roomsToCreate.length + 1)
       const roomDef = this.engine.createRoomWithHoles(outerLoop, holeLoops, roomName, state)
-      
+
       if (roomDef != null) {
         result.roomsToCreate.push(roomDef)
-        
+
         // Mark loops as used
         usedLoops.add(outerLoop.join(','))
         for (const holeLoop of holeLoops) {
@@ -262,7 +262,7 @@ export class RoomDetectionService implements IRoomDetectionService {
       if (!usedLoops.has(loopKey)) {
         const roomName = this.generateRoomName(result.roomsToCreate.length + 1)
         const roomDef = this.engine.createRoomFromLoop(wallLoop, roomName, state)
-        
+
         if (roomDef != null) {
           result.roomsToCreate.push(roomDef)
         }
@@ -412,7 +412,7 @@ export class RoomDetectionService implements IRoomDetectionService {
 
     // Create a map of room definitions by their wall IDs for quick lookup
     const roomDefsByWall = new Map<WallId, RoomDefinition[]>()
-    
+
     for (const roomDef of result.roomsToCreate) {
       for (const wallId of roomDef.wallIds) {
         if (!roomDefsByWall.has(wallId)) {
@@ -424,7 +424,7 @@ export class RoomDetectionService implements IRoomDetectionService {
 
     // Create a map for interior walls (walls inside rooms)
     const interiorWallsByRoom = new Map<WallId, RoomDefinition>()
-    
+
     for (const roomDef of result.roomsToCreate) {
       for (const interiorWallId of roomDef.interiorWallIds) {
         interiorWallsByRoom.set(interiorWallId, roomDef)
@@ -438,7 +438,7 @@ export class RoomDetectionService implements IRoomDetectionService {
 
       const roomDefs = roomDefsByWall.get(wallId) ?? []
       const interiorRoomDef = interiorWallsByRoom.get(wallId)
-      
+
       let leftRoomId: RoomId | undefined
       let rightRoomId: RoomId | undefined
 
@@ -452,7 +452,7 @@ export class RoomDetectionService implements IRoomDetectionService {
         const roomDef = roomDefs[0]
         const side = this.engine.determineRoomSide(roomDef, wall, state)
         const tempRoomId = createRoomId() // Temporary ID for assignment
-        
+
         if (side === 'left') {
           leftRoomId = tempRoomId
         } else {
@@ -463,10 +463,10 @@ export class RoomDetectionService implements IRoomDetectionService {
         const [roomDef1, roomDef2] = roomDefs
         const side1 = this.engine.determineRoomSide(roomDef1, wall, state)
         const side2 = this.engine.determineRoomSide(roomDef2, wall, state)
-        
+
         const tempRoomId1 = createRoomId()
         const tempRoomId2 = createRoomId()
-        
+
         if (side1 === 'left') {
           leftRoomId = tempRoomId1
           rightRoomId = side2 === 'right' ? tempRoomId2 : undefined
@@ -490,15 +490,15 @@ export class RoomDetectionService implements IRoomDetectionService {
 
     for (const pointId of floor.pointIds) {
       const roomIds = new Set<RoomId>()
-      
-       // Find which room definitions include this point
-       for (const roomDef of result.roomsToCreate) {
-         if (roomDef.outerBoundary?.pointIds.includes(pointId) ||
+
+      // Find which room definitions include this point
+      for (const roomDef of result.roomsToCreate) {
+        if (roomDef.outerBoundary?.pointIds.includes(pointId) ||
              roomDef.holes?.some(hole => hole.pointIds.includes(pointId))) {
-           // Use temporary room ID - will be replaced when rooms are actually created
-           roomIds.add(createRoomId())
-         }
-       }
+          // Use temporary room ID - will be replaced when rooms are actually created
+          roomIds.add(createRoomId())
+        }
+      }
 
       result.pointAssignments.push({
         pointId,
@@ -566,10 +566,10 @@ export class RoomDetectionService implements IRoomDetectionService {
 
     for (const roomDef of result.roomsToCreate) {
       const interiorWalls = this.engine.findInteriorWalls(roomDef, floor.wallIds, state)
-      
+
       // Add interior walls to room definition
       roomDef.interiorWallIds = interiorWalls
-      
+
       // Add to total wallIds for backward compatibility
       roomDef.wallIds = [...roomDef.wallIds, ...interiorWalls]
     }
@@ -588,7 +588,7 @@ export class RoomDetectionService implements IRoomDetectionService {
 
     // Update point assignments to remove references to deleted rooms
     const deletedRoomIds = new Set(result.roomsToDelete)
-    
+
     for (const pointId of [wall.startPointId, wall.endPointId]) {
       const point = state.points.get(pointId)
       if (point == null) continue

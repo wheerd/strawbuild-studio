@@ -97,6 +97,10 @@ export function addVector (point: Point2D, vector: Vector2D): Point2D {
   return createPoint2D(point.x + vector.x, point.y + vector.y)
 }
 
+export function direction (source: Point2D, target: Point2D): Vector2D {
+  return createVector2D(target.x - source.x, target.y - source.y)
+}
+
 export function normalizeVector (vector: Vector2D): Vector2D {
   const len = Math.sqrt(vector.x * vector.x + vector.y * vector.y)
   if (len === 0) return createVector2D(0, 0)

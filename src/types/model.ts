@@ -35,6 +35,7 @@ export type WallOrCornerId = WallId | PointId
 // Connection point for wall endpoints
 export interface Corner {
   pointId: PointId
+  floorId: FloorId // Immutable - set at creation time
   wall1Id: WallId // Depending on the construction type, this is the dominant wall which "owns" the corner
   wall2Id: WallId
   otherWallIds?: WallId[]

@@ -168,7 +168,7 @@ export class RoomDetectionEngine {
     }
 
     // Get all room points that are NOT on the wall (from outer boundary first)
-    let roomPoints = roomDef.outerBoundary.pointIds
+    const roomPoints = roomDef.outerBoundary.pointIds
       .filter(pointId => pointId !== wall.startPointId && pointId !== wall.endPointId)
       .map(id => state.points.get(id))
       .filter((p): p is Point => p !== undefined)
@@ -180,9 +180,9 @@ export class RoomDetectionEngine {
         .map(id => state.points.get(id))
         .filter((p): p is Point => p !== undefined)
         .map(p => p.position)
-      
+
       if (allRoomPoints.length === 0) return 'left'
-      
+
       // Use centroid of all room points
       const centroidX = allRoomPoints.reduce((sum, p) => sum + p.x, 0) / allRoomPoints.length
       const centroidY = allRoomPoints.reduce((sum, p) => sum + p.y, 0) / allRoomPoints.length
@@ -191,7 +191,7 @@ export class RoomDetectionEngine {
 
     // Take the first room point (or use centroid if needed) to determine side
     const testPoint = roomPoints[0]
-    
+
     const wallVector = {
       x: endPoint.position.x - startPoint.position.x,
       y: endPoint.position.y - startPoint.position.y
@@ -239,9 +239,9 @@ export class RoomDetectionEngine {
    * Create a complete room definition with holes from multiple wall loops
    */
   createRoomWithHoles (
-    outerWallIds: WallId[], 
-    holeWallIds: WallId[][], 
-    name: string, 
+    outerWallIds: WallId[],
+    holeWallIds: WallId[][],
+    name: string,
     state: ModelState
   ): RoomDefinition | null {
     // Validate outer boundary
@@ -255,7 +255,7 @@ export class RoomDetectionEngine {
     }
 
     // Process holes
-    const holes: import('./types').RoomBoundaryDefinition[] = []
+    const holes: Array<import('./types').RoomBoundaryDefinition> = []
     const allWallIds = [...outerWallIds]
 
     for (const holeWalls of holeWallIds) {
@@ -336,13 +336,13 @@ export class RoomDetectionEngine {
    */
   findInteriorWalls (roomDefinition: RoomDefinition, floorWallIds: WallId[], state: ModelState): WallId[] {
     const interiorWalls: WallId[] = []
-    
+
     // Get room polygon (outer boundary minus holes)
     const outerPoints = this.getLoopPolygonPoints(roomDefinition.outerBoundary.wallIds, state)
     if (outerPoints.length < 3) return []
 
     // Get hole polygons
-    const holePolygons = roomDefinition.holes.map(hole => 
+    const holePolygons = roomDefinition.holes.map(hole =>
       this.getLoopPolygonPoints(hole.wallIds, state)
     ).filter(points => points.length >= 3)
 
@@ -367,27 +367,27 @@ export class RoomDetectionEngine {
    * Check if a wall is completely inside a room (considering holes)
    */
   private isWallInsideRoom (
-    wall: Wall, 
+    wall: Wall,
     outerPolygon: Point2D[],
     holePolygons: Point2D[][],
     state: ModelState
   ): boolean {
     const startPoint = state.points.get(wall.startPointId)
     const endPoint = state.points.get(wall.endPointId)
-    
+
     if (startPoint == null || endPoint == null) return false
 
     // Check if both endpoints are inside the outer boundary
     const startInOuter = this.isPointInPolygon(startPoint.position, outerPolygon)
     const endInOuter = this.isPointInPolygon(endPoint.position, outerPolygon)
-    
+
     if (!startInOuter || !endInOuter) return false
 
     // Check if wall is NOT inside any holes
     for (const holePolygon of holePolygons) {
       const startInHole = this.isPointInPolygon(startPoint.position, holePolygon)
       const endInHole = this.isPointInPolygon(endPoint.position, holePolygon)
-      
+
       if (startInHole || endInHole) return false
     }
 
@@ -449,14 +449,14 @@ export class RoomDetectionEngine {
 
       // Direction we came from
       const prevPoint = currentWall.startPointId === currentPoint ? currentWall.endPointId : currentWall.startPointId
-    const prevPointPos = state.points.get(prevPoint)
-    const currentPointPos = state.points.get(currentPoint)
-    if (prevPointPos == null || currentPointPos == null) return null
+      const prevPointPos = state.points.get(prevPoint)
+      const currentPointPos = state.points.get(currentPoint)
+      if (prevPointPos == null || currentPointPos == null) return null
 
-    const incomingAngle = Math.atan2(
-      currentPointPos.position.y - prevPointPos.position.y,
-      currentPointPos.position.x - prevPointPos.position.x
-    )
+      const incomingAngle = Math.atan2(
+        currentPointPos.position.y - prevPointPos.position.y,
+        currentPointPos.position.x - prevPointPos.position.x
+      )
 
       for (const wallId of connectedWalls) {
         if (wallId === previousWall) continue // Don't go back
@@ -634,7 +634,7 @@ export class RoomDetectionEngine {
       visited.add(currentWallId)
 
       // Find the next wall connected to the current point
-      const connectedWalls = pointToWalls.get(currentPoint) || []
+      const connectedWalls = (pointToWalls.get(currentPoint) != null) || []
       const nextWallId = connectedWalls.find(wId => wId !== currentWallId && !visited.has(wId))
 
       if (nextWallId == null) {
@@ -746,8 +746,6 @@ export class RoomDetectionEngine {
     return calculatePolygonArea({ points })
   }
 
-
-
   private extractOrderedPointsFromWalls (wallIds: WallId[], state: ModelState): PointId[] {
     if (wallIds.length === 0) return []
 
@@ -779,6 +777,4 @@ export class RoomDetectionEngine {
 
     return points
   }
-
-
 }

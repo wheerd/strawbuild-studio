@@ -3,7 +3,7 @@ import type Konva from 'konva'
 import { useCallback, useRef } from 'react'
 import type { Wall } from '@/types/model'
 import { useSelectedEntity, useEditorStore, useDragState, useActiveTool } from '@/components/FloorPlanEditor/hooks/useEditorStore'
-import { usePoints, useCorners } from '@/model/store'
+import { usePoints, useCorners, useWallLength } from '@/model/store'
 import type { Point2D } from '@/types/geometry'
 
 interface WallShapeProps {
@@ -21,7 +21,7 @@ export function WallShape ({ wall }: WallShapeProps): React.JSX.Element | null {
   const dragState = useDragState()
   const activeTool = useActiveTool()
   const hasDraggedRef = useRef(false)
-
+  const getWallLength = useWallLength()
   const startPoint = points.get(wall.startPointId)
   const endPoint = points.get(wall.endPointId)
 
@@ -34,7 +34,7 @@ export function WallShape ({ wall }: WallShapeProps): React.JSX.Element | null {
 
   // Check if this wall is a main wall of a selected corner
   const isMainWallOfSelectedCorner = Array.from(corners.values()).some(corner =>
-    selectedEntity === corner.id && (corner.wall1Id === wall.id || corner.wall2Id === wall.id)
+    selectedEntity === corner.pointId && (corner.wall1Id === wall.id || corner.wall2Id === wall.id)
   )
 
   const handleClick = useCallback((e: Konva.KonvaEventObject<MouseEvent>): void => {
@@ -157,7 +157,7 @@ export function WallShape ({ wall }: WallShapeProps): React.JSX.Element | null {
           <Text
             x={midX}
             y={midY}
-            text={`${(Number(wall.length) / 1000).toFixed(2)}m`} // Use model's computed length in meters
+            text={`${(getWallLength(wall.id) / 1000).toFixed(2)}m`} // Use model's computed length in meters
             fontSize={60}
             fontFamily='Arial'
             fontStyle='bold'

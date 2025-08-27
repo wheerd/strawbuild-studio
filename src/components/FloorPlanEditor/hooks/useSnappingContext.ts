@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { usePoints } from '@/model/store'
 import { usePointsOfActiveFloor, useWallsOfActiveFloor } from './useFloorData'
 import type { LineSegment2D } from '@/types/geometry'
-import type { SnappingContext } from '@/model/snapping/types'
+import type { SnappingContext } from '@/model/store/services/snapping/types'
 import { useCurrentSnapFromPoint, useCurrentSnapFromPointId } from './useEditorStore'
 
 /**

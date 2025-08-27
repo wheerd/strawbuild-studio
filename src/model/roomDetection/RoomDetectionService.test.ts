@@ -168,7 +168,7 @@ describe('RoomDetectionService', () => {
       const result = service.handleWallAddition(updatedState, wall4.id, floorId)
 
       expect(result.roomsToCreate.length).toBeGreaterThanOrEqual(1)
-      
+
       if (result.roomsToCreate.length > 0) {
         const room = result.roomsToCreate[0]
         expect(room.wallIds).toContain(wall4.id)

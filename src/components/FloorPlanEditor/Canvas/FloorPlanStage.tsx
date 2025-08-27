@@ -3,17 +3,17 @@ import { Stage } from 'react-konva'
 import type Konva from 'konva'
 import { useEditorStore, useViewport, useActiveTool, useIsDrawing, useActiveFloorId, useWallDrawingStart, useCurrentSnapFromPointId } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 import { useModelStore } from '@/model/store'
-import { defaultSnappingService } from '@/model/snapping/SnappingService'
+import { defaultSnappingService } from '@/model/store/services/snapping/SnappingService'
 import { useSnappingContext } from '@/components/FloorPlanEditor/hooks/useSnappingContext'
-import { createPoint2D, type Point2D, distanceSquared } from '@/types/geometry'
-import { findNearestPoint, SNAP_CONFIG } from '@/model/operations'
+import { createPoint2D, type Point2D, distanceSquared, createLength, direction } from '@/types/geometry'
 import { GridLayer } from './GridLayer'
 import { WallLayer } from './WallLayer'
 import { WallPreviewLayer } from './WallPreviewLayer'
 import { PointLayer } from './PointLayer'
 import { RoomLayer } from './RoomLayer'
 import { CornerLayer } from './CornerLayer'
-import type { SnapResult } from '@/model/snapping'
+import type { SnapResult } from '@/model/store/services/snapping'
+import type { WallId } from '@/model'
 
 interface FloorPlanStageProps {
   width: number
@@ -47,10 +47,11 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
   // Model store actions
   const modelState = useModelStore()
   const addPoint = useModelStore(state => state.addPoint)
-  const addWall = useModelStore(state => state.addWall)
+  const addWall = useModelStore(state => state.addStructuralWall)
   const moveWall = useModelStore(state => state.moveWall)
   const movePoint = useModelStore(state => state.movePoint)
   const mergePoints = useModelStore(state => state.mergePoints)
+  const findNearestPoint = useModelStore(state => state.findNearestPoint)
 
   // Update stage dimensions in the store when they change
   useEffect(() => {
@@ -129,11 +130,11 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
       } else if (wallDrawingStart != null) {
         const wallLength = distanceSquared(wallDrawingStart, snapCoords)
         if (wallLength >= 50 ** 2) {
-          const startPoint = (snappingContext.referencePointId != null) ? modelState.points.get(snappingContext.referencePointId) : addPoint(wallDrawingStart, activeFloorId)
-          const endPoint = ((snapResult?.pointId) != null) ? modelState.points.get(snapResult.pointId) : addPoint(snapCoords, activeFloorId)
+          const startPoint = (snappingContext.referencePointId != null) ? modelState.points.get(snappingContext.referencePointId) : addPoint(activeFloorId, wallDrawingStart)
+          const endPoint = ((snapResult?.pointId) != null) ? modelState.points.get(snapResult.pointId) : addPoint(activeFloorId, snapCoords)
 
           if ((startPoint != null) && (endPoint != null)) {
-            addWall(startPoint.id, endPoint.id, activeFloorId)
+            addWall(activeFloorId, startPoint.id, endPoint.id)
           }
 
           setWallDrawingStart(undefined)
@@ -183,10 +184,9 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
     // Handle wall dragging
     if (dragState.isDragging && dragState.dragType === 'wall' && dragState.dragEntityId != null && (dragStartPos != null)) {
       const currentPos = getStageCoordinates(pointer)
-      const deltaX = currentPos.x - dragStartPos.x
-      const deltaY = currentPos.y - dragStartPos.y
+      const delta = direction(dragStartPos, currentPos)
 
-      moveWall(dragState.dragEntityId as import('../../../types/ids').WallId, deltaX, deltaY)
+      moveWall(dragState.dragEntityId as WallId, delta.x, delta.y)
       setDragStartPos(currentPos)
       return
     }
@@ -219,18 +219,11 @@ export function FloorPlanStage ({ width, height }: FloorPlanStageProps): React.J
         const currentPos = getStageCoordinates(pointer)
         const draggedPointId = dragState.dragEntityId as import('../../../types/ids').PointId
 
-        // Create a temporary state without the dragged point to find merge candidates
-        const tempState = {
-          ...modelState,
-          points: new Map([...modelState.points].filter(([id]) => id !== draggedPointId))
-        }
-
-        // Find the nearest point within merge distance (same as point snap distance)
-        const nearestPoint = findNearestPoint(tempState, currentPos, SNAP_CONFIG.pointSnapDistance)
+        const nearestPoint = findNearestPoint(activeFloorId, currentPos, createLength(200), draggedPointId)
 
         if (nearestPoint != null) {
           // Merge the dragged point into the nearest point
-          mergePoints(nearestPoint.id, draggedPointId, activeFloorId)
+          mergePoints(nearestPoint.id, draggedPointId)
         }
       }
     }

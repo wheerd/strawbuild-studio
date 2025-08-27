@@ -1,21 +1,12 @@
 import { Layer } from 'react-konva'
-import { useFloors, useRooms, getActiveFloor } from '@/model/store'
+import { useFloorRooms } from '@/model/store'
 import { useActiveFloorId } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 import { RoomShape } from '@/components/FloorPlanEditor/Shapes/RoomShape'
 
 export function RoomLayer (): React.JSX.Element {
-  const floors = useFloors()
-  const allRooms = useRooms()
   const activeFloorId = useActiveFloorId()
-  const activeFloor = getActiveFloor(floors, activeFloorId)
-
-  if (activeFloor == null || !Array.isArray(activeFloor.roomIds)) {
-    return <Layer name='rooms' />
-  }
-
-  const rooms = activeFloor.roomIds
-    .map(roomId => allRooms.get(roomId))
-    .filter((room): room is NonNullable<typeof room> => room !== undefined)
+  const floorRooms = useFloorRooms()
+  const rooms = floorRooms(activeFloorId)
 
   return (
     <Layer name='rooms'>

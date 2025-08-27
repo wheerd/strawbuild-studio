@@ -1,21 +1,11 @@
 import { Layer } from 'react-konva'
-import { useFloors, usePoints, getActiveFloor } from '@/model/store'
+import { useFloorPoints } from '@/model/store'
 import { useActiveFloorId } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 import { PointShape } from '@/components/FloorPlanEditor/Shapes/PointShape'
 
 export function PointLayer (): React.JSX.Element {
-  const floors = useFloors()
-  const allPoints = usePoints()
   const activeFloorId = useActiveFloorId()
-  const activeFloor = getActiveFloor(floors, activeFloorId)
-
-  if (activeFloor == null || !Array.isArray(activeFloor.pointIds)) {
-    return <Layer name='points' />
-  }
-
-  const points = activeFloor.pointIds
-    .map(pointId => allPoints.get(pointId))
-    .filter((point): point is NonNullable<typeof point> => point !== undefined)
+  const points = useFloorPoints(activeFloorId)
 
   return (
     <Layer name='points'>

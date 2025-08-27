@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 import { useActiveTool, useEditorStore, useActiveFloorId, useViewport, useSelectedEntity } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 import { useModelStore } from '@/model/store'
 import { FloorSelector } from './FloorSelector'
-import { calculateFloorBounds } from '@/model/operations'
 import { createPoint2D, createLength } from '@/types/geometry'
 
 export function Toolbar (): React.JSX.Element {
@@ -10,6 +9,7 @@ export function Toolbar (): React.JSX.Element {
   const activeFloorId = useActiveFloorId()
   const viewport = useViewport()
   const selectedEntityId = useSelectedEntity()
+  const calculateFloorBounds = useModelStore(state => state.getFloorBounds)
 
   // Use individual selectors instead of useEditorActions() to avoid object creation
   const setActiveTool = useEditorStore(state => state.setActiveTool)
@@ -20,7 +20,7 @@ export function Toolbar (): React.JSX.Element {
 
   // Use individual selectors for model actions
   const addPoint = useModelStore(state => state.addPoint)
-  const addWall = useModelStore(state => state.addWall)
+  const addWall = useModelStore(state => state.addStructuralWall)
 
   const tools = [
     { id: 'select' as const, label: 'Select', icon: '↖' },
@@ -30,25 +30,23 @@ export function Toolbar (): React.JSX.Element {
 
   const createSampleBuilding = useCallback(() => {
     // Create a 3m x 4m room (3000mm x 4000mm) with realistic dimensions
-    const point1 = addPoint(createPoint2D(0, 0), activeFloorId) // Bottom-left
-    const point2 = addPoint(createPoint2D(4000, 0), activeFloorId) // Bottom-right (4m wide)
-    const point3 = addPoint(createPoint2D(4000, 3000), activeFloorId) // Top-right (3m deep)
-    const point4 = addPoint(createPoint2D(0, 3000), activeFloorId) // Top-left
+    const point1 = addPoint(activeFloorId, createPoint2D(0, 0), ) // Bottom-left
+    const point2 = addPoint(activeFloorId, createPoint2D(4000, 0)) // Bottom-right (4m wide)
+    const point3 = addPoint(activeFloorId, createPoint2D(4000, 3000)) // Top-right (3m deep)
+    const point4 = addPoint(activeFloorId, createPoint2D(0, 3000)) // Top-left
 
     // Create walls with realistic thickness (200mm = 20cm) and height (2700mm = 2.7m)
     // The room will be automatically created when the wall loop is completed
-    addWall(point1.id, point2.id, activeFloorId, createLength(200), createLength(2700))
-    addWall(point2.id, point3.id, activeFloorId, createLength(200), createLength(2700))
-    addWall(point3.id, point4.id, activeFloorId, createLength(200), createLength(2700))
-    addWall(point4.id, point1.id, activeFloorId, createLength(200), createLength(2700))
+    addWall(activeFloorId, point1.id, point2.id, createLength(200))
+    addWall(activeFloorId, point2.id, point3.id, createLength(200))
+    addWall(activeFloorId, point3.id, point4.id, createLength(200))
+    addWall(activeFloorId, point4.id, point1.id, createLength(200))
 
     // No need to manually add room - it will be automatically created by the loop detection
   }, [addPoint, addWall, activeFloorId])
 
   const fitToView = useCallback(() => {
-    // Get the current model state to calculate floor bounds
-    const modelState = useModelStore.getState()
-    const bounds = calculateFloorBounds(activeFloorId, modelState)
+    const bounds = calculateFloorBounds(activeFloorId)
 
     if (bounds == null) {
       // No content to fit to, reset to default view

@@ -1,9 +1,9 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import type { ModelState, Wall, Room, Point, Opening, Floor, Slab, Roof, FloorLevel, Corner } from '@/types/model'
-import type { WallId, PointId, FloorId, RoomId, SlabId, RoofId, CornerId } from '@/types/ids'
+import type { WallId, PointId, FloorId, RoomId, SlabId, RoofId, PointId } from '@/types/ids'
 import type { Point2D, Bounds2D, Length } from '@/types/geometry'
-import { createArea } from '@/types/geometry'
+import { createArea, createLength } from '@/types/geometry'
 import {
   createEmptyModelState,
   createFloor,
@@ -31,15 +31,14 @@ import {
   switchCornerMainWalls,
   deletePoint,
   deleteWall,
-  deleteRoom,
+  deleteRoom
 
 } from '@/model/operations'
-import { 
-  defaultRoomDetectionService, 
-  type IRoomDetectionService, 
-  type RoomDetectionResult 
+import {
+  defaultRoomDetectionService,
+  type IRoomDetectionService,
+  type RoomDetectionResult
 } from '@/model/roomDetection'
-import { createLength } from '@/types/geometry'
 
 interface ModelActions {
   reset: () => void
@@ -55,14 +54,14 @@ interface ModelActions {
   movePoint: (pointId: PointId, position: Point2D) => void
   moveWall: (wallId: WallId, deltaX: number, deltaY: number) => void
   mergePoints: (targetPointId: PointId, sourcePointId: PointId, floorId: FloorId) => void
-  switchCornerMainWalls: (cornerId: CornerId, newWall1Id: WallId, newWall2Id: WallId) => void
+  switchCornerMainWalls: (pointId: PointId, newWall1Id: WallId, newWall2Id: WallId) => void
   getActiveFloorBounds: (floorId: FloorId) => Bounds2D | null
   deletePoint: (pointId: PointId, floorId: FloorId) => void
   deleteWall: (wallId: WallId, floorId: FloorId) => void
   deleteRoom: (roomId: RoomId, floorId: FloorId) => void
   cleanupModel: () => void
   validateRoomsOnFloor: (floorId: FloorId) => void
-  
+
   // New room detection service methods
   detectAndUpdateRooms: (floorId: FloorId) => void
   getRoomDetectionService: () => IRoomDetectionService
@@ -75,8 +74,8 @@ function createInitialState (): ModelState {
 }
 
 // Helper function to apply room detection results to the model state
-function applyRoomDetectionResult(state: ModelState, result: RoomDetectionResult): ModelState {
-  let updatedState = { ...state }
+function applyRoomDetectionResult (state: ModelState, result: RoomDetectionResult): ModelState {
+  const updatedState = { ...state }
   updatedState.rooms = new Map(state.rooms)
   updatedState.walls = new Map(state.walls)
   updatedState.points = new Map(state.points)
@@ -85,7 +84,7 @@ function applyRoomDetectionResult(state: ModelState, result: RoomDetectionResult
   // Remove deleted rooms
   for (const roomId of result.roomsToDelete) {
     updatedState.rooms.delete(roomId)
-    
+
     // Remove from floors
     for (const [floorId, floor] of updatedState.floors) {
       if (floor.roomIds.includes(roomId)) {
@@ -99,29 +98,29 @@ function applyRoomDetectionResult(state: ModelState, result: RoomDetectionResult
   }
 
   // Update existing rooms
-    for (const { roomId, definition } of result.roomsToUpdate) {
-      const existingRoom = updatedState.rooms.get(roomId)
-      if (existingRoom != null) {
-        const updatedRoom = {
-          id: roomId,
-          name: definition.name,
-          wallIds: new Set(definition.wallIds),
-          outerBoundary: {
-            pointIds: definition.outerBoundary.pointIds,
-            wallIds: new Set(definition.outerBoundary.wallIds)
-          },
-          holes: definition.holes.map(hole => ({
-            pointIds: hole.pointIds,
-            wallIds: new Set(hole.wallIds)
-          })),
-          interiorWallIds: new Set(definition.interiorWallIds),
-          area: createArea(0),
-          polygon: { outer: { points: [] }, holes: [] }
-        }
-        updatedRoom.area = calculateRoomArea(updatedRoom, updatedState)
-        updatedState.rooms.set(roomId, updatedRoom)
+  for (const { roomId, definition } of result.roomsToUpdate) {
+    const existingRoom = updatedState.rooms.get(roomId)
+    if (existingRoom != null) {
+      const updatedRoom = {
+        id: roomId,
+        name: definition.name,
+        wallIds: new Set(definition.wallIds),
+        outerBoundary: {
+          pointIds: definition.outerBoundary.pointIds,
+          wallIds: new Set(definition.outerBoundary.wallIds)
+        },
+        holes: definition.holes.map(hole => ({
+          pointIds: hole.pointIds,
+          wallIds: new Set(hole.wallIds)
+        })),
+        interiorWallIds: new Set(definition.interiorWallIds),
+        area: createArea(0),
+        polygon: { outer: { points: [] }, holes: [] }
       }
+      updatedRoom.area = calculateRoomArea(updatedRoom, updatedState)
+      updatedState.rooms.set(roomId, updatedRoom)
     }
+  }
 
   // Create new rooms
   for (const definition of result.roomsToCreate) {
@@ -131,7 +130,7 @@ function applyRoomDetectionResult(state: ModelState, result: RoomDetectionResult
       area: calculateRoomArea(newRoom, updatedState)
     }
     updatedState.rooms.set(newRoom.id, roomWithArea)
-    
+
     // Add to appropriate floor (find floor that contains these walls)
     for (const [floorId, floor] of updatedState.floors) {
       const wallsInFloor = definition.wallIds.some(wallId => floor.wallIds.includes(wallId))
@@ -179,7 +178,7 @@ export const useModelStore = create<ModelStore>()(
   devtools(
     (set, get) => ({
       ...createInitialState(),
-      
+
       // Room detection service instance
       _roomDetectionService: defaultRoomDetectionService,
 
@@ -369,9 +368,9 @@ export const useModelStore = create<ModelStore>()(
         set(updatedState, false, 'moveWall')
       },
 
-      switchCornerMainWalls: (cornerId: CornerId, newWall1Id: WallId, newWall2Id: WallId) => {
+      switchCornerMainWalls: (pointId: PointId, newWall1Id: WallId, newWall2Id: WallId) => {
         const state = get()
-        const updatedState = switchCornerMainWalls(state, cornerId, newWall1Id, newWall2Id)
+        const updatedState = switchCornerMainWalls(state, pointId, newWall1Id, newWall2Id)
         set(updatedState, false, 'switchCornerMainWalls')
       },
 
@@ -420,10 +419,10 @@ export const useModelStore = create<ModelStore>()(
         const state = get()
         const service = (state as any)._roomDetectionService
         const result = service.detectRooms(state, floorId)
-        
+
         // Apply room detection results to state
-        let updatedState = applyRoomDetectionResult(state, result)
-        
+        const updatedState = applyRoomDetectionResult(state, result)
+
         set(updatedState, false, 'detectAndUpdateRooms')
       },
 
@@ -443,7 +442,7 @@ export const useFloors = (): Map<FloorId, Floor> => useModelStore(state => state
 export const useWalls = (): Map<WallId, Wall> => useModelStore(state => state.walls)
 export const useRooms = (): Map<RoomId, Room> => useModelStore(state => state.rooms)
 export const usePoints = (): Map<PointId, Point> => useModelStore(state => state.points)
-export const useCorners = (): Map<CornerId, Corner> => useModelStore(state => state.corners)
+export const useCorners = (): Map<PointId, Corner> => useModelStore(state => state.corners)
 export const useSlabs = (): Map<SlabId, Slab> => useModelStore(state => state.slabs)
 export const useRoofs = (): Map<RoofId, Roof> => useModelStore(state => state.roofs)
 

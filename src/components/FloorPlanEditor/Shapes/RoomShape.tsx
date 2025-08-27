@@ -2,51 +2,11 @@ import { Line, Text } from 'react-konva'
 import type { Room } from '@/types/model'
 import type { PointId } from '@/types/ids'
 import { useSelectedEntity, useEditorStore, useActiveTool } from '@/components/FloorPlanEditor/hooks/useEditorStore'
-import { useWalls, usePoints } from '@/model/store'
+import { usePoints } from '@/model/store'
+import type { Point2D } from '@/types/geometry'
 
 interface RoomShapeProps {
   room: Room
-}
-
-function getRoomPolygonPoints (room: Room, walls: ReturnType<typeof useWalls>, pointMap: ReturnType<typeof usePoints>): number[] {
-  const wallIdsArray = Array.from(room.wallIds)
-  if (wallIdsArray.length === 0) return []
-
-  // Use the same approach as the face detection algorithm to get properly ordered points
-  const orderedPoints: number[] = []
-
-  // Find the polygon points by tracing the walls in order
-  for (let i = 0; i < wallIdsArray.length; i++) {
-    const currentWallId = wallIdsArray[i]
-    const nextWallId = wallIdsArray[(i + 1) % wallIdsArray.length]
-
-    const currentWall = walls.get(currentWallId)
-    const nextWall = walls.get(nextWallId)
-
-    if (currentWall == null || nextWall == null) continue
-
-    // Find the connection point between current and next wall
-    let connectionPointId: PointId | null = null
-
-    if (currentWall.endPointId === nextWall.startPointId) {
-      connectionPointId = currentWall.endPointId
-    } else if (currentWall.endPointId === nextWall.endPointId) {
-      connectionPointId = currentWall.endPointId
-    } else if (currentWall.startPointId === nextWall.startPointId) {
-      connectionPointId = currentWall.startPointId
-    } else if (currentWall.startPointId === nextWall.endPointId) {
-      connectionPointId = currentWall.startPointId
-    }
-
-    if (connectionPointId != null) {
-      const connectionPoint = pointMap.get(connectionPointId)
-      if (connectionPoint != null) {
-        orderedPoints.push(connectionPoint.position.x, connectionPoint.position.y)
-      }
-    }
-  }
-
-  return orderedPoints
 }
 
 function getRoomCenter (points: number[]): { x: number, y: number } {
@@ -73,11 +33,13 @@ export function RoomShape ({ room }: RoomShapeProps): React.JSX.Element | null {
   const selectEntity = useEditorStore(state => state.selectEntity)
   const showRoomLabels = useEditorStore(state => state.showRoomLabels)
   const activeTool = useActiveTool()
-  const walls = useWalls()
   const pointMap = usePoints()
 
   const isSelected = selectedEntity === room.id
-  const points = getRoomPolygonPoints(room, walls, pointMap)
+  const points = room.outerBoundary.pointIds.map((pointId: PointId) => {
+    const point = pointMap.get(pointId)
+    return point?.position
+  }).filter((pos): pos is Point2D => pos !== undefined).flatMap(pos => [pos.x, pos.y])
 
   if (points.length < 6) {
     return null

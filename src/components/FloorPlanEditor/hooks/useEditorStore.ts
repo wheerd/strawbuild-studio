@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { createPoint2D, type Point2D } from '@/types/geometry'
 import type { FloorId, PointId } from '@/types/ids'
 import { isPointId, isWallId, isRoomId } from '@/types/ids'
-import { type SnapResult } from '@/model/snapping'
+import { type SnapResult } from '@/model/store/services/snapping'
 
 export type EditorTool = 'select' | 'wall' | 'room'
 export type DragType = 'pan' | 'wall' | 'point' | 'selection'
@@ -175,22 +175,21 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
 
   deleteSelectedEntity: () => {
     const state = get()
-    if (state.selectedEntityId == null || state.activeFloorId == null) return
+    if (state.selectedEntityId == null) return
 
     const entityId = state.selectedEntityId
-    const floorId = state.activeFloorId
 
     // Import the model store dynamically to avoid circular dependencies
     import('@/model/store').then(({ useModelStore }) => {
       const modelStore = useModelStore.getState()
 
-      // Use type guards to determine entity type and call appropriate delete function
+      // Use type guards to determine entity type and call appropriate remove function
       if (isPointId(entityId)) {
-        modelStore.deletePoint(entityId, floorId)
+        modelStore.removePoint(entityId)
       } else if (isWallId(entityId)) {
-        modelStore.deleteWall(entityId, floorId)
+        modelStore.removeWall(entityId)
       } else if (isRoomId(entityId)) {
-        modelStore.deleteRoom(entityId, floorId)
+        modelStore.removeRoom(entityId)
       }
 
       // Clear selection after deletion
