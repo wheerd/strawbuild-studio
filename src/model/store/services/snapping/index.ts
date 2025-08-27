@@ -1,6 +1,5 @@
 // Main exports for the snapping system
-export { SnappingEngine } from './SnappingEngine'
-export { SnappingService, type ISnappingService, defaultSnappingService } from './SnappingService'
+export { SnappingService, defaultSnappingService } from './SnappingService'
 export {
   type SnapResult,
   type SnappingContext,
