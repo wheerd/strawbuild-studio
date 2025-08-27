@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand'
-import type { WallId, PointId } from '@/types/ids'
+import type { WallId, PointId, FloorId } from '@/types/ids'
 import type { Corner } from '@/types/model'
 
 export interface CornersState {
@@ -8,7 +8,7 @@ export interface CornersState {
 
 // Corners-specific actions
 export interface CornersActions {
-  addCorner: (pointId: PointId, wall1Id: WallId, wall2Id: WallId, otherWallIds?: WallId[]) => Corner
+  addCorner: (pointId: PointId, floorId: FloorId, wall1Id: WallId, wall2Id: WallId, otherWallIds?: WallId[]) => Corner
   removeCorner: (pointId: PointId) => void
 
   // Corner modifications
@@ -19,6 +19,7 @@ export interface CornersActions {
   // Corner queries
   getCorner: (pointId: PointId) => Corner | null
   getAllCorners: () => Corner[]
+  getCornersByFloor: (floorId: FloorId) => Corner[]
 }
 
 export type CornersSlice = CornersState & CornersActions
@@ -32,7 +33,7 @@ CornersSlice
 > = (set, get) => ({
   corners: new Map<PointId, Corner>(),
 
-  addCorner: (pointId: PointId, wall1Id: WallId, wall2Id: WallId, otherWallIds?: WallId[]) => {
+  addCorner: (pointId: PointId, floorId: FloorId, wall1Id: WallId, wall2Id: WallId, otherWallIds?: WallId[]) => {
     // Validate that main wall IDs are distinct
     if (wall1Id === wall2Id) {
       throw new Error(`Corner main walls must be distinct, got duplicate: ${wall1Id}`)
@@ -49,6 +50,7 @@ CornersSlice
 
     const corner: Corner = {
       pointId,
+      floorId,
       wall1Id,
       wall2Id,
       otherWallIds
@@ -204,6 +206,11 @@ CornersSlice
   getAllCorners: () => {
     const state = get()
     return Array.from(state.corners.values())
+  },
+
+  getCornersByFloor: (floorId: FloorId) => {
+    const state = get()
+    return Array.from(state.corners.values()).filter(corner => corner.floorId === floorId)
   }
 })
 
