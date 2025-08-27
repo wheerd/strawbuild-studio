@@ -8,6 +8,7 @@ import { createPointsSlice } from './slices/pointsSlice'
 import { createRoomsSlice } from './slices/roomsSlice'
 import { createFloorsSlice } from './slices/floorsSlice'
 import { createCornersSlice } from './slices/cornersSlice'
+import { createWallsPointsSlice } from './slices/wallsPointsSlice'
 import type { Store } from './types'
 
 // Create the main store with slices and undo/redo
@@ -20,7 +21,8 @@ export const useModelStore = create<Store>()(
           ...createPointsSlice(...a),
           ...createRoomsSlice(...a),
           ...createFloorsSlice(...a),
-          ...createCornersSlice(...a)
+          ...createCornersSlice(...a),
+          ...createWallsPointsSlice(...a)
         }
       },
       { name: 'model-store' }
