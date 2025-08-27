@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import type { PointId, RoomId } from '@/types/ids'
+import type { PointId, RoomId, FloorId } from '@/types/ids'
+import { createFloorId } from '@/types/ids'
 import { createLength, createPoint2D } from '@/types/geometry'
 import { createPointsSlice, type PointsSlice } from './pointsSlice'
 
@@ -10,6 +11,7 @@ describe('PointsSlice', () => {
   let store: PointsSlice
   let roomId1: RoomId
   let roomId2: RoomId
+  let testFloorId: FloorId
 
   beforeEach(() => {
     // Create the slice directly without using create()
@@ -22,6 +24,7 @@ describe('PointsSlice', () => {
     // Set up test IDs
     roomId1 = 'room_1' as RoomId
     roomId2 = 'room_2' as RoomId
+    testFloorId = createFloorId()
 
     // Mock the get function to return current state
     mockGet.mockImplementation(() => store)
@@ -40,7 +43,7 @@ describe('PointsSlice', () => {
   describe('addPoint', () => {
     it('should add a point at specified position', () => {
       const position = createPoint2D(100, 200)
-      const point = store.addPoint(position)
+      const point = store.addPoint(testFloorId, position)
 
       expect(store.points.size).toBe(1)
       expect(store.points.has(point.id)).toBe(true)
@@ -59,8 +62,8 @@ describe('PointsSlice', () => {
       const position1 = createPoint2D(0, 0)
       const position2 = createPoint2D(100, 100)
 
-      const point1 = store.addPoint(position1)
-      const point2 = store.addPoint(position2)
+      const point1 = store.addPoint(testFloorId, position1)
+      const point2 = store.addPoint(testFloorId, position2)
 
       expect(store.points.size).toBe(2)
       expect(store.points.has(point1.id)).toBe(true)
@@ -71,9 +74,9 @@ describe('PointsSlice', () => {
     it('should create points with unique IDs', () => {
       const position = createPoint2D(50, 50)
 
-      const point1 = store.addPoint(position)
-      const point2 = store.addPoint(position)
-      const point3 = store.addPoint(position)
+      const point1 = store.addPoint(testFloorId, position)
+      const point2 = store.addPoint(testFloorId, position)
+      const point3 = store.addPoint(testFloorId, position)
 
       expect(point1.id).not.toBe(point2.id)
       expect(point2.id).not.toBe(point3.id)
@@ -85,7 +88,7 @@ describe('PointsSlice', () => {
   describe('removePoint', () => {
     it('should remove an existing point', () => {
       const position = createPoint2D(100, 200)
-      const point = store.addPoint(position)
+      const point = store.addPoint(testFloorId, position)
       expect(store.points.size).toBe(1)
 
       store.removePoint(point.id)
@@ -107,8 +110,8 @@ describe('PointsSlice', () => {
       const position1 = createPoint2D(0, 0)
       const position2 = createPoint2D(100, 100)
 
-      const point1 = store.addPoint(position1)
-      const point2 = store.addPoint(position2)
+      const point1 = store.addPoint(testFloorId, position1)
+      const point2 = store.addPoint(testFloorId, position2)
 
       expect(store.points.size).toBe(2)
 
@@ -125,7 +128,7 @@ describe('PointsSlice', () => {
       const originalPosition = createPoint2D(100, 200)
       const newPosition = createPoint2D(300, 400)
 
-      const point = store.addPoint(originalPosition)
+      const point = store.addPoint(testFloorId, originalPosition)
 
       store.movePoint(point.id, newPosition)
 
@@ -149,7 +152,7 @@ describe('PointsSlice', () => {
       const originalPosition = createPoint2D(100, 200)
       const newPosition = createPoint2D(300, 400)
 
-      const point = store.addPoint(originalPosition)
+      const point = store.addPoint(testFloorId, originalPosition)
 
       // Add some rooms to the point
       store.addRoomToPoint(point.id, roomId1)
@@ -166,7 +169,7 @@ describe('PointsSlice', () => {
   describe('getPointById', () => {
     it('should return existing point', () => {
       const position = createPoint2D(100, 200)
-      const addedPoint = store.addPoint(position)
+      const addedPoint = store.addPoint(testFloorId, position)
 
       const point = store.getPointById(addedPoint.id)
 
@@ -193,7 +196,7 @@ describe('PointsSlice', () => {
 
     it('should return single point', () => {
       const position = createPoint2D(100, 200)
-      const point = store.addPoint(position)
+      const point = store.addPoint(testFloorId, position)
 
       const points = store.getPoints()
       expect(points).toHaveLength(1)
@@ -205,9 +208,9 @@ describe('PointsSlice', () => {
       const position2 = createPoint2D(100, 100)
       const position3 = createPoint2D(200, 200)
 
-      const point1 = store.addPoint(position1)
-      const point2 = store.addPoint(position2)
-      const point3 = store.addPoint(position3)
+      const point1 = store.addPoint(testFloorId, position1)
+      const point2 = store.addPoint(testFloorId, position2)
+      const point3 = store.addPoint(testFloorId, position3)
 
       const points = store.getPoints()
       expect(points).toHaveLength(3)
@@ -220,66 +223,66 @@ describe('PointsSlice', () => {
   describe('findNearestPoint', () => {
     it('should return null when no points exist', () => {
       const target = createPoint2D(100, 100)
-      const nearest = store.findNearestPoint(target)
+      const nearest = store.findNearestPoint(testFloorId, target)
       expect(nearest).toBeNull()
     })
 
     it('should return the only point when one exists', () => {
       const position = createPoint2D(50, 50)
-      const point = store.addPoint(position)
+      const point = store.addPoint(testFloorId, position)
 
       const target = createPoint2D(100, 100)
-      const nearest = store.findNearestPoint(target)
+      const nearest = store.findNearestPoint(testFloorId, target)
 
       expect(nearest).toEqual(point)
     })
 
     it('should return the nearest point among multiple points', () => {
-      store.addPoint(createPoint2D(0, 0)) // distance: ~141
-      const point2 = store.addPoint(createPoint2D(90, 90)) // distance: ~14
-      store.addPoint(createPoint2D(200, 200)) // distance: ~141
+      store.addPoint(testFloorId, createPoint2D(0, 0)) // distance: ~141
+      const point2 = store.addPoint(testFloorId, createPoint2D(90, 90)) // distance: ~14
+      store.addPoint(testFloorId, createPoint2D(200, 200)) // distance: ~141
 
       const target = createPoint2D(100, 100)
-      const nearest = store.findNearestPoint(target)
+      const nearest = store.findNearestPoint(testFloorId, target)
 
       expect(nearest).toEqual(point2)
     })
 
     it('should respect maxDistance parameter', () => {
-      store.addPoint(createPoint2D(0, 0)) // distance: ~141
-      const point2 = store.addPoint(createPoint2D(90, 90)) // distance: ~14
+      store.addPoint(testFloorId, createPoint2D(0, 0)) // distance: ~141
+      const point2 = store.addPoint(testFloorId, createPoint2D(90, 90)) // distance: ~14
 
       const target = createPoint2D(100, 100)
 
       // With no max distance, should return point2
-      const nearest1 = store.findNearestPoint(target)
+      const nearest1 = store.findNearestPoint(testFloorId, target)
       expect(nearest1).toEqual(point2)
 
       // With max distance of 10, should return null (point2 is ~14 units away)
-      const nearest2 = store.findNearestPoint(target, createLength(10))
+      const nearest2 = store.findNearestPoint(testFloorId, target, createLength(10))
       expect(nearest2).toBeNull()
 
       // With max distance of 20, should return point2
-      const nearest3 = store.findNearestPoint(target, createLength(20))
+      const nearest3 = store.findNearestPoint(testFloorId, target, createLength(20))
       expect(nearest3).toEqual(point2)
     })
 
     it('should handle exact position matches', () => {
       const position = createPoint2D(100, 100)
-      const point = store.addPoint(position)
+      const point = store.addPoint(testFloorId, position)
 
       const target = createPoint2D(100, 100) // Exact same position
-      const nearest = store.findNearestPoint(target)
+      const nearest = store.findNearestPoint(testFloorId, target)
 
       expect(nearest).toEqual(point)
     })
 
     it('should work with negative coordinates', () => {
-      store.addPoint(createPoint2D(-100, -100))
-      const point2 = store.addPoint(createPoint2D(-10, -10))
+      store.addPoint(testFloorId, createPoint2D(-100, -100))
+      const point2 = store.addPoint(testFloorId, createPoint2D(-10, -10))
 
       const target = createPoint2D(0, 0)
-      const nearest = store.findNearestPoint(target)
+      const nearest = store.findNearestPoint(testFloorId, target)
 
       expect(nearest).toEqual(point2) // -10,-10 is closer to 0,0 than -100,-100
     })
@@ -288,7 +291,7 @@ describe('PointsSlice', () => {
   describe('addRoomToPoint', () => {
     it('should add room to point', () => {
       const position = createPoint2D(100, 200)
-      const point = store.addPoint(position)
+      const point = store.addPoint(testFloorId, position)
 
       store.addRoomToPoint(point.id, roomId1)
 
@@ -298,7 +301,7 @@ describe('PointsSlice', () => {
 
     it('should add multiple rooms to point', () => {
       const position = createPoint2D(100, 200)
-      const point = store.addPoint(position)
+      const point = store.addPoint(testFloorId, position)
 
       store.addRoomToPoint(point.id, roomId1)
       store.addRoomToPoint(point.id, roomId2)
@@ -309,7 +312,7 @@ describe('PointsSlice', () => {
 
     it('should not add duplicate rooms', () => {
       const position = createPoint2D(100, 200)
-      const point = store.addPoint(position)
+      const point = store.addPoint(testFloorId, position)
 
       store.addRoomToPoint(point.id, roomId1)
       store.addRoomToPoint(point.id, roomId1) // Add same room again
@@ -331,7 +334,7 @@ describe('PointsSlice', () => {
   describe('removeRoomFromPoint', () => {
     it('should remove room from point', () => {
       const position = createPoint2D(100, 200)
-      const point = store.addPoint(position)
+      const point = store.addPoint(testFloorId, position)
 
       // Add rooms first
       store.addRoomToPoint(point.id, roomId1)
@@ -346,7 +349,7 @@ describe('PointsSlice', () => {
 
     it('should handle removing non-existent room gracefully', () => {
       const position = createPoint2D(100, 200)
-      const point = store.addPoint(position)
+      const point = store.addPoint(testFloorId, position)
 
       // Add one room
       store.addRoomToPoint(point.id, roomId1)
@@ -369,7 +372,7 @@ describe('PointsSlice', () => {
 
     it('should remove all rooms when called multiple times', () => {
       const position = createPoint2D(100, 200)
-      const point = store.addPoint(position)
+      const point = store.addPoint(testFloorId, position)
 
       // Add rooms first
       store.addRoomToPoint(point.id, roomId1)
@@ -387,9 +390,9 @@ describe('PointsSlice', () => {
   describe('complex scenarios', () => {
     it('should handle complex point management correctly', () => {
       // Create multiple points
-      const point1 = store.addPoint(createPoint2D(0, 0))
-      const point2 = store.addPoint(createPoint2D(100, 0))
-      const point3 = store.addPoint(createPoint2D(50, 50))
+      const point1 = store.addPoint(testFloorId, createPoint2D(0, 0))
+      const point2 = store.addPoint(testFloorId, createPoint2D(100, 0))
+      const point3 = store.addPoint(testFloorId, createPoint2D(50, 50))
 
       // Add rooms to points
       store.addRoomToPoint(point1.id, roomId1)
@@ -426,20 +429,20 @@ describe('PointsSlice', () => {
 
     it('should handle nearest point search correctly', () => {
       // Add points at same positions
-      const point1 = store.addPoint(createPoint2D(50, 50))
-      const point2 = store.addPoint(createPoint2D(50, 50))
+      const point1 = store.addPoint(testFloorId, createPoint2D(50, 50))
+      const point2 = store.addPoint(testFloorId, createPoint2D(50, 50))
 
       const target = createPoint2D(50, 50)
 
       // Should find one of them
-      const nearest = store.findNearestPoint(target)
+      const nearest = store.findNearestPoint(testFloorId, target)
       expect(nearest).toBeDefined()
       expect([point1, point2]).toContain(nearest)
     })
 
     it('should maintain data consistency after multiple operations', () => {
       const position = createPoint2D(100, 100)
-      const point = store.addPoint(position)
+      const point = store.addPoint(testFloorId, position)
 
       // Add rooms
       store.addRoomToPoint(point.id, roomId1)

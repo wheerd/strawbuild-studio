@@ -2,8 +2,8 @@ import type { StateCreator } from 'zustand'
 import type { Point } from '@/types/model'
 import type { PointId, RoomId, FloorId } from '@/types/ids'
 import { createPointId } from '@/types/ids'
-import type { Point2D, Length } from '@/types/geometry'
-import { distanceSquared } from '@/types/geometry'
+import type { Point2D, Length, Bounds2D } from '@/types/geometry'
+import { boundsFromPoints, distanceSquared } from '@/types/geometry'
 
 export interface PointsState {
   points: Map<PointId, Point>
@@ -19,7 +19,7 @@ export interface PointsActions {
 
   // Point queries
   getPointById: (pointId: PointId) => Point | null
-  findNearestPoint: (target: Point2D, maxDistance?: Length, floorId?: FloorId) => Point | null
+  findNearestPoint: (floorId: FloorId, target: Point2D, maxDistance?: Length, exludedPointId?: PointId) => Point | null
   getPoints: () => Point[]
 
   // NEW: Floor filtering methods
@@ -28,15 +28,17 @@ export interface PointsActions {
   // Floor entity management
   addRoomToPoint: (pointId: PointId, roomId: RoomId) => void
   removeRoomFromPoint: (pointId: PointId, roomId: RoomId) => void
+
+  getFloorBounds(floorId: FloorId): Bounds2D | null
 }
 
 export type PointsSlice = PointsState & PointsActions
 
 export const createPointsSlice: StateCreator<
-PointsSlice,
-[],
-[],
-PointsSlice
+  PointsSlice,
+  [["zustand/devtools", never]],
+  [],
+  PointsSlice
 > = (set, get) => ({
   points: new Map<PointId, Point>(),
 
@@ -92,15 +94,20 @@ PointsSlice
     return state.points.get(pointId) ?? null
   },
 
-  findNearestPoint: (target: Point2D, maxDistance?: Length, floorId?: FloorId) => {
+  findNearestPoint: (floorId: FloorId, target: Point2D, maxDistance?: Length, exludedPointId?: PointId) => {
     const state = get()
 
     let nearestPoint: Point | null = null
     let minDistanceSquared = maxDistance !== undefined ? maxDistance * maxDistance : Infinity
 
     for (const point of state.points.values()) {
-      // Filter by floor if specified
-      if (floorId != null && point.floorId !== floorId) {
+      // Filter by floor
+      if (point.floorId !== floorId) {
+        continue
+      }
+
+      // Exclude specified point
+      if (point.id === exludedPointId) {
         continue
       }
 
@@ -121,7 +128,6 @@ PointsSlice
     return Array.from(state.points.values())
   },
 
-  // NEW: Floor filtering methods
   getPointsByFloor: (floorId: FloorId) => {
     const state = get()
     return Array.from(state.points.values()).filter(point => point.floorId === floorId)
@@ -166,5 +172,10 @@ PointsSlice
         points: new Map(state.points).set(pointId, updatedPoint)
       }
     })
+  },
+
+  getFloorBounds: (floorId: FloorId): Bounds2D | null => {
+    const pointsOnFloor = get().getPointsByFloor(floorId).map(p => p.position)
+    return boundsFromPoints(pointsOnFloor)
   }
 })

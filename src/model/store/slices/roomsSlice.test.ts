@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createRoomsSlice, type RoomsSlice } from './roomsSlice'
-import { createRoomId, createWallId, createPointId } from '@/types/ids'
+import { createRoomId, createWallId, createPointId, createFloorId } from '@/types/ids'
 
 // Mock Zustand following the official testing guide
 vi.mock('zustand')
@@ -9,12 +9,14 @@ describe('roomsSlice', () => {
   let store: RoomsSlice
   let mockSet: any
   let mockGet: any
+  let testFloorId: any
 
   beforeEach(() => {
     // Create the slice directly without using create()
     mockSet = vi.fn()
     mockGet = vi.fn()
     const mockStore = {} as any
+    testFloorId = createFloorId()
 
     store = createRoomsSlice(mockSet, mockGet, mockStore)
 
@@ -38,7 +40,7 @@ describe('roomsSlice', () => {
       const wallIds = [createWallId(), createWallId(), createWallId()]
       const name = 'Living Room'
 
-      const result = store.addRoom(name, pointIds, wallIds)
+      const result = store.addRoom(testFloorId, name, pointIds, wallIds)
 
       expect(store.rooms.size).toBe(1)
       expect(store.rooms.has(result.id)).toBe(true)
@@ -63,8 +65,8 @@ describe('roomsSlice', () => {
       const pointIds2 = [createPointId(), createPointId(), createPointId()]
       const wallIds2 = [createWallId(), createWallId(), createWallId()]
 
-      const room1 = store.addRoom('Living Room', pointIds1, wallIds1)
-      const room2 = store.addRoom('Kitchen', pointIds2, wallIds2)
+      const room1 = store.addRoom(testFloorId, 'Living Room', pointIds1, wallIds1)
+      const room2 = store.addRoom(testFloorId, 'Kitchen', pointIds2, wallIds2)
 
       expect(store.rooms.size).toBe(2)
       expect(store.rooms.has(room1.id)).toBe(true)
@@ -75,7 +77,7 @@ describe('roomsSlice', () => {
     it('should trim room name', () => {
       const pointIds = [createPointId(), createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
-      const result = store.addRoom('  Test Room  ', pointIds, wallIds)
+      const result = store.addRoom(testFloorId, '  Test Room  ', pointIds, wallIds)
 
       expect(store.rooms.size).toBe(1)
       const addedRoom = store.rooms.get(result.id)
@@ -87,22 +89,22 @@ describe('roomsSlice', () => {
       const pointIds = [createPointId(), createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
 
-      expect(() => store.addRoom('', pointIds, wallIds)).toThrow('Room name must not be empty')
-      expect(() => store.addRoom('   ', pointIds, wallIds)).toThrow('Room name must not be empty')
+      expect(() => store.addRoom(testFloorId, '', pointIds, wallIds)).toThrow('Room name must not be empty')
+      expect(() => store.addRoom(testFloorId, '   ', pointIds, wallIds)).toThrow('Room name must not be empty')
     })
 
     it('should throw error when pointIds and wallIds have different lengths', () => {
       const pointIds = [createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
 
-      expect(() => store.addRoom('Test Room', pointIds, wallIds)).toThrow('Point IDs and wall IDs must have the same length')
+      expect(() => store.addRoom(testFloorId, 'Test Room', pointIds, wallIds)).toThrow('Point IDs and wall IDs must have the same length')
     })
 
     it('should throw error when boundary has less than 3 elements', () => {
       const pointIds = [createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId()]
 
-      expect(() => store.addRoom('Test Room', pointIds, wallIds)).toThrow('Room boundary must have at least 3 points and walls')
+      expect(() => store.addRoom(testFloorId, 'Test Room', pointIds, wallIds)).toThrow('Room boundary must have at least 3 points and walls')
     })
 
     it('should throw error for duplicate point IDs', () => {
@@ -110,7 +112,7 @@ describe('roomsSlice', () => {
       const pointIds = [pointId, pointId, createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
 
-      expect(() => store.addRoom('Test Room', pointIds, wallIds)).toThrow('Point IDs must not contain duplicates')
+      expect(() => store.addRoom(testFloorId, 'Test Room', pointIds, wallIds)).toThrow('Point IDs must not contain duplicates')
     })
 
     it('should throw error for duplicate wall IDs', () => {
@@ -118,7 +120,7 @@ describe('roomsSlice', () => {
       const pointIds = [createPointId(), createPointId(), createPointId()]
       const wallIds = [wallId, wallId, createWallId()]
 
-      expect(() => store.addRoom('Test Room', pointIds, wallIds)).toThrow('Wall IDs must not contain duplicates')
+      expect(() => store.addRoom(testFloorId, 'Test Room', pointIds, wallIds)).toThrow('Wall IDs must not contain duplicates')
     })
   })
 
@@ -127,7 +129,7 @@ describe('roomsSlice', () => {
       // Add room first
       const pointIds = [createPointId(), createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
-      const room = store.addRoom('Test Room', pointIds, wallIds)
+      const room = store.addRoom(testFloorId, 'Test Room', pointIds, wallIds)
       expect(store.rooms.size).toBe(1)
 
       // Remove it
@@ -153,8 +155,8 @@ describe('roomsSlice', () => {
       const wallIds1 = [createWallId(), createWallId(), createWallId()]
       const pointIds2 = [createPointId(), createPointId(), createPointId()]
       const wallIds2 = [createWallId(), createWallId(), createWallId()]
-      const room1 = store.addRoom('Living Room', pointIds1, wallIds1)
-      const room2 = store.addRoom('Kitchen', pointIds2, wallIds2)
+      const room1 = store.addRoom(testFloorId, 'Living Room', pointIds1, wallIds1)
+      const room2 = store.addRoom(testFloorId, 'Kitchen', pointIds2, wallIds2)
 
       expect(store.rooms.size).toBe(2)
 
@@ -172,7 +174,7 @@ describe('roomsSlice', () => {
       // Add room first
       const pointIds = [createPointId(), createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
-      const room = store.addRoom('Old Name', pointIds, wallIds)
+      const room = store.addRoom(testFloorId, 'Old Name', pointIds, wallIds)
 
       // Update name
       store.updateRoomName(room.id, 'New Name')
@@ -187,7 +189,7 @@ describe('roomsSlice', () => {
       // Add room first
       const pointIds = [createPointId(), createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
-      const room = store.addRoom('Old Name', pointIds, wallIds)
+      const room = store.addRoom(testFloorId, 'Old Name', pointIds, wallIds)
 
       // Update name with whitespace
       store.updateRoomName(room.id, '  New Name  ')
@@ -217,7 +219,7 @@ describe('roomsSlice', () => {
       // Add room first
       const originalPointIds = [createPointId(), createPointId(), createPointId()]
       const originalWallIds = [createWallId(), createWallId(), createWallId()]
-      const room = store.addRoom('Test Room', originalPointIds, originalWallIds)
+      const room = store.addRoom(testFloorId, 'Test Room', originalPointIds, originalWallIds)
 
       // Update boundary
       const newPointIds = [createPointId(), createPointId(), createPointId()]
@@ -270,7 +272,7 @@ describe('roomsSlice', () => {
       // Add room first
       const pointIds = [createPointId(), createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
-      const room = store.addRoom('Test Room', pointIds, wallIds)
+      const room = store.addRoom(testFloorId, 'Test Room', pointIds, wallIds)
 
       // Add hole
       const holePointIds = [createPointId(), createPointId(), createPointId()]
@@ -335,7 +337,7 @@ describe('roomsSlice', () => {
       // Add room first
       const pointIds = [createPointId(), createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
-      const room = store.addRoom('Test Room', pointIds, wallIds)
+      const room = store.addRoom(testFloorId, 'Test Room', pointIds, wallIds)
 
       // Add holes
       const hole1PointIds = [createPointId(), createPointId(), createPointId()]
@@ -359,7 +361,7 @@ describe('roomsSlice', () => {
       // Add room first
       const pointIds = [createPointId(), createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
-      const room = store.addRoom('Test Room', pointIds, wallIds)
+      const room = store.addRoom(testFloorId, 'Test Room', pointIds, wallIds)
 
       const initialHoles = [...room.holes]
 
@@ -386,7 +388,7 @@ describe('roomsSlice', () => {
       // Add room first
       const pointIds = [createPointId(), createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
-      const addedRoom = store.addRoom('Test Room', pointIds, wallIds)
+      const addedRoom = store.addRoom(testFloorId, 'Test Room', pointIds, wallIds)
 
       // Get the room
       const result = store.getRoomById(addedRoom.id)
@@ -412,7 +414,7 @@ describe('roomsSlice', () => {
       const pointIds = [createPointId(), createPointId(), createPointId()]
       const wallIds = [wallId, createWallId(), createWallId()]
 
-      const room = store.addRoom('Test Room', pointIds, wallIds)
+      const room = store.addRoom(testFloorId, 'Test Room', pointIds, wallIds)
 
       const result = store.getRoomsContainingWall(wallId)
       expect(result).toEqual([room])
@@ -423,7 +425,7 @@ describe('roomsSlice', () => {
       const pointIds = [createPointId(), createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
 
-      const room = store.addRoom('Test Room', pointIds, wallIds)
+      const room = store.addRoom(testFloorId, 'Test Room', pointIds, wallIds)
 
       // Add hole with the target wall
       const holePointIds = [createPointId(), createPointId(), createPointId()]
@@ -440,7 +442,7 @@ describe('roomsSlice', () => {
       const pointIds = [createPointId(), createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
 
-      const room = store.addRoom('Test Room', pointIds, wallIds)
+      const room = store.addRoom(testFloorId, 'Test Room', pointIds, wallIds)
 
       // Add interior wall
       store.addInteriorWallToRoom(room.id, wallId)
@@ -462,7 +464,7 @@ describe('roomsSlice', () => {
       const pointIds = [pointId, createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
 
-      const room = store.addRoom('Test Room', pointIds, wallIds)
+      const room = store.addRoom(testFloorId, 'Test Room', pointIds, wallIds)
 
       const result = store.getRoomsContainingPoint(pointId)
       expect(result).toEqual([room])
@@ -473,7 +475,7 @@ describe('roomsSlice', () => {
       const pointIds = [createPointId(), createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
 
-      const room = store.addRoom('Test Room', pointIds, wallIds)
+      const room = store.addRoom(testFloorId, 'Test Room', pointIds, wallIds)
 
       // Add hole with the target point
       const holePointIds = [pointId, createPointId(), createPointId()]
@@ -497,7 +499,7 @@ describe('roomsSlice', () => {
       const pointIds = [createPointId(), createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
 
-      const room = store.addRoom('Test Room', pointIds, wallIds)
+      const room = store.addRoom(testFloorId, 'Test Room', pointIds, wallIds)
 
       store.addInteriorWallToRoom(room.id, wallId)
 
@@ -511,7 +513,7 @@ describe('roomsSlice', () => {
       const pointIds = [createPointId(), createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
 
-      const room = store.addRoom('Test Room', pointIds, wallIds)
+      const room = store.addRoom(testFloorId, 'Test Room', pointIds, wallIds)
 
       store.addInteriorWallToRoom(room.id, wallId1)
       store.addInteriorWallToRoom(room.id, wallId2)
@@ -525,7 +527,7 @@ describe('roomsSlice', () => {
       const pointIds = [createPointId(), createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
 
-      const room = store.addRoom('Test Room', pointIds, wallIds)
+      const room = store.addRoom(testFloorId, 'Test Room', pointIds, wallIds)
 
       store.addInteriorWallToRoom(room.id, wallId)
       store.addInteriorWallToRoom(room.id, wallId) // Add same wall again
@@ -551,7 +553,7 @@ describe('roomsSlice', () => {
       const pointIds = [createPointId(), createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
 
-      const room = store.addRoom('Test Room', pointIds, wallIds)
+      const room = store.addRoom(testFloorId, 'Test Room', pointIds, wallIds)
 
       // Add interior walls
       store.addInteriorWallToRoom(room.id, wallId1)
@@ -570,7 +572,7 @@ describe('roomsSlice', () => {
       const pointIds = [createPointId(), createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
 
-      const room = store.addRoom('Test Room', pointIds, wallIds)
+      const room = store.addRoom(testFloorId, 'Test Room', pointIds, wallIds)
 
       // Add one interior wall
       store.addInteriorWallToRoom(room.id, wallId1)
@@ -600,8 +602,8 @@ describe('roomsSlice', () => {
       const pointIds2 = [createPointId(), createPointId(), createPointId(), createPointId()]
       const wallIds2 = [createWallId(), createWallId(), createWallId(), createWallId()]
 
-      const room1 = store.addRoom('Living Room', pointIds1, wallIds1)
-      const room2 = store.addRoom('Kitchen', pointIds2, wallIds2)
+      const room1 = store.addRoom(testFloorId, 'Living Room', pointIds1, wallIds1)
+      const room2 = store.addRoom(testFloorId, 'Kitchen', pointIds2, wallIds2)
 
       // Add holes and interior walls
       const holePointIds = [createPointId(), createPointId(), createPointId()]
@@ -647,7 +649,7 @@ describe('roomsSlice', () => {
     it('should maintain data consistency after multiple operations', () => {
       const pointIds = [createPointId(), createPointId(), createPointId()]
       const wallIds = [createWallId(), createWallId(), createWallId()]
-      const room = store.addRoom('Test Room', pointIds, wallIds)
+      const room = store.addRoom(testFloorId, 'Test Room', pointIds, wallIds)
 
       // Add hole
       const holePointIds = [createPointId(), createPointId(), createPointId()]
@@ -683,12 +685,12 @@ describe('roomsSlice', () => {
       // Create room with specific wall and point
       const pointIds = [pointId, createPointId(), createPointId()]
       const wallIds = [wallId, createWallId(), createWallId()]
-      const room = store.addRoom('Search Room', pointIds, wallIds)
+      const room = store.addRoom(testFloorId, 'Search Room', pointIds, wallIds)
 
       // Create another room without these IDs
       const otherPointIds = [createPointId(), createPointId(), createPointId()]
       const otherWallIds = [createWallId(), createWallId(), createWallId()]
-      store.addRoom('Other Room', otherPointIds, otherWallIds)
+      store.addRoom(testFloorId, 'Other Room', otherPointIds, otherWallIds)
 
       // Search for wall
       const roomsWithWall = store.getRoomsContainingWall(wallId)
