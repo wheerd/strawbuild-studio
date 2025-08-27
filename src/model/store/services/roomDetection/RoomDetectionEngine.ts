@@ -1,15 +1,15 @@
 import type { Wall, Room, Point } from '@/types/model'
-import type { ModelState } from '@/model/store/modelStateAdapter'
-import type { WallId, PointId, FloorId } from '@/types/ids'
-import type { Point2D, Area } from '@/types/geometry'
-import { calculatePolygonArea, createPoint2D } from '@/types/geometry'
+import type { WallId, PointId } from '@/types/ids'
+import type { Point2D } from '@/types/geometry'
+import { createPoint2D } from '@/types/geometry'
 import {
   type WallLoopTrace,
-  type LoopDirection,
   type RoomSide,
   type RoomDefinition,
-  type RoomBoundaryDefinition
+  type RoomBoundaryDefinition,
+  type RoomDetectionGraph
 } from './types'
+import type { StoreState } from '@/model'
 
 /**
  * Core engine for room detection algorithms
@@ -20,147 +20,205 @@ export class RoomDetectionEngine {
   }
 
   /**
-   * Find all wall loops (potential rooms) on a floor
+   * Find all minimal wall loops (potential rooms) on a floor
    */
-  findWallLoops (state: ModelState, floorId: FloorId): WallId[][] {
-    const floor = state.floors.get(floorId)
-    if (floor == null) return []
+  findMinimalWallLoops (graph: RoomDetectionGraph): WallLoopTrace[] {
+    const loops: WallLoopTrace[] = []
+    const processedEdges = new Set<string>()
 
-    const wallIds = floor.wallIds
-    if (wallIds.length === 0) return []
+    // Try to find loops starting from each edge
+    for (const [startPointId, edges] of graph.edges) {
+      for (const edge of edges) {
+        const edgeKey = `${startPointId}->${edge.endPointId}:${edge.wallId}`
+        if (processedEdges.has(edgeKey)) continue
 
-    // Build adjacency map for wall connections at each point
-    const wallConnections = new Map<PointId, WallId[]>()
-
-    for (const wallId of wallIds) {
-      const wall = state.walls.get(wallId)
-      if (wall == null) continue
-
-      if (!wallConnections.has(wall.startPointId)) {
-        wallConnections.set(wall.startPointId, [])
-      }
-      if (!wallConnections.has(wall.endPointId)) {
-        wallConnections.set(wall.endPointId, [])
-      }
-
-      wallConnections.get(wall.startPointId)?.push(wallId)
-      wallConnections.get(wall.endPointId)?.push(wallId)
-    }
-
-    const faces: WallId[][] = []
-    const usedEdges = new Set<string>()
-
-    // For each wall, try to find the minimal face starting from each direction
-    for (const startWallId of wallIds) {
-      const startWall = state.walls.get(startWallId)
-      if (startWall == null) continue
-
-      // Try both directions: start->end and end->start
-      const directions = [
-        { from: startWall.startPointId, to: startWall.endPointId },
-        { from: startWall.endPointId, to: startWall.startPointId }
-      ]
-
-      for (const { from, to } of directions) {
-        const edgeKey = `${startWallId}:${from}->${to}`
-        if (usedEdges.has(edgeKey)) continue
-
-        const face = this.findMinimalFace(startWallId, from, to, wallConnections, state)
-        if (face != null && face.length >= 3) {
-          // Check if we already have this face (same walls, possibly different order)
-          const sortedFace = [...face].sort()
-          const isDuplicate = faces.some(existingFace => {
-            const sortedExisting = [...existingFace].sort()
-            return sortedExisting.length === sortedFace.length &&
-              sortedExisting.every((wallId, index) => wallId === sortedFace[index])
-          })
-
-          if (!isDuplicate) {
-            faces.push(face)
+        const loop = this.traceWallLoop(startPointId, edge.endPointId, graph)
+        if (loop && loop.pointIds.length >= 3) {
+          // Mark all edges in this loop as processed
+          for (let i = 0; i < loop.pointIds.length; i++) {
+            const currentPoint = loop.pointIds[i]
+            const nextPoint = loop.pointIds[(i + 1) % loop.pointIds.length]
+            const wallId = loop.wallIds[i]
+            processedEdges.add(`${currentPoint}->${nextPoint}:${wallId}`)
           }
-
-          // Mark all edges in this face as used
-          this.markFaceEdgesAsUsed(face, state, usedEdges)
+          loops.push(loop)
         }
       }
     }
 
-    // Filter to keep only interior faces (actual rooms)
-    return this.filterInteriorFaces(faces, state)
+    return loops
   }
 
   /**
    * Trace a wall loop starting from a given wall in a specific direction
+   * Uses DFS with smallest angle selection to find minimal cycles
    */
-  traceWallLoop (startWallId: WallId, direction: LoopDirection, state: ModelState): WallLoopTrace | null {
-    const startWall = state.walls.get(startWallId)
-    if (startWall == null) return null
+  traceWallLoop (startPointId: PointId, endPointId: PointId, graph: RoomDetectionGraph): WallLoopTrace | null {
+    const visited = new Set<PointId>()
+    const wallsUsed = new Set<WallId>()
+    const pointPath: PointId[] = [startPointId, endPointId]
+    const wallPath: WallId[] = []
 
-    const wallIds: WallId[] = [startWallId]
-    const pointIds: PointId[] = [startWall.startPointId]
-    const visitedWalls = new Set<WallId>()
+    // Find the wall connecting start and end points
+    const startEdges = graph.edges.get(startPointId) ?? []
+    const initialWall = startEdges.find(edge => edge.endPointId === endPointId)
+    
+    if (!initialWall) {
+      return null
+    }
 
-    let currentWallId = startWallId
-    let currentPointId = startWall.endPointId
+    wallPath.push(initialWall.wallId)
+    wallsUsed.add(initialWall.wallId)
+    visited.add(startPointId)
 
-    // Keep tracing until we return to the start or get stuck
-    while (true) {
-      pointIds.push(currentPointId)
-
-      // Add the current wall to visited BEFORE looking for the next one
-      visitedWalls.add(currentWallId)
-
-      const nextWallId = this.findNextWallInLoop(currentWallId, currentPointId, direction, state, visitedWalls, startWallId)
-
-      if (nextWallId == null) {
-        // Got stuck, not a complete loop
-        return null
-      }
-
-      if (nextWallId === startWallId) {
-        // Completed the loop!
-        const area = this.calculateLoopArea(wallIds, state)
-        return {
-          wallIds,
-          pointIds,
-          isValid: true,
-          area
-        }
-      }
-
-      const nextWall = state.walls.get(nextWallId)
-      if (nextWall == null) return null
-
-      wallIds.push(nextWallId)
-
-      // Move to the next point
-      currentWallId = nextWallId
-      currentPointId = nextWall.startPointId === currentPointId ? nextWall.endPointId : nextWall.startPointId
-
-      // Safety check to prevent infinite loops
-      if (wallIds.length > 100) {
-        return null
+    const result = this.dfsTraceLoop(endPointId, startPointId, graph, visited, wallsUsed, pointPath, wallPath)
+    
+    if (result) {
+      return {
+        pointIds: result.pointPath,
+        wallIds: result.wallPath
       }
     }
+
+    return null
   }
 
   /**
-   * Validate if a room definition is geometrically valid
+   * DFS helper function for tracing wall loops
    */
-  validateRoom (roomDef: RoomDefinition, state: ModelState): boolean {
-    // Must have minimum number of walls
-    if (roomDef.wallIds.length < 3) {
-      return false
+  private dfsTraceLoop (
+    currentPoint: PointId,
+    targetPoint: PointId,
+    graph: RoomDetectionGraph,
+    visited: Set<PointId>,
+    wallsUsed: Set<WallId>,
+    pointPath: PointId[],
+    wallPath: WallId[]
+  ): { pointPath: PointId[], wallPath: WallId[] } | null {
+    // If we've reached the target point and have at least 3 points, we found a cycle
+    if (currentPoint === targetPoint && pointPath.length >= 3) {
+      // Don't add the target point again since it's already at the start
+      return { pointPath: [...pointPath], wallPath: [...wallPath] }
     }
 
-    // Check if walls form a connected loop
-    return this.isValidWallLoop(roomDef.wallIds, state)
+    // Get available edges from current point
+    const edges = graph.edges.get(currentPoint) ?? []
+    const availableEdges = edges.filter(edge => {
+      // Don't reuse walls
+      if (wallsUsed.has(edge.wallId)) return false
+      
+      // Allow returning to start point if we have enough points for a cycle
+      if (edge.endPointId === targetPoint && pointPath.length >= 3) return true
+      
+      // Don't visit already visited points
+      return !visited.has(edge.endPointId)
+    })
+
+    if (availableEdges.length === 0) {
+      return null
+    }
+
+    // Sort edges by angle (smallest angle first for minimal cycles)
+    const sortedEdges = this.sortEdgesByAngle(currentPoint, pointPath, graph, availableEdges)
+
+    // Try each edge in order (DFS with angle-based selection)
+    for (const edge of sortedEdges) {
+      const nextPoint = edge.endPointId
+      
+      // Mark as visited if not the target point
+      const wasVisited = visited.has(nextPoint)
+      if (nextPoint !== targetPoint) {
+        visited.add(nextPoint)
+      }
+      
+      wallsUsed.add(edge.wallId)
+      wallPath.push(edge.wallId)
+      
+      // Only add the next point to path if it's not the target (to avoid duplication)
+      if (nextPoint !== targetPoint) {
+        pointPath.push(nextPoint)
+      }
+
+      const result = this.dfsTraceLoop(nextPoint, targetPoint, graph, visited, wallsUsed, pointPath, wallPath)
+      
+      if (result) {
+        return result
+      }
+
+      // Backtrack
+      if (nextPoint !== targetPoint) {
+        pointPath.pop()
+      }
+      wallPath.pop()
+      wallsUsed.delete(edge.wallId)
+      
+      if (!wasVisited && nextPoint !== targetPoint) {
+        visited.delete(nextPoint)
+      }
+    }
+
+    return null
+  }
+
+  /**
+   * Sort edges by angle from the previous direction, selecting smallest angles first
+   */
+  private sortEdgesByAngle (
+    currentPoint: PointId,
+    pointPath: PointId[],
+    graph: RoomDetectionGraph,
+    edges: Array<{ endPointId: PointId, wallId: WallId }>
+  ): Array<{ endPointId: PointId, wallId: WallId }> {
+    if (pointPath.length < 2) {
+      return edges
+    }
+
+    const currentPos = graph.points.get(currentPoint)
+    const previousPoint = pointPath[pointPath.length - 2]
+    const previousPos = graph.points.get(previousPoint)
+
+    if (!currentPos || !previousPos) {
+      return edges
+    }
+
+    // Calculate incoming direction
+    const incomingAngle = Math.atan2(
+      currentPos.y - previousPos.y,
+      currentPos.x - previousPos.x
+    )
+
+    // Calculate angle for each outgoing edge and sort by smallest turn angle
+    const edgesWithAngles = edges.map(edge => {
+      const nextPos = graph.points.get(edge.endPointId)
+      if (!nextPos) {
+        return { edge, angle: 0, turnAngle: Math.PI * 2 }
+      }
+
+      const outgoingAngle = Math.atan2(
+        nextPos.y - currentPos.y,
+        nextPos.x - currentPos.x
+      )
+
+      // Calculate turn angle (difference from incoming direction)
+      let turnAngle = outgoingAngle - incomingAngle
+      
+      // Normalize to [0, 2π) - we want the smallest positive turn angle
+      while (turnAngle < 0) turnAngle += 2 * Math.PI
+      while (turnAngle >= 2 * Math.PI) turnAngle -= 2 * Math.PI
+
+      return { edge, angle: outgoingAngle, turnAngle }
+    })
+
+    // Sort by turn angle (smallest first for minimal cycles)
+    edgesWithAngles.sort((a, b) => a.turnAngle - b.turnAngle)
+
+    return edgesWithAngles.map(item => item.edge)
   }
 
   /**
    * Determine which side of a wall a room should be on based on room geometry
    */
-  determineRoomSide (roomDef: RoomDefinition, wall: Wall, state: ModelState): RoomSide {
+  determineRoomSide (roomDef: RoomDefinition, wall: Wall, state: StoreState): RoomSide {
     // Get wall direction vector (start -> end)
     const startPoint = state.points.get(wall.startPointId)
     const endPoint = state.points.get(wall.endPointId)
@@ -215,7 +273,7 @@ export class RoomDetectionEngine {
   /**
    * Create a room definition from a wall loop
    */
-  createRoomFromLoop (wallIds: WallId[], name: string, state: ModelState): RoomDefinition | null {
+  createRoomFromLoop (wallIds: WallId[], name: string, state: StoreState): RoomDefinition | null {
     if (!this.isValidWallLoop(wallIds, state)) {
       return null
     }
@@ -244,7 +302,7 @@ export class RoomDetectionEngine {
     outerWallIds: WallId[],
     holeWallIds: WallId[][],
     name: string,
-    state: ModelState
+    state: StoreState
   ): RoomDefinition | null {
     // Validate outer boundary
     if (!this.isValidWallLoop(outerWallIds, state)) {
@@ -295,7 +353,7 @@ export class RoomDetectionEngine {
   /**
    * Check if one wall loop is completely inside another
    */
-  isLoopInsideLoop (innerWallIds: WallId[], outerWallIds: WallId[], state: ModelState): boolean {
+  isLoopInsideLoop (innerWallIds: WallId[], outerWallIds: WallId[], state: StoreState): boolean {
     const innerPoints = this.getLoopPolygonPoints(innerWallIds, state)
     const outerPoints = this.getLoopPolygonPoints(outerWallIds, state)
 
@@ -310,7 +368,7 @@ export class RoomDetectionEngine {
   /**
    * Get polygon points for a wall loop
    */
-  getLoopPolygonPoints (wallIds: WallId[], state: ModelState): Point2D[] {
+  getLoopPolygonPoints (wallIds: WallId[], state: StoreState): Point2D[] {
     return this.getFacePolygonPoints(wallIds, state)
   }
 
@@ -336,7 +394,7 @@ export class RoomDetectionEngine {
   /**
    * Identify interior walls that are completely inside a room
    */
-  findInteriorWalls (roomDefinition: RoomDefinition, floorWallIds: WallId[], state: ModelState): WallId[] {
+  findInteriorWalls (roomDefinition: RoomDefinition, floorWallIds: WallId[], state: StoreState): WallId[] {
     const interiorWalls: WallId[] = []
 
     // Get room polygon (outer boundary minus holes)
@@ -372,7 +430,7 @@ export class RoomDetectionEngine {
     wall: Wall,
     outerPolygon: Point2D[],
     holePolygons: Point2D[][],
-    state: ModelState
+    state: StoreState
   ): boolean {
     const startPoint = state.points.get(wall.startPointId)
     const endPoint = state.points.get(wall.endPointId)
@@ -413,11 +471,15 @@ export class RoomDetectionEngine {
   /**
    * Find rooms that contain a specific wall
    */
-  findRoomsWithWall (state: ModelState, wallId: WallId): Room[] {
+  findRoomsWithWall (state: StoreState, wallId: WallId): Room[] {
     const rooms: Room[] = []
 
     for (const room of state.rooms.values()) {
-      if (room.wallIds.has(wallId)) {
+      const outerBoundaryHasWall = room.outerBoundary.wallIds.has(wallId)
+      const holesHaveWall = room.holes.some(hole => hole.wallIds.has(wallId))
+      const interiorHasWall = room.interiorWallIds.has(wallId)
+      
+      if (outerBoundaryHasWall || holesHaveWall || interiorHasWall) {
         rooms.push(room)
       }
     }
@@ -427,176 +489,9 @@ export class RoomDetectionEngine {
 
   // Private helper methods
 
-  private findMinimalFace (
-    startWallId: WallId,
-    _startFrom: PointId,
-    startTo: PointId,
-    wallConnections: Map<PointId, WallId[]>,
-    state: ModelState
-  ): WallId[] | null {
-    const face: WallId[] = [startWallId]
-    let currentPoint = startTo
-    let previousWall = startWallId
 
-    while (face.length < 20) { // Prevent infinite loops
-      const connectedWalls = wallConnections.get(currentPoint) ?? []
-      if (connectedWalls.length < 2) return null // Dead end
 
-      // Find the next wall by taking the rightmost turn (clockwise)
-      let nextWall: WallId | null = null
-      let bestAngle = -Math.PI * 2
-
-      const currentWall = state.walls.get(previousWall)
-      if (currentWall == null) return null
-
-      // Direction we came from
-      const prevPoint = currentWall.startPointId === currentPoint ? currentWall.endPointId : currentWall.startPointId
-      const prevPointPos = state.points.get(prevPoint)
-      const currentPointPos = state.points.get(currentPoint)
-      if (prevPointPos == null || currentPointPos == null) return null
-
-      const incomingAngle = Math.atan2(
-        currentPointPos.position.y - prevPointPos.position.y,
-        currentPointPos.position.x - prevPointPos.position.x
-      )
-
-      for (const wallId of connectedWalls) {
-        if (wallId === previousWall) continue // Don't go back
-
-        const wall = state.walls.get(wallId)
-        if (wall == null) continue
-
-        const otherPoint = wall.startPointId === currentPoint ? wall.endPointId : wall.startPointId
-        const otherPointPos = state.points.get(otherPoint)
-        if (otherPointPos == null) continue
-
-        const outgoingAngle = Math.atan2(
-          otherPointPos.position.y - currentPointPos.position.y,
-          otherPointPos.position.x - currentPointPos.position.x
-        )
-
-        // Calculate the angle difference (turn angle)
-        let turnAngle = outgoingAngle - incomingAngle
-        while (turnAngle <= -Math.PI) turnAngle += 2 * Math.PI
-        while (turnAngle > Math.PI) turnAngle -= 2 * Math.PI
-
-        // We want the rightmost turn (most clockwise, which is the smallest turn angle)
-        if (turnAngle > bestAngle) {
-          bestAngle = turnAngle
-          nextWall = wallId
-        }
-      }
-
-      if (nextWall == null) return null
-
-      // Check if we've completed the face
-      if (nextWall === startWallId) {
-        return face
-      }
-
-      // Check if we've hit another wall in our path (not a minimal face)
-      if (face.includes(nextWall)) {
-        return null
-      }
-
-      face.push(nextWall)
-      previousWall = nextWall
-
-      const nextWallObj = state.walls.get(nextWall)
-      if (nextWallObj == null) return null
-      currentPoint = nextWallObj.startPointId === currentPoint ? nextWallObj.endPointId : nextWallObj.startPointId
-    }
-
-    return null
-  }
-
-  private findNextWallInLoop (
-    currentWallId: WallId,
-    currentPointId: PointId,
-    direction: LoopDirection,
-    state: ModelState,
-    visitedWalls: Set<WallId>,
-    startWallId?: WallId
-  ): WallId | null {
-    const currentWall = state.walls.get(currentWallId)
-    const currentPoint = state.points.get(currentPointId)
-
-    if (currentWall == null || currentPoint == null) {
-      return null
-    }
-
-    // Get all walls connected to this point
-    const allConnectedWalls = Array.from(state.walls.values()).filter(wall =>
-      wall.startPointId === currentPointId || wall.endPointId === currentPointId
-    )
-
-    // Filter out the current wall and visited walls, but allow start wall for completion
-    const connectedWalls = allConnectedWalls.filter(wall => {
-      if (wall.id === currentWallId) return false
-
-      if (wall.id === startWallId && startWallId !== currentWallId) {
-        return true // Allow start wall to complete loop
-      }
-
-      return !visitedWalls.has(wall.id)
-    })
-
-    if (connectedWalls.length === 0) {
-      return null
-    }
-
-    if (connectedWalls.length === 1) {
-      return connectedWalls[0].id
-    }
-
-    // Calculate direction-based selection
-    const otherPointId = currentWall.startPointId === currentPointId ? currentWall.endPointId : currentWall.startPointId
-    const otherPoint = state.points.get(otherPointId)
-    if (otherPoint == null) return null
-
-    const currentWallVector = {
-      x: currentPoint.position.x - otherPoint.position.x,
-      y: currentPoint.position.y - otherPoint.position.y
-    }
-
-    let bestWall: WallId | null = null
-    let bestAngle = direction === 'left' ? -Math.PI * 2 : Math.PI * 2
-
-    for (const wall of connectedWalls) {
-      const nextPointId = wall.startPointId === currentPointId ? wall.endPointId : wall.startPointId
-      const nextPoint = state.points.get(nextPointId)
-      if (nextPoint == null) continue
-
-      const wallVector = {
-        x: nextPoint.position.x - currentPoint.position.x,
-        y: nextPoint.position.y - currentPoint.position.y
-      }
-
-      // Calculate angle between current wall direction and this wall
-      const angle = Math.atan2(
-        currentWallVector.x * wallVector.y - currentWallVector.y * wallVector.x,
-        currentWallVector.x * wallVector.x + currentWallVector.y * wallVector.y
-      )
-
-      if (direction === 'left') {
-        // Take the most counter-clockwise (leftmost) path
-        if (angle > bestAngle) {
-          bestAngle = angle
-          bestWall = wall.id
-        }
-      } else {
-        // Take the most clockwise (rightmost) path
-        if (angle < bestAngle) {
-          bestAngle = angle
-          bestWall = wall.id
-        }
-      }
-    }
-
-    return bestWall
-  }
-
-  private isValidWallLoop (wallIds: WallId[], state: ModelState): boolean {
+  private isValidWallLoop (wallIds: WallId[], state: StoreState): boolean {
     if (wallIds.length < 3) return false
 
     // Build connectivity map
@@ -636,7 +531,7 @@ export class RoomDetectionEngine {
       visited.add(currentWallId)
 
       // Find the next wall connected to the current point
-      const connectedWalls = (pointToWalls.get(currentPoint) != null) || []
+      const connectedWalls = pointToWalls.get(currentPoint) ?? []
       const nextWallId = connectedWalls.find(wId => wId !== currentWallId && !visited.has(wId))
 
       if (nextWallId == null) {
@@ -659,54 +554,7 @@ export class RoomDetectionEngine {
     }
   }
 
-  private markFaceEdgesAsUsed (face: WallId[], state: ModelState, usedEdges: Set<string>): void {
-    for (let i = 0; i < face.length; i++) {
-      const wallId = face[i]
-      const wall = state.walls.get(wallId)
-      if (wall == null) continue
-
-      const nextWallId = face[(i + 1) % face.length]
-      const nextWall = state.walls.get(nextWallId)
-      if (nextWall == null) continue
-
-      // Find shared point between current and next wall
-      let sharedPoint: PointId | null = null
-      if (wall.endPointId === nextWall.startPointId) sharedPoint = wall.endPointId
-      else if (wall.endPointId === nextWall.endPointId) sharedPoint = wall.endPointId
-      else if (wall.startPointId === nextWall.startPointId) sharedPoint = wall.startPointId
-      else if (wall.startPointId === nextWall.endPointId) sharedPoint = wall.startPointId
-
-      if (sharedPoint != null) {
-        const edgeFrom = wall.startPointId === sharedPoint ? wall.endPointId : wall.startPointId
-        usedEdges.add(`${wallId}:${edgeFrom}->${sharedPoint}`)
-      }
-    }
-  }
-
-  private filterInteriorFaces (faces: WallId[][], state: ModelState): WallId[][] {
-    if (faces.length <= 1) return faces
-
-    // Sort faces by area - smaller faces are more likely to be interior rooms
-    const facesWithAreas = faces.map(face => ({
-      face,
-      area: this.calculateFaceArea(face, state)
-    })).filter(item => item.area > 0)
-
-    facesWithAreas.sort((a, b) => a.area - b.area)
-
-    // For smaller projects, return all valid faces
-    // TODO: Implement more sophisticated interior/exterior detection for complex cases
-    return facesWithAreas.map(item => item.face)
-  }
-
-  private calculateFaceArea (wallIds: WallId[], state: ModelState): number {
-    const points = this.getFacePolygonPoints(wallIds, state)
-    if (points.length < 3) return 0
-
-    return Number(calculatePolygonArea({ points }))
-  }
-
-  private getFacePolygonPoints (wallIds: WallId[], state: ModelState): Point2D[] {
+  private getFacePolygonPoints (wallIds: WallId[], state: StoreState): Point2D[] {
     if (wallIds.length === 0) return []
 
     const points: Point2D[] = []
@@ -741,14 +589,7 @@ export class RoomDetectionEngine {
     return points
   }
 
-  private calculateLoopArea (wallIds: WallId[], state: ModelState): Area | undefined {
-    const points = this.getFacePolygonPoints(wallIds, state)
-    if (points.length < 3) return undefined
-
-    return calculatePolygonArea({ points })
-  }
-
-  private extractOrderedPointsFromWalls (wallIds: WallId[], state: ModelState): PointId[] {
+  private extractOrderedPointsFromWalls (wallIds: WallId[], state: StoreState): PointId[] {
     if (wallIds.length === 0) return []
 
     const points: PointId[] = []

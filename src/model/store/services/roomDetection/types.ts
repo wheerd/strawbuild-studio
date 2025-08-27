@@ -1,5 +1,5 @@
 import type { WallId, PointId, RoomId, FloorId } from '@/types/ids'
-import type { Area } from '@/types/geometry'
+import type { Area, Point2D } from '@/types/geometry'
 
 // Result of room detection operations
 export interface RoomDetectionResult {
@@ -67,10 +67,8 @@ export const DEFAULT_ROOM_DETECTION_CONFIG: RoomDetectionConfig = {
 
 // Loop trace result
 export interface WallLoopTrace {
-  wallIds: WallId[]
   pointIds: PointId[]
-  isValid: boolean
-  area?: Area
+  wallIds: WallId[]
 }
 
 // Direction for loop tracing
@@ -78,3 +76,10 @@ export type LoopDirection = 'left' | 'right'
 
 // Room side relative to wall direction
 export type RoomSide = 'left' | 'right'
+
+export interface RoomDetectionEdge { endPointId: PointId, wallId: WallId }
+
+export interface RoomDetectionGraph {
+  points: Map<PointId, Point2D>
+  edges: Map<PointId, RoomDetectionEdge[]> // Edges are undirected, so if this map contains p1 -> p2, it also contains p2 -> p1
+}

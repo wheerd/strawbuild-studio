@@ -1,6 +1,7 @@
 import type { WallId, FloorId } from '@/types/ids'
 import type { Point2D } from '@/types/geometry'
-import type { Store } from '../../types'
+import type { StoreState } from '../../types'
+import { useModelStore } from '../..'
 
 export interface IRoomDetectionService {
   // Room detection operations
@@ -18,10 +19,13 @@ export interface IRoomDetectionService {
 
 export class RoomDetectionService implements IRoomDetectionService {
   private autoDetectionEnabled: boolean = true
-  private store: Store
+  private get: () => StoreState
+  private set: (state: StoreState) => void
 
-  constructor (store: Store) {
-    this.store = store
+  constructor (get: () => StoreState, set: (state: StoreState) => void) {
+    this.get = get
+    this.set = set
+    this.autoDetectionEnabled = true
   }
 
   setAutoDetectionEnabled (enabled: boolean): void {
@@ -50,71 +54,15 @@ export class RoomDetectionService implements IRoomDetectionService {
   }
 
   updateRoomsAfterWallRemoval (floorId: FloorId, removedWallId: WallId): void {
-    if (!this.autoDetectionEnabled) return
-
-    // Handle room updates after wall removal
-    const affectedRooms = this.store.getRoomsContainingWall(removedWallId)
-    
-    for (const room of affectedRooms) {
-      if (room.floorId !== floorId) continue
-
-      // Check if the wall is part of the room's boundary
-      if (room.outerBoundary.wallIds.has(removedWallId)) {
-        const remainingWallIds = Array.from(room.outerBoundary.wallIds).filter(id => id !== removedWallId)
-        
-        // If room has too few walls left, remove it
-        if (remainingWallIds.length < 3) {
-          this.store.removeRoom(room.id)
-          continue
-        }
-
-        // Update the room boundary
-        const remainingPointIds = room.outerBoundary.pointIds.filter(pointId => {
-          // Keep points that are still connected to remaining walls
-          return this.isPointConnectedToWalls(pointId, remainingWallIds)
-        })
-
-        if (remainingPointIds.length >= 3) {
-          this.store.updateRoomBoundary(room.id, remainingPointIds, remainingWallIds)
-        } else {
-          this.store.removeRoom(room.id)
-        }
-      }
-
-      // Check if it's an interior wall
-      if (room.interiorWallIds.has(removedWallId)) {
-        this.store.removeInteriorWallFromRoom(room.id, removedWallId)
-      }
-
-      // Check holes
-      for (let holeIndex = 0; holeIndex < room.holes.length; holeIndex++) {
-        const hole = room.holes[holeIndex]
-        if (hole.wallIds.has(removedWallId)) {
-          this.store.removeHoleFromRoom(room.id, holeIndex)
-          break
-        }
-      }
-    }
+   
   }
 
   updateRoomsAfterWallAddition (floorId: FloorId, addedWallId: WallId): void {
-    if (!this.autoDetectionEnabled) return
-
-    const wall = this.store.walls.get(addedWallId)
-    if (!wall || wall.floorId !== floorId) return
-
-    // TODO: Implement sophisticated room splitting/creation logic
-    // For now, just log the operation
-    console.log('Wall addition room update:', addedWallId)
+   // Check the endpoints of the added wall
+   // If they share a room id, we may need to split the room
+   // This can be done by 
   }
 
-  private isPointConnectedToWalls (pointId: string, wallIds: string[]): boolean {
-    return wallIds.some(wallId => {
-      const wall = this.store.walls.get(wallId as WallId)
-      return wall && (wall.startPointId === pointId || wall.endPointId === pointId)
-    })
-  }
 }
 
-// Create a default singleton instance factory
-export const createRoomDetectionService = (store: Store) => new RoomDetectionService(store)
+export const defaultRoomDetectionService = new RoomDetectionService(useModelStore.getState, useModelStore.setState)
