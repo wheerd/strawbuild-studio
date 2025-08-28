@@ -242,7 +242,7 @@ describe('SnappingService', () => {
   describe('Intersection Snapping', () => {
     it('should snap to intersection of two lines', () => {
       const point1 = createMockPoint(1000, 1000) // Creates horizontal and vertical lines
-      const point2 = createMockPoint(2000, 2000)  // Creates horizontal and vertical lines
+      const point2 = createMockPoint(2000, 2000) // Creates horizontal and vertical lines
       const context: SnappingContext = {
         points: [point1, point2]
       }
@@ -279,8 +279,8 @@ describe('SnappingService', () => {
   describe('Custom Configuration', () => {
     it('should use custom point snap distance', () => {
       const customService = new SnappingService({
-        pointSnapDistance: createLength(10), // Very small snap distance  
-        lineSnapDistance: createLength(5)    // Also very small line snap distance
+        pointSnapDistance: createLength(10), // Very small snap distance
+        lineSnapDistance: createLength(5) // Also very small line snap distance
       })
 
       const point1 = createMockPoint(100, 100)
@@ -298,7 +298,7 @@ describe('SnappingService', () => {
     it('should use custom line snap distance', () => {
       const customService = new SnappingService({
         pointSnapDistance: createLength(10), // Very small point snap distance
-        lineSnapDistance: createLength(5)   // Very small line snap distance
+        lineSnapDistance: createLength(5) // Very small line snap distance
       })
 
       const point1 = createMockPoint(100, 100)

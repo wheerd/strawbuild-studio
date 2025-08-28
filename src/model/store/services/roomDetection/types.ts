@@ -1,5 +1,5 @@
 import type { WallId, PointId, RoomId, FloorId } from '@/types/ids'
-import type { Area, Point2D } from '@/types/geometry'
+import type { Point2D } from '@/types/geometry'
 
 // Result of room detection operations
 export interface RoomDetectionResult {
@@ -19,7 +19,6 @@ export interface RoomBoundaryDefinition {
 // Definition of a room (before it becomes a Room entity)
 export interface RoomDefinition {
   name: string
-  wallIds: WallId[] // All walls (boundary + interior) for backward compatibility
   outerBoundary: RoomBoundaryDefinition
   holes: RoomBoundaryDefinition[]
   interiorWallIds: WallId[] // Walls inside the room that don't form boundaries
@@ -82,4 +81,5 @@ export interface RoomDetectionEdge { endPointId: PointId, wallId: WallId }
 export interface RoomDetectionGraph {
   points: Map<PointId, Point2D>
   edges: Map<PointId, RoomDetectionEdge[]> // Edges are undirected, so if this map contains p1 -> p2, it also contains p2 -> p1
+  walls: Map<WallId, { startPointId: PointId, endPointId: PointId }>
 }

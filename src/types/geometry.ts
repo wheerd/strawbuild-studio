@@ -398,3 +398,31 @@ export function lineFromSegment (segment: LineSegment2D): Line2D {
     direction: normalizeVector(createVector2D((segment.end.x - segment.start.x), (segment.end.y - segment.start.y)))
   }
 }
+
+export function isPointInPolygon (point: Point2D, polygon: Polygon2D): boolean {
+  const { points } = polygon
+  let inside = false
+
+  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+    const xi = points[i].x; const yi = points[i].y
+    const xj = points[j].x; const yj = points[j].y
+
+    const intersect = ((yi > point.y) !== (yj > point.y)) &&
+                      (point.x < (xj - xi) * (point.y - yi) / (yj - yi + 1e-10) + xi)
+    if (intersect) inside = !inside
+  }
+
+  return inside
+}
+
+export function polygonIsClockwise (polygon: Polygon2D): boolean {
+  const { points } = polygon
+  let sum = 0
+
+  for (let i = 0; i < points.length; i++) {
+    const j = (i + 1) % points.length
+    sum += (points[j].x - points[i].x) * (points[j].y + points[i].y)
+  }
+
+  return sum > 0
+}
