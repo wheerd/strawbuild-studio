@@ -213,7 +213,7 @@ describe('WallsPointsSlice', () => {
       expect(wall1Updated === null || wall2Updated === null).toBe(true)
 
       // The remaining wall should connect point1 to point3
-      const remainingWall = (wall1Updated != null) || wall2Updated
+      const remainingWall = wall1Updated ?? wall2Updated
       expect(remainingWall).not.toBeNull()
       expect(remainingWall?.startPointId === point1.id || remainingWall?.endPointId === point1.id).toBe(true)
       expect(remainingWall?.startPointId === point3.id || remainingWall?.endPointId === point3.id).toBe(true)

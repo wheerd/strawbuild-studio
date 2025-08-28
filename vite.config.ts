@@ -39,7 +39,6 @@ export default defineConfig({
           // Model chunk
           model: [
             './src/model/store',
-            './src/model/operations',
             './src/types/model',
             './src/types/geometry',
             './src/types/ids'
