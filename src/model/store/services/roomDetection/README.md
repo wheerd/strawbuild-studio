@@ -158,27 +158,3 @@ The system includes comprehensive tests:
 - **Integration Tests**: End-to-end workflows in `integration.test.ts`
 
 Run tests with: `pnpm test roomDetection`
-
-
-
-# Room scenarios
-
-```
-o-o-o-o
-|1|2|3|
-o-o-o-o
-|4|5|6|
-o-o-o-o
-|7|8|9|
-o-o-o-o
-```
-
-```
-  o-o-o
-  |1  |
-o-o-o o
-| |2| |
-o o-o o
-|     |
-o-o-o-o
-```

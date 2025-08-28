@@ -4,6 +4,7 @@ import type { StoreState, StoreActions } from '../../types'
 import { useModelStore } from '../..'
 import { RoomDetectionEngine } from './RoomDetectionEngine'
 import type { RoomDetectionGraph, RoomDefinition } from './types'
+import type { Room, Wall } from '@/types/model'
 
 export interface IRoomDetectionService {
   // Room detection operations
@@ -11,7 +12,7 @@ export interface IRoomDetectionService {
   detectRoomAtPoint: (floorId: FloorId, point: Point2D) => void
 
   // Room merging and splitting
-  updateRoomsAfterWallRemoval: (floorId: FloorId, removedWallId: WallId) => void
+  updateRoomsAfterWallRemoval: (removedWall: Wall) => void
   updateRoomsAfterWallAddition: (floorId: FloorId, addedWallId: WallId) => void
 
   // Configuration
@@ -73,7 +74,7 @@ export class RoomDetectionService implements IRoomDetectionService {
         const roomName = this.generateUniqueRoomName(existingRooms, newRoomDefinitions)
         const roomDefinition = this.engine.createRoomFromLoop(loop, roomName, graph)
 
-        if (roomDefinition != null) {
+        if (roomDefinition !== null) {
           newRoomDefinitions.push(roomDefinition)
         }
       }
@@ -115,41 +116,153 @@ export class RoomDetectionService implements IRoomDetectionService {
     const firstEdge = edges[0]
     const loop = this.engine.traceWallLoop(nearestPointId, firstEdge.endPointId, graph)
 
-    if (loop != null) {
+    if (loop !== null) {
       const roomName = 'Detected Room'
       const roomDefinition = this.engine.createRoomFromLoop(loop, roomName, graph)
 
-      if (roomDefinition != null) {
+      if (roomDefinition !== null) {
         this.createRoomFromDefinition(roomDefinition, floorId)
       }
     }
   }
 
-  updateRoomsAfterWallRemoval (floorId: FloorId, removedWallId: WallId): void {
+  updateRoomsAfterWallRemoval (removedWall: Wall): void {
     if (!this.autoDetectionEnabled) return
 
-    // When a wall is removed, rooms may need to be merged
     const store = this.get()
-    const affectedRooms = Array.from(store.rooms.values())
-      .filter(room =>
-        room.floorId === floorId &&
-        (room.outerBoundary.wallIds.has(removedWallId) ||
-         room.holes.some(hole => hole.wallIds.has(removedWallId)) ||
-         room.interiorWallIds.has(removedWallId))
-      )
-
-    if (affectedRooms.length > 0) {
-      // Clean up references from affected rooms before re-detection
-      this.cleanupRoomReferences(affectedRooms.map(room => room.id))
-
-      // Remove affected rooms
-      affectedRooms.forEach(room => {
-        store.removeRoom(room.id)
-      })
-
-      // Trigger full room detection for the floor
-      this.detectRooms(floorId)
+    if (removedWall.leftRoomId === removedWall.rightRoomId) {
+      // If both sides of the removed wall referenced the same room, it must be an interior wall
+      const affectedRoomId = removedWall.leftRoomId
+      if (affectedRoomId) { store.removeInteriorWallFromRoom(affectedRoomId, removedWall.id) }
     }
+
+    if (removedWall.leftRoomId && removedWall.rightRoomId && removedWall.leftRoomId !== removedWall.rightRoomId) {
+      // If the removed wall separated two different rooms, we need to merge them
+      const leftRoomId = removedWall.leftRoomId
+      const rightRoomId = removedWall.rightRoomId
+
+      const leftRoom = store.rooms.get(leftRoomId)
+      const rightRoom = store.rooms.get(rightRoomId)
+
+      if (leftRoom && rightRoom) {
+        this.mergeRoomWithRemovedWall(removedWall, leftRoom, rightRoom, store, leftRoomId, rightRoomId)
+      }
+    } else if (removedWall.leftRoomId) {
+      const roomId = removedWall.leftRoomId
+      this.cleanupRoomReferences([roomId])
+      store.removeRoom(roomId)
+    } else if (removedWall.rightRoomId) {
+      const roomId = removedWall.rightRoomId
+      this.cleanupRoomReferences([removedWall.rightRoomId])
+      store.removeRoom(roomId)
+    }
+  }
+
+  private mergeRoomWithRemovedWall (removedWall: Wall, leftRoom: Room, rightRoom: Room, store: StoreState & StoreActions, leftRoomId: RoomId, rightRoomId: RoomId) {
+    const leftRoomPoints = this.shiftPointsByRemoving(leftRoom.outerBoundary.pointIds, removedWall.startPointId, removedWall.endPointId)
+    const rightRoomPoints = this.shiftPointsByRemoving(rightRoom.outerBoundary.pointIds, removedWall.startPointId, removedWall.endPointId)
+
+    if (leftRoomPoints[0] !== rightRoomPoints[rightRoomPoints.length - 1]) {
+      throw new Error('Invalid room boundaries after wall removal')
+    }
+    if (rightRoomPoints[0] !== leftRoomPoints[leftRoomPoints.length - 1]) {
+      throw new Error('Invalid room boundaries after wall removal')
+    }
+
+    // Check if there are wall fragments left that are now interior walls
+    const interiorWallPointPairs: Array<{ start: PointId; end: PointId } > = []
+    while (leftRoomPoints.length > 2 && rightRoomPoints.length > 2 &&
+      leftRoomPoints[1] === rightRoomPoints[rightRoomPoints.length - 2]) {
+      interiorWallPointPairs.push({ start: leftRoomPoints[0], end: leftRoomPoints[1] })
+      leftRoomPoints.shift()
+      rightRoomPoints.pop()
+    }
+    while (leftRoomPoints.length > 2 && rightRoomPoints.length > 2 &&
+      rightRoomPoints[1] === leftRoomPoints[leftRoomPoints.length - 2]) {
+      interiorWallPointPairs.push({ start: rightRoomPoints[0], end: rightRoomPoints[1] })
+      rightRoomPoints.shift()
+      leftRoomPoints.pop()
+    }
+    if (leftRoomPoints[0] !== rightRoomPoints[rightRoomPoints.length - 1]) {
+      throw new Error('Invalid room boundaries after wall removal')
+    }
+    if (rightRoomPoints[0] !== leftRoomPoints[leftRoomPoints.length - 1]) {
+      throw new Error('Invalid room boundaries after wall removal')
+    }
+
+    const combinedOuterPoints = [...leftRoomPoints.slice(1), ...rightRoomPoints.slice(1)]
+    const allOriginalWalls = Array.from(new Set([...leftRoom.outerBoundary.wallIds, ...rightRoom.outerBoundary.wallIds])).map(id => store.walls.get(id)).filter(wall => wall) as Wall[]
+
+    const newOuterWallIds = allOriginalWalls.filter(wall => {
+      if (wall.id === removedWall.id) return false
+      if (combinedOuterPoints.indexOf(wall.startPointId) === -1) return false
+      if (combinedOuterPoints.indexOf(wall.endPointId) === -1) return false
+      return true
+    }).map(wall => wall.id)
+
+    const newInteriorWallIds = allOriginalWalls.filter(wall => {
+      if (wall.id === removedWall.id) return false
+      for (const pair of interiorWallPointPairs) {
+        if ((wall.startPointId === pair.start && wall.endPointId === pair.end) ||
+          (wall.startPointId === pair.end && wall.endPointId === pair.start)) {
+          return true
+        }
+      }
+      return false
+    }).map(wall => wall.id)
+
+    // Create a new room definition for the merged room
+    const mergedRoomDefinition: RoomDefinition = {
+      name: leftRoom.name, // Keep the name of the left room
+      outerBoundary: {
+        wallIds: newOuterWallIds,
+        pointIds: combinedOuterPoints
+      },
+      holes: [
+        ...leftRoom.holes.map(hole => ({
+          wallIds: [...hole.wallIds],
+          pointIds: [...hole.pointIds]
+        })),
+        ...rightRoom.holes.map(hole => ({
+          wallIds: [...hole.wallIds],
+          pointIds: [...hole.pointIds]
+        }))
+      ],
+      interiorWallIds: [...newInteriorWallIds, ...leftRoom.interiorWallIds, ...rightRoom.interiorWallIds]
+    }
+
+    // Clean up references from both rooms before merging
+    this.cleanupRoomReferences([leftRoomId, rightRoomId])
+
+    // Remove both original rooms
+    store.removeRoom(leftRoomId)
+    store.removeRoom(rightRoomId)
+
+    // Create the merged room
+    this.createRoomFromDefinition(mergedRoomDefinition, removedWall.floorId)
+  }
+
+  shiftPointsByRemoving (cycle: PointId[], startPointId: PointId, endPointId: PointId): PointId[] {
+    const startIndex = cycle.indexOf(startPointId)
+    const endIndex = cycle.indexOf(endPointId)
+
+    if (startIndex === -1 || endIndex === -1) {
+      throw new Error('Start or end point not found in cycle')
+    }
+
+    // Determine the order of points in the array
+    let splitIndex: number
+    if ((startIndex + 1) % cycle.length === endIndex) {
+      // startPointId comes before endPointId
+      splitIndex = startIndex
+    } else if ((endIndex + 1) % cycle.length === startIndex) {
+      // endPointId comes before startPointId
+      splitIndex = endIndex
+    } else {
+      throw new Error('Start and end points are not adjacent in cycle')
+    }
+
+    return [...cycle.slice(splitIndex + 1), ...cycle.slice(0, splitIndex + 1)]
   }
 
   updateRoomsAfterWallAddition (floorId: FloorId, addedWallId: WallId): void {
@@ -200,7 +313,7 @@ export class RoomDetectionService implements IRoomDetectionService {
         const roomName = this.generateUniqueRoomName(existingRoomsAfterCheck, [])
         const roomDefinition = this.engine.createRoomFromLoop(loop, roomName, graph)
 
-        if (roomDefinition != null) {
+        if (roomDefinition !== null) {
           this.createRoomFromDefinition(roomDefinition, floorId)
         }
       })
@@ -297,10 +410,10 @@ export class RoomDetectionService implements IRoomDetectionService {
 
     // Clean up wall room references
     for (const wall of store.walls.values()) {
-      if (wall.leftRoomId != null && roomIdSet.has(wall.leftRoomId)) {
+      if (wall.leftRoomId && roomIdSet.has(wall.leftRoomId)) {
         store.updateWallLeftRoom(wall.id, null)
       }
-      if (wall.rightRoomId != null && roomIdSet.has(wall.rightRoomId)) {
+      if (wall.rightRoomId && roomIdSet.has(wall.rightRoomId)) {
         store.updateWallRightRoom(wall.id, null)
       }
     }
@@ -336,7 +449,7 @@ export class RoomDetectionService implements IRoomDetectionService {
     // Update walls with room assignments (determine which side of each wall the room is on)
     outerWallIds.forEach(wallId => {
       const wall = store.walls.get(wallId)
-      if (wall != null) {
+      if (wall) {
         const roomSide = this.engine.determineRoomSide(definition.outerBoundary, wall)
         if (roomSide === 'left') {
           store.updateWallLeftRoom(wallId, room.id)
@@ -358,7 +471,7 @@ export class RoomDetectionService implements IRoomDetectionService {
       // Update hole walls with room assignments
       hole.wallIds.forEach(wallId => {
         const wall = store.walls.get(wallId)
-        if (wall != null) {
+        if (wall) {
           const roomSide = this.engine.determineRoomSide({ pointIds: hole.pointIds, wallIds: hole.wallIds }, wall)
           // Holes are counter-clockwise, so sides are inverted
           if (roomSide === 'right') {
