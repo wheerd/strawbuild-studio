@@ -150,16 +150,16 @@ describe('RoomDetectionService', () => {
 
     it('should generate unique room names following Room {number} pattern', () => {
       // Create the wall that the existing room will reference
-      const existingWall: Wall = { 
-        id: 'existing-wall' as WallId, 
-        startPointId: points[1][1].id, 
-        endPointId: points[1][2].id, 
-        floorId, 
-        thickness: createLength(400), 
-        type: 'other' 
+      const existingWall: Wall = {
+        id: 'existing-wall' as WallId,
+        startPointId: points[1][1].id,
+        endPointId: points[1][2].id,
+        floorId,
+        thickness: createLength(400),
+        type: 'other'
       }
       store.walls.set(existingWall.id, existingWall)
-      
+
       // Manually add a room with name "Room 1"
       const existingRoom = {
         id: 'existing-room' as RoomId,

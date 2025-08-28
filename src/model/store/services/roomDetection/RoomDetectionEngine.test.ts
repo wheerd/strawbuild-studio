@@ -1,13 +1,25 @@
+import { describe, test, expect, beforeEach } from 'vitest'
 import { RoomDetectionEngine } from './RoomDetectionEngine'
-import { createPoint2D } from '@/types/geometry'
+import { createPoint2D, createLength } from '@/types/geometry'
 import type { RoomDetectionGraph, WallLoopTrace, RoomDefinition } from './types'
-import { createPointId, createWallId } from '@/types/ids'
+import { createPointId, createWallId, type FloorId, type PointId, type WallId } from '@/types/ids'
+import type { Wall } from '@/types/model'
 
 describe('RoomDetectionEngine', () => {
   let engine: RoomDetectionEngine
 
   beforeEach(() => {
     engine = new RoomDetectionEngine()
+  })
+
+  // Helper function to create a wall with default properties
+  const createTestWall = (id: WallId, startPointId: PointId, endPointId: PointId): Wall => ({
+    id,
+    startPointId,
+    endPointId,
+    floorId: 'floor1' as FloorId,
+    thickness: createLength(400),
+    type: 'other'
   })
 
   describe('createRoomFromLoop', () => {
@@ -466,19 +478,8 @@ describe('RoomDetectionEngine', () => {
         wallIds: [wallId, createWallId(), createWallId()]
       }
 
-      const graph: RoomDetectionGraph = {
-        points: new Map([
-          [p1, createPoint2D(0, 0)],
-          [p2, createPoint2D(10, 0)],
-          [p3, createPoint2D(5, 10)]
-        ]),
-        edges: new Map(),
-        walls: new Map([
-          [wallId, { startPointId: p2, endPointId: p1 }] // Reverse direction
-        ])
-      }
-
-      const result = engine.determineRoomSide(boundary, wallId, graph)
+      const wall = createTestWall(wallId, p2, p1)
+      const result = engine.determineRoomSide(boundary, wall)
       expect(result).toBe('right')
     })
 
@@ -493,23 +494,12 @@ describe('RoomDetectionEngine', () => {
         wallIds: [wallId, createWallId(), createWallId()]
       }
 
-      const graph: RoomDetectionGraph = {
-        points: new Map([
-          [p1, createPoint2D(0, 0)],
-          [p2, createPoint2D(10, 0)],
-          [p3, createPoint2D(5, 10)]
-        ]),
-        edges: new Map(),
-        walls: new Map([
-          [wallId, { startPointId: p1, endPointId: p2 }]
-        ])
-      }
-
-      const result = engine.determineRoomSide(boundary, wallId, graph)
+      const wall = createTestWall(wallId, p1, p2)
+      const result = engine.determineRoomSide(boundary, wall)
       expect(result).toBe('left')
     })
 
-    test('should return left for insufficient data', () => {
+    test('should throw error for insufficient boundary data', () => {
       const p1 = createPointId()
       const p2 = createPointId()
       const wallId = createWallId()
@@ -519,14 +509,9 @@ describe('RoomDetectionEngine', () => {
         wallIds: [wallId]
       }
 
-      const graph: RoomDetectionGraph = {
-        points: new Map(),
-        edges: new Map(),
-        walls: new Map()
-      }
+      const wall = createTestWall(wallId, p1, p2)
 
-      const result = engine.determineRoomSide(boundary, wallId, graph)
-      expect(result).toBe('left')
+      expect(() => engine.determineRoomSide(boundary, wall)).toThrow('Invalid boundary, must have at least 3 points')
     })
   })
 

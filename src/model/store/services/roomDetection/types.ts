@@ -19,8 +19,8 @@ export interface RoomBoundaryDefinition {
 // Definition of a room (before it becomes a Room entity)
 export interface RoomDefinition {
   name: string
-  outerBoundary: RoomBoundaryDefinition
-  holes: RoomBoundaryDefinition[]
+  outerBoundary: RoomBoundaryDefinition // clockwise order of points
+  holes: RoomBoundaryDefinition[] // counter-clockwise order of points
   interiorWallIds: WallId[] // Walls inside the room that don't form boundaries
 }
 

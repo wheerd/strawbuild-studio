@@ -1,6 +1,6 @@
 import type { WallId, PointId } from '@/types/ids'
 import type { Point2D, Polygon2D } from '@/types/geometry'
-import { createPoint2D, direction, isPointInPolygon } from '@/types/geometry'
+import { isPointInPolygon } from '@/types/geometry'
 import {
   type WallLoopTrace,
   type RoomSide,
@@ -8,6 +8,7 @@ import {
   type RoomBoundaryDefinition,
   type RoomDetectionGraph
 } from './types'
+import type { Wall } from '@/types/model'
 
 /**
  * Core engine for room detection algorithms
@@ -221,38 +222,32 @@ export class RoomDetectionEngine {
     return { points }
   }
 
-  /**
-   * Determine which side of a wall a room should be on based on room geometry
-   */
-  determineRoomSide (boundary: RoomBoundaryDefinition, wallId: WallId, graph: RoomDetectionGraph): RoomSide {
-    const wall = graph.walls.get(wallId)
-    if (boundary.pointIds.length < 3 || wall === undefined) {
-      return 'left'
+  determineRoomSide (boundary: RoomBoundaryDefinition, wall: Wall): RoomSide {
+    if (boundary.pointIds.length < 3) {
+      throw new Error('Invalid boundary, must have at least 3 points')
     }
 
-    // Calculate centroid of the boundary
-    let centroidX = 0
-    let centroidY = 0
-    for (const pointId of boundary.pointIds) {
-      const point = graph.points.get(pointId)
-      if (point != null) {
-        centroidX += point.x
-        centroidY += point.y
-      }
+    if (boundary.wallIds.indexOf(wall.id) === -1) {
+      throw new Error('Wall is not part of the boundary')
     }
-    centroidX /= boundary.pointIds.length
-    centroidY /= boundary.pointIds.length
-    const centroid = createPoint2D(centroidX, centroidY)
 
-    const wallStart = graph.points.get(wall.startPointId)
-    const wallEnd = graph.points.get(wall.endPointId)
-    if (wallStart == null || wallEnd == null) {
-      return 'left'
+    const startIndex = boundary.pointIds.indexOf(wall.startPointId)
+    const endIndex = boundary.pointIds.indexOf(wall.endPointId)
+
+    if (startIndex === -1 || endIndex === -1) {
+      throw new Error('Wall endpoints not in boundary')
     }
-    const wallVector = direction(wallStart, wallEnd)
-    const toCentroidVector = direction(wallStart, centroid)
-    const crossProduct = wallVector.x * toCentroidVector.y - wallVector.y * toCentroidVector.x
-    return crossProduct > 0 ? 'left' : 'right'
+
+    // Because boundary points are in clockwise order:
+    if (startIndex === (endIndex + 1) % boundary.pointIds.length) {
+      // Wall direction matches boundary direction
+      return 'right'
+    } else if (endIndex === (startIndex + 1) % boundary.pointIds.length) {
+      // Wall direction is opposite to boundary direction
+      return 'left'
+    } else {
+      throw new Error('Invalid wall endpoints for boundary')
+    }
   }
 
   /**

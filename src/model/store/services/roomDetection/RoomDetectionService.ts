@@ -141,12 +141,12 @@ export class RoomDetectionService implements IRoomDetectionService {
     if (affectedRooms.length > 0) {
       // Clean up references from affected rooms before re-detection
       this.cleanupRoomReferences(affectedRooms.map(room => room.id))
-      
+
       // Remove affected rooms
       affectedRooms.forEach(room => {
         store.removeRoom(room.id)
       })
-      
+
       // Trigger full room detection for the floor
       this.detectRooms(floorId)
     }
@@ -161,15 +161,16 @@ export class RoomDetectionService implements IRoomDetectionService {
     if (wall == null) return
 
     // Check if adding this wall affects existing rooms (might split them)
-    const existingRooms = store.getRoomsByFloor(floorId)
+    const existingRooms = Array.from(store.rooms.values())
+      .filter(room => room.floorId === floorId)
 
     const affectedRooms = existingRooms.filter(room => {
       // Check if the new wall might be inside this room or affect its boundary
       const wallStartPoint = store.points.get(wall.startPointId)
       const wallEndPoint = store.points.get(wall.endPointId)
-      
+
       if (wallStartPoint == null || wallEndPoint == null) return false
-      
+
       // Simple check: if either endpoint of the new wall is associated with this room
       return wallStartPoint.roomIds.has(room.id) || wallEndPoint.roomIds.has(room.id)
     })
@@ -180,7 +181,7 @@ export class RoomDetectionService implements IRoomDetectionService {
       affectedRooms.forEach(room => {
         store.removeRoom(room.id)
       })
-      
+
       // Trigger full room detection for the floor
       this.detectRooms(floorId)
     } else {
@@ -333,20 +334,22 @@ export class RoomDetectionService implements IRoomDetectionService {
     })
 
     // Update walls with room assignments (determine which side of each wall the room is on)
-    const graph = this.buildRoomDetectionGraph(floorId)
     outerWallIds.forEach(wallId => {
-      const roomSide = this.engine.determineRoomSide(definition.outerBoundary, wallId, graph)
-      if (roomSide === 'left') {
-        store.updateWallLeftRoom(wallId, room.id)
-      } else {
-        store.updateWallRightRoom(wallId, room.id)
+      const wall = store.walls.get(wallId)
+      if (wall != null) {
+        const roomSide = this.engine.determineRoomSide(definition.outerBoundary, wall)
+        if (roomSide === 'left') {
+          store.updateWallLeftRoom(wallId, room.id)
+        } else {
+          store.updateWallRightRoom(wallId, room.id)
+        }
       }
     })
 
     // Add holes if any exist
     definition.holes.forEach((hole: { pointIds: PointId[], wallIds: WallId[] }) => {
       store.addHoleToRoom(room.id, hole.pointIds, hole.wallIds)
-      
+
       // Update hole points with room IDs
       hole.pointIds.forEach(pointId => {
         store.addRoomToPoint(pointId, room.id)
@@ -354,11 +357,15 @@ export class RoomDetectionService implements IRoomDetectionService {
 
       // Update hole walls with room assignments
       hole.wallIds.forEach(wallId => {
-        const roomSide = this.engine.determineRoomSide({ pointIds: hole.pointIds, wallIds: hole.wallIds }, wallId, graph)
-        if (roomSide === 'left') {
-          store.updateWallLeftRoom(wallId, room.id)
-        } else {
-          store.updateWallRightRoom(wallId, room.id)
+        const wall = store.walls.get(wallId)
+        if (wall != null) {
+          const roomSide = this.engine.determineRoomSide({ pointIds: hole.pointIds, wallIds: hole.wallIds }, wall)
+          // Holes are counter-clockwise, so sides are inverted
+          if (roomSide === 'right') {
+            store.updateWallLeftRoom(wallId, room.id)
+          } else {
+            store.updateWallRightRoom(wallId, room.id)
+          }
         }
       })
     })
