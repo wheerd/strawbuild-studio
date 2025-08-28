@@ -1,4 +1,4 @@
-import type { WallId, FloorId, PointId } from '@/types/ids'
+import type { WallId, FloorId, PointId, RoomId } from '@/types/ids'
 import type { Point2D } from '@/types/geometry'
 import type { StoreState, StoreActions } from '../../types'
 import { useModelStore } from '../..'
@@ -139,6 +139,14 @@ export class RoomDetectionService implements IRoomDetectionService {
       )
 
     if (affectedRooms.length > 0) {
+      // Clean up references from affected rooms before re-detection
+      this.cleanupRoomReferences(affectedRooms.map(room => room.id))
+      
+      // Remove affected rooms
+      affectedRooms.forEach(room => {
+        store.removeRoom(room.id)
+      })
+      
       // Trigger full room detection for the floor
       this.detectRooms(floorId)
     }
@@ -152,21 +160,50 @@ export class RoomDetectionService implements IRoomDetectionService {
 
     if (wall == null) return
 
-    // Check if adding this wall creates new room boundaries
-    const graph = this.buildRoomDetectionGraph(floorId)
-    const loops = this.engine.findMinimalWallLoops(graph)
+    // Check if adding this wall affects existing rooms (might split them)
+    const existingRooms = store.getRoomsByFloor(floorId)
 
-    // Look for new loops that include the added wall
-    const newLoops = loops.filter(loop => loop.wallIds.includes(addedWallId))
-
-    newLoops.forEach((loop, index) => {
-      const roomName = `Room ${Date.now()}-${index}`
-      const roomDefinition = this.engine.createRoomFromLoop(loop, roomName, graph)
-
-      if (roomDefinition != null) {
-        this.createRoomFromDefinition(roomDefinition, floorId)
-      }
+    const affectedRooms = existingRooms.filter(room => {
+      // Check if the new wall might be inside this room or affect its boundary
+      const wallStartPoint = store.points.get(wall.startPointId)
+      const wallEndPoint = store.points.get(wall.endPointId)
+      
+      if (wallStartPoint == null || wallEndPoint == null) return false
+      
+      // Simple check: if either endpoint of the new wall is associated with this room
+      return wallStartPoint.roomIds.has(room.id) || wallEndPoint.roomIds.has(room.id)
     })
+
+    if (affectedRooms.length > 0) {
+      // Clean up affected rooms and re-detect
+      this.cleanupRoomReferences(affectedRooms.map(room => room.id))
+      affectedRooms.forEach(room => {
+        store.removeRoom(room.id)
+      })
+      
+      // Trigger full room detection for the floor
+      this.detectRooms(floorId)
+    } else {
+      // Check if adding this wall creates new room boundaries
+      const graph = this.buildRoomDetectionGraph(floorId)
+      const loops = this.engine.findMinimalWallLoops(graph)
+
+      // Look for new loops that include the added wall
+      const newLoops = loops.filter(loop => loop.wallIds.includes(addedWallId))
+
+      // Get existing rooms to avoid duplicates and generate proper names
+      const existingRoomsAfterCheck = Array.from(store.rooms.values())
+        .filter(room => room.floorId === floorId)
+
+      newLoops.forEach((loop) => {
+        const roomName = this.generateUniqueRoomName(existingRoomsAfterCheck, [])
+        const roomDefinition = this.engine.createRoomFromLoop(loop, roomName, graph)
+
+        if (roomDefinition != null) {
+          this.createRoomFromDefinition(roomDefinition, floorId)
+        }
+      })
+    }
   }
 
   /**
@@ -251,6 +288,33 @@ export class RoomDetectionService implements IRoomDetectionService {
   }
 
   /**
+   * Clean up room references from walls and points
+   */
+  private cleanupRoomReferences (roomIds: RoomId[]): void {
+    const store = this.get()
+    const roomIdSet = new Set(roomIds)
+
+    // Clean up wall room references
+    for (const wall of store.walls.values()) {
+      if (wall.leftRoomId != null && roomIdSet.has(wall.leftRoomId)) {
+        store.updateWallLeftRoom(wall.id, null)
+      }
+      if (wall.rightRoomId != null && roomIdSet.has(wall.rightRoomId)) {
+        store.updateWallRightRoom(wall.id, null)
+      }
+    }
+
+    // Clean up point room references
+    for (const point of store.points.values()) {
+      for (const roomId of roomIds) {
+        if (point.roomIds.has(roomId)) {
+          store.removeRoomFromPoint(point.id, roomId)
+        }
+      }
+    }
+  }
+
+  /**
    * Create a room in the store from a room definition
    */
   private createRoomFromDefinition (definition: RoomDefinition, floorId: FloorId): void {
@@ -263,9 +327,40 @@ export class RoomDetectionService implements IRoomDetectionService {
     // Add the room using the store action
     const room = store.addRoom(floorId, definition.name, outerPointIds, outerWallIds)
 
+    // Update points with room IDs
+    outerPointIds.forEach(pointId => {
+      store.addRoomToPoint(pointId, room.id)
+    })
+
+    // Update walls with room assignments (determine which side of each wall the room is on)
+    const graph = this.buildRoomDetectionGraph(floorId)
+    outerWallIds.forEach(wallId => {
+      const roomSide = this.engine.determineRoomSide(definition.outerBoundary, wallId, graph)
+      if (roomSide === 'left') {
+        store.updateWallLeftRoom(wallId, room.id)
+      } else {
+        store.updateWallRightRoom(wallId, room.id)
+      }
+    })
+
     // Add holes if any exist
     definition.holes.forEach((hole: { pointIds: PointId[], wallIds: WallId[] }) => {
       store.addHoleToRoom(room.id, hole.pointIds, hole.wallIds)
+      
+      // Update hole points with room IDs
+      hole.pointIds.forEach(pointId => {
+        store.addRoomToPoint(pointId, room.id)
+      })
+
+      // Update hole walls with room assignments
+      hole.wallIds.forEach(wallId => {
+        const roomSide = this.engine.determineRoomSide({ pointIds: hole.pointIds, wallIds: hole.wallIds }, wallId, graph)
+        if (roomSide === 'left') {
+          store.updateWallLeftRoom(wallId, room.id)
+        } else {
+          store.updateWallRightRoom(wallId, room.id)
+        }
+      })
     })
 
     // Add interior walls if any exist

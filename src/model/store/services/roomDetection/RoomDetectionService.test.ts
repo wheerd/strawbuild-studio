@@ -36,7 +36,39 @@ describe('RoomDetectionService', () => {
         store.rooms.delete(roomId)
       }),
       addHoleToRoom: vi.fn(),
-      addInteriorWallToRoom: vi.fn()
+      addInteriorWallToRoom: vi.fn(),
+      addRoomToPoint: vi.fn((pointId: PointId, roomId: RoomId) => {
+        const point = store.points.get(pointId)
+        if (point != null) {
+          point.roomIds.add(roomId)
+        }
+      }),
+      removeRoomFromPoint: vi.fn((pointId: PointId, roomId: RoomId) => {
+        const point = store.points.get(pointId)
+        if (point != null) {
+          point.roomIds.delete(roomId)
+        }
+      }),
+      updateWallLeftRoom: vi.fn((wallId: WallId, roomId: RoomId | null) => {
+        const wall = store.walls.get(wallId)
+        if (wall != null) {
+          if (roomId != null) {
+            (wall as any).leftRoomId = roomId
+          } else {
+            delete (wall as any).leftRoomId
+          }
+        }
+      }),
+      updateWallRightRoom: vi.fn((wallId: WallId, roomId: RoomId | null) => {
+        const wall = store.walls.get(wallId)
+        if (wall != null) {
+          if (roomId != null) {
+            (wall as any).rightRoomId = roomId
+          } else {
+            delete (wall as any).rightRoomId
+          }
+        }
+      })
     } as any
 
     service = new RoomDetectionService(() => store as any, (partial) => { Object.assign(store, partial) })
@@ -117,6 +149,17 @@ describe('RoomDetectionService', () => {
     })
 
     it('should generate unique room names following Room {number} pattern', () => {
+      // Create the wall that the existing room will reference
+      const existingWall: Wall = { 
+        id: 'existing-wall' as WallId, 
+        startPointId: points[1][1].id, 
+        endPointId: points[1][2].id, 
+        floorId, 
+        thickness: createLength(400), 
+        type: 'other' 
+      }
+      store.walls.set(existingWall.id, existingWall)
+      
       // Manually add a room with name "Room 1"
       const existingRoom = {
         id: 'existing-room' as RoomId,
