@@ -17,7 +17,7 @@ export class RoomDetectionEngine {
   /**
    * Find all minimal wall loops (potential rooms) on a floor
    */
-  findMinimalWallLoops(graph: RoomDetectionGraph): WallLoopTrace[] {
+  findMinimalWallLoops (graph: RoomDetectionGraph): WallLoopTrace[] {
     const loops: WallLoopTrace[] = []
     const processedEdges = new Set<string>()
 
@@ -48,7 +48,7 @@ export class RoomDetectionEngine {
    * Trace a wall loop starting from a given wall in a specific direction
    * Uses DFS with smallest angle selection to find minimal cycles
    */
-  traceWallLoop(startPointId: PointId, endPointId: PointId, graph: RoomDetectionGraph): WallLoopTrace | null {
+  traceWallLoop (startPointId: PointId, endPointId: PointId, graph: RoomDetectionGraph): WallLoopTrace | null {
     const visited = new Set<PointId>()
     const wallsUsed = new Set<WallId>()
     const pointPath: PointId[] = [startPointId, endPointId]
@@ -81,7 +81,7 @@ export class RoomDetectionEngine {
   /**
    * DFS helper function for tracing wall loops
    */
-  private dfsTraceLoop(
+  private dfsTraceLoop (
     currentPoint: PointId,
     targetPoint: PointId,
     graph: RoomDetectionGraph,
@@ -158,7 +158,7 @@ export class RoomDetectionEngine {
   /**
    * Sort edges by angle from the previous direction, selecting smallest angles first
    */
-  private sortEdgesByAngle(
+  private sortEdgesByAngle (
     currentPoint: PointId,
     pointPath: PointId[],
     graph: RoomDetectionGraph,
@@ -210,7 +210,7 @@ export class RoomDetectionEngine {
     return edgesWithAngles.map(item => item.edge)
   }
 
-  toPolygon(traceWallLoop: WallLoopTrace, graph: RoomDetectionGraph): Polygon2D {
+  toPolygon (traceWallLoop: WallLoopTrace, graph: RoomDetectionGraph): Polygon2D {
     const points: Point2D[] = []
     for (const pointId of traceWallLoop.pointIds) {
       const point = graph.points.get(pointId)
@@ -224,7 +224,7 @@ export class RoomDetectionEngine {
   /**
    * Determine which side of a wall a room should be on based on room geometry
    */
-  determineRoomSide(boundary: RoomBoundaryDefinition, wallId: WallId, graph: RoomDetectionGraph): RoomSide {
+  determineRoomSide (boundary: RoomBoundaryDefinition, wallId: WallId, graph: RoomDetectionGraph): RoomSide {
     const wall = graph.walls.get(wallId)
     if (boundary.pointIds.length < 3 || wall === undefined) {
       return 'left'
@@ -258,7 +258,7 @@ export class RoomDetectionEngine {
   /**
    * Create a room definition from a wall loop
    */
-  createRoomFromLoop(loop: WallLoopTrace, name: string, _graph: RoomDetectionGraph): RoomDefinition | null {
+  createRoomFromLoop (loop: WallLoopTrace, name: string, _graph: RoomDetectionGraph): RoomDefinition | null {
     if (loop.pointIds.length < 3 || loop.wallIds.length < 3) {
       return null
     }
@@ -279,7 +279,7 @@ export class RoomDetectionEngine {
   /**
    * Create a complete room definition with holes from multiple wall loops
    */
-  createRoomWithHoles(outer: WallLoopTrace, holes: WallLoopTrace[], name: string, _graph: RoomDetectionGraph): RoomDefinition | null {
+  createRoomWithHoles (outer: WallLoopTrace, holes: WallLoopTrace[], name: string, _graph: RoomDetectionGraph): RoomDefinition | null {
     if (outer.pointIds.length < 3 || outer.wallIds.length < 3) {
       return null
     }
@@ -305,7 +305,7 @@ export class RoomDetectionEngine {
   /**
    * Check if one wall loop is completely inside another
    */
-  isLoopInsideLoop(outer: WallLoopTrace, inner: WallLoopTrace, graph: RoomDetectionGraph): boolean {
+  isLoopInsideLoop (outer: WallLoopTrace, inner: WallLoopTrace, graph: RoomDetectionGraph): boolean {
     const outerPolygon = this.toPolygon(outer, graph)
 
     // Check if all points of the inner loop are inside the outer polygon
@@ -322,7 +322,7 @@ export class RoomDetectionEngine {
   /**
    * Identify interior walls that are completely inside a room
    */
-  findInteriorWalls(roomDefinition: RoomDefinition, graph: RoomDetectionGraph): WallId[] {
+  findInteriorWalls (roomDefinition: RoomDefinition, graph: RoomDetectionGraph): WallId[] {
     const interiorWalls: WallId[] = []
     const boundaryWallIds = new Set([
       ...roomDefinition.outerBoundary.wallIds,
