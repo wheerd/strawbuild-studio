@@ -3,6 +3,7 @@ import type { Wall, Room, Point, Corner } from '@/types/model'
 import type { SnapResult } from '@/model/store/services/snapping/types'
 import type Konva from 'konva'
 import type { EntityId, FloorId, PointId, StoreActions } from '@/model'
+import type React from 'react'
 
 export interface BaseTool {
   id: string
@@ -35,11 +36,38 @@ export interface Tool extends BaseTool {
 
   // Context actions - tools can get selected entity from context if needed
   getContextActions?(context: ToolContext): ContextAction[]
+
+  // Overlay rendering - tools can render custom preview overlays
+  renderOverlay?(context: ToolOverlayContext): React.ReactNode
 }
 
 export interface ToolInspectorProps {
   tool: Tool
   onPropertyChange: (property: string, value: any) => void
+}
+
+export interface ToolOverlayContext {
+  // Tool context for accessing model and state
+  toolContext: ToolContext
+
+  // Viewport information for coordinate calculations
+  viewport: {
+    zoom: number
+    panX: number
+    panY: number
+    stageWidth: number
+    stageHeight: number
+  }
+
+  // Current mouse/snap state
+  currentMousePos?: Point2D
+  snapResult?: SnapResult
+  snapTarget?: Point2D
+
+  // Utility functions for common overlay calculations
+  worldToStage: (worldPos: Point2D) => Point2D
+  stageToWorld: (stagePos: Point2D) => Point2D
+  getInfiniteLineExtent: () => number // For snap lines that span the canvas
 }
 
 export interface ContextAction {

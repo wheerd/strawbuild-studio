@@ -6,7 +6,7 @@ import { useToolContext, useToolManager } from '@/components/FloorPlanEditor/Too
 import { useCanvasEventDispatcher } from '@/components/FloorPlanEditor/Tools/EventHandlers/CanvasEventDispatcher'
 import { GridLayer } from './GridLayer'
 import { WallLayer } from './WallLayer'
-import { WallPreviewLayer } from './WallPreviewLayer'
+import { ToolOverlayLayer } from './ToolOverlayLayer'
 import { PointLayer } from './PointLayer'
 import { RoomLayer } from './RoomLayer'
 import { CornerLayer } from './CornerLayer'
@@ -156,9 +156,6 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
     }
   }, [eventDispatcher])
 
-  // Get wall drawing state for preview (simplified)
-  const wallDrawingStart = useEditorStore(state => state.wallDrawingStart)
-
   return (
     <Stage
       ref={stageRef}
@@ -183,7 +180,7 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
       <WallLayer />
       <CornerLayer />
       <PointLayer />
-      <WallPreviewLayer wallDrawingStart={wallDrawingStart ?? null} stageWidth={width} stageHeight={height} />
+      <ToolOverlayLayer />
     </Stage>
   )
 }

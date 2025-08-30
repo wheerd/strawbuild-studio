@@ -1,6 +1,8 @@
-import type { Tool, ToolContext, ContextAction, CanvasEvent } from '../../ToolSystem/types'
+import type { Tool, ToolContext, ContextAction, CanvasEvent, ToolOverlayContext } from '../../ToolSystem/types'
 import type { Point2D } from '@/types/geometry'
 import { distanceSquared, createLength } from '@/types/geometry'
+import React from 'react'
+import { Line, Circle, Text } from 'react-konva'
 
 export interface StructuralWallToolState {
   isDrawing: boolean
@@ -178,6 +180,122 @@ export class StructuralWallTool implements Tool {
 
   setMaterial(material: string): void {
     this.state.material = material
+  }
+
+  renderOverlay(context: ToolOverlayContext): React.ReactNode {
+    if (!this.state.isDrawing || !this.state.startPoint) {
+      return null
+    }
+
+    // Use preview end point from tool state, fallback to current snap position
+    const endPoint =
+      this.state.previewEndPoint || context.snapResult?.position || context.snapTarget || context.currentMousePos
+
+    if (!endPoint) return null
+
+    return React.createElement(
+      React.Fragment,
+      null,
+      // Main wall preview line
+      React.createElement(Line, {
+        points: [this.state.startPoint.x, this.state.startPoint.y, endPoint.x, endPoint.y],
+        stroke: '#007acc',
+        strokeWidth: this.state.thickness,
+        opacity: 0.6,
+        dash: [20, 15],
+        listening: false
+      }),
+
+      // Wall thickness indicators
+      this.renderThicknessIndicators(this.state.startPoint, endPoint),
+
+      // End point snap indicator
+      React.createElement(Circle, {
+        x: endPoint.x,
+        y: endPoint.y,
+        radius: 15,
+        fill: '#007acc',
+        stroke: '#ffffff',
+        strokeWidth: 3,
+        opacity: 0.8,
+        listening: false
+      }),
+
+      // Start point indicator
+      React.createElement(Circle, {
+        x: this.state.startPoint.x,
+        y: this.state.startPoint.y,
+        radius: 12,
+        fill: '#ff6600',
+        stroke: '#ffffff',
+        strokeWidth: 3,
+        opacity: 0.8,
+        listening: false
+      }),
+
+      // Wall length text
+      this.renderLengthLabel(this.state.startPoint, endPoint)
+    )
+  }
+
+  private renderThicknessIndicators(startPoint: Point2D, endPoint: Point2D): React.ReactNode {
+    // Calculate perpendicular vector for thickness
+    const dx = endPoint.x - startPoint.x
+    const dy = endPoint.y - startPoint.y
+    const length = Math.sqrt(dx * dx + dy * dy)
+
+    if (length === 0) return null
+
+    // Normalize and get perpendicular
+    const perpX = (-dy / length) * (this.state.thickness / 2)
+    const perpY = (dx / length) * (this.state.thickness / 2)
+
+    return React.createElement(
+      React.Fragment,
+      null,
+      // Top edge of wall
+      React.createElement(Line, {
+        points: [startPoint.x + perpX, startPoint.y + perpY, endPoint.x + perpX, endPoint.y + perpY],
+        stroke: '#007acc',
+        strokeWidth: 3,
+        opacity: 0.4,
+        dash: [10, 5],
+        listening: false
+      }),
+
+      // Bottom edge of wall
+      React.createElement(Line, {
+        points: [startPoint.x - perpX, startPoint.y - perpY, endPoint.x - perpX, endPoint.y - perpY],
+        stroke: '#007acc',
+        strokeWidth: 3,
+        opacity: 0.4,
+        dash: [10, 5],
+        listening: false
+      })
+    )
+  }
+
+  private renderLengthLabel(startPoint: Point2D, endPoint: Point2D): React.ReactNode {
+    const length = Math.sqrt(Math.pow(endPoint.x - startPoint.x, 2) + Math.pow(endPoint.y - startPoint.y, 2))
+
+    const midX = (startPoint.x + endPoint.x) / 2
+    const midY = (startPoint.y + endPoint.y) / 2
+
+    return React.createElement(Text, {
+      x: midX,
+      y: midY - 25,
+      text: `${(length / 1000).toFixed(2)}m`,
+      fontSize: 24,
+      fill: '#007acc',
+      fontFamily: 'monospace',
+      fontStyle: 'bold',
+      align: 'center',
+      listening: false,
+      shadowColor: '#ffffff',
+      shadowBlur: 8,
+      shadowOffsetX: 0,
+      shadowOffsetY: 0
+    })
   }
 
   // Helper methods
