@@ -73,7 +73,7 @@
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: #495057;
+  color: #333333;
 }
 
 .panel-content {
@@ -97,7 +97,7 @@
 .no-selection {
   padding: 20px;
   text-align: center;
-  color: #6c757d;
+  color: #666666;
 }
 
 .no-selection p {
@@ -106,7 +106,7 @@
 
 .help-text {
   font-size: 14px;
-  opacity: 0.8;
+  color: #666666;
 }
 
 .unknown-entity {

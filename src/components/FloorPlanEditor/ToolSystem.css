@@ -439,7 +439,7 @@
 
 .help-text {
   font-size: 12px;
-  opacity: 0.7;
+  color: #666666;
   margin-top: 8px;
 }
 
@@ -451,6 +451,8 @@
   border: 1px solid #eee;
   border-radius: 4px;
   margin-bottom: 16px;
+  background-color: #ffffff;
+  color: #333333;
 }
 
 .inspector-header {
@@ -487,6 +489,7 @@
   margin: 0;
   font-size: 14px;
   font-weight: 600;
+  color: #333333;
 }
 
 .inspector-content {
@@ -515,7 +518,7 @@
   margin-bottom: 4px;
   font-size: 12px;
   font-weight: 500;
-  color: #333;
+  color: #333333;
 }
 
 .property-group input,
@@ -526,6 +529,8 @@
   border: 1px solid #ccc;
   border-radius: 3px;
   font-size: 13px;
+  background-color: #ffffff;
+  color: #333333;
   transition: border-color 0.2s ease;
 }
 
@@ -571,11 +576,13 @@
   background: #f8f9fa;
   border-radius: 3px;
   font-size: 12px;
+  color: #333333;
 }
 
 .measurement-value,
 .stat-value {
   font-weight: 600;
+  color: #333333;
 }
 
 /* Action Buttons */
@@ -607,7 +614,8 @@
   padding: 8px 12px;
   border: 1px solid #ccc;
   border-radius: 3px;
-  background: #fff;
+  background: #ffffff;
+  color: #333333;
   cursor: pointer;
   font-size: 12px;
   transition: all 0.2s ease;
@@ -660,12 +668,15 @@
   border-radius: 4px;
   padding: 16px;
   margin-bottom: 16px;
+  background-color: #ffffff;
+  color: #333333;
 }
 
 .wall-tool-inspector h4 {
   margin: 0 0 16px 0;
   font-size: 14px;
   font-weight: 600;
+  color: #333333;
 }
 
 .preset-buttons {
@@ -678,7 +689,8 @@
   padding: 4px 8px;
   border: 1px solid #ccc;
   border-radius: 3px;
-  background: #fff;
+  background: #ffffff;
+  color: #333333;
   cursor: pointer;
   font-size: 11px;
   transition: all 0.2s ease;
@@ -690,7 +702,7 @@
 
 .input-help {
   font-size: 10px;
-  color: #666;
+  color: #666666;
   margin-top: 4px;
 }
 
@@ -720,7 +732,7 @@
 .drawing-help {
   margin-top: 8px;
   font-size: 11px;
-  color: #666;
+  color: #666666;
 }
 
 .drawing-help p {
