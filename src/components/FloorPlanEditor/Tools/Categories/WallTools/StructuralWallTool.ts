@@ -11,6 +11,7 @@ export interface StructuralWallToolState {
   height: number // mm
   material: string
   previewEndPoint?: Point2D // Tool handles its own preview
+  hoverPoint?: Point2D // Point where mouse is hovering (for start point preview)
 }
 
 export class StructuralWallTool implements Tool {
@@ -40,6 +41,9 @@ export class StructuralWallTool implements Tool {
       // Start drawing wall
       this.state.isDrawing = true
       this.state.startPoint = snapCoords
+      // Clear any previous preview state to avoid artifacts
+      this.state.previewEndPoint = undefined
+      this.state.hoverPoint = undefined
       event.context.updateSnapReference(snapCoords, snapResult?.pointId ?? null)
       return true
     } else if (this.state.startPoint) {
@@ -69,6 +73,8 @@ export class StructuralWallTool implements Tool {
       // Reset state
       this.state.isDrawing = false
       this.state.startPoint = undefined
+      this.state.previewEndPoint = undefined
+      this.state.hoverPoint = undefined
       event.context.clearSnapState()
       return true
     }
@@ -77,15 +83,21 @@ export class StructuralWallTool implements Tool {
   }
 
   handleMouseMove(event: CanvasEvent): boolean {
-    if (!this.state.isDrawing || !this.state.startPoint) return false
-
     const stageCoords = event.stageCoordinates
     const snapResult = event.context.findSnapPoint(stageCoords)
     const snapCoords = snapResult?.position ?? stageCoords
 
-    // Tool handles its own wall preview
-    this.state.previewEndPoint = snapCoords
-    return true
+    if (this.state.isDrawing && this.state.startPoint) {
+      // Update preview end point during drawing
+      this.state.previewEndPoint = snapCoords
+      return true
+    } else {
+      // Update hover point before drawing starts (for start point preview)
+      this.state.hoverPoint = snapCoords
+      // Update snap target for visual feedback
+      event.context.updateSnapTarget(snapCoords)
+      return true
+    }
   }
 
   handleKeyDown(event: CanvasEvent): boolean {
@@ -183,9 +195,27 @@ export class StructuralWallTool implements Tool {
   }
 
   renderOverlay(context: ToolOverlayContext): React.ReactNode {
-    if (!this.state.isDrawing || !this.state.startPoint) {
-      return null
+    // Show hover point indicator when not drawing (for start point preview)
+    if (!this.state.isDrawing) {
+      const hoverPoint =
+        this.state.hoverPoint || context.snapResult?.position || context.snapTarget || context.currentMousePos
+
+      if (!hoverPoint) return null
+
+      return React.createElement(Circle, {
+        x: hoverPoint.x,
+        y: hoverPoint.y,
+        radius: 18,
+        fill: '#007acc',
+        stroke: '#ffffff',
+        strokeWidth: 4,
+        opacity: 0.7,
+        listening: false
+      })
     }
+
+    // Show wall preview when drawing
+    if (!this.state.startPoint) return null
 
     // Use preview end point from tool state, fallback to current snap position
     const endPoint =
