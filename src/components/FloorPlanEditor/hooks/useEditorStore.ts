@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { createPoint2D, type Point2D } from '@/types/geometry'
-import type { FloorId, PointId } from '@/types/ids'
+import type { EntityId, FloorId, PointId } from '@/types/ids'
 import { isPointId, isWallId, isRoomId } from '@/types/ids'
 import { type SnapResult } from '@/model/store/services/snapping'
 
@@ -37,7 +37,7 @@ export interface EditorState {
   gridSize: number
   showRoomLabels: boolean
   activeFloorId: FloorId
-  selectedEntityId?: string
+  selectedEntityId?: EntityId
   viewMode: ViewMode
   viewport: ViewportState
 }
@@ -57,8 +57,8 @@ export interface EditorActions {
   setGridSize: (size: number) => void
   setShowRoomLabels: (show: boolean) => void
   setActiveFloor: (floorId: FloorId) => void
-  setSelectedEntity: (entityId?: string) => void
-  selectEntity: (entityId: string) => void
+  setSelectedEntity: (entityId?: EntityId) => void
+  selectEntity: (entityId: EntityId) => void
   clearSelection: () => void
   deleteSelectedEntity: () => void
   setViewMode: (viewMode: ViewMode) => void
@@ -158,11 +158,11 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
     })
   },
 
-  setSelectedEntity: (entityId?: string) => {
+  setSelectedEntity: (entityId?: EntityId) => {
     set({ selectedEntityId: entityId })
   },
 
-  selectEntity: (entityId: string) => {
+  selectEntity: (entityId: EntityId) => {
     const state = get()
     // Toggle selection - if already selected, deselect; otherwise select
     const selectedEntityId = state.selectedEntityId === entityId ? undefined : entityId

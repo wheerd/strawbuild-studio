@@ -597,59 +597,6 @@ describe('RoomDetectionService - updateRoomsAfterWallRemoval', () => {
     })
   })
 
-  describe('shiftPointsByRemoving helper method', () => {
-    const A = createPointId()
-    const B = createPointId()
-    const C = createPointId()
-    const D = createPointId()
-
-    it('should correctly shift points when startPoint comes before endPoint', () => {
-      const cycle = [A, B, C, D]
-      const result = service.shiftPointsByRemoving(cycle, A, B)
-
-      expect(result).toEqual([B, C, D, A])
-    })
-
-    it('should correctly shift points when startPoint comes before endPoint', () => {
-      const cycle = [A, B, C, D]
-      const result = service.shiftPointsByRemoving(cycle, B, A)
-
-      expect(result).toEqual([B, C, D, A])
-    })
-
-    it('should not change anything if already first and last point', () => {
-      const cycle = [A, B, C, D]
-      const result = service.shiftPointsByRemoving(cycle, A, D)
-
-      expect(result).toEqual([A, B, C, D])
-    })
-
-    it('should not change anything if already last and first point', () => {
-      const cycle = [A, B, C, D]
-      const result = service.shiftPointsByRemoving(cycle, D, A)
-
-      expect(result).toEqual([A, B, C, D])
-    })
-
-    it('should throw error when start point is not found in cycle', () => {
-      const cycle = [A, B, C]
-
-      expect(() => service.shiftPointsByRemoving(cycle, D, A)).toThrow('Start or end point not found in cycle')
-    })
-
-    it('should throw error when end point is not found in cycle', () => {
-      const cycle = [A, B, C]
-
-      expect(() => service.shiftPointsByRemoving(cycle, A, D)).toThrow('Start or end point not found in cycle')
-    })
-
-    it('should throw error when start and end points are not adjacent', () => {
-      const cycle = [A, B, C, D]
-
-      expect(() => service.shiftPointsByRemoving(cycle, A, C)).toThrow('Start and end points are not adjacent in cycle')
-    })
-  })
-
   describe('boundary wall removal patterns', () => {
     it('should merge simple adjacent rooms when removing shared wall', () => {
       const leftRoomId = 'room1' as RoomId

@@ -6,7 +6,7 @@ import { useEditorStore, useActiveFloorId } from '@/components/FloorPlanEditor/h
 import { defaultSnappingService } from '@/model/store/services/snapping/SnappingService'
 import { useSnappingContext } from '@/components/FloorPlanEditor/hooks/useSnappingContext'
 import { createPoint2D, type Point2D } from '@/types/geometry'
-import type { PointId } from '@/types/ids'
+import type { EntityId, PointId } from '@/types/ids'
 import type { SnapResult as ModelSnapResult } from '@/model/store/services/snapping/types'
 
 interface ToolContextProviderProps {
@@ -92,11 +92,12 @@ export function ToolContextProvider({ children }: ToolContextProviderProps): Rea
       clearSnapState,
 
       // Selection management (single entity only)
-      selectEntity: (entityId: string): void => {
-        selectEntity(entityId)
-      },
-
+      selectEntity,
       clearSelection,
+
+      getSelectedEntityId: (): EntityId | null => {
+        return selectedEntityId ?? null
+      },
 
       // Store access (tools use these directly)
       getModelStore: () => modelStore,
@@ -105,10 +106,6 @@ export function ToolContextProvider({ children }: ToolContextProviderProps): Rea
       // State access
       getActiveTool: (): Tool | null => {
         return toolManager.getActiveTool()
-      },
-
-      getSelectedEntityId: (): string | null => {
-        return selectedEntityId ?? null
       },
 
       getViewport: () => viewport

@@ -1,7 +1,8 @@
 import type { Point2D } from '@/types/geometry'
 import type { Wall, Room, Point, Corner } from '@/types/model'
-import type { SnapResult as ModelSnapResult } from '@/model/store/services/snapping/types'
+import type { SnapResult } from '@/model/store/services/snapping/types'
 import type Konva from 'konva'
+import type { EntityId, FloorId, PointId, StoreActions } from '@/model'
 
 export interface BaseTool {
   id: string
@@ -66,21 +67,21 @@ export interface ToolContext {
   getScreenCoordinates(point: Point2D): { x: number; y: number }
 
   // Snapping functionality
-  findSnapPoint(point: Point2D): ModelSnapResult | null
-  updateSnapReference(fromPoint: Point2D | null, fromPointId: string | null): void
+  findSnapPoint(point: Point2D): SnapResult | null
+  updateSnapReference(fromPoint: Point2D | null, fromPointId: PointId | null): void
   updateSnapTarget(target: Point2D): void
   clearSnapState(): void
 
   // Single selection management (much simpler!)
-  selectEntity(entityId: string): void
+  selectEntity(entityId: EntityId): void
   clearSelection(): void
 
   // Store access (tools use these directly)
-  getModelStore(): any // Tools access model store directly
-  getActiveFloorId(): string
+  getModelStore(): StoreActions // Tools access model store directly
+  getActiveFloorId(): FloorId
 
   // State access
   getActiveTool(): Tool | null
-  getSelectedEntityId(): string | null
+  getSelectedEntityId(): EntityId | null
   getViewport(): { zoom: number; panX: number; panY: number; stageWidth: number; stageHeight: number }
 }

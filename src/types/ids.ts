@@ -6,6 +6,8 @@ export type FloorId = string & { readonly brand: unique symbol }
 export type SlabId = string & { readonly brand: unique symbol }
 export type RoofId = string & { readonly brand: unique symbol }
 
+export type EntityId = WallId | PointId | RoomId | FloorId | SlabId | RoofId
+
 // ID generation helpers
 export const createWallId = (): WallId => `wall_${Date.now()}_${Math.random()}` as WallId
 export const createPointId = (): PointId => `point_${Date.now()}_${Math.random()}` as PointId
