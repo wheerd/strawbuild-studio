@@ -29,21 +29,13 @@ export class SelectTool implements Tool {
 
   handleKeyDown(event: CanvasEvent): boolean {
     const keyEvent = event.originalEvent as KeyboardEvent
-    // Handle keyboard shortcuts
-    if (keyEvent.key === 'Delete' || keyEvent.key === 'Backspace') {
-      const selectedId = event.context.getSelectedEntityId()
-      if (selectedId) {
-        // Delete selected entity (would be implemented in context)
-        event.context.clearSelection()
-        return true
-      }
-    }
 
     if (keyEvent.key === 'Escape') {
       event.context.clearSelection()
       return true
     }
 
+    // Don't handle Delete/Backspace here - let the KeyboardShortcutManager handle it
     return false
   }
 

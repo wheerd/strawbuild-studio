@@ -147,7 +147,6 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
         if (!isDrawing) {
           // Start drawing wall - use snapped coordinates which might be an existing point
           setWallDrawingStart(snapCoords)
-          console.log('setting snap reference', stageCoords, snapResult?.pointId ?? null, snapCoords)
           updateSnapReference(snapCoords, snapResult?.pointId ?? null)
           setIsDrawing(true)
         } else if (wallDrawingStart != null) {

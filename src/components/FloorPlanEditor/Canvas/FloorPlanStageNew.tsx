@@ -89,16 +89,7 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
       }
 
       // Route to tool system
-      const handled = eventDispatcher.handleMouseDown(e)
-
-      // If tool didn't handle the event, handle selection
-      if (!handled) {
-        // Only start selection drag when clicking on empty space (Stage or Grid)
-        if (e.target === stage || e.target.getClassName() === 'Stage' || e.target.getClassName() === 'Line') {
-          // Start selection (would be implemented)
-          console.log('Starting selection at', pointer)
-        }
-      }
+      eventDispatcher.handleMouseDown(e)
     },
     [viewport, eventDispatcher]
   )

@@ -25,15 +25,8 @@ export { wallToolGroup } from './Categories/WallTools'
  * Register all available tools - simple and direct
  */
 export function registerAllTools(manager: ToolManager): void {
-  // Register basic tools (Select, Move, Rotate)
   manager.registerToolGroup(basicToolGroup)
-  console.log(`✓ Registered ${basicToolGroup.tools.length} basic tools`)
-
-  // Register wall tools (Structural, Partition, Outer)
   manager.registerToolGroup(wallToolGroup)
-  console.log(`✓ Registered ${wallToolGroup.tools.length} wall tools`)
-
-  console.log(`✓ Total: ${manager.getAllTools().length} tools registered`)
 }
 
 /**
@@ -41,11 +34,7 @@ export function registerAllTools(manager: ToolManager): void {
  */
 export function initializeToolSystem(manager: ToolManager): void {
   registerAllTools(manager)
-
-  // Activate default tool
-  if (manager.activateTool('basic.select')) {
-    console.log('✓ Default tool activated: Select')
-  } else {
+  if (!manager.activateTool('basic.select')) {
     console.warn('✗ Failed to activate default tool')
   }
 }
