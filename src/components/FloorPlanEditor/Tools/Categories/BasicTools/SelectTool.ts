@@ -1,4 +1,4 @@
-import type { EntityId } from '@/model'
+import type { EntityId } from '@/types/ids'
 import type { Tool, ToolContext, Entity, CanvasEvent } from '../../ToolSystem/types'
 import { createLength, type Point2D } from '@/types/geometry'
 

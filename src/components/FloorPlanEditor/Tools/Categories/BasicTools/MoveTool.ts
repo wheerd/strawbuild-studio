@@ -1,3 +1,4 @@
+import type { EntityId } from '@/types/ids'
 import type { Tool, ToolContext, ContextAction, Entity, CanvasEvent } from '../../ToolSystem/types'
 import type { Point2D } from '@/types/geometry'
 import { createAbsoluteOffset, createPoint2D, createLength } from '@/types/geometry'
@@ -218,7 +219,7 @@ export class MoveTool implements Tool {
     this.state.dragStartMousePos = undefined
   }
 
-  private nudgeEntity(entityId: string, deltaX: number, deltaY: number): void {
+  private nudgeEntity(entityId: EntityId, deltaX: number, deltaY: number): void {
     // Implementation for nudging entity by small amounts
     // This would need to be implemented in the model store
     console.log(`Nudging entity ${entityId} by (${deltaX}, ${deltaY})`)
@@ -230,7 +231,8 @@ export class MoveTool implements Tool {
     console.log(`Resetting position for entity:`, entity)
   }
 
-  private getEntityId(entity: Entity): string {
+  private getEntityId(entity: Entity): EntityId {
+    // All entities should have an id, but Corner uses pointId
     if ('id' in entity) {
       return entity.id
     } else if ('pointId' in entity) {

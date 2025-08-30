@@ -1,3 +1,4 @@
+import type { EntityId } from '@/types/ids'
 import type { Tool, ToolContext, ContextAction, Entity, CanvasEvent } from '../../ToolSystem/types'
 import type { Point2D } from '@/types/geometry'
 import { createLength } from '@/types/geometry'
@@ -215,7 +216,8 @@ export class RotateTool implements Tool {
     return false
   }
 
-  private getEntityId(entity: Entity): string {
+  private getEntityId(entity: Entity): EntityId {
+    // All entities should have an id, but Corner uses pointId
     if ('id' in entity) {
       return entity.id
     } else if ('pointId' in entity) {
@@ -268,7 +270,7 @@ export class RotateTool implements Tool {
     this.state.startAngle = undefined
   }
 
-  private quickRotate(entityId: string, degrees: number): void {
+  private quickRotate(entityId: EntityId, degrees: number): void {
     // Quick rotation for selected entity
     console.log(`Quick rotating entity ${entityId} by ${degrees}°`)
   }

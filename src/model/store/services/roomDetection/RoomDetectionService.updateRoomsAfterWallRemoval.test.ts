@@ -8,8 +8,7 @@ import {
   type Wall,
   type WallId,
   type RoomId,
-  type Room,
-  createPointId
+  type Room
 } from '@/model'
 import { createLength, createPoint2D } from '@/types/geometry'
 
