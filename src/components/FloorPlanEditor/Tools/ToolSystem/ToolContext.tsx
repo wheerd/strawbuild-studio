@@ -34,12 +34,30 @@ export function ToolContextProvider({ children }: ToolContextProviderProps): Rea
   const selectEntity = useEditorStore(state => state.selectEntity)
   const clearSelection = useEditorStore(state => state.clearSelection)
   const selectedEntityId = useEditorStore(state => state.selectedEntityId)
+  const setActiveTool = useEditorStore(state => state.setActiveTool)
 
   // Subscribe to tool manager changes
   useEffect(() => {
     const unsubscribe = toolManager.subscribe(setToolManagerState)
     return unsubscribe
   }, [])
+
+  // Sync tool manager state with editor store (for backward compatibility)
+  useEffect(() => {
+    const toolId = toolManagerState.activeToolId
+    if (toolId) {
+      // Map tool manager tool IDs to editor store tool names
+      let editorTool: 'select' | 'wall' | 'room' = 'select'
+      if (toolId.startsWith('basic.select')) {
+        editorTool = 'select'
+      } else if (toolId.startsWith('wall.')) {
+        editorTool = 'wall'
+      } else if (toolId.startsWith('room.')) {
+        editorTool = 'room'
+      }
+      setActiveTool(editorTool)
+    }
+  }, [toolManagerState.activeToolId, setActiveTool])
 
   // Create tool context implementation
   const toolContext = useMemo<IToolContext>(

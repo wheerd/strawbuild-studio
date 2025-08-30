@@ -29,12 +29,24 @@ export class ToolManager {
 
   // Tool registration
   registerTool(tool: Tool): void {
-    this.state.tools.set(tool.id, tool)
+    // Create new state with updated tools map
+    const newTools = new Map(this.state.tools)
+    newTools.set(tool.id, tool)
+    this.state = {
+      ...this.state,
+      tools: newTools
+    }
     this.notifySubscribers()
   }
 
   registerToolGroup(group: ToolGroup): void {
-    this.state.toolGroups.set(group.id, group)
+    // Create new state with updated tool groups map
+    const newToolGroups = new Map(this.state.toolGroups)
+    newToolGroups.set(group.id, group)
+    this.state = {
+      ...this.state,
+      toolGroups: newToolGroups
+    }
     group.tools.forEach(tool => this.registerTool(tool))
     this.notifySubscribers()
   }
@@ -55,9 +67,12 @@ export class ToolManager {
       this.state.activeTool.onDeactivate?.()
     }
 
-    // Activate new tool
-    this.state.activeTool = tool
-    this.state.activeToolId = toolId
+    // Activate new tool - create new state object to trigger React updates
+    this.state = {
+      ...this.state,
+      activeTool: tool,
+      activeToolId: toolId
+    }
     console.log('Activating tool:', tool.name)
     tool.onActivate?.()
 
@@ -69,8 +84,12 @@ export class ToolManager {
   deactivateCurrentTool(): void {
     if (this.state.activeTool) {
       this.state.activeTool.onDeactivate?.()
-      this.state.activeTool = null
-      this.state.activeToolId = null
+      // Create new state object to trigger React updates
+      this.state = {
+        ...this.state,
+        activeTool: null,
+        activeToolId: null
+      }
       this.notifySubscribers()
     }
   }
@@ -174,8 +193,12 @@ export class ToolManager {
 
   reset(): void {
     this.deactivateCurrentTool()
-    this.state.tools.clear()
-    this.state.toolGroups.clear()
+    // Create new state with empty maps
+    this.state = {
+      ...this.state,
+      tools: new Map(),
+      toolGroups: new Map()
+    }
     this.notifySubscribers()
   }
 }
