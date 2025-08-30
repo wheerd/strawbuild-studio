@@ -13,8 +13,9 @@ export function CornerInspector({ corner, onChange }: CornerInspectorProps): Rea
 
   // Get model store functions
   const getWallsAtPoint = useModelStore(state => state.getWallsConnectedToPoint)
-  const getPoint = useModelStore(state => state.points.get.bind(state.points))
-  const getWall = useModelStore(state => state.walls.get.bind(state.walls))
+  const modelStore = useModelStore()
+  const getPoint = useCallback((pointId: string) => modelStore.points.get(pointId as any), [modelStore.points])
+  const getWall = useCallback((wallId: string) => modelStore.walls.get(wallId as any), [modelStore.walls])
 
   // Get corner data
   const cornerData = useMemo(() => {

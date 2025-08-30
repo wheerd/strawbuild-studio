@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import type { Wall, WallType, OutsideDirection } from '@/types/model'
 import { useModelStore } from '@/model/store'
 import { createLength } from '@/types/geometry'
@@ -19,19 +19,40 @@ export function WallInspector({ wall, onChange }: WallInspectorProps): React.JSX
 
   // Get model store data
   const getWallsAtPoint = useModelStore(state => state.getWallsConnectedToPoint)
-  const getPoint = useModelStore(state => state.points.get.bind(state.points))
+  const modelStore = useModelStore()
+  const getPoint = useCallback((pointId: string) => modelStore.points.get(pointId as any), [modelStore.points])
 
   // Calculate corner actions
-  const cornerActions: CornerAction[] = [wall.startPointId, wall.endPointId]
-    .map(pointId => {
-      const connectedWalls = getWallsAtPoint(pointId, wall.floorId)
-      return {
-        pointId,
-        connectedWalls: connectedWalls.map(w => w.id).filter(id => id !== wall.id),
-        canSwitchMainWalls: connectedWalls.length >= 2
+  const cornerActions: CornerAction[] = useMemo(() => {
+    try {
+      if (!wall.startPointId || !wall.endPointId || !wall.floorId) {
+        return []
       }
-    })
-    .filter(action => action.canSwitchMainWalls)
+
+      return [wall.startPointId, wall.endPointId]
+        .map(pointId => {
+          try {
+            const connectedWalls = getWallsAtPoint(pointId, wall.floorId) || []
+            return {
+              pointId,
+              connectedWalls: connectedWalls.map(w => w.id).filter(id => id !== wall.id),
+              canSwitchMainWalls: connectedWalls.length >= 2
+            }
+          } catch (error) {
+            console.error('Error getting walls at point:', pointId, error)
+            return {
+              pointId,
+              connectedWalls: [],
+              canSwitchMainWalls: false
+            }
+          }
+        })
+        .filter(action => action.canSwitchMainWalls)
+    } catch (error) {
+      console.error('Error calculating corner actions:', error)
+      return []
+    }
+  }, [wall.startPointId, wall.endPointId, wall.floorId, wall.id, getWallsAtPoint])
 
   // Material options
   const materialOptions = [
@@ -80,20 +101,29 @@ export function WallInspector({ wall, onChange }: WallInspectorProps): React.JSX
     // Implementation would be added to open corner configuration dialog
   }, [])
 
-  const calculateWallLength = (): string => {
-    const startPoint = getPoint(wall.startPointId)
-    const endPoint = getPoint(wall.endPointId)
+  const calculateWallLength = useCallback((): string => {
+    try {
+      if (!wall.startPointId || !wall.endPointId) {
+        return 'N/A'
+      }
 
-    if (startPoint && endPoint) {
-      const length = Math.hypot(
-        endPoint.position.x - startPoint.position.x,
-        endPoint.position.y - startPoint.position.y
-      )
-      return `${(length / 1000).toFixed(2)} m`
+      const startPoint = getPoint(wall.startPointId)
+      const endPoint = getPoint(wall.endPointId)
+
+      if (startPoint && endPoint && startPoint.position && endPoint.position) {
+        const length = Math.hypot(
+          endPoint.position.x - startPoint.position.x,
+          endPoint.position.y - startPoint.position.y
+        )
+        return `${(length / 1000).toFixed(2)} m`
+      }
+
+      return 'N/A'
+    } catch (error) {
+      console.error('Error calculating wall length:', error)
+      return 'N/A'
     }
-
-    return 'N/A'
-  }
+  }, [wall.startPointId, wall.endPointId, getPoint])
 
   return (
     <div className="wall-inspector">
@@ -129,7 +159,7 @@ export function WallInspector({ wall, onChange }: WallInspectorProps): React.JSX
               <input
                 id="wall-thickness"
                 type="number"
-                value={wall.thickness}
+                value={wall.thickness || 200}
                 onChange={handleThicknessChange}
                 min="50"
                 max="1000"
@@ -175,7 +205,7 @@ export function WallInspector({ wall, onChange }: WallInspectorProps): React.JSX
               </div>
               <div className="measurement">
                 <label>Thickness:</label>
-                <span className="measurement-value">{wall.thickness} mm</span>
+                <span className="measurement-value">{wall.thickness || 0} mm</span>
               </div>
             </div>
           </div>
