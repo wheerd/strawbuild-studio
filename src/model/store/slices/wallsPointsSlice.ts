@@ -1,13 +1,22 @@
 import type { StateCreator } from 'zustand'
-import type { PointId, WallId } from '@/types/ids'
+import type { PointId, WallId, FloorId } from '@/types/ids'
 import type { WallsSlice } from './wallsSlice'
 import type { PointsSlice } from './pointsSlice'
-import { createPoint2D, distance, type Length, type Point2D } from '@/types/geometry'
+import type { Wall } from '@/types/model'
+import {
+  createPoint2D,
+  distance,
+  distanceToLineSegment,
+  type Length,
+  type Point2D,
+  type LineSegment2D
+} from '@/types/geometry'
 
 export interface WallsPointsActions {
   getWallLength: (wallId: WallId) => Length
   mergePoints: (sourcePointId: PointId, targetPointId: PointId) => void
   moveWall: (wallId: WallId, deltaX: Length, deltaY: Length) => void
+  getWallAtPoint: (point: Point2D, floorId: FloorId) => Wall | null
 }
 
 export type WallsPointsSlice = WallsPointsActions
@@ -144,5 +153,29 @@ export const createWallsPointsSlice: StateCreator<WallsSlice & PointsSlice, [], 
     updatedState.points.set(wall.endPointId, updatedEndPoint)
 
     set(updatedState)
+  },
+
+  getWallAtPoint: (point: Point2D, floorId: FloorId): Wall | null => {
+    const state = get()
+    const wallsOnFloor = state.getWallsByFloor(floorId)
+
+    for (const wall of wallsOnFloor) {
+      const startPoint = state.getPointById(wall.startPointId)
+      const endPoint = state.getPointById(wall.endPointId)
+
+      if (!startPoint || !endPoint) continue
+
+      const centerLine: LineSegment2D = {
+        start: startPoint.position,
+        end: endPoint.position
+      }
+
+      const distanceFromCenterLine = distanceToLineSegment(point, centerLine)
+      if (distanceFromCenterLine <= wall.thickness / 2) {
+        return wall
+      }
+    }
+
+    return null
   }
 })

@@ -149,26 +149,10 @@ export class SelectTool implements Tool {
       return nearestPoint as Entity
     }
 
-    // Check walls
-    for (const wall of modelStore.walls.values()) {
-      if (wall.floorId === activeFloorId) {
-        // Simple distance check - could be improved with proper line-to-point distance
-        const startPoint = modelStore.points.get(wall.startPointId)
-        const endPoint = modelStore.points.get(wall.endPointId)
-        if (startPoint && endPoint) {
-          // Simplified wall hit test - should use proper line-to-point distance
-          const distToStart = Math.hypot(point.x - startPoint.position.x, point.y - startPoint.position.y)
-          const distToEnd = Math.hypot(point.x - endPoint.position.x, point.y - endPoint.position.y)
-          const wallLength = Math.hypot(
-            endPoint.position.x - startPoint.position.x,
-            endPoint.position.y - startPoint.position.y
-          )
-
-          if (distToStart + distToEnd <= wallLength + stageTolerance) {
-            return wall as Entity
-          }
-        }
-      }
+    // Check walls using the new getWallAtPoint method
+    const wall = modelStore.getWallAtPoint(point, activeFloorId)
+    if (wall) {
+      return wall as Entity
     }
 
     return null

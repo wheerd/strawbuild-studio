@@ -415,3 +415,29 @@ export function polygonIsClockwise(polygon: Polygon2D): boolean {
 
   return sum > 0
 }
+
+// Calculate the shortest distance from a point to a line segment
+export function distanceToLineSegment(point: Point2D, segment: LineSegment2D): Length {
+  const dx = segment.end.x - segment.start.x
+  const dy = segment.end.y - segment.start.y
+
+  if (dx === 0 && dy === 0) {
+    // Line segment is actually a point
+    return distance(point, segment.start)
+  }
+
+  const lengthSquared = dx * dx + dy * dy
+
+  // Calculate parameter t that represents position along the line segment
+  // t = 0 means segment.start, t = 1 means segment.end
+  let t = ((point.x - segment.start.x) * dx + (point.y - segment.start.y) * dy) / lengthSquared
+
+  // Clamp t to [0, 1] to stay within the line segment
+  t = Math.max(0, Math.min(1, t))
+
+  // Find the closest point on the line segment
+  const closest = createPoint2D(segment.start.x + t * dx, segment.start.y + t * dy)
+
+  // Return distance from point to closest point on line segment
+  return distance(point, closest)
+}
