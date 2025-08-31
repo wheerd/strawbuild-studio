@@ -1,80 +1,191 @@
-import type { Point2D } from '@/types/geometry'
-import { createPoint2D } from '@/types/geometry'
+import type { Point2D, Line2D, Vector2D, Polygon2D } from '@/types/geometry'
+import { createPoint2D, createVector2D, lineIntersection, projectPointOntoLine } from '@/types/geometry'
 import type { Wall, Corner } from '@/types/model'
 
-export interface CornerPolygon {
-  points: Point2D[]
-  mainColor: string
+/**
+ * Simple wall data needed for miter calculation
+ */
+interface WallData {
+  thickness: number
+  direction: Vector2D // Direction vector pointing away from corner
+  leftBoundary: Line2D
+  rightBoundary: Line2D
 }
 
 /**
- * Calculates a simple miter joint polygon for a corner where multiple walls meet.
- * For now, this creates a circular approximation based on the maximum wall thickness.
+ * Calculates proper miter joint polygon for architectural corners.
  */
 export function calculateCornerMiterPolygon(
   corner: Corner,
   walls: Map<string, Wall>,
   points: Map<string, { position: Point2D }>
-): CornerPolygon | null {
-  // Get all walls connected to this corner
-  const connectedWallIds = [corner.wall1Id, corner.wall2Id, ...(corner.otherWallIds || [])]
-
-  if (connectedWallIds.length < 2) {
-    return null // Need at least 2 walls for a corner
-  }
-
+): Polygon2D | null {
   // Get the corner point position
   const cornerPointData = points.get(corner.pointId)
   if (!cornerPointData) return null
   const cornerPoint = cornerPointData.position
 
-  // Find the maximum thickness among connected walls
-  let maxThickness = 0
-  for (const wallId of connectedWallIds) {
-    const wall = walls.get(wallId)
-    if (wall) {
-      maxThickness = Math.max(maxThickness, wall.thickness)
-    }
+  // Get the two main walls
+  const wall1 = walls.get(corner.wall1Id)
+  const wall2 = walls.get(corner.wall2Id)
+  if (!wall1 || !wall2) return null
+
+  // Calculate simplified wall data
+  const wall1Data = calculateWallData(wall1, points, cornerPoint)
+  const wall2Data = calculateWallData(wall2, points, cornerPoint)
+  if (!wall1Data || !wall2Data) return null
+
+  // Check if walls are colinear (cross product ≈ 0)
+  const cross =
+    Number(wall1Data.direction.x) * Number(wall2Data.direction.y) -
+    Number(wall1Data.direction.y) * Number(wall2Data.direction.x)
+  const isColinear = Math.abs(cross) < 0.1 // Tolerance for nearly colinear
+
+  let polygonPoints: Point2D[]
+
+  if (isColinear) {
+    polygonPoints = generateColinearMiterPolygon(wall1Data, wall2Data, cornerPoint)
+  } else {
+    polygonPoints = generateGenericMiterPolygon(wall1Data, wall2Data, cornerPoint)
   }
 
-  // Create a circular polygon approximation
-  // The radius is slightly smaller than half the max thickness to create proper miter joints
-  const radius = (maxThickness || 200) * 0.4
-  const numPoints = Math.max(8, connectedWallIds.length * 2) // More points for more complex corners
+  if (polygonPoints.length < 3) return null
 
-  const polygonPoints: Point2D[] = []
-  for (let i = 0; i < numPoints; i++) {
-    const angle = (i / numPoints) * 2 * Math.PI
-    polygonPoints.push(
-      createPoint2D(Number(cornerPoint.x) + Math.cos(angle) * radius, Number(cornerPoint.y) + Math.sin(angle) * radius)
-    )
-  }
+  return { points: polygonPoints }
+}
 
-  // Determine the main color (use strawbale color as default)
-  const mainColor = '#DAA520' // WALL_COLORS.strawbale
+/**
+ * Calculate simplified wall data for miter calculation
+ */
+function calculateWallData(
+  wall: Wall,
+  points: Map<string, { position: Point2D }>,
+  cornerPoint: Point2D
+): WallData | null {
+  const startPointData = points.get(wall.startPointId)
+  const endPointData = points.get(wall.endPointId)
+  if (!startPointData || !endPointData) return null
+
+  const startPoint = startPointData.position
+  const endPoint = endPointData.position
+
+  // Determine which end is at the corner
+  const distToStart = Math.abs(Number(startPoint.x - cornerPoint.x)) + Math.abs(Number(startPoint.y - cornerPoint.y))
+  const distToEnd = Math.abs(Number(endPoint.x - cornerPoint.x)) + Math.abs(Number(endPoint.y - cornerPoint.y))
+  const isStartAtCorner = distToStart < distToEnd
+
+  // Calculate wall direction vector (pointing away from corner)
+  const otherPoint = isStartAtCorner ? endPoint : startPoint
+  const dx = Number(otherPoint.x) - Number(cornerPoint.x)
+  const dy = Number(otherPoint.y) - Number(cornerPoint.y)
+  const length = Math.sqrt(dx * dx + dy * dy)
+  if (length === 0) return null
+
+  const direction = createVector2D(dx / length, dy / length)
+  const normal = createVector2D(-Number(direction.y), Number(direction.x)) // 90° counter-clockwise
+  const halfThickness = wall.thickness / 2
+
+  // Create boundary lines
+  const leftBoundaryPoint = createPoint2D(
+    Number(cornerPoint.x) + Number(normal.x) * halfThickness,
+    Number(cornerPoint.y) + Number(normal.y) * halfThickness
+  )
+  const rightBoundaryPoint = createPoint2D(
+    Number(cornerPoint.x) - Number(normal.x) * halfThickness,
+    Number(cornerPoint.y) - Number(normal.y) * halfThickness
+  )
 
   return {
-    points: polygonPoints,
-    mainColor
+    thickness: wall.thickness,
+    direction,
+    leftBoundary: { point: leftBoundaryPoint, direction },
+    rightBoundary: { point: rightBoundaryPoint, direction }
   }
 }
 
 /**
- * Enhanced version that will calculate proper miter joints in the future.
- * For now, falls back to the simple circular approximation.
+ * Generate rectangular miter for colinear walls
  */
-export function calculateProperMiterPolygon(
-  corner: Corner,
-  walls: Map<string, Wall>,
-  points: Map<string, { position: Point2D }>
-): CornerPolygon | null {
-  // TODO: Implement proper miter joint calculation
-  // This would involve:
-  // 1. Calculate wall boundary lines at the corner
-  // 2. Find intersections between adjacent wall boundaries
-  // 3. Create a convex polygon from the intersection points
-  // 4. Handle edge cases for various wall configurations
+function generateColinearMiterPolygon(wall1Data: WallData, wall2Data: WallData, cornerPoint: Point2D): Point2D[] {
+  const maxThickness = Math.max(wall1Data.thickness, wall2Data.thickness)
+  const halfThickness = maxThickness / 2
 
-  // For now, use the simple approach
-  return calculateCornerMiterPolygon(corner, walls, points)
+  const direction = wall1Data.direction
+  const normal = createVector2D(-Number(direction.y), Number(direction.x))
+
+  // Create a rectangle centered on the corner point
+  return [
+    createPoint2D(
+      Number(cornerPoint.x) + Number(normal.x) * halfThickness - Number(direction.x) * halfThickness,
+      Number(cornerPoint.y) + Number(normal.y) * halfThickness - Number(direction.y) * halfThickness
+    ),
+    createPoint2D(
+      Number(cornerPoint.x) + Number(normal.x) * halfThickness + Number(direction.x) * halfThickness,
+      Number(cornerPoint.y) + Number(normal.y) * halfThickness + Number(direction.y) * halfThickness
+    ),
+    createPoint2D(
+      Number(cornerPoint.x) - Number(normal.x) * halfThickness + Number(direction.x) * halfThickness,
+      Number(cornerPoint.y) - Number(normal.y) * halfThickness + Number(direction.y) * halfThickness
+    ),
+    createPoint2D(
+      Number(cornerPoint.x) - Number(normal.x) * halfThickness - Number(direction.x) * halfThickness,
+      Number(cornerPoint.y) - Number(normal.y) * halfThickness - Number(direction.y) * halfThickness
+    )
+  ]
+}
+
+/**
+ * Generic miter polygon for all non-colinear angles
+ */
+function generateGenericMiterPolygon(wall1Data: WallData, wall2Data: WallData, cornerPoint: Point2D): Point2D[] {
+  // Determine inner and outer boundaries based on cross product
+  const cross =
+    Number(wall1Data.direction.x) * Number(wall2Data.direction.y) -
+    Number(wall1Data.direction.y) * Number(wall2Data.direction.x)
+
+  const [wall1Inner, wall1Outer, wall2Inner, wall2Outer] =
+    cross > 0
+      ? [wall1Data.rightBoundary, wall1Data.leftBoundary, wall2Data.leftBoundary, wall2Data.rightBoundary]
+      : [wall1Data.leftBoundary, wall1Data.rightBoundary, wall2Data.rightBoundary, wall2Data.leftBoundary]
+
+  // Calculate the 4 key points
+  const innerIntersection = lineIntersection(wall1Inner, wall2Inner)
+  const outerIntersection = lineIntersection(wall1Outer, wall2Outer)
+
+  const points: Point2D[] = []
+
+  if (innerIntersection) points.push(innerIntersection)
+  if (outerIntersection) {
+    points.push(outerIntersection)
+    // Add projections of outer intersection onto inner boundaries
+    const proj1 = projectPointOntoLine(outerIntersection, wall1Inner)
+    const proj2 = projectPointOntoLine(outerIntersection, wall2Inner)
+    if (proj1) points.push(proj1)
+    if (proj2) points.push(proj2)
+  }
+
+  if (points.length >= 3) {
+    return sortPointsClockwise(points, cornerPoint)
+  }
+
+  // Simple fallback shape
+  const maxThickness = Math.max(wall1Data.thickness, wall2Data.thickness)
+  const radius = maxThickness * 0.5
+  return [
+    createPoint2D(Number(cornerPoint.x) + radius, Number(cornerPoint.y)),
+    createPoint2D(Number(cornerPoint.x), Number(cornerPoint.y) + radius),
+    createPoint2D(Number(cornerPoint.x) - radius, Number(cornerPoint.y)),
+    createPoint2D(Number(cornerPoint.x), Number(cornerPoint.y) - radius)
+  ]
+}
+
+/**
+ * Sort points in clockwise order around a center point
+ */
+function sortPointsClockwise(points: Point2D[], center: Point2D): Point2D[] {
+  return points.sort((a, b) => {
+    const angleA = Math.atan2(Number(a.y - center.y), Number(a.x - center.x))
+    const angleB = Math.atan2(Number(b.y - center.y), Number(b.x - center.x))
+    return angleA - angleB
+  })
 }

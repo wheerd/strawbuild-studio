@@ -320,9 +320,7 @@ export abstract class BaseWallTool implements Tool {
   }
 
   private updateCornersForPoint(modelStore: StoreActions, wall: Wall, pointId: PointId): void {
-    console.log('corner', wall, pointId)
     const connectedWalls = modelStore.getWallsConnectedToPoint(pointId, wall.floorId)
-    console.log(connectedWalls)
     if (connectedWalls.length === 2) {
       modelStore.addCorner(pointId, wall.floorId, connectedWalls[0].id, connectedWalls[1].id)
     } else if (connectedWalls.length > 2) {

@@ -52,10 +52,9 @@ export function CornerShape({ corner }: CornerShapeProps): React.JSX.Element | n
         {/* Miter joint polygon */}
         <Line
           points={polygonArray}
-          fill={miterPolygon.mainColor}
-          stroke={isSelected ? '#007acc' : miterPolygon.mainColor}
-          strokeWidth={isSelected ? 4 : 2}
-          opacity={0.9}
+          fill={isSelected ? '#a5d8fb' : '#AAAAAA'}
+          stroke={isSelected ? '#007acc' : '#333333'}
+          strokeWidth={10}
           closed
           listening
           onClick={handleClick}
