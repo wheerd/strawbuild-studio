@@ -8,11 +8,9 @@ import { getWallPreviewVisualization } from '@/components/FloorPlanEditor/visual
 import type { WallType } from '@/types/model'
 
 export interface WallToolState {
-  isDrawing: boolean
   startPoint?: Point2D
   thickness: number // mm
   previewEndPoint?: Point2D // Tool handles its own preview
-  hoverPoint?: Point2D // Point where mouse is hovering (for start point preview)
 }
 
 export interface WallTypeConfig {
@@ -49,7 +47,6 @@ export abstract class BaseWallTool implements Tool {
     this.hotkey = config.hotkey
 
     this.state = {
-      isDrawing: false,
       thickness: config.defaultThickness
     }
   }
@@ -69,13 +66,11 @@ export abstract class BaseWallTool implements Tool {
     const snapResult = event.context.findSnapPoint(stageCoords)
     const snapCoords = snapResult?.position ?? stageCoords
 
-    if (!this.state.isDrawing) {
+    if (!this.state.startPoint) {
       // Start drawing wall
-      this.state.isDrawing = true
       this.state.startPoint = snapCoords
       // Clear any previous preview state to avoid artifacts
       this.state.previewEndPoint = undefined
-      this.state.hoverPoint = undefined
       event.context.updateSnapReference(snapCoords, snapResult?.pointId ?? null)
       return true
     } else if (this.state.startPoint) {
@@ -98,10 +93,8 @@ export abstract class BaseWallTool implements Tool {
       }
 
       // Reset state
-      this.state.isDrawing = false
       this.state.startPoint = undefined
       this.state.previewEndPoint = undefined
-      this.state.hoverPoint = undefined
       event.context.clearSnapState()
       return true
     }
@@ -114,13 +107,11 @@ export abstract class BaseWallTool implements Tool {
     const snapResult = event.context.findSnapPoint(stageCoords)
     const snapCoords = snapResult?.position ?? stageCoords
 
-    if (this.state.isDrawing && this.state.startPoint) {
+    if (this.state.startPoint) {
       // Update preview end point during drawing
       this.state.previewEndPoint = snapCoords
       return true
     } else {
-      // Update hover point before drawing starts (for start point preview)
-      this.state.hoverPoint = snapCoords
       // Update snap target for visual feedback
       event.context.updateSnapTarget(snapCoords)
       return true
@@ -129,7 +120,7 @@ export abstract class BaseWallTool implements Tool {
 
   handleKeyDown(event: CanvasEvent): boolean {
     const keyEvent = event.originalEvent as KeyboardEvent
-    if (keyEvent.key === 'Escape' && this.state.isDrawing) {
+    if (keyEvent.key === 'Escape' && this.state.startPoint) {
       this.cancelDrawing()
       return true
     }
@@ -139,42 +130,19 @@ export abstract class BaseWallTool implements Tool {
 
   // Lifecycle methods
   onActivate(): void {
-    this.state.isDrawing = false
     this.state.startPoint = undefined
     this.state.previewEndPoint = undefined
-    this.state.hoverPoint = undefined
   }
 
   onDeactivate(): void {
-    if (this.state.isDrawing) {
-      this.state.isDrawing = false
+    if (this.state.startPoint) {
       this.state.startPoint = undefined
       this.state.previewEndPoint = undefined
-      this.state.hoverPoint = undefined
     }
   }
 
   renderOverlay(context: ToolOverlayContext): React.ReactNode {
-    // Show hover point indicator when not drawing (for start point preview)
-    if (!this.state.isDrawing) {
-      const hoverPoint =
-        this.state.hoverPoint || context.snapResult?.position || context.snapTarget || context.currentMousePos
-
-      if (!hoverPoint) return null
-
-      return React.createElement(Circle, {
-        x: hoverPoint.x,
-        y: hoverPoint.y,
-        radius: 18,
-        fill: this.config.primaryColor,
-        stroke: '#ffffff',
-        strokeWidth: 4,
-        opacity: 0.7,
-        listening: false
-      })
-    }
-
-    // Show wall preview when drawing
+    // Only render when drawing a wall
     if (!this.state.startPoint) return null
 
     // Use preview end point from tool state, fallback to current snap position
@@ -189,19 +157,7 @@ export abstract class BaseWallTool implements Tool {
       // Main wall preview with strawbale visualization
       ...this.renderStrawbalePreview(this.state.startPoint, endPoint),
 
-      // End point snap indicator
-      React.createElement(Circle, {
-        x: endPoint.x,
-        y: endPoint.y,
-        radius: 15,
-        fill: this.config.primaryColor,
-        stroke: '#ffffff',
-        strokeWidth: 3,
-        opacity: 0.8,
-        listening: false
-      }),
-
-      // Start point indicator
+      // Start point indicator (only when drawing)
       React.createElement(Circle, {
         x: this.state.startPoint.x,
         y: this.state.startPoint.y,
@@ -318,7 +274,7 @@ export abstract class BaseWallTool implements Tool {
     const actions: ContextAction[] = []
 
     // Wall-specific actions
-    if (this.state.isDrawing) {
+    if (this.state.startPoint) {
       actions.push({
         label: 'Cancel Wall',
         action: () => this.cancelDrawing(),
@@ -346,9 +302,7 @@ export abstract class BaseWallTool implements Tool {
 
   // Helper methods
   private cancelDrawing(): void {
-    this.state.isDrawing = false
     this.state.startPoint = undefined
     this.state.previewEndPoint = undefined
-    this.state.hoverPoint = undefined
   }
 }

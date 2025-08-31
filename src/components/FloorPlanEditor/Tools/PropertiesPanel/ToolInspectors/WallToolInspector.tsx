@@ -42,7 +42,7 @@ export function WallToolInspector({ tool, onPropertyChange }: WallToolInspectorP
 
       {/* Drawing Status */}
       <div className="property-group">
-        {state.isDrawing && (
+        {state.startPoint && (
           <div className="drawing-help">
             <p>Click to place the end point of the wall.</p>
             <p>
@@ -51,7 +51,7 @@ export function WallToolInspector({ tool, onPropertyChange }: WallToolInspectorP
           </div>
         )}
 
-        {!state.isDrawing && (
+        {!state.startPoint && (
           <div className="drawing-help">
             <p>Click to start drawing a wall.</p>
           </div>
