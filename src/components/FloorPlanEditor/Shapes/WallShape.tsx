@@ -4,7 +4,7 @@ import { useCallback, useRef } from 'react'
 import type { Wall } from '@/types/model'
 import { useSelectedEntity, useEditorStore, useActiveTool } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 import { usePoints, useCorners, useWallLength } from '@/model/store'
-import { createPoint2D } from '@/types/geometry'
+import { createPoint2D, distance, subtract, normalize, perpendicularCCW, angle } from '@/types/geometry'
 import { getWallVisualization } from '@/components/FloorPlanEditor/visualization/wallVisualization'
 
 interface WallShapeProps {
@@ -87,21 +87,21 @@ export function WallShape({ wall }: WallShapeProps): React.JSX.Element | null {
   // Get wall visualization using shared utility
   const wallViz = getWallVisualization(wall.type, wall.thickness, wall.outsideDirection)
 
-  // Calculate wall perpendicular direction for arrows and plaster edges
-  const wallDx = endPoint.position[0] - startPoint.position[0]
-  const wallDy = endPoint.position[1] - startPoint.position[1]
-  const wallLength = Math.sqrt(wallDx * wallDx + wallDy * wallDy)
+  // Calculate wall properties using geometry utilities
+  const wallVector = subtract(endPoint.position, startPoint.position)
+  const wallLength = distance(startPoint.position, endPoint.position)
 
   // Get perpendicular vector (normal to wall)
-  const normalX = wallLength > 0 ? -wallDy / wallLength : 0
-  const normalY = wallLength > 0 ? wallDx / wallLength : 0
+  const normalVector = wallLength > 0 ? perpendicularCCW(normalize(wallVector)) : [0, 0]
+  const normalX = normalVector[0]
+  const normalY = normalVector[1]
 
   // Calculate wall midpoint
   const midX = (startPoint.position[0] + endPoint.position[0]) / 2
   const midY = (startPoint.position[1] + endPoint.position[1]) / 2
 
   // Calculate wall angle for text rotation, keeping text as horizontal as possible
-  const wallAngle = wallLength > 0 ? Math.atan2(wallDy, wallDx) : 0
+  const wallAngle = wallLength > 0 ? angle(startPoint.position, endPoint.position) : 0
   let wallAngleDegrees = (wallAngle * 180) / Math.PI
 
   // Normalize angle to keep text readable (between -90 and +90 degrees)

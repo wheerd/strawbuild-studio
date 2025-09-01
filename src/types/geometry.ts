@@ -2,10 +2,12 @@
 import { vec2, mat2d } from 'gl-matrix'
 
 // Turf.js integration for robust polygon operations
-import { polygon as turfPolygon, lineString as turfLineString } from '@turf/helpers'
+import { polygon as turfPolygon, lineString as turfLineString, point as turfPoint } from '@turf/helpers'
 import { kinks } from '@turf/kinks'
 import { booleanValid } from '@turf/boolean-valid'
 import { lineIntersect } from '@turf/line-intersect'
+import { area as turfArea } from '@turf/area'
+import { booleanPointInPolygon } from '@turf/boolean-point-in-polygon'
 import type { Feature, Polygon as GeoJSONPolygon, LineString } from 'geojson'
 
 // Core types - simplified with gl-matrix
@@ -71,22 +73,7 @@ export function angle(from: Vec2, to: Vec2): Angle {
   return createAngle(Math.atan2(direction[1], direction[0]))
 }
 
-export function normalizeAngle(angle: Angle): Angle {
-  let normalized = Number(angle)
-  while (normalized > Math.PI) normalized -= 2 * Math.PI
-  while (normalized < -Math.PI) normalized += 2 * Math.PI
-  return createAngle(normalized)
-}
-
-export function pointOnLine(start: Vec2, end: Vec2, t: number): Vec2 {
-  const result = vec2.create()
-  vec2.lerp(result, start, end, t)
-  return result
-}
-
-export function vectorFromAngle(angle: Angle, length: Length = createLength(1)): Vec2 {
-  return vec2.fromValues(Math.cos(angle) * length, Math.sin(angle) * length)
-}
+// Removed: normalizeAngle, pointOnLine, vectorFromAngle, lineFromPointAndAngle - unused functions
 
 export function add(a: Vec2, b: Vec2): Vec2 {
   const result = vec2.create()
@@ -120,30 +107,14 @@ export function direction(source: Vec2, target: Vec2): Vec2 {
   return normalize(subtract(target, source))
 }
 
-export function addVector(point: Vec2, vector: Vec2): Vec2 {
-  return add(point, vector)
+// Additional convenience functions for common operations
+export function perpendicular(vector: Vec2): Vec2 {
+  return perpendicularCCW(vector) // Default to counter-clockwise
 }
 
-export function normalizeVector(vector: Vec2): Vec2 {
-  return normalize(vector)
-}
+// Removed: addVector and normalizeVector - unused and redundant with add/normalize
 
-export function snapToGrid(point: Vec2, gridSize: Length): Vec2 {
-  return createVec2(Math.round(point[0] / gridSize) * gridSize, Math.round(point[1] / gridSize) * gridSize)
-}
-
-export function expandBounds(bounds: Bounds2D, padding: Length): Bounds2D {
-  return {
-    min: createVec2(bounds.min[0] - padding, bounds.min[1] - padding),
-    max: createVec2(bounds.max[0] + padding, bounds.max[1] + padding)
-  }
-}
-
-export function pointInBounds(point: Vec2, bounds: Bounds2D): boolean {
-  return (
-    point[0] >= bounds.min[0] && point[0] <= bounds.max[0] && point[1] >= bounds.min[1] && point[1] <= bounds.max[1]
-  )
-}
+// Removed: snapToGrid, expandBounds, pointInBounds - unused functions
 
 export function boundsFromPoints(points: Vec2[]): Bounds2D | null {
   if (points.length === 0) return null
@@ -166,174 +137,39 @@ export function boundsFromPoints(points: Vec2[]): Bounds2D | null {
   }
 }
 
-export function isPointNearLine(
-  point: Vec2,
-  lineStart: Vec2,
-  lineEnd: Vec2,
-  tolerance: Length = createLength(5)
-): boolean {
-  const distToLine = distanceToLineSegment(point, { start: lineStart, end: lineEnd })
-  return distToLine <= tolerance
-}
+// Removed: isPointNearLine, offsetToPosition - unused functions
 
-export function offsetToPosition(startPoint: Vec2, endPoint: Vec2, offset: Length): Vec2 {
-  const dir = subtract(endPoint, startPoint)
-  const length = vec2.length(dir)
+// Removed: formatLength, formatArea - unused formatting functions
 
-  if (length === 0) return vec2.copy(vec2.create(), startPoint)
-
-  const t = offset / length
-  return pointOnLine(startPoint, endPoint, t)
-}
-
-// Formatting utilities
-export function formatLength(length: Length, unit: 'mm' | 'cm' | 'm' = 'm'): string {
-  switch (unit) {
-    case 'mm':
-      return `${length.toFixed(0)}mm`
-    case 'cm':
-      return `${(length / 10).toFixed(1)}cm`
-    case 'm':
-      return `${(length / 1000).toFixed(2)}m`
-    default:
-      return `${length.toFixed(0)}`
-  }
-}
-
-export function formatArea(area: Area, unit: 'mm²' | 'cm²' | 'm²' = 'm²'): string {
-  switch (unit) {
-    case 'mm²':
-      return `${area.toFixed(0)}mm²`
-    case 'cm²':
-      return `${(area / 100).toFixed(1)}cm²`
-    case 'm²':
-      return `${(area / 1000000).toFixed(2)}m²`
-    default:
-      return `${area.toFixed(0)}`
-  }
-}
-
-// Polygon utilities
+// Polygon utilities - using turf.js for robust area calculation
 export function calculatePolygonArea(polygon: Polygon2D): Area {
-  const points = polygon.points
-  if (points.length < 3) return createArea(0)
+  if (polygon.points.length < 3) return createArea(0)
 
-  let area = 0
-  for (let i = 0; i < points.length; i++) {
-    const j = (i + 1) % points.length
-    area += points[i][0] * points[j][1]
-    area -= points[j][0] * points[i][1]
-  }
-
-  return createArea(Math.abs(area) / 2)
-}
-
-export function calculatePolygonWithHolesArea(polygon: PolygonWithHoles2D): Area {
-  let totalArea = calculatePolygonArea(polygon.outer)
-
-  for (const hole of polygon.holes) {
-    totalArea = createArea(totalArea - calculatePolygonArea(hole))
-  }
-
-  return totalArea
-}
-
-// Corner angle calculation utilities
-export function calculateCornerAngle(wall1Start: Vec2, cornerPoint: Vec2, wall2End: Vec2): Angle {
-  // Vector from corner to wall1 start
-  const vec1 = subtract(wall1Start, cornerPoint)
-  // Vector from corner to wall2 end
-  const vector2 = subtract(wall2End, cornerPoint)
-
-  // Calculate angle between vectors using dot product
-  const dotProduct = dot(vec1, vector2)
-  const mag1 = vec2.length(vec1)
-  const mag2 = vec2.length(vector2)
-
-  if (mag1 === 0 || mag2 === 0) return createAngle(0)
-
-  const cosAngle = dotProduct / (mag1 * mag2)
-  // Clamp to prevent NaN from floating point precision issues
-  const clampedCos = Math.max(-1, Math.min(1, cosAngle))
-  const angleRad = Math.acos(clampedCos)
-
-  return createAngle(angleRad)
-}
-
-export function determineCornerType(wallCount: number, angle: Angle): 'corner' | 'straight' | 'tee' | 'cross' {
-  const angleInRadians = Number(angle)
-  // Use a very small tolerance to handle only floating point precision errors
-  const tolerance = 1e-10 // ~0.0000000057 degrees
-
-  if (wallCount === 2) {
-    // Check if angle is very close to π (180 degrees)
-    if (Math.abs(angleInRadians - Math.PI) < tolerance) {
-      return 'straight'
+  try {
+    const geoPolygon = polygonToGeoJSON(polygon)
+    const areaM2 = turfArea(geoPolygon)
+    return createArea(areaM2) // turf returns area in square meters
+  } catch (error) {
+    // Fallback to manual calculation if turf fails
+    const points = polygon.points
+    let area = 0
+    for (let i = 0; i < points.length; i++) {
+      const j = (i + 1) % points.length
+      area += points[i][0] * points[j][1]
+      area -= points[j][0] * points[i][1]
     }
-    return 'corner'
-  } else if (wallCount === 3) {
-    return 'tee'
-  } else if (wallCount > 3) {
-    return 'cross'
+    return createArea(Math.abs(area) / 2)
   }
-
-  return 'corner'
 }
 
-export function radiansToDegrees(angle: Angle): number {
-  return (Number(angle) * 180) / Math.PI
-}
+// Removed: calculateCornerAngle, determineCornerType, radiansToDegrees, degreesToRadians, calculatePolygonWithHolesArea - unused functions
 
-export function degreesToRadians(degrees: number): Angle {
-  return createAngle((degrees * Math.PI) / 180)
-}
-
-// Advanced gl-matrix operations
-export function rotatePoint(point: Vec2, angle: Angle): Vec2 {
-  const result = vec2.create()
-  vec2.rotate(result, point, vec2.create(), angle)
-  return result
-}
-
-export function rotatePointAround(point: Vec2, center: Vec2, angle: Angle): Vec2 {
-  const transform = mat2d.create()
-  mat2d.translate(transform, transform, center)
-  mat2d.rotate(transform, transform, angle)
-  mat2d.translate(transform, transform, vec2.negate(vec2.create(), center))
-
-  const result = vec2.create()
-  vec2.transformMat2d(result, point, transform)
-  return result
-}
-
-export function scalePointFrom(point: Vec2, origin: Vec2, scale: number): Vec2 {
-  const transform = mat2d.create()
-  mat2d.translate(transform, transform, origin)
-  mat2d.scale(transform, transform, vec2.fromValues(scale, scale))
-  mat2d.translate(transform, transform, vec2.negate(vec2.create(), origin))
-
-  const result = vec2.create()
-  vec2.transformMat2d(result, point, transform)
-  return result
-}
-
+// Keep only the perpendicular functions as they might be useful for wall calculations
 export function perpendicularCCW(vector: Vec2): Vec2 {
   return createVec2(-vector[1], vector[0]) // Rotate 90° counterclockwise
 }
 
-export function perpendicularCW(vector: Vec2): Vec2 {
-  return createVec2(vector[1], -vector[0]) // Rotate 90° clockwise
-}
-
-export function reflectVector(vector: Vec2, normal: Vec2): Vec2 {
-  const result = vec2.create()
-  // reflect = v - 2 * dot(v,n) * n
-  const normalizedNormal = normalize(normal)
-  const dotProduct = dot(vector, normalizedNormal)
-  const reflection = scale(normalizedNormal, 2 * dotProduct)
-  vec2.subtract(result, vector, reflection)
-  return result
-}
+// Removed: rotatePoint, rotatePointAround, scalePointFrom, reflectVector, perpendicularCW - unused functions
 
 // Calculate intersection of two infinite lines
 export function lineIntersection(line1: Line2D, line2: Line2D): Vec2 | null {
@@ -368,14 +204,6 @@ export function lineFromPoints(p1: Vec2, p2: Vec2): Line2D | null {
   }
 }
 
-// Create a line from a point and angle
-export function lineFromPointAndAngle(point: Vec2, angle: Angle): Line2D {
-  return {
-    point: vec2.copy(vec2.create(), point),
-    direction: vectorFromAngle(angle)
-  }
-}
-
 // Distance from point to infinite line
 export function distanceToInfiniteLine(point: Vec2, line: Line2D): Length {
   const toPoint = subtract(point, line.point)
@@ -401,21 +229,28 @@ export function lineFromSegment(segment: LineSegment2D): Line2D {
 }
 
 export function isPointInPolygon(point: Vec2, polygon: Polygon2D): boolean {
-  const points = polygon.points
-  let inside = false
+  try {
+    const turfPt = turfPoint([point[0], point[1]])
+    const geoPolygon = polygonToGeoJSON(polygon)
+    return booleanPointInPolygon(turfPt, geoPolygon)
+  } catch (error) {
+    // Fallback to manual calculation if turf fails
+    const points = polygon.points
+    let inside = false
 
-  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
-    const xi = points[i][0]
-    const yi = points[i][1]
-    const xj = points[j][0]
-    const yj = points[j][1]
+    for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+      const xi = points[i][0]
+      const yi = points[i][1]
+      const xj = points[j][0]
+      const yj = points[j][1]
 
-    const intersect =
-      yi > point[1] !== yj > point[1] && point[0] < ((xj - xi) * (point[1] - yi)) / (yj - yi + 1e-10) + xi
-    if (intersect) inside = !inside
+      const intersect =
+        yi > point[1] !== yj > point[1] && point[0] < ((xj - xi) * (point[1] - yi)) / (yj - yi + 1e-10) + xi
+      if (intersect) inside = !inside
+    }
+
+    return inside
   }
-
-  return inside
 }
 
 export function polygonIsClockwise(polygon: Polygon2D): boolean {
