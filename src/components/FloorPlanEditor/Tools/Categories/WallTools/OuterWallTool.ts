@@ -6,7 +6,6 @@ const OUTER_WALL_CONFIG: WallTypeConfig = {
   id: 'wall.outer',
   name: 'Outer Wall',
   icon: '▬',
-  hotkey: 'Shift+Alt+w',
   defaultThickness: 440, // 44cm
   primaryColor: '#DAA520',
   secondaryColor: '#2F2F2F',

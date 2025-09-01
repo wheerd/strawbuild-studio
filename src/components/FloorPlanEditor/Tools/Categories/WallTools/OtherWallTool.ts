@@ -6,7 +6,6 @@ const OTHER_WALL_CONFIG: WallTypeConfig = {
   id: 'wall.other',
   name: 'Other Wall',
   icon: '▬',
-  hotkey: 'Alt+w',
   defaultThickness: 200, // 20cm
   primaryColor: '#2F2F2F',
   secondaryColor: '#2F2F2F',

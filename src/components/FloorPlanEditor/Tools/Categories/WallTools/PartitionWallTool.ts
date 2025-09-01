@@ -6,7 +6,6 @@ const PARTITION_WALL_CONFIG: WallTypeConfig = {
   id: 'wall.partition',
   name: 'Partition Wall',
   icon: '▬',
-  hotkey: 'Shift+w',
   defaultThickness: 180, // 18cm
   primaryColor: '#DAA520',
   secondaryColor: '#8B4513',

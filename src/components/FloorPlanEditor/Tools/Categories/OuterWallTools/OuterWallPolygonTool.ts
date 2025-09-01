@@ -18,6 +18,7 @@ export class OuterWallPolygonTool implements Tool {
   readonly id = 'outer-wall-polygon'
   readonly name = 'Outer Wall Polygon'
   readonly icon = '⬜'
+  readonly hotkey = 'w'
   readonly cursor = 'crosshair'
   readonly category = 'walls'
   readonly hasInspector = false

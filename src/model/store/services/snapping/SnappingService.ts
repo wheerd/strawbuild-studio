@@ -136,7 +136,7 @@ export class SnappingService {
   private findLineSnapPosition(target: Point2D, snapLines: Line2D[], context: SnappingContext): SnapResult | null {
     const minDistanceSquared = this.snapConfig.minDistance ** 2
     const nearbyLines: Array<{ line: Line2D; distance: number; projectedPosition: Point2D }> = []
-    let closestDist = Number(this.snapConfig.lineSnapDistance)
+    let closestDist = Infinity
     let closestIndex = -1
 
     for (const line of snapLines) {
