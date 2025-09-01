@@ -3,7 +3,7 @@ import { createWallsPointsSlice, type WallsPointsSlice } from './wallsPointsSlic
 import { createWallsSlice, type WallsSlice } from './wallsSlice'
 import { createPointsSlice, type PointsSlice } from './pointsSlice'
 import { createFloorId, createPointId, createWallId } from '@/types/ids'
-import { createPoint2D } from '@/types/geometry'
+import { createVec2 } from '@/types/geometry'
 
 // Mock Zustand following the official testing guide
 vi.mock('zustand')
@@ -53,8 +53,8 @@ describe('WallsPointsSlice', () => {
   describe('getWallLength', () => {
     it('should calculate wall length correctly', () => {
       // Create two points 100 units apart
-      const point1 = store.addPoint(floorId, createPoint2D(100, 100))
-      const point2 = store.addPoint(floorId, createPoint2D(200, 100))
+      const point1 = store.addPoint(floorId, createVec2(100, 100))
+      const point2 = store.addPoint(floorId, createVec2(200, 100))
 
       // Create wall between the points
       const wall = store.addStructuralWall(floorId, point1.id, point2.id)
@@ -65,8 +65,8 @@ describe('WallsPointsSlice', () => {
 
     it('should calculate vertical wall length correctly', () => {
       // Create two points 150 units apart vertically
-      const point1 = store.addPoint(floorId, createPoint2D(100, 100))
-      const point2 = store.addPoint(floorId, createPoint2D(100, 250))
+      const point1 = store.addPoint(floorId, createVec2(100, 100))
+      const point2 = store.addPoint(floorId, createVec2(100, 250))
 
       // Create wall between the points
       const wall = store.addStructuralWall(floorId, point1.id, point2.id)
@@ -77,8 +77,8 @@ describe('WallsPointsSlice', () => {
 
     it('should calculate diagonal wall length correctly', () => {
       // Create two points forming a 3-4-5 right triangle (hypotenuse = 5)
-      const point1 = store.addPoint(floorId, createPoint2D(0, 0))
-      const point2 = store.addPoint(floorId, createPoint2D(30, 40)) // 3:4 ratio scaled by 10
+      const point1 = store.addPoint(floorId, createVec2(0, 0))
+      const point2 = store.addPoint(floorId, createVec2(30, 40)) // 3:4 ratio scaled by 10
 
       // Create wall between the points
       const wall = store.addStructuralWall(floorId, point1.id, point2.id)
@@ -96,8 +96,8 @@ describe('WallsPointsSlice', () => {
 
     it('should return 0 for wall with missing start point', () => {
       // Create two points
-      const point1 = store.addPoint(floorId, createPoint2D(100, 100))
-      const point2 = store.addPoint(floorId, createPoint2D(200, 100))
+      const point1 = store.addPoint(floorId, createVec2(100, 100))
+      const point2 = store.addPoint(floorId, createVec2(200, 100))
 
       // Create wall between the points
       const wall = store.addStructuralWall(floorId, point1.id, point2.id)
@@ -111,8 +111,8 @@ describe('WallsPointsSlice', () => {
 
     it('should return 0 for wall with missing end point', () => {
       // Create two points
-      const point1 = store.addPoint(floorId, createPoint2D(100, 100))
-      const point2 = store.addPoint(floorId, createPoint2D(200, 100))
+      const point1 = store.addPoint(floorId, createVec2(100, 100))
+      const point2 = store.addPoint(floorId, createVec2(200, 100))
 
       // Create wall between the points
       const wall = store.addStructuralWall(floorId, point1.id, point2.id)
@@ -126,7 +126,7 @@ describe('WallsPointsSlice', () => {
 
     it('should return 0 for wall where both points are at same position', () => {
       // Create two points at the same position
-      const samePosition = createPoint2D(100, 100)
+      const samePosition = createVec2(100, 100)
       const point1 = store.addPoint(floorId, samePosition)
       const point2 = store.addPoint(floorId, samePosition)
 
@@ -140,8 +140,8 @@ describe('WallsPointsSlice', () => {
 
   describe('mergePoints', () => {
     it('should merge two unconnected points', () => {
-      const point1 = store.addPoint(floorId, createPoint2D(100, 100))
-      const point2 = store.addPoint(floorId, createPoint2D(200, 200))
+      const point1 = store.addPoint(floorId, createVec2(100, 100))
+      const point2 = store.addPoint(floorId, createVec2(200, 200))
 
       store.mergePoints(point1.id, point2.id)
 
@@ -151,9 +151,9 @@ describe('WallsPointsSlice', () => {
     })
 
     it('should redirect walls from source point to target point', () => {
-      const point1 = store.addPoint(floorId, createPoint2D(100, 100))
-      const point2 = store.addPoint(floorId, createPoint2D(200, 100))
-      const point3 = store.addPoint(floorId, createPoint2D(300, 100))
+      const point1 = store.addPoint(floorId, createVec2(100, 100))
+      const point2 = store.addPoint(floorId, createVec2(200, 100))
+      const point3 = store.addPoint(floorId, createVec2(300, 100))
 
       // Create wall using point1 as start
       const wall = store.addStructuralWall(floorId, point1.id, point3.id)
@@ -166,9 +166,9 @@ describe('WallsPointsSlice', () => {
     })
 
     it('should update walls that reference source point as end point', () => {
-      const point1 = store.addPoint(floorId, createPoint2D(100, 100))
-      const point2 = store.addPoint(floorId, createPoint2D(200, 100))
-      const point3 = store.addPoint(floorId, createPoint2D(300, 100))
+      const point1 = store.addPoint(floorId, createVec2(100, 100))
+      const point2 = store.addPoint(floorId, createVec2(200, 100))
+      const point3 = store.addPoint(floorId, createVec2(300, 100))
 
       // Create wall using point1 as end
       const wall = store.addStructuralWall(floorId, point3.id, point1.id)
@@ -180,8 +180,8 @@ describe('WallsPointsSlice', () => {
     })
 
     it('should remove degenerate walls (same start and end point)', () => {
-      const point1 = store.addPoint(floorId, createPoint2D(100, 100))
-      const point2 = store.addPoint(floorId, createPoint2D(200, 100))
+      const point1 = store.addPoint(floorId, createVec2(100, 100))
+      const point2 = store.addPoint(floorId, createVec2(200, 100))
 
       // Create wall between point1 and point2
       const wall = store.addStructuralWall(floorId, point1.id, point2.id)
@@ -194,9 +194,9 @@ describe('WallsPointsSlice', () => {
     })
 
     it('should remove duplicate walls', () => {
-      const point1 = store.addPoint(floorId, createPoint2D(100, 100))
-      const point2 = store.addPoint(floorId, createPoint2D(200, 100))
-      const point3 = store.addPoint(floorId, createPoint2D(300, 100))
+      const point1 = store.addPoint(floorId, createVec2(100, 100))
+      const point2 = store.addPoint(floorId, createVec2(200, 100))
+      const point3 = store.addPoint(floorId, createVec2(300, 100))
 
       // Create two walls: point1->point2 and point3->point2
       const wall1 = store.addStructuralWall(floorId, point1.id, point2.id)
@@ -220,8 +220,8 @@ describe('WallsPointsSlice', () => {
     })
 
     it('should transfer room associations from source to target', () => {
-      const point1 = store.addPoint(floorId, createPoint2D(100, 100))
-      const point2 = store.addPoint(floorId, createPoint2D(200, 200))
+      const point1 = store.addPoint(floorId, createVec2(100, 100))
+      const point2 = store.addPoint(floorId, createVec2(200, 200))
 
       // Add room associations to point1
       const roomId1 = 'room_1' as any
@@ -240,8 +240,8 @@ describe('WallsPointsSlice', () => {
       const floor1 = createFloorId()
       const floor2 = createFloorId()
 
-      const point1 = store.addPoint(floor1, createPoint2D(100, 100))
-      const point2 = store.addPoint(floor2, createPoint2D(200, 200))
+      const point1 = store.addPoint(floor1, createVec2(100, 100))
+      const point2 = store.addPoint(floor2, createVec2(200, 200))
 
       expect(() => {
         store.mergePoints(point1.id, point2.id)
@@ -249,7 +249,7 @@ describe('WallsPointsSlice', () => {
     })
 
     it('should handle merging the same point gracefully', () => {
-      const point1 = store.addPoint(floorId, createPoint2D(100, 100))
+      const point1 = store.addPoint(floorId, createVec2(100, 100))
 
       expect(() => {
         store.mergePoints(point1.id, point1.id)
@@ -261,7 +261,7 @@ describe('WallsPointsSlice', () => {
 
     it('should handle non-existent source point gracefully', () => {
       const fakePointId = createPointId()
-      const point2 = store.addPoint(floorId, createPoint2D(200, 200))
+      const point2 = store.addPoint(floorId, createVec2(200, 200))
 
       expect(() => {
         store.mergePoints(fakePointId, point2.id)
@@ -271,7 +271,7 @@ describe('WallsPointsSlice', () => {
     })
 
     it('should handle non-existent target point gracefully', () => {
-      const point1 = store.addPoint(floorId, createPoint2D(100, 100))
+      const point1 = store.addPoint(floorId, createVec2(100, 100))
       const fakePointId = createPointId()
 
       expect(() => {

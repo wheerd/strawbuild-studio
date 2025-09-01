@@ -1,4 +1,4 @@
-import type { Point2D } from '@/types/geometry'
+import type { Vec2 } from '@/types/geometry'
 import type { Wall, Room, Point, Corner } from '@/types/model'
 import type { SnapResult } from '@/model/store/services/snapping/types'
 import type Konva from 'konva'
@@ -61,13 +61,13 @@ export interface ToolOverlayContext {
   }
 
   // Current mouse/snap state
-  currentMousePos?: Point2D
+  currentMousePos?: Vec2
   snapResult?: SnapResult
-  snapTarget?: Point2D
+  snapTarget?: Vec2
 
   // Utility functions for common overlay calculations
-  worldToStage: (worldPos: Point2D) => Point2D
-  stageToWorld: (stagePos: Point2D) => Point2D
+  worldToStage: (worldPos: Vec2) => Vec2
+  stageToWorld: (stagePos: Vec2) => Vec2
   getInfiniteLineExtent: () => number // For snap lines that span the canvas
 }
 
@@ -94,7 +94,7 @@ export interface CanvasEvent {
   type: 'mousedown' | 'mousemove' | 'mouseup' | 'wheel' | 'keydown' | 'keyup'
   originalEvent: MouseEvent | KeyboardEvent | WheelEvent
   konvaEvent: Konva.KonvaEventObject<any>
-  stageCoordinates: Point2D
+  stageCoordinates: Vec2
   target: any
   context: ToolContext
 }
@@ -103,13 +103,13 @@ export type Entity = Wall | Room | Point | Corner
 
 export interface ToolContext {
   // Coordinate conversion (viewport functionality)
-  getStageCoordinates(event: { x: number; y: number }): Point2D
-  getScreenCoordinates(point: Point2D): { x: number; y: number }
+  getStageCoordinates(event: { x: number; y: number }): Vec2
+  getScreenCoordinates(point: Vec2): { x: number; y: number }
 
   // Snapping functionality
-  findSnapPoint(point: Point2D): SnapResult | null
-  updateSnapReference(fromPoint: Point2D | null, fromPointId: PointId | null): void
-  updateSnapTarget(target: Point2D): void
+  findSnapPoint(point: Vec2): SnapResult | null
+  updateSnapReference(fromPoint: Vec2 | null, fromPointId: PointId | null): void
+  updateSnapTarget(target: Vec2): void
   clearSnapState(): void
 
   // Single selection management (much simpler!)

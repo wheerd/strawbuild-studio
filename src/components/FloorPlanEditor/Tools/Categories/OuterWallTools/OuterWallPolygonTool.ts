@@ -1,8 +1,8 @@
 import type { Tool, ContextAction, CanvasEvent, ToolOverlayContext } from '../../ToolSystem/types'
-import type { Point2D, Polygon2D, LineSegment2D } from '@/types/geometry'
+import type { Vec2, Polygon2D, LineSegment2D } from '@/types/geometry'
 import {
   createLength,
-  createPoint2D,
+  createVec2,
   polygonIsClockwise,
   wouldPolygonSelfIntersect,
   wouldClosingPolygonSelfIntersect
@@ -14,8 +14,8 @@ import { SnappingService } from '@/model/store/services/snapping'
 import { createPointId, type FloorId } from '@/model'
 
 interface OuterWallPolygonToolState {
-  points: Point2D[]
-  mouse: Point2D
+  points: Vec2[]
+  mouse: Vec2
   snapResult?: SnapResult
   snapContext: SnappingContext
   isCurrentLineValid: boolean
@@ -33,7 +33,7 @@ export class OuterWallPolygonTool implements Tool {
 
   public state: OuterWallPolygonToolState = {
     points: [],
-    mouse: createPoint2D(0, 0),
+    mouse: createVec2(0, 0),
     snapContext: {
       points: [],
       alignPoints: [],

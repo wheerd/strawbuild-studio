@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { SnappingService } from './SnappingService'
-import { createPoint2D, createLength } from '@/types/geometry'
+import { createVec2, createLength } from '@/types/geometry'
 import { createPointId, createFloorId } from '@/types/ids'
 import type { Point } from '@/types/model'
 import type { LineSegment2D } from '@/types/geometry'
@@ -18,7 +18,7 @@ describe('SnappingService', () => {
   const createMockPoint = (x: number, y: number): Point => ({
     id: createPointId(),
     floorId: testFloorId,
-    position: createPoint2D(x, y),
+    position: createVec2(x, y),
     roomIds: new Set()
   })
 
@@ -48,7 +48,7 @@ describe('SnappingService', () => {
       }
 
       // Target point close to point1 (within default 200mm snap distance)
-      const target = createPoint2D(150, 120)
+      const target = createVec2(150, 120)
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()
@@ -63,7 +63,7 @@ describe('SnappingService', () => {
       }
 
       // Target point far from point1 (outside 200mm snap distance)
-      const target = createPoint2D(500, 500)
+      const target = createVec2(500, 500)
       const result = service.findSnapResult(target, context)
 
       expect(result).toBeNull()
@@ -77,7 +77,7 @@ describe('SnappingService', () => {
       }
 
       // Target closer to point1
-      const target = createPoint2D(120, 110)
+      const target = createVec2(120, 110)
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()
@@ -93,7 +93,7 @@ describe('SnappingService', () => {
       }
 
       // Target close to excluded point1
-      const target = createPoint2D(110, 110)
+      const target = createVec2(110, 110)
       const result = service.findSnapResult(target, context)
 
       expect(result!.pointId).toBe(point2.id)
@@ -104,7 +104,7 @@ describe('SnappingService', () => {
         points: []
       }
 
-      const target = createPoint2D(100, 100)
+      const target = createVec2(100, 100)
       const result = service.findSnapPosition(target, context)
 
       expect(result).toEqual(target)
@@ -116,7 +116,7 @@ describe('SnappingService', () => {
         points: [point1]
       }
 
-      const target = createPoint2D(120, 110)
+      const target = createVec2(120, 110)
       const result = service.findSnapPosition(target, context)
 
       expect(result).toEqual(point1.position)
@@ -131,7 +131,7 @@ describe('SnappingService', () => {
       }
 
       // Target point near horizontal line through point1, but far enough from point to avoid point snapping
-      const target = createPoint2D(400, 110) // 10mm away from horizontal line, 300+ from point
+      const target = createVec2(400, 110) // 10mm away from horizontal line, 300+ from point
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()
@@ -147,7 +147,7 @@ describe('SnappingService', () => {
       }
 
       // Target point near vertical line through point1, but far enough from point to avoid point snapping
-      const target = createPoint2D(110, 400) // 10mm away from vertical line, 300+ from point
+      const target = createVec2(110, 400) // 10mm away from vertical line, 300+ from point
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()
@@ -163,7 +163,7 @@ describe('SnappingService', () => {
       }
 
       // Target point far from any line (outside 100mm line snap distance)
-      const target = createPoint2D(250, 250)
+      const target = createVec2(250, 250)
       const result = service.findSnapResult(target, context)
 
       expect(result).toBeNull()
@@ -172,11 +172,11 @@ describe('SnappingService', () => {
     it('should snap to reference point lines when provided', () => {
       const context: SnappingContext = {
         points: [],
-        referencePoint: createPoint2D(100, 100)
+        referencePoint: createVec2(100, 100)
       }
 
       // Target near horizontal line through reference point
-      const target = createPoint2D(200, 110)
+      const target = createVec2(200, 110)
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()
@@ -187,12 +187,12 @@ describe('SnappingService', () => {
     it('should respect minimum distance from reference point', () => {
       const context: SnappingContext = {
         points: [], // No points to avoid point snapping
-        referencePoint: createPoint2D(100, 100)
+        referencePoint: createVec2(100, 100)
       }
 
       // Target that would snap to horizontal line through reference point
       // but is too close (within 50mm default minDistance)
-      const target = createPoint2D(130, 105) // 5mm from horizontal line, 31mm from reference point
+      const target = createVec2(130, 105) // 5mm from horizontal line, 31mm from reference point
       const result = service.findSnapResult(target, context)
 
       // Should not snap because projected position would be too close to reference point
@@ -203,8 +203,8 @@ describe('SnappingService', () => {
   describe('Line Segment Snapping', () => {
     it('should snap to extension line of wall segment', () => {
       const segment: LineSegment2D = {
-        start: createPoint2D(100, 100),
-        end: createPoint2D(200, 100)
+        start: createVec2(100, 100),
+        end: createVec2(200, 100)
       }
       const context: SnappingContext = {
         points: [],
@@ -212,7 +212,7 @@ describe('SnappingService', () => {
       }
 
       // Target on extension of horizontal wall
-      const target = createPoint2D(300, 110)
+      const target = createVec2(300, 110)
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()
@@ -222,8 +222,8 @@ describe('SnappingService', () => {
 
     it('should snap to perpendicular line of wall segment', () => {
       const segment: LineSegment2D = {
-        start: createPoint2D(100, 100),
-        end: createPoint2D(200, 100)
+        start: createVec2(100, 100),
+        end: createVec2(200, 100)
       }
       const context: SnappingContext = {
         points: [],
@@ -231,7 +231,7 @@ describe('SnappingService', () => {
       }
 
       // Target near perpendicular line from wall start
-      const target = createPoint2D(110, 200)
+      const target = createVec2(110, 200)
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()
@@ -250,7 +250,7 @@ describe('SnappingService', () => {
 
       // Target near intersection of vertical line through point1 and horizontal line through point2
       // Make sure it's closer to the intersection than to either individual point
-      const target = createPoint2D(1005, 1995) // Close to intersection (1000, 2000)
+      const target = createVec2(1005, 1995) // Close to intersection (1000, 2000)
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()
@@ -267,7 +267,7 @@ describe('SnappingService', () => {
       }
 
       // Target equidistant from single line and intersection
-      const target = createPoint2D(1000, 1995)
+      const target = createVec2(1000, 1995)
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()
@@ -290,7 +290,7 @@ describe('SnappingService', () => {
       }
 
       // Target outside both point and line snap distances
-      const target = createPoint2D(200, 200) // Far from point and any lines
+      const target = createVec2(200, 200) // Far from point and any lines
       const result = customService.findSnapResult(target, context)
 
       expect(result).toBeNull()
@@ -308,7 +308,7 @@ describe('SnappingService', () => {
       }
 
       // Target far enough from point but within default line distance, outside custom line distance
-      const target = createPoint2D(400, 130) // Far from point, 30mm from horizontal line
+      const target = createVec2(400, 130) // Far from point, 30mm from horizontal line
       const result = customService.findSnapResult(target, context)
 
       expect(result).toBeNull()
@@ -323,13 +323,13 @@ describe('SnappingService', () => {
 
       const context: SnappingContext = {
         points: [], // No points - use reference point to create lines
-        referencePoint: createPoint2D(100, 100)
+        referencePoint: createVec2(100, 100)
       }
 
       // Target that would snap to horizontal line through reference point at (100, 100)
       // Projected position would be (150, 100), which is 50mm from reference point
       // Since minDistance is 80mm, this should be rejected
-      const target = createPoint2D(150, 110) // 10mm from horizontal line, projected to (150, 100)
+      const target = createVec2(150, 110) // 10mm from horizontal line, projected to (150, 100)
       const result = customService.findSnapResult(target, context)
 
       expect(result).toBeNull()
@@ -342,7 +342,7 @@ describe('SnappingService', () => {
         points: []
       }
 
-      const target = createPoint2D(100, 100)
+      const target = createVec2(100, 100)
       const result = service.findSnapResult(target, context)
 
       expect(result).toBeNull()
@@ -354,7 +354,7 @@ describe('SnappingService', () => {
         points: [point1]
       }
 
-      const target = createPoint2D(120, 110)
+      const target = createVec2(120, 110)
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()
@@ -368,7 +368,7 @@ describe('SnappingService', () => {
         referencePoint: undefined
       }
 
-      const target = createPoint2D(120, 110)
+      const target = createVec2(120, 110)
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()
@@ -381,7 +381,7 @@ describe('SnappingService', () => {
         referenceLineSegments: undefined
       }
 
-      const target = createPoint2D(120, 110)
+      const target = createVec2(120, 110)
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()
@@ -394,7 +394,7 @@ describe('SnappingService', () => {
         referenceLineSegments: []
       }
 
-      const target = createPoint2D(120, 110)
+      const target = createVec2(120, 110)
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()

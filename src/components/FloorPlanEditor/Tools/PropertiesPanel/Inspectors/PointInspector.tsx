@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react'
 import type { Point } from '@/types/model'
 import { useModelStore } from '@/model/store'
-import { createPoint2D } from '@/types/geometry'
+import { createVec2 } from '@/types/geometry'
 
 interface PointInspectorProps {
   point: Point
@@ -32,7 +32,7 @@ export function PointInspector({ point, onChange }: PointInspectorProps): React.
     (axis: 'x' | 'y', value: string) => {
       const numValue = Number(value)
       if (!isNaN(numValue)) {
-        const newPosition = createPoint2D(
+        const newPosition = createVec2(
           axis === 'x' ? numValue : point.position[0],
           axis === 'y' ? numValue : point.position[1]
         )

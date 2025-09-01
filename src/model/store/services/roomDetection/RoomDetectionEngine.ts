@@ -1,5 +1,5 @@
 import type { WallId, PointId } from '@/types/ids'
-import type { Point2D, Polygon2D } from '@/types/geometry'
+import type { Vec2, Polygon2D } from '@/types/geometry'
 import { angle, isPointInPolygon } from '@/types/geometry'
 import {
   type WallLoopTrace,
@@ -206,7 +206,7 @@ export class RoomDetectionEngine {
   }
 
   toPolygon(traceWallLoop: WallLoopTrace, graph: RoomDetectionGraph): Polygon2D {
-    const points: Point2D[] = []
+    const points: Vec2[] = []
     for (const pointId of traceWallLoop.pointIds) {
       const point = graph.points.get(pointId)
       if (point != null) {

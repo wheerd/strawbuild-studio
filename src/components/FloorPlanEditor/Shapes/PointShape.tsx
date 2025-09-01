@@ -8,7 +8,7 @@ import {
   useDragState,
   useActiveTool
 } from '@/components/FloorPlanEditor/hooks/useEditorStore'
-import { createPoint2D } from '@/types/geometry'
+import { createVec2 } from '@/types/geometry'
 
 interface PointShapeProps {
   point: Point
@@ -67,7 +67,7 @@ export function PointShape({ point }: PointShapeProps): React.JSX.Element {
       const stage = e.target.getStage()
       const pointer = stage?.getPointerPosition()
       if (pointer != null) {
-        startDrag('point', createPoint2D(pointer.x, pointer.y), point.id)
+        startDrag('point', createVec2(pointer.x, pointer.y), point.id)
         // Mark that we started a drag operation
         hasDraggedRef.current = true
       }

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { createPoint2D, type Point2D } from '@/types/geometry'
+import { createVec2, type Vec2 } from '@/types/geometry'
 import type { EntityId, FloorId, PointId } from '@/types/ids'
 import { isPointId, isWallId, isRoomId } from '@/types/ids'
 import { type SnapResult } from '@/model/store/services/snapping'
@@ -11,7 +11,7 @@ export type ViewMode = 'plan' | '3d' | 'elevation'
 export interface DragState {
   isDragging: boolean
   dragType: DragType
-  startPos: Point2D
+  startPos: Vec2
   dragEntityId?: string
 }
 
@@ -28,8 +28,8 @@ export interface EditorState {
   isDrawing: boolean
   dragState: DragState
   // Unified snap state
-  currentSnapTarget?: Point2D
-  currentSnapFromPoint?: Point2D
+  currentSnapTarget?: Vec2
+  currentSnapFromPoint?: Vec2
   currentSnapFromPointId?: PointId // Store the ID to avoid expensive lookups
   currentSnapResult?: SnapResult
   showGrid: boolean
@@ -44,11 +44,11 @@ export interface EditorState {
 export interface EditorActions {
   setActiveTool: (tool: EditorTool) => void
   setIsDrawing: (isDrawing: boolean) => void
-  startDrag: (dragType: DragType, startPos: Point2D, entityId?: string) => void
+  startDrag: (dragType: DragType, startPos: Vec2, entityId?: string) => void
   endDrag: () => void
   // Unified snap actions
-  updateSnapReference: (fromPoint: Point2D | null, fromPointId: PointId | null) => void
-  updateSnapTarget: (target: Point2D) => void
+  updateSnapReference: (fromPoint: Vec2 | null, fromPointId: PointId | null) => void
+  updateSnapTarget: (target: Vec2) => void
   updateSnapResult: (result: SnapResult | null) => void
   clearSnapState: () => void
   setShowGrid: (show: boolean) => void
@@ -75,7 +75,7 @@ function createInitialState(defaultFloorId: FloorId): EditorState {
     dragState: {
       isDragging: false,
       dragType: 'selection',
-      startPos: createPoint2D(0, 0)
+      startPos: createVec2(0, 0)
     },
     showGrid: true,
     gridSize: 500, // 500mm (0.5m) grid for real-world scale
@@ -112,7 +112,7 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
     set({ isDrawing })
   },
 
-  startDrag: (dragType: DragType, startPos: Point2D, entityId?: string) => {
+  startDrag: (dragType: DragType, startPos: Vec2, entityId?: string) => {
     set({
       dragState: {
         isDragging: true,
@@ -128,7 +128,7 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
       dragState: {
         isDragging: false,
         dragType: 'selection',
-        startPos: createPoint2D(0, 0)
+        startPos: createVec2(0, 0)
       }
     })
   },
@@ -256,8 +256,8 @@ export const useIsDrawing = (): boolean => useEditorStore(state => state.isDrawi
 export const useDragState = (): DragState => useEditorStore(state => state.dragState)
 // Unified snap state selectors
 export const useCurrentSnapResult = (): SnapResult | undefined => useEditorStore(state => state.currentSnapResult)
-export const useCurrentSnapTarget = (): Point2D | undefined => useEditorStore(state => state.currentSnapTarget)
-export const useCurrentSnapFromPoint = (): Point2D | undefined => useEditorStore(state => state.currentSnapFromPoint)
+export const useCurrentSnapTarget = (): Vec2 | undefined => useEditorStore(state => state.currentSnapTarget)
+export const useCurrentSnapFromPoint = (): Vec2 | undefined => useEditorStore(state => state.currentSnapFromPoint)
 export const useCurrentSnapFromPointId = (): PointId | undefined =>
   useEditorStore(state => state.currentSnapFromPointId)
 export const useShowGrid = (): boolean => useEditorStore(state => state.showGrid)

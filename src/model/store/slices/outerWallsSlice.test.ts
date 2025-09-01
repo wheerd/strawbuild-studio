@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createOuterWallsSlice, type OuterWallsSlice } from './outerWallsSlice'
 import { createFloorId, createOuterWallId } from '@/types/ids'
-import { createLength, createPoint2D, type Polygon2D } from '@/types/geometry'
+import { createLength, createVec2, type Polygon2D } from '@/types/geometry'
 import type { Opening } from '@/types/model'
 
 describe('OuterWallsSlice', () => {
@@ -28,7 +28,7 @@ describe('OuterWallsSlice', () => {
 
     testFloorId = createFloorId()
     testBoundary = {
-      points: [createPoint2D(0, 0), createPoint2D(1000, 0), createPoint2D(1000, 1000), createPoint2D(0, 1000)]
+      points: [createVec2(0, 0), createVec2(1000, 0), createVec2(1000, 1000), createVec2(0, 1000)]
     }
   })
 
@@ -52,8 +52,8 @@ describe('OuterWallsSlice', () => {
       // Check geometric properties are computed
       expect(segment.insideLength).toBe(1000) // Distance from (0,0) to (1000,0)
       expect(segment.outsideLength).toBe(1000)
-      expect(segment.insideLine.start).toEqual(createPoint2D(0, 0))
-      expect(segment.insideLine.end).toEqual(createPoint2D(1000, 0))
+      expect(segment.insideLine.start).toEqual(createVec2(0, 0))
+      expect(segment.insideLine.end).toEqual(createVec2(1000, 0))
       expect(segment.direction[0]).toBe(1)
       expect(segment.direction[1]).toBe(0)
       expect(segment.outsideDirection[0]).toBeCloseTo(0)
@@ -73,7 +73,7 @@ describe('OuterWallsSlice', () => {
 
     it('should throw error for invalid boundary', () => {
       const invalidBoundary: Polygon2D = {
-        points: [createPoint2D(0, 0), createPoint2D(1000, 0)] // Only 2 points
+        points: [createVec2(0, 0), createVec2(1000, 0)] // Only 2 points
       }
 
       expect(() => store.addOuterWallPolygon(testFloorId, invalidBoundary, 'cells-under-tension')).toThrow(

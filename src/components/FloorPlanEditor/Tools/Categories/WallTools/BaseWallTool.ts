@@ -1,5 +1,5 @@
 import type { Tool, ContextAction, CanvasEvent, ToolOverlayContext } from '../../ToolSystem/types'
-import type { Point2D } from '@/types/geometry'
+import type { Vec2 } from '@/types/geometry'
 import { distanceSquared } from '@/types/geometry'
 import React from 'react'
 import { Line, Circle, Text } from 'react-konva'
@@ -9,9 +9,9 @@ import type { Wall, WallType } from '@/types/model'
 
 export interface WallToolState {
   startPointId?: PointId
-  startPoint?: Point2D
+  startPoint?: Vec2
   thickness: number // mm
-  previewEndPoint?: Point2D // Tool handles its own preview
+  previewEndPoint?: Vec2 // Tool handles its own preview
 }
 
 export interface WallTypeConfig {
@@ -180,7 +180,7 @@ export abstract class BaseWallTool implements Tool {
     )
   }
 
-  private renderStrawbalePreview(startPoint: Point2D, endPoint: Point2D): React.ReactNode[] {
+  private renderStrawbalePreview(startPoint: Vec2, endPoint: Vec2): React.ReactNode[] {
     // Calculate wall perpendicular direction for plaster edges
     const dx = endPoint[0] - startPoint[0]
     const dy = endPoint[1] - startPoint[1]
@@ -260,7 +260,7 @@ export abstract class BaseWallTool implements Tool {
     return previewElements
   }
 
-  private renderLengthLabel(startPoint: Point2D, endPoint: Point2D): React.ReactNode {
+  private renderLengthLabel(startPoint: Vec2, endPoint: Vec2): React.ReactNode {
     const length = Math.sqrt(Math.pow(endPoint[0] - startPoint[0], 2) + Math.pow(endPoint[1] - startPoint[1], 2))
 
     const midX = (startPoint[0] + endPoint[0]) / 2

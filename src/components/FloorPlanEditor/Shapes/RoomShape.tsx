@@ -3,7 +3,7 @@ import type { Room } from '@/types/model'
 import type { PointId } from '@/types/ids'
 import { useSelectedEntity, useEditorStore, useActiveTool } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 import { usePoints } from '@/model/store'
-import type { Point2D } from '@/types/geometry'
+import type { Vec2 } from '@/types/geometry'
 
 interface RoomShapeProps {
   room: Room
@@ -41,7 +41,7 @@ export function RoomShape({ room }: RoomShapeProps): React.JSX.Element | null {
       const point = pointMap.get(pointId)
       return point?.position
     })
-    .filter((pos): pos is Point2D => pos !== undefined)
+    .filter((pos): pos is Vec2 => pos !== undefined)
     .flatMap(pos => [pos[0], pos[1]])
 
   if (points.length < 6) {

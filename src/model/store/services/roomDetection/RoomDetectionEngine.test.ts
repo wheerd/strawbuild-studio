@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach } from 'vitest'
 import { RoomDetectionEngine } from './RoomDetectionEngine'
-import { createPoint2D, createLength } from '@/types/geometry'
+import { createVec2, createLength } from '@/types/geometry'
 import type { RoomDetectionGraph, WallLoopTrace, RoomDefinition } from './types'
 import { createPointId, createWallId, type FloorId, type PointId, type WallId } from '@/types/ids'
 import type { Wall } from '@/types/model'
@@ -38,9 +38,9 @@ describe('RoomDetectionEngine', () => {
 
       const graph: RoomDetectionGraph = {
         points: new Map([
-          [p1, createPoint2D(0, 0)],
-          [p2, createPoint2D(10, 0)],
-          [p3, createPoint2D(5, 10)]
+          [p1, createVec2(0, 0)],
+          [p2, createVec2(10, 0)],
+          [p3, createVec2(5, 10)]
         ]),
         edges: new Map(),
         walls: new Map()
@@ -184,14 +184,14 @@ describe('RoomDetectionEngine', () => {
       const graph: RoomDetectionGraph = {
         points: new Map([
           // Outer square: 20x20
-          [outerP1, createPoint2D(0, 0)],
-          [outerP2, createPoint2D(20, 0)],
-          [outerP3, createPoint2D(20, 20)],
-          [outerP4, createPoint2D(0, 20)],
+          [outerP1, createVec2(0, 0)],
+          [outerP2, createVec2(20, 0)],
+          [outerP3, createVec2(20, 20)],
+          [outerP4, createVec2(0, 20)],
           // Inner triangle: centered in the square
-          [innerP1, createPoint2D(10, 5)],
-          [innerP2, createPoint2D(15, 15)],
-          [innerP3, createPoint2D(5, 15)]
+          [innerP1, createVec2(10, 5)],
+          [innerP2, createVec2(15, 15)],
+          [innerP3, createVec2(5, 15)]
         ]),
         edges: new Map(),
         walls: new Map()
@@ -223,13 +223,13 @@ describe('RoomDetectionEngine', () => {
       const graph: RoomDetectionGraph = {
         points: new Map([
           // Small triangle
-          [outerP1, createPoint2D(0, 0)],
-          [outerP2, createPoint2D(5, 0)],
-          [outerP3, createPoint2D(2.5, 5)],
+          [outerP1, createVec2(0, 0)],
+          [outerP2, createVec2(5, 0)],
+          [outerP3, createVec2(2.5, 5)],
           // Triangle outside the first one
-          [innerP1, createPoint2D(10, 10)],
-          [innerP2, createPoint2D(15, 10)],
-          [innerP3, createPoint2D(12.5, 15)]
+          [innerP1, createVec2(10, 10)],
+          [innerP2, createVec2(15, 10)],
+          [innerP3, createVec2(12.5, 15)]
         ]),
         edges: new Map(),
         walls: new Map()
@@ -261,13 +261,13 @@ describe('RoomDetectionEngine', () => {
       const graph: RoomDetectionGraph = {
         points: new Map([
           // First triangle
-          [outerP1, createPoint2D(0, 0)],
-          [outerP2, createPoint2D(10, 0)],
-          [outerP3, createPoint2D(5, 10)],
+          [outerP1, createVec2(0, 0)],
+          [outerP2, createVec2(10, 0)],
+          [outerP3, createVec2(5, 10)],
           // Overlapping triangle
-          [innerP1, createPoint2D(7, 5)], // Inside
-          [innerP2, createPoint2D(12, 5)], // Outside
-          [innerP3, createPoint2D(9.5, 12)] // Outside
+          [innerP1, createVec2(7, 5)], // Inside
+          [innerP2, createVec2(12, 5)], // Outside
+          [innerP3, createVec2(9.5, 12)] // Outside
         ]),
         edges: new Map(),
         walls: new Map()
@@ -307,13 +307,13 @@ describe('RoomDetectionEngine', () => {
       const graph: RoomDetectionGraph = {
         points: new Map([
           // Room boundary (square 20x20)
-          [outerP1, createPoint2D(0, 0)],
-          [outerP2, createPoint2D(20, 0)],
-          [outerP3, createPoint2D(20, 20)],
-          [outerP4, createPoint2D(0, 20)],
+          [outerP1, createVec2(0, 0)],
+          [outerP2, createVec2(20, 0)],
+          [outerP3, createVec2(20, 20)],
+          [outerP4, createVec2(0, 20)],
           // Interior points
-          [innerP1, createPoint2D(5, 5)],
-          [innerP2, createPoint2D(15, 15)]
+          [innerP1, createVec2(5, 5)],
+          [innerP2, createVec2(15, 15)]
         ]),
         edges: new Map(),
         walls: new Map([
@@ -332,8 +332,8 @@ describe('RoomDetectionEngine', () => {
       // Add exterior wall points
       const extP1 = createPointId()
       const extP2 = createPointId()
-      graph.points.set(extP1, createPoint2D(25, 25))
-      graph.points.set(extP2, createPoint2D(30, 30))
+      graph.points.set(extP1, createVec2(25, 25))
+      graph.points.set(extP2, createVec2(30, 30))
       graph.walls.set(exteriorW1, { startPointId: extP1, endPointId: extP2 })
 
       const result = engine.findInteriorWalls(roomDefinition, graph)
@@ -389,20 +389,20 @@ describe('RoomDetectionEngine', () => {
       const graph: RoomDetectionGraph = {
         points: new Map([
           // Outer boundary (square 20x20)
-          [outerP1, createPoint2D(0, 0)],
-          [outerP2, createPoint2D(20, 0)],
-          [outerP3, createPoint2D(20, 20)],
-          [outerP4, createPoint2D(0, 20)],
+          [outerP1, createVec2(0, 0)],
+          [outerP2, createVec2(20, 0)],
+          [outerP3, createVec2(20, 20)],
+          [outerP4, createVec2(0, 20)],
           // Hole (triangle in center: roughly 8,8 to 12,8 to 10,12)
-          [holeP1, createPoint2D(8, 8)],
-          [holeP2, createPoint2D(12, 8)],
-          [holeP3, createPoint2D(10, 12)],
+          [holeP1, createVec2(8, 8)],
+          [holeP2, createVec2(12, 8)],
+          [holeP3, createVec2(10, 12)],
           // Valid interior points (outside hole but inside room)
-          [validInteriorP1, createPoint2D(2, 2)],
-          [validInteriorP2, createPoint2D(5, 5)],
+          [validInteriorP1, createVec2(2, 2)],
+          [validInteriorP2, createVec2(5, 5)],
           // Points that are inside the hole
-          [insideHoleP1, createPoint2D(9, 9)],
-          [insideHoleP2, createPoint2D(11, 9)]
+          [insideHoleP1, createVec2(9, 9)],
+          [insideHoleP2, createVec2(11, 9)]
         ]),
         edges: new Map(),
         walls: new Map([
@@ -451,9 +451,9 @@ describe('RoomDetectionEngine', () => {
 
       const graph: RoomDetectionGraph = {
         points: new Map([
-          [p1, createPoint2D(0, 0)],
-          [p2, createPoint2D(10, 0)],
-          [p3, createPoint2D(5, 10)]
+          [p1, createVec2(0, 0)],
+          [p2, createVec2(10, 0)],
+          [p3, createVec2(5, 10)]
         ]),
         edges: new Map(),
         walls: new Map([
@@ -532,10 +532,10 @@ describe('RoomDetectionEngine', () => {
 
       const graph: RoomDetectionGraph = {
         points: new Map([
-          [p1, createPoint2D(0, 0)],
-          [p2, createPoint2D(10, 0)],
-          [p3, createPoint2D(10, 10)],
-          [p4, createPoint2D(0, 10)]
+          [p1, createVec2(0, 0)],
+          [p2, createVec2(10, 0)],
+          [p3, createVec2(10, 10)],
+          [p4, createVec2(0, 10)]
         ]),
         edges: new Map([
           [
@@ -608,11 +608,11 @@ describe('RoomDetectionEngine', () => {
 
       const graph: RoomDetectionGraph = {
         points: new Map([
-          [p1, createPoint2D(0, 0)],
-          [p2, createPoint2D(10, 0)],
-          [p3, createPoint2D(10, 10)],
-          [p4, createPoint2D(0, 10)],
-          [p5, createPoint2D(5, 5)] // Center
+          [p1, createVec2(0, 0)],
+          [p2, createVec2(10, 0)],
+          [p3, createVec2(10, 10)],
+          [p4, createVec2(0, 10)],
+          [p5, createVec2(5, 5)] // Center
         ]),
         edges: new Map([
           [
@@ -686,9 +686,9 @@ describe('RoomDetectionEngine', () => {
 
       const graph: RoomDetectionGraph = {
         points: new Map([
-          [p1, createPoint2D(0, 0)],
-          [p2, createPoint2D(10, 0)],
-          [p3, createPoint2D(20, 0)]
+          [p1, createVec2(0, 0)],
+          [p2, createVec2(10, 0)],
+          [p3, createVec2(20, 0)]
         ]),
         edges: new Map([
           [p1, [{ endPointId: p2, wallId: w1 }]],
@@ -721,9 +721,9 @@ describe('RoomDetectionEngine', () => {
 
       const graph: RoomDetectionGraph = {
         points: new Map([
-          [p1, createPoint2D(0, 0)],
-          [p2, createPoint2D(10, 0)],
-          [p3, createPoint2D(5, 5)]
+          [p1, createVec2(0, 0)],
+          [p2, createVec2(10, 0)],
+          [p3, createVec2(5, 5)]
         ]),
         edges: new Map([
           [p1, [{ endPointId: p2, wallId: w1 }]],

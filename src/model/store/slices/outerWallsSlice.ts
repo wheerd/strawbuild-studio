@@ -1,9 +1,9 @@
 import type { StateCreator } from 'zustand'
 import type { OuterWallPolygon, OuterWallConstructionType, OuterWallSegment, Opening } from '@/types/model'
 import type { FloorId, OuterWallId } from '@/types/ids'
-import type { Length, Polygon2D, Point2D, Vector2D, LineSegment2D } from '@/types/geometry'
+import type { Length, Polygon2D, Vec2, LineSegment2D } from '@/types/geometry'
 import { createOuterWallId } from '@/types/ids'
-import { createLength, createVector2D, createPoint2D } from '@/types/geometry'
+import { createLength, createVec2 } from '@/types/geometry'
 
 export interface OuterWallsState {
   outerWalls: Map<OuterWallId, OuterWallPolygon>
@@ -36,16 +36,16 @@ const DEFAULT_OUTER_WALL_THICKNESS = createLength(440) // 44cm for strawbale wal
 
 // Helper function to compute geometric properties for a single segment
 const computeSegmentGeometry = (
-  startPoint: Point2D,
-  endPoint: Point2D,
+  startPoint: Vec2,
+  endPoint: Vec2,
   thickness: Length
 ): {
   insideLength: Length
   outsideLength: Length
   insideLine: LineSegment2D
   outsideLine: LineSegment2D
-  direction: Vector2D
-  outsideDirection: Vector2D
+  direction: Vec2
+  outsideDirection: Vec2
 } => {
   // Calculate direction vector (normalized from start -> end)
   const dx = endPoint[0] - startPoint[0]
@@ -56,11 +56,11 @@ const computeSegmentGeometry = (
     throw new Error('Wall segment cannot have zero length')
   }
 
-  const direction = createVector2D(dx / length, dy / length)
+  const direction = createVec2(dx / length, dy / length)
 
   // Calculate outside direction (normal vector pointing outside)
   // For a clockwise polygon, the outside normal is perpendicular right to the direction
-  const outsideDirection = createVector2D(-direction[1], direction[0])
+  const outsideDirection = createVec2(-direction[1], direction[0])
 
   // Inside line is the original segment
   const insideLine: LineSegment2D = {
@@ -69,11 +69,11 @@ const computeSegmentGeometry = (
   }
 
   // Outside line is offset by thickness in the outside direction
-  const outsideStart = createPoint2D(
+  const outsideStart = createVec2(
     startPoint[0] + outsideDirection[0] * thickness,
     startPoint[1] + outsideDirection[1] * thickness
   )
-  const outsideEnd = createPoint2D(
+  const outsideEnd = createVec2(
     endPoint[0] + outsideDirection[0] * thickness,
     endPoint[1] + outsideDirection[1] * thickness
   )

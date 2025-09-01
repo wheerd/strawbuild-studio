@@ -1,5 +1,5 @@
 import type { WallId, PointId } from '@/types/ids'
-import type { Point2D } from '@/types/geometry'
+import type { Vec2 } from '@/types/geometry'
 
 export interface RoomBoundaryDefinition {
   wallIds: WallId[]
@@ -28,7 +28,7 @@ export interface RoomDetectionEdge {
 }
 
 export interface RoomDetectionGraph {
-  points: Map<PointId, Point2D>
+  points: Map<PointId, Vec2>
   // Edges are undirected, so if this map contains p1 -> p2, it also contains p2 -> p1
   edges: Map<PointId, RoomDetectionEdge[]>
   walls: Map<WallId, { startPointId: PointId; endPointId: PointId }>

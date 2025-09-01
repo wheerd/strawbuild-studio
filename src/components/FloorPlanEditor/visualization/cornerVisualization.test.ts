@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { calculateCornerMiterPolygon } from './cornerVisualization'
-import { createPoint2D, createLength } from '@/types/geometry'
+import { createVec2, createLength } from '@/types/geometry'
 import type { Corner, Wall } from '@/types/model'
 import type { PointId, WallId, FloorId } from '@/types/ids'
 
@@ -28,7 +28,7 @@ describe('Corner Miter Joint Calculation', () => {
       const corner = createTestCorner('point_1', 'wall_1', 'wall_2')
       const walls = new Map()
       const points = new Map()
-      points.set('point_1', { position: createPoint2D(100, 100) })
+      points.set('point_1', { position: createVec2(100, 100) })
 
       const result = calculateCornerMiterPolygon(corner, walls, points)
 
@@ -56,9 +56,9 @@ describe('Corner Miter Joint Calculation', () => {
       walls.set('wall_2', createTestWall('wall_2', 'point_1', 'point_3', 200)) // Vertical wall
 
       const points = new Map()
-      points.set('point_1', { position: createPoint2D(100, 100) }) // Corner point
-      points.set('point_2', { position: createPoint2D(200, 100) }) // End of horizontal wall
-      points.set('point_3', { position: createPoint2D(100, 200) }) // End of vertical wall
+      points.set('point_1', { position: createVec2(100, 100) }) // Corner point
+      points.set('point_2', { position: createVec2(200, 100) }) // End of horizontal wall
+      points.set('point_3', { position: createVec2(100, 200) }) // End of vertical wall
 
       const result = calculateCornerMiterPolygon(corner, walls, points)
 
@@ -80,10 +80,10 @@ describe('Corner Miter Joint Calculation', () => {
       walls.set('wall_3', createTestWall('wall_3', 'point_1', 'point_3', 200)) // Vertical
 
       const points = new Map()
-      points.set('point_1', { position: createPoint2D(100, 100) }) // Center point
-      points.set('point_2', { position: createPoint2D(0, 100) }) // Left end
-      points.set('point_3', { position: createPoint2D(100, 200) }) // Top end
-      points.set('point_4', { position: createPoint2D(200, 100) }) // Right end
+      points.set('point_1', { position: createVec2(100, 100) }) // Center point
+      points.set('point_2', { position: createVec2(0, 100) }) // Left end
+      points.set('point_3', { position: createVec2(100, 200) }) // Top end
+      points.set('point_4', { position: createVec2(200, 100) }) // Right end
 
       const result = calculateCornerMiterPolygon(corner, walls, points)
 
@@ -103,9 +103,9 @@ describe('Corner Miter Joint Calculation', () => {
       walls.set('wall_2', createTestWall('wall_2', 'point_1', 'point_3', 400)) // Thick wall
 
       const points = new Map()
-      points.set('point_1', { position: createPoint2D(100, 100) })
-      points.set('point_2', { position: createPoint2D(200, 100) })
-      points.set('point_3', { position: createPoint2D(100, 200) })
+      points.set('point_1', { position: createVec2(100, 100) })
+      points.set('point_2', { position: createVec2(200, 100) })
+      points.set('point_3', { position: createVec2(100, 200) })
 
       const result = calculateCornerMiterPolygon(corner, walls, points)
 
@@ -122,8 +122,8 @@ describe('Corner Miter Joint Calculation', () => {
       walls.set('wall_2', createTestWall('wall_2', 'point_1', 'point_2', 200))
 
       const points = new Map()
-      points.set('point_1', { position: createPoint2D(100, 100) })
-      points.set('point_2', { position: createPoint2D(200, 100) })
+      points.set('point_1', { position: createVec2(100, 100) })
+      points.set('point_2', { position: createVec2(200, 100) })
 
       // Should not throw, but may return null for invalid configurations
       expect(() => calculateCornerMiterPolygon(corner, walls, points)).not.toThrow()
@@ -139,9 +139,9 @@ describe('Corner Miter Joint Calculation', () => {
       walls.set('wall_2', createTestWall('wall_2', 'point_1', 'point_3'))
 
       const points = new Map()
-      points.set('point_1', { position: createPoint2D(100, 100) })
-      points.set('point_2', { position: createPoint2D(200, 100) })
-      points.set('point_3', { position: createPoint2D(100, 200) })
+      points.set('point_1', { position: createVec2(100, 100) })
+      points.set('point_2', { position: createVec2(200, 100) })
+      points.set('point_3', { position: createVec2(100, 200) })
 
       const result = calculateCornerMiterPolygon(corner, walls, points)
 
@@ -158,8 +158,8 @@ describe('Corner Miter Joint Calculation', () => {
       walls.set('wall_2', createTestWall('wall_2', 'point_1', 'point_2', 0)) // Invalid wall
 
       const points = new Map()
-      points.set('point_1', { position: createPoint2D(100, 100) })
-      points.set('point_2', { position: createPoint2D(100, 100) }) // Same position
+      points.set('point_1', { position: createVec2(100, 100) })
+      points.set('point_2', { position: createVec2(100, 100) }) // Same position
 
       const result = calculateCornerMiterPolygon(corner, walls, points)
 

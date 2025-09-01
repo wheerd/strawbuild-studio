@@ -4,7 +4,7 @@ import { Stage } from 'react-konva'
 import { OuterWallLayer } from './OuterWallLayer'
 import { useModelStore } from '@/model/store'
 import { createFloorId } from '@/types/ids'
-import { createPoint2D, createLength } from '@/types/geometry'
+import { createVec2, createLength } from '@/types/geometry'
 
 // Mock the editor store hook
 vi.mock('@/components/FloorPlanEditor/hooks/useEditorStore', () => ({
@@ -32,7 +32,7 @@ describe('OuterWallLayer', () => {
 
     // Create a simple square boundary
     const boundary = {
-      points: [createPoint2D(0, 0), createPoint2D(1000, 0), createPoint2D(1000, 1000), createPoint2D(0, 1000)]
+      points: [createVec2(0, 0), createVec2(1000, 0), createVec2(1000, 1000), createVec2(0, 1000)]
     }
 
     store.addOuterWallPolygon(floorId, boundary, 'cells-under-tension', createLength(440))

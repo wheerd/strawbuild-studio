@@ -1,6 +1,6 @@
 import type Konva from 'konva'
 import type { CanvasEvent, ToolContext } from '../ToolSystem/types'
-import { createPoint2D } from '@/types/geometry'
+import { createVec2 } from '@/types/geometry'
 
 export class CanvasEventDispatcher {
   private toolContext: ToolContext
@@ -43,7 +43,7 @@ export class CanvasEventDispatcher {
       type,
       originalEvent: keyboardEvent,
       konvaEvent: null as any, // Not applicable for keyboard events
-      stageCoordinates: createPoint2D(0, 0), // Not applicable for keyboard events
+      stageCoordinates: createVec2(0, 0), // Not applicable for keyboard events
       target: null,
       context: this.toolContext
     }

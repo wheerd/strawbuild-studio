@@ -10,7 +10,7 @@ import {
   type RoomId,
   type Room
 } from '@/model'
-import { createLength, createPoint2D } from '@/types/geometry'
+import { createLength, createVec2 } from '@/types/geometry'
 
 describe('RoomDetectionService - updateRoomsAfterWallAddition', () => {
   let store: any
@@ -124,7 +124,7 @@ describe('RoomDetectionService - updateRoomsAfterWallAddition', () => {
       points.push([])
       for (let y = 0; y < 4; y++) {
         const pointId = `point-${x}-${y}` as PointId
-        const point: Point = { floorId, id: pointId, position: createPoint2D(x, y), roomIds: new Set() }
+        const point: Point = { floorId, id: pointId, position: createVec2(x, y), roomIds: new Set() }
         store.points.set(pointId, point)
         points[x].push(point)
       }

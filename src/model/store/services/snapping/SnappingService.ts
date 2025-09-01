@@ -1,6 +1,6 @@
 import {
-  type Point2D,
-  createVector2D,
+  type Vec2,
+  createVec2,
   lineIntersection,
   distanceToInfiniteLine,
   projectPointOntoLine,
@@ -26,7 +26,7 @@ export class SnappingService {
    * Find the snap result for a target point
    * This is the main function that should be used by all components
    */
-  findSnapResult(target: Point2D, context: SnappingContext): SnapResult | null {
+  findSnapResult(target: Vec2, context: SnappingContext): SnapResult | null {
     // Step 1: Try point snapping first (highest priority)
     const pointSnapResult = this.findPointSnapPosition(target, context)
 
@@ -42,7 +42,7 @@ export class SnappingService {
    * Convenience method to get just the snapped position
    * Returns the target point if no snap is found
    */
-  findSnapPosition(target: Point2D, context: SnappingContext): Point2D {
+  findSnapPosition(target: Vec2, context: SnappingContext): Vec2 {
     const result = this.findSnapResult(target, context)
     return result?.position ?? target
   }
@@ -50,7 +50,7 @@ export class SnappingService {
   /**
    * Find existing points for direct point snapping
    */
-  private findPointSnapPosition(target: Point2D, context: SnappingContext): SnapResult | null {
+  private findPointSnapPosition(target: Vec2, context: SnappingContext): SnapResult | null {
     let bestPoint: Point | null = null
     let bestDistanceSq = this.snapConfig.pointSnapDistance ** 2
 
@@ -83,13 +83,13 @@ export class SnappingService {
       // Horizontal line through point
       snapLines.push({
         point,
-        direction: createVector2D(1, 0)
+        direction: createVec2(1, 0)
       })
 
       // Vertical line through point
       snapLines.push({
         point,
-        direction: createVector2D(0, 1)
+        direction: createVec2(0, 1)
       })
     }
 
@@ -98,13 +98,13 @@ export class SnappingService {
       // Horizontal line through point
       snapLines.push({
         point: context.referencePoint,
-        direction: createVector2D(1, 0)
+        direction: createVec2(1, 0)
       })
 
       // Vertical line through point
       snapLines.push({
         point: context.referencePoint,
-        direction: createVector2D(0, 1)
+        direction: createVec2(0, 1)
       })
     }
 
@@ -121,11 +121,11 @@ export class SnappingService {
       // Perpendicular lines (90 degrees rotated)
       snapLines.push({
         point: segment.start,
-        direction: createVector2D(-line.direction[1], line.direction[0])
+        direction: createVec2(-line.direction[1], line.direction[0])
       })
       snapLines.push({
         point: segment.end,
-        direction: createVector2D(-line.direction[1], line.direction[0])
+        direction: createVec2(-line.direction[1], line.direction[0])
       })
     }
 
@@ -135,9 +135,9 @@ export class SnappingService {
   /**
    * Find snap position on lines or line intersections
    */
-  private findLineSnapPosition(target: Point2D, snapLines: Line2D[], context: SnappingContext): SnapResult | null {
+  private findLineSnapPosition(target: Vec2, snapLines: Line2D[], context: SnappingContext): SnapResult | null {
     const minDistanceSquared = this.snapConfig.minDistance ** 2
-    const nearbyLines: Array<{ line: Line2D; distance: number; projectedPosition: Point2D }> = []
+    const nearbyLines: Array<{ line: Line2D; distance: number; projectedPosition: Vec2 }> = []
     let closestDist = Infinity
     let closestIndex = -1
 

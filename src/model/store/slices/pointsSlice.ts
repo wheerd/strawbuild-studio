@@ -2,7 +2,7 @@ import type { StateCreator } from 'zustand'
 import type { Point } from '@/types/model'
 import type { PointId, RoomId, FloorId } from '@/types/ids'
 import { createPointId } from '@/types/ids'
-import type { Point2D, Length, Bounds2D } from '@/types/geometry'
+import type { Vec2, Length, Bounds2D } from '@/types/geometry'
 import { boundsFromPoints, distanceSquared } from '@/types/geometry'
 
 export interface PointsState {
@@ -11,15 +11,15 @@ export interface PointsState {
 
 export interface PointsActions {
   // CRUD operations - Enhanced with floorId
-  addPoint: (floorId: FloorId, position: Point2D) => Point
+  addPoint: (floorId: FloorId, position: Vec2) => Point
   removePoint: (pointId: PointId) => void
 
   // Point modifications
-  movePoint: (pointId: PointId, position: Point2D) => void
+  movePoint: (pointId: PointId, position: Vec2) => void
 
   // Point queries
   getPointById: (pointId: PointId) => Point | null
-  findNearestPoint: (floorId: FloorId, target: Point2D, maxDistance?: Length, exludedPointId?: PointId) => Point | null
+  findNearestPoint: (floorId: FloorId, target: Vec2, maxDistance?: Length, exludedPointId?: PointId) => Point | null
   getPoints: () => Point[]
 
   // NEW: Floor filtering methods
@@ -41,7 +41,7 @@ export const createPointsSlice: StateCreator<PointsSlice, [['zustand/devtools', 
   points: new Map<PointId, Point>(),
 
   // CRUD operations
-  addPoint: (floorId: FloorId, position: Point2D) => {
+  addPoint: (floorId: FloorId, position: Vec2) => {
     const point: Point = {
       id: createPointId(),
       floorId,
@@ -69,7 +69,7 @@ export const createPointsSlice: StateCreator<PointsSlice, [['zustand/devtools', 
   },
 
   // Point modifications
-  movePoint: (pointId: PointId, position: Point2D) => {
+  movePoint: (pointId: PointId, position: Vec2) => {
     set(state => {
       const point = state.points.get(pointId)
       if (point == null) return state
@@ -92,7 +92,7 @@ export const createPointsSlice: StateCreator<PointsSlice, [['zustand/devtools', 
     return state.points.get(pointId) ?? null
   },
 
-  findNearestPoint: (floorId: FloorId, target: Point2D, maxDistance?: Length, exludedPointId?: PointId) => {
+  findNearestPoint: (floorId: FloorId, target: Vec2, maxDistance?: Length, exludedPointId?: PointId) => {
     const state = get()
 
     let nearestPoint: Point | null = null

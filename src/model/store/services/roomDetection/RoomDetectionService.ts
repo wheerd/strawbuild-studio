@@ -1,5 +1,5 @@
 import type { WallId, FloorId, PointId, RoomId } from '@/types/ids'
-import type { Point2D, Polygon2D } from '@/types/geometry'
+import type { Vec2, Polygon2D } from '@/types/geometry'
 import { distance, isPointInPolygon } from '@/types/geometry'
 import type { StoreState, StoreActions } from '../../types'
 import { useModelStore } from '../..'
@@ -10,7 +10,7 @@ import type { Room, Wall } from '@/types/model'
 export interface IRoomDetectionService {
   // Room detection operations
   detectRooms: (floorId: FloorId) => void
-  detectRoomAtPoint: (floorId: FloorId, point: Point2D) => void
+  detectRoomAtPoint: (floorId: FloorId, point: Vec2) => void
 
   // Room merging and splitting
   updateRoomsAfterWallRemoval: (removedWall: Wall) => void
@@ -86,7 +86,7 @@ export class RoomDetectionService implements IRoomDetectionService {
     })
   }
 
-  detectRoomAtPoint(floorId: FloorId, point: Point2D): void {
+  detectRoomAtPoint(floorId: FloorId, point: Vec2): void {
     if (!this.autoDetectionEnabled) return
 
     const graph = this.buildRoomDetectionGraph(floorId)
@@ -557,7 +557,7 @@ export class RoomDetectionService implements IRoomDetectionService {
    */
   private buildRoomDetectionGraph(floorId: FloorId): RoomDetectionGraph {
     const store = this.get()
-    const points = new Map<PointId, Point2D>()
+    const points = new Map<PointId, Vec2>()
     const edges = new Map<PointId, Array<{ endPointId: PointId; wallId: WallId }>>()
     const walls = new Map<WallId, { startPointId: PointId; endPointId: PointId }>()
 

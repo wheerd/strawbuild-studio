@@ -3,9 +3,9 @@ import { render } from '@testing-library/react'
 import { WallShape } from './WallShape'
 import type { Wall, Point } from '@/types/model'
 import type { PointId } from '@/types/ids'
-import type { Point2D } from '@/types/geometry'
+import type { Vec2 } from '@/types/geometry'
 import { createWallId, createPointId, createFloorId } from '@/types/ids'
-import { createLength, createPoint2D } from '@/types/geometry'
+import { createLength, createVec2 } from '@/types/geometry'
 
 import {
   useSelectedEntity,
@@ -41,7 +41,7 @@ describe('WallShape Angle Normalization', () => {
     type: 'other'
   }
 
-  const createMockPoint = (id: PointId, position: Point2D): Point => ({
+  const createMockPoint = (id: PointId, position: Vec2): Point => ({
     id,
     floorId: testFloorId,
     position,
@@ -58,7 +58,7 @@ describe('WallShape Angle Normalization', () => {
     vi.mocked(useDragState).mockReturnValue({
       isDragging: false,
       dragType: 'pan',
-      startPos: createPoint2D(0, 0),
+      startPos: createVec2(0, 0),
       dragEntityId: undefined
     })
     vi.mocked(useActiveTool).mockReturnValue('select')
@@ -69,8 +69,8 @@ describe('WallShape Angle Normalization', () => {
   it('should render text with correct angle for horizontal wall (left to right)', () => {
     vi.mocked(usePoints).mockReturnValue(
       new Map([
-        [mockWall.startPointId, createMockPoint(mockWall.startPointId, createPoint2D(0, 0))],
-        [mockWall.endPointId, createMockPoint(mockWall.endPointId, createPoint2D(1000, 0))]
+        [mockWall.startPointId, createMockPoint(mockWall.startPointId, createVec2(0, 0))],
+        [mockWall.endPointId, createMockPoint(mockWall.endPointId, createVec2(1000, 0))]
       ])
     )
 
@@ -84,8 +84,8 @@ describe('WallShape Angle Normalization', () => {
   it('should render text with correct angle for horizontal wall (right to left)', () => {
     vi.mocked(usePoints).mockReturnValue(
       new Map([
-        [mockWall.startPointId, createMockPoint(mockWall.startPointId, createPoint2D(1000, 0))],
-        [mockWall.endPointId, createMockPoint(mockWall.endPointId, createPoint2D(0, 0))]
+        [mockWall.startPointId, createMockPoint(mockWall.startPointId, createVec2(1000, 0))],
+        [mockWall.endPointId, createMockPoint(mockWall.endPointId, createVec2(0, 0))]
       ])
     )
 
@@ -99,8 +99,8 @@ describe('WallShape Angle Normalization', () => {
   it('should render text with correct angle for vertical wall (bottom to top)', () => {
     vi.mocked(usePoints).mockReturnValue(
       new Map([
-        [mockWall.startPointId, createMockPoint(mockWall.startPointId, createPoint2D(0, 0))],
-        [mockWall.endPointId, createMockPoint(mockWall.endPointId, createPoint2D(0, 1000))]
+        [mockWall.startPointId, createMockPoint(mockWall.startPointId, createVec2(0, 0))],
+        [mockWall.endPointId, createMockPoint(mockWall.endPointId, createVec2(0, 1000))]
       ])
     )
 
@@ -114,8 +114,8 @@ describe('WallShape Angle Normalization', () => {
   it('should render text with correct angle for vertical wall (top to bottom)', () => {
     vi.mocked(usePoints).mockReturnValue(
       new Map([
-        [mockWall.startPointId, createMockPoint(mockWall.startPointId, createPoint2D(0, 1000))],
-        [mockWall.endPointId, createMockPoint(mockWall.endPointId, createPoint2D(0, 0))]
+        [mockWall.startPointId, createMockPoint(mockWall.startPointId, createVec2(0, 1000))],
+        [mockWall.endPointId, createMockPoint(mockWall.endPointId, createVec2(0, 0))]
       ])
     )
 
@@ -129,8 +129,8 @@ describe('WallShape Angle Normalization', () => {
   it('should render text with correct angle for diagonal wall (45 degrees)', () => {
     vi.mocked(usePoints).mockReturnValue(
       new Map([
-        [mockWall.startPointId, createMockPoint(mockWall.startPointId, createPoint2D(0, 0))],
-        [mockWall.endPointId, createMockPoint(mockWall.endPointId, createPoint2D(1000, 1000))]
+        [mockWall.startPointId, createMockPoint(mockWall.startPointId, createVec2(0, 0))],
+        [mockWall.endPointId, createMockPoint(mockWall.endPointId, createVec2(1000, 1000))]
       ])
     )
 
@@ -144,8 +144,8 @@ describe('WallShape Angle Normalization', () => {
   it('should render text with correct angle for diagonal wall (-45 degrees)', () => {
     vi.mocked(usePoints).mockReturnValue(
       new Map([
-        [mockWall.startPointId, createMockPoint(mockWall.startPointId, createPoint2D(0, 1000))],
-        [mockWall.endPointId, createMockPoint(mockWall.endPointId, createPoint2D(1000, 0))]
+        [mockWall.startPointId, createMockPoint(mockWall.startPointId, createVec2(0, 1000))],
+        [mockWall.endPointId, createMockPoint(mockWall.endPointId, createVec2(1000, 0))]
       ])
     )
 
@@ -159,8 +159,8 @@ describe('WallShape Angle Normalization', () => {
   it('should normalize 135 degrees to -45 degrees', () => {
     vi.mocked(usePoints).mockReturnValue(
       new Map([
-        [mockWall.startPointId, createMockPoint(mockWall.startPointId, createPoint2D(1000, 0))],
-        [mockWall.endPointId, createMockPoint(mockWall.endPointId, createPoint2D(0, 1000))]
+        [mockWall.startPointId, createMockPoint(mockWall.startPointId, createVec2(1000, 0))],
+        [mockWall.endPointId, createMockPoint(mockWall.endPointId, createVec2(0, 1000))]
       ])
     )
 
@@ -174,8 +174,8 @@ describe('WallShape Angle Normalization', () => {
   it('should normalize -135 degrees to 45 degrees', () => {
     vi.mocked(usePoints).mockReturnValue(
       new Map([
-        [mockWall.startPointId, createMockPoint(mockWall.startPointId, createPoint2D(1000, 1000))],
-        [mockWall.endPointId, createMockPoint(mockWall.endPointId, createPoint2D(0, 0))]
+        [mockWall.startPointId, createMockPoint(mockWall.startPointId, createVec2(1000, 1000))],
+        [mockWall.endPointId, createMockPoint(mockWall.endPointId, createVec2(0, 0))]
       ])
     )
 
@@ -190,8 +190,8 @@ describe('WallShape Angle Normalization', () => {
     vi.mocked(useSelectedEntity).mockReturnValue('different-id')
     vi.mocked(usePoints).mockReturnValue(
       new Map([
-        [mockWall.startPointId, createMockPoint(mockWall.startPointId, createPoint2D(0, 0))],
-        [mockWall.endPointId, createMockPoint(mockWall.endPointId, createPoint2D(1000, 0))]
+        [mockWall.startPointId, createMockPoint(mockWall.startPointId, createVec2(0, 0))],
+        [mockWall.endPointId, createMockPoint(mockWall.endPointId, createVec2(1000, 0))]
       ])
     )
 
@@ -204,8 +204,8 @@ describe('WallShape Angle Normalization', () => {
   it('should display length in meters with 2 decimal places', () => {
     vi.mocked(usePoints).mockReturnValue(
       new Map([
-        [mockWall.startPointId, createMockPoint(mockWall.startPointId, createPoint2D(0, 0))],
-        [mockWall.endPointId, createMockPoint(mockWall.endPointId, createPoint2D(1000, 0))]
+        [mockWall.startPointId, createMockPoint(mockWall.startPointId, createVec2(0, 0))],
+        [mockWall.endPointId, createMockPoint(mockWall.endPointId, createVec2(1000, 0))]
       ])
     )
 

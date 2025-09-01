@@ -4,7 +4,7 @@ import { useCallback, useRef } from 'react'
 import type { Wall } from '@/types/model'
 import { useSelectedEntity, useEditorStore, useActiveTool } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 import { usePoints, useCorners, useWallLength } from '@/model/store'
-import { createPoint2D, distance, subtract, normalize, perpendicularCCW, angle } from '@/types/geometry'
+import { createVec2, distance, subtract, normalize, perpendicularCCW, angle } from '@/types/geometry'
 import { getWallVisualization } from '@/components/FloorPlanEditor/visualization/wallVisualization'
 
 interface WallShapeProps {
@@ -76,7 +76,7 @@ export function WallShape({ wall }: WallShapeProps): React.JSX.Element | null {
       const stage = e.target.getStage()
       const pointer = stage?.getPointerPosition()
       if (pointer != null) {
-        startDrag('wall', createPoint2D(pointer.x, pointer.y), wall.id)
+        startDrag('wall', createVec2(pointer.x, pointer.y), wall.id)
         // Mark that we started a drag operation
         hasDraggedRef.current = true
       }

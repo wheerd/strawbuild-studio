@@ -4,11 +4,11 @@ import type { WallsSlice } from './wallsSlice'
 import type { PointsSlice } from './pointsSlice'
 import type { Wall } from '@/types/model'
 import {
-  createPoint2D,
+  createVec2,
   distance,
   distanceToLineSegment,
   type Length,
-  type Point2D,
+  type Vec2,
   type LineSegment2D
 } from '@/types/geometry'
 
@@ -16,7 +16,7 @@ export interface WallsPointsActions {
   getWallLength: (wallId: WallId) => Length
   mergePoints: (sourcePointId: PointId, targetPointId: PointId) => void
   moveWall: (wallId: WallId, deltaX: Length, deltaY: Length) => void
-  getWallAtPoint: (point: Point2D, floorId: FloorId) => Wall | null
+  getWallAtPoint: (point: Vec2, floorId: FloorId) => Wall | null
 }
 
 export type WallsPointsSlice = WallsPointsActions
@@ -142,9 +142,9 @@ export const createWallsPointsSlice: StateCreator<WallsSlice & PointsSlice, [], 
     updatedState.points = new Map(state.points)
     updatedState.walls = new Map(state.walls)
 
-    const newStartPosition: Point2D = createPoint2D(startPoint.position[0] + moveX, startPoint.position[1] + moveY)
+    const newStartPosition: Vec2 = createVec2(startPoint.position[0] + moveX, startPoint.position[1] + moveY)
 
-    const newEndPosition: Point2D = createPoint2D(endPoint.position[0] + moveX, endPoint.position[1] + moveY)
+    const newEndPosition: Vec2 = createVec2(endPoint.position[0] + moveX, endPoint.position[1] + moveY)
 
     const updatedStartPoint = { ...startPoint, position: newStartPosition }
     const updatedEndPoint = { ...endPoint, position: newEndPosition }
@@ -155,7 +155,7 @@ export const createWallsPointsSlice: StateCreator<WallsSlice & PointsSlice, [], 
     set(updatedState)
   },
 
-  getWallAtPoint: (point: Point2D, floorId: FloorId): Wall | null => {
+  getWallAtPoint: (point: Vec2, floorId: FloorId): Wall | null => {
     const state = get()
     const wallsOnFloor = state.getWallsByFloor(floorId)
 

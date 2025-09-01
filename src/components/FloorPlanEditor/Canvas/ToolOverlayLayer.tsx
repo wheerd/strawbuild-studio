@@ -7,7 +7,7 @@ import {
   useCurrentSnapTarget
 } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 import type { ToolOverlayContext } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
-import { createPoint2D, type Point2D } from '@/types/geometry'
+import { createVec2, type Vec2 } from '@/types/geometry'
 
 export function ToolOverlayLayer(): React.JSX.Element {
   const toolContext = useToolContext()
@@ -17,7 +17,7 @@ export function ToolOverlayLayer(): React.JSX.Element {
   const snapTarget = useCurrentSnapTarget()
 
   // Track current mouse position for tools that need it
-  const [currentMousePos] = useState<Point2D | undefined>()
+  const [currentMousePos] = useState<Vec2 | undefined>()
 
   // Get active tool from tool manager
   const activeTool = toolManagerState.activeTool
@@ -30,10 +30,10 @@ export function ToolOverlayLayer(): React.JSX.Element {
       currentMousePos,
       snapResult,
       snapTarget,
-      worldToStage: (worldPos: Point2D): Point2D =>
-        createPoint2D(worldPos[0] * viewport.zoom + viewport.panX, worldPos[1] * viewport.zoom + viewport.panY),
-      stageToWorld: (stagePos: Point2D): Point2D =>
-        createPoint2D((stagePos[0] - viewport.panX) / viewport.zoom, (stagePos[1] - viewport.panY) / viewport.zoom),
+      worldToStage: (worldPos: Vec2): Vec2 =>
+        createVec2(worldPos[0] * viewport.zoom + viewport.panX, worldPos[1] * viewport.zoom + viewport.panY),
+      stageToWorld: (stagePos: Vec2): Vec2 =>
+        createVec2((stagePos[0] - viewport.panX) / viewport.zoom, (stagePos[1] - viewport.panY) / viewport.zoom),
       getInfiniteLineExtent: (): number => {
         const worldWidth = viewport.stageWidth / viewport.zoom
         const worldHeight = viewport.stageHeight / viewport.zoom

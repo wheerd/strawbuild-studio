@@ -1,13 +1,13 @@
 import type { EntityId } from '@/types/ids'
 import { isWallId, isRoomId, isPointId } from '@/types/ids'
 import type { Tool, ToolContext, ContextAction, Entity, CanvasEvent } from '../../ToolSystem/types'
-import type { Point2D } from '@/types/geometry'
+import type { Vec2 } from '@/types/geometry'
 import { createLength } from '@/types/geometry'
 
 export interface RotateToolState {
   rotationStep: number // degrees
   rotationCenter: 'center' | 'custom'
-  customCenter?: Point2D
+  customCenter?: Vec2
   isRotating: boolean
   rotateEntity?: Entity
   startAngle?: number
@@ -184,7 +184,7 @@ export class RotateTool implements Tool {
     this.state.rotationStep = Math.max(1, Math.min(180, step))
   }
 
-  setRotationCenter(mode: 'center' | 'custom', customPoint?: Point2D): void {
+  setRotationCenter(mode: 'center' | 'custom', customPoint?: Vec2): void {
     this.state.rotationCenter = mode
     if (mode === 'custom' && customPoint) {
       this.state.customCenter = customPoint
@@ -192,7 +192,7 @@ export class RotateTool implements Tool {
   }
 
   // Helper methods
-  private getEntityAtPoint(point: Point2D, context: ToolContext, tolerance = 10): Entity | null {
+  private getEntityAtPoint(point: Vec2, context: ToolContext, tolerance = 10): Entity | null {
     const modelStore = context.getModelStore()
     const activeFloorId = context.getActiveFloorId()
     const viewport = context.getViewport()
@@ -233,7 +233,7 @@ export class RotateTool implements Tool {
     throw new Error('Entity has no id')
   }
 
-  private getRotationCenter(entity: Entity): Point2D | null {
+  private getRotationCenter(entity: Entity): Vec2 | null {
     if (this.state.rotationCenter === 'custom' && this.state.customCenter) {
       return this.state.customCenter
     }
@@ -248,7 +248,7 @@ export class RotateTool implements Tool {
     return null
   }
 
-  private previewRotation(_entity: Entity, _center: Point2D, _angle: number): void {
+  private previewRotation(_entity: Entity, _center: Vec2, _angle: number): void {
     // Show rotation preview (visual feedback)
     // This would be implemented in the rendering layer
   }
@@ -258,7 +258,7 @@ export class RotateTool implements Tool {
     // This would be implemented by calling the model store
   }
 
-  private applyRotationWithAngle(_entity: Entity, _center: Point2D, _angle: number): void {
+  private applyRotationWithAngle(_entity: Entity, _center: Vec2, _angle: number): void {
     // Apply specific rotation angle
     // This would be implemented by calling the model store
   }

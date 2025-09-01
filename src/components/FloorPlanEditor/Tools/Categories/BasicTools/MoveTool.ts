@@ -1,15 +1,15 @@
 import type { EntityId } from '@/types/ids'
 import { isWallId, isRoomId, isPointId } from '@/types/ids'
 import type { Tool, ToolContext, ContextAction, Entity, CanvasEvent } from '../../ToolSystem/types'
-import type { Point2D } from '@/types/geometry'
-import { createPoint2D, createLength } from '@/types/geometry'
+import type { Vec2 } from '@/types/geometry'
+import { createVec2, createLength } from '@/types/geometry'
 
 interface MoveToolState {
   isDragging: boolean
   dragEntity?: Entity
-  dragStartPoint?: Point2D
-  dragOffset?: Point2D
-  dragStartMousePos?: Point2D
+  dragStartPoint?: Vec2
+  dragOffset?: Vec2
+  dragStartMousePos?: Vec2
 }
 
 export class MoveTool implements Tool {
@@ -36,12 +36,12 @@ export class MoveTool implements Tool {
       this.state.dragEntity = entity
       this.state.dragStartPoint = stageCoords
       const mouseEvent = event.originalEvent as MouseEvent
-      this.state.dragStartMousePos = createPoint2D(mouseEvent.clientX, mouseEvent.clientY)
+      this.state.dragStartMousePos = createVec2(mouseEvent.clientX, mouseEvent.clientY)
 
       // Calculate offset for smooth dragging
       const entityPosition = this.getEntityPosition(entity)
       if (entityPosition) {
-        this.state.dragOffset = createPoint2D(stageCoords[0] - entityPosition[0], stageCoords[1] - entityPosition[1])
+        this.state.dragOffset = createVec2(stageCoords[0] - entityPosition[0], stageCoords[1] - entityPosition[1])
       }
 
       // Select the entity being moved
@@ -169,7 +169,7 @@ export class MoveTool implements Tool {
   }
 
   // Helper methods
-  private getEntityAtPoint(point: Point2D, context: ToolContext, tolerance = 10): Entity | null {
+  private getEntityAtPoint(point: Vec2, context: ToolContext, tolerance = 10): Entity | null {
     const modelStore = context.getModelStore()
     const activeFloorId = context.getActiveFloorId()
     const viewport = context.getViewport()
@@ -257,7 +257,7 @@ export class MoveTool implements Tool {
     return 'Entity'
   }
 
-  private getEntityPosition(entity: Entity): Point2D | null {
+  private getEntityPosition(entity: Entity): Vec2 | null {
     // Get the position of an entity for drag calculations
     if ('position' in entity) {
       return entity.position

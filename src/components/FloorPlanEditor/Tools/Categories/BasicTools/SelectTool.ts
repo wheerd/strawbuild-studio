@@ -1,6 +1,6 @@
 import type { EntityId } from '@/types/ids'
 import type { Tool, ToolContext, Entity, CanvasEvent } from '../../ToolSystem/types'
-import { createLength, type Point2D } from '@/types/geometry'
+import { createLength, type Vec2 } from '@/types/geometry'
 
 export class SelectTool implements Tool {
   id = 'basic.select'
@@ -49,7 +49,7 @@ export class SelectTool implements Tool {
   }
 
   // Helper methods
-  private getEntityAtPoint(point: Point2D, context: ToolContext, tolerance = 10): Entity | null {
+  private getEntityAtPoint(point: Vec2, context: ToolContext, tolerance = 10): Entity | null {
     const modelStore = context.getModelStore()
     const activeFloorId = context.getActiveFloorId()
     const viewport = context.getViewport()

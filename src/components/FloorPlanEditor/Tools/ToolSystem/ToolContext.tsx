@@ -5,7 +5,7 @@ import { useModelStore } from '@/model/store'
 import { useEditorStore, useActiveFloorId } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 import { defaultSnappingService } from '@/model/store/services/snapping/SnappingService'
 import { useSnappingContext } from '@/components/FloorPlanEditor/hooks/useSnappingContext'
-import { createPoint2D, type Point2D } from '@/types/geometry'
+import { createVec2, type Vec2 } from '@/types/geometry'
 import type { EntityId, PointId } from '@/types/ids'
 import type { SnapResult as ModelSnapResult } from '@/model/store/services/snapping/types'
 
@@ -63,12 +63,12 @@ export function ToolContextProvider({ children }: ToolContextProviderProps): Rea
   const toolContext = useMemo<IToolContext>(
     () => ({
       // Coordinate conversion from screen/stage coordinates to world coordinates
-      getStageCoordinates: (event: { x: number; y: number }): Point2D => {
+      getStageCoordinates: (event: { x: number; y: number }): Vec2 => {
         // Convert screen coordinates to world coordinates by accounting for pan and zoom
-        return createPoint2D((event.x - viewport.panX) / viewport.zoom, (event.y - viewport.panY) / viewport.zoom)
+        return createVec2((event.x - viewport.panX) / viewport.zoom, (event.y - viewport.panY) / viewport.zoom)
       },
 
-      getScreenCoordinates: (point: Point2D): { x: number; y: number } => {
+      getScreenCoordinates: (point: Vec2): { x: number; y: number } => {
         // Convert world coordinates back to screen coordinates
         return {
           x: point[0] * viewport.zoom + viewport.panX,
@@ -77,14 +77,14 @@ export function ToolContextProvider({ children }: ToolContextProviderProps): Rea
       },
 
       // Snapping
-      findSnapPoint: (point: Point2D): ModelSnapResult | null => {
+      findSnapPoint: (point: Vec2): ModelSnapResult | null => {
         updateSnapTarget(point)
         const snapResult = defaultSnappingService.findSnapResult(point, snappingContext)
         updateSnapResult(snapResult)
         return snapResult
       },
 
-      updateSnapReference: (fromPoint: Point2D | null, fromPointId: string | null): void => {
+      updateSnapReference: (fromPoint: Vec2 | null, fromPointId: string | null): void => {
         updateSnapReference(fromPoint, fromPointId as PointId | null)
       },
 
