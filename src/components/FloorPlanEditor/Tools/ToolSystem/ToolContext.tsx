@@ -71,8 +71,8 @@ export function ToolContextProvider({ children }: ToolContextProviderProps): Rea
       getScreenCoordinates: (point: Point2D): { x: number; y: number } => {
         // Convert world coordinates back to screen coordinates
         return {
-          x: point.x * viewport.zoom + viewport.panX,
-          y: point.y * viewport.zoom + viewport.panY
+          x: point[0] * viewport.zoom + viewport.panX,
+          y: point[1] * viewport.zoom + viewport.panY
         }
       },
 

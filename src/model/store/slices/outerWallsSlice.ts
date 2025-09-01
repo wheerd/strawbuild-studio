@@ -48,8 +48,8 @@ const computeSegmentGeometry = (
   outsideDirection: Vector2D
 } => {
   // Calculate direction vector (normalized from start -> end)
-  const dx = endPoint.x - startPoint.x
-  const dy = endPoint.y - startPoint.y
+  const dx = endPoint[0] - startPoint[0]
+  const dy = endPoint[1] - startPoint[1]
   const length = Math.sqrt(dx * dx + dy * dy)
 
   if (length === 0) {
@@ -60,7 +60,7 @@ const computeSegmentGeometry = (
 
   // Calculate outside direction (normal vector pointing outside)
   // For a clockwise polygon, the outside normal is perpendicular right to the direction
-  const outsideDirection = createVector2D(-direction.y, direction.x)
+  const outsideDirection = createVector2D(-direction[1], direction[0])
 
   // Inside line is the original segment
   const insideLine: LineSegment2D = {
@@ -70,12 +70,12 @@ const computeSegmentGeometry = (
 
   // Outside line is offset by thickness in the outside direction
   const outsideStart = createPoint2D(
-    startPoint.x + outsideDirection.x * thickness,
-    startPoint.y + outsideDirection.y * thickness
+    startPoint[0] + outsideDirection[0] * thickness,
+    startPoint[1] + outsideDirection[1] * thickness
   )
   const outsideEnd = createPoint2D(
-    endPoint.x + outsideDirection.x * thickness,
-    endPoint.y + outsideDirection.y * thickness
+    endPoint[0] + outsideDirection[0] * thickness,
+    endPoint[1] + outsideDirection[1] * thickness
   )
 
   const outsideLine: LineSegment2D = {

@@ -165,8 +165,8 @@ export abstract class BaseWallTool implements Tool {
 
       // Start point indicator (only when drawing)
       React.createElement(Circle, {
-        x: this.state.startPoint.x,
-        y: this.state.startPoint.y,
+        x: this.state.startPoint[0],
+        y: this.state.startPoint[1],
         radius: 12,
         fill: '#ff6600',
         stroke: '#ffffff',
@@ -182,8 +182,8 @@ export abstract class BaseWallTool implements Tool {
 
   private renderStrawbalePreview(startPoint: Point2D, endPoint: Point2D): React.ReactNode[] {
     // Calculate wall perpendicular direction for plaster edges
-    const dx = endPoint.x - startPoint.x
-    const dy = endPoint.y - startPoint.y
+    const dx = endPoint[0] - startPoint[0]
+    const dy = endPoint[1] - startPoint[1]
     const length = Math.sqrt(dx * dx + dy * dy)
 
     if (length === 0) return []
@@ -207,7 +207,7 @@ export abstract class BaseWallTool implements Tool {
     previewElements.push(
       React.createElement(Line, {
         key: 'main-body',
-        points: [startPoint.x, startPoint.y, endPoint.x, endPoint.y],
+        points: [startPoint[0], startPoint[1], endPoint[0], endPoint[1]],
         stroke: wallViz.mainColor,
         strokeWidth: wallViz.strokeWidth,
         lineCap: 'butt',
@@ -221,7 +221,7 @@ export abstract class BaseWallTool implements Tool {
       previewElements.push(
         React.createElement(Line, {
           key: 'wood-supports',
-          points: [startPoint.x, startPoint.y, endPoint.x, endPoint.y],
+          points: [startPoint[0], startPoint[1], endPoint[0], endPoint[1]],
           stroke: wallViz.pattern.color,
           strokeWidth: wallViz.strokeWidth,
           dash: wallViz.pattern.dash,
@@ -243,10 +243,10 @@ export abstract class BaseWallTool implements Tool {
         React.createElement(Line, {
           key: `edge-${edge.position}-${index}`,
           points: [
-            startPoint.x + normalX * edgeOffset,
-            startPoint.y + normalY * edgeOffset,
-            endPoint.x + normalX * edgeOffset,
-            endPoint.y + normalY * edgeOffset
+            startPoint[0] + normalX * edgeOffset,
+            startPoint[1] + normalY * edgeOffset,
+            endPoint[0] + normalX * edgeOffset,
+            endPoint[1] + normalY * edgeOffset
           ],
           stroke: edge.color,
           strokeWidth: edge.width,
@@ -261,10 +261,10 @@ export abstract class BaseWallTool implements Tool {
   }
 
   private renderLengthLabel(startPoint: Point2D, endPoint: Point2D): React.ReactNode {
-    const length = Math.sqrt(Math.pow(endPoint.x - startPoint.x, 2) + Math.pow(endPoint.y - startPoint.y, 2))
+    const length = Math.sqrt(Math.pow(endPoint[0] - startPoint[0], 2) + Math.pow(endPoint[1] - startPoint[1], 2))
 
-    const midX = (startPoint.x + endPoint.x) / 2
-    const midY = (startPoint.y + endPoint.y) / 2
+    const midX = (startPoint[0] + endPoint[0]) / 2
+    const midY = (startPoint[1] + endPoint[1]) / 2
 
     return React.createElement(Text, {
       x: midX,

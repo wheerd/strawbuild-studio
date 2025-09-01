@@ -158,10 +158,10 @@ export class OuterWallPolygonTool implements Tool {
         React.createElement(Line, {
           key: `snap-line-${i}`,
           points: [
-            line.point.x - context.getInfiniteLineExtent() * line.direction.x,
-            line.point.y - context.getInfiniteLineExtent() * line.direction.y,
-            line.point.x + context.getInfiniteLineExtent() * line.direction.x,
-            line.point.y + context.getInfiniteLineExtent() * line.direction.y
+            line.point[0] - context.getInfiniteLineExtent() * line.direction[0],
+            line.point[1] - context.getInfiniteLineExtent() * line.direction[1],
+            line.point[0] + context.getInfiniteLineExtent() * line.direction[0],
+            line.point[1] + context.getInfiniteLineExtent() * line.direction[1]
           ],
           stroke: '#0066ff',
           strokeWidth: 8,
@@ -175,8 +175,8 @@ export class OuterWallPolygonTool implements Tool {
       const pos = this.state.snapResult?.position ?? this.state.mouse
       elements.push(
         React.createElement(Circle, {
-          x: pos.x,
-          y: pos.y,
+          x: pos[0],
+          y: pos[1],
           radius: 15,
           fill: '#0066ff',
           stroke: '#ffffff',
@@ -202,8 +202,8 @@ export class OuterWallPolygonTool implements Tool {
       elements.push(
         React.createElement(Circle, {
           key: `point-${index}`,
-          x: point.x,
-          y: point.y,
+          x: point[0],
+          y: point[1],
           radius: 20,
           fill: isFirstPoint ? '#ef4444' : '#3b82f6',
           stroke: '#ffffff',
@@ -217,7 +217,7 @@ export class OuterWallPolygonTool implements Tool {
     if (this.state.points.length > 1) {
       const points: number[] = []
       for (const point of this.state.points) {
-        points.push(point.x, point.y)
+        points.push(point[0], point[1])
       }
 
       elements.push(
@@ -242,7 +242,7 @@ export class OuterWallPolygonTool implements Tool {
         elements.push(
           React.createElement(Line, {
             key: 'preview-line',
-            points: [lastPoint.x, lastPoint.y, currentPos.x, currentPos.y],
+            points: [lastPoint[0], lastPoint[1], currentPos[0], currentPos[1]],
             stroke: this.state.isCurrentLineValid ? '#94a3b8' : '#ef4444',
             strokeWidth: 10,
             dash: [30, 30],
@@ -260,7 +260,7 @@ export class OuterWallPolygonTool implements Tool {
       elements.push(
         React.createElement(Line, {
           key: 'closing-line-preview',
-          points: [lastPoint.x, lastPoint.y, firstPoint.x, firstPoint.y],
+          points: [lastPoint[0], lastPoint[1], firstPoint[0], firstPoint[1]],
           stroke: this.state.isClosingLineValid ? '#22c55e' : '#ef4444',
           strokeWidth: 12,
           dash: [20, 20],

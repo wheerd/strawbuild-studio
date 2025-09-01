@@ -135,8 +135,8 @@ describe('SnappingService', () => {
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()
-      expect(result?.position.y).toBe(100) // Should snap to y=100 (horizontal line)
-      expect(result?.position.x).toBe(400) // X should remain the same
+      expect(result?.position[1]).toBe(100) // Should snap to y=100 (horizontal line)
+      expect(result?.position[0]).toBe(400) // X should remain the same
       expect(result?.lines).toHaveLength(1)
     })
 
@@ -151,8 +151,8 @@ describe('SnappingService', () => {
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()
-      expect(result?.position.x).toBe(100) // Should snap to x=100 (vertical line)
-      expect(result?.position.y).toBe(400) // Y should remain the same
+      expect(result?.position[0]).toBe(100) // Should snap to x=100 (vertical line)
+      expect(result?.position[1]).toBe(400) // Y should remain the same
       expect(result?.lines).toHaveLength(1)
     })
 
@@ -180,8 +180,8 @@ describe('SnappingService', () => {
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()
-      expect(result?.position.y).toBe(100)
-      expect(result?.position.x).toBe(200)
+      expect(result?.position[1]).toBe(100)
+      expect(result?.position[0]).toBe(200)
     })
 
     it('should respect minimum distance from reference point', () => {
@@ -212,12 +212,12 @@ describe('SnappingService', () => {
       }
 
       // Target on extension of horizontal wall
-      const target = createPoint2D(250, 110)
+      const target = createPoint2D(300, 110)
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()
-      expect(result?.position.y).toBe(100) // Should snap to extension line
-      expect(result?.position.x).toBe(250) // X should remain
+      expect(result?.position[1]).toBe(100) // Should snap to extension line
+      expect(result?.position[0]).toBe(300) // X should remain
     })
 
     it('should snap to perpendicular line of wall segment', () => {
@@ -235,8 +235,8 @@ describe('SnappingService', () => {
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()
-      expect(result?.position.x).toBe(100) // Should snap to perpendicular at start point
-      expect(result?.position.y).toBe(200)
+      expect(result?.position[0]).toBe(100) // Should snap to perpendicular at start point
+      expect(result?.position[1]).toBe(200)
     })
   })
 
@@ -255,8 +255,8 @@ describe('SnappingService', () => {
 
       expect(result).not.toBeNull()
       expect(result?.lines?.length).toBe(2) // Should indicate intersection of two lines
-      expect(result?.position.x).toBe(1000) // Intersection x from point1's vertical line
-      expect(result?.position.y).toBe(2000) // Intersection y from point2's horizontal line
+      expect(result?.position[0]).toBe(1000) // Intersection x from point1's vertical line
+      expect(result?.position[1]).toBe(2000) // Intersection y from point2's horizontal line
     })
 
     it('should prefer intersection over single line snap when both are available', () => {
@@ -272,8 +272,8 @@ describe('SnappingService', () => {
 
       expect(result).not.toBeNull()
       expect(result?.lines?.length).toBe(2) // Should indicate intersection of two lines
-      expect(result?.position.x).toBe(1000)
-      expect(result?.position.y).toBe(2000)
+      expect(result?.position[0]).toBe(1000)
+      expect(result?.position[1]).toBe(2000)
     })
   })
 

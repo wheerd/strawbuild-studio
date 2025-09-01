@@ -1,3 +1,6 @@
+// gl-matrix integration for high-performance vector operations
+import { vec2, mat2d } from 'gl-matrix'
+
 // Turf.js integration for robust polygon operations
 import { polygon as turfPolygon, lineString as turfLineString } from '@turf/helpers'
 import { kinks } from '@turf/kinks'
@@ -5,50 +8,26 @@ import { booleanValid } from '@turf/boolean-valid'
 import { lineIntersect } from '@turf/line-intersect'
 import type { Feature, Polygon as GeoJSONPolygon, LineString } from 'geojson'
 
-// Branded numeric types for type safety
-export type AbsoluteOffset = number & { __brand: 'AbsoluteOffset' }
+// Core types - simplified with gl-matrix
+export type Vec2 = vec2
+export type Matrix2D = mat2d
+
+// Branded numeric types for type safety (keep these for domain specificity)
 export type Length = number & { __brand: 'Length' }
 export type Area = number & { __brand: 'Area' }
 export type Angle = number & { __brand: 'Angle' }
 
 // Helper functions to create branded types
-export const createAbsoluteOffset = (value: number): AbsoluteOffset => value as AbsoluteOffset
 export const createLength = (value: number): Length => value as Length
 export const createArea = (value: number): Area => value as Area
 export const createAngle = (value: number): Angle => value as Angle
 
-// Helper function to create Point2D from two numbers
-export const createPoint2D = (x: number, y: number): Point2D => ({
-  x: createAbsoluteOffset(x),
-  y: createAbsoluteOffset(y)
-})
+// Helper function to create Vec2
+export const createVec2 = (x: number, y: number): Vec2 => vec2.fromValues(x, y)
 
-// Helper function to create Vector2D from two numbers
-export const createVector2D = (x: number, y: number): Vector2D => ({
-  x: createLength(x),
-  y: createLength(y)
-})
-
-// Core geometric types
-export interface Point2D {
-  x: AbsoluteOffset
-  y: AbsoluteOffset
-}
-
-export interface Vector2D {
-  x: Length
-  y: Length
-}
-
-export interface Bounds2D {
-  minX: AbsoluteOffset
-  minY: AbsoluteOffset
-  maxX: AbsoluteOffset
-  maxY: AbsoluteOffset
-}
-
+// Core geometric types - simplified
 export interface Polygon2D {
-  points: Point2D[]
+  points: Vec2[]
 }
 
 export interface PolygonWithHoles2D {
@@ -56,37 +35,40 @@ export interface PolygonWithHoles2D {
   holes: Polygon2D[]
 }
 
+export interface Bounds2D {
+  min: Vec2
+  max: Vec2
+}
+
 export interface Line2D {
-  point: Point2D
-  direction: Vector2D // Normalized direction vector
+  point: Vec2
+  direction: Vec2 // Normalized direction vector
 }
 
 export interface LineSegment2D {
-  start: Point2D
-  end: Point2D
+  start: Vec2
+  end: Vec2
 }
 
-// Geometry utility functions
-export function distance(p1: Point2D, p2: Point2D): Length {
-  const dx = p2.x - p1.x
-  const dy = p2.y - p1.y
-  return createLength(Math.sqrt(dx * dx + dy * dy))
+// Geometry utility functions - powered by gl-matrix
+export function distance(p1: Vec2, p2: Vec2): Length {
+  return createLength(vec2.distance(p1, p2))
 }
 
-export function distanceSquared(p1: Point2D, p2: Point2D): number {
-  const dx = p2.x - p1.x
-  const dy = p2.y - p1.y
-  return dx * dx + dy * dy
+export function distanceSquared(p1: Vec2, p2: Vec2): number {
+  return vec2.squaredDistance(p1, p2)
 }
 
-export function midpoint(p1: Point2D, p2: Point2D): Point2D {
-  return createPoint2D((p1.x + p2.x) / 2, (p1.y + p2.y) / 2)
+export function midpoint(p1: Vec2, p2: Vec2): Vec2 {
+  const result = vec2.create()
+  vec2.lerp(result, p1, p2, 0.5)
+  return result
 }
 
-export function angle(from: Point2D, to: Point2D): Angle {
-  const dx = to.x - from.x
-  const dy = to.y - from.y
-  return createAngle(Math.atan2(dy, dx))
+export function angle(from: Vec2, to: Vec2): Angle {
+  const direction = vec2.create()
+  vec2.subtract(direction, to, from)
+  return createAngle(Math.atan2(direction[1], direction[0]))
 }
 
 export function normalizeAngle(angle: Angle): Angle {
@@ -96,49 +78,74 @@ export function normalizeAngle(angle: Angle): Angle {
   return createAngle(normalized)
 }
 
-export function pointOnLine(start: Point2D, end: Point2D, t: number): Point2D {
-  return createPoint2D(start.x + (end.x - start.x) * t, start.y + (end.y - start.y) * t)
+export function pointOnLine(start: Vec2, end: Vec2, t: number): Vec2 {
+  const result = vec2.create()
+  vec2.lerp(result, start, end, t)
+  return result
 }
 
-export function vectorFromAngle(angle: Angle, length: Length = createLength(1)): Vector2D {
-  return {
-    x: createLength(Math.cos(angle) * length),
-    y: createLength(Math.sin(angle) * length)
-  }
+export function vectorFromAngle(angle: Angle, length: Length = createLength(1)): Vec2 {
+  return vec2.fromValues(Math.cos(angle) * length, Math.sin(angle) * length)
 }
 
-export function addVector(point: Point2D, vector: Vector2D): Point2D {
-  return createPoint2D(point.x + vector.x, point.y + vector.y)
+export function add(a: Vec2, b: Vec2): Vec2 {
+  const result = vec2.create()
+  vec2.add(result, a, b)
+  return result
 }
 
-export function direction(source: Point2D, target: Point2D): Vector2D {
-  return createVector2D(target.x - source.x, target.y - source.y)
+export function subtract(a: Vec2, b: Vec2): Vec2 {
+  const result = vec2.create()
+  vec2.subtract(result, a, b)
+  return result
 }
 
-export function normalizeVector(vector: Vector2D): Vector2D {
-  const len = Math.sqrt(vector.x * vector.x + vector.y * vector.y)
-  if (len === 0) return createVector2D(0, 0)
-  return createVector2D(vector.x / len, vector.y / len)
+export function scale(v: Vec2, scalar: number): Vec2 {
+  const result = vec2.create()
+  vec2.scale(result, v, scalar)
+  return result
 }
 
-export function snapToGrid(point: Point2D, gridSize: Length): Point2D {
-  return createPoint2D(Math.round(point.x / gridSize) * gridSize, Math.round(point.y / gridSize) * gridSize)
+export function normalize(v: Vec2): Vec2 {
+  const result = vec2.create()
+  vec2.normalize(result, v)
+  return result
+}
+
+export function dot(a: Vec2, b: Vec2): number {
+  return vec2.dot(a, b)
+}
+
+export function direction(source: Vec2, target: Vec2): Vec2 {
+  return normalize(subtract(target, source))
+}
+
+export function addVector(point: Vec2, vector: Vec2): Vec2 {
+  return add(point, vector)
+}
+
+export function normalizeVector(vector: Vec2): Vec2 {
+  return normalize(vector)
+}
+
+export function snapToGrid(point: Vec2, gridSize: Length): Vec2 {
+  return createVec2(Math.round(point[0] / gridSize) * gridSize, Math.round(point[1] / gridSize) * gridSize)
 }
 
 export function expandBounds(bounds: Bounds2D, padding: Length): Bounds2D {
   return {
-    minX: createAbsoluteOffset(bounds.minX - padding),
-    minY: createAbsoluteOffset(bounds.minY - padding),
-    maxX: createAbsoluteOffset(bounds.maxX + padding),
-    maxY: createAbsoluteOffset(bounds.maxY + padding)
+    min: createVec2(bounds.min[0] - padding, bounds.min[1] - padding),
+    max: createVec2(bounds.max[0] + padding, bounds.max[1] + padding)
   }
 }
 
-export function pointInBounds(point: Point2D, bounds: Bounds2D): boolean {
-  return point.x >= bounds.minX && point.x <= bounds.maxX && point.y >= bounds.minY && point.y <= bounds.maxY
+export function pointInBounds(point: Vec2, bounds: Bounds2D): boolean {
+  return (
+    point[0] >= bounds.min[0] && point[0] <= bounds.max[0] && point[1] >= bounds.min[1] && point[1] <= bounds.max[1]
+  )
 }
 
-export function boundsFromPoints(points: Point2D[]): Bounds2D | null {
+export function boundsFromPoints(points: Vec2[]): Bounds2D | null {
   if (points.length === 0) return null
 
   let minX = Infinity
@@ -147,67 +154,36 @@ export function boundsFromPoints(points: Point2D[]): Bounds2D | null {
   let maxY = -Infinity
 
   for (const point of points) {
-    minX = Math.min(minX, point.x)
-    minY = Math.min(minY, point.y)
-    maxX = Math.max(maxX, point.x)
-    maxY = Math.max(maxY, point.y)
+    minX = Math.min(minX, point[0])
+    minY = Math.min(minY, point[1])
+    maxX = Math.max(maxX, point[0])
+    maxY = Math.max(maxY, point[1])
   }
 
   return {
-    minX: createAbsoluteOffset(minX),
-    minY: createAbsoluteOffset(minY),
-    maxX: createAbsoluteOffset(maxX),
-    maxY: createAbsoluteOffset(maxY)
+    min: createVec2(minX, minY),
+    max: createVec2(maxX, maxY)
   }
 }
 
 export function isPointNearLine(
-  point: Point2D,
-  lineStart: Point2D,
-  lineEnd: Point2D,
+  point: Vec2,
+  lineStart: Vec2,
+  lineEnd: Vec2,
   tolerance: Length = createLength(5)
 ): boolean {
-  const A = point.x - lineStart.x
-  const B = point.y - lineStart.y
-  const C = lineEnd.x - lineStart.x
-  const D = lineEnd.y - lineStart.y
-
-  const dot = A * C + B * D
-  const lenSq = C * C + D * D
-
-  if (lenSq === 0) return distance(point, lineStart) <= tolerance
-
-  const param = dot / lenSq
-
-  let closestPoint: Point2D
-
-  if (param < 0) {
-    closestPoint = lineStart
-  } else if (param > 1) {
-    closestPoint = lineEnd
-  } else {
-    closestPoint = {
-      x: createAbsoluteOffset(lineStart.x + param * C),
-      y: createAbsoluteOffset(lineStart.y + param * D)
-    }
-  }
-
-  return distance(point, closestPoint) <= tolerance
+  const distToLine = distanceToLineSegment(point, { start: lineStart, end: lineEnd })
+  return distToLine <= tolerance
 }
 
-export function offsetToPosition(startPoint: Point2D, endPoint: Point2D, offset: Length): Point2D {
-  const dx = endPoint.x - startPoint.x
-  const dy = endPoint.y - startPoint.y
-  const length = Math.sqrt(dx * dx + dy * dy)
+export function offsetToPosition(startPoint: Vec2, endPoint: Vec2, offset: Length): Vec2 {
+  const dir = subtract(endPoint, startPoint)
+  const length = vec2.length(dir)
 
-  if (length === 0) return startPoint
+  if (length === 0) return vec2.copy(vec2.create(), startPoint)
 
   const t = offset / length
-
-  return {
-    x: createAbsoluteOffset(startPoint.x + dx * t),
-    y: createAbsoluteOffset(startPoint.y + dy * t)
-  }
+  return pointOnLine(startPoint, endPoint, t)
 }
 
 // Formatting utilities
@@ -245,8 +221,8 @@ export function calculatePolygonArea(polygon: Polygon2D): Area {
   let area = 0
   for (let i = 0; i < points.length; i++) {
     const j = (i + 1) % points.length
-    area += points[i].x * points[j].y
-    area -= points[j].x * points[i].y
+    area += points[i][0] * points[j][1]
+    area -= points[j][0] * points[i][1]
   }
 
   return createArea(Math.abs(area) / 2)
@@ -263,27 +239,20 @@ export function calculatePolygonWithHolesArea(polygon: PolygonWithHoles2D): Area
 }
 
 // Corner angle calculation utilities
-export function calculateCornerAngle(wall1Start: Point2D, cornerPoint: Point2D, wall2End: Point2D): Angle {
+export function calculateCornerAngle(wall1Start: Vec2, cornerPoint: Vec2, wall2End: Vec2): Angle {
   // Vector from corner to wall1 start
-  const vec1 = {
-    x: wall1Start.x - cornerPoint.x,
-    y: wall1Start.y - cornerPoint.y
-  }
-
+  const vec1 = subtract(wall1Start, cornerPoint)
   // Vector from corner to wall2 end
-  const vec2 = {
-    x: wall2End.x - cornerPoint.x,
-    y: wall2End.y - cornerPoint.y
-  }
+  const vector2 = subtract(wall2End, cornerPoint)
 
   // Calculate angle between vectors using dot product
-  const dot = vec1.x * vec2.x + vec1.y * vec2.y
-  const mag1 = Math.sqrt(vec1.x * vec1.x + vec1.y * vec1.y)
-  const mag2 = Math.sqrt(vec2.x * vec2.x + vec2.y * vec2.y)
+  const dotProduct = dot(vec1, vector2)
+  const mag1 = vec2.length(vec1)
+  const mag2 = vec2.length(vector2)
 
   if (mag1 === 0 || mag2 === 0) return createAngle(0)
 
-  const cosAngle = dot / (mag1 * mag2)
+  const cosAngle = dotProduct / (mag1 * mag2)
   // Clamp to prevent NaN from floating point precision issues
   const clampedCos = Math.max(-1, Math.min(1, cosAngle))
   const angleRad = Math.acos(clampedCos)
@@ -319,91 +288,130 @@ export function degreesToRadians(degrees: number): Angle {
   return createAngle((degrees * Math.PI) / 180)
 }
 
+// Advanced gl-matrix operations
+export function rotatePoint(point: Vec2, angle: Angle): Vec2 {
+  const result = vec2.create()
+  vec2.rotate(result, point, vec2.create(), angle)
+  return result
+}
+
+export function rotatePointAround(point: Vec2, center: Vec2, angle: Angle): Vec2 {
+  const transform = mat2d.create()
+  mat2d.translate(transform, transform, center)
+  mat2d.rotate(transform, transform, angle)
+  mat2d.translate(transform, transform, vec2.negate(vec2.create(), center))
+
+  const result = vec2.create()
+  vec2.transformMat2d(result, point, transform)
+  return result
+}
+
+export function scalePointFrom(point: Vec2, origin: Vec2, scale: number): Vec2 {
+  const transform = mat2d.create()
+  mat2d.translate(transform, transform, origin)
+  mat2d.scale(transform, transform, vec2.fromValues(scale, scale))
+  mat2d.translate(transform, transform, vec2.negate(vec2.create(), origin))
+
+  const result = vec2.create()
+  vec2.transformMat2d(result, point, transform)
+  return result
+}
+
+export function perpendicularCCW(vector: Vec2): Vec2 {
+  return createVec2(-vector[1], vector[0]) // Rotate 90° counterclockwise
+}
+
+export function perpendicularCW(vector: Vec2): Vec2 {
+  return createVec2(vector[1], -vector[0]) // Rotate 90° clockwise
+}
+
+export function reflectVector(vector: Vec2, normal: Vec2): Vec2 {
+  const result = vec2.create()
+  // reflect = v - 2 * dot(v,n) * n
+  const normalizedNormal = normalize(normal)
+  const dotProduct = dot(vector, normalizedNormal)
+  const reflection = scale(normalizedNormal, 2 * dotProduct)
+  vec2.subtract(result, vector, reflection)
+  return result
+}
+
 // Calculate intersection of two infinite lines
-export function lineIntersection(line1: Line2D, line2: Line2D): Point2D | null {
+export function lineIntersection(line1: Line2D, line2: Line2D): Vec2 | null {
   const { point: p1, direction: d1 } = line1
   const { point: p2, direction: d2 } = line2
 
   // Check if lines are parallel (cross product of directions is zero)
-  const cross = Number(d1.x) * Number(d2.y) - Number(d1.y) * Number(d2.x)
+  const cross = d1[0] * d2[1] - d1[1] * d2[0]
   if (Math.abs(cross) < 1e-10) {
     return null // Lines are parallel
   }
 
   // Calculate intersection using parametric form
-  // Line1: p1 + t1 * d1
-  // Line2: p2 + t2 * d2
-  const dp = createVector2D(Number(p2.x) - Number(p1.x), Number(p2.y) - Number(p1.y))
-  const t1 = (Number(dp.x) * Number(d2.y) - Number(dp.y) * Number(d2.x)) / cross
+  const dp = subtract(p2, p1)
+  const t1 = (dp[0] * d2[1] - dp[1] * d2[0]) / cross
 
-  return createPoint2D(Number(p1.x) + t1 * Number(d1.x), Number(p1.y) + t1 * Number(d1.y))
+  const result = vec2.create()
+  vec2.scaleAndAdd(result, p1, d1, t1)
+  return result
 }
 
 // Create a line from two points
-export function lineFromPoints(p1: Point2D, p2: Point2D): Line2D | null {
-  const dx = p2.x - p1.x
-  const dy = p2.y - p1.y
-  const length = Math.sqrt(dx * dx + dy * dy)
+export function lineFromPoints(p1: Vec2, p2: Vec2): Line2D | null {
+  const direction = subtract(p2, p1)
+  const length = vec2.length(direction)
 
   if (length === 0) return null
 
   return {
-    point: p1,
-    direction: createVector2D(dx / length, dy / length)
+    point: vec2.copy(vec2.create(), p1),
+    direction: normalize(direction)
   }
 }
 
 // Create a line from a point and angle
-export function lineFromPointAndAngle(point: Point2D, angle: Angle): Line2D {
+export function lineFromPointAndAngle(point: Vec2, angle: Angle): Line2D {
   return {
-    point,
-    direction: createVector2D(Math.cos(angle), Math.sin(angle))
+    point: vec2.copy(vec2.create(), point),
+    direction: vectorFromAngle(angle)
   }
 }
 
 // Distance from point to infinite line
-export function distanceToInfiniteLine(point: Point2D, line: Line2D): Length {
-  // Vector from line point to target point
-  const dx = point.x - line.point.x
-  const dy = point.y - line.point.y
-
-  // Calculate perpendicular distance using cross product
-  const crossProduct = Math.abs(dx * line.direction.y - dy * line.direction.x)
+export function distanceToInfiniteLine(point: Vec2, line: Line2D): Length {
+  const toPoint = subtract(point, line.point)
+  const crossProduct = Math.abs(toPoint[0] * line.direction[1] - toPoint[1] * line.direction[0])
   return createLength(crossProduct)
 }
 
 // Project a point onto a line (returns closest point on the line)
-export function projectPointOntoLine(point: Point2D, line: Line2D): Point2D {
-  // Vector from line point to target point
-  const toPoint = createVector2D(point.x - line.point.x, point.y - line.point.y)
+export function projectPointOntoLine(point: Vec2, line: Line2D): Vec2 {
+  const toPoint = subtract(point, line.point)
+  const projection = dot(toPoint, line.direction)
 
-  // Project toPoint onto line direction
-  const projection = Number(toPoint.x) * Number(line.direction.x) + Number(toPoint.y) * Number(line.direction.y)
-
-  return createPoint2D(
-    Number(line.point.x) + projection * Number(line.direction.x),
-    Number(line.point.y) + projection * Number(line.direction.y)
-  )
+  const result = vec2.create()
+  vec2.scaleAndAdd(result, line.point, line.direction, projection)
+  return result
 }
 
 export function lineFromSegment(segment: LineSegment2D): Line2D {
   return {
-    point: segment.start,
-    direction: normalizeVector(createVector2D(segment.end.x - segment.start.x, segment.end.y - segment.start.y))
+    point: vec2.copy(vec2.create(), segment.start),
+    direction: normalize(subtract(segment.end, segment.start))
   }
 }
 
-export function isPointInPolygon(point: Point2D, polygon: Polygon2D): boolean {
-  const { points } = polygon
+export function isPointInPolygon(point: Vec2, polygon: Polygon2D): boolean {
+  const points = polygon.points
   let inside = false
 
   for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
-    const xi = points[i].x
-    const yi = points[i].y
-    const xj = points[j].x
-    const yj = points[j].y
+    const xi = points[i][0]
+    const yi = points[i][1]
+    const xj = points[j][0]
+    const yj = points[j][1]
 
-    const intersect = yi > point.y !== yj > point.y && point.x < ((xj - xi) * (point.y - yi)) / (yj - yi + 1e-10) + xi
+    const intersect =
+      yi > point[1] !== yj > point[1] && point[0] < ((xj - xi) * (point[1] - yi)) / (yj - yi + 1e-10) + xi
     if (intersect) inside = !inside
   }
 
@@ -411,38 +419,38 @@ export function isPointInPolygon(point: Point2D, polygon: Polygon2D): boolean {
 }
 
 export function polygonIsClockwise(polygon: Polygon2D): boolean {
-  const { points } = polygon
+  const points = polygon.points
   let sum = 0
 
   for (let i = 0; i < points.length; i++) {
     const j = (i + 1) % points.length
-    sum += (points[j].x - points[i].x) * (points[j].y + points[i].y)
+    sum += (points[j][0] - points[i][0]) * (points[j][1] + points[i][1])
   }
 
   return sum > 0
 }
 
 // Calculate the shortest distance from a point to a line segment
-export function distanceToLineSegment(point: Point2D, segment: LineSegment2D): Length {
-  const dx = segment.end.x - segment.start.x
-  const dy = segment.end.y - segment.start.y
+export function distanceToLineSegment(point: Vec2, segment: LineSegment2D): Length {
+  const segmentVector = subtract(segment.end, segment.start)
+  const pointVector = subtract(point, segment.start)
 
-  if (dx === 0 && dy === 0) {
+  const segmentLengthSquared = vec2.squaredLength(segmentVector)
+
+  if (segmentLengthSquared === 0) {
     // Line segment is actually a point
     return distance(point, segment.start)
   }
 
-  const lengthSquared = dx * dx + dy * dy
-
   // Calculate parameter t that represents position along the line segment
-  // t = 0 means segment.start, t = 1 means segment.end
-  let t = ((point.x - segment.start.x) * dx + (point.y - segment.start.y) * dy) / lengthSquared
+  let t = dot(pointVector, segmentVector) / segmentLengthSquared
 
   // Clamp t to [0, 1] to stay within the line segment
   t = Math.max(0, Math.min(1, t))
 
   // Find the closest point on the line segment
-  const closest = createPoint2D(segment.start.x + t * dx, segment.start.y + t * dy)
+  const closest = vec2.create()
+  vec2.scaleAndAdd(closest, segment.start, segmentVector, t)
 
   // Return distance from point to closest point on line segment
   return distance(point, closest)
@@ -450,7 +458,7 @@ export function distanceToLineSegment(point: Point2D, segment: LineSegment2D): L
 
 // Conversion utilities between our types and GeoJSON
 export function polygonToGeoJSON(polygon: Polygon2D): Feature<GeoJSONPolygon> {
-  const coordinates = polygon.points.map(p => [Number(p.x), Number(p.y)])
+  const coordinates = polygon.points.map(p => [p[0], p[1]])
   // Ensure the polygon is closed
   if (coordinates.length > 0) {
     const first = coordinates[0]
@@ -462,8 +470,8 @@ export function polygonToGeoJSON(polygon: Polygon2D): Feature<GeoJSONPolygon> {
   return turfPolygon([coordinates])
 }
 
-export function pointsToGeoJSONPolygon(points: Point2D[]): Feature<GeoJSONPolygon> {
-  const coordinates = points.map(p => [Number(p.x), Number(p.y)])
+export function pointsToGeoJSONPolygon(points: Vec2[]): Feature<GeoJSONPolygon> {
+  const coordinates = points.map(p => [p[0], p[1]])
   // Ensure the polygon is closed
   if (coordinates.length > 0) {
     coordinates.push([coordinates[0][0], coordinates[0][1]])
@@ -473,8 +481,8 @@ export function pointsToGeoJSONPolygon(points: Point2D[]): Feature<GeoJSONPolygo
 
 export function lineSegmentToGeoJSON(segment: LineSegment2D): Feature<LineString> {
   return turfLineString([
-    [Number(segment.start.x), Number(segment.start.y)],
-    [Number(segment.end.x), Number(segment.end.y)]
+    [segment.start[0], segment.start[1]],
+    [segment.end[0], segment.end[1]]
   ])
 }
 
@@ -489,15 +497,15 @@ export function doLineSegmentsIntersect(seg1: LineSegment2D, seg2: LineSegment2D
 
 // Check if a point is already used in the polygon (with tolerance for floating point precision)
 export function isPointAlreadyUsed(
-  existingPoints: Point2D[],
-  newPoint: Point2D,
+  existingPoints: Vec2[],
+  newPoint: Vec2,
   tolerance: Length = createLength(1e-6)
 ): boolean {
   return existingPoints.some(existingPoint => distance(existingPoint, newPoint) <= tolerance)
 }
 
 // Check if adding a new point to a polygon would create self-intersection or reuse existing points
-export function wouldPolygonSelfIntersect(existingPoints: Point2D[], newPoint: Point2D): boolean {
+export function wouldPolygonSelfIntersect(existingPoints: Vec2[], newPoint: Vec2): boolean {
   if (existingPoints.length < 2) return false
 
   // Check if the new point is already used (this counts as invalid)
@@ -527,7 +535,7 @@ export function wouldPolygonSelfIntersect(existingPoints: Point2D[], newPoint: P
 }
 
 // Check if closing a polygon would create self-intersection
-export function wouldClosingPolygonSelfIntersect(points: Point2D[]): boolean {
+export function wouldClosingPolygonSelfIntersect(points: Vec2[]): boolean {
   if (points.length < 3) return false
 
   try {
@@ -546,3 +554,9 @@ export function wouldClosingPolygonSelfIntersect(points: Point2D[]): boolean {
     return true
   }
 }
+
+// Compatibility aliases for easier migration
+export const createPoint2D = createVec2
+export const createVector2D = createVec2
+export type Point2D = Vec2
+export type Vector2D = Vec2

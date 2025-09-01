@@ -37,8 +37,8 @@ export function calculateCornerMiterPolygon(
 
   // Check if walls are colinear (cross product ≈ 0)
   const cross =
-    Number(wall1Data.direction.x) * Number(wall2Data.direction.y) -
-    Number(wall1Data.direction.y) * Number(wall2Data.direction.x)
+    Number(wall1Data.direction[0]) * Number(wall2Data.direction[1]) -
+    Number(wall1Data.direction[1]) * Number(wall2Data.direction[0])
   const isColinear = Math.abs(cross) < 0.1 // Tolerance for nearly colinear
 
   let polygonPoints: Point2D[]
@@ -70,29 +70,29 @@ function calculateWallData(
   const endPoint = endPointData.position
 
   // Determine which end is at the corner
-  const distToStart = Math.abs(Number(startPoint.x - cornerPoint.x)) + Math.abs(Number(startPoint.y - cornerPoint.y))
-  const distToEnd = Math.abs(Number(endPoint.x - cornerPoint.x)) + Math.abs(Number(endPoint.y - cornerPoint.y))
+  const distToStart = Math.abs(Number(startPoint[0] - cornerPoint[0])) + Math.abs(Number(startPoint[1] - cornerPoint[1]))
+  const distToEnd = Math.abs(Number(endPoint[0] - cornerPoint[0])) + Math.abs(Number(endPoint[1] - cornerPoint[1]))
   const isStartAtCorner = distToStart < distToEnd
 
   // Calculate wall direction vector (pointing away from corner)
   const otherPoint = isStartAtCorner ? endPoint : startPoint
-  const dx = Number(otherPoint.x) - Number(cornerPoint.x)
-  const dy = Number(otherPoint.y) - Number(cornerPoint.y)
+  const dx = Number(otherPoint[0]) - Number(cornerPoint[0])
+  const dy = Number(otherPoint[1]) - Number(cornerPoint[1])
   const length = Math.sqrt(dx * dx + dy * dy)
   if (length === 0) return null
 
   const direction = createVector2D(dx / length, dy / length)
-  const normal = createVector2D(-Number(direction.y), Number(direction.x)) // 90° counter-clockwise
+  const normal = createVector2D(-Number(direction[1]), Number(direction[0])) // 90° counter-clockwise
   const halfThickness = wall.thickness / 2
 
   // Create boundary lines
   const leftBoundaryPoint = createPoint2D(
-    Number(cornerPoint.x) + Number(normal.x) * halfThickness,
-    Number(cornerPoint.y) + Number(normal.y) * halfThickness
+    Number(cornerPoint[0]) + Number(normal[0]) * halfThickness,
+    Number(cornerPoint[1]) + Number(normal[1]) * halfThickness
   )
   const rightBoundaryPoint = createPoint2D(
-    Number(cornerPoint.x) - Number(normal.x) * halfThickness,
-    Number(cornerPoint.y) - Number(normal.y) * halfThickness
+    Number(cornerPoint[0]) - Number(normal[0]) * halfThickness,
+    Number(cornerPoint[1]) - Number(normal[1]) * halfThickness
   )
 
   return {
@@ -111,25 +111,25 @@ function generateColinearMiterPolygon(wall1Data: WallData, wall2Data: WallData, 
   const halfThickness = maxThickness / 2
 
   const direction = wall1Data.direction
-  const normal = createVector2D(-Number(direction.y), Number(direction.x))
+  const normal = createVector2D(-Number(direction[1]), Number(direction[0]))
 
   // Create a rectangle centered on the corner point
   return [
     createPoint2D(
-      Number(cornerPoint.x) + Number(normal.x) * halfThickness - Number(direction.x) * halfThickness,
-      Number(cornerPoint.y) + Number(normal.y) * halfThickness - Number(direction.y) * halfThickness
+      Number(cornerPoint[0]) + Number(normal[0]) * halfThickness - Number(direction[0]) * halfThickness,
+      Number(cornerPoint[1]) + Number(normal[1]) * halfThickness - Number(direction[1]) * halfThickness
     ),
     createPoint2D(
-      Number(cornerPoint.x) + Number(normal.x) * halfThickness + Number(direction.x) * halfThickness,
-      Number(cornerPoint.y) + Number(normal.y) * halfThickness + Number(direction.y) * halfThickness
+      Number(cornerPoint[0]) + Number(normal[0]) * halfThickness + Number(direction[0]) * halfThickness,
+      Number(cornerPoint[1]) + Number(normal[1]) * halfThickness + Number(direction[1]) * halfThickness
     ),
     createPoint2D(
-      Number(cornerPoint.x) - Number(normal.x) * halfThickness + Number(direction.x) * halfThickness,
-      Number(cornerPoint.y) - Number(normal.y) * halfThickness + Number(direction.y) * halfThickness
+      Number(cornerPoint[0]) - Number(normal[0]) * halfThickness + Number(direction[0]) * halfThickness,
+      Number(cornerPoint[1]) - Number(normal[1]) * halfThickness + Number(direction[1]) * halfThickness
     ),
     createPoint2D(
-      Number(cornerPoint.x) - Number(normal.x) * halfThickness - Number(direction.x) * halfThickness,
-      Number(cornerPoint.y) - Number(normal.y) * halfThickness - Number(direction.y) * halfThickness
+      Number(cornerPoint[0]) - Number(normal[0]) * halfThickness - Number(direction[0]) * halfThickness,
+      Number(cornerPoint[1]) - Number(normal[1]) * halfThickness - Number(direction[1]) * halfThickness
     )
   ]
 }
@@ -140,8 +140,8 @@ function generateColinearMiterPolygon(wall1Data: WallData, wall2Data: WallData, 
 function generateGenericMiterPolygon(wall1Data: WallData, wall2Data: WallData, cornerPoint: Point2D): Point2D[] {
   // Determine inner and outer boundaries based on cross product
   const cross =
-    Number(wall1Data.direction.x) * Number(wall2Data.direction.y) -
-    Number(wall1Data.direction.y) * Number(wall2Data.direction.x)
+    Number(wall1Data.direction[0]) * Number(wall2Data.direction[1]) -
+    Number(wall1Data.direction[1]) * Number(wall2Data.direction[0])
 
   const [wall1Inner, wall1Outer, wall2Inner, wall2Outer] =
     cross > 0
@@ -172,10 +172,10 @@ function generateGenericMiterPolygon(wall1Data: WallData, wall2Data: WallData, c
   const maxThickness = Math.max(wall1Data.thickness, wall2Data.thickness)
   const radius = maxThickness * 0.5
   return [
-    createPoint2D(Number(cornerPoint.x) + radius, Number(cornerPoint.y)),
-    createPoint2D(Number(cornerPoint.x), Number(cornerPoint.y) + radius),
-    createPoint2D(Number(cornerPoint.x) - radius, Number(cornerPoint.y)),
-    createPoint2D(Number(cornerPoint.x), Number(cornerPoint.y) - radius)
+    createPoint2D(Number(cornerPoint[0]) + radius, Number(cornerPoint[1])),
+    createPoint2D(Number(cornerPoint[0]), Number(cornerPoint[1]) + radius),
+    createPoint2D(Number(cornerPoint[0]) - radius, Number(cornerPoint[1])),
+    createPoint2D(Number(cornerPoint[0]), Number(cornerPoint[1]) - radius)
   ]
 }
 
@@ -184,8 +184,8 @@ function generateGenericMiterPolygon(wall1Data: WallData, wall2Data: WallData, c
  */
 function sortPointsClockwise(points: Point2D[], center: Point2D): Point2D[] {
   return points.sort((a, b) => {
-    const angleA = Math.atan2(Number(a.y - center.y), Number(a.x - center.x))
-    const angleB = Math.atan2(Number(b.y - center.y), Number(b.x - center.x))
+    const angleA = Math.atan2(Number(a[1] - center[1]), Number(a[0] - center[0]))
+    const angleB = Math.atan2(Number(b[1] - center[1]), Number(b[0] - center[0]))
     return angleA - angleB
   })
 }

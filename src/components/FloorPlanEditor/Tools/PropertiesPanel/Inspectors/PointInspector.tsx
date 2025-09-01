@@ -33,8 +33,8 @@ export function PointInspector({ point, onChange }: PointInspectorProps): React.
       const numValue = Number(value)
       if (!isNaN(numValue)) {
         const newPosition = createPoint2D(
-          axis === 'x' ? numValue : point.position.x,
-          axis === 'y' ? numValue : point.position.y
+          axis === 'x' ? numValue : point.position[0],
+          axis === 'y' ? numValue : point.position[1]
         )
         onChange('position', newPosition)
       }
@@ -84,7 +84,7 @@ export function PointInspector({ point, onChange }: PointInspectorProps): React.
                 <input
                   id="point-x"
                   type="number"
-                  value={point.position.x}
+                  value={point.position[0]}
                   onChange={e => handlePositionChange('x', e.target.value)}
                   step="1"
                 />
@@ -95,7 +95,7 @@ export function PointInspector({ point, onChange }: PointInspectorProps): React.
                 <input
                   id="point-y"
                   type="number"
-                  value={point.position.y}
+                  value={point.position[1]}
                   onChange={e => handlePositionChange('y', e.target.value)}
                   step="1"
                 />
@@ -104,7 +104,7 @@ export function PointInspector({ point, onChange }: PointInspectorProps): React.
 
             <div className="position-display">
               <span className="coordinate-display">
-                ({point.position.x.toFixed(0)}, {point.position.y.toFixed(0)}) mm
+                ({point.position[0].toFixed(0)}, {point.position[1].toFixed(0)}) mm
               </span>
             </div>
           </div>
@@ -228,19 +228,19 @@ export function PointInspector({ point, onChange }: PointInspectorProps): React.
               <div className="coordinate-detail">
                 <label>World Coordinates:</label>
                 <span>
-                  ({point.position.x.toFixed(1)}, {point.position.y.toFixed(1)}) mm
+                  ({point.position[0].toFixed(1)}, {point.position[1].toFixed(1)}) mm
                 </span>
               </div>
               <div className="coordinate-detail">
                 <label>Grid Coordinates:</label>
                 <span>
-                  ({(point.position.x / 500).toFixed(1)}, {(point.position.y / 500).toFixed(1)}) grid
+                  ({(point.position[0] / 500).toFixed(1)}, {(point.position[1] / 500).toFixed(1)}) grid
                 </span>
               </div>
               <div className="coordinate-detail">
                 <label>Metric:</label>
                 <span>
-                  ({(point.position.x / 1000).toFixed(2)}, {(point.position.y / 1000).toFixed(2)}) m
+                  ({(point.position[0] / 1000).toFixed(2)}, {(point.position[1] / 1000).toFixed(2)}) m
                 </span>
               </div>
             </div>

@@ -1,5 +1,5 @@
 import type { WallId, PointId, RoomId, FloorId, SlabId, RoofId, OuterWallId } from '@/types/ids'
-import type { Length, LineSegment2D, Point2D, Vector2D } from '@/types/geometry'
+import type { Length, LineSegment2D, Vec2 } from '@/types/geometry'
 
 // Floor level branded type
 export type FloorLevel = number & { __brand: 'FloorLevel' }
@@ -26,7 +26,7 @@ export const createFloorLevel = (value: number): FloorLevel => {
 export interface Point {
   id: PointId
   floorId: FloorId // Immutable - set at creation time
-  position: Point2D
+  position: Vec2
   roomIds: Set<RoomId> // Rooms that this point belongs to
 }
 
@@ -127,7 +127,7 @@ export interface OuterWallPolygon {
   floorId: FloorId
 
   // Polygon defining the inside area of the building
-  boundary: Point2D[] // Ordered clockwise, defines inner face of walls
+  boundary: Vec2[] // Ordered clockwise, defines inner face of walls
 
   // Per-side wall data
   segments: OuterWallSegment[] // segments[i] goes from boundary[i] -> boundary[(i + 1) % boundary.length]
@@ -146,6 +146,6 @@ export interface OuterWallSegment {
   outsideLength: Length
   insideLine: LineSegment2D
   outsideLine: LineSegment2D
-  direction: Vector2D // Normalized from start -> end of segment
-  outsideDirection: Vector2D // Normal vector pointing outside
+  direction: Vec2 // Normalized from start -> end of segment
+  outsideDirection: Vec2 // Normal vector pointing outside
 }

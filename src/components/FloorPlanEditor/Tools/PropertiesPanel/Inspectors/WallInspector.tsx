@@ -93,8 +93,8 @@ export function WallInspector({ wall, onChange }: WallInspectorProps): React.JSX
 
       if (startPoint && endPoint && startPoint.position && endPoint.position) {
         const length = Math.hypot(
-          endPoint.position.x - startPoint.position.x,
-          endPoint.position.y - startPoint.position.y
+          endPoint.position[0] - startPoint.position[0],
+          endPoint.position[1] - startPoint.position[1]
         )
         return `${(length / 1000).toFixed(2)} m`
       }

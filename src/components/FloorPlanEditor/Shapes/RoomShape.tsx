@@ -42,7 +42,7 @@ export function RoomShape({ room }: RoomShapeProps): React.JSX.Element | null {
       return point?.position
     })
     .filter((pos): pos is Point2D => pos !== undefined)
-    .flatMap(pos => [pos.x, pos.y])
+    .flatMap(pos => [pos[0], pos[1]])
 
   if (points.length < 6) {
     return null

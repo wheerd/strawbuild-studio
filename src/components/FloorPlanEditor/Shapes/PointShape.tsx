@@ -8,7 +8,7 @@ import {
   useDragState,
   useActiveTool
 } from '@/components/FloorPlanEditor/hooks/useEditorStore'
-import type { Point2D } from '@/types/geometry'
+import { createPoint2D } from '@/types/geometry'
 
 interface PointShapeProps {
   point: Point
@@ -67,7 +67,7 @@ export function PointShape({ point }: PointShapeProps): React.JSX.Element {
       const stage = e.target.getStage()
       const pointer = stage?.getPointerPosition()
       if (pointer != null) {
-        startDrag('point', pointer as Point2D, point.id)
+        startDrag('point', createPoint2D(pointer.x, pointer.y), point.id)
         // Mark that we started a drag operation
         hasDraggedRef.current = true
       }
@@ -77,8 +77,8 @@ export function PointShape({ point }: PointShapeProps): React.JSX.Element {
 
   return (
     <Circle
-      x={point.position.x}
-      y={point.position.y}
+      x={point.position[0]}
+      y={point.position[1]}
       radius={50} // Much larger radius for visibility at real-world scale
       fill={isSelected ? '#007acc' : isDragging ? '#ff6b35' : '#666666'}
       stroke="#333333"

@@ -1,7 +1,6 @@
 import type { ShortcutDefinition, Tool, ToolContext, CanvasEvent } from './types'
 import type { EntityId } from '@/types/ids'
 import { isWallId, isRoomId, isPointId } from '@/types/ids'
-import { createAbsoluteOffset } from '@/types/geometry'
 
 export class KeyboardShortcutManager {
   private builtInShortcuts: ShortcutDefinition[] = []
@@ -194,10 +193,7 @@ export class KeyboardShortcutManager {
       type: 'keydown',
       originalEvent: event,
       konvaEvent: null as any, // Not needed for keyboard events
-      stageCoordinates: {
-        x: createAbsoluteOffset(0),
-        y: createAbsoluteOffset(0)
-      }, // Not relevant for keyboard
+      stageCoordinates: [0, 0], // Not relevant for keyboard
       target: null,
       context
     }

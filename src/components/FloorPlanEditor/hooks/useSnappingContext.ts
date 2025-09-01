@@ -48,5 +48,5 @@ export function useSnappingContext(): SnappingContext {
       referencePointId,
       referenceLineSegments
     }
-  }, [pointMap, points, walls, referencePoint?.x, referencePoint?.y, referencePointId])
+  }, [pointMap, points, walls, referencePoint?.[0], referencePoint?.[1], referencePointId])
 }

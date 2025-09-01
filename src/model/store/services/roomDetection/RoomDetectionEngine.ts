@@ -1,6 +1,6 @@
 import type { WallId, PointId } from '@/types/ids'
 import type { Point2D, Polygon2D } from '@/types/geometry'
-import { isPointInPolygon } from '@/types/geometry'
+import { angle, isPointInPolygon } from '@/types/geometry'
 import {
   type WallLoopTrace,
   type RoomSide,
@@ -178,7 +178,7 @@ export class RoomDetectionEngine {
     }
 
     // Calculate incoming direction
-    const incomingAngle = Math.atan2(currentPos.y - previousPos.y, currentPos.x - previousPos.x)
+    const incomingAngle = angle(currentPos, previousPos)
 
     // Calculate angle for each outgoing edge and sort by smallest turn angle
     const edgesWithAngles = edges.map(edge => {
@@ -187,7 +187,7 @@ export class RoomDetectionEngine {
         return { edge, angle: 0, turnAngle: Math.PI * 2 }
       }
 
-      const outgoingAngle = Math.atan2(nextPos.y - currentPos.y, nextPos.x - currentPos.x)
+      const outgoingAngle = angle(currentPos, nextPos)
 
       // Calculate turn angle (difference from incoming direction)
       let turnAngle = outgoingAngle - incomingAngle

@@ -41,7 +41,7 @@ export class RotateTool implements Tool {
       // Calculate start angle from center
       const center = this.getRotationCenter(entity)
       if (center) {
-        this.state.startAngle = Math.atan2(stageCoords.y - center.y, stageCoords.x - center.x)
+        this.state.startAngle = Math.atan2(stageCoords[1] - center[1], stageCoords[0] - center[0])
       }
 
       // Select the entity being rotated
@@ -62,7 +62,7 @@ export class RotateTool implements Tool {
 
     if (center) {
       // Calculate current angle
-      const currentAngle = Math.atan2(stageCoords.y - center.y, stageCoords.x - center.x)
+      const currentAngle = Math.atan2(stageCoords[1] - center[1], stageCoords[0] - center[0])
 
       // Calculate rotation delta
       const deltaAngle = currentAngle - this.state.startAngle

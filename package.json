@@ -23,6 +23,7 @@
     "@turf/line-intersect": "^7.2.0",
     "@types/geojson": "^7946.0.16",
     "@types/jest": "^30.0.0",
+    "gl-matrix": "^3.4.4",
     "konva": "^9.3.22",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

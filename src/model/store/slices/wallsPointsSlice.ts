@@ -121,8 +121,8 @@ export const createWallsPointsSlice: StateCreator<WallsSlice & PointsSlice, [], 
     if (startPoint == null || endPoint == null) return
 
     // Calculate wall direction vector
-    const wallDx = endPoint.position.x - startPoint.position.x
-    const wallDy = endPoint.position.y - startPoint.position.y
+    const wallDx = endPoint.position[0] - startPoint.position[0]
+    const wallDy = endPoint.position[1] - startPoint.position[1]
     const wallLength = Math.sqrt(wallDx * wallDx + wallDy * wallDy)
 
     if (wallLength === 0) return // Degenerate wall
@@ -142,9 +142,9 @@ export const createWallsPointsSlice: StateCreator<WallsSlice & PointsSlice, [], 
     updatedState.points = new Map(state.points)
     updatedState.walls = new Map(state.walls)
 
-    const newStartPosition: Point2D = createPoint2D(startPoint.position.x + moveX, startPoint.position.y + moveY)
+    const newStartPosition: Point2D = createPoint2D(startPoint.position[0] + moveX, startPoint.position[1] + moveY)
 
-    const newEndPosition: Point2D = createPoint2D(endPoint.position.x + moveX, endPoint.position.y + moveY)
+    const newEndPosition: Point2D = createPoint2D(endPoint.position[0] + moveX, endPoint.position[1] + moveY)
 
     const updatedStartPoint = { ...startPoint, position: newStartPosition }
     const updatedEndPoint = { ...endPoint, position: newEndPosition }

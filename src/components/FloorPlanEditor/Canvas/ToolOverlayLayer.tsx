@@ -7,8 +7,7 @@ import {
   useCurrentSnapTarget
 } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 import type { ToolOverlayContext } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
-import type { Point2D } from '@/types/geometry'
-import { createAbsoluteOffset } from '@/types/geometry'
+import { createPoint2D, type Point2D } from '@/types/geometry'
 
 export function ToolOverlayLayer(): React.JSX.Element {
   const toolContext = useToolContext()
@@ -31,14 +30,10 @@ export function ToolOverlayLayer(): React.JSX.Element {
       currentMousePos,
       snapResult,
       snapTarget,
-      worldToStage: (worldPos: Point2D): Point2D => ({
-        x: createAbsoluteOffset(worldPos.x * viewport.zoom + viewport.panX),
-        y: createAbsoluteOffset(worldPos.y * viewport.zoom + viewport.panY)
-      }),
-      stageToWorld: (stagePos: Point2D): Point2D => ({
-        x: createAbsoluteOffset((stagePos.x - viewport.panX) / viewport.zoom),
-        y: createAbsoluteOffset((stagePos.y - viewport.panY) / viewport.zoom)
-      }),
+      worldToStage: (worldPos: Point2D): Point2D =>
+        createPoint2D(worldPos[0] * viewport.zoom + viewport.panX, worldPos[1] * viewport.zoom + viewport.panY),
+      stageToWorld: (stagePos: Point2D): Point2D =>
+        createPoint2D((stagePos[0] - viewport.panX) / viewport.zoom, (stagePos[1] - viewport.panY) / viewport.zoom),
       getInfiniteLineExtent: (): number => {
         const worldWidth = viewport.stageWidth / viewport.zoom
         const worldHeight = viewport.stageHeight / viewport.zoom
@@ -66,10 +61,10 @@ export function ToolOverlayLayer(): React.JSX.Element {
         <Line
           key={`snap-line-${index}`}
           points={[
-            line.point.x - overlayContext.getInfiniteLineExtent() * line.direction.x,
-            line.point.y - overlayContext.getInfiniteLineExtent() * line.direction.y,
-            line.point.x + overlayContext.getInfiniteLineExtent() * line.direction.x,
-            line.point.y + overlayContext.getInfiniteLineExtent() * line.direction.y
+            line.point[0] - overlayContext.getInfiniteLineExtent() * line.direction[0],
+            line.point[1] - overlayContext.getInfiniteLineExtent() * line.direction[1],
+            line.point[0] + overlayContext.getInfiniteLineExtent() * line.direction[0],
+            line.point[1] + overlayContext.getInfiniteLineExtent() * line.direction[1]
           ]}
           stroke="#0066ff"
           strokeWidth={8}
@@ -81,8 +76,8 @@ export function ToolOverlayLayer(): React.JSX.Element {
       {/* Active snap point indicator */}
       {(snapResult?.position || snapTarget) && (
         <Circle
-          x={(snapResult?.position || snapTarget)!.x}
-          y={(snapResult?.position || snapTarget)!.y}
+          x={(snapResult?.position || snapTarget)![0]}
+          y={(snapResult?.position || snapTarget)![1]}
           radius={15}
           fill="#0066ff"
           stroke="#ffffff"

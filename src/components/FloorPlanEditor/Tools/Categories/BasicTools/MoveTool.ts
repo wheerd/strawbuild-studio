@@ -2,7 +2,7 @@ import type { EntityId } from '@/types/ids'
 import { isWallId, isRoomId, isPointId } from '@/types/ids'
 import type { Tool, ToolContext, ContextAction, Entity, CanvasEvent } from '../../ToolSystem/types'
 import type { Point2D } from '@/types/geometry'
-import { createAbsoluteOffset, createPoint2D, createLength } from '@/types/geometry'
+import { createPoint2D, createLength } from '@/types/geometry'
 
 interface MoveToolState {
   isDragging: boolean
@@ -41,10 +41,7 @@ export class MoveTool implements Tool {
       // Calculate offset for smooth dragging
       const entityPosition = this.getEntityPosition(entity)
       if (entityPosition) {
-        this.state.dragOffset = {
-          x: createAbsoluteOffset(stageCoords.x - entityPosition.x),
-          y: createAbsoluteOffset(stageCoords.y - entityPosition.y)
-        }
+        this.state.dragOffset = createPoint2D(stageCoords[0] - entityPosition[0], stageCoords[1] - entityPosition[1])
       }
 
       // Select the entity being moved

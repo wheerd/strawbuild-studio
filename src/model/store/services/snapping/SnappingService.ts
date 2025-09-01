@@ -57,7 +57,7 @@ export class SnappingService {
     for (const point of context.points) {
       if (point.id === context.referencePointId) continue
 
-      const targetDistSq = (target.x - point.position.x) ** 2 + (target.y - point.position.y) ** 2
+      const targetDistSq = (target[0] - point.position[0]) ** 2 + (target[1] - point.position[1]) ** 2
       if (targetDistSq <= bestDistanceSq) {
         bestDistanceSq = targetDistSq
         bestPoint = point
@@ -121,11 +121,11 @@ export class SnappingService {
       // Perpendicular lines (90 degrees rotated)
       snapLines.push({
         point: segment.start,
-        direction: createVector2D(-line.direction.y, line.direction.x)
+        direction: createVector2D(-line.direction[1], line.direction[0])
       })
       snapLines.push({
         point: segment.end,
-        direction: createVector2D(-line.direction.y, line.direction.x)
+        direction: createVector2D(-line.direction[1], line.direction[0])
       })
     }
 

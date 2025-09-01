@@ -39,12 +39,12 @@ export function CornerShape({ corner }: CornerShapeProps): React.JSX.Element | n
     // Convert polygon points to a flat array for Konva Line
     const polygonArray: number[] = []
     for (const point of miterPolygon.points) {
-      polygonArray.push(Number(point.x), Number(point.y))
+      polygonArray.push(Number(point[0]), Number(point[1]))
     }
     // Close the polygon by adding the first point at the end
     if (miterPolygon.points.length > 0) {
       const firstPoint = miterPolygon.points[0]
-      polygonArray.push(Number(firstPoint.x), Number(firstPoint.y))
+      polygonArray.push(Number(firstPoint[0]), Number(firstPoint[1]))
     }
 
     return (
@@ -71,7 +71,7 @@ export function CornerShape({ corner }: CornerShapeProps): React.JSX.Element | n
 
   // Fallback to original circle rendering if miter calculation fails
   return (
-    <Group x={cornerPoint.position.x} y={cornerPoint.position.y} listening>
+    <Group x={cornerPoint.position[0]} y={cornerPoint.position[1]} listening>
       {/* Background circle for better visibility */}
       <Circle
         radius={80}

@@ -181,7 +181,7 @@ export function CornerInspector({ corner, onChange }: CornerInspectorProps): Rea
               <div className="position-info">
                 <label>Position:</label>
                 <span className="position-value">
-                  ({cornerData.point.position.x.toFixed(0)}, {cornerData.point.position.y.toFixed(0)}) mm
+                  ({cornerData.point.position[0].toFixed(0)}, {cornerData.point.position[1].toFixed(0)}) mm
                 </span>
               </div>
             )}

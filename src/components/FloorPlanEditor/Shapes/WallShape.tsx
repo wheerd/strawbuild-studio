@@ -4,7 +4,7 @@ import { useCallback, useRef } from 'react'
 import type { Wall } from '@/types/model'
 import { useSelectedEntity, useEditorStore, useActiveTool } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 import { usePoints, useCorners, useWallLength } from '@/model/store'
-import type { Point2D } from '@/types/geometry'
+import { createPoint2D } from '@/types/geometry'
 import { getWallVisualization } from '@/components/FloorPlanEditor/visualization/wallVisualization'
 
 interface WallShapeProps {
@@ -76,7 +76,7 @@ export function WallShape({ wall }: WallShapeProps): React.JSX.Element | null {
       const stage = e.target.getStage()
       const pointer = stage?.getPointerPosition()
       if (pointer != null) {
-        startDrag('wall', pointer as Point2D, wall.id)
+        startDrag('wall', createPoint2D(pointer.x, pointer.y), wall.id)
         // Mark that we started a drag operation
         hasDraggedRef.current = true
       }
@@ -88,8 +88,8 @@ export function WallShape({ wall }: WallShapeProps): React.JSX.Element | null {
   const wallViz = getWallVisualization(wall.type, wall.thickness, wall.outsideDirection)
 
   // Calculate wall perpendicular direction for arrows and plaster edges
-  const wallDx = endPoint.position.x - startPoint.position.x
-  const wallDy = endPoint.position.y - startPoint.position.y
+  const wallDx = endPoint.position[0] - startPoint.position[0]
+  const wallDy = endPoint.position[1] - startPoint.position[1]
   const wallLength = Math.sqrt(wallDx * wallDx + wallDy * wallDy)
 
   // Get perpendicular vector (normal to wall)
@@ -97,8 +97,8 @@ export function WallShape({ wall }: WallShapeProps): React.JSX.Element | null {
   const normalY = wallLength > 0 ? wallDx / wallLength : 0
 
   // Calculate wall midpoint
-  const midX = (startPoint.position.x + endPoint.position.x) / 2
-  const midY = (startPoint.position.y + endPoint.position.y) / 2
+  const midX = (startPoint.position[0] + endPoint.position[0]) / 2
+  const midY = (startPoint.position[1] + endPoint.position[1]) / 2
 
   // Calculate wall angle for text rotation, keeping text as horizontal as possible
   const wallAngle = wallLength > 0 ? Math.atan2(wallDy, wallDx) : 0
@@ -125,7 +125,7 @@ export function WallShape({ wall }: WallShapeProps): React.JSX.Element | null {
     <Group>
       {/* Main wall body */}
       <Line
-        points={[startPoint.position.x, startPoint.position.y, endPoint.position.x, endPoint.position.y]}
+        points={[startPoint.position[0], startPoint.position[1], endPoint.position[0], endPoint.position[1]]}
         stroke={finalMainColor}
         strokeWidth={wallViz.strokeWidth}
         lineCap="butt"
@@ -139,7 +139,7 @@ export function WallShape({ wall }: WallShapeProps): React.JSX.Element | null {
       {/* Wood support pattern for structural walls */}
       {wallViz.pattern && (
         <Line
-          points={[startPoint.position.x, startPoint.position.y, endPoint.position.x, endPoint.position.y]}
+          points={[startPoint.position[0], startPoint.position[1], endPoint.position[0], endPoint.position[1]]}
           stroke={wallViz.pattern.color}
           strokeWidth={wallViz.strokeWidth}
           lineCap="butt"
@@ -161,10 +161,10 @@ export function WallShape({ wall }: WallShapeProps): React.JSX.Element | null {
           <Line
             key={`edge-${edge.position}-${index}`}
             points={[
-              startPoint.position.x + normalX * edgeOffset,
-              startPoint.position.y + normalY * edgeOffset,
-              endPoint.position.x + normalX * edgeOffset,
-              endPoint.position.y + normalY * edgeOffset
+              startPoint.position[0] + normalX * edgeOffset,
+              startPoint.position[1] + normalY * edgeOffset,
+              endPoint.position[0] + normalX * edgeOffset,
+              endPoint.position[1] + normalY * edgeOffset
             ]}
             stroke={edge.color}
             strokeWidth={edge.width}

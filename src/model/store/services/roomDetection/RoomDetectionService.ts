@@ -1,6 +1,6 @@
 import type { WallId, FloorId, PointId, RoomId } from '@/types/ids'
 import type { Point2D, Polygon2D } from '@/types/geometry'
-import { isPointInPolygon } from '@/types/geometry'
+import { distance, isPointInPolygon } from '@/types/geometry'
 import type { StoreState, StoreActions } from '../../types'
 import { useModelStore } from '../..'
 import { RoomDetectionEngine } from './RoomDetectionEngine'
@@ -96,9 +96,9 @@ export class RoomDetectionService implements IRoomDetectionService {
     let minDistance = Infinity
 
     for (const [pointId, graphPoint] of graph.points) {
-      const distance = Math.sqrt(Math.pow(point.x - graphPoint.x, 2) + Math.pow(point.y - graphPoint.y, 2))
-      if (distance < minDistance) {
-        minDistance = distance
+      const dist = distance(point, graphPoint)
+      if (dist < minDistance) {
+        minDistance = dist
         nearestPointId = pointId
       }
     }
