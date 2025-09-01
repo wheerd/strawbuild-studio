@@ -441,3 +441,107 @@ export function distanceToLineSegment(point: Point2D, segment: LineSegment2D): L
   // Return distance from point to closest point on line segment
   return distance(point, closest)
 }
+
+// Helper function to calculate the cross product of two 2D vectors
+function crossProduct2D(v1x: number, v1y: number, v2x: number, v2y: number): number {
+  return v1x * v2y - v1y * v2x
+}
+
+// Check if two line segments intersect (excluding endpoints touching)
+export function doLineSegmentsIntersect(seg1: LineSegment2D, seg2: LineSegment2D): boolean {
+  const p1 = seg1.start
+  const q1 = seg1.end
+  const p2 = seg2.start
+  const q2 = seg2.end
+
+  // Calculate direction vectors
+  const d1x = q1.x - p1.x
+  const d1y = q1.y - p1.y
+  const d2x = q2.x - p2.x
+  const d2y = q2.y - p2.y
+
+  // Calculate cross product of direction vectors
+  const denominator = crossProduct2D(d1x, d1y, d2x, d2y)
+
+  // If denominator is 0, lines are parallel
+  if (Math.abs(denominator) < 1e-10) {
+    return false
+  }
+
+  // Calculate parameters for intersection
+  const dx = p2.x - p1.x
+  const dy = p2.y - p1.y
+
+  const t = crossProduct2D(dx, dy, d2x, d2y) / denominator
+  const u = crossProduct2D(dx, dy, d1x, d1y) / denominator
+
+  // Check if intersection occurs within both line segments (excluding endpoints)
+  // Use small epsilon to avoid numerical precision issues
+  const epsilon = 1e-10
+  return t > epsilon && t < 1 - epsilon && u > epsilon && u < 1 - epsilon
+}
+
+// Check if a point is already used in the polygon (with tolerance for floating point precision)
+export function isPointAlreadyUsed(
+  existingPoints: Point2D[],
+  newPoint: Point2D,
+  tolerance: Length = createLength(1e-6)
+): boolean {
+  return existingPoints.some(existingPoint => distance(existingPoint, newPoint) <= tolerance)
+}
+
+// Check if adding a new point to a polygon would create self-intersection or reuse existing points
+export function wouldPolygonSelfIntersect(existingPoints: Point2D[], newPoint: Point2D): boolean {
+  if (existingPoints.length < 2) return false
+
+  // Check if the new point is already used (this counts as invalid)
+  if (isPointAlreadyUsed(existingPoints, newPoint)) {
+    return true
+  }
+
+  // The new line segment would be from the last existing point to the new point
+  const newSegment: LineSegment2D = {
+    start: existingPoints[existingPoints.length - 1],
+    end: newPoint
+  }
+
+  // Check if this new segment intersects with any existing segments (except the last one it connects to)
+  for (let i = 0; i < existingPoints.length - 2; i++) {
+    const existingSegment: LineSegment2D = {
+      start: existingPoints[i],
+      end: existingPoints[i + 1]
+    }
+
+    if (doLineSegmentsIntersect(newSegment, existingSegment)) {
+      return true
+    }
+  }
+
+  return false
+}
+
+// Check if closing a polygon would create self-intersection
+export function wouldClosingPolygonSelfIntersect(points: Point2D[]): boolean {
+  if (points.length < 3) return false
+
+  // The closing segment would be from the last point back to the first
+  const closingSegment: LineSegment2D = {
+    start: points[points.length - 1],
+    end: points[0]
+  }
+
+  // Check if this closing segment intersects with any existing segments
+  // (except the first and last segments which it naturally connects to)
+  for (let i = 1; i < points.length - 2; i++) {
+    const existingSegment: LineSegment2D = {
+      start: points[i],
+      end: points[i + 1]
+    }
+
+    if (doLineSegmentsIntersect(closingSegment, existingSegment)) {
+      return true
+    }
+  }
+
+  return false
+}

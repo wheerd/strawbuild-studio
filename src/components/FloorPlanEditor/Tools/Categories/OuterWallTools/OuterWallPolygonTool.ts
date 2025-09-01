@@ -1,6 +1,12 @@
 import type { Tool, ContextAction, CanvasEvent, ToolOverlayContext } from '../../ToolSystem/types'
 import type { Point2D, Polygon2D, LineSegment2D } from '@/types/geometry'
-import { createLength, createPoint2D, polygonIsClockwise } from '@/types/geometry'
+import {
+  createLength,
+  createPoint2D,
+  polygonIsClockwise,
+  wouldPolygonSelfIntersect,
+  wouldClosingPolygonSelfIntersect
+} from '@/types/geometry'
 import type { SnappingContext, SnapResult } from '@/model/store/services/snapping/types'
 import React from 'react'
 import { Line, Circle } from 'react-konva'
@@ -12,6 +18,8 @@ interface OuterWallPolygonToolState {
   mouse: Point2D
   snapResult?: SnapResult
   snapContext: SnappingContext
+  isCurrentLineValid: boolean
+  isClosingLineValid: boolean
 }
 
 export class OuterWallPolygonTool implements Tool {
@@ -30,7 +38,9 @@ export class OuterWallPolygonTool implements Tool {
       points: [],
       alignPoints: [],
       referenceLineSegments: []
-    }
+    },
+    isCurrentLineValid: true,
+    isClosingLineValid: true
   }
 
   private snapService = new SnappingService()
@@ -73,14 +83,21 @@ export class OuterWallPolygonTool implements Tool {
     // Check if clicking near the first point to close the polygon
     if (this.state.points.length >= 3) {
       if (this.state.snapResult?.pointId === this.firstPointId) {
-        this.completePolygon(event)
+        // Only allow closing if it wouldn't create intersections
+        if (this.state.isClosingLineValid) {
+          this.completePolygon(event)
+        }
         return true
       }
     }
 
-    // Add point to polygon
-    this.state.points.push(snapCoords)
-    this.updateSnapContext()
+    // Only add point if the line is valid (doesn't create intersections)
+    if (this.state.isCurrentLineValid) {
+      this.state.points.push(snapCoords)
+      this.updateSnapContext()
+      // Update validation for new state
+      this.updateValidation()
+    }
 
     return true
   }
@@ -89,6 +106,10 @@ export class OuterWallPolygonTool implements Tool {
     const stageCoords = event.stageCoordinates
     this.state.mouse = stageCoords
     this.state.snapResult = this.snapService.findSnapResult(stageCoords, this.state.snapContext) ?? undefined
+
+    // Update validation based on current mouse position
+    this.updateValidation()
+
     this.listeners.forEach(l => l())
     return true
   }
@@ -115,11 +136,15 @@ export class OuterWallPolygonTool implements Tool {
 
   onActivate(): void {
     this.state.points = []
+    this.state.isCurrentLineValid = true
+    this.state.isClosingLineValid = true
     this.updateSnapContext()
   }
 
   onDeactivate(): void {
     this.state.points = []
+    this.state.isCurrentLineValid = true
+    this.state.isClosingLineValid = true
     this.updateSnapContext()
   }
 
@@ -218,13 +243,30 @@ export class OuterWallPolygonTool implements Tool {
           React.createElement(Line, {
             key: 'preview-line',
             points: [lastPoint.x, lastPoint.y, currentPos.x, currentPos.y],
-            stroke: '#94a3b8',
+            stroke: this.state.isCurrentLineValid ? '#94a3b8' : '#ef4444',
             strokeWidth: 10,
             dash: [30, 30],
             listening: false
           })
         )
       }
+    }
+
+    // Draw closing line preview when near first point
+    if (this.state.points.length >= 3 && this.state.snapResult?.pointId === this.firstPointId) {
+      const lastPoint = this.state.points[this.state.points.length - 1]
+      const firstPoint = this.state.points[0]
+
+      elements.push(
+        React.createElement(Line, {
+          key: 'closing-line-preview',
+          points: [lastPoint.x, lastPoint.y, firstPoint.x, firstPoint.y],
+          stroke: this.state.isClosingLineValid ? '#22c55e' : '#ef4444',
+          strokeWidth: 12,
+          dash: [20, 20],
+          listening: false
+        })
+      )
     }
 
     elements.push(this.renderSnapping(context))
@@ -246,10 +288,10 @@ export class OuterWallPolygonTool implements Tool {
 
     if (this.state.points.length >= 3) {
       actions.push({
-        label: 'Complete Polygon',
+        label: this.state.isClosingLineValid ? 'Complete Polygon' : 'Complete Polygon (Invalid)',
         action: () => this.completePolygon(null),
         hotkey: 'Enter',
-        icon: '✓'
+        icon: this.state.isClosingLineValid ? '✓' : '⚠️'
       })
     }
 
@@ -258,6 +300,9 @@ export class OuterWallPolygonTool implements Tool {
 
   private completePolygon(event: CanvasEvent | null): void {
     if (this.state.points.length < 3) return
+
+    // Only complete if closing wouldn't create intersections
+    if (!this.state.isClosingLineValid) return
 
     // Create polygon and ensure clockwise order for outer walls
     let polygon: Polygon2D = { points: [...this.state.points] }
@@ -284,12 +329,46 @@ export class OuterWallPolygonTool implements Tool {
     }
 
     this.state.points = []
+    this.state.isCurrentLineValid = true
+    this.state.isClosingLineValid = true
     this.updateSnapContext()
   }
 
   private cancelPolygon(): void {
     this.state.points = []
+    this.state.isCurrentLineValid = true
+    this.state.isClosingLineValid = true
     this.updateSnapContext()
+  }
+
+  private updateValidation(): void {
+    if (this.state.points.length === 0) {
+      this.state.isCurrentLineValid = true
+      this.state.isClosingLineValid = true
+      return
+    }
+
+    const currentPos = this.state.snapResult?.position ?? this.state.mouse
+
+    // Special case: if snapping to the first point (closing the polygon),
+    // don't check for point reuse but still check intersection
+    const isSnapToFirstPoint = this.state.snapResult?.pointId === this.firstPointId
+
+    if (isSnapToFirstPoint) {
+      // When closing polygon, only check if closing would create intersections
+      this.state.isCurrentLineValid =
+        this.state.points.length >= 3 ? !wouldClosingPolygonSelfIntersect(this.state.points) : true
+    } else {
+      // Normal case: check for both intersections and point reuse
+      this.state.isCurrentLineValid = !wouldPolygonSelfIntersect(this.state.points, currentPos)
+    }
+
+    // Check if closing the polygon would create intersections
+    if (this.state.points.length >= 3) {
+      this.state.isClosingLineValid = !wouldClosingPolygonSelfIntersect(this.state.points)
+    } else {
+      this.state.isClosingLineValid = true
+    }
   }
 
   private listeners: (() => void)[] = []
