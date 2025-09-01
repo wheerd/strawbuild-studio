@@ -1,4 +1,4 @@
-import type { WallId, PointId, RoomId, FloorId, SlabId, RoofId } from '@/types/ids'
+import type { WallId, PointId, RoomId, FloorId, SlabId, RoofId, OuterWallId } from '@/types/ids'
 import type { Length, Point2D } from '@/types/geometry'
 
 // Floor level branded type
@@ -120,4 +120,24 @@ export interface Floor {
   name: string
   level: FloorLevel // Floor level (0 = ground floor, 1 = first floor, etc.)
   height: Length
+}
+
+export interface OuterWallPolygon {
+  id: OuterWallId
+  floorId: FloorId
+
+  // Polygon defining the inside area of the building
+  boundary: Point2D[] // Ordered clockwise, defines inner face of walls
+
+  // Per-side wall data
+  segments: OuterWallSegment[] // segments[i] goes from boundary[i] -> boundary[(i + 1) % boundary.length]
+}
+
+export type OuterWallConstructionType = 'cells-under-tension' | 'infill' | 'strawhenge' | 'non-strawbale'
+
+export interface OuterWallSegment {
+  thickness: Length
+  constructionType: OuterWallConstructionType
+
+  openings: Opening[]
 }

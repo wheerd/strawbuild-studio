@@ -5,6 +5,7 @@ export type RoomId = string & { readonly brand: unique symbol }
 export type FloorId = string & { readonly brand: unique symbol }
 export type SlabId = string & { readonly brand: unique symbol }
 export type RoofId = string & { readonly brand: unique symbol }
+export type OuterWallId = string & { readonly brand: unique symbol }
 
 export type EntityId = WallId | PointId | RoomId | FloorId | SlabId | RoofId
 
@@ -15,6 +16,7 @@ export const createRoomId = (): RoomId => `room_${Date.now()}_${Math.random()}` 
 export const createSlabId = (): SlabId => `slab_${Date.now()}_${Math.random()}` as SlabId
 export const createFloorId = (): FloorId => `floor_${Date.now()}_${Math.random()}` as FloorId
 export const createRoofId = (): RoofId => `roof_${Date.now()}_${Math.random()}` as RoofId
+export const createOuterWallId = (): OuterWallId => `outside_${Date.now()}_${Math.random()}` as OuterWallId
 
 // Type guards for runtime ID validation
 export const isWallId = (id: string): id is WallId => id.startsWith('wall_')
@@ -23,3 +25,4 @@ export const isRoomId = (id: string): id is RoomId => id.startsWith('room_')
 export const isFloorId = (id: string): id is FloorId => id.startsWith('floor_')
 export const isSlabId = (id: string): id is SlabId => id.startsWith('slab_')
 export const isRoofId = (id: string): id is SlabId => id.startsWith('roof_')
+export const isOuterWallId = (id: string): id is OuterWallId => id.startsWith('outside_')
