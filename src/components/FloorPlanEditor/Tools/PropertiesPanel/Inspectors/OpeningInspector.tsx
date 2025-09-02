@@ -1,5 +1,5 @@
-import { useCallback } from 'react'
-import { useGetOuterWallById, useModelStore } from '@/model/store'
+import { useCallback, useState, useEffect, useMemo } from 'react'
+import { useModelStore } from '@/model/store'
 import { createLength } from '@/types/geometry'
 import type { OpeningId, OuterWallId, WallSegmentId } from '@/types/ids'
 import type { OpeningType } from '@/types/model'
@@ -21,12 +21,34 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
   // Get model store functions - use specific selectors for stable references
   const updateOpening = useModelStore(state => state.updateOpening)
   const removeOpeningFromOuterWall = useModelStore(state => state.removeOpeningFromOuterWall)
-  const getOuterWallById = useGetOuterWallById()
 
-  // Get data
-  const outerWall = getOuterWallById(outerWallId)
-  const segment = outerWall?.segments.find(s => s.id === segmentId)
-  const opening = segment?.openings.find(o => o.id === openingId)
+  // Get outer wall from store
+  const outerWall = useModelStore(state => state.outerWalls.get(outerWallId))
+
+  // Use useMemo to find segment and opening within the wall object
+  const segment = useMemo(() => {
+    return outerWall?.segments.find(s => s.id === segmentId)
+  }, [outerWall, segmentId])
+
+  const opening = useMemo(() => {
+    return segment?.openings.find(o => o.id === openingId)
+  }, [segment, openingId])
+
+  // Local state for inputs to prevent unfocus on store updates
+  const [localWidth, setLocalWidth] = useState<string>('')
+  const [localHeight, setLocalHeight] = useState<string>('')
+  const [localOffset, setLocalOffset] = useState<string>('')
+  const [localSillHeight, setLocalSillHeight] = useState<string>('')
+
+  // Sync local state with store data
+  useEffect(() => {
+    if (opening) {
+      setLocalWidth(String(opening.width))
+      setLocalHeight(String(opening.height))
+      setLocalOffset(String(opening.offsetFromStart))
+      setLocalSillHeight(String(opening.sillHeight || 0))
+    }
+  }, [opening?.width, opening?.height, opening?.offsetFromStart, opening?.sillHeight])
 
   // If opening not found, show error
   if (!opening || !segment || !outerWall || !outerWallId || !segmentId) {
@@ -42,44 +64,58 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
   const handleTypeChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const newType = e.target.value as OpeningType
+      // Selects can update immediately since they don't have focus issues
       updateOpening(outerWallId, segmentId, openingId, { type: newType })
     },
     [updateOpening, outerWallId, segmentId, openingId]
   )
 
-  const handleWidthChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = Math.max(100, Math.min(5000, Number(e.target.value))) // Clamp between 100mm and 5000mm
-      updateOpening(outerWallId, segmentId, openingId, { width: createLength(value) })
-    },
-    [updateOpening, outerWallId, segmentId, openingId]
-  )
+  // Width handlers - local state + blur
+  const handleWidthChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalWidth(e.target.value)
+  }, [])
 
-  const handleHeightChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = Math.max(100, Math.min(4000, Number(e.target.value))) // Clamp between 100mm and 4000mm
-      updateOpening(outerWallId, segmentId, openingId, { height: createLength(value) })
-    },
-    [updateOpening, outerWallId, segmentId, openingId]
-  )
+  const handleWidthBlur = useCallback(() => {
+    const value = Math.max(100, Math.min(5000, Number(localWidth))) // Clamp between 100mm and 5000mm
+    updateOpening(outerWallId, segmentId, openingId, { width: createLength(value) })
+    setLocalWidth(String(value))
+  }, [localWidth, updateOpening, outerWallId, segmentId, openingId])
 
-  const handleOffsetChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = Math.max(0, Math.min(segment.insideLength - opening.width, Number(e.target.value)))
-      updateOpening(outerWallId, segmentId, openingId, { offsetFromStart: createLength(value) })
-    },
-    [updateOpening, outerWallId, segmentId, openingId, segment.insideLength, opening.width]
-  )
+  // Height handlers - local state + blur
+  const handleHeightChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalHeight(e.target.value)
+  }, [])
 
-  const handleSillHeightChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = Math.max(0, Math.min(2000, Number(e.target.value))) // Clamp between 0mm and 2000mm
-      updateOpening(outerWallId, segmentId, openingId, {
-        sillHeight: value === 0 ? undefined : createLength(value)
-      })
-    },
-    [updateOpening, outerWallId, segmentId, openingId]
-  )
+  const handleHeightBlur = useCallback(() => {
+    const value = Math.max(100, Math.min(4000, Number(localHeight))) // Clamp between 100mm and 4000mm
+    updateOpening(outerWallId, segmentId, openingId, { height: createLength(value) })
+    setLocalHeight(String(value))
+  }, [localHeight, updateOpening, outerWallId, segmentId, openingId])
+
+  // Offset handlers - local state + blur
+  const handleOffsetChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalOffset(e.target.value)
+  }, [])
+
+  const handleOffsetBlur = useCallback(() => {
+    if (!segment || !opening) return
+    const value = Math.max(0, Math.min(segment.insideLength - opening.width, Number(localOffset)))
+    updateOpening(outerWallId, segmentId, openingId, { offsetFromStart: createLength(value) })
+    setLocalOffset(String(value))
+  }, [localOffset, updateOpening, outerWallId, segmentId, openingId, segment?.insideLength, opening?.width])
+
+  // Sill height handlers - local state + blur
+  const handleSillHeightChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalSillHeight(e.target.value)
+  }, [])
+
+  const handleSillHeightBlur = useCallback(() => {
+    const value = Math.max(0, Math.min(2000, Number(localSillHeight))) // Clamp between 0mm and 2000mm
+    updateOpening(outerWallId, segmentId, openingId, {
+      sillHeight: value === 0 ? undefined : createLength(value)
+    })
+    setLocalSillHeight(String(value))
+  }, [localSillHeight, updateOpening, outerWallId, segmentId, openingId])
 
   const handleRemoveOpening = useCallback(() => {
     if (confirm('Are you sure you want to remove this opening?')) {
@@ -116,8 +152,9 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
             <input
               id="opening-width"
               type="number"
-              value={opening.width}
+              value={localWidth}
               onChange={handleWidthChange}
+              onBlur={handleWidthBlur}
               min="100"
               max="5000"
               step="10"
@@ -129,8 +166,9 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
             <input
               id="opening-height"
               type="number"
-              value={opening.height}
+              value={localHeight}
               onChange={handleHeightChange}
+              onBlur={handleHeightBlur}
               min="100"
               max="4000"
               step="10"
@@ -142,8 +180,9 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
             <input
               id="opening-offset"
               type="number"
-              value={opening.offsetFromStart}
+              value={localOffset}
               onChange={handleOffsetChange}
+              onBlur={handleOffsetBlur}
               min="0"
               max={segment.insideLength - opening.width}
               step="10"
@@ -157,8 +196,9 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
               <input
                 id="sill-height"
                 type="number"
-                value={opening.sillHeight || 0}
+                value={localSillHeight}
                 onChange={handleSillHeightChange}
+                onBlur={handleSillHeightBlur}
                 min="0"
                 max="2000"
                 step="10"

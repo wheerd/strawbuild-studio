@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { useGetOuterWallById, useModelStore } from '@/model/store'
+import { useModelStore } from '@/model/store'
 import type { OuterCornerId, OuterWallId } from '@/types/ids'
 
 interface OuterCornerInspectorProps {
@@ -10,12 +10,18 @@ interface OuterCornerInspectorProps {
 export function OuterCornerInspector({ outerWallId, cornerId }: OuterCornerInspectorProps): React.JSX.Element {
   // Get model store functions - use specific selectors for stable references
   const updateCornerBelongsTo = useModelStore(state => state.updateCornerBelongsTo)
-  const getOuterWallById = useGetOuterWallById()
 
-  // Get data
-  const outerWall = getOuterWallById(outerWallId)
-  const cornerIndex = outerWall?.corners.findIndex(c => c.id === cornerId) ?? -1
-  const corner = cornerIndex !== -1 ? outerWall?.corners[cornerIndex] : null
+  // Get outer wall from store
+  const outerWall = useModelStore(state => state.outerWalls.get(outerWallId))
+
+  // Use useMemo to find corner and its index within the wall object
+  const cornerIndex = useMemo(() => {
+    return outerWall?.corners.findIndex(c => c.id === cornerId) ?? -1
+  }, [outerWall, cornerId])
+
+  const corner = useMemo(() => {
+    return cornerIndex !== -1 ? outerWall?.corners[cornerIndex] : null
+  }, [outerWall, cornerIndex])
 
   // If corner not found, show error
   if (!corner || !outerWall || cornerIndex === -1) {

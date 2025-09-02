@@ -45,19 +45,40 @@ export function PropertiesPanel(): React.JSX.Element {
           )}
 
           {/* Legacy wall entity */}
-          {selectedId && isWallId(selectedId) && <WallInspector selectedId={selectedId} />}
+          {selectedId && isWallId(selectedId) && <WallInspector key={selectedId} selectedId={selectedId} />}
 
           {/* Room entity */}
-          {selectedId && isRoomId(selectedId) && <RoomInspector selectedId={selectedId} />}
+          {selectedId && isRoomId(selectedId) && <RoomInspector key={selectedId} selectedId={selectedId} />}
 
           {/* Point entity (treat as corner) */}
-          {selectedId && isPointId(selectedId) && <CornerInspector selectedId={selectedId} />}
+          {selectedId && isPointId(selectedId) && <CornerInspector key={selectedId} selectedId={selectedId} />}
 
           {/* Outer wall entities */}
-          {selectedId && isOuterWallId(selectedId) && <OuterWallInspector selectedId={selectedId} />}
+          {selectedId && isOuterWallId(selectedId) && <OuterWallInspector key={selectedId} selectedId={selectedId} />}
 
           {selectedId && isWallSegmentId(selectedId) && (
-            <WallSegmentInspector outerWallId={selectionPath[0] as OuterWallId} segmentId={selectedId} />
+            <WallSegmentInspector
+              key={selectedId}
+              outerWallId={selectionPath[0] as OuterWallId}
+              segmentId={selectedId}
+            />
+          )}
+
+          {selectedId && isOuterCornerId(selectedId) && (
+            <OuterCornerInspector
+              key={selectedId}
+              outerWallId={selectionPath[0] as OuterWallId}
+              cornerId={selectedId}
+            />
+          )}
+
+          {selectedId && isOpeningId(selectedId) && (
+            <OpeningInspector
+              key={selectedId}
+              outerWallId={selectionPath[0] as OuterWallId}
+              segmentId={selectionPath[1] as WallSegmentId}
+              openingId={selectedId}
+            />
           )}
 
           {selectedId && isOuterCornerId(selectedId) && (

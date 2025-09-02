@@ -74,9 +74,18 @@ function FloorPlanEditorContent(): React.JSX.Element {
     }
   }, [updateDimensions])
 
-  const handleClick = useCallback(() => {
-    // Ensure the editor has focus for keyboard events
-    if (containerRef.current) {
+  const handleClick = useCallback((event: React.MouseEvent) => {
+    // Only steal focus if clicking on the canvas area, not on UI elements like inputs
+    const target = event.target as HTMLElement
+
+    // Check if the click target is an input, select, button, or other interactive element
+    const isInteractiveElement = target.matches('input, select, button, textarea, [contenteditable="true"]')
+
+    // Check if the click target is inside the properties panel
+    const isInPropertiesPanel = target.closest('.properties-panel')
+
+    // Only focus the container if we're clicking on the canvas area
+    if (!isInteractiveElement && !isInPropertiesPanel && containerRef.current) {
       containerRef.current.focus()
     }
   }, [])

@@ -1,5 +1,5 @@
-import { useCallback } from 'react'
-import { useGetOuterWallById, useModelStore } from '@/model/store'
+import { useCallback, useState, useEffect, useMemo } from 'react'
+import { useModelStore } from '@/model/store'
 import { createLength } from '@/types/geometry'
 import type { WallSegmentId, OuterWallId } from '@/types/ids'
 import type { OuterWallConstructionType } from '@/types/model'
@@ -21,11 +21,47 @@ export function WallSegmentInspector({ outerWallId, segmentId }: WallSegmentInsp
   // Get model store functions - use specific selectors for stable references
   const updateOuterWallConstructionType = useModelStore(state => state.updateOuterWallConstructionType)
   const updateOuterWallThickness = useModelStore(state => state.updateOuterWallThickness)
-  const getOuterWallById = useGetOuterWallById()
 
-  // Get data
-  const outerWall = getOuterWallById(outerWallId)
-  const segment = outerWall?.segments.find(s => s.id === segmentId)
+  // Get outer wall from store
+  const outerWall = useModelStore(state => state.outerWalls.get(outerWallId))
+
+  // Use useMemo to find segment within the wall object
+  const segment = useMemo(() => {
+    return outerWall?.segments.find(s => s.id === segmentId)
+  }, [outerWall, segmentId])
+
+  // Local state for inputs to prevent unfocus on store updates
+  const [localThickness, setLocalThickness] = useState<string>('')
+
+  // Sync local state with store data
+  useEffect(() => {
+    if (segment) {
+      setLocalThickness(String(segment.thickness))
+    }
+  }, [segment?.thickness])
+
+  // Event handlers with stable references
+  const handleConstructionTypeChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const newType = e.target.value as OuterWallConstructionType
+      // Selects can update immediately since they don't have focus issues
+      updateOuterWallConstructionType(outerWallId, segmentId, newType)
+    },
+    [updateOuterWallConstructionType, outerWallId, segmentId]
+  )
+
+  // Handle thickness input changes - update local state immediately
+  const handleThicknessChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalThickness(e.target.value)
+  }, [])
+
+  // Handle thickness blur - update store when user finishes editing
+  const handleThicknessBlur = useCallback(() => {
+    const value = Math.max(50, Math.min(1500, Number(localThickness))) // Clamp between 50mm and 1500mm
+    updateOuterWallThickness(outerWallId, segmentId, createLength(value))
+    // Update local state to reflect the clamped value
+    setLocalThickness(String(value))
+  }, [localThickness, updateOuterWallThickness, outerWallId, segmentId])
 
   // If segment not found, show error
   if (!segment || !outerWall) {
@@ -37,29 +73,8 @@ export function WallSegmentInspector({ outerWallId, segmentId }: WallSegmentInsp
     )
   }
 
-  // Event handlers with stable references
-  const handleConstructionTypeChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const newType = e.target.value as OuterWallConstructionType
-      updateOuterWallConstructionType(outerWallId, segmentId, newType)
-    },
-    [updateOuterWallConstructionType, outerWallId, segmentId]
-  )
-
-  const handleThicknessChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = Math.max(50, Math.min(1500, Number(e.target.value))) // Clamp between 50mm and 1500mm
-      updateOuterWallThickness(outerWallId, segmentId, createLength(value))
-    },
-    [updateOuterWallThickness, outerWallId, segmentId]
-  )
-
   return (
     <div className="wall-segment-inspector">
-      <div className="inspector-header">
-        <h3>Wall Segment Properties</h3>
-      </div>
-
       <div className="inspector-content">
         {/* Basic Properties */}
         <div className="property-section">
@@ -81,8 +96,9 @@ export function WallSegmentInspector({ outerWallId, segmentId }: WallSegmentInsp
             <input
               id="segment-thickness"
               type="number"
-              value={segment.thickness}
+              value={localThickness}
               onChange={handleThicknessChange}
+              onBlur={handleThicknessBlur}
               min="50"
               max="1500"
               step="10"
