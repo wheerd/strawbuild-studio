@@ -63,7 +63,7 @@ export function OuterCornerShape({
       entityId={corner.id}
       entityType="outer-corner"
       parentIds={[outerWallId]}
-      listening={true}
+      listening
     >
       {/* Corner polygon fill */}
       <Line
@@ -73,7 +73,7 @@ export function OuterCornerShape({
         strokeWidth={1}
         opacity={opacity}
         closed
-        listening={true}
+        listening
       />
 
       {/* Construction type indicator - different patterns for different types */}

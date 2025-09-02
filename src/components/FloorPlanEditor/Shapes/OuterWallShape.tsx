@@ -2,7 +2,7 @@ import { Group, Line, Text } from 'react-konva'
 import { useMemo } from 'react'
 import type { OuterWallPolygon, OuterWallSegment } from '@/types/model'
 import { getWallVisualization } from '@/components/FloorPlanEditor/visualization/wallVisualization'
-import { distance, direction, midpoint } from '@/types/geometry'
+import { distance, direction, midpoint, add, scale } from '@/types/geometry'
 
 interface OuterWallShapeProps {
   outerWall: OuterWallPolygon
@@ -57,7 +57,7 @@ function OuterWallSegmentShape({
       entityId={segment.id}
       entityType="wall-segment"
       parentIds={[outerWallId]}
-      listening={true}
+      listening
     >
       {/* Main wall body - fill the area between inside and outside lines */}
       <Line
@@ -76,7 +76,7 @@ function OuterWallSegmentShape({
         strokeWidth={2}
         opacity={opacity}
         closed
-        listening={true}
+        listening
       />
 
       {/* Construction type pattern overlay */}
@@ -117,19 +117,14 @@ function OuterWallSegmentShape({
         // Calculate opening position along the segment
         const segmentVector = direction(insideStart, insideEnd)
         const offsetDistance = opening.offsetFromStart
-        const openingStart = [
-          insideStart[0] + segmentVector[0] * offsetDistance,
-          insideStart[1] + segmentVector[1] * offsetDistance
-        ]
-        const openingEnd = [
-          openingStart[0] + segmentVector[0] * opening.width,
-          openingStart[1] + segmentVector[1] * opening.width
-        ]
+        const centerStart = midpoint(insideStart, outsideStart)
+        const openingStart = add(centerStart, scale(segmentVector, offsetDistance))
+        const openingEnd = add(openingStart, scale(segmentVector, opening.width))
 
         return (
           <Group
             key={`opening-${openingIndex}`}
-            listening={true}
+            listening
             ref={node => {
               if (node) {
                 // Explicitly set entity attributes on the Konva node
@@ -144,27 +139,21 @@ function OuterWallSegmentShape({
             {/* Opening cutout - render as a different colored line */}
             <Line
               points={[openingStart[0], openingStart[1], openingEnd[0], openingEnd[1]]}
-              stroke={opening.type === 'door' ? '#8B4513' : '#87CEEB'}
+              stroke="#999"
               strokeWidth={segment.thickness}
               lineCap="butt"
               opacity={0.8}
-              listening={true}
+              listening
             />
-            {/* Opening label */}
-            <Text
-              x={(openingStart[0] + openingEnd[0]) / 2}
-              y={(openingStart[1] + openingEnd[1]) / 2}
-              text={opening.type === 'door' ? 'D' : 'W'}
-              fontSize={20}
-              fontFamily="Arial"
-              fontStyle="bold"
-              fill="white"
-              align="center"
-              verticalAlign="middle"
-              offsetX={10}
-              offsetY={10}
-              listening={false}
-            />
+            {opening.type !== 'passage' && (
+              <Line
+                points={[openingStart[0], openingStart[1], openingEnd[0], openingEnd[1]]}
+                stroke={opening.type === 'door' ? '#8B4513' : '#87CEEB'}
+                strokeWidth={30}
+                lineCap="butt"
+                listening
+              />
+            )}
           </Group>
         )
       })}
@@ -202,7 +191,7 @@ export function OuterWallShape({ outerWall, selectedSegmentIndex }: OuterWallSha
       entityId={outerWall.id}
       entityType="outer-wall"
       parentIds={[]}
-      listening={true}
+      listening
     >
       {/* Render each segment */}
       {outerWall.segments.map((segment, index) => {
@@ -226,7 +215,7 @@ export function OuterWallShape({ outerWall, selectedSegmentIndex }: OuterWallSha
         strokeWidth={3}
         dash={[15, 15]}
         closed
-        listening={true}
+        listening
       />
     </Group>
   )
