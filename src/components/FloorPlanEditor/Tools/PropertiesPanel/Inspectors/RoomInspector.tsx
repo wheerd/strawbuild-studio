@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useModelStore } from '@/model/store'
 import type { RoomId } from '@/types/ids'
 
@@ -7,8 +7,6 @@ interface RoomInspectorProps {
 }
 
 export function RoomInspector({ selectedId }: RoomInspectorProps): React.JSX.Element {
-  const [isExpanded, setIsExpanded] = useState(true)
-
   // Get room data from model store
   const room = useModelStore(state => state.rooms.get(selectedId))
   const modelStore = useModelStore()
@@ -105,151 +103,142 @@ export function RoomInspector({ selectedId }: RoomInspectorProps): React.JSX.Ele
   return (
     <div className="room-inspector">
       <div className="inspector-header">
-        <button
-          className="inspector-toggle"
-          onClick={() => setIsExpanded(!isExpanded)}
-          aria-label={isExpanded ? 'Collapse' : 'Expand'}
-        >
-          <span className={`toggle-icon ${isExpanded ? 'expanded' : ''}`}>▶</span>
-          <h3>Room Properties</h3>
-        </button>
+        <h3>Room Properties</h3>
       </div>
 
-      {isExpanded && (
-        <div className="inspector-content">
-          {/* Basic Properties */}
-          <div className="property-section">
-            <h4>Basic Properties</h4>
+      <div className="inspector-content">
+        {/* Basic Properties */}
+        <div className="property-section">
+          <h4>Basic Properties</h4>
 
-            <div className="property-group">
-              <label htmlFor="room-name">Name</label>
-              <input id="room-name" type="text" value={room.name} onChange={handleNameChange} placeholder="Room name" />
-            </div>
-
-            <div className="property-group">
-              <label htmlFor="room-type">Room Type</label>
-              <select id="room-type" value={(room as any).roomType || 'general'} onChange={handleRoomTypeChange}>
-                {roomTypeOptions.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="property-group">
-              <label htmlFor="room-color">Fill Color</label>
-              <div className="color-input-wrapper">
-                <input
-                  id="room-color"
-                  type="color"
-                  value={(room as any).fillColor || '#e0e0e0'}
-                  onChange={handleColorChange}
-                />
-                <input
-                  type="text"
-                  value={(room as any).fillColor || '#e0e0e0'}
-                  onChange={e => handleColorChange(e)}
-                  className="color-text-input"
-                  placeholder="#e0e0e0"
-                />
-              </div>
-            </div>
+          <div className="property-group">
+            <label htmlFor="room-name">Name</label>
+            <input id="room-name" type="text" value={room.name} onChange={handleNameChange} placeholder="Room name" />
           </div>
 
-          {/* Measurements */}
-          <div className="property-section">
-            <h4>Measurements</h4>
-
-            <div className="measurements-grid">
-              <div className="measurement">
-                <label>Area:</label>
-                <span className="measurement-value">{roomMetrics.area} m²</span>
-              </div>
-              <div className="measurement">
-                <label>Walls:</label>
-                <span className="measurement-value">{roomMetrics.wallCount}</span>
-              </div>
-              <div className="measurement">
-                <label>Perimeter:</label>
-                <span className="measurement-value">{roomMetrics.perimeter}</span>
-              </div>
-            </div>
+          <div className="property-group">
+            <label htmlFor="room-type">Room Type</label>
+            <select id="room-type" value={(room as any).roomType || 'general'} onChange={handleRoomTypeChange}>
+              {roomTypeOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
 
-          {/* Boundary Information */}
-          {room.outerBoundary && (
-            <div className="property-section">
-              <h4>Boundary</h4>
-
-              <div className="boundary-info">
-                <div className="boundary-stat">
-                  <label>Points:</label>
-                  <span>{room.outerBoundary.pointIds?.length || 0}</span>
-                </div>
-                <div className="boundary-stat">
-                  <label>Walls:</label>
-                  <span>{room.outerBoundary.wallIds?.size || 0}</span>
-                </div>
-              </div>
-
-              {room.outerBoundary.wallIds && room.outerBoundary.wallIds.size > 0 && (
-                <div className="wall-list">
-                  <h5>Connected Walls:</h5>
-                  <div className="wall-chips">
-                    {Array.from(room.outerBoundary.wallIds).map((wallId: string) => (
-                      <span key={wallId} className="wall-chip" title={wallId}>
-                        {wallId.split('_')[1]?.substring(0, 6) || wallId}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Room Actions */}
-          <div className="property-section">
-            <h4>Actions</h4>
-
-            <div className="room-actions">
-              <button className="action-button primary" onClick={handleFocusRoom} title="Center view on this room">
-                <span className="action-icon">🎯</span>
-                Focus Room
-              </button>
-
-              <button className="action-button" onClick={handleSplitRoom} title="Split this room into multiple rooms">
-                <span className="action-icon">✂️</span>
-                Split Room
-              </button>
-
-              <button className="action-button" onClick={handleMergeRooms} title="Merge with adjacent rooms">
-                <span className="action-icon">🔗</span>
-                Merge Rooms
-              </button>
-            </div>
-          </div>
-
-          {/* Room Notes */}
-          <div className="property-section">
-            <h4>Notes</h4>
-
-            <div className="property-group">
-              <label htmlFor="room-notes">Description/Notes</label>
-              <textarea
-                id="room-notes"
-                value={(room as any).notes || ''}
-                onChange={_e => {
-                  // Note: This would need to be implemented in the model store
-                  // modelStore.updateRoomNotes(selectedId, _e.target.value)
-                }}
-                placeholder="Add notes about this room..."
-                rows={3}
+          <div className="property-group">
+            <label htmlFor="room-color">Fill Color</label>
+            <div className="color-input-wrapper">
+              <input
+                id="room-color"
+                type="color"
+                value={(room as any).fillColor || '#e0e0e0'}
+                onChange={handleColorChange}
+              />
+              <input
+                type="text"
+                value={(room as any).fillColor || '#e0e0e0'}
+                onChange={e => handleColorChange(e)}
+                className="color-text-input"
+                placeholder="#e0e0e0"
               />
             </div>
           </div>
         </div>
-      )}
+
+        {/* Measurements */}
+        <div className="property-section">
+          <h4>Measurements</h4>
+
+          <div className="measurements-grid">
+            <div className="measurement">
+              <label>Area:</label>
+              <span className="measurement-value">{roomMetrics.area} m²</span>
+            </div>
+            <div className="measurement">
+              <label>Walls:</label>
+              <span className="measurement-value">{roomMetrics.wallCount}</span>
+            </div>
+            <div className="measurement">
+              <label>Perimeter:</label>
+              <span className="measurement-value">{roomMetrics.perimeter}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Boundary Information */}
+        {room.outerBoundary && (
+          <div className="property-section">
+            <h4>Boundary</h4>
+
+            <div className="boundary-info">
+              <div className="boundary-stat">
+                <label>Points:</label>
+                <span>{room.outerBoundary.pointIds?.length || 0}</span>
+              </div>
+              <div className="boundary-stat">
+                <label>Walls:</label>
+                <span>{room.outerBoundary.wallIds?.size || 0}</span>
+              </div>
+            </div>
+
+            {room.outerBoundary.wallIds && room.outerBoundary.wallIds.size > 0 && (
+              <div className="wall-list">
+                <h5>Connected Walls:</h5>
+                <div className="wall-chips">
+                  {Array.from(room.outerBoundary.wallIds).map((wallId: string) => (
+                    <span key={wallId} className="wall-chip" title={wallId}>
+                      {wallId.split('_')[1]?.substring(0, 6) || wallId}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Room Actions */}
+        <div className="property-section">
+          <h4>Actions</h4>
+
+          <div className="room-actions">
+            <button className="action-button primary" onClick={handleFocusRoom} title="Center view on this room">
+              <span className="action-icon">🎯</span>
+              Focus Room
+            </button>
+
+            <button className="action-button" onClick={handleSplitRoom} title="Split this room into multiple rooms">
+              <span className="action-icon">✂️</span>
+              Split Room
+            </button>
+
+            <button className="action-button" onClick={handleMergeRooms} title="Merge with adjacent rooms">
+              <span className="action-icon">🔗</span>
+              Merge Rooms
+            </button>
+          </div>
+        </div>
+
+        {/* Room Notes */}
+        <div className="property-section">
+          <h4>Notes</h4>
+
+          <div className="property-group">
+            <label htmlFor="room-notes">Description/Notes</label>
+            <textarea
+              id="room-notes"
+              value={(room as any).notes || ''}
+              onChange={_e => {
+                // Note: This would need to be implemented in the model store
+                // modelStore.updateRoomNotes(selectedId, _e.target.value)
+              }}
+              placeholder="Add notes about this room..."
+              rows={3}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

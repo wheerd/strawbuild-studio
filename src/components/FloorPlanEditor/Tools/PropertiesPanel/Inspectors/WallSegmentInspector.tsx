@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useCallback } from 'react'
 import { useGetOuterWallById, useModelStore } from '@/model/store'
 import { createLength } from '@/types/geometry'
 import type { WallSegmentId, OuterWallId } from '@/types/ids'
@@ -10,8 +10,6 @@ interface WallSegmentInspectorProps {
 }
 
 export function WallSegmentInspector({ outerWallId, segmentId }: WallSegmentInspectorProps): React.JSX.Element {
-  const [isExpanded, setIsExpanded] = useState(true)
-
   // Get model store functions
   const modelStore = useModelStore()
   const getOuterWallById = useGetOuterWallById()
@@ -56,84 +54,75 @@ export function WallSegmentInspector({ outerWallId, segmentId }: WallSegmentInsp
   return (
     <div className="wall-segment-inspector">
       <div className="inspector-header">
-        <button
-          className="inspector-toggle"
-          onClick={() => setIsExpanded(!isExpanded)}
-          aria-label={isExpanded ? 'Collapse' : 'Expand'}
-        >
-          <span className={`toggle-icon ${isExpanded ? 'expanded' : ''}`}>▶</span>
-          <h3>Wall Segment Properties</h3>
-        </button>
+        <h3>Wall Segment Properties</h3>
       </div>
 
-      {isExpanded && (
-        <div className="inspector-content">
-          {/* Basic Properties */}
-          <div className="property-section">
-            <h4>Construction Properties</h4>
+      <div className="inspector-content">
+        {/* Basic Properties */}
+        <div className="property-section">
+          <h4>Construction Properties</h4>
 
-            <div className="property-group">
-              <label htmlFor="construction-type">Construction Type</label>
-              <select id="construction-type" value={segment.constructionType} onChange={handleConstructionTypeChange}>
-                {constructionTypeOptions.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="property-group">
-              <label htmlFor="segment-thickness">Thickness (mm)</label>
-              <input
-                id="segment-thickness"
-                type="number"
-                value={segment.thickness}
-                onChange={handleThicknessChange}
-                min="50"
-                max="1500"
-                step="10"
-              />
-            </div>
+          <div className="property-group">
+            <label htmlFor="construction-type">Construction Type</label>
+            <select id="construction-type" value={segment.constructionType} onChange={handleConstructionTypeChange}>
+              {constructionTypeOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
 
-          {/* Measurements */}
-          <div className="property-section">
-            <h4>Measurements</h4>
-
-            <div className="measurements-grid">
-              <div className="measurement">
-                <label>Inside Length:</label>
-                <span className="measurement-value">{(segment.insideLength / 1000).toFixed(3)} m</span>
-              </div>
-              <div className="measurement">
-                <label>Outside Length:</label>
-                <span className="measurement-value">{(segment.outsideLength / 1000).toFixed(3)} m</span>
-              </div>
-            </div>
+          <div className="property-group">
+            <label htmlFor="segment-thickness">Thickness (mm)</label>
+            <input
+              id="segment-thickness"
+              type="number"
+              value={segment.thickness}
+              onChange={handleThicknessChange}
+              min="50"
+              max="1500"
+              step="10"
+            />
           </div>
+        </div>
 
-          {/* Openings */}
-          <div className="property-section">
-            <h4>Openings</h4>
+        {/* Measurements */}
+        <div className="property-section">
+          <h4>Measurements</h4>
 
-            <div className="measurements-grid">
-              <div className="measurement">
-                <label>Doors:</label>
-                <span className="measurement-value">{segment.openings.filter(o => o.type === 'door').length}</span>
-              </div>
-              <div className="measurement">
-                <label>Windows:</label>
-                <span className="measurement-value">{segment.openings.filter(o => o.type === 'window').length}</span>
-              </div>
-              <div className="measurement">
-                <label>Passages:</label>
-                <span className="measurement-value">{segment.openings.filter(o => o.type === 'passage').length}</span>
-              </div>
+          <div className="measurements-grid">
+            <div className="measurement">
+              <label>Inside Length:</label>
+              <span className="measurement-value">{(segment.insideLength / 1000).toFixed(3)} m</span>
+            </div>
+            <div className="measurement">
+              <label>Outside Length:</label>
+              <span className="measurement-value">{(segment.outsideLength / 1000).toFixed(3)} m</span>
             </div>
           </div>
         </div>
-      )}
+
+        {/* Openings */}
+        <div className="property-section">
+          <h4>Openings</h4>
+
+          <div className="measurements-grid">
+            <div className="measurement">
+              <label>Doors:</label>
+              <span className="measurement-value">{segment.openings.filter(o => o.type === 'door').length}</span>
+            </div>
+            <div className="measurement">
+              <label>Windows:</label>
+              <span className="measurement-value">{segment.openings.filter(o => o.type === 'window').length}</span>
+            </div>
+            <div className="measurement">
+              <label>Passages:</label>
+              <span className="measurement-value">{segment.openings.filter(o => o.type === 'passage').length}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

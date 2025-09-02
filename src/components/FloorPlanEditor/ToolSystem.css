@@ -459,39 +459,6 @@
   padding: 0;
 }
 
-.inspector-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  width: 100%;
-  text-align: left;
-  transition: background-color 0.2s ease;
-}
-
-.inspector-toggle:hover {
-  background: #f5f5f5;
-}
-
-.toggle-icon {
-  font-size: 12px;
-  transition: transform 0.2s ease;
-}
-
-.toggle-icon.expanded {
-  transform: rotate(90deg);
-}
-
-.inspector-toggle h3 {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: #333333;
-}
-
 .inspector-content {
   padding: 0 16px 16px;
 }
