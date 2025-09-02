@@ -24,6 +24,14 @@ function FloorPlanEditorContent(): React.JSX.Element {
   // Handle keyboard shortcuts
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
+      // Don't intercept keyboard events when user is typing in input fields
+      const target = event.target as HTMLElement
+      const isInputElement = target.matches('input, select, button, textarea, [contenteditable="true"]')
+
+      if (isInputElement) {
+        return // Let the input handle the event normally
+      }
+
       // Use ref to get current context without dependency issues
       if (keyboardShortcutManager.handleKeyDown(event, toolContextRef.current)) {
         event.preventDefault()
