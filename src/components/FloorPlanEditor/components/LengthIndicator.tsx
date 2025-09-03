@@ -1,7 +1,6 @@
 import { Group, Line, Text } from 'react-konva'
 import { distance, subtract, normalize, perpendicularCCW, add, scale, angle, midpoint } from '@/types/geometry'
 import type { Vec2 } from '@/types/geometry'
-import { useViewport } from '../hooks/useEditorStore'
 import { useMemo, useRef } from 'react'
 import type Konva from 'konva'
 
@@ -12,20 +11,18 @@ interface LengthIndicatorProps {
   offset?: number
   color?: string
   fontSize?: number
-  endMarkerSize?: number
-  listening?: boolean
-  zoom?: number
+  strokeWidth?: number
 }
 
 export function LengthIndicator({
   startPoint,
   endPoint,
   label,
-  offset = 1,
+  offset = 50,
   color = '#333',
-  fontSize = 40
+  fontSize = 40,
+  strokeWidth = 10
 }: LengthIndicatorProps): React.JSX.Element {
-  const viewport = useViewport()
   const textRef = useRef<Konva.Text>(null)
 
   // Calculate the measurement vector and length
@@ -53,32 +50,35 @@ export function LengthIndicator({
   // Auto-generate label if not provided
   const displayLabel = label ?? `${(measurementLength / 1000).toFixed(2)}m`
 
+  // Calculate optimal font size (max 1/3 of line width)
+  const maxTextWidth = measurementLength / 3
+  const estimatedTextWidth = displayLabel.length * fontSize * 0.6 // Rough estimate
+  const scaledFontSize =
+    estimatedTextWidth > maxTextWidth ? Math.max(12, fontSize * (maxTextWidth / estimatedTextWidth)) : fontSize
+
   const textSize: { width: number; height: number } = useMemo(() => {
     if (textRef?.current) {
       return textRef.current.measureSize(displayLabel)
     }
-    return { width: 0, height: 0 }
-  }, [textRef?.current, viewport.zoom])
+    // Fallback estimate if ref not available yet
+    return { width: displayLabel.length * scaledFontSize * 0.6, height: scaledFontSize }
+  }, [textRef?.current, displayLabel, scaledFontSize])
 
-  const approximateFontSizeLimit = measurementLength / 2 / displayLabel.length
-
-  // Scale line widths and sizes based on zoom for consistent visual appearance
-  const scaledStrokeWidth = Math.max(0.5, 2 / viewport.zoom)
-  const scaledConnectionStrokeWidth = Math.max(0.3, 1 / viewport.zoom)
-  const scaledFontSize = Math.max(20, Math.min(approximateFontSizeLimit, fontSize / viewport.zoom))
-  const scaledEndMarkerSize = textSize.height
+  // Fixed line widths and sizes
+  const connectionStrokeWidth = strokeWidth / 2
+  const actualEndMarkerSize = textSize.height
 
   // Get the perpendicular vector for offset
   const perpendicular = measurementLength > 0 ? perpendicularCCW(dir) : [0, 0]
 
   // Calculate offset positions
-  const offsetStartPoint = add(startPoint, scale(perpendicular, offset * scaledFontSize))
-  const offsetEndPoint = add(endPoint, scale(perpendicular, offset * scaledFontSize))
+  const offsetStartPoint = add(startPoint, scale(perpendicular, offset))
+  const offsetEndPoint = add(endPoint, scale(perpendicular, offset))
 
   const lineMidpoint = midpoint(offsetStartPoint, offsetEndPoint)
 
   // Calculate end marker positions (perpendicular to measurement line)
-  const endMarkerDirection = scale(perpendicular, scaledEndMarkerSize / 2)
+  const endMarkerDirection = scale(perpendicular, actualEndMarkerSize / 2)
 
   const leftEndpoint = add(lineMidpoint, scale(dir, -textSize.width * 0.6))
   const rightEndpoint = add(lineMidpoint, scale(dir, textSize.width * 0.6))
@@ -89,14 +89,14 @@ export function LengthIndicator({
       <Line
         points={[offsetStartPoint[0], offsetStartPoint[1], leftEndpoint[0], leftEndpoint[1]]}
         stroke={color}
-        strokeWidth={scaledStrokeWidth}
+        strokeWidth={strokeWidth}
         lineCap="butt"
         listening={false}
       />
       <Line
         points={[rightEndpoint[0], rightEndpoint[1], offsetEndPoint[0], offsetEndPoint[1]]}
         stroke={color}
-        strokeWidth={scaledStrokeWidth}
+        strokeWidth={strokeWidth}
         lineCap="butt"
         listening={false}
       />
@@ -105,7 +105,7 @@ export function LengthIndicator({
       <Line
         points={[startPoint[0], startPoint[1], offsetStartPoint[0], offsetStartPoint[1]]}
         stroke={color}
-        strokeWidth={scaledConnectionStrokeWidth}
+        strokeWidth={connectionStrokeWidth}
         lineCap="butt"
         opacity={0.5}
         listening={false}
@@ -113,7 +113,7 @@ export function LengthIndicator({
       <Line
         points={[endPoint[0], endPoint[1], offsetEndPoint[0], offsetEndPoint[1]]}
         stroke={color}
-        strokeWidth={scaledConnectionStrokeWidth}
+        strokeWidth={connectionStrokeWidth}
         lineCap="butt"
         opacity={0.5}
         listening={false}
@@ -128,7 +128,7 @@ export function LengthIndicator({
           offsetStartPoint[1] + endMarkerDirection[1]
         ]}
         stroke={color}
-        strokeWidth={scaledStrokeWidth}
+        strokeWidth={strokeWidth}
         lineCap="butt"
         listening={false}
       />
@@ -140,7 +140,7 @@ export function LengthIndicator({
           offsetEndPoint[1] + endMarkerDirection[1]
         ]}
         stroke={color}
-        strokeWidth={scaledStrokeWidth}
+        strokeWidth={strokeWidth}
         lineCap="butt"
         listening={false}
       />

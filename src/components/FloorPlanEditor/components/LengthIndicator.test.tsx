@@ -52,11 +52,10 @@ describe('LengthIndicator', () => {
     expect(text).toHaveAttribute('data-fill', customColor)
   })
 
-  it('renders with custom font size and zoom scaling', () => {
+  it('renders with custom font size', () => {
     const customFontSize = 60
-    const zoom = 0.5
     const { container } = render(
-      <LengthIndicator startPoint={startPoint} endPoint={endPoint} fontSize={customFontSize} zoom={zoom} />
+      <LengthIndicator startPoint={startPoint} endPoint={endPoint} fontSize={customFontSize} />
     )
 
     expect(container).toBeTruthy()
