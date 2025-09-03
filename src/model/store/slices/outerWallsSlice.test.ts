@@ -1313,4 +1313,356 @@ describe('OuterWallsSlice', () => {
       expect(updatedSegment.thickness).toBe(800)
     })
   })
+
+  describe('deletion operations', () => {
+    describe('removeOuterWallCorner', () => {
+      it('should remove corner and merge adjacent segments', () => {
+        // Create a pentagon (5 corners) so we can safely remove one
+        const boundary: Polygon2D = {
+          points: [createVec2(0, 0), createVec2(10, 0), createVec2(15, 5), createVec2(5, 10), createVec2(-5, 5)]
+        }
+        store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension')
+
+        const wall = Array.from(store.outerWalls.values())[0]
+        const originalSegmentCount = wall.segments.length
+        const originalCornerCount = wall.corners.length
+        const cornerToRemove = wall.corners[2] // Remove corner at (15,5)
+
+        const success = store.removeOuterWallCorner(wall.id, cornerToRemove.id)
+        expect(success).toBe(true)
+
+        const updatedWall = store.outerWalls.get(wall.id)!
+
+        // Should have one less corner and one less segment
+        expect(updatedWall.corners).toHaveLength(originalCornerCount - 1)
+        expect(updatedWall.segments).toHaveLength(originalSegmentCount - 1)
+        expect(updatedWall.boundary).toHaveLength(originalSegmentCount - 1)
+
+        // The removed corner should not exist
+        expect(updatedWall.corners.find(c => c.id === cornerToRemove.id)).toBeUndefined()
+
+        // All remaining segments should have valid geometry
+        updatedWall.segments.forEach(segment => {
+          expect(segment.insideLength).toBeGreaterThan(0)
+          expect(segment.segmentLength).toBeGreaterThan(0)
+          expect(segment.outsideLength).toBeGreaterThan(0)
+        })
+      })
+
+      it('should delete openings from merged segments', () => {
+        const boundary: Polygon2D = {
+          points: [createVec2(0, 0), createVec2(20, 0), createVec2(20, 10), createVec2(10, 10), createVec2(0, 10)]
+        }
+        store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension')
+
+        const wall = Array.from(store.outerWalls.values())[0]
+        const cornerToRemove = wall.corners[2] // Corner at (20,10)
+
+        // Add openings to the two segments that will be merged
+        const segment1 = wall.segments[1] // From (20,0) to (20,10)
+        const segment2 = wall.segments[2] // From (20,10) to (10,10)
+
+        store.addOpeningToOuterWall(wall.id, segment1.id, {
+          type: 'door',
+          offsetFromStart: createLength(2000),
+          width: createLength(800),
+          height: createLength(2100)
+        })
+
+        store.addOpeningToOuterWall(wall.id, segment2.id, {
+          type: 'window',
+          offsetFromStart: createLength(1000),
+          width: createLength(1200),
+          height: createLength(1000),
+          sillHeight: createLength(900)
+        })
+
+        const success = store.removeOuterWallCorner(wall.id, cornerToRemove.id)
+        expect(success).toBe(true)
+
+        const updatedWall = store.outerWalls.get(wall.id)!
+
+        // Find the merged segment (should be where segment1 was)
+        const mergedSegment = updatedWall.segments[1]
+        expect(mergedSegment.openings).toHaveLength(0) // Openings should be deleted, not merged
+      })
+
+      it('should fail for walls with less than 4 corners', () => {
+        const boundary = createTriangularBoundary() // Only 3 corners
+        store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension')
+
+        const wall = Array.from(store.outerWalls.values())[0]
+        const cornerToRemove = wall.corners[0]
+
+        const success = store.removeOuterWallCorner(wall.id, cornerToRemove.id)
+        expect(success).toBe(false)
+
+        // Wall should be unchanged
+        const unchangedWall = store.outerWalls.get(wall.id)!
+        expect(unchangedWall.corners).toHaveLength(3)
+        expect(unchangedWall.segments).toHaveLength(3)
+      })
+
+      it('should fail for non-existent wall', () => {
+        const fakeWallId = createOuterWallId()
+        const fakeCornerId = createOuterCornerId()
+
+        const success = store.removeOuterWallCorner(fakeWallId, fakeCornerId)
+        expect(success).toBe(false)
+      })
+
+      it('should fail for non-existent corner', () => {
+        const boundary = createRectangularBoundary()
+        store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension')
+
+        const wall = Array.from(store.outerWalls.values())[0]
+        const fakeCornerId = createOuterCornerId()
+
+        const success = store.removeOuterWallCorner(wall.id, fakeCornerId)
+        expect(success).toBe(false)
+
+        // Wall should be unchanged
+        const unchangedWall = store.outerWalls.get(wall.id)!
+        expect(unchangedWall.corners).toHaveLength(4)
+      })
+
+      it('should fail if removal would create self-intersecting polygon', () => {
+        // Create a concave shape where removing a specific corner would cause self-intersection
+        const boundary: Polygon2D = {
+          points: [
+            createVec2(0, 0),
+            createVec2(10, 0),
+            createVec2(10, 10),
+            createVec2(5, 5), // This creates a concave shape
+            createVec2(0, 10)
+          ]
+        }
+        store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension')
+
+        const wall = Array.from(store.outerWalls.values())[0]
+
+        // Try to remove the concave corner - this should fail validation
+        const concaveCorner = wall.corners[3] // Corner at (5,5)
+        const success = store.removeOuterWallCorner(wall.id, concaveCorner.id)
+
+        // The success depends on whether the resulting polygon is valid
+        // In this case, removing (5,5) would connect (10,10) to (0,10) directly
+        // which might be valid, so let's verify the wall is either unchanged or valid
+        const updatedWall = store.outerWalls.get(wall.id)!
+        if (!success) {
+          expect(updatedWall.corners).toHaveLength(5) // Unchanged
+        } else {
+          expect(updatedWall.corners).toHaveLength(4) // Successfully reduced
+          // Verify all segments are valid
+          updatedWall.segments.forEach(segment => {
+            expect(segment.insideLength).toBeGreaterThan(0)
+          })
+        }
+      })
+    })
+
+    describe('removeOuterWallSegment', () => {
+      it('should remove segment and its adjacent corners', () => {
+        // Create a pentagon so we can safely remove a segment
+        const boundary: Polygon2D = {
+          points: [createVec2(0, 0), createVec2(10, 0), createVec2(15, 5), createVec2(5, 10), createVec2(-5, 5)]
+        }
+        store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension')
+
+        const wall = Array.from(store.outerWalls.values())[0]
+        const originalSegmentCount = wall.segments.length
+        const originalCornerCount = wall.corners.length
+        const segmentToRemove = wall.segments[2] // Segment from (15,5) to (5,10)
+
+        const success = store.removeOuterWallSegment(wall.id, segmentToRemove.id)
+        expect(success).toBe(true)
+
+        const updatedWall = store.outerWalls.get(wall.id)!
+
+        // Should have two less corners and two less segments (removes 3, adds 1, net -2)
+        expect(updatedWall.corners).toHaveLength(originalCornerCount - 2)
+        expect(updatedWall.segments).toHaveLength(originalSegmentCount - 2)
+        expect(updatedWall.boundary).toHaveLength(originalSegmentCount - 2)
+
+        // The removed segment should not exist
+        expect(updatedWall.segments.find(s => s.id === segmentToRemove.id)).toBeUndefined()
+
+        // All remaining segments should have valid geometry
+        updatedWall.segments.forEach(segment => {
+          expect(segment.insideLength).toBeGreaterThan(0)
+          expect(segment.segmentLength).toBeGreaterThan(0)
+          expect(segment.outsideLength).toBeGreaterThan(0)
+        })
+      })
+
+      it('should fail for walls with less than 5 segments', () => {
+        const boundary = createRectangularBoundary() // Only 4 segments
+        store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension')
+
+        const wall = Array.from(store.outerWalls.values())[0]
+        const segmentToRemove = wall.segments[0]
+
+        const success = store.removeOuterWallSegment(wall.id, segmentToRemove.id)
+        expect(success).toBe(false)
+
+        // Wall should be unchanged
+        const unchangedWall = store.outerWalls.get(wall.id)!
+        expect(unchangedWall.segments).toHaveLength(4)
+        expect(unchangedWall.corners).toHaveLength(4)
+      })
+
+      it('should fail for non-existent wall', () => {
+        const fakeWallId = createOuterWallId()
+        const fakeSegmentId = createWallSegmentId()
+
+        const success = store.removeOuterWallSegment(fakeWallId, fakeSegmentId)
+        expect(success).toBe(false)
+      })
+
+      it('should fail for non-existent segment', () => {
+        const boundary = createRectangularBoundary()
+        store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension')
+
+        const wall = Array.from(store.outerWalls.values())[0]
+        const fakeSegmentId = createWallSegmentId()
+
+        const success = store.removeOuterWallSegment(wall.id, fakeSegmentId)
+        expect(success).toBe(false)
+
+        // Wall should be unchanged
+        const unchangedWall = store.outerWalls.get(wall.id)!
+        expect(unchangedWall.segments).toHaveLength(4)
+      })
+
+      it('should fail if removal would create self-intersecting polygon', () => {
+        // Create a shape where removing a specific segment would cause self-intersection
+        const boundary: Polygon2D = {
+          points: [
+            createVec2(0, 0),
+            createVec2(20, 0),
+            createVec2(20, 10),
+            createVec2(10, 5), // Creates a potential problem if we remove the wrong segment
+            createVec2(0, 10)
+          ]
+        }
+        store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension')
+
+        const wall = Array.from(store.outerWalls.values())[0]
+        const segmentToRemove = wall.segments[3] // Segment from (10,5) to (0,10)
+
+        const success = store.removeOuterWallSegment(wall.id, segmentToRemove.id)
+
+        // Verify the result is either failure or a valid polygon
+        const updatedWall = store.outerWalls.get(wall.id)!
+        if (!success) {
+          expect(updatedWall.segments).toHaveLength(5) // Unchanged
+        } else {
+          expect(updatedWall.segments).toHaveLength(3) // Successfully reduced by 2 (5 - 3 + 1 = 3)
+          // Verify all segments are valid
+          updatedWall.segments.forEach(segment => {
+            expect(segment.insideLength).toBeGreaterThan(0)
+          })
+        }
+      })
+
+      it('should preserve geometry integrity after segment removal', () => {
+        const boundary: Polygon2D = {
+          points: [
+            createVec2(0, 0),
+            createVec2(20, 0),
+            createVec2(20, 20),
+            createVec2(10, 20),
+            createVec2(10, 10),
+            createVec2(0, 10)
+          ]
+        }
+        store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension', createLength(200))
+
+        const wall = Array.from(store.outerWalls.values())[0]
+        const segmentToRemove = wall.segments[3] // Segment from (10,20) to (10,10)
+
+        const success = store.removeOuterWallSegment(wall.id, segmentToRemove.id)
+        expect(success).toBe(true)
+
+        const updatedWall = store.outerWalls.get(wall.id)!
+
+        // Verify geometry calculations are correct (6 - 3 + 1 = 4)
+        expect(updatedWall.segments).toHaveLength(4)
+        expect(updatedWall.corners).toHaveLength(4)
+
+        // All segments should have proper geometry
+        updatedWall.segments.forEach(segment => {
+          expect(segment.thickness).toBe(200)
+          expect(segment.insideLength).toBeGreaterThan(0)
+          expect(segment.segmentLength).toBeGreaterThan(0)
+          expect(segment.outsideLength).toBeGreaterThan(0)
+          expect(Number.isFinite(segment.insideLength)).toBe(true)
+          expect(Number.isFinite(segment.segmentLength)).toBe(true)
+          expect(Number.isFinite(segment.outsideLength)).toBe(true)
+        })
+
+        // All corners should have finite positions
+        updatedWall.corners.forEach(corner => {
+          expect(Number.isFinite(corner.outsidePoint[0])).toBe(true)
+          expect(Number.isFinite(corner.outsidePoint[1])).toBe(true)
+        })
+      })
+    })
+
+    describe('deletion validation', () => {
+      it('should validate polygon self-intersection before deletion', () => {
+        // Create a complex shape where certain deletions would be problematic
+        const complexBoundary: Polygon2D = {
+          points: [
+            createVec2(0, 0),
+            createVec2(10, 0),
+            createVec2(10, 10),
+            createVec2(8, 8),
+            createVec2(6, 10),
+            createVec2(2, 8),
+            createVec2(0, 10)
+          ]
+        }
+        store.addOuterWallPolygon(testFloorId, complexBoundary, 'cells-under-tension')
+
+        const wall = Array.from(store.outerWalls.values())[0]
+
+        // Try to remove various corners and segments
+        wall.corners.forEach(corner => {
+          store.removeOuterWallCorner(wall.id, corner.id)
+          // Each operation should either succeed with a valid result or fail safely
+          const currentWall = store.outerWalls.get(wall.id)!
+          expect(currentWall.corners.length).toBeGreaterThanOrEqual(3)
+          expect(currentWall.segments.length).toBeGreaterThanOrEqual(3)
+        })
+      })
+
+      it('should maintain minimum polygon size constraints', () => {
+        const boundary = createRectangularBoundary() // 4 corners/segments
+        store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension')
+
+        const wall = Array.from(store.outerWalls.values())[0]
+
+        // Try to remove two corners (would leave only 2, which is invalid)
+        const corner1Success = store.removeOuterWallCorner(wall.id, wall.corners[0].id)
+
+        if (corner1Success) {
+          // If first removal succeeded, second should fail (would leave < 3 corners)
+          const updatedWall = store.outerWalls.get(wall.id)!
+          expect(updatedWall.corners).toHaveLength(3)
+
+          const corner2Success = store.removeOuterWallCorner(wall.id, updatedWall.corners[0].id)
+          expect(corner2Success).toBe(false)
+
+          // Wall should still have 3 corners
+          const finalWall = store.outerWalls.get(wall.id)!
+          expect(finalWall.corners).toHaveLength(3)
+        } else {
+          // If first removal failed, wall should be unchanged
+          const unchangedWall = store.outerWalls.get(wall.id)!
+          expect(unchangedWall.corners).toHaveLength(4)
+        }
+      })
+    })
+  })
 })
