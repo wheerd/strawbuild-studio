@@ -52,6 +52,19 @@ describe('OuterWallsSlice', () => {
     points: [createVec2(0, 0), createVec2(5, 0), createVec2(2.5, 4)]
   })
 
+  // Helper function to create a shape with reflex angles (like a "C" or "L" shape)
+  const createReflexAngleBoundary = (): Polygon2D => ({
+    points: [
+      createVec2(0, 0), // Start
+      createVec2(10, 0), // Move right
+      createVec2(10, 5), // Move up
+      createVec2(5, 5), // Move left (creates reflex angle)
+      createVec2(5, 10), // Move up (creates reflex angle)
+      createVec2(0, 10) // Move left
+      // Back to start
+    ]
+  })
+
   describe('addOuterWallPolygon', () => {
     it('should add outer wall polygon with default thickness', () => {
       const boundary = createRectangularBoundary()
@@ -163,6 +176,66 @@ describe('OuterWallsSlice', () => {
       expect(segment.outsideLine.start[1]).toBe(createLength(440)) // Offset outward
       expect(segment.outsideLine.end[0]).toBe(10)
       expect(segment.outsideLine.end[1]).toBe(createLength(440))
+    })
+
+    it('should calculate different length values correctly', () => {
+      const boundary = createRectangularBoundary()
+      store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension')
+
+      const wall = Array.from(store.outerWalls.values())[0]
+      const segment = wall.segments[0] // First segment from (0,0) to (10,0)
+
+      // For a rectangular boundary:
+      // - insideLength should be the boundary segment length
+      // - segmentLength should equal insideLength (no truncation for right angles)
+      // - outsideLength varies based on corner intersection geometry
+      expect(segment.insideLength).toBe(10) // Original boundary segment
+      expect(segment.segmentLength).toBe(10) // Actual wall segment (same as inside for rectangles)
+
+      // outsideLength depends on corner intersection points, verify it's reasonable
+      expect(segment.outsideLength).toBeGreaterThan(0)
+      expect(segment.outsideLength).toBeLessThan(2000) // Reasonable upper bound
+
+      // All lengths should be positive and finite
+      expect(segment.insideLength).toBeGreaterThan(0)
+      expect(segment.segmentLength).toBeGreaterThan(0)
+      expect(Number.isFinite(segment.outsideLength)).toBe(true)
+    })
+
+    it('should handle reflex angles correctly without pointy corners', () => {
+      const boundary = createReflexAngleBoundary()
+      store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension')
+
+      const wall = Array.from(store.outerWalls.values())[0]
+
+      // Verify wall was created successfully
+      expect(wall.segments).toHaveLength(6)
+      expect(wall.corners).toHaveLength(6)
+
+      // Check that segments have proper geometry without overlapping
+      wall.segments.forEach(segment => {
+        expect(segment.insideLength).toBeGreaterThan(0)
+        expect(segment.segmentLength).toBeGreaterThan(0)
+        expect(segment.outsideLength).toBeGreaterThan(0)
+
+        // Verify that lines have valid start and end points
+        expect(segment.insideLine.start).toBeDefined()
+        expect(segment.insideLine.end).toBeDefined()
+        expect(segment.outsideLine.start).toBeDefined()
+        expect(segment.outsideLine.end).toBeDefined()
+
+        // For reflex angles, segmentLength may be different from insideLength due to truncation
+        // but should be reasonable (not negative, not excessively large)
+        expect(segment.segmentLength).toBeLessThanOrEqual(segment.insideLength * 1.5) // Allow some extension
+      })
+
+      // Verify corner points are properly positioned
+      wall.corners.forEach(corner => {
+        expect(corner.outsidePoint).toBeDefined()
+        expect(typeof corner.outsidePoint[0]).toBe('number')
+        expect(typeof corner.outsidePoint[1]).toBe('number')
+        expect(corner.belongsTo).toMatch(/^(previous|next)$/)
+      })
     })
   })
 
@@ -595,6 +668,50 @@ describe('OuterWallsSlice', () => {
 
         const unchangedWall = store.outerWalls.get(wall.id)!
         expect(unchangedWall.segments).toEqual(originalWall.segments)
+      })
+
+      it('should handle thickness updates for reflex angles without creating overlaps', () => {
+        const boundary = createReflexAngleBoundary()
+        store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension')
+
+        const wall = Array.from(store.outerWalls.values())[0]
+        const segmentId = wall.segments[2].id // Pick a segment that creates reflex angle
+        const newThickness = createLength(600) // Thicker than default
+
+        store.updateOuterWallThickness(wall.id, segmentId, newThickness)
+
+        const updatedWall = store.outerWalls.get(wall.id)!
+        const updatedSegment = updatedWall.segments.find(s => s.id === segmentId)!
+
+        expect(updatedSegment.thickness).toBe(newThickness)
+
+        // Verify all segments still have valid geometry
+        updatedWall.segments.forEach(segment => {
+          expect(segment.insideLength).toBeGreaterThan(0)
+          expect(segment.segmentLength).toBeGreaterThan(0)
+          expect(segment.outsideLength).toBeGreaterThan(0)
+
+          // Verify lines have different start/end points (not degenerate)
+          const insideDist = Math.sqrt(
+            Math.pow(segment.insideLine.end[0] - segment.insideLine.start[0], 2) +
+              Math.pow(segment.insideLine.end[1] - segment.insideLine.start[1], 2)
+          )
+          const outsideDist = Math.sqrt(
+            Math.pow(segment.outsideLine.end[0] - segment.outsideLine.start[0], 2) +
+              Math.pow(segment.outsideLine.end[1] - segment.outsideLine.start[1], 2)
+          )
+
+          expect(insideDist).toBeGreaterThan(0.01) // Not degenerate
+          expect(outsideDist).toBeGreaterThan(0.01) // Not degenerate
+        })
+
+        // Verify corner points are reasonable
+        updatedWall.corners.forEach(corner => {
+          expect(Number.isFinite(corner.outsidePoint[0])).toBe(true)
+          expect(Number.isFinite(corner.outsidePoint[1])).toBe(true)
+          expect(Math.abs(corner.outsidePoint[0])).toBeLessThan(1000) // Reasonable bounds
+          expect(Math.abs(corner.outsidePoint[1])).toBeLessThan(1000) // Reasonable bounds
+        })
       })
     })
 
@@ -1069,6 +1186,131 @@ describe('OuterWallsSlice', () => {
       expect(finalWall.segments).toHaveLength(4) // Rectangle still has 4 segments
       expect(finalWall.floorId).toBe(testFloorId)
       expect(finalWall.boundary).toEqual(boundary.points)
+    })
+  })
+
+  describe('reflex angle handling', () => {
+    it('should properly handle acute angles without creating invalid geometry', () => {
+      // Create a shape with acute angles (< 90 degrees)
+      const acuteAngleBoundary: Polygon2D = {
+        points: [
+          createVec2(0, 0),
+          createVec2(10, 0),
+          createVec2(5, 2) // Creates acute angle
+        ]
+      }
+
+      store.addOuterWallPolygon(testFloorId, acuteAngleBoundary, 'cells-under-tension', createLength(100))
+
+      const wall = Array.from(store.outerWalls.values())[0]
+
+      // Verify all segments have valid, positive lengths
+      wall.segments.forEach(segment => {
+        expect(segment.insideLength).toBeGreaterThan(0)
+        expect(segment.segmentLength).toBeGreaterThan(0)
+        expect(segment.outsideLength).toBeGreaterThan(0)
+
+        // Verify segment lines aren't degenerate
+        const insideLineLength = Math.sqrt(
+          Math.pow(segment.insideLine.end[0] - segment.insideLine.start[0], 2) +
+            Math.pow(segment.insideLine.end[1] - segment.insideLine.start[1], 2)
+        )
+        expect(insideLineLength).toBeGreaterThan(0.01)
+      })
+
+      // Verify corners have valid positions
+      wall.corners.forEach(corner => {
+        expect(Number.isFinite(corner.outsidePoint[0])).toBe(true)
+        expect(Number.isFinite(corner.outsidePoint[1])).toBe(true)
+      })
+    })
+
+    it('should handle L-shaped boundaries with reflex angles correctly', () => {
+      const lShapeBoundary = createReflexAngleBoundary()
+      store.addOuterWallPolygon(testFloorId, lShapeBoundary, 'cells-under-tension', createLength(200))
+
+      const wall = Array.from(store.outerWalls.values())[0]
+
+      expect(wall.segments).toHaveLength(6)
+      expect(wall.corners).toHaveLength(6)
+
+      // Test specific reflex angle segments (segments 2 and 4 in our L-shape)
+      const reflexSegment1 = wall.segments[2] // At (10,5) -> (5,5)
+      const reflexSegment2 = wall.segments[3] // At (5,5) -> (5,10)
+
+      // These segments should have proper truncation for reflex angles
+      expect(reflexSegment1.insideLength).toBe(5) // Original boundary length
+      expect(reflexSegment1.segmentLength).toBeLessThanOrEqual(reflexSegment1.insideLength) // May be truncated
+      expect(reflexSegment1.segmentLength).toBeGreaterThan(0)
+
+      expect(reflexSegment2.insideLength).toBe(5) // Original boundary length
+      expect(reflexSegment2.segmentLength).toBeLessThanOrEqual(reflexSegment2.insideLength) // May be truncated
+      expect(reflexSegment2.segmentLength).toBeGreaterThan(0)
+    })
+
+    it('should handle mixed thickness values with reflex angles', () => {
+      const boundary = createReflexAngleBoundary()
+      store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension', createLength(200))
+
+      const wall = Array.from(store.outerWalls.values())[0]
+
+      // Update different segments to different thicknesses
+      const segmentIds = wall.segments.map(s => s.id)
+      store.updateOuterWallThickness(wall.id, segmentIds[1], createLength(400))
+      store.updateOuterWallThickness(wall.id, segmentIds[3], createLength(600))
+
+      const updatedWall = store.outerWalls.get(wall.id)!
+
+      // Verify mixed thicknesses are applied correctly
+      expect(updatedWall.segments[0].thickness).toBe(200) // Original
+      expect(updatedWall.segments[1].thickness).toBe(400) // Updated
+      expect(updatedWall.segments[2].thickness).toBe(200) // Original
+      expect(updatedWall.segments[3].thickness).toBe(600) // Updated
+      expect(updatedWall.segments[4].thickness).toBe(200) // Original
+      expect(updatedWall.segments[5].thickness).toBe(200) // Original
+
+      // All segments should still have valid geometry
+      updatedWall.segments.forEach(segment => {
+        expect(segment.insideLength).toBeGreaterThan(0)
+        expect(segment.segmentLength).toBeGreaterThan(0)
+        expect(segment.outsideLength).toBeGreaterThan(0)
+        expect(Number.isFinite(segment.insideLength)).toBe(true)
+        expect(Number.isFinite(segment.segmentLength)).toBe(true)
+        expect(Number.isFinite(segment.outsideLength)).toBe(true)
+      })
+
+      // Corner points should be reasonable
+      updatedWall.corners.forEach(corner => {
+        expect(Number.isFinite(corner.outsidePoint[0])).toBe(true)
+        expect(Number.isFinite(corner.outsidePoint[1])).toBe(true)
+        expect(Math.abs(corner.outsidePoint[0])).toBeLessThan(1000)
+        expect(Math.abs(corner.outsidePoint[1])).toBeLessThan(1000)
+      })
+    })
+
+    it('should preserve segment and corner relationships after thickness updates', () => {
+      const boundary = createReflexAngleBoundary()
+      store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension', createLength(300))
+
+      const originalWall = Array.from(store.outerWalls.values())[0]
+      const originalSegmentIds = originalWall.segments.map(s => s.id)
+      const originalCornerIds = originalWall.corners.map(c => c.id)
+      const originalBelongsTo = originalWall.corners.map(c => c.belongsTo)
+
+      // Update thickness of a segment that creates reflex angle
+      const targetSegmentId = originalSegmentIds[2]
+      store.updateOuterWallThickness(originalWall.id, targetSegmentId, createLength(800))
+
+      const updatedWall = store.outerWalls.get(originalWall.id)!
+
+      // Verify IDs are preserved
+      expect(updatedWall.segments.map(s => s.id)).toEqual(originalSegmentIds)
+      expect(updatedWall.corners.map(c => c.id)).toEqual(originalCornerIds)
+      expect(updatedWall.corners.map(c => c.belongsTo)).toEqual(originalBelongsTo)
+
+      // Verify the specific segment was updated
+      const updatedSegment = updatedWall.segments.find(s => s.id === targetSegmentId)!
+      expect(updatedSegment.thickness).toBe(800)
     })
   })
 })

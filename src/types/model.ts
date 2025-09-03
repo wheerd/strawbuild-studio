@@ -158,6 +158,7 @@ export interface OuterWallSegment {
   // Geometry, computed from the points automatically
   insideLength: Length
   outsideLength: Length
+  segmentLength: Length
   insideLine: LineSegment2D
   outsideLine: LineSegment2D
   direction: Vec2 // Normalized from start -> end of segment

@@ -189,13 +189,15 @@ const calculateSegmentEndpoints = (
     const finalInsideLine = { start: finalInsideStart, end: finalInsideEnd }
     const finalOutsideLine = { start: finalOutsideStart, end: finalOutsideEnd }
 
-    const insideLength = distance(finalInsideStart, finalInsideEnd)
-    const outsideLength = distance(finalOutsideStart, finalOutsideEnd)
+    const insideLength = distance(boundaryStart, boundaryEnd)
+    const outsideLength = distance(startCornerOutside, endCornerOutside)
+    const segmentLength = distance(finalInsideStart, finalInsideEnd)
 
     finalSegments.push({
       ...segmentInputs[i], // Preserve existing segment data like openings and construction type
-      insideLength: insideLength as Length,
-      outsideLength: outsideLength as Length,
+      insideLength,
+      outsideLength,
+      segmentLength,
       insideLine: finalInsideLine,
       outsideLine: finalOutsideLine,
       direction: segmentDirection,
