@@ -27,9 +27,9 @@ describe('LengthIndicator', () => {
   it('renders all expected elements', () => {
     const { getAllByTestId } = render(<LengthIndicator startPoint={startPoint} endPoint={endPoint} />)
 
-    // Should have 1 group, 5 lines (main dimension, 2 connection lines, 2 end markers), and 1 text
+    // Should have 1 group, 6 lines (2 main dimension, 2 connection lines, 2 end markers), and 1 text
     expect(getAllByTestId('konva-group')).toHaveLength(1)
-    expect(getAllByTestId('konva-line')).toHaveLength(5)
+    expect(getAllByTestId('konva-line')).toHaveLength(6)
     expect(getAllByTestId('konva-text')).toHaveLength(1)
   })
 

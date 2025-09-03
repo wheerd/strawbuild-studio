@@ -1,8 +1,8 @@
-import { Group, Line, Text, type KonvaNodeComponent } from 'react-konva'
+import { Group, Line, Text } from 'react-konva'
 import { distance, subtract, normalize, perpendicularCCW, add, scale, angle, midpoint } from '@/types/geometry'
 import type { Vec2 } from '@/types/geometry'
 import { useViewport } from '../hooks/useEditorStore'
-import { useEffect, useMemo, useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import type Konva from 'konva'
 
 interface LengthIndicatorProps {
@@ -39,12 +39,12 @@ export function LengthIndicator({
 
   // Keep text readable (between -90 and +90 degrees)
   if (angleDegrees > 90) {
-    [endPoint, startPoint] = [startPoint, endPoint]
+    ;[endPoint, startPoint] = [startPoint, endPoint]
     dir = scale(dir, -1)
     offset = -offset
     angleDegrees -= 180
   } else if (angleDegrees < -90) {
-    [endPoint, startPoint] = [startPoint, endPoint]
+    ;[endPoint, startPoint] = [startPoint, endPoint]
     dir = scale(dir, -1)
     offset = -offset
     angleDegrees += 180
@@ -72,11 +72,10 @@ export function LengthIndicator({
   const perpendicular = measurementLength > 0 ? perpendicularCCW(dir) : [0, 0]
 
   // Calculate offset positions
-  let offsetStartPoint = add(startPoint, scale(perpendicular, offset * scaledFontSize))
-  let offsetEndPoint = add(endPoint, scale(perpendicular, offset * scaledFontSize))
+  const offsetStartPoint = add(startPoint, scale(perpendicular, offset * scaledFontSize))
+  const offsetEndPoint = add(endPoint, scale(perpendicular, offset * scaledFontSize))
 
   const lineMidpoint = midpoint(offsetStartPoint, offsetEndPoint)
-
 
   // Calculate end marker positions (perpendicular to measurement line)
   const endMarkerDirection = scale(perpendicular, scaledEndMarkerSize / 2)

@@ -138,7 +138,7 @@ function OuterWallSegmentShape({
             fontSize={30}
             listening={false}
           />
-          <LengthIndicator 
+          <LengthIndicator
             startPoint={outsideStart}
             endPoint={outsideEnd}
             label={`${(segment.outsideLength / 1000).toFixed(2)}m`}
