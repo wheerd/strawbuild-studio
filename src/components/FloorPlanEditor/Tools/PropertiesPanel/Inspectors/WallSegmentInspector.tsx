@@ -1,6 +1,7 @@
-import { useCallback, useState, useEffect, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useModelStore } from '@/model/store'
 import { createLength } from '@/types/geometry'
+import { useDebouncedNumericInput } from '../../../hooks/useDebouncedInput'
 import type { WallSegmentId, OuterWallId } from '@/types/ids'
 import type { OuterWallConstructionType } from '@/types/model'
 
@@ -30,16 +31,6 @@ export function WallSegmentInspector({ outerWallId, segmentId }: WallSegmentInsp
     return outerWall?.segments.find(s => s.id === segmentId)
   }, [outerWall, segmentId])
 
-  // Local state for inputs to prevent unfocus on store updates
-  const [localThickness, setLocalThickness] = useState<string>('')
-
-  // Sync local state with store data
-  useEffect(() => {
-    if (segment) {
-      setLocalThickness(String(segment.thickness))
-    }
-  }, [segment?.thickness])
-
   // Event handlers with stable references
   const handleConstructionTypeChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -50,18 +41,22 @@ export function WallSegmentInspector({ outerWallId, segmentId }: WallSegmentInsp
     [updateOuterWallConstructionType, outerWallId, segmentId]
   )
 
-  // Handle thickness input changes - update local state immediately
-  const handleThicknessChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setLocalThickness(e.target.value)
-  }, [])
-
-  // Handle thickness blur - update store when user finishes editing
-  const handleThicknessBlur = useCallback(() => {
-    const value = Math.max(50, Math.min(1500, Number(localThickness))) // Clamp between 50mm and 1500mm
-    updateOuterWallThickness(outerWallId, segmentId, createLength(value))
-    // Update local state to reflect the clamped value
-    setLocalThickness(String(value))
-  }, [localThickness, updateOuterWallThickness, outerWallId, segmentId])
+  // Debounced thickness input handler
+  const thicknessInput = useDebouncedNumericInput(
+    segment?.thickness || 0,
+    useCallback(
+      (value: number) => {
+        updateOuterWallThickness(outerWallId, segmentId, createLength(value))
+      },
+      [updateOuterWallThickness, outerWallId, segmentId]
+    ),
+    {
+      debounceMs: 300,
+      min: 50,
+      max: 1500,
+      step: 10
+    }
+  )
 
   // If segment not found, show error
   if (!segment || !outerWall) {
@@ -96,9 +91,10 @@ export function WallSegmentInspector({ outerWallId, segmentId }: WallSegmentInsp
             <input
               id="segment-thickness"
               type="number"
-              value={localThickness}
-              onChange={handleThicknessChange}
-              onBlur={handleThicknessBlur}
+              value={thicknessInput.value}
+              onChange={e => thicknessInput.handleChange(e.target.value)}
+              onBlur={thicknessInput.handleBlur}
+              onKeyDown={thicknessInput.handleKeyDown}
               min="50"
               max="1500"
               step="10"

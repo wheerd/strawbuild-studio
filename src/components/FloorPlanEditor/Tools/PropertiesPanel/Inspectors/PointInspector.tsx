@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react'
 import type { Point } from '@/types/model'
 import { useModelStore } from '@/model/store'
 import { createVec2 } from '@/types/geometry'
+import { useDebouncedNumericInput } from '../../../hooks/useDebouncedInput'
 
 interface PointInspectorProps {
   point: Point
@@ -26,18 +27,35 @@ export function PointInspector({ point, onChange }: PointInspectorProps): React.
     }
   }, [point.id, point.floorId, getWallsConnectedToPoint, getRoomsContainingPoint])
 
-  const handlePositionChange = useCallback(
-    (axis: 'x' | 'y', value: string) => {
-      const numValue = Number(value)
-      if (!isNaN(numValue)) {
-        const newPosition = createVec2(
-          axis === 'x' ? numValue : point.position[0],
-          axis === 'y' ? numValue : point.position[1]
-        )
+  // Debounced position inputs
+  const xInput = useDebouncedNumericInput(
+    point.position[0],
+    useCallback(
+      (value: number) => {
+        const newPosition = createVec2(value, point.position[1])
         onChange('position', newPosition)
-      }
-    },
-    [point.position, onChange]
+      },
+      [point.position, onChange]
+    ),
+    {
+      debounceMs: 300,
+      step: 1
+    }
+  )
+
+  const yInput = useDebouncedNumericInput(
+    point.position[1],
+    useCallback(
+      (value: number) => {
+        const newPosition = createVec2(point.position[0], value)
+        onChange('position', newPosition)
+      },
+      [point.position, onChange]
+    ),
+    {
+      debounceMs: 300,
+      step: 1
+    }
   )
 
   const handleMergeWithNearby = useCallback(() => {
@@ -74,8 +92,10 @@ export function PointInspector({ point, onChange }: PointInspectorProps): React.
               <input
                 id="point-x"
                 type="number"
-                value={point.position[0]}
-                onChange={e => handlePositionChange('x', e.target.value)}
+                value={xInput.value}
+                onChange={e => xInput.handleChange(e.target.value)}
+                onBlur={xInput.handleBlur}
+                onKeyDown={xInput.handleKeyDown}
                 step="1"
               />
             </div>
@@ -85,8 +105,10 @@ export function PointInspector({ point, onChange }: PointInspectorProps): React.
               <input
                 id="point-y"
                 type="number"
-                value={point.position[1]}
-                onChange={e => handlePositionChange('y', e.target.value)}
+                value={yInput.value}
+                onChange={e => yInput.handleChange(e.target.value)}
+                onBlur={yInput.handleBlur}
+                onKeyDown={yInput.handleKeyDown}
                 step="1"
               />
             </div>
