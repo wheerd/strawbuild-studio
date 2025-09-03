@@ -58,23 +58,24 @@ vi.mock('react-konva', async () => {
   const React = await import('react')
   return {
     Stage: ({ children, ...props }: any) =>
-      React.createElement('div', { 'data-testid': 'stage', ...propsAttrs(props) }, children),
+      React.createElement('div', { 'data-testid': 'konva-stage', ...propsAttrs(props) }, children),
     Layer: ({ children, ...props }: any) =>
-      React.createElement('div', { 'data-testid': 'layer', ...propsAttrs(props) }, children),
+      React.createElement('div', { 'data-testid': 'konva-layer', ...propsAttrs(props) }, children),
     Line: ({ points, ...props }: any) =>
       React.createElement('div', {
-        'data-testid': 'wall-line',
+        'data-testid': 'konva-line',
         ...propsAttrs(props)
       }),
     Group: ({ children, ...props }: any) =>
-      React.createElement('div', { 'data-testid': 'group', ...propsAttrs(props) }, children),
+      React.createElement('div', { 'data-testid': 'konva-group', ...propsAttrs(props) }, children),
     Arrow: ({ points, ...props }: any) =>
       React.createElement('div', {
-        'data-testid': 'direction-arrow',
+        'data-testid': 'konva-arrow',
         ...propsAttrs(props)
       }),
-    Circle: ({ ...props }: any) => React.createElement('div', { 'data-testid': 'circle', ...propsAttrs(props) }),
-    Text: ({ text, ...props }: any) => React.createElement('div', { 'data-testid': 'text', ...propsAttrs(props) }, text)
+    Circle: ({ ...props }: any) => React.createElement('div', { 'data-testid': 'konva-circle', ...propsAttrs(props) }),
+    Text: ({ text, ...props }: any) =>
+      React.createElement('div', { 'data-testid': 'konva-text', ...propsAttrs(props) }, text)
   }
 })
 

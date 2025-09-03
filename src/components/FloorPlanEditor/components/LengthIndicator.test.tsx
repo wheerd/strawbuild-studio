@@ -1,18 +1,6 @@
 import { render } from '@testing-library/react'
-import { vi } from 'vitest'
 import { LengthIndicator } from './LengthIndicator'
 import { createVec2 } from '@/types/geometry'
-
-// Mock Konva components
-vi.mock('react-konva', () => ({
-  Group: ({ children, ...props }: any) => (
-    <div data-testid="konva-group" {...props}>
-      {children}
-    </div>
-  ),
-  Line: (props: any) => <div data-testid="konva-line" {...props} />,
-  Text: (props: any) => <div data-testid="konva-text" fontSize={props.fontSize} {...props} />
-}))
 
 describe('LengthIndicator', () => {
   const startPoint = createVec2(0, 0)
@@ -38,14 +26,14 @@ describe('LengthIndicator', () => {
     const { getByTestId } = render(<LengthIndicator startPoint={startPoint} endPoint={endPoint} label={customLabel} />)
 
     const textElement = getByTestId('konva-text')
-    expect(textElement).toHaveAttribute('text', customLabel)
+    expect(textElement).toHaveTextContent(customLabel)
   })
 
   it('auto-generates label when none provided', () => {
     const { getByTestId } = render(<LengthIndicator startPoint={startPoint} endPoint={endPoint} />)
 
     const textElement = getByTestId('konva-text')
-    expect(textElement).toHaveAttribute('text', '1.00m')
+    expect(textElement).toHaveTextContent('1.00m')
   })
 
   it('applies custom color', () => {
@@ -59,9 +47,9 @@ describe('LengthIndicator', () => {
 
     // Check that lines and text use the custom color
     lines.forEach(line => {
-      expect(line).toHaveAttribute('stroke', customColor)
+      expect(line).toHaveAttribute('data-stroke', customColor)
     })
-    expect(text).toHaveAttribute('fill', customColor)
+    expect(text).toHaveAttribute('data-fill', customColor)
   })
 
   it('renders with custom font size and zoom scaling', () => {

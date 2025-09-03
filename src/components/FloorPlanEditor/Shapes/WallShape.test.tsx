@@ -77,7 +77,7 @@ describe('WallShape Angle Normalization', () => {
 
     const { getByTestId } = render(<WallShape wall={mockWall} />)
 
-    const textElement = getByTestId('text')
+    const textElement = getByTestId('konva-text')
     expect(textElement).toBeTruthy()
     expect(textElement.getAttribute('data-rotation')).toBe('0')
   })
@@ -92,7 +92,7 @@ describe('WallShape Angle Normalization', () => {
 
     const { getByTestId } = render(<WallShape wall={mockWall} />)
 
-    const textElement = getByTestId('text')
+    const textElement = getByTestId('konva-text')
     const rotation = parseFloat(textElement.getAttribute('data-rotation') ?? '0')
     expect(rotation).toBeCloseTo(0, 1)
   })
@@ -107,7 +107,7 @@ describe('WallShape Angle Normalization', () => {
 
     const { getByTestId } = render(<WallShape wall={mockWall} />)
 
-    const textElement = getByTestId('text')
+    const textElement = getByTestId('konva-text')
     const rotation = parseFloat(textElement.getAttribute('data-rotation') ?? '0')
     expect(rotation).toBeCloseTo(90, 1)
   })
@@ -122,7 +122,7 @@ describe('WallShape Angle Normalization', () => {
 
     const { getByTestId } = render(<WallShape wall={mockWall} />)
 
-    const textElement = getByTestId('text')
+    const textElement = getByTestId('konva-text')
     const rotation = parseFloat(textElement.getAttribute('data-rotation') ?? '0')
     expect(rotation).toBeCloseTo(-90, 1)
   })
@@ -137,7 +137,7 @@ describe('WallShape Angle Normalization', () => {
 
     const { getByTestId } = render(<WallShape wall={mockWall} />)
 
-    const textElement = getByTestId('text')
+    const textElement = getByTestId('konva-text')
     const rotation = parseFloat(textElement.getAttribute('data-rotation') ?? '0')
     expect(rotation).toBeCloseTo(45, 1)
   })
@@ -152,7 +152,7 @@ describe('WallShape Angle Normalization', () => {
 
     const { getByTestId } = render(<WallShape wall={mockWall} />)
 
-    const textElement = getByTestId('text')
+    const textElement = getByTestId('konva-text')
     const rotation = parseFloat(textElement.getAttribute('data-rotation') ?? '0')
     expect(rotation).toBeCloseTo(-45, 1)
   })
@@ -167,7 +167,7 @@ describe('WallShape Angle Normalization', () => {
 
     const { getByTestId } = render(<WallShape wall={mockWall} />)
 
-    const textElement = getByTestId('text')
+    const textElement = getByTestId('konva-text')
     const rotation = parseFloat(textElement.getAttribute('data-rotation') ?? '0')
     expect(rotation).toBeCloseTo(-45, 1)
   })
@@ -182,7 +182,7 @@ describe('WallShape Angle Normalization', () => {
 
     const { getByTestId } = render(<WallShape wall={mockWall} />)
 
-    const textElement = getByTestId('text')
+    const textElement = getByTestId('konva-text')
     const rotation = parseFloat(textElement.getAttribute('data-rotation') ?? '0')
     expect(rotation).toBeCloseTo(45, 1)
   })
@@ -212,7 +212,7 @@ describe('WallShape Angle Normalization', () => {
 
     const { getByTestId } = render(<WallShape wall={mockWall} />)
 
-    const textElement = getByTestId('text')
+    const textElement = getByTestId('konva-text')
     expect(textElement.textContent).toBe('3.46m')
   })
 })

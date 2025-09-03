@@ -1,9 +1,10 @@
 import { Group, Line } from 'react-konva'
 import type { OuterWallPolygon, OuterWallSegment } from '@/types/model'
 import { WALL_COLORS } from '@/components/FloorPlanEditor/visualization/wallVisualization'
-import { direction, midpoint, add, scale } from '@/types/geometry'
+import { direction, midpoint, add, scale, type Vec2 } from '@/types/geometry'
 import { useSelectionStore } from '../hooks/useSelectionStore'
 import { LengthIndicator } from '../components/LengthIndicator'
+import type { OuterWallId } from '@/model'
 
 interface OuterWallShapeProps {
   outerWall: OuterWallPolygon
@@ -11,14 +12,21 @@ interface OuterWallShapeProps {
 
 interface SegmentShapeProps {
   segment: OuterWallSegment
-  segmentIndex: number
+  outerWallId: OuterWallId
+  insideStartCorner: Vec2
+  insideEndCorner: Vec2
+  outsideStartCorner: Vec2
+  outsideEndCorner: Vec2
 }
 
 function OuterWallSegmentShape({
   segment,
-  segmentIndex,
-  outerWallId
-}: SegmentShapeProps & { outerWallId: string }): React.JSX.Element {
+  outerWallId,
+  insideStartCorner,
+  insideEndCorner,
+  outsideStartCorner,
+  outsideEndCorner
+}: SegmentShapeProps): React.JSX.Element {
   const select = useSelectionStore()
 
   // Calculate segment properties
@@ -43,7 +51,7 @@ function OuterWallSegmentShape({
 
   return (
     <Group
-      name={`segment-${segmentIndex}`}
+      name={`segment-${segment.id}`}
       entityId={segment.id}
       entityType="wall-segment"
       parentIds={[outerWallId]}
@@ -130,8 +138,8 @@ function OuterWallSegmentShape({
       {select.isCurrentSelection(segment.id) && (
         <>
           <LengthIndicator
-            startPoint={insideStart}
-            endPoint={insideEnd}
+            startPoint={insideStartCorner}
+            endPoint={insideEndCorner}
             label={`${(segment.insideLength / 1000).toFixed(2)}m`}
             offset={-1.2}
             color="black"
@@ -139,8 +147,8 @@ function OuterWallSegmentShape({
             listening={false}
           />
           <LengthIndicator
-            startPoint={outsideStart}
-            endPoint={outsideEnd}
+            startPoint={outsideStartCorner}
+            endPoint={outsideEndCorner}
             label={`${(segment.outsideLength / 1000).toFixed(2)}m`}
             offset={1.2}
             color="black"
@@ -167,12 +175,20 @@ export function OuterWallShape({ outerWall }: OuterWallShapeProps): React.JSX.El
 
       {/* Render each segment */}
       {outerWall.segments.map((segment, index) => {
+        const nextIndex = (index + 1) % outerWall.boundary.length
+        const insideStartCorner = outerWall.boundary[index]
+        const insideEndCorner = outerWall.boundary[nextIndex]
+        const outsideStartCorner = outerWall.corners[index].outsidePoint
+        const outsideEndCorner = outerWall.corners[nextIndex].outsidePoint
         return (
           <OuterWallSegmentShape
             key={`segment-${index}`}
             segment={segment}
-            segmentIndex={index}
             outerWallId={outerWall.id}
+            insideStartCorner={insideStartCorner}
+            insideEndCorner={insideEndCorner}
+            outsideStartCorner={outsideStartCorner}
+            outsideEndCorner={outsideEndCorner}
           />
         )
       })}
