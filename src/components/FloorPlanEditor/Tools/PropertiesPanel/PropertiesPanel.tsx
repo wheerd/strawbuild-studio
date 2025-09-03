@@ -81,18 +81,6 @@ export function PropertiesPanel(): React.JSX.Element {
             />
           )}
 
-          {selectedId && isOuterCornerId(selectedId) && (
-            <OuterCornerInspector outerWallId={selectionPath[0] as OuterWallId} cornerId={selectedId} />
-          )}
-
-          {selectedId && isOpeningId(selectedId) && (
-            <OpeningInspector
-              outerWallId={selectionPath[0] as OuterWallId}
-              segmentId={selectionPath[1] as WallSegmentId}
-              openingId={selectedId}
-            />
-          )}
-
           {/* Unknown entity type */}
           {selectedId &&
             !isWallId(selectedId) &&

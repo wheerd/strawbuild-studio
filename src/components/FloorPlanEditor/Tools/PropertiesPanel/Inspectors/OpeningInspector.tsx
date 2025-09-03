@@ -4,6 +4,7 @@ import { createLength } from '@/types/geometry'
 import { useDebouncedNumericInput } from '../../../hooks/useDebouncedInput'
 import type { OpeningId, OuterWallId, WallSegmentId } from '@/types/ids'
 import type { OpeningType } from '@/types/model'
+import { useSelectionStore } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
 
 interface OpeningInspectorProps {
   outerWallId: OuterWallId
@@ -20,6 +21,7 @@ const OPENING_TYPE_OPTIONS: { value: OpeningType; label: string }[] = [
 
 export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningInspectorProps): React.JSX.Element {
   // Get model store functions - use specific selectors for stable references
+  const select = useSelectionStore()
   const updateOpening = useModelStore(state => state.updateOpening)
   const removeOpeningFromOuterWall = useModelStore(state => state.removeOpeningFromOuterWall)
 
@@ -124,6 +126,7 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
 
   const handleRemoveOpening = useCallback(() => {
     if (confirm('Are you sure you want to remove this opening?')) {
+      select.popSelection()
       removeOpeningFromOuterWall(outerWallId, segmentId, openingId)
     }
   }, [removeOpeningFromOuterWall, outerWallId, segmentId, openingId])
