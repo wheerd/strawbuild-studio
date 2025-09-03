@@ -24,9 +24,11 @@ export function OuterCornerShape({
 
   const cornerPolygon = [
     boundaryPoint,
+    previousSegment.insideLine.end,
     previousSegment.outsideLine.end,
     corner.outsidePoint,
-    nextSegment.outsideLine.start
+    nextSegment.outsideLine.start,
+    nextSegment.insideLine.start
   ]
   const polygonArray = cornerPolygon.flatMap(point => [point[0], point[1]])
 

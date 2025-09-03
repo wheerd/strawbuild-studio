@@ -1,9 +1,22 @@
 import type { StateCreator } from 'zustand'
 import type { OuterWallPolygon, OuterWallConstructionType, OuterWallSegment, Opening, OuterCorner } from '@/types/model'
 import type { FloorId, OuterWallId, WallSegmentId, OuterCornerId, OpeningId } from '@/types/ids'
-import type { Length, Polygon2D, Vec2, LineSegment2D } from '@/types/geometry'
+import type { Length, Polygon2D, Line2D, Vec2 } from '@/types/geometry'
 import { createOuterWallId, createWallSegmentId, createOuterCornerId, createOpeningId } from '@/types/ids'
-import { createLength, createVec2, lineIntersection, lineFromSegment, midpoint } from '@/types/geometry'
+import {
+  createLength,
+  lineIntersection,
+  midpoint,
+  projectPointOntoLine,
+  distance,
+  direction,
+  perpendicularCCW,
+  lineFromPoints,
+  add,
+  scale
+} from '@/types/geometry'
+
+type PartialSegmentInput = Pick<OuterWallSegment, 'id' | 'thickness' | 'constructionType' | 'openings'>
 
 export interface OuterWallsState {
   outerWalls: Map<OuterWallId, OuterWallPolygon>
@@ -54,153 +67,170 @@ export type OuterWallsSlice = OuterWallsState & OuterWallsActions
 // Default wall thickness value
 const DEFAULT_OUTER_WALL_THICKNESS = createLength(440) // 44cm for strawbale walls
 
-// Helper function to calculate corner outside point using already computed segment outside lines
-const calculateCornerOutsidePoint = (
-  previousSegment: OuterWallSegment,
-  nextSegment: OuterWallSegment,
-  boundaryPoint: Vec2
-): Vec2 => {
-  // Convert the outside line segments to infinite lines for intersection
-  const prevOutsideLine = lineFromSegment(previousSegment.outsideLine)
-  const nextOutsideLine = lineFromSegment(nextSegment.outsideLine)
+// Step 1: Create infinite inside and outside lines for each wall segment
+const createInfiniteLines = (
+  boundary: Polygon2D,
+  thicknesses: Length[]
+): Array<{ inside: Line2D; outside: Line2D }> => {
+  const numSides = boundary.points.length
+  const infiniteLines: Array<{ inside: Line2D; outside: Line2D }> = []
 
-  if (!prevOutsideLine || !nextOutsideLine) {
-    // Fallback for degenerate case
-    return createVec2(boundaryPoint[0], boundaryPoint[1])
+  for (let i = 0; i < numSides; i++) {
+    const startPoint = boundary.points[i]
+    const endPoint = boundary.points[(i + 1) % numSides]
+    const segmentThickness = thicknesses[i]
+
+    // Create line from boundary points
+    const insideLine = lineFromPoints(startPoint, endPoint)
+    if (!insideLine) {
+      throw new Error('Wall segment cannot have zero length')
+    }
+
+    // Calculate outside direction and create outside line
+    const outsideDirection = perpendicularCCW(insideLine.direction)
+    const outsidePoint = add(startPoint, scale(outsideDirection, segmentThickness))
+    const outsideLine = { point: outsidePoint, direction: insideLine.direction }
+
+    infiniteLines.push({ inside: insideLine, outside: outsideLine })
   }
 
-  // Find intersection of the two outside lines
-  const intersection = lineIntersection(prevOutsideLine, nextOutsideLine)
-
-  if (intersection) {
-    return intersection
-  }
-
-  // Fallback: use average of the outside line endpoints closest to the corner
-  const prevEnd = previousSegment.outsideLine.end
-  const nextStart = nextSegment.outsideLine.start
-  return midpoint(prevEnd, nextStart)
+  return infiniteLines
 }
 
-// Helper function to create corners from boundary points and segments
-const createCornersFromBoundary = (
+// Step 2: Calculate corner outside points as intersections of adjacent outside lines
+const calculateCornerOutsidePoints = (
   boundary: Polygon2D,
-  segments: OuterWallSegment[],
+  thicknesses: Length[],
+  infiniteLines: Array<{ inside: Line2D; outside: Line2D }>,
   existingCorners?: OuterCorner[]
 ): OuterCorner[] => {
+  const numSides = boundary.points.length
   const corners: OuterCorner[] = []
 
-  for (let i = 0; i < boundary.points.length; i++) {
-    const prevIndex = (i - 1 + boundary.points.length) % boundary.points.length
-    const currentPoint = boundary.points[i]
+  for (let i = 0; i < numSides; i++) {
+    const prevIndex = (i - 1 + numSides) % numSides
+    const prevOutsideLine = infiniteLines[prevIndex].outside
+    const currentOutsideLine = infiniteLines[i].outside
 
-    const previousSegment = segments[prevIndex]
-    const nextSegment = segments[i]
+    // Find intersection of adjacent outside lines
+    const intersection = lineIntersection(prevOutsideLine, currentOutsideLine)
 
-    const outsidePoint = calculateCornerOutsidePoint(previousSegment, nextSegment, currentPoint)
+    let outsidePoint: Vec2
+    if (intersection) {
+      outsidePoint = intersection
+    } else {
+      // No intersection means the segments are colinear (parallel)
+      // Project the boundary point outward by the maximum thickness of adjacent segments
+      const prevThickness = thicknesses[prevIndex]
+      const currentThickness = thicknesses[i]
+      const maxThickness = Math.max(prevThickness, currentThickness)
 
-    // Preserve existing corner data if available, otherwise create new
+      // Use the outside direction from either segment (they should be the same for colinear segments)
+      const outsideDirection = perpendicularCCW(currentOutsideLine.direction)
+      outsidePoint = add(boundary.points[i], scale(outsideDirection, maxThickness))
+    }
+
+    // Preserve existing corner data if available
     const existingCorner = existingCorners?.[i]
     corners.push({
       id: existingCorner?.id ?? createOuterCornerId(),
       outsidePoint,
-      belongsTo: existingCorner?.belongsTo ?? 'next' // Use existing or default to next segment
+      belongsTo: existingCorner?.belongsTo ?? 'next'
     })
   }
 
   return corners
 }
 
-// Helper function to compute geometric properties for a single segment
-const computeSegmentGeometry = (
-  startPoint: Vec2,
-  endPoint: Vec2,
-  thickness: Length
-): {
-  insideLength: Length
-  outsideLength: Length
-  insideLine: LineSegment2D
-  outsideLine: LineSegment2D
-  direction: Vec2
-  outsideDirection: Vec2
-} => {
-  // Calculate direction vector (normalized from start -> end)
-  const dx = endPoint[0] - startPoint[0]
-  const dy = endPoint[1] - startPoint[1]
-  const length = Math.sqrt(dx * dx + dy * dy)
-
-  if (length === 0) {
-    throw new Error('Wall segment cannot have zero length')
-  }
-
-  const direction = createVec2(dx / length, dy / length)
-
-  // Calculate outside direction (normal vector pointing outside)
-  // For a clockwise polygon, the outside normal is perpendicular right to the direction
-  const outsideDirection = createVec2(-direction[1], direction[0])
-
-  // Inside line is the original segment
-  const insideLine: LineSegment2D = {
-    start: startPoint,
-    end: endPoint
-  }
-
-  // Outside line is offset by thickness in the outside direction
-  const outsideStart = createVec2(
-    startPoint[0] + outsideDirection[0] * thickness,
-    startPoint[1] + outsideDirection[1] * thickness
-  )
-  const outsideEnd = createVec2(
-    endPoint[0] + outsideDirection[0] * thickness,
-    endPoint[1] + outsideDirection[1] * thickness
-  )
-
-  const outsideLine: LineSegment2D = {
-    start: outsideStart,
-    end: outsideEnd
-  }
-
-  // Calculate outside length (same as inside for straight segments)
-  const outsideLength = Math.sqrt(
-    (outsideEnd[0] - outsideStart[0]) * (outsideEnd[0] - outsideStart[0]) +
-      (outsideEnd[1] - outsideStart[1]) * (outsideEnd[1] - outsideStart[1])
-  )
-
-  return {
-    insideLength: length as Length,
-    outsideLength: outsideLength as Length,
-    insideLine,
-    outsideLine,
-    direction,
-    outsideDirection
-  }
-}
-
-// Helper function to create segments from boundary points
-const createSegmentsFromBoundary = (
+// Step 3: Determine correct segment endpoints using projection-based distance comparison
+const calculateSegmentEndpoints = (
   boundary: Polygon2D,
-  constructionType: OuterWallConstructionType,
-  thickness: Length
+  segmentInputs: PartialSegmentInput[],
+  corners: OuterCorner[],
+  infiniteLines: Array<{ inside: Line2D; outside: Line2D }>
 ): OuterWallSegment[] => {
-  const segments: OuterWallSegment[] = []
+  const numSides = boundary.points.length
+  const finalSegments: OuterWallSegment[] = []
 
-  // Create one segment for each side of the polygon
-  for (let i = 0; i < boundary.points.length; i++) {
-    const startPoint = boundary.points[i]
-    const endPoint = boundary.points[(i + 1) % boundary.points.length]
+  for (let i = 0; i < numSides; i++) {
+    const boundaryStart = boundary.points[i]
+    const boundaryEnd = boundary.points[(i + 1) % numSides]
+    const segmentMidpoint = midpoint(boundaryStart, boundaryEnd)
 
-    const geometry = computeSegmentGeometry(startPoint, endPoint, thickness)
+    const startCornerOutside = corners[i].outsidePoint
+    const endCornerOutside = corners[(i + 1) % numSides].outsidePoint
 
-    segments.push({
-      id: createWallSegmentId(),
-      thickness,
-      constructionType,
-      openings: [],
-      ...geometry
+    const insideLine = infiniteLines[i].inside
+    const outsideLine = infiniteLines[i].outside
+
+    // Project boundary points onto outside line
+    const boundaryStartOnOutside = projectPointOntoLine(boundaryStart, outsideLine)
+    const boundaryEndOnOutside = projectPointOntoLine(boundaryEnd, outsideLine)
+
+    // Project corner outside points onto inside line
+    const cornerStartOnInside = projectPointOntoLine(startCornerOutside, insideLine)
+    const cornerEndOnInside = projectPointOntoLine(endCornerOutside, insideLine)
+
+    // Choose endpoints based on which projection is closer to segment midpoint
+    const startDistBoundary = distance(boundaryStart, segmentMidpoint)
+    const startDistCorner = distance(cornerStartOnInside, segmentMidpoint)
+    const endDistBoundary = distance(boundaryEnd, segmentMidpoint)
+    const endDistCorner = distance(cornerEndOnInside, segmentMidpoint)
+
+    const finalInsideStart = startDistBoundary <= startDistCorner ? boundaryStart : cornerStartOnInside
+    const finalInsideEnd = endDistBoundary <= endDistCorner ? boundaryEnd : cornerEndOnInside
+    const finalOutsideStart = startDistBoundary <= startDistCorner ? boundaryStartOnOutside : startCornerOutside
+    const finalOutsideEnd = endDistBoundary <= endDistCorner ? boundaryEndOnOutside : endCornerOutside
+
+    // Calculate final segment properties using utility functions
+    const segmentDirection = direction(finalInsideStart, finalInsideEnd)
+    const outsideDirection = perpendicularCCW(segmentDirection)
+
+    const finalInsideLine = { start: finalInsideStart, end: finalInsideEnd }
+    const finalOutsideLine = { start: finalOutsideStart, end: finalOutsideEnd }
+
+    const insideLength = distance(finalInsideStart, finalInsideEnd)
+    const outsideLength = distance(finalOutsideStart, finalOutsideEnd)
+
+    finalSegments.push({
+      ...segmentInputs[i], // Preserve existing segment data like openings and construction type
+      insideLength: insideLength as Length,
+      outsideLength: outsideLength as Length,
+      insideLine: finalInsideLine,
+      outsideLine: finalOutsideLine,
+      direction: segmentDirection,
+      outsideDirection
     })
   }
 
-  return segments
+  return finalSegments
+}
+
+// Helper function to create wall segments and corners simultaneously using the simplified approach
+const createSegmentsAndCorners = (
+  boundary: Polygon2D,
+  constructionType: OuterWallConstructionType,
+  thickness: Length,
+  existingCorners?: OuterCorner[]
+): { segments: OuterWallSegment[]; corners: OuterCorner[] } => {
+  // Use shared functions for the three-step process
+  const thicknesses = Array(boundary.points.length).fill(thickness)
+  const infiniteLines = createInfiniteLines(boundary, thicknesses)
+  const corners = calculateCornerOutsidePoints(boundary, thicknesses, infiniteLines, existingCorners)
+
+  // Create initial segments with uniform thickness and construction type
+  const initialSegments: PartialSegmentInput[] = []
+  for (let i = 0; i < boundary.points.length; i++) {
+    initialSegments.push({
+      id: createWallSegmentId(),
+      thickness,
+      constructionType,
+      openings: []
+    })
+  }
+  const segments = calculateSegmentEndpoints(boundary, initialSegments, corners, infiniteLines)
+
+  return { segments, corners }
 }
 
 export const createOuterWallsSlice: StateCreator<OuterWallsSlice, [], [], OuterWallsSlice> = (set, get) => ({
@@ -223,8 +253,7 @@ export const createOuterWallsSlice: StateCreator<OuterWallsSlice, [], [], OuterW
       throw new Error('Wall thickness must be greater than 0')
     }
 
-    const segments = createSegmentsFromBoundary(boundary, constructionType, wallThickness)
-    const corners = createCornersFromBoundary(boundary, segments)
+    const { segments, corners } = createSegmentsAndCorners(boundary, constructionType, wallThickness)
 
     const outerWall: OuterWallPolygon = {
       id: createOuterWallId(),
@@ -289,27 +318,23 @@ export const createOuterWallsSlice: StateCreator<OuterWallsSlice, [], [], OuterW
         return state // Segment not found
       }
 
-      // Get the boundary points for this segment
-      const startPoint = outerWall.boundary[segmentIndex]
-      const endPoint = outerWall.boundary[(segmentIndex + 1) % outerWall.boundary.length]
-
-      // Recompute geometry with new thickness
-      const geometry = computeSegmentGeometry(startPoint, endPoint, thickness)
-
+      // Update the specific segment thickness first
       const updatedSegments = [...outerWall.segments]
       updatedSegments[segmentIndex] = {
         ...updatedSegments[segmentIndex],
-        thickness,
-        ...geometry
+        thickness
       }
 
-      // Recalculate corners since thickness changed, preserving existing corner data
+      // Use shared functions for the three-step process with mixed thickness
       const boundary = { points: outerWall.boundary }
-      const updatedCorners = createCornersFromBoundary(boundary, updatedSegments, outerWall.corners)
+      const thicknesses = updatedSegments.map(s => s.thickness)
+      const infiniteLines = createInfiniteLines(boundary, thicknesses)
+      const updatedCorners = calculateCornerOutsidePoints(boundary, thicknesses, infiniteLines, outerWall.corners)
+      const finalSegments = calculateSegmentEndpoints(boundary, updatedSegments, updatedCorners, infiniteLines)
 
       const updatedOuterWall = {
         ...outerWall,
-        segments: updatedSegments,
+        segments: finalSegments,
         corners: updatedCorners
       }
 
