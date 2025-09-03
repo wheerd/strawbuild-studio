@@ -1,6 +1,15 @@
 import type { ShortcutDefinition, Tool, ToolContext, CanvasEvent } from './types'
-import type { EntityId } from '@/types/ids'
-import { isWallId, isRoomId, isPointId } from '@/types/ids'
+import type { EntityId, SelectableId } from '@/types/ids'
+import {
+  isWallId,
+  isRoomId,
+  isPointId,
+  isOuterWallId,
+  isWallSegmentId,
+  isOuterCornerId,
+  isOpeningId,
+  isSubEntityId
+} from '@/types/ids'
 
 export class KeyboardShortcutManager {
   private builtInShortcuts: ShortcutDefinition[] = []
@@ -109,18 +118,22 @@ export class KeyboardShortcutManager {
 
   private initializeBuiltInShortcuts(): void {
     this.builtInShortcuts = [
-      // Delete selected entity - works regardless of active tool
+      // Delete selected entity or sub-entity - works regardless of active tool
       {
         key: 'Delete',
         label: 'Delete Selected',
         action: context => {
-          const selectedId = context.getSelectedEntityId()
+          const selectedId = context.getCurrentSelection()
           if (selectedId) {
-            this.deleteEntity(selectedId, context)
-            context.clearSelection()
+            const success = this.deleteEntity(selectedId, context)
+            if (success) {
+              // Only pop selection if deletion was successful
+              // This moves up one level in the hierarchy instead of clearing entirely
+              context.popSelection()
+            }
           }
         },
-        condition: context => context.getSelectedEntityId() !== null,
+        condition: context => context.getCurrentSelection() !== null,
         priority: 100,
         scope: 'global',
         source: 'builtin:delete'
@@ -131,13 +144,17 @@ export class KeyboardShortcutManager {
         key: 'Backspace',
         label: 'Delete Selected',
         action: context => {
-          const selectedId = context.getSelectedEntityId()
+          const selectedId = context.getCurrentSelection()
           if (selectedId) {
-            this.deleteEntity(selectedId, context)
-            context.clearSelection()
+            const success = this.deleteEntity(selectedId, context)
+            if (success) {
+              // Only pop selection if deletion was successful
+              // This moves up one level in the hierarchy instead of clearing entirely
+              context.popSelection()
+            }
           }
         },
-        condition: context => context.getSelectedEntityId() !== null,
+        condition: context => context.getCurrentSelection() !== null,
         priority: 100,
         scope: 'global',
         source: 'builtin:delete-backspace'
@@ -170,21 +187,83 @@ export class KeyboardShortcutManager {
       .sort((a, b) => b.priority - a.priority)
   }
 
-  private deleteEntity(entityId: EntityId, context: ToolContext): void {
+  private deleteEntity(selectedId: SelectableId, context: ToolContext): boolean {
     const modelStore = context.getModelStore()
 
     try {
+      // Handle sub-entities
+      if (isSubEntityId(selectedId)) {
+        return this.deleteSubEntity(selectedId, context)
+      }
+
+      // Handle main entities (cast to EntityId since we know it's not a sub-entity)
+      const entityId = selectedId as EntityId
       if (isWallId(entityId)) {
         modelStore.removeWall(entityId)
+        return true
       } else if (isRoomId(entityId)) {
         modelStore.removeRoom(entityId)
+        return true
       } else if (isPointId(entityId)) {
         modelStore.removePoint(entityId)
+        return true
+      } else if (isOuterWallId(entityId)) {
+        modelStore.removeOuterWall(entityId)
+        return true
       } else {
         console.warn(`Unknown entity type for deletion: ${entityId}`)
+        return false
       }
     } catch (error) {
-      console.error(`Failed to delete entity ${entityId}:`, error)
+      console.error(`Failed to delete entity ${selectedId}:`, error)
+      return false
+    }
+  }
+
+  private deleteSubEntity(subEntityId: SelectableId, context: ToolContext): boolean {
+    const modelStore = context.getModelStore()
+
+    try {
+      // Selection path has fixed structure: [outerWallId, segmentId, openingId]
+      const selectionPath = context.getSelectionPath()
+
+      if (isWallSegmentId(subEntityId)) {
+        // Segment is at index 1, parent wall is at index 0
+        const parentWallId = selectionPath[0]
+        if (parentWallId && isOuterWallId(parentWallId)) {
+          return modelStore.removeOuterWallSegment(parentWallId, subEntityId)
+        } else {
+          console.warn(`Could not find parent outer wall in selection path for segment: ${subEntityId}`)
+          return false
+        }
+      } else if (isOuterCornerId(subEntityId)) {
+        // Corner is at index 1, parent wall is at index 0
+        const parentWallId = selectionPath[0]
+        if (parentWallId && isOuterWallId(parentWallId)) {
+          return modelStore.removeOuterWallCorner(parentWallId, subEntityId)
+        } else {
+          console.warn(`Could not find parent outer wall in selection path for corner: ${subEntityId}`)
+          return false
+        }
+      } else if (isOpeningId(subEntityId)) {
+        // Opening is at index 2, parent segment at index 1, parent wall at index 0
+        const parentWallId = selectionPath[0]
+        const parentSegmentId = selectionPath[1]
+
+        if (parentWallId && parentSegmentId && isOuterWallId(parentWallId) && isWallSegmentId(parentSegmentId)) {
+          modelStore.removeOpeningFromOuterWall(parentWallId, parentSegmentId, subEntityId)
+          return true
+        } else {
+          console.warn(`Could not find parent wall/segment in selection path for opening: ${subEntityId}`)
+          return false
+        }
+      } else {
+        console.warn(`Unknown sub-entity type for deletion: ${subEntityId}`)
+        return false
+      }
+    } catch (error) {
+      console.error(`Failed to delete sub-entity ${subEntityId}:`, error)
+      return false
     }
   }
 

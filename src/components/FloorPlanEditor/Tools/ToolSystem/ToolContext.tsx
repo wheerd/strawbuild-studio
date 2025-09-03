@@ -41,6 +41,7 @@ export function ToolContextProvider({ children }: ToolContextProviderProps): Rea
   const clearSelectionStore = useSelectionStore(state => state.clearSelection)
   const getCurrentSelection = useSelectionStore(state => state.getCurrentSelection)
   const getSelectedEntityId = useSelectionStore(state => state.getSelectedEntityId)
+  const getSelectionPath = useSelectionStore(state => state.getSelectionPath)
 
   // Subscribe to tool manager changes
   useEffect(() => {
@@ -127,6 +128,10 @@ export function ToolContextProvider({ children }: ToolContextProviderProps): Rea
         return getSelectedEntityId()
       },
 
+      getSelectionPath: (): SelectableId[] => {
+        return getSelectionPath()
+      },
+
       // Store access (tools use these directly)
       getModelStore: () => modelStore,
       getActiveFloorId: () => activeFloorId,
@@ -156,7 +161,8 @@ export function ToolContextProvider({ children }: ToolContextProviderProps): Rea
       popSelectionStore,
       clearSelectionStore,
       getCurrentSelection,
-      getSelectedEntityId
+      getSelectedEntityId,
+      getSelectionPath
     ]
   )
 

@@ -131,6 +131,7 @@ export interface ToolContext {
   getActiveTool(): Tool | null
   getCurrentSelection(): SelectableId | null
   getSelectedEntityId(): EntityId | null // Backward compatibility
+  getSelectionPath(): SelectableId[] // Full selection hierarchy path
   getViewport(): { zoom: number; panX: number; panY: number; stageWidth: number; stageHeight: number }
 
   // Tool activation
