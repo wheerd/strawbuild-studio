@@ -5,7 +5,7 @@ import type { OpeningType, OuterWallSegment } from '@/types/model'
 import type { OuterWallId, WallSegmentId, SelectableId, EntityType } from '@/types/ids'
 import React from 'react'
 import { Group, Rect, Line, Circle, Text } from 'react-konva'
-import { AddOpeningToolInspector } from '../../PropertiesPanel/Inspectors/AddOpeningToolInspector'
+import { AddOpeningToolInspector } from '../../PropertiesPanel/ToolInspectors/AddOpeningToolInspector'
 
 interface WallSegmentHit {
   wallId: OuterWallId
