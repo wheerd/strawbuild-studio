@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { createLength } from '@/types/geometry'
 import { useDebouncedNumericInput } from '../../../hooks/useDebouncedInput'
 import type { OpeningType } from '@/types/model'
@@ -48,6 +48,16 @@ const OPENING_PRESETS: Record<OpeningType, PresetConfig[]> = {
 
 function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps): React.JSX.Element {
   const { state } = tool
+
+  // Force re-renders when tool state changes
+  const [, forceUpdate] = useState({})
+
+  useEffect(() => {
+    const unsubscribe = tool.onRenderNeeded(() => {
+      forceUpdate({})
+    })
+    return unsubscribe
+  }, [tool])
 
   // Debounced input handlers for numeric values
   const widthInput = useDebouncedNumericInput(
