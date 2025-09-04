@@ -25,7 +25,6 @@ describe('AddOpeningTool', () => {
     expect(addOpeningTool.state.width).toBe(createLength(800))
     expect(addOpeningTool.state.height).toBe(createLength(2100))
     expect(addOpeningTool.state.canPlace).toBe(false)
-    expect(addOpeningTool.state.isSnapped).toBe(false)
   })
 
   it('should reset state on activation', () => {
@@ -77,35 +76,6 @@ describe('AddOpeningTool', () => {
       addOpeningTool.setSillHeight(undefined)
 
       expect(addOpeningTool.state.sillHeight).toBeUndefined()
-    })
-  })
-
-  describe('event handling', () => {
-    it('should handle escape key to clear preview', () => {
-      // Set up some preview state
-      addOpeningTool.state.hoveredWallSegment = {} as any
-      addOpeningTool.state.previewPosition = [100, 200] as any
-      addOpeningTool.state.canPlace = true
-
-      const mockEvent = {
-        originalEvent: new KeyboardEvent('keydown', { key: 'Escape' })
-      } as any
-
-      const result = addOpeningTool.handleKeyDown(mockEvent)
-
-      expect(result).toBe(true)
-      expect(addOpeningTool.state.hoveredWallSegment).toBeUndefined()
-      expect(addOpeningTool.state.previewPosition).toBeUndefined()
-      expect(addOpeningTool.state.canPlace).toBe(false)
-    })
-
-    it('should return false for non-handled keys', () => {
-      const mockEvent = {
-        originalEvent: new KeyboardEvent('keydown', { key: 'Enter' })
-      } as any
-
-      const result = addOpeningTool.handleKeyDown(mockEvent)
-      expect(result).toBe(false)
     })
   })
 

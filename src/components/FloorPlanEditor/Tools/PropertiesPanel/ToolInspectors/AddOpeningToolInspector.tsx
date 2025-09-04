@@ -131,9 +131,6 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
     [tool]
   )
 
-  // Calculate area for display
-  const area = (state.width * state.height) / (1000 * 1000) // Convert mm² to m²
-
   return (
     <div className="add-opening-tool-inspector">
       <div className="inspector-header">
@@ -233,33 +230,6 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
               <div className="help-text">Height of window sill above floor level</div>
             </div>
           )}
-        </div>
-
-        {/* Measurements */}
-        <div className="property-section">
-          <div className="measurements-grid">
-            <div className="measurement">
-              <label>Opening Area:</label>
-              <span className="measurement-value">{area.toFixed(2)} m²</span>
-            </div>
-            {state.isSnapped && (
-              <div className="measurement">
-                <label>Position:</label>
-                <span className="measurement-value snap-indicator">📍 Snapped</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Instructions */}
-        <div className="property-section">
-          <h4>Instructions</h4>
-          <div className="instruction-text">
-            <p>1. Configure the opening type and dimensions above</p>
-            <p>2. Hover over a wall segment to see preview</p>
-            <p>3. Click to place the opening at the desired position</p>
-            <p>4. The tool will automatically snap to valid positions</p>
-          </div>
         </div>
       </div>
     </div>

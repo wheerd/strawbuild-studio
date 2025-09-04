@@ -2,9 +2,16 @@ import type { Tool, CanvasEvent, ToolContext, ToolInspectorProps } from '../../T
 import type { Vec2, Length } from '@/types/geometry'
 import { createLength, createVec2, distance, projectPointOntoLine, lineFromSegment } from '@/types/geometry'
 import type { OpeningType, OuterWallSegment } from '@/types/model'
-import type { OuterWallId, WallSegmentId, SelectableId, EntityType } from '@/types/ids'
+import {
+  type OuterWallId,
+  type WallSegmentId,
+  type SelectableId,
+  type EntityType,
+  isOuterWallId,
+  isWallSegmentId
+} from '@/types/ids'
 import React from 'react'
-import { Group, Rect, Line, Circle, Text } from 'react-konva'
+import { Group, Rect, Line, Text } from 'react-konva'
 import { AddOpeningToolInspector } from '../../PropertiesPanel/ToolInspectors/AddOpeningToolInspector'
 
 interface WallSegmentHit {
@@ -22,11 +29,9 @@ interface AddOpeningToolState {
 
   // Interactive state
   hoveredWallSegment?: WallSegmentHit
-  previewCenterOffset?: Length
+  offset?: Length
   previewPosition?: Vec2
   canPlace: boolean
-  isSnapped: boolean
-  snapIndicator?: { from: Vec2; to: Vec2 }
 }
 
 // Default opening configurations
@@ -55,8 +60,7 @@ export class AddOpeningTool implements Tool {
     openingType: 'door',
     width: DEFAULT_OPENING_CONFIG.door.width,
     height: DEFAULT_OPENING_CONFIG.door.height,
-    canPlace: false,
-    isSnapped: false
+    canPlace: false
   }
 
   private listeners: (() => void)[] = []
@@ -85,16 +89,26 @@ export class AddOpeningTool implements Tool {
       }
     }
 
+    // Check if we hit an opening
+    if (hitResult.entityType === 'opening') {
+      const [wallId, segmentId] = hitResult.parentIds
+
+      if (isOuterWallId(wallId) && isWallSegmentId(segmentId)) {
+        const modelStore = context.getModelStore()
+        const segment = modelStore.getSegmentById(wallId, segmentId)
+        if (segment) {
+          return { wallId, segmentId, segment }
+        }
+      }
+    }
+
     return null
   }
 
   /**
    * Calculate center offset from mouse position projected onto wall
    */
-  private calculateCenterOffsetFromMousePosition(
-    mousePos: Vec2,
-    segment: OuterWallSegment
-  ): { centerOffset: Length; position: Vec2; isWithinBounds: boolean } {
+  private calculateCenterOffsetFromMousePosition(mousePos: Vec2, segment: OuterWallSegment): Length {
     // Convert LineSegment2D to Line2D for projection
     const line = lineFromSegment(segment.insideLine)
     if (!line) {
@@ -108,24 +122,19 @@ export class AddOpeningTool implements Tool {
     const startPoint = segment.insideLine.start
     const centerOffset = createLength(distance(startPoint, projectedPoint))
 
-    // Check if center position allows opening to fit within bounds
-    const halfWidth = this.state.width / 2
-    const actualStartOffset = centerOffset - halfWidth
-    const actualEndOffset = centerOffset + halfWidth
+    const actualStartOffset = centerOffset - this.state.width / 2
 
-    const isWithinBounds = actualStartOffset >= 0 && actualEndOffset <= segment.insideLength
-
-    return { centerOffset, position: projectedPoint, isWithinBounds }
+    return actualStartOffset as Length
   }
 
   /**
-   * Convert center offset to actual position on the wall
+   * Convert offset to actual position on the wall
    */
-  private offsetToPosition(centerOffset: Length, segment: OuterWallSegment): Vec2 {
+  private offsetToPosition(offset: Length, segment: OuterWallSegment): Vec2 {
     const startPoint = segment.insideLine.start
     const direction = segment.direction
 
-    return createVec2(startPoint[0] + direction[0] * centerOffset, startPoint[1] + direction[1] * centerOffset)
+    return createVec2(startPoint[0] + direction[0] * offset, startPoint[1] + direction[1] * offset)
   }
 
   /**
@@ -134,27 +143,19 @@ export class AddOpeningTool implements Tool {
   private clearPreview(): void {
     this.state.hoveredWallSegment = undefined
     this.state.previewPosition = undefined
-    this.state.previewCenterOffset = undefined
+    this.state.offset = undefined
     this.state.canPlace = false
-    this.state.isSnapped = false
-    this.state.snapIndicator = undefined
     this.triggerRender()
   }
 
   /**
    * Update preview state
    */
-  private updatePreview(
-    centerOffset: Length,
-    isSnapped: boolean,
-    wallSegment: WallSegmentHit,
-    canPlace: boolean = true
-  ): void {
+  private updatePreview(offset: Length, wallSegment: WallSegmentHit, canPlace: boolean = true): void {
     this.state.hoveredWallSegment = wallSegment
-    this.state.previewCenterOffset = centerOffset
-    this.state.previewPosition = this.offsetToPosition(centerOffset, wallSegment.segment)
+    this.state.offset = offset
+    this.state.previewPosition = this.offsetToPosition(offset, wallSegment.segment)
     this.state.canPlace = canPlace
-    this.state.isSnapped = isSnapped
     this.triggerRender()
   }
 
@@ -180,53 +181,27 @@ export class AddOpeningTool implements Tool {
     }
 
     // 2. Calculate preferred center position from mouse
-    const { centerOffset, position: mouseProjectedPos } = this.calculateCenterOffsetFromMousePosition(
-      mousePos,
-      wallSegment.segment
-    )
-
-    // 3. Convert to opening start offset for validation
-    const preferredStartOffset = createLength(centerOffset - this.state.width / 2)
+    const preferredStartOffset = this.calculateCenterOffsetFromMousePosition(mousePos, wallSegment.segment)
 
     // 4. Check if preferred position is valid
     const modelStore = event.context.getModelStore()
-    const isPreferredValid = modelStore.isOpeningPlacementValid(
+
+    // Try to find a nearby valid position
+    const snappedOffset = modelStore.findNearestValidOpeningPosition(
       wallSegment.wallId,
       wallSegment.segmentId,
       preferredStartOffset,
       this.state.width
     )
 
-    if (isPreferredValid) {
-      // Use preferred position directly
-      this.updatePreview(centerOffset, false, wallSegment)
-      this.state.snapIndicator = undefined
+    const maxSnapDistace = this.state.width * 0.4
+    if (snappedOffset !== null && Math.abs(snappedOffset - preferredStartOffset) <= maxSnapDistace) {
+      this.updatePreview(snappedOffset, wallSegment)
     } else {
-      // Try to find a nearby valid position
-      const snapResult = modelStore.findNearestValidOpeningPosition(
-        wallSegment.wallId,
-        wallSegment.segmentId,
-        preferredStartOffset,
-        this.state.width
-      )
-
-      if (snapResult) {
-        // Convert back to center offset and show snapped position
-        const snappedCenterOffset = createLength(snapResult.offset + this.state.width / 2)
-        const snappedPosition = this.offsetToPosition(snappedCenterOffset, wallSegment.segment)
-
-        this.updatePreview(snappedCenterOffset, snapResult.isSnapped, wallSegment)
-
-        // Show snap indicator if snapped
-        if (snapResult.isSnapped) {
-          this.state.snapIndicator = { from: mouseProjectedPos, to: snappedPosition }
-        } else {
-          this.state.snapIndicator = undefined
-        }
+      if (preferredStartOffset < 0 || preferredStartOffset > wallSegment.segment.segmentLength - this.state.width) {
+        this.clearPreview()
       } else {
-        // No valid position found - show invalid state
-        this.updatePreview(centerOffset, false, wallSegment, false)
-        this.state.snapIndicator = undefined
+        this.updatePreview(preferredStartOffset, wallSegment, snappedOffset === preferredStartOffset)
       }
     }
 
@@ -234,24 +209,26 @@ export class AddOpeningTool implements Tool {
   }
 
   handleMouseDown(event: CanvasEvent): boolean {
-    if (!this.state.canPlace || !this.state.hoveredWallSegment || !this.state.previewCenterOffset) {
+    if (!this.state.canPlace || !this.state.hoveredWallSegment || !this.state.offset) {
       return true
     }
 
     const { wallId, segmentId } = this.state.hoveredWallSegment
-    const startOffset = createLength(this.state.previewCenterOffset - this.state.width / 2)
 
     try {
       const modelStore = event.context.getModelStore()
       const openingId = modelStore.addOpeningToOuterWall(wallId, segmentId, {
         type: this.state.openingType,
-        offsetFromStart: startOffset,
+        offsetFromStart: this.state.offset,
         width: this.state.width,
         height: this.state.height,
         sillHeight: this.state.sillHeight
       })
 
       // Select the newly created opening
+      event.context.clearSelection()
+      event.context.selectEntity(wallId)
+      event.context.selectSubEntity(segmentId)
       event.context.selectSubEntity(openingId)
 
       // Clear preview after successful placement
@@ -261,17 +238,6 @@ export class AddOpeningTool implements Tool {
     }
 
     return true
-  }
-
-  handleKeyDown(event: CanvasEvent): boolean {
-    const keyEvent = event.originalEvent as KeyboardEvent
-
-    if (keyEvent.key === 'Escape') {
-      this.clearPreview()
-      return true
-    }
-
-    return false
   }
 
   // Lifecycle Methods
@@ -349,7 +315,7 @@ export class AddOpeningTool implements Tool {
       [
         React.createElement(Rect, {
           key: 'opening-rect',
-          x: -this.state.width / 2,
+          x: 0,
           y: 0,
           width: this.state.width,
           height: segment.thickness,
@@ -361,9 +327,13 @@ export class AddOpeningTool implements Tool {
         React.createElement(Text, {
           key: 'opening-icon',
           text: this.getOpeningIcon(),
-          fontSize: 24,
-          x: -12,
-          y: -12,
+          fontSize: segment.thickness * 0.7,
+          x: 0,
+          y: 0,
+          width: this.state.width,
+          height: segment.thickness,
+          align: 'center',
+          verticalAlign: 'middle',
           fill: '#ffffff',
           fontFamily: 'Arial'
         })
@@ -387,39 +357,6 @@ export class AddOpeningTool implements Tool {
     })
   }
 
-  private renderSnapIndicator(): React.ReactNode {
-    if (!this.state.snapIndicator) return null
-
-    const { from, to } = this.state.snapIndicator
-
-    return React.createElement(
-      Group,
-      {
-        key: 'snap-indicator',
-        listening: false
-      },
-      [
-        React.createElement(Line, {
-          key: 'snap-line',
-          points: [from[0], from[1], to[0], to[1]],
-          stroke: '#3b82f6',
-          strokeWidth: 3,
-          dash: [10, 10],
-          opacity: 0.8
-        }),
-        React.createElement(Circle, {
-          key: 'snap-circle',
-          x: to[0],
-          y: to[1],
-          radius: 8,
-          fill: '#3b82f6',
-          stroke: '#ffffff',
-          strokeWidth: 2
-        })
-      ]
-    )
-  }
-
   renderOverlay(): React.ReactNode {
     const elements: React.ReactNode[] = []
 
@@ -428,9 +365,6 @@ export class AddOpeningTool implements Tool {
 
     const openingPreview = this.renderOpeningPreview()
     if (openingPreview) elements.push(openingPreview)
-
-    const snapIndicator = this.renderSnapIndicator()
-    if (snapIndicator) elements.push(snapIndicator)
 
     return React.createElement(React.Fragment, null, ...elements)
   }

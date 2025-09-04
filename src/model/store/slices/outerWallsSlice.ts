@@ -70,9 +70,8 @@ export interface OuterWallsActions {
     wallId: OuterWallId,
     segmentId: WallSegmentId,
     preferredOffset: Length,
-    width: Length,
-    snapDistance?: Length
-  ) => { offset: Length; isSnapped: boolean } | null
+    width: Length
+  ) => Length | null
 
   // Updated getters
   getOuterWallById: (wallId: OuterWallId) => OuterWallPolygon | null
@@ -256,30 +255,6 @@ const createSegmentsAndCorners = (
 }
 
 // Helper function to find valid gaps in a wall segment for opening placement
-function findValidGaps(segment: OuterWallSegment, requiredWidth: Length): Array<{ start: Length; width: Length }> {
-  const gaps: Array<{ start: Length; width: Length }> = []
-
-  // Sort existing openings by position
-  const sortedOpenings = [...segment.openings].sort((a, b) => a.offsetFromStart - b.offsetFromStart)
-
-  let currentPos = createLength(0)
-
-  for (const opening of sortedOpenings) {
-    const gapWidth = createLength(opening.offsetFromStart - currentPos)
-    if (gapWidth >= requiredWidth) {
-      gaps.push({ start: currentPos, width: gapWidth })
-    }
-    currentPos = createLength(opening.offsetFromStart + opening.width)
-  }
-
-  // Check gap after last opening
-  const finalGapWidth = createLength(segment.insideLength - currentPos)
-  if (finalGapWidth >= requiredWidth) {
-    gaps.push({ start: currentPos, width: finalGapWidth })
-  }
-
-  return gaps
-}
 
 export const createOuterWallsSlice: StateCreator<OuterWallsSlice, [], [], OuterWallsSlice> = (set, get) => ({
   outerWalls: new Map(),
@@ -787,7 +762,7 @@ export const createOuterWallsSlice: StateCreator<OuterWallsSlice, [], [], OuterW
 
     // Check bounds
     const openingEnd = createLength(offsetFromStart + width)
-    if (offsetFromStart < 0 || openingEnd > segment.insideLength) {
+    if (offsetFromStart < 0 || openingEnd > segment.segmentLength) {
       return false
     }
 
@@ -807,38 +782,82 @@ export const createOuterWallsSlice: StateCreator<OuterWallsSlice, [], [], OuterW
   findNearestValidOpeningPosition: (
     wallId: OuterWallId,
     segmentId: WallSegmentId,
-    preferredOffset: Length,
-    width: Length,
-    snapDistance: Length = createLength(200)
-  ) => {
+    preferredStartOffset: Length,
+    width: Length
+  ): Length | null => {
     const segment = get().getSegmentById(wallId, segmentId)
     if (!segment) return null
+    if (width > segment.segmentLength) return null
 
-    // First try the preferred position
-    if (get().isOpeningPlacementValid(wallId, segmentId, preferredOffset, width)) {
-      return { offset: preferredOffset, isSnapped: false }
+    // Snap to segment bounds
+    let start = Math.max(preferredStartOffset, 0)
+    let end = start + width
+    if (end > segment.segmentLength) {
+      end = segment.segmentLength
+      start = end - width
     }
 
-    // Find all valid gaps in the wall segment
-    const validGaps = findValidGaps(segment, width)
-    if (validGaps.length === 0) return null
+    if (segment.openings.length === 0) return start as Length
 
-    // Find the closest valid position within snap distance
-    const candidates = validGaps.map(gap => {
-      // Center the opening in the gap
-      const centerOffset = createLength(gap.start + (gap.width - width) / 2)
-      const distance = Math.abs(centerOffset - preferredOffset)
-      return { offset: centerOffset, distance }
-    })
+    // Sort existing openings by position
+    const sortedOpenings = [...segment.openings].sort((a, b) => a.offsetFromStart - b.offsetFromStart)
 
-    const nearestCandidate = candidates
-      .filter(candidate => candidate.distance <= snapDistance)
-      .sort((a, b) => a.distance - b.distance)[0]
+    const afterIndex = sortedOpenings.findIndex(o => o.offsetFromStart >= start)
 
-    if (nearestCandidate) {
-      return { offset: nearestCandidate.offset, isSnapped: true }
+    const previousOpening =
+      afterIndex > 0
+        ? sortedOpenings[afterIndex - 1]
+        : afterIndex === -1
+          ? sortedOpenings[sortedOpenings.length - 1]
+          : null
+    const nextOpening = afterIndex !== -1 ? sortedOpenings[afterIndex] : null
+
+    const intersectsPrevious = previousOpening && start < previousOpening.offsetFromStart + previousOpening.width
+    const intersectsNext = nextOpening && end > nextOpening.offsetFromStart
+
+    if (!intersectsPrevious && !intersectsNext) {
+      return start as Length
     }
 
-    return null
+    // If we intersect with both, the gap is too small
+    if (intersectsPrevious && intersectsNext) {
+      return null
+    }
+
+    // Otherwise find the shortest shift
+    let bestOffset: Length | null = null
+    let bestDistance = Infinity
+
+    // If we intersect with previous opening, try shifting right (after previous)
+    if (intersectsPrevious && previousOpening) {
+      const shiftedOffset = createLength(previousOpening.offsetFromStart + previousOpening.width)
+      const shiftDistance = Math.abs(shiftedOffset - preferredStartOffset)
+      const shiftedEnd = shiftedOffset + width
+
+      // Check if shift is within the segment and doesn't intersect with next
+      if (shiftedEnd <= segment.segmentLength && (!nextOpening || shiftedEnd <= nextOpening.offsetFromStart)) {
+        bestOffset = shiftedOffset
+        bestDistance = shiftDistance
+      }
+    }
+
+    // If we intersect with next opening, try shifting left (before next)
+    if (intersectsNext && nextOpening) {
+      const shiftedOffset = createLength(nextOpening.offsetFromStart - width)
+      const shiftDistance = Math.abs(shiftedOffset - preferredStartOffset)
+
+      // Check if shift is within the segment and doesn't intersect with previous
+      if (
+        shiftedOffset >= 0 &&
+        (!previousOpening || shiftedOffset >= previousOpening.offsetFromStart + previousOpening.width)
+      ) {
+        if (shiftDistance < bestDistance) {
+          bestOffset = shiftedOffset
+          bestDistance = shiftDistance
+        }
+      }
+    }
+
+    return bestOffset
   }
 })
