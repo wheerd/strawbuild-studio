@@ -8,7 +8,6 @@ import {
   lineFromSegment,
   distanceSquared
 } from '@/types/geometry'
-import type { Point } from '@/types/model'
 import { type SnapResult, type SnappingContext, type SnapConfig, DEFAULT_SNAP_CONFIG } from './types'
 
 /**
@@ -39,32 +38,21 @@ export class SnappingService {
   }
 
   /**
-   * Convenience method to get just the snapped position
-   * Returns the target point if no snap is found
-   */
-  findSnapPosition(target: Vec2, context: SnappingContext): Vec2 {
-    const result = this.findSnapResult(target, context)
-    return result?.position ?? target
-  }
-
-  /**
    * Find existing points for direct point snapping
    */
   private findPointSnapPosition(target: Vec2, context: SnappingContext): SnapResult | null {
-    let bestPoint: Point | null = null
+    let bestPoint: Vec2 | null = null
     let bestDistanceSq = this.snapConfig.pointSnapDistance ** 2
 
-    for (const point of context.points) {
-      if (point.id === context.referencePointId) continue
-
-      const targetDistSq = (target[0] - point.position[0]) ** 2 + (target[1] - point.position[1]) ** 2
+    for (const point of context.snapPoints) {
+      const targetDistSq = distanceSquared(target, point)
       if (targetDistSq <= bestDistanceSq) {
         bestDistanceSq = targetDistSq
         bestPoint = point
       }
     }
 
-    return bestPoint != null ? { position: bestPoint.position, pointId: bestPoint.id } : null
+    return bestPoint != null ? { position: bestPoint } : null
   }
 
   /**
@@ -73,10 +61,7 @@ export class SnappingService {
   private generateSnapLines(context: SnappingContext): Line2D[] {
     const snapLines: Line2D[] = []
 
-    const allPoints = context.points.map(p => p.position)
-    if (context.alignPoints) {
-      allPoints.push(...context.alignPoints)
-    }
+    const allPoints = [...context.snapPoints, ...(context.alignPoints ?? [])]
 
     // 1. Add horizontal and vertical lines through all points
     for (const point of allPoints) {

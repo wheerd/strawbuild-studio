@@ -101,7 +101,7 @@ export class FitToViewTool implements Tool {
     if (!outerWalls || outerWalls.length === 0) {
       // Fallback to all points if no outer walls exist
       console.log('No outer walls found, falling back to all points')
-      return modelStore.getFloorBounds(floorId)
+      return null // No bounds available without outer walls
     }
 
     const outerPoints = outerWalls.flatMap(w => w.corners.map(c => c.outsidePoint))

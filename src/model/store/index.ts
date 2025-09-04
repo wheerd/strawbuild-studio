@@ -1,18 +1,12 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import { temporal } from 'zundo'
-import type { Wall, Room, Point, Floor, Corner, OuterWallPolygon } from '@/types/model'
+import type { Floor, OuterWallPolygon } from '@/types/model'
 import { createFloorLevel } from '@/types/model'
-import type { WallId, FloorId, RoomId, PointId, OuterWallId } from '@/types/ids'
-import { createWallsSlice } from './slices/wallsSlice'
-import { createPointsSlice } from './slices/pointsSlice'
-import { createRoomsSlice } from './slices/roomsSlice'
+import type { FloorId, OuterWallId } from '@/types/ids'
 import { createFloorsSlice } from './slices/floorsSlice'
-import { createCornersSlice } from './slices/cornersSlice'
-import { createWallsPointsSlice } from './slices/wallsPointsSlice'
 import { createOuterWallsSlice } from './slices/outerWallsSlice'
 import type { Store } from './types'
-import type { Length } from '@/types/geometry'
 
 // Create the main store with slices and undo/redo
 export const useModelStore = create<Store>()(
@@ -20,12 +14,7 @@ export const useModelStore = create<Store>()(
     devtools(
       (...a) => {
         const store = {
-          ...createWallsSlice(...a),
-          ...createPointsSlice(...a),
-          ...createRoomsSlice(...a),
           ...createFloorsSlice(...a),
-          ...createCornersSlice(...a),
-          ...createWallsPointsSlice(...a),
           ...createOuterWallsSlice(...a)
         }
 
@@ -48,10 +37,8 @@ export const useModelStore = create<Store>()(
         // Only save significant changes to history
         // Don't save if only timestamps changed
         const significantChange =
-          pastState.walls.size !== currentState.walls.size ||
-          pastState.rooms.size !== currentState.rooms.size ||
-          pastState.points.size !== currentState.points.size ||
-          pastState.floors.size !== currentState.floors.size
+          pastState.floors.size !== currentState.floors.size ||
+          pastState.outerWalls.size !== currentState.outerWalls.size
 
         return significantChange
       }
@@ -65,18 +52,8 @@ export const useRedo = (): (() => void) => useModelStore.temporal.getState().red
 export const useCanUndo = (): boolean => useModelStore.temporal.getState().pastStates.length > 0
 export const useCanRedo = (): boolean => useModelStore.temporal.getState().futureStates.length > 0
 
-// Entity selector hooks (same as before)
+// Entity selector hooks
 export const useFloors = (): Map<FloorId, Floor> => useModelStore(state => state.floors)
-export const useWalls = (): Map<WallId, Wall> => useModelStore(state => state.walls)
-export const useFloorWalls = (floorId: FloorId): Wall[] => useModelStore(state => state.getWallsByFloor)(floorId)
-export const useWallLength = (): ((wallid: WallId) => Length) => useModelStore(state => state.getWallLength)
-export const useRooms = (): Map<RoomId, Room> => useModelStore(state => state.rooms)
-export const useFloorRooms = (): ((floorId: FloorId) => Room[]) => useModelStore(state => state.getRoomsByFloor)
-export const usePoints = (): Map<PointId, Point> => useModelStore(state => state.points)
-export const useFloorPoints = (floorId: FloorId): Point[] => useModelStore(state => state.getPointsByFloor)(floorId)
-export const usePoint = (pointId: PointId): Point | null => useModelStore(state => state.getPointById)(pointId)
-export const useCorners = (): Map<PointId, Corner> => useModelStore(state => state.corners)
-export const useFloorCorners = (floorId: FloorId): Corner[] => useModelStore(state => state.getCornersByFloor)(floorId)
 export const useOuterWalls = (): Map<OuterWallId, OuterWallPolygon> => useModelStore(state => state.outerWalls)
 export const useGetOuterWallById = () => useModelStore(state => state.getOuterWallById)
 export const useFloorOuterWalls = (floorId: FloorId): OuterWallPolygon[] =>

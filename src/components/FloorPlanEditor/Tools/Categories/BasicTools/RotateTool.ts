@@ -1,15 +1,11 @@
-import type { EntityId } from '@/types/ids'
-import { isWallId, isRoomId, isPointId } from '@/types/ids'
-import type { Tool, ToolContext, ContextAction, Entity, CanvasEvent } from '../../ToolSystem/types'
+import type { Tool, ToolContext, ContextAction, CanvasEvent } from '../../ToolSystem/types'
 import type { Vec2 } from '@/types/geometry'
-import { createLength } from '@/types/geometry'
 
 export interface RotateToolState {
   rotationStep: number // degrees
   rotationCenter: 'center' | 'custom'
   customCenter?: Vec2
   isRotating: boolean
-  rotateEntity?: Entity
   startAngle?: number
 }
 
@@ -21,7 +17,6 @@ export class RotateTool implements Tool {
   cursor = 'grab'
   category = 'basic'
   hasInspector = true
-  // inspectorComponent would be imported and set here
 
   public state: RotateToolState = {
     rotationStep: 15, // 15 degree increments by default
@@ -29,281 +24,32 @@ export class RotateTool implements Tool {
     isRotating: false
   }
 
-  // Event handlers
-  handleMouseDown(event: CanvasEvent): boolean {
-    const stageCoords = event.stageCoordinates
-    const entity = this.getEntityAtPoint(stageCoords, event.context)
-
-    if (entity && this.canRotate(entity)) {
-      this.state.isRotating = true
-      this.state.rotateEntity = entity
-
-      // Calculate start angle from center
-      const center = this.getRotationCenter(entity)
-      if (center) {
-        this.state.startAngle = Math.atan2(stageCoords[1] - center[1], stageCoords[0] - center[0])
-      }
-
-      // Select the entity being rotated
-      event.context.selectEntity(this.getEntityId(entity))
-      return true
-    }
-
+  handleMouseDown(_event: CanvasEvent): boolean {
+    // Disabled until entities are properly implemented
     return false
   }
 
-  handleMouseMove(event: CanvasEvent): boolean {
-    if (!this.state.isRotating || !this.state.rotateEntity || this.state.startAngle === undefined) {
-      return false
-    }
-
-    const stageCoords = event.stageCoordinates
-    const center = this.getRotationCenter(this.state.rotateEntity)
-
-    if (center) {
-      // Calculate current angle
-      const currentAngle = Math.atan2(stageCoords[1] - center[1], stageCoords[0] - center[0])
-
-      // Calculate rotation delta
-      const deltaAngle = currentAngle - this.state.startAngle
-
-      // Snap to rotation step
-      const steps = Math.round((deltaAngle * 180) / Math.PI / this.state.rotationStep)
-      const snappedAngle = (steps * this.state.rotationStep * Math.PI) / 180
-
-      // Apply rotation (this would need to be implemented in the model)
-      this.previewRotation(this.state.rotateEntity, center, snappedAngle)
-
-      return true
-    }
-
+  handleMouseMove(_event: CanvasEvent): boolean {
     return false
   }
 
   handleMouseUp(_event: CanvasEvent): boolean {
-    if (!this.state.isRotating) return false
-
-    // Apply the final rotation
-    if (this.state.rotateEntity) {
-      this.applyRotation(this.state.rotateEntity)
-    }
-
-    // Reset state
-    this.state.isRotating = false
-    this.state.rotateEntity = undefined
-    this.state.startAngle = undefined
-
-    return true
-  }
-
-  handleKeyDown(event: CanvasEvent): boolean {
-    const keyEvent = event.originalEvent as KeyboardEvent
-    // Cancel rotation with Escape
-    if (keyEvent.key === 'Escape' && this.state.isRotating) {
-      this.cancelRotation()
-      return true
-    }
-
-    // Quick rotation with keyboard
-    const selectedId = event.context.getSelectedEntityId()
-    if (selectedId) {
-      let handled = false
-
-      if (keyEvent.key === 'r' || keyEvent.key === 'R') {
-        const angle = keyEvent.shiftKey ? -90 : 90
-        this.quickRotate(selectedId, angle)
-        handled = true
-      }
-
-      return handled
-    }
-
     return false
   }
 
-  // Lifecycle methods
+  handleKeyDown(_event: CanvasEvent): boolean {
+    return false
+  }
+
   onActivate(): void {
-    this.state.isRotating = false
-    this.state.rotateEntity = undefined
-    this.state.startAngle = undefined
+    // Disabled
   }
 
   onDeactivate(): void {
-    if (this.state.isRotating) {
-      this.cancelRotation()
-    }
+    // Disabled
   }
 
-  // Context actions
-  getContextActions(context: ToolContext): ContextAction[] {
-    const actions: ContextAction[] = []
-    const selectedEntityId = context.getSelectedEntityId()
-
-    if (selectedEntityId) {
-      const selectedEntity = this.getSelectedEntityFromContext(context)
-
-      if (selectedEntity && this.canRotate(selectedEntity)) {
-        actions.push({
-          label: 'Rotate 90°',
-          action: () => this.rotateEntity(selectedEntity, 90),
-          hotkey: 'R'
-        })
-
-        actions.push({
-          label: 'Rotate -90°',
-          action: () => this.rotateEntity(selectedEntity, -90),
-          hotkey: 'Shift+R'
-        })
-
-        actions.push({
-          label: `Rotate ${this.state.rotationStep}°`,
-          action: () => this.rotateEntity(selectedEntity, this.state.rotationStep)
-        })
-
-        actions.push({
-          label: 'Set Rotation Center',
-          action: () => this.setCustomRotationCenter(selectedEntity),
-          enabled: () => this.state.rotationCenter === 'custom'
-        })
-      }
-    }
-
-    return actions
-  }
-
-  // Tool-specific methods
-  rotateEntity(entity: Entity, degrees: number): void {
-    const center = this.getRotationCenter(entity)
-    if (center) {
-      const radians = (degrees * Math.PI) / 180
-      this.applyRotationWithAngle(entity, center, radians)
-    }
-  }
-
-  setRotationStep(step: number): void {
-    this.state.rotationStep = Math.max(1, Math.min(180, step))
-  }
-
-  setRotationCenter(mode: 'center' | 'custom', customPoint?: Vec2): void {
-    this.state.rotationCenter = mode
-    if (mode === 'custom' && customPoint) {
-      this.state.customCenter = customPoint
-    }
-  }
-
-  // Helper methods
-  private getEntityAtPoint(point: Vec2, context: ToolContext, tolerance = 10): Entity | null {
-    const modelStore = context.getModelStore()
-    const activeFloorId = context.getActiveFloorId()
-    const viewport = context.getViewport()
-
-    // Convert tolerance from screen pixels to stage coordinates
-    const stageTolerance = tolerance / viewport.zoom
-
-    // Check points first (smallest targets)
-    const nearestPoint = modelStore.findNearestPoint(activeFloorId, point, createLength(stageTolerance))
-    if (nearestPoint) {
-      return nearestPoint as Entity
-    }
-
-    // Check walls using the new getWallAtPoint method
-    const wall = modelStore.getWallAtPoint(point, activeFloorId)
-    if (wall) {
-      return wall as Entity
-    }
-
-    return null
-  }
-
-  private canRotate(entity: Entity): boolean {
-    // Only certain entities can be rotated
-    if ('id' in entity) {
-      return entity.id.includes('wall_') || entity.id.includes('room_')
-    }
-    return false
-  }
-
-  private getEntityId(entity: Entity): EntityId {
-    // All entities should have an id, but Corner uses pointId
-    if ('id' in entity) {
-      return entity.id
-    } else if ('pointId' in entity) {
-      return entity.pointId
-    }
-    throw new Error('Entity has no id')
-  }
-
-  private getRotationCenter(entity: Entity): Vec2 | null {
-    if (this.state.rotationCenter === 'custom' && this.state.customCenter) {
-      return this.state.customCenter
-    }
-
-    // Calculate entity center
-    if ('position' in entity) {
-      return entity.position
-    }
-
-    // For walls, rooms, etc., calculate geometric center
-    // This would need to be implemented based on entity type
-    return null
-  }
-
-  private previewRotation(_entity: Entity, _center: Vec2, _angle: number): void {
-    // Show rotation preview (visual feedback)
-    // This would be implemented in the rendering layer
-  }
-
-  private applyRotation(_entity: Entity): void {
-    // Apply the final rotation to the entity in the model
-    // This would be implemented by calling the model store
-  }
-
-  private applyRotationWithAngle(_entity: Entity, _center: Vec2, _angle: number): void {
-    // Apply specific rotation angle
-    // This would be implemented by calling the model store
-  }
-
-  private cancelRotation(): void {
-    // Cancel current rotation and restore original position
-    if (this.state.rotateEntity) {
-      // TODO: Restore original rotation
-    }
-
-    this.state.isRotating = false
-    this.state.rotateEntity = undefined
-    this.state.startAngle = undefined
-  }
-
-  private quickRotate(_entityId: EntityId, _degrees: number): void {
-    // Quick rotation for selected entity
-  }
-
-  private setCustomRotationCenter(_entity: Entity): void {
-    // Set custom rotation center (would open a dialog or enable click-to-set mode)
-  }
-
-  private getSelectedEntityFromContext(context: ToolContext): Entity | undefined {
-    const selectedId = context.getSelectedEntityId()
-    if (!selectedId) return undefined
-
-    const modelStore = context.getModelStore()
-    const activeFloorId = context.getActiveFloorId()
-
-    try {
-      if (isWallId(selectedId)) {
-        const walls = modelStore.getWalls()
-        return walls.find(w => w.id === selectedId)
-      } else if (isRoomId(selectedId)) {
-        const rooms = modelStore.getRoomsByFloor(activeFloorId)
-        return rooms.find(r => r.id === selectedId)
-      } else if (isPointId(selectedId)) {
-        const points = modelStore.getPoints()
-        return points.find(p => p.id === selectedId)
-      }
-    } catch (error) {
-      console.warn(`Failed to get selected entity ${selectedId}:`, error)
-    }
-
-    return undefined
+  getContextActions(_context: ToolContext): ContextAction[] {
+    return []
   }
 }

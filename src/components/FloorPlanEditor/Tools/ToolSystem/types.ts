@@ -1,8 +1,6 @@
 import type { Vec2 } from '@/types/geometry'
-import type { Wall, Room, Point, Corner } from '@/types/model'
-import type { SnapResult } from '@/model/store/services/snapping/types'
 import type Konva from 'konva'
-import type { EntityId, SelectableId, FloorId, PointId, StoreActions } from '@/model'
+import type { EntityId, SelectableId, FloorId, StoreActions } from '@/model'
 import type React from 'react'
 import type { EntityHitResult } from '@/components/FloorPlanEditor/services/EntityHitTestService'
 
@@ -63,8 +61,6 @@ export interface ToolOverlayContext {
 
   // Current mouse/snap state
   currentMousePos?: Vec2
-  snapResult?: SnapResult
-  snapTarget?: Vec2
 
   // Utility functions for common overlay calculations
   worldToStage: (worldPos: Vec2) => Vec2
@@ -100,19 +96,10 @@ export interface CanvasEvent {
   target: any
   context: ToolContext
 }
-
-export type Entity = Wall | Room | Point | Corner
-
 export interface ToolContext {
   // Coordinate conversion (viewport functionality)
   getStageCoordinates(event: { x: number; y: number }): Vec2
   getScreenCoordinates(point: Vec2): { x: number; y: number }
-
-  // Snapping functionality
-  findSnapPoint(point: Vec2): SnapResult | null
-  updateSnapReference(fromPoint: Vec2 | null, fromPointId: PointId | null): void
-  updateSnapTarget(target: Vec2): void
-  clearSnapState(): void
 
   // Entity discovery (on-demand) using original pointer coordinates
   findEntityAt(pointerCoordinates: { x: number; y: number }): EntityHitResult | null

@@ -1,25 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { SnappingService } from './SnappingService'
 import { createVec2, createLength } from '@/types/geometry'
-import { createPointId, createFloorId } from '@/types/ids'
-import type { Point } from '@/types/model'
 import type { LineSegment2D } from '@/types/geometry'
 import type { SnappingContext, SnapConfig } from './types'
 
 describe('SnappingService', () => {
   let service: SnappingService
-  let testFloorId: ReturnType<typeof createFloorId>
 
   beforeEach(() => {
     service = new SnappingService()
-    testFloorId = createFloorId()
-  })
-
-  const createMockPoint = (x: number, y: number): Point => ({
-    id: createPointId(),
-    floorId: testFloorId,
-    position: createVec2(x, y),
-    roomIds: new Set()
   })
 
   describe('Constructor and Configuration', () => {
@@ -41,10 +30,10 @@ describe('SnappingService', () => {
 
   describe('Point Snapping', () => {
     it('should snap to nearby point within snap distance', () => {
-      const point1 = createMockPoint(100, 100)
-      const point2 = createMockPoint(300, 300)
+      const point1 = createVec2(100, 100)
+      const point2 = createVec2(300, 300)
       const context: SnappingContext = {
-        points: [point1, point2]
+        snapPoints: [point1, point2]
       }
 
       // Target point close to point1 (within default 200mm snap distance)
@@ -52,14 +41,13 @@ describe('SnappingService', () => {
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()
-      expect(result?.position).toEqual(point1.position)
-      expect(result?.pointId).toBe(point1.id)
+      expect(result?.position).toEqual(point1)
     })
 
     it('should not snap to point outside snap distance', () => {
-      const point1 = createMockPoint(100, 100)
+      const point1 = createVec2(100, 100)
       const context: SnappingContext = {
-        points: [point1]
+        snapPoints: [point1]
       }
 
       // Target point far from point1 (outside 200mm snap distance)
@@ -70,10 +58,10 @@ describe('SnappingService', () => {
     })
 
     it('should snap to closest point when multiple points are nearby', () => {
-      const point1 = createMockPoint(100, 100)
-      const point2 = createMockPoint(150, 150)
+      const point1 = createVec2(100, 100)
+      const point2 = createVec2(150, 150)
       const context: SnappingContext = {
-        points: [point1, point2]
+        snapPoints: [point1, point2]
       }
 
       // Target closer to point1
@@ -81,53 +69,15 @@ describe('SnappingService', () => {
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()
-      expect(result?.pointId).toBe(point1.id)
-    })
-
-    it('should exclude reference point from snapping', () => {
-      const point1 = createMockPoint(100, 100)
-      const point2 = createMockPoint(150, 150)
-      const context: SnappingContext = {
-        points: [point1, point2],
-        referencePointId: point1.id
-      }
-
-      // Target close to excluded point1
-      const target = createVec2(110, 110)
-      const result = service.findSnapResult(target, context)
-
-      expect(result!.pointId).toBe(point2.id)
-    })
-
-    it('should return target position when no snap found using findSnapPosition', () => {
-      const context: SnappingContext = {
-        points: []
-      }
-
-      const target = createVec2(100, 100)
-      const result = service.findSnapPosition(target, context)
-
-      expect(result).toEqual(target)
-    })
-
-    it('should return snapped position using findSnapPosition', () => {
-      const point1 = createMockPoint(100, 100)
-      const context: SnappingContext = {
-        points: [point1]
-      }
-
-      const target = createVec2(120, 110)
-      const result = service.findSnapPosition(target, context)
-
-      expect(result).toEqual(point1.position)
+      expect(result?.position).toBe(point1)
     })
   })
 
   describe('Line Snapping', () => {
     it('should snap to horizontal line through point', () => {
-      const point1 = createMockPoint(100, 100)
+      const point1 = createVec2(100, 100)
       const context: SnappingContext = {
-        points: [point1]
+        snapPoints: [point1]
       }
 
       // Target point near horizontal line through point1, but far enough from point to avoid point snapping
@@ -141,9 +91,9 @@ describe('SnappingService', () => {
     })
 
     it('should snap to vertical line through point', () => {
-      const point1 = createMockPoint(100, 100)
+      const point1 = createVec2(100, 100)
       const context: SnappingContext = {
-        points: [point1]
+        snapPoints: [point1]
       }
 
       // Target point near vertical line through point1, but far enough from point to avoid point snapping
@@ -157,9 +107,9 @@ describe('SnappingService', () => {
     })
 
     it('should not snap to line outside line snap distance', () => {
-      const point1 = createMockPoint(100, 100)
+      const point1 = createVec2(100, 100)
       const context: SnappingContext = {
-        points: [point1]
+        snapPoints: [point1]
       }
 
       // Target point far from any line (outside 100mm line snap distance)
@@ -171,7 +121,7 @@ describe('SnappingService', () => {
 
     it('should snap to reference point lines when provided', () => {
       const context: SnappingContext = {
-        points: [],
+        snapPoints: [],
         referencePoint: createVec2(100, 100)
       }
 
@@ -186,7 +136,7 @@ describe('SnappingService', () => {
 
     it('should respect minimum distance from reference point', () => {
       const context: SnappingContext = {
-        points: [], // No points to avoid point snapping
+        snapPoints: [], // No points to avoid point snapping
         referencePoint: createVec2(100, 100)
       }
 
@@ -207,7 +157,7 @@ describe('SnappingService', () => {
         end: createVec2(200, 100)
       }
       const context: SnappingContext = {
-        points: [],
+        snapPoints: [],
         referenceLineSegments: [segment]
       }
 
@@ -226,7 +176,7 @@ describe('SnappingService', () => {
         end: createVec2(200, 100)
       }
       const context: SnappingContext = {
-        points: [],
+        snapPoints: [],
         referenceLineSegments: [segment]
       }
 
@@ -242,10 +192,10 @@ describe('SnappingService', () => {
 
   describe('Intersection Snapping', () => {
     it('should snap to intersection of two lines', () => {
-      const point1 = createMockPoint(1000, 1000) // Creates horizontal and vertical lines
-      const point2 = createMockPoint(2000, 2000) // Creates horizontal and vertical lines
+      const point1 = createVec2(1000, 1000) // Creates horizontal and vertical lines
+      const point2 = createVec2(2000, 2000) // Creates horizontal and vertical lines
       const context: SnappingContext = {
-        points: [point1, point2]
+        snapPoints: [point1, point2]
       }
 
       // Target near intersection of vertical line through point1 and horizontal line through point2
@@ -260,10 +210,10 @@ describe('SnappingService', () => {
     })
 
     it('should prefer intersection over single line snap when both are available', () => {
-      const point1 = createMockPoint(1000, 1000)
-      const point2 = createMockPoint(2000, 2000)
+      const point1 = createVec2(1000, 1000)
+      const point2 = createVec2(2000, 2000)
       const context: SnappingContext = {
-        points: [point1, point2]
+        snapPoints: [point1, point2]
       }
 
       // Target equidistant from single line and intersection
@@ -284,9 +234,9 @@ describe('SnappingService', () => {
         lineSnapDistance: createLength(5) // Also very small line snap distance
       })
 
-      const point1 = createMockPoint(100, 100)
+      const point1 = createVec2(100, 100)
       const context: SnappingContext = {
-        points: [point1]
+        snapPoints: [point1]
       }
 
       // Target outside both point and line snap distances
@@ -302,9 +252,9 @@ describe('SnappingService', () => {
         lineSnapDistance: createLength(5) // Very small line snap distance
       })
 
-      const point1 = createMockPoint(100, 100)
+      const point1 = createVec2(100, 100)
       const context: SnappingContext = {
-        points: [point1]
+        snapPoints: [point1]
       }
 
       // Target far enough from point but within default line distance, outside custom line distance
@@ -322,7 +272,7 @@ describe('SnappingService', () => {
       })
 
       const context: SnappingContext = {
-        points: [], // No points - use reference point to create lines
+        snapPoints: [], // No points - use reference point to create lines
         referencePoint: createVec2(100, 100)
       }
 
@@ -339,7 +289,7 @@ describe('SnappingService', () => {
   describe('Edge Cases', () => {
     it('should handle empty points array', () => {
       const context: SnappingContext = {
-        points: []
+        snapPoints: []
       }
 
       const target = createVec2(100, 100)
@@ -349,22 +299,22 @@ describe('SnappingService', () => {
     })
 
     it('should handle single point', () => {
-      const point1 = createMockPoint(100, 100)
+      const point1 = createVec2(100, 100)
       const context: SnappingContext = {
-        points: [point1]
+        snapPoints: [point1]
       }
 
       const target = createVec2(120, 110)
       const result = service.findSnapResult(target, context)
 
       expect(result).not.toBeNull()
-      expect(result?.pointId).toBe(point1.id)
+      expect(result?.position).toBe(point1)
     })
 
     it('should handle undefined reference point gracefully', () => {
-      const point1 = createMockPoint(100, 100)
+      const point1 = createVec2(100, 100)
       const context: SnappingContext = {
-        points: [point1],
+        snapPoints: [point1],
         referencePoint: undefined
       }
 
@@ -375,9 +325,9 @@ describe('SnappingService', () => {
     })
 
     it('should handle undefined reference line segments gracefully', () => {
-      const point1 = createMockPoint(100, 100)
+      const point1 = createVec2(100, 100)
       const context: SnappingContext = {
-        points: [point1],
+        snapPoints: [point1],
         referenceLineSegments: undefined
       }
 
@@ -388,9 +338,9 @@ describe('SnappingService', () => {
     })
 
     it('should handle empty reference line segments array', () => {
-      const point1 = createMockPoint(100, 100)
+      const point1 = createVec2(100, 100)
       const context: SnappingContext = {
-        points: [point1],
+        snapPoints: [point1],
         referenceLineSegments: []
       }
 

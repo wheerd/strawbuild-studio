@@ -1,5 +1,5 @@
 // Export main types
-export type { Tool, ToolGroup, BaseTool, ToolContext, Entity, ContextAction, CanvasEvent } from './types'
+export type { Tool, ToolGroup, BaseTool, ToolContext, ContextAction, CanvasEvent } from './types'
 export type { SnapResult } from '@/model/store/services/snapping/types'
 
 // Export tool manager

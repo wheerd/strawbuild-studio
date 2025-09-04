@@ -1,6 +1,5 @@
 import type { ToolManager } from './ToolSystem/ToolManager'
 import { basicToolGroup } from './Categories/BasicTools'
-import { wallToolGroup } from './Categories/WallTools'
 import { outerWallToolGroup } from './Categories/OuterWallTools'
 
 // Export tool system components
@@ -9,7 +8,7 @@ export { MainToolbar } from './Toolbar/MainToolbar'
 export { PropertiesPanel } from './PropertiesPanel/PropertiesPanel'
 
 // Export tool system types and hooks
-export type { Tool, ToolGroup, Entity } from './ToolSystem/types'
+export type { Tool, ToolGroup } from './ToolSystem/types'
 export {
   useToolManager,
   useToolManagerState,
@@ -20,7 +19,6 @@ export {
 
 // Export individual tool groups for external registration
 export { basicToolGroup } from './Categories/BasicTools'
-export { wallToolGroup } from './Categories/WallTools'
 export { outerWallToolGroup } from './Categories/OuterWallTools'
 
 /**
@@ -28,7 +26,6 @@ export { outerWallToolGroup } from './Categories/OuterWallTools'
  */
 export function registerAllTools(manager: ToolManager): void {
   manager.registerToolGroup(basicToolGroup)
-  manager.registerToolGroup(wallToolGroup)
   manager.registerToolGroup(outerWallToolGroup)
 }
 

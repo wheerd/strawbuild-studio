@@ -1,20 +1,8 @@
 import { useCurrentSelection, useSelectionPath } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
 import { useActiveTool } from '../ToolSystem/ToolContext'
-import {
-  WallInspector,
-  RoomInspector,
-  CornerInspector,
-  OuterWallInspector,
-  WallSegmentInspector,
-  OuterCornerInspector,
-  OpeningInspector
-} from './Inspectors'
-import { WallToolInspector } from './ToolInspectors/WallToolInspector'
+import { OuterWallInspector, WallSegmentInspector, OuterCornerInspector, OpeningInspector } from './Inspectors'
 import { ActionButtons } from './ActionButtons'
 import {
-  isWallId,
-  isRoomId,
-  isPointId,
   isOuterWallId,
   isWallSegmentId,
   isOuterCornerId,
@@ -43,15 +31,6 @@ export function PropertiesPanel(): React.JSX.Element {
               <p className="help-text">Select a wall, room, or point to view its properties</p>
             </div>
           )}
-
-          {/* Legacy wall entity */}
-          {selectedId && isWallId(selectedId) && <WallInspector key={selectedId} selectedId={selectedId} />}
-
-          {/* Room entity */}
-          {selectedId && isRoomId(selectedId) && <RoomInspector key={selectedId} selectedId={selectedId} />}
-
-          {/* Point entity (treat as corner) */}
-          {selectedId && isPointId(selectedId) && <CornerInspector key={selectedId} selectedId={selectedId} />}
 
           {/* Outer wall entities */}
           {selectedId && isOuterWallId(selectedId) && <OuterWallInspector key={selectedId} selectedId={selectedId} />}
@@ -83,9 +62,6 @@ export function PropertiesPanel(): React.JSX.Element {
 
           {/* Unknown entity type */}
           {selectedId &&
-            !isWallId(selectedId) &&
-            !isRoomId(selectedId) &&
-            !isPointId(selectedId) &&
             !isOuterWallId(selectedId) &&
             !isWallSegmentId(selectedId) &&
             !isOuterCornerId(selectedId) &&
@@ -97,12 +73,8 @@ export function PropertiesPanel(): React.JSX.Element {
             )}
         </div>
 
-        {/* Tool Inspector */}
-        <div className="tool-section">
-          {activeTool?.hasInspector && activeTool.category === 'walls' && (
-            <WallToolInspector tool={activeTool as any} />
-          )}
-        </div>
+        {/* Tool Inspector - disabled until wall tools are implemented */}
+        <div className="tool-section">{/* Tool inspectors would go here */}</div>
 
         {/* Action Buttons */}
         <div className="actions-section">

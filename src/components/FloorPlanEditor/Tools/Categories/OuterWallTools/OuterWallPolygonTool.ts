@@ -5,13 +5,13 @@ import {
   createVec2,
   polygonIsClockwise,
   wouldPolygonSelfIntersect,
-  wouldClosingPolygonSelfIntersect
+  wouldClosingPolygonSelfIntersect,
+  distanceSquared
 } from '@/types/geometry'
 import type { SnappingContext, SnapResult } from '@/model/store/services/snapping/types'
 import React from 'react'
 import { Line, Circle } from 'react-konva'
 import { SnappingService } from '@/model/store/services/snapping'
-import { createPointId, type FloorId } from '@/model'
 
 interface OuterWallPolygonToolState {
   points: Vec2[]
@@ -35,7 +35,7 @@ export class OuterWallPolygonTool implements Tool {
     points: [],
     mouse: createVec2(0, 0),
     snapContext: {
-      points: [],
+      snapPoints: [],
       alignPoints: [],
       referenceLineSegments: []
     },
@@ -45,7 +45,18 @@ export class OuterWallPolygonTool implements Tool {
 
   private snapService = new SnappingService()
 
-  private readonly firstPointId = createPointId()
+  /**
+   * Check if the current snap result is snapping to the first point of the polygon
+   */
+  private isSnappingToFirstPoint(): boolean {
+    if (this.state.points.length === 0 || !this.state.snapResult?.position) {
+      return false
+    }
+    const firstPoint = this.state.points[0]
+    const snapPos = this.state.snapResult.position
+    // Use a small threshold (5mm) to detect if snapping to first point
+    return distanceSquared(firstPoint, snapPos) < 25 // 5mm squared
+  }
 
   private updateSnapContext() {
     const referenceLineSegments: LineSegment2D[] = []
@@ -56,17 +67,7 @@ export class OuterWallPolygonTool implements Tool {
     }
 
     this.state.snapContext = {
-      points:
-        this.state.points.length > 0
-          ? [
-              {
-                id: this.firstPointId,
-                position: this.state.points[0],
-                floorId: 'invalid' as FloorId,
-                roomIds: new Set()
-              }
-            ]
-          : [],
+      snapPoints: this.state.points.slice(0, 1),
       alignPoints: this.state.points,
       referencePoint: this.state.points[this.state.points.length - 1],
       referenceLineSegments
@@ -82,7 +83,7 @@ export class OuterWallPolygonTool implements Tool {
 
     // Check if clicking near the first point to close the polygon
     if (this.state.points.length >= 3) {
-      if (this.state.snapResult?.pointId === this.firstPointId) {
+      if (this.isSnappingToFirstPoint()) {
         // Only allow closing if it wouldn't create intersections
         if (this.state.isClosingLineValid) {
           this.completePolygon(event)
@@ -253,7 +254,7 @@ export class OuterWallPolygonTool implements Tool {
     }
 
     // Draw closing line preview when near first point
-    if (this.state.points.length >= 3 && this.state.snapResult?.pointId === this.firstPointId) {
+    if (this.state.points.length >= 3 && this.isSnappingToFirstPoint()) {
       const lastPoint = this.state.points[this.state.points.length - 1]
       const firstPoint = this.state.points[0]
 
@@ -352,7 +353,7 @@ export class OuterWallPolygonTool implements Tool {
 
     // Special case: if snapping to the first point (closing the polygon),
     // don't check for point reuse but still check intersection
-    const isSnapToFirstPoint = this.state.snapResult?.pointId === this.firstPointId
+    const isSnapToFirstPoint = this.isSnappingToFirstPoint()
 
     if (isSnapToFirstPoint) {
       // When closing polygon, only check if closing would create intersections

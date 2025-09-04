@@ -1,19 +1,15 @@
 import type { Vec2, Line2D, LineSegment2D, Length } from '@/types/geometry'
-import type { PointId } from '@/types/ids'
-import type { Point } from '@/types/model'
 
 export interface SnapResult {
   position: Vec2
-  pointId?: PointId // If snapping to an existing point
   lines?: Line2D[] // Array of 1 or 2 lines to render (1 for line snap, 2 for intersection)
 }
 
 // Context for snapping operations
 export interface SnappingContext {
-  points: Point[]
+  snapPoints: Vec2[]
   alignPoints?: Vec2[]
   referencePoint?: Vec2
-  referencePointId?: PointId
   referenceLineSegments?: LineSegment2D[]
 }
 

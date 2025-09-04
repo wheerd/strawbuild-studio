@@ -7,11 +7,7 @@ import { useCanvasEventDispatcher } from '@/components/FloorPlanEditor/Tools/Eve
 import { stageReference } from '@/components/FloorPlanEditor/services/StageReference'
 import { GridLayer } from './GridLayer'
 import { OuterWallLayer } from './OuterWallLayer'
-import { WallLayer } from './WallLayer'
 import { ToolOverlayLayer } from './ToolOverlayLayer'
-import { PointLayer } from './PointLayer'
-import { RoomLayer } from './RoomLayer'
-import { CornerLayer } from './CornerLayer'
 
 interface FloorPlanStageProps {
   width: number
@@ -191,10 +187,6 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
         viewport={{ zoom: viewport.zoom, panX: viewport.panX, panY: viewport.panY }}
       />
       <OuterWallLayer />
-      <RoomLayer />
-      <WallLayer />
-      <CornerLayer />
-      <PointLayer />
       <ToolOverlayLayer />
     </Stage>
   )

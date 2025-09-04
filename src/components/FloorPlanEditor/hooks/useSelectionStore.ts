@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import type { SelectableId, EntityId } from '@/types/ids'
-import { isEntityId } from '@/types/ids'
 
 interface SelectionState {
   // Simple stack of IDs - parent is always previous item in array
@@ -99,12 +98,6 @@ export const useSelectionStore = create<SelectionStore>()(
 
       hasSelection: () => {
         return get().stack.length > 0
-      },
-
-      // Backward compatibility helper
-      getSelectedEntityId: () => {
-        const root = get().getRootSelection()
-        return root && isEntityId(root) ? root : null
       }
     }),
     {

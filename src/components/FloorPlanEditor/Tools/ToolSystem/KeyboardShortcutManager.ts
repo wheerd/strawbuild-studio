@@ -1,15 +1,6 @@
 import type { ShortcutDefinition, Tool, ToolContext, CanvasEvent } from './types'
-import type { EntityId, SelectableId } from '@/types/ids'
-import {
-  isWallId,
-  isRoomId,
-  isPointId,
-  isOuterWallId,
-  isWallSegmentId,
-  isOuterCornerId,
-  isOpeningId,
-  isSubEntityId
-} from '@/types/ids'
+import type { SelectableId } from '@/types/ids'
+import { isOuterWallId, isWallSegmentId, isOuterCornerId, isOpeningId } from '@/types/ids'
 
 export class KeyboardShortcutManager {
   private builtInShortcuts: ShortcutDefinition[] = []
@@ -191,78 +182,48 @@ export class KeyboardShortcutManager {
     const modelStore = context.getModelStore()
 
     try {
-      // Handle sub-entities
-      if (isSubEntityId(selectedId)) {
-        return this.deleteSubEntity(selectedId, context)
-      }
-
-      // Handle main entities (cast to EntityId since we know it's not a sub-entity)
-      const entityId = selectedId as EntityId
-      if (isWallId(entityId)) {
-        modelStore.removeWall(entityId)
-        return true
-      } else if (isRoomId(entityId)) {
-        modelStore.removeRoom(entityId)
-        return true
-      } else if (isPointId(entityId)) {
-        modelStore.removePoint(entityId)
-        return true
-      } else if (isOuterWallId(entityId)) {
-        modelStore.removeOuterWall(entityId)
-        return true
-      } else {
-        console.warn(`Unknown entity type for deletion: ${entityId}`)
-        return false
-      }
-    } catch (error) {
-      console.error(`Failed to delete entity ${selectedId}:`, error)
-      return false
-    }
-  }
-
-  private deleteSubEntity(subEntityId: SelectableId, context: ToolContext): boolean {
-    const modelStore = context.getModelStore()
-
-    try {
       // Selection path has fixed structure: [outerWallId, segmentId, openingId]
       const selectionPath = context.getSelectionPath()
 
-      if (isWallSegmentId(subEntityId)) {
+      if (isWallSegmentId(selectedId)) {
         // Segment is at index 1, parent wall is at index 0
         const parentWallId = selectionPath[0]
         if (parentWallId && isOuterWallId(parentWallId)) {
-          return modelStore.removeOuterWallSegment(parentWallId, subEntityId)
+          return modelStore.removeOuterWallSegment(parentWallId, selectedId)
         } else {
-          console.warn(`Could not find parent outer wall in selection path for segment: ${subEntityId}`)
+          console.warn(`Could not find parent outer wall in selection path for segment: ${selectedId}`)
           return false
         }
-      } else if (isOuterCornerId(subEntityId)) {
+      } else if (isOuterCornerId(selectedId)) {
         // Corner is at index 1, parent wall is at index 0
         const parentWallId = selectionPath[0]
         if (parentWallId && isOuterWallId(parentWallId)) {
-          return modelStore.removeOuterWallCorner(parentWallId, subEntityId)
+          return modelStore.removeOuterWallCorner(parentWallId, selectedId)
         } else {
-          console.warn(`Could not find parent outer wall in selection path for corner: ${subEntityId}`)
+          console.warn(`Could not find parent outer wall in selection path for corner: ${selectedId}`)
           return false
         }
-      } else if (isOpeningId(subEntityId)) {
+      } else if (isOpeningId(selectedId)) {
         // Opening is at index 2, parent segment at index 1, parent wall at index 0
         const parentWallId = selectionPath[0]
         const parentSegmentId = selectionPath[1]
 
         if (parentWallId && parentSegmentId && isOuterWallId(parentWallId) && isWallSegmentId(parentSegmentId)) {
-          modelStore.removeOpeningFromOuterWall(parentWallId, parentSegmentId, subEntityId)
+          modelStore.removeOpeningFromOuterWall(parentWallId, parentSegmentId, selectedId)
           return true
         } else {
-          console.warn(`Could not find parent wall/segment in selection path for opening: ${subEntityId}`)
+          console.warn(`Could not find parent wall/segment in selection path for opening: ${selectedId}`)
           return false
         }
+      } else if (isOuterWallId(selectedId)) {
+        modelStore.removeOuterWall(selectedId)
+        return true
       } else {
-        console.warn(`Unknown sub-entity type for deletion: ${subEntityId}`)
+        console.warn(`Unknown sub-entity type for deletion: ${selectedId}`)
         return false
       }
     } catch (error) {
-      console.error(`Failed to delete sub-entity ${subEntityId}:`, error)
+      console.error(`Failed to delete entity ${selectedId}:`, error)
       return false
     }
   }

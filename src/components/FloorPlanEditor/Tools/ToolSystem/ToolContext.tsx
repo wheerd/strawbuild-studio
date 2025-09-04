@@ -3,12 +3,9 @@ import { toolManager, type ToolManagerState } from './ToolManager'
 import type { Tool, ToolContext as IToolContext } from './types'
 import { useModelStore } from '@/model/store'
 import { useEditorStore, useActiveFloorId } from '@/components/FloorPlanEditor/hooks/useEditorStore'
-import { defaultSnappingService } from '@/model/store/services/snapping/SnappingService'
-import { useSnappingContext } from '@/components/FloorPlanEditor/hooks/useSnappingContext'
 import { createVec2, type Vec2 } from '@/types/geometry'
-import type { EntityId, SelectableId, PointId } from '@/types/ids'
+import type { EntityId, SelectableId } from '@/types/ids'
 import { useSelectionStore } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
-import type { SnapResult as ModelSnapResult } from '@/model/store/services/snapping/types'
 import { entityHitTestService } from '@/components/FloorPlanEditor/services/EntityHitTestService'
 
 interface ToolContextProviderProps {
@@ -26,14 +23,6 @@ export function ToolContextProvider({ children }: ToolContextProviderProps): Rea
   const modelStore = useModelStore()
   const activeFloorId = useActiveFloorId()
   const viewport = useEditorStore(state => state.viewport)
-  const snappingContext = useSnappingContext()
-
-  // Editor store actions
-  const updateSnapReference = useEditorStore(state => state.updateSnapReference)
-  const updateSnapTarget = useEditorStore(state => state.updateSnapTarget)
-  const updateSnapResult = useEditorStore(state => state.updateSnapResult)
-  const clearSnapState = useEditorStore(state => state.clearSnapState)
-  const setActiveTool = useEditorStore(state => state.setActiveTool)
 
   // Selection store actions
   const pushSelection = useSelectionStore(state => state.pushSelection)
@@ -48,23 +37,6 @@ export function ToolContextProvider({ children }: ToolContextProviderProps): Rea
     const unsubscribe = toolManager.subscribe(setToolManagerState)
     return unsubscribe
   }, [])
-
-  // Sync tool manager state with editor store (for backward compatibility)
-  useEffect(() => {
-    const toolId = toolManagerState.activeToolId
-    if (toolId) {
-      // Map tool manager tool IDs to editor store tool names
-      let editorTool: 'select' | 'wall' | 'room' = 'select'
-      if (toolId.startsWith('basic.select')) {
-        editorTool = 'select'
-      } else if (toolId.startsWith('wall.')) {
-        editorTool = 'wall'
-      } else if (toolId.startsWith('room.')) {
-        editorTool = 'room'
-      }
-      setActiveTool(editorTool)
-    }
-  }, [toolManagerState.activeToolId, setActiveTool])
 
   // Create tool context implementation
   const toolContext = useMemo<IToolContext>(
@@ -82,21 +54,6 @@ export function ToolContextProvider({ children }: ToolContextProviderProps): Rea
           y: point[1] * viewport.zoom + viewport.panY
         }
       },
-
-      // Snapping
-      findSnapPoint: (point: Vec2): ModelSnapResult | null => {
-        updateSnapTarget(point)
-        const snapResult = defaultSnappingService.findSnapResult(point, snappingContext)
-        updateSnapResult(snapResult)
-        return snapResult
-      },
-
-      updateSnapReference: (fromPoint: Vec2 | null, fromPointId: string | null): void => {
-        updateSnapReference(fromPoint, fromPointId as PointId | null)
-      },
-
-      updateSnapTarget,
-      clearSnapState,
 
       // Entity discovery (on-demand) using original pointer coordinates
       findEntityAt: (pointerCoordinates: { x: number; y: number }) => {
@@ -151,12 +108,7 @@ export function ToolContextProvider({ children }: ToolContextProviderProps): Rea
     [
       viewport,
       activeFloorId,
-      snappingContext,
       modelStore,
-      updateSnapReference,
-      updateSnapTarget,
-      updateSnapResult,
-      clearSnapState,
       pushSelection,
       popSelectionStore,
       clearSelectionStore,

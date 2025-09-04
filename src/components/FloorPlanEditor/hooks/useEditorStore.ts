@@ -1,18 +1,5 @@
 import { create } from 'zustand'
-import { createVec2, type Vec2 } from '@/types/geometry'
-import type { FloorId, PointId } from '@/types/ids'
-import { type SnapResult } from '@/model/store/services/snapping'
-
-export type EditorTool = 'select' | 'wall' | 'room'
-export type DragType = 'pan' | 'wall' | 'point' | 'selection'
-export type ViewMode = 'plan' | '3d' | 'elevation'
-
-export interface DragState {
-  isDragging: boolean
-  dragType: DragType
-  startPos: Vec2
-  dragEntityId?: string
-}
+import type { FloorId } from '@/types/ids'
 
 export interface ViewportState {
   zoom: number
@@ -23,42 +10,18 @@ export interface ViewportState {
 }
 
 export interface EditorState {
-  activeTool: EditorTool
-  isDrawing: boolean
-  dragState: DragState
-  // Unified snap state
-  currentSnapTarget?: Vec2
-  currentSnapFromPoint?: Vec2
-  currentSnapFromPointId?: PointId // Store the ID to avoid expensive lookups
-  currentSnapResult?: SnapResult
-  showGrid: boolean
-  gridSize: number
-  showRoomLabels: boolean
   activeFloorId: FloorId
-
-  viewMode: ViewMode
   viewport: ViewportState
+  showGrid: boolean
+  gridSize: number // in mm
 }
 
 export interface EditorActions {
-  setActiveTool: (tool: EditorTool) => void
-  setIsDrawing: (isDrawing: boolean) => void
-  startDrag: (dragType: DragType, startPos: Vec2, entityId?: string) => void
-  endDrag: () => void
-  // Unified snap actions
-  updateSnapReference: (fromPoint: Vec2 | null, fromPointId: PointId | null) => void
-  updateSnapTarget: (target: Vec2) => void
-  updateSnapResult: (result: SnapResult | null) => void
-  clearSnapState: () => void
-  setShowGrid: (show: boolean) => void
-  setGridSize: (size: number) => void
-  setShowRoomLabels: (show: boolean) => void
   setActiveFloor: (floorId: FloorId) => void
-  deleteSelectedEntity: () => void
-  setViewMode: (viewMode: ViewMode) => void
   setViewport: (viewport: Partial<ViewportState>) => void
   setStageDimensions: (width: number, height: number) => void
-  fitToView: () => void
+  setShowGrid: (show: boolean) => void
+  setGridSize: (size: number) => void
   reset: () => void
 }
 
@@ -66,26 +29,16 @@ type EditorStore = EditorState & EditorActions
 
 function createInitialState(defaultFloorId: FloorId): EditorState {
   return {
-    activeTool: 'select',
-    isDrawing: false,
-    dragState: {
-      isDragging: false,
-      dragType: 'selection',
-      startPos: createVec2(0, 0)
-    },
-    showGrid: true,
-    gridSize: 500, // 500mm (0.5m) grid for real-world scale
-    showRoomLabels: true,
     activeFloorId: defaultFloorId,
-
-    viewMode: 'plan',
     viewport: {
       zoom: 0.15, // Better default zoom for real-world scale (3m room ≈ 450px)
       panX: 100, // Small offset from edge
       panY: 100, // Small offset from edge
       stageWidth: 800,
       stageHeight: 600
-    }
+    },
+    showGrid: true,
+    gridSize: 1000 // 1m grid by default
   }
 }
 
@@ -93,68 +46,10 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
   // Initialize with temporary floor ID - will be reset when model loads
   ...createInitialState('ground-floor' as FloorId),
 
-  setActiveTool: (tool: EditorTool) => {
-    set({
-      activeTool: tool,
-      isDrawing: false,
-      currentSnapTarget: undefined,
-      currentSnapFromPoint: undefined,
-      currentSnapFromPointId: undefined,
-      currentSnapResult: undefined
-    })
-  },
-
-  setIsDrawing: (isDrawing: boolean) => {
-    set({ isDrawing })
-  },
-
-  startDrag: (dragType: DragType, startPos: Vec2, entityId?: string) => {
-    set({
-      dragState: {
-        isDragging: true,
-        dragType,
-        startPos,
-        dragEntityId: entityId
-      }
-    })
-  },
-
-  endDrag: () => {
-    set({
-      dragState: {
-        isDragging: false,
-        dragType: 'selection',
-        startPos: createVec2(0, 0)
-      }
-    })
-  },
-
-  setShowGrid: (show: boolean) => {
-    set({ showGrid: show })
-  },
-
-  setGridSize: (size: number) => {
-    set({ gridSize: size })
-  },
-
-  setShowRoomLabels: (show: boolean) => {
-    set({ showRoomLabels: show })
-  },
-
   setActiveFloor: (floorId: FloorId) => {
     set({
       activeFloorId: floorId
     })
-  },
-
-  deleteSelectedEntity: () => {
-    // Delete functionality moved to selection store and keyboard shortcut manager
-    // This is kept for backward compatibility but does nothing
-    console.warn('deleteSelectedEntity is deprecated - use selection store with keyboard shortcuts')
-  },
-
-  setViewMode: (viewMode: ViewMode) => {
-    set({ viewMode })
   },
 
   setViewport: (viewportUpdate: Partial<ViewportState>) => {
@@ -171,34 +66,12 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
     })
   },
 
-  fitToView: () => {
-    // This will be implemented with the bounds from the model store
-    // For now, it's a placeholder that will be called from the component
-    // TODO: Implement this
+  setShowGrid: (show: boolean) => {
+    set({ showGrid: show })
   },
 
-  updateSnapReference(fromPoint, fromPointId) {
-    set({
-      currentSnapFromPoint: fromPoint ?? undefined,
-      currentSnapFromPointId: fromPointId ?? undefined
-    })
-  },
-
-  updateSnapResult(result) {
-    set({ currentSnapResult: result ?? undefined })
-  },
-
-  updateSnapTarget(target) {
-    set({ currentSnapTarget: target })
-  },
-
-  clearSnapState: () => {
-    set({
-      currentSnapTarget: undefined,
-      currentSnapFromPoint: undefined,
-      currentSnapFromPointId: undefined,
-      currentSnapResult: undefined
-    })
+  setGridSize: (size: number) => {
+    set({ gridSize: size })
   },
 
   reset: (defaultFloorId?: FloorId) => {
@@ -208,21 +81,5 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
 }))
 
 // Selector hooks for optimized re-renders
-export const useActiveTool = (): EditorTool => useEditorStore(state => state.activeTool)
-export const useIsDrawing = (): boolean => useEditorStore(state => state.isDrawing)
-
-export const useDragState = (): DragState => useEditorStore(state => state.dragState)
-// Unified snap state selectors
-export const useCurrentSnapResult = (): SnapResult | undefined => useEditorStore(state => state.currentSnapResult)
-export const useCurrentSnapTarget = (): Vec2 | undefined => useEditorStore(state => state.currentSnapTarget)
-export const useCurrentSnapFromPoint = (): Vec2 | undefined => useEditorStore(state => state.currentSnapFromPoint)
-export const useCurrentSnapFromPointId = (): PointId | undefined =>
-  useEditorStore(state => state.currentSnapFromPointId)
-export const useShowGrid = (): boolean => useEditorStore(state => state.showGrid)
-export const useEditorGridSize = (): number => useEditorStore(state => state.gridSize)
-export const useShowRoomLabels = (): boolean => useEditorStore(state => state.showRoomLabels)
 export const useActiveFloorId = (): FloorId => useEditorStore(state => state.activeFloorId)
-// Deprecated - use useCurrentSelection from selection store instead
-// export const useSelectedEntity = (): string | undefined => useEditorStore(state => state.selectedEntityId)
-export const useViewMode = (): ViewMode => useEditorStore(state => state.viewMode)
 export const useViewport = (): ViewportState => useEditorStore(state => state.viewport)
