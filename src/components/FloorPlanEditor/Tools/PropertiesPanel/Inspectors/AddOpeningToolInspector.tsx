@@ -3,18 +3,14 @@ import { createLength } from '@/types/geometry'
 import { useDebouncedNumericInput } from '../../../hooks/useDebouncedInput'
 import type { OpeningType } from '@/types/model'
 import type { ToolInspectorProps } from '../../ToolSystem/types'
-import type { AddOpeningTool } from '../../../Tools/Categories/OuterWallTools/AddOpeningTool'
+import type { AddOpeningTool } from '../../Categories/OuterWallTools/AddOpeningTool'
 
-// Wrapper component that works with generic ToolInspectorProps
-export function AddOpeningToolInspector({ tool, onPropertyChange }: ToolInspectorProps): React.JSX.Element {
-  // Cast the tool to the specific type
-  const addOpeningTool = tool as AddOpeningTool
-  return <AddOpeningToolInspectorImpl tool={addOpeningTool} onPropertyChange={onPropertyChange} />
+export function AddOpeningToolInspector({ tool }: ToolInspectorProps<AddOpeningTool>): React.JSX.Element {
+  return <AddOpeningToolInspectorImpl tool={tool} />
 }
 
 interface AddOpeningToolInspectorImplProps {
   tool: AddOpeningTool
-  onPropertyChange: (property: string, value: any) => void
 }
 
 // Opening type options
@@ -50,7 +46,7 @@ const OPENING_PRESETS: Record<OpeningType, PresetConfig[]> = {
   ]
 }
 
-function AddOpeningToolInspectorImpl({ tool, onPropertyChange }: AddOpeningToolInspectorImplProps): React.JSX.Element {
+function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps): React.JSX.Element {
   const { state } = tool
 
   // Debounced input handlers for numeric values
@@ -59,9 +55,8 @@ function AddOpeningToolInspectorImpl({ tool, onPropertyChange }: AddOpeningToolI
     useCallback(
       (value: number) => {
         tool.setWidth(createLength(value))
-        onPropertyChange('width', value)
       },
-      [tool, onPropertyChange]
+      [tool]
     ),
     {
       debounceMs: 300,
@@ -76,9 +71,8 @@ function AddOpeningToolInspectorImpl({ tool, onPropertyChange }: AddOpeningToolI
     useCallback(
       (value: number) => {
         tool.setHeight(createLength(value))
-        onPropertyChange('height', value)
       },
-      [tool, onPropertyChange]
+      [tool]
     ),
     {
       debounceMs: 300,
@@ -94,9 +88,8 @@ function AddOpeningToolInspectorImpl({ tool, onPropertyChange }: AddOpeningToolI
       (value: number) => {
         const sillHeight = value === 0 ? undefined : createLength(value)
         tool.setSillHeight(sillHeight)
-        onPropertyChange('sillHeight', value)
       },
-      [tool, onPropertyChange]
+      [tool]
     ),
     {
       debounceMs: 300,
@@ -111,9 +104,8 @@ function AddOpeningToolInspectorImpl({ tool, onPropertyChange }: AddOpeningToolI
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const newType = e.target.value as OpeningType
       tool.setOpeningType(newType)
-      onPropertyChange('type', newType)
     },
-    [tool, onPropertyChange]
+    [tool]
   )
 
   const handlePresetClick = useCallback(
@@ -125,10 +117,8 @@ function AddOpeningToolInspectorImpl({ tool, onPropertyChange }: AddOpeningToolI
       } else {
         tool.setSillHeight(undefined)
       }
-
-      onPropertyChange('preset', preset)
     },
-    [tool, onPropertyChange]
+    [tool]
   )
 
   // Calculate area for display

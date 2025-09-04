@@ -1,9 +1,8 @@
-import type { Tool, CanvasEvent, ToolContext } from '../../ToolSystem/types'
+import type { Tool, CanvasEvent, ToolContext, ToolInspectorProps } from '../../ToolSystem/types'
 import type { Vec2, Length } from '@/types/geometry'
 import { createLength, createVec2, distance, projectPointOntoLine, lineFromSegment } from '@/types/geometry'
-import type { OpeningType } from '@/types/model'
+import type { OpeningType, OuterWallSegment } from '@/types/model'
 import type { OuterWallId, WallSegmentId, SelectableId, EntityType } from '@/types/ids'
-import type { OuterWallSegment } from '@/types/model'
 import React from 'react'
 import { Group, Rect, Line, Circle, Text } from 'react-konva'
 import { AddOpeningToolInspector } from '../../PropertiesPanel/Inspectors/AddOpeningToolInspector'
@@ -50,7 +49,7 @@ export class AddOpeningTool implements Tool {
   readonly cursor = 'crosshair'
   readonly category = 'outer-walls'
   readonly hasInspector = true
-  readonly inspectorComponent = AddOpeningToolInspector
+  readonly inspectorComponent = AddOpeningToolInspector as React.ComponentType<ToolInspectorProps<any>>
 
   public state: AddOpeningToolState = {
     openingType: 'door',
