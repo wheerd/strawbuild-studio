@@ -5,6 +5,7 @@ import { direction, type Vec2 } from '@/types/geometry'
 import { useSelectionStore } from '../hooks/useSelectionStore'
 import { LengthIndicator } from '../components/LengthIndicator'
 import { OpeningShape } from './OpeningShape'
+import { SelectionOutline } from '../components/SelectionOutline'
 import type { OuterWallId } from '@/model'
 
 interface OuterWallSegmentShapeProps {
@@ -87,9 +88,12 @@ export function OuterWallSegmentShape({
         />
       ))}
 
-      {/* Segment length indicators when selected */}
+      {/* Selection outline and length indicators when selected */}
       {select.isCurrentSelection(segment.id) && (
         <>
+          {/* Selection outline around the segment */}
+          <SelectionOutline points={[insideStart, insideEnd, outsideEnd, outsideStart]} />
+
           <LengthIndicator
             startPoint={insideStartCorner}
             endPoint={insideEndCorner}

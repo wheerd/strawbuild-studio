@@ -3,6 +3,7 @@ import type { OuterWallPolygon } from '@/types/model'
 import { useSelectionStore } from '../hooks/useSelectionStore'
 import { OuterWallSegmentShape } from './OuterWallSegmentShape'
 import { OuterCornerShape } from './OuterCornerShape'
+import { SelectionOutline } from '../components/SelectionOutline'
 import { COLORS } from '@/theme/colors'
 
 interface OuterWallShapeProps {
@@ -15,7 +16,6 @@ export function OuterWallShape({ outerWall }: OuterWallShapeProps): React.JSX.El
 
   const outerPolygon = outerWall.corners.map(c => c.outsidePoint)
   const innerPoints = outerWall.boundary.flatMap(point => [point[0], point[1]])
-  const outerPoints = outerPolygon.flatMap(point => [point[0], point[1]])
 
   return (
     <Group name={`outer-wall-${outerWall.id}`} entityId={outerWall.id} entityType="outer-wall" parentIds={[]} listening>
@@ -64,29 +64,8 @@ export function OuterWallShape({ outerWall }: OuterWallShapeProps): React.JSX.El
 
       {isSelected && (
         <>
-          {/* Wall boundary outline */}
-          <Line
-            points={innerPoints}
-            stroke={COLORS.selection.outline}
-            strokeWidth={30}
-            dash={[50, 50]}
-            lineCap="round"
-            opacity={0.5}
-            closed
-            listening={false}
-          />
-
-          {/* Wall boundary outline */}
-          <Line
-            points={outerPoints}
-            stroke={COLORS.selection.outline}
-            strokeWidth={30}
-            dash={[50, 50]}
-            lineCap="round"
-            opacity={0.5}
-            closed
-            listening={false}
-          />
+          {/* Outer boundary selection outline */}
+          <SelectionOutline points={outerPolygon} />
         </>
       )}
     </Group>

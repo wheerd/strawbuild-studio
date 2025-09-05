@@ -1,8 +1,9 @@
-import { Group, Line, Circle, Arrow } from 'react-konva'
+import { Group, Line, Arrow, Circle } from 'react-konva'
 import type { OuterCorner, OuterWallSegment } from '@/types/model'
 import { add, midpoint, scale, type Vec2 } from '@/types/geometry'
 import { COLORS } from '@/theme/colors'
 import { useSelectionStore } from '../hooks/useSelectionStore'
+import { SelectionOutline } from '../components/SelectionOutline'
 
 interface OuterCornerShapeProps {
   corner: OuterCorner
@@ -78,6 +79,7 @@ export function OuterCornerShape({
             opacity={0.8}
             listening={false}
           />
+          <SelectionOutline points={cornerPolygon} />
         </>
       )}
 

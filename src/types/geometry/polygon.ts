@@ -149,3 +149,75 @@ export function wouldClosingPolygonSelfIntersect(points: Vec2[]): boolean {
     return true
   }
 }
+
+// Offset a polygon by a given distance (positive = outward, negative = inward)
+// Uses a simple approach: move each vertex perpendicular to the adjacent edges
+export function offsetPolygon(points: Vec2[], distance: number): Vec2[] {
+  if (points.length < 3) return []
+
+  const n = points.length
+  const offsetPoints: Vec2[] = []
+
+  // Determine if polygon is clockwise to get correct normal direction
+  const isClockwise = polygonIsClockwise({ points })
+  const direction = isClockwise ? 1 : -1 // Positive distance = outward, negative = inward
+
+  for (let i = 0; i < n; i++) {
+    const prev = points[(i - 1 + n) % n]
+    const curr = points[i]
+    const next = points[(i + 1) % n]
+
+    // Get normalized vectors for the two adjacent edges
+    const v1x = curr[0] - prev[0]
+    const v1y = curr[1] - prev[1]
+    const len1 = Math.sqrt(v1x * v1x + v1y * v1y)
+
+    const v2x = next[0] - curr[0]
+    const v2y = next[1] - curr[1]
+    const len2 = Math.sqrt(v2x * v2x + v2y * v2y)
+
+    if (len1 === 0 || len2 === 0) {
+      offsetPoints.push([curr[0], curr[1]])
+      continue
+    }
+
+    // Normalize the vectors
+    const n1x = v1x / len1
+    const n1y = v1y / len1
+    const n2x = v2x / len2
+    const n2y = v2y / len2
+
+    // Get perpendicular vectors (normals) pointing outward
+    const perp1x = -n1y * direction
+    const perp1y = n1x * direction
+    const perp2x = -n2y * direction
+    const perp2y = n2x * direction
+
+    // Calculate bisector by averaging the two perpendiculars
+    let bisectorX = perp1x + perp2x
+    let bisectorY = perp1y + perp2y
+
+    const bisectorLen = Math.sqrt(bisectorX * bisectorX + bisectorY * bisectorY)
+    if (bisectorLen === 0) {
+      // Parallel edges, use one of the perpendiculars
+      bisectorX = perp1x
+      bisectorY = perp1y
+    } else {
+      bisectorX /= bisectorLen
+      bisectorY /= bisectorLen
+    }
+
+    // Calculate the angle between the edges to adjust the offset distance
+    const dot = n1x * n2x + n1y * n2y
+    const angle = Math.acos(Math.max(-1, Math.min(1, -dot))) // Angle between edges
+    const sinHalfAngle = Math.sin(angle / 2)
+
+    // Adjust distance to maintain consistent offset width
+    const adjustedDistance = sinHalfAngle > 0.1 ? distance / sinHalfAngle : distance
+
+    // Apply the offset
+    offsetPoints.push([curr[0] + bisectorX * adjustedDistance, curr[1] + bisectorY * adjustedDistance])
+  }
+
+  return offsetPoints
+}
