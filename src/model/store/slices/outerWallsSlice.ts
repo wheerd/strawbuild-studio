@@ -29,7 +29,7 @@ export interface OuterWallsActions {
     boundary: Polygon2D,
     constructionType: OuterWallConstructionType,
     thickness?: Length
-  ) => void
+  ) => OuterWallPolygon
   removeOuterWall: (wallId: OuterWallId) => void
 
   // Entity deletion operations
@@ -256,6 +256,32 @@ const createSegmentsAndCorners = (
 
 // Helper function to find valid gaps in a wall segment for opening placement
 
+// Private helper function to validate opening placement on a segment
+const validateOpeningOnSegment = (segment: OuterWallSegment, offsetFromStart: Length, width: Length): boolean => {
+  // Validate width
+  if (width <= 0) {
+    return false
+  }
+
+  // Check bounds - segmentLength and opening dimensions should be in same units
+  const openingEnd = createLength(offsetFromStart + width)
+  if (offsetFromStart < 0 || openingEnd > segment.segmentLength) {
+    return false
+  }
+
+  // Check overlap with existing openings
+  for (const existing of segment.openings) {
+    const existingStart = existing.offsetFromStart
+    const existingEnd = createLength(existing.offsetFromStart + existing.width)
+
+    if (!(openingEnd <= existingStart || offsetFromStart >= existingEnd)) {
+      return false
+    }
+  }
+
+  return true
+}
+
 export const createOuterWallsSlice: StateCreator<OuterWallsSlice, [], [], OuterWallsSlice> = (set, get) => ({
   outerWalls: new Map(),
 
@@ -289,6 +315,8 @@ export const createOuterWallsSlice: StateCreator<OuterWallsSlice, [], [], OuterW
     set(state => ({
       outerWalls: new Map(state.outerWalls).set(outerWall.id, outerWall)
     }))
+
+    return outerWall
   },
 
   removeOuterWall: (wallId: OuterWallId) => {
@@ -596,15 +624,18 @@ export const createOuterWallsSlice: StateCreator<OuterWallsSlice, [], [], OuterW
       throw new Error('Window sill height must be non-negative')
     }
 
-    // TODO: Re-enable validation once unit issues are resolved
-    // Use the validation method to check placement
-    // if (!get().isOpeningPlacementValid(wallId, segmentId, openingParams.offsetFromStart, openingParams.width)) {
-    //   throw new Error('Opening placement is not valid')
-    // }
-
-    // Basic validation checks for backward compatibility
+    // Basic validation checks
     if (openingParams.offsetFromStart < 0) {
       throw new Error('Opening offset from start must be non-negative')
+    }
+
+    const segment = get().getSegmentById(wallId, segmentId)
+    if (!segment) {
+      throw new Error('Segment does not exist')
+    }
+
+    if (!validateOpeningOnSegment(segment, openingParams.offsetFromStart, openingParams.width)) {
+      throw new Error('Opening placement is not valid')
     }
 
     // Auto-generate ID for the new opening
@@ -758,25 +789,16 @@ export const createOuterWallsSlice: StateCreator<OuterWallsSlice, [], [], OuterW
   // Opening validation methods implementation
   isOpeningPlacementValid: (wallId: OuterWallId, segmentId: WallSegmentId, offsetFromStart: Length, width: Length) => {
     const segment = get().getSegmentById(wallId, segmentId)
-    if (!segment) return false
-
-    // Check bounds
-    const openingEnd = createLength(offsetFromStart + width)
-    if (offsetFromStart < 0 || openingEnd > segment.segmentLength) {
-      return false
+    if (!segment) {
+      throw new Error(`Wall segment not found: wall ${wallId}, segment ${segmentId}`)
     }
 
-    // Check overlap with existing openings
-    for (const existing of segment.openings) {
-      const existingStart = existing.offsetFromStart
-      const existingEnd = createLength(existing.offsetFromStart + existing.width)
-
-      if (!(openingEnd <= existingStart || offsetFromStart >= existingEnd)) {
-        return false
-      }
+    // Validate width
+    if (width <= 0) {
+      throw new Error(`Opening width must be greater than 0, got ${width}`)
     }
 
-    return true
+    return validateOpeningOnSegment(segment, offsetFromStart, width)
   },
 
   findNearestValidOpeningPosition: (
@@ -787,6 +809,7 @@ export const createOuterWallsSlice: StateCreator<OuterWallsSlice, [], [], OuterW
   ): Length | null => {
     const segment = get().getSegmentById(wallId, segmentId)
     if (!segment) return null
+    // segmentLength and opening dimensions should be in same units
     if (width > segment.segmentLength) return null
 
     // Snap to segment bounds

@@ -5,9 +5,11 @@ import {
   createWallSegmentId,
   createOuterCornerId,
   createOpeningId,
-  createFloorId
+  createFloorId,
+  type WallSegmentId,
+  type OuterWallId
 } from '@/types/ids'
-import { createLength, createVec2, type Polygon2D } from '@/types/geometry'
+import { createLength, createVec2, type Length, type Polygon2D } from '@/types/geometry'
 import type { OuterWallConstructionType } from '@/types/model'
 
 // Mock Zustand following the official testing guide
@@ -42,9 +44,9 @@ describe('OuterWallsSlice', () => {
     })
   })
 
-  // Helper function to create a simple rectangular polygon
+  // Helper function to create a simple rectangular polygon (in millimeters)
   const createRectangularBoundary = (): Polygon2D => ({
-    points: [createVec2(0, 0), createVec2(10, 0), createVec2(10, 5), createVec2(0, 5)]
+    points: [createVec2(0, 0), createVec2(10000, 0), createVec2(10000, 5000), createVec2(0, 5000)]
   })
 
   // Helper function to create a triangular polygon
@@ -167,14 +169,14 @@ describe('OuterWallsSlice', () => {
       const wall = Array.from(store.outerWalls.values())[0]
       const segment = wall.segments[0] // First segment from (0,0) to (10,0)
 
-      expect(segment.insideLine.start).toEqual(createVec2(0, 0))
-      expect(segment.insideLine.end).toEqual(createVec2(10, 0))
-      expect(segment.insideLength).toBe(10)
+      expect(segment.insideLine.start).toEqual(createVec2(440, 0))
+      expect(segment.insideLine.end).toEqual(createVec2(9560, 0))
+      expect(segment.insideLength).toBe(10000)
 
       // Check that outside line is offset correctly
-      expect(segment.outsideLine.start[0]).toBe(0)
-      expect(segment.outsideLine.start[1]).toBe(createLength(440)) // Offset outward
-      expect(segment.outsideLine.end[0]).toBe(10)
+      expect(segment.outsideLine.start[0]).toBe(440)
+      expect(segment.outsideLine.start[1]).toBe(createLength(440)) // Offset by wall thickness
+      expect(segment.outsideLine.end[0]).toBe(9560)
       expect(segment.outsideLine.end[1]).toBe(createLength(440))
     })
 
@@ -189,12 +191,12 @@ describe('OuterWallsSlice', () => {
       // - insideLength should be the boundary segment length
       // - segmentLength should equal insideLength (no truncation for right angles)
       // - outsideLength varies based on corner intersection geometry
-      expect(segment.insideLength).toBe(10) // Original boundary segment
-      expect(segment.segmentLength).toBe(10) // Actual wall segment (same as inside for rectangles)
+      expect(segment.insideLength).toBe(10000) // Original boundary segment
+      expect(segment.segmentLength).toBe(9120) // Actual wall segment (truncated at corners)
 
       // outsideLength depends on corner intersection points, verify it's reasonable
       expect(segment.outsideLength).toBeGreaterThan(0)
-      expect(segment.outsideLength).toBeLessThan(2000) // Reasonable upper bound
+      expect(segment.outsideLength).toBeLessThan(15000) // Reasonable upper bound for scaled boundary
 
       // All lengths should be positive and finite
       expect(segment.insideLength).toBeGreaterThan(0)
@@ -635,39 +637,35 @@ describe('OuterWallsSlice', () => {
         ).toThrow('Window sill height must be non-negative')
       })
 
-      it('should do nothing if wall does not exist', () => {
+      it('should throw if wall does not exist', () => {
         const fakeWallId = createOuterWallId()
         const fakeSegmentId = createWallSegmentId()
-        const initialState = new Map(store.outerWalls)
 
-        const openingId = store.addOpeningToOuterWall(fakeWallId, fakeSegmentId, {
-          type: 'door',
-          offsetFromStart: createLength(1000),
-          width: createLength(800),
-          height: createLength(2100)
-        })
-
-        expect(openingId).toBeTruthy() // ID is still generated
-        expect(store.outerWalls).toEqual(initialState)
+        expect(() =>
+          store.addOpeningToOuterWall(fakeWallId, fakeSegmentId, {
+            type: 'door',
+            offsetFromStart: createLength(1000),
+            width: createLength(800),
+            height: createLength(2100)
+          })
+        ).toThrow('Segment does not exist')
       })
 
-      it('should do nothing if segment does not exist', () => {
+      it('should throw if segment does not exist', () => {
         const boundary = createRectangularBoundary()
         store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension')
 
         const wall = Array.from(store.outerWalls.values())[0]
         const fakeSegmentId = createWallSegmentId()
-        const originalWall = { ...wall }
 
-        store.addOpeningToOuterWall(wall.id, fakeSegmentId, {
-          type: 'door',
-          offsetFromStart: createLength(1000),
-          width: createLength(800),
-          height: createLength(2100)
-        })
-
-        const unchangedWall = store.outerWalls.get(wall.id)!
-        expect(unchangedWall.segments).toEqual(originalWall.segments)
+        expect(() =>
+          store.addOpeningToOuterWall(wall.id, fakeSegmentId, {
+            type: 'door',
+            offsetFromStart: createLength(1000),
+            width: createLength(800),
+            height: createLength(2100)
+          })
+        ).toThrow('Segment does not exist')
       })
 
       it('should handle thickness updates for reflex angles without creating overlaps', () => {
@@ -1351,28 +1349,33 @@ describe('OuterWallsSlice', () => {
 
       it('should delete openings from merged segments', () => {
         const boundary: Polygon2D = {
-          points: [createVec2(0, 0), createVec2(20, 0), createVec2(20, 10), createVec2(10, 10), createVec2(0, 10)]
+          points: [
+            createVec2(0, 0),
+            createVec2(2000, 0),
+            createVec2(2000, 1000),
+            createVec2(1000, 1000),
+            createVec2(0, 1000)
+          ]
         }
-        store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension')
+        const wall = store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.outerWalls.values())[0]
-        const cornerToRemove = wall.corners[2] // Corner at (20,10)
+        const cornerToRemove = wall.corners[2] // Corner at (2000,1000)
 
         // Add openings to the two segments that will be merged
-        const segment1 = wall.segments[1] // From (20,0) to (20,10)
-        const segment2 = wall.segments[2] // From (20,10) to (10,10)
+        const segment1 = wall.segments[1] // Second segment
+        const segment2 = wall.segments[2] // Third segment
 
         store.addOpeningToOuterWall(wall.id, segment1.id, {
           type: 'door',
-          offsetFromStart: createLength(2000),
-          width: createLength(800),
+          offsetFromStart: createLength(0),
+          width: createLength(100),
           height: createLength(2100)
         })
 
         store.addOpeningToOuterWall(wall.id, segment2.id, {
           type: 'window',
-          offsetFromStart: createLength(1000),
-          width: createLength(1200),
+          offsetFromStart: createLength(0),
+          width: createLength(100),
           height: createLength(1000),
           sillHeight: createLength(900)
         })
@@ -1662,6 +1665,407 @@ describe('OuterWallsSlice', () => {
           const unchangedWall = store.outerWalls.get(wall.id)!
           expect(unchangedWall.corners).toHaveLength(4)
         }
+      })
+    })
+  })
+
+  describe('Opening placement validation methods', () => {
+    describe('isOpeningPlacementValid', () => {
+      let wallId: OuterWallId
+      let segmentId: WallSegmentId
+      let segmentLength: Length
+
+      beforeEach(() => {
+        const boundary = createRectangularBoundary()
+        store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension')
+        const wall = Array.from(store.outerWalls.values())[0]
+        wallId = wall.id
+        segmentId = wall.segments[0].id
+        segmentLength = wall.segments[0].segmentLength
+      })
+
+      describe('parameter validation', () => {
+        it('should throw error for non-existent wall', () => {
+          const nonExistentWallId = createOuterWallId()
+          expect(() => {
+            store.isOpeningPlacementValid(nonExistentWallId, segmentId, createLength(0), createLength(800))
+          }).toThrow(/Wall segment not found/)
+        })
+
+        it('should throw error for non-existent segment', () => {
+          const nonExistentSegmentId = createWallSegmentId()
+          expect(() => {
+            store.isOpeningPlacementValid(wallId, nonExistentSegmentId, createLength(0), createLength(800))
+          }).toThrow(/Wall segment not found/)
+        })
+
+        it('should throw error for zero width', () => {
+          expect(() => {
+            store.isOpeningPlacementValid(wallId, segmentId, createLength(0), createLength(0))
+          }).toThrow(/Opening width must be greater than 0/)
+        })
+
+        it('should throw error for negative width', () => {
+          expect(() => {
+            store.isOpeningPlacementValid(wallId, segmentId, createLength(0), createLength(-100))
+          }).toThrow(/Opening width must be greater than 0/)
+        })
+
+        it('should return false for negative offset', () => {
+          const result = store.isOpeningPlacementValid(wallId, segmentId, createLength(-100), createLength(800))
+          expect(result).toBe(false)
+        })
+      })
+
+      describe('boundary validation', () => {
+        it('should return true for opening that fits within segment', () => {
+          const result = store.isOpeningPlacementValid(wallId, segmentId, createLength(0), segmentLength)
+          expect(result).toBe(true)
+        })
+
+        it('should return false for opening wider than segment', () => {
+          const result = store.isOpeningPlacementValid(
+            wallId,
+            segmentId,
+            createLength(0),
+            createLength(segmentLength + 1)
+          )
+          expect(result).toBe(false)
+        })
+
+        it('should return false for opening that extends beyond segment end', () => {
+          const result = store.isOpeningPlacementValid(
+            wallId,
+            segmentId,
+            createLength(segmentLength - 400),
+            createLength(800)
+          )
+          expect(result).toBe(false)
+        })
+      })
+
+      describe('overlap validation', () => {
+        beforeEach(() => {
+          // Add an existing door at offset 1000mm, width 800mm (occupies 1000-1800)
+          store.addOpeningToOuterWall(wallId, segmentId, {
+            type: 'door',
+            offsetFromStart: createLength(1000),
+            width: createLength(800),
+            height: createLength(2100)
+          })
+        })
+
+        it('should return false for opening that overlaps from the left', () => {
+          const result = store.isOpeningPlacementValid(
+            wallId,
+            segmentId,
+            createLength(800), // starts at 800, ends at 1600 (overlaps 1000-1600)
+            createLength(800)
+          )
+          expect(result).toBe(false)
+        })
+
+        it('should return false for opening that overlaps from the right', () => {
+          const result = store.isOpeningPlacementValid(
+            wallId,
+            segmentId,
+            createLength(1200), // starts at 1200, ends at 2000 (overlaps 1200-1800)
+            createLength(800)
+          )
+          expect(result).toBe(false)
+        })
+
+        it('should return false for opening at same position', () => {
+          const result = store.isOpeningPlacementValid(wallId, segmentId, createLength(1000), createLength(800))
+          expect(result).toBe(false)
+        })
+
+        it('should return true for opening adjacent to the left (touching)', () => {
+          const result = store.isOpeningPlacementValid(
+            wallId,
+            segmentId,
+            createLength(200), // starts at 200, ends at 1000 (touches at 1000)
+            createLength(800)
+          )
+          expect(result).toBe(true)
+        })
+
+        it('should return true for opening adjacent to the right (touching)', () => {
+          const result = store.isOpeningPlacementValid(
+            wallId,
+            segmentId,
+            createLength(1800), // starts at 1800, ends at 2600 (touches at 1800)
+            createLength(800)
+          )
+          expect(result).toBe(true)
+        })
+
+        it('should return true for opening with gap', () => {
+          const result = store.isOpeningPlacementValid(
+            wallId,
+            segmentId,
+            createLength(0), // starts at 0, ends at 800 (gap from 800-1000)
+            createLength(800)
+          )
+          expect(result).toBe(true)
+        })
+      })
+    })
+
+    describe('findNearestValidOpeningPosition', () => {
+      let wallId: OuterWallId
+      let segmentId: WallSegmentId
+      let segmentLength: Length
+
+      beforeEach(() => {
+        const boundary = createRectangularBoundary()
+        store.addOuterWallPolygon(testFloorId, boundary, 'cells-under-tension')
+        const wall = Array.from(store.outerWalls.values())[0]
+        wallId = wall.id
+        segmentId = wall.segments[0].id
+        segmentLength = wall.segments[0].segmentLength
+      })
+
+      describe('parameter validation', () => {
+        it('should throw error for non-existent wall', () => {
+          const nonExistentWallId = createOuterWallId()
+          expect(() => {
+            store.isOpeningPlacementValid(nonExistentWallId, segmentId, createLength(0), createLength(800))
+          }).toThrow(/Wall segment not found/)
+        })
+
+        it('should throw error for non-existent segment', () => {
+          const nonExistentSegmentId = createWallSegmentId()
+          expect(() => {
+            store.isOpeningPlacementValid(wallId, nonExistentSegmentId, createLength(0), createLength(800))
+          }).toThrow(/Wall segment not found/)
+        })
+
+        it('should return null for non-existent segment', () => {
+          const nonExistentSegmentId = createWallSegmentId()
+          const result = store.findNearestValidOpeningPosition(
+            wallId,
+            nonExistentSegmentId,
+            createLength(1000),
+            createLength(800)
+          )
+          expect(result).toBeNull()
+        })
+
+        it('should return null for opening wider than segment', () => {
+          const result = store.findNearestValidOpeningPosition(
+            wallId,
+            segmentId,
+            createLength(1000),
+            createLength(segmentLength + 100)
+          )
+          expect(result).toBeNull()
+        })
+      })
+
+      describe('empty segment behavior', () => {
+        it('should return preferred position when valid', () => {
+          const result = store.findNearestValidOpeningPosition(wallId, segmentId, createLength(1000), createLength(800))
+          expect(result).toBe(1000)
+        })
+
+        it('should adjust negative offset to 0', () => {
+          const result = store.findNearestValidOpeningPosition(wallId, segmentId, createLength(-500), createLength(800))
+          expect(result).toBe(0)
+        })
+
+        it('should adjust position that would extend beyond segment end', () => {
+          const result = store.findNearestValidOpeningPosition(
+            wallId,
+            segmentId,
+            createLength(segmentLength - 400), // would extend beyond by 400
+            createLength(800)
+          )
+          expect(result).toBe(segmentLength - 800) // adjusted to fit exactly
+        })
+      })
+
+      describe('conflict resolution with existing opening', () => {
+        beforeEach(() => {
+          // Add an existing door at 2000-2800 (offset 2000, width 800)
+          store.addOpeningToOuterWall(wallId, segmentId, {
+            type: 'door',
+            offsetFromStart: createLength(2000),
+            width: createLength(800),
+            height: createLength(2100)
+          })
+        })
+
+        it('should return preferred position when no conflict', () => {
+          const result = store.findNearestValidOpeningPosition(
+            wallId,
+            segmentId,
+            createLength(500), // no conflict with existing at 2000-2800
+            createLength(800)
+          )
+          expect(result).toBe(500)
+        })
+
+        it('should shift to closest valid position when overlapping from left side', () => {
+          const result = store.findNearestValidOpeningPosition(
+            wallId,
+            segmentId,
+            createLength(1800), // would be 1800-2600, overlaps with 2000-2800
+            createLength(800)
+          )
+          // Can shift left to 1200 (distance 600) or right to 2800 (distance 1000)
+          expect(result).toBe(1200) // left shift is closer
+        })
+
+        it('should shift to closest valid position when overlapping from right side', () => {
+          const result = store.findNearestValidOpeningPosition(
+            wallId,
+            segmentId,
+            createLength(2400), // would be 2400-3200, overlaps with 2000-2800
+            createLength(800)
+          )
+          // Can shift left to 1200 (distance 1200) or right to 2800 (distance 400)
+          expect(result).toBe(2800) // right shift is closer
+        })
+
+        it('should choose the closest valid position when both directions possible', () => {
+          const result = store.findNearestValidOpeningPosition(
+            wallId,
+            segmentId,
+            createLength(2100), // overlaps, closer to right shift (2800) than left (1200)
+            createLength(800)
+          )
+          expect(result).toBe(2800) // right shift is closer: distance 700 vs 900
+        })
+
+        it('should handle exact overlap with existing opening', () => {
+          const result = store.findNearestValidOpeningPosition(
+            wallId,
+            segmentId,
+            createLength(2000), // exact overlap with existing
+            createLength(800)
+          )
+          // Should return one of the valid adjacent positions
+          expect([1200, 2800]).toContain(result)
+        })
+      })
+
+      describe('multiple existing openings', () => {
+        beforeEach(() => {
+          // Add two doors: 1000-1800 and 3000-3800
+          store.addOpeningToOuterWall(wallId, segmentId, {
+            type: 'door',
+            offsetFromStart: createLength(1000),
+            width: createLength(800),
+            height: createLength(2100)
+          })
+          store.addOpeningToOuterWall(wallId, segmentId, {
+            type: 'door',
+            offsetFromStart: createLength(3000),
+            width: createLength(800),
+            height: createLength(2100)
+          })
+        })
+
+        it('should return preferred position when it fits in gap', () => {
+          const result = store.findNearestValidOpeningPosition(
+            wallId,
+            segmentId,
+            createLength(2000), // fits in gap 1800-3000
+            createLength(800)
+          )
+          expect(result).toBe(2000)
+        })
+
+        it('should shift when preferred position overlaps first opening', () => {
+          const result = store.findNearestValidOpeningPosition(
+            wallId,
+            segmentId,
+            createLength(1200), // overlaps with first opening 1000-1800
+            createLength(600)
+          )
+          expect(result).toBe(1800) // shift right after first opening
+        })
+
+        it('should shift when preferred position overlaps second opening', () => {
+          const result = store.findNearestValidOpeningPosition(
+            wallId,
+            segmentId,
+            createLength(3200), // overlaps with second opening 3000-3800
+            createLength(600)
+          )
+          // Can shift left to 2400 (distance 800) or right to 3800 (distance 600)
+          expect(result).toBe(3800) // right shift is closer
+        })
+
+        it('should find valid position when overlapping both openings', () => {
+          const result = store.findNearestValidOpeningPosition(
+            wallId,
+            segmentId,
+            createLength(2500), // overlaps with both
+            createLength(600)
+          )
+          // Should find closest valid position (before second opening)
+          expect(result).toBe(2400)
+        })
+
+        it('should handle opening that exactly fills the gap', () => {
+          const result = store.findNearestValidOpeningPosition(
+            wallId,
+            segmentId,
+            createLength(1900), // close to gap center
+            createLength(1200) // exactly fills gap 1800-3000
+          )
+          expect(result).toBe(1800) // exactly at gap start
+        })
+      })
+
+      describe('edge cases', () => {
+        it('should handle opening that spans entire segment on empty wall', () => {
+          const wall = store.outerWalls.get(wallId)!
+          const segment = wall.segments[0]
+          const segmentLength = segment.segmentLength
+
+          const result = store.findNearestValidOpeningPosition(
+            wallId,
+            segmentId,
+            createLength(0),
+            createLength(segmentLength)
+          )
+          expect(result).toBe(0)
+        })
+
+        it('should handle very small opening width', () => {
+          const result = store.findNearestValidOpeningPosition(
+            wallId,
+            segmentId,
+            createLength(1000),
+            createLength(1) // 1mm wide opening
+          )
+          expect(result).toBe(1000)
+        })
+
+        it('should return null when no valid position exists due to space constraints', () => {
+          const wall = store.outerWalls.get(wallId)!
+          const segment = wall.segments[0]
+          const segmentLength = segment.segmentLength
+
+          // Fill most of the segment with a large opening, leaving < 800 units space
+          store.addOpeningToOuterWall(wallId, segmentId, {
+            type: 'passage',
+            offsetFromStart: createLength(100),
+            width: createLength(segmentLength - 500), // leaves only 400 units space
+            height: createLength(2100)
+          })
+
+          const result = store.findNearestValidOpeningPosition(
+            wallId,
+            segmentId,
+            createLength(500),
+            createLength(800) // won't fit in remaining 400 units
+          )
+          expect(result).toBeNull()
+        })
       })
     })
   })
