@@ -1,9 +1,7 @@
 import { Group, Line } from 'react-konva'
 import type { OuterWallPolygon } from '@/types/model'
-import { useSelectionStore } from '../hooks/useSelectionStore'
 import { OuterWallSegmentShape } from './OuterWallSegmentShape'
 import { OuterCornerShape } from './OuterCornerShape'
-import { SelectionOutline } from '../components/SelectionOutline'
 import { COLORS } from '@/theme/colors'
 
 interface OuterWallShapeProps {
@@ -11,10 +9,6 @@ interface OuterWallShapeProps {
 }
 
 export function OuterWallShape({ outerWall }: OuterWallShapeProps): React.JSX.Element {
-  const select = useSelectionStore()
-  const isSelected = select.isCurrentSelection(outerWall.id)
-
-  const outerPolygon = outerWall.corners.map(c => c.outsidePoint)
   const innerPoints = outerWall.boundary.flatMap(point => [point[0], point[1]])
 
   return (
@@ -61,13 +55,6 @@ export function OuterWallShape({ outerWall }: OuterWallShapeProps): React.JSX.El
           />
         )
       })}
-
-      {isSelected && (
-        <>
-          {/* Outer boundary selection outline */}
-          <SelectionOutline points={outerPolygon} />
-        </>
-      )}
     </Group>
   )
 }

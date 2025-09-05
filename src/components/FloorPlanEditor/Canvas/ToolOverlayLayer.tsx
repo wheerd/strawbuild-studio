@@ -3,6 +3,7 @@ import { Layer } from 'react-konva'
 import { useToolContext, useToolManagerState } from '@/components/FloorPlanEditor/Tools'
 import type { ToolOverlayContext } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import { type Vec2 } from '@/types/geometry'
+import { SelectionOverlay } from './SelectionOverlay'
 
 export function ToolOverlayLayer(): React.JSX.Element {
   const toolContext = useToolContext()
@@ -35,6 +36,10 @@ export function ToolOverlayLayer(): React.JSX.Element {
 
   return (
     <Layer name="tool-overlay" listening={false}>
+      {/* Selection outlines - rendered first so tool overlays appear on top */}
+      <SelectionOverlay />
+
+      {/* Tool-specific overlay content */}
       {overlayContent}
     </Layer>
   )
