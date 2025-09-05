@@ -19,7 +19,7 @@ export const createBasicToolGroup = (): ToolGroup => ({
   name: 'Basic',
   icon: '↖',
   category: 'basic',
-  tools: [new SelectTool(), new MoveTool(), new RotateTool(), new FitToViewTool(), TestDataTool],
+  tools: [new SelectTool(), new MoveTool(), new RotateTool(), new FitToViewTool(), new TestDataTool()],
   defaultTool: 'basic.select'
 })
 
