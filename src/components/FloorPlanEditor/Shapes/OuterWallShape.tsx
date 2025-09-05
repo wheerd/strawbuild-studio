@@ -2,6 +2,7 @@ import { Group, Line } from 'react-konva'
 import type { OuterWallPolygon } from '@/types/model'
 import { useSelectionStore } from '../hooks/useSelectionStore'
 import { OuterWallSegmentShape } from './OuterWallSegmentShape'
+import { OuterCornerShape } from './OuterCornerShape'
 
 interface OuterWallShapeProps {
   outerWall: OuterWallPolygon
@@ -35,6 +36,27 @@ export function OuterWallShape({ outerWall }: OuterWallShapeProps): React.JSX.El
             insideEndCorner={insideEndCorner}
             outsideStartCorner={outsideStartCorner}
             outsideEndCorner={outsideEndCorner}
+          />
+        )
+      })}
+
+      {/* Render corner shapes */}
+      {outerWall.corners.map((corner, cornerIndex) => {
+        const prevSegmentIndex = (cornerIndex - 1 + outerWall.segments.length) % outerWall.segments.length
+        const nextSegmentIndex = cornerIndex
+
+        const previousSegment = outerWall.segments[prevSegmentIndex]
+        const nextSegment = outerWall.segments[nextSegmentIndex]
+        const boundaryPoint = outerWall.boundary[cornerIndex]
+
+        return (
+          <OuterCornerShape
+            key={`corner-${cornerIndex}`}
+            corner={corner}
+            boundaryPoint={boundaryPoint}
+            previousSegment={previousSegment}
+            nextSegment={nextSegment}
+            outerWallId={outerWall.id}
           />
         )
       })}
