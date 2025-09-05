@@ -4,6 +4,7 @@ import type { OuterWallId } from '@/model'
 import { midpoint, add, scale, type Vec2 } from '@/types/geometry'
 import { useSelectionStore } from '../hooks/useSelectionStore'
 import { LengthIndicator } from '../components/LengthIndicator'
+import { COLORS } from '@/theme/colors'
 
 interface OpeningShapeProps {
   opening: Opening
@@ -70,8 +71,8 @@ export function OpeningShape({
       {/* Opening cutout - render as a different colored line */}
       <Line
         points={openingPolygonArray}
-        fill={isOpeningSelected ? '#F99' : '#999'}
-        stroke={isOpeningSelected ? '#cc0014' : 'black'}
+        fill={isOpeningSelected ? COLORS.selection.secondary : COLORS.canvas.openingBackground}
+        stroke={isOpeningSelected ? COLORS.selection.secondaryOutline : COLORS.ui.black}
         strokeWidth={10}
         lineCap="butt"
         opacity={0.8}
@@ -83,7 +84,7 @@ export function OpeningShape({
       {opening.type !== 'passage' && (
         <Line
           points={[openingStart[0], openingStart[1], openingEnd[0], openingEnd[1]]}
-          stroke={opening.type === 'door' ? '#8B4513' : '#87CEEB'}
+          stroke={opening.type === 'door' ? COLORS.materials.door : COLORS.materials.window}
           strokeWidth={30}
           lineCap="butt"
           listening
@@ -106,7 +107,7 @@ export function OpeningShape({
                     startPoint={prevEndPoint}
                     endPoint={currentStartPoint}
                     offset={60}
-                    color="#000"
+                    color={COLORS.indicators.secondary}
                     fontSize={50}
                     strokeWidth={4}
                   />
@@ -127,7 +128,7 @@ export function OpeningShape({
                     startPoint={currentEndPoint}
                     endPoint={nextStartPoint}
                     offset={60}
-                    color="#000"
+                    color={COLORS.indicators.secondary}
                     fontSize={50}
                     strokeWidth={4}
                   />
@@ -142,7 +143,7 @@ export function OpeningShape({
             endPoint={insideOpeningEnd}
             label={`${(opening.width / 1000).toFixed(2)}m`}
             offset={-60}
-            color="#007acc"
+            color={COLORS.indicators.selected}
             fontSize={50}
             strokeWidth={4}
           />
@@ -151,7 +152,7 @@ export function OpeningShape({
             endPoint={outsideOpeningEnd}
             label={`${(opening.width / 1000).toFixed(2)}m`}
             offset={hasNeighbors ? 90 : 60}
-            color="#007acc"
+            color={COLORS.indicators.selected}
             fontSize={50}
             strokeWidth={4}
           />
@@ -161,7 +162,7 @@ export function OpeningShape({
             startPoint={insideStartCorner}
             endPoint={insideOpeningStart}
             offset={-60}
-            color="#000"
+            color={COLORS.indicators.main}
             fontSize={50}
             strokeWidth={4}
           />
@@ -169,7 +170,7 @@ export function OpeningShape({
             startPoint={insideOpeningEnd}
             endPoint={insideEndCorner}
             offset={-60}
-            color="#000"
+            color={COLORS.indicators.main}
             fontSize={50}
             strokeWidth={4}
           />
@@ -177,7 +178,7 @@ export function OpeningShape({
             startPoint={outsideStartCorner}
             endPoint={outsideOpeningStart}
             offset={hasNeighbors ? 120 : 60}
-            color="#000"
+            color={COLORS.indicators.main}
             fontSize={50}
             strokeWidth={4}
           />
@@ -185,7 +186,7 @@ export function OpeningShape({
             startPoint={outsideOpeningEnd}
             endPoint={outsideEndCorner}
             offset={hasNeighbors ? 120 : 60}
-            color="#000"
+            color={COLORS.indicators.main}
             fontSize={50}
             strokeWidth={4}
           />

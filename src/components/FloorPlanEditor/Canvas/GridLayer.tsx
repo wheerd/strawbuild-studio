@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { Layer, Line } from 'react-konva'
 import { useShowGrid, useEditorStore } from '@/components/FloorPlanEditor/hooks/useEditorStore'
+import { COLORS } from '@/theme/colors'
 
 interface ViewportState {
   zoom: number
@@ -60,13 +61,25 @@ export function GridLayer({ width = 800, height = 600, viewport }: GridLayerProp
 
   for (let x = startX; x <= endX; x += dynamicGridSize) {
     lines.push(
-      <Line key={`v-${x}`} points={[x, startY, x, endY]} stroke="#cccccc" strokeWidth={strokeWidth} listening={false} />
+      <Line
+        key={`v-${x}`}
+        points={[x, startY, x, endY]}
+        stroke={COLORS.canvas.grid}
+        strokeWidth={strokeWidth}
+        listening={false}
+      />
     )
   }
 
   for (let y = startY; y <= endY; y += dynamicGridSize) {
     lines.push(
-      <Line key={`h-${y}`} points={[startX, y, endX, y]} stroke="#cccccc" strokeWidth={strokeWidth} listening={false} />
+      <Line
+        key={`h-${y}`}
+        points={[startX, y, endX, y]}
+        stroke={COLORS.canvas.grid}
+        strokeWidth={strokeWidth}
+        listening={false}
+      />
     )
   }
 

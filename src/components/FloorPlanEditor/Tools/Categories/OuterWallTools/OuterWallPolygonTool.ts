@@ -12,6 +12,7 @@ import type { SnappingContext, SnapResult } from '@/model/store/services/snappin
 import React from 'react'
 import { Line, Circle } from 'react-konva'
 import { SnappingService } from '@/model/store/services/snapping'
+import { COLORS } from '@/theme/colors'
 
 interface OuterWallPolygonToolState {
   points: Vec2[]
@@ -166,7 +167,7 @@ export class OuterWallPolygonTool implements Tool {
             line.point[0] + INFINITE_LINE_EXTEND * line.direction[0],
             line.point[1] + INFINITE_LINE_EXTEND * line.direction[1]
           ],
-          stroke: '#0066ff',
+          stroke: COLORS.snapping.lines,
           strokeWidth: 8,
           opacity: 0.5,
           listening: false
@@ -181,8 +182,8 @@ export class OuterWallPolygonTool implements Tool {
           x: pos[0],
           y: pos[1],
           radius: 15,
-          fill: '#0066ff',
-          stroke: '#ffffff',
+          fill: COLORS.snapping.points,
+          stroke: COLORS.snapping.pointStroke,
           strokeWidth: 3,
           opacity: 0.9,
           listening: false
@@ -208,8 +209,8 @@ export class OuterWallPolygonTool implements Tool {
           x: point[0],
           y: point[1],
           radius: 20,
-          fill: isFirstPoint ? '#ef4444' : '#3b82f6',
-          stroke: '#ffffff',
+          fill: isFirstPoint ? COLORS.ui.primary : COLORS.ui.secondary,
+          stroke: COLORS.ui.white,
           strokeWidth: 3,
           listening: false
         })
@@ -227,7 +228,7 @@ export class OuterWallPolygonTool implements Tool {
         React.createElement(Line, {
           key: 'polygon-lines',
           points,
-          stroke: '#3b82f6',
+          stroke: COLORS.ui.secondary,
           strokeWidth: 10,
           lineCap: 'round',
           lineJoin: 'round',
@@ -246,7 +247,7 @@ export class OuterWallPolygonTool implements Tool {
           React.createElement(Line, {
             key: 'preview-line',
             points: [lastPoint[0], lastPoint[1], currentPos[0], currentPos[1]],
-            stroke: this.state.isCurrentLineValid ? '#94a3b8' : '#ef4444',
+            stroke: this.state.isCurrentLineValid ? COLORS.ui.gray500 : COLORS.ui.danger,
             strokeWidth: 10,
             dash: [30, 30],
             listening: false
@@ -264,7 +265,7 @@ export class OuterWallPolygonTool implements Tool {
         React.createElement(Line, {
           key: 'closing-line-preview',
           points: [lastPoint[0], lastPoint[1], firstPoint[0], firstPoint[1]],
-          stroke: this.state.isClosingLineValid ? '#22c55e' : '#ef4444',
+          stroke: this.state.isClosingLineValid ? COLORS.ui.success : COLORS.ui.danger,
           strokeWidth: 12,
           dash: [20, 20],
           listening: false

@@ -1,6 +1,6 @@
 import { Group, Line } from 'react-konva'
 import type { OuterWallSegment } from '@/types/model'
-import { WALL_COLORS } from '@/components/FloorPlanEditor/visualization/wallVisualization'
+import { COLORS } from '@/theme/colors'
 import { direction, type Vec2 } from '@/types/geometry'
 import { useSelectionStore } from '../hooks/useSelectionStore'
 import { LengthIndicator } from '../components/LengthIndicator'
@@ -43,8 +43,8 @@ export function OuterWallSegmentShape({
     angleDegrees += 180
   }
 
-  const baseColor = segment.constructionType === 'non-strawbale' ? WALL_COLORS.other : WALL_COLORS.strawbale
-  const finalMainColor = select.isSelected(segment.id) ? '#007acc' : baseColor
+  const baseColor = segment.constructionType === 'non-strawbale' ? COLORS.materials.other : COLORS.materials.strawbale
+  const finalMainColor = select.isSelected(segment.id) ? COLORS.selection.primary : baseColor
 
   return (
     <Group
@@ -67,7 +67,7 @@ export function OuterWallSegmentShape({
           outsideStart[1]
         ]}
         fill={finalMainColor}
-        stroke="#000"
+        stroke={COLORS.ui.black}
         strokeWidth={10}
         closed
         listening
@@ -95,7 +95,7 @@ export function OuterWallSegmentShape({
             endPoint={insideEndCorner}
             label={`${(segment.insideLength / 1000).toFixed(2)}m`}
             offset={-60}
-            color="#333"
+            color={COLORS.indicators.main}
             fontSize={60}
             strokeWidth={5}
           />
@@ -104,7 +104,7 @@ export function OuterWallSegmentShape({
             endPoint={outsideEndCorner}
             label={`${(segment.outsideLength / 1000).toFixed(2)}m`}
             offset={60}
-            color="#333"
+            color={COLORS.indicators.main}
             fontSize={60}
             strokeWidth={5}
           />

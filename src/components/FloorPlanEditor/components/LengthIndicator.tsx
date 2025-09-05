@@ -3,6 +3,7 @@ import { distance, subtract, normalize, perpendicularCCW, add, scale, angle, mid
 import type { Vec2 } from '@/types/geometry'
 import { useMemo, useRef } from 'react'
 import type Konva from 'konva'
+import { COLORS } from '@/theme/colors'
 
 interface LengthIndicatorProps {
   startPoint: Vec2
@@ -19,7 +20,7 @@ export function LengthIndicator({
   endPoint,
   label,
   offset = 50,
-  color = '#333',
+  color = COLORS.indicators.secondary,
   fontSize = 40,
   strokeWidth = 10
 }: LengthIndicatorProps): React.JSX.Element {

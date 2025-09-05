@@ -3,6 +3,7 @@ import type { OuterWallPolygon } from '@/types/model'
 import { useSelectionStore } from '../hooks/useSelectionStore'
 import { OuterWallSegmentShape } from './OuterWallSegmentShape'
 import { OuterCornerShape } from './OuterCornerShape'
+import { COLORS } from '@/theme/colors'
 
 interface OuterWallShapeProps {
   outerWall: OuterWallPolygon
@@ -18,7 +19,7 @@ export function OuterWallShape({ outerWall }: OuterWallShapeProps): React.JSX.El
 
   return (
     <Group name={`outer-wall-${outerWall.id}`} entityId={outerWall.id} entityType="outer-wall" parentIds={[]} listening>
-      <Line points={innerPoints} fill="#AAA" closed listening />
+      <Line points={innerPoints} fill={COLORS.canvas.buildingBackground} closed listening />
 
       {/* Render each segment */}
       {outerWall.segments.map((segment, index) => {
@@ -66,7 +67,7 @@ export function OuterWallShape({ outerWall }: OuterWallShapeProps): React.JSX.El
           {/* Wall boundary outline */}
           <Line
             points={innerPoints}
-            stroke="#1e40af"
+            stroke={COLORS.selection.outline}
             strokeWidth={30}
             dash={[50, 50]}
             lineCap="round"
@@ -78,7 +79,7 @@ export function OuterWallShape({ outerWall }: OuterWallShapeProps): React.JSX.El
           {/* Wall boundary outline */}
           <Line
             points={outerPoints}
-            stroke="#1e40af"
+            stroke={COLORS.selection.outline}
             strokeWidth={30}
             dash={[50, 50]}
             lineCap="round"

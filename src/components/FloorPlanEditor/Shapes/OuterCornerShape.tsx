@@ -1,7 +1,7 @@
 import { Group, Line, Circle, Arrow } from 'react-konva'
 import type { OuterCorner, OuterWallSegment } from '@/types/model'
 import { add, midpoint, scale, type Vec2 } from '@/types/geometry'
-import { WALL_COLORS } from '../visualization/wallVisualization'
+import { COLORS } from '@/theme/colors'
 import { useSelectionStore } from '../hooks/useSelectionStore'
 
 interface OuterCornerShapeProps {
@@ -41,8 +41,9 @@ export function OuterCornerShape({
   const arrowEnd = add(arrowCenter, scale(arrowDir, 60))
 
   const belongsToSegment = corner.belongsTo === 'previous' ? previousSegment : nextSegment
-  const cornerColor = belongsToSegment.constructionType === 'non-strawbale' ? WALL_COLORS.other : WALL_COLORS.strawbale
-  const finalColor = isSelected ? '#007acc' : cornerColor
+  const cornerColor =
+    belongsToSegment.constructionType === 'non-strawbale' ? COLORS.materials.other : COLORS.materials.strawbale
+  const finalColor = isSelected ? COLORS.selection.primary : cornerColor
 
   return (
     <Group
@@ -53,11 +54,12 @@ export function OuterCornerShape({
       listening
     >
       {/* Corner polygon fill */}
-      <Line points={polygonArray} fill={finalColor} stroke="black" strokeWidth={10} closed listening />
+      <Line points={polygonArray} fill={finalColor} stroke={COLORS.ui.black} strokeWidth={10} closed listening />
 
       <Line
         points={[boundaryPoint[0], boundaryPoint[1], corner.outsidePoint[0], corner.outsidePoint[1]]}
-        stroke="#8B4513"
+        stroke={COLORS.ui.black}
+        opacity={0.5}
         strokeWidth={8}
         dash={[20, 20]}
         listening={false}
@@ -70,7 +72,9 @@ export function OuterCornerShape({
             x={boundaryPoint[0]}
             y={boundaryPoint[1]}
             radius={30}
-            fill="#cc0014"
+            fill={COLORS.selection.secondary}
+            stroke={COLORS.selection.secondaryOutline}
+            strokeWidth={10}
             opacity={0.8}
             listening={false}
           />
@@ -81,8 +85,8 @@ export function OuterCornerShape({
       {isSelected && (
         <Arrow
           points={[arrowStart[0], arrowStart[1], arrowEnd[0], arrowEnd[1]]}
-          stroke="white"
-          fill="white"
+          stroke={COLORS.ui.white}
+          fill={COLORS.ui.white}
           strokeWidth={15}
           pointerLength={40}
           pointerWidth={40}

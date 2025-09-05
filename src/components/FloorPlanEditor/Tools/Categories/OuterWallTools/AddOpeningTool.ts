@@ -14,6 +14,7 @@ import React from 'react'
 import { Group, Rect, Text, Circle } from 'react-konva'
 import { AddOpeningToolInspector } from '../../PropertiesPanel/ToolInspectors/AddOpeningToolInspector'
 import { round } from '@turf/helpers'
+import { COLORS } from '@/theme/colors'
 
 interface WallSegmentHit {
   wallId: OuterWallId
@@ -333,9 +334,9 @@ export class AddOpeningTool implements Tool {
           y: 0,
           width: this.state.width,
           height: segment.thickness,
-          fill: this.state.canPlace ? '#22c55e' : '#ef4444',
+          fill: this.state.canPlace ? COLORS.ui.success : COLORS.ui.danger,
           opacity: 0.6,
-          stroke: '#ffffff',
+          stroke: COLORS.ui.white,
           strokeWidth: 3
         }),
         React.createElement(Text, {
@@ -348,7 +349,7 @@ export class AddOpeningTool implements Tool {
           height: segment.thickness,
           align: 'center',
           verticalAlign: 'middle',
-          fill: '#ffffff',
+          fill: COLORS.ui.white,
           fontFamily: 'Arial'
         })
       ]
@@ -384,8 +385,8 @@ export class AddOpeningTool implements Tool {
         x: indicatorX,
         y: indicatorY,
         radius: segment.thickness * 0.15,
-        fill: '#007acc',
-        stroke: '#ffffff',
+        fill: COLORS.snapping.highlight,
+        stroke: COLORS.snapping.highlightStroke,
         strokeWidth: 2,
         opacity: 0.9
       })

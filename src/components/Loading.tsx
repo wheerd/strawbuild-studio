@@ -1,4 +1,5 @@
 import React from 'react'
+import { COLORS } from '@/theme/colors'
 
 export function Loading(): React.JSX.Element {
   return (
@@ -9,7 +10,7 @@ export function Loading(): React.JSX.Element {
         alignItems: 'center',
         height: '100vh',
         fontSize: '18px',
-        color: '#666'
+        color: COLORS.ui.gray600
       }}
     >
       Loading Floor Plan Editor...
