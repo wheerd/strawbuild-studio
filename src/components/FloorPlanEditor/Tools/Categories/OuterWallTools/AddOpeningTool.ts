@@ -1,4 +1,4 @@
-import type { Tool, CanvasEvent, ToolContext, ToolInspectorProps } from '../../ToolSystem/types'
+import type { Tool, CanvasEvent, ToolContext } from '../../ToolSystem/types'
 import type { Vec2, Length } from '@/types/geometry'
 import { createLength, createVec2, distance, projectPointOntoLine, lineFromSegment } from '@/types/geometry'
 import type { OpeningType, OuterWallSegment } from '@/types/model'
@@ -56,8 +56,7 @@ export class AddOpeningTool implements Tool {
   readonly hotkey = 'o'
   readonly cursor = 'crosshair'
   readonly category = 'outer-walls'
-  readonly hasInspector = true
-  readonly inspectorComponent = AddOpeningToolInspector as React.ComponentType<ToolInspectorProps<any>>
+  readonly inspectorComponent = AddOpeningToolInspector
 
   public state: AddOpeningToolState = {
     openingType: 'door',

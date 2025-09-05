@@ -9,10 +9,8 @@ import {
   distanceSquared
 } from '@/types/geometry'
 import type { SnappingContext, SnapResult } from '@/model/store/services/snapping/types'
-import React from 'react'
-import { Line, Circle } from 'react-konva'
+import { OuterWallPolygonToolOverlay } from './OuterWallPolygonToolOverlay'
 import { SnappingService } from '@/model/store/services/snapping'
-import { COLORS } from '@/theme/colors'
 
 interface OuterWallPolygonToolState {
   points: Vec2[]
@@ -23,8 +21,6 @@ interface OuterWallPolygonToolState {
   isClosingLineValid: boolean
 }
 
-const INFINITE_LINE_EXTEND = 1e10
-
 export class OuterWallPolygonTool implements Tool {
   readonly id = 'outer-wall-polygon'
   readonly name = 'Outer Wall Polygon'
@@ -32,7 +28,7 @@ export class OuterWallPolygonTool implements Tool {
   readonly hotkey = 'w'
   readonly cursor = 'crosshair'
   readonly category = 'walls'
-  readonly hasInspector = false
+  readonly overlayComponent = OuterWallPolygonToolOverlay
 
   public state: OuterWallPolygonToolState = {
     points: [],
@@ -51,7 +47,7 @@ export class OuterWallPolygonTool implements Tool {
   /**
    * Check if the current snap result is snapping to the first point of the polygon
    */
-  private isSnappingToFirstPoint(): boolean {
+  public isSnappingToFirstPoint(): boolean {
     if (this.state.points.length === 0 || !this.state.snapResult?.position) {
       return false
     }
@@ -150,132 +146,6 @@ export class OuterWallPolygonTool implements Tool {
     this.state.isCurrentLineValid = true
     this.state.isClosingLineValid = true
     this.updateSnapContext()
-  }
-
-  private renderSnapping(): React.ReactNode {
-    const elements: React.ReactNode[] = []
-
-    const lines = this.state.snapResult?.lines ?? []
-    for (const i in lines) {
-      const line = lines[i]
-      elements.push(
-        React.createElement(Line, {
-          key: `snap-line-${i}`,
-          points: [
-            line.point[0] - INFINITE_LINE_EXTEND * line.direction[0],
-            line.point[1] - INFINITE_LINE_EXTEND * line.direction[1],
-            line.point[0] + INFINITE_LINE_EXTEND * line.direction[0],
-            line.point[1] + INFINITE_LINE_EXTEND * line.direction[1]
-          ],
-          stroke: COLORS.snapping.lines,
-          strokeWidth: 8,
-          opacity: 0.5,
-          listening: false
-        })
-      )
-    }
-
-    if (this.state.snapResult?.position || this.state.mouse) {
-      const pos = this.state.snapResult?.position ?? this.state.mouse
-      elements.push(
-        React.createElement(Circle, {
-          x: pos[0],
-          y: pos[1],
-          radius: 15,
-          fill: COLORS.snapping.points,
-          stroke: COLORS.snapping.pointStroke,
-          strokeWidth: 3,
-          opacity: 0.9,
-          listening: false
-        })
-      )
-    }
-
-    return React.createElement(React.Fragment, null, ...elements)
-  }
-
-  renderOverlay(): React.ReactNode {
-    if (this.state.points.length === 0) return null
-
-    const elements: React.ReactNode[] = []
-
-    // Draw existing points
-    this.state.points.forEach((point, index) => {
-      const isFirstPoint = index === 0
-
-      elements.push(
-        React.createElement(Circle, {
-          key: `point-${index}`,
-          x: point[0],
-          y: point[1],
-          radius: 20,
-          fill: isFirstPoint ? COLORS.ui.primary : COLORS.ui.secondary,
-          stroke: COLORS.ui.white,
-          strokeWidth: 3,
-          listening: false
-        })
-      )
-    })
-
-    // Draw lines between points
-    if (this.state.points.length > 1) {
-      const points: number[] = []
-      for (const point of this.state.points) {
-        points.push(point[0], point[1])
-      }
-
-      elements.push(
-        React.createElement(Line, {
-          key: 'polygon-lines',
-          points,
-          stroke: COLORS.ui.secondary,
-          strokeWidth: 10,
-          lineCap: 'round',
-          lineJoin: 'round',
-          listening: false
-        })
-      )
-    }
-
-    // Draw line to current mouse position
-    if (this.state.points.length > 0) {
-      const lastPoint = this.state.points[this.state.points.length - 1]
-      const currentPos = this.state.snapResult?.position ?? this.state.mouse
-
-      if (currentPos) {
-        elements.push(
-          React.createElement(Line, {
-            key: 'preview-line',
-            points: [lastPoint[0], lastPoint[1], currentPos[0], currentPos[1]],
-            stroke: this.state.isCurrentLineValid ? COLORS.ui.gray500 : COLORS.ui.danger,
-            strokeWidth: 10,
-            dash: [30, 30],
-            listening: false
-          })
-        )
-      }
-    }
-
-    // Draw closing line preview when near first point
-    if (this.state.points.length >= 3 && this.isSnappingToFirstPoint()) {
-      const lastPoint = this.state.points[this.state.points.length - 1]
-      const firstPoint = this.state.points[0]
-
-      elements.push(
-        React.createElement(Line, {
-          key: 'closing-line-preview',
-          points: [lastPoint[0], lastPoint[1], firstPoint[0], firstPoint[1]],
-          stroke: this.state.isClosingLineValid ? COLORS.ui.success : COLORS.ui.danger,
-          strokeWidth: 12,
-          dash: [20, 20],
-          listening: false
-        })
-      )
-    }
-
-    elements.push(this.renderSnapping())
-
-    return React.createElement(React.Fragment, null, ...elements)
   }
 
   getContextActions(): ContextAction[] {

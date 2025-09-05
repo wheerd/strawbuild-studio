@@ -19,8 +19,10 @@ export interface ToolGroup extends BaseTool {
 
 export interface Tool extends BaseTool {
   cursor?: string
-  hasInspector?: boolean
+
   inspectorComponent?: React.ComponentType<ToolInspectorProps<any>>
+  overlayComponent?: React.ComponentType<ToolOverlayComponentProps<any>>
+  onRenderNeeded?(listener: () => void): () => void
 
   // Event handlers
   handleMouseDown?(event: CanvasEvent): boolean
@@ -35,21 +37,18 @@ export interface Tool extends BaseTool {
 
   // Context actions - tools can get selected entity from context if needed
   getContextActions?(context: ToolContext): ContextAction[]
-
-  // Overlay rendering - tools can render custom preview overlays
-  renderOverlay?(context: ToolOverlayContext): React.ReactNode
-  onRenderNeeded?(listener: () => void): () => void
 }
 
 export interface ToolInspectorProps<T extends Tool = Tool> {
   tool: T
 }
 
-export interface ToolOverlayContext {
-  // Tool context for accessing model and state
-  toolContext: ToolContext
+export interface ToolOverlayComponentProps<T extends Tool = Tool> {
+  tool: T
+}
 
-  // Current mouse/snap state
+export interface ToolOverlayContext {
+  toolContext: ToolContext
   currentMousePos?: Vec2
 }
 

@@ -7,7 +7,6 @@ export class MoveTool implements Tool {
   hotkey = 'm'
   cursor = 'move'
   category = 'basic'
-  hasInspector = false
 
   handleMouseDown(_event: CanvasEvent): boolean {
     // Disabled until entities are properly implemented

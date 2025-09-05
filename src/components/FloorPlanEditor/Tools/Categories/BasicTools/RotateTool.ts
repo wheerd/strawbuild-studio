@@ -16,7 +16,6 @@ export class RotateTool implements Tool {
   hotkey = 'o'
   cursor = 'grab'
   category = 'basic'
-  hasInspector = true
 
   public state: RotateToolState = {
     rotationStep: 15, // 15 degree increments by default

@@ -11,7 +11,6 @@ describe('OuterWallPolygonTool', () => {
     expect(tool.icon).toBe('⬜')
     expect(tool.cursor).toBe('crosshair')
     expect(tool.category).toBe('walls')
-    expect(tool.hasInspector).toBe(false)
   })
 
   it('should initialize with empty state', () => {

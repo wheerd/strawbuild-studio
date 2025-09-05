@@ -75,9 +75,7 @@ export function PropertiesPanel(): React.JSX.Element {
 
         {/* Tool Inspector */}
         <div className="tool-section">
-          {activeTool?.hasInspector && activeTool.inspectorComponent && (
-            <activeTool.inspectorComponent tool={activeTool} />
-          )}
+          {activeTool?.inspectorComponent && <activeTool.inspectorComponent tool={activeTool} />}
         </div>
 
         {/* Action Buttons */}

@@ -8,7 +8,6 @@ export class SelectTool implements Tool {
   hotkey = 'v'
   cursor = 'default'
   category = 'basic'
-  hasInspector = false
 
   // Event handlers
   handleMouseDown(event: CanvasEvent): boolean {

@@ -13,7 +13,6 @@ export class FitToViewTool implements Tool {
   hotkey = 'f'
   cursor = 'default'
   category = 'basic'
-  hasInspector = false
 
   // Event handlers - not needed for this tool
   handleMouseDown(_event: CanvasEvent): boolean {

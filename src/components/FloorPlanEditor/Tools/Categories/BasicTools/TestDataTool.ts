@@ -13,7 +13,6 @@ export class TestDataTool implements Tool {
   hotkey = 't'
   cursor = 'default'
   category = 'basic'
-  hasInspector = false
 
   // Lifecycle methods
   onActivate(context: ToolContext): void {
