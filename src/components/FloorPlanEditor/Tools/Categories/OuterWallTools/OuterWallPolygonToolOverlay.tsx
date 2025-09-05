@@ -2,20 +2,19 @@ import React from 'react'
 import { Group, Line, Circle } from 'react-konva'
 import type { ToolOverlayComponentProps } from '../../ToolSystem/types'
 import type { OuterWallPolygonTool } from './OuterWallPolygonTool'
-import { useZoom } from '../../../hooks/useViewportStore'
+import { useStageHeight, useStageWidth, useZoom } from '../../../hooks/useViewportStore'
 import { COLORS } from '@/theme/colors'
 
 interface OuterWallPolygonToolOverlayProps extends ToolOverlayComponentProps<OuterWallPolygonTool> {}
-
-const INFINITE_LINE_EXTEND = 1e10
 
 /**
  * React overlay component for OuterWallPolygonTool with zoom-responsive rendering.
  * Uses viewport hooks directly for automatic re-rendering on zoom changes.
  */
 export function OuterWallPolygonToolOverlay({ tool }: OuterWallPolygonToolOverlayProps): React.JSX.Element | null {
-  // Use viewport hooks directly like any React component
   const zoom = useZoom()
+  const stageWidth = useStageWidth()
+  const stageHeight = useStageHeight()
 
   // Calculate zoom-responsive values
   const scaledLineWidth = Math.max(1, 2 / zoom)
@@ -24,18 +23,17 @@ export function OuterWallPolygonToolOverlay({ tool }: OuterWallPolygonToolOverla
   const scaledDashPattern = [dashSize, dashSize]
   const scaledPointRadius = 5 / zoom
   const scaledPointStrokeWidth = 1 / zoom
-
-  if (tool.state.points.length === 0) return null
+  const lineExtend = (Math.max(stageWidth, stageHeight) * 2) / zoom
 
   const currentPos = tool.state.snapResult?.position ?? tool.state.mouse
   const isClosingSnap = tool.isSnappingToFirstPoint()
 
   const lines =
     tool.state.snapResult?.lines?.map(l => [
-      l.point[0] - INFINITE_LINE_EXTEND * l.direction[0],
-      l.point[1] - INFINITE_LINE_EXTEND * l.direction[1],
-      l.point[0] + INFINITE_LINE_EXTEND * l.direction[0],
-      l.point[1] + INFINITE_LINE_EXTEND * l.direction[1]
+      l.point[0] - lineExtend * l.direction[0],
+      l.point[1] - lineExtend * l.direction[1],
+      l.point[0] + lineExtend * l.direction[0],
+      l.point[1] + lineExtend * l.direction[1]
     ]) ?? []
 
   return (
