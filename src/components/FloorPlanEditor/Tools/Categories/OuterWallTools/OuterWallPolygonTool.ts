@@ -1,5 +1,5 @@
 import type { Tool, ContextAction, CanvasEvent } from '../../ToolSystem/types'
-import type { Vec2, Polygon2D, LineSegment2D } from '@/types/geometry'
+import type { Vec2, Polygon2D, LineSegment2D, Length } from '@/types/geometry'
 import {
   createLength,
   createVec2,
@@ -9,7 +9,9 @@ import {
   distanceSquared
 } from '@/types/geometry'
 import type { SnappingContext, SnapResult } from '@/model/store/services/snapping/types'
+import type { OuterWallConstructionType } from '@/types/model'
 import { OuterWallPolygonToolOverlay } from './OuterWallPolygonToolOverlay'
+import { OuterWallPolygonToolInspector } from '../../PropertiesPanel/ToolInspectors/OuterWallPolygonToolInspector'
 import { SnappingService } from '@/model/store/services/snapping'
 
 interface OuterWallPolygonToolState {
@@ -19,6 +21,8 @@ interface OuterWallPolygonToolState {
   snapContext: SnappingContext
   isCurrentLineValid: boolean
   isClosingLineValid: boolean
+  constructionType: OuterWallConstructionType
+  wallThickness: Length
 }
 
 export class OuterWallPolygonTool implements Tool {
@@ -29,6 +33,7 @@ export class OuterWallPolygonTool implements Tool {
   readonly cursor = 'crosshair'
   readonly category = 'walls'
   readonly overlayComponent = OuterWallPolygonToolOverlay
+  readonly inspectorComponent = OuterWallPolygonToolInspector
 
   public state: OuterWallPolygonToolState = {
     points: [],
@@ -39,7 +44,9 @@ export class OuterWallPolygonTool implements Tool {
       referenceLineSegments: []
     },
     isCurrentLineValid: true,
-    isClosingLineValid: true
+    isClosingLineValid: true,
+    constructionType: 'infill',
+    wallThickness: createLength(440) // Default 44cm thickness
   }
 
   private snapService = new SnappingService()
@@ -55,6 +62,16 @@ export class OuterWallPolygonTool implements Tool {
     const snapPos = this.state.snapResult.position
     // Use a small threshold (5mm) to detect if snapping to first point
     return distanceSquared(firstPoint, snapPos) < 25 // 5mm squared
+  }
+
+  public setConstructionType(constructionType: OuterWallConstructionType): void {
+    this.state.constructionType = constructionType
+    this.listeners.forEach(l => l())
+  }
+
+  public setWallThickness(thickness: Length): void {
+    this.state.wallThickness = thickness
+    this.listeners.forEach(l => l())
   }
 
   private updateSnapContext() {
@@ -191,12 +208,7 @@ export class OuterWallPolygonTool implements Tool {
       const activeFloorId = event.context.getActiveFloorId()
 
       try {
-        modelStore.addOuterWallPolygon(
-          activeFloorId,
-          polygon,
-          'cells-under-tension',
-          createLength(440) // Default 44cm thickness
-        )
+        modelStore.addOuterWallPolygon(activeFloorId, polygon, this.state.constructionType, this.state.wallThickness)
       } catch (error) {
         console.error('Failed to create outer wall polygon:', error)
       }

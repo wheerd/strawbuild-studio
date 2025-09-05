@@ -2,7 +2,7 @@ import { render } from '@testing-library/react'
 import { vi } from 'vitest'
 import { OuterWallPolygonToolOverlay } from './OuterWallPolygonToolOverlay'
 import { OuterWallPolygonTool } from './OuterWallPolygonTool'
-import { createVec2 } from '@/types/geometry'
+import { createVec2, createLength } from '@/types/geometry'
 import type { SnapResult } from '@/model/store/services/snapping/types'
 
 // Mock the viewport store
@@ -36,7 +36,9 @@ describe('OuterWallPolygonToolOverlay', () => {
         referenceLineSegments: []
       },
       isCurrentLineValid: true,
-      isClosingLineValid: true
+      isClosingLineValid: true,
+      constructionType: 'cells-under-tension',
+      wallThickness: createLength(440)
     }
   })
 
