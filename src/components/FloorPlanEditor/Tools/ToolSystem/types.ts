@@ -20,7 +20,7 @@ export interface ToolGroup extends BaseTool {
 export interface Tool extends BaseTool {
   cursor?: string
   hasInspector?: boolean
-  inspectorComponent?: React.ComponentType<ToolInspectorProps>
+  inspectorComponent?: React.ComponentType<ToolInspectorProps<any>>
 
   // Event handlers
   handleMouseDown?(event: CanvasEvent): boolean
@@ -41,9 +41,8 @@ export interface Tool extends BaseTool {
   onRenderNeeded?(listener: () => void): () => void
 }
 
-export interface ToolInspectorProps {
-  tool: Tool
-  onPropertyChange: (property: string, value: any) => void
+export interface ToolInspectorProps<T extends Tool = Tool> {
+  tool: T
 }
 
 export interface ToolOverlayContext {

@@ -29,7 +29,7 @@ export interface OuterWallsActions {
     boundary: Polygon2D,
     constructionType: OuterWallConstructionType,
     thickness?: Length
-  ) => void
+  ) => OuterWallPolygon
   removeOuterWall: (wallId: OuterWallId) => void
 
   // Entity deletion operations
@@ -58,6 +58,20 @@ export interface OuterWallsActions {
     openingId: OpeningId,
     updates: Partial<Omit<Opening, 'id'>>
   ) => void
+
+  // Opening validation methods
+  isOpeningPlacementValid: (
+    wallId: OuterWallId,
+    segmentId: WallSegmentId,
+    offsetFromStart: Length,
+    width: Length
+  ) => boolean
+  findNearestValidOpeningPosition: (
+    wallId: OuterWallId,
+    segmentId: WallSegmentId,
+    preferredOffset: Length,
+    width: Length
+  ) => Length | null
 
   // Updated getters
   getOuterWallById: (wallId: OuterWallId) => OuterWallPolygon | null
@@ -240,6 +254,34 @@ const createSegmentsAndCorners = (
   return { segments, corners }
 }
 
+// Helper function to find valid gaps in a wall segment for opening placement
+
+// Private helper function to validate opening placement on a segment
+const validateOpeningOnSegment = (segment: OuterWallSegment, offsetFromStart: Length, width: Length): boolean => {
+  // Validate width
+  if (width <= 0) {
+    return false
+  }
+
+  // Check bounds - segmentLength and opening dimensions should be in same units
+  const openingEnd = createLength(offsetFromStart + width)
+  if (offsetFromStart < 0 || openingEnd > segment.segmentLength) {
+    return false
+  }
+
+  // Check overlap with existing openings
+  for (const existing of segment.openings) {
+    const existingStart = existing.offsetFromStart
+    const existingEnd = createLength(existing.offsetFromStart + existing.width)
+
+    if (!(openingEnd <= existingStart || offsetFromStart >= existingEnd)) {
+      return false
+    }
+  }
+
+  return true
+}
+
 export const createOuterWallsSlice: StateCreator<OuterWallsSlice, [], [], OuterWallsSlice> = (set, get) => ({
   outerWalls: new Map(),
 
@@ -273,6 +315,8 @@ export const createOuterWallsSlice: StateCreator<OuterWallsSlice, [], [], OuterW
     set(state => ({
       outerWalls: new Map(state.outerWalls).set(outerWall.id, outerWall)
     }))
+
+    return outerWall
   },
 
   removeOuterWall: (wallId: OuterWallId) => {
@@ -570,9 +614,6 @@ export const createOuterWallsSlice: StateCreator<OuterWallsSlice, [], [], OuterW
 
   // Opening operations
   addOpeningToOuterWall: (wallId: OuterWallId, segmentId: WallSegmentId, openingParams: Omit<Opening, 'id'>) => {
-    if (openingParams.offsetFromStart < 0) {
-      throw new Error('Opening offset from start must be non-negative')
-    }
     if (openingParams.width <= 0) {
       throw new Error('Opening width must be greater than 0')
     }
@@ -581,6 +622,20 @@ export const createOuterWallsSlice: StateCreator<OuterWallsSlice, [], [], OuterW
     }
     if (openingParams.sillHeight != null && openingParams.sillHeight < 0) {
       throw new Error('Window sill height must be non-negative')
+    }
+
+    // Basic validation checks
+    if (openingParams.offsetFromStart < 0) {
+      throw new Error('Opening offset from start must be non-negative')
+    }
+
+    const segment = get().getSegmentById(wallId, segmentId)
+    if (!segment) {
+      throw new Error('Segment does not exist')
+    }
+
+    if (!validateOpeningOnSegment(segment, openingParams.offsetFromStart, openingParams.width)) {
+      throw new Error('Opening placement is not valid')
     }
 
     // Auto-generate ID for the new opening
@@ -729,5 +784,103 @@ export const createOuterWallsSlice: StateCreator<OuterWallsSlice, [], [], OuterW
 
   getOuterWallsByFloor: (floorId: FloorId) => {
     return Array.from(get().outerWalls.values()).filter(wall => wall.floorId === floorId)
+  },
+
+  // Opening validation methods implementation
+  isOpeningPlacementValid: (wallId: OuterWallId, segmentId: WallSegmentId, offsetFromStart: Length, width: Length) => {
+    const segment = get().getSegmentById(wallId, segmentId)
+    if (!segment) {
+      throw new Error(`Wall segment not found: wall ${wallId}, segment ${segmentId}`)
+    }
+
+    // Validate width
+    if (width <= 0) {
+      throw new Error(`Opening width must be greater than 0, got ${width}`)
+    }
+
+    return validateOpeningOnSegment(segment, offsetFromStart, width)
+  },
+
+  findNearestValidOpeningPosition: (
+    wallId: OuterWallId,
+    segmentId: WallSegmentId,
+    preferredStartOffset: Length,
+    width: Length
+  ): Length | null => {
+    const segment = get().getSegmentById(wallId, segmentId)
+    if (!segment) return null
+    // segmentLength and opening dimensions should be in same units
+    if (width > segment.segmentLength) return null
+
+    // Snap to segment bounds
+    let start = Math.max(preferredStartOffset, 0)
+    let end = start + width
+    if (end > segment.segmentLength) {
+      end = segment.segmentLength
+      start = end - width
+    }
+
+    if (segment.openings.length === 0) return start as Length
+
+    // Sort existing openings by position
+    const sortedOpenings = [...segment.openings].sort((a, b) => a.offsetFromStart - b.offsetFromStart)
+
+    const afterIndex = sortedOpenings.findIndex(o => o.offsetFromStart >= start)
+
+    const previousOpening =
+      afterIndex > 0
+        ? sortedOpenings[afterIndex - 1]
+        : afterIndex === -1
+          ? sortedOpenings[sortedOpenings.length - 1]
+          : null
+    const nextOpening = afterIndex !== -1 ? sortedOpenings[afterIndex] : null
+
+    const intersectsPrevious = previousOpening && start < previousOpening.offsetFromStart + previousOpening.width
+    const intersectsNext = nextOpening && end > nextOpening.offsetFromStart
+
+    if (!intersectsPrevious && !intersectsNext) {
+      return start as Length
+    }
+
+    // If we intersect with both, the gap is too small
+    if (intersectsPrevious && intersectsNext) {
+      return null
+    }
+
+    // Otherwise find the shortest shift
+    let bestOffset: Length | null = null
+    let bestDistance = Infinity
+
+    // If we intersect with previous opening, try shifting right (after previous)
+    if (intersectsPrevious && previousOpening) {
+      const shiftedOffset = createLength(previousOpening.offsetFromStart + previousOpening.width)
+      const shiftDistance = Math.abs(shiftedOffset - preferredStartOffset)
+      const shiftedEnd = shiftedOffset + width
+
+      // Check if shift is within the segment and doesn't intersect with next
+      if (shiftedEnd <= segment.segmentLength && (!nextOpening || shiftedEnd <= nextOpening.offsetFromStart)) {
+        bestOffset = shiftedOffset
+        bestDistance = shiftDistance
+      }
+    }
+
+    // If we intersect with next opening, try shifting left (before next)
+    if (intersectsNext && nextOpening) {
+      const shiftedOffset = createLength(nextOpening.offsetFromStart - width)
+      const shiftDistance = Math.abs(shiftedOffset - preferredStartOffset)
+
+      // Check if shift is within the segment and doesn't intersect with previous
+      if (
+        shiftedOffset >= 0 &&
+        (!previousOpening || shiftedOffset >= previousOpening.offsetFromStart + previousOpening.width)
+      ) {
+        if (shiftDistance < bestDistance) {
+          bestOffset = shiftedOffset
+          bestDistance = shiftDistance
+        }
+      }
+    }
+
+    return bestOffset
   }
 })

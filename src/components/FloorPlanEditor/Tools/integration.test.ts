@@ -27,6 +27,6 @@ describe('Tool Integration', () => {
 
     expect(outerWallGroup).toBeDefined()
     expect(outerWallGroup?.name).toBe('Outer Walls')
-    expect(outerWallGroup?.tools).toHaveLength(1)
+    expect(outerWallGroup?.tools).toHaveLength(2)
   })
 })

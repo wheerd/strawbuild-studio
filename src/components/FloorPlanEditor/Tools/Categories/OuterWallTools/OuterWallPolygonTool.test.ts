@@ -32,8 +32,8 @@ describe('OuterWallPolygonTool', () => {
   it('should be registered in outer wall tool group', () => {
     expect(outerWallToolGroup.id).toBe('outer-walls')
     expect(outerWallToolGroup.name).toBe('Outer Walls')
-    expect(outerWallToolGroup.tools).toHaveLength(1)
-    expect(outerWallToolGroup.tools[0]).toBeInstanceOf(OuterWallPolygonTool)
+    expect(outerWallToolGroup.tools).toHaveLength(2)
+    expect(outerWallToolGroup.tools.find(tool => tool.id === 'outer-wall-polygon')).toBeInstanceOf(OuterWallPolygonTool)
     expect(outerWallToolGroup.defaultTool).toBe('outer-wall-polygon')
   })
 })

@@ -73,8 +73,12 @@ export function PropertiesPanel(): React.JSX.Element {
             )}
         </div>
 
-        {/* Tool Inspector - disabled until wall tools are implemented */}
-        <div className="tool-section">{/* Tool inspectors would go here */}</div>
+        {/* Tool Inspector */}
+        <div className="tool-section">
+          {activeTool?.hasInspector && activeTool.inspectorComponent && (
+            <activeTool.inspectorComponent tool={activeTool} />
+          )}
+        </div>
 
         {/* Action Buttons */}
         <div className="actions-section">
