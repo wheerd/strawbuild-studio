@@ -88,9 +88,13 @@ describe('AddOpeningTool', () => {
 
     expect(mockListener).toHaveBeenCalled()
 
-    // Unregister and trigger again
-    mockListener.mockClear()
+    // Unregister
     unregister()
+
+    // Clear call history
+    mockListener.mockClear()
+
+    // Trigger render again
     addOpeningTool.setOpeningType('door')
 
     expect(mockListener).not.toHaveBeenCalled()

@@ -10,11 +10,9 @@ import {
   isOuterWallId,
   isWallSegmentId
 } from '@/types/ids'
-import React from 'react'
-import { Group, Rect, Text, Circle } from 'react-konva'
 import { AddOpeningToolInspector } from '../../PropertiesPanel/ToolInspectors/AddOpeningToolInspector'
+import { AddOpeningToolOverlay } from './AddOpeningToolOverlay'
 import { round } from '@turf/helpers'
-import { COLORS } from '@/theme/colors'
 
 interface WallSegmentHit {
   wallId: OuterWallId
@@ -56,6 +54,7 @@ export class AddOpeningTool implements Tool {
   readonly hotkey = 'o'
   readonly cursor = 'crosshair'
   readonly category = 'outer-walls'
+  readonly overlayComponent = AddOpeningToolOverlay
   readonly inspectorComponent = AddOpeningToolInspector
 
   public state: AddOpeningToolState = {
@@ -293,115 +292,6 @@ export class AddOpeningTool implements Tool {
   setSillHeight(sillHeight: Length | undefined): void {
     this.state.sillHeight = sillHeight
     this.triggerRender()
-  }
-
-  // Rendering
-
-  private getOpeningIcon(): string {
-    switch (this.state.openingType) {
-      case 'door':
-        return '🚪'
-      case 'window':
-        return '🪟'
-      case 'passage':
-        return '⬜'
-      default:
-        return '⬜'
-    }
-  }
-
-  private renderOpeningPreview(): React.ReactNode {
-    if (!this.state.hoveredWallSegment || !this.state.previewPosition) return null
-
-    const segment = this.state.hoveredWallSegment.segment
-    const wallDirection = segment.direction
-    const wallAngle = (Math.atan2(wallDirection[1], wallDirection[0]) * 180) / Math.PI
-
-    return React.createElement(
-      Group,
-      {
-        key: 'opening-preview',
-        x: this.state.previewPosition[0],
-        y: this.state.previewPosition[1],
-        rotation: wallAngle,
-        listening: false
-      },
-      [
-        React.createElement(Rect, {
-          key: 'opening-rect',
-          x: 0,
-          y: 0,
-          width: this.state.width,
-          height: segment.thickness,
-          fill: this.state.canPlace ? COLORS.ui.success : COLORS.ui.danger,
-          opacity: 0.6,
-          stroke: COLORS.ui.white,
-          strokeWidth: 3
-        }),
-        React.createElement(Text, {
-          key: 'opening-icon',
-          text: this.getOpeningIcon(),
-          fontSize: segment.thickness * 0.7,
-          x: 0,
-          y: 0,
-          width: this.state.width,
-          height: segment.thickness,
-          align: 'center',
-          verticalAlign: 'middle',
-          fill: COLORS.ui.white,
-          fontFamily: 'Arial'
-        })
-      ]
-    )
-  }
-
-  private renderSnapIndicator(): React.ReactNode {
-    if (!this.state.snapDirection || !this.state.hoveredWallSegment || !this.state.previewPosition) {
-      return null
-    }
-
-    const segment = this.state.hoveredWallSegment.segment
-    const wallDirection = segment.direction
-    const wallAngle = (Math.atan2(wallDirection[1], wallDirection[0]) * 180) / Math.PI
-
-    // Position the indicator on the side opposite to snap direction
-    // If snapped right (opening moved right), show dot on left side
-    // If snapped left (opening moved left), show dot on right side
-    const indicatorX = this.state.snapDirection === 'right' ? 0 : this.state.width
-    const indicatorY = segment.thickness / 2
-
-    return React.createElement(
-      Group,
-      {
-        key: 'snap-indicator',
-        x: this.state.previewPosition[0],
-        y: this.state.previewPosition[1],
-        rotation: wallAngle,
-        listening: false
-      },
-      React.createElement(Circle, {
-        key: 'snap-dot',
-        x: indicatorX,
-        y: indicatorY,
-        radius: segment.thickness * 0.15,
-        fill: COLORS.snapping.highlight,
-        stroke: COLORS.snapping.highlightStroke,
-        strokeWidth: 2,
-        opacity: 0.9
-      })
-    )
-  }
-
-  renderOverlay(): React.ReactNode {
-    const elements: React.ReactNode[] = []
-
-    const openingPreview = this.renderOpeningPreview()
-    if (openingPreview) elements.push(openingPreview)
-
-    const snapIndicator = this.renderSnapIndicator()
-    if (snapIndicator) elements.push(snapIndicator)
-
-    return React.createElement(React.Fragment, null, ...elements)
   }
 
   onRenderNeeded(listener: () => void): () => void {
