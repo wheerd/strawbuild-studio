@@ -1,6 +1,6 @@
 import type { Tool, ToolContext } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import { createLength, createVec2, boundsFromPoints } from '@/types/geometry'
-import { toolManager } from '../../ToolSystem/ToolManager'
+import { toolManager } from '@/components/FloorPlanEditor/Tools/ToolSystem/ToolManager'
 
 /**
  * Tool for adding test outer wall data to demonstrate entity hit testing.

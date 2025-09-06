@@ -1,5 +1,5 @@
-import type { Tool, CanvasEvent, ToolContext } from '../../ToolSystem/types'
-import { BaseTool } from '../../ToolSystem/BaseTool'
+import type { Tool, CanvasEvent, ToolContext } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
+import { BaseTool } from '@/components/FloorPlanEditor/Tools/ToolSystem/BaseTool'
 import type { Vec2, Length } from '@/types/geometry'
 import { createLength, createVec2, distance, projectPointOntoLine, lineFromSegment } from '@/types/geometry'
 import type { OpeningType, OuterWallSegment } from '@/types/model'
@@ -11,7 +11,7 @@ import {
   isOuterWallId,
   isWallSegmentId
 } from '@/types/ids'
-import { AddOpeningToolInspector } from '../../PropertiesPanel/ToolInspectors/AddOpeningToolInspector'
+import { AddOpeningToolInspector } from '@/components/FloorPlanEditor/Tools/PropertiesPanel/ToolInspectors/AddOpeningToolInspector'
 import { AddOpeningToolOverlay } from './AddOpeningToolOverlay'
 import { round } from '@turf/helpers'
 

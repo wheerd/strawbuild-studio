@@ -1,4 +1,4 @@
-import type { Tool, CanvasEvent } from '../../ToolSystem/types'
+import type { Tool, CanvasEvent } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import { useSelectionStore } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
 
 export class SelectTool implements Tool {

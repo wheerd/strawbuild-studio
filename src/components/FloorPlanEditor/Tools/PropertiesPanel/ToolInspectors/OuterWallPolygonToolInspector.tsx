@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { createLength } from '@/types/geometry'
-import { useDebouncedNumericInput } from '../../../hooks/useDebouncedInput'
+import { useDebouncedNumericInput } from '@/components/FloorPlanEditor/hooks/useDebouncedInput'
 import type { OuterWallConstructionType } from '@/types/model'
-import type { ToolInspectorProps } from '../../ToolSystem/types'
-import type { OuterWallPolygonTool } from '../../Categories/OuterWallTools/OuterWallPolygonTool'
-import { useReactiveTool } from '../../hooks/useReactiveTool'
+import type { ToolInspectorProps } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
+import type { OuterWallPolygonTool } from '@/components/FloorPlanEditor/Tools/Categories/OuterWallTools/OuterWallPolygonTool'
+import { useReactiveTool } from '@/components/FloorPlanEditor/Tools/hooks/useReactiveTool'
 
 // Construction type options
 const CONSTRUCTION_TYPE_OPTIONS: { value: OuterWallConstructionType; label: string }[] = [

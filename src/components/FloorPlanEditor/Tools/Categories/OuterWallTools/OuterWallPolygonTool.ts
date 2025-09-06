@@ -1,4 +1,4 @@
-import type { Tool, ContextAction, CanvasEvent } from '../../ToolSystem/types'
+import type { Tool, ContextAction, CanvasEvent } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import type { Vec2, Polygon2D, LineSegment2D, Length } from '@/types/geometry'
 import {
   createLength,
@@ -11,9 +11,9 @@ import {
 import type { SnappingContext, SnapResult } from '@/model/store/services/snapping/types'
 import type { OuterWallConstructionType } from '@/types/model'
 import { OuterWallPolygonToolOverlay } from './OuterWallPolygonToolOverlay'
-import { OuterWallPolygonToolInspector } from '../../PropertiesPanel/ToolInspectors/OuterWallPolygonToolInspector'
+import { OuterWallPolygonToolInspector } from '@/components/FloorPlanEditor/Tools/PropertiesPanel/ToolInspectors/OuterWallPolygonToolInspector'
 import { SnappingService } from '@/model/store/services/snapping'
-import { BaseTool } from '../../ToolSystem/BaseTool'
+import { BaseTool } from '@/components/FloorPlanEditor/Tools/ToolSystem/BaseTool'
 
 interface OuterWallPolygonToolState {
   points: Vec2[]

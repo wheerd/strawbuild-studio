@@ -7,7 +7,7 @@ import type { OuterWallPolygon } from '@/types/model'
 import type { Store } from '@/model/store/types'
 import { useModelStore } from '@/model/store'
 import { useSelectionPath, useCurrentSelection } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
-import { SelectionOutline } from '../components/SelectionOutline'
+import { SelectionOutline } from '@/components/FloorPlanEditor/components/SelectionOutline'
 
 /**
  * Selection Path Structure Documentation:

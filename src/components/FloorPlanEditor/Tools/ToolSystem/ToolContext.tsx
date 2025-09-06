@@ -6,7 +6,7 @@ import { useActiveFloorId } from '@/components/FloorPlanEditor/hooks/useEditorSt
 import type { EntityId, SelectableId } from '@/types/ids'
 import { useSelectionStore } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
 import { entityHitTestService } from '@/components/FloorPlanEditor/services/EntityHitTestService'
-import { useViewportActions } from '../../hooks/useViewportStore'
+import { useViewportActions } from '@/components/FloorPlanEditor/hooks/useViewportStore'
 
 interface ToolContextProviderProps {
   children: React.ReactNode

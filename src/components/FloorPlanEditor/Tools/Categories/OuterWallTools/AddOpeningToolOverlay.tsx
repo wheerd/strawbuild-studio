@@ -1,8 +1,8 @@
 import React from 'react'
 import { Group, Rect, Text, Circle } from 'react-konva'
-import type { ToolOverlayComponentProps } from '../../ToolSystem/types'
+import type { ToolOverlayComponentProps } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import type { AddOpeningTool } from './AddOpeningTool'
-import { useReactiveTool } from '../../hooks/useReactiveTool'
+import { useReactiveTool } from '@/components/FloorPlanEditor/Tools/hooks/useReactiveTool'
 import { COLORS } from '@/theme/colors'
 
 interface AddOpeningToolOverlayProps extends ToolOverlayComponentProps<AddOpeningTool> {}

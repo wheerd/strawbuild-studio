@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 import { createLength } from '@/types/geometry'
-import { useDebouncedNumericInput } from '../../../hooks/useDebouncedInput'
-import { useReactiveTool } from '../../hooks/useReactiveTool'
+import { useDebouncedNumericInput } from '@/components/FloorPlanEditor/hooks/useDebouncedInput'
+import { useReactiveTool } from '@/components/FloorPlanEditor/Tools/hooks/useReactiveTool'
 import type { OpeningType } from '@/types/model'
-import type { ToolInspectorProps } from '../../ToolSystem/types'
-import type { AddOpeningTool } from '../../Categories/OuterWallTools/AddOpeningTool'
+import type { ToolInspectorProps } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
+import type { AddOpeningTool } from '@/components/FloorPlanEditor/Tools/Categories/OuterWallTools/AddOpeningTool'
 
 export function AddOpeningToolInspector({ tool }: ToolInspectorProps<AddOpeningTool>): React.JSX.Element {
   return <AddOpeningToolInspectorImpl tool={tool} />

@@ -1,5 +1,9 @@
 import { useCallback, useState } from 'react'
-import { useToolContext, useToolManager, useToolManagerState } from '../ToolSystem/ToolContext'
+import {
+  useToolContext,
+  useToolManager,
+  useToolManagerState
+} from '@/components/FloorPlanEditor/Tools/ToolSystem/ToolContext'
 
 export function MainToolbar(): React.JSX.Element {
   const toolManager = useToolManager()

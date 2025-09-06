@@ -1,10 +1,10 @@
 import React from 'react'
 import { Group, Line, Circle } from 'react-konva'
-import type { ToolOverlayComponentProps } from '../../ToolSystem/types'
+import type { ToolOverlayComponentProps } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import type { OuterWallPolygonTool } from './OuterWallPolygonTool'
-import { useStageHeight, useStageWidth, useZoom } from '../../../hooks/useViewportStore'
+import { useStageHeight, useStageWidth, useZoom } from '@/components/FloorPlanEditor/hooks/useViewportStore'
 import { COLORS } from '@/theme/colors'
-import { useReactiveTool } from '../../hooks/useReactiveTool'
+import { useReactiveTool } from '@/components/FloorPlanEditor/Tools/hooks/useReactiveTool'
 
 interface OuterWallPolygonToolOverlayProps extends ToolOverlayComponentProps<OuterWallPolygonTool> {}
 

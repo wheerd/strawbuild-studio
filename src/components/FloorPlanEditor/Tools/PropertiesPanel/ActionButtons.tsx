@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import type { Tool, ContextAction } from '../ToolSystem/types'
-import { useToolContext } from '../ToolSystem'
+import type { Tool, ContextAction } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
+import { useToolContext } from '@/components/FloorPlanEditor/Tools/ToolSystem'
 
 interface ActionButtonsProps {
   tool?: Tool | null

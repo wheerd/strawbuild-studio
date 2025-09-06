@@ -1,4 +1,4 @@
-import type { ToolGroup } from '../../ToolSystem/types'
+import type { ToolGroup } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import { SelectTool } from './SelectTool'
 import { MoveTool } from './MoveTool'
 import { RotateTool } from './RotateTool'

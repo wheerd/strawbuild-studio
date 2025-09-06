@@ -1,4 +1,4 @@
-import type { Tool, ToolContext, ContextAction, CanvasEvent } from '../../ToolSystem/types'
+import type { Tool, ToolContext, ContextAction, CanvasEvent } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import type { Vec2 } from '@/types/geometry'
 
 export interface RotateToolState {

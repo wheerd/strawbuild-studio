@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { useModelStore } from '@/model/store'
 import { createLength } from '@/types/geometry'
-import { useDebouncedNumericInput } from '../../../hooks/useDebouncedInput'
+import { useDebouncedNumericInput } from '@/components/FloorPlanEditor/hooks/useDebouncedInput'
 import type { WallSegmentId, OuterWallId } from '@/types/ids'
 import type { OuterWallConstructionType } from '@/types/model'
 

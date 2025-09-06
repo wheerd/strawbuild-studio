@@ -1,5 +1,5 @@
 import { useCurrentSelection, useSelectionPath } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
-import { useActiveTool } from '../ToolSystem/ToolContext'
+import { useActiveTool } from '@/components/FloorPlanEditor/Tools/ToolSystem/ToolContext'
 import { OuterWallInspector, WallSegmentInspector, OuterCornerInspector, OpeningInspector } from './Inspectors'
 import { ActionButtons } from './ActionButtons'
 import {

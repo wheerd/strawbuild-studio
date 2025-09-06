@@ -1,4 +1,4 @@
-import type { ToolGroup } from '../../ToolSystem/types'
+import type { ToolGroup } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import { OuterWallPolygonTool } from './OuterWallPolygonTool'
 import { AddOpeningTool } from './AddOpeningTool'
 

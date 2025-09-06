@@ -2,7 +2,7 @@ import { Group, Line, Arrow, Circle } from 'react-konva'
 import type { OuterCorner, OuterWallSegment } from '@/types/model'
 import { add, midpoint, scale, type Vec2 } from '@/types/geometry'
 import { COLORS } from '@/theme/colors'
-import { useSelectionStore } from '../hooks/useSelectionStore'
+import { useSelectionStore } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
 
 interface OuterCornerShapeProps {
   corner: OuterCorner

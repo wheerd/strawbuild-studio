@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { Tool } from '../ToolSystem/types'
+import type { Tool } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 
 /**
  * Custom hook that makes tool instances reactive in React components.

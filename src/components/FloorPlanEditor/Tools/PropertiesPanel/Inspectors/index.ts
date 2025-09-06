@@ -5,4 +5,4 @@ export { OuterCornerInspector } from './OuterCornerInspector'
 export { OpeningInspector } from './OpeningInspector'
 
 // Export tool inspectors
-export { AddOpeningToolInspector } from '../ToolInspectors/AddOpeningToolInspector'
+export { AddOpeningToolInspector } from '@/components/FloorPlanEditor/Tools/PropertiesPanel/ToolInspectors/AddOpeningToolInspector'

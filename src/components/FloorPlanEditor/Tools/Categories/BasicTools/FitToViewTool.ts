@@ -1,9 +1,9 @@
-import type { Tool, CanvasEvent, ToolContext } from '../../ToolSystem/types'
+import type { Tool, CanvasEvent, ToolContext } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import { useEditorStore } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 import { useModelStore } from '@/model/store'
 import type { Store } from '@/model/store/types'
 import type { FloorId } from '@/types/ids'
-import { toolManager } from '../../ToolSystem/ToolManager'
+import { toolManager } from '@/components/FloorPlanEditor/Tools/ToolSystem/ToolManager'
 import { boundsFromPoints, type Bounds2D } from '@/types/geometry'
 
 export class FitToViewTool implements Tool {

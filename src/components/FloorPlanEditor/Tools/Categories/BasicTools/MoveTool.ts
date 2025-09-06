@@ -1,4 +1,4 @@
-import type { Tool, ToolContext, ContextAction, CanvasEvent } from '../../ToolSystem/types'
+import type { Tool, ToolContext, ContextAction, CanvasEvent } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 
 export class MoveTool implements Tool {
   id = 'basic.move'

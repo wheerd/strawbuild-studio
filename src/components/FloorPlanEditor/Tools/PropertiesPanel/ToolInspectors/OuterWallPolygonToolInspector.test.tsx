@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { vi } from 'vitest'
 import { OuterWallPolygonToolInspector } from './OuterWallPolygonToolInspector'
-import { OuterWallPolygonTool } from '../../Categories/OuterWallTools/OuterWallPolygonTool'
+import { OuterWallPolygonTool } from '@/components/FloorPlanEditor/Tools/Categories/OuterWallTools/OuterWallPolygonTool'
 import { createVec2, createLength } from '@/types/geometry'
 
 describe('OuterWallPolygonToolInspector', () => {

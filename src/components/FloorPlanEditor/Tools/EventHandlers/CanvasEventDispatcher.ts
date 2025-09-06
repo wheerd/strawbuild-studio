@@ -1,5 +1,5 @@
 import type Konva from 'konva'
-import type { CanvasEvent, ToolContext } from '../ToolSystem/types'
+import type { CanvasEvent, ToolContext } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import { createVec2 } from '@/types/geometry'
 
 export class CanvasEventDispatcher {
