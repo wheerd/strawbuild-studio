@@ -2,9 +2,9 @@ import type { MovementBehavior, MovementContext, MouseMovementState } from '../M
 import type { SelectableId } from '@/types/ids'
 import type { StoreActions } from '@/model/store/types'
 import type { OuterCorner, OuterWallPolygon } from '@/types/model'
-import type { Vec2 } from '@/types/geometry'
-import type { SnapResult } from '@/model/store/services/snapping/types'
-import { add } from '@/types/geometry'
+import type { LineSegment2D, Vec2 } from '@/types/geometry'
+import type { SnappingContext, SnapResult } from '@/model/store/services/snapping/types'
+import { add, wouldClosingPolygonSelfIntersect } from '@/types/geometry'
 import { isOuterWallId, isOuterCornerId } from '@/types/ids'
 import React from 'react'
 import { Group, Circle, Line } from 'react-konva'
@@ -15,13 +15,14 @@ interface CornerEntityContext {
   wall: OuterWallPolygon
   corner: OuterCorner
   cornerIndex: number // Index of the boundary point that corresponds to this corner
-  // TODO: Add snap context here so that it only needs to be constructed once
+  snapContext: SnappingContext
 }
 
 // Corner movement state
 export interface CornerMovementState {
   position: Vec2
   snapResult?: SnapResult
+  newBoundary: Vec2[]
 }
 
 export class OuterCornerMovementBehavior implements MovementBehavior<CornerEntityContext, CornerMovementState> {
@@ -45,50 +46,52 @@ export class OuterCornerMovementBehavior implements MovementBehavior<CornerEntit
       throw new Error(`Could not find corner index for ${entityId}`)
     }
 
-    return { wall, corner, cornerIndex }
+    const snapLines = this.getSnapLines(wall, cornerIndex)
+    const snapContext: SnappingContext = {
+      snapPoints: [wall.boundary[cornerIndex]],
+      alignPoints: wall.boundary,
+      referenceLineSegments: snapLines
+    }
+
+    return { wall, corner, cornerIndex, snapContext }
   }
 
   initializeState(_mouseState: MouseMovementState, context: MovementContext<CornerEntityContext>): CornerMovementState {
-    const boundaryPoint = context.entity.wall.boundary[context.entity.cornerIndex]
+    const { wall, cornerIndex } = context.entity
+    const boundaryPoint = wall.boundary[cornerIndex]
+    const newBoundary = [...wall.boundary]
 
     return {
-      position: boundaryPoint
+      position: boundaryPoint,
+      newBoundary
     }
   }
 
   constrainAndSnap(mouseState: MouseMovementState, context: MovementContext<CornerEntityContext>): CornerMovementState {
-    const originalPosition = context.entity.wall.boundary[context.entity.cornerIndex]
+    const { wall, cornerIndex, snapContext } = context.entity
+
+    const originalPosition = wall.boundary[cornerIndex]
     const newPosition = add(originalPosition, mouseState.delta)
 
-    // TODO: Add snapping to other corners/grid
-    const snapResult = context.snappingService.findSnapResult(newPosition, {
-      snapPoints: [],
-      referenceLineSegments: [],
-      referencePoint: originalPosition
-    })
-
+    const snapResult = context.snappingService.findSnapResult(newPosition, snapContext)
     const finalPosition = snapResult?.position || newPosition
+
+    const newBoundary = [...wall.boundary]
+    newBoundary[cornerIndex] = finalPosition
 
     return {
       position: finalPosition,
-      snapResult: snapResult ?? undefined
+      snapResult: snapResult ?? undefined,
+      newBoundary
     }
   }
 
-  validatePosition(movementState: CornerMovementState, context: MovementContext<CornerEntityContext>): boolean {
-    const { wall, cornerIndex } = context.entity
+  validatePosition(movementState: CornerMovementState, _context: MovementContext<CornerEntityContext>): boolean {
+    const { newBoundary } = movementState
 
-    // Create new boundary with the moved corner
-    const newBoundary = [...wall.boundary]
-    newBoundary[cornerIndex] = movementState.position
-
-    // Check minimum boundary size
     if (newBoundary.length < 3) return false
 
-    // TODO: Add more validation like self-intersection check
-    // For now, just check that the new position is different
-    const originalPosition = wall.boundary[cornerIndex]
-    return movementState.position[0] !== originalPosition[0] || movementState.position[1] !== originalPosition[1]
+    return !wouldClosingPolygonSelfIntersect(newBoundary)
   }
 
   generatePreview(
@@ -124,44 +127,35 @@ export class OuterCornerMovementBehavior implements MovementBehavior<CornerEntit
           listening={false}
         />
         {/* Show the updated wall boundary preview */}
-        {this.generateWallBoundaryPreview(movementState, isValid, context)}
+        <Line
+          key="wall-boundary-preview"
+          points={movementState.newBoundary.flatMap(p => [p[0], p[1]])}
+          closed
+          stroke={isValid ? COLORS.ui.primary : COLORS.ui.danger}
+          strokeWidth={10}
+          dash={[80, 40]}
+          opacity={0.6}
+          listening={false}
+        />
       </Group>
     ]
   }
 
-  private generateWallBoundaryPreview(
-    movementState: CornerMovementState,
-    isValid: boolean,
-    context: MovementContext<CornerEntityContext>
-  ): React.ReactNode {
-    const { wall, cornerIndex } = context.entity
-
-    // Create new boundary with the moved corner
-    const newBoundary = [...wall.boundary]
-    newBoundary[cornerIndex] = movementState.position
-
-    return (
-      <Line
-        key="wall-boundary-preview"
-        points={newBoundary.flatMap(p => [p[0], p[1]])}
-        closed
-        stroke={isValid ? COLORS.ui.primary : COLORS.ui.danger}
-        strokeWidth={10}
-        dash={[80, 40]}
-        opacity={0.6}
-        listening={false}
-      />
-    )
+  commitMovement(movementState: CornerMovementState, context: MovementContext<CornerEntityContext>): boolean {
+    return context.store.updateOuterWallBoundary(context.entity.wall.id, movementState.newBoundary)
   }
 
-  commitMovement(movementState: CornerMovementState, context: MovementContext<CornerEntityContext>): boolean {
-    const { wall, cornerIndex } = context.entity
+  private getSnapLines(wall: OuterWallPolygon, cornerIndex: number): Array<LineSegment2D> {
+    const snapLines: Array<LineSegment2D> = []
 
-    // Create new boundary with the moved corner
-    const newBoundary = [...wall.boundary]
-    newBoundary[cornerIndex] = movementState.position
+    for (let i = 0; i < wall.boundary.length; i++) {
+      const nextIndex = (i + 1) % wall.boundary.length
+      if (i === cornerIndex || nextIndex === cornerIndex) continue
+      const start = wall.boundary[i]
+      const end = wall.boundary[nextIndex]
+      snapLines.push({ start, end })
+    }
 
-    // Use the store's updateOuterWallBoundary method
-    return context.store.updateOuterWallBoundary(wall.id, newBoundary)
+    return snapLines
   }
 }

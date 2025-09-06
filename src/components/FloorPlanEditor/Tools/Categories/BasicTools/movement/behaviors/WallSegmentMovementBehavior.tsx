@@ -2,7 +2,8 @@ import type { MovementBehavior, MovementContext, MouseMovementState } from '../M
 import type { SelectableId } from '@/types/ids'
 import type { StoreActions } from '@/model/store/types'
 import type { OuterWallSegment, OuterWallPolygon } from '@/types/model'
-import { add, dot, scale, perpendicular, midpoint } from '@/types/geometry'
+import { add, dot, scale, midpoint, type Vec2 } from '@/types/geometry'
+import { wouldClosingPolygonSelfIntersect } from '@/types/geometry/polygon'
 import { isOuterWallId, isWallSegmentId } from '@/types/ids'
 import React from 'react'
 import { Group, Line, Circle } from 'react-konva'
@@ -17,7 +18,8 @@ interface WallSegmentEntityContext {
 
 // Wall segment movement state - just the projected delta along perpendicular
 interface WallSegmentMovementState {
-  projectedDistance: number // Distance along perpendicular direction
+  projectedDelta: Vec2
+  newBoundary: Vec2[]
 }
 
 export class WallSegmentMovementBehavior
@@ -47,32 +49,44 @@ export class WallSegmentMovementBehavior
   }
 
   initializeState(
-    _mouseState: MouseMovementState,
-    _context: MovementContext<WallSegmentEntityContext>
+    mouseState: MouseMovementState,
+    context: MovementContext<WallSegmentEntityContext>
   ): WallSegmentMovementState {
-    return {
-      projectedDistance: 0 // TODO: Use the projected delta vector directly
-    }
+    const { wall, segment, segmentIndex } = context.entity
+    const projectedDistance = dot(mouseState.delta, segment.outsideDirection)
+    const projectedDelta = scale(segment.outsideDirection, projectedDistance)
+
+    const newBoundary = [...wall.boundary]
+    newBoundary[segmentIndex] = add(wall.boundary[segmentIndex], projectedDelta)
+    newBoundary[(segmentIndex + 1) % wall.boundary.length] = add(
+      wall.boundary[(segmentIndex + 1) % wall.boundary.length],
+      projectedDelta
+    )
+    return { projectedDelta, newBoundary }
   }
 
   constrainAndSnap(
     mouseState: MouseMovementState,
     context: MovementContext<WallSegmentEntityContext>
   ): WallSegmentMovementState {
-    const { segment } = context.entity
-
-    // Project the mouse delta onto the perpendicular direction
+    const { wall, segment, segmentIndex } = context.entity
     const projectedDistance = dot(mouseState.delta, segment.outsideDirection)
+    const projectedDelta = scale(segment.outsideDirection, projectedDistance)
 
-    return { projectedDistance }
+    const newBoundary = [...wall.boundary]
+    newBoundary[segmentIndex] = add(wall.boundary[segmentIndex], projectedDelta)
+    newBoundary[(segmentIndex + 1) % wall.boundary.length] = add(
+      wall.boundary[(segmentIndex + 1) % wall.boundary.length],
+      projectedDelta
+    )
+    return { projectedDelta, newBoundary }
   }
 
   validatePosition(
-    _movementState: WallSegmentMovementState,
+    movementState: WallSegmentMovementState,
     _context: MovementContext<WallSegmentEntityContext>
   ): boolean {
-    // TODO: Check that the new boundary wouldn't self-intersect
-    return true
+    return !wouldClosingPolygonSelfIntersect(movementState.newBoundary)
   }
 
   generatePreview(
@@ -81,12 +95,11 @@ export class WallSegmentMovementBehavior
     context: MovementContext<WallSegmentEntityContext>
   ): React.ReactNode[] {
     const { segment } = context.entity
-    const { projectedDistance } = movementState
+    const { projectedDelta, newBoundary } = movementState
 
     // Calculate original and new midpoints for visualization
     const originalMidpoint = midpoint(segment.insideLine.start, segment.insideLine.end)
-    const perpendicularDirection = perpendicular(segment.direction)
-    const newMidpoint = add(originalMidpoint, scale(perpendicularDirection, projectedDistance))
+    const newMidpoint = add(originalMidpoint, projectedDelta)
 
     return [
       <Group key="segment-preview">
@@ -113,62 +126,21 @@ export class WallSegmentMovementBehavior
           listening={false}
         />
         {/* Show the updated wall boundary preview */}
-        {this.generateWallBoundaryPreview(movementState, isValid, context)}
+        <Line
+          key="wall-boundary-preview"
+          points={newBoundary.flatMap(p => [p[0], p[1]])}
+          closed
+          stroke={isValid ? COLORS.ui.primary : COLORS.ui.danger}
+          strokeWidth={10}
+          dash={[80, 40]}
+          opacity={0.6}
+          listening={false}
+        />
       </Group>
     ]
   }
 
-  private generateWallBoundaryPreview(
-    movementState: WallSegmentMovementState,
-    isValid: boolean,
-    context: MovementContext<WallSegmentEntityContext>
-  ): React.ReactNode {
-    const { wall, segment, segmentIndex } = context.entity
-    const { projectedDistance } = movementState
-
-    // Get the perpendicular direction to the segment
-    const perpendicularDirection = perpendicular(segment.direction)
-    const offset = scale(perpendicularDirection, projectedDistance)
-
-    // Create new boundary by moving the two boundary points of this segment
-    const newBoundary = [...wall.boundary]
-    newBoundary[segmentIndex] = add(wall.boundary[segmentIndex], offset)
-    newBoundary[(segmentIndex + 1) % wall.boundary.length] = add(
-      wall.boundary[(segmentIndex + 1) % wall.boundary.length],
-      offset
-    )
-
-    return (
-      <Line
-        key="wall-boundary-preview"
-        points={newBoundary.flatMap(p => [p[0], p[1]])}
-        closed
-        stroke={isValid ? COLORS.ui.primary : COLORS.ui.danger}
-        strokeWidth={10}
-        dash={[80, 40]}
-        opacity={0.6}
-        listening={false}
-      />
-    )
-  }
-
   commitMovement(movementState: WallSegmentMovementState, context: MovementContext<WallSegmentEntityContext>): boolean {
-    const { wall, segment, segmentIndex } = context.entity
-    const { projectedDistance } = movementState
-
-    // Get the perpendicular direction to the segment
-    const perpendicularDirection = perpendicular(segment.direction)
-    const offset = scale(perpendicularDirection, projectedDistance)
-
-    // Create new boundary by moving the two boundary points of this segment
-    const newBoundary = [...wall.boundary]
-    newBoundary[segmentIndex] = add(wall.boundary[segmentIndex], offset)
-    newBoundary[(segmentIndex + 1) % wall.boundary.length] = add(
-      wall.boundary[(segmentIndex + 1) % wall.boundary.length],
-      offset
-    )
-
-    // Use the store's updateOuterWallBoundary method
-    return context.store.updateOuterWallBoundary(wall.id, newBoundary)
+    return context.store.updateOuterWallBoundary(context.entity.wall.id, movementState.newBoundary)
   }
 }

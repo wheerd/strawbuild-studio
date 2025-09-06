@@ -64,13 +64,15 @@ export interface OuterWallsActions {
     wallId: OuterWallId,
     segmentId: WallSegmentId,
     offsetFromStart: Length,
-    width: Length
+    width: Length,
+    excludedOpening?: OpeningId
   ) => boolean
   findNearestValidOpeningPosition: (
     wallId: OuterWallId,
     segmentId: WallSegmentId,
     preferredOffset: Length,
-    width: Length
+    width: Length,
+    excludedOpening?: OpeningId
   ) => Length | null
 
   // Updated getters
@@ -261,7 +263,12 @@ const createSegmentsAndCorners = (
 // Helper function to find valid gaps in a wall segment for opening placement
 
 // Private helper function to validate opening placement on a segment
-const validateOpeningOnSegment = (segment: OuterWallSegment, offsetFromStart: Length, width: Length): boolean => {
+const validateOpeningOnSegment = (
+  segment: OuterWallSegment,
+  offsetFromStart: Length,
+  width: Length,
+  excludedOpening?: OpeningId | undefined
+): boolean => {
   // Validate width
   if (width <= 0) {
     return false
@@ -275,6 +282,8 @@ const validateOpeningOnSegment = (segment: OuterWallSegment, offsetFromStart: Le
 
   // Check overlap with existing openings
   for (const existing of segment.openings) {
+    if (existing.id === excludedOpening) continue
+
     const existingStart = existing.offsetFromStart
     const existingEnd = createLength(existing.offsetFromStart + existing.width)
 
@@ -762,11 +771,20 @@ export const createOuterWallsSlice: StateCreator<OuterWallsSlice, [], [], OuterW
       const openingIndex = segment.openings.findIndex(o => o.id === openingId)
       if (openingIndex === -1) return state
 
+      const updatedOpening = {
+        ...segment.openings[openingIndex],
+        ...updates
+      }
+
+      if (!validateOpeningOnSegment(segment, updatedOpening.offsetFromStart, updatedOpening.width, openingId)) {
+        return state
+      }
+
       const updatedSegments = [...outerWall.segments]
       const updatedOpenings = [...segment.openings]
 
       updatedOpenings[openingIndex] = {
-        ...updatedOpenings[openingIndex],
+        ...updatedOpening,
         ...updates
       }
 
@@ -791,7 +809,13 @@ export const createOuterWallsSlice: StateCreator<OuterWallsSlice, [], [], OuterW
   },
 
   // Opening validation methods implementation
-  isOpeningPlacementValid: (wallId: OuterWallId, segmentId: WallSegmentId, offsetFromStart: Length, width: Length) => {
+  isOpeningPlacementValid: (
+    wallId: OuterWallId,
+    segmentId: WallSegmentId,
+    offsetFromStart: Length,
+    width: Length,
+    excludedOpening?: OpeningId
+  ) => {
     const segment = get().getSegmentById(wallId, segmentId)
     if (!segment) {
       throw new Error(`Wall segment not found: wall ${wallId}, segment ${segmentId}`)
@@ -802,14 +826,15 @@ export const createOuterWallsSlice: StateCreator<OuterWallsSlice, [], [], OuterW
       throw new Error(`Opening width must be greater than 0, got ${width}`)
     }
 
-    return validateOpeningOnSegment(segment, offsetFromStart, width)
+    return validateOpeningOnSegment(segment, offsetFromStart, width, excludedOpening)
   },
 
   findNearestValidOpeningPosition: (
     wallId: OuterWallId,
     segmentId: WallSegmentId,
     preferredStartOffset: Length,
-    width: Length
+    width: Length,
+    excludedOpening?: OpeningId
   ): Length | null => {
     const segment = get().getSegmentById(wallId, segmentId)
     if (!segment) return null
@@ -827,7 +852,9 @@ export const createOuterWallsSlice: StateCreator<OuterWallsSlice, [], [], OuterW
     if (segment.openings.length === 0) return start as Length
 
     // Sort existing openings by position
-    const sortedOpenings = [...segment.openings].sort((a, b) => a.offsetFromStart - b.offsetFromStart)
+    const sortedOpenings = [...segment.openings]
+      .filter(o => o.id !== excludedOpening)
+      .sort((a, b) => a.offsetFromStart - b.offsetFromStart)
 
     const afterIndex = sortedOpenings.findIndex(o => o.offsetFromStart >= start)
 

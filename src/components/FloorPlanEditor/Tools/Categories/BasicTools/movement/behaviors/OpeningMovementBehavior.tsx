@@ -3,7 +3,7 @@ import type { SelectableId } from '@/types/ids'
 import type { StoreActions } from '@/model/store/types'
 import type { Opening, OuterWallSegment, OuterWallPolygon } from '@/types/model'
 import type { Length } from '@/types/geometry'
-import { add, dot, scale, distance, createLength } from '@/types/geometry'
+import { add, dot, scale, createLength, subtract } from '@/types/geometry'
 import { isOuterWallId, isWallSegmentId, isOpeningId } from '@/types/ids'
 import React from 'react'
 import { Group, Line } from 'react-konva'
@@ -18,7 +18,6 @@ export interface OpeningEntityContext {
 
 // Opening movement state tracks offset changes along the segment
 export interface OpeningMovementState {
-  originalOffset: Length
   newOffset: Length
 }
 
@@ -47,7 +46,6 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
   ): OpeningMovementState {
     const { opening } = context.entity
     return {
-      originalOffset: opening.offsetFromStart, // TODO: I guess this is not needed because opening can be accessed directly
       newOffset: opening.offsetFromStart
     }
   }
@@ -56,33 +54,51 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
     mouseState: MouseMovementState,
     context: MovementContext<OpeningEntityContext>
   ): OpeningMovementState {
-    const { segment } = context.entity
+    const { segment, opening, wall } = context.entity
 
     // Constrain to segment direction only - project the mouse delta onto segment direction
     const segmentDirection = segment.direction
     const projectedDistance = dot(mouseState.delta, segmentDirection)
 
-    // Calculate new offset along segment
+    // Calculate new offset along segment (can be negative)
     const segmentStart = segment.insideLine.start
-    const currentPosition = add(segmentStart, scale(segment.direction, context.entity.opening.offsetFromStart))
+    const currentPosition = add(segmentStart, scale(segment.direction, opening.offsetFromStart))
     const newPosition = add(currentPosition, scale(segmentDirection, projectedDistance))
-    // TODO: This causes weird behavior, because it doesn't become negative if newPosition is before the start
-    const newOffset = distance(segmentStart, newPosition)
 
-    // TODO: Use findNearestValidOpeningPosition to snap to nearby valid position
-    //       See the add opening tool on how to do it
+    // Use proper signed distance calculation to handle negative offsets
+    const deltaFromStart = subtract(newPosition, segmentStart)
+    const signedOffset = dot(deltaFromStart, segmentDirection)
+
+    // Try to snap to nearest valid position
+    const snappedOffset = context.store.findNearestValidOpeningPosition(
+      wall.id,
+      segment.id,
+      createLength(signedOffset),
+      opening.width,
+      opening.id
+    )
+
+    // Use snapped position if available and within reasonable distance
+    const maxSnapDistance = opening.width * 0.4
+    const finalOffset =
+      snappedOffset !== null && Math.abs(snappedOffset - signedOffset) <= maxSnapDistance
+        ? snappedOffset
+        : createLength(Math.max(0, signedOffset)) // Clamp to non-negative only if no snap
+
     return {
-      originalOffset: context.entity.opening.offsetFromStart,
-      newOffset: createLength(Math.max(0, newOffset)) // Ensure non-negative offset
+      newOffset: finalOffset
     }
   }
 
   validatePosition(movementState: OpeningMovementState, context: MovementContext<OpeningEntityContext>): boolean {
     const { wall, segment, opening } = context.entity
-
-    // Use existing validation from store
-    // TODO: Validation should allow to exclude the opening's id from the validation (otherwise it blocks itself)
-    return context.store.isOpeningPlacementValid(wall.id, segment.id, movementState.newOffset, opening.width)
+    return context.store.isOpeningPlacementValid(
+      wall.id,
+      segment.id,
+      movementState.newOffset,
+      opening.width,
+      opening.id
+    )
   }
 
   generatePreview(
@@ -105,8 +121,8 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
     const outsideStart = add(openingStart, scale(outsideDirection, segment.thickness))
     const outsideEnd = add(openingEnd, scale(outsideDirection, segment.thickness))
 
-    // Original position for movement indicator
-    const originalStart = add(segmentStart, scale(segment.direction, movementState.originalOffset))
+    // Original position for movement indicator (access directly from entity)
+    const originalStart = add(segmentStart, scale(segment.direction, opening.offsetFromStart))
 
     return [
       <Group key="opening-preview">
