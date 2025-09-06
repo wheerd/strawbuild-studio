@@ -4,6 +4,41 @@
 
 Implementation of a generic, extensible MoveTool that can handle movement of different entity types with proper constraints, validation, snapping, and visual feedback. The system uses a behavior-based architecture where each entity type has its own movement behavior that fully encapsulates the movement logic.
 
+## ✅ COMPLETED: Delta-based Movement Implementation
+
+**Fixed**: Opening move offset issue by implementing delta-based movement architecture.
+
+### Key Changes Made:
+
+1. **Updated MovementBehavior Interface**:
+   - Position data moved to `MovementState` (cleaner immutable context)
+   - Added `getEntityPosition()` method for proper entity position initialization
+   - Methods now work with `MovementState` instead of individual parameters
+
+2. **Fixed Opening Movement**:
+   - Mouse offset properly preserved during movement
+   - Opening no longer "jumps" to mouse cursor position
+   - Delta-based calculation: `finalEntityPosition = initialEntityPosition + projected_mouseDelta`
+
+3. **MoveTool Updates**:
+   - Calculates and tracks mouse delta during movement
+   - Initializes proper entity positions using behavior's `getEntityPosition()`
+   - Maintains spatial relationship between mouse and entity
+
+### Architecture Benefits:
+
+- **No more jumping**: Entity maintains offset from mouse cursor
+- **Cleaner separation**: Context is immutable, state contains all positioning data
+- **Consistent UX**: All entity types now have proper offset handling
+
+### Remaining TODOs:
+
+- **Snapping**:
+  - Preview with component
+  - Reuse snapping context
+- **Opening validation**: isOpeningPlacementValid needs to exclude moved opening
+- **Complete other behaviors**: Wall segments and corners need full implementation (currently stubbed)
+
 ## Architecture
 
 ### Core Components

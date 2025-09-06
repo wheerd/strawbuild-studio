@@ -4,7 +4,7 @@ import type { MovementBehavior, MovementContext, MovementState } from './movemen
 import { BaseTool } from '@/components/FloorPlanEditor/Tools/ToolSystem/BaseTool'
 import { getMovementBehavior } from './movement/movementBehaviors'
 import { defaultSnappingService } from '@/model/store/services/snapping/SnappingService'
-import { distanceSquared } from '@/types/geometry'
+import { distanceSquared, subtract } from '@/types/geometry'
 import { MoveToolOverlay } from './overlays/MoveToolOverlay'
 
 export class MoveTool extends BaseTool implements Tool {
@@ -43,6 +43,10 @@ export class MoveTool extends BaseTool implements Tool {
     const behavior = getMovementBehavior(hitResult.entityType)
     if (!behavior) return false
 
+    // Get the entity's actual position
+    const store = event.context.getModelStore()
+    const initialEntityPosition = behavior.getEntityPosition(hitResult.entityId, hitResult.parentIds, store)
+
     // Start waiting for movement - don't begin actual move yet
     this.toolState.isWaitingForMovement = true
     this.toolState.downPosition = event.stageCoordinates
@@ -51,10 +55,19 @@ export class MoveTool extends BaseTool implements Tool {
       entityId: hitResult.entityId,
       entityType: hitResult.entityType,
       parentIds: hitResult.parentIds,
-      startPosition: event.stageCoordinates,
-      currentPosition: event.stageCoordinates,
-      store: event.context.getModelStore(),
+      store,
       snappingService: defaultSnappingService
+    }
+
+    // Initialize movement state
+    this.toolState.currentMovementState = {
+      initialEntityPosition,
+      mouseStartPosition: event.stageCoordinates,
+      mouseCurrentPosition: event.stageCoordinates,
+      mouseDelta: [0, 0],
+      finalEntityPosition: initialEntityPosition,
+      snapResult: null,
+      isValidPosition: true
     }
 
     return true
@@ -81,15 +94,21 @@ export class MoveTool extends BaseTool implements Tool {
 
     if (!this.toolState.isMoving) return false
 
-    const { behavior, context } = this.toolState
-    if (!behavior || !context) return false
+    const { behavior, context, currentMovementState } = this.toolState
+    if (!behavior || !context || !currentMovementState) return false
+
+    // Update movement state with current mouse position and delta
+    const updatedMovementState = {
+      ...currentMovementState,
+      mouseCurrentPosition: event.stageCoordinates,
+      mouseDelta: subtract(event.stageCoordinates, currentMovementState.mouseStartPosition)
+    }
 
     // Apply constraints, snapping and validation
-    const movementState = behavior.constrainAndSnap(event.stageCoordinates, context)
-    movementState.isValidPosition = behavior.validatePosition(movementState.finalPosition, context)
+    const finalMovementState = behavior.constrainAndSnap(updatedMovementState, context)
+    finalMovementState.isValidPosition = behavior.validatePosition(finalMovementState, context)
 
-    this.toolState.currentMovementState = movementState
-    context.currentPosition = movementState.finalPosition
+    this.toolState.currentMovementState = finalMovementState
 
     this.triggerRender()
     return true
@@ -109,7 +128,7 @@ export class MoveTool extends BaseTool implements Tool {
 
     // Only commit if position is valid
     if (currentMovementState.isValidPosition) {
-      behavior.commitMovement(currentMovementState.finalPosition, context)
+      behavior.commitMovement(currentMovementState, context)
     }
 
     this.resetState()

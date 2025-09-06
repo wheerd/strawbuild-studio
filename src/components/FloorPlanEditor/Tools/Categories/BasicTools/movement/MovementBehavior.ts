@@ -9,28 +9,42 @@ export interface MovementContext {
   entityId: SelectableId
   entityType: EntityType
   parentIds: SelectableId[]
-  startPosition: Vec2
-  currentPosition: Vec2
   store: StoreActions
   snappingService: SnappingService
 }
 
 export interface MovementState {
+  // Position data
+  initialEntityPosition: Vec2 // Actual initial position of the entity
+  mouseStartPosition: Vec2 // Initial mouse position
+  mouseCurrentPosition: Vec2 // Current mouse position
+  mouseDelta: Vec2 // mouseCurrentPosition - mouseStartPosition
+  finalEntityPosition: Vec2 // The final position of the entity after constraints/snapping
+
+  // Movement result
   snapResult: SnapResult | null
   isValidPosition: boolean
-  finalPosition: Vec2 // The position after constraints/snapping
+}
+
+export interface MovementState {
+  snapResult: SnapResult | null
+  isValidPosition: boolean
+  finalEntityPosition: Vec2 // The final position of the entity after constraints/snapping
 }
 
 export interface MovementBehavior {
-  // Apply constraints and snapping - returns final position and snap info
-  constrainAndSnap(targetPosition: Vec2, context: MovementContext): MovementState
+  // Get the entity's actual position for initialization
+  getEntityPosition(entityId: SelectableId, parentIds: SelectableId[], store: StoreActions): Vec2
+
+  // Apply constraints and snapping - updates the MovementState with final position
+  constrainAndSnap(movementState: MovementState, context: MovementContext): MovementState
 
   // Validate position using slice logic - behavior constructs geometry, slice validates
-  validatePosition(finalPosition: Vec2, context: MovementContext): boolean
+  validatePosition(movementState: MovementState, context: MovementContext): boolean
 
   // Generate preview with full state
   generatePreview(movementState: MovementState, context: MovementContext): React.ReactNode[]
 
   // Commit movement using slice operations
-  commitMovement(finalPosition: Vec2, context: MovementContext): boolean
+  commitMovement(movementState: MovementState, context: MovementContext): boolean
 }

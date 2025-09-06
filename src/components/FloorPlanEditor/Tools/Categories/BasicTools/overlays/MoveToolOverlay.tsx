@@ -23,8 +23,8 @@ export function MoveToolOverlay({ tool }: ToolOverlayComponentProps<MoveTool>) {
       {!currentMovementState.isValidPosition && (
         <Group>
           <Circle
-            x={currentMovementState.finalPosition[0]}
-            y={currentMovementState.finalPosition[1]}
+            x={currentMovementState.finalEntityPosition[0]}
+            y={currentMovementState.finalEntityPosition[1]}
             radius={8}
             fill={COLORS.ui.danger}
             stroke={COLORS.ui.white}
@@ -35,8 +35,8 @@ export function MoveToolOverlay({ tool }: ToolOverlayComponentProps<MoveTool>) {
             text="Invalid position"
             fill={COLORS.ui.danger}
             fontSize={12}
-            x={currentMovementState.finalPosition[0] + 15}
-            y={currentMovementState.finalPosition[1] - 5}
+            x={currentMovementState.finalEntityPosition[0] + 15}
+            y={currentMovementState.finalEntityPosition[1] - 5}
           />
         </Group>
       )}
