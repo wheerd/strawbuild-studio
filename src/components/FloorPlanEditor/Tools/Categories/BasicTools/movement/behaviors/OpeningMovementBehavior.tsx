@@ -6,6 +6,7 @@ import { subtract, add, dot, scale, distance } from '@/types/geometry'
 import { isOuterWallId, isWallSegmentId, isOpeningId } from '@/types/ids'
 import React from 'react'
 import { Group, Line } from 'react-konva'
+import { COLORS } from '@/theme/colors'
 
 export class OpeningMovementBehavior implements MovementBehavior {
   constrainAndSnap(targetPosition: Vec2, context: MovementContext): MovementState {
@@ -78,10 +79,35 @@ export class OpeningMovementBehavior implements MovementBehavior {
           key="opening-rectangle"
           points={[insideStart, insideEnd, outsideEnd, outsideStart].flatMap(p => [p[0], p[1]])}
           closed
-          fill={movementState.isValidPosition ? 'rgba(173, 216, 230, 0.7)' : 'rgba(240, 128, 128, 0.7)'}
-          stroke={movementState.isValidPosition ? '#0066FF' : '#FF0000'}
-          strokeWidth={2}
-          opacity={0.8}
+          fill={movementState.isValidPosition ? COLORS.ui.success : COLORS.ui.danger}
+          stroke={COLORS.ui.white}
+          strokeWidth={3}
+          opacity={0.6}
+          listening={false}
+        />
+        {/* Show constraint line along segment */}
+        <Line
+          key="constraint-line"
+          points={[segmentStart[0], segmentStart[1], segmentEnd[0], segmentEnd[1]]}
+          stroke={COLORS.ui.gray500}
+          strokeWidth={1}
+          dash={[2, 2]}
+          opacity={0.7}
+          listening={false}
+        />
+        {/* Show movement indicator */}
+        <Line
+          key="movement-line"
+          points={[
+            context.startPosition[0],
+            context.startPosition[1],
+            movementState.finalPosition[0],
+            movementState.finalPosition[1]
+          ]}
+          stroke={COLORS.ui.gray600}
+          strokeWidth={1}
+          dash={[2, 2]}
+          opacity={0.7}
           listening={false}
         />
         {/* Show constraint line along segment */}

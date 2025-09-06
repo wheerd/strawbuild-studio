@@ -5,6 +5,7 @@ import type { Vec2, LineSegment2D } from '@/types/geometry'
 import { isOuterWallId } from '@/types/ids'
 import React from 'react'
 import { Group, Line, Circle } from 'react-konva'
+import { COLORS } from '@/theme/colors'
 
 export class OuterCornerMovementBehavior implements MovementBehavior {
   constrainAndSnap(targetPosition: Vec2, context: MovementContext): MovementState {
@@ -54,7 +55,7 @@ export class OuterCornerMovementBehavior implements MovementBehavior {
           key="preview-polygon"
           points={newBoundaryPoints.flatMap(p => [p[0], p[1]])}
           closed
-          stroke={movementState.isValidPosition ? '#0066FF' : '#FF0000'}
+          stroke={movementState.isValidPosition ? COLORS.ui.primary : COLORS.ui.danger}
           strokeWidth={3}
           dash={[8, 4]}
           opacity={0.9}
@@ -65,7 +66,8 @@ export class OuterCornerMovementBehavior implements MovementBehavior {
           key="preview-polygon-fill"
           points={newBoundaryPoints.flatMap(p => [p[0], p[1]])}
           closed
-          fill={movementState.isValidPosition ? 'rgba(0, 102, 255, 0.1)' : 'rgba(255, 0, 0, 0.1)'}
+          fill={movementState.isValidPosition ? COLORS.ui.success : COLORS.ui.danger}
+          opacity={0.1}
           listening={false}
         />
         {/* Highlight the moved corner */}
@@ -73,9 +75,11 @@ export class OuterCornerMovementBehavior implements MovementBehavior {
           key="moved-corner"
           x={movementState.finalPosition[0]}
           y={movementState.finalPosition[1]}
-          radius={6}
-          fill={movementState.isValidPosition ? '#0066FF' : '#FF0000'}
-          opacity={0.8}
+          radius={8}
+          fill={movementState.isValidPosition ? COLORS.selection.primary : COLORS.ui.danger}
+          stroke={COLORS.ui.white}
+          strokeWidth={2}
+          opacity={0.9}
           listening={false}
         />
         {/* Add snap visualization if snapping occurred */}
@@ -84,9 +88,9 @@ export class OuterCornerMovementBehavior implements MovementBehavior {
             key="snap-indicator"
             x={movementState.finalPosition[0]}
             y={movementState.finalPosition[1]}
-            radius={10}
-            stroke="#00AA00"
-            strokeWidth={2}
+            radius={12}
+            stroke={COLORS.snapping.highlight}
+            strokeWidth={3}
             opacity={0.8}
             listening={false}
           />

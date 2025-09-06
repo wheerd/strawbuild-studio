@@ -2,6 +2,7 @@ import type { ToolOverlayComponentProps } from '@/components/FloorPlanEditor/Too
 import type { MoveTool } from '../MoveTool'
 import { Group, Circle, Text } from 'react-konva'
 import { useReactiveTool } from '../../../hooks/useReactiveTool'
+import { COLORS } from '@/theme/colors'
 
 export function MoveToolOverlay({ tool }: ToolOverlayComponentProps<MoveTool>) {
   useReactiveTool(tool)
@@ -25,12 +26,14 @@ export function MoveToolOverlay({ tool }: ToolOverlayComponentProps<MoveTool>) {
             x={currentMovementState.finalPosition[0]}
             y={currentMovementState.finalPosition[1]}
             radius={8}
-            fill="red"
-            opacity={0.7}
+            fill={COLORS.ui.danger}
+            stroke={COLORS.ui.white}
+            strokeWidth={2}
+            opacity={0.9}
           />
           <Text
             text="Invalid position"
-            fill="red"
+            fill={COLORS.ui.danger}
             fontSize={12}
             x={currentMovementState.finalPosition[0] + 15}
             y={currentMovementState.finalPosition[1] - 5}

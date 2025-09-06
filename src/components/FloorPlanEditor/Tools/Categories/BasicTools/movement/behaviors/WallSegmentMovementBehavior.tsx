@@ -6,6 +6,7 @@ import { subtract, add, dot, scale, perpendicularCCW } from '@/types/geometry'
 import { isOuterWallId, isWallSegmentId } from '@/types/ids'
 import React from 'react'
 import { Group, Line } from 'react-konva'
+import { COLORS } from '@/theme/colors'
 
 export class WallSegmentMovementBehavior implements MovementBehavior {
   constrainAndSnap(targetPosition: Vec2, context: MovementContext): MovementState {
@@ -63,9 +64,32 @@ export class WallSegmentMovementBehavior implements MovementBehavior {
           key="preview-polygon"
           points={newBoundaryPoints.flatMap(p => [p[0], p[1]])}
           closed
-          stroke={movementState.isValidPosition ? 'blue' : 'red'}
-          strokeWidth={2}
-          dash={[5, 5]}
+          stroke={movementState.isValidPosition ? COLORS.ui.primary : COLORS.ui.danger}
+          strokeWidth={3}
+          dash={[8, 4]}
+          opacity={0.9}
+          listening={false}
+        />
+        {/* Add semi-transparent fill for better visibility */}
+        <Line
+          key="preview-polygon-fill"
+          points={newBoundaryPoints.flatMap(p => [p[0], p[1]])}
+          closed
+          fill={movementState.isValidPosition ? COLORS.ui.success : COLORS.ui.danger}
+          opacity={0.1}
+          listening={false}
+        />
+        <Line
+          key="constraint-line"
+          points={[
+            context.startPosition[0],
+            context.startPosition[1],
+            movementState.finalPosition[0],
+            movementState.finalPosition[1]
+          ]}
+          stroke={COLORS.ui.gray500}
+          strokeWidth={1}
+          dash={[2, 2]}
           opacity={0.7}
           listening={false}
         />

@@ -6,6 +6,7 @@ import { subtract, add } from '@/types/geometry'
 import { isOuterWallId } from '@/types/ids'
 import React from 'react'
 import { Group, Line } from 'react-konva'
+import { COLORS } from '@/theme/colors'
 
 export class OuterWallPolygonMovementBehavior implements MovementBehavior {
   constrainAndSnap(targetPosition: Vec2, context: MovementContext): MovementState {
@@ -48,7 +49,7 @@ export class OuterWallPolygonMovementBehavior implements MovementBehavior {
           key="preview-polygon"
           points={previewBoundary.flatMap(p => [p[0], p[1]])}
           closed
-          stroke={movementState.isValidPosition ? '#0066FF' : '#FF0000'}
+          stroke={movementState.isValidPosition ? COLORS.ui.primary : COLORS.ui.danger}
           strokeWidth={3}
           dash={[8, 4]}
           opacity={0.9}
@@ -59,7 +60,8 @@ export class OuterWallPolygonMovementBehavior implements MovementBehavior {
           key="preview-polygon-fill"
           points={previewBoundary.flatMap(p => [p[0], p[1]])}
           closed
-          fill={movementState.isValidPosition ? 'rgba(0, 102, 255, 0.1)' : 'rgba(255, 0, 0, 0.1)'}
+          fill={movementState.isValidPosition ? COLORS.ui.success : COLORS.ui.danger}
+          opacity={0.1}
           listening={false}
         />
       </Group>
