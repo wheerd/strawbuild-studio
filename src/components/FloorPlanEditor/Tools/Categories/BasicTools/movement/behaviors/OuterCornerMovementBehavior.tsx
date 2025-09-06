@@ -1,5 +1,5 @@
 import type { MovementBehavior, MovementContext, MouseMovementState } from '../MovementBehavior'
-import type { SelectableId, OuterWallId, OuterCornerId } from '@/types/ids'
+import type { SelectableId } from '@/types/ids'
 import type { StoreActions } from '@/model/store/types'
 import type { OuterCorner, OuterWallPolygon } from '@/types/model'
 import type { Vec2 } from '@/types/geometry'
@@ -15,25 +15,25 @@ interface CornerEntityContext {
   wall: OuterWallPolygon
   corner: OuterCorner
   cornerIndex: number // Index of the boundary point that corresponds to this corner
+  // TODO: Add snap context here so that it only needs to be constructed once
 }
 
 // Corner movement state
 export interface CornerMovementState {
-  mouseOffset: Vec2 // To keep
   position: Vec2
-  snapResult: SnapResult
+  snapResult?: SnapResult
 }
 
 export class OuterCornerMovementBehavior implements MovementBehavior<CornerEntityContext, CornerMovementState> {
   getEntity(entityId: SelectableId, parentIds: SelectableId[], store: StoreActions): CornerEntityContext {
-    const parentWallId = parentIds.find(id => isOuterWallId(id as string)) as OuterWallId
+    const [wallId] = parentIds
 
-    if (!parentWallId || !isOuterCornerId(entityId as string)) {
+    if (!isOuterWallId(wallId) || !isOuterCornerId(entityId)) {
       throw new Error(`Invalid entity context for corner ${entityId}`)
     }
 
-    const wall = store.getOuterWallById(parentWallId)
-    const corner = store.getCornerById(parentWallId, entityId as OuterCornerId)
+    const wall = store.getOuterWallById(wallId)
+    const corner = store.getCornerById(wallId, entityId)
 
     if (!wall || !corner) {
       throw new Error(`Could not find wall or corner ${entityId}`)
@@ -52,12 +52,7 @@ export class OuterCornerMovementBehavior implements MovementBehavior<CornerEntit
     const boundaryPoint = context.entity.wall.boundary[context.entity.cornerIndex]
 
     return {
-      mouseOffset: [0, 0] as Vec2,
-      position: boundaryPoint,
-      snapResult: {
-        position: boundaryPoint,
-        lines: []
-      }
+      position: boundaryPoint
     }
   }
 
@@ -75,12 +70,8 @@ export class OuterCornerMovementBehavior implements MovementBehavior<CornerEntit
     const finalPosition = snapResult?.position || newPosition
 
     return {
-      mouseOffset: mouseState.delta,
       position: finalPosition,
-      snapResult: snapResult || {
-        position: finalPosition,
-        lines: []
-      }
+      snapResult: snapResult ?? undefined
     }
   }
 

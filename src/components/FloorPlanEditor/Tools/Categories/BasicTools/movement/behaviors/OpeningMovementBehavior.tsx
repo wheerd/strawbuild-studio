@@ -1,5 +1,5 @@
 import type { MovementBehavior, MovementContext, MouseMovementState } from '../MovementBehavior'
-import type { SelectableId, OuterWallId, WallSegmentId, OpeningId } from '@/types/ids'
+import type { SelectableId } from '@/types/ids'
 import type { StoreActions } from '@/model/store/types'
 import type { Opening, OuterWallSegment, OuterWallPolygon } from '@/types/model'
 import type { Length } from '@/types/geometry'
@@ -24,16 +24,15 @@ export interface OpeningMovementState {
 
 export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityContext, OpeningMovementState> {
   getEntity(entityId: SelectableId, parentIds: SelectableId[], store: StoreActions): OpeningEntityContext {
-    const parentWallId = parentIds.find(id => isOuterWallId(id as string)) as OuterWallId
-    const parentSegmentId = parentIds.find(id => isWallSegmentId(id as string)) as WallSegmentId
+    const [wallId, segmentId] = parentIds
 
-    if (!parentWallId || !parentSegmentId || !isOpeningId(entityId as string)) {
+    if (!isOuterWallId(wallId) || !isWallSegmentId(segmentId) || !isOpeningId(entityId)) {
       throw new Error(`Invalid entity context for opening ${entityId}`)
     }
 
-    const wall = store.getOuterWallById(parentWallId)
-    const segment = store.getSegmentById(parentWallId, parentSegmentId)
-    const opening = store.getOpeningById(parentWallId, parentSegmentId, entityId as OpeningId)
+    const wall = store.getOuterWallById(wallId)
+    const segment = store.getSegmentById(wallId, segmentId)
+    const opening = store.getOpeningById(wallId, segmentId, entityId)
 
     if (!wall || !segment || !opening) {
       throw new Error(`Could not find required entities for opening ${entityId}`)
@@ -48,7 +47,7 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
   ): OpeningMovementState {
     const { opening } = context.entity
     return {
-      originalOffset: opening.offsetFromStart,
+      originalOffset: opening.offsetFromStart, // TODO: I guess this is not needed because opening can be accessed directly
       newOffset: opening.offsetFromStart
     }
   }
@@ -67,8 +66,11 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
     const segmentStart = segment.insideLine.start
     const currentPosition = add(segmentStart, scale(segment.direction, context.entity.opening.offsetFromStart))
     const newPosition = add(currentPosition, scale(segmentDirection, projectedDistance))
+    // TODO: This causes weird behavior, because it doesn't become negative if newPosition is before the start
     const newOffset = distance(segmentStart, newPosition)
 
+    // TODO: Use findNearestValidOpeningPosition to snap to nearby valid position
+    //       See the add opening tool on how to do it
     return {
       originalOffset: context.entity.opening.offsetFromStart,
       newOffset: createLength(Math.max(0, newOffset)) // Ensure non-negative offset
@@ -79,6 +81,7 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
     const { wall, segment, opening } = context.entity
 
     // Use existing validation from store
+    // TODO: Validation should allow to exclude the opening's id from the validation (otherwise it blocks itself)
     return context.store.isOpeningPlacementValid(wall.id, segment.id, movementState.newOffset, opening.width)
   }
 

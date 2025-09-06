@@ -70,7 +70,6 @@ export class MoveTool extends BaseTool implements Tool {
       delta: [0, 0]
     }
 
-    this.toolState.currentMovementState = behavior.initializeState(this.toolState.mouseState, this.toolState.context)
     this.toolState.isValid = true
 
     return true
@@ -88,6 +87,11 @@ export class MoveTool extends BaseTool implements Tool {
         this.toolState.isWaitingForMovement = false
         this.toolState.isMoving = true
         this.toolState.downPosition = null
+
+        this.toolState.currentMovementState = this.toolState.behavior!.initializeState(
+          this.toolState.mouseState!,
+          this.toolState.context!
+        )
 
         // Continue with movement logic below
       } else {
@@ -141,6 +145,7 @@ export class MoveTool extends BaseTool implements Tool {
   }
 
   handleKeyDown(_event: CanvasEvent): boolean {
+    // TODO: Escape key should also cancel the movement
     return false
   }
 

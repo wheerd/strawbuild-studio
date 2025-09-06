@@ -1,8 +1,7 @@
 import type { MovementBehavior, MovementContext, MouseMovementState } from '../MovementBehavior'
-import type { SelectableId, OuterWallId, WallSegmentId } from '@/types/ids'
+import type { SelectableId } from '@/types/ids'
 import type { StoreActions } from '@/model/store/types'
 import type { OuterWallSegment, OuterWallPolygon } from '@/types/model'
-import type { Vec2 } from '@/types/geometry'
 import { add, dot, scale, perpendicular, midpoint } from '@/types/geometry'
 import { isOuterWallId, isWallSegmentId } from '@/types/ids'
 import React from 'react'
@@ -16,10 +15,8 @@ interface WallSegmentEntityContext {
   segmentIndex: number // Index of the segment in the wall
 }
 
-// Wall segment movement - move perpendicular to the segment
+// Wall segment movement state - just the projected delta along perpendicular
 interface WallSegmentMovementState {
-  originalMidpoint: Vec2
-  newMidpoint: Vec2
   projectedDistance: number // Distance along perpendicular direction
 }
 
@@ -27,14 +24,14 @@ export class WallSegmentMovementBehavior
   implements MovementBehavior<WallSegmentEntityContext, WallSegmentMovementState>
 {
   getEntity(entityId: SelectableId, parentIds: SelectableId[], store: StoreActions): WallSegmentEntityContext {
-    const parentWallId = parentIds.find(id => isOuterWallId(id as string)) as OuterWallId
+    const [wallId] = parentIds
 
-    if (!parentWallId || !isWallSegmentId(entityId as string)) {
+    if (!isOuterWallId(wallId) || !isWallSegmentId(entityId)) {
       throw new Error(`Invalid entity context for segment ${entityId}`)
     }
 
-    const wall = store.getOuterWallById(parentWallId)
-    const segment = store.getSegmentById(parentWallId, entityId as WallSegmentId)
+    const wall = store.getOuterWallById(wallId)
+    const segment = store.getSegmentById(wallId, entityId)
 
     if (!wall || !segment) {
       throw new Error(`Could not find wall or segment ${entityId}`)
@@ -51,14 +48,10 @@ export class WallSegmentMovementBehavior
 
   initializeState(
     _mouseState: MouseMovementState,
-    context: MovementContext<WallSegmentEntityContext>
+    _context: MovementContext<WallSegmentEntityContext>
   ): WallSegmentMovementState {
-    const originalMidpoint = midpoint(context.entity.segment.insideLine.start, context.entity.segment.insideLine.end)
-
     return {
-      originalMidpoint,
-      newMidpoint: originalMidpoint,
-      projectedDistance: 0
+      projectedDistance: 0 // TODO: Use the projected delta vector directly
     }
   }
 
@@ -67,34 +60,17 @@ export class WallSegmentMovementBehavior
     context: MovementContext<WallSegmentEntityContext>
   ): WallSegmentMovementState {
     const { segment } = context.entity
-    const originalMidpoint = midpoint(segment.insideLine.start, segment.insideLine.end)
-
-    // Get the perpendicular direction to the segment (pointing "outward")
-    const perpendicularDirection = perpendicular(segment.direction)
 
     // Project the mouse delta onto the perpendicular direction
-    const projectedDistance = dot(mouseState.delta, perpendicularDirection)
+    const projectedDistance = dot(mouseState.delta, segment.outsideDirection)
 
-    // Calculate new midpoint
-    const newMidpoint = add(originalMidpoint, scale(perpendicularDirection, projectedDistance))
-
-    return {
-      originalMidpoint,
-      newMidpoint,
-      projectedDistance
-    }
+    return { projectedDistance }
   }
 
   validatePosition(
-    movementState: WallSegmentMovementState,
+    _movementState: WallSegmentMovementState,
     _context: MovementContext<WallSegmentEntityContext>
   ): boolean {
-    // For now, allow any movement - TODO: add validation for self-intersections
-    const { projectedDistance } = movementState
-
-    // Don't allow zero movement
-    if (Math.abs(projectedDistance) < 1) return false
-
     // TODO: Check that the new boundary wouldn't self-intersect
     return true
   }
@@ -104,7 +80,13 @@ export class WallSegmentMovementBehavior
     isValid: boolean,
     context: MovementContext<WallSegmentEntityContext>
   ): React.ReactNode[] {
-    const { originalMidpoint, newMidpoint } = movementState
+    const { segment } = context.entity
+    const { projectedDistance } = movementState
+
+    // Calculate original and new midpoints for visualization
+    const originalMidpoint = midpoint(segment.insideLine.start, segment.insideLine.end)
+    const perpendicularDirection = perpendicular(segment.direction)
+    const newMidpoint = add(originalMidpoint, scale(perpendicularDirection, projectedDistance))
 
     return [
       <Group key="segment-preview">
@@ -113,7 +95,7 @@ export class WallSegmentMovementBehavior
           key="new-midpoint"
           x={newMidpoint[0]}
           y={newMidpoint[1]}
-          radius={4}
+          radius={20}
           fill={isValid ? COLORS.ui.success : COLORS.ui.danger}
           stroke={COLORS.ui.white}
           strokeWidth={2}
@@ -125,8 +107,8 @@ export class WallSegmentMovementBehavior
           key="movement-line"
           points={[originalMidpoint[0], originalMidpoint[1], newMidpoint[0], newMidpoint[1]]}
           stroke={COLORS.ui.gray600}
-          strokeWidth={2}
-          dash={[5, 5]}
+          strokeWidth={10}
+          dash={[50, 50]}
           opacity={0.7}
           listening={false}
         />
@@ -162,8 +144,8 @@ export class WallSegmentMovementBehavior
         points={newBoundary.flatMap(p => [p[0], p[1]])}
         closed
         stroke={isValid ? COLORS.ui.primary : COLORS.ui.danger}
-        strokeWidth={2}
-        dash={[8, 4]}
+        strokeWidth={10}
+        dash={[80, 40]}
         opacity={0.6}
         listening={false}
       />

@@ -10,7 +10,7 @@ const MOVEMENT_BEHAVIORS: Record<EntityType, MovementBehavior<any, any> | null> 
   'wall-segment': new WallSegmentMovementBehavior(),
   'outer-corner': new OuterCornerMovementBehavior(),
   opening: new OpeningMovementBehavior(),
-  floor: null // Not implemented yet
+  floor: null // Not implemented
 }
 
 export function getMovementBehavior(entityType: EntityType): MovementBehavior<any, any> | null {
