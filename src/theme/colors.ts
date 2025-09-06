@@ -1,21 +1,21 @@
 export const COLORS = {
   // Material/Construction colors
   materials: {
-    strawbale: '#DAA520',
+    strawbale: '#daa520',
     limePlaster: '#555555',
-    clayPlaster: '#8B4513',
-    other: '#2F2F2F',
-    woodSupport: '#CD853F',
+    clayPlaster: '#8b4513',
+    other: '#2f2f2f',
+    woodSupport: '#cd853f',
     // Opening types
-    door: '#8B4513',
-    window: '#87CEEB'
+    door: '#8b4513',
+    window: '#87ceeb'
   },
 
   // Interactive States
   selection: {
     primary: '#007acc', // Selected items
     outline: '#1e40af', // Selection boundaries
-    secondary: '#F99',
+    secondary: '#ff9999',
     secondaryOutline: '#dc3545'
   },
 
@@ -24,24 +24,24 @@ export const COLORS = {
     grid: '#cccccc',
     background: '#ffffff',
     // Shape fill colors
-    buildingBackground: '#AAA',
-    openingBackground: '#999'
+    buildingBackground: '#aaaaaa',
+    openingBackground: '#999999'
   },
 
   // Length Indicators & Annotations
   indicators: {
-    main: '#000',
-    secondary: '#333',
+    main: '#000000',
+    secondary: '#333333',
     selected: '#007acc'
   },
 
   // Snapping System
   snapping: {
     points: '#007bff',
-    pointStroke: 'white',
+    pointStroke: '#ffffff',
     lines: '#0066ff',
     highlight: '#007bff',
-    highlightStroke: 'white'
+    highlightStroke: '#ffffff'
   },
 
   // UI System (Bootstrap-like)
