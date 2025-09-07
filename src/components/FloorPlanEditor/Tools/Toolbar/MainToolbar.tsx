@@ -1,4 +1,7 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
+import * as Toolbar from '@radix-ui/react-toolbar'
+import * as Tooltip from '@radix-ui/react-tooltip'
+import * as Separator from '@radix-ui/react-separator'
 import {
   useToolContext,
   useToolManager,
@@ -10,71 +13,67 @@ export function MainToolbar(): React.JSX.Element {
   const toolManagerState = useToolManagerState()
   const context = useToolContext()
 
-  // Track active tab (tool group)
-  const [activeTab, setActiveTab] = useState<string | null>(null)
-
   const handleToolSelect = useCallback(
     (toolId: string) => {
       toolManager.activateTool(toolId, context)
     },
-    [toolManager]
-  )
-
-  const handleTabSelect = useCallback(
-    (groupId: string) => {
-      setActiveTab(groupId)
-      // Optionally activate the default tool for the group when tab is clicked
-      toolManager.activateDefaultToolForGroup(groupId, context)
-    },
-    [toolManager]
+    [toolManager, context]
   )
 
   // Group tools by category
   const toolGroups = Array.from(toolManagerState.toolGroups.values())
 
-  // Auto-select the first tab and determine active tab based on current tool
-  const currentActiveGroup = toolManagerState.activeTool
-    ? toolGroups.find(group => group.tools.some(tool => tool.id === toolManagerState.activeTool?.id))
-    : null
-
-  const effectiveActiveTab = activeTab || currentActiveGroup?.id || toolGroups[0]?.id
-
   return (
-    <div className="tabbed-toolbar" data-testid="main-toolbar">
-      {/* Tab Headers - Tool Groups */}
-      <div className="toolbar-tabs">
-        {toolGroups.map(group => (
-          <button
-            key={group.id}
-            className={`tab-button ${effectiveActiveTab === group.id ? 'active' : ''}`}
-            onClick={() => handleTabSelect(group.id)}
-          >
-            <span className="tab-icon">{group.icon}</span>
-            <span className="tab-label">{group.name}</span>
-          </button>
-        ))}
-      </div>
+    <div className="bg-white border-b border-gray-200 shadow-sm" data-testid="main-toolbar">
+      <div className="px-4 py-3">
+        <Tooltip.Provider>
+          <Toolbar.Root className="flex items-center gap-1">
+            {toolGroups.map((group, groupIndex) => (
+              <div key={group.id} className="flex items-center">
+                {groupIndex > 0 && <Separator.Root className="mx-2 h-6 w-px bg-gray-300" orientation="vertical" />}
 
-      {/* Tab Content - Tools in Active Group */}
-      <div className="toolbar-content">
-        {toolGroups
-          .filter(group => group.id === effectiveActiveTab)
-          .map(group => (
-            <div key={group.id} className="tool-group-content">
-              {group.tools.map(tool => (
-                <button
-                  key={tool.id}
-                  className={`tool-button ${toolManagerState.activeTool?.id === tool.id ? 'active' : ''}`}
-                  onClick={() => handleToolSelect(tool.id)}
-                  title={`${tool.name}${tool.hotkey ? ` (${tool.hotkey})` : ''}`}
-                >
-                  <span className="tool-icon">{tool.icon}</span>
-                  <span className="tool-label">{tool.name}</span>
-                  {tool.hotkey && <span className="tool-hotkey">{tool.hotkey}</span>}
-                </button>
-              ))}
-            </div>
-          ))}
+                {/* Group of tools */}
+                <div className="flex items-center gap-1">
+                  {group.tools.map(tool => (
+                    <Tooltip.Root key={tool.id}>
+                      <Tooltip.Trigger asChild>
+                        <Toolbar.Button
+                          className={`
+                            flex items-center justify-center w-10 h-10 rounded-md border transition-all duration-200
+                            ${
+                              toolManagerState.activeTool?.id === tool.id
+                                ? 'bg-primary-500 text-white border-primary-500 shadow-md'
+                                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                            }
+                          `}
+                          onClick={() => handleToolSelect(tool.id)}
+                        >
+                          <span className="text-base leading-none">{tool.icon}</span>
+                        </Toolbar.Button>
+                      </Tooltip.Trigger>
+                      <Tooltip.Portal>
+                        <Tooltip.Content
+                          className="bg-gray-900 text-white text-sm px-3 py-2 rounded shadow-lg z-50 max-w-xs"
+                          sideOffset={8}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span>{tool.name}</span>
+                            {tool.hotkey && (
+                              <kbd className="bg-gray-700 px-1.5 py-0.5 rounded text-xs font-mono">
+                                {tool.hotkey.toUpperCase()}
+                              </kbd>
+                            )}
+                          </div>
+                          <Tooltip.Arrow className="fill-gray-900" />
+                        </Tooltip.Content>
+                      </Tooltip.Portal>
+                    </Tooltip.Root>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </Toolbar.Root>
+        </Tooltip.Provider>
       </div>
     </div>
   )

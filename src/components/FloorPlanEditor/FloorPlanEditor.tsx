@@ -51,7 +51,7 @@ function FloorPlanEditorContent(): React.JSX.Element {
   const updateDimensions = useCallback(() => {
     if (containerRef.current != null) {
       const { offsetWidth, offsetHeight } = containerRef.current
-      const toolbarHeight = 120 // Increased for tab-style toolbar with two rows
+      const toolbarHeight = 64 // Single row toolbar with icon buttons
       const propertiesPanelWidth = 320
 
       const newDimensions = {
