@@ -29,16 +29,16 @@ export function PropertiesPanel(): React.JSX.Element {
   } = usePropertiesPanel()
 
   return (
-    <div className="bg-gray-50 h-full flex flex-col border-l border-gray-200">
+    <div className="bg-white h-full flex flex-col border-l border-gray-200">
       {/* Tabbed Interface */}
       <Tabs.Root value={activeTab} onValueChange={value => setActiveTab(value as 'selection' | 'tool')}>
         {/* Tab Headers */}
-        <div className="bg-white border-b border-gray-200 flex-shrink-0">
-          <Tabs.List className="flex">
+        <div className="bg-gray-50 flex-shrink-0">
+          <Tabs.List className="flex border-b border-gray-200">
             <Tabs.Trigger
               value="selection"
               disabled={!selectionTabEnabled}
-              className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-600 hover:text-gray-800 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+              className="relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 border-b-0 rounded-t-md mr-0.5 hover:text-gray-800 hover:bg-white data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:border-gray-200 data-[state=active]:border-b-white data-[state=active]:z-10 disabled:text-gray-400 disabled:cursor-not-allowed disabled:bg-gray-100 transition-all duration-200"
             >
               <span>{selectionTabIcon}</span>
               <span>{selectionTabLabel}</span>
@@ -46,7 +46,7 @@ export function PropertiesPanel(): React.JSX.Element {
             <Tabs.Trigger
               value="tool"
               disabled={!toolTabEnabled}
-              className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-600 hover:text-gray-800 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+              className="relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 border-b-0 rounded-t-md hover:text-gray-800 hover:bg-white data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:border-gray-200 data-[state=active]:border-b-white data-[state=active]:z-10 disabled:text-gray-400 disabled:cursor-not-allowed disabled:bg-gray-100 transition-all duration-200"
             >
               <span>{toolTabIcon}</span>
               <span>{toolTabLabel}</span>
@@ -55,7 +55,7 @@ export function PropertiesPanel(): React.JSX.Element {
         </div>
 
         {/* Tab Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto bg-white">
           {/* Selection Tab */}
           <Tabs.Content value="selection" className="h-full">
             {!selectedId && (
@@ -118,7 +118,7 @@ export function PropertiesPanel(): React.JSX.Element {
           </Tabs.Content>
 
           {/* Action Buttons - Always visible at bottom */}
-          <div className="border-t border-gray-200">
+          <div className="border-t border-gray-200 bg-gray-50">
             <ActionButtons tool={activeTool} />
           </div>
         </div>

@@ -27,9 +27,6 @@ export function OuterWallInspector({ selectedId }: OuterWallInspectorProps): Rea
   return (
     <div className="p-2">
       <div className="space-y-3">
-        {/* Header */}
-        <h4 className="text-xs font-semibold text-gray-700 border-b border-gray-200 pb-1">Outer Wall Properties</h4>
-
         {/* Basic Information */}
         <div className="space-y-2">
           <div className="space-y-1">

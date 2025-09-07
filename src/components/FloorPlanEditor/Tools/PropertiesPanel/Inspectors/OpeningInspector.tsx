@@ -136,11 +136,6 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
   return (
     <div className="p-2">
       <div className="space-y-3">
-        {/* Header */}
-        <h4 className="text-xs font-semibold text-gray-700 border-b border-gray-200 pb-1">
-          {opening.type.charAt(0).toUpperCase() + opening.type.slice(1)} Properties
-        </h4>
-
         {/* Basic Properties */}
         <div className="space-y-2">
           <div className="space-y-1.5">

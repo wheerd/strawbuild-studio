@@ -64,8 +64,6 @@ export function WallSegmentInspector({ outerWallId, segmentId }: WallSegmentInsp
       <div className="space-y-3">
         {/* Basic Properties */}
         <div className="space-y-2">
-          <h4 className="text-xs font-semibold text-gray-700 border-b border-gray-200 pb-1">Construction Properties</h4>
-
           <div className="space-y-1.5">
             {/* Construction Type */}
             <div className="space-y-1">
@@ -121,7 +119,7 @@ export function WallSegmentInspector({ outerWallId, segmentId }: WallSegmentInsp
 
         {/* Measurements */}
         <div className="space-y-2">
-          <h4 className="text-xs font-semibold text-gray-700 border-b border-gray-200 pb-1">Measurements</h4>
+          <h5 className="text-xs font-medium text-gray-600">Measurements</h5>
 
           <div className="space-y-1">
             <div className="flex justify-between items-center py-0.5">
@@ -137,7 +135,7 @@ export function WallSegmentInspector({ outerWallId, segmentId }: WallSegmentInsp
 
         {/* Openings */}
         <div className="space-y-2">
-          <h4 className="text-xs font-semibold text-gray-700 border-b border-gray-200 pb-1">Openings</h4>
+          <h5 className="text-xs font-medium text-gray-600">Openings</h5>
 
           <div className="grid grid-cols-3 gap-1.5">
             <div className="text-center p-1.5 bg-gray-50 rounded">

@@ -1,14 +1,14 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { vi } from 'vitest'
+import { OuterWallPolygonToolInspector } from './OuterWallPolygonToolInspector'
+import { OuterWallPolygonTool } from '@/components/FloorPlanEditor/Tools/Categories/OuterWallTools/OuterWallPolygonTool'
+import { createVec2, createLength } from '@/types/geometry'
 
 // Mock scrollIntoView for Radix UI components
 Object.defineProperty(Element.prototype, 'scrollIntoView', {
   value: vi.fn(),
   writable: true
 })
-import { OuterWallPolygonToolInspector } from './OuterWallPolygonToolInspector'
-import { OuterWallPolygonTool } from '@/components/FloorPlanEditor/Tools/Categories/OuterWallTools/OuterWallPolygonTool'
-import { createVec2, createLength } from '@/types/geometry'
 
 describe('OuterWallPolygonToolInspector', () => {
   let mockTool: OuterWallPolygonTool
@@ -48,7 +48,6 @@ describe('OuterWallPolygonToolInspector', () => {
     it('renders basic inspector with default values', () => {
       render(<OuterWallPolygonToolInspector tool={mockTool} />)
 
-      expect(screen.getByText('Outer Wall Polygon Tool')).toBeInTheDocument()
       expect(screen.getByText('Construction Type')).toBeInTheDocument()
       expect(screen.getByLabelText('Wall Thickness (mm)')).toBeInTheDocument()
       expect(screen.getByText('CUT')).toBeInTheDocument()
