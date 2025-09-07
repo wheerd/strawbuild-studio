@@ -11,9 +11,6 @@ importers:
       '@turf/area':
         specifier: ^7.2.0
         version: 7.2.0
-      '@turf/boolean-intersects':
-        specifier: ^7.2.0
-        version: 7.2.0
       '@turf/boolean-point-in-polygon':
         specifier: ^7.2.0
         version: 7.2.0
@@ -680,9 +677,6 @@ packages:
 
   '@turf/boolean-disjoint@7.2.0':
     resolution: {integrity: sha512-xdz+pYKkLMuqkNeJ6EF/3OdAiJdiHhcHCV0ykX33NIuALKIEpKik0+NdxxNsZsivOW6keKwr61SI+gcVtHYcnQ==}
-
-  '@turf/boolean-intersects@7.2.0':
-    resolution: {integrity: sha512-GLRyLQgK3F14drkK5Qi9Mv7Z9VT1bgQUd9a3DB3DACTZWDSwfh8YZUFn/HBwRkK8dDdgNEXaavggQHcPi1k9ow==}
 
   '@turf/boolean-overlap@7.2.0':
     resolution: {integrity: sha512-ieM5qIE4anO+gUHIOvEN7CjyowF+kQ6v20/oNYJCp63TVS6eGMkwgd+I4uMzBXfVW66nVHIXjODdUelU+Xyctw==}
@@ -3359,14 +3353,6 @@ snapshots:
       '@turf/line-intersect': 7.2.0
       '@turf/meta': 7.2.0
       '@turf/polygon-to-line': 7.2.0
-      '@types/geojson': 7946.0.16
-      tslib: 2.8.1
-
-  '@turf/boolean-intersects@7.2.0':
-    dependencies:
-      '@turf/boolean-disjoint': 7.2.0
-      '@turf/helpers': 7.2.0
-      '@turf/meta': 7.2.0
       '@types/geojson': 7946.0.16
       tslib: 2.8.1
 

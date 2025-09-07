@@ -17,7 +17,6 @@
   },
   "dependencies": {
     "@turf/area": "^7.2.0",
-    "@turf/boolean-intersects": "^7.2.0",
     "@turf/boolean-point-in-polygon": "^7.2.0",
     "@turf/boolean-valid": "^7.2.0",
     "@turf/helpers": "^7.2.0",
