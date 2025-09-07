@@ -5,15 +5,14 @@ import type { OuterWallPolygon } from '@/types/model'
 import type { Vec2 } from '@/types/geometry'
 import { add } from '@/types/geometry'
 import { isOuterWallId } from '@/types/ids'
-import React from 'react'
-import { Group, Line } from 'react-konva'
-import { COLORS } from '@/theme/colors'
+import { OuterWallPolygonMovementPreview } from '../previews/OuterWallPolygonMovementPreview'
 
-interface PolygonMovementState {
+export interface PolygonMovementState {
   offset: Vec2 // Just the movement delta
 }
 
 export class OuterWallPolygonMovementBehavior implements MovementBehavior<OuterWallPolygon, PolygonMovementState> {
+  previewComponent = OuterWallPolygonMovementPreview
   getEntity(entityId: SelectableId, _parentIds: SelectableId[], store: StoreActions): OuterWallPolygon {
     if (!isOuterWallId(entityId)) {
       throw new Error(`Invalid entity context for wall ${entityId}`)
@@ -128,39 +127,6 @@ export class OuterWallPolygonMovementBehavior implements MovementBehavior<OuterW
     }
 
     return inside
-  }
-
-  generatePreview(
-    movementState: PolygonMovementState,
-    isValid: boolean,
-    context: MovementContext<OuterWallPolygon>
-  ): React.ReactNode[] {
-    const previewBoundary = context.entity.boundary.map(point => add(point, movementState.offset))
-
-    // Create Konva JSX elements for preview
-    return [
-      <Group key="polygon-preview">
-        <Line
-          key="preview-polygon"
-          points={previewBoundary.flatMap(p => [p[0], p[1]])}
-          closed
-          stroke={isValid ? COLORS.ui.primary : COLORS.ui.danger}
-          strokeWidth={20}
-          dash={[80, 40]}
-          opacity={0.9}
-          listening={false}
-        />
-        {/* Add semi-transparent fill for better visibility */}
-        <Line
-          key="preview-polygon-fill"
-          points={previewBoundary.flatMap(p => [p[0], p[1]])}
-          closed
-          fill={isValid ? COLORS.ui.success : COLORS.ui.danger}
-          opacity={0.1}
-          listening={false}
-        />
-      </Group>
-    ]
   }
 
   commitMovement(movementState: PolygonMovementState, context: MovementContext<OuterWallPolygon>): boolean {

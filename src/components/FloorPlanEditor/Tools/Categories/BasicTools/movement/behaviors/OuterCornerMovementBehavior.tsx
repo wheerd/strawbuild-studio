@@ -6,12 +6,10 @@ import type { LineSegment2D, Vec2 } from '@/types/geometry'
 import type { SnappingContext, SnapResult } from '@/model/store/services/snapping/types'
 import { add, wouldClosingPolygonSelfIntersect } from '@/types/geometry'
 import { isOuterWallId, isOuterCornerId } from '@/types/ids'
-import React from 'react'
-import { Group, Circle, Line } from 'react-konva'
-import { COLORS } from '@/theme/colors'
+import { OuterCornerMovementPreview } from '../previews/OuterCornerMovementPreview'
 
 // Corner movement needs access to the wall to update the boundary
-interface CornerEntityContext {
+export interface CornerEntityContext {
   wall: OuterWallPolygon
   corner: OuterCorner
   cornerIndex: number // Index of the boundary point that corresponds to this corner
@@ -26,6 +24,7 @@ export interface CornerMovementState {
 }
 
 export class OuterCornerMovementBehavior implements MovementBehavior<CornerEntityContext, CornerMovementState> {
+  previewComponent = OuterCornerMovementPreview
   getEntity(entityId: SelectableId, parentIds: SelectableId[], store: StoreActions): CornerEntityContext {
     const [wallId] = parentIds
 
@@ -92,53 +91,6 @@ export class OuterCornerMovementBehavior implements MovementBehavior<CornerEntit
     if (newBoundary.length < 3) return false
 
     return !wouldClosingPolygonSelfIntersect(newBoundary)
-  }
-
-  generatePreview(
-    movementState: CornerMovementState,
-    isValid: boolean,
-    context: MovementContext<CornerEntityContext>
-  ): React.ReactNode[] {
-    const { wall, cornerIndex } = context.entity
-    const originalPosition = wall.boundary[cornerIndex]
-
-    return [
-      <Group key="corner-preview">
-        {/* Show the new corner position */}
-        <Circle
-          key="new-corner"
-          x={movementState.position[0]}
-          y={movementState.position[1]}
-          radius={30}
-          fill={isValid ? COLORS.ui.success : COLORS.ui.danger}
-          stroke={COLORS.ui.white}
-          strokeWidth={5}
-          opacity={0.8}
-          listening={false}
-        />
-        {/* Show movement line */}
-        <Line
-          key="movement-line"
-          points={[originalPosition[0], originalPosition[1], movementState.position[0], movementState.position[1]]}
-          stroke={COLORS.ui.gray600}
-          strokeWidth={10}
-          dash={[50, 50]}
-          opacity={0.7}
-          listening={false}
-        />
-        {/* Show the updated wall boundary preview */}
-        <Line
-          key="wall-boundary-preview"
-          points={movementState.newBoundary.flatMap(p => [p[0], p[1]])}
-          closed
-          stroke={isValid ? COLORS.ui.primary : COLORS.ui.danger}
-          strokeWidth={10}
-          dash={[80, 40]}
-          opacity={0.6}
-          listening={false}
-        />
-      </Group>
-    ]
   }
 
   commitMovement(movementState: CornerMovementState, context: MovementContext<CornerEntityContext>): boolean {

@@ -25,6 +25,12 @@ export interface MovementState<T> {
   isValid: boolean
 }
 
+export interface MovementPreviewComponentProps<TEntity, TState> {
+  movementState: TState
+  isValid: boolean
+  context: MovementContext<TEntity>
+}
+
 export interface MovementBehavior<TEntity, TState> {
   // Get the entity's actual position for initialization
   getEntity(entityId: SelectableId, parentIds: SelectableId[], store: StoreActions): TEntity
@@ -38,8 +44,11 @@ export interface MovementBehavior<TEntity, TState> {
   // Validate position using slice logic - behavior constructs geometry, slice validates
   validatePosition(movementState: TState, context: MovementContext<TEntity>): boolean
 
-  // Generate preview with full state
-  generatePreview(movementState: TState, isValid: boolean, context: MovementContext<TEntity>): React.ReactNode[]
+  // Preview component for rendering movement state
+  previewComponent: React.ComponentType<MovementPreviewComponentProps<TEntity, TState>>
+
+  // Generate preview with full state (deprecated - use previewComponent instead)
+  generatePreview?(movementState: TState, isValid: boolean, context: MovementContext<TEntity>): React.ReactNode[]
 
   // Commit movement using slice operations
   commitMovement(movementState: TState, context: MovementContext<TEntity>): boolean

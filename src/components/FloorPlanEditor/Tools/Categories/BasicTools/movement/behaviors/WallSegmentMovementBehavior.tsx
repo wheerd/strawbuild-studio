@@ -2,22 +2,20 @@ import type { MovementBehavior, MovementContext, MouseMovementState } from '../M
 import type { SelectableId } from '@/types/ids'
 import type { StoreActions } from '@/model/store/types'
 import type { OuterWallSegment, OuterWallPolygon } from '@/types/model'
-import { add, dot, scale, midpoint, type Vec2 } from '@/types/geometry'
+import { add, dot, scale, type Vec2 } from '@/types/geometry'
 import { wouldClosingPolygonSelfIntersect } from '@/types/geometry/polygon'
 import { isOuterWallId, isWallSegmentId } from '@/types/ids'
-import React from 'react'
-import { Group, Line, Circle } from 'react-konva'
-import { COLORS } from '@/theme/colors'
+import { WallSegmentMovementPreview } from '../previews/WallSegmentMovementPreview'
 
 // Wall segment movement needs access to the wall to update the boundary
-interface WallSegmentEntityContext {
+export interface WallSegmentEntityContext {
   wall: OuterWallPolygon
   segment: OuterWallSegment
   segmentIndex: number // Index of the segment in the wall
 }
 
 // Wall segment movement state - just the projected delta along perpendicular
-interface WallSegmentMovementState {
+export interface WallSegmentMovementState {
   projectedDelta: Vec2
   newBoundary: Vec2[]
 }
@@ -25,6 +23,7 @@ interface WallSegmentMovementState {
 export class WallSegmentMovementBehavior
   implements MovementBehavior<WallSegmentEntityContext, WallSegmentMovementState>
 {
+  previewComponent = WallSegmentMovementPreview
   getEntity(entityId: SelectableId, parentIds: SelectableId[], store: StoreActions): WallSegmentEntityContext {
     const [wallId] = parentIds
 
@@ -87,57 +86,6 @@ export class WallSegmentMovementBehavior
     _context: MovementContext<WallSegmentEntityContext>
   ): boolean {
     return !wouldClosingPolygonSelfIntersect(movementState.newBoundary)
-  }
-
-  generatePreview(
-    movementState: WallSegmentMovementState,
-    isValid: boolean,
-    context: MovementContext<WallSegmentEntityContext>
-  ): React.ReactNode[] {
-    const { segment } = context.entity
-    const { projectedDelta, newBoundary } = movementState
-
-    // Calculate original and new midpoints for visualization
-    const originalMidpoint = midpoint(segment.insideLine.start, segment.insideLine.end)
-    const newMidpoint = add(originalMidpoint, projectedDelta)
-
-    return [
-      <Group key="segment-preview">
-        {/* Show the new segment midpoint */}
-        <Circle
-          key="new-midpoint"
-          x={newMidpoint[0]}
-          y={newMidpoint[1]}
-          radius={20}
-          fill={isValid ? COLORS.ui.success : COLORS.ui.danger}
-          stroke={COLORS.ui.white}
-          strokeWidth={2}
-          opacity={0.8}
-          listening={false}
-        />
-        {/* Show movement line */}
-        <Line
-          key="movement-line"
-          points={[originalMidpoint[0], originalMidpoint[1], newMidpoint[0], newMidpoint[1]]}
-          stroke={COLORS.ui.gray600}
-          strokeWidth={10}
-          dash={[50, 50]}
-          opacity={0.7}
-          listening={false}
-        />
-        {/* Show the updated wall boundary preview */}
-        <Line
-          key="wall-boundary-preview"
-          points={newBoundary.flatMap(p => [p[0], p[1]])}
-          closed
-          stroke={isValid ? COLORS.ui.primary : COLORS.ui.danger}
-          strokeWidth={10}
-          dash={[80, 40]}
-          opacity={0.6}
-          listening={false}
-        />
-      </Group>
-    ]
   }
 
   commitMovement(movementState: WallSegmentMovementState, context: MovementContext<WallSegmentEntityContext>): boolean {

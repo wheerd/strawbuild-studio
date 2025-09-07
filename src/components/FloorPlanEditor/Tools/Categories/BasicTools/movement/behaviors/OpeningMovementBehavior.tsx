@@ -5,9 +5,7 @@ import type { Opening, OuterWallSegment, OuterWallPolygon } from '@/types/model'
 import type { Length } from '@/types/geometry'
 import { add, dot, scale, createLength, subtract } from '@/types/geometry'
 import { isOuterWallId, isWallSegmentId, isOpeningId } from '@/types/ids'
-import React from 'react'
-import { Group, Line } from 'react-konva'
-import { COLORS } from '@/theme/colors'
+import { OpeningMovementPreview } from '../previews/OpeningMovementPreview'
 
 // Opening movement needs access to the wall, segment, and opening
 export interface OpeningEntityContext {
@@ -22,6 +20,7 @@ export interface OpeningMovementState {
 }
 
 export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityContext, OpeningMovementState> {
+  previewComponent = OpeningMovementPreview
   getEntity(entityId: SelectableId, parentIds: SelectableId[], store: StoreActions): OpeningEntityContext {
     const [wallId, segmentId] = parentIds
 
@@ -99,56 +98,6 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
       opening.width,
       opening.id
     )
-  }
-
-  generatePreview(
-    movementState: OpeningMovementState,
-    isValid: boolean,
-    context: MovementContext<OpeningEntityContext>
-  ): React.ReactNode[] {
-    const { segment, opening } = context.entity
-
-    // Calculate the opening rectangle in new position
-    const segmentStart = segment.insideLine.start
-    const outsideDirection = segment.outsideDirection
-
-    const openingStart = add(segmentStart, scale(segment.direction, movementState.newOffset))
-    const openingEnd = add(openingStart, scale(segment.direction, opening.width))
-
-    // Create opening rectangle
-    const insideStart = openingStart
-    const insideEnd = openingEnd
-    const outsideStart = add(openingStart, scale(outsideDirection, segment.thickness))
-    const outsideEnd = add(openingEnd, scale(outsideDirection, segment.thickness))
-
-    // Original position for movement indicator (access directly from entity)
-    const originalStart = add(segmentStart, scale(segment.direction, opening.offsetFromStart))
-
-    return [
-      <Group key="opening-preview">
-        {/* Show opening rectangle */}
-        <Line
-          key="opening-rectangle"
-          points={[insideStart, insideEnd, outsideEnd, outsideStart].flatMap(p => [p[0], p[1]])}
-          closed
-          fill={isValid ? COLORS.ui.success : COLORS.ui.danger}
-          stroke={COLORS.ui.white}
-          strokeWidth={5}
-          opacity={0.6}
-          listening={false}
-        />
-        {/* Show movement indicator */}
-        <Line
-          key="movement-line"
-          points={[originalStart[0], originalStart[1], openingStart[0], openingStart[1]]}
-          stroke={COLORS.ui.gray600}
-          strokeWidth={10}
-          dash={[20, 20]}
-          opacity={0.7}
-          listening={false}
-        />
-      </Group>
-    ]
   }
 
   commitMovement(movementState: OpeningMovementState, context: MovementContext<OpeningEntityContext>): boolean {

@@ -15,12 +15,12 @@ export function MoveToolOverlay({ tool }: ToolOverlayComponentProps<MoveTool>) {
   const { behavior, context, currentMovementState, isValid } = toolState
   if (!behavior || !context) return null
 
-  const previewElements = behavior.generatePreview(currentMovementState, isValid, context)
+  const PreviewComponent = behavior.previewComponent
 
   return (
     <Group>
       <SnappingLines snapResult={currentMovementState?.snapResult} />
-      {previewElements}
+      <PreviewComponent movementState={currentMovementState} isValid={isValid} context={context} />
     </Group>
   )
 }
