@@ -1,13 +1,13 @@
 import type { ToolGroup } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import { SelectTool } from './SelectTool'
-import { MoveTool } from './MoveTool'
+import { MoveTool } from './movement/MoveTool'
 import { RotateTool } from './RotateTool'
 import { TestDataTool } from './TestDataTool'
 import { FitToViewTool } from './FitToViewTool'
 
 // Export individual tools
 export { SelectTool } from './SelectTool'
-export { MoveTool } from './MoveTool'
+export { MoveTool } from './movement/MoveTool'
 export { RotateTool } from './RotateTool'
 export type { RotateToolState } from './RotateTool'
 export { TestDataTool } from './TestDataTool'

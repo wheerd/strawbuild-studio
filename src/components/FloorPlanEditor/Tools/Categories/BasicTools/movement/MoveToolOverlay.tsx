@@ -1,5 +1,5 @@
 import type { ToolOverlayComponentProps } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
-import type { MoveTool } from '../MoveTool'
+import type { MoveTool } from './MoveTool'
 import { Group } from 'react-konva'
 import { useReactiveTool } from '../../../hooks/useReactiveTool'
 import { SnappingLines } from '@/components/FloorPlanEditor/components/SnappingLines'

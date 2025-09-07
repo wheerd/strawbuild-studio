@@ -1,11 +1,11 @@
 import type { Tool, ToolContext, ContextAction, CanvasEvent } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import type { Vec2 } from '@/types/geometry'
-import type { MovementBehavior, MovementContext, MouseMovementState } from './movement/MovementBehavior'
+import type { MovementBehavior, MovementContext, MouseMovementState } from './MovementBehavior'
 import { BaseTool } from '@/components/FloorPlanEditor/Tools/ToolSystem/BaseTool'
-import { getMovementBehavior } from './movement/movementBehaviors'
+import { getMovementBehavior } from './movementBehaviors'
 import { defaultSnappingService } from '@/model/store/services/snapping/SnappingService'
 import { distanceSquared, subtract } from '@/types/geometry'
-import { MoveToolOverlay } from './overlays/MoveToolOverlay'
+import { MoveToolOverlay } from './MoveToolOverlay'
 
 export class MoveTool extends BaseTool implements Tool {
   id = 'basic.move'
