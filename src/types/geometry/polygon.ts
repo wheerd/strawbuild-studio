@@ -5,8 +5,8 @@ import { lineIntersect } from '@turf/line-intersect'
 import { booleanPointInPolygon } from '@turf/boolean-point-in-polygon'
 import type { Feature, Polygon as GeoJSONPolygon, LineString } from 'geojson'
 
-import type { Vec2, Area, Length } from './basic'
-import { createArea, createLength, distance } from './basic'
+import type { Vec2, Area, Length, Bounds2D } from './basic'
+import { boundsFromPoints, createArea, createLength, distance } from './basic'
 import type { LineSegment2D } from './line'
 
 // Polygon types
@@ -220,4 +220,63 @@ export function offsetPolygon(points: Vec2[], distance: number): Vec2[] {
   }
 
   return offsetPoints
+}
+
+export function areBoundsOverlapping(bbox1: Bounds2D, bbox2: Bounds2D): boolean {
+  return (
+    bbox1.min[0] <= bbox2.max[0] &&
+    bbox1.max[0] >= bbox2.min[0] &&
+    bbox1.min[1] <= bbox2.max[1] &&
+    bbox1.max[1] >= bbox2.min[1]
+  )
+}
+
+export function arePolygonsIntersecting(polygon1: Polygon2D, polygon2: Polygon2D): boolean {
+  // Handle empty polygons
+  if (polygon1.points.length < 3 || polygon2.points.length < 3) {
+    return false
+  }
+
+  const bbox1 = boundsFromPoints(polygon1.points)
+  const bbox2 = boundsFromPoints(polygon2.points)
+
+  if (!bbox1 || !bbox2 || !areBoundsOverlapping(bbox1, bbox2))
+    for (const vertex of polygon1.points) {
+      if (isPointInPolygon(vertex, polygon2)) {
+        return true
+      }
+    }
+
+  for (const vertex of polygon2.points) {
+    if (isPointInPolygon(vertex, polygon1)) {
+      return true
+    }
+  }
+
+  const edges1 = getPolygonEdges(polygon1)
+  const edges2 = getPolygonEdges(polygon2)
+
+  for (const edge1 of edges1) {
+    for (const edge2 of edges2) {
+      if (doLineSegmentsIntersect(edge1, edge2)) {
+        return true
+      }
+    }
+  }
+
+  return false
+}
+
+// Helper function to get polygon edges as line segments
+function getPolygonEdges(polygon: Polygon2D): LineSegment2D[] {
+  const edges: LineSegment2D[] = []
+  const points = polygon.points
+
+  for (let i = 0; i < points.length; i++) {
+    const start = points[i]
+    const end = points[(i + 1) % points.length]
+    edges.push({ start, end })
+  }
+
+  return edges
 }
