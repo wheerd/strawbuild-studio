@@ -49,7 +49,7 @@ describe('OuterWallPolygonToolInspector', () => {
       render(<OuterWallPolygonToolInspector tool={mockTool} />)
 
       expect(screen.getByText('Construction Type')).toBeInTheDocument()
-      expect(screen.getByLabelText('Wall Thickness (mm)')).toBeInTheDocument()
+      expect(screen.getByLabelText('Wall Thickness')).toBeInTheDocument()
       expect(screen.getByText('CUT')).toBeInTheDocument()
       expect(screen.getByDisplayValue('440')).toBeInTheDocument()
     })
@@ -84,7 +84,7 @@ describe('OuterWallPolygonToolInspector', () => {
     it('calls setWallThickness when input changes', () => {
       render(<OuterWallPolygonToolInspector tool={mockTool} />)
 
-      const input = screen.getByLabelText('Wall Thickness (mm)')
+      const input = screen.getByLabelText('Wall Thickness')
       fireEvent.change(input, { target: { value: '350' } })
       fireEvent.blur(input)
 
@@ -94,7 +94,7 @@ describe('OuterWallPolygonToolInspector', () => {
     it('handles input validation with min/max values', () => {
       render(<OuterWallPolygonToolInspector tool={mockTool} />)
 
-      const input = screen.getByLabelText('Wall Thickness (mm)')
+      const input = screen.getByLabelText('Wall Thickness')
 
       // Test that input has proper constraints
       expect(input).toHaveAttribute('min', '50')
@@ -114,14 +114,14 @@ describe('OuterWallPolygonToolInspector', () => {
       render(<OuterWallPolygonToolInspector tool={mockTool} />)
 
       expect(screen.getByText('Construction Type')).toBeInTheDocument()
-      expect(screen.getByLabelText('Wall Thickness (mm)')).toBeInTheDocument()
+      expect(screen.getByLabelText('Wall Thickness')).toBeInTheDocument()
       expect(screen.getByRole('combobox')).toBeInTheDocument()
     })
 
     it('has proper input attributes', () => {
       render(<OuterWallPolygonToolInspector tool={mockTool} />)
 
-      const thicknessInput = screen.getByLabelText('Wall Thickness (mm)')
+      const thicknessInput = screen.getByLabelText('Wall Thickness')
       expect(thicknessInput).toHaveAttribute('type', 'number')
       expect(thicknessInput).toHaveAttribute('min', '50')
       expect(thicknessInput).toHaveAttribute('max', '1000')

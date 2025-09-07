@@ -76,3 +76,19 @@ button:focus-visible {
     color: #213547;
   }
 }
+
+/* Number input spinner spacing for unit inputs */
+.unit-input::-webkit-outer-spin-button,
+.unit-input::-webkit-inner-spin-button {
+  margin-left: 4px;
+  margin-right: 2px;
+}
+
+/* Firefox number input spinner spacing */
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+input[type='number']::-moz-appearance {
+  margin-left: 4px;
+}

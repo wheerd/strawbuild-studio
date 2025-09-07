@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import * as Select from '@radix-ui/react-select'
 import { useModelStore } from '@/model/store'
 import type { OuterCornerId, OuterWallId } from '@/types/ids'
 
@@ -75,22 +76,38 @@ export function OuterCornerInspector({ outerWallId, cornerId }: OuterCornerInspe
         <div className="space-y-2">
           <h5 className="text-xs font-medium text-gray-600">Corner Configuration</h5>
 
-          <div className="space-y-1">
-            <label htmlFor="belongs-to" className="text-xs font-medium text-gray-600">
-              Belongs To
-            </label>
-            <select
-              id="belongs-to"
+          <div className="flex items-center justify-between gap-3">
+            <label className="text-xs font-medium text-gray-600 flex-shrink-0">Belongs To</label>
+            <Select.Root
               value={corner.belongsTo}
-              onChange={handleBelongsToChange}
-              className="w-full px-2 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200"
+              onValueChange={(value: 'previous' | 'next') => handleBelongsToChange({ target: { value } } as any)}
             >
-              <option value="previous">Previous Segment</option>
-              <option value="next">Next Segment</option>
-            </select>
-            <div className="text-xs text-gray-500">
-              Determines which wall segment owns this corner for construction purposes.
-            </div>
+              <Select.Trigger className="flex-1 max-w-24 flex items-center justify-between px-2 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200">
+                <Select.Value />
+                <Select.Icon className="text-gray-600">⌄</Select.Icon>
+              </Select.Trigger>
+              <Select.Portal>
+                <Select.Content className="bg-white border border-gray-300 rounded-md shadow-lg z-50 overflow-hidden">
+                  <Select.Viewport className="p-1">
+                    <Select.Item
+                      value="previous"
+                      className="flex items-center px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 hover:outline-none cursor-pointer rounded"
+                    >
+                      <Select.ItemText>Previous Segment</Select.ItemText>
+                    </Select.Item>
+                    <Select.Item
+                      value="next"
+                      className="flex items-center px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 hover:outline-none cursor-pointer rounded"
+                    >
+                      <Select.ItemText>Next Segment</Select.ItemText>
+                    </Select.Item>
+                  </Select.Viewport>
+                </Select.Content>
+              </Select.Portal>
+            </Select.Root>
+          </div>
+          <div className="text-xs text-gray-500">
+            Determines which wall segment owns this corner for construction purposes.
           </div>
         </div>
 

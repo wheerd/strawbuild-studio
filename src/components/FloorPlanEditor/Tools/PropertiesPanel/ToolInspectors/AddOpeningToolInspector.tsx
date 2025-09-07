@@ -127,12 +127,12 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
       <div className="space-y-3">
         {/* Opening Type */}
         <div className="space-y-1.5">
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600">Type</label>
+          <div className="flex items-center justify-between gap-3">
+            <label className="text-xs font-medium text-gray-600 flex-shrink-0">Type</label>
             <Select.Root value={state.openingType} onValueChange={handleTypeChange}>
-              <Select.Trigger className="w-full flex items-center justify-between px-2 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200">
+              <Select.Trigger className="flex-1 max-w-24 flex items-center justify-between px-2 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200">
                 <Select.Value />
-                <Select.Icon className="text-gray-400">⌄</Select.Icon>
+                <Select.Icon className="text-gray-600">⌄</Select.Icon>
               </Select.Trigger>
               <Select.Portal>
                 <Select.Content className="bg-white border border-gray-300 rounded-md shadow-lg z-50 overflow-hidden">
@@ -173,59 +173,76 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
 
         {/* Dimensions */}
         <div className="space-y-1.5">
-          <div className="space-y-1">
-            <label htmlFor="opening-width" className="text-xs font-medium text-gray-600">
-              Width (mm)
+          <div className="flex items-center justify-between gap-3">
+            <label htmlFor="opening-width" className="text-xs font-medium text-gray-600 flex-shrink-0">
+              Width
             </label>
-            <input
-              id="opening-width"
-              type="number"
-              value={widthInput.value}
-              onChange={e => widthInput.handleChange(e.target.value)}
-              onBlur={widthInput.handleBlur}
-              onKeyDown={widthInput.handleKeyDown}
-              min="100"
-              max="5000"
-              step="10"
-              className="w-full px-2 py-1.5 bg-white border border-gray-300 rounded text-xs hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200"
-            />
+            <div className="relative flex-1 max-w-24">
+              <input
+                id="opening-width"
+                type="number"
+                value={widthInput.value}
+                onChange={e => widthInput.handleChange(e.target.value)}
+                onBlur={widthInput.handleBlur}
+                onKeyDown={widthInput.handleKeyDown}
+                min="100"
+                max="5000"
+                step="10"
+                className="unit-input w-full pl-2 py-1.5 pr-8 bg-white border border-gray-300 rounded text-xs text-right hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200"
+              />
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                mm
+              </span>
+            </div>
           </div>
 
-          <div className="space-y-1">
-            <label htmlFor="opening-height" className="text-xs font-medium text-gray-600">
-              Height (mm)
+          <div className="flex items-center justify-between gap-3">
+            <label htmlFor="opening-height" className="text-xs font-medium text-gray-600 flex-shrink-0">
+              Height
             </label>
-            <input
-              id="opening-height"
-              type="number"
-              value={heightInput.value}
-              onChange={e => heightInput.handleChange(e.target.value)}
-              onBlur={heightInput.handleBlur}
-              onKeyDown={heightInput.handleKeyDown}
-              min="100"
-              max="4000"
-              step="10"
-              className="w-full px-2 py-1.5 bg-white border border-gray-300 rounded text-xs hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200"
-            />
+            <div className="relative flex-1 max-w-24">
+              <input
+                id="opening-height"
+                type="number"
+                value={heightInput.value}
+                onChange={e => heightInput.handleChange(e.target.value)}
+                onBlur={heightInput.handleBlur}
+                onKeyDown={heightInput.handleKeyDown}
+                min="100"
+                max="4000"
+                step="10"
+                className="unit-input w-full pl-2 py-1.5 pr-8 bg-white border border-gray-300 rounded text-xs text-right hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200"
+              />
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                mm
+              </span>
+            </div>
           </div>
 
           {state.openingType === 'window' && (
             <div className="space-y-1">
-              <label htmlFor="sill-height" className="text-xs font-medium text-gray-600">
-                Sill Height (mm)
-              </label>
-              <input
-                id="sill-height"
-                type="number"
-                value={sillHeightInput.value}
-                onChange={e => sillHeightInput.handleChange(e.target.value)}
-                onBlur={sillHeightInput.handleBlur}
-                onKeyDown={sillHeightInput.handleKeyDown}
-                min="0"
-                max="2000"
-                step="10"
-                className="w-full px-2 py-1.5 bg-white border border-gray-300 rounded text-xs hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200"
-              />
+              <div className="flex items-center justify-between gap-3">
+                <label htmlFor="sill-height" className="text-xs font-medium text-gray-600 flex-shrink-0">
+                  Sill Height
+                </label>
+                <div className="relative flex-1 max-w-24">
+                  <input
+                    id="sill-height"
+                    type="number"
+                    value={sillHeightInput.value}
+                    onChange={e => sillHeightInput.handleChange(e.target.value)}
+                    onBlur={sillHeightInput.handleBlur}
+                    onKeyDown={sillHeightInput.handleKeyDown}
+                    min="0"
+                    max="2000"
+                    step="10"
+                    className="unit-input w-full pl-2 py-1.5 pr-8 bg-white border border-gray-300 rounded text-xs text-right hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200"
+                  />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                    mm
+                  </span>
+                </div>
+              </div>
               <div className="text-xs text-gray-500 mt-1">Height of window sill above floor level</div>
             </div>
           )}

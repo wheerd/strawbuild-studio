@@ -66,17 +66,17 @@ export function WallSegmentInspector({ outerWallId, segmentId }: WallSegmentInsp
         <div className="space-y-2">
           <div className="space-y-1.5">
             {/* Construction Type */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-600">Construction Type</label>
+            <div className="flex items-center justify-between gap-3">
+              <label className="text-xs font-medium text-gray-600 flex-shrink-0">Construction Type</label>
               <Select.Root
                 value={segment.constructionType}
                 onValueChange={(value: OuterWallConstructionType) => {
                   updateOuterWallConstructionType(outerWallId, segmentId, value)
                 }}
               >
-                <Select.Trigger className="w-full flex items-center justify-between px-2 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200">
+                <Select.Trigger className="flex-1 max-w-24 flex items-center justify-between px-2 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200">
                   <Select.Value placeholder="Select type" />
-                  <Select.Icon className="text-gray-400">⌄</Select.Icon>
+                  <Select.Icon className="text-gray-600">⌄</Select.Icon>
                 </Select.Trigger>
                 <Select.Portal>
                   <Select.Content className="bg-white border border-gray-300 rounded-md shadow-lg z-50 overflow-hidden">
@@ -97,22 +97,27 @@ export function WallSegmentInspector({ outerWallId, segmentId }: WallSegmentInsp
             </div>
 
             {/* Thickness Input */}
-            <div className="space-y-1">
-              <label htmlFor="segment-thickness" className="text-xs font-medium text-gray-600">
-                Thickness (mm)
+            <div className="flex items-center justify-between gap-3">
+              <label htmlFor="segment-thickness" className="text-xs font-medium text-gray-600 flex-shrink-0">
+                Thickness
               </label>
-              <input
-                id="segment-thickness"
-                type="number"
-                value={thicknessInput.value}
-                onChange={e => thicknessInput.handleChange(e.target.value)}
-                onBlur={thicknessInput.handleBlur}
-                onKeyDown={thicknessInput.handleKeyDown}
-                min="50"
-                max="1500"
-                step="10"
-                className="w-full px-2 py-1.5 bg-white border border-gray-300 rounded text-xs hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200"
-              />
+              <div className="relative flex-1 max-w-24">
+                <input
+                  id="segment-thickness"
+                  type="number"
+                  value={thicknessInput.value}
+                  onChange={e => thicknessInput.handleChange(e.target.value)}
+                  onBlur={thicknessInput.handleBlur}
+                  onKeyDown={thicknessInput.handleKeyDown}
+                  min="50"
+                  max="1500"
+                  step="10"
+                  className="unit-input w-full pl-2 py-1.5 pr-8 bg-white border border-gray-300 rounded text-xs text-right hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200"
+                />
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                  mm
+                </span>
+              </div>
             </div>
           </div>
         </div>
