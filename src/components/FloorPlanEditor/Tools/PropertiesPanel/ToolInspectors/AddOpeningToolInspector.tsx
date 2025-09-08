@@ -5,6 +5,7 @@ import { useReactiveTool } from '@/components/FloorPlanEditor/Tools/hooks/useRea
 import type { OpeningType } from '@/types/model'
 import type { ToolInspectorProps } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import type { AddOpeningTool } from '@/components/FloorPlanEditor/Tools/Categories/OuterWallTools/AddOpeningTool'
+import * as Select from '@radix-ui/react-select'
 
 export function AddOpeningToolInspector({ tool }: ToolInspectorProps<AddOpeningTool>): React.JSX.Element {
   return <AddOpeningToolInspectorImpl tool={tool} />
@@ -102,8 +103,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
 
   // Event handlers with stable references
   const handleTypeChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const newType = e.target.value as OpeningType
+    (newType: OpeningType) => {
       tool.setOpeningType(newType)
     },
     [tool]
@@ -123,34 +123,44 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
   )
 
   return (
-    <div className="add-opening-tool-inspector">
-      <div className="inspector-header">
-        <h3>Add Opening Tool</h3>
-      </div>
-
-      <div className="inspector-content">
+    <div className="p-2">
+      <div className="space-y-3">
         {/* Opening Type */}
-        <div className="property-section">
-          <div className="property-group">
-            <label htmlFor="opening-type">Type</label>
-            <select id="opening-type" value={state.openingType} onChange={handleTypeChange}>
-              {OPENING_TYPE_OPTIONS.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between gap-3">
+            <label className="text-xs font-medium text-gray-600 flex-shrink-0">Type</label>
+            <Select.Root value={state.openingType} onValueChange={handleTypeChange}>
+              <Select.Trigger className="flex-1 max-w-24 flex items-center justify-between px-2 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200">
+                <Select.Value />
+                <Select.Icon className="text-gray-600">⌄</Select.Icon>
+              </Select.Trigger>
+              <Select.Portal>
+                <Select.Content className="bg-white border border-gray-300 rounded-md shadow-lg z-50 overflow-hidden">
+                  <Select.Viewport className="p-1">
+                    {OPENING_TYPE_OPTIONS.map(option => (
+                      <Select.Item
+                        key={option.value}
+                        value={option.value}
+                        className="flex items-center px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 hover:outline-none cursor-pointer rounded"
+                      >
+                        <Select.ItemText>{option.label}</Select.ItemText>
+                      </Select.Item>
+                    ))}
+                  </Select.Viewport>
+                </Select.Content>
+              </Select.Portal>
+            </Select.Root>
           </div>
 
           {/* Quick Presets */}
-          <div className="property-group">
-            <label>Quick Presets</label>
-            <div className="preset-buttons">
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Presets</label>
+            <div className="grid grid-cols-2 gap-1">
               {OPENING_PRESETS[state.openingType].map((preset: PresetConfig, index: number) => (
                 <button
                   key={index}
                   type="button"
-                  className="preset-button"
+                  className="px-2 py-1 text-xs text-gray-700 bg-gray-50 border border-gray-200 rounded hover:bg-gray-100 hover:border-gray-300 transition-colors text-left"
                   onClick={() => handlePresetClick(preset)}
                   title={`${preset.width}×${preset.height}mm${preset.sillHeight ? `, sill: ${preset.sillHeight}mm` : ''}`}
                 >
@@ -162,54 +172,78 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
         </div>
 
         {/* Dimensions */}
-        <div className="property-section">
-          <h4>Dimensions</h4>
-
-          <div className="property-group">
-            <label htmlFor="opening-width">Width (mm)</label>
-            <input
-              id="opening-width"
-              type="number"
-              value={widthInput.value}
-              onChange={e => widthInput.handleChange(e.target.value)}
-              onBlur={widthInput.handleBlur}
-              onKeyDown={widthInput.handleKeyDown}
-              min="100"
-              max="5000"
-              step="10"
-            />
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between gap-3">
+            <label htmlFor="opening-width" className="text-xs font-medium text-gray-600 flex-shrink-0">
+              Width
+            </label>
+            <div className="relative flex-1 max-w-24">
+              <input
+                id="opening-width"
+                type="number"
+                value={widthInput.value}
+                onChange={e => widthInput.handleChange(e.target.value)}
+                onBlur={widthInput.handleBlur}
+                onKeyDown={widthInput.handleKeyDown}
+                min="100"
+                max="5000"
+                step="10"
+                className="unit-input w-full pl-2 py-1.5 pr-8 bg-white border border-gray-300 rounded text-xs text-right hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200"
+              />
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                mm
+              </span>
+            </div>
           </div>
 
-          <div className="property-group">
-            <label htmlFor="opening-height">Height (mm)</label>
-            <input
-              id="opening-height"
-              type="number"
-              value={heightInput.value}
-              onChange={e => heightInput.handleChange(e.target.value)}
-              onBlur={heightInput.handleBlur}
-              onKeyDown={heightInput.handleKeyDown}
-              min="100"
-              max="4000"
-              step="10"
-            />
+          <div className="flex items-center justify-between gap-3">
+            <label htmlFor="opening-height" className="text-xs font-medium text-gray-600 flex-shrink-0">
+              Height
+            </label>
+            <div className="relative flex-1 max-w-24">
+              <input
+                id="opening-height"
+                type="number"
+                value={heightInput.value}
+                onChange={e => heightInput.handleChange(e.target.value)}
+                onBlur={heightInput.handleBlur}
+                onKeyDown={heightInput.handleKeyDown}
+                min="100"
+                max="4000"
+                step="10"
+                className="unit-input w-full pl-2 py-1.5 pr-8 bg-white border border-gray-300 rounded text-xs text-right hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200"
+              />
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                mm
+              </span>
+            </div>
           </div>
 
           {state.openingType === 'window' && (
-            <div className="property-group">
-              <label htmlFor="sill-height">Sill Height (mm)</label>
-              <input
-                id="sill-height"
-                type="number"
-                value={sillHeightInput.value}
-                onChange={e => sillHeightInput.handleChange(e.target.value)}
-                onBlur={sillHeightInput.handleBlur}
-                onKeyDown={sillHeightInput.handleKeyDown}
-                min="0"
-                max="2000"
-                step="10"
-              />
-              <div className="help-text">Height of window sill above floor level</div>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between gap-3">
+                <label htmlFor="sill-height" className="text-xs font-medium text-gray-600 flex-shrink-0">
+                  Sill Height
+                </label>
+                <div className="relative flex-1 max-w-24">
+                  <input
+                    id="sill-height"
+                    type="number"
+                    value={sillHeightInput.value}
+                    onChange={e => sillHeightInput.handleChange(e.target.value)}
+                    onBlur={sillHeightInput.handleBlur}
+                    onKeyDown={sillHeightInput.handleKeyDown}
+                    min="0"
+                    max="2000"
+                    step="10"
+                    className="unit-input w-full pl-2 py-1.5 pr-8 bg-white border border-gray-300 rounded text-xs text-right hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200"
+                  />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                    mm
+                  </span>
+                </div>
+              </div>
+              <div className="text-xs text-gray-500 mt-1">Height of window sill above floor level</div>
             </div>
           )}
         </div>

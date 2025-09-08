@@ -14,9 +14,9 @@ export function OuterWallInspector({ selectedId }: OuterWallInspectorProps): Rea
   // If outer wall not found, show error
   if (!outerWall) {
     return (
-      <div className="outer-wall-inspector error">
-        <h3>Outer Wall Not Found</h3>
-        <p>Outer wall with ID {selectedId} could not be found.</p>
+      <div className="p-2 bg-red-50 border border-red-200 rounded">
+        <h3 className="text-xs font-semibold text-red-800">Outer Wall Not Found</h3>
+        <p className="text-xs text-red-600">Outer wall with ID {selectedId} could not be found.</p>
       </div>
     )
   }
@@ -25,24 +25,18 @@ export function OuterWallInspector({ selectedId }: OuterWallInspectorProps): Rea
   const totalArea = calculatePolygonArea({ points: outerWall.boundary })
 
   return (
-    <div className="outer-wall-inspector">
-      <div className="inspector-header">
-        <h3>Outer Wall Properties</h3>
-      </div>
-
-      <div className="inspector-content">
+    <div className="p-2">
+      <div className="space-y-3">
         {/* Basic Information */}
-        <div className="property-section">
-          <h4>Wall Information</h4>
-
-          <div className="measurements-grid">
-            <div className="measurement">
-              <label>Total Perimeter:</label>
-              <span className="measurement-value">{(totalPerimeter / 1000).toFixed(2)} m</span>
+        <div className="space-y-2">
+          <div className="space-y-1">
+            <div className="flex justify-between items-center py-0.5">
+              <span className="text-xs text-gray-600">Total Perimeter:</span>
+              <span className="text-xs font-medium text-gray-800">{(totalPerimeter / 1000).toFixed(2)} m</span>
             </div>
-            <div className="measurement">
-              <label>Total Area:</label>
-              <span className="measurement-value">{(totalArea / (1000 * 1000)).toFixed(2)} m²</span>
+            <div className="flex justify-between items-center py-0.5">
+              <span className="text-xs text-gray-600">Total Area:</span>
+              <span className="text-xs font-medium text-gray-800">{(totalArea / (1000 * 1000)).toFixed(2)} m²</span>
             </div>
           </div>
         </div>

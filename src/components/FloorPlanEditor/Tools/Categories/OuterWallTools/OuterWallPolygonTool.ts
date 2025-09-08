@@ -14,6 +14,7 @@ import { OuterWallPolygonToolOverlay } from './OuterWallPolygonToolOverlay'
 import { OuterWallPolygonToolInspector } from '@/components/FloorPlanEditor/Tools/PropertiesPanel/ToolInspectors/OuterWallPolygonToolInspector'
 import { SnappingService } from '@/model/store/services/snapping'
 import { BaseTool } from '@/components/FloorPlanEditor/Tools/ToolSystem/BaseTool'
+import { BorderAllIcon } from '@radix-ui/react-icons'
 
 interface OuterWallPolygonToolState {
   points: Vec2[]
@@ -30,6 +31,7 @@ export class OuterWallPolygonTool extends BaseTool implements Tool {
   readonly id = 'outer-wall-polygon'
   readonly name = 'Outer Wall Polygon'
   readonly icon = '⬜'
+  readonly iconComponent = BorderAllIcon
   readonly hotkey = 'w'
   readonly cursor = 'crosshair'
   readonly category = 'walls'

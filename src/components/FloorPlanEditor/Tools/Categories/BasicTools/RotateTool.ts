@@ -1,5 +1,6 @@
 import type { Tool, ToolContext, ContextAction, CanvasEvent } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import type { Vec2 } from '@/types/geometry'
+import { UpdateIcon } from '@radix-ui/react-icons'
 
 export interface RotateToolState {
   rotationStep: number // degrees
@@ -13,6 +14,7 @@ export class RotateTool implements Tool {
   id = 'basic.rotate'
   name = 'Rotate'
   icon = '↻'
+  iconComponent = UpdateIcon
   hotkey = 'o'
   cursor = 'grab'
   category = 'basic'

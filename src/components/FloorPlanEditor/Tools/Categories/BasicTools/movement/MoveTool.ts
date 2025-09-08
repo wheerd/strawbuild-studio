@@ -6,11 +6,13 @@ import { getMovementBehavior } from './movementBehaviors'
 import { defaultSnappingService } from '@/model/store/services/snapping/SnappingService'
 import { distanceSquared, subtract } from '@/types/geometry'
 import { MoveToolOverlay } from './MoveToolOverlay'
+import { MoveIcon } from '@radix-ui/react-icons'
 
 export class MoveTool extends BaseTool implements Tool {
   id = 'basic.move'
   name = 'Move'
   icon = '↔'
+  iconComponent = MoveIcon
   hotkey = 'm'
   cursor = 'move'
   category = 'basic'

@@ -24,5 +24,9 @@ export function GridSizeDisplay(): React.JSX.Element {
     return <></>
   }
 
-  return <div className="grid-size-display">Grid: {formatGridSize(gridSize)}</div>
+  return (
+    <div className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1.5 rounded text-xs font-medium font-mono pointer-events-none z-[1000] backdrop-blur-sm shadow-lg">
+      Grid: {formatGridSize(gridSize)}
+    </div>
+  )
 }

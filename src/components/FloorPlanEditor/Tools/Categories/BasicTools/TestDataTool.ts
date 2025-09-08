@@ -1,6 +1,7 @@
 import type { Tool, ToolContext } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import { createLength, createVec2, boundsFromPoints } from '@/types/geometry'
 import { toolManager } from '@/components/FloorPlanEditor/Tools/ToolSystem/ToolManager'
+import { RocketIcon } from '@radix-ui/react-icons'
 
 /**
  * Tool for adding test outer wall data to demonstrate entity hit testing.
@@ -10,6 +11,7 @@ export class TestDataTool implements Tool {
   id = 'basic.test-data'
   name = 'Test Data'
   icon = '🏗️'
+  iconComponent = RocketIcon
   hotkey = 't'
   cursor = 'default'
   category = 'basic'

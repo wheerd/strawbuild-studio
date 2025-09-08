@@ -5,11 +5,13 @@ import type { Store } from '@/model/store/types'
 import type { FloorId } from '@/types/ids'
 import { toolManager } from '@/components/FloorPlanEditor/Tools/ToolSystem/ToolManager'
 import { boundsFromPoints, type Bounds2D } from '@/types/geometry'
+import { AllSidesIcon } from '@radix-ui/react-icons'
 
 export class FitToViewTool implements Tool {
   id = 'basic.fitToView'
   name = 'Fit to View'
   icon = '⊞' // Box fit icon
+  iconComponent = AllSidesIcon
   hotkey = 'f'
   cursor = 'default'
   category = 'basic'

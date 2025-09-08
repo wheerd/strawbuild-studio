@@ -14,6 +14,7 @@ import {
 import { AddOpeningToolInspector } from '@/components/FloorPlanEditor/Tools/PropertiesPanel/ToolInspectors/AddOpeningToolInspector'
 import { AddOpeningToolOverlay } from './AddOpeningToolOverlay'
 import { round } from '@turf/helpers'
+import { BoxIcon } from '@radix-ui/react-icons'
 
 interface WallSegmentHit {
   wallId: OuterWallId
@@ -52,6 +53,7 @@ export class AddOpeningTool extends BaseTool implements Tool {
   readonly id = 'add-opening'
   readonly name = 'Add Opening'
   readonly icon = '🚪'
+  readonly iconComponent = BoxIcon
   readonly hotkey = 'o'
   readonly cursor = 'crosshair'
   readonly category = 'outer-walls'

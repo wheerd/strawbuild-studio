@@ -1,10 +1,12 @@
 import type { Tool, CanvasEvent } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import { useSelectionStore } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
+import { CursorArrowIcon } from '@radix-ui/react-icons'
 
 export class SelectTool implements Tool {
   id = 'basic.select'
   name = 'Select'
   icon = '↖'
+  iconComponent = CursorArrowIcon
   hotkey = 'v'
   cursor = 'default'
   category = 'basic'

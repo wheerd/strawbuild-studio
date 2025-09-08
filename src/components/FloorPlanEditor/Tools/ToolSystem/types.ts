@@ -3,11 +3,13 @@ import type Konva from 'konva'
 import type { EntityId, SelectableId, FloorId, StoreActions } from '@/model'
 import type React from 'react'
 import type { EntityHitResult } from '@/components/FloorPlanEditor/services/EntityHitTestService'
+import type { IconProps } from '@radix-ui/react-icons/dist/types'
 
 export interface BaseTool {
   id: string
   name: string
   icon: string
+  iconComponent?: React.ExoticComponent<IconProps>
   hotkey?: string
   category?: string
 }

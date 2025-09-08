@@ -1,6 +1,5 @@
 import React, { Suspense } from 'react'
 import { Loading } from './components/Loading'
-import './App.css'
 
 const FloorPlanEditor = React.lazy(
   async () =>

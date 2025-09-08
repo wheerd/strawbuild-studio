@@ -37,8 +37,8 @@ export function OuterCornerShape({
     corner.belongsTo === 'previous'
       ? midpoint(previousSegment.insideLine.end, previousSegment.outsideLine.end)
       : midpoint(nextSegment.insideLine.start, nextSegment.outsideLine.start)
-  const arrowStart = add(arrowCenter, scale(arrowDir, -40))
-  const arrowEnd = add(arrowCenter, scale(arrowDir, 60))
+  const arrowStart = add(arrowCenter, scale(arrowDir, -60))
+  const arrowEnd = add(arrowCenter, scale(arrowDir, 90))
 
   const belongsToSegment = corner.belongsTo === 'previous' ? previousSegment : nextSegment
   const cornerColor =
@@ -87,9 +87,9 @@ export function OuterCornerShape({
           points={[arrowStart[0], arrowStart[1], arrowEnd[0], arrowEnd[1]]}
           stroke={COLORS.ui.white}
           fill={COLORS.ui.white}
-          strokeWidth={15}
-          pointerLength={40}
-          pointerWidth={40}
+          strokeWidth={20}
+          pointerLength={50}
+          pointerWidth={50}
           listening={false}
         />
       )}
