@@ -7,7 +7,6 @@ import { ToolContextProvider, MainToolbar, PropertiesPanel, initializeToolSystem
 import { toolManager } from './Tools/ToolSystem/ToolManager'
 import { keyboardShortcutManager } from './Tools/ToolSystem/KeyboardShortcutManager'
 import { useToolContext } from './Tools/ToolSystem/ToolContext'
-import './FloorPlanEditor.css'
 
 // Inner component that has access to ToolContext
 function FloorPlanEditorContent(): React.JSX.Element {
@@ -101,26 +100,26 @@ function FloorPlanEditorContent(): React.JSX.Element {
   return (
     <div
       ref={containerRef}
-      className="floor-plan-editor full-screen"
+      className="w-screen h-screen flex flex-col bg-gray-50 m-0 p-0 overflow-hidden"
       tabIndex={0}
       onClick={handleClick}
       data-testid="floor-plan-editor"
     >
       {/* Top Toolbar - Tabs for tool groups + tools */}
-      <div className="top-toolbar">
+      <div className="flex-shrink-0 bg-white border-b border-gray-200 shadow-sm z-[100]">
         <MainToolbar />
       </div>
 
       {/* Main Content Area - Canvas + Properties Panel */}
-      <div className="editor-content">
+      <div className="flex-1 flex overflow-hidden min-h-0">
         {/* Canvas Area */}
-        <div className="canvas-section">
+        <div className="flex-1 relative overflow-hidden bg-white border-r border-gray-200">
           <FloorPlanStage width={dimensions.width} height={dimensions.height} />
           <GridSizeDisplay />
         </div>
 
         {/* Right Properties Panel */}
-        <div className="right-panel">
+        <div className="w-80 flex-shrink-0 bg-gray-50 border-l border-gray-200 overflow-y-auto flex flex-col">
           <PropertiesPanel />
         </div>
       </div>

@@ -81,11 +81,11 @@ describe('GridSizeDisplay', () => {
       expect(screen.getByText('Grid: 500mm')).toBeInTheDocument()
     })
 
-    it('should have proper CSS class for styling', () => {
+    it('should have proper Tailwind classes for styling', () => {
       render(<GridSizeDisplay />)
 
       const element = screen.getByText('Grid: 500mm')
-      expect(element).toHaveClass('grid-size-display')
+      expect(element).toHaveClass('absolute', 'bottom-4', 'right-4', 'bg-black/70', 'text-white')
     })
   })
 })
