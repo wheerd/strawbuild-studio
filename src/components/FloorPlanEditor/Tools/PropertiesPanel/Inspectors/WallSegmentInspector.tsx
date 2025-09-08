@@ -61,7 +61,7 @@ export function WallSegmentInspector({ outerWallId, segmentId }: WallSegmentInsp
 
   return (
     <div className="p-2">
-      <div className="space-y-3">
+      <div className="space-y-4">
         {/* Basic Properties */}
         <div className="space-y-2">
           <div className="space-y-1.5">
@@ -74,7 +74,7 @@ export function WallSegmentInspector({ outerWallId, segmentId }: WallSegmentInsp
                   updateOuterWallConstructionType(outerWallId, segmentId, value)
                 }}
               >
-                <Select.Trigger className="flex-1 max-w-24 flex items-center justify-between px-2 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200">
+                <Select.Trigger className="flex-1 min-w-0 flex items-center justify-between px-2 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200">
                   <Select.Value placeholder="Select type" />
                   <Select.Icon className="text-gray-600">⌄</Select.Icon>
                 </Select.Trigger>
@@ -123,8 +123,8 @@ export function WallSegmentInspector({ outerWallId, segmentId }: WallSegmentInsp
         </div>
 
         {/* Measurements */}
-        <div className="space-y-2">
-          <h5 className="text-xs font-medium text-gray-600">Measurements</h5>
+        <div className="space-y-2 pt-1 border-t border-gray-200">
+          <h5 className="text-sm font-semibold text-gray-800 pb-1">Measurements</h5>
 
           <div className="space-y-1">
             <div className="flex justify-between items-center py-0.5">
@@ -139,8 +139,8 @@ export function WallSegmentInspector({ outerWallId, segmentId }: WallSegmentInsp
         </div>
 
         {/* Openings */}
-        <div className="space-y-2">
-          <h5 className="text-xs font-medium text-gray-600">Openings</h5>
+        <div className="space-y-2 pt-1 border-t border-gray-200">
+          <h5 className="text-sm font-semibold text-gray-800 pb-1">Openings</h5>
 
           <div className="grid grid-cols-3 gap-1.5">
             <div className="text-center p-1.5 bg-gray-50 rounded">

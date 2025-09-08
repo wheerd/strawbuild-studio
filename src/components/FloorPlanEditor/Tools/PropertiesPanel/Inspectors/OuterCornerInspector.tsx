@@ -71,10 +71,10 @@ export function OuterCornerInspector({ outerWallId, cornerId }: OuterCornerInspe
 
   return (
     <div className="p-2">
-      <div className="space-y-3">
+      <div className="space-y-4">
         {/* Basic Properties */}
         <div className="space-y-2">
-          <h5 className="text-xs font-medium text-gray-600">Corner Configuration</h5>
+          <h5 className="text-sm font-semibold text-gray-800 pb-1">Corner Configuration</h5>
 
           <div className="flex items-center justify-between gap-3">
             <label className="text-xs font-medium text-gray-600 flex-shrink-0">Belongs To</label>
@@ -82,7 +82,7 @@ export function OuterCornerInspector({ outerWallId, cornerId }: OuterCornerInspe
               value={corner.belongsTo}
               onValueChange={(value: 'previous' | 'next') => handleBelongsToChange({ target: { value } } as any)}
             >
-              <Select.Trigger className="flex-1 max-w-24 flex items-center justify-between px-2 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200">
+              <Select.Trigger className="flex-1 min-w-0 flex items-center justify-between px-2 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200">
                 <Select.Value />
                 <Select.Icon className="text-gray-600">⌄</Select.Icon>
               </Select.Trigger>
@@ -112,8 +112,8 @@ export function OuterCornerInspector({ outerWallId, cornerId }: OuterCornerInspe
         </div>
 
         {/* Geometry Information */}
-        <div className="space-y-2">
-          <h5 className="text-xs font-medium text-gray-600">Geometry</h5>
+        <div className="space-y-2 pt-1 border-t border-gray-200">
+          <h5 className="text-sm font-semibold text-gray-800 pb-1">Geometry</h5>
 
           <div className="space-y-1">
             {cornerAngle && (
@@ -126,8 +126,8 @@ export function OuterCornerInspector({ outerWallId, cornerId }: OuterCornerInspe
         </div>
 
         {/* Construction Notes */}
-        <div className="space-y-2">
-          <h5 className="text-xs font-medium text-gray-600">Construction Notes</h5>
+        <div className="space-y-2 pt-1 border-t border-gray-200">
+          <h5 className="text-sm font-semibold text-gray-800 pb-1">Construction Notes</h5>
 
           <div className="space-y-1.5">
             {previousSegment.constructionType !== nextSegment.constructionType && (
@@ -139,7 +139,7 @@ export function OuterCornerInspector({ outerWallId, cornerId }: OuterCornerInspe
               </div>
             )}
 
-            {Math.abs(previousSegment.thickness - nextSegment.thickness) > 50 && (
+            {Math.abs(previousSegment.thickness - nextSegment.thickness) > 5 && (
               <div className="p-2 bg-amber-50 border border-amber-200 rounded">
                 <div className="text-xs font-medium text-amber-800">Thickness Difference:</div>
                 <div className="text-xs text-amber-700">
