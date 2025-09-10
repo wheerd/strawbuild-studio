@@ -62,6 +62,7 @@ export type ConstructionElementType =
   | 'header'
   | 'sill'
   | 'opening'
+  | 'infill'
 
 export type ConstructionElementId = string & { readonly brand: unique symbol }
 export const createConstructionElementId = (): ConstructionElementId =>
