@@ -1,7 +1,8 @@
-import { vec2, mat2d } from 'gl-matrix'
+import { vec2, mat2d, vec3 } from 'gl-matrix'
 
 // Core types - simplified with gl-matrix
 export type Vec2 = vec2
+export type Vec3 = vec3
 export type Matrix2D = mat2d
 
 // Branded numeric types for type safety
