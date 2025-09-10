@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { AddOpeningTool } from './AddOpeningTool'
-import { createOuterWallToolGroup } from './index'
+import { createPerimeterToolGroup } from './index'
 import { createLength } from '@/types/geometry'
 
 describe('AddOpeningTool', () => {
@@ -28,13 +28,13 @@ describe('AddOpeningTool', () => {
 
   it('should reset state on activation', () => {
     // Set some non-default state
-    addOpeningTool.state.hoveredWallSegment = {} as any
+    addOpeningTool.state.hoveredPerimeterWall = {} as any
     addOpeningTool.state.previewPosition = [100, 200] as any
     addOpeningTool.state.canPlace = true
 
     addOpeningTool.onActivate()
 
-    expect(addOpeningTool.state.hoveredWallSegment).toBeUndefined()
+    expect(addOpeningTool.state.hoveredPerimeterWall).toBeUndefined()
     expect(addOpeningTool.state.previewPosition).toBeUndefined()
     expect(addOpeningTool.state.canPlace).toBe(false)
   })
@@ -100,8 +100,8 @@ describe('AddOpeningTool', () => {
     expect(mockListener).not.toHaveBeenCalled()
   })
 
-  it('should be registered in outer wall tool group', () => {
-    const outerWallToolGroup = createOuterWallToolGroup()
+  it('should be registered in perimeter tool group', () => {
+    const outerWallToolGroup = createPerimeterToolGroup()
 
     expect(outerWallToolGroup.tools.find((tool: any) => tool.id === 'add-opening')).toBeInstanceOf(AddOpeningTool)
   })

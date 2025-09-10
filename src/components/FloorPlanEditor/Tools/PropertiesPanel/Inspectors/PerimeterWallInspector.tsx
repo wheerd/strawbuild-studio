@@ -3,43 +3,43 @@ import * as Select from '@radix-ui/react-select'
 import { useModelStore } from '@/model/store'
 import { createLength } from '@/types/geometry'
 import { useDebouncedNumericInput } from '@/components/FloorPlanEditor/hooks/useDebouncedInput'
-import type { WallSegmentId, PerimeterId } from '@/types/ids'
-import type { OuterWallConstructionType } from '@/types/model'
+import type { PerimeterWallId, PerimeterId } from '@/types/ids'
+import type { PerimeterConstructionType } from '@/types/model'
 
-interface WallSegmentInspectorProps {
+interface PerimeterWallInspectorProps {
   perimeterId: PerimeterId
-  segmentId: WallSegmentId
+  wallId: PerimeterWallId
 }
 
 // Construction type options - moved outside component to avoid recreation
-const CONSTRUCTION_TYPE_OPTIONS: { value: OuterWallConstructionType; label: string }[] = [
+const CONSTRUCTION_TYPE_OPTIONS: { value: PerimeterConstructionType; label: string }[] = [
   { value: 'cells-under-tension', label: 'CUT' },
   { value: 'infill', label: 'Infill' },
   { value: 'strawhenge', label: 'Strawhenge' },
   { value: 'non-strawbale', label: 'Non-Strawbale' }
 ]
 
-export function WallSegmentInspector({ perimeterId, segmentId }: WallSegmentInspectorProps): React.JSX.Element {
+export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallInspectorProps): React.JSX.Element {
   // Get model store functions - use specific selectors for stable references
-  const updateOuterWallConstructionType = useModelStore(state => state.updateOuterWallConstructionType)
-  const updateOuterWallThickness = useModelStore(state => state.updateOuterWallThickness)
+  const updateOuterWallConstructionType = useModelStore(state => state.updatePerimeterWallConstructionType)
+  const updateOuterWallThickness = useModelStore(state => state.updatePerimeterWallThickness)
 
-  // Get outer wall from store
+  // Get perimeter from store
   const outerWall = useModelStore(state => state.perimeters.get(perimeterId))
 
-  // Use useMemo to find segment within the wall object
-  const segment = useMemo(() => {
-    return outerWall?.segments.find(s => s.id === segmentId)
-  }, [outerWall, segmentId])
+  // Use useMemo to find wall within the wall object
+  const wall = useMemo(() => {
+    return outerWall?.walls.find(s => s.id === wallId)
+  }, [outerWall, wallId])
 
   // Debounced thickness input handler
   const thicknessInput = useDebouncedNumericInput(
-    segment?.thickness || 0,
+    wall?.thickness || 0,
     useCallback(
       (value: number) => {
-        updateOuterWallThickness(perimeterId, segmentId, createLength(value))
+        updateOuterWallThickness(perimeterId, wallId, createLength(value))
       },
-      [updateOuterWallThickness, perimeterId, segmentId]
+      [updateOuterWallThickness, perimeterId, wallId]
     ),
     {
       debounceMs: 300,
@@ -49,12 +49,12 @@ export function WallSegmentInspector({ perimeterId, segmentId }: WallSegmentInsp
     }
   )
 
-  // If segment not found, show error
-  if (!segment || !outerWall) {
+  // If wall not found, show error
+  if (!wall || !outerWall) {
     return (
-      <div className="wall-segment-inspector error">
-        <h3>Wall Segment Not Found</h3>
-        <p>Wall segment with ID {segmentId} could not be found.</p>
+      <div className="perimeter-wall-inspector error">
+        <h3>Wall Wall Not Found</h3>
+        <p>Wall wall with ID {wallId} could not be found.</p>
       </div>
     )
   }
@@ -69,9 +69,9 @@ export function WallSegmentInspector({ perimeterId, segmentId }: WallSegmentInsp
             <div className="flex items-center justify-between gap-3">
               <label className="text-xs font-medium text-gray-600 flex-shrink-0">Construction Type</label>
               <Select.Root
-                value={segment.constructionType}
-                onValueChange={(value: OuterWallConstructionType) => {
-                  updateOuterWallConstructionType(perimeterId, segmentId, value)
+                value={wall.constructionType}
+                onValueChange={(value: PerimeterConstructionType) => {
+                  updateOuterWallConstructionType(perimeterId, wallId, value)
                 }}
               >
                 <Select.Trigger className="flex-1 min-w-0 flex items-center justify-between px-2 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200">
@@ -98,12 +98,12 @@ export function WallSegmentInspector({ perimeterId, segmentId }: WallSegmentInsp
 
             {/* Thickness Input */}
             <div className="flex items-center justify-between gap-3">
-              <label htmlFor="segment-thickness" className="text-xs font-medium text-gray-600 flex-shrink-0">
+              <label htmlFor="wall-thickness" className="text-xs font-medium text-gray-600 flex-shrink-0">
                 Thickness
               </label>
               <div className="relative flex-1 max-w-24">
                 <input
-                  id="segment-thickness"
+                  id="wall-thickness"
                   type="number"
                   value={thicknessInput.value}
                   onChange={e => thicknessInput.handleChange(e.target.value)}
@@ -129,11 +129,11 @@ export function WallSegmentInspector({ perimeterId, segmentId }: WallSegmentInsp
           <div className="space-y-1">
             <div className="flex justify-between items-center py-0.5">
               <span className="text-xs text-gray-600">Inside Length:</span>
-              <span className="text-xs font-medium text-gray-800">{(segment.insideLength / 1000).toFixed(3)} m</span>
+              <span className="text-xs font-medium text-gray-800">{(wall.insideLength / 1000).toFixed(3)} m</span>
             </div>
             <div className="flex justify-between items-center py-0.5">
               <span className="text-xs text-gray-600">Outside Length:</span>
-              <span className="text-xs font-medium text-gray-800">{(segment.outsideLength / 1000).toFixed(3)} m</span>
+              <span className="text-xs font-medium text-gray-800">{(wall.outsideLength / 1000).toFixed(3)} m</span>
             </div>
           </div>
         </div>
@@ -145,19 +145,19 @@ export function WallSegmentInspector({ perimeterId, segmentId }: WallSegmentInsp
           <div className="grid grid-cols-3 gap-1.5">
             <div className="text-center p-1.5 bg-gray-50 rounded">
               <div className="text-sm font-semibold text-gray-800">
-                {segment.openings.filter(o => o.type === 'door').length}
+                {wall.openings.filter(o => o.type === 'door').length}
               </div>
               <div className="text-xs text-gray-600">Doors</div>
             </div>
             <div className="text-center p-1.5 bg-gray-50 rounded">
               <div className="text-sm font-semibold text-gray-800">
-                {segment.openings.filter(o => o.type === 'window').length}
+                {wall.openings.filter(o => o.type === 'window').length}
               </div>
               <div className="text-xs text-gray-600">Windows</div>
             </div>
             <div className="text-center p-1.5 bg-gray-50 rounded">
               <div className="text-sm font-semibold text-gray-800">
-                {segment.openings.filter(o => o.type === 'passage').length}
+                {wall.openings.filter(o => o.type === 'passage').length}
               </div>
               <div className="text-xs text-gray-600">Passages</div>
             </div>

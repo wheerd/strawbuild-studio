@@ -13,23 +13,23 @@ export function OpeningMovementPreview({
   isValid,
   context
 }: OpeningMovementPreviewProps): React.JSX.Element {
-  const { segment, opening } = context.entity
+  const { wall, opening } = context.entity
 
   // Calculate the opening rectangle in new position
-  const segmentStart = segment.insideLine.start
-  const outsideDirection = segment.outsideDirection
+  const wallStart = wall.insideLine.start
+  const outsideDirection = wall.outsideDirection
 
-  const openingStart = add(segmentStart, scale(segment.direction, movementState.newOffset))
-  const openingEnd = add(openingStart, scale(segment.direction, opening.width))
+  const openingStart = add(wallStart, scale(wall.direction, movementState.newOffset))
+  const openingEnd = add(openingStart, scale(wall.direction, opening.width))
 
   // Create opening rectangle
   const insideStart = openingStart
   const insideEnd = openingEnd
-  const outsideStart = add(openingStart, scale(outsideDirection, segment.thickness))
-  const outsideEnd = add(openingEnd, scale(outsideDirection, segment.thickness))
+  const outsideStart = add(openingStart, scale(outsideDirection, wall.thickness))
+  const outsideEnd = add(openingEnd, scale(outsideDirection, wall.thickness))
 
   // Original position for movement indicator
-  const originalStart = add(segmentStart, scale(segment.direction, opening.offsetFromStart))
+  const originalStart = add(wallStart, scale(wall.direction, opening.offsetFromStart))
 
   return (
     <Group>

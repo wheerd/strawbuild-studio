@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest'
 import { render } from '@testing-library/react'
 import { Stage, Layer } from 'react-konva'
 import { PerimeterShape } from './PerimeterShape'
-import { OuterCornerShape } from './OuterCornerShape'
+import { PerimeterCornerShape } from './PerimeterCornerShape'
 import { createLength, createVec2 } from '@/types/geometry'
-import { createPerimeterId, createStoreyId, createWallSegmentId, createOuterCornerId } from '@/types/ids'
+import { createPerimeterId, createStoreyId, createPerimeterWallId, createPerimeterCornerId } from '@/types/ids'
 import type { Perimeter } from '@/types/model'
 
 describe('PerimeterShape', () => {
@@ -12,15 +12,15 @@ describe('PerimeterShape', () => {
     id: createPerimeterId(),
     storeyId: createStoreyId(),
     boundary: [createVec2(0, 0), createVec2(1000, 0), createVec2(1000, 1000), createVec2(0, 1000)],
-    segments: [
+    walls: [
       {
-        id: createWallSegmentId(),
+        id: createPerimeterWallId(),
         thickness: createLength(400),
         constructionType: 'cells-under-tension',
         openings: [],
         insideLength: createLength(1000),
         outsideLength: createLength(1000),
-        segmentLength: createLength(1000),
+        wallLength: createLength(1000),
         insideLine: {
           start: createVec2(0, 0),
           end: createVec2(1000, 0)
@@ -33,13 +33,13 @@ describe('PerimeterShape', () => {
         outsideDirection: createVec2(0, -1)
       },
       {
-        id: createWallSegmentId(),
+        id: createPerimeterWallId(),
         thickness: createLength(400),
         constructionType: 'infill',
         openings: [],
         insideLength: createLength(1000),
         outsideLength: createLength(1000),
-        segmentLength: createLength(1000),
+        wallLength: createLength(1000),
         insideLine: {
           start: createVec2(1000, 0),
           end: createVec2(1000, 1000)
@@ -52,13 +52,13 @@ describe('PerimeterShape', () => {
         outsideDirection: createVec2(1, 0)
       },
       {
-        id: createWallSegmentId(),
+        id: createPerimeterWallId(),
         thickness: createLength(400),
         constructionType: 'strawhenge',
         openings: [],
         insideLength: createLength(1000),
         outsideLength: createLength(1000),
-        segmentLength: createLength(1000),
+        wallLength: createLength(1000),
         insideLine: {
           start: createVec2(1000, 1000),
           end: createVec2(0, 1000)
@@ -71,13 +71,13 @@ describe('PerimeterShape', () => {
         outsideDirection: createVec2(0, 1)
       },
       {
-        id: createWallSegmentId(),
+        id: createPerimeterWallId(),
         thickness: createLength(400),
         constructionType: 'non-strawbale',
         openings: [],
         insideLength: createLength(1000),
         outsideLength: createLength(1000),
-        segmentLength: createLength(1000),
+        wallLength: createLength(1000),
         insideLine: {
           start: createVec2(0, 1000),
           end: createVec2(0, 0)
@@ -92,29 +92,29 @@ describe('PerimeterShape', () => {
     ],
     corners: [
       {
-        id: createOuterCornerId(),
+        id: createPerimeterCornerId(),
         outsidePoint: createVec2(1400, -400),
         belongsTo: 'next'
       },
       {
-        id: createOuterCornerId(),
+        id: createPerimeterCornerId(),
         outsidePoint: createVec2(1400, 1400),
         belongsTo: 'previous'
       },
       {
-        id: createOuterCornerId(),
+        id: createPerimeterCornerId(),
         outsidePoint: createVec2(-400, 1400),
         belongsTo: 'next'
       },
       {
-        id: createOuterCornerId(),
+        id: createPerimeterCornerId(),
         outsidePoint: createVec2(-400, -400),
         belongsTo: 'previous'
       }
     ]
   }
 
-  it('should render outer wall shape without errors', () => {
+  it('should render perimeter shape without errors', () => {
     expect(() => {
       render(
         <Stage width={2000} height={2000}>
@@ -126,16 +126,16 @@ describe('PerimeterShape', () => {
     }).not.toThrow()
   })
 
-  it('should render outer corner shape without errors', () => {
+  it('should render perimeter corner shape without errors', () => {
     expect(() => {
       render(
         <Stage width={2000} height={2000}>
           <Layer>
-            <OuterCornerShape
+            <PerimeterCornerShape
               corner={testPerimeter.corners[0]}
               boundaryPoint={testPerimeter.boundary[0]}
-              previousSegment={testPerimeter.segments[3]}
-              nextSegment={testPerimeter.segments[0]}
+              previousWall={testPerimeter.walls[3]}
+              nextWall={testPerimeter.walls[0]}
               perimeterId={testPerimeter.id}
             />
           </Layer>

@@ -2,16 +2,16 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPerimetersSlice, type PerimetersSlice } from './perimeterSlice'
 import {
   createPerimeterId,
-  createWallSegmentId,
-  createOuterCornerId,
+  createPerimeterWallId,
+  createPerimeterCornerId,
   createOpeningId,
   createStoreyId,
-  type WallSegmentId,
+  type PerimeterWallId,
   type PerimeterId,
   type StoreyId
 } from '@/types/ids'
 import { createLength, createVec2, type Length, type Polygon2D } from '@/types/geometry'
-import type { OuterWallConstructionType } from '@/types/model'
+import type { PerimeterConstructionType } from '@/types/model'
 
 // Mock Zustand following the official testing guide
 vi.mock('zustand')
@@ -69,62 +69,62 @@ describe('OuterWallsSlice', () => {
   })
 
   describe('addPerimeter', () => {
-    it('should add outer wall polygon with default thickness', () => {
+    it('should add perimeter polygon with default thickness', () => {
       const boundary = createRectangularBoundary()
-      const constructionType: OuterWallConstructionType = 'cells-under-tension'
+      const constructionType: PerimeterConstructionType = 'cells-under-tension'
 
       store.addPerimeter(testStoreyId, boundary, constructionType)
 
       expect(store.perimeters.size).toBe(1)
-      const wall = Array.from(store.perimeters.values())[0]
+      const perimeter = Array.from(store.perimeters.values())[0]
 
-      expect(wall.storeyId).toBe(testStoreyId)
-      expect(wall.boundary).toEqual(boundary.points)
-      expect(wall.segments).toHaveLength(4) // Rectangle has 4 sides
-      expect(wall.corners).toHaveLength(4) // Rectangle has 4 corners
+      expect(perimeter.storeyId).toBe(testStoreyId)
+      expect(perimeter.boundary).toEqual(boundary.points)
+      expect(perimeter.walls).toHaveLength(4) // Rectangle has 4 sides
+      expect(perimeter.corners).toHaveLength(4) // Rectangle has 4 corners
 
-      // Check segments have correct properties
-      wall.segments.forEach(segment => {
-        expect(segment.constructionType).toBe(constructionType)
-        expect(segment.thickness).toBe(createLength(440)) // Default outer wall thickness
-        expect(segment.openings).toEqual([])
-        expect(segment.id).toBeTruthy()
+      // Check walls have correct properties
+      perimeter.walls.forEach(wall => {
+        expect(wall.constructionType).toBe(constructionType)
+        expect(wall.thickness).toBe(createLength(440)) // Default perimeter thickness
+        expect(wall.openings).toEqual([])
+        expect(perimeter.id).toBeTruthy()
       })
 
       // Check corners have correct properties
-      wall.corners.forEach(corner => {
+      perimeter.corners.forEach(corner => {
         expect(corner.id).toBeTruthy()
         expect(corner.belongsTo).toBe('next') // Default
         expect(corner.outsidePoint).toBeTruthy()
       })
     })
 
-    it('should add outer wall polygon with custom thickness', () => {
+    it('should add perimeter polygon with custom thickness', () => {
       const boundary = createRectangularBoundary()
-      const constructionType: OuterWallConstructionType = 'infill'
+      const constructionType: PerimeterConstructionType = 'infill'
       const customThickness = createLength(200)
 
       store.addPerimeter(testStoreyId, boundary, constructionType, customThickness)
 
-      const wall = Array.from(store.perimeters.values())[0]
-      wall.segments.forEach(segment => {
-        expect(segment.thickness).toBe(customThickness)
-        expect(segment.constructionType).toBe(constructionType)
+      const perimeter = Array.from(store.perimeters.values())[0]
+      perimeter.walls.forEach(wall => {
+        expect(wall.thickness).toBe(customThickness)
+        expect(wall.constructionType).toBe(constructionType)
       })
     })
 
-    it('should add triangular outer wall polygon', () => {
+    it('should add triangular perimeter polygon', () => {
       const boundary = createTriangularBoundary()
-      const constructionType: OuterWallConstructionType = 'strawhenge'
+      const constructionType: PerimeterConstructionType = 'strawhenge'
 
       store.addPerimeter(testStoreyId, boundary, constructionType)
 
-      const wall = Array.from(store.perimeters.values())[0]
-      expect(wall.segments).toHaveLength(3) // Triangle has 3 sides
-      expect(wall.corners).toHaveLength(3) // Triangle has 3 corners
+      const perimeter = Array.from(store.perimeters.values())[0]
+      expect(perimeter.walls).toHaveLength(3) // Triangle has 3 sides
+      expect(perimeter.corners).toHaveLength(3) // Triangle has 3 corners
     })
 
-    it('should add multiple outer wall polygons', () => {
+    it('should add multiple perimeter polygons', () => {
       const boundary1 = createRectangularBoundary()
       const boundary2 = createTriangularBoundary()
 
@@ -133,8 +133,8 @@ describe('OuterWallsSlice', () => {
 
       expect(store.perimeters.size).toBe(2)
       const walls = Array.from(store.perimeters.values())
-      expect(walls[0].segments).toHaveLength(4)
-      expect(walls[1].segments).toHaveLength(3)
+      expect(walls[0].walls).toHaveLength(4)
+      expect(walls[1].walls).toHaveLength(3)
     })
 
     it('should throw error for insufficient boundary points', () => {
@@ -143,7 +143,7 @@ describe('OuterWallsSlice', () => {
       }
 
       expect(() => store.addPerimeter(testStoreyId, invalidBoundary, 'cells-under-tension')).toThrow(
-        'Outer wall boundary must have at least 3 points'
+        'Perimeter boundary must have at least 3 points'
       )
     })
 
@@ -163,77 +163,77 @@ describe('OuterWallsSlice', () => {
       )
     })
 
-    it('should compute segment geometry correctly', () => {
+    it('should compute wall geometry correctly', () => {
       const boundary = createRectangularBoundary()
       store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-      const wall = Array.from(store.perimeters.values())[0]
-      const segment = wall.segments[0] // First segment from (0,0) to (10,0)
+      const perimeter = Array.from(store.perimeters.values())[0]
+      const wall = perimeter.walls[0] // First wall from (0,0) to (10,0)
 
-      expect(segment.insideLine.start).toEqual(createVec2(440, 0))
-      expect(segment.insideLine.end).toEqual(createVec2(9560, 0))
-      expect(segment.insideLength).toBe(10000)
+      expect(wall.insideLine.start).toEqual(createVec2(440, 0))
+      expect(wall.insideLine.end).toEqual(createVec2(9560, 0))
+      expect(wall.insideLength).toBe(10000)
 
       // Check that outside line is offset correctly
-      expect(segment.outsideLine.start[0]).toBe(440)
-      expect(segment.outsideLine.start[1]).toBe(createLength(440)) // Offset by wall thickness
-      expect(segment.outsideLine.end[0]).toBe(9560)
-      expect(segment.outsideLine.end[1]).toBe(createLength(440))
+      expect(wall.outsideLine.start[0]).toBe(440)
+      expect(wall.outsideLine.start[1]).toBe(createLength(440)) // Offset by wall thickness
+      expect(wall.outsideLine.end[0]).toBe(9560)
+      expect(wall.outsideLine.end[1]).toBe(createLength(440))
     })
 
     it('should calculate different length values correctly', () => {
       const boundary = createRectangularBoundary()
       store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-      const wall = Array.from(store.perimeters.values())[0]
-      const segment = wall.segments[0] // First segment from (0,0) to (10,0)
+      const perimeter = Array.from(store.perimeters.values())[0]
+      const wall = perimeter.walls[0] // First wall from (0,0) to (10,0)
 
       // For a rectangular boundary:
-      // - insideLength should be the boundary segment length
-      // - segmentLength should equal insideLength (no truncation for right angles)
+      // - insideLength should be the boundary wall length
+      // - wallLength should equal insideLength (no truncation for right angles)
       // - outsideLength varies based on corner intersection geometry
-      expect(segment.insideLength).toBe(10000) // Original boundary segment
-      expect(segment.segmentLength).toBe(9120) // Actual wall segment (truncated at corners)
+      expect(wall.insideLength).toBe(10000) // Original boundary wall
+      expect(wall.wallLength).toBe(9120) // Actual wall wall (truncated at corners)
 
       // outsideLength depends on corner intersection points, verify it's reasonable
-      expect(segment.outsideLength).toBeGreaterThan(0)
-      expect(segment.outsideLength).toBeLessThan(15000) // Reasonable upper bound for scaled boundary
+      expect(wall.outsideLength).toBeGreaterThan(0)
+      expect(wall.outsideLength).toBeLessThan(15000) // Reasonable upper bound for scaled boundary
 
       // All lengths should be positive and finite
-      expect(segment.insideLength).toBeGreaterThan(0)
-      expect(segment.segmentLength).toBeGreaterThan(0)
-      expect(Number.isFinite(segment.outsideLength)).toBe(true)
+      expect(wall.insideLength).toBeGreaterThan(0)
+      expect(wall.wallLength).toBeGreaterThan(0)
+      expect(Number.isFinite(wall.outsideLength)).toBe(true)
     })
 
     it('should handle reflex angles correctly without pointy corners', () => {
       const boundary = createReflexAngleBoundary()
       store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-      const wall = Array.from(store.perimeters.values())[0]
+      const perimeter = Array.from(store.perimeters.values())[0]
 
       // Verify wall was created successfully
-      expect(wall.segments).toHaveLength(6)
-      expect(wall.corners).toHaveLength(6)
+      expect(perimeter.walls).toHaveLength(6)
+      expect(perimeter.corners).toHaveLength(6)
 
-      // Check that segments have proper geometry without overlapping
-      wall.segments.forEach(segment => {
-        expect(segment.insideLength).toBeGreaterThan(0)
-        expect(segment.segmentLength).toBeGreaterThan(0)
-        expect(segment.outsideLength).toBeGreaterThan(0)
+      // Check that walls have proper geometry without overlapping
+      perimeter.walls.forEach(wall => {
+        expect(wall.insideLength).toBeGreaterThan(0)
+        expect(wall.wallLength).toBeGreaterThan(0)
+        expect(wall.outsideLength).toBeGreaterThan(0)
 
         // Verify that lines have valid start and end points
-        expect(segment.insideLine.start).toBeDefined()
-        expect(segment.insideLine.end).toBeDefined()
-        expect(segment.outsideLine.start).toBeDefined()
-        expect(segment.outsideLine.end).toBeDefined()
+        expect(wall.insideLine.start).toBeDefined()
+        expect(wall.insideLine.end).toBeDefined()
+        expect(wall.outsideLine.start).toBeDefined()
+        expect(wall.outsideLine.end).toBeDefined()
 
-        // For reflex angles, segmentLength may be different from insideLength due to truncation
+        // For reflex angles, wallLength may be different from insideLength due to truncation
         // but should be reasonable (not negative, not excessively large)
-        expect(segment.segmentLength).toBeLessThanOrEqual(segment.insideLength * 1.5) // Allow some extension
+        expect(wall.wallLength).toBeLessThanOrEqual(wall.insideLength * 1.5) // Allow some extension
       })
 
       // Verify corner points are properly positioned
-      wall.corners.forEach(corner => {
+      perimeter.corners.forEach(corner => {
         expect(corner.outsidePoint).toBeDefined()
         expect(typeof corner.outsidePoint[0]).toBe('number')
         expect(typeof corner.outsidePoint[1]).toBe('number')
@@ -243,24 +243,24 @@ describe('OuterWallsSlice', () => {
   })
 
   describe('removeOuterWall', () => {
-    it('should remove existing outer wall', () => {
+    it('should remove existing perimeter', () => {
       const boundary = createRectangularBoundary()
       store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-      const wallId = Array.from(store.perimeters.keys())[0]
+      const perimeterId = Array.from(store.perimeters.keys())[0]
       expect(store.perimeters.size).toBe(1)
 
-      store.removePerimeter(wallId)
+      store.removePerimeter(perimeterId)
 
       expect(store.perimeters.size).toBe(0)
-      expect(store.perimeters.has(wallId)).toBe(false)
+      expect(store.perimeters.has(perimeterId)).toBe(false)
     })
 
     it('should handle removing non-existent wall gracefully', () => {
       const initialSize = store.perimeters.size
-      const fakeWallId = createPerimeterId()
+      const fakePerimeterId = createPerimeterId()
 
-      store.removePerimeter(fakeWallId)
+      store.removePerimeter(fakePerimeterId)
 
       expect(store.perimeters.size).toBe(initialSize)
     })
@@ -271,94 +271,94 @@ describe('OuterWallsSlice', () => {
       store.addPerimeter(testStoreyId, boundary1, 'cells-under-tension')
       store.addPerimeter(testStoreyId, boundary2, 'infill')
 
-      const wallIds = Array.from(store.perimeters.keys())
+      const perimeterIds = Array.from(store.perimeters.keys())
       expect(store.perimeters.size).toBe(2)
 
-      store.removePerimeter(wallIds[0])
+      store.removePerimeter(perimeterIds[0])
 
       expect(store.perimeters.size).toBe(1)
-      expect(store.perimeters.has(wallIds[1])).toBe(true)
+      expect(store.perimeters.has(perimeterIds[1])).toBe(true)
     })
   })
 
   describe('updateOuterWallConstructionType', () => {
-    it('should update segment construction type', () => {
+    it('should update wall construction type', () => {
       const boundary = createRectangularBoundary()
       store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-      const wall = Array.from(store.perimeters.values())[0]
-      const segmentId = wall.segments[0].id
+      const perimeter = Array.from(store.perimeters.values())[0]
+      const wallId = perimeter.walls[0].id
 
-      store.updateOuterWallConstructionType(wall.id, segmentId, 'infill')
+      store.updatePerimeterWallConstructionType(perimeter.id, wallId, 'infill')
 
-      const updatedWall = store.perimeters.get(wall.id)!
-      const updatedSegment = updatedWall.segments.find(s => s.id === segmentId)!
-      expect(updatedSegment.constructionType).toBe('infill')
+      const updatedPerimeter = store.perimeters.get(perimeter.id)!
+      const updatedWall = updatedPerimeter.walls.find(s => s.id === wallId)!
+      expect(updatedWall.constructionType).toBe('infill')
 
       // Other properties should remain unchanged
-      expect(updatedSegment.thickness).toBe(createLength(440))
-      expect(updatedSegment.openings).toEqual([])
+      expect(updatedWall.thickness).toBe(createLength(440))
+      expect(updatedWall.openings).toEqual([])
     })
 
     it('should do nothing if wall does not exist', () => {
-      const fakeWallId = createPerimeterId()
-      const fakeSegmentId = createWallSegmentId()
+      const fakePerimeterId = createPerimeterId()
+      const fakeWallId = createPerimeterWallId()
       const initialState = new Map(store.perimeters)
 
-      store.updateOuterWallConstructionType(fakeWallId, fakeSegmentId, 'infill')
+      store.updatePerimeterWallConstructionType(fakePerimeterId, fakeWallId, 'infill')
 
       expect(store.perimeters).toEqual(initialState)
     })
 
-    it('should do nothing if segment does not exist', () => {
+    it('should do nothing if wall does not exist', () => {
       const boundary = createRectangularBoundary()
       store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-      const wall = Array.from(store.perimeters.values())[0]
-      const fakeSegmentId = createWallSegmentId()
-      const originalWall = { ...wall }
+      const perimeter = Array.from(store.perimeters.values())[0]
+      const fakeWallId = createPerimeterWallId()
+      const originalPerimeter = { ...perimeter }
 
-      store.updateOuterWallConstructionType(wall.id, fakeSegmentId, 'infill')
+      store.updatePerimeterWallConstructionType(perimeter.id, fakeWallId, 'infill')
 
-      const unchangedWall = store.perimeters.get(wall.id)!
-      expect(unchangedWall.segments).toEqual(originalWall.segments)
+      const unchangedPerimeter = store.perimeters.get(perimeter.id)!
+      expect(unchangedPerimeter.walls).toEqual(originalPerimeter.walls)
     })
   })
 
   describe('updateOuterWallThickness', () => {
-    it('should update segment thickness and recalculate geometry', () => {
+    it('should update wall thickness and recalculate geometry', () => {
       const boundary = createRectangularBoundary()
       store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-      const wall = Array.from(store.perimeters.values())[0]
-      const segmentId = wall.segments[0].id
+      const perimeter = Array.from(store.perimeters.values())[0]
+      const wallId = perimeter.walls[0].id
       const newThickness = createLength(300)
 
-      store.updateOuterWallThickness(wall.id, segmentId, newThickness)
+      store.updatePerimeterWallThickness(perimeter.id, wallId, newThickness)
 
-      const updatedWall = store.perimeters.get(wall.id)!
-      const updatedSegment = updatedWall.segments.find(s => s.id === segmentId)!
+      const updatedPerimeter = store.perimeters.get(perimeter.id)!
+      const updatedWall = updatedPerimeter.walls.find(s => s.id === wallId)!
 
-      expect(updatedSegment.thickness).toBe(newThickness)
+      expect(updatedWall.thickness).toBe(newThickness)
 
       // Geometry should be recalculated with new thickness
-      expect(updatedSegment.outsideLine.start[1]).toBe(newThickness) // New offset
+      expect(updatedWall.outsideLine.start[1]).toBe(newThickness) // New offset
     })
 
     it('should recalculate corners when thickness changes', () => {
       const boundary = createRectangularBoundary()
       store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-      const wall = Array.from(store.perimeters.values())[0]
-      const originalCornerPoints = wall.corners.map(c => c.outsidePoint)
-      const originalCornerIds = wall.corners.map(c => c.id)
-      const segmentId = wall.segments[0].id
+      const perimeter = Array.from(store.perimeters.values())[0]
+      const originalCornerPoints = perimeter.corners.map(c => c.outsidePoint)
+      const originalCornerIds = perimeter.corners.map(c => c.id)
+      const wallId = perimeter.walls[0].id
 
-      store.updateOuterWallThickness(wall.id, segmentId, createLength(300))
+      store.updatePerimeterWallThickness(perimeter.id, wallId, createLength(300))
 
-      const updatedWall = store.perimeters.get(wall.id)!
-      const newCornerPoints = updatedWall.corners.map(c => c.outsidePoint)
-      const newCornerIds = updatedWall.corners.map(c => c.id)
+      const updatedPerimeter = store.perimeters.get(perimeter.id)!
+      const newCornerPoints = updatedPerimeter.corners.map(c => c.outsidePoint)
+      const newCornerIds = updatedPerimeter.corners.map(c => c.id)
 
       // At least some corner points should have changed
       expect(newCornerPoints).not.toEqual(originalCornerPoints)
@@ -370,19 +370,19 @@ describe('OuterWallsSlice', () => {
       const boundary = createRectangularBoundary()
       store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-      const wall = Array.from(store.perimeters.values())[0]
-      const cornerId = wall.corners[0].id
+      const perimeter = Array.from(store.perimeters.values())[0]
+      const cornerId = perimeter.corners[0].id
 
       // Change belongsTo value
-      store.updateCornerBelongsTo(wall.id, cornerId, 'previous')
+      store.updatePerimeterCornerBelongsTo(perimeter.id, cornerId, 'previous')
 
       // Update thickness
-      const segmentId = wall.segments[0].id
-      store.updateOuterWallThickness(wall.id, segmentId, createLength(300))
+      const wallId = perimeter.walls[0].id
+      store.updatePerimeterWallThickness(perimeter.id, wallId, createLength(300))
 
-      const updatedWall = store.perimeters.get(wall.id)!
+      const updatedPerimeter = store.perimeters.get(perimeter.id)!
       // Corner IDs should be preserved when thickness changes
-      const updatedCorner = updatedWall.corners.find(c => c.id === cornerId)!
+      const updatedCorner = updatedPerimeter.corners.find(c => c.id === cornerId)!
       expect(updatedCorner.belongsTo).toBe('previous') // Should be preserved
       expect(updatedCorner.id).toBe(cornerId) // ID should be preserved
     })
@@ -391,40 +391,40 @@ describe('OuterWallsSlice', () => {
       const boundary = createRectangularBoundary()
       store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-      const wall = Array.from(store.perimeters.values())[0]
-      const segmentId = wall.segments[0].id
+      const perimeter = Array.from(store.perimeters.values())[0]
+      const wallId = perimeter.walls[0].id
 
-      expect(() => store.updateOuterWallThickness(wall.id, segmentId, createLength(0))).toThrow(
+      expect(() => store.updatePerimeterWallThickness(perimeter.id, wallId, createLength(0))).toThrow(
         'Wall thickness must be greater than 0'
       )
 
-      expect(() => store.updateOuterWallThickness(wall.id, segmentId, createLength(-100))).toThrow(
+      expect(() => store.updatePerimeterWallThickness(perimeter.id, wallId, createLength(-100))).toThrow(
         'Wall thickness must be greater than 0'
       )
     })
 
     it('should do nothing if wall does not exist', () => {
-      const fakeWallId = createPerimeterId()
-      const fakeSegmentId = createWallSegmentId()
+      const fakePerimeterId = createPerimeterId()
+      const fakeWallId = createPerimeterWallId()
       const initialState = new Map(store.perimeters)
 
-      store.updateOuterWallThickness(fakeWallId, fakeSegmentId, createLength(300))
+      store.updatePerimeterWallThickness(fakePerimeterId, fakeWallId, createLength(300))
 
       expect(store.perimeters).toEqual(initialState)
     })
 
-    it('should do nothing if segment does not exist', () => {
+    it('should do nothing if wall does not exist', () => {
       const boundary = createRectangularBoundary()
       store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-      const wall = Array.from(store.perimeters.values())[0]
-      const fakeSegmentId = createWallSegmentId()
-      const originalWall = { ...wall }
+      const perimeter = Array.from(store.perimeters.values())[0]
+      const fakeWallId = createPerimeterWallId()
+      const originalPerimeter = { ...perimeter }
 
-      store.updateOuterWallThickness(wall.id, fakeSegmentId, createLength(300))
+      store.updatePerimeterWallThickness(perimeter.id, fakeWallId, createLength(300))
 
-      const unchangedWall = store.perimeters.get(wall.id)!
-      expect(unchangedWall.segments).toEqual(originalWall.segments)
+      const unchangedPerimeter = store.perimeters.get(perimeter.id)!
+      expect(unchangedPerimeter.walls).toEqual(originalPerimeter.walls)
     })
   })
 
@@ -433,13 +433,13 @@ describe('OuterWallsSlice', () => {
       const boundary = createRectangularBoundary()
       store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-      const wall = Array.from(store.perimeters.values())[0]
-      const cornerId = wall.corners[0].id
+      const perimeter = Array.from(store.perimeters.values())[0]
+      const cornerId = perimeter.corners[0].id
 
-      store.updateCornerBelongsTo(wall.id, cornerId, 'previous')
+      store.updatePerimeterCornerBelongsTo(perimeter.id, cornerId, 'previous')
 
-      const updatedWall = store.perimeters.get(wall.id)!
-      const updatedCorner = updatedWall.corners.find(c => c.id === cornerId)!
+      const updatedPerimeter = store.perimeters.get(perimeter.id)!
+      const updatedCorner = updatedPerimeter.corners.find(c => c.id === cornerId)!
       expect(updatedCorner.belongsTo).toBe('previous')
     })
 
@@ -447,24 +447,24 @@ describe('OuterWallsSlice', () => {
       const boundary = createRectangularBoundary()
       store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-      const wall = Array.from(store.perimeters.values())[0]
-      const corner = wall.corners[0]
+      const perimeter = Array.from(store.perimeters.values())[0]
+      const corner = perimeter.corners[0]
       const originalOutsidePoint = corner.outsidePoint
 
-      store.updateCornerBelongsTo(wall.id, corner.id, 'previous')
+      store.updatePerimeterCornerBelongsTo(perimeter.id, corner.id, 'previous')
 
-      const updatedWall = store.perimeters.get(wall.id)!
-      const updatedCorner = updatedWall.corners.find(c => c.id === corner.id)!
+      const updatedPerimeter = store.perimeters.get(perimeter.id)!
+      const updatedCorner = updatedPerimeter.corners.find(c => c.id === corner.id)!
       expect(updatedCorner.outsidePoint).toEqual(originalOutsidePoint)
       expect(updatedCorner.id).toBe(corner.id)
     })
 
     it('should do nothing if wall does not exist', () => {
-      const fakeWallId = createPerimeterId()
-      const fakeCornerId = createOuterCornerId()
+      const fakePerimeterId = createPerimeterId()
+      const fakeCornerId = createPerimeterCornerId()
       const initialState = new Map(store.perimeters)
 
-      store.updateCornerBelongsTo(fakeWallId, fakeCornerId, 'previous')
+      store.updatePerimeterCornerBelongsTo(fakePerimeterId, fakeCornerId, 'previous')
 
       expect(store.perimeters).toEqual(initialState)
     })
@@ -473,27 +473,27 @@ describe('OuterWallsSlice', () => {
       const boundary = createRectangularBoundary()
       store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-      const wall = Array.from(store.perimeters.values())[0]
-      const fakeCornerId = createOuterCornerId()
-      const originalWall = { ...wall }
+      const perimeter = Array.from(store.perimeters.values())[0]
+      const fakeCornerId = createPerimeterCornerId()
+      const originalPerimeter = { ...perimeter }
 
-      store.updateCornerBelongsTo(wall.id, fakeCornerId, 'previous')
+      store.updatePerimeterCornerBelongsTo(perimeter.id, fakeCornerId, 'previous')
 
-      const unchangedWall = store.perimeters.get(wall.id)!
-      expect(unchangedWall.corners).toEqual(originalWall.corners)
+      const unchangedPerimeter = store.perimeters.get(perimeter.id)!
+      expect(unchangedPerimeter.corners).toEqual(originalPerimeter.corners)
     })
   })
 
   describe('opening operations', () => {
     describe('addOpeningToOuterWall', () => {
-      it('should add door opening to wall segment', () => {
+      it('should add door opening to wall wall', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const segmentId = wall.segments[0].id
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const wallId = perimeter.walls[0].id
 
-        const openingId = store.addOpeningToOuterWall(wall.id, segmentId, {
+        const openingId = store.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'door',
           offsetFromStart: createLength(1000),
           width: createLength(800),
@@ -503,11 +503,11 @@ describe('OuterWallsSlice', () => {
         expect(openingId).toBeTruthy()
         expect(typeof openingId).toBe('string')
 
-        const updatedWall = store.perimeters.get(wall.id)!
-        const updatedSegment = updatedWall.segments.find(s => s.id === segmentId)!
-        expect(updatedSegment.openings).toHaveLength(1)
+        const updatedPerimeter = store.perimeters.get(perimeter.id)!
+        const updatedWall = updatedPerimeter.walls.find(s => s.id === wallId)!
+        expect(updatedWall.openings).toHaveLength(1)
 
-        const opening = updatedSegment.openings[0]
+        const opening = updatedWall.openings[0]
         expect(opening.id).toBe(openingId)
         expect(opening.type).toBe('door')
         expect(opening.offsetFromStart).toBe(createLength(1000))
@@ -516,14 +516,14 @@ describe('OuterWallsSlice', () => {
         expect(opening.sillHeight).toBeUndefined()
       })
 
-      it('should add window opening to wall segment', () => {
+      it('should add window opening to wall wall', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const segmentId = wall.segments[0].id
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const wallId = perimeter.walls[0].id
 
-        store.addOpeningToOuterWall(wall.id, segmentId, {
+        store.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'window',
           offsetFromStart: createLength(2000),
           width: createLength(1200),
@@ -531,29 +531,29 @@ describe('OuterWallsSlice', () => {
           sillHeight: createLength(900)
         })
 
-        const updatedWall = store.perimeters.get(wall.id)!
-        const updatedSegment = updatedWall.segments.find(s => s.id === segmentId)!
-        const opening = updatedSegment.openings[0]
+        const updatedPerimeter = store.perimeters.get(perimeter.id)!
+        const updatedWall = updatedPerimeter.walls.find(s => s.id === wallId)!
+        const opening = updatedWall.openings[0]
 
         expect(opening.type).toBe('window')
         expect(opening.sillHeight).toBe(createLength(900))
       })
 
-      it('should add multiple openings to same segment', () => {
+      it('should add multiple openings to same wall', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const segmentId = wall.segments[0].id
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const wallId = perimeter.walls[0].id
 
-        store.addOpeningToOuterWall(wall.id, segmentId, {
+        store.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'door',
           offsetFromStart: createLength(1000),
           width: createLength(800),
           height: createLength(2100)
         })
 
-        store.addOpeningToOuterWall(wall.id, segmentId, {
+        store.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'window',
           offsetFromStart: createLength(5000),
           width: createLength(1200),
@@ -561,23 +561,23 @@ describe('OuterWallsSlice', () => {
           sillHeight: createLength(900)
         })
 
-        const updatedWall = store.perimeters.get(wall.id)!
-        const updatedSegment = updatedWall.segments.find(s => s.id === segmentId)!
-        expect(updatedSegment.openings).toHaveLength(2)
+        const updatedPerimeter = store.perimeters.get(perimeter.id)!
+        const updatedWall = updatedPerimeter.walls.find(s => s.id === wallId)!
+        expect(updatedWall.openings).toHaveLength(2)
 
-        expect(updatedSegment.openings[0].type).toBe('door')
-        expect(updatedSegment.openings[1].type).toBe('window')
+        expect(updatedWall.openings[0].type).toBe('door')
+        expect(updatedWall.openings[1].type).toBe('window')
       })
 
       it('should throw error for negative offset', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const segmentId = wall.segments[0].id
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const wallId = perimeter.walls[0].id
 
         expect(() =>
-          store.addOpeningToOuterWall(wall.id, segmentId, {
+          store.addPerimeterWallOpening(perimeter.id, wallId, {
             type: 'door',
             offsetFromStart: createLength(-100),
             width: createLength(800),
@@ -590,11 +590,11 @@ describe('OuterWallsSlice', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const segmentId = wall.segments[0].id
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const wallId = perimeter.walls[0].id
 
         expect(() =>
-          store.addOpeningToOuterWall(wall.id, segmentId, {
+          store.addPerimeterWallOpening(perimeter.id, wallId, {
             type: 'door',
             offsetFromStart: createLength(1000),
             width: createLength(0),
@@ -607,11 +607,11 @@ describe('OuterWallsSlice', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const segmentId = wall.segments[0].id
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const wallId = perimeter.walls[0].id
 
         expect(() =>
-          store.addOpeningToOuterWall(wall.id, segmentId, {
+          store.addPerimeterWallOpening(perimeter.id, wallId, {
             type: 'door',
             offsetFromStart: createLength(1000),
             width: createLength(800),
@@ -624,11 +624,11 @@ describe('OuterWallsSlice', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const segmentId = wall.segments[0].id
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const wallId = perimeter.walls[0].id
 
         expect(() =>
-          store.addOpeningToOuterWall(wall.id, segmentId, {
+          store.addPerimeterWallOpening(perimeter.id, wallId, {
             type: 'window',
             offsetFromStart: createLength(1000),
             width: createLength(1200),
@@ -639,65 +639,65 @@ describe('OuterWallsSlice', () => {
       })
 
       it('should throw if wall does not exist', () => {
-        const fakeWallId = createPerimeterId()
-        const fakeSegmentId = createWallSegmentId()
+        const fakePerimeterId = createPerimeterId()
+        const fakeWallId = createPerimeterWallId()
 
         expect(() =>
-          store.addOpeningToOuterWall(fakeWallId, fakeSegmentId, {
+          store.addPerimeterWallOpening(fakePerimeterId, fakeWallId, {
             type: 'door',
             offsetFromStart: createLength(1000),
             width: createLength(800),
             height: createLength(2100)
           })
-        ).toThrow('Segment does not exist')
+        ).toThrow('Wall does not exist')
       })
 
-      it('should throw if segment does not exist', () => {
+      it('should throw if wall does not exist', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const fakeSegmentId = createWallSegmentId()
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const fakeWallId = createPerimeterWallId()
 
         expect(() =>
-          store.addOpeningToOuterWall(wall.id, fakeSegmentId, {
+          store.addPerimeterWallOpening(perimeter.id, fakeWallId, {
             type: 'door',
             offsetFromStart: createLength(1000),
             width: createLength(800),
             height: createLength(2100)
           })
-        ).toThrow('Segment does not exist')
+        ).toThrow('Wall does not exist')
       })
 
       it('should handle thickness updates for reflex angles without creating overlaps', () => {
         const boundary = createReflexAngleBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const segmentId = wall.segments[2].id // Pick a segment that creates reflex angle
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const wallId = perimeter.walls[2].id // Pick a wall that creates reflex angle
         const newThickness = createLength(600) // Thicker than default
 
-        store.updateOuterWallThickness(wall.id, segmentId, newThickness)
+        store.updatePerimeterWallThickness(perimeter.id, wallId, newThickness)
 
-        const updatedWall = store.perimeters.get(wall.id)!
-        const updatedSegment = updatedWall.segments.find(s => s.id === segmentId)!
+        const updatedPerimeter = store.perimeters.get(perimeter.id)!
+        const updatedWall = updatedPerimeter.walls.find(s => s.id === wallId)!
 
-        expect(updatedSegment.thickness).toBe(newThickness)
+        expect(updatedWall.thickness).toBe(newThickness)
 
-        // Verify all segments still have valid geometry
-        updatedWall.segments.forEach(segment => {
-          expect(segment.insideLength).toBeGreaterThan(0)
-          expect(segment.segmentLength).toBeGreaterThan(0)
-          expect(segment.outsideLength).toBeGreaterThan(0)
+        // Verify all walls still have valid geometry
+        updatedPerimeter.walls.forEach(wall => {
+          expect(wall.insideLength).toBeGreaterThan(0)
+          expect(wall.wallLength).toBeGreaterThan(0)
+          expect(wall.outsideLength).toBeGreaterThan(0)
 
           // Verify lines have different start/end points (not degenerate)
           const insideDist = Math.sqrt(
-            Math.pow(segment.insideLine.end[0] - segment.insideLine.start[0], 2) +
-              Math.pow(segment.insideLine.end[1] - segment.insideLine.start[1], 2)
+            Math.pow(wall.insideLine.end[0] - wall.insideLine.start[0], 2) +
+              Math.pow(wall.insideLine.end[1] - wall.insideLine.start[1], 2)
           )
           const outsideDist = Math.sqrt(
-            Math.pow(segment.outsideLine.end[0] - segment.outsideLine.start[0], 2) +
-              Math.pow(segment.outsideLine.end[1] - segment.outsideLine.start[1], 2)
+            Math.pow(wall.outsideLine.end[0] - wall.outsideLine.start[0], 2) +
+              Math.pow(wall.outsideLine.end[1] - wall.outsideLine.start[1], 2)
           )
 
           expect(insideDist).toBeGreaterThan(0.01) // Not degenerate
@@ -705,7 +705,7 @@ describe('OuterWallsSlice', () => {
         })
 
         // Verify corner points are reasonable
-        updatedWall.corners.forEach(corner => {
+        updatedPerimeter.corners.forEach(corner => {
           expect(Number.isFinite(corner.outsidePoint[0])).toBe(true)
           expect(Number.isFinite(corner.outsidePoint[1])).toBe(true)
           expect(Math.abs(corner.outsidePoint[0])).toBeLessThan(1000) // Reasonable bounds
@@ -715,44 +715,44 @@ describe('OuterWallsSlice', () => {
     })
 
     describe('removeOpeningFromOuterWall', () => {
-      it('should remove opening from wall segment', () => {
+      it('should remove opening from wall wall', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const segmentId = wall.segments[0].id
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const wallId = perimeter.walls[0].id
 
-        const openingId = store.addOpeningToOuterWall(wall.id, segmentId, {
+        const openingId = store.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'door',
           offsetFromStart: createLength(1000),
           width: createLength(800),
           height: createLength(2100)
         })
 
-        expect(store.perimeters.get(wall.id)!.segments[0].openings).toHaveLength(1)
+        expect(store.perimeters.get(perimeter.id)!.walls[0].openings).toHaveLength(1)
 
-        store.removeOpeningFromOuterWall(wall.id, segmentId, openingId)
+        store.removePerimeterWallOpening(perimeter.id, wallId, openingId)
 
-        const updatedWall = store.perimeters.get(wall.id)!
-        const updatedSegment = updatedWall.segments.find(s => s.id === segmentId)!
-        expect(updatedSegment.openings).toHaveLength(0)
+        const updatedPerimeter = store.perimeters.get(perimeter.id)!
+        const updatedWall = updatedPerimeter.walls.find(s => s.id === wallId)!
+        expect(updatedWall.openings).toHaveLength(0)
       })
 
       it('should remove correct opening when multiple exist', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const segmentId = wall.segments[0].id
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const wallId = perimeter.walls[0].id
 
-        const doorId = store.addOpeningToOuterWall(wall.id, segmentId, {
+        const doorId = store.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'door',
           offsetFromStart: createLength(1000),
           width: createLength(800),
           height: createLength(2100)
         })
 
-        const windowId = store.addOpeningToOuterWall(wall.id, segmentId, {
+        const windowId = store.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'window',
           offsetFromStart: createLength(5000),
           width: createLength(1200),
@@ -760,62 +760,62 @@ describe('OuterWallsSlice', () => {
           sillHeight: createLength(900)
         })
 
-        store.removeOpeningFromOuterWall(wall.id, segmentId, doorId)
+        store.removePerimeterWallOpening(perimeter.id, wallId, doorId)
 
-        const updatedWall = store.perimeters.get(wall.id)!
-        const updatedSegment = updatedWall.segments.find(s => s.id === segmentId)!
-        expect(updatedSegment.openings).toHaveLength(1)
-        expect(updatedSegment.openings[0].id).toBe(windowId)
-        expect(updatedSegment.openings[0].type).toBe('window')
+        const updatedPerimeter = store.perimeters.get(perimeter.id)!
+        const updatedWall = updatedPerimeter.walls.find(s => s.id === wallId)!
+        expect(updatedWall.openings).toHaveLength(1)
+        expect(updatedWall.openings[0].id).toBe(windowId)
+        expect(updatedWall.openings[0].type).toBe('window')
       })
 
       it('should do nothing if wall does not exist', () => {
-        const fakeWallId = createPerimeterId()
-        const fakeSegmentId = createWallSegmentId()
+        const fakePerimeterId = createPerimeterId()
+        const fakeWallId = createPerimeterWallId()
         const fakeOpeningId = createOpeningId()
         const initialState = new Map(store.perimeters)
 
-        store.removeOpeningFromOuterWall(fakeWallId, fakeSegmentId, fakeOpeningId)
+        store.removePerimeterWallOpening(fakePerimeterId, fakeWallId, fakeOpeningId)
 
         expect(store.perimeters).toEqual(initialState)
       })
 
-      it('should do nothing if segment does not exist', () => {
+      it('should do nothing if wall does not exist', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const fakeSegmentId = createWallSegmentId()
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const fakeWallId = createPerimeterWallId()
         const fakeOpeningId = createOpeningId()
-        const originalWall = { ...wall }
+        const originalPerimeter = { ...perimeter }
 
-        store.removeOpeningFromOuterWall(wall.id, fakeSegmentId, fakeOpeningId)
+        store.removePerimeterWallOpening(perimeter.id, fakeWallId, fakeOpeningId)
 
-        const unchangedWall = store.perimeters.get(wall.id)!
-        expect(unchangedWall.segments).toEqual(originalWall.segments)
+        const unchangedPerimeter = store.perimeters.get(perimeter.id)!
+        expect(unchangedPerimeter.walls).toEqual(originalPerimeter.walls)
       })
 
       it('should do nothing if opening does not exist', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const segmentId = wall.segments[0].id
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const wallId = perimeter.walls[0].id
         const fakeOpeningId = createOpeningId()
 
-        store.addOpeningToOuterWall(wall.id, segmentId, {
+        store.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'door',
           offsetFromStart: createLength(1000),
           width: createLength(800),
           height: createLength(2100)
         })
 
-        const originalSegment = store.perimeters.get(wall.id)!.segments[0]
+        const originalPerimeter = store.perimeters.get(perimeter.id)!.walls[0]
 
-        store.removeOpeningFromOuterWall(wall.id, segmentId, fakeOpeningId)
+        store.removePerimeterWallOpening(perimeter.id, wallId, fakeOpeningId)
 
-        const unchangedSegment = store.perimeters.get(wall.id)!.segments[0]
-        expect(unchangedSegment.openings).toEqual(originalSegment.openings)
+        const unchangedPerimeter = store.perimeters.get(perimeter.id)!.walls[0]
+        expect(unchangedPerimeter.openings).toEqual(originalPerimeter.openings)
       })
     })
 
@@ -824,24 +824,24 @@ describe('OuterWallsSlice', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const segmentId = wall.segments[0].id
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const wallId = perimeter.walls[0].id
 
-        const openingId = store.addOpeningToOuterWall(wall.id, segmentId, {
+        const openingId = store.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'door',
           offsetFromStart: createLength(1000),
           width: createLength(800),
           height: createLength(2100)
         })
 
-        store.updateOpening(wall.id, segmentId, openingId, {
+        store.updatePerimeterWallOpening(perimeter.id, wallId, openingId, {
           width: createLength(900),
           height: createLength(2200)
         })
 
-        const updatedWall = store.perimeters.get(wall.id)!
-        const updatedSegment = updatedWall.segments.find(s => s.id === segmentId)!
-        const updatedOpening = updatedSegment.openings[0]
+        const updatedPerimeter = store.perimeters.get(perimeter.id)!
+        const updatedWall = updatedPerimeter.walls.find(s => s.id === wallId)!
+        const updatedOpening = updatedWall.openings[0]
 
         expect(updatedOpening.width).toBe(createLength(900))
         expect(updatedOpening.height).toBe(createLength(2200))
@@ -853,10 +853,10 @@ describe('OuterWallsSlice', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const segmentId = wall.segments[0].id
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const wallId = perimeter.walls[0].id
 
-        const openingId = store.addOpeningToOuterWall(wall.id, segmentId, {
+        const openingId = store.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'window',
           offsetFromStart: createLength(1000),
           width: createLength(1200),
@@ -864,117 +864,117 @@ describe('OuterWallsSlice', () => {
           sillHeight: createLength(900)
         })
 
-        store.updateOpening(wall.id, segmentId, openingId, {
+        store.updatePerimeterWallOpening(perimeter.id, wallId, openingId, {
           sillHeight: createLength(1000)
         })
 
-        const updatedWall = store.perimeters.get(wall.id)!
-        const updatedSegment = updatedWall.segments.find(s => s.id === segmentId)!
-        const updatedOpening = updatedSegment.openings[0]
+        const updatedPerimeter = store.perimeters.get(perimeter.id)!
+        const updatedWall = updatedPerimeter.walls.find(s => s.id === wallId)!
+        const updatedOpening = updatedWall.openings[0]
 
         expect(updatedOpening.sillHeight).toBe(createLength(1000))
       })
 
       it('should do nothing if wall does not exist', () => {
-        const fakeWallId = createPerimeterId()
-        const fakeSegmentId = createWallSegmentId()
+        const fakePerimeterId = createPerimeterId()
+        const fakeWallId = createPerimeterWallId()
         const fakeOpeningId = createOpeningId()
         const initialState = new Map(store.perimeters)
 
-        store.updateOpening(fakeWallId, fakeSegmentId, fakeOpeningId, { width: createLength(1000) })
+        store.updatePerimeterWallOpening(fakePerimeterId, fakeWallId, fakeOpeningId, { width: createLength(1000) })
 
         expect(store.perimeters).toEqual(initialState)
       })
 
-      it('should do nothing if segment does not exist', () => {
+      it('should do nothing if wall does not exist', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const fakeSegmentId = createWallSegmentId()
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const fakeWallId = createPerimeterWallId()
         const fakeOpeningId = createOpeningId()
-        const originalWall = { ...wall }
+        const originalPerimeter = { ...perimeter }
 
-        store.updateOpening(wall.id, fakeSegmentId, fakeOpeningId, { width: createLength(1000) })
+        store.updatePerimeterWallOpening(perimeter.id, fakeWallId, fakeOpeningId, { width: createLength(1000) })
 
-        const unchangedWall = store.perimeters.get(wall.id)!
-        expect(unchangedWall.segments).toEqual(originalWall.segments)
+        const unchangedPerimeter = store.perimeters.get(perimeter.id)!
+        expect(unchangedPerimeter.walls).toEqual(originalPerimeter.walls)
       })
 
       it('should do nothing if opening does not exist', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const segmentId = wall.segments[0].id
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const wallId = perimeter.walls[0].id
         const fakeOpeningId = createOpeningId()
 
-        store.addOpeningToOuterWall(wall.id, segmentId, {
+        store.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'door',
           offsetFromStart: createLength(1000),
           width: createLength(800),
           height: createLength(2100)
         })
 
-        const originalSegment = store.perimeters.get(wall.id)!.segments[0]
+        const originalPerimeter = store.perimeters.get(perimeter.id)!.walls[0]
 
-        store.updateOpening(wall.id, segmentId, fakeOpeningId, { width: createLength(1000) })
+        store.updatePerimeterWallOpening(perimeter.id, wallId, fakeOpeningId, { width: createLength(1000) })
 
-        const unchangedSegment = store.perimeters.get(wall.id)!.segments[0]
-        expect(unchangedSegment.openings).toEqual(originalSegment.openings)
+        const unchangedPerimeter = store.perimeters.get(perimeter.id)!.walls[0]
+        expect(unchangedPerimeter.openings).toEqual(originalPerimeter.openings)
       })
     })
   })
 
   describe('getter operations', () => {
     describe('getOuterWallById', () => {
-      it('should return existing outer wall', () => {
+      it('should return existing perimeter', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const addedWall = Array.from(store.perimeters.values())[0]
-        const result = store.getPerimeterById(addedWall.id)
+        const addedPerimeter = Array.from(store.perimeters.values())[0]
+        const result = store.getPerimeterById(addedPerimeter.id)
 
         expect(result).toBeDefined()
-        expect(result?.id).toBe(addedWall.id)
-        expect(result).toEqual(addedWall)
+        expect(result?.id).toBe(addedPerimeter.id)
+        expect(result).toEqual(addedPerimeter)
       })
 
       it('should return null for non-existent wall', () => {
-        const fakeWallId = createPerimeterId()
-        const result = store.getPerimeterById(fakeWallId)
+        const fakePerimeterId = createPerimeterId()
+        const result = store.getPerimeterById(fakePerimeterId)
         expect(result).toBeNull()
       })
     })
 
-    describe('getSegmentById', () => {
-      it('should return existing segment', () => {
+    describe('getWallById', () => {
+      it('should return existing wall', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const segment = wall.segments[0]
-        const result = store.getSegmentById(wall.id, segment.id)
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const wall = perimeter.walls[0]
+        const result = store.getPerimeterWallById(perimeter.id, wall.id)
 
         expect(result).toBeDefined()
-        expect(result?.id).toBe(segment.id)
-        expect(result).toEqual(segment)
+        expect(result?.id).toBe(wall.id)
+        expect(result).toEqual(wall)
       })
 
       it('should return null for non-existent wall', () => {
-        const fakeWallId = createPerimeterId()
-        const fakeSegmentId = createWallSegmentId()
-        const result = store.getSegmentById(fakeWallId, fakeSegmentId)
+        const fakePerimeterId = createPerimeterId()
+        const fakeWallId = createPerimeterWallId()
+        const result = store.getPerimeterWallById(fakePerimeterId, fakeWallId)
         expect(result).toBeNull()
       })
 
-      it('should return null for non-existent segment', () => {
+      it('should return null for non-existent wall', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const fakeSegmentId = createWallSegmentId()
-        const result = store.getSegmentById(wall.id, fakeSegmentId)
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const fakeWallId = createPerimeterWallId()
+        const result = store.getPerimeterWallById(perimeter.id, fakeWallId)
         expect(result).toBeNull()
       })
     })
@@ -984,9 +984,9 @@ describe('OuterWallsSlice', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const corner = wall.corners[0]
-        const result = store.getCornerById(wall.id, corner.id)
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const corner = perimeter.corners[0]
+        const result = store.getPerimeterCornerById(perimeter.id, corner.id)
 
         expect(result).toBeDefined()
         expect(result?.id).toBe(corner.id)
@@ -994,9 +994,9 @@ describe('OuterWallsSlice', () => {
       })
 
       it('should return null for non-existent wall', () => {
-        const fakeWallId = createPerimeterId()
-        const fakeCornerId = createOuterCornerId()
-        const result = store.getCornerById(fakeWallId, fakeCornerId)
+        const fakePerimeterId = createPerimeterId()
+        const fakeCornerId = createPerimeterCornerId()
+        const result = store.getPerimeterCornerById(fakePerimeterId, fakeCornerId)
         expect(result).toBeNull()
       })
 
@@ -1004,9 +1004,9 @@ describe('OuterWallsSlice', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const fakeCornerId = createOuterCornerId()
-        const result = store.getCornerById(wall.id, fakeCornerId)
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const fakeCornerId = createPerimeterCornerId()
+        const result = store.getPerimeterCornerById(perimeter.id, fakeCornerId)
         expect(result).toBeNull()
       })
     })
@@ -1016,17 +1016,17 @@ describe('OuterWallsSlice', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const segmentId = wall.segments[0].id
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const wallId = perimeter.walls[0].id
 
-        const openingId = store.addOpeningToOuterWall(wall.id, segmentId, {
+        const openingId = store.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'door',
           offsetFromStart: createLength(1000),
           width: createLength(800),
           height: createLength(2100)
         })
 
-        const result = store.getOpeningById(wall.id, segmentId, openingId)
+        const result = store.getPerimeterWallOpeningById(perimeter.id, wallId, openingId)
 
         expect(result).toBeDefined()
         expect(result?.id).toBe(openingId)
@@ -1034,21 +1034,21 @@ describe('OuterWallsSlice', () => {
       })
 
       it('should return null for non-existent wall', () => {
-        const fakeWallId = createPerimeterId()
-        const fakeSegmentId = createWallSegmentId()
+        const fakePerimeterId = createPerimeterId()
+        const fakeWallId = createPerimeterWallId()
         const fakeOpeningId = createOpeningId()
-        const result = store.getOpeningById(fakeWallId, fakeSegmentId, fakeOpeningId)
+        const result = store.getPerimeterWallOpeningById(fakePerimeterId, fakeWallId, fakeOpeningId)
         expect(result).toBeNull()
       })
 
-      it('should return null for non-existent segment', () => {
+      it('should return null for non-existent wall', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const fakeSegmentId = createWallSegmentId()
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const fakeWallId = createPerimeterWallId()
         const fakeOpeningId = createOpeningId()
-        const result = store.getOpeningById(wall.id, fakeSegmentId, fakeOpeningId)
+        const result = store.getPerimeterWallOpeningById(perimeter.id, fakeWallId, fakeOpeningId)
         expect(result).toBeNull()
       })
 
@@ -1056,10 +1056,10 @@ describe('OuterWallsSlice', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const segmentId = wall.segments[0].id
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const wallId = perimeter.walls[0].id
         const fakeOpeningId = createOpeningId()
-        const result = store.getOpeningById(wall.id, segmentId, fakeOpeningId)
+        const result = store.getPerimeterWallOpeningById(perimeter.id, wallId, fakeOpeningId)
         expect(result).toBeNull()
       })
     })
@@ -1103,23 +1103,23 @@ describe('OuterWallsSlice', () => {
   })
 
   describe('complex scenarios', () => {
-    it('should handle complex outer wall management correctly', () => {
+    it('should handle complex perimeter management correctly', () => {
       const boundary = createRectangularBoundary()
       store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-      const wall = Array.from(store.perimeters.values())[0]
-      const segmentId = wall.segments[0].id
-      const cornerId = wall.corners[0].id
+      const perimeter = Array.from(store.perimeters.values())[0]
+      const wallId = perimeter.walls[0].id
+      const cornerId = perimeter.corners[0].id
 
       // Add openings
-      const doorId = store.addOpeningToOuterWall(wall.id, segmentId, {
+      const doorId = store.addPerimeterWallOpening(perimeter.id, wallId, {
         type: 'door',
         offsetFromStart: createLength(1000),
         width: createLength(800),
         height: createLength(2100)
       })
 
-      const windowId = store.addOpeningToOuterWall(wall.id, segmentId, {
+      const windowId = store.addPerimeterWallOpening(perimeter.id, wallId, {
         type: 'window',
         offsetFromStart: createLength(5000),
         width: createLength(1200),
@@ -1128,44 +1128,44 @@ describe('OuterWallsSlice', () => {
       })
 
       // Update properties
-      store.updateOuterWallConstructionType(wall.id, segmentId, 'infill')
-      store.updateCornerBelongsTo(wall.id, cornerId, 'previous')
+      store.updatePerimeterWallConstructionType(perimeter.id, wallId, 'infill')
+      store.updatePerimeterCornerBelongsTo(perimeter.id, cornerId, 'previous')
 
       // Verify complex state
-      const updatedWall = store.perimeters.get(wall.id)!
-      const updatedSegment = updatedWall.segments.find(s => s.id === segmentId)!
-      const updatedCorner = updatedWall.corners.find(c => c.id === cornerId)!
+      const updatedPerimeter = store.perimeters.get(perimeter.id)!
+      const updatedWall = updatedPerimeter.walls.find(s => s.id === wallId)!
+      const updatedCorner = updatedPerimeter.corners.find(c => c.id === cornerId)!
 
-      expect(updatedSegment.openings).toHaveLength(2)
-      expect(updatedSegment.constructionType).toBe('infill')
+      expect(updatedWall.openings).toHaveLength(2)
+      expect(updatedWall.constructionType).toBe('infill')
       expect(updatedCorner.belongsTo).toBe('previous')
 
       // Update opening
-      store.updateOpening(wall.id, segmentId, doorId, {
+      store.updatePerimeterWallOpening(perimeter.id, wallId, doorId, {
         width: createLength(900)
       })
 
-      const finalSegment = store.perimeters.get(wall.id)!.segments.find(s => s.id === segmentId)!
-      const updatedDoor = finalSegment.openings.find(o => o.id === doorId)!
+      const finalPerimeter = store.perimeters.get(perimeter.id)!.walls.find(s => s.id === wallId)!
+      const updatedDoor = finalPerimeter.openings.find(o => o.id === doorId)!
       expect(updatedDoor.width).toBe(createLength(900))
 
       // Remove opening
-      store.removeOpeningFromOuterWall(wall.id, segmentId, windowId)
-      const finalSegmentAfterRemoval = store.perimeters.get(wall.id)!.segments.find(s => s.id === segmentId)!
-      expect(finalSegmentAfterRemoval.openings).toHaveLength(1)
-      expect(finalSegmentAfterRemoval.openings[0].id).toBe(doorId)
+      store.removePerimeterWallOpening(perimeter.id, wallId, windowId)
+      const finalWallAfterRemoval = store.perimeters.get(perimeter.id)!.walls.find(s => s.id === wallId)!
+      expect(finalWallAfterRemoval.openings).toHaveLength(1)
+      expect(finalWallAfterRemoval.openings[0].id).toBe(doorId)
     })
 
     it('should maintain data consistency after multiple operations', () => {
       const boundary = createRectangularBoundary()
       store.addPerimeter(testStoreyId, boundary, 'cells-under-tension', createLength(500))
 
-      const wall = Array.from(store.perimeters.values())[0]
-      const segmentId = wall.segments[0].id
-      const originalCornerCount = wall.corners.length
+      const perimeter = Array.from(store.perimeters.values())[0]
+      const wallId = perimeter.walls[0].id
+      const originalCornerCount = perimeter.corners.length
 
       // Add opening
-      store.addOpeningToOuterWall(wall.id, segmentId, {
+      store.addPerimeterWallOpening(perimeter.id, wallId, {
         type: 'door',
         offsetFromStart: createLength(1000),
         width: createLength(800),
@@ -1174,17 +1174,17 @@ describe('OuterWallsSlice', () => {
 
       // Update thickness - this should recalculate geometry
       const newThickness = createLength(300)
-      store.updateOuterWallThickness(wall.id, segmentId, newThickness)
+      store.updatePerimeterWallThickness(perimeter.id, wallId, newThickness)
 
-      const finalWall = store.perimeters.get(wall.id)!
-      const finalSegment = finalWall.segments.find(s => s.id === segmentId)!
+      const finalPerimeter = store.perimeters.get(perimeter.id)!
+      const finalWall = finalPerimeter.walls.find(s => s.id === wallId)!
 
-      expect(finalSegment.thickness).toBe(newThickness)
-      expect(finalSegment.openings).toHaveLength(1)
-      expect(finalWall.corners).toHaveLength(originalCornerCount) // Same number of corners
-      expect(finalWall.segments).toHaveLength(4) // Rectangle still has 4 segments
-      expect(finalWall.storeyId).toBe(testStoreyId)
-      expect(finalWall.boundary).toEqual(boundary.points)
+      expect(finalWall.thickness).toBe(newThickness)
+      expect(finalWall.openings).toHaveLength(1)
+      expect(finalPerimeter.corners).toHaveLength(originalCornerCount) // Same number of corners
+      expect(finalPerimeter.walls).toHaveLength(4) // Rectangle still has 4 walls
+      expect(finalPerimeter.storeyId).toBe(testStoreyId)
+      expect(finalPerimeter.boundary).toEqual(boundary.points)
     })
   })
 
@@ -1201,24 +1201,24 @@ describe('OuterWallsSlice', () => {
 
       store.addPerimeter(testStoreyId, acuteAngleBoundary, 'cells-under-tension', createLength(100))
 
-      const wall = Array.from(store.perimeters.values())[0]
+      const perimeter = Array.from(store.perimeters.values())[0]
 
-      // Verify all segments have valid, positive lengths
-      wall.segments.forEach(segment => {
-        expect(segment.insideLength).toBeGreaterThan(0)
-        expect(segment.segmentLength).toBeGreaterThan(0)
-        expect(segment.outsideLength).toBeGreaterThan(0)
+      // Verify all walls have valid, positive lengths
+      perimeter.walls.forEach(wall => {
+        expect(wall.insideLength).toBeGreaterThan(0)
+        expect(wall.wallLength).toBeGreaterThan(0)
+        expect(wall.outsideLength).toBeGreaterThan(0)
 
-        // Verify segment lines aren't degenerate
+        // Verify wall lines aren't degenerate
         const insideLineLength = Math.sqrt(
-          Math.pow(segment.insideLine.end[0] - segment.insideLine.start[0], 2) +
-            Math.pow(segment.insideLine.end[1] - segment.insideLine.start[1], 2)
+          Math.pow(wall.insideLine.end[0] - wall.insideLine.start[0], 2) +
+            Math.pow(wall.insideLine.end[1] - wall.insideLine.start[1], 2)
         )
         expect(insideLineLength).toBeGreaterThan(0.01)
       })
 
       // Verify corners have valid positions
-      wall.corners.forEach(corner => {
+      perimeter.corners.forEach(corner => {
         expect(Number.isFinite(corner.outsidePoint[0])).toBe(true)
         expect(Number.isFinite(corner.outsidePoint[1])).toBe(true)
       })
@@ -1228,58 +1228,58 @@ describe('OuterWallsSlice', () => {
       const lShapeBoundary = createReflexAngleBoundary()
       store.addPerimeter(testStoreyId, lShapeBoundary, 'cells-under-tension', createLength(200))
 
-      const wall = Array.from(store.perimeters.values())[0]
+      const perimeter = Array.from(store.perimeters.values())[0]
 
-      expect(wall.segments).toHaveLength(6)
-      expect(wall.corners).toHaveLength(6)
+      expect(perimeter.walls).toHaveLength(6)
+      expect(perimeter.corners).toHaveLength(6)
 
-      // Test specific reflex angle segments (segments 2 and 4 in our L-shape)
-      const reflexSegment1 = wall.segments[2] // At (10,5) -> (5,5)
-      const reflexSegment2 = wall.segments[3] // At (5,5) -> (5,10)
+      // Test specific reflex angle walls (walls 2 and 4 in our L-shape)
+      const reflexWall1 = perimeter.walls[2] // At (10,5) -> (5,5)
+      const reflexWall2 = perimeter.walls[3] // At (5,5) -> (5,10)
 
-      // These segments should have proper truncation for reflex angles
-      expect(reflexSegment1.insideLength).toBe(5) // Original boundary length
-      expect(reflexSegment1.segmentLength).toBeLessThanOrEqual(reflexSegment1.insideLength) // May be truncated
-      expect(reflexSegment1.segmentLength).toBeGreaterThan(0)
+      // These walls should have proper truncation for reflex angles
+      expect(reflexWall1.insideLength).toBe(5) // Original boundary length
+      expect(reflexWall1.wallLength).toBeLessThanOrEqual(reflexWall1.insideLength) // May be truncated
+      expect(reflexWall1.wallLength).toBeGreaterThan(0)
 
-      expect(reflexSegment2.insideLength).toBe(5) // Original boundary length
-      expect(reflexSegment2.segmentLength).toBeLessThanOrEqual(reflexSegment2.insideLength) // May be truncated
-      expect(reflexSegment2.segmentLength).toBeGreaterThan(0)
+      expect(reflexWall2.insideLength).toBe(5) // Original boundary length
+      expect(reflexWall2.wallLength).toBeLessThanOrEqual(reflexWall2.insideLength) // May be truncated
+      expect(reflexWall2.wallLength).toBeGreaterThan(0)
     })
 
     it('should handle mixed thickness values with reflex angles', () => {
       const boundary = createReflexAngleBoundary()
       store.addPerimeter(testStoreyId, boundary, 'cells-under-tension', createLength(200))
 
-      const wall = Array.from(store.perimeters.values())[0]
+      const perimeter = Array.from(store.perimeters.values())[0]
 
-      // Update different segments to different thicknesses
-      const segmentIds = wall.segments.map(s => s.id)
-      store.updateOuterWallThickness(wall.id, segmentIds[1], createLength(400))
-      store.updateOuterWallThickness(wall.id, segmentIds[3], createLength(600))
+      // Update different walls to different thicknesses
+      const wallIds = perimeter.walls.map(s => s.id)
+      store.updatePerimeterWallThickness(perimeter.id, wallIds[1], createLength(400))
+      store.updatePerimeterWallThickness(perimeter.id, wallIds[3], createLength(600))
 
-      const updatedWall = store.perimeters.get(wall.id)!
+      const updatedPerimeter = store.perimeters.get(perimeter.id)!
 
       // Verify mixed thicknesses are applied correctly
-      expect(updatedWall.segments[0].thickness).toBe(200) // Original
-      expect(updatedWall.segments[1].thickness).toBe(400) // Updated
-      expect(updatedWall.segments[2].thickness).toBe(200) // Original
-      expect(updatedWall.segments[3].thickness).toBe(600) // Updated
-      expect(updatedWall.segments[4].thickness).toBe(200) // Original
-      expect(updatedWall.segments[5].thickness).toBe(200) // Original
+      expect(updatedPerimeter.walls[0].thickness).toBe(200) // Original
+      expect(updatedPerimeter.walls[1].thickness).toBe(400) // Updated
+      expect(updatedPerimeter.walls[2].thickness).toBe(200) // Original
+      expect(updatedPerimeter.walls[3].thickness).toBe(600) // Updated
+      expect(updatedPerimeter.walls[4].thickness).toBe(200) // Original
+      expect(updatedPerimeter.walls[5].thickness).toBe(200) // Original
 
-      // All segments should still have valid geometry
-      updatedWall.segments.forEach(segment => {
-        expect(segment.insideLength).toBeGreaterThan(0)
-        expect(segment.segmentLength).toBeGreaterThan(0)
-        expect(segment.outsideLength).toBeGreaterThan(0)
-        expect(Number.isFinite(segment.insideLength)).toBe(true)
-        expect(Number.isFinite(segment.segmentLength)).toBe(true)
-        expect(Number.isFinite(segment.outsideLength)).toBe(true)
+      // All walls should still have valid geometry
+      updatedPerimeter.walls.forEach(wall => {
+        expect(wall.insideLength).toBeGreaterThan(0)
+        expect(wall.wallLength).toBeGreaterThan(0)
+        expect(wall.outsideLength).toBeGreaterThan(0)
+        expect(Number.isFinite(wall.insideLength)).toBe(true)
+        expect(Number.isFinite(wall.wallLength)).toBe(true)
+        expect(Number.isFinite(wall.outsideLength)).toBe(true)
       })
 
       // Corner points should be reasonable
-      updatedWall.corners.forEach(corner => {
+      updatedPerimeter.corners.forEach(corner => {
         expect(Number.isFinite(corner.outsidePoint[0])).toBe(true)
         expect(Number.isFinite(corner.outsidePoint[1])).toBe(true)
         expect(Math.abs(corner.outsidePoint[0])).toBeLessThan(1000)
@@ -1287,68 +1287,68 @@ describe('OuterWallsSlice', () => {
       })
     })
 
-    it('should preserve segment and corner relationships after thickness updates', () => {
+    it('should preserve wall and corner relationships after thickness updates', () => {
       const boundary = createReflexAngleBoundary()
       store.addPerimeter(testStoreyId, boundary, 'cells-under-tension', createLength(300))
 
-      const originalWall = Array.from(store.perimeters.values())[0]
-      const originalSegmentIds = originalWall.segments.map(s => s.id)
-      const originalCornerIds = originalWall.corners.map(c => c.id)
-      const originalBelongsTo = originalWall.corners.map(c => c.belongsTo)
+      const originalPerimeter = Array.from(store.perimeters.values())[0]
+      const originalWallIds = originalPerimeter.walls.map(s => s.id)
+      const originalCornerIds = originalPerimeter.corners.map(c => c.id)
+      const originalBelongsTo = originalPerimeter.corners.map(c => c.belongsTo)
 
-      // Update thickness of a segment that creates reflex angle
-      const targetSegmentId = originalSegmentIds[2]
-      store.updateOuterWallThickness(originalWall.id, targetSegmentId, createLength(800))
+      // Update thickness of a wall that creates reflex angle
+      const targetWallId = originalWallIds[2]
+      store.updatePerimeterWallThickness(originalPerimeter.id, targetWallId, createLength(800))
 
-      const updatedWall = store.perimeters.get(originalWall.id)!
+      const updatedPerimeter = store.perimeters.get(originalPerimeter.id)!
 
       // Verify IDs are preserved
-      expect(updatedWall.segments.map(s => s.id)).toEqual(originalSegmentIds)
-      expect(updatedWall.corners.map(c => c.id)).toEqual(originalCornerIds)
-      expect(updatedWall.corners.map(c => c.belongsTo)).toEqual(originalBelongsTo)
+      expect(updatedPerimeter.walls.map(s => s.id)).toEqual(originalWallIds)
+      expect(updatedPerimeter.corners.map(c => c.id)).toEqual(originalCornerIds)
+      expect(updatedPerimeter.corners.map(c => c.belongsTo)).toEqual(originalBelongsTo)
 
-      // Verify the specific segment was updated
-      const updatedSegment = updatedWall.segments.find(s => s.id === targetSegmentId)!
-      expect(updatedSegment.thickness).toBe(800)
+      // Verify the specific wall was updated
+      const updatedWall = updatedPerimeter.walls.find(s => s.id === targetWallId)!
+      expect(updatedWall.thickness).toBe(800)
     })
   })
 
   describe('deletion operations', () => {
     describe('removeOuterWallCorner', () => {
-      it('should remove corner and merge adjacent segments', () => {
+      it('should remove corner and merge adjacent walls', () => {
         // Create a pentagon (5 corners) so we can safely remove one
         const boundary: Polygon2D = {
           points: [createVec2(0, 0), createVec2(10, 0), createVec2(15, 5), createVec2(5, 10), createVec2(-5, 5)]
         }
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const originalSegmentCount = wall.segments.length
-        const originalCornerCount = wall.corners.length
-        const cornerToRemove = wall.corners[2] // Remove corner at (15,5)
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const originalWallCount = perimeter.walls.length
+        const originalCornerCount = perimeter.corners.length
+        const cornerToRemove = perimeter.corners[2] // Remove corner at (15,5)
 
-        const success = store.removeOuterWallCorner(wall.id, cornerToRemove.id)
+        const success = store.removePerimeterCorner(perimeter.id, cornerToRemove.id)
         expect(success).toBe(true)
 
-        const updatedWall = store.perimeters.get(wall.id)!
+        const updatedPerimeter = store.perimeters.get(perimeter.id)!
 
-        // Should have one less corner and one less segment
-        expect(updatedWall.corners).toHaveLength(originalCornerCount - 1)
-        expect(updatedWall.segments).toHaveLength(originalSegmentCount - 1)
-        expect(updatedWall.boundary).toHaveLength(originalSegmentCount - 1)
+        // Should have one less corner and one less wall
+        expect(updatedPerimeter.corners).toHaveLength(originalCornerCount - 1)
+        expect(updatedPerimeter.walls).toHaveLength(originalWallCount - 1)
+        expect(updatedPerimeter.boundary).toHaveLength(originalWallCount - 1)
 
         // The removed corner should not exist
-        expect(updatedWall.corners.find(c => c.id === cornerToRemove.id)).toBeUndefined()
+        expect(updatedPerimeter.corners.find(c => c.id === cornerToRemove.id)).toBeUndefined()
 
-        // All remaining segments should have valid geometry
-        updatedWall.segments.forEach(segment => {
-          expect(segment.insideLength).toBeGreaterThan(0)
-          expect(segment.segmentLength).toBeGreaterThan(0)
-          expect(segment.outsideLength).toBeGreaterThan(0)
+        // All remaining walls should have valid geometry
+        updatedPerimeter.walls.forEach(wall => {
+          expect(wall.insideLength).toBeGreaterThan(0)
+          expect(wall.wallLength).toBeGreaterThan(0)
+          expect(wall.outsideLength).toBeGreaterThan(0)
         })
       })
 
-      it('should delete openings from merged segments', () => {
+      it('should delete openings from merged walls', () => {
         const boundary: Polygon2D = {
           points: [
             createVec2(0, 0),
@@ -1358,22 +1358,22 @@ describe('OuterWallsSlice', () => {
             createVec2(0, 1000)
           ]
         }
-        const wall = store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
+        const perimeter = store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const cornerToRemove = wall.corners[2] // Corner at (2000,1000)
+        const cornerToRemove = perimeter.corners[2] // Corner at (2000,1000)
 
-        // Add openings to the two segments that will be merged
-        const segment1 = wall.segments[1] // Second segment
-        const segment2 = wall.segments[2] // Third segment
+        // Add openings to the two walls that will be merged
+        const wall1 = perimeter.walls[1] // Second wall
+        const wall2 = perimeter.walls[2] // Third wall
 
-        store.addOpeningToOuterWall(wall.id, segment1.id, {
+        store.addPerimeterWallOpening(perimeter.id, wall1.id, {
           type: 'door',
           offsetFromStart: createLength(0),
           width: createLength(100),
           height: createLength(2100)
         })
 
-        store.addOpeningToOuterWall(wall.id, segment2.id, {
+        store.addPerimeterWallOpening(perimeter.id, wall2.id, {
           type: 'window',
           offsetFromStart: createLength(0),
           width: createLength(100),
@@ -1381,37 +1381,37 @@ describe('OuterWallsSlice', () => {
           sillHeight: createLength(900)
         })
 
-        const success = store.removeOuterWallCorner(wall.id, cornerToRemove.id)
+        const success = store.removePerimeterCorner(perimeter.id, cornerToRemove.id)
         expect(success).toBe(true)
 
-        const updatedWall = store.perimeters.get(wall.id)!
+        const updatedPerimeter = store.perimeters.get(perimeter.id)!
 
-        // Find the merged segment (should be where segment1 was)
-        const mergedSegment = updatedWall.segments[1]
-        expect(mergedSegment.openings).toHaveLength(0) // Openings should be deleted, not merged
+        // Find the merged wall (should be where wall1 was)
+        const mergedWall = updatedPerimeter.walls[1]
+        expect(mergedWall.openings).toHaveLength(0) // Openings should be deleted, not merged
       })
 
       it('should fail for walls with less than 4 corners', () => {
         const boundary = createTriangularBoundary() // Only 3 corners
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const cornerToRemove = wall.corners[0]
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const cornerToRemove = perimeter.corners[0]
 
-        const success = store.removeOuterWallCorner(wall.id, cornerToRemove.id)
+        const success = store.removePerimeterCorner(perimeter.id, cornerToRemove.id)
         expect(success).toBe(false)
 
         // Wall should be unchanged
-        const unchangedWall = store.perimeters.get(wall.id)!
-        expect(unchangedWall.corners).toHaveLength(3)
-        expect(unchangedWall.segments).toHaveLength(3)
+        const unchangedPerimeter = store.perimeters.get(perimeter.id)!
+        expect(unchangedPerimeter.corners).toHaveLength(3)
+        expect(unchangedPerimeter.walls).toHaveLength(3)
       })
 
       it('should fail for non-existent wall', () => {
-        const fakeWallId = createPerimeterId()
-        const fakeCornerId = createOuterCornerId()
+        const fakePerimeterId = createPerimeterId()
+        const fakeCornerId = createPerimeterCornerId()
 
-        const success = store.removeOuterWallCorner(fakeWallId, fakeCornerId)
+        const success = store.removePerimeterCorner(fakePerimeterId, fakeCornerId)
         expect(success).toBe(false)
       })
 
@@ -1419,15 +1419,15 @@ describe('OuterWallsSlice', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const fakeCornerId = createOuterCornerId()
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const fakeCornerId = createPerimeterCornerId()
 
-        const success = store.removeOuterWallCorner(wall.id, fakeCornerId)
+        const success = store.removePerimeterCorner(perimeter.id, fakeCornerId)
         expect(success).toBe(false)
 
         // Wall should be unchanged
-        const unchangedWall = store.perimeters.get(wall.id)!
-        expect(unchangedWall.corners).toHaveLength(4)
+        const unchangedPerimeter = store.perimeters.get(perimeter.id)!
+        expect(unchangedPerimeter.corners).toHaveLength(4)
       })
 
       it('should fail if removal would create self-intersecting polygon', () => {
@@ -1443,133 +1443,133 @@ describe('OuterWallsSlice', () => {
         }
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
+        const perimeter = Array.from(store.perimeters.values())[0]
 
         // Try to remove the concave corner - this should fail validation
-        const concaveCorner = wall.corners[3] // Corner at (5,5)
-        const success = store.removeOuterWallCorner(wall.id, concaveCorner.id)
+        const concaveCorner = perimeter.corners[3] // Corner at (5,5)
+        const success = store.removePerimeterCorner(perimeter.id, concaveCorner.id)
 
         // The success depends on whether the resulting polygon is valid
         // In this case, removing (5,5) would connect (10,10) to (0,10) directly
         // which might be valid, so let's verify the wall is either unchanged or valid
-        const updatedWall = store.perimeters.get(wall.id)!
+        const updatedPerimeter = store.perimeters.get(perimeter.id)!
         if (!success) {
-          expect(updatedWall.corners).toHaveLength(5) // Unchanged
+          expect(updatedPerimeter.corners).toHaveLength(5) // Unchanged
         } else {
-          expect(updatedWall.corners).toHaveLength(4) // Successfully reduced
-          // Verify all segments are valid
-          updatedWall.segments.forEach(segment => {
-            expect(segment.insideLength).toBeGreaterThan(0)
+          expect(updatedPerimeter.corners).toHaveLength(4) // Successfully reduced
+          // Verify all walls are valid
+          updatedPerimeter.walls.forEach(wall => {
+            expect(wall.insideLength).toBeGreaterThan(0)
           })
         }
       })
     })
 
-    describe('removeOuterWallSegment', () => {
-      it('should remove segment and its adjacent corners', () => {
-        // Create a pentagon so we can safely remove a segment
+    describe('removePerimeterWall', () => {
+      it('should remove wall and its adjacent corners', () => {
+        // Create a pentagon so we can safely remove a wall
         const boundary: Polygon2D = {
           points: [createVec2(0, 0), createVec2(10, 0), createVec2(15, 5), createVec2(5, 10), createVec2(-5, 5)]
         }
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const originalSegmentCount = wall.segments.length
-        const originalCornerCount = wall.corners.length
-        const segmentToRemove = wall.segments[2] // Segment from (15,5) to (5,10)
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const originalWallCount = perimeter.walls.length
+        const originalCornerCount = perimeter.corners.length
+        const wallToRemove = perimeter.walls[2] // Wall from (15,5) to (5,10)
 
-        const success = store.removeOuterWallSegment(wall.id, segmentToRemove.id)
+        const success = store.removePerimeterWall(perimeter.id, wallToRemove.id)
         expect(success).toBe(true)
 
-        const updatedWall = store.perimeters.get(wall.id)!
+        const updatedPerimeter = store.perimeters.get(perimeter.id)!
 
-        // Should have two less corners and two less segments (removes 3, adds 1, net -2)
-        expect(updatedWall.corners).toHaveLength(originalCornerCount - 2)
-        expect(updatedWall.segments).toHaveLength(originalSegmentCount - 2)
-        expect(updatedWall.boundary).toHaveLength(originalSegmentCount - 2)
+        // Should have two less corners and two less walls (removes 3, adds 1, net -2)
+        expect(updatedPerimeter.corners).toHaveLength(originalCornerCount - 2)
+        expect(updatedPerimeter.walls).toHaveLength(originalWallCount - 2)
+        expect(updatedPerimeter.boundary).toHaveLength(originalWallCount - 2)
 
-        // The removed segment should not exist
-        expect(updatedWall.segments.find(s => s.id === segmentToRemove.id)).toBeUndefined()
+        // The removed wall should not exist
+        expect(updatedPerimeter.walls.find(s => s.id === wallToRemove.id)).toBeUndefined()
 
-        // All remaining segments should have valid geometry
-        updatedWall.segments.forEach(segment => {
-          expect(segment.insideLength).toBeGreaterThan(0)
-          expect(segment.segmentLength).toBeGreaterThan(0)
-          expect(segment.outsideLength).toBeGreaterThan(0)
+        // All remaining walls should have valid geometry
+        updatedPerimeter.walls.forEach(wall => {
+          expect(wall.insideLength).toBeGreaterThan(0)
+          expect(wall.wallLength).toBeGreaterThan(0)
+          expect(wall.outsideLength).toBeGreaterThan(0)
         })
       })
 
-      it('should fail for walls with less than 5 segments', () => {
-        const boundary = createRectangularBoundary() // Only 4 segments
+      it('should fail for walls with less than 5 walls', () => {
+        const boundary = createRectangularBoundary() // Only 4 walls
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const segmentToRemove = wall.segments[0]
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const wallToRemove = perimeter.walls[0]
 
-        const success = store.removeOuterWallSegment(wall.id, segmentToRemove.id)
+        const success = store.removePerimeterWall(perimeter.id, wallToRemove.id)
         expect(success).toBe(false)
 
         // Wall should be unchanged
-        const unchangedWall = store.perimeters.get(wall.id)!
-        expect(unchangedWall.segments).toHaveLength(4)
-        expect(unchangedWall.corners).toHaveLength(4)
+        const unchangedPerimeter = store.perimeters.get(perimeter.id)!
+        expect(unchangedPerimeter.walls).toHaveLength(4)
+        expect(unchangedPerimeter.corners).toHaveLength(4)
       })
 
       it('should fail for non-existent wall', () => {
-        const fakeWallId = createPerimeterId()
-        const fakeSegmentId = createWallSegmentId()
+        const fakePerimeterId = createPerimeterId()
+        const fakeWallId = createPerimeterWallId()
 
-        const success = store.removeOuterWallSegment(fakeWallId, fakeSegmentId)
+        const success = store.removePerimeterWall(fakePerimeterId, fakeWallId)
         expect(success).toBe(false)
       })
 
-      it('should fail for non-existent segment', () => {
+      it('should fail for non-existent wall', () => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const fakeSegmentId = createWallSegmentId()
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const fakeWallId = createPerimeterWallId()
 
-        const success = store.removeOuterWallSegment(wall.id, fakeSegmentId)
+        const success = store.removePerimeterWall(perimeter.id, fakeWallId)
         expect(success).toBe(false)
 
         // Wall should be unchanged
-        const unchangedWall = store.perimeters.get(wall.id)!
-        expect(unchangedWall.segments).toHaveLength(4)
+        const unchangedPerimeter = store.perimeters.get(perimeter.id)!
+        expect(unchangedPerimeter.walls).toHaveLength(4)
       })
 
       it('should fail if removal would create self-intersecting polygon', () => {
-        // Create a shape where removing a specific segment would cause self-intersection
+        // Create a shape where removing a specific wall would cause self-intersection
         const boundary: Polygon2D = {
           points: [
             createVec2(0, 0),
             createVec2(20, 0),
             createVec2(20, 10),
-            createVec2(10, 5), // Creates a potential problem if we remove the wrong segment
+            createVec2(10, 5), // Creates a potential problem if we remove the wrong wall
             createVec2(0, 10)
           ]
         }
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const segmentToRemove = wall.segments[3] // Segment from (10,5) to (0,10)
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const wallToRemove = perimeter.walls[3] // Wall from (10,5) to (0,10)
 
-        const success = store.removeOuterWallSegment(wall.id, segmentToRemove.id)
+        const success = store.removePerimeterWall(perimeter.id, wallToRemove.id)
 
         // Verify the result is either failure or a valid polygon
-        const updatedWall = store.perimeters.get(wall.id)!
+        const updatedPerimeter = store.perimeters.get(perimeter.id)!
         if (!success) {
-          expect(updatedWall.segments).toHaveLength(5) // Unchanged
+          expect(updatedPerimeter.walls).toHaveLength(5) // Unchanged
         } else {
-          expect(updatedWall.segments).toHaveLength(3) // Successfully reduced by 2 (5 - 3 + 1 = 3)
-          // Verify all segments are valid
-          updatedWall.segments.forEach(segment => {
-            expect(segment.insideLength).toBeGreaterThan(0)
+          expect(updatedPerimeter.walls).toHaveLength(3) // Successfully reduced by 2 (5 - 3 + 1 = 3)
+          // Verify all walls are valid
+          updatedPerimeter.walls.forEach(wall => {
+            expect(wall.insideLength).toBeGreaterThan(0)
           })
         }
       })
 
-      it('should preserve geometry integrity after segment removal', () => {
+      it('should preserve geometry integrity after wall removal', () => {
         const boundary: Polygon2D = {
           points: [
             createVec2(0, 0),
@@ -1582,31 +1582,31 @@ describe('OuterWallsSlice', () => {
         }
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension', createLength(200))
 
-        const wall = Array.from(store.perimeters.values())[0]
-        const segmentToRemove = wall.segments[3] // Segment from (10,20) to (10,10)
+        const perimeter = Array.from(store.perimeters.values())[0]
+        const wallToRemove = perimeter.walls[3] // Wall from (10,20) to (10,10)
 
-        const success = store.removeOuterWallSegment(wall.id, segmentToRemove.id)
+        const success = store.removePerimeterWall(perimeter.id, wallToRemove.id)
         expect(success).toBe(true)
 
-        const updatedWall = store.perimeters.get(wall.id)!
+        const updatedPerimeter = store.perimeters.get(perimeter.id)!
 
         // Verify geometry calculations are correct (6 - 3 + 1 = 4)
-        expect(updatedWall.segments).toHaveLength(4)
-        expect(updatedWall.corners).toHaveLength(4)
+        expect(updatedPerimeter.walls).toHaveLength(4)
+        expect(updatedPerimeter.corners).toHaveLength(4)
 
-        // All segments should have proper geometry
-        updatedWall.segments.forEach(segment => {
-          expect(segment.thickness).toBe(200)
-          expect(segment.insideLength).toBeGreaterThan(0)
-          expect(segment.segmentLength).toBeGreaterThan(0)
-          expect(segment.outsideLength).toBeGreaterThan(0)
-          expect(Number.isFinite(segment.insideLength)).toBe(true)
-          expect(Number.isFinite(segment.segmentLength)).toBe(true)
-          expect(Number.isFinite(segment.outsideLength)).toBe(true)
+        // All walls should have proper geometry
+        updatedPerimeter.walls.forEach(wall => {
+          expect(wall.thickness).toBe(200)
+          expect(wall.insideLength).toBeGreaterThan(0)
+          expect(wall.wallLength).toBeGreaterThan(0)
+          expect(wall.outsideLength).toBeGreaterThan(0)
+          expect(Number.isFinite(wall.insideLength)).toBe(true)
+          expect(Number.isFinite(wall.wallLength)).toBe(true)
+          expect(Number.isFinite(wall.outsideLength)).toBe(true)
         })
 
         // All corners should have finite positions
-        updatedWall.corners.forEach(corner => {
+        updatedPerimeter.corners.forEach(corner => {
           expect(Number.isFinite(corner.outsidePoint[0])).toBe(true)
           expect(Number.isFinite(corner.outsidePoint[1])).toBe(true)
         })
@@ -1629,42 +1629,42 @@ describe('OuterWallsSlice', () => {
         }
         store.addPerimeter(testStoreyId, complexBoundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
+        const perimeter = Array.from(store.perimeters.values())[0]
 
-        // Try to remove various corners and segments
-        wall.corners.forEach(corner => {
-          store.removeOuterWallCorner(wall.id, corner.id)
+        // Try to remove various corners and walls
+        perimeter.corners.forEach(corner => {
+          store.removePerimeterCorner(perimeter.id, corner.id)
           // Each operation should either succeed with a valid result or fail safely
-          const currentWall = store.perimeters.get(wall.id)!
-          expect(currentWall.corners.length).toBeGreaterThanOrEqual(3)
-          expect(currentWall.segments.length).toBeGreaterThanOrEqual(3)
+          const currentPerimeter = store.perimeters.get(perimeter.id)!
+          expect(currentPerimeter.corners.length).toBeGreaterThanOrEqual(3)
+          expect(currentPerimeter.walls.length).toBeGreaterThanOrEqual(3)
         })
       })
 
       it('should maintain minimum polygon size constraints', () => {
-        const boundary = createRectangularBoundary() // 4 corners/segments
+        const boundary = createRectangularBoundary() // 4 corners/walls
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
 
-        const wall = Array.from(store.perimeters.values())[0]
+        const perimeter = Array.from(store.perimeters.values())[0]
 
         // Try to remove two corners (would leave only 2, which is invalid)
-        const corner1Success = store.removeOuterWallCorner(wall.id, wall.corners[0].id)
+        const corner1Success = store.removePerimeterCorner(perimeter.id, perimeter.corners[0].id)
 
         if (corner1Success) {
           // If first removal succeeded, second should fail (would leave < 3 corners)
-          const updatedWall = store.perimeters.get(wall.id)!
-          expect(updatedWall.corners).toHaveLength(3)
+          const updatedPerimeter = store.perimeters.get(perimeter.id)!
+          expect(updatedPerimeter.corners).toHaveLength(3)
 
-          const corner2Success = store.removeOuterWallCorner(wall.id, updatedWall.corners[0].id)
+          const corner2Success = store.removePerimeterCorner(perimeter.id, updatedPerimeter.corners[0].id)
           expect(corner2Success).toBe(false)
 
           // Wall should still have 3 corners
-          const finalWall = store.perimeters.get(wall.id)!
-          expect(finalWall.corners).toHaveLength(3)
+          const finalPerimeter = store.perimeters.get(perimeter.id)!
+          expect(finalPerimeter.corners).toHaveLength(3)
         } else {
           // If first removal failed, wall should be unchanged
-          const unchangedWall = store.perimeters.get(wall.id)!
-          expect(unchangedWall.corners).toHaveLength(4)
+          const unchangedPerimeter = store.perimeters.get(perimeter.id)!
+          expect(unchangedPerimeter.corners).toHaveLength(4)
         }
       })
     })
@@ -1672,73 +1672,83 @@ describe('OuterWallsSlice', () => {
 
   describe('Opening placement validation methods', () => {
     describe('isOpeningPlacementValid', () => {
-      let wallId: PerimeterId
-      let segmentId: WallSegmentId
-      let segmentLength: Length
+      let perimeterId: PerimeterId
+      let wallId: PerimeterWallId
+      let wallLength: Length
 
       beforeEach(() => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
-        const wall = Array.from(store.perimeters.values())[0]
-        wallId = wall.id
-        segmentId = wall.segments[0].id
-        segmentLength = wall.segments[0].segmentLength
+        const perimeter = Array.from(store.perimeters.values())[0]
+        perimeterId = perimeter.id
+        wallId = perimeter.walls[0].id
+        wallLength = perimeter.walls[0].wallLength
       })
 
       describe('parameter validation', () => {
         it('should throw error for non-existent wall', () => {
           const nonExistentWallId = createPerimeterId()
           expect(() => {
-            store.isOpeningPlacementValid(nonExistentWallId, segmentId, createLength(0), createLength(800))
-          }).toThrow(/Wall segment not found/)
+            store.isPerimeterWallOpeningPlacementValid(nonExistentWallId, wallId, createLength(0), createLength(800))
+          }).toThrow(/Wall wall not found/)
         })
 
-        it('should throw error for non-existent segment', () => {
-          const nonExistentSegmentId = createWallSegmentId()
+        it('should throw error for non-existent wall', () => {
+          const nonExistentWallId = createPerimeterWallId()
           expect(() => {
-            store.isOpeningPlacementValid(wallId, nonExistentSegmentId, createLength(0), createLength(800))
-          }).toThrow(/Wall segment not found/)
+            store.isPerimeterWallOpeningPlacementValid(
+              perimeterId,
+              nonExistentWallId,
+              createLength(0),
+              createLength(800)
+            )
+          }).toThrow(/Wall wall not found/)
         })
 
         it('should throw error for zero width', () => {
           expect(() => {
-            store.isOpeningPlacementValid(wallId, segmentId, createLength(0), createLength(0))
+            store.isPerimeterWallOpeningPlacementValid(perimeterId, wallId, createLength(0), createLength(0))
           }).toThrow(/Opening width must be greater than 0/)
         })
 
         it('should throw error for negative width', () => {
           expect(() => {
-            store.isOpeningPlacementValid(wallId, segmentId, createLength(0), createLength(-100))
+            store.isPerimeterWallOpeningPlacementValid(perimeterId, wallId, createLength(0), createLength(-100))
           }).toThrow(/Opening width must be greater than 0/)
         })
 
         it('should return false for negative offset', () => {
-          const result = store.isOpeningPlacementValid(wallId, segmentId, createLength(-100), createLength(800))
+          const result = store.isPerimeterWallOpeningPlacementValid(
+            perimeterId,
+            wallId,
+            createLength(-100),
+            createLength(800)
+          )
           expect(result).toBe(false)
         })
       })
 
       describe('boundary validation', () => {
-        it('should return true for opening that fits within segment', () => {
-          const result = store.isOpeningPlacementValid(wallId, segmentId, createLength(0), segmentLength)
+        it('should return true for opening that fits within wall', () => {
+          const result = store.isPerimeterWallOpeningPlacementValid(perimeterId, wallId, createLength(0), wallLength)
           expect(result).toBe(true)
         })
 
-        it('should return false for opening wider than segment', () => {
-          const result = store.isOpeningPlacementValid(
+        it('should return false for opening wider than wall', () => {
+          const result = store.isPerimeterWallOpeningPlacementValid(
+            perimeterId,
             wallId,
-            segmentId,
             createLength(0),
-            createLength(segmentLength + 1)
+            createLength(wallLength + 1)
           )
           expect(result).toBe(false)
         })
 
-        it('should return false for opening that extends beyond segment end', () => {
-          const result = store.isOpeningPlacementValid(
+        it('should return false for opening that extends beyond wall end', () => {
+          const result = store.isPerimeterWallOpeningPlacementValid(
+            perimeterId,
             wallId,
-            segmentId,
-            createLength(segmentLength - 400),
+            createLength(wallLength - 400),
             createLength(800)
           )
           expect(result).toBe(false)
@@ -1748,7 +1758,7 @@ describe('OuterWallsSlice', () => {
       describe('overlap validation', () => {
         beforeEach(() => {
           // Add an existing door at offset 1000mm, width 800mm (occupies 1000-1800)
-          store.addOpeningToOuterWall(wallId, segmentId, {
+          store.addPerimeterWallOpening(perimeterId, wallId, {
             type: 'door',
             offsetFromStart: createLength(1000),
             width: createLength(800),
@@ -1757,9 +1767,9 @@ describe('OuterWallsSlice', () => {
         })
 
         it('should return false for opening that overlaps from the left', () => {
-          const result = store.isOpeningPlacementValid(
+          const result = store.isPerimeterWallOpeningPlacementValid(
+            perimeterId,
             wallId,
-            segmentId,
             createLength(800), // starts at 800, ends at 1600 (overlaps 1000-1600)
             createLength(800)
           )
@@ -1767,9 +1777,9 @@ describe('OuterWallsSlice', () => {
         })
 
         it('should return false for opening that overlaps from the right', () => {
-          const result = store.isOpeningPlacementValid(
+          const result = store.isPerimeterWallOpeningPlacementValid(
+            perimeterId,
             wallId,
-            segmentId,
             createLength(1200), // starts at 1200, ends at 2000 (overlaps 1200-1800)
             createLength(800)
           )
@@ -1777,14 +1787,19 @@ describe('OuterWallsSlice', () => {
         })
 
         it('should return false for opening at same position', () => {
-          const result = store.isOpeningPlacementValid(wallId, segmentId, createLength(1000), createLength(800))
+          const result = store.isPerimeterWallOpeningPlacementValid(
+            perimeterId,
+            wallId,
+            createLength(1000),
+            createLength(800)
+          )
           expect(result).toBe(false)
         })
 
         it('should return true for opening adjacent to the left (touching)', () => {
-          const result = store.isOpeningPlacementValid(
+          const result = store.isPerimeterWallOpeningPlacementValid(
+            perimeterId,
             wallId,
-            segmentId,
             createLength(200), // starts at 200, ends at 1000 (touches at 1000)
             createLength(800)
           )
@@ -1792,9 +1807,9 @@ describe('OuterWallsSlice', () => {
         })
 
         it('should return true for opening adjacent to the right (touching)', () => {
-          const result = store.isOpeningPlacementValid(
+          const result = store.isPerimeterWallOpeningPlacementValid(
+            perimeterId,
             wallId,
-            segmentId,
             createLength(1800), // starts at 1800, ends at 2600 (touches at 1800)
             createLength(800)
           )
@@ -1802,9 +1817,9 @@ describe('OuterWallsSlice', () => {
         })
 
         it('should return true for opening with gap', () => {
-          const result = store.isOpeningPlacementValid(
+          const result = store.isPerimeterWallOpeningPlacementValid(
+            perimeterId,
             wallId,
-            segmentId,
             createLength(0), // starts at 0, ends at 800 (gap from 800-1000)
             createLength(800)
           )
@@ -1814,82 +1829,97 @@ describe('OuterWallsSlice', () => {
     })
 
     describe('findNearestValidOpeningPosition', () => {
-      let wallId: PerimeterId
-      let segmentId: WallSegmentId
-      let segmentLength: Length
+      let perimeterId: PerimeterId
+      let wallId: PerimeterWallId
+      let wallLength: Length
 
       beforeEach(() => {
         const boundary = createRectangularBoundary()
         store.addPerimeter(testStoreyId, boundary, 'cells-under-tension')
-        const wall = Array.from(store.perimeters.values())[0]
-        wallId = wall.id
-        segmentId = wall.segments[0].id
-        segmentLength = wall.segments[0].segmentLength
+        const perimeter = Array.from(store.perimeters.values())[0]
+        perimeterId = perimeter.id
+        wallId = perimeter.walls[0].id
+        wallLength = perimeter.walls[0].wallLength
       })
 
       describe('parameter validation', () => {
         it('should throw error for non-existent wall', () => {
           const nonExistentWallId = createPerimeterId()
           expect(() => {
-            store.isOpeningPlacementValid(nonExistentWallId, segmentId, createLength(0), createLength(800))
-          }).toThrow(/Wall segment not found/)
+            store.isPerimeterWallOpeningPlacementValid(nonExistentWallId, wallId, createLength(0), createLength(800))
+          }).toThrow(/Wall wall not found/)
         })
 
-        it('should throw error for non-existent segment', () => {
-          const nonExistentSegmentId = createWallSegmentId()
+        it('should throw error for non-existent wall', () => {
+          const nonExistentWallId = createPerimeterWallId()
           expect(() => {
-            store.isOpeningPlacementValid(wallId, nonExistentSegmentId, createLength(0), createLength(800))
-          }).toThrow(/Wall segment not found/)
+            store.isPerimeterWallOpeningPlacementValid(
+              perimeterId,
+              nonExistentWallId,
+              createLength(0),
+              createLength(800)
+            )
+          }).toThrow(/Wall wall not found/)
         })
 
-        it('should return null for non-existent segment', () => {
-          const nonExistentSegmentId = createWallSegmentId()
-          const result = store.findNearestValidOpeningPosition(
-            wallId,
-            nonExistentSegmentId,
+        it('should return null for non-existent wall', () => {
+          const nonExistentWallId = createPerimeterWallId()
+          const result = store.findNearestValidPerimeterWallOpeningPosition(
+            perimeterId,
+            nonExistentWallId,
             createLength(1000),
             createLength(800)
           )
           expect(result).toBeNull()
         })
 
-        it('should return null for opening wider than segment', () => {
-          const result = store.findNearestValidOpeningPosition(
+        it('should return null for opening wider than wall', () => {
+          const result = store.findNearestValidPerimeterWallOpeningPosition(
+            perimeterId,
             wallId,
-            segmentId,
             createLength(1000),
-            createLength(segmentLength + 100)
+            createLength(wallLength + 100)
           )
           expect(result).toBeNull()
         })
       })
 
-      describe('empty segment behavior', () => {
+      describe('empty wall behavior', () => {
         it('should return preferred position when valid', () => {
-          const result = store.findNearestValidOpeningPosition(wallId, segmentId, createLength(1000), createLength(800))
+          const result = store.findNearestValidPerimeterWallOpeningPosition(
+            perimeterId,
+            wallId,
+            createLength(1000),
+            createLength(800)
+          )
           expect(result).toBe(1000)
         })
 
         it('should adjust negative offset to 0', () => {
-          const result = store.findNearestValidOpeningPosition(wallId, segmentId, createLength(-500), createLength(800))
+          const result = store.findNearestValidPerimeterWallOpeningPosition(
+            perimeterId,
+            wallId,
+            createLength(-500),
+            createLength(800)
+          )
           expect(result).toBe(0)
         })
 
-        it('should adjust position that would extend beyond segment end', () => {
-          const result = store.findNearestValidOpeningPosition(
+        it('should adjust position that would extend beyond wall end', () => {
+          const result = store.findNearestValidPerimeterWallOpeningPosition(
+            perimeterId,
             wallId,
-            segmentId,
-            createLength(segmentLength - 400), // would extend beyond by 400
+            createLength(wallLength - 400), // would extend beyond by 400
             createLength(800)
           )
-          expect(result).toBe(segmentLength - 800) // adjusted to fit exactly
+          expect(result).toBe(wallLength - 800) // adjusted to fit exactly
         })
       })
 
       describe('conflict resolution with existing opening', () => {
         beforeEach(() => {
           // Add an existing door at 2000-2800 (offset 2000, width 800)
-          store.addOpeningToOuterWall(wallId, segmentId, {
+          store.addPerimeterWallOpening(perimeterId, wallId, {
             type: 'door',
             offsetFromStart: createLength(2000),
             width: createLength(800),
@@ -1898,9 +1928,9 @@ describe('OuterWallsSlice', () => {
         })
 
         it('should return preferred position when no conflict', () => {
-          const result = store.findNearestValidOpeningPosition(
+          const result = store.findNearestValidPerimeterWallOpeningPosition(
+            perimeterId,
             wallId,
-            segmentId,
             createLength(500), // no conflict with existing at 2000-2800
             createLength(800)
           )
@@ -1908,9 +1938,9 @@ describe('OuterWallsSlice', () => {
         })
 
         it('should shift to closest valid position when overlapping from left side', () => {
-          const result = store.findNearestValidOpeningPosition(
+          const result = store.findNearestValidPerimeterWallOpeningPosition(
+            perimeterId,
             wallId,
-            segmentId,
             createLength(1800), // would be 1800-2600, overlaps with 2000-2800
             createLength(800)
           )
@@ -1919,9 +1949,9 @@ describe('OuterWallsSlice', () => {
         })
 
         it('should shift to closest valid position when overlapping from right side', () => {
-          const result = store.findNearestValidOpeningPosition(
+          const result = store.findNearestValidPerimeterWallOpeningPosition(
+            perimeterId,
             wallId,
-            segmentId,
             createLength(2400), // would be 2400-3200, overlaps with 2000-2800
             createLength(800)
           )
@@ -1930,9 +1960,9 @@ describe('OuterWallsSlice', () => {
         })
 
         it('should choose the closest valid position when both directions possible', () => {
-          const result = store.findNearestValidOpeningPosition(
+          const result = store.findNearestValidPerimeterWallOpeningPosition(
+            perimeterId,
             wallId,
-            segmentId,
             createLength(2100), // overlaps, closer to right shift (2800) than left (1200)
             createLength(800)
           )
@@ -1940,9 +1970,9 @@ describe('OuterWallsSlice', () => {
         })
 
         it('should handle exact overlap with existing opening', () => {
-          const result = store.findNearestValidOpeningPosition(
+          const result = store.findNearestValidPerimeterWallOpeningPosition(
+            perimeterId,
             wallId,
-            segmentId,
             createLength(2000), // exact overlap with existing
             createLength(800)
           )
@@ -1954,13 +1984,13 @@ describe('OuterWallsSlice', () => {
       describe('multiple existing openings', () => {
         beforeEach(() => {
           // Add two doors: 1000-1800 and 3000-3800
-          store.addOpeningToOuterWall(wallId, segmentId, {
+          store.addPerimeterWallOpening(perimeterId, wallId, {
             type: 'door',
             offsetFromStart: createLength(1000),
             width: createLength(800),
             height: createLength(2100)
           })
-          store.addOpeningToOuterWall(wallId, segmentId, {
+          store.addPerimeterWallOpening(perimeterId, wallId, {
             type: 'door',
             offsetFromStart: createLength(3000),
             width: createLength(800),
@@ -1969,9 +1999,9 @@ describe('OuterWallsSlice', () => {
         })
 
         it('should return preferred position when it fits in gap', () => {
-          const result = store.findNearestValidOpeningPosition(
+          const result = store.findNearestValidPerimeterWallOpeningPosition(
+            perimeterId,
             wallId,
-            segmentId,
             createLength(2000), // fits in gap 1800-3000
             createLength(800)
           )
@@ -1979,9 +2009,9 @@ describe('OuterWallsSlice', () => {
         })
 
         it('should shift when preferred position overlaps first opening', () => {
-          const result = store.findNearestValidOpeningPosition(
+          const result = store.findNearestValidPerimeterWallOpeningPosition(
+            perimeterId,
             wallId,
-            segmentId,
             createLength(1200), // overlaps with first opening 1000-1800
             createLength(600)
           )
@@ -1989,9 +2019,9 @@ describe('OuterWallsSlice', () => {
         })
 
         it('should shift when preferred position overlaps second opening', () => {
-          const result = store.findNearestValidOpeningPosition(
+          const result = store.findNearestValidPerimeterWallOpeningPosition(
+            perimeterId,
             wallId,
-            segmentId,
             createLength(3200), // overlaps with second opening 3000-3800
             createLength(600)
           )
@@ -2000,9 +2030,9 @@ describe('OuterWallsSlice', () => {
         })
 
         it('should find valid position when overlapping both openings', () => {
-          const result = store.findNearestValidOpeningPosition(
+          const result = store.findNearestValidPerimeterWallOpeningPosition(
+            perimeterId,
             wallId,
-            segmentId,
             createLength(2500), // overlaps with both
             createLength(600)
           )
@@ -2011,9 +2041,9 @@ describe('OuterWallsSlice', () => {
         })
 
         it('should handle opening that exactly fills the gap', () => {
-          const result = store.findNearestValidOpeningPosition(
+          const result = store.findNearestValidPerimeterWallOpeningPosition(
+            perimeterId,
             wallId,
-            segmentId,
             createLength(1900), // close to gap center
             createLength(1200) // exactly fills gap 1800-3000
           )
@@ -2022,24 +2052,24 @@ describe('OuterWallsSlice', () => {
       })
 
       describe('edge cases', () => {
-        it('should handle opening that spans entire segment on empty wall', () => {
-          const wall = store.perimeters.get(wallId)!
-          const segment = wall.segments[0]
-          const segmentLength = segment.segmentLength
+        it('should handle opening that spans entire wall on empty wall', () => {
+          const perimeter = store.perimeters.get(perimeterId)!
+          const wall = perimeter.walls[0]
+          const wallLength = wall.wallLength
 
-          const result = store.findNearestValidOpeningPosition(
+          const result = store.findNearestValidPerimeterWallOpeningPosition(
+            perimeterId,
             wallId,
-            segmentId,
             createLength(0),
-            createLength(segmentLength)
+            createLength(wallLength)
           )
           expect(result).toBe(0)
         })
 
         it('should handle very small opening width', () => {
-          const result = store.findNearestValidOpeningPosition(
+          const result = store.findNearestValidPerimeterWallOpeningPosition(
+            perimeterId,
             wallId,
-            segmentId,
             createLength(1000),
             createLength(1) // 1mm wide opening
           )
@@ -2047,21 +2077,21 @@ describe('OuterWallsSlice', () => {
         })
 
         it('should return null when no valid position exists due to space constraints', () => {
-          const wall = store.perimeters.get(wallId)!
-          const segment = wall.segments[0]
-          const segmentLength = segment.segmentLength
+          const perimeter = store.perimeters.get(perimeterId)!
+          const wall = perimeter.walls[0]
+          const wallLength = wall.wallLength
 
-          // Fill most of the segment with a large opening, leaving < 800 units space
-          store.addOpeningToOuterWall(wallId, segmentId, {
+          // Fill most of the wall with a large opening, leaving < 800 units space
+          store.addPerimeterWallOpening(perimeterId, wallId, {
             type: 'passage',
             offsetFromStart: createLength(100),
-            width: createLength(segmentLength - 500), // leaves only 400 units space
+            width: createLength(wallLength - 500), // leaves only 400 units space
             height: createLength(2100)
           })
 
-          const result = store.findNearestValidOpeningPosition(
+          const result = store.findNearestValidPerimeterWallOpeningPosition(
+            perimeterId,
             wallId,
-            segmentId,
             createLength(500),
             createLength(800) // won't fit in remaining 400 units
           )

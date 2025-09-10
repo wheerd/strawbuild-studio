@@ -1,7 +1,7 @@
 import { Group, Line } from 'react-konva'
 import type { Perimeter } from '@/types/model'
-import { OuterWallSegmentShape } from './OuterWallSegmentShape'
-import { OuterCornerShape } from './OuterCornerShape'
+import { PerimeterWallShape } from './PerimeterWallShape'
+import { PerimeterCornerShape } from './PerimeterCornerShape'
 import { COLORS } from '@/theme/colors'
 
 interface PerimeterShapeProps {
@@ -15,17 +15,17 @@ export function PerimeterShape({ perimeter }: PerimeterShapeProps): React.JSX.El
     <Group name={`perimeter-${perimeter.id}`} entityId={perimeter.id} entityType="perimeter" parentIds={[]} listening>
       <Line points={innerPoints} fill={COLORS.canvas.buildingBackground} closed listening />
 
-      {/* Render each segment */}
-      {perimeter.segments.map((segment, index) => {
+      {/* Render each wall */}
+      {perimeter.walls.map((wall, index) => {
         const nextIndex = (index + 1) % perimeter.boundary.length
         const insideStartCorner = perimeter.boundary[index]
         const insideEndCorner = perimeter.boundary[nextIndex]
         const outsideStartCorner = perimeter.corners[index].outsidePoint
         const outsideEndCorner = perimeter.corners[nextIndex].outsidePoint
         return (
-          <OuterWallSegmentShape
-            key={`segment-${index}`}
-            segment={segment}
+          <PerimeterWallShape
+            key={`wall-${index}`}
+            wall={wall}
             perimeterId={perimeter.id}
             insideStartCorner={insideStartCorner}
             insideEndCorner={insideEndCorner}
@@ -37,20 +37,20 @@ export function PerimeterShape({ perimeter }: PerimeterShapeProps): React.JSX.El
 
       {/* Render corner shapes */}
       {perimeter.corners.map((corner, cornerIndex) => {
-        const prevSegmentIndex = (cornerIndex - 1 + perimeter.segments.length) % perimeter.segments.length
-        const nextSegmentIndex = cornerIndex
+        const prevWallIndex = (cornerIndex - 1 + perimeter.walls.length) % perimeter.walls.length
+        const nextWallIndex = cornerIndex
 
-        const previousSegment = perimeter.segments[prevSegmentIndex]
-        const nextSegment = perimeter.segments[nextSegmentIndex]
+        const previousWall = perimeter.walls[prevWallIndex]
+        const nextWall = perimeter.walls[nextWallIndex]
         const boundaryPoint = perimeter.boundary[cornerIndex]
 
         return (
-          <OuterCornerShape
+          <PerimeterCornerShape
             key={`corner-${cornerIndex}`}
             corner={corner}
             boundaryPoint={boundaryPoint}
-            previousSegment={previousSegment}
-            nextSegment={nextSegment}
+            previousWall={previousWall}
+            nextWall={nextWall}
             perimeterId={perimeter.id}
           />
         )

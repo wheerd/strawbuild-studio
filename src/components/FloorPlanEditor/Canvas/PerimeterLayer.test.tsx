@@ -12,7 +12,7 @@ vi.mock('@/components/FloorPlanEditor/hooks/useEditorStore', () => ({
 }))
 
 describe('PerimeterLayer', () => {
-  it('should render without outer walls', () => {
+  it('should render without perimeters', () => {
     render(
       <Stage width={800} height={600}>
         <PerimeterLayer />
@@ -22,8 +22,8 @@ describe('PerimeterLayer', () => {
     expect(true).toBe(true) // Test passes if no errors are thrown
   })
 
-  it('should render outer walls when they exist', () => {
-    // Add an outer wall to the store
+  it('should render perimeters when they exist', () => {
+    // Add an perimeter to the store
     const store = useModelStore.getState()
     const storeyId = createStoreyId()
 

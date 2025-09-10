@@ -8,7 +8,7 @@ export interface Line2D {
   direction: Vec2 // Normalized direction vector
 }
 
-export interface LineSegment2D {
+export interface LineWall2D {
   start: Vec2
   end: Vec2
 }
@@ -60,34 +60,34 @@ export function projectPointOntoLine(point: Vec2, line: Line2D): Vec2 {
   return result
 }
 
-export function lineFromSegment(segment: LineSegment2D): Line2D {
+export function lineFromWall(wall: LineWall2D): Line2D {
   return {
-    point: vec2.copy(vec2.create(), segment.start),
-    direction: normalize(subtract(segment.end, segment.start))
+    point: vec2.copy(vec2.create(), wall.start),
+    direction: normalize(subtract(wall.end, wall.start))
   }
 }
 
-export function distanceToLineSegment(point: Vec2, segment: LineSegment2D): Length {
-  const segmentVector = subtract(segment.end, segment.start)
-  const pointVector = subtract(point, segment.start)
+export function distanceToLineWall(point: Vec2, wall: LineWall2D): Length {
+  const wallVector = subtract(wall.end, wall.start)
+  const pointVector = subtract(point, wall.start)
 
-  const segmentLengthSquared = vec2.squaredLength(segmentVector)
+  const wallLengthSquared = vec2.squaredLength(wallVector)
 
-  if (segmentLengthSquared === 0) {
-    // Line segment is actually a point
-    return distance(point, segment.start)
+  if (wallLengthSquared === 0) {
+    // Line wall is actually a point
+    return distance(point, wall.start)
   }
 
-  // Calculate parameter t that represents position along the line segment
-  let t = dot(pointVector, segmentVector) / segmentLengthSquared
+  // Calculate parameter t that represents position along the line wall
+  let t = dot(pointVector, wallVector) / wallLengthSquared
 
-  // Clamp t to [0, 1] to stay within the line segment
+  // Clamp t to [0, 1] to stay within the line wall
   t = Math.max(0, Math.min(1, t))
 
-  // Find the closest point on the line segment
+  // Find the closest point on the line wall
   const closest = vec2.create()
-  vec2.scaleAndAdd(closest, segment.start, segmentVector, t)
+  vec2.scaleAndAdd(closest, wall.start, wallVector, t)
 
-  // Return distance from point to closest point on line segment
+  // Return distance from point to closest point on line wall
   return distance(point, closest)
 }

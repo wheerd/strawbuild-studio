@@ -1,17 +1,17 @@
 import { useCallback, useMemo } from 'react'
 import { useModelStore } from '@/model/store'
-import type { OuterWallCornerId, PerimeterId } from '@/types/ids'
+import type { PerimeterCornerId, PerimeterId } from '@/types/ids'
 
-interface OuterCornerInspectorProps {
+interface PerimeterCornerInspectorProps {
   perimeterId: PerimeterId
-  cornerId: OuterWallCornerId
+  cornerId: PerimeterCornerId
 }
 
-export function OuterCornerInspector({ perimeterId, cornerId }: OuterCornerInspectorProps): React.JSX.Element {
+export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCornerInspectorProps): React.JSX.Element {
   // Get model store functions - use specific selectors for stable references
-  const updateCornerBelongsTo = useModelStore(state => state.updateCornerBelongsTo)
+  const updateCornerBelongsTo = useModelStore(state => state.updatePerimeterCornerBelongsTo)
 
-  // Get outer wall from store
+  // Get perimeter from store
   const outerWall = useModelStore(state => state.perimeters.get(perimeterId))
 
   // Use useMemo to find corner and its index within the wall object
@@ -33,16 +33,16 @@ export function OuterCornerInspector({ perimeterId, cornerId }: OuterCornerInspe
     )
   }
 
-  // Get adjacent segments
-  const { previousSegment, nextSegment } = useMemo(() => {
-    const prevIndex = (cornerIndex - 1 + outerWall.segments.length) % outerWall.segments.length
-    const nextIndex = cornerIndex % outerWall.segments.length
+  // Get adjacent walls
+  const { previousWall, nextWall } = useMemo(() => {
+    const prevIndex = (cornerIndex - 1 + outerWall.walls.length) % outerWall.walls.length
+    const nextIndex = cornerIndex % outerWall.walls.length
 
     return {
-      previousSegment: outerWall.segments[prevIndex],
-      nextSegment: outerWall.segments[nextIndex]
+      previousWall: outerWall.walls[prevIndex],
+      nextWall: outerWall.walls[nextIndex]
     }
-  }, [outerWall.segments, cornerIndex])
+  }, [outerWall.walls, cornerIndex])
 
   // Event handlers with stable references
   const handleToggleBelongsTo = useCallback(() => {
@@ -50,30 +50,30 @@ export function OuterCornerInspector({ perimeterId, cornerId }: OuterCornerInspe
     updateCornerBelongsTo(perimeterId, cornerId, newBelongsTo)
   }, [updateCornerBelongsTo, perimeterId, cornerId, corner.belongsTo])
 
-  // Calculate angle between segments (simplified)
+  // Calculate angle between walls (simplified)
   const cornerAngle = useMemo(() => {
-    if (!previousSegment || !nextSegment) return null
+    if (!previousWall || !nextWall) return null
 
-    // Calculate angle between the two segments
-    const prevDir = previousSegment.direction
-    const nextDir = nextSegment.direction
+    // Calculate angle between the two walls
+    const prevDir = previousWall.direction
+    const nextDir = nextWall.direction
 
     // Dot product to get angle
     const dot = prevDir[0] * nextDir[0] + prevDir[1] * nextDir[1]
     const angle = Math.acos(Math.max(-1, Math.min(1, dot))) * (180 / Math.PI)
 
     return angle
-  }, [previousSegment, nextSegment])
+  }, [previousWall, nextWall])
 
   // Check if there are construction notes to display
   const hasConstructionNotes = useMemo(() => {
-    if (!previousSegment || !nextSegment) return false
+    if (!previousWall || !nextWall) return false
 
-    const hasMixedConstruction = previousSegment.constructionType !== nextSegment.constructionType
-    const hasThicknessDifference = Math.abs(previousSegment.thickness - nextSegment.thickness) > 5
+    const hasMixedConstruction = previousWall.constructionType !== nextWall.constructionType
+    const hasThicknessDifference = Math.abs(previousWall.thickness - nextWall.thickness) > 5
 
     return hasMixedConstruction || hasThicknessDifference
-  }, [previousSegment, nextSegment])
+  }, [previousWall, nextWall])
 
   return (
     <div className="p-2">
@@ -83,17 +83,17 @@ export function OuterCornerInspector({ perimeterId, cornerId }: OuterCornerInspe
           <h5 className="text-sm font-semibold text-gray-800 pb-1">Corner Configuration</h5>
 
           <div className="flex items-center justify-between gap-3">
-            <label className="text-xs font-medium text-gray-600 flex-shrink-0">Main Segment</label>
+            <label className="text-xs font-medium text-gray-600 flex-shrink-0">Main Wall</label>
             <button
               onClick={handleToggleBelongsTo}
               className="flex-1 min-w-0 flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 hover:bg-gray-50 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200 transition-colors"
-              title="Switch which wall segment owns this corner"
+              title="Switch which wall wall owns this corner"
             >
               Switch main wall
             </button>
           </div>
           <div className="text-xs text-gray-500">
-            Determines which wall segment owns this corner for construction purposes.
+            Determines which wall wall owns this corner for construction purposes.
           </div>
         </div>
 
@@ -117,21 +117,21 @@ export function OuterCornerInspector({ perimeterId, cornerId }: OuterCornerInspe
             <h5 className="text-sm font-semibold text-gray-800 pb-1">Construction Notes</h5>
 
             <div className="space-y-1.5">
-              {previousSegment.constructionType !== nextSegment.constructionType && (
+              {previousWall.constructionType !== nextWall.constructionType && (
                 <div className="p-2 bg-amber-50 border border-amber-200 rounded">
                   <div className="text-xs font-medium text-amber-800">Mixed Construction:</div>
                   <div className="text-xs text-amber-700">
-                    Adjacent segments use different construction types. Special attention may be needed at this corner.
+                    Adjacent walls use different construction types. Special attention may be needed at this corner.
                   </div>
                 </div>
               )}
 
-              {Math.abs(previousSegment.thickness - nextSegment.thickness) > 5 && (
+              {Math.abs(previousWall.thickness - nextWall.thickness) > 5 && (
                 <div className="p-2 bg-amber-50 border border-amber-200 rounded">
                   <div className="text-xs font-medium text-amber-800">Thickness Difference:</div>
                   <div className="text-xs text-amber-700">
-                    Adjacent segments have different thicknesses (
-                    {Math.abs(previousSegment.thickness - nextSegment.thickness)}mm difference).
+                    Adjacent walls have different thicknesses ({Math.abs(previousWall.thickness - nextWall.thickness)}mm
+                    difference).
                   </div>
                 </div>
               )}

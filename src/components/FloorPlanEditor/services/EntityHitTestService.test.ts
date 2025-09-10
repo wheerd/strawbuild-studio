@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { EntityHitTestService } from './EntityHitTestService'
 import type Konva from 'konva'
-import { createPerimeterId, createWallSegmentId } from '@/types/ids'
+import { createPerimeterId, createPerimeterWallId } from '@/types/ids'
 
 // Mock Konva Stage
 const mockStage = {
@@ -11,8 +11,8 @@ const mockStage = {
 // Mock Konva Node with entity attributes
 const mockNodeWithEntity = {
   getAttrs: vi.fn(() => ({
-    entityId: createWallSegmentId(),
-    entityType: 'wall-segment',
+    entityId: createPerimeterWallId(),
+    entityType: 'perimeter-wall',
     parentIds: [createPerimeterId()]
   })),
   getParent: vi.fn(() => null)
@@ -61,7 +61,7 @@ describe('EntityHitTestService', () => {
     const result = service.findEntityAt(pointerCoords)
 
     expect(result).not.toBeNull()
-    expect(result?.entityType).toBe('wall-segment')
+    expect(result?.entityType).toBe('perimeter-wall')
     expect(result?.parentIds).toHaveLength(1)
     expect(result?.stagePoint).toEqual([100, 100])
     expect(result?.konvaNode).toBe(mockNodeWithEntity)
@@ -108,7 +108,7 @@ describe('EntityHitTestService', () => {
     const result = service.findEntityAt(pointerCoords)
 
     expect(result).not.toBeNull()
-    expect(result?.entityType).toBe('wall-segment')
+    expect(result?.entityType).toBe('perimeter-wall')
     expect(result?.stagePoint).toEqual([150, 200])
     expect(mockStage.getIntersection).toHaveBeenCalledWith(pointerCoords)
   })

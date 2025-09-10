@@ -1,5 +1,5 @@
-import type { StoreyId, PerimeterId, WallSegmentId, OuterWallCornerId, OpeningId } from '@/types/ids'
-import type { Length, LineSegment2D, Vec2 } from '@/types/geometry'
+import type { StoreyId, PerimeterId, PerimeterWallId, PerimeterCornerId, OpeningId } from '@/types/ids'
+import type { Length, LineWall2D, Vec2 } from '@/types/geometry'
 
 // Storey level branded type
 export type StoreyLevel = number & { __brand: 'StoreyLevel' }
@@ -41,33 +41,34 @@ export interface Perimeter {
   boundary: Vec2[] // Ordered clockwise, defines inner face of walls
 
   // Per-side wall data
-  segments: OuterWallSegment[] // segments[i] goes from boundary[i] -> boundary[(i + 1) % boundary.length]
-  corners: OuterWallCorner[]
+  walls: PerimeterWall[] // walls[i] goes from boundary[i] -> boundary[(i + 1) % boundary.length]
+  corners: PerimeterCorner[]
 }
 
-export type OuterWallConstructionType = 'cells-under-tension' | 'infill' | 'strawhenge' | 'non-strawbale'
+export type PerimeterConstructionType = 'cells-under-tension' | 'infill' | 'strawhenge' | 'non-strawbale'
 
-export interface OuterWallSegment {
-  id: WallSegmentId
+export interface PerimeterWall {
+  id: PerimeterWallId
   thickness: Length
-  constructionType: OuterWallConstructionType
+  constructionType: PerimeterConstructionType
 
   openings: Opening[]
 
   // Geometry, computed from the points automatically
   insideLength: Length
   outsideLength: Length
-  segmentLength: Length
-  insideLine: LineSegment2D
-  outsideLine: LineSegment2D
-  direction: Vec2 // Normalized from start -> end of segment
+  wallLength: Length
+  insideLine: LineWall2D
+  outsideLine: LineWall2D
+  direction: Vec2 // Normalized from start -> end of wall
   outsideDirection: Vec2 // Normal vector pointing outside
 }
 
-export interface OuterWallCorner {
-  id: OuterWallCornerId
+export interface PerimeterCorner {
+  id: PerimeterCornerId
+
   // This point, the boundary point, and the two adjacent wall edge points define the corner area
-  // Together with the wall areas the form the whole area that the outer wall covers
+  // Together with the wall areas the form the whole area that the perimeter covers
   outsidePoint: Vec2
 
   // Which wall "owns" this corner - this is relevant for construction

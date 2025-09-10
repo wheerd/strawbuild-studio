@@ -1,55 +1,55 @@
 import { Group, Line, Arrow, Circle } from 'react-konva'
-import type { OuterWallCorner, OuterWallSegment } from '@/types/model'
+import type { PerimeterCorner, PerimeterWall } from '@/types/model'
 import { add, midpoint, scale, type Vec2 } from '@/types/geometry'
 import { COLORS } from '@/theme/colors'
 import { useSelectionStore } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
 
-interface OuterCornerShapeProps {
-  corner: OuterWallCorner
+interface PerimeterCornerShapeProps {
+  corner: PerimeterCorner
   boundaryPoint: Vec2
-  previousSegment: OuterWallSegment
-  nextSegment: OuterWallSegment
+  previousWall: PerimeterWall
+  nextWall: PerimeterWall
   perimeterId: string
 }
 
-export function OuterCornerShape({
+export function PerimeterCornerShape({
   corner,
   boundaryPoint,
-  previousSegment,
-  nextSegment,
+  previousWall,
+  nextWall,
   perimeterId
-}: OuterCornerShapeProps): React.JSX.Element {
+}: PerimeterCornerShapeProps): React.JSX.Element {
   const select = useSelectionStore()
   const isSelected = select.isCurrentSelection(corner.id)
 
   const cornerPolygon = [
     boundaryPoint,
-    previousSegment.insideLine.end,
-    previousSegment.outsideLine.end,
+    previousWall.insideLine.end,
+    previousWall.outsideLine.end,
     corner.outsidePoint,
-    nextSegment.outsideLine.start,
-    nextSegment.insideLine.start
+    nextWall.outsideLine.start,
+    nextWall.insideLine.start
   ]
   const polygonArray = cornerPolygon.flatMap(point => [point[0], point[1]])
 
-  const arrowDir = corner.belongsTo === 'previous' ? previousSegment.direction : scale(nextSegment.direction, -1)
+  const arrowDir = corner.belongsTo === 'previous' ? previousWall.direction : scale(nextWall.direction, -1)
   const arrowCenter =
     corner.belongsTo === 'previous'
-      ? midpoint(previousSegment.insideLine.end, previousSegment.outsideLine.end)
-      : midpoint(nextSegment.insideLine.start, nextSegment.outsideLine.start)
+      ? midpoint(previousWall.insideLine.end, previousWall.outsideLine.end)
+      : midpoint(nextWall.insideLine.start, nextWall.outsideLine.start)
   const arrowStart = add(arrowCenter, scale(arrowDir, -60))
   const arrowEnd = add(arrowCenter, scale(arrowDir, 90))
 
-  const belongsToSegment = corner.belongsTo === 'previous' ? previousSegment : nextSegment
+  const belongsToWall = corner.belongsTo === 'previous' ? previousWall : nextWall
   const cornerColor =
-    belongsToSegment.constructionType === 'non-strawbale' ? COLORS.materials.other : COLORS.materials.strawbale
+    belongsToWall.constructionType === 'non-strawbale' ? COLORS.materials.other : COLORS.materials.strawbale
   const finalColor = isSelected ? COLORS.selection.primary : cornerColor
 
   return (
     <Group
-      name={`outer-corner-${corner.id}`}
+      name={`perimeter-corner-${corner.id}`}
       entityId={corner.id}
-      entityType="outer-corner"
+      entityType="perimeter-corner"
       parentIds={[perimeterId]}
       listening
     >

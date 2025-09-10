@@ -5,7 +5,7 @@ import {
   distanceToInfiniteLine,
   projectPointOntoLine,
   type Line2D,
-  lineFromSegment,
+  lineFromWall,
   distanceSquared
 } from '@/types/geometry'
 import { type SnapResult, type SnappingContext, type SnapConfig, DEFAULT_SNAP_CONFIG } from './types'
@@ -93,9 +93,9 @@ export class SnappingService {
       })
     }
 
-    // 3. Add extension and perpendicular lines for reference line segments (if any)
-    for (const segment of context.referenceLineSegments ?? []) {
-      const line = lineFromSegment(segment)
+    // 3. Add extension and perpendicular lines for reference line walls (if any)
+    for (const wall of context.referenceLineWalls ?? []) {
+      const line = lineFromWall(wall)
 
       // Extension line (same direction as wall)
       snapLines.push({
@@ -105,11 +105,11 @@ export class SnappingService {
 
       // Perpendicular lines (90 degrees rotated)
       snapLines.push({
-        point: segment.start,
+        point: wall.start,
         direction: createVec2(-line.direction[1], line.direction[0])
       })
       snapLines.push({
-        point: segment.end,
+        point: wall.end,
         direction: createVec2(-line.direction[1], line.direction[0])
       })
     }

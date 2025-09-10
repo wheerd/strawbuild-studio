@@ -35,7 +35,7 @@ export class FitToViewTool implements Tool {
     // Get current active storey
     const activeStoreyId = editorStore.activeStoreyId
 
-    // Get bounds from outer walls (the main building structure) instead of all points
+    // Get bounds from perimeters (the main building structure) instead of all points
     const bounds = this.calculateOuterWallsBounds(modelStore, activeStoreyId)
 
     if (!bounds) {
@@ -51,8 +51,8 @@ export class FitToViewTool implements Tool {
   }
 
   private calculateOuterWallsBounds(modelStore: Store, storeyId: StoreyId): Bounds2D | null {
-    const outerWalls = modelStore.getPerimetersByStorey(storeyId)
-    const outerPoints = outerWalls.flatMap(w => w.corners.map(c => c.outsidePoint))
+    const perimeters = modelStore.getPerimetersByStorey(storeyId)
+    const outerPoints = perimeters.flatMap(p => p.corners.map(c => c.outsidePoint))
     return boundsFromPoints(outerPoints)
   }
 }

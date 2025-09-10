@@ -1,5 +1,5 @@
 import { Group, Line } from 'react-konva'
-import type { OuterWallSegment } from '@/types/model'
+import type { PerimeterWall } from '@/types/model'
 import { COLORS } from '@/theme/colors'
 import { direction, type Vec2 } from '@/types/geometry'
 import { useSelectionStore } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
@@ -7,8 +7,8 @@ import { LengthIndicator } from '@/components/FloorPlanEditor/components/LengthI
 import { OpeningShape } from './OpeningShape'
 import type { PerimeterId } from '@/model'
 
-interface OuterWallSegmentShapeProps {
-  segment: OuterWallSegment
+interface PerimeterWallShapeProps {
+  wall: PerimeterWall
   perimeterId: PerimeterId
   insideStartCorner: Vec2
   insideEndCorner: Vec2
@@ -16,25 +16,25 @@ interface OuterWallSegmentShapeProps {
   outsideEndCorner: Vec2
 }
 
-export function OuterWallSegmentShape({
-  segment,
+export function PerimeterWallShape({
+  wall,
   perimeterId,
   insideStartCorner,
   insideEndCorner,
   outsideStartCorner,
   outsideEndCorner
-}: OuterWallSegmentShapeProps): React.JSX.Element {
+}: PerimeterWallShapeProps): React.JSX.Element {
   const select = useSelectionStore()
 
-  // Calculate segment properties
-  const insideStart = segment.insideLine.start
-  const insideEnd = segment.insideLine.end
-  const outsideStart = segment.outsideLine.start
-  const outsideEnd = segment.outsideLine.end
+  // Calculate wall properties
+  const insideStart = wall.insideLine.start
+  const insideEnd = wall.insideLine.end
+  const outsideStart = wall.outsideLine.start
+  const outsideEnd = wall.outsideLine.end
 
-  // Calculate text rotation to align with segment
-  const segmentDirection = direction(insideStart, insideEnd)
-  let angleDegrees = (Math.atan2(segmentDirection[1], segmentDirection[0]) * 180) / Math.PI
+  // Calculate text rotation to align with wall
+  const wallDirection = direction(insideStart, insideEnd)
+  let angleDegrees = (Math.atan2(wallDirection[1], wallDirection[0]) * 180) / Math.PI
 
   // Keep text readable
   if (angleDegrees > 90) {
@@ -43,17 +43,11 @@ export function OuterWallSegmentShape({
     angleDegrees += 180
   }
 
-  const baseColor = segment.constructionType === 'non-strawbale' ? COLORS.materials.other : COLORS.materials.strawbale
-  const finalMainColor = select.isSelected(segment.id) ? COLORS.selection.primary : baseColor
+  const baseColor = wall.constructionType === 'non-strawbale' ? COLORS.materials.other : COLORS.materials.strawbale
+  const finalMainColor = select.isSelected(wall.id) ? COLORS.selection.primary : baseColor
 
   return (
-    <Group
-      name={`segment-${segment.id}`}
-      entityId={segment.id}
-      entityType="wall-segment"
-      parentIds={[perimeterId]}
-      listening
-    >
+    <Group name={`wall-${wall.id}`} entityId={wall.id} entityType="perimeter-wall" parentIds={[perimeterId]} listening>
       {/* Main wall body - fill the area between inside and outside lines */}
       <Line
         points={[
@@ -73,12 +67,12 @@ export function OuterWallSegmentShape({
         listening
       />
 
-      {/* Render openings in this segment */}
-      {segment.openings.map(opening => (
+      {/* Render openings in this wall */}
+      {wall.openings.map(opening => (
         <OpeningShape
           key={`opening-${opening.id}`}
           opening={opening}
-          segment={segment}
+          wall={wall}
           perimeterId={perimeterId}
           insideStartCorner={insideStartCorner}
           insideEndCorner={insideEndCorner}
@@ -88,12 +82,12 @@ export function OuterWallSegmentShape({
       ))}
 
       {/* Length indicators when selected */}
-      {select.isCurrentSelection(segment.id) && (
+      {select.isCurrentSelection(wall.id) && (
         <>
           <LengthIndicator
             startPoint={insideStartCorner}
             endPoint={insideEndCorner}
-            label={`${(segment.insideLength / 1000).toFixed(2)}m`}
+            label={`${(wall.insideLength / 1000).toFixed(2)}m`}
             offset={-60}
             color={COLORS.indicators.main}
             fontSize={60}
@@ -102,7 +96,7 @@ export function OuterWallSegmentShape({
           <LengthIndicator
             startPoint={outsideStartCorner}
             endPoint={outsideEndCorner}
-            label={`${(segment.outsideLength / 1000).toFixed(2)}m`}
+            label={`${(wall.outsideLength / 1000).toFixed(2)}m`}
             offset={60}
             color={COLORS.indicators.main}
             fontSize={60}

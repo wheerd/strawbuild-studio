@@ -3,26 +3,26 @@ import { Group, Line, Circle } from 'react-konva'
 import { COLORS } from '@/theme/colors'
 import { midpoint, add } from '@/types/geometry'
 import type { MovementPreviewComponentProps } from '../MovementBehavior'
-import type { WallSegmentEntityContext, WallSegmentMovementState } from '../behaviors/WallSegmentMovementBehavior'
+import type { PerimeterWallEntityContext, PerimeterWallMovementState } from '../behaviors/PerimeterWallMovementBehavior'
 
-interface WallSegmentMovementPreviewProps
-  extends MovementPreviewComponentProps<WallSegmentEntityContext, WallSegmentMovementState> {}
+interface PerimeterWallMovementPreviewProps
+  extends MovementPreviewComponentProps<PerimeterWallEntityContext, PerimeterWallMovementState> {}
 
-export function WallSegmentMovementPreview({
+export function PerimeterWallMovementPreview({
   movementState,
   isValid,
   context
-}: WallSegmentMovementPreviewProps): React.JSX.Element {
-  const { segment } = context.entity
+}: PerimeterWallMovementPreviewProps): React.JSX.Element {
+  const { wall } = context.entity
   const { projectedDelta, newBoundary } = movementState
 
   // Calculate original and new midpoints for visualization
-  const originalMidpoint = midpoint(segment.insideLine.start, segment.insideLine.end)
+  const originalMidpoint = midpoint(wall.insideLine.start, wall.insideLine.end)
   const newMidpoint = add(originalMidpoint, projectedDelta)
 
   return (
     <Group>
-      {/* Show the new segment midpoint */}
+      {/* Show the new wall midpoint */}
       <Circle
         x={newMidpoint[0]}
         y={newMidpoint[1]}

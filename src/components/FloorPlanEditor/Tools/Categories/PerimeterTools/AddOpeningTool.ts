@@ -1,25 +1,25 @@
 import type { Tool, CanvasEvent, ToolContext } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import { BaseTool } from '@/components/FloorPlanEditor/Tools/ToolSystem/BaseTool'
 import type { Vec2, Length } from '@/types/geometry'
-import { createLength, createVec2, distance, projectPointOntoLine, lineFromSegment } from '@/types/geometry'
-import type { OpeningType, OuterWallSegment } from '@/types/model'
+import { createLength, createVec2, distance, projectPointOntoLine, lineFromWall } from '@/types/geometry'
+import type { OpeningType, PerimeterWall } from '@/types/model'
 import {
   type PerimeterId,
-  type WallSegmentId,
+  type PerimeterWallId,
   type SelectableId,
   type EntityType,
   isPerimeterId,
-  isWallSegmentId
+  isPerimeterWallId
 } from '@/types/ids'
 import { AddOpeningToolInspector } from '@/components/FloorPlanEditor/Tools/PropertiesPanel/ToolInspectors/AddOpeningToolInspector'
 import { AddOpeningToolOverlay } from './AddOpeningToolOverlay'
 import { round } from '@turf/helpers'
 import { BoxIcon } from '@radix-ui/react-icons'
 
-interface WallSegmentHit {
-  wallId: PerimeterId
-  segmentId: WallSegmentId
-  segment: OuterWallSegment
+interface PerimeterWallHit {
+  perimeterId: PerimeterId
+  wallId: PerimeterWallId
+  wall: PerimeterWall
 }
 
 interface AddOpeningToolState {
@@ -30,7 +30,7 @@ interface AddOpeningToolState {
   sillHeight?: Length
 
   // Interactive state
-  hoveredWallSegment?: WallSegmentHit
+  hoveredPerimeterWall?: PerimeterWallHit
   offset?: Length
   previewPosition?: Vec2
   canPlace: boolean
@@ -68,38 +68,38 @@ export class AddOpeningTool extends BaseTool implements Tool {
   }
 
   /**
-   * Extract wall segment information from hit test result
+   * Extract wall wall information from hit test result
    */
-  private extractWallSegmentFromHitResult(
+  private extractPerimeterWallFromHitResult(
     hitResult: { entityId: SelectableId; entityType: EntityType; parentIds: SelectableId[] } | null,
     context: ToolContext
-  ): WallSegmentHit | null {
+  ): PerimeterWallHit | null {
     if (!hitResult) return null
 
-    // Check if we hit a wall segment directly
-    if (hitResult.entityType === 'wall-segment') {
-      const segmentId = hitResult.entityId as WallSegmentId
-      // Parent should be the outer wall
-      const wallId = hitResult.parentIds[0] as PerimeterId
+    // Check if we hit a wall wall directly
+    if (hitResult.entityType === 'perimeter-wall') {
+      const wallId = hitResult.entityId as PerimeterWallId
+      // Parent should be the perimeter
+      const perimeterId = hitResult.parentIds[0] as PerimeterId
 
-      if (wallId && segmentId) {
+      if (perimeterId && wallId) {
         const modelStore = context.getModelStore()
-        const segment = modelStore.getSegmentById(wallId, segmentId)
-        if (segment) {
-          return { wallId, segmentId, segment }
+        const wall = modelStore.getPerimeterWallById(perimeterId, wallId)
+        if (wall) {
+          return { perimeterId, wallId, wall }
         }
       }
     }
 
     // Check if we hit an opening
     if (hitResult.entityType === 'opening') {
-      const [wallId, segmentId] = hitResult.parentIds
+      const [perimeterId, wallId] = hitResult.parentIds
 
-      if (isPerimeterId(wallId) && isWallSegmentId(segmentId)) {
+      if (isPerimeterId(perimeterId) && isPerimeterWallId(wallId)) {
         const modelStore = context.getModelStore()
-        const segment = modelStore.getSegmentById(wallId, segmentId)
-        if (segment) {
-          return { wallId, segmentId, segment }
+        const wall = modelStore.getPerimeterWallById(perimeterId, wallId)
+        if (wall) {
+          return { perimeterId, wallId, wall }
         }
       }
     }
@@ -110,21 +110,21 @@ export class AddOpeningTool extends BaseTool implements Tool {
   /**
    * Calculate center offset from mouse position projected onto wall
    */
-  private calculateCenterOffsetFromMousePosition(mousePos: Vec2, segment: OuterWallSegment): Length {
-    // Convert LineSegment2D to Line2D for projection
-    const line = lineFromSegment(segment.insideLine)
+  private calculateCenterOffsetFromMousePosition(mousePos: Vec2, wall: PerimeterWall): Length {
+    // Convert LineWall2D to Line2D for projection
+    const line = lineFromWall(wall.insideLine)
     if (!line) {
-      throw new Error('Cannot create line from segment')
+      throw new Error('Cannot create line from wall')
     }
 
     // Project mouse position onto wall's inside line
     const projectedPoint = projectPointOntoLine(mousePos, line)
 
-    // Calculate offset from segment start to CENTER of opening
-    const startPoint = segment.insideLine.start
+    // Calculate offset from wall start to CENTER of opening
+    const startPoint = wall.insideLine.start
     const centerOffset = createLength(distance(startPoint, projectedPoint))
 
-    // Rounded offset of opening start from the start of the wall segment
+    // Rounded offset of opening start from the start of the wall wall
     const actualStartOffset = centerOffset - this.state.width / 2
     const roundedOffset = round(actualStartOffset / 10) * 10
 
@@ -134,9 +134,9 @@ export class AddOpeningTool extends BaseTool implements Tool {
   /**
    * Convert offset to actual position on the wall
    */
-  private offsetToPosition(offset: Length, segment: OuterWallSegment): Vec2 {
-    const startPoint = segment.insideLine.start
-    const direction = segment.direction
+  private offsetToPosition(offset: Length, wall: PerimeterWall): Vec2 {
+    const startPoint = wall.insideLine.start
+    const direction = wall.direction
 
     return createVec2(startPoint[0] + direction[0] * offset, startPoint[1] + direction[1] * offset)
   }
@@ -145,7 +145,7 @@ export class AddOpeningTool extends BaseTool implements Tool {
    * Clear preview state
    */
   private clearPreview(): void {
-    this.state.hoveredWallSegment = undefined
+    this.state.hoveredPerimeterWall = undefined
     this.state.previewPosition = undefined
     this.state.offset = undefined
     this.state.canPlace = false
@@ -158,13 +158,13 @@ export class AddOpeningTool extends BaseTool implements Tool {
    */
   private updatePreview(
     offset: Length,
-    wallSegment: WallSegmentHit,
+    perimeterWall: PerimeterWallHit,
     canPlace: boolean = true,
     snapDirection?: 'left' | 'right'
   ): void {
-    this.state.hoveredWallSegment = wallSegment
+    this.state.hoveredPerimeterWall = perimeterWall
     this.state.offset = offset
-    this.state.previewPosition = this.offsetToPosition(offset, wallSegment.segment)
+    this.state.previewPosition = this.offsetToPosition(offset, perimeterWall.wall)
     this.state.canPlace = canPlace
     this.state.snapDirection = snapDirection
     this.triggerRender()
@@ -175,25 +175,25 @@ export class AddOpeningTool extends BaseTool implements Tool {
   handleMouseMove(event: CanvasEvent): boolean {
     const mousePos = event.stageCoordinates
 
-    // 1. Detect wall segment under cursor
+    // 1. Detect wall wall under cursor
     const hitResult = event.context.findEntityAt(event.pointerCoordinates!)
-    const wallSegment = this.extractWallSegmentFromHitResult(hitResult, event.context)
+    const perimeterWall = this.extractPerimeterWallFromHitResult(hitResult, event.context)
 
-    if (!wallSegment) {
+    if (!perimeterWall) {
       this.clearPreview()
       return true
     }
 
     // 2. Calculate preferred center position from mouse
-    const preferredStartOffset = this.calculateCenterOffsetFromMousePosition(mousePos, wallSegment.segment)
+    const preferredStartOffset = this.calculateCenterOffsetFromMousePosition(mousePos, perimeterWall.wall)
 
     // 4. Check if preferred position is valid
     const modelStore = event.context.getModelStore()
 
     // Try to find a nearby valid position
-    const snappedOffset = modelStore.findNearestValidOpeningPosition(
-      wallSegment.wallId,
-      wallSegment.segmentId,
+    const snappedOffset = modelStore.findNearestValidPerimeterWallOpeningPosition(
+      perimeterWall.perimeterId,
+      perimeterWall.wallId,
       preferredStartOffset,
       this.state.width
     )
@@ -203,12 +203,12 @@ export class AddOpeningTool extends BaseTool implements Tool {
       // Determine snap direction: if snapped offset is greater, opening was shifted right (snapped from left)
       const snapDirection: 'left' | 'right' | undefined =
         snappedOffset !== preferredStartOffset ? (snappedOffset > preferredStartOffset ? 'right' : 'left') : undefined
-      this.updatePreview(snappedOffset, wallSegment, true, snapDirection)
+      this.updatePreview(snappedOffset, perimeterWall, true, snapDirection)
     } else {
-      if (preferredStartOffset < 0 || preferredStartOffset > wallSegment.segment.segmentLength - this.state.width) {
+      if (preferredStartOffset < 0 || preferredStartOffset > perimeterWall.wall.wallLength - this.state.width) {
         this.clearPreview()
       } else {
-        this.updatePreview(preferredStartOffset, wallSegment, snappedOffset === preferredStartOffset)
+        this.updatePreview(preferredStartOffset, perimeterWall, snappedOffset === preferredStartOffset)
       }
     }
 
@@ -216,15 +216,15 @@ export class AddOpeningTool extends BaseTool implements Tool {
   }
 
   handleMouseDown(event: CanvasEvent): boolean {
-    if (!this.state.canPlace || !this.state.hoveredWallSegment || !this.state.offset) {
+    if (!this.state.canPlace || !this.state.hoveredPerimeterWall || !this.state.offset) {
       return true
     }
 
-    const { wallId, segmentId } = this.state.hoveredWallSegment
+    const { perimeterId, wallId } = this.state.hoveredPerimeterWall
 
     try {
       const modelStore = event.context.getModelStore()
-      const openingId = modelStore.addOpeningToOuterWall(wallId, segmentId, {
+      const openingId = modelStore.addPerimeterWallOpening(perimeterId, wallId, {
         type: this.state.openingType,
         offsetFromStart: this.state.offset,
         width: this.state.width,
@@ -234,8 +234,8 @@ export class AddOpeningTool extends BaseTool implements Tool {
 
       // Select the newly created opening
       event.context.clearSelection()
-      event.context.selectEntity(wallId)
-      event.context.selectSubEntity(segmentId)
+      event.context.selectEntity(perimeterId)
+      event.context.selectSubEntity(wallId)
       event.context.selectSubEntity(openingId)
 
       // Clear preview after successful placement

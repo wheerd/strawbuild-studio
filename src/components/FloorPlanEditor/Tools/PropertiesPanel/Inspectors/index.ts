@@ -1,7 +1,7 @@
-// Export outer wall inspectors
-export { OuterWallInspector } from './OuterWallInspector'
-export { WallSegmentInspector } from './WallSegmentInspector'
-export { OuterCornerInspector } from './OuterCornerInspector'
+// Export perimeter inspectors
+export { PerimeterInspector as OuterWallInspector } from './PerimeterInspector'
+export { PerimeterWallInspector } from './PerimeterWallInspector'
+export { PerimeterCornerInspector } from './PerimeterCornerInspector'
 export { OpeningInspector } from './OpeningInspector'
 
 // Export tool inspectors

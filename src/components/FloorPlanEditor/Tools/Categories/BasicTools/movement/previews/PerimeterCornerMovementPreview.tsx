@@ -2,16 +2,16 @@ import React from 'react'
 import { Group, Circle, Line } from 'react-konva'
 import { COLORS } from '@/theme/colors'
 import type { MovementPreviewComponentProps } from '../MovementBehavior'
-import type { CornerEntityContext, CornerMovementState } from '../behaviors/OuterCornerMovementBehavior'
+import type { CornerEntityContext, CornerMovementState } from '../behaviors/PerimeterCornerMovementBehavior'
 
-interface OuterCornerMovementPreviewProps
+interface PerimeterCornerMovementPreviewProps
   extends MovementPreviewComponentProps<CornerEntityContext, CornerMovementState> {}
 
-export function OuterCornerMovementPreview({
+export function PerimeterCornerMovementPreview({
   movementState,
   isValid,
   context
-}: OuterCornerMovementPreviewProps): React.JSX.Element {
+}: PerimeterCornerMovementPreviewProps): React.JSX.Element {
   const { wall, cornerIndex } = context.entity
   const originalPosition = wall.boundary[cornerIndex]
 

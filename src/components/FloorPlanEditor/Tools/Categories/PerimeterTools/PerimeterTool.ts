@@ -1,5 +1,5 @@
 import type { Tool, CanvasEvent } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
-import type { Vec2, Polygon2D, LineSegment2D, Length } from '@/types/geometry'
+import type { Vec2, Polygon2D, LineWall2D, Length } from '@/types/geometry'
 import {
   createLength,
   createVec2,
@@ -9,7 +9,7 @@ import {
   distanceSquared
 } from '@/types/geometry'
 import type { SnappingContext, SnapResult } from '@/model/store/services/snapping/types'
-import type { OuterWallConstructionType } from '@/types/model'
+import type { PerimeterConstructionType } from '@/types/model'
 import { PerimeterToolOverlay } from './PerimeterToolOverlay'
 import { PerimeterToolInspector } from '@/components/FloorPlanEditor/Tools/PropertiesPanel/ToolInspectors/PerimeterToolInspector'
 import { SnappingService } from '@/model/store/services/snapping'
@@ -23,12 +23,12 @@ interface PerimeterToolState {
   snapContext: SnappingContext
   isCurrentLineValid: boolean
   isClosingLineValid: boolean
-  constructionType: OuterWallConstructionType
+  constructionType: PerimeterConstructionType
   wallThickness: Length
 }
 
 export class PerimeterTool extends BaseTool implements Tool {
-  readonly id = 'perimeter-polygon'
+  readonly id = 'perimeter'
   readonly name = 'Building Perimeter'
   readonly icon = '⬜'
   readonly iconComponent = BorderAllIcon
@@ -44,7 +44,7 @@ export class PerimeterTool extends BaseTool implements Tool {
     snapContext: {
       snapPoints: [],
       alignPoints: [],
-      referenceLineSegments: []
+      referenceLineWalls: []
     },
     isCurrentLineValid: true,
     isClosingLineValid: true,
@@ -67,7 +67,7 @@ export class PerimeterTool extends BaseTool implements Tool {
     return distanceSquared(firstPoint, snapPos) < 25 // 5mm squared
   }
 
-  public setConstructionType(constructionType: OuterWallConstructionType): void {
+  public setConstructionType(constructionType: PerimeterConstructionType): void {
     this.state.constructionType = constructionType
     this.triggerRender()
   }
@@ -88,18 +88,18 @@ export class PerimeterTool extends BaseTool implements Tool {
   }
 
   private updateSnapContext() {
-    const referenceLineSegments: LineSegment2D[] = []
+    const referenceLineWalls: LineWall2D[] = []
     for (let i = 1; i < this.state.points.length; i++) {
       const start = this.state.points[i - 1]
       const end = this.state.points[i]
-      referenceLineSegments.push({ start, end })
+      referenceLineWalls.push({ start, end })
     }
 
     this.state.snapContext = {
       snapPoints: this.state.points.slice(0, 1),
       alignPoints: this.state.points,
       referencePoint: this.state.points[this.state.points.length - 1],
-      referenceLineSegments
+      referenceLineWalls
     }
     this.triggerRender()
   }
@@ -184,7 +184,7 @@ export class PerimeterTool extends BaseTool implements Tool {
     // Only complete if closing wouldn't create intersections
     if (!this.state.isClosingLineValid) return
 
-    // Create polygon and ensure clockwise order for outer walls
+    // Create polygon and ensure clockwise order for perimeters
     let polygon: Polygon2D = { points: [...this.state.points] }
 
     // Check if polygon is clockwise, if not reverse it
@@ -199,7 +199,7 @@ export class PerimeterTool extends BaseTool implements Tool {
       try {
         modelStore.addPerimeter(activeStoreyId, polygon, this.state.constructionType, this.state.wallThickness)
       } catch (error) {
-        console.error('Failed to create outer wall polygon:', error)
+        console.error('Failed to create perimeter polygon:', error)
       }
     }
 

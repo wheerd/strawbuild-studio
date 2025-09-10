@@ -2,13 +2,13 @@ import { useCallback, useEffect, useState } from 'react'
 import * as Select from '@radix-ui/react-select'
 import { createLength } from '@/types/geometry'
 import { useDebouncedNumericInput } from '@/components/FloorPlanEditor/hooks/useDebouncedInput'
-import type { OuterWallConstructionType } from '@/types/model'
+import type { PerimeterConstructionType } from '@/types/model'
 import type { ToolInspectorProps } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
-import type { PerimeterTool } from '@/components/FloorPlanEditor/Tools/Categories/OuterWallTools/PerimeterTool'
+import type { PerimeterTool } from '@/components/FloorPlanEditor/Tools/Categories/PerimeterTools/PerimeterTool'
 import { useReactiveTool } from '@/components/FloorPlanEditor/Tools/hooks/useReactiveTool'
 
 // Construction type options
-const CONSTRUCTION_TYPE_OPTIONS: { value: OuterWallConstructionType; label: string }[] = [
+const CONSTRUCTION_TYPE_OPTIONS: { value: PerimeterConstructionType; label: string }[] = [
   {
     value: 'cells-under-tension',
     label: 'CUT'
@@ -69,7 +69,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
               <label className="text-xs font-medium text-gray-600 flex-shrink-0">Construction Type</label>
               <Select.Root
                 value={state.constructionType}
-                onValueChange={(value: OuterWallConstructionType) => {
+                onValueChange={(value: PerimeterConstructionType) => {
                   tool.setConstructionType(value)
                 }}
               >

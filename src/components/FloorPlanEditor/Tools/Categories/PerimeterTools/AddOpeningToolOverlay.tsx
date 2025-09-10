@@ -14,12 +14,12 @@ export function AddOpeningToolOverlay({ tool }: AddOpeningToolOverlayProps): Rea
   const { state } = useReactiveTool(tool)
 
   // Don't render anything if no preview state
-  if (!state.hoveredWallSegment || !state.previewPosition) {
+  if (!state.hoveredPerimeterWall || !state.previewPosition) {
     return null
   }
 
-  const segment = state.hoveredWallSegment.segment
-  const wallDirection = segment.direction
+  const wall = state.hoveredPerimeterWall.wall
+  const wallDirection = wall.direction
   const wallAngle = (Math.atan2(wallDirection[1], wallDirection[0]) * 180) / Math.PI
 
   return (
@@ -29,7 +29,7 @@ export function AddOpeningToolOverlay({ tool }: AddOpeningToolOverlayProps): Rea
         x={0}
         y={0}
         width={state.width}
-        height={segment.thickness}
+        height={wall.thickness}
         fill={state.canPlace ? COLORS.ui.success : COLORS.ui.danger}
         opacity={0.6}
         stroke={COLORS.ui.white}
@@ -37,11 +37,11 @@ export function AddOpeningToolOverlay({ tool }: AddOpeningToolOverlayProps): Rea
       />
       <Text
         text={getOpeningIcon(state.openingType)}
-        fontSize={segment.thickness * 0.7}
+        fontSize={wall.thickness * 0.7}
         x={0}
         y={0}
         width={state.width}
-        height={segment.thickness}
+        height={wall.thickness}
         align="center"
         verticalAlign="middle"
         fill={COLORS.ui.white}
@@ -52,8 +52,8 @@ export function AddOpeningToolOverlay({ tool }: AddOpeningToolOverlayProps): Rea
       {state.snapDirection && (
         <Circle
           x={state.snapDirection === 'right' ? 0 : state.width}
-          y={segment.thickness / 2}
-          radius={segment.thickness * 0.15}
+          y={wall.thickness / 2}
+          radius={wall.thickness * 0.15}
           fill={COLORS.snapping.highlight}
           stroke={COLORS.snapping.highlightStroke}
           strokeWidth={2}

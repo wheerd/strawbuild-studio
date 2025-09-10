@@ -33,7 +33,7 @@ describe('PerimeterToolOverlay', () => {
       snapContext: {
         snapPoints: [],
         alignPoints: [],
-        referenceLineSegments: []
+        referenceLineWalls: []
       },
       isCurrentLineValid: true,
       isClosingLineValid: true,

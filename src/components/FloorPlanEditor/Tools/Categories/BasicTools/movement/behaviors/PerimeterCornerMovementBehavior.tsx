@@ -1,17 +1,17 @@
 import type { MovementBehavior, MovementContext, MouseMovementState } from '../MovementBehavior'
 import type { SelectableId } from '@/types/ids'
 import type { StoreActions } from '@/model/store/types'
-import type { OuterWallCorner, Perimeter } from '@/types/model'
-import type { LineSegment2D, Vec2 } from '@/types/geometry'
+import type { PerimeterCorner, Perimeter } from '@/types/model'
+import type { LineWall2D, Vec2 } from '@/types/geometry'
 import type { SnappingContext, SnapResult } from '@/model/store/services/snapping/types'
 import { add, wouldClosingPolygonSelfIntersect } from '@/types/geometry'
-import { isPerimeterId, isOuterCornerId } from '@/types/ids'
-import { OuterCornerMovementPreview } from '../previews/OuterCornerMovementPreview'
+import { isPerimeterId, isPerimeterCornerId } from '@/types/ids'
+import { PerimeterCornerMovementPreview } from '../previews/PerimeterCornerMovementPreview'
 
 // Corner movement needs access to the wall to update the boundary
 export interface CornerEntityContext {
   wall: Perimeter
-  corner: OuterWallCorner
+  corner: PerimeterCorner
   cornerIndex: number // Index of the boundary point that corresponds to this corner
   snapContext: SnappingContext
 }
@@ -23,17 +23,17 @@ export interface CornerMovementState {
   newBoundary: Vec2[]
 }
 
-export class OuterCornerMovementBehavior implements MovementBehavior<CornerEntityContext, CornerMovementState> {
-  previewComponent = OuterCornerMovementPreview
+export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerEntityContext, CornerMovementState> {
+  previewComponent = PerimeterCornerMovementPreview
   getEntity(entityId: SelectableId, parentIds: SelectableId[], store: StoreActions): CornerEntityContext {
     const [wallId] = parentIds
 
-    if (!isPerimeterId(wallId) || !isOuterCornerId(entityId)) {
+    if (!isPerimeterId(wallId) || !isPerimeterCornerId(entityId)) {
       throw new Error(`Invalid entity context for corner ${entityId}`)
     }
 
     const wall = store.getPerimeterById(wallId)
-    const corner = store.getCornerById(wallId, entityId)
+    const corner = store.getPerimeterCornerById(wallId, entityId)
 
     if (!wall || !corner) {
       throw new Error(`Could not find wall or corner ${entityId}`)
@@ -49,7 +49,7 @@ export class OuterCornerMovementBehavior implements MovementBehavior<CornerEntit
     const snapContext: SnappingContext = {
       snapPoints: [wall.boundary[cornerIndex]],
       alignPoints: wall.boundary,
-      referenceLineSegments: snapLines
+      referenceLineWalls: snapLines
     }
 
     return { wall, corner, cornerIndex, snapContext }
@@ -97,8 +97,8 @@ export class OuterCornerMovementBehavior implements MovementBehavior<CornerEntit
     return context.store.updatePerimeterBoundary(context.entity.wall.id, movementState.newBoundary)
   }
 
-  private getSnapLines(wall: Perimeter, cornerIndex: number): Array<LineSegment2D> {
-    const snapLines: Array<LineSegment2D> = []
+  private getSnapLines(wall: Perimeter, cornerIndex: number): Array<LineWall2D> {
+    const snapLines: Array<LineWall2D> = []
 
     for (let i = 0; i < wall.boundary.length; i++) {
       const nextIndex = (i + 1) % wall.boundary.length

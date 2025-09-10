@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { SnappingService } from './SnappingService'
 import { createVec2, createLength } from '@/types/geometry'
-import type { LineSegment2D } from '@/types/geometry'
+import type { LineWall2D } from '@/types/geometry'
 import type { SnappingContext, SnapConfig } from './types'
 
 describe('SnappingService', () => {
@@ -150,15 +150,15 @@ describe('SnappingService', () => {
     })
   })
 
-  describe('Line Segment Snapping', () => {
-    it('should snap to extension line of wall segment', () => {
-      const segment: LineSegment2D = {
+  describe('Line Wall Snapping', () => {
+    it('should snap to extension line of wall wall', () => {
+      const wall: LineWall2D = {
         start: createVec2(100, 100),
         end: createVec2(200, 100)
       }
       const context: SnappingContext = {
         snapPoints: [],
-        referenceLineSegments: [segment]
+        referenceLineWalls: [wall]
       }
 
       // Target on extension of horizontal wall
@@ -170,14 +170,14 @@ describe('SnappingService', () => {
       expect(result?.position[0]).toBe(300) // X should remain
     })
 
-    it('should snap to perpendicular line of wall segment', () => {
-      const segment: LineSegment2D = {
+    it('should snap to perpendicular line of wall wall', () => {
+      const wall: LineWall2D = {
         start: createVec2(100, 100),
         end: createVec2(200, 100)
       }
       const context: SnappingContext = {
         snapPoints: [],
-        referenceLineSegments: [segment]
+        referenceLineWalls: [wall]
       }
 
       // Target near perpendicular line from wall start
@@ -324,11 +324,11 @@ describe('SnappingService', () => {
       expect(result).not.toBeNull()
     })
 
-    it('should handle undefined reference line segments gracefully', () => {
+    it('should handle undefined reference line walls gracefully', () => {
       const point1 = createVec2(100, 100)
       const context: SnappingContext = {
         snapPoints: [point1],
-        referenceLineSegments: undefined
+        referenceLineWalls: undefined
       }
 
       const target = createVec2(120, 110)
@@ -337,11 +337,11 @@ describe('SnappingService', () => {
       expect(result).not.toBeNull()
     })
 
-    it('should handle empty reference line segments array', () => {
+    it('should handle empty reference line walls array', () => {
       const point1 = createVec2(100, 100)
       const context: SnappingContext = {
         snapPoints: [point1],
-        referenceLineSegments: []
+        referenceLineWalls: []
       }
 
       const target = createVec2(120, 110)

@@ -1,20 +1,20 @@
 import type { MovementBehavior, MovementContext, MouseMovementState } from '../MovementBehavior'
 import type { SelectableId } from '@/types/ids'
 import type { StoreActions } from '@/model/store/types'
-import type { Opening, OuterWallSegment, Perimeter } from '@/types/model'
+import type { Opening, PerimeterWall, Perimeter } from '@/types/model'
 import type { Length } from '@/types/geometry'
 import { add, dot, scale, createLength, subtract } from '@/types/geometry'
-import { isPerimeterId, isWallSegmentId, isOpeningId } from '@/types/ids'
+import { isPerimeterId, isPerimeterWallId, isOpeningId } from '@/types/ids'
 import { OpeningMovementPreview } from '../previews/OpeningMovementPreview'
 
-// Opening movement needs access to the wall, segment, and opening
+// Opening movement needs access to the wall, wall, and opening
 export interface OpeningEntityContext {
-  wall: Perimeter
-  segment: OuterWallSegment
+  perimeter: Perimeter
+  wall: PerimeterWall
   opening: Opening
 }
 
-// Opening movement state tracks offset changes along the segment
+// Opening movement state tracks offset changes along the wall
 export interface OpeningMovementState {
   newOffset: Length
 }
@@ -22,21 +22,21 @@ export interface OpeningMovementState {
 export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityContext, OpeningMovementState> {
   previewComponent = OpeningMovementPreview
   getEntity(entityId: SelectableId, parentIds: SelectableId[], store: StoreActions): OpeningEntityContext {
-    const [wallId, segmentId] = parentIds
+    const [perimeterId, wallId] = parentIds
 
-    if (!isPerimeterId(wallId) || !isWallSegmentId(segmentId) || !isOpeningId(entityId)) {
+    if (!isPerimeterId(perimeterId) || !isPerimeterWallId(wallId) || !isOpeningId(entityId)) {
       throw new Error(`Invalid entity context for opening ${entityId}`)
     }
 
-    const wall = store.getPerimeterById(wallId)
-    const segment = store.getSegmentById(wallId, segmentId)
-    const opening = store.getOpeningById(wallId, segmentId, entityId)
+    const perimeter = store.getPerimeterById(perimeterId)
+    const wall = store.getPerimeterWallById(perimeterId, wallId)
+    const opening = store.getPerimeterWallOpeningById(perimeterId, wallId, entityId)
 
-    if (!wall || !segment || !opening) {
+    if (!perimeter || !wall || !opening) {
       throw new Error(`Could not find required entities for opening ${entityId}`)
     }
 
-    return { wall, segment, opening }
+    return { perimeter, wall, opening }
   }
 
   initializeState(
@@ -53,25 +53,25 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
     mouseState: MouseMovementState,
     context: MovementContext<OpeningEntityContext>
   ): OpeningMovementState {
-    const { segment, opening, wall } = context.entity
+    const { perimeter, opening, wall } = context.entity
 
-    // Constrain to segment direction only - project the mouse delta onto segment direction
-    const segmentDirection = segment.direction
-    const projectedDistance = dot(mouseState.delta, segmentDirection)
+    // Constrain to wall direction only - project the mouse delta onto wall direction
+    const wallDirection = wall.direction
+    const projectedDistance = dot(mouseState.delta, wallDirection)
 
-    // Calculate new offset along segment (can be negative)
-    const segmentStart = segment.insideLine.start
-    const currentPosition = add(segmentStart, scale(segment.direction, opening.offsetFromStart))
-    const newPosition = add(currentPosition, scale(segmentDirection, projectedDistance))
+    // Calculate new offset along wall (can be negative)
+    const wallStart = wall.insideLine.start
+    const currentPosition = add(wallStart, scale(wall.direction, opening.offsetFromStart))
+    const newPosition = add(currentPosition, scale(wallDirection, projectedDistance))
 
     // Use proper signed distance calculation to handle negative offsets
-    const deltaFromStart = subtract(newPosition, segmentStart)
-    const signedOffset = dot(deltaFromStart, segmentDirection)
+    const deltaFromStart = subtract(newPosition, wallStart)
+    const signedOffset = dot(deltaFromStart, wallDirection)
 
     // Try to snap to nearest valid position
-    const snappedOffset = context.store.findNearestValidOpeningPosition(
+    const snappedOffset = context.store.findNearestValidPerimeterWallOpeningPosition(
+      perimeter.id,
       wall.id,
-      segment.id,
       createLength(signedOffset),
       opening.width,
       opening.id
@@ -90,10 +90,10 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
   }
 
   validatePosition(movementState: OpeningMovementState, context: MovementContext<OpeningEntityContext>): boolean {
-    const { wall, segment, opening } = context.entity
-    return context.store.isOpeningPlacementValid(
+    const { perimeter, wall, opening } = context.entity
+    return context.store.isPerimeterWallOpeningPlacementValid(
+      perimeter.id,
       wall.id,
-      segment.id,
       movementState.newOffset,
       opening.width,
       opening.id
@@ -101,10 +101,10 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
   }
 
   commitMovement(movementState: OpeningMovementState, context: MovementContext<OpeningEntityContext>): boolean {
-    const { wall, segment, opening } = context.entity
+    const { perimeter, wall, opening } = context.entity
 
     // Update opening position
-    context.store.updateOpening(wall.id, segment.id, opening.id, {
+    context.store.updatePerimeterWallOpening(perimeter.id, wall.id, opening.id, {
       offsetFromStart: movementState.newOffset
     })
 

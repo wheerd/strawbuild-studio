@@ -1,4 +1,4 @@
-import type { Vec2, Line2D, LineSegment2D, Length } from '@/types/geometry'
+import type { Vec2, Line2D, LineWall2D, Length } from '@/types/geometry'
 
 export interface SnapResult {
   position: Vec2
@@ -10,7 +10,7 @@ export interface SnappingContext {
   snapPoints: Vec2[]
   alignPoints?: Vec2[]
   referencePoint?: Vec2
-  referenceLineSegments?: LineSegment2D[]
+  referenceLineWalls?: LineWall2D[]
 }
 
 // Snapping configuration

@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { PerimeterTool } from './PerimeterTool'
-import { outerWallToolGroup } from './index'
+import { perimeterToolGroup } from './index'
 
 describe('PerimeterTool', () => {
   it('should have correct tool properties', () => {
     const tool = new PerimeterTool()
 
-    expect(tool.id).toBe('perimeter-polygon')
+    expect(tool.id).toBe('perimeter')
     expect(tool.name).toBe('Building Perimeter')
     expect(tool.icon).toBe('⬜')
     expect(tool.cursor).toBe('crosshair')
@@ -28,11 +28,11 @@ describe('PerimeterTool', () => {
     expect(tool.state.points).toEqual([])
   })
 
-  it('should be registered in outer wall tool group', () => {
-    expect(outerWallToolGroup.id).toBe('walls')
-    expect(outerWallToolGroup.name).toBe('Outer Walls')
-    expect(outerWallToolGroup.tools).toHaveLength(2)
-    expect(outerWallToolGroup.tools.find(tool => tool.id === 'perimeter-polygon')).toBeInstanceOf(PerimeterTool)
-    expect(outerWallToolGroup.defaultTool).toBe('perimeter-polygon')
+  it('should be registered in perimeter tool group', () => {
+    expect(perimeterToolGroup.id).toBe('perimeters')
+    expect(perimeterToolGroup.name).toBe('Perimeter Walls')
+    expect(perimeterToolGroup.tools).toHaveLength(2)
+    expect(perimeterToolGroup.tools.find(tool => tool.id === 'perimeter')).toBeInstanceOf(PerimeterTool)
+    expect(perimeterToolGroup.defaultTool).toBe('perimeter')
   })
 })

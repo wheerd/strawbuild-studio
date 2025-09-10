@@ -7,14 +7,14 @@ export { PerimeterTool } from './PerimeterTool'
 export { AddOpeningTool } from './AddOpeningTool'
 
 // Create and export tool group
-export const createOuterWallToolGroup = (): ToolGroup => ({
-  id: 'walls',
-  name: 'Outer Walls',
+export const createPerimeterToolGroup = (): ToolGroup => ({
+  id: 'perimeters',
+  name: 'Perimeter Walls',
   icon: '⬜',
-  category: 'walls',
+  category: 'perimeters',
   tools: [new PerimeterTool(), new AddOpeningTool()],
-  defaultTool: 'perimeter-polygon'
+  defaultTool: 'perimeter'
 })
 
 // Export as default tool group
-export const outerWallToolGroup = createOuterWallToolGroup()
+export const perimeterToolGroup = createPerimeterToolGroup()

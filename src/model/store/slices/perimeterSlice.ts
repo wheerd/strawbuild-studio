@@ -1,8 +1,8 @@
 import type { StateCreator } from 'zustand'
-import type { Perimeter, OuterWallConstructionType, OuterWallSegment, Opening, OuterWallCorner } from '@/types/model'
-import type { StoreyId, PerimeterId, WallSegmentId, OuterWallCornerId, OpeningId } from '@/types/ids'
+import type { Perimeter, PerimeterConstructionType, PerimeterWall, Opening, PerimeterCorner } from '@/types/model'
+import type { StoreyId, PerimeterId, PerimeterWallId, PerimeterCornerId, OpeningId } from '@/types/ids'
 import type { Length, Polygon2D, Line2D, Vec2 } from '@/types/geometry'
-import { createPerimeterId, createWallSegmentId, createOuterCornerId, createOpeningId } from '@/types/ids'
+import { createPerimeterId, createPerimeterWallId, createPerimeterCornerId, createOpeningId } from '@/types/ids'
 import {
   createLength,
   lineIntersection,
@@ -17,7 +17,7 @@ import {
 } from '@/types/geometry'
 import { wouldClosingPolygonSelfIntersect } from '@/types/geometry/polygon'
 
-type PartialSegmentInput = Pick<OuterWallSegment, 'id' | 'thickness' | 'constructionType' | 'openings'>
+type PartialWallInput = Pick<PerimeterWall, 'id' | 'thickness' | 'constructionType' | 'openings'>
 
 export interface PerimetersState {
   perimeters: Map<PerimeterId, Perimeter>
@@ -27,49 +27,53 @@ export interface PerimetersActions {
   addPerimeter: (
     storeyId: StoreyId,
     boundary: Polygon2D,
-    constructionType: OuterWallConstructionType,
+    constructionType: PerimeterConstructionType,
     thickness?: Length
   ) => Perimeter
   removePerimeter: (perimeterId: PerimeterId) => void
 
   // Entity deletion operations
-  removeOuterWallCorner: (perimeterId: PerimeterId, cornerId: OuterWallCornerId) => boolean
-  removeOuterWallSegment: (perimeterId: PerimeterId, segmentId: WallSegmentId) => boolean
+  removePerimeterCorner: (perimeterId: PerimeterId, cornerId: PerimeterCornerId) => boolean
+  removePerimeterWall: (perimeterId: PerimeterId, wallId: PerimeterWallId) => boolean
 
   // Updated to use IDs instead of indices
-  updateOuterWallConstructionType: (
+  updatePerimeterWallConstructionType: (
     perimeterId: PerimeterId,
-    segmentId: WallSegmentId,
-    type: OuterWallConstructionType
+    wallId: PerimeterWallId,
+    type: PerimeterConstructionType
   ) => void
-  updateOuterWallThickness: (perimeterId: PerimeterId, segmentId: WallSegmentId, thickness: Length) => void
-  updateCornerBelongsTo: (perimeterId: PerimeterId, cornerId: OuterWallCornerId, belongsTo: 'previous' | 'next') => void
+  updatePerimeterWallThickness: (perimeterId: PerimeterId, wallId: PerimeterWallId, thickness: Length) => void
+  updatePerimeterCornerBelongsTo: (
+    perimeterId: PerimeterId,
+    cornerId: PerimeterCornerId,
+    belongsTo: 'previous' | 'next'
+  ) => void
 
   // Updated opening actions with ID-based approach and auto-ID generation
-  addOpeningToOuterWall: (
+  addPerimeterWallOpening: (
     perimeterId: PerimeterId,
-    segmentId: WallSegmentId,
+    wallId: PerimeterWallId,
     openingParams: Omit<Opening, 'id'>
   ) => OpeningId
-  removeOpeningFromOuterWall: (perimeterId: PerimeterId, segmentId: WallSegmentId, openingId: OpeningId) => void
-  updateOpening: (
+  removePerimeterWallOpening: (perimeterId: PerimeterId, wallId: PerimeterWallId, openingId: OpeningId) => void
+  updatePerimeterWallOpening: (
     perimeterId: PerimeterId,
-    segmentId: WallSegmentId,
+    wallId: PerimeterWallId,
     openingId: OpeningId,
     updates: Partial<Omit<Opening, 'id'>>
   ) => void
 
   // Opening validation methods
-  isOpeningPlacementValid: (
+  isPerimeterWallOpeningPlacementValid: (
     perimeterId: PerimeterId,
-    segmentId: WallSegmentId,
+    wallId: PerimeterWallId,
     offsetFromStart: Length,
     width: Length,
     excludedOpening?: OpeningId
   ) => boolean
-  findNearestValidOpeningPosition: (
+  findNearestValidPerimeterWallOpeningPosition: (
     perimeterId: PerimeterId,
-    segmentId: WallSegmentId,
+    wallId: PerimeterWallId,
     preferredOffset: Length,
     width: Length,
     excludedOpening?: OpeningId
@@ -77,9 +81,13 @@ export interface PerimetersActions {
 
   // Updated getters
   getPerimeterById: (perimeterId: PerimeterId) => Perimeter | null
-  getSegmentById: (perimeterId: PerimeterId, segmentId: WallSegmentId) => OuterWallSegment | null
-  getCornerById: (perimeterId: PerimeterId, cornerId: OuterWallCornerId) => OuterWallCorner | null
-  getOpeningById: (perimeterId: PerimeterId, segmentId: WallSegmentId, openingId: OpeningId) => Opening | null
+  getPerimeterWallById: (perimeterId: PerimeterId, wallId: PerimeterWallId) => PerimeterWall | null
+  getPerimeterCornerById: (perimeterId: PerimeterId, cornerId: PerimeterCornerId) => PerimeterCorner | null
+  getPerimeterWallOpeningById: (
+    perimeterId: PerimeterId,
+    wallId: PerimeterWallId,
+    openingId: OpeningId
+  ) => Opening | null
   getPerimetersByStorey: (storeyId: StoreyId) => Perimeter[]
 
   // Movement operations for MoveTool
@@ -90,9 +98,9 @@ export interface PerimetersActions {
 export type PerimetersSlice = PerimetersState & PerimetersActions
 
 // Default wall thickness value
-const DEFAULT_OUTER_WALL_THICKNESS = createLength(440) // 44cm for strawbale walls
+const DEFAULT_PERIMETER_WALL_THICKNESS = createLength(440) // 44cm for strawbale walls
 
-// Step 1: Create infinite inside and outside lines for each wall segment
+// Step 1: Create infinite inside and outside lines for each wall wall
 const createInfiniteLines = (
   boundary: Polygon2D,
   thicknesses: Length[]
@@ -103,17 +111,17 @@ const createInfiniteLines = (
   for (let i = 0; i < numSides; i++) {
     const startPoint = boundary.points[i]
     const endPoint = boundary.points[(i + 1) % numSides]
-    const segmentThickness = thicknesses[i]
+    const wallThickness = thicknesses[i]
 
     // Create line from boundary points
     const insideLine = lineFromPoints(startPoint, endPoint)
     if (!insideLine) {
-      throw new Error('Wall segment cannot have zero length')
+      throw new Error('Wall wall cannot have zero length')
     }
 
     // Calculate outside direction and create outside line
     const outsideDirection = perpendicularCCW(insideLine.direction)
-    const outsidePoint = add(startPoint, scale(outsideDirection, segmentThickness))
+    const outsidePoint = add(startPoint, scale(outsideDirection, wallThickness))
     const outsideLine = { point: outsidePoint, direction: insideLine.direction }
 
     infiniteLines.push({ inside: insideLine, outside: outsideLine })
@@ -127,10 +135,10 @@ const calculateCornerOutsidePoints = (
   boundary: Polygon2D,
   thicknesses: Length[],
   infiniteLines: Array<{ inside: Line2D; outside: Line2D }>,
-  existingCorners?: OuterWallCorner[]
-): OuterWallCorner[] => {
+  existingCorners?: PerimeterCorner[]
+): PerimeterCorner[] => {
   const numSides = boundary.points.length
-  const corners: OuterWallCorner[] = []
+  const corners: PerimeterCorner[] = []
 
   for (let i = 0; i < numSides; i++) {
     const prevIndex = (i - 1 + numSides) % numSides
@@ -144,13 +152,13 @@ const calculateCornerOutsidePoints = (
     if (intersection) {
       outsidePoint = intersection
     } else {
-      // No intersection means the segments are colinear (parallel)
-      // Project the boundary point outward by the maximum thickness of adjacent segments
+      // No intersection means the walls are colinear (parallel)
+      // Project the boundary point outward by the maximum thickness of adjacent walls
       const prevThickness = thicknesses[prevIndex]
       const currentThickness = thicknesses[i]
       const maxThickness = Math.max(prevThickness, currentThickness)
 
-      // Use the outside direction from either segment (they should be the same for colinear segments)
+      // Use the outside direction from either wall (they should be the same for colinear walls)
       const outsideDirection = perpendicularCCW(currentOutsideLine.direction)
       outsidePoint = add(boundary.points[i], scale(outsideDirection, maxThickness))
     }
@@ -158,7 +166,7 @@ const calculateCornerOutsidePoints = (
     // Preserve existing corner data if available
     const existingCorner = existingCorners?.[i]
     corners.push({
-      id: existingCorner?.id ?? createOuterCornerId(),
+      id: existingCorner?.id ?? createPerimeterCornerId(),
       outsidePoint,
       belongsTo: existingCorner?.belongsTo ?? 'next'
     })
@@ -167,20 +175,20 @@ const calculateCornerOutsidePoints = (
   return corners
 }
 
-// Step 3: Determine correct segment endpoints using projection-based distance comparison
-const calculateSegmentEndpoints = (
+// Step 3: Determine correct wall endpoints using projection-based distance comparison
+const calculateWallEndpoints = (
   boundary: Polygon2D,
-  segmentInputs: PartialSegmentInput[],
-  corners: OuterWallCorner[],
+  wallInputs: PartialWallInput[],
+  corners: PerimeterCorner[],
   infiniteLines: Array<{ inside: Line2D; outside: Line2D }>
-): OuterWallSegment[] => {
+): PerimeterWall[] => {
   const numSides = boundary.points.length
-  const finalSegments: OuterWallSegment[] = []
+  const finalWalls: PerimeterWall[] = []
 
   for (let i = 0; i < numSides; i++) {
     const boundaryStart = boundary.points[i]
     const boundaryEnd = boundary.points[(i + 1) % numSides]
-    const segmentMidpoint = midpoint(boundaryStart, boundaryEnd)
+    const wallMidpoint = midpoint(boundaryStart, boundaryEnd)
 
     const startCornerOutside = corners[i].outsidePoint
     const endCornerOutside = corners[(i + 1) % numSides].outsidePoint
@@ -196,75 +204,75 @@ const calculateSegmentEndpoints = (
     const cornerStartOnInside = projectPointOntoLine(startCornerOutside, insideLine)
     const cornerEndOnInside = projectPointOntoLine(endCornerOutside, insideLine)
 
-    // Choose endpoints based on which projection is closer to segment midpoint
-    const startDistBoundary = distance(boundaryStart, segmentMidpoint)
-    const startDistCorner = distance(cornerStartOnInside, segmentMidpoint)
-    const endDistBoundary = distance(boundaryEnd, segmentMidpoint)
-    const endDistCorner = distance(cornerEndOnInside, segmentMidpoint)
+    // Choose endpoints based on which projection is closer to wall midpoint
+    const startDistBoundary = distance(boundaryStart, wallMidpoint)
+    const startDistCorner = distance(cornerStartOnInside, wallMidpoint)
+    const endDistBoundary = distance(boundaryEnd, wallMidpoint)
+    const endDistCorner = distance(cornerEndOnInside, wallMidpoint)
 
     const finalInsideStart = startDistBoundary <= startDistCorner ? boundaryStart : cornerStartOnInside
     const finalInsideEnd = endDistBoundary <= endDistCorner ? boundaryEnd : cornerEndOnInside
     const finalOutsideStart = startDistBoundary <= startDistCorner ? boundaryStartOnOutside : startCornerOutside
     const finalOutsideEnd = endDistBoundary <= endDistCorner ? boundaryEndOnOutside : endCornerOutside
 
-    // Calculate final segment properties using utility functions
-    const segmentDirection = direction(finalInsideStart, finalInsideEnd)
-    const outsideDirection = perpendicularCCW(segmentDirection)
+    // Calculate final wall properties using utility functions
+    const wallDirection = direction(finalInsideStart, finalInsideEnd)
+    const outsideDirection = perpendicularCCW(wallDirection)
 
     const finalInsideLine = { start: finalInsideStart, end: finalInsideEnd }
     const finalOutsideLine = { start: finalOutsideStart, end: finalOutsideEnd }
 
     const insideLength = distance(boundaryStart, boundaryEnd)
     const outsideLength = distance(startCornerOutside, endCornerOutside)
-    const segmentLength = distance(finalInsideStart, finalInsideEnd)
+    const wallLength = distance(finalInsideStart, finalInsideEnd)
 
-    finalSegments.push({
-      ...segmentInputs[i], // Preserve existing segment data like openings and construction type
+    finalWalls.push({
+      ...wallInputs[i], // Preserve existing wall data like openings and construction type
       insideLength,
       outsideLength,
-      segmentLength,
+      wallLength,
       insideLine: finalInsideLine,
       outsideLine: finalOutsideLine,
-      direction: segmentDirection,
+      direction: wallDirection,
       outsideDirection
     })
   }
 
-  return finalSegments
+  return finalWalls
 }
 
-// Helper function to create wall segments and corners simultaneously using the simplified approach
-const createSegmentsAndCorners = (
+// Helper function to create wall walls and corners simultaneously using the simplified approach
+const createWallsAndCorners = (
   boundary: Polygon2D,
-  constructionType: OuterWallConstructionType,
+  constructionType: PerimeterConstructionType,
   thickness: Length,
-  existingCorners?: OuterWallCorner[]
-): { segments: OuterWallSegment[]; corners: OuterWallCorner[] } => {
+  existingCorners?: PerimeterCorner[]
+): { walls: PerimeterWall[]; corners: PerimeterCorner[] } => {
   // Use shared functions for the three-step process
   const thicknesses = Array(boundary.points.length).fill(thickness)
   const infiniteLines = createInfiniteLines(boundary, thicknesses)
   const corners = calculateCornerOutsidePoints(boundary, thicknesses, infiniteLines, existingCorners)
 
-  // Create initial segments with uniform thickness and construction type
-  const initialSegments: PartialSegmentInput[] = []
+  // Create initial walls with uniform thickness and construction type
+  const initialWalls: PartialWallInput[] = []
   for (let i = 0; i < boundary.points.length; i++) {
-    initialSegments.push({
-      id: createWallSegmentId(),
+    initialWalls.push({
+      id: createPerimeterWallId(),
       thickness,
       constructionType,
       openings: []
     })
   }
-  const segments = calculateSegmentEndpoints(boundary, initialSegments, corners, infiniteLines)
+  const walls = calculateWallEndpoints(boundary, initialWalls, corners, infiniteLines)
 
-  return { segments, corners }
+  return { walls, corners }
 }
 
-// Helper function to find valid gaps in a wall segment for opening placement
+// Helper function to find valid gaps in a wall wall for opening placement
 
-// Private helper function to validate opening placement on a segment
-const validateOpeningOnSegment = (
-  segment: OuterWallSegment,
+// Private helper function to validate opening placement on a wall
+const validateOpeningOnWall = (
+  wall: PerimeterWall,
   offsetFromStart: Length,
   width: Length,
   excludedOpening?: OpeningId | undefined
@@ -274,14 +282,14 @@ const validateOpeningOnSegment = (
     return false
   }
 
-  // Check bounds - segmentLength and opening dimensions should be in same units
+  // Check bounds - wallLength and opening dimensions should be in same units
   const openingEnd = createLength(offsetFromStart + width)
-  if (offsetFromStart < 0 || openingEnd > segment.segmentLength) {
+  if (offsetFromStart < 0 || openingEnd > wall.wallLength) {
     return false
   }
 
   // Check overlap with existing openings
-  for (const existing of segment.openings) {
+  for (const existing of wall.openings) {
     if (existing.id === excludedOpening) continue
 
     const existingStart = existing.offsetFromStart
@@ -302,26 +310,26 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [], [], Perime
   addPerimeter: (
     storeyId: StoreyId,
     boundary: Polygon2D,
-    constructionType: OuterWallConstructionType,
+    constructionType: PerimeterConstructionType,
     thickness?: Length
   ) => {
     if (boundary.points.length < 3) {
-      throw new Error('Outer wall boundary must have at least 3 points')
+      throw new Error('Perimeter boundary must have at least 3 points')
     }
 
-    const wallThickness = thickness ?? DEFAULT_OUTER_WALL_THICKNESS
+    const wallThickness = thickness ?? DEFAULT_PERIMETER_WALL_THICKNESS
 
     if (wallThickness <= 0) {
       throw new Error('Wall thickness must be greater than 0')
     }
 
-    const { segments, corners } = createSegmentsAndCorners(boundary, constructionType, wallThickness)
+    const { walls, corners } = createWallsAndCorners(boundary, constructionType, wallThickness)
 
     const perimeter: Perimeter = {
       id: createPerimeterId(),
       storeyId,
       boundary: boundary.points,
-      segments,
+      walls,
       corners
     }
 
@@ -334,123 +342,123 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [], [], Perime
 
   removePerimeter: (perimeterId: PerimeterId) => {
     set(state => {
-      const newOuterWalls = new Map(state.perimeters)
-      newOuterWalls.delete(perimeterId)
-      return { perimeters: newOuterWalls }
+      const newPerimeters = new Map(state.perimeters)
+      newPerimeters.delete(perimeterId)
+      return { perimeters: newPerimeters }
     })
   },
 
   // Corner deletion: removes the corner and its corresponding boundary point,
-  // merging the two adjacent segments into one
-  removeOuterWallCorner: (perimeterId: PerimeterId, cornerId: OuterWallCornerId): boolean => {
+  // merging the two adjacent walls into one
+  removePerimeterCorner: (perimeterId: PerimeterId, cornerId: PerimeterCornerId): boolean => {
     const state = get()
-    const outerWall = state.perimeters.get(perimeterId)
-    if (!outerWall) return false
+    const perimeter = state.perimeters.get(perimeterId)
+    if (!perimeter) return false
 
-    const cornerIndex = outerWall.corners.findIndex(c => c.id === cornerId)
+    const cornerIndex = perimeter.corners.findIndex(c => c.id === cornerId)
     if (cornerIndex === -1) return false
 
     // Need at least 4 corners to remove one (minimum 3 sides after removal)
-    if (outerWall.corners.length < 4) return false
+    if (perimeter.corners.length < 4) return false
 
     // Create new boundary by removing the point at cornerIndex
-    const newBoundaryPoints = [...outerWall.boundary]
+    const newBoundaryPoints = [...perimeter.boundary]
     newBoundaryPoints.splice(cornerIndex, 1)
 
     // Validate the new polygon wouldn't self-intersect
     if (wouldClosingPolygonSelfIntersect(newBoundaryPoints)) return false
 
-    // Create new segments array by:
-    // 1. Removing the segment at cornerIndex (which ends at the deleted corner)
-    // 2. Removing the segment at (cornerIndex - 1) % length (which starts from the deleted corner)
-    // 3. Adding a new segment that bridges these two
-    const prevSegmentIndex = (cornerIndex - 1 + outerWall.segments.length) % outerWall.segments.length
-    const currentSegmentIndex = cornerIndex
+    // Create new walls array by:
+    // 1. Removing the wall at cornerIndex (which ends at the deleted corner)
+    // 2. Removing the wall at (cornerIndex - 1) % length (which starts from the deleted corner)
+    // 3. Adding a new wall that bridges these two
+    const prevWallIndex = (cornerIndex - 1 + perimeter.walls.length) % perimeter.walls.length
+    const currentWallIndex = cornerIndex
 
-    const newSegments = [...outerWall.segments]
-    const removedSegment1 = newSegments[prevSegmentIndex]
-    const removedSegment2 = newSegments[currentSegmentIndex]
+    const newWalls = [...perimeter.walls]
+    const removedWall1 = newWalls[prevWallIndex]
+    const removedWall2 = newWalls[currentWallIndex]
 
-    // Remove the two segments (remove higher index first to avoid shifting)
-    if (currentSegmentIndex > prevSegmentIndex) {
-      newSegments.splice(currentSegmentIndex, 1)
-      newSegments.splice(prevSegmentIndex, 1)
+    // Remove the two walls (remove higher index first to avoid shifting)
+    if (currentWallIndex > prevWallIndex) {
+      newWalls.splice(currentWallIndex, 1)
+      newWalls.splice(prevWallIndex, 1)
     } else {
-      newSegments.splice(prevSegmentIndex, 1)
-      newSegments.splice(currentSegmentIndex, 1)
+      newWalls.splice(prevWallIndex, 1)
+      newWalls.splice(currentWallIndex, 1)
     }
 
-    // Use the thicker of the two segments for the new merged segment
-    const newThickness = createLength(Math.max(removedSegment1.thickness, removedSegment2.thickness))
-    const newConstructionType = removedSegment1.constructionType // Use the first segment's construction type
+    // Use the thicker of the two walls for the new merged wall
+    const newThickness = createLength(Math.max(removedWall1.thickness, removedWall2.thickness))
+    const newConstructionType = removedWall1.constructionType // Use the first wall's construction type
 
-    // Create new segment with merged properties (openings are deleted as they don't make sense on new geometry)
-    const mergedSegmentInput: PartialSegmentInput = {
-      id: createWallSegmentId(),
+    // Create new wall with merged properties (openings are deleted as they don't make sense on new geometry)
+    const mergedWallInput: PartialWallInput = {
+      id: createPerimeterWallId(),
       thickness: newThickness,
       constructionType: newConstructionType,
-      openings: [] // Openings are deleted as they don't make sense on the new merged segment
+      openings: [] // Openings are deleted as they don't make sense on the new merged wall
     }
 
-    // Insert the merged segment at the correct position
-    const insertIndex = Math.min(prevSegmentIndex, currentSegmentIndex)
-    newSegments.splice(insertIndex, 0, mergedSegmentInput as OuterWallSegment)
+    // Insert the merged wall at the correct position
+    const insertIndex = Math.min(prevWallIndex, currentWallIndex)
+    newWalls.splice(insertIndex, 0, mergedWallInput as PerimeterWall)
 
     // Remove the corner from corners array
-    const newCorners = [...outerWall.corners]
+    const newCorners = [...perimeter.corners]
     newCorners.splice(cornerIndex, 1)
 
     // Recalculate geometry for the modified polygon
     const newBoundary = { points: newBoundaryPoints }
-    const thicknesses = newSegments.map(s => (s as PartialSegmentInput).thickness)
+    const thicknesses = newWalls.map(s => (s as PartialWallInput).thickness)
     const infiniteLines = createInfiniteLines(newBoundary, thicknesses)
     const updatedCorners = calculateCornerOutsidePoints(newBoundary, thicknesses, infiniteLines, newCorners)
-    const finalSegments = calculateSegmentEndpoints(
+    const finalWalls = calculateWallEndpoints(
       newBoundary,
-      newSegments as PartialSegmentInput[],
+      newWalls as PartialWallInput[],
       updatedCorners,
       infiniteLines
     )
 
-    const updatedOuterWall: Perimeter = {
-      ...outerWall,
+    const updatedPerimeter: Perimeter = {
+      ...perimeter,
       boundary: newBoundaryPoints,
-      segments: finalSegments,
+      walls: finalWalls,
       corners: updatedCorners
     }
 
     set(state => ({
-      perimeters: new Map(state.perimeters).set(perimeterId, updatedOuterWall)
+      perimeters: new Map(state.perimeters).set(perimeterId, updatedPerimeter)
     }))
 
     return true
   },
 
-  // Segment deletion: removes the target segment and merges the two adjacent segments into one,
-  // also removing the two corner points that connected these three segments
-  removeOuterWallSegment: (perimeterId: PerimeterId, segmentId: WallSegmentId): boolean => {
+  // Wall deletion: removes the target wall and merges the two adjacent walls into one,
+  // also removing the two corner points that connected these three walls
+  removePerimeterWall: (perimeterId: PerimeterId, wallId: PerimeterWallId): boolean => {
     const state = get()
-    const outerWall = state.perimeters.get(perimeterId)
-    if (!outerWall) return false
+    const perimeter = state.perimeters.get(perimeterId)
+    if (!perimeter) return false
 
-    const segmentIndex = outerWall.segments.findIndex(s => s.id === segmentId)
-    if (segmentIndex === -1) return false
+    const wallIndex = perimeter.walls.findIndex(s => s.id === wallId)
+    if (wallIndex === -1) return false
 
-    // Need at least 5 segments to remove one (results in 3 segments minimum: 5 - 3 + 1 = 3)
-    if (outerWall.segments.length < 5) return false
+    // Need at least 5 walls to remove one (results in 3 walls minimum: 5 - 3 + 1 = 3)
+    if (perimeter.walls.length < 5) return false
 
-    const numSegments = outerWall.segments.length
+    const numWalls = perimeter.walls.length
 
-    // Get indices of the three segments involved: previous, target, next
-    const prevSegmentIndex = (segmentIndex - 1 + numSegments) % numSegments
-    const nextSegmentIndex = (segmentIndex + 1) % numSegments
+    // Get indices of the three walls involved: previous, target, next
+    const prevWallIndex = (wallIndex - 1 + numWalls) % numWalls
+    const nextWallIndex = (wallIndex + 1) % numWalls
 
-    // Create new boundary by removing the two corner points that connected these segments
-    // Remove the corner at segmentIndex (between prev and target segments)
-    // Remove the corner at (segmentIndex + 1) % length (between target and next segments)
-    const newBoundaryPoints = [...outerWall.boundary]
-    const cornerIndex1 = segmentIndex
-    const cornerIndex2 = (segmentIndex + 1) % outerWall.boundary.length
+    // Create new boundary by removing the two corner points that connected these walls
+    // Remove the corner at wallIndex (between prev and target walls)
+    // Remove the corner at (wallIndex + 1) % length (between target and next walls)
+    const newBoundaryPoints = [...perimeter.boundary]
+    const cornerIndex1 = wallIndex
+    const cornerIndex2 = (wallIndex + 1) % perimeter.boundary.length
 
     // Remove higher index first to avoid shifting
     if (cornerIndex2 > cornerIndex1) {
@@ -464,37 +472,37 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [], [], Perime
     // Validate the new polygon wouldn't self-intersect
     if (wouldClosingPolygonSelfIntersect(newBoundaryPoints)) return false
 
-    // Remove the three segments (target and adjacent ones) and replace with one merged segment
-    const prevSegment = outerWall.segments[prevSegmentIndex]
-    const targetSegment = outerWall.segments[segmentIndex]
-    const nextSegment = outerWall.segments[nextSegmentIndex]
+    // Remove the three walls (target and adjacent ones) and replace with one merged wall
+    const prevWall = perimeter.walls[prevWallIndex]
+    const targetWall = perimeter.walls[wallIndex]
+    const nextWall = perimeter.walls[nextWallIndex]
 
-    // Create merged segment with combined properties
-    const newThickness = createLength(Math.max(prevSegment.thickness, targetSegment.thickness, nextSegment.thickness))
-    const newConstructionType = prevSegment.constructionType // Use the previous segment's construction type
+    // Create merged wall with combined properties
+    const newThickness = createLength(Math.max(prevWall.thickness, targetWall.thickness, nextWall.thickness))
+    const newConstructionType = prevWall.constructionType // Use the previous wall's construction type
 
-    const mergedSegmentInput: PartialSegmentInput = {
-      id: createWallSegmentId(),
+    const mergedWallInput: PartialWallInput = {
+      id: createPerimeterWallId(),
       thickness: newThickness,
       constructionType: newConstructionType,
-      openings: [] // Openings are deleted as they don't make sense on the new merged segment
+      openings: [] // Openings are deleted as they don't make sense on the new merged wall
     }
 
-    // Create new segments array by removing the three segments and inserting the merged one
-    const newSegments = [...outerWall.segments]
+    // Create new walls array by removing the three walls and inserting the merged one
+    const newWalls = [...perimeter.walls]
 
-    // Remove the three segments (remove from highest index to avoid shifting)
-    const indicesToRemove = [prevSegmentIndex, segmentIndex, nextSegmentIndex].sort((a, b) => b - a)
+    // Remove the three walls (remove from highest index to avoid shifting)
+    const indicesToRemove = [prevWallIndex, wallIndex, nextWallIndex].sort((a, b) => b - a)
     for (const index of indicesToRemove) {
-      newSegments.splice(index, 1)
+      newWalls.splice(index, 1)
     }
 
-    // Insert the merged segment at the position where the previous segment was
-    const insertIndex = Math.min(prevSegmentIndex, segmentIndex, nextSegmentIndex)
-    newSegments.splice(insertIndex, 0, mergedSegmentInput as OuterWallSegment)
+    // Insert the merged wall at the position where the previous wall was
+    const insertIndex = Math.min(prevWallIndex, wallIndex, nextWallIndex)
+    newWalls.splice(insertIndex, 0, mergedWallInput as PerimeterWall)
 
     // Remove the corresponding corners
-    const newCorners = [...outerWall.corners]
+    const newCorners = [...perimeter.corners]
     // Remove higher index first to avoid shifting
     if (cornerIndex2 > cornerIndex1) {
       newCorners.splice(cornerIndex2, 1)
@@ -506,131 +514,135 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [], [], Perime
 
     // Recalculate geometry for the modified polygon
     const newBoundary = { points: newBoundaryPoints }
-    const thicknesses = newSegments.map(s => (s as PartialSegmentInput).thickness)
+    const thicknesses = newWalls.map(s => (s as PartialWallInput).thickness)
     const infiniteLines = createInfiniteLines(newBoundary, thicknesses)
     const updatedCorners = calculateCornerOutsidePoints(newBoundary, thicknesses, infiniteLines, newCorners)
-    const finalSegments = calculateSegmentEndpoints(
+    const finalWalls = calculateWallEndpoints(
       newBoundary,
-      newSegments as PartialSegmentInput[],
+      newWalls as PartialWallInput[],
       updatedCorners,
       infiniteLines
     )
 
-    const updatedOuterWall: Perimeter = {
-      ...outerWall,
+    const updatedPerimeter: Perimeter = {
+      ...perimeter,
       boundary: newBoundaryPoints,
-      segments: finalSegments,
+      walls: finalWalls,
       corners: updatedCorners
     }
 
     set(state => ({
-      perimeters: new Map(state.perimeters).set(perimeterId, updatedOuterWall)
+      perimeters: new Map(state.perimeters).set(perimeterId, updatedPerimeter)
     }))
 
     return true
   },
 
   // Update operations
-  updateOuterWallConstructionType: (
+  updatePerimeterWallConstructionType: (
     perimeterId: PerimeterId,
-    segmentId: WallSegmentId,
-    type: OuterWallConstructionType
+    wallId: PerimeterWallId,
+    type: PerimeterConstructionType
   ) => {
     set(state => {
-      const outerWall = state.perimeters.get(perimeterId)
-      if (outerWall == null) return state
+      const perimeter = state.perimeters.get(perimeterId)
+      if (perimeter == null) return state
 
-      const segmentIndex = outerWall.segments.findIndex(s => s.id === segmentId)
-      if (segmentIndex === -1) {
-        return state // Segment not found
+      const wallIndex = perimeter.walls.findIndex(s => s.id === wallId)
+      if (wallIndex === -1) {
+        return state // Wall not found
       }
 
-      const updatedSegments = [...outerWall.segments]
-      updatedSegments[segmentIndex] = {
-        ...updatedSegments[segmentIndex],
+      const updatedWalls = [...perimeter.walls]
+      updatedWalls[wallIndex] = {
+        ...updatedWalls[wallIndex],
         constructionType: type
       }
 
-      const updatedOuterWall = {
-        ...outerWall,
-        segments: updatedSegments
+      const updatedPerimeter = {
+        ...perimeter,
+        walls: updatedWalls
       }
 
-      const newOuterWalls = new Map(state.perimeters)
-      newOuterWalls.set(perimeterId, updatedOuterWall)
-      return { perimeters: newOuterWalls }
+      const newPerimeters = new Map(state.perimeters)
+      newPerimeters.set(perimeterId, updatedPerimeter)
+      return { perimeters: newPerimeters }
     })
   },
 
-  updateOuterWallThickness: (perimeterId: PerimeterId, segmentId: WallSegmentId, thickness: Length) => {
+  updatePerimeterWallThickness: (perimeterId: PerimeterId, wallId: PerimeterWallId, thickness: Length) => {
     if (thickness <= 0) {
       throw new Error('Wall thickness must be greater than 0')
     }
 
     set(state => {
-      const outerWall = state.perimeters.get(perimeterId)
-      if (outerWall == null) return state
+      const perimeter = state.perimeters.get(perimeterId)
+      if (perimeter == null) return state
 
-      const segmentIndex = outerWall.segments.findIndex(s => s.id === segmentId)
-      if (segmentIndex === -1) {
-        return state // Segment not found
+      const wallIndex = perimeter.walls.findIndex(s => s.id === wallId)
+      if (wallIndex === -1) {
+        return state // Wall not found
       }
 
-      // Update the specific segment thickness first
-      const updatedSegments = [...outerWall.segments]
-      updatedSegments[segmentIndex] = {
-        ...updatedSegments[segmentIndex],
+      // Update the specific wall thickness first
+      const updatedWalls = [...perimeter.walls]
+      updatedWalls[wallIndex] = {
+        ...updatedWalls[wallIndex],
         thickness
       }
 
       // Use shared functions for the three-step process with mixed thickness
-      const boundary = { points: outerWall.boundary }
-      const thicknesses = updatedSegments.map(s => s.thickness)
+      const boundary = { points: perimeter.boundary }
+      const thicknesses = updatedWalls.map(s => s.thickness)
       const infiniteLines = createInfiniteLines(boundary, thicknesses)
-      const updatedCorners = calculateCornerOutsidePoints(boundary, thicknesses, infiniteLines, outerWall.corners)
-      const finalSegments = calculateSegmentEndpoints(boundary, updatedSegments, updatedCorners, infiniteLines)
+      const updatedCorners = calculateCornerOutsidePoints(boundary, thicknesses, infiniteLines, perimeter.corners)
+      const finalWalls = calculateWallEndpoints(boundary, updatedWalls, updatedCorners, infiniteLines)
 
-      const updatedOuterWall = {
-        ...outerWall,
-        segments: finalSegments,
+      const updatedPerimeter = {
+        ...perimeter,
+        walls: finalWalls,
         corners: updatedCorners
       }
 
-      const newOuterWalls = new Map(state.perimeters)
-      newOuterWalls.set(perimeterId, updatedOuterWall)
-      return { perimeters: newOuterWalls }
+      const newPerimeters = new Map(state.perimeters)
+      newPerimeters.set(perimeterId, updatedPerimeter)
+      return { perimeters: newPerimeters }
     })
   },
 
-  updateCornerBelongsTo: (perimeterId: PerimeterId, cornerId: OuterWallCornerId, belongsTo: 'previous' | 'next') => {
+  updatePerimeterCornerBelongsTo: (
+    perimeterId: PerimeterId,
+    cornerId: PerimeterCornerId,
+    belongsTo: 'previous' | 'next'
+  ) => {
     set(state => {
-      const outerWall = state.perimeters.get(perimeterId)
-      if (outerWall == null) return state
+      const perimeter = state.perimeters.get(perimeterId)
+      if (perimeter == null) return state
 
-      const cornerIndex = outerWall.corners.findIndex(c => c.id === cornerId)
+      const cornerIndex = perimeter.corners.findIndex(c => c.id === cornerId)
       if (cornerIndex === -1) {
         return state // Corner not found
       }
 
-      const updatedCorners = [...outerWall.corners]
+      const updatedCorners = [...perimeter.corners]
       updatedCorners[cornerIndex] = {
         ...updatedCorners[cornerIndex],
         belongsTo
       }
 
-      const updatedOuterWall = {
-        ...outerWall,
+      const updatedPerimeter = {
+        ...perimeter,
         corners: updatedCorners
       }
 
-      const newOuterWalls = new Map(state.perimeters)
-      newOuterWalls.set(perimeterId, updatedOuterWall)
-      return { perimeters: newOuterWalls }
+      const newPerimeters = new Map(state.perimeters)
+      newPerimeters.set(perimeterId, updatedPerimeter)
+      return { perimeters: newPerimeters }
     })
   },
 
   // Opening operations
-  addOpeningToOuterWall: (perimeterId: PerimeterId, segmentId: WallSegmentId, openingParams: Omit<Opening, 'id'>) => {
+  addPerimeterWallOpening: (perimeterId: PerimeterId, wallId: PerimeterWallId, openingParams: Omit<Opening, 'id'>) => {
     if (openingParams.width <= 0) {
       throw new Error('Opening width must be greater than 0')
     }
@@ -646,12 +658,12 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [], [], Perime
       throw new Error('Opening offset from start must be non-negative')
     }
 
-    const segment = get().getSegmentById(perimeterId, segmentId)
-    if (!segment) {
-      throw new Error('Segment does not exist')
+    const wall = get().getPerimeterWallById(perimeterId, wallId)
+    if (!wall) {
+      throw new Error('Wall does not exist')
     }
 
-    if (!validateOpeningOnSegment(segment, openingParams.offsetFromStart, openingParams.width)) {
+    if (!validateOpeningOnWall(wall, openingParams.offsetFromStart, openingParams.width)) {
       throw new Error('Opening placement is not valid')
     }
 
@@ -663,68 +675,68 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [], [], Perime
     }
 
     set(state => {
-      const outerWall = state.perimeters.get(perimeterId)
-      if (outerWall == null) return state
+      const perimeter = state.perimeters.get(perimeterId)
+      if (perimeter == null) return state
 
-      const segmentIndex = outerWall.segments.findIndex(s => s.id === segmentId)
-      if (segmentIndex === -1) {
-        return state // Segment not found
+      const wallIndex = perimeter.walls.findIndex(s => s.id === wallId)
+      if (wallIndex === -1) {
+        return state // Wall not found
       }
 
-      const updatedSegments = [...outerWall.segments]
-      const segment = updatedSegments[segmentIndex]
+      const updatedWalls = [...perimeter.walls]
+      const wall = updatedWalls[wallIndex]
 
-      updatedSegments[segmentIndex] = {
-        ...segment,
-        openings: [...segment.openings, newOpening]
+      updatedWalls[wallIndex] = {
+        ...wall,
+        openings: [...wall.openings, newOpening]
       }
 
-      const updatedOuterWall = {
-        ...outerWall,
-        segments: updatedSegments
+      const updatedPerimeter = {
+        ...perimeter,
+        walls: updatedWalls
       }
 
-      const newOuterWalls = new Map(state.perimeters)
-      newOuterWalls.set(perimeterId, updatedOuterWall)
-      return { perimeters: newOuterWalls }
+      const newPerimeters = new Map(state.perimeters)
+      newPerimeters.set(perimeterId, updatedPerimeter)
+      return { perimeters: newPerimeters }
     })
 
     return openingId
   },
 
-  removeOpeningFromOuterWall: (perimeterId: PerimeterId, segmentId: WallSegmentId, openingId: OpeningId) => {
+  removePerimeterWallOpening: (perimeterId: PerimeterId, wallId: PerimeterWallId, openingId: OpeningId) => {
     set(state => {
-      const outerWall = state.perimeters.get(perimeterId)
-      if (outerWall == null) return state
+      const perimeter = state.perimeters.get(perimeterId)
+      if (perimeter == null) return state
 
-      const segmentIndex = outerWall.segments.findIndex(s => s.id === segmentId)
-      if (segmentIndex === -1) {
-        return state // Segment not found
+      const wallIndex = perimeter.walls.findIndex(s => s.id === wallId)
+      if (wallIndex === -1) {
+        return state // Wall not found
       }
 
-      const segment = outerWall.segments[segmentIndex]
-      const openingIndex = segment.openings.findIndex(o => o.id === openingId)
+      const wall = perimeter.walls[wallIndex]
+      const openingIndex = wall.openings.findIndex(o => o.id === openingId)
       if (openingIndex === -1) {
         return state // Opening not found
       }
 
-      const updatedSegments = [...outerWall.segments]
-      const updatedOpenings = [...segment.openings]
+      const updatedWalls = [...perimeter.walls]
+      const updatedOpenings = [...wall.openings]
       updatedOpenings.splice(openingIndex, 1)
 
-      updatedSegments[segmentIndex] = {
-        ...segment,
+      updatedWalls[wallIndex] = {
+        ...wall,
         openings: updatedOpenings
       }
 
-      const updatedOuterWall = {
-        ...outerWall,
-        segments: updatedSegments
+      const updatedPerimeter = {
+        ...perimeter,
+        walls: updatedWalls
       }
 
-      const newOuterWalls = new Map(state.perimeters)
-      newOuterWalls.set(perimeterId, updatedOuterWall)
-      return { perimeters: newOuterWalls }
+      const newPerimeters = new Map(state.perimeters)
+      newPerimeters.set(perimeterId, updatedPerimeter)
+      return { perimeters: newPerimeters }
     })
   },
 
@@ -734,77 +746,77 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [], [], Perime
   },
 
   // Updated and new getter methods
-  getSegmentById: (perimeterId: PerimeterId, segmentId: WallSegmentId) => {
-    const outerWall = get().perimeters.get(perimeterId)
-    if (outerWall == null) return null
+  getPerimeterWallById: (perimeterId: PerimeterId, wallId: PerimeterWallId) => {
+    const perimeter = get().perimeters.get(perimeterId)
+    if (perimeter == null) return null
 
-    return outerWall.segments.find(s => s.id === segmentId) ?? null
+    return perimeter.walls.find(s => s.id === wallId) ?? null
   },
 
-  getCornerById: (perimeterId: PerimeterId, cornerId: OuterWallCornerId) => {
-    const outerWall = get().perimeters.get(perimeterId)
-    if (outerWall == null) return null
+  getPerimeterCornerById: (perimeterId: PerimeterId, cornerId: PerimeterCornerId) => {
+    const perimeter = get().perimeters.get(perimeterId)
+    if (perimeter == null) return null
 
-    return outerWall.corners.find(c => c.id === cornerId) ?? null
+    return perimeter.corners.find(c => c.id === cornerId) ?? null
   },
 
-  getOpeningById: (perimeterId: PerimeterId, segmentId: WallSegmentId, openingId: OpeningId) => {
-    const outerWall = get().perimeters.get(perimeterId)
-    if (outerWall == null) return null
+  getPerimeterWallOpeningById: (perimeterId: PerimeterId, wallId: PerimeterWallId, openingId: OpeningId) => {
+    const perimeter = get().perimeters.get(perimeterId)
+    if (perimeter == null) return null
 
-    const segment = outerWall.segments.find(s => s.id === segmentId)
-    if (segment == null) return null
+    const wall = perimeter.walls.find(s => s.id === wallId)
+    if (wall == null) return null
 
-    return segment.openings.find(o => o.id === openingId) ?? null
+    return wall.openings.find(o => o.id === openingId) ?? null
   },
 
-  updateOpening: (
+  updatePerimeterWallOpening: (
     perimeterId: PerimeterId,
-    segmentId: WallSegmentId,
+    wallId: PerimeterWallId,
     openingId: OpeningId,
     updates: Partial<Omit<Opening, 'id'>>
   ) => {
     set(state => {
-      const outerWall = state.perimeters.get(perimeterId)
-      if (outerWall == null) return state
+      const perimeter = state.perimeters.get(perimeterId)
+      if (perimeter == null) return state
 
-      const segmentIndex = outerWall.segments.findIndex(s => s.id === segmentId)
-      if (segmentIndex === -1) return state
+      const wallIndex = perimeter.walls.findIndex(s => s.id === wallId)
+      if (wallIndex === -1) return state
 
-      const segment = outerWall.segments[segmentIndex]
-      const openingIndex = segment.openings.findIndex(o => o.id === openingId)
+      const wall = perimeter.walls[wallIndex]
+      const openingIndex = wall.openings.findIndex(o => o.id === openingId)
       if (openingIndex === -1) return state
 
       const updatedOpening = {
-        ...segment.openings[openingIndex],
+        ...wall.openings[openingIndex],
         ...updates
       }
 
-      if (!validateOpeningOnSegment(segment, updatedOpening.offsetFromStart, updatedOpening.width, openingId)) {
+      if (!validateOpeningOnWall(wall, updatedOpening.offsetFromStart, updatedOpening.width, openingId)) {
         return state
       }
 
-      const updatedSegments = [...outerWall.segments]
-      const updatedOpenings = [...segment.openings]
+      const updatedWalls = [...perimeter.walls]
+      const updatedOpenings = [...wall.openings]
 
       updatedOpenings[openingIndex] = {
         ...updatedOpening,
         ...updates
       }
 
-      updatedSegments[segmentIndex] = {
-        ...segment,
+      updatedWalls[wallIndex] = {
+        ...wall,
         openings: updatedOpenings
       }
 
-      const updatedOuterWall = {
-        ...outerWall,
-        segments: updatedSegments
+      const updatedPerimeter = {
+        ...perimeter,
+        walls: updatedWalls
       }
 
-      const newOuterWalls = new Map(state.perimeters)
-      newOuterWalls.set(perimeterId, updatedOuterWall)
-      return { perimeters: newOuterWalls }
+      const newPerimeters = new Map(state.perimeters)
+      newPerimeters.set(perimeterId, updatedPerimeter)
+      return { perimeters: newPerimeters }
     })
   },
 
@@ -813,16 +825,16 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [], [], Perime
   },
 
   // Opening validation methods implementation
-  isOpeningPlacementValid: (
+  isPerimeterWallOpeningPlacementValid: (
     perimeterId: PerimeterId,
-    segmentId: WallSegmentId,
+    wallId: PerimeterWallId,
     offsetFromStart: Length,
     width: Length,
     excludedOpening?: OpeningId
   ) => {
-    const segment = get().getSegmentById(perimeterId, segmentId)
-    if (!segment) {
-      throw new Error(`Wall segment not found: perimeter ${perimeterId}, segment ${segmentId}`)
+    const wall = get().getPerimeterWallById(perimeterId, wallId)
+    if (!wall) {
+      throw new Error(`Wall wall not found: perimeter ${perimeterId}, wall ${wallId}`)
     }
 
     // Validate width
@@ -830,33 +842,33 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [], [], Perime
       throw new Error(`Opening width must be greater than 0, got ${width}`)
     }
 
-    return validateOpeningOnSegment(segment, offsetFromStart, width, excludedOpening)
+    return validateOpeningOnWall(wall, offsetFromStart, width, excludedOpening)
   },
 
-  findNearestValidOpeningPosition: (
+  findNearestValidPerimeterWallOpeningPosition: (
     perimeterId: PerimeterId,
-    segmentId: WallSegmentId,
+    wallId: PerimeterWallId,
     preferredStartOffset: Length,
     width: Length,
     excludedOpening?: OpeningId
   ): Length | null => {
-    const segment = get().getSegmentById(perimeterId, segmentId)
-    if (!segment) return null
-    // segmentLength and opening dimensions should be in same units
-    if (width > segment.segmentLength) return null
+    const wall = get().getPerimeterWallById(perimeterId, wallId)
+    if (!wall) return null
+    // wallLength and opening dimensions should be in same units
+    if (width > wall.wallLength) return null
 
-    // Snap to segment bounds
+    // Snap to wall bounds
     let start = Math.max(preferredStartOffset, 0)
     let end = start + width
-    if (end > segment.segmentLength) {
-      end = segment.segmentLength
+    if (end > wall.wallLength) {
+      end = wall.wallLength
       start = end - width
     }
 
-    if (segment.openings.length === 0) return start as Length
+    if (wall.openings.length === 0) return start as Length
 
     // Sort existing openings by position
-    const sortedOpenings = [...segment.openings]
+    const sortedOpenings = [...wall.openings]
       .filter(o => o.id !== excludedOpening)
       .sort((a, b) => a.offsetFromStart - b.offsetFromStart)
 
@@ -892,8 +904,8 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [], [], Perime
       const shiftDistance = Math.abs(shiftedOffset - preferredStartOffset)
       const shiftedEnd = shiftedOffset + width
 
-      // Check if shift is within the segment and doesn't intersect with next
-      if (shiftedEnd <= segment.segmentLength && (!nextOpening || shiftedEnd <= nextOpening.offsetFromStart)) {
+      // Check if shift is within the wall and doesn't intersect with next
+      if (shiftedEnd <= wall.wallLength && (!nextOpening || shiftedEnd <= nextOpening.offsetFromStart)) {
         bestOffset = shiftedOffset
         bestDistance = shiftDistance
       }
@@ -904,7 +916,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [], [], Perime
       const shiftedOffset = createLength(nextOpening.offsetFromStart - width)
       const shiftDistance = Math.abs(shiftedOffset - preferredStartOffset)
 
-      // Check if shift is within the segment and doesn't intersect with previous
+      // Check if shift is within the wall and doesn't intersect with previous
       if (
         shiftedOffset >= 0 &&
         (!previousOpening || shiftedOffset >= previousOpening.offsetFromStart + previousOpening.width)
@@ -922,42 +934,42 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [], [], Perime
   // Movement operations for MoveTool
   movePerimeter: (perimeterId: PerimeterId, offset: Vec2) => {
     set(state => {
-      const outerWall = state.perimeters.get(perimeterId)
-      if (!outerWall) return state
+      const perimeter = state.perimeters.get(perimeterId)
+      if (!perimeter) return state
 
       // Translate all boundary points by the offset
-      const newBoundary = outerWall.boundary.map(point => add(point, offset))
+      const newBoundary = perimeter.boundary.map(point => add(point, offset))
 
       // Create new boundary polygon and recalculate all geometry
       const newBoundaryPolygon = { points: newBoundary }
-      const thicknesses = outerWall.segments.map(s => s.thickness)
+      const thicknesses = perimeter.walls.map(s => s.thickness)
       const infiniteLines = createInfiniteLines(newBoundaryPolygon, thicknesses)
       const updatedCorners = calculateCornerOutsidePoints(
         newBoundaryPolygon,
         thicknesses,
         infiniteLines,
-        outerWall.corners
+        perimeter.corners
       )
 
-      // Create segment inputs preserving existing data
-      const segmentInputs: PartialSegmentInput[] = outerWall.segments.map(segment => ({
-        id: segment.id,
-        thickness: segment.thickness,
-        constructionType: segment.constructionType,
-        openings: segment.openings
+      // Create wall inputs preserving existing data
+      const wallInputs: PartialWallInput[] = perimeter.walls.map(wall => ({
+        id: wall.id,
+        thickness: wall.thickness,
+        constructionType: wall.constructionType,
+        openings: wall.openings
       }))
 
-      const finalSegments = calculateSegmentEndpoints(newBoundaryPolygon, segmentInputs, updatedCorners, infiniteLines)
+      const finalWalls = calculateWallEndpoints(newBoundaryPolygon, wallInputs, updatedCorners, infiniteLines)
 
-      const updatedOuterWall: Perimeter = {
-        ...outerWall,
+      const updatedPerimeter: Perimeter = {
+        ...perimeter,
         boundary: newBoundary,
-        segments: finalSegments,
+        walls: finalWalls,
         corners: updatedCorners
       }
 
       return {
-        perimeters: new Map(state.perimeters).set(perimeterId, updatedOuterWall)
+        perimeters: new Map(state.perimeters).set(perimeterId, updatedPerimeter)
       }
     })
 
@@ -975,39 +987,39 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [], [], Perime
     }
 
     set(state => {
-      const outerWall = state.perimeters.get(perimeterId)
-      if (!outerWall) return state
+      const perimeter = state.perimeters.get(perimeterId)
+      if (!perimeter) return state
 
       // Create new boundary polygon and recalculate all geometry
       const newBoundaryPolygon = { points: newBoundary }
-      const thicknesses = outerWall.segments.map(s => s.thickness)
+      const thicknesses = perimeter.walls.map(s => s.thickness)
       const infiniteLines = createInfiniteLines(newBoundaryPolygon, thicknesses)
       const updatedCorners = calculateCornerOutsidePoints(
         newBoundaryPolygon,
         thicknesses,
         infiniteLines,
-        outerWall.corners
+        perimeter.corners
       )
 
-      // Create segment inputs preserving existing data
-      const segmentInputs: PartialSegmentInput[] = outerWall.segments.map(segment => ({
-        id: segment.id,
-        thickness: segment.thickness,
-        constructionType: segment.constructionType,
-        openings: segment.openings
+      // Create wall inputs preserving existing data
+      const wallInputs: PartialWallInput[] = perimeter.walls.map(wall => ({
+        id: wall.id,
+        thickness: wall.thickness,
+        constructionType: wall.constructionType,
+        openings: wall.openings
       }))
 
-      const finalSegments = calculateSegmentEndpoints(newBoundaryPolygon, segmentInputs, updatedCorners, infiniteLines)
+      const finalWalls = calculateWallEndpoints(newBoundaryPolygon, wallInputs, updatedCorners, infiniteLines)
 
-      const updatedOuterWall: Perimeter = {
-        ...outerWall,
+      const updatedPerimeter: Perimeter = {
+        ...perimeter,
         boundary: newBoundary,
-        segments: finalSegments,
+        walls: finalWalls,
         corners: updatedCorners
       }
 
       return {
-        perimeters: new Map(state.perimeters).set(perimeterId, updatedOuterWall)
+        perimeters: new Map(state.perimeters).set(perimeterId, updatedPerimeter)
       }
     })
 

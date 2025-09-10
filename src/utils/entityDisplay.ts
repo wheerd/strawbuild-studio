@@ -1,5 +1,5 @@
 import type { SelectableId } from '@/types/ids'
-import { isPerimeterId, isWallSegmentId, isOuterCornerId, isOpeningId } from '@/types/ids'
+import { isPerimeterId, isPerimeterWallId, isPerimeterCornerId, isOpeningId } from '@/types/ids'
 import type { Perimeter } from '@/types/model'
 import type { Store } from '@/model/store/types'
 
@@ -37,22 +37,22 @@ export function getEntityDisplayName(
  * Follows the same structure as SelectionOverlay.getOuterWallEntityPoints
  */
 function getOuterWallEntityName(
-  wall: Perimeter,
+  perimeter: Perimeter,
   selectionPath: SelectableId[],
   currentSelection: SelectableId
 ): string {
   if (isPerimeterId(currentSelection)) {
     // Path: [wallId]
-    return 'Outer Wall'
+    return 'Perimeter Wall'
   }
 
-  if (isWallSegmentId(currentSelection)) {
-    // Path: [wallId, segmentId]
-    const segment = wall.segments.find(s => s.id === currentSelection)
-    if (!segment) return 'Wall Segment'
+  if (isPerimeterWallId(currentSelection)) {
+    // Path: [wallId, wallId]
+    const wall = perimeter.walls.find(s => s.id === currentSelection)
+    if (!wall) return 'Wall Wall'
 
     // Return specific construction type name
-    switch (segment.constructionType) {
+    switch (wall.constructionType) {
       case 'cells-under-tension':
         return 'CUT Wall'
       case 'infill':
@@ -62,23 +62,23 @@ function getOuterWallEntityName(
       case 'non-strawbale':
         return 'Non-Strawbale Wall'
       default:
-        return 'Wall Segment'
+        return 'Wall Wall'
     }
   }
 
-  if (isOuterCornerId(currentSelection)) {
+  if (isPerimeterCornerId(currentSelection)) {
     // Path: [wallId, cornerId]
     return 'Corner'
   }
 
   if (isOpeningId(currentSelection)) {
-    // Path: [wallId, segmentId, openingId]
-    const [, segmentId] = selectionPath
-    if (isWallSegmentId(segmentId)) {
-      const segment = wall.segments.find(s => s.id === segmentId)
-      if (!segment) return 'Opening'
+    // Path: [wallId, wallId, openingId]
+    const [, wallId] = selectionPath
+    if (isPerimeterWallId(wallId)) {
+      const wall = perimeter.walls.find(s => s.id === wallId)
+      if (!wall) return 'Opening'
 
-      const opening = segment.openings.find(o => o.id === currentSelection)
+      const opening = wall.openings.find(o => o.id === currentSelection)
       if (!opening) return 'Opening'
 
       // Return specific opening type name

@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { vi } from 'vitest'
 import { PerimeterToolInspector } from './PerimeterToolInspector'
-import { PerimeterTool } from '@/components/FloorPlanEditor/Tools/Categories/OuterWallTools/PerimeterTool'
+import { PerimeterTool } from '@/components/FloorPlanEditor/Tools/Categories/PerimeterTools/PerimeterTool'
 import { createVec2, createLength } from '@/types/geometry'
 
 // Mock scrollIntoView for Radix UI components
@@ -30,7 +30,7 @@ describe('PerimeterToolInspector', () => {
       snapContext: {
         snapPoints: [],
         alignPoints: [],
-        referenceLineSegments: []
+        referenceLineWalls: []
       },
       isCurrentLineValid: true,
       isClosingLineValid: true,
