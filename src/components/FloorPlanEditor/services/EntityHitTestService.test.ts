@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { EntityHitTestService } from './EntityHitTestService'
 import type Konva from 'konva'
-import { createOuterWallId, createWallSegmentId } from '@/types/ids'
+import { createPerimeterId, createWallSegmentId } from '@/types/ids'
 
 // Mock Konva Stage
 const mockStage = {
@@ -13,7 +13,7 @@ const mockNodeWithEntity = {
   getAttrs: vi.fn(() => ({
     entityId: createWallSegmentId(),
     entityType: 'wall-segment',
-    parentIds: [createOuterWallId()]
+    parentIds: [createPerimeterId()]
   })),
   getParent: vi.fn(() => null)
 } as unknown as Konva.Node
@@ -77,8 +77,8 @@ describe('EntityHitTestService', () => {
   it('should walk up node tree to find entity attributes', () => {
     const parentNodeWithEntity = {
       getAttrs: vi.fn(() => ({
-        entityId: createOuterWallId(),
-        entityType: 'outer-wall',
+        entityId: createPerimeterId(),
+        entityType: 'perimeter',
         parentIds: []
       })),
       getParent: vi.fn(() => null)
@@ -95,7 +95,7 @@ describe('EntityHitTestService', () => {
     const result = service.findEntityAt({ x: 100, y: 100 })
 
     expect(result).not.toBeNull()
-    expect(result?.entityType).toBe('outer-wall')
+    expect(result?.entityType).toBe('perimeter')
     expect(result?.parentIds).toHaveLength(0)
     expect(childNodeWithoutEntity.getParent).toHaveBeenCalled()
   })

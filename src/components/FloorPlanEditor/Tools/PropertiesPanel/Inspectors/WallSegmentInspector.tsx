@@ -3,11 +3,11 @@ import * as Select from '@radix-ui/react-select'
 import { useModelStore } from '@/model/store'
 import { createLength } from '@/types/geometry'
 import { useDebouncedNumericInput } from '@/components/FloorPlanEditor/hooks/useDebouncedInput'
-import type { WallSegmentId, OuterWallId } from '@/types/ids'
+import type { WallSegmentId, PerimeterId } from '@/types/ids'
 import type { OuterWallConstructionType } from '@/types/model'
 
 interface WallSegmentInspectorProps {
-  outerWallId: OuterWallId
+  perimeterId: PerimeterId
   segmentId: WallSegmentId
 }
 
@@ -19,13 +19,13 @@ const CONSTRUCTION_TYPE_OPTIONS: { value: OuterWallConstructionType; label: stri
   { value: 'non-strawbale', label: 'Non-Strawbale' }
 ]
 
-export function WallSegmentInspector({ outerWallId, segmentId }: WallSegmentInspectorProps): React.JSX.Element {
+export function WallSegmentInspector({ perimeterId, segmentId }: WallSegmentInspectorProps): React.JSX.Element {
   // Get model store functions - use specific selectors for stable references
   const updateOuterWallConstructionType = useModelStore(state => state.updateOuterWallConstructionType)
   const updateOuterWallThickness = useModelStore(state => state.updateOuterWallThickness)
 
   // Get outer wall from store
-  const outerWall = useModelStore(state => state.outerWalls.get(outerWallId))
+  const outerWall = useModelStore(state => state.perimeters.get(perimeterId))
 
   // Use useMemo to find segment within the wall object
   const segment = useMemo(() => {
@@ -37,9 +37,9 @@ export function WallSegmentInspector({ outerWallId, segmentId }: WallSegmentInsp
     segment?.thickness || 0,
     useCallback(
       (value: number) => {
-        updateOuterWallThickness(outerWallId, segmentId, createLength(value))
+        updateOuterWallThickness(perimeterId, segmentId, createLength(value))
       },
-      [updateOuterWallThickness, outerWallId, segmentId]
+      [updateOuterWallThickness, perimeterId, segmentId]
     ),
     {
       debounceMs: 300,
@@ -71,7 +71,7 @@ export function WallSegmentInspector({ outerWallId, segmentId }: WallSegmentInsp
               <Select.Root
                 value={segment.constructionType}
                 onValueChange={(value: OuterWallConstructionType) => {
-                  updateOuterWallConstructionType(outerWallId, segmentId, value)
+                  updateOuterWallConstructionType(perimeterId, segmentId, value)
                 }}
               >
                 <Select.Trigger className="flex-1 min-w-0 flex items-center justify-between px-2 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200">

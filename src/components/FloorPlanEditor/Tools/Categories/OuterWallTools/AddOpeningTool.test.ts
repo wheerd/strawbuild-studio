@@ -16,7 +16,7 @@ describe('AddOpeningTool', () => {
     expect(addOpeningTool.icon).toBe('🚪')
     expect(addOpeningTool.hotkey).toBe('o')
     expect(addOpeningTool.cursor).toBe('crosshair')
-    expect(addOpeningTool.category).toBe('outer-walls')
+    expect(addOpeningTool.category).toBe('walls')
   })
 
   it('should initialize with default door configuration', () => {

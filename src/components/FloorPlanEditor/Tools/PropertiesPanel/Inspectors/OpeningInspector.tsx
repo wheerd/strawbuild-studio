@@ -4,11 +4,11 @@ import { useModelStore } from '@/model/store'
 import { createLength } from '@/types/geometry'
 import { useDebouncedNumericInput } from '@/components/FloorPlanEditor/hooks/useDebouncedInput'
 import { useSelectionStore } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
-import type { WallSegmentId, OuterWallId, OpeningId } from '@/types/ids'
+import type { WallSegmentId, PerimeterId, OpeningId } from '@/types/ids'
 import type { OpeningType } from '@/types/model'
 
 interface OpeningInspectorProps {
-  outerWallId: OuterWallId
+  perimeterId: PerimeterId
   segmentId: WallSegmentId
   openingId: OpeningId
 }
@@ -20,14 +20,14 @@ const OPENING_TYPE_OPTIONS: { value: OpeningType; label: string }[] = [
   { value: 'passage', label: 'Passage' }
 ]
 
-export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningInspectorProps): React.JSX.Element {
+export function OpeningInspector({ perimeterId, segmentId, openingId }: OpeningInspectorProps): React.JSX.Element {
   // Get model store functions - use specific selectors for stable references
   const select = useSelectionStore()
   const updateOpening = useModelStore(state => state.updateOpening)
   const removeOpeningFromOuterWall = useModelStore(state => state.removeOpeningFromOuterWall)
 
   // Get outer wall from store
-  const outerWall = useModelStore(state => state.outerWalls.get(outerWallId))
+  const outerWall = useModelStore(state => state.perimeters.get(perimeterId))
 
   // Use useMemo to find segment and opening within the wall object
   const segment = useMemo(() => {
@@ -43,9 +43,9 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
     opening?.width || 0,
     useCallback(
       (value: number) => {
-        updateOpening(outerWallId, segmentId, openingId, { width: createLength(value) })
+        updateOpening(perimeterId, segmentId, openingId, { width: createLength(value) })
       },
-      [updateOpening, outerWallId, segmentId, openingId]
+      [updateOpening, perimeterId, segmentId, openingId]
     ),
     {
       debounceMs: 300,
@@ -59,9 +59,9 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
     opening?.height || 0,
     useCallback(
       (value: number) => {
-        updateOpening(outerWallId, segmentId, openingId, { height: createLength(value) })
+        updateOpening(perimeterId, segmentId, openingId, { height: createLength(value) })
       },
-      [updateOpening, outerWallId, segmentId, openingId]
+      [updateOpening, perimeterId, segmentId, openingId]
     ),
     {
       debounceMs: 300,
@@ -75,9 +75,9 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
     opening?.offsetFromStart || 0,
     useCallback(
       (value: number) => {
-        updateOpening(outerWallId, segmentId, openingId, { offsetFromStart: createLength(value) })
+        updateOpening(perimeterId, segmentId, openingId, { offsetFromStart: createLength(value) })
       },
-      [updateOpening, outerWallId, segmentId, openingId]
+      [updateOpening, perimeterId, segmentId, openingId]
     ),
     {
       debounceMs: 300,
@@ -91,11 +91,11 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
     opening?.sillHeight || 0,
     useCallback(
       (value: number) => {
-        updateOpening(outerWallId, segmentId, openingId, {
+        updateOpening(perimeterId, segmentId, openingId, {
           sillHeight: value === 0 ? undefined : createLength(value)
         })
       },
-      [updateOpening, outerWallId, segmentId, openingId]
+      [updateOpening, perimeterId, segmentId, openingId]
     ),
     {
       debounceMs: 300,
@@ -106,7 +106,7 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
   )
 
   // If opening not found, show error
-  if (!opening || !segment || !outerWall || !outerWallId || !segmentId) {
+  if (!opening || !segment || !outerWall || !perimeterId || !segmentId) {
     return (
       <div className="p-2 bg-red-50 border border-red-200 rounded">
         <h3 className="text-xs font-semibold text-red-800">Opening Not Found</h3>
@@ -120,17 +120,17 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const newType = e.target.value as OpeningType
       // Selects can update immediately since they don't have focus issues
-      updateOpening(outerWallId, segmentId, openingId, { type: newType })
+      updateOpening(perimeterId, segmentId, openingId, { type: newType })
     },
-    [updateOpening, outerWallId, segmentId, openingId]
+    [updateOpening, perimeterId, segmentId, openingId]
   )
 
   const handleRemoveOpening = useCallback(() => {
     if (confirm('Are you sure you want to remove this opening?')) {
       select.popSelection()
-      removeOpeningFromOuterWall(outerWallId, segmentId, openingId)
+      removeOpeningFromOuterWall(perimeterId, segmentId, openingId)
     }
-  }, [removeOpeningFromOuterWall, outerWallId, segmentId, openingId])
+  }, [removeOpeningFromOuterWall, perimeterId, segmentId, openingId])
 
   const area = (opening.width * opening.height) / (1000 * 1000)
 

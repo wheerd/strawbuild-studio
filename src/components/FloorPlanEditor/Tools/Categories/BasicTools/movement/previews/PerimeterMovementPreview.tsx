@@ -3,17 +3,16 @@ import { Group, Line } from 'react-konva'
 import { COLORS } from '@/theme/colors'
 import { add } from '@/types/geometry'
 import type { MovementPreviewComponentProps } from '../MovementBehavior'
-import type { OuterWallPolygon } from '@/types/model'
-import type { PolygonMovementState } from '../behaviors/OuterWallPolygonMovementBehavior'
+import type { Perimeter } from '@/types/model'
+import type { PerimeterMovementState } from '../behaviors/PerimeterMovementBehavior'
 
-interface OuterWallPolygonMovementPreviewProps
-  extends MovementPreviewComponentProps<OuterWallPolygon, PolygonMovementState> {}
+interface PerimeterMovementPreviewProps extends MovementPreviewComponentProps<Perimeter, PerimeterMovementState> {}
 
-export function OuterWallPolygonMovementPreview({
+export function PerimeterMovementPreview({
   movementState,
   isValid,
   context
-}: OuterWallPolygonMovementPreviewProps): React.JSX.Element {
+}: PerimeterMovementPreviewProps): React.JSX.Element {
   const previewBoundary = context.entity.boundary.map(point => add(point, movementState.offset))
 
   return (

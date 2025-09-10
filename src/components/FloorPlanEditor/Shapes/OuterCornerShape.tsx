@@ -1,15 +1,15 @@
 import { Group, Line, Arrow, Circle } from 'react-konva'
-import type { OuterCorner, OuterWallSegment } from '@/types/model'
+import type { OuterWallCorner, OuterWallSegment } from '@/types/model'
 import { add, midpoint, scale, type Vec2 } from '@/types/geometry'
 import { COLORS } from '@/theme/colors'
 import { useSelectionStore } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
 
 interface OuterCornerShapeProps {
-  corner: OuterCorner
+  corner: OuterWallCorner
   boundaryPoint: Vec2
   previousSegment: OuterWallSegment
   nextSegment: OuterWallSegment
-  outerWallId: string
+  perimeterId: string
 }
 
 export function OuterCornerShape({
@@ -17,7 +17,7 @@ export function OuterCornerShape({
   boundaryPoint,
   previousSegment,
   nextSegment,
-  outerWallId
+  perimeterId
 }: OuterCornerShapeProps): React.JSX.Element {
   const select = useSelectionStore()
   const isSelected = select.isCurrentSelection(corner.id)
@@ -50,7 +50,7 @@ export function OuterCornerShape({
       name={`outer-corner-${corner.id}`}
       entityId={corner.id}
       entityType="outer-corner"
-      parentIds={[outerWallId]}
+      parentIds={[perimeterId]}
       listening
     >
       {/* Corner polygon fill */}

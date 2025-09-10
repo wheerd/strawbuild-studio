@@ -1,6 +1,6 @@
 import type { ShortcutDefinition, Tool, ToolContext, CanvasEvent } from './types'
 import type { SelectableId } from '@/types/ids'
-import { isOuterWallId, isWallSegmentId, isOuterCornerId, isOpeningId } from '@/types/ids'
+import { isPerimeterId, isWallSegmentId, isOuterCornerId, isOpeningId } from '@/types/ids'
 
 export class KeyboardShortcutManager {
   private builtInShortcuts: ShortcutDefinition[] = []
@@ -153,13 +153,13 @@ export class KeyboardShortcutManager {
     const modelStore = context.getModelStore()
 
     try {
-      // Selection path has fixed structure: [outerWallId, segmentId, openingId]
+      // Selection path has fixed structure: [perimeterId, segmentId, openingId]
       const selectionPath = context.getSelectionPath()
 
       if (isWallSegmentId(selectedId)) {
         // Segment is at index 1, parent wall is at index 0
         const parentWallId = selectionPath[0]
-        if (parentWallId && isOuterWallId(parentWallId)) {
+        if (parentWallId && isPerimeterId(parentWallId)) {
           return modelStore.removeOuterWallSegment(parentWallId, selectedId)
         } else {
           console.warn(`Could not find parent outer wall in selection path for segment: ${selectedId}`)
@@ -168,7 +168,7 @@ export class KeyboardShortcutManager {
       } else if (isOuterCornerId(selectedId)) {
         // Corner is at index 1, parent wall is at index 0
         const parentWallId = selectionPath[0]
-        if (parentWallId && isOuterWallId(parentWallId)) {
+        if (parentWallId && isPerimeterId(parentWallId)) {
           return modelStore.removeOuterWallCorner(parentWallId, selectedId)
         } else {
           console.warn(`Could not find parent outer wall in selection path for corner: ${selectedId}`)
@@ -179,15 +179,15 @@ export class KeyboardShortcutManager {
         const parentWallId = selectionPath[0]
         const parentSegmentId = selectionPath[1]
 
-        if (parentWallId && parentSegmentId && isOuterWallId(parentWallId) && isWallSegmentId(parentSegmentId)) {
+        if (parentWallId && parentSegmentId && isPerimeterId(parentWallId) && isWallSegmentId(parentSegmentId)) {
           modelStore.removeOpeningFromOuterWall(parentWallId, parentSegmentId, selectedId)
           return true
         } else {
           console.warn(`Could not find parent wall/segment in selection path for opening: ${selectedId}`)
           return false
         }
-      } else if (isOuterWallId(selectedId)) {
-        modelStore.removeOuterWall(selectedId)
+      } else if (isPerimeterId(selectedId)) {
+        modelStore.removePerimeter(selectedId)
         return true
       } else {
         console.warn(`Unknown sub-entity type for deletion: ${selectedId}`)

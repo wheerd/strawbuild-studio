@@ -1,6 +1,6 @@
 import type { SelectableId } from '@/types/ids'
-import { isOuterWallId, isWallSegmentId, isOuterCornerId, isOpeningId } from '@/types/ids'
-import type { OuterWallPolygon } from '@/types/model'
+import { isPerimeterId, isWallSegmentId, isOuterCornerId, isOpeningId } from '@/types/ids'
+import type { Perimeter } from '@/types/model'
 import type { Store } from '@/model/store/types'
 
 /**
@@ -19,8 +19,8 @@ export function getEntityDisplayName(
   // Use the same pattern as SelectionOverlay
   const rootEntityId = selectionPath[0]
 
-  if (isOuterWallId(rootEntityId)) {
-    const wall = modelStore.getOuterWallById(rootEntityId)
+  if (isPerimeterId(rootEntityId)) {
+    const wall = modelStore.getPerimeterById(rootEntityId)
     if (!wall) return 'Selection'
 
     return getOuterWallEntityName(wall, selectionPath, currentSelection)
@@ -37,11 +37,11 @@ export function getEntityDisplayName(
  * Follows the same structure as SelectionOverlay.getOuterWallEntityPoints
  */
 function getOuterWallEntityName(
-  wall: OuterWallPolygon,
+  wall: Perimeter,
   selectionPath: SelectableId[],
   currentSelection: SelectableId
 ): string {
-  if (isOuterWallId(currentSelection)) {
+  if (isPerimeterId(currentSelection)) {
     // Path: [wallId]
     return 'Outer Wall'
   }

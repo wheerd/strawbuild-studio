@@ -1,19 +1,19 @@
 import React from 'react'
 import { Group, Line, Circle } from 'react-konva'
 import type { ToolOverlayComponentProps } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
-import type { OuterWallPolygonTool } from './OuterWallPolygonTool'
+import type { PerimeterTool } from './PerimeterTool'
 import { useZoom } from '@/components/FloorPlanEditor/hooks/useViewportStore'
 import { COLORS } from '@/theme/colors'
 import { useReactiveTool } from '@/components/FloorPlanEditor/Tools/hooks/useReactiveTool'
 import { SnappingLines } from '@/components/FloorPlanEditor/components/SnappingLines'
 
-interface OuterWallPolygonToolOverlayProps extends ToolOverlayComponentProps<OuterWallPolygonTool> {}
+interface PerimeterToolOverlayProps extends ToolOverlayComponentProps<PerimeterTool> {}
 
 /**
- * React overlay component for OuterWallPolygonTool with zoom-responsive rendering.
+ * React overlay component for PerimeterTool with zoom-responsive rendering.
  * Uses viewport hooks directly for automatic re-rendering on zoom changes.
  */
-export function OuterWallPolygonToolOverlay({ tool }: OuterWallPolygonToolOverlayProps): React.JSX.Element | null {
+export function PerimeterToolOverlay({ tool }: PerimeterToolOverlayProps): React.JSX.Element | null {
   const { state } = useReactiveTool(tool)
   const zoom = useZoom()
 

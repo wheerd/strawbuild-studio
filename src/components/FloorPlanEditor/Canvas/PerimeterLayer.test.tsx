@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render } from '@testing-library/react'
 import { Stage } from 'react-konva'
-import { OuterWallLayer } from './OuterWallLayer'
+import { PerimeterLayer } from './PerimeterLayer'
 import { useModelStore } from '@/model/store'
 import { createFloorId } from '@/types/ids'
 import { createVec2, createLength } from '@/types/geometry'
@@ -11,11 +11,11 @@ vi.mock('@/components/FloorPlanEditor/hooks/useEditorStore', () => ({
   useActiveFloorId: () => createFloorId()
 }))
 
-describe('OuterWallLayer', () => {
+describe('PerimeterLayer', () => {
   it('should render without outer walls', () => {
     render(
       <Stage width={800} height={600}>
-        <OuterWallLayer />
+        <PerimeterLayer />
       </Stage>
     )
 
@@ -35,11 +35,11 @@ describe('OuterWallLayer', () => {
       points: [createVec2(0, 0), createVec2(1000, 0), createVec2(1000, 1000), createVec2(0, 1000)]
     }
 
-    store.addOuterWallPolygon(floorId, boundary, 'cells-under-tension', createLength(440))
+    store.addPerimeter(floorId, boundary, 'cells-under-tension', createLength(440))
 
     render(
       <Stage width={800} height={600}>
-        <OuterWallLayer />
+        <PerimeterLayer />
       </Stage>
     )
 

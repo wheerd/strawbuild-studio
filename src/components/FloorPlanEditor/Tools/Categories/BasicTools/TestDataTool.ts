@@ -39,10 +39,10 @@ export class TestDataTool implements Tool {
 
     try {
       // Add the outer wall to the store
-      modelStore.addOuterWallPolygon(activeFloorId, boundary, 'infill', createLength(440))
+      modelStore.addPerimeter(activeFloorId, boundary, 'infill', createLength(440))
 
       // Get the newly created wall
-      const outerWalls = modelStore.getOuterWallsByFloor(activeFloorId)
+      const outerWalls = modelStore.getPerimetersByFloor(activeFloorId)
       const newWall = outerWalls[outerWalls.length - 1]
 
       if (newWall && newWall.segments.length > 0) {

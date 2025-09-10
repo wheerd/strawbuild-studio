@@ -1,15 +1,15 @@
 import type { MovementBehavior, MovementContext, MouseMovementState } from '../MovementBehavior'
 import type { SelectableId } from '@/types/ids'
 import type { StoreActions } from '@/model/store/types'
-import type { Opening, OuterWallSegment, OuterWallPolygon } from '@/types/model'
+import type { Opening, OuterWallSegment, Perimeter } from '@/types/model'
 import type { Length } from '@/types/geometry'
 import { add, dot, scale, createLength, subtract } from '@/types/geometry'
-import { isOuterWallId, isWallSegmentId, isOpeningId } from '@/types/ids'
+import { isPerimeterId, isWallSegmentId, isOpeningId } from '@/types/ids'
 import { OpeningMovementPreview } from '../previews/OpeningMovementPreview'
 
 // Opening movement needs access to the wall, segment, and opening
 export interface OpeningEntityContext {
-  wall: OuterWallPolygon
+  wall: Perimeter
   segment: OuterWallSegment
   opening: Opening
 }
@@ -24,11 +24,11 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
   getEntity(entityId: SelectableId, parentIds: SelectableId[], store: StoreActions): OpeningEntityContext {
     const [wallId, segmentId] = parentIds
 
-    if (!isOuterWallId(wallId) || !isWallSegmentId(segmentId) || !isOpeningId(entityId)) {
+    if (!isPerimeterId(wallId) || !isWallSegmentId(segmentId) || !isOpeningId(entityId)) {
       throw new Error(`Invalid entity context for opening ${entityId}`)
     }
 
-    const wall = store.getOuterWallById(wallId)
+    const wall = store.getPerimeterById(wallId)
     const segment = store.getSegmentById(wallId, segmentId)
     const opening = store.getOpeningById(wallId, segmentId, entityId)
 

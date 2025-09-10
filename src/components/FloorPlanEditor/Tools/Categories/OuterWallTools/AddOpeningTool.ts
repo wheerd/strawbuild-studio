@@ -4,11 +4,11 @@ import type { Vec2, Length } from '@/types/geometry'
 import { createLength, createVec2, distance, projectPointOntoLine, lineFromSegment } from '@/types/geometry'
 import type { OpeningType, OuterWallSegment } from '@/types/model'
 import {
-  type OuterWallId,
+  type PerimeterId,
   type WallSegmentId,
   type SelectableId,
   type EntityType,
-  isOuterWallId,
+  isPerimeterId,
   isWallSegmentId
 } from '@/types/ids'
 import { AddOpeningToolInspector } from '@/components/FloorPlanEditor/Tools/PropertiesPanel/ToolInspectors/AddOpeningToolInspector'
@@ -17,7 +17,7 @@ import { round } from '@turf/helpers'
 import { BoxIcon } from '@radix-ui/react-icons'
 
 interface WallSegmentHit {
-  wallId: OuterWallId
+  wallId: PerimeterId
   segmentId: WallSegmentId
   segment: OuterWallSegment
 }
@@ -56,7 +56,7 @@ export class AddOpeningTool extends BaseTool implements Tool {
   readonly iconComponent = BoxIcon
   readonly hotkey = 'o'
   readonly cursor = 'crosshair'
-  readonly category = 'outer-walls'
+  readonly category = 'walls'
   readonly overlayComponent = AddOpeningToolOverlay
   readonly inspectorComponent = AddOpeningToolInspector
 
@@ -80,7 +80,7 @@ export class AddOpeningTool extends BaseTool implements Tool {
     if (hitResult.entityType === 'wall-segment') {
       const segmentId = hitResult.entityId as WallSegmentId
       // Parent should be the outer wall
-      const wallId = hitResult.parentIds[0] as OuterWallId
+      const wallId = hitResult.parentIds[0] as PerimeterId
 
       if (wallId && segmentId) {
         const modelStore = context.getModelStore()
@@ -95,7 +95,7 @@ export class AddOpeningTool extends BaseTool implements Tool {
     if (hitResult.entityType === 'opening') {
       const [wallId, segmentId] = hitResult.parentIds
 
-      if (isOuterWallId(wallId) && isWallSegmentId(segmentId)) {
+      if (isPerimeterId(wallId) && isWallSegmentId(segmentId)) {
         const modelStore = context.getModelStore()
         const segment = modelStore.getSegmentById(wallId, segmentId)
         if (segment) {

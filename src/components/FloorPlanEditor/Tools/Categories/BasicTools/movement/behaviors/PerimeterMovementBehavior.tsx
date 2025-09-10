@@ -1,25 +1,25 @@
 import type { MovementBehavior, MovementContext, MouseMovementState } from '../MovementBehavior'
 import type { SelectableId } from '@/types/ids'
 import type { StoreActions } from '@/model/store/types'
-import type { OuterWallPolygon } from '@/types/model'
+import type { Perimeter } from '@/types/model'
 import type { Vec2 } from '@/types/geometry'
 import { add } from '@/types/geometry'
 import { arePolygonsIntersecting } from '@/types/geometry/polygon'
-import { isOuterWallId } from '@/types/ids'
-import { OuterWallPolygonMovementPreview } from '../previews/OuterWallPolygonMovementPreview'
+import { isPerimeterId } from '@/types/ids'
+import { PerimeterMovementPreview } from '../previews/PerimeterMovementPreview'
 
-export interface PolygonMovementState {
+export interface PerimeterMovementState {
   offset: Vec2 // Just the movement delta
 }
 
-export class OuterWallPolygonMovementBehavior implements MovementBehavior<OuterWallPolygon, PolygonMovementState> {
-  previewComponent = OuterWallPolygonMovementPreview
-  getEntity(entityId: SelectableId, _parentIds: SelectableId[], store: StoreActions): OuterWallPolygon {
-    if (!isOuterWallId(entityId)) {
+export class PerimeterMovementBehavior implements MovementBehavior<Perimeter, PerimeterMovementState> {
+  previewComponent = PerimeterMovementPreview
+  getEntity(entityId: SelectableId, _parentIds: SelectableId[], store: StoreActions): Perimeter {
+    if (!isPerimeterId(entityId)) {
       throw new Error(`Invalid entity context for wall ${entityId}`)
     }
 
-    const wall = store.getOuterWallById(entityId)
+    const wall = store.getPerimeterById(entityId)
     if (!wall) {
       throw new Error(`Could not find wall ${entityId}`)
     }
@@ -27,13 +27,13 @@ export class OuterWallPolygonMovementBehavior implements MovementBehavior<OuterW
     return wall
   }
 
-  initializeState(mouseState: MouseMovementState, _context: MovementContext<OuterWallPolygon>): PolygonMovementState {
+  initializeState(mouseState: MouseMovementState, _context: MovementContext<Perimeter>): PerimeterMovementState {
     return {
       offset: mouseState.delta
     }
   }
 
-  constrainAndSnap(mouseState: MouseMovementState, _context: MovementContext<OuterWallPolygon>): PolygonMovementState {
+  constrainAndSnap(mouseState: MouseMovementState, _context: MovementContext<Perimeter>): PerimeterMovementState {
     // TODO: Snapping
     // TODO: Snap state should be in the movement context, so that is only filled once
     // TODO: Snapping for all points of the polygon, use the first snap found
@@ -41,13 +41,13 @@ export class OuterWallPolygonMovementBehavior implements MovementBehavior<OuterW
     return { offset: mouseState.delta }
   }
 
-  validatePosition(movementState: PolygonMovementState, context: MovementContext<OuterWallPolygon>): boolean {
+  validatePosition(movementState: PerimeterMovementState, context: MovementContext<Perimeter>): boolean {
     // Check if the moved polygon would intersect with other wall polygons
     const previewBoundary = context.entity.boundary.map(point => add(point, movementState.offset))
 
     // Get other walls on the same floor
     const currentWall = context.entity
-    const allWalls = context.store.getOuterWallsByFloor(currentWall.floorId)
+    const allWalls = context.store.getPerimetersByFloor(currentWall.floorId)
     const otherWalls = allWalls.filter(wall => wall.id !== currentWall.id)
 
     // Check for intersections with other wall polygons
@@ -60,8 +60,8 @@ export class OuterWallPolygonMovementBehavior implements MovementBehavior<OuterW
     return true
   }
 
-  commitMovement(movementState: PolygonMovementState, context: MovementContext<OuterWallPolygon>): boolean {
+  commitMovement(movementState: PerimeterMovementState, context: MovementContext<Perimeter>): boolean {
     const wallId = context.entity.id
-    return context.store.moveOuterWallPolygon(wallId, movementState.offset)
+    return context.store.movePerimeter(wallId, movementState.offset)
   }
 }

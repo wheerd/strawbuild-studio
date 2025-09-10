@@ -10,13 +10,13 @@ import {
 } from '@/types/geometry'
 import type { SnappingContext, SnapResult } from '@/model/store/services/snapping/types'
 import type { OuterWallConstructionType } from '@/types/model'
-import { OuterWallPolygonToolOverlay } from './OuterWallPolygonToolOverlay'
-import { OuterWallPolygonToolInspector } from '@/components/FloorPlanEditor/Tools/PropertiesPanel/ToolInspectors/OuterWallPolygonToolInspector'
+import { PerimeterToolOverlay } from './PerimeterToolOverlay'
+import { PerimeterToolInspector } from '@/components/FloorPlanEditor/Tools/PropertiesPanel/ToolInspectors/PerimeterToolInspector'
 import { SnappingService } from '@/model/store/services/snapping'
 import { BaseTool } from '@/components/FloorPlanEditor/Tools/ToolSystem/BaseTool'
 import { BorderAllIcon } from '@radix-ui/react-icons'
 
-interface OuterWallPolygonToolState {
+interface PerimeterToolState {
   points: Vec2[]
   mouse: Vec2
   snapResult?: SnapResult
@@ -27,18 +27,18 @@ interface OuterWallPolygonToolState {
   wallThickness: Length
 }
 
-export class OuterWallPolygonTool extends BaseTool implements Tool {
-  readonly id = 'outer-wall-polygon'
-  readonly name = 'Outer Wall Polygon'
+export class PerimeterTool extends BaseTool implements Tool {
+  readonly id = 'perimeter-polygon'
+  readonly name = 'Building Perimeter'
   readonly icon = '⬜'
   readonly iconComponent = BorderAllIcon
   readonly hotkey = 'w'
   readonly cursor = 'crosshair'
   readonly category = 'walls'
-  readonly overlayComponent = OuterWallPolygonToolOverlay
-  readonly inspectorComponent = OuterWallPolygonToolInspector
+  readonly overlayComponent = PerimeterToolOverlay
+  readonly inspectorComponent = PerimeterToolInspector
 
-  public state: OuterWallPolygonToolState = {
+  public state: PerimeterToolState = {
     points: [],
     mouse: createVec2(0, 0),
     snapContext: {
@@ -197,7 +197,7 @@ export class OuterWallPolygonTool extends BaseTool implements Tool {
       const activeFloorId = event.context.getActiveFloorId()
 
       try {
-        modelStore.addOuterWallPolygon(activeFloorId, polygon, this.state.constructionType, this.state.wallThickness)
+        modelStore.addPerimeter(activeFloorId, polygon, this.state.constructionType, this.state.wallThickness)
       } catch (error) {
         console.error('Failed to create outer wall polygon:', error)
       }

@@ -1,9 +1,9 @@
 import type { FloorsActions, FloorsState } from './slices/floorsSlice'
-import type { OuterWallsActions, OuterWallsState } from './slices/outerWallsSlice'
+import type { PerimetersActions, PerimetersState } from './slices/outerWallsSlice'
 
-export interface StoreState extends FloorsState, OuterWallsState {}
+export interface StoreState extends FloorsState, PerimetersState {}
 
-export interface StoreActions extends FloorsActions, OuterWallsActions {
+export interface StoreActions extends FloorsActions, PerimetersActions {
   reset: () => void
 }
 

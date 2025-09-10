@@ -1,26 +1,26 @@
 import { describe, it, expect } from 'vitest'
-import { OuterWallPolygonTool } from './OuterWallPolygonTool'
+import { PerimeterTool } from './PerimeterTool'
 import { outerWallToolGroup } from './index'
 
-describe('OuterWallPolygonTool', () => {
+describe('PerimeterTool', () => {
   it('should have correct tool properties', () => {
-    const tool = new OuterWallPolygonTool()
+    const tool = new PerimeterTool()
 
-    expect(tool.id).toBe('outer-wall-polygon')
-    expect(tool.name).toBe('Outer Wall Polygon')
+    expect(tool.id).toBe('perimeter-polygon')
+    expect(tool.name).toBe('Building Perimeter')
     expect(tool.icon).toBe('⬜')
     expect(tool.cursor).toBe('crosshair')
     expect(tool.category).toBe('walls')
   })
 
   it('should initialize with empty state', () => {
-    const tool = new OuterWallPolygonTool()
+    const tool = new PerimeterTool()
 
     expect(tool.state.points).toEqual([])
   })
 
   it('should reset state on activation', () => {
-    const tool = new OuterWallPolygonTool()
+    const tool = new PerimeterTool()
     tool.state.points = [{ x: 100, y: 100 } as any]
 
     tool.onActivate()
@@ -29,10 +29,10 @@ describe('OuterWallPolygonTool', () => {
   })
 
   it('should be registered in outer wall tool group', () => {
-    expect(outerWallToolGroup.id).toBe('outer-walls')
+    expect(outerWallToolGroup.id).toBe('walls')
     expect(outerWallToolGroup.name).toBe('Outer Walls')
     expect(outerWallToolGroup.tools).toHaveLength(2)
-    expect(outerWallToolGroup.tools.find(tool => tool.id === 'outer-wall-polygon')).toBeInstanceOf(OuterWallPolygonTool)
-    expect(outerWallToolGroup.defaultTool).toBe('outer-wall-polygon')
+    expect(outerWallToolGroup.tools.find(tool => tool.id === 'perimeter-polygon')).toBeInstanceOf(PerimeterTool)
+    expect(outerWallToolGroup.defaultTool).toBe('perimeter-polygon')
   })
 })

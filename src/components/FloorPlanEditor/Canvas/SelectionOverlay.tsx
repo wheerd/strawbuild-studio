@@ -1,9 +1,9 @@
 import { Group } from 'react-konva'
 import type { Vec2 } from '@/types/geometry'
 import { add, scale } from '@/types/geometry'
-import type { WallSegmentId, OuterCornerId, OpeningId, SelectableId } from '@/types/ids'
-import { isOuterWallId, isWallSegmentId, isOuterCornerId, isOpeningId } from '@/types/ids'
-import type { OuterWallPolygon } from '@/types/model'
+import type { WallSegmentId, OuterWallCornerId, OpeningId, SelectableId } from '@/types/ids'
+import { isPerimeterId, isWallSegmentId, isOuterCornerId, isOpeningId } from '@/types/ids'
+import type { Perimeter } from '@/types/model'
 import type { Store } from '@/model/store/types'
 import { useModelStore } from '@/model/store'
 import { useSelectionPath, useCurrentSelection } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
@@ -13,10 +13,10 @@ import { SelectionOutline } from '@/components/FloorPlanEditor/components/Select
  * Selection Path Structure Documentation:
  *
  * The selection system uses a predictable hierarchical path structure:
- * - OuterWall:     [wallId]                           → ["outside_123"]
- * - WallSegment:   [wallId, segmentId]               → ["outside_123", "segment_456"]
- * - OuterCorner:   [wallId, cornerId]                → ["outside_123", "outcorner_789"]
- * - Opening:       [wallId, segmentId, openingId]    → ["outside_123", "segment_456", "opening_012"]
+ * - OuterWall:     [wallId]                           → ["perimeter_123"]
+ * - WallSegment:   [wallId, segmentId]               → ["perimeter_123", "segment_456"]
+ * - OuterCorner:   [wallId, cornerId]                → ["perimeter_123", "outcorner_789"]
+ * - Opening:       [wallId, segmentId, openingId]    → ["perimeter_123", "segment_456", "opening_012"]
  *
  * Future entities will follow similar patterns:
  * - Floor:         [floorId]                          → ["floor_123"]
@@ -65,8 +65,8 @@ function getSelectionOutlinePoints(
   // Future: Add support for Floor, Building, etc. as root entities
   const rootEntityId = selectionPath[0]
 
-  if (isOuterWallId(rootEntityId)) {
-    const wall = modelStore.getOuterWallById(rootEntityId)
+  if (isPerimeterId(rootEntityId)) {
+    const wall = modelStore.getPerimeterById(rootEntityId)
     if (!wall) {
       console.warn('SelectionOverlay: OuterWall not found:', rootEntityId)
       return null
@@ -86,12 +86,12 @@ function getSelectionOutlinePoints(
  * Get outline points for entities within an OuterWall hierarchy
  */
 function getOuterWallEntityPoints(
-  wall: OuterWallPolygon,
+  wall: Perimeter,
   selectionPath: SelectableId[],
   currentSelection: SelectableId
 ): Vec2[] | null {
   // Entity type determines the selection path structure and required points
-  if (isOuterWallId(currentSelection)) {
+  if (isPerimeterId(currentSelection)) {
     // Path: [wallId]
     return getOuterWallPoints(wall)
   }
@@ -121,7 +121,7 @@ function getOuterWallEntityPoints(
  * Get selection outline points for an OuterWall
  * Uses the outer boundary polygon formed by corner outside points
  */
-function getOuterWallPoints(wall: OuterWallPolygon): Vec2[] {
+function getOuterWallPoints(wall: Perimeter): Vec2[] {
   return wall.corners.map(corner => corner.outsidePoint)
 }
 
@@ -129,7 +129,7 @@ function getOuterWallPoints(wall: OuterWallPolygon): Vec2[] {
  * Get selection outline points for a WallSegment
  * Creates a rectangular polygon around the segment using inside/outside lines
  */
-function getWallSegmentPoints(wall: OuterWallPolygon, segmentId: WallSegmentId): Vec2[] | null {
+function getWallSegmentPoints(wall: Perimeter, segmentId: WallSegmentId): Vec2[] | null {
   const segment = wall.segments.find(s => s.id === segmentId)
 
   if (!segment) {
@@ -144,7 +144,7 @@ function getWallSegmentPoints(wall: OuterWallPolygon, segmentId: WallSegmentId):
  * Get selection outline points for an OuterCorner
  * Creates a complex polygon using the same logic as OuterCornerShape
  */
-function getOuterCornerPoints(wall: OuterWallPolygon, cornerId: OuterCornerId): Vec2[] | null {
+function getOuterCornerPoints(wall: Perimeter, cornerId: OuterWallCornerId): Vec2[] | null {
   const cornerIndex = wall.corners.findIndex(c => c.id === cornerId)
 
   if (cornerIndex === -1) {
@@ -176,7 +176,7 @@ function getOuterCornerPoints(wall: OuterWallPolygon, cornerId: OuterCornerId): 
  * Get selection outline points for an Opening
  * Creates a rectangular polygon around the opening using the same calculation as OpeningShape
  */
-function getOpeningPoints(wall: OuterWallPolygon, segmentId: WallSegmentId, openingId: OpeningId): Vec2[] | null {
+function getOpeningPoints(wall: Perimeter, segmentId: WallSegmentId, openingId: OpeningId): Vec2[] | null {
   const segment = wall.segments.find(s => s.id === segmentId)
 
   if (!segment) {

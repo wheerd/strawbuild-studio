@@ -1,15 +1,15 @@
 import React from 'react'
 import { useModelStore } from '@/model/store'
-import type { OuterWallId } from '@/types/ids'
+import type { PerimeterId } from '@/types/ids'
 import { calculatePolygonArea } from '@/types/geometry'
 
 interface OuterWallInspectorProps {
-  selectedId: OuterWallId
+  selectedId: PerimeterId
 }
 
 export function OuterWallInspector({ selectedId }: OuterWallInspectorProps): React.JSX.Element {
   // Get outer wall data from model store
-  const outerWall = useModelStore(state => state.outerWalls.get(selectedId))
+  const outerWall = useModelStore(state => state.perimeters.get(selectedId))
 
   // If outer wall not found, show error
   if (!outerWall) {

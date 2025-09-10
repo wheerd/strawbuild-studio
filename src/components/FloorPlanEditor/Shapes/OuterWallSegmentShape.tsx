@@ -5,11 +5,11 @@ import { direction, type Vec2 } from '@/types/geometry'
 import { useSelectionStore } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
 import { LengthIndicator } from '@/components/FloorPlanEditor/components/LengthIndicator'
 import { OpeningShape } from './OpeningShape'
-import type { OuterWallId } from '@/model'
+import type { PerimeterId } from '@/model'
 
 interface OuterWallSegmentShapeProps {
   segment: OuterWallSegment
-  outerWallId: OuterWallId
+  perimeterId: PerimeterId
   insideStartCorner: Vec2
   insideEndCorner: Vec2
   outsideStartCorner: Vec2
@@ -18,7 +18,7 @@ interface OuterWallSegmentShapeProps {
 
 export function OuterWallSegmentShape({
   segment,
-  outerWallId,
+  perimeterId,
   insideStartCorner,
   insideEndCorner,
   outsideStartCorner,
@@ -51,7 +51,7 @@ export function OuterWallSegmentShape({
       name={`segment-${segment.id}`}
       entityId={segment.id}
       entityType="wall-segment"
-      parentIds={[outerWallId]}
+      parentIds={[perimeterId]}
       listening
     >
       {/* Main wall body - fill the area between inside and outside lines */}
@@ -79,7 +79,7 @@ export function OuterWallSegmentShape({
           key={`opening-${opening.id}`}
           opening={opening}
           segment={segment}
-          outerWallId={outerWallId}
+          perimeterId={perimeterId}
           insideStartCorner={insideStartCorner}
           insideEndCorner={insideEndCorner}
           outsideStartCorner={outsideStartCorner}

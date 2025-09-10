@@ -1,15 +1,15 @@
 import type { MovementBehavior, MovementContext, MouseMovementState } from '../MovementBehavior'
 import type { SelectableId } from '@/types/ids'
 import type { StoreActions } from '@/model/store/types'
-import type { OuterWallSegment, OuterWallPolygon } from '@/types/model'
+import type { OuterWallSegment, Perimeter } from '@/types/model'
 import { add, dot, scale, type Vec2 } from '@/types/geometry'
 import { wouldClosingPolygonSelfIntersect } from '@/types/geometry/polygon'
-import { isOuterWallId, isWallSegmentId } from '@/types/ids'
+import { isPerimeterId, isWallSegmentId } from '@/types/ids'
 import { WallSegmentMovementPreview } from '../previews/WallSegmentMovementPreview'
 
 // Wall segment movement needs access to the wall to update the boundary
 export interface WallSegmentEntityContext {
-  wall: OuterWallPolygon
+  wall: Perimeter
   segment: OuterWallSegment
   segmentIndex: number // Index of the segment in the wall
 }
@@ -27,11 +27,11 @@ export class WallSegmentMovementBehavior
   getEntity(entityId: SelectableId, parentIds: SelectableId[], store: StoreActions): WallSegmentEntityContext {
     const [wallId] = parentIds
 
-    if (!isOuterWallId(wallId) || !isWallSegmentId(entityId)) {
+    if (!isPerimeterId(wallId) || !isWallSegmentId(entityId)) {
       throw new Error(`Invalid entity context for segment ${entityId}`)
     }
 
-    const wall = store.getOuterWallById(wallId)
+    const wall = store.getPerimeterById(wallId)
     const segment = store.getSegmentById(wallId, entityId)
 
     if (!wall || !segment) {
@@ -89,6 +89,6 @@ export class WallSegmentMovementBehavior
   }
 
   commitMovement(movementState: WallSegmentMovementState, context: MovementContext<WallSegmentEntityContext>): boolean {
-    return context.store.updateOuterWallBoundary(context.entity.wall.id, movementState.newBoundary)
+    return context.store.updatePerimeterBoundary(context.entity.wall.id, movementState.newBoundary)
   }
 }

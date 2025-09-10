@@ -1,9 +1,9 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import { temporal } from 'zundo'
-import type { Floor, OuterWallPolygon } from '@/types/model'
+import type { Floor, Perimeter } from '@/types/model'
 import { createFloorLevel } from '@/types/model'
-import type { FloorId, OuterWallId } from '@/types/ids'
+import type { FloorId, PerimeterId } from '@/types/ids'
 import { createFloorsSlice } from './slices/floorsSlice'
 import { createOuterWallsSlice } from './slices/outerWallsSlice'
 import type { Store } from './types'
@@ -38,7 +38,7 @@ export const useModelStore = create<Store>()(
         // Don't save if only timestamps changed
         const significantChange =
           pastState.floors.size !== currentState.floors.size ||
-          pastState.outerWalls.size !== currentState.outerWalls.size
+          pastState.perimeters.size !== currentState.perimeters.size
 
         return significantChange
       }
@@ -54,10 +54,10 @@ export const useCanRedo = (): boolean => useModelStore.temporal.getState().futur
 
 // Entity selector hooks
 export const useFloors = (): Map<FloorId, Floor> => useModelStore(state => state.floors)
-export const useOuterWalls = (): Map<OuterWallId, OuterWallPolygon> => useModelStore(state => state.outerWalls)
-export const useGetOuterWallById = () => useModelStore(state => state.getOuterWallById)
-export const useFloorOuterWalls = (floorId: FloorId): OuterWallPolygon[] =>
-  useModelStore(state => state.getOuterWallsByFloor)(floorId)
+export const useOuterWalls = (): Map<PerimeterId, Perimeter> => useModelStore(state => state.perimeters)
+export const useGetOuterWallById = () => useModelStore(state => state.getPerimeterById)
+export const useFloorPerimeters = (floorId: FloorId): Perimeter[] =>
+  useModelStore(state => state.getPerimetersByFloor)(floorId)
 
 // Export types
 export type { Store, StoreActions, StoreState } from './types'

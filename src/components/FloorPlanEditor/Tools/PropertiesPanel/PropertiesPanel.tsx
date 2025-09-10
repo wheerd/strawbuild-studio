@@ -3,12 +3,12 @@ import { useActiveTool } from '@/components/FloorPlanEditor/Tools/ToolSystem/Too
 import { OuterWallInspector, WallSegmentInspector, OuterCornerInspector, OpeningInspector } from './Inspectors'
 
 import {
-  isOuterWallId,
+  isPerimeterId,
   isWallSegmentId,
   isOuterCornerId,
   isOpeningId,
   type WallSegmentId,
-  type OuterWallId
+  type PerimeterId
 } from '@/types/ids'
 import * as Tabs from '@radix-ui/react-tabs'
 import { usePropertiesPanel } from '@/hooks/usePropertiesPanel'
@@ -66,12 +66,12 @@ export function PropertiesPanel(): React.JSX.Element {
             )}
 
             {/* Outer wall entities */}
-            {selectedId && isOuterWallId(selectedId) && <OuterWallInspector key={selectedId} selectedId={selectedId} />}
+            {selectedId && isPerimeterId(selectedId) && <OuterWallInspector key={selectedId} selectedId={selectedId} />}
 
             {selectedId && isWallSegmentId(selectedId) && (
               <WallSegmentInspector
                 key={selectedId}
-                outerWallId={selectionPath[0] as OuterWallId}
+                perimeterId={selectionPath[0] as PerimeterId}
                 segmentId={selectedId}
               />
             )}
@@ -79,7 +79,7 @@ export function PropertiesPanel(): React.JSX.Element {
             {selectedId && isOuterCornerId(selectedId) && (
               <OuterCornerInspector
                 key={selectedId}
-                outerWallId={selectionPath[0] as OuterWallId}
+                perimeterId={selectionPath[0] as PerimeterId}
                 cornerId={selectedId}
               />
             )}
@@ -87,7 +87,7 @@ export function PropertiesPanel(): React.JSX.Element {
             {selectedId && isOpeningId(selectedId) && (
               <OpeningInspector
                 key={selectedId}
-                outerWallId={selectionPath[0] as OuterWallId}
+                perimeterId={selectionPath[0] as PerimeterId}
                 segmentId={selectionPath[1] as WallSegmentId}
                 openingId={selectedId}
               />
@@ -95,7 +95,7 @@ export function PropertiesPanel(): React.JSX.Element {
 
             {/* Unknown entity type */}
             {selectedId &&
-              !isOuterWallId(selectedId) &&
+              !isPerimeterId(selectedId) &&
               !isWallSegmentId(selectedId) &&
               !isOuterCornerId(selectedId) &&
               !isOpeningId(selectedId) && (

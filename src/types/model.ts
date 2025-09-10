@@ -1,4 +1,4 @@
-import type { FloorId, OuterWallId, WallSegmentId, OuterCornerId, OpeningId } from '@/types/ids'
+import type { FloorId, PerimeterId, WallSegmentId, OuterWallCornerId, OpeningId } from '@/types/ids'
 import type { Length, LineSegment2D, Vec2 } from '@/types/geometry'
 
 // Floor level branded type
@@ -36,8 +36,8 @@ export interface Floor {
   height: Length
 }
 
-export interface OuterWallPolygon {
-  id: OuterWallId
+export interface Perimeter {
+  id: PerimeterId
   floorId: FloorId
 
   // Polygon defining the inside area of the building
@@ -45,7 +45,7 @@ export interface OuterWallPolygon {
 
   // Per-side wall data
   segments: OuterWallSegment[] // segments[i] goes from boundary[i] -> boundary[(i + 1) % boundary.length]
-  corners: OuterCorner[]
+  corners: OuterWallCorner[]
 }
 
 export type OuterWallConstructionType = 'cells-under-tension' | 'infill' | 'strawhenge' | 'non-strawbale'
@@ -67,8 +67,8 @@ export interface OuterWallSegment {
   outsideDirection: Vec2 // Normal vector pointing outside
 }
 
-export interface OuterCorner {
-  id: OuterCornerId
+export interface OuterWallCorner {
+  id: OuterWallCornerId
   // This point, the boundary point, and the two adjacent wall edge points define the corner area
   // Together with the wall areas the form the whole area that the outer wall covers
   outsidePoint: Vec2

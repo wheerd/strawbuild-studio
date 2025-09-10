@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react'
 import { vi } from 'vitest'
-import { OuterWallPolygonToolOverlay } from './OuterWallPolygonToolOverlay'
-import { OuterWallPolygonTool } from './OuterWallPolygonTool'
+import { PerimeterToolOverlay } from './PerimeterToolOverlay'
+import { PerimeterTool } from './PerimeterTool'
 import { createVec2, createLength } from '@/types/geometry'
 import type { SnapResult } from '@/model/store/services/snapping/types'
 
@@ -16,15 +16,15 @@ vi.mock('../../../hooks/useViewportStore', () => ({
   useStageHeight: () => mockUseStageHeight()
 }))
 
-describe('OuterWallPolygonToolOverlay', () => {
-  let mockTool: OuterWallPolygonTool
+describe('PerimeterToolOverlay', () => {
+  let mockTool: PerimeterTool
 
   beforeEach(() => {
     mockUseZoom.mockReturnValue(1.0)
     mockUseStageWidth.mockReturnValue(800)
     mockUseStageHeight.mockReturnValue(600)
 
-    mockTool = new OuterWallPolygonTool()
+    mockTool = new PerimeterTool()
 
     // Reset tool state
     mockTool.state = {
@@ -46,7 +46,7 @@ describe('OuterWallPolygonToolOverlay', () => {
     it('renders only snap point when no polygon points exist', () => {
       mockTool.state.mouse = createVec2(100, 200)
 
-      const { container } = render(<OuterWallPolygonToolOverlay tool={mockTool} />)
+      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -57,7 +57,7 @@ describe('OuterWallPolygonToolOverlay', () => {
       mockTool.state.points = [createVec2(100, 100)]
       mockTool.state.mouse = createVec2(200, 200)
 
-      const { container } = render(<OuterWallPolygonToolOverlay tool={mockTool} />)
+      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -67,7 +67,7 @@ describe('OuterWallPolygonToolOverlay', () => {
       mockTool.state.mouse = createVec2(150, 150)
       mockTool.state.isCurrentLineValid = true
 
-      const { container } = render(<OuterWallPolygonToolOverlay tool={mockTool} />)
+      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -77,7 +77,7 @@ describe('OuterWallPolygonToolOverlay', () => {
       mockTool.state.mouse = createVec2(150, 150)
       mockTool.state.isCurrentLineValid = false
 
-      const { container } = render(<OuterWallPolygonToolOverlay tool={mockTool} />)
+      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -88,7 +88,7 @@ describe('OuterWallPolygonToolOverlay', () => {
       mockTool.state.points = [createVec2(100, 100), createVec2(200, 100), createVec2(200, 200)]
       mockTool.state.mouse = createVec2(100, 200)
 
-      const { container } = render(<OuterWallPolygonToolOverlay tool={mockTool} />)
+      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -97,7 +97,7 @@ describe('OuterWallPolygonToolOverlay', () => {
       mockTool.state.points = [createVec2(0, 0), createVec2(100, 0), createVec2(100, 100), createVec2(0, 100)]
       mockTool.state.mouse = createVec2(50, 50)
 
-      const { container } = render(<OuterWallPolygonToolOverlay tool={mockTool} />)
+      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -112,7 +112,7 @@ describe('OuterWallPolygonToolOverlay', () => {
       vi.spyOn(mockTool, 'isSnappingToFirstPoint').mockReturnValue(true)
       mockTool.state.isClosingLineValid = true
 
-      const { container } = render(<OuterWallPolygonToolOverlay tool={mockTool} />)
+      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -121,7 +121,7 @@ describe('OuterWallPolygonToolOverlay', () => {
       vi.spyOn(mockTool, 'isSnappingToFirstPoint').mockReturnValue(true)
       mockTool.state.isClosingLineValid = false
 
-      const { container } = render(<OuterWallPolygonToolOverlay tool={mockTool} />)
+      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -130,7 +130,7 @@ describe('OuterWallPolygonToolOverlay', () => {
       vi.spyOn(mockTool, 'isSnappingToFirstPoint').mockReturnValue(false)
       mockTool.state.mouse = createVec2(300, 300)
 
-      const { container } = render(<OuterWallPolygonToolOverlay tool={mockTool} />)
+      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -146,7 +146,7 @@ describe('OuterWallPolygonToolOverlay', () => {
       mockTool.state.mouse = createVec2(120, 120)
       mockTool.state.snapResult = snapResult
 
-      const { container } = render(<OuterWallPolygonToolOverlay tool={mockTool} />)
+      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -170,7 +170,7 @@ describe('OuterWallPolygonToolOverlay', () => {
       mockTool.state.mouse = createVec2(145, 145)
       mockTool.state.snapResult = snapResult
 
-      const { container } = render(<OuterWallPolygonToolOverlay tool={mockTool} />)
+      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -194,7 +194,7 @@ describe('OuterWallPolygonToolOverlay', () => {
       mockTool.state.mouse = createVec2(145, 145)
       mockTool.state.snapResult = snapResult
 
-      const { container } = render(<OuterWallPolygonToolOverlay tool={mockTool} />)
+      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -207,7 +207,7 @@ describe('OuterWallPolygonToolOverlay', () => {
       mockTool.state.points = [createVec2(100, 100), createVec2(200, 100)]
       mockTool.state.mouse = createVec2(200, 200)
 
-      const { container } = render(<OuterWallPolygonToolOverlay tool={mockTool} />)
+      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -218,7 +218,7 @@ describe('OuterWallPolygonToolOverlay', () => {
       mockTool.state.points = [createVec2(100, 100), createVec2(200, 100)]
       mockTool.state.mouse = createVec2(200, 200)
 
-      const { container } = render(<OuterWallPolygonToolOverlay tool={mockTool} />)
+      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -240,7 +240,7 @@ describe('OuterWallPolygonToolOverlay', () => {
 
       mockTool.state.snapResult = snapResult
 
-      const { container } = render(<OuterWallPolygonToolOverlay tool={mockTool} />)
+      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -251,7 +251,7 @@ describe('OuterWallPolygonToolOverlay', () => {
       mockTool.state.points = []
       mockTool.state.mouse = createVec2(0, 0)
 
-      const { container } = render(<OuterWallPolygonToolOverlay tool={mockTool} />)
+      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -260,7 +260,7 @@ describe('OuterWallPolygonToolOverlay', () => {
       mockTool.state.points = [createVec2(0, 0), createVec2(100, 100)]
       mockTool.state.mouse = createVec2(200, 0)
 
-      const { container } = render(<OuterWallPolygonToolOverlay tool={mockTool} />)
+      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })

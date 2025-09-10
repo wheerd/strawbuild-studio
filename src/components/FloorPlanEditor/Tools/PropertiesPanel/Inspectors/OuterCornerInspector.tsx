@@ -1,18 +1,18 @@
 import { useCallback, useMemo } from 'react'
 import { useModelStore } from '@/model/store'
-import type { OuterCornerId, OuterWallId } from '@/types/ids'
+import type { OuterWallCornerId, PerimeterId } from '@/types/ids'
 
 interface OuterCornerInspectorProps {
-  outerWallId: OuterWallId
-  cornerId: OuterCornerId
+  perimeterId: PerimeterId
+  cornerId: OuterWallCornerId
 }
 
-export function OuterCornerInspector({ outerWallId, cornerId }: OuterCornerInspectorProps): React.JSX.Element {
+export function OuterCornerInspector({ perimeterId, cornerId }: OuterCornerInspectorProps): React.JSX.Element {
   // Get model store functions - use specific selectors for stable references
   const updateCornerBelongsTo = useModelStore(state => state.updateCornerBelongsTo)
 
   // Get outer wall from store
-  const outerWall = useModelStore(state => state.outerWalls.get(outerWallId))
+  const outerWall = useModelStore(state => state.perimeters.get(perimeterId))
 
   // Use useMemo to find corner and its index within the wall object
   const cornerIndex = useMemo(() => {
@@ -47,8 +47,8 @@ export function OuterCornerInspector({ outerWallId, cornerId }: OuterCornerInspe
   // Event handlers with stable references
   const handleToggleBelongsTo = useCallback(() => {
     const newBelongsTo = corner.belongsTo === 'previous' ? 'next' : 'previous'
-    updateCornerBelongsTo(outerWallId, cornerId, newBelongsTo)
-  }, [updateCornerBelongsTo, outerWallId, cornerId, corner.belongsTo])
+    updateCornerBelongsTo(perimeterId, cornerId, newBelongsTo)
+  }, [updateCornerBelongsTo, perimeterId, cornerId, corner.belongsTo])
 
   // Calculate angle between segments (simplified)
   const cornerAngle = useMemo(() => {

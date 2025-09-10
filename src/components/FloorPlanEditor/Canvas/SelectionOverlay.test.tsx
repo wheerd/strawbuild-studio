@@ -2,7 +2,7 @@ import { render } from '@testing-library/react'
 import { vi } from 'vitest'
 import { SelectionOverlay } from './SelectionOverlay'
 import { createVec2 } from '@/types/geometry'
-import type { OuterWallPolygon } from '@/types/model'
+import type { Perimeter } from '@/types/model'
 
 // Mock the required hooks and stores
 const mockUseSelectionPath = vi.fn()
@@ -31,7 +31,7 @@ describe('SelectionOverlay', () => {
     mockUseSelectionPath.mockReturnValue([])
     mockUseCurrentSelection.mockReturnValue(null)
     mockUseModelStore.mockReturnValue({
-      getOuterWallById: vi.fn().mockReturnValue(null)
+      getPerimeterById: vi.fn().mockReturnValue(null)
     })
   })
 
@@ -41,8 +41,8 @@ describe('SelectionOverlay', () => {
   })
 
   it('renders OuterWall selection outline', () => {
-    const wallId = 'outside_123'
-    const mockWall: Partial<OuterWallPolygon> = {
+    const wallId = 'perimeter_123'
+    const mockWall: Partial<Perimeter> = {
       id: wallId as any,
       corners: [
         { outsidePoint: createVec2(0, 0) },
@@ -55,7 +55,7 @@ describe('SelectionOverlay', () => {
     mockUseSelectionPath.mockReturnValue([wallId])
     mockUseCurrentSelection.mockReturnValue(wallId)
     mockUseModelStore.mockReturnValue({
-      getOuterWallById: vi.fn().mockReturnValue(mockWall)
+      getPerimeterById: vi.fn().mockReturnValue(mockWall)
     })
 
     const { getByTestId } = render(<SelectionOverlay />)
@@ -65,7 +65,7 @@ describe('SelectionOverlay', () => {
   })
 
   it('renders WallSegment selection outline', () => {
-    const wallId = 'outside_123'
+    const wallId = 'perimeter_123'
     const segmentId = 'segment_456'
     const mockWall = {
       id: wallId,
@@ -81,7 +81,7 @@ describe('SelectionOverlay', () => {
     mockUseSelectionPath.mockReturnValue([wallId, segmentId])
     mockUseCurrentSelection.mockReturnValue(segmentId)
     mockUseModelStore.mockReturnValue({
-      getOuterWallById: vi.fn().mockReturnValue(mockWall)
+      getPerimeterById: vi.fn().mockReturnValue(mockWall)
     })
 
     const { getByTestId } = render(<SelectionOverlay />)
@@ -91,7 +91,7 @@ describe('SelectionOverlay', () => {
   })
 
   it('renders Opening selection outline', () => {
-    const wallId = 'outside_123'
+    const wallId = 'perimeter_123'
     const segmentId = 'segment_456'
     const openingId = 'opening_789'
     const mockWall = {
@@ -116,7 +116,7 @@ describe('SelectionOverlay', () => {
     mockUseSelectionPath.mockReturnValue([wallId, segmentId, openingId])
     mockUseCurrentSelection.mockReturnValue(openingId)
     mockUseModelStore.mockReturnValue({
-      getOuterWallById: vi.fn().mockReturnValue(mockWall)
+      getPerimeterById: vi.fn().mockReturnValue(mockWall)
     })
 
     const { getByTestId } = render(<SelectionOverlay />)
@@ -126,12 +126,12 @@ describe('SelectionOverlay', () => {
   })
 
   it('handles missing wall gracefully', () => {
-    const wallId = 'outside_123'
+    const wallId = 'perimeter_123'
 
     mockUseSelectionPath.mockReturnValue([wallId])
     mockUseCurrentSelection.mockReturnValue(wallId)
     mockUseModelStore.mockReturnValue({
-      getOuterWallById: vi.fn().mockReturnValue(null)
+      getPerimeterById: vi.fn().mockReturnValue(null)
     })
 
     const { container } = render(<SelectionOverlay />)

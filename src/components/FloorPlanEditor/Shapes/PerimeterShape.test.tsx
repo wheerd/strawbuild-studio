@@ -1,15 +1,15 @@
 import { describe, it, expect } from 'vitest'
 import { render } from '@testing-library/react'
 import { Stage, Layer } from 'react-konva'
-import { OuterWallShape } from './OuterWallShape'
+import { PerimeterShape } from './PerimeterShape'
 import { OuterCornerShape } from './OuterCornerShape'
 import { createLength, createVec2 } from '@/types/geometry'
-import { createOuterWallId, createFloorId, createWallSegmentId, createOuterCornerId } from '@/types/ids'
-import type { OuterWallPolygon } from '@/types/model'
+import { createPerimeterId, createFloorId, createWallSegmentId, createOuterCornerId } from '@/types/ids'
+import type { Perimeter } from '@/types/model'
 
-describe('OuterWallShape', () => {
-  const testOuterWall: OuterWallPolygon = {
-    id: createOuterWallId(),
+describe('PerimeterShape', () => {
+  const testPerimeter: Perimeter = {
+    id: createPerimeterId(),
     floorId: createFloorId(),
     boundary: [createVec2(0, 0), createVec2(1000, 0), createVec2(1000, 1000), createVec2(0, 1000)],
     segments: [
@@ -119,7 +119,7 @@ describe('OuterWallShape', () => {
       render(
         <Stage width={2000} height={2000}>
           <Layer>
-            <OuterWallShape outerWall={testOuterWall} />
+            <PerimeterShape perimeter={testPerimeter} />
           </Layer>
         </Stage>
       )
@@ -132,11 +132,11 @@ describe('OuterWallShape', () => {
         <Stage width={2000} height={2000}>
           <Layer>
             <OuterCornerShape
-              corner={testOuterWall.corners[0]}
-              boundaryPoint={testOuterWall.boundary[0]}
-              previousSegment={testOuterWall.segments[3]}
-              nextSegment={testOuterWall.segments[0]}
-              outerWallId={testOuterWall.id}
+              corner={testPerimeter.corners[0]}
+              boundaryPoint={testPerimeter.boundary[0]}
+              previousSegment={testPerimeter.segments[3]}
+              nextSegment={testPerimeter.segments[0]}
+              perimeterId={testPerimeter.id}
             />
           </Layer>
         </Stage>

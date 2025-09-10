@@ -1,19 +1,19 @@
 import type { ToolGroup } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
-import { OuterWallPolygonTool } from './OuterWallPolygonTool'
+import { PerimeterTool } from './PerimeterTool'
 import { AddOpeningTool } from './AddOpeningTool'
 
 // Export individual tools
-export { OuterWallPolygonTool } from './OuterWallPolygonTool'
+export { PerimeterTool } from './PerimeterTool'
 export { AddOpeningTool } from './AddOpeningTool'
 
 // Create and export tool group
 export const createOuterWallToolGroup = (): ToolGroup => ({
-  id: 'outer-walls',
+  id: 'walls',
   name: 'Outer Walls',
   icon: '⬜',
-  category: 'outer-walls',
-  tools: [new OuterWallPolygonTool(), new AddOpeningTool()],
-  defaultTool: 'outer-wall-polygon'
+  category: 'walls',
+  tools: [new PerimeterTool(), new AddOpeningTool()],
+  defaultTool: 'perimeter-polygon'
 })
 
 // Export as default tool group

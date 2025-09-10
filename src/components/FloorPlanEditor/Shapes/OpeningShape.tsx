@@ -1,6 +1,6 @@
 import { Group, Line } from 'react-konva'
 import type { Opening, OuterWallSegment } from '@/types/model'
-import type { OuterWallId } from '@/model'
+import type { PerimeterId } from '@/model'
 import { midpoint, add, scale, type Vec2 } from '@/types/geometry'
 import { useSelectionStore } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
 import { LengthIndicator } from '@/components/FloorPlanEditor/components/LengthIndicator'
@@ -9,7 +9,7 @@ import { COLORS } from '@/theme/colors'
 interface OpeningShapeProps {
   opening: Opening
   segment: OuterWallSegment
-  outerWallId: OuterWallId
+  perimeterId: PerimeterId
 
   // Corner reference points (same as wall segment)
   insideStartCorner: Vec2
@@ -21,7 +21,7 @@ interface OpeningShapeProps {
 export function OpeningShape({
   opening,
   segment,
-  outerWallId,
+  perimeterId,
   insideStartCorner,
   insideEndCorner,
   outsideStartCorner,
@@ -65,7 +65,7 @@ export function OpeningShape({
       name={`opening-${opening.id}`}
       entityId={opening.id}
       entityType="opening"
-      parentIds={[outerWallId, segment.id]}
+      parentIds={[perimeterId, segment.id]}
       listening
     >
       {/* Opening cutout - render as a different colored line */}

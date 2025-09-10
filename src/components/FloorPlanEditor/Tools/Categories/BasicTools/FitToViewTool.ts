@@ -51,7 +51,7 @@ export class FitToViewTool implements Tool {
   }
 
   private calculateOuterWallsBounds(modelStore: Store, floorId: FloorId): Bounds2D | null {
-    const outerWalls = modelStore.getOuterWallsByFloor(floorId)
+    const outerWalls = modelStore.getPerimetersByFloor(floorId)
     const outerPoints = outerWalls.flatMap(w => w.corners.map(c => c.outsidePoint))
     return boundsFromPoints(outerPoints)
   }

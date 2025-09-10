@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { vi } from 'vitest'
-import { OuterWallPolygonToolInspector } from './OuterWallPolygonToolInspector'
-import { OuterWallPolygonTool } from '@/components/FloorPlanEditor/Tools/Categories/OuterWallTools/OuterWallPolygonTool'
+import { PerimeterToolInspector } from './PerimeterToolInspector'
+import { PerimeterTool } from '@/components/FloorPlanEditor/Tools/Categories/OuterWallTools/PerimeterTool'
 import { createVec2, createLength } from '@/types/geometry'
 
 // Mock scrollIntoView for Radix UI components
@@ -10,8 +10,8 @@ Object.defineProperty(Element.prototype, 'scrollIntoView', {
   writable: true
 })
 
-describe('OuterWallPolygonToolInspector', () => {
-  let mockTool: OuterWallPolygonTool
+describe('PerimeterToolInspector', () => {
+  let mockTool: PerimeterTool
   let mockOnRenderNeeded: ReturnType<typeof vi.fn>
   let mockSetConstructionType: ReturnType<typeof vi.fn>
   let mockSetWallThickness: ReturnType<typeof vi.fn>
@@ -21,7 +21,7 @@ describe('OuterWallPolygonToolInspector', () => {
     mockSetConstructionType = vi.fn()
     mockSetWallThickness = vi.fn()
 
-    mockTool = new OuterWallPolygonTool()
+    mockTool = new PerimeterTool()
 
     // Reset tool state
     mockTool.state = {
@@ -46,7 +46,7 @@ describe('OuterWallPolygonToolInspector', () => {
 
   describe('rendering', () => {
     it('renders basic inspector with default values', () => {
-      render(<OuterWallPolygonToolInspector tool={mockTool} />)
+      render(<PerimeterToolInspector tool={mockTool} />)
 
       expect(screen.getByText('Construction Type')).toBeInTheDocument()
       expect(screen.getByLabelText('Wall Thickness')).toBeInTheDocument()
@@ -57,7 +57,7 @@ describe('OuterWallPolygonToolInspector', () => {
 
   describe('construction type changes', () => {
     it('calls setConstructionType when selection changes', async () => {
-      render(<OuterWallPolygonToolInspector tool={mockTool} />)
+      render(<PerimeterToolInspector tool={mockTool} />)
 
       // Find the select trigger button (Radix Select uses a button as trigger)
       const selectTrigger = screen.getByRole('combobox')
@@ -73,7 +73,7 @@ describe('OuterWallPolygonToolInspector', () => {
 
   describe('wall thickness changes', () => {
     it('calls setWallThickness when input changes', () => {
-      render(<OuterWallPolygonToolInspector tool={mockTool} />)
+      render(<PerimeterToolInspector tool={mockTool} />)
 
       const input = screen.getByLabelText('Wall Thickness')
       fireEvent.change(input, { target: { value: '350' } })
@@ -83,7 +83,7 @@ describe('OuterWallPolygonToolInspector', () => {
     })
 
     it('handles input validation with min/max values', () => {
-      render(<OuterWallPolygonToolInspector tool={mockTool} />)
+      render(<PerimeterToolInspector tool={mockTool} />)
 
       const input = screen.getByLabelText('Wall Thickness')
 
@@ -102,7 +102,7 @@ describe('OuterWallPolygonToolInspector', () => {
 
   describe('accessibility', () => {
     it('has proper form labels', () => {
-      render(<OuterWallPolygonToolInspector tool={mockTool} />)
+      render(<PerimeterToolInspector tool={mockTool} />)
 
       expect(screen.getByText('Construction Type')).toBeInTheDocument()
       expect(screen.getByLabelText('Wall Thickness')).toBeInTheDocument()
@@ -110,7 +110,7 @@ describe('OuterWallPolygonToolInspector', () => {
     })
 
     it('has proper input attributes', () => {
-      render(<OuterWallPolygonToolInspector tool={mockTool} />)
+      render(<PerimeterToolInspector tool={mockTool} />)
 
       const thicknessInput = screen.getByLabelText('Wall Thickness')
       expect(thicknessInput).toHaveAttribute('type', 'number')
@@ -122,7 +122,7 @@ describe('OuterWallPolygonToolInspector', () => {
 
   describe('component lifecycle', () => {
     it('subscribes to tool render updates on mount', () => {
-      render(<OuterWallPolygonToolInspector tool={mockTool} />)
+      render(<PerimeterToolInspector tool={mockTool} />)
 
       expect(mockOnRenderNeeded).toHaveBeenCalledWith(expect.any(Function))
     })
@@ -131,7 +131,7 @@ describe('OuterWallPolygonToolInspector', () => {
       const unsubscribe = vi.fn()
       mockOnRenderNeeded.mockReturnValue(unsubscribe)
 
-      const { unmount } = render(<OuterWallPolygonToolInspector tool={mockTool} />)
+      const { unmount } = render(<PerimeterToolInspector tool={mockTool} />)
       unmount()
 
       expect(unsubscribe).toHaveBeenCalled()
