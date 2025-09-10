@@ -1,6 +1,6 @@
 import { Group, Line } from 'react-konva'
-import type { Opening, OuterWallSegment } from '@/types/model'
-import type { OuterWallId } from '@/model'
+import type { Opening, PerimeterWall } from '@/types/model'
+import type { PerimeterId } from '@/model'
 import { midpoint, add, scale, type Vec2 } from '@/types/geometry'
 import { useSelectionStore } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
 import { LengthIndicator } from '@/components/FloorPlanEditor/components/LengthIndicator'
@@ -8,10 +8,10 @@ import { COLORS } from '@/theme/colors'
 
 interface OpeningShapeProps {
   opening: Opening
-  segment: OuterWallSegment
-  outerWallId: OuterWallId
+  wall: PerimeterWall
+  perimeterId: PerimeterId
 
-  // Corner reference points (same as wall segment)
+  // Corner reference points (same as wall wall)
   insideStartCorner: Vec2
   insideEndCorner: Vec2
   outsideStartCorner: Vec2
@@ -20,8 +20,8 @@ interface OpeningShapeProps {
 
 export function OpeningShape({
   opening,
-  segment,
-  outerWallId,
+  wall,
+  perimeterId,
   insideStartCorner,
   insideEndCorner,
   outsideStartCorner,
@@ -29,16 +29,16 @@ export function OpeningShape({
 }: OpeningShapeProps): React.JSX.Element {
   const select = useSelectionStore()
 
-  // Extract segment geometry
-  const insideStart = segment.insideLine.start
-  const outsideStart = segment.outsideLine.start
-  const segmentVector = segment.direction
+  // Extract wall geometry
+  const insideStart = wall.insideLine.start
+  const outsideStart = wall.outsideLine.start
+  const wallVector = wall.direction
   const offsetDistance = opening.offsetFromStart
   const centerStart = midpoint(insideStart, outsideStart)
-  const offsetStart = scale(segmentVector, offsetDistance)
-  const offsetEnd = add(offsetStart, scale(segmentVector, opening.width))
-  const openingStart = add(centerStart, scale(segmentVector, offsetDistance))
-  const openingEnd = add(openingStart, scale(segmentVector, opening.width))
+  const offsetStart = scale(wallVector, offsetDistance)
+  const offsetEnd = add(offsetStart, scale(wallVector, opening.width))
+  const openingStart = add(centerStart, scale(wallVector, offsetDistance))
+  const openingEnd = add(openingStart, scale(wallVector, opening.width))
 
   // Calculate opening polygon corners
   const insideOpeningStart = add(insideStart, offsetStart)
@@ -52,20 +52,20 @@ export function OpeningShape({
   const isOpeningSelected = select.isCurrentSelection(opening.id)
 
   // Calculate opening-to-opening distances
-  const sortedOpenings = segment.openings.sort((a, b) => a.offsetFromStart - b.offsetFromStart)
+  const sortedOpenings = wall.openings.sort((a, b) => a.offsetFromStart - b.offsetFromStart)
 
   const currentIndex = sortedOpenings.findIndex(o => o.id === opening.id)
   const previousOpening = currentIndex > 0 ? sortedOpenings[currentIndex - 1] : null
   const nextOpening = currentIndex < sortedOpenings.length - 1 ? sortedOpenings[currentIndex + 1] : null
 
-  const hasNeighbors = segment.openings.length > 1
+  const hasNeighbors = wall.openings.length > 1
 
   return (
     <Group
       name={`opening-${opening.id}`}
       entityId={opening.id}
       entityType="opening"
-      parentIds={[outerWallId, segment.id]}
+      parentIds={[perimeterId, wall.id]}
       listening
     >
       {/* Opening cutout - render as a different colored line */}
@@ -100,8 +100,8 @@ export function OpeningShape({
               {(() => {
                 const prevEndOffset = previousOpening.offsetFromStart + previousOpening.width
                 const currentStartOffset = opening.offsetFromStart
-                const prevEndPoint = add(outsideStart, scale(segmentVector, prevEndOffset))
-                const currentStartPoint = add(outsideStart, scale(segmentVector, currentStartOffset))
+                const prevEndPoint = add(outsideStart, scale(wallVector, prevEndOffset))
+                const currentStartPoint = add(outsideStart, scale(wallVector, currentStartOffset))
                 return (
                   <LengthIndicator
                     startPoint={prevEndPoint}
@@ -121,8 +121,8 @@ export function OpeningShape({
               {(() => {
                 const currentEndOffset = opening.offsetFromStart + opening.width
                 const nextStartOffset = nextOpening.offsetFromStart
-                const currentEndPoint = add(outsideStart, scale(segmentVector, currentEndOffset))
-                const nextStartPoint = add(outsideStart, scale(segmentVector, nextStartOffset))
+                const currentEndPoint = add(outsideStart, scale(wallVector, currentEndOffset))
+                const nextStartPoint = add(outsideStart, scale(wallVector, nextStartOffset))
                 return (
                   <LengthIndicator
                     startPoint={currentEndPoint}

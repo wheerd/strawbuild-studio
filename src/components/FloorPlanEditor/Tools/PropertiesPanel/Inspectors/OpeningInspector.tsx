@@ -4,12 +4,12 @@ import { useModelStore } from '@/model/store'
 import { createLength } from '@/types/geometry'
 import { useDebouncedNumericInput } from '@/components/FloorPlanEditor/hooks/useDebouncedInput'
 import { useSelectionStore } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
-import type { WallSegmentId, OuterWallId, OpeningId } from '@/types/ids'
+import type { PerimeterWallId, PerimeterId, OpeningId } from '@/types/ids'
 import type { OpeningType } from '@/types/model'
 
 interface OpeningInspectorProps {
-  outerWallId: OuterWallId
-  segmentId: WallSegmentId
+  perimeterId: PerimeterId
+  wallId: PerimeterWallId
   openingId: OpeningId
 }
 
@@ -20,32 +20,32 @@ const OPENING_TYPE_OPTIONS: { value: OpeningType; label: string }[] = [
   { value: 'passage', label: 'Passage' }
 ]
 
-export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningInspectorProps): React.JSX.Element {
+export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInspectorProps): React.JSX.Element {
   // Get model store functions - use specific selectors for stable references
   const select = useSelectionStore()
-  const updateOpening = useModelStore(state => state.updateOpening)
-  const removeOpeningFromOuterWall = useModelStore(state => state.removeOpeningFromOuterWall)
+  const updateOpening = useModelStore(state => state.updatePerimeterWallOpening)
+  const removeOpeningFromOuterWall = useModelStore(state => state.removePerimeterWallOpening)
 
-  // Get outer wall from store
-  const outerWall = useModelStore(state => state.outerWalls.get(outerWallId))
+  // Get perimeter from store
+  const perimeter = useModelStore(state => state.perimeters.get(perimeterId))
 
-  // Use useMemo to find segment and opening within the wall object
-  const segment = useMemo(() => {
-    return outerWall?.segments.find(s => s.id === segmentId)
-  }, [outerWall, segmentId])
+  // Use useMemo to find wall and opening within the wall object
+  const wall = useMemo(() => {
+    return perimeter?.walls.find(w => w.id === wallId)
+  }, [perimeter, wallId])
 
   const opening = useMemo(() => {
-    return segment?.openings.find(o => o.id === openingId)
-  }, [segment, openingId])
+    return wall?.openings.find(o => o.id === openingId)
+  }, [wall, openingId])
 
   // Debounced input handlers for numeric values
   const widthInput = useDebouncedNumericInput(
     opening?.width || 0,
     useCallback(
       (value: number) => {
-        updateOpening(outerWallId, segmentId, openingId, { width: createLength(value) })
+        updateOpening(perimeterId, wallId, openingId, { width: createLength(value) })
       },
-      [updateOpening, outerWallId, segmentId, openingId]
+      [updateOpening, perimeterId, wallId, openingId]
     ),
     {
       debounceMs: 300,
@@ -59,9 +59,9 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
     opening?.height || 0,
     useCallback(
       (value: number) => {
-        updateOpening(outerWallId, segmentId, openingId, { height: createLength(value) })
+        updateOpening(perimeterId, wallId, openingId, { height: createLength(value) })
       },
-      [updateOpening, outerWallId, segmentId, openingId]
+      [updateOpening, perimeterId, wallId, openingId]
     ),
     {
       debounceMs: 300,
@@ -75,14 +75,14 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
     opening?.offsetFromStart || 0,
     useCallback(
       (value: number) => {
-        updateOpening(outerWallId, segmentId, openingId, { offsetFromStart: createLength(value) })
+        updateOpening(perimeterId, wallId, openingId, { offsetFromStart: createLength(value) })
       },
-      [updateOpening, outerWallId, segmentId, openingId]
+      [updateOpening, perimeterId, wallId, openingId]
     ),
     {
       debounceMs: 300,
       min: 0,
-      max: (segment?.insideLength || 0) - (opening?.width || 0),
+      max: (wall?.insideLength || 0) - (opening?.width || 0),
       step: 10
     }
   )
@@ -91,11 +91,11 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
     opening?.sillHeight || 0,
     useCallback(
       (value: number) => {
-        updateOpening(outerWallId, segmentId, openingId, {
+        updateOpening(perimeterId, wallId, openingId, {
           sillHeight: value === 0 ? undefined : createLength(value)
         })
       },
-      [updateOpening, outerWallId, segmentId, openingId]
+      [updateOpening, perimeterId, wallId, openingId]
     ),
     {
       debounceMs: 300,
@@ -106,7 +106,7 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
   )
 
   // If opening not found, show error
-  if (!opening || !segment || !outerWall || !outerWallId || !segmentId) {
+  if (!opening || !wall || !perimeter || !perimeterId || !wallId) {
     return (
       <div className="p-2 bg-red-50 border border-red-200 rounded">
         <h3 className="text-xs font-semibold text-red-800">Opening Not Found</h3>
@@ -120,17 +120,17 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const newType = e.target.value as OpeningType
       // Selects can update immediately since they don't have focus issues
-      updateOpening(outerWallId, segmentId, openingId, { type: newType })
+      updateOpening(perimeterId, wallId, openingId, { type: newType })
     },
-    [updateOpening, outerWallId, segmentId, openingId]
+    [updateOpening, perimeterId, wallId, openingId]
   )
 
   const handleRemoveOpening = useCallback(() => {
     if (confirm('Are you sure you want to remove this opening?')) {
       select.popSelection()
-      removeOpeningFromOuterWall(outerWallId, segmentId, openingId)
+      removeOpeningFromOuterWall(perimeterId, wallId, openingId)
     }
-  }, [removeOpeningFromOuterWall, outerWallId, segmentId, openingId])
+  }, [removeOpeningFromOuterWall, perimeterId, wallId, openingId])
 
   const area = (opening.width * opening.height) / (1000 * 1000)
 
@@ -228,7 +228,7 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
                     onBlur={offsetInput.handleBlur}
                     onKeyDown={offsetInput.handleKeyDown}
                     min="0"
-                    max={segment.insideLength - opening.width}
+                    max={wall.insideLength - opening.width}
                     step="10"
                     className="unit-input w-full pl-2 py-1.5 pr-8 bg-white border border-gray-300 rounded text-xs text-right hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200"
                   />
@@ -237,7 +237,7 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
                   </span>
                 </div>
               </div>
-              <div className="text-xs text-gray-500">Distance from the start of the wall segment</div>
+              <div className="text-xs text-gray-500">Distance from the start of the wall wall</div>
             </div>
 
             {opening.type === 'window' && (
@@ -285,7 +285,7 @@ export function OpeningInspector({ outerWallId, segmentId, openingId }: OpeningI
           <button
             className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 bg-red-500 text-white rounded text-xs font-medium hover:bg-red-600 focus:outline-none focus:ring-1 focus:ring-red-500"
             onClick={handleRemoveOpening}
-            title="Remove this opening from the wall segment"
+            title="Remove this opening from the wall wall"
           >
             <span>🗑️</span>
             Remove Opening

@@ -6,7 +6,7 @@ import { useToolContext, useToolManager } from '@/components/FloorPlanEditor/Too
 import { useCanvasEventDispatcher } from '@/components/FloorPlanEditor/Tools/EventHandlers/CanvasEventDispatcher'
 import { stageReference } from '@/components/FloorPlanEditor/services/StageReference'
 import { GridLayer } from './GridLayer'
-import { OuterWallLayer } from './OuterWallLayer'
+import { PerimeterLayer } from './PerimeterLayer'
 import { ToolOverlayLayer } from './ToolOverlayLayer'
 
 interface FloorPlanStageProps {
@@ -175,7 +175,7 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
       draggable={false}
     >
       <GridLayer width={width} height={height} viewport={{ zoom, panX, panY }} />
-      <OuterWallLayer />
+      <PerimeterLayer />
       <ToolOverlayLayer />
     </Stage>
   )

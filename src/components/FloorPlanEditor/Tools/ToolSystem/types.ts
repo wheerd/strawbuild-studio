@@ -1,6 +1,6 @@
 import type { Bounds2D, Vec2 } from '@/types/geometry'
 import type Konva from 'konva'
-import type { EntityId, SelectableId, FloorId, StoreActions } from '@/model'
+import type { EntityId, SelectableId, StoreyId, StoreActions } from '@/model'
 import type React from 'react'
 import type { EntityHitResult } from '@/components/FloorPlanEditor/services/EntityHitTestService'
 import type { IconProps } from '@radix-ui/react-icons/dist/types'
@@ -87,7 +87,7 @@ export interface ToolContext {
 
   // Store access (tools use these directly)
   getModelStore(): StoreActions // Tools access model store directly
-  getActiveFloorId(): FloorId
+  getActiveStoreyId(): StoreyId
 
   // State access
   getActiveTool(): Tool | null

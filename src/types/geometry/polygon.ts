@@ -7,7 +7,7 @@ import type { Feature, Polygon as GeoJSONPolygon, LineString } from 'geojson'
 
 import type { Vec2, Area, Length, Bounds2D } from './basic'
 import { boundsFromPoints, createArea, createLength, distance } from './basic'
-import type { LineSegment2D } from './line'
+import type { LineWall2D } from './line'
 
 // Polygon types
 export interface Polygon2D {
@@ -74,17 +74,17 @@ export function pointsToGeoJSONPolygon(points: Vec2[]): Feature<GeoJSONPolygon> 
   return turfPolygon([coordinates])
 }
 
-export function lineSegmentToGeoJSON(segment: LineSegment2D): Feature<LineString> {
+export function lineWallToGeoJSON(wall: LineWall2D): Feature<LineString> {
   return turfLineString([
-    [segment.start[0], segment.start[1]],
-    [segment.end[0], segment.end[1]]
+    [wall.start[0], wall.start[1]],
+    [wall.end[0], wall.end[1]]
   ])
 }
 
-// Check if two line segments intersect (using Turf.js)
-export function doLineSegmentsIntersect(seg1: LineSegment2D, seg2: LineSegment2D): boolean {
-  const line1 = lineSegmentToGeoJSON(seg1)
-  const line2 = lineSegmentToGeoJSON(seg2)
+// Check if two line walls intersect (using Turf.js)
+export function doLineWallsIntersect(seg1: LineWall2D, seg2: LineWall2D): boolean {
+  const line1 = lineWallToGeoJSON(seg1)
+  const line2 = lineWallToGeoJSON(seg2)
 
   const intersections = lineIntersect(line1, line2)
   return intersections.features.length > 0
@@ -108,20 +108,20 @@ export function wouldPolygonSelfIntersect(existingPoints: Vec2[], newPoint: Vec2
     return true
   }
 
-  // The new line segment would be from the last existing point to the new point
-  const newSegment: LineSegment2D = {
+  // The new line wall would be from the last existing point to the new point
+  const newWall: LineWall2D = {
     start: existingPoints[existingPoints.length - 1],
     end: newPoint
   }
 
-  // Check if this new segment intersects with any existing segments (except the last one it connects to)
+  // Check if this new wall intersects with any existing walls (except the last one it connects to)
   for (let i = 0; i < existingPoints.length - 2; i++) {
-    const existingSegment: LineSegment2D = {
+    const existingWall: LineWall2D = {
       start: existingPoints[i],
       end: existingPoints[i + 1]
     }
 
-    if (doLineSegmentsIntersect(newSegment, existingSegment)) {
+    if (doLineWallsIntersect(newWall, existingWall)) {
       return true
     }
   }
@@ -258,7 +258,7 @@ export function arePolygonsIntersecting(polygon1: Polygon2D, polygon2: Polygon2D
 
   for (const edge1 of edges1) {
     for (const edge2 of edges2) {
-      if (doLineSegmentsIntersect(edge1, edge2)) {
+      if (doLineWallsIntersect(edge1, edge2)) {
         return true
       }
     }
@@ -267,9 +267,9 @@ export function arePolygonsIntersecting(polygon1: Polygon2D, polygon2: Polygon2D
   return false
 }
 
-// Helper function to get polygon edges as line segments
-function getPolygonEdges(polygon: Polygon2D): LineSegment2D[] {
-  const edges: LineSegment2D[] = []
+// Helper function to get polygon edges as line walls
+function getPolygonEdges(polygon: Polygon2D): LineWall2D[] {
+  const edges: LineWall2D[] = []
   const points = polygon.points
 
   for (let i = 0; i < points.length; i++) {

@@ -4,8 +4,8 @@ import { toolManager } from '@/components/FloorPlanEditor/Tools/ToolSystem/ToolM
 import { RocketIcon } from '@radix-ui/react-icons'
 
 /**
- * Tool for adding test outer wall data to demonstrate entity hit testing.
- * Triggers on activation to add a test outer wall polygon with segments and openings.
+ * Tool for adding test perimeter data to demonstrate entity hit testing.
+ * Triggers on activation to add a test perimeter polygon with walls and openings.
  */
 export class TestDataTool implements Tool {
   id = 'basic.test-data'
@@ -25,9 +25,9 @@ export class TestDataTool implements Tool {
 
     // Perform the test data creation operation
     const modelStore = context.getModelStore()
-    const activeFloorId = context.getActiveFloorId()
+    const activeStoreyId = context.getActiveStoreyId()
 
-    // Create a simple rectangular outer wall
+    // Create a simple rectangular perimeter
     const boundary = {
       points: [
         createVec2(1000, 4000), // Top-left
@@ -38,27 +38,23 @@ export class TestDataTool implements Tool {
     }
 
     try {
-      // Add the outer wall to the store
-      modelStore.addOuterWallPolygon(activeFloorId, boundary, 'infill', createLength(440))
+      // Add the perimeter to the store
+      const newPerimeter = modelStore.addPerimeter(activeStoreyId, boundary, 'infill', createLength(440))
 
-      // Get the newly created wall
-      const outerWalls = modelStore.getOuterWallsByFloor(activeFloorId)
-      const newWall = outerWalls[outerWalls.length - 1]
-
-      if (newWall && newWall.segments.length > 0) {
-        // Add a door to the first segment
-        const firstSegmentId = newWall.segments[0].id
-        modelStore.addOpeningToOuterWall(newWall.id, firstSegmentId, {
+      if (newPerimeter && newPerimeter.walls.length > 0) {
+        // Add a door to the first wall
+        const firstWallId = newPerimeter.walls[0].id
+        modelStore.addPerimeterWallOpening(newPerimeter.id, firstWallId, {
           type: 'door',
           offsetFromStart: createLength(1000),
           width: createLength(800),
           height: createLength(2100)
         })
 
-        // Add a window to the second segment
-        if (newWall.segments.length > 1) {
-          const secondSegmentId = newWall.segments[1].id
-          modelStore.addOpeningToOuterWall(newWall.id, secondSegmentId, {
+        // Add a window to the second wall
+        if (newPerimeter.walls.length > 1) {
+          const secondWallId = newPerimeter.walls[1].id
+          modelStore.addPerimeterWallOpening(newPerimeter.id, secondWallId, {
             type: 'window',
             offsetFromStart: createLength(500),
             width: createLength(1200),
@@ -69,28 +65,13 @@ export class TestDataTool implements Tool {
       }
 
       // Focus the view on the newly created test data
-      if (newWall) {
-        const wallPoints = newWall.corners.map(c => c.outsidePoint)
+      if (newPerimeter) {
+        const wallPoints = newPerimeter.corners.map(c => c.outsidePoint)
         const bounds = boundsFromPoints(wallPoints)
         if (bounds) {
           context.fitToView(bounds)
         }
       }
-
-      console.log('🏗️ Test outer wall created! Details:')
-      console.log('  Wall ID:', newWall.id)
-      console.log('  Segments count:', newWall.segments.length)
-      console.log('  Corners count:', newWall.corners.length)
-      console.log(
-        '  Wall segments:',
-        newWall.segments.map(s => s.id)
-      )
-      console.log(
-        '  Wall corners:',
-        newWall.corners.map(c => c.id)
-      )
-      console.log('  All outer walls on floor:', outerWalls.length)
-      console.log('Switch to Entity Inspector tool and click on different parts!')
     } catch (error) {
       console.error('❌ Failed to create test data:', error)
     }

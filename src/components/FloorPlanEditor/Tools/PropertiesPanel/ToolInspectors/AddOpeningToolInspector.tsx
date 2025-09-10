@@ -4,7 +4,7 @@ import { useDebouncedNumericInput } from '@/components/FloorPlanEditor/hooks/use
 import { useReactiveTool } from '@/components/FloorPlanEditor/Tools/hooks/useReactiveTool'
 import type { OpeningType } from '@/types/model'
 import type { ToolInspectorProps } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
-import type { AddOpeningTool } from '@/components/FloorPlanEditor/Tools/Categories/OuterWallTools/AddOpeningTool'
+import type { AddOpeningTool } from '@/components/FloorPlanEditor/Tools/Categories/PerimeterTools/AddOpeningTool'
 import * as Select from '@radix-ui/react-select'
 
 export function AddOpeningToolInspector({ tool }: ToolInspectorProps<AddOpeningTool>): React.JSX.Element {

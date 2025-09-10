@@ -1,6 +1,6 @@
 import type { ToolManager } from './ToolSystem/ToolManager'
 import { basicToolGroup } from './Categories/BasicTools'
-import { outerWallToolGroup } from './Categories/OuterWallTools'
+import { perimeterToolGroup } from './Categories/PerimeterTools'
 
 // Export tool system components
 export { ToolContextProvider } from './ToolSystem/ToolContext'
@@ -19,14 +19,14 @@ export {
 
 // Export individual tool groups for external registration
 export { basicToolGroup } from './Categories/BasicTools'
-export { outerWallToolGroup } from './Categories/OuterWallTools'
+export { perimeterToolGroup } from './Categories/PerimeterTools'
 
 /**
  * Register all available tools - simple and direct
  */
 export function registerAllTools(manager: ToolManager): void {
   manager.registerToolGroup(basicToolGroup)
-  manager.registerToolGroup(outerWallToolGroup)
+  manager.registerToolGroup(perimeterToolGroup)
 }
 
 /**

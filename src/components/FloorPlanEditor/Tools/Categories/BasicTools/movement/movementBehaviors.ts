@@ -1,16 +1,16 @@
 import type { EntityType } from '@/types/ids'
 import type { MovementBehavior } from './MovementBehavior'
-import { OuterWallPolygonMovementBehavior } from './behaviors/OuterWallPolygonMovementBehavior'
-import { WallSegmentMovementBehavior } from './behaviors/WallSegmentMovementBehavior'
-import { OuterCornerMovementBehavior } from './behaviors/OuterCornerMovementBehavior'
+import { PerimeterMovementBehavior } from './behaviors/PerimeterMovementBehavior'
+import { PerimeterWallMovementBehavior } from './behaviors/PerimeterWallMovementBehavior'
+import { PerimeterCornerMovementBehavior } from './behaviors/PerimeterCornerMovementBehavior'
 import { OpeningMovementBehavior } from './behaviors/OpeningMovementBehavior'
 
 const MOVEMENT_BEHAVIORS: Record<EntityType, MovementBehavior<any, any> | null> = {
-  'outer-wall': new OuterWallPolygonMovementBehavior(),
-  'wall-segment': new WallSegmentMovementBehavior(),
-  'outer-corner': new OuterCornerMovementBehavior(),
+  perimeter: new PerimeterMovementBehavior(),
+  'perimeter-wall': new PerimeterWallMovementBehavior(),
+  'perimeter-corner': new PerimeterCornerMovementBehavior(),
   opening: new OpeningMovementBehavior(),
-  floor: null // Not implemented
+  storey: null // Not implemented
 }
 
 export function getMovementBehavior(entityType: EntityType): MovementBehavior<any, any> | null {

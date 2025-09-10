@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, useMemo } from 'react'
 import { toolManager, type ToolManagerState } from './ToolManager'
 import type { Tool, ToolContext as IToolContext } from './types'
 import { useModelStore } from '@/model/store'
-import { useActiveFloorId } from '@/components/FloorPlanEditor/hooks/useEditorStore'
+import { useActiveStoreyId } from '@/components/FloorPlanEditor/hooks/useEditorStore'
 import type { EntityId, SelectableId } from '@/types/ids'
 import { useSelectionStore } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
 import { entityHitTestService } from '@/components/FloorPlanEditor/services/EntityHitTestService'
@@ -21,7 +21,7 @@ const ToolSystemContext = createContext<{
 export function ToolContextProvider({ children }: ToolContextProviderProps): React.JSX.Element {
   const [toolManagerState, setToolManagerState] = useState<ToolManagerState>(toolManager.getState())
   const modelStore = useModelStore()
-  const activeFloorId = useActiveFloorId()
+  const activeStoreyId = useActiveStoreyId()
   const { stageToWorld, worldToStage, fitToView } = useViewportActions()
 
   // Selection store actions
@@ -81,7 +81,7 @@ export function ToolContextProvider({ children }: ToolContextProviderProps): Rea
 
       // Store access (tools use these directly)
       getModelStore: () => modelStore,
-      getActiveFloorId: () => activeFloorId,
+      getActiveStoreyId: () => activeStoreyId,
 
       // State access
       getActiveTool: (): Tool | null => {
@@ -99,7 +99,7 @@ export function ToolContextProvider({ children }: ToolContextProviderProps): Rea
       fitToView,
       worldToStage,
       stageToWorld,
-      activeFloorId,
+      activeStoreyId,
       modelStore,
       pushSelection,
       popSelectionStore,
