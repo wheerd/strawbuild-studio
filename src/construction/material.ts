@@ -94,3 +94,7 @@ export const DEFAULT_MATERIALS: Record<MaterialId, Material> = {
   [wood140x140.id]: wood140x140,
   [strawbale.id]: strawbale
 }
+
+export type ResolveMaterialFunction = (materialId: MaterialId) => Material | undefined
+
+export const resolveDefaultMaterial: ResolveMaterialFunction = (materialId: MaterialId) => DEFAULT_MATERIALS[materialId]

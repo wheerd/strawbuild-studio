@@ -1,10 +1,26 @@
 import { describe, it, expect } from 'vitest'
 import type { Length } from '@/types/geometry'
-import type { MaterialId } from './material'
+import type { MaterialId, Material } from './material'
+import { DEFAULT_MATERIALS } from './material'
 import { constructPost, type FullPostConfig, type DoublePostConfig } from './posts'
 
 const mockWoodMaterial = 'wood-material' as MaterialId
 const mockStrawMaterial = 'straw-material' as MaterialId
+
+// Get a real dimensional material for testing warnings
+const wood120x60 = Object.values(DEFAULT_MATERIALS).find(
+  m => m.type === 'dimensional' && m.width === 120 && m.thickness === 60
+)!
+const dimensionalMaterialId = wood120x60.id
+
+// Mock resolve material function for tests
+const mockResolveMaterial = (materialId: MaterialId): Material | undefined => {
+  if (materialId === dimensionalMaterialId) {
+    return wood120x60
+  }
+  // Return undefined for mock materials (no warnings)
+  return undefined
+}
 
 describe('constructPost', () => {
   describe('full post construction', () => {
@@ -14,16 +30,18 @@ describe('constructPost', () => {
       material: mockWoodMaterial
     }
 
-    it('should create a single full post element', () => {
+    it('should create a single full post element without errors', () => {
       const offset = 100 as Length
       const wallThickness = 360 as Length
       const wallHeight = 2500 as Length
 
-      const result = constructPost(offset, wallThickness, wallHeight, fullPostConfig)
+      const result = constructPost(offset, wallThickness, wallHeight, fullPostConfig, mockResolveMaterial)
 
-      expect(result).toHaveLength(1)
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(0)
+      expect(result.it).toHaveLength(1)
 
-      const post = result[0]
+      const post = result.it[0]
       expect(post.type).toBe('post')
       expect(post.material).toBe(mockWoodMaterial)
       expect(post.position).toEqual([100, 0, 0])
@@ -36,10 +54,12 @@ describe('constructPost', () => {
       const wallThickness = 360 as Length
       const wallHeight = 2500 as Length
 
-      const result = constructPost(offset, wallThickness, wallHeight, fullPostConfig)
+      const result = constructPost(offset, wallThickness, wallHeight, fullPostConfig, mockResolveMaterial)
 
-      expect(result).toHaveLength(1)
-      expect(result[0].position).toEqual([0, 0, 0])
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(0)
+      expect(result.it).toHaveLength(1)
+      expect(result.it[0].position).toEqual([0, 0, 0])
     })
 
     it('should handle different wall dimensions', () => {
@@ -47,11 +67,13 @@ describe('constructPost', () => {
       const wallThickness = 240 as Length
       const wallHeight = 3000 as Length
 
-      const result = constructPost(offset, wallThickness, wallHeight, fullPostConfig)
+      const result = constructPost(offset, wallThickness, wallHeight, fullPostConfig, mockResolveMaterial)
 
-      expect(result).toHaveLength(1)
-      expect(result[0].position).toEqual([50, 0, 0])
-      expect(result[0].size).toEqual([60, 240, 3000])
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(0)
+      expect(result.it).toHaveLength(1)
+      expect(result.it[0].position).toEqual([50, 0, 0])
+      expect(result.it[0].size).toEqual([60, 240, 3000])
     })
 
     it('should use correct material from config', () => {
@@ -61,9 +83,11 @@ describe('constructPost', () => {
         material: customMaterial
       }
 
-      const result = constructPost(100 as Length, 360 as Length, 2500 as Length, customConfig)
+      const result = constructPost(100 as Length, 360 as Length, 2500 as Length, customConfig, mockResolveMaterial)
 
-      expect(result[0].material).toBe(customMaterial)
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(0)
+      expect(result.it[0].material).toBe(customMaterial)
     })
 
     it('should use custom width from config', () => {
@@ -72,16 +96,49 @@ describe('constructPost', () => {
         width: 80 as Length
       }
 
-      const result = constructPost(100 as Length, 360 as Length, 2500 as Length, customConfig)
+      const result = constructPost(100 as Length, 360 as Length, 2500 as Length, customConfig, mockResolveMaterial)
 
-      expect(result[0].size).toEqual([80, 360, 2500])
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(0)
+      expect(result.it[0].size).toEqual([80, 360, 2500])
     })
 
     it('should generate unique IDs for multiple posts', () => {
-      const result1 = constructPost(0 as Length, 360 as Length, 2500 as Length, fullPostConfig)
-      const result2 = constructPost(100 as Length, 360 as Length, 2500 as Length, fullPostConfig)
+      const result1 = constructPost(0 as Length, 360 as Length, 2500 as Length, fullPostConfig, mockResolveMaterial)
+      const result2 = constructPost(100 as Length, 360 as Length, 2500 as Length, fullPostConfig, mockResolveMaterial)
 
-      expect(result1[0].id).not.toBe(result2[0].id)
+      expect(result1.it[0].id).not.toBe(result2.it[0].id)
+    })
+
+    it('should generate warning for dimensional material size mismatch', () => {
+      const dimensionalConfig: FullPostConfig = {
+        type: 'full',
+        width: 80 as Length, // Different from material width (120)
+        material: dimensionalMaterialId
+      }
+
+      const result = constructPost(100 as Length, 200 as Length, 2500 as Length, dimensionalConfig, mockResolveMaterial)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(1)
+      expect(result.warnings[0].description).toContain('dimensions')
+      expect(result.warnings[0].description).toContain("don't match")
+      expect(result.warnings[0].elements).toContain(result.it[0].id)
+      expect(result.it).toHaveLength(1)
+    })
+
+    it('should not generate warning for dimensional material exact match', () => {
+      const exactConfig: FullPostConfig = {
+        type: 'full',
+        width: 120 as Length, // Matches material width
+        material: dimensionalMaterialId
+      }
+
+      const result = constructPost(100 as Length, 60 as Length, 2500 as Length, exactConfig, mockResolveMaterial)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(0)
+      expect(result.it).toHaveLength(1)
     })
   })
 
@@ -94,32 +151,34 @@ describe('constructPost', () => {
       infillMaterial: mockStrawMaterial
     }
 
-    it('should create two posts and one infill element', () => {
+    it('should create two posts and one infill element without errors', () => {
       const offset = 100 as Length
       const wallThickness = 360 as Length
       const wallHeight = 2500 as Length
 
-      const result = constructPost(offset, wallThickness, wallHeight, doublePostConfig)
+      const result = constructPost(offset, wallThickness, wallHeight, doublePostConfig, mockResolveMaterial)
 
-      expect(result).toHaveLength(3)
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(0)
+      expect(result.it).toHaveLength(3)
 
       // First post (inside)
-      expect(result[0].type).toBe('post')
-      expect(result[0].material).toBe(mockWoodMaterial)
-      expect(result[0].position).toEqual([100, 0, 0])
-      expect(result[0].size).toEqual([60, 120, 2500])
+      expect(result.it[0].type).toBe('post')
+      expect(result.it[0].material).toBe(mockWoodMaterial)
+      expect(result.it[0].position).toEqual([100, 0, 0])
+      expect(result.it[0].size).toEqual([60, 120, 2500])
 
       // Second post (outside)
-      expect(result[1].type).toBe('post')
-      expect(result[1].material).toBe(mockWoodMaterial)
-      expect(result[1].position).toEqual([100, 240, 0]) // wallThickness(360) - thickness(120) = 240
-      expect(result[1].size).toEqual([60, 120, 2500])
+      expect(result.it[1].type).toBe('post')
+      expect(result.it[1].material).toBe(mockWoodMaterial)
+      expect(result.it[1].position).toEqual([100, 240, 0]) // wallThickness(360) - thickness(120) = 240
+      expect(result.it[1].size).toEqual([60, 120, 2500])
 
       // Infill between posts
-      expect(result[2].type).toBe('infill')
-      expect(result[2].material).toBe(mockStrawMaterial)
-      expect(result[2].position).toEqual([100, 120, 0])
-      expect(result[2].size).toEqual([60, 120, 2500]) // wallThickness(360) - 2*thickness(240) = 120
+      expect(result.it[2].type).toBe('infill')
+      expect(result.it[2].material).toBe(mockStrawMaterial)
+      expect(result.it[2].position).toEqual([100, 120, 0])
+      expect(result.it[2].size).toEqual([60, 120, 2500]) // wallThickness(360) - 2*thickness(240) = 120
     })
 
     it('should handle zero offset', () => {
@@ -127,12 +186,14 @@ describe('constructPost', () => {
       const wallThickness = 360 as Length
       const wallHeight = 2500 as Length
 
-      const result = constructPost(offset, wallThickness, wallHeight, doublePostConfig)
+      const result = constructPost(offset, wallThickness, wallHeight, doublePostConfig, mockResolveMaterial)
 
-      expect(result).toHaveLength(3)
-      expect(result[0].position).toEqual([0, 0, 0])
-      expect(result[1].position).toEqual([0, 240, 0])
-      expect(result[2].position).toEqual([0, 120, 0])
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(0)
+      expect(result.it).toHaveLength(3)
+      expect(result.it[0].position).toEqual([0, 0, 0])
+      expect(result.it[1].position).toEqual([0, 240, 0])
+      expect(result.it[2].position).toEqual([0, 120, 0])
     })
 
     it('should handle different wall dimensions', () => {
@@ -140,21 +201,23 @@ describe('constructPost', () => {
       const wallThickness = 400 as Length
       const wallHeight = 3000 as Length
 
-      const result = constructPost(offset, wallThickness, wallHeight, doublePostConfig)
+      const result = constructPost(offset, wallThickness, wallHeight, doublePostConfig, mockResolveMaterial)
 
-      expect(result).toHaveLength(3)
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(0)
+      expect(result.it).toHaveLength(3)
 
       // Posts should maintain their thickness
-      expect(result[0].size).toEqual([60, 120, 3000])
-      expect(result[1].size).toEqual([60, 120, 3000])
+      expect(result.it[0].size).toEqual([60, 120, 3000])
+      expect(result.it[1].size).toEqual([60, 120, 3000])
 
       // Infill should adjust to available space
-      expect(result[2].size).toEqual([60, 160, 3000]) // 400 - 2*120 = 160
+      expect(result.it[2].size).toEqual([60, 160, 3000]) // 400 - 2*120 = 160
 
       // Positions should be correct
-      expect(result[0].position).toEqual([200, 0, 0])
-      expect(result[1].position).toEqual([200, 280, 0]) // 400 - 120 = 280
-      expect(result[2].position).toEqual([200, 120, 0])
+      expect(result.it[0].position).toEqual([200, 0, 0])
+      expect(result.it[1].position).toEqual([200, 280, 0]) // 400 - 120 = 280
+      expect(result.it[2].position).toEqual([200, 120, 0])
     })
 
     it('should use custom post dimensions', () => {
@@ -164,20 +227,22 @@ describe('constructPost', () => {
         thickness: 100 as Length
       }
 
-      const result = constructPost(100 as Length, 360 as Length, 2500 as Length, customConfig)
+      const result = constructPost(100 as Length, 360 as Length, 2500 as Length, customConfig, mockResolveMaterial)
 
-      expect(result).toHaveLength(3)
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(0)
+      expect(result.it).toHaveLength(3)
 
       // Posts with custom dimensions
-      expect(result[0].size).toEqual([80, 100, 2500])
-      expect(result[1].size).toEqual([80, 100, 2500])
+      expect(result.it[0].size).toEqual([80, 100, 2500])
+      expect(result.it[1].size).toEqual([80, 100, 2500])
 
       // Infill adjusted for custom thickness
-      expect(result[2].size).toEqual([80, 160, 2500]) // 360 - 2*100 = 160
+      expect(result.it[2].size).toEqual([80, 160, 2500]) // 360 - 2*100 = 160
 
       // Positions adjusted for custom thickness
-      expect(result[1].position).toEqual([100, 260, 0]) // 360 - 100 = 260
-      expect(result[2].position).toEqual([100, 100, 0])
+      expect(result.it[1].position).toEqual([100, 260, 0]) // 360 - 100 = 260
+      expect(result.it[2].position).toEqual([100, 100, 0])
     })
 
     it('should use correct materials from config', () => {
@@ -190,40 +255,90 @@ describe('constructPost', () => {
         infillMaterial: customStrawMaterial
       }
 
-      const result = constructPost(100 as Length, 360 as Length, 2500 as Length, customConfig)
+      const result = constructPost(100 as Length, 360 as Length, 2500 as Length, customConfig, mockResolveMaterial)
 
-      expect(result[0].material).toBe(customWoodMaterial)
-      expect(result[1].material).toBe(customWoodMaterial)
-      expect(result[2].material).toBe(customStrawMaterial)
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(0)
+      expect(result.it[0].material).toBe(customWoodMaterial)
+      expect(result.it[1].material).toBe(customWoodMaterial)
+      expect(result.it[2].material).toBe(customStrawMaterial)
     })
 
     it('should generate unique IDs for all elements', () => {
-      const result = constructPost(100 as Length, 360 as Length, 2500 as Length, doublePostConfig)
+      const result = constructPost(100 as Length, 360 as Length, 2500 as Length, doublePostConfig, mockResolveMaterial)
 
-      expect(result).toHaveLength(3)
-      expect(result[0].id).not.toBe(result[1].id)
-      expect(result[0].id).not.toBe(result[2].id)
-      expect(result[1].id).not.toBe(result[2].id)
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(0)
+      expect(result.it).toHaveLength(3)
+      expect(result.it[0].id).not.toBe(result.it[1].id)
+      expect(result.it[0].id).not.toBe(result.it[2].id)
+      expect(result.it[1].id).not.toBe(result.it[2].id)
 
       // All IDs should be truthy
-      expect(result[0].id).toBeTruthy()
-      expect(result[1].id).toBeTruthy()
-      expect(result[2].id).toBeTruthy()
+      expect(result.it[0].id).toBeTruthy()
+      expect(result.it[1].id).toBeTruthy()
+      expect(result.it[2].id).toBeTruthy()
     })
 
-    it('should handle minimal wall thickness', () => {
-      const wallThickness = 240 as Length // Exactly 2 * thickness
+    it('should not create infill when wall thickness equals exactly 2 * post thickness', () => {
+      const wallThickness = 240 as Length // Exactly 2 * thickness (120)
 
-      const result = constructPost(100 as Length, wallThickness, 2500 as Length, doublePostConfig)
+      const result = constructPost(100 as Length, wallThickness, 2500 as Length, doublePostConfig, mockResolveMaterial)
 
-      expect(result).toHaveLength(3)
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(0)
+      expect(result.it).toHaveLength(2) // Only two posts, no infill
 
       // Posts should fit exactly
-      expect(result[0].position).toEqual([100, 0, 0])
-      expect(result[1].position).toEqual([100, 120, 0]) // 240 - 120 = 120
+      expect(result.it[0].position).toEqual([100, 0, 0])
+      expect(result.it[1].position).toEqual([100, 120, 0]) // 240 - 120 = 120
 
-      // Infill should have zero width
-      expect(result[2].size).toEqual([60, 0, 2500]) // 240 - 2*120 = 0
+      // No infill element should be created
+      expect(result.it.every(element => element.type === 'post')).toBe(true)
+    })
+
+    it('should generate error when wall is too narrow for double posts', () => {
+      const narrowWallThickness = 200 as Length // Less than 2 * thickness (240)
+
+      const result = constructPost(
+        100 as Length,
+        narrowWallThickness,
+        2500 as Length,
+        doublePostConfig,
+        mockResolveMaterial
+      )
+
+      expect(result.errors).toHaveLength(1)
+      expect(result.warnings).toHaveLength(0)
+      expect(result.it).toHaveLength(1) // Should create single error element
+
+      expect(result.errors[0].description).toContain('not wide enough')
+      expect(result.errors[0].description).toContain('240mm minimum')
+      expect(result.errors[0].elements).toContain(result.it[0].id)
+
+      // Error element should be a single post
+      expect(result.it[0].type).toBe('post')
+      expect(result.it[0].size).toEqual([60, 200, 2500])
+    })
+
+    it('should generate warning for dimensional material size mismatch', () => {
+      const dimensionalConfig: DoublePostConfig = {
+        type: 'double',
+        width: 80 as Length, // Different from material width (120)
+        thickness: 80 as Length, // Different from material thickness (60)
+        material: dimensionalMaterialId,
+        infillMaterial: mockStrawMaterial
+      }
+
+      const result = constructPost(100 as Length, 300 as Length, 2500 as Length, dimensionalConfig, mockResolveMaterial)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(1)
+      expect(result.warnings[0].description).toContain('dimensions')
+      expect(result.warnings[0].description).toContain("don't match")
+      expect(result.warnings[0].elements).toContain(result.it[0].id)
+      expect(result.warnings[0].elements).toContain(result.it[1].id)
+      expect(result.it).toHaveLength(3)
     })
   })
 
@@ -235,10 +350,12 @@ describe('constructPost', () => {
         material: mockWoodMaterial
       }
 
-      const result = constructPost(0 as Length, 1 as Length, 1 as Length, fullPostConfig)
+      const result = constructPost(0 as Length, 1 as Length, 1 as Length, fullPostConfig, mockResolveMaterial)
 
-      expect(result).toHaveLength(1)
-      expect(result[0].size).toEqual([1, 1, 1])
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(0)
+      expect(result.it).toHaveLength(1)
+      expect(result.it[0].size).toEqual([1, 1, 1])
     })
 
     it('should handle large dimensions', () => {
@@ -248,34 +365,13 @@ describe('constructPost', () => {
         material: mockWoodMaterial
       }
 
-      const result = constructPost(1000 as Length, 1000 as Length, 5000 as Length, fullPostConfig)
+      const result = constructPost(1000 as Length, 1000 as Length, 5000 as Length, fullPostConfig, mockResolveMaterial)
 
-      expect(result).toHaveLength(1)
-      expect(result[0].position).toEqual([1000, 0, 0])
-      expect(result[0].size).toEqual([200, 1000, 5000])
-    })
-
-    it('should handle negative infill width gracefully', () => {
-      const doublePostConfig: DoublePostConfig = {
-        type: 'double',
-        width: 60 as Length,
-        thickness: 200 as Length, // Thickness larger than wallThickness/2
-        material: mockWoodMaterial,
-        infillMaterial: mockStrawMaterial
-      }
-
-      const wallThickness = 300 as Length // 2*200 = 400 > 300, so negative infill
-
-      const result = constructPost(100 as Length, wallThickness, 2500 as Length, doublePostConfig)
-
-      expect(result).toHaveLength(3)
-
-      // Posts should still be created
-      expect(result[0].type).toBe('post')
-      expect(result[1].type).toBe('post')
-
-      // Infill should have negative width (this might be an error condition in real usage)
-      expect(result[2].size).toEqual([60, -100, 2500]) // 300 - 2*200 = -100
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(0)
+      expect(result.it).toHaveLength(1)
+      expect(result.it[0].position).toEqual([1000, 0, 0])
+      expect(result.it[0].size).toEqual([200, 1000, 5000])
     })
 
     it('should throw error for invalid post type', () => {
@@ -286,7 +382,7 @@ describe('constructPost', () => {
       } as any
 
       expect(() => {
-        constructPost(100 as Length, 360 as Length, 2500 as Length, invalidConfig)
+        constructPost(100 as Length, 360 as Length, 2500 as Length, invalidConfig, mockResolveMaterial)
       }).toThrow('Invalid post type')
     })
   })
@@ -299,9 +395,12 @@ describe('constructPost', () => {
         material: mockWoodMaterial
       }
 
-      const result = constructPost(100 as Length, 360 as Length, 2500 as Length, fullPostConfig)
+      const result = constructPost(100 as Length, 360 as Length, 2500 as Length, fullPostConfig, mockResolveMaterial)
 
-      const post = result[0]
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(0)
+
+      const post = result.it[0]
       expect(post).toHaveProperty('id')
       expect(post).toHaveProperty('type')
       expect(post).toHaveProperty('material')
@@ -323,9 +422,12 @@ describe('constructPost', () => {
         infillMaterial: mockStrawMaterial
       }
 
-      const result = constructPost(100 as Length, 360 as Length, 2500 as Length, doublePostConfig)
+      const result = constructPost(100 as Length, 360 as Length, 2500 as Length, doublePostConfig, mockResolveMaterial)
 
-      result.forEach(element => {
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(0)
+
+      result.it.forEach(element => {
         expect(element).toHaveProperty('id')
         expect(element).toHaveProperty('type')
         expect(element).toHaveProperty('material')
@@ -349,9 +451,12 @@ describe('constructPost', () => {
       }
 
       const offset = 500 as Length
-      const result = constructPost(offset, 360 as Length, 2500 as Length, fullPostConfig)
+      const result = constructPost(offset, 360 as Length, 2500 as Length, fullPostConfig, mockResolveMaterial)
 
-      const post = result[0]
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(0)
+
+      const post = result.it[0]
 
       // Position should follow wall coordinate system
       // [0] = along wall (offset from start)
@@ -373,22 +478,25 @@ describe('constructPost', () => {
 
       const offset = 500 as Length
       const wallThickness = 360 as Length
-      const result = constructPost(offset, wallThickness, 2500 as Length, doublePostConfig)
+      const result = constructPost(offset, wallThickness, 2500 as Length, doublePostConfig, mockResolveMaterial)
+
+      expect(result.errors).toHaveLength(0)
+      expect(result.warnings).toHaveLength(0)
 
       // First post at inside edge
-      expect(result[0].position[0]).toBe(offset)
-      expect(result[0].position[1]).toBe(0)
-      expect(result[0].position[2]).toBe(0)
+      expect(result.it[0].position[0]).toBe(offset)
+      expect(result.it[0].position[1]).toBe(0)
+      expect(result.it[0].position[2]).toBe(0)
 
       // Second post at outside edge
-      expect(result[1].position[0]).toBe(offset)
-      expect(result[1].position[1]).toBe(wallThickness - doublePostConfig.thickness)
-      expect(result[1].position[2]).toBe(0)
+      expect(result.it[1].position[0]).toBe(offset)
+      expect(result.it[1].position[1]).toBe(wallThickness - doublePostConfig.thickness)
+      expect(result.it[1].position[2]).toBe(0)
 
       // Infill between posts
-      expect(result[2].position[0]).toBe(offset)
-      expect(result[2].position[1]).toBe(doublePostConfig.thickness)
-      expect(result[2].position[2]).toBe(0)
+      expect(result.it[2].position[0]).toBe(offset)
+      expect(result.it[2].position[1]).toBe(doublePostConfig.thickness)
+      expect(result.it[2].position[2]).toBe(0)
     })
   })
 })
