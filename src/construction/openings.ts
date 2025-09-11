@@ -5,54 +5,42 @@ import {
   createConstructionElementId,
   type BaseConstructionSegment,
   type ConstructionElement,
-  type ConstructionIssue,
   type WithIssues
 } from './base'
+import type { InfillConstructionConfig } from './infill'
 
 export interface OpeningConstructionConfig {
-  frameType: 'frame' | 'box' // Default: 'frame'
-  framePadding: Length // Default: 15mm
-  frameThickness: Length // Default: 60mm
-  fillingThickness: Length // Default: 30mm
-  additionalPadding: Length // Space needed around opening
-  frameMaterial: MaterialId
-  fillingMaterial: MaterialId
+  padding: Length // Default: 15mm
+
+  sillThickness?: Length // Default: 60mm
+  sillMaterial?: MaterialId
+
+  headerThickness: Length // Default: 60mm
+  headerMaterial: MaterialId
+
+  fillingThickness?: Length // Default: 30mm
+  fillingMaterial?: MaterialId
 }
 
 export interface OpeningConstruction extends BaseConstructionSegment {
   openingId: OpeningId
   type: 'opening'
-  frameType: 'frame' | 'box'
 }
 
 export const constructOpeningFrame = (
   _opening: Opening,
-  _config: OpeningConstructionConfig
-): WithIssues<ConstructionElement[]> => {
-  throw new Error('TODO: Implementation')
-}
-
-export const constructOpeningBox = (
-  _opening: Opening,
-  _config: OpeningConstructionConfig
+  _config: OpeningConstructionConfig,
+  _infill: InfillConstructionConfig
 ): WithIssues<ConstructionElement[]> => {
   throw new Error('TODO: Implementation')
 }
 
 export const constructOpening = (
   opening: Opening,
-  config: OpeningConstructionConfig
+  config: OpeningConstructionConfig,
+  infill: InfillConstructionConfig
 ): WithIssues<OpeningConstruction> => {
-  let errors: ConstructionIssue[]
-  let warnings: ConstructionIssue[]
-  let elements: ConstructionElement[]
-  if (config.frameType === 'box') {
-    ;({ it: elements, errors, warnings } = constructOpeningBox(opening, config))
-  } else if (config.frameType === 'frame') {
-    ;({ it: elements, errors, warnings } = constructOpeningFrame(opening, config))
-  } else {
-    throw new Error('Invalid opening frame type')
-  }
+  const { it: elements, errors, warnings } = constructOpeningFrame(opening, config, infill)
   return {
     it: {
       id: createConstructionElementId(),
@@ -60,7 +48,6 @@ export const constructOpening = (
       openingId: opening.id,
       position: opening.offsetFromStart,
       width: opening.width,
-      frameType: config.frameType,
       elements
     },
     warnings,
