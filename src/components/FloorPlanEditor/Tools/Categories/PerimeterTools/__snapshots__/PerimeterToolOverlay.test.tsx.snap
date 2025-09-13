@@ -458,7 +458,7 @@ exports[`PerimeterToolOverlay > rendering with single point > renders first poin
 </div>
 `;
 
-exports[`PerimeterToolOverlay > rendering with single point > renders line to mouse position with invalid styling 1`] = `
+exports[`PerimeterToolOverlay > rendering with single point > renders line to pointer position with invalid styling 1`] = `
 <div>
   <div
     data-testid="konva-group"
@@ -494,7 +494,7 @@ exports[`PerimeterToolOverlay > rendering with single point > renders line to mo
 </div>
 `;
 
-exports[`PerimeterToolOverlay > rendering with single point > renders line to mouse position with valid styling 1`] = `
+exports[`PerimeterToolOverlay > rendering with single point > renders line to pointer position with valid styling 1`] = `
 <div>
   <div
     data-testid="konva-group"

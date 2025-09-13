@@ -25,16 +25,16 @@ export class RotateTool implements Tool {
     isRotating: false
   }
 
-  handleMouseDown(_event: CanvasEvent): boolean {
+  handlePointerDown(_event: CanvasEvent): boolean {
     // Disabled until entities are properly implemented
     return false
   }
 
-  handleMouseMove(_event: CanvasEvent): boolean {
+  handlePointerMove(_event: CanvasEvent): boolean {
     return false
   }
 
-  handleMouseUp(_event: CanvasEvent): boolean {
+  handlePointerUp(_event: CanvasEvent): boolean {
     return false
   }
 

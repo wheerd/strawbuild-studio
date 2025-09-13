@@ -27,9 +27,9 @@ export interface Tool extends BaseTool {
   onRenderNeeded?(listener: () => void): () => void
 
   // Event handlers
-  handleMouseDown?(event: CanvasEvent): boolean
-  handleMouseMove?(event: CanvasEvent): boolean
-  handleMouseUp?(event: CanvasEvent): boolean
+  handlePointerDown?(event: CanvasEvent): boolean
+  handlePointerMove?(event: CanvasEvent): boolean
+  handlePointerUp?(event: CanvasEvent): boolean
   handleKeyDown?(event: CanvasEvent): boolean
   handleKeyUp?(event: CanvasEvent): boolean
 
@@ -48,7 +48,7 @@ export interface ToolOverlayComponentProps<T extends Tool = Tool> {
 
 export interface ToolOverlayContext {
   toolContext: ToolContext
-  currentMousePos?: Vec2
+  currentPointerPos?: Vec2
 }
 
 // Keyboard shortcut system
@@ -63,8 +63,8 @@ export interface ShortcutDefinition {
 }
 
 export interface CanvasEvent {
-  type: 'mousedown' | 'mousemove' | 'mouseup' | 'wheel' | 'keydown' | 'keyup'
-  originalEvent: MouseEvent | KeyboardEvent | WheelEvent
+  type: 'pointerdown' | 'pointermove' | 'pointerup' | 'wheel' | 'keydown' | 'keyup'
+  originalEvent: PointerEvent | KeyboardEvent | WheelEvent
   konvaEvent: Konva.KonvaEventObject<any>
   stageCoordinates: Vec2 // Transformed coordinates (accounting for pan/zoom)
   pointerCoordinates?: { x: number; y: number } // Original pointer coordinates for hit testing

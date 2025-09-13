@@ -18,7 +18,7 @@ import { BorderAllIcon } from '@radix-ui/react-icons'
 
 interface PerimeterToolState {
   points: Vec2[]
-  mouse: Vec2
+  pointer: Vec2
   snapResult?: SnapResult
   snapContext: SnappingContext
   isCurrentLineValid: boolean
@@ -40,7 +40,7 @@ export class PerimeterTool extends BaseTool implements Tool {
 
   public state: PerimeterToolState = {
     points: [],
-    mouse: createVec2(0, 0),
+    pointer: createVec2(0, 0),
     snapContext: {
       snapPoints: [],
       alignPoints: [],
@@ -104,9 +104,9 @@ export class PerimeterTool extends BaseTool implements Tool {
     this.triggerRender()
   }
 
-  handleMouseDown(event: CanvasEvent): boolean {
+  handlePointerDown(event: CanvasEvent): boolean {
     const stageCoords = event.stageCoordinates
-    this.state.mouse = stageCoords
+    this.state.pointer = stageCoords
     this.state.snapResult = this.snapService.findSnapResult(stageCoords, this.state.snapContext) ?? undefined
     const snapCoords = this.state.snapResult?.position ?? stageCoords
 
@@ -132,12 +132,12 @@ export class PerimeterTool extends BaseTool implements Tool {
     return true
   }
 
-  handleMouseMove(event: CanvasEvent): boolean {
+  handlePointerMove(event: CanvasEvent): boolean {
     const stageCoords = event.stageCoordinates
-    this.state.mouse = stageCoords
+    this.state.pointer = stageCoords
     this.state.snapResult = this.snapService.findSnapResult(stageCoords, this.state.snapContext) ?? undefined
 
-    // Update validation based on current mouse position
+    // Update validation based on current pointer position
     this.updateValidation()
 
     this.triggerRender()
@@ -223,7 +223,7 @@ export class PerimeterTool extends BaseTool implements Tool {
       return
     }
 
-    const currentPos = this.state.snapResult?.position ?? this.state.mouse
+    const currentPos = this.state.snapResult?.position ?? this.state.pointer
 
     // Special case: if snapping to the first point (closing the polygon),
     // don't check for point reuse but still check intersection

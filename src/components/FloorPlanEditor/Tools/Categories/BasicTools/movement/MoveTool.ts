@@ -1,6 +1,6 @@
 import type { Tool, CanvasEvent } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import type { Vec2 } from '@/types/geometry'
-import type { MovementBehavior, MovementContext, MouseMovementState } from './MovementBehavior'
+import type { MovementBehavior, MovementContext, PointerMovementState } from './MovementBehavior'
 import { BaseTool } from '@/components/FloorPlanEditor/Tools/ToolSystem/BaseTool'
 import { getMovementBehavior } from './movementBehaviors'
 import { defaultSnappingService } from '@/model/store/services/snapping/SnappingService'
@@ -20,7 +20,7 @@ export class MoveTool extends BaseTool implements Tool {
   private static readonly MOVEMENT_THRESHOLD = 3 // pixels
 
   private toolState: {
-    // Phase 1: Mouse down, waiting to see if user will drag
+    // Phase 1: Pointer down, waiting to see if user will drag
     isWaitingForMovement: boolean
     downPosition: Vec2 | null
 
@@ -28,7 +28,7 @@ export class MoveTool extends BaseTool implements Tool {
     isMoving: boolean
     behavior: MovementBehavior<any, any> | null
     context: MovementContext<any> | null
-    mouseState: MouseMovementState | null
+    pointerState: PointerMovementState | null
     currentMovementState: any // Generic state from behavior
     isValid: boolean
   } = {
@@ -37,12 +37,12 @@ export class MoveTool extends BaseTool implements Tool {
     isMoving: false,
     behavior: null,
     context: null,
-    mouseState: null,
+    pointerState: null,
     currentMovementState: null,
     isValid: true
   }
 
-  handleMouseDown(event: CanvasEvent): boolean {
+  handlePointerDown(event: CanvasEvent): boolean {
     const hitResult = event.context.findEntityAt(event.pointerCoordinates!)
     if (!hitResult) return false
 
@@ -65,8 +65,8 @@ export class MoveTool extends BaseTool implements Tool {
       snappingService: defaultSnappingService
     }
 
-    // Initialize mouse state and movement state
-    this.toolState.mouseState = {
+    // Initialize pointer state and movement state
+    this.toolState.pointerState = {
       startPosition: event.stageCoordinates,
       currentPosition: event.stageCoordinates,
       delta: [0, 0]
@@ -77,7 +77,7 @@ export class MoveTool extends BaseTool implements Tool {
     return true
   }
 
-  handleMouseMove(event: CanvasEvent): boolean {
+  handlePointerMove(event: CanvasEvent): boolean {
     if (this.toolState.isWaitingForMovement) {
       // Check if we've moved beyond threshold
       const distance = this.toolState.downPosition
@@ -91,7 +91,7 @@ export class MoveTool extends BaseTool implements Tool {
         this.toolState.downPosition = null
 
         this.toolState.currentMovementState = this.toolState.behavior!.initializeState(
-          this.toolState.mouseState!,
+          this.toolState.pointerState!,
           this.toolState.context!
         )
 
@@ -103,21 +103,21 @@ export class MoveTool extends BaseTool implements Tool {
 
     if (!this.toolState.isMoving) return false
 
-    const { behavior, context, mouseState } = this.toolState
-    if (!behavior || !context || !mouseState) return false
+    const { behavior, context, pointerState } = this.toolState
+    if (!behavior || !context || !pointerState) return false
 
-    // Update mouse state with current position and delta
-    const updatedMouseState = {
-      ...mouseState,
+    // Update pointer state with current position and delta
+    const updatedPointerState = {
+      ...pointerState,
       currentPosition: event.stageCoordinates,
-      delta: subtract(event.stageCoordinates, mouseState.startPosition)
+      delta: subtract(event.stageCoordinates, pointerState.startPosition)
     }
 
     // Apply constraints and snapping to get new movement state
-    const newMovementState = behavior.constrainAndSnap(updatedMouseState, context)
+    const newMovementState = behavior.constrainAndSnap(updatedPointerState, context)
     const isValid = behavior.validatePosition(newMovementState, context)
 
-    this.toolState.mouseState = updatedMouseState
+    this.toolState.pointerState = updatedPointerState
     this.toolState.currentMovementState = newMovementState
     this.toolState.isValid = isValid
 
@@ -125,7 +125,7 @@ export class MoveTool extends BaseTool implements Tool {
     return true
   }
 
-  handleMouseUp(_event: CanvasEvent): boolean {
+  handlePointerUp(_event: CanvasEvent): boolean {
     if (this.toolState.isWaitingForMovement) {
       // User just clicked without dragging - treat as selection, not movement
       this.resetState()
@@ -172,7 +172,7 @@ export class MoveTool extends BaseTool implements Tool {
       isMoving: false,
       behavior: null,
       context: null,
-      mouseState: null,
+      pointerState: null,
       currentMovementState: null,
       isValid: true
     }

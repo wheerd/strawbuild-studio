@@ -1,4 +1,4 @@
-import type { MovementBehavior, MovementContext, MouseMovementState } from '../MovementBehavior'
+import type { MovementBehavior, MovementContext, PointerMovementState } from '../MovementBehavior'
 import type { SelectableId } from '@/types/ids'
 import type { StoreActions } from '@/model/store/types'
 import type { Opening, PerimeterWall, Perimeter } from '@/types/model'
@@ -40,7 +40,7 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
   }
 
   initializeState(
-    _mouseState: MouseMovementState,
+    _pointerState: PointerMovementState,
     context: MovementContext<OpeningEntityContext>
   ): OpeningMovementState {
     const { opening } = context.entity
@@ -50,14 +50,14 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
   }
 
   constrainAndSnap(
-    mouseState: MouseMovementState,
+    pointerState: PointerMovementState,
     context: MovementContext<OpeningEntityContext>
   ): OpeningMovementState {
     const { perimeter, opening, wall } = context.entity
 
-    // Constrain to wall direction only - project the mouse delta onto wall direction
+    // Constrain to wall direction only - project the pointer delta onto wall direction
     const wallDirection = wall.direction
-    const projectedDistance = dot(mouseState.delta, wallDirection)
+    const projectedDistance = dot(pointerState.delta, wallDirection)
 
     // Calculate new offset along wall (can be negative)
     const wallStart = wall.insideLine.start

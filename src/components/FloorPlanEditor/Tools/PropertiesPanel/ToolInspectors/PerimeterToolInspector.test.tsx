@@ -26,7 +26,7 @@ describe('PerimeterToolInspector', () => {
     // Reset tool state
     mockTool.state = {
       points: [],
-      mouse: createVec2(0, 0),
+      pointer: createVec2(0, 0),
       snapContext: {
         snapPoints: [],
         alignPoints: [],

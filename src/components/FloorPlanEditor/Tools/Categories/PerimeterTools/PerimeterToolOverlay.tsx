@@ -24,7 +24,7 @@ export function PerimeterToolOverlay({ tool }: PerimeterToolOverlayProps): React
   const scaledPointRadius = 5 / zoom
   const scaledPointStrokeWidth = 1 / zoom
 
-  const currentPos = state.snapResult?.position ?? state.mouse
+  const currentPos = state.snapResult?.position ?? state.pointer
   const isClosingSnap = tool.isSnappingToFirstPoint()
 
   return (
@@ -43,7 +43,7 @@ export function PerimeterToolOverlay({ tool }: PerimeterToolOverlayProps): React
           listening={false}
         />
       )}
-      {/* Draw line to current mouse position */}
+      {/* Draw line to current pointer position */}
       {state.points.length > 0 && !isClosingSnap && (
         <Line
           points={[

@@ -11,10 +11,10 @@ export class CanvasEventDispatcher {
     this.handleToolEvent = handleToolEvent
   }
 
-  // Convert Konva mouse event to our CanvasEvent format
+  // Convert Konva pointer event to our CanvasEvent format
   private createCanvasEvent(
-    type: 'mousedown' | 'mousemove' | 'mouseup',
-    konvaEvent: Konva.KonvaEventObject<MouseEvent>
+    type: 'pointerdown' | 'pointermove' | 'pointerup',
+    konvaEvent: Konva.KonvaEventObject<PointerEvent>
   ): CanvasEvent {
     const stage = konvaEvent.target.getStage()
     const pointer = stage?.getPointerPosition()
@@ -51,35 +51,35 @@ export class CanvasEventDispatcher {
     }
   }
 
-  // Handle mouse down events
-  handleMouseDown(konvaEvent: Konva.KonvaEventObject<MouseEvent>): boolean {
+  // Handle pointer down events
+  handlePointerDown(konvaEvent: Konva.KonvaEventObject<PointerEvent>): boolean {
     try {
-      const canvasEvent = this.createCanvasEvent('mousedown', konvaEvent)
+      const canvasEvent = this.createCanvasEvent('pointerdown', konvaEvent)
       return this.handleToolEvent(canvasEvent)
     } catch (error) {
-      console.error('Error handling mouse down event:', error)
+      console.error('Error handling pointer down event:', error)
       return false
     }
   }
 
-  // Handle mouse move events
-  handleMouseMove(konvaEvent: Konva.KonvaEventObject<MouseEvent>): boolean {
+  // Handle pointer move events
+  handlePointerMove(konvaEvent: Konva.KonvaEventObject<PointerEvent>): boolean {
     try {
-      const canvasEvent = this.createCanvasEvent('mousemove', konvaEvent)
+      const canvasEvent = this.createCanvasEvent('pointermove', konvaEvent)
       return this.handleToolEvent(canvasEvent)
     } catch (error) {
-      console.error('Error handling mouse move event:', error)
+      console.error('Error handling pointer move event:', error)
       return false
     }
   }
 
-  // Handle mouse up events
-  handleMouseUp(konvaEvent: Konva.KonvaEventObject<MouseEvent>): boolean {
+  // Handle pointer up events
+  handlePointerUp(konvaEvent: Konva.KonvaEventObject<PointerEvent>): boolean {
     try {
-      const canvasEvent = this.createCanvasEvent('mouseup', konvaEvent)
+      const canvasEvent = this.createCanvasEvent('pointerup', konvaEvent)
       return this.handleToolEvent(canvasEvent)
     } catch (error) {
-      console.error('Error handling mouse up event:', error)
+      console.error('Error handling pointer up event:', error)
       return false
     }
   }

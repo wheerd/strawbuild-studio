@@ -13,10 +13,10 @@ export interface MovementContext<T> {
   snappingService: SnappingService
 }
 
-export interface MouseMovementState {
-  startPosition: Vec2 // Initial mouse position
-  currentPosition: Vec2 // Current mouse position
-  delta: Vec2 // mouseCurrentPosition - mouseStartPosition
+export interface PointerMovementState {
+  startPosition: Vec2 // Initial pointer position
+  currentPosition: Vec2 // Current pointer position
+  delta: Vec2 // pointerCurrentPosition - pointerStartPosition
 }
 
 export interface MovementState<T> {
@@ -36,10 +36,10 @@ export interface MovementBehavior<TEntity, TState> {
   getEntity(entityId: SelectableId, parentIds: SelectableId[], store: StoreActions): TEntity
 
   // Called when the movement is started to create an initial state
-  initializeState(movementState: MouseMovementState, context: MovementContext<TEntity>): TState
+  initializeState(movementState: PointerMovementState, context: MovementContext<TEntity>): TState
 
   // Apply constraints and snapping - updates the movement state
-  constrainAndSnap(movementState: MouseMovementState, context: MovementContext<TEntity>): TState
+  constrainAndSnap(movementState: PointerMovementState, context: MovementContext<TEntity>): TState
 
   // Validate position using slice logic - behavior constructs geometry, slice validates
   validatePosition(movementState: TState, context: MovementContext<TEntity>): boolean

@@ -1,4 +1,4 @@
-import type { MovementBehavior, MovementContext, MouseMovementState } from '../MovementBehavior'
+import type { MovementBehavior, MovementContext, PointerMovementState } from '../MovementBehavior'
 import type { SelectableId } from '@/types/ids'
 import type { StoreActions } from '@/model/store/types'
 import type { PerimeterWall, Perimeter } from '@/types/model'
@@ -48,11 +48,11 @@ export class PerimeterWallMovementBehavior
   }
 
   initializeState(
-    mouseState: MouseMovementState,
+    pointerState: PointerMovementState,
     context: MovementContext<PerimeterWallEntityContext>
   ): PerimeterWallMovementState {
     const { perimeter, wall, wallIndex } = context.entity
-    const projectedDistance = dot(mouseState.delta, wall.outsideDirection)
+    const projectedDistance = dot(pointerState.delta, wall.outsideDirection)
     const projectedDelta = scale(wall.outsideDirection, projectedDistance)
 
     const newBoundary = [...perimeter.boundary]
@@ -65,11 +65,11 @@ export class PerimeterWallMovementBehavior
   }
 
   constrainAndSnap(
-    mouseState: MouseMovementState,
+    pointerState: PointerMovementState,
     context: MovementContext<PerimeterWallEntityContext>
   ): PerimeterWallMovementState {
     const { perimeter, wall, wallIndex } = context.entity
-    const projectedDistance = dot(mouseState.delta, wall.outsideDirection)
+    const projectedDistance = dot(pointerState.delta, wall.outsideDirection)
     const projectedDelta = scale(wall.outsideDirection, projectedDistance)
 
     const newBoundary = [...perimeter.boundary]

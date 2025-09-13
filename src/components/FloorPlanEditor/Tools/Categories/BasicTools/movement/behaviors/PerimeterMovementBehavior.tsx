@@ -1,4 +1,4 @@
-import type { MovementBehavior, MovementContext, MouseMovementState } from '../MovementBehavior'
+import type { MovementBehavior, MovementContext, PointerMovementState } from '../MovementBehavior'
 import type { SelectableId } from '@/types/ids'
 import type { StoreActions } from '@/model/store/types'
 import type { Perimeter } from '@/types/model'
@@ -27,18 +27,18 @@ export class PerimeterMovementBehavior implements MovementBehavior<Perimeter, Pe
     return wall
   }
 
-  initializeState(mouseState: MouseMovementState, _context: MovementContext<Perimeter>): PerimeterMovementState {
+  initializeState(pointerState: PointerMovementState, _context: MovementContext<Perimeter>): PerimeterMovementState {
     return {
-      offset: mouseState.delta
+      offset: pointerState.delta
     }
   }
 
-  constrainAndSnap(mouseState: MouseMovementState, _context: MovementContext<Perimeter>): PerimeterMovementState {
+  constrainAndSnap(pointerState: PointerMovementState, _context: MovementContext<Perimeter>): PerimeterMovementState {
     // TODO: Snapping
     // TODO: Snap state should be in the movement context, so that is only filled once
     // TODO: Snapping for all points of the polygon, use the first snap found
 
-    return { offset: mouseState.delta }
+    return { offset: pointerState.delta }
   }
 
   validatePosition(movementState: PerimeterMovementState, context: MovementContext<Perimeter>): boolean {

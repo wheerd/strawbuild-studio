@@ -12,7 +12,7 @@ export class SelectTool implements Tool {
   category = 'basic'
 
   // Event handlers
-  handleMouseDown(event: CanvasEvent): boolean {
+  handlePointerDown(event: CanvasEvent): boolean {
     const hitResult = event.context.findEntityAt(event.pointerCoordinates!)
 
     if (hitResult) {

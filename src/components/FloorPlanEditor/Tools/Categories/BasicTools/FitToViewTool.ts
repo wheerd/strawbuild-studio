@@ -17,7 +17,7 @@ export class FitToViewTool implements Tool {
   category = 'basic'
 
   // Event handlers - not needed for this tool
-  handleMouseDown(_event: CanvasEvent): boolean {
+  handlePointerDown(_event: CanvasEvent): boolean {
     return false
   }
 

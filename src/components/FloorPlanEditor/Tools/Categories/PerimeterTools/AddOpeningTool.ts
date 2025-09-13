@@ -108,17 +108,17 @@ export class AddOpeningTool extends BaseTool implements Tool {
   }
 
   /**
-   * Calculate center offset from mouse position projected onto wall
+   * Calculate center offset from pointer position projected onto wall
    */
-  private calculateCenterOffsetFromMousePosition(mousePos: Vec2, wall: PerimeterWall): Length {
+  private calculateCenterOffsetFromPointerPosition(pointerPos: Vec2, wall: PerimeterWall): Length {
     // Convert LineWall2D to Line2D for projection
     const line = lineFromWall(wall.insideLine)
     if (!line) {
       throw new Error('Cannot create line from wall')
     }
 
-    // Project mouse position onto wall's inside line
-    const projectedPoint = projectPointOntoLine(mousePos, line)
+    // Project pointer position onto wall's inside line
+    const projectedPoint = projectPointOntoLine(pointerPos, line)
 
     // Calculate offset from wall start to CENTER of opening
     const startPoint = wall.insideLine.start
@@ -172,8 +172,8 @@ export class AddOpeningTool extends BaseTool implements Tool {
 
   // Event Handlers
 
-  handleMouseMove(event: CanvasEvent): boolean {
-    const mousePos = event.stageCoordinates
+  handlePointerMove(event: CanvasEvent): boolean {
+    const pointerPos = event.stageCoordinates
 
     // 1. Detect wall wall under cursor
     const hitResult = event.context.findEntityAt(event.pointerCoordinates!)
@@ -184,8 +184,8 @@ export class AddOpeningTool extends BaseTool implements Tool {
       return true
     }
 
-    // 2. Calculate preferred center position from mouse
-    const preferredStartOffset = this.calculateCenterOffsetFromMousePosition(mousePos, perimeterWall.wall)
+    // 2. Calculate preferred center position from pointer
+    const preferredStartOffset = this.calculateCenterOffsetFromPointerPosition(pointerPos, perimeterWall.wall)
 
     // 4. Check if preferred position is valid
     const modelStore = event.context.getModelStore()
@@ -215,7 +215,7 @@ export class AddOpeningTool extends BaseTool implements Tool {
     return true
   }
 
-  handleMouseDown(event: CanvasEvent): boolean {
+  handlePointerDown(event: CanvasEvent): boolean {
     if (!this.state.canPlace || !this.state.hoveredPerimeterWall || !this.state.offset) {
       return true
     }

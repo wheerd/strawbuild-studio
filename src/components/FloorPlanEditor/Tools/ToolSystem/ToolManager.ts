@@ -108,12 +108,12 @@ export class ToolManager {
 
     try {
       switch (event.type) {
-        case 'mousedown':
-          return tool.handleMouseDown?.(event) ?? false
-        case 'mousemove':
-          return tool.handleMouseMove?.(event) ?? false
-        case 'mouseup':
-          return tool.handleMouseUp?.(event) ?? false
+        case 'pointerdown':
+          return tool.handlePointerDown?.(event) ?? false
+        case 'pointermove':
+          return tool.handlePointerMove?.(event) ?? false
+        case 'pointerup':
+          return tool.handlePointerUp?.(event) ?? false
         case 'keydown':
           return tool.handleKeyDown?.(event) ?? false
         case 'keyup':

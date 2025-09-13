@@ -29,7 +29,7 @@ describe('PerimeterToolOverlay', () => {
     // Reset tool state
     mockTool.state = {
       points: [],
-      mouse: createVec2(0, 0),
+      pointer: createVec2(0, 0),
       snapContext: {
         snapPoints: [],
         alignPoints: [],
@@ -44,7 +44,7 @@ describe('PerimeterToolOverlay', () => {
 
   describe('rendering with no points', () => {
     it('renders only snap point when no polygon points exist', () => {
-      mockTool.state.mouse = createVec2(100, 200)
+      mockTool.state.pointer = createVec2(100, 200)
 
       const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
@@ -55,16 +55,16 @@ describe('PerimeterToolOverlay', () => {
   describe('rendering with single point', () => {
     it('renders first point and snap point', () => {
       mockTool.state.points = [createVec2(100, 100)]
-      mockTool.state.mouse = createVec2(200, 200)
+      mockTool.state.pointer = createVec2(200, 200)
 
       const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
 
-    it('renders line to mouse position with valid styling', () => {
+    it('renders line to pointer position with valid styling', () => {
       mockTool.state.points = [createVec2(50, 50)]
-      mockTool.state.mouse = createVec2(150, 150)
+      mockTool.state.pointer = createVec2(150, 150)
       mockTool.state.isCurrentLineValid = true
 
       const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
@@ -72,9 +72,9 @@ describe('PerimeterToolOverlay', () => {
       expect(container).toMatchSnapshot()
     })
 
-    it('renders line to mouse position with invalid styling', () => {
+    it('renders line to pointer position with invalid styling', () => {
       mockTool.state.points = [createVec2(50, 50)]
-      mockTool.state.mouse = createVec2(150, 150)
+      mockTool.state.pointer = createVec2(150, 150)
       mockTool.state.isCurrentLineValid = false
 
       const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
@@ -86,7 +86,7 @@ describe('PerimeterToolOverlay', () => {
   describe('rendering with multiple points', () => {
     it('renders polygon with connected lines and points', () => {
       mockTool.state.points = [createVec2(100, 100), createVec2(200, 100), createVec2(200, 200)]
-      mockTool.state.mouse = createVec2(100, 200)
+      mockTool.state.pointer = createVec2(100, 200)
 
       const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
@@ -95,7 +95,7 @@ describe('PerimeterToolOverlay', () => {
 
     it('differentiates first point styling from other points', () => {
       mockTool.state.points = [createVec2(0, 0), createVec2(100, 0), createVec2(100, 100), createVec2(0, 100)]
-      mockTool.state.mouse = createVec2(50, 50)
+      mockTool.state.pointer = createVec2(50, 50)
 
       const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
@@ -128,7 +128,7 @@ describe('PerimeterToolOverlay', () => {
 
     it('does not render closing line when not snapping to first point', () => {
       vi.spyOn(mockTool, 'isSnappingToFirstPoint').mockReturnValue(false)
-      mockTool.state.mouse = createVec2(300, 300)
+      mockTool.state.pointer = createVec2(300, 300)
 
       const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
@@ -143,7 +143,7 @@ describe('PerimeterToolOverlay', () => {
       }
 
       mockTool.state.points = [createVec2(100, 100)]
-      mockTool.state.mouse = createVec2(120, 120)
+      mockTool.state.pointer = createVec2(120, 120)
       mockTool.state.snapResult = snapResult
 
       const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
@@ -167,7 +167,7 @@ describe('PerimeterToolOverlay', () => {
       }
 
       mockTool.state.points = [createVec2(50, 50)]
-      mockTool.state.mouse = createVec2(145, 145)
+      mockTool.state.pointer = createVec2(145, 145)
       mockTool.state.snapResult = snapResult
 
       const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
@@ -191,7 +191,7 @@ describe('PerimeterToolOverlay', () => {
       }
 
       mockTool.state.points = [createVec2(50, 50)]
-      mockTool.state.mouse = createVec2(145, 145)
+      mockTool.state.pointer = createVec2(145, 145)
       mockTool.state.snapResult = snapResult
 
       const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
@@ -205,7 +205,7 @@ describe('PerimeterToolOverlay', () => {
       mockUseZoom.mockReturnValue(4.0)
 
       mockTool.state.points = [createVec2(100, 100), createVec2(200, 100)]
-      mockTool.state.mouse = createVec2(200, 200)
+      mockTool.state.pointer = createVec2(200, 200)
 
       const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
@@ -216,7 +216,7 @@ describe('PerimeterToolOverlay', () => {
       mockUseZoom.mockReturnValue(0.25)
 
       mockTool.state.points = [createVec2(100, 100), createVec2(200, 100)]
-      mockTool.state.mouse = createVec2(200, 200)
+      mockTool.state.pointer = createVec2(200, 200)
 
       const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
@@ -249,7 +249,7 @@ describe('PerimeterToolOverlay', () => {
   describe('edge cases', () => {
     it('handles empty points array gracefully', () => {
       mockTool.state.points = []
-      mockTool.state.mouse = createVec2(0, 0)
+      mockTool.state.pointer = createVec2(0, 0)
 
       const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 
@@ -258,7 +258,7 @@ describe('PerimeterToolOverlay', () => {
 
     it('handles exactly two points (minimum for line rendering)', () => {
       mockTool.state.points = [createVec2(0, 0), createVec2(100, 100)]
-      mockTool.state.mouse = createVec2(200, 0)
+      mockTool.state.pointer = createVec2(200, 0)
 
       const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
 

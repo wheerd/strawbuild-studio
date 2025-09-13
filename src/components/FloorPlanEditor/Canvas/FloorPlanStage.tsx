@@ -79,30 +79,30 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
     [zoom, panX, panY, zoomBy, panBy]
   )
 
-  // Handle mouse down events
-  const handleMouseDown = useCallback(
-    (e: Konva.KonvaEventObject<MouseEvent>) => {
+  // Handle pointer down events
+  const handlePointerDown = useCallback(
+    (e: Konva.KonvaEventObject<PointerEvent>) => {
       const stage = e.target.getStage()
       if (stage == null) return
 
       const pointer = stage.getPointerPosition()
       if (pointer == null) return
 
-      // Handle panning (middle mouse or shift+left click)
+      // Handle panning (middle pointer or shift+left click)
       if (e.evt.button === 1 || (e.evt.button === 0 && e.evt.shiftKey)) {
         setDragStart({ pos: pointer })
         return
       }
 
       // Route to tool system
-      eventDispatcher.handleMouseDown(e)
+      eventDispatcher.handlePointerDown(e)
     },
     [setDragStart, eventDispatcher]
   )
 
-  // Handle mouse move events
-  const handleMouseMove = useCallback(
-    (e: Konva.KonvaEventObject<MouseEvent>) => {
+  // Handle pointer move events
+  const handlePointerMove = useCallback(
+    (e: Konva.KonvaEventObject<PointerEvent>) => {
       const stage = e.target.getStage()
       if (stage == null) return
 
@@ -120,14 +120,14 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
       }
 
       // Route to tool system
-      eventDispatcher.handleMouseMove(e)
+      eventDispatcher.handlePointerMove(e)
     },
     [dragStart, setViewport, eventDispatcher]
   )
 
-  // Handle mouse up events
-  const handleMouseUp = useCallback(
-    (e: Konva.KonvaEventObject<MouseEvent>) => {
+  // Handle pointer up events
+  const handlePointerUp = useCallback(
+    (e: Konva.KonvaEventObject<PointerEvent>) => {
       // End panning
       if (dragStart != null) {
         setDragStart(null)
@@ -135,7 +135,7 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
       }
 
       // Route to tool system
-      eventDispatcher.handleMouseUp(e)
+      eventDispatcher.handlePointerUp(e)
     },
     [dragStart, eventDispatcher]
   )
@@ -169,9 +169,9 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
       scaleX={zoom}
       scaleY={zoom}
       onWheel={handleWheel}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
       draggable={false}
     >
       <GridLayer width={width} height={height} viewport={{ zoom, panX, panY }} />

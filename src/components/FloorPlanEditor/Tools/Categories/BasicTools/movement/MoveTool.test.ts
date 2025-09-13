@@ -16,7 +16,7 @@ describe('MoveTool', () => {
     const tool = new MoveTool()
     const mockTriggerRender = vi.spyOn(tool as any, 'triggerRender').mockImplementation(() => {})
 
-    // Manually set tool state to waiting for movement (simulating mousedown)
+    // Manually set tool state to waiting for movement (simulating pointerdown)
     ;(tool as any).toolState.isWaitingForMovement = true
     ;(tool as any).toolState.downPosition = [100, 100]
     ;(tool as any).toolState.behavior = { mockBehavior: true }
@@ -43,7 +43,7 @@ describe('MoveTool', () => {
       isMoving: true,
       behavior: { initializeState: vi.fn() },
       context: {},
-      mouseState: { startPosition: [100, 100], currentPosition: [100, 100], delta: [0, 0] },
+      pointerState: { startPosition: [100, 100], currentPosition: [100, 100], delta: [0, 0] },
       currentMovementState: {},
       isValid: true
     }

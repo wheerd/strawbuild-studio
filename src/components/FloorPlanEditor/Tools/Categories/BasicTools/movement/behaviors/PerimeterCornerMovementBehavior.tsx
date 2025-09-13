@@ -1,4 +1,4 @@
-import type { MovementBehavior, MovementContext, MouseMovementState } from '../MovementBehavior'
+import type { MovementBehavior, MovementContext, PointerMovementState } from '../MovementBehavior'
 import type { SelectableId } from '@/types/ids'
 import type { StoreActions } from '@/model/store/types'
 import type { PerimeterCorner, Perimeter } from '@/types/model'
@@ -55,7 +55,10 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
     return { wall, corner, cornerIndex, snapContext }
   }
 
-  initializeState(_mouseState: MouseMovementState, context: MovementContext<CornerEntityContext>): CornerMovementState {
+  initializeState(
+    _pointerState: PointerMovementState,
+    context: MovementContext<CornerEntityContext>
+  ): CornerMovementState {
     const { wall, cornerIndex } = context.entity
     const boundaryPoint = wall.boundary[cornerIndex]
     const newBoundary = [...wall.boundary]
@@ -66,11 +69,14 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
     }
   }
 
-  constrainAndSnap(mouseState: MouseMovementState, context: MovementContext<CornerEntityContext>): CornerMovementState {
+  constrainAndSnap(
+    pointerState: PointerMovementState,
+    context: MovementContext<CornerEntityContext>
+  ): CornerMovementState {
     const { wall, cornerIndex, snapContext } = context.entity
 
     const originalPosition = wall.boundary[cornerIndex]
-    const newPosition = add(originalPosition, mouseState.delta)
+    const newPosition = add(originalPosition, pointerState.delta)
 
     const snapResult = context.snappingService.findSnapResult(newPosition, snapContext)
     const finalPosition = snapResult?.position || newPosition
