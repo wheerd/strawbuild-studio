@@ -127,17 +127,19 @@ function constructInfillRecursive(
   const strawPosition: Vec3 = [atStart ? position[0] : position[0] + size[0] - baleWidth, position[1], position[2]]
   const strawSize: Vec3 = [baleWidth, size[1], size[2]]
 
-  const {
-    it: strawElements,
-    errors: strawErrors,
-    warnings: strawWarnings
-  } = constructStraw(strawPosition, strawSize, config.straw)
-  elements.push(...strawElements)
-  errors.push(...strawErrors)
-  warnings.push(...strawWarnings)
+  if (baleWidth > 0) {
+    const {
+      it: strawElements,
+      errors: strawErrors,
+      warnings: strawWarnings
+    } = constructStraw(strawPosition, strawSize, config.straw)
+    elements.push(...strawElements)
+    errors.push(...strawErrors)
+    warnings.push(...strawWarnings)
 
-  if (baleWidth < config.minStrawSpace) {
-    warnings.push({ description: 'Not enough space for infilling straw', elements: strawElements.map(s => s.id) })
+    if (baleWidth < config.minStrawSpace) {
+      warnings.push({ description: 'Not enough space for infilling straw', elements: strawElements.map(s => s.id) })
+    }
   }
 
   let postOffset: Length

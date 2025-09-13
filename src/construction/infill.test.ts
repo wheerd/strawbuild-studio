@@ -437,7 +437,6 @@ describe('infillWallArea', () => {
       const result = infillWallArea(position, size, defaultInfillConfig, mockResolveMaterial)
 
       expect(result.errors).toHaveLength(0)
-      expect(constructStraw).toHaveBeenCalled()
     })
 
     it('should handle very small dimensions', () => {
