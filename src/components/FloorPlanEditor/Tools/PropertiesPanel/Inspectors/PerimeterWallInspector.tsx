@@ -5,11 +5,12 @@ import { createLength, type Length } from '@/types/geometry'
 import { useDebouncedNumericInput } from '@/components/FloorPlanEditor/hooks/useDebouncedInput'
 import type { PerimeterWallId, PerimeterId } from '@/types/ids'
 import type { PerimeterConstructionType } from '@/types/model'
-import { WallConstructionPlanDisplay } from '@/components/FloorPlanEditor/WallConstructionPlan'
+import { WallConstructionPlanModal } from '@/components/FloorPlanEditor/WallConstructionPlan'
 import {
   constructInfillWall,
-  DEFAULT_MATERIALS,
+  door,
   strawbale,
+  window as windowOpening,
   wood360x60,
   type InfillConstructionConfig
 } from '@/construction'
@@ -82,14 +83,18 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
       door: {
         padding: 15 as Length,
         headerThickness: 60 as Length,
-        headerMaterial: wood360x60.id
+        headerMaterial: wood360x60.id,
+        fillingMaterial: door.id,
+        fillingThickness: 50 as Length
       },
       window: {
         padding: 15 as Length,
         headerThickness: 60 as Length,
         headerMaterial: wood360x60.id,
         sillThickness: 60 as Length,
-        sillMaterial: wood360x60.id
+        sillMaterial: wood360x60.id,
+        fillingMaterial: windowOpening.id,
+        fillingThickness: 30 as Length
       },
       passage: {
         padding: 15 as Length,
@@ -116,10 +121,6 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
         {/* Basic Properties */}
         <div className="space-y-2">
           <div className="space-y-1.5">
-            <div>
-              <WallConstructionPlanDisplay plan={constructionPlan} />
-            </div>
-
             {/* Construction Type */}
             <div className="flex items-center justify-between gap-3">
               <label className="text-xs font-medium text-gray-600 flex-shrink-0">Construction Type</label>
@@ -217,6 +218,15 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
               <div className="text-xs text-gray-600">Passages</div>
             </div>
           </div>
+        </div>
+
+        {/* Construction Plan */}
+        <div className="pt-2 border-t border-gray-200">
+          <WallConstructionPlanModal plan={constructionPlan}>
+            <button className="w-full px-3 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded transition-colors">
+              View Construction Plan
+            </button>
+          </WallConstructionPlanModal>
         </div>
       </div>
     </div>

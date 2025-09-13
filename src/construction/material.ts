@@ -87,12 +87,28 @@ export const strawbale: DimensionalMaterial = {
   availableLengths: [800 as Length]
 }
 
+export const window: GenericMaterial = {
+  id: createMaterialId(),
+  name: 'Window',
+  color: COLORS.materials.window,
+  type: 'generic'
+}
+
+export const door: GenericMaterial = {
+  id: createMaterialId(),
+  name: 'Door',
+  color: COLORS.materials.door,
+  type: 'generic'
+}
+
 export const DEFAULT_MATERIALS: Record<MaterialId, Material> = {
   [wood360x60.id]: wood360x60,
   [wood240x60.id]: wood240x60,
   [wood120x60.id]: wood120x60,
   [wood140x140.id]: wood140x140,
-  [strawbale.id]: strawbale
+  [strawbale.id]: strawbale,
+  [window.id]: window,
+  [door.id]: door
 }
 
 export type ResolveMaterialFunction = (materialId: MaterialId) => Material | undefined
