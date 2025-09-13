@@ -46,7 +46,7 @@ export function infillWallArea(
     if (size[0] < postWidth) {
       error = 'Not enough space for a post'
     } else if (size[0] === postWidth) {
-      return constructPost(position[0] as Length, size[1] as Length, size[2] as Length, config.posts, resolveMaterial)
+      return constructPost(position, size, config.posts, resolveMaterial)
     } else if (startsWithStand && endsWithStand && size[0] < 2 * postWidth) {
       error = 'Space for more than one post, but not enough for two'
     }
@@ -62,7 +62,7 @@ export function infillWallArea(
       it: startPost,
       errors: postErrors,
       warnings: postWarnings
-    } = constructPost(position[0] as Length, size[1] as Length, size[2] as Length, config.posts, resolveMaterial)
+    } = constructPost(position, size, config.posts, resolveMaterial)
     parts.push(...startPost)
     errors.push(...postErrors)
     warnings.push(...postWarnings)
@@ -76,9 +76,8 @@ export function infillWallArea(
       errors: postErrors,
       warnings: postWarnings
     } = constructPost(
-      (position[0] + size[0] - postWidth) as Length,
-      size[1] as Length,
-      size[2] as Length,
+      [(position[0] + size[0] - postWidth) as Length, position[1], position[2]],
+      size,
       config.posts,
       resolveMaterial
     )
@@ -150,7 +149,7 @@ function constructInfillRecursive(
       it: post,
       errors: postErrors,
       warnings: postWarnings
-    } = constructPost(postOffset, size[1] as Length, size[2] as Length, config.posts, resolveMaterial)
+    } = constructPost([postOffset, position[1], position[2]], size, config.posts, resolveMaterial)
     elements.push(...post)
     errors.push(...postErrors)
     warnings.push(...postWarnings)

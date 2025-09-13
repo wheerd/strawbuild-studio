@@ -120,7 +120,7 @@ describe('infillWallArea', () => {
       expect(result.errors).toHaveLength(0)
       expect(result.warnings).toHaveLength(0)
       expect(result.it).toHaveLength(2) // post + straw
-      expect(constructPost).toHaveBeenCalledWith(100, 360, 2500, defaultPostConfig, mockResolveMaterial)
+      expect(constructPost).toHaveBeenCalledWith([100, 0, 0], [800, 360, 2500], defaultPostConfig, mockResolveMaterial)
       expect(constructStraw).toHaveBeenCalledWith([160, 0, 0], [740, 360, 2500], defaultStrawConfig)
     })
 
@@ -133,7 +133,7 @@ describe('infillWallArea', () => {
       expect(result.errors).toHaveLength(0)
       expect(result.warnings).toHaveLength(0)
       expect(result.it).toHaveLength(2) // straw + post
-      expect(constructPost).toHaveBeenCalledWith(840, 360, 2500, defaultPostConfig, mockResolveMaterial)
+      expect(constructPost).toHaveBeenCalledWith([840, 0, 0], [800, 360, 2500], defaultPostConfig, mockResolveMaterial)
       expect(constructStraw).toHaveBeenCalledWith([100, 0, 0], [740, 360, 2500], defaultStrawConfig)
     })
 
@@ -159,8 +159,20 @@ describe('infillWallArea', () => {
       expect(result.warnings).toHaveLength(0)
       expect(result.it).toHaveLength(3) // start post + straw + end post
       expect(constructPost).toHaveBeenCalledTimes(2)
-      expect(constructPost).toHaveBeenNthCalledWith(1, 100, 360, 2500, defaultPostConfig, mockResolveMaterial)
-      expect(constructPost).toHaveBeenNthCalledWith(2, 840, 360, 2500, defaultPostConfig, mockResolveMaterial)
+      expect(constructPost).toHaveBeenNthCalledWith(
+        1,
+        [100, 0, 0],
+        [800, 360, 2500],
+        defaultPostConfig,
+        mockResolveMaterial
+      )
+      expect(constructPost).toHaveBeenNthCalledWith(
+        2,
+        [840, 0, 0],
+        [800, 360, 2500],
+        defaultPostConfig,
+        mockResolveMaterial
+      )
       expect(constructStraw).toHaveBeenCalledWith([160, 0, 0], [680, 360, 2500], defaultStrawConfig)
     })
   })
@@ -192,7 +204,7 @@ describe('infillWallArea', () => {
 
       infillWallArea(position, size, defaultInfillConfig, mockResolveMaterial, true)
 
-      expect(constructPost).toHaveBeenCalledWith(100, 360, 2500, defaultPostConfig, mockResolveMaterial)
+      expect(constructPost).toHaveBeenCalledWith([100, 0, 0], [60, 360, 2500], defaultPostConfig, mockResolveMaterial)
       expect(constructStraw).not.toHaveBeenCalled()
     })
   })
@@ -230,7 +242,7 @@ describe('infillWallArea', () => {
 
       infillWallArea(position, size, config, mockResolveMaterial, true)
 
-      expect(constructPost).toHaveBeenCalledWith(100, 360, 2500, doublePostConfig, mockResolveMaterial)
+      expect(constructPost).toHaveBeenCalledWith([100, 0, 0], [800, 360, 2500], doublePostConfig, mockResolveMaterial)
     })
 
     it('should use custom post width from configuration', () => {
@@ -250,7 +262,7 @@ describe('infillWallArea', () => {
 
       infillWallArea(position, size, config, mockResolveMaterial, true)
 
-      expect(constructPost).toHaveBeenCalledWith(100, 360, 2500, customPostConfig, mockResolveMaterial)
+      expect(constructPost).toHaveBeenCalledWith([100, 0, 0], [800, 360, 2500], customPostConfig, mockResolveMaterial)
       expect(constructStraw).toHaveBeenCalledWith([180, 0, 0], [720, 360, 2500], defaultStrawConfig)
     })
   })
