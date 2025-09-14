@@ -4,17 +4,33 @@ import { distance, createVec2 } from '@/types/geometry'
 import type { WallCornerInfo } from './base'
 
 /**
- * Calculate the extension distance from wall outside line endpoint to corner outside point
+ * Calculate the extension distance for corner construction.
+ * Takes the maximum of outer extension (outside line to outside point) and
+ * inner extension (inside line to inside point) to handle both convex and concave corners.
  */
 function calculateCornerExtension(corner: PerimeterCorner, wall: PerimeterWall, isStartCorner: boolean): Length {
   if (isStartCorner) {
-    // Distance from start of wall.outsideLine to corner.outsidePoint
-    const wallStart = wall.outsideLine.start
-    return distance(wallStart, corner.outsidePoint) as Length
+    // Calculate outer extension: distance from start of wall.outsideLine to corner.outsidePoint
+    const outerWallStart = wall.outsideLine.start
+    const outerExtension = distance(outerWallStart, corner.outsidePoint)
+
+    // Calculate inner extension: distance from start of wall.insideLine to corner.insidePoint
+    const innerWallStart = wall.insideLine.start
+    const innerExtension = distance(innerWallStart, corner.insidePoint)
+
+    // Take the maximum to handle both outer and inner corners correctly
+    return Math.max(outerExtension, innerExtension) as Length
   } else {
-    // Distance from end of wall.outsideLine to corner.outsidePoint
-    const wallEnd = wall.outsideLine.end
-    return distance(wallEnd, corner.outsidePoint) as Length
+    // Calculate outer extension: distance from end of wall.outsideLine to corner.outsidePoint
+    const outerWallEnd = wall.outsideLine.end
+    const outerExtension = distance(outerWallEnd, corner.outsidePoint)
+
+    // Calculate inner extension: distance from end of wall.insideLine to corner.insidePoint
+    const innerWallEnd = wall.insideLine.end
+    const innerExtension = distance(innerWallEnd, corner.insidePoint)
+
+    // Take the maximum to handle both outer and inner corners correctly
+    return Math.max(outerExtension, innerExtension) as Length
   }
 }
 

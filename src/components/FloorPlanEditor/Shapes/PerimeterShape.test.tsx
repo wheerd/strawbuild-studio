@@ -136,7 +136,6 @@ describe('PerimeterShape', () => {
           <Layer>
             <PerimeterCornerShape
               corner={testPerimeter.corners[0]}
-              boundaryPoint={testPerimeter.corners[0].insidePoint}
               previousWall={testPerimeter.walls[3]}
               nextWall={testPerimeter.walls[0]}
               perimeterId={testPerimeter.id}

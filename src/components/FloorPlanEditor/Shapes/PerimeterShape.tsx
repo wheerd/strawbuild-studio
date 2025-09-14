@@ -42,13 +42,11 @@ export function PerimeterShape({ perimeter }: PerimeterShapeProps): React.JSX.El
 
         const previousWall = perimeter.walls[prevWallIndex]
         const nextWall = perimeter.walls[nextWallIndex]
-        const boundaryPoint = perimeter.corners[cornerIndex].insidePoint
 
         return (
           <PerimeterCornerShape
             key={`corner-${cornerIndex}`}
             corner={corner}
-            boundaryPoint={boundaryPoint}
             previousWall={previousWall}
             nextWall={nextWall}
             perimeterId={perimeter.id}

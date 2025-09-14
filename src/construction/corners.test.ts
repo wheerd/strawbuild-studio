@@ -129,5 +129,45 @@ describe('Corner Calculations', () => {
       expect(result.startExtension).toBeGreaterThan(0)
       expect(result.endExtension).toBe(0)
     })
+
+    it('should use maximum of inner and outer extensions for corner calculation', () => {
+      const wall = createMockWall(wallLength, thickness)
+
+      // Create a corner where inner extension is larger than outer extension (concave corner scenario)
+      // This simulates an inner corner where the inside point extends further than the outside point
+      const startCornerWithLargerInnerExtension = createMockCorner(
+        'inner-corner',
+        [-500, 0], // Inside point extends much further back
+        [-100, 400], // Outside point extends less
+        'next'
+      )
+
+      // Create a corner where outer extension is larger (convex corner scenario)
+      const endCornerWithLargerOuterExtension = createMockCorner(
+        'outer-corner',
+        [3100, 0], // Inside point extends slightly
+        [3500, 400], // Outside point extends much further
+        'previous'
+      )
+
+      const result = calculateWallConstructionLength(
+        wall,
+        startCornerWithLargerInnerExtension,
+        endCornerWithLargerOuterExtension
+      )
+
+      // Should include extensions from both corners, using the maximum extension calculation
+      expect(result.constructionLength).toBeGreaterThan(wallLength)
+      expect(result.startExtension).toBeGreaterThan(0)
+      expect(result.endExtension).toBeGreaterThan(0)
+
+      // The start extension should be large due to the inner point being far from the wall
+      // In this case, the inner extension (from inside line to inside point) should be larger
+      // than the outer extension (from outside line to outside point)
+      expect(result.startExtension).toBeGreaterThan(100) // Should use the larger inner extension
+
+      // The end extension should be large due to the outer point being far from the wall
+      expect(result.endExtension).toBeGreaterThan(100) // Should use the larger outer extension
+    })
   })
 })

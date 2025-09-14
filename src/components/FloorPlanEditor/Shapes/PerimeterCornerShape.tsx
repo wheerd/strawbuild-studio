@@ -1,12 +1,11 @@
 import { Group, Line, Arrow, Circle } from 'react-konva/lib/ReactKonvaCore'
 import type { PerimeterCorner, PerimeterWall } from '@/types/model'
-import { add, midpoint, scale, type Vec2 } from '@/types/geometry'
+import { add, midpoint, scale } from '@/types/geometry'
 import { COLORS } from '@/theme/colors'
 import { useSelectionStore } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
 
 interface PerimeterCornerShapeProps {
   corner: PerimeterCorner
-  boundaryPoint: Vec2
   previousWall: PerimeterWall
   nextWall: PerimeterWall
   perimeterId: string
@@ -14,7 +13,6 @@ interface PerimeterCornerShapeProps {
 
 export function PerimeterCornerShape({
   corner,
-  boundaryPoint,
   previousWall,
   nextWall,
   perimeterId
@@ -23,7 +21,7 @@ export function PerimeterCornerShape({
   const isSelected = select.isCurrentSelection(corner.id)
 
   const cornerPolygon = [
-    boundaryPoint,
+    corner.insidePoint,
     previousWall.insideLine.end,
     previousWall.outsideLine.end,
     corner.outsidePoint,
@@ -57,7 +55,7 @@ export function PerimeterCornerShape({
       <Line points={polygonArray} fill={finalColor} stroke={COLORS.ui.black} strokeWidth={10} closed listening />
 
       <Line
-        points={[boundaryPoint[0], boundaryPoint[1], corner.outsidePoint[0], corner.outsidePoint[1]]}
+        points={[corner.insidePoint[0], corner.insidePoint[1], corner.outsidePoint[0], corner.outsidePoint[1]]}
         stroke={COLORS.ui.black}
         opacity={0.5}
         strokeWidth={8}
@@ -69,8 +67,8 @@ export function PerimeterCornerShape({
       {isSelected && (
         <>
           <Circle
-            x={boundaryPoint[0]}
-            y={boundaryPoint[1]}
+            x={corner.insidePoint[0]}
+            y={corner.insidePoint[1]}
             radius={30}
             fill={COLORS.selection.secondary}
             stroke={COLORS.selection.secondaryOutline}
