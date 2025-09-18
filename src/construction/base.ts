@@ -106,15 +106,50 @@ export interface Cuboid {
   size: Vec3
 }
 
+/**
+ * CutCuboid Geometric Properties:
+ *
+ * The CutCuboid represents a 4-gonal irregular right prism (hexahedron) with 6 faces:
+ *
+ * 1. Front & Back faces: Rectangular, parallel, same width
+ *    - May have different lengths if startCut ≠ endCut
+ *
+ * 2. Top & Bottom faces: Trapezoidal, parallel (base faces of the prism)
+ *    - Shape determined by the cut angles
+ *    - Always have the same width as the original cuboid
+ *
+ * 3. Left & Right faces: Rectangular cut faces, same width
+ *    - Non-parallel if startCut ≠ endCut
+ *    - Different lengths if cut angles differ
+ *
+ * Transformation order:
+ * 1. Start with base cuboid at origin
+ * 2. Apply cuts at both ends (perpendicular to length axis)
+ * 3. Rotate around origin using Euler angles (x, y, z)
+ * 4. Translate so origin corner is at position
+ *
+ * Cut angles range from -90° to 90°:
+ * - 0° = no cut (rectangular end)
+ * - Positive angles = cut slopes one direction
+ * - Negative angles = cut slopes opposite direction
+ */
 export interface CutCuboid {
   type: 'cut-cuboid'
-  // Same position and size as Cuboid
+  // Position of one corner (origin for rotation)
   position: Vec3
+  // Size of base cuboid [length, width, height]
   size: Vec3
-  cutAxis: 0 | 1 | 2 // Which axis the cut is perpendicular to
-  cutDirection: 0 | 1 // Which of the remaining two axes defines the cut direction
-  cutAngle: number // Angle in degrees (positive = clockwise)
-  // Note: Always full cuts for now
+  // Euler angles for 3D rotation around origin (position corner)
+  rotation: {
+    x: number // Roll (degrees)
+    y: number // Pitch (degrees)
+    z: number // Yaw (degrees)
+  }
+  // Cut angles at both ends (perpendicular to length axis)
+  cuts: {
+    startCut: number // Cut angle at start (-90° to 90°)
+    endCut: number // Cut angle at end (-90° to 90°)
+  }
 }
 
 // Helper functions for creating shapes
@@ -127,16 +162,14 @@ export const createCuboidShape = (position: Vec3, size: Vec3): Cuboid => ({
 export const createCutCuboidShape = (
   position: Vec3,
   size: Vec3,
-  cutAxis: 0 | 1 | 2,
-  cutDirection: 0 | 1,
-  cutAngle: number
+  rotation: { x: number; y: number; z: number },
+  cuts: { startCut: number; endCut: number }
 ): CutCuboid => ({
   type: 'cut-cuboid',
   position,
   size,
-  cutAxis,
-  cutDirection,
-  cutAngle
+  rotation,
+  cuts
 })
 
 // Helper functions for accessing position and size from shapes
