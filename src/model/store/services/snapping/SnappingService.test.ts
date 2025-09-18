@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { SnappingService } from './SnappingService'
 import { createVec2, createLength } from '@/types/geometry'
-import type { LineWall2D } from '@/types/geometry'
+import type { LineSegment2D } from '@/types/geometry'
 import type { SnappingContext, SnapConfig } from './types'
 
 describe('SnappingService', () => {
@@ -152,7 +152,7 @@ describe('SnappingService', () => {
 
   describe('Line Wall Snapping', () => {
     it('should snap to extension line of wall wall', () => {
-      const wall: LineWall2D = {
+      const wall: LineSegment2D = {
         start: createVec2(100, 100),
         end: createVec2(200, 100)
       }
@@ -171,7 +171,7 @@ describe('SnappingService', () => {
     })
 
     it('should snap to perpendicular line of wall wall', () => {
-      const wall: LineWall2D = {
+      const wall: LineSegment2D = {
         start: createVec2(100, 100),
         end: createVec2(200, 100)
       }

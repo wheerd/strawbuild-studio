@@ -6,7 +6,7 @@ import type {
   OpeningId,
   RingBeamConstructionMethodId
 } from '@/types/ids'
-import type { Length, LineWall2D, Vec2 } from '@/types/geometry'
+import type { Length, LineSegment2D, Vec2 } from '@/types/geometry'
 
 // Storey level branded type
 export type StoreyLevel = number & { __brand: 'StoreyLevel' }
@@ -66,8 +66,8 @@ export interface PerimeterWall {
   insideLength: Length
   outsideLength: Length
   wallLength: Length
-  insideLine: LineWall2D
-  outsideLine: LineWall2D
+  insideLine: LineSegment2D
+  outsideLine: LineSegment2D
   direction: Vec2 // Normalized from start -> end of wall
   outsideDirection: Vec2 // Normal vector pointing outside
 }

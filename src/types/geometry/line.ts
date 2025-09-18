@@ -8,7 +8,7 @@ export interface Line2D {
   direction: Vec2 // Normalized direction vector
 }
 
-export interface LineWall2D {
+export interface LineSegment2D {
   start: Vec2
   end: Vec2
 }
@@ -60,34 +60,34 @@ export function projectPointOntoLine(point: Vec2, line: Line2D): Vec2 {
   return result
 }
 
-export function lineFromWall(wall: LineWall2D): Line2D {
+export function lineFromSegment(segment: LineSegment2D): Line2D {
   return {
-    point: vec2.copy(vec2.create(), wall.start),
-    direction: normalize(subtract(wall.end, wall.start))
+    point: vec2.copy(vec2.create(), segment.start),
+    direction: normalize(subtract(segment.end, segment.start))
   }
 }
 
-export function distanceToLineWall(point: Vec2, wall: LineWall2D): Length {
-  const wallVector = subtract(wall.end, wall.start)
-  const pointVector = subtract(point, wall.start)
+export function distanceToLineSegment(point: Vec2, line: LineSegment2D): Length {
+  const lineVector = subtract(line.end, line.start)
+  const pointVector = subtract(point, line.start)
 
-  const wallLengthSquared = vec2.squaredLength(wallVector)
+  const lineLengthSquared = vec2.squaredLength(lineVector)
 
-  if (wallLengthSquared === 0) {
-    // Line wall is actually a point
-    return distance(point, wall.start)
+  if (lineLengthSquared === 0) {
+    // Line segment is actually a point
+    return distance(point, line.start)
   }
 
-  // Calculate parameter t that represents position along the line wall
-  let t = dot(pointVector, wallVector) / wallLengthSquared
+  // Calculate parameter t that represents position along the segment
+  let t = dot(pointVector, lineVector) / lineLengthSquared
 
-  // Clamp t to [0, 1] to stay within the line wall
+  // Clamp t to [0, 1] to stay within the segment
   t = Math.max(0, Math.min(1, t))
 
-  // Find the closest point on the line wall
+  // Find the closest point on the segment
   const closest = vec2.create()
-  vec2.scaleAndAdd(closest, wall.start, wallVector, t)
+  vec2.scaleAndAdd(closest, line.start, lineVector, t)
 
-  // Return distance from point to closest point on line wall
+  // Return distance from point to closest point on segment
   return distance(point, closest)
 }

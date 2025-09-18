@@ -1,5 +1,5 @@
 import type { Tool, CanvasEvent } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
-import type { Vec2, Polygon2D, LineWall2D, Length } from '@/types/geometry'
+import type { Vec2, Polygon2D, LineSegment2D, Length } from '@/types/geometry'
 import type { RingBeamConstructionMethodId } from '@/types/ids'
 import { useConfigStore } from '@/config/store'
 import {
@@ -102,7 +102,7 @@ export class PerimeterTool extends BaseTool implements Tool {
   }
 
   private updateSnapContext() {
-    const referenceLineWalls: LineWall2D[] = []
+    const referenceLineWalls: LineSegment2D[] = []
     for (let i = 1; i < this.state.points.length; i++) {
       const start = this.state.points[i - 1]
       const end = this.state.points[i]
