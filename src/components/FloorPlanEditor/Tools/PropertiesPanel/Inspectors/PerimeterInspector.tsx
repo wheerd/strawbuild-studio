@@ -4,6 +4,7 @@ import { useModelStore } from '@/model/store'
 import type { PerimeterId, RingBeamConstructionMethodId } from '@/types/ids'
 import { calculatePolygonArea } from '@/types/geometry'
 import { useRingBeamConstructionMethods } from '@/config/store'
+import { RingBeamConstructionModal } from '@/components/FloorPlanEditor/RingBeamConstructionModal'
 
 interface PerimeterInspectorProps {
   selectedId: PerimeterId
@@ -98,6 +99,21 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
               </Select.Root>
             </div>
 
+            {/* Base Ring Beam View Construction Button */}
+            {outerWall.baseRingBeamMethodId && (
+              <div className="flex justify-end">
+                <RingBeamConstructionModal
+                  perimeterId={selectedId}
+                  position="base"
+                  trigger={
+                    <button className="text-xs text-blue-600 hover:text-blue-800 hover:underline">
+                      View Construction
+                    </button>
+                  }
+                />
+              </div>
+            )}
+
             {/* Top Ring Beam */}
             <div className="flex items-center justify-between gap-3">
               <label className="text-xs font-medium text-gray-600 flex-shrink-0">Top Plate</label>
@@ -138,6 +154,21 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                 </Select.Portal>
               </Select.Root>
             </div>
+
+            {/* Top Ring Beam View Construction Button */}
+            {outerWall.topRingBeamMethodId && (
+              <div className="flex justify-end">
+                <RingBeamConstructionModal
+                  perimeterId={selectedId}
+                  position="top"
+                  trigger={
+                    <button className="text-xs text-blue-600 hover:text-blue-800 hover:underline">
+                      View Construction
+                    </button>
+                  }
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
