@@ -3,7 +3,7 @@ import type { Length, Vec3 } from '@/types/geometry'
 import type { MaterialId } from './material'
 import type { PostConfig } from './posts'
 import type { StrawConfig } from './straw'
-import type { ConstructionElement, ConstructionIssue } from './base'
+import { createCuboidShape, type ConstructionElement, type ConstructionIssue } from './base'
 import { infillWallArea, type InfillConstructionConfig } from './infill'
 import { constructPost } from './posts'
 import { constructStraw } from './straw'
@@ -68,16 +68,14 @@ const createMockPost = (id: string, position: Vec3, size: Vec3): ConstructionEle
   id: id as any,
   type: 'post',
   material: mockWoodMaterial,
-  position,
-  size
+  shape: createCuboidShape(position, size)
 })
 
 const createMockStraw = (id: string, position: Vec3, size: Vec3): ConstructionElement => ({
   id: id as any,
   type: 'straw',
   material: mockStrawMaterial,
-  position,
-  size
+  shape: createCuboidShape(position, size)
 })
 
 describe('infillWallArea', () => {

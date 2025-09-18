@@ -164,13 +164,7 @@ export const createConstructionElement = (
     id: createConstructionElementId(),
     type,
     material,
-    shape,
-    get position(): Vec3 {
-      return getElementPosition(this)
-    },
-    get size(): Vec3 {
-      return getElementSize(this)
-    }
+    shape
   }
   return element
 }
@@ -182,10 +176,6 @@ export interface ConstructionElement {
 
   // Shape defining the geometry and position of the element
   shape: Shape
-
-  // Convenience getters for position and size (derived from shape)
-  readonly position: Vec3
-  readonly size: Vec3
 }
 
 export interface WithIssues<T> {

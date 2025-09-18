@@ -3,7 +3,7 @@ import type { Length, Vec3 } from '@/types/geometry'
 import type { MaterialId, Material } from './material'
 import { DEFAULT_MATERIALS } from './material'
 import { constructPost, type FullPostConfig, type DoublePostConfig } from './posts'
-import { getElementPosition, getElementSize } from './base'
+import { getElementPosition, getElementSize, type Cuboid } from './base'
 
 const mockWoodMaterial = 'wood-material' as MaterialId
 const mockStrawMaterial = 'straw-material' as MaterialId
@@ -58,8 +58,8 @@ describe('constructPost', () => {
       expect(result.errors).toHaveLength(0)
       expect(result.warnings).toHaveLength(0)
       expect(result.it).toHaveLength(1)
-      expect(result.it[0].position).toEqual([0, 0, 0])
-      expect(result.it[0].size).toEqual([60, 360, 2500])
+      expect(result.it[0].shape.position).toEqual([0, 0, 0])
+      expect(result.it[0].shape.size).toEqual([60, 360, 2500])
     })
 
     it('should handle different wall dimensions', () => {
@@ -71,8 +71,8 @@ describe('constructPost', () => {
       expect(result.errors).toHaveLength(0)
       expect(result.warnings).toHaveLength(0)
       expect(result.it).toHaveLength(1)
-      expect(result.it[0].position).toEqual([50, 0, 0])
-      expect(result.it[0].size).toEqual([60, 240, 3000])
+      expect(result.it[0].shape.position).toEqual([50, 0, 0])
+      expect(result.it[0].shape.size).toEqual([60, 240, 3000])
     })
 
     it('should use correct material from config', () => {
@@ -101,7 +101,7 @@ describe('constructPost', () => {
 
       const result = constructPost(position, size, customConfig, mockResolveMaterial)
 
-      expect(result.it[0].size).toEqual([80, 360, 2500])
+      expect(result.it[0].shape.size).toEqual([80, 360, 2500])
     })
 
     it('should generate unique IDs for multiple posts', () => {
@@ -160,7 +160,7 @@ describe('constructPost', () => {
 
       expect(result.warnings).toHaveLength(0)
       expect(result.it).toHaveLength(1)
-      const post = result.it[0]
+      const post = result.it[0].shape as Cuboid
       expect(post.size).toEqual([60, 120, 2500])
     })
 
@@ -178,7 +178,7 @@ describe('constructPost', () => {
 
       expect(result.warnings).toHaveLength(0)
       expect(result.it).toHaveLength(1)
-      const post = result.it[0]
+      const post = result.it[0].shape as Cuboid
       expect(post.size).toEqual([120, 60, 2500])
     })
   })
@@ -206,18 +206,18 @@ describe('constructPost', () => {
 
       // First post at front
       expect(post1.type).toBe('post')
-      expect(post1.position).toEqual([100, 0, 0])
-      expect(post1.size).toEqual([60, 120, 2500])
+      expect(post1.shape.position).toEqual([100, 0, 0])
+      expect(post1.shape.size).toEqual([60, 120, 2500])
 
       // Second post at back
       expect(post2.type).toBe('post')
-      expect(post2.position).toEqual([100, 240, 0]) // 360 - 120 = 240
-      expect(post2.size).toEqual([60, 120, 2500])
+      expect(post2.shape.position).toEqual([100, 240, 0]) // 360 - 120 = 240
+      expect(post2.shape.size).toEqual([60, 120, 2500])
 
       // Infill between posts
       expect(infill.type).toBe('infill')
-      expect(infill.position).toEqual([100, 120, 0])
-      expect(infill.size).toEqual([60, 120, 2500]) // 360 - 2*120 = 120
+      expect(infill.shape.position).toEqual([100, 120, 0])
+      expect(infill.shape.size).toEqual([60, 120, 2500]) // 360 - 2*120 = 120
     })
 
     it('should handle zero offset', () => {
@@ -227,9 +227,9 @@ describe('constructPost', () => {
       const result = constructPost(position, size, doublePostConfig, mockResolveMaterial)
 
       expect(result.errors).toHaveLength(0)
-      expect(result.it[0].position).toEqual([0, 0, 0])
-      expect(result.it[1].position).toEqual([0, 240, 0])
-      expect(result.it[2].position).toEqual([0, 120, 0])
+      expect(result.it[0].shape.position).toEqual([0, 0, 0])
+      expect(result.it[1].shape.position).toEqual([0, 240, 0])
+      expect(result.it[2].shape.position).toEqual([0, 120, 0])
     })
 
     it('should handle different wall dimensions', () => {
@@ -241,14 +241,14 @@ describe('constructPost', () => {
       expect(result.errors).toHaveLength(0)
       expect(result.it).toHaveLength(3)
 
-      expect(result.it[0].position).toEqual([50, 0, 0])
-      expect(result.it[0].size).toEqual([60, 120, 3000])
+      expect(result.it[0].shape.position).toEqual([50, 0, 0])
+      expect(result.it[0].shape.size).toEqual([60, 120, 3000])
 
-      expect(result.it[1].position).toEqual([50, 180, 0]) // 300 - 120 = 180
-      expect(result.it[1].size).toEqual([60, 120, 3000])
+      expect(result.it[1].shape.position).toEqual([50, 180, 0]) // 300 - 120 = 180
+      expect(result.it[1].shape.size).toEqual([60, 120, 3000])
 
-      expect(result.it[2].position).toEqual([50, 120, 0])
-      expect(result.it[2].size).toEqual([60, 60, 3000]) // 300 - 2*120 = 60
+      expect(result.it[2].shape.position).toEqual([50, 120, 0])
+      expect(result.it[2].shape.size).toEqual([60, 60, 3000]) // 300 - 2*120 = 60
     })
 
     it('should use custom post dimensions', () => {
@@ -263,9 +263,9 @@ describe('constructPost', () => {
 
       const result = constructPost(position, size, customConfig, mockResolveMaterial)
 
-      expect(result.it[0].size).toEqual([80, 100, 2500])
-      expect(result.it[1].size).toEqual([80, 100, 2500])
-      expect(result.it[2].size).toEqual([80, 160, 2500]) // 360 - 2*100 = 160
+      expect(result.it[0].shape.size).toEqual([80, 100, 2500])
+      expect(result.it[1].shape.size).toEqual([80, 100, 2500])
+      expect(result.it[2].shape.size).toEqual([80, 160, 2500]) // 360 - 2*100 = 160
     })
 
     it('should use correct materials from config', () => {
@@ -395,7 +395,7 @@ describe('constructPost', () => {
       const result = constructPost(position, size, fullPostConfig, mockResolveMaterial)
 
       expect(result.it).toHaveLength(1)
-      expect(result.it[0].size).toEqual([60, 1, 1])
+      expect(result.it[0].shape.size).toEqual([60, 1, 1])
     })
 
     it('should handle large dimensions', () => {
@@ -405,8 +405,8 @@ describe('constructPost', () => {
       const result = constructPost(position, size, fullPostConfig, mockResolveMaterial)
 
       expect(result.it).toHaveLength(1)
-      expect(result.it[0].position).toEqual([1000, 0, 0])
-      expect(result.it[0].size).toEqual([60, 1000, 5000])
+      expect(result.it[0].shape.position).toEqual([1000, 0, 0])
+      expect(result.it[0].shape.size).toEqual([60, 1000, 5000])
     })
 
     it('should throw error for invalid post type', () => {
@@ -440,10 +440,7 @@ describe('constructPost', () => {
       expect(post).toHaveProperty('id')
       expect(post).toHaveProperty('type', 'post')
       expect(post).toHaveProperty('material')
-      expect(post).toHaveProperty('position')
-      expect(post).toHaveProperty('size')
-      expect(post.position).toHaveLength(3)
-      expect(post.size).toHaveLength(3)
+      expect(post).toHaveProperty('shape')
     })
 
     it('should maintain correct element structure for double post', () => {
@@ -464,10 +461,7 @@ describe('constructPost', () => {
         expect(element).toHaveProperty('id')
         expect(element).toHaveProperty('type')
         expect(element).toHaveProperty('material')
-        expect(element).toHaveProperty('position')
-        expect(element).toHaveProperty('size')
-        expect(element.position).toHaveLength(3)
-        expect(element.size).toHaveLength(3)
+        expect(element).toHaveProperty('shape')
       })
     })
   })
@@ -485,8 +479,10 @@ describe('constructPost', () => {
 
       const result = constructPost(position, size, fullPostConfig, mockResolveMaterial)
 
-      expect(result.it[0].position).toEqual([200, 50, 100])
-      expect(result.it[0].size).toEqual([60, 360, 2500])
+      expect(result.it[0].shape.type).toBe('cuboid')
+      const cuboid = result.it[0].shape as Cuboid
+      expect(cuboid.position).toEqual([200, 50, 100])
+      expect(cuboid.size).toEqual([60, 360, 2500])
     })
 
     it('should maintain consistent coordinate system for double post', () => {
@@ -504,13 +500,13 @@ describe('constructPost', () => {
       const result = constructPost(position, size, doublePostConfig, mockResolveMaterial)
 
       // First post should be at the original position
-      expect(result.it[0].position).toEqual([200, 50, 100])
+      expect(result.it[0].shape.position).toEqual([200, 50, 100])
 
       // Second post should be offset by wall thickness - post thickness
-      expect(result.it[1].position).toEqual([200, 290, 100]) // 50 + 360 - 120 = 290
+      expect(result.it[1].shape.position).toEqual([200, 290, 100]) // 50 + 360 - 120 = 290
 
       // Infill should be between the posts
-      expect(result.it[2].position).toEqual([200, 170, 100]) // 50 + 120 = 170
+      expect(result.it[2].shape.position).toEqual([200, 170, 100]) // 50 + 120 = 170
     })
   })
 })

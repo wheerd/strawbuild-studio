@@ -5,7 +5,8 @@ import {
   resolveDefaultMaterial,
   type WallConstructionPlan,
   type ConstructionIssue,
-  type ConstructionElementId
+  type ConstructionElementId,
+  getElementPosition
 } from '@/construction'
 import { boundsFromPoints, createVec2, type Bounds2D, type Vec2 } from '@/types/geometry'
 import { COLORS } from '@/theme/colors'
@@ -115,9 +116,11 @@ export function WallConstructionPlanDisplay({
 
   // Sort elements by depth (y-axis in construction coordinates) for proper z-ordering
   const sortedElements = elements.sort((a, b) => {
+    const aPos = getElementPosition(a)
+    const bPos = getElementPosition(b)
     // For outside view: elements with smaller y (closer to inside) render first (behind)
     // For inside view: elements with larger y (closer to outside) render first (behind)
-    return view === 'outside' ? a.position[1] - b.position[1] : b.position[1] - a.position[1]
+    return view === 'outside' ? aPos[1] - bPos[1] : bPos[1] - aPos[1]
   })
 
   // Calculate issue highlights using Bounds2D
@@ -219,28 +222,30 @@ export function WallConstructionPlanDisplay({
       preserveAspectRatio="xMidYMid meet"
     >
       {/* Construction elements */}
-      {sortedElements.map(element => {
-        const { position, size } = convertConstructionToSvg(
-          element.position,
-          element.size,
-          wallHeight,
-          wallLength,
-          view
-        )
+      {sortedElements
+        .filter(e => e.shape.type === 'cuboid')
+        .map(element => {
+          const { position, size } = convertConstructionToSvg(
+            element.shape.position,
+            element.shape.size,
+            wallHeight,
+            wallLength,
+            view
+          )
 
-        return (
-          <rect
-            key={element.id}
-            x={position.x}
-            y={position.y}
-            width={size.x}
-            height={size.y}
-            fill={resolveDefaultMaterial(element.material)?.color}
-            stroke="#000000"
-            strokeWidth="5"
-          />
-        )
-      })}
+          return (
+            <rect
+              key={element.id}
+              x={position.x}
+              y={position.y}
+              width={size.x}
+              height={size.y}
+              fill={resolveDefaultMaterial(element.material)?.color}
+              stroke="#000000"
+              strokeWidth="5"
+            />
+          )
+        })}
 
       {/* Issue highlights using Bounds2D */}
       {showIssues &&

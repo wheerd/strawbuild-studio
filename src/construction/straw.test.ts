@@ -26,8 +26,8 @@ describe('constructStraw', () => {
 
       const bale = result.it[0]
       expect(bale.type).toBe('full-strawbale')
-      expect(bale.position).toEqual([0, 0, 0])
-      expect(bale.size).toEqual([800, 360, 500])
+      expect(bale.shape.position).toEqual([0, 0, 0])
+      expect(bale.shape.size).toEqual([800, 360, 500])
       expect(bale.material).toBe(mockMaterialId)
     })
 
@@ -41,12 +41,12 @@ describe('constructStraw', () => {
       expect(result.warnings).toHaveLength(0)
       expect(result.it).toHaveLength(2)
 
-      expect(result.it[0].position).toEqual([0, 0, 0])
-      expect(result.it[0].size).toEqual([800, 360, 500])
+      expect(result.it[0].shape.position).toEqual([0, 0, 0])
+      expect(result.it[0].shape.size).toEqual([800, 360, 500])
       expect(result.it[0].type).toBe('full-strawbale')
 
-      expect(result.it[1].position).toEqual([800, 0, 0])
-      expect(result.it[1].size).toEqual([800, 360, 500])
+      expect(result.it[1].shape.position).toEqual([800, 0, 0])
+      expect(result.it[1].shape.size).toEqual([800, 360, 500])
       expect(result.it[1].type).toBe('full-strawbale')
     })
 
@@ -60,12 +60,12 @@ describe('constructStraw', () => {
       expect(result.warnings).toHaveLength(0)
       expect(result.it).toHaveLength(2)
 
-      expect(result.it[0].position).toEqual([0, 0, 0])
-      expect(result.it[0].size).toEqual([800, 360, 500])
+      expect(result.it[0].shape.position).toEqual([0, 0, 0])
+      expect(result.it[0].shape.size).toEqual([800, 360, 500])
       expect(result.it[0].type).toBe('full-strawbale')
 
-      expect(result.it[1].position).toEqual([0, 0, 500])
-      expect(result.it[1].size).toEqual([800, 360, 500])
+      expect(result.it[1].shape.position).toEqual([0, 0, 500])
+      expect(result.it[1].shape.size).toEqual([800, 360, 500])
       expect(result.it[1].type).toBe('full-strawbale')
     })
 
@@ -80,15 +80,15 @@ describe('constructStraw', () => {
       expect(result.it).toHaveLength(4)
 
       // Bottom row
-      expect(result.it[0].position).toEqual([0, 0, 0])
-      expect(result.it[1].position).toEqual([800, 0, 0])
+      expect(result.it[0].shape.position).toEqual([0, 0, 0])
+      expect(result.it[1].shape.position).toEqual([800, 0, 0])
       // Top row
-      expect(result.it[2].position).toEqual([0, 0, 500])
-      expect(result.it[3].position).toEqual([800, 0, 500])
+      expect(result.it[2].shape.position).toEqual([0, 0, 500])
+      expect(result.it[3].shape.position).toEqual([800, 0, 500])
 
       result.it.forEach(bale => {
         expect(bale.type).toBe('full-strawbale')
-        expect(bale.size).toEqual([800, 360, 500])
+        expect(bale.shape.size).toEqual([800, 360, 500])
       })
     })
   })
@@ -106,8 +106,8 @@ describe('constructStraw', () => {
 
       const bale = result.it[0]
       expect(bale.type).toBe('partial-strawbale')
-      expect(bale.position).toEqual([0, 0, 0])
-      expect(bale.size).toEqual([400, 360, 500])
+      expect(bale.shape.position).toEqual([0, 0, 0])
+      expect(bale.shape.size).toEqual([400, 360, 500])
     })
 
     it('should create partial bale when height is less than full bale', () => {
@@ -122,8 +122,8 @@ describe('constructStraw', () => {
 
       const bale = result.it[0]
       expect(bale.type).toBe('partial-strawbale')
-      expect(bale.position).toEqual([0, 0, 0])
-      expect(bale.size).toEqual([800, 360, 250])
+      expect(bale.shape.position).toEqual([0, 0, 0])
+      expect(bale.shape.size).toEqual([800, 360, 250])
     })
 
     it('should mix full and partial bales when dimensions do not align', () => {
@@ -138,13 +138,13 @@ describe('constructStraw', () => {
 
       // First bale should be full
       expect(result.it[0].type).toBe('full-strawbale')
-      expect(result.it[0].position).toEqual([0, 0, 0])
-      expect(result.it[0].size).toEqual([800, 360, 500])
+      expect(result.it[0].shape.position).toEqual([0, 0, 0])
+      expect(result.it[0].shape.size).toEqual([800, 360, 500])
 
       // Second bale should be partial
       expect(result.it[1].type).toBe('partial-strawbale')
-      expect(result.it[1].position).toEqual([800, 0, 0])
-      expect(result.it[1].size).toEqual([400, 360, 500])
+      expect(result.it[1].shape.position).toEqual([800, 0, 0])
+      expect(result.it[1].shape.size).toEqual([400, 360, 500])
     })
 
     it('should handle complex mixed arrangement', () => {
@@ -158,21 +158,21 @@ describe('constructStraw', () => {
       expect(result.it).toHaveLength(4)
 
       // Bottom row
-      expect(result.it[0].position).toEqual([100, 0, 50])
-      expect(result.it[0].size).toEqual([800, 360, 500])
+      expect(result.it[0].shape.position).toEqual([100, 0, 50])
+      expect(result.it[0].shape.size).toEqual([800, 360, 500])
       expect(result.it[0].type).toBe('full-strawbale')
 
-      expect(result.it[1].position).toEqual([900, 0, 50])
-      expect(result.it[1].size).toEqual([400, 360, 500])
+      expect(result.it[1].shape.position).toEqual([900, 0, 50])
+      expect(result.it[1].shape.size).toEqual([400, 360, 500])
       expect(result.it[1].type).toBe('partial-strawbale')
 
       // Top row
-      expect(result.it[2].position).toEqual([100, 0, 550])
-      expect(result.it[2].size).toEqual([800, 360, 250])
+      expect(result.it[2].shape.position).toEqual([100, 0, 550])
+      expect(result.it[2].shape.size).toEqual([800, 360, 250])
       expect(result.it[2].type).toBe('partial-strawbale')
 
-      expect(result.it[3].position).toEqual([900, 0, 550])
-      expect(result.it[3].size).toEqual([400, 360, 250])
+      expect(result.it[3].shape.position).toEqual([900, 0, 550])
+      expect(result.it[3].shape.size).toEqual([400, 360, 250])
       expect(result.it[3].type).toBe('partial-strawbale')
     })
   })
@@ -190,8 +190,8 @@ describe('constructStraw', () => {
 
       expect(result.errors[0].description).toBe('Wall is too thick for a single strawbale')
       expect(result.it[0].type).toBe('straw')
-      expect(result.it[0].position).toEqual(position)
-      expect(result.it[0].size).toEqual(size)
+      expect(result.it[0].shape.position).toEqual(position)
+      expect(result.it[0].shape.size).toEqual(size)
     })
 
     it('should generate warning when wall is too thin for single strawbale', () => {
@@ -206,8 +206,8 @@ describe('constructStraw', () => {
 
       expect(result.warnings[0].description).toBe('Wall is too thin for a single strawbale')
       expect(result.it[0].type).toBe('straw')
-      expect(result.it[0].position).toEqual(position)
-      expect(result.it[0].size).toEqual(size)
+      expect(result.it[0].shape.position).toEqual(position)
+      expect(result.it[0].shape.size).toEqual(size)
     })
   })
 
@@ -235,7 +235,7 @@ describe('constructStraw', () => {
 
       const bale = result.it[0]
       expect(bale.type).toBe('partial-strawbale')
-      expect(bale.size).toEqual([10, 360, 10])
+      expect(bale.shape.size).toEqual([10, 360, 10])
     })
 
     it('should handle negative positions', () => {
@@ -249,8 +249,8 @@ describe('constructStraw', () => {
       expect(result.it).toHaveLength(1)
 
       const bale = result.it[0]
-      expect(bale.position).toEqual([-100, 0, -200])
-      expect(bale.size).toEqual([800, 360, 500])
+      expect(bale.shape.position).toEqual([-100, 0, -200])
+      expect(bale.shape.size).toEqual([800, 360, 500])
     })
   })
 
@@ -274,7 +274,7 @@ describe('constructStraw', () => {
 
       const bale = result.it[0]
       expect(bale.type).toBe('full-strawbale')
-      expect(bale.size).toEqual([1000, 300, 400])
+      expect(bale.shape.size).toEqual([1000, 300, 400])
     })
 
     it('should use provided material ID', () => {
