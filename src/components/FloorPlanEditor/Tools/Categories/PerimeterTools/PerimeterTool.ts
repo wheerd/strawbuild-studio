@@ -1,5 +1,6 @@
 import type { Tool, CanvasEvent } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import type { Vec2, Polygon2D, LineWall2D, Length } from '@/types/geometry'
+import type { RingBeamConstructionMethodId } from '@/types/ids'
 import {
   createLength,
   createVec2,
@@ -25,6 +26,8 @@ interface PerimeterToolState {
   isClosingLineValid: boolean
   constructionType: PerimeterConstructionType
   wallThickness: Length
+  baseRingBeamMethodId?: RingBeamConstructionMethodId
+  topRingBeamMethodId?: RingBeamConstructionMethodId
 }
 
 export class PerimeterTool extends BaseTool implements Tool {
@@ -74,6 +77,16 @@ export class PerimeterTool extends BaseTool implements Tool {
 
   public setWallThickness(thickness: Length): void {
     this.state.wallThickness = thickness
+    this.triggerRender()
+  }
+
+  public setBaseRingBeam(methodId: RingBeamConstructionMethodId | undefined): void {
+    this.state.baseRingBeamMethodId = methodId
+    this.triggerRender()
+  }
+
+  public setTopRingBeam(methodId: RingBeamConstructionMethodId | undefined): void {
+    this.state.topRingBeamMethodId = methodId
     this.triggerRender()
   }
 
@@ -197,7 +210,14 @@ export class PerimeterTool extends BaseTool implements Tool {
       const activeStoreyId = event.context.getActiveStoreyId()
 
       try {
-        modelStore.addPerimeter(activeStoreyId, polygon, this.state.constructionType, this.state.wallThickness)
+        modelStore.addPerimeter(
+          activeStoreyId,
+          polygon,
+          this.state.constructionType,
+          this.state.wallThickness,
+          this.state.baseRingBeamMethodId,
+          this.state.topRingBeamMethodId
+        )
       } catch (error) {
         console.error('Failed to create perimeter polygon:', error)
       }

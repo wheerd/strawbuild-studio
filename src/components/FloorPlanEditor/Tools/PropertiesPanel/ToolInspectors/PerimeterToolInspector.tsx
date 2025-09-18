@@ -6,6 +6,8 @@ import type { PerimeterConstructionType } from '@/types/model'
 import type { ToolInspectorProps } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import type { PerimeterTool } from '@/components/FloorPlanEditor/Tools/Categories/PerimeterTools/PerimeterTool'
 import { useReactiveTool } from '@/components/FloorPlanEditor/Tools/hooks/useReactiveTool'
+import type { RingBeamConstructionMethodId } from '@/types/ids'
+import { useRingBeamConstructionMethods } from '@/config/store'
 
 // Construction type options
 const CONSTRUCTION_TYPE_OPTIONS: { value: PerimeterConstructionType; label: string }[] = [
@@ -29,6 +31,9 @@ const CONSTRUCTION_TYPE_OPTIONS: { value: PerimeterConstructionType; label: stri
 
 export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterTool>): React.JSX.Element {
   const { state } = useReactiveTool(tool)
+
+  // Get all ring beam methods from config store
+  const allRingBeamMethods = useRingBeamConstructionMethods()
 
   // Force re-renders when tool state changes
   const [, forceUpdate] = useState({})
@@ -118,6 +123,82 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
                   mm
                 </span>
               </div>
+            </div>
+
+            {/* Base Ring Beam */}
+            <div className="flex items-center justify-between gap-3">
+              <label className="text-xs font-medium text-gray-600 flex-shrink-0">Base Plate</label>
+              <Select.Root
+                value={state.baseRingBeamMethodId || 'none'}
+                onValueChange={value => {
+                  const methodId = value === 'none' ? undefined : (value as RingBeamConstructionMethodId)
+                  tool.setBaseRingBeam(methodId)
+                }}
+              >
+                <Select.Trigger className="flex-1 max-w-24 flex items-center justify-between px-2 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200">
+                  <Select.Value placeholder="None" />
+                  <Select.Icon className="text-gray-600">⌄</Select.Icon>
+                </Select.Trigger>
+                <Select.Portal>
+                  <Select.Content className="bg-white border border-gray-300 rounded-md shadow-lg z-50 overflow-hidden">
+                    <Select.Viewport className="p-1">
+                      <Select.Item
+                        value="none"
+                        className="flex items-center px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 hover:outline-none cursor-pointer rounded"
+                      >
+                        <Select.ItemText>None</Select.ItemText>
+                      </Select.Item>
+                      {allRingBeamMethods.map(method => (
+                        <Select.Item
+                          key={method.id}
+                          value={method.id}
+                          className="flex items-center px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 hover:outline-none cursor-pointer rounded"
+                        >
+                          <Select.ItemText>{method.name}</Select.ItemText>
+                        </Select.Item>
+                      ))}
+                    </Select.Viewport>
+                  </Select.Content>
+                </Select.Portal>
+              </Select.Root>
+            </div>
+
+            {/* Top Ring Beam */}
+            <div className="flex items-center justify-between gap-3">
+              <label className="text-xs font-medium text-gray-600 flex-shrink-0">Top Plate</label>
+              <Select.Root
+                value={state.topRingBeamMethodId || 'none'}
+                onValueChange={value => {
+                  const methodId = value === 'none' ? undefined : (value as RingBeamConstructionMethodId)
+                  tool.setTopRingBeam(methodId)
+                }}
+              >
+                <Select.Trigger className="flex-1 max-w-24 flex items-center justify-between px-2 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200">
+                  <Select.Value placeholder="None" />
+                  <Select.Icon className="text-gray-600">⌄</Select.Icon>
+                </Select.Trigger>
+                <Select.Portal>
+                  <Select.Content className="bg-white border border-gray-300 rounded-md shadow-lg z-50 overflow-hidden">
+                    <Select.Viewport className="p-1">
+                      <Select.Item
+                        value="none"
+                        className="flex items-center px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 hover:outline-none cursor-pointer rounded"
+                      >
+                        <Select.ItemText>None</Select.ItemText>
+                      </Select.Item>
+                      {allRingBeamMethods.map(method => (
+                        <Select.Item
+                          key={method.id}
+                          value={method.id}
+                          className="flex items-center px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 hover:outline-none cursor-pointer rounded"
+                        >
+                          <Select.ItemText>{method.name}</Select.ItemText>
+                        </Select.Item>
+                      ))}
+                    </Select.Viewport>
+                  </Select.Content>
+                </Select.Portal>
+              </Select.Root>
             </div>
           </div>
         </div>

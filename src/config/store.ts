@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
+import { useMemo } from 'react'
 import type { RingBeamConstructionMethod } from '@/types/config'
 import type { RingBeamConstructionMethodId } from '@/types/ids'
 import { createRingBeamConstructionMethodId } from '@/types/ids'
@@ -145,8 +146,10 @@ export const useConfigStore = create<ConfigStore>()(
 )
 
 // Selector hooks for easier usage
-export const useRingBeamConstructionMethods = (): RingBeamConstructionMethod[] =>
-  useConfigStore(state => state.getAllRingBeamConstructionMethods())
+export const useRingBeamConstructionMethods = (): RingBeamConstructionMethod[] => {
+  const ringBeamMethodsMap = useConfigStore(state => state.ringBeamConstructionMethods)
+  return useMemo(() => Array.from(ringBeamMethodsMap.values()), [ringBeamMethodsMap])
+}
 
 export const useRingBeamConstructionMethodById = (
   id: RingBeamConstructionMethodId
