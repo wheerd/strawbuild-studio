@@ -127,6 +127,68 @@ describe('constructOpeningFrame', () => {
       expect(filling).toBeDefined()
     })
 
+    it('generates measurements', () => {
+      const opening = createTestOpening({
+        sillHeight: 800 as Length,
+        height: 1200 as Length,
+        width: 1000 as Length
+      })
+      const openingSegment = createTestOpeningSegment(opening)
+      const config = createTestConfig()
+      const infillConfig = createTestInfillConfig()
+      const results = [...constructOpeningFrame(openingSegment, config, infillConfig, resolveDefaultMaterial)]
+      const { measurements } = aggregateResults(results)
+
+      // Should generate measurements inline
+      expect(measurements.length).toBeGreaterThan(0)
+
+      // Check specific measurement types
+      const openingWidthMeasurements = measurements.filter(m => m.type === 'opening-width')
+      const headerHeightMeasurements = measurements.filter(m => m.type === 'header-height')
+      const sillHeightMeasurements = measurements.filter(m => m.type === 'sill-height')
+      const openingHeightMeasurements = measurements.filter(m => m.type === 'opening-height')
+
+      expect(openingWidthMeasurements).toHaveLength(1)
+      expect(headerHeightMeasurements).toHaveLength(1)
+      expect(sillHeightMeasurements).toHaveLength(1)
+      expect(openingHeightMeasurements).toHaveLength(1)
+
+      // Verify measurement values
+      expect(openingWidthMeasurements[0].label).toBe('1000mm')
+      expect(sillHeightMeasurements[0].label).toBe('800mm')
+      expect(headerHeightMeasurements[0].label).toBe('2000mm') // sillHeight + height
+      expect(openingHeightMeasurements[0].label).toBe('1200mm')
+    })
+
+    it('generates only header and opening width measurements for door', () => {
+      const opening = createTestOpening({
+        type: 'door',
+        sillHeight: 0 as Length,
+        height: 2000 as Length,
+        width: 800 as Length
+      })
+      const openingSegment = createTestOpeningSegment(opening)
+      const config = createTestConfig()
+      const infillConfig = createTestInfillConfig()
+      const results = [...constructOpeningFrame(openingSegment, config, infillConfig, resolveDefaultMaterial)]
+      const { measurements } = aggregateResults(results)
+
+      // Should generate fewer measurements for door (no sill)
+      const openingWidthMeasurements = measurements.filter(m => m.type === 'opening-width')
+      const headerHeightMeasurements = measurements.filter(m => m.type === 'header-height')
+      const sillHeightMeasurements = measurements.filter(m => m.type === 'sill-height')
+      const openingHeightMeasurements = measurements.filter(m => m.type === 'opening-height')
+
+      expect(openingWidthMeasurements).toHaveLength(1)
+      expect(headerHeightMeasurements).toHaveLength(1)
+      expect(sillHeightMeasurements).toHaveLength(0) // No sill for doors
+      expect(openingHeightMeasurements).toHaveLength(0) // No opening height without sill
+
+      // Verify measurement values
+      expect(openingWidthMeasurements[0].label).toBe('800mm')
+      expect(headerHeightMeasurements[0].label).toBe('2000mm')
+    })
+
     it('creates only header for door without sill height', () => {
       const opening = createTestOpening({
         type: 'door',

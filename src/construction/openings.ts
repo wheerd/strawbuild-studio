@@ -1,11 +1,13 @@
 import type { Opening, OpeningId } from '@/model'
 import type { Length, Vec3 } from '@/types/geometry'
+import { createVec2 } from '@/types/geometry'
 import type { MaterialId, ResolveMaterialFunction } from './material'
 import {
   createCuboidShape,
   createConstructionElement,
   yieldElement,
   yieldError,
+  yieldMeasurement,
   type BaseConstructionSegment,
   type ConstructionElement,
   type ConstructionResult,
@@ -82,6 +84,25 @@ export function* constructOpeningFrame(
 
     yield yieldElement(headerElement)
 
+    // Generate opening width measurement (horizontal, above wall)
+    yield yieldMeasurement({
+      type: 'opening-width',
+      startPoint: createVec2(segmentPosition[0], wallHeight),
+      endPoint: createVec2(segmentPosition[0] + segmentSize[0], wallHeight),
+      label: `${Math.round(segmentSize[0])}mm`,
+      offset: -60
+    })
+
+    // Generate header height measurement (vertical, in opening center)
+    const headerCenterX = (segmentPosition[0] + segmentSize[0] / 2) as Length
+    yield yieldMeasurement({
+      type: 'header-height',
+      startPoint: createVec2(headerCenterX, 0),
+      endPoint: createVec2(headerCenterX, headerBottom),
+      label: `${Math.round(headerBottom)}mm`,
+      offset: 40
+    })
+
     if (headerTop > wallHeight) {
       yield yieldError({
         description: `Header does not fit: needs ${config.headerThickness}mm but only ${wallHeight - headerBottom}mm available`,
@@ -108,6 +129,30 @@ export function* constructOpeningFrame(
     )
 
     yield yieldElement(sillElement)
+
+    // Generate sill height measurement (vertical, in opening center)
+    const sillCenterX = (segmentPosition[0] + segmentSize[0] / 2) as Length
+    yield yieldMeasurement({
+      type: 'sill-height',
+      startPoint: createVec2(sillCenterX, 0),
+      endPoint: createVec2(sillCenterX, sillTop),
+      label: `${Math.round(sillTop)}mm`,
+      offset: -40
+    })
+
+    // Generate opening height measurement if both sill and header exist
+    if (headerRequired) {
+      const openingHeight = (headerHeight - sillTop) as Length
+      if (openingHeight > 0) {
+        yield yieldMeasurement({
+          type: 'opening-height',
+          startPoint: createVec2(sillCenterX, sillTop),
+          endPoint: createVec2(sillCenterX, headerHeight),
+          label: `${Math.round(openingHeight)}mm`,
+          offset: -40
+        })
+      }
+    }
 
     if (sillBottom < 0) {
       yield yieldError({

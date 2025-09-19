@@ -7,6 +7,7 @@ import type {
   ConstructionIssue,
   ConstructionResult,
   ConstructionSegment,
+  Measurement,
   PerimeterWallConstructionMethod,
   WallConstructionPlan,
   WallConstructionSegment
@@ -23,11 +24,7 @@ import { constructOpening } from './openings'
 import { resolveDefaultMaterial } from './material'
 import type { ResolveMaterialFunction } from './material'
 import { constructStraw } from './straw'
-import {
-  calculatePostSpacingMeasurements,
-  calculateOpeningMeasurements,
-  calculateOpeningSpacingMeasurements
-} from './measurements'
+import { calculatePostSpacingMeasurements, calculateOpeningSpacingMeasurements } from './measurements'
 import { calculateWallCornerInfo, calculateWallConstructionLength } from './corners'
 
 export interface InfillConstructionConfig extends BaseConstructionConfig {
@@ -187,6 +184,7 @@ export const constructInfillWall: PerimeterWallConstructionMethod<InfillConstruc
   const errors: ConstructionIssue[] = []
   const warnings: ConstructionIssue[] = []
   const segments: ConstructionSegment[] = []
+  const allMeasurements: Measurement[] = []
 
   // Calculate corner information and construction length including assigned corners
   const cornerInfo = calculateWallCornerInfo(wall, perimeter)
@@ -236,6 +234,7 @@ export const constructInfillWall: PerimeterWallConstructionMethod<InfillConstruc
       const openingResults = [...constructOpening(segment, openingConfig, config, resolveDefaultMaterial)]
       const {
         elements: openingElements,
+        measurements: openingMeasurements,
         errors: openingErrors,
         warnings: openingWarnings
       } = aggregateResults(openingResults)
@@ -254,20 +253,19 @@ export const constructInfillWall: PerimeterWallConstructionMethod<InfillConstruc
       segments.push(openingConstruction)
       errors.push(...openingErrors)
       warnings.push(...openingWarnings)
+
+      // Collect measurements generated during opening construction
+      allMeasurements.push(...openingMeasurements)
     }
   }
 
-  // Calculate measurements
+  // Calculate remaining measurements (post spacing and opening spacing)
   const allElements = segments.flatMap(s => s.elements)
   const postSpacingMeasurements = calculatePostSpacingMeasurements(allElements)
-
-  const openingMeasurements = segments
-    .filter(s => s.type === 'opening')
-    .flatMap(s => calculateOpeningMeasurements(s, floorHeight))
-
   const openingSpacingMeasurements = calculateOpeningSpacingMeasurements(segments, constructionLength, floorHeight)
 
-  const measurements = [...postSpacingMeasurements, ...openingMeasurements, ...openingSpacingMeasurements]
+  // Combine generated measurements with calculated ones
+  const measurements = [...allMeasurements, ...postSpacingMeasurements, ...openingSpacingMeasurements]
 
   return {
     wallId: wall.id,
