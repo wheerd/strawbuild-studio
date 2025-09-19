@@ -3,15 +3,22 @@ import type { Length, Vec3 } from '@/types/geometry'
 import { constructPost, type PostConfig } from './posts'
 import type {
   BaseConstructionConfig,
-  ConstructionElement,
+  ConstructionElementId,
   ConstructionIssue,
+  ConstructionResult,
   ConstructionSegment,
   PerimeterWallConstructionMethod,
   WallConstructionPlan,
-  WallConstructionSegment,
-  WithIssues
+  WallConstructionSegment
 } from './base'
-import { segmentWall, createConstructionElementId } from './base'
+import {
+  segmentWall,
+  createConstructionElementId,
+  aggregateResults,
+  yieldError,
+  yieldWarning,
+  yieldAndCollectElementIds
+} from './base'
 import { constructOpening } from './openings'
 import { resolveDefaultMaterial } from './material'
 import type { ResolveMaterialFunction } from './material'
@@ -29,7 +36,7 @@ export interface InfillConstructionConfig extends BaseConstructionConfig {
   posts: PostConfig // Default: full
 }
 
-export function infillWallArea(
+export function* infillWallArea(
   position: Vec3,
   size: Vec3,
   config: InfillConstructionConfig,
@@ -37,13 +44,13 @@ export function infillWallArea(
   startsWithStand: boolean = false,
   endsWithStand: boolean = false,
   startAtEnd: boolean = false
-): WithIssues<ConstructionElement[]> {
+): Generator<ConstructionResult> {
   const { minStrawSpace } = config
   const { width: postWidth } = config.posts
   let error: string | null = null
   let warning: string | null = null
-  const errors: ConstructionIssue[] = []
-  const warnings: ConstructionIssue[] = []
+  const allElementIds: ConstructionElementId[] = []
+
   if (size[2] < minStrawSpace) {
     warning = 'Not enough vertical space to fill with straw'
   }
@@ -52,99 +59,75 @@ export function infillWallArea(
     if (size[0] < postWidth) {
       error = 'Not enough space for a post'
     } else if (size[0] === postWidth) {
-      return constructPost(position, size, config.posts, resolveMaterial)
+      yield* constructPost(position, size, config.posts, resolveMaterial)
+      return
     } else if (startsWithStand && endsWithStand && size[0] < 2 * postWidth) {
       error = 'Space for more than one post, but not enough for two'
     }
   }
 
-  const parts: ConstructionElement[] = []
-
   let left = position[0]
   let width = size[0]
 
   if (startsWithStand) {
-    const {
-      it: startPost,
-      errors: postErrors,
-      warnings: postWarnings
-    } = constructPost(position, size, config.posts, resolveMaterial)
-    parts.push(...startPost)
-    errors.push(...postErrors)
-    warnings.push(...postWarnings)
+    yield* yieldAndCollectElementIds(constructPost(position, size, config.posts, resolveMaterial), allElementIds)
     left += postWidth
     width -= postWidth
   }
 
   if (endsWithStand) {
-    const {
-      it: endPost,
-      errors: postErrors,
-      warnings: postWarnings
-    } = constructPost(
-      [(position[0] + size[0] - postWidth) as Length, position[1], position[2]],
-      size,
-      config.posts,
-      resolveMaterial
+    yield* yieldAndCollectElementIds(
+      constructPost(
+        [(position[0] + size[0] - postWidth) as Length, position[1], position[2]],
+        size,
+        config.posts,
+        resolveMaterial
+      ),
+      allElementIds
     )
-    parts.push(...endPost)
-    errors.push(...postErrors)
-    warnings.push(...postWarnings)
     width -= postWidth
   }
 
   const inbetweenPosition: Vec3 = [left, position[1], position[2]]
   const inbetweenSize: Vec3 = [width, size[1], size[2]]
 
-  constructInfillRecursive(
-    inbetweenPosition,
-    inbetweenSize,
-    config,
-    resolveMaterial,
-    parts,
-    warnings,
-    errors,
-    !startAtEnd
+  yield* yieldAndCollectElementIds(
+    constructInfillRecursive(inbetweenPosition, inbetweenSize, config, resolveMaterial, !startAtEnd),
+    allElementIds
   )
 
+  // Add warning/error with references to all created elements
   if (warning) {
-    warnings.push({ description: warning, elements: parts.map(p => p.id) })
+    yield yieldWarning({ description: warning, elements: allElementIds })
   }
 
   if (error) {
-    errors.push({ description: error, elements: parts.map(p => p.id) })
+    yield yieldError({ description: error, elements: allElementIds })
   }
-
-  return { it: parts, errors, warnings }
 }
 
-function constructInfillRecursive(
+function* constructInfillRecursive(
   position: Vec3,
   size: Vec3,
   config: InfillConstructionConfig,
   resolveMaterial: ResolveMaterialFunction,
-  elements: ConstructionElement[],
-  warnings: ConstructionIssue[],
-  errors: ConstructionIssue[],
   atStart: boolean
-): void {
+): Generator<ConstructionResult> {
   const baleWidth = getBaleWidth(size[0] as Length, config)
 
   const strawPosition: Vec3 = [atStart ? position[0] : position[0] + size[0] - baleWidth, position[1], position[2]]
   const strawSize: Vec3 = [baleWidth, size[1], size[2]]
 
   if (baleWidth > 0) {
-    const {
-      it: strawElements,
-      errors: strawErrors,
-      warnings: strawWarnings
-    } = constructStraw(strawPosition, strawSize, config.straw)
-    elements.push(...strawElements)
-    errors.push(...strawErrors)
-    warnings.push(...strawWarnings)
+    const strawElementIds: ConstructionElementId[] = []
+
+    yield* yieldAndCollectElementIds(constructStraw(strawPosition, strawSize, config.straw), strawElementIds)
 
     if (baleWidth < config.minStrawSpace) {
-      warnings.push({ description: 'Not enough space for infilling straw', elements: strawElements.map(s => s.id) })
+      yield yieldWarning({
+        description: 'Not enough space for infilling straw',
+        elements: strawElementIds
+      })
     }
   }
 
@@ -153,14 +136,8 @@ function constructInfillRecursive(
     postOffset = atStart
       ? ((strawPosition[0] + strawSize[0]) as Length)
       : ((strawPosition[0] - config.posts.width) as Length)
-    const {
-      it: post,
-      errors: postErrors,
-      warnings: postWarnings
-    } = constructPost([postOffset, position[1], position[2]], size, config.posts, resolveMaterial)
-    elements.push(...post)
-    errors.push(...postErrors)
-    warnings.push(...postWarnings)
+
+    yield* constructPost([postOffset, position[1], position[2]], size, config.posts, resolveMaterial)
   } else {
     return
   }
@@ -168,16 +145,7 @@ function constructInfillRecursive(
   const remainingPosition = [atStart ? postOffset + config.posts.width : position[0], position[1], position[2]]
   const remainingSize = [size[0] - strawSize[0] - config.posts.width, size[1], size[2]]
 
-  constructInfillRecursive(
-    remainingPosition,
-    remainingSize,
-    config,
-    resolveMaterial,
-    elements,
-    warnings,
-    errors,
-    !atStart
-  )
+  yield* constructInfillRecursive(remainingPosition, remainingSize, config, resolveMaterial, !atStart)
 }
 
 function getBaleWidth(availableWidth: Length, config: InfillConstructionConfig): Length {
@@ -233,19 +201,19 @@ export const constructInfillWall: PerimeterWallConstructionMethod<InfillConstruc
   for (const segment of wallSegments) {
     if (segment.type === 'wall') {
       // Construct infill wall segment - segment already has Vec3 position and size
-      const {
-        it: wallElements,
-        errors: wallErrors,
-        warnings: wallWarnings
-      } = infillWallArea(
-        segment.position,
-        segment.size,
-        config,
-        resolveDefaultMaterial,
-        true, // startsWithStand
-        true, // endsWithStand
-        false // startAtEnd
-      )
+      const wallResults = [
+        ...infillWallArea(
+          segment.position,
+          segment.size,
+          config,
+          resolveDefaultMaterial,
+          true, // startsWithStand
+          true, // endsWithStand
+          false // startAtEnd
+        )
+      ]
+
+      const { elements: wallElements, errors: wallErrors, warnings: wallWarnings } = aggregateResults(wallResults)
 
       const wallConstruction: WallConstructionSegment = {
         id: createConstructionElementId(),
@@ -265,11 +233,23 @@ export const constructInfillWall: PerimeterWallConstructionMethod<InfillConstruc
       const openingType = segment.openings[0].type
       const openingConfig = config.openings[openingType]
 
+      const openingResults = [...constructOpening(segment, openingConfig, config, resolveDefaultMaterial)]
       const {
-        it: openingConstruction,
+        elements: openingElements,
         errors: openingErrors,
         warnings: openingWarnings
-      } = constructOpening(segment, openingConfig, config, resolveDefaultMaterial)
+      } = aggregateResults(openingResults)
+
+      // Note: constructOpening now yields elements directly, but the original returned an OpeningConstruction
+      // For now, we'll create a placeholder segment structure - this needs to be addressed in the full migration
+      const openingConstruction = {
+        id: createConstructionElementId(),
+        type: 'opening' as const,
+        position: segment.position[0] as Length,
+        width: segment.size[0] as Length,
+        openingIds: segment.openings!.map(o => o.id),
+        elements: openingElements
+      }
 
       segments.push(openingConstruction)
       errors.push(...openingErrors)

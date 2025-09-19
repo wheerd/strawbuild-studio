@@ -1,6 +1,13 @@
 import type { Length, Vec3 } from '@/types/geometry'
 import type { MaterialId } from './material'
-import { createCuboidShape, createConstructionElement, type ConstructionElement, type WithIssues } from './base'
+import {
+  createCuboidShape,
+  createConstructionElement,
+  yieldElement,
+  yieldError,
+  yieldWarning,
+  type ConstructionResult
+} from './base'
 import { vec3 } from 'gl-matrix'
 
 export interface StrawConfig {
@@ -10,12 +17,11 @@ export interface StrawConfig {
   material: MaterialId
 }
 
-export const constructStraw = (position: Vec3, size: Vec3, config: StrawConfig): WithIssues<ConstructionElement[]> => {
+export function* constructStraw(position: Vec3, size: Vec3, config: StrawConfig): Generator<ConstructionResult> {
   if (size[1] === config.baleWidth) {
     const end = vec3.create()
     vec3.add(end, position, size)
 
-    const bales: ConstructionElement[] = []
     for (let z = position[2]; z < end[2]; z += config.baleHeight) {
       for (let x = position[0]; x < end[0]; x += config.baleLength) {
         const balePosition: Vec3 = [x, position[1], z]
@@ -26,41 +32,21 @@ export const constructStraw = (position: Vec3, size: Vec3, config: StrawConfig):
         ]
 
         const isFullBale = baleSize[0] === config.baleLength && baleSize[2] === config.baleHeight
-        bales.push(
-          createConstructionElement(
-            isFullBale ? 'full-strawbale' : 'partial-strawbale',
-            config.material,
-            createCuboidShape(balePosition, baleSize)
-          )
+        const bale = createConstructionElement(
+          isFullBale ? 'full-strawbale' : 'partial-strawbale',
+          config.material,
+          createCuboidShape(balePosition, baleSize)
         )
+        yield yieldElement(bale)
       }
     }
-    return {
-      it: bales,
-      errors: [],
-      warnings: []
-    }
   } else if (size[1] > config.baleWidth) {
-    const element: ConstructionElement = createConstructionElement(
-      'straw',
-      config.material,
-      createCuboidShape(position, size)
-    )
-    return {
-      it: [element],
-      errors: [{ description: 'Wall is too thick for a single strawbale', elements: [element.id] }],
-      warnings: []
-    }
+    const element = createConstructionElement('straw', config.material, createCuboidShape(position, size))
+    yield yieldElement(element)
+    yield yieldError({ description: 'Wall is too thick for a single strawbale', elements: [element.id] })
   } else {
-    const element: ConstructionElement = createConstructionElement(
-      'straw',
-      config.material,
-      createCuboidShape(position, size)
-    )
-    return {
-      it: [element],
-      errors: [],
-      warnings: [{ description: 'Wall is too thin for a single strawbale', elements: [element.id] }]
-    }
+    const element = createConstructionElement('straw', config.material, createCuboidShape(position, size))
+    yield yieldElement(element)
+    yield yieldWarning({ description: 'Wall is too thin for a single strawbale', elements: [element.id] })
   }
 }

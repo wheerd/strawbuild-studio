@@ -4,8 +4,10 @@ import {
   createCuboidShape,
   createConstructionElement,
   type ConstructionElement,
-  type WithIssues,
-  type ConstructionIssue
+  type ConstructionResult,
+  yieldElement,
+  yieldWarning,
+  yieldError
 } from './base'
 
 export interface BasePostConfig {
@@ -49,19 +51,19 @@ const dimensionsMatch = (
   return false
 }
 
-const constructFullPost = (
+function* constructFullPost(
   position: Vec3,
   size: Vec3,
   config: FullPostConfig,
   resolveMaterial: ResolveMaterialFunction
-): WithIssues<ConstructionElement[]> => {
-  const warnings: ConstructionIssue[] = []
-
+): Generator<ConstructionResult> {
   const postElement: ConstructionElement = createConstructionElement(
     'post',
     config.material,
     createCuboidShape(position, [config.width, size[1], size[2]])
   )
+
+  yield yieldElement(postElement)
 
   // Check if material is dimensional and dimensions match
   const material = resolveMaterial(config.material)
@@ -71,29 +73,20 @@ const constructFullPost = (
     const materialDimensions = { width: dimensionalMaterial.width, thickness: dimensionalMaterial.thickness }
 
     if (!dimensionsMatch(postDimensions, materialDimensions)) {
-      warnings.push({
+      yield yieldWarning({
         description: `Post dimensions (${config.width}x${size[1]}mm) don't match material dimensions (${dimensionalMaterial.width}x${dimensionalMaterial.thickness}mm)`,
         elements: [postElement.id]
       })
     }
   }
-
-  return {
-    it: [postElement],
-    errors: [],
-    warnings
-  }
 }
 
-const constructDoublePost = (
+function* constructDoublePost(
   position: Vec3,
   size: Vec3,
   config: DoublePostConfig,
   resolveMaterial: ResolveMaterialFunction
-): WithIssues<ConstructionElement[]> => {
-  const errors: ConstructionIssue[] = []
-  const warnings: ConstructionIssue[] = []
-
+): Generator<ConstructionResult> {
   // Check if wall is wide enough for two posts
   const minimumWallThickness = 2 * config.thickness
   if (size[1] < minimumWallThickness) {
@@ -103,16 +96,12 @@ const constructDoublePost = (
       createCuboidShape(position, [config.width, size[1], size[2]])
     )
 
-    errors.push({
+    yield yieldElement(errorElement)
+    yield yieldError({
       description: `Wall thickness (${size[1]}mm) is not wide enough for double posts requiring ${minimumWallThickness}mm minimum`,
       elements: [errorElement.id]
     })
-
-    return {
-      it: [errorElement],
-      errors,
-      warnings
-    }
+    return
   }
 
   const post1: ConstructionElement = createConstructionElement(
@@ -120,6 +109,7 @@ const constructDoublePost = (
     config.material,
     createCuboidShape(position, [config.width, config.thickness, size[2]])
   )
+  yield yieldElement(post1)
 
   const post2: ConstructionElement = createConstructionElement(
     'post',
@@ -129,8 +119,7 @@ const constructDoublePost = (
       [config.width, config.thickness, size[2]]
     )
   )
-
-  const elements = [post1, post2]
+  yield yieldElement(post2)
 
   // Only add infill if there's space for it
   const infillThickness = size[1] - 2 * config.thickness
@@ -143,7 +132,7 @@ const constructDoublePost = (
         [config.width, infillThickness, size[2]]
       )
     )
-    elements.push(infill)
+    yield yieldElement(infill)
   }
 
   // Check if post material is dimensional and dimensions match
@@ -154,26 +143,20 @@ const constructDoublePost = (
     const materialDimensions = { width: dimensionalMaterial.width, thickness: dimensionalMaterial.thickness }
 
     if (!dimensionsMatch(postDimensions, materialDimensions)) {
-      warnings.push({
+      yield yieldWarning({
         description: `Post dimensions (${config.width}x${config.thickness}mm) don't match material dimensions (${dimensionalMaterial.width}x${dimensionalMaterial.thickness}mm)`,
         elements: [post1.id, post2.id]
       })
     }
   }
-
-  return {
-    it: elements,
-    errors,
-    warnings
-  }
 }
 
-export const constructPost = (
+export function constructPost(
   position: Vec3,
   size: Vec3,
   config: PostConfig,
   resolveMaterial: ResolveMaterialFunction
-): WithIssues<ConstructionElement[]> => {
+): Generator<ConstructionResult> {
   if (config.type === 'full') {
     return constructFullPost(position, size, config, resolveMaterial)
   } else if (config.type === 'double') {
