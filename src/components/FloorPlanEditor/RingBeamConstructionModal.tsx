@@ -109,23 +109,97 @@ function RingBeamConstructionPlanDisplay({
                 if (import.meta.env.DEV) {
                   console.log(`  Element ${elementIndex}:`, {
                     position: shape.position,
-                    size: shape.size
+                    size: shape.size,
+                    startCut: shape.startCut,
+                    endCut: shape.endCut
                   })
                 }
 
+                // Calculate polygon points for CutCuboid with angled cuts
+                const calculateCutCuboidPoints = (shape: CutCuboid): string => {
+                  const [x, y] = shape.position
+                  const [length, width] = shape.size
+
+                  // In 2D top view, we're looking at the XY plane (length x width)
+                  // Start at bottom-left and go clockwise
+                  const points: [number, number][] = [
+                    [x, y], // bottom-left (start, inside edge)
+                    [x, y + width], // top-left (start, outside edge)
+                    [x + length, y + width], // top-right (end, outside edge)
+                    [x + length, y] // bottom-right (end, inside edge)
+                  ]
+
+                  // Apply start cut if present (at x position)
+                  if (shape.startCut && shape.startCut.plane === 'xy' && shape.startCut.axis === 'y') {
+                    const angleRad = (shape.startCut.angle * Math.PI) / 180
+                    const offsetDistance = width * Math.tan(angleRad)
+
+                    // Adjust the end edge points
+                    if (offsetDistance < 0) {
+                      points[0] = [x - offsetDistance, y] // bottom-left moves right
+                    } else {
+                      points[1] = [x + offsetDistance, y + width] // top-left moves right
+                    }
+                  }
+
+                  // Apply end cut if present (at x + length position)
+                  if (shape.endCut && shape.endCut.plane === 'xy' && shape.endCut.axis === 'y') {
+                    const angleRad = (shape.endCut.angle * Math.PI) / 180
+                    const offsetDistance = width * Math.tan(angleRad)
+
+                    // Adjust the end edge points
+                    if (offsetDistance < 0) {
+                      points[2] = [x + length + offsetDistance, y + width] // top-right moves left
+                    } else {
+                      points[3] = [x + length - offsetDistance, y] // bottom-right moves left
+                    }
+                  }
+
+                  // Convert to SVG coordinate system (flip Y)
+                  return points.map(([px, py]) => `${px},${-py}`).join(' ')
+                }
+
+                const polygonPoints =
+                  shape.type === 'cut-cuboid'
+                    ? calculateCutCuboidPoints(shape)
+                    : (() => {
+                        // Handle regular cuboid
+                        const [x, y] = shape.position
+                        const [length, width] = shape.size
+                        return `${x},${-y - width} ${x + length},${-y - width} ${x + length},${-y} ${x},${-y}`
+                      })()
+
                 return (
                   <g key={`element-${elementIndex}`}>
-                    <rect
-                      x={shape.position[0]}
-                      y={-shape.position[1] - shape.size[1]}
-                      width={shape.size[0]}
-                      height={shape.size[1]}
-                      fill="#8B4513"
-                      stroke="#000"
-                      strokeWidth="5"
-                    />
+                    <polygon points={polygonPoints} fill="#8B4513" stroke="#000" strokeWidth="5" />
                     {/* Element origin marker */}
                     {showDebugMarkers && <circle cx={shape.position[0]} cy={-shape.position[1]} r="2" fill="blue" />}
+
+                    {/* Cut angle indicators */}
+                    {showDebugMarkers && shape.type === 'cut-cuboid' && (
+                      <g>
+                        {shape.startCut && (
+                          <text
+                            x={shape.position[0] - 50}
+                            y={-shape.position[1] - shape.size[1] / 2}
+                            fontSize="100"
+                            fill="red"
+                          >
+                            Start: {shape.startCut.angle.toFixed(1)}°
+                          </text>
+                        )}
+                        {shape.endCut && (
+                          <text
+                            x={shape.position[0] + shape.size[0] + 10}
+                            y={-shape.position[1] - shape.size[1] / 2}
+                            fontSize="100"
+                            fill="red"
+                          >
+                            End: {shape.endCut.angle.toFixed(1)}°
+                          </text>
+                        )}
+                      </g>
+                    )}
                   </g>
                 )
               })}

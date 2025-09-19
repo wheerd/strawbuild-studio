@@ -18,7 +18,7 @@ describe('ConfigStore', () => {
       expect(defaultMethod!.config.height).toBe(60)
       if (defaultMethod!.config.type === 'full') {
         expect(defaultMethod!.config.width).toBe(360)
-        expect(defaultMethod!.config.offsetFromEdge).toBe(0)
+        expect(defaultMethod!.config.offsetFromEdge).toBe(30)
       }
       expect(defaultMethod!.config.material).toBeDefined()
     })
