@@ -162,6 +162,7 @@ export function LengthIndicator({
         width={measurementLength}
         offsetY={scaledFontSize / 2}
         rotation={angleDegrees}
+        scaleY={-1}
         shadowColor="white"
         shadowBlur={4}
         shadowOpacity={0.8}

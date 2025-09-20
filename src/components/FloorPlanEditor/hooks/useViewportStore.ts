@@ -77,12 +77,15 @@ const viewportStore = create<ViewportStore>()((set, get) => ({
 
   worldToStage: (worldPos: Vec2): { x: number; y: number } => {
     const viewport = get()
-    return { x: worldPos[0] * viewport.zoom + viewport.panX, y: worldPos[1] * viewport.zoom + viewport.panY }
+    return {
+      x: worldPos[0] * viewport.zoom + viewport.panX,
+      y: -(worldPos[1] * viewport.zoom + viewport.panY)
+    }
   },
 
   stageToWorld: (stagePos: { x: number; y: number }): Vec2 => {
     const viewport = get()
-    return createVec2((stagePos.x - viewport.panX) / viewport.zoom, (stagePos.y - viewport.panY) / viewport.zoom)
+    return createVec2((stagePos.x - viewport.panX) / viewport.zoom, -(stagePos.y - viewport.panY) / viewport.zoom)
   },
 
   fitToView: (bounds: Bounds2D): void => {
@@ -98,7 +101,7 @@ const viewportStore = create<ViewportStore>()((set, get) => ({
 
     // Calculate center of bounds
     const centerX = (bounds.min[0] + bounds.max[0]) / 2
-    const centerY = (bounds.min[1] + bounds.max[1]) / 2
+    const centerY = -(bounds.min[1] + bounds.max[1]) / 2
 
     // Calculate zoom level to fit content with some padding
     const padding = 0.1 // 10% padding around content

@@ -39,13 +39,14 @@ export function AddOpeningToolOverlay({ tool }: AddOpeningToolOverlayProps): Rea
         text={getOpeningIcon(state.openingType)}
         fontSize={wall.thickness * 0.7}
         x={0}
-        y={0}
+        y={wall.thickness}
         width={state.width}
         height={wall.thickness}
         align="center"
         verticalAlign="middle"
         fill={COLORS.ui.white}
         fontFamily="Arial"
+        scaleY={-1}
       />
 
       {/* Snap Indicator */}

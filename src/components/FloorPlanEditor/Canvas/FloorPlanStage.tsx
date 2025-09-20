@@ -168,7 +168,7 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
       x={panX}
       y={panY}
       scaleX={zoom}
-      scaleY={zoom}
+      scaleY={-zoom}
       onWheel={handleWheel}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
