@@ -43,7 +43,8 @@ export class CanvasEventDispatcher {
     return {
       type,
       originalEvent: keyboardEvent,
-      konvaEvent: null as any, // Not applicable for keyboard events
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      konvaEvent: null as unknown as Konva.KonvaEventObject<any>, // Not applicable for keyboard events
       stageCoordinates: createVec2(0, 0), // Not applicable for keyboard events
       pointerCoordinates: undefined, // Not applicable for keyboard events
       target: null,

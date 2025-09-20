@@ -1,5 +1,12 @@
-import type { StoreyId, PerimeterId, PerimeterWallId, PerimeterCornerId, OpeningId } from '@/types/ids'
-import type { Length, LineWall2D, Vec2 } from '@/types/geometry'
+import type {
+  StoreyId,
+  PerimeterId,
+  PerimeterWallId,
+  PerimeterCornerId,
+  OpeningId,
+  RingBeamConstructionMethodId
+} from '@/types/ids'
+import type { Length, LineSegment2D, Vec2 } from '@/types/geometry'
 
 // Storey level branded type
 export type StoreyLevel = number & { __brand: 'StoreyLevel' }
@@ -40,6 +47,10 @@ export interface Perimeter {
   // Per-side wall data
   walls: PerimeterWall[] // walls[i] goes from corners[i].insidePoint -> corners[(i + 1) % corners.length].insidePoint
   corners: PerimeterCorner[]
+
+  // Ring beam configuration
+  baseRingBeamMethodId?: RingBeamConstructionMethodId
+  topRingBeamMethodId?: RingBeamConstructionMethodId
 }
 
 export type PerimeterConstructionType = 'cells-under-tension' | 'infill' | 'strawhenge' | 'non-strawbale'
@@ -55,8 +66,8 @@ export interface PerimeterWall {
   insideLength: Length
   outsideLength: Length
   wallLength: Length
-  insideLine: LineWall2D
-  outsideLine: LineWall2D
+  insideLine: LineSegment2D
+  outsideLine: LineSegment2D
   direction: Vec2 // Normalized from start -> end of wall
   outsideDirection: Vec2 // Normal vector pointing outside
 }
@@ -72,5 +83,5 @@ export interface PerimeterCorner {
   outsidePoint: Vec2
 
   // Which wall "owns" this corner - this is relevant for construction
-  belongsTo: 'previous' | 'next'
+  constuctedByWall: 'previous' | 'next'
 }

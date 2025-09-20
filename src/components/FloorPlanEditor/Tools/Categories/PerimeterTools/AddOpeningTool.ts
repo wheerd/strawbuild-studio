@@ -1,7 +1,7 @@
 import type { Tool, CanvasEvent, ToolContext } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import { BaseTool } from '@/components/FloorPlanEditor/Tools/ToolSystem/BaseTool'
 import type { Vec2, Length } from '@/types/geometry'
-import { createLength, createVec2, distance, projectPointOntoLine, lineFromWall } from '@/types/geometry'
+import { createLength, createVec2, distance, projectPointOntoLine, lineFromSegment } from '@/types/geometry'
 import type { OpeningType, PerimeterWall } from '@/types/model'
 import {
   type PerimeterId,
@@ -112,7 +112,7 @@ export class AddOpeningTool extends BaseTool implements Tool {
    */
   private calculateCenterOffsetFromPointerPosition(pointerPos: Vec2, wall: PerimeterWall): Length {
     // Convert LineWall2D to Line2D for projection
-    const line = lineFromWall(wall.insideLine)
+    const line = lineFromSegment(wall.insideLine)
     if (!line) {
       throw new Error('Cannot create line from wall')
     }

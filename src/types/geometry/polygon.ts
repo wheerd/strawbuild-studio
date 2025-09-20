@@ -7,7 +7,7 @@ import type { Feature, Polygon as GeoJSONPolygon, LineString } from 'geojson'
 
 import type { Vec2, Area, Length, Bounds2D } from './basic'
 import { boundsFromPoints, createArea, createLength, distance } from './basic'
-import type { LineWall2D } from './line'
+import { distanceToLineSegment, type LineSegment2D } from './line'
 
 // Polygon types
 export interface Polygon2D {
@@ -74,7 +74,7 @@ export function pointsToGeoJSONPolygon(points: Vec2[]): Feature<GeoJSONPolygon> 
   return turfPolygon([coordinates])
 }
 
-export function lineWallToGeoJSON(wall: LineWall2D): Feature<LineString> {
+export function lineWallToGeoJSON(wall: LineSegment2D): Feature<LineString> {
   return turfLineString([
     [wall.start[0], wall.start[1]],
     [wall.end[0], wall.end[1]]
@@ -82,7 +82,7 @@ export function lineWallToGeoJSON(wall: LineWall2D): Feature<LineString> {
 }
 
 // Check if two line walls intersect (using Turf.js)
-export function doLineWallsIntersect(seg1: LineWall2D, seg2: LineWall2D): boolean {
+export function doLineWallsIntersect(seg1: LineSegment2D, seg2: LineSegment2D): boolean {
   const line1 = lineWallToGeoJSON(seg1)
   const line2 = lineWallToGeoJSON(seg2)
 
@@ -109,14 +109,14 @@ export function wouldPolygonSelfIntersect(existingPoints: Vec2[], newPoint: Vec2
   }
 
   // The new line wall would be from the last existing point to the new point
-  const newWall: LineWall2D = {
+  const newWall: LineSegment2D = {
     start: existingPoints[existingPoints.length - 1],
     end: newPoint
   }
 
   // Check if this new wall intersects with any existing walls (except the last one it connects to)
   for (let i = 0; i < existingPoints.length - 2; i++) {
-    const existingWall: LineWall2D = {
+    const existingWall: LineSegment2D = {
       start: existingPoints[i],
       end: existingPoints[i + 1]
     }
@@ -148,6 +148,22 @@ export function wouldClosingPolygonSelfIntersect(points: Vec2[]): boolean {
     // If Turf can't create or validate the polygon, it's likely invalid
     return true
   }
+}
+
+export function simplifyPolygon(polygon: Polygon2D, epsilon: number = 0.0001): Polygon2D {
+  const { points } = polygon
+  const newPoints: Vec2[] = []
+  for (let i = 0; i < points.length; i++) {
+    const previous = points[(i - 1 + points.length) % points.length]
+    const current = points[i]
+    const next = points[(i + 1) % points.length]
+
+    const dist = distanceToLineSegment(current, { start: previous, end: next })
+    if (dist > epsilon) {
+      newPoints.push(current)
+    }
+  }
+  return { points: newPoints }
 }
 
 // Offset a polygon by a given distance (positive = outward, negative = inward)
@@ -268,8 +284,8 @@ export function arePolygonsIntersecting(polygon1: Polygon2D, polygon2: Polygon2D
 }
 
 // Helper function to get polygon edges as line walls
-function getPolygonEdges(polygon: Polygon2D): LineWall2D[] {
-  const edges: LineWall2D[] = []
+function getPolygonEdges(polygon: Polygon2D): LineSegment2D[] {
+  const edges: LineSegment2D[] = []
   const points = polygon.points
 
   for (let i = 0; i < points.length; i++) {

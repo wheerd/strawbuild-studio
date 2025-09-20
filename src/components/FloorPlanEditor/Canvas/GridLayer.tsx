@@ -52,8 +52,8 @@ export function GridLayer({ width = 800, height = 600, viewport }: GridLayerProp
 
   const startX = Math.floor(-viewport.panX / viewport.zoom / dynamicGridSize) * dynamicGridSize
   const endX = Math.ceil((width - viewport.panX) / viewport.zoom / dynamicGridSize) * dynamicGridSize
-  const startY = Math.floor(-viewport.panY / viewport.zoom / dynamicGridSize) * dynamicGridSize
-  const endY = Math.ceil((height - viewport.panY) / viewport.zoom / dynamicGridSize) * dynamicGridSize
+  const startY = -Math.floor(-viewport.panY / viewport.zoom / dynamicGridSize) * dynamicGridSize
+  const endY = -Math.ceil((height - viewport.panY) / viewport.zoom / dynamicGridSize) * dynamicGridSize
 
   // Calculate stroke width that scales appropriately with zoom
   const baseStrokeWidth = 1
@@ -71,7 +71,7 @@ export function GridLayer({ width = 800, height = 600, viewport }: GridLayerProp
     )
   }
 
-  for (let y = startY; y <= endY; y += dynamicGridSize) {
+  for (let y = startY; y >= endY; y -= dynamicGridSize) {
     lines.push(
       <Line
         key={`h-${y}`}

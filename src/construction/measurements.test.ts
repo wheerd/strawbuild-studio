@@ -1,7 +1,6 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import type { ConstructionElement, ConstructionSegment } from './base'
-
-import { createConstructionElementId } from './base'
+import { createCuboidShape, createConstructionElement } from './base'
 import {
   calculatePostSpacingMeasurements,
   calculateOpeningMeasurements,
@@ -9,29 +8,31 @@ import {
 } from './measurements'
 import type { Length } from '@/types/geometry'
 
-const mockPost = (x: Length, width: Length = 40 as Length): ConstructionElement => ({
-  id: createConstructionElementId(),
-  type: 'post',
-  material: 'wood' as any,
-  position: [x, 0 as Length, 0 as Length],
-  size: [width, 100 as Length, 2400 as Length]
-})
+// Mock the formatLength utility
+vi.mock('@/utils/formatLength', () => ({
+  formatLength: vi.fn((length: number) => `${length}mm`) // Mock to return simple format for tests
+}))
 
-const mockHeader = (x: Length, width: Length, z: Length): ConstructionElement => ({
-  id: createConstructionElementId(),
-  type: 'header',
-  material: 'wood' as any,
-  position: [x, 0 as Length, z],
-  size: [width, 100 as Length, 60 as Length]
-})
+const mockPost = (x: Length, width: Length = 40 as Length): ConstructionElement =>
+  createConstructionElement(
+    'post',
+    'wood' as any,
+    createCuboidShape([x, 0 as Length, 0 as Length], [width, 100 as Length, 2400 as Length])
+  )
 
-const mockSill = (x: Length, width: Length, z: Length): ConstructionElement => ({
-  id: createConstructionElementId(),
-  type: 'sill',
-  material: 'wood' as any,
-  position: [x, 0 as Length, z],
-  size: [width, 100 as Length, 60 as Length]
-})
+const mockHeader = (x: Length, width: Length, z: Length): ConstructionElement =>
+  createConstructionElement(
+    'header',
+    'wood' as any,
+    createCuboidShape([x, 0 as Length, z], [width, 100 as Length, 60 as Length])
+  )
+
+const mockSill = (x: Length, width: Length, z: Length): ConstructionElement =>
+  createConstructionElement(
+    'sill',
+    'wood' as any,
+    createCuboidShape([x, 0 as Length, z], [width, 100 as Length, 60 as Length])
+  )
 
 describe('calculatePostSpacingMeasurements', () => {
   it('calculates spacing between adjacent posts', () => {

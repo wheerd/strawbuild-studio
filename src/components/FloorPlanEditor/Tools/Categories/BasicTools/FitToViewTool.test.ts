@@ -53,11 +53,23 @@ describe('FitToViewTool', () => {
           {
             insidePoint: createVec2(-1000, -500),
             outsidePoint: createVec2(-1100, -600),
-            belongsTo: 'previous' as const
+            constuctedByWall: 'previous' as const
           },
-          { insidePoint: createVec2(1000, -500), outsidePoint: createVec2(1100, -600), belongsTo: 'previous' as const },
-          { insidePoint: createVec2(1000, 500), outsidePoint: createVec2(1100, 600), belongsTo: 'previous' as const },
-          { insidePoint: createVec2(-1000, 500), outsidePoint: createVec2(-1100, 600), belongsTo: 'previous' as const }
+          {
+            insidePoint: createVec2(1000, -500),
+            outsidePoint: createVec2(1100, -600),
+            constuctedByWall: 'previous' as const
+          },
+          {
+            insidePoint: createVec2(1000, 500),
+            outsidePoint: createVec2(1100, 600),
+            constuctedByWall: 'previous' as const
+          },
+          {
+            insidePoint: createVec2(-1000, 500),
+            outsidePoint: createVec2(-1100, 600),
+            constuctedByWall: 'previous' as const
+          }
         ]
       } as Perimeter
     ]
@@ -90,10 +102,26 @@ describe('FitToViewTool', () => {
     const mockOuterWalls = [
       {
         corners: [
-          { insidePoint: createVec2(0, 0), outsidePoint: createVec2(-100, -100), belongsTo: 'previous' as const },
-          { insidePoint: createVec2(2000, 0), outsidePoint: createVec2(2100, -100), belongsTo: 'previous' as const },
-          { insidePoint: createVec2(2000, 1000), outsidePoint: createVec2(2100, 1100), belongsTo: 'previous' as const },
-          { insidePoint: createVec2(0, 1000), outsidePoint: createVec2(-100, 1100), belongsTo: 'previous' as const }
+          {
+            insidePoint: createVec2(0, 0),
+            outsidePoint: createVec2(-100, -100),
+            constuctedByWall: 'previous' as const
+          },
+          {
+            insidePoint: createVec2(2000, 0),
+            outsidePoint: createVec2(2100, -100),
+            constuctedByWall: 'previous' as const
+          },
+          {
+            insidePoint: createVec2(2000, 1000),
+            outsidePoint: createVec2(2100, 1100),
+            constuctedByWall: 'previous' as const
+          },
+          {
+            insidePoint: createVec2(0, 1000),
+            outsidePoint: createVec2(-100, 1100),
+            constuctedByWall: 'previous' as const
+          }
         ]
       } as Perimeter
     ]
@@ -116,10 +144,26 @@ describe('FitToViewTool', () => {
     const mockOuterWalls = [
       {
         corners: [
-          { insidePoint: createVec2(100, 100), outsidePoint: createVec2(95, 95), belongsTo: 'previous' as const },
-          { insidePoint: createVec2(110, 100), outsidePoint: createVec2(115, 95), belongsTo: 'previous' as const },
-          { insidePoint: createVec2(110, 110), outsidePoint: createVec2(115, 115), belongsTo: 'previous' as const },
-          { insidePoint: createVec2(100, 110), outsidePoint: createVec2(95, 115), belongsTo: 'previous' as const }
+          {
+            insidePoint: createVec2(100, 100),
+            outsidePoint: createVec2(95, 95),
+            constuctedByWall: 'previous' as const
+          },
+          {
+            insidePoint: createVec2(110, 100),
+            outsidePoint: createVec2(115, 95),
+            constuctedByWall: 'previous' as const
+          },
+          {
+            insidePoint: createVec2(110, 110),
+            outsidePoint: createVec2(115, 115),
+            constuctedByWall: 'previous' as const
+          },
+          {
+            insidePoint: createVec2(100, 110),
+            outsidePoint: createVec2(95, 115),
+            constuctedByWall: 'previous' as const
+          }
         ]
       } as Perimeter
     ]

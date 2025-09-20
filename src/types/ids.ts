@@ -10,6 +10,9 @@ export type OpeningId = string & { readonly brand: unique symbol }
 export type EntityId = StoreyId | PerimeterId
 export type SelectableId = StoreyId | PerimeterId | PerimeterWallId | PerimeterCornerId | OpeningId
 
+// Config ids
+export type RingBeamConstructionMethodId = string & { readonly brand: unique symbol }
+
 // ID generation helpers
 export const createStoreyId = (): StoreyId => `storey_${Date.now()}_${Math.random()}` as StoreyId
 export const createPerimeterId = (): PerimeterId => `perimeter_${Date.now()}_${Math.random()}` as PerimeterId
@@ -20,6 +23,10 @@ export const createPerimeterCornerId = (): PerimeterCornerId =>
   `outcorner_${Date.now()}_${Math.random()}` as PerimeterCornerId
 export const createOpeningId = (): OpeningId => `opening_${Date.now()}_${Math.random()}` as OpeningId
 
+// Config ID generators
+export const createRingBeamConstructionMethodId = (): RingBeamConstructionMethodId =>
+  `ringbeam_${Date.now()}_${Math.random()}` as RingBeamConstructionMethodId
+
 // Type guards for runtime ID validation
 export const isStoreyId = (id: string): id is StoreyId => id.startsWith('storey_')
 export const isPerimeterId = (id: string): id is PerimeterId => id.startsWith('perimeter_')
@@ -28,6 +35,10 @@ export const isPerimeterId = (id: string): id is PerimeterId => id.startsWith('p
 export const isPerimeterWallId = (id: string): id is PerimeterWallId => id.startsWith('outwall_')
 export const isPerimeterCornerId = (id: string): id is PerimeterCornerId => id.startsWith('outcorner_')
 export const isOpeningId = (id: string): id is OpeningId => id.startsWith('opening_')
+
+// Config type guards
+export const isRingBeamConstructionMethodId = (id: string): id is RingBeamConstructionMethodId =>
+  id.startsWith('ringbeam_')
 
 // Entity type definitions for hit testing
 export type EntityType = 'storey' | 'perimeter' | 'perimeter-wall' | 'perimeter-corner' | 'opening'

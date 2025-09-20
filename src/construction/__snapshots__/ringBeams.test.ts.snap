@@ -1,0 +1,171 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`constructFullRingBeam > Angle Scenarios - Snapshots > should handle 30° corners (very acute angle) 1`] = `
+[
+  {
+    "endCut": -30.030111375080594,
+    "length": 2625.362003225598,
+    "startCut": -60.01505494803848,
+  },
+  {
+    "endCut": 60.01505494803847,
+    "length": 2929.8715316919347,
+    "startCut": 30.030111375080573,
+  },
+  {
+    "endCut": 60.015056427042104,
+    "length": 4714.964111328125,
+    "startCut": -60.01505028326102,
+  },
+]
+`;
+
+exports[`constructFullRingBeam > Angle Scenarios - Snapshots > should handle 45° corners 1`] = `
+[
+  {
+    "endCut": 0,
+    "length": 1560,
+    "startCut": 0,
+  },
+  {
+    "endCut": 45,
+    "length": 3624.538330078125,
+    "startCut": 0,
+  },
+  {
+    "endCut": -45,
+    "length": 2566.1731140516654,
+    "startCut": -45,
+  },
+  {
+    "endCut": 0,
+    "length": 1915.42138671875,
+    "startCut": 45,
+  },
+]
+`;
+
+exports[`constructFullRingBeam > Angle Scenarios - Snapshots > should handle 60° corners (triangle) 1`] = `
+[
+  {
+    "endCut": 29.9985381476027,
+    "length": 1762.0718853316384,
+    "startCut": -30.000728593637746,
+  },
+  {
+    "endCut": 30.000728593637746,
+    "length": 2593.4532760821257,
+    "startCut": -29.99854110513961,
+  },
+  {
+    "endCut": 30.000725636100782,
+    "length": 2177.8148193359375,
+    "startCut": -30.000725636100782,
+  },
+]
+`;
+
+exports[`constructFullRingBeam > Angle Scenarios - Snapshots > should handle 90° corners (rectangle) 1`] = `
+[
+  {
+    "endCut": 0,
+    "length": 10200,
+    "startCut": 0,
+  },
+  {
+    "endCut": 0,
+    "length": 10920,
+    "startCut": 0,
+  },
+  {
+    "endCut": 0,
+    "length": 10560,
+    "startCut": 0,
+  },
+  {
+    "endCut": 0,
+    "length": 10560,
+    "startCut": 0,
+  },
+]
+`;
+
+exports[`constructFullRingBeam > Angle Scenarios - Snapshots > should handle 135° corners 1`] = `
+[
+  {
+    "endCut": 45,
+    "length": 2210.538330078125,
+    "startCut": 0,
+  },
+  {
+    "endCut": 45,
+    "length": 3126.1731570669394,
+    "startCut": -45,
+  },
+  {
+    "endCut": -1.4210854715202004e-14,
+    "length": 2061.42138671875,
+    "startCut": -45,
+  },
+]
+`;
+
+exports[`constructFullRingBeam > Angle Scenarios - Snapshots > should handle 180° corners (straight line - should be simplified) 1`] = `
+[
+  {
+    "endCut": 0,
+    "length": 1560,
+    "startCut": 0,
+  },
+  {
+    "endCut": 0,
+    "length": 1560,
+    "startCut": 0,
+  },
+  {
+    "endCut": 0,
+    "length": 1560,
+    "startCut": 0,
+  },
+  {
+    "endCut": 0,
+    "length": 1560,
+    "startCut": 0,
+  },
+]
+`;
+
+exports[`constructFullRingBeam > Angle Scenarios - Snapshots > should handle 270° corners (L-shape concave) 1`] = `
+[
+  {
+    "endCut": 0,
+    "length": 2560,
+    "startCut": 0,
+  },
+  {
+    "endCut": 0,
+    "length": 1560,
+    "startCut": 0,
+  },
+  {
+    "endCut": 0,
+    "length": 640,
+    "startCut": 0,
+  },
+  {
+    "endCut": 0,
+    "length": 1360,
+    "startCut": 0,
+  },
+  {
+    "endCut": 0,
+    "length": 1560,
+    "startCut": 0,
+  },
+  {
+    "endCut": 0,
+    "length": 2560,
+    "startCut": 0,
+  },
+]
+`;

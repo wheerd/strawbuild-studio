@@ -33,7 +33,7 @@ describe('LengthIndicator', () => {
     const { getByTestId } = render(<LengthIndicator startPoint={startPoint} endPoint={endPoint} />)
 
     const textElement = getByTestId('konva-text')
-    expect(textElement).toHaveTextContent('1.00m')
+    expect(textElement).toHaveTextContent('1m') // formatLength(1000) returns "1m"
   })
 
   it('applies custom color', () => {

@@ -9,7 +9,7 @@ interface PerimeterCornerInspectorProps {
 
 export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCornerInspectorProps): React.JSX.Element {
   // Get model store functions - use specific selectors for stable references
-  const updateCornerBelongsTo = useModelStore(state => state.updatePerimeterCornerBelongsTo)
+  const updateCornerConstructedByWall = useModelStore(state => state.updatePerimeterCornerConstructedByWall)
 
   // Get perimeter from store
   const outerWall = useModelStore(state => state.perimeters.get(perimeterId))
@@ -45,10 +45,10 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
   }, [outerWall.walls, cornerIndex])
 
   // Event handlers with stable references
-  const handleToggleBelongsTo = useCallback(() => {
-    const newBelongsTo = corner.belongsTo === 'previous' ? 'next' : 'previous'
-    updateCornerBelongsTo(perimeterId, cornerId, newBelongsTo)
-  }, [updateCornerBelongsTo, perimeterId, cornerId, corner.belongsTo])
+  const handleToggleConstructedByWall = useCallback(() => {
+    const newConstructedByWall = corner.constuctedByWall === 'previous' ? 'next' : 'previous'
+    updateCornerConstructedByWall(perimeterId, cornerId, newConstructedByWall)
+  }, [updateCornerConstructedByWall, perimeterId, cornerId, corner.constuctedByWall])
 
   // Calculate angle between walls (simplified)
   const cornerAngle = useMemo(() => {
@@ -85,7 +85,7 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
           <div className="flex items-center justify-between gap-3">
             <label className="text-xs font-medium text-gray-600 flex-shrink-0">Main Wall</label>
             <button
-              onClick={handleToggleBelongsTo}
+              onClick={handleToggleConstructedByWall}
               className="flex-1 min-w-0 flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 hover:bg-gray-50 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200 transition-colors"
               title="Switch which wall wall owns this corner"
             >

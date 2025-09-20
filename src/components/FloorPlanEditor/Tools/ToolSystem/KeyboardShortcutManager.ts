@@ -1,5 +1,6 @@
 import type { ShortcutDefinition, Tool, ToolContext, CanvasEvent } from './types'
 import type { SelectableId } from '@/types/ids'
+import type Konva from 'konva'
 import { isPerimeterId, isPerimeterWallId, isPerimeterCornerId, isOpeningId } from '@/types/ids'
 
 export class KeyboardShortcutManager {
@@ -202,7 +203,8 @@ export class KeyboardShortcutManager {
     return {
       type: 'keydown',
       originalEvent: event,
-      konvaEvent: null as any, // Not needed for keyboard events
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      konvaEvent: null as unknown as Konva.KonvaEventObject<any>, // Not needed for keyboard events
       stageCoordinates: [0, 0], // Not relevant for keyboard
       target: null,
       context

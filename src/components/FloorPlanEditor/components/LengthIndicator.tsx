@@ -4,6 +4,7 @@ import type { Vec2 } from '@/types/geometry'
 import { useMemo, useRef } from 'react'
 import type Konva from 'konva'
 import { COLORS } from '@/theme/colors'
+import { formatLength } from '@/utils/formatLength'
 
 interface LengthIndicatorProps {
   startPoint: Vec2
@@ -49,7 +50,7 @@ export function LengthIndicator({
   }
 
   // Auto-generate label if not provided
-  const displayLabel = label ?? `${(measurementLength / 1000).toFixed(2)}m`
+  const displayLabel = label ?? formatLength(measurementLength)
 
   // Calculate optimal font size (max 1/3 of line width)
   const maxTextWidth = measurementLength / 3
@@ -161,6 +162,7 @@ export function LengthIndicator({
         width={measurementLength}
         offsetY={scaledFontSize / 2}
         rotation={angleDegrees}
+        scaleY={-1}
         shadowColor="white"
         shadowBlur={4}
         shadowOpacity={0.8}

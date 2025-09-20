@@ -26,9 +26,12 @@ export class MoveTool extends BaseTool implements Tool {
 
     // Phase 2: Actually moving
     isMoving: boolean
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     behavior: MovementBehavior<any, any> | null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     context: MovementContext<any> | null
     pointerState: PointerMovementState | null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     currentMovementState: any // Generic state from behavior
     isValid: boolean
   } = {

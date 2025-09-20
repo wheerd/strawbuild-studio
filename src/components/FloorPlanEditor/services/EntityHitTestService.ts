@@ -47,7 +47,7 @@ export class EntityHitTestService {
   /**
    * Process the intersected node and walk up the tree to find entity attributes.
    */
-  private processIntersectedNode(intersectedNode: any, point: Vec2): EntityHitResult | null {
+  private processIntersectedNode(intersectedNode: Konva.Node | null, point: Vec2): EntityHitResult | null {
     if (!intersectedNode) {
       return null
     }

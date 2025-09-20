@@ -2,7 +2,7 @@ import type { MovementBehavior, MovementContext, PointerMovementState } from '..
 import type { SelectableId } from '@/types/ids'
 import type { StoreActions } from '@/model/store/types'
 import type { PerimeterCorner, Perimeter } from '@/types/model'
-import type { LineWall2D, Vec2 } from '@/types/geometry'
+import type { LineSegment2D, Vec2 } from '@/types/geometry'
 import type { SnappingContext, SnapResult } from '@/model/store/services/snapping/types'
 import { add, wouldClosingPolygonSelfIntersect } from '@/types/geometry'
 import { isPerimeterId, isPerimeterCornerId } from '@/types/ids'
@@ -103,8 +103,8 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
     return context.store.updatePerimeterBoundary(context.entity.wall.id, movementState.newBoundary)
   }
 
-  private getSnapLines(wall: Perimeter, cornerIndex: number): Array<LineWall2D> {
-    const snapLines: Array<LineWall2D> = []
+  private getSnapLines(wall: Perimeter, cornerIndex: number): Array<LineSegment2D> {
+    const snapLines: Array<LineSegment2D> = []
 
     for (let i = 0; i < wall.corners.length; i++) {
       const nextIndex = (i + 1) % wall.corners.length

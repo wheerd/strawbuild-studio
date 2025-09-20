@@ -5,11 +5,15 @@ import {
   resolveDefaultMaterial,
   type WallConstructionPlan,
   type ConstructionIssue,
-  type ConstructionElementId
+  type ConstructionElementId,
+  type ConstructionElement,
+  getElementPosition,
+  getElementSize
 } from '@/construction'
 import { boundsFromPoints, createVec2, type Bounds2D, type Vec2 } from '@/types/geometry'
 import { COLORS } from '@/theme/colors'
 import { SvgMeasurementIndicator } from './components/SvgMeasurementIndicator'
+import { SVGViewport } from './components/SVGViewport'
 import { convertConstructionToSvg, convertPointToSvg, type ViewType } from '@/utils/constructionCoordinates'
 
 interface WallConstructionPlanDisplayProps {
@@ -27,7 +31,7 @@ interface IssueHighlight {
 
 const calculateIssueBounds = (
   issueElementIds: ConstructionElementId[],
-  elements: any[],
+  elements: ConstructionElement[],
   wallHeight: number,
   wallLength: number,
   view: ViewType
@@ -41,7 +45,9 @@ const calculateIssueBounds = (
   const allPoints: Vec2[] = []
 
   for (const element of affectedElements) {
-    const { position, size } = convertConstructionToSvg(element.position, element.size, wallHeight, wallLength, view)
+    const elementPosition = getElementPosition(element)
+    const elementSize = getElementSize(element)
+    const { position, size } = convertConstructionToSvg(elementPosition, elementSize, wallHeight, wallLength, view)
 
     // Add all 4 corners of the rectangle
     allPoints.push(
@@ -115,9 +121,11 @@ export function WallConstructionPlanDisplay({
 
   // Sort elements by depth (y-axis in construction coordinates) for proper z-ordering
   const sortedElements = elements.sort((a, b) => {
+    const aPos = getElementPosition(a)
+    const bPos = getElementPosition(b)
     // For outside view: elements with smaller y (closer to inside) render first (behind)
     // For inside view: elements with larger y (closer to outside) render first (behind)
-    return view === 'outside' ? a.position[1] - b.position[1] : b.position[1] - a.position[1]
+    return view === 'outside' ? aPos[1] - bPos[1] : bPos[1] - aPos[1]
   })
 
   // Calculate issue highlights using Bounds2D
@@ -212,35 +220,34 @@ export function WallConstructionPlanDisplay({
   }, [wallLength, wallHeight, showIssues, issueHighlights, plan.measurements, view])
 
   return (
-    <svg
-      viewBox={expandedViewBox}
-      className="w-full h-full"
-      style={{ minHeight: '200px' }}
-      preserveAspectRatio="xMidYMid meet"
-    >
+    <SVGViewport baseViewBox={expandedViewBox} className="w-full h-full" resetButtonPosition="top-right">
       {/* Construction elements */}
-      {sortedElements.map(element => {
-        const { position, size } = convertConstructionToSvg(
-          element.position,
-          element.size,
-          wallHeight,
-          wallLength,
-          view
-        )
+      {sortedElements
+        .filter(e => e.shape.type === 'cuboid')
+        .map(element => {
+          const elementPosition = getElementPosition(element)
+          const elementSize = getElementSize(element)
+          const { position, size } = convertConstructionToSvg(
+            elementPosition,
+            elementSize,
+            wallHeight,
+            wallLength,
+            view
+          )
 
-        return (
-          <rect
-            key={element.id}
-            x={position.x}
-            y={position.y}
-            width={size.x}
-            height={size.y}
-            fill={resolveDefaultMaterial(element.material)?.color}
-            stroke="#000000"
-            strokeWidth="5"
-          />
-        )
-      })}
+          return (
+            <rect
+              key={element.id}
+              x={position.x}
+              y={position.y}
+              width={size.x}
+              height={size.y}
+              fill={resolveDefaultMaterial(element.material)?.color}
+              stroke="#000000"
+              strokeWidth="5"
+            />
+          )
+        })}
 
       {/* Issue highlights using Bounds2D */}
       {showIssues &&
@@ -249,8 +256,8 @@ export function WallConstructionPlanDisplay({
       {/* Corner areas */}
       {plan.cornerInfo.startCorner &&
         (() => {
-          // Calculate display position for start corner based on belongsToThisWall
-          const xOffset = plan.cornerInfo.startCorner.belongsToThisWall
+          // Calculate display position for start corner based on constructedByWallThisWall
+          const xOffset = plan.cornerInfo.startCorner.constructedByThisWall
             ? 0 // Overlap: starts at wall beginning
             : -plan.cornerInfo.startCorner.extensionDistance // Adjacent: before wall
 
@@ -270,18 +277,18 @@ export function WallConstructionPlanDisplay({
               width={size.x}
               height={size.y}
               fill="none"
-              stroke={plan.cornerInfo.startCorner.belongsToThisWall ? '#666666' : '#cccccc'}
-              strokeWidth={plan.cornerInfo.startCorner.belongsToThisWall ? '20' : '10'}
-              strokeDasharray={plan.cornerInfo.startCorner.belongsToThisWall ? '200,100' : '100,50'}
-              opacity={plan.cornerInfo.startCorner.belongsToThisWall ? 0.7 : 0.4}
+              stroke={plan.cornerInfo.startCorner.constructedByThisWall ? '#666666' : '#cccccc'}
+              strokeWidth={plan.cornerInfo.startCorner.constructedByThisWall ? '20' : '10'}
+              strokeDasharray={plan.cornerInfo.startCorner.constructedByThisWall ? '200,100' : '100,50'}
+              opacity={plan.cornerInfo.startCorner.constructedByThisWall ? 0.7 : 0.4}
             />
           )
         })()}
 
       {plan.cornerInfo.endCorner &&
         (() => {
-          // Calculate display position for end corner based on belongsToThisWall
-          const xOffset = plan.cornerInfo.endCorner.belongsToThisWall
+          // Calculate display position for end corner based on constructedByWallThisWall
+          const xOffset = plan.cornerInfo.endCorner.constructedByThisWall
             ? wallLength - plan.cornerInfo.endCorner.extensionDistance // Overlap: extends backward from wall end
             : wallLength // Adjacent: after wall end
 
@@ -301,31 +308,50 @@ export function WallConstructionPlanDisplay({
               width={size.x}
               height={size.y}
               fill="none"
-              stroke={plan.cornerInfo.endCorner.belongsToThisWall ? '#666666' : '#cccccc'}
-              strokeWidth={plan.cornerInfo.endCorner.belongsToThisWall ? '30' : '20'}
-              strokeDasharray={plan.cornerInfo.endCorner.belongsToThisWall ? '200,100' : '100,50'}
-              opacity={plan.cornerInfo.endCorner.belongsToThisWall ? 0.7 : 0.4}
+              stroke={plan.cornerInfo.endCorner.constructedByThisWall ? '#666666' : '#cccccc'}
+              strokeWidth={plan.cornerInfo.endCorner.constructedByThisWall ? '30' : '20'}
+              strokeDasharray={plan.cornerInfo.endCorner.constructedByThisWall ? '200,100' : '100,50'}
+              opacity={plan.cornerInfo.endCorner.constructedByThisWall ? 0.7 : 0.4}
             />
           )
         })()}
 
       {/* Measurements */}
-      {plan.measurements?.map((measurement, index) => (
-        <SvgMeasurementIndicator
-          key={`${measurement.type}-${index}`}
-          startPoint={measurement.startPoint}
-          endPoint={measurement.endPoint}
-          label={measurement.label}
-          offset={measurement.offset}
-          wallHeight={wallHeight}
-          wallLength={wallLength}
-          view={view}
-          color={COLORS.indicators.main}
-          fontSize={60}
-          strokeWidth={10}
-        />
-      ))}
-    </svg>
+      {plan.measurements?.map((measurement, index) => {
+        // Transform construction coordinates to SVG coordinates
+        const svgStartPoint = convertPointToSvg(
+          measurement.startPoint[0],
+          measurement.startPoint[1],
+          wallHeight,
+          wallLength,
+          view
+        )
+        const svgEndPoint = convertPointToSvg(
+          measurement.endPoint[0],
+          measurement.endPoint[1],
+          wallHeight,
+          wallLength,
+          view
+        )
+
+        // Calculate offset direction based on view
+        const offsetDirection = view === 'inside' ? -1 : 1
+        const adjustedOffset = (measurement.offset || 0) * offsetDirection
+
+        return (
+          <SvgMeasurementIndicator
+            key={`${measurement.type}-${index}`}
+            startPoint={svgStartPoint}
+            endPoint={svgEndPoint}
+            label={measurement.label}
+            offset={adjustedOffset}
+            color={COLORS.indicators.main}
+            fontSize={60}
+            strokeWidth={10}
+          />
+        )
+      })}
+    </SVGViewport>
   )
 }
 

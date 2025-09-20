@@ -22,7 +22,9 @@ export interface ToolGroup extends BaseTool {
 export interface Tool extends BaseTool {
   cursor?: string
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   inspectorComponent?: React.ComponentType<ToolInspectorProps<any>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   overlayComponent?: React.ComponentType<ToolOverlayComponentProps<any>>
   onRenderNeeded?(listener: () => void): () => void
 
@@ -65,9 +67,11 @@ export interface ShortcutDefinition {
 export interface CanvasEvent {
   type: 'pointerdown' | 'pointermove' | 'pointerup' | 'wheel' | 'keydown' | 'keyup'
   originalEvent: PointerEvent | KeyboardEvent | WheelEvent
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   konvaEvent: Konva.KonvaEventObject<any>
   stageCoordinates: Vec2 // Transformed coordinates (accounting for pan/zoom)
   pointerCoordinates?: { x: number; y: number } // Original pointer coordinates for hit testing
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   target: any
   context: ToolContext
 }

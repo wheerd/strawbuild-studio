@@ -5,6 +5,7 @@ import { PerimeterWallMovementBehavior } from './behaviors/PerimeterWallMovement
 import { PerimeterCornerMovementBehavior } from './behaviors/PerimeterCornerMovementBehavior'
 import { OpeningMovementBehavior } from './behaviors/OpeningMovementBehavior'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const MOVEMENT_BEHAVIORS: Record<EntityType, MovementBehavior<any, any> | null> = {
   perimeter: new PerimeterMovementBehavior(),
   'perimeter-wall': new PerimeterWallMovementBehavior(),
@@ -13,6 +14,7 @@ const MOVEMENT_BEHAVIORS: Record<EntityType, MovementBehavior<any, any> | null> 
   storey: null // Not implemented
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getMovementBehavior(entityType: EntityType): MovementBehavior<any, any> | null {
   return MOVEMENT_BEHAVIORS[entityType] || null
 }

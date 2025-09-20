@@ -3,6 +3,7 @@ import { Stage } from 'react-konva/lib/ReactKonvaCore'
 import type Konva from 'konva'
 import { useViewportActions, useZoom, usePanX, usePanY } from '@/components/FloorPlanEditor/hooks/useViewportStore'
 import { useToolContext, useToolManager } from '@/components/FloorPlanEditor/Tools'
+import type { CanvasEvent } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
 import { useCanvasEventDispatcher } from '@/components/FloorPlanEditor/Tools/EventHandlers/CanvasEventDispatcher'
 import { stageReference } from '@/components/FloorPlanEditor/services/StageReference'
 import { GridLayer } from './GridLayer'
@@ -47,7 +48,7 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
 
   // Tool event handler
   const handleToolEvent = useCallback(
-    (canvasEvent: any) => {
+    (canvasEvent: CanvasEvent) => {
       return toolManager.handleCanvasEvent(canvasEvent)
     },
     [toolManager]
@@ -167,7 +168,7 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
       x={panX}
       y={panY}
       scaleX={zoom}
-      scaleY={zoom}
+      scaleY={-zoom}
       onWheel={handleWheel}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}

@@ -5,6 +5,7 @@ import { midpoint, add, scale, type Vec2 } from '@/types/geometry'
 import { useSelectionStore } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
 import { LengthIndicator } from '@/components/FloorPlanEditor/components/LengthIndicator'
 import { COLORS } from '@/theme/colors'
+import { formatLength } from '@/utils/formatLength'
 
 interface OpeningShapeProps {
   opening: Opening
@@ -141,7 +142,7 @@ export function OpeningShape({
           <LengthIndicator
             startPoint={insideOpeningStart}
             endPoint={insideOpeningEnd}
-            label={`${(opening.width / 1000).toFixed(2)}m`}
+            label={formatLength(opening.width)}
             offset={-60}
             color={COLORS.indicators.selected}
             fontSize={50}
@@ -150,7 +151,7 @@ export function OpeningShape({
           <LengthIndicator
             startPoint={outsideOpeningStart}
             endPoint={outsideOpeningEnd}
-            label={`${(opening.width / 1000).toFixed(2)}m`}
+            label={formatLength(opening.width)}
             offset={hasNeighbors ? 90 : 60}
             color={COLORS.indicators.selected}
             fontSize={50}

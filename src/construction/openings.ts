@@ -1,12 +1,17 @@
 import type { Opening, OpeningId } from '@/model'
 import type { Length, Vec3 } from '@/types/geometry'
+import { createVec2 } from '@/types/geometry'
+import { formatLength } from '@/utils/formatLength'
 import type { MaterialId, ResolveMaterialFunction } from './material'
 import {
-  createConstructionElementId,
+  createCuboidShape,
+  createConstructionElement,
+  yieldElement,
+  yieldError,
+  yieldMeasurement,
   type BaseConstructionSegment,
   type ConstructionElement,
-  type ConstructionIssue,
-  type WithIssues,
+  type ConstructionResult,
   type WallSegment3D
 } from './base'
 import type { InfillConstructionConfig } from './infill'
@@ -42,12 +47,12 @@ function extractUnifiedDimensions(openings: Opening[]): {
   return { sillHeight, headerHeight }
 }
 
-export const constructOpeningFrame = (
+export function* constructOpeningFrame(
   openingSegment: WallSegment3D,
   config: OpeningConstructionConfig,
   infill: InfillConstructionConfig,
   resolveMaterial: ResolveMaterialFunction
-): WithIssues<ConstructionElement[]> => {
+): Generator<ConstructionResult> {
   if (openingSegment.type !== 'opening' || !openingSegment.openings) {
     throw new Error('constructOpeningFrame requires an opening segment with openings array')
   }
@@ -59,9 +64,6 @@ export const constructOpeningFrame = (
   const wallThickness = segmentSize[1]
 
   const { sillHeight, headerHeight } = extractUnifiedDimensions(openings)
-  const errors: ConstructionIssue[] = []
-  const warnings: ConstructionIssue[] = []
-  const elements: ConstructionElement[] = []
 
   // Check if header is required and fits
   const isOpeningAtWallTop = headerHeight >= wallHeight
@@ -72,54 +74,98 @@ export const constructOpeningFrame = (
     const headerTop = (headerBottom + config.headerThickness) as Length
 
     // Create single header spanning entire segment width
-    const headerElement: ConstructionElement = {
-      id: createConstructionElementId(),
-      type: 'header',
-      material: config.headerMaterial,
-      position: [segmentPosition[0], segmentPosition[1], headerBottom],
-      size: [segmentSize[0], segmentSize[1], config.headerThickness]
-    }
+    const headerElement: ConstructionElement = createConstructionElement(
+      'header',
+      config.headerMaterial,
+      createCuboidShape(
+        [segmentPosition[0], segmentPosition[1], headerBottom],
+        [segmentSize[0], segmentSize[1], config.headerThickness]
+      )
+    )
+
+    yield yieldElement(headerElement)
+
+    // Generate opening width measurement (horizontal, above wall)
+    yield yieldMeasurement({
+      type: 'opening-width',
+      startPoint: createVec2(segmentPosition[0], wallHeight),
+      endPoint: createVec2(segmentPosition[0] + segmentSize[0], wallHeight),
+      label: formatLength(segmentSize[0] as Length),
+      offset: -60
+    })
+
+    // Generate header height measurement (vertical, in opening center)
+    const headerCenterX = (segmentPosition[0] + segmentSize[0] / 2) as Length
+    yield yieldMeasurement({
+      type: 'header-height',
+      startPoint: createVec2(headerCenterX, 0),
+      endPoint: createVec2(headerCenterX, headerBottom),
+      label: formatLength(headerBottom),
+      offset: 40
+    })
 
     if (headerTop > wallHeight) {
-      errors.push({
-        description: `Header does not fit: needs ${config.headerThickness}mm but only ${wallHeight - headerBottom}mm available`,
+      yield yieldError({
+        description: `Header does not fit: needs ${formatLength(config.headerThickness)} but only ${formatLength((wallHeight - headerBottom) as Length)} available`,
         elements: [headerElement.id]
       })
     }
-
-    elements.push(headerElement)
   }
 
   // Check if sill is required and fits
   const sillRequired = sillHeight > 0
 
-  let sillElement: ConstructionElement | null = null
   if (sillRequired && config.sillThickness && config.sillMaterial) {
     const sillTop = sillHeight
     const sillBottom = (sillTop - config.sillThickness) as Length
 
     // Create single sill spanning entire segment width
-    sillElement = {
-      id: createConstructionElementId(),
-      type: 'sill',
-      material: config.sillMaterial,
-      position: [segmentPosition[0], segmentPosition[1], sillBottom] as Vec3,
-      size: [segmentSize[0], segmentSize[1], config.sillThickness] as Vec3
+    const sillElement = createConstructionElement(
+      'sill',
+      config.sillMaterial,
+      createCuboidShape(
+        [segmentPosition[0], segmentPosition[1], sillBottom] as Vec3,
+        [segmentSize[0], segmentSize[1], config.sillThickness] as Vec3
+      )
+    )
+
+    yield yieldElement(sillElement)
+
+    // Generate sill height measurement (vertical, in opening center)
+    const sillCenterX = (segmentPosition[0] + segmentSize[0] / 2) as Length
+    yield yieldMeasurement({
+      type: 'sill-height',
+      startPoint: createVec2(sillCenterX, 0),
+      endPoint: createVec2(sillCenterX, sillTop),
+      label: formatLength(sillTop),
+      offset: -40
+    })
+
+    // Generate opening height measurement if both sill and header exist
+    if (headerRequired) {
+      const openingHeight = (headerHeight - sillTop) as Length
+      if (openingHeight > 0) {
+        yield yieldMeasurement({
+          type: 'opening-height',
+          startPoint: createVec2(sillCenterX, sillTop),
+          endPoint: createVec2(sillCenterX, headerHeight),
+          label: formatLength(openingHeight),
+          offset: -40
+        })
+      }
     }
 
     if (sillBottom < 0) {
-      errors.push({
-        description: `Sill does not fit: needs ${config.sillThickness}mm but only ${sillTop}mm available`,
+      yield yieldError({
+        description: `Sill does not fit: needs ${formatLength(config.sillThickness)} but only ${formatLength(sillTop)} available`,
         elements: [sillElement.id]
       })
     }
-
-    elements.push(sillElement)
   }
 
   // Create individual filling elements for each opening if configured
   if (config.fillingMaterial && config.fillingThickness) {
-    openings.forEach(opening => {
+    for (const opening of openings) {
       const fillingWidth = (opening.width - 2 * config.padding) as Length
       const fillingHeight = (opening.height - 2 * config.padding) as Length
 
@@ -128,19 +174,20 @@ export const constructOpeningFrame = (
       // So we need the offset within this segment
       const openingOffsetInSegment = (opening.offsetFromStart - openings[0].offsetFromStart) as Length
 
-      const fillingElement: ConstructionElement = {
-        id: createConstructionElementId(),
-        type: 'opening',
-        material: config.fillingMaterial!,
-        position: [
-          (segmentPosition[0] + openingOffsetInSegment + config.padding) as Length,
-          (wallThickness - config.fillingThickness!) / 2,
-          (sillHeight + config.padding) as Length
-        ] as Vec3,
-        size: [fillingWidth, config.fillingThickness!, fillingHeight] as Vec3
-      }
-      elements.push(fillingElement)
-    })
+      const fillingElement: ConstructionElement = createConstructionElement(
+        'opening',
+        config.fillingMaterial!,
+        createCuboidShape(
+          [
+            (segmentPosition[0] + openingOffsetInSegment + config.padding) as Length,
+            (wallThickness - config.fillingThickness!) / 2,
+            (sillHeight + config.padding) as Length
+          ] as Vec3,
+          [fillingWidth, config.fillingThickness!, fillingHeight] as Vec3
+        )
+      )
+      yield yieldElement(fillingElement)
+    }
   }
 
   // Create wall above header (if space remains)
@@ -152,15 +199,7 @@ export const constructOpeningFrame = (
       const wallAbovePosition: Vec3 = [segmentPosition[0], segmentPosition[1], wallAboveBottom]
       const wallAboveSize: Vec3 = [segmentSize[0], segmentSize[1], wallAboveHeight]
 
-      const {
-        it: wallElements,
-        errors: wallErrors,
-        warnings: wallWarnings
-      } = infillWallArea(wallAbovePosition, wallAboveSize, infill, resolveMaterial)
-
-      elements.push(...wallElements)
-      errors.push(...wallErrors)
-      warnings.push(...wallWarnings)
+      yield* infillWallArea(wallAbovePosition, wallAboveSize, infill, resolveMaterial)
     }
   }
 
@@ -173,43 +212,25 @@ export const constructOpeningFrame = (
       const wallBelowPosition: Vec3 = [segmentPosition[0], segmentPosition[1], 0]
       const wallBelowSize: Vec3 = [segmentSize[0], segmentSize[1], wallBelowHeight]
 
-      const {
-        it: wallElements,
-        errors: wallErrors,
-        warnings: wallWarnings
-      } = infillWallArea(wallBelowPosition, wallBelowSize, infill, resolveMaterial)
-
-      elements.push(...wallElements)
-      errors.push(...wallErrors)
-      warnings.push(...wallWarnings)
+      yield* infillWallArea(wallBelowPosition, wallBelowSize, infill, resolveMaterial)
     }
   }
-
-  return { it: elements, errors, warnings }
 }
 
-export const constructOpening = (
+export function* constructOpening(
   openingSegment: WallSegment3D,
   config: OpeningConstructionConfig,
   infill: InfillConstructionConfig,
   resolveMaterial: ResolveMaterialFunction
-): WithIssues<OpeningConstruction> => {
+): Generator<ConstructionResult> {
   if (openingSegment.type !== 'opening' || !openingSegment.openings) {
     throw new Error('constructOpening requires an opening segment with openings array')
   }
 
-  const { it: elements, errors, warnings } = constructOpeningFrame(openingSegment, config, infill, resolveMaterial)
+  // Yield the frame results
+  yield* constructOpeningFrame(openingSegment, config, infill, resolveMaterial)
 
-  return {
-    it: {
-      id: createConstructionElementId(),
-      type: 'opening',
-      openingIds: openingSegment.openings.map(o => o.id),
-      position: openingSegment.position[0] as Length,
-      width: openingSegment.size[0] as Length,
-      elements
-    },
-    warnings,
-    errors
-  }
+  // Note: This function used to return an OpeningConstruction segment,
+  // but in the generator pattern we might handle segments differently
+  // For now, we just yield the frame elements
 }

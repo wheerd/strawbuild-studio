@@ -34,13 +34,13 @@ function createMockCorner(
   id: string,
   insidePoint: [number, number],
   outsidePoint: [number, number],
-  belongsTo: 'previous' | 'next'
+  constructedByWall: 'previous' | 'next'
 ): PerimeterCorner {
   return {
     id: id as any,
     insidePoint: createVec2(insidePoint[0], insidePoint[1]),
     outsidePoint: createVec2(outsidePoint[0], outsidePoint[1]),
-    belongsTo
+    constuctedByWall: constructedByWall
   }
 }
 
@@ -81,11 +81,11 @@ describe('Corner Calculations', () => {
       expect(result.startCorner).toBeDefined()
       expect(result.endCorner).toBeDefined()
 
-      expect(result.startCorner?.belongsToThisWall).toBe(true) // corner0 belongs to wall0
-      expect(result.endCorner?.belongsToThisWall).toBe(true) // corner1 belongs to wall0
+      expect(result.startCorner?.constructedByThisWall).toBe(true) // corner0 belongs to wall0
+      expect(result.endCorner?.constructedByThisWall).toBe(true) // corner1 belongs to wall0
     })
 
-    it('should calculate correct extension distances and belongsTo flags', () => {
+    it('should calculate correct extension distances and constructedByWall flags', () => {
       const wallLength = createLength(3000) // 3m wall
       const thickness = createLength(440) // 44cm thickness
 
@@ -102,12 +102,12 @@ describe('Corner Calculations', () => {
 
       // Start corner should belong to this wall and have extension distance
       expect(result.startCorner).toBeDefined()
-      expect(result.startCorner!.belongsToThisWall).toBe(true)
+      expect(result.startCorner!.constructedByThisWall).toBe(true)
       expect(result.startCorner!.extensionDistance).toBeGreaterThan(0)
 
       // End corner should belong to this wall and have extension distance
       expect(result.endCorner).toBeDefined()
-      expect(result.endCorner!.belongsToThisWall).toBe(true)
+      expect(result.endCorner!.constructedByThisWall).toBe(true)
       expect(result.endCorner!.extensionDistance).toBeGreaterThan(0)
     })
 
@@ -128,12 +128,12 @@ describe('Corner Calculations', () => {
 
       // Start corner should not belong to this wall but still have extension distance
       expect(result.startCorner).toBeDefined()
-      expect(result.startCorner!.belongsToThisWall).toBe(false)
+      expect(result.startCorner!.constructedByThisWall).toBe(false)
       expect(result.startCorner!.extensionDistance).toBeGreaterThan(0)
 
       // End corner should not belong to this wall but still have extension distance
       expect(result.endCorner).toBeDefined()
-      expect(result.endCorner!.belongsToThisWall).toBe(false)
+      expect(result.endCorner!.constructedByThisWall).toBe(false)
       expect(result.endCorner!.extensionDistance).toBeGreaterThan(0)
     })
   })

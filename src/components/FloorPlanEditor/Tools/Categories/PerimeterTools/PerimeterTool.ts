@@ -1,5 +1,7 @@
 import type { Tool, CanvasEvent } from '@/components/FloorPlanEditor/Tools/ToolSystem/types'
-import type { Vec2, Polygon2D, LineWall2D, Length } from '@/types/geometry'
+import type { Vec2, Polygon2D, LineSegment2D, Length } from '@/types/geometry'
+import type { RingBeamConstructionMethodId } from '@/types/ids'
+import { useConfigStore } from '@/config/store'
 import {
   createLength,
   createVec2,
@@ -25,6 +27,8 @@ interface PerimeterToolState {
   isClosingLineValid: boolean
   constructionType: PerimeterConstructionType
   wallThickness: Length
+  baseRingBeamMethodId?: RingBeamConstructionMethodId
+  topRingBeamMethodId?: RingBeamConstructionMethodId
 }
 
 export class PerimeterTool extends BaseTool implements Tool {
@@ -77,6 +81,16 @@ export class PerimeterTool extends BaseTool implements Tool {
     this.triggerRender()
   }
 
+  public setBaseRingBeam(methodId: RingBeamConstructionMethodId | undefined): void {
+    this.state.baseRingBeamMethodId = methodId
+    this.triggerRender()
+  }
+
+  public setTopRingBeam(methodId: RingBeamConstructionMethodId | undefined): void {
+    this.state.topRingBeamMethodId = methodId
+    this.triggerRender()
+  }
+
   public cancel(): void {
     this.cancelPolygon()
   }
@@ -88,7 +102,7 @@ export class PerimeterTool extends BaseTool implements Tool {
   }
 
   private updateSnapContext() {
-    const referenceLineWalls: LineWall2D[] = []
+    const referenceLineWalls: LineSegment2D[] = []
     for (let i = 1; i < this.state.points.length; i++) {
       const start = this.state.points[i - 1]
       const end = this.state.points[i]
@@ -168,6 +182,12 @@ export class PerimeterTool extends BaseTool implements Tool {
     this.state.points = []
     this.state.isCurrentLineValid = true
     this.state.isClosingLineValid = true
+
+    // Set default ring beam methods from config store
+    const configStore = useConfigStore.getState()
+    this.state.baseRingBeamMethodId = configStore.getDefaultBaseRingBeamMethodId()
+    this.state.topRingBeamMethodId = configStore.getDefaultTopRingBeamMethodId()
+
     this.updateSnapContext()
   }
 
@@ -197,7 +217,14 @@ export class PerimeterTool extends BaseTool implements Tool {
       const activeStoreyId = event.context.getActiveStoreyId()
 
       try {
-        modelStore.addPerimeter(activeStoreyId, polygon, this.state.constructionType, this.state.wallThickness)
+        modelStore.addPerimeter(
+          activeStoreyId,
+          polygon,
+          this.state.constructionType,
+          this.state.wallThickness,
+          this.state.baseRingBeamMethodId,
+          this.state.topRingBeamMethodId
+        )
       } catch (error) {
         console.error('Failed to create perimeter polygon:', error)
       }

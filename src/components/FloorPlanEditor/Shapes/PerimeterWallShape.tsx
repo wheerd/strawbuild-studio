@@ -4,6 +4,7 @@ import { COLORS } from '@/theme/colors'
 import { direction, type Vec2 } from '@/types/geometry'
 import { useSelectionStore } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
 import { LengthIndicator } from '@/components/FloorPlanEditor/components/LengthIndicator'
+import { formatLength } from '@/utils/formatLength'
 import { OpeningShape } from './OpeningShape'
 import type { PerimeterId } from '@/model'
 
@@ -87,7 +88,7 @@ export function PerimeterWallShape({
           <LengthIndicator
             startPoint={insideStartCorner}
             endPoint={insideEndCorner}
-            label={`${(wall.insideLength / 1000).toFixed(2)}m`}
+            label={formatLength(wall.insideLength)}
             offset={-60}
             color={COLORS.indicators.main}
             fontSize={60}
@@ -96,7 +97,7 @@ export function PerimeterWallShape({
           <LengthIndicator
             startPoint={outsideStartCorner}
             endPoint={outsideEndCorner}
-            label={`${(wall.outsideLength / 1000).toFixed(2)}m`}
+            label={formatLength(wall.outsideLength)}
             offset={60}
             color={COLORS.indicators.main}
             fontSize={60}

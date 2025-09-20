@@ -1,117 +1,117 @@
 import { describe, it, expect } from 'vitest'
 import {
-  distanceToLineWall,
+  distanceToLineSegment,
   createVec2,
   doLineWallsIntersect,
   wouldPolygonSelfIntersect,
   wouldClosingPolygonSelfIntersect,
   isPointAlreadyUsed,
-  type LineWall2D
+  type LineSegment2D
 } from './index'
 
 describe('distanceToLineWall', () => {
   it('should return 0 for a point on the line wall', () => {
     const point = createVec2(5, 0)
-    const wall: LineWall2D = {
+    const wall: LineSegment2D = {
       start: createVec2(0, 0),
       end: createVec2(10, 0)
     }
 
-    const distance = distanceToLineWall(point, wall)
+    const distance = distanceToLineSegment(point, wall)
     expect(distance).toBe(0)
   })
 
   it('should return perpendicular distance to horizontal line', () => {
     const point = createVec2(5, 5)
-    const wall: LineWall2D = {
+    const wall: LineSegment2D = {
       start: createVec2(0, 0),
       end: createVec2(10, 0)
     }
 
-    const distance = distanceToLineWall(point, wall)
+    const distance = distanceToLineSegment(point, wall)
     expect(distance).toBe(5)
   })
 
   it('should return perpendicular distance to vertical line', () => {
     const point = createVec2(5, 5)
-    const wall: LineWall2D = {
+    const wall: LineSegment2D = {
       start: createVec2(0, 0),
       end: createVec2(0, 10)
     }
 
-    const distance = distanceToLineWall(point, wall)
+    const distance = distanceToLineSegment(point, wall)
     expect(distance).toBe(5)
   })
 
   it('should return distance to nearest endpoint when point is beyond line wall', () => {
     const point = createVec2(15, 0)
-    const wall: LineWall2D = {
+    const wall: LineSegment2D = {
       start: createVec2(0, 0),
       end: createVec2(10, 0)
     }
 
-    const distance = distanceToLineWall(point, wall)
+    const distance = distanceToLineSegment(point, wall)
     expect(distance).toBe(5) // Distance from (15,0) to (10,0)
   })
 
   it('should return distance to start point when point is before line wall', () => {
     const point = createVec2(-5, 0)
-    const wall: LineWall2D = {
+    const wall: LineSegment2D = {
       start: createVec2(0, 0),
       end: createVec2(10, 0)
     }
 
-    const distance = distanceToLineWall(point, wall)
+    const distance = distanceToLineSegment(point, wall)
     expect(distance).toBe(5) // Distance from (-5,0) to (0,0)
   })
 
   it('should handle degenerate line wall (point)', () => {
     const point = createVec2(3, 4)
-    const wall: LineWall2D = {
+    const wall: LineSegment2D = {
       start: createVec2(0, 0),
       end: createVec2(0, 0) // Same point
     }
 
-    const distance = distanceToLineWall(point, wall)
+    const distance = distanceToLineSegment(point, wall)
     expect(distance).toBe(5) // Distance from (3,4) to (0,0) is 5
   })
 
   it('should handle diagonal line wall', () => {
     const point = createVec2(0, 0)
-    const wall: LineWall2D = {
+    const wall: LineSegment2D = {
       start: createVec2(1, 1),
       end: createVec2(3, 3)
     }
 
-    const distance = distanceToLineWall(point, wall)
+    const distance = distanceToLineSegment(point, wall)
     // Distance from origin to line y=x starting at (1,1) should be sqrt(2) ≈ 1.414
     expect(Math.abs(distance - Math.sqrt(2))).toBeLessThan(1e-10)
   })
 
   it('should be symmetric for start and end points', () => {
     const point = createVec2(5, 5)
-    const wall1: LineWall2D = {
+    const wall1: LineSegment2D = {
       start: createVec2(0, 0),
       end: createVec2(10, 0)
     }
-    const wall2: LineWall2D = {
+    const wall2: LineSegment2D = {
       start: createVec2(10, 0),
       end: createVec2(0, 0)
     }
 
-    const distance1 = distanceToLineWall(point, wall1)
-    const distance2 = distanceToLineWall(point, wall2)
+    const distance1 = distanceToLineSegment(point, wall1)
+    const distance2 = distanceToLineSegment(point, wall2)
     expect(distance1).toBe(distance2)
   })
 })
 
 describe('doLineWallsIntersect', () => {
   it('should detect intersection of crossing walls', () => {
-    const seg1: LineWall2D = {
+    const seg1: LineSegment2D = {
       start: createVec2(0, 0),
       end: createVec2(10, 10)
     }
-    const seg2: LineWall2D = {
+    const seg2: LineSegment2D = {
       start: createVec2(0, 10),
       end: createVec2(10, 0)
     }
@@ -120,11 +120,11 @@ describe('doLineWallsIntersect', () => {
   })
 
   it('should not detect intersection for parallel walls', () => {
-    const seg1: LineWall2D = {
+    const seg1: LineSegment2D = {
       start: createVec2(0, 0),
       end: createVec2(10, 0)
     }
-    const seg2: LineWall2D = {
+    const seg2: LineSegment2D = {
       start: createVec2(0, 5),
       end: createVec2(10, 5)
     }
@@ -133,11 +133,11 @@ describe('doLineWallsIntersect', () => {
   })
 
   it('should not detect intersection for walls that do not overlap', () => {
-    const seg1: LineWall2D = {
+    const seg1: LineSegment2D = {
       start: createVec2(0, 0),
       end: createVec2(5, 0)
     }
-    const seg2: LineWall2D = {
+    const seg2: LineSegment2D = {
       start: createVec2(10, 0),
       end: createVec2(15, 0)
     }
@@ -146,11 +146,11 @@ describe('doLineWallsIntersect', () => {
   })
 
   it('should not detect intersection when walls share an endpoint', () => {
-    const seg1: LineWall2D = {
+    const seg1: LineSegment2D = {
       start: createVec2(0, 0),
       end: createVec2(5, 5)
     }
-    const seg2: LineWall2D = {
+    const seg2: LineSegment2D = {
       start: createVec2(5, 5),
       end: createVec2(10, 0)
     }
@@ -159,11 +159,11 @@ describe('doLineWallsIntersect', () => {
   })
 
   it('should detect intersection for perpendicular walls', () => {
-    const seg1: LineWall2D = {
+    const seg1: LineSegment2D = {
       start: createVec2(5, 0),
       end: createVec2(5, 10)
     }
-    const seg2: LineWall2D = {
+    const seg2: LineSegment2D = {
       start: createVec2(0, 5),
       end: createVec2(10, 5)
     }

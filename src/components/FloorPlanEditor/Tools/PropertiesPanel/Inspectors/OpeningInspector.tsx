@@ -144,7 +144,9 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
               <label className="text-xs font-medium text-gray-600 flex-shrink-0">Type</label>
               <Select.Root
                 value={opening.type}
-                onValueChange={(value: OpeningType) => handleTypeChange({ target: { value } } as any)}
+                onValueChange={(value: OpeningType) =>
+                  handleTypeChange({ target: { value } } as React.ChangeEvent<HTMLSelectElement>)
+                }
               >
                 <Select.Trigger className="flex-1 min-w-0 flex items-center justify-between px-2 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200">
                   <Select.Value />

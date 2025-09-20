@@ -1,16 +1,12 @@
 import React from 'react'
 import type { Vec2 } from '@/types/geometry'
 import { COLORS } from '@/theme/colors'
-import { convertPointToSvg, type ViewType } from '@/utils/constructionCoordinates'
 
 interface SvgMeasurementIndicatorProps {
-  startPoint: Vec2 // Construction coordinates [x, z]
-  endPoint: Vec2 // Construction coordinates [x, z]
+  startPoint: Vec2 // SVG coordinates [x, y]
+  endPoint: Vec2 // SVG coordinates [x, y]
   label: string
-  offset?: number
-  wallHeight: number
-  wallLength: number
-  view?: ViewType
+  offset?: number // SVG units offset
   color?: string
   fontSize?: number
   strokeWidth?: number
@@ -21,25 +17,13 @@ export function SvgMeasurementIndicator({
   endPoint,
   label,
   offset = 50,
-  wallHeight,
-  wallLength,
-  view = 'outside',
   color = COLORS.ui.primary,
   fontSize = 40,
   strokeWidth = 10
 }: SvgMeasurementIndicatorProps): React.JSX.Element {
-  // Convert construction coordinates to SVG coordinates
-  const svgStartPoint = convertPointToSvg(startPoint[0], startPoint[1], wallHeight, wallLength, view)
-  const svgEndPoint = convertPointToSvg(endPoint[0], endPoint[1], wallHeight, wallLength, view)
-
-  const svgStartX = svgStartPoint[0]
-  const svgStartY = svgStartPoint[1]
-  const svgEndX = svgEndPoint[0]
-  const svgEndY = svgEndPoint[1]
-
   // Calculate measurement vector and length
-  const dx = svgEndX - svgStartX
-  const dy = svgEndY - svgStartY
+  const dx = endPoint[0] - startPoint[0]
+  const dy = endPoint[1] - startPoint[1]
   const length = Math.sqrt(dx * dx + dy * dy)
 
   if (length === 0) {
@@ -52,13 +36,13 @@ export function SvgMeasurementIndicator({
 
   // Calculate perpendicular vector for offset
   const perpX = -dirY
-  const perpY = view === 'inside' ? -dirX : dirX
+  const perpY = dirX
 
   // Calculate offset positions using offset parameter
-  const offsetStartX = svgStartX + perpX * offset
-  const offsetStartY = svgStartY + perpY * offset
-  const offsetEndX = svgEndX + perpX * offset
-  const offsetEndY = svgEndY + perpY * offset
+  const offsetStartX = startPoint[0] + perpX * offset
+  const offsetStartY = startPoint[1] + perpY * offset
+  const offsetEndX = endPoint[0] + perpX * offset
+  const offsetEndY = endPoint[1] + perpY * offset
 
   // Calculate text angle for rotation
   let textAngle = (Math.atan2(dy, dx) * 180) / Math.PI
@@ -96,8 +80,8 @@ export function SvgMeasurementIndicator({
       {/* Connection lines from measurement points to dimension line */}
 
       <line
-        x1={svgStartPoint[0]}
-        y1={svgStartPoint[1]}
+        x1={startPoint[0]}
+        y1={startPoint[1]}
         x2={offsetStartX}
         y2={offsetStartY}
         stroke={color}
@@ -105,8 +89,8 @@ export function SvgMeasurementIndicator({
         opacity={0.5}
       />
       <line
-        x1={svgEndPoint[0]}
-        y1={svgEndPoint[1]}
+        x1={endPoint[0]}
+        y1={endPoint[1]}
         x2={offsetEndX}
         y2={offsetEndY}
         stroke={color}

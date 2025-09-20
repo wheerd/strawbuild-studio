@@ -86,6 +86,46 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
   disconnect: vi.fn()
 }))
 
+// Mock SVG DOM methods for CTM support
+beforeAll(() => {
+  // Mock SVGElement methods
+  Object.defineProperty(SVGElement.prototype, 'getScreenCTM', {
+    writable: true,
+    value: vi.fn(() => ({
+      a: 1,
+      b: 0,
+      c: 0,
+      d: 1,
+      e: 0,
+      f: 0, // Identity matrix
+      inverse: () => ({ a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 })
+    }))
+  })
+
+  Object.defineProperty(SVGElement.prototype, 'createSVGPoint', {
+    writable: true,
+    value: vi.fn(() => ({
+      x: 0,
+      y: 0,
+      matrixTransform: vi.fn(() => ({ x: 0, y: 0 }))
+    }))
+  })
+
+  Object.defineProperty(SVGElement.prototype, 'getBoundingClientRect', {
+    writable: true,
+    value: vi.fn(() => ({
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+      top: 0,
+      left: 0,
+      bottom: 100,
+      right: 100
+    }))
+  })
+})
+
 // runs a cleanup after each test case (e.g. clearing jsdom)
 afterEach(() => {
   cleanup()

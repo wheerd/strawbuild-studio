@@ -2,6 +2,7 @@ import type { Tool, ToolContext } from '@/components/FloorPlanEditor/Tools/ToolS
 import { createLength, createVec2, boundsFromPoints } from '@/types/geometry'
 import { toolManager } from '@/components/FloorPlanEditor/Tools/ToolSystem/ToolManager'
 import { RocketIcon } from '@radix-ui/react-icons'
+import { useConfigStore } from '@/config/store'
 
 /**
  * Tool for adding test perimeter data to demonstrate entity hit testing.
@@ -46,8 +47,20 @@ export class TestDataTool implements Tool {
     }
 
     try {
-      // Add the perimeter to the store
-      const newPerimeter = modelStore.addPerimeter(activeStoreyId, boundary, 'infill', createLength(440))
+      // Get default ring beam methods from config store
+      const configStore = useConfigStore.getState()
+      const defaultBaseId = configStore.getDefaultBaseRingBeamMethodId()
+      const defaultTopId = configStore.getDefaultTopRingBeamMethodId()
+
+      // Add the perimeter to the store with default ring beams
+      const newPerimeter = modelStore.addPerimeter(
+        activeStoreyId,
+        boundary,
+        'infill',
+        createLength(440),
+        defaultBaseId,
+        defaultTopId
+      )
 
       if (newPerimeter && newPerimeter.walls.length > 0) {
         const walls = newPerimeter.walls

@@ -75,10 +75,10 @@ export function calculateWallConstructionLength(
   let constructionLength = wall.wallLength // Base inside length
 
   const startExtension =
-    startCorner?.belongsTo === 'next' ? calculateCornerExtension(startCorner, wall, true) : (0 as Length)
+    startCorner?.constuctedByWall === 'next' ? calculateCornerExtension(startCorner, wall, true) : (0 as Length)
 
   const endExtension =
-    endCorner?.belongsTo === 'previous' ? calculateCornerExtension(endCorner, wall, false) : (0 as Length)
+    endCorner?.constuctedByWall === 'previous' ? calculateCornerExtension(endCorner, wall, false) : (0 as Length)
 
   constructionLength = (constructionLength + startExtension + endExtension) as Length
 
@@ -98,22 +98,22 @@ export function calculateWallCornerInfo(wall: PerimeterWall, perimeter: Perimete
 
   if (startCorner) {
     const extensionDistance = calculateCornerExtension(startCorner, wall, true)
-    const belongsToThisWall = startCorner.belongsTo === 'next'
+    const constructedByWallThisWall = startCorner.constuctedByWall === 'next'
 
     result.startCorner = {
       id: startCorner.id,
-      belongsToThisWall,
+      constructedByThisWall: constructedByWallThisWall,
       extensionDistance
     }
   }
 
   if (endCorner) {
     const extensionDistance = calculateCornerExtension(endCorner, wall, false)
-    const belongsToThisWall = endCorner.belongsTo === 'previous'
+    const constructedByWallThisWall = endCorner.constuctedByWall === 'previous'
 
     result.endCorner = {
       id: endCorner.id,
-      belongsToThisWall,
+      constructedByThisWall: constructedByWallThisWall,
       extensionDistance
     }
   }

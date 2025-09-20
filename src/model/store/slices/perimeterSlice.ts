@@ -1,6 +1,13 @@
 import type { StateCreator } from 'zustand'
 import type { Perimeter, PerimeterConstructionType, PerimeterWall, Opening, PerimeterCorner } from '@/types/model'
-import type { StoreyId, PerimeterId, PerimeterWallId, PerimeterCornerId, OpeningId } from '@/types/ids'
+import type {
+  StoreyId,
+  PerimeterId,
+  PerimeterWallId,
+  PerimeterCornerId,
+  OpeningId,
+  RingBeamConstructionMethodId
+} from '@/types/ids'
 import type { Length, Polygon2D, Line2D, Vec2 } from '@/types/geometry'
 import { createPerimeterId, createPerimeterWallId, createPerimeterCornerId, createOpeningId } from '@/types/ids'
 import {
@@ -28,7 +35,9 @@ export interface PerimetersActions {
     storeyId: StoreyId,
     boundary: Polygon2D,
     constructionType: PerimeterConstructionType,
-    thickness?: Length
+    thickness?: Length,
+    baseRingBeamMethodId?: RingBeamConstructionMethodId,
+    topRingBeamMethodId?: RingBeamConstructionMethodId
   ) => Perimeter
   removePerimeter: (perimeterId: PerimeterId) => void
 
@@ -43,10 +52,10 @@ export interface PerimetersActions {
     type: PerimeterConstructionType
   ) => void
   updatePerimeterWallThickness: (perimeterId: PerimeterId, wallId: PerimeterWallId, thickness: Length) => void
-  updatePerimeterCornerBelongsTo: (
+  updatePerimeterCornerConstructedByWall: (
     perimeterId: PerimeterId,
     cornerId: PerimeterCornerId,
-    belongsTo: 'previous' | 'next'
+    constructedByWall: 'previous' | 'next'
   ) => void
 
   // Updated opening actions with ID-based approach and auto-ID generation
@@ -93,6 +102,12 @@ export interface PerimetersActions {
   // Movement operations for MoveTool
   movePerimeter: (perimeterId: PerimeterId, offset: Vec2) => boolean
   updatePerimeterBoundary: (perimeterId: PerimeterId, newBoundary: Vec2[]) => boolean
+
+  // Ring beam configuration
+  setPerimeterBaseRingBeam: (perimeterId: PerimeterId, methodId: RingBeamConstructionMethodId) => void
+  setPerimeterTopRingBeam: (perimeterId: PerimeterId, methodId: RingBeamConstructionMethodId) => void
+  removePerimeterBaseRingBeam: (perimeterId: PerimeterId) => void
+  removePerimeterTopRingBeam: (perimeterId: PerimeterId) => void
 }
 
 export type PerimetersSlice = PerimetersState & PerimetersActions
@@ -172,7 +187,7 @@ const calculateCornerPoints = (
       id: existingCorner?.id ?? createPerimeterCornerId(),
       insidePoint,
       outsidePoint,
-      belongsTo: existingCorner?.belongsTo ?? 'next'
+      constuctedByWall: existingCorner?.constuctedByWall ?? 'next'
     })
   }
 
@@ -315,7 +330,9 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [], [], Perime
     storeyId: StoreyId,
     boundary: Polygon2D,
     constructionType: PerimeterConstructionType,
-    thickness?: Length
+    thickness?: Length,
+    baseRingBeamMethodId?: RingBeamConstructionMethodId,
+    topRingBeamMethodId?: RingBeamConstructionMethodId
   ) => {
     if (boundary.points.length < 3) {
       throw new Error('Perimeter boundary must have at least 3 points')
@@ -333,7 +350,9 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [], [], Perime
       id: createPerimeterId(),
       storeyId,
       walls,
-      corners
+      corners,
+      baseRingBeamMethodId,
+      topRingBeamMethodId
     }
 
     set(state => ({
@@ -611,10 +630,10 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [], [], Perime
     })
   },
 
-  updatePerimeterCornerBelongsTo: (
+  updatePerimeterCornerConstructedByWall: (
     perimeterId: PerimeterId,
     cornerId: PerimeterCornerId,
-    belongsTo: 'previous' | 'next'
+    constructedByWall: 'previous' | 'next'
   ) => {
     set(state => {
       const perimeter = state.perimeters.get(perimeterId)
@@ -628,7 +647,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [], [], Perime
       const updatedCorners = [...perimeter.corners]
       updatedCorners[cornerIndex] = {
         ...updatedCorners[cornerIndex],
-        belongsTo
+        constuctedByWall: constructedByWall
       }
 
       const updatedPerimeter = {
@@ -1013,5 +1032,70 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [], [], Perime
     })
 
     return true
+  },
+
+  // Ring beam configuration
+  setPerimeterBaseRingBeam: (perimeterId: PerimeterId, methodId: RingBeamConstructionMethodId) => {
+    set(state => {
+      const perimeter = state.perimeters.get(perimeterId)
+      if (!perimeter) return state
+
+      const updatedPerimeter: Perimeter = {
+        ...perimeter,
+        baseRingBeamMethodId: methodId
+      }
+
+      return {
+        perimeters: new Map(state.perimeters).set(perimeterId, updatedPerimeter)
+      }
+    })
+  },
+
+  setPerimeterTopRingBeam: (perimeterId: PerimeterId, methodId: RingBeamConstructionMethodId) => {
+    set(state => {
+      const perimeter = state.perimeters.get(perimeterId)
+      if (!perimeter) return state
+
+      const updatedPerimeter: Perimeter = {
+        ...perimeter,
+        topRingBeamMethodId: methodId
+      }
+
+      return {
+        perimeters: new Map(state.perimeters).set(perimeterId, updatedPerimeter)
+      }
+    })
+  },
+
+  removePerimeterBaseRingBeam: (perimeterId: PerimeterId) => {
+    set(state => {
+      const perimeter = state.perimeters.get(perimeterId)
+      if (!perimeter) return state
+
+      const updatedPerimeter: Perimeter = {
+        ...perimeter,
+        baseRingBeamMethodId: undefined
+      }
+
+      return {
+        perimeters: new Map(state.perimeters).set(perimeterId, updatedPerimeter)
+      }
+    })
+  },
+
+  removePerimeterTopRingBeam: (perimeterId: PerimeterId) => {
+    set(state => {
+      const perimeter = state.perimeters.get(perimeterId)
+      if (!perimeter) return state
+
+      const updatedPerimeter: Perimeter = {
+        ...perimeter,
+        topRingBeamMethodId: undefined
+      }
+
+      return {
+        perimeters: new Map(state.perimeters).set(perimeterId, updatedPerimeter)
+      }
+    })
   }
 })
