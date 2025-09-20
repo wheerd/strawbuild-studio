@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { FloorPlanStage } from './Canvas/FloorPlanStage'
 import { GridSizeDisplay } from './GridSizeDisplay'
+import { StoreySelector } from './StoreySelector'
 import { useStoreys } from '@/model/store'
 import { useEditorStore } from './hooks/useEditorStore'
 import { ToolContextProvider, MainToolbar, PropertiesPanel, initializeToolSystem } from './Tools'
@@ -116,6 +117,7 @@ function FloorPlanEditorContent(): React.JSX.Element {
         <div className="flex-1 relative overflow-hidden bg-white border-r border-gray-200">
           <FloorPlanStage width={dimensions.width} height={dimensions.height} />
           <GridSizeDisplay />
+          <StoreySelector />
         </div>
 
         {/* Right Properties Panel */}

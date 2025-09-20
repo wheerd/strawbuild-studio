@@ -400,4 +400,180 @@ describe('StoreysSlice', () => {
       expect(orderedStoreys[1]).toEqual(updatedStorey2) // Level 1
     })
   })
+
+  describe('level management operations', () => {
+    describe('swapStoreyLevels', () => {
+      it('should swap levels between two storeys', () => {
+        // Add two storeys
+        const level1 = createStoreyLevel(0)
+        const level2 = createStoreyLevel(1)
+        const storey1 = store.addStorey('Ground Floor', level1)
+        const storey2 = store.addStorey('First Floor', level2)
+
+        // Swap their levels
+        store.swapStoreyLevels(storey1.id, storey2.id)
+
+        const updatedStorey1 = store.storeys.get(storey1.id)
+        const updatedStorey2 = store.storeys.get(storey2.id)
+
+        expect(updatedStorey1?.level).toBe(level2)
+        expect(updatedStorey2?.level).toBe(level1)
+      })
+
+      it('should do nothing if either storey does not exist', () => {
+        const level1 = createStoreyLevel(0)
+        const storey1 = store.addStorey('Ground Floor', level1)
+        const initialStoreys = new Map(store.storeys)
+
+        // Try to swap with non-existent storey
+        store.swapStoreyLevels(storey1.id, 'non-existent' as any)
+
+        expect(store.storeys).toEqual(initialStoreys)
+      })
+    })
+
+    describe('adjustAllLevels', () => {
+      it('should increase all levels by 1', () => {
+        // Add storeys at different levels
+        const storey1 = store.addStorey('Basement', createStoreyLevel(-1))
+        const storey2 = store.addStorey('Ground Floor', createStoreyLevel(0))
+        const storey3 = store.addStorey('First Floor', createStoreyLevel(1))
+
+        // Increase all levels by 1
+        store.adjustAllLevels(1)
+
+        expect(store.storeys.get(storey1.id)?.level).toBe(0)
+        expect(store.storeys.get(storey2.id)?.level).toBe(1)
+        expect(store.storeys.get(storey3.id)?.level).toBe(2)
+      })
+
+      it('should decrease all levels by 1', () => {
+        // Add storeys at different levels
+        const storey1 = store.addStorey('Ground Floor', createStoreyLevel(0))
+        const storey2 = store.addStorey('First Floor', createStoreyLevel(1))
+        const storey3 = store.addStorey('Second Floor', createStoreyLevel(2))
+
+        // Decrease all levels by 1
+        store.adjustAllLevels(-1)
+
+        expect(store.storeys.get(storey1.id)?.level).toBe(-1)
+        expect(store.storeys.get(storey2.id)?.level).toBe(0)
+        expect(store.storeys.get(storey3.id)?.level).toBe(1)
+      })
+    })
+
+    describe('duplicateStorey', () => {
+      it('should create a copy with next available level', () => {
+        const originalStorey = store.addStorey('Ground Floor', createStoreyLevel(0))
+
+        const duplicatedStorey = store.duplicateStorey(originalStorey.id)
+
+        expect(store.storeys.size).toBe(2)
+        expect(duplicatedStorey.name).toBe('Ground Floor Copy')
+        expect(duplicatedStorey.level).toBe(1)
+        expect(duplicatedStorey.height).toBe(originalStorey.height)
+        expect(duplicatedStorey.id).not.toBe(originalStorey.id)
+      })
+
+      it('should use custom name when provided', () => {
+        const originalStorey = store.addStorey('Ground Floor', createStoreyLevel(0))
+
+        const duplicatedStorey = store.duplicateStorey(originalStorey.id, 'Custom Name')
+
+        expect(duplicatedStorey.name).toBe('Custom Name')
+      })
+
+      it('should throw error for non-existent storey', () => {
+        expect(() => store.duplicateStorey('non-existent' as any)).toThrow('Source storey not found')
+      })
+    })
+
+    describe('moveStoreyUp', () => {
+      it('should swap with storey above when not highest', () => {
+        const storey1 = store.addStorey('Ground Floor', createStoreyLevel(0))
+        const storey2 = store.addStorey('First Floor', createStoreyLevel(1))
+        const storey3 = store.addStorey('Second Floor', createStoreyLevel(2))
+
+        // Move middle storey up
+        store.moveStoreyUp(storey2.id)
+
+        expect(store.storeys.get(storey1.id)?.level).toBe(0)
+        expect(store.storeys.get(storey2.id)?.level).toBe(2) // Swapped with storey3
+        expect(store.storeys.get(storey3.id)?.level).toBe(1) // Swapped with storey2
+      })
+
+      it('should increase all levels when moving highest storey up', () => {
+        const storey1 = store.addStorey('Basement', createStoreyLevel(-1))
+        const storey2 = store.addStorey('Ground Floor', createStoreyLevel(0))
+
+        // Move highest storey up
+        store.moveStoreyUp(storey2.id)
+
+        expect(store.storeys.get(storey1.id)?.level).toBe(0)
+        expect(store.storeys.get(storey2.id)?.level).toBe(1)
+      })
+
+      it('should throw error when moving highest storey would make lowest > 0', () => {
+        store.addStorey('Ground Floor', createStoreyLevel(0))
+        const storey2 = store.addStorey('First Floor', createStoreyLevel(1))
+
+        expect(() => store.moveStoreyUp(storey2.id)).toThrow(
+          'Cannot move floor up: lowest floor would exceed ground level'
+        )
+      })
+
+      it('should do nothing with single storey', () => {
+        const storey = store.addStorey('Ground Floor', createStoreyLevel(0))
+        const initialLevel = storey.level
+
+        store.moveStoreyUp(storey.id)
+
+        expect(store.storeys.get(storey.id)?.level).toBe(initialLevel)
+      })
+    })
+
+    describe('moveStoreyDown', () => {
+      it('should swap with storey below when not lowest', () => {
+        const storey1 = store.addStorey('Ground Floor', createStoreyLevel(0))
+        const storey2 = store.addStorey('First Floor', createStoreyLevel(1))
+        const storey3 = store.addStorey('Second Floor', createStoreyLevel(2))
+
+        // Move middle storey down
+        store.moveStoreyDown(storey2.id)
+
+        expect(store.storeys.get(storey1.id)?.level).toBe(1) // Swapped with storey2
+        expect(store.storeys.get(storey2.id)?.level).toBe(0) // Swapped with storey1
+        expect(store.storeys.get(storey3.id)?.level).toBe(2)
+      })
+
+      it('should decrease all levels when moving lowest storey down', () => {
+        const storey1 = store.addStorey('Ground Floor', createStoreyLevel(0))
+        const storey2 = store.addStorey('First Floor', createStoreyLevel(1))
+
+        // Move lowest storey down
+        store.moveStoreyDown(storey1.id)
+
+        expect(store.storeys.get(storey1.id)?.level).toBe(-1)
+        expect(store.storeys.get(storey2.id)?.level).toBe(0)
+      })
+
+      it('should throw error when moving lowest would make highest < 0', () => {
+        const storey1 = store.addStorey('Basement', createStoreyLevel(-1))
+        store.addStorey('Ground Floor', createStoreyLevel(0))
+
+        expect(() => store.moveStoreyDown(storey1.id)).toThrow(
+          'Cannot move floor down: highest floor would go below ground level'
+        )
+      })
+
+      it('should do nothing with single storey', () => {
+        const storey = store.addStorey('Ground Floor', createStoreyLevel(0))
+        const initialLevel = storey.level
+
+        store.moveStoreyDown(storey.id)
+
+        expect(store.storeys.get(storey.id)?.level).toBe(initialLevel)
+      })
+    })
+  })
 })
