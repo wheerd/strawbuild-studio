@@ -13,6 +13,7 @@ import {
 import { boundsFromPoints, createVec2, type Bounds2D, type Vec2 } from '@/types/geometry'
 import { COLORS } from '@/theme/colors'
 import { SvgMeasurementIndicator } from './components/SvgMeasurementIndicator'
+import { SVGViewport } from './components/SVGViewport'
 import { convertConstructionToSvg, convertPointToSvg, type ViewType } from '@/utils/constructionCoordinates'
 
 interface WallConstructionPlanDisplayProps {
@@ -219,12 +220,7 @@ export function WallConstructionPlanDisplay({
   }, [wallLength, wallHeight, showIssues, issueHighlights, plan.measurements, view])
 
   return (
-    <svg
-      viewBox={expandedViewBox}
-      className="w-full h-full"
-      style={{ minHeight: '200px' }}
-      preserveAspectRatio="xMidYMid meet"
-    >
+    <SVGViewport baseViewBox={expandedViewBox} className="w-full h-full" resetButtonPosition="top-right">
       {/* Construction elements */}
       {sortedElements
         .filter(e => e.shape.type === 'cuboid')
@@ -336,7 +332,7 @@ export function WallConstructionPlanDisplay({
           strokeWidth={10}
         />
       ))}
-    </svg>
+    </SVGViewport>
   )
 }
 

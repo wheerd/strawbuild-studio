@@ -1,6 +1,6 @@
 import { Group, Line, Text } from 'react-konva/lib/ReactKonvaCore'
 import { distance, subtract, normalize, perpendicularCCW, add, scale, angle, midpoint } from '@/types/geometry'
-import type { Vec2, Length } from '@/types/geometry'
+import type { Vec2 } from '@/types/geometry'
 import { useMemo, useRef } from 'react'
 import type Konva from 'konva'
 import { COLORS } from '@/theme/colors'
