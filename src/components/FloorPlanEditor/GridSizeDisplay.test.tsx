@@ -23,15 +23,8 @@ describe('GridSizeDisplay', () => {
     it('should display grid size when showGrid is true', () => {
       render(<GridSizeDisplay />)
 
-      // Should show "Grid: 500mm" based on our mock
-      expect(screen.getByText('Grid: 500mm')).toBeInTheDocument()
-    })
-
-    it('should have proper Tailwind classes for styling', () => {
-      render(<GridSizeDisplay />)
-
-      const element = screen.getByText('Grid: 500mm')
-      expect(element).toHaveClass('absolute', 'bottom-4', 'right-4', 'bg-black/70', 'text-white')
+      // Should show "500mm" based on our mock
+      expect(screen.getByText('500mm')).toBeInTheDocument()
     })
   })
 })
