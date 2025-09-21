@@ -7,11 +7,16 @@ import type { Length } from '@/types/geometry'
 import { createLength } from '@/types/geometry'
 
 export interface StoreysState {
+  activeStoreyId: StoreyId
   defaultHeight: Length
   storeys: Map<StoreyId, Storey>
 }
 
 export interface StoreysActions {
+  // Active storey management
+  getActiveStorey: () => StoreyId
+  setActiveStorey: (storeyId: StoreyId) => void
+
   // CRUD operations
   addStorey: (name: string, height?: Length) => Storey
   removeStorey: (storeyId: StoreyId) => void
@@ -52,10 +57,20 @@ const groundFloor: Storey = {
 }
 
 export const createStoreysSlice: StateCreator<StoreysSlice, [], [], StoreysSlice> = (set, get) => ({
+  activeStoreyId: groundFloor.id,
   defaultHeight: createLength(2400),
   storeys: new Map<StoreyId, Storey>([[groundFloor.id, groundFloor]]),
 
   actions: {
+    // Active storey management
+    getActiveStorey: () => get().activeStoreyId,
+
+    setActiveStorey: (activeStoreyId: StoreyId) => {
+      set(state => ({
+        ...state,
+        activeStoreyId
+      }))
+    },
     // CRUD operations
     addStorey: (name: string, height?: Length) => {
       const state = get()

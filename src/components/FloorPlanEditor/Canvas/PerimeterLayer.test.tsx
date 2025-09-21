@@ -2,46 +2,54 @@ import { describe, it, expect, vi } from 'vitest'
 import { render } from '@testing-library/react'
 import { Stage } from 'react-konva/lib/ReactKonvaCore'
 import { PerimeterLayer } from './PerimeterLayer'
-import { getModelActions } from '@/model/store'
-import { createStoreyId, createPerimeterConstructionMethodId } from '@/types/ids'
-import { createVec2, createLength } from '@/types/geometry'
+import { usePerimetersOfActiveStorey } from '@/model/store'
+import type { PerimeterId, StoreyId } from '@/model'
 
-// Mock the editor store hook
-vi.mock('@/components/FloorPlanEditor/hooks/useEditorStore', () => ({
-  useActiveStoreyId: () => createStoreyId()
+// Mock the model store hook
+vi.mock('@/model/store', () => ({
+  usePerimetersOfActiveStorey: vi.fn()
+}))
+vi.mock('@/components/FloorPlanEditor/Shapes/PerimeterShape', () => ({
+  PerimeterShape: ({ perimeter }: any) => <div data-id={perimeter.id}>PerimeterShape</div>
 }))
 
+// Type assertion for the mocked hook
+
+const mockUsePerimetersOfActiveStorey = vi.mocked(usePerimetersOfActiveStorey)
+
 describe('PerimeterLayer', () => {
+  beforeEach(() => {
+    // Reset mocks before each test
+    mockUsePerimetersOfActiveStorey.mockReset()
+    mockUsePerimetersOfActiveStorey.mockReturnValue([]) // Default to no perimeters
+  })
+
   it('should render without perimeters', () => {
-    render(
+    const result = render(
       <Stage width={800} height={600}>
         <PerimeterLayer />
       </Stage>
     )
 
-    expect(true).toBe(true) // Test passes if no errors are thrown
+    expect(result.container).toMatchSnapshot()
   })
 
   it('should render perimeters when they exist', () => {
-    // Add an perimeter to the store
-    const actions = getModelActions()
+    mockUsePerimetersOfActiveStorey.mockReturnValue([
+      {
+        id: 'perimeter1' as PerimeterId,
+        storeyId: 'storey1' as StoreyId,
+        walls: [],
+        corners: []
+      }
+    ])
 
-    // Add the floor first
-    const storey = actions.addStorey('Test Floor')
-
-    // Create a simple square boundary
-    const boundary = {
-      points: [createVec2(0, 0), createVec2(1000, 0), createVec2(1000, 1000), createVec2(0, 1000)]
-    }
-
-    actions.addPerimeter(storey.id, boundary, createPerimeterConstructionMethodId(), createLength(440))
-
-    render(
+    const result = render(
       <Stage width={800} height={600}>
         <PerimeterLayer />
       </Stage>
     )
 
-    expect(true).toBe(true) // Test passes if no errors are thrown
+    expect(result.container).toMatchSnapshot()
   })
 })

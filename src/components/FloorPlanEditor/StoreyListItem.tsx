@@ -1,13 +1,12 @@
 import React, { useState, useCallback } from 'react'
 import { ChevronUpIcon, ChevronDownIcon, CopyIcon, TrashIcon, HeightIcon, EnterIcon } from '@radix-ui/react-icons'
 import type { Storey } from '@/types/model'
-import { useModelActions } from '@/model/store'
+import { useModelActions, useActiveStoreyId } from '@/model/store'
 import { defaultStoreyManagementService } from '@/model/store/services/StoreyManagementService'
 import { useDebouncedNumericInput } from '@/components/FloorPlanEditor/hooks/useDebouncedInput'
 import { createLength } from '@/types/geometry'
 import { formatLength } from '@/utils/formatLength'
 import { Card, Flex, IconButton, TextField, Code, AlertDialog, Button } from '@radix-ui/themes'
-import { useActiveStoreyId, useEditorStore } from './hooks/useEditorStore'
 
 export function getLevelColor(level: number): 'grass' | 'indigo' | 'brown' {
   if (level === 0) {
@@ -33,7 +32,7 @@ export function StoreyListItem({
   highestStorey
 }: StoreyListItemProps): React.JSX.Element {
   const activeStoreyId = useActiveStoreyId()
-  const setActiveStorey = useEditorStore(state => state.setActiveStorey)
+  const { setActiveStorey } = useModelActions()
   const [editName, setEditName] = useState(storey.name)
 
   const { updateStoreyName, updateStoreyHeight } = useModelActions()

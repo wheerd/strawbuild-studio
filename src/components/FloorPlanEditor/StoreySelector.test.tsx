@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { StoreySelector } from './StoreySelector'
-import { useStoreysOrderedByLevel } from '@/model/store'
-import { useEditorStore } from './hooks/useEditorStore'
+import { useStoreysOrderedByLevel, useActiveStoreyId, useModelActions } from '@/model/store'
 import { createStoreyLevel } from '@/types/model'
 import { createLength } from '@/types/geometry'
 import type { StoreyId } from '@/types/ids'
@@ -14,15 +13,17 @@ vi.mock('@/model/store', async importOriginal => {
   return {
     ...actual,
     useStoreysOrderedByLevel: vi.fn(),
+    useActiveStoreyId: vi.fn(),
     useModelActions: vi.fn(() => ({
-      addStorey: vi.fn()
+      addStorey: vi.fn(),
+      setActiveStorey: vi.fn()
     }))
   }
 })
-vi.mock('./hooks/useEditorStore')
 
 const mockUseStoreysOrderedByLevel = vi.mocked(useStoreysOrderedByLevel)
-const mockUseEditorStore = vi.mocked(useEditorStore)
+const mockUseActiveStoreyId = vi.mocked(useActiveStoreyId)
+const mockUseModelActions = vi.mocked(useModelActions)
 
 describe('StoreySelector', () => {
   const mockStoreys = [
@@ -48,13 +49,14 @@ describe('StoreySelector', () => {
     // Mock the storeys hook
     mockUseStoreysOrderedByLevel.mockReturnValue(mockStoreys)
 
-    mockUseEditorStore.mockImplementation((selector: any) => {
-      const mockState = {
-        activeStoreyId: 'storey-1' as StoreyId,
-        setActiveStorey: mockSetActiveStorey
-      }
-      return selector(mockState)
-    })
+    // Mock the active storey hook
+    mockUseActiveStoreyId.mockReturnValue('storey-1' as StoreyId)
+
+    // Mock the model actions hook
+    mockUseModelActions.mockReturnValue({
+      setActiveStorey: mockSetActiveStorey,
+      addStorey: vi.fn()
+    } as any)
   })
 
   it('renders storey selector with floors', () => {

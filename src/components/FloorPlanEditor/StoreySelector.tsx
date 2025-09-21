@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react'
 import { Pencil1Icon } from '@radix-ui/react-icons'
-import { useStoreysOrderedByLevel } from '@/model/store'
-import { useEditorStore } from './hooks/useEditorStore'
+import { useStoreysOrderedByLevel, useActiveStoreyId, useModelActions } from '@/model/store'
 import { StoreyManagementModal } from './StoreyManagementModal'
 import type { StoreyId } from '@/types/ids'
 import { Box, Select, IconButton, Flex, Card, Text, Code } from '@radix-ui/themes'
@@ -18,8 +17,8 @@ export function getLevelColor(level: number): 'grass' | 'indigo' | 'brown' {
 
 export function StoreySelector(): React.JSX.Element {
   const storeysOrdered = useStoreysOrderedByLevel()
-  const activeStoreyId = useEditorStore(state => state.activeStoreyId)
-  const setActiveStorey = useEditorStore(state => state.setActiveStorey)
+  const activeStoreyId = useActiveStoreyId()
+  const { setActiveStorey } = useModelActions()
 
   // Display storeys in intuitive order (highest to lowest, like elevator buttons)
   const storeysDisplayOrder = [...storeysOrdered].reverse()
@@ -33,7 +32,7 @@ export function StoreySelector(): React.JSX.Element {
   )
 
   return (
-    <Box bottom="4" left="4" className="absolute z-10">
+    <Box bottom="2" left="2" className="absolute z-10">
       <Card size="1" variant="surface">
         <Flex align="center" gap="2">
           <Select.Root value={activeStoreyId} onValueChange={handleStoreyChange}>
