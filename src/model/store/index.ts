@@ -13,7 +13,7 @@ const useModelStore = create<Store>()(
   temporal(
     (set, get, store) => {
       const storeysSlice = immer(createStoreysSlice)(set, get, store)
-      const perimetersSlice = createPerimetersSlice(set, get, store)
+      const perimetersSlice = immer(createPerimetersSlice)(set, get, store)
 
       const initialStoreys = storeysSlice.storeys
       const initialPerimeters = perimetersSlice.perimeters

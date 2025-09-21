@@ -38,9 +38,11 @@ describe('OuterWallsSlice', () => {
     mockSet.mockImplementation((updater: any) => {
       if (typeof updater === 'function') {
         const newState = updater(store)
-        Object.assign(store, newState)
+        if (newState !== store) {
+          store = { ...store, ...newState }
+        }
       } else {
-        Object.assign(store, updater)
+        store = { ...store, ...updater }
       }
     })
   })
