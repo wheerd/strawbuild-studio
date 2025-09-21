@@ -8,7 +8,7 @@ export interface StoreyManagementModalProps {
   trigger: React.ReactNode
 }
 export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): React.JSX.Element {
-  const { addStorey } = useModelActions()
+  const { addStorey, setActiveStorey } = useModelActions()
   const storeysOrdered = useStoreysOrderedByLevel()
   const isOnlyStorey = storeysOrdered.length === 1
   const lowestStorey = storeysOrdered[0]
@@ -16,7 +16,8 @@ export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): 
 
   const handleAddEmptyFloor = useCallback(() => {
     try {
-      addStorey('New Floor')
+      const newStorey = addStorey('New Floor')
+      setActiveStorey(newStorey.id) // Switch to new storey
     } catch (error) {
       console.error('Failed to add new floor:', error)
     }

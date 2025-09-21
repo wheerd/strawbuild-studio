@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { ChevronUpIcon, ChevronDownIcon, CopyIcon, TrashIcon, HeightIcon, EnterIcon } from '@radix-ui/react-icons'
 import type { Storey } from '@/types/model'
 import { useModelActions, useActiveStoreyId } from '@/model/store'
@@ -109,7 +109,8 @@ export function StoreyListItem({
 
   const handleDuplicate = useCallback(() => {
     try {
-      defaultStoreyManagementService.duplicateStorey(storey.id)
+      const newStorey = defaultStoreyManagementService.duplicateStorey(storey.id)
+      setActiveStorey(newStorey.id) // Switch to new storey
     } catch (error) {
       console.error('Failed to duplicate storey:', error)
     }
@@ -124,6 +125,19 @@ export function StoreyListItem({
   }, [storey.id])
 
   const isActive = storey.id === activeStoreyId
+
+  // Auto-focus name field when it first is added to the DOM and is active storey
+  const [focussedOnce, setFocussedOnce] = useState(false)
+  const nameFieldRef = React.useRef<HTMLInputElement>(null)
+  useEffect(() => {
+    if (nameFieldRef.current && !focussedOnce) {
+      if (isActive) {
+        nameFieldRef.current.focus()
+        nameFieldRef.current.select()
+      }
+      setFocussedOnce(true)
+    }
+  }, [nameFieldRef.current, isActive, focussedOnce])
 
   return (
     <Card style={isActive ? { background: 'var(--accent-5)' } : {}}>
@@ -140,6 +154,7 @@ export function StoreyListItem({
 
         {/* Editable name */}
         <TextField.Root
+          ref={nameFieldRef}
           size="3"
           value={editName}
           onChange={handleNameChange}
