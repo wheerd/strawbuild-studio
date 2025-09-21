@@ -14,6 +14,7 @@ import { createPerimeterId, createPerimeterWallId, createPerimeterCornerId, crea
 
 import {
   createLength,
+  createVec2,
   lineIntersection,
   midpoint,
   projectPointOntoLine,
@@ -25,8 +26,6 @@ import {
   scale
 } from '@/types/geometry'
 import { wouldClosingPolygonSelfIntersect } from '@/types/geometry/polygon'
-
-type PartialWallInput = Pick<PerimeterWall, 'id' | 'thickness' | 'constructionMethodId' | 'openings'>
 
 export interface PerimetersState {
   perimeters: Record<PerimeterId, Perimeter>
@@ -117,213 +116,6 @@ export type PerimetersSlice = PerimetersState & { actions: PerimetersActions }
 // Default wall thickness value
 const DEFAULT_PERIMETER_WALL_THICKNESS = createLength(440) // 44cm for strawbale walls
 
-// Step 1: Create infinite inside and outside lines for each wall wall
-const createInfiniteLines = (
-  boundary: Polygon2D,
-  thicknesses: Length[]
-): Array<{ inside: Line2D; outside: Line2D }> => {
-  const numSides = boundary.points.length
-  const infiniteLines: Array<{ inside: Line2D; outside: Line2D }> = []
-
-  for (let i = 0; i < numSides; i++) {
-    const startPoint = boundary.points[i]
-    const endPoint = boundary.points[(i + 1) % numSides]
-    const wallThickness = thicknesses[i]
-
-    // Create line from boundary points
-    const insideLine = lineFromPoints(startPoint, endPoint)
-    if (!insideLine) {
-      throw new Error('Wall wall cannot have zero length')
-    }
-
-    // Calculate outside direction and create outside line
-    const outsideDirection = perpendicularCCW(insideLine.direction)
-    const outsidePoint = add(startPoint, scale(outsideDirection, wallThickness))
-    const outsideLine = { point: outsidePoint, direction: insideLine.direction }
-
-    infiniteLines.push({ inside: insideLine, outside: outsideLine })
-  }
-
-  return infiniteLines
-}
-
-// Step 2: Calculate corner points (both inside and outside) as intersections of adjacent lines
-const calculateCornerPoints = (
-  boundary: Polygon2D,
-  thicknesses: Length[],
-  infiniteLines: Array<{ inside: Line2D; outside: Line2D }>,
-  existingCorners?: PerimeterCorner[]
-): PerimeterCorner[] => {
-  const numSides = boundary.points.length
-  const corners: PerimeterCorner[] = []
-
-  for (let i = 0; i < numSides; i++) {
-    const prevIndex = (i - 1 + numSides) % numSides
-    const prevOutsideLine = infiniteLines[prevIndex].outside
-    const currentOutsideLine = infiniteLines[i].outside
-
-    // Inside point is the boundary point
-    const insidePoint = boundary.points[i]
-
-    // Find intersection of adjacent outside lines
-    const intersection = lineIntersection(prevOutsideLine, currentOutsideLine)
-
-    let outsidePoint: Vec2
-    if (intersection) {
-      outsidePoint = intersection
-    } else {
-      // No intersection means the walls are colinear (parallel)
-      // Project the boundary point outward by the maximum thickness of adjacent walls
-      const prevThickness = thicknesses[prevIndex]
-      const currentThickness = thicknesses[i]
-      const maxThickness = Math.max(prevThickness, currentThickness)
-
-      // Use the outside direction from either wall (they should be the same for colinear walls)
-      const outsideDirection = perpendicularCCW(currentOutsideLine.direction)
-      outsidePoint = add(boundary.points[i], scale(outsideDirection, maxThickness))
-    }
-
-    // Preserve existing corner data if available
-    const existingCorner = existingCorners?.[i]
-    corners.push({
-      id: existingCorner?.id ?? createPerimeterCornerId(),
-      insidePoint,
-      outsidePoint,
-      constuctedByWall: existingCorner?.constuctedByWall ?? 'next'
-    })
-  }
-
-  return corners
-}
-
-// Step 3: Determine correct wall endpoints using projection-based distance comparison
-const calculateWallEndpoints = (
-  boundary: Polygon2D,
-  wallInputs: PartialWallInput[],
-  corners: PerimeterCorner[],
-  infiniteLines: Array<{ inside: Line2D; outside: Line2D }>
-): PerimeterWall[] => {
-  const numSides = boundary.points.length
-  const finalWalls: PerimeterWall[] = []
-
-  for (let i = 0; i < numSides; i++) {
-    const boundaryStart = corners[i].insidePoint
-    const boundaryEnd = corners[(i + 1) % numSides].insidePoint
-    const wallMidpoint = midpoint(boundaryStart, boundaryEnd)
-
-    const startCornerOutside = corners[i].outsidePoint
-    const endCornerOutside = corners[(i + 1) % numSides].outsidePoint
-
-    const insideLine = infiniteLines[i].inside
-    const outsideLine = infiniteLines[i].outside
-
-    // Project boundary points onto outside line
-    const boundaryStartOnOutside = projectPointOntoLine(boundaryStart, outsideLine)
-    const boundaryEndOnOutside = projectPointOntoLine(boundaryEnd, outsideLine)
-
-    // Project corner outside points onto inside line
-    const cornerStartOnInside = projectPointOntoLine(startCornerOutside, insideLine)
-    const cornerEndOnInside = projectPointOntoLine(endCornerOutside, insideLine)
-
-    // Choose endpoints based on which projection is closer to wall midpoint
-    const startDistBoundary = distance(boundaryStart, wallMidpoint)
-    const startDistCorner = distance(cornerStartOnInside, wallMidpoint)
-    const endDistBoundary = distance(boundaryEnd, wallMidpoint)
-    const endDistCorner = distance(cornerEndOnInside, wallMidpoint)
-
-    const finalInsideStart = startDistBoundary <= startDistCorner ? boundaryStart : cornerStartOnInside
-    const finalInsideEnd = endDistBoundary <= endDistCorner ? boundaryEnd : cornerEndOnInside
-    const finalOutsideStart = startDistBoundary <= startDistCorner ? boundaryStartOnOutside : startCornerOutside
-    const finalOutsideEnd = endDistBoundary <= endDistCorner ? boundaryEndOnOutside : endCornerOutside
-
-    // Calculate final wall properties using utility functions
-    const wallDirection = direction(finalInsideStart, finalInsideEnd)
-    const outsideDirection = perpendicularCCW(wallDirection)
-
-    const finalInsideLine = { start: finalInsideStart, end: finalInsideEnd }
-    const finalOutsideLine = { start: finalOutsideStart, end: finalOutsideEnd }
-
-    const insideLength = distance(boundaryStart, boundaryEnd)
-    const outsideLength = distance(startCornerOutside, endCornerOutside)
-    const wallLength = distance(finalInsideStart, finalInsideEnd)
-
-    finalWalls.push({
-      ...wallInputs[i], // Preserve existing wall data like openings and construction method
-      insideLength,
-      outsideLength,
-      wallLength,
-      insideLine: finalInsideLine,
-      outsideLine: finalOutsideLine,
-      direction: wallDirection,
-      outsideDirection
-    })
-  }
-
-  return finalWalls
-}
-
-// Helper function to create wall walls and corners simultaneously using the simplified approach
-const createWallsAndCorners = (
-  boundary: Polygon2D,
-  constructionMethodId: PerimeterConstructionMethodId,
-  thickness: Length,
-  existingCorners?: PerimeterCorner[]
-): { walls: PerimeterWall[]; corners: PerimeterCorner[] } => {
-  // Use shared functions for the three-step process
-  const thicknesses = Array(boundary.points.length).fill(thickness)
-  const infiniteLines = createInfiniteLines(boundary, thicknesses)
-  const corners = calculateCornerPoints(boundary, thicknesses, infiniteLines, existingCorners)
-
-  // Create initial walls with uniform thickness and construction type
-  const initialWalls: PartialWallInput[] = []
-  for (let i = 0; i < boundary.points.length; i++) {
-    initialWalls.push({
-      id: createPerimeterWallId(),
-      thickness,
-      constructionMethodId,
-      openings: []
-    })
-  }
-  const walls = calculateWallEndpoints(boundary, initialWalls, corners, infiniteLines)
-
-  return { walls, corners }
-}
-
-// Helper function to find valid gaps in a wall wall for opening placement
-
-// Private helper function to validate opening placement on a wall
-const validateOpeningOnWall = (
-  wall: PerimeterWall,
-  offsetFromStart: Length,
-  width: Length,
-  excludedOpening?: OpeningId | undefined
-): boolean => {
-  // Validate width
-  if (width <= 0) {
-    return false
-  }
-
-  // Check bounds - wallLength and opening dimensions should be in same units
-  const openingEnd = createLength(offsetFromStart + width)
-  if (offsetFromStart < 0 || openingEnd > wall.wallLength) {
-    return false
-  }
-
-  // Check overlap with existing openings
-  for (const existing of wall.openings) {
-    if (existing.id === excludedOpening) continue
-
-    const existingStart = existing.offsetFromStart
-    const existingEnd = createLength(existing.offsetFromStart + existing.width)
-
-    if (!(openingEnd <= existingStart || offsetFromStart >= existingEnd)) {
-      return false
-    }
-  }
-
-  return true
-}
-
 export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/immer', never]], [], PerimetersSlice> = (
   set,
   get
@@ -350,22 +142,49 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         throw new Error('Wall thickness must be greater than 0')
       }
 
-      const { walls, corners } = createWallsAndCorners(boundary, constructionMethodId, wallThickness)
-
-      const perimeter: Perimeter = {
-        id: createPerimeterId(),
-        storeyId,
-        walls,
-        corners,
-        baseRingBeamMethodId,
-        topRingBeamMethodId
-      }
+      let perimeter: Perimeter | undefined
 
       set(state => {
+        // Create corners from boundary points
+        const corners: PerimeterCorner[] = boundary.points.map(point => ({
+          id: createPerimeterCornerId(),
+          insidePoint: point,
+          outsidePoint: createVec2(0, 0), // Will be calculated by updatePerimeterGeometry
+          constuctedByWall: 'next'
+        }))
+
+        // Create walls with placeholder geometry
+        const walls: PerimeterWall[] = boundary.points.map(() => ({
+          id: createPerimeterWallId(),
+          thickness: wallThickness,
+          constructionMethodId,
+          openings: [],
+          // Geometry properties will be set by updatePerimeterGeometry
+          insideLength: createLength(0),
+          outsideLength: createLength(0),
+          wallLength: createLength(0),
+          insideLine: { start: createVec2(0, 0), end: createVec2(0, 0) },
+          outsideLine: { start: createVec2(0, 0), end: createVec2(0, 0) },
+          direction: createVec2(1, 0),
+          outsideDirection: createVec2(0, 1)
+        }))
+
+        perimeter = {
+          id: createPerimeterId(),
+          storeyId,
+          walls,
+          corners,
+          baseRingBeamMethodId,
+          topRingBeamMethodId
+        }
+
+        // Calculate all geometry using the mutable helper
+        updatePerimeterGeometry(perimeter)
+
         state.perimeters[perimeter.id] = perimeter
       })
 
-      return perimeter
+      return perimeter!
     },
 
     removePerimeter: (perimeterId: PerimeterId) => {
@@ -377,189 +196,58 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
     // Corner deletion: removes the corner and its corresponding boundary point,
     // merging the two adjacent walls into one
     removePerimeterCorner: (perimeterId: PerimeterId, cornerId: PerimeterCornerId): boolean => {
-      const state = get()
-      const perimeter = state.perimeters[perimeterId]
-      if (!perimeter) return false
-
-      const cornerIndex = perimeter.corners.findIndex(c => c.id === cornerId)
-      if (cornerIndex === -1) return false
-
-      // Need at least 4 corners to remove one (minimum 3 sides after removal)
-      if (perimeter.corners.length < 4) return false
-
-      // Create new boundary by removing the point at cornerIndex
-      const newBoundaryPoints = perimeter.corners.map(c => c.insidePoint)
-      newBoundaryPoints.splice(cornerIndex, 1)
-
-      // Validate the new polygon wouldn't self-intersect
-      if (wouldClosingPolygonSelfIntersect(newBoundaryPoints)) return false
-
-      // Create new walls array by:
-      // 1. Removing the wall at cornerIndex (which ends at the deleted corner)
-      // 2. Removing the wall at (cornerIndex - 1) % length (which starts from the deleted corner)
-      // 3. Adding a new wall that bridges these two
-      const prevWallIndex = (cornerIndex - 1 + perimeter.walls.length) % perimeter.walls.length
-      const currentWallIndex = cornerIndex
-
-      const newWalls = [...perimeter.walls]
-      const removedWall1 = newWalls[prevWallIndex]
-      const removedWall2 = newWalls[currentWallIndex]
-
-      // Remove the two walls (remove higher index first to avoid shifting)
-      if (currentWallIndex > prevWallIndex) {
-        newWalls.splice(currentWallIndex, 1)
-        newWalls.splice(prevWallIndex, 1)
-      } else {
-        newWalls.splice(prevWallIndex, 1)
-        newWalls.splice(currentWallIndex, 1)
-      }
-
-      // Use the thicker of the two walls for the new merged wall
-      const newThickness = createLength(Math.max(removedWall1.thickness, removedWall2.thickness))
-      const newConstructionMethodId = removedWall1.constructionMethodId // Use the first wall's construction method
-
-      // Create new wall with merged properties (openings are deleted as they don't make sense on new geometry)
-      const mergedWallInput: PartialWallInput = {
-        id: createPerimeterWallId(),
-        thickness: newThickness,
-        constructionMethodId: newConstructionMethodId,
-        openings: [] // Openings are deleted as they don't make sense on the new merged wall
-      }
-
-      // Insert the merged wall at the correct position
-      const insertIndex = Math.min(prevWallIndex, currentWallIndex)
-      newWalls.splice(insertIndex, 0, mergedWallInput as PerimeterWall)
-
-      // Remove the corner from corners array
-      const newCorners = [...perimeter.corners]
-      newCorners.splice(cornerIndex, 1)
-
-      // Recalculate geometry for the modified polygon
-      const newBoundary = { points: newBoundaryPoints }
-      const thicknesses = newWalls.map((s: PartialWallInput) => s.thickness)
-      const infiniteLines = createInfiniteLines(newBoundary, thicknesses)
-      const updatedCorners = calculateCornerPoints(newBoundary, thicknesses, infiniteLines, newCorners)
-      const finalWalls = calculateWallEndpoints(
-        newBoundary,
-        newWalls as PartialWallInput[],
-        updatedCorners,
-        infiniteLines
-      )
-
-      const updatedPerimeter: Perimeter = {
-        ...perimeter,
-        walls: finalWalls,
-        corners: updatedCorners
-      }
-
+      let success = false
       set(state => {
-        state.perimeters[perimeterId] = updatedPerimeter
-      })
+        const perimeter = state.perimeters[perimeterId]
+        if (!perimeter) return
 
-      return true
+        const cornerIndex = perimeter.corners.findIndex((c: PerimeterCorner) => c.id === cornerId)
+        if (cornerIndex === -1 || perimeter.corners.length < 4) return
+
+        // Validation - check if removal would create self-intersecting polygon
+        const newBoundaryPoints = perimeter.corners.map((c: PerimeterCorner) => c.insidePoint)
+        newBoundaryPoints.splice(cornerIndex, 1)
+        if (wouldClosingPolygonSelfIntersect(newBoundaryPoints)) return
+
+        // Use helper to do all the work
+        removeCornerAndMergeWalls(perimeter, cornerIndex)
+        success = true
+      })
+      return success
     },
 
     // Wall deletion: removes the target wall and merges the two adjacent walls into one,
     // also removing the two corner points that connected these three walls
     removePerimeterWall: (perimeterId: PerimeterId, wallId: PerimeterWallId): boolean => {
-      const state = get()
-      const perimeter = state.perimeters[perimeterId]
-      if (!perimeter) return false
-
-      const wallIndex = perimeter.walls.findIndex(s => s.id === wallId)
-      if (wallIndex === -1) return false
-
-      // Need at least 5 walls to remove one (results in 3 walls minimum: 5 - 3 + 1 = 3)
-      if (perimeter.walls.length < 5) return false
-
-      const numWalls = perimeter.walls.length
-
-      // Get indices of the three walls involved: previous, target, next
-      const prevWallIndex = (wallIndex - 1 + numWalls) % numWalls
-      const nextWallIndex = (wallIndex + 1) % numWalls
-
-      // Create new boundary by removing the two corner points that connected these walls
-      // Remove the corner at wallIndex (between prev and target walls)
-      // Remove the corner at (wallIndex + 1) % length (between target and next walls)
-      const newBoundaryPoints = perimeter.corners.map(c => c.insidePoint)
-      const cornerIndex1 = wallIndex
-      const cornerIndex2 = (wallIndex + 1) % perimeter.corners.length
-
-      // Remove higher index first to avoid shifting
-      if (cornerIndex2 > cornerIndex1) {
-        newBoundaryPoints.splice(cornerIndex2, 1)
-        newBoundaryPoints.splice(cornerIndex1, 1)
-      } else {
-        newBoundaryPoints.splice(cornerIndex1, 1)
-        newBoundaryPoints.splice(cornerIndex2, 1)
-      }
-
-      // Validate the new polygon wouldn't self-intersect
-      if (wouldClosingPolygonSelfIntersect(newBoundaryPoints)) return false
-
-      // Remove the three walls (target and adjacent ones) and replace with one merged wall
-      const prevWall = perimeter.walls[prevWallIndex]
-      const targetWall = perimeter.walls[wallIndex]
-      const nextWall = perimeter.walls[nextWallIndex]
-
-      // Create merged wall with combined properties
-      const newThickness = createLength(Math.max(prevWall.thickness, targetWall.thickness, nextWall.thickness))
-      const newConstructionMethodId = prevWall.constructionMethodId // Use the previous wall's construction method
-
-      const mergedWallInput: PartialWallInput = {
-        id: createPerimeterWallId(),
-        thickness: newThickness,
-        constructionMethodId: newConstructionMethodId,
-        openings: [] // Openings are deleted as they don't make sense on the new merged wall
-      }
-
-      // Create new walls array by removing the three walls and inserting the merged one
-      const newWalls = [...perimeter.walls]
-
-      // Remove the three walls (remove from highest index to avoid shifting)
-      const indicesToRemove = [prevWallIndex, wallIndex, nextWallIndex].sort((a, b) => b - a)
-      for (const index of indicesToRemove) {
-        newWalls.splice(index, 1)
-      }
-
-      // Insert the merged wall at the position where the previous wall was
-      const insertIndex = Math.min(prevWallIndex, wallIndex, nextWallIndex)
-      newWalls.splice(insertIndex, 0, mergedWallInput as PerimeterWall)
-
-      // Remove the corresponding corners
-      const newCorners = [...perimeter.corners]
-      // Remove higher index first to avoid shifting
-      if (cornerIndex2 > cornerIndex1) {
-        newCorners.splice(cornerIndex2, 1)
-        newCorners.splice(cornerIndex1, 1)
-      } else {
-        newCorners.splice(cornerIndex1, 1)
-        newCorners.splice(cornerIndex2, 1)
-      }
-
-      // Recalculate geometry for the modified polygon
-      const newBoundary = { points: newBoundaryPoints }
-      const thicknesses = newWalls.map((s: PartialWallInput) => s.thickness)
-      const infiniteLines = createInfiniteLines(newBoundary, thicknesses)
-      const updatedCorners = calculateCornerPoints(newBoundary, thicknesses, infiniteLines, newCorners)
-      const finalWalls = calculateWallEndpoints(
-        newBoundary,
-        newWalls as PartialWallInput[],
-        updatedCorners,
-        infiniteLines
-      )
-
-      const updatedPerimeter: Perimeter = {
-        ...perimeter,
-        walls: finalWalls,
-        corners: updatedCorners
-      }
-
+      let success = false
       set(state => {
-        state.perimeters[perimeterId] = updatedPerimeter
-      })
+        const perimeter = state.perimeters[perimeterId]
+        if (!perimeter) return
 
-      return true
+        const wallIndex = perimeter.walls.findIndex((wall: PerimeterWall) => wall.id === wallId)
+        if (wallIndex === -1 || perimeter.walls.length < 5) return
+
+        // Validation - check if removal would create self-intersecting polygon
+        const newBoundaryPoints = perimeter.corners.map((c: PerimeterCorner) => c.insidePoint)
+        const cornerIndex1 = wallIndex
+        const cornerIndex2 = (wallIndex + 1) % perimeter.corners.length
+
+        // Remove corners to test for self-intersection
+        if (cornerIndex2 > cornerIndex1) {
+          newBoundaryPoints.splice(cornerIndex2, 1)
+          newBoundaryPoints.splice(cornerIndex1, 1)
+        } else {
+          newBoundaryPoints.splice(cornerIndex1, 1)
+          newBoundaryPoints.splice(cornerIndex2, 1)
+        }
+
+        if (wouldClosingPolygonSelfIntersect(newBoundaryPoints)) return
+
+        // Use helper to do all the work
+        removeWallAndMergeAdjacent(perimeter, wallIndex)
+        success = true
+      })
+      return success
     },
 
     // Update operations
@@ -588,20 +276,10 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         const perimeter = state.perimeters[perimeterId]
         if (perimeter == null) return
 
-        const wallIndex = perimeter.walls.findIndex((wall: PerimeterWall) => wall.id === wallId)
+        const wallIndex = perimeter.walls.findIndex(w => w.id === wallId)
         if (wallIndex !== -1) {
-          // Update the specific wall thickness first
           perimeter.walls[wallIndex].thickness = thickness
-
-          // Use shared functions for the three-step process with mixed thickness
-          const boundary = { points: perimeter.corners.map((c: PerimeterCorner) => c.insidePoint) }
-          const thicknesses = perimeter.walls.map((wall: PerimeterWall) => wall.thickness)
-          const infiniteLines = createInfiniteLines(boundary, thicknesses)
-          const updatedCorners = calculateCornerPoints(boundary, thicknesses, infiniteLines, perimeter.corners)
-          const finalWalls = calculateWallEndpoints(boundary, perimeter.walls, updatedCorners, infiniteLines)
-
-          perimeter.walls = finalWalls
-          perimeter.corners = updatedCorners
+          updatePerimeterGeometry(perimeter)
         }
       })
     },
@@ -615,7 +293,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         const perimeter = state.perimeters[perimeterId]
         if (perimeter == null) return
 
-        const cornerIndex = perimeter.corners.findIndex((c: PerimeterCorner) => c.id === cornerId)
+        const cornerIndex = perimeter.corners.findIndex(c => c.id === cornerId)
         if (cornerIndex !== -1) {
           perimeter.corners[cornerIndex].constuctedByWall = constructedByWall
         }
@@ -693,7 +371,6 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
       return get().perimeters[perimeterId] ?? null
     },
 
-    // Updated and new getter methods
     getPerimeterWallById: (perimeterId: PerimeterId, wallId: PerimeterWallId) => {
       const perimeter = get().perimeters[perimeterId]
       if (perimeter == null) return null
@@ -733,22 +410,23 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
           const wall = perimeter.walls[wallIndex]
           const openingIndex = wall.openings.findIndex((o: Opening) => o.id === openingId)
           if (openingIndex !== -1) {
-            const updatedOpening = {
-              ...wall.openings[openingIndex],
-              ...updates
-            }
-
-            if (validateOpeningOnWall(wall, updatedOpening.offsetFromStart, updatedOpening.width, openingId)) {
-              Object.assign(wall.openings[openingIndex], updates)
+            const opening = wall.openings[openingIndex]
+            if (
+              validateOpeningOnWall(
+                wall,
+                updates.offsetFromStart ?? opening.offsetFromStart,
+                updates.width ?? opening.width,
+                openingId
+              )
+            ) {
+              Object.assign(opening, updates)
             }
           }
         }
       })
     },
 
-    getPerimetersByStorey: (storeyId: StoreyId) => {
-      return Object.values(get().perimeters).filter((p: Perimeter) => p.storeyId === storeyId)
-    },
+    getPerimetersByStorey: (storeyId: StoreyId) => Object.values(get().perimeters).filter(p => p.storeyId === storeyId),
 
     // Opening validation methods implementation
     isPerimeterWallOpeningPlacementValid: (
@@ -863,27 +541,19 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         const perimeter = state.perimeters[perimeterId]
         if (!perimeter) return
 
-        // Translate all boundary points by the offset
-        const newBoundary = perimeter.corners.map((corner: PerimeterCorner) => add(corner.insidePoint, offset))
+        // Directly translate all corner points
+        perimeter.corners.forEach((corner: PerimeterCorner) => {
+          corner.insidePoint = add(corner.insidePoint, offset)
+          corner.outsidePoint = add(corner.outsidePoint, offset)
+        })
 
-        // Create new boundary polygon and recalculate all geometry
-        const newBoundaryPolygon = { points: newBoundary }
-        const thicknesses = perimeter.walls.map((wall: PerimeterWall) => wall.thickness)
-        const infiniteLines = createInfiniteLines(newBoundaryPolygon, thicknesses)
-        const updatedCorners = calculateCornerPoints(newBoundaryPolygon, thicknesses, infiniteLines, perimeter.corners)
-
-        // Create wall inputs preserving existing data
-        const wallInputs: PartialWallInput[] = perimeter.walls.map((wall: PerimeterWall) => ({
-          id: wall.id,
-          thickness: wall.thickness,
-          constructionMethodId: wall.constructionMethodId,
-          openings: wall.openings
-        }))
-
-        const finalWalls = calculateWallEndpoints(newBoundaryPolygon, wallInputs, updatedCorners, infiniteLines)
-
-        perimeter.walls = finalWalls
-        perimeter.corners = updatedCorners
+        // Directly translate all wall line endpoints
+        perimeter.walls.forEach((wall: PerimeterWall) => {
+          wall.insideLine.start = add(wall.insideLine.start, offset)
+          wall.insideLine.end = add(wall.insideLine.end, offset)
+          wall.outsideLine.start = add(wall.outsideLine.start, offset)
+          wall.outsideLine.end = add(wall.outsideLine.end, offset)
+        })
       })
 
       return true
@@ -903,24 +573,13 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         const perimeter = state.perimeters[perimeterId]
         if (!perimeter) return
 
-        // Create new boundary polygon and recalculate all geometry
-        const newBoundaryPolygon = { points: newBoundary }
-        const thicknesses = perimeter.walls.map((wall: PerimeterWall) => wall.thickness)
-        const infiniteLines = createInfiniteLines(newBoundaryPolygon, thicknesses)
-        const updatedCorners = calculateCornerPoints(newBoundaryPolygon, thicknesses, infiniteLines, perimeter.corners)
+        // Update corner inside points directly
+        perimeter.corners.forEach((corner: PerimeterCorner, index: number) => {
+          corner.insidePoint = newBoundary[index]
+        })
 
-        // Create wall inputs preserving existing data
-        const wallInputs: PartialWallInput[] = perimeter.walls.map((wall: PerimeterWall) => ({
-          id: wall.id,
-          thickness: wall.thickness,
-          constructionMethodId: wall.constructionMethodId,
-          openings: wall.openings
-        }))
-
-        const finalWalls = calculateWallEndpoints(newBoundaryPolygon, wallInputs, updatedCorners, infiniteLines)
-
-        perimeter.walls = finalWalls
-        perimeter.corners = updatedCorners
+        // Recalculate all geometry with the new boundary
+        updatePerimeterGeometry(perimeter)
       })
 
       return true
@@ -964,3 +623,265 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
     }
   }
 })
+
+// Step 1: Create infinite inside and outside lines for each wall wall
+const createInfiniteLines = (
+  boundary: Polygon2D,
+  thicknesses: Length[]
+): Array<{ inside: Line2D; outside: Line2D }> => {
+  const numSides = boundary.points.length
+  const infiniteLines: Array<{ inside: Line2D; outside: Line2D }> = []
+
+  for (let i = 0; i < numSides; i++) {
+    const startPoint = boundary.points[i]
+    const endPoint = boundary.points[(i + 1) % numSides]
+    const wallThickness = thicknesses[i]
+
+    // Create line from boundary points
+    const insideLine = lineFromPoints(startPoint, endPoint)
+    if (!insideLine) {
+      throw new Error('Wall wall cannot have zero length')
+    }
+
+    // Calculate outside direction and create outside line
+    const outsideDirection = perpendicularCCW(insideLine.direction)
+    const outsidePoint = add(startPoint, scale(outsideDirection, wallThickness))
+    const outsideLine = { point: outsidePoint, direction: insideLine.direction }
+
+    infiniteLines.push({ inside: insideLine, outside: outsideLine })
+  }
+
+  return infiniteLines
+}
+
+// Step 2: Recalculate corner outside point as intersections of adjacent lines
+const updateCornerOutsidePoint = (
+  corner: PerimeterCorner,
+  prevThickness: Length,
+  nextThickness: Length,
+  prevOutsideLine: Line2D,
+  nextOutsideLine: Line2D
+): void => {
+  const intersection = lineIntersection(prevOutsideLine, nextOutsideLine)
+
+  if (intersection) {
+    corner.outsidePoint = intersection
+  } else {
+    // No intersection means the walls are colinear (parallel)
+    // Project the boundary point outward by the maximum thickness of adjacent walls
+    const maxThickness = Math.max(prevThickness, nextThickness)
+
+    // Use the outside direction from either wall (they should be the same for colinear walls)
+    const outsideDirection = perpendicularCCW(nextOutsideLine.direction)
+    corner.outsidePoint = add(corner.insidePoint, scale(outsideDirection, maxThickness))
+  }
+}
+// Step 2: Calculate corner points (both inside and outside) as intersections of adjacent lines
+const updateAllCornerOutsidePoints = (
+  corners: PerimeterCorner[],
+  thicknesses: Length[],
+  infiniteLines: Array<{ inside: Line2D; outside: Line2D }>
+): void => {
+  const numSides = corners.length
+
+  for (let i = 0; i < numSides; i++) {
+    const prevIndex = (i - 1 + numSides) % numSides
+    const prevOutsideLine = infiniteLines[prevIndex].outside
+    const currentOutsideLine = infiniteLines[i].outside
+    const prevThickness = thicknesses[prevIndex]
+    const currentThickness = thicknesses[i]
+    updateCornerOutsidePoint(corners[i], prevThickness, currentThickness, prevOutsideLine, currentOutsideLine)
+  }
+}
+const updateWallGeometry = (wall: PerimeterWall, startCorner: PerimeterCorner, endCorner: PerimeterCorner): void => {
+  const insideStart = startCorner.insidePoint
+  const insideEnd = endCorner.insidePoint
+  const wallMidpoint = midpoint(insideStart, insideEnd)
+
+  const startCornerOutside = startCorner.outsidePoint
+  const endCornerOutside = endCorner.outsidePoint
+
+  // Calculate wall direction and outside direction
+  const wallDirection = direction(insideStart, insideEnd)
+  const outsideDirection = perpendicularCCW(wallDirection)
+
+  // Create the infinite lines for this wall
+  const insideLine: Line2D = {
+    point: insideStart,
+    direction: wallDirection
+  }
+  const outsideLine: Line2D = {
+    point: add(insideStart, scale(outsideDirection, wall.thickness)),
+    direction: wallDirection
+  }
+
+  // Project boundary points onto outside line
+  const boundaryStartOnOutside = projectPointOntoLine(insideStart, outsideLine)
+  const boundaryEndOnOutside = projectPointOntoLine(insideEnd, outsideLine)
+
+  // Project corner outside points onto inside line
+  const cornerStartOnInside = projectPointOntoLine(startCornerOutside, insideLine)
+  const cornerEndOnInside = projectPointOntoLine(endCornerOutside, insideLine)
+
+  // Choose endpoints based on which projection is closer to wall midpoint
+  const startDistBoundary = distance(insideStart, wallMidpoint)
+  const startDistCorner = distance(cornerStartOnInside, wallMidpoint)
+  const endDistBoundary = distance(insideEnd, wallMidpoint)
+  const endDistCorner = distance(cornerEndOnInside, wallMidpoint)
+
+  const finalInsideStart = startDistBoundary <= startDistCorner ? insideStart : cornerStartOnInside
+  const finalInsideEnd = endDistBoundary <= endDistCorner ? insideEnd : cornerEndOnInside
+  const finalOutsideStart = startDistBoundary <= startDistCorner ? boundaryStartOnOutside : startCornerOutside
+  const finalOutsideEnd = endDistBoundary <= endDistCorner ? boundaryEndOnOutside : endCornerOutside
+
+  // Directly mutate wall properties
+  wall.insideLength = distance(insideStart, insideEnd)
+  wall.outsideLength = distance(startCornerOutside, endCornerOutside)
+  wall.wallLength = distance(finalInsideStart, finalInsideEnd)
+  wall.insideLine = { start: finalInsideStart, end: finalInsideEnd }
+  wall.outsideLine = { start: finalOutsideStart, end: finalOutsideEnd }
+  wall.direction = wallDirection
+  wall.outsideDirection = outsideDirection
+}
+
+// High-level helper to recalculate all perimeter geometry in place
+const updatePerimeterGeometry = (perimeter: Perimeter): void => {
+  const boundary = { points: perimeter.corners.map((c: PerimeterCorner) => c.insidePoint) }
+  const thicknesses = perimeter.walls.map((wall: PerimeterWall) => wall.thickness)
+  const infiniteLines = createInfiniteLines(boundary, thicknesses)
+
+  // Update corner outside points in place
+  updateAllCornerOutsidePoints(perimeter.corners, thicknesses, infiniteLines)
+
+  // Update wall geometry in place
+  for (let i = 0; i < perimeter.walls.length; i++) {
+    const startCorner = perimeter.corners[i]
+    const endCorner = perimeter.corners[(i + 1) % perimeter.corners.length]
+    updateWallGeometry(perimeter.walls[i], startCorner, endCorner)
+  }
+}
+
+// Helper to remove a corner and merge adjacent walls
+const removeCornerAndMergeWalls = (perimeter: Perimeter, cornerIndex: number): void => {
+  const prevWallIndex = (cornerIndex - 1 + perimeter.walls.length) % perimeter.walls.length
+  const currentWallIndex = cornerIndex
+
+  // Get wall properties for merging
+  const wall1 = perimeter.walls[prevWallIndex]
+  const wall2 = perimeter.walls[currentWallIndex]
+  const mergedThickness = createLength(Math.max(wall1.thickness, wall2.thickness))
+
+  perimeter.corners.splice(cornerIndex, 1)
+
+  const mergedWall: PerimeterWall = {
+    id: createPerimeterWallId(),
+    thickness: mergedThickness,
+    constructionMethodId: wall1.constructionMethodId,
+    openings: [], // Openings are deleted as they don't make sense on new merged wall
+    // Geometry properties will be set by updatePerimeterGeometry
+    insideLength: createLength(0),
+    outsideLength: createLength(0),
+    wallLength: createLength(0),
+    insideLine: { start: createVec2(0, 0), end: createVec2(0, 0) },
+    outsideLine: { start: createVec2(0, 0), end: createVec2(0, 0) },
+    direction: createVec2(1, 0),
+    outsideDirection: createVec2(0, 1)
+  }
+
+  // Remove the two walls (remove higher index first to avoid shifting)
+  if (currentWallIndex !== 0) {
+    perimeter.walls.splice(prevWallIndex, 2, mergedWall)
+  } else {
+    perimeter.walls.splice(prevWallIndex, 1, mergedWall)
+    perimeter.walls.splice(0, 1)
+  }
+
+  // Recalculate all geometry
+  updatePerimeterGeometry(perimeter)
+}
+
+// Helper to remove a wall and merge the adjacent walls
+const removeWallAndMergeAdjacent = (perimeter: Perimeter, wallIndex: number): void => {
+  const numWalls = perimeter.walls.length
+  const prevWallIndex = (wallIndex - 1 + numWalls) % numWalls
+  const nextWallIndex = (wallIndex + 1) % numWalls
+
+  // Get wall properties for merging
+  const prevWall = perimeter.walls[prevWallIndex]
+  const targetWall = perimeter.walls[wallIndex]
+  const nextWall = perimeter.walls[nextWallIndex]
+  const mergedThickness = createLength(Math.max(prevWall.thickness, targetWall.thickness, nextWall.thickness))
+
+  // Remove the two corner points that connected these walls
+  const cornerIndex1 = wallIndex
+  const cornerIndex2 = (wallIndex + 1) % perimeter.corners.length
+
+  // Remove corners (higher index first)
+  if (cornerIndex2 > cornerIndex1) {
+    perimeter.corners.splice(cornerIndex2, 1)
+    perimeter.corners.splice(cornerIndex1, 1)
+  } else {
+    perimeter.corners.splice(cornerIndex1, 1)
+    perimeter.corners.splice(cornerIndex2, 1)
+  }
+
+  // Remove the three walls (remove from highest index to avoid shifting)
+  const indicesToRemove = [prevWallIndex, wallIndex, nextWallIndex].sort((a, b) => b - a)
+  for (const index of indicesToRemove) {
+    perimeter.walls.splice(index, 1)
+  }
+
+  // Add merged wall at the correct position
+  const insertIndex = Math.min(prevWallIndex, wallIndex, nextWallIndex)
+  const mergedWall: PerimeterWall = {
+    id: createPerimeterWallId(),
+    thickness: mergedThickness,
+    constructionMethodId: prevWall.constructionMethodId,
+    openings: [], // Openings are deleted
+    // Geometry properties will be set by updatePerimeterGeometry
+    insideLength: createLength(0),
+    outsideLength: createLength(0),
+    wallLength: createLength(0),
+    insideLine: { start: createVec2(0, 0), end: createVec2(0, 0) },
+    outsideLine: { start: createVec2(0, 0), end: createVec2(0, 0) },
+    direction: createVec2(1, 0),
+    outsideDirection: createVec2(0, 1)
+  }
+  perimeter.walls.splice(insertIndex, 0, mergedWall)
+
+  // Recalculate all geometry
+  updatePerimeterGeometry(perimeter)
+}
+
+// Private helper function to validate opening placement on a wall
+const validateOpeningOnWall = (
+  wall: PerimeterWall,
+  offsetFromStart: Length,
+  width: Length,
+  excludedOpening?: OpeningId | undefined
+): boolean => {
+  // Validate width
+  if (width <= 0) {
+    return false
+  }
+
+  // Check bounds - wallLength and opening dimensions should be in same units
+  const openingEnd = createLength(offsetFromStart + width)
+  if (offsetFromStart < 0 || openingEnd > wall.wallLength) {
+    return false
+  }
+
+  // Check overlap with existing openings
+  for (const existing of wall.openings) {
+    if (existing.id === excludedOpening) continue
+
+    const existingStart = existing.offsetFromStart
+    const existingEnd = createLength(existing.offsetFromStart + existing.width)
+
+    if (!(openingEnd <= existingStart || offsetFromStart >= existingEnd)) {
+      return false
+    }
+  }
+
+  return true
+}
