@@ -5,13 +5,13 @@ import { useModelStore } from '@/model/store'
 import { createStoreyLevel } from '@/types/model'
 import type { StoreyId } from '@/types/ids'
 import { StoreyListItem } from './StoreyListItem'
+import { defaultStoreyManagementService } from '@/model/store/services/StoreyManagementService'
 
 export interface StoreyManagementModalProps {
   trigger: React.ReactNode
 }
 export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): React.JSX.Element {
   const addStorey = useModelStore(state => state.addStorey)
-  const removeStorey = useModelStore(state => state.removeStorey)
   const getStoreysOrderedByLevel = useModelStore(state => state.getStoreysOrderedByLevel)
   const storeysOrdered = getStoreysOrderedByLevel()
   const isOnlyStorey = storeysOrdered.length === 1
@@ -30,16 +30,13 @@ export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): 
     }
   }, [storeysOrdered, addStorey])
 
-  const handleDeleteStorey = useCallback(
-    (storeyId: StoreyId) => {
-      try {
-        removeStorey(storeyId)
-      } catch (error) {
-        console.error('Failed to delete storey:', error)
-      }
-    },
-    [removeStorey]
-  )
+  const handleDeleteStorey = useCallback((storeyId: StoreyId) => {
+    try {
+      defaultStoreyManagementService.deleteStorey(storeyId)
+    } catch (error) {
+      console.error('Failed to delete storey:', error)
+    }
+  }, [])
 
   // Display storeys highest to lowest for intuitive UI
   const storeysDisplayOrder = [...storeysOrdered].reverse()

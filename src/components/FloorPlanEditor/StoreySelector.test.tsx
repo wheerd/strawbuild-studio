@@ -55,7 +55,8 @@ describe('StoreySelector', () => {
     render(<StoreySelector />)
 
     expect(screen.getByRole('combobox')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('Level 0: Ground Floor')).toBeInTheDocument()
+    expect(screen.getByText('L0')).toBeInTheDocument()
+    expect(screen.getByText('Ground Floor')).toBeInTheDocument()
   })
 
   it('renders edit button', () => {
@@ -66,10 +67,17 @@ describe('StoreySelector', () => {
   })
 
   it('calls setActiveStorey when selection changes', () => {
+    // Mock scrollIntoView for Radix UI Select
+    Element.prototype.scrollIntoView = vi.fn()
+
     render(<StoreySelector />)
 
     const select = screen.getByRole('combobox')
-    fireEvent.change(select, { target: { value: 'storey-2' } })
+    fireEvent.click(select)
+
+    // Find and click the option for First Floor (look for the floor name)
+    const option = screen.getByText('First Floor')
+    fireEvent.click(option)
 
     expect(mockSetActiveStorey).toHaveBeenCalledWith('storey-2')
   })

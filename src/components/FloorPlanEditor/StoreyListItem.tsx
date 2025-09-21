@@ -3,6 +3,8 @@ import { ChevronUpIcon, ChevronDownIcon, CopyIcon, TrashIcon } from '@radix-ui/r
 import type { Storey } from '@/types/model'
 import type { StoreyId } from '@/types/ids'
 import { useModelStore } from '@/model/store'
+import { defaultStoreyManagementService } from '@/model/store/services/StoreyManagementService'
+import { getLevelColor } from '@/theme/colors'
 
 export interface StoreyListItemProps {
   storey: Storey
@@ -23,9 +25,6 @@ export function StoreyListItem({
   const [isEditing, setIsEditing] = useState(false)
 
   const updateStoreyName = useModelStore(state => state.updateStoreyName)
-  const moveStoreyUp = useModelStore(state => state.moveStoreyUp)
-  const moveStoreyDown = useModelStore(state => state.moveStoreyDown)
-  const duplicateStorey = useModelStore(state => state.duplicateStorey)
 
   // Calculate button states
   const isLowest = storey.id === lowestStorey.id
@@ -68,27 +67,27 @@ export function StoreyListItem({
 
   const handleMoveUp = useCallback(() => {
     try {
-      moveStoreyUp(storey.id)
+      defaultStoreyManagementService.moveStoreyUp(storey.id)
     } catch (error) {
       console.error('Failed to move storey up:', error)
     }
-  }, [storey.id, moveStoreyUp])
+  }, [storey.id])
 
   const handleMoveDown = useCallback(() => {
     try {
-      moveStoreyDown(storey.id)
+      defaultStoreyManagementService.moveStoreyDown(storey.id)
     } catch (error) {
       console.error('Failed to move storey down:', error)
     }
-  }, [storey.id, moveStoreyDown])
+  }, [storey.id])
 
   const handleDuplicate = useCallback(() => {
     try {
-      duplicateStorey(storey.id)
+      defaultStoreyManagementService.duplicateStorey(storey.id)
     } catch (error) {
       console.error('Failed to duplicate storey:', error)
     }
-  }, [storey.id, duplicateStorey])
+  }, [storey.id])
 
   const handleDelete = useCallback(() => {
     if (window.confirm(`Are you sure you want to delete "${storey.name}"?`)) {
@@ -100,11 +99,7 @@ export function StoreyListItem({
     <div className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white shadow-sm">
       {/* Level indicator */}
       <div className="w-16 text-center text-sm font-mono">
-        <div
-          className={`font-semibold ${
-            storey.level === 0 ? 'text-green-600' : storey.level > 0 ? 'text-blue-600' : 'text-orange-600'
-          }`}
-        >
+        <div className="font-semibold" style={{ color: getLevelColor(storey.level) }}>
           L{storey.level}
         </div>
         <div className="text-xs text-gray-500">

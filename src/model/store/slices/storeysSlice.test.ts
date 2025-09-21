@@ -462,117 +462,140 @@ describe('StoreysSlice', () => {
       })
     })
 
-    describe('duplicateStorey', () => {
-      it('should create a copy with next available level', () => {
-        const originalStorey = store.addStorey('Ground Floor', createStoreyLevel(0))
+    describe('compactStoreyLevels', () => {
+      it('should compact levels with gaps', () => {
+        // Add storeys with gaps
+        const storey1 = store.addStorey('Ground', createStoreyLevel(0))
+        const storey2 = store.addStorey('Third', createStoreyLevel(3))
+        const storey3 = store.addStorey('Fifth', createStoreyLevel(5))
 
-        const duplicatedStorey = store.duplicateStorey(originalStorey.id)
+        // Manually compact
+        store.compactStoreyLevels()
 
-        expect(store.storeys.size).toBe(2)
-        expect(duplicatedStorey.name).toBe('Ground Floor Copy')
-        expect(duplicatedStorey.level).toBe(1)
-        expect(duplicatedStorey.height).toBe(originalStorey.height)
-        expect(duplicatedStorey.id).not.toBe(originalStorey.id)
+        // Should be compacted to consecutive levels
+        const storeys = store.getStoreysOrderedByLevel()
+        expect(storeys[0].level).toBe(0)
+        expect(storeys[1].level).toBe(1)
+        expect(storeys[2].level).toBe(2)
+
+        // Verify the storeys are in correct order
+        expect(storeys[0].id).toBe(storey1.id)
+        expect(storeys[1].id).toBe(storey2.id)
+        expect(storeys[2].id).toBe(storey3.id)
       })
 
-      it('should use custom name when provided', () => {
-        const originalStorey = store.addStorey('Ground Floor', createStoreyLevel(0))
-
-        const duplicatedStorey = store.duplicateStorey(originalStorey.id, 'Custom Name')
-
-        expect(duplicatedStorey.name).toBe('Custom Name')
-      })
-
-      it('should throw error for non-existent storey', () => {
-        expect(() => store.duplicateStorey('non-existent' as any)).toThrow('Source storey not found')
-      })
-    })
-
-    describe('moveStoreyUp', () => {
-      it('should swap with storey above when not highest', () => {
-        const storey1 = store.addStorey('Ground Floor', createStoreyLevel(0))
-        const storey2 = store.addStorey('First Floor', createStoreyLevel(1))
-        const storey3 = store.addStorey('Second Floor', createStoreyLevel(2))
-
-        // Move middle storey up
-        store.moveStoreyUp(storey2.id)
-
-        expect(store.storeys.get(storey1.id)?.level).toBe(0)
-        expect(store.storeys.get(storey2.id)?.level).toBe(2) // Swapped with storey3
-        expect(store.storeys.get(storey3.id)?.level).toBe(1) // Swapped with storey2
-      })
-
-      it('should increase all levels when moving highest storey up', () => {
+      it('should handle already consecutive levels', () => {
         const storey1 = store.addStorey('Basement', createStoreyLevel(-1))
-        const storey2 = store.addStorey('Ground Floor', createStoreyLevel(0))
+        const storey2 = store.addStorey('Ground', createStoreyLevel(0))
+        const storey3 = store.addStorey('First', createStoreyLevel(1))
 
-        // Move highest storey up
-        store.moveStoreyUp(storey2.id)
+        // Compact - should remain unchanged
+        store.compactStoreyLevels()
 
-        expect(store.storeys.get(storey1.id)?.level).toBe(0)
-        expect(store.storeys.get(storey2.id)?.level).toBe(1)
+        const storeys = store.getStoreysOrderedByLevel()
+        expect(storeys[0].level).toBe(-1)
+        expect(storeys[1].level).toBe(0)
+        expect(storeys[2].level).toBe(1)
+
+        // Verify storeys are unchanged
+        expect(storeys[0].id).toBe(storey1.id)
+        expect(storeys[1].id).toBe(storey2.id)
+        expect(storeys[2].id).toBe(storey3.id)
       })
 
-      it('should throw error when moving highest storey would make lowest > 0', () => {
-        store.addStorey('Ground Floor', createStoreyLevel(0))
-        const storey2 = store.addStorey('First Floor', createStoreyLevel(1))
-
-        expect(() => store.moveStoreyUp(storey2.id)).toThrow(
-          'Cannot move floor up: lowest floor would exceed ground level'
-        )
+      it('should handle empty storeys gracefully', () => {
+        expect(() => store.compactStoreyLevels()).not.toThrow()
+        expect(store.storeys.size).toBe(0)
       })
 
-      it('should do nothing with single storey', () => {
-        const storey = store.addStorey('Ground Floor', createStoreyLevel(0))
-        const initialLevel = storey.level
+      it('should compact towards 0 with mixed levels', () => {
+        // Add storeys: [-2, 0, 1] should become [-1, 0, 1]
+        const basement = store.addStorey('Basement', createStoreyLevel(-2))
+        const ground = store.addStorey('Ground', createStoreyLevel(0))
+        const first = store.addStorey('First', createStoreyLevel(1))
 
-        store.moveStoreyUp(storey.id)
+        store.compactStoreyLevels()
 
-        expect(store.storeys.get(storey.id)?.level).toBe(initialLevel)
-      })
-    })
+        const storeys = store.getStoreysOrderedByLevel()
+        expect(storeys[0].level).toBe(-1) // Basement compacted from -2 to -1
+        expect(storeys[1].level).toBe(0) // Ground stays at 0
+        expect(storeys[2].level).toBe(1) // First stays at 1
 
-    describe('moveStoreyDown', () => {
-      it('should swap with storey below when not lowest', () => {
-        const storey1 = store.addStorey('Ground Floor', createStoreyLevel(0))
-        const storey2 = store.addStorey('First Floor', createStoreyLevel(1))
-        const storey3 = store.addStorey('Second Floor', createStoreyLevel(2))
-
-        // Move middle storey down
-        store.moveStoreyDown(storey2.id)
-
-        expect(store.storeys.get(storey1.id)?.level).toBe(1) // Swapped with storey2
-        expect(store.storeys.get(storey2.id)?.level).toBe(0) // Swapped with storey1
-        expect(store.storeys.get(storey3.id)?.level).toBe(2)
+        expect(storeys[0].id).toBe(basement.id)
+        expect(storeys[1].id).toBe(ground.id)
+        expect(storeys[2].id).toBe(first.id)
       })
 
-      it('should decrease all levels when moving lowest storey down', () => {
-        const storey1 = store.addStorey('Ground Floor', createStoreyLevel(0))
-        const storey2 = store.addStorey('First Floor', createStoreyLevel(1))
+      it('should compact towards 0 with gaps above and below', () => {
+        // Add storeys: [-1, 0, 2, 3] should become [-1, 0, 1, 2]
+        const basement = store.addStorey('Basement', createStoreyLevel(-1))
+        const ground = store.addStorey('Ground', createStoreyLevel(0))
+        const second = store.addStorey('Second', createStoreyLevel(2))
+        const third = store.addStorey('Third', createStoreyLevel(3))
 
-        // Move lowest storey down
-        store.moveStoreyDown(storey1.id)
+        store.compactStoreyLevels()
 
-        expect(store.storeys.get(storey1.id)?.level).toBe(-1)
-        expect(store.storeys.get(storey2.id)?.level).toBe(0)
+        const storeys = store.getStoreysOrderedByLevel()
+        expect(storeys[0].level).toBe(-1) // Basement stays at -1
+        expect(storeys[1].level).toBe(0) // Ground stays at 0
+        expect(storeys[2].level).toBe(1) // Second compacted from 2 to 1
+        expect(storeys[3].level).toBe(2) // Third compacted from 3 to 2
+
+        expect(storeys[0].id).toBe(basement.id)
+        expect(storeys[1].id).toBe(ground.id)
+        expect(storeys[2].id).toBe(second.id)
+        expect(storeys[3].id).toBe(third.id)
       })
 
-      it('should throw error when moving lowest would make highest < 0', () => {
-        const storey1 = store.addStorey('Basement', createStoreyLevel(-1))
-        store.addStorey('Ground Floor', createStoreyLevel(0))
+      it('should create ground level from above-ground when no ground level exists', () => {
+        // Add storeys: [3, 5, 7] should become [0, 1, 2] (lowest becomes ground)
+        const third = store.addStorey('Third', createStoreyLevel(3))
+        const fifth = store.addStorey('Fifth', createStoreyLevel(5))
+        const seventh = store.addStorey('Seventh', createStoreyLevel(7))
 
-        expect(() => store.moveStoreyDown(storey1.id)).toThrow(
-          'Cannot move floor down: highest floor would go below ground level'
-        )
+        store.compactStoreyLevels()
+
+        const storeys = store.getStoreysOrderedByLevel()
+        expect(storeys[0].level).toBe(0) // Third promoted to ground level
+        expect(storeys[1].level).toBe(1) // Fifth compacted to 1
+        expect(storeys[2].level).toBe(2) // Seventh compacted to 2
+
+        expect(storeys[0].id).toBe(third.id)
+        expect(storeys[1].id).toBe(fifth.id)
+        expect(storeys[2].id).toBe(seventh.id)
       })
 
-      it('should do nothing with single storey', () => {
-        const storey = store.addStorey('Ground Floor', createStoreyLevel(0))
-        const initialLevel = storey.level
+      it('should create ground level from below-ground when only negatives exist', () => {
+        // Add storeys: [-5, -3, -1] should become [-2, -1, 0] (highest becomes ground)
+        const deepBasement = store.addStorey('Deep Basement', createStoreyLevel(-5))
+        const midBasement = store.addStorey('Mid Basement', createStoreyLevel(-3))
+        const basement = store.addStorey('Basement', createStoreyLevel(-1))
 
-        store.moveStoreyDown(storey.id)
+        store.compactStoreyLevels()
 
-        expect(store.storeys.get(storey.id)?.level).toBe(initialLevel)
+        const storeys = store.getStoreysOrderedByLevel()
+        expect(storeys[0].level).toBe(-2) // Deep basement compacted to -2
+        expect(storeys[1].level).toBe(-1) // Mid basement compacted to -1
+        expect(storeys[2].level).toBe(0) // Basement promoted to ground level
+
+        expect(storeys[0].id).toBe(deepBasement.id)
+        expect(storeys[1].id).toBe(midBasement.id)
+        expect(storeys[2].id).toBe(basement.id)
+      })
+
+      it('should prefer above-ground over below-ground for ground level creation', () => {
+        // Add storeys: [-2, 3] should become [-1, 0] (positive level becomes ground)
+        const basement = store.addStorey('Basement', createStoreyLevel(-2))
+        const third = store.addStorey('Third', createStoreyLevel(3))
+
+        store.compactStoreyLevels()
+
+        const storeys = store.getStoreysOrderedByLevel()
+        expect(storeys[0].level).toBe(-1) // Basement compacted to -1
+        expect(storeys[1].level).toBe(0) // Third promoted to ground level
+
+        expect(storeys[0].id).toBe(basement.id)
+        expect(storeys[1].id).toBe(third.id)
       })
     })
   })

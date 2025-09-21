@@ -14,6 +14,7 @@ export interface StoreysActions {
   // CRUD operations
   addStorey: (name: string, level: StoreyLevel, height?: Length) => Storey
   removeStorey: (storeyId: StoreyId) => void
+  compactStoreyLevels: () => void
 
   // Storey modifications
   updateStoreyName: (storeyId: StoreyId, name: string) => void
@@ -23,9 +24,6 @@ export interface StoreysActions {
   // Level management operations
   swapStoreyLevels: (storeyId1: StoreyId, storeyId2: StoreyId) => void
   adjustAllLevels: (adjustment: number) => void
-  duplicateStorey: (sourceStoreyId: StoreyId, newName?: string) => Storey
-  moveStoreyUp: (storeyId: StoreyId) => void
-  moveStoreyDown: (storeyId: StoreyId) => void
 
   // Storey queries
   getStoreyById: (storeyId: StoreyId) => Storey | null
@@ -95,6 +93,57 @@ export const createStoreysSlice: StateCreator<StoreysSlice, [], [], StoreysSlice
     set(state => {
       const newStoreys = new Map(state.storeys)
       newStoreys.delete(storeyId)
+      return {
+        ...state,
+        storeys: newStoreys
+      }
+    })
+  },
+
+  compactStoreyLevels: () => {
+    set(state => {
+      const storeys = Array.from(state.storeys.values())
+      if (storeys.length === 0) return state
+
+      // Separate storeys by their relation to ground level (0)
+      let belowGround = storeys.filter(s => s.level < 0).sort((a, b) => b.level - a.level) // Sort descending: -1, -2, -3...
+      let groundLevel = storeys.filter(s => s.level === 0)
+      let aboveGround = storeys.filter(s => s.level > 0).sort((a, b) => a.level - b.level) // Sort ascending: 1, 2, 3...
+
+      // If no ground level exists, create one by promoting the closest level
+      if (groundLevel.length === 0) {
+        if (aboveGround.length > 0) {
+          // Prefer above-ground: move lowest positive level to ground (0)
+          const newGroundStorey = aboveGround[0]
+          groundLevel = [newGroundStorey]
+          aboveGround = aboveGround.slice(1) // Remove the promoted storey from above-ground
+        } else if (belowGround.length > 0) {
+          // Use below-ground: move highest negative level to ground (0)
+          const newGroundStorey = belowGround[0] // First item is highest due to descending sort
+          groundLevel = [newGroundStorey]
+          belowGround = belowGround.slice(1) // Remove the promoted storey from below-ground
+        }
+      }
+
+      const newStoreys = new Map()
+
+      // Compact below-ground levels towards 0: -1, -2, -3, etc.
+      belowGround.forEach((storey, index) => {
+        const newLevel = createStoreyLevel(-(index + 1))
+        newStoreys.set(storey.id, { ...storey, level: newLevel })
+      })
+
+      // Set ground level (0) - either existing or newly promoted
+      groundLevel.forEach(storey => {
+        newStoreys.set(storey.id, { ...storey, level: createStoreyLevel(0) })
+      })
+
+      // Compact above-ground levels towards 0: 1, 2, 3, etc.
+      aboveGround.forEach((storey, index) => {
+        const newLevel = createStoreyLevel(index + 1)
+        newStoreys.set(storey.id, { ...storey, level: newLevel })
+      })
+
       return {
         ...state,
         storeys: newStoreys
@@ -196,72 +245,6 @@ export const createStoreysSlice: StateCreator<StoreysSlice, [], [], StoreysSlice
         storeys: newStoreys
       }
     })
-  },
-
-  duplicateStorey: (sourceStoreyId: StoreyId, newName?: string) => {
-    const state = get()
-    const sourceStorey = state.storeys.get(sourceStoreyId)
-
-    if (!sourceStorey) {
-      throw new Error('Source storey not found')
-    }
-
-    // Find the next available level (max + 1)
-    const storeys = Array.from(state.storeys.values())
-    const maxLevel = Math.max(...storeys.map(s => s.level))
-    const newLevel = createStoreyLevel(maxLevel + 1)
-
-    const duplicateName = newName ?? `${sourceStorey.name} Copy`
-
-    return get().addStorey(duplicateName, newLevel, sourceStorey.height)
-  },
-
-  moveStoreyUp: (storeyId: StoreyId) => {
-    const storeys = get().getStoreysOrderedByLevel()
-    const targetStorey = storeys.find(s => s.id === storeyId)
-    const lowestStorey = storeys[0]
-    const highestStorey = storeys[storeys.length - 1]
-
-    if (!targetStorey || storeys.length === 1) return
-
-    const isHighest = targetStorey.id === highestStorey.id
-
-    if (isHighest) {
-      // Moving highest floor up - check constraint
-      if (lowestStorey.level === 0) {
-        throw new Error('Cannot move floor up: lowest floor would exceed ground level')
-      }
-      get().adjustAllLevels(1)
-    } else {
-      // Find floor above and swap
-      const currentIndex = storeys.findIndex(s => s.id === storeyId)
-      const floorAbove = storeys[currentIndex + 1]
-      get().swapStoreyLevels(storeyId, floorAbove.id)
-    }
-  },
-
-  moveStoreyDown: (storeyId: StoreyId) => {
-    const storeys = get().getStoreysOrderedByLevel()
-    const targetStorey = storeys.find(s => s.id === storeyId)
-    const lowestStorey = storeys[0]
-    const highestStorey = storeys[storeys.length - 1]
-
-    if (!targetStorey || storeys.length === 1) return
-
-    const isLowest = targetStorey.id === lowestStorey.id
-
-    if (isLowest) {
-      // Moving lowest floor down - check constraint
-      if (highestStorey.level === 0) {
-        throw new Error('Cannot move floor down: highest floor would go below ground level')
-      }
-      get().adjustAllLevels(-1)
-    } else {
-      // Find floor below and swap
-      const currentIndex = storeys.findIndex(s => s.id === storeyId)
-      const floorBelow = storeys[currentIndex - 1]
-      get().swapStoreyLevels(storeyId, floorBelow.id)
-    }
   },
 
   // Storey queries

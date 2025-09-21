@@ -44,6 +44,13 @@ export const COLORS = {
     highlightStroke: '#ffffff'
   },
 
+  // Storey Level Colors
+  levels: {
+    ground: '#16a34a', // green-600 - Ground level (0)
+    aboveGround: '#2563eb', // blue-600 - Above ground levels (1, 2, 3...)
+    belowGround: '#ea580c' // orange-600 - Below ground levels (-1, -2, -3...)
+  },
+
   // UI System (Bootstrap-like)
   ui: {
     primary: '#007bff',
@@ -77,11 +84,23 @@ export type SelectionColor = keyof typeof COLORS.selection
 export type CanvasColor = keyof typeof COLORS.canvas
 export type IndicatorColor = keyof typeof COLORS.indicators
 export type SnappingColor = keyof typeof COLORS.snapping
+export type LevelColor = keyof typeof COLORS.levels
 export type UIColor = keyof typeof COLORS.ui
 
 // Helper function to get colors with type safety
 export function getColor<T extends ColorCategory>(category: T, color: keyof (typeof COLORS)[T]): string {
   return COLORS[category][color] as string
+}
+
+// Helper function to get level color based on storey level
+export function getLevelColor(level: number): string {
+  if (level === 0) {
+    return COLORS.levels.ground
+  } else if (level > 0) {
+    return COLORS.levels.aboveGround
+  } else {
+    return COLORS.levels.belowGround
+  }
 }
 
 // Convenience exports for backward compatibility and common usage
@@ -90,4 +109,5 @@ export const SELECTION_COLORS = COLORS.selection
 export const CANVAS_COLORS = COLORS.canvas
 export const INDICATOR_COLORS = COLORS.indicators
 export const SNAPPING_COLORS = COLORS.snapping
+export const LEVEL_COLORS = COLORS.levels
 export const UI_COLORS = COLORS.ui
