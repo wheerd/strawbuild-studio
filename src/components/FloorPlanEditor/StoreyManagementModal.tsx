@@ -1,9 +1,7 @@
 import React, { useCallback } from 'react'
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons'
 import { useModelActions, useStoreysOrderedByLevel } from '@/model/store'
-import type { StoreyId } from '@/types/ids'
 import { StoreyListItem } from './StoreyListItem'
-import { defaultStoreyManagementService } from '@/model/store/services/StoreyManagementService'
 import { Button, Dialog, Flex, IconButton, Text } from '@radix-ui/themes'
 
 export interface StoreyManagementModalProps {
@@ -22,15 +20,7 @@ export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): 
     } catch (error) {
       console.error('Failed to add new floor:', error)
     }
-  }, [storeysOrdered, addStorey])
-
-  const handleDeleteStorey = useCallback((storeyId: StoreyId) => {
-    try {
-      defaultStoreyManagementService.deleteStorey(storeyId)
-    } catch (error) {
-      console.error('Failed to delete storey:', error)
-    }
-  }, [])
+  }, [addStorey])
 
   // Display storeys highest to lowest for intuitive UI
   const storeysDisplayOrder = [...storeysOrdered].reverse()
@@ -59,7 +49,6 @@ export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): 
                 isOnlyStorey={isOnlyStorey}
                 lowestStorey={lowestStorey}
                 highestStorey={highestStorey}
-                onDelete={handleDeleteStorey}
               />
             ))
           ) : (

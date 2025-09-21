@@ -1,13 +1,12 @@
 import React, { useState, useCallback } from 'react'
 import { ChevronUpIcon, ChevronDownIcon, CopyIcon, TrashIcon, HeightIcon, EnterIcon } from '@radix-ui/react-icons'
 import type { Storey } from '@/types/model'
-import type { StoreyId } from '@/types/ids'
 import { useModelActions } from '@/model/store'
 import { defaultStoreyManagementService } from '@/model/store/services/StoreyManagementService'
 import { useDebouncedNumericInput } from '@/components/FloorPlanEditor/hooks/useDebouncedInput'
 import { createLength } from '@/types/geometry'
 import { formatLength } from '@/utils/formatLength'
-import { Card, Flex, IconButton, TextField, Code } from '@radix-ui/themes'
+import { Card, Flex, IconButton, TextField, Code, AlertDialog, Button } from '@radix-ui/themes'
 import { useActiveStoreyId, useEditorStore } from './hooks/useEditorStore'
 
 export function getLevelColor(level: number): 'grass' | 'indigo' | 'brown' {
@@ -25,15 +24,13 @@ export interface StoreyListItemProps {
   isOnlyStorey: boolean
   lowestStorey: Storey
   highestStorey: Storey
-  onDelete: (storeyId: StoreyId) => void
 }
 
 export function StoreyListItem({
   storey,
   isOnlyStorey,
   lowestStorey,
-  highestStorey,
-  onDelete
+  highestStorey
 }: StoreyListItemProps): React.JSX.Element {
   const activeStoreyId = useActiveStoreyId()
   const setActiveStorey = useEditorStore(state => state.setActiveStorey)
@@ -120,10 +117,12 @@ export function StoreyListItem({
   }, [storey.id])
 
   const handleDelete = useCallback(() => {
-    if (window.confirm(`Are you sure you want to delete "${storey.name}"?`)) {
-      onDelete(storey.id)
+    try {
+      defaultStoreyManagementService.deleteStorey(storey.id)
+    } catch (error) {
+      console.error('Failed to delete storey:', error)
     }
-  }, [storey.name, storey.id, onDelete])
+  }, [storey.id])
 
   const isActive = storey.id === activeStoreyId
 
@@ -186,9 +185,28 @@ export function StoreyListItem({
             <CopyIcon />
           </IconButton>
 
-          <IconButton onClick={handleDelete} disabled={isOnlyStorey} title="Delete floor" color="red">
-            <TrashIcon />
-          </IconButton>
+          <AlertDialog.Root>
+            <AlertDialog.Trigger>
+              <IconButton disabled={isOnlyStorey} title="Delete floor" color="red">
+                <TrashIcon />
+              </IconButton>
+            </AlertDialog.Trigger>
+            <AlertDialog.Content>
+              <AlertDialog.Title>Delete Floor</AlertDialog.Title>
+              <AlertDialog.Description size="2">Are you sure you want to delete the floor?</AlertDialog.Description>
+
+              <Flex gap="3" justify="end">
+                <AlertDialog.Cancel>
+                  <Button variant="soft" color="gray">
+                    Cancel
+                  </Button>
+                </AlertDialog.Cancel>
+                <AlertDialog.Action onClick={handleDelete}>
+                  <Button color="red">Delete Floor</Button>
+                </AlertDialog.Action>
+              </Flex>
+            </AlertDialog.Content>
+          </AlertDialog.Root>
 
           <IconButton
             onClick={() => setActiveStorey(storey.id)}
