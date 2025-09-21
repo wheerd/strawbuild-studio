@@ -53,7 +53,7 @@ export function OpeningShape({
   const isOpeningSelected = select.isCurrentSelection(opening.id)
 
   // Calculate opening-to-opening distances
-  const sortedOpenings = wall.openings.sort((a, b) => a.offsetFromStart - b.offsetFromStart)
+  const sortedOpenings = [...wall.openings].sort((a, b) => a.offsetFromStart - b.offsetFromStart)
 
   const currentIndex = sortedOpenings.findIndex(o => o.id === opening.id)
   const previousOpening = currentIndex > 0 ? sortedOpenings[currentIndex - 1] : null

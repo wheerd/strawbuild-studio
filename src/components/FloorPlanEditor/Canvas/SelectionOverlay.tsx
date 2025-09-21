@@ -1,10 +1,11 @@
+import { useMemo } from 'react'
 import { Group } from 'react-konva/lib/ReactKonvaCore'
 import type { Vec2 } from '@/types/geometry'
 import { add, scale } from '@/types/geometry'
-import type { PerimeterWallId, PerimeterCornerId, OpeningId, SelectableId } from '@/types/ids'
+import type { PerimeterWallId, PerimeterCornerId, OpeningId, SelectableId, PerimeterId } from '@/types/ids'
 import { isPerimeterId, isPerimeterWallId, isPerimeterCornerId, isOpeningId } from '@/types/ids'
 import type { Perimeter } from '@/types/model'
-import { useModelActions, type StoreActions } from '@/model/store'
+import { usePerimeterById } from '@/model/store'
 import { useSelectionPath, useCurrentSelection } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
 import { SelectionOutline } from '@/components/FloorPlanEditor/components/SelectionOutline'
 
@@ -23,18 +24,49 @@ import { SelectionOutline } from '@/components/FloorPlanEditor/components/Select
  * - Entity type guards determine which geometry calculation to use
  */
 
+/**
+ * Custom hook to get selection outline points that properly handles reactive store data
+ */
+function useSelectionOutlinePoints(
+  selectionPath: SelectableId[],
+  currentSelection: SelectableId | null
+): Vec2[] | null {
+  const rootEntityId = selectionPath[0]
+
+  // Always call the hook unconditionally - follows Rules of Hooks
+  // We cast rootEntityId to PerimeterId and let the hook handle invalid IDs gracefully
+  const perimeter = usePerimeterById(rootEntityId as PerimeterId)
+
+  return useMemo(() => {
+    if (!selectionPath.length || !currentSelection) {
+      return null
+    }
+
+    if (isPerimeterId(rootEntityId) && perimeter) {
+      return getPerimeterEntityPoints(perimeter, selectionPath, currentSelection)
+    }
+
+    if (isPerimeterId(rootEntityId) && !perimeter) {
+      console.warn('SelectionOverlay: Perimeter not found:', rootEntityId)
+      return null
+    }
+
+    // For non-perimeter root entities, perimeter will be null and we fall through
+    // Future entity types will be added here:
+    // if (isBuildingId(rootEntityId)) { ... }
+
+    if (!isPerimeterId(rootEntityId)) {
+      console.warn('SelectionOverlay: Unsupported root entity type:', rootEntityId)
+    }
+    return null
+  }, [selectionPath, currentSelection, rootEntityId, perimeter])
+}
+
 export function SelectionOverlay(): React.JSX.Element | null {
   const selectionPath = useSelectionPath()
   const currentSelection = useCurrentSelection()
-  const modelActions = useModelActions()
 
-  // No selection, no overlay
-  if (!selectionPath.length || !currentSelection) {
-    return null
-  }
-
-  // Calculate selection outline points based on entity type
-  const outlinePoints = getSelectionOutlinePoints(selectionPath, currentSelection, modelActions)
+  const outlinePoints = useSelectionOutlinePoints(selectionPath, currentSelection)
 
   if (!outlinePoints || outlinePoints.length === 0) {
     return null
@@ -45,34 +77,6 @@ export function SelectionOverlay(): React.JSX.Element | null {
       <SelectionOutline points={outlinePoints} />
     </Group>
   )
-}
-
-/**
- * Get selection outline points based on entity type and selection path
- */
-function getSelectionOutlinePoints(
-  selectionPath: SelectableId[],
-  currentSelection: SelectableId,
-  modelActions: StoreActions
-): Vec2[] | null {
-  // Currently only OuterWall entities are supported as root
-  // Future: Add support for Floor, Building, etc. as root entities
-  const rootEntityId = selectionPath[0]
-
-  if (isPerimeterId(rootEntityId)) {
-    const wall = modelActions.getPerimeterById(rootEntityId)
-    if (!wall) {
-      console.warn('SelectionOverlay: OuterWall not found:', rootEntityId)
-      return null
-    }
-    return getPerimeterEntityPoints(wall, selectionPath, currentSelection)
-  }
-
-  // Future entity types will be added here:
-  // if (isBuildingId(rootEntityId)) { ... }
-
-  console.warn('SelectionOverlay: Unsupported root entity type:', rootEntityId)
-  return null
 }
 
 /**
