@@ -1,6 +1,6 @@
 import React from 'react'
 import * as Select from '@radix-ui/react-select'
-import { useModelStore } from '@/model/store'
+import { useModelStore, useModelActions } from '@/model/store'
 import type { PerimeterId, RingBeamConstructionMethodId } from '@/types/ids'
 import { calculatePolygonArea, type Length } from '@/types/geometry'
 import { useRingBeamConstructionMethods } from '@/config/store'
@@ -19,10 +19,8 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
   const allRingBeamMethods = useRingBeamConstructionMethods()
 
   // Get store actions for updating ring beams
-  const setPerimeterBaseRingBeam = useModelStore(state => state.setPerimeterBaseRingBeam)
-  const setPerimeterTopRingBeam = useModelStore(state => state.setPerimeterTopRingBeam)
-  const removePerimeterBaseRingBeam = useModelStore(state => state.removePerimeterBaseRingBeam)
-  const removePerimeterTopRingBeam = useModelStore(state => state.removePerimeterTopRingBeam)
+  const { setPerimeterBaseRingBeam, setPerimeterTopRingBeam, removePerimeterBaseRingBeam, removePerimeterTopRingBeam } =
+    useModelActions()
 
   // If perimeter not found, show error
   if (!outerWall) {

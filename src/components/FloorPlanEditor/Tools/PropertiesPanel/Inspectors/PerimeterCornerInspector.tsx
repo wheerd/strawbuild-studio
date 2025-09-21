@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { useModelStore } from '@/model/store'
+import { useModelStore, useModelActions } from '@/model/store'
 import type { PerimeterCornerId, PerimeterId } from '@/types/ids'
 import { useConfigStore } from '@/config/store'
 
@@ -10,7 +10,7 @@ interface PerimeterCornerInspectorProps {
 
 export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCornerInspectorProps): React.JSX.Element {
   // Get model store functions - use specific selectors for stable references
-  const updateCornerConstructedByWall = useModelStore(state => state.updatePerimeterCornerConstructedByWall)
+  const { updatePerimeterCornerConstructedByWall: updateCornerConstructedByWall } = useModelActions()
   const configStore = useConfigStore()
 
   // Get perimeter from store

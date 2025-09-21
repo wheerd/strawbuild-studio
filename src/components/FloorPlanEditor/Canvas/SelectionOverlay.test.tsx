@@ -7,7 +7,7 @@ import type { Perimeter } from '@/types/model'
 // Mock the required hooks and stores
 const mockUseSelectionPath = vi.fn()
 const mockUseCurrentSelection = vi.fn()
-const mockUseModelStore = vi.fn()
+const mockUseModelActions = vi.fn()
 
 vi.mock('@/components/FloorPlanEditor/hooks/useSelectionStore', () => ({
   useSelectionPath: () => mockUseSelectionPath(),
@@ -15,7 +15,7 @@ vi.mock('@/components/FloorPlanEditor/hooks/useSelectionStore', () => ({
 }))
 
 vi.mock('@/model/store', () => ({
-  useModelStore: () => mockUseModelStore()
+  useModelActions: () => mockUseModelActions()
 }))
 
 // Mock SelectionOutline component
@@ -30,7 +30,7 @@ describe('SelectionOverlay', () => {
     // Reset mocks
     mockUseSelectionPath.mockReturnValue([])
     mockUseCurrentSelection.mockReturnValue(null)
-    mockUseModelStore.mockReturnValue({
+    mockUseModelActions.mockReturnValue({
       getPerimeterById: vi.fn().mockReturnValue(null)
     })
   })
@@ -54,7 +54,7 @@ describe('SelectionOverlay', () => {
 
     mockUseSelectionPath.mockReturnValue([wallId])
     mockUseCurrentSelection.mockReturnValue(wallId)
-    mockUseModelStore.mockReturnValue({
+    mockUseModelActions.mockReturnValue({
       getPerimeterById: vi.fn().mockReturnValue(mockWall)
     })
 
@@ -80,7 +80,7 @@ describe('SelectionOverlay', () => {
 
     mockUseSelectionPath.mockReturnValue([perimeterId, wallId])
     mockUseCurrentSelection.mockReturnValue(wallId)
-    mockUseModelStore.mockReturnValue({
+    mockUseModelActions.mockReturnValue({
       getPerimeterById: vi.fn().mockReturnValue(mockWall)
     })
 
@@ -115,7 +115,7 @@ describe('SelectionOverlay', () => {
 
     mockUseSelectionPath.mockReturnValue([perimeterId, wallId, openingId])
     mockUseCurrentSelection.mockReturnValue(openingId)
-    mockUseModelStore.mockReturnValue({
+    mockUseModelActions.mockReturnValue({
       getPerimeterById: vi.fn().mockReturnValue(mockWall)
     })
 
@@ -130,7 +130,7 @@ describe('SelectionOverlay', () => {
 
     mockUseSelectionPath.mockReturnValue([wallId])
     mockUseCurrentSelection.mockReturnValue(wallId)
-    mockUseModelStore.mockReturnValue({
+    mockUseModelActions.mockReturnValue({
       getPerimeterById: vi.fn().mockReturnValue(null)
     })
 

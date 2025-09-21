@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand'
-import type { Storey, StoreyLevel } from '@/types/model'
+import type { Storey } from '@/types/model'
 import { createStoreyLevel } from '@/types/model'
 import type { StoreyId } from '@/types/ids'
 import { createStoreyId } from '@/types/ids'
@@ -29,7 +29,7 @@ export interface StoreysActions {
   getStoreysOrderedByLevel: () => Storey[]
 }
 
-export type StoreysSlice = StoreysState & StoreysActions
+export type StoreysSlice = StoreysState & { actions: StoreysActions }
 
 // Validation functions
 const validateStoreyName = (name: string): void => {
@@ -44,164 +44,173 @@ const validateStoreyHeight = (height: Length): void => {
   }
 }
 
+const groundFloor: Storey = {
+  id: 'store_ground' as StoreyId,
+  name: 'Ground Floor',
+  level: createStoreyLevel(0),
+  height: createLength(2400)
+}
+
 export const createStoreysSlice: StateCreator<StoreysSlice, [], [], StoreysSlice> = (set, get) => ({
   defaultHeight: createLength(2400),
-  storeys: new Map<StoreyId, Storey>(),
+  storeys: new Map<StoreyId, Storey>([[groundFloor.id, groundFloor]]),
 
-  // CRUD operations
-  addStorey: (name: string, height?: Length) => {
-    const state = get()
+  actions: {
+    // CRUD operations
+    addStorey: (name: string, height?: Length) => {
+      const state = get()
 
-    validateStoreyName(name)
+      validateStoreyName(name)
 
-    const level =
-      state.storeys.size === 0
-        ? createStoreyLevel(0)
-        : createStoreyLevel(Math.max(...Array.from(state.storeys.values()).map(s => s.level)) + 1)
+      const level =
+        state.storeys.size === 0
+          ? createStoreyLevel(0)
+          : createStoreyLevel(Math.max(...Array.from(state.storeys.values()).map(s => s.level)) + 1)
 
-    const storeyId = createStoreyId()
-    const defaultHeight = height !== undefined ? height : state.defaultHeight
+      const storeyId = createStoreyId()
+      const defaultHeight = height !== undefined ? height : state.defaultHeight
 
-    validateStoreyHeight(defaultHeight)
+      validateStoreyHeight(defaultHeight)
 
-    const storey: Storey = {
-      id: storeyId,
-      name: name.trim(),
-      level,
-      height: defaultHeight
-    }
-
-    set(state => ({
-      ...state,
-      storeys: new Map(state.storeys).set(storeyId, storey)
-    }))
-
-    return storey
-  },
-
-  removeStorey: (storeyId: StoreyId) => {
-    set(state => {
-      const storey = state.storeys.get(storeyId)
-      if (storey == null) return state
-
-      // Prevent removing the last storey
-      if (state.storeys.size === 1) {
-        throw new Error('Cannot remove the last remaining storey')
+      const storey: Storey = {
+        id: storeyId,
+        name: name.trim(),
+        level,
+        height: defaultHeight
       }
 
-      const newStoreys = new Map(state.storeys)
-      newStoreys.delete(storeyId)
+      set(state => ({
+        ...state,
+        storeys: new Map(state.storeys).set(storeyId, storey)
+      }))
 
-      for (const [_, otherStorey] of newStoreys) {
-        if (storey.level >= 0 && otherStorey.level > storey.level) {
-          const newLevel = createStoreyLevel(otherStorey.level - 1)
-          newStoreys.set(otherStorey.id, { ...otherStorey, level: newLevel })
-        } else if (storey.level < 0 && otherStorey.level < storey.level) {
-          const newLevel = createStoreyLevel(otherStorey.level + 1)
-          newStoreys.set(otherStorey.id, { ...otherStorey, level: newLevel })
+      return storey
+    },
+
+    removeStorey: (storeyId: StoreyId) => {
+      set(state => {
+        const storey = state.storeys.get(storeyId)
+        if (storey == null) return state
+
+        // Prevent removing the last storey
+        if (state.storeys.size === 1) {
+          throw new Error('Cannot remove the last remaining storey')
         }
-      }
 
-      return {
-        ...state,
-        storeys: newStoreys
-      }
-    })
-  },
+        const newStoreys = new Map(state.storeys)
+        newStoreys.delete(storeyId)
 
-  // Storey modifications
-  updateStoreyName: (storeyId: StoreyId, name: string) => {
-    // Validate name
-    validateStoreyName(name)
+        for (const [, otherStorey] of newStoreys) {
+          if (storey.level >= 0 && otherStorey.level > storey.level) {
+            const newLevel = createStoreyLevel(otherStorey.level - 1)
+            newStoreys.set(otherStorey.id, { ...otherStorey, level: newLevel })
+          } else if (storey.level < 0 && otherStorey.level < storey.level) {
+            const newLevel = createStoreyLevel(otherStorey.level + 1)
+            newStoreys.set(otherStorey.id, { ...otherStorey, level: newLevel })
+          }
+        }
 
-    set(state => {
-      const storey = state.storeys.get(storeyId)
-      if (storey == null) return state
+        return {
+          ...state,
+          storeys: newStoreys
+        }
+      })
+    },
 
-      const updatedStorey: Storey = {
-        ...storey,
-        name: name.trim()
-      }
+    // Storey modifications
+    updateStoreyName: (storeyId: StoreyId, name: string) => {
+      // Validate name
+      validateStoreyName(name)
 
-      return {
-        ...state,
-        storeys: new Map(state.storeys).set(storeyId, updatedStorey)
-      }
-    })
-  },
+      set(state => {
+        const storey = state.storeys.get(storeyId)
+        if (storey == null) return state
 
-  updateStoreyHeight: (storeyId: StoreyId, height: Length) => {
-    // Validate height
-    validateStoreyHeight(height)
+        const updatedStorey: Storey = {
+          ...storey,
+          name: name.trim()
+        }
 
-    set(state => {
-      const storey = state.storeys.get(storeyId)
-      if (storey == null) return state
+        return {
+          ...state,
+          storeys: new Map(state.storeys).set(storeyId, updatedStorey)
+        }
+      })
+    },
 
-      const updatedStorey: Storey = {
-        ...storey,
-        height
-      }
+    updateStoreyHeight: (storeyId: StoreyId, height: Length) => {
+      // Validate height
+      validateStoreyHeight(height)
 
-      return {
-        ...state,
-        storeys: new Map(state.storeys).set(storeyId, updatedStorey)
-      }
-    })
-  },
+      set(state => {
+        const storey = state.storeys.get(storeyId)
+        if (storey == null) return state
 
-  // Level management operations
-  swapStoreyLevels: (storeyId1: StoreyId, storeyId2: StoreyId) => {
-    set(state => {
-      const storey1 = state.storeys.get(storeyId1)
-      const storey2 = state.storeys.get(storeyId2)
+        const updatedStorey: Storey = {
+          ...storey,
+          height
+        }
 
-      if (!storey1 || !storey2) return state
+        return {
+          ...state,
+          storeys: new Map(state.storeys).set(storeyId, updatedStorey)
+        }
+      })
+    },
 
-      const newStoreys = new Map(state.storeys)
-      newStoreys.set(storeyId1, { ...storey1, level: storey2.level })
-      newStoreys.set(storeyId2, { ...storey2, level: storey1.level })
+    // Level management operations
+    swapStoreyLevels: (storeyId1: StoreyId, storeyId2: StoreyId) => {
+      set(state => {
+        const storey1 = state.storeys.get(storeyId1)
+        const storey2 = state.storeys.get(storeyId2)
 
-      return {
-        ...state,
-        storeys: newStoreys
-      }
-    })
-  },
+        if (!storey1 || !storey2) return state
 
-  adjustAllLevels: (adjustment: number) => {
-    set(state => {
-      const newStoreys = new Map()
+        const newStoreys = new Map(state.storeys)
+        newStoreys.set(storeyId1, { ...storey1, level: storey2.level })
+        newStoreys.set(storeyId2, { ...storey2, level: storey1.level })
 
-      let minLevel = Infinity
-      let maxLevel = -Infinity
-      for (const [storeyId, storey] of state.storeys) {
-        const newLevel = createStoreyLevel(storey.level + adjustment)
-        newStoreys.set(storeyId, { ...storey, level: newLevel })
-        if (newLevel < minLevel) minLevel = newLevel
-        if (newLevel > maxLevel) maxLevel = newLevel
-      }
+        return {
+          ...state,
+          storeys: newStoreys
+        }
+      })
+    },
 
-      if (minLevel > 0) {
-        throw new Error('Adjustment would remove floor 0, which is not allowed')
-      }
+    adjustAllLevels: (adjustment: number) => {
+      set(state => {
+        const newStoreys = new Map()
 
-      return {
-        ...state,
-        storeys: newStoreys
-      }
-    })
-  },
+        let minLevel = Infinity
+        let maxLevel = -Infinity
+        for (const [storeyId, storey] of state.storeys) {
+          const newLevel = createStoreyLevel(storey.level + adjustment)
+          newStoreys.set(storeyId, { ...storey, level: newLevel })
+          if (newLevel < minLevel) minLevel = newLevel
+          if (newLevel > maxLevel) maxLevel = newLevel
+        }
 
-  // Storey queries
-  getStoreyById: (storeyId: StoreyId) => {
-    const state = get()
-    return state.storeys.get(storeyId) ?? null
-  },
+        if (minLevel > 0) {
+          throw new Error('Adjustment would remove floor 0, which is not allowed')
+        }
 
-  getStoreysOrderedByLevel: () => {
-    const state = get()
-    const storeys = Array.from(state.storeys.values())
-    return storeys.sort((a, b) => a.level - b.level)
+        return {
+          ...state,
+          storeys: newStoreys
+        }
+      })
+    },
+
+    // Storey queries
+    getStoreyById: (storeyId: StoreyId) => {
+      const state = get()
+      return state.storeys.get(storeyId) ?? null
+    },
+
+    getStoreysOrderedByLevel: () => {
+      const state = get()
+      const storeys = Array.from(state.storeys.values())
+      return storeys.sort((a, b) => a.level - b.level)
+    }
   }
 })

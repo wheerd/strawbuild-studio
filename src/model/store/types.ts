@@ -7,4 +7,4 @@ export interface StoreActions extends StoreysActions, PerimetersActions {
   reset: () => void
 }
 
-export type Store = StoreState & StoreActions
+export type Store = StoreState & { actions: StoreActions }

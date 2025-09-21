@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { Cross2Icon } from '@radix-ui/react-icons'
-import { useModelStore } from '@/model/store'
+import { useModelActions } from '@/model/store'
 import type { StoreyId } from '@/types/ids'
 import { StoreyListItem } from './StoreyListItem'
 import { defaultStoreyManagementService } from '@/model/store/services/StoreyManagementService'
@@ -10,8 +10,7 @@ export interface StoreyManagementModalProps {
   trigger: React.ReactNode
 }
 export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): React.JSX.Element {
-  const addStorey = useModelStore(state => state.addStorey)
-  const getStoreysOrderedByLevel = useModelStore(state => state.getStoreysOrderedByLevel)
+  const { addStorey, getStoreysOrderedByLevel } = useModelActions()
   const storeysOrdered = getStoreysOrderedByLevel()
   const isOnlyStorey = storeysOrdered.length === 1
   const lowestStorey = storeysOrdered[0]

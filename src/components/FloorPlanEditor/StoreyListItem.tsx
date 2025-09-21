@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react'
 import { ChevronUpIcon, ChevronDownIcon, CopyIcon, TrashIcon, HeightIcon } from '@radix-ui/react-icons'
 import type { Storey } from '@/types/model'
 import type { StoreyId } from '@/types/ids'
-import { useModelStore } from '@/model/store'
+import { useModelActions } from '@/model/store'
 import { defaultStoreyManagementService } from '@/model/store/services/StoreyManagementService'
 import { getLevelColor } from '@/theme/colors'
 import { useDebouncedNumericInput } from '@/components/FloorPlanEditor/hooks/useDebouncedInput'
@@ -27,8 +27,7 @@ export function StoreyListItem({
   const [editName, setEditName] = useState(storey.name)
   const [isEditing, setIsEditing] = useState(false)
 
-  const updateStoreyName = useModelStore(state => state.updateStoreyName)
-  const updateStoreyHeight = useModelStore(state => state.updateStoreyHeight)
+  const { updateStoreyName, updateStoreyHeight } = useModelActions()
 
   // Debounced height input handler (UI in meters, store in millimeters)
   const heightInput = useDebouncedNumericInput(

@@ -4,8 +4,7 @@ import { add, scale } from '@/types/geometry'
 import type { PerimeterWallId, PerimeterCornerId, OpeningId, SelectableId } from '@/types/ids'
 import { isPerimeterId, isPerimeterWallId, isPerimeterCornerId, isOpeningId } from '@/types/ids'
 import type { Perimeter } from '@/types/model'
-import type { Store } from '@/model/store/types'
-import { useModelStore } from '@/model/store'
+import { useModelActions, type StoreActions } from '@/model/store'
 import { useSelectionPath, useCurrentSelection } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
 import { SelectionOutline } from '@/components/FloorPlanEditor/components/SelectionOutline'
 
@@ -27,7 +26,7 @@ import { SelectionOutline } from '@/components/FloorPlanEditor/components/Select
 export function SelectionOverlay(): React.JSX.Element | null {
   const selectionPath = useSelectionPath()
   const currentSelection = useCurrentSelection()
-  const modelStore = useModelStore()
+  const modelActions = useModelActions()
 
   // No selection, no overlay
   if (!selectionPath.length || !currentSelection) {
@@ -35,7 +34,7 @@ export function SelectionOverlay(): React.JSX.Element | null {
   }
 
   // Calculate selection outline points based on entity type
-  const outlinePoints = getSelectionOutlinePoints(selectionPath, currentSelection, modelStore)
+  const outlinePoints = getSelectionOutlinePoints(selectionPath, currentSelection, modelActions)
 
   if (!outlinePoints || outlinePoints.length === 0) {
     return null
@@ -54,14 +53,14 @@ export function SelectionOverlay(): React.JSX.Element | null {
 function getSelectionOutlinePoints(
   selectionPath: SelectableId[],
   currentSelection: SelectableId,
-  modelStore: Store
+  modelActions: StoreActions
 ): Vec2[] | null {
   // Currently only OuterWall entities are supported as root
   // Future: Add support for Floor, Building, etc. as root entities
   const rootEntityId = selectionPath[0]
 
   if (isPerimeterId(rootEntityId)) {
-    const wall = modelStore.getPerimeterById(rootEntityId)
+    const wall = modelActions.getPerimeterById(rootEntityId)
     if (!wall) {
       console.warn('SelectionOverlay: OuterWall not found:', rootEntityId)
       return null

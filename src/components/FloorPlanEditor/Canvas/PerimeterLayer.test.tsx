@@ -27,14 +27,14 @@ describe('PerimeterLayer', () => {
     const store = useModelStore.getState()
 
     // Add the floor first
-    const storey = store.addStorey('Test Floor')
+    const storey = store.actions.addStorey('Test Floor')
 
     // Create a simple square boundary
     const boundary = {
       points: [createVec2(0, 0), createVec2(1000, 0), createVec2(1000, 1000), createVec2(0, 1000)]
     }
 
-    store.addPerimeter(storey.id, boundary, createPerimeterConstructionMethodId(), createLength(440))
+    store.actions.addPerimeter(storey.id, boundary, createPerimeterConstructionMethodId(), createLength(440))
 
     render(
       <Stage width={800} height={600}>

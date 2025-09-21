@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import * as Select from '@radix-ui/react-select'
-import { useModelStore } from '@/model/store'
+import { useModelStore, useModelActions } from '@/model/store'
 import { createLength } from '@/types/geometry'
 import { useDebouncedNumericInput } from '@/components/FloorPlanEditor/hooks/useDebouncedInput'
 import { useSelectionStore } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
@@ -23,8 +23,8 @@ const OPENING_TYPE_OPTIONS: { value: OpeningType; label: string }[] = [
 export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInspectorProps): React.JSX.Element {
   // Get model store functions - use specific selectors for stable references
   const select = useSelectionStore()
-  const updateOpening = useModelStore(state => state.updatePerimeterWallOpening)
-  const removeOpeningFromOuterWall = useModelStore(state => state.removePerimeterWallOpening)
+  const { updatePerimeterWallOpening: updateOpening, removePerimeterWallOpening: removeOpeningFromOuterWall } =
+    useModelActions()
 
   // Get perimeter from store
   const perimeter = useModelStore(state => state.perimeters.get(perimeterId))

@@ -36,7 +36,9 @@ describe('FitToViewTool', () => {
     // Mock model store to return our mock function
     const mockedUseModelStore = vi.mocked(useModelStore)
     mockedUseModelStore.getState = vi.fn(() => ({
-      getPerimetersByStorey: mockGetPerimetersByStorey
+      actions: {
+        getPerimetersByStorey: mockGetPerimetersByStorey
+      }
     })) as any
   })
 

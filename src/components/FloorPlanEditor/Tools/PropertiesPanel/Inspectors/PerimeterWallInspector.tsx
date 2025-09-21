@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import * as Select from '@radix-ui/react-select'
-import { useModelStore } from '@/model/store'
+import { useModelActions, useModelStore } from '@/model/store'
 import { createLength } from '@/types/geometry'
 import { useDebouncedNumericInput } from '@/components/FloorPlanEditor/hooks/useDebouncedInput'
 import { formatLength } from '@/utils/formatLength'
@@ -15,16 +15,14 @@ interface PerimeterWallInspectorProps {
 }
 
 export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallInspectorProps): React.JSX.Element {
-  // Get model store functions - use specific selectors for stable references
-  const updateOuterWallConstructionMethod = useModelStore(state => state.updatePerimeterWallConstructionMethod)
-  const updateOuterWallThickness = useModelStore(state => state.updatePerimeterWallThickness)
-
-  // Get available construction methods
   const allPerimeterMethods = usePerimeterConstructionMethods()
-
-  // Get perimeter from store
   const outerWall = useModelStore(state => state.perimeters.get(perimeterId))
-  const getStoreyById = useModelStore(state => state.getStoreyById)
+
+  const {
+    getStoreyById,
+    updatePerimeterWallThickness: updateOuterWallThickness,
+    updatePerimeterWallConstructionMethod: updateOuterWallConstructionMethod
+  } = useModelActions()
 
   // Use useMemo to find wall within the wall object
   const wall = useMemo(() => {

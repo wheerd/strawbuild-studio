@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { StoreySelector } from './StoreySelector'
-import { useModelStore } from '@/model/store'
+import { useModelActions } from '@/model/store'
 import { useEditorStore } from './hooks/useEditorStore'
 import { createStoreyLevel } from '@/types/model'
 import type { StoreyId } from '@/types/ids'
@@ -10,7 +10,7 @@ import type { StoreyId } from '@/types/ids'
 vi.mock('@/model/store')
 vi.mock('./hooks/useEditorStore')
 
-const mockUseModelStore = vi.mocked(useModelStore)
+const mockUseModelActions = vi.mocked(useModelActions)
 const mockUseEditorStore = vi.mocked(useEditorStore)
 
 describe('StoreySelector', () => {
@@ -34,13 +34,10 @@ describe('StoreySelector', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    // Mock the selector-style calls
-    mockUseModelStore.mockImplementation((selector: any) => {
-      const mockState = {
-        getStoreysOrderedByLevel: () => mockStoreys
-      }
-      return selector(mockState)
-    })
+    // Mock the actions hook
+    mockUseModelActions.mockReturnValue({
+      getStoreysOrderedByLevel: () => mockStoreys
+    } as any)
 
     mockUseEditorStore.mockImplementation((selector: any) => {
       const mockState = {
@@ -83,12 +80,9 @@ describe('StoreySelector', () => {
   })
 
   it('does not render when no storeys exist', () => {
-    mockUseModelStore.mockImplementation((selector: any) => {
-      const mockState = {
-        getStoreysOrderedByLevel: () => []
-      }
-      return selector(mockState)
-    })
+    mockUseModelActions.mockReturnValue({
+      getStoreysOrderedByLevel: () => []
+    } as any)
 
     const { container } = render(<StoreySelector />)
 

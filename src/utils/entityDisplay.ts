@@ -1,7 +1,7 @@
 import type { SelectableId } from '@/types/ids'
 import { isPerimeterId, isPerimeterWallId, isPerimeterCornerId, isOpeningId } from '@/types/ids'
 import type { Perimeter } from '@/types/model'
-import type { Store } from '@/model/store/types'
+import type { StoreActions } from '@/model/store/types'
 
 /**
  * Get display name for the currently selected entity
@@ -10,7 +10,7 @@ import type { Store } from '@/model/store/types'
 export function getEntityDisplayName(
   selectionPath: SelectableId[],
   currentSelection: SelectableId | null,
-  modelStore: Store
+  modelStore: StoreActions
 ): string {
   if (!currentSelection || !selectionPath.length) {
     return 'Selection' // Disabled tab case

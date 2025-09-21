@@ -80,7 +80,7 @@ export function ToolContextProvider({ children }: ToolContextProviderProps): Rea
       },
 
       // Store access (tools use these directly)
-      getModelStore: () => modelStore,
+      getModelStore: () => modelStore.actions,
       getActiveStoreyId: () => activeStoreyId,
 
       // State access

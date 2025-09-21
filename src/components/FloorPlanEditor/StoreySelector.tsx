@@ -1,14 +1,14 @@
 import React, { useCallback } from 'react'
 import { Pencil1Icon, ChevronDownIcon } from '@radix-ui/react-icons'
 import * as Select from '@radix-ui/react-select'
-import { useModelStore } from '@/model/store'
+import { useModelActions } from '@/model/store'
 import { useEditorStore } from './hooks/useEditorStore'
 import { StoreyManagementModal } from './StoreyManagementModal'
 import type { StoreyId } from '@/types/ids'
 import { getLevelColor } from '@/theme/colors'
 
 export function StoreySelector(): React.JSX.Element {
-  const getStoreysOrderedByLevel = useModelStore(state => state.getStoreysOrderedByLevel)
+  const { getStoreysOrderedByLevel } = useModelActions()
   const activeStoreyId = useEditorStore(state => state.activeStoreyId)
   const setActiveStorey = useEditorStore(state => state.setActiveStorey)
 

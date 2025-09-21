@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { FloorPlanStage } from './Canvas/FloorPlanStage'
 import { GridSizeDisplay } from './GridSizeDisplay'
 import { StoreySelector } from './StoreySelector'
-import { useStoreys } from '@/model/store'
+import { useModelStore } from '@/model/store'
 import { useEditorStore } from './hooks/useEditorStore'
 import { ToolContextProvider, MainToolbar, PropertiesPanel, initializeToolSystem } from './Tools'
 import { toolManager } from './Tools/ToolSystem/ToolManager'
@@ -132,7 +132,7 @@ function FloorPlanEditorContent(): React.JSX.Element {
 export function FloorPlanEditor(): React.JSX.Element {
   const [isToolSystemReady, setIsToolSystemReady] = useState(false)
 
-  const storeys = useStoreys()
+  const storeys = useModelStore(state => state.storeys)
   const setActiveStorey = useEditorStore(state => state.setActiveStorey)
 
   // Initialize tool system once

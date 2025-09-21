@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useCurrentSelection, useSelectionPath } from '@/components/FloorPlanEditor/hooks/useSelectionStore'
 import { useActiveTool } from '@/components/FloorPlanEditor/Tools/ToolSystem/ToolContext'
-import { useModelStore } from '@/model/store'
+import { useModelActions } from '@/model/store'
 import { getEntityDisplayName } from '@/utils/entityDisplay'
 
 export type PropertiesPanelTab = 'selection' | 'tool'
@@ -21,7 +21,7 @@ export function usePropertiesPanel(): UsePropertiesPanelReturn {
   const selectedId = useCurrentSelection()
   const selectionPath = useSelectionPath()
   const activeTool = useActiveTool()
-  const modelStore = useModelStore()
+  const modelActions = useModelActions()
 
   const [activeTab, setActiveTab] = useState<PropertiesPanelTab>('selection')
 
@@ -39,7 +39,7 @@ export function usePropertiesPanel(): UsePropertiesPanelReturn {
   }, [toolTabEnabled, selectionTabEnabled, activeTool])
 
   // Generate tab labels
-  const entityDisplayName = getEntityDisplayName(selectionPath, selectedId, modelStore)
+  const entityDisplayName = getEntityDisplayName(selectionPath, selectedId, modelActions)
   const selectionTabLabel = entityDisplayName
   const toolTabLabel = activeTool?.name || 'Tool'
 
