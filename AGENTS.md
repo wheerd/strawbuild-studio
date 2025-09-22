@@ -32,7 +32,7 @@
   - Use focused test files for complex functions that need extensive testing
   - Group related functionality tests in the same file when appropriate
   - Always test both success and failure cases
-- **Single Test**: `npm run test -- ComponentName` or `npm run test -- path/to/test`
+- **Single Test**: `pnpm test ComponentName` or `pnpm test path/to/test`
 
 ## Error Handling
 
