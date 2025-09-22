@@ -75,19 +75,27 @@ export const constructFullRingBeam = (
 
     const previousEdge =
       startCorner?.constuctedByWall === 'previous'
-        ? lineFromPoints(beamOutsidePolygon[previousStart], beamOutsidePolygon[currentStart])!
-        : lineFromPoints(beamInsidePolygon[previousStart], beamInsidePolygon[currentStart])!
+        ? lineFromPoints(beamOutsidePolygon[previousStart], beamOutsidePolygon[currentStart])
+        : lineFromPoints(beamInsidePolygon[previousStart], beamInsidePolygon[currentStart])
     const nextEdge =
       endCorner?.constuctedByWall === 'next'
-        ? lineFromPoints(beamOutsidePolygon[currentEnd], beamOutsidePolygon[nextEnd])!
-        : lineFromPoints(beamInsidePolygon[currentEnd], beamInsidePolygon[nextEnd])!
-    const insideEdge = lineFromPoints(beamInsidePolygon[currentStart], beamInsidePolygon[currentEnd])!
-    const outsideEdge = lineFromPoints(beamOutsidePolygon[currentStart], beamOutsidePolygon[currentEnd])!
+        ? lineFromPoints(beamOutsidePolygon[currentEnd], beamOutsidePolygon[nextEnd])
+        : lineFromPoints(beamInsidePolygon[currentEnd], beamInsidePolygon[nextEnd])
+    const insideEdge = lineFromPoints(beamInsidePolygon[currentStart], beamInsidePolygon[currentEnd])
+    const outsideEdge = lineFromPoints(beamOutsidePolygon[currentStart], beamOutsidePolygon[currentEnd])
 
-    const startInside = lineIntersection(previousEdge, insideEdge)!
-    const startOutside = lineIntersection(previousEdge, outsideEdge)!
-    const endInside = lineIntersection(nextEdge, insideEdge)!
-    const endOutside = lineIntersection(nextEdge, outsideEdge)!
+    if (!previousEdge || !nextEdge || !insideEdge || !outsideEdge) {
+      throw new Error('Failed to create beam segment edges from polygon points')
+    }
+
+    const startInside = lineIntersection(previousEdge, insideEdge)
+    const startOutside = lineIntersection(previousEdge, outsideEdge)
+    const endInside = lineIntersection(nextEdge, insideEdge)
+    const endOutside = lineIntersection(nextEdge, outsideEdge)
+
+    if (!startInside || !startOutside || !endInside || !endOutside) {
+      throw new Error('Failed to calculate beam segment corner intersections')
+    }
 
     const projectedStart = projectPointOntoLine(startOutside, insideEdge)
     const projectedEnd = projectPointOntoLine(endOutside, insideEdge)

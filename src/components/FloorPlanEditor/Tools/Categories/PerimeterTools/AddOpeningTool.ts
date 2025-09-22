@@ -176,7 +176,12 @@ export class AddOpeningTool extends BaseTool implements Tool {
     const pointerPos = event.stageCoordinates
 
     // 1. Detect wall wall under cursor
-    const hitResult = event.context.findEntityAt(event.pointerCoordinates!)
+    if (!event.pointerCoordinates) {
+      this.clearPreview()
+      return true
+    }
+
+    const hitResult = event.context.findEntityAt(event.pointerCoordinates)
     const perimeterWall = this.extractPerimeterWallFromHitResult(hitResult, event.context)
 
     if (!perimeterWall) {

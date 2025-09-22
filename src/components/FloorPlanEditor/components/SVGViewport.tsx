@@ -59,7 +59,12 @@ export function SVGViewport({
   const screenToSVGClient = useCallback((screenX: number, screenY: number) => {
     if (!svgRef.current) return { x: 0, y: 0 }
 
-    const ctm = svgRef.current.getScreenCTM()!
+    const ctm = svgRef.current.getScreenCTM()
+    if (!ctm) {
+      console.warn('Cannot get SVG screen CTM, returning fallback coordinates')
+      return { x: 0, y: 0 }
+    }
+
     const pt = svgRef.current.createSVGPoint()
     pt.x = screenX
     pt.y = screenY

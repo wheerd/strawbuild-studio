@@ -176,14 +176,14 @@ export function* constructOpeningFrame(
 
       const fillingElement: ConstructionElement = createConstructionElement(
         'opening',
-        config.fillingMaterial!,
+        config.fillingMaterial,
         createCuboidShape(
           [
             (segmentPosition[0] + openingOffsetInSegment + config.padding) as Length,
-            (wallThickness - config.fillingThickness!) / 2,
+            (wallThickness - config.fillingThickness) / 2,
             (sillHeight + config.padding) as Length
           ] as Vec3,
-          [fillingWidth, config.fillingThickness!, fillingHeight] as Vec3
+          [fillingWidth, config.fillingThickness, fillingHeight] as Vec3
         )
       )
       yield yieldElement(fillingElement)

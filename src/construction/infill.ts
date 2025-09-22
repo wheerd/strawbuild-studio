@@ -247,7 +247,7 @@ export const constructInfillWall: PerimeterWallConstructionMethod<InfillConstruc
         type: 'opening' as const,
         position: segment.position[0] as Length,
         width: segment.size[0] as Length,
-        openingIds: segment.openings!.map(o => o.id),
+        openingIds: segment.openings?.map(o => o.id) ?? [],
         elements: openingElements
       }
 

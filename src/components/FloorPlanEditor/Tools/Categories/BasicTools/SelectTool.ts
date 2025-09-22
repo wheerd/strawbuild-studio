@@ -13,7 +13,12 @@ export class SelectTool implements Tool {
 
   // Event handlers
   handlePointerDown(event: CanvasEvent): boolean {
-    const hitResult = event.context.findEntityAt(event.pointerCoordinates!)
+    if (!event.pointerCoordinates) {
+      console.warn('No pointer coordinates available for selection')
+      return false
+    }
+
+    const hitResult = event.context.findEntityAt(event.pointerCoordinates)
 
     if (hitResult) {
       const clickSelectionPath = hitResult.parentIds.concat([hitResult.entityId])

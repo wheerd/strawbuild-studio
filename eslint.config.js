@@ -8,6 +8,7 @@ export default defineConfig(
   eslint.configs.recommended,
   tseslint.configs.recommended,
   tseslint.configs.stylistic,
+  tseslint.configs.strict,
   ...neostandard({
     ts: true
   }),
@@ -25,7 +26,8 @@ export default defineConfig(
     // Allow any types in test files for now
     files: ['**/*.test.ts', '**/*.test.tsx', '**/test/**/*.ts', '**/test/**/*.tsx'],
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off'
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off'
     }
   }
 )

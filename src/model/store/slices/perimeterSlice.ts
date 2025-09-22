@@ -184,12 +184,16 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         state.perimeters[perimeter.id] = perimeter
       })
 
-      return perimeter!
+      if (!perimeter) {
+        throw new Error('Failed to create perimeter')
+      }
+      return perimeter
     },
 
     removePerimeter: (perimeterId: PerimeterId) => {
       set(state => {
-        delete state.perimeters[perimeterId]
+        const { [perimeterId]: removed, ...remainingPerimeters } = state.perimeters
+        state.perimeters = remainingPerimeters
       })
     },
 

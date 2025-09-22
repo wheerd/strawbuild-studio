@@ -46,7 +46,12 @@ export class MoveTool extends BaseTool implements Tool {
   }
 
   handlePointerDown(event: CanvasEvent): boolean {
-    const hitResult = event.context.findEntityAt(event.pointerCoordinates!)
+    if (!event.pointerCoordinates) {
+      console.warn('No pointer coordinates available for movement')
+      return false
+    }
+
+    const hitResult = event.context.findEntityAt(event.pointerCoordinates)
     if (!hitResult) return false
 
     const behavior = getMovementBehavior(hitResult.entityType)
@@ -93,9 +98,24 @@ export class MoveTool extends BaseTool implements Tool {
         this.toolState.isMoving = true
         this.toolState.downPosition = null
 
-        this.toolState.currentMovementState = this.toolState.behavior!.initializeState(
-          this.toolState.pointerState!,
-          this.toolState.context!
+        if (!this.toolState.behavior) {
+          console.error('Movement behavior not available')
+          return false
+        }
+
+        if (!this.toolState.pointerState) {
+          console.error('Pointer state not available')
+          return false
+        }
+
+        if (!this.toolState.context) {
+          console.error('Movement context not available')
+          return false
+        }
+
+        this.toolState.currentMovementState = this.toolState.behavior.initializeState(
+          this.toolState.pointerState,
+          this.toolState.context
         )
 
         // Continue with movement logic below

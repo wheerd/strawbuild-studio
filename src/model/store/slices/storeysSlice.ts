@@ -92,7 +92,10 @@ export const createStoreysSlice: StateCreator<StoreysSlice, [['zustand/immer', n
         state.storeys[storey.id] = storey
       })
 
-      return storey!
+      if (!storey) {
+        throw new Error('Failed to create storey')
+      }
+      return storey
     },
 
     removeStorey: (storeyId: StoreyId) =>
@@ -106,15 +109,16 @@ export const createStoreysSlice: StateCreator<StoreysSlice, [['zustand/immer', n
             throw new Error('Cannot remove the last remaining storey')
           }
 
-          delete storeys[storeyId]
+          const { [storeyId]: removed, ...updatedStoreys } = storeys
+          state.storeys = updatedStoreys
 
-          const remainingStoreys = Object.values(storeys)
+          const remainingStoreysList = Object.values(updatedStoreys)
           if (state.activeStoreyId === storeyId) {
-            state.activeStoreyId = remainingStoreys[0].id
+            state.activeStoreyId = remainingStoreysList[0].id
           }
 
           // Adjust levels of other storeys
-          for (const otherStorey of remainingStoreys) {
+          for (const otherStorey of remainingStoreysList) {
             if (deletedLevel >= 0 && otherStorey.level > deletedLevel) {
               otherStorey.level = createStoreyLevel(otherStorey.level - 1)
             } else if (deletedLevel < 0 && otherStorey.level < deletedLevel) {
