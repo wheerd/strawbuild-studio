@@ -254,7 +254,7 @@ export function RingBeamConstructionModal({
             )}
 
             {/* Overlay SegmentedControl in top-left corner */}
-            <Box position="absolute" top="3" left="3" p="1" className="z-10 shadow-md bg-panel rounded-2">
+            <Box position="absolute" top="3" left="3" p="0S" className="z-10 shadow-md bg-panel rounded-2">
               <SegmentedControl.Root
                 value={currentPosition}
                 onValueChange={value => setCurrentPosition(value as 'base' | 'top')}

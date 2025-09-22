@@ -48,7 +48,7 @@ export function PropertiesPanel(): React.JSX.Element {
         </Tabs.List>
 
         <Tabs.Content value="selection">
-          <Box p="2">
+          <Flex direction="column" p="2" gap="2">
             {!selectedId && (
               <>
                 <Text align="center" color="gray" mb="2">
@@ -105,7 +105,7 @@ export function PropertiesPanel(): React.JSX.Element {
                   </Callout.Text>
                 </Callout.Root>
               )}
-          </Box>
+          </Flex>
         </Tabs.Content>
 
         <Tabs.Content value="tool">
