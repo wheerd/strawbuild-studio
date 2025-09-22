@@ -1,5 +1,6 @@
-import { useCallback } from 'react'
-import { Box, Flex, Separator, Tooltip, Kbd, IconButton } from '@radix-ui/themes'
+import React, { useCallback } from 'react'
+import * as Toolbar from '@radix-ui/react-toolbar'
+import { Flex, Tooltip, Kbd, IconButton, Text, Separator } from '@radix-ui/themes'
 import {
   useToolContext,
   useToolManager,
@@ -23,45 +24,45 @@ export function MainToolbar(): React.JSX.Element {
   const toolGroups = Array.from(toolManagerState.toolGroups.values())
 
   return (
-    <Box style={{ borderBottom: '1px solid var(--gray-6)' }} data-testid="main-toolbar">
-      <Box p="3">
-        <Flex align="center" gap="4">
-          {/* Logo - Compact version */}
-          <Logo className="flex-shrink-0" />
+    <Flex align="center" gap="4" style={{ borderBottom: '1px solid var(--gray-6)' }} data-testid="main-toolbar" p="3">
+      {/* Logo - Compact version */}
+      <Logo />
 
-          {/* Tools positioned next to logo on the left */}
-          <Flex align="center" gap="1">
-            {toolGroups.map((group, groupIndex) => (
-              <Flex key={group.id} align="center">
-                {groupIndex > 0 && <Separator orientation="vertical" size="2" mx="2" />}
+      {/* Tools positioned next to logo on the left */}
+      <Toolbar.Root>
+        <Flex align="center" gap="2">
+          {toolGroups.map((group, groupIndex) => (
+            <React.Fragment key={group.id}>
+              {groupIndex > 0 && <Separator orientation="vertical" size="2" />}
 
+              <Flex align="center" gap="1">
                 {/* Group of tools */}
-                <Flex align="center" gap="1">
-                  {group.tools.map(tool => (
-                    <Tooltip
-                      key={tool.id}
-                      content={
-                        <Flex align="center" justify="between" gap="2">
-                          <span>{tool.name}</span>
-                          {tool.hotkey && <Kbd>{tool.hotkey.toUpperCase()}</Kbd>}
-                        </Flex>
-                      }
-                    >
+                {group.tools.map(tool => (
+                  <Tooltip
+                    key={tool.id}
+                    content={
+                      <Flex align="center" justify="between" gap="2">
+                        <Text>{tool.name}</Text>
+                        {tool.hotkey && <Kbd>{tool.hotkey.toUpperCase()}</Kbd>}
+                      </Flex>
+                    }
+                  >
+                    <Toolbar.Button asChild>
                       <IconButton
                         size="2"
                         variant={toolManagerState.activeTool?.id === tool.id ? 'solid' : 'surface'}
                         onClick={() => handleToolSelect(tool.id)}
                       >
-                        {tool.iconComponent ? <tool.iconComponent /> : <span>{tool.icon}</span>}
+                        {tool.iconComponent ? <tool.iconComponent /> : <Text>{tool.icon}</Text>}
                       </IconButton>
-                    </Tooltip>
-                  ))}
-                </Flex>
+                    </Toolbar.Button>
+                  </Tooltip>
+                ))}
               </Flex>
-            ))}
-          </Flex>
+            </React.Fragment>
+          ))}
         </Flex>
-      </Box>
-    </Box>
+      </Toolbar.Root>
+    </Flex>
   )
 }

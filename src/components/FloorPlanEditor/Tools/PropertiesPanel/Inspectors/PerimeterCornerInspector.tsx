@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { Box, Flex, Text, Button, Heading, Callout } from '@radix-ui/themes'
+import { Box, Flex, Text, Button, Heading, Callout, DataList, Separator } from '@radix-ui/themes'
 import { useModelActions, usePerimeterById } from '@/model/store'
 import type { PerimeterCornerId, PerimeterId } from '@/types/ids'
 import { useConfigStore } from '@/config/store'
@@ -86,79 +86,62 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
   }, [previousWall, nextWall, configStore])
 
   return (
-    <Box p="2">
-      <Flex direction="column" gap="4">
-        {/* Basic Properties */}
-        <Flex direction="column" gap="2">
-          <Heading size="2">Corner Configuration</Heading>
-
-          <Flex align="center" justify="between" gap="3">
-            <Text size="1" weight="medium" color="gray">
-              Main Wall
-            </Text>
-            <Button size="1" variant="outline" onClick={handleToggleConstructedByWall} style={{ flex: 1, minWidth: 0 }}>
-              Switch main wall
-            </Button>
-          </Flex>
-          <Text size="1" color="gray">
-            Determines which wall owns this corner for construction purposes.
-          </Text>
-        </Flex>
-
-        {/* Geometry Information */}
-        <Box pt="1" style={{ borderTop: '1px solid var(--gray-6)' }}>
-          <Heading size="2" mb="2">
-            Geometry
-          </Heading>
-
-          {cornerAngle && (
-            <Flex justify="between" align="center">
-              <Text size="1" color="gray">
-                Interior Angle:
-              </Text>
-              <Text size="1" weight="medium">
-                {cornerAngle.toFixed(1)}°
-              </Text>
-            </Flex>
-          )}
-        </Box>
-
-        {/* Construction Notes */}
-        {hasConstructionNotes && (
-          <Box pt="1" style={{ borderTop: '1px solid var(--gray-6)' }}>
-            <Heading size="2" mb="2">
-              Construction Notes
-            </Heading>
-
-            <Flex direction="column" gap="2">
-              {(() => {
-                const prevMethod = configStore.perimeterConstructionMethods.get(previousWall.constructionMethodId)
-                const nextMethod = configStore.perimeterConstructionMethods.get(nextWall.constructionMethodId)
-                return prevMethod?.config.type !== nextMethod?.config.type
-              })() && (
-                <Callout.Root color="amber">
-                  <Callout.Text>
-                    <Text weight="bold">Mixed Construction:</Text>
-                    <br />
-                    Adjacent walls use different construction types. Special attention may be needed at this corner.
-                  </Callout.Text>
-                </Callout.Root>
-              )}
-
-              {Math.abs(previousWall.thickness - nextWall.thickness) > 5 && (
-                <Callout.Root color="amber">
-                  <Callout.Text>
-                    <Text weight="bold">Thickness Difference:</Text>
-                    <br />
-                    Adjacent walls have different thicknesses ({Math.abs(previousWall.thickness - nextWall.thickness)}mm
-                    difference).
-                  </Callout.Text>
-                </Callout.Root>
-              )}
-            </Flex>
-          </Box>
+    <Flex direction="column" gap="4">
+      {/* Geometry Information */}
+      <Flex direction="column" gap="2">
+        <Heading size="2">Geometry</Heading>
+        {cornerAngle && (
+          <DataList.Root>
+            <DataList.Item>
+              <DataList.Label minWidth="88px">Interior Angle</DataList.Label>
+              <DataList.Value>{cornerAngle.toFixed(1)}°</DataList.Value>
+            </DataList.Item>
+          </DataList.Root>
         )}
       </Flex>
-    </Box>
+
+      <Separator size="4" />
+
+      {/* Actions */}
+      <Flex direction="column" gap="2">
+        <Button size="1" onClick={handleToggleConstructedByWall}>
+          Switch main wall
+        </Button>
+      </Flex>
+
+      <Separator size="4" />
+
+      {/* Construction Notes */}
+      {hasConstructionNotes && (
+        <Flex direction="column" gap="2">
+          <Heading size="2">Construction Notes</Heading>
+
+          {(() => {
+            const prevMethod = configStore.perimeterConstructionMethods.get(previousWall.constructionMethodId)
+            const nextMethod = configStore.perimeterConstructionMethods.get(nextWall.constructionMethodId)
+            return prevMethod?.config.type !== nextMethod?.config.type
+          })() && (
+            <Callout.Root color="amber">
+              <Callout.Text>
+                <Text weight="bold">Mixed Construction:</Text>
+                <br />
+                Adjacent walls use different construction types. Special attention may be needed at this corner.
+              </Callout.Text>
+            </Callout.Root>
+          )}
+
+          {Math.abs(previousWall.thickness - nextWall.thickness) > 5 && (
+            <Callout.Root color="amber">
+              <Callout.Text>
+                <Text weight="bold">Thickness Difference:</Text>
+                <br />
+                Adjacent walls have different thicknesses ({Math.abs(previousWall.thickness - nextWall.thickness)}mm
+                difference).
+              </Callout.Text>
+            </Callout.Root>
+          )}
+        </Flex>
+      )}
+    </Flex>
   )
 }

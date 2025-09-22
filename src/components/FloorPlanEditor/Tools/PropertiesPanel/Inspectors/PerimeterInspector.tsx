@@ -1,5 +1,6 @@
 import React from 'react'
-import { Box, Flex, Text, Select, Button, Heading, Callout } from '@radix-ui/themes'
+import { Box, Flex, Text, Select, Button, Heading, Callout, DataList } from '@radix-ui/themes'
+import * as Label from '@radix-ui/react-label'
 import { useModelActions, usePerimeterById } from '@/model/store'
 import type { PerimeterId, RingBeamConstructionMethodId } from '@/types/ids'
 import { calculatePolygonArea, type Length } from '@/types/geometry'
@@ -42,24 +43,16 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
     <Box p="2">
       <Flex direction="column" gap="3">
         {/* Basic Information */}
-        <Flex direction="column" gap="1">
-          <Flex justify="between" align="center">
-            <Text size="1" color="gray">
-              Total Perimeter:
-            </Text>
-            <Text size="1" weight="medium">
-              {formatLength(totalPerimeter as Length)}
-            </Text>
-          </Flex>
-          <Flex justify="between" align="center">
-            <Text size="1" color="gray">
-              Total Area:
-            </Text>
-            <Text size="1" weight="medium">
-              {(totalArea / (1000 * 1000)).toFixed(2)} m²
-            </Text>
-          </Flex>
-        </Flex>
+        <DataList.Root>
+          <DataList.Item>
+            <DataList.Label minWidth="88px">Total Perimeter</DataList.Label>
+            <DataList.Value>{formatLength(totalPerimeter as Length)}</DataList.Value>
+          </DataList.Item>
+          <DataList.Item>
+            <DataList.Label minWidth="88px">Total Area</DataList.Label>
+            <DataList.Value>{(totalArea / (1000 * 1000)).toFixed(2)} m²</DataList.Value>
+          </DataList.Item>
+        </DataList.Root>
 
         {/* Ring Beam Configuration */}
         <Box pt="1" style={{ borderTop: '1px solid var(--gray-6)' }}>
@@ -70,9 +63,11 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
           <Flex direction="column" gap="2">
             {/* Base Ring Beam */}
             <Flex align="center" justify="between" gap="3">
-              <Text size="1" weight="medium" color="gray">
-                Base Plate
-              </Text>
+              <Label.Root htmlFor="base-ring-beam">
+                <Text size="1" weight="medium" color="gray">
+                  Base Plate
+                </Text>
+              </Label.Root>
               <Select.Root
                 value={outerWall.baseRingBeamMethodId || 'none'}
                 onValueChange={value => {
@@ -84,7 +79,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                 }}
                 size="1"
               >
-                <Select.Trigger placeholder="None" style={{ flex: 1, minWidth: 0 }} />
+                <Select.Trigger id="base-ring-beam" placeholder="None" style={{ flex: 1, minWidth: 0 }} />
                 <Select.Content>
                   <Select.Item value="none">None</Select.Item>
                   {allRingBeamMethods.map(method => (
@@ -111,9 +106,11 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
 
             {/* Top Ring Beam */}
             <Flex align="center" justify="between" gap="3">
-              <Text size="1" weight="medium" color="gray">
-                Top Plate
-              </Text>
+              <Label.Root htmlFor="top-ring-beam">
+                <Text size="1" weight="medium" color="gray">
+                  Top Plate
+                </Text>
+              </Label.Root>
               <Select.Root
                 value={outerWall.topRingBeamMethodId || 'none'}
                 onValueChange={value => {
@@ -125,7 +122,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                 }}
                 size="1"
               >
-                <Select.Trigger placeholder="None" style={{ flex: 1, minWidth: 0 }} />
+                <Select.Trigger id="top-ring-beam" placeholder="None" style={{ flex: 1, minWidth: 0 }} />
                 <Select.Content>
                   <Select.Item value="none">None</Select.Item>
                   {allRingBeamMethods.map(method => (

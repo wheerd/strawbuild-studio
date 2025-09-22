@@ -37,6 +37,7 @@ export default defineConfig({
             '@radix-ui/react-tabs',
             '@radix-ui/react-toolbar',
             '@radix-ui/react-tooltip',
+            '@radix-ui/react-label',
             '@radix-ui/themes'
           ],
 

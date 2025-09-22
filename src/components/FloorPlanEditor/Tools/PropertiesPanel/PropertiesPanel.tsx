@@ -48,52 +48,52 @@ export function PropertiesPanel(): React.JSX.Element {
         </Tabs.List>
 
         <Tabs.Content value="selection">
-          {!selectedId && (
-            <Box p="6">
-              <Text align="center" color="gray" mb="2">
-                No entity selected
-              </Text>
-              <Text align="center" size="2" color="gray">
-                Select a wall, room, or point to view its properties
-              </Text>
-            </Box>
-          )}
+          <Box p="2">
+            {!selectedId && (
+              <>
+                <Text align="center" color="gray" mb="2">
+                  No entity selected
+                </Text>
+                <Text align="center" size="2" color="gray">
+                  Select a wall, room, or point to view its properties
+                </Text>
+              </>
+            )}
 
-          {/* Perimeter entities */}
-          {selectedId && isPerimeterId(selectedId) && <OuterWallInspector key={selectedId} selectedId={selectedId} />}
+            {/* Perimeter entities */}
+            {selectedId && isPerimeterId(selectedId) && <OuterWallInspector key={selectedId} selectedId={selectedId} />}
 
-          {selectedId && isPerimeterWallId(selectedId) && (
-            <PerimeterWallInspector
-              key={selectedId}
-              perimeterId={selectionPath[0] as PerimeterId}
-              wallId={selectedId}
-            />
-          )}
+            {selectedId && isPerimeterWallId(selectedId) && (
+              <PerimeterWallInspector
+                key={selectedId}
+                perimeterId={selectionPath[0] as PerimeterId}
+                wallId={selectedId}
+              />
+            )}
 
-          {selectedId && isPerimeterCornerId(selectedId) && (
-            <PerimeterCornerInspector
-              key={selectedId}
-              perimeterId={selectionPath[0] as PerimeterId}
-              cornerId={selectedId}
-            />
-          )}
+            {selectedId && isPerimeterCornerId(selectedId) && (
+              <PerimeterCornerInspector
+                key={selectedId}
+                perimeterId={selectionPath[0] as PerimeterId}
+                cornerId={selectedId}
+              />
+            )}
 
-          {selectedId && isOpeningId(selectedId) && (
-            <OpeningInspector
-              key={selectedId}
-              perimeterId={selectionPath[0] as PerimeterId}
-              wallId={selectionPath[1] as PerimeterWallId}
-              openingId={selectedId}
-            />
-          )}
+            {selectedId && isOpeningId(selectedId) && (
+              <OpeningInspector
+                key={selectedId}
+                perimeterId={selectionPath[0] as PerimeterId}
+                wallId={selectionPath[1] as PerimeterWallId}
+                openingId={selectedId}
+              />
+            )}
 
-          {/* Unknown entity type */}
-          {selectedId &&
-            !isPerimeterId(selectedId) &&
-            !isPerimeterWallId(selectedId) &&
-            !isPerimeterCornerId(selectedId) &&
-            !isOpeningId(selectedId) && (
-              <Box p="4">
+            {/* Unknown entity type */}
+            {selectedId &&
+              !isPerimeterId(selectedId) &&
+              !isPerimeterWallId(selectedId) &&
+              !isPerimeterCornerId(selectedId) &&
+              !isOpeningId(selectedId) && (
                 <Callout.Root color="amber">
                   <Callout.Icon>
                     <ExclamationTriangleIcon />
@@ -104,8 +104,8 @@ export function PropertiesPanel(): React.JSX.Element {
                     Entity type not recognized: {typeof selectedId}
                   </Callout.Text>
                 </Callout.Root>
-              </Box>
-            )}
+              )}
+          </Box>
         </Tabs.Content>
 
         <Tabs.Content value="tool">

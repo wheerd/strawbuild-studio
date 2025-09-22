@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
-import { Box, Flex, Text, Select, TextField, Button, Callout, Heading } from '@radix-ui/themes'
+import { Box, Flex, Text, Select, TextField, Button, Callout, Heading, DataList, Separator } from '@radix-ui/themes'
+import * as Label from '@radix-ui/react-label'
 import { TrashIcon } from '@radix-ui/react-icons'
 import { useModelActions, usePerimeterById } from '@/model/store'
 import { createLength } from '@/types/geometry'
@@ -141,203 +142,166 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
   const area = (opening.width * opening.height) / (1000 * 1000)
 
   return (
-    <Box p="2">
-      <Flex direction="column" gap="4">
-        {/* Basic Properties */}
-        <Flex direction="column" gap="3">
-          <Flex align="center" justify="between" gap="3">
-            <Text size="1" weight="medium" color="gray">
-              Type
-            </Text>
-            <Select.Root
-              value={opening.type}
-              onValueChange={(value: OpeningType) =>
-                handleTypeChange({ target: { value } } as React.ChangeEvent<HTMLSelectElement>)
-              }
-              size="1"
-            >
-              <Select.Trigger style={{ flex: 1, minWidth: 0 }} />
-              <Select.Content>
-                {OPENING_TYPE_OPTIONS.map(option => (
-                  <Select.Item key={option.value} value={option.value}>
-                    {option.label}
-                  </Select.Item>
-                ))}
-              </Select.Content>
-            </Select.Root>
-          </Flex>
+    <Flex direction="column" gap="4">
+      {/* Basic Properties */}
+      <Flex direction="column" gap="3">
+        <Flex align="center" justify="between" gap="3">
+          <Text size="1" weight="medium" color="gray">
+            Type
+          </Text>
+          <Select.Root
+            value={opening.type}
+            onValueChange={(value: OpeningType) =>
+              handleTypeChange({ target: { value } } as React.ChangeEvent<HTMLSelectElement>)
+            }
+            size="1"
+          >
+            <Select.Trigger style={{ flex: 1, minWidth: 0 }} />
+            <Select.Content>
+              {OPENING_TYPE_OPTIONS.map(option => (
+                <Select.Item key={option.value} value={option.value}>
+                  {option.label}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Root>
+        </Flex>
 
-          <Flex align="center" justify="between" gap="3">
+        <Flex align="center" justify="between" gap="3">
+          <Label.Root htmlFor="opening-width">
             <Text size="1" weight="medium" color="gray">
               Width
             </Text>
-            <Box style={{ position: 'relative', flex: 1, maxWidth: '96px' }}>
-              <TextField.Root
-                type="number"
-                value={widthInput.value.toString()}
-                onChange={e => widthInput.handleChange(e.target.value)}
-                onBlur={widthInput.handleBlur}
-                onKeyDown={widthInput.handleKeyDown}
-                min="100"
-                max="5000"
-                step="10"
-                size="1"
-                style={{ textAlign: 'right', paddingRight: '24px' }}
-              />
-              <Text
-                size="1"
-                color="gray"
-                style={{
-                  position: 'absolute',
-                  right: '8px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  pointerEvents: 'none'
-                }}
-              >
-                mm
-              </Text>
-            </Box>
-          </Flex>
+          </Label.Root>
+          <TextField.Root
+            id="opening-width"
+            type="number"
+            value={widthInput.value.toString()}
+            onChange={e => widthInput.handleChange(e.target.value)}
+            onBlur={widthInput.handleBlur}
+            onKeyDown={widthInput.handleKeyDown}
+            min="100"
+            max="5000"
+            step="10"
+            size="1"
+            style={{ width: '5rem', textAlign: 'right' }}
+          >
+            <TextField.Slot side="right" pl="1">
+              mm
+            </TextField.Slot>
+          </TextField.Root>
+        </Flex>
 
-          <Flex align="center" justify="between" gap="3">
+        <Flex align="center" justify="between" gap="3">
+          <Label.Root htmlFor="opening-height">
             <Text size="1" weight="medium" color="gray">
               Height
             </Text>
-            <Box style={{ position: 'relative', flex: 1, maxWidth: '96px' }}>
-              <TextField.Root
-                type="number"
-                value={heightInput.value.toString()}
-                onChange={e => heightInput.handleChange(e.target.value)}
-                onBlur={heightInput.handleBlur}
-                onKeyDown={heightInput.handleKeyDown}
-                min="100"
-                max="4000"
-                step="10"
-                size="1"
-                style={{ textAlign: 'right', paddingRight: '24px' }}
-              />
-              <Text
-                size="1"
-                color="gray"
-                style={{
-                  position: 'absolute',
-                  right: '8px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  pointerEvents: 'none'
-                }}
-              >
-                mm
-              </Text>
-            </Box>
-          </Flex>
+          </Label.Root>
+          <TextField.Root
+            id="opening-height"
+            type="number"
+            value={heightInput.value.toString()}
+            onChange={e => heightInput.handleChange(e.target.value)}
+            onBlur={heightInput.handleBlur}
+            onKeyDown={heightInput.handleKeyDown}
+            min="100"
+            max="4000"
+            step="10"
+            size="1"
+            style={{ width: '5rem', textAlign: 'right' }}
+          >
+            <TextField.Slot side="right" pl="1">
+              mm
+            </TextField.Slot>
+          </TextField.Root>
+        </Flex>
 
-          <Flex direction="column" gap="1">
-            <Flex align="center" justify="between" gap="3">
+        <Flex direction="column" gap="1">
+          <Flex align="center" justify="between" gap="3">
+            <Label.Root htmlFor="opening-offset">
               <Text size="1" weight="medium" color="gray">
                 Offset from Start
               </Text>
-              <Box style={{ position: 'relative', flex: 1, maxWidth: '96px' }}>
-                <TextField.Root
-                  type="number"
-                  value={offsetInput.value.toString()}
-                  onChange={e => offsetInput.handleChange(e.target.value)}
-                  onBlur={offsetInput.handleBlur}
-                  onKeyDown={offsetInput.handleKeyDown}
-                  min="0"
-                  max={wall.wallLength - opening.width}
-                  step="10"
-                  size="1"
-                  style={{ textAlign: 'right', paddingRight: '24px' }}
-                />
-                <Text
-                  size="1"
-                  color="gray"
-                  style={{
-                    position: 'absolute',
-                    right: '8px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    pointerEvents: 'none'
-                  }}
-                >
-                  mm
-                </Text>
-              </Box>
-            </Flex>
-            <Text size="1" color="gray">
-              Distance from the start of the wall wall
-            </Text>
+            </Label.Root>
+            <TextField.Root
+              id="opening-offset"
+              type="number"
+              value={offsetInput.value.toString()}
+              onChange={e => offsetInput.handleChange(e.target.value)}
+              onBlur={offsetInput.handleBlur}
+              onKeyDown={offsetInput.handleKeyDown}
+              min="0"
+              max={wall.wallLength - opening.width}
+              step="10"
+              size="1"
+              style={{ width: '5rem', textAlign: 'right' }}
+            >
+              <TextField.Slot side="right" pl="1">
+                mm
+              </TextField.Slot>
+            </TextField.Root>
           </Flex>
+          <Text size="1" color="gray">
+            Distance from the start of the wall wall
+          </Text>
+        </Flex>
 
-          {opening.type === 'window' && (
-            <Flex direction="column" gap="1">
-              <Flex align="center" justify="between" gap="3">
+        {opening.type === 'window' && (
+          <Flex direction="column" gap="1">
+            <Flex align="center" justify="between" gap="3">
+              <Label.Root htmlFor="opening-sill-height">
                 <Text size="1" weight="medium" color="gray">
                   Sill Height
                 </Text>
-                <Box style={{ position: 'relative', flex: 1, maxWidth: '96px' }}>
-                  <TextField.Root
-                    type="number"
-                    value={sillHeightInput.value.toString()}
-                    onChange={e => sillHeightInput.handleChange(e.target.value)}
-                    onBlur={sillHeightInput.handleBlur}
-                    onKeyDown={sillHeightInput.handleKeyDown}
-                    min="0"
-                    max="2000"
-                    step="10"
-                    size="1"
-                    style={{ textAlign: 'right', paddingRight: '24px' }}
-                  />
-                  <Text
-                    size="1"
-                    color="gray"
-                    style={{
-                      position: 'absolute',
-                      right: '8px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      pointerEvents: 'none'
-                    }}
-                  >
-                    mm
-                  </Text>
-                </Box>
-              </Flex>
-              <Text size="1" color="gray">
-                Height of window sill above floor level
-              </Text>
+              </Label.Root>
+              <TextField.Root
+                id="opening-sill-height"
+                type="number"
+                value={sillHeightInput.value.toString()}
+                onChange={e => sillHeightInput.handleChange(e.target.value)}
+                onBlur={sillHeightInput.handleBlur}
+                onKeyDown={sillHeightInput.handleKeyDown}
+                min="0"
+                max="2000"
+                step="10"
+                size="1"
+                style={{ width: '5rem', textAlign: 'right' }}
+              >
+                <TextField.Slot side="right" pl="1">
+                  mm
+                </TextField.Slot>
+              </TextField.Root>
             </Flex>
-          )}
-        </Flex>
-
-        {/* Measurements */}
-        <Box pt="1" style={{ borderTop: '1px solid var(--gray-6)' }}>
-          <Heading size="2" mb="2">
-            Measurements
-          </Heading>
-          <Flex justify="between" align="center">
             <Text size="1" color="gray">
-              Area:
-            </Text>
-            <Text size="1" weight="medium">
-              {area.toFixed(2)} m²
+              Height of window sill above floor level
             </Text>
           </Flex>
-        </Box>
-
-        {/* Actions */}
-        <Box pt="1" style={{ borderTop: '1px solid var(--gray-6)' }}>
-          <Heading size="2" mb="2">
-            Actions
-          </Heading>
-          <Button color="red" variant="solid" size="1" onClick={handleRemoveOpening} style={{ width: '100%' }}>
-            <TrashIcon />
-            Remove Opening
-          </Button>
-        </Box>
+        )}
       </Flex>
-    </Box>
+
+      <Separator size="4" />
+
+      {/* Measurements */}
+      <Flex direction="column" gap="2">
+        <Heading size="2">Measurements</Heading>
+        <DataList.Root size="1">
+          <DataList.Item>
+            <DataList.Label>Area</DataList.Label>
+            <DataList.Value>{area.toFixed(2)} m²</DataList.Value>
+          </DataList.Item>
+        </DataList.Root>
+      </Flex>
+
+      <Separator size="4" />
+
+      {/* Actions */}
+      <Flex direction="column" gap="2">
+        <Button color="red" size="1" onClick={handleRemoveOpening}>
+          <TrashIcon />
+          Remove Opening
+        </Button>
+      </Flex>
+    </Flex>
   )
 }
