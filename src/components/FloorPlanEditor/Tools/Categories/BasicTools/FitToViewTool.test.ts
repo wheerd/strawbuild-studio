@@ -81,7 +81,7 @@ describe('FitToViewTool', () => {
   it('should handle empty bounds gracefully', () => {
     mockGetPerimetersByStorey.mockReturnValue([])
 
-    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const consoleSpy = vi.spyOn(console, 'log')
 
     fitToViewTool.onActivate(mockContext as ToolContext)
 

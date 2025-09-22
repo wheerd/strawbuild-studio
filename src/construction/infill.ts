@@ -39,9 +39,9 @@ export function* infillWallArea(
   size: Vec3,
   config: InfillConstructionConfig,
   resolveMaterial: ResolveMaterialFunction,
-  startsWithStand: boolean = false,
-  endsWithStand: boolean = false,
-  startAtEnd: boolean = false
+  startsWithStand = false,
+  endsWithStand = false,
+  startAtEnd = false
 ): Generator<ConstructionResult> {
   const { minStrawSpace } = config
   const { width: postWidth } = config.posts

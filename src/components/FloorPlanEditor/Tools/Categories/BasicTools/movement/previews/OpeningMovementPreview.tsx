@@ -5,14 +5,11 @@ import { add, scale } from '@/types/geometry'
 import type { MovementPreviewComponentProps } from '../MovementBehavior'
 import type { OpeningEntityContext, OpeningMovementState } from '../behaviors/OpeningMovementBehavior'
 
-interface OpeningMovementPreviewProps
-  extends MovementPreviewComponentProps<OpeningEntityContext, OpeningMovementState> {}
-
 export function OpeningMovementPreview({
   movementState,
   isValid,
   context
-}: OpeningMovementPreviewProps): React.JSX.Element {
+}: MovementPreviewComponentProps<OpeningEntityContext, OpeningMovementState>): React.JSX.Element {
   const { wall, opening } = context.entity
 
   // Calculate the opening rectangle in new position

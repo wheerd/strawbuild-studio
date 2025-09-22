@@ -6,13 +6,11 @@ import type { MovementPreviewComponentProps } from '../MovementBehavior'
 import type { Perimeter } from '@/types/model'
 import type { PerimeterMovementState } from '../behaviors/PerimeterMovementBehavior'
 
-interface PerimeterMovementPreviewProps extends MovementPreviewComponentProps<Perimeter, PerimeterMovementState> {}
-
 export function PerimeterMovementPreview({
   movementState,
   isValid,
   context
-}: PerimeterMovementPreviewProps): React.JSX.Element {
+}: MovementPreviewComponentProps<Perimeter, PerimeterMovementState>): React.JSX.Element {
   const previewBoundary = context.entity.corners.map(corner => add(corner.insidePoint, movementState.offset))
 
   return (

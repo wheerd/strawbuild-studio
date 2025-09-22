@@ -1,7 +1,13 @@
 import neostandard from 'neostandard'
+import eslint from '@eslint/js'
+import { defineConfig } from 'eslint/config'
 import eslintConfigPrettier from 'eslint-config-prettier'
+import tseslint from 'typescript-eslint'
 
-export default [
+export default defineConfig(
+  eslint.configs.recommended,
+  tseslint.configs.recommended,
+  tseslint.configs.stylistic,
   ...neostandard({
     ts: true
   }),
@@ -22,4 +28,4 @@ export default [
       '@typescript-eslint/no-explicit-any': 'off'
     }
   }
-]
+)

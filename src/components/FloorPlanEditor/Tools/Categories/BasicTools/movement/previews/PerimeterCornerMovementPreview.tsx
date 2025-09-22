@@ -4,14 +4,11 @@ import { COLORS } from '@/theme/colors'
 import type { MovementPreviewComponentProps } from '../MovementBehavior'
 import type { CornerEntityContext, CornerMovementState } from '../behaviors/PerimeterCornerMovementBehavior'
 
-interface PerimeterCornerMovementPreviewProps
-  extends MovementPreviewComponentProps<CornerEntityContext, CornerMovementState> {}
-
 export function PerimeterCornerMovementPreview({
   movementState,
   isValid,
   context
-}: PerimeterCornerMovementPreviewProps): React.JSX.Element {
+}: MovementPreviewComponentProps<CornerEntityContext, CornerMovementState>): React.JSX.Element {
   const { wall, cornerIndex } = context.entity
   const originalPosition = wall.corners[cornerIndex].insidePoint
 

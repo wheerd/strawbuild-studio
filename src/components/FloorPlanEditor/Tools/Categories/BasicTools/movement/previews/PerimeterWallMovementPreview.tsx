@@ -5,14 +5,11 @@ import { midpoint, add } from '@/types/geometry'
 import type { MovementPreviewComponentProps } from '../MovementBehavior'
 import type { PerimeterWallEntityContext, PerimeterWallMovementState } from '../behaviors/PerimeterWallMovementBehavior'
 
-interface PerimeterWallMovementPreviewProps
-  extends MovementPreviewComponentProps<PerimeterWallEntityContext, PerimeterWallMovementState> {}
-
 export function PerimeterWallMovementPreview({
   movementState,
   isValid,
   context
-}: PerimeterWallMovementPreviewProps): React.JSX.Element {
+}: MovementPreviewComponentProps<PerimeterWallEntityContext, PerimeterWallMovementState>): React.JSX.Element {
   const { wall } = context.entity
   const { projectedDelta, newBoundary } = movementState
 

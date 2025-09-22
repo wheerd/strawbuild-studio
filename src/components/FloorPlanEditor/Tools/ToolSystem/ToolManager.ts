@@ -16,7 +16,7 @@ export class ToolManager {
     toolGroups: new Map()
   }
 
-  private subscribers: Set<(state: ToolManagerState) => void> = new Set()
+  private subscribers = new Set<(state: ToolManagerState) => void>()
 
   // Tool registration
   registerTool(tool: Tool): void {

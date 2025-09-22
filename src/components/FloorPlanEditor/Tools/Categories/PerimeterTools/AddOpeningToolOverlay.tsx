@@ -5,12 +5,10 @@ import type { AddOpeningTool } from './AddOpeningTool'
 import { useReactiveTool } from '@/components/FloorPlanEditor/Tools/hooks/useReactiveTool'
 import { COLORS } from '@/theme/colors'
 
-interface AddOpeningToolOverlayProps extends ToolOverlayComponentProps<AddOpeningTool> {}
-
 /**
  * React overlay component for AddOpeningTool with zoom-responsive rendering.
  */
-export function AddOpeningToolOverlay({ tool }: AddOpeningToolOverlayProps): React.JSX.Element | null {
+export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpeningTool>): React.JSX.Element | null {
   const { state } = useReactiveTool(tool)
 
   // Don't render anything if no preview state

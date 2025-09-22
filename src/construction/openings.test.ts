@@ -89,7 +89,7 @@ const createTestOpeningSegment = (opening: Opening): WallSegment3D => ({
 })
 
 // Helper to create mock generator for infillWallArea
-const createMockInfillGenerator = function* (numElements: number = 2): Generator<ConstructionResult> {
+const createMockInfillGenerator = function* (numElements = 2): Generator<ConstructionResult> {
   for (let i = 0; i < numElements; i++) {
     const position = [100 * i, 0, 0] as Vec3
     const size = [100, 360, 500] as Vec3

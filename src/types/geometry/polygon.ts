@@ -150,7 +150,7 @@ export function wouldClosingPolygonSelfIntersect(points: Vec2[]): boolean {
   }
 }
 
-export function simplifyPolygon(polygon: Polygon2D, epsilon: number = 0.0001): Polygon2D {
+export function simplifyPolygon(polygon: Polygon2D, epsilon = 0.0001): Polygon2D {
   const { points } = polygon
   const newPoints: Vec2[] = []
   for (let i = 0; i < points.length; i++) {

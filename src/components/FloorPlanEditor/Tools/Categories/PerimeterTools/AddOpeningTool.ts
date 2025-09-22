@@ -159,7 +159,7 @@ export class AddOpeningTool extends BaseTool implements Tool {
   private updatePreview(
     offset: Length,
     perimeterWall: PerimeterWallHit,
-    canPlace: boolean = true,
+    canPlace = true,
     snapDirection?: 'left' | 'right'
   ): void {
     this.state.hoveredPerimeterWall = perimeterWall

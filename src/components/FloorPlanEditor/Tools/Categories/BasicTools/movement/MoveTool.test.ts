@@ -14,7 +14,7 @@ describe('MoveTool', () => {
 
   it('should handle escape key to cancel movement when waiting for movement', () => {
     const tool = new MoveTool()
-    const mockTriggerRender = vi.spyOn(tool as any, 'triggerRender').mockImplementation(() => {})
+    const mockTriggerRender = vi.spyOn(tool as any, 'triggerRender')
 
     // Manually set tool state to waiting for movement (simulating pointerdown)
     ;(tool as any).toolState.isWaitingForMovement = true
@@ -34,7 +34,7 @@ describe('MoveTool', () => {
 
   it('should handle escape key to cancel movement when actively moving', () => {
     const tool = new MoveTool()
-    const mockTriggerRender = vi.spyOn(tool as any, 'triggerRender').mockImplementation(() => {})
+    const mockTriggerRender = vi.spyOn(tool as any, 'triggerRender')
 
     // Manually set tool state to moving (simulating active movement)
     ;(tool as any).toolState = {
@@ -61,7 +61,7 @@ describe('MoveTool', () => {
 
   it('should not handle escape key when not moving', () => {
     const tool = new MoveTool()
-    const mockTriggerRender = vi.spyOn(tool as any, 'triggerRender').mockImplementation(() => {})
+    const mockTriggerRender = vi.spyOn(tool as any, 'triggerRender')
 
     // Press escape key without any movement state
     const escapeEvent = createMockKeydownEvent('Escape')

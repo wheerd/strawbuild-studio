@@ -7,13 +7,11 @@ import { COLORS } from '@/theme/colors'
 import { useReactiveTool } from '@/components/FloorPlanEditor/Tools/hooks/useReactiveTool'
 import { SnappingLines } from '@/components/FloorPlanEditor/components/SnappingLines'
 
-interface PerimeterToolOverlayProps extends ToolOverlayComponentProps<PerimeterTool> {}
-
 /**
  * React overlay component for PerimeterTool with zoom-responsive rendering.
  * Uses viewport hooks directly for automatic re-rendering on zoom changes.
  */
-export function PerimeterToolOverlay({ tool }: PerimeterToolOverlayProps): React.JSX.Element | null {
+export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<PerimeterTool>): React.JSX.Element | null {
   const { state } = useReactiveTool(tool)
   const zoom = useZoom()
 

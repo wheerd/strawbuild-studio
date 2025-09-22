@@ -103,8 +103,8 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
     return context.store.updatePerimeterBoundary(context.entity.wall.id, movementState.newBoundary)
   }
 
-  private getSnapLines(wall: Perimeter, cornerIndex: number): Array<LineSegment2D> {
-    const snapLines: Array<LineSegment2D> = []
+  private getSnapLines(wall: Perimeter, cornerIndex: number): LineSegment2D[] {
+    const snapLines: LineSegment2D[] = []
 
     for (let i = 0; i < wall.corners.length; i++) {
       const nextIndex = (i + 1) % wall.corners.length
