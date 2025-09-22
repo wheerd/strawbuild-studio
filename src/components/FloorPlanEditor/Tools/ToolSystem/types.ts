@@ -71,8 +71,6 @@ export interface CanvasEvent {
   konvaEvent: Konva.KonvaEventObject<any>
   stageCoordinates: Vec2 // Transformed coordinates (accounting for pan/zoom)
   pointerCoordinates?: { x: number; y: number } // Original pointer coordinates for hit testing
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  target: any
   context: ToolContext
 }
 export interface ToolContext {

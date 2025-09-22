@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
-import { Dialog, IconButton, Flex, Box, Text, Heading, Card } from '@radix-ui/themes'
-import { Cross2Icon } from '@radix-ui/react-icons'
+import { Dialog, IconButton, Flex, Box, Text, Heading, Card, Callout, SegmentedControl } from '@radix-ui/themes'
+import { Cross2Icon, ExclamationTriangleIcon, CrossCircledIcon, CheckCircledIcon } from '@radix-ui/react-icons'
 import { usePerimeterById } from '@/model/store'
 import { useConfigStore } from '@/config/store'
 import { constructRingBeam, resolveDefaultMaterial, type RingBeamConstructionPlan } from '@/construction'
@@ -19,16 +19,13 @@ export interface RingBeamConstructionModalProps {
 
 interface RingBeamConstructionPlanDisplayProps {
   plan: RingBeamConstructionPlan
-  showIssues?: boolean
 }
 
-function RingBeamConstructionPlanDisplay({
-  plan,
-  showIssues = true
-}: RingBeamConstructionPlanDisplayProps): React.JSX.Element {
+function RingBeamConstructionPlanDisplay({ plan }: RingBeamConstructionPlanDisplayProps): React.JSX.Element {
   const perimeter = usePerimeterById(plan.perimeterId)
 
-  const perimeterBounds = boundsFromPoints(perimeter?.corners.map(c => [c.outsidePoint[0], -c.outsidePoint[1]]) ?? [])!
+  const perimeterBounds = boundsFromPoints(perimeter?.corners.map(c => [c.outsidePoint[0], -c.outsidePoint[1]]) ?? [])
+  if (!perimeterBounds) return <div>Error: Could not calculate perimeter bounds</div>
 
   const padding = 100 // padding in SVG units
   const viewBoxWidth = perimeterBounds.max[0] - perimeterBounds.min[0] + padding * 2
@@ -37,7 +34,7 @@ function RingBeamConstructionPlanDisplay({
   const viewBoxY = perimeterBounds.min[1] - padding
 
   return (
-    <div className="w-full h-96 border border-gray-300 rounded bg-gray-50 flex items-center justify-center relative">
+    <div className="w-full h-full bg-gray-50 flex items-center justify-center relative">
       <SVGViewport baseViewBox={`${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}`} className="w-full h-full">
         {/* Render perimeter outline for reference */}
         {perimeter && (
@@ -103,26 +100,74 @@ function RingBeamConstructionPlanDisplay({
           )
         })}
       </SVGViewport>
-
-      {/* Issues display */}
-      {showIssues && (plan.errors.length > 0 || plan.warnings.length > 0) && (
-        <div className="absolute top-4 right-4 bg-white border border-gray-300 rounded-md p-3 shadow-lg max-w-xs">
-          <h4 className="text-sm font-semibold mb-2">Issues</h4>
-          {plan.errors.map((error, index) => (
-            <div key={`error-${index}`} className="text-xs text-red-600 mb-1">
-              ⚠ {error.description}
-            </div>
-          ))}
-          {plan.warnings.map((warning, index) => (
-            <div key={`warning-${index}`} className="text-xs text-orange-600 mb-1">
-              ⚠ {warning.description}
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   )
 }
+
+interface IssueDescriptionPanelProps {
+  errors: { description: string }[]
+  warnings: { description: string }[]
+}
+
+const IssueDescriptionPanel = ({ errors, warnings }: IssueDescriptionPanelProps) => (
+  <Box maxHeight="200px" className="overflow-y-auto border-t border-gray-6">
+    <Flex direction="column" gap="2" p="3">
+      {errors.length > 0 && (
+        <Callout.Root color="red" size="1">
+          <Callout.Icon>
+            <CrossCircledIcon />
+          </Callout.Icon>
+          <Flex direction="column" gap="2">
+            <Text weight="medium" size="2">
+              Errors ({errors.length})
+            </Text>
+            <Flex direction="column" gap="1">
+              {errors.map((error, index) => (
+                <Text key={index} size="1">
+                  • {error.description}
+                </Text>
+              ))}
+            </Flex>
+          </Flex>
+        </Callout.Root>
+      )}
+
+      {warnings.length > 0 && (
+        <Callout.Root color="amber" size="1">
+          <Callout.Icon>
+            <ExclamationTriangleIcon />
+          </Callout.Icon>
+          <Flex direction="column" gap="2">
+            <Text weight="medium" size="2">
+              Warnings ({warnings.length})
+            </Text>
+            <Flex direction="column" gap="1">
+              {warnings.map((warning, index) => (
+                <Text key={index} size="1">
+                  • {warning.description}
+                </Text>
+              ))}
+            </Flex>
+          </Flex>
+        </Callout.Root>
+      )}
+
+      {errors.length === 0 && warnings.length === 0 && (
+        <Callout.Root color="green" size="1">
+          <Callout.Icon>
+            <CheckCircledIcon />
+          </Callout.Icon>
+          <Flex direction="column" gap="1">
+            <Text weight="medium" size="2">
+              No Issues Found
+            </Text>
+            <Text size="1">Construction plan is valid with no errors or warnings.</Text>
+          </Flex>
+        </Callout.Root>
+      )}
+    </Flex>
+  </Box>
+)
 
 export function RingBeamConstructionModal({
   perimeterId,
@@ -167,21 +212,28 @@ export function RingBeamConstructionModal({
   return (
     <Dialog.Root>
       <Dialog.Trigger>{trigger}</Dialog.Trigger>
-      <Dialog.Content>
-        <Flex justify="between" align="center" mb="3">
-          <Dialog.Title>Ring Beam Construction</Dialog.Title>
-          <Dialog.Close>
-            <IconButton variant="ghost">
-              <Cross2Icon />
-            </IconButton>
-          </Dialog.Close>
-        </Flex>
+      <Dialog.Content size="2" width="95%" maxWidth="95%" maxHeight="90vh" className="flex flex-col overflow-hidden">
+        <Flex direction="column" gap="3" height="100%" className="overflow-hidden">
+          <Dialog.Title>
+            <Flex justify="between" align="center">
+              Ring Beam Construction
+              <Dialog.Close>
+                <IconButton variant="ghost" size="1">
+                  <Cross2Icon />
+                </IconButton>
+              </Dialog.Close>
+            </Flex>
+          </Dialog.Title>
 
-        <Box style={{ height: '500px', overflow: 'hidden' }}>
-          <Card variant="surface" style={{ height: '100%', padding: '8px' }}>
+          <Box
+            position="relative"
+            flexGrow="1"
+            minHeight="300px"
+            className="overflow-hidden border border-gray-6 rounded-2"
+          >
             {currentMethod ? (
               constructionPlan ? (
-                <RingBeamConstructionPlanDisplay plan={constructionPlan} showIssues />
+                <RingBeamConstructionPlanDisplay plan={constructionPlan} />
               ) : (
                 <Flex align="center" justify="center" style={{ height: '100%' }}>
                   <Text align="center" color="gray">
@@ -200,13 +252,23 @@ export function RingBeamConstructionModal({
                 </Text>
               </Flex>
             )}
-          </Card>
-        </Box>
 
-        <Box pt="3" style={{ borderTop: '1px solid var(--gray-6)' }}>
-          <Flex justify="between">
+            {/* Overlay SegmentedControl in top-left corner */}
+            <Box position="absolute" top="3" left="3" p="1" className="z-10 shadow-md bg-panel rounded-2">
+              <SegmentedControl.Root
+                value={currentPosition}
+                onValueChange={value => setCurrentPosition(value as 'base' | 'top')}
+                size="1"
+              >
+                <SegmentedControl.Item value="base">Base Plate</SegmentedControl.Item>
+                <SegmentedControl.Item value="top">Top Plate</SegmentedControl.Item>
+              </SegmentedControl.Root>
+            </Box>
+          </Box>
+
+          <Flex direction="row" gap="3" flexShrink="0">
             {/* Method Info Panel */}
-            <Box>
+            <Box flexGrow="1">
               {currentMethod && (
                 <Card variant="surface" size="1">
                   <Heading size="2" mb="1">
@@ -226,48 +288,14 @@ export function RingBeamConstructionModal({
               )}
             </Box>
 
-            {/* Position Toggle */}
-            <Flex gap="1">
-              <Box
-                style={{
-                  display: 'flex',
-                  backgroundColor: 'var(--gray-3)',
-                  borderRadius: '6px',
-                  padding: '4px'
-                }}
-              >
-                <Box
-                  onClick={() => setCurrentPosition('base')}
-                  style={{
-                    padding: '8px 12px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    fontWeight: 'medium',
-                    backgroundColor: currentPosition === 'base' ? 'var(--accent-9)' : 'white',
-                    color: currentPosition === 'base' ? 'white' : 'var(--gray-12)'
-                  }}
-                >
-                  Base Plate
-                </Box>
-                <Box
-                  onClick={() => setCurrentPosition('top')}
-                  style={{
-                    padding: '8px 12px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    fontWeight: 'medium',
-                    backgroundColor: currentPosition === 'top' ? 'var(--accent-9)' : 'white',
-                    color: currentPosition === 'top' ? 'white' : 'var(--gray-12)'
-                  }}
-                >
-                  Top Plate
-                </Box>
+            {/* Issues Panel */}
+            {constructionPlan && (
+              <Box flexGrow="1">
+                <IssueDescriptionPanel errors={constructionPlan.errors} warnings={constructionPlan.warnings} />
               </Box>
-            </Flex>
+            )}
           </Flex>
-        </Box>
+        </Flex>
       </Dialog.Content>
     </Dialog.Root>
   )

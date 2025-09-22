@@ -206,7 +206,6 @@ export class KeyboardShortcutManager {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       konvaEvent: null as unknown as Konva.KonvaEventObject<any>, // Not needed for keyboard events
       stageCoordinates: [0, 0], // Not relevant for keyboard
-      target: null,
       context
     }
   }

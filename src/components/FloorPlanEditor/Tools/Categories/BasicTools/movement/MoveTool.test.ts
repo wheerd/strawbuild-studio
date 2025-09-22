@@ -8,7 +8,6 @@ describe('MoveTool', () => {
     originalEvent: new KeyboardEvent('keydown', { key }),
     konvaEvent: {} as any,
     stageCoordinates: [0, 0],
-    target: {},
     context: {} as any
   })
 

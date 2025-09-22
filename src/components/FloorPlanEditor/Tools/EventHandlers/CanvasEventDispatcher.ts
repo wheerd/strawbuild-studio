@@ -33,7 +33,6 @@ export class CanvasEventDispatcher {
       konvaEvent,
       stageCoordinates,
       pointerCoordinates: pointer, // Original pointer coordinates for hit testing
-      target: konvaEvent.target,
       context: this.toolContext
     }
   }
@@ -47,7 +46,6 @@ export class CanvasEventDispatcher {
       konvaEvent: null as unknown as Konva.KonvaEventObject<any>, // Not applicable for keyboard events
       stageCoordinates: createVec2(0, 0), // Not applicable for keyboard events
       pointerCoordinates: undefined, // Not applicable for keyboard events
-      target: null,
       context: this.toolContext
     }
   }
