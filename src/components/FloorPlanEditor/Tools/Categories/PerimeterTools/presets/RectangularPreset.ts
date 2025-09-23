@@ -8,7 +8,7 @@ import type { PerimeterPreset, RectangularPresetConfig } from './types'
  */
 export class RectangularPreset implements PerimeterPreset<RectangularPresetConfig> {
   readonly type = 'rectangular'
-  readonly name = 'Rectangular Room'
+  readonly name = 'Rectangular'
 
   /**
    * Generate polygon points for a rectangle centered at origin

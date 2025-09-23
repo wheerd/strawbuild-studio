@@ -2,7 +2,7 @@ import type { Tool, CanvasEvent } from '@/components/FloorPlanEditor/Tools/ToolS
 import type { Vec2, Polygon2D } from '@/types/geometry'
 import { add, polygonIsClockwise } from '@/types/geometry'
 import { BaseTool } from '@/components/FloorPlanEditor/Tools/ToolSystem/BaseTool'
-import { SquareIcon } from '@radix-ui/react-icons'
+import { BoxModelIcon } from '@radix-ui/react-icons'
 import type { PerimeterPreset, BasePresetConfig } from './presets'
 import { RectangularPreset } from './presets'
 import { PerimeterPresetToolOverlay } from './PerimeterPresetToolOverlay'
@@ -20,7 +20,7 @@ export class PerimeterPresetTool extends BaseTool implements Tool {
   readonly id = 'perimeter-preset'
   readonly name = 'Perimeter Presets'
   readonly icon = '⬜'
-  readonly iconComponent = SquareIcon
+  readonly iconComponent = BoxModelIcon
   readonly hotkey = 'p'
   readonly cursor = 'crosshair'
   readonly category = 'walls'

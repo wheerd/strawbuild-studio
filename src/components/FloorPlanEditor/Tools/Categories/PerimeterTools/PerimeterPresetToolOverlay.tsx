@@ -5,6 +5,7 @@ import type { PerimeterPresetTool } from './PerimeterPresetTool'
 import { useZoom } from '@/components/FloorPlanEditor/hooks/useViewportStore'
 import { COLORS } from '@/theme/colors'
 import { useReactiveTool } from '@/components/FloorPlanEditor/Tools/hooks/useReactiveTool'
+import { offsetPolygon } from '@/types/geometry'
 
 /**
  * React overlay component for PerimeterPresetTool with zoom-responsive rendering.
@@ -17,11 +18,12 @@ export function PerimeterPresetToolOverlay({
   const zoom = useZoom()
 
   // Only render preview when placing and we have a preview polygon
-  if (!state.isPlacing || !state.previewPolygon) {
+  if (!state.isPlacing || !state.previewPolygon || !state.presetConfig) {
     return null
   }
 
   const polygon = state.previewPolygon
+  const config = state.presetConfig
 
   // Calculate zoom-responsive values
   const scaledLineWidth = Math.max(1, 2 / zoom)
@@ -33,9 +35,37 @@ export function PerimeterPresetToolOverlay({
   const scaledCrosshairSize = 20 / zoom
   const scaledCrosshairWidth = 1 / zoom
 
+  // Calculate outer wall polygon using offsetPolygon helper
+  let outerPolygonPoints: number[] | null = null
+  if (state.presetConfig) {
+    try {
+      // Use offsetPolygon to expand the inner polygon by wall thickness
+      const outerPoints = offsetPolygon(polygon.points, config.thickness)
+      if (outerPoints.length > 0) {
+        // Convert to flat array format for Konva Line component and close the polygon
+        outerPolygonPoints = [...outerPoints.flatMap(p => [p[0], p[1]]), outerPoints[0][0], outerPoints[0][1]]
+      }
+    } catch (error) {
+      console.warn('Failed to calculate outer polygon:', error)
+    }
+  }
+
   return (
     <Group>
-      {/* Ghost preview polygon outline */}
+      {/* Outer wall rectangle (dashed outline, no fill) */}
+      {outerPolygonPoints && (
+        <Line
+          points={outerPolygonPoints}
+          stroke={COLORS.ui.gray700}
+          strokeWidth={scaledLineWidth}
+          dash={scaledDashPattern}
+          opacity={0.6}
+          closed={true}
+          listening={false}
+        />
+      )}
+
+      {/* Inner space polygon (interior area with fill) */}
       <Line
         points={[...polygon.points.flatMap(p => [p[0], p[1]]), polygon.points[0][0], polygon.points[0][1]]}
         stroke={COLORS.ui.primary}

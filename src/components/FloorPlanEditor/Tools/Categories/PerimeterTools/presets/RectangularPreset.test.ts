@@ -103,7 +103,7 @@ describe('RectangularPreset', () => {
   describe('properties', () => {
     it('should have correct type and name', () => {
       expect(preset.type).toBe('rectangular')
-      expect(preset.name).toBe('Rectangular Room')
+      expect(preset.name).toBe('Rectangular')
     })
   })
 })
