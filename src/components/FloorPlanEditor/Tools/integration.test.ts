@@ -27,6 +27,6 @@ describe('Tool Integration', () => {
 
     expect(wallsGroup).toBeDefined()
     expect(wallsGroup?.name).toBe('Perimeter Walls')
-    expect(wallsGroup?.tools).toHaveLength(2)
+    expect(wallsGroup?.tools).toHaveLength(3)
   })
 })

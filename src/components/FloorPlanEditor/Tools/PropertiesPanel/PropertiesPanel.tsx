@@ -111,14 +111,14 @@ export function PropertiesPanel(): React.JSX.Element {
         <Tabs.Content value="tool">
           {activeTool?.inspectorComponent && <activeTool.inspectorComponent tool={activeTool} />}
           {!activeTool?.inspectorComponent && (
-            <Box p="6">
+            <Flex direction="column" p="6">
               <Text align="center" color="gray" mb="2">
                 No tool inspector
               </Text>
               <Text align="center" size="2" color="gray">
                 Select a tool with configuration options
               </Text>
-            </Box>
+            </Flex>
           )}
         </Tabs.Content>
       </Tabs.Root>

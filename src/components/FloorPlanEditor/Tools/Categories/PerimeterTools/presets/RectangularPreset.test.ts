@@ -1,0 +1,109 @@
+import { describe, it, expect } from 'vitest'
+import { createLength } from '@/types/geometry'
+import { RectangularPreset } from './RectangularPreset'
+import type { RectangularPresetConfig } from './types'
+
+describe('RectangularPreset', () => {
+  const preset = new RectangularPreset()
+
+  const validConfig: RectangularPresetConfig = {
+    width: createLength(4000),
+    length: createLength(6000),
+    thickness: createLength(440),
+    constructionMethodId: 'test-method' as any
+  }
+
+  describe('getPolygonPoints', () => {
+    it('should generate correct rectangle points centered at origin using inside dimensions', () => {
+      const points = preset.getPolygonPoints(validConfig)
+
+      expect(points).toHaveLength(4)
+
+      // Check that points form a rectangle centered at origin using inside dimensions
+      const halfWidth = validConfig.width / 2 // Inside width
+      const halfLength = validConfig.length / 2 // Inside length
+
+      // Check coordinates using array access since Vec2 is Float32Array
+      expect(points[0][0]).toBe(-halfWidth)
+      expect(points[0][1]).toBe(-halfLength)
+      expect(points[1][0]).toBe(halfWidth)
+      expect(points[1][1]).toBe(-halfLength)
+      expect(points[2][0]).toBe(halfWidth)
+      expect(points[2][1]).toBe(halfLength)
+      expect(points[3][0]).toBe(-halfWidth)
+      expect(points[3][1]).toBe(halfLength)
+    })
+
+    it('should handle different inside dimensions correctly', () => {
+      const config: RectangularPresetConfig = {
+        ...validConfig,
+        width: createLength(2000), // 2m inside width
+        length: createLength(3000) // 3m inside length
+      }
+
+      const points = preset.getPolygonPoints(config)
+
+      // Points should represent the inside dimensions
+      expect(points[0][0]).toBe(-1000) // -half inside width
+      expect(points[0][1]).toBe(-1500) // -half inside length
+      expect(points[1][0]).toBe(1000) // +half inside width
+      expect(points[1][1]).toBe(-1500) // -half inside length
+      expect(points[2][0]).toBe(1000) // +half inside width
+      expect(points[2][1]).toBe(1500) // +half inside length
+      expect(points[3][0]).toBe(-1000) // -half inside width
+      expect(points[3][1]).toBe(1500) // +half inside length
+    })
+  })
+
+  describe('getBounds', () => {
+    it('should return correct bounds based on inside dimensions', () => {
+      const bounds = preset.getBounds(validConfig)
+
+      // Bounds should reflect the inside dimensions
+      expect(bounds.width).toBe(validConfig.width) // Inside width
+      expect(bounds.height).toBe(validConfig.length) // Inside length
+    })
+  })
+
+  describe('validateConfig', () => {
+    it('should validate correct configuration', () => {
+      expect(preset.validateConfig(validConfig)).toBe(true)
+    })
+
+    it('should reject zero or negative width', () => {
+      const invalidConfig = { ...validConfig, width: createLength(0) }
+      expect(preset.validateConfig(invalidConfig)).toBe(false)
+
+      const negativeConfig = { ...validConfig, width: createLength(-100) }
+      expect(preset.validateConfig(negativeConfig)).toBe(false)
+    })
+
+    it('should reject zero or negative length', () => {
+      const invalidConfig = { ...validConfig, length: createLength(0) }
+      expect(preset.validateConfig(invalidConfig)).toBe(false)
+
+      const negativeConfig = { ...validConfig, length: createLength(-100) }
+      expect(preset.validateConfig(negativeConfig)).toBe(false)
+    })
+
+    it('should reject zero or negative thickness', () => {
+      const invalidConfig = { ...validConfig, thickness: createLength(0) }
+      expect(preset.validateConfig(invalidConfig)).toBe(false)
+
+      const negativeConfig = { ...validConfig, thickness: createLength(-10) }
+      expect(preset.validateConfig(negativeConfig)).toBe(false)
+    })
+
+    it('should reject empty construction method ID', () => {
+      const invalidConfig = { ...validConfig, constructionMethodId: '' as any }
+      expect(preset.validateConfig(invalidConfig)).toBe(false)
+    })
+  })
+
+  describe('properties', () => {
+    it('should have correct type and name', () => {
+      expect(preset.type).toBe('rectangular')
+      expect(preset.name).toBe('Rectangular')
+    })
+  })
+})

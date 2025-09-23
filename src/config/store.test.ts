@@ -12,15 +12,15 @@ describe('ConfigStore', () => {
 
       expect(methods.length).toBeGreaterThanOrEqual(1)
 
-      const defaultMethod = methods.find(m => m.name === 'Standard Ring Beam 36cm')
-      expect(defaultMethod).toBeDefined()
-      expect(defaultMethod!.config.type).toBe('full')
-      expect(defaultMethod!.config.height).toBe(60)
-      if (defaultMethod!.config.type === 'full') {
-        expect(defaultMethod!.config.width).toBe(360)
-        expect(defaultMethod!.config.offsetFromEdge).toBe(30)
+      const defaultMethod = methods[0]
+      expect(defaultMethod.name).toBe('Full 36x6cm')
+      expect(defaultMethod.config.type).toBe('full')
+      expect(defaultMethod.config.height).toBe(60)
+      if (defaultMethod.config.type === 'full') {
+        expect(defaultMethod.config.width).toBe(360)
+        expect(defaultMethod.config.offsetFromEdge).toBe(30)
       }
-      expect(defaultMethod!.config.material).toBeDefined()
+      expect(defaultMethod.config.material).toBeDefined()
     })
   })
 

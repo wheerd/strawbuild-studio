@@ -6,7 +6,17 @@
     "edit": "allow",
     "bash": {
       "git *": "ask",
-      "rm -rf *": "ask"
+      "git status": "allow",
+      "git diff": "allow",
+      "rm -rf *": "ask",
+      "pnpm *": "ask",
+      "npm": "deny",
+      "pnpm test *": "allow",
+      "pnpm lint": "allow",
+      "pnpm lint:format": "allow",
+      "pnpm dev": "allow",
+      "pnpm build": "allow",
+      "pnpm typecheck": "allow"
     }
   }
 }

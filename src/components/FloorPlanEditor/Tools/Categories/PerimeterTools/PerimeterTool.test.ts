@@ -31,7 +31,7 @@ describe('PerimeterTool', () => {
   it('should be registered in perimeter tool group', () => {
     expect(perimeterToolGroup.id).toBe('perimeters')
     expect(perimeterToolGroup.name).toBe('Perimeter Walls')
-    expect(perimeterToolGroup.tools).toHaveLength(2)
+    expect(perimeterToolGroup.tools).toHaveLength(3)
     expect(perimeterToolGroup.tools.find(tool => tool.id === 'perimeter')).toBeInstanceOf(PerimeterTool)
     expect(perimeterToolGroup.defaultTool).toBe('perimeter')
   })
