@@ -4,7 +4,8 @@ import { useMemo } from 'react'
 import type {
   RingBeamConstructionMethod,
   PerimeterConstructionMethod,
-  PerimeterConstructionConfig
+  PerimeterConstructionConfig,
+  LayersConfig
 } from '@/types/config'
 import type { RingBeamConstructionMethodId, PerimeterConstructionMethodId } from '@/types/ids'
 import { createRingBeamConstructionMethodId, createPerimeterConstructionMethodId } from '@/types/ids'
@@ -128,6 +129,10 @@ const createDefaultPerimeterMethods = (): PerimeterConstructionMethod[] => [
         baleWidth: createLength(360),
         material: strawbale.id
       }
+    },
+    layers: {
+      insideThickness: createLength(30),
+      outsideThickness: createLength(50)
     }
   },
   {
@@ -212,6 +217,10 @@ const createDefaultPerimeterMethods = (): PerimeterConstructionMethod[] => [
         baleWidth: createLength(360),
         material: strawbale.id
       }
+    },
+    layers: {
+      insideThickness: createLength(30),
+      outsideThickness: createLength(50)
     }
   },
   {
@@ -250,6 +259,10 @@ const createDefaultPerimeterMethods = (): PerimeterConstructionMethod[] => [
         baleWidth: createLength(360),
         material: strawbale.id
       }
+    },
+    layers: {
+      insideThickness: createLength(0),
+      outsideThickness: createLength(0)
     }
   }
 ]
@@ -384,14 +397,15 @@ export const useConfigStore = create<ConfigStore>()(
         },
 
         // Perimeter construction method CRUD operations
-        addPerimeterConstructionMethod: (name: string, config: PerimeterConstructionConfig) => {
+        addPerimeterConstructionMethod: (name: string, config: PerimeterConstructionConfig, layers: LayersConfig) => {
           validatePerimeterMethodName(name)
 
           const id = createPerimeterConstructionMethodId()
           const method: PerimeterConstructionMethod = {
             id,
             name: name.trim(),
-            config
+            config,
+            layers
           }
 
           set(state => ({

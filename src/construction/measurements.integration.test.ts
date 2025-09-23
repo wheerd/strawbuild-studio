@@ -3,7 +3,8 @@ import { constructInfillWall } from './infill'
 import type { InfillConstructionConfig } from './infill'
 import type { PerimeterWall, Perimeter } from '@/model'
 import type { Length } from '@/types/geometry'
-import { createVec2 } from '@/types/geometry'
+import type { LayersConfig } from '@/types/config'
+import { createVec2, createLength } from '@/types/geometry'
 import { createPerimeterId, createPerimeterCornerId, createPerimeterConstructionMethodId } from '@/types/ids'
 
 // Mock the formatLength utility
@@ -81,12 +82,17 @@ const defaultConfig: InfillConstructionConfig = {
   }
 }
 
+const createTestLayersConfig = (): LayersConfig => ({
+  insideThickness: createLength(20),
+  outsideThickness: createLength(20)
+})
+
 describe('measurements integration', () => {
   it('generates post spacing measurements for infill wall', () => {
     const wall = mockWall(2400 as Length)
     const floorHeight = 2400 as Length
 
-    const plan = constructInfillWall(wall, mockPerimeter(wall), floorHeight, defaultConfig)
+    const plan = constructInfillWall(wall, mockPerimeter(wall), floorHeight, defaultConfig, createTestLayersConfig())
 
     // Should have measurements
     expect(plan.measurements).toBeDefined()
@@ -115,7 +121,7 @@ describe('measurements integration', () => {
     const wall = mockWall(3000 as Length, [window])
     const floorHeight = 2400 as Length
 
-    const plan = constructInfillWall(wall, mockPerimeter(wall), floorHeight, defaultConfig)
+    const plan = constructInfillWall(wall, mockPerimeter(wall), floorHeight, defaultConfig, createTestLayersConfig())
 
     // Should have opening-related measurements
     const openingWidthMeasurements = plan.measurements.filter(m => m.type === 'opening-width')
@@ -155,7 +161,7 @@ describe('measurements integration', () => {
     const wall = mockWall(3000 as Length, [door])
     const floorHeight = 2400 as Length
 
-    const plan = constructInfillWall(wall, mockPerimeter(wall), floorHeight, defaultConfig)
+    const plan = constructInfillWall(wall, mockPerimeter(wall), floorHeight, defaultConfig, createTestLayersConfig())
 
     // Should have opening width and header height, but no sill height or opening height
     const openingWidthMeasurements = plan.measurements.filter(m => m.type === 'opening-width')
@@ -194,7 +200,7 @@ describe('measurements integration', () => {
     const wall = mockWall(3000 as Length, [window1, window2])
     const floorHeight = 2400 as Length
 
-    const plan = constructInfillWall(wall, mockPerimeter(wall), floorHeight, defaultConfig)
+    const plan = constructInfillWall(wall, mockPerimeter(wall), floorHeight, defaultConfig, createTestLayersConfig())
 
     // Should have opening spacing measurements: start to first, between openings, last to end
     const spacingMeasurements = plan.measurements.filter(m => m.type === 'opening-spacing')
@@ -230,7 +236,7 @@ describe('measurements integration', () => {
     const wall = mockWall(4000 as Length, [window])
     const floorHeight = 2400 as Length
 
-    const plan = constructInfillWall(wall, mockPerimeter(wall), floorHeight, defaultConfig)
+    const plan = constructInfillWall(wall, mockPerimeter(wall), floorHeight, defaultConfig, createTestLayersConfig())
 
     // Should have both post spacing and opening measurements
     const postSpacingMeasurements = plan.measurements.filter(m => m.type === 'post-spacing')

@@ -26,6 +26,7 @@ import type { ResolveMaterialFunction } from './material'
 import { constructStraw } from './straw'
 import { calculatePostSpacingMeasurements, calculateOpeningSpacingMeasurements } from './measurements'
 import { calculateWallCornerInfo, calculateWallConstructionLength } from './corners'
+import type { LayersConfig } from '@/types/config'
 
 export interface InfillConstructionConfig extends BaseConstructionConfig {
   type: 'infill'
@@ -178,7 +179,8 @@ export const constructInfillWall: PerimeterWallConstructionMethod<InfillConstruc
   wall: PerimeterWall,
   perimeter: Perimeter,
   floorHeight: Length,
-  config: InfillConstructionConfig
+  config: InfillConstructionConfig,
+  layers: LayersConfig
 ): WallConstructionPlan => {
   // Using imported functions
 
@@ -195,7 +197,7 @@ export const constructInfillWall: PerimeterWallConstructionMethod<InfillConstruc
   const { constructionLength, startExtension } = calculateWallConstructionLength(wall, startCornerData, endCornerData)
 
   // Segment the wall based on openings, using the actual construction length
-  const wallSegments = segmentWall(wall, floorHeight, constructionLength, startExtension)
+  const wallSegments = segmentWall(wall, floorHeight, constructionLength, startExtension, layers)
 
   for (const segment of wallSegments) {
     if (segment.type === 'wall') {

@@ -84,7 +84,13 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
 
     // For now, only support infill construction until other types are implemented
     if (constructionMethod.config.type === 'infill') {
-      return constructInfillWall(wall, outerWall, storey.height, constructionMethod.config as InfillConstructionConfig)
+      return constructInfillWall(
+        wall,
+        outerWall,
+        storey.height,
+        constructionMethod.config as InfillConstructionConfig,
+        constructionMethod.layers
+      )
     }
 
     // TODO: Add support for other construction types

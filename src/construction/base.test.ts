@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import type { Opening, PerimeterWall } from '@/model'
 import type { Length } from '@/types/geometry'
+import type { LayersConfig } from '@/types/config'
+import { createLength } from '@/types/geometry'
 import { createOpeningId, createPerimeterWallId, createPerimeterConstructionMethodId } from '@/types/ids'
 import { segmentWall, createConstructionElementId } from './base'
 
@@ -12,6 +14,11 @@ const createTestOpening = (overrides: Partial<Opening> = {}): Opening => ({
   height: 1200 as Length,
   sillHeight: 900 as Length,
   ...overrides
+})
+
+const createTestLayersConfig = (): LayersConfig => ({
+  insideThickness: createLength(20),
+  outsideThickness: createLength(20)
 })
 
 const createTestWall = (overrides: Partial<PerimeterWall> = {}): PerimeterWall => ({
@@ -39,13 +46,13 @@ describe('segmentWall', () => {
       })
       const wallHeight = 2500 as Length
 
-      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length)
+      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
 
       expect(result).toHaveLength(1)
       expect(result[0]).toEqual({
         type: 'wall',
-        position: [0, 0, 0],
-        size: [5000, 360, 2500]
+        position: [0, 20, 0],
+        size: [5000, 320, 2500]
       })
     })
 
@@ -63,30 +70,30 @@ describe('segmentWall', () => {
       })
       const wallHeight = 2500 as Length
 
-      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length)
+      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
 
       expect(result).toHaveLength(3)
 
       // First wall segment
       expect(result[0]).toEqual({
         type: 'wall',
-        position: [0, 0, 0],
-        size: [2000, 360, 2500]
+        position: [0, 20, 0],
+        size: [2000, 320, 2500]
       })
 
       // Opening segment
       expect(result[1]).toEqual({
         type: 'opening',
-        position: [2000, 0, 0],
-        size: [800, 360, 2500],
+        position: [2000, 20, 0],
+        size: [800, 320, 2500],
         openings: [opening]
       })
 
       // Final wall segment
       expect(result[2]).toEqual({
         type: 'wall',
-        position: [2800, 0, 0],
-        size: [2200, 360, 2500]
+        position: [2800, 20, 0],
+        size: [2200, 320, 2500]
       })
     })
 
@@ -104,23 +111,23 @@ describe('segmentWall', () => {
       })
       const wallHeight = 2500 as Length
 
-      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length)
+      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
 
       expect(result).toHaveLength(2)
 
       // Opening segment at start
       expect(result[0]).toEqual({
         type: 'opening',
-        position: [0, 0, 0],
-        size: [800, 360, 2500],
+        position: [0, 20, 0],
+        size: [800, 320, 2500],
         openings: [opening]
       })
 
       // Wall segment after opening
       expect(result[1]).toEqual({
         type: 'wall',
-        position: [800, 0, 0],
-        size: [2200, 360, 2500]
+        position: [800, 20, 0],
+        size: [2200, 320, 2500]
       })
     })
 
@@ -138,22 +145,22 @@ describe('segmentWall', () => {
       })
       const wallHeight = 2500 as Length
 
-      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length)
+      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
 
       expect(result).toHaveLength(2)
 
       // Wall segment before opening
       expect(result[0]).toEqual({
         type: 'wall',
-        position: [0, 0, 0],
-        size: [2200, 360, 2500]
+        position: [0, 20, 0],
+        size: [2200, 320, 2500]
       })
 
       // Opening segment at end
       expect(result[1]).toEqual({
         type: 'opening',
-        position: [2200, 0, 0],
-        size: [800, 360, 2500],
+        position: [2200, 20, 0],
+        size: [800, 320, 2500],
         openings: [opening]
       })
     })
@@ -182,45 +189,45 @@ describe('segmentWall', () => {
       })
       const wallHeight = 2500 as Length
 
-      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length)
+      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
 
       expect(result).toHaveLength(5)
 
       // First wall segment
       expect(result[0]).toEqual({
         type: 'wall',
-        position: [0, 0, 0],
-        size: [1000, 360, 2500]
+        position: [0, 20, 0],
+        size: [1000, 320, 2500]
       })
 
       // First opening
       expect(result[1]).toEqual({
         type: 'opening',
-        position: [1000, 0, 0],
-        size: [800, 360, 2500],
+        position: [1000, 20, 0],
+        size: [800, 320, 2500],
         openings: [opening1]
       })
 
       // Middle wall segment
       expect(result[2]).toEqual({
         type: 'wall',
-        position: [1800, 0, 0],
-        size: [1200, 360, 2500]
+        position: [1800, 20, 0],
+        size: [1200, 320, 2500]
       })
 
       // Second opening
       expect(result[3]).toEqual({
         type: 'opening',
-        position: [3000, 0, 0],
-        size: [1000, 360, 2500],
+        position: [3000, 20, 0],
+        size: [1000, 320, 2500],
         openings: [opening2]
       })
 
       // Final wall segment
       expect(result[4]).toEqual({
         type: 'wall',
-        position: [4000, 0, 0],
-        size: [2000, 360, 2500]
+        position: [4000, 20, 0],
+        size: [2000, 320, 2500]
       })
     })
 
@@ -244,30 +251,30 @@ describe('segmentWall', () => {
       })
       const wallHeight = 2500 as Length
 
-      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length)
+      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
 
       expect(result).toHaveLength(5)
 
       // Should be sorted by position automatically
       expect(result[0].type).toBe('wall')
-      expect(result[0].position).toEqual([0, 0, 0])
-      expect(result[0].size).toEqual([1000, 360, 2500])
+      expect(result[0].position).toEqual([0, 20, 0])
+      expect(result[0].size).toEqual([1000, 320, 2500])
 
       expect(result[1].type).toBe('opening')
-      expect(result[1].position).toEqual([1000, 0, 0])
+      expect(result[1].position).toEqual([1000, 20, 0])
       expect(result[1].openings).toEqual([opening2])
 
       expect(result[2].type).toBe('wall')
-      expect(result[2].position).toEqual([1800, 0, 0])
-      expect(result[2].size).toEqual([1200, 360, 2500])
+      expect(result[2].position).toEqual([1800, 20, 0])
+      expect(result[2].size).toEqual([1200, 320, 2500])
 
       expect(result[3].type).toBe('opening')
-      expect(result[3].position).toEqual([3000, 0, 0])
+      expect(result[3].position).toEqual([3000, 20, 0])
       expect(result[3].openings).toEqual([opening1])
 
       expect(result[4].type).toBe('wall')
-      expect(result[4].position).toEqual([3600, 0, 0])
-      expect(result[4].size).toEqual([1400, 360, 2500])
+      expect(result[4].position).toEqual([3600, 20, 0])
+      expect(result[4].size).toEqual([1400, 320, 2500])
     })
 
     it('merges adjacent openings with same sill and header heights', () => {
@@ -292,30 +299,30 @@ describe('segmentWall', () => {
       })
       const wallHeight = 2500 as Length
 
-      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length)
+      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
 
       expect(result).toHaveLength(3)
 
       // Wall before openings
       expect(result[0]).toEqual({
         type: 'wall',
-        position: [0, 0, 0],
-        size: [1000, 360, 2500]
+        position: [0, 20, 0],
+        size: [1000, 320, 2500]
       })
 
       // Merged opening segment
       expect(result[1]).toEqual({
         type: 'opening',
-        position: [1000, 0, 0],
-        size: [1400, 360, 2500],
+        position: [1000, 20, 0],
+        size: [1400, 320, 2500],
         openings: [opening1, opening2]
       })
 
       // Wall after openings
       expect(result[2]).toEqual({
         type: 'wall',
-        position: [2400, 0, 0],
-        size: [1600, 360, 2500]
+        position: [2400, 20, 0],
+        size: [1600, 320, 2500]
       })
     })
 
@@ -341,22 +348,22 @@ describe('segmentWall', () => {
       })
       const wallHeight = 2500 as Length
 
-      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length)
+      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
 
       expect(result).toHaveLength(4)
 
       // Should not merge - keeps separate opening segments
       expect(result[1]).toEqual({
         type: 'opening',
-        position: [1000, 0, 0],
-        size: [800, 360, 2500],
+        position: [1000, 20, 0],
+        size: [800, 320, 2500],
         openings: [opening1]
       })
 
       expect(result[2]).toEqual({
         type: 'opening',
-        position: [1800, 0, 0],
-        size: [600, 360, 2500],
+        position: [1800, 20, 0],
+        size: [600, 320, 2500],
         openings: [opening2]
       })
     })
@@ -377,13 +384,13 @@ describe('segmentWall', () => {
       })
       const wallHeight = 2500 as Length
 
-      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length)
+      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
 
       expect(result).toHaveLength(1)
       expect(result[0]).toEqual({
         type: 'opening',
-        position: [0, 0, 0],
-        size: [2000, 360, 2500],
+        position: [0, 20, 0],
+        size: [2000, 320, 2500],
         openings: [opening]
       })
     })
@@ -402,18 +409,18 @@ describe('segmentWall', () => {
       })
       const wallHeight = 2500 as Length
 
-      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length)
+      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
 
       expect(result).toHaveLength(3)
 
       // Small wall segment before
-      expect(result[0].size).toEqual([100, 360, 2500])
+      expect(result[0].size).toEqual([100, 320, 2500])
 
       // Opening
-      expect(result[1].size).toEqual([800, 360, 2500])
+      expect(result[1].size).toEqual([800, 320, 2500])
 
       // Small wall segment after
-      expect(result[2].size).toEqual([100, 360, 2500])
+      expect(result[2].size).toEqual([100, 320, 2500])
     })
   })
 
@@ -433,7 +440,7 @@ describe('segmentWall', () => {
       const wallHeight = 2500 as Length
 
       expect(() => {
-        segmentWall(wall, wallHeight, wall.insideLength, 0 as Length)
+        segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
       }).toThrow('Opening extends beyond wall length')
     })
 
@@ -456,7 +463,7 @@ describe('segmentWall', () => {
       const wallHeight = 2500 as Length
 
       expect(() => {
-        segmentWall(wall, wallHeight, wall.insideLength, 0 as Length)
+        segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
       }).toThrow('Opening overlaps with previous segment')
     })
 
@@ -479,7 +486,7 @@ describe('segmentWall', () => {
       const wallHeight = 2500 as Length
 
       expect(() => {
-        segmentWall(wall, wallHeight, wall.insideLength, 0 as Length)
+        segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
       }).toThrow('Opening overlaps with previous segment')
     })
   })

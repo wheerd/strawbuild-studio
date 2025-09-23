@@ -4,6 +4,7 @@ import type { MaterialId } from './material'
 import { formatLength } from '@/utils/formatLength'
 import type { StrawConfig } from './straw'
 import type { OpeningConstruction, OpeningConstructionConfig } from './openings'
+import type { LayersConfig } from '@/types/config'
 
 export type ConstructionType = 'infill' | 'strawhenge' | 'non-strawbale'
 
@@ -17,7 +18,8 @@ export type PerimeterWallConstructionMethod<TConfig> = (
   wall: PerimeterWall,
   perimeter: Perimeter,
   floorHeight: Length,
-  config: TConfig
+  config: TConfig,
+  layers: LayersConfig
 ) => WallConstructionPlan
 
 export interface ConstructionIssue {
@@ -342,15 +344,19 @@ export function segmentWall(
   wall: PerimeterWall,
   wallHeight: Length,
   constructionLength: Length,
-  startExtension: Length = 0 as Length
+  startExtension: Length = 0 as Length,
+  layers: LayersConfig
 ): WallSegment3D[] {
+  const y = layers.insideThickness
+  const sizeY = wall.thickness - layers.insideThickness - layers.outsideThickness
+
   if (wall.openings.length === 0) {
     // No openings - just one wall segment for the entire length
     return [
       {
         type: 'wall',
-        position: [0, 0, 0],
-        size: [constructionLength, wall.thickness, wallHeight]
+        position: [0, y, 0],
+        size: [constructionLength, sizeY, wallHeight]
       }
     ]
   }
@@ -401,8 +407,8 @@ export function segmentWall(
       const wallSegmentWidth = (groupStart - currentPosition) as Length
       segments.push({
         type: 'wall',
-        position: [currentPosition, 0, 0],
-        size: [wallSegmentWidth, wall.thickness, wallHeight]
+        position: [currentPosition, y, 0],
+        size: [wallSegmentWidth, sizeY, wallHeight]
       })
     }
 
@@ -410,8 +416,8 @@ export function segmentWall(
     const groupWidth = (groupEnd - groupStart) as Length
     segments.push({
       type: 'opening',
-      position: [groupStart, 0, 0],
-      size: [groupWidth, wall.thickness, wallHeight],
+      position: [groupStart, y, 0],
+      size: [groupWidth, sizeY, wallHeight],
       openings: openingGroup
     })
 
@@ -423,8 +429,8 @@ export function segmentWall(
     const remainingWidth = (constructionLength - currentPosition) as Length
     segments.push({
       type: 'wall',
-      position: [currentPosition, 0, 0],
-      size: [remainingWidth, wall.thickness, wallHeight]
+      position: [currentPosition, y, 0],
+      size: [remainingWidth, sizeY, wallHeight]
     })
   }
 
