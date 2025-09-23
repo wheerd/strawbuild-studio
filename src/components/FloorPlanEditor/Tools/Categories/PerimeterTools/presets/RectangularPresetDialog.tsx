@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
-import { Dialog, Button, TextField, Flex, Text, Grid, Select, IconButton } from '@radix-ui/themes'
+import { Dialog, Button, TextField, Flex, Text, Grid, Select, IconButton, Heading } from '@radix-ui/themes'
 import { Cross2Icon } from '@radix-ui/react-icons'
 import { createLength } from '@/types/geometry'
 import { useDebouncedNumericInput } from '@/components/FloorPlanEditor/hooks/useDebouncedInput'
@@ -149,7 +149,7 @@ function RectangularPresetDialogContent({
   const isValid = config.width > 0 && config.length > 0 && config.thickness > 0 && config.constructionMethodId
 
   return (
-    <Dialog.Content size="3" maxWidth="90vw">
+    <Dialog.Content size="3" maxWidth="600px">
       <Flex direction="column" gap="4">
         <Dialog.Title>
           <Flex justify="between" align="center">
@@ -162,15 +162,16 @@ function RectangularPresetDialogContent({
           </Flex>
         </Dialog.Title>
 
-        <Grid columns="2" gap="6">
-          {/* Left Column - Parameters */}
-          <Flex direction="column" gap="4">
-            {/* Dimensions */}
-            <Flex direction="column" gap="4">
-              <Text size="2" weight="medium">
-                Inside Dimensions
-              </Text>
-              <Flex gap="3" align="center">
+        <Grid columns="2" gap="4">
+          {/* Left Column - Properties in 2x3 Grid */}
+          <Flex direction="column" gap="3">
+            <Heading size="2" weight="medium">
+              Configuration
+            </Heading>
+
+            <Grid columns="2" gap="3">
+              {/* Width */}
+              <Flex direction="column" gap="1">
                 <Text size="1" color="gray">
                   Width
                 </Text>
@@ -185,12 +186,16 @@ function RectangularPresetDialogContent({
                   step="0.1"
                   placeholder="4.0"
                   size="1"
-                  style={{ textAlign: 'right', width: '5rem' }}
+                  style={{ textAlign: 'right', width: '100%' }}
                 >
                   <TextField.Slot side="right" pl="1">
                     m
                   </TextField.Slot>
                 </TextField.Root>
+              </Flex>
+
+              {/* Length */}
+              <Flex direction="column" gap="1">
                 <Text size="1" color="gray">
                   Length
                 </Text>
@@ -205,117 +210,118 @@ function RectangularPresetDialogContent({
                   step="0.1"
                   placeholder="6.0"
                   size="1"
-                  style={{ textAlign: 'right', width: '5rem' }}
+                  style={{ textAlign: 'right', width: '100%' }}
                 >
                   <TextField.Slot side="right" pl="1">
                     m
                   </TextField.Slot>
                 </TextField.Root>
               </Flex>
-            </Flex>
 
-            {/* Wall Thickness */}
-            <Flex gap="3" align="center">
-              <Text size="1" color="gray">
-                Wall Thickness
-              </Text>
-              <TextField.Root
-                type="number"
-                value={thicknessInput.value.toString()}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => thicknessInput.handleChange(e.target.value)}
-                onBlur={thicknessInput.handleBlur}
-                onKeyDown={thicknessInput.handleKeyDown}
-                min="50"
-                max="1000"
-                step="10"
-                placeholder="440"
-                size="1"
-                style={{ textAlign: 'right', width: '5rem' }}
-              >
-                <TextField.Slot side="right" pl="1">
-                  mm
-                </TextField.Slot>
-              </TextField.Root>
-            </Flex>
+              {/* Wall Thickness */}
+              <Flex direction="column" gap="1">
+                <Text size="1" color="gray">
+                  Wall Thickness
+                </Text>
+                <TextField.Root
+                  type="number"
+                  value={thicknessInput.value.toString()}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => thicknessInput.handleChange(e.target.value)}
+                  onBlur={thicknessInput.handleBlur}
+                  onKeyDown={thicknessInput.handleKeyDown}
+                  min="50"
+                  max="1000"
+                  step="10"
+                  placeholder="440"
+                  size="1"
+                  style={{ textAlign: 'right', width: '100%' }}
+                >
+                  <TextField.Slot side="right" pl="1">
+                    mm
+                  </TextField.Slot>
+                </TextField.Root>
+              </Flex>
 
-            {/* Construction Method */}
-            <Flex gap="3" align="center">
-              <Text size="1" color="gray">
-                Construction Method
-              </Text>
-              <Select.Root
-                value={config.constructionMethodId || ''}
-                onValueChange={(value: PerimeterConstructionMethodId) => {
-                  setConfig(prev => ({ ...prev, constructionMethodId: value }))
-                }}
-                size="1"
-              >
-                <Select.Trigger className="w-full" />
-                <Select.Content>
-                  {allPerimeterMethods.map(method => (
-                    <Select.Item key={method.id} value={method.id}>
-                      {method.name}
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Root>
-            </Flex>
+              {/* Construction Method */}
+              <Flex direction="column" gap="1">
+                <Text size="1" color="gray">
+                  Construction Method
+                </Text>
+                <Select.Root
+                  value={config.constructionMethodId || ''}
+                  onValueChange={(value: PerimeterConstructionMethodId) => {
+                    setConfig(prev => ({ ...prev, constructionMethodId: value }))
+                  }}
+                  size="1"
+                >
+                  <Select.Trigger style={{ width: '100%' }} />
+                  <Select.Content>
+                    {allPerimeterMethods.map(method => (
+                      <Select.Item key={method.id} value={method.id}>
+                        {method.name}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+              </Flex>
 
-            {/* Ring Beams */}
-            <Flex gap="3" align="center">
-              <Text size="1" color="gray">
-                Base Plate
-              </Text>
-              <Select.Root
-                value={config.baseRingBeamMethodId || 'none'}
-                onValueChange={value => {
-                  const methodId = value === 'none' ? undefined : (value as RingBeamConstructionMethodId)
-                  setConfig(prev => ({ ...prev, baseRingBeamMethodId: methodId }))
-                }}
-                size="1"
-              >
-                <Select.Trigger className="w-full" />
-                <Select.Content>
-                  <Select.Item value="none">None</Select.Item>
-                  {allRingBeamMethods.map(method => (
-                    <Select.Item key={method.id} value={method.id}>
-                      {method.name}
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Root>
-            </Flex>
+              {/* Base Plate */}
+              <Flex direction="column" gap="1">
+                <Text size="1" color="gray">
+                  Base Plate
+                </Text>
+                <Select.Root
+                  value={config.baseRingBeamMethodId || 'none'}
+                  onValueChange={value => {
+                    const methodId = value === 'none' ? undefined : (value as RingBeamConstructionMethodId)
+                    setConfig(prev => ({ ...prev, baseRingBeamMethodId: methodId }))
+                  }}
+                  size="1"
+                >
+                  <Select.Trigger style={{ width: '100%' }} />
+                  <Select.Content>
+                    <Select.Item value="none">None</Select.Item>
+                    {allRingBeamMethods.map(method => (
+                      <Select.Item key={method.id} value={method.id}>
+                        {method.name}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+              </Flex>
 
-            <Flex gap="3" align="center">
-              <Text size="1" color="gray">
-                Top Plate
-              </Text>
-              <Select.Root
-                value={config.topRingBeamMethodId || 'none'}
-                onValueChange={value => {
-                  const methodId = value === 'none' ? undefined : (value as RingBeamConstructionMethodId)
-                  setConfig(prev => ({ ...prev, topRingBeamMethodId: methodId }))
-                }}
-                size="1"
-              >
-                <Select.Trigger className="w-full" />
-                <Select.Content>
-                  <Select.Item value="none">None</Select.Item>
-                  {allRingBeamMethods.map(method => (
-                    <Select.Item key={method.id} value={method.id}>
-                      {method.name}
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Root>
-            </Flex>
+              {/* Top Plate */}
+              <Flex direction="column" gap="1">
+                <Text size="1" color="gray">
+                  Top Plate
+                </Text>
+                <Select.Root
+                  value={config.topRingBeamMethodId || 'none'}
+                  onValueChange={value => {
+                    const methodId = value === 'none' ? undefined : (value as RingBeamConstructionMethodId)
+                    setConfig(prev => ({ ...prev, topRingBeamMethodId: methodId }))
+                  }}
+                  size="1"
+                >
+                  <Select.Trigger style={{ width: '100%' }} />
+                  <Select.Content>
+                    <Select.Item value="none">None</Select.Item>
+                    {allRingBeamMethods.map(method => (
+                      <Select.Item key={method.id} value={method.id}>
+                        {method.name}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+              </Flex>
+            </Grid>
           </Flex>
 
           {/* Right Column - Preview */}
           <Flex direction="column" gap="2">
-            <Text size="2" weight="medium">
+            <Heading align="center" size="2" weight="medium">
               Preview
-            </Text>
+            </Heading>
             <RectangularPreview config={config} />
           </Flex>
         </Grid>

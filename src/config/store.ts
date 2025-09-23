@@ -74,8 +74,8 @@ const validatePerimeterMethodName = (name: string): void => {
 
 // Default ring beam construction method using 360x60 wood
 const createDefaultRingBeamMethod = (): RingBeamConstructionMethod => ({
-  id: createRingBeamConstructionMethodId(),
-  name: 'Standard Ring Beam 36cm',
+  id: 'ringbeam_default' as RingBeamConstructionMethodId,
+  name: 'Full 36x6cm',
   config: {
     type: 'full',
     material: wood360x60.id,
@@ -88,7 +88,7 @@ const createDefaultRingBeamMethod = (): RingBeamConstructionMethod => ({
 // Default perimeter construction methods
 const createDefaultPerimeterMethods = (): PerimeterConstructionMethod[] => [
   {
-    id: createPerimeterConstructionMethodId(),
+    id: 'pwcm_infill_default' as PerimeterConstructionMethodId,
     name: 'Standard Infill',
     config: {
       type: 'infill',
@@ -131,7 +131,7 @@ const createDefaultPerimeterMethods = (): PerimeterConstructionMethod[] => [
     }
   },
   {
-    id: createPerimeterConstructionMethodId(),
+    id: 'pwcm_strawhenge_default' as PerimeterConstructionMethodId,
     name: 'Strawhenge Module',
     config: {
       type: 'strawhenge',
@@ -215,7 +215,7 @@ const createDefaultPerimeterMethods = (): PerimeterConstructionMethod[] => [
     }
   },
   {
-    id: createPerimeterConstructionMethodId(),
+    id: 'pwcm_non_strawbale_default' as PerimeterConstructionMethodId,
     name: 'Non-Strawbale Wall',
     config: {
       type: 'non-strawbale',
