@@ -9,7 +9,7 @@ import type { StoreyId } from '@/shared/types/ids'
 // Mock the store hooks
 vi.mock('@/shared/components/FloorPlanEditor/hooks/useViewportStore')
 vi.mock('@/building/store')
-vi.mock('../../ToolSystem/ToolManager')
+vi.mock('@/editor/tools/system/ToolManager')
 
 describe('FitToViewTool', () => {
   let fitToViewTool: FitToViewTool

@@ -13,8 +13,7 @@ import {
 import type { SnappingContext, SnapResult } from '@/editor/services/snapping/types'
 
 import { PerimeterToolOverlay } from './PerimeterToolOverlay'
-// Entity inspectors are different from tool inspectors
-// import { PerimeterInspector } from '@/building/components/inspectors/PerimeterInspector'
+import { PerimeterToolInspector } from './PerimeterToolInspector'
 import { SnappingService } from '@/editor/services/snapping'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
 import { BorderAllIcon } from '@radix-ui/react-icons'
@@ -41,7 +40,7 @@ export class PerimeterTool extends BaseTool implements Tool {
   readonly cursor = 'crosshair'
   readonly category = 'walls'
   readonly overlayComponent = PerimeterToolOverlay
-  readonly inspectorComponent = undefined // Tools use tool inspectors, not entity inspectors
+  readonly inspectorComponent = PerimeterToolInspector
 
   public state: PerimeterToolState = {
     points: [],
