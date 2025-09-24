@@ -1,0 +1,47 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`PerimeterLayer > should render perimeters when they exist 1`] = `
+<div>
+  <div
+    data-height="600"
+    data-testid="konva-stage"
+    data-width="800"
+  >
+    <div
+      data-name="perimeters"
+      data-testid="konva-layer"
+    >
+      <div
+        data-entity-id="perimeter1"
+        data-entity-type="perimeter"
+        data-name="perimeter-perimeter1"
+        data-parent-ids="[]"
+        data-testid="konva-group"
+        listening="true"
+      >
+        <div
+          data-closed="true"
+          data-fill="#aaaaaa"
+          data-testid="konva-line"
+          listening="true"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`PerimeterLayer > should render without perimeters 1`] = `
+<div>
+  <div
+    data-height="600"
+    data-testid="konva-stage"
+    data-width="800"
+  >
+    <div
+      data-name="perimeters"
+      data-testid="konva-layer"
+    />
+  </div>
+</div>
+`;

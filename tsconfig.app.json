@@ -19,9 +19,10 @@
     "baseUrl": "./src",
     "paths": {
       "@/*": ["./*"],
-      "@/components/*": ["./components/*"],
-      "@/model/*": ["./model/*"],
-      "@/types/*": ["./types/*"],
+      "@/editor/*": ["./editor/*"],
+      "@/building/*": ["./building/*"],
+      "@/construction/*": ["./construction/*"],
+      "@/shared/*": ["./shared/*"],
       "@/assets/*": ["./assets/*"],
       "@/test/*": ["./test/*"]
     },

@@ -8,9 +8,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
-      '@/components': resolve(__dirname, './src/components'),
-      '@/model': resolve(__dirname, './src/model'),
-      '@/types': resolve(__dirname, './src/types'),
+      '@/editor': resolve(__dirname, './src/editor'),
+      '@/building': resolve(__dirname, './src/building'),
+      '@/construction': resolve(__dirname, './src/construction'),
+      '@/shared': resolve(__dirname, './src/shared'),
       '@/assets': resolve(__dirname, './src/assets'),
       '@/test': resolve(__dirname, './src/test')
     }
@@ -53,7 +54,7 @@ export default defineConfig({
           ],
 
           // Model chunk
-          model: ['./src/model/store', './src/types/model', './src/types/geometry', './src/types/ids']
+          model: ['./src/building/store', './src/shared/types', './src/shared/geometry']
         }
       }
     },
