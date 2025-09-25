@@ -1,13 +1,7 @@
 import type { Length, Vec3 } from '@/shared/geometry'
 import type { MaterialId } from './material'
-import {
-  createCuboidShape,
-  createConstructionElement,
-  yieldElement,
-  yieldError,
-  yieldWarning,
-  type ConstructionResult
-} from '@/construction/walls/base'
+import { createCuboidShape, createConstructionElement } from '@/construction/elements'
+import { yieldElement, yieldError, yieldWarning, type ConstructionResult } from '@/construction/results'
 import { vec3 } from 'gl-matrix'
 
 export interface StrawConfig {

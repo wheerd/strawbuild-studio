@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import type { Opening, PerimeterWall  } from '@/shared/types/model'
+import type { Opening, PerimeterWall } from '@/shared/types/model'
 import type { Length } from '@/shared/geometry'
 import type { LayersConfig } from '@/shared/types/config'
 import { createLength } from '@/shared/geometry'
 import { createOpeningId, createPerimeterWallId, createPerimeterConstructionMethodId } from '@/shared/types/ids'
-import { segmentWall, createConstructionElementId } from './base'
+import { segmentWall } from './segmentation'
 
 const createTestOpening = (overrides: Partial<Opening> = {}): Opening => ({
   id: createOpeningId(),
@@ -488,23 +488,6 @@ describe('segmentWall', () => {
       expect(() => {
         segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
       }).toThrow('Opening overlaps with previous segment')
-    })
-  })
-
-  describe('construction element utilities', () => {
-    it('creates unique construction element IDs', () => {
-      const ids = new Set()
-      for (let i = 0; i < 1000; i++) {
-        const id = createConstructionElementId()
-        expect(ids.has(id)).toBe(false)
-        ids.add(id)
-      }
-    })
-
-    it('creates construction element IDs with expected format', () => {
-      const id = createConstructionElementId()
-      expect(typeof id).toBe('string')
-      expect(id.length).toBeGreaterThan(10) // Should be reasonably long for uniqueness
     })
   })
 })

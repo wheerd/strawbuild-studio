@@ -1,8 +1,17 @@
-import type { Length } from '@/shared/geometry'
+import type { Length, Vec2 } from '@/shared/geometry'
 import { createVec2 } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
-import type { Measurement, ConstructionElement, ConstructionSegment } from '@/construction/walls/base'
-import { getElementPosition, getElementSize } from '@/construction/walls/base'
+import type { ConstructionElement } from '@/construction/elements'
+import { getElementPosition, getElementSize } from '@/construction/elements'
+import type { ConstructionSegment } from '@/construction/walls/construction'
+
+export interface Measurement {
+  type: MeasurementType
+  startPoint: Vec2 // Construction coordinates [x, z]
+  endPoint: Vec2 // Construction coordinates [x, z]
+  label: string // e.g., "800mm", "1200mm"
+  offset?: number // Distance from wall (negative for below, positive for above)
+}
 
 export type MeasurementType =
   | 'post-spacing'
@@ -11,6 +20,8 @@ export type MeasurementType =
   | 'sill-height'
   | 'header-height'
   | 'opening-height'
+  | 'ring-beam-outer'
+  | 'ring-beam-inner'
 
 /**
  * Extract post positions from construction elements and calculate spacings

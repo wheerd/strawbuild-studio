@@ -4,11 +4,11 @@ import { createVec2, createLength, polygonIsClockwise } from '@/shared/geometry'
 import type { PerimeterCorner, Perimeter } from '@/shared/types/model'
 import type { PerimeterId } from '@/shared/types/ids'
 import type { MaterialId, ResolveMaterialFunction } from '@/construction/materials/material'
-import { type ConstructionElementId } from '@/construction/walls/base'
-import * as base from '@/construction/walls/base'
+import { type ConstructionElementId } from '@/construction/elements'
+import * as base from '@/construction/elements'
 
-vi.mock('../walls/base', async () => {
-  const original = await vi.importActual('../walls/base')
+vi.mock('@/construction/elements', async () => {
+  const original = await vi.importActual('@/construction/elements')
   return { ...original, createConstructionElement: vi.fn() }
 })
 

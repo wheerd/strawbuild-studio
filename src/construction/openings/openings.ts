@@ -4,17 +4,10 @@ import type { Length, Vec3 } from '@/shared/geometry'
 import { createVec2 } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
 import type { MaterialId, ResolveMaterialFunction } from '@/construction/materials/material'
-import {
-  createCuboidShape,
-  createConstructionElement,
-  yieldElement,
-  yieldError,
-  yieldMeasurement,
-  type BaseConstructionSegment,
-  type ConstructionElement,
-  type ConstructionResult,
-  type WallSegment3D
-} from '@/construction/walls/base'
+import { createCuboidShape, createConstructionElement, type ConstructionElement } from '@/construction/elements'
+import { yieldElement, yieldError, yieldMeasurement, type ConstructionResult } from '@/construction/results'
+import type { BaseConstructionSegment } from '@/construction/walls/construction'
+import type { WallSegment3D } from '@/construction/walls/segmentation'
 import type { InfillConstructionConfig } from '@/construction/walls/infill/infill'
 import { infillWallArea } from '@/construction/walls/infill/infill'
 

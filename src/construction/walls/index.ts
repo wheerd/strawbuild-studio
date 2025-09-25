@@ -1,10 +1,15 @@
-import type { ConstructionType, PerimeterWallConstructionMethod } from './base'
+import type { ConstructionType, PerimeterWallConstructionMethod } from './construction'
 import { constructInfillWall } from './infill/infill'
 import { constructStrawhengeWall } from './strawhenge/strawhenge'
 import type { NonStrawbaleConfig } from '@/shared/types/config'
 import { createLength } from '@/shared/geometry'
 
-export * from './base'
+// Re-export from new modular structure
+export * from '@/construction/elements'
+export * from '@/construction/results'
+export * from '@/construction/measurements'
+export * from './construction'
+export * from './segmentation'
 export * from './corners/corners'
 export * from './infill/infill'
 export * from '@/construction/materials/material'

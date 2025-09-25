@@ -12,13 +12,9 @@ import {
   type Vec3
 } from '@/shared/geometry'
 import type { MaterialId, ResolveMaterialFunction } from '@/construction/materials/material'
-import {
-  createConstructionElement,
-  createCutCuboidShape,
-  type ConstructionElement,
-  type ConstructionIssue,
-  type Measurement
-} from '@/construction/walls/base'
+import { createConstructionElement, createCutCuboidShape, type ConstructionElement } from '@/construction/elements'
+import type { ConstructionIssue } from '@/construction/results'
+import type { Measurement } from '@/construction/measurements'
 import type { Perimeter, PerimeterCorner } from '@/shared/types/model'
 import type { PerimeterId } from '@/shared/types/ids'
 import { vec2 } from 'gl-matrix'

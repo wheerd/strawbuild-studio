@@ -7,7 +7,7 @@ import type {
   BaseConstructionConfig,
   PerimeterWallConstructionMethod,
   WallConstructionPlan
-} from '@/construction/walls/base'
+} from '@/construction/walls/construction'
 
 export interface ModuleConfig {
   width: Length // Default: 920mm

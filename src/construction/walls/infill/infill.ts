@@ -1,25 +1,19 @@
 import type { PerimeterWall, Perimeter } from '@/shared/types/model'
 import type { Length, Vec3 } from '@/shared/geometry'
 import { constructPost, type PostConfig } from '@/construction/materials/posts'
+import type { ConstructionElementId } from '@/construction/elements'
+import { createConstructionElementId } from '@/construction/elements'
+import type { ConstructionIssue, ConstructionResult } from '@/construction/results'
+import { aggregateResults, yieldError, yieldWarning, yieldAndCollectElementIds } from '@/construction/results'
+import type { Measurement } from '@/construction/measurements'
 import type {
   BaseConstructionConfig,
-  ConstructionElementId,
-  ConstructionIssue,
-  ConstructionResult,
   ConstructionSegment,
-  Measurement,
   PerimeterWallConstructionMethod,
   WallConstructionPlan,
   WallConstructionSegment
-} from '@/construction/walls/base'
-import {
-  segmentWall,
-  createConstructionElementId,
-  aggregateResults,
-  yieldError,
-  yieldWarning,
-  yieldAndCollectElementIds
-} from '@/construction/walls/base'
+} from '@/construction/walls/construction'
+import { segmentWall } from '@/construction/walls/segmentation'
 import { constructOpening } from '@/construction/openings/openings'
 import { resolveDefaultMaterial } from '@/construction/materials/material'
 import type { ResolveMaterialFunction } from '@/construction/materials/material'

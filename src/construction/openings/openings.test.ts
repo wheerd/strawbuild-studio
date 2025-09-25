@@ -6,13 +6,9 @@ import { constructOpeningFrame, constructOpening, type OpeningConstructionConfig
 import type { InfillConstructionConfig } from '@/construction/walls/infill/infill'
 import { infillWallArea } from '@/construction/walls/infill/infill'
 import { createMaterialId, resolveDefaultMaterial } from '@/construction/materials/material'
-import {
-  createConstructionElement,
-  aggregateResults,
-  yieldElement,
-  type ConstructionResult,
-  type WallSegment3D
-} from '@/construction/walls/base'
+import { createConstructionElement } from '@/construction/elements'
+import { aggregateResults, yieldElement, type ConstructionResult } from '@/construction/results'
+import type { WallSegment3D } from '@/construction/walls/segmentation'
 
 // Mock the infill module
 vi.mock('../walls/infill/infill', () => ({

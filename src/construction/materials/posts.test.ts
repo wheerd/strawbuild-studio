@@ -3,7 +3,8 @@ import type { Length, Vec3 } from '@/shared/geometry'
 import type { MaterialId, Material } from './material'
 import { DEFAULT_MATERIALS } from './material'
 import { constructPost, type FullPostConfig, type DoublePostConfig } from './posts'
-import { getElementPosition, getElementSize, type Cuboid, aggregateResults } from '@/construction/walls/base'
+import { getElementPosition, getElementSize, type Cuboid } from '@/construction/elements'
+import { aggregateResults } from '@/construction/results'
 
 const mockWoodMaterial = 'wood-material' as MaterialId
 const mockStrawMaterial = 'straw-material' as MaterialId

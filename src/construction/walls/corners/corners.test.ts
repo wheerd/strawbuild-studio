@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { calculateWallCornerInfo, calculateWallConstructionLength } from './corners'
 import { createVec2, createLength, type Length } from '@/shared/geometry'
-import type { PerimeterWall, PerimeterCorner , Perimeter  } from '@/shared/types/model'
+import type { PerimeterWall, PerimeterCorner, Perimeter } from '@/shared/types/model'
 import { createPerimeterWallId, createPerimeterId, createPerimeterConstructionMethodId } from '@/shared/types/ids'
 
 // Mock data helpers

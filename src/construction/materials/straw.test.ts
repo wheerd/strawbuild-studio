@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import type { Length, Vec3 } from '@/shared/geometry'
 import type { MaterialId } from './material'
 import { constructStraw, type StrawConfig } from './straw'
-import { aggregateResults } from '@/construction/walls/base'
+import { aggregateResults } from '@/construction/results'
 
 const mockMaterialId = 'test-material' as MaterialId
 
