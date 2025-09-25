@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import * as useViewportStore from '@/editor/hooks/useViewportStore'
 import * as lengthInputService from '@/editor/services/length-input'
 import { perimeterToolGroup } from '@/editor/tools/perimeter'
 import { createLength, createVec2 } from '@/shared/geometry'
@@ -45,7 +46,6 @@ describe('PerimeterTool', () => {
     let activateLengthInputSpy: any
     let deactivateLengthInputSpy: any
     let updateLengthInputPositionSpy: any
-
     beforeEach(() => {
       tool = new PerimeterTool()
       activateLengthInputSpy = vi.spyOn(lengthInputService, 'activateLengthInput').mockImplementation(() => {})
@@ -53,6 +53,23 @@ describe('PerimeterTool', () => {
       updateLengthInputPositionSpy = vi
         .spyOn(lengthInputService, 'updateLengthInputPosition')
         .mockImplementation(() => {})
+
+      // Mock viewport transformations
+      vi.spyOn(useViewportStore, 'useViewportActions').mockReturnValue({
+        worldToStage: vi.fn(worldPos => ({
+          x: worldPos[0] + 50, // Simple linear transformation for testing
+          y: worldPos[1] + 100
+        })),
+        stageToWorld: vi.fn(),
+        setViewport: vi.fn(),
+        setStageDimensions: vi.fn(),
+        setZoom: vi.fn(),
+        setPan: vi.fn(),
+        zoomBy: vi.fn(),
+        panBy: vi.fn(),
+        fitToView: vi.fn(),
+        reset: vi.fn()
+      })
     })
 
     afterEach(() => {
@@ -144,8 +161,8 @@ describe('PerimeterTool', () => {
       const position = (tool as any).getLengthInputPosition()
 
       expect(position).toEqual({
-        x: 120, // 100 + 20 offset
-        y: 20 // 50 - 30 offset
+        x: 170, // worldToStage(100, 50) = (150, 150), then 150 + 20 = 170
+        y: 150 // worldToStage(100, 50) = (150, 150), then 150 - 30 = 120, clamped to margin 150
       })
     })
 
@@ -163,15 +180,15 @@ describe('PerimeterTool', () => {
       tool.state.isCurrentLineValid = true
 
       // Simulate adding a third point
-      tool.state.points.push(createVec2(100, 100))
+      tool.state.points.push(createVec2(200, 200))
 
       // Call the position update method directly
       ;(tool as any).updateLengthInputPosition()
 
       expect(updateLengthInputPositionSpy).toHaveBeenCalledTimes(1)
       expect(updateLengthInputPositionSpy).toHaveBeenCalledWith({
-        x: 120, // 100 + 20 offset
-        y: 70 // 100 - 30 offset
+        x: 270, // worldToStage(200, 200) = (250, 300), then 250 + 20 = 270
+        y: 270 // worldToStage(200, 200) = (250, 300), then 300 - 30 = 270
       })
     })
 

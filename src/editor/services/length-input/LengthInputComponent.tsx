@@ -26,10 +26,18 @@ export function LengthInputComponent(): React.JSX.Element | null {
       // Use setTimeout to ensure the input is rendered before focusing
       setTimeout(() => {
         inputRef.current?.focus()
-        inputRef.current?.select() // Select all text for easy replacement
+        // Only select text if there's an initial value (like from editing)
+        // Don't select if input value exists (indicates user is typing)
+        if (state.config?.initialValue && !state.inputValue) {
+          inputRef.current?.select()
+        } else if (state.inputValue) {
+          // Position cursor at the end of existing text
+          const length = state.inputValue.length
+          inputRef.current?.setSelectionRange(length, length)
+        }
       }, 0)
     }
-  }, [state.isActive])
+  }, [state.isActive, state.inputValue, state.config?.initialValue])
 
   // Global keyboard handler for capturing numeric input when ready but not shown
   const handleGlobalKeyDown = useCallback(
@@ -76,7 +84,7 @@ export function LengthInputComponent(): React.JSX.Element | null {
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     // Let the service handle Enter and Escape
     if (lengthInputService.handleKeyDown(event.nativeEvent)) {
-      return // Event was handled by service
+      event.stopPropagation() // Prevent bubbling to parent elements
     }
   }
 
