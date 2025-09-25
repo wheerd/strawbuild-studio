@@ -2,9 +2,14 @@ import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
 import type { PerimeterId } from '@/building/model/ids'
 import type { Opening, PerimeterWall } from '@/building/model/model'
+import { useModelActions } from '@/building/store'
+import { stageReference } from '@/editor/canvas/services/StageReference'
+import { ClickableLengthIndicator } from '@/editor/canvas/utils/ClickableLengthIndicator'
 import { LengthIndicator } from '@/editor/canvas/utils/LengthIndicator'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
-import { type Vec2, add, midpoint, scale } from '@/shared/geometry'
+import { useViewportActions } from '@/editor/hooks/useViewportStore'
+import { activateLengthInput } from '@/editor/services/length-input'
+import { type Length, type Vec2, add, createLength, midpoint, scale } from '@/shared/geometry'
 import { COLORS } from '@/shared/theme/colors'
 import { formatLength } from '@/shared/utils/formatLength'
 
@@ -30,6 +35,8 @@ export function OpeningShape({
   outsideEndCorner
 }: OpeningShapeProps): React.JSX.Element {
   const select = useSelectionStore()
+  const modelActions = useModelActions()
+  const viewportActions = useViewportActions()
 
   // Extract wall geometry
   const insideStart = wall.insideLine.start
@@ -61,6 +68,102 @@ export function OpeningShape({
   const nextOpening = currentIndex < sortedOpenings.length - 1 ? sortedOpenings[currentIndex + 1] : null
 
   const hasNeighbors = wall.openings.length > 1
+
+  // Handler for updating opening position based on measurement clicks
+  const handleMeasurementClick = (
+    currentMeasurement: Length,
+    measurementType: 'startCorner' | 'endCorner' | 'prevOpening' | 'nextOpening'
+  ) => {
+    // Calculate world position for the measurement
+    const worldPosition =
+      measurementType === 'startCorner'
+        ? midpoint(insideStartCorner, insideOpeningStart)
+        : measurementType === 'endCorner'
+          ? midpoint(insideOpeningEnd, insideEndCorner)
+          : measurementType === 'prevOpening' && previousOpening
+            ? midpoint(
+                add(outsideStart, scale(wall.direction, previousOpening.offsetFromStart + previousOpening.width)),
+                add(outsideStart, scale(wall.direction, opening.offsetFromStart))
+              )
+            : nextOpening
+              ? midpoint(
+                  add(outsideStart, scale(wall.direction, opening.offsetFromStart + opening.width)),
+                  add(outsideStart, scale(wall.direction, nextOpening.offsetFromStart))
+                )
+              : ([0, 0] as Vec2)
+
+    // Get the stage and its DOM position
+    const stage = stageReference.getStage()
+    let inputX = 400
+    let inputY = 200
+
+    if (stage) {
+      // Convert world coordinates to stage coordinates
+      const stagePos = viewportActions.worldToStage(worldPosition)
+
+      // Get the stage's DOM element position
+      const stageContainer = stage.container()
+      if (stageContainer) {
+        const rect = stageContainer.getBoundingClientRect()
+
+        // Calculate position relative to the stage container
+        inputX = rect.left + stagePos.x + 20
+        inputY = rect.top + stagePos.y + 30 // Note: using positive Y offset, no flipping
+      }
+    }
+
+    // Keep input within canvas bounds (with some margin)
+    const margin = 150
+    const canvasWidth = 800 // TODO: Get actual canvas dimensions from viewport
+    const canvasHeight = 600
+
+    if (inputX < margin) inputX = margin
+    if (inputX > canvasWidth - margin) inputX = canvasWidth - margin
+    if (inputY < margin) inputY = margin
+    if (inputY > canvasHeight - margin) inputY = canvasHeight - margin
+
+    activateLengthInput({
+      showImmediately: true,
+      position: { x: inputX, y: inputY },
+      initialValue: currentMeasurement,
+      placeholder: 'Enter distance...',
+      onCommit: enteredValue => {
+        const rawDelta = enteredValue - currentMeasurement
+
+        // Apply delta in the correct direction based on measurement type
+        let actualDelta: Length
+        if (measurementType === 'startCorner' || measurementType === 'prevOpening') {
+          // For start corner and prev opening distances: positive delta moves opening away from start
+          actualDelta = createLength(rawDelta)
+        } else {
+          // For end corner and next opening distances: positive delta moves opening toward start (negative offset change)
+          actualDelta = createLength(-rawDelta)
+        }
+
+        const newOffsetFromStart = createLength(opening.offsetFromStart + actualDelta)
+
+        // Validate the new position
+        const isValid = modelActions.isPerimeterWallOpeningPlacementValid(
+          perimeterId,
+          wall.id,
+          newOffsetFromStart,
+          opening.width
+        )
+
+        if (isValid) {
+          modelActions.updatePerimeterWallOpening(perimeterId, wall.id, opening.id, {
+            offsetFromStart: newOffsetFromStart
+          })
+        } else {
+          // Could add error feedback here in the future
+          console.warn('Invalid opening position:', formatLength(newOffsetFromStart))
+        }
+      },
+      onCancel: () => {
+        // Nothing to do on cancel
+      }
+    })
+  }
 
   return (
     <Group
@@ -105,13 +208,14 @@ export function OpeningShape({
                 const prevEndPoint = add(outsideStart, scale(wallVector, prevEndOffset))
                 const currentStartPoint = add(outsideStart, scale(wallVector, currentStartOffset))
                 return (
-                  <LengthIndicator
+                  <ClickableLengthIndicator
                     startPoint={prevEndPoint}
                     endPoint={currentStartPoint}
                     offset={60}
                     color={COLORS.indicators.secondary}
                     fontSize={50}
                     strokeWidth={4}
+                    onClick={measurement => handleMeasurementClick(measurement, 'prevOpening')}
                   />
                 )
               })()}
@@ -126,13 +230,14 @@ export function OpeningShape({
                 const currentEndPoint = add(outsideStart, scale(wallVector, currentEndOffset))
                 const nextStartPoint = add(outsideStart, scale(wallVector, nextStartOffset))
                 return (
-                  <LengthIndicator
+                  <ClickableLengthIndicator
                     startPoint={currentEndPoint}
                     endPoint={nextStartPoint}
                     offset={60}
                     color={COLORS.indicators.secondary}
                     fontSize={50}
                     strokeWidth={4}
+                    onClick={measurement => handleMeasurementClick(measurement, 'nextOpening')}
                   />
                 )
               })()}
@@ -160,37 +265,41 @@ export function OpeningShape({
           />
 
           {/* Corner distance indicators (outermost layer) */}
-          <LengthIndicator
+          <ClickableLengthIndicator
             startPoint={insideStartCorner}
             endPoint={insideOpeningStart}
             offset={-60}
             color={COLORS.indicators.main}
             fontSize={50}
             strokeWidth={4}
+            onClick={measurement => handleMeasurementClick(measurement, 'startCorner')}
           />
-          <LengthIndicator
+          <ClickableLengthIndicator
             startPoint={insideOpeningEnd}
             endPoint={insideEndCorner}
             offset={-60}
             color={COLORS.indicators.main}
             fontSize={50}
             strokeWidth={4}
+            onClick={measurement => handleMeasurementClick(measurement, 'endCorner')}
           />
-          <LengthIndicator
+          <ClickableLengthIndicator
             startPoint={outsideStartCorner}
             endPoint={outsideOpeningStart}
             offset={hasNeighbors ? 120 : 60}
             color={COLORS.indicators.main}
             fontSize={50}
             strokeWidth={4}
+            onClick={measurement => handleMeasurementClick(measurement, 'startCorner')}
           />
-          <LengthIndicator
+          <ClickableLengthIndicator
             startPoint={outsideOpeningEnd}
             endPoint={outsideEndCorner}
             offset={hasNeighbors ? 120 : 60}
             color={COLORS.indicators.main}
             fontSize={50}
             strokeWidth={4}
+            onClick={measurement => handleMeasurementClick(measurement, 'endCorner')}
           />
         </>
       )}
