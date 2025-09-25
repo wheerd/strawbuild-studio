@@ -1,5 +1,5 @@
-import { COLORS } from '@/shared/theme/colors'
 import type { Length } from '@/shared/geometry'
+import { COLORS } from '@/shared/theme/colors'
 
 export type MaterialId = string & { readonly brand: unique symbol }
 export const createMaterialId = (): MaterialId => `material_${Date.now()}_${Math.random()}` as MaterialId

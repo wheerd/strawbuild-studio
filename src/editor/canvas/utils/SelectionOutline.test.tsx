@@ -1,7 +1,9 @@
 import { render } from '@testing-library/react'
 import { vi } from 'vitest'
-import { SelectionOutline } from './SelectionOutline'
+
 import { createVec2 } from '@/shared/geometry'
+
+import { SelectionOutline } from './SelectionOutline'
 
 // Mock the viewport store
 const mockUseZoom = vi.fn()

@@ -1,5 +1,6 @@
 import type { Vec2 } from '@/shared/geometry'
 import { createVec2 } from '@/shared/geometry'
+
 import type { PerimeterPreset, RectangularPresetConfig } from './types'
 
 /**

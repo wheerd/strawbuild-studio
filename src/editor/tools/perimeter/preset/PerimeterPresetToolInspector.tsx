@@ -1,15 +1,17 @@
+import { Box, Button, DataList, Flex, Heading, Separator, Text } from '@radix-ui/themes'
 import { useCallback } from 'react'
-import { Button, Flex, Text, Box, Separator, DataList, Heading } from '@radix-ui/themes'
-import { createLength } from '@/shared/geometry'
-import type { ToolInspectorProps } from '@/editor/tools/system/types'
-import type { PerimeterPresetTool } from './PerimeterPresetTool'
-import type { RectangularPresetConfig, LShapedPresetConfig } from './presets/types'
-import { RectangularPresetDialog } from './presets/RectangularPresetDialog'
-import { LShapedPresetDialog } from './presets/LShapedPresetDialog'
+
+import { useConfigStore, usePerimeterConstructionMethods } from '@/construction/config/store'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
-import { usePerimeterConstructionMethods, useConfigStore } from '@/construction/config/store'
+import type { ToolInspectorProps } from '@/editor/tools/system/types'
+import { createLength } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
+
+import type { PerimeterPresetTool } from './PerimeterPresetTool'
 import { LShape0Icon, RectIcon } from './presets/Icons'
+import { LShapedPresetDialog } from './presets/LShapedPresetDialog'
+import { RectangularPresetDialog } from './presets/RectangularPresetDialog'
+import type { LShapedPresetConfig, RectangularPresetConfig } from './presets/types'
 
 export function PerimeterPresetToolInspector({ tool }: ToolInspectorProps<PerimeterPresetTool>): React.JSX.Element {
   const { state } = useReactiveTool(tool)

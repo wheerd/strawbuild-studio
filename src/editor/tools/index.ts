@@ -1,6 +1,6 @@
-import type { ToolManager } from './system/ToolManager'
 import { basicToolGroup } from './basic'
 import { perimeterToolGroup } from './perimeter'
+import type { ToolManager } from './system/ToolManager'
 
 // Export tool system components
 export { ToolContextProvider } from './system/ToolContext'

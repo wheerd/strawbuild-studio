@@ -1,26 +1,27 @@
-import { useCallback, useMemo } from 'react'
-import {
-  Flex,
-  Text,
-  Select,
-  TextField,
-  Heading,
-  Button,
-  Grid,
-  Card,
-  Callout,
-  DataList,
-  Separator
-} from '@radix-ui/themes'
 import * as Label from '@radix-ui/react-label'
+import {
+  Button,
+  Callout,
+  Card,
+  DataList,
+  Flex,
+  Grid,
+  Heading,
+  Select,
+  Separator,
+  Text,
+  TextField
+} from '@radix-ui/themes'
+import { useCallback, useMemo } from 'react'
+
+import type { PerimeterConstructionMethodId, PerimeterId, PerimeterWallId } from '@/building/model/ids'
 import { useModelActions, usePerimeterById } from '@/building/store'
-import { createLength, type Length } from '@/shared/geometry'
+import { WallConstructionPlanModal } from '@/construction/components/WallConstructionPlan'
+import { usePerimeterConstructionMethodById, usePerimeterConstructionMethods } from '@/construction/config/store'
+import { type InfillConstructionConfig, constructInfillWall } from '@/construction/walls'
+import { type Length, createLength } from '@/shared/geometry'
 import { useDebouncedNumericInput } from '@/shared/hooks/useDebouncedInput'
 import { formatLength } from '@/shared/utils/formatLength'
-import type { PerimeterWallId, PerimeterId, PerimeterConstructionMethodId } from '@/building/model/ids'
-import { usePerimeterConstructionMethods, usePerimeterConstructionMethodById } from '@/construction/config/store'
-import { WallConstructionPlanModal } from '@/construction/components/WallConstructionPlan'
-import { constructInfillWall, type InfillConstructionConfig } from '@/construction/walls'
 
 interface PerimeterWallInspectorProps {
   perimeterId: PerimeterId

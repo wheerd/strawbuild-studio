@@ -1,7 +1,7 @@
-import type { PerimeterWall, PerimeterCorner, Perimeter } from '@/building/model/model'
+import type { Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model/model'
+import type { WallCornerInfo } from '@/construction/walls/construction'
 import type { Length } from '@/shared/geometry'
 import { distance } from '@/shared/geometry'
-import type { WallCornerInfo } from '@/construction/walls/construction'
 
 /**
  * Calculate the extension distance for corner construction.

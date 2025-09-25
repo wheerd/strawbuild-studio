@@ -1,12 +1,14 @@
+import { useMemo } from 'react'
+import { temporal } from 'zundo'
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
-import { temporal } from 'zundo'
-import type { Perimeter, Storey } from '@/building/model/model'
+
 import type { PerimeterId, StoreyId } from '@/building/model/ids'
-import { createStoreysSlice } from './slices/storeysSlice'
+import type { Perimeter, Storey } from '@/building/model/model'
+
 import { createPerimetersSlice } from './slices/perimeterSlice'
+import { createStoreysSlice } from './slices/storeysSlice'
 import type { Store, StoreActions } from './types'
-import { useMemo } from 'react'
 
 // Create the main store with slices and undo/redo
 const useModelStore = create<Store>()(

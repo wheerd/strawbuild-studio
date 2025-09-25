@@ -1,9 +1,11 @@
-import { describe, it, expect, vi } from 'vitest'
 import { render } from '@testing-library/react'
-import { ConstructionElementShape } from './ConstructionElementShape'
-import type { ConstructionElement, ResolveMaterialFunction, MaterialId } from '@/construction/walls'
-import type { Length } from '@/shared/geometry'
+import { describe, expect, it, vi } from 'vitest'
+
+import type { ConstructionElement, MaterialId, ResolveMaterialFunction } from '@/construction/walls'
 import { createConstructionElementId } from '@/construction/walls'
+import type { Length } from '@/shared/geometry'
+
+import { ConstructionElementShape } from './ConstructionElementShape'
 
 // Mock the shape components
 vi.mock('./CuboidShape', () => ({

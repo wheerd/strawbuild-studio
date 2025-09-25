@@ -1,12 +1,13 @@
 import React from 'react'
-import { Group, Line, Circle } from 'react-konva/lib/ReactKonvaCore'
-import { COLORS } from '@/shared/theme/colors'
-import { midpoint, add } from '@/shared/geometry'
+import { Circle, Group, Line } from 'react-konva/lib/ReactKonvaCore'
+
 import type { MovementPreviewComponentProps } from '@/editor/tools/basic/movement/MovementBehavior'
 import type {
   PerimeterWallEntityContext,
   PerimeterWallMovementState
 } from '@/editor/tools/basic/movement/behaviors/PerimeterWallMovementBehavior'
+import { add, midpoint } from '@/shared/geometry'
+import { COLORS } from '@/shared/theme/colors'
 
 export function PerimeterWallMovementPreview({
   movementState,

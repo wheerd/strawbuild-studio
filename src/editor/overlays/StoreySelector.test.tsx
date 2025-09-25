@@ -1,11 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
-import { StoreySelector } from './StoreySelector'
-import { useStoreysOrderedByLevel, useActiveStoreyId, useModelActions } from '@/building/store'
-import { createStoreyLevel } from '@/building/model/model'
-import { createLength } from '@/shared/geometry'
-import type { StoreyId } from '@/building/model/ids'
 import { Theme } from '@radix-ui/themes'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import type { StoreyId } from '@/building/model/ids'
+import { createStoreyLevel } from '@/building/model/model'
+import { useActiveStoreyId, useModelActions, useStoreysOrderedByLevel } from '@/building/store'
+import { createLength } from '@/shared/geometry'
+
+import { StoreySelector } from './StoreySelector'
 
 // Mock the stores
 vi.mock('@/building/store', async importOriginal => {

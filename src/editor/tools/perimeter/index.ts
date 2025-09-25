@@ -1,6 +1,7 @@
 import type { ToolGroup } from '@/editor/tools/system/types'
-import { PerimeterTool } from './add/PerimeterTool'
+
 import { AddOpeningTool } from './add-opening/AddOpeningTool'
+import { PerimeterTool } from './add/PerimeterTool'
 import { PerimeterPresetTool } from './preset/PerimeterPresetTool'
 
 // Export individual tools

@@ -1,11 +1,12 @@
-import React from 'react'
-import { Box, Flex, Text, Select, Button, Heading, Callout, DataList } from '@radix-ui/themes'
 import * as Label from '@radix-ui/react-label'
-import { useModelActions, usePerimeterById } from '@/building/store'
+import { Box, Button, Callout, DataList, Flex, Heading, Select, Text } from '@radix-ui/themes'
+import React from 'react'
+
 import type { PerimeterId, RingBeamConstructionMethodId } from '@/building/model/ids'
-import { calculatePolygonArea, type Length } from '@/shared/geometry'
-import { useRingBeamConstructionMethods } from '@/construction/config/store'
+import { useModelActions, usePerimeterById } from '@/building/store'
 import { RingBeamConstructionModal } from '@/construction/components/RingBeamConstructionModal'
+import { useRingBeamConstructionMethods } from '@/construction/config/store'
+import { type Length, calculatePolygonArea } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
 
 interface PerimeterInspectorProps {

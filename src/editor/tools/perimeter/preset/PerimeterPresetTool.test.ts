@@ -1,7 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
+
 import { createLength, createVec2 } from '@/shared/geometry'
+
 import { PerimeterPresetTool } from './PerimeterPresetTool'
-import { RectangularPreset, LShapedPreset } from './presets'
+import { LShapedPreset, RectangularPreset } from './presets'
 import type { RectangularPresetConfig } from './presets'
 
 describe('PerimeterPresetTool', () => {

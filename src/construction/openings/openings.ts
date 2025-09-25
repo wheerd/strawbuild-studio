@@ -1,15 +1,15 @@
-import type { Opening } from '@/building/model/model'
 import type { OpeningId } from '@/building/model/ids'
+import type { Opening } from '@/building/model/model'
+import { type ConstructionElement, createConstructionElement, createCuboidShape } from '@/construction/elements'
+import type { MaterialId, ResolveMaterialFunction } from '@/construction/materials/material'
+import { type ConstructionResult, yieldElement, yieldError, yieldMeasurement } from '@/construction/results'
+import type { BaseConstructionSegment } from '@/construction/walls/construction'
+import type { InfillConstructionConfig } from '@/construction/walls/infill/infill'
+import { infillWallArea } from '@/construction/walls/infill/infill'
+import type { WallSegment3D } from '@/construction/walls/segmentation'
 import type { Length, Vec3 } from '@/shared/geometry'
 import { createVec2 } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
-import type { MaterialId, ResolveMaterialFunction } from '@/construction/materials/material'
-import { createCuboidShape, createConstructionElement, type ConstructionElement } from '@/construction/elements'
-import { yieldElement, yieldError, yieldMeasurement, type ConstructionResult } from '@/construction/results'
-import type { BaseConstructionSegment } from '@/construction/walls/construction'
-import type { WallSegment3D } from '@/construction/walls/segmentation'
-import type { InfillConstructionConfig } from '@/construction/walls/infill/infill'
-import { infillWallArea } from '@/construction/walls/infill/infill'
 
 export interface OpeningConstructionConfig {
   padding: Length // Default: 15mm

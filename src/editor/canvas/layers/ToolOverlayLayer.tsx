@@ -1,5 +1,7 @@
 import { Layer } from 'react-konva/lib/ReactKonvaCore'
+
 import { useToolManagerState } from '@/editor/tools/system'
+
 import { SelectionOverlay } from './SelectionOverlay'
 
 export function ToolOverlayLayer(): React.JSX.Element {

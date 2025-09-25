@@ -1,16 +1,17 @@
+import { useMemo } from 'react'
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
-import { useMemo } from 'react'
+
+import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
+import { createPerimeterConstructionMethodId, createRingBeamConstructionMethodId } from '@/building/model/ids'
 import type {
-  RingBeamConstructionMethod,
-  PerimeterConstructionMethod,
+  LayersConfig,
   PerimeterConstructionConfig,
-  LayersConfig
+  PerimeterConstructionMethod,
+  RingBeamConstructionMethod
 } from '@/construction/config/types'
-import type { RingBeamConstructionMethodId, PerimeterConstructionMethodId } from '@/building/model/ids'
-import { createRingBeamConstructionMethodId, createPerimeterConstructionMethodId } from '@/building/model/ids'
 import type { RingBeamConfig } from '@/construction/walls'
-import { wood360x60, validateRingBeamConfig, strawbale, door, window as windowOpening } from '@/construction/walls'
+import { door, strawbale, validateRingBeamConfig, window as windowOpening, wood360x60 } from '@/construction/walls'
 import { createLength } from '@/shared/geometry'
 
 export interface ConfigState {

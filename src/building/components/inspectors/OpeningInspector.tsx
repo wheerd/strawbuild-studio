@@ -1,13 +1,14 @@
-import { useCallback, useMemo } from 'react'
-import { Box, Flex, Text, Select, TextField, Button, Callout, Heading, DataList, Separator } from '@radix-ui/themes'
-import * as Label from '@radix-ui/react-label'
 import { TrashIcon } from '@radix-ui/react-icons'
+import * as Label from '@radix-ui/react-label'
+import { Box, Button, Callout, DataList, Flex, Heading, Select, Separator, Text, TextField } from '@radix-ui/themes'
+import { useCallback, useMemo } from 'react'
+
+import type { OpeningId, PerimeterId, PerimeterWallId } from '@/building/model/ids'
+import type { OpeningType } from '@/building/model/model'
 import { useModelActions, usePerimeterById } from '@/building/store'
+import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { createLength } from '@/shared/geometry'
 import { useDebouncedNumericInput } from '@/shared/hooks/useDebouncedInput'
-import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
-import type { PerimeterWallId, PerimeterId, OpeningId } from '@/building/model/ids'
-import type { OpeningType } from '@/building/model/model'
 
 interface OpeningInspectorProps {
   perimeterId: PerimeterId

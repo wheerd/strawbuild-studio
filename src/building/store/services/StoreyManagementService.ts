@@ -1,5 +1,5 @@
-import type { Storey } from '@/building/model/model'
 import type { StoreyId } from '@/building/model/ids'
+import type { Storey } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import type { StoreActions } from '@/building/store/types'
 

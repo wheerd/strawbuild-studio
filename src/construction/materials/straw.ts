@@ -1,8 +1,10 @@
-import type { Length, Vec3 } from '@/shared/geometry'
-import type { MaterialId } from './material'
-import { createCuboidShape, createConstructionElement } from '@/construction/elements'
-import { yieldElement, yieldError, yieldWarning, type ConstructionResult } from '@/construction/results'
 import { vec3 } from 'gl-matrix'
+
+import { createConstructionElement, createCuboidShape } from '@/construction/elements'
+import { type ConstructionResult, yieldElement, yieldError, yieldWarning } from '@/construction/results'
+import type { Length, Vec3 } from '@/shared/geometry'
+
+import type { MaterialId } from './material'
 
 export interface StrawConfig {
   baleLength: Length // Default: 800mm

@@ -1,11 +1,13 @@
+import * as Select from '@radix-ui/react-select'
 import { useCallback } from 'react'
+
+import type { OpeningType } from '@/building/model/model'
+import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
+import type { ToolInspectorProps } from '@/editor/tools/system/types'
 import { createLength } from '@/shared/geometry'
 import { useDebouncedNumericInput } from '@/shared/hooks/useDebouncedInput'
-import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
-import type { OpeningType } from '@/building/model/model'
-import type { ToolInspectorProps } from '@/editor/tools/system/types'
+
 import type { AddOpeningTool } from './AddOpeningTool'
-import * as Select from '@radix-ui/react-select'
 
 export function AddOpeningToolInspector({ tool }: ToolInspectorProps<AddOpeningTool>): React.JSX.Element {
   return <AddOpeningToolInspectorImpl tool={tool} />

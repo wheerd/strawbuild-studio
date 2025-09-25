@@ -1,12 +1,13 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
+
 import {
-  distanceToLineSegment,
+  type LineSegment2D,
   createVec2,
+  distanceToLineSegment,
   doLineWallsIntersect,
-  wouldPolygonSelfIntersect,
-  wouldClosingPolygonSelfIntersect,
   isPointAlreadyUsed,
-  type LineSegment2D
+  wouldClosingPolygonSelfIntersect,
+  wouldPolygonSelfIntersect
 } from './index'
 
 describe('distanceToLineWall', () => {

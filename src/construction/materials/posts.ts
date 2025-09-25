@@ -1,8 +1,9 @@
+import { type ConstructionElement, createConstructionElement, createCuboidShape } from '@/construction/elements'
+import { type ConstructionResult, yieldElement, yieldError, yieldWarning } from '@/construction/results'
 import { type Length, type Vec3 } from '@/shared/geometry'
-import type { MaterialId, Material, ResolveMaterialFunction } from './material'
 import { formatLength } from '@/shared/utils/formatLength'
-import { createCuboidShape, createConstructionElement, type ConstructionElement } from '@/construction/elements'
-import { type ConstructionResult, yieldElement, yieldWarning, yieldError } from '@/construction/results'
+
+import type { Material, MaterialId, ResolveMaterialFunction } from './material'
 
 export interface BasePostConfig {
   type: 'full' | 'double'

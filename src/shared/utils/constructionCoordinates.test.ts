@@ -1,6 +1,8 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
+
+import type { Length, Vec3 } from '@/shared/geometry'
+
 import { convertConstructionToSvg, convertPointToSvg } from './constructionCoordinates'
-import type { Vec3, Length } from '@/shared/geometry'
 
 describe('constructionCoordinates', () => {
   const wallHeight = 2400

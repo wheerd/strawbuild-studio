@@ -1,17 +1,19 @@
-import { describe, it, expect } from 'vitest'
 import { render } from '@testing-library/react'
-import { Stage, Layer } from 'react-konva/lib/ReactKonvaCore'
-import { PerimeterShape } from './PerimeterShape'
-import { PerimeterCornerShape } from './PerimeterCornerShape'
-import { createLength, createVec2 } from '@/shared/geometry'
+import { Layer, Stage } from 'react-konva/lib/ReactKonvaCore'
+import { describe, expect, it } from 'vitest'
+
 import {
-  createPerimeterId,
-  createStoreyId,
-  createPerimeterWallId,
+  createPerimeterConstructionMethodId,
   createPerimeterCornerId,
-  createPerimeterConstructionMethodId
+  createPerimeterId,
+  createPerimeterWallId,
+  createStoreyId
 } from '@/building/model/ids'
 import type { Perimeter } from '@/building/model/model'
+import { createLength, createVec2 } from '@/shared/geometry'
+
+import { PerimeterCornerShape } from './PerimeterCornerShape'
+import { PerimeterShape } from './PerimeterShape'
 
 describe('PerimeterShape', () => {
   const testPerimeter: Perimeter = {

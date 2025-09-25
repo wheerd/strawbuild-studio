@@ -1,5 +1,5 @@
 import type { SelectableId } from '@/building/model/ids'
-import { isPerimeterId, isPerimeterWallId, isPerimeterCornerId, isOpeningId } from '@/building/model/ids'
+import { isOpeningId, isPerimeterCornerId, isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
 import type { Perimeter } from '@/building/model/model'
 import type { StoreActions } from '@/building/store/types'
 

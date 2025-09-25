@@ -1,8 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { useConfigStore } from './store'
+import { beforeEach, describe, expect, it } from 'vitest'
+
 import { createMaterialId } from '@/construction/walls'
-import { createLength } from '@/shared/geometry'
 import type { RingBeamConfig } from '@/construction/walls'
+import { createLength } from '@/shared/geometry'
+
+import { useConfigStore } from './store'
 
 describe('ConfigStore', () => {
   describe('Default Ring Beam Method', () => {

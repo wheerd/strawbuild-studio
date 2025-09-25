@@ -1,10 +1,12 @@
-import { describe, it, expect } from 'vitest'
-import type { Length, Vec3 } from '@/shared/geometry'
-import type { MaterialId, Material } from './material'
-import { DEFAULT_MATERIALS } from './material'
-import { constructPost, type FullPostConfig, type DoublePostConfig } from './posts'
-import { getElementPosition, getElementSize, type Cuboid } from '@/construction/elements'
+import { describe, expect, it } from 'vitest'
+
+import { type Cuboid, getElementPosition, getElementSize } from '@/construction/elements'
 import { aggregateResults } from '@/construction/results'
+import type { Length, Vec3 } from '@/shared/geometry'
+
+import type { Material, MaterialId } from './material'
+import { DEFAULT_MATERIALS } from './material'
+import { type DoublePostConfig, type FullPostConfig, constructPost } from './posts'
 
 const mockWoodMaterial = 'wood-material' as MaterialId
 const mockStrawMaterial = 'straw-material' as MaterialId

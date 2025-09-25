@@ -1,4 +1,4 @@
-import type { Vec3, Vec2 } from '@/shared/geometry'
+import type { Vec2, Vec3 } from '@/shared/geometry'
 import { createVec2 } from '@/shared/geometry'
 
 export type ViewType = 'outside' | 'inside'

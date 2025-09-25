@@ -1,11 +1,12 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+import { createPerimeterConstructionMethodId, createPerimeterCornerId, createPerimeterId } from '@/building/model/ids'
+import type { Perimeter, PerimeterWall } from '@/building/model/model'
+import type { LayersConfig } from '@/construction/config/types'
 import { constructInfillWall } from '@/construction/walls/infill/infill'
 import type { InfillConstructionConfig } from '@/construction/walls/infill/infill'
-import type { PerimeterWall, Perimeter } from '@/building/model/model'
 import type { Length } from '@/shared/geometry'
-import type { LayersConfig } from '@/construction/config/types'
-import { createVec2, createLength } from '@/shared/geometry'
-import { createPerimeterId, createPerimeterCornerId, createPerimeterConstructionMethodId } from '@/building/model/ids'
+import { createLength, createVec2 } from '@/shared/geometry'
 
 // Mock the formatLength utility
 vi.mock('@/shared/utils/formatLength', () => ({

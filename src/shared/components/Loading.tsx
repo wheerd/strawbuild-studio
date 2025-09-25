@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { COLORS } from '@/shared/theme/colors'
 
 export function Loading(): React.JSX.Element {

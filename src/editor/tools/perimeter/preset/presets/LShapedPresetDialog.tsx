@@ -1,30 +1,32 @@
-import { useState, useCallback, useEffect } from 'react'
-import {
-  Dialog,
-  Button,
-  TextField,
-  Flex,
-  Text,
-  Grid,
-  Select,
-  IconButton,
-  Heading,
-  SegmentedControl
-} from '@radix-ui/themes'
 import { Cross2Icon } from '@radix-ui/react-icons'
+import {
+  Button,
+  Dialog,
+  Flex,
+  Grid,
+  Heading,
+  IconButton,
+  SegmentedControl,
+  Select,
+  Text,
+  TextField
+} from '@radix-ui/themes'
+import { useCallback, useEffect, useState } from 'react'
+
+import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
+import {
+  useConfigStore,
+  usePerimeterConstructionMethods,
+  useRingBeamConstructionMethods
+} from '@/construction/config/store'
 import { createLength, offsetPolygon } from '@/shared/geometry'
 import type { Vec2 } from '@/shared/geometry'
 import { useDebouncedNumericInput } from '@/shared/hooks/useDebouncedInput'
-import {
-  useRingBeamConstructionMethods,
-  usePerimeterConstructionMethods,
-  useConfigStore
-} from '@/construction/config/store'
-import type { LShapedPresetConfig } from './types'
-import type { RingBeamConstructionMethodId, PerimeterConstructionMethodId } from '@/building/model/ids'
 import { formatLength } from '@/shared/utils/formatLength'
-import { LShapedPreset } from './LShapedPreset'
+
 import { LShape0Icon, LShape90Icon, LShape180Icon, LShape270Icon } from './Icons'
+import { LShapedPreset } from './LShapedPreset'
+import type { LShapedPresetConfig } from './types'
 
 interface LShapedPresetDialogProps {
   onConfirm: (config: LShapedPresetConfig) => void

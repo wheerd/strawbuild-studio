@@ -1,12 +1,12 @@
-import type { PerimeterWall, Perimeter, OpeningType } from '@/building/model/model'
-import type { PerimeterWallId, PerimeterCornerId } from '@/building/model/ids'
-import type { Length } from '@/shared/geometry'
-import type { StrawConfig } from '@/construction/materials/straw'
-import type { OpeningConstructionConfig, OpeningConstruction } from '@/construction/openings/openings'
+import type { PerimeterCornerId, PerimeterWallId } from '@/building/model/ids'
+import type { OpeningType, Perimeter, PerimeterWall } from '@/building/model/model'
 import type { LayersConfig } from '@/construction/config/types'
 import type { ConstructionElement } from '@/construction/elements'
-import type { ConstructionIssue } from '@/construction/results'
+import type { StrawConfig } from '@/construction/materials/straw'
 import type { Measurement } from '@/construction/measurements'
+import type { OpeningConstruction, OpeningConstructionConfig } from '@/construction/openings/openings'
+import type { ConstructionIssue } from '@/construction/results'
+import type { Length } from '@/shared/geometry'
 
 export type ConstructionType = 'infill' | 'strawhenge' | 'non-strawbale'
 

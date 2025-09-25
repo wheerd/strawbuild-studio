@@ -1,17 +1,19 @@
-import { describe, it, expect } from 'vitest'
-import type { PerimeterWall, Opening, Perimeter } from '@/building/model/model'
-import type { Length } from '@/shared/geometry'
-import type { LayersConfig } from '@/construction/config/types'
+import { describe, expect, it } from 'vitest'
+
 import {
   createOpeningId,
-  createPerimeterWallId,
-  createPerimeterId,
+  createPerimeterConstructionMethodId,
   createPerimeterCornerId,
-  createPerimeterConstructionMethodId
+  createPerimeterId,
+  createPerimeterWallId
 } from '@/building/model/ids'
-import { constructInfillWall, type InfillConstructionConfig } from './infill'
+import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
+import type { LayersConfig } from '@/construction/config/types'
 import { createMaterialId } from '@/construction/materials/material'
-import { createVec2, createLength } from '@/shared/geometry'
+import type { Length } from '@/shared/geometry'
+import { createLength, createVec2 } from '@/shared/geometry'
+
+import { type InfillConstructionConfig, constructInfillWall } from './infill'
 
 const createTestWall = (overrides: Partial<PerimeterWall> = {}): PerimeterWall => ({
   id: createPerimeterWallId(),

@@ -1,12 +1,13 @@
-import React, { useState, useCallback, useEffect } from 'react'
-import { ChevronUpIcon, ChevronDownIcon, CopyIcon, TrashIcon, HeightIcon, EnterIcon } from '@radix-ui/react-icons'
+import { ChevronDownIcon, ChevronUpIcon, CopyIcon, EnterIcon, HeightIcon, TrashIcon } from '@radix-ui/react-icons'
+import { AlertDialog, Button, Card, Code, Flex, IconButton, TextField } from '@radix-ui/themes'
+import React, { useCallback, useEffect, useState } from 'react'
+
 import type { Storey } from '@/building/model/model'
-import { useModelActions, useActiveStoreyId } from '@/building/store'
+import { useActiveStoreyId, useModelActions } from '@/building/store'
 import { defaultStoreyManagementService } from '@/building/store/services/StoreyManagementService'
-import { useDebouncedNumericInput } from '@/shared/hooks/useDebouncedInput'
 import { createLength } from '@/shared/geometry'
+import { useDebouncedNumericInput } from '@/shared/hooks/useDebouncedInput'
 import { formatLength } from '@/shared/utils/formatLength'
-import { Card, Flex, IconButton, TextField, Code, AlertDialog, Button } from '@radix-ui/themes'
 
 export function getLevelColor(level: number): 'grass' | 'indigo' | 'brown' {
   if (level === 0) {

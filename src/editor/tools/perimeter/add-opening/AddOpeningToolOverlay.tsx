@@ -1,9 +1,11 @@
 import React from 'react'
-import { Group, Rect, Text, Circle } from 'react-konva/lib/ReactKonvaCore'
-import type { ToolOverlayComponentProps } from '@/editor/tools/system/types'
-import type { AddOpeningTool } from './AddOpeningTool'
+import { Circle, Group, Rect, Text } from 'react-konva/lib/ReactKonvaCore'
+
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
+import type { ToolOverlayComponentProps } from '@/editor/tools/system/types'
 import { COLORS } from '@/shared/theme/colors'
+
+import type { AddOpeningTool } from './AddOpeningTool'
 
 /**
  * React overlay component for AddOpeningTool with zoom-responsive rendering.

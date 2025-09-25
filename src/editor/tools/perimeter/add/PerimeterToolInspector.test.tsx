@@ -1,9 +1,11 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
-import { PerimeterToolInspector } from './PerimeterToolInspector'
-import { PerimeterTool } from './PerimeterTool'
-import { createVec2, createLength } from '@/shared/geometry'
+
 import { createPerimeterConstructionMethodId } from '@/building/model/ids'
+import { createLength, createVec2 } from '@/shared/geometry'
+
+import { PerimeterTool } from './PerimeterTool'
+import { PerimeterToolInspector } from './PerimeterToolInspector'
 
 // Mock the config store
 vi.mock('@/construction/config/store', () => ({

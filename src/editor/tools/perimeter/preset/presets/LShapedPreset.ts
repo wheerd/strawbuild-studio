@@ -1,6 +1,7 @@
 import type { Vec2 } from '@/shared/geometry'
 import { createVec2 } from '@/shared/geometry'
-import type { PerimeterPreset, LShapedPresetConfig } from './types'
+
+import type { LShapedPresetConfig, PerimeterPreset } from './types'
 
 /**
  * L-shaped perimeter preset implementation

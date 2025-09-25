@@ -1,33 +1,33 @@
 import type { StateCreator } from 'zustand'
-import type { Perimeter, PerimeterWall, Opening, PerimeterCorner } from '@/building/model/model'
+
 import type {
-  StoreyId,
+  OpeningId,
+  PerimeterConstructionMethodId,
+  PerimeterCornerId,
   PerimeterId,
   PerimeterWallId,
-  PerimeterCornerId,
-  OpeningId,
   RingBeamConstructionMethodId,
-  PerimeterConstructionMethodId
+  StoreyId
 } from '@/building/model/ids'
-import type { Length, Polygon2D, Line2D, Vec2 } from '@/shared/geometry'
 import {
-  createPerimeterId,
-  createPerimeterWallId,
+  createOpeningId,
   createPerimeterCornerId,
-  createOpeningId
+  createPerimeterId,
+  createPerimeterWallId
 } from '@/building/model/ids'
-
+import type { Opening, Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model/model'
+import type { Length, Line2D, Polygon2D, Vec2 } from '@/shared/geometry'
 import {
+  add,
   createLength,
   createVec2,
+  direction,
+  distance,
+  lineFromPoints,
   lineIntersection,
   midpoint,
-  projectPointOntoLine,
-  distance,
-  direction,
   perpendicularCCW,
-  lineFromPoints,
-  add,
+  projectPointOntoLine,
   scale
 } from '@/shared/geometry'
 import { wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'

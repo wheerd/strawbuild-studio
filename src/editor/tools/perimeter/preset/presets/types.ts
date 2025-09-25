@@ -1,5 +1,5 @@
-import type { Vec2, Length } from '@/shared/geometry'
 import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
+import type { Length, Vec2 } from '@/shared/geometry'
 
 /**
  * Base configuration interface for all perimeter presets

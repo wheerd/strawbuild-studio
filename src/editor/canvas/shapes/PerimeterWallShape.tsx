@@ -1,13 +1,15 @@
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
-import type { PerimeterWall } from '@/building/model/model'
-import { COLORS } from '@/shared/theme/colors'
-import { direction, type Vec2 } from '@/shared/geometry'
-import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
-import { LengthIndicator } from '@/editor/canvas/utils/LengthIndicator'
-import { formatLength } from '@/shared/utils/formatLength'
-import { OpeningShape } from './OpeningShape'
+
 import type { PerimeterId } from '@/building/model/ids'
+import type { PerimeterWall } from '@/building/model/model'
 import { useConfigStore } from '@/construction/config/store'
+import { LengthIndicator } from '@/editor/canvas/utils/LengthIndicator'
+import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
+import { type Vec2, direction } from '@/shared/geometry'
+import { COLORS } from '@/shared/theme/colors'
+import { formatLength } from '@/shared/utils/formatLength'
+
+import { OpeningShape } from './OpeningShape'
 
 interface PerimeterWallShapeProps {
   wall: PerimeterWall

@@ -1,6 +1,7 @@
-import type { Tool, CanvasEvent } from '@/editor/tools/system/types'
-import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { CursorArrowIcon } from '@radix-ui/react-icons'
+
+import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
+import type { CanvasEvent, Tool } from '@/editor/tools/system/types'
 
 export class SelectTool implements Tool {
   id = 'basic.select'

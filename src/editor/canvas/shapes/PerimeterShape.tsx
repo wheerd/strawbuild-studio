@@ -1,8 +1,10 @@
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
+
 import type { Perimeter } from '@/building/model/model'
-import { PerimeterWallShape } from './PerimeterWallShape'
-import { PerimeterCornerShape } from './PerimeterCornerShape'
 import { COLORS } from '@/shared/theme/colors'
+
+import { PerimeterCornerShape } from './PerimeterCornerShape'
+import { PerimeterWallShape } from './PerimeterWallShape'
 
 interface PerimeterShapeProps {
   perimeter: Perimeter

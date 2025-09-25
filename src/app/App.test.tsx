@@ -1,6 +1,7 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import App from './App'
 import { Theme } from '@radix-ui/themes'
+import { render, screen, waitFor } from '@testing-library/react'
+
+import App from './App'
 
 test('renders loading state initially', () => {
   render(

@@ -1,17 +1,19 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { createPerimetersSlice, type PerimetersSlice } from './perimeterSlice'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import {
+  type PerimeterId,
+  type PerimeterWallId,
+  type StoreyId,
+  createOpeningId,
+  createPerimeterConstructionMethodId,
+  createPerimeterCornerId,
   createPerimeterId,
   createPerimeterWallId,
-  createPerimeterCornerId,
-  createOpeningId,
-  createStoreyId,
-  type PerimeterWallId,
-  type PerimeterId,
-  type StoreyId,
-  createPerimeterConstructionMethodId
+  createStoreyId
 } from '@/building/model/ids'
-import { createLength, createVec2, type Length, type Polygon2D } from '@/shared/geometry'
+import { type Length, type Polygon2D, createLength, createVec2 } from '@/shared/geometry'
+
+import { type PerimetersSlice, createPerimetersSlice } from './perimeterSlice'
 
 // Mock Zustand following the official testing guide
 vi.mock('zustand')

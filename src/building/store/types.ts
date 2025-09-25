@@ -1,5 +1,5 @@
-import type { StoreysActions, StoreysState } from './slices/storeysSlice'
 import type { PerimetersActions, PerimetersState } from './slices/perimeterSlice'
+import type { StoreysActions, StoreysState } from './slices/storeysSlice'
 
 export interface StoreState extends StoreysState, PerimetersState {}
 

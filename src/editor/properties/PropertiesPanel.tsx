@@ -1,24 +1,24 @@
-import { useCurrentSelection, useSelectionPath } from '@/editor/hooks/useSelectionStore'
-import { useActiveTool } from '@/editor/tools/system/ToolContext'
-import {
-  PerimeterInspector,
-  PerimeterWallInspector,
-  PerimeterCornerInspector,
-  OpeningInspector
-} from '@/building/components/inspectors'
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import { Box, Callout, Flex, Tabs, Text } from '@radix-ui/themes'
+import { useEffect, useState } from 'react'
 
 import {
-  isPerimeterId,
-  isPerimeterWallId,
-  isPerimeterCornerId,
-  isOpeningId,
+  OpeningInspector,
+  PerimeterCornerInspector,
+  PerimeterInspector,
+  PerimeterWallInspector
+} from '@/building/components/inspectors'
+import {
+  type PerimeterId,
   type PerimeterWallId,
-  type PerimeterId
+  isOpeningId,
+  isPerimeterCornerId,
+  isPerimeterId,
+  isPerimeterWallId
 } from '@/building/model/ids'
-import { Box, Flex, Text, Tabs, Callout } from '@radix-ui/themes'
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { useModelActions } from '@/building/store'
-import { useEffect, useState } from 'react'
+import { useCurrentSelection, useSelectionPath } from '@/editor/hooks/useSelectionStore'
+import { useActiveTool } from '@/editor/tools/system/ToolContext'
 import { getEntityDisplayName } from '@/shared/utils/entityDisplay'
 
 export function PropertiesPanel(): React.JSX.Element {

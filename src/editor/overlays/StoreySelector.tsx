@@ -1,9 +1,10 @@
-import React, { useCallback } from 'react'
 import { Pencil1Icon } from '@radix-ui/react-icons'
-import { useStoreysOrderedByLevel, useActiveStoreyId, useModelActions } from '@/building/store'
+import { Box, Card, Code, Flex, IconButton, Select, Text } from '@radix-ui/themes'
+import React, { useCallback } from 'react'
+
 import { StoreyManagementModal } from '@/building/components/StoreyManagementModal'
 import type { StoreyId } from '@/building/model/ids'
-import { Box, Select, IconButton, Flex, Card, Text, Code } from '@radix-ui/themes'
+import { useActiveStoreyId, useModelActions, useStoreysOrderedByLevel } from '@/building/store'
 
 export function getLevelColor(level: number): 'grass' | 'indigo' | 'brown' {
   if (level === 0) {

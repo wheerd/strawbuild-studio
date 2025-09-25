@@ -1,9 +1,10 @@
-import type { SnapResult } from '@/editor/services/snapping/types'
-import type { Vec2 } from '@/shared/geometry'
+import type React from 'react'
+
 import type { SelectableId } from '@/building/model/ids'
 import type { StoreActions } from '@/building/store/types'
 import type { SnappingService } from '@/editor/services/snapping/SnappingService'
-import type React from 'react'
+import type { SnapResult } from '@/editor/services/snapping/types'
+import type { Vec2 } from '@/shared/geometry'
 
 export interface MovementContext<T> {
   entityId: SelectableId

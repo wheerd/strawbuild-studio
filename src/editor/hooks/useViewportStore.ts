@@ -1,5 +1,6 @@
-import { createVec2, type Bounds2D, type Vec2 } from '@/shared/geometry'
 import { create } from 'zustand'
+
+import { type Bounds2D, type Vec2, createVec2 } from '@/shared/geometry'
 
 export interface ViewportState {
   zoom: number

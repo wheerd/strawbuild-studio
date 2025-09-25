@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { StoreyManagementService } from './StoreyManagementService'
-import { createLength } from '@/shared/geometry'
-import { createStoreyLevel } from '@/building/model/model'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { StoreyId, PerimeterId } from '@/building/model/ids'
+import type { PerimeterId, StoreyId } from '@/building/model/ids'
+import { createStoreyLevel } from '@/building/model/model'
+import { createLength } from '@/shared/geometry'
+
+import { StoreyManagementService } from './StoreyManagementService'
 
 describe('StoreyManagementService', () => {
   let service: StoreyManagementService

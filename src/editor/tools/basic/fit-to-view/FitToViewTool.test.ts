@@ -1,10 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { FitToViewTool } from './FitToViewTool'
-import { getModelActions } from '@/building/store'
-import { createVec2 } from '@/shared/geometry/basic'
-import type { Perimeter } from '@/building/model/model'
-import type { ToolContext } from '@/editor/tools/system/types'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import type { StoreyId } from '@/building/model/ids'
+import type { Perimeter } from '@/building/model/model'
+import { getModelActions } from '@/building/store'
+import type { ToolContext } from '@/editor/tools/system/types'
+import { createVec2 } from '@/shared/geometry/basic'
+
+import { FitToViewTool } from './FitToViewTool'
 
 // Mock the store hooks
 vi.mock('@/shared/components/FloorPlanEditor/hooks/useViewportStore')

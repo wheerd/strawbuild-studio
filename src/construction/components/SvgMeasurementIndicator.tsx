@@ -1,4 +1,5 @@
 import React from 'react'
+
 import type { Vec2 } from '@/shared/geometry'
 import { COLORS } from '@/shared/theme/colors'
 

@@ -1,5 +1,5 @@
-import type { Vec3 } from '@/shared/geometry'
 import type { MaterialId } from '@/construction/materials/material'
+import type { Vec3 } from '@/shared/geometry'
 
 export type ConstructionElementType =
   | 'post'

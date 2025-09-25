@@ -1,17 +1,19 @@
-import React, { useState, useMemo } from 'react'
-import { Dialog, IconButton, Flex, Box, Text, Heading, Card, Callout, SegmentedControl } from '@radix-ui/themes'
-import { Cross2Icon, ExclamationTriangleIcon, CrossCircledIcon, CheckCircledIcon } from '@radix-ui/react-icons'
+import { CheckCircledIcon, Cross2Icon, CrossCircledIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import { Box, Callout, Card, Dialog, Flex, Heading, IconButton, SegmentedControl, Text } from '@radix-ui/themes'
+import React, { useMemo, useState } from 'react'
+
+import type { PerimeterId } from '@/building/model/ids'
 import { usePerimeterById } from '@/building/store'
 import { useConfigStore } from '@/construction/config/store'
-import { constructRingBeam, type RingBeamConstructionPlan } from '@/construction/ringBeams/ringBeams'
 import { resolveDefaultMaterial } from '@/construction/materials/material'
-import { ConstructionElementShape } from './ConstructionElementShape'
-import type { PerimeterId } from '@/building/model/ids'
-import { boundsFromPoints } from '@/shared/geometry'
+import { type RingBeamConstructionPlan, constructRingBeam } from '@/construction/ringBeams/ringBeams'
 import { SVGViewport } from '@/shared/components/SVGViewport'
-import { SvgMeasurementIndicator } from './SvgMeasurementIndicator'
-import { COLORS } from '@/shared/theme/colors'
+import { boundsFromPoints } from '@/shared/geometry'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
+import { COLORS } from '@/shared/theme/colors'
+
+import { ConstructionElementShape } from './ConstructionElementShape'
+import { SvgMeasurementIndicator } from './SvgMeasurementIndicator'
 
 export interface RingBeamConstructionModalProps {
   perimeterId: PerimeterId

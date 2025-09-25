@@ -1,8 +1,10 @@
-import { describe, it, expect } from 'vitest'
-import { calculateWallCornerInfo, calculateWallConstructionLength } from './corners'
-import { createVec2, createLength, type Length } from '@/shared/geometry'
-import type { PerimeterWall, PerimeterCorner, Perimeter } from '@/building/model/model'
-import { createPerimeterWallId, createPerimeterId, createPerimeterConstructionMethodId } from '@/building/model/ids'
+import { describe, expect, it } from 'vitest'
+
+import { createPerimeterConstructionMethodId, createPerimeterId, createPerimeterWallId } from '@/building/model/ids'
+import type { Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model/model'
+import { type Length, createLength, createVec2 } from '@/shared/geometry'
+
+import { calculateWallConstructionLength, calculateWallCornerInfo } from './corners'
 
 // Mock data helpers
 function createMockWall(wallLength: Length, thickness: Length): PerimeterWall {

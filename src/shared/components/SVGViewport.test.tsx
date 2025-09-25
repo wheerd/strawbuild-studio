@@ -1,6 +1,8 @@
-import { render, screen, fireEvent } from '@testing-library/react'
-import { SVGViewport } from './SVGViewport'
+import { fireEvent, render, screen } from '@testing-library/react'
+
 import { createVec2 } from '@/shared/geometry'
+
+import { SVGViewport } from './SVGViewport'
 
 describe('SVGViewport', () => {
   const testContentBounds = {

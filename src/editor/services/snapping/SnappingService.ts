@@ -1,14 +1,15 @@
 import {
+  type Line2D,
   type Vec2,
   createVec2,
-  lineIntersection,
+  distanceSquared,
   distanceToInfiniteLine,
-  projectPointOntoLine,
-  type Line2D,
   lineFromSegment,
-  distanceSquared
+  lineIntersection,
+  projectPointOntoLine
 } from '@/shared/geometry'
-import { type SnapResult, type SnappingContext, type SnapConfig, DEFAULT_SNAP_CONFIG } from './types'
+
+import { DEFAULT_SNAP_CONFIG, type SnapConfig, type SnapResult, type SnappingContext } from './types'
 
 /**
  * Integrated snapping service that handles all snap calculations

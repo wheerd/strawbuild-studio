@@ -1,7 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { AddOpeningTool } from './AddOpeningTool'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { createPerimeterToolGroup } from '@/editor/tools/perimeter/index'
 import { createLength } from '@/shared/geometry'
+
+import { AddOpeningTool } from './AddOpeningTool'
 
 describe('AddOpeningTool', () => {
   let addOpeningTool: AddOpeningTool

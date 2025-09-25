@@ -1,6 +1,8 @@
 import { render } from '@testing-library/react'
-import { LengthIndicator } from './LengthIndicator'
+
 import { createVec2 } from '@/shared/geometry'
+
+import { LengthIndicator } from './LengthIndicator'
 
 describe('LengthIndicator', () => {
   const startPoint = createVec2(0, 0)

@@ -1,7 +1,9 @@
-import type { ShortcutDefinition, Tool, ToolContext, CanvasEvent } from './types'
-import type { SelectableId } from '@/building/model/ids'
 import type Konva from 'konva'
-import { isPerimeterId, isPerimeterWallId, isPerimeterCornerId, isOpeningId } from '@/building/model/ids'
+
+import type { SelectableId } from '@/building/model/ids'
+import { isOpeningId, isPerimeterCornerId, isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
+
+import type { CanvasEvent, ShortcutDefinition, Tool, ToolContext } from './types'
 
 export class KeyboardShortcutManager {
   private builtInShortcuts: ShortcutDefinition[] = []

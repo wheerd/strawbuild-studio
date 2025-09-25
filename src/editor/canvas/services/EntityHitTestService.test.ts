@@ -1,7 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { EntityHitTestService } from './EntityHitTestService'
 import type Konva from 'konva'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { createPerimeterId, createPerimeterWallId } from '@/building/model/ids'
+
+import { EntityHitTestService } from './EntityHitTestService'
 
 // Mock Konva Stage
 const mockStage = {

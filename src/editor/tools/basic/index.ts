@@ -1,9 +1,10 @@
 import type { ToolGroup } from '@/editor/tools/system/types'
-import { SelectTool } from './SelectTool'
-import { MoveTool } from './movement/MoveTool'
+
 import { RotateTool } from './RotateTool'
+import { SelectTool } from './SelectTool'
 import { TestDataTool } from './TestDataTool'
 import { FitToViewTool } from './fit-to-view/FitToViewTool'
+import { MoveTool } from './movement/MoveTool'
 
 // Export individual tools
 export { SelectTool } from './SelectTool'

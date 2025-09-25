@@ -1,9 +1,10 @@
-import React from 'react'
-import { useShowGrid, useGridSize, useGridActions } from '@/editor/hooks/useGrid'
-import { formatLength } from '@/shared/utils/formatLength'
-import type { Length } from '@/shared/geometry'
-import { Box, Button, Card, Flex, Inset, Text } from '@radix-ui/themes'
 import { FrameIcon } from '@radix-ui/react-icons'
+import { Box, Button, Card, Flex, Inset, Text } from '@radix-ui/themes'
+import React from 'react'
+
+import { useGridActions, useGridSize, useShowGrid } from '@/editor/hooks/useGrid'
+import type { Length } from '@/shared/geometry'
+import { formatLength } from '@/shared/utils/formatLength'
 
 export function GridSizeDisplay(): React.JSX.Element {
   const showGrid = useShowGrid()

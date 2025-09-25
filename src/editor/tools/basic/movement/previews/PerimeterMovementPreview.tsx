@@ -1,10 +1,11 @@
 import React from 'react'
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
-import { COLORS } from '@/shared/theme/colors'
-import { add } from '@/shared/geometry'
-import type { MovementPreviewComponentProps } from '@/editor/tools/basic/movement/MovementBehavior'
+
 import type { Perimeter } from '@/building/model/model'
+import type { MovementPreviewComponentProps } from '@/editor/tools/basic/movement/MovementBehavior'
 import type { PerimeterMovementState } from '@/editor/tools/basic/movement/behaviors/PerimeterMovementBehavior'
+import { add } from '@/shared/geometry'
+import { COLORS } from '@/shared/theme/colors'
 
 export function PerimeterMovementPreview({
   movementState,

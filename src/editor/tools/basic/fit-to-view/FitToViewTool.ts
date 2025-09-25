@@ -1,8 +1,9 @@
-import type { Tool, CanvasEvent, ToolContext } from '@/editor/tools/system/types'
+import { AllSidesIcon } from '@radix-ui/react-icons'
+
 import { getModelActions } from '@/building/store'
 import { toolManager } from '@/editor/tools/system/ToolManager'
+import type { CanvasEvent, Tool, ToolContext } from '@/editor/tools/system/types'
 import { boundsFromPoints } from '@/shared/geometry'
-import { AllSidesIcon } from '@radix-ui/react-icons'
 
 export class FitToViewTool implements Tool {
   id = 'basic.fitToView'

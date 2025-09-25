@@ -1,21 +1,22 @@
-import React, { useState, useMemo } from 'react'
-import { Dialog, IconButton, Flex, Box, Text, Callout, SegmentedControl } from '@radix-ui/themes'
-import { ExclamationTriangleIcon, CrossCircledIcon, CheckCircledIcon, Cross2Icon } from '@radix-ui/react-icons'
-import {
-  resolveDefaultMaterial,
-  type WallConstructionPlan,
-  type ConstructionIssue,
-  type ConstructionElementId,
-  type ConstructionElement,
-  getElementPosition,
-  getElementSize
-} from '@/construction/walls'
-import { boundsFromPoints, createVec2, type Bounds2D, type Vec2 } from '@/shared/geometry'
-import { COLORS } from '@/shared/theme/colors'
+import { CheckCircledIcon, Cross2Icon, CrossCircledIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import { Box, Callout, Dialog, Flex, IconButton, SegmentedControl, Text } from '@radix-ui/themes'
+import React, { useMemo, useState } from 'react'
+
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
+import {
+  type ConstructionElement,
+  type ConstructionElementId,
+  type ConstructionIssue,
+  type WallConstructionPlan,
+  getElementPosition,
+  getElementSize,
+  resolveDefaultMaterial
+} from '@/construction/walls'
 import { SVGViewport } from '@/shared/components/SVGViewport'
-import { convertConstructionToSvg, convertPointToSvg, type ViewType } from '@/shared/utils/constructionCoordinates'
+import { type Bounds2D, type Vec2, boundsFromPoints, createVec2 } from '@/shared/geometry'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
+import { COLORS } from '@/shared/theme/colors'
+import { type ViewType, convertConstructionToSvg, convertPointToSvg } from '@/shared/utils/constructionCoordinates'
 
 interface WallConstructionPlanDisplayProps {
   plan: WallConstructionPlan

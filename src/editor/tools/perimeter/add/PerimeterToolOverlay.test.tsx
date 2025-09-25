@@ -1,10 +1,12 @@
 import { render } from '@testing-library/react'
 import { vi } from 'vitest'
-import { PerimeterToolOverlay } from './PerimeterToolOverlay'
-import { PerimeterTool } from './PerimeterTool'
-import { createVec2, createLength } from '@/shared/geometry'
-import type { SnapResult } from '@/editor/services/snapping/types'
+
 import { createPerimeterConstructionMethodId } from '@/building/model/ids'
+import type { SnapResult } from '@/editor/services/snapping/types'
+import { createLength, createVec2 } from '@/shared/geometry'
+
+import { PerimeterTool } from './PerimeterTool'
+import { PerimeterToolOverlay } from './PerimeterToolOverlay'
 
 // Mock the viewport store
 const mockUseZoom = vi.fn()

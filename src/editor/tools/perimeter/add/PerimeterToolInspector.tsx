@@ -1,12 +1,14 @@
-import { useCallback, useEffect, useState } from 'react'
 import * as Select from '@radix-ui/react-select'
+import { useCallback, useEffect, useState } from 'react'
+
+import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
+import { usePerimeterConstructionMethods, useRingBeamConstructionMethods } from '@/construction/config/store'
+import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
+import type { ToolInspectorProps } from '@/editor/tools/system/types'
 import { createLength } from '@/shared/geometry'
 import { useDebouncedNumericInput } from '@/shared/hooks/useDebouncedInput'
-import type { ToolInspectorProps } from '@/editor/tools/system/types'
+
 import type { PerimeterTool } from './PerimeterTool'
-import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
-import type { RingBeamConstructionMethodId, PerimeterConstructionMethodId } from '@/building/model/ids'
-import { useRingBeamConstructionMethods, usePerimeterConstructionMethods } from '@/construction/config/store'
 
 export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterTool>): React.JSX.Element {
   const { state } = useReactiveTool(tool)

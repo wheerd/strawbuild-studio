@@ -1,4 +1,4 @@
-import { vec2, mat2d, vec3 } from 'gl-matrix'
+import { mat2d, vec2, vec3 } from 'gl-matrix'
 
 // Core types - simplified with gl-matrix
 export type Vec2 = vec2

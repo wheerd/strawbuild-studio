@@ -1,9 +1,11 @@
 import { render } from '@testing-library/react'
 import { vi } from 'vitest'
-import { SelectionOverlay } from './SelectionOverlay'
-import { createVec2 } from '@/shared/geometry'
+
 import type { Perimeter } from '@/building/model/model'
 import { usePerimeterById } from '@/building/store'
+import { createVec2 } from '@/shared/geometry'
+
+import { SelectionOverlay } from './SelectionOverlay'
 
 // Mock the required hooks and stores
 const mockUseSelectionPath = vi.fn()

@@ -1,8 +1,9 @@
-import type { Tool, ToolContext } from '@/editor/tools/system/types'
-import { createLength, createVec2, boundsFromPoints } from '@/shared/geometry'
-import { toolManager } from '@/editor/tools/system/ToolManager'
 import { RocketIcon } from '@radix-ui/react-icons'
+
 import { useConfigStore } from '@/construction/config/store'
+import { toolManager } from '@/editor/tools/system/ToolManager'
+import type { Tool, ToolContext } from '@/editor/tools/system/types'
+import { boundsFromPoints, createLength, createVec2 } from '@/shared/geometry'
 
 /**
  * Tool for adding test perimeter data to demonstrate entity hit testing.

@@ -1,4 +1,5 @@
 import { Layer } from 'react-konva/lib/ReactKonvaCore'
+
 import { usePerimetersOfActiveStorey } from '@/building/store'
 import { PerimeterShape } from '@/editor/canvas/shapes/PerimeterShape'
 

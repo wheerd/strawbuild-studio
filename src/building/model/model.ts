@@ -1,11 +1,11 @@
 import type {
-  StoreyId,
+  OpeningId,
+  PerimeterConstructionMethodId,
+  PerimeterCornerId,
   PerimeterId,
   PerimeterWallId,
-  PerimeterCornerId,
-  OpeningId,
   RingBeamConstructionMethodId,
-  PerimeterConstructionMethodId
+  StoreyId
 } from '@/building/model/ids'
 import type { Length, LineSegment2D, Vec2 } from '@/shared/geometry'
 

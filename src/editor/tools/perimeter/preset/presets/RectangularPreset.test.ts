@@ -1,5 +1,7 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
+
 import { createLength } from '@/shared/geometry'
+
 import { RectangularPreset } from './RectangularPreset'
 import type { RectangularPresetConfig } from './types'
 

@@ -1,12 +1,14 @@
-import type { Tool, CanvasEvent } from '@/editor/tools/system/types'
-import type { Vec2 } from '@/shared/geometry'
-import type { MovementBehavior, MovementContext, PointerMovementState } from './MovementBehavior'
-import { BaseTool } from '@/editor/tools/system/BaseTool'
-import { getMovementBehavior } from './movementBehaviors'
-import { defaultSnappingService } from '@/editor/services/snapping/SnappingService'
-import { distanceSquared, subtract } from '@/shared/geometry'
-import { MoveToolOverlay } from './MoveToolOverlay'
 import { MoveIcon } from '@radix-ui/react-icons'
+
+import { defaultSnappingService } from '@/editor/services/snapping/SnappingService'
+import { BaseTool } from '@/editor/tools/system/BaseTool'
+import type { CanvasEvent, Tool } from '@/editor/tools/system/types'
+import type { Vec2 } from '@/shared/geometry'
+import { distanceSquared, subtract } from '@/shared/geometry'
+
+import { MoveToolOverlay } from './MoveToolOverlay'
+import type { MovementBehavior, MovementContext, PointerMovementState } from './MovementBehavior'
+import { getMovementBehavior } from './movementBehaviors'
 
 export class MoveTool extends BaseTool implements Tool {
   id = 'basic.move'

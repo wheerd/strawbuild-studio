@@ -1,5 +1,5 @@
-import type { Tool, ToolGroup, CanvasEvent, ToolContext } from './types'
 import { keyboardShortcutManager } from './KeyboardShortcutManager'
+import type { CanvasEvent, Tool, ToolContext, ToolGroup } from './types'
 
 export interface ToolManagerState {
   activeTool: Tool | null

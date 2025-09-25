@@ -1,4 +1,15 @@
+import { vec2 } from 'gl-matrix'
+
+import type { PerimeterId } from '@/building/model/ids'
+import type { Perimeter, PerimeterCorner } from '@/building/model/model'
+import { type ConstructionElement, createConstructionElement, createCutCuboidShape } from '@/construction/elements'
+import type { MaterialId, ResolveMaterialFunction } from '@/construction/materials/material'
+import type { Measurement } from '@/construction/measurements'
+import type { ConstructionIssue } from '@/construction/results'
 import {
+  type Length,
+  type Polygon2D,
+  type Vec3,
   direction,
   distance,
   distanceSquared,
@@ -6,18 +17,8 @@ import {
   lineIntersection,
   offsetPolygon,
   projectPointOntoLine,
-  simplifyPolygon,
-  type Length,
-  type Polygon2D,
-  type Vec3
+  simplifyPolygon
 } from '@/shared/geometry'
-import type { MaterialId, ResolveMaterialFunction } from '@/construction/materials/material'
-import { createConstructionElement, createCutCuboidShape, type ConstructionElement } from '@/construction/elements'
-import type { ConstructionIssue } from '@/construction/results'
-import type { Measurement } from '@/construction/measurements'
-import type { Perimeter, PerimeterCorner } from '@/building/model/model'
-import type { PerimeterId } from '@/building/model/ids'
-import { vec2 } from 'gl-matrix'
 import { formatLength } from '@/shared/utils/formatLength'
 
 export interface BaseRingBeamConfig {

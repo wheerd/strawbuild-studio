@@ -1,6 +1,7 @@
 import { vec2 } from 'gl-matrix'
-import type { Vec2, Length } from './basic'
-import { createLength, subtract, normalize, dot, distance } from './basic'
+
+import type { Length, Vec2 } from './basic'
+import { createLength, distance, dot, normalize, subtract } from './basic'
 
 // Line-related types
 export interface Line2D {

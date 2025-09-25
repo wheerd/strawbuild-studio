@@ -1,6 +1,7 @@
-import type { Tool, CanvasEvent } from '@/editor/tools/system/types'
-import type { Vec2 } from '@/shared/geometry'
 import { UpdateIcon } from '@radix-ui/react-icons'
+
+import type { CanvasEvent, Tool } from '@/editor/tools/system/types'
+import type { Vec2 } from '@/shared/geometry'
 
 export interface RotateToolState {
   rotationStep: number // degrees

@@ -1,7 +1,8 @@
 import { Line } from 'react-konva/lib/ReactKonvaCore'
+
+import { useZoom } from '@/editor/hooks/useViewportStore'
 import type { Vec2 } from '@/shared/geometry'
 import { offsetPolygon } from '@/shared/geometry'
-import { useZoom } from '@/editor/hooks/useViewportStore'
 import { COLORS } from '@/shared/theme/colors'
 
 interface SelectionOutlineProps {

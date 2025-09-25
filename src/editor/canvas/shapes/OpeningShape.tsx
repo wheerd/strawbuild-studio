@@ -1,9 +1,10 @@
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
-import type { Opening, PerimeterWall } from '@/building/model/model'
+
 import type { PerimeterId } from '@/building/model/ids'
-import { midpoint, add, scale, type Vec2 } from '@/shared/geometry'
-import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
+import type { Opening, PerimeterWall } from '@/building/model/model'
 import { LengthIndicator } from '@/editor/canvas/utils/LengthIndicator'
+import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
+import { type Vec2, add, midpoint, scale } from '@/shared/geometry'
 import { COLORS } from '@/shared/theme/colors'
 import { formatLength } from '@/shared/utils/formatLength'
 

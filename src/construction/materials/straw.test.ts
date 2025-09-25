@@ -1,8 +1,10 @@
-import { describe, it, expect } from 'vitest'
-import type { Length, Vec3 } from '@/shared/geometry'
-import type { MaterialId } from './material'
-import { constructStraw, type StrawConfig } from './straw'
+import { describe, expect, it } from 'vitest'
+
 import { aggregateResults } from '@/construction/results'
+import type { Length, Vec3 } from '@/shared/geometry'
+
+import type { MaterialId } from './material'
+import { type StrawConfig, constructStraw } from './straw'
 
 const mockMaterialId = 'test-material' as MaterialId
 

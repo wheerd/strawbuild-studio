@@ -1,9 +1,9 @@
-import type { Length, Vec2 } from '@/shared/geometry'
-import { createVec2 } from '@/shared/geometry'
-import { formatLength } from '@/shared/utils/formatLength'
 import type { ConstructionElement } from '@/construction/elements'
 import { getElementPosition, getElementSize } from '@/construction/elements'
 import type { ConstructionSegment } from '@/construction/walls/construction'
+import type { Length, Vec2 } from '@/shared/geometry'
+import { createVec2 } from '@/shared/geometry'
+import { formatLength } from '@/shared/utils/formatLength'
 
 export interface Measurement {
   type: MeasurementType

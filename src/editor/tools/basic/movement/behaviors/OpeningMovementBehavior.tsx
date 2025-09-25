@@ -1,15 +1,15 @@
+import type { SelectableId } from '@/building/model/ids'
+import { isOpeningId, isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
+import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
+import type { StoreActions } from '@/building/store/types'
 import type {
   MovementBehavior,
   MovementContext,
   PointerMovementState
 } from '@/editor/tools/basic/movement/MovementBehavior'
-import type { SelectableId } from '@/building/model/ids'
-import type { StoreActions } from '@/building/store/types'
-import type { Opening, PerimeterWall, Perimeter } from '@/building/model/model'
-import type { Length } from '@/shared/geometry'
-import { add, dot, scale, createLength, subtract } from '@/shared/geometry'
-import { isPerimeterId, isPerimeterWallId, isOpeningId } from '@/building/model/ids'
 import { OpeningMovementPreview } from '@/editor/tools/basic/movement/previews/OpeningMovementPreview'
+import type { Length } from '@/shared/geometry'
+import { add, createLength, dot, scale, subtract } from '@/shared/geometry'
 
 // Opening movement needs access to the wall, wall, and opening
 export interface OpeningEntityContext {

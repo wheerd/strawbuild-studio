@@ -1,4 +1,5 @@
 import type { ConstructionElement, ResolveMaterialFunction } from '@/construction/walls'
+
 import { CuboidShape } from './CuboidShape'
 import { CutCuboidShape } from './CutCuboidShape'
 

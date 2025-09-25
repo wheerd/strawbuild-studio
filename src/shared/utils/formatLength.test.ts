@@ -1,6 +1,8 @@
-import { describe, it, expect } from 'vitest'
-import { formatLength } from './formatLength'
+import { describe, expect, it } from 'vitest'
+
 import type { Length } from '@/shared/geometry'
+
+import { formatLength } from './formatLength'
 
 describe('formatLength', () => {
   describe('mm format (< 100mm and not divisible by 10)', () => {

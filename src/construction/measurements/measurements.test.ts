@@ -1,13 +1,15 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
 import type { ConstructionElement } from '@/construction/elements'
-import { createCuboidShape, createConstructionElement } from '@/construction/elements'
+import { createConstructionElement, createCuboidShape } from '@/construction/elements'
 import type { ConstructionSegment } from '@/construction/walls/construction'
-import {
-  calculatePostSpacingMeasurements,
-  calculateOpeningMeasurements,
-  calculateOpeningSpacingMeasurements
-} from './measurements'
 import type { Length } from '@/shared/geometry'
+
+import {
+  calculateOpeningMeasurements,
+  calculateOpeningSpacingMeasurements,
+  calculatePostSpacingMeasurements
+} from './measurements'
 
 // Mock the formatLength utility
 vi.mock('@/shared/utils/formatLength', () => ({

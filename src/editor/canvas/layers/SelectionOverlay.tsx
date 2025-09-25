@@ -1,13 +1,14 @@
 import { useMemo } from 'react'
 import { Group } from 'react-konva/lib/ReactKonvaCore'
-import type { Vec2 } from '@/shared/geometry'
-import { add, scale } from '@/shared/geometry'
-import type { PerimeterWallId, PerimeterCornerId, OpeningId, SelectableId, PerimeterId } from '@/building/model/ids'
-import { isPerimeterId, isPerimeterWallId, isPerimeterCornerId, isOpeningId } from '@/building/model/ids'
+
+import type { OpeningId, PerimeterCornerId, PerimeterId, PerimeterWallId, SelectableId } from '@/building/model/ids'
+import { isOpeningId, isPerimeterCornerId, isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
 import type { Perimeter } from '@/building/model/model'
 import { usePerimeterById } from '@/building/store'
-import { useSelectionPath, useCurrentSelection } from '@/editor/hooks/useSelectionStore'
 import { SelectionOutline } from '@/editor/canvas/utils/SelectionOutline'
+import { useCurrentSelection, useSelectionPath } from '@/editor/hooks/useSelectionStore'
+import type { Vec2 } from '@/shared/geometry'
+import { add, scale } from '@/shared/geometry'
 
 /**
  * Selection Path Structure Documentation:

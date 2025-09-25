@@ -1,7 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import type { StoreyId } from '@/building/model/ids'
 import { createLength } from '@/shared/geometry'
-import { createStoreysSlice, type StoreysSlice } from './storeysSlice'
+
+import { type StoreysSlice, createStoreysSlice } from './storeysSlice'
 
 // Mock Zustand following the official testing guide
 vi.mock('zustand')

@@ -1,7 +1,8 @@
 import React from 'react'
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
-import type { SnapResult } from '@/editor/services/snapping/types'
+
 import { useStageHeight, useStageWidth, useZoom } from '@/editor/hooks/useViewportStore'
+import type { SnapResult } from '@/editor/services/snapping/types'
 import { COLORS } from '@/shared/theme/colors'
 
 interface SnappingLinesProps {

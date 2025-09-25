@@ -1,5 +1,6 @@
-import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import { AllSidesIcon } from '@radix-ui/react-icons'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
 import type { Bounds2D } from '@/shared/geometry'
 
 interface SVGViewportProps {

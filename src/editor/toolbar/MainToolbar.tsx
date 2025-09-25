@@ -1,6 +1,7 @@
-import React, { useCallback } from 'react'
 import * as Toolbar from '@radix-ui/react-toolbar'
-import { Flex, Tooltip, Kbd, IconButton, Text, Separator } from '@radix-ui/themes'
+import { Flex, IconButton, Kbd, Separator, Text, Tooltip } from '@radix-ui/themes'
+import React, { useCallback } from 'react'
+
 import { useToolContext, useToolManager, useToolManagerState } from '@/editor/tools/system/ToolContext'
 import { Logo } from '@/shared/components/Logo'
 

@@ -1,6 +1,6 @@
-import { afterEach, vi, beforeAll } from 'vitest'
-import { cleanup } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
+import { cleanup } from '@testing-library/react'
+import { afterEach, beforeAll, vi } from 'vitest'
 import 'vitest-canvas-mock'
 
 // Mock Zustand for consistent testing

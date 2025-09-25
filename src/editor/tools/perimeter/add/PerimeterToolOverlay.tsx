@@ -1,11 +1,13 @@
 import React from 'react'
-import { Group, Line, Circle } from 'react-konva/lib/ReactKonvaCore'
-import type { ToolOverlayComponentProps } from '@/editor/tools/system/types'
-import type { PerimeterTool } from './PerimeterTool'
-import { useZoom } from '@/editor/hooks/useViewportStore'
-import { COLORS } from '@/shared/theme/colors'
-import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
+import { Circle, Group, Line } from 'react-konva/lib/ReactKonvaCore'
+
 import { SnappingLines } from '@/editor/canvas/utils/SnappingLines'
+import { useZoom } from '@/editor/hooks/useViewportStore'
+import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
+import type { ToolOverlayComponentProps } from '@/editor/tools/system/types'
+import { COLORS } from '@/shared/theme/colors'
+
+import type { PerimeterTool } from './PerimeterTool'
 
 /**
  * React overlay component for PerimeterTool with zoom-responsive rendering.

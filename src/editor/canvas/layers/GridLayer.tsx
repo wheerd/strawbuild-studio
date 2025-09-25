@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { Layer, Line } from 'react-konva/lib/ReactKonvaCore'
-import { useShowGrid, useGridActions } from '@/editor/hooks/useGrid'
+
+import { useGridActions, useShowGrid } from '@/editor/hooks/useGrid'
 import { COLORS } from '@/shared/theme/colors'
 
 interface ViewportState {

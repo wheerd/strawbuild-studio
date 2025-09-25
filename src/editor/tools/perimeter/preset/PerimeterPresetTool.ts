@@ -1,12 +1,14 @@
-import type { Tool, CanvasEvent } from '@/editor/tools/system/types'
-import type { Vec2, Polygon2D } from '@/shared/geometry'
-import { add, polygonIsClockwise } from '@/shared/geometry'
-import { BaseTool } from '@/editor/tools/system/BaseTool'
 import { BoxModelIcon } from '@radix-ui/react-icons'
-import type { PerimeterPreset, BasePresetConfig } from './presets'
-import { RectangularPreset, LShapedPreset } from './presets'
-import { PerimeterPresetToolOverlay } from './PerimeterPresetToolOverlay'
+
+import { BaseTool } from '@/editor/tools/system/BaseTool'
+import type { CanvasEvent, Tool } from '@/editor/tools/system/types'
+import type { Polygon2D, Vec2 } from '@/shared/geometry'
+import { add, polygonIsClockwise } from '@/shared/geometry'
+
 import { PerimeterPresetToolInspector } from './PerimeterPresetToolInspector'
+import { PerimeterPresetToolOverlay } from './PerimeterPresetToolOverlay'
+import type { BasePresetConfig, PerimeterPreset } from './presets'
+import { LShapedPreset, RectangularPreset } from './presets'
 
 interface PerimeterPresetToolState {
   activePreset: PerimeterPreset | null

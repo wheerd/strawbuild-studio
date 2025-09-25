@@ -1,11 +1,13 @@
 import React from 'react'
-import { Group, Line, Circle } from 'react-konva/lib/ReactKonvaCore'
-import type { ToolOverlayComponentProps } from '@/editor/tools/system/types'
-import type { PerimeterPresetTool } from './PerimeterPresetTool'
+import { Circle, Group, Line } from 'react-konva/lib/ReactKonvaCore'
+
 import { useZoom } from '@/editor/hooks/useViewportStore'
-import { COLORS } from '@/shared/theme/colors'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
+import type { ToolOverlayComponentProps } from '@/editor/tools/system/types'
 import { offsetPolygon } from '@/shared/geometry'
+import { COLORS } from '@/shared/theme/colors'
+
+import type { PerimeterPresetTool } from './PerimeterPresetTool'
 
 /**
  * React overlay component for PerimeterPresetTool with zoom-responsive rendering.

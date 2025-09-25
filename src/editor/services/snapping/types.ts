@@ -1,4 +1,4 @@
-import type { Vec2, Line2D, LineSegment2D, Length } from '@/shared/geometry'
+import type { Length, Line2D, LineSegment2D, Vec2 } from '@/shared/geometry'
 
 export interface SnapResult {
   position: Vec2

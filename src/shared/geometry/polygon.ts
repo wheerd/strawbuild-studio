@@ -1,13 +1,13 @@
-import { polygon as turfPolygon, lineString as turfLineString, point as turfPoint } from '@turf/helpers'
-import { kinks } from '@turf/kinks'
-import { booleanValid } from '@turf/boolean-valid'
-import { lineIntersect } from '@turf/line-intersect'
 import { booleanPointInPolygon } from '@turf/boolean-point-in-polygon'
+import { booleanValid } from '@turf/boolean-valid'
+import { lineString as turfLineString, point as turfPoint, polygon as turfPolygon } from '@turf/helpers'
+import { kinks } from '@turf/kinks'
+import { lineIntersect } from '@turf/line-intersect'
 import type { Feature, Polygon as GeoJSONPolygon, LineString } from 'geojson'
 
-import type { Vec2, Area, Length, Bounds2D } from './basic'
+import type { Area, Bounds2D, Length, Vec2 } from './basic'
 import { boundsFromPoints, createArea, createLength, distance } from './basic'
-import { distanceToLineSegment, type LineSegment2D } from './line'
+import { type LineSegment2D, distanceToLineSegment } from './line'
 
 // Polygon types
 export interface Polygon2D {

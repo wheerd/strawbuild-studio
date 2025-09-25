@@ -1,11 +1,19 @@
-import type { PerimeterWall, Perimeter } from '@/building/model/model'
-import type { Length, Vec3 } from '@/shared/geometry'
-import { constructPost, type PostConfig } from '@/construction/materials/posts'
+import type { Perimeter, PerimeterWall } from '@/building/model/model'
+import type { LayersConfig } from '@/construction/config/types'
 import type { ConstructionElementId } from '@/construction/elements'
 import { createConstructionElementId } from '@/construction/elements'
-import type { ConstructionIssue, ConstructionResult } from '@/construction/results'
-import { aggregateResults, yieldError, yieldWarning, yieldAndCollectElementIds } from '@/construction/results'
+import { resolveDefaultMaterial } from '@/construction/materials/material'
+import type { ResolveMaterialFunction } from '@/construction/materials/material'
+import { type PostConfig, constructPost } from '@/construction/materials/posts'
+import { constructStraw } from '@/construction/materials/straw'
 import type { Measurement } from '@/construction/measurements'
+import {
+  calculateOpeningSpacingMeasurements,
+  calculatePostSpacingMeasurements
+} from '@/construction/measurements/measurements'
+import { constructOpening } from '@/construction/openings/openings'
+import type { ConstructionIssue, ConstructionResult } from '@/construction/results'
+import { aggregateResults, yieldAndCollectElementIds, yieldError, yieldWarning } from '@/construction/results'
 import type {
   BaseConstructionConfig,
   ConstructionSegment,
@@ -13,17 +21,9 @@ import type {
   WallConstructionPlan,
   WallConstructionSegment
 } from '@/construction/walls/construction'
+import { calculateWallConstructionLength, calculateWallCornerInfo } from '@/construction/walls/corners/corners'
 import { segmentWall } from '@/construction/walls/segmentation'
-import { constructOpening } from '@/construction/openings/openings'
-import { resolveDefaultMaterial } from '@/construction/materials/material'
-import type { ResolveMaterialFunction } from '@/construction/materials/material'
-import { constructStraw } from '@/construction/materials/straw'
-import {
-  calculatePostSpacingMeasurements,
-  calculateOpeningSpacingMeasurements
-} from '@/construction/measurements/measurements'
-import { calculateWallCornerInfo, calculateWallConstructionLength } from '@/construction/walls/corners/corners'
-import type { LayersConfig } from '@/construction/config/types'
+import type { Length, Vec3 } from '@/shared/geometry'
 
 export interface InfillConstructionConfig extends BaseConstructionConfig {
   type: 'infill'

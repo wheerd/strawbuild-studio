@@ -1,8 +1,9 @@
+import type { NonStrawbaleConfig } from '@/construction/config/types'
+import { createLength } from '@/shared/geometry'
+
 import type { ConstructionType, PerimeterWallConstructionMethod } from './construction'
 import { constructInfillWall } from './infill/infill'
 import { constructStrawhengeWall } from './strawhenge/strawhenge'
-import type { NonStrawbaleConfig } from '@/construction/config/types'
-import { createLength } from '@/shared/geometry'
 
 // Re-export from new modular structure
 export * from '@/construction/elements'

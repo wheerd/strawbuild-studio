@@ -1,7 +1,9 @@
-import { describe, it, expect } from 'vitest'
 import { render } from '@testing-library/react'
-import { CutCuboidShape } from './CutCuboidShape'
+import { describe, expect, it } from 'vitest'
+
 import type { CutCuboid } from '@/construction/walls'
+
+import { CutCuboidShape } from './CutCuboidShape'
 
 describe('CutCuboidShape', () => {
   const mockCutCuboid: CutCuboid = {
