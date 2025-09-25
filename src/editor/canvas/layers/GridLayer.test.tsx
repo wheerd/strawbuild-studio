@@ -2,19 +2,15 @@ import { describe, it, expect, vi } from 'vitest'
 import { render } from '@testing-library/react'
 import { GridLayer } from './GridLayer'
 
-// Mock the editor store
+// Mock the grid hooks
 const mockSetGridSize = vi.fn()
 
-vi.mock('@/editor/hooks/useEditorStore', () => ({
-  useEditorStore: (selector: any) => {
-    const mockState = {
-      showGrid: true,
-      gridSize: 500,
-      setGridSize: mockSetGridSize
-    }
-    return selector(mockState)
-  },
-  useShowGrid: () => true
+vi.mock('@/editor/hooks/useGrid', () => ({
+  useShowGrid: () => true,
+  useGridActions: () => ({
+    setShowGrid: vi.fn(),
+    setGridSize: mockSetGridSize
+  })
 }))
 
 // Test the grid size calculation algorithm
@@ -69,16 +65,12 @@ describe('GridLayer', () => {
 
     it('should not render grid lines when showGrid is false', () => {
       // Mock showGrid to false for this test
-      vi.doMock('@/editor/hooks/useEditorStore', () => ({
-        useEditorStore: (selector: any) => {
-          const mockState = {
-            showGrid: false,
-            gridSize: 500,
-            setGridSize: mockSetGridSize
-          }
-          return selector(mockState)
-        },
-        useShowGrid: () => false
+      vi.doMock('@/editor/hooks/useGrid', () => ({
+        useShowGrid: () => false,
+        useGridActions: () => ({
+          setShowGrid: vi.fn(),
+          setGridSize: mockSetGridSize
+        })
       }))
 
       const viewport = { zoom: 1, panX: 0, panY: 0 }

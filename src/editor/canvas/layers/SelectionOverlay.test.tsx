@@ -21,7 +21,7 @@ vi.mock('@/building/store', () => ({
 const mockUsePerimeterById = vi.mocked(usePerimeterById)
 
 // Mock SelectionOutline component
-vi.mock('../../overlays/SelectionOutline', () => ({
+vi.mock('@/editor/canvas/utils/SelectionOutline', () => ({
   SelectionOutline: ({ points }: { points: any[] }) => (
     <div data-testid="selection-outline" data-points={points.length} />
   )

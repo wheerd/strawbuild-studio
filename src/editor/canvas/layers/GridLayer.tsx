@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Layer, Line } from 'react-konva/lib/ReactKonvaCore'
-import { useShowGrid, useEditorStore } from '@/editor/hooks/useEditorStore'
+import { useShowGrid, useGridActions } from '@/editor/hooks/useGrid'
 import { COLORS } from '@/shared/theme/colors'
 
 interface ViewportState {
@@ -34,7 +34,7 @@ function calculateDynamicGridSize(zoom: number): number {
 
 export function GridLayer({ width = 800, height = 600, viewport }: GridLayerProps): React.JSX.Element {
   const showGrid = useShowGrid()
-  const setGridSize = useEditorStore(state => state.setGridSize)
+  const { setGridSize } = useGridActions()
 
   // Calculate dynamic grid size based on current zoom
   const dynamicGridSize = calculateDynamicGridSize(viewport.zoom)

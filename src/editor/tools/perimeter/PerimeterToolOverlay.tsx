@@ -5,7 +5,7 @@ import type { PerimeterTool } from './PerimeterTool'
 import { useZoom } from '@/editor/hooks/useViewportStore'
 import { COLORS } from '@/shared/theme/colors'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
-import { SnappingLines } from '@/editor/overlays/SnappingLines'
+import { SnappingLines } from '@/editor/canvas/utils/SnappingLines'
 
 /**
  * React overlay component for PerimeterTool with zoom-responsive rendering.

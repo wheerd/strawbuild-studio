@@ -7,15 +7,14 @@ vi.mock('@/shared/utils/formatLength', () => ({
   formatLength: vi.fn((length: number) => `${length}mm`) // Mock to return simple format for tests
 }))
 
-// Mock the editor store
-vi.mock('@/editor/hooks/useEditorStore', () => ({
-  useEditorStore: (selector: any) => {
-    const mockState = {
-      showGrid: true,
-      gridSize: 500
-    }
-    return selector(mockState)
-  }
+// Mock the grid hooks
+vi.mock('@/editor/hooks/useGrid', () => ({
+  useShowGrid: () => true,
+  useGridSize: () => 500,
+  useGridActions: () => ({
+    setShowGrid: vi.fn(),
+    setGridSize: vi.fn()
+  })
 }))
 
 describe('GridSizeDisplay', () => {

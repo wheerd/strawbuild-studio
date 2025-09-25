@@ -1,14 +1,14 @@
 import React from 'react'
-import { useEditorStore } from '@/editor/hooks/useEditorStore'
+import { useShowGrid, useGridSize, useGridActions } from '@/editor/hooks/useGrid'
 import { formatLength } from '@/shared/utils/formatLength'
 import type { Length } from '@/shared/geometry'
 import { Box, Button, Card, Flex, Inset, Text } from '@radix-ui/themes'
 import { FrameIcon } from '@radix-ui/react-icons'
 
 export function GridSizeDisplay(): React.JSX.Element {
-  const showGrid = useEditorStore(state => state.showGrid)
-  const gridSize = useEditorStore(state => state.gridSize)
-  const setShowGrid = useEditorStore(state => state.setShowGrid)
+  const showGrid = useShowGrid()
+  const gridSize = useGridSize()
+  const { setShowGrid } = useGridActions()
 
   return (
     <Box bottom="2" right="2" className="absolute z-10">

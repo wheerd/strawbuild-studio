@@ -3,7 +3,7 @@ import type { Opening, PerimeterWall } from '@/shared/types/model'
 import type { PerimeterId } from '@/shared/types/ids'
 import { midpoint, add, scale, type Vec2 } from '@/shared/geometry'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
-import { LengthIndicator } from '@/editor/overlays/LengthIndicator'
+import { LengthIndicator } from '@/editor/canvas/utils/LengthIndicator'
 import { COLORS } from '@/shared/theme/colors'
 import { formatLength } from '@/shared/utils/formatLength'
 

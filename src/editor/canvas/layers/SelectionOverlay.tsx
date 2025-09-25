@@ -7,7 +7,7 @@ import { isPerimeterId, isPerimeterWallId, isPerimeterCornerId, isOpeningId } fr
 import type { Perimeter } from '@/shared/types/model'
 import { usePerimeterById } from '@/building/store'
 import { useSelectionPath, useCurrentSelection } from '@/editor/hooks/useSelectionStore'
-import { SelectionOutline } from '@/editor/overlays/SelectionOutline'
+import { SelectionOutline } from '@/editor/canvas/utils/SelectionOutline'
 
 /**
  * Selection Path Structure Documentation:
