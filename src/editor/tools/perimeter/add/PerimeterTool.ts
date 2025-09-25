@@ -1,22 +1,30 @@
-import type { Tool, CanvasEvent } from '@/editor/tools/system/types'
-import type { Vec2, Polygon2D, LineSegment2D, Length } from '@/shared/geometry'
-import type { RingBeamConstructionMethodId, PerimeterConstructionMethodId } from '@/building/model/ids'
+import { BorderAllIcon } from '@radix-ui/react-icons'
+
+import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
 import { useConfigStore } from '@/construction/config/store'
+import { useViewportActions } from '@/editor/hooks/useViewportStore'
+import { activateLengthInput, deactivateLengthInput, updateLengthInputPosition } from '@/editor/services/length-input'
+import type { LengthInputPosition } from '@/editor/services/length-input'
+import { SnappingService } from '@/editor/services/snapping'
+import type { SnapResult, SnappingContext } from '@/editor/services/snapping/types'
+import { BaseTool } from '@/editor/tools/system/BaseTool'
+import type { CanvasEvent, Tool } from '@/editor/tools/system/types'
+import type { Length, LineSegment2D, Polygon2D, Vec2 } from '@/shared/geometry'
 import {
+  add,
   createLength,
   createVec2,
+  distanceSquared,
+  normalize,
   polygonIsClockwise,
-  wouldPolygonSelfIntersect,
+  scale,
+  subtract,
   wouldClosingPolygonSelfIntersect,
-  distanceSquared
+  wouldPolygonSelfIntersect
 } from '@/shared/geometry'
-import type { SnappingContext, SnapResult } from '@/editor/services/snapping/types'
 
-import { PerimeterToolOverlay } from './PerimeterToolOverlay'
 import { PerimeterToolInspector } from './PerimeterToolInspector'
-import { SnappingService } from '@/editor/services/snapping'
-import { BaseTool } from '@/editor/tools/system/BaseTool'
-import { BorderAllIcon } from '@radix-ui/react-icons'
+import { PerimeterToolOverlay } from './PerimeterToolOverlay'
 
 interface PerimeterToolState {
   points: Vec2[]
@@ -141,6 +149,14 @@ export class PerimeterTool extends BaseTool implements Tool {
       this.updateSnapContext()
       // Update validation for new state
       this.updateValidation()
+
+      // Activate length input after placing second point (first segment)
+      if (this.state.points.length === 2) {
+        this.activateLengthInput()
+      } else if (this.state.points.length > 2) {
+        // Update position for subsequent points
+        this.updateLengthInputPosition()
+      }
     }
 
     return true
@@ -197,6 +213,9 @@ export class PerimeterTool extends BaseTool implements Tool {
     this.state.isCurrentLineValid = true
     this.state.isClosingLineValid = true
     this.updateSnapContext()
+
+    // Deactivate length input when tool is deactivated
+    deactivateLengthInput()
   }
 
   private completePolygon(event: CanvasEvent | null): void {
@@ -240,6 +259,9 @@ export class PerimeterTool extends BaseTool implements Tool {
     this.state.isCurrentLineValid = true
     this.state.isClosingLineValid = true
     this.updateSnapContext()
+
+    // Deactivate length input when polygon is completed
+    deactivateLengthInput()
   }
 
   private cancelPolygon(): void {
@@ -247,6 +269,9 @@ export class PerimeterTool extends BaseTool implements Tool {
     this.state.isCurrentLineValid = true
     this.state.isClosingLineValid = true
     this.updateSnapContext()
+
+    // Deactivate length input when polygon is canceled
+    deactivateLengthInput()
   }
 
   private updateValidation(): void {
@@ -277,5 +302,86 @@ export class PerimeterTool extends BaseTool implements Tool {
     } else {
       this.state.isClosingLineValid = true
     }
+  }
+
+  /**
+   * Handle length input commit - update the last placed point to make the last segment the specified length
+   */
+  private handleLengthCommit = (length: Length): void => {
+    if (this.state.points.length < 2) return
+
+    const secondToLast = this.state.points[this.state.points.length - 2]
+    const lastPoint = this.state.points[this.state.points.length - 1]
+    const direction = normalize(subtract(lastPoint, secondToLast))
+    const newLastPoint = add(secondToLast, scale(direction, length))
+
+    // Update the last point
+    this.state.points[this.state.points.length - 1] = newLastPoint
+
+    // Update snap context with new point positions
+    this.updateSnapContext()
+
+    // Reactivate length input for the next segment (without context for now)
+    this.activateLengthInput()
+
+    this.triggerRender()
+  }
+
+  /**
+   * Calculate position for the length input near the last placed point
+   */
+  private getLengthInputPosition(): LengthInputPosition {
+    if (this.state.points.length < 2) {
+      // Fallback to center if no points
+      return { x: 400, y: 300 }
+    }
+
+    const lastPoint = this.state.points[this.state.points.length - 1]
+
+    // Convert world coordinates to stage coordinates (screen pixels)
+    const viewportActions = useViewportActions()
+    const stageCoords = viewportActions.worldToStage(lastPoint)
+
+    // Add offset to position input near the point
+    let x = stageCoords.x + 20
+    let y = stageCoords.y - 30
+
+    // Keep input within canvas bounds (with some margin)
+    const margin = 150 // Space for the input component
+    const canvasWidth = 800 // TODO: Get actual canvas dimensions
+    const canvasHeight = 600
+
+    if (x < margin) x = margin
+    if (x > canvasWidth - margin) x = canvasWidth - margin
+    if (y < margin) y = margin
+    if (y > canvasHeight - margin) y = canvasHeight - margin
+
+    return { x, y }
+  }
+
+  /**
+   * Activate length input for segment length override
+   */
+  private activateLengthInput(): void {
+    if (this.state.points.length < 2) return
+
+    activateLengthInput({
+      position: this.getLengthInputPosition(),
+      placeholder: 'Enter segment length...',
+      onCommit: this.handleLengthCommit,
+      onCancel: () => {
+        // Reactivate for next attempt
+        this.activateLengthInput()
+      }
+    })
+  }
+
+  /**
+   * Update the position of the length input if it's currently active
+   */
+  private updateLengthInputPosition(): void {
+    if (this.state.points.length < 2) return
+
+    updateLengthInputPosition(this.getLengthInputPosition())
   }
 }

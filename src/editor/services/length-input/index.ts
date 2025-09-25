@@ -5,7 +5,8 @@ export {
   deactivateLengthInput,
   isLengthInputActive,
   showLengthInput,
-  isLengthInputReady
+  isLengthInputReady,
+  updateLengthInputPosition
 } from './LengthInputService'
 
 // Service class for advanced usage

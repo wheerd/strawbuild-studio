@@ -347,4 +347,49 @@ describe('LengthInputService', () => {
       expect(service.isReady()).toBe(false)
     })
   })
+
+  describe('position updates', () => {
+    beforeEach(() => {
+      service.activate({ ...mockConfig, showImmediately: true })
+    })
+
+    it('should update position when active', () => {
+      const newPosition = { x: 200, y: 300 }
+      service.updatePosition(newPosition)
+
+      const state = service.getState()
+      expect(state.config?.position).toEqual(newPosition)
+    })
+
+    it('should update position when ready but not shown', () => {
+      service.deactivate()
+      service.activate(mockConfig) // Ready but not shown
+
+      const newPosition = { x: 150, y: 250 }
+      service.updatePosition(newPosition)
+
+      const state = service.getState()
+      expect(state.config?.position).toEqual(newPosition)
+    })
+
+    it('should not update position when not activated', () => {
+      service.deactivate()
+
+      const newPosition = { x: 300, y: 400 }
+      service.updatePosition(newPosition)
+
+      const state = service.getState()
+      expect(state.config).toBe(null)
+    })
+
+    it('should notify listeners when position is updated', () => {
+      const listener = vi.fn()
+      service.subscribe(listener)
+
+      const newPosition = { x: 250, y: 350 }
+      service.updatePosition(newPosition)
+
+      expect(listener).toHaveBeenCalled()
+    })
+  })
 })

@@ -1,15 +1,16 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
 import { Box, Flex } from '@radix-ui/themes'
+import { useCallback, useEffect, useRef, useState } from 'react'
+
 import { FloorPlanStage } from './canvas/layers/FloorPlanStage'
 import { GridSizeDisplay } from './overlays/GridSizeDisplay'
 import { StoreySelector } from './overlays/StoreySelector'
+import { PropertiesPanel } from './properties/PropertiesPanel'
+import { LengthInputComponent } from './services/length-input'
+import { MainToolbar } from './toolbar/MainToolbar'
+import { initializeToolSystem } from './tools'
+import { keyboardShortcutManager } from './tools/system/KeyboardShortcutManager'
 import { ToolContextProvider, useToolContext } from './tools/system/ToolContext'
 import { toolManager } from './tools/system/ToolManager'
-import { MainToolbar } from './toolbar/MainToolbar'
-import { PropertiesPanel } from './properties/PropertiesPanel'
-import { initializeToolSystem } from './tools'
-
-import { keyboardShortcutManager } from './tools/system/KeyboardShortcutManager'
 
 // Inner component that has access to ToolContext
 function FloorPlanEditorContent(): React.JSX.Element {
@@ -135,6 +136,7 @@ function FloorPlanEditorContent(): React.JSX.Element {
           <FloorPlanStage width={dimensions.width} height={dimensions.height} />
           <GridSizeDisplay />
           <StoreySelector />
+          <LengthInputComponent />
         </Box>
 
         {/* Right Properties Panel */}

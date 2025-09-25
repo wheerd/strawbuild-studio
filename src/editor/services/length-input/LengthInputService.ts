@@ -2,7 +2,7 @@ import type { Length } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
 
 import { parseLength } from './parseLength'
-import type { LengthInputConfig, LengthInputState } from './types'
+import type { LengthInputConfig, LengthInputPosition, LengthInputState } from './types'
 
 /**
  * Global service for managing the length input system.
@@ -79,6 +79,24 @@ export class LengthInputService {
    */
   isReady(): boolean {
     return this.state.config !== null && !this.state.isActive
+  }
+
+  /**
+   * Update the position of the length input if it's currently active or ready
+   * @param position - New position for the input
+   */
+  updatePosition(position: LengthInputPosition): void {
+    if (!this.state.config) return
+
+    this.state = {
+      ...this.state,
+      config: {
+        ...this.state.config,
+        position
+      }
+    }
+
+    this.notifyListeners()
   }
 
   /**
@@ -228,4 +246,8 @@ export function showLengthInput(): void {
 
 export function isLengthInputReady(): boolean {
   return lengthInputService.isReady()
+}
+
+export function updateLengthInputPosition(position: LengthInputPosition): void {
+  lengthInputService.updatePosition(position)
 }
