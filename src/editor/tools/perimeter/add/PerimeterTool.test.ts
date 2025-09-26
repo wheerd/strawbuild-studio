@@ -45,17 +45,13 @@ describe('PerimeterTool', () => {
     let tool: PerimeterTool
     let activateLengthInputSpy: any
     let deactivateLengthInputSpy: any
-    let updateLengthInputPositionSpy: any
     beforeEach(() => {
       tool = new PerimeterTool()
       activateLengthInputSpy = vi.spyOn(lengthInputService, 'activateLengthInput').mockImplementation(vi.fn())
       deactivateLengthInputSpy = vi.spyOn(lengthInputService, 'deactivateLengthInput').mockImplementation(vi.fn())
-      updateLengthInputPositionSpy = vi
-        .spyOn(lengthInputService, 'updateLengthInputPosition')
-        .mockImplementation(vi.fn())
 
       // Mock viewport transformations
-      vi.spyOn(useViewportStore, 'useViewportActions').mockReturnValue({
+      vi.spyOn(useViewportStore, 'viewportActions').mockReturnValue({
         worldToStage: vi.fn(worldPos => ({
           x: worldPos[0] + 50, // Simple linear transformation for testing
           y: worldPos[1] + 100
@@ -76,17 +72,11 @@ describe('PerimeterTool', () => {
       vi.restoreAllMocks()
     })
 
-    it('should not activate length input after placing first point', () => {
-      tool.state.points = [createVec2(0, 0)]
-      tool.state.isCurrentLineValid = true
-
-      // Simulate adding a point (this would normally happen in handlePointerDown)
-      tool.state.points.push(createVec2(100, 0))
+    it('should activate length input for next segment after placing second point', () => {
+      tool.state.points = [createVec2(0, 0), createVec2(100, 0)]
 
       // Call the private method directly for testing
-      if (tool.state.points.length >= 2) {
-        ;(tool as any).activateLengthInput()
-      }
+      ;(tool as any).activateLengthInputForNextSegment()
 
       expect(activateLengthInputSpy).toHaveBeenCalledTimes(1)
       expect(activateLengthInputSpy).toHaveBeenCalledWith({
@@ -94,18 +84,18 @@ describe('PerimeterTool', () => {
           x: expect.any(Number),
           y: expect.any(Number)
         }),
-        placeholder: 'Enter segment length...',
+        placeholder: 'Enter length...',
         onCommit: expect.any(Function),
         onCancel: expect.any(Function)
       })
     })
 
-    it('should update last point position when length is committed', () => {
+    it('should set length override when length is committed', () => {
       // Set up tool with two points
       tool.state.points = [createVec2(0, 0), createVec2(100, 0)]
 
-      // Call activateLengthInput to set up the callback
-      ;(tool as any).activateLengthInput()
+      // Call activateLengthInputForNextSegment to set up the callback
+      ;(tool as any).activateLengthInputForNextSegment()
       const commitCallback = activateLengthInputSpy.mock.calls[0]?.[0]?.onCommit
 
       // Simulate committing a length of 200mm
@@ -113,29 +103,29 @@ describe('PerimeterTool', () => {
         commitCallback(createLength(200))
       }
 
-      // The last point should be updated to make the segment exactly 200mm long
-      expect(tool.state.points[1]).toEqual(createVec2(200, 0))
+      // Check that the length override was set
+      expect(tool.state.lengthOverride).toEqual(createLength(200))
     })
 
-    it('should handle length commit with different directions', () => {
-      // Set up tool with two points in a different direction
-      tool.state.points = [createVec2(0, 0), createVec2(100, 100)]
+    it('should clear length override when escape is pressed', () => {
+      // Set up tool with length override
+      tool.state.points = [createVec2(0, 0), createVec2(100, 0)]
+      tool.state.lengthOverride = createLength(100)
 
-      // Call activateLengthInput to set up the callback
-      ;(tool as any).activateLengthInput()
-      const commitCallback = activateLengthInputSpy.mock.calls[0]?.[0]?.onCommit
-
-      // Simulate committing a length that would change the endpoint
-      if (commitCallback) {
-        commitCallback(createLength(200)) // ~141.42mm diagonal becomes 200mm
+      // Create mock keyboard event
+      const mockKeyboardEvent = new KeyboardEvent('keydown', { key: 'Escape' })
+      const mockCanvasEvent = {
+        originalEvent: mockKeyboardEvent,
+        stageCoordinates: createVec2(0, 0),
+        context: {} as any
       }
 
-      // The last point should be updated maintaining the direction but with new length
-      const expectedDistance = Math.sqrt(
-        Math.pow(tool.state.points[1][0] - tool.state.points[0][0], 2) +
-          Math.pow(tool.state.points[1][1] - tool.state.points[0][1], 2)
-      )
-      expect(Math.round(expectedDistance)).toBe(200)
+      // Call handleKeyDown directly
+      const result = tool.handleKeyDown(mockCanvasEvent)
+
+      // Should return true (handled) and clear the override
+      expect(result).toBe(true)
+      expect(tool.state.lengthOverride).toBeNull()
     })
 
     it('should deactivate length input on tool deactivation', () => {
@@ -144,25 +134,24 @@ describe('PerimeterTool', () => {
       expect(deactivateLengthInputSpy).toHaveBeenCalledTimes(1)
     })
 
-    it('should not commit length if less than 2 points', () => {
-      tool.state.points = [createVec2(0, 0)]
+    it('should not activate length input if no points', () => {
+      tool.state.points = []
 
-      // Try to commit a length
-      const handleLengthCommit = (tool as any).handleLengthCommit
-      handleLengthCommit(createLength(100))
+      // Try to activate length input
+      ;(tool as any).activateLengthInputForNextSegment()
 
-      // Point should remain unchanged
-      expect(tool.state.points).toEqual([createVec2(0, 0)])
+      // Should not have been called since no points exist
+      expect(activateLengthInputSpy).not.toHaveBeenCalled()
     })
 
-    it('should calculate correct position for length input', () => {
+    it('should calculate position based on last placed point', () => {
       tool.state.points = [createVec2(0, 0), createVec2(100, 50)]
 
       const position = (tool as any).getLengthInputPosition()
 
       expect(position).toEqual({
-        x: 135, // Actual calculated position from mock
-        y: 62.5 // Actual calculated position from mock
+        x: 170, // 100 + 50 (mock transform) + 20 (offset)
+        y: 120 // 50 + 100 (mock transform) - 30 (offset)
       })
     })
 
@@ -174,29 +163,17 @@ describe('PerimeterTool', () => {
       expect(position).toEqual({ x: 400, y: 300 })
     })
 
-    it('should update length input position when placing third point', () => {
-      // Set up tool with two points (length input should be active)
-      tool.state.points = [createVec2(0, 0), createVec2(100, 0)]
-      tool.state.isCurrentLineValid = true
-
-      // Simulate adding a third point
-      tool.state.points.push(createVec2(200, 200))
-
-      // Call the position update method directly
-      ;(tool as any).updateLengthInputPosition()
-
-      expect(updateLengthInputPositionSpy).toHaveBeenCalledTimes(1)
-      expect(updateLengthInputPositionSpy).toHaveBeenCalledWith({
-        x: 150, // Actual calculated position from mock
-        y: 40 // Actual calculated position from mock
-      })
+    it('should have length override initially null', () => {
+      expect(tool.state.lengthOverride).toBeNull()
     })
 
-    it('should not update position when less than 2 points', () => {
-      tool.state.points = [createVec2(0, 0)]
-      ;(tool as any).updateLengthInputPosition()
+    it('should set and clear length override', () => {
+      const testLength = createLength(1000)
+      tool.setLengthOverride(testLength)
+      expect(tool.state.lengthOverride).toBe(testLength)
 
-      expect(updateLengthInputPositionSpy).not.toHaveBeenCalled()
+      tool.clearLengthOverride()
+      expect(tool.state.lengthOverride).toBeNull()
     })
   })
 })

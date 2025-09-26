@@ -43,6 +43,7 @@ describe('PerimeterToolInspector', () => {
   let mockSetWallThickness: ReturnType<typeof vi.fn>
   let mockSetBaseRingBeam: ReturnType<typeof vi.fn>
   let mockSetTopRingBeam: ReturnType<typeof vi.fn>
+  let mockClearLengthOverride: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     mockOnRenderNeeded = vi.fn()
@@ -50,6 +51,7 @@ describe('PerimeterToolInspector', () => {
     mockSetWallThickness = vi.fn()
     mockSetBaseRingBeam = vi.fn()
     mockSetTopRingBeam = vi.fn()
+    mockClearLengthOverride = vi.fn()
 
     mockTool = new PerimeterTool()
 
@@ -67,7 +69,8 @@ describe('PerimeterToolInspector', () => {
       constructionMethodId: createPerimeterConstructionMethodId(),
       wallThickness: createLength(440),
       baseRingBeamMethodId: undefined,
-      topRingBeamMethodId: undefined
+      topRingBeamMethodId: undefined,
+      lengthOverride: null
     }
 
     // Mock methods
@@ -76,6 +79,7 @@ describe('PerimeterToolInspector', () => {
     mockTool.setWallThickness = mockSetWallThickness
     mockTool.setBaseRingBeam = mockSetBaseRingBeam
     mockTool.setTopRingBeam = mockSetTopRingBeam
+    mockTool.clearLengthOverride = mockClearLengthOverride
   })
 
   describe('rendering', () => {

@@ -7,6 +7,7 @@ import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
 import { createLength } from '@/shared/geometry'
 import { useDebouncedNumericInput } from '@/shared/hooks/useDebouncedInput'
+import { formatLength } from '@/shared/utils/formatLength'
 
 import type { PerimeterTool } from './PerimeterTool'
 
@@ -182,6 +183,43 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
                 </Select.Portal>
               </Select.Root>
             </div>
+          </div>
+        </div>
+
+        {/* Length Override Display */}
+        {state.lengthOverride && (
+          <div className="space-y-2 pt-1 border-t border-gray-200">
+            <div className="flex items-center justify-between gap-3">
+              <label className="text-xs font-medium text-blue-600">Length Override</label>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono text-blue-800">{formatLength(state.lengthOverride)}</span>
+                <button
+                  className="text-xs text-red-600 hover:text-red-800"
+                  onClick={() => tool.clearLengthOverride()}
+                  title="Clear length override (Escape)"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Help Text */}
+        <div className="space-y-2 pt-1 border-t border-gray-200">
+          <div className="text-xs text-gray-600">
+            <div className="font-medium mb-1">Controls:</div>
+            <ul className="space-y-0.5 text-xs">
+              <li>• Click to place points</li>
+              <li>• Type numbers for length override</li>
+              <li>
+                • <kbd className="px-1 bg-gray-100 rounded">Enter</kbd> to place with override
+              </li>
+              <li>
+                • <kbd className="px-1 bg-gray-100 rounded">Esc</kbd> to clear override
+              </li>
+              {state.points.length >= 3 && <li>• Click first point to close</li>}
+            </ul>
           </div>
         </div>
 

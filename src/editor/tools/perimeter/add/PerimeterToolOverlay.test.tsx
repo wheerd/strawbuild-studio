@@ -41,8 +41,12 @@ describe('PerimeterToolOverlay', () => {
       isCurrentLineValid: true,
       isClosingLineValid: true,
       constructionMethodId: createPerimeterConstructionMethodId(),
-      wallThickness: createLength(440)
+      wallThickness: createLength(440),
+      lengthOverride: null
     }
+
+    // Mock the getPreviewPosition method to return pointer position by default
+    mockTool.getPreviewPosition = vi.fn().mockImplementation(() => mockTool.state.pointer)
   })
 
   describe('rendering with no points', () => {

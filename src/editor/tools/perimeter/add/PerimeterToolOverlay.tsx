@@ -24,7 +24,7 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
   const scaledPointRadius = 5 / zoom
   const scaledPointStrokeWidth = 1 / zoom
 
-  const currentPos = state.snapResult?.position ?? state.pointer
+  const previewPos = tool.getPreviewPosition()
   const isClosingSnap = tool.isSnappingToFirstPoint()
 
   return (
@@ -49,8 +49,8 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
           points={[
             state.points[state.points.length - 1][0],
             state.points[state.points.length - 1][1],
-            currentPos[0],
-            currentPos[1]
+            previewPos[0],
+            previewPos[1]
           ]}
           stroke={state.isCurrentLineValid ? COLORS.ui.gray500 : COLORS.ui.danger}
           strokeWidth={scaledLineWidth}
@@ -92,11 +92,11 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
       {/* Draw snap position */}
       <Circle
         key="snap-point"
-        x={currentPos[0]}
-        y={currentPos[1]}
+        x={previewPos[0]}
+        y={previewPos[1]}
         radius={scaledPointRadius}
-        fill={COLORS.snapping.points}
-        stroke={COLORS.snapping.pointStroke}
+        fill={state.lengthOverride ? COLORS.ui.primary : COLORS.snapping.points}
+        stroke={state.lengthOverride ? COLORS.ui.white : COLORS.snapping.pointStroke}
         strokeWidth={scaledPointStrokeWidth}
         listening={false}
       />

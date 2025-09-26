@@ -3,7 +3,7 @@ import { BorderAllIcon } from '@radix-ui/react-icons'
 import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
 import { useConfigStore } from '@/construction/config/store'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
-import { activateLengthInput, deactivateLengthInput, updateLengthInputPosition } from '@/editor/services/length-input'
+import { activateLengthInput, deactivateLengthInput } from '@/editor/services/length-input'
 import type { LengthInputPosition } from '@/editor/services/length-input'
 import { SnappingService } from '@/editor/services/snapping'
 import type { SnapResult, SnappingContext } from '@/editor/services/snapping/types'
@@ -37,6 +37,7 @@ interface PerimeterToolState {
   wallThickness: Length
   baseRingBeamMethodId?: RingBeamConstructionMethodId
   topRingBeamMethodId?: RingBeamConstructionMethodId
+  lengthOverride: Length | null
 }
 
 export class PerimeterTool extends BaseTool implements Tool {
@@ -61,7 +62,8 @@ export class PerimeterTool extends BaseTool implements Tool {
     isCurrentLineValid: true,
     isClosingLineValid: true,
     wallThickness: createLength(440), // Default 44cm thickness,
-    constructionMethodId: '' as PerimeterConstructionMethodId // Set on activation
+    constructionMethodId: '' as PerimeterConstructionMethodId, // Set on activation
+    lengthOverride: null
   }
 
   private snapService = new SnappingService()
@@ -96,6 +98,16 @@ export class PerimeterTool extends BaseTool implements Tool {
 
   public setTopRingBeam(methodId: RingBeamConstructionMethodId | undefined): void {
     this.state.topRingBeamMethodId = methodId
+    this.triggerRender()
+  }
+
+  public setLengthOverride(length: Length | null): void {
+    this.state.lengthOverride = length
+    this.triggerRender()
+  }
+
+  public clearLengthOverride(): void {
+    this.state.lengthOverride = null
     this.triggerRender()
   }
 
@@ -145,17 +157,26 @@ export class PerimeterTool extends BaseTool implements Tool {
 
     // Only add point if the line is valid (doesn't create intersections)
     if (this.state.isCurrentLineValid) {
-      this.state.points.push(snapCoords)
+      // Calculate point position: use override if set, otherwise use snap/click position
+      let pointToAdd = snapCoords
+      if (this.state.lengthOverride && this.state.points.length > 0) {
+        const lastPoint = this.state.points[this.state.points.length - 1]
+        const direction = normalize(subtract(snapCoords, lastPoint))
+        pointToAdd = add(lastPoint, scale(direction, this.state.lengthOverride))
+      }
+
+      this.state.points.push(pointToAdd)
       this.updateSnapContext()
+
+      // Clear length override after placing point
+      this.clearLengthOverride()
+
       // Update validation for new state
       this.updateValidation()
 
-      // Activate length input after placing second point (first segment)
-      if (this.state.points.length === 2) {
-        this.activateLengthInput()
-      } else if (this.state.points.length > 2) {
-        // Update position for subsequent points
-        this.updateLengthInputPosition()
+      // Activate length input after placing any point (ready for next segment)
+      if (this.state.points.length >= 1) {
+        this.activateLengthInputForNextSegment()
       }
     }
 
@@ -175,10 +196,16 @@ export class PerimeterTool extends BaseTool implements Tool {
   }
 
   handleKeyDown(event: CanvasEvent): boolean {
+    debugger
     const keyEvent = event.originalEvent as KeyboardEvent
 
     if (keyEvent.key === 'Escape') {
-      // Only handle escape if we have points, otherwise bubble up
+      // First try to clear length override if it exists
+      if (this.state.lengthOverride) {
+        this.clearLengthOverride()
+        return true
+      }
+      // Otherwise handle polygon cancellation if we have points
       if (this.state.points.length > 0) {
         this.cancelPolygon()
         return true
@@ -194,10 +221,28 @@ export class PerimeterTool extends BaseTool implements Tool {
     return false
   }
 
+  /**
+   * Get the preview position for the next point, considering length override
+   */
+  public getPreviewPosition(): Vec2 {
+    const currentPos = this.state.snapResult?.position ?? this.state.pointer
+
+    // If no length override or no points, return current position
+    if (!this.state.lengthOverride || this.state.points.length === 0) {
+      return currentPos
+    }
+
+    // Calculate position at override distance in direction of cursor
+    const lastPoint = this.state.points[this.state.points.length - 1]
+    const direction = normalize(subtract(currentPos, lastPoint))
+    return add(lastPoint, scale(direction, this.state.lengthOverride))
+  }
+
   onActivate(): void {
     this.state.points = []
     this.state.isCurrentLineValid = true
     this.state.isClosingLineValid = true
+    this.state.lengthOverride = null
 
     // Set default methods from config store
     const configStore = useConfigStore.getState()
@@ -212,6 +257,7 @@ export class PerimeterTool extends BaseTool implements Tool {
     this.state.points = []
     this.state.isCurrentLineValid = true
     this.state.isClosingLineValid = true
+    this.state.lengthOverride = null
     this.updateSnapContext()
 
     // Deactivate length input when tool is deactivated
@@ -258,6 +304,7 @@ export class PerimeterTool extends BaseTool implements Tool {
     this.state.points = []
     this.state.isCurrentLineValid = true
     this.state.isClosingLineValid = true
+    this.state.lengthOverride = null
     this.updateSnapContext()
 
     // Deactivate length input when polygon is completed
@@ -268,6 +315,7 @@ export class PerimeterTool extends BaseTool implements Tool {
     this.state.points = []
     this.state.isCurrentLineValid = true
     this.state.isClosingLineValid = true
+    this.state.lengthOverride = null
     this.updateSnapContext()
 
     // Deactivate length input when polygon is canceled
@@ -305,33 +353,17 @@ export class PerimeterTool extends BaseTool implements Tool {
   }
 
   /**
-   * Handle length input commit - update the last placed point to make the last segment the specified length
+   * Handle length input commit - set the length override for next point placement
    */
-  private handleLengthCommit = (length: Length): void => {
-    if (this.state.points.length < 2) return
-
-    const secondToLast = this.state.points[this.state.points.length - 2]
-    const lastPoint = this.state.points[this.state.points.length - 1]
-    const direction = normalize(subtract(lastPoint, secondToLast))
-    const newLastPoint = add(secondToLast, scale(direction, length))
-
-    // Update the last point
-    this.state.points[this.state.points.length - 1] = newLastPoint
-
-    // Update snap context with new point positions
-    this.updateSnapContext()
-
-    // Reactivate length input for the next segment (without context for now)
-    this.activateLengthInput()
-
-    this.triggerRender()
+  private handleLengthOverrideCommit = (length: Length): void => {
+    this.setLengthOverride(length)
   }
 
   /**
    * Calculate position for the length input near the last placed point
    */
   private getLengthInputPosition(): LengthInputPosition {
-    if (this.state.points.length < 2) {
+    if (this.state.points.length === 0) {
       // Fallback to center if no points
       return { x: 400, y: 300 }
     }
@@ -343,7 +375,6 @@ export class PerimeterTool extends BaseTool implements Tool {
     const stageCoords = worldToStage(lastPoint)
 
     // Add offset to position input near the point
-    // Bounds checking is now handled by the LengthInputService
     return {
       x: stageCoords.x + 20,
       y: stageCoords.y - 30
@@ -351,28 +382,15 @@ export class PerimeterTool extends BaseTool implements Tool {
   }
 
   /**
-   * Activate length input for segment length override
+   * Activate length input for next segment length override
    */
-  private activateLengthInput(): void {
-    if (this.state.points.length < 2) return
+  private activateLengthInputForNextSegment(): void {
+    if (this.state.points.length === 0) return
 
     activateLengthInput({
       position: this.getLengthInputPosition(),
-      placeholder: 'Enter segment length...',
-      onCommit: this.handleLengthCommit,
-      onCancel: () => {
-        // Reactivate for next attempt
-        this.activateLengthInput()
-      }
+      placeholder: 'Enter length...',
+      onCommit: this.handleLengthOverrideCommit
     })
-  }
-
-  /**
-   * Update the position of the length input if it's currently active
-   */
-  private updateLengthInputPosition(): void {
-    if (this.state.points.length < 2) return
-
-    updateLengthInputPosition(this.getLengthInputPosition())
   }
 }
