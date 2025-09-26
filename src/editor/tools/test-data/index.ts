@@ -1,9 +1,9 @@
 import type { ToolGroup } from '@/editor/tools/system/types'
 
-import { TestDataTool } from '../basic/TestDataTool'
+import { TestDataTool } from './TestDataTool'
 
 // Export individual tools
-export { TestDataTool } from '../basic/TestDataTool'
+export { TestDataTool } from './TestDataTool'
 
 // Create and export tool group
 export const createTestDataToolGroup = (): ToolGroup => ({
