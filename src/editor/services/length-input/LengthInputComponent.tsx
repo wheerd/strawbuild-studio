@@ -1,6 +1,8 @@
 import { Box, TextField } from '@radix-ui/themes'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { useStageHeight, useStageWidth } from '@/editor/hooks/useViewportStore'
+
 import { lengthInputService } from './LengthInputService'
 import type { LengthInputState } from './types'
 
@@ -11,6 +13,10 @@ import type { LengthInputState } from './types'
 export function LengthInputComponent(): React.JSX.Element | null {
   const [state, setState] = useState<LengthInputState>(lengthInputService.getState())
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Get current viewport dimensions for bounds checking (must be at top level)
+  const stageWidth = useStageWidth()
+  const stageHeight = useStageHeight()
 
   // Subscribe to service state changes
   useEffect(() => {
@@ -95,12 +101,21 @@ export function LengthInputComponent(): React.JSX.Element | null {
 
   const { position, placeholder } = state.config
 
+  // Constrain position to viewport bounds with appropriate margins
+  const horizontalMargin = 150 // Space for input width
+  const verticalMargin = 50 // Smaller margin since input is only ~40px tall
+
+  const constrainedPosition = {
+    x: Math.max(horizontalMargin, Math.min(stageWidth - horizontalMargin, position.x)),
+    y: Math.max(verticalMargin, Math.min(stageHeight - verticalMargin, position.y))
+  }
+
   return (
     <Box
       style={{
         position: 'absolute',
-        left: position.x,
-        top: position.y,
+        left: constrainedPosition.x,
+        top: constrainedPosition.y,
         zIndex: 1000,
         pointerEvents: 'auto',
         // Ensure it's above other UI elements
