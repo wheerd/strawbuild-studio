@@ -150,8 +150,11 @@ export class LengthInputService {
     const { onCommit } = this.state.config
     const value = parseResult.value
 
-    // Deactivate before calling callback to prevent re-entrance
-    this.deactivate()
+    if (this.state.config.showImmediately) {
+      this.deactivate()
+    } else {
+      this.activate(this.state.config)
+    }
 
     // Call the commit callback
     onCommit(value)
@@ -165,8 +168,11 @@ export class LengthInputService {
 
     const { onCancel } = this.state.config
 
-    // Deactivate before calling callback to prevent re-entrance
-    this.deactivate()
+    if (this.state.config.showImmediately) {
+      this.deactivate()
+    } else {
+      this.activate(this.state.config)
+    }
 
     // Call the cancel callback if provided
     if (onCancel) {

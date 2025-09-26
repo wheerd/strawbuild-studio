@@ -200,7 +200,6 @@ export class PerimeterTool extends BaseTool implements Tool {
       // First try to clear length override if it exists
       if (this.state.lengthOverride) {
         this.clearLengthOverride()
-        deactivateLengthInput()
         return true
       }
       // Otherwise handle polygon cancellation if we have points
