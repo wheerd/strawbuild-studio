@@ -26,24 +26,25 @@ export function LengthInputComponent(): React.JSX.Element | null {
     return unsubscribe
   }, [])
 
-  // Auto-focus when activated
+  // Auto-focus and select all text when activated
   useEffect(() => {
     if (state.isActive && inputRef.current) {
       // Use setTimeout to ensure the input is rendered before focusing
       setTimeout(() => {
         inputRef.current?.focus()
-        // Only select text if there's an initial value (like from editing)
-        // Don't select if input value exists (indicates user is typing)
-        if (state.config?.initialValue && !state.inputValue) {
+
+        // If showImmediately was true (preset value), select all text
+        // If triggered by typing (showImmediately was false), cursor goes to end
+        if (state.config?.showImmediately) {
           inputRef.current?.select()
-        } else if (state.inputValue) {
-          // Position cursor at the end of existing text
+        } else {
+          // Position cursor at the end (after any typed character)
           const length = state.inputValue.length
           inputRef.current?.setSelectionRange(length, length)
         }
       }, 0)
     }
-  }, [state.isActive, state.inputValue, state.config?.initialValue])
+  }, [state.isActive]) // Only depend on isActive, not inputValue
 
   // Global keyboard handler for capturing numeric input when ready but not shown
   const handleGlobalKeyDown = useCallback(
@@ -83,7 +84,17 @@ export function LengthInputComponent(): React.JSX.Element | null {
 
   // Handle input changes
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    lengthInputService.updateInputValue(event.target.value)
+    const input = event.target
+    const cursorPosition = input.selectionStart
+
+    lengthInputService.updateInputValue(input.value)
+
+    // Restore cursor position after React re-render
+    setTimeout(() => {
+      if (inputRef.current && cursorPosition !== null) {
+        inputRef.current.setSelectionRange(cursorPosition, cursorPosition)
+      }
+    }, 0)
   }
 
   // Handle key events
