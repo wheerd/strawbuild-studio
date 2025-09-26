@@ -128,15 +128,11 @@ export function LengthInputComponent(): React.JSX.Element | null {
 
   return (
     <Box
+      className="absolute z-[1000] pointer-events-auto"
       style={{
-        position: 'absolute',
         left: constrainedPosition.x,
         top: constrainedPosition.y,
-        zIndex: 1000,
-        pointerEvents: 'auto',
-        // Ensure it's above other UI elements
-        transform: 'translate(-50%, -100%)', // Center horizontally, position above cursor
-        marginTop: -10 // Small gap above cursor
+        transform: 'translate(-50%, -100%)'
       }}
     >
       <TextField.Root
@@ -146,37 +142,21 @@ export function LengthInputComponent(): React.JSX.Element | null {
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
         placeholder={placeholder || 'Enter length...'}
-        size="2"
-        variant={state.isValid ? 'surface' : 'soft'}
+        size="3"
+        variant="surface"
         color={state.isValid ? undefined : 'red'}
+        className="w-20 text-center shadow-lg"
         style={{
-          minWidth: '120px',
-          fontSize: '14px',
-          fontFamily: 'monospace', // Better for numbers
-          textAlign: 'center',
-          // Prominent styling
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-          border: state.isValid ? '2px solid var(--accent-9)' : '2px solid var(--red-9)',
-          backgroundColor: 'white'
+          border: state.isValid ? '2px solid var(--accent-9)' : '2px solid var(--red-9)'
         }}
       />
 
       {/* Error message */}
       {!state.isValid && state.errorMessage && (
         <Box
+          className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-1 text-white text-xs rounded whitespace-nowrap shadow-md"
           style={{
-            position: 'absolute',
-            top: '100%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            marginTop: 4,
-            padding: '4px 8px',
-            backgroundColor: 'var(--red-9)',
-            color: 'white',
-            fontSize: '12px',
-            borderRadius: '4px',
-            whiteSpace: 'nowrap',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+            backgroundColor: 'var(--red-9)'
           }}
         >
           {state.errorMessage}
