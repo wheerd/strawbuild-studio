@@ -1,3 +1,4 @@
+import { viewportState } from '@/editor/hooks/useViewportStore'
 import type { Length } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
 
@@ -38,6 +39,22 @@ export class LengthInputService {
   }
 
   /**
+   * Constrain position to viewport bounds with appropriate margins
+   * @param position - Raw position to constrain
+   * @returns Position constrained to viewport bounds
+   */
+  private constrainToViewport(position: LengthInputPosition): LengthInputPosition {
+    const viewport = viewportState()
+    const horizontalMargin = 150 // Space for input width
+    const verticalMargin = 50 // Smaller margin since input is only ~40px tall
+
+    return {
+      x: Math.max(horizontalMargin, Math.min(viewport.stageWidth - horizontalMargin, position.x)),
+      y: Math.max(verticalMargin, Math.min(viewport.stageHeight - verticalMargin, position.y))
+    }
+  }
+
+  /**
    * Activate the length input with the given configuration
    * @param config - Configuration for the length input
    */
@@ -49,9 +66,15 @@ export class LengthInputService {
 
     const initialValue = config.initialValue !== undefined ? this.formatInitialValue(config.initialValue) : ''
 
+    // Auto-constrain position to viewport bounds
+    const constrainedConfig = {
+      ...config,
+      position: this.constrainToViewport(config.position)
+    }
+
     this.state = {
       isActive: config.showImmediately ?? false, // Only show immediately if explicitly requested
-      config,
+      config: constrainedConfig,
       inputValue: initialValue,
       isValid: true,
       errorMessage: undefined

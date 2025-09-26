@@ -34,7 +34,10 @@ describe('LengthInputService', () => {
 
       const state = service.getState()
       expect(state.isActive).toBe(false) // Not shown immediately by default
-      expect(state.config).toBe(mockConfig)
+      expect(state.config).toEqual({
+        ...mockConfig,
+        position: { x: 150, y: 200 } // Position constrained to horizontal margin
+      })
       expect(state.inputValue).toBe('')
       expect(state.isValid).toBe(true)
     })
@@ -45,7 +48,10 @@ describe('LengthInputService', () => {
 
       const state = service.getState()
       expect(state.isActive).toBe(true)
-      expect(state.config).toBe(configWithImmediate)
+      expect(state.config).toEqual({
+        ...configWithImmediate,
+        position: { x: 150, y: 200 } // Position constrained to horizontal margin
+      })
     })
 
     it('should activate with initial value', () => {

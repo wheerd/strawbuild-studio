@@ -2,7 +2,7 @@ import { BorderAllIcon } from '@radix-ui/react-icons'
 
 import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
 import { useConfigStore } from '@/construction/config/store'
-import { useViewportActions } from '@/editor/hooks/useViewportStore'
+import { viewportActions } from '@/editor/hooks/useViewportStore'
 import { activateLengthInput, deactivateLengthInput, updateLengthInputPosition } from '@/editor/services/length-input'
 import type { LengthInputPosition } from '@/editor/services/length-input'
 import { SnappingService } from '@/editor/services/snapping'
@@ -339,24 +339,15 @@ export class PerimeterTool extends BaseTool implements Tool {
     const lastPoint = this.state.points[this.state.points.length - 1]
 
     // Convert world coordinates to stage coordinates (screen pixels)
-    const viewportActions = useViewportActions()
-    const stageCoords = viewportActions.worldToStage(lastPoint)
+    const { worldToStage } = viewportActions()
+    const stageCoords = worldToStage(lastPoint)
 
     // Add offset to position input near the point
-    let x = stageCoords.x + 20
-    let y = stageCoords.y - 30
-
-    // Keep input within canvas bounds (with some margin)
-    const margin = 150 // Space for the input component
-    const canvasWidth = 800 // TODO: Get actual canvas dimensions
-    const canvasHeight = 600
-
-    if (x < margin) x = margin
-    if (x > canvasWidth - margin) x = canvasWidth - margin
-    if (y < margin) y = margin
-    if (y > canvasHeight - margin) y = canvasHeight - margin
-
-    return { x, y }
+    // Bounds checking is now handled by the LengthInputService
+    return {
+      x: stageCoords.x + 20,
+      y: stageCoords.y - 30
+    }
   }
 
   /**

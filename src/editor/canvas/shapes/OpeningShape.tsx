@@ -3,7 +3,6 @@ import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 import type { PerimeterId } from '@/building/model/ids'
 import type { Opening, PerimeterWall } from '@/building/model/model'
 import { useModelActions } from '@/building/store'
-import { stageReference } from '@/editor/canvas/services/StageReference'
 import { ClickableLengthIndicator } from '@/editor/canvas/utils/ClickableLengthIndicator'
 import { LengthIndicator } from '@/editor/canvas/utils/LengthIndicator'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
@@ -92,39 +91,12 @@ export function OpeningShape({
                 )
               : ([0, 0] as Vec2)
 
-    // Get the stage and its DOM position
-    const stage = stageReference.getStage()
-    let inputX = 400
-    let inputY = 200
-
-    if (stage) {
-      // Convert world coordinates to stage coordinates
-      const stagePos = viewportActions.worldToStage(worldPosition)
-
-      // Get the stage's DOM element position
-      const stageContainer = stage.container()
-      if (stageContainer) {
-        const rect = stageContainer.getBoundingClientRect()
-
-        // Calculate position relative to the stage container
-        inputX = rect.left + stagePos.x + 20
-        inputY = rect.top + stagePos.y + 30 // Note: using positive Y offset, no flipping
-      }
-    }
-
-    // Keep input within canvas bounds (with some margin)
-    const margin = 150
-    const canvasWidth = 800 // TODO: Get actual canvas dimensions from viewport
-    const canvasHeight = 600
-
-    if (inputX < margin) inputX = margin
-    if (inputX > canvasWidth - margin) inputX = canvasWidth - margin
-    if (inputY < margin) inputY = margin
-    if (inputY > canvasHeight - margin) inputY = canvasHeight - margin
-
+    const stagePos = viewportActions.worldToStage(worldPosition)
+    // Add small offset to position input near the indicator
+    // Bounds checking is now handled by the LengthInputService
     activateLengthInput({
       showImmediately: true,
-      position: { x: inputX, y: inputY },
+      position: { x: stagePos.x + 20, y: stagePos.y - 30 },
       initialValue: currentMeasurement,
       placeholder: 'Enter distance...',
       onCommit: enteredValue => {
@@ -147,7 +119,8 @@ export function OpeningShape({
           perimeterId,
           wall.id,
           newOffsetFromStart,
-          opening.width
+          opening.width,
+          opening.id
         )
 
         if (isValid) {
