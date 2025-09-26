@@ -206,7 +206,9 @@ describe('LengthInputComponent', () => {
 
     it('should remove global handler when deactivated', () => {
       // Deactivate
-      lengthInputService.deactivate()
+      act(() => {
+        lengthInputService.deactivate()
+      })
 
       // Global keyboard events should not work
       fireEvent.keyDown(document, { key: '5' })
@@ -267,6 +269,32 @@ describe('LengthInputComponent', () => {
       await new Promise(resolve => setTimeout(resolve, 10))
 
       expect(document.activeElement).toBe(input)
+    })
+  })
+
+  describe('blur behavior', () => {
+    it('should cancel when input loses focus', async () => {
+      const mockConfig = {
+        position: { x: 100, y: 100 },
+        showImmediately: true,
+        onCommit: vi.fn(),
+        onCancel: vi.fn()
+      }
+
+      lengthInputService.activate(mockConfig)
+
+      render(<LengthInputComponent />)
+
+      const input = screen.getByRole('textbox')
+
+      // Simulate blur event
+      fireEvent.blur(input)
+
+      // Should call cancel callback
+      expect(mockConfig.onCancel).toHaveBeenCalledTimes(1)
+
+      // Should deactivate the service
+      expect(lengthInputService.getState().isActive).toBe(false)
     })
   })
 })

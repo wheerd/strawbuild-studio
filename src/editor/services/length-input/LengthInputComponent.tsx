@@ -105,6 +105,11 @@ export function LengthInputComponent(): React.JSX.Element | null {
     }
   }
 
+  // Handle blur events - cancel when input loses focus
+  const handleBlur = () => {
+    lengthInputService.cancel()
+  }
+
   // Don't render if not active
   if (!state.isActive || !state.config) {
     return null
@@ -139,6 +144,7 @@ export function LengthInputComponent(): React.JSX.Element | null {
         value={state.inputValue}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
         placeholder={placeholder || 'Enter length...'}
         size="2"
         variant={state.isValid ? 'surface' : 'soft'}
