@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react'
 
-import { Loading } from '@/shared/components/Loading'
+import { AppSkeleton } from '@/app/skeletons/AppSkeleton'
 
 const FloorPlanEditor = React.lazy(
   async () =>
@@ -11,7 +11,7 @@ const FloorPlanEditor = React.lazy(
 
 function App(): React.JSX.Element {
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<AppSkeleton />}>
       <FloorPlanEditor />
     </Suspense>
   )

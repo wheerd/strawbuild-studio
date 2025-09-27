@@ -1,4 +1,9 @@
 import type Konva from 'konva'
+import 'konva/lib/shapes/Arrow'
+import 'konva/lib/shapes/Circle'
+import 'konva/lib/shapes/Line'
+import 'konva/lib/shapes/Rect'
+import 'konva/lib/shapes/Text'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Stage } from 'react-konva/lib/ReactKonvaCore'
 
