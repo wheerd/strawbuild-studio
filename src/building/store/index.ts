@@ -9,10 +9,35 @@ import { immer } from 'zustand/middleware/immer'
 import type { PerimeterId, StoreyId } from '@/building/model/ids'
 import type { Perimeter, Storey } from '@/building/model/model'
 
-import { setPersistenceState } from './persistenceState'
+import { getPersistenceActions } from './persistenceStore'
 import { createPerimetersSlice } from './slices/perimeterSlice'
 import { createStoreysSlice } from './slices/storeysSlice'
 import type { Store, StoreActions } from './types'
+
+// Custom debounced save with immediate isSaving feedback
+let saveTimeout: NodeJS.Timeout | null = null
+
+const createDebouncedSave = () => {
+  return (name: string, value: unknown) => {
+    const persistenceActions = getPersistenceActions()
+
+    // Set saving immediately
+    persistenceActions.setSaving(true)
+
+    // Clear existing timeout
+    if (saveTimeout) clearTimeout(saveTimeout)
+
+    // Schedule actual save
+    saveTimeout = setTimeout(() => {
+      try {
+        localStorage.setItem(name, JSON.stringify(value))
+        persistenceActions.setSaveSuccess(new Date())
+      } catch (error) {
+        persistenceActions.setSaveError(error instanceof Error ? error.message : 'Save failed')
+      }
+    }, 1000)
+  }
+}
 
 // Create the main store with persistence, undo/redo, and slices
 const useModelStore = create<Store>()(
@@ -26,15 +51,12 @@ const useModelStore = create<Store>()(
         const initialPerimeters = perimetersSlice.perimeters
 
         return {
-          // Combine state properties
           ...storeysSlice,
           ...perimetersSlice,
-          // Merge actions properly
           actions: {
             ...storeysSlice.actions,
             ...perimetersSlice.actions,
             reset: () => {
-              // Reset both slices to their initial state
               set({
                 storeys: initialStoreys,
                 perimeters: initialPerimeters
@@ -63,27 +85,14 @@ const useModelStore = create<Store>()(
           const item = localStorage.getItem(name)
           return item ? JSON.parse(item) : null
         },
-        setItem: debounce(
-          1000,
-          (name, value) => {
-            setPersistenceState({ isSaving: true, saveError: null })
-            try {
-              localStorage.setItem(name, JSON.stringify(value))
-              setPersistenceState({
-                isSaving: false,
-                lastSaved: new Date(),
-                saveError: null
-              })
-            } catch (error) {
-              setPersistenceState({
-                isSaving: false,
-                saveError: error instanceof Error ? error.message : 'Save failed'
-              })
-            }
-          },
-          { atBegin: false }
-        ),
+        setItem: createDebouncedSave(),
         removeItem: name => localStorage.removeItem(name)
+      },
+      onRehydrateStorage: () => state => {
+        if (state) {
+          const persistenceActions = getPersistenceActions()
+          persistenceActions.setHydrated(true)
+        }
       }
     }
   )

@@ -2,19 +2,20 @@ import { Theme } from '@radix-ui/themes'
 import { render } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { PersistenceState } from '@/building/store/persistenceStore'
+
 import { AutoSaveIndicator } from './AutoSaveIndicator'
 
 // Mock the persistence state hook
-const mockPersistenceState = {
+const mockPersistenceState: PersistenceState = {
   isSaving: false,
   lastSaved: null as Date | null,
-  saveError: null as string | null
+  saveError: null as string | null,
+  isHydrated: true
 }
 
-vi.mock('@/building/store/persistenceState', () => ({
-  usePersistenceState: () => mockPersistenceState,
-  setPersistenceState: vi.fn(),
-  getPersistenceState: () => mockPersistenceState
+vi.mock('@/building/store/persistenceStore', () => ({
+  usePersistenceStore: (f: (p: PersistenceState) => any) => f(mockPersistenceState)
 }))
 
 function renderAutoSaveIndicator() {

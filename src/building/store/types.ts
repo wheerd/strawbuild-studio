@@ -7,10 +7,4 @@ export interface StoreActions extends StoreysActions, PerimetersActions {
   reset: () => void
 }
 
-export interface PersistenceState {
-  isSaving: boolean
-  lastSaved: Date | null
-  saveError: string | null
-}
-
 export type Store = StoreState & { actions: StoreActions }

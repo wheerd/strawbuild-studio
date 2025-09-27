@@ -2,10 +2,12 @@ import { CheckIcon, Cross2Icon, UpdateIcon } from '@radix-ui/react-icons'
 import { Box, Tooltip } from '@radix-ui/themes'
 import React from 'react'
 
-import { usePersistenceState } from '@/building/store/persistenceState'
+import { usePersistenceStore } from '@/building/store/persistenceStore'
 
 export function AutoSaveIndicator(): React.JSX.Element {
-  const { isSaving, lastSaved, saveError } = usePersistenceState()
+  const isSaving = usePersistenceStore(s => s.isSaving)
+  const lastSaved = usePersistenceStore(s => s.lastSaved)
+  const saveError = usePersistenceStore(s => s.saveError)
 
   const getStatusInfo = () => {
     if (saveError) {
