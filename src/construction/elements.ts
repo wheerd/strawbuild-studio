@@ -1,6 +1,8 @@
 import type { MaterialId } from '@/construction/materials/material'
 import type { Vec3 } from '@/shared/geometry'
 
+import type { TagId } from './tags'
+
 export type ConstructionElementType =
   | 'post'
   | 'plate'
@@ -150,6 +152,8 @@ export const createConstructionElement = (
   return element
 }
 
+export type PartId = string & { readonly brand: unique symbol }
+
 export interface ConstructionElement {
   id: ConstructionElementId
   type: ConstructionElementType
@@ -157,4 +161,7 @@ export interface ConstructionElement {
 
   // Shape defining the geometry and position of the element
   shape: Shape
+
+  tags?: TagId[]
+  partId?: PartId
 }
