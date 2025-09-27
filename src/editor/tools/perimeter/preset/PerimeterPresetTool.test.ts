@@ -15,7 +15,7 @@ describe('PerimeterPresetTool', () => {
 
   describe('initialization', () => {
     it('should have correct tool properties', () => {
-      expect(tool.id).toBe('perimeter-preset')
+      expect(tool.id).toBe('perimeter.preset')
       expect(tool.name).toBe('Perimeter Presets')
       expect(tool.cursor).toBe('crosshair')
       expect(tool.category).toBe('walls')

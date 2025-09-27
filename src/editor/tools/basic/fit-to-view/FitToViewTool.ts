@@ -6,7 +6,7 @@ import type { CanvasEvent, Tool } from '@/editor/tools/system/types'
 import { boundsFromPoints } from '@/shared/geometry'
 
 export class FitToViewTool implements Tool {
-  id = 'basic.fitToView'
+  id = 'basic.fit-to-view'
   name = 'Fit to View'
   icon = '⊞' // Box fit icon
   iconComponent = AllSidesIcon

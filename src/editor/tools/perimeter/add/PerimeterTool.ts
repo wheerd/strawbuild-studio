@@ -42,7 +42,7 @@ interface PerimeterToolState {
 }
 
 export class PerimeterTool extends BaseTool implements Tool {
-  readonly id = 'perimeter'
+  readonly id = 'perimeter.add'
   readonly name = 'Building Perimeter'
   readonly icon = '⬜'
   readonly iconComponent = BorderAllIcon

@@ -56,7 +56,7 @@ const DEFAULT_OPENING_CONFIG = {
 }
 
 export class AddOpeningTool extends BaseTool implements Tool {
-  readonly id = 'add-opening'
+  readonly id = 'perimeter.add-opening'
   readonly name = 'Add Opening'
   readonly icon = '🚪'
   readonly iconComponent = BoxIcon

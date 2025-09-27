@@ -1,33 +1,28 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
-import { registerAllTools } from './index'
 import { PerimeterTool } from './perimeter/add/PerimeterTool'
-import { ToolManager } from './system/ToolManager'
+import { TOOL_DEFINITIONS, TOOL_GROUPS, getToolById } from './store/toolDefinitions'
 
 describe('Tool Integration', () => {
-  let toolManager: ToolManager
-
-  beforeEach(() => {
-    toolManager = new ToolManager()
-    registerAllTools(toolManager)
-  })
-
-  it('should register perimeter polygon tool', () => {
-    const tool = toolManager.getTool('perimeter')
+  it('should have perimeter add tool in definitions', () => {
+    const tool = getToolById('perimeter.add')
     expect(tool).toBeInstanceOf(PerimeterTool)
   })
 
-  it('should be able to activate perimeter polygon tool', () => {
-    const success = toolManager.activateTool('perimeter')
-    expect(success).toBe(true)
-    expect(toolManager.getActiveTool()?.id).toBe('perimeter')
+  it('should be able to get perimeter add tool by id', () => {
+    const tool = TOOL_DEFINITIONS['perimeter.add']
+    expect(tool).toBeInstanceOf(PerimeterTool)
+    expect(tool.id).toBe('perimeter.add')
   })
 
-  it('should have perimeters tool group registered', () => {
-    const wallsGroup = toolManager.getToolGroup('perimeters')
+  it('should have perimeter tool group with correct tools', () => {
+    const perimeterGroup = TOOL_GROUPS.find(group => group.name === 'Perimeter')
 
-    expect(wallsGroup).toBeDefined()
-    expect(wallsGroup?.name).toBe('Perimeter Walls')
-    expect(wallsGroup?.tools).toHaveLength(3)
+    expect(perimeterGroup).toBeDefined()
+    expect(perimeterGroup?.name).toBe('Perimeter')
+    expect(perimeterGroup?.tools).toHaveLength(3)
+    expect(perimeterGroup?.tools).toContain('perimeter.add')
+    expect(perimeterGroup?.tools).toContain('perimeter.preset')
+    expect(perimeterGroup?.tools).toContain('perimeter.add-opening')
   })
 })

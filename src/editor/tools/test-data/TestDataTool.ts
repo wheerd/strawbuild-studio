@@ -11,7 +11,7 @@ import { boundsFromPoints, createLength, createVec2 } from '@/shared/geometry'
  * Triggers on activation to add a T-shaped test perimeter with multiple doors and windows.
  */
 export class TestDataTool implements Tool {
-  id = 'basic.test-data'
+  id = 'test.data'
   name = 'Test Data'
   icon = '🏗️'
   iconComponent = RocketIcon

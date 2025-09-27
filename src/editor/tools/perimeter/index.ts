@@ -16,7 +16,7 @@ export const createPerimeterToolGroup = (): ToolGroup => ({
   icon: '⬜',
   category: 'perimeters',
   tools: [new PerimeterTool(), new PerimeterPresetTool(), new AddOpeningTool()],
-  defaultTool: 'perimeter'
+  defaultTool: 'perimeter.add'
 })
 
 // Export as default tool group

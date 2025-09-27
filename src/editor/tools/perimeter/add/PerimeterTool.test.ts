@@ -11,7 +11,7 @@ describe('PerimeterTool', () => {
   it('should have correct tool properties', () => {
     const tool = new PerimeterTool()
 
-    expect(tool.id).toBe('perimeter')
+    expect(tool.id).toBe('perimeter.add')
     expect(tool.name).toBe('Building Perimeter')
     expect(tool.icon).toBe('⬜')
     expect(tool.cursor).toBe('crosshair')
@@ -37,8 +37,8 @@ describe('PerimeterTool', () => {
     expect(perimeterToolGroup.id).toBe('perimeters')
     expect(perimeterToolGroup.name).toBe('Perimeter Walls')
     expect(perimeterToolGroup.tools).toHaveLength(3)
-    expect(perimeterToolGroup.tools.find(tool => tool.id === 'perimeter')).toBeInstanceOf(PerimeterTool)
-    expect(perimeterToolGroup.defaultTool).toBe('perimeter')
+    expect(perimeterToolGroup.tools.find(tool => tool.id === 'perimeter.add')).toBeInstanceOf(PerimeterTool)
+    expect(perimeterToolGroup.defaultTool).toBe('perimeter.add')
   })
 
   describe('length input integration', () => {
@@ -118,7 +118,7 @@ describe('PerimeterTool', () => {
       const mockKeyboardEvent = new KeyboardEvent('keydown', { key: 'Escape' })
 
       // Call handleKeyDown directly
-      const result = tool.handleKeyDown(mockKeyboardEvent, {} as any)
+      const result = tool.handleKeyDown(mockKeyboardEvent)
 
       // Should return true (handled) and clear the override
       expect(result).toBe(true)

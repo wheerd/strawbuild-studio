@@ -19,7 +19,7 @@ interface PerimeterPresetToolState {
 }
 
 export class PerimeterPresetTool extends BaseTool implements Tool {
-  readonly id = 'perimeter-preset'
+  readonly id = 'perimeter.preset'
   readonly name = 'Perimeter Presets'
   readonly icon = '⬜'
   readonly iconComponent = BoxModelIcon

@@ -13,7 +13,7 @@ describe('AddOpeningTool', () => {
   })
 
   it('should have correct tool properties', () => {
-    expect(addOpeningTool.id).toBe('add-opening')
+    expect(addOpeningTool.id).toBe('perimeter.add-opening')
     expect(addOpeningTool.name).toBe('Add Opening')
     expect(addOpeningTool.icon).toBe('🚪')
     expect(addOpeningTool.hotkey).toBe('o')
@@ -105,6 +105,8 @@ describe('AddOpeningTool', () => {
   it('should be registered in perimeter tool group', () => {
     const outerWallToolGroup = createPerimeterToolGroup()
 
-    expect(outerWallToolGroup.tools.find((tool: any) => tool.id === 'add-opening')).toBeInstanceOf(AddOpeningTool)
+    expect(outerWallToolGroup.tools.find((tool: any) => tool.id === 'perimeter.add-opening')).toBeInstanceOf(
+      AddOpeningTool
+    )
   })
 })

@@ -16,7 +16,8 @@
       "pnpm lint:format": "allow",
       "pnpm dev": "allow",
       "pnpm build": "allow",
-      "pnpm typecheck": "allow"
+      "pnpm typecheck": "allow",
+      "rg *": "allow"
     }
   }
 }

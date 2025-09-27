@@ -8,7 +8,7 @@ import type { Tool } from '@/editor/tools/system/types'
  * Triggers on activation to clear all data and localStorage persistence.
  */
 export class ResetTool implements Tool {
-  id = 'test-data.reset'
+  id = 'test.reset'
   name = 'Reset'
   icon = '🗑️'
   iconComponent = TrashIcon

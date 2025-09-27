@@ -2,10 +2,10 @@ import type { SelectableId } from '@/building/model/ids'
 import { isOpeningId, isPerimeterCornerId, isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
 import { getCanRedo, getCanUndo, getModelActions, getRedoFunction, getUndoFunction } from '@/building/store'
 import { clearSelection, getCurrentSelection, getSelectionPath, popSelection } from '@/editor/hooks/useSelectionStore'
-import { type ToolId } from '@/editor/tools/store/toolDefinitions'
+import { type ToolId, getAllTools } from '@/editor/tools/store/toolDefinitions'
 import { getActiveTool, pushTool } from '@/editor/tools/store/toolStore'
 
-import type { ShortcutDefinition, Tool } from './types'
+import type { ShortcutDefinition } from './types'
 
 export class KeyboardShortcutManager {
   private builtInShortcuts: ShortcutDefinition[] = []
@@ -13,21 +13,17 @@ export class KeyboardShortcutManager {
 
   constructor() {
     this.initializeBuiltInShortcuts()
+    this.initializeToolShortcuts()
   }
 
-  // Register a tool's activation shortcut
-  registerToolShortcut(tool: Tool): void {
-    if (tool.hotkey) {
-      const normalizedKey = this.normalizeKey(tool.hotkey)
-      this.toolActivationShortcuts.set(normalizedKey, tool.id)
-    }
-  }
-
-  // Unregister a tool's shortcut
-  unregisterToolShortcut(tool: Tool): void {
-    if (tool.hotkey) {
-      const normalizedKey = this.normalizeKey(tool.hotkey)
-      this.toolActivationShortcuts.delete(normalizedKey)
+  // Initialize tool shortcuts from hardcoded tool definitions
+  private initializeToolShortcuts(): void {
+    const tools = getAllTools()
+    for (const tool of tools) {
+      if (tool.hotkey) {
+        const normalizedKey = this.normalizeKey(tool.hotkey)
+        this.toolActivationShortcuts.set(normalizedKey, tool.id)
+      }
     }
   }
 
