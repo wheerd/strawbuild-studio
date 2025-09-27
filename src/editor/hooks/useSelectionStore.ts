@@ -112,3 +112,16 @@ export const useCurrentSelection = () => useSelectionStore(state => state.getCur
 export const useSelectedEntityId = () => useSelectionStore(state => state.getSelectedEntityId())
 export const useSelectionPath = () => useSelectionStore(state => state.getSelectionPath())
 export const useHasSelection = () => useSelectionStore(state => state.hasSelection())
+
+// Non-reactive access functions for external usage (tools, services)
+export const getSelectionActions = (): SelectionActions => useSelectionStore.getState()
+export const getCurrentSelection = () => useSelectionStore.getState().getCurrentSelection()
+export const getSelectedEntityId = () => useSelectionStore.getState().getSelectedEntityId()
+export const getSelectionPath = () => useSelectionStore.getState().getSelectionPath()
+export const hasSelection = () => useSelectionStore.getState().hasSelection()
+
+// Non-reactive action functions for direct usage
+export const pushSelection = (id: SelectableId) => useSelectionStore.getState().pushSelection(id)
+export const popSelection = () => useSelectionStore.getState().popSelection()
+export const clearSelection = () => useSelectionStore.getState().clearSelection()
+export const replaceSelection = (stack: SelectableId[]) => useSelectionStore.getState().replaceSelection(stack)

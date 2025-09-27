@@ -1,7 +1,8 @@
 import { BoxModelIcon } from '@radix-ui/react-icons'
 
+import { getModelActions } from '@/building/store'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
-import type { CanvasEvent, Tool, ToolContext } from '@/editor/tools/system/types'
+import type { CanvasEvent, Tool } from '@/editor/tools/system/types'
 import type { Polygon2D, Vec2 } from '@/shared/geometry'
 import { add, polygonIsClockwise } from '@/shared/geometry'
 
@@ -122,8 +123,8 @@ export class PerimeterPresetTool extends BaseTool implements Tool {
       }
 
       // Create the perimeter using the model store
-      const modelStore = event.context.getModelStore()
-      const activeStoreyId = event.context.getActiveStoreyId()
+      const modelStore = getModelActions()
+      const activeStoreyId = modelStore.getActiveStorey()
 
       modelStore.addPerimeter(
         activeStoreyId,
@@ -143,7 +144,7 @@ export class PerimeterPresetTool extends BaseTool implements Tool {
     return true
   }
 
-  handleKeyDown(event: KeyboardEvent, _context: ToolContext): boolean {
+  handleKeyDown(event: KeyboardEvent): boolean {
     if (event.key === 'Escape') {
       if (this.state.presetConfig) {
         this.clearActivePreset()

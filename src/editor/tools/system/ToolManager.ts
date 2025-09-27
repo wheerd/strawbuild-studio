@@ -1,5 +1,5 @@
 import { keyboardShortcutManager } from './KeyboardShortcutManager'
-import type { CanvasEvent, Tool, ToolContext, ToolGroup } from './types'
+import type { CanvasEvent, Tool, ToolGroup } from './types'
 
 export interface ToolManagerState {
   activeTool: Tool | null
@@ -47,7 +47,7 @@ export class ToolManager {
   }
 
   // Tool activation
-  activateTool(toolId: string, context?: ToolContext): boolean {
+  activateTool(toolId: string): boolean {
     const tool = this.state.tools.get(toolId)
     if (!tool) {
       console.warn(`Tool with id '${toolId}' not found`)
@@ -56,7 +56,7 @@ export class ToolManager {
 
     // Deactivate current tool
     if (this.state.activeTool) {
-      this.state.activeTool.onDeactivate?.(context)
+      this.state.activeTool.onDeactivate?.()
     }
 
     // Activate new tool - create new state object to trigger React updates
@@ -65,7 +65,7 @@ export class ToolManager {
       activeTool: tool,
       activeToolId: toolId
     }
-    tool.onActivate?.(context)
+    tool.onActivate?.()
 
     this.notifySubscribers()
     return true
@@ -151,10 +151,10 @@ export class ToolManager {
     return this.state.tools.get(group.defaultTool) ?? null
   }
 
-  activateDefaultToolForGroup(groupId: string, context: ToolContext): boolean {
+  activateDefaultToolForGroup(groupId: string): boolean {
     const defaultTool = this.getDefaultToolForGroup(groupId)
     if (!defaultTool) return false
-    return this.activateTool(defaultTool.id, context)
+    return this.activateTool(defaultTool.id)
   }
 
   // Debug helpers

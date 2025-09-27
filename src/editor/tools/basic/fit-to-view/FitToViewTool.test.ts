@@ -3,21 +3,22 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { StoreyId } from '@/building/model/ids'
 import type { Perimeter } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
-import type { ToolContext } from '@/editor/tools/system/types'
+import { viewportActions } from '@/editor/hooks/useViewportStore'
 import { createVec2 } from '@/shared/geometry/basic'
 
 import { FitToViewTool } from './FitToViewTool'
 
 // Mock the store hooks
-vi.mock('@/shared/components/FloorPlanEditor/hooks/useViewportStore')
+vi.mock('@/editor/hooks/useViewportStore')
 vi.mock('@/building/store')
-vi.mock('@/editor/tools/system/ToolManager')
+vi.mock('@/editor/tools/store/toolStore', () => ({
+  pushTool: vi.fn()
+}))
 
 describe('FitToViewTool', () => {
   let fitToViewTool: FitToViewTool
   let mockGetPerimetersByStorey: ReturnType<typeof vi.fn>
   let mockFitToView: ReturnType<typeof vi.fn>
-  let mockContext: Pick<ToolContext, 'fitToView'>
 
   beforeEach(() => {
     fitToViewTool = new FitToViewTool()
@@ -25,13 +26,18 @@ describe('FitToViewTool', () => {
     // Create only the specific mocks we need for these tests
     mockGetPerimetersByStorey = vi.fn()
     mockFitToView = vi.fn()
-    mockContext = { fitToView: mockFitToView }
 
     // Mock model actions accessor
     const mockedGetModelActions = vi.mocked(getModelActions)
     mockedGetModelActions.mockReturnValue({
       getActiveStorey: () => 'floor1' as StoreyId,
       getPerimetersByStorey: mockGetPerimetersByStorey
+    } as any)
+
+    // Mock viewport actions
+    const mockedViewportActions = vi.mocked(viewportActions)
+    mockedViewportActions.mockReturnValue({
+      fitToView: mockFitToView
     } as any)
   })
 
@@ -71,12 +77,12 @@ describe('FitToViewTool', () => {
 
     mockGetPerimetersByStorey.mockReturnValue(mockOuterWalls)
 
-    fitToViewTool.onActivate(mockContext as ToolContext)
+    fitToViewTool.onActivate()
 
     // Should have called getPerimetersByStorey
     expect(mockGetPerimetersByStorey).toHaveBeenCalledWith('floor1')
 
-    // Should have called fitToView on context
+    // Should have called fitToView via viewportActions
     expect(mockFitToView).toHaveBeenCalled()
   })
 
@@ -85,7 +91,7 @@ describe('FitToViewTool', () => {
 
     const consoleSpy = vi.spyOn(console, 'log')
 
-    fitToViewTool.onActivate(mockContext as ToolContext)
+    fitToViewTool.onActivate()
 
     expect(consoleSpy).toHaveBeenCalledWith('No entities to fit - no bounds available')
     expect(mockFitToView).not.toHaveBeenCalled()
@@ -123,7 +129,7 @@ describe('FitToViewTool', () => {
 
     mockGetPerimetersByStorey.mockReturnValue(mockOuterWalls)
 
-    fitToViewTool.onActivate(mockContext as ToolContext)
+    fitToViewTool.onActivate()
 
     // Should have called fitToView with the correct bounds
     // Bounds: min(-100, -100) to max(2100, 1100)
@@ -165,7 +171,7 @@ describe('FitToViewTool', () => {
 
     mockGetPerimetersByStorey.mockReturnValue(mockOuterWalls)
 
-    fitToViewTool.onActivate(mockContext as ToolContext)
+    fitToViewTool.onActivate()
 
     // Should have called fitToView with the small bounds
     // Bounds: min(95, 95) to max(115, 115)

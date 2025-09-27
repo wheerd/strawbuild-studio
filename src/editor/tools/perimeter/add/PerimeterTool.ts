@@ -1,6 +1,7 @@
 import { BorderAllIcon } from '@radix-ui/react-icons'
 
 import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
+import { getModelActions } from '@/building/store'
 import { useConfigStore } from '@/construction/config/store'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
 import { activateLengthInput, deactivateLengthInput } from '@/editor/services/length-input'
@@ -8,7 +9,7 @@ import type { LengthInputPosition } from '@/editor/services/length-input'
 import { SnappingService } from '@/editor/services/snapping'
 import type { SnapResult, SnappingContext } from '@/editor/services/snapping/types'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
-import type { CanvasEvent, Tool, ToolContext } from '@/editor/tools/system/types'
+import type { CanvasEvent, Tool } from '@/editor/tools/system/types'
 import type { Length, LineSegment2D, Polygon2D, Vec2 } from '@/shared/geometry'
 import {
   add,
@@ -149,7 +150,7 @@ export class PerimeterTool extends BaseTool implements Tool {
       if (this.isSnappingToFirstPoint()) {
         // Only allow closing if it wouldn't create intersections
         if (this.state.isClosingLineValid) {
-          this.completePolygon(event.context)
+          this.completePolygon()
         }
         return true
       }
@@ -195,7 +196,7 @@ export class PerimeterTool extends BaseTool implements Tool {
     return true
   }
 
-  handleKeyDown(event: KeyboardEvent, context: ToolContext): boolean {
+  handleKeyDown(event: KeyboardEvent): boolean {
     if (event.key === 'Escape') {
       // First try to clear length override if it exists
       if (this.state.lengthOverride) {
@@ -211,7 +212,7 @@ export class PerimeterTool extends BaseTool implements Tool {
     }
 
     if (event.key === 'Enter' && this.state.points.length >= 3) {
-      this.completePolygon(context)
+      this.completePolygon()
       return true
     }
 
@@ -261,7 +262,7 @@ export class PerimeterTool extends BaseTool implements Tool {
     deactivateLengthInput()
   }
 
-  private completePolygon(context?: ToolContext): void {
+  private completePolygon(): void {
     if (this.state.points.length < 3) return
 
     // Only complete if closing wouldn't create intersections
@@ -275,27 +276,26 @@ export class PerimeterTool extends BaseTool implements Tool {
       polygon = { points: [...this.state.points].reverse() }
     }
 
-    if (context) {
-      const modelStore = context.getModelStore()
-      const activeStoreyId = context.getActiveStoreyId()
+    const { addPerimeter, getActiveStorey } = getModelActions()
 
-      try {
-        if (!this.state.constructionMethodId) {
-          console.error('No construction method selected')
-          return
-        }
+    const activeStoreyId = getActiveStorey()
 
-        modelStore.addPerimeter(
-          activeStoreyId,
-          polygon,
-          this.state.constructionMethodId,
-          this.state.wallThickness,
-          this.state.baseRingBeamMethodId,
-          this.state.topRingBeamMethodId
-        )
-      } catch (error) {
-        console.error('Failed to create perimeter polygon:', error)
+    try {
+      if (!this.state.constructionMethodId) {
+        console.error('No construction method selected')
+        return
       }
+
+      addPerimeter(
+        activeStoreyId,
+        polygon,
+        this.state.constructionMethodId,
+        this.state.wallThickness,
+        this.state.baseRingBeamMethodId,
+        this.state.topRingBeamMethodId
+      )
+    } catch (error) {
+      console.error('Failed to create perimeter polygon:', error)
     }
 
     this.state.points = []

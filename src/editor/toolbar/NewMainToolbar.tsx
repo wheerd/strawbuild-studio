@@ -6,7 +6,7 @@ import { TOOL_DEFINITIONS, TOOL_GROUPS, type ToolId } from '@/editor/tools/store
 import { pushTool, useActiveToolId } from '@/editor/tools/store/toolStore'
 import { Logo } from '@/shared/components/Logo'
 
-export function MainToolbar(): React.JSX.Element {
+export function NewMainToolbar(): React.JSX.Element {
   const activeToolId = useActiveToolId()
 
   const handleToolSelect = useCallback((toolId: ToolId) => {
@@ -22,7 +22,7 @@ export function MainToolbar(): React.JSX.Element {
       <Toolbar.Root>
         <Flex align="center" gap="2">
           {TOOL_GROUPS.map((group, groupIndex) => (
-            <React.Fragment key={groupIndex}>
+            <React.Fragment key={group.name}>
               {groupIndex > 0 && <Separator orientation="vertical" size="2" />}
 
               <Flex align="center" gap="1">

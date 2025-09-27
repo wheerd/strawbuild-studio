@@ -1,8 +1,10 @@
 import { MoveIcon } from '@radix-ui/react-icons'
 
+import { getModelActions } from '@/building/store'
+import { entityHitTestService } from '@/editor/canvas/services/EntityHitTestService'
 import { defaultSnappingService } from '@/editor/services/snapping/SnappingService'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
-import type { CanvasEvent, Tool, ToolContext } from '@/editor/tools/system/types'
+import type { CanvasEvent, Tool } from '@/editor/tools/system/types'
 import type { Vec2 } from '@/shared/geometry'
 import { distanceSquared, subtract } from '@/shared/geometry'
 
@@ -53,14 +55,14 @@ export class MoveTool extends BaseTool implements Tool {
       return false
     }
 
-    const hitResult = event.context.findEntityAt(event.pointerCoordinates)
+    const hitResult = entityHitTestService.findEntityAt(event.pointerCoordinates)
     if (!hitResult) return false
 
     const behavior = getMovementBehavior(hitResult.entityType)
     if (!behavior) return false
 
     // Get the entity and create context
-    const store = event.context.getModelStore()
+    const store = getModelActions()
     const entity = behavior.getEntity(hitResult.entityId, hitResult.parentIds, store)
 
     // Start waiting for movement - don't begin actual move yet
@@ -171,7 +173,7 @@ export class MoveTool extends BaseTool implements Tool {
     return true
   }
 
-  handleKeyDown(event: KeyboardEvent, _context: ToolContext): boolean {
+  handleKeyDown(event: KeyboardEvent): boolean {
     // Handle escape key to cancel movement
     if (event.key === 'Escape') {
       if (this.toolState.isWaitingForMovement || this.toolState.isMoving) {

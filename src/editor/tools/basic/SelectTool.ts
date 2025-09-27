@@ -1,7 +1,15 @@
 import { CursorArrowIcon } from '@radix-ui/react-icons'
 
-import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
-import type { CanvasEvent, Tool, ToolContext } from '@/editor/tools/system/types'
+import { entityHitTestService } from '@/editor/canvas/services/EntityHitTestService'
+import {
+  clearSelection,
+  getCurrentSelection,
+  getSelectionPath,
+  popSelection,
+  pushSelection,
+  replaceSelection
+} from '@/editor/hooks/useSelectionStore'
+import type { CanvasEvent, Tool } from '@/editor/tools/system/types'
 
 export class SelectTool implements Tool {
   id = 'basic.select'
@@ -19,46 +27,45 @@ export class SelectTool implements Tool {
       return false
     }
 
-    const hitResult = event.context.findEntityAt(event.pointerCoordinates)
+    const hitResult = entityHitTestService.findEntityAt(event.pointerCoordinates)
 
     if (hitResult) {
       const clickSelectionPath = hitResult.parentIds.concat([hitResult.entityId])
-      const store = useSelectionStore.getState()
-      const currentSelectionPath = store.getSelectionPath()
+      const currentSelectionPath = getSelectionPath()
 
       for (let i = 0; i < currentSelectionPath.length; i++) {
         // Clicked on parent of current selection
         if (i >= clickSelectionPath.length) {
-          store.replaceSelection(clickSelectionPath)
+          replaceSelection(clickSelectionPath)
           return true
         }
         // Clicked on sibling of current selection (or something completely different)
         if (currentSelectionPath[i] !== clickSelectionPath[i]) {
-          store.replaceSelection(clickSelectionPath.slice(0, i + 1))
+          replaceSelection(clickSelectionPath.slice(0, i + 1))
           return true
         }
       }
 
       // Clicked on child of current selection
       if (clickSelectionPath.length > currentSelectionPath.length) {
-        store.pushSelection(clickSelectionPath[currentSelectionPath.length])
+        pushSelection(clickSelectionPath[currentSelectionPath.length])
       }
 
       return true
     } else {
       // Clear selection when clicking empty space
-      event.context.clearSelection()
+      clearSelection()
       return true
     }
   }
 
-  handleKeyDown(event: KeyboardEvent, context: ToolContext): boolean {
+  handleKeyDown(event: KeyboardEvent): boolean {
     if (event.key === 'Escape') {
       // Progressive deselection - pop from selection stack
-      const currentSelection = context.getCurrentSelection()
+      const currentSelection = getCurrentSelection()
 
       if (currentSelection) {
-        context.popSelection()
+        popSelection()
       }
       return true
     }

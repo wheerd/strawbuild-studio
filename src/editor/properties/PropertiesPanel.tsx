@@ -18,7 +18,7 @@ import {
 } from '@/building/model/ids'
 import { useModelActions } from '@/building/store'
 import { useCurrentSelection, useSelectionPath } from '@/editor/hooks/useSelectionStore'
-import { useActiveTool } from '@/editor/tools/system/ToolContext'
+import { useActiveTool } from '@/editor/tools/store/toolStore'
 import { getEntityDisplayName } from '@/shared/utils/entityDisplay'
 
 export function PropertiesPanel(): React.JSX.Element {

@@ -1,8 +1,9 @@
 import { RocketIcon } from '@radix-ui/react-icons'
 
+import { getModelActions } from '@/building/store'
 import { useConfigStore } from '@/construction/config/store'
-import { toolManager } from '@/editor/tools/system/ToolManager'
-import type { Tool, ToolContext } from '@/editor/tools/system/types'
+import { viewportActions } from '@/editor/hooks/useViewportStore'
+import type { Tool } from '@/editor/tools/system/types'
 import { boundsFromPoints, createLength, createVec2 } from '@/shared/geometry'
 
 /**
@@ -19,15 +20,16 @@ export class TestDataTool implements Tool {
   category = 'basic'
 
   // Lifecycle methods
-  onActivate(context: ToolContext): void {
+  onActivate(): void {
     // Immediately deactivate and return to select tool
-    setTimeout(() => {
-      toolManager.activateTool('basic.select', context)
+    setTimeout(async () => {
+      const { pushTool } = await import('@/editor/tools/store/toolStore')
+      pushTool('basic.select')
     }, 0)
 
     // Perform the test data creation operation
-    const modelStore = context.getModelStore()
-    const activeStoreyId = context.getActiveStoreyId()
+    const modelStore = getModelActions()
+    const activeStoreyId = modelStore.getActiveStorey()
 
     // Create a T-shaped perimeter (realistic building scale)
     const boundary = {
@@ -150,7 +152,7 @@ export class TestDataTool implements Tool {
         const wallPoints = newPerimeter.corners.map(c => c.outsidePoint)
         const bounds = boundsFromPoints(wallPoints)
         if (bounds) {
-          context.fitToView(bounds)
+          viewportActions().fitToView(bounds)
         }
       }
     } catch (error) {

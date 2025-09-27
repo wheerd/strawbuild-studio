@@ -1,13 +1,12 @@
 import type Konva from 'konva'
 
-import type { CanvasEvent, ToolContext } from '@/editor/tools/system/types'
+import { viewportActions } from '@/editor/hooks/useViewportStore'
+import type { CanvasEvent } from '@/editor/tools/system/types'
 
 export class CanvasEventDispatcher {
-  private toolContext: ToolContext
   private handleToolEvent: (event: CanvasEvent) => boolean
 
-  constructor(toolContext: ToolContext, handleToolEvent: (event: CanvasEvent) => boolean) {
-    this.toolContext = toolContext
+  constructor(handleToolEvent: (event: CanvasEvent) => boolean) {
     this.handleToolEvent = handleToolEvent
   }
 
@@ -25,15 +24,14 @@ export class CanvasEventDispatcher {
 
     // Konva's getPointerPosition() gives coordinates relative to the stage canvas
     // Convert to world coordinates by accounting for stage transform
-    const stageCoordinates = this.toolContext.getStageCoordinates(pointer)
+    const stageCoordinates = viewportActions().stageToWorld(pointer)
 
     return {
       type,
       originalEvent: konvaEvent.evt,
       konvaEvent,
       stageCoordinates,
-      pointerCoordinates: pointer, // Original pointer coordinates for hit testing
-      context: this.toolContext
+      pointerCoordinates: pointer // Original pointer coordinates for hit testing
     }
   }
 
@@ -76,21 +74,13 @@ export class CanvasEventDispatcher {
     // Tools typically don't need to handle wheel events
     return false
   }
-
-  // Update tool context reference
-  updateToolContext(toolContext: ToolContext): void {
-    this.toolContext = toolContext
-  }
 }
 
 // Hook to create and manage the event dispatcher
-export function useCanvasEventDispatcher(
-  toolContext: ToolContext,
-  handleToolEvent: (event: CanvasEvent) => boolean
-): CanvasEventDispatcher {
+export function useCanvasEventDispatcher(handleToolEvent: (event: CanvasEvent) => boolean): CanvasEventDispatcher {
   // Create dispatcher instance
   // In a real implementation, this would use useMemo to avoid recreating on every render
-  const dispatcher = new CanvasEventDispatcher(toolContext, handleToolEvent)
+  const dispatcher = new CanvasEventDispatcher(handleToolEvent)
 
   return dispatcher
 }

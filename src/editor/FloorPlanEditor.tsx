@@ -8,22 +8,11 @@ import { StoreySelector } from './overlays/StoreySelector'
 import { PropertiesPanel } from './properties/PropertiesPanel'
 import { LengthInputComponent } from './services/length-input'
 import { MainToolbar } from './toolbar/MainToolbar'
-import { initializeToolSystem } from './tools'
 import { keyboardShortcutManager } from './tools/system/KeyboardShortcutManager'
-import { ToolContextProvider, useToolContext } from './tools/system/ToolContext'
-import { toolManager } from './tools/system/ToolManager'
 
-// Inner component that has access to ToolContext
 function FloorPlanEditorContent(): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null)
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 })
-  const toolContext = useToolContext()
-  const toolContextRef = useRef(toolContext)
-
-  // Keep toolContextRef updated
-  useEffect(() => {
-    toolContextRef.current = toolContext
-  }, [toolContext])
 
   // Handle keyboard shortcuts
   const handleKeyDown = useCallback(
@@ -36,8 +25,8 @@ function FloorPlanEditorContent(): React.JSX.Element {
         return // Let the input handle the event normally
       }
 
-      // Use ref to get current context without dependency issues
-      if (keyboardShortcutManager.handleKeyDown(event, toolContextRef.current)) {
+      // Handle keyboard shortcuts directly with new tool store
+      if (keyboardShortcutManager.handleKeyDown(event)) {
         event.preventDefault()
       }
     },
@@ -54,8 +43,8 @@ function FloorPlanEditorContent(): React.JSX.Element {
         return // Let the input handle the event normally
       }
 
-      // Use ref to get current context without dependency issues
-      if (keyboardShortcutManager.handleKeyUp(event, toolContextRef.current)) {
+      // Handle keyboard shortcuts directly with new tool store
+      if (keyboardShortcutManager.handleKeyUp(event)) {
         event.preventDefault()
       }
     },
@@ -183,33 +172,6 @@ function FloorPlanEditorContent(): React.JSX.Element {
 }
 
 export function FloorPlanEditor(): React.JSX.Element {
-  const [isToolSystemReady, setIsToolSystemReady] = useState(false)
-
-  // Initialize tool system once
-  useEffect(() => {
-    if (!isToolSystemReady) {
-      try {
-        initializeToolSystem(toolManager)
-        setIsToolSystemReady(true)
-      } catch (error) {
-        console.error('Failed to initialize tool system:', error)
-      }
-    }
-  }, [isToolSystemReady])
-
-  if (!isToolSystemReady) {
-    return (
-      <div className="floor-plan-editor loading">
-        <div className="loading-message">
-          <p>Initializing tool system...</p>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <ToolContextProvider>
-      <FloorPlanEditorContent />
-    </ToolContextProvider>
-  )
+  // Tool system is now hardcoded and ready immediately - no initialization needed!
+  return <FloorPlanEditorContent />
 }

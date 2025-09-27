@@ -44,9 +44,7 @@ export {
   DEFAULT_TOOL,
   type ToolId,
   getToolById,
-  getToolGroupByName,
-  getAllTools,
-  getToolsInGroup
+  getAllTools
 } from './store/toolDefinitions'
 
 // Export individual tool groups for external registration

@@ -34,12 +34,12 @@ export interface Tool extends BaseTool {
   handlePointerDown?(event: CanvasEvent): boolean
   handlePointerMove?(event: CanvasEvent): boolean
   handlePointerUp?(event: CanvasEvent): boolean
-  handleKeyDown?(event: KeyboardEvent, context: ToolContext): boolean
-  handleKeyUp?(event: KeyboardEvent, context: ToolContext): boolean
+  handleKeyDown?(event: KeyboardEvent): boolean
+  handleKeyUp?(event: KeyboardEvent): boolean
 
   // Lifecycle methods
-  onActivate?(context?: ToolContext): void
-  onDeactivate?(context?: ToolContext): void
+  onActivate?(): void
+  onDeactivate?(): void
 }
 
 export interface ToolInspectorProps<T extends Tool = Tool> {
@@ -51,15 +51,14 @@ export interface ToolOverlayComponentProps<T extends Tool = Tool> {
 }
 
 export interface ToolOverlayContext {
-  toolContext: ToolContext
   currentPointerPos?: Vec2
 }
 
 // Keyboard shortcut system
 export interface ShortcutDefinition {
   key: string // e.g., 'Delete', 'Escape', 'Ctrl+C', 'Shift+R'
-  action: (context: ToolContext) => void
-  condition?: (context: ToolContext) => boolean // When this shortcut is active
+  action: () => void
+  condition?: () => boolean // When this shortcut is active
   priority: number // Higher priority wins conflicts
   scope: 'global' | 'selection' | 'tool'
   source: string // For debugging: 'builtin:delete' or 'tool:basic.select'
@@ -73,7 +72,6 @@ export interface CanvasEvent {
   konvaEvent: Konva.KonvaEventObject<any>
   stageCoordinates: Vec2 // Transformed coordinates (accounting for pan/zoom)
   pointerCoordinates?: { x: number; y: number } // Original pointer coordinates for hit testing
-  context: ToolContext
 }
 export interface ToolContext {
   // Coordinate conversion (viewport functionality)

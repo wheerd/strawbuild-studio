@@ -93,7 +93,7 @@ export function ToolContextProvider({ children }: ToolContextProviderProps): Rea
 
       // Tool activation
       activateTool: (toolId: string): boolean => {
-        return toolManager.activateTool(toolId, toolContext)
+        return toolManager.activateTool(toolId)
       }
     }),
     [

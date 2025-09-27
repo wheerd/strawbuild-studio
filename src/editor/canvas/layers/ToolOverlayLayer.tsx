@@ -1,11 +1,11 @@
 import { Layer } from 'react-konva/lib/ReactKonvaCore'
 
-import { useToolManagerState } from '@/editor/tools/system'
+import { useActiveTool } from '@/editor/tools/store/toolStore'
 
 import { SelectionOverlay } from './SelectionOverlay'
 
 export function ToolOverlayLayer(): React.JSX.Element {
-  const { activeTool } = useToolManagerState()
+  const activeTool = useActiveTool()
 
   return (
     <Layer name="tool-overlay" listening={false}>

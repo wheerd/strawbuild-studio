@@ -1,8 +1,11 @@
 import type { SelectableId } from '@/building/model/ids'
 import { isOpeningId, isPerimeterCornerId, isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
-import { getCanRedo, getCanUndo, getRedoFunction, getUndoFunction } from '@/building/store'
+import { getCanRedo, getCanUndo, getModelActions, getRedoFunction, getUndoFunction } from '@/building/store'
+import { clearSelection, getCurrentSelection, getSelectionPath, popSelection } from '@/editor/hooks/useSelectionStore'
+import { type ToolId } from '@/editor/tools/store/toolDefinitions'
+import { getActiveTool, pushTool } from '@/editor/tools/store/toolStore'
 
-import type { ShortcutDefinition, Tool, ToolContext } from './types'
+import type { ShortcutDefinition, Tool } from './types'
 
 export class KeyboardShortcutManager {
   private builtInShortcuts: ShortcutDefinition[] = []
@@ -29,38 +32,39 @@ export class KeyboardShortcutManager {
   }
 
   // Main keyboard event handler
-  handleKeyDown(event: KeyboardEvent, context: ToolContext): boolean {
+  handleKeyDown(event: KeyboardEvent): boolean {
     const key = this.normalizeKeyFromEvent(event)
 
     // Priority 1: Active tool's handleKeyDown (highest priority)
-    const activeTool = context.getActiveTool()
+    const activeTool = getActiveTool()
     if (activeTool?.handleKeyDown) {
-      if (activeTool.handleKeyDown(event, context)) {
+      if (activeTool.handleKeyDown(event)) {
         return true
       }
     }
 
     // Priority 2: Built-in global shortcuts
-    const availableBuiltInShortcuts = this.getAvailableBuiltInShortcuts(key, context)
+    const availableBuiltInShortcuts = this.getAvailableBuiltInShortcuts(key)
     if (availableBuiltInShortcuts.length > 0) {
       const shortcut = availableBuiltInShortcuts[0] // Highest priority
-      shortcut.action(context)
+      shortcut.action()
       return true
     }
 
     // Priority 4: Tool activation shortcuts
     const toolId = this.toolActivationShortcuts.get(key)
     if (toolId) {
-      return context.activateTool(toolId)
+      pushTool(toolId as ToolId)
+      return true
     }
 
     return false
   }
 
-  handleKeyUp(event: KeyboardEvent, context: ToolContext): boolean {
-    const activeTool = context.getActiveTool()
+  handleKeyUp(event: KeyboardEvent): boolean {
+    const activeTool = getActiveTool()
     if (activeTool?.handleKeyUp) {
-      if (activeTool.handleKeyUp(event, context)) {
+      if (activeTool.handleKeyUp(event)) {
         return true
       }
     }
@@ -69,17 +73,17 @@ export class KeyboardShortcutManager {
   }
 
   // Get all available shortcuts for debugging/UI
-  getAllAvailableShortcuts(context: ToolContext): ShortcutDefinition[] {
+  getAllAvailableShortcuts(): ShortcutDefinition[] {
     const shortcuts: ShortcutDefinition[] = []
 
     // Built-in shortcuts (filtered by condition)
-    shortcuts.push(...this.builtInShortcuts.filter(s => !s.condition || s.condition(context)))
+    shortcuts.push(...this.builtInShortcuts.filter(s => !s.condition || s.condition()))
 
     // Tool activation shortcuts
     for (const [key, toolId] of this.toolActivationShortcuts.entries()) {
       shortcuts.push({
         key,
-        action: context => context.activateTool(toolId),
+        action: () => pushTool(toolId as ToolId),
         priority: 60,
         scope: 'global',
         source: `tool-activation:${toolId}`,
@@ -96,18 +100,18 @@ export class KeyboardShortcutManager {
       {
         key: 'Delete',
         label: 'Delete Selected',
-        action: context => {
-          const selectedId = context.getCurrentSelection()
+        action: () => {
+          const selectedId = getCurrentSelection()
           if (selectedId) {
-            const success = this.deleteEntity(selectedId, context)
+            const success = this.deleteEntity(selectedId)
             if (success) {
               // Only pop selection if deletion was successful
               // This moves up one level in the hierarchy instead of clearing entirely
-              context.popSelection()
+              popSelection()
             }
           }
         },
-        condition: context => context.getCurrentSelection() !== null,
+        condition: () => getCurrentSelection() !== null,
         priority: 100,
         scope: 'global',
         source: 'builtin:delete'
@@ -117,18 +121,18 @@ export class KeyboardShortcutManager {
       {
         key: 'Backspace',
         label: 'Delete Selected',
-        action: context => {
-          const selectedId = context.getCurrentSelection()
+        action: () => {
+          const selectedId = getCurrentSelection()
           if (selectedId) {
-            const success = this.deleteEntity(selectedId, context)
+            const success = this.deleteEntity(selectedId)
             if (success) {
               // Only pop selection if deletion was successful
               // This moves up one level in the hierarchy instead of clearing entirely
-              context.popSelection()
+              popSelection()
             }
           }
         },
-        condition: context => context.getCurrentSelection() !== null,
+        condition: () => getCurrentSelection() !== null,
         priority: 100,
         scope: 'global',
         source: 'builtin:delete-backspace'
@@ -138,12 +142,12 @@ export class KeyboardShortcutManager {
       {
         key: 'Escape',
         label: 'Cancel/Clear Selection',
-        action: context => {
-          context.clearSelection()
+        action: () => {
+          clearSelection()
           // Return to select tool if not already active
-          const activeTool = context.getActiveTool()
+          const activeTool = getActiveTool()
           if (activeTool?.id !== 'basic.select') {
-            context.activateTool('basic.select')
+            pushTool('basic.select')
           }
         },
         condition: () => true, // Always available
@@ -179,19 +183,19 @@ export class KeyboardShortcutManager {
     ]
   }
 
-  private getAvailableBuiltInShortcuts(key: string, context: ToolContext): ShortcutDefinition[] {
+  private getAvailableBuiltInShortcuts(key: string): ShortcutDefinition[] {
     return this.builtInShortcuts
       .filter(shortcut => shortcut.key === key)
-      .filter(shortcut => !shortcut.condition || shortcut.condition(context))
+      .filter(shortcut => !shortcut.condition || shortcut.condition())
       .sort((a, b) => b.priority - a.priority)
   }
 
-  private deleteEntity(selectedId: SelectableId, context: ToolContext): boolean {
-    const modelStore = context.getModelStore()
+  private deleteEntity(selectedId: SelectableId): boolean {
+    const modelStore = getModelActions()
 
     try {
       // Selection path has fixed structure: [perimeterId, wallId, openingId]
-      const selectionPath = context.getSelectionPath()
+      const selectionPath = getSelectionPath()
 
       if (isPerimeterWallId(selectedId)) {
         // Wall is at index 1, parent wall is at index 0

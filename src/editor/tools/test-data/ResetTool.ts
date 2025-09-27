@@ -1,8 +1,7 @@
 import { TrashIcon } from '@radix-ui/react-icons'
 
-import { clearPersistence } from '@/building/store'
-import { toolManager } from '@/editor/tools/system/ToolManager'
-import type { Tool, ToolContext } from '@/editor/tools/system/types'
+import { clearPersistence, getModelActions } from '@/building/store'
+import type { Tool } from '@/editor/tools/system/types'
 
 /**
  * Tool for resetting the entire model to empty state.
@@ -18,14 +17,15 @@ export class ResetTool implements Tool {
   category = 'test-data'
 
   // Lifecycle methods
-  onActivate(context: ToolContext): void {
+  onActivate(): void {
     // Immediately deactivate and return to select tool
-    setTimeout(() => {
-      toolManager.activateTool('basic.select', context)
+    setTimeout(async () => {
+      const { pushTool } = await import('@/editor/tools/store/toolStore')
+      pushTool('basic.select')
     }, 0)
 
     // Perform the reset operation
-    const modelStore = context.getModelStore()
+    const modelStore = getModelActions()
 
     try {
       // Clear the model data

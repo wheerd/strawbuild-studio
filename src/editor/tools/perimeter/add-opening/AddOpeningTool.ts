@@ -10,8 +10,11 @@ import {
   isPerimeterWallId
 } from '@/building/model/ids'
 import type { OpeningType, PerimeterWall } from '@/building/model/model'
+import { getModelActions } from '@/building/store'
+import { entityHitTestService } from '@/editor/canvas/services/EntityHitTestService'
+import { getSelectionActions } from '@/editor/hooks/useSelectionStore'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
-import type { CanvasEvent, Tool, ToolContext } from '@/editor/tools/system/types'
+import type { CanvasEvent, Tool } from '@/editor/tools/system/types'
 import type { Length, Vec2 } from '@/shared/geometry'
 import { createLength, createVec2, distance, lineFromSegment, projectPointOntoLine } from '@/shared/geometry'
 
@@ -74,10 +77,11 @@ export class AddOpeningTool extends BaseTool implements Tool {
    * Extract wall wall information from hit test result
    */
   private extractPerimeterWallFromHitResult(
-    hitResult: { entityId: SelectableId; entityType: EntityType; parentIds: SelectableId[] } | null,
-    context: ToolContext
+    hitResult: { entityId: SelectableId; entityType: EntityType; parentIds: SelectableId[] } | null
   ): PerimeterWallHit | null {
     if (!hitResult) return null
+
+    const { getPerimeterWallById } = getModelActions()
 
     // Check if we hit a wall wall directly
     if (hitResult.entityType === 'perimeter-wall') {
@@ -86,8 +90,7 @@ export class AddOpeningTool extends BaseTool implements Tool {
       const perimeterId = hitResult.parentIds[0] as PerimeterId
 
       if (perimeterId && wallId) {
-        const modelStore = context.getModelStore()
-        const wall = modelStore.getPerimeterWallById(perimeterId, wallId)
+        const wall = getPerimeterWallById(perimeterId, wallId)
         if (wall) {
           return { perimeterId, wallId, wall }
         }
@@ -99,8 +102,7 @@ export class AddOpeningTool extends BaseTool implements Tool {
       const [perimeterId, wallId] = hitResult.parentIds
 
       if (isPerimeterId(perimeterId) && isPerimeterWallId(wallId)) {
-        const modelStore = context.getModelStore()
-        const wall = modelStore.getPerimeterWallById(perimeterId, wallId)
+        const wall = getPerimeterWallById(perimeterId, wallId)
         if (wall) {
           return { perimeterId, wallId, wall }
         }
@@ -184,8 +186,8 @@ export class AddOpeningTool extends BaseTool implements Tool {
       return true
     }
 
-    const hitResult = event.context.findEntityAt(event.pointerCoordinates)
-    const perimeterWall = this.extractPerimeterWallFromHitResult(hitResult, event.context)
+    const hitResult = entityHitTestService.findEntityAt(event.pointerCoordinates)
+    const perimeterWall = this.extractPerimeterWallFromHitResult(hitResult)
 
     if (!perimeterWall) {
       this.clearPreview()
@@ -196,10 +198,7 @@ export class AddOpeningTool extends BaseTool implements Tool {
     const preferredStartOffset = this.calculateCenterOffsetFromPointerPosition(pointerPos, perimeterWall.wall)
 
     // 4. Check if preferred position is valid
-    const modelStore = event.context.getModelStore()
-
-    // Try to find a nearby valid position
-    const snappedOffset = modelStore.findNearestValidPerimeterWallOpeningPosition(
+    const snappedOffset = getModelActions().findNearestValidPerimeterWallOpeningPosition(
       perimeterWall.perimeterId,
       perimeterWall.wallId,
       preferredStartOffset,
@@ -223,7 +222,7 @@ export class AddOpeningTool extends BaseTool implements Tool {
     return true
   }
 
-  handlePointerDown(event: CanvasEvent): boolean {
+  handlePointerDown(_event: CanvasEvent): boolean {
     if (!this.state.canPlace || !this.state.hoveredPerimeterWall || !this.state.offset) {
       return true
     }
@@ -231,8 +230,7 @@ export class AddOpeningTool extends BaseTool implements Tool {
     const { perimeterId, wallId } = this.state.hoveredPerimeterWall
 
     try {
-      const modelStore = event.context.getModelStore()
-      const openingId = modelStore.addPerimeterWallOpening(perimeterId, wallId, {
+      const openingId = getModelActions().addPerimeterWallOpening(perimeterId, wallId, {
         type: this.state.openingType,
         offsetFromStart: this.state.offset,
         width: this.state.width,
@@ -240,11 +238,13 @@ export class AddOpeningTool extends BaseTool implements Tool {
         sillHeight: this.state.sillHeight
       })
 
+      const { clearSelection, pushSelection } = getSelectionActions()
+
       // Select the newly created opening
-      event.context.clearSelection()
-      event.context.selectEntity(perimeterId)
-      event.context.selectSubEntity(wallId)
-      event.context.selectSubEntity(openingId)
+      clearSelection()
+      pushSelection(perimeterId)
+      pushSelection(wallId)
+      pushSelection(openingId)
 
       // Clear preview after successful placement
       this.clearPreview()
