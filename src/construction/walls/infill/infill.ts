@@ -3,6 +3,7 @@ import { vec3 } from 'gl-matrix'
 import type { Perimeter, PerimeterWall } from '@/building/model/model'
 import type { LayersConfig } from '@/construction/config/types'
 import type { ConstructionElementId } from '@/construction/elements'
+import { IDENTITY } from '@/construction/geometry'
 import { resolveDefaultMaterial } from '@/construction/materials/material'
 import type { ResolveMaterialFunction } from '@/construction/materials/material'
 import { type PostConfig, constructPost } from '@/construction/materials/posts'
@@ -188,38 +189,33 @@ function getBaleWidth(availableWidth: Length, config: InfillConstructionConfig):
 function* createCornerAreas(
   cornerInfo: WallCornerInfo,
   wallLength: Length,
-  wallHeight: Length
+  wallHeight: Length,
+  wallThickness: Length
 ): Generator<HighlightedArea> {
   if (cornerInfo.startCorner) {
+    const x = cornerInfo.startCorner.constructedByThisWall
+      ? 0 // Overlap: starts at wall beginning
+      : -cornerInfo.startCorner.extensionDistance // Adjacent: before wall
     yield {
       label: 'Corner',
-      size: [cornerInfo.startCorner.extensionDistance, 0, wallHeight],
-      transform: {
-        position: [
-          cornerInfo.startCorner.constructedByThisWall
-            ? 0 // Overlap: starts at wall beginning
-            : -cornerInfo.startCorner.extensionDistance, // Adjacent: before wall
-          0,
-          0
-        ],
-        rotation: [0, 0, 0]
-      }
+      bounds: {
+        min: [x, 0, 0],
+        max: [x + cornerInfo.startCorner.extensionDistance, wallThickness, wallHeight]
+      },
+      transform: IDENTITY
     }
   }
   if (cornerInfo.endCorner) {
+    const x = cornerInfo.endCorner.constructedByThisWall
+      ? wallLength - cornerInfo.endCorner.extensionDistance // Overlap: extends backward from wall end
+      : wallLength
     yield {
       label: 'Corner',
-      size: [cornerInfo.endCorner.extensionDistance, 0, wallHeight],
-      transform: {
-        position: [
-          cornerInfo.endCorner.constructedByThisWall
-            ? wallLength - cornerInfo.endCorner.extensionDistance // Overlap: extends backward from wall end
-            : wallLength, // Adjacent: after wall end
-          0,
-          0
-        ],
-        rotation: [0, 0, 0]
-      }
+      bounds: {
+        min: [x, 0, 0],
+        max: [x + cornerInfo.endCorner.extensionDistance, wallThickness, wallHeight]
+      },
+      transform: IDENTITY
     }
   }
 }
@@ -233,7 +229,6 @@ export const constructInfillWall: PerimeterWallConstructionMethod<InfillConstruc
 ): ConstructionModel => {
   // Calculate corner information and construction length including assigned corners
   const cornerInfo = calculateWallCornerInfo(wall, perimeter)
-  const cornerAreas = createCornerAreas(cornerInfo, wall.wallLength, floorHeight)
   const { startCorner, endCorner } = cornerInfo
   const startCornerData = startCorner ? (perimeter.corners.find(c => c.id === startCorner.id) ?? null) : null
   const endCornerData = endCorner ? (perimeter.corners.find(c => c.id === endCorner.id) ?? null) : null
@@ -241,6 +236,7 @@ export const constructInfillWall: PerimeterWallConstructionMethod<InfillConstruc
 
   // Segment the wall based on openings, using the actual construction length
   const wallSegments = segmentWall(wall, floorHeight, constructionLength, startExtension, layers)
+  const cornerAreas = createCornerAreas(cornerInfo, constructionLength, floorHeight, wall.thickness)
 
   const allResults: ConstructionResult[] = []
 

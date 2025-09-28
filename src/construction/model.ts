@@ -1,4 +1,4 @@
-import type { Bounds3D, Vec3 } from '@/shared/geometry'
+import type { Bounds3D } from '@/shared/geometry'
 
 import type { GroupOrElement } from './elements'
 import type { Transform } from './geometry'
@@ -19,6 +19,6 @@ export interface ConstructionModel {
 export interface HighlightedArea {
   label: string
   transform: Transform
-  size: Vec3
+  bounds: Bounds3D
   tags?: Tag[]
 }

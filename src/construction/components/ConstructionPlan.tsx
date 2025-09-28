@@ -64,11 +64,8 @@ export function ConstructionPlan({ model, view, containerSize }: ConstructionPla
 
       {/* Measurements */}
       {model.measurements?.map((measurement, index) => {
-        // Transform construction coordinates to SVG coordinates
         const svgStartPoint = projection(measurement.startPoint)
         const svgEndPoint = projection(measurement.endPoint)
-
-        console.log(svgStartPoint, svgEndPoint)
 
         return svgStartPoint[2] === svgEndPoint[2] ? (
           <SvgMeasurementIndicator
@@ -83,6 +80,29 @@ export function ConstructionPlan({ model, view, containerSize }: ConstructionPla
           />
         ) : (
           <></>
+        )
+      })}
+
+      {/* Areas */}
+      {model.areas?.map((area, index) => {
+        const bounds2D = bounds3Dto2D(area.bounds, projection)
+        const position = projection(area.transform.position)
+        const rotation = rotationProjection(area.transform.rotation)
+
+        return (
+          <g key={`area-${index}`} transform={`translate(${position[0]} ${position[1]}) rotate(${rotation})`}>
+            <rect
+              x={bounds2D.min[0]}
+              y={bounds2D.min[1]}
+              width={bounds2D.max[0] - bounds2D.min[0]}
+              height={bounds2D.max[1] - bounds2D.min[1]}
+              fill="none"
+              stroke="#666666"
+              strokeWidth="20"
+              strokeDasharray="200,100"
+              opacity={0.7}
+            />
+          </g>
         )
       })}
     </SVGViewport>
