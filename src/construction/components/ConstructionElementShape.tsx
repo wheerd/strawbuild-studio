@@ -1,10 +1,13 @@
 import type { ConstructionElement, ResolveMaterialFunction } from '@/construction/walls'
 
+import type { Projection, RotationProjection } from '../geometry'
 import { CuboidShape } from './CuboidShape'
 import { CutCuboidShape } from './CutCuboidShape'
 
 export interface ConstructionElementShapeProps {
   element: ConstructionElement
+  projection: Projection
+  rotationProjection: RotationProjection
   resolveMaterial: ResolveMaterialFunction
   stroke?: string
   strokeWidth?: number
@@ -14,6 +17,7 @@ export interface ConstructionElementShapeProps {
 
 export function ConstructionElementShape({
   element,
+  projection,
   resolveMaterial,
   stroke = '#000',
   strokeWidth = 5,
@@ -31,6 +35,7 @@ export function ConstructionElementShape({
         <g className={className}>
           <CuboidShape
             shape={element.shape}
+            projection={projection}
             fill={fill}
             stroke={stroke}
             strokeWidth={strokeWidth}

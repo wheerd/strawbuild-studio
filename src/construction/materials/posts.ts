@@ -53,7 +53,6 @@ function* constructFullPost(
   resolveMaterial: ResolveMaterialFunction
 ): Generator<ConstructionResult> {
   const postElement: ConstructionElement = createConstructionElement(
-    'post',
     config.material,
     createCuboidShape(position, [config.width, size[1], size[2]])
   )
@@ -86,7 +85,6 @@ function* constructDoublePost(
   const minimumWallThickness = 2 * config.thickness
   if (size[1] < minimumWallThickness) {
     const errorElement: ConstructionElement = createConstructionElement(
-      'post',
       config.material,
       createCuboidShape(position, [config.width, size[1], size[2]])
     )
@@ -100,14 +98,12 @@ function* constructDoublePost(
   }
 
   const post1: ConstructionElement = createConstructionElement(
-    'post',
     config.material,
     createCuboidShape(position, [config.width, config.thickness, size[2]])
   )
   yield yieldElement(post1)
 
   const post2: ConstructionElement = createConstructionElement(
-    'post',
     config.material,
     createCuboidShape(
       [position[0], position[1] + size[1] - config.thickness, position[2]],
@@ -120,7 +116,6 @@ function* constructDoublePost(
   const infillThickness = size[1] - 2 * config.thickness
   if (infillThickness > 0) {
     const infill: ConstructionElement = createConstructionElement(
-      'infill',
       config.infillMaterial,
       createCuboidShape(
         [position[0], position[1] + config.thickness, position[2]],

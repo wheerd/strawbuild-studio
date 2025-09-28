@@ -1,7 +1,12 @@
 import type { MaterialId } from '@/construction/materials/material'
+import type { Bounds3D } from '@/shared/geometry'
 
-import { IDENTITY, type Shape, type Transform } from './shapes'
+import { IDENTITY, type Transform, transformBounds } from './geometry'
+import { type Shape, createCuboidShape, createCutCuboidShape } from './shapes'
 import type { Tag } from './tags'
+
+// Re-export shape creation functions for backward compatibility
+export { createCuboidShape, createCutCuboidShape }
 
 export type ConstructionElementId = string & { readonly brand: unique symbol }
 export const createConstructionElementId = (): ConstructionElementId =>
@@ -19,7 +24,8 @@ export const createConstructionElement = (
   shape,
   transform,
   tags,
-  partId
+  partId,
+  bounds: transformBounds(shape.bounds, transform)
 })
 
 // Used in the future for cut list etc.
@@ -28,7 +34,10 @@ export type PartId = string & { readonly brand: unique symbol }
 export type GroupOrElement = ConstructionGroup | ConstructionElement
 
 export interface ConstructionGroup {
+  id: ConstructionElementId
+
   transform: Transform
+  bounds: Bounds3D
   children: GroupOrElement[]
 
   tags?: Tag[]
@@ -40,6 +49,7 @@ export interface ConstructionElement {
   material: MaterialId
 
   transform: Transform
+  bounds: Bounds3D
   shape: Shape
 
   tags?: Tag[]

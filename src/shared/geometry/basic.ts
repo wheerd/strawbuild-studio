@@ -105,3 +105,69 @@ export function boundsFromPoints(points: Vec2[]): Bounds2D | null {
     max: createVec2(maxX, maxY)
   }
 }
+
+export type Plane3D = 'xy' | 'xz' | 'yz'
+export type Axis3D = 'x' | 'y' | 'z'
+
+export const complementaryAxis = (plane: Plane3D): Axis3D => (plane === 'xy' ? 'z' : plane === 'xz' ? 'y' : 'x')
+
+export interface Bounds3D {
+  min: Vec3
+  max: Vec3
+}
+
+export const vec3Add = (a: Vec3, b: Vec3): Vec3 => {
+  const r = vec3.create()
+  vec3.add(r, a, b)
+  return r
+}
+
+export function boundsFromPoints3D(points: Vec3[]): Bounds3D | null {
+  if (points.length === 0) return null
+
+  let minX = Infinity
+  let minY = Infinity
+  let minZ = Infinity
+  let maxX = -Infinity
+  let maxY = -Infinity
+  let maxZ = -Infinity
+
+  for (const point of points) {
+    minX = Math.min(minX, point[0])
+    minY = Math.min(minY, point[1])
+    minZ = Math.min(minZ, point[2])
+    maxX = Math.max(maxX, point[0])
+    maxY = Math.max(maxY, point[1])
+    maxZ = Math.max(maxZ, point[2])
+  }
+
+  return {
+    min: vec3.fromValues(minX, minY, minZ),
+    max: vec3.fromValues(maxX, maxY, maxZ)
+  }
+}
+
+export function mergeBounds(...bounds: Bounds3D[]): Bounds3D {
+  if (bounds.length === 0) throw new Error('No bounds to merge')
+
+  let minX = Infinity
+  let minY = Infinity
+  let minZ = Infinity
+  let maxX = -Infinity
+  let maxY = -Infinity
+  let maxZ = -Infinity
+
+  for (const bound of bounds) {
+    minX = Math.min(minX, bound.min[0])
+    minY = Math.min(minY, bound.min[1])
+    minZ = Math.min(minZ, bound.min[2])
+    maxX = Math.max(maxX, bound.max[0])
+    maxY = Math.max(maxY, bound.max[1])
+    maxZ = Math.max(maxZ, bound.max[2])
+  }
+
+  return {
+    min: vec3.fromValues(minX, minY, minZ),
+    max: vec3.fromValues(maxX, maxY, maxZ)
+  }
+}

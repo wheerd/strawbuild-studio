@@ -4,6 +4,8 @@ import { createConstructionElement, createCuboidShape } from '@/construction/ele
 import { type ConstructionResult, yieldElement, yieldError, yieldWarning } from '@/construction/results'
 import type { Length, Vec3 } from '@/shared/geometry'
 
+import { IDENTITY } from '../geometry'
+import { TAG_FULL_BALE, TAG_PARTIAL_BALE } from '../tags'
 import type { MaterialId } from './material'
 
 export interface StrawConfig {
@@ -28,20 +30,18 @@ export function* constructStraw(position: Vec3, size: Vec3, config: StrawConfig)
         ]
 
         const isFullBale = baleSize[0] === config.baleLength && baleSize[2] === config.baleHeight
-        const bale = createConstructionElement(
-          isFullBale ? 'full-strawbale' : 'partial-strawbale',
-          config.material,
-          createCuboidShape(balePosition, baleSize)
-        )
+        const bale = createConstructionElement(config.material, createCuboidShape(balePosition, baleSize), IDENTITY, [
+          isFullBale ? TAG_FULL_BALE : TAG_PARTIAL_BALE
+        ])
         yield yieldElement(bale)
       }
     }
   } else if (size[1] > config.baleWidth) {
-    const element = createConstructionElement('straw', config.material, createCuboidShape(position, size))
+    const element = createConstructionElement(config.material, createCuboidShape(position, size))
     yield yieldElement(element)
     yield yieldError({ description: 'Wall is too thick for a single strawbale', elements: [element.id] })
   } else {
-    const element = createConstructionElement('straw', config.material, createCuboidShape(position, size))
+    const element = createConstructionElement(config.material, createCuboidShape(position, size))
     yield yieldElement(element)
     yield yieldWarning({ description: 'Wall is too thin for a single strawbale', elements: [element.id] })
   }

@@ -1,18 +1,20 @@
-import type { Vec3 } from '@/shared/geometry'
+import { vec3 } from 'gl-matrix'
 
-export interface Transform {
-  readonly position: Vec3
-  readonly rotation: Vec3 // Euler angles
-}
+import type { Bounds3D, Vec3 } from '../shared/geometry'
 
-export const IDENTITY: Transform = {
-  position: [0, 0, 0],
-  rotation: [0, 0, 0]
+const vec3Add = (a: Vec3, b: Vec3): Vec3 => {
+  const result = vec3.create()
+  vec3.add(result, a, b)
+  return result
 }
 
 export type Shape = Cuboid | CutCuboid
 
-export interface Cuboid {
+interface ShapeBase {
+  readonly bounds: Bounds3D
+}
+
+export interface Cuboid extends ShapeBase {
   type: 'cuboid'
   offset: Vec3 // Local coordinate system
   size: Vec3 // Non-negative with axis same as offset
@@ -83,7 +85,7 @@ export interface Cut {
  *   /________5m________________\  L
  * This is the view from the XY plane
  */
-export interface CutCuboid {
+export interface CutCuboid extends ShapeBase {
   type: 'cut-cuboid'
   offset: Vec3 // Local coordinate system
   size: Vec3 // Non-negative size of the base cuboid with axis same as offset
@@ -95,7 +97,11 @@ export interface CutCuboid {
 export const createCuboidShape = (offset: Vec3, size: Vec3): Cuboid => ({
   type: 'cuboid',
   offset,
-  size
+  size,
+  bounds: {
+    min: offset,
+    max: vec3Add(offset, size)
+  }
 })
 
 export const createCutCuboidShape = (offset: Vec3, size: Vec3, startCut?: Cut, endCut?: Cut): CutCuboid => ({
@@ -103,5 +109,9 @@ export const createCutCuboidShape = (offset: Vec3, size: Vec3, startCut?: Cut, e
   offset,
   size,
   startCut,
-  endCut
+  endCut,
+  bounds: {
+    min: offset,
+    max: vec3Add(offset, size)
+  }
 })

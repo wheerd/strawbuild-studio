@@ -1,4 +1,4 @@
-import type { Vec3 } from '@/shared/geometry'
+import type { Bounds3D, Vec3 } from '@/shared/geometry'
 
 import type { GroupOrElement } from './elements'
 import type { Measurement } from './measurements'
@@ -12,6 +12,7 @@ export interface ConstructionModel {
   areas: HighlightedArea[]
   errors: ConstructionIssue[]
   warnings: ConstructionIssue[]
+  bounds: Bounds3D
 }
 
 /** Highlighted area for visual feedback (corners, critical zones, etc.) */
@@ -20,9 +21,4 @@ export interface HighlightedArea {
   transform: Transform
   size: Vec3
   tags?: Tag[]
-}
-
-export interface ConstructionPlanView {
-  model: ConstructionModel
-  view: 'top' | 'left' | 'right' | 'front' | 'back'
 }

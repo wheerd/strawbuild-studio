@@ -6,7 +6,7 @@ import type { ResolveMaterialFunction } from '@/construction/materials/material'
 import { type PostConfig, constructPost } from '@/construction/materials/posts'
 import { constructStraw } from '@/construction/materials/straw'
 import type { ConstructionModel, HighlightedArea } from '@/construction/model'
-import { constructOpening } from '@/construction/openings/openings'
+import { constructOpeningFrame } from '@/construction/openings/openings'
 import type { ConstructionResult } from '@/construction/results'
 import { aggregateResults, yieldAndCollectElementIds, yieldError, yieldWarning } from '@/construction/results'
 import type {
@@ -16,7 +16,7 @@ import type {
 } from '@/construction/walls/construction'
 import { calculateWallConstructionLength, calculateWallCornerInfo } from '@/construction/walls/corners/corners'
 import { segmentWall } from '@/construction/walls/segmentation'
-import type { Length, Vec3 } from '@/shared/geometry'
+import { type Length, type Vec3, mergeBounds } from '@/shared/geometry'
 
 export interface InfillConstructionConfig extends BaseConstructionConfig {
   type: 'infill'
@@ -165,8 +165,43 @@ function getBaleWidth(availableWidth: Length, config: InfillConstructionConfig):
   return maxPostSpacing
 }
 
-function createCornerAreas(cornerInfo: WallCornerInfo): HighlightedArea[] {
-  throw new Error()
+function* createCornerAreas(
+  cornerInfo: WallCornerInfo,
+  wallLength: Length,
+  wallHeight: Length
+): Generator<HighlightedArea> {
+  if (cornerInfo.startCorner) {
+    yield {
+      label: 'Corner',
+      size: [cornerInfo.startCorner.extensionDistance, 0, wallHeight],
+      transform: {
+        position: [
+          cornerInfo.startCorner.constructedByThisWall
+            ? 0 // Overlap: starts at wall beginning
+            : -cornerInfo.startCorner.extensionDistance, // Adjacent: before wall
+          0,
+          0
+        ],
+        rotation: [0, 0, 0]
+      }
+    }
+  }
+  if (cornerInfo.endCorner) {
+    yield {
+      label: 'Corner',
+      size: [cornerInfo.endCorner.extensionDistance, 0, wallHeight],
+      transform: {
+        position: [
+          cornerInfo.endCorner.constructedByThisWall
+            ? wallLength - cornerInfo.endCorner.extensionDistance // Overlap: extends backward from wall end
+            : wallLength, // Adjacent: after wall end
+          0,
+          0
+        ],
+        rotation: [0, 0, 0]
+      }
+    }
+  }
 }
 
 export const constructInfillWall: PerimeterWallConstructionMethod<InfillConstructionConfig> = (
@@ -178,7 +213,7 @@ export const constructInfillWall: PerimeterWallConstructionMethod<InfillConstruc
 ): ConstructionModel => {
   // Calculate corner information and construction length including assigned corners
   const cornerInfo = calculateWallCornerInfo(wall, perimeter)
-  const cornerAreas = createCornerAreas(cornerInfo)
+  const cornerAreas = createCornerAreas(cornerInfo, wall.wallLength, floorHeight)
   const { startCorner, endCorner } = cornerInfo
   const startCornerData = startCorner ? (perimeter.corners.find(c => c.id === startCorner.id) ?? null) : null
   const endCornerData = endCorner ? (perimeter.corners.find(c => c.id === endCorner.id) ?? null) : null
@@ -209,13 +244,14 @@ export const constructInfillWall: PerimeterWallConstructionMethod<InfillConstruc
       const openingType = segment.openings[0].type
       const openingConfig = config.openings[openingType]
 
-      allResults.push(...constructOpening(segment, openingConfig, config, resolveDefaultMaterial))
+      allResults.push(...constructOpeningFrame(segment, openingConfig, config, resolveDefaultMaterial))
     }
   }
 
   const aggRes = aggregateResults(allResults)
 
   return {
+    bounds: mergeBounds(...aggRes.elements.map(e => e.bounds)),
     elements: aggRes.elements,
     measurements: aggRes.measurements,
     areas: [...aggRes.areas, ...cornerAreas],

@@ -1,4 +1,4 @@
-import type { CutCuboid } from '@/construction/walls'
+import type { CutCuboid } from '../shapes'
 
 export interface CutCuboidShapeProps {
   shape: CutCuboid
@@ -15,9 +15,8 @@ export function CutCuboidShape({
   strokeWidth = 5,
   showDebugMarkers = false
 }: CutCuboidShapeProps): React.JSX.Element {
-  // Hardcoded coordinate transformation (as requested)
   const calculatePolygonPoints = (shape: CutCuboid): string => {
-    const [x, y] = shape.position
+    const [x, y] = shape.offset
     const [length, width] = shape.size
 
     const points: [number, number][] = [
@@ -52,7 +51,7 @@ export function CutCuboidShape({
     }
 
     // Convert to SVG coordinate system (flip Y) - hardcoded transformation
-    return points.map(([px, py]) => `${px},${-py}`).join(' ')
+    return points.map(([px, py]) => `${px},${py}`).join(' ')
   }
 
   const polygonPoints = calculatePolygonPoints(shape)
@@ -65,24 +64,7 @@ export function CutCuboidShape({
       {showDebugMarkers && (
         <g>
           {/* Origin marker */}
-          <circle cx={shape.position[0]} cy={-shape.position[1]} r="2" fill="blue" />
-
-          {/* Cut angle indicators */}
-          {shape.startCut && (
-            <text x={shape.position[0] - 50} y={-shape.position[1] - shape.size[1] / 2} fontSize="12" fill="red">
-              Start: {shape.startCut.angle.toFixed(1)}°
-            </text>
-          )}
-          {shape.endCut && (
-            <text
-              x={shape.position[0] + shape.size[0] + 10}
-              y={-shape.position[1] - shape.size[1] / 2}
-              fontSize="12"
-              fill="red"
-            >
-              End: {shape.endCut.angle.toFixed(1)}°
-            </text>
-          )}
+          <circle cx={shape.offset[0]} cy={shape.offset[1]} r="2" fill="blue" />
         </g>
       )}
     </g>

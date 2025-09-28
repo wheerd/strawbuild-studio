@@ -80,7 +80,7 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
     ? usePerimeterConstructionMethodById(wall.constructionMethodId)
     : null
 
-  const constructionPlan = useMemo(() => {
+  const constructionModel = useMemo(() => {
     if (!outerWall || !wall || !storey || !constructionMethod) return null
 
     // For now, only support infill construction until other types are implemented
@@ -238,8 +238,8 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
 
       {/* Actions */}
       <Flex direction="column" gap="2">
-        {constructionPlan && (
-          <WallConstructionPlanModal plan={constructionPlan}>
+        {constructionModel && (
+          <WallConstructionPlanModal model={constructionModel}>
             <Button size="1">View Construction Plan</Button>
           </WallConstructionPlanModal>
         )}
