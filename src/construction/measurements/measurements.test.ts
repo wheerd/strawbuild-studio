@@ -9,7 +9,7 @@ import {
   calculateOpeningMeasurements,
   calculateOpeningSpacingMeasurements,
   calculatePostSpacingMeasurements
-} from './measurements'
+} from '../measurements'
 
 // Mock the formatLength utility
 vi.mock('@/shared/utils/formatLength', () => ({

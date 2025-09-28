@@ -7,10 +7,7 @@ import type { ResolveMaterialFunction } from '@/construction/materials/material'
 import { type PostConfig, constructPost } from '@/construction/materials/posts'
 import { constructStraw } from '@/construction/materials/straw'
 import type { Measurement } from '@/construction/measurements'
-import {
-  calculateOpeningSpacingMeasurements,
-  calculatePostSpacingMeasurements
-} from '@/construction/measurements/measurements'
+import { calculateOpeningSpacingMeasurements, calculatePostSpacingMeasurements } from '@/construction/measurements'
 import { constructOpening } from '@/construction/openings/openings'
 import type { ConstructionIssue, ConstructionResult } from '@/construction/results'
 import { aggregateResults, yieldAndCollectElementIds, yieldError, yieldWarning } from '@/construction/results'
