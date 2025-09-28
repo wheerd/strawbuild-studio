@@ -1,25 +1,25 @@
 import { vec2 } from 'gl-matrix'
 
-import type { PerimeterId } from '@/building/model/ids'
 import type { Perimeter, PerimeterCorner } from '@/building/model/model'
-import { type ConstructionElement, createConstructionElement, createCutCuboidShape } from '@/construction/elements'
+import { createConstructionElement, createCutCuboidShape } from '@/construction/elements'
 import type { MaterialId, ResolveMaterialFunction } from '@/construction/materials/material'
-import type { Measurement } from '@/construction/measurements'
-import type { ConstructionIssue } from '@/construction/results'
+import { type ConstructionResult, aggregateResults, yieldElement, yieldMeasurement } from '@/construction/results'
 import {
   type Length,
   type Polygon2D,
-  type Vec3,
   direction,
   distance,
   distanceSquared,
   lineFromPoints,
   lineIntersection,
+  mergeBounds,
   offsetPolygon,
   projectPointOntoLine,
   simplifyPolygon
 } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
+
+import type { ConstructionModel } from '../model'
 
 export interface BaseRingBeamConfig {
   type: 'full' | 'double'
@@ -47,17 +47,16 @@ export type RingBeamConfig = FullRingBeamConfig | DoubleRingBeamConfig
 
 const EPSILON = 1e-2
 
-export const constructFullRingBeam = (
+function* _constructFullRingBeam(
   perimeter: Perimeter,
   config: FullRingBeamConfig,
   _resolveMaterial: ResolveMaterialFunction
-): RingBeamConstructionPlan => {
+): Generator<ConstructionResult> {
   const insidePolygon: Polygon2D = { points: perimeter.corners.map(c => c.insidePoint) }
   const simplifiedPolygon = simplifyPolygon(insidePolygon)
   const beamInsidePolygon = offsetPolygon(simplifiedPolygon.points, config.offsetFromEdge)
   const beamOutsidePolygon = offsetPolygon(simplifiedPolygon.points, config.offsetFromEdge + config.width)
 
-  const segments: RingBeamSegment[] = []
   const numCorners = simplifiedPolygon.points.length
   for (let currentStart = 0; currentStart < numCorners; currentStart++) {
     const previousStart = (currentStart - 1 + numCorners) % numCorners
@@ -120,53 +119,58 @@ export const constructFullRingBeam = (
 
     const segmentAngle = Math.atan2(insideEdge.direction[0], insideEdge.direction[1])
 
-    segments.push({
-      elements: [
-        createConstructionElement(
-          'plate',
-          config.material,
-          createCutCuboidShape(
-            [0, 0, 0],
-            [totalLength, config.width, config.height],
-            {
-              plane: 'xy',
-              axis: 'y',
-              angle: startAngleDeg
-            },
-            {
-              plane: 'xy',
-              axis: 'y',
-              angle: endAngleDeg
-            }
-          )
-        )
-      ],
-      measurements: [
+    yield yieldElement(
+      createConstructionElement(
+        config.material,
+        createCutCuboidShape(
+          [0, 0, 0],
+          [totalLength, config.width, config.height],
+          {
+            plane: 'xy',
+            axis: 'y',
+            angle: startAngleDeg
+          },
+          {
+            plane: 'xy',
+            axis: 'y',
+            angle: endAngleDeg
+          }
+        ),
         {
-          type: 'ring-beam-inner',
-          startPoint: startInside,
-          endPoint: endInside,
-          label: formatLength(distance(startInside, endInside)),
-          offset: 60
-        },
-        {
-          type: 'ring-beam-outer',
-          startPoint: startOutside,
-          endPoint: endOutside,
-          label: formatLength(distance(startOutside, endOutside)),
-          offset: -60
+          position: [finalPosition[0], finalPosition[1], 0],
+          rotation: [0, 0, segmentAngle]
         }
-      ],
-      position: [finalPosition[0], finalPosition[1], 0],
-      rotation: [0, 0, segmentAngle]
+      )
+    )
+
+    yield yieldMeasurement({
+      startPoint: [...startInside, 0],
+      endPoint: [...endInside, 0],
+      label: formatLength(distance(startInside, endInside))
+    })
+
+    yield yieldMeasurement({
+      startPoint: [...startOutside, 0],
+      endPoint: [...endOutside, 0],
+      label: formatLength(distance(startOutside, endOutside))
     })
   }
+}
+
+function constructFullRingBeam(
+  perimeter: Perimeter,
+  config: FullRingBeamConfig,
+  _resolveMaterial: ResolveMaterialFunction
+): ConstructionModel {
+  const aggRes = aggregateResults([..._constructFullRingBeam(perimeter, config, _resolveMaterial)])
 
   return {
-    perimeterId: perimeter.id,
-    segments,
-    errors: [],
-    warnings: []
+    bounds: mergeBounds(...aggRes.elements.map(e => e.bounds)),
+    elements: aggRes.elements,
+    measurements: aggRes.measurements,
+    areas: aggRes.areas,
+    errors: aggRes.errors,
+    warnings: aggRes.warnings
   }
 }
 
@@ -174,7 +178,7 @@ const constructDoubleRingBeam = (
   _perimeter: Perimeter,
   _config: DoubleRingBeamConfig,
   _resolveMaterial: ResolveMaterialFunction
-): RingBeamConstructionPlan => {
+): ConstructionModel => {
   throw new Error('Not implemented')
 }
 
@@ -215,7 +219,7 @@ export const constructRingBeam = (
   perimeter: Perimeter,
   config: RingBeamConfig,
   resolveMaterial: ResolveMaterialFunction
-): RingBeamConstructionPlan => {
+): ConstructionModel => {
   if (config.type === 'full') {
     return constructFullRingBeam(perimeter, config, resolveMaterial)
   } else if (config.type === 'double') {
@@ -223,20 +227,4 @@ export const constructRingBeam = (
   } else {
     throw new Error('Invalid ring beam type')
   }
-}
-
-export interface RingBeamConstructionPlan {
-  perimeterId: PerimeterId
-
-  segments: RingBeamSegment[]
-
-  errors: ConstructionIssue[]
-  warnings: ConstructionIssue[]
-}
-
-export interface RingBeamSegment {
-  elements: ConstructionElement[]
-  measurements: Measurement[]
-  position: Vec3
-  rotation: Vec3
 }

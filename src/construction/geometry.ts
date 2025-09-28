@@ -126,15 +126,15 @@ export const project = (plane: Plane3D, xDir: 1 | -1, yDir: 1 | -1, zDir: 1 | -1
   }
 }
 
-export const projectRotation = (plane: Plane3D, xDir: 1 | -1, yDir: 1 | -1): RotationProjection => {
+export const projectRotation = (plane: Plane3D, _xDir: 1 | -1, yDir: 1 | -1): RotationProjection => {
   return (r: Vec3): number => {
     switch (plane) {
       case 'xy':
-        return r[2] // TODO: Needs adjustment based on xDir/yDir
+        return (r[2] / Math.PI) * 180 + (yDir === -1 ? -90 : 0) // TODO: Needs adjustment based on xDir/yDir
       case 'xz':
-        return r[1] // TODO: Needs adjustment based on xDir/yDir
+        return (r[1] / Math.PI) * 180 // TODO: Needs adjustment based on xDir/yDir
       case 'yz':
-        return r[0] // TODO: Needs adjustment based on xDir/yDir
+        return (r[0] / Math.PI) * 180 // TODO: Needs adjustment based on xDir/yDir
       default:
         throw new Error(`Unknown plane: ${plane}`)
     }

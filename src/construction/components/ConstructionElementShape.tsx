@@ -18,6 +18,7 @@ export interface ConstructionElementShapeProps {
 export function ConstructionElementShape({
   element,
   projection,
+  rotationProjection,
   resolveMaterial,
   stroke = '#000',
   strokeWidth = 5,
@@ -27,12 +28,14 @@ export function ConstructionElementShape({
   // Get material color for fill
   const material = resolveMaterial(element.material)
   const fill = material?.color ?? '#8B4513' // fallback color
+  const position = projection(element.transform.position)
+  const rotation = rotationProjection(element.transform.rotation)
 
   // Delegate to appropriate shape component
   switch (element.shape.type) {
     case 'cuboid':
       return (
-        <g className={className}>
+        <g className={className} transform={`translate(${position[0]} ${position[1]}) rotate(${rotation})`}>
           <CuboidShape
             shape={element.shape}
             projection={projection}
@@ -45,7 +48,7 @@ export function ConstructionElementShape({
       )
     case 'cut-cuboid':
       return (
-        <g className={className}>
+        <g className={className} transform={`translate(${position[0]} ${position[1]}) rotate(${rotation})`}>
           <CutCuboidShape
             shape={element.shape}
             fill={fill}

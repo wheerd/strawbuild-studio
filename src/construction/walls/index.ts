@@ -1,5 +1,4 @@
 import type { NonStrawbaleConfig } from '@/construction/config/types'
-import { createLength } from '@/shared/geometry'
 
 import type { ConstructionType, PerimeterWallConstructionMethod } from './construction'
 import { constructInfillWall } from './infill/infill'
@@ -22,9 +21,9 @@ export * from './strawhenge/strawhenge'
 
 // Placeholder construction method for non-strawbale walls
 const constructNonStrawbaleWall: PerimeterWallConstructionMethod<NonStrawbaleConfig> = (
-  wall,
+  _wall,
   _perimeter,
-  floorHeight
+  _floorHeight
 ) => {
   throw new Error('Not implemented yet')
 }

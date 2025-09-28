@@ -6,104 +6,15 @@ import type { PerimeterId } from '@/building/model/ids'
 import { usePerimeterById } from '@/building/store'
 import { useConfigStore } from '@/construction/config/store'
 import { resolveDefaultMaterial } from '@/construction/materials/material'
-import { type RingBeamConstructionPlan, constructRingBeam } from '@/construction/ringBeams/ringBeams'
-import { SVGViewport } from '@/shared/components/SVGViewport'
-import { boundsFromPoints } from '@/shared/geometry'
+import { constructRingBeam } from '@/construction/ringBeams/ringBeams'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
-import { COLORS } from '@/shared/theme/colors'
 
-import { ConstructionElementShape } from './ConstructionElementShape'
-import { SvgMeasurementIndicator } from './SvgMeasurementIndicator'
+import { ConstructionPlan } from './ConstructionPlan'
 
 export interface RingBeamConstructionModalProps {
   perimeterId: PerimeterId
   position: 'base' | 'top'
   trigger: React.ReactNode
-}
-
-interface RingBeamConstructionPlanDisplayProps {
-  plan: RingBeamConstructionPlan
-  containerSize: { width: number; height: number }
-}
-
-function RingBeamConstructionPlanDisplay({
-  plan,
-  containerSize
-}: RingBeamConstructionPlanDisplayProps): React.JSX.Element {
-  const perimeter = usePerimeterById(plan.perimeterId)
-
-  const perimeterBounds = boundsFromPoints(perimeter?.corners.map(c => [c.outsidePoint[0], -c.outsidePoint[1]]) ?? [])
-  if (!perimeterBounds) return <div>Error: Could not calculate perimeter bounds</div>
-
-  return (
-    <div className="w-full h-full bg-gray-50 relative">
-      <SVGViewport contentBounds={perimeterBounds} padding={0.05} className="w-full h-full" svgSize={containerSize}>
-        {/* Render perimeter outline for reference */}
-        {perimeter && (
-          <g stroke="#ccc" strokeWidth="1" fill="none">
-            {/* Outside perimeter */}
-            <polygon
-              points={perimeter.corners.map(c => `${c.outsidePoint[0]},${-c.outsidePoint[1]}`).join(' ')}
-              stroke="#666"
-              strokeWidth={5}
-              fill="rgba(0,255,0,0.1)"
-            />
-            {/* Inside perimeter */}
-            <polygon
-              points={perimeter.corners.map(c => `${c.insidePoint[0]},${-c.insidePoint[1]}`).join(' ')}
-              stroke="#999"
-              strokeWidth={5}
-              strokeDasharray="5,5"
-              fill="rgba(0,0,255,0.1)"
-            />
-          </g>
-        )}
-
-        {/* Render ring beam segments */}
-        {plan.segments.map((segment, segmentIndex) => {
-          // Convert rotation from radians to degrees
-          const baseRotationDeg = (segment.rotation[2] * 180) / Math.PI
-          const rotationDeg = baseRotationDeg - 90
-
-          return (
-            <g key={`segment-${segmentIndex}`}>
-              {/* Segment elements in transformed group */}
-              <g transform={`translate(${segment.position[0]} ${-segment.position[1]}) rotate(${rotationDeg})`}>
-                {segment.elements.map((element, elementIndex) => (
-                  <ConstructionElementShape
-                    key={`element-${elementIndex}`}
-                    element={element}
-                    resolveMaterial={resolveDefaultMaterial}
-                    strokeWidth={5}
-                  />
-                ))}
-              </g>
-
-              {/* Render measurements for this segment in global coordinate space */}
-              {segment.measurements.map((measurement, measurementIndex) => (
-                <SvgMeasurementIndicator
-                  key={`measurement-${segmentIndex}-${measurementIndex}`}
-                  startPoint={[
-                    measurement.startPoint[0],
-                    -measurement.startPoint[1] // Y-flip for ring beam
-                  ]}
-                  endPoint={[
-                    measurement.endPoint[0],
-                    -measurement.endPoint[1] // Y-flip for ring beam
-                  ]}
-                  label={measurement.label}
-                  offset={measurement.offset}
-                  color={COLORS.indicators.main}
-                  fontSize={60}
-                  strokeWidth={12}
-                />
-              ))}
-            </g>
-          )
-        })}
-      </SVGViewport>
-    </div>
-  )
 }
 
 interface IssueDescriptionPanelProps {
@@ -182,7 +93,7 @@ export function RingBeamConstructionModal({
   const perimeter = usePerimeterById(perimeterId)
   const getRingBeamMethodById = useConfigStore(state => state.getRingBeamConstructionMethodById)
 
-  const constructionPlan = useMemo(() => {
+  const constructionModel = useMemo(() => {
     if (!perimeter) return null
 
     const methodId = currentPosition === 'base' ? perimeter.baseRingBeamMethodId : perimeter.topRingBeamMethodId
@@ -233,8 +144,12 @@ export function RingBeamConstructionModal({
             className="relative grow min-h-[300px] overflow-hidden border border-gray-6 rounded-2"
           >
             {currentMethod ? (
-              constructionPlan ? (
-                <RingBeamConstructionPlanDisplay plan={constructionPlan} containerSize={containerSize} />
+              constructionModel ? (
+                <ConstructionPlan
+                  model={constructionModel}
+                  containerSize={containerSize}
+                  view={{ plane: 'xy', xDirection: 1, yDirection: -1, zOrder: 'max' }}
+                />
               ) : (
                 <Flex align="center" justify="center" style={{ height: '100%' }}>
                   <Text align="center" color="gray">
@@ -290,9 +205,9 @@ export function RingBeamConstructionModal({
             </Box>
 
             {/* Issues Panel */}
-            {constructionPlan && (
+            {constructionModel && (
               <Box flexGrow="1">
-                <IssueDescriptionPanel errors={constructionPlan.errors} warnings={constructionPlan.warnings} />
+                <IssueDescriptionPanel errors={constructionModel.errors} warnings={constructionModel.warnings} />
               </Box>
             )}
           </Flex>

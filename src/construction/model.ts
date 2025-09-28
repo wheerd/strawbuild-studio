@@ -1,9 +1,9 @@
 import type { Bounds3D, Vec3 } from '@/shared/geometry'
 
 import type { GroupOrElement } from './elements'
+import type { Transform } from './geometry'
 import type { Measurement } from './measurements'
 import type { ConstructionIssue } from './results'
-import type { Transform } from './shapes'
 import type { Tag } from './tags'
 
 export interface ConstructionModel {

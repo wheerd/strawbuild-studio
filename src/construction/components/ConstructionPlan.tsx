@@ -72,7 +72,7 @@ export function ConstructionPlan({ model, view, containerSize }: ConstructionPla
 
         return svgStartPoint[2] === svgEndPoint[2] ? (
           <SvgMeasurementIndicator
-            key={index}
+            key={`measurement-${index}`}
             startPoint={svgStartPoint}
             endPoint={svgEndPoint}
             label={measurement.label}
