@@ -82,7 +82,7 @@ const IssueDescriptionPanel = ({ errors, warnings }: IssueDescriptionPanelProps)
   </Box>
 )
 
-export function RingBeamConstructionModal({
+export function RingBeamConstructionPlanModal({
   perimeterId,
   position,
   trigger

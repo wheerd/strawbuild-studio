@@ -3,7 +3,7 @@ import { vi } from 'vitest'
 
 import { createPerimeterId } from '@/building/model/ids'
 
-import { RingBeamConstructionModal } from './RingBeamConstructionModal'
+import { RingBeamConstructionPlanModal } from './RingBeamConstructionPlan'
 
 // Mock the zustand stores
 vi.mock('@/building/store', () => ({
@@ -32,7 +32,7 @@ describe('RingBeamConstructionModal', () => {
 
   it('renders the trigger button', () => {
     render(
-      <RingBeamConstructionModal
+      <RingBeamConstructionPlanModal
         perimeterId={mockPerimeterId}
         position="base"
         trigger={<button>Test Trigger</button>}
@@ -44,7 +44,7 @@ describe('RingBeamConstructionModal', () => {
 
   it('renders modal with base position initially', () => {
     render(
-      <RingBeamConstructionModal
+      <RingBeamConstructionPlanModal
         perimeterId={mockPerimeterId}
         position="base"
         trigger={<button>Test Trigger</button>}
@@ -58,7 +58,11 @@ describe('RingBeamConstructionModal', () => {
   it('handles missing perimeter gracefully', () => {
     // This test ensures the component doesn't crash when perimeter is not found
     render(
-      <RingBeamConstructionModal perimeterId={mockPerimeterId} position="top" trigger={<button>Test Trigger</button>} />
+      <RingBeamConstructionPlanModal
+        perimeterId={mockPerimeterId}
+        position="top"
+        trigger={<button>Test Trigger</button>}
+      />
     )
 
     expect(screen.getByText('Test Trigger')).toBeInTheDocument()

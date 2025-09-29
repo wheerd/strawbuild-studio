@@ -4,7 +4,7 @@ import React from 'react'
 
 import type { PerimeterId, RingBeamConstructionMethodId } from '@/building/model/ids'
 import { useModelActions, usePerimeterById } from '@/building/store'
-import { RingBeamConstructionModal } from '@/construction/components/RingBeamConstructionModal'
+import { RingBeamConstructionPlanModal } from '@/construction/components/RingBeamConstructionPlan'
 import { useRingBeamConstructionMethods } from '@/construction/config/store'
 import { type Length, calculatePolygonArea } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
@@ -94,7 +94,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
 
             {/* Base Ring Beam View Construction Button */}
             {outerWall.baseRingBeamMethodId && (
-              <RingBeamConstructionModal
+              <RingBeamConstructionPlanModal
                 perimeterId={selectedId}
                 position="base"
                 trigger={
@@ -137,7 +137,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
 
             {/* Top Ring Beam View Construction Button */}
             {outerWall.topRingBeamMethodId && (
-              <RingBeamConstructionModal
+              <RingBeamConstructionPlanModal
                 perimeterId={selectedId}
                 position="top"
                 trigger={
