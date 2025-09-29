@@ -11,6 +11,7 @@ import {
   yieldElement,
   yieldMeasurement
 } from '@/construction/results'
+import { TAG_PERIMETER_INSIDE, TAG_PERIMETER_OUTSIDE } from '@/construction/tags'
 import {
   type Length,
   type Polygon2D,
@@ -25,8 +26,6 @@ import {
   simplifyPolygon
 } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
-
-import { TAG_PERIMETER_INSIDE, TAG_PERIMETER_OUTSIDE } from '../tags'
 
 export interface BaseRingBeamConfig {
   type: 'full' | 'double'
@@ -166,6 +165,7 @@ function* _constructFullRingBeam(
 
     yield yieldArea({
       type: 'polygon',
+      areaType: 'outer-perimeter',
       renderPosition: 'bottom',
       plane: 'xy',
       polygon: { points: perimeter.corners.map(c => c.outsidePoint) },
@@ -174,6 +174,7 @@ function* _constructFullRingBeam(
 
     yield yieldArea({
       type: 'polygon',
+      areaType: 'inner-perimeter',
       renderPosition: 'bottom',
       plane: 'xy',
       polygon: { points: perimeter.corners.map(c => c.insidePoint) },
@@ -188,7 +189,7 @@ export function constructFullRingBeam(
   _resolveMaterial: ResolveMaterialFunction
 ): ConstructionModel {
   const aggRes = aggregateResults([..._constructFullRingBeam(perimeter, config, _resolveMaterial)])
-  const bounds2D = boundsFromPoints(perimeter.corners.map(c => c.outsidePoint))!
+  const bounds2D = boundsFromPoints(perimeter.corners.map(c => c.outsidePoint))
   const bounds3D = { min: [...bounds2D.min, 0], max: [...bounds2D.max, config.height] }
 
   return {

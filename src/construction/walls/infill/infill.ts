@@ -199,6 +199,7 @@ function* createCornerAreas(
       : -cornerInfo.startCorner.extensionDistance // Adjacent: before wall
     yield {
       type: 'cuboid',
+      areaType: 'corner',
       renderPosition: 'top',
       label: 'Corner',
       bounds: {
@@ -214,6 +215,7 @@ function* createCornerAreas(
       : wallLength
     yield {
       type: 'cuboid',
+      areaType: 'corner',
       renderPosition: 'top',
       label: 'Corner',
       bounds: {

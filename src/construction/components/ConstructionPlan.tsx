@@ -1,16 +1,17 @@
-import { vec3 } from 'gl-matrix'
 import React, { useEffect, useRef } from 'react'
 
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
-import { bounds3Dto2D, createSvgTransform, createZOrder, project, projectRotation } from '@/construction/geometry'
+import { bounds3Dto2D, createZOrder, project, projectRotation } from '@/construction/geometry'
 import type { ConstructionModel, HighlightedCuboid, HighlightedPolygon } from '@/construction/model'
 import { resolveDefaultMaterial } from '@/construction/walls'
 import { SVGViewport, type SVGViewportRef } from '@/shared/components/SVGViewport'
-import { type Plane3D, type Vec3, add, complementaryAxis, direction, distance } from '@/shared/geometry'
+import { type Plane3D, add, complementaryAxis, direction, distance } from '@/shared/geometry'
 import { COLORS } from '@/shared/theme/colors'
 
 import { ConstructionElementShape } from './ConstructionElementShape'
 import { ConstructionGroupElement } from './ConstructionGroupElement'
+import { CuboidAreaShape } from './CuboidAreaShape'
+import { PolygonAreaShape } from './PolygonAreaShape'
 
 export interface View {
   plane: Plane3D
@@ -44,40 +45,6 @@ export function ConstructionPlan({ model, view, containerSize }: ConstructionPla
   const polygonAreas = model.areas.filter(a => a.type === 'polygon' && a.plane === view.plane) as HighlightedPolygon[]
   const cuboidAreas = model.areas.filter(a => a.type === 'cuboid') as HighlightedCuboid[]
 
-  // Helper function to project polygon points and create SVG path
-  const createPolygonPath = (polygon: HighlightedPolygon): { pathData: string; center: [number, number] } => {
-    // Project polygon points to 2D
-    const projectedPoints = polygon.polygon.points.map(point => {
-      // Convert 2D polygon point to 3D point on the specified plane for projection
-      let point3D: Vec3
-      switch (polygon.plane) {
-        case 'xy':
-          point3D = vec3.fromValues(point[0], point[1], 0)
-          break
-        case 'xz':
-          point3D = vec3.fromValues(point[0], 0, point[1])
-          break
-        case 'yz':
-          point3D = vec3.fromValues(0, point[0], point[1])
-          break
-        default:
-          throw new Error(`Unsupported plane: ${polygon.plane}`)
-      }
-      const projected = projection(point3D)
-      return [projected[0], projected[1]]
-    })
-
-    // Create SVG path string
-    const pathData =
-      projectedPoints.map((point, i) => `${i === 0 ? 'M' : 'L'} ${point[0]} ${point[1]}`).join(' ') + ' Z'
-
-    // Calculate center for label positioning
-    const centerX = projectedPoints.reduce((sum, p) => sum + p[0], 0) / projectedPoints.length
-    const centerY = projectedPoints.reduce((sum, p) => sum + p[1], 0) / projectedPoints.length
-
-    return { pathData, center: [centerX, centerY] }
-  }
-
   return (
     <SVGViewport
       ref={viewportRef}
@@ -90,53 +57,21 @@ export function ConstructionPlan({ model, view, containerSize }: ConstructionPla
       {/* Polygon Areas - Bottom */}
       {polygonAreas
         .filter(p => p.renderPosition === 'bottom')
-        .map((area, index) => {
-          const { pathData } = createPolygonPath(area)
-          return (
-            <path
-              key={`polygon-bottom-${index}`}
-              d={pathData}
-              fill="none"
-              stroke="#666666"
-              strokeWidth="20"
-              strokeDasharray="200,100"
-              opacity={0.7}
-            />
-          )
-        })}
+        .map((area, index) => (
+          <PolygonAreaShape key={`polygon-bottom-${index}`} polygon={area} projection={projection} />
+        ))}
 
       {/* Cuboid Areas - Bottom */}
       {cuboidAreas
         .filter(a => a.renderPosition === 'bottom')
-        .map((area, index) => {
-          const bounds2D = bounds3Dto2D(area.bounds, projection)
-          const cx = (bounds2D.max[0] + bounds2D.min[0]) / 2
-          const cy = (bounds2D.max[1] + bounds2D.min[1]) / 2
-
-          return (
-            <g
-              key={`cuboid-bottom-${index}`}
-              transform={createSvgTransform(area.transform, projection, rotationProjection)}
-            >
-              <rect
-                x={bounds2D.min[0]}
-                y={bounds2D.min[1]}
-                width={bounds2D.max[0] - bounds2D.min[0]}
-                height={bounds2D.max[1] - bounds2D.min[1]}
-                fill="none"
-                stroke="#666666"
-                strokeWidth="20"
-                strokeDasharray="200,100"
-                opacity={0.7}
-              />
-              {area.label && (
-                <text x={cx} y={cy} fontSize={100} textAnchor="middle" opacity={0.7} color="#666666">
-                  {area.label}
-                </text>
-              )}
-            </g>
-          )
-        })}
+        .map((area, index) => (
+          <CuboidAreaShape
+            key={`cuboid-bottom-${index}`}
+            cuboid={area}
+            projection={projection}
+            rotationProjection={rotationProjection}
+          />
+        ))}
 
       {/* Construction elements */}
       {sortedElements.map(element =>
@@ -231,53 +166,21 @@ export function ConstructionPlan({ model, view, containerSize }: ConstructionPla
       {/* Cuboid Areas - Top */}
       {cuboidAreas
         .filter(a => a.renderPosition === 'top')
-        .map((area, index) => {
-          const bounds2D = bounds3Dto2D(area.bounds, projection)
-          const cx = (bounds2D.max[0] + bounds2D.min[0]) / 2
-          const cy = (bounds2D.max[1] + bounds2D.min[1]) / 2
-
-          return (
-            <g
-              key={`cuboid-top-${index}`}
-              transform={createSvgTransform(area.transform, projection, rotationProjection)}
-            >
-              <rect
-                x={bounds2D.min[0]}
-                y={bounds2D.min[1]}
-                width={bounds2D.max[0] - bounds2D.min[0]}
-                height={bounds2D.max[1] - bounds2D.min[1]}
-                fill="none"
-                stroke="#666666"
-                strokeWidth="20"
-                strokeDasharray="200,100"
-                opacity={0.7}
-              />
-              {area.label && (
-                <text x={cx} y={cy} fontSize={100} textAnchor="middle" opacity={0.7} color="#666666">
-                  {area.label}
-                </text>
-              )}
-            </g>
-          )
-        })}
+        .map((area, index) => (
+          <CuboidAreaShape
+            key={`cuboid-top-${index}`}
+            cuboid={area}
+            projection={projection}
+            rotationProjection={rotationProjection}
+          />
+        ))}
 
       {/* Polygon Areas - Top */}
       {polygonAreas
         .filter(p => p.renderPosition === 'top')
-        .map((area, index) => {
-          const { pathData } = createPolygonPath(area)
-          return (
-            <path
-              key={`polygon-top-${index}`}
-              d={pathData}
-              fill="none"
-              stroke="#666666"
-              strokeWidth="20"
-              strokeDasharray="200,100"
-              opacity={0.7}
-            />
-          )
-        })}
+        .map((area, index) => (
+          <PolygonAreaShape key={`polygon-top-${index}`} polygon={area} projection={projection} />
+        ))}
     </SVGViewport>
   )
 }

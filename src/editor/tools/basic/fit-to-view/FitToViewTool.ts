@@ -23,13 +23,14 @@ export class FitToViewTool implements ToolImplementation {
 
     const activeStoreyId = getActiveStorey()
     const perimeters = getPerimetersByStorey(activeStoreyId)
-    const outerPoints = perimeters.flatMap(p => p.corners.map(c => c.outsidePoint))
-    const bounds = boundsFromPoints(outerPoints)
 
-    if (!bounds) {
+    if (perimeters.length === 0) {
       console.log('No entities to fit - no bounds available')
       return
     }
+
+    const outerPoints = perimeters.flatMap(p => p.corners.map(c => c.outsidePoint))
+    const bounds = boundsFromPoints(outerPoints)
 
     viewportActions().fitToView(bounds)
   }

@@ -184,10 +184,13 @@ export function* constructOpeningFrame(
     const openingEnd = [openingPos[0] + fillingWidth, wallThickness, openingPos[2] + fillingHeight] as Vec3
 
     yield yieldArea({
+      type: 'cuboid',
+      areaType: opening.type,
       label,
       bounds: { min: openingPos, max: openingEnd },
       transform: IDENTITY,
-      tags
+      tags,
+      renderPosition: 'bottom'
     })
   }
 

@@ -15,11 +15,14 @@ export interface ConstructionModel {
   bounds: Bounds3D
 }
 
+export type HighlightedAreaType = 'inner-perimeter' | 'outer-perimeter' | 'corner' | 'window' | 'door' | 'passage'
+
 export type HighlightedArea = HighlightedCuboid | HighlightedPolygon
 
 /** Highlighted area for visual feedback (corners, critical zones, etc.) */
 export interface HighlightedCuboid {
   type: 'cuboid'
+  areaType: HighlightedAreaType
   label?: string
   transform: Transform
   bounds: Bounds3D
@@ -29,6 +32,7 @@ export interface HighlightedCuboid {
 
 export interface HighlightedPolygon {
   type: 'polygon'
+  areaType: HighlightedAreaType
   label?: string
   polygon: Polygon2D
   plane: Plane3D

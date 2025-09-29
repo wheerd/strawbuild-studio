@@ -82,7 +82,7 @@ export function lineWallToGeoJSON(wall: LineSegment2D): Feature<LineString> {
 }
 
 // Check if two line walls intersect (using Turf.js)
-export function doLineWallsIntersect(seg1: LineSegment2D, seg2: LineSegment2D): boolean {
+export function doLineSegmentsIntersect(seg1: LineSegment2D, seg2: LineSegment2D): boolean {
   const line1 = lineWallToGeoJSON(seg1)
   const line2 = lineWallToGeoJSON(seg2)
 
@@ -121,7 +121,7 @@ export function wouldPolygonSelfIntersect(existingPoints: Vec2[], newPoint: Vec2
       end: existingPoints[i + 1]
     }
 
-    if (doLineWallsIntersect(newWall, existingWall)) {
+    if (doLineSegmentsIntersect(newWall, existingWall)) {
       return true
     }
   }
@@ -256,12 +256,13 @@ export function arePolygonsIntersecting(polygon1: Polygon2D, polygon2: Polygon2D
   const bbox1 = boundsFromPoints(polygon1.points)
   const bbox2 = boundsFromPoints(polygon2.points)
 
-  if (!bbox1 || !bbox2 || !areBoundsOverlapping(bbox1, bbox2))
-    for (const vertex of polygon1.points) {
-      if (isPointInPolygon(vertex, polygon2)) {
-        return true
-      }
+  if (!areBoundsOverlapping(bbox1, bbox2)) return false
+
+  for (const vertex of polygon1.points) {
+    if (isPointInPolygon(vertex, polygon2)) {
+      return true
     }
+  }
 
   for (const vertex of polygon2.points) {
     if (isPointInPolygon(vertex, polygon1)) {
@@ -274,7 +275,7 @@ export function arePolygonsIntersecting(polygon1: Polygon2D, polygon2: Polygon2D
 
   for (const edge1 of edges1) {
     for (const edge2 of edges2) {
-      if (doLineWallsIntersect(edge1, edge2)) {
+      if (doLineSegmentsIntersect(edge1, edge2)) {
         return true
       }
     }

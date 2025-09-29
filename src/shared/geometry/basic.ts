@@ -85,8 +85,10 @@ export function perpendicularCCW(vector: Vec2): Vec2 {
   return createVec2(-vector[1], vector[0]) // Rotate 90° counterclockwise
 }
 
-export function boundsFromPoints(points: Vec2[]): Bounds2D | null {
-  if (points.length === 0) return null
+export function boundsFromPoints(points: Vec2[]): Bounds2D {
+  if (points.length === 0) {
+    throw new Error('No points for boundary')
+  }
 
   let minX = Infinity
   let minY = Infinity

@@ -11,6 +11,7 @@ describe('ConstructionPlan', () => {
   it('should render polygon areas correctly', () => {
     const polygonArea: HighlightedPolygon = {
       type: 'polygon',
+      areaType: 'inner-perimeter',
       label: 'Test Polygon',
       polygon: {
         points: [createVec2(0, 0), createVec2(100, 0), createVec2(100, 100), createVec2(0, 100)]
@@ -47,6 +48,7 @@ describe('ConstructionPlan', () => {
   it('should handle different plane orientations for polygons', () => {
     const polygonArea: HighlightedPolygon = {
       type: 'polygon',
+      areaType: 'inner-perimeter',
       polygon: {
         points: [createVec2(0, 0), createVec2(50, 0), createVec2(50, 50)]
       },
@@ -78,6 +80,7 @@ describe('ConstructionPlan', () => {
   it('should render cuboid areas with bottom/top render positions', () => {
     const bottomCuboid: HighlightedCuboid = {
       type: 'cuboid',
+      areaType: 'corner',
       label: 'Bottom Area',
       transform: { position: vec3.fromValues(0, 0, 0), rotation: vec3.fromValues(0, 0, 0) },
       bounds: {
@@ -89,6 +92,7 @@ describe('ConstructionPlan', () => {
 
     const topCuboid: HighlightedCuboid = {
       type: 'cuboid',
+      areaType: 'corner',
       label: 'Top Area',
       transform: { position: vec3.fromValues(60, 0, 0), rotation: vec3.fromValues(0, 0, 0) },
       bounds: {

@@ -101,11 +101,7 @@ export const bounds3Dto2D = (bounds: Bounds3D, projection: Projection): Bounds2D
   })
 
   // Find 2D bounds from projected points
-  const result = boundsFromPoints(projectedCorners)
-  if (!result) {
-    throw new Error('Failed to compute 2D bounds from projection')
-  }
-  return result
+  return boundsFromPoints(projectedCorners)
 }
 
 export type Projection = (p: Vec3) => Vec3

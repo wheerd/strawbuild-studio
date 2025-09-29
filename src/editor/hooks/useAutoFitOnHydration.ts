@@ -21,10 +21,7 @@ export function useAutoFitOnHydration(): void {
         if (perimeters.length > 0) {
           const outerPoints = perimeters.flatMap(p => p.corners.map(c => c.outsidePoint))
           const bounds = boundsFromPoints(outerPoints)
-
-          if (bounds) {
-            viewportActions().fitToView(bounds)
-          }
+          viewportActions().fitToView(bounds)
         }
       }, 100) // Small delay so that the viewport canvas size has time to adjust
     }

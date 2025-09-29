@@ -143,9 +143,7 @@ export class TestDataTool implements ToolImplementation {
       if (newPerimeter) {
         const wallPoints = newPerimeter.corners.map(c => c.outsidePoint)
         const bounds = boundsFromPoints(wallPoints)
-        if (bounds) {
-          viewportActions().fitToView(bounds)
-        }
+        viewportActions().fitToView(bounds)
       }
     } catch (error) {
       console.error('❌ Failed to create test data:', error)

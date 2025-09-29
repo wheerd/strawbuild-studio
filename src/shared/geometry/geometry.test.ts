@@ -4,7 +4,7 @@ import {
   type LineSegment2D,
   createVec2,
   distanceToLineSegment,
-  doLineWallsIntersect,
+  doLineSegmentsIntersect,
   isPointAlreadyUsed,
   wouldClosingPolygonSelfIntersect,
   wouldPolygonSelfIntersect
@@ -117,7 +117,7 @@ describe('doLineWallsIntersect', () => {
       end: createVec2(10, 0)
     }
 
-    expect(doLineWallsIntersect(seg1, seg2)).toBe(true)
+    expect(doLineSegmentsIntersect(seg1, seg2)).toBe(true)
   })
 
   it('should not detect intersection for parallel walls', () => {
@@ -130,7 +130,7 @@ describe('doLineWallsIntersect', () => {
       end: createVec2(10, 5)
     }
 
-    expect(doLineWallsIntersect(seg1, seg2)).toBe(false)
+    expect(doLineSegmentsIntersect(seg1, seg2)).toBe(false)
   })
 
   it('should not detect intersection for walls that do not overlap', () => {
@@ -143,7 +143,7 @@ describe('doLineWallsIntersect', () => {
       end: createVec2(15, 0)
     }
 
-    expect(doLineWallsIntersect(seg1, seg2)).toBe(false)
+    expect(doLineSegmentsIntersect(seg1, seg2)).toBe(false)
   })
 
   it('should not detect intersection when walls share an endpoint', () => {
@@ -156,7 +156,7 @@ describe('doLineWallsIntersect', () => {
       end: createVec2(10, 0)
     }
 
-    expect(doLineWallsIntersect(seg1, seg2)).toBe(false)
+    expect(doLineSegmentsIntersect(seg1, seg2)).toBe(false)
   })
 
   it('should detect intersection for perpendicular walls', () => {
@@ -169,7 +169,7 @@ describe('doLineWallsIntersect', () => {
       end: createVec2(10, 5)
     }
 
-    expect(doLineWallsIntersect(seg1, seg2)).toBe(true)
+    expect(doLineSegmentsIntersect(seg1, seg2)).toBe(true)
   })
 })
 
