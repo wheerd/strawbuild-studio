@@ -8,7 +8,8 @@ export const COLORS = {
     woodSupport: '#cd853f',
     // Opening types
     door: '#8b4513',
-    window: '#87ceeb'
+    window: '#87ceeb',
+    concrete: '#545452'
   },
 
   // Interactive States

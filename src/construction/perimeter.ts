@@ -6,7 +6,7 @@ import { getConfigActions } from './config'
 import type { ResolveMaterialFunction } from './materials/material'
 import { type ConstructionModel, mergeModels, transformModel } from './model'
 import { constructRingBeam } from './ringBeams/ringBeams'
-import { constructInfillWall } from './walls'
+import { constructInfillWall, constructNonStrawbaleWall } from './walls'
 
 export function constructPerimeter(perimeter: Perimeter, resolveMaterial: ResolveMaterialFunction): ConstructionModel {
   const { getActiveStorey } = getModelActions()
@@ -30,9 +30,14 @@ export function constructPerimeter(perimeter: Perimeter, resolveMaterial: Resolv
   const storey = getActiveStorey()
   for (const wall of perimeter.walls) {
     const method = getPerimeterConstructionMethodById(wall.constructionMethodId)
+    let wallModel: ConstructionModel | null = null
     if (method?.config?.type === 'infill') {
-      const wallModel = constructInfillWall(wall, perimeter, storey.height, method.config, method.layers)
+      wallModel = constructInfillWall(wall, perimeter, storey.height, method.config, method.layers)
+    } else if (method?.config?.type === 'non-strawbale') {
+      wallModel = constructNonStrawbaleWall(wall, perimeter, storey.height, method.config, method.layers)
+    }
 
+    if (wallModel) {
       const segmentAngle = angle(wall.insideLine.start, wall.insideLine.end)
       const transformedModel = transformModel(wallModel, {
         position: [wall.insideLine.start[0], wall.insideLine.start[1], 0],

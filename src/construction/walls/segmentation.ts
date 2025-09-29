@@ -1,7 +1,14 @@
-import type { Opening, PerimeterWall } from '@/building/model/model'
+import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
+import { getConfigActions } from '@/construction/config'
 import type { LayersConfig } from '@/construction/config/types'
+import { IDENTITY } from '@/construction/geometry'
+import { type ConstructionResult, yieldArea, yieldMeasurement } from '@/construction/results'
+import { TAG_OPENING_SPACING, TAG_WALL_LENGTH } from '@/construction/tags'
 import type { Length, Vec3 } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
+
+import type { WallCornerInfo } from './construction'
+import { calculateWallCornerInfo, getWallContext } from './corners/corners'
 
 export interface WallSegment3D {
   type: 'wall' | 'opening'
@@ -10,6 +17,7 @@ export interface WallSegment3D {
 
   // For opening segments - array supports merged adjacent openings
   openings?: Opening[]
+  zOffset?: Length
 }
 
 function canMergeOpenings(opening1: Opening, opening2: Opening): boolean {
@@ -54,25 +62,97 @@ function mergeAdjacentOpenings(sortedOpenings: Opening[]): Opening[][] {
   return groups
 }
 
-export function segmentWall(
-  wall: PerimeterWall,
+type WallSegmentConstruction = (
+  position: Vec3,
+  size: Vec3,
+  startsWithStand: boolean,
+  endsWithStand: boolean,
+  startAtEnd: boolean
+) => Generator<ConstructionResult>
+
+type OpeningSegmentConstruction = (
+  position: Vec3,
+  size: Vec3,
+  zOffset: Length,
+  openings: Opening[]
+) => Generator<ConstructionResult>
+
+function* createCornerAreas(
+  cornerInfo: WallCornerInfo,
+  wallLength: Length,
   wallHeight: Length,
-  constructionLength: Length,
-  startExtension: Length = 0 as Length,
-  layers: LayersConfig
-): WallSegment3D[] {
+  wallThickness: Length
+): Generator<ConstructionResult> {
+  if (cornerInfo.startCorner) {
+    yield yieldArea({
+      type: 'cuboid',
+      areaType: 'corner',
+      renderPosition: 'top',
+      label: 'Corner',
+      bounds: {
+        min: [-cornerInfo.startCorner.extensionDistance, 0, 0],
+        max: [0, wallThickness, wallHeight]
+      },
+      transform: IDENTITY
+    })
+  }
+  if (cornerInfo.endCorner) {
+    yield yieldArea({
+      type: 'cuboid',
+      areaType: 'corner',
+      renderPosition: 'top',
+      label: 'Corner',
+      bounds: {
+        min: [wallLength, 0, 0],
+        max: [wallLength + cornerInfo.endCorner.extensionDistance, wallThickness, wallHeight]
+      },
+      transform: IDENTITY
+    })
+  }
+}
+
+export function* segmentedWallConstruction(
+  wall: PerimeterWall,
+  perimeter: Perimeter,
+  wallHeight: Length,
+  layers: LayersConfig,
+  wallConstruction: WallSegmentConstruction,
+  openingConstruction: OpeningSegmentConstruction
+): Generator<ConstructionResult> {
+  const wallContext = getWallContext(wall, perimeter)
+  const cornerInfo = calculateWallCornerInfo(wall, wallContext)
+  const { constructionLength, extensionStart, extensionEnd } = cornerInfo
+
+  yield* createCornerAreas(cornerInfo, wall.wallLength, wallHeight, wall.thickness)
+
+  const { getRingBeamConstructionMethodById } = getConfigActions()
+  const bottomPlateMethod = perimeter.baseRingBeamMethodId
+    ? getRingBeamConstructionMethodById(perimeter.baseRingBeamMethodId)
+    : null
+  const bottomPlateHeight = bottomPlateMethod?.config?.height ?? 0
+  const topPlateMethod = perimeter.topRingBeamMethodId
+    ? getRingBeamConstructionMethodById(perimeter.topRingBeamMethodId)
+    : null
+  const topPlateHeight = topPlateMethod?.config?.height ?? 0
+
   const y = layers.insideThickness
   const sizeY = wall.thickness - layers.insideThickness - layers.outsideThickness
+  const z = bottomPlateHeight
+  const sizeZ = wallHeight - bottomPlateHeight - topPlateHeight
+
+  yield yieldMeasurement({
+    startPoint: [-extensionStart, y, z],
+    endPoint: [-extensionStart + constructionLength, y, z],
+    label: formatLength(constructionLength),
+    tags: [TAG_WALL_LENGTH],
+    groupKey: 'wall-length',
+    offset: 2
+  })
 
   if (wall.openings.length === 0) {
     // No openings - just one wall segment for the entire length
-    return [
-      {
-        type: 'wall',
-        position: [0, y, 0],
-        size: [constructionLength, sizeY, wallHeight]
-      }
-    ]
+    yield* wallConstruction([-extensionStart, y, z], [constructionLength, sizeY, sizeZ], true, true, extensionEnd > 0)
+    return
   }
 
   // Sort openings by position along the wall
@@ -105,48 +185,54 @@ export function segmentWall(
   // Group adjacent compatible openings
   const openingGroups = mergeAdjacentOpenings(sortedOpenings)
 
-  // Create segments with Vec3 positioning
-  const segments: WallSegment3D[] = []
-  currentPosition = 0 as Length
+  currentPosition = -extensionStart as Length
 
   for (const openingGroup of openingGroups) {
     // Adjust opening positions by start extension to account for corner extension
-    const groupStart = (openingGroup[0].offsetFromStart + startExtension) as Length
+    const groupStart = openingGroup[0].offsetFromStart as Length
     const groupEnd = (openingGroup[openingGroup.length - 1].offsetFromStart +
-      openingGroup[openingGroup.length - 1].width +
-      startExtension) as Length
+      openingGroup[openingGroup.length - 1].width) as Length
 
     // Create wall segment before opening group if there's space
     if (groupStart > currentPosition) {
       const wallSegmentWidth = (groupStart - currentPosition) as Length
-      segments.push({
-        type: 'wall',
-        position: [currentPosition, y, 0],
-        size: [wallSegmentWidth, sizeY, wallHeight]
+      yield* wallConstruction(
+        [currentPosition, y, z],
+        [wallSegmentWidth, sizeY, sizeZ],
+        true,
+        true,
+        currentPosition > 0
+      )
+
+      yield yieldMeasurement({
+        startPoint: [currentPosition, y, z],
+        endPoint: [currentPosition + wallSegmentWidth, y, z],
+        label: formatLength(wallSegmentWidth as Length),
+        groupKey: 'segment',
+        offset: -1,
+        tags: [TAG_OPENING_SPACING]
       })
     }
 
     // Create opening segment for the group
     const groupWidth = (groupEnd - groupStart) as Length
-    segments.push({
-      type: 'opening',
-      position: [groupStart, y, 0],
-      size: [groupWidth, sizeY, wallHeight],
-      openings: openingGroup
-    })
+    yield* openingConstruction([groupStart, y, z], [groupWidth, sizeY, sizeZ], -z as Length, openingGroup)
 
     currentPosition = groupEnd
   }
 
   // Create final wall segment if there's remaining space
-  if (currentPosition < constructionLength) {
-    const remainingWidth = (constructionLength - currentPosition) as Length
-    segments.push({
-      type: 'wall',
-      position: [currentPosition, y, 0],
-      size: [remainingWidth, sizeY, wallHeight]
+  if (currentPosition < constructionLength - extensionStart) {
+    const remainingWidth = (constructionLength - currentPosition - extensionStart) as Length
+    yield* wallConstruction([currentPosition, y, z], [remainingWidth, sizeY, sizeZ], true, true, currentPosition > 0)
+
+    yield yieldMeasurement({
+      startPoint: [currentPosition, y, z],
+      endPoint: [currentPosition + remainingWidth, y, z],
+      label: formatLength(remainingWidth as Length),
+      groupKey: 'segment',
+      offset: -1,
+      tags: [TAG_OPENING_SPACING]
     })
   }
-
-  return segments
 }

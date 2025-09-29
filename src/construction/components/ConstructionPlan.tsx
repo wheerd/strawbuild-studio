@@ -2,12 +2,12 @@ import React, { useEffect, useRef } from 'react'
 
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
 import { bounds3Dto2D, createZOrder, project, projectRotation } from '@/construction/geometry'
+import { resolveDefaultMaterial } from '@/construction/materials/material'
 import type { ConstructionModel, HighlightedCuboid, HighlightedPolygon } from '@/construction/model'
 import { SVGViewport, type SVGViewportRef } from '@/shared/components/SVGViewport'
 import { type Plane3D, add, complementaryAxis, direction, distance } from '@/shared/geometry'
 import { COLORS } from '@/shared/theme/colors'
 
-import { resolveDefaultMaterial } from '../materials/material'
 import { ConstructionElementShape } from './ConstructionElementShape'
 import { ConstructionGroupElement } from './ConstructionGroupElement'
 import { CuboidAreaShape } from './CuboidAreaShape'
@@ -19,7 +19,7 @@ export interface View {
   xDirection: 1 | -1
 }
 
-export const TOP_VIEW: View = { plane: 'xy', xDirection: 1, zOrder: 'max' }
+export const TOP_VIEW: View = { plane: 'xy', xDirection: 1, zOrder: 'min' }
 export const FRONT_VIEW: View = { plane: 'xz', xDirection: 1, zOrder: 'min' }
 export const BACK_VIEW: View = { plane: 'xz', xDirection: -1, zOrder: 'max' }
 

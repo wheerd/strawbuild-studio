@@ -1,8 +1,8 @@
+import type { ConstructionGroup } from '@/construction/elements'
 import type { Projection, RotationProjection, ZOrder } from '@/construction/geometry'
 import { createSvgTransform } from '@/construction/geometry'
+import type { ResolveMaterialFunction } from '@/construction/materials/material'
 
-import type { ConstructionGroup } from '../elements'
-import type { ResolveMaterialFunction } from '../materials/material'
 import { ConstructionElementShape } from './ConstructionElementShape'
 
 export interface ConstructionGroupElementProps {

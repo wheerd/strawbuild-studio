@@ -1,4 +1,5 @@
 import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
+import type { MaterialId } from '@/construction/materials/material'
 import type { RingBeamConfig } from '@/construction/ringBeams/ringBeams'
 import type {
   BaseConstructionConfig,
@@ -16,7 +17,7 @@ export interface RingBeamConstructionMethod {
 // Placeholder config interface for non-strawbale construction
 export interface NonStrawbaleConfig extends BaseConstructionConfig {
   type: 'non-strawbale'
-  material: string
+  material: MaterialId
   thickness: number
 }
 

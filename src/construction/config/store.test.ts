@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
+import { createMaterialId } from '@/construction/materials/material'
+import type { RingBeamConfig } from '@/construction/ringBeams/ringBeams'
 import { createLength } from '@/shared/geometry'
 
-import { createMaterialId } from '../materials/material'
-import type { RingBeamConfig } from '../ringBeams/ringBeams'
 import { _clearAllMethods, getConfigActions } from './store'
 
 describe('ConfigStore', () => {

@@ -17,8 +17,6 @@ export function CuboidAreaShape({ cuboid, projection, rotationProjection }: Cubo
   const cx = (bounds2D.max[0] + bounds2D.min[0]) / 2
   const cy = (bounds2D.max[1] + bounds2D.min[1]) / 2
 
-  console.log(cuboid)
-
   return (
     <g
       className={`area-cuboid area-cuboid-${cuboid.areaType}`}

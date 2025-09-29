@@ -5,9 +5,9 @@ import React, { useMemo } from 'react'
 import type { PerimeterId } from '@/building/model/ids'
 import { usePerimeterById } from '@/building/store'
 import { resolveDefaultMaterial } from '@/construction/materials/material'
+import { constructPerimeter } from '@/construction/perimeter'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 
-import { constructPerimeter } from '../perimeter'
 import { ConstructionPlan, TOP_VIEW } from './ConstructionPlan'
 
 export interface PerimeterConstructionModalProps {

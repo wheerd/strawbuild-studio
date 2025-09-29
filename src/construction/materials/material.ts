@@ -101,6 +101,13 @@ export const door: GenericMaterial = {
   type: 'generic'
 }
 
+export const concrete: GenericMaterial = {
+  id: createMaterialId(),
+  name: 'Concrete',
+  type: 'generic',
+  color: COLORS.materials.concrete
+}
+
 export const DEFAULT_MATERIALS: Record<MaterialId, Material> = {
   [wood360x60.id]: wood360x60,
   [wood240x60.id]: wood240x60,
@@ -108,7 +115,8 @@ export const DEFAULT_MATERIALS: Record<MaterialId, Material> = {
   [wood140x140.id]: wood140x140,
   [strawbale.id]: strawbale,
   [window.id]: window,
-  [door.id]: door
+  [door.id]: door,
+  [concrete.id]: concrete
 }
 
 export type ResolveMaterialFunction = (materialId: MaterialId) => Material | undefined

@@ -10,10 +10,9 @@ import type {
   PerimeterConstructionMethod,
   RingBeamConstructionMethod
 } from '@/construction/config/types'
+import { concrete, strawbale, wood360x60 } from '@/construction/materials/material'
+import { type RingBeamConfig, validateRingBeamConfig } from '@/construction/ringBeams/ringBeams'
 import { createLength } from '@/shared/geometry'
-
-import { strawbale, wood360x60 } from '../materials/material'
-import { type RingBeamConfig, validateRingBeamConfig } from '../ringBeams/ringBeams'
 
 export interface ConfigState {
   ringBeamConstructionMethods: Map<RingBeamConstructionMethodId, RingBeamConstructionMethod>
@@ -182,7 +181,7 @@ const createDefaultPerimeterMethods = (): PerimeterConstructionMethod[] => [
     name: 'Non-Strawbale Wall',
     config: {
       type: 'non-strawbale',
-      material: wood360x60.id,
+      material: concrete.id,
       thickness: 200,
       openings: {
         padding: createLength(15),
@@ -199,8 +198,8 @@ const createDefaultPerimeterMethods = (): PerimeterConstructionMethod[] => [
       }
     },
     layers: {
-      insideThickness: createLength(0),
-      outsideThickness: createLength(0)
+      insideThickness: createLength(30),
+      outsideThickness: createLength(30)
     }
   }
 ]

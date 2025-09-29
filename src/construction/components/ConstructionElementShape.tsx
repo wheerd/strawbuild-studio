@@ -1,8 +1,8 @@
+import type { ConstructionElement } from '@/construction/elements'
 import type { Projection, RotationProjection } from '@/construction/geometry'
 import { createSvgTransform } from '@/construction/geometry'
+import type { ResolveMaterialFunction } from '@/construction/materials/material'
 
-import type { ConstructionElement } from '../elements'
-import type { ResolveMaterialFunction } from '../materials/material'
 import { CuboidShape } from './CuboidShape'
 import { CutCuboidShape } from './CutCuboidShape'
 

@@ -1,122 +1,82 @@
 import type { Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model/model'
+import { getConfigActions } from '@/construction/config'
 import type { WallCornerInfo } from '@/construction/walls/construction'
 import type { Length } from '@/shared/geometry'
 import { distance } from '@/shared/geometry'
 
-/**
- * Calculate the extension distance for corner construction.
- * Takes the maximum of outer extension (outside line to outside point) and
- * inner extension (inside line to inside point) to handle both convex and concave corners.
- */
-function calculateCornerExtension(corner: PerimeterCorner, wall: PerimeterWall, isStartCorner: boolean): Length {
-  if (isStartCorner) {
-    // Calculate outer extension: distance from start of wall.outsideLine to corner.outsidePoint
-    const outerWallStart = wall.outsideLine.start
-    const outerExtension = distance(outerWallStart, corner.outsidePoint)
-
-    // Calculate inner extension: distance from start of wall.insideLine to corner.insidePoint
-    const innerWallStart = wall.insideLine.start
-    const innerExtension = distance(innerWallStart, corner.insidePoint)
-
-    // Take the maximum to handle both outer and inner corners correctly
-    return Math.max(outerExtension, innerExtension) as Length
-  } else {
-    // Calculate outer extension: distance from end of wall.outsideLine to corner.outsidePoint
-    const outerWallEnd = wall.outsideLine.end
-    const outerExtension = distance(outerWallEnd, corner.outsidePoint)
-
-    // Calculate inner extension: distance from end of wall.insideLine to corner.insidePoint
-    const innerWallEnd = wall.insideLine.end
-    const innerExtension = distance(innerWallEnd, corner.insidePoint)
-
-    // Take the maximum to handle both outer and inner corners correctly
-    return Math.max(outerExtension, innerExtension) as Length
-  }
+export interface WallContext {
+  startCorner: PerimeterCorner
+  previousWall: PerimeterWall
+  endCorner: PerimeterCorner
+  nextWall: PerimeterWall
 }
 
-/**
- * Get the corners adjacent to a specific wall
- */
-function getWallCorners(
-  wall: PerimeterWall,
-  perimeter: Perimeter
-): {
-  startCorner: PerimeterCorner | null
-  endCorner: PerimeterCorner | null
-} {
-  // Find corners at wall start/end based on wall position in perimeter
+export function getWallContext(wall: PerimeterWall, perimeter: Perimeter): WallContext {
   const wallIndex = perimeter.walls.findIndex(w => w.id === wall.id)
-
   if (wallIndex === -1) {
-    return { startCorner: null, endCorner: null }
+    throw new Error(`Could not find wall with id ${wall.id}`)
   }
 
+  const startWallIndex = (wallIndex - 1 + perimeter.walls.length) % perimeter.walls.length // wall[i-1] is the wall at the start corner for wall[i]
   const startCornerIndex = wallIndex // corner[i] is the start corner for wall[i]
   const endCornerIndex = (wallIndex + 1) % perimeter.corners.length // corner[i+1] is the end corner for wall[i]
 
   return {
     startCorner: perimeter.corners[startCornerIndex],
-    endCorner: perimeter.corners[endCornerIndex]
+    previousWall: perimeter.walls[startWallIndex],
+    endCorner: perimeter.corners[endCornerIndex],
+    nextWall: perimeter.walls[endCornerIndex]
   }
 }
 
-/**
- * Calculate the actual construction length including assigned corners
- */
-export function calculateWallConstructionLength(
-  wall: PerimeterWall,
-  startCorner: PerimeterCorner | null,
-  endCorner: PerimeterCorner | null
-): {
-  constructionLength: Length
-  startExtension: Length
-  endExtension: Length
-} {
-  let constructionLength = wall.wallLength // Base inside length
+export function calculateWallCornerInfo(wall: PerimeterWall, context: WallContext): WallCornerInfo {
+  const { startCorner, endCorner, previousWall, nextWall } = context
+  const { getPerimeterConstructionMethodById } = getConfigActions()
 
-  const startExtension =
-    startCorner?.constuctedByWall === 'next' ? calculateCornerExtension(startCorner, wall, true) : (0 as Length)
+  const previousMethod = getPerimeterConstructionMethodById(previousWall.constructionMethodId)
+  const nextMethod = getPerimeterConstructionMethodById(nextWall.constructionMethodId)
 
-  const endExtension =
-    endCorner?.constuctedByWall === 'previous' ? calculateCornerExtension(endCorner, wall, false) : (0 as Length)
-
-  constructionLength = (constructionLength + startExtension + endExtension) as Length
-
-  return { constructionLength, startExtension, endExtension }
-}
-
-/**
- * Calculate complete corner information for a wall's construction plan
- */
-export function calculateWallCornerInfo(wall: PerimeterWall, perimeter: Perimeter): WallCornerInfo {
-  const { startCorner, endCorner } = getWallCorners(wall, perimeter)
-
-  const result: WallCornerInfo = {
-    startCorner: null,
-    endCorner: null
+  if (!previousMethod || !nextMethod) {
+    throw new Error('Invalid wall construction method')
   }
 
-  if (startCorner) {
-    const extensionDistance = calculateCornerExtension(startCorner, wall, true)
-    const constructedByWallThisWall = startCorner.constuctedByWall === 'next'
+  const outerStartExtension =
+    distance(wall.outsideLine.start, startCorner.outsidePoint) - previousMethod.layers.outsideThickness
+  const innerStartExtension =
+    distance(wall.insideLine.start, startCorner.insidePoint) - previousMethod.layers.insideThickness
+  const startExtended = startCorner.constuctedByWall === 'next'
+  const startExtension = Math.max(outerStartExtension, innerStartExtension) as Length
+  const appliedStartExtension = startExtended
+    ? startExtension
+    : startExtension === outerStartExtension
+      ? previousMethod.layers.insideThickness
+      : previousMethod.layers.outsideThickness
 
-    result.startCorner = {
+  const outerEndExtension = distance(wall.outsideLine.end, endCorner.outsidePoint) - nextMethod.layers.outsideThickness
+  const innerEndExtension = distance(wall.insideLine.end, endCorner.insidePoint) - nextMethod.layers.insideThickness
+  const endExtended = endCorner.constuctedByWall === 'previous'
+  const endExtension = Math.max(outerEndExtension, innerEndExtension) as Length
+  const appliedEndExtension = endExtended
+    ? endExtension
+    : endExtension === outerEndExtension
+      ? nextMethod.layers.insideThickness
+      : nextMethod.layers.outsideThickness
+
+  const constructionLength = (wall.wallLength + appliedStartExtension + appliedEndExtension) as Length
+
+  return {
+    startCorner: {
       id: startCorner.id,
-      constructedByThisWall: constructedByWallThisWall,
-      extensionDistance
-    }
-  }
-
-  if (endCorner) {
-    const extensionDistance = calculateCornerExtension(endCorner, wall, false)
-    const constructedByWallThisWall = endCorner.constuctedByWall === 'previous'
-
-    result.endCorner = {
+      constructedByThisWall: startExtended,
+      extensionDistance: startExtension
+    },
+    endCorner: {
       id: endCorner.id,
-      constructedByThisWall: constructedByWallThisWall,
-      extensionDistance
-    }
+      constructedByThisWall: endExtended,
+      extensionDistance: endExtension
+    },
+    extensionStart: appliedStartExtension,
+    extensionEnd: appliedEndExtension,
+    constructionLength
   }
-
-  return result
 }

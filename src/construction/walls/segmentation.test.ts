@@ -1,495 +1,576 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createOpeningId, createPerimeterConstructionMethodId, createPerimeterWallId } from '@/building/model/ids'
-import type { Opening, PerimeterWall } from '@/building/model/model'
+import { createOpeningId, createPerimeterConstructionMethodId, createPerimeterId } from '@/building/model/ids'
+import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
+import { getConfigActions } from '@/construction/config'
 import type { LayersConfig } from '@/construction/config/types'
+import { IDENTITY } from '@/construction/geometry'
+import { aggregateResults, yieldElement } from '@/construction/results'
+import { TAG_OPENING_SPACING, TAG_WALL_LENGTH } from '@/construction/tags'
 import type { Length } from '@/shared/geometry'
-import { createLength } from '@/shared/geometry'
+import { createLength, createVec2 } from '@/shared/geometry'
 
-import { segmentWall } from './segmentation'
+import type { WallCornerInfo } from './construction'
+import { calculateWallCornerInfo, getWallContext } from './corners/corners'
+import { segmentedWallConstruction } from './segmentation'
 
-const createTestOpening = (overrides: Partial<Opening> = {}): Opening => ({
-  id: createOpeningId(),
-  type: 'window',
-  offsetFromStart: 1000 as Length,
-  width: 800 as Length,
-  height: 1200 as Length,
-  sillHeight: 900 as Length,
-  ...overrides
-})
+// Mock dependencies
+vi.mock('./corners/corners', () => ({
+  getWallContext: vi.fn(),
+  calculateWallCornerInfo: vi.fn()
+}))
 
-const createTestLayersConfig = (): LayersConfig => ({
-  insideThickness: createLength(20),
-  outsideThickness: createLength(20)
-})
+vi.mock('@/construction/config', () => ({
+  getConfigActions: vi.fn()
+}))
 
-const createTestWall = (overrides: Partial<PerimeterWall> = {}): PerimeterWall => ({
-  id: createPerimeterWallId(),
-  thickness: 360 as Length,
-  constructionMethodId: createPerimeterConstructionMethodId(),
-  openings: [],
-  insideLength: 5000 as Length,
-  outsideLength: 5000 as Length,
-  wallLength: 5000 as Length,
-  insideLine: { start: [0, 0], end: [5000, 0] },
-  outsideLine: { start: [0, 360], end: [5000, 360] },
-  direction: [1, 0],
-  outsideDirection: [0, 1],
-  ...overrides
-})
+vi.mock('@/shared/utils/formatLength', () => ({
+  formatLength: vi.fn((length: Length) => `${length}mm`)
+}))
 
-describe('segmentWall', () => {
-  describe('basic segmentation', () => {
-    it('creates single wall segment when no openings', () => {
-      const wall = createTestWall({
-        wallLength: 5000 as Length,
-        thickness: 360 as Length,
-        openings: []
-      })
-      const wallHeight = 2500 as Length
+const mockGetWallContext = vi.mocked(getWallContext)
+const mockCalculateWallCornerInfo = vi.mocked(calculateWallCornerInfo)
+const mockGetConfigActions = vi.mocked(getConfigActions)
 
-      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
+// Test data helpers
+function createMockWall(id: string, wallLength: Length, thickness: Length, openings: Opening[] = []): PerimeterWall {
+  return {
+    id: id as any,
+    constructionMethodId: createPerimeterConstructionMethodId(),
+    thickness,
+    wallLength,
+    insideLength: wallLength,
+    outsideLength: wallLength,
+    openings,
+    insideLine: {
+      start: createVec2(0, 0),
+      end: createVec2(wallLength, 0)
+    },
+    outsideLine: {
+      start: createVec2(0, thickness),
+      end: createVec2(wallLength, thickness)
+    },
+    direction: createVec2(1, 0),
+    outsideDirection: createVec2(0, 1)
+  }
+}
 
-      expect(result).toHaveLength(1)
-      expect(result[0]).toEqual({
-        type: 'wall',
-        position: [0, 20, 0],
-        size: [5000, 320, 2500]
+function createMockPerimeter(walls: PerimeterWall[]): Perimeter {
+  return {
+    id: createPerimeterId(),
+    storeyId: 'test-storey' as any,
+    walls,
+    corners: [],
+    baseRingBeamMethodId: 'base-method' as any,
+    topRingBeamMethodId: 'top-method' as any
+  } as Perimeter
+}
+
+function createMockOpening(
+  offsetFromStart: Length,
+  width: Length,
+  height: Length = createLength(1200),
+  sillHeight: Length = createLength(900)
+): Opening {
+  return {
+    id: createOpeningId(),
+    type: 'window',
+    offsetFromStart,
+    width,
+    height,
+    sillHeight
+  }
+}
+
+function createMockCornerInfo(
+  extensionStart: Length = createLength(0),
+  extensionEnd: Length = createLength(0),
+  constructionLength: Length = createLength(3000)
+): WallCornerInfo {
+  return {
+    startCorner: {
+      id: 'start-corner' as any,
+      constructedByThisWall: true,
+      extensionDistance: extensionStart
+    },
+    endCorner: {
+      id: 'end-corner' as any,
+      constructedByThisWall: true,
+      extensionDistance: extensionEnd
+    },
+    extensionStart,
+    extensionEnd,
+    constructionLength
+  }
+}
+
+function createMockLayers(): LayersConfig {
+  return {
+    insideThickness: createLength(30),
+    outsideThickness: createLength(50)
+  }
+}
+
+describe('segmentedWallConstruction', () => {
+  let mockWallConstruction: ReturnType<typeof vi.fn>
+  let mockOpeningConstruction: ReturnType<typeof vi.fn>
+  let mockGetRingBeamConstructionMethodById: ReturnType<typeof vi.fn>
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+
+    // Mock corner calculation
+    mockGetWallContext.mockReturnValue({
+      startCorner: {
+        id: 'start' as any,
+        insidePoint: createVec2(0, 0),
+        outsidePoint: createVec2(0, 300),
+        constuctedByWall: 'next'
+      },
+      endCorner: {
+        id: 'end' as any,
+        insidePoint: createVec2(3000, 0),
+        outsidePoint: createVec2(3000, 300),
+        constuctedByWall: 'previous'
+      },
+      previousWall: {} as any,
+      nextWall: {} as any
+    })
+
+    mockCalculateWallCornerInfo.mockReturnValue(createMockCornerInfo())
+
+    // Mock config actions
+    mockGetRingBeamConstructionMethodById = vi.fn()
+    mockGetConfigActions.mockReturnValue({
+      getRingBeamConstructionMethodById: mockGetRingBeamConstructionMethodById
+    } as any)
+
+    // Mock ring beam methods
+    mockGetRingBeamConstructionMethodById.mockReturnValue({
+      config: { height: createLength(60) }
+    })
+
+    // Mock construction functions
+    mockWallConstruction = vi.fn(function* () {
+      yield yieldElement({
+        id: 'wall-element' as any,
+        material: 'material' as any,
+        shape: {
+          type: 'cuboid',
+          offset: [0, 0, 0],
+          size: [100, 100, 100],
+          bounds: { min: [0, 0, 0], max: [100, 100, 100] }
+        },
+        transform: IDENTITY,
+        bounds: { min: [0, 0, 0], max: [100, 100, 100] }
       })
     })
 
-    it('creates segments with single opening in middle', () => {
-      const opening = createTestOpening({
-        offsetFromStart: 2000 as Length,
-        width: 800 as Length
-      })
-      const wall = createTestWall({
-        wallLength: 5000 as Length,
-        insideLength: 5000 as Length, // Match wallLength
-        thickness: 360 as Length,
-        constructionMethodId: createPerimeterConstructionMethodId(),
-        openings: [opening]
-      })
-      const wallHeight = 2500 as Length
-
-      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
-
-      expect(result).toHaveLength(3)
-
-      // First wall segment
-      expect(result[0]).toEqual({
-        type: 'wall',
-        position: [0, 20, 0],
-        size: [2000, 320, 2500]
-      })
-
-      // Opening segment
-      expect(result[1]).toEqual({
-        type: 'opening',
-        position: [2000, 20, 0],
-        size: [800, 320, 2500],
-        openings: [opening]
-      })
-
-      // Final wall segment
-      expect(result[2]).toEqual({
-        type: 'wall',
-        position: [2800, 20, 0],
-        size: [2200, 320, 2500]
-      })
-    })
-
-    it('creates segments with opening at start', () => {
-      const opening = createTestOpening({
-        offsetFromStart: 0 as Length,
-        width: 800 as Length
-      })
-      const wall = createTestWall({
-        wallLength: 3000 as Length,
-        insideLength: 3000 as Length, // Match wallLength
-        thickness: 360 as Length,
-        constructionMethodId: createPerimeterConstructionMethodId(),
-        openings: [opening]
-      })
-      const wallHeight = 2500 as Length
-
-      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
-
-      expect(result).toHaveLength(2)
-
-      // Opening segment at start
-      expect(result[0]).toEqual({
-        type: 'opening',
-        position: [0, 20, 0],
-        size: [800, 320, 2500],
-        openings: [opening]
-      })
-
-      // Wall segment after opening
-      expect(result[1]).toEqual({
-        type: 'wall',
-        position: [800, 20, 0],
-        size: [2200, 320, 2500]
-      })
-    })
-
-    it('creates segments with opening at end', () => {
-      const opening = createTestOpening({
-        offsetFromStart: 2200 as Length,
-        width: 800 as Length
-      })
-      const wall = createTestWall({
-        wallLength: 3000 as Length,
-        insideLength: 3000 as Length, // Match wallLength
-        thickness: 360 as Length,
-        constructionMethodId: createPerimeterConstructionMethodId(),
-        openings: [opening]
-      })
-      const wallHeight = 2500 as Length
-
-      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
-
-      expect(result).toHaveLength(2)
-
-      // Wall segment before opening
-      expect(result[0]).toEqual({
-        type: 'wall',
-        position: [0, 20, 0],
-        size: [2200, 320, 2500]
-      })
-
-      // Opening segment at end
-      expect(result[1]).toEqual({
-        type: 'opening',
-        position: [2200, 20, 0],
-        size: [800, 320, 2500],
-        openings: [opening]
-      })
-    })
-  })
-
-  describe('multiple openings', () => {
-    it('creates segments with multiple openings', () => {
-      const opening1 = createTestOpening({
-        offsetFromStart: 1000 as Length,
-        width: 800 as Length,
-        type: 'door',
-        sillHeight: 0 as Length // Different from opening2
-      })
-      const opening2 = createTestOpening({
-        offsetFromStart: 3000 as Length,
-        width: 1000 as Length,
-        type: 'window',
-        sillHeight: 900 as Length // Different from opening1
-      })
-      const wall = createTestWall({
-        wallLength: 6000 as Length,
-        insideLength: 6000 as Length, // Match wallLength
-        thickness: 360 as Length,
-        constructionMethodId: createPerimeterConstructionMethodId(),
-        openings: [opening1, opening2]
-      })
-      const wallHeight = 2500 as Length
-
-      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
-
-      expect(result).toHaveLength(5)
-
-      // First wall segment
-      expect(result[0]).toEqual({
-        type: 'wall',
-        position: [0, 20, 0],
-        size: [1000, 320, 2500]
-      })
-
-      // First opening
-      expect(result[1]).toEqual({
-        type: 'opening',
-        position: [1000, 20, 0],
-        size: [800, 320, 2500],
-        openings: [opening1]
-      })
-
-      // Middle wall segment
-      expect(result[2]).toEqual({
-        type: 'wall',
-        position: [1800, 20, 0],
-        size: [1200, 320, 2500]
-      })
-
-      // Second opening
-      expect(result[3]).toEqual({
-        type: 'opening',
-        position: [3000, 20, 0],
-        size: [1000, 320, 2500],
-        openings: [opening2]
-      })
-
-      // Final wall segment
-      expect(result[4]).toEqual({
-        type: 'wall',
-        position: [4000, 20, 0],
-        size: [2000, 320, 2500]
-      })
-    })
-
-    it('handles openings in unsorted order', () => {
-      const opening1 = createTestOpening({
-        offsetFromStart: 3000 as Length,
-        width: 600 as Length,
-        sillHeight: 900 as Length
-      })
-      const opening2 = createTestOpening({
-        offsetFromStart: 1000 as Length,
-        width: 800 as Length,
-        sillHeight: 800 as Length // Different sill height to prevent merging
-      })
-      const wall = createTestWall({
-        wallLength: 5000 as Length,
-        insideLength: 5000 as Length, // Match wallLength
-        thickness: 360 as Length,
-        constructionMethodId: createPerimeterConstructionMethodId(),
-        openings: [opening1, opening2] // Provide openings in reverse order
-      })
-      const wallHeight = 2500 as Length
-
-      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
-
-      expect(result).toHaveLength(5)
-
-      // Should be sorted by position automatically
-      expect(result[0].type).toBe('wall')
-      expect(result[0].position).toEqual([0, 20, 0])
-      expect(result[0].size).toEqual([1000, 320, 2500])
-
-      expect(result[1].type).toBe('opening')
-      expect(result[1].position).toEqual([1000, 20, 0])
-      expect(result[1].openings).toEqual([opening2])
-
-      expect(result[2].type).toBe('wall')
-      expect(result[2].position).toEqual([1800, 20, 0])
-      expect(result[2].size).toEqual([1200, 320, 2500])
-
-      expect(result[3].type).toBe('opening')
-      expect(result[3].position).toEqual([3000, 20, 0])
-      expect(result[3].openings).toEqual([opening1])
-
-      expect(result[4].type).toBe('wall')
-      expect(result[4].position).toEqual([3600, 20, 0])
-      expect(result[4].size).toEqual([1400, 320, 2500])
-    })
-
-    it('merges adjacent openings with same sill and header heights', () => {
-      const opening1 = createTestOpening({
-        offsetFromStart: 1000 as Length,
-        width: 800 as Length,
-        sillHeight: 900 as Length,
-        height: 1200 as Length
-      })
-      const opening2 = createTestOpening({
-        offsetFromStart: 1800 as Length,
-        width: 600 as Length,
-        sillHeight: 900 as Length,
-        height: 1200 as Length
-      })
-      const wall = createTestWall({
-        wallLength: 4000 as Length,
-        insideLength: 4000 as Length, // Match wallLength
-        thickness: 360 as Length,
-        constructionMethodId: createPerimeterConstructionMethodId(),
-        openings: [opening1, opening2]
-      })
-      const wallHeight = 2500 as Length
-
-      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
-
-      expect(result).toHaveLength(3)
-
-      // Wall before openings
-      expect(result[0]).toEqual({
-        type: 'wall',
-        position: [0, 20, 0],
-        size: [1000, 320, 2500]
-      })
-
-      // Merged opening segment
-      expect(result[1]).toEqual({
-        type: 'opening',
-        position: [1000, 20, 0],
-        size: [1400, 320, 2500],
-        openings: [opening1, opening2]
-      })
-
-      // Wall after openings
-      expect(result[2]).toEqual({
-        type: 'wall',
-        position: [2400, 20, 0],
-        size: [1600, 320, 2500]
-      })
-    })
-
-    it('does not merge adjacent openings with different sill heights', () => {
-      const opening1 = createTestOpening({
-        offsetFromStart: 1000 as Length,
-        width: 800 as Length,
-        sillHeight: 900 as Length,
-        height: 1200 as Length
-      })
-      const opening2 = createTestOpening({
-        offsetFromStart: 1800 as Length,
-        width: 600 as Length,
-        sillHeight: 1000 as Length, // Different sill height
-        height: 1200 as Length
-      })
-      const wall = createTestWall({
-        wallLength: 4000 as Length,
-        insideLength: 4000 as Length, // Match wallLength
-        thickness: 360 as Length,
-        constructionMethodId: createPerimeterConstructionMethodId(),
-        openings: [opening1, opening2]
-      })
-      const wallHeight = 2500 as Length
-
-      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
-
-      expect(result).toHaveLength(4)
-
-      // Should not merge - keeps separate opening segments
-      expect(result[1]).toEqual({
-        type: 'opening',
-        position: [1000, 20, 0],
-        size: [800, 320, 2500],
-        openings: [opening1]
-      })
-
-      expect(result[2]).toEqual({
-        type: 'opening',
-        position: [1800, 20, 0],
-        size: [600, 320, 2500],
-        openings: [opening2]
+    mockOpeningConstruction = vi.fn(function* () {
+      yield yieldElement({
+        id: 'opening-element' as any,
+        material: 'material' as any,
+        shape: { type: 'cuboid', offset: [0, 0, 0], size: [50, 50, 50], bounds: { min: [0, 0, 0], max: [50, 50, 50] } },
+        transform: IDENTITY,
+        bounds: { min: [0, 0, 0], max: [50, 50, 50] }
       })
     })
   })
 
-  describe('edge cases', () => {
-    it('handles opening that fills entire wall', () => {
-      const opening = createTestOpening({
-        offsetFromStart: 0 as Length,
-        width: 2000 as Length
-      })
-      const wall = createTestWall({
-        wallLength: 2000 as Length,
-        insideLength: 2000 as Length, // Match wallLength
-        thickness: 360 as Length,
-        constructionMethodId: createPerimeterConstructionMethodId(),
-        openings: [opening]
-      })
-      const wallHeight = 2500 as Length
+  describe('basic functionality', () => {
+    it('should generate corner areas, measurements, and wall construction for wall with no openings', () => {
+      const wall = createMockWall('wall-1', createLength(3000), createLength(300))
+      const perimeter = createMockPerimeter([wall])
+      const wallHeight = createLength(2500)
+      const layers = createMockLayers()
 
-      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
+      const results = [
+        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+      ]
+      const { elements, measurements, areas } = aggregateResults(results)
 
-      expect(result).toHaveLength(1)
-      expect(result[0]).toEqual({
-        type: 'opening',
-        position: [0, 20, 0],
-        size: [2000, 320, 2500],
-        openings: [opening]
-      })
+      // Should generate corner areas
+      expect(areas).toHaveLength(2)
+      expect(areas[0].areaType).toBe('corner')
+      expect(areas[1].areaType).toBe('corner')
+
+      // Should generate wall length measurement
+      expect(measurements).toHaveLength(1)
+      expect(measurements[0].tags).toContain(TAG_WALL_LENGTH)
+      expect(measurements[0].label).toBe('3000mm')
+
+      // Should call wall construction once for entire wall
+      expect(mockWallConstruction).toHaveBeenCalledTimes(1)
+      expect(mockWallConstruction).toHaveBeenCalledWith(
+        [-0, 30, 60], // position: [-extensionStart, insideThickness, bottomPlateHeight]
+        [3000, 220, 2380], // size: [constructionLength, thickness-layers, wallHeight-plates]
+        true, // startsWithStand
+        true, // endsWithStand
+        false // startAtEnd
+      )
+
+      // Should not call opening construction
+      expect(mockOpeningConstruction).not.toHaveBeenCalled()
+
+      // Should include wall construction elements
+      expect(elements).toHaveLength(1)
+      expect(elements[0].id).toBe('wall-element')
     })
 
-    it('handles very small wall segments', () => {
-      const opening = createTestOpening({
-        offsetFromStart: 100 as Length,
-        width: 800 as Length
-      })
-      const wall = createTestWall({
-        wallLength: 1000 as Length,
-        insideLength: 1000 as Length, // Match wallLength
-        thickness: 360 as Length,
-        constructionMethodId: createPerimeterConstructionMethodId(),
-        openings: [opening]
-      })
-      const wallHeight = 2500 as Length
+    it('should handle extensions from corner info', () => {
+      const wall = createMockWall('wall-1', createLength(3000), createLength(300))
+      const perimeter = createMockPerimeter([wall])
+      const wallHeight = createLength(2500)
+      const layers = createMockLayers()
 
-      const result = segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
+      // Mock corner info with extensions
+      const cornerInfo = createMockCornerInfo(createLength(100), createLength(150), createLength(3250))
+      mockCalculateWallCornerInfo.mockReturnValue(cornerInfo)
 
-      expect(result).toHaveLength(3)
+      const results = [
+        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+      ]
+      const { measurements } = aggregateResults(results)
 
-      // Small wall segment before
-      expect(result[0].size).toEqual([100, 320, 2500])
+      // Should include extensions in wall construction
+      expect(mockWallConstruction).toHaveBeenCalledWith(
+        [-100, 30, 60], // position includes start extension
+        [3250, 220, 2380], // size includes total construction length
+        true,
+        true,
+        true // startAtEnd = true when extensionEnd > 0
+      )
 
-      // Opening
-      expect(result[1].size).toEqual([800, 320, 2500])
+      // Measurement should reflect construction length
+      expect(measurements[0].label).toBe('3250mm')
+    })
 
-      // Small wall segment after
-      expect(result[2].size).toEqual([100, 320, 2500])
+    it('should calculate positions based on ring beam heights', () => {
+      const wall = createMockWall('wall-1', createLength(3000), createLength(300))
+      const perimeter = createMockPerimeter([wall])
+      const wallHeight = createLength(2500)
+      const layers = createMockLayers()
+
+      // Mock different ring beam heights
+      mockGetRingBeamConstructionMethodById
+        .mockReturnValueOnce({ config: { height: createLength(80) } }) // base
+        .mockReturnValueOnce({ config: { height: createLength(100) } }) // top
+
+      const results = [
+        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+      ]
+      aggregateResults(results)
+
+      // Should call wall construction once
+      expect(mockWallConstruction).toHaveBeenCalledTimes(1)
+      expect(mockWallConstruction).toHaveBeenCalledWith(
+        [-0, 30, 80], // z position = base plate height
+        [3000, 220, 2320], // z size = wallHeight - base - top
+        true,
+        true,
+        false
+      )
+    })
+  })
+
+  describe('opening handling', () => {
+    it('should create segments for wall with single opening in middle', () => {
+      const opening = createMockOpening(createLength(1000), createLength(800))
+      const wall = createMockWall('wall-1', createLength(3000), createLength(300), [opening])
+      const perimeter = createMockPerimeter([wall])
+      const wallHeight = createLength(2500)
+      const layers = createMockLayers()
+
+      const results = [
+        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+      ]
+      const { measurements } = aggregateResults(results)
+
+      // Should call wall construction twice (before and after opening)
+      expect(mockWallConstruction).toHaveBeenCalledTimes(2)
+
+      // First wall segment (before opening)
+      expect(mockWallConstruction).toHaveBeenNthCalledWith(1, [-0, 30, 60], [1000, 220, 2380], true, true, false)
+
+      // Second wall segment (after opening)
+      expect(mockWallConstruction).toHaveBeenNthCalledWith(
+        2,
+        [1800, 30, 60], // 1000 + 800
+        [1200, 220, 2380], // 3000 - 1800
+        true,
+        true,
+        true
+      )
+
+      // Should call opening construction once
+      expect(mockOpeningConstruction).toHaveBeenCalledTimes(1)
+      expect(mockOpeningConstruction).toHaveBeenCalledWith(
+        [1000, 30, 60],
+        [800, 220, 2380],
+        -60, // -z offset
+        [opening]
+      )
+
+      // Should generate segment measurements for both wall segments
+      const segmentMeasurements = measurements.filter(m => m.tags?.includes(TAG_OPENING_SPACING))
+      expect(segmentMeasurements).toHaveLength(2)
+    })
+
+    it('should handle opening at start of wall', () => {
+      const opening = createMockOpening(createLength(0), createLength(800))
+      const wall = createMockWall('wall-1', createLength(3000), createLength(300), [opening])
+      const perimeter = createMockPerimeter([wall])
+      const wallHeight = createLength(2500)
+      const layers = createMockLayers()
+
+      const results = [
+        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+      ]
+      aggregateResults(results)
+
+      // Should call wall construction once (after opening)
+      expect(mockWallConstruction).toHaveBeenCalledTimes(1)
+      expect(mockWallConstruction).toHaveBeenCalledWith([800, 30, 60], [2200, 220, 2380], true, true, true)
+
+      // Should call opening construction once
+      expect(mockOpeningConstruction).toHaveBeenCalledWith([0, 30, 60], [800, 220, 2380], -60, [opening])
+    })
+
+    it('should handle opening at end of wall', () => {
+      const opening = createMockOpening(createLength(2200), createLength(800))
+      const wall = createMockWall('wall-1', createLength(3000), createLength(300), [opening])
+      const perimeter = createMockPerimeter([wall])
+      const wallHeight = createLength(2500)
+      const layers = createMockLayers()
+
+      const results = [
+        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+      ]
+      aggregateResults(results)
+
+      // Should call wall construction once (before opening)
+      expect(mockWallConstruction).toHaveBeenCalledTimes(1)
+      expect(mockWallConstruction).toHaveBeenCalledWith([-0, 30, 60], [2200, 220, 2380], true, true, false)
+
+      // Should call opening construction once
+      expect(mockOpeningConstruction).toHaveBeenCalledWith([2200, 30, 60], [800, 220, 2380], -60, [opening])
+    })
+
+    it('should merge adjacent openings with same sill and header heights', () => {
+      const opening1 = createMockOpening(createLength(1000), createLength(800), createLength(1200), createLength(900))
+      const opening2 = createMockOpening(createLength(1800), createLength(600), createLength(1200), createLength(900))
+      const wall = createMockWall('wall-1', createLength(4000), createLength(300), [opening1, opening2])
+      const perimeter = createMockPerimeter([wall])
+      const wallHeight = createLength(2500)
+      const layers = createMockLayers()
+
+      const results = [
+        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+      ]
+      aggregateResults(results)
+
+      // Should call opening construction once with both openings merged
+      expect(mockOpeningConstruction).toHaveBeenCalledTimes(1)
+      expect(mockOpeningConstruction).toHaveBeenCalledWith(
+        [1000, 30, 60],
+        [1400, 220, 2380], // combined width: 800 + 600
+        -60,
+        [opening1, opening2]
+      )
+    })
+
+    it('should not merge adjacent openings with different sill heights', () => {
+      const opening1 = createMockOpening(createLength(1000), createLength(800), createLength(1200), createLength(900))
+      const opening2 = createMockOpening(createLength(1800), createLength(600), createLength(1200), createLength(1000)) // different sill
+      const wall = createMockWall('wall-1', createLength(4000), createLength(300), [opening1, opening2])
+      const perimeter = createMockPerimeter([wall])
+      const wallHeight = createLength(2500)
+      const layers = createMockLayers()
+
+      const results = [
+        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+      ]
+      aggregateResults(results)
+
+      // Should call opening construction twice - separate openings
+      expect(mockOpeningConstruction).toHaveBeenCalledTimes(2)
+      expect(mockOpeningConstruction).toHaveBeenNthCalledWith(1, [1000, 30, 60], [800, 220, 2380], -60, [opening1])
+      expect(mockOpeningConstruction).toHaveBeenNthCalledWith(2, [1800, 30, 60], [600, 220, 2380], -60, [opening2])
+    })
+
+    it('should not merge adjacent openings with different header heights', () => {
+      const opening1 = createMockOpening(createLength(1000), createLength(800), createLength(1200), createLength(900))
+      const opening2 = createMockOpening(createLength(1800), createLength(600), createLength(1300), createLength(900)) // different height
+      const wall = createMockWall('wall-1', createLength(4000), createLength(300), [opening1, opening2])
+      const perimeter = createMockPerimeter([wall])
+      const wallHeight = createLength(2500)
+      const layers = createMockLayers()
+
+      const results = [
+        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+      ]
+      aggregateResults(results)
+
+      // Should call opening construction twice - separate openings
+      expect(mockOpeningConstruction).toHaveBeenCalledTimes(2)
+    })
+
+    it('should sort openings by position', () => {
+      // Create openings in wrong order
+      const opening1 = createMockOpening(createLength(2000), createLength(600))
+      const opening2 = createMockOpening(createLength(500), createLength(800))
+      const wall = createMockWall('wall-1', createLength(4000), createLength(300), [opening1, opening2])
+      const perimeter = createMockPerimeter([wall])
+      const wallHeight = createLength(2500)
+      const layers = createMockLayers()
+
+      const results = [
+        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+      ]
+      aggregateResults(results)
+
+      // Should process opening2 first (at position 500), then opening1 (at position 2000)
+      expect(mockOpeningConstruction).toHaveBeenNthCalledWith(1, [500, 30, 60], [800, 220, 2380], -60, [opening2])
+      expect(mockOpeningConstruction).toHaveBeenNthCalledWith(2, [2000, 30, 60], [600, 220, 2380], -60, [opening1])
     })
   })
 
   describe('error handling', () => {
-    it('throws error when opening extends beyond wall', () => {
-      const opening = createTestOpening({
-        offsetFromStart: 2500 as Length,
-        width: 800 as Length // extends to 3300, beyond wall length of 3000
-      })
-      const wall = createTestWall({
-        wallLength: 3000 as Length,
-        insideLength: 3000 as Length, // Match wallLength
-        thickness: 360 as Length,
-        constructionMethodId: createPerimeterConstructionMethodId(),
-        openings: [opening]
-      })
-      const wallHeight = 2500 as Length
+    it('should throw error when opening extends beyond wall length', () => {
+      const opening = createMockOpening(createLength(2500), createLength(800)) // ends at 3300, wall is 3000
+      const wall = createMockWall('wall-1', createLength(3000), createLength(300), [opening])
+      const perimeter = createMockPerimeter([wall])
+      const wallHeight = createLength(2500)
+      const layers = createMockLayers()
 
       expect(() => {
-        segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
+        const results = [
+          ...segmentedWallConstruction(
+            wall,
+            perimeter,
+            wallHeight,
+            layers,
+            mockWallConstruction,
+            mockOpeningConstruction
+          )
+        ]
+        return results
       }).toThrow('Opening extends beyond wall length')
     })
 
-    it('throws error when openings overlap', () => {
-      const opening1 = createTestOpening({
-        offsetFromStart: 1000 as Length,
-        width: 1000 as Length // ends at 2000
-      })
-      const opening2 = createTestOpening({
-        offsetFromStart: 1500 as Length, // starts at 1500, overlaps with opening1
-        width: 800 as Length
-      })
-      const wall = createTestWall({
-        wallLength: 5000 as Length,
-        insideLength: 5000 as Length, // Match wallLength
-        thickness: 360 as Length,
-        constructionMethodId: createPerimeterConstructionMethodId(),
-        openings: [opening1, opening2]
-      })
-      const wallHeight = 2500 as Length
+    it('should throw error when openings overlap', () => {
+      const opening1 = createMockOpening(createLength(1000), createLength(1000)) // ends at 2000
+      const opening2 = createMockOpening(createLength(1500), createLength(800)) // starts at 1500, overlaps
+      const wall = createMockWall('wall-1', createLength(4000), createLength(300), [opening1, opening2])
+      const perimeter = createMockPerimeter([wall])
+      const wallHeight = createLength(2500)
+      const layers = createMockLayers()
 
       expect(() => {
-        segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
+        const results = [
+          ...segmentedWallConstruction(
+            wall,
+            perimeter,
+            wallHeight,
+            layers,
+            mockWallConstruction,
+            mockOpeningConstruction
+          )
+        ]
+        return results
       }).toThrow('Opening overlaps with previous segment')
     })
+  })
 
-    it('throws error when second opening starts before first ends', () => {
-      const opening1 = createTestOpening({
-        offsetFromStart: 2000 as Length,
-        width: 800 as Length // ends at 2800
-      })
-      const opening2 = createTestOpening({
-        offsetFromStart: 2700 as Length, // starts before opening1 ends
-        width: 600 as Length
-      })
-      const wall = createTestWall({
-        wallLength: 5000 as Length,
-        insideLength: 5000 as Length, // Match wallLength
-        thickness: 360 as Length,
-        constructionMethodId: createPerimeterConstructionMethodId(),
-        openings: [opening1, opening2]
-      })
-      const wallHeight = 2500 as Length
+  describe('ring beam integration', () => {
+    it('should handle missing ring beam methods gracefully', () => {
+      const wall = createMockWall('wall-1', createLength(3000), createLength(300))
+      const perimeter = createMockPerimeter([wall])
+      perimeter.baseRingBeamMethodId = undefined
+      perimeter.topRingBeamMethodId = undefined
 
-      expect(() => {
-        segmentWall(wall, wallHeight, wall.insideLength, 0 as Length, createTestLayersConfig())
-      }).toThrow('Opening overlaps with previous segment')
+      const wallHeight = createLength(2500)
+      const layers = createMockLayers()
+
+      mockGetRingBeamConstructionMethodById.mockReturnValue(null)
+
+      const results = [
+        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+      ]
+      aggregateResults(results)
+
+      // Should use 0 height for missing ring beams
+      expect(mockWallConstruction).toHaveBeenCalledTimes(1)
+      expect(mockWallConstruction).toHaveBeenCalledWith(
+        [-0, 30, 0], // z = 0 when no base plate
+        [3000, 220, 2500], // full wall height when no plates
+        true,
+        true,
+        false
+      )
+    })
+
+    it('should call getRingBeamConstructionMethodById with correct IDs', () => {
+      const wall = createMockWall('wall-1', createLength(3000), createLength(300))
+      const perimeter = createMockPerimeter([wall])
+      perimeter.baseRingBeamMethodId = 'base-method-id' as any
+      perimeter.topRingBeamMethodId = 'top-method-id' as any
+
+      const wallHeight = createLength(2500)
+      const layers = createMockLayers()
+
+      const results = [
+        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+      ]
+      aggregateResults(results)
+
+      expect(mockGetRingBeamConstructionMethodById).toHaveBeenCalledWith('base-method-id')
+      expect(mockGetRingBeamConstructionMethodById).toHaveBeenCalledWith('top-method-id')
+    })
+  })
+
+  describe('corner area generation', () => {
+    it('should generate corner areas based on corner info', () => {
+      const wall = createMockWall('wall-1', createLength(3000), createLength(300))
+      const perimeter = createMockPerimeter([wall])
+      const wallHeight = createLength(2500)
+      const layers = createMockLayers()
+
+      const cornerInfo = createMockCornerInfo(createLength(100), createLength(150))
+      mockCalculateWallCornerInfo.mockReturnValue(cornerInfo)
+
+      const results = [
+        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+      ]
+      const { areas } = aggregateResults(results)
+
+      expect(areas).toHaveLength(2)
+
+      // Start corner area
+      expect(areas[0]).toEqual({
+        type: 'cuboid',
+        areaType: 'corner',
+        renderPosition: 'top',
+        label: 'Corner',
+        bounds: {
+          min: [-100, 0, 0], // -extensionDistance
+          max: [0, 300, 2500] // wallThickness, wallHeight
+        },
+        transform: IDENTITY
+      })
+
+      // End corner area
+      expect(areas[1]).toEqual({
+        type: 'cuboid',
+        areaType: 'corner',
+        renderPosition: 'top',
+        label: 'Corner',
+        bounds: {
+          min: [3000, 0, 0], // wallLength
+          max: [3150, 300, 2500] // wallLength + extensionDistance
+        },
+        transform: IDENTITY
+      })
     })
   })
 })

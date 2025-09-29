@@ -4,11 +4,11 @@ import React, { useMemo, useState } from 'react'
 
 import type { PerimeterId } from '@/building/model/ids'
 import { usePerimeterById } from '@/building/store'
+import { useConfigActions } from '@/construction/config'
 import { resolveDefaultMaterial } from '@/construction/materials/material'
 import { constructRingBeam } from '@/construction/ringBeams/ringBeams'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 
-import { useConfigActions } from '../config'
 import { ConstructionPlan, TOP_VIEW } from './ConstructionPlan'
 
 export interface RingBeamConstructionModalProps {

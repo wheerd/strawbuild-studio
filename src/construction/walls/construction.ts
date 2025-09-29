@@ -27,11 +27,13 @@ export interface WallCornerInfo {
     id: PerimeterCornerId
     constructedByThisWall: boolean
     extensionDistance: Length
-  } | null
-
+  }
   endCorner: {
     id: PerimeterCornerId
     constructedByThisWall: boolean
     extensionDistance: Length
-  } | null
+  }
+  extensionStart: Length
+  constructionLength: Length
+  extensionEnd: Length
 }
