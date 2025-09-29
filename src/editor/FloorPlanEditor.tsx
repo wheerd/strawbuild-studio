@@ -2,6 +2,7 @@ import { Box, Flex } from '@radix-ui/themes'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { FloorPlanStage } from './canvas/layers/FloorPlanStage'
+import { useAutoFitOnHydration } from './hooks/useAutoFitOnHydration'
 import { AutoSaveIndicator } from './overlays/AutoSaveIndicator'
 import { GridSizeDisplay } from './overlays/GridSizeDisplay'
 import { StoreySelector } from './overlays/StoreySelector'
@@ -11,6 +12,8 @@ import { MainToolbar } from './toolbar/MainToolbar'
 import { keyboardShortcutManager } from './tools/system/KeyboardShortcutManager'
 
 function FloorPlanEditorContent(): React.JSX.Element {
+  useAutoFitOnHydration()
+
   const containerRef = useRef<HTMLDivElement>(null)
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 })
 
