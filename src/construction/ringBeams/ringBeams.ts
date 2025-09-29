@@ -1,15 +1,16 @@
 import { vec2 } from 'gl-matrix'
 
 import type { Perimeter, PerimeterCorner } from '@/building/model/model'
-import {
-  type ConstructionGroup,
-  createConstructionElement,
-  createConstructionElementId,
-  createCutCuboidShape
-} from '@/construction/elements'
+import { createConstructionElement, createCutCuboidShape } from '@/construction/elements'
 import type { MaterialId, ResolveMaterialFunction } from '@/construction/materials/material'
 import type { ConstructionModel } from '@/construction/model'
-import { type ConstructionResult, aggregateResults, yieldArea, yieldMeasurement } from '@/construction/results'
+import {
+  type ConstructionResult,
+  aggregateResults,
+  yieldArea,
+  yieldElement,
+  yieldMeasurement
+} from '@/construction/results'
 import { TAG_PERIMETER_INSIDE, TAG_PERIMETER_OUTSIDE } from '@/construction/tags'
 import {
   type Length,
@@ -124,35 +125,29 @@ function* _constructFullRingBeam(
 
     const segmentAngle = Math.atan2(insideEdge.direction[1], insideEdge.direction[0])
 
-    yield {
-      type: 'element',
-      element: {
-        id: createConstructionElementId(),
-        children: [
-          createConstructionElement(
-            config.material,
-            createCutCuboidShape(
-              [0, 0, 0],
-              [totalLength, config.width, config.height],
-              {
-                plane: 'xy',
-                axis: 'y',
-                angle: startAngleDeg
-              },
-              {
-                plane: 'xy',
-                axis: 'y',
-                angle: endAngleDeg
-              }
-            )
-          )
-        ],
-        transform: {
+    yield yieldElement(
+      createConstructionElement(
+        config.material,
+        createCutCuboidShape(
+          [0, 0, 0],
+          [totalLength, config.width, config.height],
+          {
+            plane: 'xy',
+            axis: 'y',
+            angle: startAngleDeg
+          },
+          {
+            plane: 'xy',
+            axis: 'y',
+            angle: endAngleDeg
+          }
+        ),
+        {
           position: [finalPosition[0], finalPosition[1], 0],
           rotation: [0, 0, segmentAngle]
         }
-      } as ConstructionGroup
-    }
+      )
+    )
 
     yield yieldMeasurement({
       startPoint: [...startInside, 0],

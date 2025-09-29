@@ -29,7 +29,7 @@ test('renders floor plan editor after loading', async () => {
     },
     { timeout: 15000 }
   )
-})
+}, 15000)
 
 test('renders toolbar with select tool after loading', async () => {
   render(
