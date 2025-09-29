@@ -2,11 +2,11 @@ import { CheckCircledIcon, Cross2Icon, CrossCircledIcon, ExclamationTriangleIcon
 import { Box, Callout, Dialog, Flex, IconButton, SegmentedControl, Text } from '@radix-ui/themes'
 import React, { useState } from 'react'
 
+import type { ConstructionModel } from '@/construction/model'
 import { type ConstructionIssue } from '@/construction/walls'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 import { type ViewType } from '@/shared/utils/constructionCoordinates'
 
-import type { ConstructionModel } from '../model'
 import { BACK_VIEW, ConstructionPlan, FRONT_VIEW } from './ConstructionPlan'
 
 interface IssueDescriptionPanelProps {

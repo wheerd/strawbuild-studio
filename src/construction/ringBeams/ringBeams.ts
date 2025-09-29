@@ -3,6 +3,7 @@ import { vec2 } from 'gl-matrix'
 import type { Perimeter, PerimeterCorner } from '@/building/model/model'
 import { createConstructionElement, createCutCuboidShape } from '@/construction/elements'
 import type { MaterialId, ResolveMaterialFunction } from '@/construction/materials/material'
+import type { ConstructionModel } from '@/construction/model'
 import { type ConstructionResult, aggregateResults, yieldElement, yieldMeasurement } from '@/construction/results'
 import {
   type Length,
@@ -18,8 +19,6 @@ import {
   simplifyPolygon
 } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
-
-import type { ConstructionModel } from '../model'
 
 export interface BaseRingBeamConfig {
   type: 'full' | 'double'

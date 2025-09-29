@@ -1,11 +1,11 @@
 import { vec3 } from 'gl-matrix'
 
 import { createConstructionElement, createCuboidShape } from '@/construction/elements'
+import { IDENTITY } from '@/construction/geometry'
 import { type ConstructionResult, yieldElement, yieldError, yieldWarning } from '@/construction/results'
+import { TAG_FULL_BALE, TAG_PARTIAL_BALE } from '@/construction/tags'
 import type { Length, Vec3 } from '@/shared/geometry'
 
-import { IDENTITY } from '../geometry'
-import { TAG_FULL_BALE, TAG_PARTIAL_BALE } from '../tags'
 import type { MaterialId } from './material'
 
 export interface StrawConfig {

@@ -1,7 +1,8 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 
-import { getToolById } from './implementations'
+import { getToolById } from '@/editor/tools'
+
 import { DEFAULT_TOOL } from './metadata'
 import type { CanvasEvent, ToolId, ToolImplementation } from './types'
 

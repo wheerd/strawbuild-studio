@@ -2,15 +2,9 @@ import { vec3 } from 'gl-matrix'
 
 import type { Opening } from '@/building/model/model'
 import { type ConstructionElement, createConstructionElement, createCuboidShape } from '@/construction/elements'
+import { IDENTITY } from '@/construction/geometry'
 import type { MaterialId, ResolveMaterialFunction } from '@/construction/materials/material'
 import { type ConstructionResult, yieldArea, yieldElement, yieldError, yieldMeasurement } from '@/construction/results'
-import type { InfillConstructionConfig } from '@/construction/walls/infill/infill'
-import { infillWallArea } from '@/construction/walls/infill/infill'
-import type { WallSegment3D } from '@/construction/walls/segmentation'
-import type { Length, Vec3 } from '@/shared/geometry'
-import { formatLength } from '@/shared/utils/formatLength'
-
-import { IDENTITY } from '../geometry'
 import {
   TAG_HEADER,
   TAG_HEADER_HEIGHT,
@@ -20,7 +14,12 @@ import {
   TAG_OPENING_WINDOW,
   TAG_SILL,
   TAG_SILL_HEIGHT
-} from '../tags'
+} from '@/construction/tags'
+import type { InfillConstructionConfig } from '@/construction/walls/infill/infill'
+import { infillWallArea } from '@/construction/walls/infill/infill'
+import type { WallSegment3D } from '@/construction/walls/segmentation'
+import type { Length, Vec3 } from '@/shared/geometry'
+import { formatLength } from '@/shared/utils/formatLength'
 
 export interface OpeningConstructionConfig {
   padding: Length // Default: 15mm

@@ -1,6 +1,6 @@
 import { vec3 } from 'gl-matrix'
 
-import type { Bounds3D, Vec3 } from '../shared/geometry'
+import type { Bounds3D, Vec3 } from '@/shared/geometry'
 
 const vec3Add = (a: Vec3, b: Vec3): Vec3 => {
   const result = vec3.create()

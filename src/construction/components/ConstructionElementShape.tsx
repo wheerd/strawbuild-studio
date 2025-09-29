@@ -1,6 +1,6 @@
+import type { Projection, RotationProjection } from '@/construction/geometry'
 import type { ConstructionElement, ResolveMaterialFunction } from '@/construction/walls'
 
-import type { Projection, RotationProjection } from '../geometry'
 import { CuboidShape } from './CuboidShape'
 import { CutCuboidShape } from './CutCuboidShape'
 

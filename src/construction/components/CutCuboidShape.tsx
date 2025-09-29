@@ -1,7 +1,6 @@
+import { type Projection, bounds3Dto2D } from '@/construction/geometry'
+import type { CutCuboid } from '@/construction/shapes'
 import { subtract } from '@/shared/geometry'
-
-import { type Projection, bounds3Dto2D } from '../geometry'
-import type { CutCuboid } from '../shapes'
 
 export interface CutCuboidShapeProps {
   shape: CutCuboid

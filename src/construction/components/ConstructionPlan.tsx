@@ -1,13 +1,13 @@
 import React, { useEffect, useRef } from 'react'
 
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
+import { bounds3Dto2D, createZOrder, project, projectRotation } from '@/construction/geometry'
+import type { ConstructionModel } from '@/construction/model'
 import { resolveDefaultMaterial } from '@/construction/walls'
 import { SVGViewport, type SVGViewportRef } from '@/shared/components/SVGViewport'
 import { type Plane3D, add, complementaryAxis, direction, distance } from '@/shared/geometry'
 import { COLORS } from '@/shared/theme/colors'
 
-import { bounds3Dto2D, createZOrder, project, projectRotation } from '../geometry'
-import type { ConstructionModel } from '../model'
 import { ConstructionElementShape } from './ConstructionElementShape'
 import { ConstructionGroupElement } from './ConstructionGroupElement'
 

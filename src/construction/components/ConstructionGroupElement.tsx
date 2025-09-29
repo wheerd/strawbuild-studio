@@ -1,6 +1,6 @@
+import type { Projection, RotationProjection, ZOrder } from '@/construction/geometry'
 import type { ConstructionGroup, ResolveMaterialFunction } from '@/construction/walls'
 
-import type { Projection, RotationProjection, ZOrder } from '../geometry'
 import { ConstructionElementShape } from './ConstructionElementShape'
 
 export interface ConstructionGroupElementProps {

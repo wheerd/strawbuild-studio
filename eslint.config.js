@@ -1,7 +1,7 @@
-import neostandard from 'neostandard'
 import eslint from '@eslint/js'
-import { defineConfig } from 'eslint/config'
 import eslintConfigPrettier from 'eslint-config-prettier'
+import { defineConfig } from 'eslint/config'
+import neostandard from 'neostandard'
 import tseslint from 'typescript-eslint'
 
 export default defineConfig(
@@ -18,7 +18,12 @@ export default defineConfig(
       'no-restricted-imports': [
         'error',
         {
-          patterns: ['^(?!\\.\\/)((?!.)[sS])*) ?$', '../.*']
+          patterns: [
+            {
+              group: ['../*'],
+              message: 'Relative imports using ../ are not allowed. Use absolute imports with @ prefix instead.'
+            }
+          ]
         }
       ],
       '@typescript-eslint/no-explicit-any': 'error'
