@@ -51,7 +51,7 @@ export function createConstructionGroup(
   // Calculate bounds from all transformed children
   const childBounds = children.map(child => {
     // Apply the group transform to each child's bounds
-    return transformBounds(child.bounds, transform)
+    return transformBounds(child.bounds, child.transform)
   })
 
   const groupBounds =

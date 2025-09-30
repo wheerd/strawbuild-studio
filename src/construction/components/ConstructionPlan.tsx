@@ -5,7 +5,7 @@ import { type CutFunction, bounds3Dto2D, createZOrder, project, projectRotation 
 import { resolveDefaultMaterial } from '@/construction/materials/material'
 import type { ConstructionModel, HighlightedCuboid, HighlightedPolygon } from '@/construction/model'
 import { SVGViewport, type SVGViewportRef } from '@/shared/components/SVGViewport'
-import { type Bounds3D, type Plane3D, add, complementaryAxis, direction, distance } from '@/shared/geometry'
+import { type Plane3D, add, complementaryAxis, direction, distance } from '@/shared/geometry'
 import { COLORS } from '@/shared/theme/colors'
 
 import { ConstructionElementShape } from './ConstructionElementShape'
@@ -19,7 +19,7 @@ export interface View {
   xDirection: 1 | -1
 }
 
-export const TOP_VIEW: View = { plane: 'xy', xDirection: 1, zOrder: 'descending' }
+export const TOP_VIEW: View = { plane: 'xy', xDirection: -1, zOrder: 'descending' }
 export const FRONT_VIEW: View = { plane: 'xz', xDirection: 1, zOrder: 'descending' }
 export const BACK_VIEW: View = { plane: 'xz', xDirection: -1, zOrder: 'ascending' }
 
@@ -49,10 +49,10 @@ export function ConstructionPlan({ model, view, containerSize, zCutOffset }: Con
     const axisIndex = axis === 'x' ? 0 : axis === 'y' ? 1 : 2
     if (view.zOrder === 'ascending') {
       // For front view: hide elements whose front face is beyond cut
-      return (element: { bounds: Bounds3D }) => element.bounds.max[axisIndex] < zCutOffset
+      return element => element.bounds.max[axisIndex] + (element.transform?.position[axisIndex] ?? 0) < zCutOffset
     } else {
       // For back view: hide elements whose back face is beyond cut
-      return (element: { bounds: Bounds3D }) => element.bounds.min[axisIndex] > zCutOffset
+      return element => element.bounds.min[axisIndex] + (element.transform?.position[axisIndex] ?? 0) > zCutOffset
     }
   }, [zCutOffset, axis, view.zOrder])
 
