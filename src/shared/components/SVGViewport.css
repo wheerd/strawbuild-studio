@@ -1,6 +1,6 @@
 svg.viewport g.flipY.normalX {
   transform: scaleY(-1);
-  transform-origin: 50% 50%;
+  transform-origin: 0 0;
 }
 
 svg.viewport g.flipY.normalX g.text text {
@@ -10,7 +10,7 @@ svg.viewport g.flipY.normalX g.text text {
 
 svg.viewport g.normalY.flipX {
   transform: scaleX(-1);
-  transform-origin: 50% 50%;
+  transform-origin: 0 0;
 }
 
 svg.viewport g.normalY.flipX g.text text {
@@ -20,7 +20,7 @@ svg.viewport g.normalY.flipX g.text text {
 
 svg.viewport g.flipY.flipX {
   transform: scaleX(-1) scaleY(-1);
-  transform-origin: center;
+  transform-origin: 0 0;
 }
 
 svg.viewport g.flipY.flipX g.text text {

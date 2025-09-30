@@ -51,7 +51,9 @@ function generateViewBoxFromBounds(
   bounds: Bounds2D,
   padding: number,
   containerWidth: number,
-  containerHeight: number
+  containerHeight: number,
+  flipX: boolean = false,
+  flipY: boolean = false
 ): string {
   const contentWidth = bounds.max[0] - bounds.min[0]
   const contentHeight = bounds.max[1] - bounds.min[1]
@@ -82,9 +84,23 @@ function generateViewBoxFromBounds(
     viewBoxWidth = paddedContentHeight * containerAspectRatio
   }
 
-  // Center the viewBox on the content
-  const viewBoxX = contentCenterX - viewBoxWidth / 2
-  const viewBoxY = contentCenterY - viewBoxHeight / 2
+  // With transform-origin: 0 0, flips happen around the origin
+  // So we need to adjust the content bounds before calculating the viewBox
+  let adjustedContentCenterX = contentCenterX
+  let adjustedContentCenterY = contentCenterY
+
+  if (flipX) {
+    // X coordinates get negated: x' = -x
+    adjustedContentCenterX = -contentCenterX
+  }
+  if (flipY) {
+    // Y coordinates get negated: y' = -y
+    adjustedContentCenterY = -contentCenterY
+  }
+
+  // Center the viewBox on the adjusted content center
+  const viewBoxX = adjustedContentCenterX - viewBoxWidth / 2
+  const viewBoxY = adjustedContentCenterY - viewBoxHeight / 2
 
   return `${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}`
 }
@@ -156,9 +172,9 @@ export function SVGViewport({
   const viewBox = useMemo(
     () =>
       svgSize.width > 0 && svgSize.height > 0
-        ? generateViewBoxFromBounds(contentBounds, padding, svgSize.width, svgSize.height)
+        ? generateViewBoxFromBounds(contentBounds, padding, svgSize.width, svgSize.height, flipX, flipY)
         : '0 0 100 100', // Fallback viewBox
-    [contentBounds, padding, svgSize]
+    [contentBounds, padding, svgSize, flipX, flipY]
   )
 
   // Convert screen coordinates to SVG coordinates using CTM
