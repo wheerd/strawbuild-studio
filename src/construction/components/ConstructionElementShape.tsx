@@ -1,7 +1,6 @@
 import type { ConstructionElement } from '@/construction/elements'
 import type { CutFunction, Projection, RotationProjection } from '@/construction/geometry'
 import { createSvgTransform } from '@/construction/geometry'
-import type { ResolveMaterialFunction } from '@/construction/materials/material'
 
 import { CuboidShape } from './CuboidShape'
 import { CutCuboidShape } from './CutCuboidShape'
@@ -11,10 +10,7 @@ export interface ConstructionElementShapeProps {
   element: ConstructionElement
   projection: Projection
   rotationProjection: RotationProjection
-  aboveCut: CutFunction
-  resolveMaterial: ResolveMaterialFunction
-  stroke?: string
-  strokeWidth?: number
+  aboveCut?: CutFunction
   showDebugMarkers?: boolean
   className?: string
 }
@@ -23,17 +19,11 @@ export function ConstructionElementShape({
   element,
   projection,
   rotationProjection,
-  resolveMaterial,
-  stroke = '#000',
-  strokeWidth = 5,
   showDebugMarkers = false,
   className,
   aboveCut
 }: ConstructionElementShapeProps): React.JSX.Element {
-  // Get material color for fill
-  const material = resolveMaterial(element.material)
-  const fill = material?.color ?? '#8B4513' // fallback color
-
+  // Generate CSS classes using helper - styling handled by CSS
   const combinedClassName = getConstructionElementClasses(element, aboveCut, className)
 
   // Delegate to appropriate shape component
@@ -44,14 +34,7 @@ export function ConstructionElementShape({
           className={combinedClassName}
           transform={createSvgTransform(element.transform, projection, rotationProjection)}
         >
-          <CuboidShape
-            shape={element.shape}
-            projection={projection}
-            fill={fill}
-            stroke={stroke}
-            strokeWidth={strokeWidth}
-            showDebugMarkers={showDebugMarkers}
-          />
+          <CuboidShape shape={element.shape} projection={projection} showDebugMarkers={showDebugMarkers} />
         </g>
       )
     case 'cut-cuboid':
@@ -60,14 +43,7 @@ export function ConstructionElementShape({
           className={combinedClassName}
           transform={createSvgTransform(element.transform, projection, rotationProjection)}
         >
-          <CutCuboidShape
-            shape={element.shape}
-            projection={projection}
-            fill={fill}
-            stroke={stroke}
-            strokeWidth={strokeWidth}
-            showDebugMarkers={showDebugMarkers}
-          />
+          <CutCuboidShape shape={element.shape} projection={projection} showDebugMarkers={showDebugMarkers} />
         </g>
       )
     default:

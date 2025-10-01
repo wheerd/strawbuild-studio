@@ -1,7 +1,6 @@
 import type { ConstructionGroup } from '@/construction/elements'
 import type { CutFunction, Projection, RotationProjection, ZOrder } from '@/construction/geometry'
 import { createSvgTransform } from '@/construction/geometry'
-import type { ResolveMaterialFunction } from '@/construction/materials/material'
 
 import { ConstructionElementShape } from './ConstructionElementShape'
 import { getConstructionElementClasses } from './cssHelpers'
@@ -11,8 +10,7 @@ export interface ConstructionGroupElementProps {
   projection: Projection
   zOrder: ZOrder
   rotationProjection: RotationProjection
-  resolveMaterial: ResolveMaterialFunction
-  aboveCut: CutFunction
+  aboveCut?: CutFunction
 }
 
 export function ConstructionGroupElement({
@@ -20,7 +18,6 @@ export function ConstructionGroupElement({
   projection,
   zOrder,
   rotationProjection,
-  resolveMaterial,
   aboveCut
 }: ConstructionGroupElementProps): React.JSX.Element {
   const sortedElements = [...group.children].sort(zOrder)
@@ -37,7 +34,6 @@ export function ConstructionGroupElement({
             projection={projection}
             zOrder={zOrder}
             rotationProjection={rotationProjection}
-            resolveMaterial={resolveMaterial}
             aboveCut={aboveCut}
           />
         ) : (
@@ -46,7 +42,6 @@ export function ConstructionGroupElement({
             element={element}
             projection={projection}
             rotationProjection={rotationProjection}
-            resolveMaterial={resolveMaterial}
             aboveCut={aboveCut}
           />
         )

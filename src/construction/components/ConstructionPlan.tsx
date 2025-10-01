@@ -3,7 +3,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
 import { type CutFunction, bounds3Dto2D, createZOrder, project, projectRotation } from '@/construction/geometry'
-import { resolveDefaultMaterial } from '@/construction/materials/material'
 import type { ConstructionModel, HighlightedCuboid, HighlightedPolygon } from '@/construction/model'
 import { SVGViewport, type SVGViewportRef } from '@/shared/components/SVGViewport'
 import { type Plane3D, add, complementaryAxis, direction, distance } from '@/shared/geometry'
@@ -13,6 +12,7 @@ import { ConstructionElementShape } from './ConstructionElementShape'
 import { ConstructionGroupElement } from './ConstructionGroupElement'
 import { CuboidAreaShape } from './CuboidAreaShape'
 import { PolygonAreaShape } from './PolygonAreaShape'
+import { SVGMaterialStyles } from './SVGMaterialStyles'
 
 export interface View {
   plane: Plane3D
@@ -87,6 +87,9 @@ export function ConstructionPlan({ model, views, containerSize }: ConstructionPl
         svgSize={containerSize}
         flipX={currentView.xDirection !== -1}
       >
+        {/* Material styles for proper SVG rendering */}
+        <SVGMaterialStyles />
+
         {/* Polygon Areas - Bottom */}
         {polygonAreas
           .filter(p => p.renderPosition === 'bottom')
@@ -113,7 +116,6 @@ export function ConstructionPlan({ model, views, containerSize }: ConstructionPl
               key={element.id}
               group={element}
               projection={projection}
-              resolveMaterial={resolveDefaultMaterial}
               zOrder={zOrder}
               rotationProjection={rotationProjection}
               aboveCut={aboveCut}
@@ -124,7 +126,6 @@ export function ConstructionPlan({ model, views, containerSize }: ConstructionPl
               projection={projection}
               rotationProjection={rotationProjection}
               element={element}
-              resolveMaterial={resolveDefaultMaterial}
               aboveCut={aboveCut}
             />
           )

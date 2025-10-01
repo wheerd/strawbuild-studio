@@ -30,14 +30,14 @@ describe('CutCuboidShape', () => {
   it('renders a cut cuboid as a polygon', () => {
     const { container } = render(
       <svg>
-        <CutCuboidShape shape={mockCutCuboid} projection={mockProjection} fill="#8B4513" />
+        <CutCuboidShape shape={mockCutCuboid} projection={mockProjection} />
       </svg>
     )
 
     const polygon = container.querySelector('polygon')
     expect(polygon).toBeInTheDocument()
-    expect(polygon).toHaveAttribute('fill', '#8B4513')
     expect(polygon).toHaveAttribute('points')
+    // Styling is now handled by CSS classes, not inline attributes
   })
 
   it('calculates correct polygon points for angled cuts', () => {
@@ -55,7 +55,7 @@ describe('CutCuboidShape', () => {
 
     const { container } = render(
       <svg>
-        <CutCuboidShape shape={simpleCuboid} projection={mockProjection} fill="#8B4513" />
+        <CutCuboidShape shape={simpleCuboid} projection={mockProjection} />
       </svg>
     )
 
@@ -85,7 +85,7 @@ describe('CutCuboidShape', () => {
 
     const { container } = render(
       <svg>
-        <CutCuboidShape shape={negativeCutCuboid} projection={mockProjection} fill="#8B4513" />
+        <CutCuboidShape shape={negativeCutCuboid} projection={mockProjection} />
       </svg>
     )
 
@@ -97,7 +97,7 @@ describe('CutCuboidShape', () => {
   it('shows debug markers and cut angles when enabled', () => {
     const { container } = render(
       <svg>
-        <CutCuboidShape shape={mockCutCuboid} projection={mockProjection} fill="#8B4513" showDebugMarkers />
+        <CutCuboidShape shape={mockCutCuboid} projection={mockProjection} showDebugMarkers />
       </svg>
     )
 
@@ -115,7 +115,7 @@ describe('CutCuboidShape', () => {
   it('does not show debug markers when disabled', () => {
     const { container } = render(
       <svg>
-        <CutCuboidShape shape={mockCutCuboid} projection={mockProjection} fill="#8B4513" showDebugMarkers={false} />
+        <CutCuboidShape shape={mockCutCuboid} projection={mockProjection} showDebugMarkers={false} />
       </svg>
     )
 
@@ -136,7 +136,7 @@ describe('CutCuboidShape', () => {
 
     const { container } = render(
       <svg>
-        <CutCuboidShape shape={noCutCuboid} projection={mockProjection} fill="#8B4513" />
+        <CutCuboidShape shape={noCutCuboid} projection={mockProjection} />
       </svg>
     )
 

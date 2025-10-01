@@ -5,18 +5,12 @@ import { subtract } from '@/shared/geometry'
 export interface CutCuboidShapeProps {
   shape: CutCuboid
   projection: Projection
-  fill: string
-  stroke?: string
-  strokeWidth?: number
   showDebugMarkers?: boolean
 }
 
 export function CutCuboidShape({
   shape,
   projection,
-  fill,
-  stroke = '#000',
-  strokeWidth = 5,
   showDebugMarkers = false
 }: CutCuboidShapeProps): React.JSX.Element {
   const calculatePolygonPoints = (shape: CutCuboid): string => {
@@ -63,7 +57,7 @@ export function CutCuboidShape({
 
   return (
     <g>
-      <polygon points={polygonPoints} fill={fill} stroke={stroke} strokeWidth={strokeWidth} />
+      <polygon points={polygonPoints} />
 
       {/* Debug markers */}
       {showDebugMarkers && (

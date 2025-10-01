@@ -2,38 +2,28 @@ import { render } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import type { ConstructionElement } from '@/construction/elements'
-import { createConstructionElement } from '@/construction/elements'
-import type { MaterialId, ResolveMaterialFunction } from '@/construction/materials/material'
-import { createCuboidShape, createCutCuboidShape } from '@/construction/shapes'
-import type { Length, Vec3 } from '@/shared/geometry'
+import { createConstructionElement, createCuboidShape, createCutCuboidShape } from '@/construction/elements'
+import type { Projection, RotationProjection } from '@/construction/geometry'
+import type { MaterialId } from '@/construction/materials/material'
+import type { Vec3 } from '@/shared/geometry'
 
 import { ConstructionElementShape } from './ConstructionElementShape'
 
 // Mock the shape components
 vi.mock('./CuboidShape', () => ({
-  CuboidShape: ({ fill }: { fill: string }) => <rect data-testid="cuboid-shape" data-fill={fill} />
+  CuboidShape: () => <rect data-testid="cuboid-shape" />
 }))
 
 vi.mock('./CutCuboidShape', () => ({
-  CutCuboidShape: ({ fill }: { fill: string }) => <polygon data-testid="cut-cuboid-shape" data-fill={fill} />
+  CutCuboidShape: () => <polygon data-testid="cut-cuboid-shape" />
 }))
 
 describe('ConstructionElementShape', () => {
   const mockMaterialId = 'material_test' as MaterialId
 
-  const mockResolveMaterial: ResolveMaterialFunction = vi.fn((id: MaterialId) => ({
-    id,
-    name: 'Test Material',
-    type: 'dimensional' as const,
-    color: '#FF0000',
-    width: 100 as Length,
-    thickness: 50 as Length,
-    availableLengths: [1000 as Length]
-  }))
-
   // Mock projection functions for testing
-  const mockProjection = vi.fn((p: Vec3): Vec3 => p)
-  const mockRotationProjection = vi.fn((r: Vec3): number => (r[2] * 180) / Math.PI)
+  const mockProjection: Projection = vi.fn((p: Vec3): Vec3 => p)
+  const mockRotationProjection: RotationProjection = vi.fn((r: Vec3): number => (r[2] * 180) / Math.PI)
 
   const mockCuboidElement: ConstructionElement = createConstructionElement(
     mockMaterialId,
@@ -56,11 +46,10 @@ describe('ConstructionElementShape', () => {
   })
 
   it('renders cuboid shapes correctly', () => {
-    const { getByTestId } = render(
+    const { getByTestId, container } = render(
       <svg>
         <ConstructionElementShape
           element={mockCuboidElement}
-          resolveMaterial={mockResolveMaterial}
           projection={mockProjection}
           rotationProjection={mockRotationProjection}
         />
@@ -69,15 +58,18 @@ describe('ConstructionElementShape', () => {
 
     const cuboidShape = getByTestId('cuboid-shape')
     expect(cuboidShape).toBeInTheDocument()
-    expect(cuboidShape).toHaveAttribute('data-fill', '#FF0000')
+
+    // Check that the parent group has the correct CSS classes including material class
+    const group = container.querySelector('g')
+    expect(group).toHaveClass('construction-element')
+    expect(group).toHaveClass(mockMaterialId)
   })
 
   it('renders cut-cuboid shapes correctly', () => {
-    const { getByTestId } = render(
+    const { getByTestId, container } = render(
       <svg>
         <ConstructionElementShape
           element={mockCutCuboidElement}
-          resolveMaterial={mockResolveMaterial}
           projection={mockProjection}
           rotationProjection={mockRotationProjection}
         />
@@ -86,51 +78,60 @@ describe('ConstructionElementShape', () => {
 
     const cutCuboidShape = getByTestId('cut-cuboid-shape')
     expect(cutCuboidShape).toBeInTheDocument()
-    expect(cutCuboidShape).toHaveAttribute('data-fill', '#FF0000')
+
+    // Check CSS classes instead of inline styling
+    const group = container.querySelector('g')
+    expect(group).toHaveClass('construction-element')
+    expect(group).toHaveClass(mockMaterialId)
   })
 
-  it('uses material color for fill', () => {
-    const customMaterialResolver: ResolveMaterialFunction = vi.fn(() => ({
-      id: mockMaterialId,
-      name: 'Custom Material',
-      type: 'dimensional' as const,
-      color: '#00FF00',
-      width: 100 as Length,
-      thickness: 50 as Length,
-      availableLengths: [1000 as Length]
-    }))
-
-    const { getByTestId } = render(
+  it('applies material CSS class correctly', () => {
+    const { container } = render(
       <svg>
         <ConstructionElementShape
           element={mockCuboidElement}
-          resolveMaterial={customMaterialResolver}
           projection={mockProjection}
           rotationProjection={mockRotationProjection}
         />
       </svg>
     )
 
-    const cuboidShape = getByTestId('cuboid-shape')
-    expect(cuboidShape).toHaveAttribute('data-fill', '#00FF00')
+    const group = container.querySelector('g')
+    expect(group).toHaveClass(mockMaterialId)
   })
 
-  it('uses fallback color when material is not found', () => {
-    const failingResolver: ResolveMaterialFunction = vi.fn(() => undefined)
-
-    const { getByTestId } = render(
+  it('applies CSS classes without material resolution logic', () => {
+    const { container } = render(
       <svg>
         <ConstructionElementShape
           element={mockCuboidElement}
-          resolveMaterial={failingResolver}
           projection={mockProjection}
           rotationProjection={mockRotationProjection}
         />
       </svg>
     )
 
-    const cuboidShape = getByTestId('cuboid-shape')
-    expect(cuboidShape).toHaveAttribute('data-fill', '#8B4513') // fallback color
+    // CSS classes are applied but styling is handled by injected CSS
+    const group = container.querySelector('g')
+    expect(group).toHaveClass('construction-element')
+    expect(group).toHaveClass(mockMaterialId)
+  })
+
+  it('applies CSS classes without material resolution logic', () => {
+    const { container } = render(
+      <svg>
+        <ConstructionElementShape
+          element={mockCuboidElement}
+          projection={mockProjection}
+          rotationProjection={mockRotationProjection}
+        />
+      </svg>
+    )
+
+    // CSS classes are applied but styling is handled by injected CSS
+    const group = container.querySelector('g')
+    expect(group).toHaveClass('construction-element')
+    expect(group).toHaveClass(mockMaterialId)
   })
 
   it('throws error for unsupported shape types', () => {
@@ -150,7 +151,6 @@ describe('ConstructionElementShape', () => {
         <svg>
           <ConstructionElementShape
             element={unsupportedElement}
-            resolveMaterial={mockResolveMaterial}
             projection={mockProjection}
             rotationProjection={mockRotationProjection}
           />
@@ -164,11 +164,8 @@ describe('ConstructionElementShape', () => {
       <svg>
         <ConstructionElementShape
           element={mockCuboidElement}
-          resolveMaterial={mockResolveMaterial}
           projection={mockProjection}
           rotationProjection={mockRotationProjection}
-          stroke="#0000FF"
-          strokeWidth={10}
           showDebugMarkers
           className="test-class"
         />
@@ -177,5 +174,6 @@ describe('ConstructionElementShape', () => {
 
     const group = container.querySelector('g')
     expect(group).toHaveClass('test-class')
+    expect(group).toHaveClass('construction-element')
   })
 })

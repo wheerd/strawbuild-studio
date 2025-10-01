@@ -20,7 +20,7 @@ describe('CuboidShape', () => {
   it('renders a basic cuboid as a rectangle', () => {
     const { container } = render(
       <svg>
-        <CuboidShape shape={mockCuboid} projection={mockProjection} fill="#8B4513" />
+        <CuboidShape shape={mockCuboid} projection={mockProjection} />
       </svg>
     )
 
@@ -30,25 +30,28 @@ describe('CuboidShape', () => {
     expect(rect).toHaveAttribute('y', '-250') // -50 - 200 (Y flipped)
     expect(rect).toHaveAttribute('width', '500')
     expect(rect).toHaveAttribute('height', '200')
-    expect(rect).toHaveAttribute('fill', '#8B4513')
+    // Styling is now handled by CSS classes, not inline attributes
   })
 
-  it('applies custom stroke and strokeWidth', () => {
+  it('renders rect element without inline styling', () => {
     const { container } = render(
       <svg>
-        <CuboidShape shape={mockCuboid} projection={mockProjection} fill="#ff0000" stroke="#00ff00" strokeWidth={10} />
+        <CuboidShape shape={mockCuboid} projection={mockProjection} />
       </svg>
     )
 
     const rect = container.querySelector('rect')
-    expect(rect).toHaveAttribute('stroke', '#00ff00')
-    expect(rect).toHaveAttribute('stroke-width', '10')
+    expect(rect).toBeInTheDocument()
+    // CSS-based styling - no inline fill/stroke attributes
+    expect(rect).not.toHaveAttribute('fill')
+    expect(rect).not.toHaveAttribute('stroke')
+    expect(rect).not.toHaveAttribute('stroke-width')
   })
 
   it('shows debug markers when enabled', () => {
     const { container } = render(
       <svg>
-        <CuboidShape shape={mockCuboid} projection={mockProjection} fill="#8B4513" showDebugMarkers />
+        <CuboidShape shape={mockCuboid} projection={mockProjection} showDebugMarkers />
       </svg>
     )
 
@@ -62,7 +65,7 @@ describe('CuboidShape', () => {
   it('does not show debug markers when disabled', () => {
     const { container } = render(
       <svg>
-        <CuboidShape shape={mockCuboid} projection={mockProjection} fill="#8B4513" showDebugMarkers={false} />
+        <CuboidShape shape={mockCuboid} projection={mockProjection} showDebugMarkers={false} />
       </svg>
     )
 

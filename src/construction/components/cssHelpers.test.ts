@@ -23,7 +23,7 @@ describe('getConstructionElementClasses', () => {
     const result = getConstructionElementClasses(element)
 
     expect(result).toBe(
-      'tag__wall-wood_post tag-cat__wall-wood tag__construction_top-plate tag-cat__construction material__wood construction-element'
+      'tag__wall-wood_post tag-cat__wall-wood tag__construction_top-plate tag-cat__construction wood construction-element'
     )
   })
 
@@ -54,7 +54,7 @@ describe('getConstructionElementClasses', () => {
 
     const result = getConstructionElementClasses(element, aboveCut)
 
-    expect(result).toBe('material__straw construction-element above-cut')
+    expect(result).toBe('straw construction-element above-cut')
   })
 
   it('should include additional className when provided', () => {
@@ -68,7 +68,7 @@ describe('getConstructionElementClasses', () => {
 
     const result = getConstructionElementClasses(element, undefined, 'custom-class')
 
-    expect(result).toBe('custom-class material__concrete construction-element')
+    expect(result).toBe('custom-class concrete construction-element')
   })
 
   it('should handle element with no tags or additional classes', () => {
@@ -82,7 +82,7 @@ describe('getConstructionElementClasses', () => {
 
     const result = getConstructionElementClasses(element)
 
-    expect(result).toBe('material__steel construction-element')
+    expect(result).toBe('steel construction-element')
   })
 
   it('should handle group with no tags', () => {

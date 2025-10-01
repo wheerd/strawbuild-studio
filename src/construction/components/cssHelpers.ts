@@ -19,9 +19,7 @@ export function getConstructionElementClasses(
 
   // Both elements and groups can have tags
   const tagClasses = element.tags?.flatMap(t => [`tag__${t.id}`, `tag-cat__${t.category}`]) ?? []
-
   // Only elements have materials (groups don't)
-  const materialClass = 'material' in element && element.material ? `material__${element.material}` : ''
-
+  const materialClass = 'material' in element && element.material ? element.material : ''
   return [additionalClassName, ...tagClasses, materialClass, baseClass, cutClassName].filter(Boolean).join(' ')
 }
