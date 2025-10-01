@@ -202,7 +202,7 @@ export function* constructOpeningFrame(
   // Create wall below sill (if space remains)
   if (sillRequired) {
     const sillThickness = config.sillThickness ?? (60 as Length)
-    const wallBelowHeight = (sillTop - sillThickness) as Length
+    const wallBelowHeight = (sillTop - sillThickness - wallBottom) as Length
 
     if (wallBelowHeight > 0) {
       const wallBelowPosition: Vec3 = [openingLeft, wallFront, wallBottom]

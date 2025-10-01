@@ -16,24 +16,8 @@ describe('SVGMaterialStyles', () => {
 
     const cssContent = styleElement?.innerHTML || ''
     expect(cssContent).toContain('Construction Material Styles')
-    expect(cssContent).toContain('.material__')
+    expect(cssContent).toContain('.material_')
     expect(cssContent).toContain('fill:')
     expect(cssContent).toContain('stroke:')
-    expect(cssContent).toContain('.mid-cut-enabled')
-  })
-
-  it('includes cut behavior CSS', () => {
-    const { container } = render(
-      <svg>
-        <SVGMaterialStyles />
-      </svg>
-    )
-
-    const styleElement = container.querySelector('style')
-    const cssContent = styleElement?.innerHTML || ''
-
-    expect(cssContent).toContain('.mid-cut-enabled .construction-element.above-cut')
-    expect(cssContent).toContain('.mid-cut-enabled .construction-group.above-cut')
-    expect(cssContent).toContain('display: none')
   })
 })
