@@ -1,7 +1,17 @@
 import { InfoCircledIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import * as Tooltip from '@radix-ui/react-tooltip'
-import { Box, Button, Callout, Flex, Grid, SegmentedControl, Separator, Text, TextField } from '@radix-ui/themes'
+import {
+  Box,
+  Button,
+  Callout,
+  Flex,
+  Grid,
+  SegmentedControl,
+  Separator,
+  Text,
+  TextField,
+  Tooltip
+} from '@radix-ui/themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import type { OpeningId, PerimeterId, PerimeterWallId } from '@/building/model/ids'
@@ -249,13 +259,27 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
             size="2"
           >
             <SegmentedControl.Item value="door">
-              <DoorIcon width={20} height={20} />
+              <Tooltip content="Door">
+                <Box>
+                  <DoorIcon width={20} height={20} />
+                </Box>
+              </Tooltip>
             </SegmentedControl.Item>
+
             <SegmentedControl.Item value="window">
-              <WindowIcon width={20} height={20} />
+              <Tooltip content="Window">
+                <Box>
+                  <WindowIcon width={20} height={20} />
+                </Box>
+              </Tooltip>
             </SegmentedControl.Item>
+
             <SegmentedControl.Item value="passage">
-              <PassageIcon width={20} height={20} />
+              <Tooltip content="Passage">
+                <Box>
+                  <PassageIcon width={20} height={20} />
+                </Box>
+              </Tooltip>
             </SegmentedControl.Item>
           </SegmentedControl.Root>
         </Flex>
@@ -266,21 +290,15 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
             <Text size="1" weight="medium" color="gray">
               Dimension Mode
             </Text>
-            <Tooltip.Provider>
-              <Tooltip.Root>
-                <Tooltip.Trigger asChild>
-                  <InfoCircledIcon width={12} height={12} style={{ color: 'var(--gray-9)' }} />
-                </Tooltip.Trigger>
-                <Tooltip.Portal>
-                  <Tooltip.Content className="bg-gray-900 text-white text-xs px-2 py-1 rounded max-w-48">
-                    {dimensionInputMode === 'fitting'
-                      ? 'Raw opening size (what gets cut)'
-                      : 'Actual door/window size (with padding)'}
-                    <Tooltip.Arrow className="fill-gray-900" />
-                  </Tooltip.Content>
-                </Tooltip.Portal>
-              </Tooltip.Root>
-            </Tooltip.Provider>
+            <Tooltip
+              content={
+                dimensionInputMode === 'fitting'
+                  ? 'Raw opening size (construction)'
+                  : 'Actual opening size (with fitted frame)'
+              }
+            >
+              <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
+            </Tooltip>
           </Flex>
           <SegmentedControl.Root
             value={dimensionInputMode}

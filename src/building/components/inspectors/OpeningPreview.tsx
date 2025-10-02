@@ -159,13 +159,14 @@ export function OpeningPreview({
       {/* Opening type indicator */}
       {opening.type === 'door' && (
         <g>
-          {/* Door swing arc */}
-          <path
-            d={`M ${finishedLeft + 5} ${finishedBottom - 5} A ${finishedWidthSvg - 10} ${finishedWidthSvg - 10} 0 0 1 ${finishedRight - 5} ${finishedTop + 5}`}
-            fill="none"
-            stroke="var(--gray-8)"
+          {/* Door handle */}
+          <circle
+            cx={finishedRight - 12}
+            cy={(finishedTop + finishedBottom) / 2}
+            r="3"
+            fill="var(--gray-8)"
+            stroke="var(--gray-9)"
             strokeWidth="1"
-            strokeDasharray="2,2"
           />
         </g>
       )}
