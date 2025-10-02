@@ -1,4 +1,5 @@
 import * as Select from '@radix-ui/react-select'
+import { IconButton } from '@radix-ui/themes'
 import { useCallback } from 'react'
 
 import {
@@ -12,8 +13,9 @@ import {
 import type { OpeningType } from '@/building/model/model'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
-import { createLength } from '@/shared/geometry'
+import { type Length, createLength } from '@/shared/geometry'
 import { useDebouncedNumericInput } from '@/shared/hooks/useDebouncedInput'
+import { formatLength } from '@/shared/utils/formatLength'
 
 import type { AddOpeningTool } from './AddOpeningTool'
 
@@ -35,39 +37,57 @@ const OPENING_TYPE_OPTIONS: { value: OpeningType; label: string }[] = [
 // Quick preset buttons for common sizes (in mm)
 interface PresetConfig {
   label: string
-  width: number
-  height: number
-  sillHeight?: number
+  width: Length
+  height: Length
+  sillHeight?: Length
   icon: string
 }
 
 // All presets available for all opening types
 const ALL_OPENING_PRESETS: PresetConfig[] = [
-  { label: 'Standard Door', width: 800, height: 2100, icon: 'standard' },
-  { label: 'Wide Door', width: 900, height: 2100, icon: 'wide' },
-  { label: 'Double Door', width: 1600, height: 2100, icon: 'double' },
-  { label: 'Small Window', width: 800, height: 1200, sillHeight: 800, icon: 'small' },
-  { label: 'Standard Window', width: 1200, height: 1200, sillHeight: 800, icon: 'standard' },
-  { label: 'Floor Window', width: 1200, height: 2000, sillHeight: 100, icon: 'floor' }
+  { label: 'Standard Door', width: createLength(800), height: createLength(2100), icon: 'standard' },
+  { label: 'Wide Door', width: createLength(900), height: createLength(2100), icon: 'wide' },
+  { label: 'Double Door', width: createLength(1600), height: createLength(2100), icon: 'double' },
+  {
+    label: 'Small Window',
+    width: createLength(800),
+    height: createLength(1200),
+    sillHeight: createLength(800),
+    icon: 'small'
+  },
+  {
+    label: 'Standard Window',
+    width: createLength(1200),
+    height: createLength(1200),
+    sillHeight: createLength(800),
+    icon: 'standard'
+  },
+  {
+    label: 'Floor Window',
+    width: createLength(1200),
+    height: createLength(2000),
+    sillHeight: createLength(100),
+    icon: 'floor'
+  }
 ]
 
 // Helper function to get the appropriate icon component
 function getPresetIcon(iconType: string): React.JSX.Element {
   switch (iconType) {
     case 'standard':
-      return <StandardSizeIcon width={12} height={12} />
+      return <StandardSizeIcon width={20} height={20} />
     case 'wide':
-      return <WideSizeIcon width={12} height={12} />
+      return <WideSizeIcon width={20} height={20} />
     case 'double':
-      return <DoubleSizeIcon width={12} height={12} />
+      return <DoubleSizeIcon width={20} height={20} />
     case 'small':
-      return <SmallSizeIcon width={12} height={12} />
+      return <SmallSizeIcon width={20} height={20} />
     case 'large':
-      return <LargeSizeIcon width={12} height={12} />
+      return <LargeSizeIcon width={20} height={20} />
     case 'floor':
-      return <FloorSizeIcon width={12} height={12} />
+      return <FloorSizeIcon width={20} height={20} />
     default:
-      return <StandardSizeIcon width={12} height={12} />
+      return <StandardSizeIcon width={20} height={20} />
   }
 }
 
@@ -177,19 +197,18 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
 
           {/* Quick Presets - Available for all types */}
           <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600">Presets (All Sizes)</label>
-            <div className="grid grid-cols-3 gap-1">
+            <label className="text-xs font-medium text-gray-600">Presets</label>
+            <div className="grid grid-cols-6 gap-1">
               {ALL_OPENING_PRESETS.map((preset: PresetConfig, index: number) => (
-                <button
+                <IconButton
                   key={index}
-                  type="button"
-                  className="flex flex-col items-center justify-center p-2 text-xs text-gray-700 bg-gray-50 border border-gray-200 rounded hover:bg-gray-100 hover:border-gray-300 transition-colors"
+                  variant="surface"
+                  size="3"
                   onClick={() => handlePresetClick(preset)}
-                  title={`${preset.label}: ${preset.width}×${preset.height}mm${preset.sillHeight ? `, sill: ${preset.sillHeight}mm` : ''}`}
+                  title={`${preset.label}: ${formatLength(preset.width)} × ${formatLength(preset.height)}${preset.sillHeight ? `, sill: ${formatLength(preset.sillHeight)}` : ''}`}
                 >
                   {getPresetIcon(preset.icon)}
-                  <span className="mt-1 text-center leading-tight">{preset.label.split(' ')[0]}</span>
-                </button>
+                </IconButton>
               ))}
             </div>
           </div>
