@@ -1,14 +1,17 @@
 import { TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
 import { Box, Button, Callout, DataList, Flex, Heading, Select, Separator, Text, TextField } from '@radix-ui/themes'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import type { OpeningId, PerimeterId, PerimeterWallId } from '@/building/model/ids'
 import type { OpeningType } from '@/building/model/model'
 import { useModelActions, usePerimeterById } from '@/building/store'
+import { usePerimeterConstructionMethodById } from '@/construction/config/store'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { createLength } from '@/shared/geometry'
 import { useDebouncedNumericInput } from '@/shared/hooks/useDebouncedInput'
+
+import { OpeningPreview } from './OpeningPreview'
 
 interface OpeningInspectorProps {
   perimeterId: PerimeterId
@@ -26,11 +29,19 @@ const OPENING_TYPE_OPTIONS: { value: OpeningType; label: string }[] = [
 export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInspectorProps): React.JSX.Element {
   // Get model store functions - use specific selectors for stable references
   const select = useSelectionStore()
-  const { updatePerimeterWallOpening: updateOpening, removePerimeterWallOpening: removeOpeningFromOuterWall } =
-    useModelActions()
+  const {
+    updatePerimeterWallOpening: updateOpening,
+    removePerimeterWallOpening: removeOpeningFromOuterWall,
+    getStoreyById
+  } = useModelActions()
 
   // Get perimeter from store
   const perimeter = usePerimeterById(perimeterId)
+
+  // Get storey for wall height
+  const storey = useMemo(() => {
+    return perimeter ? getStoreyById(perimeter.storeyId) : null
+  }, [perimeter, getStoreyById])
 
   // Use useMemo to find wall and opening within the wall object
   const wall = useMemo(() => {
@@ -40,6 +51,13 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
   const opening = useMemo(() => {
     return wall?.openings.find(o => o.id === openingId)
   }, [wall, openingId])
+
+  // Get construction method for padding config
+  const constructionMethod = usePerimeterConstructionMethodById(wall?.constructionMethodId || ('' as any))
+
+  // Preview state
+  const [highlightMode, setHighlightMode] = useState<'fitting' | 'finished'>('fitting')
+  const [focusedField, setFocusedField] = useState<'width' | 'height' | 'sillHeight' | undefined>()
 
   // Debounced input handlers for numeric values
   const widthInput = useDebouncedNumericInput(
@@ -70,22 +88,6 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
       debounceMs: 300,
       min: 100,
       max: 4000,
-      step: 10
-    }
-  )
-
-  const offsetInput = useDebouncedNumericInput(
-    opening?.offsetFromStart || 0,
-    useCallback(
-      (value: number) => {
-        updateOpening(perimeterId, wallId, openingId, { offsetFromStart: createLength(value) })
-      },
-      [updateOpening, perimeterId, wallId, openingId]
-    ),
-    {
-      debounceMs: 300,
-      min: 0,
-      max: (wall?.wallLength || 0) - (opening?.width || 0),
       step: 10
     }
   )
@@ -179,7 +181,11 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
             type="number"
             value={widthInput.value.toString()}
             onChange={e => widthInput.handleChange(e.target.value)}
-            onBlur={widthInput.handleBlur}
+            onBlur={() => {
+              widthInput.handleBlur()
+              setFocusedField(undefined)
+            }}
+            onFocus={() => setFocusedField('width')}
             onKeyDown={widthInput.handleKeyDown}
             min="100"
             max="5000"
@@ -204,7 +210,11 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
             type="number"
             value={heightInput.value.toString()}
             onChange={e => heightInput.handleChange(e.target.value)}
-            onBlur={heightInput.handleBlur}
+            onBlur={() => {
+              heightInput.handleBlur()
+              setFocusedField(undefined)
+            }}
+            onFocus={() => setFocusedField('height')}
             onKeyDown={heightInput.handleKeyDown}
             min="100"
             max="4000"
@@ -216,36 +226,6 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
               mm
             </TextField.Slot>
           </TextField.Root>
-        </Flex>
-
-        <Flex direction="column" gap="1">
-          <Flex align="center" justify="between" gap="3">
-            <Label.Root htmlFor="opening-offset">
-              <Text size="1" weight="medium" color="gray">
-                Offset from Start
-              </Text>
-            </Label.Root>
-            <TextField.Root
-              id="opening-offset"
-              type="number"
-              value={offsetInput.value.toString()}
-              onChange={e => offsetInput.handleChange(e.target.value)}
-              onBlur={offsetInput.handleBlur}
-              onKeyDown={offsetInput.handleKeyDown}
-              min="0"
-              max={wall.wallLength - opening.width}
-              step="10"
-              size="1"
-              style={{ width: '5rem', textAlign: 'right' }}
-            >
-              <TextField.Slot side="right" pl="1">
-                mm
-              </TextField.Slot>
-            </TextField.Root>
-          </Flex>
-          <Text size="1" color="gray">
-            Distance from the start of the wall wall
-          </Text>
         </Flex>
 
         {opening.type === 'window' && (
@@ -261,7 +241,11 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
                 type="number"
                 value={sillHeightInput.value.toString()}
                 onChange={e => sillHeightInput.handleChange(e.target.value)}
-                onBlur={sillHeightInput.handleBlur}
+                onBlur={() => {
+                  sillHeightInput.handleBlur()
+                  setFocusedField(undefined)
+                }}
+                onFocus={() => setFocusedField('sillHeight')}
                 onKeyDown={sillHeightInput.handleKeyDown}
                 min="0"
                 max="2000"
@@ -280,6 +264,40 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
           </Flex>
         )}
       </Flex>
+
+      <Separator size="4" />
+
+      {/* Preview */}
+      {opening && storey && constructionMethod && (
+        <Flex direction="column" gap="2">
+          <Flex align="center" justify="between">
+            <Heading size="2">Preview</Heading>
+            <Flex gap="1">
+              <Button
+                size="1"
+                variant={highlightMode === 'fitting' ? 'solid' : 'outline'}
+                onClick={() => setHighlightMode('fitting')}
+              >
+                Fitting
+              </Button>
+              <Button
+                size="1"
+                variant={highlightMode === 'finished' ? 'solid' : 'outline'}
+                onClick={() => setHighlightMode('finished')}
+              >
+                Finished
+              </Button>
+            </Flex>
+          </Flex>
+          <OpeningPreview
+            opening={opening}
+            wallHeight={storey.height}
+            padding={constructionMethod.config.openings.padding}
+            highlightMode={highlightMode}
+            focusedField={focusedField}
+          />
+        </Flex>
+      )}
 
       <Separator size="4" />
 
