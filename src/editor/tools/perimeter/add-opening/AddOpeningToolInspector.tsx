@@ -48,10 +48,7 @@ const ALL_OPENING_PRESETS: PresetConfig[] = [
   { label: 'Double Door', width: 1600, height: 2100, icon: 'double' },
   { label: 'Small Window', width: 800, height: 1200, sillHeight: 800, icon: 'small' },
   { label: 'Standard Window', width: 1200, height: 1200, sillHeight: 800, icon: 'standard' },
-  { label: 'Large Window', width: 1600, height: 1400, sillHeight: 600, icon: 'large' },
-  { label: 'Floor Window', width: 1200, height: 2000, sillHeight: 100, icon: 'floor' },
-  { label: 'Standard Passage', width: 1000, height: 2200, icon: 'standard' },
-  { label: 'Wide Passage', width: 1500, height: 2200, icon: 'wide' }
+  { label: 'Floor Window', width: 1200, height: 2000, sillHeight: 100, icon: 'floor' }
 ]
 
 // Helper function to get the appropriate icon component
