@@ -1,7 +1,19 @@
-import { TrashIcon } from '@radix-ui/react-icons'
+import { InfoCircledIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Box, Button, Callout, DataList, Flex, Heading, Select, Separator, Text, TextField } from '@radix-ui/themes'
-import { useCallback, useMemo, useState } from 'react'
+import * as Tooltip from '@radix-ui/react-tooltip'
+import {
+  Box,
+  Button,
+  Callout,
+  DataList,
+  Flex,
+  Heading,
+  SegmentedControl,
+  Separator,
+  Text,
+  TextField
+} from '@radix-ui/themes'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import type { OpeningId, PerimeterId, PerimeterWallId } from '@/building/model/ids'
 import type { OpeningType } from '@/building/model/model'
@@ -11,6 +23,7 @@ import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { createLength } from '@/shared/geometry'
 import { useDebouncedNumericInput } from '@/shared/hooks/useDebouncedInput'
 
+import { DoorIcon, PassageIcon, WindowIcon } from './OpeningIcons'
 import { OpeningPreview } from './OpeningPreview'
 
 interface OpeningInspectorProps {
@@ -18,13 +31,6 @@ interface OpeningInspectorProps {
   wallId: PerimeterWallId
   openingId: OpeningId
 }
-
-// Opening type options - moved outside component to avoid recreation
-const OPENING_TYPE_OPTIONS: { value: OpeningType; label: string }[] = [
-  { value: 'door', label: 'Door' },
-  { value: 'window', label: 'Window' },
-  { value: 'passage', label: 'Passage' }
-]
 
 export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInspectorProps): React.JSX.Element {
   // Get model store functions - use specific selectors for stable references
@@ -59,48 +65,102 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
   const [highlightMode, setHighlightMode] = useState<'fitting' | 'finished'>('fitting')
   const [focusedField, setFocusedField] = useState<'width' | 'height' | 'sillHeight' | undefined>()
 
+  // Dimension input mode - whether user is inputting fitting or finished dimensions
+  const [dimensionInputMode, setDimensionInputMode] = useState<'fitting' | 'finished'>('fitting')
+
+  // Sync dimension input mode with highlight mode
+  useEffect(() => {
+    setHighlightMode(dimensionInputMode)
+  }, [dimensionInputMode])
+
+  // Helper functions for dimension conversion
+  const getDisplayValue = useCallback(
+    (fittingValue: number, type: 'width' | 'height' | 'sillHeight') => {
+      if (!constructionMethod) return fittingValue
+      const padding = constructionMethod.config.openings.padding
+
+      if (dimensionInputMode === 'fitting') {
+        return fittingValue
+      } else {
+        // Convert to finished dimensions
+        if (type === 'sillHeight') {
+          // Sill height: finished = fitting + padding (sill sits on padding)
+          return fittingValue > 0 ? fittingValue + padding : 0
+        } else {
+          // Width/Height: finished = fitting - 2×padding
+          return Math.max(0, fittingValue - 2 * padding)
+        }
+      }
+    },
+    [constructionMethod, dimensionInputMode]
+  )
+
+  const convertToFittingValue = useCallback(
+    (inputValue: number, type: 'width' | 'height' | 'sillHeight') => {
+      if (!constructionMethod) return inputValue
+      const padding = constructionMethod.config.openings.padding
+
+      if (dimensionInputMode === 'fitting') {
+        return inputValue
+      } else {
+        // Convert from finished to fitting dimensions
+        if (type === 'sillHeight') {
+          // Sill height: fitting = finished - padding (remove padding offset)
+          return Math.max(0, inputValue - padding)
+        } else {
+          // Width/Height: fitting = finished + 2×padding
+          return inputValue + 2 * padding
+        }
+      }
+    },
+    [constructionMethod, dimensionInputMode]
+  )
+
   // Debounced input handlers for numeric values
   const widthInput = useDebouncedNumericInput(
-    opening?.width || 0,
+    getDisplayValue(opening?.width || 0, 'width'),
     useCallback(
       (value: number) => {
-        updateOpening(perimeterId, wallId, openingId, { width: createLength(value) })
+        const fittingValue = convertToFittingValue(value, 'width')
+        updateOpening(perimeterId, wallId, openingId, { width: createLength(fittingValue) })
       },
-      [updateOpening, perimeterId, wallId, openingId]
+      [updateOpening, perimeterId, wallId, openingId, convertToFittingValue]
     ),
     {
       debounceMs: 300,
-      min: 100,
+      min: dimensionInputMode === 'fitting' ? 100 : 50, // Allow smaller finished dimensions
       max: 5000,
       step: 10
     }
   )
 
   const heightInput = useDebouncedNumericInput(
-    opening?.height || 0,
+    getDisplayValue(opening?.height || 0, 'height'),
     useCallback(
       (value: number) => {
-        updateOpening(perimeterId, wallId, openingId, { height: createLength(value) })
+        const fittingValue = convertToFittingValue(value, 'height')
+        updateOpening(perimeterId, wallId, openingId, { height: createLength(fittingValue) })
       },
-      [updateOpening, perimeterId, wallId, openingId]
+      [updateOpening, perimeterId, wallId, openingId, convertToFittingValue]
     ),
     {
       debounceMs: 300,
-      min: 100,
+      min: dimensionInputMode === 'fitting' ? 100 : 50, // Allow smaller finished dimensions
       max: 4000,
       step: 10
     }
   )
 
   const sillHeightInput = useDebouncedNumericInput(
-    opening?.sillHeight || 0,
+    getDisplayValue(opening?.sillHeight || 0, 'sillHeight'),
     useCallback(
       (value: number) => {
+        const fittingValue = convertToFittingValue(value, 'sillHeight')
         updateOpening(perimeterId, wallId, openingId, {
-          sillHeight: value === 0 ? undefined : createLength(value)
+          sillHeight: fittingValue === 0 ? undefined : createLength(fittingValue)
         })
       },
-      [updateOpening, perimeterId, wallId, openingId]
+      [updateOpening, perimeterId, wallId, openingId, convertToFittingValue]
     ),
     {
       debounceMs: 300,
@@ -146,28 +206,74 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
 
   return (
     <Flex direction="column" gap="4">
+      {/* Preview */}
+      {opening && storey && constructionMethod && (
+        <Flex direction="column" align="center">
+          <OpeningPreview
+            opening={opening}
+            wallHeight={storey.height}
+            padding={constructionMethod.config.openings.padding}
+            highlightMode={highlightMode}
+            focusedField={focusedField}
+          />
+        </Flex>
+      )}
+
       {/* Basic Properties */}
       <Flex direction="column" gap="3">
-        <Flex align="center" justify="between" gap="3">
+        <Flex align="center" justify="between" gap="2">
           <Text size="1" weight="medium" color="gray">
             Type
           </Text>
-          <Select.Root
+          <SegmentedControl.Root
             value={opening.type}
             onValueChange={(value: OpeningType) =>
               handleTypeChange({ target: { value } } as React.ChangeEvent<HTMLSelectElement>)
             }
             size="1"
           >
-            <Select.Trigger style={{ flex: 1, minWidth: 0 }} />
-            <Select.Content>
-              {OPENING_TYPE_OPTIONS.map(option => (
-                <Select.Item key={option.value} value={option.value}>
-                  {option.label}
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Root>
+            <SegmentedControl.Item value="door">
+              <DoorIcon width={16} height={16} />
+            </SegmentedControl.Item>
+            <SegmentedControl.Item value="window">
+              <WindowIcon width={16} height={16} />
+            </SegmentedControl.Item>
+            <SegmentedControl.Item value="passage">
+              <PassageIcon width={16} height={16} />
+            </SegmentedControl.Item>
+          </SegmentedControl.Root>
+        </Flex>
+
+        {/* Dimension Input Mode Toggle - Compact Layout */}
+        <Flex align="center" justify="between" gap="2">
+          <Flex align="center" gap="1">
+            <Text size="1" weight="medium" color="gray">
+              Dimension Mode
+            </Text>
+            <Tooltip.Provider>
+              <Tooltip.Root>
+                <Tooltip.Trigger asChild>
+                  <InfoCircledIcon width={12} height={12} style={{ color: 'var(--gray-9)' }} />
+                </Tooltip.Trigger>
+                <Tooltip.Portal>
+                  <Tooltip.Content className="bg-gray-900 text-white text-xs px-2 py-1 rounded max-w-48">
+                    {dimensionInputMode === 'fitting'
+                      ? 'Raw opening size (what gets cut)'
+                      : 'Actual door/window size (with padding)'}
+                    <Tooltip.Arrow className="fill-gray-900" />
+                  </Tooltip.Content>
+                </Tooltip.Portal>
+              </Tooltip.Root>
+            </Tooltip.Provider>
+          </Flex>
+          <SegmentedControl.Root
+            value={dimensionInputMode}
+            onValueChange={(value: 'fitting' | 'finished') => setDimensionInputMode(value)}
+            size="1"
+          >
+            <SegmentedControl.Item value="fitting">Fitting</SegmentedControl.Item>
+            <SegmentedControl.Item value="finished">Finished</SegmentedControl.Item>
+          </SegmentedControl.Root>
         </Flex>
 
         <Flex align="center" justify="between" gap="3">
@@ -228,76 +334,37 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
           </TextField.Root>
         </Flex>
 
-        {opening.type === 'window' && (
-          <Flex direction="column" gap="1">
-            <Flex align="center" justify="between" gap="3">
-              <Label.Root htmlFor="opening-sill-height">
-                <Text size="1" weight="medium" color="gray">
-                  Sill Height
-                </Text>
-              </Label.Root>
-              <TextField.Root
-                id="opening-sill-height"
-                type="number"
-                value={sillHeightInput.value.toString()}
-                onChange={e => sillHeightInput.handleChange(e.target.value)}
-                onBlur={() => {
-                  sillHeightInput.handleBlur()
-                  setFocusedField(undefined)
-                }}
-                onFocus={() => setFocusedField('sillHeight')}
-                onKeyDown={sillHeightInput.handleKeyDown}
-                min="0"
-                max="2000"
-                step="10"
-                size="1"
-                style={{ width: '5rem', textAlign: 'right' }}
-              >
-                <TextField.Slot side="right" pl="1">
-                  mm
-                </TextField.Slot>
-              </TextField.Root>
-            </Flex>
-            <Text size="1" color="gray">
-              Height of window sill above floor level
-            </Text>
+        <Flex direction="column" gap="1">
+          <Flex align="center" justify="between" gap="3">
+            <Label.Root htmlFor="opening-sill-height">
+              <Text size="1" weight="medium" color="gray">
+                Sill Height
+              </Text>
+            </Label.Root>
+            <TextField.Root
+              id="opening-sill-height"
+              type="number"
+              value={sillHeightInput.value.toString()}
+              onChange={e => sillHeightInput.handleChange(e.target.value)}
+              onBlur={() => {
+                sillHeightInput.handleBlur()
+                setFocusedField(undefined)
+              }}
+              onFocus={() => setFocusedField('sillHeight')}
+              onKeyDown={sillHeightInput.handleKeyDown}
+              min="0"
+              max="2000"
+              step="10"
+              size="1"
+              style={{ width: '5rem', textAlign: 'right' }}
+            >
+              <TextField.Slot side="right" pl="1">
+                mm
+              </TextField.Slot>
+            </TextField.Root>
           </Flex>
-        )}
-      </Flex>
-
-      <Separator size="4" />
-
-      {/* Preview */}
-      {opening && storey && constructionMethod && (
-        <Flex direction="column" gap="2">
-          <Flex align="center" justify="between">
-            <Heading size="2">Preview</Heading>
-            <Flex gap="1">
-              <Button
-                size="1"
-                variant={highlightMode === 'fitting' ? 'solid' : 'outline'}
-                onClick={() => setHighlightMode('fitting')}
-              >
-                Fitting
-              </Button>
-              <Button
-                size="1"
-                variant={highlightMode === 'finished' ? 'solid' : 'outline'}
-                onClick={() => setHighlightMode('finished')}
-              >
-                Finished
-              </Button>
-            </Flex>
-          </Flex>
-          <OpeningPreview
-            opening={opening}
-            wallHeight={storey.height}
-            padding={constructionMethod.config.openings.padding}
-            highlightMode={highlightMode}
-            focusedField={focusedField}
-          />
         </Flex>
-      )}
+      </Flex>
 
       <Separator size="4" />
 

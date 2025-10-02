@@ -1,6 +1,14 @@
 import * as Select from '@radix-ui/react-select'
 import { useCallback } from 'react'
 
+import {
+  DoubleSizeIcon,
+  FloorSizeIcon,
+  LargeSizeIcon,
+  SmallSizeIcon,
+  StandardSizeIcon,
+  WideSizeIcon
+} from '@/building/components/inspectors/OpeningIcons'
 import type { OpeningType } from '@/building/model/model'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
@@ -30,24 +38,40 @@ interface PresetConfig {
   width: number
   height: number
   sillHeight?: number
+  icon: string
 }
 
-const OPENING_PRESETS: Record<OpeningType, PresetConfig[]> = {
-  door: [
-    { label: 'Standard Door', width: 800, height: 2100 },
-    { label: 'Wide Door', width: 900, height: 2100 },
-    { label: 'Double Door', width: 1600, height: 2100 }
-  ],
-  window: [
-    { label: 'Small Window', width: 800, height: 1200, sillHeight: 800 },
-    { label: 'Standard Window', width: 1200, height: 1200, sillHeight: 800 },
-    { label: 'Large Window', width: 1600, height: 1400, sillHeight: 600 },
-    { label: 'Floor Window', width: 1200, height: 2000, sillHeight: 100 }
-  ],
-  passage: [
-    { label: 'Standard Passage', width: 1000, height: 2200 },
-    { label: 'Wide Passage', width: 1500, height: 2200 }
-  ]
+// All presets available for all opening types
+const ALL_OPENING_PRESETS: PresetConfig[] = [
+  { label: 'Standard Door', width: 800, height: 2100, icon: 'standard' },
+  { label: 'Wide Door', width: 900, height: 2100, icon: 'wide' },
+  { label: 'Double Door', width: 1600, height: 2100, icon: 'double' },
+  { label: 'Small Window', width: 800, height: 1200, sillHeight: 800, icon: 'small' },
+  { label: 'Standard Window', width: 1200, height: 1200, sillHeight: 800, icon: 'standard' },
+  { label: 'Large Window', width: 1600, height: 1400, sillHeight: 600, icon: 'large' },
+  { label: 'Floor Window', width: 1200, height: 2000, sillHeight: 100, icon: 'floor' },
+  { label: 'Standard Passage', width: 1000, height: 2200, icon: 'standard' },
+  { label: 'Wide Passage', width: 1500, height: 2200, icon: 'wide' }
+]
+
+// Helper function to get the appropriate icon component
+function getPresetIcon(iconType: string): React.JSX.Element {
+  switch (iconType) {
+    case 'standard':
+      return <StandardSizeIcon width={12} height={12} />
+    case 'wide':
+      return <WideSizeIcon width={12} height={12} />
+    case 'double':
+      return <DoubleSizeIcon width={12} height={12} />
+    case 'small':
+      return <SmallSizeIcon width={12} height={12} />
+    case 'large':
+      return <LargeSizeIcon width={12} height={12} />
+    case 'floor':
+      return <FloorSizeIcon width={12} height={12} />
+    default:
+      return <StandardSizeIcon width={12} height={12} />
+  }
 }
 
 function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps): React.JSX.Element {
@@ -154,19 +178,20 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
             </Select.Root>
           </div>
 
-          {/* Quick Presets */}
+          {/* Quick Presets - Available for all types */}
           <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600">Presets</label>
-            <div className="grid grid-cols-2 gap-1">
-              {OPENING_PRESETS[state.openingType].map((preset: PresetConfig, index: number) => (
+            <label className="text-xs font-medium text-gray-600">Presets (All Sizes)</label>
+            <div className="grid grid-cols-3 gap-1">
+              {ALL_OPENING_PRESETS.map((preset: PresetConfig, index: number) => (
                 <button
                   key={index}
                   type="button"
-                  className="px-2 py-1 text-xs text-gray-700 bg-gray-50 border border-gray-200 rounded hover:bg-gray-100 hover:border-gray-300 transition-colors text-left"
+                  className="flex flex-col items-center justify-center p-2 text-xs text-gray-700 bg-gray-50 border border-gray-200 rounded hover:bg-gray-100 hover:border-gray-300 transition-colors"
                   onClick={() => handlePresetClick(preset)}
-                  title={`${preset.width}×${preset.height}mm${preset.sillHeight ? `, sill: ${preset.sillHeight}mm` : ''}`}
+                  title={`${preset.label}: ${preset.width}×${preset.height}mm${preset.sillHeight ? `, sill: ${preset.sillHeight}mm` : ''}`}
                 >
-                  {preset.label}
+                  {getPresetIcon(preset.icon)}
+                  <span className="mt-1 text-center leading-tight">{preset.label.split(' ')[0]}</span>
                 </button>
               ))}
             </div>
@@ -221,33 +246,37 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
             </div>
           </div>
 
-          {state.openingType === 'window' && (
-            <div className="space-y-1">
-              <div className="flex items-center justify-between gap-3">
-                <label htmlFor="sill-height" className="text-xs font-medium text-gray-600 flex-shrink-0">
-                  Sill Height
-                </label>
-                <div className="relative flex-1 max-w-24">
-                  <input
-                    id="sill-height"
-                    type="number"
-                    value={sillHeightInput.value}
-                    onChange={e => sillHeightInput.handleChange(e.target.value)}
-                    onBlur={sillHeightInput.handleBlur}
-                    onKeyDown={sillHeightInput.handleKeyDown}
-                    min="0"
-                    max="2000"
-                    step="10"
-                    className="unit-input w-full pl-2 py-1.5 pr-8 bg-white border border-gray-300 rounded text-xs text-right hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200"
-                  />
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
-                    mm
-                  </span>
-                </div>
+          <div className="space-y-1">
+            <div className="flex items-center justify-between gap-3">
+              <label htmlFor="sill-height" className="text-xs font-medium text-gray-600 flex-shrink-0">
+                Sill Height
+              </label>
+              <div className="relative flex-1 max-w-24">
+                <input
+                  id="sill-height"
+                  type="number"
+                  value={sillHeightInput.value}
+                  onChange={e => sillHeightInput.handleChange(e.target.value)}
+                  onBlur={sillHeightInput.handleBlur}
+                  onKeyDown={sillHeightInput.handleKeyDown}
+                  min="0"
+                  max="2000"
+                  step="10"
+                  className="unit-input w-full pl-2 py-1.5 pr-8 bg-white border border-gray-300 rounded text-xs text-right hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200"
+                />
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                  mm
+                </span>
               </div>
-              <div className="text-xs text-gray-500 mt-1">Height of window sill above floor level</div>
             </div>
-          )}
+            <div className="text-xs text-gray-500 mt-1">
+              {state.openingType === 'window'
+                ? 'Height of window sill above floor level'
+                : state.openingType === 'door'
+                  ? 'Height of door threshold above floor level (usually 0)'
+                  : 'Height of bottom edge above floor level (usually 0)'}
+            </div>
+          </div>
         </div>
       </div>
     </div>

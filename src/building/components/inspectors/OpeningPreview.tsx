@@ -1,4 +1,3 @@
-import { Flex } from '@radix-ui/themes'
 import { useId } from 'react'
 
 import type { OpeningType } from '@/building/model/model'
@@ -98,7 +97,7 @@ export function OpeningPreview({
     const isFocused = focusedField === field
     const isHighlighted = highlightMode === type
 
-    if (isFocused) return 'var(--accent-11)'
+    if (isFocused && isHighlighted) return 'var(--accent-11)'
     if (isHighlighted) {
       return type === 'fitting' ? 'var(--blue-11)' : 'var(--green-11)'
     }
@@ -106,176 +105,174 @@ export function OpeningPreview({
   }
 
   return (
-    <Flex direction="column" align="center">
-      <svg width={svgWidth} height={svgHeight} viewBox={`0 0 ${svgWidth} ${svgHeight}`}>
-        {/* Clip path definitions */}
-        <defs>
-          {/* Fitting opening clip path - clip to inside bounds */}
-          <clipPath id={fittingClipId}>
-            <rect x={openingLeft} y={openingTop} width={openingWidthSvg} height={openingHeightSvg} />
-          </clipPath>
+    <svg width={svgWidth} height={svgHeight} viewBox={`0 0 ${svgWidth} ${svgHeight}`}>
+      {/* Clip path definitions */}
+      <defs>
+        {/* Fitting opening clip path - clip to inside bounds */}
+        <clipPath id={fittingClipId}>
+          <rect x={openingLeft} y={openingTop} width={openingWidthSvg} height={openingHeightSvg} />
+        </clipPath>
 
-          {/* Finished opening clip path - clip to inside bounds */}
-          <clipPath id={finishedClipId}>
-            <rect x={finishedLeft} y={finishedTop} width={finishedWidthSvg} height={finishedHeightSvg} />
-          </clipPath>
-        </defs>
+        {/* Finished opening clip path - clip to inside bounds */}
+        <clipPath id={finishedClipId}>
+          <rect x={finishedLeft} y={finishedTop} width={finishedWidthSvg} height={finishedHeightSvg} />
+        </clipPath>
+      </defs>
 
-        {/* Wall */}
-        <rect
-          x={wallLeft}
-          y={wallTop}
-          width={svgWidth}
-          height={wallHeightSvg}
-          fill="var(--gray-4)"
-          stroke="var(--gray-8)"
-          strokeWidth="1"
-        />
+      {/* Wall */}
+      <rect
+        x={wallLeft}
+        y={wallTop}
+        width={svgWidth}
+        height={wallHeightSvg}
+        fill="var(--gray-4)"
+        stroke="var(--gray-8)"
+        strokeWidth="1"
+      />
 
-        {/* Fitting Opening (rough opening) - clipped to show stroke on outside */}
-        <rect
-          x={openingLeft}
-          y={openingTop}
-          width={openingWidthSvg}
-          height={openingHeightSvg}
-          {...getFittingStyle()}
-          clipPath={`url(#${fittingClipId})`}
-        />
+      {/* Fitting Opening (rough opening) - clipped to show stroke on outside */}
+      <rect
+        x={openingLeft}
+        y={openingTop}
+        width={openingWidthSvg}
+        height={openingHeightSvg}
+        {...getFittingStyle()}
+        clipPath={`url(#${fittingClipId})`}
+      />
 
-        {/* Finished Opening (actual door/window) - clipped to show stroke on outside */}
-        <rect
-          x={finishedLeft}
-          y={finishedTop}
-          width={finishedWidthSvg}
-          height={finishedHeightSvg}
-          {...getFinishedStyle()}
-          clipPath={`url(#${finishedClipId})`}
-        />
+      {/* Finished Opening (actual door/window) - clipped to show stroke on outside */}
+      <rect
+        x={finishedLeft}
+        y={finishedTop}
+        width={finishedWidthSvg}
+        height={finishedHeightSvg}
+        {...getFinishedStyle()}
+        clipPath={`url(#${finishedClipId})`}
+      />
 
-        {/* Opening type indicator */}
-        {opening.type === 'door' && (
-          <g>
-            {/* Door swing arc */}
-            <path
-              d={`M ${finishedLeft + 5} ${finishedBottom - 5} A ${finishedWidthSvg - 10} ${finishedWidthSvg - 10} 0 0 1 ${finishedRight - 5} ${finishedTop + 5}`}
-              fill="none"
-              stroke="var(--gray-8)"
-              strokeWidth="1"
-              strokeDasharray="2,2"
-            />
-          </g>
-        )}
+      {/* Opening type indicator */}
+      {opening.type === 'door' && (
+        <g>
+          {/* Door swing arc */}
+          <path
+            d={`M ${finishedLeft + 5} ${finishedBottom - 5} A ${finishedWidthSvg - 10} ${finishedWidthSvg - 10} 0 0 1 ${finishedRight - 5} ${finishedTop + 5}`}
+            fill="none"
+            stroke="var(--gray-8)"
+            strokeWidth="1"
+            strokeDasharray="2,2"
+          />
+        </g>
+      )}
 
-        {opening.type === 'window' && (
-          <g>
-            {/* Window mullions */}
-            <line
-              x1={finishedLeft + finishedWidthSvg / 2}
-              y1={finishedTop}
-              x2={finishedLeft + finishedWidthSvg / 2}
-              y2={finishedBottom}
-              stroke="var(--gray-8)"
-              strokeWidth="1"
-            />
-            <line
-              x1={finishedLeft}
-              y1={finishedTop + finishedHeightSvg / 2}
-              x2={finishedRight}
-              y2={finishedTop + finishedHeightSvg / 2}
-              stroke="var(--gray-8)"
-              strokeWidth="1"
-            />
-          </g>
-        )}
+      {opening.type === 'window' && (
+        <g>
+          {/* Window mullions */}
+          <line
+            x1={finishedLeft + finishedWidthSvg / 2}
+            y1={finishedTop}
+            x2={finishedLeft + finishedWidthSvg / 2}
+            y2={finishedBottom}
+            stroke="var(--gray-8)"
+            strokeWidth="1"
+          />
+          <line
+            x1={finishedLeft}
+            y1={finishedTop + finishedHeightSvg / 2}
+            x2={finishedRight}
+            y2={finishedTop + finishedHeightSvg / 2}
+            stroke="var(--gray-8)"
+            strokeWidth="1"
+          />
+        </g>
+      )}
 
-        {/* Dimension lines */}
+      {/* Dimension lines */}
 
-        {/* Width dimensions - bottom of opening */}
-        <SvgMeasurementIndicator
-          startPoint={[openingLeft, openingBottom]}
-          endPoint={[openingLeft + openingWidthSvg, openingBottom]}
-          label={formatLength(fittingWidth)}
-          offset={bottomHasSpace ? 16 : -16}
-          color={getMeasurementColor('width', 'fitting')}
-          fontSize={8}
-          strokeWidth={1}
-        />
+      {/* Width dimensions - bottom of opening */}
+      <SvgMeasurementIndicator
+        startPoint={[openingLeft, openingBottom]}
+        endPoint={[openingLeft + openingWidthSvg, openingBottom]}
+        label={formatLength(fittingWidth)}
+        offset={bottomHasSpace ? 16 : -16}
+        color={getMeasurementColor('width', 'fitting')}
+        fontSize={8}
+        strokeWidth={1}
+      />
 
-        <SvgMeasurementIndicator
-          startPoint={[finishedLeft, finishedBottom]}
-          endPoint={[finishedRight, finishedBottom]}
-          label={formatLength(finishedWidthMm)}
-          offset={bottomHasSpace ? 8 : -8}
-          color={getMeasurementColor('width', 'finished')}
-          fontSize={8}
-          strokeWidth={1}
-        />
+      <SvgMeasurementIndicator
+        startPoint={[finishedLeft, finishedBottom]}
+        endPoint={[finishedRight, finishedBottom]}
+        label={formatLength(finishedWidthMm)}
+        offset={bottomHasSpace ? 8 : -8}
+        color={getMeasurementColor('width', 'finished')}
+        fontSize={8}
+        strokeWidth={1}
+      />
 
-        {/* Height dimensions - inside opening when space allows, otherwise on the side */}
-        <SvgMeasurementIndicator
-          startPoint={[openingLeft, openingTop]}
-          endPoint={[openingLeft, openingBottom]}
-          label={formatLength(fittingHeight)}
-          offset={sideHasSpace ? 16 : -16}
-          color={getMeasurementColor('height', 'fitting')}
-          fontSize={8}
-          strokeWidth={1}
-        />
+      {/* Height dimensions - inside opening when space allows, otherwise on the side */}
+      <SvgMeasurementIndicator
+        startPoint={[openingLeft, openingTop]}
+        endPoint={[openingLeft, openingBottom]}
+        label={formatLength(fittingHeight)}
+        offset={sideHasSpace ? 16 : -16}
+        color={getMeasurementColor('height', 'fitting')}
+        fontSize={8}
+        strokeWidth={1}
+      />
 
-        <SvgMeasurementIndicator
-          startPoint={[finishedLeft, finishedTop]}
-          endPoint={[finishedLeft, finishedBottom]}
-          label={formatLength(finishedHeightMm)}
-          offset={sideHasSpace ? 8 : -8}
-          color={getMeasurementColor('height', 'finished')}
-          fontSize={8}
-          strokeWidth={1}
-        />
+      <SvgMeasurementIndicator
+        startPoint={[finishedLeft, finishedTop]}
+        endPoint={[finishedLeft, finishedBottom]}
+        label={formatLength(finishedHeightMm)}
+        offset={sideHasSpace ? 8 : -8}
+        color={getMeasurementColor('height', 'finished')}
+        fontSize={8}
+        strokeWidth={1}
+      />
 
-        {/* Sill height dimensions - both fitting and finished */}
-        {fittingSillHeight > 0 && (
-          <>
-            <SvgMeasurementIndicator
-              startPoint={[openingLeft, wallBottom]}
-              endPoint={[openingLeft, openingBottom]}
-              label={formatLength(fittingSillHeight as Length)}
-              offset={sideHasSpace ? -16 : 16}
-              color={getMeasurementColor('sillHeight', 'fitting')}
-              fontSize={7}
-              strokeWidth={1}
-            />
-            <SvgMeasurementIndicator
-              startPoint={[openingLeft, wallBottom]}
-              endPoint={[openingLeft, openingBottom]}
-              label={formatLength(finishedSillHeight as Length)}
-              offset={sideHasSpace ? -8 : 8}
-              color={getMeasurementColor('sillHeight', 'finished')}
-              fontSize={7}
-              strokeWidth={1}
-            />
+      {/* Sill height dimensions - both fitting and finished */}
+      {fittingSillHeight > 0 && (
+        <>
+          <SvgMeasurementIndicator
+            startPoint={[openingLeft, wallBottom]}
+            endPoint={[openingLeft, openingBottom]}
+            label={formatLength(fittingSillHeight as Length)}
+            offset={sideHasSpace ? -16 : 16}
+            color={getMeasurementColor('sillHeight', 'fitting')}
+            fontSize={7}
+            strokeWidth={1}
+          />
+          <SvgMeasurementIndicator
+            startPoint={[openingLeft, wallBottom]}
+            endPoint={[openingLeft, openingBottom]}
+            label={formatLength(finishedSillHeight as Length)}
+            offset={sideHasSpace ? -8 : 8}
+            color={getMeasurementColor('sillHeight', 'finished')}
+            fontSize={7}
+            strokeWidth={1}
+          />
 
-            {/* Floor to top measurements */}
-            <SvgMeasurementIndicator
-              startPoint={[openingLeft + openingWidthSvg, wallBottom]}
-              endPoint={[openingLeft + openingWidthSvg, openingTop]}
-              label={formatLength(fittingFloorToTop as Length)}
-              offset={sideHasSpace ? 16 : -16}
-              color={getMeasurementColor('top', 'fitting')}
-              fontSize={7}
-              strokeWidth={1}
-            />
-            <SvgMeasurementIndicator
-              startPoint={[openingLeft + openingWidthSvg, wallBottom]}
-              endPoint={[openingLeft + openingWidthSvg, finishedTop]}
-              label={formatLength(finishedFloorToTop as Length)}
-              offset={sideHasSpace ? 8 : -8}
-              color={getMeasurementColor('top', 'finished')}
-              fontSize={7}
-              strokeWidth={1}
-            />
-          </>
-        )}
-      </svg>
-    </Flex>
+          {/* Floor to top measurements */}
+          <SvgMeasurementIndicator
+            startPoint={[openingLeft + openingWidthSvg, wallBottom]}
+            endPoint={[openingLeft + openingWidthSvg, openingTop]}
+            label={formatLength(fittingFloorToTop as Length)}
+            offset={sideHasSpace ? 16 : -16}
+            color={getMeasurementColor('top', 'fitting')}
+            fontSize={7}
+            strokeWidth={1}
+          />
+          <SvgMeasurementIndicator
+            startPoint={[openingLeft + openingWidthSvg, wallBottom]}
+            endPoint={[openingLeft + openingWidthSvg, finishedTop]}
+            label={formatLength(finishedFloorToTop as Length)}
+            offset={sideHasSpace ? 8 : -8}
+            color={getMeasurementColor('top', 'finished')}
+            fontSize={7}
+            strokeWidth={1}
+          />
+        </>
+      )}
+    </svg>
   )
 }
