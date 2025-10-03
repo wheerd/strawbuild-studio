@@ -2,6 +2,10 @@ import * as Label from '@radix-ui/react-label'
 import { Box, Flex, Grid, IconButton, SegmentedControl, Separator, Text, TextField, Tooltip } from '@radix-ui/themes'
 import { useCallback, useMemo, useState } from 'react'
 
+import type { OpeningType } from '@/building/model/model'
+import { useActiveStoreyId, useModelActions } from '@/building/store'
+import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
+import type { ToolInspectorProps } from '@/editor/tools/system/types'
 import {
   DoorIcon,
   DoubleDoorPresetIcon,
@@ -12,11 +16,7 @@ import {
   StandardWindowPresetIcon,
   WideDoorPresetIcon,
   WindowIcon
-} from '@/building/components/inspectors/OpeningIcons'
-import type { OpeningType } from '@/building/model/model'
-import { useActiveStoreyId, useModelActions } from '@/building/store'
-import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
-import type { ToolInspectorProps } from '@/editor/tools/system/types'
+} from '@/shared/components/OpeningIcons'
 import { type Length, createLength } from '@/shared/geometry'
 import { useDebouncedNumericInput } from '@/shared/hooks/useDebouncedInput'
 import { formatLength } from '@/shared/utils/formatLength'

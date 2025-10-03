@@ -19,11 +19,11 @@ import type { OpeningType } from '@/building/model/model'
 import { useModelActions, usePerimeterById } from '@/building/store'
 import { usePerimeterConstructionMethodById } from '@/construction/config/store'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
+import { DoorIcon, PassageIcon, WindowIcon } from '@/shared/components/OpeningIcons'
 import { createLength } from '@/shared/geometry'
 import { useDebouncedNumericInput } from '@/shared/hooks/useDebouncedInput'
 import { formatLength } from '@/shared/utils/formatLength'
 
-import { DoorIcon, PassageIcon, WindowIcon } from './OpeningIcons'
 import { OpeningPreview } from './OpeningPreview'
 
 interface OpeningInspectorProps {
