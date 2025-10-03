@@ -4,13 +4,13 @@ import { useCallback, useMemo, useState } from 'react'
 
 import {
   DoorIcon,
-  DoubleSizeIcon,
-  FloorSizeIcon,
-  LargeSizeIcon,
+  DoubleDoorPresetIcon,
+  FloorWindowPresetIcon,
   PassageIcon,
-  SmallSizeIcon,
-  StandardSizeIcon,
-  WideSizeIcon,
+  SmallWindowPresetIcon,
+  StandardDoorPresetIcon,
+  StandardWindowPresetIcon,
+  WideDoorPresetIcon,
   WindowIcon
 } from '@/building/components/inspectors/OpeningIcons'
 import type { OpeningType } from '@/building/model/model'
@@ -39,21 +39,39 @@ interface PresetConfig {
   width: Length
   height: Length
   sillHeight?: Length
-  icon: string
+  icon: React.JSX.Element
 }
 
 // All presets available for all opening types
 const ALL_OPENING_PRESETS: PresetConfig[] = [
-  { label: 'Standard Door', type: 'door', width: createLength(800), height: createLength(2100), icon: 'standard' },
-  { label: 'Wide Door', type: 'door', width: createLength(900), height: createLength(2100), icon: 'wide' },
-  { label: 'Double Door', type: 'door', width: createLength(1600), height: createLength(2100), icon: 'double' },
+  {
+    label: 'Standard Door',
+    type: 'door',
+    width: createLength(800),
+    height: createLength(2100),
+    icon: <StandardDoorPresetIcon width={20} height={20} />
+  },
+  {
+    label: 'Wide Door',
+    type: 'door',
+    width: createLength(900),
+    height: createLength(2100),
+    icon: <WideDoorPresetIcon width={20} height={20} />
+  },
+  {
+    label: 'Double Door',
+    type: 'door',
+    width: createLength(1600),
+    height: createLength(2100),
+    icon: <DoubleDoorPresetIcon width={20} height={20} />
+  },
   {
     label: 'Small Window',
     type: 'window',
     width: createLength(800),
     height: createLength(1200),
     sillHeight: createLength(800),
-    icon: 'small'
+    icon: <SmallWindowPresetIcon width={20} height={20} />
   },
   {
     label: 'Standard Window',
@@ -61,7 +79,7 @@ const ALL_OPENING_PRESETS: PresetConfig[] = [
     width: createLength(1200),
     height: createLength(1200),
     sillHeight: createLength(800),
-    icon: 'standard'
+    icon: <StandardWindowPresetIcon width={20} height={20} />
   },
   {
     label: 'Floor Window',
@@ -69,29 +87,9 @@ const ALL_OPENING_PRESETS: PresetConfig[] = [
     width: createLength(1200),
     height: createLength(2000),
     sillHeight: createLength(100),
-    icon: 'floor'
+    icon: <FloorWindowPresetIcon width={20} height={20} />
   }
 ]
-
-// Helper function to get the appropriate icon component
-function getPresetIcon(iconType: string): React.JSX.Element {
-  switch (iconType) {
-    case 'standard':
-      return <StandardSizeIcon width={20} height={20} />
-    case 'wide':
-      return <WideSizeIcon width={20} height={20} />
-    case 'double':
-      return <DoubleSizeIcon width={20} height={20} />
-    case 'small':
-      return <SmallSizeIcon width={20} height={20} />
-    case 'large':
-      return <LargeSizeIcon width={20} height={20} />
-    case 'floor':
-      return <FloorSizeIcon width={20} height={20} />
-    default:
-      return <StandardSizeIcon width={20} height={20} />
-  }
-}
 
 function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps): React.JSX.Element {
   const { state } = useReactiveTool(tool)
@@ -382,7 +380,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
               onClick={() => handlePresetClick(preset)}
               title={`${preset.label}: ${formatLength(preset.width)} × ${formatLength(preset.height)}${preset.sillHeight ? `, sill: ${formatLength(preset.sillHeight)}` : ''}`}
             >
-              {getPresetIcon(preset.icon)}
+              {preset.icon}
             </IconButton>
           ))}
         </Grid>

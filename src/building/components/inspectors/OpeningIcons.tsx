@@ -16,6 +16,7 @@ export function DoorIcon({ className, width = 15, height = 15 }: IconProps): Rea
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
+      {/* Wall lines */}
       <line x1="1" y1="1" x2="14" y2="1" stroke="currentColor" strokeWidth="0.5" fill="none" />
       <line x1="1" y1="14" x2="14" y2="14" stroke="currentColor" strokeWidth="0.5" fill="none" />
       {/* Door frame */}
@@ -36,9 +37,9 @@ export function WindowIcon({ className, width = 15, height = 15 }: IconProps): R
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
+      {/* Wall lines */}
       <line x1="1" y1="1" x2="14" y2="1" stroke="currentColor" strokeWidth="0.5" fill="none" />
       <line x1="1" y1="14" x2="14" y2="14" stroke="currentColor" strokeWidth="0.5" fill="none" />
-
       {/* Window frame */}
       <rect x="4" y="4" width="7" height="7" stroke="currentColor" strokeWidth="0.7" fill="none" />
       {/* Window mullions */}
@@ -58,9 +59,9 @@ export function PassageIcon({ className, width = 15, height = 15 }: IconProps): 
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
+      {/* Wall lines */}
       <line x1="1" y1="1" x2="14" y2="1" stroke="currentColor" strokeWidth="0.5" fill="none" />
       <line x1="1" y1="14" x2="14" y2="14" stroke="currentColor" strokeWidth="0.5" fill="none" />
-
       {/* Opening frame */}
       <rect x="4" y="3" width="7" height="9" stroke="currentColor" strokeWidth="0.7" fill="none" />
     </svg>
@@ -68,7 +69,7 @@ export function PassageIcon({ className, width = 15, height = 15 }: IconProps): 
 }
 
 // Preset size icons
-export function StandardSizeIcon({ className, width = 15, height = 15 }: IconProps): React.JSX.Element {
+export function StandardDoorPresetIcon({ className, width = 15, height = 15 }: IconProps): React.JSX.Element {
   return (
     <svg
       width={width}
@@ -78,15 +79,14 @@ export function StandardSizeIcon({ className, width = 15, height = 15 }: IconPro
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      <rect x="2" y="4" width="11" height="7" stroke="currentColor" strokeWidth="1" fill="none" />
-      <text x="7.5" y="8" textAnchor="middle" dominantBaseline="middle" fontSize="4" fill="currentColor">
-        S
-      </text>
+      {/* Standard Door: 800×2100 (narrow and tall) */}
+      <rect x="5" y="2" width="5" height="11" stroke="currentColor" strokeWidth="1" fill="none" />
+      <circle cx="8.5" cy="7.5" r="0.5" fill="currentColor" />
     </svg>
   )
 }
 
-export function WideSizeIcon({ className, width = 15, height = 15 }: IconProps): React.JSX.Element {
+export function WideDoorPresetIcon({ className, width = 15, height = 15 }: IconProps): React.JSX.Element {
   return (
     <svg
       width={width}
@@ -96,15 +96,14 @@ export function WideSizeIcon({ className, width = 15, height = 15 }: IconProps):
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      <rect x="1" y="5" width="13" height="5" stroke="currentColor" strokeWidth="1" fill="none" />
-      <text x="7.5" y="7.5" textAnchor="middle" dominantBaseline="middle" fontSize="4" fill="currentColor">
-        W
-      </text>
+      {/* Wide Door: 900×2100 (wider and tall) */}
+      <rect x="4" y="2" width="7" height="11" stroke="currentColor" strokeWidth="1" fill="none" />
+      <circle cx="9.5" cy="7.5" r="0.5" fill="currentColor" />
     </svg>
   )
 }
 
-export function DoubleSizeIcon({ className, width = 15, height = 15 }: IconProps): React.JSX.Element {
+export function DoubleDoorPresetIcon({ className, width = 15, height = 15 }: IconProps): React.JSX.Element {
   return (
     <svg
       width={width}
@@ -114,16 +113,16 @@ export function DoubleSizeIcon({ className, width = 15, height = 15 }: IconProps
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      <rect x="1" y="4" width="6" height="7" stroke="currentColor" strokeWidth="1" fill="none" />
-      <rect x="8" y="4" width="6" height="7" stroke="currentColor" strokeWidth="1" fill="none" />
-      <text x="7.5" y="12.5" textAnchor="middle" dominantBaseline="middle" fontSize="3" fill="currentColor">
-        2x
-      </text>
+      {/* Double Door: 1600×2100 (very wide, two panels) */}
+      <rect x="1" y="2" width="6" height="11" stroke="currentColor" strokeWidth="1" fill="none" />
+      <rect x="8" y="2" width="6" height="11" stroke="currentColor" strokeWidth="1" fill="none" />
+      <circle cx="6" cy="7.5" r="0.4" fill="currentColor" />
+      <circle cx="9" cy="7.5" r="0.4" fill="currentColor" />
     </svg>
   )
 }
 
-export function LargeSizeIcon({ className, width = 15, height = 15 }: IconProps): React.JSX.Element {
+export function StandardWindowPresetIcon({ className, width = 15, height = 15 }: IconProps): React.JSX.Element {
   return (
     <svg
       width={width}
@@ -133,15 +132,15 @@ export function LargeSizeIcon({ className, width = 15, height = 15 }: IconProps)
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      <rect x="2" y="2" width="11" height="11" stroke="currentColor" strokeWidth="1" fill="none" />
-      <text x="7.5" y="8" textAnchor="middle" dominantBaseline="middle" fontSize="4" fill="currentColor">
-        L
-      </text>
+      {/* Standard Window: 1200×1200 (perfect square) */}
+      <rect x="3" y="3" width="9" height="9" stroke="currentColor" strokeWidth="1" fill="none" />
+      <line x1="7.5" y1="3" x2="7.5" y2="12" stroke="currentColor" strokeWidth="0.5" />
+      <line x1="3" y1="7.5" x2="12" y2="7.5" stroke="currentColor" strokeWidth="0.5" />
     </svg>
   )
 }
 
-export function SmallSizeIcon({ className, width = 15, height = 15 }: IconProps): React.JSX.Element {
+export function SmallWindowPresetIcon({ className, width = 15, height = 15 }: IconProps): React.JSX.Element {
   return (
     <svg
       width={width}
@@ -151,15 +150,15 @@ export function SmallSizeIcon({ className, width = 15, height = 15 }: IconProps)
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
+      {/* Small Window: 800×1200 (compact square-ish) */}
       <rect x="4" y="5" width="7" height="5" stroke="currentColor" strokeWidth="1" fill="none" />
-      <text x="7.5" y="7.5" textAnchor="middle" dominantBaseline="middle" fontSize="3" fill="currentColor">
-        S
-      </text>
+      <line x1="7.5" y1="5" x2="7.5" y2="10" stroke="currentColor" strokeWidth="0.5" />
+      <line x1="4" y1="7.5" x2="11" y2="7.5" stroke="currentColor" strokeWidth="0.5" />
     </svg>
   )
 }
 
-export function FloorSizeIcon({ className, width = 15, height = 15 }: IconProps): React.JSX.Element {
+export function FloorWindowPresetIcon({ className, width = 15, height = 15 }: IconProps): React.JSX.Element {
   return (
     <svg
       width={width}
@@ -169,11 +168,11 @@ export function FloorSizeIcon({ className, width = 15, height = 15 }: IconProps)
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      <rect x="3" y="2" width="9" height="11" stroke="currentColor" strokeWidth="1" fill="none" />
-      <line x1="1" y1="13" x2="14" y2="13" stroke="currentColor" strokeWidth="2" />
-      <text x="7.5" y="8" textAnchor="middle" dominantBaseline="middle" fontSize="3" fill="currentColor">
-        F
-      </text>
+      {/* Floor Window: 1200×2000 (tall window, floor to ceiling) */}
+      <rect x="4" y="1" width="7" height="12" stroke="currentColor" strokeWidth="1" fill="none" />
+      <line x1="1" y1="13" x2="14" y2="13" stroke="currentColor" strokeWidth="1.5" />
+      <line x1="7.5" y1="1" x2="7.5" y2="13" stroke="currentColor" strokeWidth="0.5" />
+      <line x1="4" y1="7" x2="11" y2="7" stroke="currentColor" strokeWidth="0.5" />
     </svg>
   )
 }
