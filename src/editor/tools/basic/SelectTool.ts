@@ -9,8 +9,11 @@ import {
 } from '@/editor/hooks/useSelectionStore'
 import type { CanvasEvent, ToolImplementation } from '@/editor/tools/system/types'
 
+import { SelectToolInspector } from './SelectToolInspector'
+
 export class SelectTool implements ToolImplementation {
   readonly id = 'basic.select'
+  readonly inspectorComponent = SelectToolInspector
 
   // Event handlers
   handlePointerDown(event: CanvasEvent): boolean {

@@ -1,7 +1,7 @@
 import { Box, Flex } from '@radix-ui/themes'
 import React from 'react'
 
-import { CanvasSkeleton, PropertiesPanelSkeleton, ToolbarSkeleton } from '.'
+import { CanvasSkeleton, SidePanelSkeleton, ToolbarSkeleton } from '.'
 
 /**
  * App-level skeleton that shows when React has loaded but FloorPlanEditor is still loading
@@ -25,12 +25,12 @@ export function AppSkeleton(): React.JSX.Element {
         <ToolbarSkeleton />
       </Box>
 
-      {/* Main Content Area - Canvas + Properties Panel */}
+      {/* Main Content Area - Canvas + Side Panel */}
       <Flex style={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
         {/* Canvas Area Skeleton */}
         <CanvasSkeleton />
 
-        {/* Right Properties Panel Skeleton */}
+        {/* Right Side Panel Skeleton */}
         <Box
           style={{
             width: '320px',
@@ -39,7 +39,7 @@ export function AppSkeleton(): React.JSX.Element {
             overflowY: 'auto'
           }}
         >
-          <PropertiesPanelSkeleton />
+          <SidePanelSkeleton />
         </Box>
       </Flex>
 

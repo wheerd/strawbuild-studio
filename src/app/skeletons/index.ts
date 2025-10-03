@@ -1,3 +1,3 @@
 export { ToolbarSkeleton } from './ToolbarSkeleton'
-export { PropertiesPanelSkeleton } from './PropertiesPanelSkeleton'
+export { SidePanelSkeleton } from './SidePanelSkeleton'
 export { CanvasSkeleton } from './CanvasSkeleton'

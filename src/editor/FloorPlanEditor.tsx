@@ -1,17 +1,17 @@
 import { Box, Flex } from '@radix-ui/themes'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { MainToolbar } from './MainToolbar'
+import { SidePanel } from './SidePanel'
 import { FloorPlanStage } from './canvas/layers/FloorPlanStage'
 import { useAutoFitOnHydration } from './hooks/useAutoFitOnHydration'
 import { AutoSaveIndicator } from './overlays/AutoSaveIndicator'
 import { GridSizeDisplay } from './overlays/GridSizeDisplay'
 import { StoreySelector } from './overlays/StoreySelector'
-import { PropertiesPanel } from './properties/PropertiesPanel'
 import { LengthInputComponent } from './services/length-input'
-import { MainToolbar } from './toolbar/MainToolbar'
 import { keyboardShortcutManager } from './tools/system/KeyboardShortcutManager'
 
-function FloorPlanEditorContent(): React.JSX.Element {
+export function FloorPlanEditor(): React.JSX.Element {
   useAutoFitOnHydration()
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -73,10 +73,10 @@ function FloorPlanEditorContent(): React.JSX.Element {
     if (containerRef.current != null) {
       const { offsetWidth, offsetHeight } = containerRef.current
       const toolbarHeight = 64 // Single row toolbar with icon buttons
-      const propertiesPanelWidth = 320
+      const sidePanelWidth = 320
 
       const newDimensions = {
-        width: Math.max(offsetWidth - propertiesPanelWidth, 400),
+        width: Math.max(offsetWidth - sidePanelWidth, 400),
         height: Math.max(offsetHeight - toolbarHeight, 400)
       }
 
@@ -110,11 +110,11 @@ function FloorPlanEditorContent(): React.JSX.Element {
     // Check if the click target is an input, select, button, or other interactive element
     const isInteractiveElement = target.matches('input, select, button, textarea, [contenteditable="true"]')
 
-    // Check if the click target is inside the properties panel
-    const isInPropertiesPanel = target.closest('.properties-panel')
+    // Check if the click target is inside the side panel
+    const isInSidePanel = target.closest('.side-panel')
 
     // Only focus the container if we're clicking on the canvas area
-    if (!isInteractiveElement && !isInPropertiesPanel && containerRef.current) {
+    if (!isInteractiveElement && !isInSidePanel && containerRef.current) {
       containerRef.current.focus()
     }
   }, [])
@@ -139,7 +139,7 @@ function FloorPlanEditorContent(): React.JSX.Element {
         <MainToolbar />
       </Box>
 
-      {/* Main Content Area - Canvas + Properties Panel */}
+      {/* Main Content Area - Canvas + Side Panel */}
       <Flex style={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
         {/* Canvas Area */}
         <Box
@@ -158,7 +158,7 @@ function FloorPlanEditorContent(): React.JSX.Element {
           <LengthInputComponent />
         </Box>
 
-        {/* Right Properties Panel */}
+        {/* Right Side Panel */}
         <Box
           style={{
             width: '320px',
@@ -167,14 +167,9 @@ function FloorPlanEditorContent(): React.JSX.Element {
             overflowY: 'auto'
           }}
         >
-          <PropertiesPanel />
+          <SidePanel />
         </Box>
       </Flex>
     </Box>
   )
-}
-
-export function FloorPlanEditor(): React.JSX.Element {
-  // Tool system is now hardcoded and ready immediately - no initialization needed!
-  return <FloorPlanEditorContent />
 }

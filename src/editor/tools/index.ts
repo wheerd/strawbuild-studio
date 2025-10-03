@@ -8,8 +8,8 @@ import type { ToolId, ToolImplementation } from './system/types'
 import { ResetTool } from './test-data/ResetTool'
 import { TestDataTool } from './test-data/TestDataTool'
 
-export { MainToolbar } from '@/editor/toolbar/MainToolbar'
-export { PropertiesPanel } from '@/editor/properties/PropertiesPanel'
+export { MainToolbar } from '@/editor/MainToolbar'
+export { SidePanel } from '@/editor/SidePanel'
 
 export * from './system'
 
