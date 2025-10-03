@@ -1,5 +1,5 @@
 import { getModelActions } from '@/building/store'
-import { useConfigActions } from '@/construction/config/store'
+import { getConfigActions } from '@/construction/config/store'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
 import type { ToolImplementation } from '@/editor/tools/system/types'
 import { boundsFromPoints, createLength, createVec2 } from '@/shared/geometry'
@@ -43,7 +43,7 @@ export class TestDataTool implements ToolImplementation {
 
     try {
       // Get default construction methods from config store
-      const configStore = useConfigActions()
+      const configStore = getConfigActions()
       const defaultBaseId = configStore.getDefaultBaseRingBeamMethodId()
       const defaultTopId = configStore.getDefaultTopRingBeamMethodId()
       const defaultMethodId = configStore.getDefaultPerimeterMethodId()
