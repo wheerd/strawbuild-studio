@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import type { Length, Vec2 } from './basic'
-import { createLength, distance, dot, normalize, subtract } from './basic'
+import { createLength, distance, dot, normalize, perpendicularCCW, perpendicularCW, subtract } from './basic'
 
 // Line-related types
 export interface Line2D {
@@ -91,4 +91,47 @@ export function distanceToLineSegment(point: Vec2, line: LineSegment2D): Length 
 
   // Return distance from point to closest point on segment
   return distance(point, closest)
+}
+
+/**
+ * Given a direction d and a set of points,
+ * compute two parallel offset lines with the given direction d
+ * so that all the points lie between those two line
+ */
+export function computeBoundsLine(d: Vec2, points: Vec2[]): { left: Line2D; right: Line2D } {
+  const A = points[0]
+  const n1 = perpendicularCCW(d)
+  const n2 = perpendicularCW(d)
+
+  // Compute max signed distance of plan points relative to line through A
+  let maxOffset1 = 0
+  let maxOffset2 = 0
+  for (const p of points) {
+    const ap = vec2.create()
+    vec2.sub(ap, p, A)
+    const dist1 = vec2.dot(n1, ap) // signed offset along n1
+    if (dist1 > maxOffset1) {
+      maxOffset1 = dist1
+    }
+    const dist2 = vec2.dot(n2, ap) // signed offset along n2
+    if (dist2 > maxOffset2) {
+      maxOffset2 = dist2
+    }
+  }
+
+  const leftOrigin = vec2.create()
+  vec2.scaleAndAdd(leftOrigin, A, n1, maxOffset1)
+  const rightOrigin = vec2.create()
+  vec2.scaleAndAdd(rightOrigin, A, n2, maxOffset2)
+
+  return {
+    left: {
+      point: leftOrigin, // a point on the offset line
+      direction: d // same direction as original measurement line
+    },
+    right: {
+      point: rightOrigin, // a point on the offset line
+      direction: d // same direction as original measurement line
+    }
+  }
 }

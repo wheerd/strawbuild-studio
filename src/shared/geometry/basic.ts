@@ -85,6 +85,10 @@ export function perpendicularCCW(vector: Vec2): Vec2 {
   return createVec2(-vector[1], vector[0]) // Rotate 90° counterclockwise
 }
 
+export function perpendicularCW(vector: Vec2): Vec2 {
+  return createVec2(vector[1], -vector[0]) // Rotate 90° clockwise
+}
+
 export function boundsFromPoints(points: Vec2[]): Bounds2D {
   if (points.length === 0) {
     throw new Error('No points for boundary')
