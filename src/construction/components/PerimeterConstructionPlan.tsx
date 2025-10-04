@@ -121,7 +121,12 @@ export function PerimeterConstructionPlanModal({
             className="relative flex-1 min-h-[300px] max-h-[calc(100vh-400px)] overflow-hidden border border-gray-6 rounded-2"
           >
             {constructionModel ? (
-              <ConstructionPlan model={constructionModel} views={views} containerSize={containerSize} />
+              <ConstructionPlan
+                model={constructionModel}
+                views={views}
+                containerSize={containerSize}
+                midCutActiveDefault
+              />
             ) : (
               <Flex align="center" justify="center" style={{ height: '100%' }}>
                 <Text align="center" color="gray">

@@ -33,12 +33,18 @@ interface ConstructionPlanProps {
   model: ConstructionModel
   views: ViewOption[]
   containerSize: { width: number; height: number }
+  midCutActiveDefault?: boolean
 }
 
-export function ConstructionPlan({ model, views, containerSize }: ConstructionPlanProps): React.JSX.Element {
+export function ConstructionPlan({
+  model,
+  views,
+  containerSize,
+  midCutActiveDefault = false
+}: ConstructionPlanProps): React.JSX.Element {
   const viewportRef = useRef<SVGViewportRef>(null)
   const [currentViewIndex, setCurrentViewIndex] = useState(0)
-  const [midCutEnabled, setMidCutEnabled] = useState(false)
+  const [midCutEnabled, setMidCutEnabled] = useState(midCutActiveDefault)
 
   const currentView = views[currentViewIndex]?.view || views[0]?.view
 
