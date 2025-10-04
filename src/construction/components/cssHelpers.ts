@@ -22,7 +22,7 @@ export function getConstructionElementClasses(
   const tagClasses = getTagClasses(element.tags)
   // Only elements have materials (groups don't)
   const materialClass = 'material' in element && element.material ? element.material : ''
-  return [additionalClassName, ...tagClasses, materialClass, baseClass, cutClassName].filter(Boolean).join(' ')
+  return [additionalClassName, tagClasses, materialClass, baseClass, cutClassName].filter(Boolean).join(' ')
 }
 
 export function getTagClasses(tags?: Tag[], additionalClassName?: string): string {
