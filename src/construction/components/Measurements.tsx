@@ -43,13 +43,13 @@ export function Measurements({ model, projection }: MeasurementsProps): React.JS
   }, [autoMeasurements, projection, planPoints])
 
   // Convert processed measurements back to renderable format
-  const renderableMeasurements: Array<{
+  const renderableMeasurements: {
     startPoint: Vec2
     endPoint: Vec2
     label: string
     offset: number
     classes: string[]
-  }> = []
+  }[] = []
 
   for (const [, { left, right }] of processedMeasurements) {
     // Process left side measurements

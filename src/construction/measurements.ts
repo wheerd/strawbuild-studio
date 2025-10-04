@@ -1,5 +1,4 @@
-import { vec2 } from 'gl-matrix'
-import { vec3 } from 'gl-matrix'
+import { vec2, vec3 } from 'gl-matrix'
 
 import { type Projection } from '@/construction/geometry'
 import {
@@ -125,7 +124,7 @@ function groupMeasurements(measurements: ProjectedMeasurement[]) {
   const groupedMeasurements = new Map<Vec2, ProjectedMeasurement[]>()
 
   for (const measurement of measurements) {
-    let dir = normalizeDirection(direction(measurement.startPoint, measurement.endPoint))
+    const dir = normalizeDirection(direction(measurement.startPoint, measurement.endPoint))
     let existingGroup: ProjectedMeasurement[] | null = null
 
     for (const [groupDir, group] of groupedMeasurements.entries()) {
@@ -229,8 +228,8 @@ function assignRows(measurements: IntervalMeasurement[]): IntervalMeasurement[][
     const distA = Math.min(a.distanceLeft, a.distanceRight)
     const distB = Math.min(b.distanceLeft, b.distanceRight)
     if (Math.abs(distA - distB) < 1e-5) {
-      // Same distance: larger intervals go outside (earlier in array)
-      return b.t2 - b.t1 - (a.t2 - a.t1)
+      // Same distance: larger intervals go outside (later in array)
+      return a.t2 - a.t1 - (b.t2 - b.t1)
     }
     return distB - distA // Further measurements first
   })

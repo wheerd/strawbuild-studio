@@ -172,11 +172,11 @@ describe('constructOpeningFrame', () => {
       expect(sillHeightMeasurements).toHaveLength(1)
       expect(openingHeightMeasurements).toHaveLength(1)
 
-      // Verify measurement values by checking the size vectors
-      expect((openingWidthMeasurements[0] as any).size[0]).toBe(1000) // width
-      expect((sillHeightMeasurements[0] as any).size[2]).toBe(800) // sillHeight
-      expect((headerHeightMeasurements[0] as any).size[2]).toBe(2000) // sillHeight + height
-      expect((openingHeightMeasurements[0] as any).size[2]).toBe(1200) // height
+      // Verify measurement values
+      expect((openingWidthMeasurements[0] as any).size[0]).toBe(1000) // width (AutoMeasurement)
+      expect((sillHeightMeasurements[0] as any).label).toBe('800mm') // sillHeight (DirectMeasurement)
+      expect((headerHeightMeasurements[0] as any).label).toBe('2000mm') // sillHeight + height (DirectMeasurement)
+      expect((openingHeightMeasurements[0] as any).label).toBe('1200mm') // height (DirectMeasurement)
     })
 
     it('generates only header and opening width measurements for door', () => {
@@ -204,8 +204,8 @@ describe('constructOpeningFrame', () => {
       expect(openingHeightMeasurements).toHaveLength(0) // No opening height without sill
 
       // Verify measurement values
-      expect((openingWidthMeasurements[0] as any).size[0]).toBe(800) // width
-      expect((headerHeightMeasurements[0] as any).size[2]).toBe(2000) // height
+      expect((openingWidthMeasurements[0] as any).size[0]).toBe(800) // width (AutoMeasurement)
+      expect((headerHeightMeasurements[0] as any).label).toBe('2000mm') // height (DirectMeasurement)
     })
 
     it('creates only header for door without sill height', () => {

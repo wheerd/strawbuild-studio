@@ -554,8 +554,8 @@ describe('constructInfillWall', () => {
 
       expect(result.errors).toHaveLength(1)
       expect(result.warnings).toHaveLength(1)
-      expect(result.errors[0].description).toBe('Test error')
-      expect(result.warnings[0].description).toBe('Test warning')
+      expect(result.errors[0]).toBe(mockError)
+      expect(result.warnings[0]).toBe(mockWarning)
     })
 
     it('should include measurements in the result', () => {
@@ -580,8 +580,7 @@ describe('constructInfillWall', () => {
       const result = constructInfillWall(wall, perimeter, floorHeight, config, layers)
 
       expect(result.measurements).toHaveLength(1)
-      expect((result.measurements[0] as any).size[0]).toBe(800)
-      expect(result.measurements[0].tags).toContain(TAG_POST_SPACING)
+      expect(result.measurements[0]).toBe(mockMeasurement)
     })
 
     it('should calculate correct bounds from all elements', () => {
