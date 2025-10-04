@@ -4,6 +4,8 @@ import React, { useState } from 'react'
 
 import { usePersistenceStore } from '@/building/store/persistenceStore'
 import { ProjectImportExportService } from '@/shared/services/ProjectImportExportService'
+import { createFileInput } from '@/shared/utils/createFileInput'
+import { downloadFile } from '@/shared/utils/downloadFile'
 
 export function AutoSaveIndicator(): React.JSX.Element {
   // Auto-save state from persistence store
@@ -21,11 +23,16 @@ export function AutoSaveIndicator(): React.JSX.Element {
     setIsExporting(true)
     setExportError(null)
 
-    const result = await ProjectImportExportService.exportProject()
+    const result = await ProjectImportExportService.exportToString()
 
     setIsExporting(false)
     if (!result.success) {
       setExportError(result.error)
+    } else {
+      // Generate filename in UI component
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0]
+      const filename = `strawbaler-project-${timestamp}.json`
+      downloadFile(result.content, filename)
     }
   }
 
@@ -33,11 +40,18 @@ export function AutoSaveIndicator(): React.JSX.Element {
     setIsImporting(true)
     setImportError(null)
 
-    const result = await ProjectImportExportService.importProject()
+    try {
+      await createFileInput(async (content: string) => {
+        const result = await ProjectImportExportService.importFromString(content)
 
-    setIsImporting(false)
-    if (!result.success) {
-      setImportError(result.error)
+        setIsImporting(false)
+        if (!result.success) {
+          setImportError(result.error)
+        }
+      })
+    } catch (error) {
+      setIsImporting(false)
+      setImportError(error instanceof Error ? error.message : 'Failed to import file')
     }
   }
 

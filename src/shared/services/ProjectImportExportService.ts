@@ -54,17 +54,6 @@ export interface ExportData {
   }
 }
 
-export interface ExportResult {
-  success: true
-  data: ExportData
-  filename: string
-}
-
-export interface ExportError {
-  success: false
-  error: string
-}
-
 export interface ImportResult {
   success: true
   data: ExportData
@@ -75,17 +64,26 @@ export interface ImportError {
   error: string
 }
 
-// Simple service interface - no UI state management
-export interface ProjectImportExportService {
-  exportProject(): Promise<ExportResult | ExportError>
-  importProject(): Promise<ImportResult | ImportError>
-  importFromFile(): Promise<ImportResult | ImportError>
+export interface StringExportResult {
+  success: true
+  content: string
+}
+
+export interface StringExportError {
+  success: false
+  error: string
+}
+
+// Simple service interface - no UI state management, works with strings
+export interface IProjectImportExportService {
+  exportToString(): Promise<StringExportResult | StringExportError>
+  importFromString(content: string): Promise<ImportResult | ImportError>
 }
 
 const CURRENT_VERSION = '1.0.0'
 
-class ProjectImportExportServiceImpl implements ProjectImportExportService {
-  async exportProject(): Promise<ExportResult | ExportError> {
+class ProjectImportExportServiceImpl implements IProjectImportExportService {
+  async exportToString(): Promise<StringExportResult | StringExportError> {
     try {
       // Dynamic imports to avoid circular dependencies
       const { getModelActions } = await import('@/building/store')
@@ -125,10 +123,17 @@ class ProjectImportExportServiceImpl implements ProjectImportExportService {
       const result = this.exportToJSON({ storeys: exportedStoreys }, getConfigState())
 
       if (result.success) {
-        this.downloadFile(result.data, result.filename)
+        const content = JSON.stringify(result.data, null, 2)
+        return {
+          success: true,
+          content
+        }
       }
 
-      return result
+      return {
+        success: false,
+        error: result.error
+      }
     } catch (error) {
       return {
         success: false,
@@ -137,21 +142,7 @@ class ProjectImportExportServiceImpl implements ProjectImportExportService {
     }
   }
 
-  async importProject(): Promise<ImportResult | ImportError> {
-    return new Promise(resolve => {
-      this.createFileInput(async (content: string) => {
-        const result = await this.processImportContent(content)
-        resolve(result)
-      })
-    })
-  }
-
-  async importFromFile(): Promise<ImportResult | ImportError> {
-    // Alias for importProject for clarity
-    return this.importProject()
-  }
-
-  private async processImportContent(content: string): Promise<ImportResult | ImportError> {
+  async importFromString(content: string): Promise<ImportResult | ImportError> {
     try {
       const importResult = this.importFromJSON(content)
       if (!importResult.success) return importResult
@@ -271,7 +262,7 @@ class ProjectImportExportServiceImpl implements ProjectImportExportService {
   private exportToJSON(
     modelState: ExportData['modelStore'],
     configState: ExportData['configStore']
-  ): ExportResult | ExportError {
+  ): { success: true; data: ExportData; filename: string } | { success: false; error: string } {
     try {
       const data = this.createExportData(modelState, configState)
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0]
@@ -358,45 +349,6 @@ class ProjectImportExportServiceImpl implements ProjectImportExportService {
         error: error instanceof Error ? error.message : 'Failed to parse file'
       }
     }
-  }
-
-  private downloadFile(data: ExportData, filename: string): void {
-    const jsonString = JSON.stringify(data, null, 2)
-    const blob = new Blob([jsonString], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-
-    const link = document.createElement('a')
-    link.href = url
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }
-
-  private createFileInput(onFileLoaded: (content: string) => void): void {
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = '.json'
-    input.style.display = 'none'
-
-    input.addEventListener('change', event => {
-      const file = (event.target as HTMLInputElement).files?.[0]
-      if (!file) return
-
-      const reader = new FileReader()
-      reader.onload = e => {
-        const content = e.target?.result
-        if (typeof content === 'string') {
-          onFileLoaded(content)
-        }
-      }
-      reader.readAsText(file)
-    })
-
-    document.body.appendChild(input)
-    input.click()
-    document.body.removeChild(input)
   }
 }
 
