@@ -38,8 +38,10 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
     )
   }
 
-  const totalPerimeter = outerWall.walls.reduce((l, s) => l + s.insideLength, 0)
-  const totalArea = calculatePolygonArea({ points: outerWall.corners.map(c => c.insidePoint) })
+  const totalInnerPerimeter = outerWall.walls.reduce((l, s) => l + s.insideLength, 0)
+  const totalOuterPerimeter = outerWall.walls.reduce((l, s) => l + s.outsideLength, 0)
+  const totalInnerArea = calculatePolygonArea({ points: outerWall.corners.map(c => c.insidePoint) })
+  const totalOuterArea = calculatePolygonArea({ points: outerWall.corners.map(c => c.outsidePoint) })
 
   return (
     <Box p="2">
@@ -47,12 +49,20 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
         {/* Basic Information */}
         <DataList.Root>
           <DataList.Item>
-            <DataList.Label minWidth="88px">Total Perimeter</DataList.Label>
-            <DataList.Value>{formatLength(totalPerimeter as Length)}</DataList.Value>
+            <DataList.Label minWidth="88px">Total Inner Perimeter</DataList.Label>
+            <DataList.Value>{formatLength(totalInnerPerimeter as Length)}</DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label minWidth="88px">Total Area</DataList.Label>
-            <DataList.Value>{(totalArea / (1000 * 1000)).toFixed(2)} m²</DataList.Value>
+            <DataList.Label minWidth="88px">Total Inside Area</DataList.Label>
+            <DataList.Value>{(totalInnerArea / (1000 * 1000)).toFixed(2)} m²</DataList.Value>
+          </DataList.Item>
+          <DataList.Item>
+            <DataList.Label minWidth="88px">Total Outer Perimeter</DataList.Label>
+            <DataList.Value>{formatLength(totalOuterPerimeter as Length)}</DataList.Value>
+          </DataList.Item>
+          <DataList.Item>
+            <DataList.Label minWidth="88px">Total Overbuilt Area</DataList.Label>
+            <DataList.Value>{(totalOuterArea / (1000 * 1000)).toFixed(2)} m²</DataList.Value>
           </DataList.Item>
         </DataList.Root>
 
