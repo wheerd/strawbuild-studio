@@ -176,8 +176,9 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
           modelActions.updateStoreyHeight(targetStorey.id, createLength(exportedStorey.height))
 
           // Adjust level if needed
-          if (exportedStorey.level !== 0) {
-            modelActions.adjustAllLevels(exportedStorey.level)
+          if (exportedStorey.level !== targetStorey.level) {
+            const adjustment = exportedStorey.level - targetStorey.level
+            modelActions.adjustAllLevels(adjustment)
           }
         } else {
           // Add additional storeys
