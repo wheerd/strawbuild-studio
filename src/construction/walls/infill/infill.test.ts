@@ -247,7 +247,7 @@ describe('infillWallArea', () => {
 
       expect(measurements.length).toBeGreaterThan(0)
       expect(measurements[0].tags).toContain(TAG_POST_SPACING)
-      expect(measurements[0].label).toBe('800mm') // maxPostSpacing
+      expect((measurements[0] as any).size[0]).toBe(800) // maxPostSpacing
     })
   })
 
@@ -402,7 +402,7 @@ describe('infillWallArea', () => {
       const { measurements } = aggregateResults(results)
 
       expect(measurements.length).toBeGreaterThan(0)
-      expect(measurements[0].label).toBe('600mm') // Updated maxPostSpacing
+      expect((measurements[0] as any).size[0]).toBe(600) // Updated maxPostSpacing
     })
 
     it('should work with different minStrawSpace', () => {
@@ -554,8 +554,8 @@ describe('constructInfillWall', () => {
 
       expect(result.errors).toHaveLength(1)
       expect(result.warnings).toHaveLength(1)
-      expect(result.errors[0].description).toBe('Test error')
-      expect(result.warnings[0].description).toBe('Test warning')
+      expect(result.errors[0]).toBe(mockError)
+      expect(result.warnings[0]).toBe(mockWarning)
     })
 
     it('should include measurements in the result', () => {
@@ -580,8 +580,7 @@ describe('constructInfillWall', () => {
       const result = constructInfillWall(wall, perimeter, floorHeight, config, layers)
 
       expect(result.measurements).toHaveLength(1)
-      expect(result.measurements[0].label).toBe('800mm')
-      expect(result.measurements[0].tags).toContain(TAG_POST_SPACING)
+      expect(result.measurements[0]).toBe(mockMeasurement)
     })
 
     it('should calculate correct bounds from all elements', () => {

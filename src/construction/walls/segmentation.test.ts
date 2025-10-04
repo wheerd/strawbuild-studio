@@ -197,7 +197,7 @@ describe('segmentedWallConstruction', () => {
       // Should generate wall length measurement
       expect(measurements).toHaveLength(1)
       expect(measurements[0].tags).toContain(TAG_WALL_LENGTH)
-      expect(measurements[0].label).toBe('3000mm')
+      expect((measurements[0] as any).size[0]).toBe(3000)
 
       // Should call wall construction once for entire wall
       expect(mockWallConstruction).toHaveBeenCalledTimes(1)
@@ -242,7 +242,7 @@ describe('segmentedWallConstruction', () => {
       )
 
       // Measurement should reflect construction length
-      expect(measurements[0].label).toBe('3250mm')
+      expect((measurements[0] as any).size[0]).toBe(3250)
     })
 
     it('should calculate positions based on ring beam heights', () => {

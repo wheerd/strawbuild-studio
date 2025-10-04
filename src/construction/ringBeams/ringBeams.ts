@@ -25,7 +25,6 @@ import {
   projectPointOntoLine,
   simplifyPolygon
 } from '@/shared/geometry'
-import { formatLength } from '@/shared/utils/formatLength'
 
 export interface BaseRingBeamConfig {
   type: 'full' | 'double'
@@ -152,15 +151,13 @@ function* _constructFullRingBeam(
     yield yieldMeasurement({
       startPoint: [...startInside, 0],
       endPoint: [...endInside, 0],
-      label: formatLength(distance(startInside, endInside)),
-      offset: 1
+      size: [1, 1, config.height]
     })
 
     yield yieldMeasurement({
       startPoint: [...startOutside, 0],
       endPoint: [...endOutside, 0],
-      label: formatLength(distance(startOutside, endOutside)),
-      offset: -1
+      size: [1, 1, config.height]
     })
 
     yield yieldArea({

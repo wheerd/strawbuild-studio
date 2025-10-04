@@ -1,6 +1,7 @@
 import { mat4, vec3 } from 'gl-matrix'
 
-import type { Axis3D, Bounds2D, Bounds3D, Plane3D, Vec3 } from '@/shared/geometry'
+import type { GroupOrElement } from '@/construction/elements'
+import type { Axis3D, Bounds2D, Bounds3D, Plane3D, Vec2, Vec3 } from '@/shared/geometry'
 import { boundsFromPoints, boundsFromPoints3D, createVec2 } from '@/shared/geometry'
 
 export interface Transform {
@@ -166,3 +167,18 @@ export const createSvgTransform = (
 }
 
 export const IDENTITY_PROJECTION: Projection = v => v
+
+export function* allPoints(element: GroupOrElement, projection: Projection): Generator<Vec2> {
+  if ('shape' in element) {
+    yield projection(transform(element.shape.bounds.min, element.transform))
+    yield projection(transform([element.shape.bounds.min[0], element.bounds.max[1]], element.transform))
+    yield projection(transform(element.shape.bounds.max, element.transform))
+    yield projection(transform([element.shape.bounds.max[0], element.bounds.min[1]], element.transform))
+  } else if ('children' in element) {
+    for (const child of element.children) {
+      for (const p of allPoints(child, projection)) {
+        yield transform(p, element.transform)
+      }
+    }
+  }
+}

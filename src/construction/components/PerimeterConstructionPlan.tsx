@@ -107,7 +107,7 @@ export function PerimeterConstructionPlanModal({
         <Flex direction="column" gap="3" height="100%" className="overflow-hidden">
           <Dialog.Title>
             <Flex justify="between" align="center">
-              Ring Beam Construction
+              Perimeter Construction
               <Dialog.Close>
                 <IconButton variant="ghost" size="1">
                   <Cross2Icon />

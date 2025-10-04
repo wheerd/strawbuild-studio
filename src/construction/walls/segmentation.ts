@@ -143,10 +143,8 @@ export function* segmentedWallConstruction(
   yield yieldMeasurement({
     startPoint: [-extensionStart, y, z],
     endPoint: [-extensionStart + constructionLength, y, z],
-    label: formatLength(constructionLength),
-    tags: [TAG_WALL_LENGTH],
-    groupKey: 'wall-length',
-    offset: 2
+    size: [constructionLength, sizeY, sizeZ],
+    tags: [TAG_WALL_LENGTH]
   })
 
   if (wall.openings.length === 0) {
@@ -207,9 +205,7 @@ export function* segmentedWallConstruction(
       yield yieldMeasurement({
         startPoint: [currentPosition, y, z],
         endPoint: [currentPosition + wallSegmentWidth, y, z],
-        label: formatLength(wallSegmentWidth as Length),
-        groupKey: 'segment',
-        offset: -1,
+        size: [wallSegmentWidth, sizeY, sizeZ],
         tags: [TAG_OPENING_SPACING]
       })
     }
@@ -229,9 +225,7 @@ export function* segmentedWallConstruction(
     yield yieldMeasurement({
       startPoint: [currentPosition, y, z],
       endPoint: [currentPosition + remainingWidth, y, z],
-      label: formatLength(remainingWidth as Length),
-      groupKey: 'segment',
-      offset: -1,
+      size: [remainingWidth, sizeY, sizeZ],
       tags: [TAG_OPENING_SPACING]
     })
   }

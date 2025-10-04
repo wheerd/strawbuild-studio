@@ -1,5 +1,6 @@
 import type { ConstructionElement, ConstructionGroup } from '@/construction/elements'
 import type { CutFunction } from '@/construction/geometry'
+import type { Tag } from '@/construction/tags'
 
 /**
  * Helper function for generating CSS classes for construction plan elements and groups
@@ -18,8 +19,13 @@ export function getConstructionElementClasses(
   const cutClassName = aboveCut?.(element) ? 'above-cut' : ''
 
   // Both elements and groups can have tags
-  const tagClasses = element.tags?.flatMap(t => [`tag__${t.id}`, `tag-cat__${t.category}`]) ?? []
+  const tagClasses = getTagClasses(element.tags)
   // Only elements have materials (groups don't)
   const materialClass = 'material' in element && element.material ? element.material : ''
   return [additionalClassName, ...tagClasses, materialClass, baseClass, cutClassName].filter(Boolean).join(' ')
+}
+
+export function getTagClasses(tags?: Tag[], additionalClassName?: string): string {
+  const tagClasses = tags?.flatMap(t => [`tag__${t.id}`, `tag-cat__${t.category}`]) ?? []
+  return [additionalClassName, ...tagClasses].filter(Boolean).join(' ')
 }

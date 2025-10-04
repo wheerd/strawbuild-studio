@@ -4,7 +4,7 @@ import { createOpeningId } from '@/building/model/ids'
 import type { Opening } from '@/building/model/model'
 import { type ConstructionElement, type GroupOrElement, createConstructionElement } from '@/construction/elements'
 import { createMaterialId, resolveDefaultMaterial } from '@/construction/materials/material'
-import type { Measurement } from '@/construction/measurements'
+import type { RawMeasurement } from '@/construction/measurements'
 import { type ConstructionResult, aggregateResults, yieldElement } from '@/construction/results'
 import {
   TAG_HEADER,
@@ -43,7 +43,7 @@ const hasTag = (element: GroupOrElement, tag: Tag): boolean => {
 }
 
 // Helper function to check if a measurement has a specific tag
-const measurementHasTag = (measurement: Measurement, tag: Tag): boolean => {
+const measurementHasTag = (measurement: RawMeasurement, tag: Tag): boolean => {
   return measurement.tags?.some(t => t.id === tag.id) ?? false
 }
 
@@ -172,11 +172,11 @@ describe('constructOpeningFrame', () => {
       expect(sillHeightMeasurements).toHaveLength(1)
       expect(openingHeightMeasurements).toHaveLength(1)
 
-      // Verify measurement values (using mocked formatLength)
-      expect(openingWidthMeasurements[0].label).toBe('1000mm')
-      expect(sillHeightMeasurements[0].label).toBe('800mm')
-      expect(headerHeightMeasurements[0].label).toBe('2000mm') // sillHeight + height
-      expect(openingHeightMeasurements[0].label).toBe('1200mm')
+      // Verify measurement values
+      expect((openingWidthMeasurements[0] as any).size[0]).toBe(1000) // width (AutoMeasurement)
+      expect((sillHeightMeasurements[0] as any).label).toBe('800mm') // sillHeight (DirectMeasurement)
+      expect((headerHeightMeasurements[0] as any).label).toBe('2000mm') // sillHeight + height (DirectMeasurement)
+      expect((openingHeightMeasurements[0] as any).label).toBe('1200mm') // height (DirectMeasurement)
     })
 
     it('generates only header and opening width measurements for door', () => {
@@ -204,8 +204,8 @@ describe('constructOpeningFrame', () => {
       expect(openingHeightMeasurements).toHaveLength(0) // No opening height without sill
 
       // Verify measurement values
-      expect(openingWidthMeasurements[0].label).toBe('800mm')
-      expect(headerHeightMeasurements[0].label).toBe('2000mm')
+      expect((openingWidthMeasurements[0] as any).size[0]).toBe(800) // width (AutoMeasurement)
+      expect((headerHeightMeasurements[0] as any).label).toBe('2000mm') // height (DirectMeasurement)
     })
 
     it('creates only header for door without sill height', () => {

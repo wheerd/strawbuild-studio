@@ -80,12 +80,10 @@ export function* constructOpeningFrame(
 
     // Generate opening width measurement (horizontal, above wall)
     yield yieldMeasurement({
-      startPoint: vec3.fromValues(openingLeft, 0, wallTop),
-      endPoint: vec3.fromValues(openingLeft + openingWidth, 0, wallTop),
-      label: formatLength(openingWidth as Length),
-      groupKey: 'segment',
-      tags: [TAG_OPENING_WIDTH],
-      offset: -1
+      startPoint: vec3.fromValues(openingLeft, wallFront, sillTop),
+      endPoint: vec3.fromValues(openingLeft + openingWidth, wallFront, sillTop),
+      size: [openingWidth, wallThickness, headerBottom - sillTop],
+      tags: [TAG_OPENING_WIDTH]
     })
 
     // Generate header height measurement (vertical, in opening center)

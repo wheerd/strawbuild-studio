@@ -1,7 +1,7 @@
 import { type Bounds3D, mergeBounds } from '@/shared/geometry'
 
 import type { ConstructionElement, ConstructionElementId, GroupOrElement } from './elements'
-import type { Measurement } from './measurements'
+import type { RawMeasurement } from './measurements'
 import type { HighlightedArea } from './model'
 
 export interface ConstructionIssue {
@@ -14,7 +14,7 @@ export interface ConstructionIssue {
 
 export type ConstructionResult =
   | { type: 'element'; element: GroupOrElement }
-  | { type: 'measurement'; measurement: Measurement }
+  | { type: 'measurement'; measurement: RawMeasurement }
   | { type: 'error'; error: ConstructionIssue }
   | { type: 'warning'; warning: ConstructionIssue }
   | { type: 'area'; area: HighlightedArea }
@@ -34,7 +34,10 @@ export const yieldError = (error: ConstructionIssue): ConstructionResult => ({ t
 
 export const yieldWarning = (warning: ConstructionIssue): ConstructionResult => ({ type: 'warning', warning })
 
-export const yieldMeasurement = (measurement: Measurement): ConstructionResult => ({ type: 'measurement', measurement })
+export const yieldMeasurement = (measurement: RawMeasurement): ConstructionResult => ({
+  type: 'measurement',
+  measurement
+})
 
 export const yieldArea = (area: HighlightedArea): ConstructionResult => ({ type: 'area', area })
 

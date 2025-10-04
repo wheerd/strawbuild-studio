@@ -1,11 +1,11 @@
 import { Box, Button, Flex, SegmentedControl } from '@radix-ui/themes'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 
-import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
+import { Measurements } from '@/construction/components/Measurements'
 import { type CutFunction, bounds3Dto2D, createZOrder, project, projectRotation } from '@/construction/geometry'
 import type { ConstructionModel, HighlightedCuboid, HighlightedPolygon } from '@/construction/model'
 import { SVGViewport, type SVGViewportRef } from '@/shared/components/SVGViewport'
-import { type Plane3D, add, complementaryAxis, direction, distance } from '@/shared/geometry'
+import { type Plane3D, complementaryAxis } from '@/shared/geometry'
 import { COLORS } from '@/shared/theme/colors'
 
 import { ConstructionElementShape } from './ConstructionElementShape'
@@ -174,30 +174,7 @@ export function ConstructionPlan({ model, views, containerSize }: ConstructionPl
         })}
 
         {/* Measurements */}
-        {model.measurements?.map((measurement, index) => {
-          const svgStartPoint = projection(measurement.startPoint)
-          const svgEndPoint = projection(measurement.endPoint)
-
-          const dir = direction(measurement.startPoint, measurement.endPoint)
-          const svgDir = direction(svgStartPoint, svgEndPoint)
-
-          const offsetSign = distance(add(dir, svgDir), [0, 0, 0]) === 0 ? -1 : 1
-
-          return svgStartPoint[2] === svgEndPoint[2] ? (
-            <SvgMeasurementIndicator
-              key={`measurement-${index}`}
-              startPoint={svgStartPoint}
-              endPoint={svgEndPoint}
-              label={measurement.label}
-              offset={(measurement.offset ?? 0) * 60 * offsetSign}
-              color={COLORS.indicators.main}
-              fontSize={60}
-              strokeWidth={10}
-            />
-          ) : (
-            <></>
-          )
-        })}
+        <Measurements model={model} projection={projection} />
 
         {/* Cuboid Areas - Top */}
         {cuboidAreas

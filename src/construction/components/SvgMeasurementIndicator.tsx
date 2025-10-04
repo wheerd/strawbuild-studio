@@ -11,12 +11,14 @@ interface SvgMeasurementIndicatorProps {
   color?: string
   fontSize?: number
   strokeWidth?: number
+  className?: string
 }
 
 export function SvgMeasurementIndicator({
   startPoint,
   endPoint,
   label,
+  className,
   offset = 50,
   color = COLORS.ui.primary,
   fontSize = 40,
@@ -82,7 +84,7 @@ export function SvgMeasurementIndicator({
   const rightEndpointY = textY + gapHalfWidth * dirY
 
   return (
-    <g>
+    <g className={className}>
       {/* Connection lines from measurement points to dimension line */}
 
       <line

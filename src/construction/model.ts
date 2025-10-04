@@ -1,14 +1,16 @@
-import { type Bounds3D, type Plane3D, type Polygon2D, mergeBounds } from '@/shared/geometry'
+import { vec3 } from 'gl-matrix'
+
+import { type Bounds3D, type Plane3D, type Polygon2D, mergeBounds, vec3Add } from '@/shared/geometry'
 
 import { type ConstructionGroup, type GroupOrElement, createConstructionElementId } from './elements'
 import { type Transform, transform, transformBounds } from './geometry'
-import type { Measurement } from './measurements'
+import type { RawMeasurement } from './measurements'
 import type { ConstructionIssue } from './results'
 import type { Tag } from './tags'
 
 export interface ConstructionModel {
   elements: GroupOrElement[]
-  measurements: Measurement[]
+  measurements: RawMeasurement[]
   areas: HighlightedArea[]
   errors: ConstructionIssue[]
   warnings: ConstructionIssue[]
@@ -83,11 +85,16 @@ export function transformModel(model: ConstructionModel, t: Transform, tags?: Ta
 
   return {
     elements: [transformedGroup],
-    measurements: model.measurements.map(m => ({
-      ...m,
-      startPoint: transform(m.startPoint, t),
-      endPoint: transform(m.endPoint, t)
-    })),
+    measurements: model.measurements.map(m => {
+      const startPoint = transform(m.startPoint, t)
+      const endPoint = transform(m.endPoint, t)
+      if ('size' in m) {
+        const sizeEnd = transform(vec3Add(m.startPoint, m.size), t)
+        const transformedSize = vec3.subtract(vec3.create(), sizeEnd, startPoint)
+        return { ...m, startPoint, endPoint, size: transformedSize }
+      }
+      return { ...m, startPoint, endPoint }
+    }),
     areas: model.areas.map(a => transformArea(a, t)),
     errors: model.errors.map(e => ({ ...e, bounds: e.bounds ? transformBounds(e.bounds, t) : undefined })),
     warnings: model.warnings.map(w => ({ ...w, bounds: w.bounds ? transformBounds(w.bounds, t) : undefined })),

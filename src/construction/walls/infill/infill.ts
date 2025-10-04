@@ -21,7 +21,6 @@ import { TAG_POST_SPACING } from '@/construction/tags'
 import type { BaseConstructionConfig, PerimeterWallConstructionMethod } from '@/construction/walls/construction'
 import { segmentedWallConstruction } from '@/construction/walls/segmentation'
 import { type Length, type Vec3, boundsFromCuboid, mergeBounds } from '@/shared/geometry'
-import { formatLength } from '@/shared/utils/formatLength'
 
 export interface InfillConstructionConfig extends BaseConstructionConfig {
   type: 'infill'
@@ -128,10 +127,8 @@ function* constructInfillRecursive(
     yield yieldMeasurement({
       startPoint: strawPosition,
       endPoint: vec3.fromValues(strawPosition[0] + strawSize[0], strawPosition[1], strawPosition[2]),
-      label: formatLength(strawSize[0] as Length),
-      tags: [TAG_POST_SPACING],
-      groupKey: 'post-spacing',
-      offset: 1
+      size: strawSize,
+      tags: [TAG_POST_SPACING]
     })
   }
 
