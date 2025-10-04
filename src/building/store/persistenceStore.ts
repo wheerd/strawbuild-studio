@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 
-import { createFileInput, downloadFile, exportToJSON, importFromJSON } from '@/shared/services/exportImport'
+import { createFileInput } from '@/shared/services/exportImport'
 
 export interface PersistenceState {
   isSaving: boolean
@@ -95,17 +95,10 @@ export const usePersistenceStore = create<PersistenceStore>()(
         actions.setExporting(true)
 
         try {
-          // Dynamic imports to avoid circular dependencies
-          const { getModelState } = await import('@/building/store')
-          const { getConfigState } = await import('@/construction/config/store')
-
-          const modelData = getModelState()
-          const configData = getConfigState()
-
-          const result = exportToJSON(modelData, configData)
+          const { ProjectImportExportService } = await import('@/shared/services/ProjectImportExportService')
+          const result = await ProjectImportExportService.exportProject()
 
           if (result.success) {
-            downloadFile(result.data, result.filename)
             actions.setExporting(false)
           } else {
             actions.setExportError(result.error)
@@ -120,24 +113,17 @@ export const usePersistenceStore = create<PersistenceStore>()(
         actions.setImporting(true)
 
         createFileInput(async (content: string) => {
-          const result = importFromJSON(content)
+          try {
+            const { ProjectImportExportService } = await import('@/shared/services/ProjectImportExportService')
+            const result = await ProjectImportExportService.importProject(content)
 
-          if (result.success) {
-            try {
-              // Dynamic imports to avoid circular dependencies
-              const { setModelState } = await import('@/building/store')
-              const { setConfigState } = await import('@/construction/config/store')
-
-              // Import model and config data
-              setModelState(result.data.modelStore)
-              setConfigState(result.data.configStore)
-
+            if (result.success) {
               actions.setImporting(false)
-            } catch (error) {
-              actions.setImportError(error instanceof Error ? error.message : 'Failed to import')
+            } else {
+              actions.setImportError(result.error)
             }
-          } else {
-            actions.setImportError(result.error)
+          } catch (error) {
+            actions.setImportError(error instanceof Error ? error.message : 'Failed to import')
           }
         })
       }

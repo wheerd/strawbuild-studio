@@ -130,31 +130,6 @@ export const useModelActions = (): StoreActions => useModelStore(state => state.
 // Non-reactive actions-only accessor for tools and services
 export const getModelActions = (): StoreActions => useModelStore.getState().actions
 
-// Export model state for persistence
-export const getModelState = () => {
-  const state = useModelStore.getState()
-  return {
-    storeys: state.storeys,
-    perimeters: state.perimeters,
-    activeStoreyId: state.activeStoreyId
-  }
-}
-
-// Import model state from persistence
-export const setModelState = (data: {
-  storeys: Record<StoreyId, Storey>
-  perimeters: Record<PerimeterId, Perimeter>
-  activeStoreyId: StoreyId
-}) => {
-  const actions = getModelActions()
-  actions.reset()
-  useModelStore.setState({
-    storeys: data.storeys,
-    perimeters: data.perimeters,
-    activeStoreyId: data.activeStoreyId
-  })
-}
-
 // Non-reactive undo/redo functions for direct access (not hooks)
 export const getUndoFunction = (): (() => void) => useModelStore.temporal.getState().undo
 export const getRedoFunction = (): (() => void) => useModelStore.temporal.getState().redo

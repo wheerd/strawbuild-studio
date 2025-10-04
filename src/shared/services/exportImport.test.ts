@@ -3,23 +3,31 @@ import { describe, expect, it } from 'vitest'
 import { createExportData, exportToJSON, importFromJSON, validateImportData } from './exportImport'
 
 const mockModelState = {
-  storeys: {
-    storey_1: {
-      id: 'storey_1',
+  storeys: [
+    {
       name: 'Ground Floor',
       level: 0,
-      height: { value: 2500, unit: 'mm' as const }
+      height: 2500,
+      perimeters: [
+        {
+          corners: [
+            { insideX: 0, insideY: 0, constuctedByWall: 'next' as const },
+            { insideX: 100, insideY: 0, constuctedByWall: 'next' as const },
+            { insideX: 100, insideY: 100, constuctedByWall: 'next' as const },
+            { insideX: 0, insideY: 100, constuctedByWall: 'next' as const }
+          ],
+          walls: [
+            { thickness: 200, constructionMethodId: 'method_1', openings: [] },
+            { thickness: 200, constructionMethodId: 'method_1', openings: [] },
+            { thickness: 200, constructionMethodId: 'method_1', openings: [] },
+            { thickness: 200, constructionMethodId: 'method_1', openings: [] }
+          ],
+          baseRingBeamMethodId: 'beam_1',
+          topRingBeamMethodId: 'beam_1'
+        }
+      ]
     }
-  },
-  perimeters: {
-    perimeter_1: {
-      id: 'perimeter_1',
-      storeyId: 'storey_1',
-      name: 'Test Perimeter',
-      coordinates: []
-    }
-  },
-  activeStoreyId: 'storey_1' as any
+  ]
 }
 
 const mockConfigState = {
@@ -71,9 +79,7 @@ describe('exportImport', () => {
         version: '1.0.0',
         timestamp: '2023-01-01T00:00:00.000Z',
         modelStore: {
-          storeys: {},
-          perimeters: {},
-          activeStoreyId: 'test'
+          storeys: []
         },
         configStore: {
           ringBeamConstructionMethods: {},

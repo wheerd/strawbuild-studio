@@ -1,5 +1,5 @@
 import { CheckIcon, Cross2Icon, DownloadIcon, UpdateIcon, UploadIcon } from '@radix-ui/react-icons'
-import { Box, Button, DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
+import { Box, DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
 import React from 'react'
 
 import { usePersistenceStore } from '@/building/store/persistenceStore'

@@ -52,7 +52,7 @@ const validateStoreyHeight = (height: Length): void => {
 }
 
 const groundFloor: Storey = {
-  id: 'store_ground' as StoreyId,
+  id: 'storey_ground' as StoreyId,
   name: 'Ground Floor',
   level: createStoreyLevel(0),
   height: createLength(2400)

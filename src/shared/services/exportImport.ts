@@ -1,19 +1,45 @@
-import type {
-  PerimeterConstructionMethodId,
-  PerimeterId,
-  RingBeamConstructionMethodId,
-  StoreyId
-} from '@/building/model/ids'
-import type { Perimeter, Storey } from '@/building/model/model'
+import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
 import type { PerimeterConstructionMethod, RingBeamConstructionMethod } from '@/construction/config/types'
+
+export interface ExportedStorey {
+  name: string
+  level: number
+  height: number
+  perimeters: ExportedPerimeter[]
+}
+
+export interface ExportedPerimeter {
+  corners: ExportedCorner[]
+  walls: ExportedWall[]
+  baseRingBeamMethodId?: string
+  topRingBeamMethodId?: string
+}
+
+export interface ExportedCorner {
+  insideX: number
+  insideY: number
+  constuctedByWall: 'previous' | 'next'
+}
+
+export interface ExportedWall {
+  thickness: number
+  constructionMethodId: string
+  openings: ExportedOpening[]
+}
+
+export interface ExportedOpening {
+  type: 'door' | 'window' | 'passage'
+  offsetFromStart: number
+  width: number
+  height: number
+  sillHeight?: number
+}
 
 export interface ExportData {
   version: string
   timestamp: string
   modelStore: {
-    storeys: Record<StoreyId, Storey>
-    perimeters: Record<PerimeterId, Perimeter>
-    activeStoreyId: StoreyId
+    storeys: ExportedStorey[]
   }
   configStore: {
     ringBeamConstructionMethods: Record<RingBeamConstructionMethodId, RingBeamConstructionMethod>
@@ -105,11 +131,7 @@ export function validateImportData(data: unknown): data is ExportData {
   }
 
   const modelStore = obj.modelStore as Record<string, unknown>
-  if (
-    typeof modelStore.storeys !== 'object' ||
-    typeof modelStore.perimeters !== 'object' ||
-    typeof modelStore.activeStoreyId !== 'string'
-  ) {
+  if (!Array.isArray(modelStore.storeys)) {
     return false
   }
 
