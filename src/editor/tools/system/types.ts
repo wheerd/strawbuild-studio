@@ -13,7 +13,6 @@ export type ToolId =
   | 'perimeter.add-opening'
   | 'perimeter.split-wall'
   | 'test.data'
-  | 'test.reset'
 
 export interface ToolMetadata {
   name: string

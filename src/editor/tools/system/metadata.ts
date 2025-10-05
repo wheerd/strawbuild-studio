@@ -6,8 +6,7 @@ import {
   CursorArrowIcon,
   DividerHorizontalIcon,
   MoveIcon,
-  RocketIcon,
-  TrashIcon
+  RocketIcon
 } from '@radix-ui/react-icons'
 
 import type { ToolGroup, ToolId, ToolMetadata } from './types'
@@ -60,12 +59,6 @@ export const TOOL_METADATA: Record<ToolId, ToolMetadata> = {
     icon: '🏗️',
     iconComponent: RocketIcon,
     hotkey: 't'
-  },
-  'test.reset': {
-    name: 'Reset',
-    icon: '🗑️',
-    iconComponent: TrashIcon,
-    hotkey: 'r'
   }
 } as const
 
@@ -80,7 +73,7 @@ export const TOOL_GROUPS: ToolGroup[] = [
   },
   {
     name: 'Test Data',
-    tools: ['test.data', 'test.reset'] as const
+    tools: ['test.data'] as const
   }
 ] as const
 

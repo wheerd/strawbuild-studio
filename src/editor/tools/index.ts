@@ -6,7 +6,6 @@ import { PerimeterTool } from './perimeter/add/PerimeterTool'
 import { PerimeterPresetTool } from './perimeter/preset/PerimeterPresetTool'
 import { SplitWallTool } from './perimeter/split/SplitWallTool'
 import type { ToolId, ToolImplementation } from './system/types'
-import { ResetTool } from './test-data/ResetTool'
 import { TestDataTool } from './test-data/TestDataTool'
 
 export { MainToolbar } from '@/editor/MainToolbar'
@@ -22,8 +21,7 @@ const TOOL_IMPLEMENTATIONS: Record<ToolId, ToolImplementation> = {
   'perimeter.preset': new PerimeterPresetTool(),
   'perimeter.add-opening': new AddOpeningTool(),
   'perimeter.split-wall': new SplitWallTool(),
-  'test.data': new TestDataTool(),
-  'test.reset': new ResetTool()
+  'test.data': new TestDataTool()
 }
 
 export function getToolById(toolId: ToolId): ToolImplementation {
