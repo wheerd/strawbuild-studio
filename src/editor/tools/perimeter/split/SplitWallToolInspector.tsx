@@ -1,4 +1,4 @@
-import { Button, Callout, Flex, Heading, Text } from '@radix-ui/themes'
+import { Button, Callout, Flex, Heading, Kbd, Text } from '@radix-ui/themes'
 
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
@@ -27,14 +27,19 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
           <Callout.Text>Ready to split wall</Callout.Text>
         </Callout.Root>
       )}
+      {!state.isValidSplit && state.splitError && (
+        <Callout.Root color="red">
+          <Callout.Text>{state.splitError}</Callout.Text>
+        </Callout.Root>
+      )}
 
       {/* Action Buttons */}
       <Flex direction="column" gap="2">
         <Button onClick={() => tool.commitSplit()} disabled={!state.isValidSplit} size="2">
-          Split Wall (Enter)
+          Split Wall <Kbd>Enter</Kbd>
         </Button>
         <Button variant="soft" onClick={() => tool.cancel()} size="2">
-          Cancel (Esc)
+          Cancel <Kbd>Esc</Kbd>
         </Button>
       </Flex>
 
@@ -44,7 +49,7 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
           • Hover over wall to preview split position
         </Text>
         <Text size="1" color="gray">
-          • Click to set target position
+          • Click to set split position
         </Text>
         <Text size="1" color="gray">
           • Click measurements to enter precise values

@@ -1,4 +1,5 @@
 import { clearPersistence, getModelActions } from '@/building/store'
+import { getToolActions } from '@/editor/tools/system'
 import type { ToolImplementation } from '@/editor/tools/system/types'
 
 /**
@@ -10,12 +11,6 @@ export class ResetTool implements ToolImplementation {
 
   // Lifecycle methods
   onActivate(): void {
-    // Immediately deactivate and return to select tool
-    setTimeout(async () => {
-      const { pushTool } = await import('@/editor/tools/system/store')
-      pushTool('basic.select')
-    }, 0)
-
     // Perform the reset operation
     const modelStore = getModelActions()
 
@@ -29,6 +24,8 @@ export class ResetTool implements ToolImplementation {
       console.log('✅ Model reset completed - all data cleared')
     } catch (error) {
       console.error('❌ Failed to reset model:', error)
+    } finally {
+      getToolActions().popTool()
     }
   }
 

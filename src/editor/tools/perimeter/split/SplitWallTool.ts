@@ -8,7 +8,7 @@ import { getToolActions } from '@/editor/tools/system'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
 import type { CanvasEvent, ToolImplementation } from '@/editor/tools/system/types'
 import type { Length, Vec2 } from '@/shared/geometry'
-import { distance, distanceToLineSegment, projectPointOntoLine } from '@/shared/geometry'
+import { distanceToLineSegment, dot, subtract } from '@/shared/geometry'
 
 import { SplitWallToolInspector } from './SplitWallToolInspector'
 import { SplitWallToolOverlay } from './SplitWallToolOverlay'
@@ -27,6 +27,7 @@ export interface SplitWallToolState {
   // Validation & feedback
   isValidHover: boolean
   isValidSplit: boolean
+  splitError: string | null
 }
 
 export class SplitWallTool extends BaseTool implements ToolImplementation {
@@ -44,7 +45,8 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
     targetPosition: null,
 
     isValidHover: false,
-    isValidSplit: false
+    isValidSplit: false,
+    splitError: null
   }
 
   public setTargetWall(perimeterId: PerimeterId, wallId: PerimeterWallId): void {
@@ -81,8 +83,10 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
     if (position !== null) {
       const validation = this.validateSplitPosition(position)
       this.state.isValidSplit = validation.valid
+      this.state.splitError = validation.error ?? null
     } else {
       this.state.isValidSplit = false
+      this.state.splitError = null
     }
     this.triggerRender()
   }
@@ -153,12 +157,14 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
   private positionFromWorldPoint(wall: PerimeterWall, worldPoint: Vec2): Length | null {
     const insideDist = distanceToLineSegment(worldPoint, wall.insideLine)
     const outsideDist = distanceToLineSegment(worldPoint, wall.outsideLine)
-    if (Math.max(insideDist, outsideDist) <= wall.thickness) {
-      const projected = projectPointOntoLine(worldPoint, {
-        point: wall.insideLine.start,
-        direction: wall.direction
-      })
-      return distance(wall.insideLine.start, projected)
+    if (Math.max(insideDist, outsideDist) <= wall.thickness * 1.5) {
+      // Get signed distance along wall direction
+      const toPoint = subtract(worldPoint, wall.insideLine.start)
+      const signedDistance = dot(toPoint, wall.direction)
+
+      // Clamp to wall bounds
+      const clampedDistance = Math.max(0, Math.min(signedDistance, wall.wallLength))
+      return clampedDistance as Length
     }
     return null
   }
@@ -188,7 +194,7 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
 
     if (this.state.wall) {
       const position = this.positionFromWorldPoint(this.state.wall, event.stageCoordinates)
-      if (position) {
+      if (position !== null) {
         this.updateTargetPosition(position)
         return true
       }
@@ -231,6 +237,7 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
     this.state.targetPosition = null
     this.state.isValidSplit = false
     this.state.isValidHover = false
+    this.state.splitError = null
     this.triggerRender()
   }
 

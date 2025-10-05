@@ -3,7 +3,7 @@ import { Flex, IconButton, Kbd, Separator, Text, Tooltip } from '@radix-ui/theme
 import React, { useCallback } from 'react'
 
 import { TOOL_GROUPS, getToolInfoById } from '@/editor/tools/system/metadata'
-import { pushTool, useActiveToolId } from '@/editor/tools/system/store'
+import { replaceTool, useActiveToolId } from '@/editor/tools/system/store'
 import type { ToolId } from '@/editor/tools/system/types'
 import { Logo } from '@/shared/components/Logo'
 
@@ -11,7 +11,7 @@ export function MainToolbar(): React.JSX.Element {
   const activeToolId = useActiveToolId()
 
   const handleToolSelect = useCallback((toolId: ToolId) => {
-    pushTool(toolId)
+    replaceTool(toolId)
   }, [])
 
   return (

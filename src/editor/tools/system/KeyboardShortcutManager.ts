@@ -2,7 +2,7 @@ import type { SelectableId } from '@/building/model/ids'
 import { isOpeningId, isPerimeterCornerId, isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
 import { getCanRedo, getCanUndo, getModelActions, getRedoFunction, getUndoFunction } from '@/building/store'
 import { clearSelection, getCurrentSelection, getSelectionPath, popSelection } from '@/editor/hooks/useSelectionStore'
-import { getActiveTool, pushTool } from '@/editor/tools/system/store'
+import { getActiveTool, popTool, replaceTool } from '@/editor/tools/system/store'
 
 import { TOOL_METADATA } from './metadata'
 import type { ShortcutDefinition, ToolId } from './types'
@@ -49,7 +49,7 @@ export class KeyboardShortcutManager {
     // Priority 4: Tool activation shortcuts
     const toolId = this.toolActivationShortcuts.get(key)
     if (toolId) {
-      pushTool(toolId as ToolId)
+      replaceTool(toolId as ToolId)
       return true
     }
 
@@ -78,7 +78,7 @@ export class KeyboardShortcutManager {
     for (const [key, toolId] of this.toolActivationShortcuts.entries()) {
       shortcuts.push({
         key,
-        action: () => pushTool(toolId as ToolId),
+        action: () => replaceTool(toolId as ToolId),
         priority: 60,
         scope: 'global',
         source: `tool-activation:${toolId}`,
@@ -142,7 +142,7 @@ export class KeyboardShortcutManager {
           // Return to select tool if not already active
           const activeTool = getActiveTool()
           if (activeTool?.id !== 'basic.select') {
-            pushTool('basic.select')
+            popTool()
           }
         },
         condition: () => true, // Always available

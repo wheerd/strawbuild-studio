@@ -11,8 +11,13 @@ import { FitToViewTool } from './FitToViewTool'
 // Mock the store hooks
 vi.mock('@/editor/hooks/useViewportStore')
 vi.mock('@/building/store')
-vi.mock('@/editor/tools/store/toolStore', () => ({
-  pushTool: vi.fn()
+vi.mock('@/editor/tools/system', () => ({
+  getToolActions: vi.fn(() => ({
+    popTool: vi.fn(),
+    pushTool: vi.fn(),
+    replaceTool: vi.fn(),
+    clearToDefault: vi.fn()
+  }))
 }))
 
 describe('FitToViewTool', () => {

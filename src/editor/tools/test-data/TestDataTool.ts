@@ -1,6 +1,7 @@
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config/store'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
+import { getToolActions } from '@/editor/tools/system'
 import type { ToolImplementation } from '@/editor/tools/system/types'
 import { boundsFromPoints, createLength, createVec2 } from '@/shared/geometry'
 
@@ -13,12 +14,6 @@ export class TestDataTool implements ToolImplementation {
 
   // Lifecycle methods
   onActivate(): void {
-    // Immediately deactivate and return to select tool
-    setTimeout(async () => {
-      const { pushTool } = await import('@/editor/tools/system/store')
-      pushTool('basic.select')
-    }, 0)
-
     // Perform the test data creation operation
     const modelStore = getModelActions()
     const activeStoreyId = modelStore.getActiveStoreyId()
@@ -147,6 +142,8 @@ export class TestDataTool implements ToolImplementation {
       }
     } catch (error) {
       console.error('❌ Failed to create test data:', error)
+    } finally {
+      getToolActions().popTool()
     }
   }
 

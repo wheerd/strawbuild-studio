@@ -116,11 +116,13 @@ export const useToolStore = create<ToolStore>()(
         const currentTool = state.getActiveTool()
         currentTool.onDeactivate?.()
 
+        const remainingStack = state.toolStack.length <= 1 ? state.toolStack : state.toolStack.slice(0, -1)
+
         // Replace top of stack
         set(
-          state => ({
-            toolStack: [...state.toolStack.slice(0, -1), toolId]
-          }),
+          {
+            toolStack: [...remainingStack, toolId]
+          },
           false,
           'tool/replace'
         )
