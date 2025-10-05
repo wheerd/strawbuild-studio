@@ -934,6 +934,20 @@ const updatePerimeterGeometry = (perimeter: Perimeter): void => {
   }
 }
 
+// Helper to merge openings when corner is exactly straight (180°)
+const mergeOpeningsForStraightCorner = (wall1: PerimeterWall, wall2: PerimeterWall): Opening[] => {
+  // Keep all openings from wall1 as-is
+  const wall1Openings = [...wall1.openings]
+
+  // Adjust wall2 openings by adding wall1's wall length to their offsets
+  const wall2Openings = wall2.openings.map(opening => ({
+    ...opening,
+    offsetFromStart: (opening.offsetFromStart + wall1.wallLength) as Length
+  }))
+
+  return [...wall1Openings, ...wall2Openings]
+}
+
 // Helper to remove a corner and merge adjacent walls
 const removeCornerAndMergeWalls = (perimeter: Perimeter, cornerIndex: number): void => {
   const prevWallIndex = (cornerIndex - 1 + perimeter.walls.length) % perimeter.walls.length
@@ -944,13 +958,17 @@ const removeCornerAndMergeWalls = (perimeter: Perimeter, cornerIndex: number): v
   const wall2 = perimeter.walls[currentWallIndex]
   const mergedThickness = createLength(Math.max(wall1.thickness, wall2.thickness))
 
+  // Check if corner is exactly straight (180°) to preserve openings
+  const corner = perimeter.corners[cornerIndex]
+  const isExactlyStraight = corner.interiorAngle === 180
+
   perimeter.corners.splice(cornerIndex, 1)
 
   const mergedWall: PerimeterWall = {
     id: createPerimeterWallId(),
     thickness: mergedThickness,
     constructionMethodId: wall1.constructionMethodId,
-    openings: [], // Openings are deleted as they don't make sense on new merged wall
+    openings: isExactlyStraight ? mergeOpeningsForStraightCorner(wall1, wall2) : [], // Keep current behavior for non-straight corners
     // Geometry properties will be set by updatePerimeterGeometry
     insideLength: createLength(0),
     outsideLength: createLength(0),

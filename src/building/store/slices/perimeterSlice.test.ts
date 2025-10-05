@@ -2118,5 +2118,133 @@ describe('OuterWallsSlice', () => {
         })
       })
     })
+
+    describe('Smart corner merging', () => {
+      it('should preserve openings when removing straight corner (180°)', () => {
+        // Create a perimeter with a split wall
+        const boundary = {
+          points: [
+            [0, 0],
+            [0, 3000],
+            [0, 6000],
+            [2000, 6000],
+            [2000, 0]
+          ]
+        }
+        const constructionMethodId = createPerimeterConstructionMethodId()
+
+        const perimeter = store.actions.addPerimeter(createStoreyId(), boundary, constructionMethodId)
+
+        // Add openings to the first wall
+        store.actions.addPerimeterWallOpening(perimeter.id, perimeter.walls[0].id, {
+          type: 'door',
+          offsetFromStart: createLength(500),
+          width: createLength(800),
+          height: createLength(2100)
+        })
+
+        store.actions.addPerimeterWallOpening(perimeter.id, perimeter.walls[0].id, {
+          type: 'window',
+          offsetFromStart: createLength(1500),
+          width: createLength(600),
+          height: createLength(1200)
+        })
+
+        // Add openings to the second wall
+        store.actions.addPerimeterWallOpening(perimeter.id, perimeter.walls[1].id, {
+          type: 'window',
+          offsetFromStart: createLength(300),
+          width: createLength(400),
+          height: createLength(1200)
+        })
+
+        // Manually set the corner to be exactly straight (180°)
+        // This simulates what would happen when a corner becomes straight
+        const cornerToMerge = perimeter.corners[1] // Split corner
+        expect(cornerToMerge.interiorAngle).toBe(180) // Should be 180° for wall split
+
+        const originalWall1Openings = perimeter.walls[0].openings.length
+        const originalWall2Openings = perimeter.walls[1].openings.length
+        const expectedTotalOpenings = originalWall1Openings + originalWall2Openings
+
+        // Remove the straight corner - this should merge walls and preserve openings
+        const success = store.actions.removePerimeterCorner(perimeter.id, cornerToMerge.id)
+        expect(success).toBe(true)
+
+        const updatedPerimeter = store.perimeters[perimeter.id]!
+
+        // Should have one less corner and one less wall
+        expect(updatedPerimeter.corners).toHaveLength(4)
+        expect(updatedPerimeter.walls).toHaveLength(4)
+
+        // Find the merged wall (the one that would have combined the openings)
+        // It should be the first wall after the merge
+        const mergedWall = updatedPerimeter.walls[0]
+
+        // The merged wall should have all openings from both original walls
+        expect(mergedWall.openings).toHaveLength(expectedTotalOpenings)
+
+        // Verify opening positions are correct
+        const sortedOpenings = mergedWall.openings.sort((a, b) => a.offsetFromStart - b.offsetFromStart)
+
+        // First opening should be the door from the original first wall
+        expect(sortedOpenings[0].type).toBe('door')
+        expect(sortedOpenings[0].offsetFromStart).toBe(500)
+
+        // Second opening should be the window from the original first wall
+        expect(sortedOpenings[1].type).toBe('window')
+        expect(sortedOpenings[1].offsetFromStart).toBe(1500)
+
+        // Third opening should be from the second wall, offset by the first wall's length
+        expect(sortedOpenings[2].type).toBe('window')
+        // Original offset (300) + first wall length (3000) = 2860
+        expect(sortedOpenings[2].offsetFromStart).toBe(3300)
+      })
+
+      it('should delete openings when removing non-straight corner (preserves current behavior)', () => {
+        // Create a simple rectangular perimeter
+        const boundary = {
+          points: [
+            [0, 0],
+            [0, 3000],
+            [3000, 3000],
+            [3000, 0]
+          ]
+        }
+        const constructionMethodId = createPerimeterConstructionMethodId()
+        const perimeter = store.actions.addPerimeter(createStoreyId(), boundary, constructionMethodId)
+
+        // Add openings to walls
+        store.actions.addPerimeterWallOpening(perimeter.id, perimeter.walls[0].id, {
+          type: 'door',
+          offsetFromStart: createLength(500),
+          width: createLength(800),
+          height: createLength(2100)
+        })
+
+        console.log(perimeter.walls[0])
+
+        store.actions.addPerimeterWallOpening(perimeter.id, perimeter.walls[1].id, {
+          type: 'window',
+          offsetFromStart: createLength(300),
+          width: createLength(400),
+          height: createLength(1200)
+        })
+
+        // Keep the corner at 90° (non-straight)
+        const cornerToMerge = perimeter.corners[1]
+        expect(cornerToMerge.interiorAngle).toBe(90) // Should be 90° for rectangle
+
+        // Remove the non-straight corner
+        const success = store.actions.removePerimeterCorner(perimeter.id, cornerToMerge.id)
+        expect(success).toBe(true)
+
+        const updatedPerimeter = store.perimeters[perimeter.id]!
+        const mergedWall = updatedPerimeter.walls[0]
+
+        // For non-straight corners, openings should be deleted (current behavior)
+        expect(mergedWall.openings).toHaveLength(0)
+      })
+    })
   })
 })

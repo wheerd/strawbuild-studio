@@ -4,6 +4,7 @@ import { useCallback, useMemo } from 'react'
 import type { PerimeterCornerId, PerimeterId } from '@/building/model/ids'
 import { useModelActions, usePerimeterById } from '@/building/store'
 import { useConfigActions } from '@/construction/config/store'
+import { popSelection } from '@/editor/hooks/useSelectionStore'
 
 interface PerimeterCornerInspectorProps {
   perimeterId: PerimeterId
@@ -12,7 +13,8 @@ interface PerimeterCornerInspectorProps {
 
 export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCornerInspectorProps): React.JSX.Element {
   // Get model store functions - use specific selectors for stable references
-  const { updatePerimeterCornerConstructedByWall: updateCornerConstructedByWall } = useModelActions()
+  const { updatePerimeterCornerConstructedByWall: updateCornerConstructedByWall, removePerimeterCorner } =
+    useModelActions()
   const { getPerimeterConstructionMethodById } = useConfigActions()
 
   // Get perimeter from store
@@ -59,6 +61,12 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
     updateCornerConstructedByWall(perimeterId, cornerId, newConstructedByWall)
   }, [updateCornerConstructedByWall, perimeterId, cornerId, corner.constuctedByWall])
 
+  const handleMergeCorner = useCallback(() => {
+    if (removePerimeterCorner(perimeterId, cornerId)) {
+      popSelection()
+    }
+  }, [removePerimeterCorner, perimeterId, cornerId])
+
   // Check if there are construction notes to display
   const hasConstructionNotes = useMemo(() => {
     if (!previousWall || !nextWall) return false
@@ -95,6 +103,12 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
         <Button size="1" onClick={handleToggleConstructedByWall}>
           Switch main wall
         </Button>
+
+        {corner.interiorAngle === 180 && (
+          <Button size="1" onClick={handleMergeCorner} variant="soft">
+            Merge Straight Corner
+          </Button>
+        )}
       </Flex>
 
       <Separator size="4" />
