@@ -31,39 +31,7 @@ describe('RingBeamConstructionModal', () => {
   })
 
   it('renders the trigger button', () => {
-    render(
-      <RingBeamConstructionPlanModal
-        perimeterId={mockPerimeterId}
-        position="base"
-        trigger={<button>Test Trigger</button>}
-      />
-    )
-
-    expect(screen.getByText('Test Trigger')).toBeInTheDocument()
-  })
-
-  it('renders modal with base position initially', () => {
-    render(
-      <RingBeamConstructionPlanModal
-        perimeterId={mockPerimeterId}
-        position="base"
-        trigger={<button>Test Trigger</button>}
-      />
-    )
-
-    // The modal should render the trigger
-    expect(screen.getByText('Test Trigger')).toBeInTheDocument()
-  })
-
-  it('handles missing perimeter gracefully', () => {
-    // This test ensures the component doesn't crash when perimeter is not found
-    render(
-      <RingBeamConstructionPlanModal
-        perimeterId={mockPerimeterId}
-        position="top"
-        trigger={<button>Test Trigger</button>}
-      />
-    )
+    render(<RingBeamConstructionPlanModal perimeterId={mockPerimeterId} trigger={<button>Test Trigger</button>} />)
 
     expect(screen.getByText('Test Trigger')).toBeInTheDocument()
   })

@@ -13,7 +13,6 @@ import { ConstructionPlan, TOP_VIEW } from './ConstructionPlan'
 
 export interface RingBeamConstructionModalProps {
   perimeterId: PerimeterId
-  position: 'base' | 'top'
   trigger: React.ReactNode
 }
 
@@ -84,13 +83,14 @@ const IssueDescriptionPanel = ({ errors, warnings }: IssueDescriptionPanelProps)
 
 export function RingBeamConstructionPlanModal({
   perimeterId,
-  position,
   trigger
 }: RingBeamConstructionModalProps): React.JSX.Element {
-  const [currentPosition, setCurrentPosition] = useState<'base' | 'top'>(position)
   const [containerSize, containerRef] = elementSizeRef()
 
   const perimeter = usePerimeterById(perimeterId)
+  const [currentPosition, setCurrentPosition] = useState<'base' | 'top'>(
+    perimeter?.baseRingBeamMethodId ? 'base' : 'top'
+  )
   const { getRingBeamConstructionMethodById } = useConfigActions()
 
   const constructionModel = useMemo(() => {

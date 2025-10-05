@@ -277,19 +277,6 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
               </Select.Root>
             </Flex>
 
-            {/* Base Ring Beam View Construction Button */}
-            {perimeter.baseRingBeamMethodId && (
-              <RingBeamConstructionPlanModal
-                perimeterId={selectedId}
-                position="base"
-                trigger={
-                  <Button size="2" style={{ width: '100%' }}>
-                    View Construction
-                  </Button>
-                }
-              />
-            )}
-
             {/* Top Ring Beam */}
             <Flex align="center" justify="between" gap="3">
               <Label.Root htmlFor="top-ring-beam">
@@ -320,14 +307,13 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
               </Select.Root>
             </Flex>
 
-            {/* Top Ring Beam View Construction Button */}
-            {perimeter.topRingBeamMethodId && (
+            {/* Ring Beam View Construction Button */}
+            {(perimeter.topRingBeamMethodId || perimeter.baseRingBeamMethodId) && (
               <RingBeamConstructionPlanModal
                 perimeterId={selectedId}
-                position="top"
                 trigger={
-                  <Button size="2" style={{ width: '100%' }}>
-                    View Construction
+                  <Button size="1" style={{ width: '100%' }}>
+                    View Ring Beam Construction
                   </Button>
                 }
               />
