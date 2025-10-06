@@ -1,0 +1,3 @@
+.length-field input:focus {
+  outline: none !important;
+}
