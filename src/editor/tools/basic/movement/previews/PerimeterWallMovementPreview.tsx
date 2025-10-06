@@ -15,11 +15,11 @@ export function PerimeterWallMovementPreview({
   context
 }: MovementPreviewComponentProps<PerimeterWallEntityContext, PerimeterWallMovementState>): React.JSX.Element {
   const { wall } = context.entity
-  const { projectedDelta, newBoundary } = movementState
+  const { movementDelta, newBoundary } = movementState
 
   // Calculate original and new midpoints for visualization
   const originalMidpoint = midpoint(wall.insideLine.start, wall.insideLine.end)
-  const newMidpoint = add(originalMidpoint, projectedDelta)
+  const newMidpoint = add(originalMidpoint, movementDelta)
 
   return (
     <Group>

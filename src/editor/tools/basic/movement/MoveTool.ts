@@ -6,7 +6,7 @@ import { defaultSnappingService } from '@/editor/services/snapping/SnappingServi
 import { BaseTool } from '@/editor/tools/system/BaseTool'
 import type { CanvasEvent, ToolImplementation } from '@/editor/tools/system/types'
 import type { Length, Vec2 } from '@/shared/geometry'
-import { add, distanceSquared, normalize, scale, subtract } from '@/shared/geometry'
+import { distanceSquared, normalize, scale, subtract } from '@/shared/geometry'
 
 import { MoveToolOverlay } from './MoveToolOverlay'
 import type { MovementBehavior, MovementContext, PointerMovementState } from './MovementBehavior'
@@ -17,8 +17,8 @@ interface LastMovementRecord {
   behavior: MovementBehavior<any, any>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   context: MovementContext<any>
-  movementVector: Vec2
-  startPosition: Vec2
+  movementDelta: Vec2 // The actual movement delta applied
+  originalDirection: Vec2 // Normalized direction for negative distance handling
 }
 
 export class MoveTool extends BaseTool implements ToolImplementation {
@@ -225,14 +225,16 @@ export class MoveTool extends BaseTool implements ToolImplementation {
   }
 
   private storeLastMovement(): void {
-    const { behavior, context, pointerState } = this.toolState
-    if (!behavior || !context || !pointerState) return
+    const { behavior, context, currentMovementState } = this.toolState
+    if (!behavior || !context || !currentMovementState) return
+
+    const delta = currentMovementState.movementDelta
 
     this.toolState.lastMovement = {
       behavior,
       context: { ...context }, // Shallow copy
-      movementVector: pointerState.delta,
-      startPosition: pointerState.startPosition
+      movementDelta: delta,
+      originalDirection: normalize(delta) // Store original direction
     }
   }
 
@@ -252,44 +254,28 @@ export class MoveTool extends BaseTool implements ToolImplementation {
   }
 
   private calculateEntityScreenPosition(): { x: number; y: number } {
-    const lastMovement = this.toolState.lastMovement
-    if (!lastMovement) {
-      return { x: 100, y: 100 }
-    }
-
-    // Calculate the final position after the last movement
-    const finalPosition = add(lastMovement.startPosition, lastMovement.movementVector)
-
-    // TODO: Convert stage coordinates to screen coordinates
-    // For now, just use the stage coordinates directly
-    // In a real implementation, this would need to account for stage transform
-    return { x: finalPosition[0], y: finalPosition[1] }
+    // For now, just return a default position
+    // In a real implementation, this would calculate the actual entity screen position
+    return { x: 100, y: 100 }
   }
 
   private applyLastMovementWithNewDistance(distance: Length): boolean {
     const lastMovement = this.toolState.lastMovement
     if (!lastMovement) return false
 
-    // Refresh entity context in case entity has moved
     const refreshedContext = this.refreshContextFromLast(lastMovement)
     if (!refreshedContext) return false
 
-    // Calculate direction from stored movement vector
-    const direction = normalize(lastMovement.movementVector)
+    const newDelta = scale(lastMovement.originalDirection, distance)
+    const deltaDifference = subtract(newDelta, lastMovement.movementDelta)
 
-    // Handle negative distances by reversing direction
-    if (distance < 0) {
-      const reversedDirection = scale(direction, -1)
-      const positiveDistance = Math.abs(distance) as Length
-      return this.applyDirectionalMovement(
-        lastMovement.startPosition,
-        reversedDirection,
-        positiveDistance,
-        refreshedContext
-      )
+    const success = lastMovement.behavior.applyRelativeMovement(deltaDifference, refreshedContext)
+
+    if (success) {
+      lastMovement.movementDelta = newDelta
     }
 
-    return this.applyDirectionalMovement(lastMovement.startPosition, direction, distance, refreshedContext)
+    return success
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -310,57 +296,7 @@ export class MoveTool extends BaseTool implements ToolImplementation {
     }
   }
 
-  private applyDirectionalMovement(
-    origin: Vec2,
-    direction: Vec2,
-    distance: Length,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    context: MovementContext<any>
-  ): boolean {
-    const lastMovement = this.toolState.lastMovement
-    if (!lastMovement) return false
-
-    const { behavior } = lastMovement
-
-    // Use the behavior's directional movement method if available
-    if (behavior.applyDirectionalMovement) {
-      const success = behavior.applyDirectionalMovement(origin, direction, distance, context)
-
-      if (success) {
-        // Update last movement with new distance
-        this.updateLastMovementDistance(distance, direction)
-      }
-
-      return success
-    }
-
-    // Fallback: calculate target position and use normal movement workflow
-    const target = add(origin, scale(direction, distance))
-    const mockPointerState: PointerMovementState = {
-      startPosition: origin,
-      currentPosition: target,
-      delta: subtract(target, origin)
-    }
-
-    const movementState = behavior.constrainAndSnap(mockPointerState, context)
-    const isValid = behavior.validatePosition(movementState, context)
-
-    if (isValid) {
-      const success = behavior.commitMovement(movementState, context)
-      if (success) {
-        this.updateLastMovementDistance(distance, direction)
-      }
-      return success
-    }
-
-    return false
-  }
-
-  private updateLastMovementDistance(distance: Length, direction: Vec2): void {
-    if (this.toolState.lastMovement) {
-      this.toolState.lastMovement.movementVector = scale(direction, distance)
-    }
-  }
+  // Method removed - replaced with delta-based approach in applyLastMovementWithNewDistance
 
   // For overlay component to access state
   getToolState() {

@@ -3,8 +3,7 @@ import type React from 'react'
 import type { SelectableId } from '@/building/model/ids'
 import type { StoreActions } from '@/building/store/types'
 import type { SnappingService } from '@/editor/services/snapping/SnappingService'
-import type { SnapResult } from '@/editor/services/snapping/types'
-import type { Length, Vec2 } from '@/shared/geometry'
+import type { Vec2 } from '@/shared/geometry'
 
 export interface MovementContext<T> {
   entityId: SelectableId
@@ -20,10 +19,9 @@ export interface PointerMovementState {
   delta: Vec2 // pointerCurrentPosition - pointerStartPosition
 }
 
-export interface MovementState<T> {
-  result: T
-  snapResult?: SnapResult
-  isValid: boolean
+// Base interface that all movement states must implement
+export interface MovementState {
+  movementDelta: Vec2 // The movement delta that represents the actual movement
 }
 
 export interface MovementPreviewComponentProps<TEntity, TState> {
@@ -32,7 +30,7 @@ export interface MovementPreviewComponentProps<TEntity, TState> {
   context: MovementContext<TEntity>
 }
 
-export interface MovementBehavior<TEntity, TState> {
+export interface MovementBehavior<TEntity, TState extends MovementState> {
   // Get the entity's actual position for initialization
   getEntity(entityId: SelectableId, parentIds: SelectableId[], store: StoreActions): TEntity
 
@@ -51,7 +49,7 @@ export interface MovementBehavior<TEntity, TState> {
   // Commit movement using slice operations
   commitMovement(movementState: TState, context: MovementContext<TEntity>): boolean
 
-  // Apply movement in a specific direction with given distance
-  // Used for length input to reapply last movement with new distance
-  applyDirectionalMovement?(origin: Vec2, direction: Vec2, distance: Length, context: MovementContext<TEntity>): boolean
+  // Apply relative movement based on delta difference from last movement
+  // Used for length input to modify last movement with new distance
+  applyRelativeMovement(deltaDifference: Vec2, context: MovementContext<TEntity>): boolean
 }

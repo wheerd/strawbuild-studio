@@ -5,6 +5,7 @@ import type { StoreActions } from '@/building/store/types'
 import type {
   MovementBehavior,
   MovementContext,
+  MovementState,
   PointerMovementState
 } from '@/editor/tools/basic/movement/MovementBehavior'
 import { OpeningMovementPreview } from '@/editor/tools/basic/movement/previews/OpeningMovementPreview'
@@ -19,8 +20,9 @@ export interface OpeningEntityContext {
 }
 
 // Opening movement state tracks offset changes along the wall
-export interface OpeningMovementState {
+export interface OpeningMovementState extends MovementState {
   newOffset: Length
+  movementDelta: Vec2 // [offsetChange, 0] format for simplicity
 }
 
 export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityContext, OpeningMovementState> {
@@ -48,8 +50,10 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
     context: MovementContext<OpeningEntityContext>
   ): OpeningMovementState {
     const { opening } = context.entity
+
     return {
-      newOffset: opening.offsetFromStart
+      newOffset: opening.offsetFromStart,
+      movementDelta: [0, 0] // Store as [1D_change, 0]
     }
   }
 
@@ -89,7 +93,8 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
         : createLength(Math.max(0, signedOffset)) // Clamp to non-negative only if no snap
 
     return {
-      newOffset: finalOffset
+      newOffset: finalOffset,
+      movementDelta: [finalOffset - opening.offsetFromStart, 0]
     }
   }
 
@@ -115,21 +120,11 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
     return true
   }
 
-  applyDirectionalMovement(
-    _origin: Vec2,
-    direction: Vec2,
-    distance: Length,
-    context: MovementContext<OpeningEntityContext>
-  ): boolean {
+  applyRelativeMovement(deltaDifference: Vec2, context: MovementContext<OpeningEntityContext>): boolean {
     const { perimeter, wall, opening } = context.entity
 
-    // Project movement direction onto wall direction
-    const wallDirection = wall.direction
-    const projectedDistance = dot(direction, wallDirection) * distance
-
-    // Calculate new offset from current position
-    const currentOffset = opening.offsetFromStart
-    const newOffset = createLength(Math.max(0, currentOffset + projectedDistance))
+    // Use deltaDifference[0] as the offset change (1D movement along wall)
+    const newOffset = createLength(opening.offsetFromStart + deltaDifference[0])
 
     // Validate the new position
     if (

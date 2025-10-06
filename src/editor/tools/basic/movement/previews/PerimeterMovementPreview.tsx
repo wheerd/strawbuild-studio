@@ -12,7 +12,7 @@ export function PerimeterMovementPreview({
   isValid,
   context
 }: MovementPreviewComponentProps<Perimeter, PerimeterMovementState>): React.JSX.Element {
-  const previewBoundary = context.entity.corners.map(corner => add(corner.insidePoint, movementState.offset))
+  const previewBoundary = context.entity.corners.map(corner => add(corner.insidePoint, movementState.movementDelta))
 
   return (
     <Group>

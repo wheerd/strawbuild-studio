@@ -6,11 +6,12 @@ import type { SnapResult, SnappingContext } from '@/editor/services/snapping/typ
 import type {
   MovementBehavior,
   MovementContext,
+  MovementState,
   PointerMovementState
 } from '@/editor/tools/basic/movement/MovementBehavior'
 import { PerimeterCornerMovementPreview } from '@/editor/tools/basic/movement/previews/PerimeterCornerMovementPreview'
-import type { Length, LineSegment2D, Vec2 } from '@/shared/geometry'
-import { add, scale, wouldClosingPolygonSelfIntersect } from '@/shared/geometry'
+import type { LineSegment2D, Vec2 } from '@/shared/geometry'
+import { add, wouldClosingPolygonSelfIntersect } from '@/shared/geometry'
 
 // Corner movement needs access to the wall to update the boundary
 export interface CornerEntityContext {
@@ -21,8 +22,9 @@ export interface CornerEntityContext {
 }
 
 // Corner movement state
-export interface CornerMovementState {
+export interface CornerMovementState extends MovementState {
   position: Vec2
+  movementDelta: Vec2 // The 2D movement delta
   snapResult?: SnapResult
   newBoundary: Vec2[]
 }
@@ -60,7 +62,7 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
   }
 
   initializeState(
-    _pointerState: PointerMovementState,
+    pointerState: PointerMovementState,
     context: MovementContext<CornerEntityContext>
   ): CornerMovementState {
     const { wall, cornerIndex } = context.entity
@@ -69,6 +71,7 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
 
     return {
       position: boundaryPoint,
+      movementDelta: pointerState.delta,
       newBoundary
     }
   }
@@ -90,6 +93,7 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
 
     return {
       position: finalPosition,
+      movementDelta: pointerState.delta,
       snapResult: snapResult ?? undefined,
       newBoundary
     }
@@ -107,27 +111,18 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
     return context.store.updatePerimeterBoundary(context.entity.wall.id, movementState.newBoundary)
   }
 
-  applyDirectionalMovement(
-    origin: Vec2,
-    direction: Vec2,
-    distance: Length,
-    context: MovementContext<CornerEntityContext>
-  ): boolean {
-    const { wall, cornerIndex, snapContext } = context.entity
+  applyRelativeMovement(deltaDifference: Vec2, context: MovementContext<CornerEntityContext>): boolean {
+    const { wall, cornerIndex } = context.entity
 
-    // Calculate target position
-    const targetPosition = add(origin, scale(direction, distance))
-
-    // Apply snapping to the target position
-    const snapResult = context.snappingService.findSnapResult(targetPosition, snapContext)
-    const finalPosition = snapResult?.position || targetPosition
+    const currentPosition = wall.corners[cornerIndex].insidePoint
+    const newPosition = add(currentPosition, deltaDifference)
 
     // Create new boundary with updated corner position
     const newBoundary = wall.corners.map(c => c.insidePoint)
-    newBoundary[cornerIndex] = finalPosition
+    newBoundary[cornerIndex] = newPosition
 
     // Validate the new boundary
-    if (newBoundary.length < 3 || wouldClosingPolygonSelfIntersect(newBoundary)) {
+    if (wouldClosingPolygonSelfIntersect(newBoundary)) {
       return false
     }
 
