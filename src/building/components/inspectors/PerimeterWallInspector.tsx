@@ -1,26 +1,14 @@
 import * as Label from '@radix-ui/react-label'
-import {
-  Button,
-  Callout,
-  Card,
-  DataList,
-  Flex,
-  Grid,
-  Heading,
-  Select,
-  Separator,
-  Text,
-  TextField
-} from '@radix-ui/themes'
-import { useCallback, useMemo } from 'react'
+import { Button, Callout, Card, DataList, Flex, Grid, Heading, Select, Separator, Text } from '@radix-ui/themes'
+import { useMemo } from 'react'
 
 import type { PerimeterConstructionMethodId, PerimeterId, PerimeterWallId } from '@/building/model/ids'
 import { useModelActions, usePerimeterById } from '@/building/store'
 import { WallConstructionPlanModal } from '@/construction/components/WallConstructionPlan'
 import { usePerimeterConstructionMethodById, usePerimeterConstructionMethods } from '@/construction/config/store'
 import { pushTool } from '@/editor/tools/system/store'
-import { type Length, createLength } from '@/shared/geometry'
-import { useDebouncedNumericInput } from '@/shared/hooks/useDebouncedInput'
+import { LengthField } from '@/shared/components/LengthField'
+import { type Length } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
 
 interface PerimeterWallInspectorProps {
@@ -41,23 +29,6 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
   const wall = useMemo(() => {
     return outerWall?.walls.find(s => s.id === wallId)
   }, [outerWall, wallId])
-
-  // Debounced thickness input handler
-  const thicknessInput = useDebouncedNumericInput(
-    wall?.thickness || 0,
-    useCallback(
-      (value: number) => {
-        updateOuterWallThickness(perimeterId, wallId, createLength(value))
-      },
-      [updateOuterWallThickness, perimeterId, wallId]
-    ),
-    {
-      debounceMs: 300,
-      min: 50,
-      max: 1500,
-      step: 10
-    }
-  )
 
   // If wall not found, show error
   if (!wall || !outerWall) {
@@ -113,23 +84,17 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
               Thickness
             </Text>
           </Label.Root>
-          <TextField.Root
-            id="wall-thickness"
-            type="number"
-            value={thicknessInput.value.toString()}
-            onChange={e => thicknessInput.handleChange(e.target.value)}
-            onBlur={thicknessInput.handleBlur}
-            onKeyDown={thicknessInput.handleKeyDown}
-            min="50"
-            max="1500"
-            step="10"
+          <LengthField
+            id="perimeter-thickness"
+            value={wall.thickness as Length}
+            onCommit={value => updateOuterWallThickness(perimeterId, wallId, value)}
+            min={50 as Length}
+            max={1500 as Length}
+            step={10 as Length}
             size="1"
-            style={{ width: '5rem', textAlign: 'right' }}
-          >
-            <TextField.Slot side="right" pl="1">
-              mm
-            </TextField.Slot>
-          </TextField.Root>
+            unit="cm"
+            style={{ width: '5rem' }}
+          />
         </Flex>
       </Flex>
 

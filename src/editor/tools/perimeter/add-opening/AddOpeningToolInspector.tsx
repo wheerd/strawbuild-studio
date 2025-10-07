@@ -1,11 +1,12 @@
 import * as Label from '@radix-ui/react-label'
-import { Box, Flex, Grid, IconButton, SegmentedControl, Separator, Text, TextField, Tooltip } from '@radix-ui/themes'
+import { Box, Flex, Grid, IconButton, SegmentedControl, Separator, Text, Tooltip } from '@radix-ui/themes'
 import { useCallback, useMemo, useState } from 'react'
 
 import type { OpeningType } from '@/building/model/model'
 import { useActiveStoreyId, useModelActions } from '@/building/store'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
+import { LengthField } from '@/shared/components/LengthField'
 import {
   DoorIcon,
   DoubleDoorPresetIcon,
@@ -18,7 +19,6 @@ import {
   WindowIcon
 } from '@/shared/components/OpeningIcons'
 import { type Length, createLength } from '@/shared/geometry'
-import { useDebouncedNumericInput } from '@/shared/hooks/useDebouncedInput'
 import { formatLength } from '@/shared/utils/formatLength'
 
 import type { AddOpeningTool } from './AddOpeningTool'
@@ -102,75 +102,6 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
     return getStoreyById(activeStoreyId)
   }, [getStoreyById, activeStoreyId])
 
-  // Debounced input handlers for numeric values
-  const widthInput = useDebouncedNumericInput(
-    state.width,
-    useCallback(
-      (value: number) => {
-        tool.setWidth(createLength(value))
-      },
-      [tool]
-    ),
-    {
-      debounceMs: 300,
-      min: 100,
-      max: 5000,
-      step: 10
-    }
-  )
-
-  const heightInput = useDebouncedNumericInput(
-    state.height,
-    useCallback(
-      (value: number) => {
-        tool.setHeight(createLength(value))
-      },
-      [tool]
-    ),
-    {
-      debounceMs: 300,
-      min: 100,
-      max: 4000,
-      step: 10
-    }
-  )
-
-  const sillHeightInput = useDebouncedNumericInput(
-    state.sillHeight || 0,
-    useCallback(
-      (value: number) => {
-        const sillHeight = value === 0 ? undefined : createLength(value)
-        tool.setSillHeight(sillHeight)
-      },
-      [tool]
-    ),
-    {
-      debounceMs: 300,
-      min: 0,
-      max: 2000,
-      step: 10
-    }
-  )
-
-  // Top height input - floor to top measurement
-  const currentTopHeight = (state.sillHeight || 0) + state.height
-  const topHeightInput = useDebouncedNumericInput(
-    currentTopHeight,
-    useCallback(
-      (value: number) => {
-        const newHeight = value - (state.sillHeight || 0)
-        tool.setHeight(createLength(Math.max(100, newHeight)))
-      },
-      [tool, state.sillHeight]
-    ),
-    {
-      debounceMs: 300,
-      min: Math.max(state.sillHeight || 0, 100),
-      max: 5000,
-      step: 10
-    }
-  )
-
   // Event handlers with stable references
   const handleTypeChange = useCallback(
     (newType: OpeningType) => {
@@ -251,27 +182,18 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
         </Label.Root>
 
         {/* Row 1, Column 2: Width Input */}
-        <TextField.Root
-          id="opening-width"
-          type="number"
-          value={widthInput.value.toString()}
-          onChange={e => widthInput.handleChange(e.target.value)}
-          onBlur={() => {
-            widthInput.handleBlur()
-            setFocusedField(undefined)
-          }}
-          onFocus={() => setFocusedField('width')}
-          onKeyDown={widthInput.handleKeyDown}
-          min="100"
-          max="5000"
-          step="10"
+        <LengthField
+          value={state.width}
+          onCommit={value => tool.setWidth(value)}
+          unit="cm"
+          min={createLength(100)}
+          max={createLength(5000)}
+          step={createLength(100)}
           size="1"
-          style={{ textAlign: 'right', width: '80px' }}
-        >
-          <TextField.Slot side="right" pl="1">
-            mm
-          </TextField.Slot>
-        </TextField.Root>
+          style={{ width: '80px' }}
+          onFocus={() => setFocusedField('width')}
+          onBlur={() => setFocusedField(undefined)}
+        />
 
         {/* Row 1, Column 3: Height Label */}
         <Label.Root htmlFor="opening-height">
@@ -281,27 +203,18 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
         </Label.Root>
 
         {/* Row 1, Column 4: Height Input */}
-        <TextField.Root
-          id="opening-height"
-          type="number"
-          value={heightInput.value.toString()}
-          onChange={e => heightInput.handleChange(e.target.value)}
-          onBlur={() => {
-            heightInput.handleBlur()
-            setFocusedField(undefined)
-          }}
-          onFocus={() => setFocusedField('height')}
-          onKeyDown={heightInput.handleKeyDown}
-          min="100"
-          max="4000"
-          step="10"
+        <LengthField
+          value={state.height}
+          onCommit={value => tool.setHeight(value)}
+          unit="cm"
+          min={createLength(100)}
+          max={createLength(4000)}
+          step={createLength(100)}
           size="1"
-          style={{ textAlign: 'right', width: '80px' }}
-        >
-          <TextField.Slot side="right" pl="1">
-            mm
-          </TextField.Slot>
-        </TextField.Root>
+          style={{ width: '80px' }}
+          onFocus={() => setFocusedField('height')}
+          onBlur={() => setFocusedField(undefined)}
+        />
 
         {/* Row 2, Column 1: Sill Height Label */}
         <Label.Root htmlFor="opening-sill-height">
@@ -311,27 +224,18 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
         </Label.Root>
 
         {/* Row 2, Column 2: Sill Height Input */}
-        <TextField.Root
-          id="opening-sill-height"
-          type="number"
-          value={sillHeightInput.value.toString()}
-          onChange={e => sillHeightInput.handleChange(e.target.value)}
-          onBlur={() => {
-            sillHeightInput.handleBlur()
-            setFocusedField(undefined)
-          }}
-          onFocus={() => setFocusedField('sillHeight')}
-          onKeyDown={sillHeightInput.handleKeyDown}
-          min="0"
-          max="2000"
-          step="10"
+        <LengthField
+          value={(state.sillHeight ?? 0) as Length}
+          onCommit={value => tool.setSillHeight(value)}
+          unit="cm"
+          min={createLength(0)}
+          max={createLength(2000)}
+          step={createLength(100)}
           size="1"
-          style={{ textAlign: 'right', width: '80px' }}
-        >
-          <TextField.Slot side="right" pl="1">
-            mm
-          </TextField.Slot>
-        </TextField.Root>
+          style={{ width: '80px' }}
+          onFocus={() => setFocusedField('sillHeight')}
+          onBlur={() => setFocusedField(undefined)}
+        />
 
         {/* Row 2, Column 3: Top Height Label */}
         <Label.Root htmlFor="opening-top-height">
@@ -341,27 +245,18 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
         </Label.Root>
 
         {/* Row 2, Column 4: Top Height Input */}
-        <TextField.Root
-          id="opening-top-height"
-          type="number"
-          value={topHeightInput.value.toString()}
-          onChange={e => topHeightInput.handleChange(e.target.value)}
-          onBlur={() => {
-            topHeightInput.handleBlur()
-            setFocusedField(undefined)
-          }}
-          onFocus={() => setFocusedField('topHeight')}
-          onKeyDown={topHeightInput.handleKeyDown}
-          min={Math.max(state.sillHeight || 0, 100)}
-          max="5000"
-          step="10"
+        <LengthField
+          value={((state.sillHeight ?? 0) + state.height) as Length}
+          onCommit={value => tool.setHeight((value - (state.sillHeight ?? 0)) as Length)}
+          unit="cm"
+          min={((state.sillHeight ?? 0) + 100) as Length}
+          max={createLength(5000)}
+          step={createLength(100)}
           size="1"
-          style={{ textAlign: 'right', width: '80px' }}
-        >
-          <TextField.Slot side="right" pl="1">
-            mm
-          </TextField.Slot>
-        </TextField.Root>
+          style={{ width: '80px' }}
+          onFocus={() => setFocusedField('topHeight')}
+          onBlur={() => setFocusedField(undefined)}
+        />
       </Grid>
 
       <Separator size="4" />

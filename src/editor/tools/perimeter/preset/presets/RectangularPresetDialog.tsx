@@ -1,5 +1,5 @@
 import { Cross2Icon } from '@radix-ui/react-icons'
-import { Button, Dialog, Flex, Grid, Heading, IconButton, Select, Text, TextField } from '@radix-ui/themes'
+import { Button, Dialog, Flex, Grid, Heading, IconButton, Select, Text } from '@radix-ui/themes'
 import { useCallback, useEffect, useState } from 'react'
 
 import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
@@ -8,8 +8,8 @@ import {
   usePerimeterConstructionMethods,
   useRingBeamConstructionMethods
 } from '@/construction/config/store'
+import { LengthField } from '@/shared/components/LengthField'
 import { createLength } from '@/shared/geometry'
-import { useDebouncedNumericInput } from '@/shared/hooks/useDebouncedInput'
 import { formatLength } from '@/shared/utils/formatLength'
 
 import type { RectangularPresetConfig } from './types'
@@ -121,31 +121,6 @@ function RectangularPresetDialogContent({
     }
   }, [initialConfig])
 
-  // Debounced inputs (UI in meters for width/length, mm for thickness)
-  const widthInput = useDebouncedNumericInput(
-    config.width / 1000, // Convert mm to meters for UI
-    useCallback((value: number) => {
-      setConfig(prev => ({ ...prev, width: createLength(value * 1000) })) // Convert meters to mm for store
-    }, []),
-    { debounceMs: 300, min: 1, max: 20, step: 0.1 } // 1m to 20m in 0.1m increments
-  )
-
-  const lengthInput = useDebouncedNumericInput(
-    config.length / 1000, // Convert mm to meters for UI
-    useCallback((value: number) => {
-      setConfig(prev => ({ ...prev, length: createLength(value * 1000) })) // Convert meters to mm for store
-    }, []),
-    { debounceMs: 300, min: 1, max: 20, step: 0.1 } // 1m to 20m in 0.1m increments
-  )
-
-  const thicknessInput = useDebouncedNumericInput(
-    config.thickness, // Keep thickness in mm
-    useCallback((value: number) => {
-      setConfig(prev => ({ ...prev, thickness: createLength(value) }))
-    }, []),
-    { debounceMs: 300, min: 50, max: 1000, step: 10 } // 50mm to 1000mm in 10mm increments
-  )
-
   const handleConfirm = useCallback(() => {
     if (config.width > 0 && config.length > 0 && config.thickness > 0 && config.constructionMethodId) {
       onConfirm(config)
@@ -181,23 +156,17 @@ function RectangularPresetDialogContent({
                 <Text size="1" color="gray">
                   Width
                 </Text>
-                <TextField.Root
-                  type="number"
-                  value={widthInput.value.toString()}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => widthInput.handleChange(e.target.value)}
-                  onBlur={widthInput.handleBlur}
-                  onKeyDown={widthInput.handleKeyDown}
-                  min="1"
-                  max="20"
-                  step="0.1"
-                  placeholder="4.0"
+                <LengthField
+                  value={config.width}
+                  onChange={value => setConfig(prev => ({ ...prev, width: value }))}
+                  min={createLength(2000)}
+                  max={createLength(20000)}
+                  step={createLength(100)}
+                  unit="m"
+                  precision={3}
                   size="1"
-                  style={{ textAlign: 'right', width: '100%' }}
-                >
-                  <TextField.Slot side="right" pl="1">
-                    m
-                  </TextField.Slot>
-                </TextField.Root>
+                  style={{ width: '100%' }}
+                />
               </Flex>
 
               {/* Length */}
@@ -205,23 +174,17 @@ function RectangularPresetDialogContent({
                 <Text size="1" color="gray">
                   Length
                 </Text>
-                <TextField.Root
-                  type="number"
-                  value={lengthInput.value.toString()}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => lengthInput.handleChange(e.target.value)}
-                  onBlur={lengthInput.handleBlur}
-                  onKeyDown={lengthInput.handleKeyDown}
-                  min="1"
-                  max="20"
-                  step="0.1"
-                  placeholder="6.0"
+                <LengthField
+                  value={config.length}
+                  onChange={value => setConfig(prev => ({ ...prev, length: value }))}
+                  min={createLength(2000)}
+                  max={createLength(20000)}
+                  step={createLength(100)}
+                  unit="m"
+                  precision={3}
                   size="1"
-                  style={{ textAlign: 'right', width: '100%' }}
-                >
-                  <TextField.Slot side="right" pl="1">
-                    m
-                  </TextField.Slot>
-                </TextField.Root>
+                  style={{ width: '100%' }}
+                />
               </Flex>
 
               {/* Wall Thickness */}
@@ -229,23 +192,16 @@ function RectangularPresetDialogContent({
                 <Text size="1" color="gray">
                   Wall Thickness
                 </Text>
-                <TextField.Root
-                  type="number"
-                  value={thicknessInput.value.toString()}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => thicknessInput.handleChange(e.target.value)}
-                  onBlur={thicknessInput.handleBlur}
-                  onKeyDown={thicknessInput.handleKeyDown}
-                  min="50"
-                  max="1000"
-                  step="10"
-                  placeholder="440"
+                <LengthField
+                  value={config.thickness}
+                  onChange={value => setConfig(prev => ({ ...prev, thickness: value }))}
+                  min={createLength(50)}
+                  max={createLength(1500)}
+                  step={createLength(10)}
+                  unit="cm"
                   size="1"
-                  style={{ textAlign: 'right', width: '100%' }}
-                >
-                  <TextField.Slot side="right" pl="1">
-                    mm
-                  </TextField.Slot>
-                </TextField.Root>
+                  style={{ width: '100%' }}
+                />
               </Flex>
 
               {/* Construction Method */}

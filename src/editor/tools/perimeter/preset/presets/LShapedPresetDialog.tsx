@@ -1,16 +1,5 @@
 import { Cross2Icon } from '@radix-ui/react-icons'
-import {
-  Button,
-  Dialog,
-  Flex,
-  Grid,
-  Heading,
-  IconButton,
-  SegmentedControl,
-  Select,
-  Text,
-  TextField
-} from '@radix-ui/themes'
+import { Button, Dialog, Flex, Grid, Heading, IconButton, SegmentedControl, Select, Text } from '@radix-ui/themes'
 import { useCallback, useEffect, useState } from 'react'
 
 import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
@@ -19,9 +8,9 @@ import {
   usePerimeterConstructionMethods,
   useRingBeamConstructionMethods
 } from '@/construction/config/store'
+import { LengthField } from '@/shared/components/LengthField'
 import { createLength, offsetPolygon } from '@/shared/geometry'
 import type { Vec2 } from '@/shared/geometry'
-import { useDebouncedNumericInput } from '@/shared/hooks/useDebouncedInput'
 import { formatLength } from '@/shared/utils/formatLength'
 
 import { LShape0Icon, LShape90Icon, LShape180Icon, LShape270Icon } from './Icons'
@@ -185,47 +174,6 @@ function LShapedPresetDialogContent({
     }
   }, [initialConfig])
 
-  // Debounced inputs (UI in meters for dimensions, mm for thickness)
-  const width1Input = useDebouncedNumericInput(
-    config.width1 / 1000,
-    useCallback((value: number) => {
-      setConfig(prev => ({ ...prev, width1: createLength(value * 1000) }))
-    }, []),
-    { debounceMs: 300, min: 2, max: 20, step: 0.1 }
-  )
-
-  const length1Input = useDebouncedNumericInput(
-    config.length1 / 1000,
-    useCallback((value: number) => {
-      setConfig(prev => ({ ...prev, length1: createLength(value * 1000) }))
-    }, []),
-    { debounceMs: 300, min: 2, max: 20, step: 0.1 }
-  )
-
-  const width2Input = useDebouncedNumericInput(
-    config.width2 / 1000,
-    useCallback((value: number) => {
-      setConfig(prev => ({ ...prev, width2: createLength(value * 1000) }))
-    }, []),
-    { debounceMs: 300, min: 1, max: 20, step: 0.1 }
-  )
-
-  const length2Input = useDebouncedNumericInput(
-    config.length2 / 1000,
-    useCallback((value: number) => {
-      setConfig(prev => ({ ...prev, length2: createLength(value * 1000) }))
-    }, []),
-    { debounceMs: 300, min: 1, max: 20, step: 0.1 }
-  )
-
-  const thicknessInput = useDebouncedNumericInput(
-    config.thickness,
-    useCallback((value: number) => {
-      setConfig(prev => ({ ...prev, thickness: createLength(value) }))
-    }, []),
-    { debounceMs: 300, min: 50, max: 1000, step: 10 }
-  )
-
   const handleConfirm = useCallback(() => {
     const preset = new LShapedPreset()
     if (preset.validateConfig(config)) {
@@ -267,46 +215,34 @@ function LShapedPresetDialogContent({
                   <Text size="1" color="gray">
                     Width 1
                   </Text>
-                  <TextField.Root
-                    type="number"
-                    value={width1Input.value.toString()}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => width1Input.handleChange(e.target.value)}
-                    onBlur={width1Input.handleBlur}
-                    onKeyDown={width1Input.handleKeyDown}
-                    min="2"
-                    max="20"
-                    step="0.1"
-                    placeholder="8.0"
+                  <LengthField
+                    value={config.width1}
+                    onChange={value => setConfig(prev => ({ ...prev, width1: value }))}
+                    min={createLength(2000)}
+                    max={createLength(20000)}
+                    step={createLength(100)}
+                    unit="m"
+                    precision={3}
                     size="1"
-                    style={{ textAlign: 'right', width: '100%' }}
-                  >
-                    <TextField.Slot side="right" pl="1">
-                      m
-                    </TextField.Slot>
-                  </TextField.Root>
+                    style={{ width: '100%' }}
+                  />
                 </Flex>
 
                 <Flex direction="column" gap="1">
                   <Text size="1" color="gray">
                     Length 1
                   </Text>
-                  <TextField.Root
-                    type="number"
-                    value={length1Input.value.toString()}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => length1Input.handleChange(e.target.value)}
-                    onBlur={length1Input.handleBlur}
-                    onKeyDown={length1Input.handleKeyDown}
-                    min="2"
-                    max="20"
-                    step="0.1"
-                    placeholder="6.0"
+                  <LengthField
+                    value={config.length1}
+                    onChange={value => setConfig(prev => ({ ...prev, length1: value }))}
+                    min={createLength(2000)}
+                    max={createLength(20000)}
+                    step={createLength(100)}
+                    unit="m"
+                    precision={3}
                     size="1"
-                    style={{ textAlign: 'right', width: '100%' }}
-                  >
-                    <TextField.Slot side="right" pl="1">
-                      m
-                    </TextField.Slot>
-                  </TextField.Root>
+                    style={{ width: '100%' }}
+                  />
                 </Flex>
               </Grid>
             </Flex>
@@ -321,46 +257,36 @@ function LShapedPresetDialogContent({
                   <Text size="1" color="gray">
                     Width 2
                   </Text>
-                  <TextField.Root
-                    type="number"
-                    value={width2Input.value.toString()}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => width2Input.handleChange(e.target.value)}
-                    onBlur={width2Input.handleBlur}
-                    onKeyDown={width2Input.handleKeyDown}
-                    min="1"
-                    max="20"
-                    step="0.1"
-                    placeholder="4.0"
+
+                  <LengthField
+                    value={config.width2}
+                    onChange={value => setConfig(prev => ({ ...prev, width2: value }))}
+                    min={createLength(2000)}
+                    max={createLength(20000)}
+                    step={createLength(100)}
+                    unit="m"
+                    precision={3}
                     size="1"
-                    style={{ textAlign: 'right', width: '100%' }}
-                  >
-                    <TextField.Slot side="right" pl="1">
-                      m
-                    </TextField.Slot>
-                  </TextField.Root>
+                    style={{ width: '100%' }}
+                  />
                 </Flex>
 
                 <Flex direction="column" gap="1">
                   <Text size="1" color="gray">
                     Length 2
                   </Text>
-                  <TextField.Root
-                    type="number"
-                    value={length2Input.value.toString()}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => length2Input.handleChange(e.target.value)}
-                    onBlur={length2Input.handleBlur}
-                    onKeyDown={length2Input.handleKeyDown}
-                    min="1"
-                    max="20"
-                    step="0.1"
-                    placeholder="3.0"
+
+                  <LengthField
+                    value={config.length2}
+                    onChange={value => setConfig(prev => ({ ...prev, length2: value }))}
+                    min={createLength(2000)}
+                    max={createLength(20000)}
+                    step={createLength(100)}
+                    unit="m"
+                    precision={3}
                     size="1"
-                    style={{ textAlign: 'right', width: '100%' }}
-                  >
-                    <TextField.Slot side="right" pl="1">
-                      m
-                    </TextField.Slot>
-                  </TextField.Root>
+                    style={{ width: '100%' }}
+                  />
                 </Flex>
               </Grid>
             </Flex>
@@ -399,23 +325,16 @@ function LShapedPresetDialogContent({
                 <Text size="1" color="gray">
                   Wall Thickness
                 </Text>
-                <TextField.Root
-                  type="number"
-                  value={thicknessInput.value.toString()}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => thicknessInput.handleChange(e.target.value)}
-                  onBlur={thicknessInput.handleBlur}
-                  onKeyDown={thicknessInput.handleKeyDown}
-                  min="50"
-                  max="1000"
-                  step="10"
-                  placeholder="440"
+                <LengthField
+                  value={config.thickness}
+                  onChange={value => setConfig(prev => ({ ...prev, thickness: value }))}
+                  min={createLength(50)}
+                  max={createLength(1500)}
+                  step={createLength(10)}
+                  unit="cm"
                   size="1"
-                  style={{ textAlign: 'right', width: '100%' }}
-                >
-                  <TextField.Slot side="right" pl="1">
-                    mm
-                  </TextField.Slot>
-                </TextField.Root>
+                  style={{ width: '100%' }}
+                />
               </Flex>
 
               {/* Construction Method */}
