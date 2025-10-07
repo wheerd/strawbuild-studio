@@ -45,6 +45,7 @@ export const LengthField = forwardRef<HTMLInputElement, LengthFieldProps>(functi
     style,
     onFocus,
     onBlur,
+    children,
     ...props
   },
   ref
@@ -90,6 +91,8 @@ export const LengthField = forwardRef<HTMLInputElement, LengthFieldProps>(functi
       color={isValid ? undefined : 'red'}
       {...props}
     >
+      {children}
+
       <TextField.Slot side="right" style={{ display: 'flex', alignItems: 'center', gap: '1px', padding: '0 4px' }}>
         <Text size="1" color="gray">
           {unit}

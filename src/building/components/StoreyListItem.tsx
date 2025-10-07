@@ -5,8 +5,8 @@ import React, { useCallback, useEffect, useState } from 'react'
 import type { Storey } from '@/building/model/model'
 import { useActiveStoreyId, useModelActions } from '@/building/store'
 import { defaultStoreyManagementService } from '@/building/store/services/StoreyManagementService'
-import { createLength } from '@/shared/geometry'
-import { useDebouncedNumericInput } from '@/shared/hooks/useDebouncedInput'
+import { LengthField } from '@/shared/components/LengthField'
+import { type Length } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
 
 export function getLevelColor(level: number): 'grass' | 'indigo' | 'brown' {
@@ -37,23 +37,6 @@ export function StoreyListItem({
   const [editName, setEditName] = useState(storey.name)
 
   const { updateStoreyName, updateStoreyHeight } = useModelActions()
-
-  // Debounced height input handler (UI in meters, store in millimeters)
-  const heightInput = useDebouncedNumericInput(
-    storey.height / 1000, // Convert mm to meters for UI
-    useCallback(
-      (value: number) => {
-        updateStoreyHeight(storey.id, createLength(value * 1000)) // Convert meters to mm for store
-      },
-      [updateStoreyHeight, storey.id]
-    ),
-    {
-      debounceMs: 300,
-      min: 1, // Minimum 1m height
-      max: 10, // Maximum 10m height
-      step: 0.1 // 0.1m (10cm) increments
-    }
-  )
 
   // Calculate button states
   const isLowest = storey.id === lowestStorey.id
@@ -166,25 +149,21 @@ export function StoreyListItem({
         />
 
         {/* Height input */}
-        <TextField.Root
-          type="number"
-          min="1"
-          max="10"
-          step="0.1"
-          style={{ width: '5rem', textAlign: 'right' }}
-          value={heightInput.value}
-          onChange={e => heightInput.handleChange(e.target.value)}
-          onBlur={heightInput.handleBlur}
-          onKeyDown={heightInput.handleKeyDown}
+        <LengthField
+          min={1000 as Length}
+          max={10000 as Length}
+          precision={3}
+          unit="m"
+          step={100 as Length}
+          style={{ width: '6.5rem' }}
+          value={storey.height}
+          onCommit={value => updateStoreyHeight(storey.id, value)}
           title={`Floor height: ${formatLength(storey.height)}`}
         >
-          <TextField.Slot side="left">
+          <TextField.Slot side="left" className="pl-1 pr-0">
             <HeightIcon />
           </TextField.Slot>
-          <TextField.Slot side="right" pl="1">
-            m
-          </TextField.Slot>
-        </TextField.Root>
+        </LengthField>
 
         {/* Action buttons */}
         <Flex gap="1">

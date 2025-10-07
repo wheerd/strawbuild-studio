@@ -1,3 +1,5 @@
+import type React from 'react'
+
 import type { Length } from '@/shared/geometry'
 
 export type LengthUnit = 'mm' | 'cm' | 'm'
@@ -26,10 +28,13 @@ export interface LengthFieldProps {
   disabled?: boolean
   className?: string
   style?: React.CSSProperties
+  title?: string
 
   // Event handlers
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
   onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void
+
+  children: React.ReactNode
 }
 
 export interface LengthFieldState {
