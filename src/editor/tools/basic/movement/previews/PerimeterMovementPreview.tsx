@@ -1,9 +1,12 @@
 import React from 'react'
-import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
+import { Circle, Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
-import type { Perimeter } from '@/building/model/model'
+import { SnappingLines } from '@/editor/canvas/utils/SnappingLines'
 import type { MovementPreviewComponentProps } from '@/editor/tools/basic/movement/MovementBehavior'
-import type { PerimeterMovementState } from '@/editor/tools/basic/movement/behaviors/PerimeterMovementBehavior'
+import type {
+  PerimeterEntityContext,
+  PerimeterMovementState
+} from '@/editor/tools/basic/movement/behaviors/PerimeterMovementBehavior'
 import { add } from '@/shared/geometry'
 import { COLORS } from '@/shared/theme/colors'
 
@@ -11,11 +14,27 @@ export function PerimeterMovementPreview({
   movementState,
   isValid,
   context
-}: MovementPreviewComponentProps<Perimeter, PerimeterMovementState>): React.JSX.Element {
-  const previewBoundary = context.entity.corners.map(corner => add(corner.insidePoint, movementState.movementDelta))
+}: MovementPreviewComponentProps<PerimeterEntityContext, PerimeterMovementState>): React.JSX.Element {
+  const perimeter = context.entity.perimeter
+  const previewBoundary = perimeter.corners.map(corner => add(corner.insidePoint, movementState.movementDelta))
 
   return (
     <Group>
+      <SnappingLines snapResult={movementState.snapResult} />
+
+      {movementState.snapResult?.position && (
+        <Circle
+          x={movementState.snapResult?.position[0]}
+          y={movementState.snapResult?.position[1]}
+          radius={50}
+          fill={COLORS.snapping.points}
+          stroke={COLORS.snapping.pointStroke}
+          strokeWidth={5}
+          opacity={0.8}
+          listening={false}
+        />
+      )}
+
       {/* Main polygon outline */}
       <Line
         points={previewBoundary.flatMap(p => [p[0], p[1]])}

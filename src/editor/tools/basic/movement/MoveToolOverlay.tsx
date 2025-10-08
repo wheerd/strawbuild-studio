@@ -1,6 +1,5 @@
 import { Group } from 'react-konva/lib/ReactKonvaCore'
 
-import { SnappingLines } from '@/editor/canvas/utils/SnappingLines'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolOverlayComponentProps } from '@/editor/tools/system/types'
 
@@ -21,7 +20,6 @@ export function MoveToolOverlay({ tool }: ToolOverlayComponentProps<MoveTool>) {
 
   return (
     <Group>
-      <SnappingLines snapResult={currentMovementState?.snapResult} />
       <PreviewComponent movementState={currentMovementState} isValid={isValid} context={context} />
     </Group>
   )

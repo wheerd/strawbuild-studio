@@ -1,6 +1,7 @@
 import React from 'react'
 import { Circle, Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
+import { SnappingLines } from '@/editor/canvas/utils/SnappingLines'
 import type { MovementPreviewComponentProps } from '@/editor/tools/basic/movement/MovementBehavior'
 import type {
   CornerEntityContext,
@@ -18,6 +19,8 @@ export function PerimeterCornerMovementPreview({
 
   return (
     <Group>
+      <SnappingLines snapResult={movementState.snapResult} />
+
       {/* Show the new corner position */}
       <Circle
         x={movementState.position[0]}
