@@ -3,8 +3,6 @@ import { vec3 } from 'gl-matrix'
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
 import type { LayersConfig } from '@/construction/config/types'
 import type { ConstructionElementId } from '@/construction/elements'
-import { resolveDefaultMaterial } from '@/construction/materials/material'
-import type { ResolveMaterialFunction } from '@/construction/materials/material'
 import { type PostConfig, constructPost } from '@/construction/materials/posts'
 import { constructStraw } from '@/construction/materials/straw'
 import type { ConstructionModel } from '@/construction/model'
@@ -33,7 +31,6 @@ export function* infillWallArea(
   position: Vec3,
   size: Vec3,
   config: InfillConstructionConfig,
-  resolveMaterial: ResolveMaterialFunction,
   startsWithStand = false,
   endsWithStand = false,
   startAtEnd = false
@@ -52,7 +49,7 @@ export function* infillWallArea(
     if (size[0] < postWidth) {
       error = 'Not enough space for a post'
     } else if (size[0] === postWidth) {
-      yield* constructPost(position, size, config.posts, resolveMaterial)
+      yield* constructPost(position, size, config.posts)
       return
     } else if (startsWithStand && endsWithStand && size[0] < 2 * postWidth) {
       error = 'Space for more than one post, but not enough for two'
@@ -63,19 +60,14 @@ export function* infillWallArea(
   let width = size[0]
 
   if (startsWithStand) {
-    yield* yieldAndCollectElementIds(constructPost(position, size, config.posts, resolveMaterial), allElementIds)
+    yield* yieldAndCollectElementIds(constructPost(position, size, config.posts), allElementIds)
     left += postWidth
     width -= postWidth
   }
 
   if (endsWithStand) {
     yield* yieldAndCollectElementIds(
-      constructPost(
-        [(position[0] + size[0] - postWidth) as Length, position[1], position[2]],
-        size,
-        config.posts,
-        resolveMaterial
-      ),
+      constructPost([(position[0] + size[0] - postWidth) as Length, position[1], position[2]], size, config.posts),
       allElementIds
     )
     width -= postWidth
@@ -85,7 +77,7 @@ export function* infillWallArea(
   const inbetweenSize: Vec3 = [width, size[1], size[2]]
 
   yield* yieldAndCollectElementIds(
-    constructInfillRecursive(inbetweenPosition, inbetweenSize, config, resolveMaterial, !startAtEnd),
+    constructInfillRecursive(inbetweenPosition, inbetweenSize, config, !startAtEnd),
     allElementIds
   )
 
@@ -103,7 +95,6 @@ function* constructInfillRecursive(
   position: Vec3,
   size: Vec3,
   config: InfillConstructionConfig,
-  resolveMaterial: ResolveMaterialFunction,
   atStart: boolean
 ): Generator<ConstructionResult> {
   const baleWidth = getBaleWidth(size[0] as Length, config)
@@ -138,7 +129,7 @@ function* constructInfillRecursive(
       ? ((strawPosition[0] + strawSize[0]) as Length)
       : ((strawPosition[0] - config.posts.width) as Length)
 
-    yield* constructPost([postOffset, position[1], position[2]], size, config.posts, resolveMaterial)
+    yield* constructPost([postOffset, position[1], position[2]], size, config.posts)
   } else {
     return
   }
@@ -146,7 +137,7 @@ function* constructInfillRecursive(
   const remainingPosition = [atStart ? postOffset + config.posts.width : position[0], position[1], position[2]]
   const remainingSize = [size[0] - strawSize[0] - config.posts.width, size[1], size[2]]
 
-  yield* constructInfillRecursive(remainingPosition, remainingSize, config, resolveMaterial, !atStart)
+  yield* constructInfillRecursive(remainingPosition, remainingSize, config, !atStart)
 }
 
 function getBaleWidth(availableWidth: Length, config: InfillConstructionConfig): Length {
@@ -190,15 +181,10 @@ const _constructInfillWall = (
     floorHeight,
     layers,
     (position, size, startsWithStand, endsWithStand, startAtEnd) =>
-      infillWallArea(position, size, config, resolveDefaultMaterial, startsWithStand, endsWithStand, startAtEnd),
+      infillWallArea(position, size, config, startsWithStand, endsWithStand, startAtEnd),
 
     (position: Vec3, size: Vec3, zOffset: Length, openings: Opening[]) =>
-      constructOpeningFrame(
-        { type: 'opening', position, size, zOffset, openings },
-        config.openings,
-        config,
-        resolveDefaultMaterial
-      )
+      constructOpeningFrame({ type: 'opening', position, size, zOffset, openings }, config.openings, config)
   )
 
 export const constructInfillWall: PerimeterWallConstructionMethod<InfillConstructionConfig> = (

@@ -127,7 +127,3 @@ export const DEFAULT_MATERIALS: Record<MaterialId, Material> = {
   [door.id]: door,
   [concrete.id]: concrete
 }
-
-export type ResolveMaterialFunction = (materialId: MaterialId) => Material | undefined
-
-export const resolveDefaultMaterial: ResolveMaterialFunction = (materialId: MaterialId) => DEFAULT_MATERIALS[materialId]

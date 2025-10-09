@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createOpeningId } from '@/building/model/ids'
 import type { Opening } from '@/building/model/model'
 import { type ConstructionElement, type GroupOrElement, createConstructionElement } from '@/construction/elements'
-import { createMaterialId, resolveDefaultMaterial } from '@/construction/materials/material'
+import { createMaterialId } from '@/construction/materials/material'
 import type { RawMeasurement } from '@/construction/measurements'
 import { type ConstructionResult, aggregateResults, yieldElement } from '@/construction/results'
 import {
@@ -131,7 +131,7 @@ describe('constructOpeningFrame', () => {
       const config = createTestConfig()
       const infillConfig = createTestInfillConfig()
 
-      const results = [...constructOpeningFrame(openingSegment, config, infillConfig, resolveDefaultMaterial)]
+      const results = [...constructOpeningFrame(openingSegment, config, infillConfig)]
       const { elements, errors, areas } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -155,7 +155,7 @@ describe('constructOpeningFrame', () => {
       const openingSegment = createTestOpeningSegment(opening)
       const config = createTestConfig()
       const infillConfig = createTestInfillConfig()
-      const results = [...constructOpeningFrame(openingSegment, config, infillConfig, resolveDefaultMaterial)]
+      const results = [...constructOpeningFrame(openingSegment, config, infillConfig)]
       const { measurements } = aggregateResults(results)
 
       // Should generate measurements inline
@@ -189,7 +189,7 @@ describe('constructOpeningFrame', () => {
       const openingSegment = createTestOpeningSegment(opening)
       const config = createTestConfig()
       const infillConfig = createTestInfillConfig()
-      const results = [...constructOpeningFrame(openingSegment, config, infillConfig, resolveDefaultMaterial)]
+      const results = [...constructOpeningFrame(openingSegment, config, infillConfig)]
       const { measurements } = aggregateResults(results)
 
       // Should generate fewer measurements for door (no sill)
@@ -218,7 +218,7 @@ describe('constructOpeningFrame', () => {
       const config = createTestConfig()
       const infillConfig = createTestInfillConfig()
 
-      const results = [...constructOpeningFrame(openingSegment, config, infillConfig, resolveDefaultMaterial)]
+      const results = [...constructOpeningFrame(openingSegment, config, infillConfig)]
       const { elements, errors, areas } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -245,7 +245,7 @@ describe('constructOpeningFrame', () => {
       })
       const infillConfig = createTestInfillConfig()
 
-      const results = [...constructOpeningFrame(openingSegment, config, infillConfig, resolveDefaultMaterial)]
+      const results = [...constructOpeningFrame(openingSegment, config, infillConfig)]
       const { errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(1)
@@ -263,7 +263,7 @@ describe('constructOpeningFrame', () => {
       })
       const infillConfig = createTestInfillConfig()
 
-      const results = [...constructOpeningFrame(openingSegment, config, infillConfig, resolveDefaultMaterial)]
+      const results = [...constructOpeningFrame(openingSegment, config, infillConfig)]
       const { errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(1)

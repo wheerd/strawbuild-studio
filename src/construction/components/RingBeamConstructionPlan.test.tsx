@@ -19,7 +19,6 @@ vi.mock('@/construction/config/store', () => ({
 // Mock construction functions
 vi.mock('@/construction/walls', () => ({
   constructRingBeam: vi.fn(),
-  resolveDefaultMaterial: vi.fn(),
   getElementSize: vi.fn(() => [1000, 100, 60])
 }))
 

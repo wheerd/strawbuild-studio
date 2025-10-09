@@ -5,12 +5,11 @@ import { TAG_BASE_PLATE, TAG_TOP_PLATE, TAG_WALLS } from '@/construction/tags'
 import { angle } from '@/shared/geometry'
 
 import { getConfigActions } from './config'
-import type { ResolveMaterialFunction } from './materials/material'
 import { type ConstructionModel, mergeModels, transformModel } from './model'
 import { constructRingBeam } from './ringBeams/ringBeams'
 import { PERIMETER_WALL_CONSTRUCTION_METHODS } from './walls'
 
-export function constructPerimeter(perimeter: Perimeter, resolveMaterial: ResolveMaterialFunction): ConstructionModel {
+export function constructPerimeter(perimeter: Perimeter): ConstructionModel {
   const { getStoreyById } = getModelActions()
   const storey = getStoreyById(perimeter.storeyId)
   if (!storey) {
@@ -23,7 +22,7 @@ export function constructPerimeter(perimeter: Perimeter, resolveMaterial: Resolv
   if (perimeter.baseRingBeamMethodId) {
     const method = getRingBeamConstructionMethodById(perimeter.baseRingBeamMethodId)
     if (method) {
-      const ringBeam = constructRingBeam(perimeter, method.config, resolveMaterial)
+      const ringBeam = constructRingBeam(perimeter, method.config)
       const transformedModel = transformModel(ringBeam, IDENTITY, [TAG_BASE_PLATE])
       allModels.push(transformedModel)
     }
@@ -31,7 +30,7 @@ export function constructPerimeter(perimeter: Perimeter, resolveMaterial: Resolv
   if (perimeter.topRingBeamMethodId) {
     const method = getRingBeamConstructionMethodById(perimeter.topRingBeamMethodId)
     if (method) {
-      const ringBeam = constructRingBeam(perimeter, method.config, resolveMaterial)
+      const ringBeam = constructRingBeam(perimeter, method.config)
       const transformedModel = transformModel(
         ringBeam,
         {

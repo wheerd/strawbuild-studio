@@ -129,7 +129,7 @@ const useMaterialsStore = create<MaterialsStore>()(
               // Check for name uniqueness (excluding current material)
               if (updates.name !== undefined) {
                 const nameExists = Object.values(state.materials).some(
-                  mat => mat.id !== id && mat.name.trim().toLowerCase() === updates.name!.trim().toLowerCase()
+                  mat => mat.id !== id && mat.name.trim().toLowerCase() === updates.name?.trim().toLowerCase()
                 )
                 if (nameExists) {
                   throw new Error('A material with this name already exists')
@@ -240,6 +240,24 @@ export const getMaterialsState = () => {
 export const setMaterialsState = (data: { materials: Record<MaterialId, Material> }) => {
   useMaterialsStore.setState({
     materials: data.materials
+  })
+}
+// For non-reactive material resolution in construction functions
+export const getMaterialById = (id: MaterialId): Material | null => {
+  const state = useMaterialsStore.getState()
+  return state.materials[id] ?? null
+}
+
+// For getting all materials (CSS generation, etc.)
+export const getAllMaterials = (): Material[] => {
+  const state = useMaterialsStore.getState()
+  return Object.values(state.materials)
+}
+
+// Subscribe to materials changes (for CSS re-injection, etc.)
+export const subscribeToMaterials = (callback: (materials: Material[]) => void) => {
+  return useMaterialsStore.subscribe(state => {
+    callback(Object.values(state.materials))
   })
 }
 

@@ -1,5 +1,5 @@
 import { type ConstructionElement, createConstructionElement, createCuboidShape } from '@/construction/elements'
-import type { MaterialId, ResolveMaterialFunction } from '@/construction/materials/material'
+import type { MaterialId } from '@/construction/materials/material'
 import { type ConstructionResult, yieldElement, yieldMeasurement } from '@/construction/results'
 import { TAG_MODULE_WIDTH } from '@/construction/tags'
 import type { Length, Vec3 } from '@/shared/geometry'
@@ -26,8 +26,7 @@ export type ModuleConfig = SingleFrameModuleConfig | DoubleFrameModuleConfig
 function* constructSingleFrameModule(
   position: Vec3,
   size: Vec3,
-  config: SingleFrameModuleConfig,
-  _resolveMaterial: ResolveMaterialFunction
+  config: SingleFrameModuleConfig
 ): Generator<ConstructionResult> {
   const { frameThickness, frameMaterial } = config
 
@@ -86,8 +85,7 @@ function* constructSingleFrameModule(
 function* constructDoubleFrameModule(
   position: Vec3,
   size: Vec3,
-  config: DoubleFrameModuleConfig,
-  _resolveMaterial: ResolveMaterialFunction
+  config: DoubleFrameModuleConfig
 ): Generator<ConstructionResult> {
   const { frameThickness, frameWidth, frameMaterial } = config
 
@@ -179,16 +177,11 @@ function* constructDoubleFrameModule(
   })
 }
 
-export function constructModule(
-  position: Vec3,
-  size: Vec3,
-  config: ModuleConfig,
-  resolveMaterial: ResolveMaterialFunction
-): Generator<ConstructionResult> {
+export function constructModule(position: Vec3, size: Vec3, config: ModuleConfig): Generator<ConstructionResult> {
   if (config.type === 'single') {
-    return constructSingleFrameModule(position, size, config, resolveMaterial)
+    return constructSingleFrameModule(position, size, config)
   } else if (config.type === 'double') {
-    return constructDoubleFrameModule(position, size, config, resolveMaterial)
+    return constructDoubleFrameModule(position, size, config)
   } else {
     throw new Error('Invalid module type')
   }

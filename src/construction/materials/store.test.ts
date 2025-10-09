@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import type { Length } from '@/shared/geometry'
 
 import { DEFAULT_MATERIALS, createMaterialId } from './material'
-import { _clearAllMaterials, getMaterialsActions, getMaterialsState, setMaterialsState } from './store'
+import { getMaterialsActions, getMaterialsState, setMaterialsState } from './store'
 
 describe('Materials Store', () => {
   beforeEach(() => {

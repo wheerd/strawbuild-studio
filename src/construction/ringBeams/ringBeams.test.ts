@@ -4,7 +4,7 @@ import type { PerimeterId } from '@/building/model/ids'
 import type { Perimeter, PerimeterCorner } from '@/building/model/model'
 import { type ConstructionElement, type ConstructionElementId } from '@/construction/elements'
 import * as base from '@/construction/elements'
-import type { MaterialId, ResolveMaterialFunction } from '@/construction/materials/material'
+import type { MaterialId } from '@/construction/materials/material'
 import type { CutCuboid } from '@/construction/shapes'
 import { createLength, createVec2, polygonIsClockwise } from '@/shared/geometry'
 
@@ -49,15 +49,6 @@ function createMockPerimeter(corners: PerimeterCorner[]): Perimeter {
 }
 
 const mockMaterial: MaterialId = 'test-material' as MaterialId
-const mockResolveMaterial: ResolveMaterialFunction = () => ({
-  id: mockMaterial,
-  type: 'dimensional',
-  name: 'Test Wood',
-  color: '#8B4513',
-  width: createLength(360),
-  thickness: createLength(60),
-  availableLengths: [createLength(2400), createLength(3600), createLength(4800)]
-})
 
 const defaultConfig: FullRingBeamConfig = {
   type: 'full',
@@ -78,7 +69,7 @@ describe('constructFullRingBeam', () => {
       ]
 
       const perimeter = createMockPerimeter(corners)
-      const result = constructRingBeam(perimeter, defaultConfig, mockResolveMaterial)
+      const result = constructRingBeam(perimeter, defaultConfig)
 
       expect(result.elements.length).toBeGreaterThan(0)
       expect(result.errors).toHaveLength(0)
@@ -101,7 +92,7 @@ describe('constructFullRingBeam', () => {
       ]
 
       const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig, mockResolveMaterial)
+      const result = constructFullRingBeam(perimeter, defaultConfig)
 
       result.elements.forEach(element => {
         expect('material' in element).toBe(true)
@@ -122,7 +113,7 @@ describe('constructFullRingBeam', () => {
       ]
 
       const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig, mockResolveMaterial)
+      const result = constructFullRingBeam(perimeter, defaultConfig)
 
       expect(result.elements.length).toBeGreaterThan(0)
       expect(result.errors).toHaveLength(0)
@@ -148,7 +139,7 @@ describe('constructFullRingBeam', () => {
       ]
 
       configs.forEach(config => {
-        const result = constructFullRingBeam(perimeter, config, mockResolveMaterial)
+        const result = constructFullRingBeam(perimeter, config)
         expect(result.elements.length).toBeGreaterThan(0)
         expect(result.errors).toHaveLength(0)
       })
@@ -170,7 +161,7 @@ describe('constructFullRingBeam', () => {
         height: createLength(90)
       }
 
-      const result = constructFullRingBeam(perimeter, customConfig, mockResolveMaterial)
+      const result = constructFullRingBeam(perimeter, customConfig)
 
       result.elements.forEach(element => {
         expect('material' in element).toBe(true)
@@ -192,7 +183,7 @@ describe('constructFullRingBeam', () => {
       ]
 
       const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig, mockResolveMaterial)
+      const result = constructFullRingBeam(perimeter, defaultConfig)
 
       result.elements.forEach(element => {
         expect('material' in element).toBe(true)
@@ -223,7 +214,7 @@ describe('constructFullRingBeam', () => {
       ]
 
       const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig, mockResolveMaterial)
+      const result = constructFullRingBeam(perimeter, defaultConfig)
 
       const cutsAndLengths = result.elements.map(element => {
         const constructionElement = element as ConstructionElement
@@ -243,7 +234,7 @@ describe('constructFullRingBeam', () => {
       ]
 
       const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig, mockResolveMaterial)
+      const result = constructFullRingBeam(perimeter, defaultConfig)
 
       const cutsAndLengths = result.elements.map(element => {
         const constructionElement = element as ConstructionElement
@@ -262,7 +253,7 @@ describe('constructFullRingBeam', () => {
       ]
 
       const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig, mockResolveMaterial)
+      const result = constructFullRingBeam(perimeter, defaultConfig)
 
       const cutsAndLengths = result.elements.map(element => {
         const constructionElement = element as ConstructionElement
@@ -284,7 +275,7 @@ describe('constructFullRingBeam', () => {
       ]
 
       const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig, mockResolveMaterial)
+      const result = constructFullRingBeam(perimeter, defaultConfig)
 
       const cutsAndLengths = result.elements.map(element => {
         const constructionElement = element as ConstructionElement
@@ -335,7 +326,7 @@ describe('constructFullRingBeam', () => {
       expect(polygonIsClockwise({ points })).toBeTruthy()
 
       const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig, mockResolveMaterial)
+      const result = constructFullRingBeam(perimeter, defaultConfig)
 
       const firstElement = result.elements.find(element => 'material' in element) as ConstructionElement
       const lastElement = result.elements[result.elements.length - 1] as ConstructionElement
@@ -358,7 +349,7 @@ describe('constructFullRingBeam', () => {
       ]
 
       const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig, mockResolveMaterial)
+      const result = constructFullRingBeam(perimeter, defaultConfig)
 
       const cutsAndLengths = result.elements.map(element => {
         const constructionElement = element as ConstructionElement
@@ -378,7 +369,7 @@ describe('constructFullRingBeam', () => {
       ]
 
       const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig, mockResolveMaterial)
+      const result = constructFullRingBeam(perimeter, defaultConfig)
 
       const cutsAndLengths = result.elements.map(element => {
         const constructionElement = element as ConstructionElement
@@ -400,7 +391,7 @@ describe('constructFullRingBeam', () => {
       ]
 
       const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig, mockResolveMaterial)
+      const result = constructFullRingBeam(perimeter, defaultConfig)
 
       const cutsAndLengths = result.elements.map(element => {
         const constructionElement = element as ConstructionElement

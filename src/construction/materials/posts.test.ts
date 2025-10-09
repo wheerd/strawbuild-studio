@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import type { ConstructionElement } from '@/construction/elements'
 import { aggregateResults } from '@/construction/results'
@@ -18,14 +18,15 @@ const wood120x60 = Object.values(DEFAULT_MATERIALS).find(
 )!
 const dimensionalMaterialId = wood120x60.id
 
-// Mock resolve material function for tests
-const mockResolveMaterial = (materialId: MaterialId): Material | undefined => {
-  if (materialId === dimensionalMaterialId) {
-    return wood120x60
-  }
-  // Return undefined for mock materials (no warnings)
-  return undefined
-}
+vi.mock('./store', () => ({
+  getMaterialById: vi.fn().mockImplementation((materialId: MaterialId): Material | undefined => {
+    if (materialId === dimensionalMaterialId) {
+      return wood120x60
+    }
+    // Return undefined for mock materials (no warnings)
+    return undefined
+  })
+}))
 
 describe('constructPost', () => {
   describe('full post construction', () => {
@@ -39,7 +40,7 @@ describe('constructPost', () => {
       const position: Vec3 = [100, 50, 25]
       const size: Vec3 = [60, 360, 3000]
 
-      const results = [...constructPost(position, size, fullPostConfig, mockResolveMaterial)]
+      const results = [...constructPost(position, size, fullPostConfig)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -60,7 +61,7 @@ describe('constructPost', () => {
       const position: Vec3 = [0, 0, 0]
       const size: Vec3 = [60, 360, 3000]
 
-      const results = [...constructPost(position, size, fullPostConfig, mockResolveMaterial)]
+      const results = [...constructPost(position, size, fullPostConfig)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -78,7 +79,7 @@ describe('constructPost', () => {
       const position: Vec3 = [200, 100, 0]
       const size: Vec3 = [60, 180, 2500]
 
-      const results = [...constructPost(position, size, fullPostConfig, mockResolveMaterial)]
+      const results = [...constructPost(position, size, fullPostConfig)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -99,7 +100,7 @@ describe('constructPost', () => {
         material: customMaterial
       }
 
-      const results = [...constructPost([0, 0, 0], [60, 360, 3000], config, mockResolveMaterial)]
+      const results = [...constructPost([0, 0, 0], [60, 360, 3000], config)]
       const { elements } = aggregateResults(results)
 
       expect((elements[0] as ConstructionElement).material).toBe(customMaterial)
@@ -111,7 +112,7 @@ describe('constructPost', () => {
         width: 80 as Length
       }
 
-      const results = [...constructPost([0, 0, 0], [80, 360, 3000], config, mockResolveMaterial)]
+      const results = [...constructPost([0, 0, 0], [80, 360, 3000], config)]
       const { elements } = aggregateResults(results)
 
       const post = elements[0]
@@ -121,8 +122,8 @@ describe('constructPost', () => {
     })
 
     it('should generate unique IDs for multiple posts', () => {
-      const results1 = [...constructPost([0, 0, 0], [60, 360, 3000], fullPostConfig, mockResolveMaterial)]
-      const results2 = [...constructPost([100, 0, 0], [60, 360, 3000], fullPostConfig, mockResolveMaterial)]
+      const results1 = [...constructPost([0, 0, 0], [60, 360, 3000], fullPostConfig)]
+      const results2 = [...constructPost([100, 0, 0], [60, 360, 3000], fullPostConfig)]
       const { elements: elements1 } = aggregateResults(results1)
       const { elements: elements2 } = aggregateResults(results2)
 
@@ -136,7 +137,7 @@ describe('constructPost', () => {
         width: 80 as Length // Doesn't match material dimensions
       }
 
-      const results = [...constructPost([0, 0, 0], [80, 200, 3000], config, mockResolveMaterial)]
+      const results = [...constructPost([0, 0, 0], [80, 200, 3000], config)]
       const { warnings } = aggregateResults(results)
 
       expect(warnings).toHaveLength(1)
@@ -150,7 +151,7 @@ describe('constructPost', () => {
         width: 120 as Length // Matches material width
       }
 
-      const results = [...constructPost([0, 0, 0], [120, 60, 3000], config, mockResolveMaterial)]
+      const results = [...constructPost([0, 0, 0], [120, 60, 3000], config)]
       const { warnings } = aggregateResults(results)
 
       expect(warnings).toHaveLength(0)
@@ -163,7 +164,7 @@ describe('constructPost', () => {
         width: 60 as Length // Swapped dimension match
       }
 
-      const results = [...constructPost([0, 0, 0], [60, 120, 3000], config, mockResolveMaterial)]
+      const results = [...constructPost([0, 0, 0], [60, 120, 3000], config)]
       const { warnings } = aggregateResults(results)
 
       expect(warnings).toHaveLength(0)
@@ -176,7 +177,7 @@ describe('constructPost', () => {
         width: 120 as Length // Original dimension match
       }
 
-      const results = [...constructPost([0, 0, 0], [120, 60, 3000], config, mockResolveMaterial)]
+      const results = [...constructPost([0, 0, 0], [120, 60, 3000], config)]
       const { warnings } = aggregateResults(results)
 
       expect(warnings).toHaveLength(0)
@@ -196,7 +197,7 @@ describe('constructPost', () => {
       const position: Vec3 = [100, 50, 25]
       const size: Vec3 = [60, 360, 3000]
 
-      const results = [...constructPost(position, size, doublePostConfig, mockResolveMaterial)]
+      const results = [...constructPost(position, size, doublePostConfig)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -229,7 +230,7 @@ describe('constructPost', () => {
       const position: Vec3 = [0, 0, 0]
       const size: Vec3 = [60, 360, 3000]
 
-      const results = [...constructPost(position, size, doublePostConfig, mockResolveMaterial)]
+      const results = [...constructPost(position, size, doublePostConfig)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -248,7 +249,7 @@ describe('constructPost', () => {
       const position: Vec3 = [200, 100, 0]
       const size: Vec3 = [60, 400, 2500]
 
-      const results = [...constructPost(position, size, doublePostConfig, mockResolveMaterial)]
+      const results = [...constructPost(position, size, doublePostConfig)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -270,7 +271,7 @@ describe('constructPost', () => {
         thickness: 150 as Length
       }
 
-      const results = [...constructPost([0, 0, 0], [80, 400, 3000], config, mockResolveMaterial)]
+      const results = [...constructPost([0, 0, 0], [80, 400, 3000], config)]
       const { elements } = aggregateResults(results)
 
       // Check element sizes via shape size
@@ -291,7 +292,7 @@ describe('constructPost', () => {
         infillMaterial: customStraw
       }
 
-      const results = [...constructPost([0, 0, 0], [60, 360, 3000], config, mockResolveMaterial)]
+      const results = [...constructPost([0, 0, 0], [60, 360, 3000], config)]
       const { elements } = aggregateResults(results)
 
       expect((elements[0] as ConstructionElement).material).toBe(customWood)
@@ -300,7 +301,7 @@ describe('constructPost', () => {
     })
 
     it('should generate unique IDs for all elements', () => {
-      const results = [...constructPost([0, 0, 0], [60, 360, 3000], doublePostConfig, mockResolveMaterial)]
+      const results = [...constructPost([0, 0, 0], [60, 360, 3000], doublePostConfig)]
       const { elements } = aggregateResults(results)
 
       const ids = elements.map(e => e.id)
@@ -311,7 +312,7 @@ describe('constructPost', () => {
       const position: Vec3 = [0, 0, 0]
       const size: Vec3 = [60, 240, 3000] // Exactly 2 * 120
 
-      const results = [...constructPost(position, size, doublePostConfig, mockResolveMaterial)]
+      const results = [...constructPost(position, size, doublePostConfig)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -324,7 +325,7 @@ describe('constructPost', () => {
       const position: Vec3 = [0, 0, 0]
       const size: Vec3 = [60, 200, 3000] // Less than 2 * 120
 
-      const results = [...constructPost(position, size, doublePostConfig, mockResolveMaterial)]
+      const results = [...constructPost(position, size, doublePostConfig)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(1)
@@ -341,7 +342,7 @@ describe('constructPost', () => {
         thickness: 100 as Length
       }
 
-      const results = [...constructPost([0, 0, 0], [80, 300, 3000], config, mockResolveMaterial)]
+      const results = [...constructPost([0, 0, 0], [80, 300, 3000], config)]
       const { warnings } = aggregateResults(results)
 
       expect(warnings).toHaveLength(1)
@@ -356,7 +357,7 @@ describe('constructPost', () => {
         thickness: 120 as Length
       }
 
-      const results = [...constructPost([0, 0, 0], [60, 300, 3000], config, mockResolveMaterial)]
+      const results = [...constructPost([0, 0, 0], [60, 300, 3000], config)]
       const { warnings } = aggregateResults(results)
 
       expect(warnings).toHaveLength(0)
@@ -370,7 +371,7 @@ describe('constructPost', () => {
         thickness: 60 as Length
       }
 
-      const results = [...constructPost([0, 0, 0], [120, 200, 3000], config, mockResolveMaterial)]
+      const results = [...constructPost([0, 0, 0], [120, 200, 3000], config)]
       const { warnings } = aggregateResults(results)
 
       expect(warnings).toHaveLength(0)
@@ -385,7 +386,7 @@ describe('constructPost', () => {
         material: mockWoodMaterial
       }
 
-      const results = [...constructPost([0, 0, 0], [1, 1, 1], config, mockResolveMaterial)]
+      const results = [...constructPost([0, 0, 0], [1, 1, 1], config)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -400,7 +401,7 @@ describe('constructPost', () => {
         material: mockWoodMaterial
       }
 
-      const results = [...constructPost([0, 0, 0], [1000, 5000, 10000], config, mockResolveMaterial)]
+      const results = [...constructPost([0, 0, 0], [1000, 5000, 10000], config)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -412,7 +413,7 @@ describe('constructPost', () => {
       const invalidConfig = { type: 'invalid' } as any
 
       expect(() => {
-        return [...constructPost([0, 0, 0], [60, 360, 3000], invalidConfig, mockResolveMaterial)]
+        return [...constructPost([0, 0, 0], [60, 360, 3000], invalidConfig)]
       }).toThrow('Invalid post type')
     })
   })
@@ -425,7 +426,7 @@ describe('constructPost', () => {
         material: mockWoodMaterial
       }
 
-      const results = [...constructPost([0, 0, 0], [60, 360, 3000], config, mockResolveMaterial)]
+      const results = [...constructPost([0, 0, 0], [60, 360, 3000], config)]
       const { elements } = aggregateResults(results)
 
       expect('material' in elements[0]).toBe(true)
@@ -445,7 +446,7 @@ describe('constructPost', () => {
         infillMaterial: mockStrawMaterial
       }
 
-      const results = [...constructPost([0, 0, 0], [60, 360, 3000], config, mockResolveMaterial)]
+      const results = [...constructPost([0, 0, 0], [60, 360, 3000], config)]
       const { elements } = aggregateResults(results)
 
       elements.forEach(element => {
@@ -469,7 +470,7 @@ describe('constructPost', () => {
         material: mockWoodMaterial
       }
 
-      const results = [...constructPost(position, size, config, mockResolveMaterial)]
+      const results = [...constructPost(position, size, config)]
       const { elements } = aggregateResults(results)
 
       expect('material' in elements[0]).toBe(true)
@@ -494,7 +495,7 @@ describe('constructPost', () => {
         infillMaterial: mockStrawMaterial
       }
 
-      const results = [...constructPost(position, size, config, mockResolveMaterial)]
+      const results = [...constructPost(position, size, config)]
       const { elements } = aggregateResults(results)
 
       // First post should be at original position

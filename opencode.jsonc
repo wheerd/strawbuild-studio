@@ -11,12 +11,14 @@
       "rm -rf *": "ask",
       "pnpm *": "ask",
       "npm": "deny",
+      "pnpm test": "allow",
       "pnpm test *": "allow",
       "pnpm lint": "allow",
       "pnpm lint:format": "allow",
       "pnpm dev": "allow",
       "pnpm build": "allow",
       "pnpm typecheck": "allow",
+      "npx tsc *": "allow",
       "rg *": "allow"
     }
   }

@@ -4,7 +4,8 @@ import { TAG_POST } from '@/construction/tags'
 import { type Length, type Vec3, mergeBounds } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
 
-import type { Material, MaterialId, ResolveMaterialFunction } from './material'
+import type { Material, MaterialId } from './material'
+import { getMaterialById } from './store'
 
 export interface BasePostConfig {
   type: 'full' | 'double'
@@ -47,12 +48,7 @@ const dimensionsMatch = (
   return false
 }
 
-function* constructFullPost(
-  position: Vec3,
-  size: Vec3,
-  config: FullPostConfig,
-  resolveMaterial: ResolveMaterialFunction
-): Generator<ConstructionResult> {
+function* constructFullPost(position: Vec3, size: Vec3, config: FullPostConfig): Generator<ConstructionResult> {
   const postElement: ConstructionElement = createConstructionElement(
     config.material,
     createCuboidShape(position, [config.width, size[1], size[2]])
@@ -61,7 +57,7 @@ function* constructFullPost(
   yield yieldElement(postElement)
 
   // Check if material is dimensional and dimensions match
-  const material = resolveMaterial(config.material)
+  const material = getMaterialById(config.material)
   if (material && material.type === 'dimensional') {
     const dimensionalMaterial = material as Material & { type: 'dimensional' }
     const postDimensions = { width: config.width, thickness: size[1] as Length }
@@ -77,12 +73,7 @@ function* constructFullPost(
   }
 }
 
-function* constructDoublePost(
-  position: Vec3,
-  size: Vec3,
-  config: DoublePostConfig,
-  resolveMaterial: ResolveMaterialFunction
-): Generator<ConstructionResult> {
+function* constructDoublePost(position: Vec3, size: Vec3, config: DoublePostConfig): Generator<ConstructionResult> {
   // Check if wall is wide enough for two posts
   const minimumWallThickness = 2 * config.thickness
   if (size[1] < minimumWallThickness) {
@@ -131,7 +122,7 @@ function* constructDoublePost(
   }
 
   // Check if post material is dimensional and dimensions match
-  const postMaterial = resolveMaterial(config.material)
+  const postMaterial = getMaterialById(config.material)
   if (postMaterial && postMaterial.type === 'dimensional') {
     const dimensionalMaterial = postMaterial as Material & { type: 'dimensional' }
     const postDimensions = { width: config.width, thickness: config.thickness }
@@ -147,16 +138,11 @@ function* constructDoublePost(
   }
 }
 
-export function constructPost(
-  position: Vec3,
-  size: Vec3,
-  config: PostConfig,
-  resolveMaterial: ResolveMaterialFunction
-): Generator<ConstructionResult> {
+export function constructPost(position: Vec3, size: Vec3, config: PostConfig): Generator<ConstructionResult> {
   if (config.type === 'full') {
-    return constructFullPost(position, size, config, resolveMaterial)
+    return constructFullPost(position, size, config)
   } else if (config.type === 'double') {
-    return constructDoublePost(position, size, config, resolveMaterial)
+    return constructDoublePost(position, size, config)
   } else {
     throw new Error('Invalid post type')
   }

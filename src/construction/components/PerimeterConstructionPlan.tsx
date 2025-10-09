@@ -4,7 +4,6 @@ import React, { useMemo } from 'react'
 
 import type { PerimeterId } from '@/building/model/ids'
 import { usePerimeterById } from '@/building/store'
-import { resolveDefaultMaterial } from '@/construction/materials/material'
 import { constructPerimeter } from '@/construction/perimeter'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 
@@ -90,7 +89,7 @@ export function PerimeterConstructionPlanModal({
 
   const constructionModel = useMemo(() => {
     if (!perimeter) return null
-    return constructPerimeter(perimeter, resolveDefaultMaterial)
+    return constructPerimeter(perimeter)
   }, [perimeter])
 
   // Define views for perimeter construction (only top view)

@@ -5,7 +5,6 @@ import React, { useMemo, useState } from 'react'
 import type { PerimeterId } from '@/building/model/ids'
 import { usePerimeterById } from '@/building/store'
 import { useConfigActions } from '@/construction/config'
-import { resolveDefaultMaterial } from '@/construction/materials/material'
 import { constructRingBeam } from '@/construction/ringBeams/ringBeams'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 
@@ -104,7 +103,7 @@ export function RingBeamConstructionPlanModal({
     if (!method) return null
 
     try {
-      return constructRingBeam(perimeter, method.config, resolveDefaultMaterial)
+      return constructRingBeam(perimeter, method.config)
     } catch (error) {
       console.error('Failed to generate ring beam construction plan:', error)
       return null
