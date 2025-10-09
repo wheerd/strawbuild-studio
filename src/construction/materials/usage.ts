@@ -1,4 +1,4 @@
-import { getConfigState } from '@/construction/config/store'
+import type { PerimeterConstructionMethod, RingBeamConstructionMethod } from '@/construction/config/types'
 
 import type { MaterialId } from './material'
 
@@ -10,19 +10,23 @@ export interface MaterialUsage {
 /**
  * Checks if a material is currently in use by any construction configurations
  */
-export function getMaterialUsage(materialId: MaterialId): MaterialUsage {
-  const configState = getConfigState()
+export function getMaterialUsage(
+  materialId: MaterialId,
+  ringBeamMethods: RingBeamConstructionMethod[],
+  perimeterMethods: PerimeterConstructionMethod[]
+): MaterialUsage {
   const usedByConfigs: string[] = []
 
   // Check ring beam construction methods
-  Object.values(configState.ringBeamConstructionMethods).forEach(method => {
+
+  ringBeamMethods.forEach(method => {
     if (method.config.material === materialId) {
       usedByConfigs.push(`Ring Beam: ${method.name}`)
     }
   })
 
   // Check perimeter construction methods
-  Object.values(configState.perimeterConstructionMethods).forEach(method => {
+  perimeterMethods.forEach(method => {
     const configUsages: string[] = []
 
     // Check different parts of perimeter config based on type
@@ -130,11 +134,4 @@ export function getMaterialUsage(materialId: MaterialId): MaterialUsage {
     isUsed: usedByConfigs.length > 0,
     usedByConfigs
   }
-}
-
-/**
- * React hook to get material usage information
- */
-export function useMaterialUsage(materialId: MaterialId): MaterialUsage {
-  return getMaterialUsage(materialId)
 }

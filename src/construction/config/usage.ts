@@ -16,15 +16,15 @@ export interface PerimeterConfigUsage {
  */
 export function getRingBeamConfigUsage(
   configId: RingBeamConstructionMethodId,
-  perimeters: Record<string, Perimeter>,
-  storeys: Record<string, Storey>
+  perimeters: Perimeter[],
+  storeys: Storey[]
 ): RingBeamConfigUsage {
   const usedByPerimeters: string[] = []
 
   // Check all perimeters for base and top ring beam references
-  Object.values(perimeters).forEach(perimeter => {
+  perimeters.forEach(perimeter => {
     // Get storey name for context
-    const storey = Object.values(storeys).find(s => s.id === perimeter.storeyId)
+    const storey = storeys.find(s => s.id === perimeter.storeyId)
     const storeyName = storey?.name ?? 'Unknown Floor'
 
     // Check base ring beam
@@ -49,15 +49,15 @@ export function getRingBeamConfigUsage(
  */
 export function getPerimeterConfigUsage(
   configId: PerimeterConstructionMethodId,
-  perimeters: Record<string, Perimeter>,
-  storeys: Record<string, Storey>
+  perimeters: Perimeter[],
+  storeys: Storey[]
 ): PerimeterConfigUsage {
   const usedByWalls: string[] = []
 
   // Check all perimeters and their walls
-  Object.values(perimeters).forEach(perimeter => {
+  perimeters.forEach(perimeter => {
     // Get storey name for context
-    const storey = Object.values(storeys).find(s => s.id === perimeter.storeyId)
+    const storey = storeys.find(s => s.id === perimeter.storeyId)
     const storeyName = storey?.name ?? 'Unknown Floor'
 
     // Check each wall in the perimeter

@@ -25,8 +25,8 @@ describe('Config Usage Detection', () => {
   describe('getRingBeamConfigUsage', () => {
     it('should detect ring beam config not in use', () => {
       const ringBeamId = createRingBeamConstructionMethodId()
-      const perimeters = {}
-      const storeys = { [storeyId]: storey }
+      const perimeters: Perimeter[] = []
+      const storeys = [storey]
 
       const usage = getRingBeamConfigUsage(ringBeamId, perimeters, storeys)
 
@@ -47,10 +47,7 @@ describe('Config Usage Detection', () => {
         topRingBeamMethodId: undefined
       }
 
-      const perimeters = { [perimeterId]: perimeter }
-      const storeys = { [storeyId]: storey }
-
-      const usage = getRingBeamConfigUsage(ringBeamId, perimeters, storeys)
+      const usage = getRingBeamConfigUsage(ringBeamId, [perimeter], [storey])
 
       expect(usage.isUsed).toBe(true)
       expect(usage.usedByPerimeters).toEqual(['Test Floor - Base Ring Beam'])
@@ -69,10 +66,7 @@ describe('Config Usage Detection', () => {
         topRingBeamMethodId: ringBeamId
       }
 
-      const perimeters = { [perimeterId]: perimeter }
-      const storeys = { [storeyId]: storey }
-
-      const usage = getRingBeamConfigUsage(ringBeamId, perimeters, storeys)
+      const usage = getRingBeamConfigUsage(ringBeamId, [perimeter], [storey])
 
       expect(usage.isUsed).toBe(true)
       expect(usage.usedByPerimeters).toEqual(['Test Floor - Top Ring Beam'])
@@ -101,10 +95,7 @@ describe('Config Usage Detection', () => {
         topRingBeamMethodId: ringBeamId
       }
 
-      const perimeters = { [perimeter1Id]: perimeter1, [perimeter2Id]: perimeter2 }
-      const storeys = { [storeyId]: storey }
-
-      const usage = getRingBeamConfigUsage(ringBeamId, perimeters, storeys)
+      const usage = getRingBeamConfigUsage(ringBeamId, [perimeter1, perimeter2], [storey])
 
       expect(usage.isUsed).toBe(true)
       expect(usage.usedByPerimeters).toHaveLength(2)
@@ -116,10 +107,8 @@ describe('Config Usage Detection', () => {
   describe('getPerimeterConfigUsage', () => {
     it('should detect perimeter config not in use', () => {
       const perimeterId = createPerimeterConstructionMethodId()
-      const perimeters = {}
-      const storeys = { [storeyId]: storey }
 
-      const usage = getPerimeterConfigUsage(perimeterId, perimeters, storeys)
+      const usage = getPerimeterConfigUsage(perimeterId, [], [storey])
 
       expect(usage.isUsed).toBe(false)
       expect(usage.usedByWalls).toEqual([])
@@ -176,10 +165,7 @@ describe('Config Usage Detection', () => {
         corners: []
       }
 
-      const perimeters = { [perimeterId]: perimeter }
-      const storeys = { [storeyId]: storey }
-
-      const usage = getPerimeterConfigUsage(configId, perimeters, storeys)
+      const usage = getPerimeterConfigUsage(configId, [perimeter], [storey])
 
       expect(usage.isUsed).toBe(true)
       expect(usage.usedByWalls).toEqual(['Test Floor - Wall 1', 'Test Floor - Wall 3'])
