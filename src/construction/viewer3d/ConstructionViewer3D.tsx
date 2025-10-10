@@ -23,7 +23,7 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
 
   const cameraDistance = maxSize * 1.5
 
-  const cameraThreeX = -centerX - cameraDistance * 0.7
+  const cameraThreeX = centerX - cameraDistance * 0.7
   const cameraThreeY = centerZ + cameraDistance * 0.8
   const cameraThreeZ = -centerY + cameraDistance * 0.7
 
@@ -43,13 +43,11 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
         background: '#f0f0f0'
       }}
     >
-      <ambientLight intensity={1} />
-      {/*
+      <ambientLight intensity={0.6} />
       <directionalLight position={[10000, 10000, 5000]} intensity={0.8} />
       <directionalLight position={[-10000, 5000, -5000]} intensity={0.3} />
-      */}
 
-      <gridHelper args={[gridSize, 50]} position={[-centerX, 0, -centerY]} />
+      <gridHelper args={[gridSize, 50]} position={[centerX, 0, -centerY]} />
 
       {model.elements.map(element =>
         'children' in element ? (
@@ -59,7 +57,7 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
         )
       )}
 
-      <OrbitControls target={[-centerX, centerZ, -centerY]} makeDefault />
+      <OrbitControls target={[centerX, centerZ, -centerY]} makeDefault />
     </Canvas>
   )
 }

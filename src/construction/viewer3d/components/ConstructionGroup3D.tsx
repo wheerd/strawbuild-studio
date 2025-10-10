@@ -10,8 +10,8 @@ function ConstructionGroup3D({ group }: ConstructionGroup3DProps): React.JSX.Ele
   const position = group.transform.position
   const rotation = group.transform.rotation
 
-  const threePosition: [number, number, number] = [-position[0], position[2], -position[1]]
-  const threeRotation: [number, number, number] = [-rotation[0], -rotation[2], -rotation[1]]
+  const threePosition: [number, number, number] = [position[0], position[2], -position[1]]
+  const threeRotation: [number, number, number] = [rotation[0], rotation[2], rotation[1]]
 
   return (
     <group position={threePosition} rotation={threeRotation}>

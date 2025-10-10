@@ -21,21 +21,21 @@ export function computeCutCuboidVertices(shape: CutCuboid): CutCuboidVertices {
     const offsetDistance = h * Math.tan(angleRad)
 
     if (offsetDistance < 0) {
-      v0 = [-(x - offsetDistance), z, -y]
-      v3 = [-x, z, -(y + h)]
-      v4 = [-(x - offsetDistance), z + d, -y]
-      v7 = [-x, z + d, -(y + h)]
+      v0 = [x - offsetDistance, z, -y]
+      v3 = [x, z, -(y + h)]
+      v4 = [x - offsetDistance, z + d, -y]
+      v7 = [x, z + d, -(y + h)]
     } else {
-      v0 = [-x, z, -y]
-      v3 = [-(x + offsetDistance), z, -(y + h)]
-      v4 = [-x, z + d, -y]
-      v7 = [-(x + offsetDistance), z + d, -(y + h)]
+      v0 = [x, z, -y]
+      v3 = [x + offsetDistance, z, -(y + h)]
+      v4 = [x, z + d, -y]
+      v7 = [x + offsetDistance, z + d, -(y + h)]
     }
   } else {
-    v0 = [-x, z, -y]
-    v3 = [-x, z, -(y + h)]
-    v4 = [-x, z + d, -y]
-    v7 = [-x, z + d, -(y + h)]
+    v0 = [x, z, -y]
+    v3 = [x, z, -(y + h)]
+    v4 = [x, z + d, -y]
+    v7 = [x, z + d, -(y + h)]
   }
 
   if (endCut?.plane === 'xy' && endCut?.axis === 'y') {
@@ -43,38 +43,38 @@ export function computeCutCuboidVertices(shape: CutCuboid): CutCuboidVertices {
     const offsetDistance = h * Math.tan(angleRad)
 
     if (offsetDistance < 0) {
-      v1 = [-(x + w), z, -y]
-      v2 = [-(x + w + offsetDistance), z, -(y + h)]
-      v5 = [-(x + w), z + d, -y]
-      v6 = [-(x + w + offsetDistance), z + d, -(y + h)]
+      v1 = [x + w, z, -y]
+      v2 = [x + w + offsetDistance, z, -(y + h)]
+      v5 = [x + w, z + d, -y]
+      v6 = [x + w + offsetDistance, z + d, -(y + h)]
     } else {
-      v1 = [-(x + w - offsetDistance), z, -y]
-      v2 = [-(x + w), z, -(y + h)]
-      v5 = [-(x + w - offsetDistance), z + d, -y]
-      v6 = [-(x + w), z + d, -(y + h)]
+      v1 = [x + w - offsetDistance, z, -y]
+      v2 = [x + w, z, -(y + h)]
+      v5 = [x + w - offsetDistance, z + d, -y]
+      v6 = [x + w, z + d, -(y + h)]
     }
   } else {
-    v1 = [-(x + w), z, -y]
-    v2 = [-(x + w), z, -(y + h)]
-    v5 = [-(x + w), z + d, -y]
-    v6 = [-(x + w), z + d, -(y + h)]
+    v1 = [x + w, z, -y]
+    v2 = [x + w, z, -(y + h)]
+    v5 = [x + w, z + d, -y]
+    v6 = [x + w, z + d, -(y + h)]
   }
 
   const vertices = new Float32Array([...v0, ...v1, ...v2, ...v3, ...v4, ...v5, ...v6, ...v7])
 
   const indices = new Uint16Array([
     // Bottom face (y edge at z)
-    0, 4, 1, 1, 4, 5,
+    0, 1, 4, 1, 5, 4,
     // Top face (y+h edge at z)
-    3, 2, 7, 2, 6, 7,
+    3, 7, 2, 2, 7, 6,
     // Start face (x=0)
-    0, 3, 4, 4, 3, 7,
+    0, 4, 3, 4, 7, 3,
     // End face (x=w)
-    1, 5, 2, 2, 5, 6,
+    1, 2, 5, 2, 6, 5,
     // Front face (z)
-    0, 1, 3, 1, 2, 3,
+    0, 3, 1, 1, 3, 2,
     // Back face (z+d)
-    4, 7, 5, 5, 7, 6
+    4, 5, 7, 5, 6, 7
   ])
 
   return { vertices, indices }

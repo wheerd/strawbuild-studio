@@ -24,8 +24,8 @@ function ConstructionElement3D({ element }: ConstructionElement3DProps): React.J
   const position = element.transform.position
   const rotation = element.transform.rotation
 
-  const threePosition: [number, number, number] = [-position[0], position[2], -position[1]]
-  const threeRotation: [number, number, number] = [-rotation[0], -rotation[2], -rotation[1]]
+  const threePosition: [number, number, number] = [position[0], position[2], -position[1]]
+  const threeRotation: [number, number, number] = [rotation[0], rotation[2], rotation[1]]
 
   return (
     <group position={threePosition} rotation={threeRotation}>
