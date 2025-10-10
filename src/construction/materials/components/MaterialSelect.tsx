@@ -2,8 +2,8 @@ import { CircleIcon, CubeIcon, LayersIcon, OpacityIcon } from '@radix-ui/react-i
 import { Flex, Select, Text } from '@radix-ui/themes'
 import React from 'react'
 
-import type { Material, MaterialId } from '../material'
-import { useMaterials } from '../store'
+import type { Material, MaterialId } from '@/construction/materials/material'
+import { useMaterials } from '@/construction/materials/store'
 
 export interface MaterialSelectProps {
   value: MaterialId | null | undefined

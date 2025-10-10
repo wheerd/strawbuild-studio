@@ -13,9 +13,6 @@ import { AlertDialog, Badge, Button, DropdownMenu, Flex, Grid, IconButton, Text,
 import React, { useCallback, useState } from 'react'
 
 import { usePerimeterConstructionMethods, useRingBeamConstructionMethods } from '@/construction/config/store'
-import { LengthField } from '@/shared/components/LengthField/LengthField'
-import type { Length } from '@/shared/geometry'
-
 import type {
   DimensionalMaterial,
   GenericMaterial,
@@ -23,9 +20,12 @@ import type {
   MaterialId,
   SheetMaterial,
   VolumeMaterial
-} from '../material'
-import { useMaterialActions, useMaterials } from '../store'
-import { getMaterialUsage } from '../usage'
+} from '@/construction/materials/material'
+import { useMaterialActions, useMaterials } from '@/construction/materials/store'
+import { getMaterialUsage } from '@/construction/materials/usage'
+import { LengthField } from '@/shared/components/LengthField/LengthField'
+import type { Length } from '@/shared/geometry'
+
 import { MaterialSelect, getMaterialTypeIcon, getMaterialTypeName } from './MaterialSelect'
 
 export interface MaterialsConfigModalProps {

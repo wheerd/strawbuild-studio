@@ -18,13 +18,18 @@ import React, { useCallback, useMemo, useState } from 'react'
 
 import type { PerimeterConstructionMethodId } from '@/building/model/ids'
 import { usePerimeters, useStoreysOrderedByLevel } from '@/building/store'
+import {
+  useConfigActions,
+  useDefaultPerimeterMethodId,
+  usePerimeterConstructionMethods
+} from '@/construction/config/store'
+import type { LayersConfig, PerimeterConstructionConfig } from '@/construction/config/types'
 import { getPerimeterConfigUsage } from '@/construction/config/usage'
 import { MaterialSelect } from '@/construction/materials/components'
+import type { MaterialId } from '@/construction/materials/material'
 import { LengthField } from '@/shared/components/LengthField'
 import type { Length } from '@/shared/geometry'
 
-import { useConfigActions, useDefaultPerimeterMethodId, usePerimeterConstructionMethods } from '../store'
-import type { LayersConfig, PerimeterConstructionConfig } from '../types'
 import { InfillIcon, ModulesIcon, NonStrawbaleIcon, StrawhengeIcon } from './Icons'
 
 type PerimeterConfigType = PerimeterConstructionConfig['type']
@@ -114,7 +119,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
                 type: 'double',
                 width: posts.width,
                 thickness: 'thickness' in posts ? posts.thickness : (120 as Length),
-                infillMaterial: 'infillMaterial' in posts ? posts.infillMaterial : ('' as any),
+                infillMaterial: ('infillMaterial' in posts ? posts.infillMaterial : '') as MaterialId,
                 material: posts.material
               })
             }
@@ -162,7 +167,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
         </Label.Root>
         <MaterialSelect
           value={'material' in posts ? posts.material : undefined}
-          onValueChange={material => onUpdate({ ...posts, material } as any)}
+          onValueChange={material => onUpdate({ ...posts, material })}
           size="1"
         />
 
@@ -316,7 +321,12 @@ function StrawhengeConfigForm({ config, onUpdate }: StrawhengeConfigFormProps): 
     <Flex direction="column" gap="3">
       <ModuleConfigSection module={config.module} onUpdate={module => onUpdate({ ...config, module })} />
       <Separator size="4" />
-      <InfillConfigForm config={config.infill} onUpdate={infill => onUpdate({ ...config, infill } as any)} />
+      <InfillConfigForm
+        config={config.infill}
+        onUpdate={infill =>
+          onUpdate({ ...config, infill: infill as Extract<PerimeterConstructionConfig, { type: 'infill' }> })
+        }
+      />
     </Flex>
   )
 }
@@ -331,7 +341,10 @@ function ModulesConfigForm({ config, onUpdate }: ModulesConfigFormProps): React.
     <Flex direction="column" gap="3">
       <ModuleConfigSection module={config.module} onUpdate={module => onUpdate({ ...config, module })} />
       <Separator size="4" />
-      <InfillConfigForm config={config.infill} onUpdate={infill => onUpdate({ ...config, infill } as any)} />
+      <InfillConfigForm
+        config={config.infill}
+        onUpdate={infill => onUpdate({ ...config, infill: infill as typeof config.infill })}
+      />
     </Flex>
   )
 }
@@ -718,7 +731,7 @@ export function PerimeterConfigContent(): React.JSX.Element {
 
   const handleAddNew = useCallback(
     (type: PerimeterConfigType) => {
-      const defaultMaterial = '' as any
+      const defaultMaterial = '' as MaterialId
 
       let config: PerimeterConstructionConfig
       const baseStrawConfig = {

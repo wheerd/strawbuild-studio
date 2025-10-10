@@ -17,17 +17,18 @@ import React, { useCallback, useMemo, useState } from 'react'
 
 import type { RingBeamConstructionMethodId } from '@/building/model/ids'
 import { usePerimeters, useStoreysOrderedByLevel } from '@/building/store'
-import { getRingBeamConfigUsage } from '@/construction/config/usage'
-import { MaterialSelect } from '@/construction/materials/components/MaterialSelect'
-import { LengthField } from '@/shared/components/LengthField/LengthField'
-import type { Length } from '@/shared/geometry'
-
 import {
   useConfigActions,
   useDefaultBaseRingBeamMethodId,
   useDefaultTopRingBeamMethodId,
   useRingBeamConstructionMethods
-} from '../store'
+} from '@/construction/config/store'
+import { getRingBeamConfigUsage } from '@/construction/config/usage'
+import { MaterialSelect } from '@/construction/materials/components/MaterialSelect'
+import type { MaterialId } from '@/construction/materials/material'
+import { LengthField } from '@/shared/components/LengthField/LengthField'
+import type { Length } from '@/shared/geometry'
+
 import type { RingBeamConfig } from './../../ringBeams/ringBeams'
 
 type RingBeamType = 'full' | 'double'
@@ -73,7 +74,7 @@ export function RingBeamConfigContent(): React.JSX.Element {
 
   const handleAddNew = useCallback(
     (type: RingBeamType) => {
-      const defaultMaterial = '' as any
+      const defaultMaterial = '' as MaterialId
 
       let config: RingBeamConfig
       if (type === 'full') {
@@ -255,7 +256,7 @@ export function RingBeamConfigContent(): React.JSX.Element {
             <Flex gap="2" align="center">
               {selectedMethod.config.type === 'full' ? <SquareIcon /> : <ViewVerticalIcon />}
               <Text size="2" color="gray">
-                {selectedMethod.config.type == 'full' ? 'Full' : 'Double'}
+                {selectedMethod.config.type === 'full' ? 'Full' : 'Double'}
               </Text>
             </Flex>
           </Grid>
