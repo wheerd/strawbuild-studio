@@ -14,7 +14,7 @@ export interface MaterialSelectProps {
   materials?: Material[]
 }
 
-function getMaterialTypeIcon(type: Material['type']) {
+export function getMaterialTypeIcon(type: Material['type']) {
   switch (type) {
     case 'dimensional':
       return CubeIcon
@@ -24,6 +24,19 @@ function getMaterialTypeIcon(type: Material['type']) {
       return OpacityIcon
     case 'generic':
       return CircleIcon
+  }
+}
+
+export function getMaterialTypeName(type: Material['type']) {
+  switch (type) {
+    case 'dimensional':
+      return 'Dimensional'
+    case 'sheet':
+      return 'Sheet'
+    case 'volume':
+      return 'Volume'
+    case 'generic':
+      return 'Generic'
   }
 }
 

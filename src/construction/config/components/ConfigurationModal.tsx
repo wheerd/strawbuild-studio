@@ -36,7 +36,7 @@ export function ConfigurationModal({ trigger }: ConfigurationModalProps): React.
           <Tabs.List>
             <Tabs.Trigger value="materials">Materials</Tabs.Trigger>
             <Tabs.Trigger value="ringbeams">Ring Beams</Tabs.Trigger>
-            <Tabs.Trigger value="perimeter">Perimeter Configs</Tabs.Trigger>
+            <Tabs.Trigger value="perimeter">Perimeter Walls</Tabs.Trigger>
           </Tabs.List>
 
           <Tabs.Content value="materials">

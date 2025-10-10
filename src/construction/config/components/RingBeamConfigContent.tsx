@@ -146,9 +146,6 @@ export function RingBeamConfigContent(): React.JSX.Element {
       <Flex direction="column" gap="2">
         <Flex gap="2" align="end">
           <Flex direction="column" gap="1" flexGrow="1">
-            <Text size="2" weight="medium">
-              Ring Beam Method
-            </Text>
             <Select.Root value={selectedMethodId ?? ''} onValueChange={setSelectedMethodId}>
               <Select.Trigger placeholder="Select ring beam method..." />
               <Select.Content>
@@ -255,9 +252,12 @@ export function RingBeamConfigContent(): React.JSX.Element {
                 Type
               </Text>
             </Label.Root>
-            <Text size="2" color="gray">
-              {selectedMethod.config.type}
-            </Text>
+            <Flex gap="2" align="center">
+              {selectedMethod.config.type === 'full' ? <SquareIcon /> : <ViewVerticalIcon />}
+              <Text size="2" color="gray">
+                {selectedMethod.config.type == 'full' ? 'Full' : 'Double'}
+              </Text>
+            </Flex>
           </Grid>
 
           {selectedMethod.config.type === 'full' && (

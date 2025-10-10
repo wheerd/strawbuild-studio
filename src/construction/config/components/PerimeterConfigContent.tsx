@@ -624,7 +624,7 @@ function ConfigForm({ method, onUpdateName }: ConfigFormProps): React.JSX.Elemen
       {/* Basic Info - Full Width */}
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
+          <Text size="2" weight="medium" color="gray">
             Name
           </Text>
         </Label.Root>
@@ -632,17 +632,35 @@ function ConfigForm({ method, onUpdateName }: ConfigFormProps): React.JSX.Elemen
           value={method.name}
           onChange={e => onUpdateName(e.target.value)}
           placeholder="Method name"
-          size="1"
+          size="2"
         />
 
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
+          <Text size="2" weight="medium" color="gray">
             Type
           </Text>
         </Label.Root>
-        <Text size="1" color="gray">
-          {method.config.type}
-        </Text>
+
+        <Flex gap="2" align="center">
+          {method.config.type === 'infill' ? (
+            <InfillIcon />
+          ) : method.config.type === 'modules' ? (
+            <ModulesIcon />
+          ) : method.config.type === 'strawhenge' ? (
+            <StrawhengeIcon />
+          ) : (
+            <NonStrawbaleIcon />
+          )}
+          <Text size="2" color="gray">
+            {method.config.type === 'infill'
+              ? 'Infill'
+              : method.config.type === 'modules'
+                ? 'Modules'
+                : method.config.type === 'strawhenge'
+                  ? 'Strawhenge'
+                  : 'Non-Strawbale'}
+          </Text>
+        </Flex>
       </Grid>
 
       <Separator size="4" />

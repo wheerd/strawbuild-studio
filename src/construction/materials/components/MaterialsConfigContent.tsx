@@ -26,7 +26,7 @@ import type {
 } from '../material'
 import { useMaterialActions, useMaterials } from '../store'
 import { getMaterialUsage } from '../usage'
-import { MaterialSelect } from './MaterialSelect'
+import { MaterialSelect, getMaterialTypeIcon, getMaterialTypeName } from './MaterialSelect'
 
 export interface MaterialsConfigModalProps {
   trigger: React.ReactNode
@@ -130,90 +130,84 @@ export function MaterialsConfigContent(): React.JSX.Element {
     [selectedMaterial, updateMaterial]
   )
 
+  const Icon = selectedMaterial ? getMaterialTypeIcon(selectedMaterial.type) : null
+
   return (
     <Flex direction="column" gap="4" style={{ width: '100%' }}>
       {/* Selector + Actions */}
-      <Flex direction="column" gap="2">
-        <Flex gap="2" align="end">
-          <Flex direction="column" gap="1" flexGrow="1">
-            <Text size="2" weight="medium">
-              Material
-            </Text>
-            <MaterialSelect
-              value={(selectedMaterialId ?? undefined) as MaterialId | undefined}
-              onValueChange={setSelectedMaterialId}
-              placeholder="Select material..."
-            />
-          </Flex>
-
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger>
-              <IconButton title="Add New">
-                <PlusIcon />
-              </IconButton>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content>
-              <DropdownMenu.Item onSelect={() => handleAddNew('dimensional')}>
-                <Flex align="center" gap="1">
-                  <CubeIcon />
-                  Dimensional
-                </Flex>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => handleAddNew('sheet')}>
-                <Flex align="center" gap="1">
-                  <LayersIcon />
-                  Sheet
-                </Flex>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => handleAddNew('volume')}>
-                <Flex align="center" gap="1">
-                  <OpacityIcon />
-                  Volume
-                </Flex>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => handleAddNew('generic')}>
-                <Flex align="center" gap="1">
-                  <CircleIcon />
-                  Generic
-                </Flex>
-              </DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
-
-          <IconButton onClick={handleDuplicate} disabled={!selectedMaterial} title="Duplicate" variant="soft">
-            <CopyIcon />
-          </IconButton>
-
-          <AlertDialog.Root>
-            <AlertDialog.Trigger>
-              <IconButton
-                disabled={!selectedMaterial || usage.isUsed}
-                color="red"
-                title={usage.isUsed ? 'In Use - Cannot Delete' : 'Delete'}
-              >
-                <TrashIcon />
-              </IconButton>
-            </AlertDialog.Trigger>
-            <AlertDialog.Content>
-              <AlertDialog.Title>Delete Material</AlertDialog.Title>
-              <AlertDialog.Description>
-                Are you sure you want to delete "{selectedMaterial?.name}"? This action cannot be undone.
-              </AlertDialog.Description>
-              <Flex gap="3" mt="4" justify="end">
-                <AlertDialog.Cancel>
-                  <Button variant="soft" color="gray">
-                    Cancel
-                  </Button>
-                </AlertDialog.Cancel>
-                <AlertDialog.Action>
-                  <Button variant="solid" color="red" onClick={handleDelete}>
-                    Delete
-                  </Button>
-                </AlertDialog.Action>
-              </Flex>
-            </AlertDialog.Content>
-          </AlertDialog.Root>
+      <Flex gap="2" align="center" width="100%">
+        <Flex direction="column" flexGrow="1">
+          <MaterialSelect
+            value={(selectedMaterialId ?? undefined) as MaterialId | undefined}
+            onValueChange={setSelectedMaterialId}
+            placeholder="Select material..."
+          />
         </Flex>
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger>
+            <IconButton title="Add New">
+              <PlusIcon />
+            </IconButton>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content>
+            <DropdownMenu.Item onSelect={() => handleAddNew('dimensional')}>
+              <Flex align="center" gap="1">
+                <CubeIcon />
+                Dimensional
+              </Flex>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item onSelect={() => handleAddNew('sheet')}>
+              <Flex align="center" gap="1">
+                <LayersIcon />
+                Sheet
+              </Flex>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item onSelect={() => handleAddNew('volume')}>
+              <Flex align="center" gap="1">
+                <OpacityIcon />
+                Volume
+              </Flex>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item onSelect={() => handleAddNew('generic')}>
+              <Flex align="center" gap="1">
+                <CircleIcon />
+                Generic
+              </Flex>
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu.Root>
+        <IconButton onClick={handleDuplicate} disabled={!selectedMaterial} title="Duplicate" variant="soft">
+          <CopyIcon />
+        </IconButton>
+        <AlertDialog.Root>
+          <AlertDialog.Trigger>
+            <IconButton
+              disabled={!selectedMaterial || usage.isUsed}
+              color="red"
+              title={usage.isUsed ? 'In Use - Cannot Delete' : 'Delete'}
+            >
+              <TrashIcon />
+            </IconButton>
+          </AlertDialog.Trigger>
+          <AlertDialog.Content>
+            <AlertDialog.Title>Delete Material</AlertDialog.Title>
+            <AlertDialog.Description>
+              Are you sure you want to delete "{selectedMaterial?.name}"? This action cannot be undone.
+            </AlertDialog.Description>
+            <Flex gap="3" mt="4" justify="end">
+              <AlertDialog.Cancel>
+                <Button variant="soft" color="gray">
+                  Cancel
+                </Button>
+              </AlertDialog.Cancel>
+              <AlertDialog.Action>
+                <Button variant="solid" color="red" onClick={handleDelete}>
+                  Delete
+                </Button>
+              </AlertDialog.Action>
+            </Flex>
+          </AlertDialog.Content>
+        </AlertDialog.Root>
       </Flex>
 
       {/* Form */}
@@ -243,9 +237,12 @@ export function MaterialsConfigContent(): React.JSX.Element {
                 Type
               </Text>
             </Label.Root>
-            <Text size="2" color="gray">
-              {selectedMaterial.type}
-            </Text>
+            <Flex gap="2" align="center">
+              {Icon && <Icon width="12" height="12" />}
+              <Text size="2" color="gray">
+                {getMaterialTypeName(selectedMaterial.type)}
+              </Text>
+            </Flex>
 
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
