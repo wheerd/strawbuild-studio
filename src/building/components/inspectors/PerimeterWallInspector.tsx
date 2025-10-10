@@ -1,11 +1,12 @@
 import * as Label from '@radix-ui/react-label'
-import { Button, Callout, Card, DataList, Flex, Grid, Heading, Select, Separator, Text } from '@radix-ui/themes'
+import { Button, Callout, Card, DataList, Flex, Grid, Heading, Separator, Text } from '@radix-ui/themes'
 import { useMemo } from 'react'
 
 import type { PerimeterConstructionMethodId, PerimeterId, PerimeterWallId } from '@/building/model/ids'
 import { useModelActions, usePerimeterById } from '@/building/store'
 import { WallConstructionPlanModal } from '@/construction/components/WallConstructionPlan'
-import { usePerimeterConstructionMethodById, usePerimeterConstructionMethods } from '@/construction/config/store'
+import { PerimeterMethodSelect } from '@/construction/config/components/PerimeterMethodSelect'
+import { usePerimeterConstructionMethodById } from '@/construction/config/store'
 import { pushTool } from '@/editor/tools/system/store'
 import { LengthField } from '@/shared/components/LengthField'
 import { type Length } from '@/shared/geometry'
@@ -17,7 +18,6 @@ interface PerimeterWallInspectorProps {
 }
 
 export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallInspectorProps): React.JSX.Element {
-  const allPerimeterMethods = usePerimeterConstructionMethods()
   const {
     updatePerimeterWallThickness: updateOuterWallThickness,
     updatePerimeterWallConstructionMethod: updateOuterWallConstructionMethod
@@ -59,22 +59,14 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
               Construction Method
             </Text>
           </Label.Root>
-          <Select.Root
-            value={wall.constructionMethodId || ''}
+          <PerimeterMethodSelect
+            value={wall.constructionMethodId}
             onValueChange={(value: PerimeterConstructionMethodId) => {
               updateOuterWallConstructionMethod(perimeterId, wallId, value)
             }}
+            placeholder="Select construction method"
             size="1"
-          >
-            <Select.Trigger id="contruction-method" placeholder="Select method" style={{ flex: 1, minWidth: 0 }} />
-            <Select.Content>
-              {allPerimeterMethods.map(method => (
-                <Select.Item key={method.id} value={method.id}>
-                  {method.name}
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Root>
+          />
         </Flex>
 
         {/* Thickness Input */}

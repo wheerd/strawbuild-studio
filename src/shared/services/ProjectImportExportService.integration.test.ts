@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigState, setConfigState } from '@/construction/config/store'
+import { getMaterialsState, setMaterialsState } from '@/construction/materials/store'
+import type { Length } from '@/shared/geometry'
 import { createLength, createVec2 } from '@/shared/geometry'
 
 import { ProjectImportExportService } from './ProjectImportExportService'
@@ -16,6 +18,10 @@ describe('ProjectImportExportService Integration', () => {
     // Ensure we have some default config
     const defaultConfig = getConfigState()
     setConfigState(defaultConfig)
+
+    // Ensure we have some default materials
+    const defaultMaterials = getMaterialsState()
+    setMaterialsState(defaultMaterials)
   })
 
   it('exports and imports project data with full fidelity (except IDs)', async () => {
@@ -89,6 +95,7 @@ describe('ProjectImportExportService Integration', () => {
       perimeters: modelActions.getPerimetersByStorey(storey.id)
     }))
     const originalConfig = getConfigState()
+    const originalMaterials = getMaterialsState()
 
     // 3. Export the project
     const exportResult = await ProjectImportExportService.exportToString()
@@ -115,9 +122,13 @@ describe('ProjectImportExportService Integration', () => {
     // 6. Verify the imported data matches the original (except for IDs)
     const importedStoreys = modelActions.getStoreysOrderedByLevel()
     const importedConfig = getConfigState()
+    const importedMaterials = getMaterialsState()
 
     // Check config state is restored
     expect(importedConfig).toEqual(originalConfig)
+
+    // Check materials state is restored
+    expect(importedMaterials).toEqual(originalMaterials)
 
     // Check storey data
     expect(importedStoreys).toHaveLength(originalData.length)
@@ -318,5 +329,80 @@ describe('ProjectImportExportService Integration', () => {
     expect(importedStoreys[1].name).toBe('First Floor')
     expect(importedStoreys[2].level).toBe(1)
     expect(importedStoreys[2].name).toBe('Second Floor')
+  })
+
+  it('exports and imports materials with configurations', async () => {
+    const { getMaterialsActions } = await import('@/construction/materials/store')
+    const materialsActions = getMaterialsActions()
+
+    // Add a custom material
+    const customMaterial = materialsActions.addMaterial({
+      type: 'dimensional',
+      name: 'Custom Wood',
+      color: '#ff5500',
+      width: 200 as Length,
+      thickness: 80 as Length,
+      availableLengths: [4000 as Length, 6000 as Length]
+    })
+
+    // Export the project
+    const exportResult = await ProjectImportExportService.exportToString()
+    expect(exportResult.success).toBe(true)
+
+    if (!exportResult.success) return
+
+    // Verify export contains materials
+    const exportedData = JSON.parse(exportResult.content)
+    expect(exportedData.materialsStore).toBeDefined()
+    expect(exportedData.materialsStore.materials).toBeDefined()
+    expect(exportedData.materialsStore.materials[customMaterial.id]).toEqual(customMaterial)
+
+    // Reset materials store
+    const { _clearAllMaterials } = await import('@/construction/materials/store')
+    _clearAllMaterials()
+
+    // Import the data
+    const importResult = await ProjectImportExportService.importFromString(exportResult.content)
+    expect(importResult.success).toBe(true)
+
+    // Verify custom material was restored
+    const restoredMaterial = materialsActions.getMaterialById(customMaterial.id)
+    expect(restoredMaterial).toEqual(customMaterial)
+  })
+
+  it('handles backwards compatibility with v1.0.0 files (no materials)', async () => {
+    // Create a mock v1.0.0 export without materials
+    const mockV1Export = {
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+      modelStore: {
+        storeys: [
+          {
+            name: 'Test Floor',
+            height: 3000,
+            perimeters: []
+          }
+        ],
+        minLevel: 0
+      },
+      configStore: {
+        ringBeamConstructionMethods: {},
+        perimeterConstructionMethods: {},
+        defaultPerimeterMethodId: 'test_id'
+      }
+      // Note: no materialsStore field
+    }
+
+    const exportContent = JSON.stringify(mockV1Export, null, 2)
+
+    // Should be able to import v1.0.0 files
+    const importResult = await ProjectImportExportService.importFromString(exportContent)
+    expect(importResult.success).toBe(true)
+
+    if (!importResult.success) return
+
+    // Materials store should remain unchanged (keep defaults)
+    const materials = getMaterialsState()
+    expect(Object.keys(materials.materials).length).toBeGreaterThan(0) // Should have default materials
   })
 })

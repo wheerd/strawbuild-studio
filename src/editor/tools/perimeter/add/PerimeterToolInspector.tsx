@@ -1,22 +1,21 @@
-import * as Select from '@radix-ui/react-select'
-import { useCallback, useEffect, useState } from 'react'
+import { Cross2Icon } from '@radix-ui/react-icons'
+import * as Label from '@radix-ui/react-label'
+import { Box, Button, Code, Flex, Grid, IconButton, Kbd, Separator, Text } from '@radix-ui/themes'
+import { useEffect, useState } from 'react'
 
 import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
-import { usePerimeterConstructionMethods, useRingBeamConstructionMethods } from '@/construction/config/store'
+import { PerimeterMethodSelect } from '@/construction/config/components/PerimeterMethodSelect'
+import { RingBeamMethodSelect } from '@/construction/config/components/RingBeamMethodSelect'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
-import { createLength } from '@/shared/geometry'
-import { useDebouncedNumericInput } from '@/shared/hooks/useDebouncedInput'
+import { LengthField } from '@/shared/components/LengthField'
+import type { Length } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
 
 import type { PerimeterTool } from './PerimeterTool'
 
 export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterTool>): React.JSX.Element {
   const { state } = useReactiveTool(tool)
-
-  // Get all construction methods from config store
-  const allRingBeamMethods = useRingBeamConstructionMethods()
-  const allPerimeterMethods = usePerimeterConstructionMethods()
 
   // Force re-renders when tool state changes
   const [, forceUpdate] = useState({})
@@ -29,227 +28,171 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
     [tool]
   )
 
-  // Debounced input handler for wall thickness
-  const thicknessInput = useDebouncedNumericInput(
-    state.wallThickness,
-    useCallback(
-      (value: number) => {
-        tool.setWallThickness(createLength(value))
-      },
-      [tool]
-    ),
-    {
-      debounceMs: 300,
-      min: 50,
-      max: 1000,
-      step: 10
-    }
-  )
-
   return (
-    <div className="space-y-3">
-      {/* Tool Properties */}
-      <div className="space-y-2">
-        <div className="space-y-1.5">
+    <Box p="2">
+      <Flex direction="column" gap="2">
+        {/* Tool Properties */}
+        <Grid columns="auto 1fr" gap="2">
           {/* Construction Method */}
-          <div className="flex items-center justify-between gap-3">
-            <label className="text-xs font-medium text-gray-600 flex-shrink-0">Construction Method</label>
-            <Select.Root
-              value={state.constructionMethodId || ''}
-              onValueChange={(value: PerimeterConstructionMethodId) => {
-                tool.setConstructionMethod(value)
-              }}
-            >
-              <Select.Trigger className="flex-1 max-w-24 flex items-center justify-between px-2 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200">
-                <Select.Value />
-                <Select.Icon className="text-gray-600">⌄</Select.Icon>
-              </Select.Trigger>
-              <Select.Portal>
-                <Select.Content className="bg-white border border-gray-300 rounded-md shadow-lg z-50 overflow-hidden">
-                  <Select.Viewport className="p-1">
-                    {allPerimeterMethods.map(method => (
-                      <Select.Item
-                        key={method.id}
-                        value={method.id}
-                        className="flex items-center px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 hover:outline-none cursor-pointer rounded"
-                      >
-                        <Select.ItemText>{method.name}</Select.ItemText>
-                      </Select.Item>
-                    ))}
-                  </Select.Viewport>
-                </Select.Content>
-              </Select.Portal>
-            </Select.Root>
-          </div>
+          <Label.Root>
+            <Text size="1" weight="medium" color="gray">
+              Construction Method
+            </Text>
+          </Label.Root>
+          <PerimeterMethodSelect
+            value={state.constructionMethodId ?? undefined}
+            onValueChange={(value: PerimeterConstructionMethodId) => {
+              tool.setConstructionMethod(value)
+            }}
+            size="1"
+          />
 
           {/* Wall Thickness */}
-          <div className="flex items-center justify-between gap-3">
-            <label htmlFor="wall-thickness" className="text-xs font-medium text-gray-600 flex-shrink-0">
+          <Label.Root htmlFor="wall-thickness">
+            <Text size="1" weight="medium" color="gray">
               Wall Thickness
-            </label>
-            <div className="relative flex-1 max-w-24">
-              <input
-                id="wall-thickness"
-                type="number"
-                value={thicknessInput.value}
-                onChange={e => thicknessInput.handleChange(e.target.value)}
-                onBlur={thicknessInput.handleBlur}
-                onKeyDown={thicknessInput.handleKeyDown}
-                min="50"
-                max="1000"
-                step="10"
-                className="unit-input w-full pl-2 py-1.5 pr-8 bg-white border border-gray-300 rounded text-xs text-right hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200"
-                onWheel={e => e.currentTarget.blur()}
-              />
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
-                mm
-              </span>
-            </div>
-          </div>
+            </Text>
+          </Label.Root>
+          <LengthField
+            id="wall-thickness"
+            value={state.wallThickness}
+            onCommit={value => tool.setWallThickness(value)}
+            min={50 as Length}
+            max={1000 as Length}
+            step={10 as Length}
+            size="1"
+            unit="mm"
+          />
 
           {/* Base Ring Beam */}
-          <div className="flex items-center justify-between gap-3">
-            <label className="text-xs font-medium text-gray-600 flex-shrink-0">Base Plate</label>
-            <Select.Root
-              value={state.baseRingBeamMethodId || 'none'}
-              onValueChange={value => {
-                const methodId = value === 'none' ? undefined : (value as RingBeamConstructionMethodId)
-                tool.setBaseRingBeam(methodId)
-              }}
-            >
-              <Select.Trigger className="flex-1 max-w-24 flex items-center justify-between px-2 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200">
-                <Select.Value placeholder="None" />
-                <Select.Icon className="text-gray-600">⌄</Select.Icon>
-              </Select.Trigger>
-              <Select.Portal>
-                <Select.Content className="bg-white border border-gray-300 rounded-md shadow-lg z-50 overflow-hidden">
-                  <Select.Viewport className="p-1">
-                    <Select.Item
-                      value="none"
-                      className="flex items-center px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 hover:outline-none cursor-pointer rounded"
-                    >
-                      <Select.ItemText>None</Select.ItemText>
-                    </Select.Item>
-                    {allRingBeamMethods.map(method => (
-                      <Select.Item
-                        key={method.id}
-                        value={method.id}
-                        className="flex items-center px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 hover:outline-none cursor-pointer rounded"
-                      >
-                        <Select.ItemText>{method.name}</Select.ItemText>
-                      </Select.Item>
-                    ))}
-                  </Select.Viewport>
-                </Select.Content>
-              </Select.Portal>
-            </Select.Root>
-          </div>
+          <Label.Root>
+            <Text size="1" weight="medium" color="gray">
+              Base Plate
+            </Text>
+          </Label.Root>
+          <RingBeamMethodSelect
+            value={state.baseRingBeamMethodId ?? undefined}
+            onValueChange={(value: RingBeamConstructionMethodId | undefined) => {
+              tool.setBaseRingBeam(value)
+            }}
+            placeholder="None"
+            size="1"
+            allowNone
+          />
 
           {/* Top Ring Beam */}
-          <div className="flex items-center justify-between gap-3">
-            <label className="text-xs font-medium text-gray-600 flex-shrink-0">Top Plate</label>
-            <Select.Root
-              value={state.topRingBeamMethodId || 'none'}
-              onValueChange={value => {
-                const methodId = value === 'none' ? undefined : (value as RingBeamConstructionMethodId)
-                tool.setTopRingBeam(methodId)
-              }}
-            >
-              <Select.Trigger className="flex-1 max-w-24 flex items-center justify-between px-2 py-1.5 bg-white border border-gray-300 rounded text-xs text-gray-800 hover:border-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200">
-                <Select.Value placeholder="None" />
-                <Select.Icon className="text-gray-600">⌄</Select.Icon>
-              </Select.Trigger>
-              <Select.Portal>
-                <Select.Content className="bg-white border border-gray-300 rounded-md shadow-lg z-50 overflow-hidden">
-                  <Select.Viewport className="p-1">
-                    <Select.Item
-                      value="none"
-                      className="flex items-center px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 hover:outline-none cursor-pointer rounded"
-                    >
-                      <Select.ItemText>None</Select.ItemText>
-                    </Select.Item>
-                    {allRingBeamMethods.map(method => (
-                      <Select.Item
-                        key={method.id}
-                        value={method.id}
-                        className="flex items-center px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 hover:outline-none cursor-pointer rounded"
-                      >
-                        <Select.ItemText>{method.name}</Select.ItemText>
-                      </Select.Item>
-                    ))}
-                  </Select.Viewport>
-                </Select.Content>
-              </Select.Portal>
-            </Select.Root>
-          </div>
-        </div>
-      </div>
+          <Label.Root>
+            <Text size="1" weight="medium" color="gray">
+              Top Plate
+            </Text>
+          </Label.Root>
+          <RingBeamMethodSelect
+            value={state.topRingBeamMethodId ?? undefined}
+            onValueChange={(value: RingBeamConstructionMethodId | undefined) => {
+              tool.setTopRingBeam(value)
+            }}
+            placeholder="None"
+            size="1"
+            allowNone
+          />
+        </Grid>
 
-      {/* Length Override Display */}
-      {state.lengthOverride && (
-        <div className="space-y-2 pt-1 border-t border-gray-200">
-          <div className="flex items-center justify-between gap-3">
-            <label className="text-xs font-medium text-blue-600">Length Override</label>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono text-blue-800">{formatLength(state.lengthOverride)}</span>
-              <button
-                className="text-xs text-red-600 hover:text-red-800"
-                onClick={() => tool.clearLengthOverride()}
-                title="Clear length override (Escape)"
+        {/* Length Override Display */}
+        {state.lengthOverride && (
+          <>
+            <Separator size="4" />
+            <Flex align="center" justify="between" gap="2">
+              <Text size="1" weight="medium" color="blue">
+                Length Override
+              </Text>
+              <Flex align="center" gap="2">
+                <Code size="1" color="blue">
+                  {formatLength(state.lengthOverride)}
+                </Code>
+                <IconButton
+                  size="1"
+                  variant="ghost"
+                  color="red"
+                  onClick={() => tool.clearLengthOverride()}
+                  title="Clear length override (Escape)"
+                >
+                  <Cross2Icon />
+                </IconButton>
+              </Flex>
+            </Flex>
+          </>
+        )}
+
+        {/* Help Text */}
+        <Separator size="4" />
+        <Flex direction="column" gap="2">
+          <Text size="1" weight="medium">
+            Controls:
+          </Text>
+          <Text size="1" color="gray">
+            • Click to place points
+          </Text>
+          <Text size="1" color="gray">
+            • Type numbers for length override
+          </Text>
+          {state.lengthOverride ? (
+            <Text size="1" color="gray">
+              • <Kbd>Esc</Kbd> to clear override
+            </Text>
+          ) : (
+            <Text size="1" color="gray">
+              • <Kbd>Esc</Kbd> to abort perimeter
+            </Text>
+          )}
+          {state.points.length >= 3 && (
+            <>
+              <Text size="1" color="gray">
+                • <Kbd>Enter</Kbd> to close perimeter
+              </Text>
+              <Text size="1" color="gray">
+                • Click first point to close
+              </Text>
+            </>
+          )}
+        </Flex>
+
+        {/* Actions */}
+        {state.points.length > 0 && (
+          <>
+            <Separator size="4" />
+            <Flex direction="column" gap="2">
+              {state.points.length >= 3 && (
+                <Button
+                  size="2"
+                  color="green"
+                  onClick={() => tool.complete()}
+                  disabled={!state.isClosingLineValid}
+                  title="Complete polygon (Enter)"
+                  style={{ width: '100%' }}
+                >
+                  <Text size="1">✓ Complete Polygon</Text>
+                  <Kbd size="1" style={{ marginLeft: 'auto' }}>
+                    Enter
+                  </Kbd>
+                </Button>
+              )}
+              <Button
+                size="2"
+                color="red"
+                variant="soft"
+                onClick={() => tool.cancel()}
+                title="Cancel polygon creation (Escape)"
+                style={{ width: '100%' }}
               >
-                ✕
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Help Text */}
-      <div className="space-y-2 pt-1 border-t border-gray-200">
-        <div className="text-xs text-gray-600">
-          <div className="font-medium mb-1">Controls:</div>
-          <ul className="space-y-0.5 text-xs">
-            <li>• Click to place points</li>
-            <li>• Type numbers for length override</li>
-            <li>
-              • <kbd className="px-1 bg-gray-100 rounded">Enter</kbd> to place with override
-            </li>
-            <li>
-              • <kbd className="px-1 bg-gray-100 rounded">Esc</kbd> to clear override
-            </li>
-            {state.points.length >= 3 && <li>• Click first point to close</li>}
-          </ul>
-        </div>
-      </div>
-
-      {/* Actions */}
-      {state.points.length > 0 && (
-        <div className="space-y-2 pt-1">
-          <div className="space-y-1.5">
-            {state.points.length >= 3 && (
-              <button
-                className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 bg-green-500 text-white rounded text-xs font-medium hover:bg-green-600 focus:outline-none focus:ring-1 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={() => tool.complete()}
-                disabled={!state.isClosingLineValid}
-                title="Complete polygon (Enter)"
-              >
-                <span>✓</span>
-                Complete Polygon
-                <kbd className="ml-auto px-1 py-0.5 bg-green-600 rounded text-xs font-mono opacity-75">Enter</kbd>
-              </button>
-            )}
-            <button
-              className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 bg-red-500 text-white rounded text-xs font-medium hover:bg-red-600 focus:outline-none focus:ring-1 focus:ring-red-500"
-              onClick={() => tool.cancel()}
-              title="Cancel polygon creation (Escape)"
-            >
-              <span>✕</span>
-              Cancel Polygon
-              <kbd className="ml-auto px-1 py-0.5 bg-red-600 rounded text-xs font-mono opacity-75">Esc</kbd>
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+                <Text size="1">✕ Cancel Polygon</Text>
+                <Kbd size="1" style={{ marginLeft: 'auto' }}>
+                  Esc
+                </Kbd>
+              </Button>
+            </Flex>
+          </>
+        )}
+      </Flex>
+    </Box>
   )
 }

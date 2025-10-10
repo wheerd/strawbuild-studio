@@ -1,13 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
 import type { ConstructionElement } from '@/construction/elements'
-import type { Material } from '@/construction/materials/material'
 import { aggregateResults } from '@/construction/results'
 import type { Length, Vec3 } from '@/shared/geometry'
 
 import { type DoubleFrameModuleConfig, type SingleFrameModuleConfig, constructModule } from './modules'
-
-const mockResolveMaterial = (): Material | undefined => undefined
 
 const isConstructionElement = (item: any): item is ConstructionElement =>
   item && typeof item === 'object' && 'material' in item
@@ -26,7 +23,7 @@ describe('Module Construction', () => {
       const position: Vec3 = [0, 0, 0]
       const size: Vec3 = [920, 360, 2000]
 
-      const results = Array.from(constructModule(position, size, config, mockResolveMaterial))
+      const results = Array.from(constructModule(position, size, config))
       const aggregated = aggregateResults(results)
 
       // Should have multiple elements
@@ -45,7 +42,7 @@ describe('Module Construction', () => {
       const position: Vec3 = [0, 0, 0]
       const size: Vec3 = [920, 360, 2000]
 
-      const results = Array.from(constructModule(position, size, config, mockResolveMaterial))
+      const results = Array.from(constructModule(position, size, config))
       const aggregated = aggregateResults(results)
 
       const frameElements = aggregated.elements.filter(isConstructionElement).filter(el => el.material === 'wood')
@@ -77,7 +74,7 @@ describe('Module Construction', () => {
       const position: Vec3 = [0, 0, 0]
       const size: Vec3 = [920, 360, 2000]
 
-      const results = Array.from(constructModule(position, size, config, mockResolveMaterial))
+      const results = Array.from(constructModule(position, size, config))
       const aggregated = aggregateResults(results)
 
       // Check that we have eight frame elements
@@ -103,7 +100,7 @@ describe('Module Construction', () => {
       }
 
       expect(() => {
-        Array.from(constructModule(position, size, invalidConfig, mockResolveMaterial))
+        Array.from(constructModule(position, size, invalidConfig))
       }).toThrow('Invalid module type')
     })
   })

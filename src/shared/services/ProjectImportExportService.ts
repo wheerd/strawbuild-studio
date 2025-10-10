@@ -1,6 +1,7 @@
 import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
 import type { Storey } from '@/building/model/model'
 import type { PerimeterConstructionMethod, RingBeamConstructionMethod } from '@/construction/config/types'
+import type { Material, MaterialId } from '@/construction/materials/material'
 import type { Polygon2D } from '@/shared/geometry'
 import { createLength, createVec2 } from '@/shared/geometry'
 
@@ -51,6 +52,9 @@ export interface ExportData {
     defaultTopRingBeamMethodId?: RingBeamConstructionMethodId
     defaultPerimeterMethodId: PerimeterConstructionMethodId
   }
+  materialsStore: {
+    materials: Record<MaterialId, Material>
+  }
 }
 
 export interface ImportResult {
@@ -79,7 +83,7 @@ export interface IProjectImportExportService {
   importFromString(content: string): Promise<ImportResult | ImportError>
 }
 
-const CURRENT_VERSION = '1.0.0'
+const CURRENT_VERSION = '1.1.0'
 
 class ProjectImportExportServiceImpl implements IProjectImportExportService {
   async exportToString(): Promise<StringExportResult | StringExportError> {
@@ -87,6 +91,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
       // Dynamic imports to avoid circular dependencies
       const { getModelActions } = await import('@/building/store')
       const { getConfigState } = await import('@/construction/config/store')
+      const { getMaterialsState } = await import('@/construction/materials/store')
 
       const modelActions = getModelActions()
 
@@ -121,7 +126,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
         }))
       }))
 
-      const result = this.exportToJSON({ storeys: exportedStoreys, minLevel }, getConfigState())
+      const result = this.exportToJSON({ storeys: exportedStoreys, minLevel }, getConfigState(), getMaterialsState())
 
       if (result.success) {
         const content = JSON.stringify(result.data, null, 2)
@@ -150,6 +155,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
 
       // Dynamic imports to avoid circular dependencies
       const { setConfigState } = await import('@/construction/config/store')
+      const { setMaterialsState } = await import('@/construction/materials/store')
       const { getModelActions } = await import('@/building/store')
 
       const modelActions = getModelActions()
@@ -157,14 +163,19 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
       // 1. Import config state (unchanged format)
       setConfigState(importResult.data.configStore)
 
-      // 2. Reset model (creates default "Ground Floor" at level 0)
+      // 2. Import materials state (if available for backwards compatibility)
+      if (importResult.data.materialsStore) {
+        setMaterialsState(importResult.data.materialsStore)
+      }
+
+      // 3. Reset model (creates default "Ground Floor" at level 0)
       modelActions.reset()
 
-      // 3. Get existing default ground floor
+      // 4. Get existing default ground floor
       const existingStoreys = modelActions.getStoreysOrderedByLevel()
       const defaultGroundFloor = existingStoreys[0]
 
-      // 4. Process imported storeys
+      // 5. Process imported storeys
       const exportedStoreys = importResult.data.modelStore.storeys
 
       exportedStoreys.forEach((exportedStorey, index) => {
@@ -180,7 +191,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
           targetStorey = modelActions.addStorey(exportedStorey.name, createLength(exportedStorey.height))
         }
 
-        // 5. Recreate perimeters - let store auto-compute all geometry
+        // 6. Recreate perimeters - let store auto-compute all geometry
         exportedStorey.perimeters.forEach(exportedPerimeter => {
           const boundary: Polygon2D = {
             points: exportedPerimeter.corners.map(c => createVec2(c.insideX, c.insideY))
@@ -200,7 +211,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
             exportedPerimeter.topRingBeamMethodId as RingBeamConstructionMethodId | undefined
           )
 
-          // 6. Update wall properties - auto-recomputes geometry
+          // 7. Update wall properties - auto-recomputes geometry
           exportedPerimeter.walls.forEach((exportedWall, wallIndex) => {
             const wallId = perimeter.walls[wallIndex].id
 
@@ -224,7 +235,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
             })
           })
 
-          // 7. Update corner properties - auto-recomputes outsidePoints
+          // 8. Update corner properties - auto-recomputes outsidePoints
           exportedPerimeter.corners.forEach((exportedCorner, cornerIndex) => {
             const cornerId = perimeter.corners[cornerIndex].id
             modelActions.updatePerimeterCornerConstructedByWall(
@@ -236,7 +247,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
         })
       })
 
-      // 8. Adjust levels based on minLevel
+      // 9. Adjust levels based on minLevel
       const minLevel = importResult.data.modelStore.minLevel
       if (minLevel !== 0) {
         modelActions.adjustAllLevels(minLevel)
@@ -252,21 +263,27 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
   }
 
   // Private helper methods (consolidated from exportImport.ts)
-  private createExportData(modelState: ExportData['modelStore'], configState: ExportData['configStore']): ExportData {
+  private createExportData(
+    modelState: ExportData['modelStore'],
+    configState: ExportData['configStore'],
+    materialsState: ExportData['materialsStore']
+  ): ExportData {
     return {
       version: CURRENT_VERSION,
       timestamp: new Date().toISOString(),
       modelStore: modelState,
-      configStore: configState
+      configStore: configState,
+      materialsStore: materialsState
     }
   }
 
   private exportToJSON(
     modelState: ExportData['modelStore'],
-    configState: ExportData['configStore']
+    configState: ExportData['configStore'],
+    materialsState: ExportData['materialsStore']
   ): { success: true; data: ExportData; filename: string } | { success: false; error: string } {
     try {
-      const data = this.createExportData(modelState, configState)
+      const data = this.createExportData(modelState, configState, materialsState)
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0]
       const filename = `strawbaler-project-${timestamp}.json`
 
@@ -320,6 +337,17 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
       return false
     }
 
+    // Materials store is optional for backwards compatibility
+    if (obj.materialsStore !== undefined) {
+      if (typeof obj.materialsStore !== 'object' || obj.materialsStore === null) {
+        return false
+      }
+      const materialsStore = obj.materialsStore as Record<string, unknown>
+      if (typeof materialsStore.materials !== 'object') {
+        return false
+      }
+    }
+
     return true
   }
 
@@ -334,10 +362,12 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
         }
       }
 
-      if (parsed.version !== CURRENT_VERSION) {
+      // Support backwards compatibility
+      const supportedVersions = ['1.0.0', '1.1.0']
+      if (!supportedVersions.includes(parsed.version)) {
         return {
           success: false,
-          error: `Unsupported file version ${parsed.version}. Expected version ${CURRENT_VERSION}.`
+          error: `Unsupported file version ${parsed.version}. Supported versions: ${supportedVersions.join(', ')}.`
         }
       }
 

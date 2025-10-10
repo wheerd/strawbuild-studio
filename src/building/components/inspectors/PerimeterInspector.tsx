@@ -1,14 +1,15 @@
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Box, Button, Callout, DataList, Flex, Heading, Select, Text, Tooltip } from '@radix-ui/themes'
+import { Box, Button, Callout, DataList, Flex, Heading, Text, Tooltip } from '@radix-ui/themes'
 import React, { useMemo } from 'react'
 
-import type { PerimeterConstructionMethodId, PerimeterId, RingBeamConstructionMethodId } from '@/building/model/ids'
+import type { PerimeterConstructionMethodId, PerimeterId } from '@/building/model/ids'
 import type { PerimeterWall } from '@/building/model/model'
 import { useModelActions, usePerimeterById } from '@/building/store'
 import { PerimeterConstructionPlanModal } from '@/construction/components/PerimeterConstructionPlan'
 import { RingBeamConstructionPlanModal } from '@/construction/components/RingBeamConstructionPlan'
-import { usePerimeterConstructionMethods, useRingBeamConstructionMethods } from '@/construction/config/store'
+import { PerimeterMethodSelect } from '@/construction/config/components/PerimeterMethodSelect'
+import { RingBeamMethodSelect } from '@/construction/config/components/RingBeamMethodSelect'
 import { LengthField } from '@/shared/components/LengthField'
 import { type Length, calculatePolygonArea } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
@@ -72,10 +73,6 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
     updateAllPerimeterWallsThickness
   } = useModelActions()
   const perimeter = usePerimeterById(selectedId)
-
-  // Get construction methods from config store
-  const allRingBeamMethods = useRingBeamConstructionMethods()
-  const allPerimeterMethods = usePerimeterConstructionMethods()
 
   // Mixed state detection
   const constructionMethodState = useMemo(
@@ -164,26 +161,18 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                   </Text>
                 )}
               </Label.Root>
-              <Select.Root
-                value={constructionMethodState.isMixed ? '' : constructionMethodState.value || ''}
+              <PerimeterMethodSelect
+                value={
+                  constructionMethodState.isMixed
+                    ? undefined
+                    : (constructionMethodState.value as PerimeterConstructionMethodId | undefined)
+                }
                 onValueChange={(value: PerimeterConstructionMethodId) => {
                   updateAllPerimeterWallsConstructionMethod(selectedId, value)
                 }}
+                placeholder={constructionMethodState.isMixed ? 'Mixed' : 'Select method'}
                 size="1"
-              >
-                <Select.Trigger
-                  id="perimeter-construction-method"
-                  placeholder={constructionMethodState.isMixed ? 'Mixed' : 'Select method'}
-                  style={{ flex: 1, minWidth: 0 }}
-                />
-                <Select.Content>
-                  {allPerimeterMethods.map(method => (
-                    <Select.Item key={method.id} value={method.id}>
-                      {method.name}
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Root>
+              />
             </Flex>
 
             {/* Thickness Input */}
@@ -231,27 +220,19 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                   Base Plate
                 </Text>
               </Label.Root>
-              <Select.Root
-                value={perimeter.baseRingBeamMethodId || 'none'}
+              <RingBeamMethodSelect
+                value={perimeter.baseRingBeamMethodId}
                 onValueChange={value => {
-                  if (value === 'none') {
+                  if (value === undefined) {
                     removePerimeterBaseRingBeam(selectedId)
                   } else {
-                    setPerimeterBaseRingBeam(selectedId, value as RingBeamConstructionMethodId)
+                    setPerimeterBaseRingBeam(selectedId, value)
                   }
                 }}
+                placeholder="None"
                 size="1"
-              >
-                <Select.Trigger id="base-ring-beam" placeholder="None" style={{ flex: 1, minWidth: 0 }} />
-                <Select.Content>
-                  <Select.Item value="none">None</Select.Item>
-                  {allRingBeamMethods.map(method => (
-                    <Select.Item key={method.id} value={method.id}>
-                      {method.name}
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Root>
+                allowNone
+              />
             </Flex>
 
             {/* Top Ring Beam */}
@@ -261,27 +242,19 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                   Top Plate
                 </Text>
               </Label.Root>
-              <Select.Root
-                value={perimeter.topRingBeamMethodId || 'none'}
+              <RingBeamMethodSelect
+                value={perimeter.topRingBeamMethodId}
                 onValueChange={value => {
-                  if (value === 'none') {
+                  if (value === undefined) {
                     removePerimeterTopRingBeam(selectedId)
                   } else {
-                    setPerimeterTopRingBeam(selectedId, value as RingBeamConstructionMethodId)
+                    setPerimeterTopRingBeam(selectedId, value)
                   }
                 }}
+                placeholder="None"
                 size="1"
-              >
-                <Select.Trigger id="top-ring-beam" placeholder="None" style={{ flex: 1, minWidth: 0 }} />
-                <Select.Content>
-                  <Select.Item value="none">None</Select.Item>
-                  {allRingBeamMethods.map(method => (
-                    <Select.Item key={method.id} value={method.id}>
-                      {method.name}
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Root>
+                allowNone
+              />
             </Flex>
 
             {/* Ring Beam View Construction Button */}

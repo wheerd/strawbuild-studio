@@ -1,13 +1,11 @@
 import { Cross2Icon } from '@radix-ui/react-icons'
-import { Button, Dialog, Flex, Grid, Heading, IconButton, SegmentedControl, Select, Text } from '@radix-ui/themes'
+import { Button, Dialog, Flex, Grid, Heading, IconButton, SegmentedControl, Text } from '@radix-ui/themes'
 import { useCallback, useEffect, useState } from 'react'
 
-import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
-import {
-  useConfigActions,
-  usePerimeterConstructionMethods,
-  useRingBeamConstructionMethods
-} from '@/construction/config/store'
+import type { PerimeterConstructionMethodId } from '@/building/model/ids'
+import { PerimeterMethodSelect } from '@/construction/config/components/PerimeterMethodSelect'
+import { RingBeamMethodSelect } from '@/construction/config/components/RingBeamMethodSelect'
+import { useConfigActions } from '@/construction/config/store'
 import { LengthField } from '@/shared/components/LengthField'
 import { createLength, offsetPolygon } from '@/shared/geometry'
 import type { Vec2 } from '@/shared/geometry'
@@ -147,10 +145,7 @@ function LShapedPreview({ config }: { config: LShapedPresetConfig }) {
 function LShapedPresetDialogContent({
   onConfirm,
   initialConfig
-}: Omit<LShapedPresetDialogProps, 'trigger'>): React.JSX.Element {
-  // Get construction methods and defaults from config store
-  const allRingBeamMethods = useRingBeamConstructionMethods()
-  const allPerimeterMethods = usePerimeterConstructionMethods()
+}: Omit<LShapedPresetDialogProps, 'isOpen' | 'trigger'>): React.JSX.Element {
   const configStore = useConfigActions()
 
   // Form state with defaults from config store
@@ -342,22 +337,14 @@ function LShapedPresetDialogContent({
                 <Text size="1" color="gray">
                   Construction Method
                 </Text>
-                <Select.Root
-                  value={config.constructionMethodId || ''}
+                <PerimeterMethodSelect
+                  value={config.constructionMethodId ?? undefined}
                   onValueChange={(value: PerimeterConstructionMethodId) => {
                     setConfig(prev => ({ ...prev, constructionMethodId: value }))
                   }}
+                  placeholder="Select method"
                   size="1"
-                >
-                  <Select.Trigger style={{ width: '100%' }} />
-                  <Select.Content>
-                    {allPerimeterMethods.map(method => (
-                      <Select.Item key={method.id} value={method.id}>
-                        {method.name}
-                      </Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Root>
+                />
               </Flex>
 
               {/* Base Plate */}
@@ -365,24 +352,15 @@ function LShapedPresetDialogContent({
                 <Text size="1" color="gray">
                   Base Plate
                 </Text>
-                <Select.Root
-                  value={config.baseRingBeamMethodId || 'none'}
+                <RingBeamMethodSelect
+                  value={config.baseRingBeamMethodId}
                   onValueChange={value => {
-                    const methodId = value === 'none' ? undefined : (value as RingBeamConstructionMethodId)
-                    setConfig(prev => ({ ...prev, baseRingBeamMethodId: methodId }))
+                    setConfig(prev => ({ ...prev, baseRingBeamMethodId: value }))
                   }}
+                  placeholder="None"
                   size="1"
-                >
-                  <Select.Trigger style={{ width: '100%' }} />
-                  <Select.Content>
-                    <Select.Item value="none">None</Select.Item>
-                    {allRingBeamMethods.map(method => (
-                      <Select.Item key={method.id} value={method.id}>
-                        {method.name}
-                      </Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Root>
+                  allowNone
+                />
               </Flex>
 
               {/* Top Plate */}
@@ -390,24 +368,15 @@ function LShapedPresetDialogContent({
                 <Text size="1" color="gray">
                   Top Plate
                 </Text>
-                <Select.Root
-                  value={config.topRingBeamMethodId || 'none'}
+                <RingBeamMethodSelect
+                  value={config.topRingBeamMethodId}
                   onValueChange={value => {
-                    const methodId = value === 'none' ? undefined : (value as RingBeamConstructionMethodId)
-                    setConfig(prev => ({ ...prev, topRingBeamMethodId: methodId }))
+                    setConfig(prev => ({ ...prev, topRingBeamMethodId: value }))
                   }}
+                  placeholder="None"
                   size="1"
-                >
-                  <Select.Trigger style={{ width: '100%' }} />
-                  <Select.Content>
-                    <Select.Item value="none">None</Select.Item>
-                    {allRingBeamMethods.map(method => (
-                      <Select.Item key={method.id} value={method.id}>
-                        {method.name}
-                      </Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Root>
+                  allowNone
+                />
               </Flex>
             </Grid>
           </Flex>

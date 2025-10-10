@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createConstructionElement, createCuboidShape } from '@/construction/elements'
-import type { Material } from '@/construction/materials/material'
 import { constructStraw } from '@/construction/materials/straw'
 import { aggregateResults, yieldElement } from '@/construction/results'
 import { infillWallArea } from '@/construction/walls/infill/infill'
@@ -26,8 +25,6 @@ vi.mock('./modules', () => ({
 const mockConstructStraw = vi.mocked(constructStraw)
 const mockInfillWallArea = vi.mocked(infillWallArea)
 const mockConstructModule = vi.mocked(constructModule)
-
-const mockResolveMaterial = (): Material | undefined => undefined
 
 // Test constants matching C# implementation
 const MODULE_WIDTH = 500 as Length
@@ -145,7 +142,6 @@ describe('Strawhenge Wall Construction', () => {
           position,
           size,
           config,
-          mockResolveMaterial,
           false,
           false,
           false // No stands
@@ -153,7 +149,7 @@ describe('Strawhenge Wall Construction', () => {
       )
 
       // Current implementation creates a module even without stands if size equals module width
-      expect(mockConstructModule).toHaveBeenCalledWith(position, size, config.module, mockResolveMaterial)
+      expect(mockConstructModule).toHaveBeenCalledWith(position, size, config.module)
       expect(mockInfillWallArea).not.toHaveBeenCalled()
     })
 
@@ -166,7 +162,6 @@ describe('Strawhenge Wall Construction', () => {
           position,
           size,
           config,
-          mockResolveMaterial,
           false,
           false,
           false // No stands
@@ -174,15 +169,7 @@ describe('Strawhenge Wall Construction', () => {
       )
 
       // Should call infill for insufficient space to place modules properly
-      expect(mockInfillWallArea).toHaveBeenCalledWith(
-        position,
-        size,
-        config.infill,
-        mockResolveMaterial,
-        false,
-        false,
-        false
-      )
+      expect(mockInfillWallArea).toHaveBeenCalledWith(position, size, config.infill, false, false, false)
     })
 
     it('should fall back to infill when space is too small for module', () => {
@@ -194,7 +181,6 @@ describe('Strawhenge Wall Construction', () => {
           position,
           size,
           config,
-          mockResolveMaterial,
           true,
           true,
           false // Has stands but too small
@@ -202,15 +188,7 @@ describe('Strawhenge Wall Construction', () => {
       )
 
       // Should call infill, not module construction
-      expect(mockInfillWallArea).toHaveBeenCalledWith(
-        position,
-        size,
-        config.infill,
-        mockResolveMaterial,
-        true,
-        true,
-        false
-      )
+      expect(mockInfillWallArea).toHaveBeenCalledWith(position, size, config.infill, true, true, false)
       expect(mockConstructModule).not.toHaveBeenCalled()
     })
   })
@@ -220,10 +198,10 @@ describe('Strawhenge Wall Construction', () => {
       const position: Vec3 = [0, 0, 0]
       const size: Vec3 = [MODULE_WIDTH, 360, 2000]
 
-      Array.from(strawhengeWallArea(position, size, config, mockResolveMaterial, true, true, false))
+      Array.from(strawhengeWallArea(position, size, config, true, true, false))
 
       // Should call module construction, not infill
-      expect(mockConstructModule).toHaveBeenCalledWith(position, size, config.module, mockResolveMaterial)
+      expect(mockConstructModule).toHaveBeenCalledWith(position, size, config.module)
       expect(mockInfillWallArea).not.toHaveBeenCalled()
     })
   })
@@ -233,7 +211,7 @@ describe('Strawhenge Wall Construction', () => {
       const position: Vec3 = [0, 0, 0]
       const size: Vec3 = [MODULE_WIDTH + FULL_BALE + MODULE_WIDTH, 360, 2000] // 1400
 
-      Array.from(strawhengeWallArea(position, size, config, mockResolveMaterial, true, true, false))
+      Array.from(strawhengeWallArea(position, size, config, true, true, false))
 
       // Should call both module and straw construction
       expect(mockConstructModule).toHaveBeenCalled()
@@ -247,7 +225,7 @@ describe('Strawhenge Wall Construction', () => {
         const position: Vec3 = [0, 0, 0]
         const size: Vec3 = [wallLength, 360, 2000]
 
-        const results = Array.from(strawhengeWallArea(position, size, config, mockResolveMaterial, true, true, false))
+        const results = Array.from(strawhengeWallArea(position, size, config, true, true, false))
 
         const snapshotData = extractSnapshotData(results)
         expect(snapshotData).toMatchSnapshot(`wall-length-${wallLength}-startAtEnd-false`)
@@ -261,7 +239,7 @@ describe('Strawhenge Wall Construction', () => {
         const position: Vec3 = [0, 0, 0]
         const size: Vec3 = [wallLength, 360, 2000]
 
-        const results = Array.from(strawhengeWallArea(position, size, config, mockResolveMaterial, true, true, true))
+        const results = Array.from(strawhengeWallArea(position, size, config, true, true, true))
 
         const snapshotData = extractSnapshotData(results)
         expect(snapshotData).toMatchSnapshot(`wall-length-${wallLength}-startAtEnd-true`)
@@ -279,7 +257,6 @@ describe('Strawhenge Wall Construction', () => {
           position,
           size,
           config,
-          mockResolveMaterial,
           true,
           false,
           false // Only start stand
@@ -290,8 +267,7 @@ describe('Strawhenge Wall Construction', () => {
       expect(mockConstructModule).toHaveBeenCalledWith(
         expect.arrayContaining([0, expect.any(Number), expect.any(Number)]),
         expect.arrayContaining([MODULE_WIDTH, expect.any(Number), expect.any(Number)]),
-        config.module,
-        mockResolveMaterial
+        config.module
       )
     })
 
@@ -304,7 +280,6 @@ describe('Strawhenge Wall Construction', () => {
           position,
           size,
           config,
-          mockResolveMaterial,
           false,
           true,
           false // Only end stand
@@ -315,8 +290,7 @@ describe('Strawhenge Wall Construction', () => {
       expect(mockConstructModule).toHaveBeenCalledWith(
         expect.arrayContaining([MODULE_WIDTH, expect.any(Number), expect.any(Number)]),
         expect.arrayContaining([MODULE_WIDTH, expect.any(Number), expect.any(Number)]),
-        config.module,
-        mockResolveMaterial
+        config.module
       )
     })
   })
@@ -327,14 +301,12 @@ describe('Strawhenge Wall Construction', () => {
       const size: Vec3 = [MODULE_WIDTH, 360, 2000]
 
       // Test module construction
-      Array.from(strawhengeWallArea(position, size, config, mockResolveMaterial, true, true, false))
+      Array.from(strawhengeWallArea(position, size, config, true, true, false))
       expect(mockConstructModule).toHaveBeenCalled()
 
       // Reset and test infill fallback
       vi.clearAllMocks()
-      Array.from(
-        strawhengeWallArea(position, [MODULE_WIDTH - 1, 360, 2000], config, mockResolveMaterial, true, true, false)
-      )
+      Array.from(strawhengeWallArea(position, [MODULE_WIDTH - 1, 360, 2000], config, true, true, false))
       expect(mockInfillWallArea).toHaveBeenCalled()
     })
   })

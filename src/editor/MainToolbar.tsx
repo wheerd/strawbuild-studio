@@ -1,7 +1,9 @@
+import { GearIcon } from '@radix-ui/react-icons'
 import * as Toolbar from '@radix-ui/react-toolbar'
-import { Flex, IconButton, Kbd, Separator, Text, Tooltip } from '@radix-ui/themes'
+import { Button, Flex, IconButton, Kbd, Separator, Text, Tooltip } from '@radix-ui/themes'
 import React, { useCallback } from 'react'
 
+import { ConfigurationModal } from '@/construction/config/components/ConfigurationModal'
 import { TOOL_GROUPS, getToolInfoById } from '@/editor/tools/system/metadata'
 import { replaceTool, useActiveToolId } from '@/editor/tools/system/store'
 import type { ToolId } from '@/editor/tools/system/types'
@@ -34,7 +36,7 @@ export function MainToolbar(): React.JSX.Element {
                     <Tooltip
                       key={toolId}
                       content={
-                        <Flex align="center" justify="between" gap="2">
+                        <Flex align="center" justify="between" gap="2" as="span">
                           <Text>{toolInfo.name}</Text>
                           {toolInfo.hotkey && <Kbd>{toolInfo.hotkey.toUpperCase()}</Kbd>}
                         </Flex>
@@ -57,6 +59,18 @@ export function MainToolbar(): React.JSX.Element {
           ))}
         </Flex>
       </Toolbar.Root>
+
+      {/* Configuration button on the right */}
+      <Flex ml="auto">
+        <ConfigurationModal
+          trigger={
+            <Button variant="surface" size="2">
+              <GearIcon />
+              Configuration
+            </Button>
+          }
+        />
+      </Flex>
     </Flex>
   )
 }

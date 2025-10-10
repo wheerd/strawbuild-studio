@@ -3,7 +3,7 @@ import { vec3 } from 'gl-matrix'
 import type { Opening } from '@/building/model/model'
 import { type ConstructionElement, createConstructionElement, createCuboidShape } from '@/construction/elements'
 import { IDENTITY } from '@/construction/geometry'
-import type { MaterialId, ResolveMaterialFunction } from '@/construction/materials/material'
+import type { MaterialId } from '@/construction/materials/material'
 import { type ConstructionResult, yieldArea, yieldElement, yieldError, yieldMeasurement } from '@/construction/results'
 import {
   TAG_HEADER,
@@ -46,8 +46,7 @@ function extractUnifiedDimensions(openings: Opening[]): {
 export function* constructOpeningFrame(
   openingSegment: WallSegment3D,
   config: OpeningConstructionConfig,
-  infill: InfillConstructionConfig,
-  resolveMaterial: ResolveMaterialFunction
+  infill: InfillConstructionConfig
 ): Generator<ConstructionResult> {
   if (openingSegment.type !== 'opening' || !openingSegment.openings) {
     throw new Error('constructOpeningFrame requires an opening segment with openings array')
@@ -193,7 +192,7 @@ export function* constructOpeningFrame(
       const wallAbovePosition: Vec3 = [openingLeft, wallFront, wallAboveBottom]
       const wallAboveSize: Vec3 = [openingWidth, wallThickness, wallAboveHeight]
 
-      yield* infillWallArea(wallAbovePosition, wallAboveSize, infill, resolveMaterial)
+      yield* infillWallArea(wallAbovePosition, wallAboveSize, infill)
     }
   }
 
@@ -206,7 +205,7 @@ export function* constructOpeningFrame(
       const wallBelowPosition: Vec3 = [openingLeft, wallFront, wallBottom]
       const wallBelowSize: Vec3 = [openingWidth, wallThickness, wallBelowHeight]
 
-      yield* infillWallArea(wallBelowPosition, wallBelowSize, infill, resolveMaterial)
+      yield* infillWallArea(wallBelowPosition, wallBelowSize, infill)
     }
   }
 }

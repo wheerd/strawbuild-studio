@@ -2,7 +2,7 @@ import { vec2 } from 'gl-matrix'
 
 import type { Perimeter, PerimeterCorner } from '@/building/model/model'
 import { createConstructionElement, createCutCuboidShape } from '@/construction/elements'
-import type { MaterialId, ResolveMaterialFunction } from '@/construction/materials/material'
+import type { MaterialId } from '@/construction/materials/material'
 import type { ConstructionModel } from '@/construction/model'
 import {
   type ConstructionResult,
@@ -52,11 +52,7 @@ export type RingBeamConfig = FullRingBeamConfig | DoubleRingBeamConfig
 
 const EPSILON = 1e-2
 
-function* _constructFullRingBeam(
-  perimeter: Perimeter,
-  config: FullRingBeamConfig,
-  _resolveMaterial: ResolveMaterialFunction
-): Generator<ConstructionResult> {
+function* _constructFullRingBeam(perimeter: Perimeter, config: FullRingBeamConfig): Generator<ConstructionResult> {
   const insidePolygon: Polygon2D = { points: perimeter.corners.map(c => c.insidePoint) }
   const simplifiedPolygon = simplifyPolygon(insidePolygon)
   const beamInsidePolygon = offsetPolygon(simplifiedPolygon.points, config.offsetFromEdge)
@@ -180,12 +176,8 @@ function* _constructFullRingBeam(
   }
 }
 
-export function constructFullRingBeam(
-  perimeter: Perimeter,
-  config: FullRingBeamConfig,
-  _resolveMaterial: ResolveMaterialFunction
-): ConstructionModel {
-  const aggRes = aggregateResults([..._constructFullRingBeam(perimeter, config, _resolveMaterial)])
+export function constructFullRingBeam(perimeter: Perimeter, config: FullRingBeamConfig): ConstructionModel {
+  const aggRes = aggregateResults([..._constructFullRingBeam(perimeter, config)])
   const bounds2D = boundsFromPoints(perimeter.corners.map(c => c.outsidePoint))
   const bounds3D = { min: [...bounds2D.min, 0], max: [...bounds2D.max, config.height] }
 
@@ -199,11 +191,7 @@ export function constructFullRingBeam(
   }
 }
 
-const constructDoubleRingBeam = (
-  _perimeter: Perimeter,
-  _config: DoubleRingBeamConfig,
-  _resolveMaterial: ResolveMaterialFunction
-): ConstructionModel => {
+const constructDoubleRingBeam = (_perimeter: Perimeter, _config: DoubleRingBeamConfig): ConstructionModel => {
   throw new Error('Not implemented')
 }
 
@@ -240,15 +228,11 @@ const validateDoubleRingBeamConfig = (config: DoubleRingBeamConfig): void => {
   // offsetFromEdge can be any value (positive, negative, or zero)
 }
 
-export const constructRingBeam = (
-  perimeter: Perimeter,
-  config: RingBeamConfig,
-  resolveMaterial: ResolveMaterialFunction
-): ConstructionModel => {
+export const constructRingBeam = (perimeter: Perimeter, config: RingBeamConfig): ConstructionModel => {
   if (config.type === 'full') {
-    return constructFullRingBeam(perimeter, config, resolveMaterial)
+    return constructFullRingBeam(perimeter, config)
   } else if (config.type === 'double') {
-    return constructDoubleRingBeam(perimeter, config, resolveMaterial)
+    return constructDoubleRingBeam(perimeter, config)
   } else {
     throw new Error('Invalid ring beam type')
   }
