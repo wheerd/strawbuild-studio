@@ -3,6 +3,7 @@ import * as Label from '@radix-ui/react-label'
 import {
   AlertDialog,
   Badge,
+  Box,
   Button,
   DropdownMenu,
   Flex,
@@ -52,34 +53,30 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
     <Flex direction="column" gap="3">
       <Heading size="2">Infill Configuration</Heading>
 
-      <Grid columns="2" gap="2" gapX="3">
-        <Flex direction="column" gap="1">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Max Post Spacing
-            </Text>
-          </Label.Root>
-          <LengthField
-            value={config.maxPostSpacing}
-            onChange={value => onUpdate({ ...config, maxPostSpacing: value })}
-            unit="mm"
-            size="1"
-          />
-        </Flex>
+      <Grid columns="7em 1fr 7em 1fr" gap="2" gapX="3">
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Max Post Spacing
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={config.maxPostSpacing}
+          onChange={value => onUpdate({ ...config, maxPostSpacing: value })}
+          unit="mm"
+          size="1"
+        />
 
-        <Flex direction="column" gap="1">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Min Straw Space
-            </Text>
-          </Label.Root>
-          <LengthField
-            value={config.minStrawSpace}
-            onChange={value => onUpdate({ ...config, minStrawSpace: value })}
-            unit="mm"
-            size="1"
-          />
-        </Flex>
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Min Straw Space
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={config.minStrawSpace}
+          onChange={value => onUpdate({ ...config, minStrawSpace: value })}
+          unit="mm"
+          size="1"
+        />
       </Grid>
 
       <Separator size="4" />
@@ -98,7 +95,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
     <Flex direction="column" gap="3">
       <Heading size="2">Posts Configuration</Heading>
 
-      <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
+      <Grid columns="5em 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
             Post Type
@@ -133,23 +130,16 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
         </Select.Root>
       </Grid>
 
-      <Grid columns="2" gap="2" gapX="3">
-        <Flex direction="column" gap="1">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Width
-            </Text>
-          </Label.Root>
-          <LengthField
-            value={posts.width}
-            onChange={value => onUpdate({ ...posts, width: value })}
-            unit="mm"
-            size="1"
-          />
-        </Flex>
+      <Grid columns="5em 1fr 5em 1fr" gap="2" gapX="3">
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Width
+          </Text>
+        </Label.Root>
+        <LengthField value={posts.width} onChange={value => onUpdate({ ...posts, width: value })} unit="mm" size="1" />
 
         {posts.type === 'double' && (
-          <Flex direction="column" gap="1">
+          <>
             <Label.Root>
               <Text size="1" weight="medium" color="gray">
                 Thickness
@@ -161,26 +151,24 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
               unit="mm"
               size="1"
             />
-          </Flex>
+          </>
         )}
       </Grid>
 
-      <Grid columns="1" gap="2">
-        <Flex direction="column" gap="1">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Material
-            </Text>
-          </Label.Root>
-          <MaterialSelect
-            value={'material' in posts ? posts.material : undefined}
-            onValueChange={material => onUpdate({ ...posts, material } as any)}
-            size="1"
-          />
-        </Flex>
+      <Grid columns="5em 1fr" gap="2">
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Material
+          </Text>
+        </Label.Root>
+        <MaterialSelect
+          value={'material' in posts ? posts.material : undefined}
+          onValueChange={material => onUpdate({ ...posts, material } as any)}
+          size="1"
+        />
 
         {posts.type === 'double' && (
-          <Flex direction="column" gap="1">
+          <>
             <Label.Root>
               <Text size="1" weight="medium" color="gray">
                 Infill Material
@@ -191,7 +179,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
               onValueChange={infillMaterial => onUpdate({ ...posts, infillMaterial })}
               size="1"
             />
-          </Flex>
+          </>
         )}
       </Grid>
     </Flex>
@@ -208,7 +196,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
     <Flex direction="column" gap="3">
       <Heading size="2">Module Configuration</Heading>
 
-      <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
+      <Grid columns="6em 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
             Module Type
@@ -246,37 +234,33 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
         </Select.Root>
       </Grid>
 
-      <Grid columns="2" gap="2" gapX="3">
-        <Flex direction="column" gap="1">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Width
-            </Text>
-          </Label.Root>
-          <LengthField
-            value={module.width}
-            onChange={value => onUpdate({ ...module, width: value })}
-            unit="mm"
-            size="1"
-          />
-        </Flex>
+      <Grid columns="6em 1fr 6em 1fr" gap="2" gapX="3">
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Width
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={module.width}
+          onChange={value => onUpdate({ ...module, width: value })}
+          unit="mm"
+          size="1"
+        />
 
-        <Flex direction="column" gap="1">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Frame Thickness
-            </Text>
-          </Label.Root>
-          <LengthField
-            value={module.frameThickness}
-            onChange={value => onUpdate({ ...module, frameThickness: value })}
-            unit="mm"
-            size="1"
-          />
-        </Flex>
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Frame Thickness
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={module.frameThickness}
+          onChange={value => onUpdate({ ...module, frameThickness: value })}
+          unit="mm"
+          size="1"
+        />
 
         {module.type === 'double' && (
-          <Flex direction="column" gap="1">
+          <>
             <Label.Root>
               <Text size="1" weight="medium" color="gray">
                 Frame Width
@@ -288,7 +272,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
               unit="mm"
               size="1"
             />
-          </Flex>
+          </>
         )}
       </Grid>
 
@@ -331,10 +315,8 @@ interface StrawhengeConfigFormProps {
 function StrawhengeConfigForm({ config, onUpdate }: StrawhengeConfigFormProps): React.JSX.Element {
   return (
     <Flex direction="column" gap="3">
-      <Heading size="2">Strawhenge Configuration</Heading>
       <ModuleConfigSection module={config.module} onUpdate={module => onUpdate({ ...config, module })} />
       <Separator size="4" />
-      <Heading size="2">Infill (between modules)</Heading>
       <InfillConfigForm config={config.infill} onUpdate={infill => onUpdate({ ...config, infill } as any)} />
     </Flex>
   )
@@ -348,10 +330,8 @@ interface ModulesConfigFormProps {
 function ModulesConfigForm({ config, onUpdate }: ModulesConfigFormProps): React.JSX.Element {
   return (
     <Flex direction="column" gap="3">
-      <Heading size="2">Modules Configuration</Heading>
       <ModuleConfigSection module={config.module} onUpdate={module => onUpdate({ ...config, module })} />
       <Separator size="4" />
-      <Heading size="2">Infill (between modules)</Heading>
       <InfillConfigForm config={config.infill} onUpdate={infill => onUpdate({ ...config, infill } as any)} />
     </Flex>
   )
@@ -413,7 +393,7 @@ function CommonConfigSections({ methodId, config, layers }: CommonConfigSections
       {/* Openings Configuration */}
       <Heading size="2">Openings</Heading>
       <Grid columns="2" gap="2" gapX="3">
-        <Flex direction="column" gap="1">
+        <Flex direction="column" gap="1" gridColumnEnd="span 2">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
               Padding
@@ -511,119 +491,107 @@ function CommonConfigSections({ methodId, config, layers }: CommonConfigSections
 
       {/* Straw Configuration */}
       <Heading size="2">Straw</Heading>
-      <Grid columns="2" gap="2" gapX="3">
-        <Flex direction="column" gap="1">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Bale Length
-            </Text>
-          </Label.Root>
-          <LengthField
-            value={config.straw.baleLength}
-            onChange={baleLength =>
-              updatePerimeterConstructionMethodConfig(methodId, {
-                ...config,
-                straw: { ...config.straw, baleLength }
-              })
-            }
-            unit="mm"
-            size="1"
-          />
-        </Flex>
+      <Grid columns="5em 1fr 5em 1fr" gap="2" gapX="3">
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Bale Length
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={config.straw.baleLength}
+          onChange={baleLength =>
+            updatePerimeterConstructionMethodConfig(methodId, {
+              ...config,
+              straw: { ...config.straw, baleLength }
+            })
+          }
+          unit="mm"
+          size="1"
+        />
 
-        <Flex direction="column" gap="1">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Bale Height
-            </Text>
-          </Label.Root>
-          <LengthField
-            value={config.straw.baleHeight}
-            onChange={baleHeight =>
-              updatePerimeterConstructionMethodConfig(methodId, {
-                ...config,
-                straw: { ...config.straw, baleHeight }
-              })
-            }
-            unit="mm"
-            size="1"
-          />
-        </Flex>
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Bale Height
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={config.straw.baleHeight}
+          onChange={baleHeight =>
+            updatePerimeterConstructionMethodConfig(methodId, {
+              ...config,
+              straw: { ...config.straw, baleHeight }
+            })
+          }
+          unit="mm"
+          size="1"
+        />
 
-        <Flex direction="column" gap="1">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Bale Width
-            </Text>
-          </Label.Root>
-          <LengthField
-            value={config.straw.baleWidth}
-            onChange={baleWidth =>
-              updatePerimeterConstructionMethodConfig(methodId, {
-                ...config,
-                straw: { ...config.straw, baleWidth }
-              })
-            }
-            unit="mm"
-            size="1"
-          />
-        </Flex>
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Bale Width
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={config.straw.baleWidth}
+          onChange={baleWidth =>
+            updatePerimeterConstructionMethodConfig(methodId, {
+              ...config,
+              straw: { ...config.straw, baleWidth }
+            })
+          }
+          unit="mm"
+          size="1"
+        />
 
-        <Flex direction="column" gap="1">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Material
-            </Text>
-          </Label.Root>
-          <MaterialSelect
-            value={config.straw.material}
-            onValueChange={material =>
-              updatePerimeterConstructionMethodConfig(methodId, {
-                ...config,
-                straw: { ...config.straw, material }
-              })
-            }
-            size="1"
-          />
-        </Flex>
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Material
+          </Text>
+        </Label.Root>
+        <MaterialSelect
+          value={config.straw.material}
+          onValueChange={material =>
+            updatePerimeterConstructionMethodConfig(methodId, {
+              ...config,
+              straw: { ...config.straw, material }
+            })
+          }
+          size="1"
+        />
       </Grid>
 
       <Separator size="4" />
 
       {/* Layers Configuration */}
       <Heading size="2">Layers</Heading>
-      <Grid columns="2" gap="2" gapX="3">
-        <Flex direction="column" gap="1">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Inside Thickness
-            </Text>
-          </Label.Root>
-          <LengthField
-            value={layers.insideThickness}
-            onChange={insideThickness =>
-              updatePerimeterConstructionMethodLayers(methodId, { ...layers, insideThickness })
-            }
-            unit="mm"
-            size="1"
-          />
-        </Flex>
+      <Grid columns="7em 1fr 7em 1fr" gap="2" gapX="3">
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Inside Thickness
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={layers.insideThickness}
+          onChange={insideThickness =>
+            updatePerimeterConstructionMethodLayers(methodId, { ...layers, insideThickness })
+          }
+          unit="mm"
+          size="1"
+        />
 
-        <Flex direction="column" gap="1">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Outside Thickness
-            </Text>
-          </Label.Root>
-          <LengthField
-            value={layers.outsideThickness}
-            onChange={outsideThickness =>
-              updatePerimeterConstructionMethodLayers(methodId, { ...layers, outsideThickness })
-            }
-            unit="mm"
-            size="1"
-          />
-        </Flex>
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Outside Thickness
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={layers.outsideThickness}
+          onChange={outsideThickness =>
+            updatePerimeterConstructionMethodLayers(methodId, { ...layers, outsideThickness })
+          }
+          unit="mm"
+          size="1"
+        />
       </Grid>
     </Flex>
   )
@@ -654,8 +622,8 @@ function ConfigForm({ method, onUpdateName }: ConfigFormProps): React.JSX.Elemen
       p="3"
       style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
     >
-      {/* Basic Info */}
-      <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
+      {/* Basic Info - Full Width */}
+      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
             Name
@@ -680,18 +648,25 @@ function ConfigForm({ method, onUpdateName }: ConfigFormProps): React.JSX.Elemen
 
       <Separator size="4" />
 
-      {/* Type-specific configuration */}
-      {method.config.type === 'infill' && <InfillConfigForm config={method.config} onUpdate={updateConfig} />}
-      {method.config.type === 'strawhenge' && <StrawhengeConfigForm config={method.config} onUpdate={updateConfig} />}
-      {method.config.type === 'modules' && <ModulesConfigForm config={method.config} onUpdate={updateConfig} />}
-      {method.config.type === 'non-strawbale' && (
-        <NonStrawbaleConfigForm config={method.config} onUpdate={updateConfig} />
-      )}
+      {/* Two Column Layout */}
+      <Grid columns="2" gap="4" style={{ gridTemplateColumns: '1fr 1fr' }}>
+        {/* Left Column - Type-specific configuration */}
+        <Flex direction="column" gap="3">
+          {method.config.type === 'infill' && <InfillConfigForm config={method.config} onUpdate={updateConfig} />}
+          {method.config.type === 'strawhenge' && (
+            <StrawhengeConfigForm config={method.config} onUpdate={updateConfig} />
+          )}
+          {method.config.type === 'modules' && <ModulesConfigForm config={method.config} onUpdate={updateConfig} />}
+          {method.config.type === 'non-strawbale' && (
+            <NonStrawbaleConfigForm config={method.config} onUpdate={updateConfig} />
+          )}
+        </Flex>
 
-      <Separator size="4" />
-
-      {/* Common sections (Openings, Straw, Layers) */}
-      <CommonConfigSections methodId={method.id} config={method.config} layers={method.layers} />
+        {/* Right Column - Common sections (Openings, Straw, Layers) */}
+        <Flex direction="column" gap="3">
+          <CommonConfigSections methodId={method.id} config={method.config} layers={method.layers} />
+        </Flex>
+      </Grid>
     </Flex>
   )
 }
@@ -856,118 +831,145 @@ export function PerimeterConfigContent(): React.JSX.Element {
   )
 
   return (
-    <Flex direction="column" gap="4">
+    <Flex direction="column" gap="4" style={{ width: '100%' }}>
       {/* Selector + Actions */}
       <Flex direction="column" gap="2">
-        <Flex gap="2" align="end">
-          <Flex direction="column" gap="1" flexGrow="1">
-            <Text size="2" weight="medium">
-              Perimeter Method
-            </Text>
-            <Select.Root value={selectedMethodId ?? ''} onValueChange={setSelectedMethodId}>
-              <Select.Trigger placeholder="Select perimeter method..." />
-              <Select.Content>
-                {perimeterMethods.map(method => {
-                  const Icon = getPerimeterConfigTypeIcon(method.config.type)
-                  const isDefault = method.id === defaultMethodId
-                  return (
-                    <Select.Item key={method.id} value={method.id}>
-                      <Flex align="center" gap="2">
-                        <Icon style={{ flexShrink: 0 }} />
-                        <Text>
-                          {method.name}
-                          {isDefault && <Text color="gray"> (default)</Text>}
-                        </Text>
-                      </Flex>
-                    </Select.Item>
-                  )
-                })}
-              </Select.Content>
-            </Select.Root>
+        <Grid columns="2" gap="2">
+          <Flex gap="2" align="end">
+            <Flex direction="column" gap="1" flexGrow="1">
+              <Select.Root value={selectedMethodId ?? ''} onValueChange={setSelectedMethodId}>
+                <Select.Trigger placeholder="Select perimeter method..." />
+                <Select.Content>
+                  {perimeterMethods.map(method => {
+                    const Icon = getPerimeterConfigTypeIcon(method.config.type)
+                    const isDefault = method.id === defaultMethodId
+                    return (
+                      <Select.Item key={method.id} value={method.id}>
+                        <Flex align="center" gap="2">
+                          <Icon style={{ flexShrink: 0 }} />
+                          <Text>
+                            {method.name}
+                            {isDefault && <Text color="gray"> (default)</Text>}
+                          </Text>
+                        </Flex>
+                      </Select.Item>
+                    )
+                  })}
+                </Select.Content>
+              </Select.Root>
+            </Flex>
+
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger>
+                <Button variant="surface">
+                  <PlusIcon />
+                  New...
+                </Button>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Content>
+                <DropdownMenu.Item onSelect={() => handleAddNew('infill')}>
+                  <Flex align="center" gap="1">
+                    <LayersIcon />
+                    Infill
+                  </Flex>
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onSelect={() => handleAddNew('strawhenge')}>
+                  <Flex align="center" gap="1">
+                    <CubeIcon />
+                    Strawhenge
+                  </Flex>
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onSelect={() => handleAddNew('modules')}>
+                  <Flex align="center" gap="1">
+                    <CircleIcon />
+                    Modules
+                  </Flex>
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onSelect={() => handleAddNew('non-strawbale')}>
+                  <Flex align="center" gap="1">
+                    <TrashIcon />
+                    Non-Strawbale
+                  </Flex>
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu.Root>
+
+            <Tooltip
+              content={
+                usage.isUsed ? (
+                  <Flex direction="column" gap="1">
+                    <Text size="1" weight="medium">
+                      In Use - Cannot Delete
+                    </Text>
+                    <Flex gap="1" wrap="wrap">
+                      {usage.usedByWalls.map((use, index) => (
+                        <Badge key={index} size="1" variant="soft">
+                          {use}
+                        </Badge>
+                      ))}
+                    </Flex>
+                  </Flex>
+                ) : (
+                  'Delete'
+                )
+              }
+            >
+              <Box>
+                <AlertDialog.Root>
+                  <AlertDialog.Trigger>
+                    <IconButton disabled={!selectedMethod || usage.isUsed} color="red" variant="surface">
+                      <TrashIcon />
+                    </IconButton>
+                  </AlertDialog.Trigger>
+                  <AlertDialog.Content>
+                    <AlertDialog.Title>Delete Perimeter Method</AlertDialog.Title>
+                    <AlertDialog.Description>
+                      Are you sure you want to delete "{selectedMethod?.name}"? This action cannot be undone.
+                    </AlertDialog.Description>
+                    <Flex gap="3" mt="4" justify="end">
+                      <AlertDialog.Cancel>
+                        <Button variant="soft" color="gray">
+                          Cancel
+                        </Button>
+                      </AlertDialog.Cancel>
+                      <AlertDialog.Action>
+                        <Button variant="solid" color="red" onClick={handleDelete}>
+                          Delete
+                        </Button>
+                      </AlertDialog.Action>
+                    </Flex>
+                  </AlertDialog.Content>
+                </AlertDialog.Root>
+              </Box>
+            </Tooltip>
           </Flex>
 
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger>
-              <Button variant="surface">
-                <PlusIcon />
-                New...
-              </Button>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content>
-              <DropdownMenu.Item onSelect={() => handleAddNew('infill')}>
-                <Flex align="center" gap="1">
-                  <LayersIcon />
-                  Infill
-                </Flex>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => handleAddNew('strawhenge')}>
-                <Flex align="center" gap="1">
-                  <CubeIcon />
-                  Strawhenge
-                </Flex>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => handleAddNew('modules')}>
-                <Flex align="center" gap="1">
-                  <CircleIcon />
-                  Modules
-                </Flex>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => handleAddNew('non-strawbale')}>
-                <Flex align="center" gap="1">
-                  <TrashIcon />
-                  Non-Strawbale
-                </Flex>
-              </DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
-
-          <Tooltip
-            content={
-              usage.isUsed ? (
-                <Flex direction="column" gap="1">
-                  <Text size="1" weight="medium">
-                    In Use - Cannot Delete
-                  </Text>
-                  <Flex gap="1" wrap="wrap">
-                    {usage.usedByWalls.map((use, index) => (
-                      <Badge key={index} size="1" variant="soft">
-                        {use}
-                      </Badge>
-                    ))}
-                  </Flex>
-                </Flex>
-              ) : (
-                'Delete'
-              )
-            }
-          >
-            <AlertDialog.Root>
-              <AlertDialog.Trigger>
-                <IconButton disabled={!selectedMethod || usage.isUsed} color="red" variant="surface">
-                  <TrashIcon />
-                </IconButton>
-              </AlertDialog.Trigger>
-              <AlertDialog.Content>
-                <AlertDialog.Title>Delete Perimeter Method</AlertDialog.Title>
-                <AlertDialog.Description>
-                  Are you sure you want to delete "{selectedMethod?.name}"? This action cannot be undone.
-                </AlertDialog.Description>
-                <Flex gap="3" mt="4" justify="end">
-                  <AlertDialog.Cancel>
-                    <Button variant="soft" color="gray">
-                      Cancel
-                    </Button>
-                  </AlertDialog.Cancel>
-                  <AlertDialog.Action>
-                    <Button variant="solid" color="red" onClick={handleDelete}>
-                      Delete
-                    </Button>
-                  </AlertDialog.Action>
-                </Flex>
-              </AlertDialog.Content>
-            </AlertDialog.Root>
-          </Tooltip>
-        </Flex>
+          <Grid columns="auto 1fr" gap="2" align="center">
+            <Label.Root>
+              <Text size="1" weight="medium" color="gray">
+                Default Perimeter Method
+              </Text>
+            </Label.Root>
+            <Select.Root
+              value={defaultMethodId ?? 'none'}
+              onValueChange={value =>
+                setDefaultPerimeterMethod(value === 'none' ? undefined : (value as PerimeterConstructionMethodId))
+              }
+            >
+              <Select.Trigger placeholder="Select default..." />
+              <Select.Content>
+                <Select.Item value="none">
+                  <Text color="gray">None</Text>
+                </Select.Item>
+                {perimeterMethods.map(method => (
+                  <Select.Item key={method.id} value={method.id}>
+                    {method.name}
+                  </Select.Item>
+                ))}
+              </Select.Content>
+            </Select.Root>
+          </Grid>
+        </Grid>
       </Flex>
 
       {/* Form */}
@@ -980,37 +982,7 @@ export function PerimeterConfigContent(): React.JSX.Element {
       )}
 
       {/* Defaults Section */}
-      <Separator size="4" />
-      <Flex direction="column" gap="3">
-        <Text size="2" weight="medium">
-          Default Method
-        </Text>
-        <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Default Perimeter Method
-            </Text>
-          </Label.Root>
-          <Select.Root
-            value={defaultMethodId ?? 'none'}
-            onValueChange={value =>
-              setDefaultPerimeterMethod(value === 'none' ? undefined : (value as PerimeterConstructionMethodId))
-            }
-          >
-            <Select.Trigger placeholder="Select default..." />
-            <Select.Content>
-              <Select.Item value="none">
-                <Text color="gray">None</Text>
-              </Select.Item>
-              {perimeterMethods.map(method => (
-                <Select.Item key={method.id} value={method.id}>
-                  {method.name}
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Root>
-        </Grid>
-      </Flex>
+      <Grid columns="auto auto" gap="2" gapX="3" align="center"></Grid>
     </Flex>
   )
 }

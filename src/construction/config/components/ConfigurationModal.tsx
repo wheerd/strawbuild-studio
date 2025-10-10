@@ -40,19 +40,19 @@ export function ConfigurationModal({ trigger }: ConfigurationModalProps): React.
           </Tabs.List>
 
           <Tabs.Content value="materials">
-            <Flex pt="4">
+            <Flex pt="4" style={{ width: '100%' }}>
               <MaterialsConfigContent />
             </Flex>
           </Tabs.Content>
 
           <Tabs.Content value="ringbeams">
-            <Flex pt="4">
+            <Flex pt="4" style={{ width: '100%' }}>
               <RingBeamConfigContent />
             </Flex>
           </Tabs.Content>
 
           <Tabs.Content value="perimeter">
-            <Flex pt="4">
+            <Flex pt="4" style={{ width: '100%' }}>
               <PerimeterConfigContent />
             </Flex>
           </Tabs.Content>

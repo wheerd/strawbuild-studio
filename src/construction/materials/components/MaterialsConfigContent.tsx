@@ -113,7 +113,7 @@ export function MaterialsConfigContent(): React.JSX.Element {
   )
 
   return (
-    <Flex direction="column" gap="4">
+    <Flex direction="column" gap="4" style={{ width: '100%' }}>
       {/* Selector + Actions */}
       <Flex direction="column" gap="2">
         <Flex gap="2" align="end">
