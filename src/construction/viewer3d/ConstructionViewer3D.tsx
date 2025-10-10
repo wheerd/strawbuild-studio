@@ -1,0 +1,67 @@
+import { OrbitControls } from '@react-three/drei'
+import { Canvas } from '@react-three/fiber'
+
+import type { ConstructionModel } from '@/construction/model'
+
+import ConstructionElement3D from './components/ConstructionElement3D'
+import ConstructionGroup3D from './components/ConstructionGroup3D'
+
+interface ConstructionViewer3DProps {
+  model: ConstructionModel
+  containerSize: { width: number; height: number }
+}
+
+function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProps): React.JSX.Element {
+  const centerX = (model.bounds.min[0] + model.bounds.max[0]) / 2
+  const centerY = (model.bounds.min[1] + model.bounds.max[1]) / 2
+  const centerZ = (model.bounds.min[2] + model.bounds.max[2]) / 2
+
+  const sizeX = model.bounds.max[0] - model.bounds.min[0]
+  const sizeY = model.bounds.max[1] - model.bounds.min[1]
+  const sizeZ = model.bounds.max[2] - model.bounds.min[2]
+  const maxSize = Math.max(sizeX, sizeY, sizeZ)
+
+  const cameraDistance = maxSize * 1.5
+
+  const cameraThreeX = -centerX - cameraDistance * 0.7
+  const cameraThreeY = centerZ + cameraDistance * 0.8
+  const cameraThreeZ = -centerY + cameraDistance * 0.7
+
+  const gridSize = Math.max(maxSize * 3, 10000)
+
+  return (
+    <Canvas
+      camera={{
+        position: [cameraThreeX, cameraThreeY, cameraThreeZ],
+        fov: 50,
+        near: 1,
+        far: maxSize * 10
+      }}
+      style={{
+        width: `${containerSize.width}px`,
+        height: `${containerSize.height}px`,
+        background: '#f0f0f0'
+      }}
+    >
+      <ambientLight intensity={1} />
+      {/*
+      <directionalLight position={[10000, 10000, 5000]} intensity={0.8} />
+      <directionalLight position={[-10000, 5000, -5000]} intensity={0.3} />
+      */}
+
+      <gridHelper args={[gridSize, 50]} position={[-centerX, 0, -centerY]} />
+
+      {model.elements.map(element =>
+        'children' in element ? (
+          <ConstructionGroup3D key={element.id} group={element} />
+        ) : (
+          <ConstructionElement3D key={element.id} element={element} />
+        )
+      )}
+
+      <OrbitControls target={[-centerX, centerZ, -centerY]} makeDefault />
+    </Canvas>
+  )
+}
+
+export default ConstructionViewer3D
