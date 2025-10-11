@@ -32,7 +32,16 @@ export function ConstructionViewer3DModal({ perimeterId, trigger }: Construction
   return (
     <Dialog.Root>
       <Dialog.Trigger>{trigger}</Dialog.Trigger>
-      <Dialog.Content size="2" width="95%" maxWidth="95%" maxHeight="90vh" className="flex flex-col overflow-hidden">
+      <Dialog.Content
+        size="2"
+        width="95%"
+        maxWidth="95%"
+        maxHeight="90vh"
+        className="flex flex-col overflow-hidden"
+        onEscapeKeyDown={e => {
+          e.stopPropagation()
+        }}
+      >
         <Flex direction="column" gap="1" height="100%" className="overflow-hidden">
           <Dialog.Title>
             <Flex justify="between" align="center">

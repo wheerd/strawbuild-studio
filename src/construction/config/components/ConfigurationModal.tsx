@@ -29,7 +29,16 @@ export function ConfigurationModal({
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Content size="4" width="95%" maxWidth="95%" height="90vh" maxHeight="90vh">
+      <Dialog.Content
+        size="4"
+        width="95%"
+        maxWidth="95%"
+        height="90vh"
+        maxHeight="90vh"
+        onEscapeKeyDown={e => {
+          e.stopPropagation()
+        }}
+      >
         <Dialog.Title>
           <Flex justify="between" align="center">
             <Flex align="center" gap="2">

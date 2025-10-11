@@ -180,7 +180,13 @@ function LShapedPresetDialogContent({
   const isValid = preset.validateConfig(config)
 
   return (
-    <Dialog.Content size="4" maxWidth="800px">
+    <Dialog.Content
+      size="4"
+      maxWidth="800px"
+      onEscapeKeyDown={e => {
+        e.stopPropagation()
+      }}
+    >
       <Flex direction="column" gap="4">
         <Dialog.Title>
           <Flex justify="between" align="center">

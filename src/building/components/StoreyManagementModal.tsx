@@ -31,7 +31,11 @@ export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): 
   return (
     <Dialog.Root>
       <Dialog.Trigger>{trigger}</Dialog.Trigger>
-      <Dialog.Content>
+      <Dialog.Content
+        onEscapeKeyDown={e => {
+          e.stopPropagation()
+        }}
+      >
         <Dialog.Title>
           <Flex justify="between" align="center">
             Manage Floors

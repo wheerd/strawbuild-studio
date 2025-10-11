@@ -125,7 +125,13 @@ function RectangularPresetDialogContent({
   const isValid = config.width > 0 && config.length > 0 && config.thickness > 0 && config.constructionMethodId
 
   return (
-    <Dialog.Content size="3" maxWidth="600px">
+    <Dialog.Content
+      size="3"
+      maxWidth="600px"
+      onEscapeKeyDown={e => {
+        e.stopPropagation()
+      }}
+    >
       <Flex direction="column" gap="4">
         <Dialog.Title>
           <Flex justify="between" align="center">

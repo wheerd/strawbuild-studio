@@ -124,7 +124,16 @@ export function WallConstructionPlanModal({
   return (
     <Dialog.Root>
       <Dialog.Trigger>{children}</Dialog.Trigger>
-      <Dialog.Content size="2" width="95%" maxWidth="95%" maxHeight="90vh" className="flex flex-col overflow-hidden">
+      <Dialog.Content
+        size="2"
+        width="95%"
+        maxWidth="95%"
+        maxHeight="90vh"
+        className="flex flex-col overflow-hidden"
+        onEscapeKeyDown={e => {
+          e.stopPropagation()
+        }}
+      >
         <Flex direction="column" gap="3" height="100%" className="overflow-hidden">
           <Dialog.Title>
             <Flex justify="between" align="center">
