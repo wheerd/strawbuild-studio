@@ -1,6 +1,6 @@
 import type { IconProps } from '@radix-ui/react-icons/dist/types'
 import type Konva from 'konva'
-import type React from 'react'
+import React from 'react'
 
 import type { Vec2 } from '@/shared/geometry'
 
@@ -30,7 +30,7 @@ export interface ToolImplementation {
   id: ToolId
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  inspectorComponent?: React.ComponentType<ToolInspectorProps<any>>
+  inspectorComponent: React.ComponentType<ToolInspectorProps<any>>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   overlayComponent?: React.ComponentType<ToolOverlayComponentProps<any>>
   onRenderNeeded?(listener: () => void): () => void
@@ -53,6 +53,12 @@ export interface ToolInspectorProps<T extends ToolImplementation = ToolImplement
 
 export interface ToolOverlayComponentProps<T extends ToolImplementation = ToolImplementation> {
   tool: T
+}
+
+export function DummyToolInspector<TTool extends ToolImplementation>(
+  _props: ToolInspectorProps<TTool>
+): React.JSX.Element | undefined {
+  return undefined
 }
 
 // Keyboard shortcut system

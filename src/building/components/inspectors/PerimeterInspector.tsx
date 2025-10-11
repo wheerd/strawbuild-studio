@@ -106,11 +106,13 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
   const totalInnerArea = calculatePolygonArea({ points: perimeter.corners.map(c => c.insidePoint) })
   const totalOuterArea = calculatePolygonArea({ points: perimeter.corners.map(c => c.outsidePoint) })
 
+  const hasNonStandardAngles = perimeter.corners.some(corner => corner.interiorAngle % 90 !== 0)
+
   return (
     <Box p="2">
       <Flex direction="column" gap="3">
         {/* Basic Information */}
-        <DataList.Root>
+        <DataList.Root size="1">
           <DataList.Item>
             <DataList.Label minWidth="88px">Total Inner Perimeter</DataList.Label>
             <DataList.Value>{formatLength(totalInnerPerimeter as Length)}</DataList.Value>
@@ -128,6 +130,23 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             <DataList.Value>{(totalOuterArea / (1000 * 1000)).toFixed(2)} m²</DataList.Value>
           </DataList.Item>
         </DataList.Root>
+
+        {/* Non-standard angle warning */}
+        {hasNonStandardAngles && (
+          <Callout.Root color="amber">
+            <Callout.Icon>
+              <ExclamationTriangleIcon />
+            </Callout.Icon>
+            <Callout.Text>
+              <Text weight="bold">Non-right angles detected</Text>
+              <br />
+              <Text size="1">
+                This perimeter contains corners with angles that are not multiples of 90°. Construction planning for
+                such corners is not fully supported yet.
+              </Text>
+            </Callout.Text>
+          </Callout.Root>
+        )}
 
         <Flex direction="column" gap="2" pt="1">
           <PerimeterConstructionPlanModal

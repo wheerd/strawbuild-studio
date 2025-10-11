@@ -1,6 +1,6 @@
 import { InfoCircledIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Box, Button, Callout, Flex, Grid, SegmentedControl, Separator, Text, Tooltip } from '@radix-ui/themes'
+import { Box, Button, Callout, Flex, Grid, Kbd, SegmentedControl, Separator, Text, Tooltip } from '@radix-ui/themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import type { OpeningId, PerimeterId, PerimeterWallId } from '@/building/model/ids'
@@ -161,9 +161,14 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
       {/* Basic Properties */}
       <Flex direction="column" gap="3">
         <Flex align="center" justify="between" gap="2">
-          <Text size="1" weight="medium" color="gray">
-            Type
-          </Text>
+          <Flex gap="1" align="center">
+            <Text size="1" weight="medium" color="gray">
+              Type
+            </Text>
+            <Tooltip content="Opening types don't influence the construction yet but are rendered differently.">
+              <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
+            </Tooltip>
+          </Flex>
           <SegmentedControl.Root
             value={opening.type}
             onValueChange={(value: OpeningType) =>
@@ -346,6 +351,18 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
           Remove Opening
         </Button>
       </Flex>
+
+      <Callout.Root color="blue">
+        <Callout.Icon>
+          <InfoCircledIcon />
+        </Callout.Icon>
+        <Callout.Text>
+          <Text size="1">
+            To move the opening, you can use the Move Tool <Kbd>M</Kbd> or click any of the distance measurements shown
+            in the editor to adjust them.
+          </Text>
+        </Callout.Text>
+      </Callout.Root>
     </Flex>
   )
 }

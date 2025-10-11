@@ -1,3 +1,4 @@
+import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { Button, Callout, Flex, Heading, Kbd, Text } from '@radix-ui/themes'
 
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
@@ -12,6 +13,18 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
     return (
       <Flex direction="column" gap="3">
         <Heading size="2">Split Wall</Heading>
+
+        <Callout.Root color="blue">
+          <Callout.Icon>
+            <InfoCircledIcon />
+          </Callout.Icon>
+          <Callout.Text>
+            <Text size="1">
+              Split walls to create segments with different construction methods or to position openings precisely.
+            </Text>
+          </Callout.Text>
+        </Callout.Root>
+
         <Text size="2" color="gray">
           Click on a wall to select it for splitting
         </Text>

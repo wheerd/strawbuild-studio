@@ -1,5 +1,6 @@
+import { InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Box, Flex, Grid, IconButton, SegmentedControl, Separator, Text, Tooltip } from '@radix-ui/themes'
+import { Box, Callout, Flex, Grid, IconButton, SegmentedControl, Separator, Text, Tooltip } from '@radix-ui/themes'
 import { useCallback, useMemo, useState } from 'react'
 
 import type { OpeningType } from '@/building/model/model'
@@ -126,6 +127,19 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
 
   return (
     <Flex direction="column" gap="4">
+      {/* Informational Note */}
+      <Callout.Root color="blue">
+        <Callout.Icon>
+          <InfoCircledIcon />
+        </Callout.Icon>
+        <Callout.Text>
+          <Text size="1">
+            Click on a wall to place an opening. Configure dimensions and type before placement. Use presets for common
+            sizes.
+          </Text>
+        </Callout.Text>
+      </Callout.Root>
+
       {/* Preview */}
       <Flex direction="column" align="center">
         <OpeningPreviewSimple
@@ -142,9 +156,14 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
 
       {/* Type Selection */}
       <Flex align="center" justify="between" gap="2">
-        <Text size="1" weight="medium" color="gray">
-          Type
-        </Text>
+        <Flex gap="1" align="center">
+          <Text size="1" weight="medium" color="gray">
+            Type
+          </Text>
+          <Tooltip content="Opening types don't influence the construction yet but are rendered differently.">
+            <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
+          </Tooltip>
+        </Flex>
         <SegmentedControl.Root value={state.openingType} onValueChange={handleTypeChange} size="2">
           <SegmentedControl.Item value="door">
             <Tooltip content="Door">

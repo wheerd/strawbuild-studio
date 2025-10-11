@@ -1,11 +1,12 @@
 import { getModelActions } from '@/building/store'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
 import { getToolActions } from '@/editor/tools/system'
-import type { CanvasEvent, ToolImplementation } from '@/editor/tools/system/types'
+import { type CanvasEvent, DummyToolInspector, type ToolImplementation } from '@/editor/tools/system/types'
 import { boundsFromPoints } from '@/shared/geometry'
 
 export class FitToViewTool implements ToolImplementation {
   readonly id = 'basic.fit-to-view'
+  readonly inspectorComponent = DummyToolInspector
 
   // Event handlers - not needed for this tool
   handlePointerDown(_event: CanvasEvent): boolean {

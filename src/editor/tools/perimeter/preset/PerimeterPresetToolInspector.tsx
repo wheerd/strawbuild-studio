@@ -1,4 +1,5 @@
-import { Box, Button, DataList, Flex, Heading, Separator, Text } from '@radix-ui/themes'
+import { InfoCircledIcon } from '@radix-ui/react-icons'
+import { Box, Button, Callout, DataList, Flex, Heading, Separator, Text } from '@radix-ui/themes'
 import { useCallback } from 'react'
 
 import { useDefaultPerimeterMethodId, usePerimeterConstructionMethods } from '@/construction/config/store'
@@ -50,6 +51,19 @@ export function PerimeterPresetToolInspector({ tool }: ToolInspectorProps<Perime
   return (
     <Box p="2">
       <Flex direction="column" gap="3">
+        {/* Informational Note */}
+        <Callout.Root color="blue">
+          <Callout.Icon>
+            <InfoCircledIcon />
+          </Callout.Icon>
+          <Callout.Text>
+            <Text size="1">
+              Presets create common building shapes with the <Text weight="bold">inside edge</Text> aligned to your
+              chosen dimensions. Configure the shape, then click to place it on the plan.
+            </Text>
+          </Callout.Text>
+        </Callout.Root>
+
         {/* Rectangular Preset Dialog */}
         <RectangularPresetDialog
           onConfirm={handleRectangularPresetConfirm}

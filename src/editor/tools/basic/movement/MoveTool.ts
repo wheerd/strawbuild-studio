@@ -8,6 +8,7 @@ import type { CanvasEvent, ToolImplementation } from '@/editor/tools/system/type
 import type { Length, Vec2 } from '@/shared/geometry'
 import { distanceSquared, normalize, scale, subtract } from '@/shared/geometry'
 
+import { MoveToolInspector } from './MoveToolInspector'
 import { MoveToolOverlay } from './MoveToolOverlay'
 import type { MovementBehavior, MovementContext, PointerMovementState } from './MovementBehavior'
 import { getMovementBehavior } from './movementBehaviors'
@@ -23,6 +24,7 @@ interface LastMovementRecord {
 
 export class MoveTool extends BaseTool implements ToolImplementation {
   readonly id = 'basic.move'
+  readonly inspectorComponent = MoveToolInspector
 
   private static readonly MOVEMENT_THRESHOLD = 3 // pixels
 

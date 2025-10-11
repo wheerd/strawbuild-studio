@@ -1,4 +1,4 @@
-import { Box, Flex } from '@radix-ui/themes'
+import { Box, Grid } from '@radix-ui/themes'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { MainToolbar } from './MainToolbar'
@@ -45,8 +45,6 @@ export function FloorPlanEditor(): React.JSX.Element {
       const isInputElement = target.matches(
         'input[type=text], input[type=number], input:not([type]), select, textarea, [contenteditable="true"]'
       )
-
-      console.log(event, isInputElement)
 
       if (isInputElement) {
         return // Let the input handle the event normally
@@ -126,14 +124,14 @@ export function FloorPlanEditor(): React.JSX.Element {
   }, [])
 
   return (
-    <Box
+    <Grid
       ref={containerRef}
+      rows="auto 1fr"
       style={{
         width: '100vw',
         height: '100vh',
         margin: 0,
         padding: 0,
-        overflow: 'hidden',
         backgroundColor: 'var(--gray-2)'
       }}
       tabIndex={0}
@@ -141,16 +139,15 @@ export function FloorPlanEditor(): React.JSX.Element {
       data-testid="floor-plan-editor"
     >
       {/* Top Toolbar - Tabs for tool groups + tools */}
-      <Box style={{ flexShrink: 0, zIndex: 100, borderBottom: '1px solid var(--gray-6)' }}>
+      <Box style={{ zIndex: 100, borderBottom: '1px solid var(--gray-6)' }}>
         <MainToolbar />
       </Box>
 
       {/* Main Content Area - Canvas + Side Panel */}
-      <Flex style={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
+      <Grid p="0" gap="0" columns="1fr 320px" style={{ overflow: 'hidden' }}>
         {/* Canvas Area */}
         <Box
           style={{
-            flex: 1,
             position: 'relative',
             overflow: 'hidden',
             backgroundColor: 'white',
@@ -165,17 +162,8 @@ export function FloorPlanEditor(): React.JSX.Element {
         </Box>
 
         {/* Right Side Panel */}
-        <Box
-          style={{
-            width: '320px',
-            flexShrink: 0,
-            backgroundColor: 'var(--gray-2)',
-            overflowY: 'auto'
-          }}
-        >
-          <SidePanel />
-        </Box>
-      </Flex>
-    </Box>
+        <SidePanel />
+      </Grid>
+    </Grid>
   )
 }

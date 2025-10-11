@@ -1,6 +1,6 @@
-import { Cross2Icon } from '@radix-ui/react-icons'
+import { Cross2Icon, InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Box, Button, Code, Flex, Grid, IconButton, Kbd, Separator, Text } from '@radix-ui/themes'
+import { Box, Button, Callout, Code, Flex, Grid, IconButton, Kbd, Separator, Text } from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
 
 import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
@@ -31,6 +31,19 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
   return (
     <Box p="2">
       <Flex direction="column" gap="2">
+        {/* Informational Note */}
+        <Callout.Root color="blue">
+          <Callout.Icon>
+            <InfoCircledIcon />
+          </Callout.Icon>
+          <Callout.Text>
+            <Text size="1">
+              Draw the <Text weight="bold">inside edge</Text> of your building perimeter. Click to place points, and
+              close the shape by clicking the first point or pressing Enter.
+            </Text>
+          </Callout.Text>
+        </Callout.Root>
+
         {/* Tool Properties */}
         <Grid columns="auto 1fr" gap="2">
           {/* Construction Method */}
@@ -130,10 +143,13 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
             Controls:
           </Text>
           <Text size="1" color="gray">
-            • Click to place points
+            • Click to place corner points
           </Text>
           <Text size="1" color="gray">
-            • Type numbers for length override
+            • Points snap to grid and existing geometry
+          </Text>
+          <Text size="1" color="gray">
+            • Type numbers to set exact wall length
           </Text>
           {state.lengthOverride ? (
             <Text size="1" color="gray">
@@ -167,10 +183,10 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
                   color="green"
                   onClick={() => tool.complete()}
                   disabled={!state.isClosingLineValid}
-                  title="Complete polygon (Enter)"
+                  title="Complete perimeter (Enter)"
                   style={{ width: '100%' }}
                 >
-                  <Text size="1">✓ Complete Polygon</Text>
+                  <Text size="1">✓ Complete Perimeter</Text>
                   <Kbd size="1" style={{ marginLeft: 'auto' }}>
                     Enter
                   </Kbd>
@@ -181,10 +197,10 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
                 color="red"
                 variant="soft"
                 onClick={() => tool.cancel()}
-                title="Cancel polygon creation (Escape)"
+                title="Cancel perimeter creation (Escape)"
                 style={{ width: '100%' }}
               >
-                <Text size="1">✕ Cancel Polygon</Text>
+                <Text size="1">✕ Cancel Perimeter</Text>
                 <Kbd size="1" style={{ marginLeft: 'auto' }}>
                   Esc
                 </Kbd>

@@ -1,3 +1,4 @@
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { Box, Button, Callout, DataList, Flex, Heading, Separator, Text } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 
@@ -79,6 +80,8 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
     return hasMixedConstruction || hasThicknessDifference
   }, [previousWall, nextWall, getPerimeterConstructionMethodById])
 
+  const isNonStandardAngle = corner.interiorAngle % 90 !== 0
+
   return (
     <Flex direction="column" gap="4">
       {/* Geometry Information */}
@@ -95,6 +98,23 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
           </DataList.Item>
         </DataList.Root>
       </Flex>
+
+      {/* Non-standard angle warning */}
+      {isNonStandardAngle && (
+        <Callout.Root color="amber">
+          <Callout.Icon>
+            <ExclamationTriangleIcon />
+          </Callout.Icon>
+          <Callout.Text>
+            <Text weight="bold">Non-right angle</Text>
+            <br />
+            <Text size="1">
+              Corners with angles that are not multiples of 90° are not fully supported yet. Construction details for
+              this corner may require manual review and adjustments.
+            </Text>
+          </Callout.Text>
+        </Callout.Root>
+      )}
 
       <Separator size="4" />
 

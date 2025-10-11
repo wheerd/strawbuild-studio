@@ -1,5 +1,5 @@
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
-import { Callout, Flex, Text } from '@radix-ui/themes'
+import { Callout, Flex, Kbd, Text } from '@radix-ui/themes'
 
 import {
   OpeningInspector,
@@ -25,11 +25,14 @@ export function SelectToolInspector(): React.JSX.Element {
     <Flex direction="column" p="2" gap="2">
       {!selectedId && (
         <>
-          <Text align="center" color="gray" mb="2">
+          <Text align="center" color="gray" mb="2" weight="medium">
             No entity selected
           </Text>
           <Text align="center" size="2" color="gray">
-            Select a wall, room, or point to view its properties
+            Click on a perimeter, wall, corner, or opening to view and edit its properties.
+          </Text>
+          <Text align="center" size="1" color="gray" mt="2">
+            Tip: Use <Kbd>V</Kbd> for Select, <Kbd>M</Kbd> for Move
           </Text>
         </>
       )}
