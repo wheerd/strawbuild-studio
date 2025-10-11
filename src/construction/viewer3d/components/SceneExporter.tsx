@@ -12,8 +12,10 @@ function SceneExporter({ onExportReady }: SceneExporterProps): null {
   const exportScene = useCallback((): void => {
     const exporter = new GLTFExporter()
 
+    const objectsToExport = scene.children.filter(child => child.type !== 'GridHelper')
+
     exporter.parse(
-      scene,
+      objectsToExport,
       gltf => {
         const blob = new Blob([JSON.stringify(gltf, null, 2)], { type: 'application/json' })
         const url = URL.createObjectURL(blob)
@@ -26,7 +28,10 @@ function SceneExporter({ onExportReady }: SceneExporterProps): null {
       error => {
         console.error('Error exporting GLTF:', error)
       },
-      { binary: false }
+      {
+        binary: false,
+        onlyVisible: true
+      }
     )
   }, [scene])
 
