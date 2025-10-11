@@ -54,6 +54,9 @@ export default defineConfig({
             'gl-matrix'
           ],
 
+          // Three.js chunk (lazy loaded for 3D viewer)
+          three: ['three', '@react-three/fiber', '@react-three/drei'],
+
           // Model chunk
           model: ['./src/building/store', './src/building/model', './src/shared/geometry']
         }

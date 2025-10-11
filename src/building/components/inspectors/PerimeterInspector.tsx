@@ -10,6 +10,7 @@ import { PerimeterConstructionPlanModal } from '@/construction/components/Perime
 import { RingBeamConstructionPlanModal } from '@/construction/components/RingBeamConstructionPlan'
 import { PerimeterMethodSelect } from '@/construction/config/components/PerimeterMethodSelect'
 import { RingBeamMethodSelect } from '@/construction/config/components/RingBeamMethodSelect'
+import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
 import { LengthField } from '@/shared/components/LengthField'
 import { type Length, calculatePolygonArea } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
@@ -128,16 +129,24 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
           </DataList.Item>
         </DataList.Root>
 
-        <Box pt="1">
+        <Flex direction="column" gap="2" pt="1">
           <PerimeterConstructionPlanModal
             perimeterId={selectedId}
             trigger={
               <Button size="2" style={{ width: '100%' }}>
-                View Construction
+                View Construction Plan
               </Button>
             }
           />
-        </Box>
+          <ConstructionViewer3DModal
+            perimeterId={selectedId}
+            trigger={
+              <Button size="2" variant="outline" style={{ width: '100%' }}>
+                View 3D Construction
+              </Button>
+            }
+          />
+        </Flex>
 
         {/* Wall Configuration */}
         <Box pt="1" style={{ borderTop: '1px solid var(--gray-6)' }}>

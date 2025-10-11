@@ -1,7 +1,8 @@
 import { type ConstructionElement, createConstructionElement, createCuboidShape } from '@/construction/elements'
+import { IDENTITY } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
 import { type ConstructionResult, yieldElement, yieldMeasurement } from '@/construction/results'
-import { TAG_MODULE_WIDTH } from '@/construction/tags'
+import { TAG_INFILL, TAG_MODULE_WIDTH } from '@/construction/tags'
 import type { Length, Vec3 } from '@/shared/geometry'
 
 export interface BaseModuleConfig {
@@ -72,7 +73,9 @@ function* constructSingleFrameModule(
   yield yieldElement(endFrame)
 
   // Straw filling
-  yield yieldElement(createConstructionElement(config.strawMaterial, createCuboidShape(strawPosition, strawSize)))
+  yield yieldElement(
+    createConstructionElement(config.strawMaterial, createCuboidShape(strawPosition, strawSize), IDENTITY, [TAG_INFILL])
+  )
 
   yield yieldMeasurement({
     startPoint: position,
@@ -167,7 +170,9 @@ function* constructDoubleFrameModule(
   yield yieldElement(endFrame2)
 
   // Straw filling
-  yield yieldElement(createConstructionElement(config.strawMaterial, createCuboidShape(strawPosition, strawSize)))
+  yield yieldElement(
+    createConstructionElement(config.strawMaterial, createCuboidShape(strawPosition, strawSize), IDENTITY, [TAG_INFILL])
+  )
 
   yield yieldMeasurement({
     startPoint: position,

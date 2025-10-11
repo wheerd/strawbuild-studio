@@ -9,142 +9,56 @@ export function Logo({ className = '', compact = false }: LogoProps): React.JSX.
   const iconSize = compact ? 28 : 32
 
   return (
-    <div className={`flex items-center ${compact ? 'gap-2' : 'gap-3'} ${className}`}>
+    <div className={`flex items-center gap-2 ${className}`}>
       {/* Logo Icon - Strawbale Construction with visible bales and wood frame */}
-      <svg width={iconSize} height={iconSize} viewBox="0 0 32 32" className="flex-shrink-0">
-        {/* Foundation/Base */}
-        <rect x="1" y="28" width="30" height="3" fill="#8B4513" stroke="#654321" strokeWidth="0.3" />
+      <svg
+        width={iconSize}
+        height={iconSize}
+        preserveAspectRatio="meet"
+        viewBox="-2.5 7.5 27.5 22"
+        className="flex-shrink-0"
+      >
+        <defs>
+          <rect id="strawbale" x="0" y="0" width="3.5" height="2.5" stroke="black" fill="#daa520" strokeWidth="0.2" />
+          <rect id="post" x="0" y="0" width="0.5" height="12.5" stroke="black" fill="#cd853f" strokeWidth="0.2" />
 
-        {/* Vertical Wood Posts */}
-        <rect
-          x="3"
-          y="8"
-          width="2.5"
-          height="20"
-          fill={COLORS.materials.woodSupport}
-          stroke="#8B4513"
-          strokeWidth="0.3"
-        />
-        <rect
-          x="13.75"
-          y="8"
-          width="2.5"
-          height="20"
-          fill={COLORS.materials.woodSupport}
-          stroke="#8B4513"
-          strokeWidth="0.3"
-        />
-        <rect
-          x="24.5"
-          y="8"
-          width="2.5"
-          height="20"
-          fill={COLORS.materials.woodSupport}
-          stroke="#8B4513"
-          strokeWidth="0.3"
-        />
+          <g id="infill-section">
+            <use x="0" y="0" href="#post" />
+            <use x="0.5" y="0" href="#strawbale" />
+            <use x="0.5" y="2.5" href="#strawbale" />
+            <use x="0.5" y="5" href="#strawbale" />
+            <use x="0.5" y="7.5" href="#strawbale" />
+            <use x="0.5" y="10" href="#strawbale" />
+            <use x="4" y="0" href="#post" />
+          </g>
+          <g id="window-section">
+            <use x="0" y="0" href="#post" />
+            <use x="0.5" y="0" href="#strawbale" />
+            <rect x="0.5" y="2.5" width="3.5" height="5" stroke="black" fill="#87ceeb" strokeWidth="0.2" />
+            <use x="0.5" y="7.5" href="#strawbale" />
+            <use x="0.5" y="10" href="#strawbale" />
+            <use x="4" y="0" href="#post" />
+          </g>
+          <g id="door-section">
+            <use x="0" y="0" href="#post" />
+            <use x="0.5" y="0" href="#strawbale" />
+            <rect x="0.5" y="2.5" width="3.5" height="10" stroke="black" fill="#8b4513" strokeWidth="0.2" />
+            <use x="4" y="0" href="#post" />
+          </g>
+        </defs>
 
-        {/* Horizontal Wood Beams */}
-        <rect
-          x="1"
-          y="8"
-          width="30"
-          height="2"
-          fill={COLORS.materials.woodSupport}
-          stroke="#8B4513"
-          strokeWidth="0.3"
-        />
-        <rect
-          x="1"
-          y="18"
-          width="30"
-          height="1.5"
-          fill={COLORS.materials.woodSupport}
-          stroke="#8B4513"
-          strokeWidth="0.3"
-        />
+        <rect x="1" y="28" width="20.5" height="1" fill="#8B4513" stroke="black" strokeWidth="0.2" />
 
-        {/* Individual Strawbales - Bottom Row */}
-        <rect
-          x="6"
-          y="20"
-          width="6"
-          height="8"
-          fill={COLORS.materials.strawbale}
-          stroke="#C8860D"
-          strokeWidth="0.4"
-          rx="0.3"
-        />
-        <rect
-          x="17"
-          y="20"
-          width="6"
-          height="8"
-          fill={COLORS.materials.strawbale}
-          stroke="#C8860D"
-          strokeWidth="0.4"
-          rx="0.3"
-        />
+        <use x="1" y="15.5" href="#infill-section" />
+        <use x="5" y="15.5" href="#window-section" />
+        <use x="9" y="15.5" href="#infill-section" />
+        <use x="13" y="15.5" href="#door-section" />
+        <use x="17" y="15.5" href="#infill-section" />
 
-        {/* Individual Strawbales - Top Row (offset pattern) */}
-        <rect
-          x="2"
-          y="10"
-          width="6"
-          height="8"
-          fill={COLORS.materials.strawbale}
-          stroke="#C8860D"
-          strokeWidth="0.4"
-          rx="0.3"
-        />
-        <rect
-          x="9.5"
-          y="10"
-          width="6"
-          height="8"
-          fill={COLORS.materials.strawbale}
-          stroke="#C8860D"
-          strokeWidth="0.4"
-          rx="0.3"
-        />
-        <rect
-          x="21"
-          y="10"
-          width="6"
-          height="8"
-          fill={COLORS.materials.strawbale}
-          stroke="#C8860D"
-          strokeWidth="0.4"
-          rx="0.3"
-        />
-
-        {/* Straw Texture on Bales */}
-        <g stroke="#B8760C" strokeWidth="0.15" opacity="0.7">
-          {/* Bottom row straw lines */}
-          <line x1="6.5" y1="22" x2="11.5" y2="22" />
-          <line x1="6.5" y1="24" x2="11.5" y2="24" />
-          <line x1="6.5" y1="26" x2="11.5" y2="26" />
-          <line x1="17.5" y1="22" x2="22.5" y2="22" />
-          <line x1="17.5" y1="24" x2="22.5" y2="24" />
-          <line x1="17.5" y1="26" x2="22.5" y2="26" />
-
-          {/* Top row straw lines */}
-          <line x1="2.5" y1="12" x2="7.5" y2="12" />
-          <line x1="2.5" y1="14" x2="7.5" y2="14" />
-          <line x1="2.5" y1="16" x2="7.5" y2="16" />
-          <line x1="10" y1="12" x2="15" y2="12" />
-          <line x1="10" y1="14" x2="15" y2="14" />
-          <line x1="10" y1="16" x2="15" y2="16" />
-          <line x1="21.5" y1="12" x2="26.5" y2="12" />
-          <line x1="21.5" y1="14" x2="26.5" y2="14" />
-          <line x1="21.5" y1="16" x2="26.5" y2="16" />
-        </g>
+        <rect x="1" y="14.5" width="20.5" height="1" fill="#8B4513" stroke="black" strokeWidth="0.2" />
 
         {/* Roof Structure */}
-        <polygon points="1,8 16,2 31,8" fill={COLORS.materials.woodSupport} stroke="#8B4513" strokeWidth="0.4" />
-        <line x1="16" y1="2" x2="16" y2="8" stroke="#8B4513" strokeWidth="0.4" />
-        <line x1="8" y1="5" x2="8" y2="8" stroke="#8B4513" strokeWidth="0.3" />
-        <line x1="24" y1="5" x2="24" y2="8" stroke="#8B4513" strokeWidth="0.3" />
+        <path d="M -2,14.5 h 26.5 L 10.75,8 Z" fill={COLORS.materials.woodSupport} stroke="black" strokeWidth="0.3" />
       </svg>
 
       {/* App Name - Only show if not compact */}
