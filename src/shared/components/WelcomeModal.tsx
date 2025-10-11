@@ -92,20 +92,18 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                 <ExclamationTriangleIcon />
               </Callout.Icon>
               <Callout.Text>
-                <Flex direction="column" gap="2">
+                <Flex direction="column" gap="2" as="span">
                   <Text weight="bold">Important Disclaimer</Text>
-                  <Text as="div">
-                    This tool is currently in active development and provided as-is:
-                    <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.5rem' }}>
-                      <li>No guarantees for accuracy of calculations, plans, or 3D models</li>
-                      <li>Breaking changes may occur between versions</li>
-                      <li>Project data may be lost due to browser storage limitations or updates</li>
-                      <li>
-                        <strong>Always save and export your work regularly</strong>
-                      </li>
-                      <li>This tool does not replace professional engineering consultation</li>
-                    </ul>
-                  </Text>
+                  <Text>This tool is currently in active development and provided as-is:</Text>
+                  <Flex direction="column" ml="4" gap="0" as="span">
+                    <Text>No guarantees for accuracy of calculations, plans, or 3D models</Text>
+                    <Text>Breaking changes may occur between versions</Text>
+                    <Text>Project data may be lost due to browser storage limitations or updates</Text>
+                    <Text>
+                      <strong>Always save and export your work regularly</strong>
+                    </Text>
+                    <Text>This tool does not replace professional engineering consultation</Text>
+                  </Flex>
                 </Flex>
               </Callout.Text>
             </Callout.Root>

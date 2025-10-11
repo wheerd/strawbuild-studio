@@ -11,13 +11,7 @@ export function Logo({ className = '', compact = false }: LogoProps): React.JSX.
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       {/* Logo Icon - Strawbale Construction with visible bales and wood frame */}
-      <svg
-        width={iconSize}
-        height={iconSize}
-        preserveAspectRatio="meet"
-        viewBox="-2.5 7.5 27.5 22"
-        className="flex-shrink-0"
-      >
+      <svg width={iconSize} height={iconSize} viewBox="-2.5 7.5 27.5 22" className="flex-shrink-0">
         <defs>
           <rect id="strawbale" x="0" y="0" width="3.5" height="2.5" stroke="black" fill="#daa520" strokeWidth="0.2" />
           <rect id="post" x="0" y="0" width="0.5" height="12.5" stroke="black" fill="#cd853f" strokeWidth="0.2" />
