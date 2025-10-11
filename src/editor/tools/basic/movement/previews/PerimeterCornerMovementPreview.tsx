@@ -7,13 +7,14 @@ import type {
   CornerEntityContext,
   CornerMovementState
 } from '@/editor/tools/basic/movement/behaviors/PerimeterCornerMovementBehavior'
-import { COLORS } from '@/shared/theme/colors'
+import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 export function PerimeterCornerMovementPreview({
   movementState,
   isValid,
   context
 }: MovementPreviewComponentProps<CornerEntityContext, CornerMovementState>): React.JSX.Element {
+  const theme = useCanvasTheme()
   const { wall, cornerIndex } = context.entity
   const originalPosition = wall.corners[cornerIndex].insidePoint
 
@@ -26,8 +27,8 @@ export function PerimeterCornerMovementPreview({
         x={movementState.position[0]}
         y={movementState.position[1]}
         radius={30}
-        fill={isValid ? COLORS.ui.success : COLORS.ui.danger}
-        stroke={COLORS.ui.white}
+        fill={isValid ? theme.success : theme.danger}
+        stroke={theme.white}
         strokeWidth={5}
         opacity={0.8}
         listening={false}
@@ -36,7 +37,7 @@ export function PerimeterCornerMovementPreview({
       {/* Show movement line */}
       <Line
         points={[originalPosition[0], originalPosition[1], movementState.position[0], movementState.position[1]]}
-        stroke={COLORS.ui.gray600}
+        stroke={theme.textSecondary}
         strokeWidth={10}
         dash={[50, 50]}
         opacity={0.7}
@@ -47,7 +48,7 @@ export function PerimeterCornerMovementPreview({
       <Line
         points={movementState.newBoundary.flatMap(p => [p[0], p[1]])}
         closed
-        stroke={isValid ? COLORS.ui.success : COLORS.ui.danger}
+        stroke={isValid ? theme.success : theme.danger}
         strokeWidth={10}
         dash={[80, 40]}
         opacity={0.6}
@@ -56,7 +57,7 @@ export function PerimeterCornerMovementPreview({
       <Line
         points={movementState.newBoundary.flatMap(p => [p[0], p[1]])}
         closed
-        fill={isValid ? COLORS.ui.success : COLORS.ui.danger}
+        fill={isValid ? theme.success : theme.danger}
         opacity={0.3}
         listening={false}
       />

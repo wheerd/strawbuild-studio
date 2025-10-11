@@ -4,7 +4,7 @@ import { Group, Line, Text } from 'react-konva/lib/ReactKonvaCore'
 
 import { add, angle, distance, midpoint, normalize, perpendicularCCW, scale, subtract } from '@/shared/geometry'
 import type { Length, Vec2 } from '@/shared/geometry'
-import { COLORS } from '@/shared/theme/colors'
+import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 import { formatLength } from '@/shared/utils/formatLength'
 
 interface ClickableLengthIndicatorProps {
@@ -23,11 +23,12 @@ export function ClickableLengthIndicator({
   endPoint,
   label,
   offset = 50,
-  color = COLORS.indicators.secondary,
+  color,
   fontSize = 40,
   strokeWidth = 10,
   onClick
 }: ClickableLengthIndicatorProps): React.JSX.Element {
+  const theme = useCanvasTheme()
   const textRef = useRef<Konva.Text>(null)
   const [isHovered, setIsHovered] = useState(false)
 
@@ -90,7 +91,8 @@ export function ClickableLengthIndicator({
   const rightEndpoint = add(lineMidpoint, scale(dir, textSize.width * 0.6))
 
   // Visual feedback colors
-  const displayColor = isHovered ? COLORS.selection.primary : color
+  const actualColor = color ?? theme.textSecondary
+  const displayColor = isHovered ? theme.primary : actualColor
 
   const handleClick = () => {
     if (onClick) {

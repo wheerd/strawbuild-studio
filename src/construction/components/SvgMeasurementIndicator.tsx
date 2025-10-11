@@ -1,7 +1,6 @@
 import React from 'react'
 
 import type { Vec2 } from '@/shared/geometry'
-import { COLORS } from '@/shared/theme/colors'
 
 interface SvgMeasurementIndicatorProps {
   startPoint: Vec2 // SVG coordinates [x, y]
@@ -20,7 +19,7 @@ export function SvgMeasurementIndicator({
   label,
   className,
   offset = 50,
-  color = COLORS.ui.primary,
+  color = 'var(--color-primary)',
   fontSize = 40,
   strokeWidth = 10
 }: SvgMeasurementIndicatorProps): React.JSX.Element {

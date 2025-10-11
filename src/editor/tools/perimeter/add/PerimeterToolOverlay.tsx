@@ -5,7 +5,7 @@ import { SnappingLines } from '@/editor/canvas/utils/SnappingLines'
 import { useZoom } from '@/editor/hooks/useViewportStore'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolOverlayComponentProps } from '@/editor/tools/system/types'
-import { COLORS } from '@/shared/theme/colors'
+import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 import type { PerimeterTool } from './PerimeterTool'
 
@@ -16,6 +16,7 @@ import type { PerimeterTool } from './PerimeterTool'
 export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<PerimeterTool>): React.JSX.Element | null {
   const { state } = useReactiveTool(tool)
   const zoom = useZoom()
+  const theme = useCanvasTheme()
 
   // Calculate zoom-responsive values
   const scaledLineWidth = Math.max(1, 2 / zoom)
@@ -36,7 +37,7 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
       {state.points.length > 1 && (
         <Line
           points={state.points.flatMap(point => [point[0], point[1]])}
-          stroke={COLORS.ui.secondary}
+          stroke={theme.secondary}
           strokeWidth={scaledLineWidth}
           lineCap="round"
           lineJoin="round"
@@ -52,7 +53,7 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
             previewPos[0],
             previewPos[1]
           ]}
-          stroke={state.isCurrentLineValid ? COLORS.ui.gray500 : COLORS.ui.danger}
+          stroke={state.isCurrentLineValid ? theme.textTertiary : theme.danger}
           strokeWidth={scaledLineWidth}
           dash={scaledDashPattern}
           listening={false}
@@ -68,7 +69,7 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
             state.points[0][0],
             state.points[0][1]
           ]}
-          stroke={state.isClosingLineValid ? COLORS.ui.success : COLORS.ui.danger}
+          stroke={state.isClosingLineValid ? theme.success : theme.danger}
           strokeWidth={scaledLineWidth}
           dash={scaledDashPattern}
           listening={false}
@@ -82,8 +83,8 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
           x={point[0]}
           y={point[1]}
           radius={scaledPointRadius}
-          fill={index === 0 ? COLORS.ui.primary : COLORS.ui.secondary}
-          stroke={COLORS.ui.white}
+          fill={index === 0 ? theme.primary : theme.secondary}
+          stroke={theme.white}
           strokeWidth={scaledPointStrokeWidth}
           listening={false}
         />
@@ -95,8 +96,8 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
         x={previewPos[0]}
         y={previewPos[1]}
         radius={scaledPointRadius}
-        fill={state.lengthOverride ? COLORS.ui.primary : COLORS.snapping.points}
-        stroke={state.lengthOverride ? COLORS.ui.white : COLORS.snapping.pointStroke}
+        fill={state.lengthOverride ? theme.primary : theme.secondary}
+        stroke={state.lengthOverride ? theme.white : theme.black}
         strokeWidth={scaledPointStrokeWidth}
         listening={false}
       />

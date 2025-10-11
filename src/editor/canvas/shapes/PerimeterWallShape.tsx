@@ -6,7 +6,8 @@ import { usePerimeterConstructionMethodById } from '@/construction/config/store'
 import { LengthIndicator } from '@/editor/canvas/utils/LengthIndicator'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { type Vec2, direction } from '@/shared/geometry'
-import { COLORS } from '@/shared/theme/colors'
+import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
+import { MATERIAL_COLORS } from '@/shared/theme/colors'
 import { formatLength } from '@/shared/utils/formatLength'
 
 import { OpeningShape } from './OpeningShape'
@@ -29,6 +30,7 @@ export function PerimeterWallShape({
   outsideEndCorner
 }: PerimeterWallShapeProps): React.JSX.Element {
   const select = useSelectionStore()
+  const theme = useCanvasTheme()
 
   // Calculate wall properties
   const insideStart = wall.insideLine.start
@@ -49,8 +51,8 @@ export function PerimeterWallShape({
 
   const constructionMethod = usePerimeterConstructionMethodById(wall.constructionMethodId)
   const baseColor =
-    constructionMethod?.config.type === 'non-strawbale' ? COLORS.materials.other : COLORS.materials.strawbale
-  const finalMainColor = select.isSelected(wall.id) ? COLORS.selection.primary : baseColor
+    constructionMethod?.config.type === 'non-strawbale' ? MATERIAL_COLORS.other : MATERIAL_COLORS.strawbale
+  const finalMainColor = select.isSelected(wall.id) ? theme.primary : baseColor
 
   return (
     <Group name={`wall-${wall.id}`} entityId={wall.id} entityType="perimeter-wall" parentIds={[perimeterId]} listening>
@@ -67,7 +69,7 @@ export function PerimeterWallShape({
           outsideStart[1]
         ]}
         fill={finalMainColor}
-        stroke={COLORS.ui.black}
+        stroke={theme.black}
         strokeWidth={10}
         closed
         listening
@@ -95,7 +97,7 @@ export function PerimeterWallShape({
             endPoint={insideEndCorner}
             label={formatLength(wall.insideLength)}
             offset={-60}
-            color={COLORS.indicators.main}
+            color={theme.text}
             fontSize={60}
             strokeWidth={5}
           />
@@ -104,7 +106,7 @@ export function PerimeterWallShape({
             endPoint={outsideEndCorner}
             label={formatLength(wall.outsideLength)}
             offset={60}
-            color={COLORS.indicators.main}
+            color={theme.text}
             fontSize={60}
             strokeWidth={5}
           />

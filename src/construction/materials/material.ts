@@ -1,5 +1,5 @@
 import type { Length } from '@/shared/geometry'
-import { COLORS } from '@/shared/theme/colors'
+import { MATERIAL_COLORS } from '@/shared/theme/colors'
 
 export type MaterialId = string & { readonly brand: unique symbol }
 export const createMaterialId = (): MaterialId =>
@@ -44,7 +44,7 @@ export const wood360x60: DimensionalMaterial = {
   width: 360 as Length,
   thickness: 60 as Length,
   type: 'dimensional',
-  color: COLORS.materials.woodSupport,
+  color: MATERIAL_COLORS.woodSupport,
   availableLengths: [5000 as Length]
 }
 
@@ -54,7 +54,7 @@ export const wood240x60: DimensionalMaterial = {
   width: 240 as Length,
   thickness: 60 as Length,
   type: 'dimensional',
-  color: COLORS.materials.woodSupport,
+  color: MATERIAL_COLORS.woodSupport,
   availableLengths: [5000 as Length]
 }
 
@@ -64,7 +64,7 @@ export const wood120x60: DimensionalMaterial = {
   width: 120 as Length,
   thickness: 60 as Length,
   type: 'dimensional',
-  color: COLORS.materials.woodSupport,
+  color: MATERIAL_COLORS.woodSupport,
   availableLengths: [5000 as Length]
 }
 
@@ -74,7 +74,7 @@ export const wood140x140: DimensionalMaterial = {
   width: 140 as Length,
   thickness: 140 as Length,
   type: 'dimensional',
-  color: COLORS.materials.woodSupport,
+  color: MATERIAL_COLORS.woodSupport,
   availableLengths: [5000 as Length]
 }
 
@@ -84,7 +84,7 @@ export const strawbale: DimensionalMaterial = {
   width: 500 as Length,
   thickness: 360 as Length,
   type: 'dimensional',
-  color: COLORS.materials.strawbale,
+  color: MATERIAL_COLORS.strawbale,
   availableLengths: [800 as Length]
 }
 
@@ -92,20 +92,20 @@ export const straw: GenericMaterial = {
   id: 'material_straw' as MaterialId,
   name: 'Straw',
   type: 'generic',
-  color: COLORS.materials.straw
+  color: MATERIAL_COLORS.straw
 }
 
 export const window: GenericMaterial = {
   id: 'material_window' as MaterialId,
   name: 'Window',
-  color: COLORS.materials.window,
+  color: MATERIAL_COLORS.window,
   type: 'generic'
 }
 
 export const door: GenericMaterial = {
   id: 'material_door' as MaterialId,
   name: 'Door',
-  color: COLORS.materials.door,
+  color: MATERIAL_COLORS.door,
   type: 'generic'
 }
 
@@ -113,7 +113,7 @@ export const concrete: GenericMaterial = {
   id: 'material_concrete' as MaterialId,
   name: 'Concrete',
   type: 'generic',
-  color: COLORS.materials.concrete
+  color: MATERIAL_COLORS.concrete
 }
 
 export const DEFAULT_MATERIALS: Record<MaterialId, Material> = {

@@ -4,7 +4,7 @@ import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
 import { useStageHeight, useStageWidth, useZoom } from '@/editor/hooks/useViewportStore'
 import type { SnapResult } from '@/editor/services/snapping/types'
-import { COLORS } from '@/shared/theme/colors'
+import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 interface SnappingLinesProps {
   snapResult: SnapResult | null | undefined
@@ -12,6 +12,7 @@ interface SnappingLinesProps {
 
 export function SnappingLines({ snapResult }: SnappingLinesProps): React.JSX.Element | null {
   const zoom = useZoom()
+  const theme = useCanvasTheme()
   const stageWidth = useStageWidth()
   const stageHeight = useStageHeight()
 
@@ -27,10 +28,10 @@ export function SnappingLines({ snapResult }: SnappingLinesProps): React.JSX.Ele
     <Group>
       {snapResult.lines.map((line, index) => {
         const color = vec2.equals(line.direction, [0, 1])
-          ? COLORS.snapping.linesVertical
+          ? theme.gridVertical
           : vec2.equals(line.direction, [1, 0])
-            ? COLORS.snapping.linesHorizontal
-            : COLORS.snapping.lines
+            ? theme.gridHorizontal
+            : theme.primary
         return (
           <Line
             key={`snap-line-${index}`}

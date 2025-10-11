@@ -3,7 +3,7 @@ import { Line } from 'react-konva/lib/ReactKonvaCore'
 import { useZoom } from '@/editor/hooks/useViewportStore'
 import type { Vec2 } from '@/shared/geometry'
 import { offsetPolygon } from '@/shared/geometry'
-import { COLORS } from '@/shared/theme/colors'
+import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 interface SelectionOutlineProps {
   points: Vec2[]
@@ -15,6 +15,7 @@ interface SelectionOutlineProps {
  */
 export function SelectionOutline({ points }: SelectionOutlineProps): React.JSX.Element | null {
   const zoom = useZoom()
+  const theme = useCanvasTheme()
 
   // Calculate offset polygon
   const offset = 4 / zoom
@@ -34,7 +35,7 @@ export function SelectionOutline({ points }: SelectionOutlineProps): React.JSX.E
   return (
     <Line
       points={flatPoints}
-      stroke={COLORS.selection.outline}
+      stroke={theme.primaryDark}
       strokeWidth={strokeWidth}
       dash={dashPattern}
       lineCap="round"

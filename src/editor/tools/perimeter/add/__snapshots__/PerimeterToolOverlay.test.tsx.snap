@@ -8,22 +8,22 @@ exports[`PerimeterToolOverlay > closing polygon behavior > does not render closi
     <div
       data-line-cap="round"
       data-line-join="round"
-      data-stroke="#6c757d"
+      data-stroke="var(--color-secondary)"
       data-stroke-width="2"
       data-testid="konva-line"
       listening="false"
     />
     <div
       data-dash="[10,10]"
-      data-stroke="#adb5bd"
+      data-stroke="var(--color-text-tertiary)"
       data-stroke-width="2"
       data-testid="konva-line"
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-primary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="100"
@@ -31,9 +31,9 @@ exports[`PerimeterToolOverlay > closing polygon behavior > does not render closi
       listening="false"
     />
     <div
-      data-fill="#6c757d"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="200"
@@ -41,9 +41,9 @@ exports[`PerimeterToolOverlay > closing polygon behavior > does not render closi
       listening="false"
     />
     <div
-      data-fill="#6c757d"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="200"
@@ -51,9 +51,9 @@ exports[`PerimeterToolOverlay > closing polygon behavior > does not render closi
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="black"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="300"
@@ -72,22 +72,22 @@ exports[`PerimeterToolOverlay > closing polygon behavior > renders closing line 
     <div
       data-line-cap="round"
       data-line-join="round"
-      data-stroke="#6c757d"
+      data-stroke="var(--color-secondary)"
       data-stroke-width="2"
       data-testid="konva-line"
       listening="false"
     />
     <div
       data-dash="[10,10]"
-      data-stroke="#dc3545"
+      data-stroke="var(--color-danger)"
       data-stroke-width="2"
       data-testid="konva-line"
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-primary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="100"
@@ -95,9 +95,9 @@ exports[`PerimeterToolOverlay > closing polygon behavior > renders closing line 
       listening="false"
     />
     <div
-      data-fill="#6c757d"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="200"
@@ -105,9 +105,9 @@ exports[`PerimeterToolOverlay > closing polygon behavior > renders closing line 
       listening="false"
     />
     <div
-      data-fill="#6c757d"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="200"
@@ -115,9 +115,9 @@ exports[`PerimeterToolOverlay > closing polygon behavior > renders closing line 
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="black"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="0"
@@ -136,22 +136,22 @@ exports[`PerimeterToolOverlay > closing polygon behavior > renders closing line 
     <div
       data-line-cap="round"
       data-line-join="round"
-      data-stroke="#6c757d"
+      data-stroke="var(--color-secondary)"
       data-stroke-width="2"
       data-testid="konva-line"
       listening="false"
     />
     <div
       data-dash="[10,10]"
-      data-stroke="#28a745"
+      data-stroke="var(--color-success)"
       data-stroke-width="2"
       data-testid="konva-line"
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-primary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="100"
@@ -159,9 +159,9 @@ exports[`PerimeterToolOverlay > closing polygon behavior > renders closing line 
       listening="false"
     />
     <div
-      data-fill="#6c757d"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="200"
@@ -169,9 +169,9 @@ exports[`PerimeterToolOverlay > closing polygon behavior > renders closing line 
       listening="false"
     />
     <div
-      data-fill="#6c757d"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="200"
@@ -179,9 +179,9 @@ exports[`PerimeterToolOverlay > closing polygon behavior > renders closing line 
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="black"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="0"
@@ -198,9 +198,9 @@ exports[`PerimeterToolOverlay > edge cases > handles empty points array graceful
     data-testid="konva-group"
   >
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="black"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="0"
@@ -219,22 +219,22 @@ exports[`PerimeterToolOverlay > edge cases > handles exactly two points (minimum
     <div
       data-line-cap="round"
       data-line-join="round"
-      data-stroke="#6c757d"
+      data-stroke="var(--color-secondary)"
       data-stroke-width="2"
       data-testid="konva-line"
       listening="false"
     />
     <div
       data-dash="[10,10]"
-      data-stroke="#adb5bd"
+      data-stroke="var(--color-text-tertiary)"
       data-stroke-width="2"
       data-testid="konva-line"
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-primary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="0"
@@ -242,9 +242,9 @@ exports[`PerimeterToolOverlay > edge cases > handles exactly two points (minimum
       listening="false"
     />
     <div
-      data-fill="#6c757d"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="100"
@@ -252,9 +252,9 @@ exports[`PerimeterToolOverlay > edge cases > handles exactly two points (minimum
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="black"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="200"
@@ -273,22 +273,22 @@ exports[`PerimeterToolOverlay > rendering with multiple points > differentiates 
     <div
       data-line-cap="round"
       data-line-join="round"
-      data-stroke="#6c757d"
+      data-stroke="var(--color-secondary)"
       data-stroke-width="2"
       data-testid="konva-line"
       listening="false"
     />
     <div
       data-dash="[10,10]"
-      data-stroke="#adb5bd"
+      data-stroke="var(--color-text-tertiary)"
       data-stroke-width="2"
       data-testid="konva-line"
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-primary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="0"
@@ -296,9 +296,9 @@ exports[`PerimeterToolOverlay > rendering with multiple points > differentiates 
       listening="false"
     />
     <div
-      data-fill="#6c757d"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="100"
@@ -306,9 +306,9 @@ exports[`PerimeterToolOverlay > rendering with multiple points > differentiates 
       listening="false"
     />
     <div
-      data-fill="#6c757d"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="100"
@@ -316,9 +316,9 @@ exports[`PerimeterToolOverlay > rendering with multiple points > differentiates 
       listening="false"
     />
     <div
-      data-fill="#6c757d"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="0"
@@ -326,9 +326,9 @@ exports[`PerimeterToolOverlay > rendering with multiple points > differentiates 
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="black"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="50"
@@ -347,22 +347,22 @@ exports[`PerimeterToolOverlay > rendering with multiple points > renders polygon
     <div
       data-line-cap="round"
       data-line-join="round"
-      data-stroke="#6c757d"
+      data-stroke="var(--color-secondary)"
       data-stroke-width="2"
       data-testid="konva-line"
       listening="false"
     />
     <div
       data-dash="[10,10]"
-      data-stroke="#adb5bd"
+      data-stroke="var(--color-text-tertiary)"
       data-stroke-width="2"
       data-testid="konva-line"
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-primary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="100"
@@ -370,9 +370,9 @@ exports[`PerimeterToolOverlay > rendering with multiple points > renders polygon
       listening="false"
     />
     <div
-      data-fill="#6c757d"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="200"
@@ -380,9 +380,9 @@ exports[`PerimeterToolOverlay > rendering with multiple points > renders polygon
       listening="false"
     />
     <div
-      data-fill="#6c757d"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="200"
@@ -390,9 +390,9 @@ exports[`PerimeterToolOverlay > rendering with multiple points > renders polygon
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="black"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="100"
@@ -409,9 +409,9 @@ exports[`PerimeterToolOverlay > rendering with no points > renders only snap poi
     data-testid="konva-group"
   >
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="black"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="100"
@@ -429,15 +429,15 @@ exports[`PerimeterToolOverlay > rendering with single point > renders first poin
   >
     <div
       data-dash="[10,10]"
-      data-stroke="#adb5bd"
+      data-stroke="var(--color-text-tertiary)"
       data-stroke-width="2"
       data-testid="konva-line"
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-primary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="100"
@@ -445,9 +445,9 @@ exports[`PerimeterToolOverlay > rendering with single point > renders first poin
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="black"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="200"
@@ -465,15 +465,15 @@ exports[`PerimeterToolOverlay > rendering with single point > renders line to po
   >
     <div
       data-dash="[10,10]"
-      data-stroke="#dc3545"
+      data-stroke="var(--color-danger)"
       data-stroke-width="2"
       data-testid="konva-line"
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-primary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="50"
@@ -481,9 +481,9 @@ exports[`PerimeterToolOverlay > rendering with single point > renders line to po
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="black"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="150"
@@ -501,15 +501,15 @@ exports[`PerimeterToolOverlay > rendering with single point > renders line to po
   >
     <div
       data-dash="[10,10]"
-      data-stroke="#adb5bd"
+      data-stroke="var(--color-text-tertiary)"
       data-stroke-width="2"
       data-testid="konva-line"
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-primary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="50"
@@ -517,9 +517,9 @@ exports[`PerimeterToolOverlay > rendering with single point > renders line to po
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="black"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="150"
@@ -540,14 +540,14 @@ exports[`PerimeterToolOverlay > snapping behavior > renders snap lines when snap
     >
       <div
         data-opacity="0.5"
-        data-stroke="#00ff66"
+        data-stroke="var(--color-grid-horizontal)"
         data-stroke-width="2"
         data-testid="konva-line"
         listening="false"
       />
       <div
         data-opacity="0.5"
-        data-stroke="#ff0066"
+        data-stroke="var(--color-grid-vertical)"
         data-stroke-width="2"
         data-testid="konva-line"
         listening="false"
@@ -555,15 +555,15 @@ exports[`PerimeterToolOverlay > snapping behavior > renders snap lines when snap
     </div>
     <div
       data-dash="[10,10]"
-      data-stroke="#adb5bd"
+      data-stroke="var(--color-text-tertiary)"
       data-stroke-width="2"
       data-testid="konva-line"
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-primary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="50"
@@ -571,9 +571,9 @@ exports[`PerimeterToolOverlay > snapping behavior > renders snap lines when snap
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="black"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="145"
@@ -594,14 +594,14 @@ exports[`PerimeterToolOverlay > snapping behavior > renders snap lines when snap
     >
       <div
         data-opacity="0.5"
-        data-stroke="#00ff66"
+        data-stroke="var(--color-grid-horizontal)"
         data-stroke-width="2"
         data-testid="konva-line"
         listening="false"
       />
       <div
         data-opacity="0.5"
-        data-stroke="#ff0066"
+        data-stroke="var(--color-grid-vertical)"
         data-stroke-width="2"
         data-testid="konva-line"
         listening="false"
@@ -609,15 +609,15 @@ exports[`PerimeterToolOverlay > snapping behavior > renders snap lines when snap
     </div>
     <div
       data-dash="[10,10]"
-      data-stroke="#adb5bd"
+      data-stroke="var(--color-text-tertiary)"
       data-stroke-width="2"
       data-testid="konva-line"
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-primary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="50"
@@ -625,9 +625,9 @@ exports[`PerimeterToolOverlay > snapping behavior > renders snap lines when snap
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="black"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="145"
@@ -645,15 +645,15 @@ exports[`PerimeterToolOverlay > snapping behavior > renders snap position when s
   >
     <div
       data-dash="[10,10]"
-      data-stroke="#adb5bd"
+      data-stroke="var(--color-text-tertiary)"
       data-stroke-width="2"
       data-testid="konva-line"
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-primary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="100"
@@ -661,9 +661,9 @@ exports[`PerimeterToolOverlay > snapping behavior > renders snap position when s
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-secondary)"
       data-radius="5"
-      data-stroke="#ffffff"
+      data-stroke="black"
       data-stroke-width="1"
       data-testid="konva-circle"
       data-x="120"
@@ -684,16 +684,16 @@ exports[`PerimeterToolOverlay > zoom responsiveness > adjusts line extension bas
     >
       <div
         data-opacity="0.5"
-        data-stroke="#00ff66"
+        data-stroke="var(--color-grid-horizontal)"
         data-stroke-width="1"
         data-testid="konva-line"
         listening="false"
       />
     </div>
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-secondary)"
       data-radius="2.5"
-      data-stroke="#ffffff"
+      data-stroke="black"
       data-stroke-width="0.5"
       data-testid="konva-circle"
       data-x="0"
@@ -712,22 +712,22 @@ exports[`PerimeterToolOverlay > zoom responsiveness > scales elements appropriat
     <div
       data-line-cap="round"
       data-line-join="round"
-      data-stroke="#6c757d"
+      data-stroke="var(--color-secondary)"
       data-stroke-width="1"
       data-testid="konva-line"
       listening="false"
     />
     <div
       data-dash="[2.5,2.5]"
-      data-stroke="#adb5bd"
+      data-stroke="var(--color-text-tertiary)"
       data-stroke-width="1"
       data-testid="konva-line"
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-primary)"
       data-radius="1.25"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="0.25"
       data-testid="konva-circle"
       data-x="100"
@@ -735,9 +735,9 @@ exports[`PerimeterToolOverlay > zoom responsiveness > scales elements appropriat
       listening="false"
     />
     <div
-      data-fill="#6c757d"
+      data-fill="var(--color-secondary)"
       data-radius="1.25"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="0.25"
       data-testid="konva-circle"
       data-x="200"
@@ -745,9 +745,9 @@ exports[`PerimeterToolOverlay > zoom responsiveness > scales elements appropriat
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-secondary)"
       data-radius="1.25"
-      data-stroke="#ffffff"
+      data-stroke="black"
       data-stroke-width="0.25"
       data-testid="konva-circle"
       data-x="200"
@@ -766,22 +766,22 @@ exports[`PerimeterToolOverlay > zoom responsiveness > scales elements appropriat
     <div
       data-line-cap="round"
       data-line-join="round"
-      data-stroke="#6c757d"
+      data-stroke="var(--color-secondary)"
       data-stroke-width="8"
       data-testid="konva-line"
       listening="false"
     />
     <div
       data-dash="[40,40]"
-      data-stroke="#adb5bd"
+      data-stroke="var(--color-text-tertiary)"
       data-stroke-width="8"
       data-testid="konva-line"
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-primary)"
       data-radius="20"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="4"
       data-testid="konva-circle"
       data-x="100"
@@ -789,9 +789,9 @@ exports[`PerimeterToolOverlay > zoom responsiveness > scales elements appropriat
       listening="false"
     />
     <div
-      data-fill="#6c757d"
+      data-fill="var(--color-secondary)"
       data-radius="20"
-      data-stroke="#ffffff"
+      data-stroke="white"
       data-stroke-width="4"
       data-testid="konva-circle"
       data-x="200"
@@ -799,9 +799,9 @@ exports[`PerimeterToolOverlay > zoom responsiveness > scales elements appropriat
       listening="false"
     />
     <div
-      data-fill="#007bff"
+      data-fill="var(--color-secondary)"
       data-radius="20"
-      data-stroke="#ffffff"
+      data-stroke="black"
       data-stroke-width="4"
       data-testid="konva-circle"
       data-x="200"

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { Layer, Line } from 'react-konva/lib/ReactKonvaCore'
 
 import { useGridActions, useShowGrid } from '@/editor/hooks/useGrid'
-import { COLORS } from '@/shared/theme/colors'
+import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 interface ViewportState {
   zoom: number
@@ -35,6 +35,7 @@ function calculateDynamicGridSize(zoom: number): number {
 
 export function GridLayer({ width = 800, height = 600, viewport }: GridLayerProps): React.JSX.Element {
   const showGrid = useShowGrid()
+  const theme = useCanvasTheme()
   const { setGridSize } = useGridActions()
 
   // Calculate dynamic grid size based on current zoom
@@ -65,7 +66,7 @@ export function GridLayer({ width = 800, height = 600, viewport }: GridLayerProp
       <Line
         key={`v-${x}`}
         points={[x, startY, x, endY]}
-        stroke={x === 0 ? COLORS.canvas.gridVertical : COLORS.canvas.grid}
+        stroke={x === 0 ? theme.gridVertical : theme.grid}
         strokeWidth={x === 0 ? strokeWidth * 2 : strokeWidth}
         listening={false}
       />
@@ -77,7 +78,7 @@ export function GridLayer({ width = 800, height = 600, viewport }: GridLayerProp
       <Line
         key={`h-${y}`}
         points={[startX, y, endX, y]}
-        stroke={y === 0 ? COLORS.canvas.gridHorizontal : COLORS.canvas.grid}
+        stroke={y === 0 ? theme.gridHorizontal : theme.grid}
         strokeWidth={y === 0 ? strokeWidth * 2 : strokeWidth}
         listening={false}
       />

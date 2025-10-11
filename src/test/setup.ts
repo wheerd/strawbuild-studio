@@ -34,6 +34,32 @@ beforeAll(() => {
     Circle: vi.fn(),
     Text: vi.fn()
   }))
+
+  vi.mock('@/shared/theme/CanvasThemeContext', async importOriginal => ({
+    ...(await importOriginal<typeof import('@/shared/theme/CanvasThemeContext')>()),
+    useCanvasTheme: vi.fn().mockReturnValue({
+      primary: 'var(--color-primary)',
+      primaryLight: 'var(--color-primary-light)',
+      primaryDark: 'var(--color-primary-dark)',
+      secondary: 'var(--color-secondary)',
+      secondaryLight: 'var(--color-secondary-light)',
+      success: 'var(--color-success)',
+      warning: 'var(--color-warning)',
+      danger: 'var(--color-danger)',
+      info: 'var(--color-info)',
+      text: 'var(--color-text)',
+      textSecondary: 'var(--color-text-secondary)',
+      textTertiary: 'var(--color-text-tertiary)',
+      gridVertical: 'var(--color-grid-vertical)',
+      gridHorizontal: 'var(--color-grid-horizontal)',
+      grid: 'var(--color-grid)',
+      bgSubtle: 'var(--color-bg-subtle)',
+      bgCanvas: 'var(--color-bg-canvas)',
+      white: 'white',
+      black: 'black',
+      primaryLightOutline: 'var(--color-primary-dark)'
+    })
+  }))
 })
 
 const propsAttrs = (props: any): Record<string, any> => {

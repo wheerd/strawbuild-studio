@@ -7,13 +7,14 @@ import type {
   PerimeterWallMovementState
 } from '@/editor/tools/basic/movement/behaviors/PerimeterWallMovementBehavior'
 import { add, midpoint } from '@/shared/geometry'
-import { COLORS } from '@/shared/theme/colors'
+import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 export function PerimeterWallMovementPreview({
   movementState,
   isValid,
   context
 }: MovementPreviewComponentProps<PerimeterWallEntityContext, PerimeterWallMovementState>): React.JSX.Element {
+  const theme = useCanvasTheme()
   const { wall } = context.entity
   const { movementDelta, newBoundary } = movementState
 
@@ -28,8 +29,8 @@ export function PerimeterWallMovementPreview({
         x={newMidpoint[0]}
         y={newMidpoint[1]}
         radius={20}
-        fill={isValid ? COLORS.ui.success : COLORS.ui.danger}
-        stroke={COLORS.ui.white}
+        fill={isValid ? theme.success : theme.danger}
+        stroke={theme.white}
         strokeWidth={2}
         opacity={0.8}
         listening={false}
@@ -38,7 +39,7 @@ export function PerimeterWallMovementPreview({
       {/* Show movement line */}
       <Line
         points={[originalMidpoint[0], originalMidpoint[1], newMidpoint[0], newMidpoint[1]]}
-        stroke={COLORS.ui.gray600}
+        stroke={theme.textSecondary}
         strokeWidth={10}
         dash={[50, 50]}
         opacity={0.7}
@@ -49,7 +50,7 @@ export function PerimeterWallMovementPreview({
       <Line
         points={newBoundary.flatMap(p => [p[0], p[1]])}
         closed
-        stroke={isValid ? COLORS.ui.success : COLORS.ui.danger}
+        stroke={isValid ? theme.success : theme.danger}
         strokeWidth={10}
         dash={[80, 40]}
         opacity={0.6}
@@ -58,7 +59,7 @@ export function PerimeterWallMovementPreview({
       <Line
         points={newBoundary.flatMap(p => [p[0], p[1]])}
         closed
-        fill={isValid ? COLORS.ui.success : COLORS.ui.danger}
+        fill={isValid ? theme.success : theme.danger}
         opacity={0.3}
         listening={false}
       />

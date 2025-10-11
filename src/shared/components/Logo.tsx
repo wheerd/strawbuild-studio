@@ -1,4 +1,4 @@
-import { COLORS } from '@/shared/theme/colors'
+import { MATERIAL_COLORS } from '@/shared/theme/colors'
 
 interface LogoProps {
   className?: string
@@ -52,7 +52,7 @@ export function Logo({ className = '', compact = false }: LogoProps): React.JSX.
         <rect x="1" y="14.5" width="20.5" height="1" fill="#8B4513" stroke="black" strokeWidth="0.2" />
 
         {/* Roof Structure */}
-        <path d="M -2,14.5 h 26.5 L 10.75,8 Z" fill={COLORS.materials.woodSupport} stroke="black" strokeWidth="0.3" />
+        <path d="M -2,14.5 h 26.5 L 10.75,8 Z" fill={MATERIAL_COLORS.woodSupport} stroke="black" strokeWidth="0.3" />
       </svg>
 
       {/* App Name - Only show if not compact */}

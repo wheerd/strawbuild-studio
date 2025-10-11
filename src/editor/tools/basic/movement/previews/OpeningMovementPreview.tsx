@@ -7,13 +7,14 @@ import type {
   OpeningMovementState
 } from '@/editor/tools/basic/movement/behaviors/OpeningMovementBehavior'
 import { add, scale } from '@/shared/geometry'
-import { COLORS } from '@/shared/theme/colors'
+import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 export function OpeningMovementPreview({
   movementState,
   isValid,
   context
 }: MovementPreviewComponentProps<OpeningEntityContext, OpeningMovementState>): React.JSX.Element {
+  const theme = useCanvasTheme()
   const { wall, opening } = context.entity
 
   // Calculate the opening rectangle in new position
@@ -38,8 +39,8 @@ export function OpeningMovementPreview({
       <Line
         points={[insideStart, insideEnd, outsideEnd, outsideStart].flatMap(p => [p[0], p[1]])}
         closed
-        fill={isValid ? COLORS.ui.success : COLORS.ui.danger}
-        stroke={COLORS.ui.white}
+        fill={isValid ? theme.success : theme.danger}
+        stroke={theme.white}
         strokeWidth={5}
         opacity={0.6}
         listening={false}
@@ -48,7 +49,7 @@ export function OpeningMovementPreview({
       {/* Show movement indicator */}
       <Line
         points={[originalStart[0], originalStart[1], openingStart[0], openingStart[1]]}
-        stroke={COLORS.ui.gray600}
+        stroke={theme.textSecondary}
         strokeWidth={10}
         dash={[20, 20]}
         opacity={0.7}

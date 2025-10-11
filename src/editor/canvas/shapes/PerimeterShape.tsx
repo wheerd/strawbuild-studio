@@ -1,7 +1,7 @@
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
 import type { Perimeter } from '@/building/model/model'
-import { COLORS } from '@/shared/theme/colors'
+import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 import { PerimeterCornerShape } from './PerimeterCornerShape'
 import { PerimeterWallShape } from './PerimeterWallShape'
@@ -11,11 +11,12 @@ interface PerimeterShapeProps {
 }
 
 export function PerimeterShape({ perimeter }: PerimeterShapeProps): React.JSX.Element {
+  const theme = useCanvasTheme()
   const innerPoints = perimeter.corners.flatMap(corner => [corner.insidePoint[0], corner.insidePoint[1]])
 
   return (
     <Group name={`perimeter-${perimeter.id}`} entityId={perimeter.id} entityType="perimeter" parentIds={[]} listening>
-      <Line points={innerPoints} fill={COLORS.canvas.buildingBackground} closed listening />
+      <Line points={innerPoints} fill={theme.bgSubtle} closed listening />
 
       {/* Render each wall */}
       {perimeter.walls.map((wall, index) => {

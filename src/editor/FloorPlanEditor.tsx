@@ -5,6 +5,7 @@ import { ConfigurationModal } from '@/construction/config/components/Configurati
 import { type ConfigTab, ConfigurationModalContext } from '@/construction/config/context/ConfigurationModalContext'
 import { WelcomeModal } from '@/shared/components/WelcomeModal'
 import { useWelcomeModal } from '@/shared/hooks/useWelcomeModal'
+import { CanvasThemeProvider } from '@/shared/theme/CanvasThemeContext'
 
 import { MainToolbar } from './MainToolbar'
 import { SidePanel } from './SidePanel'
@@ -183,11 +184,13 @@ export function FloorPlanEditor(): React.JSX.Element {
               borderRight: '1px solid var(--gray-6)'
             }}
           >
-            <FloorPlanStage width={dimensions.width} height={dimensions.height} />
-            <AutoSaveIndicator />
-            <GridSizeDisplay />
-            <StoreySelector />
-            <LengthInputComponent />
+            <CanvasThemeProvider>
+              <FloorPlanStage width={dimensions.width} height={dimensions.height} />
+              <AutoSaveIndicator />
+              <GridSizeDisplay />
+              <StoreySelector />
+              <LengthInputComponent />
+            </CanvasThemeProvider>
           </Box>
 
           {/* Right Side Panel */}

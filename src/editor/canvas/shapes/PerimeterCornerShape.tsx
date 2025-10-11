@@ -4,7 +4,8 @@ import type { PerimeterCorner, PerimeterWall } from '@/building/model/model'
 import { usePerimeterConstructionMethodById } from '@/construction/config/store'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { add, direction, midpoint, perpendicular, scale } from '@/shared/geometry'
-import { COLORS } from '@/shared/theme/colors'
+import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
+import { MATERIAL_COLORS } from '@/shared/theme/colors'
 
 interface PerimeterCornerShapeProps {
   corner: PerimeterCorner
@@ -20,6 +21,7 @@ export function PerimeterCornerShape({
   perimeterId
 }: PerimeterCornerShapeProps): React.JSX.Element {
   const select = useSelectionStore()
+  const theme = useCanvasTheme()
   const isSelected = select.isCurrentSelection(corner.id)
 
   const cornerPolygon = [
@@ -39,8 +41,8 @@ export function PerimeterCornerShape({
   const constructingWall = corner.constructedByWall === 'previous' ? previousWall : nextWall
   const constructionMethod = usePerimeterConstructionMethodById(constructingWall.constructionMethodId)
   const cornerColor =
-    constructionMethod?.config.type === 'non-strawbale' ? COLORS.materials.other : COLORS.materials.strawbale
-  const finalColor = isSelected ? COLORS.selection.primary : cornerColor
+    constructionMethod?.config.type === 'non-strawbale' ? MATERIAL_COLORS.other : MATERIAL_COLORS.strawbale
+  const finalColor = isSelected ? theme.primary : cornerColor
 
   // Check if corner is nearly straight (close to 180°)
   const interiorAngleDegrees = corner.interiorAngle
@@ -59,7 +61,7 @@ export function PerimeterCornerShape({
       listening
     >
       {/* Corner polygon fill */}
-      <Line points={polygonArray} fill={finalColor} stroke={COLORS.ui.black} strokeWidth={10} closed listening />
+      <Line points={polygonArray} fill={finalColor} stroke={theme.black} strokeWidth={10} closed listening />
 
       {/* Rounded rectangle overlay for near-straight corners */}
       {isNearStraight && (
@@ -75,7 +77,7 @@ export function PerimeterCornerShape({
             corner.outsidePoint[1] - (normal[1] * overlayWidth) / 2
           ]}
           fill={finalColor}
-          stroke={COLORS.ui.black}
+          stroke={theme.black}
           strokeWidth={8}
           opacity={0.5}
           dash={[20, 20]}
@@ -87,7 +89,7 @@ export function PerimeterCornerShape({
       {!isNearStraight && (
         <Line
           points={[corner.insidePoint[0], corner.insidePoint[1], corner.outsidePoint[0], corner.outsidePoint[1]]}
-          stroke={COLORS.ui.black}
+          stroke={theme.black}
           opacity={0.5}
           strokeWidth={8}
           dash={[20, 20]}
@@ -99,8 +101,8 @@ export function PerimeterCornerShape({
       {isSelected && (
         <Arrow
           points={[arrowStart[0], arrowStart[1], arrowEnd[0], arrowEnd[1]]}
-          stroke={COLORS.ui.white}
-          fill={COLORS.ui.white}
+          stroke={theme.white}
+          fill={theme.white}
           strokeWidth={20}
           pointerLength={50}
           pointerWidth={50}

@@ -6,7 +6,6 @@ import { type Projection, allPoints } from '@/construction/geometry'
 import { type AutoMeasurement, type DirectMeasurement, processMeasurements } from '@/construction/measurements'
 import type { ConstructionModel } from '@/construction/model'
 import { distance } from '@/shared/geometry'
-import { COLORS } from '@/shared/theme/colors'
 import { formatLength } from '@/shared/utils/formatLength'
 
 export interface MeasurementsProps {
@@ -64,7 +63,7 @@ export function Measurements({ model, projection }: MeasurementsProps): React.JS
           endPoint={measurement.endPoint}
           label={measurement.label}
           offset={measurement.offset}
-          color={COLORS.indicators.main}
+          color="var(--color-text)"
           fontSize={60}
           strokeWidth={10}
           className={getTagClasses(measurement.tags, 'measurement')}
@@ -78,7 +77,7 @@ export function Measurements({ model, projection }: MeasurementsProps): React.JS
           endPoint={measurement.endPoint}
           label={measurement.label}
           offset={measurement.offset}
-          color={COLORS.indicators.main}
+          color="var(--color-text)"
           fontSize={60}
           strokeWidth={10}
           className={getTagClasses(measurement.tags, 'measurement')}

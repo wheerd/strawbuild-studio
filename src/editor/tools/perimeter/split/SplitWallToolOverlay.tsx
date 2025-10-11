@@ -8,12 +8,13 @@ import { activateLengthInput } from '@/editor/services/length-input'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolOverlayComponentProps } from '@/editor/tools/system/types'
 import { type Length, distance, midpoint } from '@/shared/geometry'
-import { COLORS } from '@/shared/theme/colors'
+import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 import type { SplitWallTool } from './SplitWallTool'
 
 export function SplitWallToolOverlay({ tool }: ToolOverlayComponentProps<SplitWallTool>): React.JSX.Element | null {
   const { state } = useReactiveTool(tool)
+  const theme = useCanvasTheme()
   const { wall, perimeter } = state
   const { worldToStage } = useViewportActions()
   const isCurrentSelection = useSelectionStore(s => s.isCurrentSelection)
@@ -68,12 +69,8 @@ export function SplitWallToolOverlay({ tool }: ToolOverlayComponentProps<SplitWa
 
   // Colors based on validation state
   const isWallSelected = state.selectedWallId ? isCurrentSelection(state.selectedWallId) : false
-  const hoverColor = state.isValidHover
-    ? isWallSelected
-      ? COLORS.selection.secondary
-      : COLORS.selection.primary
-    : COLORS.ui.danger
-  const splitColor = state.isValidSplit ? COLORS.ui.success : COLORS.ui.danger
+  const hoverColor = state.isValidHover ? (isWallSelected ? theme.secondary : theme.primary) : theme.danger
+  const splitColor = state.isValidSplit ? theme.success : theme.danger
 
   return (
     <Group>

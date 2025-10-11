@@ -9,7 +9,8 @@ import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { activateLengthInput } from '@/editor/services/length-input'
 import { type Length, type Vec2, add, createLength, midpoint, scale } from '@/shared/geometry'
-import { COLORS } from '@/shared/theme/colors'
+import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
+import { MATERIAL_COLORS } from '@/shared/theme/colors'
 import { formatLength } from '@/shared/utils/formatLength'
 
 interface OpeningShapeProps {
@@ -34,6 +35,7 @@ export function OpeningShape({
   outsideEndCorner
 }: OpeningShapeProps): React.JSX.Element {
   const select = useSelectionStore()
+  const theme = useCanvasTheme()
   const modelActions = useModelActions()
   const viewportActions = useViewportActions()
 
@@ -149,8 +151,8 @@ export function OpeningShape({
       {/* Opening cutout - render as a different colored line */}
       <Line
         points={openingPolygonArray}
-        fill={isOpeningSelected ? COLORS.selection.secondary : COLORS.canvas.openingBackground}
-        stroke={isOpeningSelected ? COLORS.selection.secondaryOutline : COLORS.ui.black}
+        fill={isOpeningSelected ? theme.primaryLight : theme.bgCanvas}
+        stroke={isOpeningSelected ? theme.primaryLightOutline : theme.black}
         strokeWidth={10}
         lineCap="butt"
         opacity={0.8}
@@ -162,7 +164,7 @@ export function OpeningShape({
       {opening.type !== 'passage' && (
         <Line
           points={[openingStart[0], openingStart[1], openingEnd[0], openingEnd[1]]}
-          stroke={opening.type === 'door' ? COLORS.materials.door : COLORS.materials.window}
+          stroke={opening.type === 'door' ? MATERIAL_COLORS.door : MATERIAL_COLORS.window}
           strokeWidth={30}
           lineCap="butt"
           listening
@@ -185,7 +187,7 @@ export function OpeningShape({
                     startPoint={prevEndPoint}
                     endPoint={currentStartPoint}
                     offset={60}
-                    color={COLORS.indicators.secondary}
+                    color={theme.textSecondary}
                     fontSize={50}
                     strokeWidth={4}
                     onClick={measurement => handleMeasurementClick(measurement, 'prevOpening')}
@@ -207,7 +209,7 @@ export function OpeningShape({
                     startPoint={currentEndPoint}
                     endPoint={nextStartPoint}
                     offset={60}
-                    color={COLORS.indicators.secondary}
+                    color={theme.textSecondary}
                     fontSize={50}
                     strokeWidth={4}
                     onClick={measurement => handleMeasurementClick(measurement, 'nextOpening')}
@@ -223,7 +225,7 @@ export function OpeningShape({
             endPoint={insideOpeningEnd}
             label={formatLength(opening.width)}
             offset={-60}
-            color={COLORS.indicators.selected}
+            color={theme.primary}
             fontSize={50}
             strokeWidth={4}
           />
@@ -232,7 +234,7 @@ export function OpeningShape({
             endPoint={outsideOpeningEnd}
             label={formatLength(opening.width)}
             offset={hasNeighbors ? 90 : 60}
-            color={COLORS.indicators.selected}
+            color={theme.primary}
             fontSize={50}
             strokeWidth={4}
           />
@@ -242,7 +244,7 @@ export function OpeningShape({
             startPoint={insideStartCorner}
             endPoint={insideOpeningStart}
             offset={-60}
-            color={COLORS.indicators.main}
+            color={theme.text}
             fontSize={50}
             strokeWidth={4}
             onClick={measurement => handleMeasurementClick(measurement, 'startCorner')}
@@ -251,7 +253,7 @@ export function OpeningShape({
             startPoint={insideOpeningEnd}
             endPoint={insideEndCorner}
             offset={-60}
-            color={COLORS.indicators.main}
+            color={theme.text}
             fontSize={50}
             strokeWidth={4}
             onClick={measurement => handleMeasurementClick(measurement, 'endCorner')}
@@ -260,7 +262,7 @@ export function OpeningShape({
             startPoint={outsideStartCorner}
             endPoint={outsideOpeningStart}
             offset={hasNeighbors ? 120 : 60}
-            color={COLORS.indicators.main}
+            color={theme.text}
             fontSize={50}
             strokeWidth={4}
             onClick={measurement => handleMeasurementClick(measurement, 'startCorner')}
@@ -269,7 +271,7 @@ export function OpeningShape({
             startPoint={outsideOpeningEnd}
             endPoint={outsideEndCorner}
             offset={hasNeighbors ? 120 : 60}
-            color={COLORS.indicators.main}
+            color={theme.text}
             fontSize={50}
             strokeWidth={4}
             onClick={measurement => handleMeasurementClick(measurement, 'endCorner')}

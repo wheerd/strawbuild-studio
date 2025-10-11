@@ -4,7 +4,7 @@ import { Group, Line, Text } from 'react-konva/lib/ReactKonvaCore'
 
 import { add, angle, distance, midpoint, normalize, perpendicularCCW, scale, subtract } from '@/shared/geometry'
 import type { Vec2 } from '@/shared/geometry'
-import { COLORS } from '@/shared/theme/colors'
+import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 import { formatLength } from '@/shared/utils/formatLength'
 
 interface LengthIndicatorProps {
@@ -22,11 +22,13 @@ export function LengthIndicator({
   endPoint,
   label,
   offset = 50,
-  color = COLORS.indicators.secondary,
+  color,
   fontSize = 40,
   strokeWidth = 10
 }: LengthIndicatorProps): React.JSX.Element {
+  const theme = useCanvasTheme()
   const textRef = useRef<Konva.Text>(null)
+  const actualColor = color ?? theme.textSecondary
 
   // Calculate the measurement vector and length
   const measurementVector = subtract(endPoint, startPoint)
@@ -91,14 +93,14 @@ export function LengthIndicator({
       {/* Main dimension line */}
       <Line
         points={[offsetStartPoint[0], offsetStartPoint[1], leftEndpoint[0], leftEndpoint[1]]}
-        stroke={color}
+        stroke={actualColor}
         strokeWidth={strokeWidth}
         lineCap="butt"
         listening={false}
       />
       <Line
         points={[rightEndpoint[0], rightEndpoint[1], offsetEndPoint[0], offsetEndPoint[1]]}
-        stroke={color}
+        stroke={actualColor}
         strokeWidth={strokeWidth}
         lineCap="butt"
         listening={false}
@@ -107,7 +109,7 @@ export function LengthIndicator({
       {/* Connection lines from measurement points to dimension line */}
       <Line
         points={[startPoint[0], startPoint[1], offsetStartPoint[0], offsetStartPoint[1]]}
-        stroke={color}
+        stroke={actualColor}
         strokeWidth={connectionStrokeWidth}
         lineCap="butt"
         opacity={0.5}
@@ -115,7 +117,7 @@ export function LengthIndicator({
       />
       <Line
         points={[endPoint[0], endPoint[1], offsetEndPoint[0], offsetEndPoint[1]]}
-        stroke={color}
+        stroke={actualColor}
         strokeWidth={connectionStrokeWidth}
         lineCap="butt"
         opacity={0.5}
@@ -130,7 +132,7 @@ export function LengthIndicator({
           offsetStartPoint[0] + endMarkerDirection[0],
           offsetStartPoint[1] + endMarkerDirection[1]
         ]}
-        stroke={color}
+        stroke={actualColor}
         strokeWidth={strokeWidth}
         lineCap="butt"
         listening={false}
@@ -142,7 +144,7 @@ export function LengthIndicator({
           offsetEndPoint[0] + endMarkerDirection[0],
           offsetEndPoint[1] + endMarkerDirection[1]
         ]}
-        stroke={color}
+        stroke={actualColor}
         strokeWidth={strokeWidth}
         lineCap="butt"
         listening={false}
@@ -157,7 +159,7 @@ export function LengthIndicator({
         fontSize={scaledFontSize}
         fontFamily="Arial"
         fontStyle="bold"
-        fill={color}
+        fill={actualColor}
         align="center"
         verticalAlign="middle"
         width={measurementLength}

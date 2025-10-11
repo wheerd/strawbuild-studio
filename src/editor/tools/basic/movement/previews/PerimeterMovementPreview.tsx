@@ -8,13 +8,14 @@ import type {
   PerimeterMovementState
 } from '@/editor/tools/basic/movement/behaviors/PerimeterMovementBehavior'
 import { add } from '@/shared/geometry'
-import { COLORS } from '@/shared/theme/colors'
+import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 export function PerimeterMovementPreview({
   movementState,
   isValid,
   context
 }: MovementPreviewComponentProps<PerimeterEntityContext, PerimeterMovementState>): React.JSX.Element {
+  const theme = useCanvasTheme()
   const perimeter = context.entity.perimeter
   const previewBoundary = perimeter.corners.map(corner => add(corner.insidePoint, movementState.movementDelta))
 
@@ -27,8 +28,8 @@ export function PerimeterMovementPreview({
           x={movementState.snapResult?.position[0]}
           y={movementState.snapResult?.position[1]}
           radius={50}
-          fill={COLORS.snapping.points}
-          stroke={COLORS.snapping.pointStroke}
+          fill={theme.info}
+          stroke={theme.white}
           strokeWidth={5}
           opacity={0.8}
           listening={false}
@@ -39,7 +40,7 @@ export function PerimeterMovementPreview({
       <Line
         points={previewBoundary.flatMap(p => [p[0], p[1]])}
         closed
-        stroke={isValid ? COLORS.ui.success : COLORS.ui.danger}
+        stroke={isValid ? theme.success : theme.danger}
         strokeWidth={20}
         dash={[80, 40]}
         opacity={0.6}
@@ -50,7 +51,7 @@ export function PerimeterMovementPreview({
       <Line
         points={previewBoundary.flatMap(p => [p[0], p[1]])}
         closed
-        fill={isValid ? COLORS.ui.success : COLORS.ui.danger}
+        fill={isValid ? theme.success : theme.danger}
         opacity={0.3}
         listening={false}
       />

@@ -6,7 +6,6 @@ import { type CutFunction, bounds3Dto2D, createZOrder, project, projectRotation 
 import type { ConstructionModel, HighlightedCuboid, HighlightedPolygon } from '@/construction/model'
 import { SVGViewport, type SVGViewportRef } from '@/shared/components/SVGViewport'
 import { type Plane3D, complementaryAxis } from '@/shared/geometry'
-import { COLORS } from '@/shared/theme/colors'
 
 import { ConstructionElementShape } from './ConstructionElementShape'
 import { ConstructionGroupElement } from './ConstructionGroupElement'
@@ -148,9 +147,9 @@ export function ConstructionPlan({
                 y={bounds2D.min[1]}
                 width={bounds2D.max[0] - bounds2D.min[0]}
                 height={bounds2D.max[1] - bounds2D.min[1]}
-                stroke={COLORS.ui.warning}
+                stroke="var(--color-warning)"
                 strokeWidth={30}
-                fill={`${COLORS.ui.warning}88`}
+                fill="var(--color-warning-light)"
                 strokeDasharray="100,100"
               />
             )
@@ -169,9 +168,9 @@ export function ConstructionPlan({
                 y={bounds2D.min[1]}
                 width={bounds2D.max[0] - bounds2D.min[0]}
                 height={bounds2D.max[1] - bounds2D.min[1]}
-                stroke={COLORS.ui.danger}
+                stroke="var(--color-danger)"
                 strokeWidth={50}
-                fill={`${COLORS.ui.danger}AA`}
+                fill="var(--color-danger-light)"
                 strokeDasharray="100,100"
               />
             )

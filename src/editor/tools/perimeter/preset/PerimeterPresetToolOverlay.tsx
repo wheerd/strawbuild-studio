@@ -5,7 +5,7 @@ import { useZoom } from '@/editor/hooks/useViewportStore'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolOverlayComponentProps } from '@/editor/tools/system/types'
 import { offsetPolygon } from '@/shared/geometry'
-import { COLORS } from '@/shared/theme/colors'
+import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 import type { PerimeterPresetTool } from './PerimeterPresetTool'
 
@@ -18,6 +18,7 @@ export function PerimeterPresetToolOverlay({
 }: ToolOverlayComponentProps<PerimeterPresetTool>): React.JSX.Element | null {
   const { state } = useReactiveTool(tool)
   const zoom = useZoom()
+  const theme = useCanvasTheme()
 
   // Only render preview when placing and we have a preview polygon
   if (!state.previewPolygon || !state.presetConfig) {
@@ -56,7 +57,7 @@ export function PerimeterPresetToolOverlay({
       {outerPolygonPoints && (
         <Line
           points={outerPolygonPoints}
-          stroke={COLORS.ui.gray700}
+          stroke={theme.text}
           strokeWidth={scaledLineWidth}
           dash={scaledDashPattern}
           opacity={0.6}
@@ -68,11 +69,11 @@ export function PerimeterPresetToolOverlay({
       {/* Inner space polygon (interior area with fill) */}
       <Line
         points={[...polygon.points.flatMap(p => [p[0], p[1]]), polygon.points[0][0], polygon.points[0][1]]}
-        stroke={COLORS.ui.primary}
+        stroke={theme.primary}
         strokeWidth={scaledLineWidth}
         dash={scaledDashPattern}
         opacity={0.8}
-        fill={COLORS.ui.primary}
+        fill={theme.primary}
         fillOpacity={0.1}
         closed
         listening={false}
@@ -85,8 +86,8 @@ export function PerimeterPresetToolOverlay({
           x={point[0]}
           y={point[1]}
           radius={scaledPointRadius}
-          fill={COLORS.ui.primary}
-          stroke={COLORS.ui.white}
+          fill={theme.primary}
+          stroke={theme.white}
           strokeWidth={scaledPointStrokeWidth}
           opacity={0.9}
           listening={false}
@@ -104,7 +105,7 @@ export function PerimeterPresetToolOverlay({
               state.previewPosition[0] + scaledCrosshairSize,
               state.previewPosition[1]
             ]}
-            stroke={COLORS.ui.primary}
+            stroke={theme.primary}
             strokeWidth={scaledCrosshairWidth}
             listening={false}
           />
@@ -116,7 +117,7 @@ export function PerimeterPresetToolOverlay({
               state.previewPosition[0],
               state.previewPosition[1] + scaledCrosshairSize
             ]}
-            stroke={COLORS.ui.primary}
+            stroke={theme.primary}
             strokeWidth={scaledCrosshairWidth}
             listening={false}
           />

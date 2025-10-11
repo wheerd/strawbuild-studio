@@ -3,7 +3,7 @@ import { Circle, Group, Rect, Text } from 'react-konva/lib/ReactKonvaCore'
 
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolOverlayComponentProps } from '@/editor/tools/system/types'
-import { COLORS } from '@/shared/theme/colors'
+import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 import type { AddOpeningTool } from './AddOpeningTool'
 
@@ -12,6 +12,7 @@ import type { AddOpeningTool } from './AddOpeningTool'
  */
 export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpeningTool>): React.JSX.Element | null {
   const { state } = useReactiveTool(tool)
+  const theme = useCanvasTheme()
 
   // Don't render anything if no preview state
   if (!state.hoveredPerimeterWall || !state.previewPosition) {
@@ -30,9 +31,9 @@ export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpe
         y={0}
         width={state.width}
         height={wall.thickness}
-        fill={state.canPlace ? COLORS.ui.success : COLORS.ui.danger}
+        fill={state.canPlace ? theme.success : theme.danger}
         opacity={0.6}
-        stroke={COLORS.ui.white}
+        stroke={theme.white}
         strokeWidth={3}
       />
       <Text
@@ -44,7 +45,7 @@ export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpe
         height={wall.thickness}
         align="center"
         verticalAlign="middle"
-        fill={COLORS.ui.white}
+        fill={theme.white}
         fontFamily="Arial"
         scaleY={-1}
       />
@@ -55,8 +56,8 @@ export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpe
           x={state.snapDirection === 'right' ? 0 : state.width}
           y={wall.thickness / 2}
           radius={wall.thickness * 0.15}
-          fill={COLORS.snapping.highlight}
-          stroke={COLORS.snapping.highlightStroke}
+          fill={theme.primary}
+          stroke={theme.white}
           strokeWidth={2}
           opacity={0.9}
         />
