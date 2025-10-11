@@ -1,4 +1,4 @@
-import { Box, Card } from '@radix-ui/themes'
+import { Box, Card, Flex } from '@radix-ui/themes'
 import { OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 
@@ -46,9 +46,7 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
           background: '#f0f0f0'
         }}
       >
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[10000, 10000, 5000]} intensity={0.8} />
-        <directionalLight position={[-10000, 5000, -5000]} intensity={0.3} />
+        <ambientLight intensity={1.3} />
 
         <gridHelper args={[gridSize, 50]} position={[centerX, 0, -centerY]} />
 
@@ -65,7 +63,9 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
 
       <Box position="absolute" top="3" left="3" style={{ zIndex: 10 }}>
         <Card size="1" variant="surface" className="shadow-md">
-          <OpacityControlButton />
+          <Flex direction="column" gap="2" m="-2">
+            <OpacityControlButton />
+          </Flex>
         </Card>
       </Box>
     </div>

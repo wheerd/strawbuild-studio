@@ -33,7 +33,7 @@ export function ConstructionViewer3DModal({ perimeterId, trigger }: Construction
     <Dialog.Root>
       <Dialog.Trigger>{trigger}</Dialog.Trigger>
       <Dialog.Content size="2" width="95%" maxWidth="95%" maxHeight="90vh" className="flex flex-col overflow-hidden">
-        <Flex direction="column" gap="3" height="100%" className="overflow-hidden">
+        <Flex direction="column" gap="1" height="100%" className="overflow-hidden">
           <Dialog.Title>
             <Flex justify="between" align="center">
               3D Construction View
