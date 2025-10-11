@@ -47,22 +47,31 @@ export function ConstructionViewer3DModal({ perimeterId, trigger }: Construction
 
           <div
             ref={containerRef}
-            className="relative flex-1 min-h-[500px] max-h-[calc(100vh-200px)] overflow-hidden border border-gray-6 rounded-2"
+            className="relative flex-1 min-h-[500px] max-h-[calc(90vh-100px)] overflow-hidden border border-gray-6 rounded-2"
           >
             {constructionModel ? (
               <Suspense
                 fallback={
-                  <Flex align="center" justify="center" style={{ height: '100%', padding: '2rem' }}>
-                    <Flex direction="column" gap="4" style={{ width: '100%', maxWidth: '600px' }}>
-                      <Skeleton height="40px" />
-                      <Skeleton height="300px" />
-                      <Flex gap="3">
-                        <Skeleton height="40px" style={{ flex: 1 }} />
-                        <Skeleton height="40px" style={{ flex: 1 }} />
-                        <Skeleton height="40px" style={{ flex: 1 }} />
-                      </Flex>
-                    </Flex>
-                  </Flex>
+                  <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <Skeleton height="95vh" />
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '12px',
+                        left: '12px',
+                        zIndex: 10
+                      }}
+                    >
+                      <Skeleton
+                        height="48px"
+                        width="90px"
+                        style={{
+                          borderRadius: 'var(--radius-3)',
+                          boxShadow: 'var(--shadow-3)'
+                        }}
+                      />
+                    </div>
+                  </div>
                 }
               >
                 <OpacityControlProvider>
