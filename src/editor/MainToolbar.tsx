@@ -1,12 +1,16 @@
 import { GearIcon, InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Toolbar from '@radix-ui/react-toolbar'
-import { Button, Flex, IconButton, Kbd, Separator, Text, Tooltip } from '@radix-ui/themes'
+import { Flex, IconButton, Kbd, Separator, Text, Tooltip } from '@radix-ui/themes'
 import React, { useCallback } from 'react'
 
+import { usePerimeters, useStoreysOrderedByLevel } from '@/building/store'
 import { useConfigurationModal } from '@/construction/config/context/ConfigurationModalContext'
+import { constructModel } from '@/construction/storey'
+import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
 import { TOOL_GROUPS, getToolInfoById } from '@/editor/tools/system/metadata'
 import { replaceTool, useActiveToolId } from '@/editor/tools/system/store'
 import type { ToolId } from '@/editor/tools/system/types'
+import { Model3DIcon } from '@/shared/components/Icons'
 import { Logo } from '@/shared/components/Logo'
 
 export interface MainToolbarProps {
@@ -16,6 +20,9 @@ export interface MainToolbarProps {
 export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Element {
   const activeToolId = useActiveToolId()
   const { openConfiguration } = useConfigurationModal()
+
+  const storeys = useStoreysOrderedByLevel()
+  const perimeters = usePerimeters()
 
   const handleToolSelect = useCallback((toolId: ToolId) => {
     replaceTool(toolId)
@@ -67,14 +74,21 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
 
       {/* Configuration button on the right */}
       <Flex ml="auto" gap="2" align="center">
+        <ConstructionViewer3DModal
+          constructionModelFactory={async () => constructModel()}
+          refreshKey={[storeys, perimeters]}
+          trigger={
+            <IconButton title="View 3D Construction" size="2" variant="outline">
+              <Model3DIcon width={20} height={20} />
+            </IconButton>
+          }
+        />
+        <IconButton title="Configuration" variant="surface" size="2" onClick={() => openConfiguration('materials')}>
+          <GearIcon width={20} height={20} />
+        </IconButton>
         <IconButton title="About" variant="ghost" size="2" onClick={onInfoClick}>
           <InfoCircledIcon />
         </IconButton>
-
-        <Button variant="surface" size="2" onClick={() => openConfiguration('materials')}>
-          <GearIcon />
-          Configuration
-        </Button>
       </Flex>
     </Flex>
   )

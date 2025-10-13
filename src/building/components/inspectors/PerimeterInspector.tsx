@@ -1,6 +1,6 @@
 import { ExclamationTriangleIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Box, Button, Callout, DataList, Flex, Heading, IconButton, Separator, Text, Tooltip } from '@radix-ui/themes'
+import { Box, Callout, DataList, Flex, Heading, IconButton, Separator, Text, Tooltip } from '@radix-ui/themes'
 import React, { useCallback, useMemo } from 'react'
 
 import type { PerimeterConstructionMethodId, PerimeterId } from '@/building/model/ids'
@@ -10,10 +10,11 @@ import { PerimeterConstructionPlanModal } from '@/construction/components/Perime
 import { RingBeamConstructionPlanModal } from '@/construction/components/RingBeamConstructionPlan'
 import { PerimeterMethodSelectWithEdit } from '@/construction/config/components/PerimeterMethodSelectWithEdit'
 import { RingBeamMethodSelectWithEdit } from '@/construction/config/components/RingBeamMethodSelectWithEdit'
+import { constructPerimeter } from '@/construction/perimeter'
 import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
-import { FitToViewIcon } from '@/shared/components/Icons'
+import { ConstructionPlanIcon, FitToViewIcon, Model3DIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
 import { type Length, boundsFromPoints, calculatePolygonArea } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
@@ -165,21 +166,25 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
           </Callout.Root>
         )}
 
-        <Flex direction="column" gap="2" pt="1">
+        <Flex direction="row" gap="3" pt="1" align="center" justify="center">
           <PerimeterConstructionPlanModal
             perimeterId={selectedId}
             trigger={
-              <Button size="2" style={{ width: '100%' }}>
-                View Construction Plan
-              </Button>
+              <IconButton title="View Construction Plan" size="3">
+                <ConstructionPlanIcon width={24} height={24} />
+              </IconButton>
             }
           />
           <ConstructionViewer3DModal
-            perimeterId={selectedId}
+            constructionModelFactory={async () => {
+              if (!perimeter) return null
+              return constructPerimeter(perimeter)
+            }}
+            refreshKey={perimeter}
             trigger={
-              <Button size="2" variant="outline" style={{ width: '100%' }}>
-                View 3D Construction
-              </Button>
+              <IconButton title="View 3D Construction" size="3" variant="outline">
+                <Model3DIcon width={24} height={24} />
+              </IconButton>
             }
           />
         </Flex>
@@ -304,14 +309,16 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
 
             {/* Ring Beam View Construction Button */}
             {(perimeter.topRingBeamMethodId || perimeter.baseRingBeamMethodId) && (
-              <RingBeamConstructionPlanModal
-                perimeterId={selectedId}
-                trigger={
-                  <Button size="1" style={{ width: '100%' }}>
-                    View Ring Beam Construction
-                  </Button>
-                }
-              />
+              <Flex justify="center">
+                <RingBeamConstructionPlanModal
+                  perimeterId={selectedId}
+                  trigger={
+                    <IconButton title="View Ring Beam Construction" size="2">
+                      <ConstructionPlanIcon width={20} height={20} />
+                    </IconButton>
+                  }
+                />
+              </Flex>
             )}
           </Flex>
         </Box>

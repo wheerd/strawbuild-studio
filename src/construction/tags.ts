@@ -210,3 +210,9 @@ export const TAG_SLAB: Tag = {
   label: 'Slab',
   category: 'construction'
 }
+
+export const TAG_STOREY: Tag = {
+  id: 'construction_slorey',
+  label: 'Storey',
+  category: 'construction'
+}

@@ -1,10 +1,8 @@
 import { Cross2Icon } from '@radix-ui/react-icons'
-import { Dialog, Flex, IconButton, Skeleton, Text } from '@radix-ui/themes'
-import React, { Suspense, lazy, useMemo } from 'react'
+import { Dialog, Flex, IconButton, Skeleton, Spinner, Text } from '@radix-ui/themes'
+import React, { Suspense, lazy, use, useEffect, useState } from 'react'
 
-import type { PerimeterId } from '@/building/model/ids'
-import { usePerimeterById } from '@/building/store'
-import { constructPerimeter } from '@/construction/perimeter'
+import type { ConstructionModel } from '@/construction/model'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 
 import { OpacityControlProvider } from './context/OpacityControlContext'
@@ -12,25 +10,35 @@ import { OpacityControlProvider } from './context/OpacityControlContext'
 const ConstructionViewer3D = lazy(() => import('./ConstructionViewer3D'))
 
 export interface ConstructionViewer3DModalProps {
-  perimeterId: PerimeterId
+  constructionModelFactory: () => Promise<ConstructionModel | null>
   trigger: React.ReactNode
+  refreshKey?: unknown
 }
 
-export function ConstructionViewer3DModal({ perimeterId, trigger }: ConstructionViewer3DModalProps): React.JSX.Element {
+export function ConstructionViewer3DModal({
+  constructionModelFactory,
+  trigger,
+  refreshKey
+}: ConstructionViewer3DModalProps): React.JSX.Element {
   const [containerSize, containerRef] = elementSizeRef()
-  const perimeter = usePerimeterById(perimeterId)
+  const [modelPromise, setModelPromise] = useState<Promise<ConstructionModel | null> | null>(null)
+  const [isOpen, setIsOpen] = useState(false)
 
-  const constructionModel = useMemo(() => {
-    if (!perimeter) return null
-    return constructPerimeter(perimeter)
-  }, [perimeter])
-
-  if (!perimeter) {
-    return <>{trigger}</>
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open)
+    if (open && !modelPromise) {
+      setModelPromise(constructionModelFactory())
+    }
   }
 
+  useEffect(() => {
+    if (isOpen && refreshKey !== undefined) {
+      setModelPromise(constructionModelFactory())
+    }
+  }, [refreshKey, isOpen, constructionModelFactory])
+
   return (
-    <Dialog.Root>
+    <Dialog.Root open={isOpen} onOpenChange={handleOpenChange}>
       <Dialog.Trigger>{trigger}</Dialog.Trigger>
       <Dialog.Content
         size="2"
@@ -58,11 +66,22 @@ export function ConstructionViewer3DModal({ perimeterId, trigger }: Construction
             ref={containerRef}
             className="relative flex-1 min-h-[500px] max-h-[calc(90vh-100px)] overflow-hidden border border-gray-6 rounded-2"
           >
-            {constructionModel ? (
+            {modelPromise ? (
               <Suspense
                 fallback={
                   <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                     <Skeleton height="95vh" />
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%) scale(3)',
+                        zIndex: 10
+                      }}
+                    >
+                      <Spinner size="3" />
+                    </div>
                     <div
                       style={{
                         position: 'absolute',
@@ -84,21 +103,37 @@ export function ConstructionViewer3DModal({ perimeterId, trigger }: Construction
                 }
               >
                 <OpacityControlProvider>
-                  <ConstructionViewer3D model={constructionModel} containerSize={containerSize} />
+                  <ConstructionViewer3DContent modelPromise={modelPromise} containerSize={containerSize} />
                 </OpacityControlProvider>
               </Suspense>
-            ) : (
-              <Flex align="center" justify="center" style={{ height: '100%' }}>
-                <Text align="center" color="gray">
-                  <Text size="6">⚠</Text>
-                  <br />
-                  <Text size="2">Failed to generate construction model</Text>
-                </Text>
-              </Flex>
-            )}
+            ) : null}
           </div>
         </Flex>
       </Dialog.Content>
     </Dialog.Root>
   )
+}
+
+function ConstructionViewer3DContent({
+  modelPromise,
+  containerSize
+}: {
+  modelPromise: Promise<ConstructionModel | null>
+  containerSize: { width: number; height: number }
+}) {
+  const constructionModel = use(modelPromise)
+
+  if (!constructionModel) {
+    return (
+      <Flex align="center" justify="center" style={{ height: '100%' }}>
+        <Text align="center" color="gray">
+          <Text size="6">⚠</Text>
+          <br />
+          <Text size="2">Failed to generate construction model</Text>
+        </Text>
+      </Flex>
+    )
+  }
+
+  return <ConstructionViewer3D model={constructionModel} containerSize={containerSize} />
 }
