@@ -1,6 +1,6 @@
 import type { PerimeterCornerId } from '@/building/model/ids'
 import type { Perimeter, PerimeterWall } from '@/building/model/model'
-import type { LayersConfig } from '@/construction/config/types'
+import type { WallLayersConfig } from '@/construction/config/types'
 import type { StrawConfig } from '@/construction/materials/straw'
 import type { ConstructionModel } from '@/construction/model'
 import type { OpeningConstructionConfig } from '@/construction/openings/openings'
@@ -19,7 +19,7 @@ export type PerimeterWallConstructionMethod<TConfig> = (
   perimeter: Perimeter,
   floorHeight: Length,
   config: TConfig,
-  layers: LayersConfig
+  layers: WallLayersConfig
 ) => ConstructionModel
 
 export interface WallCornerInfo {

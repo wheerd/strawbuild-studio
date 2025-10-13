@@ -1,5 +1,5 @@
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
-import type { LayersConfig } from '@/construction/config/types'
+import type { WallLayersConfig } from '@/construction/config/types'
 import type { ConstructionModel } from '@/construction/model'
 import { constructOpeningFrame } from '@/construction/openings/openings'
 import type { ConstructionResult } from '@/construction/results'
@@ -53,7 +53,7 @@ const _constructModuleWall = (
   perimeter: Perimeter,
   floorHeight: Length,
   config: ModulesConstructionConfig,
-  layers: LayersConfig
+  layers: WallLayersConfig
 ): Generator<ConstructionResult> =>
   segmentedWallConstruction(
     wall,
@@ -72,7 +72,7 @@ export const constructModuleWall: PerimeterWallConstructionMethod<ModulesConstru
   perimeter: Perimeter,
   floorHeight: Length,
   config: ModulesConstructionConfig,
-  layers: LayersConfig
+  layers: WallLayersConfig
 ): ConstructionModel => {
   const allResults = Array.from(_constructModuleWall(wall, perimeter, floorHeight, config, layers))
 

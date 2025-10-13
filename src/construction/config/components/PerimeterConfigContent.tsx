@@ -23,7 +23,7 @@ import {
   useDefaultPerimeterMethodId,
   usePerimeterConstructionMethods
 } from '@/construction/config/store'
-import type { LayersConfig, PerimeterConstructionConfig } from '@/construction/config/types'
+import type { PerimeterConstructionConfig, WallLayersConfig } from '@/construction/config/types'
 import { getPerimeterConfigUsage } from '@/construction/config/usage'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
@@ -382,7 +382,7 @@ function NonStrawbaleConfigForm({ config, onUpdate }: NonStrawbaleConfigFormProp
 interface CommonConfigSectionsProps {
   methodId: PerimeterConstructionMethodId
   config: PerimeterConstructionConfig
-  layers: LayersConfig
+  layers: WallLayersConfig
 }
 
 function CommonConfigSections({ methodId, config, layers }: CommonConfigSectionsProps): React.JSX.Element {
@@ -598,7 +598,12 @@ function CommonConfigSections({ methodId, config, layers }: CommonConfigSections
 }
 
 interface ConfigFormProps {
-  method: { id: PerimeterConstructionMethodId; name: string; config: PerimeterConstructionConfig; layers: LayersConfig }
+  method: {
+    id: PerimeterConstructionMethodId
+    name: string
+    config: PerimeterConstructionConfig
+    layers: WallLayersConfig
+  }
   onUpdateName: (name: string) => void
 }
 

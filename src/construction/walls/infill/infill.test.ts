@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createOpeningId, createPerimeterConstructionMethodId, createPerimeterId } from '@/building/model/ids'
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
-import type { LayersConfig } from '@/construction/config/types'
+import type { WallLayersConfig } from '@/construction/config/types'
 import { IDENTITY } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
 import type { PostConfig } from '@/construction/materials/posts'
@@ -151,7 +151,7 @@ function createMockPerimeter(walls: PerimeterWall[]): Perimeter {
   } as Perimeter
 }
 
-function createMockLayers(): LayersConfig {
+function createMockLayers(): WallLayersConfig {
   return {
     insideThickness: createLength(30),
     outsideThickness: createLength(50)

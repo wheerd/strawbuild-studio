@@ -1,7 +1,7 @@
 import { vec3 } from 'gl-matrix'
 
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
-import type { LayersConfig } from '@/construction/config/types'
+import type { WallLayersConfig } from '@/construction/config/types'
 import type { ConstructionElementId } from '@/construction/elements'
 import { type PostConfig, constructPost } from '@/construction/materials/posts'
 import { constructStraw } from '@/construction/materials/straw'
@@ -173,7 +173,7 @@ const _constructInfillWall = (
   perimeter: Perimeter,
   floorHeight: Length,
   config: InfillConstructionConfig,
-  layers: LayersConfig
+  layers: WallLayersConfig
 ): Generator<ConstructionResult> =>
   segmentedWallConstruction(
     wall,
@@ -192,7 +192,7 @@ export const constructInfillWall: PerimeterWallConstructionMethod<InfillConstruc
   perimeter: Perimeter,
   floorHeight: Length,
   config: InfillConstructionConfig,
-  layers: LayersConfig
+  layers: WallLayersConfig
 ): ConstructionModel => {
   const allResults = Array.from(_constructInfillWall(wall, perimeter, floorHeight, config, layers))
 

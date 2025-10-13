@@ -1,5 +1,5 @@
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
-import type { LayersConfig } from '@/construction/config/types'
+import type { WallLayersConfig } from '@/construction/config/types'
 import { constructStraw } from '@/construction/materials/straw'
 import type { ConstructionModel } from '@/construction/model'
 import { constructOpeningFrame } from '@/construction/openings/openings'
@@ -162,7 +162,7 @@ const _constructStrawhengeWall = (
   perimeter: Perimeter,
   floorHeight: Length,
   config: StrawhengeConstructionConfig,
-  layers: LayersConfig
+  layers: WallLayersConfig
 ): Generator<ConstructionResult> =>
   segmentedWallConstruction(
     wall,
@@ -181,7 +181,7 @@ export const constructStrawhengeWall: PerimeterWallConstructionMethod<Strawhenge
   perimeter: Perimeter,
   floorHeight: Length,
   config: StrawhengeConstructionConfig,
-  layers: LayersConfig
+  layers: WallLayersConfig
 ): ConstructionModel => {
   const allResults = Array.from(_constructStrawhengeWall(wall, perimeter, floorHeight, config, layers))
 

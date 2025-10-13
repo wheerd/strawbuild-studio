@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createOpeningId, createPerimeterConstructionMethodId, createPerimeterId } from '@/building/model/ids'
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config'
-import type { LayersConfig } from '@/construction/config/types'
+import type { WallLayersConfig } from '@/construction/config/types'
 import { IDENTITY } from '@/construction/geometry'
 import { aggregateResults, yieldElement } from '@/construction/results'
 import { TAG_OPENING_SPACING, TAG_WALL_LENGTH } from '@/construction/tags'
@@ -104,7 +104,7 @@ function createMockCornerInfo(
   }
 }
 
-function createMockLayers(): LayersConfig {
+function createMockLayers(): WallLayersConfig {
   return {
     insideThickness: createLength(30),
     outsideThickness: createLength(50)

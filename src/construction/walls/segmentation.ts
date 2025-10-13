@@ -1,6 +1,6 @@
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config'
-import type { LayersConfig } from '@/construction/config/types'
+import type { WallLayersConfig } from '@/construction/config/types'
 import { IDENTITY } from '@/construction/geometry'
 import { type ConstructionResult, yieldArea, yieldMeasurement } from '@/construction/results'
 import { TAG_OPENING_SPACING, TAG_WALL_LENGTH } from '@/construction/tags'
@@ -114,7 +114,7 @@ export function* segmentedWallConstruction(
   wall: PerimeterWall,
   perimeter: Perimeter,
   wallHeight: Length,
-  layers: LayersConfig,
+  layers: WallLayersConfig,
   wallConstruction: WallSegmentConstruction,
   openingConstruction: OpeningSegmentConstruction
 ): Generator<ConstructionResult> {

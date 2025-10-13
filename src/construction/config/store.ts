@@ -2,24 +2,36 @@ import { useMemo } from 'react'
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 
-import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
-import { createPerimeterConstructionMethodId, createRingBeamConstructionMethodId } from '@/building/model/ids'
 import type {
-  LayersConfig,
+  FloorConstructionConfigId,
+  PerimeterConstructionMethodId,
+  RingBeamConstructionMethodId
+} from '@/building/model/ids'
+import {
+  createFloorConstructionConfigId,
+  createPerimeterConstructionMethodId,
+  createRingBeamConstructionMethodId
+} from '@/building/model/ids'
+import type {
+  CltConstructionConfig,
+  FloorConstructionConfig,
   PerimeterConstructionConfig,
   PerimeterConstructionMethod,
-  RingBeamConstructionMethod
+  RingBeamConstructionMethod,
+  WallLayersConfig
 } from '@/construction/config/types'
-import { concrete, straw, strawbale, wood120x60, wood360x60 } from '@/construction/materials/material'
+import { clt180, concrete, straw, strawbale, wood120x60, wood360x60 } from '@/construction/materials/material'
 import { type RingBeamConfig, validateRingBeamConfig } from '@/construction/ringBeams/ringBeams'
 import { createLength } from '@/shared/geometry'
 
 export interface ConfigState {
   ringBeamConstructionMethods: Record<RingBeamConstructionMethodId, RingBeamConstructionMethod>
   perimeterConstructionMethods: Record<PerimeterConstructionMethodId, PerimeterConstructionMethod>
+  floorConstructionConfigs: Record<FloorConstructionConfigId, FloorConstructionConfig>
   defaultBaseRingBeamMethodId?: RingBeamConstructionMethodId
   defaultTopRingBeamMethodId?: RingBeamConstructionMethodId
   defaultPerimeterMethodId: PerimeterConstructionMethodId
+  defaultFloorConfigId: FloorConstructionConfigId
 }
 
 export interface ConfigActions {
@@ -43,7 +55,7 @@ export interface ConfigActions {
   addPerimeterConstructionMethod: (
     name: string,
     config: PerimeterConstructionConfig,
-    layers: LayersConfig
+    layers: WallLayersConfig
   ) => PerimeterConstructionMethod
   duplicatePerimeterConstructionMethod: (id: PerimeterConstructionMethodId, name: string) => PerimeterConstructionMethod
   removePerimeterConstructionMethod: (id: PerimeterConstructionMethodId) => void
@@ -52,7 +64,7 @@ export interface ConfigActions {
     id: PerimeterConstructionMethodId,
     config: PerimeterConstructionConfig
   ) => void
-  updatePerimeterConstructionMethodLayers: (id: PerimeterConstructionMethodId, layers: LayersConfig) => void
+  updatePerimeterConstructionMethodLayers: (id: PerimeterConstructionMethodId, layers: WallLayersConfig) => void
 
   // Perimeter queries
   getPerimeterConstructionMethodById: (id: PerimeterConstructionMethodId) => PerimeterConstructionMethod | null
@@ -61,6 +73,20 @@ export interface ConfigActions {
   // Default perimeter method management
   setDefaultPerimeterMethod: (methodId: PerimeterConstructionMethodId | undefined) => void
   getDefaultPerimeterMethodId: () => PerimeterConstructionMethodId
+
+  // CRUD operations for floor construction configs
+  addFloorConstructionConfig: (config: FloorConstructionConfig) => FloorConstructionConfig
+  removeFloorConstructionConfig: (id: FloorConstructionConfigId) => void
+  updateFloorConstructionConfig: (id: FloorConstructionConfigId, config: Omit<FloorConstructionConfig, 'id'>) => void
+  duplicateFloorConstructionConfig: (id: FloorConstructionConfigId, name: string) => FloorConstructionConfig
+
+  // Floor queries
+  getFloorConstructionConfigById: (id: FloorConstructionConfigId) => FloorConstructionConfig | null
+  getAllFloorConstructionConfigs: () => FloorConstructionConfig[]
+
+  // Default floor config management
+  setDefaultFloorConfig: (configId: FloorConstructionConfigId) => void
+  getDefaultFloorConfigId: () => FloorConstructionConfigId
 }
 
 export type ConfigStore = ConfigState & { actions: ConfigActions }
@@ -78,6 +104,36 @@ const validatePerimeterMethodName = (name: string): void => {
   }
 }
 
+const validateFloorConfigName = (name: string): void => {
+  if (name.trim().length === 0) {
+    throw new Error('Floor construction config name cannot be empty')
+  }
+}
+
+const validateFloorConfig = (config: FloorConstructionConfig): void => {
+  validateFloorConfigName(config.name)
+
+  if (config.type === 'clt') {
+    if (config.thickness <= 0) {
+      throw new Error('CLT thickness must be greater than 0')
+    }
+  } else if (config.type === 'joist') {
+    if (config.joistHeight <= 0 || config.joistThickness <= 0) {
+      throw new Error('Joist dimensions must be greater than 0')
+    }
+    if (config.joistSpacing <= 0) {
+      throw new Error('Joist spacing must be greater than 0')
+    }
+    if (config.subfloorThickness <= 0) {
+      throw new Error('Subfloor thickness must be greater than 0')
+    }
+  }
+
+  if (config.layers.topThickness < 0 || config.layers.bottomThickness < 0) {
+    throw new Error('Layer thicknesses cannot be negative')
+  }
+}
+
 // Config validation is handled by the construction module
 
 // Default ring beam construction method using 360x60 wood
@@ -90,6 +146,19 @@ const createDefaultRingBeamMethod = (): RingBeamConstructionMethod => ({
     height: createLength(60),
     width: createLength(360),
     offsetFromEdge: createLength(30)
+  }
+})
+
+// Default floor construction config
+const createDefaultFloorConfig = (): CltConstructionConfig => ({
+  id: 'fcm_default' as FloorConstructionConfigId,
+  name: 'CLT 18cm',
+  type: 'clt',
+  thickness: createLength(180),
+  material: clt180.id,
+  layers: {
+    topThickness: createLength(0),
+    bottomThickness: createLength(0)
   }
 })
 
@@ -271,15 +340,20 @@ const useConfigStore = create<ConfigStore>()(
         // Initialize with default methods
         const defaultRingBeamMethod = createDefaultRingBeamMethod()
         const defaultPerimeterMethods = createDefaultPerimeterMethods()
+        const defaultFloorConfig = createDefaultFloorConfig()
 
         return {
           ringBeamConstructionMethods: {
             [defaultRingBeamMethod.id]: defaultRingBeamMethod
           },
           perimeterConstructionMethods: Object.fromEntries(defaultPerimeterMethods.map(method => [method.id, method])),
+          floorConstructionConfigs: {
+            [defaultFloorConfig.id]: defaultFloorConfig
+          },
           defaultBaseRingBeamMethodId: defaultRingBeamMethod.id,
           defaultTopRingBeamMethodId: defaultRingBeamMethod.id,
           defaultPerimeterMethodId: defaultPerimeterMethods[0].id,
+          defaultFloorConfigId: defaultFloorConfig.id,
 
           actions: {
             // CRUD operations
@@ -396,7 +470,7 @@ const useConfigStore = create<ConfigStore>()(
             addPerimeterConstructionMethod: (
               name: string,
               config: PerimeterConstructionConfig,
-              layers: LayersConfig
+              layers: WallLayersConfig
             ) => {
               validatePerimeterMethodName(name)
 
@@ -492,7 +566,7 @@ const useConfigStore = create<ConfigStore>()(
               })
             },
 
-            updatePerimeterConstructionMethodLayers: (id: PerimeterConstructionMethodId, layers: LayersConfig) => {
+            updatePerimeterConstructionMethodLayers: (id: PerimeterConstructionMethodId, layers: WallLayersConfig) => {
               set(state => {
                 const method = state.perimeterConstructionMethods[id]
                 if (method == null) return state
@@ -531,6 +605,112 @@ const useConfigStore = create<ConfigStore>()(
             getDefaultPerimeterMethodId: () => {
               const state = get()
               return state.defaultPerimeterMethodId
+            },
+
+            // Floor construction config CRUD operations
+            addFloorConstructionConfig: (config: FloorConstructionConfig) => {
+              validateFloorConfig(config)
+
+              set(state => ({
+                ...state,
+                floorConstructionConfigs: { ...state.floorConstructionConfigs, [config.id]: config }
+              }))
+
+              return config
+            },
+
+            removeFloorConstructionConfig: (id: FloorConstructionConfigId) => {
+              set(state => {
+                const { floorConstructionConfigs } = state
+
+                // Prevent removing the last config
+                if (Object.keys(floorConstructionConfigs).length === 1) {
+                  throw new Error('Cannot remove the last floor construction config')
+                }
+
+                const { [id]: removed, ...remainingConfigs } = floorConstructionConfigs
+
+                // If removing the default, set first remaining config as default
+                let newDefaultId = state.defaultFloorConfigId
+                if (state.defaultFloorConfigId === id) {
+                  newDefaultId = Object.keys(remainingConfigs)[0] as FloorConstructionConfigId
+                }
+
+                return {
+                  ...state,
+                  floorConstructionConfigs: remainingConfigs,
+                  defaultFloorConfigId: newDefaultId
+                }
+              })
+            },
+
+            updateFloorConstructionConfig: (
+              id: FloorConstructionConfigId,
+              updates: Omit<FloorConstructionConfig, 'id'>
+            ) => {
+              set(state => {
+                const config = state.floorConstructionConfigs[id]
+                if (config == null) return state
+
+                const updatedConfig = { ...config, ...updates, id } as FloorConstructionConfig
+                validateFloorConfig(updatedConfig)
+
+                return {
+                  ...state,
+                  floorConstructionConfigs: { ...state.floorConstructionConfigs, [id]: updatedConfig }
+                }
+              })
+            },
+
+            duplicateFloorConstructionConfig: (id: FloorConstructionConfigId, name: string) => {
+              const state = get()
+              const original = state.floorConstructionConfigs[id]
+              if (original == null) {
+                throw new Error(`Floor construction config with id ${id} not found`)
+              }
+
+              validateFloorConfigName(name)
+
+              const newId = createFloorConstructionConfigId()
+              const duplicated = { ...original, id: newId, name: name.trim() } as FloorConstructionConfig
+
+              set(state => ({
+                ...state,
+                floorConstructionConfigs: { ...state.floorConstructionConfigs, [newId]: duplicated }
+              }))
+
+              return duplicated
+            },
+
+            // Floor queries
+            getFloorConstructionConfigById: (id: FloorConstructionConfigId) => {
+              const state = get()
+              return state.floorConstructionConfigs[id] ?? null
+            },
+
+            getAllFloorConstructionConfigs: () => {
+              const state = get()
+              return Object.values(state.floorConstructionConfigs)
+            },
+
+            // Default floor config management
+            setDefaultFloorConfig: (configId: FloorConstructionConfigId) => {
+              set(state => {
+                // Validate that the config exists
+                if (state.floorConstructionConfigs[configId] == null) {
+                  throw new Error(`Floor construction config with id ${configId} not found`)
+                }
+
+                return {
+                  ...state,
+                  defaultFloorConfigId: configId
+                }
+              })
+            },
+
+            getDefaultFloorConfigId: () => {
+              const state = get()
+              return state.defaultFloorConfigId
             }
           }
         }
@@ -542,9 +722,11 @@ const useConfigStore = create<ConfigStore>()(
       partialize: state => ({
         ringBeamConstructionMethods: state.ringBeamConstructionMethods,
         perimeterConstructionMethods: state.perimeterConstructionMethods,
+        floorConstructionConfigs: state.floorConstructionConfigs,
         defaultBaseRingBeamMethodId: state.defaultBaseRingBeamMethodId,
         defaultTopRingBeamMethodId: state.defaultTopRingBeamMethodId,
-        defaultPerimeterMethodId: state.defaultPerimeterMethodId
+        defaultPerimeterMethodId: state.defaultPerimeterMethodId,
+        defaultFloorConfigId: state.defaultFloorConfigId
       })
     }
   )
@@ -579,6 +761,18 @@ export const usePerimeterConstructionMethodById = (
 export const useDefaultPerimeterMethodId = (): PerimeterConstructionMethodId | undefined =>
   useConfigStore(state => state.actions.getDefaultPerimeterMethodId())
 
+// Floor construction config selector hooks
+export const useFloorConstructionConfigs = (): FloorConstructionConfig[] => {
+  const floorConfigs = useConfigStore(state => state.floorConstructionConfigs)
+  return useMemo(() => Object.values(floorConfigs), [floorConfigs])
+}
+
+export const useFloorConstructionConfigById = (id: FloorConstructionConfigId): FloorConstructionConfig | null =>
+  useConfigStore(state => state.actions.getFloorConstructionConfigById(id))
+
+export const useDefaultFloorConfigId = (): FloorConstructionConfigId =>
+  useConfigStore(state => state.actions.getDefaultFloorConfigId())
+
 export const useConfigActions = (): ConfigActions => useConfigStore(state => state.actions)
 
 // For non-reactive contexts
@@ -590,9 +784,11 @@ export const getConfigState = () => {
   return {
     ringBeamConstructionMethods: state.ringBeamConstructionMethods,
     perimeterConstructionMethods: state.perimeterConstructionMethods,
+    floorConstructionConfigs: state.floorConstructionConfigs,
     defaultBaseRingBeamMethodId: state.defaultBaseRingBeamMethodId,
     defaultTopRingBeamMethodId: state.defaultTopRingBeamMethodId,
-    defaultPerimeterMethodId: state.defaultPerimeterMethodId
+    defaultPerimeterMethodId: state.defaultPerimeterMethodId,
+    defaultFloorConfigId: state.defaultFloorConfigId
   }
 }
 
@@ -600,19 +796,27 @@ export const getConfigState = () => {
 export const setConfigState = (data: {
   ringBeamConstructionMethods: Record<RingBeamConstructionMethodId, RingBeamConstructionMethod>
   perimeterConstructionMethods: Record<PerimeterConstructionMethodId, PerimeterConstructionMethod>
+  floorConstructionConfigs: Record<FloorConstructionConfigId, FloorConstructionConfig>
   defaultBaseRingBeamMethodId?: RingBeamConstructionMethodId
   defaultTopRingBeamMethodId?: RingBeamConstructionMethodId
   defaultPerimeterMethodId: PerimeterConstructionMethodId
+  defaultFloorConfigId: FloorConstructionConfigId
 }) => {
   useConfigStore.setState({
     ringBeamConstructionMethods: data.ringBeamConstructionMethods,
     perimeterConstructionMethods: data.perimeterConstructionMethods,
+    floorConstructionConfigs: data.floorConstructionConfigs,
     defaultBaseRingBeamMethodId: data.defaultBaseRingBeamMethodId,
     defaultTopRingBeamMethodId: data.defaultTopRingBeamMethodId,
-    defaultPerimeterMethodId: data.defaultPerimeterMethodId
+    defaultPerimeterMethodId: data.defaultPerimeterMethodId,
+    defaultFloorConfigId: data.defaultFloorConfigId
   })
 }
 
 // Only for the tests
 export const _clearAllMethods = () =>
-  useConfigStore.setState({ ringBeamConstructionMethods: {}, perimeterConstructionMethods: {} })
+  useConfigStore.setState({
+    ringBeamConstructionMethods: {},
+    perimeterConstructionMethods: {},
+    floorConstructionConfigs: {}
+  })
