@@ -19,7 +19,8 @@
 }
 
 .area-polygon text,
-.area-cuboid text {
+.area-cuboid text,
+.area-cut text {
   font-size: 100px;
   text-anchor: middle;
   opacity: 0.7;
@@ -45,6 +46,34 @@
   stroke-width: 20;
   stroke-dasharray: 200, 100;
   opacity: 0.7;
+}
+
+.area-polygon-bottom-plate path,
+.area-polygon-top-plate path {
+  fill: var(--gray-8);
+  stroke: var(--gray-12);
+  stroke-width: 20;
+  stroke-dasharray: 50, 50;
+  opacity: 0.7;
+}
+
+.area-polygon-bottom-plate text,
+.area-polygon-top-plate text {
+  font-size: 50px;
+  dominant-baseline: central;
+}
+
+.area-cut-floor-level line {
+  stroke: var(--gray-12);
+  stroke-width: 10;
+  stroke-dasharray: 100, 50;
+  opacity: 0.7;
+}
+
+.area-cut-floor-level text {
+  dominant-baseline: hanging;
+  font-weight: bold;
+  font-size: 70px;
 }
 
 /* Mid cut functionality */

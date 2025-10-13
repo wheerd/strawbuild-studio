@@ -1,9 +1,10 @@
 import { Box, Button, Card, Flex, SegmentedControl } from '@radix-ui/themes'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 
+import { CutAreaShape } from '@/construction/components/CutAreaShape'
 import { Measurements } from '@/construction/components/Measurements'
 import { type CutFunction, bounds3Dto2D, createZOrder, project, projectRotation } from '@/construction/geometry'
-import type { ConstructionModel, HighlightedCuboid, HighlightedPolygon } from '@/construction/model'
+import type { ConstructionModel, HighlightedCuboid, HighlightedCut, HighlightedPolygon } from '@/construction/model'
 import { SVGViewport, type SVGViewportRef } from '@/shared/components/SVGViewport'
 import { type Plane3D, complementaryAxis } from '@/shared/geometry'
 
@@ -80,6 +81,7 @@ export function ConstructionPlan({
     a => a.type === 'polygon' && a.plane === currentView.plane
   ) as HighlightedPolygon[]
   const cuboidAreas = model.areas.filter(a => a.type === 'cuboid') as HighlightedCuboid[]
+  const cutAreas = model.areas.filter(a => a.type === 'cut') as HighlightedCut[]
 
   return (
     <div className="relative w-full h-full">
@@ -94,6 +96,18 @@ export function ConstructionPlan({
       >
         {/* Material styles for proper SVG rendering */}
         <SVGMaterialStyles />
+
+        {/* Cut Areas - Bottom */}
+        {cutAreas
+          .filter(p => p.renderPosition === 'bottom')
+          .map((area, index) => (
+            <CutAreaShape
+              key={`cut-bottom-${index}`}
+              cut={area}
+              projection={projection}
+              viewportBounds={contentBounds}
+            />
+          ))}
 
         {/* Polygon Areas - Bottom */}
         {polygonAreas
@@ -198,6 +212,13 @@ export function ConstructionPlan({
           .filter(p => p.renderPosition === 'top')
           .map((area, index) => (
             <PolygonAreaShape key={`polygon-top-${index}`} polygon={area} projection={projection} />
+          ))}
+
+        {/* Cut Areas - Top */}
+        {cutAreas
+          .filter(p => p.renderPosition === 'top')
+          .map((area, index) => (
+            <CutAreaShape key={`cut-top-${index}`} cut={area} projection={projection} viewportBounds={contentBounds} />
           ))}
       </SVGViewport>
 

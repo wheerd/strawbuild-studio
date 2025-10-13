@@ -111,6 +111,49 @@ function* createCornerAreas(
   }
 }
 
+function* createPlateAreas(
+  totalConstructionHeight: Length,
+  bottomPlateHeight: Length,
+  topPlateHeight: Length,
+  start: number,
+  constructionLength: Length
+): Generator<ConstructionResult> {
+  if (bottomPlateHeight > 0) {
+    yield yieldArea({
+      type: 'polygon',
+      areaType: 'bottom-plate',
+      renderPosition: 'bottom',
+      label: 'Bottom Ring Beam',
+      plane: 'xz',
+      polygon: {
+        points: [
+          [start, 0],
+          [start + constructionLength, 0],
+          [start + constructionLength, bottomPlateHeight],
+          [start, bottomPlateHeight]
+        ]
+      }
+    })
+  }
+  if (topPlateHeight > 0) {
+    yield yieldArea({
+      type: 'polygon',
+      areaType: 'top-plate',
+      renderPosition: 'bottom',
+      label: 'Top Ring Beam',
+      plane: 'xz',
+      polygon: {
+        points: [
+          [start, totalConstructionHeight - topPlateHeight],
+          [start + constructionLength, totalConstructionHeight - topPlateHeight],
+          [start + constructionLength, totalConstructionHeight],
+          [start, totalConstructionHeight]
+        ]
+      }
+    })
+  }
+}
+
 export interface WallStoreyContext {
   ceilingBottomLayersThickness: Length
   ceilingBottomConstructionOffset: Length
@@ -153,11 +196,11 @@ export function* segmentedWallConstruction(
   const bottomPlateMethod = perimeter.baseRingBeamMethodId
     ? getRingBeamConstructionMethodById(perimeter.baseRingBeamMethodId)
     : null
-  const bottomPlateHeight = bottomPlateMethod?.config?.height ?? 0
+  const bottomPlateHeight = bottomPlateMethod?.config?.height ?? (0 as Length)
   const topPlateMethod = perimeter.topRingBeamMethodId
     ? getRingBeamConstructionMethodById(perimeter.topRingBeamMethodId)
     : null
-  const topPlateHeight = topPlateMethod?.config?.height ?? 0
+  const topPlateHeight = topPlateMethod?.config?.height ?? (0 as Length)
 
   const totalConstructionHeight = (storeyContext.storeyHeight +
     storeyContext.floorTopLayersThickness +
@@ -172,12 +215,27 @@ export function* segmentedWallConstruction(
   const z = bottomPlateHeight
   const sizeZ = (totalConstructionHeight - bottomPlateHeight - topPlateHeight) as Length
 
-  const openingZOffset = (storeyContext.floorTopLayersThickness +
-    storeyContext.floorTopConstructionOffset -
-    bottomPlateHeight) as Length
+  yield* createPlateAreas(
+    totalConstructionHeight,
+    bottomPlateHeight,
+    topPlateHeight,
+    -extensionStart,
+    constructionLength
+  )
+
+  const openingZOffset = (storeyContext.floorTopLayersThickness + storeyContext.floorTopConstructionOffset) as Length
 
   const standAtWallStart = wallContext.startCorner.exteriorAngle !== 180 || cornerInfo.startCorner.constructedByThisWall
   const standAtWallEnd = wallContext.endCorner.exteriorAngle !== 180 || cornerInfo.endCorner.constructedByThisWall
+
+  yield yieldArea({
+    type: 'cut',
+    areaType: 'floor-level',
+    renderPosition: 'top',
+    label: 'Finished Floor Level',
+    axis: 'z',
+    position: openingZOffset
+  })
 
   yield yieldMeasurement({
     startPoint: [-extensionStart, y, z],
