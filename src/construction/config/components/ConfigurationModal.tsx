@@ -5,6 +5,7 @@ import React from 'react'
 import type { ConfigTab } from '@/construction/config/context/ConfigurationModalContext'
 import { MaterialsConfigContent } from '@/construction/materials/components/MaterialsConfigContent'
 
+import { FloorConfigContent } from './FloorConfigContent'
 import { PerimeterConfigContent } from './PerimeterConfigContent'
 import { RingBeamConfigContent } from './RingBeamConfigContent'
 
@@ -58,6 +59,7 @@ export function ConfigurationModal({
             <Tabs.Trigger value="materials">Materials</Tabs.Trigger>
             <Tabs.Trigger value="ringbeams">Ring Beams</Tabs.Trigger>
             <Tabs.Trigger value="perimeter">Perimeter Walls</Tabs.Trigger>
+            <Tabs.Trigger value="floors">Floors</Tabs.Trigger>
           </Tabs.List>
 
           <Tabs.Content value="materials">
@@ -75,6 +77,12 @@ export function ConfigurationModal({
           <Tabs.Content value="perimeter">
             <Flex pt="4" style={{ width: '100%' }}>
               <PerimeterConfigContent initialSelectionId={initialSelectionId} />
+            </Flex>
+          </Tabs.Content>
+
+          <Tabs.Content value="floors">
+            <Flex pt="4" style={{ width: '100%' }}>
+              <FloorConfigContent initialSelectionId={initialSelectionId} />
             </Flex>
           </Tabs.Content>
         </Tabs.Root>

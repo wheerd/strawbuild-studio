@@ -1,6 +1,14 @@
-import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
+import type {
+  FloorConstructionConfigId,
+  PerimeterConstructionMethodId,
+  RingBeamConstructionMethodId
+} from '@/building/model/ids'
 import type { Storey } from '@/building/model/model'
-import type { PerimeterConstructionMethod, RingBeamConstructionMethod } from '@/construction/config/types'
+import type {
+  FloorConstructionConfig,
+  PerimeterConstructionMethod,
+  RingBeamConstructionMethod
+} from '@/construction/config/types'
 import type { Material, MaterialId } from '@/construction/materials/material'
 import type { Polygon2D } from '@/shared/geometry'
 import { createLength, createVec2 } from '@/shared/geometry'
@@ -48,9 +56,11 @@ export interface ExportData {
   configStore: {
     ringBeamConstructionMethods: Record<RingBeamConstructionMethodId, RingBeamConstructionMethod>
     perimeterConstructionMethods: Record<PerimeterConstructionMethodId, PerimeterConstructionMethod>
+    floorConstructionConfigs?: Record<FloorConstructionConfigId, FloorConstructionConfig>
     defaultBaseRingBeamMethodId?: RingBeamConstructionMethodId
     defaultTopRingBeamMethodId?: RingBeamConstructionMethodId
     defaultPerimeterMethodId: PerimeterConstructionMethodId
+    defaultFloorConfigId?: FloorConstructionConfigId
   }
   materialsStore: {
     materials: Record<MaterialId, Material>
@@ -83,7 +93,7 @@ export interface IProjectImportExportService {
   importFromString(content: string): Promise<ImportResult | ImportError>
 }
 
-const CURRENT_VERSION = '1.1.0'
+const CURRENT_VERSION = '1.2.0'
 
 class ProjectImportExportServiceImpl implements IProjectImportExportService {
   async exportToString(): Promise<StringExportResult | StringExportError> {
@@ -160,8 +170,33 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
 
       const modelActions = getModelActions()
 
-      // 1. Import config state (unchanged format)
-      setConfigState(importResult.data.configStore)
+      // 1. Import config state with backwards compatibility for floor configs
+      const configStore = importResult.data.configStore
+
+      // Add default floor config if missing (backwards compatibility)
+      if (!configStore.floorConstructionConfigs || !configStore.defaultFloorConfigId) {
+        const { createFloorConstructionConfigId } = await import('@/building/model/ids')
+        const { clt180 } = await import('@/construction/materials/material')
+        const { createLength } = await import('@/shared/geometry')
+
+        const defaultFloorConfigId = createFloorConstructionConfigId()
+        configStore.floorConstructionConfigs = {
+          [defaultFloorConfigId]: {
+            id: defaultFloorConfigId,
+            name: 'CLT 18cm',
+            type: 'clt',
+            thickness: createLength(180),
+            material: clt180.id,
+            layers: {
+              topThickness: createLength(0),
+              bottomThickness: createLength(0)
+            }
+          }
+        }
+        configStore.defaultFloorConfigId = defaultFloorConfigId
+      }
+
+      setConfigState(configStore)
 
       // 2. Import materials state (if available for backwards compatibility)
       if (importResult.data.materialsStore) {
@@ -363,7 +398,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
       }
 
       // Support backwards compatibility
-      const supportedVersions = ['1.0.0', '1.1.0']
+      const supportedVersions = ['1.0.0', '1.1.0', '1.2.0']
       if (!supportedVersions.includes(parsed.version)) {
         return {
           success: false,

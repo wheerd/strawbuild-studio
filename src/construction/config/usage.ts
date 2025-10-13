@@ -1,4 +1,8 @@
-import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
+import type {
+  FloorConstructionConfigId,
+  PerimeterConstructionMethodId,
+  RingBeamConstructionMethodId
+} from '@/building/model/ids'
 import type { Perimeter, Storey } from '@/building/model/model'
 
 export interface RingBeamConfigUsage {
@@ -9,6 +13,11 @@ export interface RingBeamConfigUsage {
 export interface PerimeterConfigUsage {
   isUsed: boolean
   usedByWalls: string[]
+}
+
+export interface FloorConfigUsage {
+  isUsed: boolean
+  usedByStoreys: string[]
 }
 
 /**
@@ -71,5 +80,18 @@ export function getPerimeterConfigUsage(
   return {
     isUsed: usedByWalls.length > 0,
     usedByWalls
+  }
+}
+
+/**
+ * Checks if a floor construction config is currently in use by any storeys
+ * Note: This is a stub implementation as storeys don't yet reference floor configs
+ */
+export function getFloorConfigUsage(_configId: FloorConstructionConfigId, _storeys: Storey[]): FloorConfigUsage {
+  // TODO: Implement when storeys have floorConstructionConfigId field
+  // For now, always return not used
+  return {
+    isUsed: false,
+    usedByStoreys: []
   }
 }

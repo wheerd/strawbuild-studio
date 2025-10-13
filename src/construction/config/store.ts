@@ -796,20 +796,22 @@ export const getConfigState = () => {
 export const setConfigState = (data: {
   ringBeamConstructionMethods: Record<RingBeamConstructionMethodId, RingBeamConstructionMethod>
   perimeterConstructionMethods: Record<PerimeterConstructionMethodId, PerimeterConstructionMethod>
-  floorConstructionConfigs: Record<FloorConstructionConfigId, FloorConstructionConfig>
+  floorConstructionConfigs?: Record<FloorConstructionConfigId, FloorConstructionConfig>
   defaultBaseRingBeamMethodId?: RingBeamConstructionMethodId
   defaultTopRingBeamMethodId?: RingBeamConstructionMethodId
   defaultPerimeterMethodId: PerimeterConstructionMethodId
-  defaultFloorConfigId: FloorConstructionConfigId
+  defaultFloorConfigId?: FloorConstructionConfigId
 }) => {
+  const state = useConfigStore.getState()
+
   useConfigStore.setState({
     ringBeamConstructionMethods: data.ringBeamConstructionMethods,
     perimeterConstructionMethods: data.perimeterConstructionMethods,
-    floorConstructionConfigs: data.floorConstructionConfigs,
+    floorConstructionConfigs: data.floorConstructionConfigs ?? state.floorConstructionConfigs,
     defaultBaseRingBeamMethodId: data.defaultBaseRingBeamMethodId,
     defaultTopRingBeamMethodId: data.defaultTopRingBeamMethodId,
     defaultPerimeterMethodId: data.defaultPerimeterMethodId,
-    defaultFloorConfigId: data.defaultFloorConfigId
+    defaultFloorConfigId: data.defaultFloorConfigId ?? state.defaultFloorConfigId
   })
 }
 
