@@ -2,7 +2,7 @@ import type { Material } from './material'
 
 /**
  * Generates CSS styles for construction materials
- * Creates material-specific classes that style rect and polygon elements
+ * Creates material-specific classes that style children with the 'apply-material' class
  */
 export function generateMaterialCSS(materials: Material[]): string {
   const materialRules = materials

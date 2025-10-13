@@ -9,10 +9,9 @@ describe('Material CSS Generation', () => {
     const css = generateMaterialCSS(materials)
 
     expect(css).toContain('Construction Material Styles')
-    expect(css).toContain(`.${strawbale.id} rect`)
-    expect(css).toContain(`.${strawbale.id} polygon`)
+    expect(css).toContain(`.${strawbale.id} .apply-material`)
     expect(css).toContain(`fill: ${strawbale.color}`)
-    expect(css).toContain(`.${wood360x60.id} rect`)
+    expect(css).toContain(`.${wood360x60.id} .apply-material`)
     expect(css).toContain(`fill: ${wood360x60.color}`)
     expect(css).toContain('stroke: #000')
     expect(css).toContain('stroke-width: 5')
