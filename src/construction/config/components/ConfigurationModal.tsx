@@ -31,6 +31,7 @@ export function ConfigurationModal({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Content
+        aria-describedby={undefined}
         size="4"
         width="95%"
         maxWidth="95%"

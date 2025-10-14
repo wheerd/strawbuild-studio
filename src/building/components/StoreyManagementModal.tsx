@@ -3,6 +3,7 @@ import { Button, Dialog, Flex, Grid, IconButton, Text } from '@radix-ui/themes'
 import React, { useCallback } from 'react'
 
 import { useModelActions, useStoreysOrderedByLevel } from '@/building/store'
+import { useConfigActions } from '@/construction/config'
 
 import { StoreyListItem } from './StoreyListItem'
 
@@ -11,6 +12,7 @@ export interface StoreyManagementModalProps {
 }
 export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): React.JSX.Element {
   const { addStorey, setActiveStoreyId } = useModelActions()
+  const { getDefaultSlabConfigId } = useConfigActions()
   const storeysOrdered = useStoreysOrderedByLevel()
   const isOnlyStorey = storeysOrdered.length === 1
   const lowestStorey = storeysOrdered[0]
@@ -18,7 +20,8 @@ export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): 
 
   const handleAddEmptyStorey = useCallback(() => {
     try {
-      const newStorey = addStorey('New Floor')
+      const slabConfigId = getDefaultSlabConfigId()
+      const newStorey = addStorey('New Floor', undefined, slabConfigId)
       setActiveStoreyId(newStorey.id) // Switch to new storey
     } catch (error) {
       console.error('Failed to add new floor:', error)
@@ -32,6 +35,7 @@ export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): 
     <Dialog.Root>
       <Dialog.Trigger>{trigger}</Dialog.Trigger>
       <Dialog.Content
+        aria-describedby={undefined}
         minWidth="60vw"
         maxWidth="90vw"
         onEscapeKeyDown={e => {

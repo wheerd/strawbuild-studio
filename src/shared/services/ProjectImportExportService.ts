@@ -4,12 +4,15 @@ import type {
   SlabConstructionConfigId
 } from '@/building/model/ids'
 import type { Storey } from '@/building/model/model'
+import { getModelActions } from '@/building/store'
+import { getConfigState, setConfigState } from '@/construction/config/store'
 import type {
   PerimeterConstructionMethod,
   RingBeamConstructionMethod,
   SlabConstructionConfig
 } from '@/construction/config/types'
 import type { Material, MaterialId } from '@/construction/materials/material'
+import { getMaterialsState, setMaterialsState } from '@/construction/materials/store'
 import type { Polygon2D } from '@/shared/geometry'
 import { createLength, createVec2 } from '@/shared/geometry'
 
@@ -99,11 +102,6 @@ const CURRENT_VERSION = '1.2.0'
 class ProjectImportExportServiceImpl implements IProjectImportExportService {
   async exportToString(): Promise<StringExportResult | StringExportError> {
     try {
-      // Dynamic imports to avoid circular dependencies
-      const { getModelActions } = await import('@/building/store')
-      const { getConfigState } = await import('@/construction/config/store')
-      const { getMaterialsState } = await import('@/construction/materials/store')
-
       const modelActions = getModelActions()
 
       // Use store getters for proper encapsulation
@@ -164,11 +162,6 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
     try {
       const importResult = this.importFromJSON(content)
       if (!importResult.success) return importResult
-
-      // Dynamic imports to avoid circular dependencies
-      const { setConfigState } = await import('@/construction/config/store')
-      const { setMaterialsState } = await import('@/construction/materials/store')
-      const { getModelActions } = await import('@/building/store')
 
       const modelActions = getModelActions()
 

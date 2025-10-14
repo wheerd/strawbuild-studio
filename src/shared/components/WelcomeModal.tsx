@@ -26,6 +26,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
     <Dialog.Root open={isOpen} onOpenChange={handleOpenChange}>
       {trigger && <Dialog.Trigger>{trigger}</Dialog.Trigger>}
       <Dialog.Content
+        aria-describedby={undefined}
         size="3"
         maxWidth="90vw"
         onEscapeKeyDown={e => {

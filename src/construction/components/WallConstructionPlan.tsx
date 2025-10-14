@@ -142,6 +142,7 @@ export function WallConstructionPlanModal({
     <Dialog.Root>
       <Dialog.Trigger>{children}</Dialog.Trigger>
       <Dialog.Content
+        aria-describedby={undefined}
         size="2"
         width="95%"
         maxWidth="95%"

@@ -181,6 +181,7 @@ function LShapedPresetDialogContent({
 
   return (
     <Dialog.Content
+      aria-describedby={undefined}
       size="4"
       maxWidth="800px"
       onEscapeKeyDown={e => {

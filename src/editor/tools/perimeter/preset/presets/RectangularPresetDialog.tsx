@@ -134,6 +134,7 @@ function RectangularPresetDialogContent({
 
   return (
     <Dialog.Content
+      aria-describedby={undefined}
       size="3"
       maxWidth="600px"
       onEscapeKeyDown={e => {

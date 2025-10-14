@@ -42,6 +42,7 @@ export function ConstructionViewer3DModal({
     <Dialog.Root open={isOpen} onOpenChange={handleOpenChange}>
       <Dialog.Trigger>{trigger}</Dialog.Trigger>
       <Dialog.Content
+        aria-describedby={undefined}
         size="2"
         width="95%"
         maxWidth="95%"
