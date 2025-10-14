@@ -1,4 +1,4 @@
-import { MATERIAL_COLORS } from '@/shared/theme/colors'
+import { useId } from 'react'
 
 interface LogoProps {
   className?: string
@@ -7,52 +7,86 @@ interface LogoProps {
 
 export function Logo({ className = '', compact = false }: LogoProps): React.JSX.Element {
   const iconSize = compact ? 28 : 32
+  const strawbaleId = useId()
+  const postId = useId()
+  const infillId = useId()
+  const windowId = useId()
+  const doorId = useId()
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      {/* Logo Icon - Strawbale Construction with visible bales and wood frame */}
-      <svg width={iconSize} height={iconSize} viewBox="-2.5 7.5 27.5 22" className="flex-shrink-0">
+      {/* Logo Icon - stylized strawbale building section */}
+      <svg
+        width={iconSize}
+        height={iconSize}
+        viewBox="-2.5 7.5 27.5 22"
+        className="flex-shrink-0"
+        xmlns="http://www.w3.org/2000/svg"
+        role="img"
+        aria-hidden={compact}
+        focusable="false"
+      >
         <defs>
-          <rect id="strawbale" x="0" y="0" width="3.5" height="2.5" stroke="black" fill="#daa520" strokeWidth="0.2" />
-          <rect id="post" x="0" y="0" width="0.5" height="12.5" stroke="black" fill="#cd853f" strokeWidth="0.2" />
+          <rect
+            id={strawbaleId}
+            x="0"
+            y="0"
+            width="3.5"
+            height="2.5"
+            stroke="#000000"
+            fill="#daa520"
+            strokeWidth="0.2"
+            rx="0.3"
+            ry="0.3"
+          />
+          <rect
+            id={postId}
+            x="0"
+            y="0"
+            width="0.5"
+            height="12.5"
+            stroke="#000000"
+            fill="#cd853f"
+            strokeWidth="0.2"
+          />
 
-          <g id="infill-section">
-            <use x="0" y="0" href="#post" />
-            <use x="0.5" y="0" href="#strawbale" />
-            <use x="0.5" y="2.5" href="#strawbale" />
-            <use x="0.5" y="5" href="#strawbale" />
-            <use x="0.5" y="7.5" href="#strawbale" />
-            <use x="0.5" y="10" href="#strawbale" />
-            <use x="4" y="0" href="#post" />
+          <g id={infillId}>
+            <use x="0" y="0" href={`#${postId}`} />
+            <use x="0.5" y="0" href={`#${strawbaleId}`} />
+            <use x="0.5" y="2.5" href={`#${strawbaleId}`} />
+            <use x="0.5" y="5" href={`#${strawbaleId}`} />
+            <use x="0.5" y="7.5" href={`#${strawbaleId}`} />
+            <use x="0.5" y="10" href={`#${strawbaleId}`} />
+            <use x="4" y="0" href={`#${postId}`} />
           </g>
-          <g id="window-section">
-            <use x="0" y="0" href="#post" />
-            <use x="0.5" y="0" href="#strawbale" />
-            <rect x="0.5" y="2.5" width="3.5" height="5" stroke="black" fill="#87ceeb" strokeWidth="0.2" />
-            <use x="0.5" y="7.5" href="#strawbale" />
-            <use x="0.5" y="10" href="#strawbale" />
-            <use x="4" y="0" href="#post" />
+          <g id={windowId}>
+            <use x="0" y="0" href={`#${postId}`} />
+            <use x="0.5" y="0" href={`#${strawbaleId}`} />
+            <rect x="0.5" y="2.5" width="3.5" height="5" stroke="#000000" fill="#87ceeb" strokeWidth="0.2" />
+            <use x="0.5" y="7.5" href={`#${strawbaleId}`} />
+            <use x="0.5" y="10" href={`#${strawbaleId}`} />
+            <use x="4" y="0" href={`#${postId}`} />
           </g>
-          <g id="door-section">
-            <use x="0" y="0" href="#post" />
-            <use x="0.5" y="0" href="#strawbale" />
-            <rect x="0.5" y="2.5" width="3.5" height="10" stroke="black" fill="#8b4513" strokeWidth="0.2" />
-            <use x="4" y="0" href="#post" />
+          <g id={doorId}>
+            <use x="0" y="0" href={`#${postId}`} />
+            <use x="0.5" y="0" href={`#${strawbaleId}`} />
+            <rect x="0.5" y="2.5" width="3.5" height="10" stroke="#000000" fill="#8b4513" strokeWidth="0.2" />
+            <use x="4" y="0" href={`#${postId}`} />
           </g>
         </defs>
 
-        <rect x="1" y="28" width="20.5" height="1" fill="#8B4513" stroke="black" strokeWidth="0.2" />
+        <rect x="1" y="28" width="20.5" height="1" fill="#8b4513" stroke="#000000" strokeWidth="0.2" />
 
-        <use x="1" y="15.5" href="#infill-section" />
-        <use x="5" y="15.5" href="#window-section" />
-        <use x="9" y="15.5" href="#infill-section" />
-        <use x="13" y="15.5" href="#door-section" />
-        <use x="17" y="15.5" href="#infill-section" />
+        <use x="1" y="15.5" href={`#${infillId}`} />
+        <use x="5" y="15.5" href={`#${windowId}`} />
+        <use x="9" y="15.5" href={`#${infillId}`} />
+        <use x="13" y="15.5" href={`#${doorId}`} />
+        <use x="17" y="15.5" href={`#${infillId}`} />
 
-        <rect x="1" y="14.5" width="20.5" height="1" fill="#8B4513" stroke="black" strokeWidth="0.2" />
+        <rect x="1" y="14.5" width="20.5" height="1" fill="#8b4513" stroke="#000000" strokeWidth="0.2" />
 
         {/* Roof Structure */}
-        <path d="M -2,14.5 h 26.5 L 10.75,8 Z" fill={MATERIAL_COLORS.woodSupport} stroke="black" strokeWidth="0.3" />
+        <path d="M -2,14.5 h 26.5 L 10.75,8 Z" fill="#cd853f" stroke="#000000" strokeWidth="0.3" />
       </svg>
 
       {/* App Name - Only show if not compact */}

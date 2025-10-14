@@ -10,6 +10,13 @@ import { getAllMaterials, subscribeToMaterials } from '@/construction/materials/
 import App from './App.tsx'
 import './index.css'
 
+function removeInitialLoadingScreen() {
+  const loadingScreen = document.querySelector('[data-loading-screen]')
+  if (loadingScreen && loadingScreen.parentElement) {
+    loadingScreen.parentElement.removeChild(loadingScreen)
+  }
+}
+
 // Initialize material CSS styles
 injectMaterialCSS(getAllMaterials())
 
@@ -23,7 +30,9 @@ if (rootElement === null) {
   throw new Error('Root element not found')
 }
 
-createRoot(rootElement).render(
+const root = createRoot(rootElement)
+
+root.render(
   <StrictMode>
     <ThemeProvider attribute="class">
       <Theme>
@@ -32,3 +41,7 @@ createRoot(rootElement).render(
     </ThemeProvider>
   </StrictMode>
 )
+
+requestAnimationFrame(() => {
+  requestAnimationFrame(removeInitialLoadingScreen)
+})

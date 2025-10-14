@@ -22,16 +22,16 @@ export default defineConfig({
       output: {
         manualChunks: {
           // Vendor chunk for React and related libraries
-          react: ['react', 'react-dom', 'react/jsx-runtime'],
+          'vendor-react': ['react', 'react-dom', 'react/jsx-runtime'],
 
           // Canvas chunk for Konva and react-konva
-          canvas: ['konva', 'react-konva'],
+          'vendor-canvas': ['konva', 'react-konva'],
 
           // State management chunk
-          store: ['zustand', 'zundo'],
+          'vendor-store': ['zustand', 'zundo'],
 
           // Radix UI chunk
-          radix: [
+          'vendor-radix': [
             '@radix-ui/react-dialog',
             '@radix-ui/react-icons',
             '@radix-ui/react-select',
@@ -44,7 +44,7 @@ export default defineConfig({
           ],
 
           // Geometry utilities chunk (Turf.js and gl-matrix)
-          geometry: [
+          'vendor-geometry': [
             '@turf/helpers',
             '@turf/kinks',
             '@turf/boolean-valid',
@@ -55,10 +55,7 @@ export default defineConfig({
           ],
 
           // Three.js chunk (lazy loaded for 3D viewer)
-          three: ['three', '@react-three/fiber', '@react-three/drei'],
-
-          // Model chunk
-          model: ['./src/building/store', './src/building/model', './src/shared/geometry']
+          'vendor-three': ['three', '@react-three/fiber', '@react-three/drei']
         }
       }
     },

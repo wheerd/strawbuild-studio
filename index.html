@@ -10,9 +10,199 @@
     <meta name="theme-color" content="#e6c547" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Strawbaler Online - Floor Plan Editor</title>
+    <style>
+      :root {
+        color-scheme: only light;
+        --loading-bg: #fdf8ec;
+        --loading-card: #ffffff;
+        --loading-text: #3a210a;
+        --loading-muted: #6f4e2c;
+        --loading-accent: #d2960f;
+        --loading-shadow: rgba(58, 33, 10, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+        background: var(--loading-bg);
+        color: var(--loading-text);
+      }
+
+      #root {
+        min-height: 100vh;
+      }
+
+      [data-loading-screen] {
+        display: flex;
+        min-height: 100vh;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+      }
+
+      .loading-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.25rem;
+        padding: 2.5rem 3rem;
+        border-radius: 1.5rem;
+        background: var(--loading-card);
+        box-shadow: 0 30px 60px -30px var(--loading-shadow), 0 18px 36px -24px var(--loading-shadow);
+        text-align: center;
+        max-width: 28rem;
+      }
+
+      .loading-logo svg {
+        width: 120px;
+        height: auto;
+        display: block;
+      }
+
+      .loading-title {
+        font-size: clamp(2rem, 4vw, 2.75rem);
+        letter-spacing: -0.03em;
+        margin: 0;
+        color: var(--loading-text);
+      }
+
+      .loading-subtitle {
+        margin: 0;
+        font-size: 1rem;
+        color: var(--loading-muted);
+      }
+
+      .loading-spinner {
+        position: relative;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        border: 6px solid rgba(210, 150, 15, 0.2);
+        border-top-color: var(--loading-accent);
+        animation: loading-spin 1s linear infinite;
+      }
+
+      .sr-only {
+        border: 0;
+        clip: rect(0 0 0 0);
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        padding: 0;
+        position: absolute;
+        width: 1px;
+        white-space: nowrap;
+      }
+
+      @keyframes loading-spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (max-width: 600px) {
+        .loading-card {
+          width: 100%;
+          padding: 2rem;
+          border-radius: 1rem;
+          box-shadow: none;
+        }
+
+        .loading-subtitle {
+          font-size: 0.95rem;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="loading-screen" data-loading-screen>
+        <div class="loading-card" role="status" aria-live="polite">
+          <div class="loading-logo" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="-2.5 7.5 27.5 22" width="160" height="128">
+              <defs>
+                <rect
+                  id="loading-logo-strawbale"
+                  x="0"
+                  y="0"
+                  width="3.5"
+                  height="2.5"
+                  stroke="#000000"
+                  fill="#daa520"
+                  stroke-width="0.2"
+                  rx="0.3"
+                  ry="0.3"
+                />
+                <rect
+                  id="loading-logo-post"
+                  x="0"
+                  y="0"
+                  width="0.5"
+                  height="12.5"
+                  stroke="#000000"
+                  fill="#cd853f"
+                  stroke-width="0.2"
+                />
+
+                <g id="loading-logo-infill-section">
+                  <use x="0" y="0" href="#loading-logo-post" />
+                  <use x="0.5" y="0" href="#loading-logo-strawbale" />
+                  <use x="0.5" y="2.5" href="#loading-logo-strawbale" />
+                  <use x="0.5" y="5" href="#loading-logo-strawbale" />
+                  <use x="0.5" y="7.5" href="#loading-logo-strawbale" />
+                  <use x="0.5" y="10" href="#loading-logo-strawbale" />
+                  <use x="4" y="0" href="#loading-logo-post" />
+                </g>
+
+                <g id="loading-logo-window-section">
+                  <use x="0" y="0" href="#loading-logo-post" />
+                  <use x="0.5" y="0" href="#loading-logo-strawbale" />
+                  <rect x="0.5" y="2.5" width="3.5" height="5" stroke="#000000" fill="#87ceeb" stroke-width="0.2" />
+                  <use x="0.5" y="7.5" href="#loading-logo-strawbale" />
+                  <use x="0.5" y="10" href="#loading-logo-strawbale" />
+                  <use x="4" y="0" href="#loading-logo-post" />
+                </g>
+
+                <g id="loading-logo-door-section">
+                  <use x="0" y="0" href="#loading-logo-post" />
+                  <use x="0.5" y="0" href="#loading-logo-strawbale" />
+                  <rect x="0.5" y="2.5" width="3.5" height="10" stroke="#000000" fill="#8b4513" stroke-width="0.2" />
+                  <use x="4" y="0" href="#loading-logo-post" />
+                </g>
+              </defs>
+
+              <rect x="1" y="28" width="20.5" height="1" fill="#8b4513" stroke="#000000" stroke-width="0.2" />
+
+              <use x="1" y="15.5" href="#loading-logo-infill-section" />
+              <use x="5" y="15.5" href="#loading-logo-window-section" />
+              <use x="9" y="15.5" href="#loading-logo-infill-section" />
+              <use x="13" y="15.5" href="#loading-logo-door-section" />
+              <use x="17" y="15.5" href="#loading-logo-infill-section" />
+
+              <rect x="1" y="14.5" width="20.5" height="1" fill="#8b4513" stroke="#000000" stroke-width="0.2" />
+
+              <path d="M -2,14.5 h 26.5 L 10.75,8 Z" fill="#cd853f" stroke="#000000" stroke-width="0.3" />
+            </svg>
+          </div>
+          <h1 class="loading-title">Strawbaler Online</h1>
+          <div class="loading-spinner" aria-hidden="true"></div>
+          <p class="loading-subtitle">Preparing your floor plan workspace…</p>
+          <span class="sr-only">Loading Strawbaler Online</span>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/app/main.tsx"></script>
   </body>
 </html>

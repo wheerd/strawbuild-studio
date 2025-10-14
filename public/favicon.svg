@@ -1,36 +1,44 @@
-<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="-2.5 7.5 27.5 22">
   <defs>
-    <linearGradient id="baleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#f5e6a3"/>
-      <stop offset="100%" style="stop-color:#d4a017"/>
-    </linearGradient>
+    <rect id="logo-strawbale" x="0" y="0" width="3.5" height="2.5" stroke="#000000" fill="#daa520" stroke-width="0.2" rx="0.3" ry="0.3" />
+    <rect id="logo-post" x="0" y="0" width="0.5" height="12.5" stroke="#000000" fill="#cd853f" stroke-width="0.2" />
+
+    <g id="logo-infill-section">
+      <use x="0" y="0" href="#logo-post" />
+      <use x="0.5" y="0" href="#logo-strawbale" />
+      <use x="0.5" y="2.5" href="#logo-strawbale" />
+      <use x="0.5" y="5" href="#logo-strawbale" />
+      <use x="0.5" y="7.5" href="#logo-strawbale" />
+      <use x="0.5" y="10" href="#logo-strawbale" />
+      <use x="4" y="0" href="#logo-post" />
+    </g>
+
+    <g id="logo-window-section">
+      <use x="0" y="0" href="#logo-post" />
+      <use x="0.5" y="0" href="#logo-strawbale" />
+      <rect x="0.5" y="2.5" width="3.5" height="5" stroke="#000000" fill="#87ceeb" stroke-width="0.2" />
+      <use x="0.5" y="7.5" href="#logo-strawbale" />
+      <use x="0.5" y="10" href="#logo-strawbale" />
+      <use x="4" y="0" href="#logo-post" />
+    </g>
+
+    <g id="logo-door-section">
+      <use x="0" y="0" href="#logo-post" />
+      <use x="0.5" y="0" href="#logo-strawbale" />
+      <rect x="0.5" y="2.5" width="3.5" height="10" stroke="#000000" fill="#8b4513" stroke-width="0.2" />
+      <use x="4" y="0" href="#logo-post" />
+    </g>
   </defs>
-  
-  <!-- Background for contrast -->
-  <circle cx="16" cy="16" r="15" fill="#ffffff" stroke="#d4a017" stroke-width="1"/>
-  
-  <!-- Main strawbale -->
-  <rect x="6" y="11" width="20" height="10" rx="1" fill="url(#baleGradient)" stroke="#b8860b" stroke-width="1"/>
-  
-  <!-- Simple straw texture -->
-  <g stroke="#cd853f" stroke-width="0.5" opacity="0.7">
-    <line x1="7" y1="13" x2="25" y2="13"/>
-    <line x1="7" y1="15" x2="25" y2="15"/>
-    <line x1="7" y1="17" x2="25" y2="17"/>
-    <line x1="7" y1="19" x2="25" y2="19"/>
-  </g>
-  
-  <!-- Binding straps -->
-  <rect x="10" y="10.5" width="1" height="11" fill="#8b4513"/>
-  <rect x="21" y="10.5" width="1" height="11" fill="#8b4513"/>
-  
-  <!-- Protruding straw for character -->
-  <g stroke="#d4a017" stroke-width="1.5" stroke-linecap="round" opacity="0.8">
-    <line x1="6" y1="12" x2="4" y2="11"/>
-    <line x1="6" y1="16" x2="3" y2="16"/>
-    <line x1="6" y1="20" x2="4" y2="21"/>
-    <line x1="26" y1="12" x2="28" y2="11"/>
-    <line x1="26" y1="16" x2="29" y2="16"/>
-    <line x1="26" y1="20" x2="28" y2="21"/>
-  </g>
+
+  <rect x="1" y="28" width="20.5" height="1" fill="#8b4513" stroke="#000000" stroke-width="0.2" />
+
+  <use x="1" y="15.5" href="#logo-infill-section" />
+  <use x="5" y="15.5" href="#logo-window-section" />
+  <use x="9" y="15.5" href="#logo-infill-section" />
+  <use x="13" y="15.5" href="#logo-door-section" />
+  <use x="17" y="15.5" href="#logo-infill-section" />
+
+  <rect x="1" y="14.5" width="20.5" height="1" fill="#8b4513" stroke="#000000" stroke-width="0.2" />
+
+  <path d="M -2,14.5 h 26.5 L 10.75,8 Z" fill="#cd853f" stroke="#000000" stroke-width="0.3" />
 </svg>
