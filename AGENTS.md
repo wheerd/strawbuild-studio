@@ -5,16 +5,34 @@
 - `pnpm dev` - Start development server
 - `pnpm build` - Build production (runs TypeScript check then Vite build)
 - `pnpm lint` - Run ESLint
+- `pnpm format:check` - Formats with prettier and fixes all fixable issues with eslint
 - `pnpm test` - Run all tests with Vitest
 - `pnpm preview` - Preview production build
 - `pnpm add <package>` - Add dependency
-- `npx tsc --noEmit --skipLibCheck` - TypeScript check only
+- `pnpm typecheck` - TypeScript check only
 - `pnpm audit --audit-level moderate` Security audit
+
+## Runtime
+
+- Node.js 22.x (`.nvmrc` provided)
+- pnpm (lockfile committed)
+
+## Directory Structure
+
+```
+src/
+├── app/          # App shell, entry point, global styling
+├── building/     # Building models, store, and management UI
+├── construction/ # Construction configuration, materials, plan + 3D viewers
+├── editor/       # Canvas tools, services, and status bar
+├── shared/       # Reusable components, geometry, hooks, services, theming
+└── test/         # Vitest setup helpers and fixtures
+```
 
 ## Code Style
 
 - **TypeScript**: Use strict mode with all safety checks enabled
-- **Imports**: Named imports from React (`import { useState } from 'react'`), default exports for components
+- **Imports**: Named imports from React (`import { useState } from 'react'`), default exports for components. Use relative path imports for same directory ('./foo') and absolute imports ('@/foo/bar') when it is in a different part of the file tree.
 - **Components**: Function declarations, not arrow functions (`function App() {}`)
 - **JSX**: Use React 18+ JSX transform (no need to import React for JSX)
 - **File Extensions**: Use `.tsx` for React components, `.ts` for utilities
@@ -38,3 +56,9 @@
 
 - Leverage TypeScript's strict mode for compile-time safety
 - Use non-null assertion (`!`) only when certain (like `document.getElementById('root')!`)
+
+## Product Context
+
+- Floor plan editor focused on strawbale construction
+- Current capabilities: finished-dimension walls, windows/doors, configurable construction methods, 2D plans, and interactive 3D previews
+- Planned additions: material and cost estimation, extended structural support, CAD import/export, irregular building handling

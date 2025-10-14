@@ -4,23 +4,23 @@
 [![Security](https://github.com/wheerd/strawbaler-online/workflows/Security%20&%20Dependencies/badge.svg)](https://github.com/wheerd/strawbaler-online/actions/workflows/security.yml)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/0c31f906-f421-426d-b6af-d0f69ae3ea83/deploy-status)](https://app.netlify.com/projects/strawbaler/deploys)
 
-A modern web-based floor plan editor specifically designed for strawbale construction planning. Built with React, TypeScript, and Konva for high-performance canvas rendering.
+A modern web-based floor plan editor specifically designed for strawbale construction planning.
 
 ## ✨ Features
 
-- **Interactive Floor Plan Editor**: Draw walls, rooms, and connection points
-- **Strawbale-Specific Tools**: Optimized for strawbale construction workflows
-- **Real-time Preview**: See your floor plan as you build it
-- **Modern Tech Stack**: React 19, TypeScript, Vite, and Zustand
-- **Comprehensive Testing**: 31+ tests covering core functionality
-- **CI/CD Pipeline**: Automated testing, linting, and security checks
+- **Finished-Dimension Floor Plans**: Define perimeter walls with plaster thickness accounted for
+- **Openings & Components**: Add windows, doors, and other wall penetrations tailored to strawbale builds
+- **Configurable Construction Methods**: Switch between infill, strawhenge, and module-based assemblies
+- **Plan & Model Generation**: Produce wall and floor build plans with interactive 3D previews
+- **Modern Tech Stack**: React 19, TypeScript, Vite, Zustand, and Radix UI
+- **CI/CD Pipeline**: Automated testing, linting, security checks, and dependency updates
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Node.js 18+
-- pnpm (recommended) or npm
+- Node.js 22+
+- pnpm
 
 ### Installation
 
@@ -53,6 +53,7 @@ pnpm lint         # Check code style and formatting
 pnpm lint:fix     # Auto-fix linting issues
 pnpm format       # Auto format with prettier
 pnpm format:check # Check formatting with prettier
+pnpm typecheck    # Run typescript type check
 
 # Building
 pnpm build        # Build for production
@@ -63,26 +64,45 @@ pnpm build        # Build for production
 ### Tech Stack
 
 - **Frontend**: React 19 with TypeScript
+- **UI**: Radix UI Themes and tailwind
 - **Canvas Rendering**: Konva.js with react-konva
-- **State Management**: Zustand with immutable updates
+- **3D Rendering**: Three.js via react-three
+- **State Management**: Zustand with immer, persist and zundo middlewares
+- **Geometry**: Turf, gl-matrix
+- **PWA**: with workbox and vite-pwa-plugin
 - **Testing**: Vitest + React Testing Library + jsdom
 - **Build Tool**: Vite
-- **Code Style**: neostandard
+- **Code Style**: neostandard, prettier, eslint
 
 ### Project Structure
 
 ```
 src/
-├── components/
-│   └── FloorPlanEditor/    # Main editor components
-│       ├── Canvas/         # Konva canvas layers
-│       ├── Shapes/         # Drawable elements (walls, points, rooms)
-│       ├── Tools/          # UI tools and toolbar
-│       └── hooks/          # Editor state management
-├── model/                  # Data models and operations
-├── types/                  # TypeScript type definitions
-└── test/                   # Test utilities and setup
+├── app/                # Application shell, entry point, and global styles
+├── building/           # Building-level models, store, and management UI
+├── construction/       # Construction configuration, materials, and plan/3D viewers
+├── editor/             # Canvas editor tools, services, status bar, and hooks
+├── shared/             # Reusable UI components, geometry utilities, services, and theming
+└── test/               # Shared Vitest setup, helpers, and fixtures
 ```
+
+## ⚠️ Disclaimer
+
+Strawbaler Online is under active development and provided as-is:
+
+- No guarantees for the precision of calculations, generated plans, or 3D models
+- Breaking changes may occur between releases
+- Browser storage can be cleared or migrate, which may remove project data
+- Always export and back up your work frequently
+- This tool does not replace consultation with qualified building professionals
+
+## 💾 Local Storage
+
+The application stores data locally in your browser to:
+
+- Remember whether the welcome information has been acknowledged
+- Persist floor plans, projects, and configuration preferences
+- Keep usage entirely local—no cookies, tracking, or third-party analytics
 
 ## 🔧 Development
 
@@ -93,22 +113,27 @@ src/
 pnpm test
 
 # Run specific test file
-pnpm test -- wall-creation.test.tsx
+pnpm test wall-creation.test.tsx
 
 # Run tests in watch mode
-pnpm test -- --watch
+pnpm test:watch
 ```
 
 ### Code Style
 
-This project uses ts-standard for consistent code formatting:
+This project uses prettier and eslint for consistent code formatting:
 
 ```bash
 # Check code style
 pnpm lint
+pnpm format:check
 
 # Auto-fix style issues
 pnpm lint:fix
+pnpm format
+
+# or just
+pnpm lint:format
 ```
 
 ## 🚢 Deployment
@@ -126,37 +151,20 @@ The `dist/` folder contains the production-ready static files.
 This project includes comprehensive CI/CD workflows:
 
 - **CI**: Tests, linting, and builds on every push/PR
-- **Security**: Dependency auditing and CodeQL analysis
-- **Release**: Automated releases on git tags
+- **Security**: Dependency auditing
 - **Dependencies**: Weekly automated dependency updates
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes and add tests
-4. Run tests and linting: `pnpm test && pnpm lint`
-5. Commit your changes: `git commit -m 'Add amazing feature'`
-6. Push to branch: `git push origin feature/amazing-feature`
-7. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 🎯 Roadmap
 
 - [ ] Enhanced room editing tools
+- [ ] Roof and foundation support
+- [ ] Import functionality for CAD files or PDF
 - [ ] Export functionality (PDF, DXF)
 - [ ] Material estimation calculations
-- [ ] 3D visualization mode
-- [ ] Collaborative editing features
-- [ ] Mobile-responsive design
 
 ## 🐛 Known Issues
 
-- Some linting rules need cleanup (tracked in CI)
-- Bundle size optimization needed for production
+- Non-right corners are not fully supported
 
 ---
 
