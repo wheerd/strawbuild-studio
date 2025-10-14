@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client'
 
 import { injectMaterialCSS } from '@/construction/materials/materialCSS'
 import { getAllMaterials, subscribeToMaterials } from '@/construction/materials/store'
+import { registerServiceWorker } from '@/shared/services/serviceWorkerRegistration'
 
 import App from './App.tsx'
 import './index.css'
@@ -43,5 +44,8 @@ root.render(
 )
 
 requestAnimationFrame(() => {
-  requestAnimationFrame(removeInitialLoadingScreen)
+  requestAnimationFrame(() => {
+    removeInitialLoadingScreen()
+    registerServiceWorker()
+  })
 })
