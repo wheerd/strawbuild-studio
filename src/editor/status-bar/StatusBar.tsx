@@ -2,6 +2,7 @@ import { Box, Flex, Grid } from '@radix-ui/themes'
 import React from 'react'
 
 import { AutoSaveIndicator } from './AutoSaveIndicator'
+import { OfflineStatusIndicator } from './OfflineStatusIndicator'
 import { GridSizeDisplay } from './GridSizeDisplay'
 import { PointerPositionDisplay } from './PointerPositionDisplay'
 import { StoreySelector } from './StoreySelector'
@@ -24,6 +25,7 @@ export function StatusBar(): React.JSX.Element {
     >
       <Grid columns="1fr 1fr 1fr" align="center" gap="4" p="1" className="pointer-events-auto">
         <Flex align="center" gap="3" p="0">
+          <OfflineStatusIndicator />
           <AutoSaveIndicator />
           <ThemeToggle />
         </Flex>
