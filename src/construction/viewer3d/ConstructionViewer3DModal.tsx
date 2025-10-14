@@ -4,6 +4,7 @@ import React, { Suspense, lazy, use, useEffect, useState } from 'react'
 
 import type { ConstructionModel } from '@/construction/model'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
+import { CanvasThemeProvider } from '@/shared/theme/CanvasThemeContext'
 
 import { OpacityControlProvider } from './context/OpacityControlContext'
 
@@ -103,7 +104,9 @@ export function ConstructionViewer3DModal({
                 }
               >
                 <OpacityControlProvider>
-                  <ConstructionViewer3DContent modelPromise={modelPromise} containerSize={containerSize} />
+                  <CanvasThemeProvider>
+                    <ConstructionViewer3DContent modelPromise={modelPromise} containerSize={containerSize} />
+                  </CanvasThemeProvider>
                 </OpacityControlProvider>
               </Suspense>
             ) : null}

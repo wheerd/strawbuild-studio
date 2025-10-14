@@ -1,9 +1,10 @@
 import { Box, Card, Flex } from '@radix-ui/themes'
 import { OrbitControls } from '@react-three/drei'
-import { Canvas } from '@react-three/fiber'
-import { useCallback, useRef } from 'react'
+import { Canvas, useThree } from '@react-three/fiber'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 
 import type { ConstructionModel } from '@/construction/model'
+import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 import ConstructionElement3D from './components/ConstructionElement3D'
 import ConstructionGroup3D from './components/ConstructionGroup3D'
@@ -17,6 +18,7 @@ interface ConstructionViewer3DProps {
 }
 
 function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProps): React.JSX.Element {
+  const theme = useCanvasTheme()
   const exportFnRef = useRef<((format: ExportFormat) => void) | null>(null)
 
   const centerX = (model.bounds.min[0] + model.bounds.max[0]) / 2
@@ -35,6 +37,11 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
   const cameraThreeZ = -centerY + cameraDistance * 0.7
 
   const gridSize = Math.max(maxSize * 3, 10000)
+
+  const gridHelperArgs = useMemo<[number, number, string, string]>(
+    () => [gridSize, 50, theme.grid, theme.grid],
+    [gridSize, theme.grid]
+  )
 
   const handleExportReady = useCallback((fn: (format: ExportFormat) => void) => {
     exportFnRef.current = fn
@@ -58,12 +65,13 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
         style={{
           width: `${containerSize.width}px`,
           height: `${containerSize.height}px`,
-          background: '#f0f0f0'
+          background: theme.bgCanvas
         }}
       >
-        <ambientLight intensity={1.3} />
+        <CanvasBackground color={theme.bgCanvas} />
+        <ambientLight intensity={theme.isDarkTheme ? 0.8 : 1.3} />
 
-        <gridHelper args={[gridSize, 50]} position={[centerX, 0, -centerY]} />
+        <gridHelper args={gridHelperArgs} position={[centerX, 0, -centerY]} />
 
         {model.elements.map(element =>
           'children' in element ? (
@@ -87,6 +95,16 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
       </Box>
     </div>
   )
+}
+
+function CanvasBackground({ color }: { color: string }): null {
+  const { gl } = useThree()
+
+  useEffect(() => {
+    gl.setClearColor(color)
+  }, [color, gl])
+
+  return null
 }
 
 export default ConstructionViewer3D

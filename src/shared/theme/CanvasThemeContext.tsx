@@ -2,6 +2,8 @@ import { useTheme } from 'next-themes'
 import { type ReactNode, createContext, useContext, useEffect, useRef, useState } from 'react'
 
 interface CanvasThemeColors {
+  isDarkTheme: boolean
+
   // Primary accent colors
   primary: string
   primaryLight: string
@@ -42,7 +44,7 @@ interface CanvasThemeColors {
 
 export const CanvasThemeContext = createContext<CanvasThemeColors | null>(null)
 
-function readColorsFromElement(element: HTMLElement | null): CanvasThemeColors {
+function readColorsFromElement(element: HTMLElement | null, isDarkTheme: boolean): CanvasThemeColors {
   const styles = element && getComputedStyle(element)
   const get = (varName: string): string => {
     if (!styles) {
@@ -52,6 +54,7 @@ function readColorsFromElement(element: HTMLElement | null): CanvasThemeColors {
   }
 
   return {
+    isDarkTheme,
     primary: get('--color-primary'),
     primaryLight: get('--color-primary-light'),
     primaryDark: get('--color-primary-dark'),
@@ -79,11 +82,11 @@ function readColorsFromElement(element: HTMLElement | null): CanvasThemeColors {
 export function CanvasThemeProvider({ children }: { children: ReactNode }): React.JSX.Element {
   const { resolvedTheme } = useTheme()
   const containerRef = useRef<HTMLDivElement>(null)
-  const [colors, setColors] = useState<CanvasThemeColors>(() => readColorsFromElement(null))
+  const [colors, setColors] = useState<CanvasThemeColors>(() => readColorsFromElement(null, false))
 
   useEffect(() => {
     if (containerRef.current) {
-      setTimeout(() => setColors(readColorsFromElement(containerRef.current)), 0)
+      setTimeout(() => setColors(readColorsFromElement(containerRef.current, resolvedTheme === 'dark')), 0)
     }
   }, [resolvedTheme, containerRef.current])
 
