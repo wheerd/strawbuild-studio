@@ -198,8 +198,21 @@ export const TAG_WALLS: Tag = {
   label: 'Walls',
   category: 'construction'
 }
+
 export const TAG_MODULE: Tag = {
   id: 'construction_module',
   label: 'Module',
+  category: 'construction'
+}
+
+export const TAG_SLAB: Tag = {
+  id: 'construction_slab',
+  label: 'Slab',
+  category: 'construction'
+}
+
+export const TAG_STOREY: Tag = {
+  id: 'construction_slorey',
+  label: 'Storey',
   category: 'construction'
 }

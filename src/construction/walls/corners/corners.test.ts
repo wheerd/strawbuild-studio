@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPerimeterConstructionMethodId, createPerimeterId, createPerimeterWallId } from '@/building/model/ids'
 import type { Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model/model'
 import { type ConfigActions, getConfigActions } from '@/construction/config'
-import type { LayersConfig, PerimeterConstructionMethod } from '@/construction/config/types'
+import type { PerimeterConstructionMethod, WallLayersConfig } from '@/construction/config/types'
 import { type Length, createLength, createVec2 } from '@/shared/geometry'
 
 import { type WallContext, calculateWallCornerInfo, getWallContext } from './corners'
@@ -73,7 +73,7 @@ function createMockPerimeter(walls: PerimeterWall[], corners: PerimeterCorner[])
   } as Perimeter
 }
 
-function createMockConstructionMethod(id: string, name: string, layers: LayersConfig): PerimeterConstructionMethod {
+function createMockConstructionMethod(id: string, name: string, layers: WallLayersConfig): PerimeterConstructionMethod {
   return {
     id: id as any,
     name,
@@ -195,7 +195,7 @@ describe('Corner Calculations', () => {
     let mockContext: WallContext
 
     beforeEach(() => {
-      const layers: LayersConfig = {
+      const layers: WallLayersConfig = {
         insideThickness: createLength(30),
         outsideThickness: createLength(50)
       }
@@ -352,7 +352,7 @@ describe('Corner Calculations', () => {
 
   describe('integration tests', () => {
     it('should work with getWallContext and calculateWallCornerInfo together', () => {
-      const layers: LayersConfig = {
+      const layers: WallLayersConfig = {
         insideThickness: createLength(30),
         outsideThickness: createLength(50)
       }

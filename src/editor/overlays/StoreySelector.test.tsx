@@ -2,8 +2,8 @@ import { Theme } from '@radix-ui/themes'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { StoreyId } from '@/building/model/ids'
-import { createStoreyLevel } from '@/building/model/model'
+import { DEFAULT_SLAB_CONFIG_ID, type StoreyId } from '@/building/model/ids'
+import { type Storey, createStoreyLevel } from '@/building/model/model'
 import { useActiveStoreyId, useModelActions, useStoreysOrderedByLevel } from '@/building/store'
 import { createLength } from '@/shared/geometry'
 
@@ -28,18 +28,20 @@ const mockUseActiveStoreyId = vi.mocked(useActiveStoreyId)
 const mockUseModelActions = vi.mocked(useModelActions)
 
 describe('StoreySelector', () => {
-  const mockStoreys = [
+  const mockStoreys: Storey[] = [
     {
       id: 'storey-1' as StoreyId,
       name: 'Ground Floor',
       level: createStoreyLevel(0),
-      height: createLength(3000)
+      height: createLength(3000),
+      slabConstructionConfigId: DEFAULT_SLAB_CONFIG_ID
     },
     {
       id: 'storey-2' as StoreyId,
       name: 'First Floor',
       level: createStoreyLevel(1),
-      height: createLength(3000)
+      height: createLength(3000),
+      slabConstructionConfigId: DEFAULT_SLAB_CONFIG_ID
     }
   ]
 

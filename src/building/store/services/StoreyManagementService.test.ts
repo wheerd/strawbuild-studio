@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { PerimeterId, StoreyId } from '@/building/model/ids'
+import { DEFAULT_SLAB_CONFIG_ID, type PerimeterId, type StoreyId } from '@/building/model/ids'
 import { createStoreyLevel } from '@/building/model/model'
 import { createLength } from '@/shared/geometry'
 
@@ -128,14 +128,16 @@ describe('StoreyManagementService', () => {
         id: 'storey-1' as StoreyId,
         name: 'Ground Floor',
         level: createStoreyLevel(0),
-        height: createLength(3000)
+        height: createLength(3000),
+        slabConstructionConfigId: DEFAULT_SLAB_CONFIG_ID
       }
 
       const newStorey = {
         id: 'storey-2' as StoreyId,
         name: 'Ground Floor Copy',
         level: createStoreyLevel(1),
-        height: createLength(3000)
+        height: createLength(3000),
+        slabConstructionConfigId: DEFAULT_SLAB_CONFIG_ID
       }
 
       mockActions.getStoreyById.mockReturnValue(sourceStorey)
@@ -145,7 +147,11 @@ describe('StoreyManagementService', () => {
 
       const result = service.duplicateStorey('storey-1' as StoreyId)
 
-      expect(mockActions.addStorey).toHaveBeenCalledWith('Ground Floor Copy', createLength(3000))
+      expect(mockActions.addStorey).toHaveBeenCalledWith(
+        'Ground Floor Copy',
+        createLength(3000),
+        DEFAULT_SLAB_CONFIG_ID
+      )
       expect(result).toEqual(newStorey)
     })
 
@@ -154,14 +160,16 @@ describe('StoreyManagementService', () => {
         id: 'storey-1' as StoreyId,
         name: 'Ground Floor',
         level: createStoreyLevel(0),
-        height: createLength(3000)
+        height: createLength(3000),
+        slabConstructionConfigId: DEFAULT_SLAB_CONFIG_ID
       }
 
       const newStorey = {
         id: 'storey-2' as StoreyId,
         name: 'Custom Name',
         level: createStoreyLevel(1),
-        height: createLength(3000)
+        height: createLength(3000),
+        slabConstructionConfigId: DEFAULT_SLAB_CONFIG_ID
       }
 
       mockActions.getStoreyById.mockReturnValue(sourceStorey)
@@ -171,7 +179,7 @@ describe('StoreyManagementService', () => {
 
       service.duplicateStorey('storey-1' as StoreyId, 'Custom Name')
 
-      expect(mockActions.addStorey).toHaveBeenCalledWith('Custom Name', createLength(3000))
+      expect(mockActions.addStorey).toHaveBeenCalledWith('Custom Name', createLength(3000), DEFAULT_SLAB_CONFIG_ID)
     })
 
     it('should throw error for non-existent storey', () => {
@@ -185,14 +193,16 @@ describe('StoreyManagementService', () => {
         id: 'storey-1' as StoreyId,
         name: 'Only Floor',
         level: createStoreyLevel(0),
-        height: createLength(3000)
+        height: createLength(3000),
+        slabConstructionConfigId: DEFAULT_SLAB_CONFIG_ID
       }
 
       const newStorey = {
         id: 'storey-2' as StoreyId,
         name: 'Only Floor Copy',
         level: createStoreyLevel(1),
-        height: createLength(3000)
+        height: createLength(3000),
+        slabConstructionConfigId: DEFAULT_SLAB_CONFIG_ID
       }
 
       mockActions.getStoreyById.mockReturnValue(sourceStorey)
@@ -202,7 +212,7 @@ describe('StoreyManagementService', () => {
 
       const result = service.duplicateStorey('storey-1' as StoreyId)
 
-      expect(mockActions.addStorey).toHaveBeenCalledWith('Only Floor Copy', createLength(3000))
+      expect(mockActions.addStorey).toHaveBeenCalledWith('Only Floor Copy', createLength(3000), DEFAULT_SLAB_CONFIG_ID)
       expect(result).toEqual(newStorey)
     })
 
@@ -211,14 +221,16 @@ describe('StoreyManagementService', () => {
         id: 'storey-1' as StoreyId,
         name: 'Ground Floor',
         level: createStoreyLevel(0),
-        height: createLength(3000)
+        height: createLength(3000),
+        slabConstructionConfigId: DEFAULT_SLAB_CONFIG_ID
       }
 
       const newStorey = {
         id: 'storey-2' as StoreyId,
         name: 'Ground Floor Copy',
         level: createStoreyLevel(1),
-        height: createLength(3000)
+        height: createLength(3000),
+        slabConstructionConfigId: DEFAULT_SLAB_CONFIG_ID
       }
 
       const sourcePerimeter = {

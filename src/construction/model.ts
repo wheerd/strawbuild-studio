@@ -1,6 +1,14 @@
 import { vec3 } from 'gl-matrix'
 
-import { type Bounds3D, type Plane3D, type Polygon2D, mergeBounds, vec3Add } from '@/shared/geometry'
+import {
+  type Axis3D,
+  type Bounds3D,
+  type Length,
+  type Plane3D,
+  type Polygon2D,
+  mergeBounds,
+  vec3Add
+} from '@/shared/geometry'
 
 import { type ConstructionGroup, type GroupOrElement, createConstructionElementId } from './elements'
 import { type Transform, transform, transformBounds } from './geometry'
@@ -17,9 +25,18 @@ export interface ConstructionModel {
   bounds: Bounds3D
 }
 
-export type HighlightedAreaType = 'inner-perimeter' | 'outer-perimeter' | 'corner' | 'window' | 'door' | 'passage'
+export type HighlightedAreaType =
+  | 'inner-perimeter'
+  | 'outer-perimeter'
+  | 'corner'
+  | 'window'
+  | 'door'
+  | 'passage'
+  | 'top-plate'
+  | 'bottom-plate'
+  | 'floor-level'
 
-export type HighlightedArea = HighlightedCuboid | HighlightedPolygon
+export type HighlightedArea = HighlightedCuboid | HighlightedPolygon | HighlightedCut
 
 /** Highlighted area for visual feedback (corners, critical zones, etc.) */
 export interface HighlightedCuboid {
@@ -38,6 +55,16 @@ export interface HighlightedPolygon {
   label?: string
   polygon: Polygon2D
   plane: Plane3D
+  tags?: Tag[]
+  renderPosition: 'bottom' | 'top'
+}
+
+export interface HighlightedCut {
+  type: 'cut'
+  areaType: HighlightedAreaType
+  label?: string
+  position: Length
+  axis: Axis3D
   tags?: Tag[]
   renderPosition: 'bottom' | 'top'
 }

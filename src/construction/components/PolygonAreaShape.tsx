@@ -59,9 +59,11 @@ export function PolygonAreaShape({ polygon, projection }: PolygonAreaShapeProps)
       <path d={pathData} clipPath={`url(#${polygonId})`} />
 
       {polygon.label && (
-        <text x={center[0]} y={center[1]}>
-          {polygon.label}
-        </text>
+        <g className="text" transform={`translate(${center[0]} ${center[1]})`}>
+          <text x={0} y={0}>
+            {polygon.label}
+          </text>
+        </g>
       )}
     </g>
   )

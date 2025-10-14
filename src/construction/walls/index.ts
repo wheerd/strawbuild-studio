@@ -35,7 +35,7 @@ function* constructNonStrawbaleOpeningFrame(
 export const constructNonStrawbaleWall: PerimeterWallConstructionMethod<NonStrawbaleConfig> = (
   wall,
   perimeter,
-  floorHeight,
+  storeyContext,
   config,
   layers
 ) => {
@@ -43,7 +43,7 @@ export const constructNonStrawbaleWall: PerimeterWallConstructionMethod<NonStraw
     segmentedWallConstruction(
       wall,
       perimeter,
-      floorHeight,
+      storeyContext,
       layers,
       (position, size) => infillNonStrawbaleWallArea(position, size, config),
       (position: Vec3, size: Vec3) => constructNonStrawbaleOpeningFrame(config.material, position, size)

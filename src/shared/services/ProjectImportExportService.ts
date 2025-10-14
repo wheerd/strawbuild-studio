@@ -1,6 +1,14 @@
-import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
+import type {
+  PerimeterConstructionMethodId,
+  RingBeamConstructionMethodId,
+  SlabConstructionConfigId
+} from '@/building/model/ids'
 import type { Storey } from '@/building/model/model'
-import type { PerimeterConstructionMethod, RingBeamConstructionMethod } from '@/construction/config/types'
+import type {
+  PerimeterConstructionMethod,
+  RingBeamConstructionMethod,
+  SlabConstructionConfig
+} from '@/construction/config/types'
 import type { Material, MaterialId } from '@/construction/materials/material'
 import type { Polygon2D } from '@/shared/geometry'
 import { createLength, createVec2 } from '@/shared/geometry'
@@ -8,6 +16,7 @@ import { createLength, createVec2 } from '@/shared/geometry'
 export interface ExportedStorey {
   name: string
   height: number
+  slabConstructionConfigId: string
   perimeters: ExportedPerimeter[]
 }
 
@@ -48,9 +57,11 @@ export interface ExportData {
   configStore: {
     ringBeamConstructionMethods: Record<RingBeamConstructionMethodId, RingBeamConstructionMethod>
     perimeterConstructionMethods: Record<PerimeterConstructionMethodId, PerimeterConstructionMethod>
+    slabConstructionConfigs?: Record<SlabConstructionConfigId, SlabConstructionConfig>
     defaultBaseRingBeamMethodId?: RingBeamConstructionMethodId
     defaultTopRingBeamMethodId?: RingBeamConstructionMethodId
     defaultPerimeterMethodId: PerimeterConstructionMethodId
+    defaultSlabConfigId?: SlabConstructionConfigId
   }
   materialsStore: {
     materials: Record<MaterialId, Material>
@@ -83,7 +94,7 @@ export interface IProjectImportExportService {
   importFromString(content: string): Promise<ImportResult | ImportError>
 }
 
-const CURRENT_VERSION = '1.1.0'
+const CURRENT_VERSION = '1.2.0'
 
 class ProjectImportExportServiceImpl implements IProjectImportExportService {
   async exportToString(): Promise<StringExportResult | StringExportError> {
@@ -104,6 +115,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
       const exportedStoreys: ExportedStorey[] = storeys.map(storey => ({
         name: storey.name,
         height: Number(storey.height),
+        slabConstructionConfigId: storey.slabConstructionConfigId,
         perimeters: modelActions.getPerimetersByStorey(storey.id).map(perimeter => ({
           corners: perimeter.corners.map(corner => ({
             insideX: corner.insidePoint[0],
@@ -160,13 +172,12 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
 
       const modelActions = getModelActions()
 
-      // 1. Import config state (unchanged format)
-      setConfigState(importResult.data.configStore)
+      // 1. Import config state with backwards compatibility for floor configs
+      const configStore = importResult.data.configStore
+      setConfigState(configStore)
 
       // 2. Import materials state (if available for backwards compatibility)
-      if (importResult.data.materialsStore) {
-        setMaterialsState(importResult.data.materialsStore)
-      }
+      setMaterialsState(importResult.data.materialsStore)
 
       // 3. Reset model (creates default "Ground Floor" at level 0)
       modelActions.reset()
@@ -180,15 +191,17 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
 
       exportedStoreys.forEach((exportedStorey, index) => {
         let targetStorey: Storey
+        const slabConfigId = exportedStorey.slabConstructionConfigId as SlabConstructionConfigId
 
         if (index === 0) {
           // Modify existing default ground floor
           targetStorey = defaultGroundFloor
           modelActions.updateStoreyName(targetStorey.id, exportedStorey.name)
           modelActions.updateStoreyHeight(targetStorey.id, createLength(exportedStorey.height))
+          modelActions.updateStoreySlabConfig(targetStorey.id, slabConfigId)
         } else {
-          // Add additional storeys
-          targetStorey = modelActions.addStorey(exportedStorey.name, createLength(exportedStorey.height))
+          // Add additional storeys with floor config
+          targetStorey = modelActions.addStorey(exportedStorey.name, createLength(exportedStorey.height), slabConfigId)
         }
 
         // 6. Recreate perimeters - let store auto-compute all geometry
@@ -363,7 +376,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
       }
 
       // Support backwards compatibility
-      const supportedVersions = ['1.0.0', '1.1.0']
+      const supportedVersions = ['1.0.0', '1.1.0', '1.2.0']
       if (!supportedVersions.includes(parsed.version)) {
         return {
           success: false,

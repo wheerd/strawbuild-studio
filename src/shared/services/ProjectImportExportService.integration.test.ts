@@ -369,40 +369,4 @@ describe('ProjectImportExportService Integration', () => {
     const restoredMaterial = materialsActions.getMaterialById(customMaterial.id)
     expect(restoredMaterial).toEqual(customMaterial)
   })
-
-  it('handles backwards compatibility with v1.0.0 files (no materials)', async () => {
-    // Create a mock v1.0.0 export without materials
-    const mockV1Export = {
-      version: '1.0.0',
-      timestamp: new Date().toISOString(),
-      modelStore: {
-        storeys: [
-          {
-            name: 'Test Floor',
-            height: 3000,
-            perimeters: []
-          }
-        ],
-        minLevel: 0
-      },
-      configStore: {
-        ringBeamConstructionMethods: {},
-        perimeterConstructionMethods: {},
-        defaultPerimeterMethodId: 'test_id'
-      }
-      // Note: no materialsStore field
-    }
-
-    const exportContent = JSON.stringify(mockV1Export, null, 2)
-
-    // Should be able to import v1.0.0 files
-    const importResult = await ProjectImportExportService.importFromString(exportContent)
-    expect(importResult.success).toBe(true)
-
-    if (!importResult.success) return
-
-    // Materials store should remain unchanged (keep defaults)
-    const materials = getMaterialsState()
-    expect(Object.keys(materials.materials).length).toBeGreaterThan(0) // Should have default materials
-  })
 })

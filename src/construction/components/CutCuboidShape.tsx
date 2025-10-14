@@ -57,7 +57,7 @@ export function CutCuboidShape({
 
   return (
     <g>
-      <polygon points={polygonPoints} />
+      <polygon className="apply-material" points={polygonPoints} />
 
       {/* Debug markers */}
       {showDebugMarkers && (

@@ -31,13 +31,17 @@ export interface OpeningConstructionConfig {
   headerMaterial: MaterialId
 }
 
-function extractUnifiedDimensions(openings: Opening[]): {
+function extractUnifiedDimensions(
+  openings: Opening[],
+  zOffset: Length
+): {
   sillTop: Length
   headerBottom: Length
 } {
   // All openings in a segment have same sill/header heights (guaranteed by segmentWall)
   const firstOpening = openings[0]
-  const sillTop = (firstOpening.sillHeight ?? 0) as Length
+  // Apply zOffset to convert from finished floor coordinates to wall construction coordinates
+  const sillTop = ((firstOpening.sillHeight ?? 0) + zOffset) as Length
   const headerBottom = (sillTop + firstOpening.height) as Length
 
   return { sillTop, headerBottom }
@@ -58,7 +62,8 @@ export function* constructOpeningFrame(
   const [openingWidth, wallThickness] = openingSegment.size
   const openingCenterX = (openingLeft + openingRight) / 2
 
-  const { sillTop, headerBottom } = extractUnifiedDimensions(openings)
+  const zOffset = openingSegment.zOffset ?? (0 as Length)
+  const { sillTop, headerBottom } = extractUnifiedDimensions(openings, zOffset)
 
   // Check if header is required and fits
   const isOpeningAtWallTop = headerBottom >= wallTop
@@ -104,7 +109,7 @@ export function* constructOpeningFrame(
   }
 
   // Check if sill is required and fits
-  const sillRequired = sillTop > wallBottom
+  const sillRequired = sillTop !== wallBottom
   if (sillRequired) {
     const sillBottom = (sillTop - config.sillThickness) as Length
 

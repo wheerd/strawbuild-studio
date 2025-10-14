@@ -1,5 +1,5 @@
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons'
-import { Button, Dialog, Flex, IconButton, Text } from '@radix-ui/themes'
+import { Button, Dialog, Flex, Grid, IconButton, Text } from '@radix-ui/themes'
 import React, { useCallback } from 'react'
 
 import { useModelActions, useStoreysOrderedByLevel } from '@/building/store'
@@ -16,7 +16,7 @@ export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): 
   const lowestStorey = storeysOrdered[0]
   const highestStorey = storeysOrdered[storeysOrdered.length - 1]
 
-  const handleAddEmptyFloor = useCallback(() => {
+  const handleAddEmptyStorey = useCallback(() => {
     try {
       const newStorey = addStorey('New Floor')
       setActiveStoreyId(newStorey.id) // Switch to new storey
@@ -32,6 +32,8 @@ export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): 
     <Dialog.Root>
       <Dialog.Trigger>{trigger}</Dialog.Trigger>
       <Dialog.Content
+        minWidth="60vw"
+        maxWidth="90vw"
         onEscapeKeyDown={e => {
           e.stopPropagation()
         }}
@@ -47,7 +49,7 @@ export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): 
           </Flex>
         </Dialog.Title>
 
-        <Flex direction="column" gap="2" align="end">
+        <Grid columns="1fr" gap="2">
           {storeysDisplayOrder.length > 0 ? (
             storeysDisplayOrder.map(storey => (
               <StoreyListItem
@@ -62,11 +64,11 @@ export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): 
             <Text>No floors yet.</Text>
           )}
 
-          <Button onClick={handleAddEmptyFloor}>
+          <Button onClick={handleAddEmptyStorey}>
             <PlusIcon />
             Add New Floor
           </Button>
-        </Flex>
+        </Grid>
       </Dialog.Content>
     </Dialog.Root>
   )

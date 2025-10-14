@@ -1,5 +1,5 @@
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
-import type { LayersConfig } from '@/construction/config/types'
+import type { WallLayersConfig } from '@/construction/config/types'
 import { constructStraw } from '@/construction/materials/straw'
 import type { ConstructionModel } from '@/construction/model'
 import { constructOpeningFrame } from '@/construction/openings/openings'
@@ -8,7 +8,7 @@ import { aggregateResults, yieldAsGroup } from '@/construction/results'
 import { TAG_MODULE } from '@/construction/tags'
 import type { BaseConstructionConfig, PerimeterWallConstructionMethod } from '@/construction/walls/construction'
 import { type InfillConstructionConfig, infillWallArea } from '@/construction/walls/infill/infill'
-import { segmentedWallConstruction } from '@/construction/walls/segmentation'
+import { type WallStoreyContext, segmentedWallConstruction } from '@/construction/walls/segmentation'
 import { type Length, type Vec3, mergeBounds } from '@/shared/geometry'
 
 import { type ModuleConfig, constructModule } from './modules'
@@ -160,14 +160,14 @@ export function* strawhengeWallArea(
 const _constructStrawhengeWall = (
   wall: PerimeterWall,
   perimeter: Perimeter,
-  floorHeight: Length,
+  storeyContext: WallStoreyContext,
   config: StrawhengeConstructionConfig,
-  layers: LayersConfig
+  layers: WallLayersConfig
 ): Generator<ConstructionResult> =>
   segmentedWallConstruction(
     wall,
     perimeter,
-    floorHeight,
+    storeyContext,
     layers,
     (position, size, startsWithStand, endsWithStand, startAtEnd) =>
       strawhengeWallArea(position, size, config, startsWithStand, endsWithStand, startAtEnd),
@@ -179,11 +179,11 @@ const _constructStrawhengeWall = (
 export const constructStrawhengeWall: PerimeterWallConstructionMethod<StrawhengeConstructionConfig> = (
   wall: PerimeterWall,
   perimeter: Perimeter,
-  floorHeight: Length,
+  storeyContext: WallStoreyContext,
   config: StrawhengeConstructionConfig,
-  layers: LayersConfig
+  layers: WallLayersConfig
 ): ConstructionModel => {
-  const allResults = Array.from(_constructStrawhengeWall(wall, perimeter, floorHeight, config, layers))
+  const allResults = Array.from(_constructStrawhengeWall(wall, perimeter, storeyContext, config, layers))
 
   const aggRes = aggregateResults(allResults)
 

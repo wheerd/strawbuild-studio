@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import type { Storey } from '@/building/model/model'
 import { useActiveStoreyId, useModelActions } from '@/building/store'
 import { defaultStoreyManagementService } from '@/building/store/services/StoreyManagementService'
+import { SlabConfigSelectWithEdit } from '@/construction/config/components/SlabConfigSelectWithEdit'
 import { LengthField } from '@/shared/components/LengthField'
 import { type Length } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
@@ -36,7 +37,7 @@ export function StoreyListItem({
   const { setActiveStoreyId } = useModelActions()
   const [editName, setEditName] = useState(storey.name)
 
-  const { updateStoreyName, updateStoreyHeight } = useModelActions()
+  const { updateStoreyName, updateStoreyHeight, updateStoreySlabConfig } = useModelActions()
 
   // Calculate button states
   const isLowest = storey.id === lowestStorey.id
@@ -146,6 +147,7 @@ export function StoreyListItem({
           onKeyDown={handleKeyDown}
           placeholder="Floor name"
           required
+          style={{ minWidth: '150px', flexGrow: 1 }}
         />
 
         {/* Height input */}
@@ -164,6 +166,13 @@ export function StoreyListItem({
             <HeightIcon />
           </TextField.Slot>
         </LengthField>
+
+        {/* Slab Configuration */}
+        <SlabConfigSelectWithEdit
+          value={storey.slabConstructionConfigId}
+          onValueChange={value => updateStoreySlabConfig(storey.id, value)}
+          size="2"
+        />
 
         {/* Action buttons */}
         <Flex gap="1">

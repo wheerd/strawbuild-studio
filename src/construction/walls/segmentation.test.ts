@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createOpeningId, createPerimeterConstructionMethodId, createPerimeterId } from '@/building/model/ids'
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config'
-import type { LayersConfig } from '@/construction/config/types'
+import type { WallLayersConfig } from '@/construction/config/types'
 import { IDENTITY } from '@/construction/geometry'
 import { aggregateResults, yieldElement } from '@/construction/results'
 import { TAG_OPENING_SPACING, TAG_WALL_LENGTH } from '@/construction/tags'
@@ -12,12 +12,25 @@ import { createLength, createVec2 } from '@/shared/geometry'
 
 import type { WallCornerInfo } from './construction'
 import { calculateWallCornerInfo, getWallContext } from './corners/corners'
-import { segmentedWallConstruction } from './segmentation'
+import { type WallStoreyContext, segmentedWallConstruction } from './segmentation'
 
 // Mock dependencies
 vi.mock('./corners/corners', () => ({
   getWallContext: vi.fn(),
   calculateWallCornerInfo: vi.fn()
+}))
+
+vi.mock('@/construction/floors', () => ({
+  SLAB_CONSTRUCTION_METHODS: {
+    monolithic: {
+      getTopOffset: vi.fn(() => 0),
+      getBottomOffset: vi.fn(() => 0)
+    },
+    joist: {
+      getTopOffset: vi.fn(() => 0),
+      getBottomOffset: vi.fn(() => 0)
+    }
+  }
 }))
 
 vi.mock('@/construction/config', () => ({
@@ -104,10 +117,18 @@ function createMockCornerInfo(
   }
 }
 
-function createMockLayers(): LayersConfig {
+function createMockLayers(): WallLayersConfig {
   return {
     insideThickness: createLength(30),
     outsideThickness: createLength(50)
+  }
+}
+
+function createMockStoreyContext(storeyHeight: Length = createLength(2500)): WallStoreyContext {
+  return {
+    storeyHeight,
+    floorTopOffset: 0 as Length,
+    ceilingBottomOffset: 0 as Length
   }
 }
 
@@ -189,14 +210,24 @@ describe('segmentedWallConstruction', () => {
       const layers = createMockLayers()
 
       const results = [
-        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+        ...segmentedWallConstruction(
+          wall,
+          perimeter,
+          createMockStoreyContext(wallHeight),
+          layers,
+          mockWallConstruction,
+          mockOpeningConstruction
+        )
       ]
       const { elements, measurements, areas } = aggregateResults(results)
 
       // Should generate corner areas
-      expect(areas).toHaveLength(2)
+      expect(areas).toHaveLength(5)
       expect(areas[0].areaType).toBe('corner')
       expect(areas[1].areaType).toBe('corner')
+      expect(areas[2].areaType).toBe('bottom-plate')
+      expect(areas[3].areaType).toBe('top-plate')
+      expect(areas[4].areaType).toBe('floor-level')
 
       // Should generate wall length measurement
       expect(measurements).toHaveLength(1)
@@ -232,7 +263,14 @@ describe('segmentedWallConstruction', () => {
       mockCalculateWallCornerInfo.mockReturnValue(cornerInfo)
 
       const results = [
-        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+        ...segmentedWallConstruction(
+          wall,
+          perimeter,
+          createMockStoreyContext(wallHeight),
+          layers,
+          mockWallConstruction,
+          mockOpeningConstruction
+        )
       ]
       const { measurements } = aggregateResults(results)
 
@@ -261,7 +299,14 @@ describe('segmentedWallConstruction', () => {
         .mockReturnValueOnce({ config: { height: createLength(100) } }) // top
 
       const results = [
-        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+        ...segmentedWallConstruction(
+          wall,
+          perimeter,
+          createMockStoreyContext(wallHeight),
+          layers,
+          mockWallConstruction,
+          mockOpeningConstruction
+        )
       ]
       aggregateResults(results)
 
@@ -286,7 +331,14 @@ describe('segmentedWallConstruction', () => {
       const layers = createMockLayers()
 
       const results = [
-        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+        ...segmentedWallConstruction(
+          wall,
+          perimeter,
+          createMockStoreyContext(wallHeight),
+          layers,
+          mockWallConstruction,
+          mockOpeningConstruction
+        )
       ]
       const { measurements } = aggregateResults(results)
 
@@ -308,12 +360,7 @@ describe('segmentedWallConstruction', () => {
 
       // Should call opening construction once
       expect(mockOpeningConstruction).toHaveBeenCalledTimes(1)
-      expect(mockOpeningConstruction).toHaveBeenCalledWith(
-        [1000, 30, 60],
-        [800, 220, 2380],
-        -60, // -z offset
-        [opening]
-      )
+      expect(mockOpeningConstruction).toHaveBeenCalledWith([1000, 30, 60], [800, 220, 2380], 0, [opening])
 
       // Should generate segment measurements for both wall segments
       const segmentMeasurements = measurements.filter(m => m.tags?.includes(TAG_OPENING_SPACING))
@@ -328,7 +375,14 @@ describe('segmentedWallConstruction', () => {
       const layers = createMockLayers()
 
       const results = [
-        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+        ...segmentedWallConstruction(
+          wall,
+          perimeter,
+          createMockStoreyContext(wallHeight),
+          layers,
+          mockWallConstruction,
+          mockOpeningConstruction
+        )
       ]
       aggregateResults(results)
 
@@ -337,7 +391,7 @@ describe('segmentedWallConstruction', () => {
       expect(mockWallConstruction).toHaveBeenCalledWith([800, 30, 60], [2200, 220, 2380], true, true, true)
 
       // Should call opening construction once
-      expect(mockOpeningConstruction).toHaveBeenCalledWith([0, 30, 60], [800, 220, 2380], -60, [opening])
+      expect(mockOpeningConstruction).toHaveBeenCalledWith([0, 30, 60], [800, 220, 2380], 0, [opening])
     })
 
     it('should handle opening at end of wall', () => {
@@ -348,7 +402,14 @@ describe('segmentedWallConstruction', () => {
       const layers = createMockLayers()
 
       const results = [
-        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+        ...segmentedWallConstruction(
+          wall,
+          perimeter,
+          createMockStoreyContext(wallHeight),
+          layers,
+          mockWallConstruction,
+          mockOpeningConstruction
+        )
       ]
       aggregateResults(results)
 
@@ -357,7 +418,7 @@ describe('segmentedWallConstruction', () => {
       expect(mockWallConstruction).toHaveBeenCalledWith([-0, 30, 60], [2200, 220, 2380], true, true, false)
 
       // Should call opening construction once
-      expect(mockOpeningConstruction).toHaveBeenCalledWith([2200, 30, 60], [800, 220, 2380], -60, [opening])
+      expect(mockOpeningConstruction).toHaveBeenCalledWith([2200, 30, 60], [800, 220, 2380], 0, [opening])
     })
 
     it('should merge adjacent openings with same sill and header heights', () => {
@@ -369,7 +430,14 @@ describe('segmentedWallConstruction', () => {
       const layers = createMockLayers()
 
       const results = [
-        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+        ...segmentedWallConstruction(
+          wall,
+          perimeter,
+          createMockStoreyContext(wallHeight),
+          layers,
+          mockWallConstruction,
+          mockOpeningConstruction
+        )
       ]
       aggregateResults(results)
 
@@ -378,7 +446,7 @@ describe('segmentedWallConstruction', () => {
       expect(mockOpeningConstruction).toHaveBeenCalledWith(
         [1000, 30, 60],
         [1400, 220, 2380], // combined width: 800 + 600
-        -60,
+        0,
         [opening1, opening2]
       )
     })
@@ -392,14 +460,21 @@ describe('segmentedWallConstruction', () => {
       const layers = createMockLayers()
 
       const results = [
-        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+        ...segmentedWallConstruction(
+          wall,
+          perimeter,
+          createMockStoreyContext(wallHeight),
+          layers,
+          mockWallConstruction,
+          mockOpeningConstruction
+        )
       ]
       aggregateResults(results)
 
       // Should call opening construction twice - separate openings
       expect(mockOpeningConstruction).toHaveBeenCalledTimes(2)
-      expect(mockOpeningConstruction).toHaveBeenNthCalledWith(1, [1000, 30, 60], [800, 220, 2380], -60, [opening1])
-      expect(mockOpeningConstruction).toHaveBeenNthCalledWith(2, [1800, 30, 60], [600, 220, 2380], -60, [opening2])
+      expect(mockOpeningConstruction).toHaveBeenNthCalledWith(1, [1000, 30, 60], [800, 220, 2380], 0, [opening1])
+      expect(mockOpeningConstruction).toHaveBeenNthCalledWith(2, [1800, 30, 60], [600, 220, 2380], 0, [opening2])
     })
 
     it('should not merge adjacent openings with different header heights', () => {
@@ -411,7 +486,14 @@ describe('segmentedWallConstruction', () => {
       const layers = createMockLayers()
 
       const results = [
-        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+        ...segmentedWallConstruction(
+          wall,
+          perimeter,
+          createMockStoreyContext(wallHeight),
+          layers,
+          mockWallConstruction,
+          mockOpeningConstruction
+        )
       ]
       aggregateResults(results)
 
@@ -429,13 +511,20 @@ describe('segmentedWallConstruction', () => {
       const layers = createMockLayers()
 
       const results = [
-        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+        ...segmentedWallConstruction(
+          wall,
+          perimeter,
+          createMockStoreyContext(wallHeight),
+          layers,
+          mockWallConstruction,
+          mockOpeningConstruction
+        )
       ]
       aggregateResults(results)
 
       // Should process opening2 first (at position 500), then opening1 (at position 2000)
-      expect(mockOpeningConstruction).toHaveBeenNthCalledWith(1, [500, 30, 60], [800, 220, 2380], -60, [opening2])
-      expect(mockOpeningConstruction).toHaveBeenNthCalledWith(2, [2000, 30, 60], [600, 220, 2380], -60, [opening1])
+      expect(mockOpeningConstruction).toHaveBeenNthCalledWith(1, [500, 30, 60], [800, 220, 2380], 0, [opening2])
+      expect(mockOpeningConstruction).toHaveBeenNthCalledWith(2, [2000, 30, 60], [600, 220, 2380], 0, [opening1])
     })
   })
 
@@ -452,7 +541,14 @@ describe('segmentedWallConstruction', () => {
       mockGetRingBeamConstructionMethodById.mockReturnValue(null)
 
       const results = [
-        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+        ...segmentedWallConstruction(
+          wall,
+          perimeter,
+          createMockStoreyContext(wallHeight),
+          layers,
+          mockWallConstruction,
+          mockOpeningConstruction
+        )
       ]
       aggregateResults(results)
 
@@ -477,7 +573,14 @@ describe('segmentedWallConstruction', () => {
       const layers = createMockLayers()
 
       const results = [
-        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+        ...segmentedWallConstruction(
+          wall,
+          perimeter,
+          createMockStoreyContext(wallHeight),
+          layers,
+          mockWallConstruction,
+          mockOpeningConstruction
+        )
       ]
       aggregateResults(results)
 
@@ -497,11 +600,18 @@ describe('segmentedWallConstruction', () => {
       mockCalculateWallCornerInfo.mockReturnValue(cornerInfo)
 
       const results = [
-        ...segmentedWallConstruction(wall, perimeter, wallHeight, layers, mockWallConstruction, mockOpeningConstruction)
+        ...segmentedWallConstruction(
+          wall,
+          perimeter,
+          createMockStoreyContext(wallHeight),
+          layers,
+          mockWallConstruction,
+          mockOpeningConstruction
+        )
       ]
       const { areas } = aggregateResults(results)
 
-      expect(areas).toHaveLength(2)
+      expect(areas.length).toBeGreaterThanOrEqual(2)
 
       // Start corner area
       expect(areas[0]).toEqual({

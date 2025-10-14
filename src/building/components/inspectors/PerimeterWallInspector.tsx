@@ -1,6 +1,6 @@
 import { TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Button, Callout, Card, DataList, Flex, Grid, Heading, IconButton, Separator, Text } from '@radix-ui/themes'
+import { Callout, Card, DataList, Flex, Grid, Heading, IconButton, Separator, Text } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 
 import type { PerimeterConstructionMethodId, PerimeterId, PerimeterWallId } from '@/building/model/ids'
@@ -11,7 +11,7 @@ import { usePerimeterConstructionMethodById } from '@/construction/config/store'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { pushTool } from '@/editor/tools/system/store'
-import { FitToViewIcon, SplitWallIcon } from '@/shared/components/Icons'
+import { ConstructionPlanIcon, FitToViewIcon, SplitWallIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
 import { type Length, type Vec2, boundsFromPoints } from '@/shared/geometry'
 import { wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
@@ -227,16 +227,18 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
 
       {/* Actions */}
       <Flex direction="column" gap="2">
-        <WallConstructionPlanModal perimeterId={perimeterId} wallId={wallId}>
-          <Button size="2">View Construction Plan</Button>
-        </WallConstructionPlanModal>
-
         <Flex gap="2" justify="end">
+          <WallConstructionPlanModal perimeterId={perimeterId} wallId={wallId}>
+            <IconButton title="View Construction Plan" size="2">
+              <ConstructionPlanIcon width={20} height={20} />
+            </IconButton>
+          </WallConstructionPlanModal>
+
           <IconButton size="2" title="Split Wall" onClick={() => pushTool('perimeter.split-wall')}>
-            <SplitWallIcon />
+            <SplitWallIcon width={20} height={20} />
           </IconButton>
           <IconButton size="2" title="Fit to View" onClick={handleFitToView}>
-            <FitToViewIcon />
+            <FitToViewIcon width={20} height={20} />
           </IconButton>
           <IconButton
             size="2"
@@ -245,7 +247,7 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
             onClick={handleDelete}
             disabled={!canDeleteWall.canDelete}
           >
-            <TrashIcon />
+            <TrashIcon width={20} height={20} />
           </IconButton>
         </Flex>
       </Flex>

@@ -98,9 +98,9 @@ describe('constructFullRingBeam', () => {
         expect('material' in element).toBe(true)
         const constructionElement = element as ConstructionElement
         expect(constructionElement.shape.type).toBe('cut-cuboid')
-        expect(constructionElement.shape.size[0]).toBeGreaterThan(0) // Length > 0
-        expect(constructionElement.shape.size[1]).toBe(defaultConfig.width) // Width
-        expect(constructionElement.shape.size[2]).toBe(defaultConfig.height) // Height
+        expect((constructionElement.shape as CutCuboid).size[0]).toBeGreaterThan(0) // Length > 0
+        expect((constructionElement.shape as CutCuboid).size[1]).toBe(defaultConfig.width) // Width
+        expect((constructionElement.shape as CutCuboid).size[2]).toBe(defaultConfig.height) // Height
       })
     })
 
@@ -167,8 +167,8 @@ describe('constructFullRingBeam', () => {
         expect('material' in element).toBe(true)
         const constructionElement = element as ConstructionElement
         expect(constructionElement.shape.type).toBe('cut-cuboid')
-        expect(constructionElement.shape.size[1]).toBe(240) // Custom width
-        expect(constructionElement.shape.size[2]).toBe(90) // Custom height
+        expect((constructionElement.shape as CutCuboid).size[1]).toBe(240) // Custom width
+        expect((constructionElement.shape as CutCuboid).size[2]).toBe(90) // Custom height
       })
     })
   })

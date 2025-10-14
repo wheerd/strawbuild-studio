@@ -85,8 +85,8 @@ export class StoreyManagementService {
 
     const duplicateName = newName ?? `${sourceStorey.name} Copy`
 
-    // Create the new storey
-    const newStorey = this.actions.addStorey(duplicateName, sourceStorey.height)
+    // Create the new storey, copying the floor configuration
+    const newStorey = this.actions.addStorey(duplicateName, sourceStorey.height, sourceStorey.slabConstructionConfigId)
 
     // Duplicate all perimeters from the source storey
     const sourcePerimeters = this.actions.getPerimetersByStorey(sourceStoreyId)

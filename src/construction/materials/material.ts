@@ -1,9 +1,9 @@
 import type { Length } from '@/shared/geometry'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
+import { createId } from '@/shared/utils/ids'
 
 export type MaterialId = string & { readonly brand: unique symbol }
-export const createMaterialId = (): MaterialId =>
-  `material_${Date.now().toString(36)}${Math.random().toString(36).slice(2)}` as MaterialId
+export const createMaterialId = () => createId<MaterialId>('material_')
 export const isMaterialId = (id: string): id is MaterialId => id.startsWith('material_')
 
 export type Material = DimensionalMaterial | SheetMaterial | VolumeMaterial | GenericMaterial
@@ -116,6 +116,16 @@ export const concrete: GenericMaterial = {
   color: MATERIAL_COLORS.concrete
 }
 
+export const clt180: SheetMaterial = {
+  id: 'material_clt180' as MaterialId,
+  name: 'CLT 18cm',
+  width: 2440 as Length,
+  length: 6000 as Length,
+  thickness: 180 as Length,
+  type: 'sheet',
+  color: MATERIAL_COLORS.woodSupport
+}
+
 export const DEFAULT_MATERIALS: Record<MaterialId, Material> = {
   [wood360x60.id]: wood360x60,
   [wood240x60.id]: wood240x60,
@@ -125,5 +135,6 @@ export const DEFAULT_MATERIALS: Record<MaterialId, Material> = {
   [straw.id]: straw,
   [window.id]: window,
   [door.id]: door,
-  [concrete.id]: concrete
+  [concrete.id]: concrete,
+  [clt180.id]: clt180
 }

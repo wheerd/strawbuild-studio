@@ -89,8 +89,9 @@ describe('constructPost', () => {
       const post = elements[0]
       expect('material' in post).toBe(true)
       const postElement = post as ConstructionElement
-      expect(postElement.shape.offset).toEqual([200, 100, 0])
-      expect((postElement.shape as Cuboid).size).toEqual([60, 180, 2500])
+      const postShape = postElement.shape as Cuboid
+      expect(postShape.offset).toEqual([200, 100, 0])
+      expect(postShape.size).toEqual([60, 180, 2500])
     })
 
     it('should use correct material from config', () => {
@@ -207,23 +208,26 @@ describe('constructPost', () => {
       // First post
       expect('material' in elements[0]).toBe(true)
       const firstPost = elements[0] as ConstructionElement
+      const firstShape = firstPost.shape as Cuboid
       expect(firstPost.material).toBe(mockWoodMaterial)
-      expect(firstPost.shape.offset).toEqual([100, 50, 25])
-      expect((firstPost.shape as Cuboid).size).toEqual([60, 120, 3000])
+      expect(firstShape.offset).toEqual([100, 50, 25])
+      expect(firstShape.size).toEqual([60, 120, 3000])
 
       // Second post
       expect('material' in elements[1]).toBe(true)
       const secondPost = elements[1] as ConstructionElement
+      const secondShape = secondPost.shape as Cuboid
       expect(secondPost.material).toBe(mockWoodMaterial)
-      expect(secondPost.shape.offset).toEqual([100, 290, 25])
-      expect((secondPost.shape as Cuboid).size).toEqual([60, 120, 3000])
+      expect(secondShape.offset).toEqual([100, 290, 25])
+      expect(secondShape.size).toEqual([60, 120, 3000])
 
       // Infill
       expect('material' in elements[2]).toBe(true)
       const infillElement = elements[2] as ConstructionElement
+      const infillShape = infillElement.shape as Cuboid
       expect(infillElement.material).toBe(mockStrawMaterial)
-      expect(infillElement.shape.offset).toEqual([100, 170, 25])
-      expect(infillElement.shape.size).toEqual([60, 120, 3000])
+      expect(infillShape.offset).toEqual([100, 170, 25])
+      expect(infillShape.size).toEqual([60, 120, 3000])
     })
 
     it('should handle zero offset', () => {
@@ -240,9 +244,9 @@ describe('constructPost', () => {
       expect('material' in elements[0]).toBe(true)
       expect('material' in elements[1]).toBe(true)
       expect('material' in elements[2]).toBe(true)
-      expect((elements[0] as ConstructionElement).shape.offset).toEqual([0, 0, 0])
-      expect((elements[1] as ConstructionElement).shape.offset).toEqual([0, 240, 0])
-      expect((elements[2] as ConstructionElement).shape.offset).toEqual([0, 120, 0])
+      expect(((elements[0] as ConstructionElement).shape as Cuboid).offset).toEqual([0, 0, 0])
+      expect(((elements[1] as ConstructionElement).shape as Cuboid).offset).toEqual([0, 240, 0])
+      expect(((elements[2] as ConstructionElement).shape as Cuboid).offset).toEqual([0, 120, 0])
     })
 
     it('should handle different wall dimensions', () => {
@@ -259,9 +263,9 @@ describe('constructPost', () => {
       expect('material' in elements[0]).toBe(true)
       expect('material' in elements[1]).toBe(true)
       expect('material' in elements[2]).toBe(true)
-      expect((elements[0] as ConstructionElement).shape.offset).toEqual([200, 100, 0])
-      expect((elements[1] as ConstructionElement).shape.offset).toEqual([200, 380, 0])
-      expect((elements[2] as ConstructionElement).shape.offset).toEqual([200, 220, 0])
+      expect(((elements[0] as ConstructionElement).shape as Cuboid).offset).toEqual([200, 100, 0])
+      expect(((elements[1] as ConstructionElement).shape as Cuboid).offset).toEqual([200, 380, 0])
+      expect(((elements[2] as ConstructionElement).shape as Cuboid).offset).toEqual([200, 220, 0])
     })
 
     it('should use custom post dimensions', () => {
@@ -431,10 +435,11 @@ describe('constructPost', () => {
 
       expect('material' in elements[0]).toBe(true)
       const post = elements[0] as ConstructionElement
+      const postShape = post.shape as Cuboid
       expect(post.id).toBeTruthy()
       expect(post.material).toBeTruthy()
-      expect(post.shape).toBeTruthy()
-      expect(post.shape.type).toBe('cuboid')
+      expect(postShape).toBeTruthy()
+      expect(postShape.type).toBe('cuboid')
     })
 
     it('should maintain correct element structure for double post', () => {
@@ -475,13 +480,14 @@ describe('constructPost', () => {
 
       expect('material' in elements[0]).toBe(true)
       const post = elements[0] as ConstructionElement
+      const postShape = post.shape as Cuboid
 
-      expect(post.shape.offset[0]).toBe(position[0])
-      expect(post.shape.offset[1]).toBe(position[1])
-      expect(post.shape.offset[2]).toBe(position[2])
-      expect(post.shape.size[0]).toBe(60) // width from config
-      expect(post.shape.size[1]).toBe(size[1])
-      expect(post.shape.size[2]).toBe(size[2])
+      expect(postShape.offset[0]).toBe(position[0])
+      expect(postShape.offset[1]).toBe(position[1])
+      expect(postShape.offset[2]).toBe(position[2])
+      expect(postShape.size[0]).toBe(60) // width from config
+      expect(postShape.size[1]).toBe(size[1])
+      expect(postShape.size[2]).toBe(size[2])
     })
 
     it('should maintain consistent coordinate system for double post', () => {
@@ -499,13 +505,13 @@ describe('constructPost', () => {
       const { elements } = aggregateResults(results)
 
       // First post should be at original position
-      expect((elements[0] as ConstructionElement).shape.offset).toEqual([100, 200, 300])
+      expect(((elements[0] as ConstructionElement).shape as Cuboid).offset).toEqual([100, 200, 300])
 
       // Second post should be at the far end
-      expect((elements[1] as ConstructionElement).shape.offset).toEqual([100, 440, 300])
+      expect(((elements[1] as ConstructionElement).shape as Cuboid).offset).toEqual([100, 440, 300])
 
       // Infill should be in between
-      expect((elements[2] as ConstructionElement).shape.offset).toEqual([100, 320, 300])
+      expect(((elements[2] as ConstructionElement).shape as Cuboid).offset).toEqual([100, 320, 300])
     })
   })
 })

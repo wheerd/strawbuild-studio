@@ -7,6 +7,7 @@ import { MaterialsConfigContent } from '@/construction/materials/components/Mate
 
 import { PerimeterConfigContent } from './PerimeterConfigContent'
 import { RingBeamConfigContent } from './RingBeamConfigContent'
+import { SlabConfigContent } from './SlabConfigContent'
 
 export interface ConfigurationModalProps {
   open: boolean
@@ -58,6 +59,7 @@ export function ConfigurationModal({
             <Tabs.Trigger value="materials">Materials</Tabs.Trigger>
             <Tabs.Trigger value="ringbeams">Ring Beams</Tabs.Trigger>
             <Tabs.Trigger value="perimeter">Perimeter Walls</Tabs.Trigger>
+            <Tabs.Trigger value="slabs">Slabs</Tabs.Trigger>
           </Tabs.List>
 
           <Tabs.Content value="materials">
@@ -75,6 +77,12 @@ export function ConfigurationModal({
           <Tabs.Content value="perimeter">
             <Flex pt="4" style={{ width: '100%' }}>
               <PerimeterConfigContent initialSelectionId={initialSelectionId} />
+            </Flex>
+          </Tabs.Content>
+
+          <Tabs.Content value="slabs">
+            <Flex pt="4" style={{ width: '100%' }}>
+              <SlabConfigContent initialSelectionId={initialSelectionId} />
             </Flex>
           </Tabs.Content>
         </Tabs.Root>

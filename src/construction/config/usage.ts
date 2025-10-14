@@ -1,4 +1,8 @@
-import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
+import type {
+  PerimeterConstructionMethodId,
+  RingBeamConstructionMethodId,
+  SlabConstructionConfigId
+} from '@/building/model/ids'
 import type { Perimeter, Storey } from '@/building/model/model'
 
 export interface RingBeamConfigUsage {
@@ -9,6 +13,11 @@ export interface RingBeamConfigUsage {
 export interface PerimeterConfigUsage {
   isUsed: boolean
   usedByWalls: string[]
+}
+
+export interface SlabConfigUsage {
+  isUsed: boolean
+  usedByStoreys: string[]
 }
 
 /**
@@ -71,5 +80,23 @@ export function getPerimeterConfigUsage(
   return {
     isUsed: usedByWalls.length > 0,
     usedByWalls
+  }
+}
+
+/**
+ * Checks if a slab construction config is currently in use by any storeys
+ */
+export function getSlabConfigUsage(configId: SlabConstructionConfigId, storeys: Storey[]): SlabConfigUsage {
+  const usedByStoreys: string[] = []
+
+  storeys.forEach(storey => {
+    if (storey.slabConstructionConfigId === configId) {
+      usedByStoreys.push(storey.name)
+    }
+  })
+
+  return {
+    isUsed: usedByStoreys.length > 0,
+    usedByStoreys
   }
 }

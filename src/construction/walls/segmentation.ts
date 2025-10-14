@@ -1,8 +1,9 @@
-import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
+import type { Opening, Perimeter, PerimeterWall, Storey } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config'
-import type { LayersConfig } from '@/construction/config/types'
+import type { SlabConstructionConfig, WallLayersConfig } from '@/construction/config/types'
 import { IDENTITY } from '@/construction/geometry'
 import { type ConstructionResult, yieldArea, yieldMeasurement } from '@/construction/results'
+import { SLAB_CONSTRUCTION_METHODS } from '@/construction/slabs'
 import { TAG_OPENING_SPACING, TAG_WALL_LENGTH } from '@/construction/tags'
 import type { Length, Vec3 } from '@/shared/geometry'
 
@@ -110,11 +111,77 @@ function* createCornerAreas(
   }
 }
 
+function* createPlateAreas(
+  totalConstructionHeight: Length,
+  bottomPlateHeight: Length,
+  topPlateHeight: Length,
+  start: number,
+  constructionLength: Length
+): Generator<ConstructionResult> {
+  if (bottomPlateHeight > 0) {
+    yield yieldArea({
+      type: 'polygon',
+      areaType: 'bottom-plate',
+      renderPosition: 'bottom',
+      label: 'Bottom Ring Beam',
+      plane: 'xz',
+      polygon: {
+        points: [
+          [start, 0],
+          [start + constructionLength, 0],
+          [start + constructionLength, bottomPlateHeight],
+          [start, bottomPlateHeight]
+        ]
+      }
+    })
+  }
+  if (topPlateHeight > 0) {
+    yield yieldArea({
+      type: 'polygon',
+      areaType: 'top-plate',
+      renderPosition: 'bottom',
+      label: 'Top Ring Beam',
+      plane: 'xz',
+      polygon: {
+        points: [
+          [start, totalConstructionHeight - topPlateHeight],
+          [start + constructionLength, totalConstructionHeight - topPlateHeight],
+          [start + constructionLength, totalConstructionHeight],
+          [start, totalConstructionHeight]
+        ]
+      }
+    })
+  }
+}
+
+export interface WallStoreyContext {
+  ceilingBottomOffset: Length
+  storeyHeight: Length
+  floorTopOffset: Length
+}
+
+export function createWallStoreyContext(
+  currentStorey: Storey,
+  currentSlabConfig: SlabConstructionConfig,
+  nextSlabConfig: SlabConstructionConfig | null
+): WallStoreyContext {
+  const currentFloorSlabMethod = SLAB_CONSTRUCTION_METHODS[currentSlabConfig.type]
+  const nextFloorSlabMethod = nextSlabConfig ? SLAB_CONSTRUCTION_METHODS[nextSlabConfig.type] : null
+
+  return {
+    storeyHeight: currentStorey.height,
+    floorTopOffset: (currentSlabConfig.layers.topThickness +
+      currentFloorSlabMethod.getTopOffset(currentSlabConfig)) as Length,
+    ceilingBottomOffset: ((nextSlabConfig?.layers.bottomThickness ?? 0) +
+      (nextFloorSlabMethod?.getBottomOffset(nextSlabConfig) ?? 0)) as Length
+  }
+}
+
 export function* segmentedWallConstruction(
   wall: PerimeterWall,
   perimeter: Perimeter,
-  wallHeight: Length,
-  layers: LayersConfig,
+  storeyContext: WallStoreyContext,
+  layers: WallLayersConfig,
   wallConstruction: WallSegmentConstruction,
   openingConstruction: OpeningSegmentConstruction
 ): Generator<ConstructionResult> {
@@ -122,25 +189,48 @@ export function* segmentedWallConstruction(
   const cornerInfo = calculateWallCornerInfo(wall, wallContext)
   const { constructionLength, extensionStart, extensionEnd } = cornerInfo
 
-  yield* createCornerAreas(cornerInfo, wall.wallLength, wallHeight, wall.thickness)
-
   const { getRingBeamConstructionMethodById } = getConfigActions()
   const bottomPlateMethod = perimeter.baseRingBeamMethodId
     ? getRingBeamConstructionMethodById(perimeter.baseRingBeamMethodId)
     : null
-  const bottomPlateHeight = bottomPlateMethod?.config?.height ?? 0
+  const bottomPlateHeight = bottomPlateMethod?.config?.height ?? (0 as Length)
   const topPlateMethod = perimeter.topRingBeamMethodId
     ? getRingBeamConstructionMethodById(perimeter.topRingBeamMethodId)
     : null
-  const topPlateHeight = topPlateMethod?.config?.height ?? 0
+  const topPlateHeight = topPlateMethod?.config?.height ?? (0 as Length)
+
+  const totalConstructionHeight = (storeyContext.storeyHeight +
+    storeyContext.floorTopOffset +
+    storeyContext.ceilingBottomOffset) as Length
+
+  yield* createCornerAreas(cornerInfo, wall.wallLength, totalConstructionHeight, wall.thickness)
 
   const y = layers.insideThickness
   const sizeY = wall.thickness - layers.insideThickness - layers.outsideThickness
   const z = bottomPlateHeight
-  const sizeZ = wallHeight - bottomPlateHeight - topPlateHeight
+  const sizeZ = (totalConstructionHeight - bottomPlateHeight - topPlateHeight) as Length
+
+  yield* createPlateAreas(
+    totalConstructionHeight,
+    bottomPlateHeight,
+    topPlateHeight,
+    -extensionStart,
+    constructionLength
+  )
+
+  const finishedFloorZLevel = storeyContext.floorTopOffset
 
   const standAtWallStart = wallContext.startCorner.exteriorAngle !== 180 || cornerInfo.startCorner.constructedByThisWall
   const standAtWallEnd = wallContext.endCorner.exteriorAngle !== 180 || cornerInfo.endCorner.constructedByThisWall
+
+  yield yieldArea({
+    type: 'cut',
+    areaType: 'floor-level',
+    renderPosition: 'top',
+    label: 'Finished Floor Level',
+    axis: 'z',
+    position: finishedFloorZLevel
+  })
 
   yield yieldMeasurement({
     startPoint: [-extensionStart, y, z],
@@ -196,7 +286,7 @@ export function* segmentedWallConstruction(
 
     // Create opening segment for the group
     const groupWidth = (groupEnd - groupStart) as Length
-    yield* openingConstruction([groupStart, y, z], [groupWidth, sizeY, sizeZ], -z as Length, openingGroup)
+    yield* openingConstruction([groupStart, y, z], [groupWidth, sizeY, sizeZ], finishedFloorZLevel, openingGroup)
 
     currentPosition = groupEnd
   }

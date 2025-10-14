@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createOpeningId, createPerimeterConstructionMethodId, createPerimeterId } from '@/building/model/ids'
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
-import type { LayersConfig } from '@/construction/config/types'
+import type { WallLayersConfig } from '@/construction/config/types'
 import { IDENTITY } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
 import type { PostConfig } from '@/construction/materials/posts'
@@ -12,13 +12,35 @@ import { constructStraw } from '@/construction/materials/straw'
 import { constructOpeningFrame } from '@/construction/openings/openings'
 import { aggregateResults, yieldElement, yieldError, yieldMeasurement, yieldWarning } from '@/construction/results'
 import { TAG_POST_SPACING } from '@/construction/tags'
+import { type WallStoreyContext } from '@/construction/walls/segmentation'
 import { segmentedWallConstruction } from '@/construction/walls/segmentation'
 import type { Length, Vec3 } from '@/shared/geometry'
 import { createLength, createVec2 } from '@/shared/geometry'
 
 import { type InfillConstructionConfig, constructInfillWall, infillWallArea } from './infill'
 
+function createMockStoreyContext(storeyHeight: Length = createLength(2500)): WallStoreyContext {
+  return {
+    storeyHeight,
+    floorTopOffset: 0 as Length,
+    ceilingBottomOffset: 0 as Length
+  }
+}
+
 // Mock dependencies
+vi.mock('@/construction/floors', () => ({
+  SLAB_CONSTRUCTION_METHODS: {
+    monolithic: {
+      getTopOffset: vi.fn(() => 0),
+      getBottomOffset: vi.fn(() => 0)
+    },
+    joist: {
+      getTopOffset: vi.fn(() => 0),
+      getBottomOffset: vi.fn(() => 0)
+    }
+  }
+}))
+
 vi.mock('@/construction/materials/posts', () => ({
   constructPost: vi.fn()
 }))
@@ -151,7 +173,7 @@ function createMockPerimeter(walls: PerimeterWall[]): Perimeter {
   } as Perimeter
 }
 
-function createMockLayers(): LayersConfig {
+function createMockLayers(): WallLayersConfig {
   return {
     insideThickness: createLength(30),
     outsideThickness: createLength(50)
@@ -185,7 +207,7 @@ describe('infillWallArea', () => {
       expect(warnings).toHaveLength(0)
       expect(mockConstructStraw).toHaveBeenCalled()
       expect(elements.length).toBeGreaterThan(0)
-      expect(elements.some(e => e.id === 'straw-1')).toBe(true)
+      expect(elements.some(e => e.id === ('straw-1' as any))).toBe(true)
     })
 
     it('should create start post when startsWithStand is true', () => {
@@ -452,7 +474,7 @@ describe('constructInfillWall', () => {
 
     // Mock segmentedWallConstruction to call our wall and opening construction functions
     mockSegmentedWallConstruction.mockImplementation(
-      function* (wall, _perimeter, _wallHeight, _layers, wallConstruction, openingConstruction) {
+      function* (wall, _perimeter, _storeyContext, _layers, wallConstruction, openingConstruction) {
         // Simulate calling wall construction
         yield* wallConstruction([0, 30, 60], [3000, 220, 2380], true, true, false)
 
@@ -483,7 +505,7 @@ describe('constructInfillWall', () => {
       const config = createMockInfillConfig()
       const layers = createMockLayers()
 
-      const result = constructInfillWall(wall, perimeter, floorHeight, config, layers)
+      const result = constructInfillWall(wall, perimeter, createMockStoreyContext(floorHeight), config, layers)
 
       expect(result.elements.length).toBeGreaterThan(0)
       expect(result.errors).toHaveLength(0)
@@ -492,7 +514,7 @@ describe('constructInfillWall', () => {
       expect(mockSegmentedWallConstruction).toHaveBeenCalledWith(
         wall,
         perimeter,
-        floorHeight,
+        createMockStoreyContext(floorHeight),
         layers,
         expect.any(Function), // wallConstruction function
         expect.any(Function) // openingConstruction function
@@ -514,7 +536,7 @@ describe('constructInfillWall', () => {
       const config = createMockInfillConfig()
       const layers = createMockLayers()
 
-      const result = constructInfillWall(wall, perimeter, floorHeight, config, layers)
+      const result = constructInfillWall(wall, perimeter, createMockStoreyContext(floorHeight), config, layers)
 
       expect(result.elements.length).toBeGreaterThan(0)
       expect(result.errors).toHaveLength(0)
@@ -538,7 +560,7 @@ describe('constructInfillWall', () => {
         createMockGenerator([mockElement], [], [mockError], [mockWarning])()
       )
 
-      const result = constructInfillWall(wall, perimeter, floorHeight, config, layers)
+      const result = constructInfillWall(wall, perimeter, createMockStoreyContext(floorHeight), config, layers)
 
       expect(result.errors).toHaveLength(1)
       expect(result.warnings).toHaveLength(1)
@@ -565,7 +587,7 @@ describe('constructInfillWall', () => {
       const mockElement = createMockElement('test', [0, 0, 0], [100, 100, 100], mockWoodMaterial)
       mockSegmentedWallConstruction.mockReturnValue(createMockGenerator([mockElement], [mockMeasurement])())
 
-      const result = constructInfillWall(wall, perimeter, floorHeight, config, layers)
+      const result = constructInfillWall(wall, perimeter, createMockStoreyContext(floorHeight), config, layers)
 
       expect(result.measurements).toHaveLength(1)
       expect(result.measurements[0]).toBe(mockMeasurement)
@@ -578,7 +600,7 @@ describe('constructInfillWall', () => {
       const config = createMockInfillConfig()
       const layers = createMockLayers()
 
-      const result = constructInfillWall(wall, perimeter, floorHeight, config, layers)
+      const result = constructInfillWall(wall, perimeter, createMockStoreyContext(floorHeight), config, layers)
 
       expect(result.bounds).toBeDefined()
       expect(result.bounds.min).toBeDefined()
@@ -598,12 +620,12 @@ describe('constructInfillWall', () => {
       const config = createMockInfillConfig()
       const layers = createMockLayers()
 
-      constructInfillWall(wall, perimeter, floorHeight, config, layers)
+      constructInfillWall(wall, perimeter, createMockStoreyContext(floorHeight), config, layers)
 
       expect(mockSegmentedWallConstruction).toHaveBeenCalledWith(
         wall,
         perimeter,
-        floorHeight,
+        createMockStoreyContext(floorHeight),
         layers,
         expect.any(Function), // wallConstruction function
         expect.any(Function) // openingConstruction function
@@ -617,7 +639,7 @@ describe('constructInfillWall', () => {
       const config = createMockInfillConfig()
       const layers = createMockLayers()
 
-      constructInfillWall(wall, perimeter, floorHeight, config, layers)
+      constructInfillWall(wall, perimeter, createMockStoreyContext(floorHeight), config, layers)
 
       const wallConstructionFn = mockSegmentedWallConstruction.mock.calls[0][4]
       expect(wallConstructionFn).toBeDefined()
@@ -634,7 +656,7 @@ describe('constructInfillWall', () => {
       const config = createMockInfillConfig()
       const layers = createMockLayers()
 
-      constructInfillWall(wall, perimeter, floorHeight, config, layers)
+      constructInfillWall(wall, perimeter, createMockStoreyContext(floorHeight), config, layers)
 
       const openingConstructionFn = mockSegmentedWallConstruction.mock.calls[0][5]
       expect(openingConstructionFn).toBeDefined()

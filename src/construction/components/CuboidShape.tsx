@@ -15,7 +15,7 @@ export function CuboidShape({ shape, projection, showDebugMarkers = false }: Cub
 
   return (
     <g>
-      <rect x={x} y={y} width={length} height={width} />
+      <rect className="apply-material" x={x} y={y} width={length} height={width} />
 
       {/* Debug markers */}
       {showDebugMarkers && <circle cx={x} cy={y} r="2" fill="blue" />}

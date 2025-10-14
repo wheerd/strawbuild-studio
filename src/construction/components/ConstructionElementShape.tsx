@@ -1,3 +1,4 @@
+import { ExtrudedPolygonShape } from '@/construction/components/ExtrudedPolygonShape'
 import type { ConstructionElement } from '@/construction/elements'
 import type { CutFunction, Projection, RotationProjection } from '@/construction/geometry'
 import { createSvgTransform } from '@/construction/geometry'
@@ -44,6 +45,15 @@ export function ConstructionElementShape({
           transform={createSvgTransform(element.transform, projection, rotationProjection)}
         >
           <CutCuboidShape shape={element.shape} projection={projection} showDebugMarkers={showDebugMarkers} />
+        </g>
+      )
+    case 'polygon':
+      return (
+        <g
+          className={combinedClassName}
+          transform={createSvgTransform(element.transform, projection, rotationProjection)}
+        >
+          <ExtrudedPolygonShape shape={element.shape} projection={projection} showDebugMarkers={showDebugMarkers} />
         </g>
       )
     default:

@@ -45,6 +45,7 @@ const mockActions = {
   reset: vi.fn(),
   updateStoreyName: vi.fn(),
   updateStoreyHeight: vi.fn(),
+  updateStoreySlabConfig: vi.fn(),
   adjustAllLevels: vi.fn(),
   addStorey: vi.fn((name, height) => ({
     id: 'new_storey',
@@ -127,14 +128,15 @@ describe('ProjectImportExportService', () => {
     it('calls the correct store methods on import', async () => {
       // Create simple valid import data
       const validImportData = {
-        version: '1.0.0',
+        version: '1.2.0',
         timestamp: new Date().toISOString(),
         modelStore: {
           storeys: [
             {
               name: 'Test Floor',
               height: 2500,
-              perimeters: []
+              perimeters: [],
+              slabConstructionConfigId: 'scm_1'
             }
           ],
           minLevel: 0
@@ -142,20 +144,29 @@ describe('ProjectImportExportService', () => {
         configStore: {
           ringBeamConstructionMethods: { beam_1: { id: 'beam_1', name: 'Test Beam' } },
           perimeterConstructionMethods: { method_1: { id: 'method_1', name: 'Test Method' } },
-          defaultPerimeterMethodId: 'method_1'
+          slabConstructionConfigs: { scm_1: { id: 'scm_1', name: 'Test Slab' } },
+          defaultPerimeterMethodId: 'method_1',
+          defaultSlabConfigId: 'scm_1'
+        },
+        materialsStore: {
+          materials: { material_1: { id: 'material_1', name: 'Test Material' } }
         }
       }
 
       // Clear previous calls
       vi.clearAllMocks()
 
-      await ProjectImportExportService.importFromString(JSON.stringify(validImportData))
+      const result = await ProjectImportExportService.importFromString(JSON.stringify(validImportData))
+
+      expect(result.success).toBeTruthy()
 
       // Should have called reset and basic store methods
       expect(mockActions.reset).toHaveBeenCalled()
 
       // For a storey with no perimeters, should still call updateStoreyName
       expect(mockActions.updateStoreyName).toHaveBeenCalled()
+      expect(mockActions.updateStoreyHeight).toHaveBeenCalled()
+      expect(mockActions.updateStoreySlabConfig).toHaveBeenCalled()
     })
 
     it('handles invalid JSON gracefully', async () => {
