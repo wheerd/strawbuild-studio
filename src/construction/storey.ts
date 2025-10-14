@@ -7,12 +7,16 @@ import { TAG_STOREY } from '@/construction/tags'
 
 import { type ConstructionModel, mergeModels, transformModel } from './model'
 
-export function constructStorey(storeyId: StoreyId): ConstructionModel {
+export function constructStorey(storeyId: StoreyId): ConstructionModel | null {
   const { getPerimetersByStorey } = getModelActions()
-  return mergeModels(...getPerimetersByStorey(storeyId).map(constructPerimeter))
+  const perimeters = getPerimetersByStorey(storeyId)
+  if (perimeters.length === 0) {
+    return null
+  }
+  return mergeModels(...perimeters.map(constructPerimeter))
 }
 
-export function constructModel(): ConstructionModel {
+export function constructModel(): ConstructionModel | null {
   const { getStoreysOrderedByLevel } = getModelActions()
   const { getSlabConstructionConfigById } = getConfigActions()
   const models: ConstructionModel[] = []
@@ -25,8 +29,10 @@ export function constructModel(): ConstructionModel {
     const slabMethod = SLAB_CONSTRUCTION_METHODS[slab.type]
     zOffset += slabMethod.getBottomOffset(slab) + slabMethod.getConstructionThickness(slab)
     const model = constructStorey(storey.id)
-    models.push(transformModel(model, { position: [0, 0, zOffset], rotation: [0, 0, 0] }, [TAG_STOREY]))
+    if (model) {
+      models.push(transformModel(model, { position: [0, 0, zOffset], rotation: [0, 0, 0] }, [TAG_STOREY]))
+    }
     zOffset += slab.layers.topThickness + slabMethod.getTopOffset(slab) + storey.height
   }
-  return mergeModels(...models)
+  return models.length > 0 ? mergeModels(...models) : null
 }
