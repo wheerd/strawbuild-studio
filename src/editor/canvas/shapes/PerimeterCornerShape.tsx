@@ -60,7 +60,7 @@ export function PerimeterCornerShape({
       listening
     >
       {/* Corner polygon fill */}
-      <Line points={polygonArray} fill={cornerColor} stroke={theme.black} strokeWidth={10} closed listening />
+      <Line points={polygonArray} fill={cornerColor} stroke={theme.border} strokeWidth={10} closed listening />
 
       {/* Rounded rectangle overlay for near-straight corners */}
       {isNearStraight && (
@@ -76,7 +76,7 @@ export function PerimeterCornerShape({
             corner.outsidePoint[1] - (normal[1] * overlayWidth) / 2
           ]}
           fill={cornerColor}
-          stroke={theme.black}
+          stroke={theme.border}
           strokeWidth={8}
           opacity={0.5}
           dash={[20, 20]}

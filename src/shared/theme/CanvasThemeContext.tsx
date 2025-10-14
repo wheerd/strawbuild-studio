@@ -1,4 +1,4 @@
-import { useThemeContext } from '@radix-ui/themes'
+import { useTheme } from 'next-themes'
 import { type ReactNode, createContext, useContext, useEffect, useRef, useState } from 'react'
 
 interface CanvasThemeColors {
@@ -33,6 +33,7 @@ interface CanvasThemeColors {
 
   // Basic colors
   white: string
+  border: string
   black: string
 
   // Selection highlight (for openings)
@@ -68,22 +69,23 @@ function readColorsFromElement(element: HTMLElement | null): CanvasThemeColors {
     grid: get('--color-grid'),
     bgSubtle: get('--color-bg-subtle'),
     bgCanvas: get('--color-bg-canvas'),
-    white: '#ffffff',
-    black: '#000000',
+    white: get('--gray-1'),
+    border: get('--gray-11'),
+    black: get('--gray-12'),
     primaryLightOutline: get('--color-primary-dark')
   }
 }
 
 export function CanvasThemeProvider({ children }: { children: ReactNode }): React.JSX.Element {
-  const radixTheme = useThemeContext()
+  const { resolvedTheme } = useTheme()
   const containerRef = useRef<HTMLDivElement>(null)
   const [colors, setColors] = useState<CanvasThemeColors>(() => readColorsFromElement(null))
 
   useEffect(() => {
     if (containerRef.current) {
-      setColors(readColorsFromElement(containerRef.current))
+      setTimeout(() => setColors(readColorsFromElement(containerRef.current)), 0)
     }
-  }, [radixTheme.appearance, radixTheme.accentColor, radixTheme.grayColor, containerRef.current])
+  }, [resolvedTheme, containerRef.current])
 
   return (
     <div ref={containerRef} style={{ display: 'contents' }} className="canvas-theme-context">

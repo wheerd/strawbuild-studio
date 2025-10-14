@@ -1,5 +1,6 @@
 import { Theme } from '@radix-ui/themes'
 import '@radix-ui/themes/styles.css'
+import { ThemeProvider } from 'next-themes'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
@@ -24,8 +25,10 @@ if (rootElement === null) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <Theme>
-      <App />
-    </Theme>
+    <ThemeProvider attribute="class">
+      <Theme>
+        <App />
+      </Theme>
+    </ThemeProvider>
   </StrictMode>
 )

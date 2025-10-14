@@ -16,14 +16,14 @@ export function PerimeterGhostShape({ perimeter }: PerimeterGhostShapeProps): Re
     <Group listening={false}>
       <Line
         points={innerPoints}
-        stroke="black"
+        stroke={theme.black}
         fill={theme.bgSubtle}
         strokeWidth={20}
         dash={[40, 80]}
         opacity={0.3}
         closed
       />
-      <Line points={outerPoints} stroke="black" strokeWidth={20} dash={[40, 80]} opacity={0.3} closed />
+      <Line points={outerPoints} stroke={theme.black} strokeWidth={20} dash={[40, 80]} opacity={0.3} closed />
     </Group>
   )
 }

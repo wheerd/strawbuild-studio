@@ -1,5 +1,5 @@
 import { Pencil1Icon } from '@radix-ui/react-icons'
-import { Box, Card, Code, Flex, IconButton, Select, Text } from '@radix-ui/themes'
+import { Code, Flex, IconButton, Select, Text } from '@radix-ui/themes'
 import React, { useCallback } from 'react'
 
 import { StoreyManagementModal } from '@/building/components/StoreyManagementModal'
@@ -35,34 +35,30 @@ export function StoreySelector(): React.JSX.Element {
   )
 
   return (
-    <Box bottom="2" left="2" className="absolute z-10">
-      <Card size="1" variant="surface">
-        <Flex align="center" gap="2">
-          <Select.Root value={activeStoreyId} onValueChange={handleStoreyChange}>
-            <Select.Trigger />
-            <Select.Content position="popper" variant="soft">
-              {storeysDisplayOrder.map(storey => (
-                <Select.Item key={storey.id} value={storey.id}>
-                  <Flex align="center" gap="2" as="span">
-                    <Code variant="ghost" size="2" weight="bold" color={getLevelColor(storey.level)}>
-                      L{storey.level}
-                    </Code>
-                    <Text>{storey.name}</Text>
-                  </Flex>
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Root>
+    <Flex align="center" gap="2">
+      <Select.Root size="1" value={activeStoreyId} onValueChange={handleStoreyChange}>
+        <Select.Trigger />
+        <Select.Content position="popper" variant="soft">
+          {storeysDisplayOrder.map(storey => (
+            <Select.Item key={storey.id} value={storey.id}>
+              <Flex align="center" gap="2" as="span">
+                <Code variant="ghost" size="2" weight="bold" color={getLevelColor(storey.level)}>
+                  L{storey.level}
+                </Code>
+                <Text>{storey.name}</Text>
+              </Flex>
+            </Select.Item>
+          ))}
+        </Select.Content>
+      </Select.Root>
 
-          <StoreyManagementModal
-            trigger={
-              <IconButton title="Manage floors" type="button">
-                <Pencil1Icon />
-              </IconButton>
-            }
-          />
-        </Flex>
-      </Card>
-    </Box>
+      <StoreyManagementModal
+        trigger={
+          <IconButton size="1" title="Manage floors" type="button" variant="soft">
+            <Pencil1Icon />
+          </IconButton>
+        }
+      />
+    </Flex>
   )
 }

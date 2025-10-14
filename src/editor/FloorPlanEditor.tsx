@@ -11,10 +11,8 @@ import { MainToolbar } from './MainToolbar'
 import { SidePanel } from './SidePanel'
 import { FloorPlanStage } from './canvas/layers/FloorPlanStage'
 import { useAutoFitOnHydration } from './hooks/useAutoFitOnHydration'
-import { AutoSaveIndicator } from './overlays/AutoSaveIndicator'
-import { GridSizeDisplay } from './overlays/GridSizeDisplay'
-import { StoreySelector } from './overlays/StoreySelector'
 import { LengthInputComponent } from './services/length-input'
+import { StatusBar } from './status-bar/StatusBar'
 import { keyboardShortcutManager } from './tools/system/KeyboardShortcutManager'
 
 export function FloorPlanEditor(): React.JSX.Element {
@@ -180,15 +178,13 @@ export function FloorPlanEditor(): React.JSX.Element {
             style={{
               position: 'relative',
               overflow: 'hidden',
-              backgroundColor: 'white',
+              backgroundColor: 'var(--color-background)',
               borderRight: '1px solid var(--gray-6)'
             }}
           >
             <CanvasThemeProvider>
               <FloorPlanStage width={dimensions.width} height={dimensions.height} />
-              <AutoSaveIndicator />
-              <GridSizeDisplay />
-              <StoreySelector />
+              <StatusBar />
               <LengthInputComponent />
             </CanvasThemeProvider>
           </Box>

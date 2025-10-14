@@ -68,7 +68,7 @@ export function PerimeterWallShape({
           outsideStart[1]
         ]}
         fill={fillColor}
-        stroke={theme.black}
+        stroke={theme.border}
         strokeWidth={10}
         closed
         listening

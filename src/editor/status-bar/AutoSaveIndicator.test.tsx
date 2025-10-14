@@ -21,8 +21,8 @@ vi.mock('@/building/store/persistenceStore', () => ({
 // Mock the ProjectImportExportService
 vi.mock('@/shared/services/ProjectImportExportService', () => ({
   ProjectImportExportService: {
-    exportProject: vi.fn().mockResolvedValue({ success: true }),
-    importProject: vi.fn().mockResolvedValue({ success: true })
+    exportToString: vi.fn().mockResolvedValue({ success: true, content: '{}' }),
+    importFromString: vi.fn().mockResolvedValue({ success: true })
   }
 }))
 

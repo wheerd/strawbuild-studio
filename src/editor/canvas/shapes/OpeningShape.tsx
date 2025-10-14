@@ -152,7 +152,7 @@ export function OpeningShape({
       <Line
         points={openingPolygonArray}
         fill={theme.bgCanvas}
-        stroke={theme.black}
+        stroke={theme.border}
         strokeWidth={10}
         lineCap="butt"
         opacity={0.8}

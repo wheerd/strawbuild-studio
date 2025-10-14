@@ -1,7 +1,12 @@
 import { Theme } from '@radix-ui/themes'
 import { render, screen, waitFor } from '@testing-library/react'
+import { vi } from 'vitest'
 
 import App from './App'
+
+vi.mock('next-themes', () => ({
+  useTheme: vi.fn().mockReturnValue({ resolvedTheme: 'light' })
+}))
 
 test('renders loading state initially', () => {
   render(

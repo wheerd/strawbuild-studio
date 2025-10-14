@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Stage } from 'react-konva/lib/ReactKonvaCore'
 
 import { stageReference } from '@/editor/canvas/services/StageReference'
+import { usePointerPositionActions } from '@/editor/hooks/usePointerPosition'
 import { usePanX, usePanY, useViewportActions, useZoom } from '@/editor/hooks/useViewportStore'
 import { useCanvasEventDispatcher } from '@/editor/tools/system/events/CanvasEventDispatcher'
 import { handleCanvasEvent } from '@/editor/tools/system/store'
@@ -29,7 +30,8 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
   const zoom = useZoom()
   const panX = usePanX()
   const panY = usePanY()
-  const { setViewport, setStageDimensions, zoomBy, panBy, setPan } = useViewportActions()
+  const { setStageDimensions, zoomBy, panBy, setPan, stageToWorld } = useViewportActions()
+  const pointerActions = usePointerPositionActions()
 
   // Local state for panning (non-tool related)
   const [dragStart, setDragStart] = useState<{ pos: { x: number; y: number } } | null>(null)
@@ -94,6 +96,8 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
       const pointer = stage.getPointerPosition()
       if (pointer == null) return
 
+      pointerActions.setPosition(pointer, stageToWorld(pointer))
+
       // Handle panning (middle pointer or shift+left click)
       if (e.evt.button === 1 || (e.evt.button === 0 && e.evt.shiftKey)) {
         setDragStart({ pos: pointer })
@@ -103,7 +107,7 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
       // Route to tool system
       eventDispatcher.handlePointerDown(e)
     },
-    [setDragStart, eventDispatcher]
+    [setDragStart, eventDispatcher, pointerActions, stageToWorld]
   )
 
   // Handle pointer move events
@@ -114,6 +118,8 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
 
       const pointer = stage.getPointerPosition()
       if (pointer == null) return
+
+      pointerActions.setPosition(pointer, stageToWorld(pointer))
 
       // Handle panning
       if (dragStart != null && (e.evt.buttons === 4 || (e.evt.buttons === 1 && e.evt.shiftKey))) {
@@ -128,12 +134,18 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
       // Route to tool system
       eventDispatcher.handlePointerMove(e)
     },
-    [dragStart, setViewport, eventDispatcher]
+    [dragStart, eventDispatcher, pointerActions, stageToWorld, panBy, setDragStart]
   )
 
   // Handle pointer up events
   const handlePointerUp = useCallback(
     (e: Konva.KonvaEventObject<PointerEvent>) => {
+      const stage = e.target.getStage()
+      const pointer = stage?.getPointerPosition()
+      if (pointer) {
+        pointerActions.setPosition(pointer, stageToWorld(pointer))
+      }
+
       // End panning
       if (dragStart != null) {
         setDragStart(null)
@@ -143,14 +155,22 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
       // Route to tool system
       eventDispatcher.handlePointerUp(e)
     },
-    [dragStart, eventDispatcher]
+    [dragStart, eventDispatcher, pointerActions, stageToWorld, setDragStart]
   )
 
+  const handlePointerLeave = useCallback(() => {
+    pointerActions.clear()
+  }, [pointerActions])
+
   // Handle touch start events
-  const handleTouchStart = useCallback((e: Konva.KonvaEventObject<TouchEvent>) => {
-    e.evt.preventDefault()
-    setTouches(Array.from(e.evt.touches))
-  }, [])
+  const handleTouchStart = useCallback(
+    (e: Konva.KonvaEventObject<TouchEvent>) => {
+      e.evt.preventDefault()
+      pointerActions.clear()
+      setTouches(Array.from(e.evt.touches))
+    },
+    [pointerActions]
+  )
 
   // Handle touch move events
   const handleTouchMove = useCallback(
@@ -207,10 +227,14 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
   )
 
   // Handle touch end events
-  const handleTouchEnd = useCallback((e: Konva.KonvaEventObject<TouchEvent>) => {
-    e.evt.preventDefault()
-    setTouches([])
-  }, [])
+  const handleTouchEnd = useCallback(
+    (e: Konva.KonvaEventObject<TouchEvent>) => {
+      e.evt.preventDefault()
+      setTouches([])
+      pointerActions.clear()
+    },
+    [pointerActions]
+  )
 
   return (
     <Stage
@@ -225,6 +249,7 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onPointerLeave={handlePointerLeave}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}

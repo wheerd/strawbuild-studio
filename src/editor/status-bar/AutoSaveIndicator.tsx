@@ -130,32 +130,30 @@ export function AutoSaveIndicator(): React.JSX.Element {
   const statusInfo = getStatusInfo()
 
   return (
-    <Box top="2" left="2" className="absolute z-10">
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger>
-          <IconButton variant="surface" color={statusInfo.color}>
-            <Tooltip content={statusInfo.text}>
-              <Box p="1">{statusInfo.icon}</Box>
-            </Tooltip>
-          </IconButton>
-        </DropdownMenu.Trigger>
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger>
+        <IconButton size="1" variant="soft" color={statusInfo.color}>
+          <Tooltip content={statusInfo.text}>
+            <Box p="1">{statusInfo.icon}</Box>
+          </Tooltip>
+        </IconButton>
+      </DropdownMenu.Trigger>
 
-        <DropdownMenu.Content>
-          <DropdownMenu.Item onClick={handleExport} disabled={isExporting || isImporting}>
-            <DownloadIcon />
-            Save to File
-          </DropdownMenu.Item>
+      <DropdownMenu.Content>
+        <DropdownMenu.Item onClick={handleExport} disabled={isExporting || isImporting}>
+          <DownloadIcon />
+          Save to File
+        </DropdownMenu.Item>
 
-          <DropdownMenu.Item onClick={handleImport} disabled={isExporting || isImporting}>
-            <UploadIcon />
-            Load from File
-          </DropdownMenu.Item>
+        <DropdownMenu.Item onClick={handleImport} disabled={isExporting || isImporting}>
+          <UploadIcon />
+          Load from File
+        </DropdownMenu.Item>
 
-          <DropdownMenu.Separator />
+        <DropdownMenu.Separator />
 
-          <DropdownMenu.Item disabled>{statusInfo.text}</DropdownMenu.Item>
-        </DropdownMenu.Content>
-      </DropdownMenu.Root>
-    </Box>
+        <DropdownMenu.Item disabled>{statusInfo.text}</DropdownMenu.Item>
+      </DropdownMenu.Content>
+    </DropdownMenu.Root>
   )
 }
