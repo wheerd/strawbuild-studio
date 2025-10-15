@@ -60,8 +60,8 @@ export interface Cut {
  * Example:
  * {
  *   type: 'cut-cuboid',
- *   offset: [0, 0, 0],
- *   size: [5000, 360, 60],
+ *   offset: vec3.fromValues(0, 0, 0),
+ *   size: vec3.fromValues(5000, 360, 60),
  *   startCut: {
  *     plane: 'xy',
  *     axis: 'y',

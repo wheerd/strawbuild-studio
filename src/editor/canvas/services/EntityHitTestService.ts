@@ -44,7 +44,7 @@ export class EntityHitTestService {
     // Use Konva's built-in intersection detection with original pointer coordinates
     const intersectedNode = stage.getIntersection(pointerCoordinates)
 
-    return this.processIntersectedNode(intersectedNode, [pointerCoordinates.x, pointerCoordinates.y])
+    return this.processIntersectedNode(intersectedNode, vec2.fromValues(pointerCoordinates.x, pointerCoordinates.y))
   }
 
   /**

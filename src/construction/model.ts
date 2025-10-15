@@ -101,7 +101,9 @@ export function createConstructionGroup(
   })
 
   const groupBounds =
-    childBounds.length > 0 ? mergeBounds(...childBounds) : ({ min: [0, 0, 0], max: [0, 0, 0] } as Bounds3D)
+    childBounds.length > 0
+      ? mergeBounds(...childBounds)
+      : ({ min: vec3.fromValues(0, 0, 0), max: vec3.fromValues(0, 0, 0) } as Bounds3D)
 
   return {
     id: createConstructionElementId(),

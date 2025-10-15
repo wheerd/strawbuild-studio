@@ -23,15 +23,11 @@ vi.mock('@/shared/geometry', async () => {
 const simplifyPolygonMock = vi.mocked(geometry.simplifyPolygon)
 const offsetPolygonMock = vi.mocked(geometry.offsetPolygon)
 
-function createMockCorner(
-  id: string,
-  insidePoint: [number, number],
-  constructedByWall: 'previous' | 'next'
-): PerimeterCorner {
+function createMockCorner(id: string, insidePoint: vec2, constructedByWall: 'previous' | 'next'): PerimeterCorner {
   return {
     id: id as any,
-    insidePoint: vec2.fromValues(insidePoint[0], insidePoint[1]),
-    outsidePoint: vec2.fromValues(insidePoint[0], insidePoint[1]),
+    insidePoint,
+    outsidePoint: insidePoint,
     constructedByWall,
     interiorAngle: 90,
     exteriorAngle: 270
@@ -71,10 +67,10 @@ afterEach(() => {
 describe('constructFullRingBeam', () => {
   it('constructs extruded polygons for each segment using simplified and offset polygons', () => {
     const corners = [
-      createMockCorner('c1', [0, 0], 'next'),
-      createMockCorner('c2', [0, 3000], 'next'),
-      createMockCorner('c3', [4000, 3000], 'next'),
-      createMockCorner('c4', [4000, 0], 'next')
+      createMockCorner('c1', vec2.fromValues(0, 0), 'next'),
+      createMockCorner('c2', vec2.fromValues(0, 3000), 'next'),
+      createMockCorner('c3', vec2.fromValues(4000, 3000), 'next'),
+      createMockCorner('c4', vec2.fromValues(4000, 0), 'next')
     ]
     const perimeter = createMockPerimeter(corners)
 
@@ -104,10 +100,10 @@ describe('constructFullRingBeam', () => {
 
   it('passes through offset distance variations to geometry helpers', () => {
     const corners = [
-      createMockCorner('c1', [0, 0], 'next'),
-      createMockCorner('c2', [0, 1000], 'next'),
-      createMockCorner('c3', [1000, 1000], 'next'),
-      createMockCorner('c4', [1000, 0], 'next')
+      createMockCorner('c1', vec2.fromValues(0, 0), 'next'),
+      createMockCorner('c2', vec2.fromValues(0, 1000), 'next'),
+      createMockCorner('c3', vec2.fromValues(1000, 1000), 'next'),
+      createMockCorner('c4', vec2.fromValues(1000, 0), 'next')
     ]
     const perimeter = createMockPerimeter(corners)
 
@@ -128,10 +124,10 @@ describe('constructFullRingBeam', () => {
 describe('constructRingBeam', () => {
   it('delegates full ring beam construction', () => {
     const corners = [
-      createMockCorner('c1', [0, 0], 'next'),
-      createMockCorner('c2', [0, 1000], 'next'),
-      createMockCorner('c3', [1000, 1000], 'next'),
-      createMockCorner('c4', [1000, 0], 'next')
+      createMockCorner('c1', vec2.fromValues(0, 0), 'next'),
+      createMockCorner('c2', vec2.fromValues(0, 1000), 'next'),
+      createMockCorner('c3', vec2.fromValues(1000, 1000), 'next'),
+      createMockCorner('c4', vec2.fromValues(1000, 0), 'next')
     ]
     const perimeter = createMockPerimeter(corners)
 
@@ -142,10 +138,10 @@ describe('constructRingBeam', () => {
 
   it('returns unsupported model for double ring beam', () => {
     const corners = [
-      createMockCorner('c1', [0, 0], 'next'),
-      createMockCorner('c2', [0, 1000], 'next'),
-      createMockCorner('c3', [1000, 1000], 'next'),
-      createMockCorner('c4', [1000, 0], 'next')
+      createMockCorner('c1', vec2.fromValues(0, 0), 'next'),
+      createMockCorner('c2', vec2.fromValues(0, 1000), 'next'),
+      createMockCorner('c3', vec2.fromValues(1000, 1000), 'next'),
+      createMockCorner('c4', vec2.fromValues(1000, 0), 'next')
     ]
     const perimeter = createMockPerimeter(corners)
 

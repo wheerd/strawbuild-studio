@@ -1,3 +1,5 @@
+import { vec3 } from 'gl-matrix'
+
 import type { Perimeter } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { IDENTITY } from '@/construction/geometry'
@@ -52,7 +54,7 @@ export function constructPerimeter(perimeter: Perimeter): ConstructionModel {
         ringBeam,
         {
           position: [0, 0, constructionHeight - method.config.height],
-          rotation: [0, 0, 0]
+          rotation: vec3.fromValues(0, 0, 0)
         },
         [TAG_TOP_PLATE]
       )

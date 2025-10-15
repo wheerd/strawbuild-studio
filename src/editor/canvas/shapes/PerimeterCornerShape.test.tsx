@@ -22,7 +22,7 @@ vi.mock('@/construction/config/store', () => ({
 }))
 
 describe('PerimeterCornerShape', () => {
-  const createMockWall = (direction: [number, number]): PerimeterWall => ({
+  const createMockWall = (direction: vec2): PerimeterWall => ({
     id: createPerimeterWallId(),
     thickness: 440,
     constructionMethodId: 'method1' as any,
@@ -30,9 +30,9 @@ describe('PerimeterCornerShape', () => {
     insideLength: 1000,
     outsideLength: 1000,
     wallLength: 1000,
-    insideLine: { start: vec2.fromValues(0, 0), end: vec2.fromValues(direction[0], direction[1]) },
-    outsideLine: { start: vec2.fromValues(0, 0), end: vec2.fromValues(direction[0], direction[1]) },
-    direction: vec2.fromValues(direction[0], direction[1]),
+    insideLine: { start: vec2.fromValues(0, 0), end: direction },
+    outsideLine: { start: vec2.fromValues(0, 0), end: direction },
+    direction,
     outsideDirection: vec2.fromValues(-direction[1], direction[0])
   })
 
@@ -47,8 +47,8 @@ describe('PerimeterCornerShape', () => {
 
   it('should render rounded rectangle overlay for near-180° interior angles', () => {
     const corner = createMockCorner(178) // Close to 180°
-    const previousWall = createMockWall([1, 0])
-    const nextWall = createMockWall([1, 0])
+    const previousWall = createMockWall(vec2.fromValues(1, 0))
+    const nextWall = createMockWall(vec2.fromValues(1, 0))
 
     const { container } = render(
       <PerimeterCornerShape
@@ -67,8 +67,8 @@ describe('PerimeterCornerShape', () => {
 
   it('should render rounded rectangle overlay for near-180° exterior angles', () => {
     const corner = createMockCorner(182) // Exterior angle is 178°, close to 180°
-    const previousWall = createMockWall([1, 0])
-    const nextWall = createMockWall([1, 0])
+    const previousWall = createMockWall(vec2.fromValues(1, 0))
+    const nextWall = createMockWall(vec2.fromValues(1, 0))
 
     const { container } = render(
       <PerimeterCornerShape
@@ -86,8 +86,8 @@ describe('PerimeterCornerShape', () => {
 
   it('should not render overlay for normal angles', () => {
     const corner = createMockCorner(90) // Normal 90° corner
-    const previousWall = createMockWall([1, 0])
-    const nextWall = createMockWall([0, 1])
+    const previousWall = createMockWall(vec2.fromValues(1, 0))
+    const nextWall = createMockWall(vec2.fromValues(0, 1))
 
     const { container } = render(
       <PerimeterCornerShape
@@ -105,8 +105,8 @@ describe('PerimeterCornerShape', () => {
 
   it('should not render overlay for angles just outside the threshold', () => {
     const corner = createMockCorner(174) // 6° away from 180°, outside ±5° threshold
-    const previousWall = createMockWall([1, 0])
-    const nextWall = createMockWall([1, 0])
+    const previousWall = createMockWall(vec2.fromValues(1, 0))
+    const nextWall = createMockWall(vec2.fromValues(1, 0))
 
     const { container } = render(
       <PerimeterCornerShape
@@ -124,8 +124,8 @@ describe('PerimeterCornerShape', () => {
 
   it('should render overlay for angles at the edge of the threshold', () => {
     const corner = createMockCorner(175) // Exactly 5° away from 180°
-    const previousWall = createMockWall([1, 0])
-    const nextWall = createMockWall([1, 0])
+    const previousWall = createMockWall(vec2.fromValues(1, 0))
+    const nextWall = createMockWall(vec2.fromValues(1, 0))
 
     const { container } = render(
       <PerimeterCornerShape

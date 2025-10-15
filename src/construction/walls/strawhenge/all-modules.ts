@@ -1,4 +1,4 @@
-import type { vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
 import type { WallLayersConfig } from '@/construction/config/types'
@@ -35,17 +35,17 @@ export function* moduleWallArea(
     return
   }
 
-  const moduleSize: vec3 = [module.width, size[1], size[2]]
+  const moduleSize = vec3.fromValues(module.width, size[1], size[2])
   const remainingWidth = size[0] % module.width
   const start = position[0] + (startAtEnd ? remainingWidth : 0)
   const end = position[0] + size[0] - (startAtEnd ? 0 : remainingWidth)
   for (let x = start; x < end; x += module.width) {
-    const modulePosition: vec3 = [x, position[1], position[2]]
+    const modulePosition = vec3.fromValues(x, position[1], position[2])
     yield* yieldAsGroup(constructModule(modulePosition, moduleSize, module), [TAG_MODULE])
   }
   if (remainingWidth > 0) {
-    const remainingPosition: vec3 = [startAtEnd ? position[0] : end, position[1], position[2]]
-    const remainingSize: vec3 = [remainingWidth, size[1], size[2]]
+    const remainingPosition = vec3.fromValues(startAtEnd ? position[0] : end, position[1], position[2])
+    const remainingSize = vec3.fromValues(remainingWidth, size[1], size[2])
     yield* infillWallArea(remainingPosition, remainingSize, infill, startsWithStand, endsWithStand, startAtEnd)
   }
 }

@@ -61,7 +61,7 @@ export class SnappingService {
   private generateSnapLines(context: SnappingContext): Line2D[] {
     const snapLines: Line2D[] = []
 
-    const allPoints = [[0, 0], ...context.snapPoints, ...(context.alignPoints ?? [])]
+    const allPoints = [vec2.fromValues(0, 0), ...context.snapPoints, ...(context.alignPoints ?? [])]
 
     // 1. Add horizontal and vertical lines through all points
     for (const point of allPoints) {

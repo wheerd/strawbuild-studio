@@ -1,3 +1,4 @@
+import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { createPerimeterConstructionMethodId } from '@/building/model/ids'
@@ -118,12 +119,12 @@ describe('LShapedPreset', () => {
 
       // Expected points for L-shape centered at origin
       const expected = [
-        [-4000, -3000], // Bottom-left of main rectangle
-        [4000, -3000], // Bottom-right of main rectangle
-        [4000, 0], // Inner corner (right side)
-        [0, 0], // Inner corner (top side)
-        [0, 3000], // Top-right of extension
-        [-4000, 3000] // Top-left of main rectangle
+        vec2.fromValues(-4000, -3000), // Bottom-left of main rectangle
+        vec2.fromValues(4000, -3000), // Bottom-right of main rectangle
+        vec2.fromValues(4000, 0), // Inner corner (right side)
+        vec2.fromValues(0, 0), // Inner corner (top side)
+        vec2.fromValues(0, 3000), // Top-right of extension
+        vec2.fromValues(-4000, 3000) // Top-left of main rectangle
       ]
 
       points.forEach((point, index) => {

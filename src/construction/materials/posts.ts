@@ -1,4 +1,4 @@
-import type { vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 
 import { type ConstructionElement, createConstructionElement, createCuboidShape } from '@/construction/elements'
 import { type ConstructionResult, yieldElement, yieldError, yieldWarning } from '@/construction/results'
@@ -53,7 +53,7 @@ const dimensionsMatch = (
 function* constructFullPost(position: vec3, size: vec3, config: FullPostConfig): Generator<ConstructionResult> {
   const postElement: ConstructionElement = createConstructionElement(
     config.material,
-    createCuboidShape(position, [config.width, size[1], size[2]])
+    createCuboidShape(position, vec3.fromValues(config.width, size[1], size[2]))
   )
 
   yield yieldElement(postElement)
@@ -81,7 +81,7 @@ function* constructDoublePost(position: vec3, size: vec3, config: DoublePostConf
   if (size[1] < minimumWallThickness) {
     const errorElement: ConstructionElement = createConstructionElement(
       config.material,
-      createCuboidShape(position, [config.width, size[1], size[2]])
+      createCuboidShape(position, vec3.fromValues(config.width, size[1], size[2]))
     )
 
     yield yieldElement(errorElement)
@@ -95,7 +95,7 @@ function* constructDoublePost(position: vec3, size: vec3, config: DoublePostConf
 
   const post1: ConstructionElement = createConstructionElement(
     config.material,
-    createCuboidShape(position, [config.width, config.thickness, size[2]]),
+    createCuboidShape(position, vec3.fromValues(config.width, config.thickness, size[2])),
     undefined,
     [TAG_POST]
   )
@@ -104,8 +104,8 @@ function* constructDoublePost(position: vec3, size: vec3, config: DoublePostConf
   const post2: ConstructionElement = createConstructionElement(
     config.material,
     createCuboidShape(
-      [position[0], position[1] + size[1] - config.thickness, position[2]],
-      [config.width, config.thickness, size[2]]
+      vec3.fromValues(position[0], position[1] + size[1] - config.thickness, position[2]),
+      vec3.fromValues(config.width, config.thickness, size[2])
     )
   )
   yield yieldElement(post2)
@@ -116,8 +116,8 @@ function* constructDoublePost(position: vec3, size: vec3, config: DoublePostConf
     const infill: ConstructionElement = createConstructionElement(
       config.infillMaterial,
       createCuboidShape(
-        [position[0], position[1] + config.thickness, position[2]],
-        [config.width, infillThickness, size[2]]
+        vec3.fromValues(position[0], position[1] + config.thickness, position[2]),
+        vec3.fromValues(config.width, infillThickness, size[2])
       )
     )
     yield yieldElement(infill)

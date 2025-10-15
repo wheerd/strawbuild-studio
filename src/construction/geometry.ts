@@ -10,8 +10,8 @@ export interface Transform {
 }
 
 export const IDENTITY: Transform = {
-  position: [0, 0, 0],
-  rotation: [0, 0, 0]
+  position: vec3.fromValues(0, 0, 0),
+  rotation: vec3.fromValues(0, 0, 0)
 }
 
 export function transform(v: vec3, t: Transform, origin?: vec3): vec3 {

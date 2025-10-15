@@ -73,8 +73,8 @@ export function* infillWallArea(
     width -= postWidth
   }
 
-  const inbetweenPosition: vec3 = [left, position[1], position[2]]
-  const inbetweenSize: vec3 = [width, size[1], size[2]]
+  const inbetweenPosition = vec3.fromValues(left, position[1], position[2])
+  const inbetweenSize = vec3.fromValues(width, size[1], size[2])
 
   yield* yieldAndCollectElementIds(
     constructInfillRecursive(inbetweenPosition, inbetweenSize, config, !startAtEnd),
@@ -99,8 +99,12 @@ function* constructInfillRecursive(
 ): Generator<ConstructionResult> {
   const baleWidth = getBaleWidth(size[0], config)
 
-  const strawPosition: vec3 = [atStart ? position[0] : position[0] + size[0] - baleWidth, position[1], position[2]]
-  const strawSize: vec3 = [baleWidth, size[1], size[2]]
+  const strawPosition = vec3.fromValues(
+    atStart ? position[0] : position[0] + size[0] - baleWidth,
+    position[1],
+    position[2]
+  )
+  const strawSize = vec3.fromValues(baleWidth, size[1], size[2])
 
   if (baleWidth > 0) {
     const strawElementIds: ConstructionElementId[] = []

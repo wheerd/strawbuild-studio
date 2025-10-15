@@ -54,7 +54,7 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
 
     return {
       newOffset: opening.offsetFromStart,
-      movementDelta: [0, 0] // Store as [1D_change, 0]
+      movementDelta: vec2.fromValues(0, 0) // Store as [1D_change, 0]
     }
   }
 

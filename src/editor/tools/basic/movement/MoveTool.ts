@@ -91,7 +91,7 @@ export class MoveTool extends BaseTool implements ToolImplementation {
     this.toolState.pointerState = {
       startPosition: event.stageCoordinates,
       currentPosition: event.stageCoordinates,
-      delta: [0, 0]
+      delta: vec2.fromValues(0, 0)
     }
 
     this.toolState.isValid = true

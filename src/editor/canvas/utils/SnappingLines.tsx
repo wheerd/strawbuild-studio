@@ -27,9 +27,9 @@ export function SnappingLines({ snapResult }: SnappingLinesProps): React.JSX.Ele
   return (
     <Group>
       {snapResult.lines.map((line, index) => {
-        const color = vec2.equals(line.direction, [0, 1])
+        const color = vec2.equals(line.direction, vec2.fromValues(0, 1))
           ? theme.gridVertical
-          : vec2.equals(line.direction, [1, 0])
+          : vec2.equals(line.direction, vec2.fromValues(1, 0))
             ? theme.gridHorizontal
             : theme.primary
         return (

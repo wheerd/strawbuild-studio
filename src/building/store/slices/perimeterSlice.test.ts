@@ -1963,7 +1963,7 @@ describe('perimeterSlice', () => {
             800
           )
           // Should return one of the valid adjacent positions
-          expect([1200, 2800]).toContain(result)
+          expect(vec2.fromValues(1200, 2800)).toContain(result)
         })
       })
 
@@ -2086,11 +2086,11 @@ describe('perimeterSlice', () => {
         // Create a perimeter with a split wall
         const boundary = {
           points: [
-            [0, 0],
-            [0, 3000],
-            [0, 6000],
-            [2000, 6000],
-            [2000, 0]
+            vec2.fromValues(0, 0),
+            vec2.fromValues(0, 3000),
+            vec2.fromValues(0, 6000),
+            vec2.fromValues(2000, 6000),
+            vec2.fromValues(2000, 0)
           ]
         }
         const constructionMethodId = createPerimeterConstructionMethodId()
@@ -2167,10 +2167,10 @@ describe('perimeterSlice', () => {
         // Create a simple rectangular perimeter
         const boundary = {
           points: [
-            [0, 0],
-            [0, 3000],
-            [3000, 3000],
-            [3000, 0]
+            vec2.fromValues(0, 0),
+            vec2.fromValues(0, 3000),
+            vec2.fromValues(3000, 3000),
+            vec2.fromValues(3000, 0)
           ]
         }
         const constructionMethodId = createPerimeterConstructionMethodId()

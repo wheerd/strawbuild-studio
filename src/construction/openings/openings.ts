@@ -194,8 +194,8 @@ export function* constructOpeningFrame(
     const wallAboveHeight = wallTop - wallAboveBottom
 
     if (wallAboveHeight > 0) {
-      const wallAbovePosition: vec3 = [openingLeft, wallFront, wallAboveBottom]
-      const wallAboveSize: vec3 = [openingWidth, wallThickness, wallAboveHeight]
+      const wallAbovePosition = vec3.fromValues(openingLeft, wallFront, wallAboveBottom)
+      const wallAboveSize = vec3.fromValues(openingWidth, wallThickness, wallAboveHeight)
 
       yield* infillWallArea(wallAbovePosition, wallAboveSize, infill)
     }
@@ -207,8 +207,8 @@ export function* constructOpeningFrame(
     const wallBelowHeight = sillTop - sillThickness - wallBottom
 
     if (wallBelowHeight > 0) {
-      const wallBelowPosition: vec3 = [openingLeft, wallFront, wallBottom]
-      const wallBelowSize: vec3 = [openingWidth, wallThickness, wallBelowHeight]
+      const wallBelowPosition = vec3.fromValues(openingLeft, wallFront, wallBottom)
+      const wallBelowSize = vec3.fromValues(openingWidth, wallThickness, wallBelowHeight)
 
       yield* infillWallArea(wallBelowPosition, wallBelowSize, infill)
     }

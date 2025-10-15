@@ -21,12 +21,12 @@ export function* constructStraw(position: vec3, size: vec3, config: StrawConfig)
 
     for (let z = position[2]; z < end[2]; z += config.baleHeight) {
       for (let x = position[0]; x < end[0]; x += config.baleLength) {
-        const balePosition: vec3 = [x, position[1], z]
-        const baleSize = [
+        const balePosition = vec3.fromValues(x, position[1], z)
+        const baleSize = vec3.fromValues(
           Math.min(config.baleLength, end[0] - x),
           config.baleWidth,
           Math.min(config.baleHeight, end[2] - z)
-        ]
+        )
 
         const isFullBale = baleSize[0] === config.baleLength && baleSize[2] === config.baleHeight
         const bale = createConstructionElement(config.material, createCuboidShape(balePosition, baleSize), IDENTITY, [

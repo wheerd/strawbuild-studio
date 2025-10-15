@@ -1,4 +1,4 @@
-import { vec2 } from 'gl-matrix'
+import { vec2, vec3 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createOpeningId, createPerimeterConstructionMethodId, createPerimeterId } from '@/building/model/ids'
@@ -183,12 +183,12 @@ describe('segmentedWallConstruction', () => {
         material: 'material' as any,
         shape: {
           type: 'cuboid',
-          offset: [0, 0, 0],
-          size: [100, 100, 100],
-          bounds: { min: [0, 0, 0], max: [100, 100, 100] }
+          offset: vec3.fromValues(0, 0, 0),
+          size: vec3.fromValues(100, 100, 100),
+          bounds: { min: vec3.fromValues(0, 0, 0), max: vec3.fromValues(100, 100, 100) }
         },
         transform: IDENTITY,
-        bounds: { min: [0, 0, 0], max: [100, 100, 100] }
+        bounds: { min: vec3.fromValues(0, 0, 0), max: vec3.fromValues(100, 100, 100) }
       })
     })
 
@@ -196,9 +196,14 @@ describe('segmentedWallConstruction', () => {
       yield yieldElement({
         id: 'opening-element' as any,
         material: 'material' as any,
-        shape: { type: 'cuboid', offset: [0, 0, 0], size: [50, 50, 50], bounds: { min: [0, 0, 0], max: [50, 50, 50] } },
+        shape: {
+          type: 'cuboid',
+          offset: vec3.fromValues(0, 0, 0),
+          size: vec3.fromValues(50, 50, 50),
+          bounds: { min: vec3.fromValues(0, 0, 0), max: vec3.fromValues(50, 50, 50) }
+        },
         transform: IDENTITY,
-        bounds: { min: [0, 0, 0], max: [50, 50, 50] }
+        bounds: { min: vec3.fromValues(0, 0, 0), max: vec3.fromValues(50, 50, 50) }
       })
     })
   })
@@ -238,8 +243,8 @@ describe('segmentedWallConstruction', () => {
       // Should call wall construction once for entire wall
       expect(mockWallConstruction).toHaveBeenCalledTimes(1)
       expect(mockWallConstruction).toHaveBeenCalledWith(
-        [-0, 30, 60], // position: [-extensionStart, insideThickness, bottomPlateHeight]
-        [3000, 220, 2380], // size: [constructionLength, thickness-layers, wallHeight-plates]
+        vec3.fromValues(-0, 30, 60), // position: [-extensionStart, insideThickness, bottomPlateHeight]
+        vec3.fromValues(3000, 220, 2380), // size: [constructionLength, thickness-layers, wallHeight-plates]
         true, // startsWithStand
         true, // endsWithStand
         false // startAtEnd
@@ -277,8 +282,8 @@ describe('segmentedWallConstruction', () => {
 
       // Should include extensions in wall construction
       expect(mockWallConstruction).toHaveBeenCalledWith(
-        [-100, 30, 60], // position includes start extension
-        [3250, 220, 2380], // size includes total construction length
+        vec3.fromValues(-100, 30, 60), // position includes start extension
+        vec3.fromValues(3250, 220, 2380), // size includes total construction length
         true,
         true,
         true // startAtEnd = true when extensionEnd > 0
@@ -314,8 +319,8 @@ describe('segmentedWallConstruction', () => {
       // Should call wall construction once
       expect(mockWallConstruction).toHaveBeenCalledTimes(1)
       expect(mockWallConstruction).toHaveBeenCalledWith(
-        [-0, 30, 80], // z position = base plate height
-        [3000, 220, 2320], // z size = wallHeight - base - top
+        vec3.fromValues(-0, 30, 80), // z position = base plate height
+        vec3.fromValues(3000, 220, 2320), // z size = wallHeight - base - top
         true,
         true,
         false
@@ -347,13 +352,20 @@ describe('segmentedWallConstruction', () => {
       expect(mockWallConstruction).toHaveBeenCalledTimes(2)
 
       // First wall segment (before opening)
-      expect(mockWallConstruction).toHaveBeenNthCalledWith(1, [-0, 30, 60], [1000, 220, 2380], true, true, false)
+      expect(mockWallConstruction).toHaveBeenNthCalledWith(
+        1,
+        vec3.fromValues(-0, 30, 60),
+        vec3.fromValues(1000, 220, 2380),
+        true,
+        true,
+        false
+      )
 
       // Second wall segment (after opening)
       expect(mockWallConstruction).toHaveBeenNthCalledWith(
         2,
-        [1800, 30, 60], // 1000 + 800
-        [1200, 220, 2380], // 3000 - 1800
+        vec3.fromValues(1800, 30, 60), // 1000 + 800
+        vec3.fromValues(1200, 220, 2380), // 3000 - 1800
         true,
         true,
         true
@@ -361,7 +373,12 @@ describe('segmentedWallConstruction', () => {
 
       // Should call opening construction once
       expect(mockOpeningConstruction).toHaveBeenCalledTimes(1)
-      expect(mockOpeningConstruction).toHaveBeenCalledWith([1000, 30, 60], [800, 220, 2380], 0, [opening])
+      expect(mockOpeningConstruction).toHaveBeenCalledWith(
+        vec3.fromValues(1000, 30, 60),
+        vec3.fromValues(800, 220, 2380),
+        0,
+        [opening]
+      )
 
       // Should generate segment measurements for both wall segments
       const segmentMeasurements = measurements.filter(m => m.tags?.includes(TAG_OPENING_SPACING))
@@ -389,10 +406,21 @@ describe('segmentedWallConstruction', () => {
 
       // Should call wall construction once (after opening)
       expect(mockWallConstruction).toHaveBeenCalledTimes(1)
-      expect(mockWallConstruction).toHaveBeenCalledWith([800, 30, 60], [2200, 220, 2380], true, true, true)
+      expect(mockWallConstruction).toHaveBeenCalledWith(
+        vec3.fromValues(800, 30, 60),
+        vec3.fromValues(2200, 220, 2380),
+        true,
+        true,
+        true
+      )
 
       // Should call opening construction once
-      expect(mockOpeningConstruction).toHaveBeenCalledWith([0, 30, 60], [800, 220, 2380], 0, [opening])
+      expect(mockOpeningConstruction).toHaveBeenCalledWith(
+        vec3.fromValues(0, 30, 60),
+        vec3.fromValues(800, 220, 2380),
+        0,
+        [opening]
+      )
     })
 
     it('should handle opening at end of wall', () => {
@@ -416,10 +444,21 @@ describe('segmentedWallConstruction', () => {
 
       // Should call wall construction once (before opening)
       expect(mockWallConstruction).toHaveBeenCalledTimes(1)
-      expect(mockWallConstruction).toHaveBeenCalledWith([-0, 30, 60], [2200, 220, 2380], true, true, false)
+      expect(mockWallConstruction).toHaveBeenCalledWith(
+        vec3.fromValues(-0, 30, 60),
+        vec3.fromValues(2200, 220, 2380),
+        true,
+        true,
+        false
+      )
 
       // Should call opening construction once
-      expect(mockOpeningConstruction).toHaveBeenCalledWith([2200, 30, 60], [800, 220, 2380], 0, [opening])
+      expect(mockOpeningConstruction).toHaveBeenCalledWith(
+        vec3.fromValues(2200, 30, 60),
+        vec3.fromValues(800, 220, 2380),
+        0,
+        [opening]
+      )
     })
 
     it('should merge adjacent openings with same sill and header heights', () => {
@@ -445,8 +484,8 @@ describe('segmentedWallConstruction', () => {
       // Should call opening construction once with both openings merged
       expect(mockOpeningConstruction).toHaveBeenCalledTimes(1)
       expect(mockOpeningConstruction).toHaveBeenCalledWith(
-        [1000, 30, 60],
-        [1400, 220, 2380], // combined width: 800 + 600
+        vec3.fromValues(1000, 30, 60),
+        vec3.fromValues(1400, 220, 2380), // combined width: 800 + 600
         0,
         [opening1, opening2]
       )
@@ -474,8 +513,20 @@ describe('segmentedWallConstruction', () => {
 
       // Should call opening construction twice - separate openings
       expect(mockOpeningConstruction).toHaveBeenCalledTimes(2)
-      expect(mockOpeningConstruction).toHaveBeenNthCalledWith(1, [1000, 30, 60], [800, 220, 2380], 0, [opening1])
-      expect(mockOpeningConstruction).toHaveBeenNthCalledWith(2, [1800, 30, 60], [600, 220, 2380], 0, [opening2])
+      expect(mockOpeningConstruction).toHaveBeenNthCalledWith(
+        1,
+        vec3.fromValues(1000, 30, 60),
+        vec3.fromValues(800, 220, 2380),
+        0,
+        [opening1]
+      )
+      expect(mockOpeningConstruction).toHaveBeenNthCalledWith(
+        2,
+        vec3.fromValues(1800, 30, 60),
+        vec3.fromValues(600, 220, 2380),
+        0,
+        [opening2]
+      )
     })
 
     it('should not merge adjacent openings with different header heights', () => {
@@ -524,8 +575,20 @@ describe('segmentedWallConstruction', () => {
       aggregateResults(results)
 
       // Should process opening2 first (at position 500), then opening1 (at position 2000)
-      expect(mockOpeningConstruction).toHaveBeenNthCalledWith(1, [500, 30, 60], [800, 220, 2380], 0, [opening2])
-      expect(mockOpeningConstruction).toHaveBeenNthCalledWith(2, [2000, 30, 60], [600, 220, 2380], 0, [opening1])
+      expect(mockOpeningConstruction).toHaveBeenNthCalledWith(
+        1,
+        vec3.fromValues(500, 30, 60),
+        vec3.fromValues(800, 220, 2380),
+        0,
+        [opening2]
+      )
+      expect(mockOpeningConstruction).toHaveBeenNthCalledWith(
+        2,
+        vec3.fromValues(2000, 30, 60),
+        vec3.fromValues(600, 220, 2380),
+        0,
+        [opening1]
+      )
     })
   })
 
@@ -556,8 +619,8 @@ describe('segmentedWallConstruction', () => {
       // Should use 0 height for missing ring beams
       expect(mockWallConstruction).toHaveBeenCalledTimes(1)
       expect(mockWallConstruction).toHaveBeenCalledWith(
-        [-0, 30, 0], // z = 0 when no base plate
-        [3000, 220, 2500], // full wall height when no plates
+        vec3.fromValues(-0, 30, 0), // z = 0 when no base plate
+        vec3.fromValues(3000, 220, 2500), // full wall height when no plates
         true,
         true,
         false
@@ -621,8 +684,8 @@ describe('segmentedWallConstruction', () => {
         renderPosition: 'top',
         label: 'Corner',
         bounds: {
-          min: [-100, 0, 0], // -extensionDistance
-          max: [0, 300, 2500] // wallThickness, wallHeight
+          min: vec3.fromValues(-100, 0, 0), // -extensionDistance
+          max: vec3.fromValues(0, 300, 2500) // wallThickness, wallHeight
         },
         transform: IDENTITY
       })
@@ -634,8 +697,8 @@ describe('segmentedWallConstruction', () => {
         renderPosition: 'top',
         label: 'Corner',
         bounds: {
-          min: [3000, 0, 0], // wallLength
-          max: [3150, 300, 2500] // wallLength + extensionDistance
+          min: vec3.fromValues(3000, 0, 0), // wallLength
+          max: vec3.fromValues(3150, 300, 2500) // wallLength + extensionDistance
         },
         transform: IDENTITY
       })

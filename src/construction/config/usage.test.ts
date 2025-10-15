@@ -1,3 +1,4 @@
+import { vec2 } from 'gl-matrix'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -132,10 +133,10 @@ describe('Config Usage Detection', () => {
             insideLength: 1000,
             outsideLength: 1000,
             wallLength: 1000,
-            insideLine: { start: [0, 0], end: [1000, 0] },
-            outsideLine: { start: [0, 440], end: [1000, 440] },
-            direction: [1, 0],
-            outsideDirection: [0, 1]
+            insideLine: { start: vec2.fromValues(0, 0), end: vec2.fromValues(1000, 0) },
+            outsideLine: { start: vec2.fromValues(0, 440), end: vec2.fromValues(1000, 440) },
+            direction: vec2.fromValues(1, 0),
+            outsideDirection: vec2.fromValues(0, 1)
           },
           {
             id: createPerimeterWallId(),
@@ -145,10 +146,10 @@ describe('Config Usage Detection', () => {
             insideLength: 1000,
             outsideLength: 1000,
             wallLength: 1000,
-            insideLine: { start: [1000, 0], end: [1000, 1000] },
-            outsideLine: { start: [1440, 0], end: [1440, 1000] },
-            direction: [0, 1],
-            outsideDirection: [1, 0]
+            insideLine: { start: vec2.fromValues(1000, 0), end: vec2.fromValues(1000, 1000) },
+            outsideLine: { start: vec2.fromValues(1440, 0), end: vec2.fromValues(1440, 1000) },
+            direction: vec2.fromValues(0, 1),
+            outsideDirection: vec2.fromValues(1, 0)
           },
           {
             id: createPerimeterWallId(),
@@ -158,10 +159,10 @@ describe('Config Usage Detection', () => {
             insideLength: 1000,
             outsideLength: 1000,
             wallLength: 1000,
-            insideLine: { start: [1000, 1000], end: [0, 1000] },
-            outsideLine: { start: [1000, 1440], end: [0, 1440] },
-            direction: [-1, 0],
-            outsideDirection: [0, 1]
+            insideLine: { start: vec2.fromValues(1000, 1000), end: vec2.fromValues(0, 1000) },
+            outsideLine: { start: vec2.fromValues(1000, 1440), end: vec2.fromValues(0, 1440) },
+            direction: vec2.fromValues(-1, 0),
+            outsideDirection: vec2.fromValues(0, 1)
           }
         ],
         corners: []

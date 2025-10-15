@@ -1,4 +1,4 @@
-import type { vec3 } from 'gl-matrix'
+import { vec2, vec3 } from 'gl-matrix'
 
 import type { Opening, Perimeter, PerimeterWall, Storey } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config'
@@ -92,8 +92,8 @@ function* createCornerAreas(
       renderPosition: 'top',
       label: 'Corner',
       bounds: {
-        min: [-cornerInfo.startCorner.extensionDistance, 0, 0],
-        max: [0, wallThickness, wallHeight]
+        min: vec3.fromValues(-cornerInfo.startCorner.extensionDistance, 0, 0),
+        max: vec3.fromValues(0, wallThickness, wallHeight)
       },
       transform: IDENTITY
     })
@@ -105,8 +105,8 @@ function* createCornerAreas(
       renderPosition: 'top',
       label: 'Corner',
       bounds: {
-        min: [wallLength, 0, 0],
-        max: [wallLength + cornerInfo.endCorner.extensionDistance, wallThickness, wallHeight]
+        min: vec3.fromValues(wallLength, 0, 0),
+        max: vec3.fromValues(wallLength + cornerInfo.endCorner.extensionDistance, wallThickness, wallHeight)
       },
       transform: IDENTITY
     })
@@ -129,10 +129,10 @@ function* createPlateAreas(
       plane: 'xz',
       polygon: {
         points: [
-          [start, 0],
-          [start + constructionLength, 0],
-          [start + constructionLength, bottomPlateHeight],
-          [start, bottomPlateHeight]
+          vec2.fromValues(start, 0),
+          vec2.fromValues(start + constructionLength, 0),
+          vec2.fromValues(start + constructionLength, bottomPlateHeight),
+          vec2.fromValues(start, bottomPlateHeight)
         ]
       }
     })
@@ -146,10 +146,10 @@ function* createPlateAreas(
       plane: 'xz',
       polygon: {
         points: [
-          [start, totalConstructionHeight - topPlateHeight],
-          [start + constructionLength, totalConstructionHeight - topPlateHeight],
-          [start + constructionLength, totalConstructionHeight],
-          [start, totalConstructionHeight]
+          vec2.fromValues(start, totalConstructionHeight - topPlateHeight),
+          vec2.fromValues(start + constructionLength, totalConstructionHeight - topPlateHeight),
+          vec2.fromValues(start + constructionLength, totalConstructionHeight),
+          vec2.fromValues(start, totalConstructionHeight)
         ]
       }
     })
@@ -233,17 +233,17 @@ export function* segmentedWallConstruction(
   })
 
   yield yieldMeasurement({
-    startPoint: [-extensionStart, y, z],
-    endPoint: [-extensionStart + constructionLength, y, z],
-    size: [constructionLength, sizeY, sizeZ],
+    startPoint: vec3.fromValues(-extensionStart, y, z),
+    endPoint: vec3.fromValues(-extensionStart + constructionLength, y, z),
+    size: vec3.fromValues(constructionLength, sizeY, sizeZ),
     tags: [TAG_WALL_LENGTH]
   })
 
   if (wall.openings.length === 0) {
     // No openings - just one wall segment for the entire length
     yield* wallConstruction(
-      [-extensionStart, y, z],
-      [constructionLength, sizeY, sizeZ],
+      vec3.fromValues(-extensionStart, y, z),
+      vec3.fromValues(constructionLength, sizeY, sizeZ),
       standAtWallStart,
       standAtWallEnd,
       extensionEnd > 0
@@ -268,24 +268,29 @@ export function* segmentedWallConstruction(
     if (groupStart > currentPosition) {
       const wallSegmentWidth = groupStart - currentPosition
       yield* wallConstruction(
-        [currentPosition, y, z],
-        [wallSegmentWidth, sizeY, sizeZ],
+        vec3.fromValues(currentPosition, y, z),
+        vec3.fromValues(wallSegmentWidth, sizeY, sizeZ),
         currentPosition !== -extensionStart || standAtWallStart,
         true,
         currentPosition > 0
       )
 
       yield yieldMeasurement({
-        startPoint: [currentPosition, y, z],
-        endPoint: [currentPosition + wallSegmentWidth, y, z],
-        size: [wallSegmentWidth, sizeY, sizeZ],
+        startPoint: vec3.fromValues(currentPosition, y, z),
+        endPoint: vec3.fromValues(currentPosition + wallSegmentWidth, y, z),
+        size: vec3.fromValues(wallSegmentWidth, sizeY, sizeZ),
         tags: [TAG_OPENING_SPACING]
       })
     }
 
     // Create opening segment for the group
     const groupWidth = groupEnd - groupStart
-    yield* openingConstruction([groupStart, y, z], [groupWidth, sizeY, sizeZ], finishedFloorZLevel, openingGroup)
+    yield* openingConstruction(
+      vec3.fromValues(groupStart, y, z),
+      vec3.fromValues(groupWidth, sizeY, sizeZ),
+      finishedFloorZLevel,
+      openingGroup
+    )
 
     currentPosition = groupEnd
   }
@@ -294,17 +299,17 @@ export function* segmentedWallConstruction(
   if (currentPosition < constructionLength - extensionStart) {
     const remainingWidth = constructionLength - currentPosition - extensionStart
     yield* wallConstruction(
-      [currentPosition, y, z],
-      [remainingWidth, sizeY, sizeZ],
+      vec3.fromValues(currentPosition, y, z),
+      vec3.fromValues(remainingWidth, sizeY, sizeZ),
       true,
       standAtWallEnd,
       currentPosition > 0
     )
 
     yield yieldMeasurement({
-      startPoint: [currentPosition, y, z],
-      endPoint: [currentPosition + remainingWidth, y, z],
-      size: [remainingWidth, sizeY, sizeZ],
+      startPoint: vec3.fromValues(currentPosition, y, z),
+      endPoint: vec3.fromValues(currentPosition + remainingWidth, y, z),
+      size: vec3.fromValues(remainingWidth, sizeY, sizeZ),
       tags: [TAG_OPENING_SPACING]
     })
   }

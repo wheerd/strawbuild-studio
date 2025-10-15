@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react'
-import type { vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 import { describe, expect, it } from 'vitest'
 
 import type { CutCuboid } from '@/construction/shapes'
@@ -12,9 +12,9 @@ describe('CutCuboidShape', () => {
 
   const mockCutCuboid: CutCuboid = {
     type: 'cut-cuboid',
-    offset: [100, 50, 0],
-    size: [500, 200, 60],
-    bounds: { min: [100, 50, 0], max: [600, 250, 60] },
+    offset: vec3.fromValues(100, 50, 0),
+    size: vec3.fromValues(500, 200, 60),
+    bounds: { min: vec3.fromValues(100, 50, 0), max: vec3.fromValues(600, 250, 60) },
     startCut: {
       plane: 'xy',
       axis: 'y',
@@ -43,9 +43,9 @@ describe('CutCuboidShape', () => {
   it('calculates correct polygon points for angled cuts', () => {
     const simpleCuboid: CutCuboid = {
       type: 'cut-cuboid',
-      offset: [0, 0, 0],
-      size: [100, 100, 60],
-      bounds: { min: [0, 0, 0], max: [100, 100, 60] },
+      offset: vec3.fromValues(0, 0, 0),
+      size: vec3.fromValues(100, 100, 60),
+      bounds: { min: vec3.fromValues(0, 0, 0), max: vec3.fromValues(100, 100, 60) },
       startCut: {
         plane: 'xy',
         axis: 'y',
@@ -73,9 +73,9 @@ describe('CutCuboidShape', () => {
   it('handles negative cut angles correctly', () => {
     const negativeCutCuboid: CutCuboid = {
       type: 'cut-cuboid',
-      offset: [0, 0, 0],
-      size: [100, 100, 60],
-      bounds: { min: [0, 0, 0], max: [100, 100, 60] },
+      offset: vec3.fromValues(0, 0, 0),
+      size: vec3.fromValues(100, 100, 60),
+      bounds: { min: vec3.fromValues(0, 0, 0), max: vec3.fromValues(100, 100, 60) },
       endCut: {
         plane: 'xy',
         axis: 'y',
@@ -129,9 +129,9 @@ describe('CutCuboidShape', () => {
   it('handles cuboid without cuts', () => {
     const noCutCuboid: CutCuboid = {
       type: 'cut-cuboid',
-      offset: [0, 0, 0],
-      size: [100, 100, 60],
-      bounds: { min: [0, 0, 0], max: [100, 100, 60] }
+      offset: vec3.fromValues(0, 0, 0),
+      size: vec3.fromValues(100, 100, 60),
+      bounds: { min: vec3.fromValues(0, 0, 0), max: vec3.fromValues(100, 100, 60) }
     }
 
     const { container } = render(

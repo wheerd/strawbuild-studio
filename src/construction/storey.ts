@@ -1,3 +1,5 @@
+import { vec3 } from 'gl-matrix'
+
 import type { StoreyId } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
@@ -30,7 +32,9 @@ export function constructModel(): ConstructionModel | null {
     zOffset += slabMethod.getBottomOffset(slab) + slabMethod.getConstructionThickness(slab)
     const model = constructStorey(storey.id)
     if (model) {
-      models.push(transformModel(model, { position: [0, 0, zOffset], rotation: [0, 0, 0] }, [TAG_STOREY]))
+      models.push(
+        transformModel(model, { position: [0, 0, zOffset], rotation: vec3.fromValues(0, 0, 0) }, [TAG_STOREY])
+      )
     }
     zOffset += slab.layers.topThickness + slabMethod.getTopOffset(slab) + storey.height
   }

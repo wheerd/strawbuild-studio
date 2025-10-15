@@ -51,14 +51,14 @@ function createMockWall(
 
 function createMockCorner(
   id: string,
-  insidePoint: [number, number],
-  outsidePoint: [number, number],
+  insidePoint: vec2,
+  outsidePoint: vec2,
   constructedByWall: 'previous' | 'next'
 ): PerimeterCorner {
   return {
     id: id as any,
-    insidePoint: vec2.fromValues(insidePoint[0], insidePoint[1]),
-    outsidePoint: vec2.fromValues(outsidePoint[0], outsidePoint[1]),
+    insidePoint,
+    outsidePoint,
     constructedByWall,
     interiorAngle: 90, // Default angle for testing
     exteriorAngle: 270 // Default angle for testing
@@ -123,10 +123,10 @@ describe('Corner Calculations', () => {
       const wall2 = createMockWall('wall-2', 3000, 300)
       const wall3 = createMockWall('wall-3', 2000, 300)
 
-      const corner0 = createMockCorner('corner-0', [0, 0], [-150, 450], 'next')
-      const corner1 = createMockCorner('corner-1', [3000, 0], [3150, 450], 'previous')
-      const corner2 = createMockCorner('corner-2', [3000, 2000], [3150, 2450], 'next')
-      const corner3 = createMockCorner('corner-3', [0, 2000], [-150, 2450], 'previous')
+      const corner0 = createMockCorner('corner-0', vec2.fromValues(0, 0), vec2.fromValues(-150, 450), 'next')
+      const corner1 = createMockCorner('corner-1', vec2.fromValues(3000, 0), vec2.fromValues(3150, 450), 'previous')
+      const corner2 = createMockCorner('corner-2', vec2.fromValues(3000, 2000), vec2.fromValues(3150, 2450), 'next')
+      const corner3 = createMockCorner('corner-3', vec2.fromValues(0, 2000), vec2.fromValues(-150, 2450), 'previous')
 
       const walls = [wall0, wall1, wall2, wall3]
       const corners = [corner0, corner1, corner2, corner3]
@@ -145,9 +145,9 @@ describe('Corner Calculations', () => {
       const wall1 = createMockWall('wall-1', 2000, 300)
       const wall2 = createMockWall('wall-2', 3000, 300)
 
-      const corner0 = createMockCorner('corner-0', [0, 0], [-150, 450], 'next')
-      const corner1 = createMockCorner('corner-1', [3000, 0], [3150, 450], 'previous')
-      const corner2 = createMockCorner('corner-2', [3000, 2000], [3150, 2450], 'next')
+      const corner0 = createMockCorner('corner-0', vec2.fromValues(0, 0), vec2.fromValues(-150, 450), 'next')
+      const corner1 = createMockCorner('corner-1', vec2.fromValues(3000, 0), vec2.fromValues(3150, 450), 'previous')
+      const corner2 = createMockCorner('corner-2', vec2.fromValues(3000, 2000), vec2.fromValues(3150, 2450), 'next')
 
       const walls = [wall0, wall1, wall2]
       const corners = [corner0, corner1, corner2]
@@ -166,9 +166,9 @@ describe('Corner Calculations', () => {
       const wall1 = createMockWall('wall-1', 2000, 300)
       const wall2 = createMockWall('wall-2', 3000, 300)
 
-      const corner0 = createMockCorner('corner-0', [0, 0], [-150, 450], 'next')
-      const corner1 = createMockCorner('corner-1', [3000, 0], [3150, 450], 'previous')
-      const corner2 = createMockCorner('corner-2', [3000, 2000], [3150, 2450], 'next')
+      const corner0 = createMockCorner('corner-0', vec2.fromValues(0, 0), vec2.fromValues(-150, 450), 'next')
+      const corner1 = createMockCorner('corner-1', vec2.fromValues(3000, 0), vec2.fromValues(3150, 450), 'previous')
+      const corner2 = createMockCorner('corner-2', vec2.fromValues(3000, 2000), vec2.fromValues(3150, 2450), 'next')
 
       const walls = [wall0, wall1, wall2]
       const corners = [corner0, corner1, corner2]
@@ -185,7 +185,7 @@ describe('Corner Calculations', () => {
     it('should throw error when wall is not found in perimeter', () => {
       const wall = createMockWall('missing-wall', 3000, 300)
       const walls = [createMockWall('wall-0', 3000, 300)]
-      const corners = [createMockCorner('corner-0', [0, 0], [-150, 450], 'next')]
+      const corners = [createMockCorner('corner-0', vec2.fromValues(0, 0), vec2.fromValues(-150, 450), 'next')]
       const perimeter = createMockPerimeter(walls, corners)
 
       expect(() => getWallContext(wall, perimeter)).toThrow('Could not find wall with id missing-wall')
@@ -205,8 +205,8 @@ describe('Corner Calculations', () => {
       const nextMethod = createMockConstructionMethod('method-2', 'Next Method', layers)
 
       mockGetPerimeterConstructionMethodById.mockReturnValueOnce(previousMethod).mockReturnValueOnce(nextMethod)
-      const startCorner = createMockCorner('start-corner', [0, 0], [-200, 500], 'next')
-      const endCorner = createMockCorner('end-corner', [3000, 0], [3300, 500], 'previous')
+      const startCorner = createMockCorner('start-corner', vec2.fromValues(0, 0), vec2.fromValues(-200, 500), 'next')
+      const endCorner = createMockCorner('end-corner', vec2.fromValues(3000, 0), vec2.fromValues(3300, 500), 'previous')
       const previousWall = createMockWall('prev-wall', 2000, 300, 'method-1')
       const nextWall = createMockWall('next-wall', 2500, 300, 'method-2')
 
@@ -226,8 +226,8 @@ describe('Corner Calculations', () => {
       // Create corners with known positions that will create extensions
       // Start corner: inside at (-200, 0), outside at (-200, 300) - 200mm extension to the left
       // End corner: inside at (3300, 0), outside at (3300, 300) - 300mm extension to the right
-      const startCorner = createMockCorner('start-corner', [-200, 0], [-200, 300], 'next')
-      const endCorner = createMockCorner('end-corner', [3300, 0], [3300, 300], 'previous')
+      const startCorner = createMockCorner('start-corner', vec2.fromValues(-200, 0), vec2.fromValues(-200, 300), 'next')
+      const endCorner = createMockCorner('end-corner', vec2.fromValues(3300, 0), vec2.fromValues(3300, 300), 'previous')
 
       const context = {
         ...mockContext,
@@ -251,8 +251,13 @@ describe('Corner Calculations', () => {
       const wall = createMockWall('test-wall', 3000, 300)
 
       // Create corners that are not constructed by this wall with extensions
-      const startCorner = createMockCorner('start-corner', [-200, 0], [-200, 300], 'previous')
-      const endCorner = createMockCorner('end-corner', [3300, 0], [3300, 300], 'next')
+      const startCorner = createMockCorner(
+        'start-corner',
+        vec2.fromValues(-200, 0),
+        vec2.fromValues(-200, 300),
+        'previous'
+      )
+      const endCorner = createMockCorner('end-corner', vec2.fromValues(3300, 0), vec2.fromValues(3300, 300), 'next')
 
       const context = {
         ...mockContext,
@@ -278,8 +283,13 @@ describe('Corner Calculations', () => {
       // Create corners where inner extension is larger than outer extension
       // Start corner: inside at (-250, 0), outside at (-100, 300)
       // End corner: inside at (3320, 0), outside at (3150, 300)
-      const startCorner = createMockCorner('start-corner', [-250, 0], [-100, 300], 'previous')
-      const endCorner = createMockCorner('end-corner', [3320, 0], [3150, 300], 'next')
+      const startCorner = createMockCorner(
+        'start-corner',
+        vec2.fromValues(-250, 0),
+        vec2.fromValues(-100, 300),
+        'previous'
+      )
+      const endCorner = createMockCorner('end-corner', vec2.fromValues(3320, 0), vec2.fromValues(3150, 300), 'next')
 
       const context = {
         ...mockContext,
@@ -313,8 +323,8 @@ describe('Corner Calculations', () => {
       // Create corners positioned exactly at layer thicknesses to result in zero extension
       // Start corner: inside at (-30, 0), outside at (-50, 300) - exactly at layer thickness
       // End corner: inside at (3030, 0), outside at (3050, 300) - exactly at layer thickness
-      const startCorner = createMockCorner('start-corner', [-30, 0], [-50, 300], 'next')
-      const endCorner = createMockCorner('end-corner', [3030, 0], [3050, 300], 'previous')
+      const startCorner = createMockCorner('start-corner', vec2.fromValues(-30, 0), vec2.fromValues(-50, 300), 'next')
+      const endCorner = createMockCorner('end-corner', vec2.fromValues(3030, 0), vec2.fromValues(3050, 300), 'previous')
 
       const context = {
         ...mockContext,
@@ -335,8 +345,8 @@ describe('Corner Calculations', () => {
       const wall = createMockWall('test-wall', 3000, 300)
 
       // Create simple corners for ID testing
-      const startCorner = createMockCorner('start-corner', [-100, 0], [-100, 300], 'next')
-      const endCorner = createMockCorner('end-corner', [3100, 0], [3100, 300], 'previous')
+      const startCorner = createMockCorner('start-corner', vec2.fromValues(-100, 0), vec2.fromValues(-100, 300), 'next')
+      const endCorner = createMockCorner('end-corner', vec2.fromValues(3100, 0), vec2.fromValues(3100, 300), 'previous')
 
       const context = {
         ...mockContext,
@@ -367,9 +377,9 @@ describe('Corner Calculations', () => {
       const wall1 = createMockWall('wall-1', 2000, 300, 'method-1')
       const wall2 = createMockWall('wall-2', 3000, 300, 'method-2')
 
-      const corner0 = createMockCorner('corner-0', [0, 0], [-150, 450], 'next')
-      const corner1 = createMockCorner('corner-1', [3000, 0], [3150, 450], 'previous')
-      const corner2 = createMockCorner('corner-2', [3000, 2000], [3150, 2450], 'next')
+      const corner0 = createMockCorner('corner-0', vec2.fromValues(0, 0), vec2.fromValues(-150, 450), 'next')
+      const corner1 = createMockCorner('corner-1', vec2.fromValues(3000, 0), vec2.fromValues(3150, 450), 'previous')
+      const corner2 = createMockCorner('corner-2', vec2.fromValues(3000, 2000), vec2.fromValues(3150, 2450), 'next')
 
       const walls = [wall0, wall1, wall2]
       const corners = [corner0, corner1, corner2]

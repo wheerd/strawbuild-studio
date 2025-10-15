@@ -1,4 +1,5 @@
 import type { MainModule, PathD, PathsD } from 'clipper2-wasm'
+import { vec2 } from 'gl-matrix'
 import { type Mocked, afterEach, beforeEach, describe, expect, vi } from 'vitest'
 
 import {
@@ -66,7 +67,7 @@ beforeEach(() => {
   createPointDMock.mockReturnValue({ delete: vi.fn() } as any)
   createPathDMock.mockReturnValue({ delete: vi.fn() } as any)
   createPathsDMock.mockReturnValue({ delete: vi.fn() } as any)
-  pathDToPointsMock.mockReturnValue([new Float32Array([0, 0])])
+  pathDToPointsMock.mockReturnValue([new Float32Array(vec2.fromValues(0, 0))])
   getClipperModuleMock.mockReturnValue(mockClipperModule())
 })
 
@@ -76,12 +77,9 @@ afterEach(() => {
 
 describe('polygon helpers using Clipper', () => {
   const samplePolygon = {
-    points: [
-      [0, 0],
-      [10, 0],
-      [10, 10],
-      [0, 10]
-    ].map(([x, y]) => new Float32Array([x, y]))
+    points: [vec2.fromValues(0, 0), vec2.fromValues(10, 0), vec2.fromValues(10, 10), vec2.fromValues(0, 10)].map(
+      ([x, y]) => new Float32Array([x, y])
+    )
   }
 
   it('calculatePolygonArea delegates to AreaPathD', () => {
@@ -122,7 +120,7 @@ describe('polygon helpers using Clipper', () => {
     createPointDMock.mockReturnValueOnce(pointStub as any)
     createPathDMock.mockReturnValueOnce(pathStub as any)
 
-    const point = new Float32Array([5, 5])
+    const point = new Float32Array(vec2.fromValues(5, 5))
     const result = isPointInPolygon(point, samplePolygon)
 
     expect(createPointDMock).toHaveBeenCalledWith(point)
@@ -141,7 +139,7 @@ describe('polygon helpers using Clipper', () => {
     const pathsStub = { delete: vi.fn() }
     createPathDMock.mockReturnValueOnce(pathStub as any)
     createPathsDMock.mockReturnValueOnce(pathsStub as any)
-    const pathPoints = [new Float32Array([123, 456])]
+    const pathPoints = [new Float32Array(vec2.fromValues(123, 456))]
     pathDToPointsMock.mockReturnValueOnce(pathPoints)
 
     const result = simplifyPolygon(samplePolygon, 23)
@@ -168,7 +166,7 @@ describe('polygon helpers using Clipper', () => {
     const pathsStub = { delete: vi.fn() }
     createPathDMock.mockReturnValueOnce(pathStub as any)
     createPathsDMock.mockReturnValueOnce(pathsStub as any)
-    const pathPoints = [new Float32Array([123, 456])]
+    const pathPoints = [new Float32Array(vec2.fromValues(123, 456))]
     pathDToPointsMock.mockReturnValueOnce(pathPoints)
 
     const result = offsetPolygon(samplePolygon, 5)
@@ -207,11 +205,7 @@ describe('polygon helpers using Clipper', () => {
     createPathsDMock.mockReturnValueOnce(pathsStubA as any).mockReturnValueOnce(pathsStubB as any)
 
     const otherPolygon = {
-      points: [
-        [0, 0],
-        [1, 1],
-        [2, 2]
-      ]
+      points: [vec2.fromValues(0, 0), vec2.fromValues(1, 1), vec2.fromValues(2, 2)]
     }
     const result = arePolygonsIntersecting(samplePolygon, otherPolygon)
 

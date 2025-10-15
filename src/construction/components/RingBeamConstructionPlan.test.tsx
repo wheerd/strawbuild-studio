@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import { vec3 } from 'gl-matrix'
 import { vi } from 'vitest'
 
 import { createPerimeterId } from '@/building/model/ids'
@@ -19,7 +20,7 @@ vi.mock('@/construction/config/store', () => ({
 // Mock construction functions
 vi.mock('@/construction/walls', () => ({
   constructRingBeam: vi.fn(),
-  getElementSize: vi.fn(() => [1000, 100, 60])
+  getElementSize: vi.fn(() => vec3.fromValues(1000, 100, 60))
 }))
 
 describe('RingBeamConstructionModal', () => {

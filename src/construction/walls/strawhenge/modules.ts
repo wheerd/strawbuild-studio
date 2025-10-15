@@ -1,4 +1,4 @@
-import type { vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 
 import { type ConstructionElement, createConstructionElement, createCuboidShape } from '@/construction/elements'
 import { IDENTITY } from '@/construction/geometry'
@@ -34,8 +34,8 @@ function* constructSingleFrameModule(
   const { frameThickness, frameMaterial } = config
 
   // Calculate straw area (inset by frameThickness on all sides)
-  const strawPosition: vec3 = [position[0] + frameThickness, position[1], position[2] + frameThickness]
-  const strawSize: vec3 = [size[0] - 2 * frameThickness, size[1], size[2] - 2 * frameThickness]
+  const strawPosition = vec3.fromValues(position[0] + frameThickness, position[1], position[2] + frameThickness)
+  const strawSize = vec3.fromValues(size[0] - 2 * frameThickness, size[1], size[2] - 2 * frameThickness)
 
   // Top frame
   const topFrame: ConstructionElement = createConstructionElement(
@@ -95,8 +95,8 @@ function* constructDoubleFrameModule(
   const { frameThickness, frameWidth, frameMaterial } = config
 
   // Calculate straw area (inset by frameThickness on all sides)
-  const strawPosition: vec3 = [position[0] + frameThickness, position[1], position[2] + frameThickness]
-  const strawSize: vec3 = [size[0] - 2 * frameThickness, size[1], size[2] - 2 * frameThickness]
+  const strawPosition = vec3.fromValues(position[0] + frameThickness, position[1], position[2] + frameThickness)
+  const strawSize = vec3.fromValues(size[0] - 2 * frameThickness, size[1], size[2] - 2 * frameThickness)
 
   // Top frame - 2 beams
   const topFrame1: ConstructionElement = createConstructionElement(

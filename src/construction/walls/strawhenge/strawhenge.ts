@@ -1,4 +1,4 @@
-import type { vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
 import type { WallLayersConfig } from '@/construction/config/types'
@@ -51,8 +51,12 @@ function* placeStrawhengeSegments(
   const strawWidth = getStrawWidth(size[0], config)
   const { module } = config
 
-  const strawPosition: vec3 = [atStart ? position[0] : position[0] + size[0] - strawWidth, position[1], position[2]]
-  const strawSize: vec3 = [strawWidth, size[1], size[2]]
+  const strawPosition = vec3.fromValues(
+    atStart ? position[0] : position[0] + size[0] - strawWidth,
+    position[1],
+    position[2]
+  )
+  const strawSize = vec3.fromValues(strawWidth, size[1], size[2])
 
   if (strawWidth > 0) {
     if (strawWidth < config.infill.minStrawSpace) {
@@ -68,12 +72,16 @@ function* placeStrawhengeSegments(
       position[1],
       position[2]
     ]
-    const moduleSize: vec3 = [module.width, size[1], size[2]]
+    const moduleSize = vec3.fromValues(module.width, size[1], size[2])
 
     yield* yieldAsGroup(constructModule(modulePosition, moduleSize, module), [TAG_MODULE])
 
-    const remainingPosition: vec3 = [atStart ? modulePosition[0] + module.width : position[0], position[1], position[2]]
-    const remainingSize: vec3 = [size[0] - strawSize[0] - module.width, size[1], size[2]]
+    const remainingPosition = vec3.fromValues(
+      atStart ? modulePosition[0] + module.width : position[0],
+      position[1],
+      position[2]
+    )
+    const remainingSize = vec3.fromValues(size[0] - strawSize[0] - module.width, size[1], size[2])
 
     yield* placeStrawhengeSegments(remainingPosition, remainingSize, config, !atStart)
   }
@@ -112,18 +120,18 @@ export function* strawhengeWallArea(
   if (startsWithStand && endsWithStand && size[0] < twoModules) {
     // Single module plus remaining space
     if (startAtEnd) {
-      const modulePosition: vec3 = [position[0] + size[0] - oneModule, position[1], position[2]]
-      const moduleSize: vec3 = [oneModule, size[1], size[2]]
+      const modulePosition = vec3.fromValues(position[0] + size[0] - oneModule, position[1], position[2])
+      const moduleSize = vec3.fromValues(oneModule, size[1], size[2])
       const remainingPosition: vec3 = position
-      const remainingSize: vec3 = [size[0] - oneModule, size[1], size[2]]
+      const remainingSize = vec3.fromValues(size[0] - oneModule, size[1], size[2])
 
       yield* infillWallArea(remainingPosition, remainingSize, infill, true, false, false)
       yield* yieldAsGroup(constructModule(modulePosition, moduleSize, module), [TAG_MODULE])
     } else {
       const modulePosition: vec3 = position
-      const moduleSize: vec3 = [oneModule, size[1], size[2]]
-      const remainingPosition: vec3 = [position[0] + oneModule, position[1], position[2]]
-      const remainingSize: vec3 = [size[0] - oneModule, size[1], size[2]]
+      const moduleSize = vec3.fromValues(oneModule, size[1], size[2])
+      const remainingPosition = vec3.fromValues(position[0] + oneModule, position[1], position[2])
+      const remainingSize = vec3.fromValues(size[0] - oneModule, size[1], size[2])
 
       yield* yieldAsGroup(constructModule(modulePosition, moduleSize, module), [TAG_MODULE])
       yield* infillWallArea(remainingPosition, remainingSize, infill, false, true, true)
@@ -136,8 +144,8 @@ export function* strawhengeWallArea(
 
   // Place start module if starts with stand
   if (startsWithStand) {
-    const modulePosition: vec3 = [left, position[1], position[2]]
-    const moduleSize: vec3 = [oneModule, size[1], size[2]]
+    const modulePosition = vec3.fromValues(left, position[1], position[2])
+    const moduleSize = vec3.fromValues(oneModule, size[1], size[2])
     yield* yieldAsGroup(constructModule(modulePosition, moduleSize, module), [TAG_MODULE])
     left += oneModule
     width -= oneModule
@@ -145,16 +153,16 @@ export function* strawhengeWallArea(
 
   // Place end module if ends with stand
   if (endsWithStand) {
-    const modulePosition: vec3 = [position[0] + size[0] - oneModule, position[1], position[2]]
-    const moduleSize: vec3 = [oneModule, size[1], size[2]]
+    const modulePosition = vec3.fromValues(position[0] + size[0] - oneModule, position[1], position[2])
+    const moduleSize = vec3.fromValues(oneModule, size[1], size[2])
     yield* yieldAsGroup(constructModule(modulePosition, moduleSize, module), [TAG_MODULE])
     width -= oneModule
   }
 
   // Fill the middle section recursively
   if (width > 0) {
-    const middlePosition: vec3 = [left, position[1], position[2]]
-    const middleSize: vec3 = [width, size[1], size[2]]
+    const middlePosition = vec3.fromValues(left, position[1], position[2])
+    const middleSize = vec3.fromValues(width, size[1], size[2])
     yield* placeStrawhengeSegments(middlePosition, middleSize, config, !startAtEnd)
   }
 }

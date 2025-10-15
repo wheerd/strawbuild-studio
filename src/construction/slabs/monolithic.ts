@@ -1,3 +1,5 @@
+import { vec3 } from 'gl-matrix'
+
 import type { MonolithicSlabConstructionConfig } from '@/construction/config/types'
 import { createConstructionElement } from '@/construction/elements'
 import type { ConstructionModel } from '@/construction/model'
@@ -12,7 +14,7 @@ export class MonolithicConstructionMethod extends BaseSlabConstructionMethod<Mon
     const slab = createConstructionElement(
       config.material,
       createExtrudedPolygon(polygon, 'xy', config.thickness),
-      { position: [0, 0, -config.thickness], rotation: [0, 0, 0] },
+      { position: [0, 0, -config.thickness], rotation: vec3.fromValues(0, 0, 0) },
       [TAG_SLAB]
     )
     return {

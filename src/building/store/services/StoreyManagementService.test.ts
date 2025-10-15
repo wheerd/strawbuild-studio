@@ -1,3 +1,4 @@
+import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { DEFAULT_SLAB_CONFIG_ID, type PerimeterId, type StoreyId } from '@/building/model/ids'
@@ -231,10 +232,10 @@ describe('StoreyManagementService', () => {
         id: 'perimeter-1' as PerimeterId,
         storeyId: 'storey-1' as StoreyId,
         corners: [
-          { insidePoint: [0, 0] },
-          { insidePoint: [10, 0] },
-          { insidePoint: [10, 10] },
-          { insidePoint: [0, 10] }
+          { insidePoint: vec2.fromValues(0, 0) },
+          { insidePoint: vec2.fromValues(10, 0) },
+          { insidePoint: vec2.fromValues(10, 10) },
+          { insidePoint: vec2.fromValues(0, 10) }
         ],
         walls: [{ constructionMethodId: 'method-1' as any, thickness: 400 }],
         baseRingBeamMethodId: 'base-method' as any,
@@ -251,12 +252,7 @@ describe('StoreyManagementService', () => {
       expect(mockActions.addPerimeter).toHaveBeenCalledWith(
         'storey-2',
         {
-          points: [
-            [0, 0],
-            [10, 0],
-            [10, 10],
-            [0, 10]
-          ]
+          points: [vec2.fromValues(0, 0), vec2.fromValues(10, 0), vec2.fromValues(10, 10), vec2.fromValues(0, 10)]
         },
         'method-1',
         400,

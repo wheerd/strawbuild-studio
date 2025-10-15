@@ -1,3 +1,4 @@
+import { vec2 } from 'gl-matrix'
 import { describe, expect, it, vi } from 'vitest'
 
 import { ProjectImportExportService } from './ProjectImportExportService'
@@ -16,10 +17,10 @@ const mockActions = {
     {
       id: 'perimeter_1',
       corners: [
-        { id: 'corner_1', insidePoint: [0, 0], constructedByWall: 'next' },
-        { id: 'corner_2', insidePoint: [100, 0], constructedByWall: 'next' },
-        { id: 'corner_3', insidePoint: [100, 100], constructedByWall: 'next' },
-        { id: 'corner_4', insidePoint: [0, 100], constructedByWall: 'next' }
+        { id: 'corner_1', insidePoint: vec2.fromValues(0, 0), constructedByWall: 'next' },
+        { id: 'corner_2', insidePoint: vec2.fromValues(100, 0), constructedByWall: 'next' },
+        { id: 'corner_3', insidePoint: vec2.fromValues(100, 100), constructedByWall: 'next' },
+        { id: 'corner_4', insidePoint: vec2.fromValues(0, 100), constructedByWall: 'next' }
       ],
       walls: [
         {

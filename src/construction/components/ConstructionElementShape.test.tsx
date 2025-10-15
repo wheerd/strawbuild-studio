@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react'
-import type { vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 import { describe, expect, it, vi } from 'vitest'
 
 import type { ConstructionElement } from '@/construction/elements'
@@ -27,18 +27,18 @@ describe('ConstructionElementShape', () => {
 
   const mockCuboidElement: ConstructionElement = createConstructionElement(
     mockMaterialId,
-    createCuboidShape([0, 0, 0], [100, 50, 25]),
-    { position: [0, 0, 0], rotation: [0, 0, 0] }
+    createCuboidShape(vec3.fromValues(0, 0, 0), vec3.fromValues(100, 50, 25)),
+    { position: vec3.fromValues(0, 0, 0), rotation: vec3.fromValues(0, 0, 0) }
   )
 
   const mockCutCuboidElement: ConstructionElement = createConstructionElement(
     mockMaterialId,
-    createCutCuboidShape([0, 0, 0], [100, 50, 25], {
+    createCutCuboidShape(vec3.fromValues(0, 0, 0), vec3.fromValues(100, 50, 25), {
       plane: 'xy',
       axis: 'y',
       angle: 45
     }),
-    { position: [0, 0, 0], rotation: [0, 0, 0] }
+    { position: vec3.fromValues(0, 0, 0), rotation: vec3.fromValues(0, 0, 0) }
   )
 
   beforeEach(() => {
@@ -139,11 +139,11 @@ describe('ConstructionElementShape', () => {
       mockMaterialId,
       {
         type: 'unsupported-shape' as any,
-        offset: [0, 0, 0],
-        size: [100, 50, 25],
-        bounds: { min: [0, 0, 0], max: [100, 50, 25] }
+        offset: vec3.fromValues(0, 0, 0),
+        size: vec3.fromValues(100, 50, 25),
+        bounds: { min: vec3.fromValues(0, 0, 0), max: vec3.fromValues(100, 50, 25) }
       },
-      { position: [0, 0, 0], rotation: [0, 0, 0] }
+      { position: vec3.fromValues(0, 0, 0), rotation: vec3.fromValues(0, 0, 0) }
     )
 
     expect(() => {

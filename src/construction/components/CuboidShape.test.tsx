@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react'
-import type { vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 import { describe, expect, it } from 'vitest'
 
 import type { Cuboid } from '@/construction/shapes'
@@ -9,9 +9,9 @@ import { CuboidShape } from './CuboidShape'
 describe('CuboidShape', () => {
   const mockCuboid: Cuboid = {
     type: 'cuboid',
-    offset: [100, 50, 0],
-    size: [500, 200, 60],
-    bounds: { min: [100, 50, 0], max: [600, 250, 60] }
+    offset: vec3.fromValues(100, 50, 0),
+    size: vec3.fromValues(500, 200, 60),
+    bounds: { min: vec3.fromValues(100, 50, 0), max: vec3.fromValues(600, 250, 60) }
   }
 
   // Mock projection function

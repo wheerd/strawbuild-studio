@@ -1,4 +1,4 @@
-import type { vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 import { describe, expect, it } from 'vitest'
 
 import type { ConstructionElement } from '@/construction/elements'
@@ -20,8 +20,8 @@ describe('Module Construction', () => {
     }
 
     it('should create a single frame module with frame elements', () => {
-      const position: vec3 = [0, 0, 0]
-      const size: vec3 = [920, 360, 2000]
+      const position = vec3.fromValues(0, 0, 0)
+      const size = vec3.fromValues(920, 360, 2000)
 
       const results = Array.from(constructModule(position, size, config))
       const aggregated = aggregateResults(results)
@@ -39,8 +39,8 @@ describe('Module Construction', () => {
     })
 
     it('should create frame elements with correct positions', () => {
-      const position: vec3 = [0, 0, 0]
-      const size: vec3 = [920, 360, 2000]
+      const position = vec3.fromValues(0, 0, 0)
+      const size = vec3.fromValues(920, 360, 2000)
 
       const results = Array.from(constructModule(position, size, config))
       const aggregated = aggregateResults(results)
@@ -71,8 +71,8 @@ describe('Module Construction', () => {
     }
 
     it('should create a double frame module with more frame elements than single', () => {
-      const position: vec3 = [0, 0, 0]
-      const size: vec3 = [920, 360, 2000]
+      const position = vec3.fromValues(0, 0, 0)
+      const size = vec3.fromValues(920, 360, 2000)
 
       const results = Array.from(constructModule(position, size, config))
       const aggregated = aggregateResults(results)
@@ -89,8 +89,8 @@ describe('Module Construction', () => {
 
   describe('Module Type Selection', () => {
     it('should throw error for invalid module type', () => {
-      const position: vec3 = [0, 0, 0]
-      const size: vec3 = [920, 360, 2000]
+      const position = vec3.fromValues(0, 0, 0)
+      const size = vec3.fromValues(920, 360, 2000)
       const invalidConfig = {
         type: 'invalid' as any,
         width: 920,

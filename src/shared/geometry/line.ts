@@ -78,7 +78,7 @@ export function distanceToLineSegment(point: vec2, line: LineSegment2D): Length 
   // Calculate parameter t that represents position along the segment
   let t = vec2.dot(pointVector, lineVector) / lineLengthSquared
 
-  // Clamp t to [0, 1] to stay within the segment
+  // Clamp t to vec2.fromValues(0, 1) to stay within the segment
   t = Math.max(0, Math.min(1, t))
 
   // Find the closest point on the segment
