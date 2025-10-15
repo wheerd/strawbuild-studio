@@ -8,7 +8,7 @@ import { useConfigActions } from '@/construction/config/store'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon, SplitWallIcon } from '@/shared/components/Icons'
-import { type Vec2, boundsFromPoints } from '@/shared/geometry'
+import { type Polygon2D, type Vec2, boundsFromPoints } from '@/shared/geometry'
 import { wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 
 interface PerimeterCornerInspectorProps {
@@ -117,7 +117,9 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
     const newBoundaryPoints: Vec2[] = outerWall.corners.map(c => c.insidePoint)
     newBoundaryPoints.splice(cornerIndex, 1)
 
-    if (wouldClosingPolygonSelfIntersect(newBoundaryPoints)) {
+    const newBoundary: Polygon2D = { points: newBoundaryPoints }
+
+    if (wouldClosingPolygonSelfIntersect(newBoundary)) {
       return { canDelete: false, reason: 'Cannot delete - would create self-intersecting polygon' }
     }
 

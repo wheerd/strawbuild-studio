@@ -33,7 +33,9 @@ function LShapedPreview({ config }: { config: LShapedPresetConfig }) {
   const sideLengths = preset.getSideLengths(config)
 
   // Create outer wall polygon by offsetting outward
-  const exteriorPoints = offsetPolygon(interiorPoints, config.thickness)
+  const interiorPolygon = { points: interiorPoints }
+  const exteriorPolygon = offsetPolygon(interiorPolygon, config.thickness)
+  const exteriorPoints = exteriorPolygon.points
 
   // Calculate bounds for scaling (use exterior for proper sizing)
   let minX = Infinity

@@ -104,7 +104,7 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
 
     if (newBoundary.length < 3) return false
 
-    return !wouldClosingPolygonSelfIntersect(newBoundary)
+    return !wouldClosingPolygonSelfIntersect({ points: newBoundary })
   }
 
   commitMovement(movementState: CornerMovementState, context: MovementContext<CornerEntityContext>): boolean {
@@ -122,7 +122,7 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
     newBoundary[cornerIndex] = newPosition
 
     // Validate the new boundary
-    if (wouldClosingPolygonSelfIntersect(newBoundary)) {
+    if (wouldClosingPolygonSelfIntersect({ points: newBoundary })) {
       return false
     }
 

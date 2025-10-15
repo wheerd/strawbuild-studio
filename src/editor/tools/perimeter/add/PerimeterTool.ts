@@ -327,7 +327,7 @@ export class PerimeterTool extends BaseTool implements ToolImplementation {
     if (isSnapToFirstPoint) {
       // When closing polygon, only check if closing would create intersections
       this.state.isCurrentLineValid =
-        this.state.points.length >= 3 ? !wouldClosingPolygonSelfIntersect(this.state.points) : true
+        this.state.points.length >= 3 ? !wouldClosingPolygonSelfIntersect({ points: this.state.points }) : true
     } else {
       // Normal case: check for both intersections and point reuse
       this.state.isCurrentLineValid = !wouldPolygonSelfIntersect(this.state.points, currentPos)
@@ -335,7 +335,7 @@ export class PerimeterTool extends BaseTool implements ToolImplementation {
 
     // Check if closing the polygon would create intersections
     if (this.state.points.length >= 3) {
-      this.state.isClosingLineValid = !wouldClosingPolygonSelfIntersect(this.state.points)
+      this.state.isClosingLineValid = !wouldClosingPolygonSelfIntersect({ points: this.state.points })
     } else {
       this.state.isClosingLineValid = true
     }

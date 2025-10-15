@@ -53,8 +53,8 @@ export function createPointD(point: Vec2): PointD {
 export function createPathD(points: Vec2[]): PathD {
   const module = getClipperModule()
   const path = new module.PathD()
-  for (const [x, y] of points) {
-    path.push_back(new module.PointD(x, y, 0))
+  for (const point of points) {
+    path.push_back(new module.PointD(point[0], point[1], 0))
   }
   return path
 }

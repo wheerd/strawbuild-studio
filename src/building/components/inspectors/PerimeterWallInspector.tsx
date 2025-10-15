@@ -13,7 +13,7 @@ import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { pushTool } from '@/editor/tools/system/store'
 import { ConstructionPlanIcon, FitToViewIcon, SplitWallIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
-import { type Length, type Vec2, boundsFromPoints } from '@/shared/geometry'
+import { type Length, type Polygon2D, type Vec2, boundsFromPoints } from '@/shared/geometry'
 import { wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 import { formatLength } from '@/shared/utils/formatLength'
 
@@ -87,7 +87,9 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
       newBoundaryPoints.splice(cornerIndex2, 1)
     }
 
-    if (wouldClosingPolygonSelfIntersect(newBoundaryPoints)) {
+    const newBoundaryPolygon: Polygon2D = { points: newBoundaryPoints }
+
+    if (wouldClosingPolygonSelfIntersect(newBoundaryPolygon)) {
       return { canDelete: false, reason: 'Cannot delete - would create self-intersecting polygon' }
     }
 

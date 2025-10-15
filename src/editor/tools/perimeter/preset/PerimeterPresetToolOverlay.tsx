@@ -42,10 +42,14 @@ export function PerimeterPresetToolOverlay({
   let outerPolygonPoints: number[] | null = null
   try {
     // Use offsetPolygon to expand the inner polygon by wall thickness
-    const outerPoints = offsetPolygon(polygon.points, config.thickness)
-    if (outerPoints.length > 0) {
+    const outerPolygon = offsetPolygon(polygon, config.thickness)
+    if (outerPolygon.points.length > 0) {
       // Convert to flat array format for Konva Line component and close the polygon
-      outerPolygonPoints = [...outerPoints.flatMap(p => [p[0], p[1]]), outerPoints[0][0], outerPoints[0][1]]
+      outerPolygonPoints = [
+        ...outerPolygon.points.flatMap(p => [p[0], p[1]]),
+        outerPolygon.points[0][0],
+        outerPolygon.points[0][1]
+      ]
     }
   } catch (error) {
     console.warn('Failed to calculate outer polygon:', error)

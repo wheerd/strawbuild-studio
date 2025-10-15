@@ -12,7 +12,7 @@ import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
 import { DoorIcon, PassageIcon, WindowIcon } from '@/shared/components/OpeningIcons'
-import { type Vec2, add, boundsFromPoints, createLength, offsetPolygon, scale } from '@/shared/geometry'
+import { type Polygon2D, type Vec2, add, boundsFromPoints, createLength, offsetPolygon, scale } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
 
 import { OpeningPreview } from './OpeningPreview'
@@ -161,14 +161,16 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
     const outsideOpeningStart = add(outsideStart, offsetStart)
     const outsideOpeningEnd = add(outsideStart, offsetEnd)
 
-    const openingPolygon: Vec2[] = [insideOpeningStart, insideOpeningEnd, outsideOpeningEnd, outsideOpeningStart]
+    const openingPolygon: Polygon2D = {
+      points: [insideOpeningStart, insideOpeningEnd, outsideOpeningEnd, outsideOpeningStart]
+    }
 
     // Expand the polygon by 1.5x on each side (3x total area)
     const expandAmount = Math.max(opening.width, wall.thickness) * 1.5
     const expandedPolygon = offsetPolygon(openingPolygon, expandAmount)
 
     // Calculate bounds from expanded polygon
-    const bounds = boundsFromPoints(expandedPolygon)
+    const bounds = boundsFromPoints(expandedPolygon.points)
 
     viewportActions.fitToView(bounds)
   }, [wall, opening, viewportActions])

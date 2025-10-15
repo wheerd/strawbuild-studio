@@ -1,7 +1,7 @@
 import { Line } from 'react-konva/lib/ReactKonvaCore'
 
 import { useZoom } from '@/editor/hooks/useViewportStore'
-import type { Vec2 } from '@/shared/geometry'
+import type { Polygon2D, Vec2 } from '@/shared/geometry'
 import { offsetPolygon } from '@/shared/geometry'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
@@ -19,7 +19,8 @@ export function SelectionOutline({ points }: SelectionOutlineProps): React.JSX.E
 
   // Calculate offset polygon
   const offset = 4 / zoom
-  const offsetPoints = offsetPolygon(points, offset)
+  const offsetPolygonResult: Polygon2D = offsetPolygon({ points }, offset)
+  const offsetPoints = offsetPolygonResult.points
 
   // If offsetting failed or produced invalid polygon, don't render
   if (offsetPoints.length < 3) {

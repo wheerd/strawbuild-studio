@@ -90,7 +90,7 @@ export function constructPerimeter(perimeter: Perimeter): ConstructionModel {
   const outerPolygon = { points: perimeter.corners.map(c => c.outsidePoint) }
   // TODO: Properly determine the construction polygon based on offsets
   const constructionPolygon = isFinite(minOffset)
-    ? { points: offsetPolygon(outerPolygon.points, -minOffset) }
+    ? offsetPolygon(outerPolygon, -minOffset)
     : outerPolygon
   const slabMethod = SLAB_CONSTRUCTION_METHODS[currentSlabConfig.type]
   const slabModel = slabMethod.construct({ outer: constructionPolygon, holes: [] }, currentSlabConfig)

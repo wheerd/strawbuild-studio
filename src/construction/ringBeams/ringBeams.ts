@@ -55,8 +55,8 @@ const EPSILON = 1e-2
 function* _constructFullRingBeam(perimeter: Perimeter, config: FullRingBeamConfig): Generator<ConstructionResult> {
   const insidePolygon: Polygon2D = { points: perimeter.corners.map(c => c.insidePoint) }
   const simplifiedPolygon = simplifyPolygon(insidePolygon)
-  const beamInsidePolygon = offsetPolygon(simplifiedPolygon.points, config.offsetFromEdge)
-  const beamOutsidePolygon = offsetPolygon(simplifiedPolygon.points, config.offsetFromEdge + config.width)
+  const beamInsidePolygon = offsetPolygon(simplifiedPolygon, config.offsetFromEdge).points
+  const beamOutsidePolygon = offsetPolygon(simplifiedPolygon, config.offsetFromEdge + config.width).points
 
   const numCorners = simplifiedPolygon.points.length
   for (let currentStart = 0; currentStart < numCorners; currentStart++) {

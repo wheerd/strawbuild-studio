@@ -231,7 +231,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         // Validation - check if removal would create self-intersecting polygon
         const newBoundaryPoints = perimeter.corners.map((c: PerimeterCorner) => c.insidePoint)
         newBoundaryPoints.splice(cornerIndex, 1)
-        if (wouldClosingPolygonSelfIntersect(newBoundaryPoints)) return
+        if (wouldClosingPolygonSelfIntersect({ points: newBoundaryPoints })) return
 
         // Use helper to do all the work
         removeCornerAndMergeWalls(perimeter, cornerIndex)
@@ -265,7 +265,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
           newBoundaryPoints.splice(cornerIndex2, 1)
         }
 
-        if (wouldClosingPolygonSelfIntersect(newBoundaryPoints)) return
+        if (wouldClosingPolygonSelfIntersect({ points: newBoundaryPoints })) return
 
         // Use helper to do all the work
         removeWallAndMergeAdjacent(perimeter, wallIndex)
@@ -721,7 +721,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
       }
 
       // Check if the new polygon would self-intersect
-      if (wouldClosingPolygonSelfIntersect(newBoundary)) {
+      if (wouldClosingPolygonSelfIntersect({ points: newBoundary })) {
         return false
       }
 

@@ -90,7 +90,7 @@ export class PerimeterWallMovementBehavior
     movementState: PerimeterWallMovementState,
     _context: MovementContext<PerimeterWallEntityContext>
   ): boolean {
-    return !wouldClosingPolygonSelfIntersect(movementState.newBoundary)
+    return !wouldClosingPolygonSelfIntersect({ points: movementState.newBoundary })
   }
 
   commitMovement(
@@ -116,7 +116,7 @@ export class PerimeterWallMovementBehavior
     )
 
     // Validate the new boundary
-    if (wouldClosingPolygonSelfIntersect(newBoundary)) {
+    if (wouldClosingPolygonSelfIntersect({ points: newBoundary })) {
       return false
     }
 
