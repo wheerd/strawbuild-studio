@@ -6,7 +6,7 @@ import { createRoot } from 'react-dom/client'
 
 import { injectMaterialCSS } from '@/construction/materials/materialCSS'
 import { getAllMaterials, subscribeToMaterials } from '@/construction/materials/store'
-import { ensureClipperModule } from '@/shared/geometry/clipperInstance.ts'
+import { ensureClipperModule } from '@/shared/geometry/clipperInstance'
 import { registerServiceWorker } from '@/shared/services/serviceWorkerRegistration'
 
 import App from './App.tsx'

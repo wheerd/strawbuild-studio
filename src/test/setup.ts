@@ -3,11 +3,26 @@ import { cleanup } from '@testing-library/react'
 import { afterEach, beforeAll, vi } from 'vitest'
 import 'vitest-canvas-mock'
 
-import type { ClipperModule } from '@/shared/geometry/clipperInstance'
-
 vi.mock('@/shared/geometry/clipperInstance', () => {
+  const mockModule = {
+    PointD: vi.fn(),
+    PathD: vi.fn(),
+    PointInPolygonResult: {
+      IsOutside: { value: 0 },
+      IsInside: { value: 1 },
+      IsOn: { value: 2 }
+    },
+    PointInPolygonD: vi.fn(),
+    AreaPathD: vi.fn(),
+    IsPositiveD: vi.fn(),
+    SimplifyPathD: vi.fn()
+  }
+
   return {
-    getClipperModule: vi.fn().mockReturnValue({} as Partial<ClipperModule>)
+    getClipperModule: vi.fn(() => mockModule),
+    ensureClipperModule: vi.fn(),
+    loadClipperModule: vi.fn(async () => mockModule),
+    withClipperPath: vi.fn()
   }
 })
 

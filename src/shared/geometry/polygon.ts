@@ -1,14 +1,14 @@
 import type { PathD, PointD } from 'clipper2-wasm'
+import { vec2 } from 'gl-matrix'
 
-import { type ClipperModule, getClipperModule } from '@/shared/geometry/clipperInstance'
+import { withClipperPath } from '@/shared/geometry/clipperInstance'
 
-import type { Area, Bounds2D, Length, Vec2 } from './basic'
-import { boundsFromPoints, createArea, createLength, distance } from './basic'
-import { type LineSegment2D, distanceToLineSegment } from './line'
+import type { Area, Bounds2D, Vec2 } from './basic'
+import { boundsFromPoints, createArea } from './basic'
+import type { LineSegment2D } from './line'
 
-const DUPLICATE_TOLERANCE = createLength(1e-6)
-const DUPLICATE_TOLERANCE_VALUE = Number(DUPLICATE_TOLERANCE)
 const COLINEAR_EPSILON = 1e-9
+const SIMPLIFY_TOLERANCE = 0.01
 
 export interface Polygon2D {
   points: Vec2[]
@@ -20,69 +20,39 @@ export interface PolygonWithHoles2D {
 }
 
 export function calculatePolygonArea(polygon: Polygon2D): Area {
-  if (polygon.points.length < 3) return createArea(0)
-  const points = polygon.points
-  let area = 0
-  for (let i = 0; i < points.length; i++) {
-    const j = (i + 1) % points.length
-    area += points[i][0] * points[j][1]
-    area -= points[j][0] * points[i][1]
-  }
-  return createArea(Math.abs(area) / 2)
+  return withClipperPath(polygon.points, createArea(0), (module, path) => {
+    const area = Math.abs(module.AreaPathD(path))
+    return createArea(area)
+  })
 }
 
 export function polygonIsClockwise(polygon: Polygon2D): boolean {
-  const points = polygon.points
-  let sum = 0
-
-  for (let i = 0; i < points.length; i++) {
-    const j = (i + 1) % points.length
-    sum += (points[j][0] - points[i][0]) * (points[j][1] + points[i][1])
-  }
-
-  return sum > 0
+  return withClipperPath(polygon.points, false, (module, path) => !module.IsPositiveD(path))
 }
 
 export function isPointInPolygon(point: Vec2, polygon: Polygon2D): boolean {
-  if (polygon.points.length < 3) return false
-
-  const module = getClipperModule()
-  const path = createPathD(module, polygon.points)
-  if (path == null || path.size() < 3) {
-    path?.delete()
-    return false
-  }
-
-  const testPoint: PointD = new module.PointD(point[0], point[1], 0)
-  try {
-    const result = module.PointInPolygonD(testPoint, path)
-    const flags = module.PointInPolygonResult
-    return result.value !== flags.IsOutside.value
-  } finally {
-    testPoint.delete()
-    path.delete()
-  }
+  return withClipperPath(polygon.points, false, (module, path) => {
+    if (path.size() < 3) return false
+    const testPoint: PointD = new module.PointD(point[0], point[1], 0)
+    try {
+      const result = module.PointInPolygonD(testPoint, path)
+      return result.value !== module.PointInPolygonResult.IsOutside.value
+    } finally {
+      testPoint.delete()
+    }
+  })
 }
 
-export function doLineSegmentsIntersect(seg1: LineSegment2D, seg2: LineSegment2D): boolean {
+function doLineSegmentsIntersect(seg1: LineSegment2D, seg2: LineSegment2D): boolean {
   return segmentsIntersect(seg1.start, seg1.end, seg2.start, seg2.end)
 }
 
-export function isPointAlreadyUsed(
-  existingPoints: Vec2[],
-  newPoint: Vec2,
-  tolerance: Length = createLength(1e-6)
-): boolean {
-  const toleranceValue = Number(tolerance)
-  return existingPoints.some(existingPoint => Number(distance(existingPoint, newPoint)) <= toleranceValue)
-}
-
 export function wouldPolygonSelfIntersect(existingPoints: Vec2[], newPoint: Vec2): boolean {
-  if (existingPoints.length < 2) return false
-
-  if (isPointAlreadyUsed(existingPoints, newPoint)) {
+  if (existingPoints.some(p => vec2.equals(p, newPoint))) {
     return true
   }
+
+  if (existingPoints.length < 2) return false
 
   const newSegment: LineSegment2D = {
     start: existingPoints[existingPoints.length - 1],
@@ -95,7 +65,7 @@ export function wouldPolygonSelfIntersect(existingPoints: Vec2[], newPoint: Vec2
       end: existingPoints[i + 1]
     }
 
-    if (doLineSegmentsIntersect(newSegment, existingSegment)) {
+    if (doLineSegmentsIntersect(newSegment, existingSegment) && !segmentsShareEndpoint(newSegment, existingSegment)) {
       return true
     }
   }
@@ -113,23 +83,39 @@ export function wouldClosingPolygonSelfIntersect(points: Vec2[]): boolean {
     return true
   }
 
+  const simplifiedChanged = withClipperPath(normalized, false, (module, path) => {
+    if (path.size() < 3) return false
+    const simplified = module.SimplifyPathD(path, SIMPLIFY_TOLERANCE, true)
+    try {
+      if (simplified.size() !== path.size()) {
+        return true
+      }
+      return !pathsApproximatelyEqual(path, simplified)
+    } finally {
+      simplified.delete()
+    }
+  })
+
+  if (simplifiedChanged) {
+    return true
+  }
+
   return hasSelfIntersection(normalized)
 }
 
-export function simplifyPolygon(polygon: Polygon2D, epsilon = 0.0001): Polygon2D {
-  const { points } = polygon
-  const newPoints: Vec2[] = []
-  for (let i = 0; i < points.length; i++) {
-    const previous = points[(i - 1 + points.length) % points.length]
-    const current = points[i]
-    const next = points[(i + 1) % points.length]
-
-    const dist = distanceToLineSegment(current, { start: previous, end: next })
-    if (dist > epsilon) {
-      newPoints.push(current)
+export function simplifyPolygon(polygon: Polygon2D, epsilon = SIMPLIFY_TOLERANCE): Polygon2D {
+  return withClipperPath(polygon.points, { points: [...polygon.points] }, (module, path) => {
+    if (path.size() < 3) {
+      return { points: [...polygon.points] }
     }
-  }
-  return { points: newPoints }
+    const simplified = module.SimplifyPathD(path, epsilon, true)
+    try {
+      const simplifiedPoints = pathDToPoints(simplified)
+      return { points: simplifiedPoints }
+    } finally {
+      simplified.delete()
+    }
+  })
 }
 
 export function offsetPolygon(points: Vec2[], distanceValue: number): Vec2[] {
@@ -138,8 +124,8 @@ export function offsetPolygon(points: Vec2[], distanceValue: number): Vec2[] {
   const n = points.length
   const offsetPoints: Vec2[] = []
 
-  const isClockwise = polygonIsClockwise({ points })
-  const direction = isClockwise ? 1 : -1
+  const isClockwiseOrientation = polygonIsClockwise({ points })
+  const direction = isClockwiseOrientation ? 1 : -1
 
   for (let i = 0; i < n; i++) {
     const prev = points[(i - 1 + n) % n]
@@ -193,7 +179,7 @@ export function offsetPolygon(points: Vec2[], distanceValue: number): Vec2[] {
   return offsetPoints
 }
 
-export function areBoundsOverlapping(bbox1: Bounds2D, bbox2: Bounds2D): boolean {
+function areBoundsOverlapping(bbox1: Bounds2D, bbox2: Bounds2D): boolean {
   return (
     bbox1.min[0] <= bbox2.max[0] &&
     bbox1.max[0] >= bbox2.min[0] &&
@@ -229,7 +215,7 @@ export function arePolygonsIntersecting(polygon1: Polygon2D, polygon2: Polygon2D
 
   for (const edge1 of edges1) {
     for (const edge2 of edges2) {
-      if (doLineSegmentsIntersect(edge1, edge2)) {
+      if (doLineSegmentsIntersect(edge1, edge2) && !segmentsShareEndpoint(edge1, edge2)) {
         return true
       }
     }
@@ -238,26 +224,40 @@ export function arePolygonsIntersecting(polygon1: Polygon2D, polygon2: Polygon2D
   return false
 }
 
-function createPathD(module: ClipperModule, points: Vec2[]): PathD | null {
-  const normalized = normalizePoints(points)
-  if (normalized.length < 3) return null
-
-  const path: PathD = new module.PathD()
-  for (const [x, y] of normalized) {
-    path.push_back(new module.PointD(x, y, 0))
+function pathDToPoints(path: PathD): Vec2[] {
+  const result: Vec2[] = []
+  const size = path.size()
+  for (let i = 0; i < size; i++) {
+    const point = path.get(i) as PointD
+    result.push([point.x as number, point.y as number])
   }
-  return path
+  return result
+}
+
+function pathsApproximatelyEqual(original: PathD, simplified: PathD): boolean {
+  if (original.size() !== simplified.size()) {
+    return false
+  }
+
+  for (let i = 0; i < original.size(); i++) {
+    const a = original.get(i) as PointD
+    const b = simplified.get(i) as PointD
+    if (!vec2.equals([a.x, a.y], [b.x, b.y])) {
+      return false
+    }
+  }
+  return true
 }
 
 function normalizePoints(points: Vec2[]): Vec2[] {
   if (points.length === 0) return []
   const normalized: Vec2[] = []
   for (const point of points) {
-    if (normalized.length === 0 || !equalsVec2(normalized[normalized.length - 1], point)) {
+    if (normalized.length === 0 || !vec2.equals(normalized[normalized.length - 1], point)) {
       normalized.push(point)
     }
   }
-  if (normalized.length > 1 && equalsVec2(normalized[0], normalized[normalized.length - 1])) {
+  if (normalized.length > 1 && vec2.equals(normalized[0], normalized[normalized.length - 1])) {
     normalized.pop()
   }
   return normalized
@@ -266,7 +266,7 @@ function normalizePoints(points: Vec2[]): Vec2[] {
 function hasDuplicatePoints(points: Vec2[]): boolean {
   const seen: Vec2[] = []
   for (const point of points) {
-    if (seen.some(existing => equalsVec2(existing, point))) {
+    if (seen.some(existing => vec2.equals(existing, point))) {
       return true
     }
     seen.push(point)
@@ -278,7 +278,7 @@ function hasSelfIntersection(points: Vec2[]): boolean {
   const segments = buildPolygonSegments(points)
   for (let i = 0; i < segments.length; i++) {
     for (let j = i + 1; j < segments.length; j++) {
-      if (segmentsShareVertex(segments[i], segments[j])) continue
+      if (segmentsShareEndpoint(segments[i], segments[j])) continue
       if (doLineSegmentsIntersect(segments[i], segments[j])) {
         return true
       }
@@ -297,25 +297,13 @@ function buildPolygonSegments(points: Vec2[]): LineSegment2D[] {
   return segments
 }
 
-function segmentsShareVertex(seg1: LineSegment2D, seg2: LineSegment2D): boolean {
+function segmentsShareEndpoint(seg1: LineSegment2D, seg2: LineSegment2D): boolean {
   return (
-    (equalsVec2(seg1.start, seg2.start) ||
-      equalsVec2(seg1.start, seg2.end) ||
-      equalsVec2(seg1.end, seg2.start) ||
-      equalsVec2(seg1.end, seg2.end)) &&
-    !segmentsAreIdentical(seg1, seg2)
+    vec2.equals(seg1.start, seg2.start) ||
+    vec2.equals(seg1.start, seg2.end) ||
+    vec2.equals(seg1.end, seg2.start) ||
+    vec2.equals(seg1.end, seg2.end)
   )
-}
-
-function segmentsAreIdentical(seg1: LineSegment2D, seg2: LineSegment2D): boolean {
-  return (
-    (equalsVec2(seg1.start, seg2.start) && equalsVec2(seg1.end, seg2.end)) ||
-    (equalsVec2(seg1.start, seg2.end) && equalsVec2(seg1.end, seg2.start))
-  )
-}
-
-function equalsVec2(a: Vec2, b: Vec2): boolean {
-  return Math.abs(a[0] - b[0]) <= DUPLICATE_TOLERANCE_VALUE && Math.abs(a[1] - b[1]) <= DUPLICATE_TOLERANCE_VALUE
 }
 
 function segmentsIntersect(p1: Vec2, q1: Vec2, p2: Vec2, q2: Vec2): boolean {

@@ -1,7 +1,7 @@
-import Clipper2Z, { type MainModule as ClipperModule } from 'clipper2-wasm'
+import Clipper2Z, { type MainModule as ClipperModule, type PathD } from 'clipper2-wasm'
 import clipperWasmUrl from 'clipper2-wasm/dist/es/clipper2z.wasm?url'
 
-export { type MainModule as ClipperModule } from 'clipper2-wasm'
+import type { Vec2 } from '@/shared/geometry/basic'
 
 let clipperModuleInstance: ClipperModule | null = null
 let clipperModulePromise: Promise<ClipperModule> | null = null
@@ -44,4 +44,27 @@ export function getClipperModule(): ClipperModule {
   throw new Error(
     'Clipper geometry module has not been loaded yet. Call ensureClipperModule() before accessing geometry helpers.'
   )
+}
+
+export type PathCallback<T> = (module: ClipperModule, path: PathD) => T
+export function withClipperPath<T>(points: Vec2[], fallback: T, callback: PathCallback<T>): T {
+  if (points.length < 1) return fallback
+  const module = getClipperModule()
+  const path = createPathD(module, points)
+  if (!path) {
+    return fallback
+  }
+  try {
+    return callback(module, path)
+  } finally {
+    path.delete()
+  }
+}
+
+function createPathD(module: ClipperModule, points: Vec2[]): PathD | null {
+  const path = new module.PathD()
+  for (const [x, y] of points) {
+    path.push_back(new module.PointD(x, y, 0))
+  }
+  return path
 }

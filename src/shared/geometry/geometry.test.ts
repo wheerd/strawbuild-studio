@@ -4,8 +4,6 @@ import {
   type LineSegment2D,
   createVec2,
   distanceToLineSegment,
-  doLineSegmentsIntersect,
-  isPointAlreadyUsed,
   wouldClosingPolygonSelfIntersect,
   wouldPolygonSelfIntersect
 } from './index'
@@ -106,73 +104,6 @@ describe('distanceToLineWall', () => {
   })
 })
 
-describe('doLineWallsIntersect', () => {
-  it('should detect intersection of crossing walls', () => {
-    const seg1: LineSegment2D = {
-      start: createVec2(0, 0),
-      end: createVec2(10, 10)
-    }
-    const seg2: LineSegment2D = {
-      start: createVec2(0, 10),
-      end: createVec2(10, 0)
-    }
-
-    expect(doLineSegmentsIntersect(seg1, seg2)).toBe(true)
-  })
-
-  it('should not detect intersection for parallel walls', () => {
-    const seg1: LineSegment2D = {
-      start: createVec2(0, 0),
-      end: createVec2(10, 0)
-    }
-    const seg2: LineSegment2D = {
-      start: createVec2(0, 5),
-      end: createVec2(10, 5)
-    }
-
-    expect(doLineSegmentsIntersect(seg1, seg2)).toBe(false)
-  })
-
-  it('should not detect intersection for walls that do not overlap', () => {
-    const seg1: LineSegment2D = {
-      start: createVec2(0, 0),
-      end: createVec2(5, 0)
-    }
-    const seg2: LineSegment2D = {
-      start: createVec2(10, 0),
-      end: createVec2(15, 0)
-    }
-
-    expect(doLineSegmentsIntersect(seg1, seg2)).toBe(false)
-  })
-
-  it('should not detect intersection when walls share an endpoint', () => {
-    const seg1: LineSegment2D = {
-      start: createVec2(0, 0),
-      end: createVec2(5, 5)
-    }
-    const seg2: LineSegment2D = {
-      start: createVec2(5, 5),
-      end: createVec2(10, 0)
-    }
-
-    expect(doLineSegmentsIntersect(seg1, seg2)).toBe(false)
-  })
-
-  it('should detect intersection for perpendicular walls', () => {
-    const seg1: LineSegment2D = {
-      start: createVec2(5, 0),
-      end: createVec2(5, 10)
-    }
-    const seg2: LineSegment2D = {
-      start: createVec2(0, 5),
-      end: createVec2(10, 5)
-    }
-
-    expect(doLineSegmentsIntersect(seg1, seg2)).toBe(true)
-  })
-})
-
 describe('wouldPolygonSelfIntersect', () => {
   it('should return false for empty polygon', () => {
     expect(wouldPolygonSelfIntersect([], createVec2(5, 5))).toBe(false)
@@ -222,32 +153,6 @@ describe('wouldPolygonSelfIntersect', () => {
     const points = [createVec2(0, 0), createVec2(10, 0)]
     // Point very close to first point (within floating point precision)
     expect(wouldPolygonSelfIntersect(points, createVec2(0.0000001, 0))).toBe(true)
-  })
-})
-
-describe('isPointAlreadyUsed', () => {
-  it('should return false for empty points array', () => {
-    expect(isPointAlreadyUsed([], createVec2(5, 5))).toBe(false)
-  })
-
-  it('should return true for exact point match', () => {
-    const points = [createVec2(0, 0), createVec2(10, 0)]
-    expect(isPointAlreadyUsed(points, createVec2(0, 0))).toBe(true)
-  })
-
-  it('should return false for different points', () => {
-    const points = [createVec2(0, 0), createVec2(10, 0)]
-    expect(isPointAlreadyUsed(points, createVec2(5, 5))).toBe(false)
-  })
-
-  it('should return true for points within tolerance', () => {
-    const points = [createVec2(0, 0)]
-    expect(isPointAlreadyUsed(points, createVec2(0.0000001, 0.0000001))).toBe(true)
-  })
-
-  it('should return false for points outside tolerance', () => {
-    const points = [createVec2(0, 0)]
-    expect(isPointAlreadyUsed(points, createVec2(0.1, 0))).toBe(false)
   })
 })
 

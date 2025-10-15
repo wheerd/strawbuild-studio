@@ -73,7 +73,7 @@
 | `konva`, `react-konva` | 2D canvas stage for the plan editor | Provides performant vector drawing and event handling for tools. |
 | `three`, `@react-three/fiber`, `@react-three/drei` | 3D construction viewer | Lazy-loaded into a dedicated chunk; Drei supplies OrbitControls and exporters. |
 | `gl-matrix` | Vector/matrix math shared across geometry computations | Used heavily for Vec2/Vec3 operations, projections, and transformations. |
-| `clipper2-wasm` | Polygon predicates and validity checks | Replaces Turf for point containment and self-intersection tests, enabling future robust offsets alongside existing custom helpers. |
+| `clipper2-wasm` | Polygon predicates, area/orientation, validity checks | Replaces Turf for containment, winding order, area, and simplification helpers; still paired with custom segment math for fine-grained control. |
 | `workbox-window`, `vite-plugin-pwa` | Progressive web app support and offline caching | Service worker auto-updates and caches vendor chunks per Vite configuration. |
 | `next-themes` | Theme synchronization between Radix and canvas consumers | Drives the canvas palette exposed through `CanvasThemeContext`. |
 | Testing stack (`vitest`, `@testing-library/react`, `vitest-canvas-mock`, `fast-check`) | Unit and snapshot testing for components, geometry, and construction logic | Property tests exist for geometry (see `src/construction/geometry.test.ts`). |
