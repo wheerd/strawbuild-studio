@@ -3,6 +3,7 @@ import { Button, DropdownMenu, Flex, Tooltip } from '@radix-ui/themes'
 import React, { useState } from 'react'
 
 import { usePersistenceStore } from '@/building/store/persistenceStore'
+import { clearSelection } from '@/editor/hooks/useSelectionStore'
 import { SaveIcon } from '@/shared/components/Icons'
 import { ProjectImportExportService } from '@/shared/services/ProjectImportExportService'
 import { createFileInput } from '@/shared/utils/createFileInput'
@@ -43,6 +44,7 @@ export function AutoSaveIndicator(): React.JSX.Element {
 
     try {
       await createFileInput(async (content: string) => {
+        clearSelection()
         const result = await ProjectImportExportService.importFromString(content)
 
         setIsImporting(false)
