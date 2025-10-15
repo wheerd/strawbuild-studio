@@ -62,13 +62,16 @@ export function registerServiceWorker(): void {
     setServiceWorkerReady(true)
   })
 
-  workbox.register().then(() => {
-    navigator.serviceWorker.ready
-      .then(() => {
-        setServiceWorkerReady(true)
-      })
-      .catch(() => setServiceWorkerReady(false))
-  }).catch(error => {
-    console.error('Service worker registration failed', error)
-  })
+  workbox
+    .register()
+    .then(() => {
+      navigator.serviceWorker.ready
+        .then(() => {
+          setServiceWorkerReady(true)
+        })
+        .catch(() => setServiceWorkerReady(false))
+    })
+    .catch(error => {
+      console.error('Service worker registration failed', error)
+    })
 }

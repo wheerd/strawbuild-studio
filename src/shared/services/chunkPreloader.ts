@@ -193,10 +193,7 @@ function processQueue(deadline: IdleDeadline): void {
     return
   }
 
-  while (
-    preloadQueue.length > 0 &&
-    (deadline.didTimeout || deadline.timeRemaining() > 10)
-  ) {
+  while (preloadQueue.length > 0 && (deadline.didTimeout || deadline.timeRemaining() > 10)) {
     const item = preloadQueue.shift()
     if (item !== undefined) {
       prefetchResource(item)

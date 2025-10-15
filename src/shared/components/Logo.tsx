@@ -39,16 +39,7 @@ export function Logo({ className = '', compact = false }: LogoProps): React.JSX.
             rx="0.3"
             ry="0.3"
           />
-          <rect
-            id={postId}
-            x="0"
-            y="0"
-            width="0.5"
-            height="12.5"
-            stroke="#000000"
-            fill="#cd853f"
-            strokeWidth="0.2"
-          />
+          <rect id={postId} x="0" y="0" width="0.5" height="12.5" stroke="#000000" fill="#cd853f" strokeWidth="0.2" />
 
           <g id={infillId}>
             <use x="0" y="0" href={`#${postId}`} />

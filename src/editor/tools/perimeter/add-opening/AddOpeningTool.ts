@@ -1,5 +1,3 @@
-import { round } from '@turf/helpers'
-
 import {
   type EntityType,
   type PerimeterId,
@@ -124,7 +122,7 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
 
     // Rounded offset of opening start from the start of the wall wall
     const actualStartOffset = centerOffset - this.state.width / 2
-    const roundedOffset = round(actualStartOffset / 10) * 10
+    const roundedOffset = Math.round(actualStartOffset / 10) * 10
 
     return roundedOffset as Length
   }

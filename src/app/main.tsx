@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client'
 
 import { injectMaterialCSS } from '@/construction/materials/materialCSS'
 import { getAllMaterials, subscribeToMaterials } from '@/construction/materials/store'
+import { ensureClipperModule } from '@/shared/geometry/clipperInstance.ts'
 import { registerServiceWorker } from '@/shared/services/serviceWorkerRegistration'
 
 import App from './App.tsx'
@@ -18,34 +19,40 @@ function removeInitialLoadingScreen() {
   }
 }
 
-// Initialize material CSS styles
-injectMaterialCSS(getAllMaterials())
+async function bootstrap() {
+  await ensureClipperModule()
 
-// Re-inject CSS whenever materials change
-subscribeToMaterials(materials => {
-  injectMaterialCSS(materials)
-})
+  // Initialize material CSS styles
+  injectMaterialCSS(getAllMaterials())
 
-const rootElement = document.getElementById('root')
-if (rootElement === null) {
-  throw new Error('Root element not found')
+  // Re-inject CSS whenever materials change
+  subscribeToMaterials(materials => {
+    injectMaterialCSS(materials)
+  })
+
+  const rootElement = document.getElementById('root')
+  if (rootElement === null) {
+    throw new Error('Root element not found')
+  }
+
+  const root = createRoot(rootElement)
+
+  root.render(
+    <StrictMode>
+      <ThemeProvider attribute="class">
+        <Theme>
+          <App />
+        </Theme>
+      </ThemeProvider>
+    </StrictMode>
+  )
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      removeInitialLoadingScreen()
+      registerServiceWorker()
+    })
+  })
 }
 
-const root = createRoot(rootElement)
-
-root.render(
-  <StrictMode>
-    <ThemeProvider attribute="class">
-      <Theme>
-        <App />
-      </Theme>
-    </ThemeProvider>
-  </StrictMode>
-)
-
-requestAnimationFrame(() => {
-  requestAnimationFrame(() => {
-    removeInitialLoadingScreen()
-    registerServiceWorker()
-  })
-})
+bootstrap()

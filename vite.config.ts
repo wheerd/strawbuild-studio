@@ -136,16 +136,8 @@ export default defineConfig({
             '@radix-ui/themes'
           ],
 
-          // Geometry utilities chunk (Turf.js and gl-matrix)
-          'vendor-geometry': [
-            '@turf/helpers',
-            '@turf/kinks',
-            '@turf/boolean-valid',
-            '@turf/line-intersect',
-            '@turf/boolean-point-in-polygon',
-            '@turf/area',
-            'gl-matrix'
-          ],
+          // Geometry utilities chunk (Clipper + vector math)
+          'vendor-geometry': ['clipper2-wasm', 'gl-matrix'],
 
           // Three.js chunk (lazy loaded for 3D viewer)
           'vendor-three': ['three', '@react-three/fiber', '@react-three/drei']

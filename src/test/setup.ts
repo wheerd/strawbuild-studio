@@ -3,6 +3,14 @@ import { cleanup } from '@testing-library/react'
 import { afterEach, beforeAll, vi } from 'vitest'
 import 'vitest-canvas-mock'
 
+import type { ClipperModule } from '@/shared/geometry/clipperInstance'
+
+vi.mock('@/shared/geometry/clipperInstance', () => {
+  return {
+    getClipperModule: vi.fn().mockReturnValue({} as Partial<ClipperModule>)
+  }
+})
+
 // Mock Zustand for consistent testing
 vi.mock('zustand')
 
