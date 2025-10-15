@@ -1,29 +1,29 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { PerimeterId } from '@/building/model/ids'
 import type { Perimeter, PerimeterCorner } from '@/building/model/model'
-import { type ConstructionElement, type ConstructionElementId } from '@/construction/elements'
-import * as base from '@/construction/elements'
+import { type ConstructionElement } from '@/construction/elements'
 import type { MaterialId } from '@/construction/materials/material'
-import type { CutCuboid } from '@/construction/shapes'
-import { createLength, createVec2, polygonIsClockwise } from '@/shared/geometry'
+import type { ExtrudedPolygon } from '@/construction/shapes'
+import type { Polygon2D } from '@/shared/geometry'
+import * as geometry from '@/shared/geometry'
 
-import { type FullRingBeamConfig, constructFullRingBeam, constructRingBeam } from './ringBeams'
+import { type FullRingBeamConfig, constructFullRingBeam, constructRingBeam, validateRingBeamConfig } from './ringBeams'
 
-vi.mock('@/construction/elements', async () => {
-  const original = await vi.importActual('@/construction/elements')
-  return { ...original, createConstructionElement: vi.fn() }
+vi.mock('@/shared/geometry', async () => {
+  const original = await vi.importActual<typeof import('@/shared/geometry')>('@/shared/geometry')
+  return {
+    ...original,
+    simplifyPolygon: vi.fn(),
+    offsetPolygon: vi.fn()
+  }
 })
 
-vi.mocked(base.createConstructionElement).mockImplementation((material, shape, transform) => ({
-  id: 'test-element' as ConstructionElementId,
-  material,
-  shape,
-  transform: transform || { position: [0, 0, 0], rotation: [0, 0, 0] },
-  bounds: shape.bounds
-}))
+const simplifyPolygonMock = vi.mocked(geometry.simplifyPolygon)
+const offsetPolygonMock = vi.mocked(geometry.offsetPolygon)
 
-// Mock data helpers
+const { createLength, createVec2 } = geometry
+
 function createMockCorner(
   id: string,
   insidePoint: [number, number],
@@ -32,374 +32,160 @@ function createMockCorner(
   return {
     id: id as any,
     insidePoint: createVec2(insidePoint[0], insidePoint[1]),
-    outsidePoint: createVec2(0, 0), // Not used in ring beam construction
+    outsidePoint: createVec2(insidePoint[0], insidePoint[1]),
     constructedByWall,
-    interiorAngle: 90, // Default angle for testing
-    exteriorAngle: 270 // Default angle for testing
+    interiorAngle: 90,
+    exteriorAngle: 270
   }
 }
 
 function createMockPerimeter(corners: PerimeterCorner[]): Perimeter {
   return {
-    id: 'test-perimeter' as PerimeterId,
-    storeyId: 'test-storey' as any,
-    walls: [], // Not used in ring beam construction
+    id: 'perimeter-1' as PerimeterId,
+    storeyId: 'storey-1' as any,
+    walls: [],
     corners
   }
 }
 
-const mockMaterial: MaterialId = 'test-material' as MaterialId
+const material: MaterialId = 'material-1' as MaterialId
 
 const defaultConfig: FullRingBeamConfig = {
   type: 'full',
   height: createLength(60),
   width: createLength(360),
   offsetFromEdge: createLength(100),
-  material: mockMaterial
+  material
 }
 
+beforeEach(() => {
+  simplifyPolygonMock.mockImplementation((polygon: Polygon2D) => polygon)
+  offsetPolygonMock.mockImplementation((polygon: Polygon2D, distance: number) => ({
+    points: polygon.points.map(point => createVec2(point[0] + distance, point[1] + distance))
+  }))
+})
+
+afterEach(() => {
+  vi.clearAllMocks()
+})
+
 describe('constructFullRingBeam', () => {
-  describe('Basic Functionality', () => {
-    it('should construct ring beam for simple rectangle', () => {
-      const corners = [
-        createMockCorner('c1', [0, 0], 'next'),
-        createMockCorner('c4', [0, 3000], 'next'),
-        createMockCorner('c3', [4000, 3000], 'next'),
-        createMockCorner('c2', [4000, 0], 'next')
-      ]
+  it('constructs extruded polygons for each segment using simplified and offset polygons', () => {
+    const corners = [
+      createMockCorner('c1', [0, 0], 'next'),
+      createMockCorner('c2', [0, 3000], 'next'),
+      createMockCorner('c3', [4000, 3000], 'next'),
+      createMockCorner('c4', [4000, 0], 'next')
+    ]
+    const perimeter = createMockPerimeter(corners)
 
-      const perimeter = createMockPerimeter(corners)
-      const result = constructRingBeam(perimeter, defaultConfig)
+    const result = constructFullRingBeam(perimeter, defaultConfig)
 
-      expect(result.elements.length).toBeGreaterThan(0)
-      expect(result.errors).toHaveLength(0)
-      expect(result.warnings).toHaveLength(0)
+    const expectedPolygon: Polygon2D = { points: corners.map(corner => corner.insidePoint) }
+    expect(simplifyPolygonMock).toHaveBeenCalledWith(expectedPolygon)
+    expect(offsetPolygonMock).toHaveBeenNthCalledWith(1, expectedPolygon, defaultConfig.offsetFromEdge)
+    expect(offsetPolygonMock).toHaveBeenNthCalledWith(
+      2,
+      expectedPolygon,
+      defaultConfig.offsetFromEdge + defaultConfig.width
+    )
 
-      result.elements.forEach(element => {
-        expect('material' in element).toBe(true)
-        const constructionElement = element as ConstructionElement
-        expect(constructionElement.material).toBe(mockMaterial)
-        expect(constructionElement.shape.type).toBe('cut-cuboid')
-      })
-    })
-
-    it('should create elements with correct dimensions', () => {
-      const corners = [
-        createMockCorner('c1', [0, 0], 'next'),
-        createMockCorner('c4', [0, 1000], 'next'),
-        createMockCorner('c3', [2000, 1000], 'next'),
-        createMockCorner('c2', [2000, 0], 'next')
-      ]
-
-      const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig)
-
-      result.elements.forEach(element => {
-        expect('material' in element).toBe(true)
-        const constructionElement = element as ConstructionElement
-        expect(constructionElement.shape.type).toBe('cut-cuboid')
-        expect((constructionElement.shape as CutCuboid).size[0]).toBeGreaterThan(0) // Length > 0
-        expect((constructionElement.shape as CutCuboid).size[1]).toBe(defaultConfig.width) // Width
-        expect((constructionElement.shape as CutCuboid).size[2]).toBe(defaultConfig.height) // Height
-      })
-    })
-
-    it('should handle different constructedByWall settings', () => {
-      const corners = [
-        createMockCorner('c1', [0, 0], 'previous'),
-        createMockCorner('c4', [0, 1000], 'next'),
-        createMockCorner('c3', [1000, 1000], 'next'),
-        createMockCorner('c2', [1000, 0], 'next')
-      ]
-
-      const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig)
-
-      expect(result.elements.length).toBeGreaterThan(0)
-      expect(result.errors).toHaveLength(0)
+    expect(result.elements).toHaveLength(corners.length)
+    result.elements.forEach(element => {
+      expect('material' in element).toBe(true)
+      const ce = element as ConstructionElement
+      expect(ce.material).toBe(defaultConfig.material)
+      expect(ce.shape.type).toBe('polygon')
+      const shape = ce.shape as ExtrudedPolygon
+      expect(shape.polygon.outer.points).toHaveLength(4)
+      expect(shape.plane).toBe('xy')
+      expect(shape.thickness).toBe(defaultConfig.height)
     })
   })
 
-  describe('Configuration Variations', () => {
-    it('should handle different offset values', () => {
-      const corners = [
-        createMockCorner('c1', [0, 0], 'next'),
-        createMockCorner('c4', [0, 1000], 'next'),
-        createMockCorner('c3', [1000, 1000], 'next'),
-        createMockCorner('c2', [1000, 0], 'next')
-      ]
+  it('passes through offset distance variations to geometry helpers', () => {
+    const corners = [
+      createMockCorner('c1', [0, 0], 'next'),
+      createMockCorner('c2', [0, 1000], 'next'),
+      createMockCorner('c3', [1000, 1000], 'next'),
+      createMockCorner('c4', [1000, 0], 'next')
+    ]
+    const perimeter = createMockPerimeter(corners)
 
-      const perimeter = createMockPerimeter(corners)
+    const config: FullRingBeamConfig = {
+      ...defaultConfig,
+      offsetFromEdge: createLength(50),
+      width: createLength(240)
+    }
 
-      const configs = [
-        { ...defaultConfig, offsetFromEdge: createLength(0) },
-        { ...defaultConfig, offsetFromEdge: createLength(50) },
-        { ...defaultConfig, offsetFromEdge: createLength(200) },
-        { ...defaultConfig, offsetFromEdge: createLength(-50) }
-      ]
+    constructFullRingBeam(perimeter, config)
 
-      configs.forEach(config => {
-        const result = constructFullRingBeam(perimeter, config)
-        expect(result.elements.length).toBeGreaterThan(0)
-        expect(result.errors).toHaveLength(0)
-      })
+    const expectedPolygon: Polygon2D = { points: corners.map(corner => corner.insidePoint) }
+    expect(offsetPolygonMock).toHaveBeenNthCalledWith(1, expectedPolygon, config.offsetFromEdge)
+    expect(offsetPolygonMock).toHaveBeenNthCalledWith(2, expectedPolygon, config.offsetFromEdge + config.width)
+  })
+})
+
+describe('constructRingBeam', () => {
+  it('delegates full ring beam construction', () => {
+    const corners = [
+      createMockCorner('c1', [0, 0], 'next'),
+      createMockCorner('c2', [0, 1000], 'next'),
+      createMockCorner('c3', [1000, 1000], 'next'),
+      createMockCorner('c4', [1000, 0], 'next')
+    ]
+    const perimeter = createMockPerimeter(corners)
+
+    const result = constructRingBeam(perimeter, defaultConfig)
+
+    expect(result.elements).toHaveLength(corners.length)
+  })
+
+  it('returns unsupported model for double ring beam', () => {
+    const corners = [
+      createMockCorner('c1', [0, 0], 'next'),
+      createMockCorner('c2', [0, 1000], 'next'),
+      createMockCorner('c3', [1000, 1000], 'next'),
+      createMockCorner('c4', [1000, 0], 'next')
+    ]
+    const perimeter = createMockPerimeter(corners)
+
+    const result = constructRingBeam(perimeter, {
+      type: 'double',
+      height: createLength(60),
+      thickness: createLength(120),
+      spacing: createLength(50),
+      offsetFromEdge: createLength(100),
+      material,
+      infillMaterial: 'inf' as MaterialId
     })
 
-    it('should handle different beam dimensions', () => {
-      const corners = [
-        createMockCorner('c1', [0, 0], 'next'),
-        createMockCorner('c4', [0, 1000], 'next'),
-        createMockCorner('c3', [1000, 1000], 'next'),
-        createMockCorner('c2', [1000, 0], 'next')
-      ]
+    expect(result.warnings).toHaveLength(1)
+    expect(result.elements).toHaveLength(0)
+  })
+})
 
-      const perimeter = createMockPerimeter(corners)
-
-      const customConfig: FullRingBeamConfig = {
+describe('validateRingBeamConfig', () => {
+  it('throws for invalid full config', () => {
+    expect(() =>
+      validateRingBeamConfig({
         ...defaultConfig,
-        width: createLength(240),
-        height: createLength(90)
-      }
-
-      const result = constructFullRingBeam(perimeter, customConfig)
-
-      result.elements.forEach(element => {
-        expect('material' in element).toBe(true)
-        const constructionElement = element as ConstructionElement
-        expect(constructionElement.shape.type).toBe('cut-cuboid')
-        expect((constructionElement.shape as CutCuboid).size[1]).toBe(240) // Custom width
-        expect((constructionElement.shape as CutCuboid).size[2]).toBe(90) // Custom height
+        width: createLength(0)
       })
-    })
+    ).toThrow('Ring beam width must be greater than 0')
   })
 
-  describe('Position and Rotation', () => {
-    it('should create elements with valid positions and rotations', () => {
-      const corners = [
-        createMockCorner('c1', [0, 0], 'next'),
-        createMockCorner('c4', [0, 1000], 'next'),
-        createMockCorner('c3', [1000, 1000], 'next'),
-        createMockCorner('c2', [1000, 0], 'next')
-      ]
-
-      const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig)
-
-      result.elements.forEach(element => {
-        expect('material' in element).toBe(true)
-        const constructionElement = element as ConstructionElement
-
-        // Position should be valid 3D coordinates
-        expect(constructionElement.transform.position).toHaveLength(3)
-        expect(Number.isFinite(constructionElement.transform.position[0])).toBe(true)
-        expect(Number.isFinite(constructionElement.transform.position[1])).toBe(true)
-        expect(constructionElement.transform.position[2]).toBe(0) // Z should be 0
-
-        // Rotation should be valid
-        expect(constructionElement.transform.rotation).toHaveLength(3)
-        expect(Number.isFinite(constructionElement.transform.rotation[2])).toBe(true)
-        expect(constructionElement.transform.rotation[0]).toBe(0) // X rotation should be 0
-        expect(constructionElement.transform.rotation[1]).toBe(0) // Y rotation should be 0
+  it('throws for invalid double config', () => {
+    expect(() =>
+      validateRingBeamConfig({
+        type: 'double',
+        height: createLength(60),
+        thickness: createLength(0),
+        spacing: createLength(50),
+        offsetFromEdge: createLength(10),
+        material,
+        infillMaterial: material
       })
-    })
-  })
-
-  describe('Angle Scenarios - Snapshots', () => {
-    it('should handle 90° corners (rectangle)', () => {
-      const corners = [
-        createMockCorner('c1', [0, 0], 'next'),
-        createMockCorner('c2', [0, 10000], 'previous'),
-        createMockCorner('c3', [10000, 10000], 'next'),
-        createMockCorner('c4', [10000, 0], 'next')
-      ]
-
-      const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig)
-
-      const cutsAndLengths = result.elements.map(element => {
-        const constructionElement = element as ConstructionElement
-        const shape = constructionElement.shape as CutCuboid
-        return { startCut: shape.startCut?.angle, endCut: shape.endCut?.angle, length: shape.size[0] }
-      })
-
-      expect(cutsAndLengths).toMatchSnapshot()
-    })
-
-    it('should handle 135° corners', () => {
-      const corners = [
-        createMockCorner('c1', [0, 0], 'next'),
-        createMockCorner('c4', [0, 1000], 'next'),
-        createMockCorner('c3', [500, 500], 'next'), // Creates 135° angle
-        createMockCorner('c2', [1000, 0], 'next')
-      ]
-
-      const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig)
-
-      const cutsAndLengths = result.elements.map(element => {
-        const constructionElement = element as ConstructionElement
-        const shape = constructionElement.shape as CutCuboid
-        return { startCut: shape.startCut?.angle, endCut: shape.endCut?.angle, length: shape.size[0] }
-      })
-
-      expect(cutsAndLengths).toMatchSnapshot()
-    })
-
-    it('should handle 60° corners (triangle)', () => {
-      const corners = [
-        createMockCorner('c1', [0, 0], 'next'),
-        createMockCorner('c3', [500, 866], 'previous'), // Equilateral triangle (60° corners)
-        createMockCorner('c2', [1000, 0], 'next')
-      ]
-
-      const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig)
-
-      const cutsAndLengths = result.elements.map(element => {
-        const constructionElement = element as ConstructionElement
-        const shape = constructionElement.shape as CutCuboid
-        return { startCut: shape.startCut?.angle, endCut: shape.endCut?.angle, length: shape.size[0] }
-      })
-
-      expect(cutsAndLengths).toMatchSnapshot()
-    })
-
-    it('should handle 180° corners (straight line - should be simplified)', () => {
-      // This tests the polygon simplification - 180° corners should be removed
-      const corners = [
-        createMockCorner('c1', [0, 0], 'next'),
-        createMockCorner('c5', [0, 1000], 'next'),
-        createMockCorner('c4', [1000, 1000], 'next'),
-        createMockCorner('c3', [1000, 0], 'next'),
-        createMockCorner('c2', [500, 0], 'next') // This should be simplified away
-      ]
-
-      const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig)
-
-      const cutsAndLengths = result.elements.map(element => {
-        const constructionElement = element as ConstructionElement
-        const shape = constructionElement.shape as CutCuboid
-        return { startCut: shape.startCut?.angle, endCut: shape.endCut?.angle, length: shape.size[0] }
-      })
-
-      expect(cutsAndLengths).toMatchSnapshot()
-    })
-
-    test.each([
-      { angle: -150, cut: -60 },
-      { angle: -135, cut: -45 },
-      { angle: -120, cut: -30 },
-      { angle: -90, cut: 0 },
-      { angle: -60, cut: 30 },
-      { angle: -45, cut: 45 },
-      { angle: -30, cut: 60 },
-      { angle: 30, cut: -60 },
-      { angle: 45, cut: -45 },
-      { angle: 60, cut: -30 },
-      { angle: 90, cut: 0 },
-      { angle: 120, cut: 30 },
-      { angle: 135, cut: 45 },
-      { angle: 150, cut: 60 }
-    ])('Cut angle test %s', ({ angle, cut }) => {
-      const sign = Math.abs(angle) > 90 ? -1000 : 1000
-      const x = Math.abs(Math.abs(angle) - 90) < 0.1 ? 0 : sign
-      const y =
-        Math.abs(Math.abs(angle) - 90) < 0.1 ? Math.sign(angle) * 1000 : sign * Math.tan((angle / 180) * Math.PI)
-
-      const corners = [
-        createMockCorner('c1', [0, 0], 'next'),
-        createMockCorner('c2', [x, y], 'next'),
-        createMockCorner('c3', [-1000, 0], 'next')
-      ]
-
-      if (angle > 0) {
-        corners.splice(
-          2,
-          0,
-          createMockCorner('c4', [-10000, 10000], 'next'),
-          createMockCorner('c5', [-1000, 10000], 'next')
-        )
-      }
-
-      const points = corners.map(c => c.insidePoint)
-      expect(polygonIsClockwise({ points })).toBeTruthy()
-
-      const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig)
-
-      const firstElement = result.elements.find(element => 'material' in element) as ConstructionElement
-      const lastElement = result.elements[result.elements.length - 1] as ConstructionElement
-      const startCut = (firstElement.shape as CutCuboid).startCut?.angle
-      const endCut = (lastElement.shape as CutCuboid).endCut?.angle
-
-      expect(startCut).toBeCloseTo(cut)
-      expect(endCut).toBeCloseTo(cut === 0 ? cut : -cut)
-    })
-
-    it('should handle 270° corners (L-shape concave)', () => {
-      // L-shaped building with concave (270°) inner corner
-      const corners = [
-        createMockCorner('c1', [0, 0], 'next'),
-        createMockCorner('c6', [0, 2000], 'next'),
-        createMockCorner('c5', [1000, 2000], 'next'),
-        createMockCorner('c4', [1000, 1000], 'next'), // 270° concave corner
-        createMockCorner('c3', [2000, 1000], 'next'),
-        createMockCorner('c2', [2000, 0], 'next')
-      ]
-
-      const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig)
-
-      const cutsAndLengths = result.elements.map(element => {
-        const constructionElement = element as ConstructionElement
-        const shape = constructionElement.shape as CutCuboid
-        return { startCut: shape.startCut?.angle, endCut: shape.endCut?.angle, length: shape.size[0] }
-      })
-
-      expect(cutsAndLengths).toMatchSnapshot()
-    })
-
-    it('should handle 30° corners (very acute angle)', () => {
-      // Create a shape with very acute 30° corners (like a narrow triangle)
-      const corners = [
-        createMockCorner('c1', [0, 0], 'next'),
-        createMockCorner('c3', [1000, 577], 'next'), // Creates ~30° corners (tan(30°) ≈ 0.577)
-        createMockCorner('c2', [2000, 0], 'next')
-      ]
-
-      const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig)
-
-      const cutsAndLengths = result.elements.map(element => {
-        const constructionElement = element as ConstructionElement
-        const shape = constructionElement.shape as CutCuboid
-        return { startCut: shape.startCut?.angle, endCut: shape.endCut?.angle, length: shape.size[0] }
-      })
-
-      expect(cutsAndLengths).toMatchSnapshot()
-    })
-
-    it('should handle 45° corners', () => {
-      // Create a shape with 45° corners (like an octagon segment)
-      const corners = [
-        createMockCorner('c1', [0, 0], 'next'),
-        createMockCorner('c5', [0, 1000], 'next'),
-        createMockCorner('c4', [1000, 1000], 'next'),
-        createMockCorner('c3', [2414, 1000], 'next'), // Creates 45° corner
-        createMockCorner('c2', [1414, 0], 'next') // ~sqrt(2) * 1000 for 45° geometry
-      ]
-
-      const perimeter = createMockPerimeter(corners)
-      const result = constructFullRingBeam(perimeter, defaultConfig)
-
-      const cutsAndLengths = result.elements.map(element => {
-        const constructionElement = element as ConstructionElement
-        const shape = constructionElement.shape as CutCuboid
-        return { startCut: shape.startCut?.angle, endCut: shape.endCut?.angle, length: shape.size[0] }
-      })
-
-      expect(cutsAndLengths).toMatchSnapshot()
-    })
+    ).toThrow('Ring beam thickness must be greater than 0')
   })
 })
