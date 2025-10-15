@@ -1,8 +1,6 @@
-import type { FloorAssemblyType } from '@/construction/config/types'
-
 import { JoistFloorAssembly } from './joists'
 import { MonolithicFloorAssembly } from './monolithic'
-import type { FloorAssembly } from './types'
+import type { FloorAssembly, FloorAssemblyType } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const FLOOR_ASSEMBLIES: Record<FloorAssemblyType, FloorAssembly<any>> = {

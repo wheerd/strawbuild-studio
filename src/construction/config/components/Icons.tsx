@@ -1,7 +1,8 @@
 import { BoxIcon, SquareIcon, ViewVerticalIcon } from '@radix-ui/react-icons'
 import React, { type ComponentType } from 'react'
 
-import type { FloorAssemblyType, WallAssemblyConfig } from '@/construction/config/types'
+import type { WallAssemblyConfig } from '@/construction/config/types'
+import type { FloorAssemblyType } from '@/construction/floors/types'
 
 interface IconProps {
   className?: string

@@ -1,6 +1,5 @@
 import { vec3 } from 'gl-matrix'
 
-import type { MonolithicFloorAssemblyConfig } from '@/construction/config/types'
 import { createConstructionElement } from '@/construction/elements'
 import type { ConstructionModel } from '@/construction/model'
 import { createExtrudedPolygon } from '@/construction/shapes'
@@ -8,6 +7,7 @@ import { TAG_FLOOR } from '@/construction/tags'
 import { type PolygonWithHoles2D } from '@/shared/geometry'
 
 import { BaseFloorAssembly } from './base'
+import type { MonolithicFloorAssemblyConfig } from './types'
 
 export class MonolithicFloorAssembly extends BaseFloorAssembly<MonolithicFloorAssemblyConfig> {
   construct = (polygon: PolygonWithHoles2D, config: MonolithicFloorAssemblyConfig) => {

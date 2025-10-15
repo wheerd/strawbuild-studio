@@ -9,14 +9,8 @@ import {
   createRingBeamAssemblyId,
   createWallAssemblyId
 } from '@/building/model/ids'
-import type {
-  FloorAssemblyConfig,
-  MonolithicFloorAssemblyConfig,
-  RingBeamAssembly,
-  WallAssembly,
-  WallAssemblyConfig,
-  WallLayersConfig
-} from '@/construction/config/types'
+import type { RingBeamAssembly, WallAssembly, WallAssemblyConfig, WallLayersConfig } from '@/construction/config/types'
+import type { FloorAssemblyConfig, MonolithicFloorAssemblyConfig } from '@/construction/floors/types'
 import { clt180, concrete, straw, strawbale, wood120x60, wood360x60 } from '@/construction/materials/material'
 import { type RingBeamConfig, validateRingBeamConfig } from '@/construction/ringBeams/ringBeams'
 import '@/shared/geometry'

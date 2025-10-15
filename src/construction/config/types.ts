@@ -1,4 +1,4 @@
-import type { FloorAssemblyId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
+import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import type { MaterialId } from '@/construction/materials/material'
 import type { RingBeamConfig } from '@/construction/ringBeams/ringBeams'
 import type {
@@ -86,35 +86,3 @@ export interface WallAssembly {
   config: WallAssemblyConfig
   layers: WallLayersConfig
 }
-
-export type FloorAssemblyType = 'monolithic' | 'joist'
-
-export interface FloorAssemblyBaseConfig {
-  id: FloorAssemblyId
-  name: string
-  type: FloorAssemblyType
-  layers: FloorLayersConfig
-}
-
-export interface FloorLayersConfig {
-  bottomThickness: Length
-  topThickness: Length
-}
-
-export interface MonolithicFloorAssemblyConfig extends FloorAssemblyBaseConfig {
-  type: 'monolithic'
-  thickness: Length
-  material: MaterialId
-}
-
-export interface JoistFloorAssemblyConfig extends FloorAssemblyBaseConfig {
-  type: 'joist'
-  joistThickness: Length
-  joistHeight: Length
-  joistSpacing: Length
-  joistMaterial: MaterialId
-  subfloorThickness: Length
-  subfloorMaterial: MaterialId
-}
-
-export type FloorAssemblyConfig = MonolithicFloorAssemblyConfig | JoistFloorAssemblyConfig

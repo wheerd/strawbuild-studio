@@ -1,8 +1,8 @@
-import type { JoistFloorAssemblyConfig } from '@/construction/config/types'
 import { createUnsupportedModel } from '@/construction/model'
 import { type PolygonWithHoles2D } from '@/shared/geometry'
 
 import { BaseFloorAssembly } from './base'
+import type { JoistFloorAssemblyConfig } from './types'
 
 export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorAssemblyConfig> {
   construct = (_polygon: PolygonWithHoles2D, _config: JoistFloorAssemblyConfig) => {
