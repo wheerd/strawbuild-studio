@@ -68,7 +68,7 @@ pnpm build        # Build for production
 - **Canvas Rendering**: Konva.js with react-konva
 - **3D Rendering**: Three.js via react-three
 - **State Management**: Zustand with immer, persist and zundo middlewares
-- **Geometry**: Turf, gl-matrix
+- **Geometry**: clipper2-wasm, gl-matrix
 - **PWA**: with workbox and vite-pwa-plugin
 - **Testing**: Vitest + React Testing Library + jsdom
 - **Build Tool**: Vite
