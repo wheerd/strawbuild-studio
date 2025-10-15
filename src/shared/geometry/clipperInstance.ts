@@ -1,4 +1,4 @@
-import Clipper2Z, { type MainModule as ClipperModule, type PathD } from 'clipper2-wasm'
+import Clipper2Z, { type MainModule as ClipperModule, type PathD, type PathsD, type PointD } from 'clipper2-wasm'
 import clipperWasmUrl from 'clipper2-wasm/dist/es/clipper2z.wasm?url'
 
 import type { Vec2 } from '@/shared/geometry/basic'
@@ -46,25 +46,34 @@ export function getClipperModule(): ClipperModule {
   )
 }
 
-export type PathCallback<T> = (module: ClipperModule, path: PathD) => T
-export function withClipperPath<T>(points: Vec2[], fallback: T, callback: PathCallback<T>): T {
-  if (points.length < 1) return fallback
-  const module = getClipperModule()
-  const path = createPathD(module, points)
-  if (!path) {
-    return fallback
-  }
-  try {
-    return callback(module, path)
-  } finally {
-    path.delete()
-  }
+export function createPointD(point: Vec2): PointD {
+  return new (getClipperModule().PointD)(point[0], point[1], 0)
 }
 
-function createPathD(module: ClipperModule, points: Vec2[]): PathD | null {
+export function createPathD(points: Vec2[]): PathD {
+  const module = getClipperModule()
   const path = new module.PathD()
   for (const [x, y] of points) {
     path.push_back(new module.PointD(x, y, 0))
   }
   return path
+}
+
+export function createPathsD(paths: PathD[]): PathsD {
+  const module = getClipperModule()
+  const pathsD = new module.PathsD()
+  for (const path of paths) {
+    pathsD.push_back(path)
+  }
+  return pathsD
+}
+
+export function pathDToPoints(path: PathD): Vec2[] {
+  const result: Vec2[] = []
+  const size = path.size()
+  for (let i = 0; i < size; i++) {
+    const point = path.get(i)
+    result.push([point.x, point.y])
+  }
+  return result
 }
