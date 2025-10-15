@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import type { Perimeter, PerimeterCorner } from '@/building/model/model'
-import { createConstructionElement, createCutCuboidShape } from '@/construction/elements'
+import { createConstructionElement } from '@/construction/elements'
 import type { MaterialId } from '@/construction/materials/material'
 import { type ConstructionModel, createUnsupportedModel } from '@/construction/model'
 import {
@@ -11,18 +11,15 @@ import {
   yieldElement,
   yieldMeasurement
 } from '@/construction/results'
+import { createExtrudedPolygon } from '@/construction/shapes'
 import { TAG_PERIMETER_INSIDE, TAG_PERIMETER_OUTSIDE } from '@/construction/tags'
 import {
   type Length,
   type Polygon2D,
   boundsFromPoints,
-  direction,
-  distance,
-  distanceSquared,
   lineFromPoints,
   lineIntersection,
   offsetPolygon,
-  projectPointOntoLine,
   simplifyPolygon
 } from '@/shared/geometry'
 
@@ -50,8 +47,6 @@ export interface DoubleRingBeamConfig extends BaseRingBeamConfig {
 
 export type RingBeamConfig = FullRingBeamConfig | DoubleRingBeamConfig
 
-const EPSILON = 1e-2
-
 function* _constructFullRingBeam(perimeter: Perimeter, config: FullRingBeamConfig): Generator<ConstructionResult> {
   const insidePolygon: Polygon2D = { points: perimeter.corners.map(c => c.insidePoint) }
   const simplifiedPolygon = simplifyPolygon(insidePolygon)
@@ -64,11 +59,11 @@ function* _constructFullRingBeam(perimeter: Perimeter, config: FullRingBeamConfi
     const currentEnd = (currentStart + 1) % numCorners
     const nextEnd = (currentStart + 2) % numCorners
 
-    const startCorner = perimeter.corners.find(
-      (c: PerimeterCorner) => distanceSquared(c.insidePoint, simplifiedPolygon.points[currentStart]) < EPSILON
+    const startCorner = perimeter.corners.find((c: PerimeterCorner) =>
+      vec2.equals(c.insidePoint, simplifiedPolygon.points[currentStart])
     )
-    const endCorner = perimeter.corners.find(
-      (c: PerimeterCorner) => distanceSquared(c.insidePoint, simplifiedPolygon.points[currentEnd]) < EPSILON
+    const endCorner = perimeter.corners.find((c: PerimeterCorner) =>
+      vec2.equals(c.insidePoint, simplifiedPolygon.points[currentEnd])
     )
 
     const previousEdge =
@@ -95,52 +90,14 @@ function* _constructFullRingBeam(perimeter: Perimeter, config: FullRingBeamConfi
       throw new Error('Failed to calculate beam segment corner intersections')
     }
 
-    const projectedStart = projectPointOntoLine(startOutside, insideEdge)
-    const projectedEnd = projectPointOntoLine(endOutside, insideEdge)
-
-    const totalLength = Math.max(
-      distance(projectedStart, endInside),
-      distance(projectedStart, projectedEnd),
-      distance(startInside, endInside),
-      distance(startInside, projectedEnd)
-    )
-
-    const finalPosition =
-      distance(startInside, endInside) > distance(projectedStart, endInside) ? startInside : projectedStart
-
-    // Calculate angles between beam direction and cut directions
-    const startCutDirection = direction(startInside, startOutside)
-    const endCutDirection = direction(endInside, endOutside)
-    const startAngle = vec2.signedAngle(insideEdge.direction, startCutDirection)
-    const endAngle = vec2.signedAngle(insideEdge.direction, endCutDirection)
-
-    // Convert to chop saw angles: 0° = perpendicular cut.
-    const startAngleDeg = 90 - (startAngle * 180) / Math.PI
-    const endAngleDeg = 90 - (endAngle * 180) / Math.PI
-
-    const segmentAngle = Math.atan2(insideEdge.direction[1], insideEdge.direction[0])
-
     yield yieldElement(
       createConstructionElement(
         config.material,
-        createCutCuboidShape(
-          [0, 0, 0],
-          [totalLength, config.width, config.height],
-          {
-            plane: 'xy',
-            axis: 'y',
-            angle: startAngleDeg
-          },
-          {
-            plane: 'xy',
-            axis: 'y',
-            angle: endAngleDeg
-          }
-        ),
-        {
-          position: [finalPosition[0], finalPosition[1], 0],
-          rotation: [0, 0, segmentAngle]
-        }
+        createExtrudedPolygon(
+          { outer: { points: [startInside, endInside, endOutside, startOutside] }, holes: [] },
+          'xy',
+          config.height
+        )
       )
     )
 
