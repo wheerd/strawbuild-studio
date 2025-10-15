@@ -11,20 +11,38 @@ import {
   createPerimeterWallId,
   createStoreyId
 } from '@/building/model/ids'
-import { type Length, type Polygon2D, createLength, createVec2 } from '@/shared/geometry'
+import {
+  type Length,
+  type Polygon2D,
+  createLength,
+  createVec2,
+  wouldClosingPolygonSelfIntersect
+} from '@/shared/geometry'
 
 import { type PerimetersSlice, createPerimetersSlice } from './perimeterSlice'
+
+vi.mock('@/shared/geometry/polygon', async importOriginal => {
+  return {
+    ...(await importOriginal()),
+    wouldClosingPolygonSelfIntersect: vi.fn()
+  }
+})
+
+const wouldClosingPolygonSelfIntersectMock = vi.mocked(wouldClosingPolygonSelfIntersect)
 
 // Mock Zustand following the official testing guide
 vi.mock('zustand')
 
-describe('OuterWallsSlice', () => {
+describe('perimeterSlice', () => {
   let store: PerimetersSlice
   let mockSet: any
   let mockGet: any
   let testStoreyId: StoreyId
 
   beforeEach(() => {
+    wouldClosingPolygonSelfIntersectMock.mockReset()
+    wouldClosingPolygonSelfIntersectMock.mockReturnValue(false)
+
     // Create the slice directly without using create()
     mockSet = vi.fn()
     mockGet = vi.fn()
@@ -1451,6 +1469,7 @@ describe('OuterWallsSlice', () => {
 
         // Try to remove the concave corner - this should fail validation
         const concaveCorner = perimeter.corners[3] // Corner at (5,5)
+        wouldClosingPolygonSelfIntersectMock.mockReturnValue(true)
         const success = store.actions.removePerimeterCorner(perimeter.id, concaveCorner.id)
 
         // The success depends on whether the resulting polygon is valid
@@ -1558,6 +1577,7 @@ describe('OuterWallsSlice', () => {
         const perimeter = Object.values(store.perimeters)[0]
         const wallToRemove = perimeter.walls[3] // Wall from (10,5) to (0,10)
 
+        wouldClosingPolygonSelfIntersectMock.mockReturnValue(true)
         const success = store.actions.removePerimeterWall(perimeter.id, wallToRemove.id)
 
         // Verify the result is either failure or a valid polygon

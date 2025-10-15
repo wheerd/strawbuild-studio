@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react'
 import { vi } from 'vitest'
 
-import { createVec2 } from '@/shared/geometry'
+import { createVec2, offsetPolygon } from '@/shared/geometry'
 
 import { SelectionOutline } from './SelectionOutline'
 
@@ -11,9 +11,19 @@ vi.mock('@/editor/hooks/useViewportStore', () => ({
   useZoom: () => mockUseZoom()
 }))
 
+const offsetPolygonMock = vi.mocked(offsetPolygon)
+
+vi.mock('@/shared/geometry', async importOriginal => ({
+  ...(await importOriginal()),
+  offsetPolygon: vi.fn()
+}))
+
 describe('SelectionOutline', () => {
   beforeEach(() => {
+    mockUseZoom.mockReset()
     mockUseZoom.mockReturnValue(1.0)
+    offsetPolygonMock.mockReset()
+    offsetPolygonMock.mockImplementation(({ points }) => ({ points }))
   })
 
   it('renders without crashing for valid polygon', () => {

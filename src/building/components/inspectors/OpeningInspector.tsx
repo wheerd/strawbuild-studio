@@ -12,7 +12,7 @@ import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
 import { DoorIcon, PassageIcon, WindowIcon } from '@/shared/components/OpeningIcons'
-import { type Polygon2D, type Vec2, add, boundsFromPoints, createLength, offsetPolygon, scale } from '@/shared/geometry'
+import { type Polygon2D, add, boundsFromPoints, createLength, offsetPolygon, scale } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
 
 import { OpeningPreview } from './OpeningPreview'

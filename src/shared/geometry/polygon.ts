@@ -88,7 +88,8 @@ export function wouldClosingPolygonSelfIntersect(polygon: Polygon2D): boolean {
   const paths = createPathsD([path])
 
   try {
-    const unionPaths = getClipperModule().UnionSelfD(paths, getClipperModule().FillRule.EvenOdd, SIMPLIFY_TOLERANCE)
+    const module = getClipperModule()
+    const unionPaths = module.UnionSelfD(paths, module.FillRule.EvenOdd, 2)
     try {
       return unionPaths.size() !== 1
     } finally {
@@ -132,9 +133,9 @@ export function offsetPolygon(polygon: Polygon2D, distanceValue: number): Polygo
       distanceValue,
       module.JoinType.Miter,
       module.EndType.Polygon,
-      1_000_000,
-      0,
-      1
+      1000,
+      2,
+      0
     )
     try {
       const inflatedPath = inflated.get(0)
@@ -160,7 +161,7 @@ export function arePolygonsIntersecting(polygon1: Polygon2D, polygon2: Polygon2D
   const pathsB = createPathsD([pathB])
 
   try {
-    const intersections = module.IntersectD(pathsA, pathsB, module.FillRule.EvenOdd, SIMPLIFY_TOLERANCE)
+    const intersections = module.IntersectD(pathsA, pathsB, module.FillRule.EvenOdd, 2)
     try {
       for (let i = 0; i < intersections.size(); i++) {
         const intersectionPath = intersections.get(i)
