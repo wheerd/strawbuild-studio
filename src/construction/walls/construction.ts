@@ -15,7 +15,7 @@ export interface BaseConstructionConfig {
   straw: StrawConfig
 }
 
-export type PerimeterWallConstructionMethod<TConfig> = (
+export type WallAssemblyBuilder<TConfig> = (
   wall: PerimeterWall,
   perimeter: Perimeter,
   storeyContext: WallStoreyContext,

@@ -1,8 +1,4 @@
-import type {
-  PerimeterConstructionMethodId,
-  RingBeamConstructionMethodId,
-  SlabConstructionConfigId
-} from '@/building/model/ids'
+import type { FloorAssemblyId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import type { Perimeter, Storey } from '@/building/model/model'
 
 export interface RingBeamConfigUsage {
@@ -21,10 +17,10 @@ export interface SlabConfigUsage {
 }
 
 /**
- * Checks if a ring beam construction method is currently in use by any perimeters
+ * Checks if a ring beam assembly is currently in use by any perimeters
  */
 export function getRingBeamConfigUsage(
-  configId: RingBeamConstructionMethodId,
+  configId: RingBeamAssemblyId,
   perimeters: Perimeter[],
   storeys: Storey[]
 ): RingBeamConfigUsage {
@@ -37,12 +33,12 @@ export function getRingBeamConfigUsage(
     const storeyName = storey?.name ?? 'Unknown Floor'
 
     // Check base ring beam
-    if (perimeter.baseRingBeamMethodId === configId) {
+    if (perimeter.baseRingBeamAssemblyId === configId) {
       usedByPerimeters.push(`${storeyName} - Base Ring Beam`)
     }
 
     // Check top ring beam
-    if (perimeter.topRingBeamMethodId === configId) {
+    if (perimeter.topRingBeamAssemblyId === configId) {
       usedByPerimeters.push(`${storeyName} - Top Ring Beam`)
     }
   })
@@ -54,10 +50,10 @@ export function getRingBeamConfigUsage(
 }
 
 /**
- * Checks if a perimeter construction method is currently in use by any walls
+ * Checks if a wall assembly is currently in use by any walls
  */
 export function getPerimeterConfigUsage(
-  configId: PerimeterConstructionMethodId,
+  configId: WallAssemblyId,
   perimeters: Perimeter[],
   storeys: Storey[]
 ): PerimeterConfigUsage {
@@ -71,7 +67,7 @@ export function getPerimeterConfigUsage(
 
     // Check each wall in the perimeter
     perimeter.walls.forEach((wall, wallIndex) => {
-      if (wall.constructionMethodId === configId) {
+      if (wall.wallAssemblyId === configId) {
         usedByWalls.push(`${storeyName} - Wall ${wallIndex + 1}`)
       }
     })
@@ -84,13 +80,13 @@ export function getPerimeterConfigUsage(
 }
 
 /**
- * Checks if a slab construction config is currently in use by any storeys
+ * Checks if a floor construction config is currently in use by any storeys
  */
-export function getSlabConfigUsage(configId: SlabConstructionConfigId, storeys: Storey[]): SlabConfigUsage {
+export function getSlabConfigUsage(configId: FloorAssemblyId, storeys: Storey[]): SlabConfigUsage {
   const usedByStoreys: string[] = []
 
   storeys.forEach(storey => {
-    if (storey.slabConstructionConfigId === configId) {
+    if (storey.floorAssemblyId === configId) {
       usedByStoreys.push(storey.name)
     }
   })

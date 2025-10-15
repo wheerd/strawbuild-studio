@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
+import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import type { Length } from '@/shared/geometry'
 
 /**
@@ -8,9 +8,9 @@ import type { Length } from '@/shared/geometry'
  */
 export interface BasePresetConfig {
   thickness: Length
-  constructionMethodId: PerimeterConstructionMethodId
-  baseRingBeamMethodId?: RingBeamConstructionMethodId
-  topRingBeamMethodId?: RingBeamConstructionMethodId
+  wallAssemblyId: WallAssemblyId
+  baseRingBeamAssemblyId?: RingBeamAssemblyId
+  topRingBeamAssemblyId?: RingBeamAssemblyId
 }
 
 /**

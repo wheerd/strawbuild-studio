@@ -13,7 +13,7 @@ vi.mock('@/building/store', () => ({
 
 vi.mock('@/construction/config/store', () => ({
   useConfigActions: vi.fn(() => ({
-    getRingBeamConstructionMethodById: vi.fn(() => null)
+    getRingBeamAssemblyById: vi.fn(() => null)
   }))
 }))
 

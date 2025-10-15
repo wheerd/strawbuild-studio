@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
+import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config/store'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
@@ -28,10 +28,10 @@ interface PerimeterToolState {
   snapContext: SnappingContext
   isCurrentLineValid: boolean
   isClosingLineValid: boolean
-  constructionMethodId: PerimeterConstructionMethodId
+  wallAssemblyId: WallAssemblyId
   wallThickness: Length
-  baseRingBeamMethodId?: RingBeamConstructionMethodId
-  topRingBeamMethodId?: RingBeamConstructionMethodId
+  baseRingBeamAssemblyId?: RingBeamAssemblyId
+  topRingBeamAssemblyId?: RingBeamAssemblyId
   lengthOverride: Length | null
 }
 
@@ -51,7 +51,7 @@ export class PerimeterTool extends BaseTool implements ToolImplementation {
     isCurrentLineValid: true,
     isClosingLineValid: true,
     wallThickness: 440, // Default 44cm thickness,
-    constructionMethodId: '' as PerimeterConstructionMethodId, // Set on activation
+    wallAssemblyId: '' as WallAssemblyId, // Set on activation
     lengthOverride: null
   }
 
@@ -70,8 +70,8 @@ export class PerimeterTool extends BaseTool implements ToolImplementation {
     return vec2.squaredDistance(firstPoint, snapPos) < 25 // 5mm squared
   }
 
-  public setConstructionMethod(methodId: PerimeterConstructionMethodId): void {
-    this.state.constructionMethodId = methodId
+  public setAssembly(assemblyId: WallAssemblyId): void {
+    this.state.wallAssemblyId = assemblyId
     this.triggerRender()
   }
 
@@ -80,13 +80,13 @@ export class PerimeterTool extends BaseTool implements ToolImplementation {
     this.triggerRender()
   }
 
-  public setBaseRingBeam(methodId: RingBeamConstructionMethodId | undefined): void {
-    this.state.baseRingBeamMethodId = methodId
+  public setBaseRingBeam(assemblyId: RingBeamAssemblyId | undefined): void {
+    this.state.baseRingBeamAssemblyId = assemblyId
     this.triggerRender()
   }
 
-  public setTopRingBeam(methodId: RingBeamConstructionMethodId | undefined): void {
-    this.state.topRingBeamMethodId = methodId
+  public setTopRingBeam(assemblyId: RingBeamAssemblyId | undefined): void {
+    this.state.topRingBeamAssemblyId = assemblyId
     this.triggerRender()
   }
 
@@ -230,11 +230,11 @@ export class PerimeterTool extends BaseTool implements ToolImplementation {
     this.state.isClosingLineValid = true
     this.state.lengthOverride = null
 
-    // Set default methods from config store
+    // Set default assemblies from config store
     const configStore = getConfigActions()
-    this.state.baseRingBeamMethodId = configStore.getDefaultBaseRingBeamMethodId()
-    this.state.topRingBeamMethodId = configStore.getDefaultTopRingBeamMethodId()
-    this.state.constructionMethodId = configStore.getDefaultPerimeterMethodId()
+    this.state.baseRingBeamAssemblyId = configStore.getDefaultBaseRingBeamAssemblyId()
+    this.state.topRingBeamAssemblyId = configStore.getDefaultTopRingBeamAssemblyId()
+    this.state.wallAssemblyId = configStore.getDefaultWallAssemblyId()
 
     this.updateSnapContext()
   }
@@ -269,18 +269,18 @@ export class PerimeterTool extends BaseTool implements ToolImplementation {
     const activeStoreyId = getActiveStoreyId()
 
     try {
-      if (!this.state.constructionMethodId) {
-        console.error('No construction method selected')
+      if (!this.state.wallAssemblyId) {
+        console.error('No wall assembly selected')
         return
       }
 
       addPerimeter(
         activeStoreyId,
         polygon,
-        this.state.constructionMethodId,
+        this.state.wallAssemblyId,
         this.state.wallThickness,
-        this.state.baseRingBeamMethodId,
-        this.state.topRingBeamMethodId
+        this.state.baseRingBeamAssemblyId,
+        this.state.topRingBeamAssemblyId
       )
     } catch (error) {
       console.error('Failed to create perimeter polygon:', error)

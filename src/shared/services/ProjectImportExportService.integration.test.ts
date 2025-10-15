@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
+import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigState, setConfigState } from '@/construction/config/store'
 import { getMaterialsState, setMaterialsState } from '@/construction/materials/store'
@@ -41,20 +41,16 @@ describe('ProjectImportExportService Integration', () => {
       points: [vec2.fromValues(0, 0), vec2.fromValues(8000, 0), vec2.fromValues(8000, 6000), vec2.fromValues(0, 6000)]
     }
 
-    const constructionMethodId = Object.keys(
-      getConfigState().perimeterConstructionMethods
-    )[0] as PerimeterConstructionMethodId
-    const ringBeamMethodId = Object.keys(
-      getConfigState().ringBeamConstructionMethods
-    )[0] as RingBeamConstructionMethodId
+    const wallAssemblyId = Object.keys(getConfigState().wallAssemblies)[0] as WallAssemblyId
+    const ringBeamAssemblyId = Object.keys(getConfigState().ringBeamAssemblies)[0] as RingBeamAssemblyId
 
     const perimeter = modelActions.addPerimeter(
       testStorey.id,
       boundary,
-      constructionMethodId,
+      wallAssemblyId,
       200,
-      ringBeamMethodId,
-      ringBeamMethodId
+      ringBeamAssemblyId,
+      ringBeamAssemblyId
     )
 
     // Add openings to walls
@@ -151,8 +147,8 @@ describe('ProjectImportExportService Integration', () => {
         const importedPerimeter = importedPerimeters[j]
 
         // Compare perimeter ring beam settings
-        expect(importedPerimeter.baseRingBeamMethodId).toBe(originalPerimeter.baseRingBeamMethodId)
-        expect(importedPerimeter.topRingBeamMethodId).toBe(originalPerimeter.topRingBeamMethodId)
+        expect(importedPerimeter.baseRingBeamAssemblyId).toBe(originalPerimeter.baseRingBeamAssemblyId)
+        expect(importedPerimeter.topRingBeamAssemblyId).toBe(originalPerimeter.topRingBeamAssemblyId)
 
         // Compare corners (excluding IDs)
         expect(importedPerimeter.corners).toHaveLength(originalPerimeter.corners.length)
@@ -172,7 +168,7 @@ describe('ProjectImportExportService Integration', () => {
           const importedWall = importedPerimeter.walls[k]
 
           expect(Number(importedWall.thickness)).toBe(Number(originalWall.thickness))
-          expect(importedWall.constructionMethodId).toBe(originalWall.constructionMethodId)
+          expect(importedWall.wallAssemblyId).toBe(originalWall.wallAssemblyId)
 
           // Compare openings (excluding IDs)
           expect(importedWall.openings).toHaveLength(originalWall.openings.length)
@@ -205,9 +201,7 @@ describe('ProjectImportExportService Integration', () => {
     modelActions.addStorey('Second Floor', 2600)
 
     // Add perimeters to each storey
-    const constructionMethodId = Object.keys(
-      getConfigState().perimeterConstructionMethods
-    )[0] as PerimeterConstructionMethodId
+    const wallAssemblyId = Object.keys(getConfigState().wallAssemblies)[0] as WallAssemblyId
 
     // Different shaped perimeters for each floor
     const groundBoundary = {
@@ -223,8 +217,8 @@ describe('ProjectImportExportService Integration', () => {
       ]
     }
 
-    modelActions.addPerimeter(ground.id, groundBoundary, constructionMethodId, 200)
-    modelActions.addPerimeter(firstFloor.id, firstFloorBoundary, constructionMethodId, 180)
+    modelActions.addPerimeter(ground.id, groundBoundary, wallAssemblyId, 200)
+    modelActions.addPerimeter(firstFloor.id, firstFloorBoundary, wallAssemblyId, 180)
 
     // Export and import
     const exportResult = await ProjectImportExportService.exportToString()

@@ -4,11 +4,11 @@ import { Layer, Stage } from 'react-konva/lib/ReactKonvaCore'
 import { describe, expect, it } from 'vitest'
 
 import {
-  createPerimeterConstructionMethodId,
   createPerimeterCornerId,
   createPerimeterId,
   createPerimeterWallId,
-  createStoreyId
+  createStoreyId,
+  createWallAssemblyId
 } from '@/building/model/ids'
 import type { Perimeter } from '@/building/model/model'
 import '@/shared/geometry'
@@ -24,7 +24,7 @@ describe('PerimeterShape', () => {
       {
         id: createPerimeterWallId(),
         thickness: 400,
-        constructionMethodId: createPerimeterConstructionMethodId(),
+        wallAssemblyId: createWallAssemblyId(),
         openings: [],
         insideLength: 1000,
         outsideLength: 1000,
@@ -43,7 +43,7 @@ describe('PerimeterShape', () => {
       {
         id: createPerimeterWallId(),
         thickness: 400,
-        constructionMethodId: createPerimeterConstructionMethodId(),
+        wallAssemblyId: createWallAssemblyId(),
         openings: [],
         insideLength: 1000,
         outsideLength: 1000,
@@ -62,7 +62,7 @@ describe('PerimeterShape', () => {
       {
         id: createPerimeterWallId(),
         thickness: 400,
-        constructionMethodId: createPerimeterConstructionMethodId(),
+        wallAssemblyId: createWallAssemblyId(),
         openings: [],
         insideLength: 1000,
         outsideLength: 1000,
@@ -81,7 +81,7 @@ describe('PerimeterShape', () => {
       {
         id: createPerimeterWallId(),
         thickness: 400,
-        constructionMethodId: createPerimeterConstructionMethodId(),
+        wallAssemblyId: createWallAssemblyId(),
         openings: [],
         insideLength: 1000,
         outsideLength: 1000,

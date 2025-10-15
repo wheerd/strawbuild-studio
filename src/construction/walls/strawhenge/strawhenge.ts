@@ -8,7 +8,7 @@ import { constructOpeningFrame } from '@/construction/openings/openings'
 import type { ConstructionResult } from '@/construction/results'
 import { aggregateResults, yieldAsGroup } from '@/construction/results'
 import { TAG_MODULE } from '@/construction/tags'
-import type { BaseConstructionConfig, PerimeterWallConstructionMethod } from '@/construction/walls/construction'
+import type { BaseConstructionConfig, WallAssemblyBuilder } from '@/construction/walls/construction'
 import { type InfillConstructionConfig, infillWallArea } from '@/construction/walls/infill/infill'
 import { type WallStoreyContext, segmentedWallConstruction } from '@/construction/walls/segmentation'
 import { type Length, mergeBounds } from '@/shared/geometry'
@@ -186,7 +186,7 @@ const _constructStrawhengeWall = (
       constructOpeningFrame({ type: 'opening', position, size, zOffset, openings }, config.openings, config.infill)
   )
 
-export const constructStrawhengeWall: PerimeterWallConstructionMethod<StrawhengeConstructionConfig> = (
+export const constructStrawhengeWall: WallAssemblyBuilder<StrawhengeConstructionConfig> = (
   wall: PerimeterWall,
   perimeter: Perimeter,
   storeyContext: WallStoreyContext,

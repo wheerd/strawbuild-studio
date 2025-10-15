@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { vec2 } from 'gl-matrix'
 import { vi } from 'vitest'
 
-import { createPerimeterConstructionMethodId } from '@/building/model/ids'
+import { createWallAssemblyId } from '@/building/model/ids'
 import { ConfigurationModalContext } from '@/construction/config/context/ConfigurationModalContext'
 import '@/shared/geometry'
 
@@ -12,21 +12,21 @@ import { PerimeterToolInspector } from './PerimeterToolInspector'
 
 // Mock the config store
 vi.mock('@/construction/config/store', () => ({
-  useRingBeamConstructionMethods: () => [
+  useRingBeamAssemblies: () => [
     {
-      id: 'test-ring-beam-method',
+      id: 'test-ring-beam-assembly',
       name: 'Test Ring Beam',
       config: { type: 'full' }
     }
   ],
-  usePerimeterConstructionMethods: () => [
+  useWallAssemblies: () => [
     {
-      id: 'test-method-1',
+      id: 'test-assembly-1',
       name: 'Standard Infill',
       config: { type: 'infill' }
     },
     {
-      id: 'test-method-2',
+      id: 'test-assembly-2',
       name: 'Strawhenge Module',
       config: { type: 'strawhenge' }
     }
@@ -42,7 +42,7 @@ Object.defineProperty(Element.prototype, 'scrollIntoView', {
 describe('PerimeterToolInspector', () => {
   let mockTool: PerimeterTool
   let mockOnRenderNeeded: ReturnType<typeof vi.fn>
-  let mockSetConstructionMethod: ReturnType<typeof vi.fn>
+  let mockSetAssembly: ReturnType<typeof vi.fn>
   let mockSetWallThickness: ReturnType<typeof vi.fn>
   let mockSetBaseRingBeam: ReturnType<typeof vi.fn>
   let mockSetTopRingBeam: ReturnType<typeof vi.fn>
@@ -50,7 +50,7 @@ describe('PerimeterToolInspector', () => {
 
   beforeEach(() => {
     mockOnRenderNeeded = vi.fn()
-    mockSetConstructionMethod = vi.fn()
+    mockSetAssembly = vi.fn()
     mockSetWallThickness = vi.fn()
     mockSetBaseRingBeam = vi.fn()
     mockSetTopRingBeam = vi.fn()
@@ -69,16 +69,16 @@ describe('PerimeterToolInspector', () => {
       },
       isCurrentLineValid: true,
       isClosingLineValid: true,
-      constructionMethodId: createPerimeterConstructionMethodId(),
+      wallAssemblyId: createWallAssemblyId(),
       wallThickness: 440,
-      baseRingBeamMethodId: undefined,
-      topRingBeamMethodId: undefined,
+      baseRingBeamAssemblyId: undefined,
+      topRingBeamAssemblyId: undefined,
       lengthOverride: null
     }
 
-    // Mock methods
+    // Mock assemblies
     mockTool.onRenderNeeded = mockOnRenderNeeded.mockReturnValue(vi.fn())
-    mockTool.setConstructionMethod = mockSetConstructionMethod
+    mockTool.setAssembly = mockSetAssembly
     mockTool.setWallThickness = mockSetWallThickness
     mockTool.setBaseRingBeam = mockSetBaseRingBeam
     mockTool.setTopRingBeam = mockSetTopRingBeam
@@ -100,7 +100,7 @@ describe('PerimeterToolInspector', () => {
     it('renders basic inspector with default values', () => {
       renderInspector()
 
-      expect(screen.getByText('Construction Method')).toBeInTheDocument()
+      expect(screen.getByText('Wall Assembly')).toBeInTheDocument()
       expect(screen.getByLabelText('Wall Thickness')).toBeInTheDocument()
       expect(screen.getByText('Base Plate')).toBeInTheDocument()
       expect(screen.getByText('Top Plate')).toBeInTheDocument()
@@ -110,20 +110,20 @@ describe('PerimeterToolInspector', () => {
     })
   })
 
-  describe('construction method changes', () => {
-    it('calls setConstructionMethod when selection changes', async () => {
+  describe('assembly changes', () => {
+    it('calls setAssembly when selection changes', async () => {
       renderInspector()
 
-      // Find the construction method select trigger button by getting all comboboxes and selecting the first one
+      // Find the assembly select trigger button by getting all comboboxes and selecting the first one
       const comboboxes = screen.getAllByRole('combobox')
-      const constructionMethodSelect = comboboxes[0] // First combobox is construction method
-      fireEvent.click(constructionMethodSelect)
+      const wallAssemblySelect = comboboxes[0] // First combobox is assembly
+      fireEvent.click(wallAssemblySelect)
 
       // Wait for the dropdown to appear and find the option
       const strawhengeOption = await screen.findByText('Strawhenge Module')
       fireEvent.click(strawhengeOption)
 
-      expect(mockSetConstructionMethod).toHaveBeenCalledWith('test-method-2')
+      expect(mockSetAssembly).toHaveBeenCalledWith('test-assembly-2')
     })
   })
 
@@ -153,12 +153,12 @@ describe('PerimeterToolInspector', () => {
     it('has proper form labels', () => {
       renderInspector()
 
-      expect(screen.getByText('Construction Method')).toBeInTheDocument()
+      expect(screen.getByText('Wall Assembly')).toBeInTheDocument()
       expect(screen.getByLabelText('Wall Thickness')).toBeInTheDocument()
       expect(screen.getByText('Base Plate')).toBeInTheDocument()
       expect(screen.getByText('Top Plate')).toBeInTheDocument()
 
-      // Should have exactly 3 comboboxes: construction method, base ring beam, top ring beam
+      // Should have exactly 3 comboboxes: assembly, base ring beam, top ring beam
       const comboboxes = screen.getAllByRole('combobox')
       expect(comboboxes).toHaveLength(3)
     })
@@ -190,7 +190,7 @@ describe('PerimeterToolInspector', () => {
       const baseRingBeamSelect = comboboxes[1]
       fireEvent.click(baseRingBeamSelect)
 
-      // Since there are no ring beam methods in the test, clicking should still work
+      // Since there are no ring beam assemblies in the test, clicking should still work
       // but we can't test actual selection without mocking the config store
       expect(baseRingBeamSelect).toBeInTheDocument()
     })
@@ -203,7 +203,7 @@ describe('PerimeterToolInspector', () => {
       const topRingBeamSelect = comboboxes[2]
       fireEvent.click(topRingBeamSelect)
 
-      // Since there are no ring beam methods in the test, clicking should still work
+      // Since there are no ring beam assemblies in the test, clicking should still work
       // but we can't test actual selection without mocking the config store
       expect(topRingBeamSelect).toBeInTheDocument()
     })

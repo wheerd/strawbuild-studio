@@ -12,7 +12,7 @@ import * as Label from '@radix-ui/react-label'
 import { AlertDialog, Badge, Button, DropdownMenu, Flex, Grid, IconButton, Text, TextField } from '@radix-ui/themes'
 import React, { useCallback, useState } from 'react'
 
-import { usePerimeterConstructionMethods, useRingBeamConstructionMethods } from '@/construction/config/store'
+import { useRingBeamAssemblies, useWallAssemblies } from '@/construction/config/store'
 import type {
   DimensionalMaterial,
   GenericMaterial,
@@ -41,8 +41,8 @@ type MaterialType = Material['type']
 export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigContentProps): React.JSX.Element {
   const materials = useMaterials()
   const { addMaterial, updateMaterial, removeMaterial, duplicateMaterial } = useMaterialActions()
-  const ringBeamMethods = useRingBeamConstructionMethods()
-  const perimeterMethods = usePerimeterConstructionMethods()
+  const ringBeamAssemblies = useRingBeamAssemblies()
+  const wallAssemblies = useWallAssemblies()
 
   const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(() => {
     if (initialSelectionId && materials.some(m => m.id === initialSelectionId)) {
@@ -56,9 +56,9 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
   const usage = React.useMemo(
     () =>
       selectedMaterial
-        ? getMaterialUsage(selectedMaterial.id, ringBeamMethods, perimeterMethods)
+        ? getMaterialUsage(selectedMaterial.id, ringBeamAssemblies, wallAssemblies)
         : { isUsed: false, usedByConfigs: [] },
-    [selectedMaterial, ringBeamMethods, perimeterMethods]
+    [selectedMaterial, ringBeamAssemblies, wallAssemblies]
   )
 
   const handleAddNew = useCallback(

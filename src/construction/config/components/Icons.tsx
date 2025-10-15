@@ -1,7 +1,7 @@
 import { BoxIcon, SquareIcon, ViewVerticalIcon } from '@radix-ui/react-icons'
 import React, { type ComponentType } from 'react'
 
-import type { PerimeterConstructionConfig, SlabConstructionType } from '@/construction/config/types'
+import type { FloorAssemblyType, WallAssemblyConfig } from '@/construction/config/types'
 
 interface IconProps {
   className?: string
@@ -99,7 +99,7 @@ export function ModulesIcon({ className, width = 15, height = 15 }: IconProps): 
   )
 }
 
-export function getPerimeterConfigTypeIcon(type: PerimeterConstructionConfig['type']) {
+export function getPerimeterConfigTypeIcon(type: WallAssemblyConfig['type']) {
   switch (type) {
     case 'infill':
       return InfillIcon
@@ -160,7 +160,7 @@ export function JoistIcon({ className, width = 15, height = 15, style }: IconPro
   )
 }
 
-export function getSlabConstructionTypeIcon(type: SlabConstructionType): ComponentType<IconProps> {
+export function getFloorAssemblyTypeIcon(type: FloorAssemblyType): ComponentType<IconProps> {
   switch (type) {
     case 'monolithic':
       return BoxIcon

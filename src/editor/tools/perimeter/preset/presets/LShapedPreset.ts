@@ -73,7 +73,7 @@ export class LShapedPreset implements PerimeterPreset<LShapedPresetConfig> {
       config.width2 <= config.width1 &&
       config.length2 <= config.length1 &&
       config.thickness > 0 &&
-      config.constructionMethodId.length > 0 &&
+      config.wallAssemblyId.length > 0 &&
       [0, 90, 180, 270].includes(config.rotation)
     )
   }

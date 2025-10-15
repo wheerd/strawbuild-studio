@@ -4,11 +4,11 @@ import { Callout, Card, DataList, Flex, Grid, Heading, IconButton, Separator, Te
 import { vec2 } from 'gl-matrix'
 import { useCallback, useMemo } from 'react'
 
-import type { PerimeterConstructionMethodId, PerimeterId, PerimeterWallId } from '@/building/model/ids'
+import type { PerimeterId, PerimeterWallId, WallAssemblyId } from '@/building/model/ids'
 import { useModelActions, usePerimeterById } from '@/building/store'
 import { WallConstructionPlanModal } from '@/construction/components/WallConstructionPlan'
-import { PerimeterMethodSelectWithEdit } from '@/construction/config/components/PerimeterMethodSelectWithEdit'
-import { usePerimeterConstructionMethodById } from '@/construction/config/store'
+import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
+import { useWallAssemblyById } from '@/construction/config/store'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { pushTool } from '@/editor/tools/system/store'
@@ -26,7 +26,7 @@ interface PerimeterWallInspectorProps {
 export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallInspectorProps): React.JSX.Element {
   const {
     updatePerimeterWallThickness: updateOuterWallThickness,
-    updatePerimeterWallConstructionMethod: updateOuterWallConstructionMethod,
+    updateWallAssemblyBuilder: updateOuterWallAssembly,
     removePerimeterWall
   } = useModelActions()
 
@@ -51,10 +51,8 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
     )
   }
 
-  // Get construction method for this wall
-  const constructionMethod = wall?.constructionMethodId
-    ? usePerimeterConstructionMethodById(wall.constructionMethodId)
-    : null
+  // Get assembly for this wall
+  const wallAssembly = wall?.wallAssemblyId ? useWallAssemblyById(wall.wallAssemblyId) : null
 
   const handleFitToView = useCallback(() => {
     if (!wall) return
@@ -108,19 +106,19 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
     <Flex direction="column" gap="4">
       {/* Basic Properties */}
       <Flex direction="column" gap="3">
-        {/* Construction Method */}
+        {/* Wall Assembly */}
         <Flex align="center" justify="between" gap="3">
-          <Label.Root htmlFor="contruction-method">
+          <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Construction Method
+              Wall Assembly
             </Text>
           </Label.Root>
-          <PerimeterMethodSelectWithEdit
-            value={wall.constructionMethodId}
-            onValueChange={(value: PerimeterConstructionMethodId) => {
-              updateOuterWallConstructionMethod(perimeterId, wallId, value)
+          <WallAssemblySelectWithEdit
+            value={wall.wallAssemblyId}
+            onValueChange={(value: WallAssemblyId) => {
+              updateOuterWallAssembly(perimeterId, wallId, value)
             }}
-            placeholder="Select construction method"
+            placeholder="Select wall assembly"
             size="1"
           />
         </Flex>
@@ -160,23 +158,21 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
             <DataList.Label minWidth="88px">Outside Length</DataList.Label>
             <DataList.Value>{formatLength(wall.outsideLength)}</DataList.Value>
           </DataList.Item>
-          {constructionMethod ? (
+          {wallAssembly ? (
             <>
               <DataList.Item>
                 <DataList.Label minWidth="88px">Inside Layers Thickness</DataList.Label>
-                <DataList.Value>{formatLength(constructionMethod.layers.insideThickness)}</DataList.Value>
+                <DataList.Value>{formatLength(wallAssembly.layers.insideThickness)}</DataList.Value>
               </DataList.Item>
               <DataList.Item>
                 <DataList.Label minWidth="88px">Outside Layers Thickness</DataList.Label>
-                <DataList.Value>{formatLength(constructionMethod.layers.outsideThickness)}</DataList.Value>
+                <DataList.Value>{formatLength(wallAssembly.layers.outsideThickness)}</DataList.Value>
               </DataList.Item>
               <DataList.Item>
                 <DataList.Label minWidth="88px">Construction Thickness</DataList.Label>
                 <DataList.Value>
                   {formatLength(
-                    wall.thickness -
-                      constructionMethod.layers.outsideThickness -
-                      constructionMethod.layers.insideThickness
+                    wall.thickness - wallAssembly.layers.outsideThickness - wallAssembly.layers.insideThickness
                   )}
                 </DataList.Value>
               </DataList.Item>

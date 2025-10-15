@@ -2,23 +2,19 @@ import { useMemo } from 'react'
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 
-import type {
-  PerimeterConstructionMethodId,
-  RingBeamConstructionMethodId,
-  SlabConstructionConfigId
-} from '@/building/model/ids'
+import type { FloorAssemblyId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import {
-  DEFAULT_SLAB_CONFIG_ID,
-  createPerimeterConstructionMethodId,
-  createRingBeamConstructionMethodId,
-  createSlabConstructionConfigId
+  DEFAULT_FLOOR_ASSEMBLY_ID,
+  createFloorAssemblyId,
+  createRingBeamAssemblyId,
+  createWallAssemblyId
 } from '@/building/model/ids'
 import type {
-  MonolithicSlabConstructionConfig,
-  PerimeterConstructionConfig,
-  PerimeterConstructionMethod,
-  RingBeamConstructionMethod,
-  SlabConstructionConfig,
+  FloorAssemblyConfig,
+  MonolithicFloorAssemblyConfig,
+  RingBeamAssembly,
+  WallAssembly,
+  WallAssemblyConfig,
   WallLayersConfig
 } from '@/construction/config/types'
 import { clt180, concrete, straw, strawbale, wood120x60, wood360x60 } from '@/construction/materials/material'
@@ -26,68 +22,61 @@ import { type RingBeamConfig, validateRingBeamConfig } from '@/construction/ring
 import '@/shared/geometry'
 
 export interface ConfigState {
-  ringBeamConstructionMethods: Record<RingBeamConstructionMethodId, RingBeamConstructionMethod>
-  perimeterConstructionMethods: Record<PerimeterConstructionMethodId, PerimeterConstructionMethod>
-  slabConstructionConfigs: Record<SlabConstructionConfigId, SlabConstructionConfig>
-  defaultBaseRingBeamMethodId?: RingBeamConstructionMethodId
-  defaultTopRingBeamMethodId?: RingBeamConstructionMethodId
-  defaultPerimeterMethodId: PerimeterConstructionMethodId
-  defaultSlabConfigId: SlabConstructionConfigId
+  ringBeamAssemblies: Record<RingBeamAssemblyId, RingBeamAssembly>
+  wallAssemblies: Record<WallAssemblyId, WallAssembly>
+  floorAssemblyConfigs: Record<FloorAssemblyId, FloorAssemblyConfig>
+  defaultBaseRingBeamAssemblyId?: RingBeamAssemblyId
+  defaultTopRingBeamAssemblyId?: RingBeamAssemblyId
+  defaultWallAssemblyId: WallAssemblyId
+  defaultFloorAssemblyId: FloorAssemblyId
 }
 
 export interface ConfigActions {
-  // CRUD operations for ring beam construction methods
-  addRingBeamConstructionMethod: (name: string, config: RingBeamConfig) => RingBeamConstructionMethod
-  removeRingBeamConstructionMethod: (id: RingBeamConstructionMethodId) => void
-  updateRingBeamConstructionMethodName: (id: RingBeamConstructionMethodId, name: string) => void
-  updateRingBeamConstructionMethodConfig: (id: RingBeamConstructionMethodId, config: RingBeamConfig) => void
+  // CRUD operations for ring beam assemblies
+  addRingBeamAssembly: (name: string, config: RingBeamConfig) => RingBeamAssembly
+  removeRingBeamAssembly: (id: RingBeamAssemblyId) => void
+  updateRingBeamAssemblyName: (id: RingBeamAssemblyId, name: string) => void
+  updateRingBeamAssemblyConfig: (id: RingBeamAssemblyId, config: RingBeamConfig) => void
 
   // Queries
-  getRingBeamConstructionMethodById: (id: RingBeamConstructionMethodId) => RingBeamConstructionMethod | null
-  getAllRingBeamConstructionMethods: () => RingBeamConstructionMethod[]
+  getRingBeamAssemblyById: (id: RingBeamAssemblyId) => RingBeamAssembly | null
+  getAllRingBeamAssemblies: () => RingBeamAssembly[]
 
   // Default ring beam management
-  setDefaultBaseRingBeamMethod: (methodId: RingBeamConstructionMethodId | undefined) => void
-  setDefaultTopRingBeamMethod: (methodId: RingBeamConstructionMethodId | undefined) => void
-  getDefaultBaseRingBeamMethodId: () => RingBeamConstructionMethodId | undefined
-  getDefaultTopRingBeamMethodId: () => RingBeamConstructionMethodId | undefined
+  setDefaultBaseRingBeamAssembly: (assemblyId: RingBeamAssemblyId | undefined) => void
+  setDefaultTopRingBeamAssembly: (assemblyId: RingBeamAssemblyId | undefined) => void
+  getDefaultBaseRingBeamAssemblyId: () => RingBeamAssemblyId | undefined
+  getDefaultTopRingBeamAssemblyId: () => RingBeamAssemblyId | undefined
 
-  // CRUD operations for perimeter construction methods
-  addPerimeterConstructionMethod: (
-    name: string,
-    config: PerimeterConstructionConfig,
-    layers: WallLayersConfig
-  ) => PerimeterConstructionMethod
-  duplicatePerimeterConstructionMethod: (id: PerimeterConstructionMethodId, name: string) => PerimeterConstructionMethod
-  removePerimeterConstructionMethod: (id: PerimeterConstructionMethodId) => void
-  updatePerimeterConstructionMethodName: (id: PerimeterConstructionMethodId, name: string) => void
-  updatePerimeterConstructionMethodConfig: (
-    id: PerimeterConstructionMethodId,
-    config: PerimeterConstructionConfig
-  ) => void
-  updatePerimeterConstructionMethodLayers: (id: PerimeterConstructionMethodId, layers: WallLayersConfig) => void
+  // CRUD operations for wall assemblies
+  addWallAssembly: (name: string, config: WallAssemblyConfig, layers: WallLayersConfig) => WallAssembly
+  duplicateWallAssembly: (id: WallAssemblyId, name: string) => WallAssembly
+  removeWallAssembly: (id: WallAssemblyId) => void
+  updateWallAssemblyName: (id: WallAssemblyId, name: string) => void
+  updateWallAssemblyConfig: (id: WallAssemblyId, config: WallAssemblyConfig) => void
+  updateWallAssemblyLayers: (id: WallAssemblyId, layers: WallLayersConfig) => void
 
   // Perimeter queries
-  getPerimeterConstructionMethodById: (id: PerimeterConstructionMethodId) => PerimeterConstructionMethod | null
-  getAllPerimeterConstructionMethods: () => PerimeterConstructionMethod[]
+  getWallAssemblyById: (id: WallAssemblyId) => WallAssembly | null
+  getAllWallAssemblies: () => WallAssembly[]
 
-  // Default perimeter method management
-  setDefaultPerimeterMethod: (methodId: PerimeterConstructionMethodId | undefined) => void
-  getDefaultPerimeterMethodId: () => PerimeterConstructionMethodId
+  // Default wall assembly management
+  setDefaultWallAssembly: (assemblyId: WallAssemblyId | undefined) => void
+  getDefaultWallAssemblyId: () => WallAssemblyId
 
-  // CRUD operations for slab construction configs
-  addSlabConstructionConfig: (config: SlabConstructionConfig) => SlabConstructionConfig
-  removeSlabConstructionConfig: (id: SlabConstructionConfigId) => void
-  updateSlabConstructionConfig: (id: SlabConstructionConfigId, config: Omit<SlabConstructionConfig, 'id'>) => void
-  duplicateSlabConstructionConfig: (id: SlabConstructionConfigId, name: string) => SlabConstructionConfig
+  // CRUD operations for floor construction configs
+  addFloorAssemblyConfig: (config: FloorAssemblyConfig) => FloorAssemblyConfig
+  removeFloorAssemblyConfig: (id: FloorAssemblyId) => void
+  updateFloorAssemblyConfig: (id: FloorAssemblyId, config: Omit<FloorAssemblyConfig, 'id'>) => void
+  duplicateFloorAssemblyConfig: (id: FloorAssemblyId, name: string) => FloorAssemblyConfig
 
   // Slab queries
-  getSlabConstructionConfigById: (id: SlabConstructionConfigId) => SlabConstructionConfig | null
-  getAllSlabConstructionConfigs: () => SlabConstructionConfig[]
+  getFloorAssemblyConfigById: (id: FloorAssemblyId) => FloorAssemblyConfig | null
+  getAllFloorAssemblyConfigs: () => FloorAssemblyConfig[]
 
-  // Default slab config management
-  setDefaultSlabConfig: (configId: SlabConstructionConfigId) => void
-  getDefaultSlabConfigId: () => SlabConstructionConfigId
+  // Default floor config management
+  setDefaultFloorAssembly: (configId: FloorAssemblyId) => void
+  getDefaultFloorAssemblyId: () => FloorAssemblyId
 }
 
 export type ConfigStore = ConfigState & { actions: ConfigActions }
@@ -95,23 +84,23 @@ export type ConfigStore = ConfigState & { actions: ConfigActions }
 // Validation functions
 const validateRingBeamName = (name: string): void => {
   if (name.trim().length === 0) {
-    throw new Error('Ring beam construction method name cannot be empty')
+    throw new Error('Ring beam assembly name cannot be empty')
   }
 }
 
-const validatePerimeterMethodName = (name: string): void => {
+const validateWallAssemblyName = (name: string): void => {
   if (name.trim().length === 0) {
-    throw new Error('Perimeter construction method name cannot be empty')
+    throw new Error('Wall assembly name cannot be empty')
   }
 }
 
 const validateSlabConfigName = (name: string): void => {
   if (name.trim().length === 0) {
-    throw new Error('Slab construction config name cannot be empty')
+    throw new Error('Floor assembly name cannot be empty')
   }
 }
 
-const validateSlabConfig = (config: SlabConstructionConfig): void => {
+const validateSlabConfig = (config: FloorAssemblyConfig): void => {
   validateSlabConfigName(config.name)
 
   if (config.type === 'monolithic') {
@@ -137,9 +126,9 @@ const validateSlabConfig = (config: SlabConstructionConfig): void => {
 
 // Config validation is handled by the construction module
 
-// Default ring beam construction method using 360x60 wood
-const createDefaultRingBeamMethod = (): RingBeamConstructionMethod => ({
-  id: 'ringbeam_default' as RingBeamConstructionMethodId,
+// Default ring beam assembly using 360x60 wood
+const createDefaultRingBeamAssembly = (): RingBeamAssembly => ({
+  id: 'ringbeam_default' as RingBeamAssemblyId,
   name: 'Full 36x6cm',
   config: {
     type: 'full',
@@ -150,10 +139,10 @@ const createDefaultRingBeamMethod = (): RingBeamConstructionMethod => ({
   }
 })
 
-// Default slab construction config
-const createDefaultSlabConfigs = (): MonolithicSlabConstructionConfig[] => [
+// Default floor construction config
+const createDefaultFloorAssemblies = (): MonolithicFloorAssemblyConfig[] => [
   {
-    id: DEFAULT_SLAB_CONFIG_ID,
+    id: DEFAULT_FLOOR_ASSEMBLY_ID,
     name: 'CLT 18cm (6m)',
     type: 'monolithic',
     thickness: 180,
@@ -164,7 +153,7 @@ const createDefaultSlabConfigs = (): MonolithicSlabConstructionConfig[] => [
     }
   },
   {
-    id: 'scm_concrete_default' as SlabConstructionConfigId,
+    id: 'fa_concrete_default' as FloorAssemblyId,
     name: 'Concrete 20cm (6m)',
     type: 'monolithic',
     thickness: 200,
@@ -176,10 +165,10 @@ const createDefaultSlabConfigs = (): MonolithicSlabConstructionConfig[] => [
   }
 ]
 
-// Default perimeter construction methods
-const createDefaultPerimeterMethods = (): PerimeterConstructionMethod[] => [
+// Default wall assemblies
+const createDefaultWallAssemblies = (): WallAssembly[] => [
   {
-    id: 'pwcm_infill_default' as PerimeterConstructionMethodId,
+    id: 'wa_infill_default' as WallAssemblyId,
     name: 'Standard Infill',
     config: {
       type: 'infill',
@@ -212,7 +201,7 @@ const createDefaultPerimeterMethods = (): PerimeterConstructionMethod[] => [
     }
   },
   {
-    id: 'pwcm_strawhenge_default' as PerimeterConstructionMethodId,
+    id: 'wa_strawhenge_default' as WallAssemblyId,
     name: 'Strawhenge Module',
     config: {
       type: 'strawhenge',
@@ -266,7 +255,7 @@ const createDefaultPerimeterMethods = (): PerimeterConstructionMethod[] => [
     }
   },
   {
-    id: 'pwcm_module_default' as PerimeterConstructionMethodId,
+    id: 'wa_module_default' as WallAssemblyId,
     name: 'Default Module',
     config: {
       type: 'modules',
@@ -320,7 +309,7 @@ const createDefaultPerimeterMethods = (): PerimeterConstructionMethod[] => [
     }
   },
   {
-    id: 'pwcm_non_strawbale_default' as PerimeterConstructionMethodId,
+    id: 'wa_non_strawbale_default' as WallAssemblyId,
     name: 'Non-Strawbale Wall',
     config: {
       type: 'non-strawbale',
@@ -351,31 +340,31 @@ const useConfigStore = create<ConfigStore>()(
   persist(
     devtools(
       (set, get) => {
-        // Initialize with default methods
-        const defaultRingBeamMethod = createDefaultRingBeamMethod()
-        const defaultPerimeterMethods = createDefaultPerimeterMethods()
-        const defaultSlabConfigs = createDefaultSlabConfigs()
+        // Initialize with default assemblies
+        const defaultRingBeamAssembly = createDefaultRingBeamAssembly()
+        const defaultWallAssemblies = createDefaultWallAssemblies()
+        const defaultSlabConfigs = createDefaultFloorAssemblies()
 
         return {
-          ringBeamConstructionMethods: {
-            [defaultRingBeamMethod.id]: defaultRingBeamMethod
+          ringBeamAssemblies: {
+            [defaultRingBeamAssembly.id]: defaultRingBeamAssembly
           },
-          perimeterConstructionMethods: Object.fromEntries(defaultPerimeterMethods.map(method => [method.id, method])),
-          slabConstructionConfigs: Object.fromEntries(defaultSlabConfigs.map(config => [config.id, config])),
-          defaultBaseRingBeamMethodId: defaultRingBeamMethod.id,
-          defaultTopRingBeamMethodId: defaultRingBeamMethod.id,
-          defaultPerimeterMethodId: defaultPerimeterMethods[0].id,
-          defaultSlabConfigId: DEFAULT_SLAB_CONFIG_ID,
+          wallAssemblies: Object.fromEntries(defaultWallAssemblies.map(assembly => [assembly.id, assembly])),
+          floorAssemblyConfigs: Object.fromEntries(defaultSlabConfigs.map(config => [config.id, config])),
+          defaultBaseRingBeamAssemblyId: defaultRingBeamAssembly.id,
+          defaultTopRingBeamAssemblyId: defaultRingBeamAssembly.id,
+          defaultWallAssemblyId: defaultWallAssemblies[0].id,
+          defaultFloorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID,
 
           actions: {
             // CRUD operations
-            addRingBeamConstructionMethod: (name: string, config: RingBeamConfig) => {
+            addRingBeamAssembly: (name: string, config: RingBeamConfig) => {
               // Validate inputs
               validateRingBeamName(name)
               validateRingBeamConfig(config)
 
-              const id = createRingBeamConstructionMethodId()
-              const method: RingBeamConstructionMethod = {
+              const id = createRingBeamAssemblyId()
+              const assembly: RingBeamAssembly = {
                 id,
                 name: name.trim(),
                 config
@@ -383,111 +372,107 @@ const useConfigStore = create<ConfigStore>()(
 
               set(state => ({
                 ...state,
-                ringBeamConstructionMethods: { ...state.ringBeamConstructionMethods, [id]: method }
+                ringBeamAssemblies: { ...state.ringBeamAssemblies, [id]: assembly }
               }))
 
-              return method
+              return assembly
             },
 
-            removeRingBeamConstructionMethod: (id: RingBeamConstructionMethodId) => {
+            removeRingBeamAssembly: (id: RingBeamAssemblyId) => {
               set(state => {
-                const { [id]: _removed, ...remainingMethods } = state.ringBeamConstructionMethods
+                const { [id]: _removed, ...remainingAssemblies } = state.ringBeamAssemblies
                 return {
                   ...state,
-                  ringBeamConstructionMethods: remainingMethods,
-                  // Clear defaults if removing the default method
-                  defaultBaseRingBeamMethodId:
-                    state.defaultBaseRingBeamMethodId === id ? undefined : state.defaultBaseRingBeamMethodId,
-                  defaultTopRingBeamMethodId:
-                    state.defaultTopRingBeamMethodId === id ? undefined : state.defaultTopRingBeamMethodId
+                  ringBeamAssemblies: remainingAssemblies,
+                  // Clear defaults if removing the default assembly
+                  defaultBaseRingBeamAssemblyId:
+                    state.defaultBaseRingBeamAssemblyId === id ? undefined : state.defaultBaseRingBeamAssemblyId,
+                  defaultTopRingBeamAssemblyId:
+                    state.defaultTopRingBeamAssemblyId === id ? undefined : state.defaultTopRingBeamAssemblyId
                 }
               })
             },
 
-            updateRingBeamConstructionMethodName: (id: RingBeamConstructionMethodId, name: string) => {
+            updateRingBeamAssemblyName: (id: RingBeamAssemblyId, name: string) => {
               set(state => {
-                const method = state.ringBeamConstructionMethods[id]
-                if (method == null) return state
+                const assembly = state.ringBeamAssemblies[id]
+                if (assembly == null) return state
 
                 validateRingBeamName(name)
 
-                const updatedMethod: RingBeamConstructionMethod = {
-                  ...method,
+                const updatedAssembly: RingBeamAssembly = {
+                  ...assembly,
                   name: name.trim()
                 }
 
                 return {
                   ...state,
-                  ringBeamConstructionMethods: { ...state.ringBeamConstructionMethods, [id]: updatedMethod }
+                  ringBeamAssemblies: { ...state.ringBeamAssemblies, [id]: updatedAssembly }
                 }
               })
             },
 
-            updateRingBeamConstructionMethodConfig: (id: RingBeamConstructionMethodId, config: RingBeamConfig) => {
+            updateRingBeamAssemblyConfig: (id: RingBeamAssemblyId, config: RingBeamConfig) => {
               set(state => {
-                const method = state.ringBeamConstructionMethods[id]
-                if (method == null) return state
+                const assembly = state.ringBeamAssemblies[id]
+                if (assembly == null) return state
 
                 validateRingBeamConfig(config)
 
-                const updatedMethod: RingBeamConstructionMethod = {
-                  ...method,
+                const updatedAssembly: RingBeamAssembly = {
+                  ...assembly,
                   config
                 }
 
                 return {
                   ...state,
-                  ringBeamConstructionMethods: { ...state.ringBeamConstructionMethods, [id]: updatedMethod }
+                  ringBeamAssemblies: { ...state.ringBeamAssemblies, [id]: updatedAssembly }
                 }
               })
             },
 
             // Queries
-            getRingBeamConstructionMethodById: (id: RingBeamConstructionMethodId) => {
+            getRingBeamAssemblyById: (id: RingBeamAssemblyId) => {
               const state = get()
-              return state.ringBeamConstructionMethods[id] ?? null
+              return state.ringBeamAssemblies[id] ?? null
             },
 
-            getAllRingBeamConstructionMethods: () => {
+            getAllRingBeamAssemblies: () => {
               const state = get()
-              return Object.values(state.ringBeamConstructionMethods)
+              return Object.values(state.ringBeamAssemblies)
             },
 
             // Default ring beam management
-            setDefaultBaseRingBeamMethod: (methodId: RingBeamConstructionMethodId | undefined) => {
+            setDefaultBaseRingBeamAssembly: (assemblyId: RingBeamAssemblyId | undefined) => {
               set(state => ({
                 ...state,
-                defaultBaseRingBeamMethodId: methodId
+                defaultBaseRingBeamAssemblyId: assemblyId
               }))
             },
 
-            setDefaultTopRingBeamMethod: (methodId: RingBeamConstructionMethodId | undefined) => {
+            setDefaultTopRingBeamAssembly: (assemblyId: RingBeamAssemblyId | undefined) => {
               set(state => ({
                 ...state,
-                defaultTopRingBeamMethodId: methodId
+                defaultTopRingBeamAssemblyId: assemblyId
               }))
             },
 
-            getDefaultBaseRingBeamMethodId: () => {
+            getDefaultBaseRingBeamAssemblyId: () => {
               const state = get()
-              return state.defaultBaseRingBeamMethodId
+              return state.defaultBaseRingBeamAssemblyId
             },
 
-            getDefaultTopRingBeamMethodId: () => {
+            getDefaultTopRingBeamAssemblyId: () => {
               const state = get()
-              return state.defaultTopRingBeamMethodId
+              return state.defaultTopRingBeamAssemblyId
             },
 
-            // Perimeter construction method CRUD operations
-            addPerimeterConstructionMethod: (
-              name: string,
-              config: PerimeterConstructionConfig,
-              layers: WallLayersConfig
-            ) => {
-              validatePerimeterMethodName(name)
+            // Wall assembly CRUD operations
+            addWallAssembly: (name: string, config: WallAssemblyConfig, layers: WallLayersConfig) => {
+              validateWallAssemblyName(name)
 
-              const id = createPerimeterConstructionMethodId()
-              const method: PerimeterConstructionMethod = {
+              const id = createWallAssemblyId()
+              const assembly: WallAssembly = {
                 id,
                 name: name.trim(),
                 config,
@@ -496,23 +481,23 @@ const useConfigStore = create<ConfigStore>()(
 
               set(state => ({
                 ...state,
-                perimeterConstructionMethods: { ...state.perimeterConstructionMethods, [id]: method }
+                wallAssemblies: { ...state.wallAssemblies, [id]: assembly }
               }))
 
-              return method
+              return assembly
             },
 
-            duplicatePerimeterConstructionMethod: (id: PerimeterConstructionMethodId, name: string) => {
+            duplicateWallAssembly: (id: WallAssemblyId, name: string) => {
               const state = get()
-              const original = state.perimeterConstructionMethods[id]
+              const original = state.wallAssemblies[id]
               if (original == null) {
-                throw new Error(`Perimeter construction method with id ${id} not found`)
+                throw new Error(`Wall assembly with id ${id} not found`)
               }
 
-              validatePerimeterMethodName(name)
+              validateWallAssemblyName(name)
 
-              const newId = createPerimeterConstructionMethodId()
-              const duplicated: PerimeterConstructionMethod = {
+              const newId = createWallAssemblyId()
+              const duplicated: WallAssembly = {
                 id: newId,
                 name: name.trim(),
                 config: original.config,
@@ -521,208 +506,201 @@ const useConfigStore = create<ConfigStore>()(
 
               set(state => ({
                 ...state,
-                perimeterConstructionMethods: { ...state.perimeterConstructionMethods, [newId]: duplicated }
+                wallAssemblies: { ...state.wallAssemblies, [newId]: duplicated }
               }))
 
               return duplicated
             },
 
-            removePerimeterConstructionMethod: (id: PerimeterConstructionMethodId) => {
+            removeWallAssembly: (id: WallAssemblyId) => {
               set(state => {
-                const { [id]: _removed, ...remainingMethods } = state.perimeterConstructionMethods
+                const { [id]: _removed, ...remainingAssemblies } = state.wallAssemblies
                 return {
                   ...state,
-                  perimeterConstructionMethods: remainingMethods,
-                  defaultPerimeterMethodId:
-                    state.defaultPerimeterMethodId === id ? undefined : state.defaultPerimeterMethodId
+                  wallAssemblies: remainingAssemblies,
+                  defaultWallAssemblyId: state.defaultWallAssemblyId === id ? undefined : state.defaultWallAssemblyId
                 }
               })
             },
 
-            updatePerimeterConstructionMethodName: (id: PerimeterConstructionMethodId, name: string) => {
+            updateWallAssemblyName: (id: WallAssemblyId, name: string) => {
               set(state => {
-                const method = state.perimeterConstructionMethods[id]
-                if (method == null) return state
+                const assembly = state.wallAssemblies[id]
+                if (assembly == null) return state
 
-                validatePerimeterMethodName(name)
+                validateWallAssemblyName(name)
 
-                const updatedMethod: PerimeterConstructionMethod = {
-                  ...method,
+                const updatedAssembly: WallAssembly = {
+                  ...assembly,
                   name: name.trim()
                 }
 
                 return {
                   ...state,
-                  perimeterConstructionMethods: { ...state.perimeterConstructionMethods, [id]: updatedMethod }
+                  wallAssemblies: { ...state.wallAssemblies, [id]: updatedAssembly }
                 }
               })
             },
 
-            updatePerimeterConstructionMethodConfig: (
-              id: PerimeterConstructionMethodId,
-              config: PerimeterConstructionConfig
-            ) => {
+            updateWallAssemblyConfig: (id: WallAssemblyId, config: WallAssemblyConfig) => {
               set(state => {
-                const method = state.perimeterConstructionMethods[id]
-                if (method == null) return state
+                const assembly = state.wallAssemblies[id]
+                if (assembly == null) return state
 
-                const updatedMethod: PerimeterConstructionMethod = {
-                  ...method,
+                const updatedAssembly: WallAssembly = {
+                  ...assembly,
                   config
                 }
 
                 return {
                   ...state,
-                  perimeterConstructionMethods: { ...state.perimeterConstructionMethods, [id]: updatedMethod }
+                  wallAssemblies: { ...state.wallAssemblies, [id]: updatedAssembly }
                 }
               })
             },
 
-            updatePerimeterConstructionMethodLayers: (id: PerimeterConstructionMethodId, layers: WallLayersConfig) => {
+            updateWallAssemblyLayers: (id: WallAssemblyId, layers: WallLayersConfig) => {
               set(state => {
-                const method = state.perimeterConstructionMethods[id]
-                if (method == null) return state
+                const assembly = state.wallAssemblies[id]
+                if (assembly == null) return state
 
-                const updatedMethod: PerimeterConstructionMethod = {
-                  ...method,
+                const updatedAssembly: WallAssembly = {
+                  ...assembly,
                   layers
                 }
 
                 return {
                   ...state,
-                  perimeterConstructionMethods: { ...state.perimeterConstructionMethods, [id]: updatedMethod }
+                  wallAssemblies: { ...state.wallAssemblies, [id]: updatedAssembly }
                 }
               })
             },
 
             // Perimeter queries
-            getPerimeterConstructionMethodById: (id: PerimeterConstructionMethodId) => {
+            getWallAssemblyById: (id: WallAssemblyId) => {
               const state = get()
-              return state.perimeterConstructionMethods[id] ?? null
+              return state.wallAssemblies[id] ?? null
             },
 
-            getAllPerimeterConstructionMethods: () => {
+            getAllWallAssemblies: () => {
               const state = get()
-              return Object.values(state.perimeterConstructionMethods)
+              return Object.values(state.wallAssemblies)
             },
 
-            // Default perimeter method management
-            setDefaultPerimeterMethod: (methodId: PerimeterConstructionMethodId | undefined) => {
+            // Default wall assembly management
+            setDefaultWallAssembly: (assemblyId: WallAssemblyId | undefined) => {
               set(state => ({
                 ...state,
-                defaultPerimeterMethodId: methodId
+                defaultWallAssemblyId: assemblyId
               }))
             },
 
-            getDefaultPerimeterMethodId: () => {
+            getDefaultWallAssemblyId: () => {
               const state = get()
-              return state.defaultPerimeterMethodId
+              return state.defaultWallAssemblyId
             },
 
             // Slab construction config CRUD operations
-            addSlabConstructionConfig: (config: SlabConstructionConfig) => {
+            addFloorAssemblyConfig: (config: FloorAssemblyConfig) => {
               validateSlabConfig(config)
 
               set(state => ({
                 ...state,
-                slabConstructionConfigs: { ...state.slabConstructionConfigs, [config.id]: config }
+                floorAssemblyConfigs: { ...state.floorAssemblyConfigs, [config.id]: config }
               }))
 
               return config
             },
 
-            removeSlabConstructionConfig: (id: SlabConstructionConfigId) => {
+            removeFloorAssemblyConfig: (id: FloorAssemblyId) => {
               set(state => {
-                const { slabConstructionConfigs } = state
+                const { floorAssemblyConfigs } = state
 
                 // Prevent removing the last config
-                if (Object.keys(slabConstructionConfigs).length === 1) {
-                  throw new Error('Cannot remove the last slab construction config')
+                if (Object.keys(floorAssemblyConfigs).length === 1) {
+                  throw new Error('Cannot remove the last floor assembly')
                 }
 
-                const { [id]: _removed, ...remainingConfigs } = slabConstructionConfigs
+                const { [id]: _removed, ...remainingConfigs } = floorAssemblyConfigs
 
                 // If removing the default, set first remaining config as default
-                let newDefaultId = state.defaultSlabConfigId
-                if (state.defaultSlabConfigId === id) {
-                  newDefaultId = Object.keys(remainingConfigs)[0] as SlabConstructionConfigId
+                let newDefaultId = state.defaultFloorAssemblyId
+                if (state.defaultFloorAssemblyId === id) {
+                  newDefaultId = Object.keys(remainingConfigs)[0] as FloorAssemblyId
                 }
 
                 return {
                   ...state,
-                  slabConstructionConfigs: remainingConfigs,
-                  defaultSlabConfigId: newDefaultId
+                  floorAssemblyConfigs: remainingConfigs,
+                  defaultFloorAssemblyId: newDefaultId
                 }
               })
             },
 
-            updateSlabConstructionConfig: (
-              id: SlabConstructionConfigId,
-              updates: Omit<SlabConstructionConfig, 'id'>
-            ) => {
+            updateFloorAssemblyConfig: (id: FloorAssemblyId, updates: Omit<FloorAssemblyConfig, 'id'>) => {
               set(state => {
-                const config = state.slabConstructionConfigs[id]
+                const config = state.floorAssemblyConfigs[id]
                 if (config == null) return state
 
-                const updatedConfig = { ...config, ...updates, id } as SlabConstructionConfig
+                const updatedConfig = { ...config, ...updates, id } as FloorAssemblyConfig
                 validateSlabConfig(updatedConfig)
 
                 return {
                   ...state,
-                  slabConstructionConfigs: { ...state.slabConstructionConfigs, [id]: updatedConfig }
+                  floorAssemblyConfigs: { ...state.floorAssemblyConfigs, [id]: updatedConfig }
                 }
               })
             },
 
-            duplicateSlabConstructionConfig: (id: SlabConstructionConfigId, name: string) => {
+            duplicateFloorAssemblyConfig: (id: FloorAssemblyId, name: string) => {
               const state = get()
-              const original = state.slabConstructionConfigs[id]
+              const original = state.floorAssemblyConfigs[id]
               if (original == null) {
-                throw new Error(`Slab construction config with id ${id} not found`)
+                throw new Error(`Floor assembly with id ${id} not found`)
               }
 
               validateSlabConfigName(name)
 
-              const newId = createSlabConstructionConfigId()
-              const duplicated = { ...original, id: newId, name: name.trim() } as SlabConstructionConfig
+              const newId = createFloorAssemblyId()
+              const duplicated = { ...original, id: newId, name: name.trim() } as FloorAssemblyConfig
 
               set(state => ({
                 ...state,
-                slabConstructionConfigs: { ...state.slabConstructionConfigs, [newId]: duplicated }
+                floorAssemblyConfigs: { ...state.floorAssemblyConfigs, [newId]: duplicated }
               }))
 
               return duplicated
             },
 
             // Slab queries
-            getSlabConstructionConfigById: (id: SlabConstructionConfigId) => {
+            getFloorAssemblyConfigById: (id: FloorAssemblyId) => {
               const state = get()
-              return state.slabConstructionConfigs[id] ?? null
+              return state.floorAssemblyConfigs[id] ?? null
             },
 
-            getAllSlabConstructionConfigs: () => {
+            getAllFloorAssemblyConfigs: () => {
               const state = get()
-              return Object.values(state.slabConstructionConfigs)
+              return Object.values(state.floorAssemblyConfigs)
             },
 
-            // Default slab config management
-            setDefaultSlabConfig: (configId: SlabConstructionConfigId) => {
+            // Default floor config management
+            setDefaultFloorAssembly: (configId: FloorAssemblyId) => {
               set(state => {
                 // Validate that the config exists
-                if (state.slabConstructionConfigs[configId] == null) {
-                  throw new Error(`Slab construction config with id ${configId} not found`)
+                if (state.floorAssemblyConfigs[configId] == null) {
+                  throw new Error(`Floor assembly with id ${configId} not found`)
                 }
 
                 return {
                   ...state,
-                  defaultSlabConfigId: configId
+                  defaultFloorAssemblyId: configId
                 }
               })
             },
 
-            getDefaultSlabConfigId: () => {
+            getDefaultFloorAssemblyId: () => {
               const state = get()
-              return state.defaultSlabConfigId
+              return state.defaultFloorAssemblyId
             }
           }
         }
@@ -732,58 +710,56 @@ const useConfigStore = create<ConfigStore>()(
     {
       name: 'strawbaler-config',
       partialize: state => ({
-        ringBeamConstructionMethods: state.ringBeamConstructionMethods,
-        perimeterConstructionMethods: state.perimeterConstructionMethods,
-        slabConstructionConfigs: state.slabConstructionConfigs,
-        defaultBaseRingBeamMethodId: state.defaultBaseRingBeamMethodId,
-        defaultTopRingBeamMethodId: state.defaultTopRingBeamMethodId,
-        defaultPerimeterMethodId: state.defaultPerimeterMethodId,
-        defaultSlabConfigId: state.defaultSlabConfigId
+        ringBeamAssemblies: state.ringBeamAssemblies,
+        wallAssemblies: state.wallAssemblies,
+        floorAssemblyConfigs: state.floorAssemblyConfigs,
+        defaultBaseRingBeamAssemblyId: state.defaultBaseRingBeamAssemblyId,
+        defaultTopRingBeamAssemblyId: state.defaultTopRingBeamAssemblyId,
+        defaultWallAssemblyId: state.defaultWallAssemblyId,
+        defaultFloorAssemblyId: state.defaultFloorAssemblyId
       })
     }
   )
 )
 
 // Selector hooks for easier usage
-export const useRingBeamConstructionMethods = (): RingBeamConstructionMethod[] => {
-  const ringBeamMethods = useConfigStore(state => state.ringBeamConstructionMethods)
-  return useMemo(() => Object.values(ringBeamMethods), [ringBeamMethods])
+export const useRingBeamAssemblies = (): RingBeamAssembly[] => {
+  const ringBeamAssemblies = useConfigStore(state => state.ringBeamAssemblies)
+  return useMemo(() => Object.values(ringBeamAssemblies), [ringBeamAssemblies])
 }
 
-export const useRingBeamConstructionMethodById = (
-  id: RingBeamConstructionMethodId
-): RingBeamConstructionMethod | null => useConfigStore(state => state.actions.getRingBeamConstructionMethodById(id))
+export const useRingBeamAssemblyById = (id: RingBeamAssemblyId): RingBeamAssembly | null =>
+  useConfigStore(state => state.actions.getRingBeamAssemblyById(id))
 
-export const useDefaultBaseRingBeamMethodId = (): RingBeamConstructionMethodId | undefined =>
-  useConfigStore(state => state.actions.getDefaultBaseRingBeamMethodId())
+export const useDefaultBaseRingBeamAssemblyId = (): RingBeamAssemblyId | undefined =>
+  useConfigStore(state => state.actions.getDefaultBaseRingBeamAssemblyId())
 
-export const useDefaultTopRingBeamMethodId = (): RingBeamConstructionMethodId | undefined =>
-  useConfigStore(state => state.actions.getDefaultTopRingBeamMethodId())
+export const useDefaultTopRingBeamAssemblyId = (): RingBeamAssemblyId | undefined =>
+  useConfigStore(state => state.actions.getDefaultTopRingBeamAssemblyId())
 
-// Perimeter construction method selector hooks
-export const usePerimeterConstructionMethods = (): PerimeterConstructionMethod[] => {
-  const perimeterMethods = useConfigStore(state => state.perimeterConstructionMethods)
-  return useMemo(() => Object.values(perimeterMethods), [perimeterMethods])
+// Wall assembly selector hooks
+export const useWallAssemblies = (): WallAssembly[] => {
+  const wallAssemblies = useConfigStore(state => state.wallAssemblies)
+  return useMemo(() => Object.values(wallAssemblies), [wallAssemblies])
 }
 
-export const usePerimeterConstructionMethodById = (
-  id: PerimeterConstructionMethodId
-): PerimeterConstructionMethod | null => useConfigStore(state => state.actions.getPerimeterConstructionMethodById(id))
+export const useWallAssemblyById = (id: WallAssemblyId): WallAssembly | null =>
+  useConfigStore(state => state.actions.getWallAssemblyById(id))
 
-export const useDefaultPerimeterMethodId = (): PerimeterConstructionMethodId | undefined =>
-  useConfigStore(state => state.actions.getDefaultPerimeterMethodId())
+export const useDefaultWallAssemblyId = (): WallAssemblyId | undefined =>
+  useConfigStore(state => state.actions.getDefaultWallAssemblyId())
 
 // Slab construction config selector hooks
-export const useSlabConstructionConfigs = (): SlabConstructionConfig[] => {
-  const slabConfigs = useConfigStore(state => state.slabConstructionConfigs)
-  return useMemo(() => Object.values(slabConfigs), [slabConfigs])
+export const useFloorAssemblyConfigs = (): FloorAssemblyConfig[] => {
+  const floorAssemblyConfigs = useConfigStore(state => state.floorAssemblyConfigs)
+  return useMemo(() => Object.values(floorAssemblyConfigs), [floorAssemblyConfigs])
 }
 
-export const useSlabConstructionConfigById = (id: SlabConstructionConfigId): SlabConstructionConfig | null =>
-  useConfigStore(state => state.actions.getSlabConstructionConfigById(id))
+export const useFloorAssemblyConfigById = (id: FloorAssemblyId): FloorAssemblyConfig | null =>
+  useConfigStore(state => state.actions.getFloorAssemblyConfigById(id))
 
-export const useDefaultSlabConfigId = (): SlabConstructionConfigId =>
-  useConfigStore(state => state.actions.getDefaultSlabConfigId())
+export const useDefaultFloorAssemblyId = (): FloorAssemblyId =>
+  useConfigStore(state => state.actions.getDefaultFloorAssemblyId())
 
 export const useConfigActions = (): ConfigActions => useConfigStore(state => state.actions)
 
@@ -794,43 +770,43 @@ export const getConfigActions = (): ConfigActions => useConfigStore.getState().a
 export const getConfigState = () => {
   const state = useConfigStore.getState()
   return {
-    ringBeamConstructionMethods: state.ringBeamConstructionMethods,
-    perimeterConstructionMethods: state.perimeterConstructionMethods,
-    slabConstructionConfigs: state.slabConstructionConfigs,
-    defaultBaseRingBeamMethodId: state.defaultBaseRingBeamMethodId,
-    defaultTopRingBeamMethodId: state.defaultTopRingBeamMethodId,
-    defaultPerimeterMethodId: state.defaultPerimeterMethodId,
-    defaultSlabConfigId: state.defaultSlabConfigId
+    ringBeamAssemblies: state.ringBeamAssemblies,
+    wallAssemblies: state.wallAssemblies,
+    floorAssemblyConfigs: state.floorAssemblyConfigs,
+    defaultBaseRingBeamAssemblyId: state.defaultBaseRingBeamAssemblyId,
+    defaultTopRingBeamAssemblyId: state.defaultTopRingBeamAssemblyId,
+    defaultWallAssemblyId: state.defaultWallAssemblyId,
+    defaultFloorAssemblyId: state.defaultFloorAssemblyId
   }
 }
 
 // Import config state from persistence
 export const setConfigState = (data: {
-  ringBeamConstructionMethods: Record<RingBeamConstructionMethodId, RingBeamConstructionMethod>
-  perimeterConstructionMethods: Record<PerimeterConstructionMethodId, PerimeterConstructionMethod>
-  slabConstructionConfigs?: Record<SlabConstructionConfigId, SlabConstructionConfig>
-  defaultBaseRingBeamMethodId?: RingBeamConstructionMethodId
-  defaultTopRingBeamMethodId?: RingBeamConstructionMethodId
-  defaultPerimeterMethodId: PerimeterConstructionMethodId
-  defaultSlabConfigId?: SlabConstructionConfigId
+  ringBeamAssemblies: Record<RingBeamAssemblyId, RingBeamAssembly>
+  wallAssemblies: Record<WallAssemblyId, WallAssembly>
+  floorAssemblyConfigs?: Record<FloorAssemblyId, FloorAssemblyConfig>
+  defaultBaseRingBeamAssemblyId?: RingBeamAssemblyId
+  defaultTopRingBeamAssemblyId?: RingBeamAssemblyId
+  defaultWallAssemblyId: WallAssemblyId
+  defaultFloorAssemblyId?: FloorAssemblyId
 }) => {
   const state = useConfigStore.getState()
 
   useConfigStore.setState({
-    ringBeamConstructionMethods: data.ringBeamConstructionMethods,
-    perimeterConstructionMethods: data.perimeterConstructionMethods,
-    slabConstructionConfigs: data.slabConstructionConfigs ?? state.slabConstructionConfigs,
-    defaultBaseRingBeamMethodId: data.defaultBaseRingBeamMethodId,
-    defaultTopRingBeamMethodId: data.defaultTopRingBeamMethodId,
-    defaultPerimeterMethodId: data.defaultPerimeterMethodId,
-    defaultSlabConfigId: data.defaultSlabConfigId ?? state.defaultSlabConfigId
+    ringBeamAssemblies: data.ringBeamAssemblies,
+    wallAssemblies: data.wallAssemblies,
+    floorAssemblyConfigs: data.floorAssemblyConfigs ?? state.floorAssemblyConfigs,
+    defaultBaseRingBeamAssemblyId: data.defaultBaseRingBeamAssemblyId,
+    defaultTopRingBeamAssemblyId: data.defaultTopRingBeamAssemblyId,
+    defaultWallAssemblyId: data.defaultWallAssemblyId,
+    defaultFloorAssemblyId: data.defaultFloorAssemblyId ?? state.defaultFloorAssemblyId
   })
 }
 
 // Only for the tests
-export const _clearAllMethods = () =>
+export const _clearAllAssemblies = () =>
   useConfigStore.setState({
-    ringBeamConstructionMethods: {},
-    perimeterConstructionMethods: {},
-    slabConstructionConfigs: {}
+    ringBeamAssemblies: {},
+    wallAssemblies: {},
+    floorAssemblyConfigs: {}
   })

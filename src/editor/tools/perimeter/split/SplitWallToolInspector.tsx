@@ -20,7 +20,7 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
           </Callout.Icon>
           <Callout.Text>
             <Text size="1">
-              Split walls to create segments with different construction methods or to position openings precisely.
+              Split walls to create segments with different wall assemblies or to position openings precisely.
             </Text>
           </Callout.Text>
         </Callout.Root>

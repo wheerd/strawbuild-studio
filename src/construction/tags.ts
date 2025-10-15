@@ -205,9 +205,9 @@ export const TAG_MODULE: Tag = {
   category: 'construction'
 }
 
-export const TAG_SLAB: Tag = {
-  id: 'construction_slab',
-  label: 'Slab',
+export const TAG_FLOOR: Tag = {
+  id: 'construction_floor',
+  label: 'Floor',
   category: 'construction'
 }
 

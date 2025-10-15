@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { OpeningId, PerimeterId, PerimeterWallId } from '@/building/model/ids'
 import type { OpeningType } from '@/building/model/model'
 import { useModelActions, usePerimeterById } from '@/building/store'
-import { usePerimeterConstructionMethodById } from '@/construction/config/store'
+import { useWallAssemblyById } from '@/construction/config/store'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
@@ -50,8 +50,8 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
     return wall?.openings.find(o => o.id === openingId)
   }, [wall, openingId])
 
-  // Get construction method for padding config
-  const constructionMethod = wall?.constructionMethodId && usePerimeterConstructionMethodById(wall.constructionMethodId)
+  // Get assembly for padding config
+  const wallAssembly = wall?.wallAssemblyId && useWallAssemblyById(wall.wallAssemblyId)
   const viewportActions = useViewportActions()
 
   // Preview state
@@ -69,8 +69,8 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
   // Helper functions for dimension conversion
   const getDisplayValue = useCallback(
     (fittingValue: number, type: 'width' | 'height' | 'sillHeight' | 'topHeight') => {
-      if (!constructionMethod) return fittingValue
-      const padding = constructionMethod.config.openings.padding
+      if (!wallAssembly) return fittingValue
+      const padding = wallAssembly.config.openings.padding
 
       if (dimensionInputMode === 'fitting') {
         return fittingValue
@@ -88,13 +88,13 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
         }
       }
     },
-    [constructionMethod, dimensionInputMode]
+    [wallAssembly, dimensionInputMode]
   )
 
   const convertToFittingValue = useCallback(
     (inputValue: number, type: 'width' | 'height' | 'sillHeight' | 'topHeight') => {
-      if (!constructionMethod) return inputValue
-      const padding = constructionMethod.config.openings.padding
+      if (!wallAssembly) return inputValue
+      const padding = wallAssembly.config.openings.padding
 
       if (dimensionInputMode === 'fitting') {
         return inputValue
@@ -112,7 +112,7 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
         }
       }
     },
-    [constructionMethod, dimensionInputMode]
+    [wallAssembly, dimensionInputMode]
   )
 
   // If opening not found, show error
@@ -179,12 +179,12 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
   return (
     <Flex direction="column" gap="4">
       {/* Preview */}
-      {opening && storey && constructionMethod && (
+      {opening && storey && wallAssembly && (
         <Flex direction="column" align="center">
           <OpeningPreview
             opening={opening}
             wallHeight={storey.height}
-            padding={constructionMethod.config.openings.padding}
+            padding={wallAssembly.config.openings.padding}
             highlightMode={highlightMode}
             focusedField={focusedField}
           />
@@ -265,8 +265,8 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
             Padding
           </Text>
           <Text size="1" color="gray">
-            {constructionMethod
-              ? `${formatLength(constructionMethod?.config.openings.padding)} (configured by ${constructionMethod.name})`
+            {wallAssembly
+              ? `${formatLength(wallAssembly?.config.openings.padding)} (configured by ${wallAssembly.name})`
               : '???'}
           </Text>
         </Flex>

@@ -1,8 +1,4 @@
-import type {
-  PerimeterConstructionMethodId,
-  RingBeamConstructionMethodId,
-  SlabConstructionConfigId
-} from '@/building/model/ids'
+import type { FloorAssemblyId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import type { MaterialId } from '@/construction/materials/material'
 import type { RingBeamConfig } from '@/construction/ringBeams/ringBeams'
 import type {
@@ -14,7 +10,7 @@ import type { ModulesConstructionConfig } from '@/construction/walls/strawhenge/
 import type { Length } from '@/shared/geometry'
 
 /*
-  This is what the wall + slab construction looks like from the side:
+  This is what the wall + floor construction looks like from the side:
 
   |   |       Slab Construction                           
   |   +--------------+ . . . . . . . . . . . . . . . . . .  
@@ -60,8 +56,8 @@ e | y +--------------+ s | Floor top layers                 }
   |   |              | e |                 .
 */
 
-export interface RingBeamConstructionMethod {
-  id: RingBeamConstructionMethodId
+export interface RingBeamAssembly {
+  id: RingBeamAssemblyId
   name: string
   config: RingBeamConfig
 }
@@ -78,25 +74,25 @@ export interface WallLayersConfig {
   outsideThickness: Length
 }
 
-export type PerimeterConstructionConfig =
+export type WallAssemblyConfig =
   | InfillConstructionConfig
   | StrawhengeConstructionConfig
   | ModulesConstructionConfig
   | NonStrawbaleConfig
 
-export interface PerimeterConstructionMethod {
-  id: PerimeterConstructionMethodId
+export interface WallAssembly {
+  id: WallAssemblyId
   name: string
-  config: PerimeterConstructionConfig
+  config: WallAssemblyConfig
   layers: WallLayersConfig
 }
 
-export type SlabConstructionType = 'monolithic' | 'joist'
+export type FloorAssemblyType = 'monolithic' | 'joist'
 
-export interface SlabBaseConstructionConfig {
-  id: SlabConstructionConfigId
+export interface FloorAssemblyBaseConfig {
+  id: FloorAssemblyId
   name: string
-  type: SlabConstructionType
+  type: FloorAssemblyType
   layers: FloorLayersConfig
 }
 
@@ -105,13 +101,13 @@ export interface FloorLayersConfig {
   topThickness: Length
 }
 
-export interface MonolithicSlabConstructionConfig extends SlabBaseConstructionConfig {
+export interface MonolithicFloorAssemblyConfig extends FloorAssemblyBaseConfig {
   type: 'monolithic'
   thickness: Length
   material: MaterialId
 }
 
-export interface JoistSlabConstructionConfig extends SlabBaseConstructionConfig {
+export interface JoistFloorAssemblyConfig extends FloorAssemblyBaseConfig {
   type: 'joist'
   joistThickness: Length
   joistHeight: Length
@@ -121,4 +117,4 @@ export interface JoistSlabConstructionConfig extends SlabBaseConstructionConfig 
   subfloorMaterial: MaterialId
 }
 
-export type SlabConstructionConfig = MonolithicSlabConstructionConfig | JoistSlabConstructionConfig
+export type FloorAssemblyConfig = MonolithicFloorAssemblyConfig | JoistFloorAssemblyConfig

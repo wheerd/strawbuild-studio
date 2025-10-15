@@ -1,48 +1,48 @@
 import { Flex, Select, Text } from '@radix-ui/themes'
 import React from 'react'
 
-import type { SlabConstructionConfigId } from '@/building/model/ids'
-import { useSlabConstructionConfigs } from '@/construction/config/store'
+import type { FloorAssemblyId } from '@/building/model/ids'
+import { useFloorAssemblyConfigs } from '@/construction/config/store'
 
-import { getSlabConstructionTypeIcon } from './Icons'
+import { getFloorAssemblyTypeIcon } from './Icons'
 
-export interface SlabConfigSelectProps {
-  value: SlabConstructionConfigId | null | undefined
-  onValueChange: (configId: SlabConstructionConfigId) => void
+export interface FloorAssemblySelectProps {
+  value: FloorAssemblyId | null | undefined
+  onValueChange: (configId: FloorAssemblyId) => void
   placeholder?: string
   size?: '1' | '2' | '3'
   disabled?: boolean
   showDefaultIndicator?: boolean
-  defaultConfigId?: SlabConstructionConfigId
+  defaultConfigId?: FloorAssemblyId
 }
 
-export function SlabConfigSelect({
+export function FloorAssemblySelect({
   value,
   onValueChange,
-  placeholder = 'Select slab configuration...',
+  placeholder = 'Select floor assembly...',
   size = '2',
   disabled = false,
   showDefaultIndicator = false,
   defaultConfigId
-}: SlabConfigSelectProps): React.JSX.Element {
-  const slabConfigs = useSlabConstructionConfigs()
+}: FloorAssemblySelectProps): React.JSX.Element {
+  const floorAssemblyConfigs = useFloorAssemblyConfigs()
 
   return (
     <Select.Root
       value={value ?? ''}
-      onValueChange={val => onValueChange(val as SlabConstructionConfigId)}
+      onValueChange={val => onValueChange(val as FloorAssemblyId)}
       disabled={disabled}
       size={size}
     >
       <Select.Trigger placeholder={placeholder} />
       <Select.Content>
-        {slabConfigs.length === 0 ? (
+        {floorAssemblyConfigs.length === 0 ? (
           <Select.Item value="" disabled>
-            <Text color="gray">No slab configurations available</Text>
+            <Text color="gray">No floor assemblies available</Text>
           </Select.Item>
         ) : (
-          slabConfigs.map(config => {
-            const Icon = getSlabConstructionTypeIcon(config.type)
+          floorAssemblyConfigs.map(config => {
+            const Icon = getFloorAssemblyTypeIcon(config.type)
             const isDefault = showDefaultIndicator && config.id === defaultConfigId
             return (
               <Select.Item key={config.id} value={config.id}>

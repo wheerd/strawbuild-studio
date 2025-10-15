@@ -31,19 +31,19 @@ export function getWallContext(wall: PerimeterWall, perimeter: Perimeter): WallC
 
 export function calculateWallCornerInfo(wall: PerimeterWall, context: WallContext): WallCornerInfo {
   const { startCorner, endCorner, previousWall, nextWall } = context
-  const { getPerimeterConstructionMethodById } = getConfigActions()
+  const { getWallAssemblyById } = getConfigActions()
 
-  const previousMethod = getPerimeterConstructionMethodById(previousWall.constructionMethodId)
-  const nextMethod = getPerimeterConstructionMethodById(nextWall.constructionMethodId)
+  const previousAssembly = getWallAssemblyById(previousWall.wallAssemblyId)
+  const nextAssembly = getWallAssemblyById(nextWall.wallAssemblyId)
 
-  if (!previousMethod || !nextMethod) {
-    throw new Error('Invalid wall construction method')
+  if (!previousAssembly || !nextAssembly) {
+    throw new Error('Invalid wall assembly')
   }
 
   const outerStartExtension =
-    vec2.distance(wall.outsideLine.start, startCorner.outsidePoint) - previousMethod.layers.outsideThickness
+    vec2.distance(wall.outsideLine.start, startCorner.outsidePoint) - previousAssembly.layers.outsideThickness
   const innerStartExtension =
-    vec2.distance(wall.insideLine.start, startCorner.insidePoint) - previousMethod.layers.insideThickness
+    vec2.distance(wall.insideLine.start, startCorner.insidePoint) - previousAssembly.layers.insideThickness
   const startExtended = startCorner.constructedByWall === 'next'
   const startExtension = startCorner.exteriorAngle === 180 ? 0 : Math.max(outerStartExtension, innerStartExtension)
   const appliedStartExtension =
@@ -52,13 +52,13 @@ export function calculateWallCornerInfo(wall: PerimeterWall, context: WallContex
       : startExtended
         ? startExtension
         : startExtension === outerStartExtension
-          ? previousMethod.layers.insideThickness
-          : previousMethod.layers.outsideThickness
+          ? previousAssembly.layers.insideThickness
+          : previousAssembly.layers.outsideThickness
 
   const outerEndExtension =
-    vec2.distance(wall.outsideLine.end, endCorner.outsidePoint) - nextMethod.layers.outsideThickness
+    vec2.distance(wall.outsideLine.end, endCorner.outsidePoint) - nextAssembly.layers.outsideThickness
   const innerEndExtension =
-    vec2.distance(wall.insideLine.end, endCorner.insidePoint) - nextMethod.layers.insideThickness
+    vec2.distance(wall.insideLine.end, endCorner.insidePoint) - nextAssembly.layers.insideThickness
   const endExtended = endCorner.constructedByWall === 'previous'
   const endExtension = endCorner.exteriorAngle === 180 ? 0 : Math.max(outerEndExtension, innerEndExtension)
   const appliedEndExtension =
@@ -67,8 +67,8 @@ export function calculateWallCornerInfo(wall: PerimeterWall, context: WallContex
       : endExtended
         ? endExtension
         : endExtension === outerEndExtension
-          ? nextMethod.layers.insideThickness
-          : nextMethod.layers.outsideThickness
+          ? nextAssembly.layers.insideThickness
+          : nextAssembly.layers.outsideThickness
 
   const constructionLength = wall.wallLength + appliedStartExtension + appliedEndExtension
 

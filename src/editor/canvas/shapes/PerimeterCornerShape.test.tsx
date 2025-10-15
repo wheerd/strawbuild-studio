@@ -16,7 +16,7 @@ vi.mock('@/editor/hooks/useSelectionStore', () => ({
 }))
 
 vi.mock('@/construction/config/store', () => ({
-  usePerimeterConstructionMethodById: () => ({
+  useWallAssemblyById: () => ({
     config: { type: 'strawbale' }
   })
 }))
@@ -25,7 +25,7 @@ describe('PerimeterCornerShape', () => {
   const createMockWall = (direction: vec2): PerimeterWall => ({
     id: createPerimeterWallId(),
     thickness: 440,
-    constructionMethodId: 'method1' as any,
+    wallAssemblyId: 'assembly1' as any,
     openings: [],
     insideLength: 1000,
     outsideLength: 1000,

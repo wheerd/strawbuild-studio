@@ -39,7 +39,7 @@ export default defineConfig(
         {
           patterns: [
             {
-              group: ['../*'],
+              group: ['../*', '*/../*'],
               message: 'Relative imports using ../ are not allowed. Use absolute imports with @ prefix instead.'
             }
           ]

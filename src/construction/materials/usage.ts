@@ -1,4 +1,4 @@
-import type { PerimeterConstructionMethod, RingBeamConstructionMethod } from '@/construction/config/types'
+import type { RingBeamAssembly, WallAssembly } from '@/construction/config/types'
 
 import type { MaterialId } from './material'
 
@@ -12,113 +12,113 @@ export interface MaterialUsage {
  */
 export function getMaterialUsage(
   materialId: MaterialId,
-  ringBeamMethods: RingBeamConstructionMethod[],
-  perimeterMethods: PerimeterConstructionMethod[]
+  ringBeamAssemblies: RingBeamAssembly[],
+  wallAssemblies: WallAssembly[]
 ): MaterialUsage {
   const usedByConfigs: string[] = []
 
-  // Check ring beam construction methods
+  // Check ring beam assemblies
 
-  ringBeamMethods.forEach(method => {
-    if (method.config.material === materialId) {
-      usedByConfigs.push(`Ring Beam: ${method.name}`)
+  ringBeamAssemblies.forEach(assembly => {
+    if (assembly.config.material === materialId) {
+      usedByConfigs.push(`Ring Beam: ${assembly.name}`)
     }
   })
 
-  // Check perimeter construction methods
-  perimeterMethods.forEach(method => {
+  // Check wall assemblies
+  wallAssemblies.forEach(assembly => {
     const configUsages: string[] = []
 
     // Check different parts of perimeter config based on type
-    switch (method.config.type) {
+    switch (assembly.config.type) {
       case 'infill':
         // Posts material
-        if (method.config.posts.material === materialId) {
+        if (assembly.config.posts.material === materialId) {
           configUsages.push('posts')
         }
         // Infill material (for double posts)
-        if ('infillMaterial' in method.config.posts && method.config.posts.infillMaterial === materialId) {
+        if ('infillMaterial' in assembly.config.posts && assembly.config.posts.infillMaterial === materialId) {
           configUsages.push('post infill')
         }
         // Opening materials
-        if (method.config.openings.headerMaterial === materialId) {
+        if (assembly.config.openings.headerMaterial === materialId) {
           configUsages.push('opening headers')
         }
-        if (method.config.openings.sillMaterial === materialId) {
+        if (assembly.config.openings.sillMaterial === materialId) {
           configUsages.push('opening sills')
         }
         // Straw material
-        if (method.config.straw.material === materialId) {
+        if (assembly.config.straw.material === materialId) {
           configUsages.push('straw')
         }
         break
 
       case 'strawhenge':
         // Module frame material
-        if (method.config.module.frameMaterial === materialId) {
+        if (assembly.config.module.frameMaterial === materialId) {
           configUsages.push('module frame')
         }
         // Module straw material
-        if (method.config.module.strawMaterial === materialId) {
+        if (assembly.config.module.strawMaterial === materialId) {
           configUsages.push('module straw')
         }
         // Infill posts material
-        if (method.config.infill.posts.material === materialId) {
+        if (assembly.config.infill.posts.material === materialId) {
           configUsages.push('infill posts')
         }
         // Opening materials
-        if (method.config.openings.headerMaterial === materialId) {
+        if (assembly.config.openings.headerMaterial === materialId) {
           configUsages.push('opening headers')
         }
-        if (method.config.openings.sillMaterial === materialId) {
+        if (assembly.config.openings.sillMaterial === materialId) {
           configUsages.push('opening sills')
         }
         // Straw material
-        if (method.config.straw.material === materialId) {
+        if (assembly.config.straw.material === materialId) {
           configUsages.push('straw')
         }
         break
 
       case 'modules':
         // Module frame material
-        if (method.config.module.frameMaterial === materialId) {
+        if (assembly.config.module.frameMaterial === materialId) {
           configUsages.push('module frame')
         }
         // Module straw material
-        if (method.config.module.strawMaterial === materialId) {
+        if (assembly.config.module.strawMaterial === materialId) {
           configUsages.push('module straw')
         }
         // Infill posts material
-        if (method.config.infill.posts.material === materialId) {
+        if (assembly.config.infill.posts.material === materialId) {
           configUsages.push('infill posts')
         }
         // Opening materials
-        if (method.config.openings.headerMaterial === materialId) {
+        if (assembly.config.openings.headerMaterial === materialId) {
           configUsages.push('opening headers')
         }
-        if (method.config.openings.sillMaterial === materialId) {
+        if (assembly.config.openings.sillMaterial === materialId) {
           configUsages.push('opening sills')
         }
         // Straw material
-        if (method.config.straw.material === materialId) {
+        if (assembly.config.straw.material === materialId) {
           configUsages.push('straw')
         }
         break
 
       case 'non-strawbale':
         // Wall material
-        if (method.config.material === materialId) {
+        if (assembly.config.material === materialId) {
           configUsages.push('wall')
         }
         // Opening materials
-        if (method.config.openings.headerMaterial === materialId) {
+        if (assembly.config.openings.headerMaterial === materialId) {
           configUsages.push('opening headers')
         }
-        if (method.config.openings.sillMaterial === materialId) {
+        if (assembly.config.openings.sillMaterial === materialId) {
           configUsages.push('opening sills')
         }
         // Straw material
-        if (method.config.straw.material === materialId) {
+        if (assembly.config.straw.material === materialId) {
           configUsages.push('straw')
         }
         break
@@ -126,7 +126,7 @@ export function getMaterialUsage(
 
     // Add to results if material is used in this config
     if (configUsages.length > 0) {
-      usedByConfigs.push(`Perimeter: ${method.name} (${configUsages.join(', ')})`)
+      usedByConfigs.push(`Wall: ${assembly.name} (${configUsages.join(', ')})`)
     }
   })
 

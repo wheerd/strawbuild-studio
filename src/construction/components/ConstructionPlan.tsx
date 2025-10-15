@@ -154,6 +154,7 @@ export function ConstructionPlan({
         {model.warnings?.map((warning, index) => {
           if (warning.bounds) {
             const bounds2D = bounds3Dto2D(warning.bounds, projection)
+            console.log(bounds2D, warning.bounds)
             return (
               <rect
                 key={`warning-${index}`}

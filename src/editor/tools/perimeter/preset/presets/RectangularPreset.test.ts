@@ -12,7 +12,7 @@ describe('RectangularPreset', () => {
     width: 4000,
     length: 6000,
     thickness: 440,
-    constructionMethodId: 'test-method' as any
+    wallAssemblyId: 'test-assembly' as any
   }
 
   describe('getPolygonPoints', () => {
@@ -96,8 +96,8 @@ describe('RectangularPreset', () => {
       expect(preset.validateConfig(negativeConfig)).toBe(false)
     })
 
-    it('should reject empty construction method ID', () => {
-      const invalidConfig = { ...validConfig, constructionMethodId: '' as any }
+    it('should reject empty assembly ID', () => {
+      const invalidConfig = { ...validConfig, wallAssemblyId: '' as any }
       expect(preset.validateConfig(invalidConfig)).toBe(false)
     })
   })

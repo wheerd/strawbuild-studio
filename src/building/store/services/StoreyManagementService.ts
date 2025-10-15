@@ -86,7 +86,7 @@ export class StoreyManagementService {
     const duplicateName = newName ?? `${sourceStorey.name} Copy`
 
     // Create the new storey, copying the floor configuration
-    const newStorey = this.actions.addStorey(duplicateName, sourceStorey.height, sourceStorey.slabConstructionConfigId)
+    const newStorey = this.actions.addStorey(duplicateName, sourceStorey.height, sourceStorey.floorAssemblyId)
 
     // Duplicate all perimeters from the source storey
     const sourcePerimeters = this.actions.getPerimetersByStorey(sourceStoreyId)
@@ -94,21 +94,21 @@ export class StoreyManagementService {
       // Create boundary from the source perimeter corners
       const boundary = { points: sourcePerimeter.corners.map(c => c.insidePoint) }
 
-      // Get the construction method from the first wall (they should all be the same for a perimeter)
-      const constructionMethodId = sourcePerimeter.walls[0]?.constructionMethodId
+      // Get the assembly from the first wall (they should all be the same for a perimeter)
+      const wallAssemblyId = sourcePerimeter.walls[0]?.wallAssemblyId
 
       // Get the thickness from the first wall (we'll use uniform thickness)
       const thickness = sourcePerimeter.walls[0]?.thickness
 
-      if (constructionMethodId && thickness) {
+      if (wallAssemblyId && thickness) {
         // Add the duplicated perimeter to the new storey
         this.actions.addPerimeter(
           newStorey.id,
           boundary,
-          constructionMethodId,
+          wallAssemblyId,
           thickness,
-          sourcePerimeter.baseRingBeamMethodId,
-          sourcePerimeter.topRingBeamMethodId
+          sourcePerimeter.baseRingBeamAssemblyId,
+          sourcePerimeter.topRingBeamAssemblyId
         )
       }
     }

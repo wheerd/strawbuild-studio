@@ -62,7 +62,7 @@ describe('SplitWallTool', () => {
     const mockWall: PerimeterWall = {
       id: wallId,
       thickness: 440,
-      constructionMethodId: 'method1' as any,
+      wallAssemblyId: 'assembly1' as any,
       openings: [],
       insideLength: 1000,
       outsideLength: 1000,
@@ -105,7 +105,7 @@ describe('SplitWallTool', () => {
     const mockWall: PerimeterWall = {
       id: wallId,
       thickness: 440,
-      constructionMethodId: 'method1' as any,
+      wallAssemblyId: 'assembly1' as any,
       openings: [
         {
           id: 'opening1' as any,

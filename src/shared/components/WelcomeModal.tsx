@@ -68,7 +68,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                   <ul style={{ listStyleType: 'disc', margin: 0, paddingLeft: '1.5rem' }}>
                     <li>Define perimeter walls in finished dimensions (with plasters)</li>
                     <li>Add windows, doors, etc.</li>
-                    <li>Configure your construction method (infill, strawhenge, modules)</li>
+                    <li>Configure your wall assembly (infill, strawhenge, modules)</li>
                     <li>Generate 2D construction plans for walls and floors</li>
                   </ul>
                 </Text>

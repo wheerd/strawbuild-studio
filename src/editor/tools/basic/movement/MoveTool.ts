@@ -299,8 +299,6 @@ export class MoveTool extends BaseTool implements ToolImplementation {
     }
   }
 
-  // Method removed - replaced with delta-based approach in applyLastMovementWithNewDistance
-
   // For overlay component to access state
   getToolState() {
     return this.toolState

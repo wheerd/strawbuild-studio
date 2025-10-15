@@ -2,7 +2,7 @@ import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { Box, Button, Callout, DataList, Flex, Heading, Separator, Text } from '@radix-ui/themes'
 import { useCallback } from 'react'
 
-import { useDefaultPerimeterMethodId, usePerimeterConstructionMethods } from '@/construction/config/store'
+import { useDefaultWallAssemblyId, useWallAssemblies } from '@/construction/config/store'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
 import '@/shared/geometry'
@@ -16,8 +16,8 @@ import type { LShapedPresetConfig, RectangularPresetConfig } from './presets/typ
 
 export function PerimeterPresetToolInspector({ tool }: ToolInspectorProps<PerimeterPresetTool>): React.JSX.Element {
   const { state } = useReactiveTool(tool)
-  const allPerimeterMethods = usePerimeterConstructionMethods()
-  const defaultPerimeterMethodId = useDefaultPerimeterMethodId()
+  const allWallAssemblies = useWallAssemblies()
+  const defaultWallAssemblyId = useDefaultWallAssemblyId()
 
   // Get available presets
   const availablePresets = tool.getAvailablePresets()
@@ -71,7 +71,7 @@ export function PerimeterPresetToolInspector({ tool }: ToolInspectorProps<Perime
             width: 4000,
             length: 6000,
             thickness: 440,
-            constructionMethodId: defaultPerimeterMethodId
+            wallAssemblyId: defaultWallAssemblyId
           }}
           trigger={
             <Button className="w-full" size="2">
@@ -91,7 +91,7 @@ export function PerimeterPresetToolInspector({ tool }: ToolInspectorProps<Perime
             length2: 3000,
             rotation: 0,
             thickness: 440,
-            constructionMethodId: defaultPerimeterMethodId
+            wallAssemblyId: defaultWallAssemblyId
           }}
           trigger={
             <Button className="w-full" size="2">
@@ -151,9 +151,9 @@ export function PerimeterPresetToolInspector({ tool }: ToolInspectorProps<Perime
                 </DataList.Item>
 
                 <DataList.Item>
-                  <DataList.Label minWidth="80px">Method</DataList.Label>
+                  <DataList.Label minWidth="80px">Assembly</DataList.Label>
                   <DataList.Value>
-                    {allPerimeterMethods.find(m => m.id === currentConfig.constructionMethodId)?.name || 'Unknown'}
+                    {allWallAssemblies.find(m => m.id === currentConfig.wallAssemblyId)?.name || 'Unknown'}
                   </DataList.Value>
                 </DataList.Item>
               </DataList.Root>

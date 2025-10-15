@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { DEFAULT_SLAB_CONFIG_ID, type PerimeterId, type StoreyId } from '@/building/model/ids'
+import { DEFAULT_FLOOR_ASSEMBLY_ID, type PerimeterId, type StoreyId } from '@/building/model/ids'
 import { createStoreyLevel } from '@/building/model/model'
 import '@/shared/geometry'
 
@@ -128,7 +128,7 @@ describe('StoreyManagementService', () => {
         name: 'Ground Floor',
         level: createStoreyLevel(0),
         height: 3000,
-        slabConstructionConfigId: DEFAULT_SLAB_CONFIG_ID
+        floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
       }
 
       const newStorey = {
@@ -136,7 +136,7 @@ describe('StoreyManagementService', () => {
         name: 'Ground Floor Copy',
         level: createStoreyLevel(1),
         height: 3000,
-        slabConstructionConfigId: DEFAULT_SLAB_CONFIG_ID
+        floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
       }
 
       mockActions.getStoreyById.mockReturnValue(sourceStorey)
@@ -146,7 +146,7 @@ describe('StoreyManagementService', () => {
 
       const result = service.duplicateStorey('storey-1' as StoreyId)
 
-      expect(mockActions.addStorey).toHaveBeenCalledWith('Ground Floor Copy', 3000, DEFAULT_SLAB_CONFIG_ID)
+      expect(mockActions.addStorey).toHaveBeenCalledWith('Ground Floor Copy', 3000, DEFAULT_FLOOR_ASSEMBLY_ID)
       expect(result).toEqual(newStorey)
     })
 
@@ -156,7 +156,7 @@ describe('StoreyManagementService', () => {
         name: 'Ground Floor',
         level: createStoreyLevel(0),
         height: 3000,
-        slabConstructionConfigId: DEFAULT_SLAB_CONFIG_ID
+        floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
       }
 
       const newStorey = {
@@ -164,7 +164,7 @@ describe('StoreyManagementService', () => {
         name: 'Custom Name',
         level: createStoreyLevel(1),
         height: 3000,
-        slabConstructionConfigId: DEFAULT_SLAB_CONFIG_ID
+        floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
       }
 
       mockActions.getStoreyById.mockReturnValue(sourceStorey)
@@ -174,7 +174,7 @@ describe('StoreyManagementService', () => {
 
       service.duplicateStorey('storey-1' as StoreyId, 'Custom Name')
 
-      expect(mockActions.addStorey).toHaveBeenCalledWith('Custom Name', 3000, DEFAULT_SLAB_CONFIG_ID)
+      expect(mockActions.addStorey).toHaveBeenCalledWith('Custom Name', 3000, DEFAULT_FLOOR_ASSEMBLY_ID)
     })
 
     it('should throw error for non-existent storey', () => {
@@ -189,7 +189,7 @@ describe('StoreyManagementService', () => {
         name: 'Only Floor',
         level: createStoreyLevel(0),
         height: 3000,
-        slabConstructionConfigId: DEFAULT_SLAB_CONFIG_ID
+        floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
       }
 
       const newStorey = {
@@ -197,7 +197,7 @@ describe('StoreyManagementService', () => {
         name: 'Only Floor Copy',
         level: createStoreyLevel(1),
         height: 3000,
-        slabConstructionConfigId: DEFAULT_SLAB_CONFIG_ID
+        floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
       }
 
       mockActions.getStoreyById.mockReturnValue(sourceStorey)
@@ -207,7 +207,7 @@ describe('StoreyManagementService', () => {
 
       const result = service.duplicateStorey('storey-1' as StoreyId)
 
-      expect(mockActions.addStorey).toHaveBeenCalledWith('Only Floor Copy', 3000, DEFAULT_SLAB_CONFIG_ID)
+      expect(mockActions.addStorey).toHaveBeenCalledWith('Only Floor Copy', 3000, DEFAULT_FLOOR_ASSEMBLY_ID)
       expect(result).toEqual(newStorey)
     })
 
@@ -217,7 +217,7 @@ describe('StoreyManagementService', () => {
         name: 'Ground Floor',
         level: createStoreyLevel(0),
         height: 3000,
-        slabConstructionConfigId: DEFAULT_SLAB_CONFIG_ID
+        floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
       }
 
       const newStorey = {
@@ -225,7 +225,7 @@ describe('StoreyManagementService', () => {
         name: 'Ground Floor Copy',
         level: createStoreyLevel(1),
         height: 3000,
-        slabConstructionConfigId: DEFAULT_SLAB_CONFIG_ID
+        floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
       }
 
       const sourcePerimeter = {
@@ -237,9 +237,9 @@ describe('StoreyManagementService', () => {
           { insidePoint: vec2.fromValues(10, 10) },
           { insidePoint: vec2.fromValues(0, 10) }
         ],
-        walls: [{ constructionMethodId: 'method-1' as any, thickness: 400 }],
-        baseRingBeamMethodId: 'base-method' as any,
-        topRingBeamMethodId: 'top-method' as any
+        walls: [{ wallAssemblyId: 'assembly-1' as any, thickness: 400 }],
+        baseRingBeamAssemblyId: 'base-assembly' as any,
+        topRingBeamAssemblyId: 'top-assembly' as any
       }
 
       mockActions.getStoreyById.mockReturnValue(sourceStorey)
@@ -254,10 +254,10 @@ describe('StoreyManagementService', () => {
         {
           points: [vec2.fromValues(0, 0), vec2.fromValues(10, 0), vec2.fromValues(10, 10), vec2.fromValues(0, 10)]
         },
-        'method-1',
+        'assembly-1',
         400,
-        'base-method',
-        'top-method'
+        'base-assembly',
+        'top-assembly'
       )
     })
   })

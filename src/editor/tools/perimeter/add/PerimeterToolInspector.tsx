@@ -3,9 +3,9 @@ import * as Label from '@radix-ui/react-label'
 import { Box, Button, Callout, Code, Flex, Grid, IconButton, Kbd, Separator, Text } from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
 
-import type { PerimeterConstructionMethodId, RingBeamConstructionMethodId } from '@/building/model/ids'
-import { PerimeterMethodSelectWithEdit } from '@/construction/config/components/PerimeterMethodSelectWithEdit'
-import { RingBeamMethodSelectWithEdit } from '@/construction/config/components/RingBeamMethodSelectWithEdit'
+import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
+import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
+import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
 import { LengthField } from '@/shared/components/LengthField'
@@ -45,16 +45,16 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
 
         {/* Tool Properties */}
         <Grid columns="auto 1fr" gap="2">
-          {/* Construction Method */}
+          {/* Wall Assembly */}
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Construction Method
+              Wall Assembly
             </Text>
           </Label.Root>
-          <PerimeterMethodSelectWithEdit
-            value={state.constructionMethodId ?? undefined}
-            onValueChange={(value: PerimeterConstructionMethodId) => {
-              tool.setConstructionMethod(value)
+          <WallAssemblySelectWithEdit
+            value={state.wallAssemblyId ?? undefined}
+            onValueChange={(value: WallAssemblyId) => {
+              tool.setAssembly(value)
             }}
             size="1"
           />
@@ -82,9 +82,9 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
               Base Plate
             </Text>
           </Label.Root>
-          <RingBeamMethodSelectWithEdit
-            value={state.baseRingBeamMethodId ?? undefined}
-            onValueChange={(value: RingBeamConstructionMethodId | undefined) => {
+          <RingBeamAssemblySelectWithEdit
+            value={state.baseRingBeamAssemblyId ?? undefined}
+            onValueChange={(value: RingBeamAssemblyId | undefined) => {
               tool.setBaseRingBeam(value)
             }}
             placeholder="None"
@@ -98,9 +98,9 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
               Top Plate
             </Text>
           </Label.Root>
-          <RingBeamMethodSelectWithEdit
-            value={state.topRingBeamMethodId ?? undefined}
-            onValueChange={(value: RingBeamConstructionMethodId | undefined) => {
+          <RingBeamAssemblySelectWithEdit
+            value={state.topRingBeamAssemblyId ?? undefined}
+            onValueChange={(value: RingBeamAssemblyId | undefined) => {
               tool.setTopRingBeam(value)
             }}
             placeholder="None"

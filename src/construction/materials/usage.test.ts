@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { createPerimeterConstructionMethodId, createRingBeamConstructionMethodId } from '@/building/model/ids'
-import type { PerimeterConstructionMethod, RingBeamConstructionMethod } from '@/construction/config/types'
+import { createRingBeamAssemblyId, createWallAssemblyId } from '@/building/model/ids'
+import type { RingBeamAssembly, WallAssembly } from '@/construction/config/types'
 import '@/shared/geometry'
 
 import { straw, strawbale, wood360x60 } from './material'
@@ -17,9 +17,9 @@ describe('Material Usage Detection', () => {
     })
 
     it('should detect material used in ring beam config', () => {
-      const ringBeamId = createRingBeamConstructionMethodId()
+      const ringBeamId = createRingBeamAssemblyId()
 
-      const ringBeamMethod: RingBeamConstructionMethod = {
+      const ringBeamAssembly: RingBeamAssembly = {
         id: ringBeamId,
         name: 'Test Ring Beam',
         config: {
@@ -31,15 +31,15 @@ describe('Material Usage Detection', () => {
         }
       }
 
-      const usage = getMaterialUsage(wood360x60.id, [ringBeamMethod], [])
+      const usage = getMaterialUsage(wood360x60.id, [ringBeamAssembly], [])
 
       expect(usage.isUsed).toBe(true)
       expect(usage.usedByConfigs).toEqual(['Ring Beam: Test Ring Beam'])
     })
 
     it('should detect material used in perimeter config posts', () => {
-      const perimeterId = createPerimeterConstructionMethodId()
-      const perimeterMethod: PerimeterConstructionMethod = {
+      const perimeterId = createWallAssemblyId()
+      const wallAssembly: WallAssembly = {
         id: perimeterId,
         name: 'Test Infill',
         config: {
@@ -73,15 +73,15 @@ describe('Material Usage Detection', () => {
         }
       }
 
-      const usage = getMaterialUsage(wood360x60.id, [], [perimeterMethod])
+      const usage = getMaterialUsage(wood360x60.id, [], [wallAssembly])
 
       expect(usage.isUsed).toBe(true)
-      expect(usage.usedByConfigs).toEqual(['Perimeter: Test Infill (posts, opening headers, opening sills)'])
+      expect(usage.usedByConfigs).toEqual(['Wall: Test Infill (posts, opening headers, opening sills)'])
     })
 
     it('should detect material used in strawhenge config', () => {
-      const perimeterId = createPerimeterConstructionMethodId()
-      const perimeterMethod: PerimeterConstructionMethod = {
+      const perimeterId = createWallAssemblyId()
+      const wallAssembly: WallAssembly = {
         id: perimeterId,
         name: 'Test Strawhenge',
         config: {
@@ -136,18 +136,18 @@ describe('Material Usage Detection', () => {
         }
       }
 
-      const usage = getMaterialUsage(wood360x60.id, [], [perimeterMethod])
+      const usage = getMaterialUsage(wood360x60.id, [], [wallAssembly])
 
       expect(usage.isUsed).toBe(true)
       expect(usage.usedByConfigs).toEqual([
-        'Perimeter: Test Strawhenge (module frame, infill posts, opening headers, opening sills)'
+        'Wall: Test Strawhenge (module frame, infill posts, opening headers, opening sills)'
       ])
     })
 
     it('should detect material used in multiple configs', () => {
-      const ringBeamId = createRingBeamConstructionMethodId()
-      const perimeterId = createPerimeterConstructionMethodId()
-      const ringBeamMethod: RingBeamConstructionMethod = {
+      const ringBeamId = createRingBeamAssemblyId()
+      const perimeterId = createWallAssemblyId()
+      const ringBeamAssembly: RingBeamAssembly = {
         id: ringBeamId,
         name: 'Test Ring Beam',
         config: {
@@ -159,7 +159,7 @@ describe('Material Usage Detection', () => {
         }
       }
 
-      const perimeterMethod: PerimeterConstructionMethod = {
+      const wallAssembly: WallAssembly = {
         id: perimeterId,
         name: 'Test Infill',
         config: {
@@ -191,12 +191,12 @@ describe('Material Usage Detection', () => {
         }
       }
 
-      const usage = getMaterialUsage(wood360x60.id, [ringBeamMethod], [perimeterMethod])
+      const usage = getMaterialUsage(wood360x60.id, [ringBeamAssembly], [wallAssembly])
 
       expect(usage.isUsed).toBe(true)
       expect(usage.usedByConfigs).toHaveLength(2)
       expect(usage.usedByConfigs).toContain('Ring Beam: Test Ring Beam')
-      expect(usage.usedByConfigs).toContain('Perimeter: Test Infill (posts)')
+      expect(usage.usedByConfigs).toContain('Wall: Test Infill (posts)')
     })
   })
 })

@@ -26,7 +26,7 @@ const mockActions = {
         {
           id: 'wall_1',
           thickness: 200,
-          constructionMethodId: 'method_1',
+          wallAssemblyId: 'assembly_1',
           openings: [
             {
               id: 'opening_1',
@@ -39,14 +39,14 @@ const mockActions = {
           ]
         }
       ],
-      baseRingBeamMethodId: 'beam_1',
-      topRingBeamMethodId: 'beam_1'
+      baseRingBeamAssemblyId: 'beam_1',
+      topRingBeamAssemblyId: 'beam_1'
     }
   ]),
   reset: vi.fn(),
   updateStoreyName: vi.fn(),
   updateStoreyHeight: vi.fn(),
-  updateStoreySlabConfig: vi.fn(),
+  updateStoreyFloorAssembly: vi.fn(),
   adjustAllLevels: vi.fn(),
   addStorey: vi.fn((name, height) => ({
     id: 'new_storey',
@@ -60,7 +60,7 @@ const mockActions = {
     corners: [{ id: 'new_corner_1' }]
   })),
   updatePerimeterWallThickness: vi.fn(),
-  updatePerimeterWallConstructionMethod: vi.fn(),
+  updateWallAssemblyBuilder: vi.fn(),
   addPerimeterWallOpening: vi.fn(),
   updatePerimeterCornerConstructedByWall: vi.fn()
 }
@@ -72,13 +72,13 @@ vi.mock('@/building/store', () => ({
 
 vi.mock('@/construction/config/store', () => ({
   getConfigState: vi.fn(() => ({
-    ringBeamConstructionMethods: {
+    ringBeamAssemblies: {
       beam_1: { id: 'beam_1', name: 'Test Beam', config: {} }
     },
-    perimeterConstructionMethods: {
-      method_1: { id: 'method_1', name: 'Test Method', config: {} }
+    wallAssemblies: {
+      assembly_1: { id: 'assembly_1', name: 'Test Assembly', config: {} }
     },
-    defaultPerimeterMethodId: 'method_1'
+    defaultWallAssemblyId: 'assembly_1'
   })),
   setConfigState: vi.fn()
 }))
@@ -121,7 +121,7 @@ describe('ProjectImportExportService', () => {
   })
 
   describe('importFromString', () => {
-    it('calls the correct store methods on import', async () => {
+    it('calls the correct store assemblies on import', async () => {
       // Create simple valid import data
       const validImportData = {
         version: '1.2.0',
@@ -132,17 +132,17 @@ describe('ProjectImportExportService', () => {
               name: 'Test Floor',
               height: 2500,
               perimeters: [],
-              slabConstructionConfigId: 'scm_1'
+              floorAssemblyId: 'fa_1'
             }
           ],
           minLevel: 0
         },
         configStore: {
-          ringBeamConstructionMethods: { beam_1: { id: 'beam_1', name: 'Test Beam' } },
-          perimeterConstructionMethods: { method_1: { id: 'method_1', name: 'Test Method' } },
-          slabConstructionConfigs: { scm_1: { id: 'scm_1', name: 'Test Slab' } },
-          defaultPerimeterMethodId: 'method_1',
-          defaultSlabConfigId: 'scm_1'
+          ringBeamAssemblies: { beam_1: { id: 'beam_1', name: 'Test Beam' } },
+          wallAssemblies: { assembly_1: { id: 'assembly_1', name: 'Test Assembly' } },
+          floorAssemblyConfigs: { fa_1: { id: 'fa_1', name: 'Test Slab' } },
+          defaultWallAssemblyId: 'assembly_1',
+          defaultFloorAssemblyId: 'fa_1'
         },
         materialsStore: {
           materials: { material_1: { id: 'material_1', name: 'Test Material' } }
@@ -156,13 +156,13 @@ describe('ProjectImportExportService', () => {
 
       expect(result.success).toBeTruthy()
 
-      // Should have called reset and basic store methods
+      // Should have called reset and basic store assemblies
       expect(mockActions.reset).toHaveBeenCalled()
 
       // For a storey with no perimeters, should still call updateStoreyName
       expect(mockActions.updateStoreyName).toHaveBeenCalled()
       expect(mockActions.updateStoreyHeight).toHaveBeenCalled()
-      expect(mockActions.updateStoreySlabConfig).toHaveBeenCalled()
+      expect(mockActions.updateStoreyFloorAssembly).toHaveBeenCalled()
     })
 
     it('handles invalid JSON gracefully', async () => {

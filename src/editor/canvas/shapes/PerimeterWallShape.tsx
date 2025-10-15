@@ -3,7 +3,7 @@ import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
 import type { PerimeterId } from '@/building/model/ids'
 import type { PerimeterWall } from '@/building/model/model'
-import { usePerimeterConstructionMethodById } from '@/construction/config/store'
+import { useWallAssemblyById } from '@/construction/config/store'
 import { LengthIndicator } from '@/editor/canvas/utils/LengthIndicator'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { direction } from '@/shared/geometry'
@@ -50,9 +50,8 @@ export function PerimeterWallShape({
     angleDegrees += 180
   }
 
-  const constructionMethod = usePerimeterConstructionMethodById(wall.constructionMethodId)
-  const fillColor =
-    constructionMethod?.config.type === 'non-strawbale' ? MATERIAL_COLORS.other : MATERIAL_COLORS.strawbale
+  const wallAssembly = useWallAssemblyById(wall.wallAssemblyId)
+  const fillColor = wallAssembly?.config.type === 'non-strawbale' ? MATERIAL_COLORS.other : MATERIAL_COLORS.strawbale
 
   return (
     <Group name={`wall-${wall.id}`} entityId={wall.id} entityType="perimeter-wall" parentIds={[perimeterId]} listening>

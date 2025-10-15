@@ -1,7 +1,7 @@
 import { vec2, vec3 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createOpeningId, createPerimeterConstructionMethodId, createPerimeterId } from '@/building/model/ids'
+import { createOpeningId, createPerimeterId, createWallAssemblyId } from '@/building/model/ids'
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config'
 import type { WallLayersConfig } from '@/construction/config/types'
@@ -22,7 +22,7 @@ vi.mock('./corners/corners', () => ({
 }))
 
 vi.mock('@/construction/floors', () => ({
-  SLAB_CONSTRUCTION_METHODS: {
+  FLOOR_ASSEMBLIES: {
     monolithic: {
       getTopOffset: vi.fn(() => 0),
       getBottomOffset: vi.fn(() => 0)
@@ -50,7 +50,7 @@ const mockGetConfigActions = vi.mocked(getConfigActions)
 function createMockWall(id: string, wallLength: Length, thickness: Length, openings: Opening[] = []): PerimeterWall {
   return {
     id: id as any,
-    constructionMethodId: createPerimeterConstructionMethodId(),
+    wallAssemblyId: createWallAssemblyId(),
     thickness,
     wallLength,
     insideLength: wallLength,
@@ -75,8 +75,8 @@ function createMockPerimeter(walls: PerimeterWall[]): Perimeter {
     storeyId: 'test-storey' as any,
     walls,
     corners: [],
-    baseRingBeamMethodId: 'base-method' as any,
-    topRingBeamMethodId: 'top-method' as any
+    baseRingBeamAssemblyId: 'base-assembly' as any,
+    topRingBeamAssemblyId: 'top-assembly' as any
   } as Perimeter
 }
 
@@ -136,7 +136,7 @@ function createMockStoreyContext(storeyHeight: Length = 2500): WallStoreyContext
 describe('segmentedWallConstruction', () => {
   let mockWallConstruction: ReturnType<typeof vi.fn>
   let mockOpeningConstruction: ReturnType<typeof vi.fn>
-  let mockGetRingBeamConstructionMethodById: ReturnType<typeof vi.fn>
+  let mockGetRingBeamAssemblyById: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -166,13 +166,13 @@ describe('segmentedWallConstruction', () => {
     mockCalculateWallCornerInfo.mockReturnValue(createMockCornerInfo())
 
     // Mock config actions
-    mockGetRingBeamConstructionMethodById = vi.fn()
+    mockGetRingBeamAssemblyById = vi.fn()
     mockGetConfigActions.mockReturnValue({
-      getRingBeamConstructionMethodById: mockGetRingBeamConstructionMethodById
+      getRingBeamAssemblyById: mockGetRingBeamAssemblyById
     } as any)
 
-    // Mock ring beam methods
-    mockGetRingBeamConstructionMethodById.mockReturnValue({
+    // Mock ring beam assemblies
+    mockGetRingBeamAssemblyById.mockReturnValue({
       config: { height: 60 }
     })
 
@@ -300,7 +300,7 @@ describe('segmentedWallConstruction', () => {
       const layers = createMockLayers()
 
       // Mock different ring beam heights
-      mockGetRingBeamConstructionMethodById
+      mockGetRingBeamAssemblyById
         .mockReturnValueOnce({ config: { height: 80 } }) // base
         .mockReturnValueOnce({ config: { height: 100 } }) // top
 
@@ -593,16 +593,16 @@ describe('segmentedWallConstruction', () => {
   })
 
   describe('ring beam integration', () => {
-    it('should handle missing ring beam methods gracefully', () => {
+    it('should handle missing ring beam assemblies gracefully', () => {
       const wall = createMockWall('wall-1', 3000, 300)
       const perimeter = createMockPerimeter([wall])
-      perimeter.baseRingBeamMethodId = undefined
-      perimeter.topRingBeamMethodId = undefined
+      perimeter.baseRingBeamAssemblyId = undefined
+      perimeter.topRingBeamAssemblyId = undefined
 
       const wallHeight = 2500
       const layers = createMockLayers()
 
-      mockGetRingBeamConstructionMethodById.mockReturnValue(null)
+      mockGetRingBeamAssemblyById.mockReturnValue(null)
 
       const results = [
         ...segmentedWallConstruction(
@@ -627,11 +627,11 @@ describe('segmentedWallConstruction', () => {
       )
     })
 
-    it('should call getRingBeamConstructionMethodById with correct IDs', () => {
+    it('should call getRingBeamAssemblyById with correct IDs', () => {
       const wall = createMockWall('wall-1', 3000, 300)
       const perimeter = createMockPerimeter([wall])
-      perimeter.baseRingBeamMethodId = 'base-method-id' as any
-      perimeter.topRingBeamMethodId = 'top-method-id' as any
+      perimeter.baseRingBeamAssemblyId = 'base-assembly-id' as any
+      perimeter.topRingBeamAssemblyId = 'top-assembly-id' as any
 
       const wallHeight = 2500
       const layers = createMockLayers()
@@ -648,8 +648,8 @@ describe('segmentedWallConstruction', () => {
       ]
       aggregateResults(results)
 
-      expect(mockGetRingBeamConstructionMethodById).toHaveBeenCalledWith('base-method-id')
-      expect(mockGetRingBeamConstructionMethodById).toHaveBeenCalledWith('top-method-id')
+      expect(mockGetRingBeamAssemblyById).toHaveBeenCalledWith('base-assembly-id')
+      expect(mockGetRingBeamAssemblyById).toHaveBeenCalledWith('top-assembly-id')
     })
   })
 

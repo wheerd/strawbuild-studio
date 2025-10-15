@@ -3,14 +3,14 @@ import * as Label from '@radix-ui/react-label'
 import { Box, Callout, DataList, Flex, Heading, IconButton, Separator, Text, Tooltip } from '@radix-ui/themes'
 import React, { useCallback, useMemo } from 'react'
 
-import type { PerimeterConstructionMethodId, PerimeterId } from '@/building/model/ids'
+import type { PerimeterId, WallAssemblyId } from '@/building/model/ids'
 import type { PerimeterWall } from '@/building/model/model'
 import { useModelActions, usePerimeterById } from '@/building/store'
 import { TOP_VIEW } from '@/construction/components/ConstructionPlan'
 import { ConstructionPlanModal } from '@/construction/components/ConstructionPlanModal'
 import { RingBeamConstructionPlanModal } from '@/construction/components/RingBeamConstructionPlan'
-import { PerimeterMethodSelectWithEdit } from '@/construction/config/components/PerimeterMethodSelectWithEdit'
-import { RingBeamMethodSelectWithEdit } from '@/construction/config/components/RingBeamMethodSelectWithEdit'
+import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
+import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import { constructPerimeter } from '@/construction/perimeter'
 import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
@@ -29,15 +29,15 @@ interface MixedState<T> {
   value: T | null
 }
 
-function detectMixedConstructionMethod(walls: PerimeterWall[]): MixedState<PerimeterConstructionMethodId> {
+function detectMixedAssemblies(walls: PerimeterWall[]): MixedState<WallAssemblyId> {
   if (walls.length === 0) return { isMixed: false, value: null }
 
-  const firstMethod = walls[0].constructionMethodId
-  const allSame = walls.every(wall => wall.constructionMethodId === firstMethod)
+  const firstAssembly = walls[0].wallAssemblyId
+  const allSame = walls.every(wall => wall.wallAssemblyId === firstAssembly)
 
   return {
     isMixed: !allSame,
-    value: allSame ? firstMethod : null
+    value: allSame ? firstAssembly : null
   }
 }
 
@@ -75,7 +75,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
     setPerimeterTopRingBeam,
     removePerimeterBaseRingBeam,
     removePerimeterTopRingBeam,
-    updateAllPerimeterWallsConstructionMethod,
+    updateAllPerimeterWallsAssembly,
     updateAllPerimeterWallsThickness,
     removePerimeter
   } = useModelActions()
@@ -83,8 +83,8 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
   const viewportActions = useViewportActions()
 
   // Mixed state detection
-  const constructionMethodState = useMemo(
-    () => (perimeter ? detectMixedConstructionMethod(perimeter.walls) : { isMixed: false, value: null }),
+  const wallAssemblyState = useMemo(
+    () => (perimeter ? detectMixedAssemblies(perimeter.walls) : { isMixed: false, value: null }),
     [perimeter?.walls]
   )
 
@@ -200,31 +200,27 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
           </Heading>
 
           <Flex direction="column" gap="2">
-            {/* Construction Method */}
+            {/* Wall Assembly */}
             <Flex align="center" justify="between" gap="3">
-              <Label.Root htmlFor="perimeter-construction-method">
-                {constructionMethodState.isMixed ? (
+              <Label.Root htmlFor="wall-assembly">
+                {wallAssemblyState.isMixed ? (
                   <MixedStateIndicator>
                     <Text size="1" weight="medium" color="gray">
-                      Construction Method
+                      Wall Assembly
                     </Text>
                   </MixedStateIndicator>
                 ) : (
                   <Text size="1" weight="medium" color="gray">
-                    Construction Method
+                    Wall Assembly
                   </Text>
                 )}
               </Label.Root>
-              <PerimeterMethodSelectWithEdit
-                value={
-                  constructionMethodState.isMixed
-                    ? undefined
-                    : (constructionMethodState.value as PerimeterConstructionMethodId | undefined)
-                }
-                onValueChange={(value: PerimeterConstructionMethodId) => {
-                  updateAllPerimeterWallsConstructionMethod(selectedId, value)
+              <WallAssemblySelectWithEdit
+                value={wallAssemblyState.isMixed ? undefined : (wallAssemblyState.value as WallAssemblyId | undefined)}
+                onValueChange={(value: WallAssemblyId) => {
+                  updateAllPerimeterWallsAssembly(selectedId, value)
                 }}
-                placeholder={constructionMethodState.isMixed ? 'Mixed' : 'Select method'}
+                placeholder={wallAssemblyState.isMixed ? 'Mixed' : 'Select assembly'}
                 size="1"
               />
             </Flex>
@@ -274,8 +270,8 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                   Base Plate
                 </Text>
               </Label.Root>
-              <RingBeamMethodSelectWithEdit
-                value={perimeter.baseRingBeamMethodId}
+              <RingBeamAssemblySelectWithEdit
+                value={perimeter.baseRingBeamAssemblyId}
                 onValueChange={value => {
                   if (value === undefined) {
                     removePerimeterBaseRingBeam(selectedId)
@@ -296,8 +292,8 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                   Top Plate
                 </Text>
               </Label.Root>
-              <RingBeamMethodSelectWithEdit
-                value={perimeter.topRingBeamMethodId}
+              <RingBeamAssemblySelectWithEdit
+                value={perimeter.topRingBeamAssemblyId}
                 onValueChange={value => {
                   if (value === undefined) {
                     removePerimeterTopRingBeam(selectedId)
@@ -312,7 +308,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             </Flex>
 
             {/* Ring Beam View Construction Button */}
-            {(perimeter.topRingBeamMethodId || perimeter.baseRingBeamMethodId) && (
+            {(perimeter.topRingBeamAssemblyId || perimeter.baseRingBeamAssemblyId) && (
               <Flex justify="center">
                 <RingBeamConstructionPlanModal
                   perimeterId={selectedId}

@@ -16,27 +16,23 @@ import {
 } from '@radix-ui/themes'
 import React, { useCallback, useMemo, useState } from 'react'
 
-import type { PerimeterConstructionMethodId } from '@/building/model/ids'
+import type { WallAssemblyId } from '@/building/model/ids'
 import { usePerimeters, useStoreysOrderedByLevel } from '@/building/store'
-import {
-  useConfigActions,
-  useDefaultPerimeterMethodId,
-  usePerimeterConstructionMethods
-} from '@/construction/config/store'
-import type { PerimeterConstructionConfig, WallLayersConfig } from '@/construction/config/types'
+import { useConfigActions, useDefaultWallAssemblyId, useWallAssemblies } from '@/construction/config/store'
+import type { WallAssemblyConfig, WallLayersConfig } from '@/construction/config/types'
 import { getPerimeterConfigUsage } from '@/construction/config/usage'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
 import { LengthField } from '@/shared/components/LengthField'
 
 import { getPerimeterConfigTypeIcon } from './Icons'
-import { PerimeterMethodSelect } from './PerimeterMethodSelect'
+import { WallAssemblySelect } from './WallAssemblySelect'
 
-type PerimeterConfigType = PerimeterConstructionConfig['type']
+type PerimeterConfigType = WallAssemblyConfig['type']
 
 interface InfillConfigFormProps {
-  config: Extract<PerimeterConstructionConfig, { type: 'infill' }>
-  onUpdate: (updates: Partial<PerimeterConstructionConfig>) => void
+  config: Extract<WallAssemblyConfig, { type: 'infill' }>
+  onUpdate: (updates: Partial<WallAssemblyConfig>) => void
 }
 
 function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JSX.Element {
@@ -77,8 +73,8 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
 }
 
 interface PostsConfigSectionProps {
-  posts: Extract<PerimeterConstructionConfig, { type: 'infill' }>['posts']
-  onUpdate: (posts: Extract<PerimeterConstructionConfig, { type: 'infill' }>['posts']) => void
+  posts: Extract<WallAssemblyConfig, { type: 'infill' }>['posts']
+  onUpdate: (posts: Extract<WallAssemblyConfig, { type: 'infill' }>['posts']) => void
 }
 
 function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React.JSX.Element {
@@ -178,8 +174,8 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
 }
 
 interface ModuleConfigSectionProps {
-  module: Extract<PerimeterConstructionConfig, { type: 'strawhenge' | 'modules' }>['module']
-  onUpdate: (module: Extract<PerimeterConstructionConfig, { type: 'strawhenge' | 'modules' }>['module']) => void
+  module: Extract<WallAssemblyConfig, { type: 'strawhenge' | 'modules' }>['module']
+  onUpdate: (module: Extract<WallAssemblyConfig, { type: 'strawhenge' | 'modules' }>['module']) => void
 }
 
 function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): React.JSX.Element {
@@ -299,8 +295,8 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
 }
 
 interface StrawhengeConfigFormProps {
-  config: Extract<PerimeterConstructionConfig, { type: 'strawhenge' }>
-  onUpdate: (updates: Partial<PerimeterConstructionConfig>) => void
+  config: Extract<WallAssemblyConfig, { type: 'strawhenge' }>
+  onUpdate: (updates: Partial<WallAssemblyConfig>) => void
 }
 
 function StrawhengeConfigForm({ config, onUpdate }: StrawhengeConfigFormProps): React.JSX.Element {
@@ -310,17 +306,15 @@ function StrawhengeConfigForm({ config, onUpdate }: StrawhengeConfigFormProps): 
       <Separator size="4" />
       <InfillConfigForm
         config={config.infill}
-        onUpdate={infill =>
-          onUpdate({ ...config, infill: infill as Extract<PerimeterConstructionConfig, { type: 'infill' }> })
-        }
+        onUpdate={infill => onUpdate({ ...config, infill: infill as Extract<WallAssemblyConfig, { type: 'infill' }> })}
       />
     </Flex>
   )
 }
 
 interface ModulesConfigFormProps {
-  config: Extract<PerimeterConstructionConfig, { type: 'modules' }>
-  onUpdate: (updates: Partial<PerimeterConstructionConfig>) => void
+  config: Extract<WallAssemblyConfig, { type: 'modules' }>
+  onUpdate: (updates: Partial<WallAssemblyConfig>) => void
 }
 
 function ModulesConfigForm({ config, onUpdate }: ModulesConfigFormProps): React.JSX.Element {
@@ -337,8 +331,8 @@ function ModulesConfigForm({ config, onUpdate }: ModulesConfigFormProps): React.
 }
 
 interface NonStrawbaleConfigFormProps {
-  config: Extract<PerimeterConstructionConfig, { type: 'non-strawbale' }>
-  onUpdate: (updates: Partial<PerimeterConstructionConfig>) => void
+  config: Extract<WallAssemblyConfig, { type: 'non-strawbale' }>
+  onUpdate: (updates: Partial<WallAssemblyConfig>) => void
 }
 
 function NonStrawbaleConfigForm({ config, onUpdate }: NonStrawbaleConfigFormProps): React.JSX.Element {
@@ -379,13 +373,13 @@ function NonStrawbaleConfigForm({ config, onUpdate }: NonStrawbaleConfigFormProp
 }
 
 interface CommonConfigSectionsProps {
-  methodId: PerimeterConstructionMethodId
-  config: PerimeterConstructionConfig
+  assemblyId: WallAssemblyId
+  config: WallAssemblyConfig
   layers: WallLayersConfig
 }
 
-function CommonConfigSections({ methodId, config, layers }: CommonConfigSectionsProps): React.JSX.Element {
-  const { updatePerimeterConstructionMethodConfig, updatePerimeterConstructionMethodLayers } = useConfigActions()
+function CommonConfigSections({ assemblyId, config, layers }: CommonConfigSectionsProps): React.JSX.Element {
+  const { updateWallAssemblyConfig, updateWallAssemblyLayers } = useConfigActions()
 
   return (
     <Flex direction="column" gap="3">
@@ -401,7 +395,7 @@ function CommonConfigSections({ methodId, config, layers }: CommonConfigSections
           <LengthField
             value={config.openings.padding}
             onChange={padding =>
-              updatePerimeterConstructionMethodConfig(methodId, {
+              updateWallAssemblyConfig(assemblyId, {
                 ...config,
                 openings: { ...config.openings, padding }
               })
@@ -420,7 +414,7 @@ function CommonConfigSections({ methodId, config, layers }: CommonConfigSections
           <LengthField
             value={config.openings.headerThickness}
             onChange={headerThickness =>
-              updatePerimeterConstructionMethodConfig(methodId, {
+              updateWallAssemblyConfig(assemblyId, {
                 ...config,
                 openings: { ...config.openings, headerThickness }
               })
@@ -439,7 +433,7 @@ function CommonConfigSections({ methodId, config, layers }: CommonConfigSections
           <MaterialSelectWithEdit
             value={config.openings.headerMaterial}
             onValueChange={headerMaterial =>
-              updatePerimeterConstructionMethodConfig(methodId, {
+              updateWallAssemblyConfig(assemblyId, {
                 ...config,
                 openings: { ...config.openings, headerMaterial }
               })
@@ -457,7 +451,7 @@ function CommonConfigSections({ methodId, config, layers }: CommonConfigSections
           <LengthField
             value={config.openings.sillThickness}
             onChange={sillThickness =>
-              updatePerimeterConstructionMethodConfig(methodId, {
+              updateWallAssemblyConfig(assemblyId, {
                 ...config,
                 openings: { ...config.openings, sillThickness }
               })
@@ -476,7 +470,7 @@ function CommonConfigSections({ methodId, config, layers }: CommonConfigSections
           <MaterialSelectWithEdit
             value={config.openings.sillMaterial}
             onValueChange={sillMaterial =>
-              updatePerimeterConstructionMethodConfig(methodId, {
+              updateWallAssemblyConfig(assemblyId, {
                 ...config,
                 openings: { ...config.openings, sillMaterial }
               })
@@ -499,7 +493,7 @@ function CommonConfigSections({ methodId, config, layers }: CommonConfigSections
         <LengthField
           value={config.straw.baleLength}
           onChange={baleLength =>
-            updatePerimeterConstructionMethodConfig(methodId, {
+            updateWallAssemblyConfig(assemblyId, {
               ...config,
               straw: { ...config.straw, baleLength }
             })
@@ -516,7 +510,7 @@ function CommonConfigSections({ methodId, config, layers }: CommonConfigSections
         <LengthField
           value={config.straw.baleHeight}
           onChange={baleHeight =>
-            updatePerimeterConstructionMethodConfig(methodId, {
+            updateWallAssemblyConfig(assemblyId, {
               ...config,
               straw: { ...config.straw, baleHeight }
             })
@@ -533,7 +527,7 @@ function CommonConfigSections({ methodId, config, layers }: CommonConfigSections
         <LengthField
           value={config.straw.baleWidth}
           onChange={baleWidth =>
-            updatePerimeterConstructionMethodConfig(methodId, {
+            updateWallAssemblyConfig(assemblyId, {
               ...config,
               straw: { ...config.straw, baleWidth }
             })
@@ -550,7 +544,7 @@ function CommonConfigSections({ methodId, config, layers }: CommonConfigSections
         <MaterialSelectWithEdit
           value={config.straw.material}
           onValueChange={material =>
-            updatePerimeterConstructionMethodConfig(methodId, {
+            updateWallAssemblyConfig(assemblyId, {
               ...config,
               straw: { ...config.straw, material }
             })
@@ -571,9 +565,7 @@ function CommonConfigSections({ methodId, config, layers }: CommonConfigSections
         </Label.Root>
         <LengthField
           value={layers.insideThickness}
-          onChange={insideThickness =>
-            updatePerimeterConstructionMethodLayers(methodId, { ...layers, insideThickness })
-          }
+          onChange={insideThickness => updateWallAssemblyLayers(assemblyId, { ...layers, insideThickness })}
           unit="mm"
           size="1"
         />
@@ -585,9 +577,7 @@ function CommonConfigSections({ methodId, config, layers }: CommonConfigSections
         </Label.Root>
         <LengthField
           value={layers.outsideThickness}
-          onChange={outsideThickness =>
-            updatePerimeterConstructionMethodLayers(methodId, { ...layers, outsideThickness })
-          }
+          onChange={outsideThickness => updateWallAssemblyLayers(assemblyId, { ...layers, outsideThickness })}
           unit="mm"
           size="1"
         />
@@ -597,26 +587,26 @@ function CommonConfigSections({ methodId, config, layers }: CommonConfigSections
 }
 
 interface ConfigFormProps {
-  method: {
-    id: PerimeterConstructionMethodId
+  assembly: {
+    id: WallAssemblyId
     name: string
-    config: PerimeterConstructionConfig
+    config: WallAssemblyConfig
     layers: WallLayersConfig
   }
   onUpdateName: (name: string) => void
 }
 
-function ConfigForm({ method, onUpdateName }: ConfigFormProps): React.JSX.Element {
-  const { updatePerimeterConstructionMethodConfig } = useConfigActions()
+function ConfigForm({ assembly, onUpdateName }: ConfigFormProps): React.JSX.Element {
+  const { updateWallAssemblyConfig } = useConfigActions()
 
   const updateConfig = useCallback(
-    (updates: Partial<PerimeterConstructionConfig>) => {
-      updatePerimeterConstructionMethodConfig(method.id, {
-        ...method.config,
+    (updates: Partial<WallAssemblyConfig>) => {
+      updateWallAssemblyConfig(assembly.id, {
+        ...assembly.config,
         ...updates
-      } as PerimeterConstructionConfig)
+      } as WallAssemblyConfig)
     },
-    [method.id, method.config, updatePerimeterConstructionMethodConfig]
+    [assembly.id, assembly.config, updateWallAssemblyConfig]
   )
 
   return (
@@ -634,9 +624,9 @@ function ConfigForm({ method, onUpdateName }: ConfigFormProps): React.JSX.Elemen
           </Text>
         </Label.Root>
         <TextField.Root
-          value={method.name}
+          value={assembly.name}
           onChange={e => onUpdateName(e.target.value)}
-          placeholder="Method name"
+          placeholder="Assembly name"
           size="2"
         />
 
@@ -647,13 +637,13 @@ function ConfigForm({ method, onUpdateName }: ConfigFormProps): React.JSX.Elemen
         </Label.Root>
 
         <Flex gap="2" align="center">
-          {React.createElement(getPerimeterConfigTypeIcon(method.config.type))}
+          {React.createElement(getPerimeterConfigTypeIcon(assembly.config.type))}
           <Text size="2" color="gray">
-            {method.config.type === 'infill'
+            {assembly.config.type === 'infill'
               ? 'Infill'
-              : method.config.type === 'modules'
+              : assembly.config.type === 'modules'
                 ? 'Modules'
-                : method.config.type === 'strawhenge'
+                : assembly.config.type === 'strawhenge'
                   ? 'Strawhenge'
                   : 'Non-Strawbale'}
           </Text>
@@ -666,65 +656,60 @@ function ConfigForm({ method, onUpdateName }: ConfigFormProps): React.JSX.Elemen
       <Grid columns="2" gap="4" style={{ gridTemplateColumns: '1fr 1fr' }}>
         {/* Left Column - Type-specific configuration */}
         <Flex direction="column" gap="3">
-          {method.config.type === 'infill' && <InfillConfigForm config={method.config} onUpdate={updateConfig} />}
-          {method.config.type === 'strawhenge' && (
-            <StrawhengeConfigForm config={method.config} onUpdate={updateConfig} />
+          {assembly.config.type === 'infill' && <InfillConfigForm config={assembly.config} onUpdate={updateConfig} />}
+          {assembly.config.type === 'strawhenge' && (
+            <StrawhengeConfigForm config={assembly.config} onUpdate={updateConfig} />
           )}
-          {method.config.type === 'modules' && <ModulesConfigForm config={method.config} onUpdate={updateConfig} />}
-          {method.config.type === 'non-strawbale' && (
-            <NonStrawbaleConfigForm config={method.config} onUpdate={updateConfig} />
+          {assembly.config.type === 'modules' && <ModulesConfigForm config={assembly.config} onUpdate={updateConfig} />}
+          {assembly.config.type === 'non-strawbale' && (
+            <NonStrawbaleConfigForm config={assembly.config} onUpdate={updateConfig} />
           )}
         </Flex>
 
         {/* Right Column - Common sections (Openings, Straw, Layers) */}
         <Flex direction="column" gap="3">
-          <CommonConfigSections methodId={method.id} config={method.config} layers={method.layers} />
+          <CommonConfigSections assemblyId={assembly.id} config={assembly.config} layers={assembly.layers} />
         </Flex>
       </Grid>
     </Flex>
   )
 }
 
-export interface PerimeterConfigContentProps {
+export interface WallAssemblyContentProps {
   initialSelectionId?: string
 }
 
-export function PerimeterConfigContent({ initialSelectionId }: PerimeterConfigContentProps): React.JSX.Element {
-  const perimeterMethods = usePerimeterConstructionMethods()
+export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentProps): React.JSX.Element {
+  const wallAssemblies = useWallAssemblies()
   const perimeters = usePerimeters()
   const storeys = useStoreysOrderedByLevel()
-  const {
-    addPerimeterConstructionMethod,
-    duplicatePerimeterConstructionMethod,
-    updatePerimeterConstructionMethodName,
-    removePerimeterConstructionMethod,
-    setDefaultPerimeterMethod
-  } = useConfigActions()
+  const { addWallAssembly, duplicateWallAssembly, updateWallAssemblyName, removeWallAssembly, setDefaultWallAssembly } =
+    useConfigActions()
 
-  const defaultMethodId = useDefaultPerimeterMethodId()
+  const defaultAssemblyId = useDefaultWallAssemblyId()
 
-  const [selectedMethodId, setSelectedMethodId] = useState<string | null>(() => {
-    if (initialSelectionId && perimeterMethods.some(m => m.id === initialSelectionId)) {
+  const [selectedAssemblyId, setSelectedAssemblyId] = useState<string | null>(() => {
+    if (initialSelectionId && wallAssemblies.some(m => m.id === initialSelectionId)) {
       return initialSelectionId
     }
-    return perimeterMethods.length > 0 ? perimeterMethods[0].id : null
+    return wallAssemblies.length > 0 ? wallAssemblies[0].id : null
   })
 
-  const selectedMethod = perimeterMethods.find(m => m.id === selectedMethodId) ?? null
+  const selectedAssembly = wallAssemblies.find(m => m.id === selectedAssemblyId) ?? null
 
   const usage = useMemo(
     () =>
-      selectedMethod
-        ? getPerimeterConfigUsage(selectedMethod.id, Object.values(perimeters), storeys)
+      selectedAssembly
+        ? getPerimeterConfigUsage(selectedAssembly.id, Object.values(perimeters), storeys)
         : { isUsed: false, usedByWalls: [] },
-    [selectedMethod, perimeters, storeys]
+    [selectedAssembly, perimeters, storeys]
   )
 
   const handleAddNew = useCallback(
     (type: PerimeterConfigType) => {
       const defaultMaterial = '' as MaterialId
 
-      let config: PerimeterConstructionConfig
+      let config: WallAssemblyConfig
       const baseStrawConfig = {
         baleLength: 800,
         baleHeight: 500,
@@ -824,39 +809,39 @@ export function PerimeterConfigContent({ initialSelectionId }: PerimeterConfigCo
         outsideThickness: 50
       }
 
-      const newMethod = addPerimeterConstructionMethod(`New ${type} method`, config, layers)
-      setSelectedMethodId(newMethod.id)
+      const newAssembly = addWallAssembly(`New ${type} assembly`, config, layers)
+      setSelectedAssemblyId(newAssembly.id)
     },
-    [addPerimeterConstructionMethod]
+    [addWallAssembly]
   )
 
   const handleDuplicate = useCallback(() => {
-    if (!selectedMethod) return
+    if (!selectedAssembly) return
 
-    const duplicated = duplicatePerimeterConstructionMethod(selectedMethod.id, `${selectedMethod.name} (Copy)`)
-    setSelectedMethodId(duplicated.id)
-  }, [selectedMethod, duplicatePerimeterConstructionMethod])
+    const duplicated = duplicateWallAssembly(selectedAssembly.id, `${selectedAssembly.name} (Copy)`)
+    setSelectedAssemblyId(duplicated.id)
+  }, [selectedAssembly, duplicateWallAssembly])
 
   const handleDelete = useCallback(() => {
-    if (!selectedMethod || usage.isUsed) return
+    if (!selectedAssembly || usage.isUsed) return
 
-    const currentIndex = perimeterMethods.findIndex(m => m.id === selectedMethodId)
-    removePerimeterConstructionMethod(selectedMethod.id)
+    const currentIndex = wallAssemblies.findIndex(m => m.id === selectedAssemblyId)
+    removeWallAssembly(selectedAssembly.id)
 
-    if (perimeterMethods.length > 1) {
-      const nextMethod = perimeterMethods[currentIndex + 1] ?? perimeterMethods[currentIndex - 1]
-      setSelectedMethodId(nextMethod?.id ?? null)
+    if (wallAssemblies.length > 1) {
+      const nextAssembly = wallAssemblies[currentIndex + 1] ?? wallAssemblies[currentIndex - 1]
+      setSelectedAssemblyId(nextAssembly?.id ?? null)
     } else {
-      setSelectedMethodId(null)
+      setSelectedAssemblyId(null)
     }
-  }, [selectedMethod, selectedMethodId, perimeterMethods, removePerimeterConstructionMethod, usage.isUsed])
+  }, [selectedAssembly, selectedAssemblyId, wallAssemblies, removeWallAssembly, usage.isUsed])
 
   const handleUpdateName = useCallback(
     (name: string) => {
-      if (!selectedMethod) return
-      updatePerimeterConstructionMethodName(selectedMethod.id, name)
+      if (!selectedAssembly) return
+      updateWallAssemblyName(selectedAssembly.id, name)
     },
-    [selectedMethod, updatePerimeterConstructionMethodName]
+    [selectedAssembly, updateWallAssemblyName]
   )
 
   return (
@@ -866,11 +851,11 @@ export function PerimeterConfigContent({ initialSelectionId }: PerimeterConfigCo
         <Grid columns="2" gap="2">
           <Flex gap="2" align="end">
             <Flex direction="column" gap="1" flexGrow="1">
-              <PerimeterMethodSelect
-                value={selectedMethodId as PerimeterConstructionMethodId | undefined}
-                onValueChange={setSelectedMethodId}
+              <WallAssemblySelect
+                value={selectedAssemblyId as WallAssemblyId | undefined}
+                onValueChange={setSelectedAssemblyId}
                 showDefaultIndicator
-                defaultMethodId={defaultMethodId}
+                defaultAssemblyId={defaultAssemblyId}
               />
             </Flex>
 
@@ -908,14 +893,14 @@ export function PerimeterConfigContent({ initialSelectionId }: PerimeterConfigCo
               </DropdownMenu.Content>
             </DropdownMenu.Root>
 
-            <IconButton onClick={handleDuplicate} disabled={!selectedMethod} title="Duplicate" variant="soft">
+            <IconButton onClick={handleDuplicate} disabled={!selectedAssembly} title="Duplicate" variant="soft">
               <CopyIcon />
             </IconButton>
 
             <AlertDialog.Root>
               <AlertDialog.Trigger>
                 <IconButton
-                  disabled={!selectedMethod || usage.isUsed}
+                  disabled={!selectedAssembly || usage.isUsed}
                   color="red"
                   title={usage.isUsed ? 'In Use - Cannot Delete' : 'Delete'}
                 >
@@ -923,9 +908,9 @@ export function PerimeterConfigContent({ initialSelectionId }: PerimeterConfigCo
                 </IconButton>
               </AlertDialog.Trigger>
               <AlertDialog.Content>
-                <AlertDialog.Title>Delete Perimeter Method</AlertDialog.Title>
+                <AlertDialog.Title>Delete Perimeter Assembly</AlertDialog.Title>
                 <AlertDialog.Description>
-                  Are you sure you want to delete "{selectedMethod?.name}"? This action cannot be undone.
+                  Are you sure you want to delete "{selectedAssembly?.name}"? This action cannot be undone.
                 </AlertDialog.Description>
                 <Flex gap="3" mt="4" justify="end">
                   <AlertDialog.Cancel>
@@ -946,12 +931,12 @@ export function PerimeterConfigContent({ initialSelectionId }: PerimeterConfigCo
           <Grid columns="auto 1fr" gap="2" align="center">
             <Label.Root>
               <Text size="1" weight="medium" color="gray">
-                Default Perimeter Method
+                Default Perimeter Assembly
               </Text>
             </Label.Root>
-            <PerimeterMethodSelect
-              value={defaultMethodId}
-              onValueChange={value => setDefaultPerimeterMethod(value)}
+            <WallAssemblySelect
+              value={defaultAssemblyId}
+              onValueChange={value => setDefaultWallAssembly(value)}
               placeholder="Select default..."
               size="2"
             />
@@ -960,11 +945,11 @@ export function PerimeterConfigContent({ initialSelectionId }: PerimeterConfigCo
       </Flex>
 
       {/* Form */}
-      {selectedMethod && <ConfigForm method={selectedMethod} onUpdateName={handleUpdateName} />}
+      {selectedAssembly && <ConfigForm assembly={selectedAssembly} onUpdateName={handleUpdateName} />}
 
-      {!selectedMethod && perimeterMethods.length === 0 && (
+      {!selectedAssembly && wallAssemblies.length === 0 && (
         <Flex justify="center" align="center" p="5">
-          <Text color="gray">No perimeter methods yet. Create one using the "New" button above.</Text>
+          <Text color="gray">No wall assemblies yet. Create one using the "New" button above.</Text>
         </Flex>
       )}
 

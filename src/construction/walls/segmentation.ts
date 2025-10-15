@@ -2,10 +2,10 @@ import { vec2, vec3 } from 'gl-matrix'
 
 import type { Opening, Perimeter, PerimeterWall, Storey } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config'
-import type { SlabConstructionConfig, WallLayersConfig } from '@/construction/config/types'
+import type { FloorAssemblyConfig, WallLayersConfig } from '@/construction/config/types'
+import { FLOOR_ASSEMBLIES } from '@/construction/floors'
 import { IDENTITY } from '@/construction/geometry'
 import { type ConstructionResult, yieldArea, yieldMeasurement } from '@/construction/results'
-import { SLAB_CONSTRUCTION_METHODS } from '@/construction/slabs'
 import { TAG_OPENING_SPACING, TAG_WALL_LENGTH } from '@/construction/tags'
 import type { Length } from '@/shared/geometry'
 
@@ -164,17 +164,19 @@ export interface WallStoreyContext {
 
 export function createWallStoreyContext(
   currentStorey: Storey,
-  currentSlabConfig: SlabConstructionConfig,
-  nextSlabConfig: SlabConstructionConfig | null
+  currentFloorAssembly: FloorAssemblyConfig,
+  nextFloorAssembly: FloorAssemblyConfig | null
 ): WallStoreyContext {
-  const currentFloorSlabMethod = SLAB_CONSTRUCTION_METHODS[currentSlabConfig.type]
-  const nextFloorSlabMethod = nextSlabConfig ? SLAB_CONSTRUCTION_METHODS[nextSlabConfig.type] : null
+  const currentFloorSlabAssembly = FLOOR_ASSEMBLIES[currentFloorAssembly.type]
+  const nextFloorSlabAssembly = nextFloorAssembly ? FLOOR_ASSEMBLIES[nextFloorAssembly.type] : null
 
   return {
     storeyHeight: currentStorey.height,
-    floorTopOffset: currentSlabConfig.layers.topThickness + currentFloorSlabMethod.getTopOffset(currentSlabConfig),
+    floorTopOffset:
+      currentFloorAssembly.layers.topThickness + currentFloorSlabAssembly.getTopOffset(currentFloorAssembly),
     ceilingBottomOffset:
-      (nextSlabConfig?.layers.bottomThickness ?? 0) + (nextFloorSlabMethod?.getBottomOffset(nextSlabConfig) ?? 0)
+      (nextFloorAssembly?.layers.bottomThickness ?? 0) +
+      (nextFloorSlabAssembly?.getBottomOffset(nextFloorAssembly) ?? 0)
   }
 }
 
@@ -190,15 +192,15 @@ export function* segmentedWallConstruction(
   const cornerInfo = calculateWallCornerInfo(wall, wallContext)
   const { constructionLength, extensionStart, extensionEnd } = cornerInfo
 
-  const { getRingBeamConstructionMethodById } = getConfigActions()
-  const bottomPlateMethod = perimeter.baseRingBeamMethodId
-    ? getRingBeamConstructionMethodById(perimeter.baseRingBeamMethodId)
+  const { getRingBeamAssemblyById } = getConfigActions()
+  const bottomPlateAssembly = perimeter.baseRingBeamAssemblyId
+    ? getRingBeamAssemblyById(perimeter.baseRingBeamAssemblyId)
     : null
-  const bottomPlateHeight = bottomPlateMethod?.config?.height ?? 0
-  const topPlateMethod = perimeter.topRingBeamMethodId
-    ? getRingBeamConstructionMethodById(perimeter.topRingBeamMethodId)
+  const bottomPlateHeight = bottomPlateAssembly?.config?.height ?? 0
+  const topPlateAssembly = perimeter.topRingBeamAssemblyId
+    ? getRingBeamAssemblyById(perimeter.topRingBeamAssemblyId)
     : null
-  const topPlateHeight = topPlateMethod?.config?.height ?? 0
+  const topPlateHeight = topPlateAssembly?.config?.height ?? 0
 
   const totalConstructionHeight =
     storeyContext.storeyHeight + storeyContext.floorTopOffset + storeyContext.ceilingBottomOffset

@@ -21,7 +21,7 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
   // Get model store functions - use specific selectors for stable references
   const { updatePerimeterCornerConstructedByWall: updateCornerConstructedByWall, removePerimeterCorner } =
     useModelActions()
-  const { getPerimeterConstructionMethodById } = useConfigActions()
+  const { getWallAssemblyById } = useConfigActions()
   const viewportActions = useViewportActions()
 
   // Get perimeter from store
@@ -78,13 +78,13 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
   const hasConstructionNotes = useMemo(() => {
     if (!previousWall || !nextWall) return false
 
-    const prevMethod = getPerimeterConstructionMethodById(previousWall.constructionMethodId)
-    const nextMethod = getPerimeterConstructionMethodById(nextWall.constructionMethodId)
-    const hasMixedConstruction = prevMethod?.config.type !== nextMethod?.config.type
+    const prevAssembly = getWallAssemblyById(previousWall.wallAssemblyId)
+    const nextAssembly = getWallAssemblyById(nextWall.wallAssemblyId)
+    const hasMixedAssembly = prevAssembly?.config.type !== nextAssembly?.config.type
     const hasThicknessDifference = Math.abs(previousWall.thickness - nextWall.thickness) > 5
 
-    return hasMixedConstruction || hasThicknessDifference
-  }, [previousWall, nextWall, getPerimeterConstructionMethodById])
+    return hasMixedAssembly || hasThicknessDifference
+  }, [previousWall, nextWall, getWallAssemblyById])
 
   const isNonStandardAngle = corner.interiorAngle % 90 !== 0
 
@@ -198,15 +198,15 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
           <Heading size="2">Construction Notes</Heading>
 
           {(() => {
-            const prevMethod = getPerimeterConstructionMethodById(previousWall.constructionMethodId)
-            const nextMethod = getPerimeterConstructionMethodById(nextWall.constructionMethodId)
-            return prevMethod?.config.type !== nextMethod?.config.type
+            const prevAssembly = getWallAssemblyById(previousWall.wallAssemblyId)
+            const nextAssembly = getWallAssemblyById(nextWall.wallAssemblyId)
+            return prevAssembly?.config.type !== nextAssembly?.config.type
           })() && (
             <Callout.Root color="amber">
               <Callout.Text>
-                <Text weight="bold">Mixed Construction:</Text>
+                <Text weight="bold">Mixed Assemblies:</Text>
                 <br />
-                Adjacent walls use different construction types. Special attention may be needed at this corner.
+                Adjacent walls use different assembly types. Special attention may be needed at this corner.
               </Callout.Text>
             </Callout.Root>
           )}

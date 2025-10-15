@@ -41,21 +41,21 @@ export function createCrossShapedPerimeter(): void {
   const boundary = { points }
 
   try {
-    // Get default construction methods from config store
+    // Get default assemblies from config store
     const configStore = getConfigActions()
-    const defaultBaseId = configStore.getDefaultBaseRingBeamMethodId()
-    const defaultTopId = configStore.getDefaultTopRingBeamMethodId()
-    const defaultMethodId = configStore.getDefaultPerimeterMethodId()
-    if (!defaultMethodId) {
-      console.error('No default perimeter construction method available')
+    const defaultBaseId = configStore.getDefaultBaseRingBeamAssemblyId()
+    const defaultTopId = configStore.getDefaultTopRingBeamAssemblyId()
+    const defaultAssemblyId = configStore.getDefaultWallAssemblyId()
+    if (!defaultAssemblyId) {
+      console.error('No default wall assembly available')
       return
     }
 
-    // Add the perimeter to the store with default methods
+    // Add the perimeter to the store with default assemblies
     const newPerimeter = modelStore.addPerimeter(
       activeStoreyId,
       boundary,
-      defaultMethodId,
+      defaultAssemblyId,
       440,
       defaultBaseId,
       defaultTopId

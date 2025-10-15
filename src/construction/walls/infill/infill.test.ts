@@ -1,7 +1,7 @@
 import { vec2, vec3 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createOpeningId, createPerimeterConstructionMethodId, createPerimeterId } from '@/building/model/ids'
+import { createOpeningId, createPerimeterId, createWallAssemblyId } from '@/building/model/ids'
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
 import type { WallLayersConfig } from '@/construction/config/types'
 import { IDENTITY } from '@/construction/geometry'
@@ -30,7 +30,7 @@ function createMockStoreyContext(storeyHeight: Length = 2500): WallStoreyContext
 
 // Mock dependencies
 vi.mock('@/construction/floors', () => ({
-  SLAB_CONSTRUCTION_METHODS: {
+  FLOOR_ASSEMBLIES: {
     monolithic: {
       getTopOffset: vi.fn(() => 0),
       getBottomOffset: vi.fn(() => 0)
@@ -146,7 +146,7 @@ function createMockWall(
 ): PerimeterWall {
   return {
     id: id as any,
-    constructionMethodId: createPerimeterConstructionMethodId(),
+    wallAssemblyId: createWallAssemblyId(),
     thickness,
     wallLength,
     insideLength: wallLength,

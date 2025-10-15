@@ -6,7 +6,7 @@ import type { PerimeterId, PerimeterWallId } from '@/building/model/ids'
 import { useModelActions, usePerimeterById } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import type { ConstructionIssue } from '@/construction/results'
-import { PERIMETER_WALL_CONSTRUCTION_METHODS, createWallStoreyContext } from '@/construction/walls'
+import { WALL_ASSEMBLY_BUILDERS, createWallStoreyContext } from '@/construction/walls'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 
 import { BACK_VIEW, ConstructionPlan, FRONT_VIEW, type ViewOption } from './ConstructionPlan'
@@ -90,7 +90,7 @@ export function WallConstructionPlanModal({
   const [containerSize, containerRef] = elementSizeRef()
   const perimeter = usePerimeterById(perimeterId)
   const { getStoreyById, getStoreysOrderedByLevel } = useModelActions()
-  const { getPerimeterConstructionMethodById, getSlabConstructionConfigById } = getConfigActions()
+  const { getWallAssemblyById, getFloorAssemblyConfigById } = getConfigActions()
 
   const constructionModel = useMemo(() => {
     if (!perimeter) return null
@@ -101,32 +101,25 @@ export function WallConstructionPlanModal({
     const storey = getStoreyById(perimeter.storeyId)
     if (!storey) return null
 
-    const method = getPerimeterConstructionMethodById(wall.constructionMethodId)
-    if (!method?.config?.type) return null
+    const assembly = getWallAssemblyById(wall.wallAssemblyId)
+    if (!assembly?.config?.type) return null
 
-    // Use generic construction method registry
-    const constructionMethod = PERIMETER_WALL_CONSTRUCTION_METHODS[method.config.type]
-    if (!constructionMethod) return null
+    // Use generic assembly registry
+    const wallAssembly = WALL_ASSEMBLY_BUILDERS[assembly.config.type]
+    if (!wallAssembly) return null
 
-    const currentSlabConfig = getSlabConstructionConfigById(storey.slabConstructionConfigId)
-    if (!currentSlabConfig) return null
+    const currentFloorAssembly = getFloorAssemblyConfigById(storey.floorAssemblyId)
+    if (!currentFloorAssembly) return null
 
     const allStoreys = getStoreysOrderedByLevel()
     const currentIndex = allStoreys.findIndex(s => s.id === storey.id)
     const nextStorey = currentIndex >= 0 && currentIndex < allStoreys.length - 1 ? allStoreys[currentIndex + 1] : null
-    const nextSlabConfig = nextStorey ? getSlabConstructionConfigById(nextStorey.slabConstructionConfigId) : null
+    const nextFloorAssembly = nextStorey ? getFloorAssemblyConfigById(nextStorey.floorAssemblyId) : null
 
-    const storeyContext = createWallStoreyContext(storey, currentSlabConfig, nextSlabConfig)
+    const storeyContext = createWallStoreyContext(storey, currentFloorAssembly, nextFloorAssembly)
 
-    return constructionMethod(wall, perimeter, storeyContext, method.config, method.layers)
-  }, [
-    perimeter,
-    wallId,
-    getStoreyById,
-    getStoreysOrderedByLevel,
-    getPerimeterConstructionMethodById,
-    getSlabConstructionConfigById
-  ])
+    return wallAssembly(wall, perimeter, storeyContext, assembly.config, assembly.layers)
+  }, [perimeter, wallId, getStoreyById, getStoreysOrderedByLevel, getWallAssemblyById, getFloorAssemblyConfigById])
 
   // Define views for wall construction
   const views: ViewOption[] = [

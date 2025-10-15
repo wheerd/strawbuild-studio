@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import type { Storey } from '@/building/model/model'
 import { useActiveStoreyId, useModelActions } from '@/building/store'
 import { defaultStoreyManagementService } from '@/building/store/services/StoreyManagementService'
-import { SlabConfigSelectWithEdit } from '@/construction/config/components/SlabConfigSelectWithEdit'
+import { FloorAssemblySelectWithEdit } from '@/construction/config/components/FloorAssemblySelectWithEdit'
 import { LengthField } from '@/shared/components/LengthField'
 import { formatLength } from '@/shared/utils/formatLength'
 
@@ -36,7 +36,7 @@ export function StoreyListItem({
   const { setActiveStoreyId } = useModelActions()
   const [editName, setEditName] = useState(storey.name)
 
-  const { updateStoreyName, updateStoreyHeight, updateStoreySlabConfig } = useModelActions()
+  const { updateStoreyName, updateStoreyHeight, updateStoreyFloorAssembly } = useModelActions()
 
   // Calculate button states
   const isLowest = storey.id === lowestStorey.id
@@ -167,9 +167,9 @@ export function StoreyListItem({
         </LengthField>
 
         {/* Slab Configuration */}
-        <SlabConfigSelectWithEdit
-          value={storey.slabConstructionConfigId}
-          onValueChange={value => updateStoreySlabConfig(storey.id, value)}
+        <FloorAssemblySelectWithEdit
+          value={storey.floorAssemblyId}
+          onValueChange={value => updateStoreyFloorAssembly(storey.id, value)}
           size="2"
         />
 

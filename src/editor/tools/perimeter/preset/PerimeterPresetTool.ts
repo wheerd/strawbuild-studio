@@ -123,10 +123,10 @@ export class PerimeterPresetTool extends BaseTool implements ToolImplementation 
       modelStore.addPerimeter(
         activeStoreyId,
         polygon,
-        this.state.presetConfig.constructionMethodId,
+        this.state.presetConfig.wallAssemblyId,
         this.state.presetConfig.thickness,
-        this.state.presetConfig.baseRingBeamMethodId,
-        this.state.presetConfig.topRingBeamMethodId
+        this.state.presetConfig.baseRingBeamAssemblyId,
+        this.state.presetConfig.topRingBeamAssemblyId
       )
 
       // Reset the active preset after successful placement

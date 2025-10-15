@@ -16,49 +16,45 @@ import {
 } from '@radix-ui/themes'
 import React, { useCallback, useMemo, useState } from 'react'
 
-import type { SlabConstructionConfigId } from '@/building/model/ids'
-import { createSlabConstructionConfigId } from '@/building/model/ids'
+import type { FloorAssemblyId } from '@/building/model/ids'
+import { createFloorAssemblyId } from '@/building/model/ids'
 import { useStoreysOrderedByLevel } from '@/building/store'
-import { useConfigActions, useDefaultSlabConfigId, useSlabConstructionConfigs } from '@/construction/config/store'
-import type {
-  MonolithicSlabConstructionConfig,
-  SlabConstructionConfig,
-  SlabConstructionType
-} from '@/construction/config/types'
+import { useConfigActions, useDefaultFloorAssemblyId, useFloorAssemblyConfigs } from '@/construction/config/store'
+import type { FloorAssemblyConfig, FloorAssemblyType, MonolithicFloorAssemblyConfig } from '@/construction/config/types'
 import { getSlabConfigUsage } from '@/construction/config/usage'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
 import '@/shared/geometry'
 
-import { getSlabConstructionTypeIcon } from './Icons'
-import { SlabConfigSelect } from './SlabConfigSelect'
+import { FloorAssemblySelect } from './FloorAssemblySelect'
+import { getFloorAssemblyTypeIcon } from './Icons'
 
-export interface SlabConfigContentProps {
+export interface FloorAssemblyConfigContentProps {
   initialSelectionId?: string
 }
 
-export function SlabConfigContent({ initialSelectionId }: SlabConfigContentProps): React.JSX.Element {
-  const slabConfigs = useSlabConstructionConfigs()
+export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssemblyConfigContentProps): React.JSX.Element {
+  const floorAssemblyConfigs = useFloorAssemblyConfigs()
   const storeys = useStoreysOrderedByLevel()
   const {
-    addSlabConstructionConfig,
-    updateSlabConstructionConfig,
-    duplicateSlabConstructionConfig,
-    removeSlabConstructionConfig,
-    setDefaultSlabConfig
+    addFloorAssemblyConfig,
+    updateFloorAssemblyConfig,
+    duplicateFloorAssemblyConfig,
+    removeFloorAssemblyConfig,
+    setDefaultFloorAssembly
   } = useConfigActions()
 
-  const defaultConfigId = useDefaultSlabConfigId()
+  const defaultConfigId = useDefaultFloorAssemblyId()
 
   const [selectedConfigId, setSelectedConfigId] = useState<string | null>(() => {
-    if (initialSelectionId && slabConfigs.some(c => c.id === initialSelectionId)) {
+    if (initialSelectionId && floorAssemblyConfigs.some(c => c.id === initialSelectionId)) {
       return initialSelectionId
     }
-    return slabConfigs.length > 0 ? slabConfigs[0].id : null
+    return floorAssemblyConfigs.length > 0 ? floorAssemblyConfigs[0].id : null
   })
 
-  const selectedConfig = slabConfigs.find(c => c.id === selectedConfigId) ?? null
+  const selectedConfig = floorAssemblyConfigs.find(c => c.id === selectedConfigId) ?? null
 
   const usage = useMemo(
     () => (selectedConfig ? getSlabConfigUsage(selectedConfig.id, storeys) : { isUsed: false, usedByStoreys: [] }),
@@ -66,11 +62,11 @@ export function SlabConfigContent({ initialSelectionId }: SlabConfigContentProps
   )
 
   const handleAddNew = useCallback(
-    (type: SlabConstructionType) => {
+    (type: FloorAssemblyType) => {
       const defaultMaterial = '' as MaterialId
-      const newId = createSlabConstructionConfigId()
+      const newId = createFloorAssemblyId()
 
-      let config: SlabConstructionConfig
+      let config: FloorAssemblyConfig
       if (type === 'monolithic') {
         config = {
           id: newId,
@@ -101,52 +97,52 @@ export function SlabConfigContent({ initialSelectionId }: SlabConfigContentProps
         }
       }
 
-      const newConfig = addSlabConstructionConfig(config)
+      const newConfig = addFloorAssemblyConfig(config)
       setSelectedConfigId(newConfig.id)
     },
-    [addSlabConstructionConfig]
+    [addFloorAssemblyConfig]
   )
 
   const handleDuplicate = useCallback(() => {
     if (!selectedConfig) return
 
-    const duplicated = duplicateSlabConstructionConfig(selectedConfig.id, `${selectedConfig.name} (Copy)`)
+    const duplicated = duplicateFloorAssemblyConfig(selectedConfig.id, `${selectedConfig.name} (Copy)`)
     setSelectedConfigId(duplicated.id)
-  }, [selectedConfig, duplicateSlabConstructionConfig])
+  }, [selectedConfig, duplicateFloorAssemblyConfig])
 
   const handleDelete = useCallback(() => {
     if (!selectedConfig || usage.isUsed) return
 
     try {
-      const currentIndex = slabConfigs.findIndex(c => c.id === selectedConfigId)
-      removeSlabConstructionConfig(selectedConfig.id)
+      const currentIndex = floorAssemblyConfigs.findIndex(c => c.id === selectedConfigId)
+      removeFloorAssemblyConfig(selectedConfig.id)
 
-      if (slabConfigs.length > 1) {
-        const nextConfig = slabConfigs[currentIndex + 1] ?? slabConfigs[currentIndex - 1]
+      if (floorAssemblyConfigs.length > 1) {
+        const nextConfig = floorAssemblyConfigs[currentIndex + 1] ?? floorAssemblyConfigs[currentIndex - 1]
         setSelectedConfigId(nextConfig?.id ?? null)
       } else {
         setSelectedConfigId(null)
       }
     } catch (error) {
       // Handle error - probably tried to delete last config
-      console.error('Failed to delete slab config:', error)
+      console.error('Failed to delete floor assembly:', error)
     }
-  }, [selectedConfig, selectedConfigId, slabConfigs, removeSlabConstructionConfig, usage.isUsed])
+  }, [selectedConfig, selectedConfigId, floorAssemblyConfigs, removeFloorAssemblyConfig, usage.isUsed])
 
   const handleUpdateName = useCallback(
     (name: string) => {
       if (!selectedConfig) return
-      updateSlabConstructionConfig(selectedConfig.id, { ...selectedConfig, name })
+      updateFloorAssemblyConfig(selectedConfig.id, { ...selectedConfig, name })
     },
-    [selectedConfig, updateSlabConstructionConfig]
+    [selectedConfig, updateFloorAssemblyConfig]
   )
 
   const handleUpdateConfig = useCallback(
-    (updates: Partial<Omit<SlabConstructionConfig, 'id'>>) => {
+    (updates: Partial<Omit<FloorAssemblyConfig, 'id'>>) => {
       if (!selectedConfig) return
-      updateSlabConstructionConfig(selectedConfig.id, { ...selectedConfig, ...updates })
+      updateFloorAssemblyConfig(selectedConfig.id, { ...selectedConfig, ...updates })
     },
-    [selectedConfig, updateSlabConstructionConfig]
+    [selectedConfig, updateFloorAssemblyConfig]
   )
 
   return (
@@ -155,8 +151,8 @@ export function SlabConfigContent({ initialSelectionId }: SlabConfigContentProps
       <Flex direction="column" gap="2">
         <Flex gap="2" align="end">
           <Flex direction="column" gap="1" flexGrow="1">
-            <SlabConfigSelect
-              value={selectedConfigId as SlabConstructionConfigId | undefined}
+            <FloorAssemblySelect
+              value={selectedConfigId as FloorAssemblyId | undefined}
               onValueChange={value => setSelectedConfigId(value ?? null)}
               showDefaultIndicator
               defaultConfigId={defaultConfigId}
@@ -172,13 +168,13 @@ export function SlabConfigContent({ initialSelectionId }: SlabConfigContentProps
             <DropdownMenu.Content>
               <DropdownMenu.Item onSelect={() => handleAddNew('monolithic')}>
                 <Flex align="center" gap="1">
-                  {React.createElement(getSlabConstructionTypeIcon('monolithic'))}
+                  {React.createElement(getFloorAssemblyTypeIcon('monolithic'))}
                   Monolithic Slab
                 </Flex>
               </DropdownMenu.Item>
               <DropdownMenu.Item onSelect={() => handleAddNew('joist')}>
                 <Flex align="center" gap="1">
-                  {React.createElement(getSlabConstructionTypeIcon('joist'))}
+                  {React.createElement(getFloorAssemblyTypeIcon('joist'))}
                   Joist Slab
                 </Flex>
               </DropdownMenu.Item>
@@ -192,12 +188,12 @@ export function SlabConfigContent({ initialSelectionId }: SlabConfigContentProps
           <AlertDialog.Root>
             <AlertDialog.Trigger>
               <IconButton
-                disabled={!selectedConfig || usage.isUsed || slabConfigs.length === 1}
+                disabled={!selectedConfig || usage.isUsed || floorAssemblyConfigs.length === 1}
                 color="red"
                 title={
                   !selectedConfig
                     ? 'No config selected'
-                    : slabConfigs.length === 1
+                    : floorAssemblyConfigs.length === 1
                       ? 'Cannot delete the last config'
                       : usage.isUsed
                         ? 'In Use - Cannot Delete'
@@ -246,7 +242,7 @@ export function SlabConfigContent({ initialSelectionId }: SlabConfigContentProps
             <TextField.Root
               value={selectedConfig.name}
               onChange={e => handleUpdateName(e.target.value)}
-              placeholder="Slab configuration name"
+              placeholder="Floor assembly name"
               size="2"
             />
 
@@ -256,7 +252,7 @@ export function SlabConfigContent({ initialSelectionId }: SlabConfigContentProps
               </Text>
             </Label.Root>
             <Flex gap="2" align="center">
-              {React.createElement(getSlabConstructionTypeIcon(selectedConfig.type))}
+              {React.createElement(getFloorAssemblyTypeIcon(selectedConfig.type))}
               <Text size="2" color="gray">
                 {selectedConfig.type === 'monolithic' ? 'Monolithic' : 'Joist'}
               </Text>
@@ -268,7 +264,7 @@ export function SlabConfigContent({ initialSelectionId }: SlabConfigContentProps
           {selectedConfig.type === 'monolithic' && (
             <MonolithicConfigFields
               config={selectedConfig}
-              onUpdate={updates => handleUpdateConfig(updates as Partial<Omit<SlabConstructionConfig, 'id'>>)}
+              onUpdate={updates => handleUpdateConfig(updates as Partial<Omit<FloorAssemblyConfig, 'id'>>)}
             />
           )}
 
@@ -280,9 +276,9 @@ export function SlabConfigContent({ initialSelectionId }: SlabConfigContentProps
         </Flex>
       )}
 
-      {!selectedConfig && slabConfigs.length === 0 && (
+      {!selectedConfig && floorAssemblyConfigs.length === 0 && (
         <Flex justify="center" align="center" p="5">
-          <Text color="gray">No slab configurations yet. Create one using the "New" button above.</Text>
+          <Text color="gray">No floor assemblies yet. Create one using the "New" button above.</Text>
         </Flex>
       )}
 
@@ -295,9 +291,9 @@ export function SlabConfigContent({ initialSelectionId }: SlabConfigContentProps
               Default Slab Configuration
             </Text>
           </Label.Root>
-          <SlabConfigSelect
+          <FloorAssemblySelect
             value={defaultConfigId}
-            onValueChange={setDefaultSlabConfig}
+            onValueChange={setDefaultFloorAssembly}
             placeholder="Select default..."
             size="2"
           />
@@ -328,8 +324,8 @@ function MonolithicConfigFields({
   config,
   onUpdate
 }: {
-  config: MonolithicSlabConstructionConfig
-  onUpdate: (updates: Omit<MonolithicSlabConstructionConfig, 'id'>) => void
+  config: MonolithicFloorAssemblyConfig
+  onUpdate: (updates: Omit<MonolithicFloorAssemblyConfig, 'id'>) => void
 }) {
   return (
     <>
@@ -369,7 +365,7 @@ function JoistConfigPlaceholder() {
       <Heading size="2">Joist Configuration</Heading>
       <Callout.Root color="amber">
         <Callout.Text>
-          Joist slab construction is not yet supported. Please use monolithic configuration for now.
+          Joist construction is not yet supported. Please use monolithic configuration for now.
         </Callout.Text>
       </Callout.Root>
     </>
@@ -380,8 +376,8 @@ function LayersFields({
   config,
   onUpdate
 }: {
-  config: SlabConstructionConfig
-  onUpdate: (updates: Partial<Omit<SlabConstructionConfig, 'id'>>) => void
+  config: FloorAssemblyConfig
+  onUpdate: (updates: Partial<Omit<FloorAssemblyConfig, 'id'>>) => void
 }) {
   return (
     <>

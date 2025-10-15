@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { createPerimeterConstructionMethodId } from '@/building/model/ids'
+import { createWallAssemblyId } from '@/building/model/ids'
 import '@/shared/geometry'
 
 import { LShapedPreset } from './LShapedPreset'
@@ -21,7 +21,7 @@ describe('LShapedPreset', () => {
     length2: 3000,
     rotation: 0,
     thickness: 440,
-    constructionMethodId: createPerimeterConstructionMethodId(),
+    wallAssemblyId: createWallAssemblyId(),
     ...overrides
   })
 
@@ -89,8 +89,8 @@ describe('LShapedPreset', () => {
       expect(preset.validateConfig(createValidConfig({ thickness: -100 }))).toBe(false)
     })
 
-    it('should reject empty construction method', () => {
-      expect(preset.validateConfig(createValidConfig({ constructionMethodId: '' as any }))).toBe(false)
+    it('should reject empty assembly', () => {
+      expect(preset.validateConfig(createValidConfig({ wallAssemblyId: '' as any }))).toBe(false)
     })
   })
 

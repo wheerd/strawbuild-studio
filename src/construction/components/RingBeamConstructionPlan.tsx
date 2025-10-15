@@ -88,35 +88,35 @@ export function RingBeamConstructionPlanModal({
 
   const perimeter = usePerimeterById(perimeterId)
   const [currentPosition, setCurrentPosition] = useState<'base' | 'top'>(
-    perimeter?.baseRingBeamMethodId ? 'base' : 'top'
+    perimeter?.baseRingBeamAssemblyId ? 'base' : 'top'
   )
-  const { getRingBeamConstructionMethodById } = useConfigActions()
+  const { getRingBeamAssemblyById } = useConfigActions()
 
   const constructionModel = useMemo(() => {
     if (!perimeter) return null
 
-    const methodId = currentPosition === 'base' ? perimeter.baseRingBeamMethodId : perimeter.topRingBeamMethodId
+    const assemblyId = currentPosition === 'base' ? perimeter.baseRingBeamAssemblyId : perimeter.topRingBeamAssemblyId
 
-    if (!methodId) return null
+    if (!assemblyId) return null
 
-    const method = getRingBeamConstructionMethodById(methodId)
-    if (!method) return null
+    const assembly = getRingBeamAssemblyById(assemblyId)
+    if (!assembly) return null
 
     try {
-      return constructRingBeam(perimeter, method.config)
+      return constructRingBeam(perimeter, assembly.config)
     } catch (error) {
       console.error('Failed to generate ring beam construction plan:', error)
       return null
     }
-  }, [perimeter, currentPosition, getRingBeamConstructionMethodById])
+  }, [perimeter, currentPosition, getRingBeamAssemblyById])
 
-  const currentMethod = useMemo(() => {
+  const currentAssembly = useMemo(() => {
     if (!perimeter) return null
 
-    const methodId = currentPosition === 'base' ? perimeter.baseRingBeamMethodId : perimeter.topRingBeamMethodId
+    const assemblyId = currentPosition === 'base' ? perimeter.baseRingBeamAssemblyId : perimeter.topRingBeamAssemblyId
 
-    return methodId ? getRingBeamConstructionMethodById(methodId) : null
-  }, [perimeter, currentPosition, getRingBeamConstructionMethodById])
+    return assemblyId ? getRingBeamAssemblyById(assemblyId) : null
+  }, [perimeter, currentPosition, getRingBeamAssemblyById])
 
   if (!perimeter) {
     return <>{trigger}</>
@@ -152,7 +152,7 @@ export function RingBeamConstructionPlanModal({
             ref={containerRef}
             className="relative grow min-h-[300px] overflow-hidden border border-gray-6 rounded-2"
           >
-            {currentMethod ? (
+            {currentAssembly ? (
               constructionModel ? (
                 <ConstructionPlan
                   model={constructionModel}
@@ -173,7 +173,7 @@ export function RingBeamConstructionPlanModal({
                 <Text align="center" color="gray">
                   <Text size="6">📋</Text>
                   <br />
-                  <Text size="2">No {currentPosition} ring beam method selected</Text>
+                  <Text size="2">No {currentPosition} ring beam assembly selected</Text>
                 </Text>
               </Flex>
             )}
@@ -192,21 +192,21 @@ export function RingBeamConstructionPlanModal({
           </div>
 
           <Flex direction="row" gap="3" flexShrink="0">
-            {/* Method Info Panel */}
+            {/* Assembly Info Panel */}
             <Box flexGrow="1">
-              {currentMethod && (
+              {currentAssembly && (
                 <Card variant="surface" size="1">
                   <Heading size="2" mb="1">
-                    {currentMethod.name}
+                    {currentAssembly.name}
                   </Heading>
                   <Flex direction="column" gap="1">
-                    <Text size="1">Type: {currentMethod.config.type}</Text>
-                    <Text size="1">Height: {currentMethod.config.height}mm</Text>
-                    {currentMethod.config.type === 'full' && (
-                      <Text size="1">Width: {currentMethod.config.width}mm</Text>
+                    <Text size="1">Type: {currentAssembly.config.type}</Text>
+                    <Text size="1">Height: {currentAssembly.config.height}mm</Text>
+                    {currentAssembly.config.type === 'full' && (
+                      <Text size="1">Width: {currentAssembly.config.width}mm</Text>
                     )}
-                    {currentMethod.config.type === 'double' && (
-                      <Text size="1">Thickness: {currentMethod.config.thickness}mm</Text>
+                    {currentAssembly.config.type === 'double' && (
+                      <Text size="1">Thickness: {currentAssembly.config.thickness}mm</Text>
                     )}
                   </Flex>
                 </Card>

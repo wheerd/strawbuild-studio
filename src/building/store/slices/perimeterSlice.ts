@@ -3,12 +3,12 @@ import type { StateCreator } from 'zustand'
 
 import type {
   OpeningId,
-  PerimeterConstructionMethodId,
   PerimeterCornerId,
   PerimeterId,
   PerimeterWallId,
-  RingBeamConstructionMethodId,
-  StoreyId
+  RingBeamAssemblyId,
+  StoreyId,
+  WallAssemblyId
 } from '@/building/model/ids'
 import {
   createOpeningId,
@@ -37,10 +37,10 @@ export interface PerimetersActions {
   addPerimeter: (
     storeyId: StoreyId,
     boundary: Polygon2D,
-    constructionMethodId: PerimeterConstructionMethodId,
+    wallAssemblyId: WallAssemblyId,
     thickness?: Length,
-    baseRingBeamMethodId?: RingBeamConstructionMethodId,
-    topRingBeamMethodId?: RingBeamConstructionMethodId
+    baseRingBeamAssemblyId?: RingBeamAssemblyId,
+    topRingBeamAssemblyId?: RingBeamAssemblyId
   ) => Perimeter
   removePerimeter: (perimeterId: PerimeterId) => void
 
@@ -56,15 +56,11 @@ export interface PerimetersActions {
   ) => PerimeterWallId | null
 
   // Updated to use IDs instead of indices
-  updatePerimeterWallConstructionMethod: (
-    perimeterId: PerimeterId,
-    wallId: PerimeterWallId,
-    methodId: PerimeterConstructionMethodId
-  ) => void
+  updateWallAssemblyBuilder: (perimeterId: PerimeterId, wallId: PerimeterWallId, assemblyId: WallAssemblyId) => void
   updatePerimeterWallThickness: (perimeterId: PerimeterId, wallId: PerimeterWallId, thickness: Length) => void
 
   // Bulk update actions for all walls in a perimeter
-  updateAllPerimeterWallsConstructionMethod: (perimeterId: PerimeterId, methodId: PerimeterConstructionMethodId) => void
+  updateAllPerimeterWallsAssembly: (perimeterId: PerimeterId, assemblyId: WallAssemblyId) => void
   updateAllPerimeterWallsThickness: (perimeterId: PerimeterId, thickness: Length) => void
 
   updatePerimeterCornerConstructedByWall: (
@@ -119,8 +115,8 @@ export interface PerimetersActions {
   updatePerimeterBoundary: (perimeterId: PerimeterId, newBoundary: vec2[]) => boolean
 
   // Ring beam configuration
-  setPerimeterBaseRingBeam: (perimeterId: PerimeterId, methodId: RingBeamConstructionMethodId) => void
-  setPerimeterTopRingBeam: (perimeterId: PerimeterId, methodId: RingBeamConstructionMethodId) => void
+  setPerimeterBaseRingBeam: (perimeterId: PerimeterId, assemblyId: RingBeamAssemblyId) => void
+  setPerimeterTopRingBeam: (perimeterId: PerimeterId, assemblyId: RingBeamAssemblyId) => void
   removePerimeterBaseRingBeam: (perimeterId: PerimeterId) => void
   removePerimeterTopRingBeam: (perimeterId: PerimeterId) => void
 }
@@ -141,10 +137,10 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
     addPerimeter: (
       storeyId: StoreyId,
       boundary: Polygon2D,
-      constructionMethodId: PerimeterConstructionMethodId,
+      wallAssemblyId: WallAssemblyId,
       thickness?: Length,
-      baseRingBeamMethodId?: RingBeamConstructionMethodId,
-      topRingBeamMethodId?: RingBeamConstructionMethodId
+      baseRingBeamAssemblyId?: RingBeamAssemblyId,
+      topRingBeamAssemblyId?: RingBeamAssemblyId
     ) => {
       if (boundary.points.length < 3) {
         throw new Error('Perimeter boundary must have at least 3 points')
@@ -173,7 +169,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         const walls: PerimeterWall[] = boundary.points.map(() => ({
           id: createPerimeterWallId(),
           thickness: wallThickness,
-          constructionMethodId,
+          wallAssemblyId,
           openings: [],
           // Geometry properties will be set by updatePerimeterGeometry
           insideLength: 0,
@@ -190,8 +186,8 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
           storeyId,
           walls,
           corners,
-          baseRingBeamMethodId,
-          topRingBeamMethodId
+          baseRingBeamAssemblyId,
+          topRingBeamAssemblyId
         }
 
         // Calculate all geometry using the mutable helper
@@ -329,7 +325,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         const firstWall: PerimeterWall = {
           id: createPerimeterWallId(),
           thickness: originalWall.thickness,
-          constructionMethodId: originalWall.constructionMethodId,
+          wallAssemblyId: originalWall.wallAssemblyId,
           openings: firstWallOpenings,
           // Geometry will be set by updatePerimeterGeometry
           insideLength: 0,
@@ -344,7 +340,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         const secondWall: PerimeterWall = {
           id: createPerimeterWallId(),
           thickness: originalWall.thickness,
-          constructionMethodId: originalWall.constructionMethodId,
+          wallAssemblyId: originalWall.wallAssemblyId,
           openings: secondWallOpenings,
           // Geometry will be set by updatePerimeterGeometry
           insideLength: 0,
@@ -373,18 +369,14 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
     },
 
     // Update operations
-    updatePerimeterWallConstructionMethod: (
-      perimeterId: PerimeterId,
-      wallId: PerimeterWallId,
-      methodId: PerimeterConstructionMethodId
-    ) => {
+    updateWallAssemblyBuilder: (perimeterId: PerimeterId, wallId: PerimeterWallId, assemblyId: WallAssemblyId) => {
       set(state => {
         const perimeter = state.perimeters[perimeterId]
         if (perimeter == null) return
 
         const wallIndex = perimeter.walls.findIndex((wall: PerimeterWall) => wall.id === wallId)
         if (wallIndex !== -1) {
-          perimeter.walls[wallIndex].constructionMethodId = methodId
+          perimeter.walls[wallIndex].wallAssemblyId = assemblyId
         }
       })
     },
@@ -407,13 +399,13 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
     },
 
     // Bulk update operations for all walls in a perimeter
-    updateAllPerimeterWallsConstructionMethod: (perimeterId: PerimeterId, methodId: PerimeterConstructionMethodId) => {
+    updateAllPerimeterWallsAssembly: (perimeterId: PerimeterId, assemblyId: WallAssemblyId) => {
       set(state => {
         const perimeter = state.perimeters[perimeterId]
         if (perimeter == null) return
 
         perimeter.walls.forEach(wall => {
-          wall.constructionMethodId = methodId
+          wall.wallAssemblyId = assemblyId
         })
       })
     },
@@ -738,21 +730,21 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
     },
 
     // Ring beam configuration
-    setPerimeterBaseRingBeam: (perimeterId: PerimeterId, methodId: RingBeamConstructionMethodId) => {
+    setPerimeterBaseRingBeam: (perimeterId: PerimeterId, assemblyId: RingBeamAssemblyId) => {
       set(state => {
         const perimeter = state.perimeters[perimeterId]
         if (!perimeter) return
 
-        perimeter.baseRingBeamMethodId = methodId
+        perimeter.baseRingBeamAssemblyId = assemblyId
       })
     },
 
-    setPerimeterTopRingBeam: (perimeterId: PerimeterId, methodId: RingBeamConstructionMethodId) => {
+    setPerimeterTopRingBeam: (perimeterId: PerimeterId, assemblyId: RingBeamAssemblyId) => {
       set(state => {
         const perimeter = state.perimeters[perimeterId]
         if (!perimeter) return
 
-        perimeter.topRingBeamMethodId = methodId
+        perimeter.topRingBeamAssemblyId = assemblyId
       })
     },
 
@@ -761,7 +753,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         const perimeter = state.perimeters[perimeterId]
         if (!perimeter) return
 
-        perimeter.baseRingBeamMethodId = undefined
+        perimeter.baseRingBeamAssemblyId = undefined
       })
     },
 
@@ -770,7 +762,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         const perimeter = state.perimeters[perimeterId]
         if (!perimeter) return
 
-        perimeter.topRingBeamMethodId = undefined
+        perimeter.topRingBeamAssemblyId = undefined
       })
     }
   }
@@ -998,7 +990,7 @@ const removeCornerAndMergeWalls = (perimeter: Perimeter, cornerIndex: number): v
   const mergedWall: PerimeterWall = {
     id: createPerimeterWallId(),
     thickness: mergedThickness,
-    constructionMethodId: wall1.constructionMethodId,
+    wallAssemblyId: wall1.wallAssemblyId,
     openings: isExactlyStraight ? mergeOpeningsForStraightCorner(wall1, wall2) : [], // Keep current behavior for non-straight corners
     // Geometry properties will be set by updatePerimeterGeometry
     insideLength: 0,
@@ -1058,7 +1050,7 @@ const removeWallAndMergeAdjacent = (perimeter: Perimeter, wallIndex: number): vo
   const mergedWall: PerimeterWall = {
     id: createPerimeterWallId(),
     thickness: mergedThickness,
-    constructionMethodId: prevWall.constructionMethodId,
+    wallAssemblyId: prevWall.wallAssemblyId,
     openings: [], // Openings are deleted
     // Geometry properties will be set by updatePerimeterGeometry
     insideLength: 0,

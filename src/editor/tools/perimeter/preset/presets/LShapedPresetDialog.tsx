@@ -3,9 +3,9 @@ import { Button, Dialog, Flex, Grid, Heading, IconButton, SegmentedControl, Text
 import { vec2 } from 'gl-matrix'
 import { useCallback, useEffect, useState } from 'react'
 
-import type { PerimeterConstructionMethodId } from '@/building/model/ids'
-import { PerimeterMethodSelectWithEdit } from '@/construction/config/components/PerimeterMethodSelectWithEdit'
-import { RingBeamMethodSelectWithEdit } from '@/construction/config/components/RingBeamMethodSelectWithEdit'
+import type { WallAssemblyId } from '@/building/model/ids'
+import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
+import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import { useConfigActions } from '@/construction/config/store'
 import { LengthField } from '@/shared/components/LengthField'
 import { offsetPolygon } from '@/shared/geometry'
@@ -158,9 +158,9 @@ function LShapedPresetDialogContent({
     length2: 3000, // 3m extension length
     rotation: 0,
     thickness: 440, // 44cm default
-    constructionMethodId: configStore.getDefaultPerimeterMethodId(),
-    baseRingBeamMethodId: configStore.getDefaultBaseRingBeamMethodId(),
-    topRingBeamMethodId: configStore.getDefaultTopRingBeamMethodId(),
+    wallAssemblyId: configStore.getDefaultWallAssemblyId(),
+    baseRingBeamAssemblyId: configStore.getDefaultBaseRingBeamAssemblyId(),
+    topRingBeamAssemblyId: configStore.getDefaultTopRingBeamAssemblyId(),
     ...initialConfig
   }))
 
@@ -341,17 +341,17 @@ function LShapedPresetDialogContent({
                 />
               </Flex>
 
-              {/* Construction Method */}
+              {/* Wall Assembly */}
               <Flex direction="column" gap="1">
                 <Text size="1" color="gray">
-                  Construction Method
+                  Wall Assembly
                 </Text>
-                <PerimeterMethodSelectWithEdit
-                  value={config.constructionMethodId ?? undefined}
-                  onValueChange={(value: PerimeterConstructionMethodId) => {
-                    setConfig(prev => ({ ...prev, constructionMethodId: value }))
+                <WallAssemblySelectWithEdit
+                  value={config.wallAssemblyId ?? undefined}
+                  onValueChange={(value: WallAssemblyId) => {
+                    setConfig(prev => ({ ...prev, wallAssemblyId: value }))
                   }}
-                  placeholder="Select method"
+                  placeholder="Select assembly"
                   size="1"
                 />
               </Flex>
@@ -361,10 +361,10 @@ function LShapedPresetDialogContent({
                 <Text size="1" color="gray">
                   Base Plate
                 </Text>
-                <RingBeamMethodSelectWithEdit
-                  value={config.baseRingBeamMethodId}
+                <RingBeamAssemblySelectWithEdit
+                  value={config.baseRingBeamAssemblyId}
                   onValueChange={value => {
-                    setConfig(prev => ({ ...prev, baseRingBeamMethodId: value }))
+                    setConfig(prev => ({ ...prev, baseRingBeamAssemblyId: value }))
                   }}
                   placeholder="None"
                   size="1"
@@ -377,10 +377,10 @@ function LShapedPresetDialogContent({
                 <Text size="1" color="gray">
                   Top Plate
                 </Text>
-                <RingBeamMethodSelectWithEdit
-                  value={config.topRingBeamMethodId}
+                <RingBeamAssemblySelectWithEdit
+                  value={config.topRingBeamAssemblyId}
                   onValueChange={value => {
-                    setConfig(prev => ({ ...prev, topRingBeamMethodId: value }))
+                    setConfig(prev => ({ ...prev, topRingBeamAssemblyId: value }))
                   }}
                   placeholder="None"
                   size="1"

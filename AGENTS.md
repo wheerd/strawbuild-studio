@@ -60,5 +60,5 @@ src/
 ## Product Context
 
 - Floor plan editor focused on strawbale construction
-- Current capabilities: finished-dimension walls, windows/doors, configurable construction methods, 2D plans, and interactive 3D previews
+- Current capabilities: finished-dimension walls, windows/doors, configurable assemblies, 2D plans, and interactive 3D previews
 - Planned additions: material and cost estimation, extended structural support, CAD import/export, irregular building handling

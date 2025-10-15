@@ -1,18 +1,10 @@
 import { vec2 } from 'gl-matrix'
 
-import type {
-  PerimeterConstructionMethodId,
-  RingBeamConstructionMethodId,
-  SlabConstructionConfigId
-} from '@/building/model/ids'
+import type { FloorAssemblyId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import type { Storey } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { getConfigState, setConfigState } from '@/construction/config/store'
-import type {
-  PerimeterConstructionMethod,
-  RingBeamConstructionMethod,
-  SlabConstructionConfig
-} from '@/construction/config/types'
+import type { FloorAssemblyConfig, RingBeamAssembly, WallAssembly } from '@/construction/config/types'
 import type { Material, MaterialId } from '@/construction/materials/material'
 import { getMaterialsState, setMaterialsState } from '@/construction/materials/store'
 import type { Polygon2D } from '@/shared/geometry'
@@ -20,15 +12,15 @@ import type { Polygon2D } from '@/shared/geometry'
 export interface ExportedStorey {
   name: string
   height: number
-  slabConstructionConfigId: string
+  floorAssemblyId: string
   perimeters: ExportedPerimeter[]
 }
 
 export interface ExportedPerimeter {
   corners: ExportedCorner[]
   walls: ExportedWall[]
-  baseRingBeamMethodId?: string
-  topRingBeamMethodId?: string
+  baseRingBeamAssemblyId?: string
+  topRingBeamAssemblyId?: string
 }
 
 export interface ExportedCorner {
@@ -39,7 +31,7 @@ export interface ExportedCorner {
 
 export interface ExportedWall {
   thickness: number
-  constructionMethodId: string
+  wallAssemblyId: string
   openings: ExportedOpening[]
 }
 
@@ -59,13 +51,13 @@ export interface ExportData {
     minLevel: number
   }
   configStore: {
-    ringBeamConstructionMethods: Record<RingBeamConstructionMethodId, RingBeamConstructionMethod>
-    perimeterConstructionMethods: Record<PerimeterConstructionMethodId, PerimeterConstructionMethod>
-    slabConstructionConfigs?: Record<SlabConstructionConfigId, SlabConstructionConfig>
-    defaultBaseRingBeamMethodId?: RingBeamConstructionMethodId
-    defaultTopRingBeamMethodId?: RingBeamConstructionMethodId
-    defaultPerimeterMethodId: PerimeterConstructionMethodId
-    defaultSlabConfigId?: SlabConstructionConfigId
+    ringBeamAssemblies: Record<RingBeamAssemblyId, RingBeamAssembly>
+    wallAssemblies: Record<WallAssemblyId, WallAssembly>
+    floorAssemblyConfigs?: Record<FloorAssemblyId, FloorAssemblyConfig>
+    defaultBaseRingBeamAssemblyId?: RingBeamAssemblyId
+    defaultTopRingBeamAssemblyId?: RingBeamAssemblyId
+    defaultWallAssemblyId: WallAssemblyId
+    defaultFloorAssemblyId?: FloorAssemblyId
   }
   materialsStore: {
     materials: Record<MaterialId, Material>
@@ -114,7 +106,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
       const exportedStoreys: ExportedStorey[] = storeys.map(storey => ({
         name: storey.name,
         height: Number(storey.height),
-        slabConstructionConfigId: storey.slabConstructionConfigId,
+        floorAssemblyId: storey.floorAssemblyId,
         perimeters: modelActions.getPerimetersByStorey(storey.id).map(perimeter => ({
           corners: perimeter.corners.map(corner => ({
             insideX: corner.insidePoint[0],
@@ -123,7 +115,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
           })),
           walls: perimeter.walls.map(wall => ({
             thickness: Number(wall.thickness),
-            constructionMethodId: wall.constructionMethodId,
+            wallAssemblyId: wall.wallAssemblyId,
             openings: wall.openings.map(opening => ({
               type: opening.type,
               offsetFromStart: Number(opening.offsetFromStart),
@@ -132,8 +124,8 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
               sillHeight: opening.sillHeight ? Number(opening.sillHeight) : undefined
             }))
           })),
-          baseRingBeamMethodId: perimeter.baseRingBeamMethodId,
-          topRingBeamMethodId: perimeter.topRingBeamMethodId
+          baseRingBeamAssemblyId: perimeter.baseRingBeamAssemblyId,
+          topRingBeamAssemblyId: perimeter.topRingBeamAssemblyId
         }))
       }))
 
@@ -185,17 +177,17 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
 
       exportedStoreys.forEach((exportedStorey, index) => {
         let targetStorey: Storey
-        const slabConfigId = exportedStorey.slabConstructionConfigId as SlabConstructionConfigId
+        const floorAssemblyId = exportedStorey.floorAssemblyId as FloorAssemblyId
 
         if (index === 0) {
           // Modify existing default ground floor
           targetStorey = defaultGroundFloor
           modelActions.updateStoreyName(targetStorey.id, exportedStorey.name)
           modelActions.updateStoreyHeight(targetStorey.id, exportedStorey.height)
-          modelActions.updateStoreySlabConfig(targetStorey.id, slabConfigId)
+          modelActions.updateStoreyFloorAssembly(targetStorey.id, floorAssemblyId)
         } else {
           // Add additional storeys with floor config
-          targetStorey = modelActions.addStorey(exportedStorey.name, exportedStorey.height, slabConfigId)
+          targetStorey = modelActions.addStorey(exportedStorey.name, exportedStorey.height, floorAssemblyId)
         }
 
         // 6. Recreate perimeters - let store auto-compute all geometry
@@ -204,18 +196,18 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
             points: exportedPerimeter.corners.map(c => vec2.fromValues(c.insideX, c.insideY))
           }
 
-          // Get construction method from first wall or use default
-          const constructionMethodId = exportedPerimeter.walls[0]?.constructionMethodId as PerimeterConstructionMethodId
+          // Get assembly from first wall or use default
+          const wallAssemblyId = exportedPerimeter.walls[0]?.wallAssemblyId as WallAssemblyId
           const thickness = exportedPerimeter.walls[0]?.thickness || 200
 
           // Basic perimeter creation - auto-computes geometry, outsidePoints, etc.
           const perimeter = modelActions.addPerimeter(
             targetStorey.id,
             boundary,
-            constructionMethodId,
+            wallAssemblyId,
             thickness,
-            exportedPerimeter.baseRingBeamMethodId as RingBeamConstructionMethodId | undefined,
-            exportedPerimeter.topRingBeamMethodId as RingBeamConstructionMethodId | undefined
+            exportedPerimeter.baseRingBeamAssemblyId as RingBeamAssemblyId | undefined,
+            exportedPerimeter.topRingBeamAssemblyId as RingBeamAssemblyId | undefined
           )
 
           // 7. Update wall properties - auto-recomputes geometry
@@ -224,11 +216,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
 
             // Basic wall updates - auto-computes all derived properties
             modelActions.updatePerimeterWallThickness(perimeter.id, wallId, exportedWall.thickness)
-            modelActions.updatePerimeterWallConstructionMethod(
-              perimeter.id,
-              wallId,
-              exportedWall.constructionMethodId as PerimeterConstructionMethodId
-            )
+            modelActions.updateWallAssemblyBuilder(perimeter.id, wallId, exportedWall.wallAssemblyId as WallAssemblyId)
 
             // Add openings
             exportedWall.openings.forEach(exportedOpening => {
@@ -337,9 +325,9 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
 
     const configStore = obj.configStore as Record<string, unknown>
     if (
-      typeof configStore.ringBeamConstructionMethods !== 'object' ||
-      typeof configStore.perimeterConstructionMethods !== 'object' ||
-      typeof configStore.defaultPerimeterMethodId !== 'string'
+      typeof configStore.ringBeamAssemblies !== 'object' ||
+      typeof configStore.wallAssemblies !== 'object' ||
+      typeof configStore.defaultWallAssemblyId !== 'string'
     ) {
       return false
     }

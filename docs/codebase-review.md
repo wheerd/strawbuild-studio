@@ -3,9 +3,9 @@
 ## Overview
 
 - React 19 single-page app that loads the editor shell via suspense (`src/app/App.tsx`) and bootstraps theming, material styling, and service worker support in `src/app/main.tsx`.
-- Core state lives in Zustand stores with undo/redo, local persistence, and configuration repositories for materials, slabs, ring beams, and perimeter construction methods.
+- Core state lives in Zustand stores with undo/redo, local persistence, and configuration repositories for materials, floors, ring beams, and wall assemblies.
 - Editors present a 2D plan canvas (Konva) backed by a modular tool system and provide SVG construction plans plus a Three.js 3D viewer generated from construction models.
-- Business logic focuses on generating wall segments, openings, ring beams, and slabs for strawbale-centric construction strategies before merging them into renderable construction models.
+- Business logic focuses on generating wall segments, openings, ring beams, and floors for strawbale-centric construction strategies before merging them into renderable construction models.
 
 ## Architecture
 
@@ -20,7 +20,7 @@
 - The building model store (`src/building/store/index.ts:42`) combines slices for storeys and perimeters, wraps them with `immer` for ergonomic mutations, persists state to `localStorage`, and layers undo/redo through `zundo`.
 - Perimeter geometry and wall data are maintained in `src/building/store/slices/perimeterSlice.ts`, which recalculates wall directions, offsets, openings, and corner metadata whenever topology changes.
 - Storey management lives in `src/building/store/slices/storeysSlice.ts`, enforcing positive heights, preserving a default ground floor, and exposing helpers such as `adjustAllLevels`.
-- Configuration data (materials, wall methods, slabs, ring beams) is centralized in `src/construction/config/store.ts`, persisted with Zustand middleware, and exposed through hooks/context (`ConfigurationModalContext`).
+- Configuration data (materials, wall methods, floors, ring beams) is centralized in `src/construction/config/store.ts`, persisted with Zustand middleware, and exposed through hooks/context (`ConfigurationModalContext`).
 - Materials have their own store (`src/construction/materials/store.ts`) seeded with defaults, validated for dimensional sanity, and used both for rendering and CSS generation (`materialCSS.ts`).
 
 ### Editor Experience
@@ -32,8 +32,8 @@
 
 ### Construction Rendering
 
-- `constructModel` (`src/construction/storey.ts:14`) walks ordered storeys, builds each perimeter via `constructPerimeter`, applies vertical offsets determined by slab configs, and merges results into a single `ConstructionModel`.
-- `constructPerimeter` (`src/construction/perimeter.ts:13`) retrieves the relevant storey, resolves construction methods, builds ring beams, constructs each wall via strategy-specific handlers, and then creates the slab footprint.
+- `constructModel` (`src/construction/storey.ts:14`) walks ordered storeys, builds each perimeter via `constructPerimeter`, applies vertical offsets determined by floor configs, and merges results into a single `ConstructionModel`.
+- `constructPerimeter` (`src/construction/perimeter.ts:13`) retrieves the relevant storey, resolves assemblies, builds ring beams, constructs each wall via strategy-specific handlers, and then creates the floor footprint.
 - 2D plan rendering lives in `src/construction/components/ConstructionPlan.tsx`, projecting `ConstructionModel` elements into SVG, layering highlighted areas, errors, warnings, and auto-generated measurements.
 - The 3D viewer (`src/construction/viewer3d/ConstructionViewer3D.tsx`) renders the same construction model using `@react-three/fiber`, with orbit controls, grid helper, opacity controls, and export tooling.
 
@@ -66,13 +66,13 @@
 
 ### Slabs & Storey Context
 
-- Slab methods (`src/construction/slabs`) expose interfaces for construction thickness and offsets. The monolithic implementation extrudes the construction polygon; the joist path is still marked TODO (`src/construction/slabs/joists.ts:6`).
-- `createWallStoreyContext` (`src/construction/walls/segmentation.ts:163`) combines slab top/bottom offsets with storey heights to define construction heights for wall segments, informing floor-level cuts and plate placement.
+- Slab methods (`src/construction/floors`) expose interfaces for construction thickness and offsets. The monolithic implementation extrudes the construction polygon; the joist path is still marked TODO (`src/construction/floors/joists.ts:6`).
+- `createWallStoreyContext` (`src/construction/walls/segmentation.ts:163`) combines floor top/bottom offsets with storey heights to define construction heights for wall segments, informing floor-level cuts and plate placement.
 
 ### Materials, Tags, and Results
 
 - Materials are typed (`src/construction/materials/material.ts`) by dimensional capabilities, seeded with straw, strawbale, various lumber sizes, and CLT sheets. `injectMaterialCSS` creates per-material SVG CSS classes.
-- Construction results (`src/construction/results.ts`) provide a generator-friendly API for aggregating elements, warnings, errors, measurements, and highlighted areas, making it easy for wall/slab/ring-beam code to annotate output.
+- Construction results (`src/construction/results.ts`) provide a generator-friendly API for aggregating elements, warnings, errors, measurements, and highlighted areas, making it easy for wall/floor/ring-beam code to annotate output.
 - Tags (`src/construction/tags.ts`) categorize components (straw, wall wood, measurements, openings) and are attached throughout construction for filtering in viewers or plan legends.
 
 ## Third-Party Dependencies

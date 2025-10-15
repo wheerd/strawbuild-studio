@@ -6,8 +6,8 @@ const PERIMETER_WALL_ID_PREFIX = 'outwall_'
 const PERIMETER_CORNER_ID_PREFIX = 'outcorner_'
 const OPENING_ID_PREFIX = 'opening_'
 const RING_BEAM_ID_PREFIX = 'ringbeam_'
-const PERIMETER_CONSTRUCTION_METHOD_ID_PREFIX = 'pwcm_'
-const SLAB_CONSTRUCTION_CONFIG_ID_PREFIX = 'scm_'
+const WALL_ASSEMBLY_ID_PREFIX = 'wa_'
+const FLOOR_ASSEMBLY_ID_PREFIX = 'fa_'
 
 // Strong typing for entity IDs
 export type StoreyId = `${typeof STOREY_ID_PREFIX}${string}`
@@ -22,9 +22,9 @@ export type EntityId = StoreyId | PerimeterId
 export type SelectableId = StoreyId | PerimeterId | PerimeterWallId | PerimeterCornerId | OpeningId
 
 // Config ids
-export type RingBeamConstructionMethodId = `${typeof RING_BEAM_ID_PREFIX}${string}`
-export type PerimeterConstructionMethodId = `${typeof PERIMETER_CONSTRUCTION_METHOD_ID_PREFIX}${string}`
-export type SlabConstructionConfigId = `${typeof SLAB_CONSTRUCTION_CONFIG_ID_PREFIX}${string}`
+export type RingBeamAssemblyId = `${typeof RING_BEAM_ID_PREFIX}${string}`
+export type WallAssemblyId = `${typeof WALL_ASSEMBLY_ID_PREFIX}${string}`
+export type FloorAssemblyId = `${typeof FLOOR_ASSEMBLY_ID_PREFIX}${string}`
 
 // ID generation helpers
 export const createStoreyId = (): StoreyId => createId(STOREY_ID_PREFIX)
@@ -36,14 +36,12 @@ export const createPerimeterCornerId = (): PerimeterCornerId => createId(PERIMET
 export const createOpeningId = (): OpeningId => createId(OPENING_ID_PREFIX)
 
 // Config ID generators
-export const createRingBeamConstructionMethodId = (): RingBeamConstructionMethodId => createId(RING_BEAM_ID_PREFIX)
-export const createPerimeterConstructionMethodId = (): PerimeterConstructionMethodId =>
-  createId(PERIMETER_CONSTRUCTION_METHOD_ID_PREFIX)
-export const createSlabConstructionConfigId = (): SlabConstructionConfigId =>
-  createId(SLAB_CONSTRUCTION_CONFIG_ID_PREFIX)
+export const createRingBeamAssemblyId = (): RingBeamAssemblyId => createId(RING_BEAM_ID_PREFIX)
+export const createWallAssemblyId = (): WallAssemblyId => createId(WALL_ASSEMBLY_ID_PREFIX)
+export const createFloorAssemblyId = (): FloorAssemblyId => createId(FLOOR_ASSEMBLY_ID_PREFIX)
 
-// Default slab construction config ID constant
-export const DEFAULT_SLAB_CONFIG_ID = 'scm_clt_default' as SlabConstructionConfigId
+// Default floor construction config ID constant
+export const DEFAULT_FLOOR_ASSEMBLY_ID = 'fa_clt_default' as FloorAssemblyId
 
 // Type guards for runtime ID validation
 export const isStoreyId = (id: string): id is StoreyId => id.startsWith(STOREY_ID_PREFIX)
@@ -55,12 +53,9 @@ export const isPerimeterCornerId = (id: string): id is PerimeterCornerId => id.s
 export const isOpeningId = (id: string): id is OpeningId => id.startsWith(OPENING_ID_PREFIX)
 
 // Config type guards
-export const isRingBeamConstructionMethodId = (id: string): id is RingBeamConstructionMethodId =>
-  id.startsWith(RING_BEAM_ID_PREFIX)
-export const isPerimeterConstructionMethodId = (id: string): id is PerimeterConstructionMethodId =>
-  id.startsWith(PERIMETER_CONSTRUCTION_METHOD_ID_PREFIX)
-export const isSlabConstructionConfigId = (id: string): id is SlabConstructionConfigId =>
-  id.startsWith(SLAB_CONSTRUCTION_CONFIG_ID_PREFIX)
+export const isRingBeamAssemblyId = (id: string): id is RingBeamAssemblyId => id.startsWith(RING_BEAM_ID_PREFIX)
+export const isWallAssemblyId = (id: string): id is WallAssemblyId => id.startsWith(WALL_ASSEMBLY_ID_PREFIX)
+export const isFloorAssemblyId = (id: string): id is FloorAssemblyId => id.startsWith(FLOOR_ASSEMBLY_ID_PREFIX)
 
 // Entity type definitions for hit testing
 export type EntityType = 'storey' | 'perimeter' | 'perimeter-wall' | 'perimeter-corner' | 'opening'

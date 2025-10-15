@@ -42,6 +42,6 @@ export class RectangularPreset implements PerimeterPreset<RectangularPresetConfi
    * Validate rectangular preset configuration
    */
   validateConfig(config: RectangularPresetConfig): boolean {
-    return config.width > 0 && config.length > 0 && config.thickness > 0 && config.constructionMethodId.length > 0
+    return config.width > 0 && config.length > 0 && config.thickness > 0 && config.wallAssemblyId.length > 0
   }
 }

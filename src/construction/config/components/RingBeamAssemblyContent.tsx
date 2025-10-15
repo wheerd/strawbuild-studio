@@ -15,60 +15,60 @@ import {
 } from '@radix-ui/themes'
 import React, { useCallback, useMemo, useState } from 'react'
 
-import type { RingBeamConstructionMethodId } from '@/building/model/ids'
+import type { RingBeamAssemblyId } from '@/building/model/ids'
 import { usePerimeters, useStoreysOrderedByLevel } from '@/building/store'
 import {
   useConfigActions,
-  useDefaultBaseRingBeamMethodId,
-  useDefaultTopRingBeamMethodId,
-  useRingBeamConstructionMethods
+  useDefaultBaseRingBeamAssemblyId,
+  useDefaultTopRingBeamAssemblyId,
+  useRingBeamAssemblies
 } from '@/construction/config/store'
 import { getRingBeamConfigUsage } from '@/construction/config/usage'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
+import type { RingBeamConfig } from '@/construction/ringBeams/ringBeams'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
 
-import type { RingBeamConfig } from './../../ringBeams/ringBeams'
 import { getRingBeamTypeIcon } from './Icons'
-import { RingBeamMethodSelect } from './RingBeamMethodSelect'
+import { RingBeamAssemblySelect } from './RingBeamAssemblySelect'
 
 type RingBeamType = 'full' | 'double'
 
-export interface RingBeamConfigContentProps {
+export interface RingBeamAssemblyContentProps {
   initialSelectionId?: string
 }
 
-export function RingBeamConfigContent({ initialSelectionId }: RingBeamConfigContentProps): React.JSX.Element {
-  const ringBeamMethods = useRingBeamConstructionMethods()
+export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssemblyContentProps): React.JSX.Element {
+  const ringBeamAssemblies = useRingBeamAssemblies()
   const perimeters = usePerimeters()
   const storeys = useStoreysOrderedByLevel()
   const {
-    addRingBeamConstructionMethod,
-    updateRingBeamConstructionMethodName,
-    updateRingBeamConstructionMethodConfig,
-    removeRingBeamConstructionMethod,
-    setDefaultBaseRingBeamMethod,
-    setDefaultTopRingBeamMethod
+    addRingBeamAssembly,
+    updateRingBeamAssemblyName,
+    updateRingBeamAssemblyConfig,
+    removeRingBeamAssembly,
+    setDefaultBaseRingBeamAssembly,
+    setDefaultTopRingBeamAssembly
   } = useConfigActions()
 
-  const defaultBaseId = useDefaultBaseRingBeamMethodId()
-  const defaultTopId = useDefaultTopRingBeamMethodId()
+  const defaultBaseId = useDefaultBaseRingBeamAssemblyId()
+  const defaultTopId = useDefaultTopRingBeamAssemblyId()
 
-  const [selectedMethodId, setSelectedMethodId] = useState<string | null>(() => {
-    if (initialSelectionId && ringBeamMethods.some(m => m.id === initialSelectionId)) {
+  const [selectedAssemblyId, setSelectedAssemblyId] = useState<string | null>(() => {
+    if (initialSelectionId && ringBeamAssemblies.some(m => m.id === initialSelectionId)) {
       return initialSelectionId
     }
-    return ringBeamMethods.length > 0 ? ringBeamMethods[0].id : null
+    return ringBeamAssemblies.length > 0 ? ringBeamAssemblies[0].id : null
   })
 
-  const selectedMethod = ringBeamMethods.find(m => m.id === selectedMethodId) ?? null
+  const selectedAssembly = ringBeamAssemblies.find(m => m.id === selectedAssemblyId) ?? null
 
   const usage = useMemo(
     () =>
-      selectedMethod
-        ? getRingBeamConfigUsage(selectedMethod.id, Object.values(perimeters), Object.values(storeys))
+      selectedAssembly
+        ? getRingBeamConfigUsage(selectedAssembly.id, Object.values(perimeters), Object.values(storeys))
         : { isUsed: false, usedByPerimeters: [] },
-    [selectedMethod, perimeters, storeys]
+    [selectedAssembly, perimeters, storeys]
   )
 
   const handleAddNew = useCallback(
@@ -96,48 +96,48 @@ export function RingBeamConfigContent({ initialSelectionId }: RingBeamConfigCont
         }
       }
 
-      const newMethod = addRingBeamConstructionMethod(`New ${type} ring beam`, config)
-      setSelectedMethodId(newMethod.id)
+      const newAssembly = addRingBeamAssembly(`New ${type} ring beam`, config)
+      setSelectedAssemblyId(newAssembly.id)
     },
-    [addRingBeamConstructionMethod]
+    [addRingBeamAssembly]
   )
 
   const handleDuplicate = useCallback(() => {
-    if (!selectedMethod) return
+    if (!selectedAssembly) return
 
-    const duplicated = addRingBeamConstructionMethod(`${selectedMethod.name} (Copy)`, selectedMethod.config)
-    setSelectedMethodId(duplicated.id)
-  }, [selectedMethod, addRingBeamConstructionMethod])
+    const duplicated = addRingBeamAssembly(`${selectedAssembly.name} (Copy)`, selectedAssembly.config)
+    setSelectedAssemblyId(duplicated.id)
+  }, [selectedAssembly, addRingBeamAssembly])
 
   const handleDelete = useCallback(() => {
-    if (!selectedMethod || usage.isUsed) return
+    if (!selectedAssembly || usage.isUsed) return
 
-    const currentIndex = ringBeamMethods.findIndex(m => m.id === selectedMethodId)
-    removeRingBeamConstructionMethod(selectedMethod.id)
+    const currentIndex = ringBeamAssemblies.findIndex(m => m.id === selectedAssemblyId)
+    removeRingBeamAssembly(selectedAssembly.id)
 
-    if (ringBeamMethods.length > 1) {
-      const nextMethod = ringBeamMethods[currentIndex + 1] ?? ringBeamMethods[currentIndex - 1]
-      setSelectedMethodId(nextMethod?.id ?? null)
+    if (ringBeamAssemblies.length > 1) {
+      const nextAssembly = ringBeamAssemblies[currentIndex + 1] ?? ringBeamAssemblies[currentIndex - 1]
+      setSelectedAssemblyId(nextAssembly?.id ?? null)
     } else {
-      setSelectedMethodId(null)
+      setSelectedAssemblyId(null)
     }
-  }, [selectedMethod, selectedMethodId, ringBeamMethods, removeRingBeamConstructionMethod, usage.isUsed])
+  }, [selectedAssembly, selectedAssemblyId, ringBeamAssemblies, removeRingBeamAssembly, usage.isUsed])
 
   const handleUpdateName = useCallback(
     (name: string) => {
-      if (!selectedMethod) return
-      updateRingBeamConstructionMethodName(selectedMethod.id, name)
+      if (!selectedAssembly) return
+      updateRingBeamAssemblyName(selectedAssembly.id, name)
     },
-    [selectedMethod, updateRingBeamConstructionMethodName]
+    [selectedAssembly, updateRingBeamAssemblyName]
   )
 
   const handleUpdateConfig = useCallback(
     (updates: Partial<RingBeamConfig>) => {
-      if (!selectedMethod) return
-      const updatedConfig = { ...selectedMethod.config, ...updates } as RingBeamConfig
-      updateRingBeamConstructionMethodConfig(selectedMethod.id, updatedConfig)
+      if (!selectedAssembly) return
+      const updatedConfig = { ...selectedAssembly.config, ...updates } as RingBeamConfig
+      updateRingBeamAssemblyConfig(selectedAssembly.id, updatedConfig)
     },
-    [selectedMethod, updateRingBeamConstructionMethodConfig]
+    [selectedAssembly, updateRingBeamAssemblyConfig]
   )
 
   return (
@@ -146,11 +146,11 @@ export function RingBeamConfigContent({ initialSelectionId }: RingBeamConfigCont
       <Flex direction="column" gap="2">
         <Flex gap="2" align="end">
           <Flex direction="column" gap="1" flexGrow="1">
-            <RingBeamMethodSelect
-              value={selectedMethodId as RingBeamConstructionMethodId | undefined}
-              onValueChange={value => setSelectedMethodId(value ?? null)}
+            <RingBeamAssemblySelect
+              value={selectedAssemblyId as RingBeamAssemblyId | undefined}
+              onValueChange={value => setSelectedAssemblyId(value ?? null)}
               showDefaultIndicator
-              defaultMethodIds={[defaultBaseId, defaultTopId].filter(Boolean) as RingBeamConstructionMethodId[]}
+              defaultAssemblyIds={[defaultBaseId, defaultTopId].filter(Boolean) as RingBeamAssemblyId[]}
             />
           </Flex>
 
@@ -176,14 +176,14 @@ export function RingBeamConfigContent({ initialSelectionId }: RingBeamConfigCont
             </DropdownMenu.Content>
           </DropdownMenu.Root>
 
-          <IconButton onClick={handleDuplicate} disabled={!selectedMethod} title="Duplicate" variant="soft">
+          <IconButton onClick={handleDuplicate} disabled={!selectedAssembly} title="Duplicate" variant="soft">
             <CopyIcon />
           </IconButton>
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
               <IconButton
-                disabled={!selectedMethod || usage.isUsed}
+                disabled={!selectedAssembly || usage.isUsed}
                 color="red"
                 title={usage.isUsed ? 'In Use - Cannot Delete' : 'Delete'}
               >
@@ -191,9 +191,9 @@ export function RingBeamConfigContent({ initialSelectionId }: RingBeamConfigCont
               </IconButton>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
-              <AlertDialog.Title>Delete Ring Beam Method</AlertDialog.Title>
+              <AlertDialog.Title>Delete Ring Beam Assembly</AlertDialog.Title>
               <AlertDialog.Description>
-                Are you sure you want to delete "{selectedMethod?.name}"? This action cannot be undone.
+                Are you sure you want to delete "{selectedAssembly?.name}"? This action cannot be undone.
               </AlertDialog.Description>
               <Flex gap="3" mt="4" justify="end">
                 <AlertDialog.Cancel>
@@ -213,7 +213,7 @@ export function RingBeamConfigContent({ initialSelectionId }: RingBeamConfigCont
       </Flex>
 
       {/* Form */}
-      {selectedMethod && (
+      {selectedAssembly && (
         <Flex
           direction="column"
           gap="3"
@@ -227,9 +227,9 @@ export function RingBeamConfigContent({ initialSelectionId }: RingBeamConfigCont
               </Text>
             </Label.Root>
             <TextField.Root
-              value={selectedMethod.name}
+              value={selectedAssembly.name}
               onChange={e => handleUpdateName(e.target.value)}
-              placeholder="Ring beam method name"
+              placeholder="Ring beam assembly name"
               size="2"
             />
 
@@ -239,26 +239,26 @@ export function RingBeamConfigContent({ initialSelectionId }: RingBeamConfigCont
               </Text>
             </Label.Root>
             <Flex gap="2" align="center">
-              {React.createElement(getRingBeamTypeIcon(selectedMethod.config.type))}
+              {React.createElement(getRingBeamTypeIcon(selectedAssembly.config.type))}
               <Text size="2" color="gray">
-                {selectedMethod.config.type === 'full' ? 'Full' : 'Double'}
+                {selectedAssembly.config.type === 'full' ? 'Full' : 'Double'}
               </Text>
             </Flex>
           </Grid>
 
-          {selectedMethod.config.type === 'full' && (
-            <FullRingBeamFields config={selectedMethod.config} onUpdate={handleUpdateConfig} />
+          {selectedAssembly.config.type === 'full' && (
+            <FullRingBeamFields config={selectedAssembly.config} onUpdate={handleUpdateConfig} />
           )}
 
-          {selectedMethod.config.type === 'double' && (
-            <DoubleRingBeamFields config={selectedMethod.config} onUpdate={handleUpdateConfig} />
+          {selectedAssembly.config.type === 'double' && (
+            <DoubleRingBeamFields config={selectedAssembly.config} onUpdate={handleUpdateConfig} />
           )}
         </Flex>
       )}
 
-      {!selectedMethod && ringBeamMethods.length === 0 && (
+      {!selectedAssembly && ringBeamAssemblies.length === 0 && (
         <Flex justify="center" align="center" p="5">
-          <Text color="gray">No ring beam methods yet. Create one using the "New" button above.</Text>
+          <Text color="gray">No ring beam assemblies yet. Create one using the "New" button above.</Text>
         </Flex>
       )}
 
@@ -271,9 +271,9 @@ export function RingBeamConfigContent({ initialSelectionId }: RingBeamConfigCont
               Default Base Plate
             </Text>
           </Label.Root>
-          <RingBeamMethodSelect
+          <RingBeamAssemblySelect
             value={defaultBaseId}
-            onValueChange={setDefaultBaseRingBeamMethod}
+            onValueChange={setDefaultBaseRingBeamAssembly}
             placeholder="Select default..."
             size="2"
             allowNone
@@ -284,9 +284,9 @@ export function RingBeamConfigContent({ initialSelectionId }: RingBeamConfigCont
               Default Top Plate
             </Text>
           </Label.Root>
-          <RingBeamMethodSelect
+          <RingBeamAssemblySelect
             value={defaultTopId}
-            onValueChange={setDefaultTopRingBeamMethod}
+            onValueChange={setDefaultTopRingBeamAssembly}
             placeholder="Select default..."
             size="2"
             allowNone

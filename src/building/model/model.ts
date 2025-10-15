@@ -1,14 +1,14 @@
 import { vec2 } from 'gl-matrix'
 
 import type {
+  FloorAssemblyId,
   OpeningId,
-  PerimeterConstructionMethodId,
   PerimeterCornerId,
   PerimeterId,
   PerimeterWallId,
-  RingBeamConstructionMethodId,
-  SlabConstructionConfigId,
-  StoreyId
+  RingBeamAssemblyId,
+  StoreyId,
+  WallAssemblyId
 } from '@/building/model/ids'
 import type { Length, LineSegment2D } from '@/shared/geometry'
 
@@ -42,7 +42,7 @@ export interface Storey {
   readonly name: string
   readonly level: StoreyLevel // Floor level (0 = ground floor, 1 = first floor, etc.)
   readonly height: Length
-  readonly slabConstructionConfigId: SlabConstructionConfigId
+  readonly floorAssemblyId: FloorAssemblyId
 }
 
 export interface Perimeter {
@@ -54,14 +54,14 @@ export interface Perimeter {
   corners: PerimeterCorner[]
 
   // Ring beam configuration
-  baseRingBeamMethodId?: RingBeamConstructionMethodId
-  topRingBeamMethodId?: RingBeamConstructionMethodId
+  baseRingBeamAssemblyId?: RingBeamAssemblyId
+  topRingBeamAssemblyId?: RingBeamAssemblyId
 }
 
 export interface PerimeterWall {
   id: PerimeterWallId
   thickness: Length
-  constructionMethodId: PerimeterConstructionMethodId
+  wallAssemblyId: WallAssemblyId
 
   openings: Opening[]
 

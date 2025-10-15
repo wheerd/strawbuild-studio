@@ -4,21 +4,21 @@ import React from 'react'
 
 import { useConfigurationModal } from '@/construction/config/context/ConfigurationModalContext'
 
-import { RingBeamMethodSelect, type RingBeamMethodSelectProps } from './RingBeamMethodSelect'
+import { WallAssemblySelect, type WallAssemblySelectProps } from './WallAssemblySelect'
 
-export function RingBeamMethodSelectWithEdit(props: RingBeamMethodSelectProps): React.JSX.Element {
+export function WallAssemblySelectWithEdit(props: WallAssemblySelectProps): React.JSX.Element {
   const { openConfiguration } = useConfigurationModal()
 
   return (
     <Flex gap="1" align="center">
       <Flex direction="column" gap="1" flexGrow="1" mr="1">
-        <RingBeamMethodSelect {...props} />
+        <WallAssemblySelect {...props} />
       </Flex>
       <IconButton
-        title="Configure Ring Beam"
+        title="Configure Wall Assembly"
         variant="ghost"
         size={props.size}
-        onClick={() => openConfiguration('ringbeams', props.value ?? undefined)}
+        onClick={() => openConfiguration('walls', props.value ?? undefined)}
       >
         <Pencil1Icon />
       </IconButton>

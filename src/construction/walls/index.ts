@@ -7,7 +7,7 @@ import { type ConstructionResult, aggregateResults, yieldElement } from '@/const
 import { constructModuleWall } from '@/construction/walls/strawhenge/all-modules'
 import { mergeBounds } from '@/shared/geometry'
 
-import type { ConstructionType, PerimeterWallConstructionMethod } from './construction'
+import type { ConstructionType, WallAssemblyBuilder } from './construction'
 import { constructInfillWall } from './infill/infill'
 import { segmentedWallConstruction } from './segmentation'
 import { constructStrawhengeWall } from './strawhenge/strawhenge'
@@ -34,7 +34,7 @@ function* constructNonStrawbaleOpeningFrame(
   yield yieldElement(createConstructionElement(material, createCuboidShape(position, size)))
 }
 
-export const constructNonStrawbaleWall: PerimeterWallConstructionMethod<NonStrawbaleConfig> = (
+export const constructNonStrawbaleWall: WallAssemblyBuilder<NonStrawbaleConfig> = (
   wall,
   perimeter,
   storeyContext,
@@ -64,7 +64,7 @@ export const constructNonStrawbaleWall: PerimeterWallConstructionMethod<NonStraw
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const PERIMETER_WALL_CONSTRUCTION_METHODS: Record<ConstructionType, PerimeterWallConstructionMethod<any>> = {
+export const WALL_ASSEMBLY_BUILDERS: Record<ConstructionType, WallAssemblyBuilder<any>> = {
   infill: constructInfillWall,
   strawhenge: constructStrawhengeWall,
   modules: constructModuleWall,

@@ -2,15 +2,15 @@ import { vec3 } from 'gl-matrix'
 
 import type { Perimeter } from '@/building/model'
 import { getModelActions } from '@/building/store'
+import { FLOOR_ASSEMBLIES } from '@/construction/floors'
 import { IDENTITY } from '@/construction/geometry'
-import { SLAB_CONSTRUCTION_METHODS } from '@/construction/slabs'
 import { TAG_BASE_PLATE, TAG_TOP_PLATE, TAG_WALLS } from '@/construction/tags'
 import { angle, offsetPolygon } from '@/shared/geometry'
 
 import { getConfigActions } from './config'
 import { type ConstructionModel, mergeModels, transformModel } from './model'
 import { constructRingBeam } from './ringBeams/ringBeams'
-import { PERIMETER_WALL_CONSTRUCTION_METHODS, createWallStoreyContext } from './walls'
+import { WALL_ASSEMBLY_BUILDERS, createWallStoreyContext } from './walls'
 
 export function constructPerimeter(perimeter: Perimeter): ConstructionModel {
   const { getStoreyById, getStoreysOrderedByLevel } = getModelActions()
@@ -19,41 +19,40 @@ export function constructPerimeter(perimeter: Perimeter): ConstructionModel {
     throw new Error('Invalid storey on perimeter')
   }
 
-  const { getRingBeamConstructionMethodById, getPerimeterConstructionMethodById, getSlabConstructionConfigById } =
-    getConfigActions()
+  const { getRingBeamAssemblyById, getWallAssemblyById, getFloorAssemblyConfigById } = getConfigActions()
 
-  const currentSlabConfig = getSlabConstructionConfigById(storey.slabConstructionConfigId)
-  if (!currentSlabConfig) {
-    throw new Error(`Slab config ${storey.slabConstructionConfigId} not found for storey ${storey.id}`)
+  const currentFloorAssembly = getFloorAssemblyConfigById(storey.floorAssemblyId)
+  if (!currentFloorAssembly) {
+    throw new Error(`Slab config ${storey.floorAssemblyId} not found for storey ${storey.id}`)
   }
 
   const allStoreys = getStoreysOrderedByLevel()
   const currentIndex = allStoreys.findIndex(s => s.id === storey.id)
   const nextStorey = currentIndex >= 0 && currentIndex < allStoreys.length - 1 ? allStoreys[currentIndex + 1] : null
 
-  const nextSlabConfig = nextStorey ? getSlabConstructionConfigById(nextStorey.slabConstructionConfigId) : null
+  const nextFloorAssembly = nextStorey ? getFloorAssemblyConfigById(nextStorey.floorAssemblyId) : null
 
-  const storeyContext = createWallStoreyContext(storey, currentSlabConfig, nextSlabConfig)
+  const storeyContext = createWallStoreyContext(storey, currentFloorAssembly, nextFloorAssembly)
   const constructionHeight =
     storeyContext.storeyHeight + storeyContext.floorTopOffset + storeyContext.ceilingBottomOffset
 
   const allModels: ConstructionModel[] = []
-  if (perimeter.baseRingBeamMethodId) {
-    const method = getRingBeamConstructionMethodById(perimeter.baseRingBeamMethodId)
-    if (method) {
-      const ringBeam = constructRingBeam(perimeter, method.config)
+  if (perimeter.baseRingBeamAssemblyId) {
+    const assembly = getRingBeamAssemblyById(perimeter.baseRingBeamAssemblyId)
+    if (assembly) {
+      const ringBeam = constructRingBeam(perimeter, assembly.config)
       const transformedModel = transformModel(ringBeam, IDENTITY, [TAG_BASE_PLATE])
       allModels.push(transformedModel)
     }
   }
-  if (perimeter.topRingBeamMethodId) {
-    const method = getRingBeamConstructionMethodById(perimeter.topRingBeamMethodId)
-    if (method) {
-      const ringBeam = constructRingBeam(perimeter, method.config)
+  if (perimeter.topRingBeamAssemblyId) {
+    const assembly = getRingBeamAssemblyById(perimeter.topRingBeamAssemblyId)
+    if (assembly) {
+      const ringBeam = constructRingBeam(perimeter, assembly.config)
       const transformedModel = transformModel(
         ringBeam,
         {
-          position: [0, 0, constructionHeight - method.config.height],
+          position: [0, 0, constructionHeight - assembly.config.height],
           rotation: vec3.fromValues(0, 0, 0)
         },
         [TAG_TOP_PLATE]
@@ -64,15 +63,15 @@ export function constructPerimeter(perimeter: Perimeter): ConstructionModel {
 
   let minOffset = Infinity
   for (const wall of perimeter.walls) {
-    const method = getPerimeterConstructionMethodById(wall.constructionMethodId)
+    const assembly = getWallAssemblyById(wall.wallAssemblyId)
     let wallModel: ConstructionModel | null = null
 
-    if (method?.config?.type) {
-      const constructionMethod = PERIMETER_WALL_CONSTRUCTION_METHODS[method.config.type]
-      if (method.layers.outsideThickness < minOffset) {
-        minOffset = method.layers.outsideThickness
+    if (assembly?.config?.type) {
+      const wallAssembly = WALL_ASSEMBLY_BUILDERS[assembly.config.type]
+      if (assembly.layers.outsideThickness < minOffset) {
+        minOffset = assembly.layers.outsideThickness
       }
-      wallModel = constructionMethod(wall, perimeter, storeyContext, method.config, method.layers)
+      wallModel = wallAssembly(wall, perimeter, storeyContext, assembly.config, assembly.layers)
     }
 
     if (wallModel) {
@@ -92,9 +91,9 @@ export function constructPerimeter(perimeter: Perimeter): ConstructionModel {
   const outerPolygon = { points: perimeter.corners.map(c => c.outsidePoint) }
   // TODO: Properly determine the construction polygon based on offsets
   const constructionPolygon = isFinite(minOffset) ? offsetPolygon(outerPolygon, -minOffset) : outerPolygon
-  const slabMethod = SLAB_CONSTRUCTION_METHODS[currentSlabConfig.type]
-  const slabModel = slabMethod.construct({ outer: constructionPolygon, holes: [] }, currentSlabConfig)
-  allModels.push(slabModel)
+  const floorAssembly = FLOOR_ASSEMBLIES[currentFloorAssembly.type]
+  const floorModel = floorAssembly.construct({ outer: constructionPolygon, holes: [] }, currentFloorAssembly)
+  allModels.push(floorModel)
 
   return mergeModels(...allModels)
 }

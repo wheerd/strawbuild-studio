@@ -2,12 +2,12 @@ import { vec2 } from 'gl-matrix'
 import { describe, expect, it } from 'vitest'
 
 import {
-  DEFAULT_SLAB_CONFIG_ID,
-  createPerimeterConstructionMethodId,
+  DEFAULT_FLOOR_ASSEMBLY_ID,
   createPerimeterId,
   createPerimeterWallId,
-  createRingBeamConstructionMethodId,
-  createStoreyId
+  createRingBeamAssemblyId,
+  createStoreyId,
+  createWallAssemblyId
 } from '@/building/model/ids'
 import type { Perimeter, Storey } from '@/building/model/model'
 import { createStoreyLevel } from '@/building/model/model'
@@ -22,12 +22,12 @@ describe('Config Usage Detection', () => {
     name: 'Test Floor',
     level: createStoreyLevel(0),
     height: 3000,
-    slabConstructionConfigId: DEFAULT_SLAB_CONFIG_ID
+    floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
   }
 
   describe('getRingBeamConfigUsage', () => {
     it('should detect ring beam config not in use', () => {
-      const ringBeamId = createRingBeamConstructionMethodId()
+      const ringBeamId = createRingBeamAssemblyId()
       const perimeters: Perimeter[] = []
       const storeys = [storey]
 
@@ -38,7 +38,7 @@ describe('Config Usage Detection', () => {
     })
 
     it('should detect ring beam config used as base ring beam', () => {
-      const ringBeamId = createRingBeamConstructionMethodId()
+      const ringBeamId = createRingBeamAssemblyId()
       const perimeterId = createPerimeterId()
 
       const perimeter: Perimeter = {
@@ -46,8 +46,8 @@ describe('Config Usage Detection', () => {
         storeyId,
         walls: [],
         corners: [],
-        baseRingBeamMethodId: ringBeamId,
-        topRingBeamMethodId: undefined
+        baseRingBeamAssemblyId: ringBeamId,
+        topRingBeamAssemblyId: undefined
       }
 
       const usage = getRingBeamConfigUsage(ringBeamId, [perimeter], [storey])
@@ -57,7 +57,7 @@ describe('Config Usage Detection', () => {
     })
 
     it('should detect ring beam config used as top ring beam', () => {
-      const ringBeamId = createRingBeamConstructionMethodId()
+      const ringBeamId = createRingBeamAssemblyId()
       const perimeterId = createPerimeterId()
 
       const perimeter: Perimeter = {
@@ -65,8 +65,8 @@ describe('Config Usage Detection', () => {
         storeyId,
         walls: [],
         corners: [],
-        baseRingBeamMethodId: undefined,
-        topRingBeamMethodId: ringBeamId
+        baseRingBeamAssemblyId: undefined,
+        topRingBeamAssemblyId: ringBeamId
       }
 
       const usage = getRingBeamConfigUsage(ringBeamId, [perimeter], [storey])
@@ -76,7 +76,7 @@ describe('Config Usage Detection', () => {
     })
 
     it('should detect ring beam config used in multiple places', () => {
-      const ringBeamId = createRingBeamConstructionMethodId()
+      const ringBeamId = createRingBeamAssemblyId()
       const perimeter1Id = createPerimeterId()
       const perimeter2Id = createPerimeterId()
 
@@ -85,8 +85,8 @@ describe('Config Usage Detection', () => {
         storeyId,
         walls: [],
         corners: [],
-        baseRingBeamMethodId: ringBeamId,
-        topRingBeamMethodId: undefined
+        baseRingBeamAssemblyId: ringBeamId,
+        topRingBeamAssemblyId: undefined
       }
 
       const perimeter2: Perimeter = {
@@ -94,8 +94,8 @@ describe('Config Usage Detection', () => {
         storeyId,
         walls: [],
         corners: [],
-        baseRingBeamMethodId: undefined,
-        topRingBeamMethodId: ringBeamId
+        baseRingBeamAssemblyId: undefined,
+        topRingBeamAssemblyId: ringBeamId
       }
 
       const usage = getRingBeamConfigUsage(ringBeamId, [perimeter1, perimeter2], [storey])
@@ -109,7 +109,7 @@ describe('Config Usage Detection', () => {
 
   describe('getPerimeterConfigUsage', () => {
     it('should detect perimeter config not in use', () => {
-      const perimeterId = createPerimeterConstructionMethodId()
+      const perimeterId = createWallAssemblyId()
 
       const usage = getPerimeterConfigUsage(perimeterId, [], [storey])
 
@@ -118,7 +118,7 @@ describe('Config Usage Detection', () => {
     })
 
     it('should detect perimeter config used by walls', () => {
-      const configId = createPerimeterConstructionMethodId()
+      const configId = createWallAssemblyId()
       const perimeterId = createPerimeterId()
 
       const perimeter: Perimeter = {
@@ -128,7 +128,7 @@ describe('Config Usage Detection', () => {
           {
             id: createPerimeterWallId(),
             thickness: 440,
-            constructionMethodId: configId,
+            wallAssemblyId: configId,
             openings: [],
             insideLength: 1000,
             outsideLength: 1000,
@@ -141,7 +141,7 @@ describe('Config Usage Detection', () => {
           {
             id: createPerimeterWallId(),
             thickness: 440,
-            constructionMethodId: createPerimeterConstructionMethodId(), // Different config
+            wallAssemblyId: createWallAssemblyId(), // Different config
             openings: [],
             insideLength: 1000,
             outsideLength: 1000,
@@ -154,7 +154,7 @@ describe('Config Usage Detection', () => {
           {
             id: createPerimeterWallId(),
             thickness: 440,
-            constructionMethodId: configId, // Same config as first wall
+            wallAssemblyId: configId, // Same config as first wall
             openings: [],
             insideLength: 1000,
             outsideLength: 1000,

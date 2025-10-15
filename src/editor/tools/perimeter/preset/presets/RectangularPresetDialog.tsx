@@ -2,9 +2,9 @@ import { Cross2Icon } from '@radix-ui/react-icons'
 import { Button, Dialog, Flex, Grid, Heading, IconButton, Text } from '@radix-ui/themes'
 import { useCallback, useEffect, useState } from 'react'
 
-import type { PerimeterConstructionMethodId } from '@/building/model/ids'
-import { PerimeterMethodSelectWithEdit } from '@/construction/config/components/PerimeterMethodSelectWithEdit'
-import { RingBeamMethodSelectWithEdit } from '@/construction/config/components/RingBeamMethodSelectWithEdit'
+import type { WallAssemblyId } from '@/building/model/ids'
+import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
+import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import { useConfigActions } from '@/construction/config/store'
 import { LengthField } from '@/shared/components/LengthField'
 import '@/shared/geometry'
@@ -111,9 +111,9 @@ function RectangularPresetDialogContent({
     width: 10000, // 10m default inside width
     length: 7000, // 7m default inside length
     thickness: 440, // 44cm default
-    constructionMethodId: configStore.getDefaultPerimeterMethodId(),
-    baseRingBeamMethodId: configStore.getDefaultBaseRingBeamMethodId(),
-    topRingBeamMethodId: configStore.getDefaultTopRingBeamMethodId(),
+    wallAssemblyId: configStore.getDefaultWallAssemblyId(),
+    baseRingBeamAssemblyId: configStore.getDefaultBaseRingBeamAssemblyId(),
+    topRingBeamAssemblyId: configStore.getDefaultTopRingBeamAssemblyId(),
     ...initialConfig
   }))
 
@@ -125,12 +125,12 @@ function RectangularPresetDialogContent({
   }, [initialConfig])
 
   const handleConfirm = useCallback(() => {
-    if (config.width > 0 && config.length > 0 && config.thickness > 0 && config.constructionMethodId) {
+    if (config.width > 0 && config.length > 0 && config.thickness > 0 && config.wallAssemblyId) {
       onConfirm(config)
     }
   }, [config, onConfirm])
 
-  const isValid = config.width > 0 && config.length > 0 && config.thickness > 0 && config.constructionMethodId
+  const isValid = config.width > 0 && config.length > 0 && config.thickness > 0 && config.wallAssemblyId
 
   return (
     <Dialog.Content
@@ -214,17 +214,17 @@ function RectangularPresetDialogContent({
                 />
               </Flex>
 
-              {/* Construction Method */}
+              {/* Wall Assembly */}
               <Flex direction="column" gap="1">
                 <Text size="1" color="gray">
-                  Construction Method
+                  Wall Assembly
                 </Text>
-                <PerimeterMethodSelectWithEdit
-                  value={config.constructionMethodId ?? undefined}
-                  onValueChange={(value: PerimeterConstructionMethodId) => {
-                    setConfig(prev => ({ ...prev, constructionMethodId: value }))
+                <WallAssemblySelectWithEdit
+                  value={config.wallAssemblyId ?? undefined}
+                  onValueChange={(value: WallAssemblyId) => {
+                    setConfig(prev => ({ ...prev, wallAssemblyId: value }))
                   }}
-                  placeholder="Select method"
+                  placeholder="Select assembly"
                   size="1"
                 />
               </Flex>
@@ -234,10 +234,10 @@ function RectangularPresetDialogContent({
                 <Text size="1" color="gray">
                   Base Plate
                 </Text>
-                <RingBeamMethodSelectWithEdit
-                  value={config.baseRingBeamMethodId}
+                <RingBeamAssemblySelectWithEdit
+                  value={config.baseRingBeamAssemblyId}
                   onValueChange={value => {
-                    setConfig(prev => ({ ...prev, baseRingBeamMethodId: value }))
+                    setConfig(prev => ({ ...prev, baseRingBeamAssemblyId: value }))
                   }}
                   placeholder="None"
                   size="1"
@@ -250,10 +250,10 @@ function RectangularPresetDialogContent({
                 <Text size="1" color="gray">
                   Top Plate
                 </Text>
-                <RingBeamMethodSelectWithEdit
-                  value={config.topRingBeamMethodId}
+                <RingBeamAssemblySelectWithEdit
+                  value={config.topRingBeamAssemblyId}
                   onValueChange={value => {
-                    setConfig(prev => ({ ...prev, topRingBeamMethodId: value }))
+                    setConfig(prev => ({ ...prev, topRingBeamAssemblyId: value }))
                   }}
                   placeholder="None"
                   size="1"

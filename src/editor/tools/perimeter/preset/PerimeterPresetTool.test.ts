@@ -38,7 +38,7 @@ describe('PerimeterPresetTool', () => {
       width: 4000,
       length: 6000,
       thickness: 440,
-      constructionMethodId: 'test-method' as any
+      wallAssemblyId: 'test-assembly' as any
     }
 
     it('should set active preset and enter placement mode', () => {
@@ -82,7 +82,7 @@ describe('PerimeterPresetTool', () => {
       width: 4000,
       length: 6000,
       thickness: 440,
-      constructionMethodId: 'test-method' as any
+      wallAssemblyId: 'test-assembly' as any
     }
 
     it('should generate preview polygon when position is set', () => {
@@ -129,14 +129,14 @@ describe('PerimeterPresetTool', () => {
     })
   })
 
-  describe('lifecycle methods', () => {
+  describe('lifecycle assemblies', () => {
     it('should reset state on activation', () => {
       const rectangularPreset = new RectangularPreset()
       const config: RectangularPresetConfig = {
         width: 4000,
         length: 6000,
         thickness: 440,
-        constructionMethodId: 'test-method' as any
+        wallAssemblyId: 'test-assembly' as any
       }
 
       tool.setActivePreset(rectangularPreset, config)
@@ -153,7 +153,7 @@ describe('PerimeterPresetTool', () => {
         width: 4000,
         length: 6000,
         thickness: 440,
-        constructionMethodId: 'test-method' as any
+        wallAssemblyId: 'test-assembly' as any
       }
 
       tool.setActivePreset(rectangularPreset, config)

@@ -1,33 +1,33 @@
 import { Flex, Select, Text } from '@radix-ui/themes'
 import React from 'react'
 
-import type { RingBeamConstructionMethodId } from '@/building/model/ids'
-import { useRingBeamConstructionMethods } from '@/construction/config/store'
+import type { RingBeamAssemblyId } from '@/building/model/ids'
+import { useRingBeamAssemblies } from '@/construction/config/store'
 
 import { getRingBeamTypeIcon } from './Icons'
 
-export interface RingBeamMethodSelectProps {
-  value: RingBeamConstructionMethodId | null | undefined
-  onValueChange: (methodId: RingBeamConstructionMethodId | undefined) => void
+export interface RingBeamAssemblySelectProps {
+  value: RingBeamAssemblyId | null | undefined
+  onValueChange: (assemblyId: RingBeamAssemblyId | undefined) => void
   placeholder?: string
   size?: '1' | '2' | '3'
   disabled?: boolean
   allowNone?: boolean
   showDefaultIndicator?: boolean
-  defaultMethodIds?: RingBeamConstructionMethodId[]
+  defaultAssemblyIds?: RingBeamAssemblyId[]
 }
 
-export function RingBeamMethodSelect({
+export function RingBeamAssemblySelect({
   value,
   onValueChange,
-  placeholder = 'Select ring beam method...',
+  placeholder = 'Select ring beam assembly...',
   size = '2',
   disabled = false,
   allowNone = false,
   showDefaultIndicator = false,
-  defaultMethodIds = []
-}: RingBeamMethodSelectProps): React.JSX.Element {
-  const ringBeamMethods = useRingBeamConstructionMethods()
+  defaultAssemblyIds = []
+}: RingBeamAssemblySelectProps): React.JSX.Element {
+  const ringBeamAssemblies = useRingBeamAssemblies()
 
   return (
     <Select.Root
@@ -36,7 +36,7 @@ export function RingBeamMethodSelect({
         if (val === 'none') {
           onValueChange(undefined)
         } else {
-          onValueChange(val as RingBeamConstructionMethodId)
+          onValueChange(val as RingBeamAssemblyId)
         }
       }}
       disabled={disabled}
@@ -49,20 +49,20 @@ export function RingBeamMethodSelect({
             <Text color="gray">None</Text>
           </Select.Item>
         )}
-        {ringBeamMethods.length === 0 ? (
+        {ringBeamAssemblies.length === 0 ? (
           <Select.Item value="" disabled>
-            <Text color="gray">No ring beam methods available</Text>
+            <Text color="gray">No ring beam assemblies available</Text>
           </Select.Item>
         ) : (
-          ringBeamMethods.map(method => {
-            const Icon = getRingBeamTypeIcon(method.config.type)
-            const isDefault = showDefaultIndicator && defaultMethodIds.includes(method.id)
+          ringBeamAssemblies.map(assembly => {
+            const Icon = getRingBeamTypeIcon(assembly.config.type)
+            const isDefault = showDefaultIndicator && defaultAssemblyIds.includes(assembly.id)
             return (
-              <Select.Item key={method.id} value={method.id}>
+              <Select.Item key={assembly.id} value={assembly.id}>
                 <Flex align="center" gap="2">
                   <Icon style={{ flexShrink: 0 }} />
                   <Text>
-                    {method.name}
+                    {assembly.name}
                     {isDefault && <Text color="gray"> (default)</Text>}
                   </Text>
                 </Flex>

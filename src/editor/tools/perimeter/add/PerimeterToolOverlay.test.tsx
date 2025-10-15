@@ -2,7 +2,7 @@ import { render } from '@testing-library/react'
 import { vec2 } from 'gl-matrix'
 import { vi } from 'vitest'
 
-import { createPerimeterConstructionMethodId } from '@/building/model/ids'
+import { createWallAssemblyId } from '@/building/model/ids'
 import type { SnapResult } from '@/editor/services/snapping/types'
 
 import { PerimeterTool } from './PerimeterTool'
@@ -40,7 +40,7 @@ describe('PerimeterToolOverlay', () => {
       },
       isCurrentLineValid: true,
       isClosingLineValid: true,
-      constructionMethodId: createPerimeterConstructionMethodId(),
+      wallAssemblyId: createWallAssemblyId(),
       wallThickness: 440,
       lengthOverride: null
     }

@@ -1,10 +1,10 @@
 import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createPerimeterConstructionMethodId, createPerimeterId, createPerimeterWallId } from '@/building/model/ids'
+import { createPerimeterId, createPerimeterWallId, createWallAssemblyId } from '@/building/model/ids'
 import type { Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model/model'
 import { type ConfigActions, getConfigActions } from '@/construction/config'
-import type { PerimeterConstructionMethod, WallLayersConfig } from '@/construction/config/types'
+import type { WallAssembly, WallLayersConfig } from '@/construction/config/types'
 import { type Length } from '@/shared/geometry'
 
 import { type WallContext, calculateWallCornerInfo, getWallContext } from './corners'
@@ -12,25 +12,20 @@ import { type WallContext, calculateWallCornerInfo, getWallContext } from './cor
 // Mock the config actions
 vi.mock('@/construction/config', () => ({
   getConfigActions: vi.fn(() => ({
-    getPerimeterConstructionMethodById: vi.fn()
+    getWallAssemblyById: vi.fn()
   }))
 }))
 
 const mockGetConfigActions = vi.mocked(getConfigActions)
 
 // Mock data helpers
-function createMockWall(
-  id: string,
-  wallLength: Length,
-  thickness: Length,
-  constructionMethodId?: string
-): PerimeterWall {
+function createMockWall(id: string, wallLength: Length, thickness: Length, wallAssemblyId?: string): PerimeterWall {
   const startPoint = vec2.fromValues(0, 0)
   const endPoint = vec2.fromValues(wallLength, 0)
 
   return {
     id: (id || createPerimeterWallId()) as any,
-    constructionMethodId: (constructionMethodId || createPerimeterConstructionMethodId()) as any,
+    wallAssemblyId: (wallAssemblyId || createWallAssemblyId()) as any,
     thickness,
     wallLength,
     insideLength: wallLength,
@@ -74,7 +69,7 @@ function createMockPerimeter(walls: PerimeterWall[], corners: PerimeterCorner[])
   } as Perimeter
 }
 
-function createMockConstructionMethod(id: string, name: string, layers: WallLayersConfig): PerimeterConstructionMethod {
+function createMockAssembly(id: string, name: string, layers: WallLayersConfig): WallAssembly {
   return {
     id: id as any,
     name,
@@ -106,13 +101,13 @@ function createMockConstructionMethod(id: string, name: string, layers: WallLaye
 }
 
 describe('Corner Calculations', () => {
-  let mockGetPerimeterConstructionMethodById: ReturnType<typeof vi.fn>
+  let mockGetWallAssemblyById: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mockGetPerimeterConstructionMethodById = vi.fn()
+    mockGetWallAssemblyById = vi.fn()
     mockGetConfigActions.mockReturnValue({
-      getPerimeterConstructionMethodById: mockGetPerimeterConstructionMethodById
+      getWallAssemblyById: mockGetWallAssemblyById
     } as unknown as ConfigActions)
   })
 
@@ -201,14 +196,14 @@ describe('Corner Calculations', () => {
         outsideThickness: 50
       }
 
-      const previousMethod = createMockConstructionMethod('method-1', 'Previous Method', layers)
-      const nextMethod = createMockConstructionMethod('method-2', 'Next Method', layers)
+      const previousAssembly = createMockAssembly('assembly-1', 'Previous Assembly', layers)
+      const nextAssembly = createMockAssembly('assembly-2', 'Next Assembly', layers)
 
-      mockGetPerimeterConstructionMethodById.mockReturnValueOnce(previousMethod).mockReturnValueOnce(nextMethod)
+      mockGetWallAssemblyById.mockReturnValueOnce(previousAssembly).mockReturnValueOnce(nextAssembly)
       const startCorner = createMockCorner('start-corner', vec2.fromValues(0, 0), vec2.fromValues(-200, 500), 'next')
       const endCorner = createMockCorner('end-corner', vec2.fromValues(3000, 0), vec2.fromValues(3300, 500), 'previous')
-      const previousWall = createMockWall('prev-wall', 2000, 300, 'method-1')
-      const nextWall = createMockWall('next-wall', 2500, 300, 'method-2')
+      const previousWall = createMockWall('prev-wall', 2000, 300, 'assembly-1')
+      const nextWall = createMockWall('next-wall', 2500, 300, 'assembly-2')
 
       mockContext = {
         startCorner,
@@ -307,14 +302,14 @@ describe('Corner Calculations', () => {
       expect(result.constructionLength).toBe(3100) // 3000 + 50 + 50
     })
 
-    it('should throw error when construction methods are not found', () => {
+    it('should throw error when assemblies are not found', () => {
       // Reset the mock to return null for both calls
-      mockGetPerimeterConstructionMethodById.mockReset()
-      mockGetPerimeterConstructionMethodById.mockReturnValue(null)
+      mockGetWallAssemblyById.mockReset()
+      mockGetWallAssemblyById.mockReturnValue(null)
 
       const wall = createMockWall('test-wall', 3000, 300)
 
-      expect(() => calculateWallCornerInfo(wall, mockContext)).toThrow('Invalid wall construction method')
+      expect(() => calculateWallCornerInfo(wall, mockContext)).toThrow('Invalid wall assembly')
     })
 
     it('should handle zero extension distances', () => {
@@ -368,14 +363,14 @@ describe('Corner Calculations', () => {
         outsideThickness: 50
       }
 
-      const method1 = createMockConstructionMethod('method-1', 'Method 1', layers)
-      const method2 = createMockConstructionMethod('method-2', 'Method 2', layers)
+      const assembly1 = createMockAssembly('assembly-1', 'Assembly 1', layers)
+      const assembly2 = createMockAssembly('assembly-2', 'Assembly 2', layers)
 
-      mockGetPerimeterConstructionMethodById.mockReturnValueOnce(method1).mockReturnValueOnce(method2)
+      mockGetWallAssemblyById.mockReturnValueOnce(assembly1).mockReturnValueOnce(assembly2)
 
-      const wall0 = createMockWall('wall-0', 3000, 300, 'method-1')
-      const wall1 = createMockWall('wall-1', 2000, 300, 'method-1')
-      const wall2 = createMockWall('wall-2', 3000, 300, 'method-2')
+      const wall0 = createMockWall('wall-0', 3000, 300, 'assembly-1')
+      const wall1 = createMockWall('wall-1', 2000, 300, 'assembly-1')
+      const wall2 = createMockWall('wall-2', 3000, 300, 'assembly-2')
 
       const corner0 = createMockCorner('corner-0', vec2.fromValues(0, 0), vec2.fromValues(-150, 450), 'next')
       const corner1 = createMockCorner('corner-1', vec2.fromValues(3000, 0), vec2.fromValues(3150, 450), 'previous')

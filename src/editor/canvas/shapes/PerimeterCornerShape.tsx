@@ -2,7 +2,7 @@ import { vec2 } from 'gl-matrix'
 import { Arrow, Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
 import type { PerimeterCorner, PerimeterWall } from '@/building/model/model'
-import { usePerimeterConstructionMethodById } from '@/construction/config/store'
+import { useWallAssemblyById } from '@/construction/config/store'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { direction, midpoint, perpendicular } from '@/shared/geometry'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
@@ -41,9 +41,8 @@ export function PerimeterCornerShape({
   const arrowStart = vec2.scaleAndAdd(vec2.create(), arrowEnd, arrowDir, -180)
 
   const constructingWall = corner.constructedByWall === 'previous' ? previousWall : nextWall
-  const constructionMethod = usePerimeterConstructionMethodById(constructingWall.constructionMethodId)
-  const cornerColor =
-    constructionMethod?.config.type === 'non-strawbale' ? MATERIAL_COLORS.other : MATERIAL_COLORS.strawbale
+  const wallAssembly = useWallAssemblyById(constructingWall.wallAssemblyId)
+  const cornerColor = wallAssembly?.config.type === 'non-strawbale' ? MATERIAL_COLORS.other : MATERIAL_COLORS.strawbale
 
   // Check if corner is nearly straight (close to 180°)
   const interiorAngleDegrees = corner.interiorAngle

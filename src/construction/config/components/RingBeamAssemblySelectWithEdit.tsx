@@ -4,21 +4,21 @@ import React from 'react'
 
 import { useConfigurationModal } from '@/construction/config/context/ConfigurationModalContext'
 
-import { PerimeterMethodSelect, type PerimeterMethodSelectProps } from './PerimeterMethodSelect'
+import { RingBeamAssemblySelect, type RingBeamAssemblySelectProps } from './RingBeamAssemblySelect'
 
-export function PerimeterMethodSelectWithEdit(props: PerimeterMethodSelectProps): React.JSX.Element {
+export function RingBeamAssemblySelectWithEdit(props: RingBeamAssemblySelectProps): React.JSX.Element {
   const { openConfiguration } = useConfigurationModal()
 
   return (
     <Flex gap="1" align="center">
       <Flex direction="column" gap="1" flexGrow="1" mr="1">
-        <PerimeterMethodSelect {...props} />
+        <RingBeamAssemblySelect {...props} />
       </Flex>
       <IconButton
-        title="Configure Perimeter Method"
+        title="Configure Ring Beam"
         variant="ghost"
         size={props.size}
-        onClick={() => openConfiguration('perimeter', props.value ?? undefined)}
+        onClick={() => openConfiguration('ringbeams', props.value ?? undefined)}
       >
         <Pencil1Icon />
       </IconButton>

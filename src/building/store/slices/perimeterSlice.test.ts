@@ -6,11 +6,11 @@ import {
   type PerimeterWallId,
   type StoreyId,
   createOpeningId,
-  createPerimeterConstructionMethodId,
   createPerimeterCornerId,
   createPerimeterId,
   createPerimeterWallId,
-  createStoreyId
+  createStoreyId,
+  createWallAssemblyId
 } from '@/building/model/ids'
 import { type Length, type Polygon2D, wouldClosingPolygonSelfIntersect } from '@/shared/geometry'
 
@@ -88,9 +88,9 @@ describe('perimeterSlice', () => {
   describe('addPerimeter', () => {
     it('should add perimeter polygon with default thickness', () => {
       const boundary = createRectangularBoundary()
-      const constructionMethodId = createPerimeterConstructionMethodId()
+      const wallAssemblyId = createWallAssemblyId()
 
-      store.actions.addPerimeter(testStoreyId, boundary, constructionMethodId)
+      store.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId)
 
       expect(Object.keys(store.perimeters).length).toBe(1)
       const perimeter = Object.values(store.perimeters)[0]
@@ -102,7 +102,7 @@ describe('perimeterSlice', () => {
 
       // Check walls have correct properties
       perimeter.walls.forEach(wall => {
-        expect(wall.constructionMethodId).toBe(constructionMethodId)
+        expect(wall.wallAssemblyId).toBe(wallAssemblyId)
         expect(wall.thickness).toBe(440) // Default perimeter thickness
         expect(wall.openings).toEqual([])
         expect(perimeter.id).toBeTruthy()
@@ -118,23 +118,23 @@ describe('perimeterSlice', () => {
 
     it('should add perimeter polygon with custom thickness', () => {
       const boundary = createRectangularBoundary()
-      const constructionMethodId = createPerimeterConstructionMethodId()
+      const wallAssemblyId = createWallAssemblyId()
       const customThickness = 200
 
-      store.actions.addPerimeter(testStoreyId, boundary, constructionMethodId, customThickness)
+      store.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, customThickness)
 
       const perimeter = Object.values(store.perimeters)[0]
       perimeter.walls.forEach(wall => {
         expect(wall.thickness).toBe(customThickness)
-        expect(wall.constructionMethodId).toBe(constructionMethodId)
+        expect(wall.wallAssemblyId).toBe(wallAssemblyId)
       })
     })
 
     it('should add triangular perimeter polygon', () => {
       const boundary = createTriangularBoundary()
-      const constructionMethodId = createPerimeterConstructionMethodId()
+      const wallAssemblyId = createWallAssemblyId()
 
-      store.actions.addPerimeter(testStoreyId, boundary, constructionMethodId)
+      store.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId)
 
       const perimeter = Object.values(store.perimeters)[0]
       expect(perimeter.walls).toHaveLength(3) // Triangle has 3 sides
@@ -145,8 +145,8 @@ describe('perimeterSlice', () => {
       const boundary1 = createRectangularBoundary()
       const boundary2 = createTriangularBoundary()
 
-      store.actions.addPerimeter(testStoreyId, boundary1, createPerimeterConstructionMethodId())
-      store.actions.addPerimeter(testStoreyId, boundary2, createPerimeterConstructionMethodId())
+      store.actions.addPerimeter(testStoreyId, boundary1, createWallAssemblyId())
+      store.actions.addPerimeter(testStoreyId, boundary2, createWallAssemblyId())
 
       expect(Object.keys(store.perimeters).length).toBe(2)
       const walls = Object.values(store.perimeters)
@@ -159,30 +159,30 @@ describe('perimeterSlice', () => {
         points: [vec2.fromValues(0, 0), vec2.fromValues(1, 0)] // Only 2 points
       }
 
-      expect(() =>
-        store.actions.addPerimeter(testStoreyId, invalidBoundary, createPerimeterConstructionMethodId())
-      ).toThrow('Perimeter boundary must have at least 3 points')
+      expect(() => store.actions.addPerimeter(testStoreyId, invalidBoundary, createWallAssemblyId())).toThrow(
+        'Perimeter boundary must have at least 3 points'
+      )
     })
 
     it('should throw error for zero thickness', () => {
       const boundary = createRectangularBoundary()
 
-      expect(() =>
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId(), 0)
-      ).toThrow('Wall thickness must be greater than 0')
+      expect(() => store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), 0)).toThrow(
+        'Wall thickness must be greater than 0'
+      )
     })
 
     it('should throw error for negative thickness', () => {
       const boundary = createRectangularBoundary()
 
-      expect(() =>
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId(), -100)
-      ).toThrow('Wall thickness must be greater than 0')
+      expect(() => store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), -100)).toThrow(
+        'Wall thickness must be greater than 0'
+      )
     })
 
     it('should compute wall geometry correctly', () => {
       const boundary = createRectangularBoundary()
-      store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+      store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
       const perimeter = Object.values(store.perimeters)[0]
       const wall = perimeter.walls[0] // First wall from (0,0) to (10,0)
@@ -200,7 +200,7 @@ describe('perimeterSlice', () => {
 
     it('should calculate different length values correctly', () => {
       const boundary = createRectangularBoundary()
-      store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+      store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
       const perimeter = Object.values(store.perimeters)[0]
       const wall = perimeter.walls[0] // First wall from (0,0) to (10,0)
@@ -224,7 +224,7 @@ describe('perimeterSlice', () => {
 
     it('should handle reflex angles correctly without pointy corners', () => {
       const boundary = createReflexAngleBoundary()
-      store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+      store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
       const perimeter = Object.values(store.perimeters)[0]
 
@@ -262,7 +262,7 @@ describe('perimeterSlice', () => {
   describe('removeOuterWall', () => {
     it('should remove existing perimeter', () => {
       const boundary = createRectangularBoundary()
-      store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+      store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
       const perimeterId = Object.keys(store.perimeters)[0] as PerimeterId
       expect(Object.keys(store.perimeters).length).toBe(1)
@@ -285,8 +285,8 @@ describe('perimeterSlice', () => {
     it('should not affect other walls when removing one', () => {
       const boundary1 = createRectangularBoundary()
       const boundary2 = createTriangularBoundary()
-      store.actions.addPerimeter(testStoreyId, boundary1, createPerimeterConstructionMethodId())
-      store.actions.addPerimeter(testStoreyId, boundary2, createPerimeterConstructionMethodId())
+      store.actions.addPerimeter(testStoreyId, boundary1, createWallAssemblyId())
+      store.actions.addPerimeter(testStoreyId, boundary2, createWallAssemblyId())
 
       const perimeterIds = Object.keys(store.perimeters) as PerimeterId[]
       expect(Object.keys(store.perimeters).length).toBe(2)
@@ -301,17 +301,17 @@ describe('perimeterSlice', () => {
   describe('updateOuterWallConstructionType', () => {
     it('should update wall construction type', () => {
       const boundary = createRectangularBoundary()
-      store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+      store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
       const perimeter = Object.values(store.perimeters)[0]
       const wallId = perimeter.walls[0].id
-      const newMethodId = createPerimeterConstructionMethodId()
+      const newAssemblyId = createWallAssemblyId()
 
-      store.actions.updatePerimeterWallConstructionMethod(perimeter.id, wallId, newMethodId)
+      store.actions.updateWallAssemblyBuilder(perimeter.id, wallId, newAssemblyId)
 
       const updatedPerimeter = store.perimeters[perimeter.id]!
       const updatedWall = updatedPerimeter.walls.find((s: any) => s.id === wallId)!
-      expect(updatedWall.constructionMethodId).toBe(newMethodId)
+      expect(updatedWall.wallAssemblyId).toBe(newAssemblyId)
 
       // Other properties should remain unchanged
       expect(updatedWall.thickness).toBe(440)
@@ -323,11 +323,7 @@ describe('perimeterSlice', () => {
       const fakeWallId = createPerimeterWallId()
       const initialState = Object.fromEntries(Object.entries(store.perimeters))
 
-      store.actions.updatePerimeterWallConstructionMethod(
-        fakePerimeterId,
-        fakeWallId,
-        createPerimeterConstructionMethodId()
-      )
+      store.actions.updateWallAssemblyBuilder(fakePerimeterId, fakeWallId, createWallAssemblyId())
 
       expect(store.perimeters).toEqual(initialState)
     })
@@ -336,7 +332,7 @@ describe('perimeterSlice', () => {
   describe('updateOuterWallThickness', () => {
     it('should update wall thickness and recalculate geometry', () => {
       const boundary = createRectangularBoundary()
-      store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+      store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
       const perimeter = Object.values(store.perimeters)[0]
       const wallId = perimeter.walls[0].id
@@ -355,7 +351,7 @@ describe('perimeterSlice', () => {
 
     it('should recalculate corners when thickness changes', () => {
       const boundary = createRectangularBoundary()
-      store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+      store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
       const perimeter = Object.values(store.perimeters)[0]
       const originalCornerPoints = perimeter.corners.map((c: any) => c.outsidePoint)
@@ -376,7 +372,7 @@ describe('perimeterSlice', () => {
 
     it('should preserve corner constructedByWall values', () => {
       const boundary = createRectangularBoundary()
-      store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+      store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
       const perimeter = Object.values(store.perimeters)[0]
       const cornerId = perimeter.corners[0].id
@@ -397,7 +393,7 @@ describe('perimeterSlice', () => {
 
     it('should throw error for invalid thickness', () => {
       const boundary = createRectangularBoundary()
-      store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+      store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
       const perimeter = Object.values(store.perimeters)[0]
       const wallId = perimeter.walls[0].id
@@ -423,7 +419,7 @@ describe('perimeterSlice', () => {
 
     it('should do nothing if wall does not exist', () => {
       const boundary = createRectangularBoundary()
-      store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+      store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
       const perimeter = Object.values(store.perimeters)[0]
       const fakeWallId = createPerimeterWallId()
@@ -439,7 +435,7 @@ describe('perimeterSlice', () => {
   describe('updateCornerConstructedByWall', () => {
     it('should update corner constructedByWall value', () => {
       const boundary = createRectangularBoundary()
-      store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+      store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
       const perimeter = Object.values(store.perimeters)[0]
       const cornerId = perimeter.corners[0].id
@@ -453,7 +449,7 @@ describe('perimeterSlice', () => {
 
     it('should preserve other corner properties', () => {
       const boundary = createRectangularBoundary()
-      store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+      store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
       const perimeter = Object.values(store.perimeters)[0]
       const corner = perimeter.corners[0]
@@ -479,7 +475,7 @@ describe('perimeterSlice', () => {
 
     it('should do nothing if corner does not exist', () => {
       const boundary = createRectangularBoundary()
-      store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+      store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
       const perimeter = Object.values(store.perimeters)[0]
       const fakeCornerId = createPerimeterCornerId()
@@ -496,7 +492,7 @@ describe('perimeterSlice', () => {
     describe('addOpeningToOuterWall', () => {
       it('should add door opening to wall wall', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const wallId = perimeter.walls[0].id
@@ -526,7 +522,7 @@ describe('perimeterSlice', () => {
 
       it('should add window opening to wall wall', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const wallId = perimeter.walls[0].id
@@ -549,7 +545,7 @@ describe('perimeterSlice', () => {
 
       it('should add multiple openings to same wall', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const wallId = perimeter.walls[0].id
@@ -579,7 +575,7 @@ describe('perimeterSlice', () => {
 
       it('should throw error for negative offset', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const wallId = perimeter.walls[0].id
@@ -596,7 +592,7 @@ describe('perimeterSlice', () => {
 
       it('should throw error for invalid width', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const wallId = perimeter.walls[0].id
@@ -613,7 +609,7 @@ describe('perimeterSlice', () => {
 
       it('should throw error for invalid height', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const wallId = perimeter.walls[0].id
@@ -630,7 +626,7 @@ describe('perimeterSlice', () => {
 
       it('should throw error for negative sill height', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const wallId = perimeter.walls[0].id
@@ -662,7 +658,7 @@ describe('perimeterSlice', () => {
 
       it('should throw if wall does not exist', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const fakeWallId = createPerimeterWallId()
@@ -679,7 +675,7 @@ describe('perimeterSlice', () => {
 
       it('should handle thickness updates for reflex angles without creating overlaps', () => {
         const boundary = createReflexAngleBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const wallId = perimeter.walls[2].id // Pick a wall that creates reflex angle
@@ -725,7 +721,7 @@ describe('perimeterSlice', () => {
     describe('removeOpeningFromOuterWall', () => {
       it('should remove opening from wall wall', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const wallId = perimeter.walls[0].id
@@ -748,7 +744,7 @@ describe('perimeterSlice', () => {
 
       it('should remove correct opening when multiple exist', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const wallId = perimeter.walls[0].id
@@ -790,7 +786,7 @@ describe('perimeterSlice', () => {
 
       it('should do nothing if wall does not exist', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const fakeWallId = createPerimeterWallId()
@@ -805,7 +801,7 @@ describe('perimeterSlice', () => {
 
       it('should do nothing if opening does not exist', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const wallId = perimeter.walls[0].id
@@ -830,7 +826,7 @@ describe('perimeterSlice', () => {
     describe('updateOpening', () => {
       it('should update opening properties', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const wallId = perimeter.walls[0].id
@@ -859,7 +855,7 @@ describe('perimeterSlice', () => {
 
       it('should update window sill height', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const wallId = perimeter.walls[0].id
@@ -898,7 +894,7 @@ describe('perimeterSlice', () => {
 
       it('should do nothing if wall does not exist', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const fakeWallId = createPerimeterWallId()
@@ -913,7 +909,7 @@ describe('perimeterSlice', () => {
 
       it('should do nothing if opening does not exist', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const wallId = perimeter.walls[0].id
@@ -940,7 +936,7 @@ describe('perimeterSlice', () => {
     describe('getOuterWallById', () => {
       it('should return existing perimeter', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const addedPerimeter = Object.values(store.perimeters)[0]
         const result = store.actions.getPerimeterById(addedPerimeter.id)
@@ -960,7 +956,7 @@ describe('perimeterSlice', () => {
     describe('getWallById', () => {
       it('should return existing wall', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const wall = perimeter.walls[0]
@@ -980,7 +976,7 @@ describe('perimeterSlice', () => {
 
       it('should return null for non-existent wall', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const fakeWallId = createPerimeterWallId()
@@ -992,7 +988,7 @@ describe('perimeterSlice', () => {
     describe('getCornerById', () => {
       it('should return existing corner', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const corner = perimeter.corners[0]
@@ -1012,7 +1008,7 @@ describe('perimeterSlice', () => {
 
       it('should return null for non-existent corner', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const fakeCornerId = createPerimeterCornerId()
@@ -1024,7 +1020,7 @@ describe('perimeterSlice', () => {
     describe('getOpeningById', () => {
       it('should return existing opening', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const wallId = perimeter.walls[0].id
@@ -1053,7 +1049,7 @@ describe('perimeterSlice', () => {
 
       it('should return null for non-existent wall', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const fakeWallId = createPerimeterWallId()
@@ -1064,7 +1060,7 @@ describe('perimeterSlice', () => {
 
       it('should return null for non-existent opening', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const wallId = perimeter.walls[0].id
@@ -1086,9 +1082,9 @@ describe('perimeterSlice', () => {
         const boundary1 = createRectangularBoundary()
         const boundary2 = createTriangularBoundary()
 
-        store.actions.addPerimeter(floor1Id, boundary1, createPerimeterConstructionMethodId())
-        store.actions.addPerimeter(floor1Id, boundary2, createPerimeterConstructionMethodId())
-        store.actions.addPerimeter(floor2Id, boundary1, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(floor1Id, boundary1, createWallAssemblyId())
+        store.actions.addPerimeter(floor1Id, boundary2, createWallAssemblyId())
+        store.actions.addPerimeter(floor2Id, boundary1, createWallAssemblyId())
 
         const floor1Walls = store.actions.getPerimetersByStorey(floor1Id)
         const floor2Walls = store.actions.getPerimetersByStorey(floor2Id)
@@ -1102,7 +1098,7 @@ describe('perimeterSlice', () => {
 
       it('should return empty array for non-existent floor', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const nonExistentStoreyId = createStoreyId()
         const walls = store.actions.getPerimetersByStorey(nonExistentStoreyId)
@@ -1115,7 +1111,7 @@ describe('perimeterSlice', () => {
   describe('complex scenarios', () => {
     it('should handle complex perimeter management correctly', () => {
       const boundary = createRectangularBoundary()
-      store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+      store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
       const perimeter = Object.values(store.perimeters)[0]
       const wallId = perimeter.walls[0].id
@@ -1137,10 +1133,10 @@ describe('perimeterSlice', () => {
         sillHeight: 900
       })
 
-      const newMethodId = createPerimeterConstructionMethodId()
+      const newAssemblyId = createWallAssemblyId()
 
       // Update properties
-      store.actions.updatePerimeterWallConstructionMethod(perimeter.id, wallId, newMethodId)
+      store.actions.updateWallAssemblyBuilder(perimeter.id, wallId, newAssemblyId)
       store.actions.updatePerimeterCornerConstructedByWall(perimeter.id, cornerId, 'previous')
 
       // Verify complex state
@@ -1149,7 +1145,7 @@ describe('perimeterSlice', () => {
       const updatedCorner = updatedPerimeter.corners.find((c: any) => c.id === cornerId)!
 
       expect(updatedWall.openings).toHaveLength(2)
-      expect(updatedWall.constructionMethodId).toBe(newMethodId)
+      expect(updatedWall.wallAssemblyId).toBe(newAssemblyId)
       expect(updatedCorner.constructedByWall).toBe('previous')
 
       // Update opening
@@ -1170,7 +1166,7 @@ describe('perimeterSlice', () => {
 
     it('should maintain data consistency after multiple operations', () => {
       const boundary = createRectangularBoundary()
-      store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId(), 500)
+      store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), 500)
 
       const perimeter = Object.values(store.perimeters)[0]
       const wallId = perimeter.walls[0].id
@@ -1211,7 +1207,7 @@ describe('perimeterSlice', () => {
         ]
       }
 
-      store.actions.addPerimeter(testStoreyId, acuteAngleBoundary, createPerimeterConstructionMethodId(), 100)
+      store.actions.addPerimeter(testStoreyId, acuteAngleBoundary, createWallAssemblyId(), 100)
 
       const perimeter = Object.values(store.perimeters)[0]
 
@@ -1238,7 +1234,7 @@ describe('perimeterSlice', () => {
 
     it('should handle L-shaped boundaries with reflex angles correctly', () => {
       const lShapeBoundary = createReflexAngleBoundary()
-      store.actions.addPerimeter(testStoreyId, lShapeBoundary, createPerimeterConstructionMethodId(), 200)
+      store.actions.addPerimeter(testStoreyId, lShapeBoundary, createWallAssemblyId(), 200)
 
       const perimeter = Object.values(store.perimeters)[0]
 
@@ -1261,7 +1257,7 @@ describe('perimeterSlice', () => {
 
     it('should handle mixed thickness values with reflex angles', () => {
       const boundary = createReflexAngleBoundary()
-      store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId(), 200)
+      store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), 200)
 
       const perimeter = Object.values(store.perimeters)[0]
 
@@ -1301,7 +1297,7 @@ describe('perimeterSlice', () => {
 
     it('should preserve wall and corner relationships after thickness updates', () => {
       const boundary = createReflexAngleBoundary()
-      store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId(), 300)
+      store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), 300)
 
       const originalPerimeter = Object.values(store.perimeters)[0]
       const originalWallIds = originalPerimeter.walls.map((s: any) => s.id)
@@ -1338,7 +1334,7 @@ describe('perimeterSlice', () => {
             vec2.fromValues(-5, 5)
           ]
         }
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const originalWallCount = perimeter.walls.length
@@ -1376,7 +1372,7 @@ describe('perimeterSlice', () => {
             vec2.fromValues(0, 1000)
           ]
         }
-        const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const cornerToRemove = perimeter.corners[2] // Corner at (2000,1000)
 
@@ -1411,7 +1407,7 @@ describe('perimeterSlice', () => {
 
       it('should fail for walls with less than 4 corners', () => {
         const boundary = createTriangularBoundary() // Only 3 corners
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const cornerToRemove = perimeter.corners[0]
@@ -1435,7 +1431,7 @@ describe('perimeterSlice', () => {
 
       it('should fail for non-existent corner', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const fakeCornerId = createPerimeterCornerId()
@@ -1459,7 +1455,7 @@ describe('perimeterSlice', () => {
             vec2.fromValues(0, 10)
           ]
         }
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
 
@@ -1496,7 +1492,7 @@ describe('perimeterSlice', () => {
             vec2.fromValues(-5, 5)
           ]
         }
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const originalWallCount = perimeter.walls.length
@@ -1526,7 +1522,7 @@ describe('perimeterSlice', () => {
 
       it('should fail for walls with less than 5 walls', () => {
         const boundary = createRectangularBoundary() // Only 4 walls
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const wallToRemove = perimeter.walls[0]
@@ -1550,7 +1546,7 @@ describe('perimeterSlice', () => {
 
       it('should fail for non-existent wall', () => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const fakeWallId = createPerimeterWallId()
@@ -1574,7 +1570,7 @@ describe('perimeterSlice', () => {
             vec2.fromValues(0, 10)
           ]
         }
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
         const wallToRemove = perimeter.walls[3] // Wall from (10,5) to (0,10)
@@ -1606,7 +1602,7 @@ describe('perimeterSlice', () => {
             vec2.fromValues(0, 10)
           ]
         }
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId(), 200)
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), 200)
 
         const perimeter = Object.values(store.perimeters)[0]
         const wallToRemove = perimeter.walls[3] // Wall from (10,20) to (10,10)
@@ -1653,7 +1649,7 @@ describe('perimeterSlice', () => {
             vec2.fromValues(0, 10)
           ]
         }
-        store.actions.addPerimeter(testStoreyId, complexBoundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, complexBoundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
 
@@ -1669,7 +1665,7 @@ describe('perimeterSlice', () => {
 
       it('should maintain minimum polygon size constraints', () => {
         const boundary = createRectangularBoundary() // 4 corners/walls
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
         const perimeter = Object.values(store.perimeters)[0]
 
@@ -1704,7 +1700,7 @@ describe('perimeterSlice', () => {
 
       beforeEach(() => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
         const perimeter = Object.values(store.perimeters)[0]
         perimeterId = perimeter.id
         wallId = perimeter.walls[0].id
@@ -1836,7 +1832,7 @@ describe('perimeterSlice', () => {
 
       beforeEach(() => {
         const boundary = createRectangularBoundary()
-        store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId())
+        store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
         const perimeter = Object.values(store.perimeters)[0]
         perimeterId = perimeter.id
         wallId = perimeter.walls[0].id
@@ -2093,9 +2089,9 @@ describe('perimeterSlice', () => {
             vec2.fromValues(2000, 0)
           ]
         }
-        const constructionMethodId = createPerimeterConstructionMethodId()
+        const wallAssemblyId = createWallAssemblyId()
 
-        const perimeter = store.actions.addPerimeter(createStoreyId(), boundary, constructionMethodId)
+        const perimeter = store.actions.addPerimeter(createStoreyId(), boundary, wallAssemblyId)
 
         // Add openings to the first wall
         store.actions.addPerimeterWallOpening(perimeter.id, perimeter.walls[0].id, {
@@ -2173,8 +2169,8 @@ describe('perimeterSlice', () => {
             vec2.fromValues(3000, 0)
           ]
         }
-        const constructionMethodId = createPerimeterConstructionMethodId()
-        const perimeter = store.actions.addPerimeter(createStoreyId(), boundary, constructionMethodId)
+        const wallAssemblyId = createWallAssemblyId()
+        const perimeter = store.actions.addPerimeter(createStoreyId(), boundary, wallAssemblyId)
 
         // Add openings to walls
         store.actions.addPerimeterWallOpening(perimeter.id, perimeter.walls[0].id, {
@@ -2209,28 +2205,28 @@ describe('perimeterSlice', () => {
   })
 
   describe('Bulk Wall Updates', () => {
-    it('should update construction method for all walls in perimeter', () => {
+    it('should update assembly for all walls in perimeter', () => {
       // Add perimeter with multiple walls
       const boundary: Polygon2D = {
         points: [vec2.fromValues(0, 0), vec2.fromValues(5000, 0), vec2.fromValues(5000, 3000), vec2.fromValues(0, 3000)]
       }
-      const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId(), 360)
+      const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), 360)
 
       // Verify we have multiple walls
       expect(perimeter.walls.length).toBeGreaterThan(1)
 
-      // Verify initial state - all walls should have same method
-      const initialMethod = perimeter.walls[0].constructionMethodId
-      expect(perimeter.walls.every(wall => wall.constructionMethodId === initialMethod)).toBe(true)
+      // Verify initial state - all walls should have same assembly
+      const initialAssembly = perimeter.walls[0].wallAssemblyId
+      expect(perimeter.walls.every(wall => wall.wallAssemblyId === initialAssembly)).toBe(true)
 
-      // Update all walls to new method
-      const newMethodId = createPerimeterConstructionMethodId()
-      store.actions.updateAllPerimeterWallsConstructionMethod(perimeter.id, newMethodId)
+      // Update all walls to new assembly
+      const newAssemblyId = createWallAssemblyId()
+      store.actions.updateAllPerimeterWallsAssembly(perimeter.id, newAssemblyId)
 
-      // Verify all walls now have new method
+      // Verify all walls now have new assembly
       const updatedPerimeter = store.actions.getPerimeterById(perimeter.id)
       expect(updatedPerimeter).toBeTruthy()
-      expect(updatedPerimeter!.walls.every(wall => wall.constructionMethodId === newMethodId)).toBe(true)
+      expect(updatedPerimeter!.walls.every(wall => wall.wallAssemblyId === newAssemblyId)).toBe(true)
     })
 
     it('should update thickness for all walls in perimeter', () => {
@@ -2238,7 +2234,7 @@ describe('perimeterSlice', () => {
       const boundary: Polygon2D = {
         points: [vec2.fromValues(0, 0), vec2.fromValues(5000, 0), vec2.fromValues(5000, 3000), vec2.fromValues(0, 3000)]
       }
-      const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId(), 360)
+      const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), 360)
 
       // Verify we have multiple walls
       expect(perimeter.walls.length).toBeGreaterThan(1)
@@ -2258,7 +2254,7 @@ describe('perimeterSlice', () => {
       const boundary: Polygon2D = {
         points: [vec2.fromValues(0, 0), vec2.fromValues(5000, 0), vec2.fromValues(5000, 3000), vec2.fromValues(0, 3000)]
       }
-      const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createPerimeterConstructionMethodId(), 360)
+      const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), 360)
 
       // Should throw error for zero thickness
       expect(() => {
@@ -2273,12 +2269,12 @@ describe('perimeterSlice', () => {
 
     it('should handle non-existent perimeter gracefully in bulk updates', () => {
       const fakePerimeterId = createPerimeterId()
-      const newMethodId = createPerimeterConstructionMethodId()
+      const newAssemblyId = createWallAssemblyId()
       const newThickness = 400
 
       // Should not throw error for non-existent perimeter
       expect(() => {
-        store.actions.updateAllPerimeterWallsConstructionMethod(fakePerimeterId, newMethodId)
+        store.actions.updateAllPerimeterWallsAssembly(fakePerimeterId, newAssemblyId)
       }).not.toThrow()
 
       expect(() => {

@@ -10,7 +10,7 @@ A modern web-based floor plan editor specifically designed for strawbale constru
 
 - **Finished-Dimension Floor Plans**: Define perimeter walls with plaster thickness accounted for
 - **Openings & Components**: Add windows, doors, and other wall penetrations tailored to strawbale builds
-- **Configurable Construction Methods**: Switch between infill, strawhenge, and module-based assemblies
+- **Configurable Wall Assemblies**: Switch between infill, strawhenge, and module-based assemblies
 - **Plan & Model Generation**: Produce wall and floor build plans with interactive 3D previews
 - **Modern Tech Stack**: React 19, TypeScript, Vite, Zustand, and Radix UI
 - **CI/CD Pipeline**: Automated testing, linting, security checks, and dependency updates
