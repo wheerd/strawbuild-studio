@@ -41,10 +41,12 @@ async function bootstrap() {
 
   root.render(
     <StrictMode>
-      <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <ErrorBoundary fallback={<div>An error occurred</div>}>
         <ThemeProvider attribute="class">
           <Theme>
-            <App />
+            <ErrorBoundary FallbackComponent={ErrorFallback}>
+              <App />
+            </ErrorBoundary>
           </Theme>
         </ThemeProvider>
       </ErrorBoundary>

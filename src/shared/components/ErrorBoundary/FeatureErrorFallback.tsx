@@ -22,7 +22,7 @@ export function FeatureErrorFallback({ error, resetErrorBoundary }: FallbackProp
         </Callout.Icon>
         <Callout.Text>
           <Flex direction="column" gap="2">
-            <Text weight="bold">Feature Error</Text>
+            <Text weight="bold">Error</Text>
             <Text size="2">{error.message || 'This feature encountered an error and cannot be displayed.'}</Text>
           </Flex>
         </Callout.Text>

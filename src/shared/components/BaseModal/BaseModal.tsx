@@ -3,7 +3,7 @@ import { Dialog, Flex, IconButton } from '@radix-ui/themes'
 import React from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 
-import { ModalErrorFallback } from '@/shared/components/ErrorBoundary'
+import { FeatureErrorFallback } from '@/shared/components/ErrorBoundary'
 
 export interface BaseModalProps {
   open?: boolean
@@ -76,7 +76,7 @@ export function BaseModal({
           </Flex>
         </Dialog.Title>
 
-        <ErrorBoundary FallbackComponent={ModalErrorFallback} resetKeys={[open, ...resetKeys]}>
+        <ErrorBoundary FallbackComponent={FeatureErrorFallback} resetKeys={[open, ...resetKeys]}>
           {children}
         </ErrorBoundary>
       </Dialog.Content>
