@@ -15,7 +15,8 @@ vi.mock('@/construction/materials/straw', () => ({
   constructStraw: vi.fn()
 }))
 
-vi.mock('@/construction/walls/infill/infill', () => ({
+vi.mock('@/construction/walls/infill/infill', async importOriginal => ({
+  ...(await importOriginal()),
   infillWallArea: vi.fn()
 }))
 

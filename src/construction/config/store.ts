@@ -9,10 +9,10 @@ import {
   createRingBeamAssemblyId,
   createWallAssemblyId
 } from '@/building/model/ids'
-import { type FloorConfig, validateFloorConfig } from '@/construction/floors'
+import { type FloorConfig, validateFloorConfig } from '@/construction/floors/types'
 import { clt180, concrete, straw, strawbale, wood120x60, wood360x60 } from '@/construction/materials/material'
-import { type RingBeamConfig, validateRingBeamConfig } from '@/construction/ringBeams'
-import type { WallConfig } from '@/construction/walls'
+import { type RingBeamConfig, validateRingBeamConfig } from '@/construction/ringBeams/types'
+import { type WallConfig, validateWallConfig } from '@/construction/walls/types'
 import '@/shared/geometry'
 
 import { CURRENT_VERSION, applyMigrations } from './migrations'
@@ -409,6 +409,7 @@ const useConfigStore = create<ConfigStore>()(
             // Wall assembly CRUD operations
             addWallAssembly: (name: string, config: WallConfig) => {
               validateWallAssemblyName(name)
+              validateWallConfig(config)
 
               const id = createWallAssemblyId()
               const assembly = {
@@ -489,6 +490,9 @@ const useConfigStore = create<ConfigStore>()(
                   ...config,
                   id: assembly.id
                 }
+
+                const { id: _id, name: _name, ...wallConfig } = updatedAssembly
+                validateWallConfig(wallConfig as WallConfig)
 
                 return {
                   ...state,

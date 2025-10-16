@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 
 import { createMaterialId } from '@/construction/materials/material'
 import type { RingBeamConfig } from '@/construction/ringBeams'
+import type { InfillWallConfig, WallConfig } from '@/construction/walls'
 import '@/shared/geometry'
 
 import { _clearAllAssemblies, getConfigActions } from './store'
@@ -225,6 +226,86 @@ describe('ConfigStore', () => {
       if (assembly.type === 'full') {
         expect(assembly.offsetFromEdge).toBe(-50)
         expect(Number(assembly.offsetFromEdge)).toBe(-50)
+      }
+    })
+  })
+
+  describe('Wall Assemblies', () => {
+    beforeEach(() => {
+      _clearAllAssemblies()
+    })
+
+    const createValidWallConfig = (): InfillWallConfig => {
+      const postMaterial = createMaterialId()
+      const headerMaterial = createMaterialId()
+      const sillMaterial = createMaterialId()
+      const strawMaterial = createMaterialId()
+
+      return {
+        type: 'infill',
+        maxPostSpacing: 800,
+        minStrawSpace: 70,
+        posts: {
+          type: 'full',
+          width: 60,
+          material: postMaterial
+        },
+        openings: {
+          padding: 15,
+          headerThickness: 60,
+          headerMaterial,
+          sillThickness: 60,
+          sillMaterial
+        },
+        straw: {
+          baleLength: 800,
+          baleHeight: 500,
+          baleWidth: 360,
+          material: strawMaterial
+        },
+        layers: {
+          insideThickness: 30,
+          outsideThickness: 50
+        }
+      }
+    }
+
+    it('should add an infill wall assembly', () => {
+      const store = getConfigActions()
+      const config = createValidWallConfig()
+
+      const assembly = store.addWallAssembly('Standard Infill', config)
+
+      expect(assembly.name).toBe('Standard Infill')
+      expect(assembly.type).toBe('infill')
+      expect(store.getAllWallAssemblies()).toHaveLength(1)
+    })
+
+    it('should validate wall assembly on add', () => {
+      const store = getConfigActions()
+      const invalidConfig: WallConfig = {
+        ...createValidWallConfig(),
+        maxPostSpacing: 0
+      }
+
+      expect(() => store.addWallAssembly('Invalid Wall', invalidConfig)).toThrow(
+        'Maximum post spacing must be greater than 0'
+      )
+    })
+
+    it('should validate wall assembly on update', () => {
+      const store = getConfigActions()
+      const assembly = store.addWallAssembly('Standard Infill', createValidWallConfig())
+
+      expect(() =>
+        store.updateWallAssemblyConfig(assembly.id, { layers: { insideThickness: -1, outsideThickness: 0 } })
+      ).toThrow('Inside layer thickness cannot be negative')
+
+      const fetched = store.getWallAssemblyById(assembly.id)
+      if (fetched?.type === 'infill') {
+        expect(fetched.layers.insideThickness).toBe(30)
+      } else {
+        throw new Error('Expected infill wall assembly')
       }
     })
   })
