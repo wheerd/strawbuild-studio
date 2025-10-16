@@ -2,11 +2,11 @@ import { vec2, vec3 } from 'gl-matrix'
 
 import type { Opening, Perimeter, PerimeterWall, Storey } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config'
-import type { WallLayersConfig } from '@/construction/config/types'
 import { FLOOR_ASSEMBLIES, type FloorAssemblyConfig } from '@/construction/floors'
 import { IDENTITY } from '@/construction/geometry'
 import { type ConstructionResult, yieldArea, yieldMeasurement } from '@/construction/results'
 import { TAG_OPENING_SPACING, TAG_WALL_LENGTH } from '@/construction/tags'
+import type { WallLayersConfig } from '@/construction/walls'
 import type { Length } from '@/shared/geometry'
 
 import type { WallCornerInfo } from './construction'

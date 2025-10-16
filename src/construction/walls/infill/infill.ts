@@ -1,10 +1,9 @@
 import { vec3 } from 'gl-matrix'
 
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
-import type { WallLayersConfig } from '@/construction/config/types'
 import type { ConstructionElementId } from '@/construction/elements'
-import { type PostConfig, constructPost } from '@/construction/materials/posts'
-import { constructStraw } from '@/construction/materials/straw'
+import { constructPost } from '@/construction/materials/posts'
+import { type StrawConfig, constructStraw } from '@/construction/materials/straw'
 import type { ConstructionModel } from '@/construction/model'
 import { constructOpeningFrame } from '@/construction/openings/openings'
 import type { ConstructionResult } from '@/construction/results'
@@ -16,21 +15,15 @@ import {
   yieldWarning
 } from '@/construction/results'
 import { TAG_POST_SPACING } from '@/construction/tags'
-import type { BaseConstructionConfig, WallAssemblyBuilder } from '@/construction/walls/construction'
+import type { InfillWallConfig, InfillWallSegmentConfig, WallAssembly } from '@/construction/walls'
 import { type WallStoreyContext, segmentedWallConstruction } from '@/construction/walls/segmentation'
 import { type Length, boundsFromCuboid, mergeBounds } from '@/shared/geometry'
-
-export interface InfillConstructionConfig extends BaseConstructionConfig {
-  type: 'infill'
-  maxPostSpacing: Length // Default: 800mm
-  minStrawSpace: Length // Default: 70mm
-  posts: PostConfig // Default: full
-}
 
 export function* infillWallArea(
   position: vec3,
   size: vec3,
-  config: InfillConstructionConfig,
+  config: InfillWallSegmentConfig,
+  strawConfig: StrawConfig,
   startsWithStand = false,
   endsWithStand = false,
   startAtEnd = false
@@ -77,7 +70,7 @@ export function* infillWallArea(
   const inbetweenSize = vec3.fromValues(width, size[1], size[2])
 
   yield* yieldAndCollectElementIds(
-    constructInfillRecursive(inbetweenPosition, inbetweenSize, config, !startAtEnd),
+    constructInfillRecursive(inbetweenPosition, inbetweenSize, config, strawConfig, !startAtEnd),
     allElementIds
   )
 
@@ -94,7 +87,8 @@ export function* infillWallArea(
 function* constructInfillRecursive(
   position: vec3,
   size: vec3,
-  config: InfillConstructionConfig,
+  config: InfillWallSegmentConfig,
+  strawConfig: StrawConfig,
   atStart: boolean
 ): Generator<ConstructionResult> {
   const baleWidth = getBaleWidth(size[0], config)
@@ -109,7 +103,7 @@ function* constructInfillRecursive(
   if (baleWidth > 0) {
     const strawElementIds: ConstructionElementId[] = []
 
-    yield* yieldAndCollectElementIds(constructStraw(strawPosition, strawSize, config.straw), strawElementIds)
+    yield* yieldAndCollectElementIds(constructStraw(strawPosition, strawSize, strawConfig), strawElementIds)
 
     if (baleWidth < config.minStrawSpace) {
       yield yieldWarning({
@@ -139,10 +133,10 @@ function* constructInfillRecursive(
   const remainingPosition = [atStart ? postOffset + config.posts.width : position[0], position[1], position[2]]
   const remainingSize = [size[0] - strawSize[0] - config.posts.width, size[1], size[2]]
 
-  yield* constructInfillRecursive(remainingPosition, remainingSize, config, !atStart)
+  yield* constructInfillRecursive(remainingPosition, remainingSize, config, strawConfig, !atStart)
 }
 
-function getBaleWidth(availableWidth: Length, config: InfillConstructionConfig): Length {
+function getBaleWidth(availableWidth: Length, config: InfillWallSegmentConfig): Length {
   const {
     maxPostSpacing,
     minStrawSpace,
@@ -170,42 +164,38 @@ function getBaleWidth(availableWidth: Length, config: InfillConstructionConfig):
   return maxPostSpacing
 }
 
-const _constructInfillWall = (
-  wall: PerimeterWall,
-  perimeter: Perimeter,
-  storeyContext: WallStoreyContext,
-  config: InfillConstructionConfig,
-  layers: WallLayersConfig
-): Generator<ConstructionResult> =>
-  segmentedWallConstruction(
-    wall,
-    perimeter,
-    storeyContext,
-    layers,
-    (position, size, startsWithStand, endsWithStand, startAtEnd) =>
-      infillWallArea(position, size, config, startsWithStand, endsWithStand, startAtEnd),
+export class InfillWallAssembly implements WallAssembly<InfillWallConfig> {
+  construct(
+    wall: PerimeterWall,
+    perimeter: Perimeter,
+    storeyContext: WallStoreyContext,
+    config: InfillWallConfig
+  ): ConstructionModel {
+    const allResults = Array.from(
+      segmentedWallConstruction(
+        wall,
+        perimeter,
+        storeyContext,
+        config.layers,
+        (position, size, startsWithStand, endsWithStand, startAtEnd) =>
+          infillWallArea(position, size, config, config.straw, startsWithStand, endsWithStand, startAtEnd),
 
-    (position: vec3, size: vec3, zOffset: Length, openings: Opening[]) =>
-      constructOpeningFrame({ type: 'opening', position, size, zOffset, openings }, config.openings, config)
-  )
+        (position: vec3, size: vec3, zOffset: Length, openings: Opening[]) =>
+          constructOpeningFrame({ type: 'opening', position, size, zOffset, openings }, config.openings, (p, s) =>
+            infillWallArea(p, s, config, config.straw)
+          )
+      )
+    )
 
-export const constructInfillWall: WallAssemblyBuilder<InfillConstructionConfig> = (
-  wall: PerimeterWall,
-  perimeter: Perimeter,
-  storeyContext: WallStoreyContext,
-  config: InfillConstructionConfig,
-  layers: WallLayersConfig
-): ConstructionModel => {
-  const allResults = Array.from(_constructInfillWall(wall, perimeter, storeyContext, config, layers))
+    const aggRes = aggregateResults(allResults)
 
-  const aggRes = aggregateResults(allResults)
-
-  return {
-    bounds: mergeBounds(...aggRes.elements.map(e => e.bounds)),
-    elements: aggRes.elements,
-    measurements: aggRes.measurements,
-    areas: aggRes.areas,
-    errors: aggRes.errors,
-    warnings: aggRes.warnings
+    return {
+      bounds: mergeBounds(...aggRes.elements.map(e => e.bounds)),
+      elements: aggRes.elements,
+      measurements: aggRes.measurements,
+      areas: aggRes.areas,
+      errors: aggRes.errors,
+      warnings: aggRes.warnings
+    }
   }
 }

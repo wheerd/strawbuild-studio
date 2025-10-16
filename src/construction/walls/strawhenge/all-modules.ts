@@ -1,29 +1,22 @@
 import { vec3 } from 'gl-matrix'
 
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
-import type { WallLayersConfig } from '@/construction/config/types'
 import type { ConstructionModel } from '@/construction/model'
 import { constructOpeningFrame } from '@/construction/openings/openings'
 import type { ConstructionResult } from '@/construction/results'
 import { aggregateResults, yieldAsGroup } from '@/construction/results'
 import { TAG_MODULE } from '@/construction/tags'
-import type { BaseConstructionConfig, WallAssemblyBuilder } from '@/construction/walls/construction'
-import { type InfillConstructionConfig, infillWallArea } from '@/construction/walls/infill/infill'
+import type { ModulesWallConfig, WallAssembly } from '@/construction/walls'
+import { infillWallArea } from '@/construction/walls/infill/infill'
 import { type WallStoreyContext, segmentedWallConstruction } from '@/construction/walls/segmentation'
 import { type Length, mergeBounds } from '@/shared/geometry'
 
-import { type ModuleConfig, constructModule } from './modules'
-
-export interface ModulesConstructionConfig extends BaseConstructionConfig {
-  type: 'modules'
-  module: ModuleConfig
-  infill: InfillConstructionConfig
-}
+import { constructModule } from './modules'
 
 export function* moduleWallArea(
   position: vec3,
   size: vec3,
-  config: ModulesConstructionConfig,
+  config: ModulesWallConfig,
   startsWithStand = false,
   endsWithStand = false,
   startAtEnd = false
@@ -31,7 +24,7 @@ export function* moduleWallArea(
   const { module, infill } = config
 
   if (size[0] < module.width) {
-    yield* infillWallArea(position, size, infill, startsWithStand, endsWithStand, startAtEnd)
+    yield* infillWallArea(position, size, infill, config.straw, startsWithStand, endsWithStand, startAtEnd)
     return
   }
 
@@ -46,46 +39,50 @@ export function* moduleWallArea(
   if (remainingWidth > 0) {
     const remainingPosition = vec3.fromValues(startAtEnd ? position[0] : end, position[1], position[2])
     const remainingSize = vec3.fromValues(remainingWidth, size[1], size[2])
-    yield* infillWallArea(remainingPosition, remainingSize, infill, startsWithStand, endsWithStand, startAtEnd)
+    yield* infillWallArea(
+      remainingPosition,
+      remainingSize,
+      infill,
+      config.straw,
+      startsWithStand,
+      endsWithStand,
+      startAtEnd
+    )
   }
 }
 
-const _constructModuleWall = (
-  wall: PerimeterWall,
-  perimeter: Perimeter,
-  storeyContext: WallStoreyContext,
-  config: ModulesConstructionConfig,
-  layers: WallLayersConfig
-): Generator<ConstructionResult> =>
-  segmentedWallConstruction(
-    wall,
-    perimeter,
-    storeyContext,
-    layers,
-    (position, size, startsWithStand, endsWithStand, startAtEnd) =>
-      moduleWallArea(position, size, config, startsWithStand, endsWithStand, startAtEnd),
+export class ModulesWallAssembly implements WallAssembly<ModulesWallConfig> {
+  construct(
+    wall: PerimeterWall,
+    perimeter: Perimeter,
+    storeyContext: WallStoreyContext,
+    config: ModulesWallConfig
+  ): ConstructionModel {
+    const allResults = Array.from(
+      segmentedWallConstruction(
+        wall,
+        perimeter,
+        storeyContext,
+        config.layers,
+        (position, size, startsWithStand, endsWithStand, startAtEnd) =>
+          moduleWallArea(position, size, config, startsWithStand, endsWithStand, startAtEnd),
 
-    (position: vec3, size: vec3, zOffset: Length, openings: Opening[]) =>
-      constructOpeningFrame({ type: 'opening', position, size, zOffset, openings }, config.openings, config.infill)
-  )
+        (position: vec3, size: vec3, zOffset: Length, openings: Opening[]) =>
+          constructOpeningFrame({ type: 'opening', position, size, zOffset, openings }, config.openings, (p, s) =>
+            infillWallArea(p, s, config.infill, config.straw)
+          )
+      )
+    )
 
-export const constructModuleWall: WallAssemblyBuilder<ModulesConstructionConfig> = (
-  wall: PerimeterWall,
-  perimeter: Perimeter,
-  storeyContext: WallStoreyContext,
-  config: ModulesConstructionConfig,
-  layers: WallLayersConfig
-): ConstructionModel => {
-  const allResults = Array.from(_constructModuleWall(wall, perimeter, storeyContext, config, layers))
+    const aggRes = aggregateResults(allResults)
 
-  const aggRes = aggregateResults(allResults)
-
-  return {
-    bounds: mergeBounds(...aggRes.elements.map(e => e.bounds)),
-    elements: aggRes.elements,
-    measurements: aggRes.measurements,
-    areas: aggRes.areas,
-    errors: aggRes.errors,
-    warnings: aggRes.warnings
+    return {
+      bounds: mergeBounds(...aggRes.elements.map(e => e.bounds)),
+      elements: aggRes.elements,
+      measurements: aggRes.measurements,
+      areas: aggRes.areas,
+      errors: aggRes.errors,
+      warnings: aggRes.warnings
+    }
   }
 }

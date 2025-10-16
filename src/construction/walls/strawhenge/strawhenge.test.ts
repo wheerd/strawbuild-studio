@@ -4,10 +4,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createConstructionElement, createCuboidShape } from '@/construction/elements'
 import { constructStraw } from '@/construction/materials/straw'
 import { aggregateResults, yieldElement } from '@/construction/results'
+import type { StrawhengeWallConfig } from '@/construction/walls'
 import { infillWallArea } from '@/construction/walls/infill/infill'
 
 import { constructModule } from './modules'
-import { type StrawhengeConstructionConfig, strawhengeWallArea } from './strawhenge'
+import { strawhengeWallArea } from './strawhenge'
 
 // Mock dependencies
 vi.mock('@/construction/materials/straw', () => ({
@@ -32,7 +33,7 @@ const FULL_BALE = 400
 const MIN_BALE = 100
 const POST_WIDTH = 10
 
-const createTestConfig = (): StrawhengeConstructionConfig => ({
+const createTestConfig = (): StrawhengeWallConfig => ({
   type: 'strawhenge',
   module: {
     type: 'single',
@@ -42,20 +43,12 @@ const createTestConfig = (): StrawhengeConstructionConfig => ({
     strawMaterial: 'straw' as any
   },
   infill: {
-    type: 'infill',
     maxPostSpacing: FULL_BALE,
     minStrawSpace: MIN_BALE,
     posts: {
       type: 'full',
       width: POST_WIDTH,
       material: 'wood' as any
-    },
-    openings: {} as any,
-    straw: {
-      baleLength: 800,
-      baleHeight: 500,
-      baleWidth: 360,
-      material: 'straw' as any
     }
   },
   openings: {} as any,
@@ -64,6 +57,10 @@ const createTestConfig = (): StrawhengeConstructionConfig => ({
     baleHeight: 500,
     baleWidth: 360,
     material: 'straw' as any
+  },
+  layers: {
+    insideThickness: 0,
+    outsideThickness: 0
   }
 })
 
@@ -169,7 +166,7 @@ describe('Strawhenge Wall Construction', () => {
       )
 
       // Should call infill for insufficient space to place modules properly
-      expect(mockInfillWallArea).toHaveBeenCalledWith(position, size, config.infill, false, false, false)
+      expect(mockInfillWallArea).toHaveBeenCalledWith(position, size, config.infill, config.straw, false, false, false)
     })
 
     it('should fall back to infill when space is too small for module', () => {
@@ -188,7 +185,7 @@ describe('Strawhenge Wall Construction', () => {
       )
 
       // Should call infill, not module construction
-      expect(mockInfillWallArea).toHaveBeenCalledWith(position, size, config.infill, true, true, false)
+      expect(mockInfillWallArea).toHaveBeenCalledWith(position, size, config.infill, config.straw, true, true, false)
       expect(mockConstructModule).not.toHaveBeenCalled()
     })
   })

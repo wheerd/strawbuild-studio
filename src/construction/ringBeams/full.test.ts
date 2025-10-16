@@ -1,7 +1,7 @@
 import { vec2, vec3 } from 'gl-matrix'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { PerimeterId, RingBeamAssemblyId } from '@/building/model/ids'
+import type { PerimeterId } from '@/building/model/ids'
 import type { Perimeter, PerimeterCorner } from '@/building/model/model'
 import { type ConstructionElement, type GroupOrElement } from '@/construction/elements'
 import type { MaterialId } from '@/construction/materials/material'
@@ -12,7 +12,7 @@ import * as geometry from '@/shared/geometry'
 import type { Polygon2D } from '@/shared/geometry'
 
 import { FullRingBeamAssembly } from './full'
-import type { FullRingBeamAssemblyConfig } from './types'
+import type { FullRingBeamConfig } from './types'
 
 vi.mock('@/shared/geometry', async () => {
   const original = await vi.importActual<typeof import('@/shared/geometry')>('@/shared/geometry')
@@ -27,12 +27,9 @@ const simplifyPolygonMock = vi.mocked(geometry.simplifyPolygon)
 const offsetPolygonMock = vi.mocked(geometry.offsetPolygon)
 
 const material: MaterialId = 'material-1' as MaterialId
-const assemblyId: RingBeamAssemblyId = 'ringbeam_test' as RingBeamAssemblyId
 
-const defaultConfig: FullRingBeamAssemblyConfig = {
+const defaultConfig: FullRingBeamConfig = {
   type: 'full',
-  name: 'Test Ring Beam',
-  id: assemblyId,
   height: 60,
   width: 360,
   offsetFromEdge: 100,
@@ -192,7 +189,7 @@ describe('FullRingBeamAssembly', () => {
       ]
       const perimeter = createMockPerimeter(corners)
 
-      const config: FullRingBeamAssemblyConfig = {
+      const config: FullRingBeamConfig = {
         ...defaultConfig,
         offsetFromEdge: 50,
         width: 240

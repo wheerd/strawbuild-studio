@@ -4,11 +4,10 @@ import type { FloorAssemblyId, RingBeamAssemblyId, WallAssemblyId } from '@/buil
 import type { Storey } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { getConfigState, setConfigState } from '@/construction/config/store'
+import type { RingBeamAssemblyConfig, WallAssemblyConfig } from '@/construction/config/types'
 import type { FloorAssemblyConfig } from '@/construction/floors/types'
 import type { Material, MaterialId } from '@/construction/materials/material'
 import { getMaterialsState, setMaterialsState } from '@/construction/materials/store'
-import type { RingBeamAssemblyConfig } from '@/construction/ringBeams'
-import type { WallAssemblyConfig } from '@/construction/walls/types'
 import type { Polygon2D } from '@/shared/geometry'
 
 export interface ExportedStorey {

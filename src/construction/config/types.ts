@@ -1,11 +1,11 @@
-import type { MaterialId } from '@/construction/materials/material'
+import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model'
+import type { DoubleRingBeamConfig, FullRingBeamConfig } from '@/construction/ringBeams'
 import type {
-  BaseConstructionConfig,
-  InfillConstructionConfig,
-  StrawhengeConstructionConfig
+  InfillWallConfig,
+  ModulesWallConfig,
+  NonStrawbaleWallConfig,
+  StrawhengeWallConfig
 } from '@/construction/walls'
-import type { ModulesConstructionConfig } from '@/construction/walls/strawhenge/all-modules'
-import type { Length } from '@/shared/geometry'
 
 /*
   This is what the wall + floor construction looks like from the side:
@@ -54,20 +54,32 @@ e | y +--------------+ s | Floor top layers                 }
   |   |              | e |                 .
 */
 
-// Placeholder config interface for non-strawbale construction
-export interface NonStrawbaleConfig extends BaseConstructionConfig {
-  type: 'non-strawbale'
-  material: MaterialId
-  thickness: number
+// Walls
+
+export interface WallAssemblyIdPart {
+  id: WallAssemblyId
+  name: string
 }
 
-export interface WallLayersConfig {
-  insideThickness: Length
-  outsideThickness: Length
-}
+export type InfillWallAssemblyConfig = InfillWallConfig & WallAssemblyIdPart
+export type ModulesWallAssemblyConfig = ModulesWallConfig & WallAssemblyIdPart
+export type StrawhengeWallAssemblyConfig = StrawhengeWallConfig & WallAssemblyIdPart
+export type NonStrawbaleWallAssemblyConfig = NonStrawbaleWallConfig & WallAssemblyIdPart
 
 export type WallAssemblyConfig =
-  | InfillConstructionConfig
-  | StrawhengeConstructionConfig
-  | ModulesConstructionConfig
-  | NonStrawbaleConfig
+  | InfillWallAssemblyConfig
+  | ModulesWallAssemblyConfig
+  | StrawhengeWallAssemblyConfig
+  | NonStrawbaleWallAssemblyConfig
+
+// Ring beams
+
+export interface RingBeamAssemblyIdPart {
+  id: RingBeamAssemblyId
+  name: string
+}
+
+export type FullRingBeamAssemblyConfig = FullRingBeamConfig & RingBeamAssemblyIdPart
+export type DoubleRingBeamAssemblyConfig = DoubleRingBeamConfig & RingBeamAssemblyIdPart
+
+export type RingBeamAssemblyConfig = FullRingBeamAssemblyConfig | DoubleRingBeamAssemblyConfig

@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createOpeningId, createPerimeterId, createWallAssemblyId } from '@/building/model/ids'
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
-import type { WallLayersConfig } from '@/construction/config/types'
 import { IDENTITY } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
 import type { PostConfig } from '@/construction/materials/posts'
@@ -13,12 +12,13 @@ import { constructStraw } from '@/construction/materials/straw'
 import { constructOpeningFrame } from '@/construction/openings/openings'
 import { aggregateResults, yieldElement, yieldError, yieldMeasurement, yieldWarning } from '@/construction/results'
 import { TAG_POST_SPACING } from '@/construction/tags'
+import type { InfillWallConfig, InfillWallSegmentConfig, WallLayersConfig } from '@/construction/walls'
 import { type WallStoreyContext } from '@/construction/walls/segmentation'
 import { segmentedWallConstruction } from '@/construction/walls/segmentation'
 import type { Length } from '@/shared/geometry'
 import '@/shared/geometry'
 
-import { type InfillConstructionConfig, constructInfillWall, infillWallArea } from './infill'
+import { InfillWallAssembly, infillWallArea } from './infill'
 
 function createMockStoreyContext(storeyHeight: Length = 2500): WallStoreyContext {
   return {
@@ -121,20 +121,12 @@ function createMockStrawConfig(): StrawConfig {
   }
 }
 
-function createMockInfillConfig(): InfillConstructionConfig {
+function createMockInfillConfig(overrides: Partial<InfillWallSegmentConfig> = {}): InfillWallSegmentConfig {
   return {
-    type: 'infill',
     maxPostSpacing: 800,
     minStrawSpace: 70,
     posts: createMockPostConfig(),
-    openings: {
-      padding: 15,
-      headerThickness: 60,
-      headerMaterial: mockHeaderMaterial,
-      sillThickness: 60,
-      sillMaterial: mockHeaderMaterial
-    },
-    straw: createMockStrawConfig()
+    ...overrides
   }
 }
 
@@ -182,6 +174,9 @@ function createMockLayers(): WallLayersConfig {
 }
 
 describe('infillWallArea', () => {
+  let config: InfillWallSegmentConfig
+  let strawConfig: StrawConfig
+
   beforeEach(() => {
     vi.clearAllMocks()
 
@@ -197,15 +192,17 @@ describe('infillWallArea', () => {
         createMockElement('straw-1', vec3.fromValues(0, 0, 0), vec3.fromValues(800, 300, 2500), mockStrawMaterial)
       ])()
     )
+
+    config = createMockInfillConfig()
+    strawConfig = createMockStrawConfig()
   })
 
   describe('basic functionality', () => {
     it('should create straw infill when no stands are specified', () => {
       const position = vec3.fromValues(100, 0, 0)
       const size = vec3.fromValues(800, 300, 2500)
-      const config = createMockInfillConfig()
 
-      const results = [...infillWallArea(position, size, config)]
+      const results = [...infillWallArea(position, size, config, strawConfig)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -218,9 +215,8 @@ describe('infillWallArea', () => {
     it('should create start post when startsWithStand is true', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1000, 300, 2500)
-      const config = createMockInfillConfig()
 
-      const results = [...infillWallArea(position, size, config, true)]
+      const results = [...infillWallArea(position, size, config, strawConfig, true)]
       const { elements, errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -232,9 +228,8 @@ describe('infillWallArea', () => {
     it('should create end post when endsWithStand is true', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1000, 300, 2500)
-      const config = createMockInfillConfig()
 
-      const results = [...infillWallArea(position, size, config, false, true)]
+      const results = [...infillWallArea(position, size, config, strawConfig, false, true)]
       const { elements, errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -246,9 +241,8 @@ describe('infillWallArea', () => {
     it('should create both start and end posts when both stands are true', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1600, 300, 2500)
-      const config = createMockInfillConfig()
 
-      const results = [...infillWallArea(position, size, config, true, true)]
+      const results = [...infillWallArea(position, size, config, strawConfig, true, true)]
       const { elements, errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -260,9 +254,8 @@ describe('infillWallArea', () => {
     it('should generate measurements for post spacing', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1000, 300, 2500)
-      const config = createMockInfillConfig()
 
-      const results = [...infillWallArea(position, size, config)]
+      const results = [...infillWallArea(position, size, config, strawConfig)]
       const { measurements } = aggregateResults(results)
 
       expect(measurements.length).toBeGreaterThan(0)
@@ -275,9 +268,8 @@ describe('infillWallArea', () => {
     it('should generate error when not enough space for a post with start stand', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(30, 300, 2500) // Less than post width
-      const config = createMockInfillConfig()
 
-      const results = [...infillWallArea(position, size, config, true)]
+      const results = [...infillWallArea(position, size, config, strawConfig, true)]
       const { errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(1)
@@ -287,9 +279,8 @@ describe('infillWallArea', () => {
     it('should generate error when not enough space for a post with end stand', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(30, 300, 2500) // Less than post width
-      const config = createMockInfillConfig()
 
-      const results = [...infillWallArea(position, size, config, false, true)]
+      const results = [...infillWallArea(position, size, config, strawConfig, false, true)]
       const { errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(1)
@@ -299,9 +290,8 @@ describe('infillWallArea', () => {
     it('should generate error when space for more than one post but not enough for two', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(100, 300, 2500) // More than one post width but less than 2
-      const config = createMockInfillConfig()
 
-      const results = [...infillWallArea(position, size, config, true, true)]
+      const results = [...infillWallArea(position, size, config, strawConfig, true, true)]
       const { errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(1)
@@ -311,9 +301,8 @@ describe('infillWallArea', () => {
     it('should generate warning when not enough vertical space for straw', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(800, 300, 50) // Less than minStrawSpace
-      const config = createMockInfillConfig()
 
-      const results = [...infillWallArea(position, size, config)]
+      const results = [...infillWallArea(position, size, config, strawConfig)]
       const { warnings } = aggregateResults(results)
 
       expect(warnings).toHaveLength(1)
@@ -323,9 +312,8 @@ describe('infillWallArea', () => {
     it('should generate warning when not enough space for infilling straw', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(50, 300, 2500) // Less than minStrawSpace for bale width
-      const config = createMockInfillConfig()
 
-      const results = [...infillWallArea(position, size, config)]
+      const results = [...infillWallArea(position, size, config, strawConfig)]
       const { warnings } = aggregateResults(results)
 
       expect(warnings.length).toBeGreaterThan(0)
@@ -337,9 +325,8 @@ describe('infillWallArea', () => {
     it('should handle exactly post width with start stand', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(60, 300, 2500) // Exactly post width
-      const config = createMockInfillConfig()
 
-      const results = [...infillWallArea(position, size, config, true)]
+      const results = [...infillWallArea(position, size, config, strawConfig, true)]
       const { elements, errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -350,9 +337,8 @@ describe('infillWallArea', () => {
     it('should handle exactly post width with end stand', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(60, 300, 2500) // Exactly post width
-      const config = createMockInfillConfig()
 
-      const results = [...infillWallArea(position, size, config, false, true)]
+      const results = [...infillWallArea(position, size, config, strawConfig, false, true)]
       const { elements, errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -363,9 +349,8 @@ describe('infillWallArea', () => {
     it('should handle zero dimensions gracefully', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(0, 0, 0)
-      const config = createMockInfillConfig()
 
-      const results = [...infillWallArea(position, size, config)]
+      const results = [...infillWallArea(position, size, config, strawConfig)]
       const { elements, errors } = aggregateResults(results)
 
       expect(elements).toHaveLength(0)
@@ -375,9 +360,8 @@ describe('infillWallArea', () => {
     it('should handle startAtEnd parameter correctly', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1000, 300, 2500)
-      const config = createMockInfillConfig()
 
-      const results = [...infillWallArea(position, size, config, false, false, true)]
+      const results = [...infillWallArea(position, size, config, strawConfig, false, false, true)]
       const { elements } = aggregateResults(results)
 
       expect(mockConstructStraw).toHaveBeenCalled()
@@ -395,12 +379,13 @@ describe('infillWallArea', () => {
         infillMaterial: mockStrawMaterial
       }
 
-      const config: InfillConstructionConfig = {
-        ...createMockInfillConfig(),
+      const config = createMockInfillConfig({
         posts: doublePostConfig
-      }
+      })
 
-      const results = [...infillWallArea(vec3.fromValues(0, 0, 0), vec3.fromValues(1000, 300, 2500), config, true)]
+      const results = [
+        ...infillWallArea(vec3.fromValues(0, 0, 0), vec3.fromValues(1000, 300, 2500), config, strawConfig, true)
+      ]
       const { errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -412,12 +397,13 @@ describe('infillWallArea', () => {
     })
 
     it('should work with different maxPostSpacing', () => {
-      const config: InfillConstructionConfig = {
-        ...createMockInfillConfig(),
+      const config = createMockInfillConfig({
         maxPostSpacing: 600
-      }
+      })
 
-      const results = [...infillWallArea(vec3.fromValues(0, 0, 0), vec3.fromValues(1000, 300, 2500), config)]
+      const results = [
+        ...infillWallArea(vec3.fromValues(0, 0, 0), vec3.fromValues(1000, 300, 2500), config, strawConfig)
+      ]
       const { measurements } = aggregateResults(results)
 
       expect(measurements.length).toBeGreaterThan(0)
@@ -425,15 +411,14 @@ describe('infillWallArea', () => {
     })
 
     it('should work with different minStrawSpace', () => {
-      const config: InfillConstructionConfig = {
-        ...createMockInfillConfig(),
+      const config = createMockInfillConfig({
         minStrawSpace: 100
-      }
+      })
 
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(800, 300, 90) // Between old and new minStrawSpace
 
-      const results = [...infillWallArea(position, size, config)]
+      const results = [...infillWallArea(position, size, config, strawConfig)]
       const { warnings } = aggregateResults(results)
 
       expect(warnings).toHaveLength(1)
@@ -445,7 +430,6 @@ describe('infillWallArea', () => {
     it('should create multiple posts and straw sections for large areas', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(2000, 300, 2500) // Large enough for multiple sections
-      const config = createMockInfillConfig()
 
       // Mock multiple calls to constructPost and constructStraw
       mockConstructPost.mockReturnValue(
@@ -459,7 +443,7 @@ describe('infillWallArea', () => {
         ])()
       )
 
-      const results = [...infillWallArea(position, size, config)]
+      const results = [...infillWallArea(position, size, config, strawConfig)]
       const { elements } = aggregateResults(results)
 
       expect(mockConstructPost).toHaveBeenCalled()
@@ -470,9 +454,8 @@ describe('infillWallArea', () => {
     it('should alternate straw placement based on atStart parameter', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1500, 300, 2500)
-      const config = createMockInfillConfig()
 
-      const results = [...infillWallArea(position, size, config)]
+      const results = [...infillWallArea(position, size, config, strawConfig)]
       aggregateResults(results)
 
       expect(mockConstructStraw).toHaveBeenCalled()
@@ -481,7 +464,7 @@ describe('infillWallArea', () => {
   })
 })
 
-describe('constructInfillWall', () => {
+describe('assembly.construct', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
@@ -517,14 +500,30 @@ describe('constructInfillWall', () => {
   })
 
   describe('full wall construction', () => {
+    const assembly = new InfillWallAssembly()
+    let config: InfillWallConfig
+    beforeEach(() => {
+      config = {
+        type: 'infill',
+        ...createMockInfillConfig(),
+        straw: createMockStrawConfig(),
+        layers: createMockLayers(),
+        openings: {
+          padding: 15,
+          headerThickness: 60,
+          headerMaterial: mockHeaderMaterial,
+          sillThickness: 60,
+          sillMaterial: mockHeaderMaterial
+        }
+      }
+    })
+
     it('should construct a complete infill wall with no openings', () => {
       const wall = createMockWall()
       const perimeter = createMockPerimeter([wall])
       const floorHeight = 2500
-      const config = createMockInfillConfig()
-      const layers = createMockLayers()
 
-      const result = constructInfillWall(wall, perimeter, createMockStoreyContext(floorHeight), config, layers)
+      const result = assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight), config)
 
       expect(result.elements.length).toBeGreaterThan(0)
       expect(result.errors).toHaveLength(0)
@@ -534,7 +533,7 @@ describe('constructInfillWall', () => {
         wall,
         perimeter,
         createMockStoreyContext(floorHeight),
-        layers,
+        config.layers,
         expect.any(Function), // wallConstruction function
         expect.any(Function) // openingConstruction function
       )
@@ -552,10 +551,8 @@ describe('constructInfillWall', () => {
       const wall = createMockWall('test-wall', 3000, 300, [opening])
       const perimeter = createMockPerimeter([wall])
       const floorHeight = 2500
-      const config = createMockInfillConfig()
-      const layers = createMockLayers()
 
-      const result = constructInfillWall(wall, perimeter, createMockStoreyContext(floorHeight), config, layers)
+      const result = assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight), config)
 
       expect(result.elements.length).toBeGreaterThan(0)
       expect(result.errors).toHaveLength(0)
@@ -567,8 +564,6 @@ describe('constructInfillWall', () => {
       const wall = createMockWall()
       const perimeter = createMockPerimeter([wall])
       const floorHeight = 2500
-      const config = createMockInfillConfig()
-      const layers = createMockLayers()
 
       // Mock segmented construction to return errors/warnings
       const mockError = { description: 'Test error', elements: [] }
@@ -584,7 +579,7 @@ describe('constructInfillWall', () => {
         createMockGenerator([mockElement], [], [mockError], [mockWarning])()
       )
 
-      const result = constructInfillWall(wall, perimeter, createMockStoreyContext(floorHeight), config, layers)
+      const result = assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight), config)
 
       expect(result.errors).toHaveLength(1)
       expect(result.warnings).toHaveLength(1)
@@ -596,8 +591,6 @@ describe('constructInfillWall', () => {
       const wall = createMockWall()
       const perimeter = createMockPerimeter([wall])
       const floorHeight = 2500
-      const config = createMockInfillConfig()
-      const layers = createMockLayers()
 
       const mockMeasurement = {
         startPoint: vec3.fromValues(0, 0, 0),
@@ -616,7 +609,7 @@ describe('constructInfillWall', () => {
       )
       mockSegmentedWallConstruction.mockReturnValue(createMockGenerator([mockElement], [mockMeasurement])())
 
-      const result = constructInfillWall(wall, perimeter, createMockStoreyContext(floorHeight), config, layers)
+      const result = assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight), config)
 
       expect(result.measurements).toHaveLength(1)
       expect(result.measurements[0]).toBe(mockMeasurement)
@@ -626,10 +619,8 @@ describe('constructInfillWall', () => {
       const wall = createMockWall()
       const perimeter = createMockPerimeter([wall])
       const floorHeight = 2500
-      const config = createMockInfillConfig()
-      const layers = createMockLayers()
 
-      const result = constructInfillWall(wall, perimeter, createMockStoreyContext(floorHeight), config, layers)
+      const result = assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight), config)
 
       expect(result.bounds).toBeDefined()
       expect(result.bounds.min).toBeDefined()
@@ -639,36 +630,13 @@ describe('constructInfillWall', () => {
       expect(result.bounds.min[1]).toBeLessThanOrEqual(result.bounds.max[1])
       expect(result.bounds.min[2]).toBeLessThanOrEqual(result.bounds.max[2])
     })
-  })
-
-  describe('integration with segmentation', () => {
-    it('should pass correct parameters to segmentedWallConstruction', () => {
-      const wall = createMockWall()
-      const perimeter = createMockPerimeter([wall])
-      const floorHeight = 2500
-      const config = createMockInfillConfig()
-      const layers = createMockLayers()
-
-      constructInfillWall(wall, perimeter, createMockStoreyContext(floorHeight), config, layers)
-
-      expect(mockSegmentedWallConstruction).toHaveBeenCalledWith(
-        wall,
-        perimeter,
-        createMockStoreyContext(floorHeight),
-        layers,
-        expect.any(Function), // wallConstruction function
-        expect.any(Function) // openingConstruction function
-      )
-    })
 
     it('should pass infillWallArea function as wall construction callback', () => {
       const wall = createMockWall()
       const perimeter = createMockPerimeter([wall])
       const floorHeight = 2500
-      const config = createMockInfillConfig()
-      const layers = createMockLayers()
 
-      constructInfillWall(wall, perimeter, createMockStoreyContext(floorHeight), config, layers)
+      assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight), config)
 
       const wallConstructionFn = mockSegmentedWallConstruction.mock.calls[0][4]
       expect(wallConstructionFn).toBeDefined()
@@ -684,10 +652,8 @@ describe('constructInfillWall', () => {
       const wall = createMockWall()
       const perimeter = createMockPerimeter([wall])
       const floorHeight = 2500
-      const config = createMockInfillConfig()
-      const layers = createMockLayers()
 
-      constructInfillWall(wall, perimeter, createMockStoreyContext(floorHeight), config, layers)
+      assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight), config)
 
       const openingConstructionFn = mockSegmentedWallConstruction.mock.calls[0][5]
       expect(openingConstructionFn).toBeDefined()

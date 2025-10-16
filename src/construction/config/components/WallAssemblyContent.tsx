@@ -19,23 +19,27 @@ import React, { useCallback, useMemo, useState } from 'react'
 import type { WallAssemblyId } from '@/building/model/ids'
 import { usePerimeters, useStoreysOrderedByLevel } from '@/building/store'
 import { useConfigActions, useDefaultWallAssemblyId, useWallAssemblies } from '@/construction/config/store'
-import type { WallLayersConfig } from '@/construction/config/types'
+import type { WallAssemblyConfig } from '@/construction/config/types'
 import { getPerimeterConfigUsage } from '@/construction/config/usage'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
-import type { WallAssemblyConfig } from '@/construction/walls/types'
+import type { PostConfig } from '@/construction/materials/posts'
+import type {
+  InfillWallSegmentConfig,
+  ModulesWallConfig,
+  NonStrawbaleWallConfig,
+  StrawhengeWallConfig,
+  WallAssemblyType
+} from '@/construction/walls'
+import type { ModuleConfig } from '@/construction/walls/strawhenge/modules'
 import { LengthField } from '@/shared/components/LengthField'
 
 import { getPerimeterConfigTypeIcon } from './Icons'
 import { WallAssemblySelect } from './WallAssemblySelect'
 
-type PerimeterConfigType = WallAssemblyConfig['type']
-
 interface InfillConfigFormProps {
-  config:
-    | Extract<WallAssemblyConfig, { type: 'infill' }>
-    | { maxPostSpacing: number; minStrawSpace: number; posts: Extract<WallAssemblyConfig, { type: 'infill' }>['posts'] }
-  onUpdate: (updates: Partial<WallAssemblyConfig>) => void
+  config: InfillWallSegmentConfig
+  onUpdate: (updates: Partial<InfillWallSegmentConfig>) => void
 }
 
 function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JSX.Element {
@@ -76,8 +80,8 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
 }
 
 interface PostsConfigSectionProps {
-  posts: Extract<WallAssemblyConfig, { type: 'infill' }>['posts']
-  onUpdate: (posts: Extract<WallAssemblyConfig, { type: 'infill' }>['posts']) => void
+  posts: PostConfig
+  onUpdate: (posts: PostConfig) => void
 }
 
 function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React.JSX.Element {
@@ -177,8 +181,8 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
 }
 
 interface ModuleConfigSectionProps {
-  module: Extract<WallAssemblyConfig, { type: 'strawhenge' | 'modules' }>['module']
-  onUpdate: (module: Extract<WallAssemblyConfig, { type: 'strawhenge' | 'modules' }>['module']) => void
+  module: ModuleConfig
+  onUpdate: (module: ModuleConfig) => void
 }
 
 function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): React.JSX.Element {
@@ -298,8 +302,8 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
 }
 
 interface StrawhengeConfigFormProps {
-  config: Extract<WallAssemblyConfig, { type: 'strawhenge' }>
-  onUpdate: (updates: Partial<WallAssemblyConfig>) => void
+  config: StrawhengeWallConfig
+  onUpdate: (updates: Partial<StrawhengeWallConfig>) => void
 }
 
 function StrawhengeConfigForm({ config, onUpdate }: StrawhengeConfigFormProps): React.JSX.Element {
@@ -309,15 +313,15 @@ function StrawhengeConfigForm({ config, onUpdate }: StrawhengeConfigFormProps): 
       <Separator size="4" />
       <InfillConfigForm
         config={config.infill}
-        onUpdate={infill => onUpdate({ ...config, infill: infill as Extract<WallAssemblyConfig, { type: 'infill' }> })}
+        onUpdate={updates => onUpdate({ ...config, infill: { ...config.infill, ...updates } })}
       />
     </Flex>
   )
 }
 
 interface ModulesConfigFormProps {
-  config: Extract<WallAssemblyConfig, { type: 'modules' }>
-  onUpdate: (updates: Partial<WallAssemblyConfig>) => void
+  config: ModulesWallConfig
+  onUpdate: (updates: Partial<ModulesWallConfig>) => void
 }
 
 function ModulesConfigForm({ config, onUpdate }: ModulesConfigFormProps): React.JSX.Element {
@@ -334,8 +338,8 @@ function ModulesConfigForm({ config, onUpdate }: ModulesConfigFormProps): React.
 }
 
 interface NonStrawbaleConfigFormProps {
-  config: Extract<WallAssemblyConfig, { type: 'non-strawbale' }>
-  onUpdate: (updates: Partial<WallAssemblyConfig>) => void
+  config: NonStrawbaleWallConfig
+  onUpdate: (updates: Partial<NonStrawbaleWallConfig>) => void
 }
 
 function NonStrawbaleConfigForm({ config, onUpdate }: NonStrawbaleConfigFormProps): React.JSX.Element {
@@ -378,10 +382,9 @@ function NonStrawbaleConfigForm({ config, onUpdate }: NonStrawbaleConfigFormProp
 interface CommonConfigSectionsProps {
   assemblyId: WallAssemblyId
   config: WallAssemblyConfig
-  layers: WallLayersConfig
 }
 
-function CommonConfigSections({ assemblyId, config, layers }: CommonConfigSectionsProps): React.JSX.Element {
+function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps): React.JSX.Element {
   const { updateWallAssemblyConfig } = useConfigActions()
 
   return (
@@ -567,9 +570,9 @@ function CommonConfigSections({ assemblyId, config, layers }: CommonConfigSectio
           </Text>
         </Label.Root>
         <LengthField
-          value={layers.insideThickness}
+          value={config.layers.insideThickness}
           onChange={insideThickness =>
-            updateWallAssemblyConfig(assemblyId, { ...config, layers: { ...layers, insideThickness } })
+            updateWallAssemblyConfig(assemblyId, { ...config, layers: { ...config.layers, insideThickness } })
           }
           unit="mm"
           size="1"
@@ -581,9 +584,9 @@ function CommonConfigSections({ assemblyId, config, layers }: CommonConfigSectio
           </Text>
         </Label.Root>
         <LengthField
-          value={layers.outsideThickness}
+          value={config.layers.outsideThickness}
           onChange={outsideThickness =>
-            updateWallAssemblyConfig(assemblyId, { ...config, layers: { ...layers, outsideThickness } })
+            updateWallAssemblyConfig(assemblyId, { ...config, layers: { ...config.layers, outsideThickness } })
           }
           unit="mm"
           size="1"
@@ -666,7 +669,7 @@ function ConfigForm({ assembly, onUpdateName }: ConfigFormProps): React.JSX.Elem
 
         {/* Right Column - Common sections (Openings, Straw, Layers) */}
         <Flex direction="column" gap="3">
-          <CommonConfigSections assemblyId={assembly.id} config={assembly} layers={assembly.layers} />
+          <CommonConfigSections assemblyId={assembly.id} config={assembly} />
         </Flex>
       </Grid>
     </Flex>
@@ -704,7 +707,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
   )
 
   const handleAddNew = useCallback(
-    (type: PerimeterConfigType) => {
+    (type: WallAssemblyType) => {
       const defaultMaterial = '' as MaterialId
 
       let config: Partial<WallAssemblyConfig>

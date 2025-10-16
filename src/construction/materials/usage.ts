@@ -1,5 +1,4 @@
-import type { RingBeamAssemblyConfig } from '@/construction/ringBeams'
-import type { WallAssemblyConfig } from '@/construction/walls/types'
+import type { RingBeamAssemblyConfig, WallAssemblyConfig } from '@/construction/config/types'
 
 import type { MaterialId } from './material'
 

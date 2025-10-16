@@ -21,10 +21,10 @@ import {
   simplifyPolygon
 } from '@/shared/geometry'
 
-import type { FullRingBeamAssemblyConfig, RingBeamAssembly } from './types'
+import type { FullRingBeamConfig, RingBeamAssembly } from './types'
 
-export class FullRingBeamAssembly implements RingBeamAssembly<FullRingBeamAssemblyConfig> {
-  construct(perimeter: Perimeter, config: FullRingBeamAssemblyConfig): ConstructionModel {
+export class FullRingBeamAssembly implements RingBeamAssembly<FullRingBeamConfig> {
+  construct(perimeter: Perimeter, config: FullRingBeamConfig): ConstructionModel {
     const aggRes = aggregateResults([...this._constructFullRingBeam(perimeter, config)])
     const bounds2D = boundsFromPoints(perimeter.corners.map(c => c.outsidePoint))
     const bounds3D = {
@@ -42,10 +42,7 @@ export class FullRingBeamAssembly implements RingBeamAssembly<FullRingBeamAssemb
     }
   }
 
-  private *_constructFullRingBeam(
-    perimeter: Perimeter,
-    config: FullRingBeamAssemblyConfig
-  ): Generator<ConstructionResult> {
+  private *_constructFullRingBeam(perimeter: Perimeter, config: FullRingBeamConfig): Generator<ConstructionResult> {
     const insidePolygon: Polygon2D = { points: perimeter.corners.map(c => c.insidePoint) }
     const simplifiedPolygon = simplifyPolygon(insidePolygon)
     const beamInsidePolygon = offsetPolygon(simplifiedPolygon, config.offsetFromEdge).points

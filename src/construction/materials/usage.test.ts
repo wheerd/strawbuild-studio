@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { createRingBeamAssemblyId, createWallAssemblyId } from '@/building/model/ids'
-import type { RingBeamAssemblyConfig } from '@/construction/ringBeams'
-import type { WallAssemblyConfig } from '@/construction/walls/types'
+import type { RingBeamAssemblyConfig, WallAssemblyConfig } from '@/construction/config/types'
 import '@/shared/geometry'
 
 import { straw, strawbale, wood360x60 } from './material'

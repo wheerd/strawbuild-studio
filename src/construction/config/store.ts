@@ -11,22 +11,19 @@ import {
 } from '@/building/model/ids'
 import type { FloorAssemblyConfig, MonolithicFloorAssemblyConfig } from '@/construction/floors/types'
 import { clt180, concrete, straw, strawbale, wood120x60, wood360x60 } from '@/construction/materials/material'
-import {
-  type FullRingBeamAssemblyConfig,
-  type RingBeamAssemblyConfig,
-  type RingBeamConfig,
-  validateRingBeamConfig
-} from '@/construction/ringBeams'
-import type {
-  InfillWallAssemblyConfig,
-  ModulesWallAssemblyConfig,
-  NonStrawbaleWallAssemblyConfig,
-  StrawhengeWallAssemblyConfig,
-  WallAssemblyConfig
-} from '@/construction/walls/types'
+import { type RingBeamConfig, validateRingBeamConfig } from '@/construction/ringBeams'
 import '@/shared/geometry'
 
 import { CURRENT_VERSION, applyMigrations } from './migrations'
+import type {
+  FullRingBeamAssemblyConfig,
+  InfillWallAssemblyConfig,
+  ModulesWallAssemblyConfig,
+  NonStrawbaleWallAssemblyConfig,
+  RingBeamAssemblyConfig,
+  StrawhengeWallAssemblyConfig,
+  WallAssemblyConfig
+} from './types'
 
 export interface ConfigState {
   ringBeamAssemblyConfigs: Record<RingBeamAssemblyId, RingBeamAssemblyConfig>

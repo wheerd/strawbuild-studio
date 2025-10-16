@@ -15,8 +15,7 @@ import {
   TAG_SILL,
   TAG_SILL_HEIGHT
 } from '@/construction/tags'
-import type { InfillConstructionConfig } from '@/construction/walls/infill/infill'
-import { infillWallArea } from '@/construction/walls/infill/infill'
+import type { InfillMethod } from '@/construction/walls'
 import type { WallSegment3D } from '@/construction/walls/segmentation'
 import { type Length } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatLength'
@@ -50,7 +49,7 @@ function extractUnifiedDimensions(
 export function* constructOpeningFrame(
   openingSegment: WallSegment3D,
   config: OpeningConstructionConfig,
-  infill: InfillConstructionConfig
+  infill: InfillMethod
 ): Generator<ConstructionResult> {
   if (openingSegment.type !== 'opening' || !openingSegment.openings) {
     throw new Error('constructOpeningFrame requires an opening segment with openings array')
@@ -197,7 +196,7 @@ export function* constructOpeningFrame(
       const wallAbovePosition = vec3.fromValues(openingLeft, wallFront, wallAboveBottom)
       const wallAboveSize = vec3.fromValues(openingWidth, wallThickness, wallAboveHeight)
 
-      yield* infillWallArea(wallAbovePosition, wallAboveSize, infill)
+      yield* infill(wallAbovePosition, wallAboveSize)
     }
   }
 
@@ -210,7 +209,7 @@ export function* constructOpeningFrame(
       const wallBelowPosition = vec3.fromValues(openingLeft, wallFront, wallBottom)
       const wallBelowSize = vec3.fromValues(openingWidth, wallThickness, wallBelowHeight)
 
-      yield* infillWallArea(wallBelowPosition, wallBelowSize, infill)
+      yield* infill(wallBelowPosition, wallBelowSize)
     }
   }
 }
