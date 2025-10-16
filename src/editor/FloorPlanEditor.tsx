@@ -1,8 +1,10 @@
 import { Box, Grid } from '@radix-ui/themes'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 
 import { ConfigurationModal } from '@/construction/config/components/ConfigurationModal'
 import { type ConfigTab, ConfigurationModalContext } from '@/construction/config/context/ConfigurationModalContext'
+import { FeatureErrorFallback } from '@/shared/components/ErrorBoundary'
 import { WelcomeModal } from '@/shared/components/WelcomeModal'
 import { useWelcomeModal } from '@/shared/hooks/useWelcomeModal'
 import { CanvasThemeProvider } from '@/shared/theme/CanvasThemeContext'
@@ -182,15 +184,19 @@ export function FloorPlanEditor(): React.JSX.Element {
               borderRight: '1px solid var(--gray-6)'
             }}
           >
-            <CanvasThemeProvider>
-              <FloorPlanStage width={dimensions.width} height={dimensions.height} />
-              <StatusBar />
-              <LengthInputComponent />
-            </CanvasThemeProvider>
+            <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
+              <CanvasThemeProvider>
+                <FloorPlanStage width={dimensions.width} height={dimensions.height} />
+                <StatusBar />
+                <LengthInputComponent />
+              </CanvasThemeProvider>
+            </ErrorBoundary>
           </Box>
 
           {/* Right Side Panel */}
-          <SidePanel />
+          <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
+            <SidePanel />
+          </ErrorBoundary>
         </Grid>
       </Grid>
     </ConfigurationModalContext.Provider>

@@ -1,8 +1,8 @@
-import { Cross2Icon } from '@radix-ui/react-icons'
-import { Dialog, Flex, IconButton, Skeleton, Spinner, Text } from '@radix-ui/themes'
+import { Flex, Skeleton, Spinner, Text } from '@radix-ui/themes'
 import React, { Suspense, lazy, use, useEffect, useState } from 'react'
 
 import type { ConstructionModel } from '@/construction/model'
+import { BaseModal } from '@/shared/components/BaseModal'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 import { CanvasThemeProvider } from '@/shared/theme/CanvasThemeContext'
 
@@ -39,82 +39,69 @@ export function ConstructionViewer3DModal({
   }, [refreshKey, isOpen, constructionModelFactory])
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={handleOpenChange}>
-      <Dialog.Trigger>{trigger}</Dialog.Trigger>
-      <Dialog.Content
-        aria-describedby={undefined}
-        size="2"
-        width="95%"
-        maxWidth="95%"
-        maxHeight="90vh"
-        className="flex flex-col overflow-hidden"
-        onEscapeKeyDown={e => {
-          e.stopPropagation()
-        }}
-      >
-        <Flex direction="column" gap="1" height="100%" className="overflow-hidden">
-          <Dialog.Title>
-            <Flex justify="between" align="center">
-              3D Construction View
-              <Dialog.Close>
-                <IconButton variant="ghost" size="1">
-                  <Cross2Icon />
-                </IconButton>
-              </Dialog.Close>
-            </Flex>
-          </Dialog.Title>
-
-          <div
-            ref={containerRef}
-            className="relative flex-1 min-h-[500px] max-h-[calc(90vh-100px)] overflow-hidden border border-gray-6 rounded-2"
-          >
-            {modelPromise ? (
-              <Suspense
-                fallback={
-                  <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                    <Skeleton height="95vh" />
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%) scale(3)',
-                        zIndex: 10
-                      }}
-                    >
-                      <Spinner size="3" />
-                    </div>
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '12px',
-                        left: '12px',
-                        zIndex: 10
-                      }}
-                    >
-                      <Skeleton
-                        height="48px"
-                        width="90px"
-                        style={{
-                          borderRadius: 'var(--radius-3)',
-                          boxShadow: 'var(--shadow-3)'
-                        }}
-                      />
-                    </div>
+    <BaseModal
+      open={isOpen}
+      onOpenChange={handleOpenChange}
+      title="3D Construction View"
+      trigger={trigger}
+      size="2"
+      width="95%"
+      maxWidth="95%"
+      maxHeight="90vh"
+      className="flex flex-col overflow-hidden"
+      resetKeys={[refreshKey]}
+    >
+      <Flex direction="column" gap="1" height="100%" className="overflow-hidden">
+        <div
+          ref={containerRef}
+          className="relative flex-1 min-h-[500px] max-h-[calc(90vh-100px)] overflow-hidden border border-gray-6 rounded-2"
+        >
+          {modelPromise ? (
+            <Suspense
+              fallback={
+                <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                  <Skeleton height="95vh" />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%) scale(3)',
+                      zIndex: 10
+                    }}
+                  >
+                    <Spinner size="3" />
                   </div>
-                }
-              >
-                <OpacityControlProvider>
-                  <CanvasThemeProvider>
-                    <ConstructionViewer3DContent modelPromise={modelPromise} containerSize={containerSize} />
-                  </CanvasThemeProvider>
-                </OpacityControlProvider>
-              </Suspense>
-            ) : null}
-          </div>
-        </Flex>
-      </Dialog.Content>
-    </Dialog.Root>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '12px',
+                      left: '12px',
+                      zIndex: 10
+                    }}
+                  >
+                    <Skeleton
+                      height="48px"
+                      width="90px"
+                      style={{
+                        borderRadius: 'var(--radius-3)',
+                        boxShadow: 'var(--shadow-3)'
+                      }}
+                    />
+                  </div>
+                </div>
+              }
+            >
+              <OpacityControlProvider>
+                <CanvasThemeProvider>
+                  <ConstructionViewer3DContent modelPromise={modelPromise} containerSize={containerSize} />
+                </CanvasThemeProvider>
+              </OpacityControlProvider>
+            </Suspense>
+          ) : null}
+        </div>
+      </Flex>
+    </BaseModal>
   )
 }
 

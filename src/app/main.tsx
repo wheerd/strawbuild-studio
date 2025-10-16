@@ -3,9 +3,11 @@ import '@radix-ui/themes/styles.css'
 import { ThemeProvider } from 'next-themes'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { ErrorBoundary } from 'react-error-boundary'
 
 import { injectMaterialCSS } from '@/construction/materials/materialCSS'
 import { getAllMaterials, subscribeToMaterials } from '@/construction/materials/store'
+import { ErrorFallback } from '@/shared/components/ErrorBoundary'
 import { ensureClipperModule } from '@/shared/geometry/clipperInstance'
 import { registerServiceWorker } from '@/shared/services/serviceWorkerRegistration'
 
@@ -39,11 +41,13 @@ async function bootstrap() {
 
   root.render(
     <StrictMode>
-      <ThemeProvider attribute="class">
-        <Theme>
-          <App />
-        </Theme>
-      </ThemeProvider>
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
+        <ThemeProvider attribute="class">
+          <Theme>
+            <App />
+          </Theme>
+        </ThemeProvider>
+      </ErrorBoundary>
     </StrictMode>
   )
 
