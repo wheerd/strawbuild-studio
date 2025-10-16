@@ -91,7 +91,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
           views={[{ view: TOP_VIEW, label: 'Top' }]}
           refreshKey={[activeStoreyId, activePerimiters]}
           trigger={
-            <IconButton title="View Construction Plan" size="2" variant="outline">
+            <IconButton title="View Construction Plan" size="2" variant="solid">
               <ConstructionPlanIcon width={20} height={20} />
             </IconButton>
           }
@@ -100,7 +100,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
           constructionModelFactory={async () => constructModel()}
           refreshKey={[storeys, perimeters]}
           trigger={
-            <IconButton title="View 3D Construction" size="2" variant="outline">
+            <IconButton title="View 3D Construction" size="2" variant="solid">
               <Model3DIcon width={20} height={20} />
             </IconButton>
           }
