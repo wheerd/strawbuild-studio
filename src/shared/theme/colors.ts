@@ -4,9 +4,9 @@ export const MATERIAL_COLORS = {
   straw: '#dcb550ff',
   limePlaster: '#555555',
   clayPlaster: '#8b4513',
-  other: '#2f2f2f',
+  other: '#444444',
   woodSupport: '#cd853f',
   door: '#8b4513',
   window: '#87ceeb',
-  concrete: '#545452'
+  concrete: '#555555'
 } as const
