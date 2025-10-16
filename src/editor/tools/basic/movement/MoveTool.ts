@@ -6,7 +6,7 @@ import { activateLengthInput, deactivateLengthInput } from '@/editor/services/le
 import type { LengthInputConfig } from '@/editor/services/length-input'
 import { defaultSnappingService } from '@/editor/services/snapping/SnappingService'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
-import type { CanvasEvent, ToolImplementation } from '@/editor/tools/system/types'
+import type { CanvasEvent, CursorStyle, ToolImplementation } from '@/editor/tools/system/types'
 import type { Length } from '@/shared/geometry'
 
 import { MoveToolInspector } from './MoveToolInspector'
@@ -302,6 +302,16 @@ export class MoveTool extends BaseTool implements ToolImplementation {
   // For overlay component to access state
   getToolState() {
     return this.toolState
+  }
+
+  getCursor(): CursorStyle {
+    if (this.toolState.isMoving) {
+      return 'grabbing'
+    }
+    if (this.toolState.isWaitingForMovement) {
+      return 'grab'
+    }
+    return 'move'
   }
 
   overlayComponent = MoveToolOverlay

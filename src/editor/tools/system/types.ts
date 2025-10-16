@@ -15,6 +15,19 @@ export type ToolId =
   | 'perimeter.split-wall'
   | 'test.data'
 
+export type CursorStyle =
+  | 'default'
+  | 'pointer'
+  | 'crosshair'
+  | 'move'
+  | 'grab'
+  | 'grabbing'
+  | 'not-allowed'
+  | 'text'
+  | 'wait'
+  | 'help'
+  | string
+
 export interface ToolMetadata {
   name: string
   iconComponent: React.ComponentType<IconProps>
@@ -45,6 +58,9 @@ export interface ToolImplementation {
   // Lifecycle methods
   onActivate?(): void
   onDeactivate?(): void
+
+  // Cursor
+  getCursor?(): CursorStyle
 }
 
 export interface ToolInspectorProps<T extends ToolImplementation = ToolImplementation> {

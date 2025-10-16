@@ -9,7 +9,7 @@ import type { LengthInputPosition } from '@/editor/services/length-input'
 import { SnappingService } from '@/editor/services/snapping'
 import type { SnapResult, SnappingContext } from '@/editor/services/snapping/types'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
-import type { CanvasEvent, ToolImplementation } from '@/editor/tools/system/types'
+import type { CanvasEvent, CursorStyle, ToolImplementation } from '@/editor/tools/system/types'
 import type { Length, LineSegment2D, Polygon2D } from '@/shared/geometry'
 import {
   direction,
@@ -380,5 +380,9 @@ export class PerimeterTool extends BaseTool implements ToolImplementation {
         this.clearLengthOverride()
       }
     })
+  }
+
+  getCursor(): CursorStyle {
+    return 'crosshair'
   }
 }

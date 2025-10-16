@@ -2,7 +2,7 @@ import { vec2 } from 'gl-matrix'
 
 import { getModelActions } from '@/building/store'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
-import type { CanvasEvent, ToolImplementation } from '@/editor/tools/system/types'
+import type { CanvasEvent, CursorStyle, ToolImplementation } from '@/editor/tools/system/types'
 import type { Polygon2D } from '@/shared/geometry'
 import { polygonIsClockwise } from '@/shared/geometry'
 
@@ -181,5 +181,9 @@ export class PerimeterPresetTool extends BaseTool implements ToolImplementation 
    */
   public getPreviewPolygon(): Polygon2D | null {
     return this.state.previewPolygon
+  }
+
+  public getCursor(): CursorStyle {
+    return this.isPlacing() ? 'default' : 'not-allowed'
   }
 }

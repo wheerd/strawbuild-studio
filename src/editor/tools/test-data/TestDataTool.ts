@@ -1,6 +1,6 @@
 import { clearPersistence, getModelActions } from '@/building/store'
 import { popTool } from '@/editor/tools/system'
-import type { ToolImplementation } from '@/editor/tools/system/types'
+import type { CursorStyle, ToolImplementation } from '@/editor/tools/system/types'
 
 import { TestDataToolInspector } from './TestDataToolInspector'
 import { createCrossShapedPerimeter } from './generators/crossShaped'
@@ -64,5 +64,9 @@ export class TestDataTool implements ToolImplementation {
 
   onDeactivate(): void {
     // Nothing to do on deactivate
+  }
+
+  getCursor(): CursorStyle {
+    return 'not-allowed'
   }
 }

@@ -13,7 +13,7 @@ import { getModelActions } from '@/building/store'
 import { entityHitTestService } from '@/editor/canvas/services/EntityHitTestService'
 import { getSelectionActions } from '@/editor/hooks/useSelectionStore'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
-import type { CanvasEvent, ToolImplementation } from '@/editor/tools/system/types'
+import type { CanvasEvent, CursorStyle, ToolImplementation } from '@/editor/tools/system/types'
 import type { Length } from '@/shared/geometry'
 import { lineFromSegment, projectPointOntoLine } from '@/shared/geometry'
 
@@ -287,5 +287,9 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
   setSillHeight(sillHeight: Length | undefined): void {
     this.state.sillHeight = sillHeight
     this.triggerRender()
+  }
+
+  public getCursor(): CursorStyle {
+    return this.state.canPlace ? 'default' : 'not-allowed'
   }
 }

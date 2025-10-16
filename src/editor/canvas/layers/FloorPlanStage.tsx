@@ -10,6 +10,7 @@ import { Stage } from 'react-konva/lib/ReactKonvaCore'
 import { stageReference } from '@/editor/canvas/services/StageReference'
 import { usePointerPositionActions } from '@/editor/hooks/usePointerPosition'
 import { usePanX, usePanY, useViewportActions, useZoom } from '@/editor/hooks/useViewportStore'
+import { useToolCursor } from '@/editor/tools/system'
 import { useCanvasEventDispatcher } from '@/editor/tools/system/events/CanvasEventDispatcher'
 import { handleCanvasEvent } from '@/editor/tools/system/store'
 import type { CanvasEvent } from '@/editor/tools/system/types'
@@ -32,6 +33,7 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
   const panY = usePanY()
   const { setStageDimensions, zoomBy, panBy, setPan, stageToWorld } = useViewportActions()
   const pointerActions = usePointerPositionActions()
+  const cursor = useToolCursor()
 
   // Local state for panning (non-tool related)
   const [dragStart, setDragStart] = useState<{ pos: { x: number; y: number } } | null>(null)
@@ -55,6 +57,14 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
       stageReference.clearStage()
     }
   }, [])
+
+  // Apply cursor style to stage container
+  useEffect(() => {
+    if (stageRef.current) {
+      const container = stageRef.current.container()
+      container.style.cursor = cursor
+    }
+  }, [cursor])
 
   // Tool event handler
   const handleToolEvent = useCallback((canvasEvent: CanvasEvent) => {
