@@ -51,16 +51,17 @@ export function ConstructionPlanModal({
       title={title}
       trigger={trigger}
       size="2"
-      width="95%"
-      maxWidth="95%"
-      maxHeight="90vh"
+      width="calc(100vw - 2 * var(--space-4))"
+      maxWidth="calc(100vw - 2 * var(--space-4))"
+      height="calc(100vh - 2 * var(--space-6))"
+      maxHeight="calc(100vh - 2 * var(--space-6))"
       className="flex flex-col overflow-hidden"
       resetKeys={[refreshKey]}
     >
       <Flex direction="column" gap="3" height="100%" className="overflow-hidden">
         <div
           ref={containerRef}
-          className="relative flex-1 min-h-[300px] max-h-[calc(100vh-400px)] overflow-hidden border border-gray-6 rounded-2"
+          className="relative flex-1 min-h-[300px] overflow-hidden border border-gray-6 rounded-2"
         >
           {modelPromise ? (
             <Suspense

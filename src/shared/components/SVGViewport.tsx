@@ -197,7 +197,7 @@ export function SVGViewport({
 
   // Handle wheel zoom with constraints
   const handleWheel = useCallback(
-    (e: React.WheelEvent) => {
+    (e: WheelEvent) => {
       e.preventDefault()
 
       const zoomFactor = e.deltaY > 0 ? 1 / ZOOM_SCALE : ZOOM_SCALE
@@ -337,6 +337,15 @@ export function SVGViewport({
     setTouches([])
   }, [])
 
+  // Use native event so we can prevent default (react listener is passive)
+  useEffect(() => {
+    if (svgRef.current) {
+      const svg = svgRef.current
+      svg.addEventListener('wheel', handleWheel, { passive: false })
+      return () => svg.removeEventListener('wheel', handleWheel)
+    }
+  }, [svgRef.current])
+
   // Generate transform string (same order as main editor: translate then scale)
   const transform = `translate(${viewport.panX}, ${viewport.panY}) scale(${viewport.zoom})`
 
@@ -349,7 +358,6 @@ export function SVGViewport({
         height={svgSize.height || 100}
         className="w-full h-full touch-none block viewport"
         preserveAspectRatio="none"
-        onWheel={handleWheel}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
