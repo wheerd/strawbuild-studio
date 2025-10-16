@@ -231,7 +231,7 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
         <Flex gap="2" justify="end">
           <ConstructionPlanModal
             title="Wall Construction Plan"
-            constructionModelFactory={async () => constructWall(perimeterId, wallId)}
+            constructionModelFactory={async () => constructWall(perimeterId, wallId, true)}
             views={[
               { view: FRONT_VIEW, label: 'Outside' },
               { view: BACK_VIEW, label: 'Inside' },
