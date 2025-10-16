@@ -28,4 +28,5 @@ export interface DoubleRingBeamConfig extends RingBeamConfigBase {
   offsetFromEdge: Length // From inside construction edge of wall
   spacing: Length // In between the two beams
 }
+
 export type RingBeamConfig = FullRingBeamConfig | DoubleRingBeamConfig

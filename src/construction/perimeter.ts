@@ -19,18 +19,18 @@ export function constructPerimeter(perimeter: Perimeter): ConstructionModel {
     throw new Error('Invalid storey on perimeter')
   }
 
-  const { getRingBeamAssemblyById, getWallAssemblyById, getFloorAssemblyConfigById } = getConfigActions()
+  const { getRingBeamAssemblyById, getWallAssemblyById, getFloorAssemblyById } = getConfigActions()
 
-  const currentFloorAssembly = getFloorAssemblyConfigById(storey.floorAssemblyId)
+  const currentFloorAssembly = getFloorAssemblyById(storey.floorAssemblyId)
   if (!currentFloorAssembly) {
-    throw new Error(`Slab config ${storey.floorAssemblyId} not found for storey ${storey.id}`)
+    throw new Error(`Floor assembly ${storey.floorAssemblyId} not found for storey ${storey.id}`)
   }
 
   const allStoreys = getStoreysOrderedByLevel()
   const currentIndex = allStoreys.findIndex(s => s.id === storey.id)
   const nextStorey = currentIndex >= 0 && currentIndex < allStoreys.length - 1 ? allStoreys[currentIndex + 1] : null
 
-  const nextFloorAssembly = nextStorey ? getFloorAssemblyConfigById(nextStorey.floorAssemblyId) : null
+  const nextFloorAssembly = nextStorey ? getFloorAssemblyById(nextStorey.floorAssemblyId) : null
 
   const storeyContext = createWallStoreyContext(storey, currentFloorAssembly, nextFloorAssembly)
   const constructionHeight =

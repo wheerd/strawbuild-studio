@@ -20,7 +20,7 @@ import type { WallAssemblyId } from '@/building/model/ids'
 import { usePerimeters, useStoreysOrderedByLevel } from '@/building/store'
 import { useConfigActions, useDefaultWallAssemblyId, useWallAssemblies } from '@/construction/config/store'
 import type { WallAssemblyConfig } from '@/construction/config/types'
-import { getPerimeterConfigUsage } from '@/construction/config/usage'
+import { getWallAssemblyUsage } from '@/construction/config/usage'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
 import type { PostConfig } from '@/construction/materials/posts'
@@ -29,7 +29,8 @@ import type {
   ModulesWallConfig,
   NonStrawbaleWallConfig,
   StrawhengeWallConfig,
-  WallAssemblyType
+  WallAssemblyType,
+  WallConfig
 } from '@/construction/walls'
 import type { ModuleConfig } from '@/construction/walls/strawhenge/modules'
 import { LengthField } from '@/shared/components/LengthField'
@@ -402,7 +403,6 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
             value={config.openings.padding}
             onChange={padding =>
               updateWallAssemblyConfig(assemblyId, {
-                ...config,
                 openings: { ...config.openings, padding }
               })
             }
@@ -421,7 +421,6 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
             value={config.openings.headerThickness}
             onChange={headerThickness =>
               updateWallAssemblyConfig(assemblyId, {
-                ...config,
                 openings: { ...config.openings, headerThickness }
               })
             }
@@ -440,7 +439,6 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
             value={config.openings.headerMaterial}
             onValueChange={headerMaterial =>
               updateWallAssemblyConfig(assemblyId, {
-                ...config,
                 openings: { ...config.openings, headerMaterial }
               })
             }
@@ -458,7 +456,6 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
             value={config.openings.sillThickness}
             onChange={sillThickness =>
               updateWallAssemblyConfig(assemblyId, {
-                ...config,
                 openings: { ...config.openings, sillThickness }
               })
             }
@@ -477,7 +474,6 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
             value={config.openings.sillMaterial}
             onValueChange={sillMaterial =>
               updateWallAssemblyConfig(assemblyId, {
-                ...config,
                 openings: { ...config.openings, sillMaterial }
               })
             }
@@ -500,7 +496,6 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           value={config.straw.baleLength}
           onChange={baleLength =>
             updateWallAssemblyConfig(assemblyId, {
-              ...config,
               straw: { ...config.straw, baleLength }
             })
           }
@@ -517,7 +512,6 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           value={config.straw.baleHeight}
           onChange={baleHeight =>
             updateWallAssemblyConfig(assemblyId, {
-              ...config,
               straw: { ...config.straw, baleHeight }
             })
           }
@@ -534,7 +528,6 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           value={config.straw.baleWidth}
           onChange={baleWidth =>
             updateWallAssemblyConfig(assemblyId, {
-              ...config,
               straw: { ...config.straw, baleWidth }
             })
           }
@@ -551,7 +544,6 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           value={config.straw.material}
           onValueChange={material =>
             updateWallAssemblyConfig(assemblyId, {
-              ...config,
               straw: { ...config.straw, material }
             })
           }
@@ -572,7 +564,7 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
         <LengthField
           value={config.layers.insideThickness}
           onChange={insideThickness =>
-            updateWallAssemblyConfig(assemblyId, { ...config, layers: { ...config.layers, insideThickness } })
+            updateWallAssemblyConfig(assemblyId, { layers: { ...config.layers, insideThickness } })
           }
           unit="mm"
           size="1"
@@ -586,7 +578,7 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
         <LengthField
           value={config.layers.outsideThickness}
           onChange={outsideThickness =>
-            updateWallAssemblyConfig(assemblyId, { ...config, layers: { ...config.layers, outsideThickness } })
+            updateWallAssemblyConfig(assemblyId, { layers: { ...config.layers, outsideThickness } })
           }
           unit="mm"
           size="1"
@@ -605,12 +597,7 @@ function ConfigForm({ assembly, onUpdateName }: ConfigFormProps): React.JSX.Elem
   const { updateWallAssemblyConfig } = useConfigActions()
 
   const updateConfig = useCallback(
-    (updates: Partial<WallAssemblyConfig>) => {
-      updateWallAssemblyConfig(assembly.id, {
-        ...assembly,
-        ...updates
-      } as WallAssemblyConfig)
-    },
+    (updates: Partial<WallConfig>) => updateWallAssemblyConfig(assembly.id, updates),
     [assembly.id, assembly, updateWallAssemblyConfig]
   )
 
@@ -701,7 +688,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
   const usage = useMemo(
     () =>
       selectedAssembly
-        ? getPerimeterConfigUsage(selectedAssembly.id, Object.values(perimeters), storeys)
+        ? getWallAssemblyUsage(selectedAssembly.id, Object.values(perimeters), storeys)
         : { isUsed: false, usedByWalls: [] },
     [selectedAssembly, perimeters, storeys]
   )
@@ -710,7 +697,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
     (type: WallAssemblyType) => {
       const defaultMaterial = '' as MaterialId
 
-      let config: Partial<WallAssemblyConfig>
+      let config: WallConfig
       const baseStrawConfig = {
         baleLength: 800,
         baleHeight: 500,
@@ -723,6 +710,10 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
         headerMaterial: defaultMaterial,
         sillThickness: 60,
         sillMaterial: defaultMaterial
+      }
+      const layers = {
+        insideThickness: 30,
+        outsideThickness: 50
       }
 
       switch (type) {
@@ -739,7 +730,8 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
               material: defaultMaterial
             },
             openings: baseOpeningsConfig,
-            straw: baseStrawConfig
+            straw: baseStrawConfig,
+            layers
           }
           break
         case 'strawhenge':
@@ -762,7 +754,8 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
               }
             },
             openings: baseOpeningsConfig,
-            straw: baseStrawConfig
+            straw: baseStrawConfig,
+            layers
           }
           break
         case 'modules':
@@ -785,7 +778,8 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
               }
             },
             openings: baseOpeningsConfig,
-            straw: baseStrawConfig
+            straw: baseStrawConfig,
+            layers
           }
           break
         case 'non-strawbale':
@@ -794,20 +788,13 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
             material: defaultMaterial,
             thickness: 200,
             openings: baseOpeningsConfig,
-            straw: baseStrawConfig
+            straw: baseStrawConfig,
+            layers
           }
           break
       }
 
-      const layers = {
-        insideThickness: 30,
-        outsideThickness: 50
-      }
-
-      const newAssembly = addWallAssembly({ ...config, name: `New ${type} assembly`, layers } as Omit<
-        WallAssemblyConfig,
-        'id'
-      >)
+      const newAssembly = addWallAssembly(`New ${type} assembly`, config)
       setSelectedAssemblyId(newAssembly.id)
     },
     [addWallAssembly]

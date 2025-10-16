@@ -20,11 +20,11 @@ export function constructStorey(storeyId: StoreyId): ConstructionModel | null {
 
 export function constructModel(): ConstructionModel | null {
   const { getStoreysOrderedByLevel } = getModelActions()
-  const { getFloorAssemblyConfigById } = getConfigActions()
+  const { getFloorAssemblyById } = getConfigActions()
   const models: ConstructionModel[] = []
   let zOffset = 0
   for (const storey of getStoreysOrderedByLevel()) {
-    const floor = getFloorAssemblyConfigById(storey.floorAssemblyId)
+    const floor = getFloorAssemblyById(storey.floorAssemblyId)
     if (!floor) {
       throw new Error('Invalid floor assembly id')
     }

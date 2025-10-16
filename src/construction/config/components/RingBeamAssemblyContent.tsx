@@ -23,7 +23,7 @@ import {
   useDefaultTopRingBeamAssemblyId,
   useRingBeamAssemblies
 } from '@/construction/config/store'
-import { getRingBeamConfigUsage } from '@/construction/config/usage'
+import { getRingBeamAssemblyUsage } from '@/construction/config/usage'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
 import type { RingBeamConfig } from '@/construction/ringBeams'
@@ -66,7 +66,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
   const usage = useMemo(
     () =>
       selectedAssembly
-        ? getRingBeamConfigUsage(selectedAssembly.id, Object.values(perimeters), Object.values(storeys))
+        ? getRingBeamAssemblyUsage(selectedAssembly.id, Object.values(perimeters), Object.values(storeys))
         : { isUsed: false, usedByPerimeters: [] },
     [selectedAssembly, perimeters, storeys]
   )

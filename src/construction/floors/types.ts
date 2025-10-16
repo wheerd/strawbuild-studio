@@ -1,9 +1,8 @@
-import type { FloorAssemblyId } from '@/building/model/ids'
 import type { MaterialId } from '@/construction/materials/material'
 import type { ConstructionModel } from '@/construction/model'
 import type { Length, PolygonWithHoles2D } from '@/shared/geometry'
 
-export interface FloorAssembly<TConfig extends FloorAssemblyBaseConfig> {
+export interface FloorAssembly<TConfig extends FloorAssemblyConfigBase> {
   construct: (polygon: PolygonWithHoles2D, config: TConfig) => ConstructionModel
 
   getTopOffset: (config: TConfig) => Length
@@ -14,9 +13,7 @@ export interface FloorAssembly<TConfig extends FloorAssemblyBaseConfig> {
 
 export type FloorAssemblyType = 'monolithic' | 'joist'
 
-export interface FloorAssemblyBaseConfig {
-  id: FloorAssemblyId
-  name: string
+export interface FloorAssemblyConfigBase {
   type: FloorAssemblyType
   layers: FloorLayersConfig
 }
@@ -26,13 +23,13 @@ export interface FloorLayersConfig {
   topThickness: Length
 }
 
-export interface MonolithicFloorAssemblyConfig extends FloorAssemblyBaseConfig {
+export interface MonolithicFloorConfig extends FloorAssemblyConfigBase {
   type: 'monolithic'
   thickness: Length
   material: MaterialId
 }
 
-export interface JoistFloorAssemblyConfig extends FloorAssemblyBaseConfig {
+export interface JoistFloorConfig extends FloorAssemblyConfigBase {
   type: 'joist'
   joistThickness: Length
   joistHeight: Length
@@ -42,4 +39,4 @@ export interface JoistFloorAssemblyConfig extends FloorAssemblyBaseConfig {
   subfloorMaterial: MaterialId
 }
 
-export type FloorAssemblyConfig = MonolithicFloorAssemblyConfig | JoistFloorAssemblyConfig
+export type FloorConfig = MonolithicFloorConfig | JoistFloorConfig

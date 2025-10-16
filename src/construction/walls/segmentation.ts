@@ -2,7 +2,8 @@ import { vec2, vec3 } from 'gl-matrix'
 
 import type { Opening, Perimeter, PerimeterWall, Storey } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config'
-import { FLOOR_ASSEMBLIES, type FloorAssemblyConfig } from '@/construction/floors'
+import type { FloorAssemblyConfig } from '@/construction/config/types'
+import { FLOOR_ASSEMBLIES } from '@/construction/floors'
 import { IDENTITY } from '@/construction/geometry'
 import { type ConstructionResult, yieldArea, yieldMeasurement } from '@/construction/results'
 import { TAG_OPENING_SPACING, TAG_WALL_LENGTH } from '@/construction/tags'
@@ -167,16 +168,16 @@ export function createWallStoreyContext(
   currentFloorAssembly: FloorAssemblyConfig,
   nextFloorAssembly: FloorAssemblyConfig | null
 ): WallStoreyContext {
-  const currentFloorSlabAssembly = FLOOR_ASSEMBLIES[currentFloorAssembly.type]
-  const nextFloorSlabAssembly = nextFloorAssembly ? FLOOR_ASSEMBLIES[nextFloorAssembly.type] : null
+  const currentFloorFloorAssembly = FLOOR_ASSEMBLIES[currentFloorAssembly.type]
+  const nextFloorFloorAssembly = nextFloorAssembly ? FLOOR_ASSEMBLIES[nextFloorAssembly.type] : null
 
   return {
     storeyHeight: currentStorey.height,
     floorTopOffset:
-      currentFloorAssembly.layers.topThickness + currentFloorSlabAssembly.getTopOffset(currentFloorAssembly),
+      currentFloorAssembly.layers.topThickness + currentFloorFloorAssembly.getTopOffset(currentFloorAssembly),
     ceilingBottomOffset:
       (nextFloorAssembly?.layers.bottomThickness ?? 0) +
-      (nextFloorSlabAssembly?.getBottomOffset(nextFloorAssembly) ?? 0)
+      (nextFloorFloorAssembly?.getBottomOffset(nextFloorAssembly) ?? 0)
   }
 }
 

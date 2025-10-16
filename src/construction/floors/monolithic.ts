@@ -7,10 +7,10 @@ import { TAG_FLOOR } from '@/construction/tags'
 import { type PolygonWithHoles2D } from '@/shared/geometry'
 
 import { BaseFloorAssembly } from './base'
-import type { MonolithicFloorAssemblyConfig } from './types'
+import type { MonolithicFloorConfig } from './types'
 
-export class MonolithicFloorAssembly extends BaseFloorAssembly<MonolithicFloorAssemblyConfig> {
-  construct = (polygon: PolygonWithHoles2D, config: MonolithicFloorAssemblyConfig) => {
+export class MonolithicFloorAssembly extends BaseFloorAssembly<MonolithicFloorConfig> {
+  construct = (polygon: PolygonWithHoles2D, config: MonolithicFloorConfig) => {
     const floor = createConstructionElement(
       config.material,
       createExtrudedPolygon(polygon, 'xy', config.thickness),
@@ -27,7 +27,7 @@ export class MonolithicFloorAssembly extends BaseFloorAssembly<MonolithicFloorAs
     } as ConstructionModel
   }
 
-  getTopOffset = (_config: MonolithicFloorAssemblyConfig) => 0
-  getBottomOffset = (_config: MonolithicFloorAssemblyConfig) => 0
-  getConstructionThickness = (config: MonolithicFloorAssemblyConfig) => config.thickness
+  getTopOffset = (_config: MonolithicFloorConfig) => 0
+  getBottomOffset = (_config: MonolithicFloorConfig) => 0
+  getConstructionThickness = (config: MonolithicFloorConfig) => config.thickness
 }

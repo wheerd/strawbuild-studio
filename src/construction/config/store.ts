@@ -9,13 +9,15 @@ import {
   createRingBeamAssemblyId,
   createWallAssemblyId
 } from '@/building/model/ids'
-import type { FloorAssemblyConfig, MonolithicFloorAssemblyConfig } from '@/construction/floors/types'
+import { type FloorConfig, validateFloorConfig } from '@/construction/floors'
 import { clt180, concrete, straw, strawbale, wood120x60, wood360x60 } from '@/construction/materials/material'
 import { type RingBeamConfig, validateRingBeamConfig } from '@/construction/ringBeams'
+import type { WallConfig } from '@/construction/walls'
 import '@/shared/geometry'
 
 import { CURRENT_VERSION, applyMigrations } from './migrations'
 import type {
+  FloorAssemblyConfig,
   FullRingBeamAssemblyConfig,
   InfillWallAssemblyConfig,
   ModulesWallAssemblyConfig,
@@ -40,9 +42,9 @@ export interface ConfigActions {
   addRingBeamAssembly: (name: string, config: RingBeamConfig) => RingBeamAssemblyConfig
   removeRingBeamAssembly: (id: RingBeamAssemblyId) => void
   updateRingBeamAssemblyName: (id: RingBeamAssemblyId, name: string) => void
-  updateRingBeamAssemblyConfig: (id: RingBeamAssemblyId, config: Omit<RingBeamConfig, 'type'>) => void
+  updateRingBeamAssemblyConfig: (id: RingBeamAssemblyId, config: Partial<Omit<RingBeamConfig, 'type'>>) => void
 
-  // Queries
+  // Ring beam assembly queries
   getRingBeamAssemblyById: (id: RingBeamAssemblyId) => RingBeamAssemblyConfig | null
   getAllRingBeamAssemblies: () => RingBeamAssemblyConfig[]
 
@@ -53,31 +55,32 @@ export interface ConfigActions {
   getDefaultTopRingBeamAssemblyId: () => RingBeamAssemblyId | undefined
 
   // CRUD operations for wall assemblies
-  addWallAssembly: (config: Omit<WallAssemblyConfig, 'id'>) => WallAssemblyConfig
-  duplicateWallAssembly: (id: WallAssemblyId, name: string) => WallAssemblyConfig
+  addWallAssembly: (name: string, config: WallConfig) => WallAssemblyConfig
   removeWallAssembly: (id: WallAssemblyId) => void
   updateWallAssemblyName: (id: WallAssemblyId, name: string) => void
-  updateWallAssemblyConfig: (id: WallAssemblyId, config: Omit<WallAssemblyConfig, 'id'>) => void
+  updateWallAssemblyConfig: (id: WallAssemblyId, config: Partial<Omit<WallConfig, 'type'>>) => void
+  duplicateWallAssembly: (id: WallAssemblyId, name: string) => WallAssemblyConfig
 
-  // Perimeter queries
+  // Wall assembly queries
   getWallAssemblyById: (id: WallAssemblyId) => WallAssemblyConfig | null
   getAllWallAssemblies: () => WallAssemblyConfig[]
 
   // Default wall assembly management
-  setDefaultWallAssembly: (assemblyId: WallAssemblyId | undefined) => void
+  setDefaultWallAssembly: (assemblyId: WallAssemblyId) => void
   getDefaultWallAssemblyId: () => WallAssemblyId
 
-  // CRUD operations for floor construction configs
-  addFloorAssemblyConfig: (config: FloorAssemblyConfig) => FloorAssemblyConfig
-  removeFloorAssemblyConfig: (id: FloorAssemblyId) => void
-  updateFloorAssemblyConfig: (id: FloorAssemblyId, config: Omit<FloorAssemblyConfig, 'id'>) => void
-  duplicateFloorAssemblyConfig: (id: FloorAssemblyId, name: string) => FloorAssemblyConfig
+  // CRUD operations for floor assemblies
+  addFloorAssembly: (name: string, config: FloorConfig) => FloorAssemblyConfig
+  removeFloorAssembly: (id: FloorAssemblyId) => void
+  updateFloorAssemblyName: (id: FloorAssemblyId, name: string) => void
+  updateFloorAssemblyConfig: (id: FloorAssemblyId, config: Partial<Omit<FloorConfig, 'type'>>) => void
+  duplicateFloorAssembly: (id: FloorAssemblyId, name: string) => FloorAssemblyConfig
 
-  // Slab queries
-  getFloorAssemblyConfigById: (id: FloorAssemblyId) => FloorAssemblyConfig | null
-  getAllFloorAssemblyConfigs: () => FloorAssemblyConfig[]
+  // Floor assembly queries
+  getFloorAssemblyById: (id: FloorAssemblyId) => FloorAssemblyConfig | null
+  getAllFloorAssemblies: () => FloorAssemblyConfig[]
 
-  // Default floor config management
+  // Default floor assembly management
   setDefaultFloorAssembly: (configId: FloorAssemblyId) => void
   getDefaultFloorAssemblyId: () => FloorAssemblyId
 }
@@ -97,33 +100,9 @@ const validateWallAssemblyName = (name: string): void => {
   }
 }
 
-const validateSlabConfigName = (name: string): void => {
+const validateFloorAssemblyName = (name: string): void => {
   if (name.trim().length === 0) {
     throw new Error('Floor assembly name cannot be empty')
-  }
-}
-
-const validateSlabConfig = (config: FloorAssemblyConfig): void => {
-  validateSlabConfigName(config.name)
-
-  if (config.type === 'monolithic') {
-    if (config.thickness <= 0) {
-      throw new Error('CLT thickness must be greater than 0')
-    }
-  } else if (config.type === 'joist') {
-    if (config.joistHeight <= 0 || config.joistThickness <= 0) {
-      throw new Error('Joist dimensions must be greater than 0')
-    }
-    if (config.joistSpacing <= 0) {
-      throw new Error('Joist spacing must be greater than 0')
-    }
-    if (config.subfloorThickness <= 0) {
-      throw new Error('Subfloor thickness must be greater than 0')
-    }
-  }
-
-  if (config.layers.topThickness < 0 || config.layers.bottomThickness < 0) {
-    throw new Error('Layer thicknesses cannot be negative')
   }
 }
 
@@ -141,7 +120,7 @@ const createDefaultRingBeamAssembly = (): FullRingBeamAssemblyConfig => ({
 })
 
 // Default floor construction config
-const createDefaultFloorAssemblies = (): MonolithicFloorAssemblyConfig[] => [
+const createDefaultFloorAssemblies = (): FloorAssemblyConfig[] => [
   {
     id: DEFAULT_FLOOR_ASSEMBLY_ID,
     name: 'CLT 18cm (6m)',
@@ -308,14 +287,14 @@ const useConfigStore = create<ConfigStore>()(
         // Initialize with default assemblies
         const defaultRingBeamAssembly = createDefaultRingBeamAssembly()
         const defaultWallAssemblies = createDefaultWallAssemblies()
-        const defaultSlabConfigs = createDefaultFloorAssemblies()
+        const defaultFloorAssemblies = createDefaultFloorAssemblies()
 
         return {
           ringBeamAssemblyConfigs: {
             [defaultRingBeamAssembly.id]: defaultRingBeamAssembly
           },
           wallAssemblyConfigs: Object.fromEntries(defaultWallAssemblies.map(assembly => [assembly.id, assembly])),
-          floorAssemblyConfigs: Object.fromEntries(defaultSlabConfigs.map(config => [config.id, config])),
+          floorAssemblyConfigs: Object.fromEntries(defaultFloorAssemblies.map(config => [config.id, config])),
           defaultBaseRingBeamAssemblyId: defaultRingBeamAssembly.id,
           defaultTopRingBeamAssemblyId: defaultRingBeamAssembly.id,
           defaultWallAssemblyId: defaultWallAssemblies[0].id,
@@ -381,7 +360,7 @@ const useConfigStore = create<ConfigStore>()(
                 const assembly = state.ringBeamAssemblyConfigs[id]
                 if (assembly == null) return state
 
-                const updatedAssembly: RingBeamAssemblyConfig = { ...assembly, ...config }
+                const updatedAssembly: RingBeamAssemblyConfig = { ...assembly, ...config, id }
                 validateRingBeamConfig(updatedAssembly)
 
                 return {
@@ -428,13 +407,14 @@ const useConfigStore = create<ConfigStore>()(
             },
 
             // Wall assembly CRUD operations
-            addWallAssembly: (config: Omit<WallAssemblyConfig, 'id'>) => {
-              validateWallAssemblyName(config.name)
+            addWallAssembly: (name: string, config: WallConfig) => {
+              validateWallAssemblyName(name)
 
               const id = createWallAssemblyId()
               const assembly = {
                 ...config,
-                id
+                id,
+                name
               } as WallAssemblyConfig
 
               set(state => ({
@@ -499,15 +479,16 @@ const useConfigStore = create<ConfigStore>()(
               })
             },
 
-            updateWallAssemblyConfig: (id: WallAssemblyId, config: Omit<WallAssemblyConfig, 'id'>) => {
+            updateWallAssemblyConfig: (id: WallAssemblyId, config: Partial<Omit<WallConfig, 'type'>>) => {
               set(state => {
                 const assembly = state.wallAssemblyConfigs[id]
                 if (assembly == null) return state
 
-                const updatedAssembly = {
+                const updatedAssembly: WallAssemblyConfig = {
+                  ...assembly,
                   ...config,
-                  id
-                } as WallAssemblyConfig
+                  id: assembly.id
+                }
 
                 return {
                   ...state,
@@ -540,19 +521,27 @@ const useConfigStore = create<ConfigStore>()(
               return state.defaultWallAssemblyId
             },
 
-            // Slab construction config CRUD operations
-            addFloorAssemblyConfig: (config: FloorAssemblyConfig) => {
-              validateSlabConfig(config)
+            // Floor construction config CRUD operations
+            addFloorAssembly: (name: string, config: FloorConfig) => {
+              validateFloorAssemblyName(name)
+              validateFloorConfig(config)
+
+              const id = createFloorAssemblyId()
+              const assembly = {
+                ...config,
+                id,
+                name
+              } as FloorAssemblyConfig
 
               set(state => ({
                 ...state,
-                floorAssemblyConfigs: { ...state.floorAssemblyConfigs, [config.id]: config }
+                floorAssemblyConfigs: { ...state.floorAssemblyConfigs, [assembly.id]: assembly }
               }))
 
-              return config
+              return assembly
             },
 
-            removeFloorAssemblyConfig: (id: FloorAssemblyId) => {
+            removeFloorAssembly: (id: FloorAssemblyId) => {
               set(state => {
                 const { floorAssemblyConfigs } = state
 
@@ -577,13 +566,31 @@ const useConfigStore = create<ConfigStore>()(
               })
             },
 
-            updateFloorAssemblyConfig: (id: FloorAssemblyId, updates: Omit<FloorAssemblyConfig, 'id'>) => {
+            updateFloorAssemblyName: (id: FloorAssemblyId, name: string) => {
+              set(state => {
+                const assembly = state.floorAssemblyConfigs[id]
+                if (assembly == null) return state
+
+                validateFloorAssemblyName(name)
+
+                const updatedAssembly: FloorAssemblyConfig = {
+                  ...assembly,
+                  name: name.trim()
+                }
+                return {
+                  ...state,
+                  floorAssemblyConfigs: { ...state.floorAssemblyConfigs, [id]: updatedAssembly }
+                }
+              })
+            },
+
+            updateFloorAssemblyConfig: (id: FloorAssemblyId, updates: Partial<Omit<FloorConfig, 'type'>>) => {
               set(state => {
                 const config = state.floorAssemblyConfigs[id]
                 if (config == null) return state
 
-                const updatedConfig = { ...config, ...updates, id } as FloorAssemblyConfig
-                validateSlabConfig(updatedConfig)
+                const updatedConfig: FloorAssemblyConfig = { ...config, ...updates, id }
+                validateFloorConfig(updatedConfig)
 
                 return {
                   ...state,
@@ -592,14 +599,14 @@ const useConfigStore = create<ConfigStore>()(
               })
             },
 
-            duplicateFloorAssemblyConfig: (id: FloorAssemblyId, name: string) => {
+            duplicateFloorAssembly: (id: FloorAssemblyId, name: string) => {
               const state = get()
               const original = state.floorAssemblyConfigs[id]
               if (original == null) {
                 throw new Error(`Floor assembly with id ${id} not found`)
               }
 
-              validateSlabConfigName(name)
+              validateFloorAssemblyName(name)
 
               const newId = createFloorAssemblyId()
               const duplicated = { ...original, id: newId, name: name.trim() } as FloorAssemblyConfig
@@ -612,13 +619,13 @@ const useConfigStore = create<ConfigStore>()(
               return duplicated
             },
 
-            // Slab queries
-            getFloorAssemblyConfigById: (id: FloorAssemblyId) => {
+            // Floor queries
+            getFloorAssemblyById: (id: FloorAssemblyId) => {
               const state = get()
               return state.floorAssemblyConfigs[id] ?? null
             },
 
-            getAllFloorAssemblyConfigs: () => {
+            getAllFloorAssemblies: () => {
               const state = get()
               return Object.values(state.floorAssemblyConfigs)
             },
@@ -642,7 +649,7 @@ const useConfigStore = create<ConfigStore>()(
               const state = get()
               return state.defaultFloorAssemblyId
             }
-          }
+          } satisfies ConfigActions
         }
       },
       { name: 'config-store' }
@@ -702,14 +709,14 @@ export const useWallAssemblyById = (id: WallAssemblyId): WallAssemblyConfig | nu
 export const useDefaultWallAssemblyId = (): WallAssemblyId | undefined =>
   useConfigStore(state => state.actions.getDefaultWallAssemblyId())
 
-// Slab construction config selector hooks
-export const useFloorAssemblyConfigs = (): FloorAssemblyConfig[] => {
+// Floor construction config selector hooks
+export const useFloorAssemblies = (): FloorAssemblyConfig[] => {
   const floorAssemblyConfigs = useConfigStore(state => state.floorAssemblyConfigs)
   return useMemo(() => Object.values(floorAssemblyConfigs), [floorAssemblyConfigs])
 }
 
-export const useFloorAssemblyConfigById = (id: FloorAssemblyId): FloorAssemblyConfig | null =>
-  useConfigStore(state => state.actions.getFloorAssemblyConfigById(id))
+export const useFloorAssemblyById = (id: FloorAssemblyId): FloorAssemblyConfig | null =>
+  useConfigStore(state => state.actions.getFloorAssemblyById(id))
 
 export const useDefaultFloorAssemblyId = (): FloorAssemblyId =>
   useConfigStore(state => state.actions.getDefaultFloorAssemblyId())

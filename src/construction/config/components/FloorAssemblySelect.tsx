@@ -2,7 +2,7 @@ import { Flex, Select, Text } from '@radix-ui/themes'
 import React from 'react'
 
 import type { FloorAssemblyId } from '@/building/model/ids'
-import { useFloorAssemblyConfigs } from '@/construction/config/store'
+import { useFloorAssemblies } from '@/construction/config/store'
 
 import { getFloorAssemblyTypeIcon } from './Icons'
 
@@ -25,7 +25,7 @@ export function FloorAssemblySelect({
   showDefaultIndicator = false,
   defaultConfigId
 }: FloorAssemblySelectProps): React.JSX.Element {
-  const floorAssemblyConfigs = useFloorAssemblyConfigs()
+  const floorAssemblyConfigs = useFloorAssemblies()
 
   return (
     <Select.Root

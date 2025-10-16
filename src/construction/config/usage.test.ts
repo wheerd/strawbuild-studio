@@ -13,9 +13,9 @@ import type { Perimeter, Storey } from '@/building/model/model'
 import { createStoreyLevel } from '@/building/model/model'
 import '@/shared/geometry'
 
-import { getPerimeterConfigUsage, getRingBeamConfigUsage } from './usage'
+import { getRingBeamAssemblyUsage, getWallAssemblyUsage } from './usage'
 
-describe('Config Usage Detection', () => {
+describe('Assembly Usage Detection', () => {
   const storeyId = createStoreyId()
   const storey: Storey = {
     id: storeyId,
@@ -25,20 +25,20 @@ describe('Config Usage Detection', () => {
     floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
   }
 
-  describe('getRingBeamConfigUsage', () => {
-    it('should detect ring beam config not in use', () => {
-      const ringBeamId = createRingBeamAssemblyId()
+  describe('getRingBeamAssemblyUsage', () => {
+    it('should detect ring beam assembly not in use', () => {
+      const assemblyId = createRingBeamAssemblyId()
       const perimeters: Perimeter[] = []
       const storeys = [storey]
 
-      const usage = getRingBeamConfigUsage(ringBeamId, perimeters, storeys)
+      const usage = getRingBeamAssemblyUsage(assemblyId, perimeters, storeys)
 
       expect(usage.isUsed).toBe(false)
       expect(usage.usedByPerimeters).toEqual([])
     })
 
-    it('should detect ring beam config used as base ring beam', () => {
-      const ringBeamId = createRingBeamAssemblyId()
+    it('should detect ring beam assembly used as base ring beam', () => {
+      const assemblyId = createRingBeamAssemblyId()
       const perimeterId = createPerimeterId()
 
       const perimeter: Perimeter = {
@@ -46,18 +46,18 @@ describe('Config Usage Detection', () => {
         storeyId,
         walls: [],
         corners: [],
-        baseRingBeamAssemblyId: ringBeamId,
+        baseRingBeamAssemblyId: assemblyId,
         topRingBeamAssemblyId: undefined
       }
 
-      const usage = getRingBeamConfigUsage(ringBeamId, [perimeter], [storey])
+      const usage = getRingBeamAssemblyUsage(assemblyId, [perimeter], [storey])
 
       expect(usage.isUsed).toBe(true)
       expect(usage.usedByPerimeters).toEqual(['Test Floor - Base Ring Beam'])
     })
 
-    it('should detect ring beam config used as top ring beam', () => {
-      const ringBeamId = createRingBeamAssemblyId()
+    it('should detect ring beam assembly used as top ring beam', () => {
+      const assemblyId = createRingBeamAssemblyId()
       const perimeterId = createPerimeterId()
 
       const perimeter: Perimeter = {
@@ -66,17 +66,17 @@ describe('Config Usage Detection', () => {
         walls: [],
         corners: [],
         baseRingBeamAssemblyId: undefined,
-        topRingBeamAssemblyId: ringBeamId
+        topRingBeamAssemblyId: assemblyId
       }
 
-      const usage = getRingBeamConfigUsage(ringBeamId, [perimeter], [storey])
+      const usage = getRingBeamAssemblyUsage(assemblyId, [perimeter], [storey])
 
       expect(usage.isUsed).toBe(true)
       expect(usage.usedByPerimeters).toEqual(['Test Floor - Top Ring Beam'])
     })
 
-    it('should detect ring beam config used in multiple places', () => {
-      const ringBeamId = createRingBeamAssemblyId()
+    it('should detect ring beam assembly used in multiple places', () => {
+      const assemblyId = createRingBeamAssemblyId()
       const perimeter1Id = createPerimeterId()
       const perimeter2Id = createPerimeterId()
 
@@ -85,7 +85,7 @@ describe('Config Usage Detection', () => {
         storeyId,
         walls: [],
         corners: [],
-        baseRingBeamAssemblyId: ringBeamId,
+        baseRingBeamAssemblyId: assemblyId,
         topRingBeamAssemblyId: undefined
       }
 
@@ -95,10 +95,10 @@ describe('Config Usage Detection', () => {
         walls: [],
         corners: [],
         baseRingBeamAssemblyId: undefined,
-        topRingBeamAssemblyId: ringBeamId
+        topRingBeamAssemblyId: assemblyId
       }
 
-      const usage = getRingBeamConfigUsage(ringBeamId, [perimeter1, perimeter2], [storey])
+      const usage = getRingBeamAssemblyUsage(assemblyId, [perimeter1, perimeter2], [storey])
 
       expect(usage.isUsed).toBe(true)
       expect(usage.usedByPerimeters).toHaveLength(2)
@@ -107,18 +107,18 @@ describe('Config Usage Detection', () => {
     })
   })
 
-  describe('getPerimeterConfigUsage', () => {
-    it('should detect perimeter config not in use', () => {
-      const perimeterId = createWallAssemblyId()
+  describe('getWallAssemblyUsage', () => {
+    it('should detect wall assembly not in use', () => {
+      const assemblyId = createWallAssemblyId()
 
-      const usage = getPerimeterConfigUsage(perimeterId, [], [storey])
+      const usage = getWallAssemblyUsage(assemblyId, [], [storey])
 
       expect(usage.isUsed).toBe(false)
       expect(usage.usedByWalls).toEqual([])
     })
 
-    it('should detect perimeter config used by walls', () => {
-      const configId = createWallAssemblyId()
+    it('should detect wall assembly used by walls', () => {
+      const assemblyId = createWallAssemblyId()
       const perimeterId = createPerimeterId()
 
       const perimeter: Perimeter = {
@@ -128,7 +128,7 @@ describe('Config Usage Detection', () => {
           {
             id: createPerimeterWallId(),
             thickness: 440,
-            wallAssemblyId: configId,
+            wallAssemblyId: assemblyId,
             openings: [],
             insideLength: 1000,
             outsideLength: 1000,
@@ -141,7 +141,7 @@ describe('Config Usage Detection', () => {
           {
             id: createPerimeterWallId(),
             thickness: 440,
-            wallAssemblyId: createWallAssemblyId(), // Different config
+            wallAssemblyId: createWallAssemblyId(), // Different assembly
             openings: [],
             insideLength: 1000,
             outsideLength: 1000,
@@ -154,7 +154,7 @@ describe('Config Usage Detection', () => {
           {
             id: createPerimeterWallId(),
             thickness: 440,
-            wallAssemblyId: configId, // Same config as first wall
+            wallAssemblyId: assemblyId, // Same assembly as first wall
             openings: [],
             insideLength: 1000,
             outsideLength: 1000,
@@ -168,7 +168,7 @@ describe('Config Usage Detection', () => {
         corners: []
       }
 
-      const usage = getPerimeterConfigUsage(configId, [perimeter], [storey])
+      const usage = getWallAssemblyUsage(assemblyId, [perimeter], [storey])
 
       expect(usage.isUsed).toBe(true)
       expect(usage.usedByWalls).toEqual(['Test Floor - Wall 1', 'Test Floor - Wall 3'])

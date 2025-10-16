@@ -1,4 +1,5 @@
-import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model'
+import type { FloorAssemblyId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model'
+import type { JoistFloorConfig, MonolithicFloorConfig } from '@/construction/floors'
 import type { DoubleRingBeamConfig, FullRingBeamConfig } from '@/construction/ringBeams'
 import type {
   InfillWallConfig,
@@ -10,9 +11,9 @@ import type {
 /*
   This is what the wall + floor construction looks like from the side:
 
-  |   |       Slab Construction                           
+  |   |       Floor Construction                           
   |   +--------------+ . . . . . . . . . . . . . . . . . .  
-  |   |     Top      | Slab Construction Bottom Offset          
+  |   |     Top      | Floor Construction Bottom Offset          
   |   |    Plate     +---+-------------------------------- 
   |   +--------------+   | Floor Bottom layers             
   |   |              |   +--------------------------------
@@ -40,11 +41,11 @@ i | L |     Wall     | e |     .           .
 d | a | Construction | r +--------------------------------  }
 e | y +--------------+ s | Floor top layers                 }
   | e |    Bottom    +---+--------------------------------  }
-  | r |    Plate     | Slab Construction Top Offset         }
+  | r |    Plate     | Floor Construction Top Offset        }
   | s +--------------+ . . . . . . . . . . . . . . . . . .  } . . . . . . .  Zero level for wall construction
-  |   |       Slab  Construction                            } Floor
+  |   |       Floor  Construction                           } Floor
   |   +--------------+ . . . . . . . . . . . . . . . . . .  } Thickness
-  |   |     Top      | Slab Construction Bottom Offset      }      
+  |   |     Top      | Floor Construction Bottom Offset     }      
   |   |    Plate     +---+--------------------------------  }
   |   +--------------+ I | Floor Bottom layers              }
   |   |     Wall     | n +--------------------------------  }
@@ -83,3 +84,15 @@ export type FullRingBeamAssemblyConfig = FullRingBeamConfig & RingBeamAssemblyId
 export type DoubleRingBeamAssemblyConfig = DoubleRingBeamConfig & RingBeamAssemblyIdPart
 
 export type RingBeamAssemblyConfig = FullRingBeamAssemblyConfig | DoubleRingBeamAssemblyConfig
+
+// Floors
+
+export interface FloorAssemblyIdPart {
+  id: FloorAssemblyId
+  name: string
+}
+
+export type MonolithicFloorAssemblyConfig = MonolithicFloorConfig & FloorAssemblyIdPart
+export type JoistFloorAssemblyConfig = JoistFloorConfig & FloorAssemblyIdPart
+
+export type FloorAssemblyConfig = MonolithicFloorAssemblyConfig | JoistFloorAssemblyConfig

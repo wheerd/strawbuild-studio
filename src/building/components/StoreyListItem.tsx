@@ -166,7 +166,7 @@ export function StoreyListItem({
           </TextField.Slot>
         </LengthField>
 
-        {/* Slab Configuration */}
+        {/* Floor Assembly Configuration */}
         <FloorAssemblySelectWithEdit
           value={storey.floorAssemblyId}
           onValueChange={value => updateStoreyFloorAssembly(storey.id, value)}

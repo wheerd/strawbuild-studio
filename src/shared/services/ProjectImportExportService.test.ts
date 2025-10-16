@@ -140,7 +140,7 @@ describe('ProjectImportExportService', () => {
         configStore: {
           ringBeamAssemblyConfigs: { beam_1: { id: 'beam_1', name: 'Test Beam' } },
           wallAssemblyConfigs: { assembly_1: { id: 'assembly_1', name: 'Test Assembly' } },
-          floorAssemblyConfigs: { fa_1: { id: 'fa_1', name: 'Test Slab' } },
+          floorAssemblyConfigs: { fa_1: { id: 'fa_1', name: 'Test Floor' } },
           defaultWallAssemblyId: 'assembly_1',
           defaultFloorAssemblyId: 'fa_1'
         },

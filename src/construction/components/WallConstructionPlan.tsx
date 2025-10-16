@@ -90,7 +90,7 @@ export function WallConstructionPlanModal({
   const [containerSize, containerRef] = elementSizeRef()
   const perimeter = usePerimeterById(perimeterId)
   const { getStoreyById, getStoreysOrderedByLevel } = useModelActions()
-  const { getWallAssemblyById, getFloorAssemblyConfigById } = getConfigActions()
+  const { getWallAssemblyById, getFloorAssemblyById } = getConfigActions()
 
   const constructionModel = useMemo(() => {
     if (!perimeter) return null
@@ -108,18 +108,18 @@ export function WallConstructionPlanModal({
     const wallAssembly = WALL_ASSEMBLIES[assembly.type]
     if (!wallAssembly) return null
 
-    const currentFloorAssembly = getFloorAssemblyConfigById(storey.floorAssemblyId)
+    const currentFloorAssembly = getFloorAssemblyById(storey.floorAssemblyId)
     if (!currentFloorAssembly) return null
 
     const allStoreys = getStoreysOrderedByLevel()
     const currentIndex = allStoreys.findIndex(s => s.id === storey.id)
     const nextStorey = currentIndex >= 0 && currentIndex < allStoreys.length - 1 ? allStoreys[currentIndex + 1] : null
-    const nextFloorAssembly = nextStorey ? getFloorAssemblyConfigById(nextStorey.floorAssemblyId) : null
+    const nextFloorAssembly = nextStorey ? getFloorAssemblyById(nextStorey.floorAssemblyId) : null
 
     const storeyContext = createWallStoreyContext(storey, currentFloorAssembly, nextFloorAssembly)
 
     return wallAssembly.construct(wall, perimeter, storeyContext, assembly)
-  }, [perimeter, wallId, getStoreyById, getStoreysOrderedByLevel, getWallAssemblyById, getFloorAssemblyConfigById])
+  }, [perimeter, wallId, getStoreyById, getStoreysOrderedByLevel, getWallAssemblyById, getFloorAssemblyById])
 
   // Define views for wall construction
   const views: ViewOption[] = [

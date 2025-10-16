@@ -1,17 +1,17 @@
 import type { FloorAssemblyId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import type { Perimeter, Storey } from '@/building/model/model'
 
-export interface RingBeamConfigUsage {
+export interface RingBeamAssemblyUsage {
   isUsed: boolean
   usedByPerimeters: string[]
 }
 
-export interface PerimeterConfigUsage {
+export interface WallAssemblyUsage {
   isUsed: boolean
   usedByWalls: string[]
 }
 
-export interface SlabConfigUsage {
+export interface FloorAssemblyUsage {
   isUsed: boolean
   usedByStoreys: string[]
 }
@@ -19,11 +19,11 @@ export interface SlabConfigUsage {
 /**
  * Checks if a ring beam assembly is currently in use by any perimeters
  */
-export function getRingBeamConfigUsage(
-  configId: RingBeamAssemblyId,
+export function getRingBeamAssemblyUsage(
+  assemblyId: RingBeamAssemblyId,
   perimeters: Perimeter[],
   storeys: Storey[]
-): RingBeamConfigUsage {
+): RingBeamAssemblyUsage {
   const usedByPerimeters: string[] = []
 
   // Check all perimeters for base and top ring beam references
@@ -33,12 +33,12 @@ export function getRingBeamConfigUsage(
     const storeyName = storey?.name ?? 'Unknown Floor'
 
     // Check base ring beam
-    if (perimeter.baseRingBeamAssemblyId === configId) {
+    if (perimeter.baseRingBeamAssemblyId === assemblyId) {
       usedByPerimeters.push(`${storeyName} - Base Ring Beam`)
     }
 
     // Check top ring beam
-    if (perimeter.topRingBeamAssemblyId === configId) {
+    if (perimeter.topRingBeamAssemblyId === assemblyId) {
       usedByPerimeters.push(`${storeyName} - Top Ring Beam`)
     }
   })
@@ -52,11 +52,11 @@ export function getRingBeamConfigUsage(
 /**
  * Checks if a wall assembly is currently in use by any walls
  */
-export function getPerimeterConfigUsage(
-  configId: WallAssemblyId,
+export function getWallAssemblyUsage(
+  assemblyId: WallAssemblyId,
   perimeters: Perimeter[],
   storeys: Storey[]
-): PerimeterConfigUsage {
+): WallAssemblyUsage {
   const usedByWalls: string[] = []
 
   // Check all perimeters and their walls
@@ -67,7 +67,7 @@ export function getPerimeterConfigUsage(
 
     // Check each wall in the perimeter
     perimeter.walls.forEach((wall, wallIndex) => {
-      if (wall.wallAssemblyId === configId) {
+      if (wall.wallAssemblyId === assemblyId) {
         usedByWalls.push(`${storeyName} - Wall ${wallIndex + 1}`)
       }
     })
@@ -80,13 +80,13 @@ export function getPerimeterConfigUsage(
 }
 
 /**
- * Checks if a floor construction config is currently in use by any storeys
+ * Checks if a floor assembly is currently in use by any storeys
  */
-export function getSlabConfigUsage(configId: FloorAssemblyId, storeys: Storey[]): SlabConfigUsage {
+export function getFloorAssemblyUsage(assemblyId: FloorAssemblyId, storeys: Storey[]): FloorAssemblyUsage {
   const usedByStoreys: string[] = []
 
   storeys.forEach(storey => {
-    if (storey.floorAssemblyId === configId) {
+    if (storey.floorAssemblyId === assemblyId) {
       usedByStoreys.push(storey.name)
     }
   })
