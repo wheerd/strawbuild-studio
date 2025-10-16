@@ -4,7 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPerimeterId, createPerimeterWallId, createWallAssemblyId } from '@/building/model/ids'
 import type { Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model/model'
 import { type ConfigActions, getConfigActions } from '@/construction/config'
-import type { WallAssembly, WallLayersConfig } from '@/construction/config/types'
+import type { WallLayersConfig } from '@/construction/config/types'
+import type { WallAssemblyConfig } from '@/construction/walls/types'
 import { type Length } from '@/shared/geometry'
 
 import { type WallContext, calculateWallCornerInfo, getWallContext } from './corners'
@@ -69,32 +70,30 @@ function createMockPerimeter(walls: PerimeterWall[], corners: PerimeterCorner[])
   } as Perimeter
 }
 
-function createMockAssembly(id: string, name: string, layers: WallLayersConfig): WallAssembly {
+function createMockAssembly(id: string, name: string, layers: WallLayersConfig): WallAssemblyConfig {
   return {
     id: id as any,
     name,
-    config: {
-      type: 'infill',
-      maxPostSpacing: 800,
-      minStrawSpace: 70,
-      posts: {
-        type: 'full',
-        width: 60,
-        material: 'wood' as any
-      },
-      openings: {
-        padding: 15,
-        headerThickness: 60,
-        headerMaterial: 'wood' as any,
-        sillThickness: 60,
-        sillMaterial: 'wood' as any
-      },
-      straw: {
-        baleLength: 800,
-        baleHeight: 500,
-        baleWidth: 360,
-        material: 'straw' as any
-      }
+    type: 'infill',
+    maxPostSpacing: 800,
+    minStrawSpace: 70,
+    posts: {
+      type: 'full',
+      width: 60,
+      material: 'wood' as any
+    },
+    openings: {
+      padding: 15,
+      headerThickness: 60,
+      headerMaterial: 'wood' as any,
+      sillThickness: 60,
+      sillMaterial: 'wood' as any
+    },
+    straw: {
+      baleLength: 800,
+      baleHeight: 500,
+      baleWidth: 360,
+      material: 'straw' as any
     },
     layers
   }

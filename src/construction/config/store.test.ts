@@ -16,13 +16,13 @@ describe('ConfigStore', () => {
 
       const defaultAssembly = assemblies[0]
       expect(defaultAssembly.name).toBe('Full 36x6cm')
-      expect(defaultAssembly.config.type).toBe('full')
-      expect(defaultAssembly.config.height).toBe(60)
-      if (defaultAssembly.config.type === 'full') {
-        expect(defaultAssembly.config.width).toBe(360)
-        expect(defaultAssembly.config.offsetFromEdge).toBe(30)
+      expect(defaultAssembly.type).toBe('full')
+      expect(defaultAssembly.height).toBe(60)
+      if (defaultAssembly.type === 'full') {
+        expect(defaultAssembly.width).toBe(360)
+        expect(defaultAssembly.offsetFromEdge).toBe(30)
       }
-      expect(defaultAssembly.config.material).toBeDefined()
+      expect(defaultAssembly.material).toBeDefined()
     })
   })
 
@@ -43,10 +43,10 @@ describe('ConfigStore', () => {
         offsetFromEdge: 0
       }
 
-      const assembly = store.addRingBeamAssembly('Standard Ring Beam', config)
+      const assembly = store.addRingBeamAssembly({ name: 'Standard Ring Beam', ...config })
 
       expect(assembly.name).toBe('Standard Ring Beam')
-      expect(assembly.config).toEqual(config)
+      expect(assembly).toMatchObject(config)
 
       const allAssemblies = store.getAllRingBeamAssemblies()
       expect(allAssemblies).toHaveLength(1)
@@ -67,10 +67,10 @@ describe('ConfigStore', () => {
         spacing: 100
       }
 
-      const assembly = store.addRingBeamAssembly('Double Ring Beam', config)
+      const assembly = store.addRingBeamAssembly({ name: 'Double Ring Beam', ...config })
 
       expect(assembly.name).toBe('Double Ring Beam')
-      expect(assembly.config).toEqual(config)
+      expect(assembly).toMatchObject(config)
     })
 
     it('should throw error for empty name', () => {
@@ -85,7 +85,7 @@ describe('ConfigStore', () => {
       }
 
       expect(() => {
-        store.addRingBeamAssembly('', config)
+        store.addRingBeamAssembly({ name: '', ...config })
       }).toThrow('Ring beam assembly name cannot be empty')
     })
 
@@ -101,7 +101,7 @@ describe('ConfigStore', () => {
       }
 
       expect(() => {
-        store.addRingBeamAssembly('Test', config)
+        store.addRingBeamAssembly({ name: 'Test', ...config })
       }).toThrow('Ring beam height must be greater than 0')
     })
 
@@ -116,8 +116,8 @@ describe('ConfigStore', () => {
         offsetFromEdge: 0
       }
 
-      const assembly1 = store.addRingBeamAssembly('Same Name', config)
-      const assembly2 = store.addRingBeamAssembly('Same Name', config)
+      const assembly1 = store.addRingBeamAssembly({ name: 'Same Name', ...config })
+      const assembly2 = store.addRingBeamAssembly({ name: 'Same Name', ...config })
 
       expect(assembly1.name).toBe('Same Name')
       expect(assembly2.name).toBe('Same Name')
@@ -136,7 +136,7 @@ describe('ConfigStore', () => {
         offsetFromEdge: 0
       }
 
-      const assembly = store.addRingBeamAssembly('To Remove', config)
+      const assembly = store.addRingBeamAssembly({ name: 'To Remove', ...config })
       expect(store.getAllRingBeamAssemblies()).toHaveLength(1)
 
       store.removeRingBeamAssembly(assembly.id)
@@ -154,13 +154,13 @@ describe('ConfigStore', () => {
         offsetFromEdge: 0
       }
 
-      const assembly = store.addRingBeamAssembly('Original', config)
+      const assembly = store.addRingBeamAssembly({ name: 'Original', ...config })
 
       store.updateRingBeamAssemblyName(assembly.id, 'Updated')
 
       const updated = store.getRingBeamAssemblyById(assembly.id)
       expect(updated?.name).toBe('Updated')
-      expect(updated?.config).toEqual(config) // Config should remain unchanged
+      expect(updated).toMatchObject(config)
     })
 
     it('should update ring beam assembly config', () => {
@@ -174,7 +174,7 @@ describe('ConfigStore', () => {
         offsetFromEdge: 0
       }
 
-      const assembly = store.addRingBeamAssembly('Test Assembly', originalConfig)
+      const assembly = store.addRingBeamAssembly({ name: 'Test Assembly', ...originalConfig })
 
       const newMaterial = createMaterialId()
       const newConfig: RingBeamConfig = {
@@ -185,11 +185,11 @@ describe('ConfigStore', () => {
         offsetFromEdge: 10
       }
 
-      store.updateRingBeamAssemblyConfig(assembly.id, newConfig)
+      store.updateRingBeamAssemblyConfig(assembly.id, { name: 'Test Assembly', ...newConfig })
 
       const updated = store.getRingBeamAssemblyById(assembly.id)
-      expect(updated?.name).toBe('Test Assembly') // Name should remain unchanged
-      expect(updated?.config).toEqual(newConfig)
+      expect(updated?.name).toBe('Test Assembly')
+      expect(updated).toMatchObject(newConfig)
     })
 
     it('should handle validation errors for invalid config', () => {
@@ -204,7 +204,7 @@ describe('ConfigStore', () => {
       }
 
       expect(() => {
-        store.addRingBeamAssembly('Invalid Config', invalidConfig)
+        store.addRingBeamAssembly({ name: 'Invalid Config', ...invalidConfig })
       }).toThrow('Ring beam height must be greater than 0')
     })
 
@@ -219,12 +219,12 @@ describe('ConfigStore', () => {
         offsetFromEdge: -50
       }
 
-      const assembly = store.addRingBeamAssembly('Negative Offset Assembly', config)
+      const assembly = store.addRingBeamAssembly({ name: 'Negative Offset Assembly', ...config })
 
-      expect(assembly.config.type).toBe('full')
-      if (assembly.config.type === 'full') {
-        expect(assembly.config.offsetFromEdge).toBe(-50)
-        expect(Number(assembly.config.offsetFromEdge)).toBe(-50)
+      expect(assembly.type).toBe('full')
+      if (assembly.type === 'full') {
+        expect(assembly.offsetFromEdge).toBe(-50)
+        expect(Number(assembly.offsetFromEdge)).toBe(-50)
       }
     })
   })

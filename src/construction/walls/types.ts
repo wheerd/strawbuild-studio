@@ -31,8 +31,8 @@ export interface WallAssemblyBaseConfig {
 }
 
 export interface WallLayersConfig {
-  bottomThickness: Length
-  topThickness: Length
+  insideThickness: Length
+  outsideThickness: Length
 }
 
 export interface InfillWallConfig {

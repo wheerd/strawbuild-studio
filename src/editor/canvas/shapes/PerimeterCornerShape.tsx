@@ -42,7 +42,7 @@ export function PerimeterCornerShape({
 
   const constructingWall = corner.constructedByWall === 'previous' ? previousWall : nextWall
   const wallAssembly = useWallAssemblyById(constructingWall.wallAssemblyId)
-  const cornerColor = wallAssembly?.config.type === 'non-strawbale' ? MATERIAL_COLORS.other : MATERIAL_COLORS.strawbale
+  const cornerColor = wallAssembly?.type === 'non-strawbale' ? MATERIAL_COLORS.other : MATERIAL_COLORS.strawbale
 
   // Check if corner is nearly straight (close to 180°)
   const interiorAngleDegrees = corner.interiorAngle

@@ -4,10 +4,11 @@ import type { FloorAssemblyId, RingBeamAssemblyId, WallAssemblyId } from '@/buil
 import type { Storey } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { getConfigState, setConfigState } from '@/construction/config/store'
-import type { RingBeamAssembly, WallAssembly } from '@/construction/config/types'
 import type { FloorAssemblyConfig } from '@/construction/floors/types'
 import type { Material, MaterialId } from '@/construction/materials/material'
 import { getMaterialsState, setMaterialsState } from '@/construction/materials/store'
+import type { RingBeamAssemblyConfig } from '@/construction/ringBeams'
+import type { WallAssemblyConfig } from '@/construction/walls/types'
 import type { Polygon2D } from '@/shared/geometry'
 
 export interface ExportedStorey {
@@ -52,8 +53,8 @@ export interface ExportData {
     minLevel: number
   }
   configStore: {
-    ringBeamAssemblies: Record<RingBeamAssemblyId, RingBeamAssembly>
-    wallAssemblies: Record<WallAssemblyId, WallAssembly>
+    ringBeamAssemblyConfigs: Record<RingBeamAssemblyId, RingBeamAssemblyConfig>
+    wallAssemblyConfigs: Record<WallAssemblyId, WallAssemblyConfig>
     floorAssemblyConfigs?: Record<FloorAssemblyId, FloorAssemblyConfig>
     defaultBaseRingBeamAssemblyId?: RingBeamAssemblyId
     defaultTopRingBeamAssemblyId?: RingBeamAssemblyId
@@ -326,8 +327,8 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
 
     const configStore = obj.configStore as Record<string, unknown>
     if (
-      typeof configStore.ringBeamAssemblies !== 'object' ||
-      typeof configStore.wallAssemblies !== 'object' ||
+      typeof configStore.ringBeamAssemblyConfigs !== 'object' ||
+      typeof configStore.wallAssemblyConfigs !== 'object' ||
       typeof configStore.defaultWallAssemblyId !== 'string'
     ) {
       return false

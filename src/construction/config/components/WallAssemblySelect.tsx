@@ -42,7 +42,7 @@ export function WallAssemblySelect({
           </Select.Item>
         ) : (
           wallAssemblies.map(assembly => {
-            const Icon = getPerimeterConfigTypeIcon(assembly.config.type)
+            const Icon = getPerimeterConfigTypeIcon(assembly.type)
             const isDefault = showDefaultIndicator && assembly.id === defaultAssemblyId
             return (
               <Select.Item key={assembly.id} value={assembly.id}>

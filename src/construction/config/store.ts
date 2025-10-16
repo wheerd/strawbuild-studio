@@ -9,15 +9,24 @@ import {
   createRingBeamAssemblyId,
   createWallAssemblyId
 } from '@/building/model/ids'
-import type { RingBeamAssembly, WallAssembly, WallAssemblyConfig, WallLayersConfig } from '@/construction/config/types'
 import type { FloorAssemblyConfig, MonolithicFloorAssemblyConfig } from '@/construction/floors/types'
 import { clt180, concrete, straw, strawbale, wood120x60, wood360x60 } from '@/construction/materials/material'
-import { type RingBeamConfig, validateRingBeamConfig } from '@/construction/ringBeams/ringBeams'
+import type { FullRingBeamAssemblyConfig, RingBeamAssemblyConfig } from '@/construction/ringBeams'
+import { validateRingBeamConfig } from '@/construction/ringBeams/ringBeams'
+import type {
+  InfillWallAssemblyConfig,
+  ModulesWallAssemblyConfig,
+  NonStrawbaleWallAssemblyConfig,
+  StrawhengeWallAssemblyConfig,
+  WallAssemblyConfig
+} from '@/construction/walls/types'
 import '@/shared/geometry'
 
+import { CURRENT_VERSION, applyMigrations } from './migrations'
+
 export interface ConfigState {
-  ringBeamAssemblies: Record<RingBeamAssemblyId, RingBeamAssembly>
-  wallAssemblies: Record<WallAssemblyId, WallAssembly>
+  ringBeamAssemblyConfigs: Record<RingBeamAssemblyId, RingBeamAssemblyConfig>
+  wallAssemblyConfigs: Record<WallAssemblyId, WallAssemblyConfig>
   floorAssemblyConfigs: Record<FloorAssemblyId, FloorAssemblyConfig>
   defaultBaseRingBeamAssemblyId?: RingBeamAssemblyId
   defaultTopRingBeamAssemblyId?: RingBeamAssemblyId
@@ -27,14 +36,14 @@ export interface ConfigState {
 
 export interface ConfigActions {
   // CRUD operations for ring beam assemblies
-  addRingBeamAssembly: (name: string, config: RingBeamConfig) => RingBeamAssembly
+  addRingBeamAssembly: (config: Omit<RingBeamAssemblyConfig, 'id'>) => RingBeamAssemblyConfig
   removeRingBeamAssembly: (id: RingBeamAssemblyId) => void
   updateRingBeamAssemblyName: (id: RingBeamAssemblyId, name: string) => void
-  updateRingBeamAssemblyConfig: (id: RingBeamAssemblyId, config: RingBeamConfig) => void
+  updateRingBeamAssemblyConfig: (id: RingBeamAssemblyId, config: Omit<RingBeamAssemblyConfig, 'id'>) => void
 
   // Queries
-  getRingBeamAssemblyById: (id: RingBeamAssemblyId) => RingBeamAssembly | null
-  getAllRingBeamAssemblies: () => RingBeamAssembly[]
+  getRingBeamAssemblyById: (id: RingBeamAssemblyId) => RingBeamAssemblyConfig | null
+  getAllRingBeamAssemblies: () => RingBeamAssemblyConfig[]
 
   // Default ring beam management
   setDefaultBaseRingBeamAssembly: (assemblyId: RingBeamAssemblyId | undefined) => void
@@ -43,16 +52,15 @@ export interface ConfigActions {
   getDefaultTopRingBeamAssemblyId: () => RingBeamAssemblyId | undefined
 
   // CRUD operations for wall assemblies
-  addWallAssembly: (name: string, config: WallAssemblyConfig, layers: WallLayersConfig) => WallAssembly
-  duplicateWallAssembly: (id: WallAssemblyId, name: string) => WallAssembly
+  addWallAssembly: (config: Omit<WallAssemblyConfig, 'id'>) => WallAssemblyConfig
+  duplicateWallAssembly: (id: WallAssemblyId, name: string) => WallAssemblyConfig
   removeWallAssembly: (id: WallAssemblyId) => void
   updateWallAssemblyName: (id: WallAssemblyId, name: string) => void
-  updateWallAssemblyConfig: (id: WallAssemblyId, config: WallAssemblyConfig) => void
-  updateWallAssemblyLayers: (id: WallAssemblyId, layers: WallLayersConfig) => void
+  updateWallAssemblyConfig: (id: WallAssemblyId, config: Omit<WallAssemblyConfig, 'id'>) => void
 
   // Perimeter queries
-  getWallAssemblyById: (id: WallAssemblyId) => WallAssembly | null
-  getAllWallAssemblies: () => WallAssembly[]
+  getWallAssemblyById: (id: WallAssemblyId) => WallAssemblyConfig | null
+  getAllWallAssemblies: () => WallAssemblyConfig[]
 
   // Default wall assembly management
   setDefaultWallAssembly: (assemblyId: WallAssemblyId | undefined) => void
@@ -121,16 +129,14 @@ const validateSlabConfig = (config: FloorAssemblyConfig): void => {
 // Config validation is handled by the construction module
 
 // Default ring beam assembly using 360x60 wood
-const createDefaultRingBeamAssembly = (): RingBeamAssembly => ({
+const createDefaultRingBeamAssembly = (): FullRingBeamAssemblyConfig => ({
   id: 'ringbeam_default' as RingBeamAssemblyId,
   name: 'Full 36x6cm',
-  config: {
-    type: 'full',
-    material: wood360x60.id,
-    height: 60,
-    width: 360,
-    offsetFromEdge: 30
-  }
+  type: 'full',
+  material: wood360x60.id,
+  height: 60,
+  width: 360,
+  offsetFromEdge: 30
 })
 
 // Default floor construction config
@@ -160,174 +166,138 @@ const createDefaultFloorAssemblies = (): MonolithicFloorAssemblyConfig[] => [
 ]
 
 // Default wall assemblies
-const createDefaultWallAssemblies = (): WallAssembly[] => [
+const createDefaultWallAssemblies = (): WallAssemblyConfig[] => [
   {
     id: 'wa_infill_default' as WallAssemblyId,
     name: 'Standard Infill',
-    config: {
-      type: 'infill',
-      maxPostSpacing: 800,
-      minStrawSpace: 70,
-      posts: {
-        type: 'double',
-        width: 60,
-        thickness: 120,
-        infillMaterial: straw.id,
-        material: wood120x60.id
-      },
-      openings: {
-        padding: 15,
-        headerThickness: 60,
-        headerMaterial: wood360x60.id,
-        sillThickness: 60,
-        sillMaterial: wood360x60.id
-      },
-      straw: {
-        baleLength: 800,
-        baleHeight: 500,
-        baleWidth: 360,
-        material: strawbale.id
-      }
+    type: 'infill',
+    maxPostSpacing: 800,
+    minStrawSpace: 70,
+    posts: {
+      type: 'double',
+      width: 60,
+      thickness: 120,
+      infillMaterial: straw.id,
+      material: wood120x60.id
+    },
+    openings: {
+      padding: 15,
+      headerThickness: 60,
+      headerMaterial: wood360x60.id,
+      sillThickness: 60,
+      sillMaterial: wood360x60.id
+    },
+    straw: {
+      baleLength: 800,
+      baleHeight: 500,
+      baleWidth: 360,
+      material: strawbale.id
     },
     layers: {
       insideThickness: 30,
       outsideThickness: 50
     }
-  },
+  } as InfillWallAssemblyConfig,
   {
     id: 'wa_strawhenge_default' as WallAssemblyId,
     name: 'Strawhenge Module',
-    config: {
-      type: 'strawhenge',
-      module: {
-        width: 920,
-        type: 'single',
-        frameThickness: 60,
-        frameMaterial: wood360x60.id,
-        strawMaterial: strawbale.id
-      },
-      infill: {
-        type: 'infill',
-        maxPostSpacing: 800,
-        minStrawSpace: 70,
-        posts: {
-          type: 'full',
-          width: 60,
-          material: wood360x60.id
-        },
-        openings: {
-          padding: 15,
-          headerThickness: 60,
-          headerMaterial: wood360x60.id,
-          sillThickness: 60,
-          sillMaterial: wood360x60.id
-        },
-        straw: {
-          baleLength: 800,
-          baleHeight: 500,
-          baleWidth: 360,
-          material: strawbale.id
-        }
-      },
-      openings: {
-        padding: 15,
-        headerThickness: 60,
-        headerMaterial: wood360x60.id,
-        sillThickness: 60,
-        sillMaterial: wood360x60.id
-      },
-      straw: {
-        baleLength: 800,
-        baleHeight: 500,
-        baleWidth: 360,
-        material: strawbale.id
+    type: 'strawhenge',
+    module: {
+      width: 920,
+      type: 'single',
+      frameThickness: 60,
+      frameMaterial: wood360x60.id,
+      strawMaterial: strawbale.id
+    },
+    infill: {
+      maxPostSpacing: 800,
+      minStrawSpace: 70,
+      posts: {
+        type: 'full',
+        width: 60,
+        material: wood360x60.id
       }
+    },
+    openings: {
+      padding: 15,
+      headerThickness: 60,
+      headerMaterial: wood360x60.id,
+      sillThickness: 60,
+      sillMaterial: wood360x60.id
+    },
+    straw: {
+      baleLength: 800,
+      baleHeight: 500,
+      baleWidth: 360,
+      material: strawbale.id
     },
     layers: {
       insideThickness: 30,
       outsideThickness: 50
     }
-  },
+  } as StrawhengeWallAssemblyConfig,
   {
     id: 'wa_module_default' as WallAssemblyId,
     name: 'Default Module',
-    config: {
-      type: 'modules',
-      module: {
-        width: 920,
-        type: 'single',
-        frameThickness: 60,
-        frameMaterial: wood360x60.id,
-        strawMaterial: strawbale.id
-      },
-      infill: {
-        type: 'infill',
-        maxPostSpacing: 800,
-        minStrawSpace: 70,
-        posts: {
-          type: 'full',
-          width: 60,
-          material: wood360x60.id
-        },
-        openings: {
-          padding: 15,
-          headerThickness: 60,
-          headerMaterial: wood360x60.id,
-          sillThickness: 60,
-          sillMaterial: wood360x60.id
-        },
-        straw: {
-          baleLength: 800,
-          baleHeight: 500,
-          baleWidth: 360,
-          material: strawbale.id
-        }
-      },
-      openings: {
-        padding: 15,
-        headerThickness: 60,
-        headerMaterial: wood360x60.id,
-        sillThickness: 60,
-        sillMaterial: wood360x60.id
-      },
-      straw: {
-        baleLength: 800,
-        baleHeight: 500,
-        baleWidth: 360,
-        material: strawbale.id
+    type: 'modules',
+    module: {
+      width: 920,
+      type: 'single',
+      frameThickness: 60,
+      frameMaterial: wood360x60.id,
+      strawMaterial: strawbale.id
+    },
+    infill: {
+      maxPostSpacing: 800,
+      minStrawSpace: 70,
+      posts: {
+        type: 'full',
+        width: 60,
+        material: wood360x60.id
       }
+    },
+    openings: {
+      padding: 15,
+      headerThickness: 60,
+      headerMaterial: wood360x60.id,
+      sillThickness: 60,
+      sillMaterial: wood360x60.id
+    },
+    straw: {
+      baleLength: 800,
+      baleHeight: 500,
+      baleWidth: 360,
+      material: strawbale.id
     },
     layers: {
       insideThickness: 30,
       outsideThickness: 50
     }
-  },
+  } as ModulesWallAssemblyConfig,
   {
     id: 'wa_non_strawbale_default' as WallAssemblyId,
     name: 'Non-Strawbale Wall',
-    config: {
-      type: 'non-strawbale',
-      material: concrete.id,
-      thickness: 200,
-      openings: {
-        padding: 15,
-        headerThickness: 60,
-        headerMaterial: wood360x60.id,
-        sillThickness: 60,
-        sillMaterial: wood360x60.id
-      },
-      straw: {
-        baleLength: 800,
-        baleHeight: 500,
-        baleWidth: 360,
-        material: strawbale.id
-      }
+    type: 'non-strawbale',
+    material: concrete.id,
+    thickness: 200,
+    openings: {
+      padding: 15,
+      headerThickness: 60,
+      headerMaterial: wood360x60.id,
+      sillThickness: 60,
+      sillMaterial: wood360x60.id
+    },
+    straw: {
+      baleLength: 800,
+      baleHeight: 500,
+      baleWidth: 360,
+      material: strawbale.id
     },
     layers: {
       insideThickness: 30,
       outsideThickness: 30
     }
-  }
+  } as NonStrawbaleWallAssemblyConfig
 ]
 
 const useConfigStore = create<ConfigStore>()(
@@ -340,10 +310,10 @@ const useConfigStore = create<ConfigStore>()(
         const defaultSlabConfigs = createDefaultFloorAssemblies()
 
         return {
-          ringBeamAssemblies: {
+          ringBeamAssemblyConfigs: {
             [defaultRingBeamAssembly.id]: defaultRingBeamAssembly
           },
-          wallAssemblies: Object.fromEntries(defaultWallAssemblies.map(assembly => [assembly.id, assembly])),
+          wallAssemblyConfigs: Object.fromEntries(defaultWallAssemblies.map(assembly => [assembly.id, assembly])),
           floorAssemblyConfigs: Object.fromEntries(defaultSlabConfigs.map(config => [config.id, config])),
           defaultBaseRingBeamAssemblyId: defaultRingBeamAssembly.id,
           defaultTopRingBeamAssemblyId: defaultRingBeamAssembly.id,
@@ -352,21 +322,21 @@ const useConfigStore = create<ConfigStore>()(
 
           actions: {
             // CRUD operations
-            addRingBeamAssembly: (name: string, config: RingBeamConfig) => {
-              // Validate inputs
-              validateRingBeamName(name)
-              validateRingBeamConfig(config)
+            addRingBeamAssembly: (config: Omit<RingBeamAssemblyConfig, 'id'>) => {
+              validateRingBeamName(config.name)
+
+              const { name: _name, id: _id, ...ringBeamConfig } = config as RingBeamAssemblyConfig
+              validateRingBeamConfig(ringBeamConfig)
 
               const id = createRingBeamAssemblyId()
-              const assembly: RingBeamAssembly = {
-                id,
-                name: name.trim(),
-                config
-              }
+              const assembly = {
+                ...config,
+                id
+              } as RingBeamAssemblyConfig
 
               set(state => ({
                 ...state,
-                ringBeamAssemblies: { ...state.ringBeamAssemblies, [id]: assembly }
+                ringBeamAssemblyConfigs: { ...state.ringBeamAssemblyConfigs, [id]: assembly }
               }))
 
               return assembly
@@ -374,10 +344,10 @@ const useConfigStore = create<ConfigStore>()(
 
             removeRingBeamAssembly: (id: RingBeamAssemblyId) => {
               set(state => {
-                const { [id]: _removed, ...remainingAssemblies } = state.ringBeamAssemblies
+                const { [id]: _removed, ...remainingAssemblies } = state.ringBeamAssemblyConfigs
                 return {
                   ...state,
-                  ringBeamAssemblies: remainingAssemblies,
+                  ringBeamAssemblyConfigs: remainingAssemblies,
                   // Clear defaults if removing the default assembly
                   defaultBaseRingBeamAssemblyId:
                     state.defaultBaseRingBeamAssemblyId === id ? undefined : state.defaultBaseRingBeamAssemblyId,
@@ -389,38 +359,36 @@ const useConfigStore = create<ConfigStore>()(
 
             updateRingBeamAssemblyName: (id: RingBeamAssemblyId, name: string) => {
               set(state => {
-                const assembly = state.ringBeamAssemblies[id]
+                const assembly = state.ringBeamAssemblyConfigs[id]
                 if (assembly == null) return state
 
                 validateRingBeamName(name)
 
-                const updatedAssembly: RingBeamAssembly = {
+                const updatedAssembly: RingBeamAssemblyConfig = {
                   ...assembly,
                   name: name.trim()
                 }
 
                 return {
                   ...state,
-                  ringBeamAssemblies: { ...state.ringBeamAssemblies, [id]: updatedAssembly }
+                  ringBeamAssemblyConfigs: { ...state.ringBeamAssemblyConfigs, [id]: updatedAssembly }
                 }
               })
             },
 
-            updateRingBeamAssemblyConfig: (id: RingBeamAssemblyId, config: RingBeamConfig) => {
+            updateRingBeamAssemblyConfig: (id: RingBeamAssemblyId, config: Omit<RingBeamAssemblyConfig, 'id'>) => {
               set(state => {
-                const assembly = state.ringBeamAssemblies[id]
+                const assembly = state.ringBeamAssemblyConfigs[id]
                 if (assembly == null) return state
 
-                validateRingBeamConfig(config)
-
-                const updatedAssembly: RingBeamAssembly = {
-                  ...assembly,
-                  config
-                }
+                const updatedAssembly = {
+                  ...config,
+                  id
+                } as RingBeamAssemblyConfig
 
                 return {
                   ...state,
-                  ringBeamAssemblies: { ...state.ringBeamAssemblies, [id]: updatedAssembly }
+                  ringBeamAssemblyConfigs: { ...state.ringBeamAssemblyConfigs, [id]: updatedAssembly }
                 }
               })
             },
@@ -428,12 +396,12 @@ const useConfigStore = create<ConfigStore>()(
             // Queries
             getRingBeamAssemblyById: (id: RingBeamAssemblyId) => {
               const state = get()
-              return state.ringBeamAssemblies[id] ?? null
+              return state.ringBeamAssemblyConfigs[id] ?? null
             },
 
             getAllRingBeamAssemblies: () => {
               const state = get()
-              return Object.values(state.ringBeamAssemblies)
+              return Object.values(state.ringBeamAssemblyConfigs)
             },
 
             // Default ring beam management
@@ -462,20 +430,18 @@ const useConfigStore = create<ConfigStore>()(
             },
 
             // Wall assembly CRUD operations
-            addWallAssembly: (name: string, config: WallAssemblyConfig, layers: WallLayersConfig) => {
-              validateWallAssemblyName(name)
+            addWallAssembly: (config: Omit<WallAssemblyConfig, 'id'>) => {
+              validateWallAssemblyName(config.name)
 
               const id = createWallAssemblyId()
-              const assembly: WallAssembly = {
-                id,
-                name: name.trim(),
-                config,
-                layers
-              }
+              const assembly = {
+                ...config,
+                id
+              } as WallAssemblyConfig
 
               set(state => ({
                 ...state,
-                wallAssemblies: { ...state.wallAssemblies, [id]: assembly }
+                wallAssemblyConfigs: { ...state.wallAssemblyConfigs, [id]: assembly }
               }))
 
               return assembly
@@ -483,7 +449,7 @@ const useConfigStore = create<ConfigStore>()(
 
             duplicateWallAssembly: (id: WallAssemblyId, name: string) => {
               const state = get()
-              const original = state.wallAssemblies[id]
+              const original = state.wallAssemblyConfigs[id]
               if (original == null) {
                 throw new Error(`Wall assembly with id ${id} not found`)
               }
@@ -491,16 +457,15 @@ const useConfigStore = create<ConfigStore>()(
               validateWallAssemblyName(name)
 
               const newId = createWallAssemblyId()
-              const duplicated: WallAssembly = {
+              const duplicated = {
+                ...original,
                 id: newId,
-                name: name.trim(),
-                config: original.config,
-                layers: original.layers
-              }
+                name: name.trim()
+              } as WallAssemblyConfig
 
               set(state => ({
                 ...state,
-                wallAssemblies: { ...state.wallAssemblies, [newId]: duplicated }
+                wallAssemblyConfigs: { ...state.wallAssemblyConfigs, [newId]: duplicated }
               }))
 
               return duplicated
@@ -508,10 +473,10 @@ const useConfigStore = create<ConfigStore>()(
 
             removeWallAssembly: (id: WallAssemblyId) => {
               set(state => {
-                const { [id]: _removed, ...remainingAssemblies } = state.wallAssemblies
+                const { [id]: _removed, ...remainingAssemblies } = state.wallAssemblyConfigs
                 return {
                   ...state,
-                  wallAssemblies: remainingAssemblies,
+                  wallAssemblyConfigs: remainingAssemblies,
                   defaultWallAssemblyId: state.defaultWallAssemblyId === id ? undefined : state.defaultWallAssemblyId
                 }
               })
@@ -519,53 +484,36 @@ const useConfigStore = create<ConfigStore>()(
 
             updateWallAssemblyName: (id: WallAssemblyId, name: string) => {
               set(state => {
-                const assembly = state.wallAssemblies[id]
+                const assembly = state.wallAssemblyConfigs[id]
                 if (assembly == null) return state
 
                 validateWallAssemblyName(name)
 
-                const updatedAssembly: WallAssembly = {
+                const updatedAssembly: WallAssemblyConfig = {
                   ...assembly,
                   name: name.trim()
                 }
 
                 return {
                   ...state,
-                  wallAssemblies: { ...state.wallAssemblies, [id]: updatedAssembly }
+                  wallAssemblyConfigs: { ...state.wallAssemblyConfigs, [id]: updatedAssembly }
                 }
               })
             },
 
-            updateWallAssemblyConfig: (id: WallAssemblyId, config: WallAssemblyConfig) => {
+            updateWallAssemblyConfig: (id: WallAssemblyId, config: Omit<WallAssemblyConfig, 'id'>) => {
               set(state => {
-                const assembly = state.wallAssemblies[id]
+                const assembly = state.wallAssemblyConfigs[id]
                 if (assembly == null) return state
 
-                const updatedAssembly: WallAssembly = {
-                  ...assembly,
-                  config
-                }
+                const updatedAssembly = {
+                  ...config,
+                  id
+                } as WallAssemblyConfig
 
                 return {
                   ...state,
-                  wallAssemblies: { ...state.wallAssemblies, [id]: updatedAssembly }
-                }
-              })
-            },
-
-            updateWallAssemblyLayers: (id: WallAssemblyId, layers: WallLayersConfig) => {
-              set(state => {
-                const assembly = state.wallAssemblies[id]
-                if (assembly == null) return state
-
-                const updatedAssembly: WallAssembly = {
-                  ...assembly,
-                  layers
-                }
-
-                return {
-                  ...state,
-                  wallAssemblies: { ...state.wallAssemblies, [id]: updatedAssembly }
+                  wallAssemblyConfigs: { ...state.wallAssemblyConfigs, [id]: updatedAssembly }
                 }
               })
             },
@@ -573,12 +521,12 @@ const useConfigStore = create<ConfigStore>()(
             // Perimeter queries
             getWallAssemblyById: (id: WallAssemblyId) => {
               const state = get()
-              return state.wallAssemblies[id] ?? null
+              return state.wallAssemblyConfigs[id] ?? null
             },
 
             getAllWallAssemblies: () => {
               const state = get()
-              return Object.values(state.wallAssemblies)
+              return Object.values(state.wallAssemblyConfigs)
             },
 
             // Default wall assembly management
@@ -703,26 +651,39 @@ const useConfigStore = create<ConfigStore>()(
     ),
     {
       name: 'strawbaler-config',
+      version: CURRENT_VERSION,
       partialize: state => ({
-        ringBeamAssemblies: state.ringBeamAssemblies,
-        wallAssemblies: state.wallAssemblies,
+        ringBeamAssemblyConfigs: state.ringBeamAssemblyConfigs,
+        wallAssemblyConfigs: state.wallAssemblyConfigs,
         floorAssemblyConfigs: state.floorAssemblyConfigs,
         defaultBaseRingBeamAssemblyId: state.defaultBaseRingBeamAssemblyId,
         defaultTopRingBeamAssemblyId: state.defaultTopRingBeamAssemblyId,
         defaultWallAssemblyId: state.defaultWallAssemblyId,
         defaultFloorAssemblyId: state.defaultFloorAssemblyId
-      })
+      }),
+      migrate: (persistedState: unknown, version: number) => {
+        if (version === CURRENT_VERSION) {
+          return persistedState as ConfigState
+        }
+
+        try {
+          return applyMigrations(persistedState) as ConfigState
+        } catch (error) {
+          console.error('Migration failed:', error)
+          throw error
+        }
+      }
     }
   )
 )
 
 // Selector hooks for easier usage
-export const useRingBeamAssemblies = (): RingBeamAssembly[] => {
-  const ringBeamAssemblies = useConfigStore(state => state.ringBeamAssemblies)
+export const useRingBeamAssemblies = (): RingBeamAssemblyConfig[] => {
+  const ringBeamAssemblies = useConfigStore(state => state.ringBeamAssemblyConfigs)
   return useMemo(() => Object.values(ringBeamAssemblies), [ringBeamAssemblies])
 }
 
-export const useRingBeamAssemblyById = (id: RingBeamAssemblyId): RingBeamAssembly | null =>
+export const useRingBeamAssemblyById = (id: RingBeamAssemblyId): RingBeamAssemblyConfig | null =>
   useConfigStore(state => state.actions.getRingBeamAssemblyById(id))
 
 export const useDefaultBaseRingBeamAssemblyId = (): RingBeamAssemblyId | undefined =>
@@ -732,12 +693,12 @@ export const useDefaultTopRingBeamAssemblyId = (): RingBeamAssemblyId | undefine
   useConfigStore(state => state.actions.getDefaultTopRingBeamAssemblyId())
 
 // Wall assembly selector hooks
-export const useWallAssemblies = (): WallAssembly[] => {
-  const wallAssemblies = useConfigStore(state => state.wallAssemblies)
+export const useWallAssemblies = (): WallAssemblyConfig[] => {
+  const wallAssemblies = useConfigStore(state => state.wallAssemblyConfigs)
   return useMemo(() => Object.values(wallAssemblies), [wallAssemblies])
 }
 
-export const useWallAssemblyById = (id: WallAssemblyId): WallAssembly | null =>
+export const useWallAssemblyById = (id: WallAssemblyId): WallAssemblyConfig | null =>
   useConfigStore(state => state.actions.getWallAssemblyById(id))
 
 export const useDefaultWallAssemblyId = (): WallAssemblyId | undefined =>
@@ -764,8 +725,8 @@ export const getConfigActions = (): ConfigActions => useConfigStore.getState().a
 export const getConfigState = () => {
   const state = useConfigStore.getState()
   return {
-    ringBeamAssemblies: state.ringBeamAssemblies,
-    wallAssemblies: state.wallAssemblies,
+    ringBeamAssemblyConfigs: state.ringBeamAssemblyConfigs,
+    wallAssemblyConfigs: state.wallAssemblyConfigs,
     floorAssemblyConfigs: state.floorAssemblyConfigs,
     defaultBaseRingBeamAssemblyId: state.defaultBaseRingBeamAssemblyId,
     defaultTopRingBeamAssemblyId: state.defaultTopRingBeamAssemblyId,
@@ -776,8 +737,8 @@ export const getConfigState = () => {
 
 // Import config state from persistence
 export const setConfigState = (data: {
-  ringBeamAssemblies: Record<RingBeamAssemblyId, RingBeamAssembly>
-  wallAssemblies: Record<WallAssemblyId, WallAssembly>
+  ringBeamAssemblyConfigs: Record<RingBeamAssemblyId, RingBeamAssemblyConfig>
+  wallAssemblyConfigs: Record<WallAssemblyId, WallAssemblyConfig>
   floorAssemblyConfigs?: Record<FloorAssemblyId, FloorAssemblyConfig>
   defaultBaseRingBeamAssemblyId?: RingBeamAssemblyId
   defaultTopRingBeamAssemblyId?: RingBeamAssemblyId
@@ -787,8 +748,8 @@ export const setConfigState = (data: {
   const state = useConfigStore.getState()
 
   useConfigStore.setState({
-    ringBeamAssemblies: data.ringBeamAssemblies,
-    wallAssemblies: data.wallAssemblies,
+    ringBeamAssemblyConfigs: data.ringBeamAssemblyConfigs,
+    wallAssemblyConfigs: data.wallAssemblyConfigs,
     floorAssemblyConfigs: data.floorAssemblyConfigs ?? state.floorAssemblyConfigs,
     defaultBaseRingBeamAssemblyId: data.defaultBaseRingBeamAssemblyId,
     defaultTopRingBeamAssemblyId: data.defaultTopRingBeamAssemblyId,
@@ -800,7 +761,7 @@ export const setConfigState = (data: {
 // Only for the tests
 export const _clearAllAssemblies = () =>
   useConfigStore.setState({
-    ringBeamAssemblies: {},
-    wallAssemblies: {},
+    ringBeamAssemblyConfigs: {},
+    wallAssemblyConfigs: {},
     floorAssemblyConfigs: {}
   })

@@ -96,7 +96,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
         }
       }
 
-      const newAssembly = addRingBeamAssembly(`New ${type} ring beam`, config)
+      const newAssembly = addRingBeamAssembly({ name: `New ${type} ring beam`, ...config })
       setSelectedAssemblyId(newAssembly.id)
     },
     [addRingBeamAssembly]
@@ -105,7 +105,8 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
   const handleDuplicate = useCallback(() => {
     if (!selectedAssembly) return
 
-    const duplicated = addRingBeamAssembly(`${selectedAssembly.name} (Copy)`, selectedAssembly.config)
+    const { id: _id, ...config } = selectedAssembly
+    const duplicated = addRingBeamAssembly({ ...config, name: `${selectedAssembly.name} (Copy)` })
     setSelectedAssemblyId(duplicated.id)
   }, [selectedAssembly, addRingBeamAssembly])
 
@@ -134,7 +135,8 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
   const handleUpdateConfig = useCallback(
     (updates: Partial<RingBeamConfig>) => {
       if (!selectedAssembly) return
-      const updatedConfig = { ...selectedAssembly.config, ...updates } as RingBeamConfig
+      const { id: _id, ...config } = selectedAssembly
+      const updatedConfig = { ...config, ...updates }
       updateRingBeamAssemblyConfig(selectedAssembly.id, updatedConfig)
     },
     [selectedAssembly, updateRingBeamAssemblyConfig]
@@ -239,19 +241,19 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
               </Text>
             </Label.Root>
             <Flex gap="2" align="center">
-              {React.createElement(getRingBeamTypeIcon(selectedAssembly.config.type))}
+              {React.createElement(getRingBeamTypeIcon(selectedAssembly.type))}
               <Text size="2" color="gray">
-                {selectedAssembly.config.type === 'full' ? 'Full' : 'Double'}
+                {selectedAssembly.type === 'full' ? 'Full' : 'Double'}
               </Text>
             </Flex>
           </Grid>
 
-          {selectedAssembly.config.type === 'full' && (
-            <FullRingBeamFields config={selectedAssembly.config} onUpdate={handleUpdateConfig} />
+          {selectedAssembly.type === 'full' && (
+            <FullRingBeamFields config={selectedAssembly} onUpdate={handleUpdateConfig} />
           )}
 
-          {selectedAssembly.config.type === 'double' && (
-            <DoubleRingBeamFields config={selectedAssembly.config} onUpdate={handleUpdateConfig} />
+          {selectedAssembly.type === 'double' && (
+            <DoubleRingBeamFields config={selectedAssembly} onUpdate={handleUpdateConfig} />
           )}
         </Flex>
       )}

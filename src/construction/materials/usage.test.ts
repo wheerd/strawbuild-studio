@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import { createRingBeamAssemblyId, createWallAssemblyId } from '@/building/model/ids'
-import type { RingBeamAssembly, WallAssembly } from '@/construction/config/types'
+import type { RingBeamAssemblyConfig } from '@/construction/ringBeams'
+import type { WallAssemblyConfig } from '@/construction/walls/types'
 import '@/shared/geometry'
 
 import { straw, strawbale, wood360x60 } from './material'
@@ -19,16 +20,14 @@ describe('Material Usage Detection', () => {
     it('should detect material used in ring beam config', () => {
       const ringBeamId = createRingBeamAssemblyId()
 
-      const ringBeamAssembly: RingBeamAssembly = {
+      const ringBeamAssembly: RingBeamAssemblyConfig = {
         id: ringBeamId,
         name: 'Test Ring Beam',
-        config: {
-          type: 'full',
-          material: wood360x60.id,
-          height: 60,
-          width: 360,
-          offsetFromEdge: 30
-        }
+        type: 'full',
+        material: wood360x60.id,
+        height: 60,
+        width: 360,
+        offsetFromEdge: 30
       }
 
       const usage = getMaterialUsage(wood360x60.id, [ringBeamAssembly], [])
@@ -39,33 +38,31 @@ describe('Material Usage Detection', () => {
 
     it('should detect material used in perimeter config posts', () => {
       const perimeterId = createWallAssemblyId()
-      const wallAssembly: WallAssembly = {
+      const wallAssembly: WallAssemblyConfig = {
         id: perimeterId,
         name: 'Test Infill',
-        config: {
-          type: 'infill',
-          maxPostSpacing: 800,
-          minStrawSpace: 70,
-          posts: {
-            type: 'double',
-            width: 60,
-            thickness: 120,
-            material: wood360x60.id,
-            infillMaterial: straw.id
-          },
-          openings: {
-            padding: 15,
-            headerThickness: 60,
-            headerMaterial: wood360x60.id,
-            sillThickness: 60,
-            sillMaterial: wood360x60.id
-          },
-          straw: {
-            baleLength: 800,
-            baleHeight: 500,
-            baleWidth: 360,
-            material: strawbale.id
-          }
+        type: 'infill',
+        maxPostSpacing: 800,
+        minStrawSpace: 70,
+        posts: {
+          type: 'double',
+          width: 60,
+          thickness: 120,
+          material: wood360x60.id,
+          infillMaterial: straw.id
+        },
+        openings: {
+          padding: 15,
+          headerThickness: 60,
+          headerMaterial: wood360x60.id,
+          sillThickness: 60,
+          sillMaterial: wood360x60.id
+        },
+        straw: {
+          baleLength: 800,
+          baleHeight: 500,
+          baleWidth: 360,
+          material: strawbale.id
         },
         layers: {
           insideThickness: 30,
@@ -81,54 +78,38 @@ describe('Material Usage Detection', () => {
 
     it('should detect material used in strawhenge config', () => {
       const perimeterId = createWallAssemblyId()
-      const wallAssembly: WallAssembly = {
+      const wallAssembly: WallAssemblyConfig = {
         id: perimeterId,
         name: 'Test Strawhenge',
-        config: {
-          type: 'strawhenge',
-          module: {
-            width: 920,
-            type: 'single',
-            frameThickness: 60,
-            frameMaterial: wood360x60.id,
-            strawMaterial: strawbale.id
-          },
-          infill: {
-            type: 'infill',
-            maxPostSpacing: 800,
-            minStrawSpace: 70,
-            posts: {
-              type: 'full',
-              width: 60,
-              material: wood360x60.id
-            },
-            openings: {
-              padding: 15,
-              headerThickness: 60,
-              headerMaterial: wood360x60.id,
-              sillThickness: 60,
-              sillMaterial: wood360x60.id
-            },
-            straw: {
-              baleLength: 800,
-              baleHeight: 500,
-              baleWidth: 360,
-              material: strawbale.id
-            }
-          },
-          openings: {
-            padding: 15,
-            headerThickness: 60,
-            headerMaterial: wood360x60.id,
-            sillThickness: 60,
-            sillMaterial: wood360x60.id
-          },
-          straw: {
-            baleLength: 800,
-            baleHeight: 500,
-            baleWidth: 360,
-            material: strawbale.id
+        type: 'strawhenge',
+        module: {
+          width: 920,
+          type: 'single',
+          frameThickness: 60,
+          frameMaterial: wood360x60.id,
+          strawMaterial: strawbale.id
+        },
+        infill: {
+          maxPostSpacing: 800,
+          minStrawSpace: 70,
+          posts: {
+            type: 'full',
+            width: 60,
+            material: wood360x60.id
           }
+        },
+        openings: {
+          padding: 15,
+          headerThickness: 60,
+          headerMaterial: wood360x60.id,
+          sillThickness: 60,
+          sillMaterial: wood360x60.id
+        },
+        straw: {
+          baleLength: 800,
+          baleHeight: 500,
+          baleWidth: 360,
+          material: strawbale.id
         },
         layers: {
           insideThickness: 30,
@@ -147,43 +128,39 @@ describe('Material Usage Detection', () => {
     it('should detect material used in multiple configs', () => {
       const ringBeamId = createRingBeamAssemblyId()
       const perimeterId = createWallAssemblyId()
-      const ringBeamAssembly: RingBeamAssembly = {
+      const ringBeamAssembly: RingBeamAssemblyConfig = {
         id: ringBeamId,
         name: 'Test Ring Beam',
-        config: {
-          type: 'full',
-          material: wood360x60.id,
-          height: 60,
-          width: 360,
-          offsetFromEdge: 30
-        }
+        type: 'full',
+        material: wood360x60.id,
+        height: 60,
+        width: 360,
+        offsetFromEdge: 30
       }
 
-      const wallAssembly: WallAssembly = {
+      const wallAssembly: WallAssemblyConfig = {
         id: perimeterId,
         name: 'Test Infill',
-        config: {
-          type: 'infill',
-          maxPostSpacing: 800,
-          minStrawSpace: 70,
-          posts: {
-            type: 'full',
-            width: 60,
-            material: wood360x60.id
-          },
-          openings: {
-            padding: 15,
-            headerThickness: 60,
-            headerMaterial: straw.id, // Different material for headers
-            sillThickness: 60,
-            sillMaterial: straw.id
-          },
-          straw: {
-            baleLength: 800,
-            baleHeight: 500,
-            baleWidth: 360,
-            material: strawbale.id
-          }
+        type: 'infill',
+        maxPostSpacing: 800,
+        minStrawSpace: 70,
+        posts: {
+          type: 'full',
+          width: 60,
+          material: wood360x60.id
+        },
+        openings: {
+          padding: 15,
+          headerThickness: 60,
+          headerMaterial: straw.id, // Different material for headers
+          sillThickness: 60,
+          sillMaterial: straw.id
+        },
+        straw: {
+          baleLength: 800,
+          baleHeight: 500,
+          baleWidth: 360,
+          material: strawbale.id
         },
         layers: {
           insideThickness: 30,

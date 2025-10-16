@@ -80,7 +80,7 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
 
     const prevAssembly = getWallAssemblyById(previousWall.wallAssemblyId)
     const nextAssembly = getWallAssemblyById(nextWall.wallAssemblyId)
-    const hasMixedAssembly = prevAssembly?.config.type !== nextAssembly?.config.type
+    const hasMixedAssembly = prevAssembly?.type !== nextAssembly?.type
     const hasThicknessDifference = Math.abs(previousWall.thickness - nextWall.thickness) > 5
 
     return hasMixedAssembly || hasThicknessDifference
@@ -200,7 +200,7 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
           {(() => {
             const prevAssembly = getWallAssemblyById(previousWall.wallAssemblyId)
             const nextAssembly = getWallAssemblyById(nextWall.wallAssemblyId)
-            return prevAssembly?.config.type !== nextAssembly?.config.type
+            return prevAssembly?.type !== nextAssembly?.type
           })() && (
             <Callout.Root color="amber">
               <Callout.Text>

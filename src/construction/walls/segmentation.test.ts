@@ -173,7 +173,7 @@ describe('segmentedWallConstruction', () => {
 
     // Mock ring beam assemblies
     mockGetRingBeamAssemblyById.mockReturnValue({
-      config: { height: 60 }
+      height: 60
     })
 
     // Mock construction functions
@@ -301,8 +301,8 @@ describe('segmentedWallConstruction', () => {
 
       // Mock different ring beam heights
       mockGetRingBeamAssemblyById
-        .mockReturnValueOnce({ config: { height: 80 } }) // base
-        .mockReturnValueOnce({ config: { height: 100 } }) // top
+        .mockReturnValueOnce({ height: 80 }) // base
+        .mockReturnValueOnce({ height: 100 }) // top
 
       const results = [
         ...segmentedWallConstruction(

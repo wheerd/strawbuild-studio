@@ -1,6 +1,4 @@
-import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import type { MaterialId } from '@/construction/materials/material'
-import type { RingBeamConfig } from '@/construction/ringBeams/ringBeams'
 import type {
   BaseConstructionConfig,
   InfillConstructionConfig,
@@ -56,12 +54,6 @@ e | y +--------------+ s | Floor top layers                 }
   |   |              | e |                 .
 */
 
-export interface RingBeamAssembly {
-  id: RingBeamAssemblyId
-  name: string
-  config: RingBeamConfig
-}
-
 // Placeholder config interface for non-strawbale construction
 export interface NonStrawbaleConfig extends BaseConstructionConfig {
   type: 'non-strawbale'
@@ -79,10 +71,3 @@ export type WallAssemblyConfig =
   | StrawhengeConstructionConfig
   | ModulesConstructionConfig
   | NonStrawbaleConfig
-
-export interface WallAssembly {
-  id: WallAssemblyId
-  name: string
-  config: WallAssemblyConfig
-  layers: WallLayersConfig
-}

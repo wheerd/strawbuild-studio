@@ -196,11 +196,11 @@ export function* segmentedWallConstruction(
   const bottomPlateAssembly = perimeter.baseRingBeamAssemblyId
     ? getRingBeamAssemblyById(perimeter.baseRingBeamAssemblyId)
     : null
-  const bottomPlateHeight = bottomPlateAssembly?.config?.height ?? 0
+  const bottomPlateHeight = bottomPlateAssembly?.height ?? 0
   const topPlateAssembly = perimeter.topRingBeamAssemblyId
     ? getRingBeamAssemblyById(perimeter.topRingBeamAssemblyId)
     : null
-  const topPlateHeight = topPlateAssembly?.config?.height ?? 0
+  const topPlateHeight = topPlateAssembly?.height ?? 0
 
   const totalConstructionHeight =
     storeyContext.storeyHeight + storeyContext.floorTopOffset + storeyContext.ceilingBottomOffset

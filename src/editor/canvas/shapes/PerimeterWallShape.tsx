@@ -51,7 +51,7 @@ export function PerimeterWallShape({
   }
 
   const wallAssembly = useWallAssemblyById(wall.wallAssemblyId)
-  const fillColor = wallAssembly?.config.type === 'non-strawbale' ? MATERIAL_COLORS.other : MATERIAL_COLORS.strawbale
+  const fillColor = wallAssembly?.type === 'non-strawbale' ? MATERIAL_COLORS.other : MATERIAL_COLORS.strawbale
 
   return (
     <Group name={`wall-${wall.id}`} entityId={wall.id} entityType="perimeter-wall" parentIds={[perimeterId]} listening>

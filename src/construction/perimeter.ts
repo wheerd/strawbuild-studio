@@ -9,8 +9,8 @@ import { angle, offsetPolygon } from '@/shared/geometry'
 
 import { getConfigActions } from './config'
 import { type ConstructionModel, mergeModels, transformModel } from './model'
-import { constructRingBeam } from './ringBeams/ringBeams'
-import { WALL_ASSEMBLY_BUILDERS, createWallStoreyContext } from './walls'
+import { RING_BEAM_ASSEMBLIES } from './ringBeams'
+import { WALL_ASSEMBLIES, createWallStoreyContext } from './walls'
 
 export function constructPerimeter(perimeter: Perimeter): ConstructionModel {
   const { getStoreyById, getStoreysOrderedByLevel } = getModelActions()
@@ -40,7 +40,7 @@ export function constructPerimeter(perimeter: Perimeter): ConstructionModel {
   if (perimeter.baseRingBeamAssemblyId) {
     const assembly = getRingBeamAssemblyById(perimeter.baseRingBeamAssemblyId)
     if (assembly) {
-      const ringBeam = constructRingBeam(perimeter, assembly.config)
+      const ringBeam = RING_BEAM_ASSEMBLIES[assembly.type].construct(perimeter, assembly)
       const transformedModel = transformModel(ringBeam, IDENTITY, [TAG_BASE_PLATE])
       allModels.push(transformedModel)
     }
@@ -48,11 +48,11 @@ export function constructPerimeter(perimeter: Perimeter): ConstructionModel {
   if (perimeter.topRingBeamAssemblyId) {
     const assembly = getRingBeamAssemblyById(perimeter.topRingBeamAssemblyId)
     if (assembly) {
-      const ringBeam = constructRingBeam(perimeter, assembly.config)
+      const ringBeam = RING_BEAM_ASSEMBLIES[assembly.type].construct(perimeter, assembly)
       const transformedModel = transformModel(
         ringBeam,
         {
-          position: [0, 0, constructionHeight - assembly.config.height],
+          position: [0, 0, constructionHeight - assembly.height],
           rotation: vec3.fromValues(0, 0, 0)
         },
         [TAG_TOP_PLATE]
@@ -66,12 +66,12 @@ export function constructPerimeter(perimeter: Perimeter): ConstructionModel {
     const assembly = getWallAssemblyById(wall.wallAssemblyId)
     let wallModel: ConstructionModel | null = null
 
-    if (assembly?.config?.type) {
-      const wallAssembly = WALL_ASSEMBLY_BUILDERS[assembly.config.type]
+    if (assembly?.type) {
+      const wallAssembly = WALL_ASSEMBLIES[assembly.type]
       if (assembly.layers.outsideThickness < minOffset) {
         minOffset = assembly.layers.outsideThickness
       }
-      wallModel = wallAssembly(wall, perimeter, storeyContext, assembly.config, assembly.layers)
+      wallModel = wallAssembly.construct(wall, perimeter, storeyContext, assembly)
     }
 
     if (wallModel) {

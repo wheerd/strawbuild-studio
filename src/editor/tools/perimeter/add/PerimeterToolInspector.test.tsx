@@ -16,19 +16,19 @@ vi.mock('@/construction/config/store', () => ({
     {
       id: 'test-ring-beam-assembly',
       name: 'Test Ring Beam',
-      config: { type: 'full' }
+      type: 'full'
     }
   ],
   useWallAssemblies: () => [
     {
       id: 'test-assembly-1',
       name: 'Standard Infill',
-      config: { type: 'infill' }
+      type: 'infill'
     },
     {
       id: 'test-assembly-2',
       name: 'Strawhenge Module',
-      config: { type: 'strawhenge' }
+      type: 'strawhenge'
     }
   ]
 }))

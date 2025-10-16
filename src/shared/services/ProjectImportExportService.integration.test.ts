@@ -41,8 +41,8 @@ describe('ProjectImportExportService Integration', () => {
       points: [vec2.fromValues(0, 0), vec2.fromValues(8000, 0), vec2.fromValues(8000, 6000), vec2.fromValues(0, 6000)]
     }
 
-    const wallAssemblyId = Object.keys(getConfigState().wallAssemblies)[0] as WallAssemblyId
-    const ringBeamAssemblyId = Object.keys(getConfigState().ringBeamAssemblies)[0] as RingBeamAssemblyId
+    const wallAssemblyId = Object.keys(getConfigState().wallAssemblyConfigs)[0] as WallAssemblyId
+    const ringBeamAssemblyId = Object.keys(getConfigState().ringBeamAssemblyConfigs)[0] as RingBeamAssemblyId
 
     const perimeter = modelActions.addPerimeter(
       testStorey.id,
@@ -201,7 +201,7 @@ describe('ProjectImportExportService Integration', () => {
     modelActions.addStorey('Second Floor', 2600)
 
     // Add perimeters to each storey
-    const wallAssemblyId = Object.keys(getConfigState().wallAssemblies)[0] as WallAssemblyId
+    const wallAssemblyId = Object.keys(getConfigState().wallAssemblyConfigs)[0] as WallAssemblyId
 
     // Different shaped perimeters for each floor
     const groundBoundary = {

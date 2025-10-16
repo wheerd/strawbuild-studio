@@ -55,7 +55,7 @@ export function RingBeamAssemblySelect({
           </Select.Item>
         ) : (
           ringBeamAssemblies.map(assembly => {
-            const Icon = getRingBeamTypeIcon(assembly.config.type)
+            const Icon = getRingBeamTypeIcon(assembly.type)
             const isDefault = showDefaultIndicator && defaultAssemblyIds.includes(assembly.id)
             return (
               <Select.Item key={assembly.id} value={assembly.id}>

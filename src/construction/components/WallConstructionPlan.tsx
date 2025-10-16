@@ -6,7 +6,7 @@ import type { PerimeterId, PerimeterWallId } from '@/building/model/ids'
 import { useModelActions, usePerimeterById } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import type { ConstructionIssue } from '@/construction/results'
-import { WALL_ASSEMBLY_BUILDERS, createWallStoreyContext } from '@/construction/walls'
+import { WALL_ASSEMBLIES, createWallStoreyContext } from '@/construction/walls'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 
 import { BACK_VIEW, ConstructionPlan, FRONT_VIEW, type ViewOption } from './ConstructionPlan'
@@ -102,10 +102,10 @@ export function WallConstructionPlanModal({
     if (!storey) return null
 
     const assembly = getWallAssemblyById(wall.wallAssemblyId)
-    if (!assembly?.config?.type) return null
+    if (!assembly?.type) return null
 
     // Use generic assembly registry
-    const wallAssembly = WALL_ASSEMBLY_BUILDERS[assembly.config.type]
+    const wallAssembly = WALL_ASSEMBLIES[assembly.type]
     if (!wallAssembly) return null
 
     const currentFloorAssembly = getFloorAssemblyConfigById(storey.floorAssemblyId)
@@ -118,7 +118,7 @@ export function WallConstructionPlanModal({
 
     const storeyContext = createWallStoreyContext(storey, currentFloorAssembly, nextFloorAssembly)
 
-    return wallAssembly(wall, perimeter, storeyContext, assembly.config, assembly.layers)
+    return wallAssembly.construct(wall, perimeter, storeyContext, assembly)
   }, [perimeter, wallId, getStoreyById, getStoreysOrderedByLevel, getWallAssemblyById, getFloorAssemblyConfigById])
 
   // Define views for wall construction

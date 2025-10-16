@@ -70,7 +70,7 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
   const getDisplayValue = useCallback(
     (fittingValue: number, type: 'width' | 'height' | 'sillHeight' | 'topHeight') => {
       if (!wallAssembly) return fittingValue
-      const padding = wallAssembly.config.openings.padding
+      const padding = wallAssembly.openings.padding
 
       if (dimensionInputMode === 'fitting') {
         return fittingValue
@@ -94,7 +94,7 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
   const convertToFittingValue = useCallback(
     (inputValue: number, type: 'width' | 'height' | 'sillHeight' | 'topHeight') => {
       if (!wallAssembly) return inputValue
-      const padding = wallAssembly.config.openings.padding
+      const padding = wallAssembly.openings.padding
 
       if (dimensionInputMode === 'fitting') {
         return inputValue
@@ -184,7 +184,7 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
           <OpeningPreview
             opening={opening}
             wallHeight={storey.height}
-            padding={wallAssembly.config.openings.padding}
+            padding={wallAssembly.openings.padding}
             highlightMode={highlightMode}
             focusedField={focusedField}
           />
@@ -266,7 +266,7 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
           </Text>
           <Text size="1" color="gray">
             {wallAssembly
-              ? `${formatLength(wallAssembly?.config.openings.padding)} (configured by ${wallAssembly.name})`
+              ? `${formatLength(wallAssembly?.openings.padding)} (configured by ${wallAssembly.name})`
               : '???'}
           </Text>
         </Flex>

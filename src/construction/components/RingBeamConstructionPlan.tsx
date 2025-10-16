@@ -103,7 +103,7 @@ export function RingBeamConstructionPlanModal({
     if (!assembly) return null
 
     try {
-      return constructRingBeam(perimeter, assembly.config)
+      return constructRingBeam(perimeter, assembly)
     } catch (error) {
       console.error('Failed to generate ring beam construction plan:', error)
       return null
@@ -200,13 +200,11 @@ export function RingBeamConstructionPlanModal({
                     {currentAssembly.name}
                   </Heading>
                   <Flex direction="column" gap="1">
-                    <Text size="1">Type: {currentAssembly.config.type}</Text>
-                    <Text size="1">Height: {currentAssembly.config.height}mm</Text>
-                    {currentAssembly.config.type === 'full' && (
-                      <Text size="1">Width: {currentAssembly.config.width}mm</Text>
-                    )}
-                    {currentAssembly.config.type === 'double' && (
-                      <Text size="1">Thickness: {currentAssembly.config.thickness}mm</Text>
+                    <Text size="1">Type: {currentAssembly.type}</Text>
+                    <Text size="1">Height: {currentAssembly.height}mm</Text>
+                    {currentAssembly.type === 'full' && <Text size="1">Width: {currentAssembly.width}mm</Text>}
+                    {currentAssembly.type === 'double' && (
+                      <Text size="1">Thickness: {currentAssembly.thickness}mm</Text>
                     )}
                   </Flex>
                 </Card>
