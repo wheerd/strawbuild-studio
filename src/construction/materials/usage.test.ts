@@ -35,7 +35,7 @@ describe('Material Usage Detection', () => {
       expect(usage.usedByConfigs).toEqual(['Ring Beam: Test Ring Beam'])
     })
 
-    it('should detect material used in perimeter config posts', () => {
+    it('should detect material used in wall assembly posts', () => {
       const perimeterId = createWallAssemblyId()
       const wallAssembly: WallAssemblyConfig = {
         id: perimeterId,

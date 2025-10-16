@@ -29,7 +29,7 @@ export function getMaterialUsage(
   wallAssemblies.forEach(assembly => {
     const configUsages: string[] = []
 
-    // Check different parts of perimeter config based on type
+    // Check different parts of wall assembly based on type
     switch (assembly.type) {
       case 'infill':
         // Posts material

@@ -893,7 +893,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                 </IconButton>
               </AlertDialog.Trigger>
               <AlertDialog.Content>
-                <AlertDialog.Title>Delete Perimeter Assembly</AlertDialog.Title>
+                <AlertDialog.Title>Delete Wall Assembly</AlertDialog.Title>
                 <AlertDialog.Description>
                   Are you sure you want to delete "{selectedAssembly?.name}"? This action cannot be undone.
                 </AlertDialog.Description>
@@ -916,7 +916,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
           <Grid columns="auto 1fr" gap="2" align="center">
             <Label.Root>
               <Text size="1" weight="medium" color="gray">
-                Default Perimeter Assembly
+                Default Wall Assembly
               </Text>
             </Label.Root>
             <WallAssemblySelect
