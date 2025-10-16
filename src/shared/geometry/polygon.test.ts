@@ -10,12 +10,14 @@ import {
   pathDToPoints
 } from '@/shared/geometry/clipperInstance'
 import {
+  type Polygon2D,
   arePolygonsIntersecting,
   calculatePolygonArea,
   isPointInPolygon,
   offsetPolygon,
   polygonIsClockwise,
   simplifyPolygon,
+  unionPolygons,
   wouldClosingPolygonSelfIntersect
 } from '@/shared/geometry/polygon'
 
@@ -242,6 +244,59 @@ describe('polygon helpers using Clipper', () => {
     expect(result).toBe(true)
     expect(pathsStub.delete).toHaveBeenCalled()
     expect(pathStub.delete).toHaveBeenCalled()
+    expect(union.delete).toHaveBeenCalled()
+  })
+})
+
+describe('unionPolygons', () => {
+  it('should return empty array for empty input', () => {
+    const result = unionPolygons([])
+    expect(result).toEqual([])
+  })
+
+  it('should return same polygon for single polygon input', () => {
+    const polygon: Polygon2D = {
+      points: [vec2.fromValues(0, 0), vec2.fromValues(10, 0), vec2.fromValues(10, 10), vec2.fromValues(0, 10)]
+    }
+    const result = unionPolygons([polygon])
+    expect(result).toEqual([polygon])
+  })
+
+  it('should union two overlapping polygons', () => {
+    const polygon1: Polygon2D = {
+      points: [vec2.fromValues(0, 0), vec2.fromValues(10, 0), vec2.fromValues(10, 10), vec2.fromValues(0, 10)]
+    }
+    const polygon2: Polygon2D = {
+      points: [vec2.fromValues(5, 5), vec2.fromValues(15, 5), vec2.fromValues(15, 15), vec2.fromValues(5, 15)]
+    }
+
+    const unionResultPath = { delete: vi.fn() } as any
+    const union = {
+      size: vi.fn(() => 1),
+      get: vi.fn(() => unionResultPath),
+      delete: vi.fn()
+    } as any as PathsD
+    const module = mockClipperModule({ UnionSelfD: vi.fn((_1, _2, _3) => union) })
+    getClipperModuleMock.mockReturnValue(module)
+    const pathStub1 = { delete: vi.fn() }
+    const pathStub2 = { delete: vi.fn() }
+    const pathsStub = { delete: vi.fn() }
+    createPathDMock.mockReturnValueOnce(pathStub1 as any).mockReturnValueOnce(pathStub2 as any)
+    createPathsDMock.mockReturnValueOnce(pathsStub as any)
+    const pathPoints = [new Float32Array(vec2.fromValues(123, 456))]
+    pathDToPointsMock.mockReturnValueOnce(pathPoints)
+
+    const result = unionPolygons([polygon1, polygon2])
+
+    expect(createPathDMock).toHaveBeenCalledWith(polygon1.points)
+    expect(createPathDMock).toHaveBeenCalledWith(polygon2.points)
+    expect(createPathsDMock).toHaveBeenCalledWith([pathStub1, pathStub2])
+    expect(module.UnionSelfD).toHaveBeenCalledWith(pathsStub, module.FillRule.NonZero, 2)
+    expect(result).toHaveLength(1)
+    expect(result[0].points).toBe(pathPoints)
+    expect(pathsStub.delete).toHaveBeenCalled()
+    expect(pathStub1.delete).toHaveBeenCalled()
+    expect(pathStub2.delete).toHaveBeenCalled()
     expect(union.delete).toHaveBeenCalled()
   })
 })

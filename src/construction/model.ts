@@ -1,6 +1,7 @@
 import { vec3 } from 'gl-matrix'
 
 import { type Axis3D, type Bounds3D, type Length, type Plane3D, type Polygon2D, mergeBounds } from '@/shared/geometry'
+import { simplifyPolygon, unionPolygons } from '@/shared/geometry/polygon'
 
 import { type ConstructionGroup, type GroupOrElement, createConstructionElementId } from './elements'
 import { type Transform, transform, transformBounds } from './geometry'
@@ -39,6 +40,8 @@ export interface HighlightedCuboid {
   bounds: Bounds3D
   tags?: Tag[]
   renderPosition: 'bottom' | 'top'
+  cancelKey?: string
+  mergeKey?: string
 }
 
 export interface HighlightedPolygon {
@@ -49,6 +52,8 @@ export interface HighlightedPolygon {
   plane: Plane3D
   tags?: Tag[]
   renderPosition: 'bottom' | 'top'
+  cancelKey?: string
+  mergeKey?: string
 }
 
 export interface HighlightedCut {
@@ -59,6 +64,8 @@ export interface HighlightedCut {
   axis: Axis3D
   tags?: Tag[]
   renderPosition: 'bottom' | 'top'
+  cancelKey?: string
+  mergeKey?: string
 }
 
 /**
@@ -115,10 +122,56 @@ export function createConstructionGroup(
 }
 
 export function mergeModels(...models: ConstructionModel[]): ConstructionModel {
+  const allAreas = models.flatMap(m => m.areas)
+
+  const cancelKeyCounts = new Map<string, number>()
+  const areasWithoutCancelKeys: HighlightedArea[] = []
+
+  for (const area of allAreas) {
+    if (area.cancelKey) {
+      const count = cancelKeyCounts.get(area.cancelKey) || 0
+      cancelKeyCounts.set(area.cancelKey, count + 1)
+    } else {
+      areasWithoutCancelKeys.push(area)
+    }
+  }
+
+  const filteredAreas = allAreas.filter(area => {
+    if (!area.cancelKey) return false
+    const count = cancelKeyCounts.get(area.cancelKey) || 0
+    return count === 1
+  })
+
+  const remainingAreas = [...areasWithoutCancelKeys, ...filteredAreas]
+
+  const areasWithoutMergeKey: HighlightedArea[] = []
+  const mergeGroups = new Map<string, HighlightedArea[]>()
+
+  for (const area of remainingAreas) {
+    if (area.mergeKey) {
+      const group = mergeGroups.get(area.mergeKey) || []
+      group.push(area)
+      mergeGroups.set(area.mergeKey, group)
+    } else {
+      areasWithoutMergeKey.push(area)
+    }
+  }
+
+  const mergedAreas: HighlightedArea[] = []
+  for (const [mergeKey, group] of mergeGroups) {
+    try {
+      const merged = mergeAreaGroup(group, mergeKey)
+      mergedAreas.push(...merged)
+    } catch (error) {
+      console.error(`Failed to merge areas with key ${mergeKey}:`, error)
+      mergedAreas.push(...group)
+    }
+  }
+
   return {
     elements: models.flatMap(m => m.elements),
     measurements: models.flatMap(m => m.measurements),
-    areas: models.flatMap(m => m.areas),
+    areas: [...areasWithoutMergeKey, ...mergedAreas],
     errors: models.flatMap(m => m.errors),
     warnings: models.flatMap(m => m.warnings),
     bounds: mergeBounds(...models.map(m => m.bounds))
@@ -150,7 +203,139 @@ export function transformModel(model: ConstructionModel, t: Transform, tags?: Ta
 
 function transformArea(a: HighlightedArea, t: Transform): HighlightedArea {
   if (a.type === 'cuboid') {
-    return { ...a, transform: t }
+    const composedTransform = composeTransforms(a.transform, t)
+    return { ...a, transform: composedTransform, bounds: a.bounds }
+  }
+  if (a.type === 'polygon') {
+    const transformedPoints = a.polygon.points.map(p => {
+      let p3d: vec3
+      if (a.plane === 'xy') {
+        p3d = vec3.fromValues(p[0], p[1], 0)
+      } else if (a.plane === 'xz') {
+        p3d = vec3.fromValues(p[0], 0, p[1])
+      } else {
+        p3d = vec3.fromValues(0, p[0], p[1])
+      }
+      const transformed = transform(p3d, t)
+
+      if (a.plane === 'xy') {
+        return [transformed[0], transformed[1]] as [number, number]
+      } else if (a.plane === 'xz') {
+        return [transformed[0], transformed[2]] as [number, number]
+      } else {
+        return [transformed[1], transformed[2]] as [number, number]
+      }
+    })
+    return { ...a, polygon: { points: transformedPoints } }
+  }
+  if (a.type === 'cut') {
+    const positionVec = vec3.fromValues(
+      a.axis === 'x' ? a.position : 0,
+      a.axis === 'y' ? a.position : 0,
+      a.axis === 'z' ? a.position : 0
+    )
+    const transformed = transform(positionVec, t)
+    const newPosition = a.axis === 'x' ? transformed[0] : a.axis === 'y' ? transformed[1] : transformed[2]
+    return { ...a, position: newPosition }
   }
   return a
+}
+
+function composeTransforms(inner: Transform, outer: Transform): Transform {
+  const composedPosition = transform(inner.position, outer)
+  const composedRotation = vec3.add(vec3.create(), inner.rotation, outer.rotation)
+  return {
+    position: composedPosition,
+    rotation: composedRotation
+  }
+}
+
+function mergeAreaGroup(areas: HighlightedArea[], mergeKey: string): HighlightedArea[] {
+  if (areas.length === 0) return []
+  if (areas.length === 1) return areas
+
+  const firstType = areas[0].type
+
+  if (!areas.every(a => a.type === firstType)) {
+    throw new Error(`Cannot merge areas with different types for mergeKey ${mergeKey}`)
+  }
+
+  if (firstType === 'cuboid') {
+    return [mergeCuboidAreas(areas as HighlightedCuboid[], mergeKey)]
+  }
+
+  if (firstType === 'polygon') {
+    return mergePolygonAreas(areas as HighlightedPolygon[], mergeKey)
+  }
+
+  if (firstType === 'cut') {
+    return [mergeCutAreas(areas as HighlightedCut[], mergeKey)]
+  }
+
+  return areas
+}
+
+function mergeCuboidAreas(areas: HighlightedCuboid[], mergeKey: string): HighlightedCuboid {
+  const template = areas[0]
+
+  const mergedBounds = mergeBounds(...areas.map(a => a.bounds))
+
+  return {
+    ...template,
+    bounds: mergedBounds,
+    mergeKey
+  }
+}
+
+function mergePolygonAreas(areas: HighlightedPolygon[], mergeKey: string): HighlightedPolygon[] {
+  const template = areas[0]
+
+  if (!areas.every(a => a.plane === template.plane)) {
+    throw new Error(
+      `Cannot merge polygons on different planes for mergeKey ${mergeKey}. ` +
+        `Found planes: ${Array.from(new Set(areas.map(a => a.plane))).join(', ')}`
+    )
+  }
+
+  const polygons = areas.map(a => a.polygon)
+  const unionResult = unionPolygons(polygons)
+
+  if (unionResult.length !== 1) {
+    throw new Error(
+      `Union of polygons with mergeKey ${mergeKey} resulted in ${unionResult.length} polygons. ` +
+        `Expected exactly 1 polygon. This likely means the polygons don't overlap or touch.`
+    )
+  }
+
+  return [
+    {
+      ...template,
+      polygon: simplifyPolygon(unionResult[0]),
+      mergeKey
+    }
+  ]
+}
+
+function mergeCutAreas(areas: HighlightedCut[], mergeKey: string): HighlightedCut {
+  const template = areas[0]
+
+  if (!areas.every(a => a.axis === template.axis)) {
+    throw new Error(
+      `Cannot merge cuts on different axes for mergeKey ${mergeKey}. ` +
+        `Found axes: ${Array.from(new Set(areas.map(a => a.axis))).join(', ')}`
+    )
+  }
+
+  const positions = new Set(areas.map(a => a.position))
+  if (positions.size !== 1) {
+    throw new Error(
+      `Cannot merge cuts at different positions for mergeKey ${mergeKey}. ` +
+        `Found positions: ${Array.from(positions).join(', ')}`
+    )
+  }
+
+  return {
+    ...template,
+    mergeKey
+  }
 }

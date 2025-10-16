@@ -98,7 +98,8 @@ function* createCornerAreas(
           vec2.fromValues(0, wallHeight),
           vec2.fromValues(0, 0)
         ]
-      }
+      },
+      cancelKey: `corner-${cornerInfo.startCorner.id}`
     })
   }
   if (cornerInfo.endCorner) {
@@ -115,7 +116,8 @@ function* createCornerAreas(
           vec2.fromValues(wallLength + cornerInfo.endCorner.extensionDistance, wallHeight),
           vec2.fromValues(wallLength + cornerInfo.endCorner.extensionDistance, 0)
         ]
-      }
+      },
+      cancelKey: `corner-${cornerInfo.endCorner.id}`
     })
   }
 }
@@ -124,8 +126,9 @@ function* createPlateAreas(
   totalConstructionHeight: Length,
   bottomPlateHeight: Length,
   topPlateHeight: Length,
-  start: number,
-  constructionLength: Length
+  start: Length,
+  constructionLength: Length,
+  perimeterId: string
 ): Generator<ConstructionResult> {
   if (bottomPlateHeight > 0) {
     yield yieldArea({
@@ -141,7 +144,8 @@ function* createPlateAreas(
           vec2.fromValues(start + constructionLength, bottomPlateHeight),
           vec2.fromValues(start, bottomPlateHeight)
         ]
-      }
+      },
+      mergeKey: `bottom-plate-${perimeterId}`
     })
   }
   if (topPlateHeight > 0) {
@@ -158,7 +162,8 @@ function* createPlateAreas(
           vec2.fromValues(start + constructionLength, totalConstructionHeight),
           vec2.fromValues(start, totalConstructionHeight)
         ]
-      }
+      },
+      mergeKey: `top-plate-${perimeterId}`
     })
   }
 }
@@ -224,7 +229,8 @@ export function* segmentedWallConstruction(
     bottomPlateHeight,
     topPlateHeight,
     -extensionStart,
-    constructionLength
+    constructionLength,
+    perimeter.id
   )
 
   const finishedFloorZLevel = storeyContext.floorTopOffset
@@ -238,7 +244,8 @@ export function* segmentedWallConstruction(
     renderPosition: 'top',
     label: 'Finished Floor Level',
     axis: 'z',
-    position: finishedFloorZLevel
+    position: finishedFloorZLevel,
+    mergeKey: `floor-level-${perimeter.storeyId}`
   })
 
   yield yieldMeasurement({

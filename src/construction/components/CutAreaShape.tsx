@@ -35,23 +35,23 @@ export function CutAreaShape({ cut, projection, viewportBounds }: CutAreaShapePr
   if (projectedStart[0] !== projectedEnd[0] && projectedStart[1] !== projectedEnd[1]) {
     return <></>
   }
-
-  const viewportCenterX = (viewportBounds.min[0] + viewportBounds.max[0]) / 2
-  const viewportCenterY = (viewportBounds.min[1] + viewportBounds.max[1]) / 2
-
-  const textX = projectedStart[0] === projectedEnd[0] ? projectedStart[0] : viewportCenterX
-  const textY = projectedStart[1] === projectedEnd[1] ? projectedStart[1] : viewportCenterY
-
   return (
     <g className={`area-cut area-cut-${cut.areaType}`}>
       <line x1={projectedStart[0]} y1={projectedStart[1]} x2={projectedEnd[0]} y2={projectedEnd[1]} />
 
       {cut.label && (
-        <g className="text" transform={`translate(${textX} ${textY})`}>
-          <text x={0} y={0} textAnchor="middle" dominantBaseline="middle">
-            {cut.label}
-          </text>
-        </g>
+        <>
+          <g className="text" transform={`translate(${projectedStart[0]} ${projectedStart[1]})`}>
+            <text x={0} y={0} textAnchor="middle" dominantBaseline="middle">
+              {cut.label}
+            </text>
+          </g>
+          <g className="text" transform={`translate(${projectedEnd[0]} ${projectedEnd[1]})`}>
+            <text x={0} y={0} textAnchor="middle" dominantBaseline="middle">
+              {cut.label}
+            </text>
+          </g>
+        </>
       )}
     </g>
   )

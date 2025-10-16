@@ -181,6 +181,34 @@ export function arePolygonsIntersecting(polygon1: Polygon2D, polygon2: Polygon2D
   }
 }
 
+export function unionPolygons(polygons: Polygon2D[]): Polygon2D[] {
+  if (polygons.length === 0) return []
+  if (polygons.length === 1) return polygons
+
+  const module = getClipperModule()
+  const paths = polygons.map(p => createPathD(p.points))
+  const pathsD = createPathsD(paths)
+
+  try {
+    const unionResult = module.UnionSelfD(pathsD, module.FillRule.NonZero, 2)
+    try {
+      const result: Polygon2D[] = []
+      for (let i = 0; i < unionResult.size(); i++) {
+        const path = unionResult.get(i)
+        result.push({ points: pathDToPoints(path) })
+      }
+      return result
+    } finally {
+      unionResult.delete()
+    }
+  } finally {
+    pathsD.delete()
+    for (const path of paths) {
+      path.delete()
+    }
+  }
+}
+
 function segmentsIntersect(p1: vec2, q1: vec2, p2: vec2, q2: vec2): boolean {
   const o1 = orientation(p1, q1, p2)
   const o2 = orientation(p1, q1, q2)

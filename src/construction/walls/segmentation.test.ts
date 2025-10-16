@@ -691,7 +691,8 @@ describe('segmentedWallConstruction', () => {
             vec2.fromValues(0, 2500),
             vec2.fromValues(0, 0)
           ]
-        }
+        },
+        cancelKey: 'corner-start-corner'
       })
 
       // End corner area
@@ -708,7 +709,8 @@ describe('segmentedWallConstruction', () => {
             vec2.fromValues(3150, 2500),
             vec2.fromValues(3150, 0)
           ]
-        }
+        },
+        cancelKey: 'corner-end-corner'
       })
     })
   })
