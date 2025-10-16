@@ -1,4 +1,4 @@
-import { vec2 } from 'gl-matrix'
+import { vec2, vec3 } from 'gl-matrix'
 
 import type { Perimeter, PerimeterCorner } from '@/building/model/model'
 import { createConstructionElement } from '@/construction/elements'
@@ -27,7 +27,10 @@ export class FullRingBeamAssembly implements RingBeamAssembly<FullRingBeamAssemb
   construct(perimeter: Perimeter, config: FullRingBeamAssemblyConfig): ConstructionModel {
     const aggRes = aggregateResults([...this._constructFullRingBeam(perimeter, config)])
     const bounds2D = boundsFromPoints(perimeter.corners.map(c => c.outsidePoint))
-    const bounds3D = { min: [...bounds2D.min, 0], max: [...bounds2D.max, config.height] }
+    const bounds3D = {
+      min: vec3.fromValues(bounds2D.min[0], bounds2D.min[1], 0),
+      max: vec3.fromValues(bounds2D.max[0], bounds2D.max[1], config.height)
+    }
 
     return {
       bounds: bounds3D,
@@ -107,24 +110,24 @@ export class FullRingBeamAssembly implements RingBeamAssembly<FullRingBeamAssemb
         endPoint: [...endOutside, 0],
         size: [1, 1, config.height]
       })
-
-      yield yieldArea({
-        type: 'polygon',
-        areaType: 'outer-perimeter',
-        renderPosition: 'bottom',
-        plane: 'xy',
-        polygon: { points: perimeter.corners.map(c => c.outsidePoint) },
-        tags: [TAG_PERIMETER_OUTSIDE]
-      })
-
-      yield yieldArea({
-        type: 'polygon',
-        areaType: 'inner-perimeter',
-        renderPosition: 'bottom',
-        plane: 'xy',
-        polygon: { points: perimeter.corners.map(c => c.insidePoint) },
-        tags: [TAG_PERIMETER_INSIDE]
-      })
     }
+
+    yield yieldArea({
+      type: 'polygon',
+      areaType: 'outer-perimeter',
+      renderPosition: 'bottom',
+      plane: 'xy',
+      polygon: { points: perimeter.corners.map(c => c.outsidePoint) },
+      tags: [TAG_PERIMETER_OUTSIDE]
+    })
+
+    yield yieldArea({
+      type: 'polygon',
+      areaType: 'inner-perimeter',
+      renderPosition: 'bottom',
+      plane: 'xy',
+      polygon: { points: perimeter.corners.map(c => c.insidePoint) },
+      tags: [TAG_PERIMETER_INSIDE]
+    })
   }
 }

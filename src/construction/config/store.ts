@@ -11,8 +11,12 @@ import {
 } from '@/building/model/ids'
 import type { FloorAssemblyConfig, MonolithicFloorAssemblyConfig } from '@/construction/floors/types'
 import { clt180, concrete, straw, strawbale, wood120x60, wood360x60 } from '@/construction/materials/material'
-import type { FullRingBeamAssemblyConfig, RingBeamAssemblyConfig } from '@/construction/ringBeams'
-import { validateRingBeamConfig } from '@/construction/ringBeams/ringBeams'
+import {
+  type FullRingBeamAssemblyConfig,
+  type RingBeamAssemblyConfig,
+  type RingBeamConfig,
+  validateRingBeamConfig
+} from '@/construction/ringBeams'
 import type {
   InfillWallAssemblyConfig,
   ModulesWallAssemblyConfig,
@@ -36,10 +40,10 @@ export interface ConfigState {
 
 export interface ConfigActions {
   // CRUD operations for ring beam assemblies
-  addRingBeamAssembly: (config: Omit<RingBeamAssemblyConfig, 'id'>) => RingBeamAssemblyConfig
+  addRingBeamAssembly: (name: string, config: RingBeamConfig) => RingBeamAssemblyConfig
   removeRingBeamAssembly: (id: RingBeamAssemblyId) => void
   updateRingBeamAssemblyName: (id: RingBeamAssemblyId, name: string) => void
-  updateRingBeamAssemblyConfig: (id: RingBeamAssemblyId, config: Omit<RingBeamAssemblyConfig, 'id'>) => void
+  updateRingBeamAssemblyConfig: (id: RingBeamAssemblyId, config: Omit<RingBeamConfig, 'type'>) => void
 
   // Queries
   getRingBeamAssemblyById: (id: RingBeamAssemblyId) => RingBeamAssemblyConfig | null
@@ -322,17 +326,16 @@ const useConfigStore = create<ConfigStore>()(
 
           actions: {
             // CRUD operations
-            addRingBeamAssembly: (config: Omit<RingBeamAssemblyConfig, 'id'>) => {
-              validateRingBeamName(config.name)
-
-              const { name: _name, id: _id, ...ringBeamConfig } = config as RingBeamAssemblyConfig
-              validateRingBeamConfig(ringBeamConfig)
+            addRingBeamAssembly: (name: string, config: RingBeamConfig) => {
+              validateRingBeamName(name)
+              validateRingBeamConfig(config)
 
               const id = createRingBeamAssemblyId()
-              const assembly = {
+              const assembly: RingBeamAssemblyConfig = {
                 ...config,
+                name,
                 id
-              } as RingBeamAssemblyConfig
+              }
 
               set(state => ({
                 ...state,
@@ -376,15 +379,13 @@ const useConfigStore = create<ConfigStore>()(
               })
             },
 
-            updateRingBeamAssemblyConfig: (id: RingBeamAssemblyId, config: Omit<RingBeamAssemblyConfig, 'id'>) => {
+            updateRingBeamAssemblyConfig: (id: RingBeamAssemblyId, config: Partial<Omit<RingBeamConfig, 'type'>>) => {
               set(state => {
                 const assembly = state.ringBeamAssemblyConfigs[id]
                 if (assembly == null) return state
 
-                const updatedAssembly = {
-                  ...config,
-                  id
-                } as RingBeamAssemblyConfig
+                const updatedAssembly: RingBeamAssemblyConfig = { ...assembly, ...config }
+                validateRingBeamConfig(updatedAssembly)
 
                 return {
                   ...state,

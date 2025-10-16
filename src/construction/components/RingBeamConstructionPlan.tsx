@@ -5,7 +5,7 @@ import React, { useMemo, useState } from 'react'
 import type { PerimeterId } from '@/building/model/ids'
 import { usePerimeterById } from '@/building/store'
 import { useConfigActions } from '@/construction/config'
-import { constructRingBeam } from '@/construction/ringBeams/ringBeams'
+import { RING_BEAM_ASSEMBLIES } from '@/construction/ringBeams'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 
 import { ConstructionPlan, TOP_VIEW } from './ConstructionPlan'
@@ -103,7 +103,7 @@ export function RingBeamConstructionPlanModal({
     if (!assembly) return null
 
     try {
-      return constructRingBeam(perimeter, assembly)
+      return RING_BEAM_ASSEMBLIES[assembly.type].construct(perimeter, assembly)
     } catch (error) {
       console.error('Failed to generate ring beam construction plan:', error)
       return null

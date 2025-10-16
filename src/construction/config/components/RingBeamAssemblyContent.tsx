@@ -26,7 +26,7 @@ import {
 import { getRingBeamConfigUsage } from '@/construction/config/usage'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
-import type { RingBeamConfig } from '@/construction/ringBeams/ringBeams'
+import type { RingBeamConfig } from '@/construction/ringBeams'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
 
 import { getRingBeamTypeIcon } from './Icons'
@@ -96,7 +96,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
         }
       }
 
-      const newAssembly = addRingBeamAssembly({ name: `New ${type} ring beam`, ...config })
+      const newAssembly = addRingBeamAssembly(`New ${type} ring beam`, config)
       setSelectedAssemblyId(newAssembly.id)
     },
     [addRingBeamAssembly]
@@ -105,8 +105,8 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
   const handleDuplicate = useCallback(() => {
     if (!selectedAssembly) return
 
-    const { id: _id, ...config } = selectedAssembly
-    const duplicated = addRingBeamAssembly({ ...config, name: `${selectedAssembly.name} (Copy)` })
+    const { id: _id, name: _name, ...config } = selectedAssembly
+    const duplicated = addRingBeamAssembly(`${selectedAssembly.name} (Copy)`, config)
     setSelectedAssemblyId(duplicated.id)
   }, [selectedAssembly, addRingBeamAssembly])
 

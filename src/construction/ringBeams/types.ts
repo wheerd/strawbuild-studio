@@ -4,25 +4,32 @@ import type { MaterialId } from '@/construction/materials/material'
 import type { ConstructionModel } from '@/construction/model'
 import type { Length } from '@/shared/geometry'
 
-export interface RingBeamAssembly<TConfig extends RingBeamAssemblyBaseConfig> {
+export type RingBeamAssemblyType = 'full' | 'double'
+
+export interface RingBeamAssembly<TConfig extends RingBeamAssemblyConfig> {
   construct: (perimeter: Perimeter, config: TConfig) => ConstructionModel
 }
 
-export interface RingBeamAssemblyBaseConfig {
-  id: RingBeamAssemblyId
-  name: string
+export interface RingBeamConfigBase {
   type: RingBeamAssemblyType
   height: Length // Default: 60mm
   material: MaterialId
 }
 
-export interface FullRingBeamAssemblyConfig extends RingBeamAssemblyBaseConfig {
+export interface RingBeamAssemblyIdPart {
+  name: string
+  id: RingBeamAssemblyId
+}
+
+export interface FullRingBeamConfig extends RingBeamConfigBase {
   type: 'full'
   width: Length // Default: 360mm
   offsetFromEdge: Length // From inside construction edge of wall
 }
 
-export interface DoubleRingBeamAssemblyConfig extends RingBeamAssemblyBaseConfig {
+export type FullRingBeamAssemblyConfig = FullRingBeamConfig & RingBeamAssemblyIdPart
+
+export interface DoubleRingBeamConfig extends RingBeamConfigBase {
   type: 'double'
   thickness: Length // Default: 120mm
   infillMaterial: MaterialId // Default: straw
@@ -30,6 +37,8 @@ export interface DoubleRingBeamAssemblyConfig extends RingBeamAssemblyBaseConfig
   spacing: Length // In between the two beams
 }
 
-export type RingBeamAssemblyType = 'full' | 'double'
+export type DoubleRingBeamAssemblyConfig = DoubleRingBeamConfig & RingBeamAssemblyIdPart
+
+export type RingBeamConfig = FullRingBeamConfig | DoubleRingBeamConfig
 
 export type RingBeamAssemblyConfig = FullRingBeamAssemblyConfig | DoubleRingBeamAssemblyConfig

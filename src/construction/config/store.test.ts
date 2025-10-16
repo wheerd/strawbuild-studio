@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { createMaterialId } from '@/construction/materials/material'
-import type { RingBeamConfig } from '@/construction/ringBeams/ringBeams'
+import type { RingBeamConfig } from '@/construction/ringBeams'
 import '@/shared/geometry'
 
 import { _clearAllAssemblies, getConfigActions } from './store'
@@ -43,7 +43,7 @@ describe('ConfigStore', () => {
         offsetFromEdge: 0
       }
 
-      const assembly = store.addRingBeamAssembly({ name: 'Standard Ring Beam', ...config })
+      const assembly = store.addRingBeamAssembly('Standard Ring Beam', config)
 
       expect(assembly.name).toBe('Standard Ring Beam')
       expect(assembly).toMatchObject(config)
@@ -67,7 +67,7 @@ describe('ConfigStore', () => {
         spacing: 100
       }
 
-      const assembly = store.addRingBeamAssembly({ name: 'Double Ring Beam', ...config })
+      const assembly = store.addRingBeamAssembly('Double Ring Beam', config)
 
       expect(assembly.name).toBe('Double Ring Beam')
       expect(assembly).toMatchObject(config)
@@ -85,7 +85,7 @@ describe('ConfigStore', () => {
       }
 
       expect(() => {
-        store.addRingBeamAssembly({ name: '', ...config })
+        store.addRingBeamAssembly('', config)
       }).toThrow('Ring beam assembly name cannot be empty')
     })
 
@@ -101,7 +101,7 @@ describe('ConfigStore', () => {
       }
 
       expect(() => {
-        store.addRingBeamAssembly({ name: 'Test', ...config })
+        store.addRingBeamAssembly('Test', config)
       }).toThrow('Ring beam height must be greater than 0')
     })
 
@@ -116,8 +116,8 @@ describe('ConfigStore', () => {
         offsetFromEdge: 0
       }
 
-      const assembly1 = store.addRingBeamAssembly({ name: 'Same Name', ...config })
-      const assembly2 = store.addRingBeamAssembly({ name: 'Same Name', ...config })
+      const assembly1 = store.addRingBeamAssembly('Same Name', config)
+      const assembly2 = store.addRingBeamAssembly('Same Name', config)
 
       expect(assembly1.name).toBe('Same Name')
       expect(assembly2.name).toBe('Same Name')
@@ -136,7 +136,7 @@ describe('ConfigStore', () => {
         offsetFromEdge: 0
       }
 
-      const assembly = store.addRingBeamAssembly({ name: 'To Remove', ...config })
+      const assembly = store.addRingBeamAssembly('To Remove', config)
       expect(store.getAllRingBeamAssemblies()).toHaveLength(1)
 
       store.removeRingBeamAssembly(assembly.id)
@@ -154,7 +154,7 @@ describe('ConfigStore', () => {
         offsetFromEdge: 0
       }
 
-      const assembly = store.addRingBeamAssembly({ name: 'Original', ...config })
+      const assembly = store.addRingBeamAssembly('Original', config)
 
       store.updateRingBeamAssemblyName(assembly.id, 'Updated')
 
@@ -174,7 +174,7 @@ describe('ConfigStore', () => {
         offsetFromEdge: 0
       }
 
-      const assembly = store.addRingBeamAssembly({ name: 'Test Assembly', ...originalConfig })
+      const assembly = store.addRingBeamAssembly('Test Assembly', originalConfig)
 
       const newMaterial = createMaterialId()
       const newConfig: RingBeamConfig = {
@@ -185,7 +185,7 @@ describe('ConfigStore', () => {
         offsetFromEdge: 10
       }
 
-      store.updateRingBeamAssemblyConfig(assembly.id, { name: 'Test Assembly', ...newConfig })
+      store.updateRingBeamAssemblyConfig(assembly.id, newConfig)
 
       const updated = store.getRingBeamAssemblyById(assembly.id)
       expect(updated?.name).toBe('Test Assembly')
@@ -204,7 +204,7 @@ describe('ConfigStore', () => {
       }
 
       expect(() => {
-        store.addRingBeamAssembly({ name: 'Invalid Config', ...invalidConfig })
+        store.addRingBeamAssembly('Invalid Config', invalidConfig)
       }).toThrow('Ring beam height must be greater than 0')
     })
 
@@ -219,7 +219,7 @@ describe('ConfigStore', () => {
         offsetFromEdge: -50
       }
 
-      const assembly = store.addRingBeamAssembly({ name: 'Negative Offset Assembly', ...config })
+      const assembly = store.addRingBeamAssembly('Negative Offset Assembly', config)
 
       expect(assembly.type).toBe('full')
       if (assembly.type === 'full') {
