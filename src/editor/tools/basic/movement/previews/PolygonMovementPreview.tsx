@@ -1,25 +1,22 @@
-import { vec2 } from 'gl-matrix'
+import type { vec2 } from 'gl-matrix'
 import React from 'react'
 import { Circle, Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
 import { SnappingLines } from '@/editor/canvas/utils/SnappingLines'
 import type { MovementPreviewComponentProps } from '@/editor/tools/basic/movement/MovementBehavior'
-import type {
-  PerimeterEntityContext,
-  PerimeterMovementState
-} from '@/editor/tools/basic/movement/behaviors/PerimeterMovementBehavior'
+import type { PolygonMovementState } from '@/editor/tools/basic/movement/behaviors/PolygonMovementBehavior'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
-export function PerimeterMovementPreview({
+function flattenPolygonPoints(points: readonly vec2[]): number[] {
+  return points.flatMap(point => [point[0], point[1]])
+}
+
+export function PolygonMovementPreview<TEntity>({
   movementState,
-  isValid,
-  context
-}: MovementPreviewComponentProps<PerimeterEntityContext, PerimeterMovementState>): React.JSX.Element {
+  isValid
+}: MovementPreviewComponentProps<TEntity, PolygonMovementState>): React.JSX.Element {
   const theme = useCanvasTheme()
-  const perimeter = context.entity.perimeter
-  const previewBoundary = perimeter.corners.map(corner =>
-    vec2.add(vec2.create(), corner.insidePoint, movementState.movementDelta)
-  )
+  const flattenedPoints = flattenPolygonPoints(movementState.previewPolygon)
 
   return (
     <Group>
@@ -27,8 +24,8 @@ export function PerimeterMovementPreview({
 
       {movementState.snapResult?.position && (
         <Circle
-          x={movementState.snapResult?.position[0]}
-          y={movementState.snapResult?.position[1]}
+          x={movementState.snapResult.position[0]}
+          y={movementState.snapResult.position[1]}
           radius={50}
           fill={theme.info}
           stroke={theme.white}
@@ -38,9 +35,8 @@ export function PerimeterMovementPreview({
         />
       )}
 
-      {/* Main polygon outline */}
       <Line
-        points={previewBoundary.flatMap(p => [p[0], p[1]])}
+        points={flattenedPoints}
         closed
         stroke={isValid ? theme.success : theme.danger}
         strokeWidth={20}
@@ -49,9 +45,8 @@ export function PerimeterMovementPreview({
         listening={false}
       />
 
-      {/* Semi-transparent fill for better visibility */}
       <Line
-        points={previewBoundary.flatMap(p => [p[0], p[1]])}
+        points={flattenedPoints}
         closed
         fill={isValid ? theme.success : theme.danger}
         opacity={0.3}

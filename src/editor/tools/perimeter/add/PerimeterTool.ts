@@ -26,17 +26,6 @@ export class PerimeterTool extends BasePolygonTool<PerimeterToolState> implement
 
   constructor() {
     super({
-      points: [],
-      pointer: vec2.fromValues(0, 0),
-      snapResult: undefined,
-      snapContext: {
-        snapPoints: [],
-        alignPoints: [],
-        referenceLineSegments: []
-      },
-      isCurrentSegmentValid: true,
-      isClosingSegmentValid: true,
-      lengthOverride: null,
       wallAssemblyId: '' as WallAssemblyId,
       wallThickness: 440
     })

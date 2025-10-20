@@ -30,13 +30,19 @@ export abstract class BasePolygonTool<TState extends PolygonToolStateBase> exten
 
   private readonly snappingService: SnappingService
 
-  protected constructor(initialState: TState) {
+  protected constructor(initialState: Omit<TState, keyof PolygonToolStateBase>) {
     super()
-    this.state = initialState
+    this.state = {
+      points: [] as vec2[],
+      pointer: vec2.fromValues(0, 0),
+      snapResult: undefined,
+      isCurrentSegmentValid: true,
+      isClosingSegmentValid: true,
+      lengthOverride: null,
+      snapContext: this.extendSnapContext(this.createBaseSnapContext([])),
+      ...initialState
+    } as TState
     this.snappingService = new SnappingService()
-
-    // Ensure snap context is initialized
-    this.state.snapContext = this.extendSnapContext(this.createBaseSnapContext(this.state.points))
   }
 
   handlePointerDown(event: CanvasEvent): boolean {

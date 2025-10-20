@@ -1,39 +1,25 @@
-import { vec2 } from 'gl-matrix'
+import type { vec2 } from 'gl-matrix'
 
 import type { SelectableId } from '@/building/model/ids'
 import { isFloorAreaId } from '@/building/model/ids'
 import type { FloorArea, FloorOpening, Perimeter } from '@/building/model/model'
 import type { StoreActions } from '@/building/store/types'
-import type { SnapResult, SnappingContext } from '@/editor/services/snapping/types'
-import type {
-  MovementBehavior,
-  MovementContext,
-  MovementState,
-  PointerMovementState
-} from '@/editor/tools/basic/movement/MovementBehavior'
-import { FloorAreaMovementPreview } from '@/editor/tools/basic/movement/previews/FloorAreaMovementPreview'
+import type { SnappingContext } from '@/editor/services/snapping/types'
+import type { MovementContext } from '@/editor/tools/basic/movement/MovementBehavior'
 import { type Polygon2D } from '@/shared/geometry'
 
-export interface FloorAreaEntityContext {
+import {
+  type PolygonEntityContext,
+  PolygonMovementBehavior,
+  type PolygonMovementState
+} from './PolygonMovementBehavior'
+import { createPolygonSegments } from './polygonUtils'
+
+export interface FloorAreaEntityContext extends PolygonEntityContext {
   floorArea: FloorArea
-  snapContext: SnappingContext
 }
 
-export interface FloorAreaMovementState extends MovementState {
-  movementDelta: vec2
-  snapResult?: SnapResult
-}
-
-function createPolygonSegments(points: readonly vec2[]): { start: vec2; end: vec2 }[] {
-  if (points.length < 2) return []
-  const segments: { start: vec2; end: vec2 }[] = []
-  for (let i = 0; i < points.length; i += 1) {
-    const start = points[i]
-    const end = points[(i + 1) % points.length]
-    segments.push({ start, end })
-  }
-  return segments
-}
+export type FloorAreaMovementState = PolygonMovementState
 
 function buildSnapContext(perimeters: Perimeter[], otherAreas: FloorArea[], openings: FloorOpening[]): SnappingContext {
   const perimeterPoints = perimeters.flatMap(perimeter => perimeter.corners.map(corner => corner.insidePoint))
@@ -52,9 +38,7 @@ function buildSnapContext(perimeters: Perimeter[], otherAreas: FloorArea[], open
   }
 }
 
-export class FloorAreaMovementBehavior implements MovementBehavior<FloorAreaEntityContext, FloorAreaMovementState> {
-  previewComponent = FloorAreaMovementPreview
-
+export class FloorAreaMovementBehavior extends PolygonMovementBehavior<FloorAreaEntityContext> {
   getEntity(entityId: SelectableId, _parentIds: SelectableId[], store: StoreActions): FloorAreaEntityContext {
     if (!isFloorAreaId(entityId)) {
       throw new Error(`Invalid floor area id ${entityId}`)
@@ -75,65 +59,15 @@ export class FloorAreaMovementBehavior implements MovementBehavior<FloorAreaEnti
     }
   }
 
-  initializeState(pointerState: PointerMovementState): FloorAreaMovementState {
-    return {
-      movementDelta: vec2.clone(pointerState.delta)
-    }
+  protected getPolygonPoints(context: MovementContext<FloorAreaEntityContext>): readonly vec2[] {
+    return context.entity.floorArea.area.points
   }
 
-  constrainAndSnap(
-    pointerState: PointerMovementState,
-    context: MovementContext<FloorAreaEntityContext>
-  ): FloorAreaMovementState {
-    const previewPoints = this.translatePoints(context.entity.floorArea.area.points, pointerState.delta)
-
-    let bestSnap: SnapResult | undefined
-    let bestScore = Infinity
-    let finalDelta = vec2.clone(pointerState.delta)
-
-    for (let index = 0; index < previewPoints.length; index += 1) {
-      const snapResult =
-        context.snappingService.findSnapResult(previewPoints[index], context.entity.snapContext) ?? undefined
-      if (!snapResult) continue
-
-      const score =
-        vec2.squaredDistance(previewPoints[index], snapResult.position) *
-        (snapResult.lines && snapResult.lines.length > 0 ? 5 : 1)
-
-      if (score < bestScore) {
-        bestScore = score
-        bestSnap = snapResult
-        finalDelta = vec2.subtract(vec2.create(), snapResult.position, context.entity.floorArea.area.points[index])
-      }
-    }
-
-    return {
-      movementDelta: finalDelta,
-      snapResult: bestSnap
-    }
-  }
-
-  validatePosition(_movementState: FloorAreaMovementState, _context: MovementContext<FloorAreaEntityContext>): boolean {
-    return true
-  }
-
-  commitMovement(movementState: FloorAreaMovementState, context: MovementContext<FloorAreaEntityContext>): boolean {
+  protected applyMovementDelta(delta: vec2, context: MovementContext<FloorAreaEntityContext>): boolean {
     const newPolygon: Polygon2D = {
-      points: this.translatePoints(context.entity.floorArea.area.points, movementState.movementDelta)
+      points: this.translatePoints(context.entity.floorArea.area.points, delta)
     }
 
     return context.store.updateFloorArea(context.entity.floorArea.id, newPolygon)
-  }
-
-  applyRelativeMovement(deltaDifference: vec2, context: MovementContext<FloorAreaEntityContext>): boolean {
-    const updatedPolygon: Polygon2D = {
-      points: this.translatePoints(context.entity.floorArea.area.points, deltaDifference)
-    }
-
-    return context.store.updateFloorArea(context.entity.floorArea.id, updatedPolygon)
-  }
-
-  private translatePoints(points: readonly vec2[], delta: vec2): vec2[] {
-    return points.map(point => vec2.add(vec2.create(), point, delta))
   }
 }

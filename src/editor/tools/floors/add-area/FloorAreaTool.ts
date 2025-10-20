@@ -1,5 +1,3 @@
-import { vec2 } from 'gl-matrix'
-
 import { getModelActions } from '@/building/store'
 import { BaseFloorPolygonTool } from '@/editor/tools/floors/shared/BaseFloorPolygonTool'
 import type { PolygonToolStateBase } from '@/editor/tools/shared/polygon/BasePolygonTool'
@@ -15,19 +13,7 @@ export class FloorAreaTool extends BaseFloorPolygonTool<PolygonToolStateBase> im
   readonly inspectorComponent = FloorAreaToolInspector
 
   constructor() {
-    super({
-      points: [],
-      pointer: vec2.fromValues(0, 0),
-      snapResult: undefined,
-      snapContext: {
-        snapPoints: [],
-        alignPoints: [],
-        referenceLineSegments: []
-      },
-      isCurrentSegmentValid: true,
-      isClosingSegmentValid: true,
-      lengthOverride: null
-    })
+    super({})
   }
 
   protected onPolygonCompleted(polygon: Polygon2D): void {

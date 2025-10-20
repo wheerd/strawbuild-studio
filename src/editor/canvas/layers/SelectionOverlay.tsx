@@ -17,8 +17,7 @@ import {
   isOpeningId,
   isPerimeterCornerId,
   isPerimeterId,
-  isPerimeterWallId,
-  isStoreyId
+  isPerimeterWallId
 } from '@/building/model/ids'
 import type { Perimeter } from '@/building/model/model'
 import { useFloorAreaById, useFloorOpeningById, usePerimeterById } from '@/building/store'
@@ -82,7 +81,7 @@ function useSelectionOutlinePoints(
     // Future entity types will be added here:
     // if (isBuildingId(rootEntityId)) { ... }
 
-    if (!isPerimeterId(rootEntityId) && !isStoreyId(rootEntityId)) {
+    if (!isPerimeterId(rootEntityId)) {
       console.warn('SelectionOverlay: Unsupported root entity type:', rootEntityId)
     }
     return null

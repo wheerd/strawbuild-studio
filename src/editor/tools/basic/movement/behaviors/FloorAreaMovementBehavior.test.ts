@@ -57,6 +57,7 @@ describe('FloorAreaMovementBehavior', () => {
   it('commits movement by translating all points', () => {
     updateFloorArea.mockClear()
     const movementState: FloorAreaMovementState = {
+      previewPolygon: floorArea.area.points,
       movementDelta: vec2.fromValues(100, 50)
     }
 
