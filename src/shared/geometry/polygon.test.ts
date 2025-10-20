@@ -15,6 +15,7 @@ import {
   calculatePolygonArea,
   isPointInPolygon,
   offsetPolygon,
+  polygonEdgeOffset,
   polygonIsClockwise,
   simplifyPolygon,
   unionPolygons,
@@ -245,6 +246,86 @@ describe('polygon helpers using Clipper', () => {
     expect(pathsStub.delete).toHaveBeenCalled()
     expect(pathStub.delete).toHaveBeenCalled()
     expect(union.delete).toHaveBeenCalled()
+  })
+})
+
+describe('polygonEdgeOffset', () => {
+  const createClockwiseRectangle = (): Polygon2D => ({
+    points: [vec2.fromValues(0, 0), vec2.fromValues(0, 10), vec2.fromValues(10, 10), vec2.fromValues(10, 0)]
+  })
+
+  it('expands a clockwise polygon when offsets are positive', () => {
+    const rectangle = createClockwiseRectangle()
+    const result = polygonEdgeOffset(rectangle, [1, 1, 1, 1])
+
+    const expected = [
+      vec2.fromValues(-1, -1),
+      vec2.fromValues(-1, 11),
+      vec2.fromValues(11, 11),
+      vec2.fromValues(11, -1)
+    ]
+
+    expect(result.points).toHaveLength(expected.length)
+    result.points.forEach((point, index) => {
+      expect(point[0]).toBeCloseTo(expected[index][0], 6)
+      expect(point[1]).toBeCloseTo(expected[index][1], 6)
+    })
+  })
+
+  it('applies per-edge offsets individually', () => {
+    const rectangle = createClockwiseRectangle()
+    const offsets = [1, 2, 3, 4]
+
+    const result = polygonEdgeOffset(rectangle, offsets)
+    const expected = [
+      vec2.fromValues(-1, -4),
+      vec2.fromValues(-1, 12),
+      vec2.fromValues(13, 12),
+      vec2.fromValues(13, -4)
+    ]
+
+    result.points.forEach((point, index) => {
+      expect(point[0]).toBeCloseTo(expected[index][0], 6)
+      expect(point[1]).toBeCloseTo(expected[index][1], 6)
+    })
+  })
+
+  it('handles colinear adjacent edges using fallback averaging', () => {
+    const polygon: Polygon2D = {
+      points: [
+        vec2.fromValues(0, 0),
+        vec2.fromValues(0, 10),
+        vec2.fromValues(20, 10),
+        vec2.fromValues(20, 0),
+        vec2.fromValues(10, 0)
+      ]
+    }
+
+    const result = polygonEdgeOffset(polygon, [1, 1, 1, 1, 1])
+    const expected = [
+      vec2.fromValues(-1, -1),
+      vec2.fromValues(-1, 11),
+      vec2.fromValues(21, 11),
+      vec2.fromValues(21, -1),
+      vec2.fromValues(10, -1)
+    ]
+
+    result.points.forEach((point, index) => {
+      expect(point[0]).toBeCloseTo(expected[index][0], 6)
+      expect(point[1]).toBeCloseTo(expected[index][1], 6)
+    })
+  })
+
+  it('shrinks a polygon when offsets are negative', () => {
+    const rectangle = createClockwiseRectangle()
+    const result = polygonEdgeOffset(rectangle, [-1, -1, -1, -1])
+
+    const expected = [vec2.fromValues(1, 1), vec2.fromValues(1, 9), vec2.fromValues(9, 9), vec2.fromValues(9, 1)]
+
+    result.points.forEach((point, index) => {
+      expect(point[0]).toBeCloseTo(expected[index][0], 6)
+      expect(point[1]).toBeCloseTo(expected[index][1], 6)
+    })
   })
 })
 

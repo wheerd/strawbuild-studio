@@ -1,14 +1,23 @@
-import { vec3 } from 'gl-matrix'
+import { vec2, vec3 } from 'gl-matrix'
 
-import type { StoreyId } from '@/building/model'
+import type { Perimeter, StoreyId } from '@/building/model'
 import { getModelActions } from '@/building/store'
-import { getConfigActions } from '@/construction/config'
-import { FLOOR_ASSEMBLIES } from '@/construction/floors'
-import { computeFloorConstructionPolygon, constructPerimeter } from '@/construction/perimeter'
-import { TAG_STOREY } from '@/construction/tags'
-import { subtractPolygons } from '@/shared/geometry'
+import {
+  type Length,
+  type Line2D,
+  type Polygon2D,
+  direction,
+  distanceToInfiniteLine,
+  perpendicular,
+  polygonEdgeOffset,
+  subtractPolygons
+} from '@/shared/geometry'
 
+import { getConfigActions } from './config'
+import { FLOOR_ASSEMBLIES } from './floors'
 import { type ConstructionModel, mergeModels, transformModel } from './model'
+import { computeFloorConstructionPolygon, constructPerimeter } from './perimeter'
+import { TAG_STOREY } from './tags'
 
 export function constructStoreyFloor(storeyId: StoreyId): ConstructionModel[] {
   const { getPerimetersByStorey, getFloorAreasByStorey, getFloorOpeningsByStorey, getStoreyById } = getModelActions()
@@ -24,11 +33,13 @@ export function constructStoreyFloor(storeyId: StoreyId): ConstructionModel[] {
   }
 
   const perimeters = getPerimetersByStorey(storeyId)
-  const perimeterPolygons = perimeters.map(computeFloorConstructionPolygon)
-  const floorAreas = getFloorAreasByStorey(storeyId).map(a => a.area)
-  const openings = getFloorOpeningsByStorey(storeyId).map(o => o.area)
+  const wallFaces = createWallFaceOffsets(perimeters)
+  const perimeterPolygons = perimeters.map(perimeter => computeFloorConstructionPolygon(perimeter))
+
+  const floorAreas = getFloorAreasByStorey(storeyId).map(a => applyWallFaceOffsets(a.area, wallFaces))
+  const openings = getFloorOpeningsByStorey(storeyId).map(o => applyWallFaceOffsets(o.area, wallFaces))
+
   const floorPolygons = subtractPolygons([...perimeterPolygons, ...floorAreas], openings)
-  console.log('Floor polygons:', floorPolygons)
   const floorAssembly = FLOOR_ASSEMBLIES[floorAssemblyConfig.type]
   const floorModels = floorPolygons.map(p => floorAssembly.construct(p, floorAssemblyConfig))
   return floorModels
@@ -66,4 +77,112 @@ export function constructModel(): ConstructionModel | null {
     zOffset += floor.layers.topThickness + floorAssembly.getTopOffset(floor) + storey.height
   }
   return models.length > 0 ? mergeModels(...models) : null
+}
+
+interface WallFaceOffset {
+  line: Line2D
+  normal: vec2
+  distance: Length
+}
+
+const PARALLEL_EPSILON = 1e-6
+const DISTANCE_EPSILON = 1e-3
+
+export function createWallFaceOffsets(perimeters: Perimeter[]): WallFaceOffset[] {
+  const { getWallAssemblyById } = getConfigActions()
+  const faces: WallFaceOffset[] = []
+
+  for (const perimeter of perimeters) {
+    for (const wall of perimeter.walls) {
+      const assembly = getWallAssemblyById(wall.wallAssemblyId)
+      if (!assembly) {
+        continue
+      }
+
+      const inwardNormal = vec2.negate(vec2.create(), wall.outsideDirection)
+
+      const insideThickness = Math.max(assembly.layers.insideThickness ?? 0, 0)
+      if (insideThickness > 0) {
+        faces.push({
+          line: {
+            point: wall.insideLine.start,
+            direction: wall.direction
+          },
+          normal: vec2.clone(wall.outsideDirection),
+          distance: insideThickness
+        })
+      }
+
+      const outsideThickness = Math.max(assembly.layers.outsideThickness ?? 0, 0)
+      if (outsideThickness > 0) {
+        faces.push({
+          line: {
+            point: wall.outsideLine.start,
+            direction: wall.direction
+          },
+          normal: vec2.clone(inwardNormal),
+          distance: outsideThickness
+        })
+      }
+    }
+  }
+
+  return faces
+}
+
+export function applyWallFaceOffsets(polygon: Polygon2D, faces: WallFaceOffset[]): Polygon2D {
+  if (faces.length === 0 || polygon.points.length < 3) {
+    return polygon
+  }
+
+  const edgeOffsets = polygon.points.map(() => 0)
+  let needsOffset = false
+
+  for (let i = 0; i < polygon.points.length; i++) {
+    const start = polygon.points[i]
+    const end = polygon.points[(i + 1) % polygon.points.length]
+
+    if (vec2.distance(start, end) < DISTANCE_EPSILON) {
+      continue
+    }
+
+    const edgeDirection = direction(start, end)
+    const edgeNormal = vec2.normalize(vec2.create(), perpendicular(edgeDirection))
+
+    let selectedOffset = 0
+
+    for (const face of faces) {
+      const cross = edgeDirection[0] * face.line.direction[1] - edgeDirection[1] * face.line.direction[0]
+      if (Math.abs(cross) > PARALLEL_EPSILON) {
+        continue
+      }
+
+      const distanceStart = distanceToInfiniteLine(start, face.line)
+      const distanceEnd = distanceToInfiniteLine(end, face.line)
+      if (distanceStart > DISTANCE_EPSILON || distanceEnd > DISTANCE_EPSILON) {
+        continue
+      }
+
+      const alignment = vec2.dot(edgeNormal, face.normal)
+      if (Math.abs(alignment) < PARALLEL_EPSILON) {
+        continue
+      }
+
+      const candidateOffset = face.distance * Math.sign(alignment)
+      if (Math.abs(candidateOffset) > Math.abs(selectedOffset)) {
+        selectedOffset = candidateOffset
+      }
+    }
+
+    if (selectedOffset !== 0) {
+      needsOffset = true
+      edgeOffsets[i] = selectedOffset
+    }
+  }
+
+  if (!needsOffset) {
+    return polygon
+  }
+
+  return polygonEdgeOffset(polygon, edgeOffsets)
 }

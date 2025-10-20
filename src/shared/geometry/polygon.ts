@@ -9,8 +9,8 @@ import {
   pathDToPoints
 } from '@/shared/geometry/clipperInstance'
 
-import type { Area } from './basic'
-import type { LineSegment2D } from './line'
+import { type Area, type Length, direction, perpendicular } from './basic'
+import { type LineSegment2D, lineIntersection } from './line'
 
 const COLINEAR_EPSILON = 1e-9
 const SIMPLIFY_TOLERANCE = 0.01
@@ -285,6 +285,31 @@ export function subtractPolygons(subject: Polygon2D[], clips: Polygon2D[]): Poly
     subjectPaths.forEach(path => path.delete())
     clipPaths.forEach(path => path.delete())
   }
+}
+
+export function polygonEdgeOffset(polygon: Polygon2D, offsets: Length[]): Polygon2D {
+  const offsetLines = polygon.points.map((point, index) => {
+    const dir = direction(point, polygon.points[(index + 1) % polygon.points.length])
+    const outside = perpendicular(dir)
+    const offsetDistance = offsets[index]
+    const offsetPoint = vec2.scaleAndAdd(vec2.create(), point, outside, offsetDistance)
+    return { point: offsetPoint, direction: dir }
+  })
+
+  const points = offsetLines.map((line, index) => {
+    const prevIndex = (index - 1 + offsetLines.length) % offsetLines.length
+    const prevLine = offsetLines[prevIndex]
+    const intersection = lineIntersection(prevLine, line)
+    if (intersection) {
+      return intersection
+    }
+
+    const fallbackDistance = (offsets[prevIndex] + offsets[index]) / 2
+    // For colinear walls fall back to moving the inside corner along the outward normal.
+    return vec2.scaleAndAdd(vec2.create(), polygon.points[index], perpendicular(line.direction), fallbackDistance)
+  })
+
+  return { points }
 }
 
 const normaliseOrientation = (polygon: Polygon2D, clockwise: boolean): Polygon2D => {
