@@ -1,12 +1,36 @@
 import { vec2 } from 'gl-matrix'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigState, setConfigState } from '@/construction/config/store'
 import { getMaterialsState, setMaterialsState } from '@/construction/materials/store'
+import type { Polygon2D } from '@/shared/geometry'
 
 import { ProjectImportExportService } from './ProjectImportExportService'
+
+export function polygonIsClockwise({ points }: Polygon2D, eps = 0): boolean {
+  let area2 = 0
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i]
+    const q = points[(i + 1) % points.length]
+    area2 += p[0] * q[1] - q[0] * p[1]
+  }
+
+  if (eps > 0 && Math.abs(area2) <= eps) {
+    return false
+  }
+
+  return area2 < 0
+}
+
+vi.mock('@/shared/geometry', async importOriginal => {
+  return {
+    ...(await importOriginal()),
+    wouldClosingPolygonSelfIntersect: vi.fn(),
+    polygonIsClockwise: vi.fn().mockImplementation(polygonIsClockwise)
+  }
+})
 
 describe('ProjectImportExportService Integration', () => {
   beforeEach(() => {
@@ -83,11 +107,35 @@ describe('ProjectImportExportService Integration', () => {
     const corner1 = perimeter.corners[0]
     modelActions.updatePerimeterCornerConstructedByWall(perimeter.id, corner1.id, 'previous')
 
+    // Add floor area
+    const floorAreaPolygon = {
+      points: [
+        vec2.fromValues(500, 500),
+        vec2.fromValues(7000, 500),
+        vec2.fromValues(7000, 5500),
+        vec2.fromValues(500, 5500)
+      ]
+    }
+    modelActions.addFloorArea(testStorey.id, floorAreaPolygon)
+
+    // Add floor opening
+    const floorOpeningPolygon = {
+      points: [
+        vec2.fromValues(2000, 2000),
+        vec2.fromValues(3000, 2000),
+        vec2.fromValues(3000, 3000),
+        vec2.fromValues(2000, 3000)
+      ]
+    }
+    modelActions.addFloorOpening(testStorey.id, floorOpeningPolygon)
+
     // 2. Capture the original data for comparison (including perimeters before reset)
     const originalStoreys = modelActions.getStoreysOrderedByLevel()
     const originalData = originalStoreys.map(storey => ({
       storey,
-      perimeters: modelActions.getPerimetersByStorey(storey.id)
+      perimeters: modelActions.getPerimetersByStorey(storey.id),
+      floorAreas: modelActions.getFloorAreasByStorey(storey.id),
+      floorOpenings: modelActions.getFloorOpeningsByStorey(storey.id)
     }))
     const originalConfig = getConfigState()
     const originalMaterials = getMaterialsState()
@@ -129,7 +177,12 @@ describe('ProjectImportExportService Integration', () => {
     expect(importedStoreys).toHaveLength(originalData.length)
 
     for (let i = 0; i < originalData.length; i++) {
-      const { storey: originalStorey, perimeters: originalPerimeters } = originalData[i]
+      const {
+        storey: originalStorey,
+        perimeters: originalPerimeters,
+        floorAreas: originalFloorAreas,
+        floorOpenings: originalFloorOpenings
+      } = originalData[i]
       const importedStorey = importedStoreys[i]
 
       // Compare storey properties (excluding IDs)
@@ -139,6 +192,8 @@ describe('ProjectImportExportService Integration', () => {
 
       // Get imported perimeters for comparison
       const importedPerimeters = modelActions.getPerimetersByStorey(importedStorey.id)
+      const importedFloorAreas = modelActions.getFloorAreasByStorey(importedStorey.id)
+      const importedFloorOpenings = modelActions.getFloorOpeningsByStorey(importedStorey.id)
 
       expect(importedPerimeters).toHaveLength(originalPerimeters.length)
 
@@ -187,6 +242,28 @@ describe('ProjectImportExportService Integration', () => {
               expect(importedOpening.sillHeight).toBeUndefined()
             }
           }
+        }
+      }
+
+      expect(importedFloorAreas).toHaveLength(originalFloorAreas.length)
+      for (let j = 0; j < originalFloorAreas.length; j++) {
+        const originalArea = originalFloorAreas[j]
+        const importedArea = importedFloorAreas[j]
+        expect(importedArea.area.points).toHaveLength(originalArea.area.points.length)
+        for (let k = 0; k < originalArea.area.points.length; k++) {
+          expect(importedArea.area.points[k][0]).toBeCloseTo(originalArea.area.points[k][0])
+          expect(importedArea.area.points[k][1]).toBeCloseTo(originalArea.area.points[k][1])
+        }
+      }
+
+      expect(importedFloorOpenings).toHaveLength(originalFloorOpenings.length)
+      for (let j = 0; j < originalFloorOpenings.length; j++) {
+        const originalOpening = originalFloorOpenings[j]
+        const importedOpening = importedFloorOpenings[j]
+        expect(importedOpening.area.points).toHaveLength(originalOpening.area.points.length)
+        for (let k = 0; k < originalOpening.area.points.length; k++) {
+          expect(importedOpening.area.points[k][0]).toBeCloseTo(originalOpening.area.points[k][0])
+          expect(importedOpening.area.points[k][1]).toBeCloseTo(originalOpening.area.points[k][1])
         }
       }
     }

@@ -43,6 +43,8 @@ const mockActions = {
       topRingBeamAssemblyId: 'beam_1'
     }
   ]),
+  getFloorAreasByStorey: vi.fn(() => []),
+  getFloorOpeningsByStorey: vi.fn(() => []),
   reset: vi.fn(),
   updateStoreyName: vi.fn(),
   updateStoreyHeight: vi.fn(),
@@ -62,7 +64,9 @@ const mockActions = {
   updatePerimeterWallThickness: vi.fn(),
   updateWallAssemblyBuilder: vi.fn(),
   addPerimeterWallOpening: vi.fn(),
-  updatePerimeterCornerConstructedByWall: vi.fn()
+  updatePerimeterCornerConstructedByWall: vi.fn(),
+  addFloorArea: vi.fn(),
+  addFloorOpening: vi.fn()
 }
 
 // Mock the stores and dependencies
@@ -117,6 +121,8 @@ describe('ProjectImportExportService', () => {
 
       expect(mockActions.getStoreysOrderedByLevel).toHaveBeenCalled()
       expect(mockActions.getPerimetersByStorey).toHaveBeenCalled()
+      expect(mockActions.getFloorAreasByStorey).toHaveBeenCalled()
+      expect(mockActions.getFloorOpeningsByStorey).toHaveBeenCalled()
     })
   })
 
@@ -124,7 +130,7 @@ describe('ProjectImportExportService', () => {
     it('calls the correct store assemblies on import', async () => {
       // Create simple valid import data
       const validImportData = {
-        version: '1.2.0',
+        version: '1.3.0',
         timestamp: new Date().toISOString(),
         modelStore: {
           storeys: [
@@ -132,7 +138,27 @@ describe('ProjectImportExportService', () => {
               name: 'Test Floor',
               height: 2500,
               perimeters: [],
-              floorAssemblyId: 'fa_1'
+              floorAssemblyId: 'fa_1',
+              floorAreas: [
+                {
+                  points: [
+                    { x: 0, y: 0 },
+                    { x: 2000, y: 0 },
+                    { x: 2000, y: 2000 },
+                    { x: 0, y: 2000 }
+                  ]
+                }
+              ],
+              floorOpenings: [
+                {
+                  points: [
+                    { x: 500, y: 500 },
+                    { x: 1000, y: 500 },
+                    { x: 1000, y: 1000 },
+                    { x: 500, y: 1000 }
+                  ]
+                }
+              ]
             }
           ],
           minLevel: 0
@@ -163,6 +189,8 @@ describe('ProjectImportExportService', () => {
       expect(mockActions.updateStoreyName).toHaveBeenCalled()
       expect(mockActions.updateStoreyHeight).toHaveBeenCalled()
       expect(mockActions.updateStoreyFloorAssembly).toHaveBeenCalled()
+      expect(mockActions.addFloorArea).toHaveBeenCalled()
+      expect(mockActions.addFloorOpening).toHaveBeenCalled()
     })
 
     it('handles invalid JSON gracefully', async () => {

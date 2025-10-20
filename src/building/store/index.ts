@@ -13,7 +13,7 @@ import { getPersistenceActions } from './persistenceStore'
 import { createFloorsSlice } from './slices/floorsSlice'
 import { createPerimetersSlice } from './slices/perimeterSlice'
 import { createStoreysSlice } from './slices/storeysSlice'
-import type { Store, StoreActions } from './types'
+import type { Store, StoreActions, StoreState } from './types'
 
 // Custom debounced save with immediate isSaving feedback
 let saveTimeout: NodeJS.Timeout | null = null
@@ -73,6 +73,28 @@ const useModelStore = create<Store>()(
     {
       // Persistence configuration
       name: 'strawbaler-model',
+      version: 2,
+      migrate: (persistedState: unknown) => {
+        if (!persistedState || typeof persistedState !== 'object') {
+          return persistedState
+        }
+
+        const state = persistedState as Partial<StoreState>
+        const floorAreas =
+          state.floorAreas && typeof state.floorAreas === 'object' && !Array.isArray(state.floorAreas)
+            ? state.floorAreas
+            : {}
+        const floorOpenings =
+          state.floorOpenings && typeof state.floorOpenings === 'object' && !Array.isArray(state.floorOpenings)
+            ? state.floorOpenings
+            : {}
+
+        return {
+          ...state,
+          floorAreas,
+          floorOpenings
+        }
+      },
       partialize: state => ({
         storeys: state.storeys,
         perimeters: state.perimeters,
