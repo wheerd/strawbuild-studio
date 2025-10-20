@@ -4,9 +4,9 @@ import { vi } from 'vitest'
 
 import { createWallAssemblyId } from '@/building/model/ids'
 import type { SnapResult } from '@/editor/services/snapping/types'
+import { PerimeterTool } from '@/editor/tools/perimeter/add/PerimeterTool'
 
-import { PerimeterTool } from './PerimeterTool'
-import { PerimeterToolOverlay } from './PerimeterToolOverlay'
+import { PolygonToolOverlay } from './PolygonToolOverlay'
 
 // Mock the viewport store
 const mockUseZoom = vi.fn()
@@ -19,7 +19,7 @@ vi.mock('@/editor/hooks/useViewportStore', () => ({
   useStageHeight: () => mockUseStageHeight()
 }))
 
-describe('PerimeterToolOverlay', () => {
+describe('PolygonToolOverlay', () => {
   let mockTool: PerimeterTool
 
   beforeEach(() => {
@@ -33,16 +33,19 @@ describe('PerimeterToolOverlay', () => {
     mockTool.state = {
       points: [],
       pointer: vec2.fromValues(0, 0),
+      snapResult: undefined,
       snapContext: {
         snapPoints: [],
         alignPoints: [],
-        referenceLineWalls: []
+        referenceLineSegments: []
       },
-      isCurrentLineValid: true,
-      isClosingLineValid: true,
+      isCurrentSegmentValid: true,
+      isClosingSegmentValid: true,
       wallAssemblyId: createWallAssemblyId(),
       wallThickness: 440,
-      lengthOverride: null
+      lengthOverride: null,
+      baseRingBeamAssemblyId: undefined,
+      topRingBeamAssemblyId: undefined
     }
 
     // Mock the getPreviewPosition method to return pointer position by default
@@ -53,7 +56,7 @@ describe('PerimeterToolOverlay', () => {
     it('renders only snap point when no polygon points exist', () => {
       mockTool.state.pointer = vec2.fromValues(100, 200)
 
-      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
+      const { container } = render(<PolygonToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -64,7 +67,7 @@ describe('PerimeterToolOverlay', () => {
       mockTool.state.points = [vec2.fromValues(100, 100)]
       mockTool.state.pointer = vec2.fromValues(200, 200)
 
-      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
+      const { container } = render(<PolygonToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -72,9 +75,9 @@ describe('PerimeterToolOverlay', () => {
     it('renders line to pointer position with valid styling', () => {
       mockTool.state.points = [vec2.fromValues(50, 50)]
       mockTool.state.pointer = vec2.fromValues(150, 150)
-      mockTool.state.isCurrentLineValid = true
+      mockTool.state.isCurrentSegmentValid = true
 
-      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
+      const { container } = render(<PolygonToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -82,9 +85,9 @@ describe('PerimeterToolOverlay', () => {
     it('renders line to pointer position with invalid styling', () => {
       mockTool.state.points = [vec2.fromValues(50, 50)]
       mockTool.state.pointer = vec2.fromValues(150, 150)
-      mockTool.state.isCurrentLineValid = false
+      mockTool.state.isCurrentSegmentValid = false
 
-      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
+      const { container } = render(<PolygonToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -95,7 +98,7 @@ describe('PerimeterToolOverlay', () => {
       mockTool.state.points = [vec2.fromValues(100, 100), vec2.fromValues(200, 100), vec2.fromValues(200, 200)]
       mockTool.state.pointer = vec2.fromValues(100, 200)
 
-      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
+      const { container } = render(<PolygonToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -109,7 +112,7 @@ describe('PerimeterToolOverlay', () => {
       ]
       mockTool.state.pointer = vec2.fromValues(50, 50)
 
-      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
+      const { container } = render(<PolygonToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -122,18 +125,18 @@ describe('PerimeterToolOverlay', () => {
 
     it('renders closing line when snapping to first point with valid closure', () => {
       vi.spyOn(mockTool, 'isSnappingToFirstPoint').mockReturnValue(true)
-      mockTool.state.isClosingLineValid = true
+      mockTool.state.isClosingSegmentValid = true
 
-      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
+      const { container } = render(<PolygonToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
 
     it('renders closing line when snapping to first point with invalid closure', () => {
       vi.spyOn(mockTool, 'isSnappingToFirstPoint').mockReturnValue(true)
-      mockTool.state.isClosingLineValid = false
+      mockTool.state.isClosingSegmentValid = false
 
-      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
+      const { container } = render(<PolygonToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -142,7 +145,7 @@ describe('PerimeterToolOverlay', () => {
       vi.spyOn(mockTool, 'isSnappingToFirstPoint').mockReturnValue(false)
       mockTool.state.pointer = vec2.fromValues(300, 300)
 
-      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
+      const { container } = render(<PolygonToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -158,7 +161,7 @@ describe('PerimeterToolOverlay', () => {
       mockTool.state.pointer = vec2.fromValues(120, 120)
       mockTool.state.snapResult = snapResult
 
-      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
+      const { container } = render(<PolygonToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -182,7 +185,7 @@ describe('PerimeterToolOverlay', () => {
       mockTool.state.pointer = vec2.fromValues(145, 145)
       mockTool.state.snapResult = snapResult
 
-      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
+      const { container } = render(<PolygonToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -206,7 +209,7 @@ describe('PerimeterToolOverlay', () => {
       mockTool.state.pointer = vec2.fromValues(145, 145)
       mockTool.state.snapResult = snapResult
 
-      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
+      const { container } = render(<PolygonToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -219,7 +222,7 @@ describe('PerimeterToolOverlay', () => {
       mockTool.state.points = [vec2.fromValues(100, 100), vec2.fromValues(200, 100)]
       mockTool.state.pointer = vec2.fromValues(200, 200)
 
-      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
+      const { container } = render(<PolygonToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -230,7 +233,7 @@ describe('PerimeterToolOverlay', () => {
       mockTool.state.points = [vec2.fromValues(100, 100), vec2.fromValues(200, 100)]
       mockTool.state.pointer = vec2.fromValues(200, 200)
 
-      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
+      const { container } = render(<PolygonToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -252,7 +255,7 @@ describe('PerimeterToolOverlay', () => {
 
       mockTool.state.snapResult = snapResult
 
-      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
+      const { container } = render(<PolygonToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -263,7 +266,7 @@ describe('PerimeterToolOverlay', () => {
       mockTool.state.points = []
       mockTool.state.pointer = vec2.fromValues(0, 0)
 
-      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
+      const { container } = render(<PolygonToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })
@@ -272,7 +275,7 @@ describe('PerimeterToolOverlay', () => {
       mockTool.state.points = [vec2.fromValues(0, 0), vec2.fromValues(100, 100)]
       mockTool.state.pointer = vec2.fromValues(200, 0)
 
-      const { container } = render(<PerimeterToolOverlay tool={mockTool} />)
+      const { container } = render(<PolygonToolOverlay tool={mockTool} />)
 
       expect(container).toMatchSnapshot()
     })

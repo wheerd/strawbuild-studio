@@ -5,15 +5,15 @@ import { getModelActions } from '@/building/store'
 import { FLOOR_ASSEMBLIES } from '@/construction/floors'
 import { IDENTITY } from '@/construction/geometry'
 import { TAG_BASE_PLATE, TAG_TOP_PLATE, TAG_WALLS } from '@/construction/tags'
-import { angle, offsetPolygon } from '@/shared/geometry'
+import { angle, arePolygonsIntersecting, offsetPolygon, unionPolygons } from '@/shared/geometry'
 
 import { getConfigActions } from './config'
 import { type ConstructionModel, mergeModels, transformModel } from './model'
 import { RING_BEAM_ASSEMBLIES } from './ringBeams'
 import { WALL_ASSEMBLIES, createWallStoreyContext } from './walls'
 
-export function constructPerimeter(perimeter: Perimeter): ConstructionModel {
-  const { getStoreyById, getStoreysOrderedByLevel } = getModelActions()
+export function constructPerimeter(perimeter: Perimeter, includeFloor = true): ConstructionModel {
+  const { getStoreyById, getStoreysOrderedByLevel, getFloorOpeningsByStorey } = getModelActions()
   const storey = getStoreyById(perimeter.storeyId)
   if (!storey) {
     throw new Error('Invalid storey on perimeter')
@@ -88,12 +88,17 @@ export function constructPerimeter(perimeter: Perimeter): ConstructionModel {
     }
   }
 
-  const outerPolygon = { points: perimeter.corners.map(c => c.outsidePoint) }
-  // TODO: Properly determine the construction polygon based on offsets
-  const constructionPolygon = isFinite(minOffset) ? offsetPolygon(outerPolygon, -minOffset) : outerPolygon
-  const floorAssembly = FLOOR_ASSEMBLIES[currentFloorAssembly.type]
-  const floorModel = floorAssembly.construct({ outer: constructionPolygon, holes: [] }, currentFloorAssembly)
-  allModels.push(floorModel)
+  if (includeFloor) {
+    const outerPolygon = { points: perimeter.corners.map(c => c.outsidePoint) }
+    const holes = getFloorOpeningsByStorey(storey.id).map(opening => opening.area)
+    // TODO: Properly determine the construction polygon based on offsets
+    const constructionPolygon = isFinite(minOffset) ? offsetPolygon(outerPolygon, -minOffset) : outerPolygon
+    const relevantHoles = holes.filter(hole => arePolygonsIntersecting(constructionPolygon, hole))
+    const mergedHoles = unionPolygons(relevantHoles)
+    const floorAssembly = FLOOR_ASSEMBLIES[currentFloorAssembly.type]
+    const floorModel = floorAssembly.construct({ outer: constructionPolygon, holes: mergedHoles }, currentFloorAssembly)
+    allModels.push(floorModel)
+  }
 
   return mergeModels(...allModels)
 }

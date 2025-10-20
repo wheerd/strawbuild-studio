@@ -6,13 +6,14 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
-import type { PerimeterId, StoreyId } from '@/building/model/ids'
-import type { Perimeter, Storey } from '@/building/model/model'
+import type { FloorAreaId, FloorOpeningId, PerimeterId, StoreyId } from '@/building/model/ids'
+import type { FloorArea, FloorOpening, Perimeter, Storey } from '@/building/model/model'
 
 import { getPersistenceActions } from './persistenceStore'
+import { createFloorsSlice } from './slices/floorsSlice'
 import { createPerimetersSlice } from './slices/perimeterSlice'
 import { createStoreysSlice } from './slices/storeysSlice'
-import type { Store, StoreActions } from './types'
+import type { Store, StoreActions, StoreState } from './types'
 
 // Custom debounced save with immediate isSaving feedback
 let saveTimeout: NodeJS.Timeout | null = null
@@ -46,13 +47,16 @@ const useModelStore = create<Store>()(
       (set, get, store) => {
         const storeysSlice = immer(createStoreysSlice)(set, get, store)
         const perimetersSlice = immer(createPerimetersSlice)(set, get, store)
+        const floorsSlice = immer(createFloorsSlice)(set, get, store)
 
         return {
           ...storeysSlice,
           ...perimetersSlice,
+          ...floorsSlice,
           actions: {
             ...storeysSlice.actions,
             ...perimetersSlice.actions,
+            ...floorsSlice.actions,
             reset: () => {
               set(store.getInitialState())
             }
@@ -69,9 +73,33 @@ const useModelStore = create<Store>()(
     {
       // Persistence configuration
       name: 'strawbaler-model',
+      version: 2,
+      migrate: (persistedState: unknown) => {
+        if (!persistedState || typeof persistedState !== 'object') {
+          return persistedState
+        }
+
+        const state = persistedState as Partial<StoreState>
+        const floorAreas =
+          state.floorAreas && typeof state.floorAreas === 'object' && !Array.isArray(state.floorAreas)
+            ? state.floorAreas
+            : {}
+        const floorOpenings =
+          state.floorOpenings && typeof state.floorOpenings === 'object' && !Array.isArray(state.floorOpenings)
+            ? state.floorOpenings
+            : {}
+
+        return {
+          ...state,
+          floorAreas,
+          floorOpenings
+        }
+      },
       partialize: state => ({
         storeys: state.storeys,
         perimeters: state.perimeters,
+        floorAreas: state.floorAreas,
+        floorOpenings: state.floorOpenings,
         activeStoreyId: state.activeStoreyId
       }),
       storage: {
@@ -117,6 +145,35 @@ export const usePerimetersOfActiveStorey = (): Perimeter[] => {
   const perimeters = useModelStore(state => state.perimeters)
   const getPerimetersByStorey = useModelStore(state => state.actions.getPerimetersByStorey)
   return useMemo(() => getPerimetersByStorey(activeStoreyId), [perimeters, activeStoreyId])
+}
+
+export const useFloorAreas = (): Record<FloorAreaId, FloorArea> => useModelStore(state => state.floorAreas)
+export const useFloorOpenings = (): Record<FloorOpeningId, FloorOpening> => useModelStore(state => state.floorOpenings)
+
+export const useFloorAreaById = (id: FloorAreaId): FloorArea | null => {
+  const floorAreas = useModelStore(state => state.floorAreas)
+  const getFloorAreaById = useModelStore(state => state.actions.getFloorAreaById)
+  return useMemo(() => getFloorAreaById(id), [floorAreas, id])
+}
+
+export const useFloorOpeningById = (id: FloorOpeningId): FloorOpening | null => {
+  const floorOpenings = useModelStore(state => state.floorOpenings)
+  const getFloorOpeningById = useModelStore(state => state.actions.getFloorOpeningById)
+  return useMemo(() => getFloorOpeningById(id), [floorOpenings, id])
+}
+
+export const useFloorAreasOfActiveStorey = (): FloorArea[] => {
+  const activeStoreyId = useActiveStoreyId()
+  const floorAreas = useModelStore(state => state.floorAreas)
+  const getFloorAreasByStorey = useModelStore(state => state.actions.getFloorAreasByStorey)
+  return useMemo(() => getFloorAreasByStorey(activeStoreyId), [floorAreas, activeStoreyId])
+}
+
+export const useFloorOpeningsOfActiveStorey = (): FloorOpening[] => {
+  const activeStoreyId = useActiveStoreyId()
+  const floorOpenings = useModelStore(state => state.floorOpenings)
+  const getFloorOpeningsByStorey = useModelStore(state => state.actions.getFloorOpeningsByStorey)
+  return useMemo(() => getFloorOpeningsByStorey(activeStoreyId), [floorOpenings, activeStoreyId])
 }
 
 export const useModelActions = (): StoreActions => useModelStore(state => state.actions)

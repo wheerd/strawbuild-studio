@@ -57,7 +57,7 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
     const snapContext: SnappingContext = {
       snapPoints: [wall.corners[cornerIndex].insidePoint],
       alignPoints: wall.corners.map(c => c.insidePoint),
-      referenceLineWalls: snapLines
+      referenceLineSegments: snapLines
     }
 
     return { wall, corner, cornerIndex, snapContext }

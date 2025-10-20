@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`PerimeterToolOverlay > closing polygon behavior > does not render closing line when not snapping to first point 1`] = `
+exports[`PolygonToolOverlay > closing polygon behavior > does not render closing line when not snapping to first point 1`] = `
 <div>
   <div
     data-testid="konva-group"
@@ -66,7 +66,7 @@ exports[`PerimeterToolOverlay > closing polygon behavior > does not render closi
 </div>
 `;
 
-exports[`PerimeterToolOverlay > closing polygon behavior > renders closing line when snapping to first point with invalid closure 1`] = `
+exports[`PolygonToolOverlay > closing polygon behavior > renders closing line when snapping to first point with invalid closure 1`] = `
 <div>
   <div
     data-testid="konva-group"
@@ -132,7 +132,7 @@ exports[`PerimeterToolOverlay > closing polygon behavior > renders closing line 
 </div>
 `;
 
-exports[`PerimeterToolOverlay > closing polygon behavior > renders closing line when snapping to first point with valid closure 1`] = `
+exports[`PolygonToolOverlay > closing polygon behavior > renders closing line when snapping to first point with valid closure 1`] = `
 <div>
   <div
     data-testid="konva-group"
@@ -198,7 +198,7 @@ exports[`PerimeterToolOverlay > closing polygon behavior > renders closing line 
 </div>
 `;
 
-exports[`PerimeterToolOverlay > edge cases > handles empty points array gracefully 1`] = `
+exports[`PolygonToolOverlay > edge cases > handles empty points array gracefully 1`] = `
 <div>
   <div
     data-testid="konva-group"
@@ -217,7 +217,7 @@ exports[`PerimeterToolOverlay > edge cases > handles empty points array graceful
 </div>
 `;
 
-exports[`PerimeterToolOverlay > edge cases > handles exactly two points (minimum for line rendering) 1`] = `
+exports[`PolygonToolOverlay > edge cases > handles exactly two points (minimum for line rendering) 1`] = `
 <div>
   <div
     data-testid="konva-group"
@@ -273,7 +273,7 @@ exports[`PerimeterToolOverlay > edge cases > handles exactly two points (minimum
 </div>
 `;
 
-exports[`PerimeterToolOverlay > rendering with multiple points > differentiates first point styling from other points 1`] = `
+exports[`PolygonToolOverlay > rendering with multiple points > differentiates first point styling from other points 1`] = `
 <div>
   <div
     data-testid="konva-group"
@@ -349,7 +349,7 @@ exports[`PerimeterToolOverlay > rendering with multiple points > differentiates 
 </div>
 `;
 
-exports[`PerimeterToolOverlay > rendering with multiple points > renders polygon with connected lines and points 1`] = `
+exports[`PolygonToolOverlay > rendering with multiple points > renders polygon with connected lines and points 1`] = `
 <div>
   <div
     data-testid="konva-group"
@@ -415,7 +415,7 @@ exports[`PerimeterToolOverlay > rendering with multiple points > renders polygon
 </div>
 `;
 
-exports[`PerimeterToolOverlay > rendering with no points > renders only snap point when no polygon points exist 1`] = `
+exports[`PolygonToolOverlay > rendering with no points > renders only snap point when no polygon points exist 1`] = `
 <div>
   <div
     data-testid="konva-group"
@@ -434,7 +434,7 @@ exports[`PerimeterToolOverlay > rendering with no points > renders only snap poi
 </div>
 `;
 
-exports[`PerimeterToolOverlay > rendering with single point > renders first point and snap point 1`] = `
+exports[`PolygonToolOverlay > rendering with single point > renders first point and snap point 1`] = `
 <div>
   <div
     data-testid="konva-group"
@@ -471,7 +471,7 @@ exports[`PerimeterToolOverlay > rendering with single point > renders first poin
 </div>
 `;
 
-exports[`PerimeterToolOverlay > rendering with single point > renders line to pointer position with invalid styling 1`] = `
+exports[`PolygonToolOverlay > rendering with single point > renders line to pointer position with invalid styling 1`] = `
 <div>
   <div
     data-testid="konva-group"
@@ -508,7 +508,7 @@ exports[`PerimeterToolOverlay > rendering with single point > renders line to po
 </div>
 `;
 
-exports[`PerimeterToolOverlay > rendering with single point > renders line to pointer position with valid styling 1`] = `
+exports[`PolygonToolOverlay > rendering with single point > renders line to pointer position with valid styling 1`] = `
 <div>
   <div
     data-testid="konva-group"
@@ -545,7 +545,7 @@ exports[`PerimeterToolOverlay > rendering with single point > renders line to po
 </div>
 `;
 
-exports[`PerimeterToolOverlay > snapping behavior > renders snap lines when snap result has lines 1`] = `
+exports[`PolygonToolOverlay > snapping behavior > renders snap lines when snap result has lines 1`] = `
 <div>
   <div
     data-testid="konva-group"
@@ -602,7 +602,7 @@ exports[`PerimeterToolOverlay > snapping behavior > renders snap lines when snap
 </div>
 `;
 
-exports[`PerimeterToolOverlay > snapping behavior > renders snap lines when snap result has lines 2`] = `
+exports[`PolygonToolOverlay > snapping behavior > renders snap lines when snap result has lines 2`] = `
 <div>
   <div
     data-testid="konva-group"
@@ -659,7 +659,7 @@ exports[`PerimeterToolOverlay > snapping behavior > renders snap lines when snap
 </div>
 `;
 
-exports[`PerimeterToolOverlay > snapping behavior > renders snap position when snap result exists 1`] = `
+exports[`PolygonToolOverlay > snapping behavior > renders snap position when snap result exists 1`] = `
 <div>
   <div
     data-testid="konva-group"
@@ -696,7 +696,7 @@ exports[`PerimeterToolOverlay > snapping behavior > renders snap position when s
 </div>
 `;
 
-exports[`PerimeterToolOverlay > zoom responsiveness > adjusts line extension based on stage dimensions 1`] = `
+exports[`PolygonToolOverlay > zoom responsiveness > adjusts line extension based on stage dimensions 1`] = `
 <div>
   <div
     data-testid="konva-group"
@@ -727,7 +727,7 @@ exports[`PerimeterToolOverlay > zoom responsiveness > adjusts line extension bas
 </div>
 `;
 
-exports[`PerimeterToolOverlay > zoom responsiveness > scales elements appropriately at high zoom 1`] = `
+exports[`PolygonToolOverlay > zoom responsiveness > scales elements appropriately at high zoom 1`] = `
 <div>
   <div
     data-testid="konva-group"
@@ -783,7 +783,7 @@ exports[`PerimeterToolOverlay > zoom responsiveness > scales elements appropriat
 </div>
 `;
 
-exports[`PerimeterToolOverlay > zoom responsiveness > scales elements appropriately at low zoom 1`] = `
+exports[`PolygonToolOverlay > zoom responsiveness > scales elements appropriately at low zoom 1`] = `
 <div>
   <div
     data-testid="konva-group"

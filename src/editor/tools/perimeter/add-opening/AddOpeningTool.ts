@@ -12,6 +12,7 @@ import type { OpeningType, PerimeterWall } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { entityHitTestService } from '@/editor/canvas/services/EntityHitTestService'
 import { getSelectionActions } from '@/editor/hooks/useSelectionStore'
+import { getViewModeActions } from '@/editor/hooks/useViewMode'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
 import type { CanvasEvent, CursorStyle, ToolImplementation } from '@/editor/tools/system/types'
 import type { Length } from '@/shared/geometry'
@@ -251,6 +252,7 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
   // Lifecycle Methods
 
   onActivate(): void {
+    getViewModeActions().ensureMode('walls')
     // Reset state when tool is activated
     this.clearPreview()
   }

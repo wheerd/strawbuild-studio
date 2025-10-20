@@ -1,6 +1,8 @@
 import { SelectTool } from './basic/SelectTool'
 import { FitToViewTool } from './basic/fit-to-view/FitToViewTool'
 import { MoveTool } from './basic/movement/MoveTool'
+import { FloorAreaTool } from './floors/add-area/FloorAreaTool'
+import { FloorOpeningTool } from './floors/add-opening/FloorOpeningTool'
 import { AddOpeningTool } from './perimeter/add-opening/AddOpeningTool'
 import { PerimeterTool } from './perimeter/add/PerimeterTool'
 import { PerimeterPresetTool } from './perimeter/preset/PerimeterPresetTool'
@@ -17,6 +19,8 @@ const TOOL_IMPLEMENTATIONS: Record<ToolId, ToolImplementation> = {
   'basic.select': new SelectTool(),
   'basic.move': new MoveTool(),
   'basic.fit-to-view': new FitToViewTool(),
+  'floors.add-area': new FloorAreaTool(),
+  'floors.add-opening': new FloorOpeningTool(),
   'perimeter.add': new PerimeterTool(),
   'perimeter.preset': new PerimeterPresetTool(),
   'perimeter.add-opening': new AddOpeningTool(),

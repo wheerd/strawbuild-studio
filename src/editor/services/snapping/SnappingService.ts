@@ -94,7 +94,7 @@ export class SnappingService {
     }
 
     // 3. Add extension and perpendicular lines for reference line walls (if any)
-    for (const wall of context.referenceLineWalls ?? []) {
+    for (const wall of context.referenceLineSegments ?? []) {
       const line = lineFromSegment(wall)
 
       // Extension line (same direction as wall)

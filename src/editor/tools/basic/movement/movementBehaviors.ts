@@ -1,6 +1,8 @@
 import type { EntityType } from '@/building/model/ids'
 
 import type { MovementBehavior } from './MovementBehavior'
+import { FloorAreaMovementBehavior } from './behaviors/FloorAreaMovementBehavior'
+import { FloorOpeningMovementBehavior } from './behaviors/FloorOpeningMovementBehavior'
 import { OpeningMovementBehavior } from './behaviors/OpeningMovementBehavior'
 import { PerimeterCornerMovementBehavior } from './behaviors/PerimeterCornerMovementBehavior'
 import { PerimeterMovementBehavior } from './behaviors/PerimeterMovementBehavior'
@@ -12,7 +14,8 @@ const MOVEMENT_BEHAVIORS: Record<EntityType, MovementBehavior<any, any> | null> 
   'perimeter-wall': new PerimeterWallMovementBehavior(),
   'perimeter-corner': new PerimeterCornerMovementBehavior(),
   opening: new OpeningMovementBehavior(),
-  storey: null // Not implemented
+  'floor-area': new FloorAreaMovementBehavior(),
+  'floor-opening': new FloorOpeningMovementBehavior()
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

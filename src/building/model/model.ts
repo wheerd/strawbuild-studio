@@ -1,7 +1,9 @@
 import { vec2 } from 'gl-matrix'
 
 import type {
+  FloorAreaId,
   FloorAssemblyId,
+  FloorOpeningId,
   OpeningId,
   PerimeterCornerId,
   PerimeterId,
@@ -10,7 +12,7 @@ import type {
   StoreyId,
   WallAssemblyId
 } from '@/building/model/ids'
-import type { Length, LineSegment2D } from '@/shared/geometry'
+import type { Length, LineSegment2D, Polygon2D } from '@/shared/geometry'
 
 // Storey level branded type
 export type StoreyLevel = number & { __brand: 'StoreyLevel' }
@@ -93,4 +95,16 @@ export interface PerimeterCorner {
 
   // Exterior angle (outside the building perimeter) in degrees
   exteriorAngle: number
+}
+
+export interface FloorArea {
+  id: FloorAreaId
+  storeyId: StoreyId
+  area: Polygon2D
+}
+
+export interface FloorOpening {
+  id: FloorOpeningId
+  storeyId: StoreyId
+  area: Polygon2D
 }

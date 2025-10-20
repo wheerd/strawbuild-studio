@@ -2,6 +2,8 @@ import { CursorArrowIcon, MoveIcon, RocketIcon } from '@radix-ui/react-icons'
 
 import {
   FitToViewIcon,
+  FloorAreaIcon,
+  FloorOpeningIcon,
   OpeningsIcon,
   PerimeterDrawIcon,
   PerimeterPresetsIcon,
@@ -25,6 +27,14 @@ export const TOOL_METADATA: Record<ToolId, ToolMetadata> = {
     name: 'Fit to View',
     iconComponent: FitToViewIcon,
     hotkey: 'f'
+  },
+  'floors.add-area': {
+    name: 'Floor Area',
+    iconComponent: FloorAreaIcon
+  },
+  'floors.add-opening': {
+    name: 'Floor Opening',
+    iconComponent: FloorOpeningIcon
   },
   'perimeter.add': {
     name: 'Building Perimeter',
@@ -61,6 +71,10 @@ export const TOOL_GROUPS: ToolGroup[] = [
   {
     name: 'Perimeter',
     tools: ['perimeter.add', 'perimeter.preset', 'perimeter.add-opening', 'perimeter.split-wall'] as const
+  },
+  {
+    name: 'Floors',
+    tools: ['floors.add-area', 'floors.add-opening'] as const
   },
   {
     name: 'Test Data',

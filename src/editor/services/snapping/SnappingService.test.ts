@@ -161,7 +161,7 @@ describe('SnappingService', () => {
       }
       const context: SnappingContext = {
         snapPoints: [],
-        referenceLineWalls: [wall]
+        referenceLineSegments: [wall]
       }
 
       // Target on extension of horizontal wall
@@ -180,7 +180,7 @@ describe('SnappingService', () => {
       }
       const context: SnappingContext = {
         snapPoints: [],
-        referenceLineWalls: [wall]
+        referenceLineSegments: [wall]
       }
 
       // Target near perpendicular line from wall start
@@ -333,7 +333,7 @@ describe('SnappingService', () => {
       const point1 = vec2.fromValues(100, 100)
       const context: SnappingContext = {
         snapPoints: [point1],
-        referenceLineWalls: undefined
+        referenceLineSegments: undefined
       }
 
       const target = vec2.fromValues(120, 110)
@@ -346,7 +346,7 @@ describe('SnappingService', () => {
       const point1 = vec2.fromValues(100, 100)
       const context: SnappingContext = {
         snapPoints: [point1],
-        referenceLineWalls: []
+        referenceLineSegments: []
       }
 
       const target = vec2.fromValues(120, 110)

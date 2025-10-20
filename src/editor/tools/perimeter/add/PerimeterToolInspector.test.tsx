@@ -62,13 +62,14 @@ describe('PerimeterToolInspector', () => {
     mockTool.state = {
       points: [],
       pointer: vec2.fromValues(0, 0),
+      snapResult: undefined,
       snapContext: {
         snapPoints: [],
         alignPoints: [],
-        referenceLineWalls: []
+        referenceLineSegments: []
       },
-      isCurrentLineValid: true,
-      isClosingLineValid: true,
+      isCurrentSegmentValid: true,
+      isClosingSegmentValid: true,
       wallAssemblyId: createWallAssemblyId(),
       wallThickness: 440,
       baseRingBeamAssemblyId: undefined,

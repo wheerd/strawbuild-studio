@@ -3,7 +3,7 @@ import { vec2 } from 'gl-matrix'
 import { vi } from 'vitest'
 
 import type { Perimeter } from '@/building/model/model'
-import { usePerimeterById } from '@/building/store'
+import { useFloorAreaById, useFloorOpeningById, usePerimeterById } from '@/building/store'
 import '@/shared/geometry'
 
 import { SelectionOverlay } from './SelectionOverlay'
@@ -18,10 +18,14 @@ vi.mock('@/editor/hooks/useSelectionStore', () => ({
 }))
 
 vi.mock('@/building/store', () => ({
-  usePerimeterById: vi.fn()
+  usePerimeterById: vi.fn(),
+  useFloorAreaById: vi.fn(),
+  useFloorOpeningById: vi.fn()
 }))
 
 const mockUsePerimeterById = vi.mocked(usePerimeterById)
+const mockUseFloorAreaById = vi.mocked(useFloorAreaById)
+const mockUseFloorOpeningById = vi.mocked(useFloorOpeningById)
 
 // Mock SelectionOutline component
 vi.mock('@/editor/canvas/utils/SelectionOutline', () => ({
@@ -36,6 +40,8 @@ describe('SelectionOverlay', () => {
     mockUseSelectionPath.mockReturnValue([])
     mockUseCurrentSelection.mockReturnValue(null)
     mockUsePerimeterById.mockReturnValue(null)
+    mockUseFloorAreaById.mockReturnValue(null)
+    mockUseFloorOpeningById.mockReturnValue(null)
   })
 
   it('renders nothing when no selection', () => {
@@ -131,5 +137,41 @@ describe('SelectionOverlay', () => {
 
     const { container } = render(<SelectionOverlay />)
     expect(container.firstChild).toBeNull()
+  })
+
+  it('renders floor area selection outline', () => {
+    const storeyId = 'storey_1'
+    const floorAreaId = 'floorarea_1'
+    mockUseSelectionPath.mockReturnValue([storeyId, floorAreaId])
+    mockUseCurrentSelection.mockReturnValue(floorAreaId)
+    mockUseFloorAreaById.mockReturnValue({
+      id: floorAreaId,
+      storeyId,
+      area: { points: [vec2.fromValues(0, 0), vec2.fromValues(200, 0), vec2.fromValues(200, 200)] }
+    } as any)
+
+    const { getByTestId } = render(<SelectionOverlay />)
+    const outline = getByTestId('selection-outline')
+    expect(outline).toBeInTheDocument()
+    expect(outline).toHaveAttribute('data-points', '3')
+  })
+
+  it('renders floor opening selection outline', () => {
+    const storeyId = 'storey_1'
+    const openingId = 'flooropening_1'
+    mockUseSelectionPath.mockReturnValue([storeyId, openingId])
+    mockUseCurrentSelection.mockReturnValue(openingId)
+    mockUseFloorOpeningById.mockReturnValue({
+      id: openingId,
+      storeyId,
+      area: {
+        points: [vec2.fromValues(10, 10), vec2.fromValues(20, 10), vec2.fromValues(20, 20), vec2.fromValues(10, 20)]
+      }
+    } as any)
+
+    const { getByTestId } = render(<SelectionOverlay />)
+    const outline = getByTestId('selection-outline')
+    expect(outline).toBeInTheDocument()
+    expect(outline).toHaveAttribute('data-points', '4')
   })
 })

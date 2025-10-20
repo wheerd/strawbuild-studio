@@ -2,10 +2,25 @@ import { vec2 } from 'gl-matrix'
 import { useMemo } from 'react'
 import { Group } from 'react-konva/lib/ReactKonvaCore'
 
-import type { OpeningId, PerimeterCornerId, PerimeterId, PerimeterWallId, SelectableId } from '@/building/model/ids'
-import { isOpeningId, isPerimeterCornerId, isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
+import type {
+  FloorAreaId,
+  FloorOpeningId,
+  OpeningId,
+  PerimeterCornerId,
+  PerimeterId,
+  PerimeterWallId,
+  SelectableId
+} from '@/building/model/ids'
+import {
+  isFloorAreaId,
+  isFloorOpeningId,
+  isOpeningId,
+  isPerimeterCornerId,
+  isPerimeterId,
+  isPerimeterWallId
+} from '@/building/model/ids'
 import type { Perimeter } from '@/building/model/model'
-import { usePerimeterById } from '@/building/store'
+import { useFloorAreaById, useFloorOpeningById, usePerimeterById } from '@/building/store'
 import { SelectionOutline } from '@/editor/canvas/utils/SelectionOutline'
 import { useCurrentSelection, useSelectionPath } from '@/editor/hooks/useSelectionStore'
 import { direction, perpendicular } from '@/shared/geometry'
@@ -37,10 +52,20 @@ function useSelectionOutlinePoints(
   // Always call the hook unconditionally - follows Rules of Hooks
   // We cast rootEntityId to PerimeterId and let the hook handle invalid IDs gracefully
   const perimeter = usePerimeterById(rootEntityId as PerimeterId)
+  const floorArea = useFloorAreaById((currentSelection ?? '') as FloorAreaId)
+  const floorOpening = useFloorOpeningById((currentSelection ?? '') as FloorOpeningId)
 
   return useMemo(() => {
     if (!selectionPath.length || !currentSelection) {
       return null
+    }
+
+    if (isFloorAreaId(currentSelection) && floorArea) {
+      return floorArea.area.points
+    }
+
+    if (isFloorOpeningId(currentSelection) && floorOpening) {
+      return floorOpening.area.points
     }
 
     if (isPerimeterId(rootEntityId) && perimeter) {
@@ -60,7 +85,7 @@ function useSelectionOutlinePoints(
       console.warn('SelectionOverlay: Unsupported root entity type:', rootEntityId)
     }
     return null
-  }, [selectionPath, currentSelection, rootEntityId, perimeter])
+  }, [selectionPath, currentSelection, rootEntityId, perimeter, floorArea, floorOpening])
 }
 
 export function SelectionOverlay(): React.JSX.Element | null {

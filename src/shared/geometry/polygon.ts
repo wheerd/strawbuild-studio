@@ -1,3 +1,4 @@
+import type { PolyPathD } from 'clipper2-wasm'
 import { vec2 } from 'gl-matrix'
 
 import {
@@ -39,6 +40,17 @@ export function polygonIsClockwise(polygon: Polygon2D): boolean {
   } finally {
     path.delete()
   }
+}
+
+export function polygonPerimeter(polygon: Polygon2D): number {
+  if (polygon.points.length < 2) return 0
+  let total = 0
+  for (let i = 0; i < polygon.points.length; i++) {
+    const current = polygon.points[i]
+    const next = polygon.points[(i + 1) % polygon.points.length]
+    total += vec2.distance(current, next)
+  }
+  return total
 }
 
 export function isPointInPolygon(point: vec2, polygon: Polygon2D): boolean {
@@ -206,6 +218,82 @@ export function unionPolygons(polygons: Polygon2D[]): Polygon2D[] {
     for (const path of paths) {
       path.delete()
     }
+  }
+}
+
+const pathDToPolygon = (path: ReturnType<typeof createPathD>): Polygon2D => {
+  const points = pathDToPoints(path)
+  path.delete()
+  return { points }
+}
+
+const collectPolygonsWithHolesFromPolyTree = (root: PolyPathD): PolygonWithHoles2D[] => {
+  const result: PolygonWithHoles2D[] = []
+
+  const processNode = (node: PolyPathD, depth: number, currentOuter: PolygonWithHoles2D | null) => {
+    const polygon = pathDToPolygon(node.polygon())
+    if (depth % 2 === 1) {
+      const outer = normaliseOrientation(polygon, true)
+      const entry: PolygonWithHoles2D = { outer, holes: [] }
+      result.push(entry)
+      const childCount = node.count()
+      for (let i = 0; i < childCount; i += 1) {
+        processNode(node.child(i), depth + 1, entry)
+      }
+      return
+    }
+
+    if (currentOuter) {
+      const hole = normaliseOrientation(polygon, false)
+      currentOuter.holes.push(hole)
+    }
+
+    const childCount = node.count()
+    for (let i = 0; i < childCount; i += 1) {
+      processNode(node.child(i), depth + 1, null)
+    }
+  }
+
+  processNode(root, 0, null)
+
+  return result
+}
+
+export function subtractPolygons(subject: Polygon2D[], clips: Polygon2D[]): PolygonWithHoles2D[] {
+  if (subject.length === 0) {
+    return []
+  }
+
+  const module = getClipperModule()
+  const subjectPaths = subject.map(polygon => createPathD(polygon.points))
+  const clipPaths = clips.map(polygon => createPathD(polygon.points))
+  const subjectPathsD = createPathsD(subjectPaths)
+  const clipPathsD = createPathsD(clipPaths)
+  const clipper = new module.ClipperD()
+  const polyTree = new module.PolyPathD()
+
+  try {
+    clipper.AddSubject(subjectPathsD)
+    clipper.AddClip(clipPathsD)
+    clipper.ExecutePoly(module.ClipType.Difference, module.FillRule.NonZero, polyTree)
+    return collectPolygonsWithHolesFromPolyTree(polyTree)
+  } finally {
+    clipper.delete()
+    polyTree.delete()
+    subjectPathsD.delete()
+    clipPathsD.delete()
+    subjectPaths.forEach(path => path.delete())
+    clipPaths.forEach(path => path.delete())
+  }
+}
+
+const normaliseOrientation = (polygon: Polygon2D, clockwise: boolean): Polygon2D => {
+  const isClockwise = polygonIsClockwise(polygon)
+  if (clockwise === isClockwise) {
+    return polygon
+  }
+  return {
+    points: [...polygon.points].reverse()
   }
 }
 

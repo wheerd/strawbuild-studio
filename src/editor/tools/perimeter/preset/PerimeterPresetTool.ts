@@ -1,6 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { getModelActions } from '@/building/store'
+import { getViewModeActions } from '@/editor/hooks/useViewMode'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
 import type { CanvasEvent, CursorStyle, ToolImplementation } from '@/editor/tools/system/types'
 import type { Polygon2D } from '@/shared/geometry'
@@ -151,6 +152,7 @@ export class PerimeterPresetTool extends BaseTool implements ToolImplementation 
   }
 
   onActivate(): void {
+    getViewModeActions().ensureMode('walls')
     // Reset state when tool is activated
     this.state.previewPosition = null
     this.state.previewPolygon = null

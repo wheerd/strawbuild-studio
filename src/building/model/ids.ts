@@ -8,18 +8,22 @@ const OPENING_ID_PREFIX = 'opening_'
 const RING_BEAM_ID_PREFIX = 'ringbeam_'
 const WALL_ASSEMBLY_ID_PREFIX = 'wa_'
 const FLOOR_ASSEMBLY_ID_PREFIX = 'fa_'
+const FLOOR_AREA_ID_PREFIX = 'floorarea_'
+const FLOOR_OPENING_ID_PREFIX = 'flooropening_'
 
 // Strong typing for entity IDs
 export type StoreyId = `${typeof STOREY_ID_PREFIX}${string}`
 export type PerimeterId = `${typeof PERIMETER_ID_PREFIX}${string}`
+export type FloorAreaId = `${typeof FLOOR_AREA_ID_PREFIX}${string}`
+export type FloorOpeningId = `${typeof FLOOR_OPENING_ID_PREFIX}${string}`
 
 // Sub-entity ID types for hierarchical selection
 export type PerimeterWallId = `${typeof PERIMETER_WALL_ID_PREFIX}${string}`
 export type PerimeterCornerId = `${typeof PERIMETER_CORNER_ID_PREFIX}${string}`
 export type OpeningId = `${typeof OPENING_ID_PREFIX}${string}`
 
-export type EntityId = StoreyId | PerimeterId
-export type SelectableId = StoreyId | PerimeterId | PerimeterWallId | PerimeterCornerId | OpeningId
+export type EntityId = PerimeterId | FloorAreaId | FloorOpeningId
+export type SelectableId = PerimeterId | FloorAreaId | FloorOpeningId | PerimeterWallId | PerimeterCornerId | OpeningId
 
 // Config ids
 export type RingBeamAssemblyId = `${typeof RING_BEAM_ID_PREFIX}${string}`
@@ -29,6 +33,8 @@ export type FloorAssemblyId = `${typeof FLOOR_ASSEMBLY_ID_PREFIX}${string}`
 // ID generation helpers
 export const createStoreyId = (): StoreyId => createId(STOREY_ID_PREFIX)
 export const createPerimeterId = (): PerimeterId => createId(PERIMETER_ID_PREFIX)
+export const createFloorAreaId = (): FloorAreaId => createId(FLOOR_AREA_ID_PREFIX)
+export const createFloorOpeningId = (): FloorOpeningId => createId(FLOOR_OPENING_ID_PREFIX)
 
 // Sub-entity ID generators
 export const createPerimeterWallId = (): PerimeterWallId => createId(PERIMETER_WALL_ID_PREFIX)
@@ -46,6 +52,8 @@ export const DEFAULT_FLOOR_ASSEMBLY_ID = 'fa_clt_default' as FloorAssemblyId
 // Type guards for runtime ID validation
 export const isStoreyId = (id: string): id is StoreyId => id.startsWith(STOREY_ID_PREFIX)
 export const isPerimeterId = (id: string): id is PerimeterId => id.startsWith(PERIMETER_ID_PREFIX)
+export const isFloorAreaId = (id: string): id is FloorAreaId => id.startsWith(FLOOR_AREA_ID_PREFIX)
+export const isFloorOpeningId = (id: string): id is FloorOpeningId => id.startsWith(FLOOR_OPENING_ID_PREFIX)
 
 // Sub-entity type guards
 export const isPerimeterWallId = (id: string): id is PerimeterWallId => id.startsWith(PERIMETER_WALL_ID_PREFIX)
@@ -58,4 +66,10 @@ export const isWallAssemblyId = (id: string): id is WallAssemblyId => id.startsW
 export const isFloorAssemblyId = (id: string): id is FloorAssemblyId => id.startsWith(FLOOR_ASSEMBLY_ID_PREFIX)
 
 // Entity type definitions for hit testing
-export type EntityType = 'storey' | 'perimeter' | 'perimeter-wall' | 'perimeter-corner' | 'opening'
+export type EntityType =
+  | 'perimeter'
+  | 'perimeter-wall'
+  | 'perimeter-corner'
+  | 'opening'
+  | 'floor-area'
+  | 'floor-opening'

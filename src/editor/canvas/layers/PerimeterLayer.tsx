@@ -15,7 +15,7 @@ export function PerimeterLayer(): React.JSX.Element {
     const storeyIndex = storeys.findIndex(s => s.id === activeStorey)
     const lowerStorey = storeyIndex > 0 ? storeys[storeyIndex - 1] : null
     return lowerStorey ? getPerimetersByStorey(lowerStorey.id) : []
-  }, [activeStorey])
+  }, [activeStorey, getPerimetersByStorey, getStoreysOrderedByLevel])
 
   return (
     <Layer name="perimeters">

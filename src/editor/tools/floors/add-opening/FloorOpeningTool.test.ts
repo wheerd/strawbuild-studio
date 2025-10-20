@@ -1,0 +1,101 @@
+import { vec2 } from 'gl-matrix'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import type { FloorArea, FloorOpening, Perimeter } from '@/building/model/model'
+
+import { FloorOpeningTool } from './FloorOpeningTool'
+
+const mockModelActions = {
+  addFloorArea: vi.fn(),
+  addFloorOpening: vi.fn(),
+  getActiveStoreyId: vi.fn(() => 'storey_opening'),
+  getPerimetersByStorey: vi.fn(() => [] as Perimeter[]),
+  getFloorAreasByStorey: vi.fn(() => [] as FloorArea[]),
+  getFloorOpeningsByStorey: vi.fn(() => [] as FloorOpening[])
+}
+
+vi.mock('@/building/store', () => ({
+  getModelActions: () => mockModelActions
+}))
+
+describe('FloorOpeningTool', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockModelActions.getActiveStoreyId.mockReturnValue('storey_opening')
+    mockModelActions.getPerimetersByStorey.mockReturnValue([])
+    mockModelActions.getFloorAreasByStorey.mockReturnValue([])
+    mockModelActions.getFloorOpeningsByStorey.mockReturnValue([])
+  })
+
+  it('calls addFloorOpening when polygon is completed', () => {
+    const tool = new FloorOpeningTool()
+    const points = [vec2.fromValues(10, 10), vec2.fromValues(50, 10), vec2.fromValues(50, 50)]
+    tool.state.points = points
+    tool.state.isClosingSegmentValid = true
+
+    tool.complete()
+
+    expect(mockModelActions.addFloorOpening).toHaveBeenCalledTimes(1)
+    expect(mockModelActions.addFloorOpening).toHaveBeenCalledWith('storey_opening', { points })
+  })
+
+  it('reuses floor and perimeter geometry for snapping context', () => {
+    const perimeter = {
+      id: 'perimeter_opening',
+      storeyId: 'storey_opening',
+      corners: [
+        {
+          id: 'corner_a',
+          insidePoint: vec2.fromValues(0, 0),
+          outsidePoint: vec2.fromValues(0, 0),
+          constructedByWall: 'next',
+          interiorAngle: 90,
+          exteriorAngle: 270
+        }
+      ],
+      walls: [
+        {
+          id: 'wall_a',
+          insideLine: { start: vec2.fromValues(0, 0), end: vec2.fromValues(100, 0) }
+        }
+      ]
+    } as unknown as Perimeter
+
+    const floorArea = {
+      id: 'floorarea_existing',
+      storeyId: 'storey_opening',
+      area: { points: [vec2.fromValues(0, 0), vec2.fromValues(0, 120), vec2.fromValues(120, 120)] }
+    } as FloorArea
+
+    const floorOpening = {
+      id: 'flooropening_existing',
+      storeyId: 'storey_opening',
+      area: { points: [vec2.fromValues(20, 20), vec2.fromValues(40, 20), vec2.fromValues(40, 40)] }
+    } as FloorOpening
+
+    mockModelActions.getPerimetersByStorey.mockReturnValue([perimeter])
+    mockModelActions.getFloorAreasByStorey.mockReturnValue([floorArea])
+    mockModelActions.getFloorOpeningsByStorey.mockReturnValue([floorOpening])
+
+    const tool = new FloorOpeningTool()
+    const baseContext = {
+      snapPoints: [] as vec2[],
+      alignPoints: [] as vec2[],
+      referenceLineSegments: []
+    }
+
+    const result = (
+      tool as unknown as { extendSnapContext: (ctx: typeof baseContext) => typeof baseContext }
+    ).extendSnapContext(baseContext)
+
+    expect(result.snapPoints).toEqual(
+      expect.arrayContaining([perimeter.corners[0].insidePoint, ...floorArea.area.points, ...floorOpening.area.points])
+    )
+    expect(result.referenceLineSegments).toEqual(
+      expect.arrayContaining([
+        perimeter.walls[0].insideLine,
+        expect.objectContaining({ start: floorOpening.area.points[0], end: floorOpening.area.points[1] })
+      ])
+    )
+  })
+})

@@ -14,6 +14,8 @@ export interface ExportedStorey {
   height: number
   floorAssemblyId: string
   perimeters: ExportedPerimeter[]
+  floorAreas?: ExportedFloorPolygon[]
+  floorOpenings?: ExportedFloorPolygon[]
 }
 
 export interface ExportedPerimeter {
@@ -41,6 +43,10 @@ export interface ExportedOpening {
   width: number
   height: number
   sillHeight?: number
+}
+
+export interface ExportedFloorPolygon {
+  points: { x: number; y: number }[]
 }
 
 export interface ExportData {
@@ -90,7 +96,11 @@ export interface IProjectImportExportService {
   importFromString(content: string): Promise<ImportResult | ImportError>
 }
 
-const CURRENT_VERSION = '1.2.0'
+const CURRENT_VERSION = '1.3.0'
+
+const polygonToExport = (polygon: Polygon2D): ExportedFloorPolygon => ({
+  points: polygon.points.map(point => ({ x: point[0], y: point[1] }))
+})
 
 class ProjectImportExportServiceImpl implements IProjectImportExportService {
   async exportToString(): Promise<StringExportResult | StringExportError> {
@@ -103,11 +113,12 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
       // Calculate the minimum level
       const minLevel = storeys.length > 0 ? Math.min(...storeys.map(s => s.level)) : 0
 
-      const exportedStoreys: ExportedStorey[] = storeys.map(storey => ({
-        name: storey.name,
-        height: Number(storey.height),
-        floorAssemblyId: storey.floorAssemblyId,
-        perimeters: modelActions.getPerimetersByStorey(storey.id).map(perimeter => ({
+      const exportedStoreys: ExportedStorey[] = storeys.map(storey => {
+        const floorAreas = modelActions.getFloorAreasByStorey(storey.id).map(area => polygonToExport(area.area))
+        const floorOpenings = modelActions
+          .getFloorOpeningsByStorey(storey.id)
+          .map(opening => polygonToExport(opening.area))
+        const perimeters = modelActions.getPerimetersByStorey(storey.id).map(perimeter => ({
           corners: perimeter.corners.map(corner => ({
             insideX: corner.insidePoint[0],
             insideY: corner.insidePoint[1],
@@ -127,7 +138,16 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
           baseRingBeamAssemblyId: perimeter.baseRingBeamAssemblyId,
           topRingBeamAssemblyId: perimeter.topRingBeamAssemblyId
         }))
-      }))
+
+        return {
+          name: storey.name,
+          height: Number(storey.height),
+          floorAssemblyId: storey.floorAssemblyId,
+          perimeters,
+          floorAreas: floorAreas.length > 0 ? floorAreas : undefined,
+          floorOpenings: floorOpenings.length > 0 ? floorOpenings : undefined
+        }
+      })
 
       const result = this.exportToJSON({ storeys: exportedStoreys, minLevel }, getConfigState(), getMaterialsState())
 
@@ -240,6 +260,20 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
             )
           })
         })
+
+        exportedStorey.floorAreas?.forEach(exportedFloorArea => {
+          const polygon: Polygon2D = {
+            points: exportedFloorArea.points.map(point => vec2.fromValues(point.x, point.y))
+          }
+          modelActions.addFloorArea(targetStorey.id, polygon)
+        })
+
+        exportedStorey.floorOpenings?.forEach(exportedFloorOpening => {
+          const polygon: Polygon2D = {
+            points: exportedFloorOpening.points.map(point => vec2.fromValues(point.x, point.y))
+          }
+          modelActions.addFloorOpening(targetStorey.id, polygon)
+        })
       })
 
       // 9. Adjust levels based on minLevel
@@ -323,6 +357,49 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
       return false
     }
 
+    const isValidPolygonCollection = (value: unknown): value is ExportedFloorPolygon[] => {
+      if (!Array.isArray(value)) {
+        return false
+      }
+      return value.every(polygon => {
+        if (
+          typeof polygon !== 'object' ||
+          polygon === null ||
+          !Array.isArray((polygon as { points?: unknown }).points)
+        ) {
+          return false
+        }
+        return (polygon as ExportedFloorPolygon).points.every(
+          point =>
+            typeof point === 'object' &&
+            point !== null &&
+            typeof (point as { x?: unknown }).x === 'number' &&
+            typeof (point as { y?: unknown }).y === 'number'
+        )
+      })
+    }
+
+    for (const storey of modelStore.storeys) {
+      if (typeof storey !== 'object' || storey === null) {
+        return false
+      }
+      const storeyRecord = storey as Record<string, unknown>
+      if (
+        storeyRecord.floorAreas !== undefined &&
+        storeyRecord.floorAreas !== null &&
+        !isValidPolygonCollection(storeyRecord.floorAreas)
+      ) {
+        return false
+      }
+      if (
+        storeyRecord.floorOpenings !== undefined &&
+        storeyRecord.floorOpenings !== null &&
+        !isValidPolygonCollection(storeyRecord.floorOpenings)
+      ) {
+        return false
+      }
+    }
+
     const configStore = obj.configStore as Record<string, unknown>
     if (
       typeof configStore.ringBeamAssemblyConfigs !== 'object' ||
@@ -358,7 +435,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
       }
 
       // Support backwards compatibility
-      const supportedVersions = ['1.0.0', '1.1.0', '1.2.0']
+      const supportedVersions = ['1.0.0', '1.1.0', '1.2.0', '1.3.0']
       if (!supportedVersions.includes(parsed.version)) {
         return {
           success: false,

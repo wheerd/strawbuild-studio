@@ -9,6 +9,8 @@ export type ToolId =
   | 'basic.select'
   | 'basic.move'
   | 'basic.fit-to-view'
+  | 'floors.add-area'
+  | 'floors.add-opening'
   | 'perimeter.add'
   | 'perimeter.preset'
   | 'perimeter.add-opening'

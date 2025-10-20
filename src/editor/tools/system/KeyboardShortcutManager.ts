@@ -1,5 +1,12 @@
 import type { SelectableId } from '@/building/model/ids'
-import { isOpeningId, isPerimeterCornerId, isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
+import {
+  isFloorAreaId,
+  isFloorOpeningId,
+  isOpeningId,
+  isPerimeterCornerId,
+  isPerimeterId,
+  isPerimeterWallId
+} from '@/building/model/ids'
 import { getCanRedo, getCanUndo, getModelActions, getRedoFunction, getUndoFunction } from '@/building/store'
 import { getCurrentSelection, getSelectionPath, popSelection } from '@/editor/hooks/useSelectionStore'
 import { getActiveTool, popTool, replaceTool } from '@/editor/tools/system/store'
@@ -222,6 +229,12 @@ export class KeyboardShortcutManager {
         }
       } else if (isPerimeterId(selectedId)) {
         modelStore.removePerimeter(selectedId)
+        return true
+      } else if (isFloorAreaId(selectedId)) {
+        modelStore.removeFloorArea(selectedId)
+        return true
+      } else if (isFloorOpeningId(selectedId)) {
+        modelStore.removeFloorOpening(selectedId)
         return true
       } else {
         console.warn(`Unknown sub-entity type for deletion: ${selectedId}`)

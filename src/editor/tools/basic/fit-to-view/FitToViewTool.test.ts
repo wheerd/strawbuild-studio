@@ -24,6 +24,7 @@ vi.mock('@/editor/tools/system', () => ({
 describe('FitToViewTool', () => {
   let fitToViewTool: FitToViewTool
   let mockGetPerimetersByStorey: ReturnType<typeof vi.fn>
+  let mockGetFloorAreasByStorey: ReturnType<typeof vi.fn>
   let mockFitToView: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
@@ -31,13 +32,15 @@ describe('FitToViewTool', () => {
 
     // Create only the specific mocks we need for these tests
     mockGetPerimetersByStorey = vi.fn()
+    mockGetFloorAreasByStorey = vi.fn()
     mockFitToView = vi.fn()
 
     // Mock model actions accessor
     const mockedGetModelActions = vi.mocked(getModelActions)
     mockedGetModelActions.mockReturnValue({
       getActiveStoreyId: () => 'floor1' as StoreyId,
-      getPerimetersByStorey: mockGetPerimetersByStorey
+      getPerimetersByStorey: mockGetPerimetersByStorey,
+      getFloorAreasByStorey: mockGetFloorAreasByStorey
     } as any)
 
     // Mock viewport actions
@@ -80,6 +83,7 @@ describe('FitToViewTool', () => {
     ]
 
     mockGetPerimetersByStorey.mockReturnValue(mockOuterWalls)
+    mockGetFloorAreasByStorey.mockReturnValue([])
 
     fitToViewTool.onActivate()
 
@@ -92,6 +96,7 @@ describe('FitToViewTool', () => {
 
   it('should handle empty bounds gracefully', () => {
     mockGetPerimetersByStorey.mockReturnValue([])
+    mockGetFloorAreasByStorey.mockReturnValue([])
 
     const consoleSpy = vi.spyOn(console, 'log')
 
@@ -132,6 +137,7 @@ describe('FitToViewTool', () => {
     ]
 
     mockGetPerimetersByStorey.mockReturnValue(mockOuterWalls)
+    mockGetFloorAreasByStorey.mockReturnValue([])
 
     fitToViewTool.onActivate()
 
@@ -174,6 +180,7 @@ describe('FitToViewTool', () => {
     ]
 
     mockGetPerimetersByStorey.mockReturnValue(mockOuterWalls)
+    mockGetFloorAreasByStorey.mockReturnValue([])
 
     fitToViewTool.onActivate()
 

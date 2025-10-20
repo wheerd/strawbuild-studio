@@ -6,8 +6,36 @@ import { getConfigActions } from '@/construction/config'
 import { FLOOR_ASSEMBLIES } from '@/construction/floors'
 import { constructPerimeter } from '@/construction/perimeter'
 import { TAG_STOREY } from '@/construction/tags'
+import { subtractPolygons } from '@/shared/geometry'
 
 import { type ConstructionModel, mergeModels, transformModel } from './model'
+
+export function constructStoreyFloor(storeyId: StoreyId): ConstructionModel[] {
+  const { getPerimetersByStorey, getFloorAreasByStorey, getFloorOpeningsByStorey, getStoreyById } = getModelActions()
+  const storey = getStoreyById(storeyId)
+  if (!storey) {
+    throw new Error('Invalid storey')
+  }
+
+  const { getFloorAssemblyById } = getConfigActions()
+  const floorAssemblyConfig = getFloorAssemblyById(storey.floorAssemblyId)
+  if (!floorAssemblyConfig) {
+    throw new Error('Invalid floor assembly')
+  }
+
+  const perimeters = getPerimetersByStorey(storeyId)
+  const perimeterPolygons = perimeters.map(p => ({
+    // TODO: Properly determine the construction polygon based on offsets
+    points: p.corners.map(c => c.outsidePoint)
+  }))
+  const floorAreas = getFloorAreasByStorey(storeyId).map(a => a.area)
+  const openings = getFloorOpeningsByStorey(storeyId).map(o => o.area)
+  const floorPolygons = subtractPolygons([...perimeterPolygons, ...floorAreas], openings)
+  console.log('Floor polygons:', floorPolygons)
+  const floorAssembly = FLOOR_ASSEMBLIES[floorAssemblyConfig.type]
+  const floorModels = floorPolygons.map(p => floorAssembly.construct(p, floorAssemblyConfig))
+  return floorModels
+}
 
 export function constructStorey(storeyId: StoreyId): ConstructionModel | null {
   const { getPerimetersByStorey } = getModelActions()
@@ -15,7 +43,9 @@ export function constructStorey(storeyId: StoreyId): ConstructionModel | null {
   if (perimeters.length === 0) {
     return null
   }
-  return mergeModels(...perimeters.map(constructPerimeter))
+  const perimeterModels = perimeters.map(p => constructPerimeter(p, false))
+  const floorModels = constructStoreyFloor(storeyId)
+  return mergeModels(...perimeterModels, ...floorModels)
 }
 
 export function constructModel(): ConstructionModel | null {

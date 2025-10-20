@@ -181,7 +181,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
                   size="2"
                   color="green"
                   onClick={() => tool.complete()}
-                  disabled={!state.isClosingLineValid}
+                  disabled={!state.isClosingSegmentValid}
                   title="Complete perimeter (Enter)"
                   style={{ width: '100%' }}
                 >

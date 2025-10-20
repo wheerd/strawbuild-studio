@@ -2,6 +2,8 @@ import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { Callout, Flex, Kbd, Text } from '@radix-ui/themes'
 
 import {
+  FloorAreaInspector,
+  FloorOpeningInspector,
   OpeningInspector,
   PerimeterCornerInspector,
   PerimeterInspector,
@@ -10,6 +12,8 @@ import {
 import {
   type PerimeterId,
   type PerimeterWallId,
+  isFloorAreaId,
+  isFloorOpeningId,
   isOpeningId,
   isPerimeterCornerId,
   isPerimeterId,
@@ -29,7 +33,7 @@ export function SelectToolInspector(): React.JSX.Element {
             No entity selected
           </Text>
           <Text align="center" size="2" color="gray">
-            Click on a perimeter, wall, corner, or opening to view and edit its properties.
+            Click on a perimeter, wall, corner, floor area, hole, or opening to view and edit its properties.
           </Text>
           <Text align="center" size="1" color="gray" mt="2">
             Tip: Use <Kbd>V</Kbd> for Select, <Kbd>M</Kbd> for Move
@@ -61,12 +65,20 @@ export function SelectToolInspector(): React.JSX.Element {
         />
       )}
 
+      {selectedId && isFloorAreaId(selectedId) && <FloorAreaInspector key={selectedId} floorAreaId={selectedId} />}
+
+      {selectedId && isFloorOpeningId(selectedId) && (
+        <FloorOpeningInspector key={selectedId} floorOpeningId={selectedId} />
+      )}
+
       {/* Unknown entity type */}
       {selectedId &&
         !isPerimeterId(selectedId) &&
         !isPerimeterWallId(selectedId) &&
         !isPerimeterCornerId(selectedId) &&
-        !isOpeningId(selectedId) && (
+        !isOpeningId(selectedId) &&
+        !isFloorAreaId(selectedId) &&
+        !isFloorOpeningId(selectedId) && (
           <Callout.Root color="amber">
             <Callout.Icon>
               <ExclamationTriangleIcon />
@@ -74,7 +86,7 @@ export function SelectToolInspector(): React.JSX.Element {
             <Callout.Text>
               <Text weight="bold">Unknown Entity Type</Text>
               <br />
-              Entity type not recognized: {typeof selectedId}
+              Entity id not recognized: {selectedId}
             </Callout.Text>
           </Callout.Root>
         )}

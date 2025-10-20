@@ -301,10 +301,11 @@ function mergePolygonAreas(areas: HighlightedPolygon[], mergeKey: string): Highl
   const unionResult = unionPolygons(polygons)
 
   if (unionResult.length !== 1) {
-    throw new Error(
+    console.warn(
       `Union of polygons with mergeKey ${mergeKey} resulted in ${unionResult.length} polygons. ` +
         `Expected exactly 1 polygon. This likely means the polygons don't overlap or touch.`
     )
+    return areas
   }
 
   return [

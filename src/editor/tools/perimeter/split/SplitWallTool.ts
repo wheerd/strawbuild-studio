@@ -6,6 +6,7 @@ import { isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { entityHitTestService } from '@/editor/canvas/services/EntityHitTestService'
 import { getCurrentSelection, getSelectionActions, getSelectionPath } from '@/editor/hooks/useSelectionStore'
+import { getViewModeActions } from '@/editor/hooks/useViewMode'
 import { getToolActions } from '@/editor/tools/system'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
 import type { CanvasEvent, ToolImplementation } from '@/editor/tools/system/types'
@@ -244,6 +245,7 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
   }
 
   onActivate(): void {
+    getViewModeActions().ensureMode('walls')
     // Initialize state
     this.resetState()
 

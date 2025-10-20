@@ -12,7 +12,7 @@ export interface SnappingContext {
   snapPoints: vec2[]
   alignPoints?: vec2[]
   referencePoint?: vec2
-  referenceLineWalls?: LineSegment2D[]
+  referenceLineSegments?: LineSegment2D[]
 }
 
 // Snapping configuration

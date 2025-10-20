@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import * as useViewportStore from '@/editor/hooks/useViewportStore'
 import * as lengthInputService from '@/editor/services/length-input'
+import type { CanvasEvent } from '@/editor/tools/system/types'
 import '@/shared/geometry'
 
 import { PerimeterTool } from './PerimeterTool'
@@ -159,6 +160,33 @@ describe('PerimeterTool', () => {
 
       tool.clearLengthOverride()
       expect(tool.state.lengthOverride).toBeNull()
+    })
+
+    it('uses length override in the direction of the pointer for preview', () => {
+      const tool = new PerimeterTool()
+      tool.state.points = [vec2.fromValues(0, 0)]
+      tool.setLengthOverride(100)
+      tool.state.pointer = vec2.fromValues(0, 50)
+
+      const preview = tool.getPreviewPosition()
+
+      expect(Array.from(preview)).toEqual([0, 100])
+    })
+
+    it('places new point using length override in pointer direction on click', () => {
+      const tool = new PerimeterTool()
+      tool.state.points = [vec2.fromValues(0, 0)]
+      tool.setLengthOverride(120)
+
+      const mockEvent = {
+        stageCoordinates: vec2.fromValues(0, 400)
+      } as unknown as CanvasEvent
+
+      tool.handlePointerDown(mockEvent)
+
+      expect(tool.state.points).toHaveLength(2)
+      const placedPoint = tool.state.points[1]
+      expect(Array.from(placedPoint)).toEqual([0, 120])
     })
   })
 })

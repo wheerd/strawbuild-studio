@@ -12,6 +12,7 @@ import { CanvasThemeProvider } from '@/shared/theme/CanvasThemeContext'
 import { MainToolbar } from './MainToolbar'
 import { SidePanel } from './SidePanel'
 import { FloorPlanStage } from './canvas/layers/FloorPlanStage'
+import { ViewModeToggle } from './components/ViewModeToggle'
 import { useAutoFitOnHydration } from './hooks/useAutoFitOnHydration'
 import { LengthInputComponent } from './services/length-input'
 import { StatusBar } from './status-bar/StatusBar'
@@ -186,6 +187,7 @@ export function FloorPlanEditor(): React.JSX.Element {
           >
             <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
               <CanvasThemeProvider>
+                <ViewModeToggle />
                 <FloorPlanStage width={dimensions.width} height={dimensions.height} />
                 <StatusBar />
                 <LengthInputComponent />

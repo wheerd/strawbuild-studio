@@ -3,71 +3,32 @@ import { vec2 } from 'gl-matrix'
 import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config/store'
-import { viewportActions } from '@/editor/hooks/useViewportStore'
-import { activateLengthInput, deactivateLengthInput } from '@/editor/services/length-input'
-import type { LengthInputPosition } from '@/editor/services/length-input'
-import { SnappingService } from '@/editor/services/snapping'
-import type { SnapResult, SnappingContext } from '@/editor/services/snapping/types'
-import { BaseTool } from '@/editor/tools/system/BaseTool'
-import type { CanvasEvent, CursorStyle, ToolImplementation } from '@/editor/tools/system/types'
-import type { Length, LineSegment2D, Polygon2D } from '@/shared/geometry'
-import {
-  direction,
-  polygonIsClockwise,
-  wouldClosingPolygonSelfIntersect,
-  wouldPolygonSelfIntersect
-} from '@/shared/geometry'
+import { getViewModeActions } from '@/editor/hooks/useViewMode'
+import { BasePolygonTool, type PolygonToolStateBase } from '@/editor/tools/shared/polygon/BasePolygonTool'
+import { PolygonToolOverlay } from '@/editor/tools/shared/polygon/PolygonToolOverlay'
+import type { ToolImplementation } from '@/editor/tools/system/types'
+import type { Length, Polygon2D } from '@/shared/geometry'
+import { polygonIsClockwise } from '@/shared/geometry'
 
 import { PerimeterToolInspector } from './PerimeterToolInspector'
-import { PerimeterToolOverlay } from './PerimeterToolOverlay'
 
-interface PerimeterToolState {
-  points: vec2[]
-  pointer: vec2
-  snapResult?: SnapResult
-  snapContext: SnappingContext
-  isCurrentLineValid: boolean
-  isClosingLineValid: boolean
+interface PerimeterToolState extends PolygonToolStateBase {
   wallAssemblyId: WallAssemblyId
   wallThickness: Length
   baseRingBeamAssemblyId?: RingBeamAssemblyId
   topRingBeamAssemblyId?: RingBeamAssemblyId
-  lengthOverride: Length | null
 }
 
-export class PerimeterTool extends BaseTool implements ToolImplementation {
+export class PerimeterTool extends BasePolygonTool<PerimeterToolState> implements ToolImplementation {
   readonly id = 'perimeter.add'
-  readonly overlayComponent = PerimeterToolOverlay
+  readonly overlayComponent = PolygonToolOverlay
   readonly inspectorComponent = PerimeterToolInspector
 
-  public state: PerimeterToolState = {
-    points: [],
-    pointer: vec2.fromValues(0, 0),
-    snapContext: {
-      snapPoints: [],
-      alignPoints: [],
-      referenceLineWalls: []
-    },
-    isCurrentLineValid: true,
-    isClosingLineValid: true,
-    wallThickness: 440, // Default 44cm thickness,
-    wallAssemblyId: '' as WallAssemblyId, // Set on activation
-    lengthOverride: null
-  }
-
-  private snapService = new SnappingService()
-
-  /**
-   * Check if the current snap result is snapping to the first point of the polygon
-   */
-  public isSnappingToFirstPoint(): boolean {
-    if (this.state.points.length === 0 || !this.state.snapResult?.position) {
-      return false
-    }
-    const firstPoint = this.state.points[0]
-    const snapPos = this.state.snapResult.position
-    // Use a small threshold (5mm) to detect if snapping to first point
-    return vec2.squaredDistance(firstPoint, snapPos) < 25 // 5mm squared
+  constructor() {
+    super({
+      wallAssemblyId: '' as WallAssemblyId,
+      wallThickness: 440
+    })
   }
 
   public setAssembly(assemblyId: WallAssemblyId): void {
@@ -90,299 +51,38 @@ export class PerimeterTool extends BaseTool implements ToolImplementation {
     this.triggerRender()
   }
 
-  public setLengthOverride(length: Length | null): void {
-    this.state.lengthOverride = length
-    this.triggerRender()
-  }
-
-  public clearLengthOverride(): void {
-    this.state.lengthOverride = null
-    this.triggerRender()
-  }
-
-  public cancel(): void {
-    this.cancelPolygon()
-  }
-
-  public complete(): void {
-    if (this.state.points.length >= 3 && this.state.isClosingLineValid) {
-      this.completePolygon()
-    }
-  }
-
-  private updateSnapContext() {
-    const referenceLineWalls: LineSegment2D[] = []
-    for (let i = 1; i < this.state.points.length; i++) {
-      const start = this.state.points[i - 1]
-      const end = this.state.points[i]
-      referenceLineWalls.push({ start, end })
-    }
-
-    this.state.snapContext = {
-      snapPoints: this.state.points.slice(0, 1),
-      alignPoints: this.state.points,
-      referencePoint: this.state.points[this.state.points.length - 1],
-      referenceLineWalls
-    }
-    this.triggerRender()
-  }
-
-  handlePointerDown(event: CanvasEvent): boolean {
-    const stageCoords = event.stageCoordinates
-    this.state.pointer = stageCoords
-    this.state.snapResult = this.snapService.findSnapResult(stageCoords, this.state.snapContext) ?? undefined
-    const snapCoords = this.state.snapResult?.position ?? stageCoords
-
-    // Check if clicking near the first point to close the polygon
-    if (this.state.points.length >= 3) {
-      if (this.isSnappingToFirstPoint()) {
-        // Only allow closing if it wouldn't create intersections
-        if (this.state.isClosingLineValid) {
-          this.completePolygon()
-        }
-        return true
-      }
-    }
-
-    // Only add point if the line is valid (doesn't create intersections)
-    if (this.state.isCurrentLineValid) {
-      // Calculate point position: use override if set, otherwise use snap/click position
-      let pointToAdd = snapCoords
-      if (this.state.lengthOverride && this.state.points.length > 0) {
-        const lastPoint = this.state.points[this.state.points.length - 1]
-        const dir = direction(snapCoords, lastPoint)
-        pointToAdd = vec2.scaleAndAdd(vec2.create(), lastPoint, dir, this.state.lengthOverride)
-      }
-
-      this.state.points.push(pointToAdd)
-      this.updateSnapContext()
-
-      // Clear length override after placing point
-      this.clearLengthOverride()
-
-      // Update validation for new state
-      this.updateValidation()
-
-      // Activate length input after placing any point (ready for next segment)
-      if (this.state.points.length >= 1) {
-        this.activateLengthInputForNextSegment()
-      }
-    }
-
-    return true
-  }
-
-  handlePointerMove(event: CanvasEvent): boolean {
-    const stageCoords = event.stageCoordinates
-    this.state.pointer = stageCoords
-    this.state.snapResult = this.snapService.findSnapResult(stageCoords, this.state.snapContext) ?? undefined
-
-    // Update validation based on current pointer position
-    this.updateValidation()
-
-    this.triggerRender()
-    return true
-  }
-
-  handleKeyDown(event: KeyboardEvent): boolean {
-    if (event.key === 'Escape') {
-      // First try to clear length override if it exists
-      if (this.state.lengthOverride) {
-        this.clearLengthOverride()
-        return true
-      }
-      // Otherwise handle polygon cancellation if we have points
-      if (this.state.points.length > 0) {
-        this.cancelPolygon()
-        return true
-      }
-      return false // Bubble up to allow tool cancellation
-    }
-
-    if (event.key === 'Enter' && this.state.points.length >= 3) {
-      this.completePolygon()
-      return true
-    }
-
-    return false
-  }
-
-  /**
-   * Get the preview position for the next point, considering length override
-   */
-  public getPreviewPosition(): vec2 {
-    const currentPos = this.state.snapResult?.position ?? this.state.pointer
-
-    // If no length override or no points, return current position
-    if (!this.state.lengthOverride || this.state.points.length === 0) {
-      return currentPos
-    }
-
-    // Calculate position at override distance in direction of cursor
-    const lastPoint = this.state.points[this.state.points.length - 1]
-    const dir = direction(currentPos, lastPoint)
-    return vec2.scaleAndAdd(vec2.create(), lastPoint, dir, this.state.lengthOverride)
-  }
-
-  onActivate(): void {
-    this.state.points = []
-    this.state.isCurrentLineValid = true
-    this.state.isClosingLineValid = true
-    this.state.lengthOverride = null
-
-    // Set default assemblies from config store
+  protected onToolActivated(): void {
+    getViewModeActions().ensureMode('walls')
     const configStore = getConfigActions()
     this.state.baseRingBeamAssemblyId = configStore.getDefaultBaseRingBeamAssemblyId()
     this.state.topRingBeamAssemblyId = configStore.getDefaultTopRingBeamAssemblyId()
     this.state.wallAssemblyId = configStore.getDefaultWallAssemblyId()
-
-    this.updateSnapContext()
   }
 
-  onDeactivate(): void {
-    this.state.points = []
-    this.state.isCurrentLineValid = true
-    this.state.isClosingLineValid = true
-    this.state.lengthOverride = null
-    this.updateSnapContext()
-
-    // Deactivate length input when tool is deactivated
-    deactivateLengthInput()
-  }
-
-  private completePolygon(): void {
-    if (this.state.points.length < 3) return
-
-    // Only complete if closing wouldn't create intersections
-    if (!this.state.isClosingLineValid) return
-
-    // Create polygon and ensure clockwise order for perimeters
-    let polygon: Polygon2D = { points: [...this.state.points] }
-
-    // Check if polygon is clockwise, if not reverse it
+  protected buildPolygon(points: vec2[]): Polygon2D {
+    let polygon: Polygon2D = { points }
     if (!polygonIsClockwise(polygon)) {
-      polygon = { points: [...this.state.points].reverse() }
+      polygon = { points: [...points].reverse() }
     }
+    return polygon
+  }
 
+  protected onPolygonCompleted(polygon: Polygon2D): void {
     const { addPerimeter, getActiveStoreyId } = getModelActions()
-
     const activeStoreyId = getActiveStoreyId()
 
-    try {
-      if (!this.state.wallAssemblyId) {
-        console.error('No wall assembly selected')
-        return
-      }
-
-      addPerimeter(
-        activeStoreyId,
-        polygon,
-        this.state.wallAssemblyId,
-        this.state.wallThickness,
-        this.state.baseRingBeamAssemblyId,
-        this.state.topRingBeamAssemblyId
-      )
-    } catch (error) {
-      console.error('Failed to create perimeter polygon:', error)
-    }
-
-    this.state.points = []
-    this.state.isCurrentLineValid = true
-    this.state.isClosingLineValid = true
-    this.state.lengthOverride = null
-    this.updateSnapContext()
-
-    // Deactivate length input when polygon is completed
-    deactivateLengthInput()
-  }
-
-  private cancelPolygon(): void {
-    this.state.points = []
-    this.state.isCurrentLineValid = true
-    this.state.isClosingLineValid = true
-    this.state.lengthOverride = null
-    this.updateSnapContext()
-
-    // Deactivate length input when polygon is canceled
-    deactivateLengthInput()
-  }
-
-  private updateValidation(): void {
-    if (this.state.points.length === 0) {
-      this.state.isCurrentLineValid = true
-      this.state.isClosingLineValid = true
+    if (!this.state.wallAssemblyId) {
+      console.error('No wall assembly selected')
       return
     }
 
-    const currentPos = this.state.snapResult?.position ?? this.state.pointer
-
-    // Special case: if snapping to the first point (closing the polygon),
-    // don't check for point reuse but still check intersection
-    const isSnapToFirstPoint = this.isSnappingToFirstPoint()
-
-    if (isSnapToFirstPoint) {
-      // When closing polygon, only check if closing would create intersections
-      this.state.isCurrentLineValid =
-        this.state.points.length >= 3 ? !wouldClosingPolygonSelfIntersect({ points: this.state.points }) : true
-    } else {
-      // Normal case: check for both intersections and point reuse
-      this.state.isCurrentLineValid = !wouldPolygonSelfIntersect(this.state.points, currentPos)
-    }
-
-    // Check if closing the polygon would create intersections
-    if (this.state.points.length >= 3) {
-      this.state.isClosingLineValid = !wouldClosingPolygonSelfIntersect({ points: this.state.points })
-    } else {
-      this.state.isClosingLineValid = true
-    }
-  }
-
-  /**
-   * Handle length input commit - set the length override for next point placement
-   */
-  private handleLengthOverrideCommit = (length: Length): void => {
-    this.setLengthOverride(length)
-  }
-
-  /**
-   * Calculate position for the length input near the last placed point
-   */
-  private getLengthInputPosition(): LengthInputPosition {
-    if (this.state.points.length === 0) {
-      // Fallback to center if no points
-      return { x: 400, y: 300 }
-    }
-
-    const lastPoint = this.state.points[this.state.points.length - 1]
-
-    // Convert world coordinates to stage coordinates (screen pixels)
-    const { worldToStage } = viewportActions()
-    const stageCoords = worldToStage(lastPoint)
-
-    // Add offset to position input near the point
-    return {
-      x: stageCoords.x + 20,
-      y: stageCoords.y - 30
-    }
-  }
-
-  /**
-   * Activate length input for next segment length override
-   */
-  private activateLengthInputForNextSegment(): void {
-    if (this.state.points.length === 0) return
-
-    activateLengthInput({
-      position: this.getLengthInputPosition(),
-      placeholder: 'Enter length...',
-      onCommit: this.handleLengthOverrideCommit,
-      onCancel: () => {
-        this.clearLengthOverride()
-      }
-    })
-  }
-
-  getCursor(): CursorStyle {
-    return 'crosshair'
+    addPerimeter(
+      activeStoreyId,
+      polygon,
+      this.state.wallAssemblyId,
+      this.state.wallThickness,
+      this.state.baseRingBeamAssemblyId,
+      this.state.topRingBeamAssemblyId
+    )
   }
 }

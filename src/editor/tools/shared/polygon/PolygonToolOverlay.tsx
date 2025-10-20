@@ -4,21 +4,18 @@ import { Circle, Group, Line } from 'react-konva/lib/ReactKonvaCore'
 import { SnappingLines } from '@/editor/canvas/utils/SnappingLines'
 import { useZoom } from '@/editor/hooks/useViewportStore'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
-import type { ToolOverlayComponentProps } from '@/editor/tools/system/types'
+import type { ToolImplementation, ToolOverlayComponentProps } from '@/editor/tools/system/types'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
-import type { PerimeterTool } from './PerimeterTool'
+import type { BasePolygonTool, PolygonToolStateBase } from './BasePolygonTool'
 
-/**
- * React overlay component for PerimeterTool with zoom-responsive rendering.
- * Uses viewport hooks directly for automatic re-rendering on zoom changes.
- */
-export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<PerimeterTool>): React.JSX.Element | null {
+export function PolygonToolOverlay<TTool extends BasePolygonTool<PolygonToolStateBase> & ToolImplementation>({
+  tool
+}: ToolOverlayComponentProps<TTool>): React.JSX.Element | null {
   const { state } = useReactiveTool(tool)
   const zoom = useZoom()
   const theme = useCanvasTheme()
 
-  // Calculate zoom-responsive values
   const scaledLineWidth = Math.max(1, 2 / zoom)
   const dashSize = 10 / zoom
   const scaledDashPattern = [dashSize, dashSize]
@@ -30,10 +27,8 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
 
   return (
     <Group>
-      {/* Snapping lines */}
       <SnappingLines snapResult={state.snapResult} />
 
-      {/* Draw lines between points */}
       {state.points.length > 1 && (
         <Line
           points={state.points.flatMap(point => [point[0], point[1]])}
@@ -44,7 +39,7 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
           listening={false}
         />
       )}
-      {/* Draw line to current pointer position */}
+
       {state.points.length > 0 && !isClosingSnap && (
         <Line
           points={[
@@ -53,15 +48,14 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
             previewPos[0],
             previewPos[1]
           ]}
-          stroke={state.isCurrentLineValid ? theme.textTertiary : theme.danger}
+          stroke={state.isCurrentSegmentValid ? theme.textTertiary : theme.danger}
           strokeWidth={scaledLineWidth}
           dash={scaledDashPattern}
           listening={false}
         />
       )}
 
-      {/* Draw closing line preview when near first point */}
-      {state.points.length >= 3 && isClosingSnap && (
+      {state.points.length >= tool.getMinimumPointCount() && isClosingSnap && (
         <Line
           points={[
             state.points[state.points.length - 1][0],
@@ -69,14 +63,13 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
             state.points[0][0],
             state.points[0][1]
           ]}
-          stroke={state.isClosingLineValid ? theme.success : theme.danger}
+          stroke={state.isClosingSegmentValid ? theme.success : theme.danger}
           strokeWidth={scaledLineWidth}
           dash={scaledDashPattern}
           listening={false}
         />
       )}
 
-      {/* Draw existing points */}
       {state.points.map((point, index) => (
         <Circle
           key={`point-${index}`}
@@ -90,7 +83,6 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
         />
       ))}
 
-      {/* Draw snap position */}
       <Circle
         key="snap-point"
         x={previewPos[0]}
