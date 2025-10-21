@@ -4,6 +4,7 @@ import type { Perimeter } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { FLOOR_ASSEMBLIES } from '@/construction/floors'
 import { IDENTITY } from '@/construction/geometry'
+import { applyWallFaceOffsets, createWallFaceOffsets } from '@/construction/storey'
 import { TAG_BASE_PLATE, TAG_TOP_PLATE, TAG_WALLS } from '@/construction/tags'
 import { type Polygon2D, angle, arePolygonsIntersecting, lineIntersection, unionPolygons } from '@/shared/geometry'
 
@@ -125,7 +126,9 @@ export function constructPerimeter(perimeter: Perimeter, includeFloor = true): C
     const floorPolygon = computeFloorConstructionPolygon(perimeter)
     const holes = getFloorOpeningsByStorey(storey.id).map(opening => opening.area)
     const relevantHoles = holes.filter(hole => arePolygonsIntersecting(floorPolygon, hole))
-    const mergedHoles = unionPolygons(relevantHoles)
+    const wallFaces = createWallFaceOffsets([perimeter])
+    const adjustedHoles = relevantHoles.map(hole => applyWallFaceOffsets(hole, wallFaces))
+    const mergedHoles = unionPolygons(adjustedHoles)
     const floorAssembly = FLOOR_ASSEMBLIES[currentFloorAssembly.type]
     const floorModel = floorAssembly.construct({ outer: floorPolygon, holes: mergedHoles }, currentFloorAssembly)
     allModels.push(floorModel)
