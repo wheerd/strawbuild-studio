@@ -22,6 +22,10 @@ export interface SingleFrameModuleConfig extends BaseModuleConfig {
 export interface DoubleFrameModuleConfig extends BaseModuleConfig {
   type: 'double'
   frameWidth: Length // Default: 120mm
+  spacerSize: Length // Default: 120mm
+  spacerCount: number // Default: 3
+  spacerMaterial: MaterialId // Default: wood120x60
+  infillMaterial: MaterialId // Default: woodwool
 }
 
 export type ModuleConfig = SingleFrameModuleConfig | DoubleFrameModuleConfig
@@ -92,7 +96,16 @@ function* constructDoubleFrameModule(
   size: vec3,
   config: DoubleFrameModuleConfig
 ): Generator<ConstructionResult> {
-  const { frameThickness, frameWidth, frameMaterial } = config
+  const {
+    frameThickness,
+    frameWidth,
+    frameMaterial,
+    strawMaterial,
+    spacerSize: spacerHeight,
+    spacerCount,
+    spacerMaterial,
+    infillMaterial
+  } = config
 
   // Calculate straw area (inset by frameThickness on all sides)
   const strawPosition = vec3.fromValues(position[0] + frameThickness, position[1], position[2] + frameThickness)
@@ -173,8 +186,80 @@ function* constructDoubleFrameModule(
 
   // Straw filling
   yield yieldElement(
-    createConstructionElement(config.strawMaterial, createCuboidShape(strawPosition, strawSize), IDENTITY, [TAG_INFILL])
+    createConstructionElement(strawMaterial, createCuboidShape(strawPosition, strawSize), IDENTITY, [TAG_INFILL])
   )
+
+  const gapWidth = size[1] - 2 * frameWidth
+  if (gapWidth > 0) {
+    // Top infill
+    yield yieldElement(
+      createConstructionElement(
+        infillMaterial,
+        createCuboidShape(
+          vec3.fromValues(position[0], position[1] + frameWidth, position[2] + size[2] - frameThickness),
+          vec3.fromValues(size[0], gapWidth, frameThickness)
+        )
+      )
+    )
+
+    // Bottom infill
+    yield yieldElement(
+      createConstructionElement(
+        infillMaterial,
+        createCuboidShape(
+          vec3.fromValues(position[0], position[1] + frameWidth, position[2]),
+          vec3.fromValues(size[0], gapWidth, frameThickness)
+        )
+      )
+    )
+
+    const verticalStart = position[2] + frameThickness
+    const verticalEnd = position[2] + size[2] - frameThickness
+
+    const availableHeight = verticalEnd - verticalStart
+    const spacing = (availableHeight - spacerHeight) / (spacerCount - 1)
+    const infillHeight = (availableHeight - spacerCount * spacerHeight) / (spacerCount - 1)
+    const y = position[1] + frameWidth
+    const rightX = position[0] + size[0] - frameThickness
+
+    const spacerSize = vec3.fromValues(frameThickness, gapWidth, spacerHeight)
+    const infillSize = vec3.fromValues(frameThickness, gapWidth, infillHeight)
+
+    let z = verticalStart
+    for (let i = spacerCount; i > 0; i--) {
+      // Left spacer
+      yield yieldElement(
+        createConstructionElement(spacerMaterial, createCuboidShape(vec3.fromValues(position[0], y, z), spacerSize))
+      )
+
+      if (i > 1) {
+        // Left infill
+        yield yieldElement(
+          createConstructionElement(
+            infillMaterial,
+            createCuboidShape(vec3.fromValues(position[0], y, z + spacerHeight), infillSize)
+          )
+        )
+      }
+
+      // Right spacer
+      yield yieldElement(
+        createConstructionElement(spacerMaterial, createCuboidShape(vec3.fromValues(rightX, y, z), spacerSize))
+      )
+
+      if (i > 1) {
+        // Right infill
+        yield yieldElement(
+          createConstructionElement(
+            infillMaterial,
+            createCuboidShape(vec3.fromValues(rightX, y, z + spacerHeight), infillSize)
+          )
+        )
+      }
+
+      z += spacing
+    }
+  }
 
   yield yieldMeasurement({
     startPoint: position,

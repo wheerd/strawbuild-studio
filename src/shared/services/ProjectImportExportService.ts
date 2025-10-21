@@ -3,6 +3,7 @@ import { vec2 } from 'gl-matrix'
 import type { FloorAssemblyId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import type { Storey } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
+import { applyMigrations } from '@/construction/config/migrations'
 import { getConfigState, setConfigState } from '@/construction/config/store'
 import type { FloorAssemblyConfig, RingBeamAssemblyConfig, WallAssemblyConfig } from '@/construction/config/types'
 import type { Material, MaterialId } from '@/construction/materials/material'
@@ -96,7 +97,7 @@ export interface IProjectImportExportService {
   importFromString(content: string): Promise<ImportResult | ImportError>
 }
 
-const CURRENT_VERSION = '1.3.0'
+const CURRENT_VERSION = '1.4.0'
 
 const polygonToExport = (polygon: Polygon2D): ExportedFloorPolygon => ({
   points: polygon.points.map(point => ({ x: point[0], y: point[1] }))
@@ -179,7 +180,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
       const modelActions = getModelActions()
 
       // 1. Import config state with backwards compatibility for floor configs
-      const configStore = importResult.data.configStore
+      const configStore = applyMigrations(importResult.data.configStore) as Parameters<typeof setConfigState>[0]
       setConfigState(configStore)
 
       // 2. Import materials state (if available for backwards compatibility)
@@ -435,7 +436,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
       }
 
       // Support backwards compatibility
-      const supportedVersions = ['1.0.0', '1.1.0', '1.2.0', '1.3.0']
+      const supportedVersions = ['1.0.0', '1.1.0', '1.2.0', '1.3.0', '1.4.0']
       if (!supportedVersions.includes(parsed.version)) {
         return {
           success: false,

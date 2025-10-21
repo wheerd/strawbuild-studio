@@ -126,6 +126,16 @@ export const clt180: SheetMaterial = {
   color: MATERIAL_COLORS.woodSupport
 }
 
+export const woodwool: SheetMaterial = {
+  id: 'material_woodwool' as MaterialId,
+  name: 'Woodwool Insulation',
+  width: 575,
+  length: 1220,
+  thickness: 60,
+  type: 'sheet',
+  color: '#ddb984'
+}
+
 export const DEFAULT_MATERIALS: Record<MaterialId, Material> = {
   [wood360x60.id]: wood360x60,
   [wood240x60.id]: wood240x60,
@@ -136,5 +146,6 @@ export const DEFAULT_MATERIALS: Record<MaterialId, Material> = {
   [window.id]: window,
   [door.id]: door,
   [concrete.id]: concrete,
-  [clt180.id]: clt180
+  [clt180.id]: clt180,
+  [woodwool.id]: woodwool
 }

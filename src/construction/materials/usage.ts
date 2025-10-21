@@ -62,6 +62,14 @@ export function getMaterialUsage(
         if (assembly.module.strawMaterial === materialId) {
           configUsages.push('module straw')
         }
+        if (assembly.module.type === 'double') {
+          if (assembly.module.spacerMaterial === materialId) {
+            configUsages.push('module spacers')
+          }
+          if (assembly.module.infillMaterial === materialId) {
+            configUsages.push('module infill')
+          }
+        }
         // Infill posts material
         if (assembly.infill.posts.material === materialId) {
           configUsages.push('infill posts')
@@ -87,6 +95,14 @@ export function getMaterialUsage(
         // Module straw material
         if (assembly.module.strawMaterial === materialId) {
           configUsages.push('module straw')
+        }
+        if (assembly.module.type === 'double') {
+          if (assembly.module.spacerMaterial === materialId) {
+            configUsages.push('module spacers')
+          }
+          if (assembly.module.infillMaterial === materialId) {
+            configUsages.push('module infill')
+          }
         }
         // Infill posts material
         if (assembly.infill.posts.material === materialId) {

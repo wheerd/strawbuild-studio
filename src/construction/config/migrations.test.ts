@@ -1,0 +1,57 @@
+import { describe, expect, it } from 'vitest'
+
+import { wood120x60, woodwool } from '@/construction/materials/material'
+
+import { applyMigrations } from './migrations'
+
+describe('config migrations', () => {
+  it('adds default spacer properties to double modules', () => {
+    const migrated = applyMigrations({
+      wallAssemblyConfigs: {
+        missingFields: {
+          module: {
+            type: 'double',
+            width: 900,
+            frameThickness: 60,
+            frameWidth: 120,
+            frameMaterial: 'frame-material',
+            strawMaterial: 'straw-material'
+          }
+        }
+      }
+    }) as { wallAssemblyConfigs: Record<string, { module: Record<string, unknown> }> }
+
+    const module = migrated.wallAssemblyConfigs.missingFields.module
+    expect(module.spacerSize).toBe(120)
+    expect(module.spacerCount).toBe(3)
+    expect(module.spacerMaterial).toBe(wood120x60.id)
+    expect(module.infillMaterial).toBe(woodwool.id)
+  })
+
+  it('normalizes existing spacer properties when provided as strings', () => {
+    const migrated = applyMigrations({
+      wallAssemblyConfigs: {
+        withStrings: {
+          module: {
+            type: 'double',
+            width: 900,
+            frameThickness: 60,
+            frameWidth: 120,
+            frameMaterial: 'frame-material',
+            strawMaterial: 'straw-material',
+            spacerSize: '150',
+            spacerCount: '4',
+            spacerMaterial: 'custom-spacer',
+            infillMaterial: 'custom-infill'
+          }
+        }
+      }
+    }) as { wallAssemblyConfigs: Record<string, { module: Record<string, unknown> }> }
+
+    const module = migrated.wallAssemblyConfigs.withStrings.module
+    expect(module.spacerSize).toBe(150)
+    expect(module.spacerCount).toBe(4)
+    expect(module.spacerMaterial).toBe('custom-spacer')
+    expect(module.infillMaterial).toBe('custom-infill')
+  })
+})

@@ -67,7 +67,11 @@ describe('Module Construction', () => {
       frameThickness: 60,
       frameWidth: 120,
       frameMaterial: 'wood' as any,
-      strawMaterial: 'straw' as any
+      strawMaterial: 'straw' as any,
+      spacerSize: 120,
+      spacerCount: 3,
+      spacerMaterial: 'spacer-wood' as any,
+      infillMaterial: 'infill' as any
     }
 
     it('should create a double frame module with more frame elements than single', () => {
@@ -84,6 +88,32 @@ describe('Module Construction', () => {
       // Check that we have one straw element
       const strawElements = aggregated.elements.filter(isConstructionElement).filter(el => el.material === 'straw')
       expect(strawElements).toHaveLength(1)
+
+      // Check spacers count
+      const spacerElements = aggregated.elements
+        .filter(isConstructionElement)
+        .filter(el => el.material === 'spacer-wood')
+      expect(spacerElements).toHaveLength(2 * config.spacerCount)
+
+      // Check infill segments count
+      const infillElements = aggregated.elements.filter(isConstructionElement).filter(el => el.material === 'infill')
+      expect(infillElements).toHaveLength(2 * config.spacerCount)
+    })
+
+    it('should position spacers aligned to vertical beams', () => {
+      const position = vec3.fromValues(0, 0, 0)
+      const size = vec3.fromValues(920, 360, 2000)
+
+      const results = Array.from(constructModule(position, size, config))
+      const aggregated = aggregateResults(results)
+
+      const spacers = aggregated.elements
+        .filter(isConstructionElement)
+        .filter(el => el.material === 'spacer-wood')
+        .sort((a, b) => a.bounds.min[2] - b.bounds.min[2])
+
+      expect(spacers[0].bounds.min[2]).toBe(60)
+      expect(spacers[spacers.length - 1].bounds.max[2]).toBe(2000 - 60)
     })
   })
 

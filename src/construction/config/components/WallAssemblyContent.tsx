@@ -23,6 +23,7 @@ import type { WallAssemblyConfig } from '@/construction/config/types'
 import { getWallAssemblyUsage } from '@/construction/config/usage'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
+import { wood120x60, woodwool } from '@/construction/materials/material'
 import type { PostConfig } from '@/construction/materials/posts'
 import type {
   InfillWallSegmentConfig,
@@ -215,7 +216,11 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
                 frameThickness: module.frameThickness,
                 frameMaterial: module.frameMaterial,
                 strawMaterial: module.strawMaterial,
-                frameWidth: 'frameWidth' in module ? module.frameWidth : 120
+                frameWidth: 'frameWidth' in module ? module.frameWidth : 120,
+                spacerSize: 'spacerSize' in module ? module.spacerSize : 120,
+                spacerCount: 'spacerCount' in module ? module.spacerCount : 3,
+                spacerMaterial: 'spacerMaterial' in module ? module.spacerMaterial : wood120x60.id,
+                infillMaterial: 'infillMaterial' in module ? module.infillMaterial : woodwool.id
               })
             }
           }}
@@ -267,6 +272,34 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
               unit="mm"
               size="1"
             />
+
+            <Label.Root>
+              <Text size="1" weight="medium" color="gray">
+                Spacer Size
+              </Text>
+            </Label.Root>
+            <LengthField
+              value={module.spacerSize}
+              onChange={value => onUpdate({ ...module, spacerSize: value })}
+              unit="mm"
+              size="1"
+            />
+
+            <Label.Root>
+              <Text size="1" weight="medium" color="gray">
+                Spacer Count
+              </Text>
+            </Label.Root>
+            <TextField.Root
+              type="number"
+              min={2}
+              value={module.spacerCount.toString()}
+              onChange={event => {
+                const next = Number.parseInt(event.target.value, 10)
+                onUpdate({ ...module, spacerCount: Number.isFinite(next) ? Math.max(2, next) : module.spacerCount })
+              }}
+              size="1"
+            />
           </>
         )}
       </Grid>
@@ -297,6 +330,36 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
             size="1"
           />
         </Flex>
+
+        {module.type === 'double' && (
+          <>
+            <Flex direction="column" gap="1">
+              <Label.Root>
+                <Text size="1" weight="medium" color="gray">
+                  Spacer Material
+                </Text>
+              </Label.Root>
+              <MaterialSelectWithEdit
+                value={module.spacerMaterial}
+                onValueChange={spacerMaterial => onUpdate({ ...module, spacerMaterial })}
+                size="1"
+              />
+            </Flex>
+
+            <Flex direction="column" gap="1">
+              <Label.Root>
+                <Text size="1" weight="medium" color="gray">
+                  Infill Material
+                </Text>
+              </Label.Root>
+              <MaterialSelectWithEdit
+                value={module.infillMaterial}
+                onValueChange={infillMaterial => onUpdate({ ...module, infillMaterial })}
+                size="1"
+              />
+            </Flex>
+          </>
+        )}
       </Grid>
     </Flex>
   )

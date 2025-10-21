@@ -4,7 +4,7 @@ import { createRingBeamAssemblyId, createWallAssemblyId } from '@/building/model
 import type { RingBeamAssemblyConfig, WallAssemblyConfig } from '@/construction/config/types'
 import '@/shared/geometry'
 
-import { straw, strawbale, wood360x60 } from './material'
+import { straw, strawbale, wood120x60, wood360x60, woodwool } from './material'
 import { getMaterialUsage } from './usage'
 
 describe('Material Usage Detection', () => {
@@ -122,6 +122,61 @@ describe('Material Usage Detection', () => {
       expect(usage.usedByConfigs).toEqual([
         'Wall: Test Strawhenge (module frame, infill posts, opening headers, opening sills)'
       ])
+    })
+
+    it('should detect materials used in double module spacers and infill', () => {
+      const perimeterId = createWallAssemblyId()
+      const wallAssembly: WallAssemblyConfig = {
+        id: perimeterId,
+        name: 'Double Module Wall',
+        type: 'strawhenge',
+        module: {
+          width: 920,
+          type: 'double',
+          frameThickness: 60,
+          frameWidth: 120,
+          frameMaterial: wood360x60.id,
+          strawMaterial: strawbale.id,
+          spacerSize: 120,
+          spacerCount: 3,
+          spacerMaterial: wood120x60.id,
+          infillMaterial: woodwool.id
+        },
+        infill: {
+          maxPostSpacing: 800,
+          minStrawSpace: 70,
+          posts: {
+            type: 'full',
+            width: 60,
+            material: wood360x60.id
+          }
+        },
+        openings: {
+          padding: 15,
+          headerThickness: 60,
+          headerMaterial: wood360x60.id,
+          sillThickness: 60,
+          sillMaterial: wood360x60.id
+        },
+        straw: {
+          baleLength: 800,
+          baleHeight: 500,
+          baleWidth: 360,
+          material: strawbale.id
+        },
+        layers: {
+          insideThickness: 30,
+          outsideThickness: 50
+        }
+      }
+
+      const spacerUsage = getMaterialUsage(wood120x60.id, [], [wallAssembly])
+      expect(spacerUsage.isUsed).toBe(true)
+      expect(spacerUsage.usedByConfigs).toEqual(['Wall: Double Module Wall (module spacers)'])
+
+      const infillUsage = getMaterialUsage(woodwool.id, [], [wallAssembly])
+      expect(infillUsage.isUsed).toBe(true)
+      expect(infillUsage.usedByConfigs).toEqual(['Wall: Double Module Wall (module infill)'])
     })
 
     it('should detect material used in multiple configs', () => {

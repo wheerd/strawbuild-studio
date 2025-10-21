@@ -117,6 +117,10 @@ const validateModule = (module: ModuleConfig): void => {
 
   if (module.type === 'double') {
     ensurePositive(module.frameWidth, 'Double module frame width must be greater than 0')
+    ensurePositive(module.spacerSize, 'Double module spacer size must be greater than 0')
+    if (module.spacerCount < 2) {
+      throw new Error('Double module spacer count must be at least 2')
+    }
   }
 }
 

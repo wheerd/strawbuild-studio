@@ -1,4 +1,6 @@
-export const CURRENT_VERSION = 1
+import { wood120x60, woodwool } from '@/construction/materials/material'
+
+export const CURRENT_VERSION = 2
 
 export function applyMigrations(state: unknown): unknown {
   if (!state || typeof state !== 'object') {
@@ -77,6 +79,56 @@ export function applyMigrations(state: unknown): unknown {
     newState.wallAssemblyConfigs = newWallConfigs
     delete newState.wallAssemblies
   }
+
+  const ensureDoubleModuleDefaults = (module: unknown) => {
+    if (!module || typeof module !== 'object') {
+      return
+    }
+
+    const moduleConfig = module as Record<string, unknown>
+    if (moduleConfig.type !== 'double') {
+      return
+    }
+
+    const parsedSpacerSize =
+      typeof moduleConfig.spacerSize === 'number'
+        ? moduleConfig.spacerSize
+        : Number(moduleConfig.spacerSize ?? Number.NaN)
+    moduleConfig.spacerSize = Number.isFinite(parsedSpacerSize) && parsedSpacerSize > 0 ? parsedSpacerSize : 120
+
+    const parsedSpacerCount =
+      typeof moduleConfig.spacerCount === 'number'
+        ? moduleConfig.spacerCount
+        : Number.parseInt(String(moduleConfig.spacerCount ?? ''), 10)
+    moduleConfig.spacerCount = Number.isFinite(parsedSpacerCount) && parsedSpacerCount >= 2 ? parsedSpacerCount : 3
+
+    if (moduleConfig.spacerMaterial == null) {
+      moduleConfig.spacerMaterial = wood120x60.id
+    }
+
+    if (moduleConfig.infillMaterial == null) {
+      moduleConfig.infillMaterial = woodwool.id
+    }
+  }
+
+  const updateDoubleModules = (assemblies: unknown) => {
+    if (!assemblies || typeof assemblies !== 'object') {
+      return
+    }
+
+    for (const assembly of Object.values(assemblies as Record<string, unknown>)) {
+      if (!assembly || typeof assembly !== 'object') {
+        continue
+      }
+
+      const assemblyConfig = assembly as Record<string, unknown>
+      if ('module' in assemblyConfig) {
+        ensureDoubleModuleDefaults(assemblyConfig.module)
+      }
+    }
+  }
+
+  updateDoubleModules(newState.wallAssemblyConfigs)
 
   return newState
 }
