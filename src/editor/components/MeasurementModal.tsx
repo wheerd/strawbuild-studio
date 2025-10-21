@@ -1,3 +1,4 @@
+import { HoverCard, Inset } from '@radix-ui/themes'
 import { useId } from 'react'
 
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
@@ -386,6 +387,284 @@ e | y +--------------+ s | Floor top layers                 }
     </g>
   )
 
+  const heightMeasurements = (
+    <g key="height-measurements">
+      <SvgMeasurementIndicator
+        startPoint={[marginRightX, marginTop]}
+        endPoint={[marginRightX, marginTop + storeyHeight]}
+        label={'Storey Height'}
+        fontSize={60}
+        offset={40}
+        strokeWidth={10}
+        color="var(--accent-10)"
+      />
+
+      <SvgMeasurementIndicator
+        startPoint={[marginRightX, roomHeightStartY]}
+        endPoint={[marginRightX, marginTop + storeyHeight]}
+        label={'Room Height'}
+        fontSize={60}
+        offset={120}
+        strokeWidth={10}
+        color="var(--accent-10)"
+      />
+    </g>
+  )
+
+  const floorMeasurements = (
+    <g key="floor-measurements">
+      <SvgMeasurementIndicator
+        startPoint={[wallRight, topFloorConstructionTopY]}
+        endPoint={[wallRight, topFloorConstructionTopY + floorConstructionTopOverlap]}
+        label={'Construction Top Offset'}
+        fontSize={50}
+        offset={wallRight - floorMeasurementX}
+        strokeWidth={10}
+        color="var(--accent-10)"
+        labelOrientation="perpendicular"
+      />
+
+      <SvgMeasurementIndicator
+        startPoint={[wallRight, topFloorConstructionBottomY - floorConstructionBottomOverlap]}
+        endPoint={[wallRight, topFloorConstructionBottomY]}
+        label={'Construction Bottom Offset'}
+        fontSize={50}
+        offset={wallRight - floorMeasurementX}
+        strokeWidth={10}
+        color="var(--accent-10)"
+        labelOrientation="perpendicular"
+      />
+
+      <text
+        x={floorMeasurementX}
+        y={floorTopLayersLabelY}
+        fontSize={50}
+        text-anchor="middle"
+        dominantBaseline="middle"
+        fill={textFill}
+      >
+        Floor Top Layers
+      </text>
+
+      <text
+        x={floorMeasurementX}
+        y={floorConstructionLabelY}
+        fontSize={50}
+        text-anchor="middle"
+        dominantBaseline="middle"
+        fill={textFill}
+      >
+        Floor Construction
+      </text>
+
+      <text
+        x={floorMeasurementX}
+        y={floorBottomLayersLabelY}
+        fontSize={50}
+        text-anchor="middle"
+        dominantBaseline="middle"
+        fill={textFill}
+      >
+        Floor Bottom Layers
+      </text>
+
+      <text
+        x={floorMeasurementX}
+        y={bottomFloorTopLayersLabelY}
+        fontSize={50}
+        text-anchor="middle"
+        dominantBaseline="middle"
+        fill={textFill}
+      >
+        Floor Top Layers
+      </text>
+
+      <text
+        x={floorMeasurementX}
+        y={bottomFloorConstructionLabelY}
+        fontSize={50}
+        text-anchor="middle"
+        dominantBaseline="middle"
+        fill={textFill}
+      >
+        Floor Construction
+      </text>
+
+      <text
+        x={floorMeasurementX}
+        y={bottomFloorBottomLayersLabelY}
+        fontSize={50}
+        text-anchor="middle"
+        dominantBaseline="middle"
+        fill={textFill}
+      >
+        Floor Bottom Layers
+      </text>
+
+      <text
+        x={floorMeasurementX}
+        y={topFloorBottomLayersBottomY}
+        fontSize={60}
+        text-anchor="middle"
+        dominantBaseline="text-before-edge"
+        fill="var(--teal-10)"
+      >
+        Finished Ceiling
+      </text>
+      <text
+        x={floorMeasurementX}
+        y={bottomFloorTopY}
+        fontSize={60}
+        text-anchor="middle"
+        dominantBaseline="text-after-edge"
+        fill="var(--teal-10)"
+      >
+        Finished Floor
+      </text>
+
+      <SvgMeasurementIndicator
+        startPoint={[marginRightX, bottomFloorTopY]}
+        endPoint={[marginRightX, bottomFloorBottomLayersBottomY]}
+        label={'Total\nFloor\nThickness'}
+        labelOrientation="perpendicular"
+        offset={80}
+        fontSize={60}
+        strokeWidth={10}
+        color="var(--accent-10)"
+      />
+    </g>
+  )
+
+  const wallMeasurements = (
+    <g key="wall-measurements">
+      <text
+        fontSize={60}
+        text-anchor="middle"
+        dominantBaseline="text-after-edge"
+        transform={`translate(${outsidePadding} ${totalHeight / 2}) rotate(-90)`}
+        fill={textFill}
+      >
+        Finished Outside
+      </text>
+      <text
+        fontSize={60}
+        text-anchor="middle"
+        dominantBaseline="text-after-edge"
+        transform={`translate(${inside} ${totalHeight / 2}) rotate(90)`}
+        fill={textFill}
+      >
+        Finished Inside
+      </text>
+
+      <text
+        x={wallCenterX}
+        y={upperBottomPlateLabelY}
+        fontSize={48}
+        text-anchor="middle"
+        dominantBaseline="middle"
+        fill={textFill}
+      >
+        Bottom Plate
+      </text>
+
+      <text
+        x={wallCenterX}
+        y={topFloorConstructionBottomY - floorConstructionBottomOverlap + topPlateThickness / 2}
+        fontSize={50}
+        text-anchor="middle"
+        dominantBaseline="middle"
+        fill={textFill}
+      >
+        Top Plate
+      </text>
+
+      <text
+        x={wallCenterX}
+        y={wallAssemblyBottomY - bottomPlateThickness / 2}
+        fontSize={50}
+        text-anchor="middle"
+        dominantBaseline="middle"
+        fill={textFill}
+      >
+        Bottom Plate
+      </text>
+
+      <text
+        x={wallCenterX}
+        y={lowerTopPlateLabelY}
+        fontSize={48}
+        text-anchor="middle"
+        dominantBaseline="middle"
+        fill={textFill}
+      >
+        Top Plate
+      </text>
+
+      <text
+        x={outsideLayerLabelX}
+        y={outsideLayerLabelY}
+        fontSize={50}
+        text-anchor="middle"
+        dominantBaseline="middle"
+        transform={`rotate(-90 ${outsideLayerLabelX} ${outsideLayerLabelY})`}
+        fill={textFill}
+      >
+        Outside Layers
+      </text>
+
+      <text
+        x={insideLayerLabelX}
+        y={insideLayerLabelY}
+        fontSize={50}
+        text-anchor="middle"
+        dominantBaseline="middle"
+        transform={`rotate(90 ${insideLayerLabelX} ${insideLayerLabelY})`}
+        fill={textFill}
+      >
+        Inside Layers
+      </text>
+
+      <SvgMeasurementIndicator
+        startPoint={[wallLeft, wallAssemblyTopY]}
+        endPoint={[wallLeft, wallAssemblyBottomY]}
+        label="Wall Assembly Height"
+        fontSize={60}
+        offset={outsideThickness + 160}
+        strokeWidth={10}
+        color="var(--accent-10)"
+      />
+
+      <SvgMeasurementIndicator
+        startPoint={[wallLeft, wallCoreTopY]}
+        endPoint={[wallLeft, wallCoreBottomY]}
+        label="Wall Construction Height"
+        fontSize={60}
+        offset={outsideThickness + 100}
+        strokeWidth={10}
+        color="var(--accent-10)"
+      />
+
+      <SvgMeasurementIndicator
+        startPoint={[outsideLayerX, wallCoreTopY]}
+        endPoint={[interiorExtentX, wallCoreTopY]}
+        label={'Total\nWall\nThickness'}
+        offset={200}
+        fontSize={60}
+        strokeWidth={10}
+        color="var(--accent-10)"
+      />
+
+      <g transform={`translate(${wallCenterX} ${wallCenterY})`}>
+        <text x={0} y={0} fontSize={50} fill="var(--accent-10)" text-anchor="middle" dominantBaseline="middle">
+          <tspan x={0}>Wall</tspan>
+          <tspan x={0} dy="1.2em">
+            Construction
+          </tspan>
+        </text>
+      </g>
+    </g>
+  )
+
   return (
     <svg height={500} viewBox={`0 0 ${totalWidth} ${totalHeight}`} style={{ background: 'var(--color-background)' }}>
       <defs>
@@ -491,272 +770,9 @@ e | y +--------------+ s | Floor top layers                 }
         height={totalHeight + 100}
         fill={`url(#${marginRightGradientId})`}
       />
-
-      <SvgMeasurementIndicator
-        startPoint={[marginRightX, marginTop]}
-        endPoint={[marginRightX, marginTop + storeyHeight]}
-        label={'Storey Height'}
-        fontSize={60}
-        offset={40}
-        strokeWidth={10}
-        color="var(--accent-10)"
-      />
-
-      <SvgMeasurementIndicator
-        startPoint={[marginRightX, roomHeightStartY]}
-        endPoint={[marginRightX, marginTop + storeyHeight]}
-        label={'Room Height'}
-        fontSize={60}
-        offset={120}
-        strokeWidth={10}
-        color="var(--accent-10)"
-      />
-
-      <SvgMeasurementIndicator
-        startPoint={[wallRight, topFloorConstructionTopY]}
-        endPoint={[wallRight, topFloorConstructionTopY + floorConstructionTopOverlap]}
-        label={'Construction Top Offset'}
-        fontSize={50}
-        offset={wallRight - floorMeasurementX}
-        strokeWidth={10}
-        color="var(--accent-10)"
-        labelOrientation="perpendicular"
-      />
-
-      <SvgMeasurementIndicator
-        startPoint={[wallRight, topFloorConstructionBottomY - floorConstructionBottomOverlap]}
-        endPoint={[wallRight, topFloorConstructionBottomY]}
-        label={'Construction Bottom Offset'}
-        fontSize={50}
-        offset={wallRight - floorMeasurementX}
-        strokeWidth={10}
-        color="var(--accent-10)"
-        labelOrientation="perpendicular"
-      />
-
-      <text
-        x={floorMeasurementX}
-        y={floorTopLayersLabelY}
-        fontSize={50}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        fill={textFill}
-      >
-        Floor Top Layers
-      </text>
-
-      <text
-        x={floorMeasurementX}
-        y={floorConstructionLabelY}
-        fontSize={50}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        fill={textFill}
-      >
-        Floor Construction
-      </text>
-
-      <text
-        x={floorMeasurementX}
-        y={floorBottomLayersLabelY}
-        fontSize={50}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        fill={textFill}
-      >
-        Floor Bottom Layers
-      </text>
-
-      <text
-        x={floorMeasurementX}
-        y={bottomFloorTopLayersLabelY}
-        fontSize={50}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        fill={textFill}
-      >
-        Floor Top Layers
-      </text>
-
-      <text
-        x={floorMeasurementX}
-        y={bottomFloorConstructionLabelY}
-        fontSize={50}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        fill={textFill}
-      >
-        Floor Construction
-      </text>
-
-      <text
-        x={floorMeasurementX}
-        y={bottomFloorBottomLayersLabelY}
-        fontSize={50}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        fill={textFill}
-      >
-        Floor Bottom Layers
-      </text>
-
-      <text
-        fontSize={60}
-        text-anchor="middle"
-        dominantBaseline="text-after-edge"
-        transform={`translate(${outsidePadding} ${totalHeight / 2}) rotate(-90)`}
-        fill={textFill}
-      >
-        Finished Outside
-      </text>
-      <text
-        fontSize={60}
-        text-anchor="middle"
-        dominantBaseline="text-after-edge"
-        transform={`translate(${inside} ${totalHeight / 2}) rotate(90)`}
-        fill={textFill}
-      >
-        Finished Inside
-      </text>
-
-      <text
-        x={floorMeasurementX}
-        y={topFloorBottomLayersBottomY}
-        fontSize={60}
-        text-anchor="middle"
-        dominantBaseline="text-before-edge"
-        fill="var(--teal-10)"
-      >
-        Finished Ceiling
-      </text>
-      <text
-        x={floorMeasurementX}
-        y={bottomFloorTopY}
-        fontSize={60}
-        text-anchor="middle"
-        dominantBaseline="text-after-edge"
-        fill="var(--teal-10)"
-      >
-        Finished Floor
-      </text>
-
-      <text
-        x={wallCenterX}
-        y={upperBottomPlateLabelY}
-        fontSize={48}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        fill={textFill}
-      >
-        Bottom Plate
-      </text>
-
-      <text
-        x={wallCenterX}
-        y={topFloorConstructionBottomY - floorConstructionBottomOverlap + topPlateThickness / 2}
-        fontSize={50}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        fill={textFill}
-      >
-        Top Plate
-      </text>
-
-      <text
-        x={wallCenterX}
-        y={wallAssemblyBottomY - bottomPlateThickness / 2}
-        fontSize={50}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        fill={textFill}
-      >
-        Bottom Plate
-      </text>
-
-      <text
-        x={wallCenterX}
-        y={lowerTopPlateLabelY}
-        fontSize={48}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        fill={textFill}
-      >
-        Top Plate
-      </text>
-
-      <text
-        x={outsideLayerLabelX}
-        y={outsideLayerLabelY}
-        fontSize={50}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        transform={`rotate(-90 ${outsideLayerLabelX} ${outsideLayerLabelY})`}
-        fill={textFill}
-      >
-        Outside Layers
-      </text>
-
-      <text
-        x={insideLayerLabelX}
-        y={insideLayerLabelY}
-        fontSize={50}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        transform={`rotate(90 ${insideLayerLabelX} ${insideLayerLabelY})`}
-        fill={textFill}
-      >
-        Inside Layers
-      </text>
-
-      <SvgMeasurementIndicator
-        startPoint={[wallLeft, wallAssemblyTopY]}
-        endPoint={[wallLeft, wallAssemblyBottomY]}
-        label="Wall Assembly Height"
-        fontSize={60}
-        offset={outsideThickness + 160}
-        strokeWidth={10}
-        color="var(--accent-10)"
-      />
-
-      <SvgMeasurementIndicator
-        startPoint={[wallLeft, wallCoreTopY]}
-        endPoint={[wallLeft, wallCoreBottomY]}
-        label="Wall Construction Height"
-        fontSize={60}
-        offset={outsideThickness + 100}
-        strokeWidth={10}
-        color="var(--accent-10)"
-      />
-
-      <SvgMeasurementIndicator
-        startPoint={[marginRightX, bottomFloorTopY]}
-        endPoint={[marginRightX, bottomFloorBottomLayersBottomY]}
-        label={'Total\nFloor\nThickness'}
-        labelOrientation="perpendicular"
-        offset={80}
-        fontSize={60}
-        strokeWidth={10}
-        color="var(--accent-10)"
-      />
-
-      <SvgMeasurementIndicator
-        startPoint={[outsideLayerX, wallCoreTopY]}
-        endPoint={[interiorExtentX, wallCoreTopY]}
-        label={'Total\nWall\nThickness'}
-        offset={200}
-        fontSize={60}
-        strokeWidth={10}
-        color="var(--accent-10)"
-      />
-
-      <g transform={`translate(${wallCenterX} ${wallCenterY})`}>
-        <text x={0} y={0} fontSize={50} fill={textFill} text-anchor="middle" dominantBaseline="middle">
-          <tspan x={0}>Wall</tspan>
-          <tspan x={0} dy="1.2em">
-            Construction
-          </tspan>
-        </text>
-      </g>
+      {heightMeasurements}
+      {floorMeasurements}
+      {wallMeasurements}
     </svg>
   )
 }
@@ -769,5 +785,20 @@ export function MeasurementModal({ trigger }: MeasurementModalProps): React.JSX.
     <BaseModal title="Measurements" trigger={trigger}>
       <ConstructionSchematic />
     </BaseModal>
+  )
+}
+export interface MeasurementModalProps {
+  trigger: React.ReactNode
+}
+export function MeasurementHover({ trigger }: MeasurementModalProps): React.JSX.Element {
+  return (
+    <HoverCard.Root>
+      <HoverCard.Trigger>{trigger}</HoverCard.Trigger>
+      <HoverCard.Content>
+        <Inset>
+          <ConstructionSchematic />
+        </Inset>
+      </HoverCard.Content>
+    </HoverCard.Root>
   )
 }

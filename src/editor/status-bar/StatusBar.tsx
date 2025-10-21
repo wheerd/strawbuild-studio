@@ -1,5 +1,8 @@
-import { Box, Flex, Grid } from '@radix-ui/themes'
+import { InfoCircledIcon } from '@radix-ui/react-icons'
+import { Box, Flex, Grid, IconButton } from '@radix-ui/themes'
 import React from 'react'
+
+import { MeasurementHover } from '@/editor/components/MeasurementModal'
 
 import { AutoSaveIndicator } from './AutoSaveIndicator'
 import { GridSizeDisplay } from './GridSizeDisplay'
@@ -32,6 +35,14 @@ export function StatusBar(): React.JSX.Element {
 
         <Flex align="center" justify="center" gap="3">
           <StoreySelector />
+
+          <MeasurementHover
+            trigger={
+              <IconButton title="Measurements" variant="ghost" size="2">
+                <InfoCircledIcon />
+              </IconButton>
+            }
+          />
         </Flex>
 
         <Flex align="center" justify="end" gap="3">
