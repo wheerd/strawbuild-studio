@@ -1,8 +1,8 @@
-import { HoverCard, Inset } from '@radix-ui/themes'
+import { InfoCircledIcon } from '@radix-ui/react-icons'
+import { HoverCard, IconButton, Inset } from '@radix-ui/themes'
 import { type ComponentProps, type JSX, type ReactNode, useId } from 'react'
 
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
-import { BaseModal } from '@/shared/components/BaseModal'
 
 export type Measurement =
   | 'storeyHeight'
@@ -30,6 +30,8 @@ export interface MeasurementDisplayConfig {
   showPartLabels?: boolean
   showMeasurements?: boolean
   showAssemblyOutlines?: boolean
+  showFinishedLevels?: boolean
+  showFinishedSides?: boolean
   highlightedMeasurement?: Measurement
   highlightedAssembly?: Assembly
   highlightedPart?: ConstructionPart
@@ -41,7 +43,9 @@ function ConstructionSchematic({
   highlightedPart,
   showPartLabels = true,
   showMeasurements = true,
-  showAssemblyOutlines = true
+  showAssemblyOutlines = true,
+  showFinishedLevels = true,
+  showFinishedSides = true
 }: MeasurementDisplayConfig = {}): JSX.Element {
   /*
   |   |       Slab Construction                           
@@ -192,6 +196,8 @@ e | y +--------------+ s | Floor top layers                 }
   const highlightFill = 'var(--accent-4)'
   const highlightStroke = 'var(--accent-10)'
   const measurementNeutralColor = 'var(--gray-10)'
+  const finishedLevelColor = 'var(--teal-10)'
+  const finishedSideColor = 'var(--gold-10)'
 
   const partIsHighlighted = (part?: ConstructionPart): boolean => Boolean(part && highlightedPart === part)
 
@@ -586,26 +592,30 @@ e | y +--------------+ s | Floor top layers                 }
         </text>
       )}
 
-      <text
-        x={floorMeasurementX}
-        y={topFloorBottomLayersBottomY}
-        fontSize={60}
-        text-anchor="middle"
-        dominantBaseline="text-before-edge"
-        fill="var(--teal-10)"
-      >
-        Finished Ceiling
-      </text>
-      <text
-        x={floorMeasurementX}
-        y={bottomFloorTopY}
-        fontSize={60}
-        text-anchor="middle"
-        dominantBaseline="text-after-edge"
-        fill="var(--teal-10)"
-      >
-        Finished Floor
-      </text>
+      {showFinishedLevels && (
+        <>
+          <text
+            x={floorMeasurementX}
+            y={topFloorBottomLayersBottomY}
+            fontSize={60}
+            text-anchor="middle"
+            dominantBaseline="text-before-edge"
+            fill={finishedLevelColor}
+          >
+            Finished Ceiling
+          </text>
+          <text
+            x={floorMeasurementX}
+            y={bottomFloorTopY}
+            fontSize={60}
+            text-anchor="middle"
+            dominantBaseline="text-after-edge"
+            fill={finishedLevelColor}
+          >
+            Finished Floor
+          </text>
+        </>
+      )}
 
       {renderMeasurement('totalFloorThickness', {
         startPoint: [marginRightX, bottomFloorTopY],
@@ -621,24 +631,46 @@ e | y +--------------+ s | Floor top layers                 }
 
   const wallMeasurements = (
     <g key="wall-measurements">
-      <text
-        fontSize={60}
-        text-anchor="middle"
-        dominantBaseline="text-after-edge"
-        transform={`translate(${outsidePadding} ${totalHeight / 2}) rotate(-90)`}
-        fill="var(--gold-10)"
-      >
-        Finished Outside
-      </text>
-      <text
-        fontSize={60}
-        text-anchor="middle"
-        dominantBaseline="text-after-edge"
-        transform={`translate(${inside} ${totalHeight / 2}) rotate(90)`}
-        fill="var(--gold-10)"
-      >
-        Finished Inside
-      </text>
+      {showFinishedSides && (
+        <>
+          <text
+            fontSize={60}
+            text-anchor="middle"
+            dominantBaseline="text-after-edge"
+            transform={`translate(${outsidePadding} ${totalHeight / 2}) rotate(-90)`}
+            fill={finishedSideColor}
+          >
+            Finished Outside
+          </text>
+          <text
+            fontSize={60}
+            text-anchor="middle"
+            dominantBaseline="text-after-edge"
+            transform={`translate(${inside} ${totalHeight / 2}) rotate(90)`}
+            fill={finishedSideColor}
+          >
+            Finished Inside
+          </text>
+          <line
+            key="finished-inside"
+            x1={inside}
+            y1={topFloorBottomLayersBottomY}
+            x2={inside}
+            y2={bottomFloorTopY}
+            stroke={finishedSideColor}
+            strokeWidth={20}
+          />
+          <line
+            key="finished-outside"
+            x1={outsideLayerX}
+            y1={0}
+            x2={outsideLayerX}
+            y2={totalHeight}
+            stroke={finishedSideColor}
+            strokeWidth={20}
+          />
+        </>
+      )}
 
       {partLabelVisible('bottomPlate') && (
         <text
@@ -834,43 +866,28 @@ e | y +--------------+ s | Floor top layers                 }
         />
       )}
 
-      <line
-        key="finished-ceiling"
-        x1={inside}
-        y1={topFloorBottomLayersBottomY}
-        x2={totalWidth}
-        y2={topFloorBottomLayersBottomY}
-        stroke="var(--teal-10)"
-        strokeWidth={20}
-      />
-      <line
-        key="finished-floor"
-        x1={inside}
-        y1={bottomFloorTopY}
-        x2={totalWidth}
-        y2={bottomFloorTopY}
-        stroke="var(--teal-10)"
-        strokeWidth={20}
-      />
-
-      <line
-        key="finished-inside"
-        x1={inside}
-        y1={topFloorBottomLayersBottomY}
-        x2={inside}
-        y2={bottomFloorTopY}
-        stroke="var(--gold-10)"
-        strokeWidth={20}
-      />
-      <line
-        key="finished-outside"
-        x1={outsideLayerX}
-        y1={0}
-        x2={outsideLayerX}
-        y2={totalHeight}
-        stroke="var(--gold-10)"
-        strokeWidth={20}
-      />
+      {showFinishedLevels && (
+        <>
+          <line
+            key="finished-ceiling"
+            x1={inside}
+            y1={topFloorBottomLayersBottomY}
+            x2={totalWidth}
+            y2={topFloorBottomLayersBottomY}
+            stroke={finishedLevelColor}
+            strokeWidth={20}
+          />
+          <line
+            key="finished-floor"
+            x1={inside}
+            y1={bottomFloorTopY}
+            x2={totalWidth}
+            y2={bottomFloorTopY}
+            stroke={finishedLevelColor}
+            strokeWidth={20}
+          />
+        </>
+      )}
 
       <rect
         key="margin-top"
@@ -903,29 +920,21 @@ e | y +--------------+ s | Floor top layers                 }
   )
 }
 
-export interface MeasurementModalProps {
+export interface MeasurementInfoProps {
   trigger: ReactNode
   config?: MeasurementDisplayConfig
 }
-export function MeasurementModal({ trigger, config }: MeasurementModalProps): React.JSX.Element {
-  return (
-    <BaseModal title="Measurements" trigger={trigger}>
-      <ConstructionSchematic {...(config ?? {})} />
-    </BaseModal>
-  )
-}
-
-export interface MeasurementHoverProps {
-  trigger: ReactNode
-  config?: MeasurementDisplayConfig
-}
-export function MeasurementHover({ trigger, config }: MeasurementHoverProps): React.JSX.Element {
+export function MeasurementInfo(config: MeasurementDisplayConfig): React.JSX.Element {
   return (
     <HoverCard.Root>
-      <HoverCard.Trigger>{trigger}</HoverCard.Trigger>
+      <HoverCard.Trigger>
+        <IconButton radius="full" title="Measurements" variant="ghost" size="1">
+          <InfoCircledIcon cursor="help" />
+        </IconButton>
+      </HoverCard.Trigger>
       <HoverCard.Content>
         <Inset>
-          <ConstructionSchematic {...(config ?? {})} />
+          <ConstructionSchematic {...config} />
         </Inset>
       </HoverCard.Content>
     </HoverCard.Root>
