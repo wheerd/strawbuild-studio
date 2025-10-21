@@ -621,28 +621,24 @@ e | y +--------------+ s | Floor top layers                 }
 
   const wallMeasurements = (
     <g key="wall-measurements">
-      {partLabelVisible('outsideLayer') && (
-        <text
-          fontSize={60}
-          text-anchor="middle"
-          dominantBaseline="text-after-edge"
-          transform={`translate(${outsidePadding} ${totalHeight / 2}) rotate(-90)`}
-          fill={partLabelColor('outsideLayer')}
-        >
-          Finished Outside
-        </text>
-      )}
-      {partLabelVisible('insideLayer') && (
-        <text
-          fontSize={60}
-          text-anchor="middle"
-          dominantBaseline="text-after-edge"
-          transform={`translate(${inside} ${totalHeight / 2}) rotate(90)`}
-          fill={partLabelColor('insideLayer')}
-        >
-          Finished Inside
-        </text>
-      )}
+      <text
+        fontSize={60}
+        text-anchor="middle"
+        dominantBaseline="text-after-edge"
+        transform={`translate(${outsidePadding} ${totalHeight / 2}) rotate(-90)`}
+        fill="var(--gold-10)"
+      >
+        Finished Outside
+      </text>
+      <text
+        fontSize={60}
+        text-anchor="middle"
+        dominantBaseline="text-after-edge"
+        transform={`translate(${inside} ${totalHeight / 2}) rotate(90)`}
+        fill="var(--gold-10)"
+      >
+        Finished Inside
+      </text>
 
       {partLabelVisible('bottomPlate') && (
         <text
@@ -847,7 +843,6 @@ e | y +--------------+ s | Floor top layers                 }
         stroke="var(--teal-10)"
         strokeWidth={20}
       />
-
       <line
         key="finished-floor"
         x1={inside}
@@ -855,6 +850,25 @@ e | y +--------------+ s | Floor top layers                 }
         x2={totalWidth}
         y2={bottomFloorTopY}
         stroke="var(--teal-10)"
+        strokeWidth={20}
+      />
+
+      <line
+        key="finished-inside"
+        x1={inside}
+        y1={topFloorBottomLayersBottomY}
+        x2={inside}
+        y2={bottomFloorTopY}
+        stroke="var(--gold-10)"
+        strokeWidth={20}
+      />
+      <line
+        key="finished-outside"
+        x1={outsideLayerX}
+        y1={0}
+        x2={outsideLayerX}
+        y2={totalHeight}
+        stroke="var(--gold-10)"
         strokeWidth={20}
       />
 
