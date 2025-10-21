@@ -1,8 +1,6 @@
 import { Box, Flex, Grid } from '@radix-ui/themes'
 import React from 'react'
 
-import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
-
 import { AutoSaveIndicator } from './AutoSaveIndicator'
 import { GridSizeDisplay } from './GridSizeDisplay'
 import { OfflineStatusIndicator } from './OfflineStatusIndicator'
@@ -34,7 +32,6 @@ export function StatusBar(): React.JSX.Element {
 
         <Flex align="center" justify="center" gap="3">
           <StoreySelector />
-          <MeasurementInfo />
         </Flex>
 
         <Flex align="center" justify="end" gap="3">

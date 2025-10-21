@@ -23,6 +23,7 @@ import { getFloorAssemblyUsage } from '@/construction/config/usage'
 import type { FloorAssemblyType, FloorConfig, MonolithicFloorConfig } from '@/construction/floors/types'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
+import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
 import '@/shared/geometry'
 
@@ -202,7 +203,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
               </IconButton>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
-              <AlertDialog.Title>Delete Floor Configuration</AlertDialog.Title>
+              <AlertDialog.Title>Delete Floor Assembly</AlertDialog.Title>
               <AlertDialog.Description>
                 Are you sure you want to delete "{selectedConfig?.name}"? This action cannot be undone.
               </AlertDialog.Description>
@@ -281,11 +282,14 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
       <Separator size="4" />
       <Flex direction="column" gap="3">
         <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
-          <Label.Root>
-            <Text size="2" weight="medium" color="gray">
-              Default Floor Configuration
-            </Text>
-          </Label.Root>
+          <Flex align="center" gap="1">
+            <Label.Root>
+              <Text size="2" weight="medium" color="gray">
+                Default Floor Assembly
+              </Text>
+            </Label.Root>
+            <MeasurementInfo highlightedAssembly="floorAssembly" />
+          </Flex>
           <FloorAssemblySelect
             value={defaultConfigId}
             onValueChange={setDefaultFloorAssembly}
@@ -324,7 +328,7 @@ function MonolithicConfigFields({
 }) {
   return (
     <>
-      <Heading size="2">Monolithic Floor Configuration</Heading>
+      <Heading size="2">Monolithic Floor</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
@@ -338,11 +342,14 @@ function MonolithicConfigFields({
           size="2"
         />
 
-        <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            Thickness
-          </Text>
-        </Label.Root>
+        <Flex align="center" gap="1">
+          <Label.Root>
+            <Text size="2" weight="medium" color="gray">
+              Thickness
+            </Text>
+          </Label.Root>
+          <MeasurementInfo highlightedPart="floorConstruction" showPartLabels />
+        </Flex>
         <LengthField value={config.thickness} onChange={thickness => onUpdate({ thickness })} unit="mm" size="2" />
       </Grid>
     </>
@@ -373,11 +380,14 @@ function LayersFields({
     <>
       <Heading size="2">Layers</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3">
-        <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            Top Thickness
-          </Text>
-        </Label.Root>
+        <Flex align="center" gap="1">
+          <Label.Root>
+            <Text size="2" weight="medium" color="gray">
+              Top Thickness
+            </Text>
+          </Label.Root>
+          <MeasurementInfo highlightedPart="floorTopLayers" showPartLabels />
+        </Flex>
         <LengthField
           value={config.layers.topThickness}
           onChange={topThickness => onUpdate({ layers: { ...config.layers, topThickness } })}
@@ -385,11 +395,14 @@ function LayersFields({
           size="2"
         />
 
-        <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            Bottom Thickness
-          </Text>
-        </Label.Root>
+        <Flex align="center" gap="1">
+          <Label.Root>
+            <Text size="2" weight="medium" color="gray">
+              Bottom Thickness
+            </Text>
+          </Label.Root>
+          <MeasurementInfo highlightedPart="floorBottomLayers" showPartLabels />
+        </Flex>
         <LengthField
           value={config.layers.bottomThickness}
           onChange={bottomThickness => onUpdate({ layers: { ...config.layers, bottomThickness } })}

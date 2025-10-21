@@ -22,6 +22,7 @@ export type ConstructionPart =
   | 'floorBottomLayers'
   | 'insideLayer'
   | 'outsideLayer'
+  | 'plates'
   | 'topPlate'
   | 'wallConstruction'
   | 'bottomPlate'
@@ -41,11 +42,11 @@ function ConstructionSchematic({
   highlightedAssembly,
   highlightedMeasurement,
   highlightedPart,
-  showPartLabels = true,
-  showMeasurements = true,
-  showAssemblyOutlines = true,
-  showFinishedLevels = true,
-  showFinishedSides = true
+  showPartLabels = false,
+  showMeasurements = false,
+  showAssemblyOutlines = false,
+  showFinishedLevels = false,
+  showFinishedSides = false
 }: MeasurementDisplayConfig = {}): JSX.Element {
   /*
   |   |       Slab Construction                           
@@ -199,7 +200,10 @@ e | y +--------------+ s | Floor top layers                 }
   const finishedLevelColor = 'var(--teal-10)'
   const finishedSideColor = 'var(--gold-10)'
 
-  const partIsHighlighted = (part?: ConstructionPart): boolean => Boolean(part && highlightedPart === part)
+  const isPlateSegment = (part?: ConstructionPart): boolean => part === 'topPlate' || part === 'bottomPlate'
+
+  const partIsHighlighted = (part?: ConstructionPart): boolean =>
+    Boolean(part && (highlightedPart === part || (highlightedPart === 'plates' && isPlateSegment(part))))
 
   const getPartFill = (part: ConstructionPart | undefined, defaultFill: string): string =>
     partIsHighlighted(part) ? highlightFill : defaultFill
@@ -207,7 +211,8 @@ e | y +--------------+ s | Floor top layers                 }
   const getPartStroke = (part: ConstructionPart | undefined, defaultStroke = 'var(--gray-12)'): string =>
     partIsHighlighted(part) ? highlightStroke : defaultStroke
 
-  const partLabelVisible = (part: ConstructionPart): boolean => showPartLabels || highlightedPart === part
+  const partLabelVisible = (part: ConstructionPart): boolean =>
+    showPartLabels || highlightedPart === part || (highlightedPart === 'plates' && isPlateSegment(part))
 
   const partLabelColor = (part: ConstructionPart): string => (partIsHighlighted(part) ? highlightStroke : textFill)
 
@@ -928,11 +933,11 @@ export function MeasurementInfo(config: MeasurementDisplayConfig): React.JSX.Ele
   return (
     <HoverCard.Root>
       <HoverCard.Trigger>
-        <IconButton radius="full" title="Measurements" variant="ghost" size="1">
-          <InfoCircledIcon cursor="help" />
+        <IconButton style={{ cursor: 'help' }} color="gray" radius="full" title="Measurements" variant="ghost" size="1">
+          <InfoCircledIcon width={12} height={12} />
         </IconButton>
       </HoverCard.Trigger>
-      <HoverCard.Content>
+      <HoverCard.Content side="right">
         <Inset>
           <ConstructionSchematic {...config} />
         </Inset>
