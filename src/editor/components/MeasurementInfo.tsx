@@ -831,7 +831,7 @@ e | y +--------------+ s | Floor top layers                 }
         <clipPath id={wallAssemblyClipId} clipPathUnits="userSpaceOnUse">
           <use href={`#${wallAssemblyPathId}`} />
         </clipPath>
-        <style dangerouslySetInnerHTML={{ __html: 'text { font-family: monospace; }' }}></style>
+        <style dangerouslySetInnerHTML={{ __html: 'text { font-family: monospace; }' }} />
       </defs>
 
       {floorShapes}
