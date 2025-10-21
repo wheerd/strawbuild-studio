@@ -125,6 +125,13 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
           <InfoCircledIcon />
         </IconButton>
         <MeasurementModal
+          config={{
+            showMeasurements: false,
+            showPartLabels: true,
+            showAssemblyOutlines: false,
+            highlightedMeasurement: 'floorBottomOffset',
+            highlightedPart: 'floorConstruction'
+          }}
           trigger={
             <IconButton title="Measurements" variant="ghost" size="2">
               <InfoCircledIcon />

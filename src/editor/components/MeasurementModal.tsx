@@ -1,5 +1,5 @@
 import { HoverCard, Inset } from '@radix-ui/themes'
-import { type JSX, useId } from 'react'
+import { type ComponentProps, type JSX, type ReactNode, useId } from 'react'
 
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
 import { BaseModal } from '@/shared/components/BaseModal'
@@ -7,8 +7,8 @@ import { BaseModal } from '@/shared/components/BaseModal'
 export type Measurement =
   | 'storeyHeight'
   | 'roomHeight'
-  | 'constructionTopOffset'
-  | 'constructionBottomOffset'
+  | 'floorTopOffset'
+  | 'floorBottomOffset'
   | 'totalFloorThickness'
   | 'wallAssemblyHeight'
   | 'wallConstructionHeight'
@@ -189,6 +189,45 @@ e | y +--------------+ s | Floor top layers                 }
     bottomFloorConstructionTopY + floorConstructionThickness + floorConstructionTopOverlap
   const insideLayerMiddleBottomY = topFloorConstructionBottomY + insideLayerMiddleHeight
 
+  const highlightFill = 'var(--accent-4)'
+  const highlightStroke = 'var(--accent-10)'
+  const measurementNeutralColor = 'var(--gray-10)'
+
+  const partIsHighlighted = (part?: ConstructionPart): boolean => Boolean(part && highlightedPart === part)
+
+  const getPartFill = (part: ConstructionPart | undefined, defaultFill: string): string =>
+    partIsHighlighted(part) ? highlightFill : defaultFill
+
+  const getPartStroke = (part: ConstructionPart | undefined, defaultStroke = 'var(--gray-12)'): string =>
+    partIsHighlighted(part) ? highlightStroke : defaultStroke
+
+  const partLabelVisible = (part: ConstructionPart): boolean => showPartLabels || highlightedPart === part
+
+  const partLabelColor = (part: ConstructionPart): string => (partIsHighlighted(part) ? highlightStroke : textFill)
+
+  const measurementVisible = (measurement: Measurement): boolean =>
+    showMeasurements || highlightedMeasurement === measurement
+
+  const measurementColor = (measurement: Measurement): string =>
+    highlightedMeasurement === measurement ? highlightStroke : measurementNeutralColor
+
+  const assemblyOutlineVisible = (assembly: Assembly): boolean =>
+    showAssemblyOutlines || highlightedAssembly === assembly
+
+  const assemblyOutlineStroke = (assembly: Assembly, defaultStroke: string): string =>
+    highlightedAssembly === assembly ? highlightStroke : defaultStroke
+
+  const renderMeasurement = (
+    measurement: Measurement,
+    props: Omit<ComponentProps<typeof SvgMeasurementIndicator>, 'color'>
+  ): JSX.Element | null => {
+    if (!measurementVisible(measurement)) {
+      return null
+    }
+
+    return <SvgMeasurementIndicator {...props} color={measurementColor(measurement)} />
+  }
+
   const upperFloorOutlinePath = [
     `M ${wallLeft} ${topFloorConstructionTopY + floorConstructionTopOverlap}`,
     `H ${wallRight}`,
@@ -242,8 +281,8 @@ e | y +--------------+ s | Floor top layers                 }
           y={floorTopY}
           width={floorWidth + floorProjection}
           height={floorTopThickness}
-          fill="var(--gray-6)"
-          stroke="var(--gray-12)"
+          fill={getPartFill('floorTopLayers', 'var(--gray-6)')}
+          stroke={getPartStroke('floorTopLayers')}
           strokeWidth="5"
         />
         <path
@@ -256,8 +295,8 @@ e | y +--------------+ s | Floor top layers                 }
               H ${wallRight}
               v -${floorConstructionBottomOverlap}
               H ${wallLeft} Z`}
-          fill="var(--gray-7)"
-          stroke="var(--gray-12)"
+          fill={getPartFill('floorConstruction', 'var(--gray-7)')}
+          stroke={getPartStroke('floorConstruction')}
           strokeWidth="5"
         />
         <rect
@@ -266,8 +305,8 @@ e | y +--------------+ s | Floor top layers                 }
           y={topFloorBottomLayersTopY}
           width={floorWidth + floorProjection}
           height={floorBottomThickness}
-          fill="var(--gray-6)"
-          stroke="var(--gray-12)"
+          fill={getPartFill('floorBottomLayers', 'var(--gray-6)')}
+          stroke={getPartStroke('floorBottomLayers')}
           strokeWidth="5"
         />
       </g>
@@ -278,8 +317,8 @@ e | y +--------------+ s | Floor top layers                 }
           y={bottomFloorTopY}
           width={floorWidth + floorProjection}
           height={floorTopThickness}
-          fill="var(--gray-6)"
-          stroke="var(--gray-12)"
+          fill={getPartFill('floorTopLayers', 'var(--gray-6)')}
+          stroke={getPartStroke('floorTopLayers')}
           strokeWidth="5"
         />
         <path
@@ -292,8 +331,8 @@ e | y +--------------+ s | Floor top layers                 }
               H ${wallRight}
               v -${floorConstructionBottomOverlap}
               H ${wallLeft} Z`}
-          fill="var(--gray-7)"
-          stroke="var(--gray-12)"
+          fill={getPartFill('floorConstruction', 'var(--gray-7)')}
+          stroke={getPartStroke('floorConstruction')}
           strokeWidth="5"
         />
         <rect
@@ -302,8 +341,8 @@ e | y +--------------+ s | Floor top layers                 }
           y={bottomFloorBottomLayersTopY}
           width={floorWidth + floorProjection}
           height={floorBottomThickness}
-          fill="var(--gray-6)"
-          stroke="var(--gray-12)"
+          fill={getPartFill('floorBottomLayers', 'var(--gray-6)')}
+          stroke={getPartStroke('floorBottomLayers')}
           strokeWidth="5"
         />
       </g>
@@ -328,8 +367,8 @@ e | y +--------------+ s | Floor top layers                 }
         y={-wallVerticalExtension}
         width={insideThickness}
         height={topFloorConstructionTopY + wallVerticalExtension}
-        fill="var(--gray-5)"
-        stroke="var(--gray-12)"
+        fill={getPartFill('insideLayer', 'var(--gray-5)')}
+        stroke={getPartStroke('insideLayer')}
         strokeWidth="5"
       />
       <rect
@@ -338,8 +377,8 @@ e | y +--------------+ s | Floor top layers                 }
         y={topFloorConstructionTopY + floorConstructionTopOverlap - bottomPlateThickness}
         width={wallWidth}
         height={bottomPlateThickness}
-        fill="var(--gray-8)"
-        stroke="var(--gray-12)"
+        fill={getPartFill('bottomPlate', 'var(--gray-8)')}
+        stroke={getPartStroke('bottomPlate')}
         strokeWidth="5"
       />
       <rect
@@ -348,8 +387,8 @@ e | y +--------------+ s | Floor top layers                 }
         y={wallAssemblyTopY}
         width={wallWidth}
         height={topPlateThickness}
-        fill="var(--gray-8)"
-        stroke="var(--gray-12)"
+        fill={getPartFill('topPlate', 'var(--gray-8)')}
+        stroke={getPartStroke('topPlate')}
         strokeWidth="5"
       />
       <rect
@@ -358,8 +397,8 @@ e | y +--------------+ s | Floor top layers                 }
         y={wallCoreTopY}
         width={wallWidth}
         height={wallCoreHeight}
-        fill="var(--gray-7)"
-        stroke="var(--gray-12)"
+        fill={getPartFill('wallConstruction', 'var(--gray-7)')}
+        stroke={getPartStroke('wallConstruction')}
         strokeWidth="5"
       />
       <rect
@@ -368,8 +407,8 @@ e | y +--------------+ s | Floor top layers                 }
         y={bottomPlateTopY}
         width={wallWidth}
         height={bottomPlateThickness}
-        fill="var(--gray-8)"
-        stroke="var(--gray-12)"
+        fill={getPartFill('bottomPlate', 'var(--gray-8)')}
+        stroke={getPartStroke('bottomPlate')}
         strokeWidth="5"
       />
       <rect
@@ -378,8 +417,8 @@ e | y +--------------+ s | Floor top layers                 }
         y={topFloorBottomLayersTopY}
         width={insideThickness}
         height={insideLayerMiddleHeight}
-        fill="var(--gray-5)"
-        stroke="var(--gray-12)"
+        fill={getPartFill('insideLayer', 'var(--gray-5)')}
+        stroke={getPartStroke('insideLayer')}
         strokeWidth="5"
       />
       <rect
@@ -388,8 +427,8 @@ e | y +--------------+ s | Floor top layers                 }
         y={bottomFloorConstructionTopY + floorConstructionThickness + floorConstructionTopOverlap}
         width={wallWidth}
         height={topPlateThickness}
-        fill="var(--gray-8)"
-        stroke="var(--gray-12)"
+        fill={getPartFill('topPlate', 'var(--gray-8)')}
+        stroke={getPartStroke('topPlate')}
         strokeWidth="5"
       />
       <rect
@@ -408,8 +447,8 @@ e | y +--------------+ s | Floor top layers                 }
         y={bottomFloorConstructionTopY + floorTotalConstructionThickness}
         width={insideThickness}
         height={wallHeight}
-        fill="var(--gray-5)"
-        stroke="var(--gray-12)"
+        fill={getPartFill('insideLayer', 'var(--gray-5)')}
+        stroke={getPartStroke('insideLayer')}
         strokeWidth="5"
       />
       <rect
@@ -418,8 +457,8 @@ e | y +--------------+ s | Floor top layers                 }
         y={-1}
         width={outsideThickness}
         height={totalHeight + 1}
-        fill="var(--gray-5)"
-        stroke="var(--gray-12)"
+        fill={getPartFill('outsideLayer', 'var(--gray-5)')}
+        stroke={getPartStroke('outsideLayer')}
         strokeWidth="5"
       />
     </g>
@@ -427,117 +466,125 @@ e | y +--------------+ s | Floor top layers                 }
 
   const heightMeasurements = (
     <g key="height-measurements">
-      <SvgMeasurementIndicator
-        startPoint={[marginRightX, marginTop]}
-        endPoint={[marginRightX, marginTop + storeyHeight]}
-        label={'Storey Height'}
-        fontSize={60}
-        offset={40}
-        strokeWidth={10}
-        color="var(--accent-10)"
-      />
+      {renderMeasurement('storeyHeight', {
+        startPoint: [marginRightX, marginTop],
+        endPoint: [marginRightX, marginTop + storeyHeight],
+        label: 'Storey Height',
+        fontSize: 60,
+        offset: 40,
+        strokeWidth: 10
+      })}
 
-      <SvgMeasurementIndicator
-        startPoint={[marginRightX, roomHeightStartY]}
-        endPoint={[marginRightX, marginTop + storeyHeight]}
-        label={'Room Height'}
-        fontSize={60}
-        offset={120}
-        strokeWidth={10}
-        color="var(--accent-10)"
-      />
+      {renderMeasurement('roomHeight', {
+        startPoint: [marginRightX, roomHeightStartY],
+        endPoint: [marginRightX, marginTop + storeyHeight],
+        label: 'Room Height',
+        fontSize: 60,
+        offset: 120,
+        strokeWidth: 10
+      })}
     </g>
   )
 
   const floorMeasurements = (
     <g key="floor-measurements">
-      <SvgMeasurementIndicator
-        startPoint={[wallRight, topFloorConstructionTopY]}
-        endPoint={[wallRight, topFloorConstructionTopY + floorConstructionTopOverlap]}
-        label={'Construction Top Offset'}
-        fontSize={50}
-        offset={wallRight - floorMeasurementX}
-        strokeWidth={10}
-        color="var(--accent-10)"
-        labelOrientation="perpendicular"
-      />
+      {renderMeasurement('floorTopOffset', {
+        startPoint: [wallRight, topFloorConstructionTopY],
+        endPoint: [wallRight, topFloorConstructionTopY + floorConstructionTopOverlap],
+        label: 'Construction Top Offset',
+        fontSize: 50,
+        offset: wallRight - floorMeasurementX,
+        strokeWidth: 10,
+        labelOrientation: 'perpendicular'
+      })}
 
-      <SvgMeasurementIndicator
-        startPoint={[wallRight, topFloorConstructionBottomY - floorConstructionBottomOverlap]}
-        endPoint={[wallRight, topFloorConstructionBottomY]}
-        label={'Construction Bottom Offset'}
-        fontSize={50}
-        offset={wallRight - floorMeasurementX}
-        strokeWidth={10}
-        color="var(--accent-10)"
-        labelOrientation="perpendicular"
-      />
+      {renderMeasurement('floorBottomOffset', {
+        startPoint: [wallRight, topFloorConstructionBottomY - floorConstructionBottomOverlap],
+        endPoint: [wallRight, topFloorConstructionBottomY],
+        label: 'Construction Bottom Offset',
+        fontSize: 50,
+        offset: wallRight - floorMeasurementX,
+        strokeWidth: 10,
+        labelOrientation: 'perpendicular'
+      })}
 
-      <text
-        x={floorMeasurementX}
-        y={floorTopLayersLabelY}
-        fontSize={50}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        fill={textFill}
-      >
-        Floor Top Layers
-      </text>
+      {partLabelVisible('floorTopLayers') && (
+        <text
+          x={floorMeasurementX}
+          y={floorTopLayersLabelY}
+          fontSize={50}
+          text-anchor="middle"
+          dominantBaseline="middle"
+          fill={partLabelColor('floorTopLayers')}
+        >
+          Floor Top Layers
+        </text>
+      )}
 
-      <text
-        x={floorMeasurementX}
-        y={floorConstructionLabelY}
-        fontSize={50}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        fill={textFill}
-      >
-        Floor Construction
-      </text>
+      {partLabelVisible('floorConstruction') && (
+        <text
+          x={floorMeasurementX}
+          y={floorConstructionLabelY}
+          fontSize={50}
+          text-anchor="middle"
+          dominantBaseline="middle"
+          fill={partLabelColor('floorConstruction')}
+        >
+          Floor Construction
+        </text>
+      )}
 
-      <text
-        x={floorMeasurementX}
-        y={floorBottomLayersLabelY}
-        fontSize={50}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        fill={textFill}
-      >
-        Floor Bottom Layers
-      </text>
+      {partLabelVisible('floorBottomLayers') && (
+        <text
+          x={floorMeasurementX}
+          y={floorBottomLayersLabelY}
+          fontSize={50}
+          text-anchor="middle"
+          dominantBaseline="middle"
+          fill={partLabelColor('floorBottomLayers')}
+        >
+          Floor Bottom Layers
+        </text>
+      )}
 
-      <text
-        x={floorMeasurementX}
-        y={bottomFloorTopLayersLabelY}
-        fontSize={50}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        fill={textFill}
-      >
-        Floor Top Layers
-      </text>
+      {partLabelVisible('floorTopLayers') && (
+        <text
+          x={floorMeasurementX}
+          y={bottomFloorTopLayersLabelY}
+          fontSize={50}
+          text-anchor="middle"
+          dominantBaseline="middle"
+          fill={partLabelColor('floorTopLayers')}
+        >
+          Floor Top Layers
+        </text>
+      )}
 
-      <text
-        x={floorMeasurementX}
-        y={bottomFloorConstructionLabelY}
-        fontSize={50}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        fill={textFill}
-      >
-        Floor Construction
-      </text>
+      {partLabelVisible('floorConstruction') && (
+        <text
+          x={floorMeasurementX}
+          y={bottomFloorConstructionLabelY}
+          fontSize={50}
+          text-anchor="middle"
+          dominantBaseline="middle"
+          fill={partLabelColor('floorConstruction')}
+        >
+          Floor Construction
+        </text>
+      )}
 
-      <text
-        x={floorMeasurementX}
-        y={bottomFloorBottomLayersLabelY}
-        fontSize={50}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        fill={textFill}
-      >
-        Floor Bottom Layers
-      </text>
+      {partLabelVisible('floorBottomLayers') && (
+        <text
+          x={floorMeasurementX}
+          y={bottomFloorBottomLayersLabelY}
+          fontSize={50}
+          text-anchor="middle"
+          dominantBaseline="middle"
+          fill={partLabelColor('floorBottomLayers')}
+        >
+          Floor Bottom Layers
+        </text>
+      )}
 
       <text
         x={floorMeasurementX}
@@ -560,146 +607,167 @@ e | y +--------------+ s | Floor top layers                 }
         Finished Floor
       </text>
 
-      <SvgMeasurementIndicator
-        startPoint={[marginRightX, bottomFloorTopY]}
-        endPoint={[marginRightX, bottomFloorBottomLayersBottomY]}
-        label={'Total\nFloor\nThickness'}
-        labelOrientation="perpendicular"
-        offset={80}
-        fontSize={60}
-        strokeWidth={10}
-        color="var(--accent-10)"
-      />
+      {renderMeasurement('totalFloorThickness', {
+        startPoint: [marginRightX, bottomFloorTopY],
+        endPoint: [marginRightX, bottomFloorBottomLayersBottomY],
+        label: 'Total\nFloor\nThickness',
+        labelOrientation: 'perpendicular',
+        offset: 80,
+        fontSize: 60,
+        strokeWidth: 10
+      })}
     </g>
   )
 
   const wallMeasurements = (
     <g key="wall-measurements">
-      <text
-        fontSize={60}
-        text-anchor="middle"
-        dominantBaseline="text-after-edge"
-        transform={`translate(${outsidePadding} ${totalHeight / 2}) rotate(-90)`}
-        fill={textFill}
-      >
-        Finished Outside
-      </text>
-      <text
-        fontSize={60}
-        text-anchor="middle"
-        dominantBaseline="text-after-edge"
-        transform={`translate(${inside} ${totalHeight / 2}) rotate(90)`}
-        fill={textFill}
-      >
-        Finished Inside
-      </text>
-
-      <text
-        x={wallCenterX}
-        y={upperBottomPlateLabelY}
-        fontSize={48}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        fill={textFill}
-      >
-        Bottom Plate
-      </text>
-
-      <text
-        x={wallCenterX}
-        y={topFloorConstructionBottomY - floorConstructionBottomOverlap + topPlateThickness / 2}
-        fontSize={50}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        fill={textFill}
-      >
-        Top Plate
-      </text>
-
-      <text
-        x={wallCenterX}
-        y={wallAssemblyBottomY - bottomPlateThickness / 2}
-        fontSize={50}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        fill={textFill}
-      >
-        Bottom Plate
-      </text>
-
-      <text
-        x={wallCenterX}
-        y={lowerTopPlateLabelY}
-        fontSize={48}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        fill={textFill}
-      >
-        Top Plate
-      </text>
-
-      <text
-        x={outsideLayerLabelX}
-        y={outsideLayerLabelY}
-        fontSize={50}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        transform={`rotate(-90 ${outsideLayerLabelX} ${outsideLayerLabelY})`}
-        fill={textFill}
-      >
-        Outside Layers
-      </text>
-
-      <text
-        x={insideLayerLabelX}
-        y={insideLayerLabelY}
-        fontSize={50}
-        text-anchor="middle"
-        dominantBaseline="middle"
-        transform={`rotate(90 ${insideLayerLabelX} ${insideLayerLabelY})`}
-        fill={textFill}
-      >
-        Inside Layers
-      </text>
-
-      <SvgMeasurementIndicator
-        startPoint={[wallLeft, wallAssemblyTopY]}
-        endPoint={[wallLeft, wallAssemblyBottomY]}
-        label="Wall Assembly Height"
-        fontSize={60}
-        offset={outsideThickness + 160}
-        strokeWidth={10}
-        color="var(--accent-10)"
-      />
-
-      <SvgMeasurementIndicator
-        startPoint={[wallLeft, wallCoreTopY]}
-        endPoint={[wallLeft, wallCoreBottomY]}
-        label="Wall Construction Height"
-        fontSize={60}
-        offset={outsideThickness + 100}
-        strokeWidth={10}
-        color="var(--accent-10)"
-      />
-
-      <SvgMeasurementIndicator
-        startPoint={[outsideLayerX, wallCoreTopY]}
-        endPoint={[interiorExtentX, wallCoreTopY]}
-        label={'Total\nWall\nThickness'}
-        offset={200}
-        fontSize={60}
-        strokeWidth={10}
-        color="var(--accent-10)"
-      />
-
-      <g transform={`translate(${wallCenterX} ${wallCenterY})`}>
-        <text x={0} y={0} fontSize={50} fill={textFill} text-anchor="middle" dominantBaseline="middle">
-          <tspan x={0}>Wall</tspan>
-          <tspan x={0} dy="1.2em">
-            Construction
-          </tspan>
+      {partLabelVisible('outsideLayer') && (
+        <text
+          fontSize={60}
+          text-anchor="middle"
+          dominantBaseline="text-after-edge"
+          transform={`translate(${outsidePadding} ${totalHeight / 2}) rotate(-90)`}
+          fill={partLabelColor('outsideLayer')}
+        >
+          Finished Outside
         </text>
-      </g>
+      )}
+      {partLabelVisible('insideLayer') && (
+        <text
+          fontSize={60}
+          text-anchor="middle"
+          dominantBaseline="text-after-edge"
+          transform={`translate(${inside} ${totalHeight / 2}) rotate(90)`}
+          fill={partLabelColor('insideLayer')}
+        >
+          Finished Inside
+        </text>
+      )}
+
+      {partLabelVisible('bottomPlate') && (
+        <text
+          x={wallCenterX}
+          y={upperBottomPlateLabelY}
+          fontSize={48}
+          text-anchor="middle"
+          dominantBaseline="middle"
+          fill={partLabelColor('bottomPlate')}
+        >
+          Bottom Plate
+        </text>
+      )}
+
+      {partLabelVisible('topPlate') && (
+        <text
+          x={wallCenterX}
+          y={topFloorConstructionBottomY - floorConstructionBottomOverlap + topPlateThickness / 2}
+          fontSize={50}
+          text-anchor="middle"
+          dominantBaseline="middle"
+          fill={partLabelColor('topPlate')}
+        >
+          Top Plate
+        </text>
+      )}
+
+      {partLabelVisible('bottomPlate') && (
+        <text
+          x={wallCenterX}
+          y={wallAssemblyBottomY - bottomPlateThickness / 2}
+          fontSize={50}
+          text-anchor="middle"
+          dominantBaseline="middle"
+          fill={partLabelColor('bottomPlate')}
+        >
+          Bottom Plate
+        </text>
+      )}
+
+      {partLabelVisible('topPlate') && (
+        <text
+          x={wallCenterX}
+          y={lowerTopPlateLabelY}
+          fontSize={48}
+          text-anchor="middle"
+          dominantBaseline="middle"
+          fill={partLabelColor('topPlate')}
+        >
+          Top Plate
+        </text>
+      )}
+
+      {partLabelVisible('outsideLayer') && (
+        <text
+          x={outsideLayerLabelX}
+          y={outsideLayerLabelY}
+          fontSize={50}
+          text-anchor="middle"
+          dominantBaseline="middle"
+          transform={`rotate(-90 ${outsideLayerLabelX} ${outsideLayerLabelY})`}
+          fill={partLabelColor('outsideLayer')}
+        >
+          Outside Layers
+        </text>
+      )}
+
+      {partLabelVisible('insideLayer') && (
+        <text
+          x={insideLayerLabelX}
+          y={insideLayerLabelY}
+          fontSize={50}
+          text-anchor="middle"
+          dominantBaseline="middle"
+          transform={`rotate(90 ${insideLayerLabelX} ${insideLayerLabelY})`}
+          fill={partLabelColor('insideLayer')}
+        >
+          Inside Layers
+        </text>
+      )}
+
+      {renderMeasurement('wallAssemblyHeight', {
+        startPoint: [wallLeft, wallAssemblyTopY],
+        endPoint: [wallLeft, wallAssemblyBottomY],
+        label: 'Wall Assembly Height',
+        fontSize: 60,
+        offset: outsideThickness + 160,
+        strokeWidth: 10
+      })}
+
+      {renderMeasurement('wallConstructionHeight', {
+        startPoint: [wallLeft, wallCoreTopY],
+        endPoint: [wallLeft, wallCoreBottomY],
+        label: 'Wall Construction Height',
+        fontSize: 60,
+        offset: outsideThickness + 100,
+        strokeWidth: 10
+      })}
+
+      {renderMeasurement('totalWallThickness', {
+        startPoint: [outsideLayerX, wallCoreTopY],
+        endPoint: [interiorExtentX, wallCoreTopY],
+        label: 'Total\nWall\nThickness',
+        offset: 200,
+        fontSize: 60,
+        strokeWidth: 10
+      })}
+
+      {partLabelVisible('wallConstruction') && (
+        <g transform={`translate(${wallCenterX} ${wallCenterY})`}>
+          <text
+            x={0}
+            y={0}
+            fontSize={50}
+            fill={partLabelColor('wallConstruction')}
+            text-anchor="middle"
+            dominantBaseline="middle"
+          >
+            <tspan x={0}>Wall</tspan>
+            <tspan x={0} dy="1.2em">
+              Construction
+            </tspan>
+          </text>
+        </g>
+      )}
     </g>
   )
 
@@ -736,33 +804,39 @@ e | y +--------------+ s | Floor top layers                 }
       {floorShapes}
       {wallShapes}
 
-      <use
-        href={`#${upperFloorPathId}`}
-        clipPath={`url(#${upperFloorClipId})`}
-        fill="none"
-        stroke="var(--amber-10)"
-        strokeWidth={40}
-        strokeLinejoin="round"
-        opacity={0.4}
-      />
-      <use
-        href={`#${lowerFloorPathId}`}
-        clipPath={`url(#${lowerFloorClipId})`}
-        fill="none"
-        stroke="var(--amber-10)"
-        strokeWidth={40}
-        strokeLinejoin="round"
-        opacity={0.4}
-      />
-      <use
-        href={`#${wallAssemblyPathId}`}
-        clipPath={`url(#${wallAssemblyClipId})`}
-        fill="none"
-        stroke="var(--ruby-10)"
-        strokeWidth={40}
-        strokeLinejoin="round"
-        opacity={0.4}
-      />
+      {assemblyOutlineVisible('floorAssembly') && (
+        <>
+          <use
+            href={`#${upperFloorPathId}`}
+            clipPath={`url(#${upperFloorClipId})`}
+            fill="none"
+            stroke={assemblyOutlineStroke('floorAssembly', 'var(--amber-10)')}
+            strokeWidth={40}
+            strokeLinejoin="round"
+            opacity={0.4}
+          />
+          <use
+            href={`#${lowerFloorPathId}`}
+            clipPath={`url(#${lowerFloorClipId})`}
+            fill="none"
+            stroke={assemblyOutlineStroke('floorAssembly', 'var(--amber-10)')}
+            strokeWidth={40}
+            strokeLinejoin="round"
+            opacity={0.4}
+          />
+        </>
+      )}
+      {assemblyOutlineVisible('wallAssembly') && (
+        <use
+          href={`#${wallAssemblyPathId}`}
+          clipPath={`url(#${wallAssemblyClipId})`}
+          fill="none"
+          stroke={assemblyOutlineStroke('wallAssembly', 'var(--ruby-10)')}
+          strokeWidth={40}
+          strokeLinejoin="round"
+          opacity={0.4}
+        />
+      )}
 
       <line
         key="finished-ceiling"
@@ -816,25 +890,28 @@ e | y +--------------+ s | Floor top layers                 }
 }
 
 export interface MeasurementModalProps {
-  trigger: React.ReactNode
+  trigger: ReactNode
+  config?: MeasurementDisplayConfig
 }
-export function MeasurementModal({ trigger }: MeasurementModalProps): React.JSX.Element {
+export function MeasurementModal({ trigger, config }: MeasurementModalProps): React.JSX.Element {
   return (
     <BaseModal title="Measurements" trigger={trigger}>
-      <ConstructionSchematic />
+      <ConstructionSchematic {...(config ?? {})} />
     </BaseModal>
   )
 }
-export interface MeasurementModalProps {
-  trigger: React.ReactNode
+
+export interface MeasurementHoverProps {
+  trigger: ReactNode
+  config?: MeasurementDisplayConfig
 }
-export function MeasurementHover({ trigger }: MeasurementModalProps): React.JSX.Element {
+export function MeasurementHover({ trigger, config }: MeasurementHoverProps): React.JSX.Element {
   return (
     <HoverCard.Root>
       <HoverCard.Trigger>{trigger}</HoverCard.Trigger>
       <HoverCard.Content>
         <Inset>
-          <ConstructionSchematic />
+          <ConstructionSchematic {...(config ?? {})} />
         </Inset>
       </HoverCard.Content>
     </HoverCard.Root>
