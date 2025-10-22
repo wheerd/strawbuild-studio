@@ -1,5 +1,5 @@
 import type { MaterialId } from '@/construction/materials/material'
-import type { Bounds3D } from '@/shared/geometry'
+import type { Bounds3D, Length } from '@/shared/geometry'
 import { createId } from '@/shared/utils/ids'
 
 import { IDENTITY, type Transform, transformBounds } from './geometry'
@@ -32,6 +32,11 @@ export const createConstructionElement = (
 
 // Used in the future for cut list etc.
 export type PartId = string & { readonly brand: unique symbol }
+
+export const dimensionalPartId = (material: MaterialId, ...lengths: Length[]) => {
+  const sortedLengths = lengths.map(Math.round).sort((a, b) => b - a)
+  return `${material}_${sortedLengths.join('x')}` as PartId
+}
 
 export type GroupOrElement = ConstructionGroup | ConstructionElement
 

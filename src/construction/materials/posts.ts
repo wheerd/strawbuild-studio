@@ -1,6 +1,11 @@
 import { vec3 } from 'gl-matrix'
 
-import { type ConstructionElement, createConstructionElement, createCuboidShape } from '@/construction/elements'
+import {
+  type ConstructionElement,
+  createConstructionElement,
+  createCuboidShape,
+  dimensionalPartId
+} from '@/construction/elements'
 import { type ConstructionResult, yieldElement, yieldError, yieldWarning } from '@/construction/results'
 import { TAG_POST } from '@/construction/tags'
 import { type Length, mergeBounds } from '@/shared/geometry'
@@ -53,7 +58,10 @@ const dimensionsMatch = (
 function* constructFullPost(position: vec3, size: vec3, config: FullPostConfig): Generator<ConstructionResult> {
   const postElement: ConstructionElement = createConstructionElement(
     config.material,
-    createCuboidShape(position, vec3.fromValues(config.width, size[1], size[2]))
+    createCuboidShape(position, vec3.fromValues(config.width, size[1], size[2])),
+    undefined,
+    [TAG_POST],
+    dimensionalPartId(config.material, size[1], config.width, size[2])
   )
 
   yield yieldElement(postElement)
@@ -93,11 +101,13 @@ function* constructDoublePost(position: vec3, size: vec3, config: DoublePostConf
     return
   }
 
+  const partId = dimensionalPartId(config.material, config.thickness, config.width, size[2])
   const post1: ConstructionElement = createConstructionElement(
     config.material,
     createCuboidShape(position, vec3.fromValues(config.width, config.thickness, size[2])),
     undefined,
-    [TAG_POST]
+    [TAG_POST],
+    partId
   )
   yield yieldElement(post1)
 
@@ -106,7 +116,10 @@ function* constructDoublePost(position: vec3, size: vec3, config: DoublePostConf
     createCuboidShape(
       vec3.fromValues(position[0], position[1] + size[1] - config.thickness, position[2]),
       vec3.fromValues(config.width, config.thickness, size[2])
-    )
+    ),
+    undefined,
+    [TAG_POST],
+    partId
   )
   yield yieldElement(post2)
 

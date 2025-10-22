@@ -1,7 +1,12 @@
 import { vec3 } from 'gl-matrix'
 
 import type { Opening } from '@/building/model/model'
-import { type ConstructionElement, createConstructionElement, createCuboidShape } from '@/construction/elements'
+import {
+  type ConstructionElement,
+  createConstructionElement,
+  createCuboidShape,
+  dimensionalPartId
+} from '@/construction/elements'
 import { IDENTITY } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
 import { type ConstructionResult, yieldArea, yieldElement, yieldError, yieldMeasurement } from '@/construction/results'
@@ -76,7 +81,8 @@ export function* constructOpeningFrame(
       config.headerMaterial,
       createCuboidShape([openingLeft, wallFront, headerBottom], [openingWidth, wallThickness, config.headerThickness]),
       IDENTITY,
-      [TAG_HEADER]
+      [TAG_HEADER],
+      dimensionalPartId(config.headerMaterial, config.headerThickness, wallThickness, openingWidth)
     )
 
     yield yieldElement(headerElement)
@@ -120,7 +126,8 @@ export function* constructOpeningFrame(
         vec3.fromValues(openingWidth, wallThickness, config.sillThickness)
       ),
       IDENTITY,
-      [TAG_SILL]
+      [TAG_SILL],
+      dimensionalPartId(config.sillMaterial, config.sillThickness, wallThickness, openingWidth)
     )
 
     yield yieldElement(sillElement)
