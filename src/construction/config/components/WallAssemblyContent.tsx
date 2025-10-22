@@ -34,6 +34,7 @@ import type {
   WallConfig
 } from '@/construction/walls'
 import type { ModuleConfig } from '@/construction/walls/strawhenge/modules'
+import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField'
 
 import { getPerimeterConfigTypeIcon } from './Icons'
@@ -618,12 +619,15 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
 
       {/* Layers Configuration */}
       <Heading size="2">Layers</Heading>
-      <Grid columns="7em 1fr 7em 1fr" gap="2" gapX="3">
-        <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            Inside Thickness
-          </Text>
-        </Label.Root>
+      <Grid columns="8em 1fr 8em 1fr" gap="2" gapX="3">
+        <Flex align="center" gap="1">
+          <Label.Root>
+            <Text size="1" weight="medium" color="gray">
+              Inside Thickness
+            </Text>
+          </Label.Root>
+          <MeasurementInfo highlightedPart="insideLayer" showFinishedSides />
+        </Flex>
         <LengthField
           value={config.layers.insideThickness}
           onChange={insideThickness =>
@@ -633,11 +637,14 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           size="1"
         />
 
-        <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            Outside Thickness
-          </Text>
-        </Label.Root>
+        <Flex align="center" gap="1">
+          <Label.Root>
+            <Text size="1" weight="medium" color="gray">
+              Outside Thickness
+            </Text>
+          </Label.Root>
+          <MeasurementInfo highlightedPart="outsideLayer" showFinishedSides />
+        </Flex>
         <LengthField
           value={config.layers.outsideThickness}
           onChange={outsideThickness =>
@@ -978,9 +985,12 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
 
           <Grid columns="auto 1fr" gap="2" align="center">
             <Label.Root>
-              <Text size="1" weight="medium" color="gray">
-                Default Wall Assembly
-              </Text>
+              <Flex align="center" gap="1">
+                <Text size="1" weight="medium" color="gray">
+                  Default Wall Assembly
+                </Text>
+                <MeasurementInfo highlightedAssembly="wallAssembly" />
+              </Flex>
             </Label.Root>
             <WallAssemblySelect
               value={defaultAssemblyId}

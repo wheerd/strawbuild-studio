@@ -8,6 +8,7 @@ interface SvgMeasurementIndicatorProps {
   endPoint: vec2 // SVG coordinates [x, y]
   label: string
   offset?: number // SVG units offset
+  labelOrientation?: 'parallel' | 'perpendicular'
   color?: string
   fontSize?: number
   strokeWidth?: number
@@ -20,10 +21,15 @@ export function SvgMeasurementIndicator({
   label,
   className,
   offset = 50,
+  labelOrientation = 'parallel',
   color = 'var(--color-primary)',
   fontSize = 40,
   strokeWidth = 10
 }: SvgMeasurementIndicatorProps): React.JSX.Element {
+  const lines = label.split('\n')
+  const lineCount = lines.length
+  const longestLineLength = lines.reduce((max, line) => Math.max(max, line.length), 0)
+
   // Calculate measurement vector and length
   const dx = endPoint[0] - startPoint[0]
   const dy = endPoint[1] - startPoint[1]
@@ -48,14 +54,22 @@ export function SvgMeasurementIndicator({
   const offsetEndY = endPoint[1] + perpY * offset
 
   // Calculate text angle for rotation
-  let textAngle = (Math.atan2(dy, dx) * 180) / Math.PI
+  const lineAngleRad = Math.atan2(dy, dx)
+  let textAngleRad = lineAngleRad
+
+  if (labelOrientation === 'perpendicular') {
+    textAngleRad += Math.PI / 2
+  }
 
   // Keep text readable
-  if (textAngle > 90) {
-    textAngle -= 180
-  } else if (textAngle < -90) {
-    textAngle += 180
+  while (textAngleRad > Math.PI / 2) {
+    textAngleRad -= Math.PI
   }
+  while (textAngleRad <= -Math.PI / 2) {
+    textAngleRad += Math.PI
+  }
+
+  const textAngle = (textAngleRad * 180) / Math.PI
 
   // Calculate text position (middle of offset line)
   const textX = (offsetStartX + offsetEndX) / 2
@@ -69,12 +83,29 @@ export function SvgMeasurementIndicator({
   const connectionStrokeWidth = strokeWidth / 2
 
   // Calculate line gap for text similar to canvas version
+  const TEXT_WIDTH_FACTOR = 0.6
+  const GAP_FACTOR = 0.6
+  const LINE_HEIGHT_FACTOR = 1.2
+  const angleDelta = Math.atan2(Math.sin(textAngleRad - lineAngleRad), Math.cos(textAngleRad - lineAngleRad))
+
+  const computeGapHalfWidth = (size: number): number => {
+    if (lineCount === 0) {
+      return 0
+    }
+
+    const estimatedTextWidth = longestLineLength * size * TEXT_WIDTH_FACTOR
+    const estimatedTextHeight = size + (lineCount - 1) * size * LINE_HEIGHT_FACTOR
+    const projectedLength =
+      Math.abs(estimatedTextWidth * Math.cos(angleDelta)) + Math.abs(estimatedTextHeight * Math.sin(angleDelta))
+
+    return projectedLength * GAP_FACTOR
+  }
+
   let actualFontSize = fontSize
-  let gapHalfWidth = label.length * actualFontSize * 0.6 * 0.6
+  let gapHalfWidth = computeGapHalfWidth(actualFontSize)
   while (gapHalfWidth >= length / 3) {
     actualFontSize *= 0.9
-    const estimatedTextWidth = label.length * actualFontSize * 0.6
-    gapHalfWidth = estimatedTextWidth * 0.6
+    gapHalfWidth = computeGapHalfWidth(actualFontSize)
   }
 
   // Calculate left and right endpoints for line gap
@@ -82,6 +113,7 @@ export function SvgMeasurementIndicator({
   const leftEndpointY = textY - gapHalfWidth * dirY
   const rightEndpointX = textX + gapHalfWidth * dirX
   const rightEndpointY = textY + gapHalfWidth * dirY
+  const verticalOffset = ((lineCount - 1) * actualFontSize * LINE_HEIGHT_FACTOR) / 2
 
   return (
     <g className={`measurement ${className}`}>
@@ -114,6 +146,15 @@ export function SvgMeasurementIndicator({
         y2={leftEndpointY}
         stroke={color}
         strokeWidth={strokeWidth}
+      />
+      <line
+        x1={rightEndpointX}
+        y1={rightEndpointY}
+        x2={leftEndpointX}
+        y2={leftEndpointY}
+        stroke={color}
+        strokeWidth={strokeWidth}
+        opacity={0.2}
       />
       <line
         x1={rightEndpointX}
@@ -153,11 +194,16 @@ export function SvgMeasurementIndicator({
           fill={color}
           textAnchor="middle"
           dominantBaseline="central"
+          transform={`translate(0 ${-verticalOffset})`}
           style={{
             filter: 'drop-shadow(0 0 0.1em var(--gray-1))'
           }}
         >
-          {label}
+          {lines.map((line, index) => (
+            <tspan key={`line-${index}`} x={0} dy={index === 0 ? 0 : `${LINE_HEIGHT_FACTOR}em`}>
+              {line}
+            </tspan>
+          ))}
         </text>
       </g>
     </g>

@@ -6,6 +6,7 @@ import type { WallAssemblyId } from '@/building/model/ids'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import { useConfigActions } from '@/construction/config/store'
+import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { BaseModal } from '@/shared/components/BaseModal'
 import { LengthField } from '@/shared/components/LengthField'
 import { offsetPolygon } from '@/shared/geometry'
@@ -309,9 +310,12 @@ export function LShapedPresetDialog({
             <Grid columns="2" gap="3">
               {/* Wall Thickness */}
               <Flex direction="column" gap="1">
-                <Text size="1" color="gray">
-                  Wall Thickness
-                </Text>
+                <Flex align="center" gap="1">
+                  <Text size="1" color="gray">
+                    Wall Thickness
+                  </Text>
+                  <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
+                </Flex>
                 <LengthField
                   value={config.thickness}
                   onChange={value => setConfig(prev => ({ ...prev, thickness: value }))}
@@ -326,9 +330,12 @@ export function LShapedPresetDialog({
 
               {/* Wall Assembly */}
               <Flex direction="column" gap="1">
-                <Text size="1" color="gray">
-                  Wall Assembly
-                </Text>
+                <Flex align="center" gap="1">
+                  <Text size="1" color="gray">
+                    Wall Assembly
+                  </Text>
+                  {config.wallAssemblyId && <MeasurementInfo highlightedAssembly="wallAssembly" />}
+                </Flex>
                 <WallAssemblySelectWithEdit
                   value={config.wallAssemblyId ?? undefined}
                   onValueChange={(value: WallAssemblyId) => {
@@ -341,9 +348,12 @@ export function LShapedPresetDialog({
 
               {/* Base Plate */}
               <Flex direction="column" gap="1">
-                <Text size="1" color="gray">
-                  Base Plate
-                </Text>
+                <Flex align="center" gap="1">
+                  <Text size="1" color="gray">
+                    Base Plate
+                  </Text>
+                  <MeasurementInfo highlightedPart="basePlate" />
+                </Flex>
                 <RingBeamAssemblySelectWithEdit
                   value={config.baseRingBeamAssemblyId}
                   onValueChange={value => {
@@ -357,9 +367,12 @@ export function LShapedPresetDialog({
 
               {/* Top Plate */}
               <Flex direction="column" gap="1">
-                <Text size="1" color="gray">
-                  Top Plate
-                </Text>
+                <Flex align="center" gap="1">
+                  <Text size="1" color="gray">
+                    Top Plate
+                  </Text>
+                  <MeasurementInfo highlightedPart="topPlate" />
+                </Flex>
                 <RingBeamAssemblySelectWithEdit
                   value={config.topRingBeamAssemblyId}
                   onValueChange={value => {

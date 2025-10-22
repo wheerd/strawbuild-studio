@@ -243,7 +243,7 @@ describe('segmentedWallConstruction', () => {
       // Should call wall construction once for entire wall
       expect(mockWallConstruction).toHaveBeenCalledTimes(1)
       expect(mockWallConstruction).toHaveBeenCalledWith(
-        vec3.fromValues(-0, 30, 60), // position: [-extensionStart, insideThickness, bottomPlateHeight]
+        vec3.fromValues(-0, 30, 60), // position: [-extensionStart, insideThickness, basePlateHeight]
         vec3.fromValues(3000, 220, 2380), // size: [constructionLength, thickness-layers, wallHeight-plates]
         true, // startsWithStand
         true, // endsWithStand

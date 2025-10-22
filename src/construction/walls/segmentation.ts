@@ -124,13 +124,13 @@ function* createCornerAreas(
 
 function* createPlateAreas(
   totalConstructionHeight: Length,
-  bottomPlateHeight: Length,
+  basePlateHeight: Length,
   topPlateHeight: Length,
   start: Length,
   constructionLength: Length,
   perimeterId: string
 ): Generator<ConstructionResult> {
-  if (bottomPlateHeight > 0) {
+  if (basePlateHeight > 0) {
     yield yieldArea({
       type: 'polygon',
       areaType: 'bottom-plate',
@@ -141,8 +141,8 @@ function* createPlateAreas(
         points: [
           vec2.fromValues(start, 0),
           vec2.fromValues(start + constructionLength, 0),
-          vec2.fromValues(start + constructionLength, bottomPlateHeight),
-          vec2.fromValues(start, bottomPlateHeight)
+          vec2.fromValues(start + constructionLength, basePlateHeight),
+          vec2.fromValues(start, basePlateHeight)
         ]
       },
       mergeKey: `bottom-plate-${perimeterId}`
@@ -205,10 +205,10 @@ export function* segmentedWallConstruction(
   const { constructionLength, extensionStart, extensionEnd } = cornerInfo
 
   const { getRingBeamAssemblyById } = getConfigActions()
-  const bottomPlateAssembly = perimeter.baseRingBeamAssemblyId
+  const basePlateAssembly = perimeter.baseRingBeamAssemblyId
     ? getRingBeamAssemblyById(perimeter.baseRingBeamAssemblyId)
     : null
-  const bottomPlateHeight = bottomPlateAssembly?.height ?? 0
+  const basePlateHeight = basePlateAssembly?.height ?? 0
   const topPlateAssembly = perimeter.topRingBeamAssemblyId
     ? getRingBeamAssemblyById(perimeter.topRingBeamAssemblyId)
     : null
@@ -221,12 +221,12 @@ export function* segmentedWallConstruction(
 
   const y = layers.insideThickness
   const sizeY = wall.thickness - layers.insideThickness - layers.outsideThickness
-  const z = bottomPlateHeight
-  const sizeZ = totalConstructionHeight - bottomPlateHeight - topPlateHeight
+  const z = basePlateHeight
+  const sizeZ = totalConstructionHeight - basePlateHeight - topPlateHeight
 
   yield* createPlateAreas(
     totalConstructionHeight,
-    bottomPlateHeight,
+    basePlateHeight,
     topPlateHeight,
     -extensionStart,
     constructionLength,

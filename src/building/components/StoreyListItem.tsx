@@ -1,11 +1,12 @@
 import { ChevronDownIcon, ChevronUpIcon, CopyIcon, EnterIcon, HeightIcon, TrashIcon } from '@radix-ui/react-icons'
-import { AlertDialog, Button, Card, Code, Flex, IconButton, TextField } from '@radix-ui/themes'
+import { AlertDialog, Button, Card, Code, Flex, IconButton, Text, TextField } from '@radix-ui/themes'
 import React, { useCallback, useEffect, useState } from 'react'
 
 import type { Storey } from '@/building/model/model'
 import { useActiveStoreyId, useModelActions } from '@/building/store'
 import { defaultStoreyManagementService } from '@/building/store/services/StoreyManagementService'
 import { FloorAssemblySelectWithEdit } from '@/construction/config/components/FloorAssemblySelectWithEdit'
+import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField'
 import { formatLength } from '@/shared/utils/formatLength'
 
@@ -137,51 +138,73 @@ export function StoreyListItem({
         </Flex>
 
         {/* Editable name */}
-        <TextField.Root
-          ref={nameFieldRef}
-          size="3"
-          value={editName}
-          onChange={handleNameChange}
-          onBlur={handleNameSave}
-          onKeyDown={handleKeyDown}
-          placeholder="Floor name"
-          required
-          style={{ minWidth: '150px', flexGrow: 1 }}
-        />
+        <Flex direction="column" gap="1" flexGrow="1">
+          <Text size="1" weight="medium" color="gray">
+            Name
+          </Text>
+          <TextField.Root
+            ref={nameFieldRef}
+            value={editName}
+            onChange={handleNameChange}
+            onBlur={handleNameSave}
+            onKeyDown={handleKeyDown}
+            placeholder="Floor name"
+            required
+            style={{ minWidth: '150px', flexGrow: 1 }}
+          />
+        </Flex>
 
         {/* Height input */}
-        <LengthField
-          min={1000}
-          max={10000}
-          precision={3}
-          unit="m"
-          step={100}
-          style={{ width: '6.5rem' }}
-          value={storey.height}
-          onCommit={value => updateStoreyHeight(storey.id, value)}
-          title={`Floor height: ${formatLength(storey.height)}`}
-        >
-          <TextField.Slot side="left" className="pl-1 pr-0">
-            <HeightIcon />
-          </TextField.Slot>
-        </LengthField>
+        <Flex direction="column" gap="1">
+          <Flex align="center" gap="1">
+            <Text size="1" weight="medium" color="gray">
+              Room Height
+            </Text>
+            <MeasurementInfo highlightedMeasurement="roomHeight" />
+          </Flex>
+          <LengthField
+            min={1000}
+            max={10000}
+            precision={3}
+            unit="m"
+            step={100}
+            style={{ width: '6.5rem' }}
+            value={storey.height}
+            onCommit={value => updateStoreyHeight(storey.id, value)}
+            title={`Floor height: ${formatLength(storey.height)}`}
+          >
+            <TextField.Slot side="left" className="pl-1 pr-0">
+              <HeightIcon />
+            </TextField.Slot>
+          </LengthField>
+        </Flex>
 
         {/* Floor Assembly Configuration */}
-        <FloorAssemblySelectWithEdit
-          value={storey.floorAssemblyId}
-          onValueChange={value => updateStoreyFloorAssembly(storey.id, value)}
-          size="2"
-        />
+        <Flex direction="column" gap="1">
+          <Flex align="center" gap="1">
+            <Text size="1" weight="medium" color="gray">
+              Floor Assembly
+            </Text>
+            <MeasurementInfo highlightedAssembly="floorAssembly" />
+          </Flex>
+          <FloorAssemblySelectWithEdit
+            value={storey.floorAssemblyId}
+            onValueChange={value => updateStoreyFloorAssembly(storey.id, value)}
+            size="2"
+          />
+        </Flex>
 
         {/* Action buttons */}
-        <Flex gap="1">
-          <IconButton onClick={handleMoveUp} disabled={!canMoveUp} title="Move up">
-            <ChevronUpIcon />
-          </IconButton>
+        <Flex gap="1" align="center">
+          <Flex direction="column" gap="1">
+            <IconButton size="1" onClick={handleMoveUp} disabled={!canMoveUp} title="Move up">
+              <ChevronUpIcon />
+            </IconButton>
 
-          <IconButton onClick={handleMoveDown} disabled={!canMoveDown} title="Move down">
-            <ChevronDownIcon />
-          </IconButton>
+            <IconButton size="1" onClick={handleMoveDown} disabled={!canMoveDown} title="Move down">
+              <ChevronDownIcon />
+            </IconButton>
+          </Flex>
 
           <IconButton onClick={handleDuplicate} title="Duplicate floor" variant="soft">
             <CopyIcon />

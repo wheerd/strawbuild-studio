@@ -13,10 +13,11 @@ import { WallAssemblySelectWithEdit } from '@/construction/config/components/Wal
 import { constructPerimeter } from '@/construction/perimeter'
 import { TAG_BASE_PLATE, TAG_TOP_PLATE, TAG_WALLS } from '@/construction/tags'
 import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
+import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import {
-  BottomPlateIcon,
+  BasePlateIcon,
   ConstructionPlanIcon,
   FitToViewIcon,
   Model3DIcon,
@@ -60,18 +61,11 @@ function detectMixedThickness(walls: PerimeterWall[]): MixedState<Length> {
   }
 }
 
-interface MixedStateIndicatorProps {
-  children: React.ReactNode
-}
-
-function MixedStateIndicator({ children }: MixedStateIndicatorProps) {
+function MixedStateIndicator() {
   return (
-    <Flex align="center" gap="2">
-      {children}
-      <Tooltip content="Different values across walls. Changing this will update all walls.">
-        <ExclamationTriangleIcon width={14} height={14} style={{ color: 'var(--amber-9)' }} />
-      </Tooltip>
-    </Flex>
+    <Tooltip content="Different values across walls. Changing this will update all walls.">
+      <ExclamationTriangleIcon width={14} height={14} style={{ color: 'var(--amber-9)' }} />
+    </Tooltip>
   )
 }
 
@@ -181,7 +175,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             views={[{ view: TOP_VIEW, label: 'Top' }]}
             visibilityToggles={[
               { icon: TopPlateIcon, title: 'Top Plate', tags: [TAG_TOP_PLATE.id] },
-              { icon: BottomPlateIcon, title: 'Base Plate', tags: [TAG_BASE_PLATE.id] },
+              { icon: BasePlateIcon, title: 'Base Plate', tags: [TAG_BASE_PLATE.id] },
               { icon: WallToggleIcon, title: 'Wall', tags: [TAG_WALLS.id] }
             ]}
             refreshKey={perimeter}
@@ -214,19 +208,17 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
           <Flex direction="column" gap="2">
             {/* Wall Assembly */}
             <Flex align="center" justify="between" gap="3">
-              <Label.Root htmlFor="wall-assembly">
-                {wallAssemblyState.isMixed ? (
-                  <MixedStateIndicator>
+              <Flex align="center" gap="1">
+                <Label.Root htmlFor="wall-assembly">
+                  <Flex align="center" gap="2">
                     <Text size="1" weight="medium" color="gray">
                       Wall Assembly
                     </Text>
-                  </MixedStateIndicator>
-                ) : (
-                  <Text size="1" weight="medium" color="gray">
-                    Wall Assembly
-                  </Text>
-                )}
-              </Label.Root>
+                    <MeasurementInfo highlightedAssembly="wallAssembly" />
+                    {wallAssemblyState.isMixed && <MixedStateIndicator />}
+                  </Flex>
+                </Label.Root>
+              </Flex>
               <WallAssemblySelectWithEdit
                 value={wallAssemblyState.isMixed ? undefined : (wallAssemblyState.value as WallAssemblyId | undefined)}
                 onValueChange={(value: WallAssemblyId) => {
@@ -239,19 +231,17 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
 
             {/* Thickness Input */}
             <Flex align="center" justify="between" gap="3">
-              <Label.Root htmlFor="perimeter-thickness">
-                {thicknessState.isMixed ? (
-                  <MixedStateIndicator>
+              <Flex align="center" gap="1">
+                <Label.Root htmlFor="perimeter-thickness">
+                  <Flex align="center" gap="2">
                     <Text size="1" weight="medium" color="gray">
                       Wall Thickness
                     </Text>
-                  </MixedStateIndicator>
-                ) : (
-                  <Text size="1" weight="medium" color="gray">
-                    Wall Thickness
-                  </Text>
-                )}
-              </Label.Root>
+                    <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
+                    {thicknessState.isMixed && <MixedStateIndicator />}
+                  </Flex>
+                </Label.Root>
+              </Flex>
               <LengthField
                 id="perimeter-thickness"
                 value={thicknessState.value as Length}
@@ -277,11 +267,14 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
           <Flex direction="column" gap="2">
             {/* Base Ring Beam */}
             <Flex align="center" justify="between" gap="3">
-              <Label.Root htmlFor="base-ring-beam">
-                <Text size="1" weight="medium" color="gray">
-                  Base Plate
-                </Text>
-              </Label.Root>
+              <Flex align="center" gap="1">
+                <Label.Root htmlFor="base-ring-beam">
+                  <Text size="1" weight="medium" color="gray">
+                    Base Plate
+                  </Text>
+                </Label.Root>
+                <MeasurementInfo highlightedPart="basePlate" />
+              </Flex>
               <RingBeamAssemblySelectWithEdit
                 value={perimeter.baseRingBeamAssemblyId}
                 onValueChange={value => {
@@ -299,11 +292,14 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
 
             {/* Top Ring Beam */}
             <Flex align="center" justify="between" gap="3">
-              <Label.Root htmlFor="top-ring-beam">
-                <Text size="1" weight="medium" color="gray">
-                  Top Plate
-                </Text>
-              </Label.Root>
+              <Flex align="center" gap="1">
+                <Label.Root htmlFor="top-ring-beam">
+                  <Text size="1" weight="medium" color="gray">
+                    Top Plate
+                  </Text>
+                </Label.Root>
+                <MeasurementInfo highlightedPart="topPlate" />
+              </Flex>
               <RingBeamAssemblySelectWithEdit
                 value={perimeter.topRingBeamAssemblyId}
                 onValueChange={value => {

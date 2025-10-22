@@ -217,7 +217,7 @@ export function TopPlateIcon({ width = 15, height = 15, ...props }: IconProps): 
   )
 }
 
-export function BottomPlateIcon({ width = 15, height = 15, ...props }: IconProps): React.JSX.Element {
+export function BasePlateIcon({ width = 15, height = 15, ...props }: IconProps): React.JSX.Element {
   return (
     <svg width={width} height={height} viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path d="M4 1 H 10 V 12 H 4Z" stroke="currentColor" strokeWidth="0.5" strokeDasharray="1 1" />

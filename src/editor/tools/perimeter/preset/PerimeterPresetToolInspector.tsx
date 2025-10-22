@@ -3,6 +3,7 @@ import { Box, Button, Callout, DataList, Flex, Heading, Separator, Text } from '
 import { useCallback } from 'react'
 
 import { useDefaultWallAssemblyId, useWallAssemblies } from '@/construction/config/store'
+import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
 import '@/shared/geometry'
@@ -146,12 +147,22 @@ export function PerimeterPresetToolInspector({ tool }: ToolInspectorProps<Perime
                 )}
 
                 <DataList.Item>
-                  <DataList.Label minWidth="80px">Thickness</DataList.Label>
+                  <DataList.Label minWidth="80px">
+                    <Flex align="center" gap="1">
+                      Thickness
+                      <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
+                    </Flex>
+                  </DataList.Label>
                   <DataList.Value>{formatLength(currentConfig.thickness)}</DataList.Value>
                 </DataList.Item>
 
                 <DataList.Item>
-                  <DataList.Label minWidth="80px">Assembly</DataList.Label>
+                  <DataList.Label minWidth="80px">
+                    <Flex align="center" gap="1">
+                      Assembly
+                      <MeasurementInfo highlightedAssembly="wallAssembly" />
+                    </Flex>
+                  </DataList.Label>
                   <DataList.Value>
                     {allWallAssemblies.find(m => m.id === currentConfig.wallAssemblyId)?.name || 'Unknown'}
                   </DataList.Value>

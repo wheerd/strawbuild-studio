@@ -11,6 +11,7 @@ import { ConstructionPlanModal } from '@/construction/components/ConstructionPla
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import { useWallAssemblyById } from '@/construction/config/store'
 import { constructWall } from '@/construction/walls'
+import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { pushTool } from '@/editor/tools/system/store'
@@ -110,11 +111,14 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
       <Flex direction="column" gap="3">
         {/* Wall Assembly */}
         <Flex align="center" justify="between" gap="3">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Wall Assembly
-            </Text>
-          </Label.Root>
+          <Flex align="center" gap="1">
+            <Label.Root>
+              <Text size="1" weight="medium" color="gray">
+                Wall Assembly
+              </Text>
+            </Label.Root>
+            <MeasurementInfo highlightedAssembly="wallAssembly" />
+          </Flex>
           <WallAssemblySelectWithEdit
             value={wall.wallAssemblyId}
             onValueChange={(value: WallAssemblyId) => {
@@ -127,11 +131,14 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
 
         {/* Thickness Input */}
         <Flex align="center" justify="between" gap="3">
-          <Label.Root htmlFor="wall-thickness">
-            <Text size="1" weight="medium" color="gray">
-              Thickness
-            </Text>
-          </Label.Root>
+          <Flex align="center" gap="1">
+            <Label.Root htmlFor="wall-thickness">
+              <Text size="1" weight="medium" color="gray">
+                Thickness
+              </Text>
+            </Label.Root>
+            <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
+          </Flex>
           <LengthField
             id="perimeter-thickness"
             value={wall.thickness}
@@ -163,15 +170,30 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
           {wallAssembly ? (
             <>
               <DataList.Item>
-                <DataList.Label minWidth="88px">Inside Layers Thickness</DataList.Label>
+                <DataList.Label minWidth="88px">
+                  <Flex align="center" gap="1">
+                    Inside Layers Thickness
+                    <MeasurementInfo highlightedPart="insideLayer" />
+                  </Flex>
+                </DataList.Label>
                 <DataList.Value>{formatLength(wallAssembly.layers.insideThickness)}</DataList.Value>
               </DataList.Item>
               <DataList.Item>
-                <DataList.Label minWidth="88px">Outside Layers Thickness</DataList.Label>
+                <DataList.Label minWidth="88px">
+                  <Flex align="center" gap="1">
+                    Outside Layers Thickness
+                    <MeasurementInfo highlightedPart="outsideLayer" />
+                  </Flex>
+                </DataList.Label>
                 <DataList.Value>{formatLength(wallAssembly.layers.outsideThickness)}</DataList.Value>
               </DataList.Item>
               <DataList.Item>
-                <DataList.Label minWidth="88px">Construction Thickness</DataList.Label>
+                <DataList.Label minWidth="88px">
+                  <Flex align="center" gap="1">
+                    Construction Thickness
+                    <MeasurementInfo highlightedPart="wallConstruction" />
+                  </Flex>
+                </DataList.Label>
                 <DataList.Value>
                   {formatLength(
                     wall.thickness - wallAssembly.layers.outsideThickness - wallAssembly.layers.insideThickness

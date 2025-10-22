@@ -27,6 +27,7 @@ import { getRingBeamAssemblyUsage } from '@/construction/config/usage'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
 import type { RingBeamConfig } from '@/construction/ringBeams'
+import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
 
 import { getRingBeamTypeIcon } from './Icons'
@@ -268,11 +269,14 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
       <Separator size="4" />
       <Flex direction="column" gap="3">
         <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
-          <Label.Root>
-            <Text size="2" weight="medium" color="gray">
-              Default Base Plate
-            </Text>
-          </Label.Root>
+          <Flex align="center" gap="1">
+            <Label.Root>
+              <Text size="2" weight="medium" color="gray">
+                Default Base Plate
+              </Text>
+            </Label.Root>
+            <MeasurementInfo highlightedPart="basePlate" />
+          </Flex>
           <RingBeamAssemblySelect
             value={defaultBaseId}
             onValueChange={setDefaultBaseRingBeamAssembly}
@@ -281,11 +285,14 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
             allowNone
           />
 
-          <Label.Root>
-            <Text size="2" weight="medium" color="gray">
-              Default Top Plate
-            </Text>
-          </Label.Root>
+          <Flex align="center" gap="1">
+            <Label.Root>
+              <Text size="2" weight="medium" color="gray">
+                Default Top Plate
+              </Text>
+            </Label.Root>
+            <MeasurementInfo highlightedPart="topPlate" />
+          </Flex>
           <RingBeamAssemblySelect
             value={defaultTopId}
             onValueChange={setDefaultTopRingBeamAssembly}
@@ -338,11 +345,14 @@ function FullRingBeamFields({
           size="2"
         />
 
-        <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            Height
-          </Text>
-        </Label.Root>
+        <Flex align="center" gap="1">
+          <Label.Root>
+            <Text size="2" weight="medium" color="gray">
+              Height
+            </Text>
+          </Label.Root>
+          <MeasurementInfo highlightedPart="plates" />
+        </Flex>
         <LengthField value={config.height} onChange={height => onUpdate({ height })} unit="mm" size="2" />
 
         <Label.Root>
@@ -354,7 +364,7 @@ function FullRingBeamFields({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Offset from Edge
+            Offset from Inside Edge
           </Text>
         </Label.Root>
         <LengthField
@@ -408,32 +418,44 @@ function DoubleRingBeamFields({
           size="2"
         />
 
-        <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            Height
-          </Text>
-        </Label.Root>
+        <Flex align="center" gap="1">
+          <Label.Root>
+            <Text size="2" weight="medium" color="gray">
+              Height
+            </Text>
+          </Label.Root>
+          <MeasurementInfo highlightedPart="plates" />
+        </Flex>
         <LengthField value={config.height} onChange={height => onUpdate({ height })} unit="mm" size="2" />
 
-        <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            Thickness
-          </Text>
-        </Label.Root>
+        <Flex align="center" gap="1">
+          <Label.Root>
+            <Text size="2" weight="medium" color="gray">
+              Thickness
+            </Text>
+          </Label.Root>
+          <MeasurementInfo highlightedPart="plates" />
+        </Flex>
         <LengthField value={config.thickness} onChange={thickness => onUpdate({ thickness })} unit="mm" size="2" />
 
-        <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            Spacing
-          </Text>
-        </Label.Root>
+        <Flex align="center" gap="1">
+          <Label.Root>
+            <Text size="2" weight="medium" color="gray">
+              Spacing
+            </Text>
+          </Label.Root>
+          <MeasurementInfo highlightedPart="plates" />
+        </Flex>
         <LengthField value={config.spacing} onChange={spacing => onUpdate({ spacing })} unit="mm" size="2" />
 
-        <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            Offset from Edge
-          </Text>
-        </Label.Root>
+        <Flex align="center" gap="1">
+          <Label.Root>
+            <Text size="2" weight="medium" color="gray">
+              Offset from Edge
+            </Text>
+          </Label.Root>
+          <MeasurementInfo highlightedPart="plates" />
+        </Flex>
         <LengthField
           value={config.offsetFromEdge}
           onChange={offsetFromEdge => onUpdate({ offsetFromEdge })}

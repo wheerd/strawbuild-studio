@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
+import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
 import { LengthField } from '@/shared/components/LengthField'
@@ -46,11 +47,14 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
         {/* Tool Properties */}
         <Grid columns="auto 1fr" gap="2">
           {/* Wall Assembly */}
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Wall Assembly
-            </Text>
-          </Label.Root>
+          <Flex align="center" gap="1">
+            <Label.Root>
+              <Text size="1" weight="medium" color="gray">
+                Wall Assembly
+              </Text>
+            </Label.Root>
+            <MeasurementInfo highlightedAssembly="wallAssembly" />
+          </Flex>
           <WallAssemblySelectWithEdit
             value={state.wallAssemblyId ?? undefined}
             onValueChange={(value: WallAssemblyId) => {
@@ -60,11 +64,14 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
           />
 
           {/* Wall Thickness */}
-          <Label.Root htmlFor="wall-thickness">
-            <Text size="1" weight="medium" color="gray">
-              Wall Thickness
-            </Text>
-          </Label.Root>
+          <Flex align="center" gap="1">
+            <Label.Root htmlFor="wall-thickness">
+              <Text size="1" weight="medium" color="gray">
+                Wall Thickness
+              </Text>
+            </Label.Root>
+            <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
+          </Flex>
           <LengthField
             id="wall-thickness"
             value={state.wallThickness}
@@ -77,11 +84,14 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
           />
 
           {/* Base Ring Beam */}
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Base Plate
-            </Text>
-          </Label.Root>
+          <Flex align="center" gap="1">
+            <Label.Root>
+              <Text size="1" weight="medium" color="gray">
+                Base Plate
+              </Text>
+            </Label.Root>
+            <MeasurementInfo highlightedPart="basePlate" />
+          </Flex>
           <RingBeamAssemblySelectWithEdit
             value={state.baseRingBeamAssemblyId ?? undefined}
             onValueChange={(value: RingBeamAssemblyId | undefined) => {
@@ -93,11 +103,14 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
           />
 
           {/* Top Ring Beam */}
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Top Plate
-            </Text>
-          </Label.Root>
+          <Flex align="center" gap="1">
+            <Label.Root>
+              <Text size="1" weight="medium" color="gray">
+                Top Plate
+              </Text>
+            </Label.Root>
+            <MeasurementInfo highlightedPart="topPlate" />
+          </Flex>
           <RingBeamAssemblySelectWithEdit
             value={state.topRingBeamAssemblyId ?? undefined}
             onValueChange={(value: RingBeamAssemblyId | undefined) => {
