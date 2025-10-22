@@ -70,7 +70,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
                 Wall Thickness
               </Text>
             </Label.Root>
-            <MeasurementInfo highlightedMeasurement="totalWallThickness" />
+            <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
           </Flex>
           <LengthField
             id="wall-thickness"
@@ -90,7 +90,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
                 Base Plate
               </Text>
             </Label.Root>
-            <MeasurementInfo highlightedPart="bottomPlate" />
+            <MeasurementInfo highlightedPart="basePlate" />
           </Flex>
           <RingBeamAssemblySelectWithEdit
             value={state.baseRingBeamAssemblyId ?? undefined}

@@ -20,7 +20,7 @@ import { TOOL_GROUPS, getToolInfoById } from '@/editor/tools/system/metadata'
 import { replaceTool, useActiveToolId } from '@/editor/tools/system/store'
 import type { ToolId } from '@/editor/tools/system/types'
 import {
-  BottomPlateIcon,
+  BasePlateIcon,
   ConstructionPlanIcon,
   Model3DIcon,
   TopPlateIcon,
@@ -98,7 +98,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
           views={[{ view: TOP_VIEW, label: 'Top' }]}
           visibilityToggles={[
             { icon: TopPlateIcon, title: 'Top Plate', tags: [TAG_TOP_PLATE.id] },
-            { icon: BottomPlateIcon, title: 'Base Plate', tags: [TAG_BASE_PLATE.id] },
+            { icon: BasePlateIcon, title: 'Base Plate', tags: [TAG_BASE_PLATE.id] },
             { icon: WallToggleIcon, title: 'Wall', tags: [TAG_WALLS.id] }
           ]}
           refreshKey={[activeStoreyId, activePerimiters]}

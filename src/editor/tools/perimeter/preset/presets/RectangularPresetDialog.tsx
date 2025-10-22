@@ -187,7 +187,7 @@ export function RectangularPresetDialog({
                   <Text size="1" color="gray">
                     Wall Thickness
                   </Text>
-                  <MeasurementInfo highlightedMeasurement="totalWallThickness" />
+                  <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
                 </Flex>
                 <LengthField
                   value={config.thickness}
@@ -225,7 +225,7 @@ export function RectangularPresetDialog({
                   <Text size="1" color="gray">
                     Base Plate
                   </Text>
-                  <MeasurementInfo highlightedPart="bottomPlate" />
+                  <MeasurementInfo highlightedPart="basePlate" />
                 </Flex>
                 <RingBeamAssemblySelectWithEdit
                   value={config.baseRingBeamAssemblyId}

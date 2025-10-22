@@ -275,7 +275,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
                 Default Base Plate
               </Text>
             </Label.Root>
-            <MeasurementInfo highlightedPart="bottomPlate" showPartLabels />
+            <MeasurementInfo highlightedPart="basePlate" />
           </Flex>
           <RingBeamAssemblySelect
             value={defaultBaseId}
@@ -291,7 +291,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
                 Default Top Plate
               </Text>
             </Label.Root>
-            <MeasurementInfo highlightedPart="topPlate" showPartLabels />
+            <MeasurementInfo highlightedPart="topPlate" />
           </Flex>
           <RingBeamAssemblySelect
             value={defaultTopId}
@@ -351,7 +351,7 @@ function FullRingBeamFields({
               Height
             </Text>
           </Label.Root>
-          <MeasurementInfo highlightedPart="plates" showPartLabels />
+          <MeasurementInfo highlightedPart="plates" />
         </Flex>
         <LengthField value={config.height} onChange={height => onUpdate({ height })} unit="mm" size="2" />
 
@@ -424,7 +424,7 @@ function DoubleRingBeamFields({
               Height
             </Text>
           </Label.Root>
-          <MeasurementInfo highlightedPart="plates" showPartLabels />
+          <MeasurementInfo highlightedPart="plates" />
         </Flex>
         <LengthField value={config.height} onChange={height => onUpdate({ height })} unit="mm" size="2" />
 
@@ -434,7 +434,7 @@ function DoubleRingBeamFields({
               Thickness
             </Text>
           </Label.Root>
-          <MeasurementInfo highlightedPart="plates" showPartLabels />
+          <MeasurementInfo highlightedPart="plates" />
         </Flex>
         <LengthField value={config.thickness} onChange={thickness => onUpdate({ thickness })} unit="mm" size="2" />
 
@@ -444,7 +444,7 @@ function DoubleRingBeamFields({
               Spacing
             </Text>
           </Label.Root>
-          <MeasurementInfo highlightedPart="plates" showPartLabels />
+          <MeasurementInfo highlightedPart="plates" />
         </Flex>
         <LengthField value={config.spacing} onChange={spacing => onUpdate({ spacing })} unit="mm" size="2" />
 
@@ -454,7 +454,7 @@ function DoubleRingBeamFields({
               Offset from Edge
             </Text>
           </Label.Root>
-          <MeasurementInfo highlightedPart="plates" showPartLabels />
+          <MeasurementInfo highlightedPart="plates" />
         </Flex>
         <LengthField
           value={config.offsetFromEdge}

@@ -626,7 +626,7 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
               Inside Thickness
             </Text>
           </Label.Root>
-          <MeasurementInfo highlightedPart="insideLayer" showPartLabels showFinishedSides />
+          <MeasurementInfo highlightedPart="insideLayer" showFinishedSides />
         </Flex>
         <LengthField
           value={config.layers.insideThickness}
@@ -643,7 +643,7 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
               Outside Thickness
             </Text>
           </Label.Root>
-          <MeasurementInfo highlightedPart="outsideLayer" showPartLabels showFinishedSides />
+          <MeasurementInfo highlightedPart="outsideLayer" showFinishedSides />
         </Flex>
         <LengthField
           value={config.layers.outsideThickness}

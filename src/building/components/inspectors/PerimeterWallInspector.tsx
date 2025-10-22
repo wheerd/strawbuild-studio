@@ -137,7 +137,7 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
                 Thickness
               </Text>
             </Label.Root>
-            <MeasurementInfo highlightedMeasurement="totalWallThickness" />
+            <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
           </Flex>
           <LengthField
             id="perimeter-thickness"

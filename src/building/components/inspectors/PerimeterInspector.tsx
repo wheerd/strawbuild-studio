@@ -17,7 +17,7 @@ import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import {
-  BottomPlateIcon,
+  BasePlateIcon,
   ConstructionPlanIcon,
   FitToViewIcon,
   Model3DIcon,
@@ -175,7 +175,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             views={[{ view: TOP_VIEW, label: 'Top' }]}
             visibilityToggles={[
               { icon: TopPlateIcon, title: 'Top Plate', tags: [TAG_TOP_PLATE.id] },
-              { icon: BottomPlateIcon, title: 'Base Plate', tags: [TAG_BASE_PLATE.id] },
+              { icon: BasePlateIcon, title: 'Base Plate', tags: [TAG_BASE_PLATE.id] },
               { icon: WallToggleIcon, title: 'Wall', tags: [TAG_WALLS.id] }
             ]}
             refreshKey={perimeter}
@@ -237,7 +237,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                     <Text size="1" weight="medium" color="gray">
                       Wall Thickness
                     </Text>
-                    <MeasurementInfo highlightedMeasurement="totalWallThickness" />
+                    <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
                     {thicknessState.isMixed && <MixedStateIndicator />}
                   </Flex>
                 </Label.Root>
@@ -273,7 +273,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                     Base Plate
                   </Text>
                 </Label.Root>
-                <MeasurementInfo highlightedPart="bottomPlate" />
+                <MeasurementInfo highlightedPart="basePlate" />
               </Flex>
               <RingBeamAssemblySelectWithEdit
                 value={perimeter.baseRingBeamAssemblyId}

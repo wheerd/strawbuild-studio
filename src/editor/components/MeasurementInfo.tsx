@@ -25,7 +25,7 @@ export type ConstructionPart =
   | 'plates'
   | 'topPlate'
   | 'wallConstruction'
-  | 'bottomPlate'
+  | 'basePlate'
 
 export interface MeasurementDisplayConfig {
   showPartLabels?: boolean
@@ -42,7 +42,7 @@ function ConstructionSchematic({
   highlightedAssembly,
   highlightedMeasurement,
   highlightedPart,
-  showPartLabels = false,
+  showPartLabels = true,
   showMeasurements = false,
   showAssemblyOutlines = false,
   showFinishedLevels = false,
@@ -104,7 +104,7 @@ e | y +--------------+ s | Floor top layers                 }
   const wallAssemblyClipId = useId()
 
   const marginTop = 100
-  const marginBottom = 100
+  const marginBottom = 150
   const marginRight = 100
   const wallVerticalExtension = 100
   const floorProjection = 100
@@ -132,7 +132,7 @@ e | y +--------------+ s | Floor top layers                 }
 
   const wallHeight = storeyHeight - floorConstructionThickness
   const topPlateThickness = 150
-  const bottomPlateThickness = 150
+  const basePlateThickness = 150
 
   const totalHeight = marginTop + storeyHeight + totalFloorThickness + marginBottom
   const totalWidth = outsidePadding + outsideThickness + wallWidth + insideThickness + floorWidth
@@ -156,12 +156,12 @@ e | y +--------------+ s | Floor top layers                 }
   const wallAssemblyTopY = topFloorConstructionTopY + floorConstructionThickness + floorConstructionTopOverlap
   const wallAssemblyBottomY = wallAssemblyTopY + wallHeight
   const wallCoreTopY = wallAssemblyTopY + topPlateThickness
-  const wallCoreHeight = wallHeight - topPlateThickness - bottomPlateThickness
+  const wallCoreHeight = wallHeight - topPlateThickness - basePlateThickness
   const wallCenterY = wallCoreTopY + wallCoreHeight / 2
-  const wallCoreBottomY = wallAssemblyBottomY - bottomPlateThickness
-  const bottomPlateTopY = wallAssemblyBottomY - bottomPlateThickness
+  const wallCoreBottomY = wallAssemblyBottomY - basePlateThickness
+  const basePlateTopY = wallAssemblyBottomY - basePlateThickness
   const bottomWallTopY =
-    bottomFloorConstructionTopY + floorConstructionThickness + floorConstructionTopOverlap + bottomPlateThickness
+    bottomFloorConstructionTopY + floorConstructionThickness + floorConstructionTopOverlap + basePlateThickness
 
   const insideLayerMiddleHeight = wallHeight - floorConstructionTopOverlap - floorConstructionBottomOverlap
 
@@ -184,7 +184,7 @@ e | y +--------------+ s | Floor top layers                 }
   const bottomFloorConstructionLabelY = (bottomFloorConstructionTopY + bottomFloorConstructionBottomY) / 2
   const bottomFloorBottomLayersLabelY = (bottomFloorBottomLayersTopY + bottomFloorBottomLayersBottomY) / 2
 
-  const upperBottomPlateLabelY = topFloorConstructionTopY + floorConstructionTopOverlap - bottomPlateThickness / 2
+  const upperBasePlateLabelY = topFloorConstructionTopY + floorConstructionTopOverlap - basePlateThickness / 2
   const lowerTopPlateLabelY =
     bottomFloorConstructionTopY + floorConstructionThickness + floorConstructionTopOverlap + topPlateThickness / 2
 
@@ -198,9 +198,9 @@ e | y +--------------+ s | Floor top layers                 }
   const highlightStroke = 'var(--accent-10)'
   const measurementNeutralColor = 'var(--gray-10)'
   const finishedLevelColor = 'var(--teal-10)'
-  const finishedSideColor = 'var(--gold-10)'
+  const finishedSideColor = 'var(--sky-11)'
 
-  const isPlateSegment = (part?: ConstructionPart): boolean => part === 'topPlate' || part === 'bottomPlate'
+  const isPlateSegment = (part?: ConstructionPart): boolean => part === 'topPlate' || part === 'basePlate'
 
   const partIsHighlighted = (part?: ConstructionPart): boolean =>
     Boolean(part && (highlightedPart === part || (highlightedPart === 'plates' && isPlateSegment(part))))
@@ -367,7 +367,7 @@ e | y +--------------+ s | Floor top layers                 }
         x={wallLeft}
         y={-wallVerticalExtension}
         width={wallWidth}
-        height={topFloorConstructionTopY + floorConstructionTopOverlap - bottomPlateThickness + wallVerticalExtension}
+        height={topFloorConstructionTopY + floorConstructionTopOverlap - basePlateThickness + wallVerticalExtension}
         fill="var(--gray-7)"
         stroke="var(--gray-12)"
         strokeWidth="5"
@@ -385,11 +385,11 @@ e | y +--------------+ s | Floor top layers                 }
       <rect
         key="bottom-plate-top"
         x={wallLeft}
-        y={topFloorConstructionTopY + floorConstructionTopOverlap - bottomPlateThickness}
+        y={topFloorConstructionTopY + floorConstructionTopOverlap - basePlateThickness}
         width={wallWidth}
-        height={bottomPlateThickness}
-        fill={getPartFill('bottomPlate', 'var(--gray-8)')}
-        stroke={getPartStroke('bottomPlate')}
+        height={basePlateThickness}
+        fill={getPartFill('basePlate', 'var(--gray-8)')}
+        stroke={getPartStroke('basePlate')}
         strokeWidth="5"
       />
       <rect
@@ -415,11 +415,11 @@ e | y +--------------+ s | Floor top layers                 }
       <rect
         key="bottom-plate"
         x={wallLeft}
-        y={bottomPlateTopY}
+        y={basePlateTopY}
         width={wallWidth}
-        height={bottomPlateThickness}
-        fill={getPartFill('bottomPlate', 'var(--gray-8)')}
-        stroke={getPartStroke('bottomPlate')}
+        height={basePlateThickness}
+        fill={getPartFill('basePlate', 'var(--gray-8)')}
+        stroke={getPartStroke('basePlate')}
         strokeWidth="5"
       />
       <rect
@@ -597,11 +597,24 @@ e | y +--------------+ s | Floor top layers                 }
         </text>
       )}
 
+      {assemblyOutlineVisible('floorAssembly') && (
+        <text
+          x={floorMeasurementX}
+          y={bottomFloorBottomLayersBottomY + 10}
+          fontSize={60}
+          text-anchor="middle"
+          dominantBaseline="text-before-edge"
+          fill={assemblyOutlineStroke('floorAssembly', 'var(--amber-10)')}
+        >
+          Floor Assembly
+        </text>
+      )}
+
       {showFinishedLevels && (
         <>
           <text
             x={floorMeasurementX}
-            y={topFloorBottomLayersBottomY}
+            y={topFloorBottomLayersBottomY + 10}
             fontSize={60}
             text-anchor="middle"
             dominantBaseline="text-before-edge"
@@ -611,7 +624,7 @@ e | y +--------------+ s | Floor top layers                 }
           </text>
           <text
             x={floorMeasurementX}
-            y={bottomFloorTopY}
+            y={bottomFloorTopY - 10}
             fontSize={60}
             text-anchor="middle"
             dominantBaseline="text-after-edge"
@@ -642,7 +655,7 @@ e | y +--------------+ s | Floor top layers                 }
             fontSize={60}
             text-anchor="middle"
             dominantBaseline="text-after-edge"
-            transform={`translate(${outsidePadding} ${totalHeight / 2}) rotate(-90)`}
+            transform={`translate(${outsidePadding - 10} ${totalHeight / 2}) rotate(-90)`}
             fill={finishedSideColor}
           >
             Finished Outside
@@ -651,7 +664,7 @@ e | y +--------------+ s | Floor top layers                 }
             fontSize={60}
             text-anchor="middle"
             dominantBaseline="text-after-edge"
-            transform={`translate(${inside} ${totalHeight / 2}) rotate(90)`}
+            transform={`translate(${inside + 10} ${totalHeight / 2}) rotate(90)`}
             fill={finishedSideColor}
           >
             Finished Inside
@@ -663,7 +676,7 @@ e | y +--------------+ s | Floor top layers                 }
             x2={inside}
             y2={bottomFloorTopY}
             stroke={finishedSideColor}
-            strokeWidth={20}
+            strokeWidth={10}
           />
           <line
             key="finished-outside"
@@ -672,21 +685,21 @@ e | y +--------------+ s | Floor top layers                 }
             x2={outsideLayerX}
             y2={totalHeight}
             stroke={finishedSideColor}
-            strokeWidth={20}
+            strokeWidth={10}
           />
         </>
       )}
 
-      {partLabelVisible('bottomPlate') && (
+      {partLabelVisible('basePlate') && (
         <text
           x={wallCenterX}
-          y={upperBottomPlateLabelY}
+          y={upperBasePlateLabelY}
           fontSize={48}
           text-anchor="middle"
           dominantBaseline="middle"
-          fill={partLabelColor('bottomPlate')}
+          fill={partLabelColor('basePlate')}
         >
-          Bottom Plate
+          Base Plate
         </text>
       )}
 
@@ -703,16 +716,16 @@ e | y +--------------+ s | Floor top layers                 }
         </text>
       )}
 
-      {partLabelVisible('bottomPlate') && (
+      {partLabelVisible('basePlate') && (
         <text
           x={wallCenterX}
-          y={wallAssemblyBottomY - bottomPlateThickness / 2}
+          y={wallAssemblyBottomY - basePlateThickness / 2}
           fontSize={50}
           text-anchor="middle"
           dominantBaseline="middle"
-          fill={partLabelColor('bottomPlate')}
+          fill={partLabelColor('basePlate')}
         >
-          Bottom Plate
+          Base Plate
         </text>
       )}
 
@@ -726,6 +739,21 @@ e | y +--------------+ s | Floor top layers                 }
           fill={partLabelColor('topPlate')}
         >
           Top Plate
+        </text>
+      )}
+
+      {assemblyOutlineVisible('wallAssembly') && (
+        <text
+          fontSize={60}
+          text-anchor="middle"
+          dominantBaseline="middle"
+          fill={assemblyOutlineStroke('wallAssembly', 'var(--ruby-10)')}
+          transform={`translate(${wallCenterX} ${basePlateTopY - 150})`}
+        >
+          <tspan x={0}>Wall</tspan>
+          <tspan x={0} dy="1.2em">
+            Assembly
+          </tspan>
         </text>
       )}
 
@@ -837,27 +865,27 @@ e | y +--------------+ s | Floor top layers                 }
       {floorShapes}
       {wallShapes}
 
+      {showAssemblyOutlines && (
+        <use
+          href={`#${upperFloorPathId}`}
+          clipPath={`url(#${upperFloorClipId})`}
+          fill="none"
+          stroke="var(--amber-10)"
+          strokeWidth={50}
+          strokeLinejoin="round"
+          opacity={0.4}
+        />
+      )}
       {assemblyOutlineVisible('floorAssembly') && (
-        <>
-          <use
-            href={`#${upperFloorPathId}`}
-            clipPath={`url(#${upperFloorClipId})`}
-            fill="none"
-            stroke={assemblyOutlineStroke('floorAssembly', 'var(--amber-10)')}
-            strokeWidth={40}
-            strokeLinejoin="round"
-            opacity={0.4}
-          />
-          <use
-            href={`#${lowerFloorPathId}`}
-            clipPath={`url(#${lowerFloorClipId})`}
-            fill="none"
-            stroke={assemblyOutlineStroke('floorAssembly', 'var(--amber-10)')}
-            strokeWidth={40}
-            strokeLinejoin="round"
-            opacity={0.4}
-          />
-        </>
+        <use
+          href={`#${lowerFloorPathId}`}
+          clipPath={`url(#${lowerFloorClipId})`}
+          fill="none"
+          stroke={assemblyOutlineStroke('floorAssembly', 'var(--amber-10)')}
+          strokeWidth={50}
+          strokeLinejoin="round"
+          opacity={0.4}
+        />
       )}
       {assemblyOutlineVisible('wallAssembly') && (
         <use
@@ -865,7 +893,7 @@ e | y +--------------+ s | Floor top layers                 }
           clipPath={`url(#${wallAssemblyClipId})`}
           fill="none"
           stroke={assemblyOutlineStroke('wallAssembly', 'var(--ruby-10)')}
-          strokeWidth={40}
+          strokeWidth={50}
           strokeLinejoin="round"
           opacity={0.4}
         />
@@ -880,7 +908,7 @@ e | y +--------------+ s | Floor top layers                 }
             x2={totalWidth}
             y2={topFloorBottomLayersBottomY}
             stroke={finishedLevelColor}
-            strokeWidth={20}
+            strokeWidth={10}
           />
           <line
             key="finished-floor"
@@ -889,7 +917,7 @@ e | y +--------------+ s | Floor top layers                 }
             x2={totalWidth}
             y2={bottomFloorTopY}
             stroke={finishedLevelColor}
-            strokeWidth={20}
+            strokeWidth={10}
           />
         </>
       )}

@@ -348,7 +348,7 @@ function MonolithicConfigFields({
               Thickness
             </Text>
           </Label.Root>
-          <MeasurementInfo highlightedPart="floorConstruction" showPartLabels />
+          <MeasurementInfo highlightedPart="floorConstruction" />
         </Flex>
         <LengthField value={config.thickness} onChange={thickness => onUpdate({ thickness })} unit="mm" size="2" />
       </Grid>
@@ -386,7 +386,7 @@ function LayersFields({
               Top Thickness
             </Text>
           </Label.Root>
-          <MeasurementInfo highlightedPart="floorTopLayers" showPartLabels />
+          <MeasurementInfo highlightedPart="floorTopLayers" />
         </Flex>
         <LengthField
           value={config.layers.topThickness}
@@ -401,7 +401,7 @@ function LayersFields({
               Bottom Thickness
             </Text>
           </Label.Root>
-          <MeasurementInfo highlightedPart="floorBottomLayers" showPartLabels />
+          <MeasurementInfo highlightedPart="floorBottomLayers" />
         </Flex>
         <LengthField
           value={config.layers.bottomThickness}

@@ -150,7 +150,7 @@ export function PerimeterPresetToolInspector({ tool }: ToolInspectorProps<Perime
                   <DataList.Label minWidth="80px">
                     <Flex align="center" gap="1">
                       Thickness
-                      <MeasurementInfo highlightedMeasurement="totalWallThickness" />
+                      <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
                     </Flex>
                   </DataList.Label>
                   <DataList.Value>{formatLength(currentConfig.thickness)}</DataList.Value>
