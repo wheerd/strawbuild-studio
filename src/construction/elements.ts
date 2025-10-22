@@ -1,5 +1,5 @@
 import type { MaterialId } from '@/construction/materials/material'
-import type { PartId } from '@/construction/parts'
+import type { PartInfo } from '@/construction/parts'
 import type { Bounds3D } from '@/shared/geometry'
 import { createId } from '@/shared/utils/ids'
 
@@ -17,14 +17,14 @@ export const createConstructionElement = (
   shape: Shape,
   transform: Transform = IDENTITY,
   tags?: Tag[],
-  partId?: PartId
+  partInfo?: PartInfo
 ): ConstructionElement => ({
   id: createConstructionElementId(),
   material,
   shape,
   transform,
   tags,
-  partId,
+  partInfo,
   bounds: transformBounds(shape.bounds, transform)
 })
 
@@ -38,7 +38,7 @@ export interface ConstructionGroup {
   children: GroupOrElement[]
 
   tags?: Tag[]
-  partId?: PartId
+  partInfo?: PartInfo
 }
 
 export interface ConstructionElement {
@@ -50,5 +50,5 @@ export interface ConstructionElement {
   shape: Shape
 
   tags?: Tag[]
-  partId?: PartId
+  partInfo?: PartInfo
 }

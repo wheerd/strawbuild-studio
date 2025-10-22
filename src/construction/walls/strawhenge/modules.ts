@@ -3,7 +3,7 @@ import { vec3 } from 'gl-matrix'
 import { type ConstructionElement, createConstructionElement } from '@/construction/elements'
 import { IDENTITY } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
-import { dimensionalPartId } from '@/construction/parts'
+import { dimensionalPartInfo } from '@/construction/parts'
 import { type ConstructionResult, yieldElement, yieldMeasurement } from '@/construction/results'
 import { createCuboidShape } from '@/construction/shapes'
 import { TAG_INFILL, TAG_MODULE_WIDTH } from '@/construction/tags'
@@ -39,10 +39,10 @@ function* constructSingleFrameModule(
 ): Generator<ConstructionResult> {
   const { frameThickness, frameMaterial } = config
   const horizontalFrameSize = vec3.fromValues(size[0], size[1], frameThickness)
-  const horizontalFramePartId = dimensionalPartId(frameMaterial, horizontalFrameSize)
+  const horizontalFramePartId = dimensionalPartInfo('module-frame', horizontalFrameSize)
   const verticalFrameLength = size[2] - 2 * frameThickness
   const verticalFrameSize = vec3.fromValues(frameThickness, size[1], verticalFrameLength)
-  const verticalFramePartId = dimensionalPartId(frameMaterial, verticalFrameSize)
+  const verticalFramePartId = dimensionalPartInfo('module-frame', verticalFrameSize)
 
   // Calculate straw area (inset by frameThickness on all sides)
   const strawPosition = vec3.fromValues(position[0] + frameThickness, position[1], position[2] + frameThickness)
@@ -130,10 +130,10 @@ function* constructDoubleFrameModule(
   const strawPosition = vec3.fromValues(position[0] + frameThickness, position[1], position[2] + frameThickness)
   const strawSize = vec3.fromValues(size[0] - 2 * frameThickness, size[1], size[2] - 2 * frameThickness)
   const horizontalFrameSize = vec3.fromValues(size[0], frameWidth, frameThickness)
-  const horizontalFramePartId = dimensionalPartId(frameMaterial, horizontalFrameSize)
+  const horizontalFramePartId = dimensionalPartInfo('module-frame', horizontalFrameSize)
   const verticalFrameLength = size[2] - 2 * frameThickness
   const verticalFrameSize = vec3.fromValues(frameThickness, frameWidth, verticalFrameLength)
-  const verticalFramePartId = dimensionalPartId(frameMaterial, verticalFrameSize)
+  const verticalFramePartId = dimensionalPartInfo('module-frame', verticalFrameSize)
 
   // Top frame - 2 beams
   const topFrame1: ConstructionElement = createConstructionElement(
@@ -272,7 +272,7 @@ function* constructDoubleFrameModule(
 
     const spacerSize = vec3.fromValues(frameThickness, gapWidth, spacerHeight)
     const infillSize = vec3.fromValues(frameThickness, gapWidth, infillHeight)
-    const spacerPartId = dimensionalPartId(spacerMaterial, spacerSize)
+    const spacerPartId = dimensionalPartInfo(spacerMaterial, spacerSize)
 
     let z = verticalStart
     for (let i = spacerCount; i > 0; i--) {

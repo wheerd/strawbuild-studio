@@ -4,7 +4,7 @@ import type { Opening } from '@/building/model/model'
 import { type ConstructionElement, createConstructionElement } from '@/construction/elements'
 import { IDENTITY } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
-import { dimensionalPartId } from '@/construction/parts'
+import { dimensionalPartInfo } from '@/construction/parts'
 import { type ConstructionResult, yieldArea, yieldElement, yieldError, yieldMeasurement } from '@/construction/results'
 import { createCuboidShape } from '@/construction/shapes'
 import {
@@ -80,7 +80,7 @@ export function* constructOpeningFrame(
       createCuboidShape([openingLeft, wallFront, headerBottom], headerSize),
       IDENTITY,
       [TAG_HEADER],
-      dimensionalPartId(config.headerMaterial, headerSize)
+      dimensionalPartInfo('header', headerSize)
     )
 
     yield yieldElement(headerElement)
@@ -123,7 +123,7 @@ export function* constructOpeningFrame(
       createCuboidShape(vec3.fromValues(openingLeft, wallFront, sillBottom), sillSize),
       IDENTITY,
       [TAG_SILL],
-      dimensionalPartId(config.sillMaterial, sillSize)
+      dimensionalPartInfo('sill', sillSize)
     )
 
     yield yieldElement(sillElement)
