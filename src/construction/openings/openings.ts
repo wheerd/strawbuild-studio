@@ -77,12 +77,13 @@ export function* constructOpeningFrame(
     const headerTop = headerBottom + config.headerThickness
 
     // Create single header spanning entire segment width
+    const headerSize = vec3.fromValues(openingWidth, wallThickness, config.headerThickness)
     const headerElement: ConstructionElement = createConstructionElement(
       config.headerMaterial,
-      createCuboidShape([openingLeft, wallFront, headerBottom], [openingWidth, wallThickness, config.headerThickness]),
+      createCuboidShape([openingLeft, wallFront, headerBottom], headerSize),
       IDENTITY,
       [TAG_HEADER],
-      dimensionalPartId(config.headerMaterial, config.headerThickness, wallThickness, openingWidth)
+      dimensionalPartId(config.headerMaterial, headerSize)
     )
 
     yield yieldElement(headerElement)
@@ -119,15 +120,13 @@ export function* constructOpeningFrame(
     const sillBottom = sillTop - config.sillThickness
 
     // Create single sill spanning entire segment width
+    const sillSize = vec3.fromValues(openingWidth, wallThickness, config.sillThickness)
     const sillElement = createConstructionElement(
       config.sillMaterial,
-      createCuboidShape(
-        vec3.fromValues(openingLeft, wallFront, sillBottom),
-        vec3.fromValues(openingWidth, wallThickness, config.sillThickness)
-      ),
+      createCuboidShape(vec3.fromValues(openingLeft, wallFront, sillBottom), sillSize),
       IDENTITY,
       [TAG_SILL],
-      dimensionalPartId(config.sillMaterial, config.sillThickness, wallThickness, openingWidth)
+      dimensionalPartId(config.sillMaterial, sillSize)
     )
 
     yield yieldElement(sillElement)
