@@ -5,7 +5,6 @@ import type { MaterialId } from '@/construction/materials/material'
 import { getMaterialById } from '@/construction/materials/store'
 import type { ConstructionModel } from '@/construction/model'
 import type { Length, Polygon2D, Volume } from '@/shared/geometry'
-import { formatLength } from '@/shared/utils/formatLength'
 
 export type PartId = string & { readonly brand: unique symbol }
 
@@ -43,7 +42,7 @@ export interface PartItem {
   length?: Length
   totalLength?: Length
   quantity: number
-  issue?: string
+  issue?: PartIssue
 }
 
 export type PartsList = Record<MaterialId, MaterialParts>
@@ -64,6 +63,8 @@ const indexToLabel = (index: number): string => {
 
 const computeVolume = (size: vec3): Volume => size[0] * size[1] * size[2]
 
+export type PartIssue = 'CrossSectionMismatch' | 'LengthExceedsAvailable'
+
 const computeDimensionalDetails = (size: vec3, availableLengths: Length[], width: Length, thickness: Length) => {
   const dimensions = Array.from(size) as [number, number, number]
   const indices = [0, 1, 2]
@@ -82,25 +83,19 @@ const computeDimensionalDetails = (size: vec3, availableLengths: Length[], width
 
   const widthIndex = findMatchingIndex(materialWidth)
   const thicknessIndex = findMatchingIndex(materialThickness)
-  let issue: string | undefined
+  let issue: PartIssue | undefined
 
   if (widthIndex === -1 || thicknessIndex === -1) {
-    const crossSection = `${formatLength(Math.round(dimensions[0]))} x ${formatLength(Math.round(dimensions[1]))}`
-    const materialCrossSection = `${formatLength(materialThickness)} x ${formatLength(materialWidth)}`
-    issue = `Part cross section ${crossSection} does not match material cross section ${materialCrossSection}`
+    issue = 'CrossSectionMismatch'
   }
 
   let length: Length | undefined
+  length = dimensions[indices.length === 1 ? indices[0] : 2]
 
-  if (indices.length === 1) {
-    const lengthIndex = indices[0]
-    length = dimensions[lengthIndex]
-
-    if (availableLengths.length > 0) {
-      const maxAvailableLength = Math.round(Math.max(...availableLengths))
-      if (length > maxAvailableLength) {
-        issue = `Part length ${formatLength(length)} exceeds material maximum length ${formatLength(maxAvailableLength)}`
-      }
+  if (!issue && availableLengths.length > 0) {
+    const maxAvailableLength = Math.round(Math.max(...availableLengths))
+    if (length > maxAvailableLength) {
+      issue = 'LengthExceedsAvailable'
     }
   }
 
@@ -162,7 +157,7 @@ export const generatePartsList = (model: ConstructionModel): PartsList => {
 
     const materialDefinition = getMaterialById(material)
     let length: Length | undefined
-    let issue: string | undefined
+    let issue: PartIssue | undefined
 
     if (materialDefinition?.type === 'dimensional') {
       const details = computeDimensionalDetails(

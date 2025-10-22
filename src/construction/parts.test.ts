@@ -97,18 +97,17 @@ describe('generatePartsList', () => {
     const model = createModel([createElement(wood360x60.id, mismatchedPart)])
 
     const part = generatePartsList(model)[wood360x60.id].parts[mismatchedPart.partId]
-    expect(part.issue).toBe('Part cross section 6cm x 0.2m does not match material cross section 6cm x 0.36m')
-    expect(part.length).toBeUndefined()
+    expect(part.issue).toBe('CrossSectionMismatch')
+    expect(part.length).toBe(5000)
   })
 
-  it('records an issue when the part length exceeds available stock lengths', () => {
+  it('records an issue when the part length exceeds available standard lengths', () => {
     const longPart = dimensionalPartInfo('post', vec3.fromValues(6000, 360, 60))
     const model = createModel([createElement(wood360x60.id, longPart)])
 
     const part = generatePartsList(model)[wood360x60.id].parts[longPart.partId]
-    expect(part.issue).toBe('Part length 6m exceeds material maximum length 5m')
+    expect(part.issue).toBe('LengthExceedsAvailable')
     expect(part.length).toBe(6000)
-    expect(part.totalLength).toBe(6000)
   })
 
   it('handles parts nested inside groups', () => {

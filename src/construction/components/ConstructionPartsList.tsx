@@ -1,4 +1,6 @@
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { Badge, Card, Flex, Heading, Table, Text, Tooltip } from '@radix-ui/themes'
+import type { vec3 } from 'gl-matrix'
 import React, { useMemo } from 'react'
 
 import { getMaterialTypeIcon, getMaterialTypeName } from '@/construction/materials/components/MaterialSelect'
@@ -27,6 +29,12 @@ const formatVolume = (volume: number): string => {
   return `${cubicMeters.toFixed(2)}m³`
 }
 
+const formatCrossSection = ([first, second]: [number, number]) =>
+  `${formatLengthInMeters(first)} × ${formatLengthInMeters(second)}`
+
+const formatDimensions = (size: vec3) =>
+  `${formatLengthInMeters(size[0])} × ${formatLengthInMeters(size[1])} × ${formatLengthInMeters(size[2])}`
+
 function MaterialTypeIndicator({ material, size = 18 }: { material: Material; size?: number }) {
   const Icon = getMaterialTypeIcon(material.type)
   if (!Icon) return null
@@ -53,17 +61,6 @@ function MaterialTypeIndicator({ material, size = 18 }: { material: Material; si
         style={{ color: 'white', filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.5))' }}
       />
     </div>
-  )
-}
-
-function PartIssue({ issue }: { issue?: string }) {
-  if (!issue) return null
-  return (
-    <Tooltip content={issue}>
-      <Badge color="red" variant="soft">
-        Issue
-      </Badge>
-    </Tooltip>
   )
 }
 
@@ -138,31 +135,52 @@ function PartsTable({ material, parts }: { material: Material; parts: PartItem[]
               <Table.ColumnHeaderCell width="9em" justify="end">
                 Total Volume
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="5em" justify="center">
-                Status
-              </Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {parts.map(part => (
-              <Table.Row key={part.partId}>
-                <Table.RowHeaderCell justify="center">
-                  <Text weight="medium">{part.label}</Text>
-                </Table.RowHeaderCell>
-                <Table.Cell>{part.type}</Table.Cell>
-                <Table.Cell justify="center">{part.quantity}</Table.Cell>
-                <Table.Cell justify="end">
-                  {part.length !== undefined ? formatLengthInMeters(part.length) : '—'}
-                </Table.Cell>
-                <Table.Cell justify="end">
-                  {part.totalLength !== undefined ? formatLengthInMeters(part.totalLength) : '—'}
-                </Table.Cell>
-                <Table.Cell justify="end">{formatVolume(part.totalVolume)}</Table.Cell>
-                <Table.Cell justify="center">
-                  <PartIssue issue={part.issue} />
-                </Table.Cell>
-              </Table.Row>
-            ))}
+            {parts.map(part => {
+              return (
+                <Table.Row key={part.partId} style={{ background: part.issue ? 'var(--red-3)' : undefined }}>
+                  <Table.RowHeaderCell justify="center">
+                    <Text weight="medium">{part.label}</Text>
+                  </Table.RowHeaderCell>
+                  <Table.Cell>
+                    <Flex align="center" gap="2">
+                      <Text>{part.type}</Text>
+
+                      {part.issue === 'CrossSectionMismatch' && material.type === 'dimensional' && (
+                        <Tooltip
+                          key="cross-section-mismatch"
+                          content={`Part dimensions ${formatDimensions(part.size)} do not match material cross section ${formatCrossSection([material.thickness, material.width])}`}
+                        >
+                          <ExclamationTriangleIcon style={{ color: 'var(--red-9)' }} />
+                        </Tooltip>
+                      )}
+                    </Flex>
+                  </Table.Cell>
+                  <Table.Cell justify="center">{part.quantity}</Table.Cell>
+                  <Table.Cell justify="end">
+                    <Flex align="center" gap="2" justify="end">
+                      <Text>{part.length !== undefined ? formatLengthInMeters(part.length) : '—'}</Text>
+                      {part.issue === 'LengthExceedsAvailable' && material.type === 'dimensional' && (
+                        <Tooltip
+                          key="length-exceeds-available"
+                          content={`Part length ${
+                            part.length !== undefined ? formatLengthInMeters(part.length) : 'Unknown'
+                          } exceeds material maximum available length ${formatLengthInMeters(Math.max(...material.availableLengths))}`}
+                        >
+                          <ExclamationTriangleIcon style={{ color: 'var(--red-9)' }} />
+                        </Tooltip>
+                      )}
+                    </Flex>
+                  </Table.Cell>
+                  <Table.Cell justify="end">
+                    {part.totalLength !== undefined ? formatLengthInMeters(part.totalLength) : '—'}
+                  </Table.Cell>
+                  <Table.Cell justify="end">{formatVolume(part.totalVolume)}</Table.Cell>
+                </Table.Row>
+              )
+            })}
           </Table.Body>
         </Table.Root>
       </Flex>
