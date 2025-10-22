@@ -4,8 +4,8 @@ import type { ConstructionElementId } from '@/construction/elements'
 import type { MaterialId } from '@/construction/materials/material'
 import { getMaterialById } from '@/construction/materials/store'
 import type { ConstructionModel } from '@/construction/model'
-import type { Length, Plane3D, Polygon2D, PolygonWithHoles2D, Volume } from '@/shared/geometry'
-import { minimumAreaBoundingBoxOfPolygonWithHoles } from '@/shared/geometry'
+import type { Length, Plane3D, Polygon2D, Volume } from '@/shared/geometry'
+import { boundsFromPoints, minimumAreaBoundingBox } from '@/shared/geometry'
 
 export type PartId = string & { readonly brand: unique symbol }
 
@@ -25,16 +25,11 @@ export const dimensionalPartInfo = (type: string, size: vec3): PartInfo => {
   return { partId, type, size: vec3.fromValues(sortedDimensions[0], sortedDimensions[1], sortedDimensions[2]) }
 }
 
-export const polygonPartInfo = (
-  type: string,
-  polygon: PolygonWithHoles2D,
-  plane: Plane3D,
-  thickness: Length
-): PartInfo => {
-  const { size } = minimumAreaBoundingBoxOfPolygonWithHoles(polygon)
-  const width = Math.max(size[0], 0)
-  const height = Math.max(size[1], 0)
-  const absoluteThickness = Math.abs(thickness)
+export const polygonPartInfo = (type: string, polygon: Polygon2D, plane: Plane3D, thickness: Length): PartInfo => {
+  const { size, angle } = minimumAreaBoundingBox(polygon)
+  const width = Math.max(Math.round(size[0]), 0)
+  const height = Math.max(Math.round(size[1]), 0)
+  const absoluteThickness = Math.abs(Math.round(thickness))
 
   const dimensions =
     plane === 'xy'
@@ -50,23 +45,48 @@ export const polygonPartInfo = (
   ]
 
   const sorted = combined.sort((a, b) => a[0] - b[0])
+  const sortedSize = sorted.map(([value, _]) => Math.round(value))
   const dimOrdered = sorted.map(s => s[1])
   const xIndex = dimOrdered.indexOf('x')
   const yIndex = dimOrdered.indexOf('y')
   const flipXY = yIndex < xIndex
   const newPlane = `${'xyz'[Math.min(xIndex, yIndex)]}${'xyz'[Math.max(xIndex, yIndex)]}` as Plane3D
-  const normalizedPolygon: Polygon2D = {
-    points: polygon.outer.points.map(p => (flipXY ? vec2.fromValues(p[1], p[0]) : vec2.fromValues(p[0], p[1])))
+
+  const sinAngle = Math.sin(-angle)
+  const cosAngle = Math.cos(-angle)
+
+  const rotatePoint = (point: vec2) => {
+    const x = point[0] * cosAngle - point[1] * sinAngle
+    const y = point[0] * sinAngle + point[1] * cosAngle
+    return vec2.fromValues(x, y)
   }
 
-  const partId = sorted.map(([value, _]) => Math.round(value)).join('x') as PartId
+  const rotatedPoints = polygon.points.map(rotatePoint)
+  const flippedPoints = rotatedPoints.map(p => (flipXY ? vec2.fromValues(p[1], p[0]) : vec2.fromValues(p[0], p[1])))
+  if (flipXY) flippedPoints.reverse()
+  const bounds = boundsFromPoints(flippedPoints)
+  const normalizedPolygon: Polygon2D = {
+    points: flippedPoints.map(p => vec2.fromValues(Math.round(p[0] - bounds.min[0]), Math.round(p[1] - bounds.min[1])))
+  }
+
+  const pointStrs = normalizedPolygon.points.map(p => `${p[0]},${p[1]}`)
+  const minPointStr = [...pointStrs].sort()[0]
+  const minPointIndex = pointStrs.indexOf(minPointStr)
+  const normalizedPointStrs = pointStrs.slice(minPointIndex).concat(pointStrs.slice(0, minPointIndex))
+  const dimStr = sortedSize.join('x')
+  const polygonStr = normalizedPointStrs.join(' ')
+  const rectStr = flipXY
+    ? `0,0 ${height},0 ${height},${width} 0,${width}`
+    : `0,0 ${width},0 ${width},${height} 0,${height}`
+  const isCuboid = rectStr === polygonStr
+  const partId = (isCuboid ? dimStr : `${dimStr}:${polygonStr}`) as PartId
 
   return {
     partId,
     type,
-    size: vec3.fromValues(sorted[0][0], sorted[1][0], sorted[2][0]),
-    polygon: normalizedPolygon,
-    polygonPlane: newPlane
+    size: vec3.fromValues(sortedSize[0], sortedSize[1], sortedSize[2]),
+    polygon: isCuboid ? undefined : normalizedPolygon,
+    polygonPlane: isCuboid ? undefined : newPlane
   }
 }
 

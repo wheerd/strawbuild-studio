@@ -6,7 +6,7 @@ import type { Perimeter, PerimeterCorner } from '@/building/model/model'
 import { type ConstructionElement, type GroupOrElement } from '@/construction/elements'
 import type { MaterialId } from '@/construction/materials/material'
 import type { HighlightedPolygon } from '@/construction/model'
-import { polygonPartInfo } from '@/construction/parts'
+import { type PartInfo, polygonPartInfo } from '@/construction/parts'
 import type { ExtrudedPolygon } from '@/construction/shapes'
 import { TAG_PERIMETER_INSIDE, TAG_PERIMETER_OUTSIDE } from '@/construction/tags'
 import * as geometry from '@/shared/geometry'
@@ -14,6 +14,8 @@ import type { Polygon2D } from '@/shared/geometry'
 
 import { FullRingBeamAssembly } from './full'
 import type { FullRingBeamConfig } from './types'
+
+vi.mock('@/construction/parts')
 
 vi.mock('@/shared/geometry', async () => {
   const original = await vi.importActual<typeof import('@/shared/geometry')>('@/shared/geometry')
@@ -26,6 +28,7 @@ vi.mock('@/shared/geometry', async () => {
 
 const simplifyPolygonMock = vi.mocked(geometry.simplifyPolygon)
 const offsetPolygonMock = vi.mocked(geometry.offsetPolygon)
+const polygonPartInfoMock = vi.mocked(polygonPartInfo)
 
 const material: MaterialId = 'material-1' as MaterialId
 
@@ -47,6 +50,7 @@ beforeEach(() => {
   offsetPolygonMock.mockImplementation((polygon: Polygon2D, distance: number) => ({
     points: polygon.points.map(point => vec2.fromValues(point[0] + distance, point[1] + distance))
   }))
+  polygonPartInfoMock.mockClear()
 })
 
 afterEach(() => {
@@ -135,13 +139,16 @@ describe('FullRingBeamAssembly', () => {
     })
 
     it('attaches polygon part info to each element', () => {
+      const mockInfo = { partId: 'fubar' } as PartInfo
+      polygonPartInfoMock.mockReturnValue(mockInfo)
+
       const model = assembly.construct(perimeter, defaultConfig)
 
       model.elements.forEach(element => {
         assertConstructionElement(element)
         const shape = element.shape as ExtrudedPolygon
-        const expectedPartInfo = polygonPartInfo('ring-beam', shape.polygon, shape.plane, shape.thickness)
-        expect(element.partInfo).toEqual(expectedPartInfo)
+        expect(element.partInfo).toEqual(mockInfo)
+        expect(polygonPartInfoMock).toHaveBeenCalledWith('ring-beam', shape.polygon.outer, shape.plane, shape.thickness)
       })
     })
 

@@ -147,10 +147,7 @@ describe('generatePartsList', () => {
 describe('polygonPartInfo', () => {
   it('derives part info from an axis-aligned polygon', () => {
     const polygon = {
-      outer: {
-        points: [vec2.fromValues(0, 0), vec2.fromValues(1000, 0), vec2.fromValues(1000, 500), vec2.fromValues(0, 500)]
-      },
-      holes: []
+      points: [vec2.fromValues(0, 0), vec2.fromValues(1000, 0), vec2.fromValues(1000, 500), vec2.fromValues(0, 500)]
     }
 
     const info = polygonPartInfo('ring-beam segment', polygon, 'xy', 200)
@@ -158,23 +155,34 @@ describe('polygonPartInfo', () => {
     expect(info.type).toBe('ring-beam segment')
     expect(info.partId).toBe('200x500x1000')
     expect(Array.from(info.size)).toEqual([200, 500, 1000]) // Order of dimensions: z y x
+    expect(info.polygon).toBeUndefined() // Because this is a cuboid, we don't get a polygon
+    expect(info.polygonPlane).toBeUndefined()
+  })
+
+  it('derives part info from a trapezoid', () => {
+    const polygon = {
+      points: [vec2.fromValues(0, 0), vec2.fromValues(1000, 200), vec2.fromValues(1000, 500), vec2.fromValues(0, 700)]
+    }
+
+    const info = polygonPartInfo('ring-beam segment', polygon, 'xy', 200)
+
+    expect(info.type).toBe('ring-beam segment')
+    expect(info.partId).toBe('200x700x1000:0,1000 200,0 500,0 700,1000')
+    expect(Array.from(info.size)).toEqual([200, 700, 1000]) // Order of dimensions: z y x
     expect(info.polygonPlane).toBe('yz') // Hence xy -> yz
 
     // Flipped xy
     expect(info.polygon?.points).toEqual([
-      vec2.fromValues(0, 0),
       vec2.fromValues(0, 1000),
-      vec2.fromValues(500, 1000),
-      vec2.fromValues(500, 0)
+      vec2.fromValues(200, 0),
+      vec2.fromValues(500, 0),
+      vec2.fromValues(700, 1000)
     ])
   })
 
   it('handles negative thickness values', () => {
     const polygon = {
-      outer: {
-        points: [vec2.fromValues(0, 0), vec2.fromValues(2000, 0), vec2.fromValues(2000, 1000), vec2.fromValues(0, 1000)]
-      },
-      holes: []
+      points: [vec2.fromValues(0, 0), vec2.fromValues(2000, 0), vec2.fromValues(2000, 1000), vec2.fromValues(0, 1000)]
     }
 
     const info = polygonPartInfo('ring-beam segment', polygon, 'xy', -150)
