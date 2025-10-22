@@ -272,7 +272,7 @@ function* constructDoubleFrameModule(
 
     const spacerSize = vec3.fromValues(frameThickness, gapWidth, spacerHeight)
     const infillSize = vec3.fromValues(frameThickness, gapWidth, infillHeight)
-    const spacerPartId = dimensionalPartInfo(spacerMaterial, spacerSize)
+    const spacerPartId = dimensionalPartInfo('module-spacer', spacerSize)
 
     let z = verticalStart
     for (let i = spacerCount; i > 0; i--) {

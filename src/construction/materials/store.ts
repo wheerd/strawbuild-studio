@@ -218,6 +218,11 @@ export const useMaterials = (): Material[] => {
 export const useMaterialById = (id: MaterialId): Material | null =>
   useMaterialsStore(state => state.actions.getMaterialById(id))
 
+export const useMaterialsMap = (): Record<MaterialId, Material> => {
+  const materials = useMaterialsStore(state => state.materials)
+  return useMemo(() => ({ ...materials }), [materials])
+}
+
 export const useMaterialsByType = (type: Material['type']): Material[] => {
   const materials = useMaterialsStore(state => state.materials)
   return useMemo(() => Object.values(materials).filter(material => material.type === type), [materials, type])
