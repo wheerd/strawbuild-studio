@@ -18,7 +18,7 @@ export interface PartInfo {
 export const dimensionalPartInfo = (type: string, size: vec3): PartInfo => {
   const sortedDimensions = Array.from(size)
     .map(Math.round)
-    .sort((a, b) => b - a)
+    .sort((a, b) => a - b)
   const partId = sortedDimensions.join('x') as PartId
   return { partId, type, size: vec3.fromValues(sortedDimensions[0], sortedDimensions[1], sortedDimensions[2]) }
 }
@@ -83,7 +83,7 @@ const computeDimensionalDetails = (size: vec3, availableLengths: Length[], width
   let issue: string | undefined
 
   if (widthIndex === -1 || thicknessIndex === -1) {
-    const crossSection = `${formatLength(Math.round(dimensions[1]))} x ${formatLength(Math.round(dimensions[2]))}`
+    const crossSection = `${formatLength(Math.round(dimensions[0]))} x ${formatLength(Math.round(dimensions[1]))}`
     const materialCrossSection = `${formatLength(materialThickness)} x ${formatLength(materialWidth)}`
     issue = `Part cross section ${crossSection} does not match material cross section ${materialCrossSection}`
   }
