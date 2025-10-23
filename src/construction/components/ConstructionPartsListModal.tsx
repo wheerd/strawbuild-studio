@@ -1,12 +1,15 @@
 import { CrossCircledIcon } from '@radix-ui/react-icons'
-import { Box, Callout, Flex, Skeleton, Spinner } from '@radix-ui/themes'
+import { Box, Callout, Flex, Skeleton, Spinner, Tabs } from '@radix-ui/themes'
 import React, { Suspense, use, useCallback, useEffect, useState } from 'react'
 
 import { ConstructionPartsList } from '@/construction/components/ConstructionPartsList'
+import { ConstructionVirtualPartsList } from '@/construction/components/ConstructionVirtualPartsList'
 import type { ConstructionModel } from '@/construction/model'
-import type { MaterialPartsList } from '@/construction/parts'
-import { generateMaterialPartsList } from '@/construction/parts'
+import type { MaterialPartsList, VirtualPartsList } from '@/construction/parts'
+import { generateMaterialPartsList, generateVirtualPartsList } from '@/construction/parts'
 import { BaseModal } from '@/shared/components/BaseModal'
+
+interface PartsData { material: MaterialPartsList; virtual: VirtualPartsList }
 
 export interface ConstructionPartsListModalProps {
   title?: string
@@ -22,13 +25,17 @@ export function ConstructionPartsListModal({
   refreshKey
 }: ConstructionPartsListModalProps): React.JSX.Element {
   const [isOpen, setIsOpen] = useState(false)
-  const [partsListPromise, setPartsListPromise] = useState<Promise<MaterialPartsList | null> | null>(null)
+  const [activeTab, setActiveTab] = useState<'materials' | 'modules'>('materials')
+  const [partsDataPromise, setPartsDataPromise] = useState<Promise<PartsData | null> | null>(null)
 
-  const loadPartsList = useCallback(
+  const loadPartsData = useCallback(
     () =>
       constructionModelFactory().then(model => {
         if (!model) return null
-        return generateMaterialPartsList(model)
+        return {
+          material: generateMaterialPartsList(model),
+          virtual: generateVirtualPartsList(model)
+        }
       }),
     [constructionModelFactory]
   )
@@ -36,19 +43,20 @@ export function ConstructionPartsListModal({
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open)
     if (!open) {
-      setPartsListPromise(null)
+      setActiveTab('materials')
+      setPartsDataPromise(null)
       return
     }
-    if (!partsListPromise) {
-      setPartsListPromise(loadPartsList())
+    if (!partsDataPromise) {
+      setPartsDataPromise(loadPartsData())
     }
   }
 
   useEffect(() => {
     if (!isOpen) return
     if (refreshKey === undefined) return
-    setPartsListPromise(loadPartsList())
-  }, [refreshKey, isOpen, loadPartsList])
+    setPartsDataPromise(loadPartsData())
+  }, [refreshKey, isOpen, loadPartsData])
 
   return (
     <BaseModal
@@ -61,26 +69,48 @@ export function ConstructionPartsListModal({
       maxWidth="calc(100vw - 2 * var(--space-4))"
       height="calc(100vh - 2 * var(--space-6))"
       maxHeight="calc(100vh - 2 * var(--space-6))"
-      className="flex flex-col overflow-hidden"
       resetKeys={[refreshKey]}
     >
-      <Box width="100%" height="100%" style={{ overflow: 'auto' }} p="3">
-        {partsListPromise ? (
-          <Suspense fallback={<PartsSkeleton />}>
-            <PartsListContent partsListPromise={partsListPromise} />
-          </Suspense>
-        ) : (
-          <PartsSkeleton />
-        )}
-      </Box>
+      <Tabs.Root value={activeTab} onValueChange={value => setActiveTab(value as 'materials' | 'modules')}>
+        <Box px="4" pt="3">
+          <Tabs.List>
+            <Tabs.Trigger value="materials">Materials</Tabs.Trigger>
+            <Tabs.Trigger value="modules">Modules</Tabs.Trigger>
+          </Tabs.List>
+        </Box>
+
+        <Tabs.Content value="materials">
+          <Box p="3">
+            {partsDataPromise ? (
+              <Suspense fallback={<PartsSkeleton />}>
+                <MaterialPartsContent partsDataPromise={partsDataPromise} />
+              </Suspense>
+            ) : (
+              <PartsSkeleton />
+            )}
+          </Box>
+        </Tabs.Content>
+
+        <Tabs.Content value="modules">
+          <Box p="3">
+            {partsDataPromise ? (
+              <Suspense fallback={<PartsSkeleton />}>
+                <ModulePartsContent partsDataPromise={partsDataPromise} />
+              </Suspense>
+            ) : (
+              <PartsSkeleton />
+            )}
+          </Box>
+        </Tabs.Content>
+      </Tabs.Root>
     </BaseModal>
   )
 }
 
-function PartsListContent({ partsListPromise }: { partsListPromise: Promise<MaterialPartsList | null> }) {
-  const partsList = use(partsListPromise)
+function MaterialPartsContent({ partsDataPromise }: { partsDataPromise: Promise<PartsData | null> }) {
+  const partsData = use(partsDataPromise)
 
-  if (!partsList) {
+  if (!partsData) {
     return (
       <Flex>
         <Callout.Root color="red" size="2">
@@ -93,7 +123,26 @@ function PartsListContent({ partsListPromise }: { partsListPromise: Promise<Mate
     )
   }
 
-  return <ConstructionPartsList partsList={partsList} />
+  return <ConstructionPartsList partsList={partsData.material} />
+}
+
+function ModulePartsContent({ partsDataPromise }: { partsDataPromise: Promise<PartsData | null> }) {
+  const partsData = use(partsDataPromise)
+
+  if (!partsData) {
+    return (
+      <Flex>
+        <Callout.Root color="red" size="2">
+          <Callout.Icon>
+            <CrossCircledIcon />
+          </Callout.Icon>
+          <Callout.Text>Failed to generate modules list</Callout.Text>
+        </Callout.Root>
+      </Flex>
+    )
+  }
+
+  return <ConstructionVirtualPartsList partsList={partsData.virtual} />
 }
 
 function PartsSkeleton() {
