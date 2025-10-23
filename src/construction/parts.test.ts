@@ -159,7 +159,7 @@ describe('polygonPartInfo', () => {
     expect(info.polygonPlane).toBeUndefined()
   })
 
-  it('derives part info from a trapezoid', () => {
+  it('derives part info from a wide trapezoid', () => {
     const polygon = {
       points: [vec2.fromValues(0, 0), vec2.fromValues(1000, 200), vec2.fromValues(1000, 500), vec2.fromValues(0, 700)]
     }
@@ -167,7 +167,7 @@ describe('polygonPartInfo', () => {
     const info = polygonPartInfo('ring-beam segment', polygon, 'xy', 200)
 
     expect(info.type).toBe('ring-beam segment')
-    expect(info.partId).toBe('200x700x1000:0,1000 200,0 500,0 700,1000')
+    expect(info.partId).toBe('200x700x1000:300,-79;1020,-101;700,-101;1020,-79')
     expect(Array.from(info.size)).toEqual([200, 700, 1000]) // Order of dimensions: z y x
     expect(info.polygonPlane).toBe('yz') // Hence xy -> yz
 
@@ -177,6 +177,27 @@ describe('polygonPartInfo', () => {
       vec2.fromValues(200, 0),
       vec2.fromValues(500, 0),
       vec2.fromValues(700, 1000)
+    ])
+  })
+
+  it('derives part info from a high trapezoid', () => {
+    const polygon = {
+      points: [vec2.fromValues(0, 0), vec2.fromValues(200, 1000), vec2.fromValues(500, 1000), vec2.fromValues(700, 0)]
+    }
+
+    const info = polygonPartInfo('ring-beam segment', polygon, 'xy', 200)
+
+    expect(info.type).toBe('ring-beam segment')
+    expect(info.partId).toBe('200x700x1000:300,-79;1020,-101;700,-101;1020,-79')
+    expect(Array.from(info.size)).toEqual([200, 700, 1000]) // Order of dimensions: z x y
+    expect(info.polygonPlane).toBe('yz') // Hence xy -> yz
+
+    // Flipped xy
+    expect(info.polygon?.points).toEqual([
+      vec2.fromValues(0, 0),
+      vec2.fromValues(200, 1000),
+      vec2.fromValues(500, 1000),
+      vec2.fromValues(700, 0)
     ])
   })
 

@@ -5,7 +5,7 @@ import type { MaterialId } from '@/construction/materials/material'
 import { getMaterialById } from '@/construction/materials/store'
 import type { ConstructionModel } from '@/construction/model'
 import type { Length, Plane3D, Polygon2D, Volume } from '@/shared/geometry'
-import { boundsFromPoints, minimumAreaBoundingBox } from '@/shared/geometry'
+import { boundsFromPoints, canonicalPolygonKey, minimumAreaBoundingBox } from '@/shared/geometry'
 
 export type PartId = string & { readonly brand: unique symbol }
 
@@ -50,6 +50,7 @@ export const polygonPartInfo = (type: string, polygon: Polygon2D, plane: Plane3D
   const xIndex = dimOrdered.indexOf('x')
   const yIndex = dimOrdered.indexOf('y')
   const flipXY = yIndex < xIndex
+
   const newPlane = `${'xyz'[Math.min(xIndex, yIndex)]}${'xyz'[Math.max(xIndex, yIndex)]}` as Plane3D
 
   const sinAngle = Math.sin(-angle)
@@ -69,15 +70,11 @@ export const polygonPartInfo = (type: string, polygon: Polygon2D, plane: Plane3D
     points: flippedPoints.map(p => vec2.fromValues(Math.round(p[0] - bounds.min[0]), Math.round(p[1] - bounds.min[1])))
   }
 
-  const pointStrs = normalizedPolygon.points.map(p => `${p[0]},${p[1]}`)
-  const minPointStr = [...pointStrs].sort()[0]
-  const minPointIndex = pointStrs.indexOf(minPointStr)
-  const normalizedPointStrs = pointStrs.slice(minPointIndex).concat(pointStrs.slice(0, minPointIndex))
   const dimStr = sortedSize.join('x')
-  const polygonStr = normalizedPointStrs.join(' ')
-  const rectStr = flipXY
-    ? `0,0 ${height},0 ${height},${width} 0,${width}`
-    : `0,0 ${width},0 ${width},${height} 0,${height}`
+  const polygonStr = canonicalPolygonKey(normalizedPolygon.points)
+  const minSize = Math.min(width, height)
+  const maxSize = Math.max(width, height)
+  const rectStr = `${minSize},-90;${maxSize},-90;${minSize},-90;${maxSize},-90`
   const isCuboid = rectStr === polygonStr
   const partId = (isCuboid ? dimStr : `${dimStr}:${polygonStr}`) as PartId
 
