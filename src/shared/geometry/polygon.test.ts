@@ -16,6 +16,7 @@ import {
   canonicalPolygonKey,
   convexHullOfPolygonWithHoles,
   isPointInPolygon,
+  minimumAreaBoundingBox,
   offsetPolygon,
   polygonEdgeOffset,
   polygonIsClockwise,
@@ -135,6 +136,102 @@ describe('canonicalPolygonKey', () => {
   it('returns different keys for different polygons', () => {
     const changedPolygon = [vec2.fromValues(10, 10), ...basePoints.slice(1)]
     expect(canonicalPolygonKey(changedPolygon)).not.toBe(baseKey)
+  })
+})
+
+describe('minimumAreaBoundingBox', () => {
+  const rotatePoint = (point: vec2, angle: number) => {
+    const sinAngle = Math.sin(angle)
+    const cosAngle = Math.cos(angle)
+    return vec2.fromValues(point[0] * cosAngle - point[1] * sinAngle, point[0] * sinAngle + point[1] * cosAngle)
+  }
+
+  const createRectangle = (width: number, height: number, angle = 0): vec2[] => {
+    const halfWidth = width / 2
+    const halfHeight = height / 2
+    const corners = [
+      vec2.fromValues(-halfWidth, -halfHeight),
+      vec2.fromValues(halfWidth, -halfHeight),
+      vec2.fromValues(halfWidth, halfHeight),
+      vec2.fromValues(-halfWidth, halfHeight)
+    ]
+
+    if (angle === 0) {
+      return corners
+    }
+
+    return corners.map(corner => rotatePoint(corner, angle))
+  }
+
+  const sortedAbsComponents = (vector: vec2) => [Math.abs(vector[0]), Math.abs(vector[1])].sort((a, b) => a - b)
+  const angleDifference = (a: number, b: number) => {
+    const twoPi = Math.PI * 2
+    let diff = (a - b) % twoPi
+    if (diff < -Math.PI) diff += twoPi
+    if (diff > Math.PI) diff -= twoPi
+    return Math.abs(diff)
+  }
+
+  it('returns expected size and angle for an axis-aligned rectangle', () => {
+    const rectangle = createRectangle(6, 2, 0)
+    const { size, angle } = minimumAreaBoundingBox({ points: rectangle })
+
+    const components = sortedAbsComponents(size)
+    expect(components[0]).toBeCloseTo(2, 2)
+    expect(components[1]).toBeCloseTo(6, 2)
+    expect(
+      Math.min(angleDifference(angle, 0), angleDifference(angle, Math.PI / 2), angleDifference(angle, -Math.PI / 2))
+    ).toBeLessThan(1e-6)
+  })
+
+  it('finds the minimum box for a rotated rectangle', () => {
+    const rotation = Math.PI / 6
+    const rectangle = createRectangle(8, 3, rotation).map(point => vec2.fromValues(point[0] + 10, point[1] - 5))
+    const { size, angle } = minimumAreaBoundingBox({ points: rectangle })
+
+    const components = sortedAbsComponents(size)
+    expect(components[0]).toBeCloseTo(3, 2)
+    expect(components[1]).toBeCloseTo(8, 2)
+    expect(
+      Math.min(
+        angleDifference(angle, rotation),
+        angleDifference(angle, rotation + Math.PI / 2),
+        angleDifference(angle, rotation - Math.PI / 2)
+      )
+    ).toBeLessThan(1e-6)
+  })
+
+  it('finds the minimum box for a rotated trapezoid with axis-aligned legs', () => {
+    const trapezoid = {
+      points: [vec2.fromValues(0, 0), vec2.fromValues(4, 4), vec2.fromValues(4, 6), vec2.fromValues(-2, 0)]
+    }
+
+    const { size, angle } = minimumAreaBoundingBox(trapezoid)
+
+    const components = sortedAbsComponents(size)
+    expect(components[0]).toBeCloseTo(Math.sqrt(2), 2)
+    expect(components[1]).toBeCloseTo(6 * Math.SQRT2, 2)
+
+    const target = Math.PI / 4
+    expect(
+      Math.min(
+        angleDifference(angle, target),
+        angleDifference(angle, target + Math.PI / 2),
+        angleDifference(angle, target - Math.PI / 2)
+      )
+    ).toBeLessThan(1e-6)
+  })
+
+  it('throws when the polygon has fewer than three points', () => {
+    const polygon = { points: [vec2.fromValues(0, 0), vec2.fromValues(1, 1)] }
+    expect(() => minimumAreaBoundingBox(polygon)).toThrowError('Polygon requires at least 3 points')
+  })
+
+  it('throws when the polygon is degenerate after computing the hull', () => {
+    const polygon = {
+      points: [vec2.fromValues(0, 0), vec2.fromValues(2, 2), vec2.fromValues(4, 4), vec2.fromValues(6, 6)]
+    }
+    expect(() => minimumAreaBoundingBox(polygon)).toThrowError('Convex hull of polygon requires at least 3 points')
   })
 })
 
