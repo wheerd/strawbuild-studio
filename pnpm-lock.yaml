@@ -47,6 +47,9 @@ importers:
       clipper2-wasm:
         specifier: ^0.1.0
         version: 0.1.0
+      dxf-parser:
+        specifier: ^1.1.2
+        version: 1.1.2
       fast-deep-equal:
         specifier: ^3.1.3
         version: 3.1.3
@@ -171,6 +174,9 @@ importers:
       vite:
         specifier: ^7.1.9
         version: 7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(yaml@2.8.1)
+      vite-node:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(yaml@2.8.1)
       vite-plugin-pwa:
         specifier: ^1.1.0
         version: 1.1.0(vite@7.1.9(@types/node@24.6.2)(jiti@1.21.7)(terser@5.44.0)(yaml@2.8.1))(workbox-build@7.3.0(@types/babel__core@7.20.5))(workbox-window@7.3.0)
@@ -2861,6 +2867,9 @@ packages:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
 
+  dxf-parser@1.1.2:
+    resolution: {integrity: sha512-GPTumUvRkounlIazLIyJMmTWt+nlg+ksS0Hdm8jWvejmZKBTz6gvHTam76wRm4PQMma5sgKLThblQyeIJcH79Q==}
+
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
@@ -3723,6 +3732,10 @@ packages:
 
   lodash@4.17.21:
     resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
+
+  loglevel@1.9.2:
+    resolution: {integrity: sha512-HgMmCqIJSAKqo68l0rS2AanEWfkxaZ5wNiEFb5ggm08lDs9Xl2KxBlX3PTcaD2chBM1gXAYf491/M2Rv8Jwayg==}
+    engines: {node: '>= 0.6.0'}
 
   loose-envify@1.4.0:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
@@ -8025,6 +8038,10 @@ snapshots:
       es-errors: 1.3.0
       gopd: 1.2.0
 
+  dxf-parser@1.1.2:
+    dependencies:
+      loglevel: 1.9.2
+
   eastasianwidth@0.2.0: {}
 
   ejs@3.1.10:
@@ -9072,6 +9089,8 @@ snapshots:
   lodash.sortby@4.7.0: {}
 
   lodash@4.17.21: {}
+
+  loglevel@1.9.2: {}
 
   loose-envify@1.4.0:
     dependencies:

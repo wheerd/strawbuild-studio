@@ -1,4 +1,4 @@
-import { CheckIcon, Cross2Icon, DownloadIcon, UpdateIcon, UploadIcon } from '@radix-ui/react-icons'
+import { CheckIcon, Cross2Icon, DownloadIcon, FileIcon, UpdateIcon, UploadIcon } from '@radix-ui/react-icons'
 import { Button, DropdownMenu, Flex, Tooltip } from '@radix-ui/themes'
 import React, { useState } from 'react'
 
@@ -6,6 +6,7 @@ import { usePersistenceStore } from '@/building/store/persistenceStore'
 import { clearSelection } from '@/editor/hooks/useSelectionStore'
 import { SaveIcon } from '@/shared/components/Icons'
 import { ProjectImportExportService } from '@/shared/services/ProjectImportExportService'
+import { extractFromDxf } from '@/shared/services/floorplan_extract'
 import { createFileInput } from '@/shared/utils/createFileInput'
 import { downloadFile } from '@/shared/utils/downloadFile'
 
@@ -18,8 +19,10 @@ export function AutoSaveIndicator(): React.JSX.Element {
   // Local state for export/import operations
   const [isExporting, setIsExporting] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
+  const [isProcessingDxf, setIsProcessingDxf] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
   const [importError, setImportError] = useState<string | null>(null)
+  const [dxfError, setDxfError] = useState<string | null>(null)
 
   const handleExport = async () => {
     setIsExporting(true)
@@ -58,11 +61,42 @@ export function AutoSaveIndicator(): React.JSX.Element {
     }
   }
 
+  const handleDxfImport = async () => {
+    setIsProcessingDxf(true)
+    setDxfError(null)
+
+    try {
+      await createFileInput(
+        async (content: string) => {
+          try {
+            const result = await extractFromDxf(content, {})
+            console.info('DXF extraction result', result)
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Failed to process DXF file'
+            console.error('DXF extraction error', error)
+            setDxfError(message)
+          } finally {
+            setIsProcessingDxf(false)
+          }
+        },
+        '.dxf,.DXF'
+      )
+    } catch (error) {
+      setIsProcessingDxf(false)
+      if (error instanceof Error && error.message === 'File selection cancelled') {
+        return
+      }
+      const message = error instanceof Error ? error.message : 'Failed to open DXF file'
+      setDxfError(message)
+      console.error('DXF selection error', error)
+    }
+  }
+
   const getStatusInfo = () => {
     // Prioritize export/import errors and states
-    if (exportError || importError) {
+    if (exportError || importError || dxfError) {
       return {
-        text: exportError || importError || 'Export/Import failed',
+        text: exportError || importError || dxfError || 'Export/Import failed',
         icon: <Cross2Icon />,
         color: 'red' as const
       }
@@ -79,6 +113,14 @@ export function AutoSaveIndicator(): React.JSX.Element {
     if (isImporting) {
       return {
         text: 'Importing...',
+        icon: <UpdateIcon className="animate-spin" />,
+        color: 'blue' as const
+      }
+    }
+
+    if (isProcessingDxf) {
+      return {
+        text: 'Processing DXF...',
         icon: <UpdateIcon className="animate-spin" />,
         color: 'blue' as const
       }
@@ -146,14 +188,19 @@ export function AutoSaveIndicator(): React.JSX.Element {
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Content>
-        <DropdownMenu.Item onClick={handleExport} disabled={isExporting || isImporting}>
+        <DropdownMenu.Item onClick={handleExport} disabled={isExporting || isImporting || isProcessingDxf}>
           <DownloadIcon />
           Save to File
         </DropdownMenu.Item>
 
-        <DropdownMenu.Item onClick={handleImport} disabled={isExporting || isImporting}>
+        <DropdownMenu.Item onClick={handleImport} disabled={isExporting || isImporting || isProcessingDxf}>
           <UploadIcon />
           Load from File
+        </DropdownMenu.Item>
+
+        <DropdownMenu.Item onClick={handleDxfImport} disabled={isExporting || isImporting || isProcessingDxf}>
+          <FileIcon />
+          Load DXF
         </DropdownMenu.Item>
 
         <DropdownMenu.Separator />

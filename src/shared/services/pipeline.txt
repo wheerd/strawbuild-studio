@@ -1,0 +1,133 @@
+High-level pipeline 0) Sheet detection & normalization
+
+Model space over paper space (for DXF). If only paper space is used, filter out title blocks by:
+
+bounding box area (keep the largest drawing with high line density),
+
+layer heuristics: include layers matching WALL*, EXT*, ARCH\*, exclude TITLE, TEXT, DIM, GRID.
+
+Units & scale: from DXF header.$INSUNITS and DIMSTYLE (or PDF user unit). Fall back to dimension entities (see §3) to calibrate: fit a global pixels→meters (or paper→model) scale by robust regression on several DIMs.
+
+1. Collect candidate wall geometry
+
+Entities: LWPOLYLINE, LINE, ARC, SPLINE, HATCH.
+
+Double-line walls are usually two roughly parallel polylines (outer/inner) or a filled HATCH (solid hatch between them).
+
+Unify:
+
+Convert ARCs/SPLINEs to line strings (segmentize with small angular tolerance).
+
+Merge collinear segments (snap endpoints within ε, e.g., 2–5 mm at model scale).
+
+Store in a graph: nodes=corners, edges=segments with direction & length.
+
+2. Perimeter detection (outer shell)
+
+Strategy A (preferred when HATCH exists)
+
+Collect solid hatches on architectural layers.
+
+Union hatch polygons → the outer silhouette of built mass.
+
+Take the outer boundary (largest exterior ring). That’s the outside face of the perimeter wall.
+
+To get the interior face (what you want), offset inward by wall thickness (unknown yet) OR compute from the inner parallel polyline if present (Strategy B below).
+
+Strategy B (when double lines exist, no hatch)
+
+Find parallel band pairs:
+
+For each edge, search for a parallel edge within [150 mm, 800 mm] (typical wall thickness range; adjust to your locale).
+
+Cluster matched pairs by proximity/orientation to form wall belts (ribbons).
+
+Build a polygonal ribbon union (buffer each centerline by half the detected local thickness; union).
+
+Take the outer ring (outside face) and inner ring (inside face) from the union boundary.
+
+Strategy C (fallback, no hatch, gaps, messy layers)
+
+Compute the arrangement of all wall segments, then the planar faces (cycles). Select the outermost face by:
+
+maximum area,
+
+minimum number of concavities,
+
+adjacent to most exterior annotations (site boundary, north arrow).
+
+Derive the inside face by medial offset or by identifying the inner of the two parallel outlines where they exist most of the length.
+
+Output of this step
+
+perimeter_outside: Polygon
+
+perimeter_inside: Polygon (this is your “interior polygon of the perimeter”)
+
+perimeter_axes: List[Segment] (optional: average centerline per façade run)
+
+3. Perimeter wall thickness
+
+Prefer explicit CAD semantics, then geometry:
+
+Order of precedence:
+
+Dimensions (DIMENSION entities) whose extension lines touch both outer & inner outlines:
+
+For each DIM: parse measured value (DXF stores the value; overrides via DIMTAD/MTEXT handled).
+
+If aligned with a façade run and spans the gap → local thickness sample.
+
+Block attributes / XDATA: some templates store wall type & thickness as attributes on polylines/blocks.
+
+Geometric estimate:
+
+For each façade run, compute the average offset distance between matched parallel polylines (outer vs inner).
+
+Robustify with RANSAC and clamp to plausible bins (e.g., {200, 240, 300, 365, 450, 500, 600} mm if you want snapping).
+
+Output
+
+perimeter_wall_thickness_mean
+
+perimeter_wall_thickness_by_segment: [{seg_id, thickness_mm}]
+
+4. Openings on the outer wall
+
+You have three rich sources; consume in this order and cross-validate:
+
+4.1 Block references (best)
+
+Doors/windows are typically INSERTs of blocks: names like DOOR*, D*, WIN*, W*, etc.
+
+Compute block geometry footprint (after applying insertion transform, scale, rotation).
+
+For each block, project to the nearest perimeter wall segment (shortest distance within, say, ≤ wall_thickness).
+
+Width: from block’s stretch parameter/attributes if available; else from block extents intersecting wall band.
+
+Classify as door/window from block name/layer/attributes.
+
+4.2 Explicit dimensions + leaders
+
+DIMENSION aligned across a wall gap → opening clear width.
+
+MLEADER/LEADER pointing to an opening with MTEXT like “W 1200”, “D 900” → parse text via regex.
+
+Associate leader by ray-casting from arrowhead to nearest gap/block on the perimeter.
+
+4.3 Geometry gaps (fallback)
+
+Along each façade segment, intersect the wall ribbon with rays perpendicular to the wall:
+
+Gaps in the inner+outer outlines where the ribbon is interrupted correspond to openings.
+
+Measure gap width along the façade tangent.
+
+De-duplicate with 4.1/4.2 matches (IoU/overlap threshold).
+
+Position along wall
+
+Represent placement as (wall_segment_id, t), where t∈[0,1] is the fraction along that segment’s length from a fixed start vertex; also keep absolute coordinates of jamb midpoints.
+
+Output per opening
