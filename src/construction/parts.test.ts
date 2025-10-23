@@ -146,6 +146,25 @@ describe('generatePartsList', () => {
     expect(part.elements).toEqual([element.id])
   })
 
+  it('preserves polygon metadata on parts', () => {
+    canonicalPolygonKeyMock.mockReturnValue('polygon-key')
+    minimumAreaBoundingBoxMock.mockImplementation(polygon => ({
+      size: boundsFromPoints(polygon.points).max,
+      angle: 0
+    }))
+
+    const polygon = {
+      points: [vec2.fromValues(0, 0), vec2.fromValues(1000, 200), vec2.fromValues(1000, 800), vec2.fromValues(0, 600)]
+    }
+
+    const partInfo = polygonPartInfo('ring-beam segment', polygon, 'xy', 200)
+    const model = createModel([createElement(wood360x60.id, partInfo)])
+
+    const part = generatePartsList(model)[wood360x60.id].parts[partInfo.partId]
+    expect(part.polygon?.points).toEqual(partInfo.polygon?.points)
+    expect(part.polygonPlane).toBe(partInfo.polygonPlane)
+  })
+
   it('ignores elements without part info', () => {
     const nonPartElement = createConstructionElement(
       wood360x60.id,

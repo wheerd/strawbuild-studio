@@ -7,7 +7,8 @@ import { getMaterialTypeIcon, getMaterialTypeName } from '@/construction/materia
 import type { Material } from '@/construction/materials/material'
 import { useMaterialsMap } from '@/construction/materials/store'
 import type { PartItem, PartsList } from '@/construction/parts'
-import type { Length } from '@/shared/geometry'
+import { boundsFromPoints } from '@/shared/geometry'
+import type { Length, Polygon2D } from '@/shared/geometry'
 
 interface ConstructionPartsListProps {
   partsList: PartsList
@@ -61,6 +62,71 @@ function MaterialTypeIndicator({ material, size = 18 }: { material: Material; si
         style={{ color: 'white', filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.5))' }}
       />
     </div>
+  )
+}
+
+const SPECIAL_CUT_PREVIEW_TARGET = 300
+const SPECIAL_CUT_PREVIEW_PADDING = 6
+
+function SpecialCutTooltip({ polygon }: { polygon: Polygon2D }): React.JSX.Element {
+  const preview = useMemo(() => {
+    const bounds = boundsFromPoints(polygon.points)
+    const width = Math.max(bounds.max[0] - bounds.min[0], 1)
+    const height = Math.max(bounds.max[1] - bounds.min[1], 1)
+    const scale = SPECIAL_CUT_PREVIEW_TARGET / Math.max(width, height)
+    const scaledWidth = height * scale
+    const scaledHeight = width * scale
+    const svgWidth = scaledWidth + SPECIAL_CUT_PREVIEW_PADDING * 2
+    const svgHeight = scaledHeight + SPECIAL_CUT_PREVIEW_PADDING * 2
+
+    const pointsAttribute = polygon.points
+      .map(point => {
+        const x = (point[1] - bounds.min[1]) * scale + SPECIAL_CUT_PREVIEW_PADDING
+        const y = svgHeight - ((point[0] - bounds.min[0]) * scale + SPECIAL_CUT_PREVIEW_PADDING)
+        return `${x.toFixed(2)},${y.toFixed(2)}`
+      })
+      .join(' ')
+
+    return {
+      svgWidth,
+      svgHeight,
+      pointsAttribute,
+      rectWidth: scaledWidth,
+      rectHeight: scaledHeight
+    }
+  }, [polygon])
+
+  return (
+    <Flex direction="column" gap="2">
+      <Text>This part requires a special cut</Text>
+      <Text>The given length is the raw length</Text>
+      <svg
+        width={preview.svgWidth}
+        height={preview.svgHeight}
+        viewBox={`0 0 ${preview.svgWidth} ${preview.svgHeight}`}
+        role="img"
+        aria-label="Special cut polygon preview"
+      >
+        <rect
+          x={SPECIAL_CUT_PREVIEW_PADDING}
+          y={SPECIAL_CUT_PREVIEW_PADDING}
+          width={preview.rectWidth}
+          height={preview.rectHeight}
+          fill="none"
+          stroke="var(--gray-10)"
+          strokeDasharray="3 1"
+          strokeWidth="1"
+        />
+        <polygon
+          points={preview.pointsAttribute}
+          stroke="var(--accent-9)"
+          strokeWidth="2"
+          fill="var(--accent-9)"
+          fillOpacity="0.2"
+          strokeLinejoin="miter"
+        />
+      </svg>
+    </Flex>
   )
 }
 
@@ -153,7 +219,12 @@ function PartsTable({ material, parts }: { material: Material; parts: PartItem[]
                           key="cross-section-mismatch"
                           content={`Part dimensions ${formatDimensions(part.size)} do not match material cross section ${formatCrossSection([material.thickness, material.width])}`}
                         >
-                          <ExclamationTriangleIcon style={{ color: 'var(--red-9)' }} />
+                          <ExclamationTriangleIcon aria-hidden style={{ color: 'var(--red-9)' }} />
+                        </Tooltip>
+                      )}
+                      {part.polygon && part.polygon.points.length >= 3 && (
+                        <Tooltip key="special-cut" content={<SpecialCutTooltip polygon={part.polygon} />}>
+                          <ExclamationTriangleIcon aria-hidden style={{ color: 'var(--amber-9)' }} />
                         </Tooltip>
                       )}
                     </Flex>

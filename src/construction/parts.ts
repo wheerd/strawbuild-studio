@@ -117,6 +117,8 @@ export interface PartItem {
   totalLength?: Length
   quantity: number
   issue?: PartIssue
+  polygon?: Polygon2D
+  polygonPlane?: Plane3D
 }
 
 export type PartsList = Record<MaterialId, MaterialParts>
@@ -256,7 +258,9 @@ export const generatePartsList = (model: ConstructionModel): PartsList => {
       elements: [id],
       totalVolume: volume,
       quantity: 1,
-      issue
+      issue,
+      polygon: partInfo.polygon,
+      polygonPlane: partInfo.polygonPlane
     }
 
     if (length !== undefined) {
