@@ -20,11 +20,11 @@ describe('StepWriter', () => {
 
   it('serialises enums, raw values, and nested parameters', () => {
     const writer = new StepWriter()
-    const unitId = writer.addEntity('IFCSIUNIT', [stepEnum('LENGTHUNIT'), null, stepEnum('METRE'), null])
+    const unitId = writer.addEntity('IFCSIUNIT', [stepRaw('*'), stepEnum('LENGTHUNIT'), null, stepEnum('METRE')])
     writer.addEntity('IFCUNITASSIGNMENT', [[stepRef(unitId), stepRaw('IFCLENGTHMEASURE(2500)')]])
 
     const output = writer.build({ name: 'EnumTest', timestamp: '2024-01-01T00:00:00Z' })
-    expect(output).toContain(`#1=IFCSIUNIT(.LENGTHUNIT.,$,.METRE.,$);`)
+    expect(output).toContain(`#1=IFCSIUNIT(*,.LENGTHUNIT.,$,.METRE.);`)
     expect(output).toContain(`#2=IFCUNITASSIGNMENT((#1,IFCLENGTHMEASURE(2500)));`)
     expect(output).toMatch(/FILE_NAME\('EnumTest','2024-01-01T00:00:00Z'/)
     expect(output).toContain(`FILE_DESCRIPTION(('ViewDefinition [ReferenceView]'),'2;1');`)

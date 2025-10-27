@@ -215,15 +215,10 @@ function createIfcContext(writer: StepWriter): IfcContext {
     null
   ])
 
-  const lengthUnit = writer.addEntity('IFCSIUNIT', [
-    stepEnum('LENGTHUNIT'),
-    LENGTH_UNIT_PREFIX ? stepEnum(LENGTH_UNIT_PREFIX) : null,
-    stepEnum(LENGTH_UNIT_NAME),
-    null
-  ])
-  const areaUnit = writer.addEntity('IFCSIUNIT', [stepEnum('AREAUNIT'), null, stepEnum('SQUARE_METRE'), null])
-  const volumeUnit = writer.addEntity('IFCSIUNIT', [stepEnum('VOLUMEUNIT'), null, stepEnum('CUBIC_METRE'), null])
-  const planeAngle = writer.addEntity('IFCSIUNIT', [stepEnum('PLANEANGLEUNIT'), null, stepEnum('RADIAN'), null])
+  const lengthUnit = createSiUnit(writer, 'LENGTHUNIT', LENGTH_UNIT_NAME, LENGTH_UNIT_PREFIX)
+  const areaUnit = createSiUnit(writer, 'AREAUNIT', 'SQUARE_METRE')
+  const volumeUnit = createSiUnit(writer, 'VOLUMEUNIT', 'CUBIC_METRE')
+  const planeAngle = createSiUnit(writer, 'PLANEANGLEUNIT', 'RADIAN')
 
   const unitAssignment = writer.addEntity('IFCUNITASSIGNMENT', [
     [stepRef(lengthUnit), stepRef(areaUnit), stepRef(volumeUnit), stepRef(planeAngle)]
@@ -259,6 +254,15 @@ function createIfcContext(writer: StepWriter): IfcContext {
     zAxis,
     xAxis
   }
+}
+
+function createSiUnit(writer: StepWriter, unitType: string, unitName: string, prefix?: string | null): number {
+  return writer.addEntity('IFCSIUNIT', [
+    stepRaw('*'),
+    stepEnum(unitType),
+    prefix ? stepEnum(prefix) : null,
+    stepEnum(unitName)
+  ])
 }
 
 function buildStoreyRuntimeInfo(
