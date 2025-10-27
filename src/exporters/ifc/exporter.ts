@@ -135,6 +135,7 @@ export async function exportCurrentModelToIfc(): Promise<void> {
   ])
 
   const allStoreyIds: number[] = []
+  const wallMaterialCache = new Map<string, number>()
   const storeyDistribution: Array<{ storeyId: number; elements: number[] }> = []
 
   for (const info of storeyInfos) {
@@ -158,7 +159,15 @@ export async function exportCurrentModelToIfc(): Promise<void> {
     const perimeters = getPerimetersByStorey(info.storey.id)
     for (const perimeter of perimeters) {
       perimeterElements.push(
-        ...createWallsForPerimeter(writer, perimeter, info, storeyPlacement, getWallAssemblyById, ifcContext)
+        ...createWallsForPerimeter(
+          writer,
+          perimeter,
+          info,
+          storeyPlacement,
+          getWallAssemblyById,
+          wallMaterialCache,
+          ifcContext
+        )
       )
     }
 
@@ -209,7 +218,7 @@ function createIfcContext(writer: StepWriter): IfcContext {
   const modelContext = writer.addEntity('IFCGEOMETRICREPRESENTATIONCONTEXT', [
     null,
     'Model',
-    3,
+    stepRaw('3'),
     1e-5,
     stepRef(worldPlacement),
     null
@@ -349,6 +358,7 @@ function createWallsForPerimeter(
   info: StoreyRuntimeInfo,
   storeyPlacement: number,
   getWallAssemblyById: (id: PerimeterWall['wallAssemblyId']) => { type: string } | null,
+  materialUsageCache: Map<string, number>,
   ifcContext: IfcContext
 ): number[] {
   const elements: number[] = []
@@ -358,7 +368,16 @@ function createWallsForPerimeter(
     if (!assemblyConfig) continue
     const startCorner = perimeter.corners[index]
     const endCorner = perimeter.corners[(index + 1) % perimeter.corners.length]
-    const wallId = createWallElement(writer, wall, startCorner, endCorner, info, storeyPlacement, ifcContext)
+    const wallId = createWallElement(
+      writer,
+      wall,
+      startCorner,
+      endCorner,
+      info,
+      storeyPlacement,
+      materialUsageCache,
+      ifcContext
+    )
     elements.push(wallId)
     const wallPropertySet = writer.addEntity('IFCPROPERTYSET', [
       createIfcGuid(),
@@ -404,6 +423,7 @@ function createWallElement(
   endCorner: PerimeterCorner,
   info: StoreyRuntimeInfo,
   storeyPlacement: number,
+  materialUsageCache: Map<string, number>,
   ifcContext: IfcContext
 ): number {
   const profile = createWallProfile(writer, wall, startCorner, endCorner)
@@ -435,11 +455,56 @@ function createWallElement(
     null
   ])
 
+  const materialUsageId = ensureWallMaterialUsage(writer, materialUsageCache, wall.wallAssemblyId, wall.thickness)
+  writer.addEntity('IFCRELASSOCIATESMATERIAL', [
+    createIfcGuid(),
+    stepRef(ifcContext.ownerHistory),
+    `Wall Material ${wall.id}`,
+    null,
+    [stepRef(wallId)],
+    stepRef(materialUsageId)
+  ])
+
   for (const opening of wall.openings) {
     createOpeningElement(writer, opening, wall, wallId, placement, ifcContext)
   }
 
   return wallId
+}
+
+function ensureWallMaterialUsage(
+  writer: StepWriter,
+  cache: Map<string, number>,
+  assemblyId: string,
+  thickness: number
+): number {
+  const key = `${assemblyId}:${thickness}`
+  const existing = cache.get(key)
+  if (existing) return existing
+
+  const materialName = `Wall ${assemblyId}`
+  const materialId = writer.addEntity('IFCMATERIAL', [materialName])
+  const materialLayerId = writer.addEntity('IFCMATERIALLAYER', [
+    stepRef(materialId),
+    Number(thickness),
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ])
+  const layerSetId = writer.addEntity('IFCMATERIALLAYERSET', [[stepRef(materialLayerId)], materialName, null])
+  const usageId = writer.addEntity('IFCMATERIALLAYERSETUSAGE', [
+    stepRef(layerSetId),
+    stepEnum('AXIS2'),
+    stepEnum('POSITIVE'),
+    0.0,
+    null
+  ])
+
+  cache.set(key, usageId)
+  return usageId
 }
 
 function createOpeningElement(
@@ -754,7 +819,17 @@ function createCartesianPoint(writer: StepWriter, coordinates: [number, number] 
 }
 
 function createDirection(writer: StepWriter, components: [number, number] | [number, number, number]): number {
-  return writer.addEntity('IFCDIRECTION', [[...components]])
+  const normalized = normalizeComponents(components)
+  return writer.addEntity('IFCDIRECTION', [normalized])
+}
+
+function normalizeComponents(components: [number, number] | [number, number, number]): number[] {
+  const vector = [...components]
+  const length = Math.hypot(...vector)
+  if (length === 0) {
+    return vector.length === 3 ? [0, 0, 1] : [1, 0]
+  }
+  return vector.map(component => component / length)
 }
 
 function createAxisPlacement(

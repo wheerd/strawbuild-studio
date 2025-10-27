@@ -143,9 +143,9 @@ function escapeString(value: string): string {
 }
 
 function formatNumber(value: number): string {
-  if (Number.isInteger(value)) {
-    return value.toString()
+  const fixed = value.toFixed(6).replace(/0+$/, '')
+  if (fixed.includes('.')) {
+    return fixed.endsWith('.') ? `${fixed}0` : fixed
   }
-  // Limit to 6 decimal places to avoid overly long floats
-  return value.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')
+  return `${fixed}.0`
 }
