@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import { getModelActions } from '@/building/store'
-import type { Perimeter, PerimeterWall, Storey } from '@/building/model'
+import type { Perimeter, PerimeterCorner, PerimeterWall, Storey } from '@/building/model'
 import { getConfigActions } from '@/construction/config'
 import type { FloorAssemblyConfig } from '@/construction/config/types'
 import { FLOOR_ASSEMBLIES } from '@/construction/floors'
@@ -14,6 +14,7 @@ import {
   unionPolygons
 } from '@/shared/geometry/polygon'
 import { downloadFile } from '@/shared/utils/downloadFile'
+import { getVersionString } from '@/shared/utils/version'
 
 import { StepWriter, stepEnum, stepRaw, stepRef } from './stepWriter'
 
@@ -232,11 +233,12 @@ function createIfcContext(writer: StepWriter): IfcContext {
   const person = writer.addEntity('IFCPERSON', [null, 'Strawbaler', 'User', null, null, null, null, null])
   const organization = writer.addEntity('IFCORGANIZATION', [null, 'Strawbaler', null, null, null])
   const personOrg = writer.addEntity('IFCPERSONANDORGANIZATION', [stepRef(person), stepRef(organization), null])
+  const appVersion = getVersionString()
   const application = writer.addEntity('IFCAPPLICATION', [
     stepRef(organization),
-    '1.0',
-    'Strawbaler IFC Exporter',
-    'STRAWBALER_IFC'
+    appVersion,
+    'Strawbaler Online',
+    `Strawbaler - Strawbaler Online - ${appVersion}`
   ])
   const ownerHistory = writer.addEntity('IFCOWNERHISTORY', [
     stepRef(personOrg),
@@ -309,7 +311,7 @@ function computeFloorGeometry(
     if (perimeters.length === 0) continue
 
     const perimeterPolygons = perimeters.map(perimeter => ({
-      points: perimeter.corners.map(corner => corner.insidePoint)
+      points: perimeter.corners.map(corner => corner.outsidePoint)
     }))
 
     const baseAreas = [...perimeterPolygons, ...getFloorAreasByStorey(info.storey.id).map(area => area.area)]
@@ -346,10 +348,13 @@ function createWallsForPerimeter(
   ifcContext: IfcContext
 ): number[] {
   const elements: number[] = []
-  for (const wall of perimeter.walls) {
+  for (let index = 0; index < perimeter.walls.length; index++) {
+    const wall = perimeter.walls[index]
     const assemblyConfig = getWallAssemblyById(wall.wallAssemblyId)
     if (!assemblyConfig) continue
-    const wallId = createWallElement(writer, wall, info, storeyPlacement, ifcContext)
+    const startCorner = perimeter.corners[index]
+    const endCorner = perimeter.corners[(index + 1) % perimeter.corners.length]
+    const wallId = createWallElement(writer, wall, startCorner, endCorner, info, storeyPlacement, ifcContext)
     elements.push(wallId)
     const wallPropertySet = writer.addEntity('IFCPROPERTYSET', [
       createIfcGuid(),
@@ -391,12 +396,14 @@ function createWallsForPerimeter(
 function createWallElement(
   writer: StepWriter,
   wall: PerimeterWall,
+  startCorner: PerimeterCorner,
+  endCorner: PerimeterCorner,
   info: StoreyRuntimeInfo,
   storeyPlacement: number,
   ifcContext: IfcContext
 ): number {
-  const profile = createWallProfile(writer, wall)
-  const placement = createWallPlacement(writer, wall, storeyPlacement, ifcContext)
+  const profile = createWallProfile(writer, wall, startCorner, endCorner)
+  const placement = createWallPlacement(writer, wall, startCorner, storeyPlacement, ifcContext)
   const extrudedDirection = createDirection(writer, [0, 0, 1])
   const solid = writer.addEntity('IFCEXTRUDEDAREASOLID', [
     stepRef(profile),
@@ -627,15 +634,20 @@ function createFloorSolid(
   ])
 }
 
-function createWallProfile(writer: StepWriter, wall: PerimeterWall): number {
-  const origin = wall.insideLine.start
+function createWallProfile(
+  writer: StepWriter,
+  wall: PerimeterWall,
+  startCorner: PerimeterCorner,
+  endCorner: PerimeterCorner
+): number {
+  const origin = startCorner.insidePoint
   const direction = wall.direction
   const normal = wall.outsideDirection
 
-  const insideStart = wall.insideLine.start
-  const insideEnd = wall.insideLine.end
-  const outsideStart = wall.outsideLine.start
-  const outsideEnd = wall.outsideLine.end
+  const insideStart = startCorner.insidePoint
+  const insideEnd = endCorner.insidePoint
+  const outsideStart = startCorner.outsidePoint
+  const outsideEnd = endCorner.outsidePoint
 
   const localPoints = [
     toLocalVec(insideStart, origin, direction, normal),
@@ -767,10 +779,11 @@ function createLocalPlacementForStorey(
 function createWallPlacement(
   writer: StepWriter,
   wall: PerimeterWall,
+  startCorner: PerimeterCorner,
   storeyPlacement: number,
   ifcContext: IfcContext
 ): number {
-  const start = wall.insideLine.start
+  const start = startCorner.insidePoint
   const location = createCartesianPoint(writer, [start[0], start[1], 0])
   const wallDirection = createDirection(writer, [wall.direction[0], wall.direction[1], 0])
   const placement = writer.addEntity('IFCAXIS2PLACEMENT3D', [

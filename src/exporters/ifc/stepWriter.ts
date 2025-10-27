@@ -57,13 +57,17 @@ export class StepWriter {
   }
 
   build(headerOptions?: StepHeaderOptions): string {
+    const schema = headerOptions?.schema ?? DEFAULT_SCHEMA
+    const defaultDescription =
+      schema.startsWith('IFC4') || schema === 'IFC4X3'
+        ? ['ViewDefinition [ReferenceView]']
+        : ['ViewDefinition [CoordinationViewV2.0]']
     const {
-      description = ['ViewDefinition [CoordinationView]'],
+      description = defaultDescription,
       name = 'Strawbaler IFC Export',
       author = 'Strawbaler',
       organization = 'Strawbaler',
       application = 'Strawbaler IFC Exporter',
-      schema = DEFAULT_SCHEMA,
       timestamp = new Date().toISOString()
     } = headerOptions ?? {}
 

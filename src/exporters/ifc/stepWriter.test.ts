@@ -27,6 +27,7 @@ describe('StepWriter', () => {
     expect(output).toContain(`#1=IFCSIUNIT(.LENGTHUNIT.,$,.METRE.,$);`)
     expect(output).toContain(`#2=IFCUNITASSIGNMENT((#1,IFCLENGTHMEASURE(2500)));`)
     expect(output).toMatch(/FILE_NAME\('EnumTest','2024-01-01T00:00:00Z'/)
+    expect(output).toContain(`FILE_DESCRIPTION(('ViewDefinition [ReferenceView]'),'2;1');`)
   })
 
   it('escapes single quotes in string parameters', () => {
