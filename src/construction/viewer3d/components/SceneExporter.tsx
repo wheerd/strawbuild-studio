@@ -5,6 +5,7 @@ import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js'
 import { STLExporter } from 'three/examples/jsm/exporters/STLExporter.js'
 
 import { downloadFile } from '@/shared/utils/downloadFile'
+import { generateCollada } from '@/construction/viewer3d/utils/exportCollada'
 
 import type { ExportFormat } from './ExportButton'
 
@@ -35,6 +36,15 @@ function SceneExporter({ onExportReady }: SceneExporterProps): null {
             onlyVisible: true
           }
         )
+      } else if (format === 'collada') {
+        scene.updateMatrixWorld(true)
+        const collada = generateCollada(objectsToExport)
+
+        if (collada) {
+          downloadFile(collada, `construction-${timestamp}.dae`, 'model/vnd.collada+xml')
+        } else {
+          console.warn('Collada export skipped: no mesh data available.')
+        }
       } else if (format === 'obj') {
         const exporter = new OBJExporter()
         const result = exporter.parse(scene)
