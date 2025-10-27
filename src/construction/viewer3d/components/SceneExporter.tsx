@@ -4,6 +4,7 @@ import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js'
 import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js'
 import { STLExporter } from 'three/examples/jsm/exporters/STLExporter.js'
 
+import { exportCurrentModelToIfc } from '@/exporters/ifc'
 import { downloadFile } from '@/shared/utils/downloadFile'
 
 import type { ExportFormat } from './ExportButton'
@@ -20,7 +21,11 @@ function SceneExporter({ onExportReady }: SceneExporterProps): null {
       const objectsToExport = scene.children.filter(child => child.type !== 'GridHelper')
       const timestamp = new Date().toISOString().split('T')[0]
 
-      if (format === 'gltf') {
+      if (format === 'ifc') {
+        void exportCurrentModelToIfc().catch(error => {
+          console.error('Error exporting IFC:', error)
+        })
+      } else if (format === 'gltf') {
         const exporter = new GLTFExporter()
         exporter.parse(
           objectsToExport,

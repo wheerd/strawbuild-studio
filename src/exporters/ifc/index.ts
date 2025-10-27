@@ -1,0 +1,1 @@
+export { exportCurrentModelToIfc } from './exporter'
