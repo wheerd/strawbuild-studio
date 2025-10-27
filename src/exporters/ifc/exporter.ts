@@ -459,11 +459,10 @@ function ensureWallMaterialUsage(
   if (existing) return existing
 
   const materialName = `Wall ${assemblyId}`
-  const materialId = writer.addEntity('IFCMATERIAL', [materialName])
+  const materialId = writer.addEntity('IFCMATERIAL', [materialName, null, null])
   const materialLayerId = writer.addEntity('IFCMATERIALLAYER', [
     stepRef(materialId),
-    createLengthMeasure(thickness, 'non-negative'),
-    null,
+    createLengthMeasure(thickness, 'positive-length'),
     null,
     null,
     null,
@@ -545,13 +544,27 @@ function createOpeningElement(
     'Pset_StrawbalerOpening',
     null,
     [
-      stepRef(writer.addEntity('IFCPROPERTYSINGLEVALUE', ['Width', null, createLengthMeasure(opening.width), null])),
-      stepRef(writer.addEntity('IFCPROPERTYSINGLEVALUE', ['Height', null, createLengthMeasure(opening.height), null])),
+      stepRef(
+        writer.addEntity('IFCPROPERTYSINGLEVALUE', [
+          'Width',
+          null,
+          createLengthMeasure(opening.width, 'positive-length'),
+          null
+        ])
+      ),
+      stepRef(
+        writer.addEntity('IFCPROPERTYSINGLEVALUE', [
+          'Height',
+          null,
+          createLengthMeasure(opening.height, 'positive-length'),
+          null
+        ])
+      ),
       stepRef(
         writer.addEntity('IFCPROPERTYSINGLEVALUE', [
           'SillHeight',
           null,
-          createLengthMeasure(opening.sillHeight ?? 0),
+          createLengthMeasure(opening.sillHeight ?? 0, 'non-negative-length'),
           null
         ])
       ),
@@ -614,7 +627,12 @@ function createFloorSlab(
     null,
     [
       stepRef(
-        writer.addEntity('IFCPROPERTYSINGLEVALUE', ['Thickness', null, createLengthMeasure(floor.thickness), null])
+        writer.addEntity('IFCPROPERTYSINGLEVALUE', [
+          'Thickness',
+          null,
+          createLengthMeasure(floor.thickness, 'positive-length'),
+          null
+        ])
       )
     ]
   ])
@@ -868,11 +886,13 @@ function generateFilename(ext: string): string {
   return `strawbaler-${timestamp}.${ext}`
 }
 
-function createLengthMeasure(value: number, type: 'any' | 'positive' | 'non-negative' = 'any'): StepRaw {
+type LengthMeasureType = 'length' | 'positive-length' | 'non-negative-length'
+
+function createLengthMeasure(value: number, type: LengthMeasureType = 'length'): StepRaw {
   const measureType =
-    type === 'positive'
+    type === 'positive-length'
       ? 'IFCPOSITIVELENGTHMEASURE'
-      : type === 'non-negative'
+      : type === 'non-negative-length'
         ? 'IFCNONNEGATIVELENGTHMEASURE'
         : 'IFCLENGTHMEASURE'
   return stepRaw(`${measureType}(${formatNumber(value)})`)
