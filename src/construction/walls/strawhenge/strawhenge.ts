@@ -52,10 +52,10 @@ function* placeStrawhengeSegments(
 
   if (strawWidth > 0) {
     if (strawWidth < config.infill.minStrawSpace) {
-      yield* infillWallArea(position, size, config.infill, config.straw, false, false, atStart)
+      yield* infillWallArea(position, size, config.infill, false, false, atStart)
       return
     }
-    yield* constructStraw(strawPosition, strawSize, config.straw)
+    yield* constructStraw(strawPosition, strawSize)
   }
 
   if (strawWidth + module.width <= size[0]) {
@@ -95,7 +95,7 @@ export function* strawhengeWallArea(
 
   // Check if strawhenge is possible
   if (size[0] < oneModule) {
-    yield* infillWallArea(position, size, infill, config.straw, startsWithStand, endsWithStand, startAtEnd)
+    yield* infillWallArea(position, size, infill, startsWithStand, endsWithStand, startAtEnd)
     return
   }
 
@@ -105,7 +105,7 @@ export function* strawhengeWallArea(
   }
 
   if (size[0] < moduleAndMinFilling + postWidth) {
-    yield* infillWallArea(position, size, infill, config.straw, startsWithStand, endsWithStand, startAtEnd)
+    yield* infillWallArea(position, size, infill, startsWithStand, endsWithStand, startAtEnd)
     return
   }
 
@@ -117,7 +117,7 @@ export function* strawhengeWallArea(
       const remainingPosition: vec3 = position
       const remainingSize = vec3.fromValues(size[0] - oneModule, size[1], size[2])
 
-      yield* infillWallArea(remainingPosition, remainingSize, infill, config.straw, true, false, false)
+      yield* infillWallArea(remainingPosition, remainingSize, infill, true, false, false)
       yield* constructModule(modulePosition, moduleSize, module)
     } else {
       const modulePosition: vec3 = position
@@ -126,7 +126,7 @@ export function* strawhengeWallArea(
       const remainingSize = vec3.fromValues(size[0] - oneModule, size[1], size[2])
 
       yield* constructModule(modulePosition, moduleSize, module)
-      yield* infillWallArea(remainingPosition, remainingSize, infill, config.straw, false, true, true)
+      yield* infillWallArea(remainingPosition, remainingSize, infill, false, true, true)
     }
     return
   }
@@ -177,7 +177,7 @@ export class StrawhengeWallAssembly implements WallAssembly<StrawhengeWallConfig
 
         (position: vec3, size: vec3, zOffset: Length, openings: Opening[]) =>
           constructOpeningFrame({ type: 'opening', position, size, zOffset, openings }, config.openings, (p, s) =>
-            infillWallArea(p, s, config.infill, config.straw)
+            infillWallArea(p, s, config.infill)
           )
       )
     )

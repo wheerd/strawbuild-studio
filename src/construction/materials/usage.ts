@@ -1,4 +1,5 @@
 import type { RingBeamAssemblyConfig, WallAssemblyConfig } from '@/construction/config/types'
+import type { StrawConfig } from '@/construction/materials/straw'
 
 import type { MaterialId } from './material'
 
@@ -13,7 +14,8 @@ export interface MaterialUsage {
 export function getMaterialUsage(
   materialId: MaterialId,
   ringBeamAssemblies: RingBeamAssemblyConfig[],
-  wallAssemblies: WallAssemblyConfig[]
+  wallAssemblies: WallAssemblyConfig[],
+  strawConfig: StrawConfig
 ): MaterialUsage {
   const usedByConfigs: string[] = []
 
@@ -24,6 +26,10 @@ export function getMaterialUsage(
       usedByConfigs.push(`Ring Beam: ${assembly.name}`)
     }
   })
+
+  if (strawConfig.material === materialId) {
+    usedByConfigs.push('Global Straw Configuration')
+  }
 
   // Check wall assemblies
   wallAssemblies.forEach(assembly => {
@@ -46,10 +52,6 @@ export function getMaterialUsage(
         }
         if (assembly.openings.sillMaterial === materialId) {
           configUsages.push('opening sills')
-        }
-        // Straw material
-        if (assembly.straw.material === materialId) {
-          configUsages.push('straw')
         }
         break
 
@@ -81,10 +83,6 @@ export function getMaterialUsage(
         if (assembly.openings.sillMaterial === materialId) {
           configUsages.push('opening sills')
         }
-        // Straw material
-        if (assembly.straw.material === materialId) {
-          configUsages.push('straw')
-        }
         break
 
       case 'modules':
@@ -115,10 +113,6 @@ export function getMaterialUsage(
         if (assembly.openings.sillMaterial === materialId) {
           configUsages.push('opening sills')
         }
-        // Straw material
-        if (assembly.straw.material === materialId) {
-          configUsages.push('straw')
-        }
         break
 
       case 'non-strawbale':
@@ -132,10 +126,6 @@ export function getMaterialUsage(
         }
         if (assembly.openings.sillMaterial === materialId) {
           configUsages.push('opening sills')
-        }
-        // Straw material
-        if (assembly.straw.material === materialId) {
-          configUsages.push('straw')
         }
         break
     }

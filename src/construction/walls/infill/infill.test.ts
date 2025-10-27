@@ -7,7 +7,6 @@ import { IDENTITY } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
 import type { PostConfig } from '@/construction/materials/posts'
 import { constructPost } from '@/construction/materials/posts'
-import type { StrawConfig } from '@/construction/materials/straw'
 import { constructStraw } from '@/construction/materials/straw'
 import { constructOpeningFrame } from '@/construction/openings/openings'
 import { aggregateResults, yieldElement, yieldError, yieldMeasurement, yieldWarning } from '@/construction/results'
@@ -112,15 +111,6 @@ function createMockPostConfig(): PostConfig {
   }
 }
 
-function createMockStrawConfig(): StrawConfig {
-  return {
-    baleLength: 800,
-    baleHeight: 500,
-    baleWidth: 360,
-    material: mockStrawMaterial
-  }
-}
-
 function createMockInfillConfig(overrides: Partial<InfillWallSegmentConfig> = {}): InfillWallSegmentConfig {
   return {
     maxPostSpacing: 800,
@@ -175,7 +165,6 @@ function createMockLayers(): WallLayersConfig {
 
 describe('infillWallArea', () => {
   let config: InfillWallSegmentConfig
-  let strawConfig: StrawConfig
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -194,7 +183,6 @@ describe('infillWallArea', () => {
     )
 
     config = createMockInfillConfig()
-    strawConfig = createMockStrawConfig()
   })
 
   describe('basic functionality', () => {
@@ -202,7 +190,7 @@ describe('infillWallArea', () => {
       const position = vec3.fromValues(100, 0, 0)
       const size = vec3.fromValues(800, 300, 2500)
 
-      const results = [...infillWallArea(position, size, config, strawConfig)]
+      const results = [...infillWallArea(position, size, config)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -216,7 +204,7 @@ describe('infillWallArea', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1000, 300, 2500)
 
-      const results = [...infillWallArea(position, size, config, strawConfig, true)]
+      const results = [...infillWallArea(position, size, config, true)]
       const { elements, errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -229,7 +217,7 @@ describe('infillWallArea', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1000, 300, 2500)
 
-      const results = [...infillWallArea(position, size, config, strawConfig, false, true)]
+      const results = [...infillWallArea(position, size, config, false, true)]
       const { elements, errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -242,7 +230,7 @@ describe('infillWallArea', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1600, 300, 2500)
 
-      const results = [...infillWallArea(position, size, config, strawConfig, true, true)]
+      const results = [...infillWallArea(position, size, config, true, true)]
       const { elements, errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -255,7 +243,7 @@ describe('infillWallArea', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1000, 300, 2500)
 
-      const results = [...infillWallArea(position, size, config, strawConfig)]
+      const results = [...infillWallArea(position, size, config)]
       const { measurements } = aggregateResults(results)
 
       expect(measurements.length).toBeGreaterThan(0)
@@ -269,7 +257,7 @@ describe('infillWallArea', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(30, 300, 2500) // Less than post width
 
-      const results = [...infillWallArea(position, size, config, strawConfig, true)]
+      const results = [...infillWallArea(position, size, config, true)]
       const { errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(1)
@@ -280,7 +268,7 @@ describe('infillWallArea', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(30, 300, 2500) // Less than post width
 
-      const results = [...infillWallArea(position, size, config, strawConfig, false, true)]
+      const results = [...infillWallArea(position, size, config, false, true)]
       const { errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(1)
@@ -291,7 +279,7 @@ describe('infillWallArea', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(100, 300, 2500) // More than one post width but less than 2
 
-      const results = [...infillWallArea(position, size, config, strawConfig, true, true)]
+      const results = [...infillWallArea(position, size, config, true, true)]
       const { errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(1)
@@ -302,7 +290,7 @@ describe('infillWallArea', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(800, 300, 50) // Less than minStrawSpace
 
-      const results = [...infillWallArea(position, size, config, strawConfig)]
+      const results = [...infillWallArea(position, size, config)]
       const { warnings } = aggregateResults(results)
 
       expect(warnings).toHaveLength(1)
@@ -313,7 +301,7 @@ describe('infillWallArea', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(50, 300, 2500) // Less than minStrawSpace for bale width
 
-      const results = [...infillWallArea(position, size, config, strawConfig)]
+      const results = [...infillWallArea(position, size, config)]
       const { warnings } = aggregateResults(results)
 
       expect(warnings.length).toBeGreaterThan(0)
@@ -326,7 +314,7 @@ describe('infillWallArea', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(60, 300, 2500) // Exactly post width
 
-      const results = [...infillWallArea(position, size, config, strawConfig, true)]
+      const results = [...infillWallArea(position, size, config, true)]
       const { elements, errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -338,7 +326,7 @@ describe('infillWallArea', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(60, 300, 2500) // Exactly post width
 
-      const results = [...infillWallArea(position, size, config, strawConfig, false, true)]
+      const results = [...infillWallArea(position, size, config, false, true)]
       const { elements, errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -350,7 +338,7 @@ describe('infillWallArea', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(0, 0, 0)
 
-      const results = [...infillWallArea(position, size, config, strawConfig)]
+      const results = [...infillWallArea(position, size, config)]
       const { elements, errors } = aggregateResults(results)
 
       expect(elements).toHaveLength(0)
@@ -361,7 +349,7 @@ describe('infillWallArea', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1000, 300, 2500)
 
-      const results = [...infillWallArea(position, size, config, strawConfig, false, false, true)]
+      const results = [...infillWallArea(position, size, config, false, false, true)]
       const { elements } = aggregateResults(results)
 
       expect(mockConstructStraw).toHaveBeenCalled()
@@ -383,9 +371,7 @@ describe('infillWallArea', () => {
         posts: doublePostConfig
       })
 
-      const results = [
-        ...infillWallArea(vec3.fromValues(0, 0, 0), vec3.fromValues(1000, 300, 2500), config, strawConfig, true)
-      ]
+      const results = [...infillWallArea(vec3.fromValues(0, 0, 0), vec3.fromValues(1000, 300, 2500), config, true)]
       const { errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -401,9 +387,7 @@ describe('infillWallArea', () => {
         maxPostSpacing: 600
       })
 
-      const results = [
-        ...infillWallArea(vec3.fromValues(0, 0, 0), vec3.fromValues(1000, 300, 2500), config, strawConfig)
-      ]
+      const results = [...infillWallArea(vec3.fromValues(0, 0, 0), vec3.fromValues(1000, 300, 2500), config)]
       const { measurements } = aggregateResults(results)
 
       expect(measurements.length).toBeGreaterThan(0)
@@ -418,7 +402,7 @@ describe('infillWallArea', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(800, 300, 90) // Between old and new minStrawSpace
 
-      const results = [...infillWallArea(position, size, config, strawConfig)]
+      const results = [...infillWallArea(position, size, config)]
       const { warnings } = aggregateResults(results)
 
       expect(warnings).toHaveLength(1)
@@ -443,7 +427,7 @@ describe('infillWallArea', () => {
         ])()
       )
 
-      const results = [...infillWallArea(position, size, config, strawConfig)]
+      const results = [...infillWallArea(position, size, config)]
       const { elements } = aggregateResults(results)
 
       expect(mockConstructPost).toHaveBeenCalled()
@@ -455,7 +439,7 @@ describe('infillWallArea', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1500, 300, 2500)
 
-      const results = [...infillWallArea(position, size, config, strawConfig)]
+      const results = [...infillWallArea(position, size, config)]
       aggregateResults(results)
 
       expect(mockConstructStraw).toHaveBeenCalled()
@@ -506,7 +490,6 @@ describe('assembly.construct', () => {
       config = {
         type: 'infill',
         ...createMockInfillConfig(),
-        straw: createMockStrawConfig(),
         layers: createMockLayers(),
         openings: {
           padding: 15,

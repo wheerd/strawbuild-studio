@@ -1,6 +1,7 @@
 import { vec3 } from 'gl-matrix'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
+import { type ConfigActions, getConfigActions } from '@/construction/config'
 import type { ConstructionElement } from '@/construction/elements'
 import { aggregateResults } from '@/construction/results'
 import type { Cuboid } from '@/construction/shapes'
@@ -8,22 +9,37 @@ import type { Cuboid } from '@/construction/shapes'
 import type { MaterialId } from './material'
 import { type StrawConfig, constructStraw } from './straw'
 
+vi.mock('@/construction/config', () => ({
+  getConfigActions: vi.fn()
+}))
+
+const mockGetStrawConfig = vi.fn()
+vi.mocked(getConfigActions).mockReturnValue({
+  getStrawConfig: mockGetStrawConfig
+} as any as ConfigActions)
+
 const mockMaterialId = 'test-material' as MaterialId
 
 const defaultConfig: StrawConfig = {
-  baleLength: 800,
+  baleMinLength: 800,
+  baleMaxLength: 900,
   baleHeight: 500,
   baleWidth: 360,
   material: mockMaterialId
 }
 
 describe('constructStraw', () => {
+  beforeEach(() => {
+    mockGetStrawConfig.mockClear()
+    mockGetStrawConfig.mockReturnValue(defaultConfig)
+  })
+
   describe('perfect fit scenarios', () => {
     it('should create a single full strawbale when dimensions match exactly', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(800, 360, 500)
 
-      const results = [...constructStraw(position, size, defaultConfig)]
+      const results = [...constructStraw(position, size)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -43,7 +59,7 @@ describe('constructStraw', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1600, 360, 500) // 2 bales wide
 
-      const results = [...constructStraw(position, size, defaultConfig)]
+      const results = [...constructStraw(position, size)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -61,7 +77,7 @@ describe('constructStraw', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(800, 360, 1000) // 2 bales high
 
-      const results = [...constructStraw(position, size, defaultConfig)]
+      const results = [...constructStraw(position, size)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -79,7 +95,7 @@ describe('constructStraw', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1600, 360, 1000) // 2x2 bales
 
-      const results = [...constructStraw(position, size, defaultConfig)]
+      const results = [...constructStraw(position, size)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -104,7 +120,7 @@ describe('constructStraw', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(400, 360, 500) // Half width
 
-      const results = [...constructStraw(position, size, defaultConfig)]
+      const results = [...constructStraw(position, size)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -120,7 +136,7 @@ describe('constructStraw', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(800, 360, 250) // Half height
 
-      const results = [...constructStraw(position, size, defaultConfig)]
+      const results = [...constructStraw(position, size)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -136,7 +152,7 @@ describe('constructStraw', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1200, 360, 500) // 1.5 bales wide
 
-      const results = [...constructStraw(position, size, defaultConfig)]
+      const results = [...constructStraw(position, size)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -156,7 +172,7 @@ describe('constructStraw', () => {
       const position = vec3.fromValues(100, 0, 50) // Non-zero start position
       const size = vec3.fromValues(1200, 360, 750) // 1.5 bales wide, 1.5 bales high
 
-      const results = [...constructStraw(position, size, defaultConfig)]
+      const results = [...constructStraw(position, size)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -184,7 +200,7 @@ describe('constructStraw', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(800, 400, 500) // Thicker than bale width
 
-      const results = [...constructStraw(position, size, defaultConfig)]
+      const results = [...constructStraw(position, size)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(1)
@@ -200,7 +216,7 @@ describe('constructStraw', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(800, 300, 500) // Thinner than bale width
 
-      const results = [...constructStraw(position, size, defaultConfig)]
+      const results = [...constructStraw(position, size)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -218,7 +234,7 @@ describe('constructStraw', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(0, 360, 500)
 
-      const results = [...constructStraw(position, size, defaultConfig)]
+      const results = [...constructStraw(position, size)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -230,7 +246,7 @@ describe('constructStraw', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(10, 360, 10)
 
-      const results = [...constructStraw(position, size, defaultConfig)]
+      const results = [...constructStraw(position, size)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -245,7 +261,7 @@ describe('constructStraw', () => {
       const position = vec3.fromValues(-100, 0, -200)
       const size = vec3.fromValues(800, 360, 500)
 
-      const results = [...constructStraw(position, size, defaultConfig)]
+      const results = [...constructStraw(position, size)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -261,16 +277,18 @@ describe('constructStraw', () => {
   describe('different configurations', () => {
     it('should work with custom bale dimensions', () => {
       const customConfig: StrawConfig = {
-        baleLength: 1000,
+        baleMinLength: 1000,
+        baleMaxLength: 1000,
         baleHeight: 400,
         baleWidth: 300,
         material: mockMaterialId
       }
+      mockGetStrawConfig.mockReturnValue(customConfig)
 
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1000, 300, 400)
 
-      const results = [...constructStraw(position, size, customConfig)]
+      const results = [...constructStraw(position, size)]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -287,11 +305,12 @@ describe('constructStraw', () => {
         ...defaultConfig,
         material: customMaterial
       }
+      mockGetStrawConfig.mockReturnValue(customConfig)
 
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(800, 360, 500)
 
-      const results = [...constructStraw(position, size, customConfig)]
+      const results = [...constructStraw(position, size)]
       const { elements } = aggregateResults(results)
 
       expect((elements[0] as ConstructionElement).material).toBe(customMaterial)
@@ -303,7 +322,7 @@ describe('constructStraw', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1600, 360, 500) // 2 bales
 
-      const results = [...constructStraw(position, size, defaultConfig)]
+      const results = [...constructStraw(position, size)]
       const { elements } = aggregateResults(results)
 
       expect(elements).toHaveLength(2)

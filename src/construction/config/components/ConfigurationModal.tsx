@@ -8,6 +8,7 @@ import { BaseModal } from '@/shared/components/BaseModal'
 
 import { FloorAssemblyConfigContent } from './FloorAssemblyConfigContent'
 import { RingBeamAssemblyContent } from './RingBeamAssemblyContent'
+import { StrawConfigContent } from './StrawConfigContent'
 import { WallAssemblyContent } from './WallAssemblyContent'
 
 export interface ConfigurationModalProps {
@@ -45,6 +46,7 @@ export function ConfigurationModal({
       <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
         <Tabs.List>
           <Tabs.Trigger value="materials">Materials</Tabs.Trigger>
+          <Tabs.Trigger value="straw">Straw</Tabs.Trigger>
           <Tabs.Trigger value="ringbeams">Ring Beam Assemblies</Tabs.Trigger>
           <Tabs.Trigger value="walls">Wall Assemblies</Tabs.Trigger>
           <Tabs.Trigger value="floors">Floor Assemblies</Tabs.Trigger>
@@ -53,6 +55,12 @@ export function ConfigurationModal({
         <Tabs.Content value="materials">
           <Flex pt="4" style={{ width: '100%' }}>
             <MaterialsConfigContent initialSelectionId={initialSelectionId} />
+          </Flex>
+        </Tabs.Content>
+
+        <Tabs.Content value="straw">
+          <Flex pt="4" style={{ width: '100%' }}>
+            <StrawConfigContent />
           </Flex>
         </Tabs.Content>
 

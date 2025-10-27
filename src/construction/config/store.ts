@@ -11,6 +11,7 @@ import {
 } from '@/building/model/ids'
 import { type FloorConfig, validateFloorConfig } from '@/construction/floors/types'
 import { clt180, concrete, straw, strawbale, wood120x60, wood360x60 } from '@/construction/materials/material'
+import { type StrawConfig, validateStrawConfig } from '@/construction/materials/straw'
 import { type RingBeamConfig, validateRingBeamConfig } from '@/construction/ringBeams/types'
 import { type WallConfig, validateWallConfig } from '@/construction/walls/types'
 import '@/shared/geometry'
@@ -28,6 +29,7 @@ import type {
 } from './types'
 
 export interface ConfigState {
+  straw: StrawConfig
   ringBeamAssemblyConfigs: Record<RingBeamAssemblyId, RingBeamAssemblyConfig>
   wallAssemblyConfigs: Record<WallAssemblyId, WallAssemblyConfig>
   floorAssemblyConfigs: Record<FloorAssemblyId, FloorAssemblyConfig>
@@ -38,6 +40,10 @@ export interface ConfigState {
 }
 
 export interface ConfigActions {
+  // Straw
+  getStrawConfig: () => StrawConfig
+  updateStrawConfig: (updates: Partial<StrawConfig>) => void
+
   // CRUD operations for ring beam assemblies
   addRingBeamAssembly: (name: string, config: RingBeamConfig) => RingBeamAssemblyConfig
   removeRingBeamAssembly: (id: RingBeamAssemblyId) => void
@@ -108,6 +114,14 @@ const validateFloorAssemblyName = (name: string): void => {
 
 // Config validation is handled by the construction module
 
+const createDefaultStrawConfig = (): StrawConfig => ({
+  baleMinLength: 800,
+  baleMaxLength: 900,
+  baleHeight: 500,
+  baleWidth: 360,
+  material: strawbale.id
+})
+
 // Default ring beam assembly using 360x60 wood
 const createDefaultRingBeamAssembly = (): FullRingBeamAssemblyConfig => ({
   id: 'ringbeam_default' as RingBeamAssemblyId,
@@ -167,12 +181,6 @@ const createDefaultWallAssemblies = (): WallAssemblyConfig[] => [
       sillThickness: 60,
       sillMaterial: wood360x60.id
     },
-    straw: {
-      baleLength: 800,
-      baleHeight: 500,
-      baleWidth: 360,
-      material: strawbale.id
-    },
     layers: {
       insideThickness: 30,
       outsideThickness: 50
@@ -204,12 +212,6 @@ const createDefaultWallAssemblies = (): WallAssemblyConfig[] => [
       headerMaterial: wood360x60.id,
       sillThickness: 60,
       sillMaterial: wood360x60.id
-    },
-    straw: {
-      baleLength: 800,
-      baleHeight: 500,
-      baleWidth: 360,
-      material: strawbale.id
     },
     layers: {
       insideThickness: 30,
@@ -243,12 +245,6 @@ const createDefaultWallAssemblies = (): WallAssemblyConfig[] => [
       sillThickness: 60,
       sillMaterial: wood360x60.id
     },
-    straw: {
-      baleLength: 800,
-      baleHeight: 500,
-      baleWidth: 360,
-      material: strawbale.id
-    },
     layers: {
       insideThickness: 30,
       outsideThickness: 50
@@ -267,12 +263,6 @@ const createDefaultWallAssemblies = (): WallAssemblyConfig[] => [
       sillThickness: 60,
       sillMaterial: wood360x60.id
     },
-    straw: {
-      baleLength: 800,
-      baleHeight: 500,
-      baleWidth: 360,
-      material: strawbale.id
-    },
     layers: {
       insideThickness: 30,
       outsideThickness: 30
@@ -290,6 +280,7 @@ const useConfigStore = create<ConfigStore>()(
         const defaultFloorAssemblies = createDefaultFloorAssemblies()
 
         return {
+          straw: createDefaultStrawConfig(),
           ringBeamAssemblyConfigs: {
             [defaultRingBeamAssembly.id]: defaultRingBeamAssembly
           },
@@ -301,6 +292,19 @@ const useConfigStore = create<ConfigStore>()(
           defaultFloorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID,
 
           actions: {
+            getStrawConfig: () => {
+              const state = get()
+              return state.straw
+            },
+
+            updateStrawConfig: (updates: Partial<StrawConfig>) => {
+              set(state => {
+                const next = { ...state.straw, ...updates }
+                validateStrawConfig(next)
+                return { ...state, straw: next }
+              })
+            },
+
             // CRUD operations
             addRingBeamAssembly: (name: string, config: RingBeamConfig) => {
               validateRingBeamName(name)
@@ -662,6 +666,7 @@ const useConfigStore = create<ConfigStore>()(
       name: 'strawbaler-config',
       version: CURRENT_VERSION,
       partialize: state => ({
+        straw: state.straw,
         ringBeamAssemblyConfigs: state.ringBeamAssemblyConfigs,
         wallAssemblyConfigs: state.wallAssemblyConfigs,
         floorAssemblyConfigs: state.floorAssemblyConfigs,
@@ -687,6 +692,8 @@ const useConfigStore = create<ConfigStore>()(
 )
 
 // Selector hooks for easier usage
+export const useStrawConfig = (): StrawConfig => useConfigStore(state => state.straw)
+
 export const useRingBeamAssemblies = (): RingBeamAssemblyConfig[] => {
   const ringBeamAssemblies = useConfigStore(state => state.ringBeamAssemblyConfigs)
   return useMemo(() => Object.values(ringBeamAssemblies), [ringBeamAssemblies])
@@ -734,6 +741,7 @@ export const getConfigActions = (): ConfigActions => useConfigStore.getState().a
 export const getConfigState = () => {
   const state = useConfigStore.getState()
   return {
+    straw: state.straw,
     ringBeamAssemblyConfigs: state.ringBeamAssemblyConfigs,
     wallAssemblyConfigs: state.wallAssemblyConfigs,
     floorAssemblyConfigs: state.floorAssemblyConfigs,
@@ -746,6 +754,7 @@ export const getConfigState = () => {
 
 // Import config state from persistence
 export const setConfigState = (data: {
+  straw?: StrawConfig
   ringBeamAssemblyConfigs: Record<RingBeamAssemblyId, RingBeamAssemblyConfig>
   wallAssemblyConfigs: Record<WallAssemblyId, WallAssemblyConfig>
   floorAssemblyConfigs?: Record<FloorAssemblyId, FloorAssemblyConfig>
@@ -755,8 +764,11 @@ export const setConfigState = (data: {
   defaultFloorAssemblyId?: FloorAssemblyId
 }) => {
   const state = useConfigStore.getState()
+  const strawConfig = data.straw ?? state.straw
+  validateStrawConfig(strawConfig)
 
   useConfigStore.setState({
+    straw: strawConfig,
     ringBeamAssemblyConfigs: data.ringBeamAssemblyConfigs,
     wallAssemblyConfigs: data.wallAssemblyConfigs,
     floorAssemblyConfigs: data.floorAssemblyConfigs ?? state.floorAssemblyConfigs,

@@ -12,7 +12,7 @@ import * as Label from '@radix-ui/react-label'
 import { AlertDialog, Badge, Button, DropdownMenu, Flex, Grid, IconButton, Text, TextField } from '@radix-ui/themes'
 import React, { useCallback, useState } from 'react'
 
-import { useRingBeamAssemblies, useWallAssemblies } from '@/construction/config/store'
+import { useRingBeamAssemblies, useStrawConfig, useWallAssemblies } from '@/construction/config/store'
 import type {
   DimensionalMaterial,
   GenericMaterial,
@@ -43,6 +43,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
   const { addMaterial, updateMaterial, removeMaterial, duplicateMaterial } = useMaterialActions()
   const ringBeamAssemblies = useRingBeamAssemblies()
   const wallAssemblies = useWallAssemblies()
+  const strawConfig = useStrawConfig()
 
   const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(() => {
     if (initialSelectionId && materials.some(m => m.id === initialSelectionId)) {
@@ -56,9 +57,9 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
   const usage = React.useMemo(
     () =>
       selectedMaterial
-        ? getMaterialUsage(selectedMaterial.id, ringBeamAssemblies, wallAssemblies)
+        ? getMaterialUsage(selectedMaterial.id, ringBeamAssemblies, wallAssemblies, strawConfig)
         : { isUsed: false, usedByConfigs: [] },
-    [selectedMaterial, ringBeamAssemblies, wallAssemblies]
+    [selectedMaterial, ringBeamAssemblies, wallAssemblies, strawConfig]
   )
 
   const handleAddNew = useCallback(

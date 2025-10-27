@@ -2,18 +2,34 @@ import { describe, expect, it } from 'vitest'
 
 import { createRingBeamAssemblyId, createWallAssemblyId } from '@/building/model/ids'
 import type { RingBeamAssemblyConfig, WallAssemblyConfig } from '@/construction/config/types'
+import type { StrawConfig } from '@/construction/materials/straw'
 import '@/shared/geometry'
 
 import { straw, strawbale, wood120x60, wood360x60, woodwool } from './material'
 import { getMaterialUsage } from './usage'
 
+const defaultStrawConfig: StrawConfig = {
+  baleMinLength: 800,
+  baleMaxLength: 900,
+  baleHeight: 500,
+  baleWidth: 360,
+  material: strawbale.id
+}
+
 describe('Material Usage Detection', () => {
   describe('getMaterialUsage', () => {
     it('should detect material not in use', () => {
-      const usage = getMaterialUsage(wood360x60.id, [], [])
+      const usage = getMaterialUsage(wood360x60.id, [], [], defaultStrawConfig)
 
       expect(usage.isUsed).toBe(false)
       expect(usage.usedByConfigs).toEqual([])
+    })
+
+    it('should detect material used in straw configuration', () => {
+      const usage = getMaterialUsage(defaultStrawConfig.material, [], [], defaultStrawConfig)
+
+      expect(usage.isUsed).toBe(true)
+      expect(usage.usedByConfigs).toEqual(['Global Straw Configuration'])
     })
 
     it('should detect material used in ring beam config', () => {
@@ -29,7 +45,7 @@ describe('Material Usage Detection', () => {
         offsetFromEdge: 30
       }
 
-      const usage = getMaterialUsage(wood360x60.id, [ringBeamAssembly], [])
+      const usage = getMaterialUsage(wood360x60.id, [ringBeamAssembly], [], defaultStrawConfig)
 
       expect(usage.isUsed).toBe(true)
       expect(usage.usedByConfigs).toEqual(['Ring Beam: Test Ring Beam'])
@@ -57,19 +73,13 @@ describe('Material Usage Detection', () => {
           sillThickness: 60,
           sillMaterial: wood360x60.id
         },
-        straw: {
-          baleLength: 800,
-          baleHeight: 500,
-          baleWidth: 360,
-          material: strawbale.id
-        },
         layers: {
           insideThickness: 30,
           outsideThickness: 50
         }
       }
 
-      const usage = getMaterialUsage(wood360x60.id, [], [wallAssembly])
+      const usage = getMaterialUsage(wood360x60.id, [], [wallAssembly], defaultStrawConfig)
 
       expect(usage.isUsed).toBe(true)
       expect(usage.usedByConfigs).toEqual(['Wall: Test Infill (posts, opening headers, opening sills)'])
@@ -104,19 +114,13 @@ describe('Material Usage Detection', () => {
           sillThickness: 60,
           sillMaterial: wood360x60.id
         },
-        straw: {
-          baleLength: 800,
-          baleHeight: 500,
-          baleWidth: 360,
-          material: strawbale.id
-        },
         layers: {
           insideThickness: 30,
           outsideThickness: 50
         }
       }
 
-      const usage = getMaterialUsage(wood360x60.id, [], [wallAssembly])
+      const usage = getMaterialUsage(wood360x60.id, [], [wallAssembly], defaultStrawConfig)
 
       expect(usage.isUsed).toBe(true)
       expect(usage.usedByConfigs).toEqual([
@@ -158,23 +162,17 @@ describe('Material Usage Detection', () => {
           sillThickness: 60,
           sillMaterial: wood360x60.id
         },
-        straw: {
-          baleLength: 800,
-          baleHeight: 500,
-          baleWidth: 360,
-          material: strawbale.id
-        },
         layers: {
           insideThickness: 30,
           outsideThickness: 50
         }
       }
 
-      const spacerUsage = getMaterialUsage(wood120x60.id, [], [wallAssembly])
+      const spacerUsage = getMaterialUsage(wood120x60.id, [], [wallAssembly], defaultStrawConfig)
       expect(spacerUsage.isUsed).toBe(true)
       expect(spacerUsage.usedByConfigs).toEqual(['Wall: Double Module Wall (module spacers)'])
 
-      const infillUsage = getMaterialUsage(woodwool.id, [], [wallAssembly])
+      const infillUsage = getMaterialUsage(woodwool.id, [], [wallAssembly], defaultStrawConfig)
       expect(infillUsage.isUsed).toBe(true)
       expect(infillUsage.usedByConfigs).toEqual(['Wall: Double Module Wall (module infill)'])
     })
@@ -210,19 +208,13 @@ describe('Material Usage Detection', () => {
           sillThickness: 60,
           sillMaterial: straw.id
         },
-        straw: {
-          baleLength: 800,
-          baleHeight: 500,
-          baleWidth: 360,
-          material: strawbale.id
-        },
         layers: {
           insideThickness: 30,
           outsideThickness: 50
         }
       }
 
-      const usage = getMaterialUsage(wood360x60.id, [ringBeamAssembly], [wallAssembly])
+      const usage = getMaterialUsage(wood360x60.id, [ringBeamAssembly], [wallAssembly], defaultStrawConfig)
 
       expect(usage.isUsed).toBe(true)
       expect(usage.usedByConfigs).toHaveLength(2)

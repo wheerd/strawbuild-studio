@@ -89,12 +89,6 @@ function createMockAssembly(id: string, name: string, layers: WallLayersConfig):
       sillThickness: 60,
       sillMaterial: 'wood' as any
     },
-    straw: {
-      baleLength: 800,
-      baleHeight: 500,
-      baleWidth: 360,
-      material: 'straw' as any
-    },
     layers
   }
 }

@@ -23,7 +23,7 @@ export function* moduleWallArea(
   const { module, infill } = config
 
   if (size[0] < module.width) {
-    yield* infillWallArea(position, size, infill, config.straw, startsWithStand, endsWithStand, startAtEnd)
+    yield* infillWallArea(position, size, infill, startsWithStand, endsWithStand, startAtEnd)
     return
   }
 
@@ -38,15 +38,7 @@ export function* moduleWallArea(
   if (remainingWidth > 0) {
     const remainingPosition = vec3.fromValues(startAtEnd ? position[0] : end, position[1], position[2])
     const remainingSize = vec3.fromValues(remainingWidth, size[1], size[2])
-    yield* infillWallArea(
-      remainingPosition,
-      remainingSize,
-      infill,
-      config.straw,
-      startsWithStand,
-      endsWithStand,
-      startAtEnd
-    )
+    yield* infillWallArea(remainingPosition, remainingSize, infill, startsWithStand, endsWithStand, startAtEnd)
   }
 }
 
@@ -68,7 +60,7 @@ export class ModulesWallAssembly implements WallAssembly<ModulesWallConfig> {
 
         (position: vec3, size: vec3, zOffset: Length, openings: Opening[]) =>
           constructOpeningFrame({ type: 'opening', position, size, zOffset, openings }, config.openings, (p, s) =>
-            infillWallArea(p, s, config.infill, config.straw)
+            infillWallArea(p, s, config.infill)
           )
       )
     )

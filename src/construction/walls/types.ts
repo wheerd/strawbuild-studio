@@ -3,7 +3,6 @@ import type { vec3 } from 'gl-matrix'
 import type { Perimeter, PerimeterWall } from '@/building/model'
 import type { MaterialId } from '@/construction/materials/material'
 import type { PostConfig } from '@/construction/materials/posts'
-import type { StrawConfig } from '@/construction/materials/straw'
 import type { ConstructionModel } from '@/construction/model'
 import type { OpeningConstructionConfig } from '@/construction/openings/openings'
 import type { ConstructionResult } from '@/construction/results'
@@ -27,7 +26,6 @@ export interface WallBaseConfig {
   type: WallAssemblyType
   layers: WallLayersConfig
   openings: OpeningConstructionConfig
-  straw: StrawConfig
 }
 
 export interface WallLayersConfig {
@@ -92,12 +90,6 @@ const validateOpenings = (openings: OpeningConstructionConfig): void => {
   ensurePositive(openings.sillThickness, 'Sill thickness must be greater than 0')
 }
 
-const validateStraw = (straw: StrawConfig): void => {
-  ensurePositive(straw.baleLength, 'Straw bale length must be greater than 0')
-  ensurePositive(straw.baleHeight, 'Straw bale height must be greater than 0')
-  ensurePositive(straw.baleWidth, 'Straw bale width must be greater than 0')
-}
-
 const validatePosts = (posts: PostConfig): void => {
   ensurePositive(posts.width, 'Post width must be greater than 0')
   if (posts.type === 'double') {
@@ -145,7 +137,6 @@ const validateNonStrawbaleWallConfig = (config: NonStrawbaleWallConfig): void =>
 export const validateWallConfig = (config: WallConfig): void => {
   validateLayers(config.layers)
   validateOpenings(config.openings)
-  validateStraw(config.straw)
 
   if (config.type === 'infill') {
     validateInfillWallConfig(config)

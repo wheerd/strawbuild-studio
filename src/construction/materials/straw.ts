@@ -1,5 +1,6 @@
 import { vec3 } from 'gl-matrix'
 
+import { getConfigActions } from '@/construction/config'
 import { createConstructionElement } from '@/construction/elements'
 import { IDENTITY } from '@/construction/geometry'
 import { dimensionalPartInfo } from '@/construction/parts'
@@ -11,26 +12,51 @@ import type { Length } from '@/shared/geometry'
 import type { MaterialId } from './material'
 
 export interface StrawConfig {
-  baleLength: Length // Default: 800mm
+  baleMinLength: Length // Default: 800mm
+  baleMaxLength: Length // Default: 900mm
   baleHeight: Length // Default: 500mm
   baleWidth: Length // Default: 360mm
   material: MaterialId
 }
 
-export function* constructStraw(position: vec3, size: vec3, config: StrawConfig): Generator<ConstructionResult> {
+export function validateStrawConfig(config: StrawConfig): void {
+  if (Number(config.baleMinLength) <= 0) {
+    throw new Error('Minimum straw bale length must be greater than 0')
+  }
+
+  if (Number(config.baleMaxLength) <= 0) {
+    throw new Error('Maximum straw bale length must be greater than 0')
+  }
+
+  if (Number(config.baleMinLength) > Number(config.baleMaxLength)) {
+    throw new Error('Minimum straw bale length cannot exceed the maximum straw bale length')
+  }
+
+  if (Number(config.baleHeight) <= 0) {
+    throw new Error('Straw bale height must be greater than 0')
+  }
+
+  if (Number(config.baleWidth) <= 0) {
+    throw new Error('Straw bale width must be greater than 0')
+  }
+}
+
+export function* constructStraw(position: vec3, size: vec3): Generator<ConstructionResult> {
+  const config = getConfigActions().getStrawConfig()
+
   if (size[1] === config.baleWidth) {
     const end = vec3.add(vec3.create(), position, size)
 
     for (let z = position[2]; z < end[2]; z += config.baleHeight) {
-      for (let x = position[0]; x < end[0]; x += config.baleLength) {
+      for (let x = position[0]; x < end[0]; x += config.baleMinLength) {
         const balePosition = vec3.fromValues(x, position[1], z)
         const baleSize = vec3.fromValues(
-          Math.min(config.baleLength, end[0] - x),
+          Math.min(config.baleMinLength, end[0] - x),
           config.baleWidth,
           Math.min(config.baleHeight, end[2] - z)
         )
 
-        const isFullBale = baleSize[0] === config.baleLength && baleSize[2] === config.baleHeight
+        const isFullBale = baleSize[0] === config.baleMinLength && baleSize[2] === config.baleHeight
         const bale = createConstructionElement(
           config.material,
           createCuboidShape(balePosition, baleSize),

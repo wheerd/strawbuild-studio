@@ -54,12 +54,6 @@ const createTestConfig = (): StrawhengeWallConfig => ({
     }
   },
   openings: {} as any,
-  straw: {
-    baleLength: 800,
-    baleHeight: 500,
-    baleWidth: 360,
-    material: 'straw' as any
-  },
   layers: {
     insideThickness: 0,
     outsideThickness: 0
@@ -168,7 +162,7 @@ describe('Strawhenge Wall Construction', () => {
       )
 
       // Should call infill for insufficient space to place modules properly
-      expect(mockInfillWallArea).toHaveBeenCalledWith(position, size, config.infill, config.straw, false, false, false)
+      expect(mockInfillWallArea).toHaveBeenCalledWith(position, size, config.infill, false, false, false)
     })
 
     it('should fall back to infill when space is too small for module', () => {
@@ -187,7 +181,7 @@ describe('Strawhenge Wall Construction', () => {
       )
 
       // Should call infill, not module construction
-      expect(mockInfillWallArea).toHaveBeenCalledWith(position, size, config.infill, config.straw, true, true, false)
+      expect(mockInfillWallArea).toHaveBeenCalledWith(position, size, config.infill, true, true, false)
       expect(mockConstructModule).not.toHaveBeenCalled()
     })
   })

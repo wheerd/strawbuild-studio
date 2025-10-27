@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { createMaterialId } from '@/construction/materials/material'
+import { createMaterialId, strawbale } from '@/construction/materials/material'
 import type { RingBeamConfig } from '@/construction/ringBeams'
 import type { InfillWallConfig, WallConfig } from '@/construction/walls'
 import '@/shared/geometry'
@@ -24,6 +24,54 @@ describe('ConfigStore', () => {
         expect(defaultAssembly.offsetFromEdge).toBe(30)
       }
       expect(defaultAssembly.material).toBeDefined()
+    })
+  })
+
+  describe('Straw Configuration', () => {
+    beforeEach(() => {
+      const store = getConfigActions()
+      store.updateStrawConfig({
+        baleMinLength: 800,
+        baleMaxLength: 900,
+        baleHeight: 500,
+        baleWidth: 360,
+        material: strawbale.id
+      })
+    })
+
+    it('should expose default straw configuration', () => {
+      const { getStrawConfig } = getConfigActions()
+      const strawConfig = getStrawConfig()
+
+      expect(strawConfig).toMatchObject({
+        baleMinLength: 800,
+        baleMaxLength: 900,
+        baleHeight: 500,
+        baleWidth: 360,
+        material: strawbale.id
+      })
+    })
+
+    it('should update straw configuration', () => {
+      const store = getConfigActions()
+
+      store.updateStrawConfig({ baleMinLength: 850, baleMaxLength: 950 })
+      const strawConfig = store.getStrawConfig()
+
+      expect(strawConfig.baleMinLength).toBe(850)
+      expect(strawConfig.baleMaxLength).toBe(950)
+    })
+
+    it('should reject invalid straw configuration', () => {
+      const store = getConfigActions()
+
+      expect(() => store.updateStrawConfig({ baleMinLength: -10 })).toThrow(
+        'Minimum straw bale length must be greater than 0'
+      )
+
+      expect(() => store.updateStrawConfig({ baleMaxLength: 500, baleMinLength: 600 })).toThrow(
+        'Minimum straw bale length cannot exceed the maximum straw bale length'
+      )
     })
   })
 
@@ -239,7 +287,6 @@ describe('ConfigStore', () => {
       const postMaterial = createMaterialId()
       const headerMaterial = createMaterialId()
       const sillMaterial = createMaterialId()
-      const strawMaterial = createMaterialId()
 
       return {
         type: 'infill',
@@ -256,12 +303,6 @@ describe('ConfigStore', () => {
           headerMaterial,
           sillThickness: 60,
           sillMaterial
-        },
-        straw: {
-          baleLength: 800,
-          baleHeight: 500,
-          baleWidth: 360,
-          material: strawMaterial
         },
         layers: {
           insideThickness: 30,

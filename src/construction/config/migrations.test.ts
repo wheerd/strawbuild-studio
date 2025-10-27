@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { wood120x60, woodwool } from '@/construction/materials/material'
+import { strawbale, wood120x60, woodwool } from '@/construction/materials/material'
 
 import { applyMigrations } from './migrations'
 
@@ -53,5 +53,30 @@ describe('config migrations', () => {
     expect(module.spacerCount).toBe(4)
     expect(module.spacerMaterial).toBe('custom-spacer')
     expect(module.infillMaterial).toBe('custom-infill')
+  })
+
+  it('migrates straw configuration to top level and removes duplicates', () => {
+    const migrated = applyMigrations({
+      wallAssemblyConfigs: {
+        sample: {
+          straw: {
+            baleMinLength: 850,
+            baleMaxLength: 950,
+            baleHeight: 480,
+            baleWidth: 340,
+            material: strawbale.id
+          }
+        }
+      }
+    }) as { straw: Record<string, unknown>; wallAssemblyConfigs: Record<string, Record<string, unknown>> }
+
+    expect(migrated.straw).toMatchObject({
+      baleMinLength: 850,
+      baleMaxLength: 950,
+      baleHeight: 480,
+      baleWidth: 340,
+      material: strawbale.id
+    })
+    expect('straw' in migrated.wallAssemblyConfigs.sample).toBe(false)
   })
 })

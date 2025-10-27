@@ -546,77 +546,6 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
         </Flex>
       </Grid>
 
-      <Separator size="4" />
-
-      {/* Straw Configuration */}
-      <Heading size="2">Straw</Heading>
-      <Grid columns="5em 1fr 5em 1fr" gap="2" gapX="3">
-        <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            Bale Length
-          </Text>
-        </Label.Root>
-        <LengthField
-          value={config.straw.baleLength}
-          onChange={baleLength =>
-            updateWallAssemblyConfig(assemblyId, {
-              straw: { ...config.straw, baleLength }
-            })
-          }
-          unit="mm"
-          size="1"
-        />
-
-        <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            Bale Height
-          </Text>
-        </Label.Root>
-        <LengthField
-          value={config.straw.baleHeight}
-          onChange={baleHeight =>
-            updateWallAssemblyConfig(assemblyId, {
-              straw: { ...config.straw, baleHeight }
-            })
-          }
-          unit="mm"
-          size="1"
-        />
-
-        <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            Bale Width
-          </Text>
-        </Label.Root>
-        <LengthField
-          value={config.straw.baleWidth}
-          onChange={baleWidth =>
-            updateWallAssemblyConfig(assemblyId, {
-              straw: { ...config.straw, baleWidth }
-            })
-          }
-          unit="mm"
-          size="1"
-        />
-
-        <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            Material
-          </Text>
-        </Label.Root>
-        <MaterialSelectWithEdit
-          value={config.straw.material}
-          onValueChange={material =>
-            updateWallAssemblyConfig(assemblyId, {
-              straw: { ...config.straw, material }
-            })
-          }
-          size="1"
-        />
-      </Grid>
-
-      <Separator size="4" />
-
       {/* Layers Configuration */}
       <Heading size="2">Layers</Heading>
       <Grid columns="8em 1fr 8em 1fr" gap="2" gapX="3">
@@ -768,12 +697,6 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
       const defaultMaterial = '' as MaterialId
 
       let config: WallConfig
-      const baseStrawConfig = {
-        baleLength: 800,
-        baleHeight: 500,
-        baleWidth: 360,
-        material: defaultMaterial
-      }
       const baseOpeningsConfig = {
         padding: 15,
         headerThickness: 60,
@@ -800,7 +723,6 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
               material: defaultMaterial
             },
             openings: baseOpeningsConfig,
-            straw: baseStrawConfig,
             layers
           }
           break
@@ -824,7 +746,6 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
               }
             },
             openings: baseOpeningsConfig,
-            straw: baseStrawConfig,
             layers
           }
           break
@@ -848,7 +769,6 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
               }
             },
             openings: baseOpeningsConfig,
-            straw: baseStrawConfig,
             layers
           }
           break
@@ -858,7 +778,6 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
             material: defaultMaterial,
             thickness: 200,
             openings: baseOpeningsConfig,
-            straw: baseStrawConfig,
             layers
           }
           break

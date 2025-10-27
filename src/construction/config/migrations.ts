@@ -1,6 +1,6 @@
-import { wood120x60, woodwool } from '@/construction/materials/material'
+import { strawbale, wood120x60, woodwool } from '@/construction/materials/material'
 
-export const CURRENT_VERSION = 2
+export const CURRENT_VERSION = 3
 
 export function applyMigrations(state: unknown): unknown {
   if (!state || typeof state !== 'object') {
@@ -130,5 +130,69 @@ export function applyMigrations(state: unknown): unknown {
 
   updateDoubleModules(newState.wallAssemblyConfigs)
 
+  if (!('straw' in newState) || newState.straw == null) {
+    newState.straw = defaultStrawConfig
+  }
+
+  const wallAssemblies = newState.wallAssemblyConfigs
+  if (wallAssemblies && typeof wallAssemblies === 'object') {
+    let migratedStrawConfig: Record<string, unknown> | null = null
+
+    for (const assembly of Object.values(wallAssemblies as Record<string, unknown>)) {
+      if (!assembly || typeof assembly !== 'object') {
+        continue
+      }
+
+      const assemblyConfig = assembly as Record<string, unknown>
+      if ('straw' in assemblyConfig) {
+        if (migratedStrawConfig == null && assemblyConfig.straw && typeof assemblyConfig.straw === 'object') {
+          migratedStrawConfig = assemblyConfig.straw as Record<string, unknown>
+        }
+        delete assemblyConfig.straw
+      }
+    }
+
+    if (migratedStrawConfig) {
+      const parsed = {
+        baleMinLength: Number(migratedStrawConfig.baleMinLength ?? defaultStrawConfig.baleMinLength),
+        baleMaxLength: Number(
+          migratedStrawConfig.baleMaxLength ?? migratedStrawConfig.baleMinLength ?? defaultStrawConfig.baleMaxLength
+        ),
+        baleHeight: Number(migratedStrawConfig.baleHeight ?? defaultStrawConfig.baleHeight),
+        baleWidth: Number(migratedStrawConfig.baleWidth ?? defaultStrawConfig.baleWidth),
+        material:
+          typeof migratedStrawConfig.material === 'string' ? migratedStrawConfig.material : defaultStrawConfig.material
+      }
+
+      const sanitizedMin =
+        Number.isFinite(parsed.baleMinLength) && parsed.baleMinLength > 0
+          ? parsed.baleMinLength
+          : defaultStrawConfig.baleMinLength
+
+      const sanitizedMaxCandidate =
+        Number.isFinite(parsed.baleMaxLength) && parsed.baleMaxLength > 0 ? parsed.baleMaxLength : sanitizedMin
+      const sanitizedMax = sanitizedMaxCandidate >= sanitizedMin ? sanitizedMaxCandidate : sanitizedMin
+
+      newState.straw = {
+        baleMinLength: sanitizedMin,
+        baleMaxLength: sanitizedMax,
+        baleHeight:
+          Number.isFinite(parsed.baleHeight) && parsed.baleHeight > 0
+            ? parsed.baleHeight
+            : defaultStrawConfig.baleHeight,
+        baleWidth:
+          Number.isFinite(parsed.baleWidth) && parsed.baleWidth > 0 ? parsed.baleWidth : defaultStrawConfig.baleWidth,
+        material: parsed.material
+      }
+    }
+  }
+
   return newState
+}
+const defaultStrawConfig = {
+  baleMinLength: 800,
+  baleMaxLength: 900,
+  baleHeight: 500,
+  baleWidth: 360,
+  material: strawbale.id
 }

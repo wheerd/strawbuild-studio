@@ -3,7 +3,7 @@ import { vec3 } from 'gl-matrix'
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
 import type { ConstructionElementId } from '@/construction/elements'
 import { constructPost } from '@/construction/materials/posts'
-import { type StrawConfig, constructStraw } from '@/construction/materials/straw'
+import { constructStraw } from '@/construction/materials/straw'
 import type { ConstructionModel } from '@/construction/model'
 import { constructOpeningFrame } from '@/construction/openings/openings'
 import type { ConstructionResult } from '@/construction/results'
@@ -23,7 +23,6 @@ export function* infillWallArea(
   position: vec3,
   size: vec3,
   config: InfillWallSegmentConfig,
-  strawConfig: StrawConfig,
   startsWithStand = false,
   endsWithStand = false,
   startAtEnd = false
@@ -70,7 +69,7 @@ export function* infillWallArea(
   const inbetweenSize = vec3.fromValues(width, size[1], size[2])
 
   yield* yieldAndCollectElementIds(
-    constructInfillRecursive(inbetweenPosition, inbetweenSize, config, strawConfig, !startAtEnd),
+    constructInfillRecursive(inbetweenPosition, inbetweenSize, config, !startAtEnd),
     allElementIds
   )
 
@@ -88,7 +87,6 @@ function* constructInfillRecursive(
   position: vec3,
   size: vec3,
   config: InfillWallSegmentConfig,
-  strawConfig: StrawConfig,
   atStart: boolean
 ): Generator<ConstructionResult> {
   const baleWidth = getBaleWidth(size[0], config)
@@ -103,7 +101,7 @@ function* constructInfillRecursive(
   if (baleWidth > 0) {
     const strawElementIds: ConstructionElementId[] = []
 
-    yield* yieldAndCollectElementIds(constructStraw(strawPosition, strawSize, strawConfig), strawElementIds)
+    yield* yieldAndCollectElementIds(constructStraw(strawPosition, strawSize), strawElementIds)
 
     if (baleWidth < config.minStrawSpace) {
       yield yieldWarning({
@@ -133,7 +131,7 @@ function* constructInfillRecursive(
   const remainingPosition = [atStart ? postOffset + config.posts.width : position[0], position[1], position[2]]
   const remainingSize = [size[0] - strawSize[0] - config.posts.width, size[1], size[2]]
 
-  yield* constructInfillRecursive(remainingPosition, remainingSize, config, strawConfig, !atStart)
+  yield* constructInfillRecursive(remainingPosition, remainingSize, config, !atStart)
 }
 
 function getBaleWidth(availableWidth: Length, config: InfillWallSegmentConfig): Length {
@@ -178,11 +176,11 @@ export class InfillWallAssembly implements WallAssembly<InfillWallConfig> {
         storeyContext,
         config.layers,
         (position, size, startsWithStand, endsWithStand, startAtEnd) =>
-          infillWallArea(position, size, config, config.straw, startsWithStand, endsWithStand, startAtEnd),
+          infillWallArea(position, size, config, startsWithStand, endsWithStand, startAtEnd),
 
         (position: vec3, size: vec3, zOffset: Length, openings: Opening[]) =>
           constructOpeningFrame({ type: 'opening', position, size, zOffset, openings }, config.openings, (p, s) =>
-            infillWallArea(p, s, config, config.straw)
+            infillWallArea(p, s, config)
           )
       )
     )
