@@ -38,7 +38,8 @@ class IfcExporter {
   private modelID!: number
 
   private ownerHistory!: Handle<IFC4.IfcOwnerHistory>
-  private modelContext!: Handle<IFC4.IfcContext>
+  private modelContext!: Handle<IFC4.IfcGeometricRepresentationContext>
+  private bodyContext!: Handle<IFC4.IfcGeometricRepresentationSubContext>
   private unitAssignment!: Handle<IFC4.IfcUnitAssignment>
   private worldPlacement!: Handle<IFC4.IfcPlacement>
   private zAxis!: Handle<IFC4.IfcDirection>
@@ -64,7 +65,8 @@ class IfcExporter {
       name: 'Strawbaler Online Model',
       authors: ['Strawbaler User'],
       organizations: [`???`],
-      authorization: 'none'
+      authorization: 'none',
+      description: ['ViewDefinition [ReferenceView_V1.2]']
     })
 
     this.initialiseContext()
@@ -197,11 +199,22 @@ class IfcExporter {
 
     this.modelContext = this.writeEntity(
       new IFC4.IfcGeometricRepresentationContext(
-        null,
+        this.label('Model'),
         this.label('Model'),
         new IFC4.IfcDimensionCount(3),
         this.real(0.01),
         this.worldPlacement,
+        null
+      )
+    )
+
+    this.bodyContext = this.writeEntity(
+      new IFC4.IfcGeometricRepresentationSubContext(
+        this.label('Body'),
+        this.label('Model'),
+        this.modelContext,
+        null,
+        IFC4.IfcGeometricProjectionEnum.MODEL_VIEW,
         null
       )
     )
@@ -439,7 +452,7 @@ class IfcExporter {
     )
 
     const representation = this.writeEntity(
-      new IFC4.IfcShapeRepresentation(this.modelContext, this.label('Body'), this.label('SweptSolid'), [solid])
+      new IFC4.IfcShapeRepresentation(this.bodyContext, this.label('Body'), this.label('SweptSolid'), [solid])
     )
 
     const productDefinition = this.writeEntity(new IFC4.IfcProductDefinitionShape(null, null, [representation]))
@@ -516,7 +529,7 @@ class IfcExporter {
     )
 
     const representation = this.writeEntity(
-      new IFC4.IfcShapeRepresentation(this.modelContext, this.label('Body'), this.label('SweptSolid'), [solid])
+      new IFC4.IfcShapeRepresentation(this.bodyContext, this.label('Body'), this.label('SweptSolid'), [solid])
     )
 
     const productDefinition = this.writeEntity(new IFC4.IfcProductDefinitionShape(null, null, [representation]))
@@ -587,7 +600,7 @@ class IfcExporter {
 
     const representation = this.writeEntity(
       new IFC4.IfcShapeRepresentation(
-        this.modelContext,
+        this.bodyContext,
         this.label('Body'),
         this.label('SweptSolid'),
         profileSolids.map(id => id)
