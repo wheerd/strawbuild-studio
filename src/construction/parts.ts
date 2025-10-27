@@ -181,7 +181,7 @@ const computeDimensionalDetails = (size: vec3, availableLengths: Length[], width
   return { length, issue }
 }
 
-export const generateMaterialPartsList = (model: ConstructionModel): MaterialPartsList => {
+export const generateMaterialPartsList = (model: ConstructionModel, excludeTypes?: string[]): MaterialPartsList => {
   const partsList: MaterialPartsList = {}
   const labelCounters = new Map<MaterialId, number>()
 
@@ -209,7 +209,7 @@ export const generateMaterialPartsList = (model: ConstructionModel): MaterialPar
 
     const { material, partInfo, id } = element
 
-    if (!partInfo) return
+    if (!partInfo || excludeTypes?.some(t => t === partInfo.type)) return
 
     const materialEntry = ensureMaterialEntry(material)
     const partId = partInfo.partId

@@ -36,7 +36,7 @@ export function ConstructionPartsListModal({
       constructionModelFactory().then(model => {
         if (!model) return null
         return {
-          material: generateMaterialPartsList(model),
+          material: generateMaterialPartsList(model, ['strawbale']),
           virtual: generateVirtualPartsList(model)
         }
       }),

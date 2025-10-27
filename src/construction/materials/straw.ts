@@ -2,6 +2,7 @@ import { vec3 } from 'gl-matrix'
 
 import { createConstructionElement } from '@/construction/elements'
 import { IDENTITY } from '@/construction/geometry'
+import { dimensionalPartInfo } from '@/construction/parts'
 import { type ConstructionResult, yieldElement, yieldError, yieldWarning } from '@/construction/results'
 import { createCuboidShape } from '@/construction/shapes'
 import { TAG_FULL_BALE, TAG_PARTIAL_BALE } from '@/construction/tags'
@@ -30,9 +31,13 @@ export function* constructStraw(position: vec3, size: vec3, config: StrawConfig)
         )
 
         const isFullBale = baleSize[0] === config.baleLength && baleSize[2] === config.baleHeight
-        const bale = createConstructionElement(config.material, createCuboidShape(balePosition, baleSize), IDENTITY, [
-          isFullBale ? TAG_FULL_BALE : TAG_PARTIAL_BALE
-        ])
+        const bale = createConstructionElement(
+          config.material,
+          createCuboidShape(balePosition, baleSize),
+          IDENTITY,
+          [isFullBale ? TAG_FULL_BALE : TAG_PARTIAL_BALE],
+          dimensionalPartInfo('strawbale', baleSize)
+        )
         yield yieldElement(bale)
       }
     }
