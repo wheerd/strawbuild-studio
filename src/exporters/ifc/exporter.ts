@@ -382,7 +382,7 @@ function createWallsForPerimeter(
           writer.addEntity('IFCPROPERTYSINGLEVALUE', [
             'AssemblyId',
             null,
-            stepRaw(`IFCIDENTIFIER(${wall.wallAssemblyId ?? ''})`),
+            stepRaw(`IFCIDENTIFIER('${wall.wallAssemblyId ?? ''}')`),
             null
           ])
         )
@@ -916,17 +916,15 @@ function createLengthMeasure(value: number, type: LengthMeasureType = 'length'):
 
 function createDefaultPostalAddress(writer: StepWriter): number {
   return writer.addEntity('IFCPOSTALADDRESS', [
-    stepEnum('SITE'),
-    null,
-    null,
-    stepRaw(`IFCLABEL(Unknown)`),
-    null,
-    [],
+    stepEnum('OFFICE'),
     null,
     null,
     null,
     null,
     null,
-    null
+    null,
+    null,
+    null,
+    stepRaw("IFCLABEL('GERMANY')")
   ])
 }

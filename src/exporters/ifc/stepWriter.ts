@@ -145,9 +145,5 @@ function escapeString(value: string): string {
 }
 
 export function formatNumber(value: number): string {
-  const fixed = value.toFixed(6).replace(/0+$/, '')
-  if (fixed.includes('.')) {
-    return fixed.endsWith('.') ? `${fixed}0` : fixed
-  }
-  return `${fixed}.0`
+  return value.toFixed(6).replace(/(?<!\.)0+$/, '')
 }
