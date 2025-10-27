@@ -222,31 +222,17 @@ class IfcExporter {
   private setupUnits(): void {
     const lengthUnit = this.createEntity(
       IFCSIUNIT,
-      null,
       IFC4.IfcUnitEnum.LENGTHUNIT,
       IFC4.IfcSIPrefix.MILLI,
       IFC4.IfcSIUnitName.METRE
     )
 
-    const areaUnit = this.createEntity(
-      IFCSIUNIT,
-      null,
-      IFC4.IfcUnitEnum.AREAUNIT,
-      null,
-      IFC4.IfcSIUnitName.SQUARE_METRE
-    )
+    const areaUnit = this.createEntity(IFCSIUNIT, IFC4.IfcUnitEnum.AREAUNIT, null, IFC4.IfcSIUnitName.SQUARE_METRE)
 
-    const volumeUnit = this.createEntity(
-      IFCSIUNIT,
-      null,
-      IFC4.IfcUnitEnum.VOLUMEUNIT,
-      null,
-      IFC4.IfcSIUnitName.CUBIC_METRE
-    )
+    const volumeUnit = this.createEntity(IFCSIUNIT, IFC4.IfcUnitEnum.VOLUMEUNIT, null, IFC4.IfcSIUnitName.CUBIC_METRE)
 
     const planeAngleUnit = this.createEntity(
       IFCSIUNIT,
-      null,
       IFC4.IfcUnitEnum.PLANEANGLEUNIT,
       null,
       IFC4.IfcSIUnitName.RADIAN
@@ -891,10 +877,6 @@ class IfcExporter {
     const entity = this.api.CreateIfcEntity(this.modelID, type, ...args)
     this.api.WriteLine(this.modelID, entity)
     return entity.expressID
-  }
-
-  private createDimensionalExponents(...exponents: readonly number[]): number {
-    return this.createEntity(IFCDIMENSIONALEXPONENTS, ...exponents)
   }
 
   private createCartesianPoint(coordinates: [number, number, number]): number {
