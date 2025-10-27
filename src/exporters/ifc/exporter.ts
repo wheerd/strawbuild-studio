@@ -1,18 +1,13 @@
 import { vec2 } from 'gl-matrix'
 
-import { getModelActions } from '@/building/store'
 import type { Perimeter, PerimeterCorner, PerimeterWall, Storey } from '@/building/model'
+import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import type { FloorAssemblyConfig } from '@/construction/config/types'
 import { FLOOR_ASSEMBLIES } from '@/construction/floors'
 import { createWallStoreyContext } from '@/construction/walls/segmentation'
 import type { Polygon2D, PolygonWithHoles2D } from '@/shared/geometry'
-import {
-  arePolygonsIntersecting,
-  polygonIsClockwise,
-  subtractPolygons,
-  unionPolygons
-} from '@/shared/geometry/polygon'
+import { arePolygonsIntersecting, polygonIsClockwise, subtractPolygons, unionPolygons } from '@/shared/geometry/polygon'
 import { downloadFile } from '@/shared/utils/downloadFile'
 import { getVersionString } from '@/shared/utils/version'
 
@@ -95,8 +90,6 @@ export async function exportCurrentModelToIfc(): Promise<void> {
     null,
     null,
     null,
-    stepEnum('ELEMENT'),
-    null,
     null
   ])
 
@@ -108,9 +101,6 @@ export async function exportCurrentModelToIfc(): Promise<void> {
     null,
     stepRef(buildingPlacement),
     null,
-    null,
-    null,
-    stepEnum('ELEMENT'),
     null,
     null,
     null
@@ -209,11 +199,7 @@ function createIfcContext(writer: StepWriter): IfcContext {
   const zAxis = createDirection(writer, [0, 0, 1])
   const xAxis = createDirection(writer, [1, 0, 0])
   const originPoint = createCartesianPoint(writer, [0, 0, 0])
-  const worldPlacement = writer.addEntity('IFCAXIS2PLACEMENT3D', [
-    stepRef(originPoint),
-    stepRef(zAxis),
-    stepRef(xAxis)
-  ])
+  const worldPlacement = writer.addEntity('IFCAXIS2PLACEMENT3D', [stepRef(originPoint), stepRef(zAxis), stepRef(xAxis)])
 
   const modelContext = writer.addEntity('IFCGEOMETRICREPRESENTATIONCONTEXT', [
     null,
@@ -233,7 +219,7 @@ function createIfcContext(writer: StepWriter): IfcContext {
     [stepRef(lengthUnit), stepRef(areaUnit), stepRef(volumeUnit), stepRef(planeAngle)]
   ])
 
-  const now = Math.floor(Date.now() / 1000)
+  const now = Math.floor(Date.now() / 1000).toString()
   const person = writer.addEntity('IFCPERSON', [null, 'Strawbaler', 'User', null, null, null, null, null])
   const organization = writer.addEntity('IFCORGANIZATION', [null, 'Strawbaler', null, null, null])
   const personOrg = writer.addEntity('IFCPERSONANDORGANIZATION', [stepRef(person), stepRef(organization), null])
@@ -249,10 +235,10 @@ function createIfcContext(writer: StepWriter): IfcContext {
     stepRef(application),
     null,
     stepEnum('ADDED'),
-    now,
+    stepRaw(now),
     null,
     null,
-    now
+    stepRaw(now)
   ])
 
   return {
@@ -334,7 +320,9 @@ function computeFloorGeometry(
     }
 
     const openings = getFloorOpeningsByStorey(info.storey.id).map(opening => opening.area)
-    const relevantOpenings = openings.filter(opening => mergedFootprint.some(poly => arePolygonsIntersecting(poly, opening)))
+    const relevantOpenings = openings.filter(opening =>
+      mergedFootprint.some(poly => arePolygonsIntersecting(poly, opening))
+    )
     const mergedOpenings = unionPolygons(relevantOpenings)
 
     const polygonsWithHoles = mergedOpenings.length
@@ -393,14 +381,7 @@ function createWallsForPerimeter(
             null
           ])
         ),
-        stepRef(
-          writer.addEntity('IFCPROPERTYSINGLEVALUE', [
-            'AssemblyId',
-            null,
-            wall.wallAssemblyId ?? '',
-            null
-          ])
-        )
+        stepRef(writer.addEntity('IFCPROPERTYSINGLEVALUE', ['AssemblyId', null, wall.wallAssemblyId ?? '', null]))
       ]
     ])
 
@@ -518,7 +499,12 @@ function createOpeningElement(
   const openingPlacement = createLocalPlacement(
     writer,
     wallPlacement,
-    createAxisPlacement(writer, [opening.offsetFromStart, 0, opening.sillHeight ?? 0], ifcContext.zAxis, ifcContext.xAxis)
+    createAxisPlacement(
+      writer,
+      [opening.offsetFromStart, 0, opening.sillHeight ?? 0],
+      ifcContext.zAxis,
+      ifcContext.xAxis
+    )
   )
 
   const profile = createRectangleProfile(writer, opening.width, wall.thickness)
@@ -588,14 +574,7 @@ function createOpeningElement(
           null
         ])
       ),
-      stepRef(
-        writer.addEntity('IFCPROPERTYSINGLEVALUE', [
-          'Type',
-          null,
-          opening.type,
-          null
-        ])
-      )
+      stepRef(writer.addEntity('IFCPROPERTYSINGLEVALUE', ['Type', null, opening.type, null]))
     ]
   ])
 
@@ -838,7 +817,11 @@ function createAxisPlacement(
   axis: number,
   refDirection: number
 ): number {
-  return writer.addEntity('IFCAXIS2PLACEMENT3D', [stepRef(createCartesianPoint(writer, location)), stepRef(axis), stepRef(refDirection)])
+  return writer.addEntity('IFCAXIS2PLACEMENT3D', [
+    stepRef(createCartesianPoint(writer, location)),
+    stepRef(axis),
+    stepRef(refDirection)
+  ])
 }
 
 function createLocalPlacement(writer: StepWriter, relativeTo: number | null, relativePlacement: number): number {
@@ -893,7 +876,7 @@ function createIfcGuid(): string {
   for (const byte of data) {
     bitString += byte.toString(2).padStart(8, '0')
   }
-  bitString += '0000'
+  bitString = bitString.padStart(132, '0')
 
   let result = ''
   for (let offset = 0; offset < 132; offset += 6) {
