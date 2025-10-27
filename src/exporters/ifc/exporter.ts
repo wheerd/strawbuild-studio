@@ -59,7 +59,13 @@ class IfcExporter {
       return prefix + path
     })
 
-    this.modelID = this.api.CreateModel({ schema: 'IFC4' })
+    const appVersion = getVersionString()
+    this.modelID = this.api.CreateModel({
+      schema: 'IFC4',
+      name: 'Strawbaler Online Model',
+      authors: ['Strawbaler User'],
+      organizations: [`Wheerd - Strawbaler-Online - ${appVersion}`]
+    })
 
     this.initialiseContext()
 
@@ -151,7 +157,7 @@ class IfcExporter {
         organisation,
         this.label(getVersionString()),
         this.label('Strawbaler Online'),
-        this.identifier('Strawbaler-Online')
+        this.identifier(`Strawbaler - Strawbaler-Online - ${getVersionString()}`)
       )
     )
 
