@@ -20,7 +20,6 @@ type SupportedMaterial = {
 
 interface ColladaMaterialEntry {
   id: string
-  symbol: string
   effectId: string
   materialXml: string
   effectXml: string
@@ -114,10 +113,7 @@ function sanitizeName(name: string, fallback: string): string {
   return trimmed.replace(/[^A-Za-z0-9_\-]+/g, '_')
 }
 
-function createMaterialEntry(
-  material: SupportedMaterial | SupportedMaterial[] | null | undefined,
-  counter: number
-): ColladaMaterialEntry {
+function createMaterialEntry(material: SupportedMaterial | SupportedMaterial[] | null | undefined, counter: number): ColladaMaterialEntry {
   const baseMaterial = Array.isArray(material) ? material[0] : material
   const color = baseMaterial?.color ? baseMaterial.color.clone() : new Color(0xdddddd)
   const opacity = baseMaterial?.opacity ?? 1
@@ -125,7 +121,6 @@ function createMaterialEntry(
 
   const materialId = `material-${counter}`
   const effectId = `effect-${counter}`
-  const symbol = materialId
 
   const diffuseColor = `${formatFloat(color.r)} ${formatFloat(color.g)} ${formatFloat(color.b)} ${formatFloat(opacity)}`
   const transparencyBlock =
@@ -138,13 +133,12 @@ function createMaterialEntry(
   const effectXml = `<effect id="${effectId}"><profile_COMMON><technique sid="common"><lambert><diffuse><color>${diffuseColor}</color></diffuse>${transparencyBlock}</lambert></technique></profile_COMMON></effect>`
   const materialXml = `<material id="${materialId}"><instance_effect url="#${effectId}" /></material>`
 
-  return { id: materialId, symbol, effectId, materialXml, effectXml }
+  return { id: materialId, effectId, materialXml, effectXml }
 }
 
 function createGeometryXml(
   mesh: Mesh,
   geometryId: string,
-  materialSymbol: string,
   geometryData: GeometryData
 ): string {
   const { positionValues, normalValues, vertexCount } = geometryData
@@ -155,6 +149,8 @@ function createGeometryXml(
   const normalsSourceId = `${geometryId}-normals`
   const verticesId = `${geometryId}-vertices`
   const indicesString = buildTrianglesIndexString(vertexCount)
+
+  const materialSymbol = 'material'
 
   return `<geometry id="${geometryId}" name="${nodeName}"><mesh><source id="${positionsSourceId}"><float_array id="${positionsSourceId}-array" count="${floatCount}">${numberArrayToString(
       positionValues
@@ -167,8 +163,7 @@ function createNodeXml(
   mesh: Mesh,
   nodeId: string,
   geometryId: string,
-  materialId: string,
-  materialSymbol: string
+  materialId: string
 ): string {
   matrixHelper.copy(mesh.matrixWorld)
   matrixHelper.transpose()
@@ -176,7 +171,7 @@ function createNodeXml(
   const matrixValues = matrixHelper.elements.map(formatFloat).join(' ')
   const nodeName = sanitizeName(mesh.name, nodeId)
 
-  return `<node id="${nodeId}" name="${nodeName}"><matrix>${matrixValues}</matrix><instance_geometry url="#${geometryId}"><bind_material><technique_common><instance_material symbol="${materialSymbol}" target="#${materialId}" /></technique_common></bind_material></instance_geometry></node>`
+  return `<node id="${nodeId}" name="${nodeName}"><matrix>${matrixValues}</matrix><instance_geometry url="#${geometryId}"><bind_material><technique_common><instance_material symbol="material" target="#${materialId}" /></technique_common></bind_material></instance_geometry></node>`
 }
 
 function collectRenderableMeshes(objects: Object3D[]): Mesh[] {
@@ -216,20 +211,40 @@ export function generateCollada(objects: Object3D[]): string | null {
     return null
   }
 
-  const geometries: string[] = []
   const nodes: string[] = []
 
   const materials: ColladaMaterialEntry[] = []
   const materialKeyMap = new Map<string, ColladaMaterialEntry>()
+  const geometryMap = new Map<string, { id: string; xml: string }>()
 
-  meshes.forEach((mesh, index) => {
+  let geometryCounter = 0
+
+  meshes.forEach(mesh => {
     const geometry = mesh.geometry
     if (!(geometry instanceof BufferGeometry)) {
       return
     }
 
-    const geometryData = extractGeometryData(geometry)
-    if (!geometryData) {
+    const geometryKey = typeof mesh.userData?.geometryKey === 'string' ? mesh.userData.geometryKey : mesh.uuid
+
+    let geometryId: string | undefined
+    const existingGeometry = geometryMap.get(geometryKey)
+
+    if (existingGeometry) {
+      geometryId = existingGeometry.id
+    } else {
+      const geometryData = extractGeometryData(geometry)
+      if (!geometryData) {
+        return
+      }
+
+      geometryCounter += 1
+      geometryId = `geometry-${geometryCounter}`
+      const geometryXml = createGeometryXml(mesh, geometryId, geometryData)
+      geometryMap.set(geometryKey, { id: geometryId, xml: geometryXml })
+    }
+
+    if (!geometryId) {
       return
     }
 
@@ -239,19 +254,20 @@ export function generateCollada(objects: Object3D[]): string | null {
 
     let materialEntry = materialKeyMap.get(materialKey)
     if (!materialEntry) {
-      materialEntry = createMaterialEntry(mesh.material as SupportedMaterial | SupportedMaterial[] | undefined, materials.length + 1)
+      materialEntry = createMaterialEntry(
+        mesh.material as SupportedMaterial | SupportedMaterial[] | undefined,
+        materials.length + 1
+      )
       materialKeyMap.set(materialKey, materialEntry)
       materials.push(materialEntry)
     }
 
-    const geometryId = `geometry-${index + 1}`
-    const nodeId = `node-${index + 1}`
+    const nodeId = `node-${nodes.length + 1}`
 
-    geometries.push(createGeometryXml(mesh, geometryId, materialEntry.symbol, geometryData))
-    nodes.push(createNodeXml(mesh, nodeId, geometryId, materialEntry.id, materialEntry.symbol))
+    nodes.push(createNodeXml(mesh, nodeId, geometryId, materialEntry.id))
   })
 
-  if (geometries.length === 0) {
+  if (geometryMap.size === 0) {
     return null
   }
 
@@ -259,7 +275,7 @@ export function generateCollada(objects: Object3D[]): string | null {
 
   const effectsXml = materials.map(material => material.effectXml).join('')
   const materialsXml = materials.map(material => material.materialXml).join('')
-  const geometriesXml = geometries.join('')
+  const geometriesXml = Array.from(geometryMap.values()).map(entry => entry.xml).join('')
   const nodesXml = nodes.join('')
 
   return `<?xml version="1.0" encoding="UTF-8" standalone="no" ?><COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1"><asset><contributor><authoring_tool>Strawbaler Online Collada Exporter</authoring_tool></contributor><created>${now}</created><modified>${now}</modified><up_axis>Y_UP</up_axis></asset><library_effects>${effectsXml}</library_effects><library_materials>${materialsXml}</library_materials><library_geometries>${geometriesXml}</library_geometries><library_visual_scenes><visual_scene id="Scene" name="Scene">${nodesXml}</visual_scene></library_visual_scenes><scene><instance_visual_scene url="#Scene" /></scene></COLLADA>`

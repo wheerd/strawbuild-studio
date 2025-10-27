@@ -1,15 +1,16 @@
-import { useMemo } from 'react'
-import * as THREE from 'three'
-
 import type { Cuboid } from '@/construction/shapes'
+import { getCuboidGeometry } from '@/construction/viewer3d/utils/geometryCache'
 
 interface Cuboid3DProps {
   shape: Cuboid
   color: string
   opacity?: number
+  partId?: string
 }
 
-function Cuboid3D({ shape, color, opacity = 1.0 }: Cuboid3DProps): React.JSX.Element | null {
+function Cuboid3D({ shape, color, opacity = 1.0, partId }: Cuboid3DProps): React.JSX.Element | null {
+  if (opacity === 0) return null
+
   const [x, y, z] = shape.offset
   const [w, h, d] = shape.size
 
@@ -17,15 +18,10 @@ function Cuboid3D({ shape, color, opacity = 1.0 }: Cuboid3DProps): React.JSX.Ele
   const centerThreeY = z + d / 2
   const centerThreeZ = -(y + h / 2)
 
-  const edgesGeometry = useMemo(() => {
-    return new THREE.EdgesGeometry(new THREE.BoxGeometry(w, d, h), 1)
-  }, [w, d, h])
-
-  if (opacity === 0) return null
+  const { geometry, edgesGeometry, cacheKey } = getCuboidGeometry(shape, partId)
 
   return (
-    <mesh position={[centerThreeX, centerThreeY, centerThreeZ]}>
-      <boxGeometry args={[w, d, h]} />
+    <mesh geometry={geometry} position={[centerThreeX, centerThreeY, centerThreeZ]} userData={{ partId, geometryKey: cacheKey }}>
       <meshStandardMaterial color={color} opacity={opacity} transparent depthWrite={opacity === 1.0} />
       <lineSegments geometry={edgesGeometry}>
         <lineBasicMaterial color="#000000" opacity={0.4} transparent linewidth={1} />

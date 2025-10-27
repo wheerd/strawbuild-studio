@@ -53,12 +53,14 @@ function ConstructionElement3D({ element }: ConstructionElement3DProps): React.J
   const threePosition: [number, number, number] = [position[0], position[2], -position[1]]
   const threeRotation: [number, number, number] = [rotation[0], rotation[2], rotation[1]]
 
+  const partId = element.partInfo?.partId
+
   return (
     <group position={threePosition} rotation={threeRotation}>
       {element.shape.type === 'cuboid' ? (
-        <Cuboid3D shape={element.shape} color={color} opacity={opacity} />
+        <Cuboid3D shape={element.shape} color={color} opacity={opacity} partId={partId} />
       ) : element.shape.type === 'polygon' ? (
-        <ExtrudedPolygon3D shape={element.shape} color={color} opacity={opacity} />
+        <ExtrudedPolygon3D shape={element.shape} color={color} opacity={opacity} partId={partId} />
       ) : null}
     </group>
   )
