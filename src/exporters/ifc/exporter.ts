@@ -1,6 +1,7 @@
 import { vec2 } from 'gl-matrix'
 import {
   Handle,
+  IFC4,
   IFCAPPLICATION,
   IFCARBITRARYCLOSEDPROFILEDEF,
   IFCAXIS2PLACEMENT3D,
@@ -49,7 +50,6 @@ import {
   IFCWALLSTANDARDCASE,
   IfcAPI
 } from 'web-ifc'
-import { IFC4 } from 'web-ifc'
 import wasmUrl from 'web-ifc/web-ifc.wasm?url'
 
 import type { Perimeter, PerimeterCorner, PerimeterWall, Storey } from '@/building/model'
@@ -57,6 +57,7 @@ import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import type { FloorAssemblyConfig } from '@/construction/config/types'
 import { FLOOR_ASSEMBLIES } from '@/construction/floors'
+import { createWallStoreyContext } from '@/construction/walls/segmentation'
 import type { Polygon2D, PolygonWithHoles2D } from '@/shared/geometry'
 import { arePolygonsIntersecting, subtractPolygons, unionPolygons } from '@/shared/geometry/polygon'
 import { downloadFile } from '@/shared/utils/downloadFile'
@@ -74,11 +75,6 @@ interface FloorGeometry {
   readonly polygons: PolygonWithHoles2D[]
   readonly thickness: number
 }
-
-const LENGTH_EXPONENT = [1, 0, 0, 0, 0, 0, 0] as const
-const AREA_EXPONENT = [2, 0, 0, 0, 0, 0, 0] as const
-const VOLUME_EXPONENT = [3, 0, 0, 0, 0, 0, 0] as const
-const DIMENSIONLESS_EXPONENT = [0, 0, 0, 0, 0, 0, 0] as const
 
 export async function exportCurrentModelToIfc(): Promise<void> {
   const exporter = new IfcExporter()
@@ -99,6 +95,11 @@ class IfcExporter {
   private xAxis!: number
 
   private readonly now = Math.floor(Date.now() / 1000)
+  private projectId!: number
+  private siteId!: number
+  private buildingId!: number
+  private readonly storeyIds = new Map<string, number>()
+  private readonly storeyPlacements = new Map<string, number>()
 
   async export(): Promise<Uint8Array> {
     await this.api.Init((path, prefix) => {
@@ -129,7 +130,7 @@ class IfcExporter {
       getFloorOpeningsByStorey
     )
 
-    const buildingPlacement = this.createSpatialStructure(storeyInfos)
+    this.createSpatialStructure(storeyInfos)
 
     const wallMaterialCache = new Map<string, number>()
 
@@ -183,7 +184,6 @@ class IfcExporter {
     this.ownerHistory = this.createOwnerHistory()
     this.setupUnits()
     this.createGeometricContext()
-    this.createSpatialHierarchy()
   }
 
   private createOwnerHistory(): number {
@@ -220,14 +220,9 @@ class IfcExporter {
   }
 
   private setupUnits(): void {
-    const lengthDims = this.createDimensionalExponents(...LENGTH_EXPONENT)
-    const areaDims = this.createDimensionalExponents(...AREA_EXPONENT)
-    const volumeDims = this.createDimensionalExponents(...VOLUME_EXPONENT)
-    const dimensionless = this.createDimensionalExponents(...DIMENSIONLESS_EXPONENT)
-
     const lengthUnit = this.createEntity(
       IFCSIUNIT,
-      new Handle(lengthDims),
+      null,
       IFC4.IfcUnitEnum.LENGTHUNIT,
       IFC4.IfcSIPrefix.MILLI,
       IFC4.IfcSIUnitName.METRE
@@ -235,7 +230,7 @@ class IfcExporter {
 
     const areaUnit = this.createEntity(
       IFCSIUNIT,
-      new Handle(areaDims),
+      null,
       IFC4.IfcUnitEnum.AREAUNIT,
       null,
       IFC4.IfcSIUnitName.SQUARE_METRE
@@ -243,7 +238,7 @@ class IfcExporter {
 
     const volumeUnit = this.createEntity(
       IFCSIUNIT,
-      new Handle(volumeDims),
+      null,
       IFC4.IfcUnitEnum.VOLUMEUNIT,
       null,
       IFC4.IfcSIUnitName.CUBIC_METRE
@@ -251,7 +246,7 @@ class IfcExporter {
 
     const planeAngleUnit = this.createEntity(
       IFCSIUNIT,
-      new Handle(dimensionless),
+      null,
       IFC4.IfcUnitEnum.PLANEANGLEUNIT,
       null,
       IFC4.IfcSIUnitName.RADIAN
@@ -282,20 +277,14 @@ class IfcExporter {
       null,
       this.label('Model'),
       this.api.CreateIfcType(this.modelID, IFCINTEGER, 3),
-      this.api.CreateIfcType(this.modelID, IFCREAL, 1e-5),
+      this.api.CreateIfcType(this.modelID, IFCREAL, 0.01),
       new Handle(this.worldPlacement),
       null
     )
   }
 
-  private projectId!: number
-  private siteId!: number
-  private buildingId!: number
-  private readonly storeyIds = new Map<string, number>()
-  private readonly storeyPlacements = new Map<string, number>()
-
-  private createSpatialHierarchy(): void {
-    const project = this.createEntity(
+  private createSpatialStructure(storeyInfos: StoreyRuntimeInfo[]): void {
+    this.projectId = this.createEntity(
       IFCPROJECT,
       this.globalId(),
       this.ownerHistory,
@@ -306,7 +295,6 @@ class IfcExporter {
       [new Handle(this.modelContext)],
       new Handle(this.unitAssignment)
     )
-    this.projectId = project
 
     const sitePlacement = this.createEntity(IFCLOCALPLACEMENT, null, new Handle(this.worldPlacement))
 
@@ -345,7 +333,7 @@ class IfcExporter {
       new Handle(buildingPlacement),
       null,
       null,
-      this.api.CreateIfcType(this.modelID, IFCREAL, 0),
+      this.real(0),
       null,
       new Handle(address)
     )
@@ -357,6 +345,33 @@ class IfcExporter {
     this.createEntity(IFCRELAGGREGATES, this.globalId(), this.ownerHistory, null, null, new Handle(this.siteId), [
       new Handle(this.buildingId)
     ])
+
+    for (const info of storeyInfos) {
+      const placement = this.createEntity(
+        IFCLOCALPLACEMENT,
+        new Handle(buildingPlacement),
+        new Handle(this.createAxisPlacement([0, 0, info.elevation]))
+      )
+      this.storeyPlacements.set(info.storey.id, placement)
+
+      const storeyId = this.createEntity(
+        IFCBUILDINGSTOREY,
+        this.globalId(),
+        this.ownerHistory,
+        this.label(info.storey.name),
+        null,
+        null,
+        new Handle(placement),
+        null,
+        this.real(info.storey.level),
+        this.real(info.elevation)
+      )
+      this.storeyIds.set(info.storey.id, storeyId)
+
+      this.createEntity(IFCRELAGGREGATES, this.globalId(), this.ownerHistory, null, null, new Handle(this.buildingId), [
+        new Handle(storeyId)
+      ])
+    }
   }
 
   private createDefaultPostalAddress(): number {
@@ -382,11 +397,16 @@ class IfcExporter {
     const infos: StoreyRuntimeInfo[] = []
     let elevation = 0
 
-    for (const storey of storeys) {
+    for (let index = 0; index < storeys.length; index++) {
+      const storey = storeys[index]
       const floorConfig = getFloorAssemblyById(storey.floorAssemblyId)
       if (!floorConfig) {
         throw new Error(`Missing floor assembly for storey ${storey.id}`)
       }
+
+      const nextStorey = storeys[index + 1]
+      const nextFloorConfig = nextStorey ? getFloorAssemblyById(nextStorey.floorAssemblyId) : null
+      const storeyContext = createWallStoreyContext(storey, floorConfig, nextFloorConfig ?? null)
 
       const floorAssembly = FLOOR_ASSEMBLIES[floorConfig.type]
       const bottomOffset = floorAssembly.getBottomOffset(floorConfig)
@@ -394,49 +414,14 @@ class IfcExporter {
 
       elevation += bottomOffset + constructionThickness
 
-      const info: StoreyRuntimeInfo = {
+      infos.push({
         storey,
         elevation,
         floorConfig,
-        wallHeight: storey.height + floorConfig.layers.bottomThickness + floorConfig.layers.topThickness
-      }
-      infos.push(info)
+        wallHeight: storeyContext.storeyHeight + storeyContext.floorTopOffset + storeyContext.ceilingBottomOffset
+      })
 
       elevation += floorConfig.layers.topThickness + floorAssembly.getTopOffset(floorConfig) + storey.height
-
-      const storeyPlacement = this.createEntity(
-        IFCLOCALPLACEMENT,
-        new Handle(
-          this.createEntity(IFCLOCALPLACEMENT, new Handle(this.worldPlacement), new Handle(this.worldPlacement))
-        ),
-        new Handle(
-          this.createEntity(
-            IFCAXIS2PLACEMENT3D,
-            new Handle(this.createCartesianPoint([0, 0, info.elevation])),
-            new Handle(this.zAxis),
-            new Handle(this.xAxis)
-          )
-        )
-      )
-      this.storeyPlacements.set(storey.id, storeyPlacement)
-
-      const storeyId = this.createEntity(
-        IFCBUILDINGSTOREY,
-        this.globalId(),
-        this.ownerHistory,
-        this.label(storey.name),
-        null,
-        null,
-        new Handle(storeyPlacement),
-        null,
-        this.api.CreateIfcType(this.modelID, IFCREAL, storey.level),
-        this.api.CreateIfcType(this.modelID, IFCREAL, info.elevation)
-      )
-      this.storeyIds.set(storey.id, storeyId)
-
-      this.createEntity(IFCRELAGGREGATES, this.globalId(), this.ownerHistory, null, null, new Handle(this.buildingId), [
-        new Handle(storeyId)
-      ])
     }
 
     return infos
@@ -519,7 +504,7 @@ class IfcExporter {
     materialUsageCache: Map<string, number>
   ): number {
     const profile = this.createWallProfile(wall, startCorner, endCorner)
-    const placement = this.createWallPlacement(startCorner, storeyPlacement)
+    const placement = this.createWallPlacement(wall, startCorner, storeyPlacement)
 
     const solid = this.createEntity(
       IFCEXTRUDEDAREASOLID,
@@ -851,13 +836,9 @@ class IfcExporter {
     return this.createEntity(IFCAXIS2PLACEMENT3D, new Handle(point), new Handle(this.zAxis), new Handle(this.xAxis))
   }
 
-  private createWallPlacement(startCorner: PerimeterCorner, storeyPlacement: number): number {
+  private createWallPlacement(wall: PerimeterWall, startCorner: PerimeterCorner, storeyPlacement: number): number {
     const location = this.createCartesianPoint([startCorner.insidePoint[0], startCorner.insidePoint[1], 0])
-    const wallDirection = this.createDirection([
-      startCorner.outsidePoint[0] - startCorner.insidePoint[0],
-      startCorner.outsidePoint[1] - startCorner.insidePoint[1],
-      0
-    ])
+    const wallDirection = this.createDirection([wall.direction[0], wall.direction[1], 0])
     const placement = this.createEntity(
       IFCAXIS2PLACEMENT3D,
       new Handle(location),
@@ -947,6 +928,14 @@ class IfcExporter {
 
   private identifier(value: string): unknown {
     return this.api.CreateIfcType(this.modelID, IFCIDENTIFIER, value)
+  }
+
+  private real(value: number): unknown {
+    return this.api.CreateIfcType(this.modelID, IFCREAL, value)
+  }
+
+  private integer(value: number): unknown {
+    return this.api.CreateIfcType(this.modelID, IFCINTEGER, value)
   }
 
   private globalId(): unknown {
