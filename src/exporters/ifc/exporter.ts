@@ -1,5 +1,5 @@
 import { vec2 } from 'gl-matrix'
-import { Handle, IFC4, IfcAPI, type IfcLineObject } from 'web-ifc'
+import { Handle, IFC4, IFCPOSITIVELENGTHMEASURE, IFCPROPERTYSINGLEVALUE, IfcAPI, type IfcLineObject } from 'web-ifc'
 import wasmUrl from 'web-ifc/web-ifc.wasm?url'
 
 import type { Perimeter, PerimeterCorner, PerimeterWall, Storey } from '@/building/model'
@@ -59,12 +59,12 @@ class IfcExporter {
       return prefix + path
     })
 
-    const appVersion = getVersionString()
     this.modelID = this.api.CreateModel({
       schema: 'IFC4',
       name: 'Strawbaler Online Model',
       authors: ['Strawbaler User'],
-      organizations: [`Wheerd - Strawbaler-Online - ${appVersion}`]
+      organizations: [`???`],
+      authorization: 'none'
     })
 
     this.initialiseContext()
@@ -483,7 +483,7 @@ class IfcExporter {
     )
 
     const propertySet = this.writeEntity(
-      new IFC4.IfcPropertySet(this.globalId(), this.ownerHistory, this.label('Pset_StrawbalerWall'), null, [
+      new IFC4.IfcPropertySet(this.globalId(), this.ownerHistory, this.label('StrawbalerWall'), null, [
         thicknessProperty,
         assemblyProperty
       ])
@@ -537,9 +537,15 @@ class IfcExporter {
 
     this.writeEntity(new IFC4.IfcRelVoidsElement(this.globalId(), this.ownerHistory, null, null, wallId, openingId))
 
-    const widthProp = this.writeEntity(
-      new IFC4.IfcPropertySingleValue(this.identifier('Width'), null, this.positiveLengthMeasure(opening.width), null)
+    const widthProp = this.api.CreateIfcEntity(
+      this.modelID,
+      IFCPROPERTYSINGLEVALUE,
+      'Width',
+      null,
+      this.api.CreateIfcType(this.modelID, IFCPOSITIVELENGTHMEASURE, opening.width),
+      null
     )
+    this.api.WriteLine(this.modelID, widthProp)
 
     const heightProp = this.writeEntity(
       new IFC4.IfcPropertySingleValue(this.identifier('Height'), null, this.positiveLengthMeasure(opening.height), null)
@@ -559,8 +565,8 @@ class IfcExporter {
     )
 
     const propertySet = this.writeEntity(
-      new IFC4.IfcPropertySet(this.globalId(), this.ownerHistory, this.label('Pset_StrawbalerOpening'), null, [
-        widthProp,
+      new IFC4.IfcPropertySet(this.globalId(), this.ownerHistory, this.label('StrawbalerOpening'), null, [
+        new Handle(widthProp.expressID),
         heightProp,
         sillProp,
         typeProp
@@ -612,7 +618,7 @@ class IfcExporter {
     )
 
     const propertySet = this.writeEntity(
-      new IFC4.IfcPropertySet(this.globalId(), this.ownerHistory, this.label('Pset_StrawbalerFloor'), null, [
+      new IFC4.IfcPropertySet(this.globalId(), this.ownerHistory, this.label('StrawbalerFloor'), null, [
         thicknessProperty
       ])
     )
