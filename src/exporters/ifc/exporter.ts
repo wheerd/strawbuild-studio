@@ -826,15 +826,19 @@ class IfcExporter {
     return new IFC4.IfcLengthMeasure(value)
   }
 
-  private positiveLengthMeasure(value: number, force: boolean = false): IFC4.IfcPositiveLengthMeasure {
+  private positiveLengthMeasure(value: number, force = false): IFC4.IfcPositiveLengthMeasure {
     if (force) {
+      // To actually get a value like IFCPOSITIVELENGTHMEASURE(42.0) we need to do this:
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return { type: 2, label: 'IFCPOSITIVELENGTHMEASURE', valueType: 4, internalValue: Math.max(value, 0.01) } as any
     }
     return new IFC4.IfcPositiveLengthMeasure(Math.max(value, 1e-6))
   }
 
-  private nonNegativeLengthMeasure(value: number, force: boolean = false): IFC4.IfcNonNegativeLengthMeasure {
+  private nonNegativeLengthMeasure(value: number, force = false): IFC4.IfcNonNegativeLengthMeasure {
     if (force) {
+      // To actually get a value like IFCNONNEGATIVELENGTHMEASURE(42.0) we need to do this:
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return { type: 2, label: 'IFCNONNEGATIVELENGTHMEASURE', valueType: 4, internalValue: Math.max(value, 0) } as any
     }
     return new IFC4.IfcNonNegativeLengthMeasure(Math.max(value, 0))
