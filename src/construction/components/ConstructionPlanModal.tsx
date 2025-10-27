@@ -14,7 +14,10 @@ import { elementSizeRef } from '@/shared/hooks/useElementSize'
 import { ConstructionPlan, type ViewOption, type VisibilityToggleConfig } from './ConstructionPlan'
 import './ConstructionPlanModal.css'
 
-interface PartsData { material: MaterialPartsList; virtual: VirtualPartsList }
+interface PartsData {
+  material: MaterialPartsList
+  virtual: VirtualPartsList
+}
 
 export interface ConstructionModalProps {
   title: string

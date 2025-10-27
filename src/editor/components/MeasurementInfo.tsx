@@ -38,7 +38,7 @@ export interface MeasurementDisplayConfig {
   highlightedPart?: ConstructionPart
 }
 
-function ConstructionSchematic({
+export function ConstructionSchematic({
   highlightedAssembly,
   highlightedMeasurement,
   highlightedPart,
@@ -833,7 +833,12 @@ e | y +--------------+ s | Floor top layers                 }
   )
 
   return (
-    <svg height={500} viewBox={`0 0 ${totalWidth} ${totalHeight}`} style={{ background: 'var(--color-background)' }}>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      height={500}
+      viewBox={`0 0 ${totalWidth} ${totalHeight}`}
+      style={{ background: 'var(--color-background)' }}
+    >
       <defs>
         <linearGradient id={marginTopGradientId} x1="0" x2="0" y1="0" y2="1">
           <stop offset="10%" stop-color="var(--color-background)" stop-opacity="1" />

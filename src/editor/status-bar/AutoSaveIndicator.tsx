@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 
 import { usePersistenceStore } from '@/building/store/persistenceStore'
 import { clearSelection } from '@/editor/hooks/useSelectionStore'
+import { exportCurrentModelToIfc } from '@/exporters/ifc'
 import { SaveIcon } from '@/shared/components/Icons'
 import { ProjectImportExportService } from '@/shared/services/ProjectImportExportService'
 import { createFileInput } from '@/shared/utils/createFileInput'
@@ -25,16 +26,32 @@ export function AutoSaveIndicator(): React.JSX.Element {
     setIsExporting(true)
     setExportError(null)
 
-    const result = await ProjectImportExportService.exportToString()
+    try {
+      const result = await ProjectImportExportService.exportToString()
+      if (!result.success) {
+        setExportError(result.error)
+      } else {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0]
+        const filename = `strawbaler-project-${timestamp}.json`
+        downloadFile(result.content, filename)
+      }
+    } catch (error) {
+      setExportError(error instanceof Error ? error.message : 'Failed to export project')
+    } finally {
+      setIsExporting(false)
+    }
+  }
 
-    setIsExporting(false)
-    if (!result.success) {
-      setExportError(result.error)
-    } else {
-      // Generate filename in UI component
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0]
-      const filename = `strawbaler-project-${timestamp}.json`
-      downloadFile(result.content, filename)
+  const handleIfcExport = async () => {
+    setIsExporting(true)
+    setExportError(null)
+
+    try {
+      await exportCurrentModelToIfc()
+    } catch (error) {
+      setExportError(error instanceof Error ? error.message : 'Failed to export IFC')
+    } finally {
+      setIsExporting(false)
     }
   }
 
@@ -149,6 +166,11 @@ export function AutoSaveIndicator(): React.JSX.Element {
         <DropdownMenu.Item onClick={handleExport} disabled={isExporting || isImporting}>
           <DownloadIcon />
           Save to File
+        </DropdownMenu.Item>
+
+        <DropdownMenu.Item onClick={handleIfcExport} disabled={isExporting || isImporting}>
+          <DownloadIcon />
+          Export IFC
         </DropdownMenu.Item>
 
         <DropdownMenu.Item onClick={handleImport} disabled={isExporting || isImporting}>

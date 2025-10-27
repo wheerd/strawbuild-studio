@@ -9,7 +9,10 @@ import type { MaterialPartsList, VirtualPartsList } from '@/construction/parts'
 import { generateMaterialPartsList, generateVirtualPartsList } from '@/construction/parts'
 import { BaseModal } from '@/shared/components/BaseModal'
 
-interface PartsData { material: MaterialPartsList; virtual: VirtualPartsList }
+interface PartsData {
+  material: MaterialPartsList
+  virtual: VirtualPartsList
+}
 
 export interface ConstructionPartsListModalProps {
   title?: string
