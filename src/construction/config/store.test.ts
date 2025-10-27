@@ -35,7 +35,10 @@ describe('ConfigStore', () => {
         baleMaxLength: 900,
         baleHeight: 500,
         baleWidth: 360,
-        material: strawbale.id
+        material: strawbale.id,
+        tolerance: 2,
+        topCutoffLimit: 50,
+        flakeSize: 70
       })
     })
 
@@ -48,7 +51,10 @@ describe('ConfigStore', () => {
         baleMaxLength: 900,
         baleHeight: 500,
         baleWidth: 360,
-        material: strawbale.id
+        material: strawbale.id,
+        tolerance: 2,
+        topCutoffLimit: 50,
+        flakeSize: 70
       })
     })
 
@@ -60,6 +66,11 @@ describe('ConfigStore', () => {
 
       expect(strawConfig.baleMinLength).toBe(850)
       expect(strawConfig.baleMaxLength).toBe(950)
+      store.updateStrawConfig({ tolerance: 3, topCutoffLimit: 45, flakeSize: 65 })
+      const updatedStrawConfig = store.getStrawConfig()
+      expect(updatedStrawConfig.tolerance).toBe(3)
+      expect(updatedStrawConfig.topCutoffLimit).toBe(45)
+      expect(updatedStrawConfig.flakeSize).toBe(65)
     })
 
     it('should reject invalid straw configuration', () => {
@@ -72,6 +83,14 @@ describe('ConfigStore', () => {
       expect(() => store.updateStrawConfig({ baleMaxLength: 500, baleMinLength: 600 })).toThrow(
         'Minimum straw bale length cannot exceed the maximum straw bale length'
       )
+
+      expect(() => store.updateStrawConfig({ tolerance: -1 })).toThrow('Straw bale tolerance cannot be negative')
+
+      expect(() => store.updateStrawConfig({ topCutoffLimit: 0 })).toThrow(
+        'Straw top cutoff limit must be greater than 0'
+      )
+
+      expect(() => store.updateStrawConfig({ flakeSize: 0 })).toThrow('Straw flake size must be greater than 0')
     })
   })
 

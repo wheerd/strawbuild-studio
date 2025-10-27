@@ -1,6 +1,6 @@
 import { strawbale, wood120x60, woodwool } from '@/construction/materials/material'
 
-export const CURRENT_VERSION = 3
+export const CURRENT_VERSION = 4
 
 export function applyMigrations(state: unknown): unknown {
   if (!state || typeof state !== 'object') {
@@ -187,6 +187,34 @@ export function applyMigrations(state: unknown): unknown {
     }
   }
 
+  const ensureStrawDefaults = () => {
+    const strawConfig = newState.straw
+    if (!strawConfig || typeof strawConfig !== 'object') {
+      newState.straw = { ...defaultStrawConfig }
+      return
+    }
+
+    const config = strawConfig as Record<string, unknown>
+    const sanitized = {
+      ...defaultStrawConfig,
+      ...config
+    } as Record<string, unknown>
+
+    const tolerance = Number(config.tolerance)
+    sanitized.tolerance = Number.isFinite(tolerance) && tolerance >= 0 ? tolerance : defaultStrawConfig.tolerance
+
+    const topCutoffLimit = Number(config.topCutoffLimit)
+    sanitized.topCutoffLimit =
+      Number.isFinite(topCutoffLimit) && topCutoffLimit > 0 ? topCutoffLimit : defaultStrawConfig.topCutoffLimit
+
+    const flakeSize = Number(config.flakeSize)
+    sanitized.flakeSize = Number.isFinite(flakeSize) && flakeSize > 0 ? flakeSize : defaultStrawConfig.flakeSize
+
+    newState.straw = sanitized
+  }
+
+  ensureStrawDefaults()
+
   return newState
 }
 const defaultStrawConfig = {
@@ -194,5 +222,8 @@ const defaultStrawConfig = {
   baleMaxLength: 900,
   baleHeight: 500,
   baleWidth: 360,
-  material: strawbale.id
+  material: strawbale.id,
+  tolerance: 2,
+  topCutoffLimit: 50,
+  flakeSize: 70
 }

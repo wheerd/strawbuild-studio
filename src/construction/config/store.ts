@@ -119,7 +119,10 @@ const createDefaultStrawConfig = (): StrawConfig => ({
   baleMaxLength: 900,
   baleHeight: 500,
   baleWidth: 360,
-  material: strawbale.id
+  material: strawbale.id,
+  tolerance: 2,
+  topCutoffLimit: 50,
+  flakeSize: 70
 })
 
 // Default ring beam assembly using 360x60 wood
@@ -764,7 +767,7 @@ export const setConfigState = (data: {
   defaultFloorAssemblyId?: FloorAssemblyId
 }) => {
   const state = useConfigStore.getState()
-  const strawConfig = data.straw ?? state.straw
+  const strawConfig = { ...state.straw, ...(data.straw ?? {}) }
   validateStrawConfig(strawConfig)
 
   useConfigStore.setState({

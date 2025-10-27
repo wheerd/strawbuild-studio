@@ -25,7 +25,10 @@ const defaultConfig: StrawConfig = {
   baleMaxLength: 900,
   baleHeight: 500,
   baleWidth: 360,
-  material: mockMaterialId
+  material: mockMaterialId,
+  tolerance: 2,
+  topCutoffLimit: 50,
+  flakeSize: 70
 }
 
 describe('constructStraw', () => {
@@ -277,11 +280,11 @@ describe('constructStraw', () => {
   describe('different configurations', () => {
     it('should work with custom bale dimensions', () => {
       const customConfig: StrawConfig = {
+        ...defaultConfig,
         baleMinLength: 1000,
         baleMaxLength: 1000,
         baleHeight: 400,
-        baleWidth: 300,
-        material: mockMaterialId
+        baleWidth: 300
       }
       mockGetStrawConfig.mockReturnValue(customConfig)
 

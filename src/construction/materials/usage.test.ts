@@ -13,7 +13,10 @@ const defaultStrawConfig: StrawConfig = {
   baleMaxLength: 900,
   baleHeight: 500,
   baleWidth: 360,
-  material: strawbale.id
+  material: strawbale.id,
+  tolerance: 2,
+  topCutoffLimit: 50,
+  flakeSize: 70
 }
 
 describe('Material Usage Detection', () => {

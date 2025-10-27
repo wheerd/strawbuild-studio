@@ -81,7 +81,10 @@ vi.mock('@/construction/config/store', () => ({
       baleMaxLength: 900,
       baleHeight: 500,
       baleWidth: 360,
-      material: 'material_straw'
+      material: 'material_straw',
+      tolerance: 2,
+      topCutoffLimit: 50,
+      flakeSize: 70
     },
     ringBeamAssemblyConfigs: {
       beam_1: {
@@ -148,6 +151,9 @@ describe('ProjectImportExportService', () => {
         expect(parsed.configStore).toBeDefined()
         expect(parsed.configStore.straw).toBeDefined()
         expect(parsed.configStore.straw.material).toBe('material_straw')
+        expect(parsed.configStore.straw.tolerance).toBe(2)
+        expect(parsed.configStore.straw.topCutoffLimit).toBe(50)
+        expect(parsed.configStore.straw.flakeSize).toBe(70)
       }
     })
 
@@ -210,7 +216,10 @@ describe('ProjectImportExportService', () => {
             baleMaxLength: 950,
             baleHeight: 500,
             baleWidth: 360,
-            material: 'material_straw'
+            material: 'material_straw',
+            tolerance: 1.5,
+            topCutoffLimit: 45,
+            flakeSize: 60
           },
           ringBeamAssemblyConfigs: { beam_1: { id: 'beam_1', name: 'Test Beam' } },
           wallAssemblyConfigs: { assembly_1: { id: 'assembly_1', name: 'Test Assembly' } },

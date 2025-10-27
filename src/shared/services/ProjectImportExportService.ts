@@ -469,15 +469,21 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
 
     const straw = value as Record<string, unknown>
 
-    const numberFields: (keyof StrawConfig)[] = ['baleMinLength', 'baleMaxLength', 'baleHeight', 'baleWidth']
+    const requiredNumberFields: (keyof StrawConfig)[] = ['baleMinLength', 'baleMaxLength', 'baleHeight', 'baleWidth']
+    const optionalNumberFields: (keyof StrawConfig)[] = ['tolerance', 'topCutoffLimit', 'flakeSize']
 
-    const hasValidNumbers = numberFields.every(field => {
-      const value = straw[field]
-      return typeof value === 'number' && Number.isFinite(value)
+    const hasValidRequiredNumbers = requiredNumberFields.every(field => {
+      const fieldValue = straw[field]
+      return typeof fieldValue === 'number' && Number.isFinite(fieldValue)
+    })
+
+    const hasValidOptionalNumbers = optionalNumberFields.every(field => {
+      const fieldValue = straw[field]
+      return fieldValue === undefined || (typeof fieldValue === 'number' && Number.isFinite(fieldValue))
     })
     const hasValidMaterial = typeof straw.material === 'string'
 
-    return hasValidNumbers && hasValidMaterial
+    return hasValidRequiredNumbers && hasValidOptionalNumbers && hasValidMaterial
   }
 }
 

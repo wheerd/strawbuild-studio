@@ -75,8 +75,37 @@ describe('config migrations', () => {
       baleMaxLength: 950,
       baleHeight: 480,
       baleWidth: 340,
-      material: strawbale.id
+      material: strawbale.id,
+      tolerance: 2,
+      topCutoffLimit: 50,
+      flakeSize: 70
     })
     expect('straw' in migrated.wallAssemblyConfigs.sample).toBe(false)
+  })
+
+  it('adds defaults for new straw configuration properties when missing or invalid', () => {
+    const migrated = applyMigrations({
+      straw: {
+        baleMinLength: 820,
+        baleMaxLength: 930,
+        baleHeight: 500,
+        baleWidth: 360,
+        material: strawbale.id,
+        tolerance: -5,
+        topCutoffLimit: 'invalid',
+        flakeSize: 0
+      }
+    }) as { straw: Record<string, unknown> }
+
+    expect(migrated.straw).toMatchObject({
+      baleMinLength: 820,
+      baleMaxLength: 930,
+      baleHeight: 500,
+      baleWidth: 360,
+      material: strawbale.id,
+      tolerance: 2,
+      topCutoffLimit: 50,
+      flakeSize: 70
+    })
   })
 })

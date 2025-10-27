@@ -43,6 +43,18 @@ export function validateStrawConfig(config: StrawConfig): void {
   if (Number(config.baleWidth) <= 0) {
     throw new Error('Straw bale width must be greater than 0')
   }
+
+  if (Number(config.tolerance) < 0) {
+    throw new Error('Straw bale tolerance cannot be negative')
+  }
+
+  if (Number(config.topCutoffLimit) <= 0) {
+    throw new Error('Straw top cutoff limit must be greater than 0')
+  }
+
+  if (Number(config.flakeSize) <= 0) {
+    throw new Error('Straw flake size must be greater than 0')
+  }
 }
 
 function getStrawTags(size: vec3, config: StrawConfig): Tag[] {

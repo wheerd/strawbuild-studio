@@ -87,13 +87,14 @@ g.tag__construction_module {
   outline-offset: -30px;
 }
 
+/*
 g.tag__straw_full-bale {
-  outline: solid 20px var(--green-a8);
+  outline: solid 20px var(--grass-a8);
   outline-offset: -20px;
 }
 
 g.tag__straw_partial-bale {
-  outline: solid 20px var(--orange-a8);
+  outline: solid 20px var(--lime-a8);
   outline-offset: -20px;
 }
 
@@ -101,3 +102,4 @@ g.tag__straw_stuffed {
   outline: solid 20px var(--red-a8);
   outline-offset: -20px;
 }
+*/
