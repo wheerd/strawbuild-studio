@@ -40,7 +40,27 @@ describe('IFC importer integration', () => {
       throw error
     }
 
-    await generateDebugSvgs(model)
+    await generateDebugSvgs(model, 'export')
+
+    const summary = summarizeModel(model)
+
+    expect(summary).toMatchSnapshot()
+  })
+
+  test('parses IFC Builder sample', async () => {
+    const importer = new IfcImporter()
+    const filePath = path.resolve(process.cwd(), 'src', 'test', 'testsb.ifc')
+    const file = await fs.readFile(filePath)
+
+    let model
+    try {
+      model = await importer.importFromArrayBuffer(file.buffer)
+    } catch (error) {
+      console.error('IFC import failed', error)
+      throw error
+    }
+
+    await generateDebugSvgs(model, 'testsb')
 
     const summary = summarizeModel(model)
 
@@ -125,7 +145,7 @@ function round(value: number): number {
   return Math.round(value * factor) / factor
 }
 
-async function generateDebugSvgs(model: { storeys: ImportedStorey[] }): Promise<void> {
+async function generateDebugSvgs(model: { storeys: ImportedStorey[] }, prefix: string): Promise<void> {
   if (model.storeys.length === 0) return
 
   const outputDir = path.resolve(process.cwd(), 'src', 'importers', 'ifc', '__fixtures__', 'debug')
@@ -135,7 +155,7 @@ async function generateDebugSvgs(model: { storeys: ImportedStorey[] }): Promise<
     model.storeys.map(async (storey, index) => {
       const svg = renderStoreyDebugSvg(storey)
       const slug = sanitizeFileComponent(storey.name ?? `storey-${index}`)
-      const filename = path.join(outputDir, `${String(index).padStart(2, '0')}-${slug}.svg`)
+      const filename = path.join(outputDir, `${prefix}-${String(index).padStart(2, '0')}-${slug}.svg`)
       await fs.writeFile(filename, svg, 'utf-8')
     })
   )

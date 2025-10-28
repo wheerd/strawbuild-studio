@@ -75,10 +75,6 @@ const EDGE_PROJECTION_TOLERANCE = 10
 const OPENING_ASSIGNMENT_TOLERANCE = 600
 const MINIMUM_THICKNESS = 50
 const DEFAULT_WALL_THICKNESS = 300
-const DEFAULT_DOOR_HEIGHT = 2100
-const DEFAULT_WINDOW_HEIGHT = 1200
-const DEFAULT_VOID_HEIGHT = 2100
-const DEFAULT_WINDOW_SILL = 900
 
 export class IfcImporter {
   private readonly api = new IfcAPI()
@@ -130,7 +126,7 @@ export class IfcImporter {
     const walls = this.extractWalls(context, raw.line)
     const slabs = this.extractSlabs(context, raw.line)
     const height = this.estimateStoreyHeight(raw, nextStorey)
-    const perimeterCandidates = this.generatePerimeterCandidates(walls, slabs)
+    const perimeterCandidates = this.generatePerimeterCandidates(walls, slabs, raw.elevation)
 
     return {
       expressId: raw.expressId,
@@ -154,9 +150,13 @@ export class IfcImporter {
     return delta > 0 ? delta : null
   }
 
-  private generatePerimeterCandidates(walls: ImportedWall[], slabs: ImportedSlab[]): ImportedPerimeterCandidate[] {
+  private generatePerimeterCandidates(
+    walls: ImportedWall[],
+    slabs: ImportedSlab[],
+    elevation: number
+  ): ImportedPerimeterCandidate[] {
     const slabHoles = this.collectSlabOpenings(slabs)
-    const wallOpenings = this.collectWallOpenings(walls)
+    const wallOpenings = this.collectWallOpenings(walls, elevation)
 
     const wallCandidates = this.buildWallPerimeterCandidates(walls, slabHoles, wallOpenings)
     if (wallCandidates.length > 0) {
@@ -295,24 +295,25 @@ export class IfcImporter {
     return holes
   }
 
-  private collectWallOpenings(walls: ImportedWall[]): OpeningProjection[] {
+  private collectWallOpenings(walls: ImportedWall[], elevation: number): OpeningProjection[] {
     const openings: OpeningProjection[] = []
 
     for (const wall of walls) {
-      const wallHeight = wall.height ?? DEFAULT_DOOR_HEIGHT
       for (const opening of wall.openings) {
         if (!opening.profile) continue
         const polygon = opening.profile.footprint.outer
         if (polygon.points.length < 3) continue
         const center = this.calculatePolygonCentroid(polygon)
         if (!center) continue
+        const sillHeight = opening.placement[14] - elevation
+        const height = opening.profile.extrusionDepth
 
         openings.push({
           type: opening.type,
           polygon: clonePolygon2D(polygon),
           center,
-          height: this.deriveOpeningHeight(opening.type, wallHeight),
-          sill: this.deriveOpeningSill(opening.type)
+          height,
+          sill: sillHeight
         })
       }
     }
@@ -565,25 +566,6 @@ export class IfcImporter {
     }
 
     return vec2.fromValues(cx / (6 * area), cy / (6 * area))
-  }
-
-  private deriveOpeningHeight(type: ImportedOpeningType, wallHeight: number | null): number {
-    const baseHeight = wallHeight ?? DEFAULT_DOOR_HEIGHT
-    switch (type) {
-      case 'door':
-        return Math.min(baseHeight, DEFAULT_DOOR_HEIGHT)
-      case 'window':
-        return Math.min(baseHeight, DEFAULT_WINDOW_HEIGHT)
-      default:
-        return Math.min(baseHeight, DEFAULT_VOID_HEIGHT)
-    }
-  }
-
-  private deriveOpeningSill(type: ImportedOpeningType): number | undefined {
-    if (type === 'window') {
-      return DEFAULT_WINDOW_SILL
-    }
-    return undefined
   }
 
   private estimatePolygonThickness(polygon: Polygon2D): number | null {
