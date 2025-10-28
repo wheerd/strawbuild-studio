@@ -185,7 +185,6 @@ export function getPerimeterStats(perimeter: Perimeter): PerimeterStats {
   const nextFloorAssemblyConfig = nextStorey ? getFloorAssemblyById(nextStorey.floorAssemblyId) : null
 
   const floorAssembly = FLOOR_ASSEMBLIES[floorAssemblyConfig.type]
-  const nextFloorAssembly = nextFloorAssemblyConfig ? FLOOR_ASSEMBLIES[nextFloorAssemblyConfig.type] : null
 
   const storeyContext = createWallStoreyContext(storey, floorAssemblyConfig, nextFloorAssemblyConfig)
   const storeyHeight =
@@ -195,8 +194,8 @@ export function getPerimeterStats(perimeter: Perimeter): PerimeterStats {
     floorAssembly.getConstructionThickness(floorAssemblyConfig)
   const constructionHeight =
     storeyContext.storeyHeight +
-    floorAssembly.getTopOffset(floorAssemblyConfig) +
-    (nextFloorAssembly?.getBottomOffset(nextFloorAssemblyConfig) ?? 0)
+    floorAssemblyConfig.layers.topThickness +
+    (nextFloorAssemblyConfig?.layers.bottomThickness ?? 0)
   const finishedHeight = storeyContext.storeyHeight
 
   const footprintPolygon: Polygon2D = { points: perimeter.corners.map(corner => corner.outsidePoint) }
