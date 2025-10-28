@@ -1,5 +1,5 @@
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
-import { Callout, Flex, Kbd, Text } from '@radix-ui/themes'
+import { Callout, Flex, Text } from '@radix-ui/themes'
 
 import {
   FloorAreaInspector,
@@ -9,6 +9,7 @@ import {
   PerimeterInspector,
   PerimeterWallInspector
 } from '@/building/components/inspectors'
+import { StoreyInspector } from '@/building/components/inspectors/StoreyInspector'
 import {
   type PerimeterId,
   type PerimeterWallId,
@@ -19,27 +20,17 @@ import {
   isPerimeterId,
   isPerimeterWallId
 } from '@/building/model/ids'
+import { useActiveStoreyId } from '@/building/store'
 import { useCurrentSelection, useSelectionPath } from '@/editor/hooks/useSelectionStore'
 
 export function SelectToolInspector(): React.JSX.Element {
   const selectedId = useCurrentSelection()
   const selectionPath = useSelectionPath()
+  const storeyId = useActiveStoreyId()
 
   return (
     <Flex direction="column" p="2" gap="2">
-      {!selectedId && (
-        <>
-          <Text align="center" color="gray" mb="2" weight="medium">
-            No entity selected
-          </Text>
-          <Text align="center" size="2" color="gray">
-            Click on a perimeter, wall, corner, floor area, hole, or opening to view and edit its properties.
-          </Text>
-          <Text align="center" size="1" color="gray" mt="2">
-            Tip: Use <Kbd>V</Kbd> for Select, <Kbd>M</Kbd> for Move
-          </Text>
-        </>
-      )}
+      {!selectedId && <StoreyInspector key="storey" selectedId={storeyId} />}
 
       {/* Perimeter entities */}
       {selectedId && isPerimeterId(selectedId) && <PerimeterInspector key={selectedId} selectedId={selectedId} />}

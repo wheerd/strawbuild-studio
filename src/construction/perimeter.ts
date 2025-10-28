@@ -244,7 +244,7 @@ export function getPerimeterStats(perimeter: Perimeter): PerimeterStats {
     totalWindowArea,
     totalDoorArea,
     totalVolume,
-    storeyHeight: storeyHeight,
+    storeyHeight,
     ceilingHeight: finishedHeight
   }
 }
