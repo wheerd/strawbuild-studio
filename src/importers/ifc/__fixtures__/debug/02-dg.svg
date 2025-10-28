@@ -1,19 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="10000" height="7200" viewBox="0 0 10000 7200">
 <text x="500" y="500" fill="#222" font-size="200" font-family="monospace">DG</text>
 <polygon points="9080,5480 5350,5480 5770,5900 9500,5900" fill="none" stroke="#2979ff" stroke-width="20" />
+<polygon points="8440,5480 6470,5480 6470,5900 8440,5900" fill="#FFFFFF55" stroke="white" stroke-width="20" />
 <polygon points="5350,5480 5350,6280 5770,6700 5770,5900" fill="none" stroke="#2979ff" stroke-width="20" />
 <polygon points="5350,6280 920,6280 500,6700 5770,6700" fill="none" stroke="#2979ff" stroke-width="20" />
+<polygon points="3770,6280 1790,6280 1790,6700 3770,6700" fill="#FFFFFF55" stroke="white" stroke-width="20" />
 <polygon points="920,6280 920,920 500,500 500,6700" fill="none" stroke="#2979ff" stroke-width="20" />
+<polygon points="920,4725 920,1805 500,1805 500,4725" fill="#FFFFFF55" stroke="white" stroke-width="20" />
 <polygon points="920,920 4535,920 4535,500 500,500" fill="none" stroke="#2979ff" stroke-width="20" />
+<polygon points="1445,920 3600,920 3600,500 1445,500" fill="#FFFFFF55" stroke="white" stroke-width="20" />
 <polygon points="4535,920 9080,920 9500,500 4535,500" fill="none" stroke="#2979ff" stroke-width="20" />
 <polygon points="9080,920 9080,5480 9500,5900 9500,500" fill="none" stroke="#2979ff" stroke-width="20" />
+<polygon points="9080,2360 9080,3690 9500,3690 9500,2360" fill="#FFFFFF55" stroke="white" stroke-width="20" />
+<polygon points="9080,3750 9080,5080 9500,5080 9500,3750" fill="#FFFFFF55" stroke="white" stroke-width="20" />
 <polygon points="9500,5480 9500,500 4535,500 500,500 500,6700 5770,6700 9500,6700" fill="rgba(0,200,83,0.18)" stroke="#2979ff" stroke-width="20" />
 <polygon points="4680,1920 4680,920 9080,920 9080,1920" fill="rgba(255,193,7,0.25)" stroke="#ff9100" stroke-width="20" />
-<polygon points="9500,5480 9500,500 4535,500 500,500 500,6700 5770,6700 9500,6700" fill="none" stroke="#ff1744" stroke-width="40" />
+<polygon points="920,6280 920,920 4535,920 9080,920 9080,5480 5350,5480 5350,6280" fill="none" stroke="#ff1744" stroke-width="40" />
 <polygon points="4680,1920 4680,920 9080,920 9080,1920" fill="rgba(255,193,7,0.25)" stroke="#ff9100" stroke-width="20" />
-<line x1="9500" y1="3690" x2="9500" y2="2360" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
-<line x1="9500" y1="5080" x2="9500" y2="3750" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
-<line x1="3600" y1="500" x2="1445" y2="500" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
-<line x1="500" y1="1805" x2="500" y2="4725" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
-<line x1="1790" y1="6700" x2="3770" y2="6700" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
+<line x1="920" y1="4725" x2="920" y2="1805" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
+<line x1="1445" y1="920" x2="3600" y2="920" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
+<line x1="9080" y1="2360" x2="9080" y2="3690" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
+<line x1="9080" y1="3750" x2="9080" y2="5080" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
+<line x1="8440" y1="5480" x2="6470" y2="5480" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
+<line x1="3770" y1="6280" x2="1790" y2="6280" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
 </svg>

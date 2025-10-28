@@ -43,12 +43,8 @@ import type {
   RawIfcStorey
 } from '@/importers/ifc/types'
 import { createIdentityMatrix } from '@/importers/ifc/utils'
-import type { Polygon2D, PolygonWithHoles2D } from '@/shared/geometry'
-import {
-  isPointInPolygon,
-  polygonEdgeOffset,
-  unionPolygons
-} from '@/shared/geometry/polygon'
+import { type Polygon2D, type PolygonWithHoles2D } from '@/shared/geometry'
+import { isPointInPolygon, polygonEdgeOffset, unionPolygons, unionPolygonsWithHoles } from '@/shared/geometry/polygon'
 
 interface CachedModelContext {
   readonly modelID: number
@@ -183,27 +179,13 @@ export class IfcImporter {
       return []
     }
 
-    const unionShells = unionPolygons(wallFootprints).filter(polygon => polygon.points.length >= 3)
+    const unionShells = unionPolygonsWithHoles(wallFootprints)
 
     if (unionShells.length === 0) {
       return []
     }
 
-    const shells = unionShells.filter((polygon, index) => {
-      const centroid = this.calculatePolygonCentroid(polygon)
-      if (!centroid) return false
-      for (let i = 0; i < unionShells.length; i++) {
-        if (i === index) continue
-        if (isPointInPolygon(centroid, unionShells[i])) {
-          return false
-        }
-      }
-      return true
-    })
-
-    if (shells.length === 0) {
-      return []
-    }
+    const shells = unionShells.map(p => p.outer)
 
     const remainingSlabHoles = [...slabHoles]
     const candidates: ImportedPerimeterCandidate[] = []

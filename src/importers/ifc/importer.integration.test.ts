@@ -1,3 +1,4 @@
+import clipperWasmUrl from 'clipper2-wasm/dist/es/clipper2z.wasm?url'
 import { vec2 } from 'gl-matrix'
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -14,7 +15,6 @@ import type {
 } from '@/importers/ifc/types'
 import type { Polygon2D, PolygonWithHoles2D } from '@/shared/geometry'
 import { ensureClipperModule } from '@/shared/geometry/clipperInstance'
-import clipperWasmUrl from 'clipper2-wasm/dist/es/clipper2z.wasm?url'
 
 const ROUNDING_PRECISION = 4
 
@@ -142,13 +142,18 @@ async function generateDebugSvgs(model: { storeys: ImportedStorey[] }): Promise<
 }
 
 function renderStoreyDebugSvg(storey: ImportedStorey): string {
-  const polygons: { type: 'wall' | 'slab' | 'perimeter' | 'hole'; polygon: Polygon2D }[] = []
+  const polygons: { type: 'wall' | 'slab' | 'perimeter' | 'hole' | 'opening'; polygon: Polygon2D }[] = []
   const openingLines: { start: vec2; end: vec2; opening: ImportedPerimeterOpening }[] = []
 
   for (const wall of storey.walls) {
     const footprint = wall.profile?.footprint.outer
     if (footprint && footprint.points.length >= 3) {
       polygons.push({ type: 'wall', polygon: footprint })
+    }
+    for (const opening of wall.openings) {
+      if (opening.profile && opening.profile.footprint.outer.points.length >= 3) {
+        polygons.push({ type: 'opening', polygon: opening.profile.footprint.outer })
+      }
     }
   }
 
@@ -228,8 +233,22 @@ function renderStoreyDebugSvg(storey: ImportedStorey): string {
       })
       .join(' ')
 
-    const stroke = entry.type === 'perimeter' ? '#ff1744' : entry.type === 'hole' ? '#ff9100' : '#2979ff'
-    const fill = entry.type === 'slab' ? 'rgba(0,200,83,0.18)' : entry.type === 'hole' ? 'rgba(255,193,7,0.25)' : 'none'
+    const stroke =
+      entry.type === 'perimeter'
+        ? '#ff1744'
+        : entry.type === 'hole'
+          ? '#ff9100'
+          : entry.type === 'opening'
+            ? 'white'
+            : '#2979ff'
+    const fill =
+      entry.type === 'slab'
+        ? 'rgba(0,200,83,0.18)'
+        : entry.type === 'hole'
+          ? 'rgba(255,193,7,0.25)'
+          : entry.type === 'opening'
+            ? '#FFFFFF55'
+            : 'none'
     const strokeWidth = entry.type === 'perimeter' ? 40 : 20
 
     return `<polygon points="${pointsAttr}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}" />`
