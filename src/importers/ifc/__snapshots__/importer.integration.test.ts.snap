@@ -7,6 +7,40 @@ exports[`IFC importer integration > parses strawbaler export sample 1`] = `
       "elevation": 200,
       "height": 2890,
       "name": "EG",
+      "perimeterCandidates": [
+        {
+          "boundary": {
+            "holes": [],
+            "outer": [
+              [
+                -400,
+                -5781.9468,
+              ],
+              [
+                8599.999,
+                -5781.9468,
+              ],
+              [
+                8599.999,
+                418.0625,
+              ],
+              [
+                3634.9993,
+                418.0625,
+              ],
+              [
+                425,
+                418.0625,
+              ],
+              [
+                -400,
+                398.0625,
+              ],
+            ],
+          },
+          "source": "slab",
+        },
+      ],
       "placement": [
         1,
         0,
@@ -931,6 +965,55 @@ exports[`IFC importer integration > parses strawbaler export sample 1`] = `
       "elevation": 3090,
       "height": 2900,
       "name": "OG",
+      "perimeterCandidates": [
+        {
+          "boundary": {
+            "holes": [
+              [
+                [
+                  3760,
+                  -1000,
+                ],
+                [
+                  3760,
+                  0,
+                ],
+                [
+                  8160,
+                  0,
+                ],
+                [
+                  8160,
+                  -1000,
+                ],
+              ],
+            ],
+            "outer": [
+              [
+                8580,
+                -5780,
+              ],
+              [
+                8580,
+                420,
+              ],
+              [
+                3615,
+                420,
+              ],
+              [
+                -420,
+                420,
+              ],
+              [
+                -420,
+                -5780,
+              ],
+            ],
+          },
+          "source": "slab",
+        },
+      ],
       "placement": [
         1,
         0,
@@ -2209,6 +2292,63 @@ exports[`IFC importer integration > parses strawbaler export sample 1`] = `
       "elevation": 5990,
       "height": null,
       "name": "DG",
+      "perimeterCandidates": [
+        {
+          "boundary": {
+            "holes": [
+              [
+                [
+                  3760,
+                  -1000,
+                ],
+                [
+                  3760,
+                  0,
+                ],
+                [
+                  8160,
+                  0,
+                ],
+                [
+                  8160,
+                  -1000,
+                ],
+              ],
+            ],
+            "outer": [
+              [
+                8580,
+                -4560,
+              ],
+              [
+                8580,
+                420,
+              ],
+              [
+                3615,
+                420,
+              ],
+              [
+                -420,
+                420,
+              ],
+              [
+                -420,
+                -5780,
+              ],
+              [
+                4850,
+                -5780,
+              ],
+              [
+                8580,
+                -5780,
+              ],
+            ],
+          },
+          "source": "slab",
+        },
+      ],
       "placement": [
         1,
         0,

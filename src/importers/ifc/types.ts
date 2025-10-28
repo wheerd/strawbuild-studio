@@ -12,6 +12,7 @@ export interface ImportedStorey {
   readonly placement: mat4
   readonly walls: ImportedWall[]
   readonly slabs: ImportedSlab[]
+  readonly perimeterCandidates: ImportedPerimeterCandidate[]
 }
 
 export interface ImportedWall {
@@ -43,6 +44,11 @@ export interface ImportedSlab {
   readonly placement: mat4
   readonly profile: ExtrudedProfile | null
   readonly thickness: number | null
+}
+
+export interface ImportedPerimeterCandidate {
+  readonly source: 'slab' | 'walls'
+  readonly boundary: PolygonWithHoles2D
 }
 
 export interface ExtrudedProfile {

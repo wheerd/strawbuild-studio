@@ -48,7 +48,11 @@ function summarizeStorey(storey: ImportedStorey): unknown {
     height: storey.height != null ? round(storey.height) : null,
     placement: Array.from(storey.placement),
     walls: storey.walls.map(summarizeWall),
-    slabs: storey.slabs.map(summarizeSlab)
+    slabs: storey.slabs.map(summarizeSlab),
+    perimeterCandidates: storey.perimeterCandidates.map(candidate => ({
+      source: candidate.source,
+      boundary: summarizePolygonWithHoles(candidate.boundary)
+    }))
   }
 }
 

@@ -34,6 +34,7 @@ import type {
   ExtrudedProfile,
   ImportedOpening,
   ImportedOpeningType,
+  ImportedPerimeterCandidate,
   ImportedSlab,
   ImportedStorey,
   ImportedWall,
@@ -42,6 +43,7 @@ import type {
 } from '@/importers/ifc/types'
 import { createIdentityMatrix } from '@/importers/ifc/utils'
 import type { Polygon2D, PolygonWithHoles2D } from '@/shared/geometry'
+import { offsetPolygon, unionPolygons } from '@/shared/geometry/polygon'
 
 interface CachedModelContext {
   readonly modelID: number
@@ -100,6 +102,7 @@ export class IfcImporter {
     const walls = this.extractWalls(context, raw.line)
     const slabs = this.extractSlabs(context, raw.line)
     const height = this.estimateStoreyHeight(raw, nextStorey)
+    const perimeterCandidates = this.generatePerimeterCandidates(context, walls, slabs)
 
     return {
       expressId: raw.expressId,
@@ -109,7 +112,8 @@ export class IfcImporter {
       height,
       placement: raw.placement,
       walls,
-      slabs
+      slabs,
+      perimeterCandidates
     }
   }
 
@@ -120,6 +124,98 @@ export class IfcImporter {
 
     const delta = nextStorey.elevation - current.elevation
     return delta > 0 ? delta : null
+  }
+
+  private generatePerimeterCandidates(
+    context: CachedModelContext,
+    walls: ImportedWall[],
+    slabs: ImportedSlab[]
+  ): ImportedPerimeterCandidate[] {
+    const slabCandidates = this.buildSlabPerimeterCandidates(slabs)
+    if (slabCandidates.length > 0) {
+      return slabCandidates
+    }
+
+    return this.buildWallPerimeterCandidates(walls)
+  }
+
+  private buildSlabPerimeterCandidates(slabs: ImportedSlab[]): ImportedPerimeterCandidate[] {
+    const candidates: ImportedPerimeterCandidate[] = []
+    const seen = new Set<string>()
+
+    for (const slab of slabs) {
+      const footprint = slab.profile?.footprint
+      if (!footprint) continue
+      if (footprint.outer.points.length < 3) continue
+
+      const key = this.serialisePolygon(footprint.outer)
+      if (seen.has(key)) continue
+      seen.add(key)
+
+      candidates.push({
+        source: 'slab',
+        boundary: footprint
+      })
+    }
+
+    return candidates
+  }
+
+  private buildWallPerimeterCandidates(walls: ImportedWall[]): ImportedPerimeterCandidate[] {
+    const wallProfiles = walls
+      .map(wall => wall.profile?.footprint.outer)
+      .filter((polygon): polygon is Polygon2D => polygon != null)
+
+    if (wallProfiles.length === 0) {
+      return []
+    }
+
+    const union = unionPolygons(wallProfiles)
+    if (union.length === 0) {
+      return []
+    }
+
+    const thicknessValues = walls
+      .map(wall => wall.thickness)
+      .filter((value): value is number => typeof value === 'number' && Number.isFinite(value) && value > 0)
+
+    const averageThickness =
+      thicknessValues.length > 0 ? thicknessValues.reduce((sum, value) => sum + value, 0) / thicknessValues.length : 0
+
+    const candidates: ImportedPerimeterCandidate[] = []
+    for (const polygon of union) {
+      let boundary: Polygon2D | null = null
+      if (averageThickness > 0) {
+        const offset = offsetPolygon(polygon, -averageThickness)
+        if (offset.points.length >= 3) {
+          boundary = offset
+        }
+      }
+
+      if (!boundary && polygon.points.length >= 3) {
+        boundary = polygon
+      }
+
+      if (!boundary) continue
+
+      const boundaryWithHoles: PolygonWithHoles2D = {
+        outer: boundary,
+        holes: []
+      }
+
+      candidates.push({
+        source: 'walls',
+        boundary: boundaryWithHoles
+      })
+    }
+
+    return candidates
+  }
+
+  private serialisePolygon(polygon: Polygon2D): string {
+    return polygon.points
+      .map(point => `${Math.round(point[0])}:${Math.round(point[1])}`)
+      .join('|')
   }
 
   private extractWalls(context: CachedModelContext, storey: IFC4.IfcBuildingStorey): ImportedWall[] {
