@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 
 import { usePersistenceStore } from '@/building/store/persistenceStore'
 import { clearSelection } from '@/editor/hooks/useSelectionStore'
-import { exportCurrentModelToIfc } from '@/exporters/ifc'
 import { SaveIcon } from '@/shared/components/Icons'
 import { ProjectImportExportService } from '@/shared/services/ProjectImportExportService'
 import { createFileInput } from '@/shared/utils/createFileInput'
@@ -47,6 +46,7 @@ export function AutoSaveIndicator(): React.JSX.Element {
     setExportError(null)
 
     try {
+      const { exportCurrentModelToIfc } = await import('@/exporters/ifc')
       await exportCurrentModelToIfc()
     } catch (error) {
       setExportError(error instanceof Error ? error.message : 'Failed to export IFC')

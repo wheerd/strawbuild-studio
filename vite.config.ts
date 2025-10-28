@@ -117,7 +117,10 @@ export default defineConfig({
           'vendor-geometry': ['clipper2-wasm', 'gl-matrix'],
 
           // Three.js chunk (lazy loaded for 3D viewer)
-          'vendor-three': ['three', '@react-three/fiber', '@react-three/drei']
+          'vendor-three': ['three', '@react-three/fiber', '@react-three/drei'],
+
+          // IFC
+          'vendor-ifc': ['web-ifc']
         }
       }
     },
