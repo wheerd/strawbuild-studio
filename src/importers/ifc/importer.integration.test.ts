@@ -14,13 +14,18 @@ import type {
 } from '@/importers/ifc/types'
 import type { Polygon2D, PolygonWithHoles2D } from '@/shared/geometry'
 import { ensureClipperModule } from '@/shared/geometry/clipperInstance'
+import clipperWasmUrl from 'clipper2-wasm/dist/es/clipper2z.wasm?url'
 
 const ROUNDING_PRECISION = 4
 
 vi.unmock('@/shared/geometry/clipperInstance')
 
 describe('IFC importer integration', () => {
-  beforeAll(async () => await ensureClipperModule())
+  beforeAll(async () => {
+    const clipperPath = resolveBundledAssetPath(clipperWasmUrl)
+    const clipperBinary = await fs.readFile(clipperPath)
+    await ensureClipperModule({ wasmBinary: clipperBinary })
+  })
 
   test('parses strawbaler export sample', async () => {
     const importer = new IfcImporter()
@@ -263,4 +268,9 @@ function escapeHtml(value: string): string {
 
 function formatNumber(value: number): string {
   return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.?0+$/, '')
+}
+
+function resolveBundledAssetPath(assetUrl: string): string {
+  const normalized = assetUrl.startsWith('/') ? assetUrl.slice(1) : assetUrl
+  return path.resolve(process.cwd(), normalized)
 }

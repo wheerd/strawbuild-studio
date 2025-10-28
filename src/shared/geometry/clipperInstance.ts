@@ -1,15 +1,22 @@
 import Clipper2Z, { type MainModule as ClipperModule, type PathD, type PathsD, type PointD } from 'clipper2-wasm'
 import clipperWasmUrl from 'clipper2-wasm/dist/es/clipper2z.wasm?url'
 import { vec2 } from 'gl-matrix'
-import path from 'node:path'
-import { pathToFileURL } from 'node:url'
 
 import type {} from '@/shared/geometry/basic'
 
 let clipperModuleInstance: ClipperModule | null = null
 let clipperModulePromise: Promise<ClipperModule> | null = null
 
-export function loadClipperModule(): Promise<ClipperModule> {
+interface LoadClipperOptions {
+  wasmBinary?: ArrayBuffer | Uint8Array
+}
+
+const normalizeBinary = (binary?: ArrayBuffer | Uint8Array): Uint8Array | undefined => {
+  if (binary == null) return undefined
+  return binary instanceof Uint8Array ? binary : new Uint8Array(binary)
+}
+
+export function loadClipperModule(options?: LoadClipperOptions): Promise<ClipperModule> {
   if (clipperModuleInstance) {
     return Promise.resolve(clipperModuleInstance)
   }
@@ -17,40 +24,17 @@ export function loadClipperModule(): Promise<ClipperModule> {
   let modulePromise: Promise<ClipperModule>
 
   if (!clipperModulePromise) {
-    const isNode = typeof process !== 'undefined' && process?.release?.name === 'node'
+    const wasmBinary = normalizeBinary(options?.wasmBinary)
 
-    clipperModulePromise = (async () => {
-      const locateFile = (file: string): string => {
-        if (!file.endsWith('.wasm')) {
-          return file
-        }
-
-        if (!isNode) {
-          return clipperWasmUrl
-        }
-
-        const resolvedPath = resolveClipperWasmPath(clipperWasmUrl)
-        return pathToFileURL(resolvedPath).toString()
-      }
-
-      let wasmBinary: Uint8Array | undefined
-      if (isNode) {
-        const resolvedPath = resolveClipperWasmPath(clipperWasmUrl)
-        const { promises: fsPromises } = await import('node:fs')
-        const file = await fsPromises.readFile(resolvedPath)
-        wasmBinary = file instanceof Uint8Array ? file : new Uint8Array(file)
-      }
-
-      const instance = await Clipper2Z({
-        locateFile,
-        wasmBinary
-      })
-
+    modulePromise = Clipper2Z({
+      locateFile: (file: string) => (file.endsWith('.wasm') ? clipperWasmUrl : file),
+      wasmBinary
+    }).then((instance: ClipperModule) => {
       clipperModuleInstance = instance
       return instance
-    })()
+    })
 
-    modulePromise = clipperModulePromise
+    clipperModulePromise = modulePromise
   } else {
     modulePromise = clipperModulePromise
   }
@@ -58,8 +42,8 @@ export function loadClipperModule(): Promise<ClipperModule> {
   return modulePromise
 }
 
-export async function ensureClipperModule(): Promise<void> {
-  await loadClipperModule()
+export async function ensureClipperModule(options?: LoadClipperOptions): Promise<void> {
+  await loadClipperModule(options)
 }
 
 export function getClipperModule(): ClipperModule {
@@ -101,38 +85,4 @@ export function pathDToPoints(path: PathD): vec2[] {
     result.push([point.x, point.y])
   }
   return result
-}
-
-function resolveClipperWasmPath(assetUrl: string): string {
-  const proc = globalThis.process as NodeJS.Process | undefined
-  const isNode = typeof proc === 'object' && proc?.release?.name === 'node'
-
-  if (!isNode) {
-    return assetUrl
-  }
-
-  if (assetUrl.startsWith('http://') || assetUrl.startsWith('https://')) {
-    return assetUrl
-  }
-
-  if (assetUrl.startsWith('file://')) {
-    return decodeURIComponent(new URL(assetUrl).pathname)
-  }
-
-  let resolvedPath: string
-  if (assetUrl.startsWith('/')) {
-    resolvedPath = path.resolve(assetUrl.slice(1))
-  } else {
-    try {
-      const resolved = new URL(assetUrl, import.meta.url)
-      if (resolved.protocol === 'file:') {
-        return decodeURIComponent(resolved.pathname)
-      }
-      resolvedPath = decodeURIComponent(resolved.pathname)
-    } catch {
-      resolvedPath = path.resolve(process.cwd(), assetUrl)
-    }
-  }
-
-  return resolvedPath
 }
