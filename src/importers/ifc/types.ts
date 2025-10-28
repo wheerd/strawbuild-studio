@@ -1,3 +1,5 @@
+import { IFC4 } from 'web-ifc'
+
 import { mat4, vec3 } from 'gl-matrix'
 
 import type { Polygon2D, PolygonWithHoles2D } from '@/shared/geometry'
@@ -63,6 +65,7 @@ export interface RawIfcStorey {
   readonly name: string | null
   readonly elevation: number
   readonly placement: mat4
+  readonly line: IFC4.IfcBuildingStorey
 }
 
 export interface RawIfcElement {
