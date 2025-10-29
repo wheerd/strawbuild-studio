@@ -9,6 +9,7 @@ import {
   IFCBUILDINGSTOREY,
   IFCDOOR,
   IFCEXTRUDEDAREASOLID,
+  IFCEXTRUDEDAREASOLIDTAPERED,
   IFCLOCALPLACEMENT,
   IFCOPENINGELEMENT,
   IFCPOLYLINE,
@@ -45,15 +46,20 @@ import type {
 import { createIdentityMatrix } from '@/importers/ifc/utils'
 import {
   type Bounds3D,
+  type LineSegment2D,
   type Polygon2D,
   type PolygonWithHoles2D,
   boundsFromPoints,
-  boundsFromPoints3D
+  boundsFromPoints3D,
+  direction,
+  distanceToInfiniteLine,
+  distanceToLineSegment
 } from '@/shared/geometry'
 import {
   arePolygonsIntersecting,
   ensurePolygonIsClockwise,
   isPointInPolygon,
+  minimumAreaBoundingBox,
   offsetPolygon,
   polygonEdgeOffset,
   simplifyPolygon,
@@ -71,7 +77,6 @@ type DisposableVector<T> = Vector<T> & { delete?: () => void }
 interface OpeningProjection {
   readonly type: ImportedOpeningType
   readonly polygon: Polygon2D
-  readonly center: vec2
   readonly height: number
   readonly sill?: number
 }
@@ -87,7 +92,6 @@ interface WallEdgeInfo {
 const EDGE_ALIGNMENT_DOT_THRESHOLD = 0.98
 const EDGE_DISTANCE_TOLERANCE = 10
 const EDGE_PROJECTION_TOLERANCE = 10
-const OPENING_ASSIGNMENT_TOLERANCE = 600
 const MINIMUM_THICKNESS = 50
 const DEFAULT_WALL_THICKNESS = 300
 
@@ -189,18 +193,23 @@ export class IfcImporter {
     const wallFootprints = walls
       .map(wall => wall.profile?.footprint.outer)
       .filter((polygon): polygon is Polygon2D => polygon != null && polygon.points.length >= 3)
+      .map(p => offsetPolygon(ensurePolygonIsClockwise(simplifyPolygon(p, 1)), 2))
+      .map(p => ({
+        points: p.points.map(p => vec3.round(vec3.create(), p))
+      }))
 
     if (wallFootprints.length === 0) {
       return []
     }
 
-    const unionShells = unionPolygonsWithHoles(wallFootprints)
+    const unionShells = unionPolygonsWithHoles(wallFootprints).map(s => simplifyPolygon(s.outer, 1))
+    const filteredShells = unionShells.filter((shell, i) =>
+      shell.points.every(point => unionShells.every((other, j) => i === j || !isPointInPolygon(point, other)))
+    )
 
-    if (unionShells.length === 0) {
+    if (filteredShells.length === 0) {
       return []
     }
-
-    const shells = unionShells.map(p => p.outer)
 
     const remainingSlabHoles = [...slabHoles]
     const candidates: ImportedPerimeterCandidate[] = []
@@ -208,17 +217,19 @@ export class IfcImporter {
     const wallEdges = this.collectWallEdges(walls)
     const averageThickness = this.computeAverageWallThickness(walls)
 
-    for (const shell of shells) {
-      const edgeThicknesses = this.deriveEdgeThicknesses(shell, wallEdges, averageThickness)
-      const innerPolygon = this.offsetPolygonWithThickness(shell, edgeThicknesses)
+    for (const shell of filteredShells) {
+      const outer = simplifyPolygon(offsetPolygon(ensurePolygonIsClockwise(shell), -2), 1)
+      const edgeThicknesses = this.deriveEdgeThicknesses(outer, wallEdges, -averageThickness)
+      const innerPolygon = this.offsetPolygonWithThickness(outer, edgeThicknesses)
       if (!innerPolygon) {
+        console.warn('invalid inner', innerPolygon)
         continue
       }
 
       const segments = this.createPerimeterSegments(innerPolygon, edgeThicknesses)
-      this.assignOpeningsToSegments(shell, segments, wallOpenings)
+      this.assignOpeningsToSegments(outer, segments, wallOpenings)
 
-      const holes = this.extractHolesForShell(shell, remainingSlabHoles)
+      const holes = this.extractHolesForShell(outer, remainingSlabHoles)
 
       candidates.push({
         source: 'walls',
@@ -276,7 +287,7 @@ export class IfcImporter {
     const results: { bounds: Bounds3D; polygons: Polygon2D[] }[] = []
     for (let j = 0; j < mesh.geometries.size(); j++) {
       const placedGeometry = mesh.geometries.get(j)
-      const matrix = mat4.fromValues.apply(mat4.fromValues, placedGeometry.flatTransformation as any)
+      const matrix = mat4.copy(mat4.create(), placedGeometry.flatTransformation)
       const geometry = this.api.GetGeometry(context.modelID, placedGeometry.geometryExpressID)
 
       const idx = this.api.GetIndexArray(geometry.GetIndexData(), geometry.GetIndexDataSize()) as Uint32Array
@@ -292,9 +303,9 @@ export class IfcImporter {
       const usedPoints: vec3[] = []
       const triPolys: Polygon2D[] = []
       for (let t = 0; t < indices.length; t += 3) {
-        const i0 = indices[t],
-          i1 = indices[t + 1],
-          i2 = indices[t + 2]
+        const i0 = indices[t]
+        const i1 = indices[t + 1]
+        const i2 = indices[t + 2]
 
         usedPoints.push(points[i0], points[i1], points[i2])
 
@@ -332,6 +343,7 @@ export class IfcImporter {
 
     return posFloats
   }
+
   private posArrayToVec2(posFloats: Float32Array): vec3[] {
     const points: vec3[] = []
     for (let i = 0; i < posFloats.length; i += 3) {
@@ -372,14 +384,15 @@ export class IfcImporter {
 
   private collectWallOpenings(walls: ImportedWall[], elevation: number): OpeningProjection[] {
     const openings: OpeningProjection[] = []
+    const openingIds = new Set<number>()
 
     for (const wall of walls) {
       for (const opening of wall.openings) {
+        if (openingIds.has(opening.expressId)) continue
+        openingIds.add(opening.expressId)
         if (!opening.profile) continue
         const polygon = opening.profile.footprint.outer
         if (polygon.points.length < 3) continue
-        const center = this.calculatePolygonCentroid(polygon)
-        if (!center) continue
         const sillHeight = opening.placement[14] - elevation
         const profileBounds = boundsFromPoints(opening.profile.localOutline.points)
         const height =
@@ -390,7 +403,6 @@ export class IfcImporter {
         openings.push({
           type: opening.type,
           polygon: clonePolygon2D(polygon),
-          center,
           height,
           sill: sillHeight
         })
@@ -410,13 +422,14 @@ export class IfcImporter {
       const points = footprint.points
       const thickness = wall.thickness ?? this.estimatePolygonThickness(footprint) ?? DEFAULT_WALL_THICKNESS
 
+      const wallEdges: WallEdgeInfo[] = []
       for (let i = 0; i < points.length; i++) {
         const start = points[i]
         const end = points[(i + 1) % points.length]
         const length = vec2.distance(start, end)
         if (length < 1e-3) continue
         const direction = vec2.normalize(vec2.create(), vec2.subtract(vec2.create(), end, start))
-        edges.push({
+        wallEdges.push({
           start: vec2.clone(start),
           end: vec2.clone(end),
           direction,
@@ -424,6 +437,23 @@ export class IfcImporter {
           thickness: Math.max(thickness, MINIMUM_THICKNESS)
         })
       }
+
+      const pairedEdges = wallEdges.filter((edge, i) => {
+        return wallEdges.some((other, j) => {
+          if (j === i) return false
+          const alignment = Math.abs(vec2.dot(edge.direction, other.direction))
+          if (alignment < EDGE_ALIGNMENT_DOT_THRESHOLD) {
+            return false
+          }
+          const distance = distanceToInfiniteLine(edge.start, { point: other.start, direction: other.direction })
+          if (distance < EDGE_DISTANCE_TOLERANCE) {
+            return false
+          }
+          return Math.abs(distance - thickness) < thickness * 0.2
+        })
+      })
+
+      edges.push(...pairedEdges)
     }
 
     return edges
@@ -469,13 +499,8 @@ export class IfcImporter {
 
       for (const edge of wallEdges) {
         const alignment = Math.abs(vec2.dot(dir, edge.direction))
-        if (alignment < EDGE_ALIGNMENT_DOT_THRESHOLD) {
-          continue
-        }
-
-        if (!this.segmentsOverlap(start, end, edge)) {
-          continue
-        }
+        if (alignment < EDGE_ALIGNMENT_DOT_THRESHOLD) continue
+        if (!this.segmentsOverlap(start, end, edge)) continue
 
         const distStart = this.distancePointToSegment(start, edge.start, edge.end)
         const distEnd = this.distancePointToSegment(end, edge.start, edge.end)
@@ -528,12 +553,12 @@ export class IfcImporter {
   private assignOpeningsToSegments(
     outer: Polygon2D,
     segments: ImportedPerimeterSegment[],
-    openings: OpeningProjection[]
+    openings: OpeningProjection[],
+    inner?: Polygon2D
   ): void {
     for (const opening of openings) {
-      if (!isPointInPolygon(opening.center, outer)) {
-        continue
-      }
+      if (opening.polygon.points.every(p => !isPointInPolygon(p, outer))) continue
+      if (inner && opening.polygon.points.every(p => isPointInPolygon(p, inner))) continue
 
       let bestSegmentIndex = -1
       let bestDistance = Number.POSITIVE_INFINITY
@@ -542,21 +567,16 @@ export class IfcImporter {
 
       for (let i = 0; i < segments.length; i++) {
         const segment = segments[i]
-        const segmentVector = vec2.subtract(vec2.create(), segment.end, segment.start)
-        const segmentLength = vec2.length(segmentVector)
-        if (segmentLength < 1e-3) continue
-        const segmentDir = vec2.scale(vec2.create(), segmentVector, 1 / segmentLength)
-
-        const toCenter = vec2.subtract(vec2.create(), opening.center, segment.start)
-        const projection = vec2.dot(toCenter, segmentDir)
-        const clampedProjection = Math.min(Math.max(projection, 0), segmentLength)
-        const closestPoint = vec2.scaleAndAdd(vec2.create(), segment.start, segmentDir, clampedProjection)
-
-        const distance = vec2.distance(closestPoint, opening.center)
-        if (distance > OPENING_ASSIGNMENT_TOLERANCE) {
+        const line: LineSegment2D = { start: segment.start, end: segment.end }
+        const distances = opening.polygon.points.map(p => distanceToLineSegment(p, line))
+        const minDistance = Math.min(...distances)
+        const maxDistance = Math.max(...distances)
+        const thickness = segment.thickness ?? DEFAULT_WALL_THICKNESS
+        if (minDistance > 0.5 * thickness || maxDistance > 1.5 * thickness) {
           continue
         }
 
+        const segmentDir = direction(segment.start, segment.end)
         let minProjection = Number.POSITIVE_INFINITY
         let maxProjection = Number.NEGATIVE_INFINITY
         for (const point of opening.polygon.points) {
@@ -566,6 +586,7 @@ export class IfcImporter {
           maxProjection = Math.max(maxProjection, value)
         }
 
+        const segmentLength = vec2.distance(segment.start, segment.end)
         const openingStart = Math.min(segmentLength, Math.max(0, minProjection))
         const openingEnd = Math.max(0, Math.min(segmentLength, maxProjection))
         const width = Math.max(0, openingEnd - openingStart)
@@ -574,8 +595,8 @@ export class IfcImporter {
           continue
         }
 
-        if (distance < bestDistance) {
-          bestDistance = distance
+        if (maxDistance < bestDistance) {
+          bestDistance = maxDistance
           bestSegmentIndex = i
           bestOffset = openingStart
           bestWidth = width
@@ -648,25 +669,7 @@ export class IfcImporter {
   }
 
   private estimatePolygonThickness(polygon: Polygon2D): number | null {
-    if (polygon.points.length < 2) {
-      return null
-    }
-
-    let minLength = Number.POSITIVE_INFINITY
-    for (let i = 0; i < polygon.points.length; i++) {
-      const start = polygon.points[i]
-      const end = polygon.points[(i + 1) % polygon.points.length]
-      const length = vec2.distance(start, end)
-      if (length > 1e-3) {
-        minLength = Math.min(minLength, length)
-      }
-    }
-
-    if (!Number.isFinite(minLength) || minLength === Number.POSITIVE_INFINITY) {
-      return null
-    }
-
-    return minLength
+    return Math.min(...minimumAreaBoundingBox(polygon).size)
   }
 
   private distancePointToSegment(point: vec2, segmentStart: vec2, segmentEnd: vec2): number {
@@ -702,8 +705,8 @@ export class IfcImporter {
       return false
     }
 
-    const distStart = this.distancePointToSegment(segmentStart, edge.start, edge.end)
-    const distEnd = this.distancePointToSegment(segmentEnd, edge.start, edge.end)
+    const distStart = this.distancePointToSegment(edge.start, segmentStart, segmentEnd)
+    const distEnd = this.distancePointToSegment(edge.end, segmentStart, segmentEnd)
 
     return distStart < EDGE_DISTANCE_TOLERANCE && distEnd < EDGE_DISTANCE_TOLERANCE
   }
@@ -721,34 +724,36 @@ export class IfcImporter {
 
         const wall = element as IFC4.IfcWall
         const placement = this.resolveObjectPlacement(context, wall)
-        let profile = this.extractPrimaryExtrudedProfile(context, wall, placement)
-        if (!profile) {
+        const profiles = this.extractExtrudedProfiles(context, wall, placement)
+        if (profiles.length === 0) {
           const geometries = this.projectGeometry(context, wall)
-          if (geometries.length > 0) {
-            const height = geometries[0].bounds.max[2] - geometries[0].bounds.min[2]
-            profile = {
-              footprint: { outer: geometries[0].polygons[0], holes: [] },
-              extrusionDepth: height,
-              extrusionDirection: vec3.fromValues(0, 0, 1),
-              localOutline: geometries[0].polygons[0],
-              localToWorld: mat4.identity(mat4.create())
-            }
-          }
+          geometries.forEach(geometry => {
+            const height = geometry.bounds.max[2] - geometry.bounds.min[2]
+            geometry.polygons.forEach(polygon => {
+              profiles.push({
+                footprint: { outer: polygon, holes: [] },
+                extrusionDepth: height,
+                extrusionDirection: vec3.fromValues(0, 0, 1),
+                localOutline: polygon,
+                localToWorld: mat4.identity(mat4.create())
+              })
+            })
+          })
         }
         const openings = this.extractOpenings(context, wall)
-        const height = profile?.extrusionDepth ?? null
-        const thickness = profile != null ? this.estimateWallThickness(profile) : null
 
-        walls.push({
-          expressId: wall.expressID,
-          guid: this.getStringValue(wall.GlobalId),
-          name: this.getStringValue(wall.Name),
-          placement,
-          height,
-          thickness,
-          profile,
-          path: null,
-          openings
+        profiles.forEach(profile => {
+          return walls.push({
+            expressId: wall.expressID,
+            guid: this.getStringValue(wall.GlobalId),
+            name: this.getStringValue(wall.Name),
+            placement,
+            height: profile?.extrusionDepth ?? null,
+            thickness: profile != null ? this.estimateWallThickness(profile) : null,
+            profile,
+            path: null,
+            openings
+          })
         })
       }
     }
@@ -770,19 +775,20 @@ export class IfcImporter {
 
         const slab = element as IFC4.IfcSlab
         const placement = this.resolveObjectPlacement(context, slab)
-        const profile = this.extractPrimaryExtrudedProfile(context, slab, placement)
-        const thickness = profile?.extrusionDepth ?? null
+        const profiles = this.extractExtrudedProfiles(context, slab, placement)
         const openings = this.extractOpenings(context, slab)
 
-        slabs.push({
-          expressId: slab.expressID,
-          guid: this.getStringValue(slab.GlobalId),
-          name: this.getStringValue(slab.Name),
-          placement,
-          profile,
-          thickness,
-          openings
-        })
+        slabs.push(
+          ...profiles.map(profile => ({
+            expressId: slab.expressID,
+            guid: this.getStringValue(slab.GlobalId),
+            name: this.getStringValue(slab.Name),
+            placement,
+            profile,
+            thickness: profile?.extrusionDepth ?? null,
+            openings
+          }))
+        )
       }
     }
 
@@ -800,16 +806,18 @@ export class IfcImporter {
       if (!this.isOpeningElement(openingElement)) continue
 
       const openingPlacement = this.resolveObjectPlacement(context, openingElement)
-      const profile = this.extractPrimaryExtrudedProfile(context, openingElement, openingPlacement)
+      const profiles = this.extractExtrudedProfiles(context, openingElement, openingPlacement)
       const type = this.detectOpeningType(context, openingElement)
 
-      openings.push({
-        expressId: openingElement.expressID,
-        guid: this.getStringValue(openingElement.GlobalId),
-        type,
-        profile,
-        placement: openingPlacement
-      })
+      profiles.forEach(profile =>
+        openings.push({
+          expressId: openingElement.expressID,
+          guid: this.getStringValue(openingElement.GlobalId),
+          type,
+          profile,
+          placement: openingPlacement
+        })
+      )
     }
 
     return openings
@@ -834,15 +842,15 @@ export class IfcImporter {
     return detected
   }
 
-  private extractPrimaryExtrudedProfile(
+  private extractExtrudedProfiles(
     context: CachedModelContext,
     product: IFC4.IfcProduct,
     productPlacement: mat4
-  ): ExtrudedProfile | null {
+  ): ExtrudedProfile[] {
     const representationRef = product.Representation
     const representation = this.dereferenceLine(context, representationRef)
     if (!representation) {
-      return null
+      return []
     }
 
     let fallbackShape: IFC4.IfcShapeRepresentation | null = null
@@ -853,9 +861,9 @@ export class IfcImporter {
 
       const identifier = this.getStringValue(shape.RepresentationIdentifier)?.toLowerCase()
       if (identifier === 'body') {
-        const profile = this.extractExtrudedProfileFromShape(context, shape, productPlacement)
-        if (profile) {
-          return profile
+        const profiles = this.extractExtrudedProfilesFromShape(context, shape, productPlacement)
+        if (profiles.length > 0) {
+          return profiles
         }
       }
 
@@ -865,25 +873,30 @@ export class IfcImporter {
     }
 
     if (fallbackShape) {
-      return this.extractExtrudedProfileFromShape(context, fallbackShape, productPlacement)
+      return this.extractExtrudedProfilesFromShape(context, fallbackShape, productPlacement)
     }
 
-    return null
+    return []
   }
 
-  private extractExtrudedProfileFromShape(
+  private extractExtrudedProfilesFromShape(
     context: CachedModelContext,
     shape: IFC4.IfcShapeRepresentation,
     productPlacement: mat4
-  ): ExtrudedProfile | null {
+  ): ExtrudedProfile[] {
+    const profiles = []
     for (const itemRef of this.toArray(shape.Items)) {
       const item = this.dereferenceLine(context, itemRef)
-      if (!this.isExtrudedAreaSolid(item)) continue
-
-      return this.buildExtrudedProfile(context, item as IFC4.IfcExtrudedAreaSolid, productPlacement)
+      if (!this.isExtrudedAreaSolid(item) && !this.isExtrudedAreaSolidTapered(item)) {
+        continue
+      }
+      const profile = this.buildExtrudedProfile(context, item as IFC4.IfcExtrudedAreaSolid, productPlacement)
+      if (profile) {
+        profiles.push(profile)
+      }
     }
 
-    return null
+    return profiles
   }
 
   private buildExtrudedProfile(
@@ -892,7 +905,9 @@ export class IfcImporter {
     productPlacement: mat4
   ): ExtrudedProfile | null {
     const profilePolygon = this.extractProfilePolygon(context, solid.SweptArea)
-    if (!profilePolygon) {
+    const endPolygon =
+      'EndSweptArea' in solid ? this.extractProfilePolygon(context, solid.EndSweptArea) : profilePolygon
+    if (!profilePolygon || !endPolygon) {
       return null
     }
 
@@ -900,11 +915,50 @@ export class IfcImporter {
       ? this.resolveAxis2Placement3D(context, solid.Position)
       : createIdentityMatrix()
     const localToWorld = mat4.mul(mat4.create(), productPlacement, positionMatrix)
-    const footprint = this.transformPolygonWithMatrix(localToWorld, profilePolygon)
 
     const extrusionDirectionLocal = this.getDirection3(context, solid.ExtrudedDirection) ?? vec3.fromValues(0, 0, 1)
     const extrusionDirection = this.transformDirection(localToWorld, extrusionDirectionLocal)
     const extrusionDepth = Math.abs(this.getNumberValue(solid.Depth)) * context.unitScale
+
+    let footprint: PolygonWithHoles2D
+    if (extrusionDirection[2] === 0) {
+      const footprintPolygons: Polygon2D[] = []
+      const pointCount = profilePolygon.outer.points.length
+      profilePolygon.outer.points.forEach((start, index) => {
+        const end = endPolygon.outer.points[index]
+        const nextStart = profilePolygon.outer.points[(index + 1) % pointCount]
+        const nextEnd = endPolygon.outer.points[(index + 1) % pointCount]
+        const start3 = vec3.transformMat4(vec3.create(), vec3.fromValues(start[0], start[1], 0), localToWorld)
+        const nextStart3 = vec3.transformMat4(
+          vec3.create(),
+          vec3.fromValues(nextStart[0], nextStart[1], 0),
+          localToWorld
+        )
+        const end3 = vec3.transformMat4(
+          vec3.create(),
+          vec3.scaleAndAdd(vec3.create(), vec3.fromValues(end[0], end[1], 0), extrusionDirectionLocal, extrusionDepth),
+          localToWorld
+        )
+        const nextEnd3 = vec3.transformMat4(
+          vec3.create(),
+          vec3.scaleAndAdd(
+            vec3.create(),
+            vec3.fromValues(nextEnd[0], nextEnd[1], 0),
+            extrusionDirectionLocal,
+            extrusionDepth
+          ),
+          localToWorld
+        )
+        footprintPolygons.push(
+          ensurePolygonIsClockwise({
+            points: [vec2.clone(start3), vec2.clone(end3), vec2.clone(nextEnd3), vec2.clone(nextStart3)]
+          })
+        )
+      })
+      footprint = { outer: unionPolygons(footprintPolygons)[0], holes: [] }
+    } else {
+      footprint = this.transformPolygonWithMatrix(localToWorld, profilePolygon)
+    }
 
     return {
       footprint,
@@ -1058,17 +1112,7 @@ export class IfcImporter {
   }
 
   private estimateWallThickness(profile: ExtrudedProfile): number | null {
-    const xs = profile.localOutline.points.map(p => p[0])
-    const ys = profile.localOutline.points.map(p => p[1])
-
-    if (xs.length === 0 || ys.length === 0) {
-      return null
-    }
-
-    const width = Math.max(...xs) - Math.min(...xs)
-    const depth = Math.max(...ys) - Math.min(...ys)
-    const thickness = Math.min(Math.abs(width), Math.abs(depth))
-    return thickness > 0 ? thickness : null
+    return Math.min(...minimumAreaBoundingBox(profile.footprint.outer).size)
   }
 
   private sanitizePolygonPoints(points: vec2[]): vec2[] {
@@ -1316,6 +1360,10 @@ export class IfcImporter {
 
   private isExtrudedAreaSolid(value: IfcLineObject | null): value is IFC4.IfcExtrudedAreaSolid {
     return value != null && value.type === IFCEXTRUDEDAREASOLID
+  }
+
+  private isExtrudedAreaSolidTapered(value: IfcLineObject | null): value is IFC4.IfcExtrudedAreaSolidTapered {
+    return value != null && value.type === IFCEXTRUDEDAREASOLIDTAPERED
   }
 
   private isArbitraryClosedProfile(value: IfcLineObject | null): value is IFC4.IfcArbitraryClosedProfileDef {

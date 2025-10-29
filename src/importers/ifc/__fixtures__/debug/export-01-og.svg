@@ -15,14 +15,14 @@
 <polygon points="920,4980 920,2060 500,2060 500,4980" fill="#FFFFFF55" stroke="white" stroke-width="20" />
 <polygon points="9500,6700 9500,500 4535,500 500,500 500,6700" fill="rgba(0,200,83,0.18)" stroke="#2979ff" stroke-width="20" />
 <polygon points="4680,1920 4680,920 9080,920 9080,1920" fill="rgba(255,193,7,0.25)" stroke="#ff9100" stroke-width="20" />
-<polygon points="920,6280 920,920 4535,920 9080,920 9080,6280" fill="none" stroke="#ff1744" stroke-width="40" />
+<polygon points="9080.01,6280.16 919.84,6280.01 919.99,919.84 9080.16,919.99" fill="none" stroke="#ff1744" stroke-width="40" />
 <polygon points="4680,1920 4680,920 9080,920 9080,1920" fill="rgba(255,193,7,0.25)" stroke="#ff9100" stroke-width="20" />
-<line x1="920" y1="4980" x2="920" y2="2060" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
-<line x1="1445" y1="920" x2="3605" y2="920" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
-<line x1="9080" y1="1445" x2="9080" y2="2085" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
-<line x1="9080" y1="3035" x2="9080" y2="4365" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
-<line x1="9080" y1="4425" x2="9080" y2="5755" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
-<line x1="8195" y1="6280" x2="7235" y2="6280" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
-<line x1="5391" y1="6280" x2="4431" y2="6280" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
-<line x1="2765" y1="6280" x2="1805" y2="6280" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
+<line x1="8195.01" y1="6280.15" x2="7235" y2="6280.13" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
+<line x1="5391.01" y1="6280.09" x2="4431" y2="6280.07" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
+<line x1="2765.01" y1="6280.04" x2="1805" y2="6280.02" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
+<line x1="919.88" y1="4980.01" x2="919.96" y2="2060" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
+<line x1="1444.99" y1="919.85" x2="3605" y2="919.89" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
+<line x1="9080.14" y1="1444.99" x2="9080.13" y2="2085" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
+<line x1="9080.1" y1="3034.99" x2="9080.06" y2="4365" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
+<line x1="9080.06" y1="4424.99" x2="9080.03" y2="5755" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
 </svg>

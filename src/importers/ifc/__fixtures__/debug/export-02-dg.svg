@@ -15,12 +15,12 @@
 <polygon points="9080,3750 9080,5080 9500,5080 9500,3750" fill="#FFFFFF55" stroke="white" stroke-width="20" />
 <polygon points="9500,5480 9500,500 4535,500 500,500 500,6700 5770,6700 9500,6700" fill="rgba(0,200,83,0.18)" stroke="#2979ff" stroke-width="20" />
 <polygon points="4680,1920 4680,920 9080,920 9080,1920" fill="rgba(255,193,7,0.25)" stroke="#ff9100" stroke-width="20" />
-<polygon points="920,6280 920,920 4535,920 9080,920 9080,5480 5350,5480 5350,6280" fill="none" stroke="#ff1744" stroke-width="40" />
+<polygon points="920,6280.16 920,919.84 9080.16,919.99 9080.01,5480.15 5349.91,5479.98 5350.08,6280.01" fill="none" stroke="#ff1744" stroke-width="40" />
 <polygon points="4680,1920 4680,920 9080,920 9080,1920" fill="rgba(255,193,7,0.25)" stroke="#ff9100" stroke-width="20" />
 <line x1="920" y1="4725" x2="920" y2="1805" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
-<line x1="1445" y1="920" x2="3600" y2="920" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
-<line x1="9080" y1="2360" x2="9080" y2="3690" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
-<line x1="9080" y1="3750" x2="9080" y2="5080" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
-<line x1="8440" y1="5480" x2="6470" y2="5480" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
-<line x1="3770" y1="6280" x2="1790" y2="6280" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
+<line x1="1444.99" y1="919.85" x2="3600" y2="919.89" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
+<line x1="9080.11" y1="2359.99" x2="9080.07" y2="3690" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
+<line x1="9080.07" y1="3749.99" x2="9080.03" y2="5080" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
+<line x1="8440.02" y1="5480.12" x2="6470" y2="5480.03" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
+<line x1="3770" y1="6280.06" x2="1789.99" y2="6280.13" stroke="#8e24aa" stroke-width="40" stroke-linecap="round" />
 </svg>
