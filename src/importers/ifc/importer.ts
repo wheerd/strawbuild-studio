@@ -64,7 +64,8 @@ import {
   polygonEdgeOffset,
   simplifyPolygon,
   unionPolygons,
-  unionPolygonsWithHoles
+  unionPolygonsWithHoles,
+  wouldClosingPolygonSelfIntersect
 } from '@/shared/geometry/polygon'
 
 interface CachedModelContext {
@@ -221,10 +222,7 @@ export class IfcImporter {
       const outer = simplifyPolygon(offsetPolygon(ensurePolygonIsClockwise(shell), -2), 1)
       const edgeThicknesses = this.deriveEdgeThicknesses(outer, wallEdges, -averageThickness)
       const innerPolygon = this.offsetPolygonWithThickness(outer, edgeThicknesses)
-      if (!innerPolygon) {
-        console.warn('invalid inner', innerPolygon)
-        continue
-      }
+      if (!innerPolygon || wouldClosingPolygonSelfIntersect(innerPolygon)) continue
 
       const segments = this.createPerimeterSegments(innerPolygon, edgeThicknesses)
       this.assignOpeningsToSegments(outer, segments, wallOpenings)
@@ -572,7 +570,7 @@ export class IfcImporter {
         const minDistance = Math.min(...distances)
         const maxDistance = Math.max(...distances)
         const thickness = segment.thickness ?? DEFAULT_WALL_THICKNESS
-        if (minDistance > 0.5 * thickness || maxDistance > 1.5 * thickness) {
+        if (minDistance > thickness || maxDistance > 2 * thickness) {
           continue
         }
 

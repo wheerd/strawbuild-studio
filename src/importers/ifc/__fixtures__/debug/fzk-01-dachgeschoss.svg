@@ -11,4 +11,6 @@
 <polygon points="900,10400 12700,10400 12700,600 900,600" fill="rgba(0,200,83,0.18)" stroke="#2979ff" stroke-width="20" />
 <polygon points="12500,10200.17 1099.84,10200 1099.99,799.83 12500.16,800" fill="none" stroke="#ff1744" stroke-width="40" />
 <polygon points="8240.01,10200 12500,10200 12500,6490 8240.17,6490.02" fill="rgba(255,193,7,0.25)" stroke="#ff9100" stroke-width="20" />
+<line x1="1099.91" y1="6000.01" x2="1099.92" y2="5000" stroke="#00b0ff" stroke-width="40" stroke-linecap="round" />
+<line x1="12500.09" y1="5000" x2="12500.08" y2="6000.01" stroke="#00b0ff" stroke-width="40" stroke-linecap="round" />
 </svg>
