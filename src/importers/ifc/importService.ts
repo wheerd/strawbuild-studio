@@ -1,5 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
+import type { Perimeter } from '@/building/model'
 import type { StoreyId } from '@/building/model/ids'
 import { clearPersistence, getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
@@ -95,16 +96,21 @@ function applyImportedModel(model: ParsedIfcModel): void {
       const perimeterPolygon = clonePolygon(candidate.boundary.outer)
       const defaultThicknessFromSegments = averageSegmentThickness(candidate.segments) ?? wallThickness ?? undefined
 
-      const perimeter = actions.addPerimeter(
-        targetStoreyId,
-        perimeterPolygon,
-        defaultWallAssemblyId,
-        defaultThicknessFromSegments
-      )
-      const perimeterRecord = actions.getPerimeterById(perimeter.id) ?? perimeter
+      let perimeter: Perimeter
+      try {
+        perimeter = actions.addPerimeter(
+          targetStoreyId,
+          perimeterPolygon,
+          defaultWallAssemblyId,
+          defaultThicknessFromSegments
+        )
+      } catch (e) {
+        console.error(e)
+        continue
+      }
 
       candidate.segments.forEach((segment, index) => {
-        const wall = perimeterRecord.walls[index]
+        const wall = perimeter.walls[index]
         if (!wall) return
 
         if (segment.thickness && Number.isFinite(segment.thickness)) {
@@ -132,11 +138,19 @@ function applyImportedModel(model: ParsedIfcModel): void {
       })
 
       const floorAreaPolygon = clonePolygon(candidate.boundary.outer)
-      actions.addFloorArea(targetStoreyId, floorAreaPolygon)
+      try {
+        actions.addFloorArea(targetStoreyId, floorAreaPolygon)
+      } catch (e) {
+        console.error(e)
+      }
 
       for (const hole of candidate.boundary.holes) {
         if (hole.points.length >= 3) {
-          actions.addFloorOpening(targetStoreyId, clonePolygon(hole))
+          try {
+            actions.addFloorOpening(targetStoreyId, clonePolygon(hole))
+          } catch (e) {
+            console.error(e)
+          }
         }
       }
     }
