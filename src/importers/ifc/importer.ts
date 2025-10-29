@@ -43,8 +43,23 @@ import type {
   RawIfcStorey
 } from '@/importers/ifc/types'
 import { createIdentityMatrix } from '@/importers/ifc/utils'
-import { type Polygon2D, type PolygonWithHoles2D, boundsFromPoints } from '@/shared/geometry'
-import { isPointInPolygon, polygonEdgeOffset, unionPolygons, unionPolygonsWithHoles } from '@/shared/geometry/polygon'
+import {
+  type Bounds3D,
+  type Polygon2D,
+  type PolygonWithHoles2D,
+  boundsFromPoints,
+  boundsFromPoints3D
+} from '@/shared/geometry'
+import {
+  arePolygonsIntersecting,
+  ensurePolygonIsClockwise,
+  isPointInPolygon,
+  offsetPolygon,
+  polygonEdgeOffset,
+  simplifyPolygon,
+  unionPolygons,
+  unionPolygonsWithHoles
+} from '@/shared/geometry/polygon'
 
 interface CachedModelContext {
   readonly modelID: number
@@ -224,61 +239,115 @@ export class IfcImporter {
     slabHoles: Polygon2D[],
     wallOpenings: OpeningProjection[]
   ): ImportedPerimeterCandidate[] {
-    const candidates: ImportedPerimeterCandidate[] = []
-    const seen = new Set<string>()
-
     const averageThickness = this.computeAverageWallThickness(walls)
 
-    for (const slab of slabs) {
-      const footprint = slab.profile?.footprint
-      if (!footprint || footprint.outer.points.length < 3) continue
+    const allSlabOuter = slabs
+      .map(slab => slab.profile?.footprint.outer)
+      .filter((polygon): polygon is Polygon2D => polygon != null && polygon.points.length >= 3)
+    if (allSlabOuter.length === 0) return []
 
-      const key = this.serialisePolygon(footprint.outer)
-      if (seen.has(key)) continue
-      seen.add(key)
+    const mergedOuter = unionPolygons(allSlabOuter)
+    return mergedOuter.map(outer => {
+      const inner = offsetPolygon(ensurePolygonIsClockwise(outer), -averageThickness)
+      const relevantHoles = slabHoles.filter(h => arePolygonsIntersecting(h, inner))
 
       const segments = this.createPerimeterSegments(
-        footprint.outer,
-        footprint.outer.points.map(() => averageThickness)
+        inner,
+        inner.points.map(() => averageThickness)
       )
-      this.assignOpeningsToSegments(footprint.outer, segments, wallOpenings)
+      this.assignOpeningsToSegments(outer, segments, wallOpenings)
 
-      candidates.push({
+      return {
         source: 'slab',
         boundary: {
-          outer: clonePolygon2D(footprint.outer),
-          holes: footprint.holes.map(clonePolygon2D)
+          outer: clonePolygon2D(inner),
+          holes: relevantHoles.map(clonePolygon2D)
         },
         segments
-      })
-    }
-
-    if (candidates.length === 0 && slabHoles.length > 0) {
-      const allSlabOuter = slabs
-        .map(slab => slab.profile?.footprint.outer)
-        .filter((polygon): polygon is Polygon2D => polygon != null && polygon.points.length >= 3)
-      if (allSlabOuter.length > 0) {
-        const mergedOuter = unionPolygons(allSlabOuter)
-        for (const outer of mergedOuter) {
-          if (outer.points.length < 3) continue
-          const segments = this.createPerimeterSegments(
-            outer,
-            outer.points.map(() => averageThickness)
-          )
-          this.assignOpeningsToSegments(outer, segments, wallOpenings)
-          candidates.push({
-            source: 'slab',
-            boundary: {
-              outer: clonePolygon2D(outer),
-              holes: slabHoles.map(clonePolygon2D)
-            },
-            segments
-          })
-        }
       }
+    })
+  }
+
+  private projectGeometry(
+    context: CachedModelContext,
+    element: IFC4.IfcProduct
+  ): { bounds: Bounds3D; polygons: Polygon2D[] }[] {
+    const mesh = this.api.GetFlatMesh(context.modelID, element.expressID)
+    const results: { bounds: Bounds3D; polygons: Polygon2D[] }[] = []
+    for (let j = 0; j < mesh.geometries.size(); j++) {
+      const placedGeometry = mesh.geometries.get(j)
+      const matrix = mat4.fromValues.apply(mat4.fromValues, placedGeometry.flatTransformation as any)
+      const geometry = this.api.GetGeometry(context.modelID, placedGeometry.geometryExpressID)
+
+      const idx = this.api.GetIndexArray(geometry.GetIndexData(), geometry.GetIndexDataSize()) as Uint32Array
+      const v = this.api.GetVertexArray(geometry.GetVertexData(), geometry.GetVertexDataSize()) as Float32Array
+      const posArray = this.ifcGeometryToPosArray(v)
+      const rawPoints = this.posArrayToVec2(posArray)
+      const indices = Array.from(idx)
+      geometry.delete()
+
+      const points = rawPoints.map(p => vec3.scale(vec3.create(), vec3.transformMat4(vec3.create(), p, matrix), 1000))
+
+      // --- Project triangles to XY and collect as polygons ---
+      const usedPoints: vec3[] = []
+      const triPolys: Polygon2D[] = []
+      for (let t = 0; t < indices.length; t += 3) {
+        const i0 = indices[t],
+          i1 = indices[t + 1],
+          i2 = indices[t + 2]
+
+        usedPoints.push(points[i0], points[i1], points[i2])
+
+        const p0: vec2 = vec2.fromValues(points[i0][0], -points[i0][2])
+        const p1: vec2 = vec2.fromValues(points[i1][0], -points[i1][2])
+        const p2: vec2 = vec2.fromValues(points[i2][0], -points[i2][2])
+
+        const a2 = this.signedArea2([p0, p1, p2])
+        if (Math.abs(a2) <= 1e-10) continue // drop degenerate/flat
+
+        // Ensure CCW winding (many union libs expect outer rings CCW)
+        triPolys.push({ points: a2 > 0 ? [p0, p1, p2] : [p0, p2, p1] })
+      }
+
+      const bounds = boundsFromPoints3D(usedPoints)
+      if (!bounds) continue
+
+      const polygons = unionPolygons(triPolys).map(simplifyPolygon)
+
+      results.push({ bounds, polygons })
+    }
+    if ('delete' in mesh) mesh.delete()
+
+    return results
+  }
+
+  private ifcGeometryToPosArray(vertexData: Float32Array): Float32Array {
+    const posFloats = new Float32Array(vertexData.length / 2)
+
+    for (let i = 0; i < vertexData.length; i += 6) {
+      posFloats[i / 2] = vertexData[i]
+      posFloats[i / 2 + 1] = vertexData[i + 1]
+      posFloats[i / 2 + 2] = vertexData[i + 2]
     }
 
-    return candidates
+    return posFloats
+  }
+  private posArrayToVec2(posFloats: Float32Array): vec3[] {
+    const points: vec3[] = []
+    for (let i = 0; i < posFloats.length; i += 3) {
+      points.push(vec3.fromValues(posFloats[i], posFloats[i + 1], posFloats[i + 2]))
+    }
+    return points
+  }
+
+  private signedArea2(pts: vec2[]): number {
+    let a = 0
+    for (let i = 0, n = pts.length; i < n; i++) {
+      const [x0, y0] = pts[i]
+      const [x1, y1] = pts[(i + 1) % n]
+      a += x0 * y1 - y0 * x1
+    }
+    return 0.5 * a
   }
 
   private collectSlabOpenings(slabs: ImportedSlab[]): Polygon2D[] {
@@ -639,10 +708,6 @@ export class IfcImporter {
     return distStart < EDGE_DISTANCE_TOLERANCE && distEnd < EDGE_DISTANCE_TOLERANCE
   }
 
-  private serialisePolygon(polygon: Polygon2D): string {
-    return polygon.points.map(point => `${Math.round(point[0])}:${Math.round(point[1])}`).join('|')
-  }
-
   private extractWalls(context: CachedModelContext, storey: IFC4.IfcBuildingStorey): ImportedWall[] {
     const walls: ImportedWall[] = []
 
@@ -656,7 +721,20 @@ export class IfcImporter {
 
         const wall = element as IFC4.IfcWall
         const placement = this.resolveObjectPlacement(context, wall)
-        const profile = this.extractPrimaryExtrudedProfile(context, wall, placement)
+        let profile = this.extractPrimaryExtrudedProfile(context, wall, placement)
+        if (!profile) {
+          const geometries = this.projectGeometry(context, wall)
+          if (geometries.length > 0) {
+            const height = geometries[0].bounds.max[2] - geometries[0].bounds.min[2]
+            profile = {
+              footprint: { outer: geometries[0].polygons[0], holes: [] },
+              extrusionDepth: height,
+              extrusionDirection: vec3.fromValues(0, 0, 1),
+              localOutline: geometries[0].polygons[0],
+              localToWorld: mat4.identity(mat4.create())
+            }
+          }
+        }
         const openings = this.extractOpenings(context, wall)
         const height = profile?.extrusionDepth ?? null
         const thickness = profile != null ? this.estimateWallThickness(profile) : null
@@ -688,6 +766,7 @@ export class IfcImporter {
       for (const elementRef of this.toArray(relation.RelatedElements)) {
         const element = this.dereferenceLine(context, elementRef)
         if (!this.isSlabElement(element)) continue
+        if (this.enumEquals(element.PredefinedType, IFC4.IfcSlabTypeEnum.ROOF)) continue
 
         const slab = element as IFC4.IfcSlab
         const placement = this.resolveObjectPlacement(context, slab)
