@@ -8,6 +8,7 @@ import {
   IFCAXIS2PLACEMENT3D,
   IFCBUILDINGSTOREY,
   IFCCARTESIANPOINTLIST3D,
+  IFCCONVERSIONBASEDUNIT,
   IFCDOOR,
   IFCEXTRUDEDAREASOLID,
   IFCEXTRUDEDAREASOLIDTAPERED,
@@ -1310,10 +1311,21 @@ export class IfcImporter {
 
       for (const unitRef of this.toArray(assignment.Units)) {
         const unitLine = this.dereferenceLine(context, unitRef)
-        if (!this.isSiUnit(unitLine)) continue
-
-        if (this.enumEquals(unitLine.UnitType, IFC4.IfcUnitEnum.LENGTHUNIT)) {
-          return this.computeSiPrefixScale(unitLine.Prefix, unitLine.Name)
+        if (this.isSiUnit(unitLine)) {
+          if (this.enumEquals(unitLine.UnitType, IFC4.IfcUnitEnum.LENGTHUNIT)) {
+            return this.computeSiPrefixScale(unitLine.Prefix, unitLine.Name)
+          }
+        } else if (this.isConversionBasedUnit(unitLine)) {
+          if (this.enumEquals(unitLine.UnitType, IFC4.IfcUnitEnum.LENGTHUNIT)) {
+            const conversionFactor = this.dereferenceLine(context, unitLine.ConversionFactor) as IFC4.IfcMeasureWithUnit
+            const baseUnit = this.dereferenceLine(context, conversionFactor.UnitComponent)
+            if (this.isSiUnit(baseUnit)) {
+              return (
+                this.getNumberValue(conversionFactor.ValueComponent) *
+                this.computeSiPrefixScale(baseUnit.Prefix, baseUnit.Name)
+              )
+            }
+          }
         }
       }
     } finally {
@@ -1666,6 +1678,10 @@ export class IfcImporter {
 
   private isSiUnit(value: IfcLineObject | null): value is IFC4.IfcSIUnit {
     return value != null && value.type === IFCSIUNIT
+  }
+
+  private isConversionBasedUnit(value: IfcLineObject | null): value is IFC4.IfcConversionBasedUnit {
+    return value != null && value.type === IFCCONVERSIONBASEDUNIT
   }
 }
 
