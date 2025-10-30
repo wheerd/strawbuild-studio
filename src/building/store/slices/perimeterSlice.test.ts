@@ -12,18 +12,25 @@ import {
   createStoreyId,
   createWallAssemblyId
 } from '@/building/model/ids'
-import { type Length, type Polygon2D, wouldClosingPolygonSelfIntersect } from '@/shared/geometry'
+import {
+  type Length,
+  type Polygon2D,
+  ensurePolygonIsClockwise,
+  wouldClosingPolygonSelfIntersect
+} from '@/shared/geometry'
 
 import { type PerimetersSlice, createPerimetersSlice } from './perimeterSlice'
 
 vi.mock('@/shared/geometry/polygon', async importOriginal => {
   return {
     ...(await importOriginal()),
-    wouldClosingPolygonSelfIntersect: vi.fn()
+    wouldClosingPolygonSelfIntersect: vi.fn(),
+    ensurePolygonIsClockwise: vi.fn()
   }
 })
 
 const wouldClosingPolygonSelfIntersectMock = vi.mocked(wouldClosingPolygonSelfIntersect)
+const ensurePolygonIsClockwiseMock = vi.mocked(ensurePolygonIsClockwise)
 
 // Mock Zustand following the official testing guide
 vi.mock('zustand')
@@ -37,6 +44,8 @@ describe('perimeterSlice', () => {
   beforeEach(() => {
     wouldClosingPolygonSelfIntersectMock.mockReset()
     wouldClosingPolygonSelfIntersectMock.mockReturnValue(false)
+    ensurePolygonIsClockwiseMock.mockReset()
+    ensurePolygonIsClockwiseMock.mockImplementation(p => p)
 
     // Create the slice directly without using create()
     mockSet = vi.fn()
@@ -114,6 +123,14 @@ describe('perimeterSlice', () => {
         expect(corner.constructedByWall).toBe('next') // Default
         expect(corner.outsidePoint).toBeTruthy()
       })
+    })
+    it('should ensure polygon is clockwise', () => {
+      const boundary = createRectangularBoundary()
+      const wallAssemblyId = createWallAssemblyId()
+
+      store.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId)
+
+      expect(ensurePolygonIsClockwiseMock).toHaveBeenCalledWith(boundary)
     })
 
     it('should add perimeter polygon with custom thickness', () => {

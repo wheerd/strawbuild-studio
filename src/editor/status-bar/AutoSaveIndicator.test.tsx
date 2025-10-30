@@ -26,8 +26,8 @@ vi.mock('@/shared/services/ProjectImportExportService', () => ({
   }
 }))
 
-vi.mock('@/exporters/ifc', () => ({
-  exportCurrentModelToIfc: vi.fn().mockResolvedValue(undefined)
+vi.mock('@/importers/ifc/importService', () => ({
+  importIfcIntoModel: vi.fn()
 }))
 
 function renderAutoSaveIndicator() {

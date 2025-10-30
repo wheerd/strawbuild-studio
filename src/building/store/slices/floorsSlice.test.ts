@@ -2,7 +2,12 @@ import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { type StoreyId, createFloorAreaId, createFloorOpeningId, createStoreyId } from '@/building/model/ids'
-import { type Polygon2D, polygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/shared/geometry'
+import {
+  type Polygon2D,
+  ensurePolygonIsClockwise,
+  ensurePolygonIsCounterClockwise,
+  wouldClosingPolygonSelfIntersect
+} from '@/shared/geometry'
 
 import { type FloorsSlice, createFloorsSlice } from './floorsSlice'
 
@@ -10,12 +15,14 @@ vi.mock('@/shared/geometry/polygon', async importOriginal => {
   return {
     ...(await importOriginal()),
     wouldClosingPolygonSelfIntersect: vi.fn(),
-    polygonIsClockwise: vi.fn()
+    ensurePolygonIsClockwise: vi.fn(),
+    ensurePolygonIsCounterClockwise: vi.fn()
   }
 })
 
 const wouldClosingPolygonSelfIntersectMock = vi.mocked(wouldClosingPolygonSelfIntersect)
-const polygonIsClockwiseMock = vi.mocked(polygonIsClockwise)
+const ensurePolygonIsClockwiseMock = vi.mocked(ensurePolygonIsClockwise)
+const ensurePolygonIsCounterClockwiseMock = vi.mocked(ensurePolygonIsCounterClockwise)
 
 vi.mock('zustand')
 
@@ -28,7 +35,9 @@ describe('floorsSlice', () => {
   beforeEach(() => {
     wouldClosingPolygonSelfIntersectMock.mockReset()
     wouldClosingPolygonSelfIntersectMock.mockReturnValue(false)
-    polygonIsClockwiseMock.mockReset()
+    ensurePolygonIsClockwiseMock.mockReset()
+    ensurePolygonIsClockwiseMock.mockImplementation(p => p)
+    ensurePolygonIsCounterClockwiseMock.mockImplementation(p => p)
 
     mockSet = vi.fn()
     mockGet = vi.fn()
@@ -63,7 +72,6 @@ describe('floorsSlice', () => {
     describe('addFloorArea', () => {
       it('should add a valid clockwise floor area', () => {
         const polygon = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(true)
 
         const floorArea = store.actions.addFloorArea(testStoreyId, polygon)
 
@@ -77,7 +85,6 @@ describe('floorsSlice', () => {
       it('should add multiple floor areas to the same storey', () => {
         const polygon1 = createRectangularPolygon()
         const polygon2 = createTriangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(true)
 
         store.actions.addFloorArea(testStoreyId, polygon1)
         store.actions.addFloorArea(testStoreyId, polygon2)
@@ -91,7 +98,6 @@ describe('floorsSlice', () => {
         const storey1Id = createStoreyId()
         const storey2Id = createStoreyId()
         const polygon = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(true)
 
         store.actions.addFloorArea(storey1Id, polygon)
         store.actions.addFloorArea(storey2Id, polygon)
@@ -114,26 +120,23 @@ describe('floorsSlice', () => {
       it('should throw error for self-intersecting polygon', () => {
         const polygon = createRectangularPolygon()
         wouldClosingPolygonSelfIntersectMock.mockReturnValue(true)
-        polygonIsClockwiseMock.mockReturnValue(true)
 
         expect(() => store.actions.addFloorArea(testStoreyId, polygon)).toThrow('Polygon must not self-intersect')
       })
 
       it('should automatically flip counter-clockwise polygon to clockwise', () => {
         const polygon = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(false)
 
         const floorArea = store.actions.addFloorArea(testStoreyId, polygon)
 
-        expect(floorArea).toBeDefined()
-        expect(floorArea.area.points).toEqual([...polygon.points].reverse())
+        expect(ensurePolygonIsClockwiseMock).toHaveBeenCalledWith(polygon)
+        expect(floorArea.area).toBe(polygon)
       })
     })
 
     describe('removeFloorArea', () => {
       it('should remove existing floor area', () => {
         const polygon = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(true)
 
         const floorArea = store.actions.addFloorArea(testStoreyId, polygon)
         expect(Object.keys(store.floorAreas).length).toBe(1)
@@ -156,7 +159,6 @@ describe('floorsSlice', () => {
       it('should not affect other floor areas when removing one', () => {
         const polygon1 = createRectangularPolygon()
         const polygon2 = createTriangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(true)
 
         const area1 = store.actions.addFloorArea(testStoreyId, polygon1)
         const area2 = store.actions.addFloorArea(testStoreyId, polygon2)
@@ -172,7 +174,6 @@ describe('floorsSlice', () => {
       it('should update existing floor area with valid polygon', () => {
         const polygon1 = createRectangularPolygon()
         const polygon2 = createTriangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(true)
 
         const floorArea = store.actions.addFloorArea(testStoreyId, polygon1)
 
@@ -186,7 +187,6 @@ describe('floorsSlice', () => {
       it('should return false for non-existent floor area', () => {
         const fakeId = createFloorAreaId()
         const polygon = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(true)
 
         const success = store.actions.updateFloorArea(fakeId, polygon)
 
@@ -195,7 +195,6 @@ describe('floorsSlice', () => {
 
       it('should throw error for invalid polygon', () => {
         const polygon1 = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(true)
 
         const floorArea = store.actions.addFloorArea(testStoreyId, polygon1)
 
@@ -210,7 +209,6 @@ describe('floorsSlice', () => {
 
       it('should throw error for self-intersecting polygon', () => {
         const polygon1 = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(true)
 
         const floorArea = store.actions.addFloorArea(testStoreyId, polygon1)
 
@@ -222,25 +220,22 @@ describe('floorsSlice', () => {
 
       it('should automatically flip counter-clockwise polygon to clockwise on update', () => {
         const polygon1 = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(true)
 
         const floorArea = store.actions.addFloorArea(testStoreyId, polygon1)
 
-        polygonIsClockwiseMock.mockReturnValue(false)
         const polygon2 = createRectangularPolygon()
 
         const success = store.actions.updateFloorArea(floorArea.id, polygon2)
 
         expect(success).toBe(true)
-        const updated = store.actions.getFloorAreaById(floorArea.id)
-        expect(updated?.area.points).toEqual([...polygon2.points].reverse())
+        expect(ensurePolygonIsClockwiseMock).toHaveBeenCalledWith(polygon2)
+        expect(floorArea.area).toBe(polygon2)
       })
     })
 
     describe('getFloorAreaById', () => {
       it('should return existing floor area', () => {
         const polygon = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(true)
 
         const floorArea = store.actions.addFloorArea(testStoreyId, polygon)
         const result = store.actions.getFloorAreaById(floorArea.id)
@@ -268,7 +263,6 @@ describe('floorsSlice', () => {
         const storey1Id = createStoreyId()
         const storey2Id = createStoreyId()
         const polygon = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(true)
 
         store.actions.addFloorArea(storey1Id, polygon)
         store.actions.addFloorArea(storey1Id, polygon)
@@ -285,7 +279,6 @@ describe('floorsSlice', () => {
 
       it('should return empty array for non-existent storey', () => {
         const polygon = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(true)
 
         store.actions.addFloorArea(testStoreyId, polygon)
 
@@ -301,7 +294,6 @@ describe('floorsSlice', () => {
     describe('addFloorOpening', () => {
       it('should add a valid counter-clockwise floor opening', () => {
         const polygon = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(false)
 
         const floorOpening = store.actions.addFloorOpening(testStoreyId, polygon)
 
@@ -315,7 +307,6 @@ describe('floorsSlice', () => {
       it('should add multiple floor openings to the same storey', () => {
         const polygon1 = createRectangularPolygon()
         const polygon2 = createTriangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(false)
 
         store.actions.addFloorOpening(testStoreyId, polygon1)
         store.actions.addFloorOpening(testStoreyId, polygon2)
@@ -329,7 +320,6 @@ describe('floorsSlice', () => {
         const storey1Id = createStoreyId()
         const storey2Id = createStoreyId()
         const polygon = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(false)
 
         store.actions.addFloorOpening(storey1Id, polygon)
         store.actions.addFloorOpening(storey2Id, polygon)
@@ -352,26 +342,23 @@ describe('floorsSlice', () => {
       it('should throw error for self-intersecting polygon', () => {
         const polygon = createRectangularPolygon()
         wouldClosingPolygonSelfIntersectMock.mockReturnValue(true)
-        polygonIsClockwiseMock.mockReturnValue(false)
 
         expect(() => store.actions.addFloorOpening(testStoreyId, polygon)).toThrow('Polygon must not self-intersect')
       })
 
       it('should automatically flip clockwise polygon to counter-clockwise', () => {
         const polygon = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(true)
 
         const floorOpening = store.actions.addFloorOpening(testStoreyId, polygon)
 
-        expect(floorOpening).toBeDefined()
-        expect(floorOpening.area.points).toEqual([...polygon.points].reverse())
+        expect(ensurePolygonIsCounterClockwiseMock).toHaveBeenCalledWith(polygon)
+        expect(floorOpening.area).toBe(polygon)
       })
     })
 
     describe('removeFloorOpening', () => {
       it('should remove existing floor opening', () => {
         const polygon = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(false)
 
         const floorOpening = store.actions.addFloorOpening(testStoreyId, polygon)
         expect(Object.keys(store.floorOpenings).length).toBe(1)
@@ -394,7 +381,6 @@ describe('floorsSlice', () => {
       it('should not affect other floor openings when removing one', () => {
         const polygon1 = createRectangularPolygon()
         const polygon2 = createTriangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(false)
 
         const opening1 = store.actions.addFloorOpening(testStoreyId, polygon1)
         const opening2 = store.actions.addFloorOpening(testStoreyId, polygon2)
@@ -410,7 +396,6 @@ describe('floorsSlice', () => {
       it('should update existing floor opening with valid polygon', () => {
         const polygon1 = createRectangularPolygon()
         const polygon2 = createTriangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(false)
 
         const floorOpening = store.actions.addFloorOpening(testStoreyId, polygon1)
 
@@ -424,7 +409,6 @@ describe('floorsSlice', () => {
       it('should return false for non-existent floor opening', () => {
         const fakeId = createFloorOpeningId()
         const polygon = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(false)
 
         const success = store.actions.updateFloorOpening(fakeId, polygon)
 
@@ -433,7 +417,6 @@ describe('floorsSlice', () => {
 
       it('should throw error for invalid polygon', () => {
         const polygon1 = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(false)
 
         const floorOpening = store.actions.addFloorOpening(testStoreyId, polygon1)
 
@@ -448,7 +431,6 @@ describe('floorsSlice', () => {
 
       it('should throw error for self-intersecting polygon', () => {
         const polygon1 = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(false)
 
         const floorOpening = store.actions.addFloorOpening(testStoreyId, polygon1)
 
@@ -462,25 +444,22 @@ describe('floorsSlice', () => {
 
       it('should automatically flip clockwise polygon to counter-clockwise on update', () => {
         const polygon1 = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(false)
 
         const floorOpening = store.actions.addFloorOpening(testStoreyId, polygon1)
 
-        polygonIsClockwiseMock.mockReturnValue(true)
         const polygon2 = createRectangularPolygon()
 
         const success = store.actions.updateFloorOpening(floorOpening.id, polygon2)
 
         expect(success).toBe(true)
-        const updated = store.actions.getFloorOpeningById(floorOpening.id)
-        expect(updated?.area.points).toEqual([...polygon2.points].reverse())
+        expect(ensurePolygonIsCounterClockwiseMock).toHaveBeenCalledWith(polygon2)
+        expect(floorOpening.area).toBe(polygon2)
       })
     })
 
     describe('getFloorOpeningById', () => {
       it('should return existing floor opening', () => {
         const polygon = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(false)
 
         const floorOpening = store.actions.addFloorOpening(testStoreyId, polygon)
         const result = store.actions.getFloorOpeningById(floorOpening.id)
@@ -508,7 +487,6 @@ describe('floorsSlice', () => {
         const storey1Id = createStoreyId()
         const storey2Id = createStoreyId()
         const polygon = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(false)
 
         store.actions.addFloorOpening(storey1Id, polygon)
         store.actions.addFloorOpening(storey1Id, polygon)
@@ -525,7 +503,6 @@ describe('floorsSlice', () => {
 
       it('should return empty array for non-existent storey', () => {
         const polygon = createRectangularPolygon()
-        polygonIsClockwiseMock.mockReturnValue(false)
 
         store.actions.addFloorOpening(testStoreyId, polygon)
 
@@ -542,10 +519,8 @@ describe('floorsSlice', () => {
       const areaPolygon = createRectangularPolygon()
       const openingPolygon = createTriangularPolygon()
 
-      polygonIsClockwiseMock.mockReturnValue(true)
       const area = store.actions.addFloorArea(testStoreyId, areaPolygon)
 
-      polygonIsClockwiseMock.mockReturnValue(false)
       const opening = store.actions.addFloorOpening(testStoreyId, openingPolygon)
 
       expect(Object.keys(store.floorAreas).length).toBe(1)
@@ -558,11 +533,9 @@ describe('floorsSlice', () => {
       const polygon1 = createRectangularPolygon()
       const polygon2 = createTriangularPolygon()
 
-      polygonIsClockwiseMock.mockReturnValue(true)
       const area1 = store.actions.addFloorArea(testStoreyId, polygon1)
       const area2 = store.actions.addFloorArea(testStoreyId, polygon2)
 
-      polygonIsClockwiseMock.mockReturnValue(false)
       const opening1 = store.actions.addFloorOpening(testStoreyId, polygon1)
 
       store.actions.removeFloorArea(area1.id)
@@ -572,7 +545,6 @@ describe('floorsSlice', () => {
       expect(store.actions.getFloorAreaById(area2.id)).toBeTruthy()
       expect(store.actions.getFloorOpeningById(opening1.id)).toBeTruthy()
 
-      polygonIsClockwiseMock.mockReturnValue(true)
       store.actions.updateFloorArea(area2.id, polygon1)
 
       const updatedArea = store.actions.getFloorAreaById(area2.id)
@@ -584,11 +556,9 @@ describe('floorsSlice', () => {
       const storey2Id = createStoreyId()
       const polygon = createRectangularPolygon()
 
-      polygonIsClockwiseMock.mockReturnValue(true)
       store.actions.addFloorArea(storey1Id, polygon)
       store.actions.addFloorArea(storey2Id, polygon)
 
-      polygonIsClockwiseMock.mockReturnValue(false)
       store.actions.addFloorOpening(storey1Id, polygon)
       store.actions.addFloorOpening(storey1Id, polygon)
       store.actions.addFloorOpening(storey2Id, polygon)

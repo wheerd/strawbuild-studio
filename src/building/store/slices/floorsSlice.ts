@@ -4,7 +4,11 @@ import type { FloorAreaId, FloorOpeningId, StoreyId } from '@/building/model/ids
 import { createFloorAreaId, createFloorOpeningId } from '@/building/model/ids'
 import type { FloorArea, FloorOpening } from '@/building/model/model'
 import type { Polygon2D } from '@/shared/geometry'
-import { polygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/shared/geometry'
+import {
+  ensurePolygonIsClockwise,
+  ensurePolygonIsCounterClockwise,
+  wouldClosingPolygonSelfIntersect
+} from '@/shared/geometry'
 
 export interface FloorsState {
   floorAreas: Record<FloorAreaId, FloorArea>
@@ -39,20 +43,12 @@ const validatePolygon = (polygon: Polygon2D): void => {
 
 const ensureFloorAreaPolygon = (polygon: Polygon2D): Polygon2D => {
   validatePolygon(polygon)
-
-  if (!polygonIsClockwise(polygon)) {
-    return { points: [...polygon.points].reverse() }
-  }
-  return polygon
+  return ensurePolygonIsClockwise(polygon)
 }
 
 const ensureFloorOpeningPolygon = (polygon: Polygon2D): Polygon2D => {
   validatePolygon(polygon)
-
-  if (polygonIsClockwise(polygon)) {
-    return { points: [...polygon.points].reverse() }
-  }
-  return polygon
+  return ensurePolygonIsCounterClockwise(polygon)
 }
 
 export const createFloorsSlice: StateCreator<FloorsSlice, [['zustand/immer', never]], [], FloorsSlice> = (

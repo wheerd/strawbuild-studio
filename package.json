@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "typecheck": "tsc --noEmit --skipLibCheck",
+    "typecheck": "tsc -b --noEmit",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
@@ -18,7 +18,8 @@
     "check": "pnpm format:check && pnpm lint",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest watch"
+    "test:watch": "vitest watch",
+    "testimporter": "IFCIMPORTER=1 vitest watch src/importers/ifc/importer.integration.test.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

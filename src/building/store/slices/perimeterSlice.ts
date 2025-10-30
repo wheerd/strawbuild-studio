@@ -27,7 +27,7 @@ import {
   projectPointOntoLine,
   radiansToDegrees
 } from '@/shared/geometry'
-import { wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
+import { ensurePolygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 
 export interface PerimetersState {
   perimeters: Record<PerimeterId, Perimeter>
@@ -145,6 +145,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
       if (boundary.points.length < 3) {
         throw new Error('Perimeter boundary must have at least 3 points')
       }
+      boundary = ensurePolygonIsClockwise(boundary)
 
       const wallThickness = thickness ?? DEFAULT_PERIMETER_WALL_THICKNESS
 
@@ -708,25 +709,29 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         return false
       }
 
+      const newPolygon = ensurePolygonIsClockwise({ points: newBoundary })
+
       // Check if the new polygon would self-intersect
-      if (wouldClosingPolygonSelfIntersect({ points: newBoundary })) {
+      if (wouldClosingPolygonSelfIntersect(newPolygon)) {
         return false
       }
 
+      let success = false
       set(state => {
         const perimeter = state.perimeters[perimeterId]
-        if (!perimeter) return
+        if (!perimeter || perimeter.corners.length !== newPolygon.points.length) return
 
         // Update corner inside points directly
         perimeter.corners.forEach((corner: PerimeterCorner, index: number) => {
-          corner.insidePoint = newBoundary[index]
+          corner.insidePoint = newPolygon.points[index]
         })
 
         // Recalculate all geometry with the new boundary
         updatePerimeterGeometry(perimeter)
+        success = true
       })
 
-      return true
+      return success
     },
 
     // Ring beam configuration

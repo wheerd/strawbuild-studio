@@ -6,7 +6,7 @@ import { usePersistenceStore } from '@/building/store/persistenceStore'
 import { clearSelection } from '@/editor/hooks/useSelectionStore'
 import { SaveIcon } from '@/shared/components/Icons'
 import { ProjectImportExportService } from '@/shared/services/ProjectImportExportService'
-import { createFileInput } from '@/shared/utils/createFileInput'
+import { createBinaryFileInput, createFileInput } from '@/shared/utils/createFileInput'
 import { downloadFile } from '@/shared/utils/downloadFile'
 
 export function AutoSaveIndicator(): React.JSX.Element {
@@ -72,6 +72,26 @@ export function AutoSaveIndicator(): React.JSX.Element {
     } catch (error) {
       setIsImporting(false)
       setImportError(error instanceof Error ? error.message : 'Failed to import file')
+    }
+  }
+
+  const handleIfcImport = async () => {
+    setIsImporting(true)
+    setImportError(null)
+
+    try {
+      await createBinaryFileInput(async (content: ArrayBuffer) => {
+        clearSelection()
+        const { importIfcIntoModel } = await import('@/importers/ifc/importService')
+        const result = await importIfcIntoModel(content)
+        if (!result.success) {
+          throw new Error(result.error ?? 'Failed to import IFC file')
+        }
+      }, '.ifc')
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : 'Failed to import IFC file')
+    } finally {
+      setIsImporting(false)
     }
   }
 
@@ -176,6 +196,11 @@ export function AutoSaveIndicator(): React.JSX.Element {
         <DropdownMenu.Item onClick={handleImport} disabled={isExporting || isImporting}>
           <UploadIcon />
           Load from File
+        </DropdownMenu.Item>
+
+        <DropdownMenu.Item onClick={handleIfcImport} disabled={isExporting || isImporting}>
+          <UploadIcon />
+          Import IFC
         </DropdownMenu.Item>
 
         <DropdownMenu.Separator />

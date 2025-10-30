@@ -1,5 +1,5 @@
 import type { PolyPathD } from 'clipper2-wasm'
-import { vec2 } from 'gl-matrix'
+import { vec2, vec3 } from 'gl-matrix'
 
 import {
   createPathD,
@@ -24,6 +24,15 @@ export interface PolygonWithHoles2D {
   holes: Polygon2D[]
 }
 
+export interface Polygon3D {
+  points: vec3[]
+}
+
+export interface PolygonWithHoles3D {
+  outer: Polygon3D
+  holes: Polygon3D[]
+}
+
 export function calculatePolygonArea(polygon: Polygon2D): Area {
   const path = createPathD(polygon.points)
   try {
@@ -46,6 +55,20 @@ export function polygonIsClockwise(polygon: Polygon2D): boolean {
   } finally {
     path.delete()
   }
+}
+
+export function ensurePolygonIsClockwise(polygon: Polygon2D): Polygon2D {
+  if (!polygonIsClockwise(polygon)) {
+    return { points: [...polygon.points].reverse() }
+  }
+  return polygon
+}
+
+export function ensurePolygonIsCounterClockwise(polygon: Polygon2D): Polygon2D {
+  if (polygonIsClockwise(polygon)) {
+    return { points: [...polygon.points].reverse() }
+  }
+  return polygon
 }
 
 export function polygonPerimeter(polygon: Polygon2D): number {
@@ -233,7 +256,7 @@ const pathDToPolygon = (path: ReturnType<typeof createPathD>): Polygon2D => {
   return { points }
 }
 
-const collectPolygonsWithHolesFromPolyTree = (root: PolyPathD): PolygonWithHoles2D[] => {
+export const collectPolygonsWithHolesFromPolyTree = (root: PolyPathD): PolygonWithHoles2D[] => {
   const result: PolygonWithHoles2D[] = []
 
   const processNode = (node: PolyPathD, depth: number, currentOuter: PolygonWithHoles2D | null) => {
@@ -290,6 +313,29 @@ export function subtractPolygons(subject: Polygon2D[], clips: Polygon2D[]): Poly
     clipPathsD.delete()
     subjectPaths.forEach(path => path.delete())
     clipPaths.forEach(path => path.delete())
+  }
+}
+
+export function unionPolygonsWithHoles(polygons: Polygon2D[]): PolygonWithHoles2D[] {
+  if (polygons.length === 0) {
+    return []
+  }
+
+  const module = getClipperModule()
+  const paths = polygons.map(polygon => createPathD(polygon.points))
+  const pathsD = createPathsD(paths)
+  const clipper = new module.ClipperD()
+  const polyTree = new module.PolyPathD()
+
+  try {
+    clipper.AddSubject(pathsD)
+    clipper.ExecutePoly(module.ClipType.Union, module.FillRule.NonZero, polyTree)
+    return collectPolygonsWithHolesFromPolyTree(polyTree)
+  } finally {
+    clipper.delete()
+    polyTree.delete()
+    pathsD.delete()
+    paths.forEach(path => path.delete())
   }
 }
 

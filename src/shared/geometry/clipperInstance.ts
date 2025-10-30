@@ -7,7 +7,16 @@ import type {} from '@/shared/geometry/basic'
 let clipperModuleInstance: ClipperModule | null = null
 let clipperModulePromise: Promise<ClipperModule> | null = null
 
-export function loadClipperModule(): Promise<ClipperModule> {
+interface LoadClipperOptions {
+  wasmBinary?: ArrayBuffer | Uint8Array
+}
+
+const normalizeBinary = (binary?: ArrayBuffer | Uint8Array): Uint8Array | undefined => {
+  if (binary == null) return undefined
+  return binary instanceof Uint8Array ? binary : new Uint8Array(binary)
+}
+
+export function loadClipperModule(options?: LoadClipperOptions): Promise<ClipperModule> {
   if (clipperModuleInstance) {
     return Promise.resolve(clipperModuleInstance)
   }
@@ -15,17 +24,16 @@ export function loadClipperModule(): Promise<ClipperModule> {
   let modulePromise: Promise<ClipperModule>
 
   if (!clipperModulePromise) {
+    const wasmBinary = normalizeBinary(options?.wasmBinary)
+
     modulePromise = Clipper2Z({
-      locateFile: (file: string) => {
-        if (file.endsWith('.wasm')) {
-          return clipperWasmUrl
-        }
-        return file
-      }
+      locateFile: (file: string) => (file.endsWith('.wasm') ? clipperWasmUrl : file),
+      wasmBinary
     }).then((instance: ClipperModule) => {
       clipperModuleInstance = instance
-      return clipperModuleInstance
+      return instance
     })
+
     clipperModulePromise = modulePromise
   } else {
     modulePromise = clipperModulePromise
@@ -34,8 +42,8 @@ export function loadClipperModule(): Promise<ClipperModule> {
   return modulePromise
 }
 
-export async function ensureClipperModule(): Promise<void> {
-  await loadClipperModule()
+export async function ensureClipperModule(options?: LoadClipperOptions): Promise<void> {
+  await loadClipperModule(options)
 }
 
 export function getClipperModule(): ClipperModule {
