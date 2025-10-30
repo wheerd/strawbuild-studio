@@ -1,6 +1,7 @@
 import type { vec3 } from 'gl-matrix'
 
 import type { Perimeter, PerimeterWall } from '@/building/model'
+import type { LayerConfig } from '@/construction/layers/types'
 import type { MaterialId } from '@/construction/materials/material'
 import type { PostConfig } from '@/construction/materials/posts'
 import type { ConstructionModel } from '@/construction/model'
@@ -30,7 +31,9 @@ export interface WallBaseConfig {
 
 export interface WallLayersConfig {
   insideThickness: Length
+  insideLayers: LayerConfig[]
   outsideThickness: Length
+  outsideLayers: LayerConfig[]
 }
 
 export interface InfillWallSegmentConfig {

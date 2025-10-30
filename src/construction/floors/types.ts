@@ -1,3 +1,5 @@
+import type { LayerConfig } from 'konva/lib/Layer'
+
 import type { MaterialId } from '@/construction/materials/material'
 import type { ConstructionModel } from '@/construction/model'
 import type { Length, PolygonWithHoles2D } from '@/shared/geometry'
@@ -20,7 +22,9 @@ export interface FloorAssemblyConfigBase {
 
 export interface FloorLayersConfig {
   bottomThickness: Length
+  bottomLayers: LayerConfig[]
   topThickness: Length
+  topLayers: LayerConfig[]
 }
 
 export interface MonolithicFloorConfig extends FloorAssemblyConfigBase {
