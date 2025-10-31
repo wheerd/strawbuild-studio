@@ -11,7 +11,13 @@ import {
 import { Card, DropdownMenu, Flex, Grid, IconButton, Select, Text, TextField, Tooltip } from '@radix-ui/themes'
 import React, { useMemo } from 'react'
 
-import type { LayerConfig, LayerType, StripeDirection } from '@/construction/layers/types'
+import type {
+  LayerConfig,
+  LayerType,
+  MonolithicLayerConfig,
+  StripeDirection,
+  StripedLayerConfig
+} from '@/construction/layers/types'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
 import { LengthField } from '@/shared/components/LengthField'
@@ -49,7 +55,7 @@ interface LayerListEditorProps {
   title: string
   layers: LayerConfig[]
   onAddLayer: (layer: LayerConfig) => void
-  onUpdateLayer: (index: number, updates: Partial<LayerConfig>) => void
+  onUpdateLayer: (index: number, updates: Partial<Omit<LayerConfig, 'type'>>) => void
   onRemoveLayer: (index: number) => void
   onMoveLayer: (fromIndex: number, toIndex: number) => void
   measurementInfo?: React.ReactNode
@@ -142,7 +148,7 @@ interface LayerCardProps {
   isFirst: boolean
   isLast: boolean
   onMoveLayer: (fromIndex: number, toIndex: number) => void
-  onUpdateLayer: (index: number, updates: Partial<LayerConfig>) => void
+  onUpdateLayer: (index: number, updates: Partial<Omit<LayerConfig, 'type'>>) => void
   onRemoveLayer: (index: number) => void
 }
 
@@ -236,7 +242,7 @@ function MonolithicLayerFields({
 }: {
   index: number
   layer: Extract<LayerConfig, { type: 'monolithic' }>
-  onUpdateLayer: (index: number, updates: Partial<LayerConfig>) => void
+  onUpdateLayer: (index: number, updates: Partial<Omit<MonolithicLayerConfig, 'type'>>) => void
 }): React.JSX.Element {
   return (
     <Field
@@ -263,7 +269,7 @@ function StripedLayerFields({
 }: {
   index: number
   layer: Extract<LayerConfig, { type: 'striped' }>
-  onUpdateLayer: (index: number, updates: Partial<LayerConfig>) => void
+  onUpdateLayer: (index: number, updates: Partial<Omit<StripedLayerConfig, 'type'>>) => void
 }): React.JSX.Element {
   return (
     <>

@@ -1,12 +1,6 @@
 import { type StateCreator } from 'zustand'
 
 import { DEFAULT_FLOOR_ASSEMBLY_ID, type FloorAssemblyId, createFloorAssemblyId } from '@/building/model'
-import type { FloorAssemblyConfig } from '@/construction/config/types'
-import { type FloorConfig, validateFloorConfig } from '@/construction/floors/types'
-import type { LayerConfig } from '@/construction/layers/types'
-import { clt180, concrete } from '@/construction/materials/material'
-import '@/shared/geometry'
-
 import {
   appendLayer,
   moveLayer,
@@ -14,6 +8,11 @@ import {
   sumLayerThickness,
   updateLayerAt
 } from '@/construction/config/store/layerUtils'
+import type { FloorAssemblyConfig } from '@/construction/config/types'
+import { type FloorConfig, validateFloorConfig } from '@/construction/floors/types'
+import type { LayerConfig } from '@/construction/layers/types'
+import { clt180, concrete } from '@/construction/materials/material'
+import '@/shared/geometry'
 
 export interface FloorAssembliesState {
   floorAssemblyConfigs: Record<FloorAssemblyId, FloorAssemblyConfig>
@@ -28,11 +27,15 @@ export interface FloorAssembliesActions {
   updateFloorAssemblyConfig: (id: FloorAssemblyId, config: Partial<Omit<FloorConfig, 'type'>>) => void
   duplicateFloorAssembly: (id: FloorAssemblyId, name: string) => FloorAssemblyConfig
   addFloorAssemblyTopLayer: (id: FloorAssemblyId, layer: LayerConfig) => void
-  updateFloorAssemblyTopLayer: (id: FloorAssemblyId, index: number, updates: Partial<LayerConfig>) => void
+  updateFloorAssemblyTopLayer: (id: FloorAssemblyId, index: number, updates: Partial<Omit<LayerConfig, 'type'>>) => void
   removeFloorAssemblyTopLayer: (id: FloorAssemblyId, index: number) => void
   moveFloorAssemblyTopLayer: (id: FloorAssemblyId, fromIndex: number, toIndex: number) => void
   addFloorAssemblyBottomLayer: (id: FloorAssemblyId, layer: LayerConfig) => void
-  updateFloorAssemblyBottomLayer: (id: FloorAssemblyId, index: number, updates: Partial<LayerConfig>) => void
+  updateFloorAssemblyBottomLayer: (
+    id: FloorAssemblyId,
+    index: number,
+    updates: Partial<Omit<LayerConfig, 'type'>>
+  ) => void
   removeFloorAssemblyBottomLayer: (id: FloorAssemblyId, index: number) => void
   moveFloorAssemblyBottomLayer: (id: FloorAssemblyId, fromIndex: number, toIndex: number) => void
 
@@ -245,7 +248,11 @@ export const createFloorAssembliesSlice: StateCreator<
         })
       },
 
-      updateFloorAssemblyTopLayer: (id: FloorAssemblyId, index: number, updates: Partial<LayerConfig>) => {
+      updateFloorAssemblyTopLayer: (
+        id: FloorAssemblyId,
+        index: number,
+        updates: Partial<Omit<LayerConfig, 'type'>>
+      ) => {
         set(state => {
           const config = state.floorAssemblyConfigs[id]
           if (config == null) return state
@@ -325,7 +332,11 @@ export const createFloorAssembliesSlice: StateCreator<
         })
       },
 
-      updateFloorAssemblyBottomLayer: (id: FloorAssemblyId, index: number, updates: Partial<LayerConfig>) => {
+      updateFloorAssemblyBottomLayer: (
+        id: FloorAssemblyId,
+        index: number,
+        updates: Partial<Omit<LayerConfig, 'type'>>
+      ) => {
         set(state => {
           const config = state.floorAssemblyConfigs[id]
           if (config == null) return state

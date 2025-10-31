@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { clayPlaster, limePlaster, strawbale, wood120x60, woodwool } from '@/construction/materials/material'
 import { INVALID_FLOOR_LAYER_MATERIAL_ID } from '@/construction/layers/defaults'
+import { clayPlaster, limePlaster, strawbale, wood120x60, woodwool } from '@/construction/materials/material'
 
 import { applyMigrations } from './migrations'
 

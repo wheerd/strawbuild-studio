@@ -1,19 +1,6 @@
 import { type StateCreator } from 'zustand'
 
 import { type WallAssemblyId, createWallAssemblyId } from '@/building/model/ids'
-import type {
-  InfillWallAssemblyConfig,
-  ModulesWallAssemblyConfig,
-  NonStrawbaleWallAssemblyConfig,
-  StrawhengeWallAssemblyConfig,
-  WallAssemblyConfig
-} from '@/construction/config/types'
-import { concrete, straw, strawbale, wood120x60, wood360x60 } from '@/construction/materials/material'
-import { type WallConfig, validateWallConfig } from '@/construction/walls/types'
-import '@/shared/geometry'
-
-import type { LayerConfig } from '@/construction/layers/types'
-
 import {
   appendLayer,
   moveLayer,
@@ -21,6 +8,17 @@ import {
   sumLayerThickness,
   updateLayerAt
 } from '@/construction/config/store/layerUtils'
+import type {
+  InfillWallAssemblyConfig,
+  ModulesWallAssemblyConfig,
+  NonStrawbaleWallAssemblyConfig,
+  StrawhengeWallAssemblyConfig,
+  WallAssemblyConfig
+} from '@/construction/config/types'
+import type { LayerConfig } from '@/construction/layers/types'
+import { concrete, straw, strawbale, wood120x60, wood360x60 } from '@/construction/materials/material'
+import { type WallConfig, validateWallConfig } from '@/construction/walls/types'
+import '@/shared/geometry'
 
 export interface WallAssembliesState {
   wallAssemblyConfigs: Record<WallAssemblyId, WallAssemblyConfig>
@@ -34,12 +32,22 @@ export interface WallAssembliesActions {
   updateWallAssemblyName: (id: WallAssemblyId, name: string) => void
   updateWallAssemblyConfig: (id: WallAssemblyId, config: Partial<Omit<WallConfig, 'type'>>) => void
   duplicateWallAssembly: (id: WallAssemblyId, name: string) => WallAssemblyConfig
+
   addWallAssemblyInsideLayer: (id: WallAssemblyId, layer: LayerConfig) => void
-  updateWallAssemblyInsideLayer: (id: WallAssemblyId, index: number, updates: Partial<LayerConfig>) => void
+  updateWallAssemblyInsideLayer: (
+    id: WallAssemblyId,
+    index: number,
+    updates: Partial<Omit<LayerConfig, 'type'>>
+  ) => void
   removeWallAssemblyInsideLayer: (id: WallAssemblyId, index: number) => void
   moveWallAssemblyInsideLayer: (id: WallAssemblyId, fromIndex: number, toIndex: number) => void
+
   addWallAssemblyOutsideLayer: (id: WallAssemblyId, layer: LayerConfig) => void
-  updateWallAssemblyOutsideLayer: (id: WallAssemblyId, index: number, updates: Partial<LayerConfig>) => void
+  updateWallAssemblyOutsideLayer: (
+    id: WallAssemblyId,
+    index: number,
+    updates: Partial<Omit<LayerConfig, 'type'>>
+  ) => void
   removeWallAssemblyOutsideLayer: (id: WallAssemblyId, index: number) => void
   moveWallAssemblyOutsideLayer: (id: WallAssemblyId, fromIndex: number, toIndex: number) => void
 
@@ -335,7 +343,11 @@ export const createWallAssembliesSlice: StateCreator<
         })
       },
 
-      updateWallAssemblyInsideLayer: (id: WallAssemblyId, index: number, updates: Partial<LayerConfig>) => {
+      updateWallAssemblyInsideLayer: (
+        id: WallAssemblyId,
+        index: number,
+        updates: Partial<Omit<LayerConfig, 'type'>>
+      ) => {
         set(state => {
           const assembly = state.wallAssemblyConfigs[id]
           if (assembly == null) return state
@@ -423,7 +435,11 @@ export const createWallAssembliesSlice: StateCreator<
         })
       },
 
-      updateWallAssemblyOutsideLayer: (id: WallAssemblyId, index: number, updates: Partial<LayerConfig>) => {
+      updateWallAssemblyOutsideLayer: (
+        id: WallAssemblyId,
+        index: number,
+        updates: Partial<Omit<LayerConfig, 'type'>>
+      ) => {
         set(state => {
           const assembly = state.wallAssemblyConfigs[id]
           if (assembly == null) return state

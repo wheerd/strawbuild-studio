@@ -412,11 +412,11 @@ function LayersFields({
   assemblyId: FloorAssemblyId
   config: FloorConfig
   onAddTopLayer: (id: FloorAssemblyId, layer: LayerConfig) => void
-  onUpdateTopLayer: (id: FloorAssemblyId, index: number, updates: Partial<LayerConfig>) => void
+  onUpdateTopLayer: (id: FloorAssemblyId, index: number, updates: Partial<Omit<LayerConfig, 'type'>>) => void
   onRemoveTopLayer: (id: FloorAssemblyId, index: number) => void
   onMoveTopLayer: (id: FloorAssemblyId, fromIndex: number, toIndex: number) => void
   onAddBottomLayer: (id: FloorAssemblyId, layer: LayerConfig) => void
-  onUpdateBottomLayer: (id: FloorAssemblyId, index: number, updates: Partial<LayerConfig>) => void
+  onUpdateBottomLayer: (id: FloorAssemblyId, index: number, updates: Partial<Omit<LayerConfig, 'type'>>) => void
   onRemoveBottomLayer: (id: FloorAssemblyId, index: number) => void
   onMoveBottomLayer: (id: FloorAssemblyId, fromIndex: number, toIndex: number) => void
 }) {

@@ -1,10 +1,10 @@
-import { strawbale, wood120x60, woodwool } from '@/construction/materials/material'
 import {
   createDefaultFloorBottomLayers,
   createDefaultFloorTopLayers,
   createDefaultInsideLayers,
   createDefaultOutsideLayers
 } from '@/construction/layers/defaults'
+import { strawbale, wood120x60, woodwool } from '@/construction/materials/material'
 
 export const CURRENT_VERSION = 5
 
