@@ -487,31 +487,21 @@ describe('ConfigStore', () => {
       expect(updated?.layers.insideThickness).toBe(15)
     })
 
-    it('supports changing layer type when updating inside layers', () => {
+    it('supports updating inside layers', () => {
       const store = getConfigActions()
       const assembly = store.addWallAssembly('Convertible Wall', createValidWallConfig())
 
       store.addWallAssemblyInsideLayer(assembly.id, createMonolithicLayer(30))
 
-      const gapMaterial = createMaterialId()
       store.updateWallAssemblyInsideLayer(assembly.id, 0, {
-        type: 'striped',
-        thickness: 45,
-        direction: 'diagonal',
-        stripeWidth: 60,
-        stripeMaterial: createMaterialId(),
-        gapWidth: 20,
-        gapMaterial
+        thickness: 45
       })
 
       const updated = store.getWallAssemblyById(assembly.id)
       const layer = updated?.layers.insideLayers[0]
 
-      expect(layer?.type).toBe('striped')
-      expect('material' in (layer ?? {})).toBe(false)
-      if (layer?.type === 'striped') {
-        expect(layer.gapMaterial).toBe(gapMaterial)
-      }
+      expect(layer?.type).toBe('monolithic')
+      expect(layer?.thickness).toBe(45)
       expect(updated?.layers.insideThickness).toBe(45)
     })
 

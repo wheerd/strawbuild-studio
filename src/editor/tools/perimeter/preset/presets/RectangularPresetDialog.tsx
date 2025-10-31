@@ -112,7 +112,7 @@ export function RectangularPresetDialog({
   const [config, setConfig] = useState<RectangularPresetConfig>(() => ({
     width: 10000, // 10m default inside width
     length: 7000, // 7m default inside length
-    thickness: 440, // 44cm default
+    thickness: 420, // 44cm default
     wallAssemblyId: configStore.getDefaultWallAssemblyId(),
     baseRingBeamAssemblyId: configStore.getDefaultBaseRingBeamAssemblyId(),
     topRingBeamAssemblyId: configStore.getDefaultTopRingBeamAssemblyId(),

@@ -159,7 +159,7 @@ export function applyMigrations(state: unknown): unknown {
         factory: (thickness: number) => unknown
       ) => {
         const existing = layerConfig[key]
-        if (Array.isArray(existing) && existing.length > 0) {
+        if (Array.isArray(existing)) {
           return
         }
 
@@ -196,7 +196,7 @@ export function applyMigrations(state: unknown): unknown {
         factory: (thickness: number) => unknown
       ) => {
         const existing = layerConfig[key]
-        if (Array.isArray(existing) && existing.length > 0) {
+        if (Array.isArray(existing)) {
           return
         }
 

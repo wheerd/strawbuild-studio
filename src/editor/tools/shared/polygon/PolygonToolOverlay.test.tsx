@@ -42,7 +42,7 @@ describe('PolygonToolOverlay', () => {
       isCurrentSegmentValid: true,
       isClosingSegmentValid: true,
       wallAssemblyId: createWallAssemblyId(),
-      wallThickness: 440,
+      wallThickness: 420,
       lengthOverride: null,
       baseRingBeamAssemblyId: undefined,
       topRingBeamAssemblyId: undefined

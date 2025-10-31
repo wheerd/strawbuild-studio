@@ -24,7 +24,7 @@ vi.mock('@/construction/config/store', () => ({
 describe('PerimeterCornerShape', () => {
   const createMockWall = (direction: vec2): PerimeterWall => ({
     id: createPerimeterWallId(),
-    thickness: 440,
+    thickness: 420,
     wallAssemblyId: 'assembly1' as any,
     openings: [],
     insideLength: 1000,

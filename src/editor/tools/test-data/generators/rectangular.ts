@@ -54,7 +54,7 @@ export function createRectangularPerimeter(): void {
       activeStoreyId,
       boundary,
       defaultAssemblyId,
-      440,
+      420,
       defaultBaseId,
       defaultTopId
     )

@@ -10,6 +10,7 @@ import {
 } from '@/construction/config/store/layerUtils'
 import type { FloorAssemblyConfig } from '@/construction/config/types'
 import { type FloorConfig, validateFloorConfig } from '@/construction/floors/types'
+import { createDefaultFloorTopLayers } from '@/construction/layers/defaults'
 import type { LayerConfig } from '@/construction/layers/types'
 import { clt180, concrete } from '@/construction/materials/material'
 import '@/shared/geometry'
@@ -65,7 +66,7 @@ const createDefaultFloorAssemblies = (): FloorAssemblyConfig[] => [
     material: clt180.id,
     layers: {
       topThickness: 60,
-      topLayers: [],
+      topLayers: createDefaultFloorTopLayers(60),
       bottomThickness: 0,
       bottomLayers: []
     }
@@ -78,7 +79,7 @@ const createDefaultFloorAssemblies = (): FloorAssemblyConfig[] => [
     material: concrete.id,
     layers: {
       topThickness: 60,
-      topLayers: [],
+      topLayers: createDefaultFloorTopLayers(60),
       bottomThickness: 0,
       bottomLayers: []
     }

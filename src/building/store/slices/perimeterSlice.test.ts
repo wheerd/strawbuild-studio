@@ -112,7 +112,7 @@ describe('perimeterSlice', () => {
       // Check walls have correct properties
       perimeter.walls.forEach(wall => {
         expect(wall.wallAssemblyId).toBe(wallAssemblyId)
-        expect(wall.thickness).toBe(440) // Default perimeter thickness
+        expect(wall.thickness).toBe(420) // Default perimeter thickness
         expect(wall.openings).toEqual([])
         expect(perimeter.id).toBeTruthy()
       })
@@ -204,15 +204,15 @@ describe('perimeterSlice', () => {
       const perimeter = Object.values(store.perimeters)[0]
       const wall = perimeter.walls[0] // First wall from (0,0) to (10,0)
 
-      expect(wall.insideLine.start).toEqual(vec2.fromValues(440, 0))
-      expect(wall.insideLine.end).toEqual(vec2.fromValues(9560, 0))
+      expect(wall.insideLine.start).toEqual(vec2.fromValues(420, 0))
+      expect(wall.insideLine.end).toEqual(vec2.fromValues(9580, 0))
       expect(wall.insideLength).toBe(10000)
 
       // Check that outside line is offset correctly
-      expect(wall.outsideLine.start[0]).toBe(440)
-      expect(wall.outsideLine.start[1]).toBe(440) // Offset by wall thickness
+      expect(wall.outsideLine.start[0]).toBe(420)
+      expect(wall.outsideLine.start[1]).toBe(420) // Offset by wall thickness
       expect(wall.outsideLine.end[0]).toBe(9560)
-      expect(wall.outsideLine.end[1]).toBe(440)
+      expect(wall.outsideLine.end[1]).toBe(420)
     })
 
     it('should calculate different length values correctly', () => {
@@ -227,7 +227,7 @@ describe('perimeterSlice', () => {
       // - wallLength should equal insideLength (no truncation for right angles)
       // - outsideLength varies based on corner intersection geometry
       expect(wall.insideLength).toBe(10000) // Original boundary wall
-      expect(wall.wallLength).toBe(9120) // Actual wall wall (truncated at corners)
+      expect(wall.wallLength).toBe(9160) // Actual wall wall (truncated at corners)
 
       // outsideLength depends on corner intersection points, verify it's reasonable
       expect(wall.outsideLength).toBeGreaterThan(0)
@@ -331,7 +331,7 @@ describe('perimeterSlice', () => {
       expect(updatedWall.wallAssemblyId).toBe(newAssemblyId)
 
       // Other properties should remain unchanged
-      expect(updatedWall.thickness).toBe(440)
+      expect(updatedWall.thickness).toBe(420)
       expect(updatedWall.openings).toEqual([])
     })
 

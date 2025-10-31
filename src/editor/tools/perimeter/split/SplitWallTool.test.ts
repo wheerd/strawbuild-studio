@@ -61,7 +61,7 @@ describe('SplitWallTool', () => {
     // Mock wall with 1000mm length
     const mockWall: PerimeterWall = {
       id: wallId,
-      thickness: 440,
+      thickness: 420,
       wallAssemblyId: 'assembly1' as any,
       openings: [],
       insideLength: 1000,
@@ -72,8 +72,8 @@ describe('SplitWallTool', () => {
         end: vec2.fromValues(1000, 0)
       },
       outsideLine: {
-        start: vec2.fromValues(0, 440),
-        end: vec2.fromValues(1000, 440)
+        start: vec2.fromValues(0, 420),
+        end: vec2.fromValues(1000, 420)
       },
       direction: vec2.fromValues(1, 0),
       outsideDirection: vec2.fromValues(0, 1)
@@ -104,7 +104,7 @@ describe('SplitWallTool', () => {
 
     const mockWall: PerimeterWall = {
       id: wallId,
-      thickness: 440,
+      thickness: 420,
       wallAssemblyId: 'assembly1' as any,
       openings: [
         {
@@ -124,8 +124,8 @@ describe('SplitWallTool', () => {
         end: vec2.fromValues(2000, 0)
       },
       outsideLine: {
-        start: vec2.fromValues(0, 440),
-        end: vec2.fromValues(2000, 440)
+        start: vec2.fromValues(0, 420),
+        end: vec2.fromValues(2000, 420)
       },
       direction: vec2.fromValues(1, 0),
       outsideDirection: vec2.fromValues(0, 1)

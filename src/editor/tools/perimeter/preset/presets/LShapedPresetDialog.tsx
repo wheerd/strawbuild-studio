@@ -159,7 +159,7 @@ export function LShapedPresetDialog({
     width2: 5000, // 5m extension width
     length2: 4000, // 4m extension length
     rotation: 0, // 0° rotation
-    thickness: 440, // 44cm wall thickness
+    thickness: 420, // 44cm wall thickness
     wallAssemblyId: configStore.getDefaultWallAssemblyId(),
     baseRingBeamAssemblyId: configStore.getDefaultBaseRingBeamAssemblyId(),
     topRingBeamAssemblyId: configStore.getDefaultTopRingBeamAssemblyId(),

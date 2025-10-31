@@ -71,7 +71,7 @@ describe('PerimeterToolInspector', () => {
       isCurrentSegmentValid: true,
       isClosingSegmentValid: true,
       wallAssemblyId: createWallAssemblyId(),
-      wallThickness: 440,
+      wallThickness: 420,
       baseRingBeamAssemblyId: undefined,
       topRingBeamAssemblyId: undefined,
       lengthOverride: null
@@ -105,7 +105,7 @@ describe('PerimeterToolInspector', () => {
       expect(screen.getByLabelText('Wall Thickness')).toBeInTheDocument()
       expect(screen.getByText('Base Plate')).toBeInTheDocument()
       expect(screen.getByText('Top Plate')).toBeInTheDocument()
-      expect(screen.getByDisplayValue('440')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('420')).toBeInTheDocument()
       // Ring beam selects should show "None" by default
       expect(screen.getAllByText('None')).toHaveLength(2)
     })
@@ -146,7 +146,7 @@ describe('PerimeterToolInspector', () => {
 
       // LengthField renders the underlying input with these constraints
       expect(input).toBeInTheDocument()
-      expect(input.value).toBe('440')
+      expect(input.value).toBe('420')
     })
   })
 

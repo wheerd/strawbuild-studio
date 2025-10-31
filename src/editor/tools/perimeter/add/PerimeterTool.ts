@@ -27,7 +27,7 @@ export class PerimeterTool extends BasePolygonTool<PerimeterToolState> implement
   constructor() {
     super({
       wallAssemblyId: '' as WallAssemblyId,
-      wallThickness: 440
+      wallThickness: 420
     })
   }
 

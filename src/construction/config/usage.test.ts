@@ -127,20 +127,20 @@ describe('Assembly Usage Detection', () => {
         walls: [
           {
             id: createPerimeterWallId(),
-            thickness: 440,
+            thickness: 420,
             wallAssemblyId: assemblyId,
             openings: [],
             insideLength: 1000,
             outsideLength: 1000,
             wallLength: 1000,
             insideLine: { start: vec2.fromValues(0, 0), end: vec2.fromValues(1000, 0) },
-            outsideLine: { start: vec2.fromValues(0, 440), end: vec2.fromValues(1000, 440) },
+            outsideLine: { start: vec2.fromValues(0, 420), end: vec2.fromValues(1000, 420) },
             direction: vec2.fromValues(1, 0),
             outsideDirection: vec2.fromValues(0, 1)
           },
           {
             id: createPerimeterWallId(),
-            thickness: 440,
+            thickness: 420,
             wallAssemblyId: createWallAssemblyId(), // Different assembly
             openings: [],
             insideLength: 1000,
@@ -153,7 +153,7 @@ describe('Assembly Usage Detection', () => {
           },
           {
             id: createPerimeterWallId(),
-            thickness: 440,
+            thickness: 420,
             wallAssemblyId: assemblyId, // Same assembly as first wall
             openings: [],
             insideLength: 1000,

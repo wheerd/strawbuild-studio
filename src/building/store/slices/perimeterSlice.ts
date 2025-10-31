@@ -124,7 +124,7 @@ export interface PerimetersActions {
 export type PerimetersSlice = PerimetersState & { actions: PerimetersActions }
 
 // Default wall thickness value
-const DEFAULT_PERIMETER_WALL_THICKNESS = 440 // 44cm for strawbale walls
+const DEFAULT_PERIMETER_WALL_THICKNESS = 420 // 44cm for strawbale walls
 
 export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/immer', never]], [], PerimetersSlice> = (
   set,

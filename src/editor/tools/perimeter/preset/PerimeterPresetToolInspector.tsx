@@ -71,7 +71,7 @@ export function PerimeterPresetToolInspector({ tool }: ToolInspectorProps<Perime
           initialConfig={{
             width: 4000,
             length: 6000,
-            thickness: 440,
+            thickness: 420,
             wallAssemblyId: defaultWallAssemblyId
           }}
           trigger={
@@ -91,7 +91,7 @@ export function PerimeterPresetToolInspector({ tool }: ToolInspectorProps<Perime
             width2: 4000,
             length2: 3000,
             rotation: 0,
-            thickness: 440,
+            thickness: 420,
             wallAssemblyId: defaultWallAssemblyId
           }}
           trigger={

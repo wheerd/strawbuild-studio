@@ -15,8 +15,9 @@ import type {
   StrawhengeWallAssemblyConfig,
   WallAssemblyConfig
 } from '@/construction/config/types'
+import { createDefaultInsideLayers, createDefaultOutsideLayers } from '@/construction/layers/defaults'
 import type { LayerConfig } from '@/construction/layers/types'
-import { concrete, straw, strawbale, wood120x60, wood360x60 } from '@/construction/materials/material'
+import { concrete, limePlaster, straw, strawbale, wood120x60, wood360x60 } from '@/construction/materials/material'
 import { type WallConfig, validateWallConfig } from '@/construction/walls/types'
 import '@/shared/geometry'
 
@@ -93,9 +94,9 @@ const createDefaultWallAssemblies = (): WallAssemblyConfig[] => [
     },
     layers: {
       insideThickness: 30,
-      insideLayers: [],
-      outsideThickness: 50,
-      outsideLayers: []
+      insideLayers: createDefaultInsideLayers(30),
+      outsideThickness: 30,
+      outsideLayers: createDefaultOutsideLayers(30)
     }
   } as InfillWallAssemblyConfig,
   {
@@ -127,9 +128,9 @@ const createDefaultWallAssemblies = (): WallAssemblyConfig[] => [
     },
     layers: {
       insideThickness: 30,
-      insideLayers: [],
-      outsideThickness: 50,
-      outsideLayers: []
+      insideLayers: createDefaultInsideLayers(30),
+      outsideThickness: 30,
+      outsideLayers: createDefaultOutsideLayers(30)
     }
   } as StrawhengeWallAssemblyConfig,
   {
@@ -161,14 +162,14 @@ const createDefaultWallAssemblies = (): WallAssemblyConfig[] => [
     },
     layers: {
       insideThickness: 30,
-      insideLayers: [],
-      outsideThickness: 50,
-      outsideLayers: []
+      insideLayers: createDefaultInsideLayers(30),
+      outsideThickness: 30,
+      outsideLayers: createDefaultOutsideLayers(30)
     }
   } as ModulesWallAssemblyConfig,
   {
     id: 'wa_non_strawbale_default' as WallAssemblyId,
-    name: 'Non-Strawbale Wall',
+    name: 'Concrete Wall',
     type: 'non-strawbale',
     material: concrete.id,
     thickness: 200,
@@ -181,9 +182,12 @@ const createDefaultWallAssemblies = (): WallAssemblyConfig[] => [
     },
     layers: {
       insideThickness: 30,
-      insideLayers: [],
-      outsideThickness: 30,
-      outsideLayers: []
+      insideLayers: createDefaultInsideLayers(30),
+      outsideThickness: 160 + 30,
+      outsideLayers: [
+        { type: 'monolithic', material: 'material_invalid', thickness: 160 },
+        { type: 'monolithic', material: limePlaster.id, thickness: 30 }
+      ]
     }
   } as NonStrawbaleWallAssemblyConfig
 ]

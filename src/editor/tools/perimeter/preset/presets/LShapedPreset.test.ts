@@ -20,7 +20,7 @@ describe('LShapedPreset', () => {
     width2: 4000,
     length2: 3000,
     rotation: 0,
-    thickness: 440,
+    thickness: 420,
     wallAssemblyId: createWallAssemblyId(),
     ...overrides
   })

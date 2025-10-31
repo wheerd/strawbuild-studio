@@ -11,7 +11,7 @@ describe('RectangularPreset', () => {
   const validConfig: RectangularPresetConfig = {
     width: 4000,
     length: 6000,
-    thickness: 440,
+    thickness: 420,
     wallAssemblyId: 'test-assembly' as any
   }
 
