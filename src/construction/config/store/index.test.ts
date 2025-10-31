@@ -45,18 +45,22 @@ describe('ConfigStore', () => {
 
       let updated = store.getFloorAssemblyById(assembly.id)
       expect(updated?.layers.topLayers).toHaveLength(2)
+      expect(updated?.layers.topThickness).toBe(35)
 
       store.updateFloorAssemblyTopLayer(assembly.id, 0, { thickness: 25 })
       updated = store.getFloorAssemblyById(assembly.id)
       expect(updated?.layers.topLayers[0].thickness).toBe(25)
+      expect(updated?.layers.topThickness).toBe(40)
 
       store.moveFloorAssemblyTopLayer(assembly.id, 0, 1)
       updated = store.getFloorAssemblyById(assembly.id)
       expect(updated?.layers.topLayers[0].thickness).toBe(secondLayer.thickness)
+      expect(updated?.layers.topThickness).toBe(40)
 
       store.removeFloorAssemblyTopLayer(assembly.id, 1)
       updated = store.getFloorAssemblyById(assembly.id)
       expect(updated?.layers.topLayers).toHaveLength(1)
+      expect(updated?.layers.topThickness).toBe(15)
     })
 
     it('supports managing bottom layers and validates indices', () => {
@@ -71,6 +75,7 @@ describe('ConfigStore', () => {
 
       const updated = store.getFloorAssemblyById(assembly.id)
       expect(updated?.layers.bottomLayers).toHaveLength(1)
+      expect(updated?.layers.bottomThickness).toBe(18)
     })
   })
 
@@ -464,18 +469,22 @@ describe('ConfigStore', () => {
 
       let updated = store.getWallAssemblyById(assembly.id)
       expect(updated?.layers.insideLayers).toHaveLength(2)
+      expect(updated?.layers.insideThickness).toBe(40)
 
       store.updateWallAssemblyInsideLayer(assembly.id, 0, { thickness: 35 })
       updated = store.getWallAssemblyById(assembly.id)
       expect(updated?.layers.insideLayers[0].thickness).toBe(35)
+      expect(updated?.layers.insideThickness).toBe(50)
 
       store.moveWallAssemblyInsideLayer(assembly.id, 0, 1)
       updated = store.getWallAssemblyById(assembly.id)
       expect(updated?.layers.insideLayers[0].thickness).toBe(15)
+      expect(updated?.layers.insideThickness).toBe(50)
 
       store.removeWallAssemblyInsideLayer(assembly.id, 1)
       updated = store.getWallAssemblyById(assembly.id)
       expect(updated?.layers.insideLayers).toHaveLength(1)
+      expect(updated?.layers.insideThickness).toBe(15)
     })
 
     it('supports changing layer type when updating inside layers', () => {
@@ -503,6 +512,7 @@ describe('ConfigStore', () => {
       if (layer?.type === 'striped') {
         expect(layer.gapMaterial).toBe(gapMaterial)
       }
+      expect(updated?.layers.insideThickness).toBe(45)
     })
 
     it('validates outside layer indices', () => {
@@ -512,6 +522,7 @@ describe('ConfigStore', () => {
       store.addWallAssemblyOutsideLayer(assembly.id, createStripedLayer())
       const updated = store.getWallAssemblyById(assembly.id)
       expect(updated?.layers.outsideLayers).toHaveLength(1)
+      expect(updated?.layers.outsideThickness).toBe(40)
 
       expect(() => store.removeWallAssemblyOutsideLayer(assembly.id, 3)).toThrow('Layer index out of bounds')
     })

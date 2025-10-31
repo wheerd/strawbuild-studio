@@ -38,8 +38,8 @@ import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField'
 
 import { getPerimeterConfigTypeIcon } from './Icons'
-import { LayerListEditor } from './layers/LayerListEditor'
 import { WallAssemblySelect } from './WallAssemblySelect'
+import { LayerListEditor } from './layers/LayerListEditor'
 
 interface InfillConfigFormProps {
   config: InfillWallSegmentConfig
@@ -483,6 +483,9 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
     moveWallAssemblyOutsideLayer
   } = useConfigActions()
 
+  const insideDefaultThickness = config.layers.insideLayers.at(-1)?.thickness ?? config.layers.insideThickness ?? 30
+  const outsideDefaultThickness = config.layers.outsideLayers.at(-1)?.thickness ?? config.layers.outsideThickness ?? 30
+
   return (
     <Flex direction="column" gap="3">
       {/* Openings Configuration */}
@@ -579,49 +582,12 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
         </Flex>
       </Grid>
 
-      {/* Layers Configuration */}
-      <Heading size="2">Layers</Heading>
-      <Grid columns="8em 1fr 8em 1fr" gap="2" gapX="3">
-        <Flex align="center" gap="1">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Inside Thickness
-            </Text>
-          </Label.Root>
-          <MeasurementInfo highlightedPart="insideLayer" showFinishedSides />
-        </Flex>
-        <LengthField
-          value={config.layers.insideThickness}
-          onChange={insideThickness =>
-            updateWallAssemblyConfig(assemblyId, { layers: { ...config.layers, insideThickness } })
-          }
-          unit="mm"
-          size="1"
-        />
-
-        <Flex align="center" gap="1">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Outside Thickness
-            </Text>
-          </Label.Root>
-          <MeasurementInfo highlightedPart="outsideLayer" showFinishedSides />
-        </Flex>
-        <LengthField
-          value={config.layers.outsideThickness}
-          onChange={outsideThickness =>
-            updateWallAssemblyConfig(assemblyId, { layers: { ...config.layers, outsideThickness } })
-          }
-          unit="mm"
-          size="1"
-        />
-      </Grid>
-
       <Separator size="4" />
 
-      <Flex direction="column" gap="4">
+      <Flex direction="column" gap="3">
         <LayerListEditor
           title="Inside Layers"
+          measurementInfo={<MeasurementInfo highlightedPart="insideLayer" showFinishedSides />}
           layers={config.layers.insideLayers}
           onAddLayer={layer => addWallAssemblyInsideLayer(assemblyId, layer)}
           onUpdateLayer={(index, updates) => updateWallAssemblyInsideLayer(assemblyId, index, updates)}
@@ -629,11 +595,14 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           onMoveLayer={(fromIndex, toIndex) => moveWallAssemblyInsideLayer(assemblyId, fromIndex, toIndex)}
           addLabel="Add Inside Layer"
           emptyHint="No inside layers defined"
-          defaultThickness={config.layers.insideThickness || 30}
+          defaultThickness={insideDefaultThickness}
         />
+
+        <Separator size="4" />
 
         <LayerListEditor
           title="Outside Layers"
+          measurementInfo={<MeasurementInfo highlightedPart="outsideLayer" showFinishedSides />}
           layers={config.layers.outsideLayers}
           onAddLayer={layer => addWallAssemblyOutsideLayer(assemblyId, layer)}
           onUpdateLayer={(index, updates) => updateWallAssemblyOutsideLayer(assemblyId, index, updates)}
@@ -641,7 +610,7 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           onMoveLayer={(fromIndex, toIndex) => moveWallAssemblyOutsideLayer(assemblyId, fromIndex, toIndex)}
           addLabel="Add Outside Layer"
           emptyHint="No outside layers defined"
-          defaultThickness={config.layers.outsideThickness || 30}
+          defaultThickness={outsideDefaultThickness}
         />
       </Flex>
     </Flex>

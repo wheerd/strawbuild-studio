@@ -285,7 +285,6 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           <LayersFields
             assemblyId={selectedConfig.id}
             config={selectedConfig}
-            onUpdateConfig={handleUpdateConfig}
             onAddTopLayer={addFloorAssemblyTopLayer}
             onUpdateTopLayer={updateFloorAssemblyTopLayer}
             onRemoveTopLayer={removeFloorAssemblyTopLayer}
@@ -401,7 +400,6 @@ function JoistConfigPlaceholder() {
 function LayersFields({
   assemblyId,
   config,
-  onUpdateConfig,
   onAddTopLayer,
   onUpdateTopLayer,
   onRemoveTopLayer,
@@ -413,7 +411,6 @@ function LayersFields({
 }: {
   assemblyId: FloorAssemblyId
   config: FloorConfig
-  onUpdateConfig: (updates: Partial<FloorConfig>) => void
   onAddTopLayer: (id: FloorAssemblyId, layer: LayerConfig) => void
   onUpdateTopLayer: (id: FloorAssemblyId, index: number, updates: Partial<LayerConfig>) => void
   onRemoveTopLayer: (id: FloorAssemblyId, index: number) => void
@@ -423,68 +420,38 @@ function LayersFields({
   onRemoveBottomLayer: (id: FloorAssemblyId, index: number) => void
   onMoveBottomLayer: (id: FloorAssemblyId, fromIndex: number, toIndex: number) => void
 }) {
-  return (
-    <>
-      <Heading size="2">Layers</Heading>
-      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3">
-        <Flex align="center" gap="1">
-          <Label.Root>
-            <Text size="2" weight="medium" color="gray">
-              Top Thickness
-            </Text>
-          </Label.Root>
-          <MeasurementInfo highlightedPart="floorTopLayers" />
-        </Flex>
-        <LengthField
-          value={config.layers.topThickness}
-          onChange={topThickness => onUpdateConfig({ layers: { ...config.layers, topThickness } })}
-          unit="mm"
-          size="2"
-        />
+  const topDefaultThickness = config.layers.topLayers.at(-1)?.thickness ?? config.layers.topThickness ?? 30
+  const bottomDefaultThickness = config.layers.bottomLayers.at(-1)?.thickness ?? config.layers.bottomThickness ?? 30
 
-        <Flex align="center" gap="1">
-          <Label.Root>
-            <Text size="2" weight="medium" color="gray">
-              Bottom Thickness
-            </Text>
-          </Label.Root>
-          <MeasurementInfo highlightedPart="floorBottomLayers" />
-        </Flex>
-        <LengthField
-          value={config.layers.bottomThickness}
-          onChange={bottomThickness => onUpdateConfig({ layers: { ...config.layers, bottomThickness } })}
-          unit="mm"
-          size="2"
-        />
-      </Grid>
+  return (
+    <Flex direction="column" gap="3">
+      <LayerListEditor
+        title="Top Layers"
+        measurementInfo={<MeasurementInfo highlightedPart="floorTopLayers" />}
+        layers={config.layers.topLayers}
+        onAddLayer={layer => onAddTopLayer(assemblyId, layer)}
+        onUpdateLayer={(index, updates) => onUpdateTopLayer(assemblyId, index, updates)}
+        onRemoveLayer={index => onRemoveTopLayer(assemblyId, index)}
+        onMoveLayer={(fromIndex, toIndex) => onMoveTopLayer(assemblyId, fromIndex, toIndex)}
+        addLabel="Add Top Layer"
+        emptyHint="No top layers defined"
+        defaultThickness={topDefaultThickness}
+      />
 
       <Separator size="4" />
 
-      <Flex direction="column" gap="4">
-        <LayerListEditor
-          title="Top Layers"
-          layers={config.layers.topLayers}
-          onAddLayer={layer => onAddTopLayer(assemblyId, layer)}
-          onUpdateLayer={(index, updates) => onUpdateTopLayer(assemblyId, index, updates)}
-          onRemoveLayer={index => onRemoveTopLayer(assemblyId, index)}
-          onMoveLayer={(fromIndex, toIndex) => onMoveTopLayer(assemblyId, fromIndex, toIndex)}
-          addLabel="Add Top Layer"
-          emptyHint="No top layers defined"
-          defaultThickness={config.layers.topThickness || 30}
-        />
-
-        <LayerListEditor
-          title="Bottom Layers"
-          layers={config.layers.bottomLayers}
-          onAddLayer={layer => onAddBottomLayer(assemblyId, layer)}
-          onUpdateLayer={(index, updates) => onUpdateBottomLayer(assemblyId, index, updates)}
-          onRemoveLayer={index => onRemoveBottomLayer(assemblyId, index)}
-          onMoveLayer={(fromIndex, toIndex) => onMoveBottomLayer(assemblyId, fromIndex, toIndex)}
-          addLabel="Add Bottom Layer"
-          emptyHint="No bottom layers defined"
-          defaultThickness={config.layers.bottomThickness || 30}
-        />
-      </Flex>
-    </>
+      <LayerListEditor
+        title="Bottom Layers"
+        measurementInfo={<MeasurementInfo highlightedPart="floorBottomLayers" />}
+        layers={config.layers.bottomLayers}
+        onAddLayer={layer => onAddBottomLayer(assemblyId, layer)}
+        onUpdateLayer={(index, updates) => onUpdateBottomLayer(assemblyId, index, updates)}
+        onRemoveLayer={index => onRemoveBottomLayer(assemblyId, index)}
+        onMoveLayer={(fromIndex, toIndex) => onMoveBottomLayer(assemblyId, fromIndex, toIndex)}
+        addLabel="Add Bottom Layer"
+        emptyHint="No bottom layers defined"
+        defaultThickness={bottomDefaultThickness}
+      />
+    </Flex>
   )
 }

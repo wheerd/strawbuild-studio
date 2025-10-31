@@ -157,3 +157,6 @@ export const moveLayer = (
   reordered.splice(toIndex, 0, layer)
   return reordered
 }
+
+export const sumLayerThickness = (layers: LayerConfig[]): number =>
+  layers.reduce((total, layer) => total + Number(layer.thickness ?? 0), 0)

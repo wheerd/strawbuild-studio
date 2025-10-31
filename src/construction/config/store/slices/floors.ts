@@ -11,6 +11,7 @@ import {
   appendLayer,
   moveLayer,
   removeLayerAt,
+  sumLayerThickness,
   updateLayerAt
 } from '@/construction/config/store/layerUtils'
 
@@ -230,9 +231,10 @@ export const createFloorAssembliesSlice: StateCreator<
           if (config == null) return state
 
           const topLayers = appendLayer(config.layers.topLayers, layer)
+          const topThickness = sumLayerThickness(topLayers)
           const updatedConfig: FloorAssemblyConfig = {
             ...config,
-            layers: { ...config.layers, topLayers }
+            layers: { ...config.layers, topLayers, topThickness }
           }
           validateFloorConfig(updatedConfig)
 
@@ -249,9 +251,10 @@ export const createFloorAssembliesSlice: StateCreator<
           if (config == null) return state
 
           const topLayers = updateLayerAt(config.layers.topLayers, index, updates)
+          const topThickness = sumLayerThickness(topLayers)
           const updatedConfig: FloorAssemblyConfig = {
             ...config,
-            layers: { ...config.layers, topLayers }
+            layers: { ...config.layers, topLayers, topThickness }
           }
           validateFloorConfig(updatedConfig)
 
@@ -268,9 +271,10 @@ export const createFloorAssembliesSlice: StateCreator<
           if (config == null) return state
 
           const topLayers = removeLayerAt(config.layers.topLayers, index)
+          const topThickness = sumLayerThickness(topLayers)
           const updatedConfig: FloorAssemblyConfig = {
             ...config,
-            layers: { ...config.layers, topLayers }
+            layers: { ...config.layers, topLayers, topThickness }
           }
           validateFloorConfig(updatedConfig)
 
@@ -287,9 +291,10 @@ export const createFloorAssembliesSlice: StateCreator<
           if (config == null) return state
 
           const topLayers = moveLayer(config.layers.topLayers, fromIndex, toIndex)
+          const topThickness = sumLayerThickness(topLayers)
           const updatedConfig: FloorAssemblyConfig = {
             ...config,
-            layers: { ...config.layers, topLayers }
+            layers: { ...config.layers, topLayers, topThickness }
           }
           validateFloorConfig(updatedConfig)
 
@@ -306,9 +311,10 @@ export const createFloorAssembliesSlice: StateCreator<
           if (config == null) return state
 
           const bottomLayers = appendLayer(config.layers.bottomLayers, layer)
+          const bottomThickness = sumLayerThickness(bottomLayers)
           const updatedConfig: FloorAssemblyConfig = {
             ...config,
-            layers: { ...config.layers, bottomLayers }
+            layers: { ...config.layers, bottomLayers, bottomThickness }
           }
           validateFloorConfig(updatedConfig)
 
@@ -325,9 +331,10 @@ export const createFloorAssembliesSlice: StateCreator<
           if (config == null) return state
 
           const bottomLayers = updateLayerAt(config.layers.bottomLayers, index, updates)
+          const bottomThickness = sumLayerThickness(bottomLayers)
           const updatedConfig: FloorAssemblyConfig = {
             ...config,
-            layers: { ...config.layers, bottomLayers }
+            layers: { ...config.layers, bottomLayers, bottomThickness }
           }
           validateFloorConfig(updatedConfig)
 
@@ -344,9 +351,10 @@ export const createFloorAssembliesSlice: StateCreator<
           if (config == null) return state
 
           const bottomLayers = removeLayerAt(config.layers.bottomLayers, index)
+          const bottomThickness = sumLayerThickness(bottomLayers)
           const updatedConfig: FloorAssemblyConfig = {
             ...config,
-            layers: { ...config.layers, bottomLayers }
+            layers: { ...config.layers, bottomLayers, bottomThickness }
           }
           validateFloorConfig(updatedConfig)
 
@@ -363,9 +371,10 @@ export const createFloorAssembliesSlice: StateCreator<
           if (config == null) return state
 
           const bottomLayers = moveLayer(config.layers.bottomLayers, fromIndex, toIndex)
+          const bottomThickness = sumLayerThickness(bottomLayers)
           const updatedConfig: FloorAssemblyConfig = {
             ...config,
-            layers: { ...config.layers, bottomLayers }
+            layers: { ...config.layers, bottomLayers, bottomThickness }
           }
           validateFloorConfig(updatedConfig)
 
