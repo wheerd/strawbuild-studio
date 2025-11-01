@@ -15,7 +15,13 @@ import { TOP_VIEW } from '@/construction/components/ConstructionPlan'
 import { ConstructionPlanModal } from '@/construction/components/ConstructionPlanModal'
 import { useConfigurationModal } from '@/construction/config/context/ConfigurationModalContext'
 import { constructModel, constructStorey } from '@/construction/storey'
-import { TAG_BASE_PLATE, TAG_TOP_PLATE, TAG_WALL_LAYER_INSIDE, TAG_WALL_LAYER_OUTSIDE, TAG_WALLS } from '@/construction/tags'
+import {
+  TAG_BASE_PLATE,
+  TAG_TOP_PLATE,
+  TAG_WALLS,
+  TAG_WALL_LAYER_INSIDE,
+  TAG_WALL_LAYER_OUTSIDE
+} from '@/construction/tags'
 import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
 import { TOOL_GROUPS, getToolInfoById } from '@/editor/tools/system/metadata'
 import { replaceTool, useActiveToolId } from '@/editor/tools/system/store'
@@ -24,8 +30,8 @@ import {
   BasePlateIcon,
   ConstructionPlanIcon,
   Model3DIcon,
-  WallLayersIcon,
   TopPlateIcon,
+  WallLayersIcon,
   WallToggleIcon
 } from '@/shared/components/Icons'
 import { Logo } from '@/shared/components/Logo'

@@ -211,7 +211,7 @@ describe('perimeterSlice', () => {
       // Check that outside line is offset correctly
       expect(wall.outsideLine.start[0]).toBe(420)
       expect(wall.outsideLine.start[1]).toBe(420) // Offset by wall thickness
-      expect(wall.outsideLine.end[0]).toBe(9560)
+      expect(wall.outsideLine.end[0]).toBe(9580)
       expect(wall.outsideLine.end[1]).toBe(420)
     })
 

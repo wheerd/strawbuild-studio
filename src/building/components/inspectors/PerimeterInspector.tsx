@@ -11,7 +11,13 @@ import { ConstructionPlanModal } from '@/construction/components/ConstructionPla
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import { constructPerimeter } from '@/construction/perimeter'
-import { TAG_BASE_PLATE, TAG_TOP_PLATE, TAG_WALL_LAYER_INSIDE, TAG_WALL_LAYER_OUTSIDE, TAG_WALLS } from '@/construction/tags'
+import {
+  TAG_BASE_PLATE,
+  TAG_TOP_PLATE,
+  TAG_WALLS,
+  TAG_WALL_LAYER_INSIDE,
+  TAG_WALL_LAYER_OUTSIDE
+} from '@/construction/tags'
 import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
@@ -21,8 +27,8 @@ import {
   ConstructionPlanIcon,
   FitToViewIcon,
   Model3DIcon,
-  WallLayersIcon,
   TopPlateIcon,
+  WallLayersIcon,
   WallToggleIcon
 } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'

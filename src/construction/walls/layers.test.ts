@@ -1,6 +1,25 @@
-import type { Polygon2D } from '@/shared/geometry'
 import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import {
+  createOpeningId,
+  createPerimeterCornerId,
+  createPerimeterId,
+  createPerimeterWallId,
+  createStoreyId,
+  createWallAssemblyId
+} from '@/building/model/ids'
+import type { Opening, Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model/model'
+import type { ConstructionElement, GroupOrElement } from '@/construction/elements'
+import { clayPlaster, limePlaster } from '@/construction/materials/material'
+import type { ExtrudedPolygon } from '@/construction/shapes'
+import type { WallCornerInfo } from '@/construction/walls'
+import type { WallContext } from '@/construction/walls/corners/corners'
+import type { WallStoreyContext } from '@/construction/walls/segmentation'
+import type { WallLayersConfig } from '@/construction/walls/types'
+import type { Polygon2D } from '@/shared/geometry'
+
+import { constructWallLayers } from './layers'
 
 vi.mock('@/shared/geometry', async () => {
   const actual = await vi.importActual<typeof import('@/shared/geometry')>('@/shared/geometry')
@@ -24,25 +43,6 @@ vi.mock('@/shared/geometry', async () => {
     })
   }
 })
-
-import {
-  createOpeningId,
-  createPerimeterCornerId,
-  createPerimeterId,
-  createPerimeterWallId,
-  createStoreyId,
-  createWallAssemblyId
-} from '@/building/model/ids'
-import type { Opening, Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model/model'
-import type { ConstructionElement, GroupOrElement } from '@/construction/elements'
-import { clayPlaster, limePlaster } from '@/construction/materials/material'
-import type { WallCornerInfo } from '@/construction/walls'
-import type { WallLayersConfig } from '@/construction/walls/types'
-import type { WallContext } from '@/construction/walls/corners/corners'
-import type { WallStoreyContext } from '@/construction/walls/segmentation'
-import type { ExtrudedPolygon } from '@/construction/shapes'
-
-import { constructWallLayers } from './layers'
 
 const mockAssemblies = new Map<string, { layers: WallLayersConfig }>()
 

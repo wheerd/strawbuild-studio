@@ -2,12 +2,13 @@ import { vec2, vec3 } from 'gl-matrix'
 
 import type { Perimeter, PerimeterWall } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config'
+import type { GroupOrElement } from '@/construction/elements'
+import { IDENTITY } from '@/construction/geometry'
 import { LAYER_CONSTRUCTIONS } from '@/construction/layers'
 import type { LayerConfig, MonolithicLayerConfig, StripedLayerConfig } from '@/construction/layers/types'
 import { type ConstructionModel, createConstructionGroup } from '@/construction/model'
 import { type ConstructionResult, aggregateResults } from '@/construction/results'
-import type { GroupOrElement } from '@/construction/elements'
-import { IDENTITY } from '@/construction/geometry'
+import { TAG_WALL_LAYER_INSIDE, TAG_WALL_LAYER_OUTSIDE } from '@/construction/tags'
 import {
   type Bounds3D,
   type Length,
@@ -19,8 +20,6 @@ import {
   simplifyPolygon
 } from '@/shared/geometry'
 import { lineFromSegment, lineIntersection } from '@/shared/geometry/line'
-
-import { TAG_WALL_LAYER_INSIDE, TAG_WALL_LAYER_OUTSIDE } from '@/construction/tags'
 
 import { getWallContext } from './corners/corners'
 import type { WallStoreyContext } from './segmentation'
@@ -267,15 +266,7 @@ export function constructWallLayers(
       const start = Math.min(span.start, previousSpan.start)
       const end = Math.max(span.end, previousSpan.end)
       const polygon = createLayerPolygon(start, end, bottom, top)
-      const polygonWithHoles = subtractOpenings(
-        polygon,
-        start,
-        end,
-        bottom,
-        top,
-        wall,
-        storeyContext.floorTopOffset
-      )
+      const polygonWithHoles = subtractOpenings(polygon, start, end, bottom, top, wall, storeyContext.floorTopOffset)
       const normalizedPolygon = normalizePolygonWithHoles(polygonWithHoles)
       const results = runLayerConstruction(normalizedPolygon, insideOffset, WALL_LAYER_PLANE, layer)
       for (const result of results) {
@@ -302,15 +293,7 @@ export function constructWallLayers(
       const start = Math.min(span.start, previousSpan.start)
       const end = Math.max(span.end, previousSpan.end)
       const polygon = createLayerPolygon(start, end, bottom, top)
-      const polygonWithHoles = subtractOpenings(
-        polygon,
-        start,
-        end,
-        bottom,
-        top,
-        wall,
-        storeyContext.floorTopOffset
-      )
+      const polygonWithHoles = subtractOpenings(polygon, start, end, bottom, top, wall, storeyContext.floorTopOffset)
       const normalizedPolygon = normalizePolygonWithHoles(polygonWithHoles)
       const results = runLayerConstruction(normalizedPolygon, outsideOffset, WALL_LAYER_PLANE, layer)
       for (const result of results) {

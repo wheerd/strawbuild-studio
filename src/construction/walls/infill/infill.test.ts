@@ -57,6 +57,20 @@ vi.mock('@/construction/walls/segmentation', () => ({
   segmentedWallConstruction: vi.fn()
 }))
 
+vi.mock('@/construction/walls/layers', () => ({
+  constructWallLayers: vi.fn(() => ({
+    elements: [],
+    measurements: [],
+    areas: [],
+    errors: [],
+    warnings: [],
+    bounds: {
+      min: vec3.fromValues(0, 0, 0),
+      max: vec3.fromValues(0, 0, 0)
+    }
+  }))
+}))
+
 vi.mock('@/shared/utils/formatLength', () => ({
   formatLength: vi.fn((length: Length) => `${length}mm`)
 }))

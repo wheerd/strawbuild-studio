@@ -194,8 +194,7 @@ export class InfillWallAssembly implements WallAssembly<InfillWallConfig> {
 
     const aggRes = aggregateResults(allResults)
     const baseModel: ConstructionModel = {
-      bounds:
-        aggRes.elements.length > 0 ? mergeBounds(...aggRes.elements.map(e => e.bounds)) : ZERO_BOUNDS,
+      bounds: aggRes.elements.length > 0 ? mergeBounds(...aggRes.elements.map(e => e.bounds)) : ZERO_BOUNDS,
       elements: aggRes.elements,
       measurements: aggRes.measurements,
       areas: aggRes.areas,

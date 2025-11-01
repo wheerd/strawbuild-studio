@@ -9,7 +9,7 @@ export class StripedLayerConstruction implements LayerConstruction<StripedLayerC
     _plane: Plane3D,
     _config: StripedLayerConfig
   ): Generator<ConstructionResult> {
-    yieldWarning({
+    yield yieldWarning({
       description: 'Striped layer is not yet supported.',
       elements: [],
       groupKey: 'unsupported-stripe-layer'

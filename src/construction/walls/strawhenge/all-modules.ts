@@ -7,8 +7,8 @@ import { constructOpeningFrame } from '@/construction/openings/openings'
 import type { ConstructionResult } from '@/construction/results'
 import { aggregateResults } from '@/construction/results'
 import type { ModulesWallConfig, WallAssembly } from '@/construction/walls'
-import { constructWallLayers } from '@/construction/walls/layers'
 import { infillWallArea } from '@/construction/walls/infill/infill'
+import { constructWallLayers } from '@/construction/walls/layers'
 import { type WallStoreyContext, segmentedWallConstruction } from '@/construction/walls/segmentation'
 import { type Length, mergeBounds } from '@/shared/geometry'
 
@@ -74,8 +74,7 @@ export class ModulesWallAssembly implements WallAssembly<ModulesWallConfig> {
 
     const aggRes = aggregateResults(allResults)
     const baseModel: ConstructionModel = {
-      bounds:
-        aggRes.elements.length > 0 ? mergeBounds(...aggRes.elements.map(e => e.bounds)) : ZERO_BOUNDS,
+      bounds: aggRes.elements.length > 0 ? mergeBounds(...aggRes.elements.map(e => e.bounds)) : ZERO_BOUNDS,
       elements: aggRes.elements,
       measurements: aggRes.measurements,
       areas: aggRes.areas,
