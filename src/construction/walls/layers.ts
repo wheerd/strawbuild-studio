@@ -4,8 +4,10 @@ import type { Perimeter, PerimeterWall } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config'
 import { LAYER_CONSTRUCTIONS } from '@/construction/layers'
 import type { LayerConfig, MonolithicLayerConfig, StripedLayerConfig } from '@/construction/layers/types'
-import { type ConstructionModel } from '@/construction/model'
+import { type ConstructionModel, createConstructionGroup } from '@/construction/model'
 import { type ConstructionResult, aggregateResults } from '@/construction/results'
+import type { GroupOrElement } from '@/construction/elements'
+import { IDENTITY } from '@/construction/geometry'
 import {
   type Bounds3D,
   type Length,
@@ -17,6 +19,8 @@ import {
   simplifyPolygon
 } from '@/shared/geometry'
 import { lineFromSegment, lineIntersection } from '@/shared/geometry/line'
+
+import { TAG_WALL_LAYER_INSIDE, TAG_WALL_LAYER_OUTSIDE } from '@/construction/tags'
 
 import { getWallContext } from './corners/corners'
 import type { WallStoreyContext } from './segmentation'
@@ -249,6 +253,8 @@ export function constructWallLayers(
   const baseOutsideSpan = computeLayerSpan('outside', layers.outsideThickness, wall, context)
 
   const layerResults: ConstructionResult[] = []
+  const insideElements: GroupOrElement[] = []
+  const outsideElements: GroupOrElement[] = []
 
   if (layers.insideLayers.length > 0) {
     let insideOffset: Length = 0
@@ -271,7 +277,14 @@ export function constructWallLayers(
         storeyContext.floorTopOffset
       )
       const normalizedPolygon = normalizePolygonWithHoles(polygonWithHoles)
-      layerResults.push(...runLayerConstruction(normalizedPolygon, insideOffset, WALL_LAYER_PLANE, layer))
+      const results = runLayerConstruction(normalizedPolygon, insideOffset, WALL_LAYER_PLANE, layer)
+      for (const result of results) {
+        if (result.type === 'element') {
+          insideElements.push(result.element)
+        } else {
+          layerResults.push(result)
+        }
+      }
       insideOffset = (insideOffset + layer.thickness) as Length
       previousSpan = span
     }
@@ -299,10 +312,27 @@ export function constructWallLayers(
         storeyContext.floorTopOffset
       )
       const normalizedPolygon = normalizePolygonWithHoles(polygonWithHoles)
-      layerResults.push(...runLayerConstruction(normalizedPolygon, outsideOffset, WALL_LAYER_PLANE, layer))
+      const results = runLayerConstruction(normalizedPolygon, outsideOffset, WALL_LAYER_PLANE, layer)
+      for (const result of results) {
+        if (result.type === 'element') {
+          outsideElements.push(result.element)
+        } else {
+          layerResults.push(result)
+        }
+      }
       outsideOffset = (outsideOffset + layer.thickness) as Length
       previousSpan = span
     }
+  }
+
+  if (insideElements.length > 0) {
+    const group = createConstructionGroup(insideElements, IDENTITY, [TAG_WALL_LAYER_INSIDE])
+    layerResults.push({ type: 'element', element: group })
+  }
+
+  if (outsideElements.length > 0) {
+    const group = createConstructionGroup(outsideElements, IDENTITY, [TAG_WALL_LAYER_OUTSIDE])
+    layerResults.push({ type: 'element', element: group })
   }
 
   const rawModel = aggregateLayerResults(layerResults)

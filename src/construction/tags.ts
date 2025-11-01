@@ -105,6 +105,18 @@ export const TAG_NON_STRAWBALE_CONSTRUCTION: Tag = {
   category: 'wall-construction-type'
 }
 
+export const TAG_WALL_LAYER_INSIDE: Tag = {
+  id: 'construction_wall-layer-inside',
+  label: 'Inside Wall Layers',
+  category: 'construction'
+}
+
+export const TAG_WALL_LAYER_OUTSIDE: Tag = {
+  id: 'construction_wall-layer-outside',
+  label: 'Outside Wall Layers',
+  category: 'construction'
+}
+
 // Opening tags
 export const TAG_OPENING_WINDOW: Tag = {
   id: 'opening_window',
@@ -224,7 +236,19 @@ export const TAG_FLOOR: Tag = {
 }
 
 export const TAG_STOREY: Tag = {
-  id: 'construction_slorey',
+  id: 'construction_storey',
   label: 'Storey',
+  category: 'construction'
+}
+
+export const TAG_INSIDE_LAYERS: Tag = {
+  id: 'construction_inside-layers',
+  label: 'Inside Layers',
+  category: 'construction'
+}
+
+export const TAG_OUTSIDE_LAYERS: Tag = {
+  id: 'construction_outside-layers',
+  label: 'Outside Layers',
   category: 'construction'
 }
