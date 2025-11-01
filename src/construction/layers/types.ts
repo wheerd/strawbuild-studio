@@ -1,5 +1,10 @@
 import type { MaterialId } from '@/construction/materials/material'
-import type { Length } from '@/shared/geometry'
+import type { ConstructionResult } from '@/construction/results'
+import type { Length, PolygonWithHoles2D } from '@/shared/geometry'
+
+export interface LayerConstruction<TConfig extends BaseLayerConfig> {
+  construct(polygon: PolygonWithHoles2D, offset: Length, config: TConfig): Generator<ConstructionResult>
+}
 
 export type LayerType = 'monolithic' | 'striped'
 
