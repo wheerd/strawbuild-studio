@@ -1,16 +1,54 @@
+import type { Polygon2D } from '@/shared/geometry'
 import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+vi.mock('@/shared/geometry', async () => {
+  const actual = await vi.importActual<typeof import('@/shared/geometry')>('@/shared/geometry')
+
+  return {
+    ...actual,
+    subtractPolygons: vi.fn((subjects: Polygon2D[], clips: Polygon2D[]) => {
+      if (subjects.length === 0) {
+        return []
+      }
+
+      const outer = actual.ensurePolygonIsClockwise(subjects[0])
+      const holes = clips.map(clip => actual.ensurePolygonIsCounterClockwise(clip))
+
+      return [
+        {
+          outer,
+          holes
+        }
+      ]
+    })
+  }
+})
+
+import {
+  createOpeningId,
+  createPerimeterCornerId,
+  createPerimeterId,
+  createPerimeterWallId,
+  createStoreyId,
+  createWallAssemblyId
+} from '@/building/model/ids'
 import type { Opening, Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model/model'
-import type { ConstructionElement, ConstructionGroup } from '@/construction/elements'
+import type { ConstructionElement, GroupOrElement } from '@/construction/elements'
+import { clayPlaster, limePlaster } from '@/construction/materials/material'
 import type { WallCornerInfo } from '@/construction/walls'
 import type { WallLayersConfig } from '@/construction/walls/types'
 import type { WallContext } from '@/construction/walls/corners/corners'
 import type { WallStoreyContext } from '@/construction/walls/segmentation'
+import type { ExtrudedPolygon } from '@/construction/shapes'
 
 import { constructWallLayers } from './layers'
 
 const mockAssemblies = new Map<string, { layers: WallLayersConfig }>()
+
+const baseAssemblyId = createWallAssemblyId()
+const previousAssemblyId = createWallAssemblyId()
+const nextAssemblyId = createWallAssemblyId()
 
 let wallContext: WallContext
 let cornerInfo: WallCornerInfo
@@ -28,9 +66,9 @@ vi.mock('@/construction/walls/corners/corners', () => ({
 }))
 
 const createWall = (overrides: Partial<PerimeterWall> = {}): PerimeterWall => ({
-  id: 'wall-current',
+  id: createPerimeterWallId(),
   thickness: 300,
-  wallAssemblyId: 'assembly-current',
+  wallAssemblyId: baseAssemblyId,
   openings: [],
   insideLength: 3000,
   outsideLength: 3000,
@@ -49,15 +87,15 @@ const createWall = (overrides: Partial<PerimeterWall> = {}): PerimeterWall => ({
 })
 
 const createPerimeter = (wall: PerimeterWall, overrides: Partial<Perimeter> = {}): Perimeter => ({
-  id: 'perimeter-1',
-  storeyId: 'storey-1',
+  id: createPerimeterId(),
+  storeyId: createStoreyId(),
   walls: [wall],
   corners: [],
   ...overrides
 })
 
 const createCorner = (overrides: Partial<PerimeterCorner>): PerimeterCorner => ({
-  id: 'corner',
+  id: createPerimeterCornerId(),
   insidePoint: vec2.fromValues(0, 0),
   outsidePoint: vec2.fromValues(0, 300),
   constructedByWall: 'next',
@@ -77,7 +115,7 @@ const baseLayers: WallLayersConfig = {
   insideLayers: [
     {
       type: 'monolithic',
-      material: 'mat-inside',
+      material: clayPlaster.id,
       thickness: 30
     }
   ],
@@ -85,7 +123,7 @@ const baseLayers: WallLayersConfig = {
   outsideLayers: [
     {
       type: 'monolithic',
-      material: 'mat-outside',
+      material: limePlaster.id,
       thickness: 20
     }
   ]
@@ -94,13 +132,31 @@ const baseLayers: WallLayersConfig = {
 const applyAssemblies = () => {
   mockAssemblies.clear()
   const assembly = { layers: baseLayers }
-  mockAssemblies.set('assembly-current', assembly)
-  mockAssemblies.set('assembly-previous', assembly)
-  mockAssemblies.set('assembly-next', assembly)
+  mockAssemblies.set(baseAssemblyId, assembly)
+  mockAssemblies.set(previousAssemblyId, assembly)
+  mockAssemblies.set(nextAssemblyId, assembly)
 }
 
-const fetchElements = (modelGroup: ConstructionGroup): ConstructionElement[] => {
-  return modelGroup.children.filter((child): child is ConstructionElement => 'shape' in child)
+const flattenElements = (items: GroupOrElement[]): ConstructionElement[] => {
+  const result: ConstructionElement[] = []
+
+  const visit = (entry: GroupOrElement) => {
+    if ('children' in entry) {
+      entry.children.forEach(visit)
+      return
+    }
+    result.push(entry)
+  }
+
+  items.forEach(visit)
+  return result
+}
+
+const expectExtrudedPolygon = (element: ConstructionElement): ExtrudedPolygon => {
+  if (element.shape.type !== 'polygon') {
+    throw new Error('Expected extruded polygon element')
+  }
+  return element.shape
 }
 
 describe('constructWallLayers', () => {
@@ -108,17 +164,17 @@ describe('constructWallLayers', () => {
     applyAssemblies()
 
     const wall = createWall()
-    const previousWall = createWall({ id: 'wall-previous', wallAssemblyId: 'assembly-previous' })
-    const nextWall = createWall({ id: 'wall-next', wallAssemblyId: 'assembly-next' })
+    const previousWall = createWall({ id: createPerimeterWallId(), wallAssemblyId: previousAssemblyId })
+    const nextWall = createWall({ id: createPerimeterWallId(), wallAssemblyId: nextAssemblyId })
 
     const startCorner = createCorner({
-      id: 'corner-start',
+      id: createPerimeterCornerId(),
       insidePoint: vec2.fromValues(0, 0),
       outsidePoint: vec2.fromValues(0, 300),
       constructedByWall: 'next'
     })
     const endCorner = createCorner({
-      id: 'corner-end',
+      id: createPerimeterCornerId(),
       insidePoint: vec2.fromValues(3000, 0),
       outsidePoint: vec2.fromValues(3000, 300),
       constructedByWall: 'previous'
@@ -154,9 +210,7 @@ describe('constructWallLayers', () => {
 
     const model = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
 
-    expect(model.elements).toHaveLength(1)
-    const group = model.elements[0] as ConstructionGroup
-    const elements = fetchElements(group)
+    const elements = flattenElements(model.elements)
     expect(elements).toHaveLength(2)
 
     const inside = elements.find(element => element.shape.type === 'polygon' && element.shape.thickness === 30)
@@ -168,19 +222,22 @@ describe('constructWallLayers', () => {
       throw new Error('Expected inside and outside elements')
     }
 
-    expect(inside.shape.polygon.outer.points[0][0]).toBeCloseTo(0)
-    expect(inside.shape.polygon.outer.points[2][0]).toBeCloseTo(3000)
+    const insidePolygon = expectExtrudedPolygon(inside)
+    const outsidePolygon = expectExtrudedPolygon(outside)
 
-    expect(outside.shape.polygon.outer.points[0][0]).toBeCloseTo(0)
-    expect(outside.shape.polygon.outer.points[2][0]).toBeCloseTo(3000)
+    expect(insidePolygon.polygon.outer.points[0][0]).toBeCloseTo(0)
+    expect(insidePolygon.polygon.outer.points[2][0]).toBeCloseTo(3000)
 
-    expect(inside.shape.polygon.outer.points[0][1]).toBeCloseTo(0)
-    expect(inside.shape.polygon.outer.points[1][1]).toBeCloseTo(3000)
+    expect(outsidePolygon.polygon.outer.points[0][0]).toBeCloseTo(0)
+    expect(outsidePolygon.polygon.outer.points[2][0]).toBeCloseTo(3000)
+
+    expect(insidePolygon.polygon.outer.points[0][1]).toBeCloseTo(0)
+    expect(insidePolygon.polygon.outer.points[1][1]).toBeCloseTo(3000)
   })
 
   it('adds holes for openings', () => {
     const opening: Opening = {
-      id: 'opening-1',
+      id: createOpeningId(),
       type: 'window',
       offsetFromStart: 1000,
       width: 900,
@@ -193,8 +250,7 @@ describe('constructWallLayers', () => {
 
     const model = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
 
-    const group = model.elements[0] as ConstructionGroup
-    const elements = fetchElements(group)
+    const elements = flattenElements(model.elements)
     const inside = elements.find(element => element.shape.type === 'polygon' && element.shape.thickness === 30)
     expect(inside).toBeDefined()
 
@@ -202,12 +258,18 @@ describe('constructWallLayers', () => {
       throw new Error('Inside layer was not constructed')
     }
 
-    expect(inside.shape.polygon.holes).toHaveLength(1)
-    const hole = inside.shape.polygon.holes[0]
-    expect(hole.points[0][0]).toBeCloseTo(1000)
-    expect(hole.points[2][0]).toBeCloseTo(1900)
-    expect(hole.points[0][1]).toBeCloseTo(900)
-    expect(hole.points[1][1]).toBeCloseTo(2100)
+    const insidePolygon = expectExtrudedPolygon(inside)
+
+    expect(insidePolygon.polygon.holes).toHaveLength(1)
+    const hole = insidePolygon.polygon.holes[0]
+
+    const xs = hole.points.map(point => point[0])
+    const ys = hole.points.map(point => point[1])
+
+    expect(Math.min(...xs)).toBeCloseTo(1000)
+    expect(Math.max(...xs)).toBeCloseTo(1900)
+    expect(Math.min(...ys)).toBeCloseTo(900)
+    expect(Math.max(...ys)).toBeCloseTo(2100)
   })
 
   it('extends exterior layers when wall constructs the corner', () => {
@@ -218,8 +280,7 @@ describe('constructWallLayers', () => {
     cornerInfo.startCorner = { ...cornerInfo.startCorner, constructedByThisWall: true, extensionDistance: 80 }
 
     const model = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
-    const group = model.elements[0] as ConstructionGroup
-    const elements = fetchElements(group)
+    const elements = flattenElements(model.elements)
     const outside = elements.find(element => element.shape.type === 'polygon' && element.shape.thickness === 20)
 
     expect(outside).toBeDefined()
@@ -227,7 +288,9 @@ describe('constructWallLayers', () => {
       throw new Error('Outside layer was not constructed')
     }
 
-    expect(outside.shape.polygon.outer.points[0][0]).toBeCloseTo(-60)
+    const outsidePolygon = expectExtrudedPolygon(outside)
+
+    expect(outsidePolygon.polygon.outer.points[0][0]).toBeCloseTo(-60)
   })
 
   it('shortens interior layers on inner corners not owned by the wall', () => {
@@ -238,8 +301,7 @@ describe('constructWallLayers', () => {
     cornerInfo.startCorner = { ...cornerInfo.startCorner, constructedByThisWall: false, extensionDistance: -10 }
 
     const model = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
-    const group = model.elements[0] as ConstructionGroup
-    const elements = fetchElements(group)
+    const elements = flattenElements(model.elements)
     const inside = elements.find(element => element.shape.type === 'polygon' && element.shape.thickness === 30)
 
     expect(inside).toBeDefined()
@@ -247,6 +309,8 @@ describe('constructWallLayers', () => {
       throw new Error('Inside layer was not constructed')
     }
 
-    expect(inside.shape.polygon.outer.points[0][0]).toBeCloseTo(10)
+    const insidePolygon = expectExtrudedPolygon(inside)
+
+    expect(insidePolygon.polygon.outer.points[0][0]).toBeCloseTo(10)
   })
 })

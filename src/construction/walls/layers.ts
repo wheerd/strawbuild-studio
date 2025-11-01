@@ -1,22 +1,30 @@
 import { vec2, vec3 } from 'gl-matrix'
 
-import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
+import type { Perimeter, PerimeterWall } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config'
 import { LAYER_CONSTRUCTIONS } from '@/construction/layers'
-import type { LayerConfig } from '@/construction/layers/types'
-import { type ConstructionModel, transformModel } from '@/construction/model'
+import type { LayerConfig, MonolithicLayerConfig, StripedLayerConfig } from '@/construction/layers/types'
+import { type ConstructionModel } from '@/construction/model'
 import { type ConstructionResult, aggregateResults } from '@/construction/results'
-import { type Bounds3D, type Length, type Polygon2D, type PolygonWithHoles2D, mergeBounds } from '@/shared/geometry'
+import {
+  type Bounds3D,
+  type Length,
+  type Plane3D,
+  type Polygon2D,
+  type PolygonWithHoles2D,
+  ensurePolygonIsClockwise,
+  ensurePolygonIsCounterClockwise,
+  mergeBounds,
+  subtractPolygons
+} from '@/shared/geometry'
 
 import { calculateWallCornerInfo, getWallContext } from './corners/corners'
 import type { WallStoreyContext } from './segmentation'
 import type { WallLayersConfig } from './types'
 
-interface LayerSideContext {
-  polygon: PolygonWithHoles2D
-}
-
 type LayerSide = 'inside' | 'outside'
+
+const WALL_LAYER_PLANE: Plane3D = 'xz'
 
 const ZERO_BOUNDS = {
   min: vec3.fromValues(0, 0, 0),
@@ -52,14 +60,14 @@ const clampInterval = (start: Length, end: Length, min: Length, max: Length): [L
   return [clampedStart, clampedEnd]
 }
 
-const createLayerPolygon = (
+const createLayerPolygons = (
   wall: PerimeterWall,
   side: LayerSide,
   context: ReturnType<typeof getWallContext>,
   cornerInfo: ReturnType<typeof calculateWallCornerInfo>,
   bottom: Length,
   top: Length
-): LayerSideContext => {
+): PolygonWithHoles2D[] => {
   const { getWallAssemblyById } = getConfigActions()
 
   const previousAssembly = getWallAssemblyById(context.previousWall.wallAssemblyId)
@@ -96,7 +104,11 @@ const createLayerPolygon = (
   const startPosition = -startOffset
   const endPosition = baseLength + endOffset
 
-  const holes = wall.openings
+  if (endPosition <= startPosition || top <= bottom) {
+    return []
+  }
+
+  const cutouts = wall.openings
     .map(opening => {
       const openingStart = opening.offsetFromStart
       const openingEnd = openingStart + opening.width
@@ -109,30 +121,40 @@ const createLayerPolygon = (
       const vertical = clampInterval(openingBottom, openingTop, bottom, top)
       if (!vertical) return null
 
-      return rectangle(horizontal[0], horizontal[1], vertical[0], vertical[1])
+      return ensurePolygonIsCounterClockwise(rectangle(horizontal[0], horizontal[1], vertical[0], vertical[1]))
     })
     .filter((polygon): polygon is Polygon2D => polygon !== null)
 
-  return {
-    polygon: {
-      outer: rectangle(startPosition, endPosition, bottom, top),
-      holes
-    }
+  const outer = ensurePolygonIsClockwise(rectangle(startPosition, endPosition, bottom, top))
+
+  if (cutouts.length === 0) {
+    return [
+      {
+        outer,
+        holes: []
+      }
+    ]
   }
+
+  const subtracted = subtractPolygons([outer], cutouts)
+  return subtracted.length > 0 ? subtracted : []
 }
 
 const runLayerConstruction = (
   polygon: PolygonWithHoles2D,
   offset: Length,
+  plane: Plane3D,
   layer: LayerConfig
 ): ConstructionResult[] => {
-  const construction = LAYER_CONSTRUCTIONS[layer.type]
-
-  if (!construction) {
-    throw new Error(`Unsupported layer type: ${layer.type}`)
+  if (layer.type === 'monolithic') {
+    const construction = LAYER_CONSTRUCTIONS.monolithic as (typeof LAYER_CONSTRUCTIONS)['monolithic']
+    return Array.from(construction.construct(clonePolygon(polygon), offset, plane, layer as MonolithicLayerConfig))
   }
-
-  return Array.from(construction.construct(clonePolygon(polygon), offset, layer))
+  if (layer.type === 'striped') {
+    const construction = LAYER_CONSTRUCTIONS.striped as (typeof LAYER_CONSTRUCTIONS)['striped']
+    return Array.from(construction.construct(clonePolygon(polygon), offset, plane, layer as StripedLayerConfig))
+  }
+  throw new Error(`Unsupported layer type: ${(layer as { type: string }).type}`)
 }
 
 const aggregateLayerResults = (results: ConstructionResult[]): ConstructionModel => {
@@ -186,39 +208,31 @@ export function constructWallLayers(
   const bottom = basePlateHeight
   const top = totalConstructionHeight - topPlateHeight
 
-  const insideContext = createLayerPolygon(wall, 'inside', context, cornerInfo, bottom, top)
-  const outsideContext = createLayerPolygon(wall, 'outside', context, cornerInfo, bottom, top)
+  const insidePolygons = createLayerPolygons(wall, 'inside', context, cornerInfo, bottom, top)
+  const outsidePolygons = createLayerPolygons(wall, 'outside', context, cornerInfo, bottom, top)
 
   const layerResults: ConstructionResult[] = []
 
-  let insideAccumulated = 0
-  if (layers.insideLayers.length > 0) {
+  if (insidePolygons.length > 0 && layers.insideLayers.length > 0) {
+    let insideOffset: Length = 0
     for (const layer of layers.insideLayers) {
-      const start = insideAccumulated
-      insideAccumulated += layer.thickness
-      const offset = -(start + layer.thickness)
-      layerResults.push(...runLayerConstruction(insideContext.polygon, offset, layer))
+      for (const polygon of insidePolygons) {
+        layerResults.push(...runLayerConstruction(polygon, insideOffset, WALL_LAYER_PLANE, layer))
+      }
+      insideOffset = (insideOffset + layer.thickness) as Length
     }
   }
 
-  if (layers.outsideLayers.length > 0) {
-    let outsideAccumulated = 0
+  if (outsidePolygons.length > 0 && layers.outsideLayers.length > 0) {
+    let outsideOffset: Length = (wall.thickness - layers.outsideThickness) as Length
     for (const layer of layers.outsideLayers) {
-      const start = wall.thickness - outsideAccumulated - layer.thickness
-      const end = wall.thickness - outsideAccumulated
-      outsideAccumulated += layer.thickness
-      const offset = -end
-      layerResults.push(...runLayerConstruction(outsideContext.polygon, offset, layer))
+      for (const polygon of outsidePolygons) {
+        layerResults.push(...runLayerConstruction(polygon, outsideOffset, WALL_LAYER_PLANE, layer))
+      }
+      outsideOffset = (outsideOffset + layer.thickness) as Length
     }
   }
 
   const rawModel = aggregateLayerResults(layerResults)
-  if (rawModel.elements.length === 0) {
-    return rawModel
-  }
-
-  return transformModel(rawModel, {
-    position: vec3.fromValues(0, 0, 0),
-    rotation: vec3.fromValues(Math.PI / 2, 0, 0)
-  })
+  return rawModel
 }

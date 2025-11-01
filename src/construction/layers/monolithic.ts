@@ -4,17 +4,25 @@ import { createConstructionElement } from '@/construction/elements'
 import type { LayerConstruction, MonolithicLayerConfig } from '@/construction/layers/types'
 import { type ConstructionResult, yieldElement } from '@/construction/results'
 import { createExtrudedPolygon } from '@/construction/shapes'
-import type { Length, PolygonWithHoles2D } from '@/shared/geometry'
+import type { Length, Plane3D, PolygonWithHoles2D } from '@/shared/geometry'
 
 export class MonolithicLayerConstruction implements LayerConstruction<MonolithicLayerConfig> {
   construct = function* (
     polygon: PolygonWithHoles2D,
     offset: Length,
+    plane: Plane3D,
     config: MonolithicLayerConfig
   ): Generator<ConstructionResult> {
+    const position =
+      plane === 'xy'
+        ? vec3.fromValues(0, 0, offset)
+        : plane === 'xz'
+          ? vec3.fromValues(0, offset, 0)
+          : vec3.fromValues(offset, 0, 0)
+
     yield yieldElement(
-      createConstructionElement(config.material, createExtrudedPolygon(polygon, 'xy', config.thickness), {
-        position: [0, 0, offset],
+      createConstructionElement(config.material, createExtrudedPolygon(polygon, plane, config.thickness), {
+        position,
         rotation: vec3.fromValues(0, 0, 0)
       })
     )
