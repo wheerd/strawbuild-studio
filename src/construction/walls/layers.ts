@@ -146,7 +146,8 @@ const subtractOpenings = (
   end: Length,
   bottom: Length,
   top: Length,
-  wall: PerimeterWall
+  wall: PerimeterWall,
+  finishedFloorHeight: Length
 ): PolygonWithHoles2D => {
   const holes = wall.openings
     .map(opening => {
@@ -159,7 +160,7 @@ const subtractOpenings = (
       }
 
       const sill = opening.sillHeight ?? 0
-      const openingBottom = bottom + sill
+      const openingBottom = finishedFloorHeight + sill
       const openingTop = openingBottom + opening.height
       const clampedBottom = Math.max(openingBottom, bottom)
       const clampedTop = Math.min(openingTop, top)
@@ -260,7 +261,15 @@ export function constructWallLayers(
       const start = Math.min(span.start, previousSpan.start)
       const end = Math.max(span.end, previousSpan.end)
       const polygon = createLayerPolygon(start, end, bottom, top)
-      const polygonWithHoles = subtractOpenings(polygon, start, end, bottom, top, wall)
+      const polygonWithHoles = subtractOpenings(
+        polygon,
+        start,
+        end,
+        bottom,
+        top,
+        wall,
+        storeyContext.floorTopOffset
+      )
       const normalizedPolygon = normalizePolygonWithHoles(polygonWithHoles)
       layerResults.push(...runLayerConstruction(normalizedPolygon, insideOffset, WALL_LAYER_PLANE, layer))
       insideOffset = (insideOffset + layer.thickness) as Length
@@ -280,7 +289,15 @@ export function constructWallLayers(
       const start = Math.min(span.start, previousSpan.start)
       const end = Math.max(span.end, previousSpan.end)
       const polygon = createLayerPolygon(start, end, bottom, top)
-      const polygonWithHoles = subtractOpenings(polygon, start, end, bottom, top, wall)
+      const polygonWithHoles = subtractOpenings(
+        polygon,
+        start,
+        end,
+        bottom,
+        top,
+        wall,
+        storeyContext.floorTopOffset
+      )
       const normalizedPolygon = normalizePolygonWithHoles(polygonWithHoles)
       layerResults.push(...runLayerConstruction(normalizedPolygon, outsideOffset, WALL_LAYER_PLANE, layer))
       outsideOffset = (outsideOffset + layer.thickness) as Length
