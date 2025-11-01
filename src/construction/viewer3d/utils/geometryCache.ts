@@ -64,8 +64,9 @@ function buildExtrudedPolygonGeometry(shape: ExtrudedPolygon): {
       matrix.multiply(new THREE.Matrix4().makeTranslation(0, 0, -shape.thickness))
     }
   } else if (shape.plane === 'xz') {
+    matrix.makeScale(1, 1, -1)
     if (shape.thickness < 0) {
-      matrix.makeTranslation(0, 0, -shape.thickness)
+      matrix.multiply(new THREE.Matrix4().makeTranslation(0, 0, -shape.thickness))
     }
   } else if (shape.plane === 'yz') {
     matrix.makeRotationY(Math.PI / 2)
