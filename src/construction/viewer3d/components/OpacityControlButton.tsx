@@ -1,25 +1,32 @@
 import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons'
-import { IconButton } from '@radix-ui/themes'
+import { Button, Flex, Text } from '@radix-ui/themes'
 
+import type { TagCategoryId } from '@/construction/tags'
 import { useOpacityControl } from '@/construction/viewer3d/context/OpacityControlContext'
 
-function OpacityControlButton(): React.JSX.Element {
+interface OpacityControlButtonProps {
+  category: TagCategoryId
+  label: string
+}
+
+function OpacityControlButton({ category, label }: OpacityControlButtonProps): React.JSX.Element {
   const { getOpacityForCategory, cycleOpacityForCategory } = useOpacityControl()
 
-  const strawOpacity = getOpacityForCategory('straw')
-
-  const label = strawOpacity === 1.0 ? 'Straw: 100%' : strawOpacity === 0.5 ? 'Straw: 50%' : 'Straw: 0%'
+  const opacity = getOpacityForCategory(category)
 
   return (
-    <IconButton size="2" variant="surface" onClick={() => cycleOpacityForCategory('straw')} title={label}>
-      {strawOpacity === 1.0 ? (
-        <EyeOpenIcon />
-      ) : strawOpacity === 0.5 ? (
-        <EyeOpenIcon style={{ opacity: 0.5 }} />
-      ) : (
-        <EyeClosedIcon />
-      )}
-    </IconButton>
+    <Button size="1" variant="ghost" onClick={() => cycleOpacityForCategory(category)}>
+      <Flex align="center" gap="2" justify="between" width="100%">
+        <Text size="1">{label}</Text>
+        {opacity === 1.0 ? (
+          <EyeOpenIcon />
+        ) : opacity === 0.5 ? (
+          <EyeOpenIcon style={{ opacity: 0.5 }} />
+        ) : (
+          <EyeClosedIcon />
+        )}
+      </Flex>
+    </Button>
   )
 }
 

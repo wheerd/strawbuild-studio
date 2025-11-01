@@ -88,8 +88,18 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
 
       <Box position="absolute" top="3" left="3" style={{ zIndex: 10 }}>
         <Card size="1" variant="surface" className="shadow-md">
-          <Flex direction="row" gap="2" m="-2">
-            <OpacityControlButton />
+          <Flex direction="column" align="center" gap="2" m="-2" p="2">
+            <Flex direction="column" gap="1">
+              <OpacityControlButton category="straw" label="Straw" />
+              <OpacityControlButton category="wall-layer" label="Wall Layers" />
+            </Flex>
+          </Flex>
+        </Card>
+      </Box>
+
+      <Box position="absolute" top="3" right="3" style={{ zIndex: 10 }}>
+        <Card size="1" variant="surface" className="shadow-md">
+          <Flex direction="column" align="center" gap="2" m="-2" p="0">
             <ExportButton onExport={handleExport} />
           </Flex>
         </Card>

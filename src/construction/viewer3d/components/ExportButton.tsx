@@ -11,7 +11,7 @@ function ExportButton({ onExport }: ExportButtonProps): React.JSX.Element {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
-        <IconButton size="2" variant="surface" title="Export">
+        <IconButton size="2" title="Export">
           <DownloadIcon />
         </IconButton>
       </DropdownMenu.Trigger>

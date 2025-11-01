@@ -12,6 +12,7 @@ export const ALL_CATEGORIES = {
   straw: { label: 'Straw' },
   'wall-wood': { label: 'Wall Wood' },
   'wall-construction-type': { label: 'Wall Construction Type' },
+  'wall-layer': { label: 'Wall Layers' },
   measurement: { label: 'Measurement' },
   opening: { label: 'Opening' },
   area: { label: 'Area' },
@@ -108,13 +109,13 @@ export const TAG_NON_STRAWBALE_CONSTRUCTION: Tag = {
 export const TAG_WALL_LAYER_INSIDE: Tag = {
   id: 'construction_wall-layer-inside',
   label: 'Inside Wall Layers',
-  category: 'construction'
+  category: 'wall-layer'
 }
 
 export const TAG_WALL_LAYER_OUTSIDE: Tag = {
   id: 'construction_wall-layer-outside',
   label: 'Outside Wall Layers',
-  category: 'construction'
+  category: 'wall-layer'
 }
 
 // Opening tags

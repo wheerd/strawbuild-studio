@@ -8,6 +8,7 @@ import Cuboid3D from './Cuboid3D'
 
 interface ConstructionElement3DProps {
   element: ConstructionElement
+  parentOpacity?: number
 }
 
 function stripAlphaFromHex(color: string): string {
@@ -37,15 +38,16 @@ function calculateEffectiveOpacity(
   return minOpacity
 }
 
-function ConstructionElement3D({ element }: ConstructionElement3DProps): React.JSX.Element | null {
+function ConstructionElement3D({ element, parentOpacity = 1 }: ConstructionElement3DProps): React.JSX.Element | null {
   const material = getMaterialById(element.material)
   const { getOpacityForCategory } = useOpacityControl()
 
   if (!material) return null
 
   const color = stripAlphaFromHex(material.color)
-  const categories = getTagCategories(element)
-  const opacity = calculateEffectiveOpacity(categories, getOpacityForCategory)
+  const elementCategories = getTagCategories(element)
+  const elementOpacity = calculateEffectiveOpacity(elementCategories, getOpacityForCategory)
+  const opacity = Math.min(parentOpacity, elementOpacity)
 
   const position = element.transform.position
   const rotation = element.transform.rotation
