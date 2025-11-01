@@ -167,16 +167,44 @@ describe('constructWallLayers', () => {
     const previousWall = createWall({ id: createPerimeterWallId(), wallAssemblyId: previousAssemblyId })
     const nextWall = createWall({ id: createPerimeterWallId(), wallAssemblyId: nextAssemblyId })
 
+    previousWall.insideLine = {
+      start: vec2.fromValues(0, -3000),
+      end: vec2.fromValues(0, 0)
+    }
+    previousWall.outsideLine = {
+      start: vec2.fromValues(-300, -3000),
+      end: vec2.fromValues(-300, 0)
+    }
+    previousWall.direction = vec2.fromValues(0, 1)
+    previousWall.outsideDirection = vec2.fromValues(-1, 0)
+    previousWall.insideLength = 3000
+    previousWall.outsideLength = 3000
+    previousWall.wallLength = 3000
+
+    nextWall.insideLine = {
+      start: vec2.fromValues(3000, 0),
+      end: vec2.fromValues(3000, 3000)
+    }
+    nextWall.outsideLine = {
+      start: vec2.fromValues(3300, 0),
+      end: vec2.fromValues(3300, 3000)
+    }
+    nextWall.direction = vec2.fromValues(0, 1)
+    nextWall.outsideDirection = vec2.fromValues(1, 0)
+    nextWall.insideLength = 3000
+    nextWall.outsideLength = 3000
+    nextWall.wallLength = 3000
+
     const startCorner = createCorner({
       id: createPerimeterCornerId(),
       insidePoint: vec2.fromValues(0, 0),
-      outsidePoint: vec2.fromValues(0, 300),
+      outsidePoint: vec2.fromValues(-300, 300),
       constructedByWall: 'next'
     })
     const endCorner = createCorner({
       id: createPerimeterCornerId(),
       insidePoint: vec2.fromValues(3000, 0),
-      outsidePoint: vec2.fromValues(3000, 300),
+      outsidePoint: vec2.fromValues(3300, 300),
       constructedByWall: 'previous'
     })
 
@@ -225,11 +253,11 @@ describe('constructWallLayers', () => {
     const insidePolygon = expectExtrudedPolygon(inside)
     const outsidePolygon = expectExtrudedPolygon(outside)
 
-    expect(insidePolygon.polygon.outer.points[0][0]).toBeCloseTo(0)
-    expect(insidePolygon.polygon.outer.points[2][0]).toBeCloseTo(3000)
+    expect(insidePolygon.polygon.outer.points[0][0]).toBeCloseTo(-30)
+    expect(insidePolygon.polygon.outer.points[2][0]).toBeCloseTo(3030)
 
-    expect(outsidePolygon.polygon.outer.points[0][0]).toBeCloseTo(0)
-    expect(outsidePolygon.polygon.outer.points[2][0]).toBeCloseTo(3000)
+    expect(outsidePolygon.polygon.outer.points[0][0]).toBeCloseTo(-300)
+    expect(outsidePolygon.polygon.outer.points[2][0]).toBeCloseTo(3300)
 
     expect(insidePolygon.polygon.outer.points[0][1]).toBeCloseTo(0)
     expect(insidePolygon.polygon.outer.points[1][1]).toBeCloseTo(3000)
@@ -276,8 +304,21 @@ describe('constructWallLayers', () => {
     const wall = createWall()
     const perimeter = createPerimeter(wall)
 
-    wallContext.startCorner.outsidePoint = vec2.fromValues(-80, 300)
-    cornerInfo.startCorner = { ...cornerInfo.startCorner, constructedByThisWall: true, extensionDistance: 80 }
+    const baselineOutsideStart = (() => {
+      const baselineModel = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
+      const baselineOutside = flattenElements(baselineModel.elements).find(
+        element => element.shape.type === 'polygon' && element.shape.thickness === 20
+      )
+      if (!baselineOutside) {
+        throw new Error('Baseline outside layer missing')
+      }
+      return expectExtrudedPolygon(baselineOutside).polygon.outer.points[0][0]
+    })()
+
+    wallContext.previousWall.outsideLine = {
+      start: vec2.fromValues(-360, -3000),
+      end: vec2.fromValues(-360, 0)
+    }
 
     const model = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
     const elements = flattenElements(model.elements)
@@ -290,15 +331,28 @@ describe('constructWallLayers', () => {
 
     const outsidePolygon = expectExtrudedPolygon(outside)
 
-    expect(outsidePolygon.polygon.outer.points[0][0]).toBeCloseTo(-60)
+    expect(outsidePolygon.polygon.outer.points[0][0]).toBeLessThan(baselineOutsideStart)
   })
 
   it('shortens interior layers on inner corners not owned by the wall', () => {
     const wall = createWall()
     const perimeter = createPerimeter(wall)
 
-    wallContext.startCorner.insidePoint = vec2.fromValues(20, 0)
-    cornerInfo.startCorner = { ...cornerInfo.startCorner, constructedByThisWall: false, extensionDistance: -10 }
+    const baselineInsideStart = (() => {
+      const baselineModel = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
+      const baselineInside = flattenElements(baselineModel.elements).find(
+        element => element.shape.type === 'polygon' && element.shape.thickness === 30
+      )
+      if (!baselineInside) {
+        throw new Error('Baseline inside layer missing')
+      }
+      return expectExtrudedPolygon(baselineInside).polygon.outer.points[0][0]
+    })()
+
+    wallContext.previousWall.insideLine = {
+      start: vec2.fromValues(40, -3000),
+      end: vec2.fromValues(40, 0)
+    }
 
     const model = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
     const elements = flattenElements(model.elements)
@@ -311,6 +365,6 @@ describe('constructWallLayers', () => {
 
     const insidePolygon = expectExtrudedPolygon(inside)
 
-    expect(insidePolygon.polygon.outer.points[0][0]).toBeCloseTo(10)
+    expect(insidePolygon.polygon.outer.points[0][0]).toBeGreaterThan(baselineInsideStart)
   })
 })

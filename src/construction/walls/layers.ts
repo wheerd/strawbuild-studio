@@ -10,15 +10,15 @@ import {
   type Bounds3D,
   type Length,
   type Plane3D,
-  type Polygon2D,
   type PolygonWithHoles2D,
   ensurePolygonIsClockwise,
   ensurePolygonIsCounterClockwise,
   mergeBounds,
-  subtractPolygons
+  simplifyPolygon
 } from '@/shared/geometry'
+import { lineFromSegment, lineIntersection } from '@/shared/geometry/line'
 
-import { calculateWallCornerInfo, getWallContext } from './corners/corners'
+import { getWallContext } from './corners/corners'
 import type { WallStoreyContext } from './segmentation'
 import type { WallLayersConfig } from './types'
 
@@ -40,106 +40,6 @@ const clonePolygon = (polygon: PolygonWithHoles2D): PolygonWithHoles2D => ({
   }))
 })
 
-const rectangle = (start: Length, end: Length, bottom: Length, top: Length): Polygon2D => ({
-  points: [
-    vec2.fromValues(start, bottom),
-    vec2.fromValues(start, top),
-    vec2.fromValues(end, top),
-    vec2.fromValues(end, bottom)
-  ]
-})
-
-const clampInterval = (start: Length, end: Length, min: Length, max: Length): [Length, Length] | null => {
-  const clampedStart = Math.max(start, min)
-  const clampedEnd = Math.min(end, max)
-
-  if (clampedEnd <= clampedStart) {
-    return null
-  }
-
-  return [clampedStart, clampedEnd]
-}
-
-const createLayerPolygons = (
-  wall: PerimeterWall,
-  side: LayerSide,
-  context: ReturnType<typeof getWallContext>,
-  cornerInfo: ReturnType<typeof calculateWallCornerInfo>,
-  bottom: Length,
-  top: Length
-): PolygonWithHoles2D[] => {
-  const { getWallAssemblyById } = getConfigActions()
-
-  const previousAssembly = getWallAssemblyById(context.previousWall.wallAssemblyId)
-  const nextAssembly = getWallAssemblyById(context.nextWall.wallAssemblyId)
-
-  if (!previousAssembly || !nextAssembly) {
-    throw new Error('Unable to resolve neighbouring wall assemblies for layer construction')
-  }
-
-  const startDistance =
-    side === 'inside'
-      ? vec2.distance(wall.insideLine.start, context.startCorner.insidePoint)
-      : vec2.distance(wall.outsideLine.start, context.startCorner.outsidePoint)
-
-  const endDistance =
-    side === 'inside'
-      ? vec2.distance(wall.insideLine.end, context.endCorner.insidePoint)
-      : vec2.distance(wall.outsideLine.end, context.endCorner.outsidePoint)
-
-  const previousThickness =
-    side === 'inside' ? previousAssembly.layers.insideThickness : previousAssembly.layers.outsideThickness
-  const nextThickness = side === 'inside' ? nextAssembly.layers.insideThickness : nextAssembly.layers.outsideThickness
-
-  const startDelta = startDistance - previousThickness
-  const endDelta = endDistance - nextThickness
-
-  const constructsStart = cornerInfo.startCorner.constructedByThisWall
-  const constructsEnd = cornerInfo.endCorner.constructedByThisWall
-
-  const startOffset = constructsStart ? Math.max(startDelta, 0) : Math.min(startDelta, 0)
-  const endOffset = constructsEnd ? Math.max(endDelta, 0) : Math.min(endDelta, 0)
-
-  const baseLength = side === 'inside' ? wall.insideLength : wall.outsideLength
-  const startPosition = -startOffset
-  const endPosition = baseLength + endOffset
-
-  if (endPosition <= startPosition || top <= bottom) {
-    return []
-  }
-
-  const cutouts = wall.openings
-    .map(opening => {
-      const openingStart = opening.offsetFromStart
-      const openingEnd = openingStart + opening.width
-      const horizontal = clampInterval(openingStart, openingEnd, startPosition, endPosition)
-      if (!horizontal) return null
-
-      const sill = opening.sillHeight ?? 0
-      const openingBottom = bottom + sill
-      const openingTop = openingBottom + opening.height
-      const vertical = clampInterval(openingBottom, openingTop, bottom, top)
-      if (!vertical) return null
-
-      return ensurePolygonIsCounterClockwise(rectangle(horizontal[0], horizontal[1], vertical[0], vertical[1]))
-    })
-    .filter((polygon): polygon is Polygon2D => polygon !== null)
-
-  const outer = ensurePolygonIsClockwise(rectangle(startPosition, endPosition, bottom, top))
-
-  if (cutouts.length === 0) {
-    return [
-      {
-        outer,
-        holes: []
-      }
-    ]
-  }
-
-  const subtracted = subtractPolygons([outer], cutouts)
-  return subtracted.length > 0 ? subtracted : []
-}
-
 const runLayerConstruction = (
   polygon: PolygonWithHoles2D,
   offset: Length,
@@ -156,6 +56,136 @@ const runLayerConstruction = (
   }
   throw new Error(`Unsupported layer type: ${(layer as { type: string }).type}`)
 }
+
+const shiftPoint = (point: vec2, direction: vec2, distance: Length): vec2 => {
+  return vec2.scaleAndAdd(vec2.create(), point, direction, distance)
+}
+
+const computeOffsetLine = (start: vec2, end: vec2, normal: vec2, distance: Length) => {
+  const offsetStart = shiftPoint(start, normal, distance)
+  const offsetEnd = shiftPoint(end, normal, distance)
+  return lineFromSegment({ start: offsetStart, end: offsetEnd })
+}
+
+const projectAlongWall = (wall: PerimeterWall, point: vec2): Length => {
+  const direction = vec2.normalize(vec2.create(), vec2.subtract(vec2.create(), wall.insideLine.end, wall.insideLine.start))
+  const relative = vec2.subtract(vec2.create(), point, wall.insideLine.start)
+  return vec2.dot(relative, direction)
+}
+
+const computeCornerIntersection = (
+  corner: 'start' | 'end',
+  side: LayerSide,
+  depth: Length,
+  wall: PerimeterWall,
+  context: ReturnType<typeof getWallContext>
+): vec2 => {
+  const baseSegment = side === 'inside' ? wall.insideLine : wall.outsideLine
+  const referenceWall = corner === 'start' ? context.previousWall : context.nextWall
+  const referenceSegment = side === 'inside' ? referenceWall.insideLine : referenceWall.outsideLine
+
+  const offsetDistance = (side === 'inside' ? 1 : -1) * depth
+
+  const baseLine = computeOffsetLine(baseSegment.start, baseSegment.end, wall.outsideDirection, offsetDistance)
+  const referenceLine = computeOffsetLine(referenceSegment.start, referenceSegment.end, referenceWall.outsideDirection, offsetDistance)
+
+  if (baseLine && referenceLine) {
+    const intersection = lineIntersection(baseLine, referenceLine)
+    if (intersection) {
+      return intersection
+    }
+  }
+
+  return corner === 'start'
+    ? shiftPoint(baseSegment.start, wall.outsideDirection, offsetDistance)
+    : shiftPoint(baseSegment.end, wall.outsideDirection, offsetDistance)
+}
+
+const computeLayerSpan = (
+  side: LayerSide,
+  depth: Length,
+  wall: PerimeterWall,
+  context: ReturnType<typeof getWallContext>
+): { start: Length; end: Length } => {
+  const startPoint = computeCornerIntersection('start', side, depth, wall, context)
+  const endPoint = computeCornerIntersection('end', side, depth, wall, context)
+
+  const startProjection = projectAlongWall(wall, startPoint)
+  const endProjection = projectAlongWall(wall, endPoint)
+
+  return startProjection <= endProjection
+    ? { start: startProjection, end: endProjection }
+    : { start: endProjection, end: startProjection }
+}
+
+const createLayerPolygon = (start: Length, end: Length, bottom: Length, top: Length): PolygonWithHoles2D => ({
+  outer: ensurePolygonIsClockwise(
+    simplifyPolygon({
+      points: [
+        vec2.fromValues(start, bottom),
+        vec2.fromValues(start, top),
+        vec2.fromValues(end, top),
+        vec2.fromValues(end, bottom)
+      ]
+    })
+  ),
+  holes: []
+})
+
+const subtractOpenings = (
+  polygon: PolygonWithHoles2D,
+  start: Length,
+  end: Length,
+  bottom: Length,
+  top: Length,
+  wall: PerimeterWall
+): PolygonWithHoles2D => {
+  const holes = wall.openings
+    .map(opening => {
+      const openingStart = opening.offsetFromStart
+      const openingEnd = openingStart + opening.width
+      const clampedStart = Math.max(openingStart, start)
+      const clampedEnd = Math.min(openingEnd, end)
+      if (clampedEnd <= clampedStart) {
+        return null
+      }
+
+      const sill = opening.sillHeight ?? 0
+      const openingBottom = bottom + sill
+      const openingTop = openingBottom + opening.height
+      const clampedBottom = Math.max(openingBottom, bottom)
+      const clampedTop = Math.min(openingTop, top)
+      if (clampedTop <= clampedBottom) {
+        return null
+      }
+
+      return ensurePolygonIsCounterClockwise(
+        simplifyPolygon({
+          points: [
+            vec2.fromValues(clampedStart, clampedBottom),
+            vec2.fromValues(clampedStart, clampedTop),
+            vec2.fromValues(clampedEnd, clampedTop),
+            vec2.fromValues(clampedEnd, clampedBottom)
+          ]
+        })
+      )
+    })
+    .filter((hole): hole is { points: vec2[] } => hole !== null)
+
+  if (holes.length === 0) {
+    return polygon
+  }
+
+  return {
+    outer: polygon.outer,
+    holes
+  }
+}
+
+const normalizePolygonWithHoles = (polygon: PolygonWithHoles2D): PolygonWithHoles2D => ({
+  outer: ensurePolygonIsClockwise(simplifyPolygon(polygon.outer)),
+  holes: polygon.holes.map(hole => ensurePolygonIsCounterClockwise(simplifyPolygon(hole)))
+})
 
 const aggregateLayerResults = (results: ConstructionResult[]): ConstructionModel => {
   const aggregated = aggregateResults(results)
@@ -190,8 +220,6 @@ export function constructWallLayers(
   const { getRingBeamAssemblyById } = getConfigActions()
 
   const context = getWallContext(wall, perimeter)
-  const cornerInfo = calculateWallCornerInfo(wall, context)
-
   const basePlateAssembly = perimeter.baseRingBeamAssemblyId
     ? getRingBeamAssemblyById(perimeter.baseRingBeamAssemblyId)
     : null
@@ -208,27 +236,35 @@ export function constructWallLayers(
   const bottom = basePlateHeight
   const top = totalConstructionHeight - topPlateHeight
 
-  const insidePolygons = createLayerPolygons(wall, 'inside', context, cornerInfo, bottom, top)
-  const outsidePolygons = createLayerPolygons(wall, 'outside', context, cornerInfo, bottom, top)
-
   const layerResults: ConstructionResult[] = []
 
-  if (insidePolygons.length > 0 && layers.insideLayers.length > 0) {
+  if (layers.insideLayers.length > 0) {
     let insideOffset: Length = 0
+    let cumulativeInside: Length = 0
+
     for (const layer of layers.insideLayers) {
-      for (const polygon of insidePolygons) {
-        layerResults.push(...runLayerConstruction(polygon, insideOffset, WALL_LAYER_PLANE, layer))
-      }
+      cumulativeInside = (cumulativeInside + layer.thickness) as Length
+      const { start, end } = computeLayerSpan('inside', cumulativeInside, wall, context)
+      const polygon = createLayerPolygon(start, end, bottom, top)
+      const polygonWithHoles = subtractOpenings(polygon, start, end, bottom, top, wall)
+      const normalizedPolygon = normalizePolygonWithHoles(polygonWithHoles)
+      layerResults.push(...runLayerConstruction(normalizedPolygon, insideOffset, WALL_LAYER_PLANE, layer))
       insideOffset = (insideOffset + layer.thickness) as Length
     }
   }
 
-  if (outsidePolygons.length > 0 && layers.outsideLayers.length > 0) {
+  if (layers.outsideLayers.length > 0) {
     let outsideOffset: Length = (wall.thickness - layers.outsideThickness) as Length
+    let remainingOutside: Length = layers.outsideThickness
+
     for (const layer of layers.outsideLayers) {
-      for (const polygon of outsidePolygons) {
-        layerResults.push(...runLayerConstruction(polygon, outsideOffset, WALL_LAYER_PLANE, layer))
-      }
+      remainingOutside = (remainingOutside - layer.thickness) as Length
+      const depth = Math.max(remainingOutside, 0) as Length
+      const { start, end } = computeLayerSpan('outside', depth, wall, context)
+      const polygon = createLayerPolygon(start, end, bottom, top)
+      const polygonWithHoles = subtractOpenings(polygon, start, end, bottom, top, wall)
+      const normalizedPolygon = normalizePolygonWithHoles(polygonWithHoles)
+      layerResults.push(...runLayerConstruction(normalizedPolygon, outsideOffset, WALL_LAYER_PLANE, layer))
       outsideOffset = (outsideOffset + layer.thickness) as Length
     }
   }
