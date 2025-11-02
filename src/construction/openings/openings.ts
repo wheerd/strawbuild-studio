@@ -19,7 +19,7 @@ import {
 } from '@/construction/tags'
 import type { InfillMethod } from '@/construction/walls'
 import type { WallSegment3D } from '@/construction/walls/segmentation'
-import { type Length } from '@/shared/geometry'
+import { Bounds3D, type Length } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
 
 export interface OpeningConstructionConfig {
@@ -177,13 +177,12 @@ export function* constructOpeningFrame(
       wallFront,
       sillTop + config.padding
     )
-    const openingEnd = vec3.add(vec3.create(), openingPos, [fillingWidth, wallThickness, fillingHeight])
 
     yield yieldArea({
       type: 'cuboid',
       areaType: opening.type,
       label,
-      bounds: { min: openingPos, max: openingEnd },
+      bounds: Bounds3D.fromCuboid(openingPos, [fillingWidth, wallThickness, fillingHeight]),
       transform: IDENTITY,
       tags,
       renderPosition: 'bottom'

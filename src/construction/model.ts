@@ -1,6 +1,6 @@
 import { vec3 } from 'gl-matrix'
 
-import { type Axis3D, type Bounds3D, type Length, type Plane3D, type Polygon2D, mergeBounds } from '@/shared/geometry'
+import { type Axis3D, Bounds3D, type Length, type Plane3D, type Polygon2D } from '@/shared/geometry'
 import { simplifyPolygon, unionPolygons } from '@/shared/geometry/polygon'
 
 import { type ConstructionGroup, type GroupOrElement, createConstructionElementId } from './elements'
@@ -73,7 +73,6 @@ export interface HighlightedCut {
  * Useful for guarding unfinished construction paths until the real implementation lands.
  */
 export function createUnsupportedModel(description: string, groupKey?: string): ConstructionModel {
-  const origin = vec3.fromValues(0, 0, 0)
   return {
     elements: [],
     measurements: [],
@@ -86,10 +85,7 @@ export function createUnsupportedModel(description: string, groupKey?: string): 
         groupKey
       }
     ],
-    bounds: {
-      min: origin,
-      max: vec3.clone(origin)
-    }
+    bounds: Bounds3D.EMPTY
   }
 }
 
@@ -107,10 +103,7 @@ export function createConstructionGroup(
     return transformBounds(child.bounds, child.transform)
   })
 
-  const groupBounds =
-    childBounds.length > 0
-      ? mergeBounds(...childBounds)
-      : ({ min: vec3.fromValues(0, 0, 0), max: vec3.fromValues(0, 0, 0) } as Bounds3D)
+  const groupBounds = Bounds3D.merge(...childBounds)
 
   return {
     id: createConstructionElementId(),
@@ -174,7 +167,7 @@ export function mergeModels(...models: ConstructionModel[]): ConstructionModel {
     areas: [...areasWithoutMergeKey, ...mergedAreas],
     errors: models.flatMap(m => m.errors),
     warnings: models.flatMap(m => m.warnings),
-    bounds: mergeBounds(...models.map(m => m.bounds))
+    bounds: Bounds3D.merge(...models.map(m => m.bounds))
   }
 }
 
@@ -278,7 +271,7 @@ function mergeAreaGroup(areas: HighlightedArea[], mergeKey: string): Highlighted
 function mergeCuboidAreas(areas: HighlightedCuboid[], mergeKey: string): HighlightedCuboid {
   const template = areas[0]
 
-  const mergedBounds = mergeBounds(...areas.map(a => a.bounds))
+  const mergedBounds = Bounds3D.merge(...areas.map(a => a.bounds))
 
   return {
     ...template,

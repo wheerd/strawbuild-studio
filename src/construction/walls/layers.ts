@@ -1,4 +1,4 @@
-import { vec2, vec3 } from 'gl-matrix'
+import { vec2 } from 'gl-matrix'
 
 import type { Perimeter, PerimeterWall } from '@/building/model/model'
 import type { GroupOrElement } from '@/construction/elements'
@@ -9,13 +9,12 @@ import { type ConstructionModel, createConstructionGroup } from '@/construction/
 import { type ConstructionResult, aggregateResults } from '@/construction/results'
 import { TAG_LAYERS, TAG_WALL_LAYER_INSIDE, TAG_WALL_LAYER_OUTSIDE, createTag } from '@/construction/tags'
 import {
-  type Bounds3D,
+  Bounds3D,
   type Length,
   type Plane3D,
   type PolygonWithHoles2D,
   ensurePolygonIsClockwise,
   ensurePolygonIsCounterClockwise,
-  mergeBounds,
   simplifyPolygon
 } from '@/shared/geometry'
 import { lineFromSegment, lineIntersection } from '@/shared/geometry/line'
@@ -27,11 +26,6 @@ import type { WallLayersConfig } from './types'
 type LayerSide = 'inside' | 'outside'
 
 const WALL_LAYER_PLANE: Plane3D = 'xz'
-
-const ZERO_BOUNDS = {
-  min: vec3.fromValues(0, 0, 0),
-  max: vec3.fromValues(0, 0, 0)
-} satisfies Bounds3D
 
 const clonePolygon = (polygon: PolygonWithHoles2D): PolygonWithHoles2D => ({
   outer: {
@@ -200,26 +194,7 @@ const normalizePolygonWithHoles = (polygon: PolygonWithHoles2D): PolygonWithHole
 
 const aggregateLayerResults = (results: ConstructionResult[]): ConstructionModel => {
   const aggregated = aggregateResults(results)
-
-  if (aggregated.elements.length === 0) {
-    return {
-      elements: [],
-      measurements: aggregated.measurements,
-      areas: aggregated.areas,
-      errors: aggregated.errors,
-      warnings: aggregated.warnings,
-      bounds: ZERO_BOUNDS
-    }
-  }
-
-  return {
-    elements: aggregated.elements,
-    measurements: aggregated.measurements,
-    areas: aggregated.areas,
-    errors: aggregated.errors,
-    warnings: aggregated.warnings,
-    bounds: mergeBounds(...aggregated.elements.map(element => element.bounds))
-  }
+  return { ...aggregated, bounds: Bounds3D.merge(...aggregated.elements.map(element => element.bounds)) }
 }
 
 export function constructWallLayers(

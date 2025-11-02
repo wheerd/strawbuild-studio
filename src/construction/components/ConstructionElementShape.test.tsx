@@ -7,6 +7,7 @@ import { createConstructionElement } from '@/construction/elements'
 import type { Projection, RotationProjection } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
 import { createCuboidShape } from '@/construction/shapes'
+import { Bounds3D } from '@/shared/geometry'
 
 import { ConstructionElementShape } from './ConstructionElementShape'
 
@@ -108,7 +109,7 @@ describe('ConstructionElementShape', () => {
         type: 'unsupported-shape' as any,
         offset: vec3.fromValues(0, 0, 0),
         size: vec3.fromValues(100, 50, 25),
-        bounds: { min: vec3.fromValues(0, 0, 0), max: vec3.fromValues(100, 50, 25) }
+        bounds: Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(100, 50, 25))
       },
       { position: vec3.fromValues(0, 0, 0), rotation: vec3.fromValues(0, 0, 0) }
     )

@@ -1,4 +1,4 @@
-import { defaultStrawConfig, type MigrationState } from './shared'
+import { type MigrationState, defaultStrawConfig } from './shared'
 
 export function migrateToVersion4(state: MigrationState): void {
   const strawConfig = state.straw

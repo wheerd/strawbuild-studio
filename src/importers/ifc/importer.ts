@@ -51,11 +51,10 @@ import type {
 import { createIdentityMatrix } from '@/importers/ifc/utils'
 import {
   Bounds2D,
-  type Bounds3D,
+  Bounds3D,
   type LineSegment2D,
   type Polygon2D,
   type PolygonWithHoles2D,
-  boundsFromPoints3D,
   direction,
   distanceToInfiniteLine,
   distanceToLineSegment
@@ -353,7 +352,7 @@ export class IfcImporter {
         triPolys.push({ points: a2 > 0 ? [p0, p1, p2] : [p0, p2, p1] })
       }
 
-      const bounds = boundsFromPoints3D(usedPoints)
+      const bounds = Bounds3D.fromPoints(usedPoints)
       if (!bounds) continue
 
       const polygons = unionPolygons(triPolys).map(simplifyPolygon)
@@ -1018,7 +1017,7 @@ export class IfcImporter {
     )
     const pnIndex = set.PnIndex?.map(i => i.value as number)
 
-    const bounds = boundsFromPoints3D(points)
+    const bounds = Bounds3D.fromPoints(points)
 
     if (!bounds) return null
 

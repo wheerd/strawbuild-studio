@@ -1,4 +1,4 @@
-import { defaultStrawConfig, type MigrationState } from './shared'
+import { type MigrationState, defaultStrawConfig } from './shared'
 
 export function migrateToVersion3(state: MigrationState): void {
   if (!('straw' in state) || state.straw == null) {
@@ -37,7 +37,8 @@ export function migrateToVersion3(state: MigrationState): void {
     ),
     baleHeight: Number(migratedStrawConfig.baleHeight ?? defaultStrawConfig.baleHeight),
     baleWidth: Number(migratedStrawConfig.baleWidth ?? defaultStrawConfig.baleWidth),
-    material: typeof migratedStrawConfig.material === 'string' ? migratedStrawConfig.material : defaultStrawConfig.material
+    material:
+      typeof migratedStrawConfig.material === 'string' ? migratedStrawConfig.material : defaultStrawConfig.material
   }
 
   const sanitizedMin =

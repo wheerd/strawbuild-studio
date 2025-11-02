@@ -21,6 +21,7 @@ import {
 import type { InfillMethod } from '@/construction/walls'
 import { infillWallArea } from '@/construction/walls/infill/infill'
 import type { WallSegment3D } from '@/construction/walls/segmentation'
+import { Bounds3D } from '@/shared/geometry'
 
 import { type OpeningConstructionConfig, constructOpeningFrame } from './openings'
 
@@ -82,10 +83,7 @@ const createMockInfillGenerator = function* (numElements = 2): Generator<Constru
       type: 'cuboid' as const,
       offset,
       size,
-      bounds: {
-        min: offset,
-        max: vec3.add(vec3.create(), offset, size)
-      }
+      bounds: Bounds3D.fromCuboid(offset, size)
     })
     yield yieldElement(element)
   }

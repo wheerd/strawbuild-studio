@@ -4,7 +4,15 @@ import type { ConstructionElementId } from '@/construction/elements'
 import type { MaterialId } from '@/construction/materials/material'
 import { getMaterialById } from '@/construction/materials/store'
 import type { ConstructionModel } from '@/construction/model'
-import { Bounds2D, canonicalPolygonKey, minimumAreaBoundingBox, type Length, type Plane3D, type Polygon2D, type Volume } from '@/shared/geometry'
+import {
+  Bounds2D,
+  type Length,
+  type Plane3D,
+  type Polygon2D,
+  type Volume,
+  canonicalPolygonKey,
+  minimumAreaBoundingBox
+} from '@/shared/geometry'
 
 export type PartId = string & { readonly brand: unique symbol }
 

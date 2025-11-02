@@ -3,6 +3,7 @@ import { vec3 } from 'gl-matrix'
 import { describe, expect, it } from 'vitest'
 
 import type { Cuboid } from '@/construction/shapes'
+import { Bounds3D } from '@/shared/geometry'
 
 import { CuboidShape } from './CuboidShape'
 
@@ -11,7 +12,7 @@ describe('CuboidShape', () => {
     type: 'cuboid',
     offset: vec3.fromValues(100, 50, 0),
     size: vec3.fromValues(500, 200, 60),
-    bounds: { min: vec3.fromValues(100, 50, 0), max: vec3.fromValues(600, 250, 60) }
+    bounds: Bounds3D.fromMinMax(vec3.fromValues(100, 50, 0), vec3.fromValues(600, 250, 60))
   }
 
   // Mock projection function

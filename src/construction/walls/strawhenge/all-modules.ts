@@ -10,7 +10,7 @@ import type { ModulesWallConfig, WallAssembly } from '@/construction/walls'
 import { infillWallArea } from '@/construction/walls/infill/infill'
 import { constructWallLayers } from '@/construction/walls/layers'
 import { type WallStoreyContext, segmentedWallConstruction } from '@/construction/walls/segmentation'
-import { type Length, mergeBounds } from '@/shared/geometry'
+import { Bounds3D, type Length } from '@/shared/geometry'
 
 import { constructModule } from './modules'
 
@@ -44,11 +44,6 @@ export function* moduleWallArea(
   }
 }
 
-const ZERO_BOUNDS = {
-  min: vec3.fromValues(0, 0, 0),
-  max: vec3.fromValues(0, 0, 0)
-}
-
 export class ModulesWallAssembly implements WallAssembly<ModulesWallConfig> {
   construct(
     wall: PerimeterWall,
@@ -74,7 +69,7 @@ export class ModulesWallAssembly implements WallAssembly<ModulesWallConfig> {
 
     const aggRes = aggregateResults(allResults)
     const baseModel: ConstructionModel = {
-      bounds: aggRes.elements.length > 0 ? mergeBounds(...aggRes.elements.map(e => e.bounds)) : ZERO_BOUNDS,
+      bounds: Bounds3D.merge(...aggRes.elements.map(e => e.bounds)),
       elements: aggRes.elements,
       measurements: aggRes.measurements,
       areas: aggRes.areas,

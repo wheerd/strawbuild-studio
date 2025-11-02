@@ -27,7 +27,7 @@ import {
   WallToggleIcon
 } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
-import { Bounds2D, calculatePolygonArea, type Length } from '@/shared/geometry'
+import { Bounds2D, type Length, calculatePolygonArea } from '@/shared/geometry'
 import { formatArea, formatLength } from '@/shared/utils/formatting'
 
 interface PerimeterInspectorProps {

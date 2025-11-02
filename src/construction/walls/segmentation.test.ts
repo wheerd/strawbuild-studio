@@ -8,8 +8,7 @@ import { IDENTITY } from '@/construction/geometry'
 import { aggregateResults, yieldElement } from '@/construction/results'
 import { TAG_OPENING_SPACING, TAG_WALL_LENGTH } from '@/construction/tags'
 import type { OpeningSegmentConstruction, WallLayersConfig, WallSegmentConstruction } from '@/construction/walls'
-import type { Length } from '@/shared/geometry'
-import '@/shared/geometry'
+import { Bounds3D, type Length } from '@/shared/geometry'
 
 import type { WallCornerInfo } from './construction'
 import { calculateWallCornerInfo, getWallContext } from './corners/corners'
@@ -188,10 +187,10 @@ describe('segmentedWallConstruction', () => {
           type: 'cuboid',
           offset: vec3.fromValues(0, 0, 0),
           size: vec3.fromValues(100, 100, 100),
-          bounds: { min: vec3.fromValues(0, 0, 0), max: vec3.fromValues(100, 100, 100) }
+          bounds: Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(100, 100, 100))
         },
         transform: IDENTITY,
-        bounds: { min: vec3.fromValues(0, 0, 0), max: vec3.fromValues(100, 100, 100) }
+        bounds: Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(100, 100, 100))
       })
     })
 
@@ -203,10 +202,10 @@ describe('segmentedWallConstruction', () => {
           type: 'cuboid',
           offset: vec3.fromValues(0, 0, 0),
           size: vec3.fromValues(50, 50, 50),
-          bounds: { min: vec3.fromValues(0, 0, 0), max: vec3.fromValues(50, 50, 50) }
+          bounds: Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(50, 50, 50))
         },
         transform: IDENTITY,
-        bounds: { min: vec3.fromValues(0, 0, 0), max: vec3.fromValues(50, 50, 50) }
+        bounds: Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(50, 50, 50))
       })
     })
   })

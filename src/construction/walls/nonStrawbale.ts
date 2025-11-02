@@ -10,7 +10,7 @@ import { createCuboidShape } from '@/construction/shapes'
 import type { NonStrawbaleWallConfig, WallAssembly } from '@/construction/walls'
 import { constructWallLayers } from '@/construction/walls/layers'
 import { type WallStoreyContext, segmentedWallConstruction } from '@/construction/walls/segmentation'
-import { mergeBounds } from '@/shared/geometry'
+import { Bounds3D } from '@/shared/geometry'
 
 function* infillNonStrawbaleWallArea(
   position: vec3,
@@ -26,11 +26,6 @@ function* constructNonStrawbaleOpeningFrame(
   size: vec3
 ): Generator<ConstructionResult> {
   yield yieldElement(createConstructionElement(material, createCuboidShape(position, size)))
-}
-
-const ZERO_BOUNDS = {
-  min: vec3.fromValues(0, 0, 0),
-  max: vec3.fromValues(0, 0, 0)
 }
 
 export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallConfig> {
@@ -52,7 +47,7 @@ export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallCo
     )
     const aggRes = aggregateResults(allResults)
     const baseModel: ConstructionModel = {
-      bounds: aggRes.elements.length > 0 ? mergeBounds(...aggRes.elements.map(e => e.bounds)) : ZERO_BOUNDS,
+      bounds: Bounds3D.merge(...aggRes.elements.map(e => e.bounds)),
       elements: aggRes.elements,
       measurements: aggRes.measurements,
       areas: aggRes.areas,

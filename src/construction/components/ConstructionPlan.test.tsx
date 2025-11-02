@@ -3,7 +3,7 @@ import { vec2, vec3 } from 'gl-matrix'
 import { describe, expect, it } from 'vitest'
 
 import type { ConstructionModel, HighlightedCuboid, HighlightedPolygon } from '@/construction/model'
-import '@/shared/geometry'
+import { Bounds3D } from '@/shared/geometry'
 
 import { ConstructionPlan, TOP_VIEW, type ViewOption } from './ConstructionPlan'
 
@@ -26,10 +26,7 @@ describe('ConstructionPlan', () => {
       areas: [polygonArea],
       errors: [],
       warnings: [],
-      bounds: {
-        min: vec3.fromValues(0, 0, 0),
-        max: vec3.fromValues(100, 100, 100)
-      }
+      bounds: Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(100, 100, 100))
     }
 
     const views: ViewOption[] = [{ view: TOP_VIEW, label: 'Top' }]
@@ -63,10 +60,7 @@ describe('ConstructionPlan', () => {
       areas: [polygonArea],
       errors: [],
       warnings: [],
-      bounds: {
-        min: vec3.fromValues(0, 0, 0),
-        max: vec3.fromValues(50, 50, 50)
-      }
+      bounds: Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(50, 50, 50))
     }
 
     const views: ViewOption[] = [{ view: TOP_VIEW, label: 'Top' }]
@@ -85,10 +79,7 @@ describe('ConstructionPlan', () => {
       areaType: 'corner',
       label: 'Bottom Area',
       transform: { position: vec3.fromValues(0, 0, 0), rotation: vec3.fromValues(0, 0, 0) },
-      bounds: {
-        min: vec3.fromValues(0, 0, 0),
-        max: vec3.fromValues(50, 50, 10)
-      },
+      bounds: Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(50, 50, 10)),
       renderPosition: 'bottom'
     }
 
@@ -97,10 +88,7 @@ describe('ConstructionPlan', () => {
       areaType: 'corner',
       label: 'Top Area',
       transform: { position: vec3.fromValues(60, 0, 0), rotation: vec3.fromValues(0, 0, 0) },
-      bounds: {
-        min: vec3.fromValues(60, 0, 0),
-        max: vec3.fromValues(110, 50, 10)
-      },
+      bounds: Bounds3D.fromMinMax(vec3.fromValues(60, 0, 0), vec3.fromValues(110, 50, 10)),
       renderPosition: 'top'
     }
 
@@ -110,10 +98,7 @@ describe('ConstructionPlan', () => {
       areas: [bottomCuboid, topCuboid],
       errors: [],
       warnings: [],
-      bounds: {
-        min: vec3.fromValues(0, 0, 0),
-        max: vec3.fromValues(110, 50, 10)
-      }
+      bounds: Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(110, 50, 10))
     }
 
     const views: ViewOption[] = [{ view: TOP_VIEW, label: 'Top' }]

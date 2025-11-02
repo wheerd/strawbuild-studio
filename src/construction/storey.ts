@@ -23,13 +23,8 @@ import { TAG_STOREY } from './tags'
 import { createWallStoreyContext } from './walls'
 
 export function constructStoreyFloor(storeyId: StoreyId): ConstructionModel[] {
-  const {
-    getPerimetersByStorey,
-    getFloorAreasByStorey,
-    getFloorOpeningsByStorey,
-    getStoreyById,
-    getStoreyAbove
-  } = getModelActions()
+  const { getPerimetersByStorey, getFloorAreasByStorey, getFloorOpeningsByStorey, getStoreyById, getStoreyAbove } =
+    getModelActions()
   const storey = getStoreyById(storeyId)
   if (!storey) {
     throw new Error('Invalid storey')

@@ -13,6 +13,7 @@ import type { Perimeter, PerimeterCorner, PerimeterWall, Storey } from '@/buildi
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import type { ConstructionModel } from '@/construction/model'
+import { Bounds3D } from '@/shared/geometry'
 
 import { constructWall } from './construction'
 import { WALL_ASSEMBLIES } from './index'
@@ -101,19 +102,13 @@ describe('constructWall', () => {
       {
         id: `element-${id}` as any,
         transform: { position: vec3.fromValues(0, 0, 0), rotation: vec3.fromValues(0, 0, 0) },
-        bounds: {
-          min: vec3.fromValues(0, 0, 0),
-          max: vec3.fromValues(1000, 400, 3000)
-        },
+        bounds: Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(1000, 400, 3000)),
         material: 'wood' as any,
         shape: {
           type: 'cuboid',
           size: vec3.fromValues(1000, 400, 3000),
           offset: vec3.fromValues(0, 0, 0),
-          bounds: {
-            min: vec3.fromValues(0, 0, 0),
-            max: vec3.fromValues(1000, 400, 3000)
-          }
+          bounds: Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(1000, 400, 3000))
         }
       }
     ],
@@ -121,10 +116,7 @@ describe('constructWall', () => {
     areas: [],
     errors: [],
     warnings: [],
-    bounds: {
-      min: vec3.fromValues(0, 0, 0),
-      max: vec3.fromValues(1000, 400, 3000)
-    }
+    bounds: Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(1000, 400, 3000))
   })
 
   let mockModelActions: any

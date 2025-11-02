@@ -36,9 +36,7 @@ describe('StoreyManagementService', () => {
       ]
 
       mockActions.getStoreysOrderedByLevel.mockReturnValue(storeys)
-      mockActions.getStoreyAbove.mockImplementation((id: StoreyId) =>
-        id === storeys[1].id ? storeys[2] : null
-      )
+      mockActions.getStoreyAbove.mockImplementation((id: StoreyId) => (id === storeys[1].id ? storeys[2] : null))
 
       service.moveStoreyUp('storey-2' as StoreyId)
 

@@ -1,8 +1,8 @@
 import { mat4, vec2, vec3 } from 'gl-matrix'
 
 import type { GroupOrElement } from '@/construction/elements'
-import { Bounds2D, boundsFromPoints3D } from '@/shared/geometry'
-import type { Axis3D, Bounds3D, Plane3D } from '@/shared/geometry'
+import { Bounds2D } from '@/shared/geometry'
+import { type Axis3D, Bounds3D, type Plane3D } from '@/shared/geometry'
 
 export interface Transform {
   readonly position: vec3
@@ -61,7 +61,7 @@ export function transformBounds(bounds: Bounds3D, t: Transform): Bounds3D {
   const transformedCorners = corners.map(corner => transform(corner, t))
 
   // Use boundsFromPoints3D to compute new bounds
-  const result = boundsFromPoints3D(transformedCorners)
+  const result = Bounds3D.fromPoints(transformedCorners)
   if (!result) {
     throw new Error('Failed to compute transformed bounds')
   }

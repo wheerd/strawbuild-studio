@@ -15,7 +15,7 @@ import {
   polygonPartInfo
 } from '@/construction/parts'
 import { createCuboidShape } from '@/construction/shapes'
-import { Bounds2D, canonicalPolygonKey, minimumAreaBoundingBox } from '@/shared/geometry'
+import { Bounds2D, Bounds3D, canonicalPolygonKey, minimumAreaBoundingBox } from '@/shared/geometry'
 
 vi.mock('@/shared/geometry', async importActual => ({
   ...(await importActual()),
@@ -27,14 +27,13 @@ const canonicalPolygonKeyMock = vi.mocked(canonicalPolygonKey)
 const minimumAreaBoundingBoxMock = vi.mocked(minimumAreaBoundingBox)
 
 const createModel = (elements: ConstructionModel['elements']): ConstructionModel => {
-  const origin = vec3.fromValues(0, 0, 0)
   return {
     elements,
     measurements: [],
     areas: [],
     errors: [],
     warnings: [],
-    bounds: { min: origin, max: origin }
+    bounds: Bounds3D.EMPTY
   }
 }
 
@@ -239,7 +238,10 @@ describe('generateVirtualPartsList', () => {
 describe('polygonPartInfo', () => {
   beforeEach(() => {
     canonicalPolygonKeyMock.mockReturnValue('polygon-key')
-    minimumAreaBoundingBoxMock.mockImplementation(polygon => ({ size: Bounds2D.fromPoints(polygon.points).max, angle: 0 }))
+    minimumAreaBoundingBoxMock.mockImplementation(polygon => ({
+      size: Bounds2D.fromPoints(polygon.points).max,
+      angle: 0
+    }))
   })
 
   it('derives part info from an axis-aligned polygon', () => {

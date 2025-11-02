@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import type { ConstructionElement, ConstructionGroup } from '@/construction/elements'
 import type { MaterialId } from '@/construction/materials/material'
+import { Bounds3D } from '@/shared/geometry'
 
 import { getConstructionElementClasses } from './cssHelpers'
 
@@ -12,8 +13,8 @@ describe('getConstructionElementClasses', () => {
       id: 'test-id' as any,
       material: 'wood' as MaterialId,
       transform: { position: vec3.create(), rotation: vec3.create() },
-      bounds: { min: vec3.create(), max: vec3.create() },
-      shape: { type: 'cuboid', bounds: { min: vec3.create(), max: vec3.create() } } as any,
+      bounds: Bounds3D.EMPTY,
+      shape: { type: 'cuboid', bounds: Bounds3D.EMPTY } as any,
       tags: [
         { id: 'wall-wood_post', label: 'Post', category: 'wall-wood' },
         { id: 'construction_top-plate', label: 'Top Plate', category: 'construction' }
@@ -31,7 +32,7 @@ describe('getConstructionElementClasses', () => {
     const group: ConstructionGroup = {
       id: 'test-group-id' as any,
       transform: { position: vec3.create(), rotation: vec3.create() },
-      bounds: { min: vec3.create(), max: vec3.create() },
+      bounds: Bounds3D.EMPTY,
       children: [],
       tags: [{ id: 'construction_walls', label: 'Walls', category: 'construction' }]
     }
@@ -46,8 +47,8 @@ describe('getConstructionElementClasses', () => {
       id: 'test-id' as any,
       material: 'straw' as MaterialId,
       transform: { position: vec3.create(), rotation: vec3.create() },
-      bounds: { min: vec3.create(), max: vec3.create() },
-      shape: { type: 'cuboid', bounds: { min: vec3.create(), max: vec3.create() } } as any
+      bounds: Bounds3D.EMPTY,
+      shape: { type: 'cuboid', bounds: Bounds3D.EMPTY } as any
     }
 
     const aboveCut = () => true
@@ -62,8 +63,8 @@ describe('getConstructionElementClasses', () => {
       id: 'test-id' as any,
       material: 'concrete' as MaterialId,
       transform: { position: vec3.create(), rotation: vec3.create() },
-      bounds: { min: vec3.create(), max: vec3.create() },
-      shape: { type: 'cuboid', bounds: { min: vec3.create(), max: vec3.create() } } as any
+      bounds: Bounds3D.EMPTY,
+      shape: { type: 'cuboid', bounds: Bounds3D.EMPTY } as any
     }
 
     const result = getConstructionElementClasses(element, undefined, 'custom-class')
@@ -76,8 +77,8 @@ describe('getConstructionElementClasses', () => {
       id: 'test-id' as any,
       material: 'steel' as MaterialId,
       transform: { position: vec3.create(), rotation: vec3.create() },
-      bounds: { min: vec3.create(), max: vec3.create() },
-      shape: { type: 'cuboid', bounds: { min: vec3.create(), max: vec3.create() } } as any
+      bounds: Bounds3D.EMPTY,
+      shape: { type: 'cuboid', bounds: Bounds3D.EMPTY } as any
     }
 
     const result = getConstructionElementClasses(element)
@@ -89,7 +90,7 @@ describe('getConstructionElementClasses', () => {
     const group: ConstructionGroup = {
       id: 'test-group-id' as any,
       transform: { position: vec3.create(), rotation: vec3.create() },
-      bounds: { min: vec3.create(), max: vec3.create() },
+      bounds: Bounds3D.EMPTY,
       children: []
     }
 

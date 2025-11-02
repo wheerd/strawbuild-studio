@@ -42,7 +42,7 @@ export class Bounds2D {
     return new Bounds2D(vec2.clone(min), vec2.clone(max))
   }
 
-  static merge(...bounds: ReadonlyArray<Bounds2D>): Bounds2D {
+  static merge(...bounds: readonly Bounds2D[]): Bounds2D {
     const nonEmptyBound = bounds.filter(b => !b.isEmpty)
     if (nonEmptyBound.length === 0) {
       return Bounds2D.EMPTY
@@ -136,65 +136,126 @@ export type Axis3D = 'x' | 'y' | 'z'
 
 export const complementaryAxis = (plane: Plane3D): Axis3D => (plane === 'xy' ? 'z' : plane === 'xz' ? 'y' : 'x')
 
-export interface Bounds3D {
-  min: vec3
-  max: vec3
-}
+export class Bounds3D {
+  static readonly EMPTY = new Bounds3D(vec3.create(), vec3.create())
 
-export function boundsFromCuboid(position: vec3, size: vec3): Bounds3D {
-  return {
-    min: position,
-    max: vec3.add(vec3.create(), position, size)
-  }
-}
+  static fromPoints(points: readonly vec3[]): Bounds3D {
+    if (points.length === 0) {
+      return Bounds3D.EMPTY
+    }
 
-export function boundsFromPoints3D(points: vec3[]): Bounds3D | null {
-  if (points.length === 0) return null
+    let minX = Infinity
+    let minY = Infinity
+    let minZ = Infinity
+    let maxX = -Infinity
+    let maxY = -Infinity
+    let maxZ = -Infinity
 
-  let minX = Infinity
-  let minY = Infinity
-  let minZ = Infinity
-  let maxX = -Infinity
-  let maxY = -Infinity
-  let maxZ = -Infinity
+    for (const point of points) {
+      if (point[0] < minX) minX = point[0]
+      if (point[1] < minY) minY = point[1]
+      if (point[2] < minZ) minZ = point[2]
+      if (point[0] > maxX) maxX = point[0]
+      if (point[1] > maxY) maxY = point[1]
+      if (point[2] > maxZ) maxZ = point[2]
+    }
 
-  for (const point of points) {
-    minX = Math.min(minX, point[0])
-    minY = Math.min(minY, point[1])
-    minZ = Math.min(minZ, point[2])
-    maxX = Math.max(maxX, point[0])
-    maxY = Math.max(maxY, point[1])
-    maxZ = Math.max(maxZ, point[2])
+    return new Bounds3D(vec3.fromValues(minX, minY, minZ), vec3.fromValues(maxX, maxY, maxZ))
   }
 
-  return {
-    min: vec3.fromValues(minX, minY, minZ),
-    max: vec3.fromValues(maxX, maxY, maxZ)
-  }
-}
+  static fromMinMax(min: vec3, max: vec3): Bounds3D {
+    if (min[0] >= max[0] && min[1] >= max[1] && min[2] >= max[2]) {
+      return Bounds3D.EMPTY
+    }
 
-export function mergeBounds(...bounds: Bounds3D[]): Bounds3D {
-  if (bounds.length === 0) throw new Error('No bounds to merge')
-
-  let minX = Infinity
-  let minY = Infinity
-  let minZ = Infinity
-  let maxX = -Infinity
-  let maxY = -Infinity
-  let maxZ = -Infinity
-
-  for (const bound of bounds) {
-    minX = Math.min(minX, bound.min[0])
-    minY = Math.min(minY, bound.min[1])
-    minZ = Math.min(minZ, bound.min[2])
-    maxX = Math.max(maxX, bound.max[0])
-    maxY = Math.max(maxY, bound.max[1])
-    maxZ = Math.max(maxZ, bound.max[2])
+    return new Bounds3D(vec3.clone(min), vec3.clone(max))
   }
 
-  return {
-    min: vec3.fromValues(minX, minY, minZ),
-    max: vec3.fromValues(maxX, maxY, maxZ)
+  static fromCuboid(position: vec3, size: vec3): Bounds3D {
+    return Bounds3D.fromMinMax(position, vec3.add(vec3.create(), position, size))
+  }
+
+  static merge(...bounds: readonly Bounds3D[]): Bounds3D {
+    const filtered = bounds.filter(b => !b.isEmpty)
+    if (filtered.length === 0) {
+      return Bounds3D.EMPTY
+    }
+
+    let minX = Infinity
+    let minY = Infinity
+    let minZ = Infinity
+    let maxX = -Infinity
+    let maxY = -Infinity
+    let maxZ = -Infinity
+
+    for (const bound of filtered) {
+      if (bound.min[0] < minX) minX = bound.min[0]
+      if (bound.min[1] < minY) minY = bound.min[1]
+      if (bound.min[2] < minZ) minZ = bound.min[2]
+      if (bound.max[0] > maxX) maxX = bound.max[0]
+      if (bound.max[1] > maxY) maxY = bound.max[1]
+      if (bound.max[2] > maxZ) maxZ = bound.max[2]
+    }
+
+    return new Bounds3D(vec3.fromValues(minX, minY, minZ), vec3.fromValues(maxX, maxY, maxZ))
+  }
+
+  readonly min: vec3
+  readonly max: vec3
+
+  private constructor(min: vec3, max: vec3) {
+    this.min = min
+    this.max = max
+  }
+
+  get width(): number {
+    return this.max[0] - this.min[0]
+  }
+
+  get depth(): number {
+    return this.max[1] - this.min[1]
+  }
+
+  get height(): number {
+    return this.max[2] - this.min[2]
+  }
+
+  get size(): vec3 {
+    return vec3.fromValues(this.width, this.depth, this.height)
+  }
+
+  get center(): vec3 {
+    return vec3.fromValues(
+      (this.min[0] + this.max[0]) / 2,
+      (this.min[1] + this.max[1]) / 2,
+      (this.min[2] + this.max[2]) / 2
+    )
+  }
+
+  get isEmpty(): boolean {
+    return vec3.equals(this.min, this.max)
+  }
+
+  pad(amount: number | vec3): Bounds3D {
+    const padX = typeof amount === 'number' ? amount : amount[0]
+    const padY = typeof amount === 'number' ? amount : amount[1]
+    const padZ = typeof amount === 'number' ? amount : amount[2]
+
+    return Bounds3D.fromMinMax(
+      vec3.fromValues(this.min[0] - padX, this.min[1] - padY, this.min[2] - padZ),
+      vec3.fromValues(this.max[0] + padX, this.max[1] + padY, this.max[2] + padZ)
+    )
+  }
+
+  contains(point: vec3): boolean {
+    return (
+      point[0] >= this.min[0] &&
+      point[0] <= this.max[0] &&
+      point[1] >= this.min[1] &&
+      point[1] <= this.max[1] &&
+      point[2] >= this.min[2] &&
+      point[2] <= this.max[2]
+    )
   }
 }
 

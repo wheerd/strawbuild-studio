@@ -24,20 +24,9 @@ export function CuboidAreaShape({ cuboid, projection, rotationProjection }: Cubo
       transform={createSvgTransform(cuboid.transform, projection, rotationProjection)}
     >
       <clipPath id={cuboidId}>
-        <rect
-          x={min[0]}
-          y={min[1]}
-          width={width}
-          height={height}
-        />
+        <rect x={min[0]} y={min[1]} width={width} height={height} />
       </clipPath>
-      <rect
-        x={min[0]}
-        y={min[1]}
-        width={width}
-        height={height}
-        clipPath={`url(#${cuboidId})`}
-      />
+      <rect x={min[0]} y={min[1]} width={width} height={height} clipPath={`url(#${cuboidId})`} />
 
       {cuboid.label && (
         <g className="text" transform={`translate(${centerX} ${centerY})`}>

@@ -19,7 +19,7 @@ import { TAG_POST_SPACING } from '@/construction/tags'
 import type { InfillWallConfig, InfillWallSegmentConfig, WallAssembly } from '@/construction/walls'
 import { constructWallLayers } from '@/construction/walls/layers'
 import { type WallStoreyContext, segmentedWallConstruction } from '@/construction/walls/segmentation'
-import { type Length, boundsFromCuboid, mergeBounds } from '@/shared/geometry'
+import { Bounds3D, type Length } from '@/shared/geometry'
 
 export function* infillWallArea(
   position: vec3,
@@ -77,11 +77,11 @@ export function* infillWallArea(
 
   // Add warning/error with references to all created elements
   if (warning) {
-    yield yieldWarning({ description: warning, elements: allElementIds, bounds: boundsFromCuboid(position, size) })
+    yield yieldWarning({ description: warning, elements: allElementIds, bounds: Bounds3D.fromCuboid(position, size) })
   }
 
   if (error) {
-    yield yieldError({ description: error, elements: allElementIds, bounds: boundsFromCuboid(position, size) })
+    yield yieldError({ description: error, elements: allElementIds, bounds: Bounds3D.fromCuboid(position, size) })
   }
 }
 
@@ -109,7 +109,7 @@ function* constructInfillRecursive(
       yield yieldWarning({
         description: 'Not enough space for infilling straw',
         elements: strawElementIds,
-        bounds: boundsFromCuboid(strawPosition, strawSize)
+        bounds: Bounds3D.fromCuboid(strawPosition, strawSize)
       })
     }
 
@@ -164,11 +164,6 @@ function getBaleWidth(availableWidth: Length, config: InfillWallSegmentConfig): 
   return maxPostSpacing
 }
 
-const ZERO_BOUNDS = {
-  min: vec3.fromValues(0, 0, 0),
-  max: vec3.fromValues(0, 0, 0)
-}
-
 export class InfillWallAssembly implements WallAssembly<InfillWallConfig> {
   construct(
     wall: PerimeterWall,
@@ -194,7 +189,7 @@ export class InfillWallAssembly implements WallAssembly<InfillWallConfig> {
 
     const aggRes = aggregateResults(allResults)
     const baseModel: ConstructionModel = {
-      bounds: aggRes.elements.length > 0 ? mergeBounds(...aggRes.elements.map(e => e.bounds)) : ZERO_BOUNDS,
+      bounds: Bounds3D.merge(...aggRes.elements.map(e => e.bounds)),
       elements: aggRes.elements,
       measurements: aggRes.measurements,
       areas: aggRes.areas,

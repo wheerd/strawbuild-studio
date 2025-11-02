@@ -1,6 +1,6 @@
 import { vec2, vec3 } from 'gl-matrix'
 
-import { Bounds2D, type Bounds3D, type Length, type Plane3D, type PolygonWithHoles2D } from '@/shared/geometry'
+import { Bounds2D, Bounds3D, type Length, type Plane3D, type PolygonWithHoles2D } from '@/shared/geometry'
 
 export type Shape = Cuboid | ExtrudedPolygon
 
@@ -25,10 +25,7 @@ export const createCuboidShape = (offset: vec3, size: vec3): Cuboid => ({
   type: 'cuboid',
   offset,
   size,
-  bounds: {
-    min: offset,
-    max: vec3.add(vec3.create(), offset, size)
-  }
+  bounds: Bounds3D.fromCuboid(offset, size)
 })
 
 export const createExtrudedPolygon = (
@@ -41,22 +38,22 @@ export const createExtrudedPolygon = (
   const maxT = Math.max(thickness, 0)
   const min =
     plane === 'xy'
-      ? [...bounds2D.min, minT]
+      ? vec3.fromValues(bounds2D.min[0], bounds2D.min[1], minT)
       : plane === 'xz'
-        ? [bounds2D.min[0], minT, bounds2D.min[1]]
-        : [minT, ...bounds2D.min]
+        ? vec3.fromValues(bounds2D.min[0], minT, bounds2D.min[1])
+        : vec3.fromValues(minT, bounds2D.min[0], bounds2D.min[1])
   const max =
     plane === 'xy'
-      ? [...bounds2D.max, maxT]
+      ? vec3.fromValues(bounds2D.max[0], bounds2D.max[1], maxT)
       : plane === 'xz'
-        ? [bounds2D.max[0], maxT, bounds2D.max[1]]
-        : [maxT, ...bounds2D.max]
+        ? vec3.fromValues(bounds2D.max[0], maxT, bounds2D.max[1])
+        : vec3.fromValues(maxT, bounds2D.max[0], bounds2D.max[1])
   return {
     type: 'polygon',
     polygon,
     plane,
     thickness,
-    bounds: { min, max }
+    bounds: Bounds3D.fromMinMax(min, max)
   }
 }
 

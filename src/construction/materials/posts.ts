@@ -5,7 +5,7 @@ import { dimensionalPartInfo } from '@/construction/parts'
 import { type ConstructionResult, yieldElement, yieldError, yieldWarning } from '@/construction/results'
 import { createCuboidShape } from '@/construction/shapes'
 import { TAG_POST } from '@/construction/tags'
-import { type Length, mergeBounds } from '@/shared/geometry'
+import { Bounds3D, type Length } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
 
 import type { Material, MaterialId } from './material'
@@ -143,7 +143,7 @@ function* constructDoublePost(position: vec3, size: vec3, config: DoublePostConf
       yield yieldWarning({
         description: `Post dimensions (${formatLength(config.width)}x${formatLength(config.thickness)}) don't match material dimensions (${formatLength(dimensionalMaterial.width)}x${formatLength(dimensionalMaterial.thickness)})`,
         elements: [post1.id, post2.id],
-        bounds: mergeBounds(post1.bounds, post2.bounds)
+        bounds: Bounds3D.merge(post1.bounds, post2.bounds)
       })
     }
   }

@@ -7,12 +7,12 @@ import { type ConstructionModel } from '@/construction/model'
 import { type ConstructionResult, aggregateResults, yieldAsGroup } from '@/construction/results'
 import { TAG_FLOOR_LAYER_BOTTOM, TAG_FLOOR_LAYER_TOP, TAG_LAYERS, createTag } from '@/construction/tags'
 import {
+  Bounds3D,
   type Length,
   type Polygon2D,
   type PolygonWithHoles2D,
   ensurePolygonIsClockwise,
   ensurePolygonIsCounterClockwise,
-  mergeBounds,
   simplifyPolygon,
   subtractPolygons
 } from '@/shared/geometry'
@@ -145,6 +145,6 @@ export function constructFloorLayerModel(options: FloorLayerOptions): Constructi
 
   return {
     ...results,
-    bounds: mergeBounds(...results.elements.map(element => element.bounds))
+    bounds: Bounds3D.merge(...results.elements.map(element => element.bounds))
   }
 }
