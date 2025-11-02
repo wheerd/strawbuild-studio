@@ -132,6 +132,11 @@ export function constructFloorLayerModel(options: FloorLayerOptions): Constructi
   }
 
   const results = aggregateResults(floorLayersConstruction)
+
+  if (results.elements.length === 0) {
+    return null
+  }
+
   return {
     ...results,
     bounds: mergeBounds(...results.elements.map(element => element.bounds))
