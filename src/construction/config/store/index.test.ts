@@ -23,8 +23,9 @@ describe('ConfigStore', () => {
       }
     })
 
-    const createMonolithicLayer = (thickness = 20): LayerConfig => ({
+    const createMonolithicLayer = (thickness = 20, name = 'Layer'): LayerConfig => ({
       type: 'monolithic',
+      name,
       thickness,
       material: createMaterialId()
     })
@@ -76,6 +77,20 @@ describe('ConfigStore', () => {
       const updated = store.getFloorAssemblyById(assembly.id)
       expect(updated?.layers.bottomLayers).toHaveLength(1)
       expect(updated?.layers.bottomThickness).toBe(18)
+    })
+
+    it('rejects empty layer names', () => {
+      const store = getConfigActions()
+      const assembly = store.addFloorAssembly('Named Floor', createFloorConfig())
+
+      expect(() => store.addFloorAssemblyTopLayer(assembly.id, createMonolithicLayer(12, '   '))).toThrow(
+        'Layer name cannot be empty'
+      )
+
+      store.addFloorAssemblyTopLayer(assembly.id, createMonolithicLayer(12, 'Valid Layer'))
+      expect(() => store.updateFloorAssemblyTopLayer(assembly.id, 0, { name: '' })).toThrow(
+        'Layer name cannot be empty'
+      )
     })
   })
 
@@ -444,14 +459,16 @@ describe('ConfigStore', () => {
       }
     })
 
-    const createMonolithicLayer = (thickness: number): LayerConfig => ({
+    const createMonolithicLayer = (thickness: number, name = 'Layer'): LayerConfig => ({
       type: 'monolithic',
+      name,
       thickness,
       material: createMaterialId()
     })
 
-    const createStripedLayer = (): LayerConfig => ({
+    const createStripedLayer = (name = 'Striped Layer'): LayerConfig => ({
       type: 'striped',
+      name,
       thickness: 40,
       direction: 'perpendicular',
       stripeWidth: 50,
@@ -515,6 +532,20 @@ describe('ConfigStore', () => {
       expect(updated?.layers.outsideThickness).toBe(40)
 
       expect(() => store.removeWallAssemblyOutsideLayer(assembly.id, 3)).toThrow('Layer index out of bounds')
+    })
+
+    it('rejects empty wall layer names', () => {
+      const store = getConfigActions()
+      const assembly = store.addWallAssembly('Wall With Layers', createValidWallConfig())
+
+      expect(() => store.addWallAssemblyInsideLayer(assembly.id, createMonolithicLayer(20, ''))).toThrow(
+        'Layer name cannot be empty'
+      )
+
+      store.addWallAssemblyInsideLayer(assembly.id, createMonolithicLayer(20, 'Valid Layer'))
+      expect(() => store.updateWallAssemblyInsideLayer(assembly.id, 0, { name: '   ' })).toThrow(
+        'Layer name cannot be empty'
+      )
     })
   })
 })

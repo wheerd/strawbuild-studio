@@ -1,7 +1,7 @@
 import { Theme } from '@radix-ui/themes'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { vec2 } from 'gl-matrix'
-import { vi } from 'vitest'
+import { type Mock, vi } from 'vitest'
 
 import { createWallAssemblyId } from '@/building/model/ids'
 import { ConfigurationModalContext } from '@/construction/config/context/ConfigurationModalContext'
@@ -41,12 +41,12 @@ Object.defineProperty(Element.prototype, 'scrollIntoView', {
 
 describe('PerimeterToolInspector', () => {
   let mockTool: PerimeterTool
-  let mockOnRenderNeeded: ReturnType<typeof vi.fn>
-  let mockSetAssembly: ReturnType<typeof vi.fn>
-  let mockSetWallThickness: ReturnType<typeof vi.fn>
-  let mockSetBaseRingBeam: ReturnType<typeof vi.fn>
-  let mockSetTopRingBeam: ReturnType<typeof vi.fn>
-  let mockClearLengthOverride: ReturnType<typeof vi.fn>
+  let mockOnRenderNeeded: Mock<(listener: () => void) => () => void>
+  let mockSetAssembly: Mock<typeof PerimeterTool.prototype.setAssembly>
+  let mockSetWallThickness: Mock<typeof PerimeterTool.prototype.setWallThickness>
+  let mockSetBaseRingBeam: Mock<typeof PerimeterTool.prototype.setBaseRingBeam>
+  let mockSetTopRingBeam: Mock<typeof PerimeterTool.prototype.setTopRingBeam>
+  let mockClearLengthOverride: Mock<typeof PerimeterTool.prototype.clearLengthOverride>
 
   beforeEach(() => {
     mockOnRenderNeeded = vi.fn()

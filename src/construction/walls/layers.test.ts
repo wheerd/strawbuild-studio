@@ -101,7 +101,8 @@ const createCorner = (overrides: Partial<PerimeterCorner>): PerimeterCorner => (
 const storeyContext: WallStoreyContext = {
   storeyHeight: 3000,
   floorTopOffset: 0,
-  ceilingBottomOffset: 0
+  ceilingBottomOffset: 0,
+  floorConstructionThickness: 0
 }
 
 const baseLayers: WallLayersConfig = {
@@ -109,6 +110,7 @@ const baseLayers: WallLayersConfig = {
   insideLayers: [
     {
       type: 'monolithic',
+      name: 'Inside Layer',
       material: clayPlaster.id,
       thickness: 30
     }
@@ -117,6 +119,7 @@ const baseLayers: WallLayersConfig = {
   outsideLayers: [
     {
       type: 'monolithic',
+      name: 'Outside Layer',
       material: limePlaster.id,
       thickness: 20
     }

@@ -29,6 +29,7 @@ const createLayersConfig = (topThickness: number, bottomThickness: number): Floo
   topLayers: [
     {
       type: 'monolithic',
+      name: 'Top Layer',
       material: 'material_top' as never,
       thickness: topThickness
     }
@@ -36,6 +37,7 @@ const createLayersConfig = (topThickness: number, bottomThickness: number): Floo
   bottomLayers: [
     {
       type: 'monolithic',
+      name: 'Bottom Layer',
       material: 'material_bottom' as never,
       thickness: bottomThickness
     }

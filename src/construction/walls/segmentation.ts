@@ -64,7 +64,7 @@ function mergeAdjacentOpenings(sortedOpenings: Opening[]): Opening[][] {
   return groups
 }
 
-type WallSegmentConstruction = (
+export type WallSegmentConstruction = (
   position: vec3,
   size: vec3,
   startsWithStand: boolean,
@@ -72,7 +72,7 @@ type WallSegmentConstruction = (
   startAtEnd: boolean
 ) => Generator<ConstructionResult>
 
-type OpeningSegmentConstruction = (
+export type OpeningSegmentConstruction = (
   position: vec3,
   size: vec3,
   zOffset: Length,

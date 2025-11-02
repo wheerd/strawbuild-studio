@@ -9,7 +9,7 @@ import {
   WidthIcon
 } from '@radix-ui/react-icons'
 import { Card, DropdownMenu, Flex, Grid, IconButton, Select, Text, TextField, Tooltip } from '@radix-ui/themes'
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import type {
   LayerConfig,
@@ -38,11 +38,13 @@ const getDefaultLayer = (type: LayerType, thickness: number): LayerConfig =>
   type === 'monolithic'
     ? {
         type: 'monolithic',
+        name: 'New Layer',
         thickness,
         material: DEFAULT_MATERIAL
       }
     : {
         type: 'striped',
+        name: 'New Layer',
         thickness,
         direction: 'perpendicular',
         stripeWidth: 50,
@@ -167,27 +169,55 @@ function LayerCard({
   onUpdateLayer,
   onRemoveLayer
 }: LayerCardProps): React.JSX.Element {
+  const [nameInput, setNameInput] = useState(layer.name)
+
+  useEffect(() => {
+    setNameInput(layer.name)
+  }, [layer.name])
+
+  const commitNameChange = () => {
+    const trimmed = nameInput.trim()
+    if (trimmed.length === 0) {
+      setNameInput(layer.name)
+      return
+    }
+    if (trimmed !== layer.name) {
+      onUpdateLayer(index, { name: trimmed })
+    } else if (trimmed !== nameInput) {
+      setNameInput(trimmed)
+    }
+  }
+
   return (
     <Card variant="surface" style={{ padding: '0.75rem' }}>
       <Flex direction="column" gap="2">
-        <Flex align="center" justify="between">
-          <Flex align="center" gap="2">
-            <LayerTypeIcon type={layer.type} />
-            <Text size="1" color="gray">
-              Layer {index + 1}
-            </Text>
-            <LengthField
-              value={layer.thickness}
-              onChange={value => onUpdateLayer(index, { thickness: value })}
-              unit="mm"
-              size="1"
-              style={{ width: '8em' }}
-            >
-              <TextField.Slot title="Thickness" side="left" className="pl-1 pr-0">
-                <HeightIcon />
-              </TextField.Slot>
-            </LengthField>
-          </Flex>
+        <Grid columns="auto 1fr auto auto" align="center" gap="1">
+          <LayerTypeIcon type={layer.type} />
+          <TextField.Root
+            title="Layer Name"
+            size="1"
+            value={nameInput}
+            onChange={event => setNameInput(event.target.value)}
+            onBlur={commitNameChange}
+            onKeyDown={event => {
+              if (event.key === 'Enter') {
+                event.currentTarget.blur()
+              }
+            }}
+            placeholder={`Enter Layer Name`}
+            required
+          />
+          <LengthField
+            value={layer.thickness}
+            onChange={value => onUpdateLayer(index, { thickness: value })}
+            unit="mm"
+            size="1"
+            style={{ width: '8em' }}
+          >
+            <TextField.Slot title="Thickness" side="left" className="pl-1 pr-0">
+              <HeightIcon />
+            </TextField.Slot>
+          </LengthField>
 
           <Flex gap="1">
             <IconButton
@@ -212,7 +242,7 @@ function LayerCard({
               <TrashIcon />
             </IconButton>
           </Flex>
-        </Flex>
+        </Grid>
 
         {layer.type === 'monolithic' && (
           <MonolithicLayerFields index={index} layer={layer} onUpdateLayer={onUpdateLayer} />

@@ -185,8 +185,8 @@ const createDefaultWallAssemblies = (): WallAssemblyConfig[] => [
       insideLayers: createDefaultInsideLayers(30),
       outsideThickness: 160 + 30,
       outsideLayers: [
-        { type: 'monolithic', material: 'material_invalid', thickness: 160 },
-        { type: 'monolithic', material: limePlaster.id, thickness: 30 }
+        { type: 'monolithic', name: 'Structural Layer', material: 'material_invalid', thickness: 160 },
+        { type: 'monolithic', name: 'Exterior Finish', material: limePlaster.id, thickness: 30 }
       ]
     }
   } as NonStrawbaleWallAssemblyConfig

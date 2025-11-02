@@ -10,6 +10,7 @@ export type LayerType = 'monolithic' | 'striped'
 
 interface BaseLayerConfig {
   type: LayerType
+  name: string
   thickness: Length
 }
 

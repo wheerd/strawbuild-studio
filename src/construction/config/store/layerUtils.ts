@@ -1,5 +1,7 @@
 import type { LayerConfig } from '@/construction/layers/types'
 
+const sanitizeLayerName = (name: string): string => name.trim()
+
 const ensureNonNegative = (value: number, message: string): void => {
   if (Number(value) < 0) {
     throw new Error(message)
@@ -13,6 +15,9 @@ const assertLayerIndex = (layers: LayerConfig[], index: number): void => {
 }
 
 export const validateLayerConfig = (layer: LayerConfig): void => {
+  if (sanitizeLayerName(layer.name).length === 0) {
+    throw new Error('Layer name cannot be empty')
+  }
   ensureNonNegative(layer.thickness, 'Layer thickness cannot be negative')
 
   if (layer.type === 'striped') {
@@ -22,21 +27,24 @@ export const validateLayerConfig = (layer: LayerConfig): void => {
 }
 
 export const mergeLayerUpdates = (layer: LayerConfig, updates: Partial<Omit<LayerConfig, 'type'>>): LayerConfig => {
-  const merged = { ...layer, ...updates } as LayerConfig
+  const nextName = 'name' in updates && typeof updates.name === 'string' ? sanitizeLayerName(updates.name) : layer.name
+  const merged = { ...layer, ...updates, name: sanitizeLayerName(nextName) } as LayerConfig
   validateLayerConfig(merged)
   return merged
 }
 
 export const appendLayer = (layers: LayerConfig[], layer: LayerConfig): LayerConfig[] => {
-  validateLayerConfig(layer)
-  return [...layers, layer]
+  const sanitized: LayerConfig = { ...layer, name: sanitizeLayerName(layer.name) }
+  validateLayerConfig(sanitized)
+  return [...layers, sanitized]
 }
 
 export const replaceLayerAt = (layers: LayerConfig[], index: number, layer: LayerConfig): LayerConfig[] => {
   assertLayerIndex(layers, index)
-  validateLayerConfig(layer)
+  const sanitized: LayerConfig = { ...layer, name: sanitizeLayerName(layer.name) }
+  validateLayerConfig(sanitized)
 
-  return layers.map((existing, position) => (position === index ? layer : existing))
+  return layers.map((existing, position) => (position === index ? sanitized : existing))
 }
 
 export const updateLayerAt = (

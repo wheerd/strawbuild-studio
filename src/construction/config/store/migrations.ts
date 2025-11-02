@@ -169,6 +169,25 @@ export function applyMigrations(state: unknown): unknown {
 
       ensureLayerArray('insideLayers', 'insideThickness', createDefaultInsideLayers)
       ensureLayerArray('outsideLayers', 'outsideThickness', createDefaultOutsideLayers)
+
+      const ensureLayerNames = (key: 'insideLayers' | 'outsideLayers', prefix: string) => {
+        const layers = layerConfig[key]
+        if (!Array.isArray(layers)) {
+          return
+        }
+
+        layers.forEach((layer, index) => {
+          if (!layer || typeof layer !== 'object') {
+            return
+          }
+          const layerObject = layer as Record<string, unknown>
+          const existingName = typeof layerObject.name === 'string' ? layerObject.name.trim() : ''
+          layerObject.name = existingName.length > 0 ? existingName : `${prefix} ${index + 1}`
+        })
+      }
+
+      ensureLayerNames('insideLayers', 'Inside Layer')
+      ensureLayerNames('outsideLayers', 'Outside Layer')
     }
   }
 
@@ -206,6 +225,25 @@ export function applyMigrations(state: unknown): unknown {
 
       ensureLayerArray('topLayers', 'topThickness', createDefaultFloorTopLayers)
       ensureLayerArray('bottomLayers', 'bottomThickness', createDefaultFloorBottomLayers)
+
+      const ensureLayerNames = (key: 'topLayers' | 'bottomLayers', prefix: string) => {
+        const layers = layerConfig[key]
+        if (!Array.isArray(layers)) {
+          return
+        }
+
+        layers.forEach((layer, index) => {
+          if (!layer || typeof layer !== 'object') {
+            return
+          }
+          const layerObject = layer as Record<string, unknown>
+          const existingName = typeof layerObject.name === 'string' ? layerObject.name.trim() : ''
+          layerObject.name = existingName.length > 0 ? existingName : `${prefix} ${index + 1}`
+        })
+      }
+
+      ensureLayerNames('topLayers', 'Top Layer')
+      ensureLayerNames('bottomLayers', 'Bottom Layer')
     }
   }
 
