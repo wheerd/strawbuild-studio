@@ -2299,4 +2299,43 @@ describe('perimeterSlice', () => {
       }).not.toThrow()
     })
   })
+
+  describe('setPerimeterReferenceSide', () => {
+    it('updates the reference side and recomputes geometry without changing coordinates', () => {
+      const boundary = createRectangularBoundary()
+      const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), 400)
+
+      const originalInsidePoints = perimeter.corners.map(corner => vec2.clone(corner.insidePoint))
+      const originalOutsidePoints = perimeter.corners.map(corner => vec2.clone(corner.outsidePoint))
+
+      store.actions.setPerimeterReferenceSide(perimeter.id, 'outside')
+
+      const updatedPerimeter = store.perimeters[perimeter.id]!
+      expect(updatedPerimeter.referenceSide).toBe('outside')
+      updatedPerimeter.corners.forEach((corner, index) => {
+        expect(Array.from(corner.insidePoint)).toEqual(Array.from(originalInsidePoints[index]))
+        expect(Array.from(corner.outsidePoint)).toEqual(Array.from(originalOutsidePoints[index]))
+      })
+    })
+
+    it('applies new boundary updates to the active reference side', () => {
+      const boundary = createRectangularBoundary()
+      const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), 400)
+      store.actions.setPerimeterReferenceSide(perimeter.id, 'outside')
+
+      const expansion = vec2.fromValues(1000, 1000)
+      const newBoundary = perimeter.corners.map(corner => vec2.add(vec2.create(), corner.outsidePoint, expansion))
+
+      const result = store.actions.updatePerimeterBoundary(perimeter.id, newBoundary)
+      expect(result).toBe(true)
+
+      const updated = store.perimeters[perimeter.id]!
+      updated.corners.forEach((corner, index) => {
+        expect(Array.from(corner.outsidePoint)).toEqual(Array.from(newBoundary[index]))
+      })
+      updated.corners.forEach((corner, index) => {
+        expect(Array.from(corner.insidePoint)).not.toEqual(Array.from(newBoundary[index]))
+      })
+    })
+  })
 })

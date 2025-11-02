@@ -120,6 +120,7 @@ export interface PerimetersActions {
   setPerimeterTopRingBeam: (perimeterId: PerimeterId, assemblyId: RingBeamAssemblyId) => void
   removePerimeterBaseRingBeam: (perimeterId: PerimeterId) => void
   removePerimeterTopRingBeam: (perimeterId: PerimeterId) => void
+  setPerimeterReferenceSide: (perimeterId: PerimeterId, referenceSide: PerimeterReferenceSide) => void
 }
 
 export type PerimetersSlice = PerimetersState & { actions: PerimetersActions }
@@ -161,8 +162,9 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         // Create corners from boundary points
         const corners: PerimeterCorner[] = boundary.points.map(point => ({
           id: createPerimeterCornerId(),
-          insidePoint: point,
-          outsidePoint: vec2.fromValues(0, 0), // Will be calculated by updatePerimeterGeometry
+          // The other point will be calculated by updatePerimeterGeometry
+          insidePoint: referenceSide === 'inside' ? vec2.clone(point) : vec2.fromValues(0, 0),
+          outsidePoint: referenceSide === 'outside' ? vec2.clone(point) : vec2.fromValues(0, 0),
           constructedByWall: 'next',
           interiorAngle: 0, // Will be calculated by updatePerimeterGeometry
           exteriorAngle: 0 // Will be calculated by updatePerimeterGeometry
@@ -724,10 +726,15 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         const perimeter = state.perimeters[perimeterId]
         if (!perimeter || perimeter.corners.length !== newPolygon.points.length) return
 
-        // Update corner inside points directly
-        perimeter.corners.forEach((corner: PerimeterCorner, index: number) => {
-          corner.insidePoint = newPolygon.points[index]
-        })
+        if (perimeter.referenceSide === 'inside') {
+          perimeter.corners.forEach((corner: PerimeterCorner, index: number) => {
+            corner.insidePoint = vec2.clone(newPolygon.points[index])
+          })
+        } else {
+          perimeter.corners.forEach((corner: PerimeterCorner, index: number) => {
+            corner.outsidePoint = vec2.clone(newPolygon.points[index])
+          })
+        }
 
         // Recalculate all geometry with the new boundary
         updatePerimeterGeometry(perimeter)
@@ -772,12 +779,27 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
 
         perimeter.topRingBeamAssemblyId = undefined
       })
+    },
+
+    setPerimeterReferenceSide: (perimeterId: PerimeterId, referenceSide: PerimeterReferenceSide) => {
+      set(state => {
+        const perimeter = state.perimeters[perimeterId]
+        if (!perimeter) return
+        if (perimeter.referenceSide === referenceSide) return
+
+        perimeter.referenceSide = referenceSide
+        updatePerimeterGeometry(perimeter)
+      })
     }
   }
 })
 
 // Step 1: Create infinite inside and outside lines for each wall wall
-const createInfiniteLines = (boundary: Polygon2D, thicknesses: Length[]): { inside: Line2D; outside: Line2D }[] => {
+const createInfiniteLines = (
+  boundary: Polygon2D,
+  thicknesses: Length[],
+  referenceSide: PerimeterReferenceSide
+): { inside: Line2D; outside: Line2D }[] => {
   const numSides = boundary.points.length
   const infiniteLines: { inside: Line2D; outside: Line2D }[] = []
 
@@ -787,15 +809,24 @@ const createInfiniteLines = (boundary: Polygon2D, thicknesses: Length[]): { insi
     const wallThickness = thicknesses[i]
 
     // Create line from boundary points
-    const insideLine = lineFromPoints(startPoint, endPoint)
-    if (!insideLine) {
+    const baseLine = lineFromPoints(startPoint, endPoint)
+    if (!baseLine) {
       throw new Error('Wall wall cannot have zero length')
     }
 
-    // Calculate outside direction and create outside line
-    const outsideDirection = perpendicularCCW(insideLine.direction)
-    const outsidePoint = vec2.scaleAndAdd(vec2.create(), startPoint, outsideDirection, wallThickness)
-    const outsideLine = { point: outsidePoint, direction: insideLine.direction }
+    const outwardDirection = perpendicularCCW(baseLine.direction)
+    let insideLine: Line2D
+    let outsideLine: Line2D
+
+    if (referenceSide === 'inside') {
+      insideLine = baseLine
+      const outsidePoint = vec2.scaleAndAdd(vec2.create(), startPoint, outwardDirection, wallThickness)
+      outsideLine = { point: outsidePoint, direction: baseLine.direction }
+    } else {
+      outsideLine = baseLine
+      const insidePoint = vec2.scaleAndAdd(vec2.create(), startPoint, outwardDirection, -wallThickness)
+      insideLine = { point: insidePoint, direction: baseLine.direction }
+    }
 
     infiniteLines.push({ inside: insideLine, outside: outsideLine })
   }
@@ -840,6 +871,41 @@ const updateAllCornerOutsidePoints = (
     const prevThickness = thicknesses[prevIndex]
     const currentThickness = thicknesses[i]
     updateCornerOutsidePoint(corners[i], prevThickness, currentThickness, prevOutsideLine, currentOutsideLine)
+  }
+}
+
+const updateCornerInsidePoint = (
+  corner: PerimeterCorner,
+  prevThickness: Length,
+  nextThickness: Length,
+  prevInsideLine: Line2D,
+  nextInsideLine: Line2D
+): void => {
+  const intersection = lineIntersection(prevInsideLine, nextInsideLine)
+
+  if (intersection) {
+    corner.insidePoint = intersection
+  } else {
+    const minThickness = Math.min(prevThickness, nextThickness)
+    const inwardDirection = vec2.negate(vec2.create(), perpendicularCCW(nextInsideLine.direction))
+    corner.insidePoint = vec2.scaleAndAdd(vec2.create(), corner.outsidePoint, inwardDirection, minThickness)
+  }
+}
+
+const updateAllCornerInsidePoints = (
+  corners: PerimeterCorner[],
+  thicknesses: Length[],
+  infiniteLines: { inside: Line2D; outside: Line2D }[]
+): void => {
+  const numSides = corners.length
+
+  for (let i = 0; i < numSides; i++) {
+    const prevIndex = (i - 1 + numSides) % numSides
+    const prevInsideLine = infiniteLines[prevIndex].inside
+    const currentInsideLine = infiniteLines[i].inside
+    const prevThickness = thicknesses[prevIndex]
+    const currentThickness = thicknesses[i]
+    updateCornerInsidePoint(corners[i], prevThickness, currentThickness, prevInsideLine, currentInsideLine)
   }
 }
 
@@ -947,12 +1013,26 @@ const updateWallGeometry = (wall: PerimeterWall, startCorner: PerimeterCorner, e
 
 // High-level helper to recalculate all perimeter geometry in place
 const updatePerimeterGeometry = (perimeter: Perimeter): void => {
-  const boundary = { points: perimeter.corners.map((c: PerimeterCorner) => c.insidePoint) }
-  const thicknesses = perimeter.walls.map((wall: PerimeterWall) => wall.thickness)
-  const infiniteLines = createInfiniteLines(boundary, thicknesses)
+  const boundaryPoints =
+    perimeter.referenceSide === 'inside'
+      ? perimeter.corners.map((c: PerimeterCorner) => vec2.clone(c.insidePoint))
+      : perimeter.corners.map((c: PerimeterCorner) => vec2.clone(c.outsidePoint))
 
-  // Update corner outside points in place
-  updateAllCornerOutsidePoints(perimeter.corners, thicknesses, infiniteLines)
+  const boundary = { points: boundaryPoints }
+  const thicknesses = perimeter.walls.map((wall: PerimeterWall) => wall.thickness)
+  const infiniteLines = createInfiniteLines(boundary, thicknesses, perimeter.referenceSide)
+
+  if (perimeter.referenceSide === 'inside') {
+    perimeter.corners.forEach((corner: PerimeterCorner, index: number) => {
+      corner.insidePoint = vec2.clone(boundary.points[index])
+    })
+    updateAllCornerOutsidePoints(perimeter.corners, thicknesses, infiniteLines)
+  } else {
+    perimeter.corners.forEach((corner: PerimeterCorner, index: number) => {
+      corner.outsidePoint = vec2.clone(boundary.points[index])
+    })
+    updateAllCornerInsidePoints(perimeter.corners, thicknesses, infiniteLines)
+  }
 
   // Update corner angles in place
   updateAllCornerAngles(perimeter.corners)
