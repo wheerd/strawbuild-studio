@@ -1,13 +1,12 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { vec2 } from 'gl-matrix'
 
+import { Bounds2D } from '@/shared/geometry'
+
 import { SVGViewport } from './SVGViewport'
 
 describe('SVGViewport', () => {
-  const testContentBounds = {
-    min: vec2.fromValues(0, 0),
-    max: vec2.fromValues(100, 100)
-  }
+  const testContentBounds = Bounds2D.fromMinMax(vec2.fromValues(0, 0), vec2.fromValues(100, 100))
   const TestContent = () => <rect x="10" y="10" width="80" height="80" fill="blue" data-testid="test-rect" />
 
   test('renders SVG with generated viewBox from content bounds', async () => {

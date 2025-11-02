@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react'
 import { getModelActions } from '@/building/store'
 import { useIsHydrated } from '@/building/store/persistenceStore'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
-import { boundsFromPoints } from '@/shared/geometry'
+import { Bounds2D } from '@/shared/geometry'
 
 export function useAutoFitOnHydration(): void {
   const isHydrated = useIsHydrated()
@@ -20,7 +20,7 @@ export function useAutoFitOnHydration(): void {
 
         if (perimeters.length > 0) {
           const outerPoints = perimeters.flatMap(p => p.corners.map(c => c.outsidePoint))
-          const bounds = boundsFromPoints(outerPoints)
+          const bounds = Bounds2D.fromPoints(outerPoints)
           viewportActions().fitToView(bounds)
         }
       }, 100) // Small delay so that the viewport canvas size has time to adjust

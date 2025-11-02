@@ -1,6 +1,6 @@
 import { vec2, vec3 } from 'gl-matrix'
 
-import { type Bounds3D, type Length, type Plane3D, type PolygonWithHoles2D, boundsFromPoints } from '@/shared/geometry'
+import { Bounds2D, type Bounds3D, type Length, type Plane3D, type PolygonWithHoles2D } from '@/shared/geometry'
 
 export type Shape = Cuboid | ExtrudedPolygon
 
@@ -36,7 +36,7 @@ export const createExtrudedPolygon = (
   plane: Plane3D,
   thickness: Length
 ): ExtrudedPolygon => {
-  const bounds2D = boundsFromPoints(polygon.outer.points)
+  const bounds2D = Bounds2D.fromPoints(polygon.outer.points)
   const minT = Math.min(thickness, 0)
   const maxT = Math.max(thickness, 0)
   const min =

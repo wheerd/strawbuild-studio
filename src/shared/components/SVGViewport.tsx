@@ -56,12 +56,11 @@ function generateViewBoxFromBounds(
   flipX = false,
   flipY = false
 ): string {
-  const contentWidth = bounds.max[0] - bounds.min[0]
-  const contentHeight = bounds.max[1] - bounds.min[1]
+  const contentWidth = bounds.width
+  const contentHeight = bounds.height
 
   // Calculate content center
-  const contentCenterX = (bounds.min[0] + bounds.max[0]) / 2
-  const contentCenterY = (bounds.min[1] + bounds.max[1]) / 2
+  const [contentCenterX, contentCenterY] = bounds.center
 
   // Add padding to content dimensions
   const paddedContentWidth = contentWidth * (1 + padding * 2)

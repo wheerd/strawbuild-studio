@@ -4,8 +4,7 @@ import type { ConstructionElementId } from '@/construction/elements'
 import type { MaterialId } from '@/construction/materials/material'
 import { getMaterialById } from '@/construction/materials/store'
 import type { ConstructionModel } from '@/construction/model'
-import type { Length, Plane3D, Polygon2D, Volume } from '@/shared/geometry'
-import { boundsFromPoints, canonicalPolygonKey, minimumAreaBoundingBox } from '@/shared/geometry'
+import { Bounds2D, canonicalPolygonKey, minimumAreaBoundingBox, type Length, type Plane3D, type Polygon2D, type Volume } from '@/shared/geometry'
 
 export type PartId = string & { readonly brand: unique symbol }
 
@@ -79,7 +78,7 @@ export const polygonPartInfo = (type: string, polygon: Polygon2D, plane: Plane3D
   const rotatedPoints = polygon.points.map(rotatePoint)
   const flippedPoints = rotatedPoints.map(p => (flipXY ? vec2.fromValues(p[1], p[0]) : vec2.fromValues(p[0], p[1])))
   if (flipXY) flippedPoints.reverse()
-  const bounds = boundsFromPoints(flippedPoints)
+  const bounds = Bounds2D.fromPoints(flippedPoints)
   const normalizedPolygon: Polygon2D = {
     points: flippedPoints.map(p => vec2.fromValues(Math.round(p[0] - bounds.min[0]), Math.round(p[1] - bounds.min[1])))
   }

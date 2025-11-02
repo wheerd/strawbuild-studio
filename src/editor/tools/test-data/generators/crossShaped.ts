@@ -4,7 +4,7 @@ import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config/store'
 import { getSelectionActions } from '@/editor/hooks/useSelectionStore'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
-import { boundsFromPoints, polygonIsClockwise } from '@/shared/geometry'
+import { Bounds2D, polygonIsClockwise } from '@/shared/geometry'
 
 import { type DoorSpec, type WindowSpec, addDoors, addWindows } from './openings'
 
@@ -106,7 +106,7 @@ export function createCrossShapedPerimeter(): void {
 
       // Focus the view on the newly created test data
       const wallPoints = newPerimeter.corners.map(c => c.outsidePoint)
-      const bounds = boundsFromPoints(wallPoints)
+      const bounds = Bounds2D.fromPoints(wallPoints)
       getSelectionActions().replaceSelection([newPerimeter.id])
       viewportActions().fitToView(bounds)
     }

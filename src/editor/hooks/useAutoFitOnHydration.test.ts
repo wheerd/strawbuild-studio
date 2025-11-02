@@ -21,9 +21,31 @@ vi.mock('@/editor/hooks/useViewportStore', () => ({
   }))
 }))
 
-vi.mock('@/shared/geometry', () => ({
-  boundsFromPoints: vi.fn()
-}))
+vi.mock('@/shared/geometry', () => {
+  class MockBounds2D {
+    static EMPTY = new MockBounds2D()
+    static fromPoints = vi.fn(() => new MockBounds2D())
+
+    readonly min = [0, 0] as [number, number]
+    readonly max = [0, 0] as [number, number]
+
+    get width() {
+      return 0
+    }
+
+    get height() {
+      return 0
+    }
+
+    get isEmpty() {
+      return false
+    }
+  }
+
+  return {
+    Bounds2D: MockBounds2D
+  }
+})
 
 describe('useAutoFitOnHydration', () => {
   it('should not crash when called', () => {

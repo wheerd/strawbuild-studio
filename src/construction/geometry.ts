@@ -1,8 +1,8 @@
 import { mat4, vec2, vec3 } from 'gl-matrix'
 
 import type { GroupOrElement } from '@/construction/elements'
-import type { Axis3D, Bounds2D, Bounds3D, Plane3D } from '@/shared/geometry'
-import { boundsFromPoints, boundsFromPoints3D } from '@/shared/geometry'
+import { Bounds2D, boundsFromPoints3D } from '@/shared/geometry'
+import type { Axis3D, Bounds3D, Plane3D } from '@/shared/geometry'
 
 export interface Transform {
   readonly position: vec3
@@ -113,7 +113,7 @@ export const bounds3Dto2D = (bounds: Bounds3D, projection: Projection): Bounds2D
   })
 
   // Find 2D bounds from projected points
-  return boundsFromPoints(projectedCorners)
+  return Bounds2D.fromPoints(projectedCorners)
 }
 
 export type Projection = (p: vec3) => vec3

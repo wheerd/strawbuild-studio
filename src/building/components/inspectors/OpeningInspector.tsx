@@ -13,7 +13,7 @@ import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
 import { DoorIcon, PassageIcon, WindowIcon } from '@/shared/components/OpeningIcons'
-import { type Polygon2D, boundsFromPoints, offsetPolygon } from '@/shared/geometry'
+import { Bounds2D, type Polygon2D, offsetPolygon } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
 
 import { OpeningPreview } from './OpeningPreview'
@@ -171,7 +171,7 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
     const expandedPolygon = offsetPolygon(openingPolygon, expandAmount)
 
     // Calculate bounds from expanded polygon
-    const bounds = boundsFromPoints(expandedPolygon.points)
+    const bounds = Bounds2D.fromPoints(expandedPolygon.points)
 
     viewportActions.fitToView(bounds)
   }, [wall, opening, viewportActions])

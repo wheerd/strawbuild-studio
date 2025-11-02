@@ -2,7 +2,7 @@ import { getModelActions } from '@/building/store'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
 import { getToolActions } from '@/editor/tools/system'
 import { type CanvasEvent, DummyToolInspector, type ToolImplementation } from '@/editor/tools/system/types'
-import { boundsFromPoints } from '@/shared/geometry'
+import { Bounds2D } from '@/shared/geometry'
 
 export class FitToViewTool implements ToolImplementation {
   readonly id = 'basic.fit-to-view'
@@ -30,7 +30,7 @@ export class FitToViewTool implements ToolImplementation {
       const perimeterPoints = perimeters.flatMap(p => p.corners.map(c => c.outsidePoint))
       const floorAreaPoints = floorAreas.flatMap(area => area.area.points)
       const allPoints = [...perimeterPoints, ...floorAreaPoints]
-      const bounds = boundsFromPoints(allPoints)
+      const bounds = Bounds2D.fromPoints(allPoints)
 
       viewportActions().fitToView(bounds)
     } finally {

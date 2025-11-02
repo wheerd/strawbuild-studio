@@ -17,7 +17,7 @@ import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { pushTool } from '@/editor/tools/system/store'
 import { ConstructionPlanIcon, FitToViewIcon, SplitWallIcon, WallLayersIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
-import { type Polygon2D, boundsFromPoints } from '@/shared/geometry'
+import { Bounds2D, type Polygon2D } from '@/shared/geometry'
 import { wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 import { formatLength } from '@/shared/utils/formatting'
 
@@ -60,7 +60,7 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
   const handleFitToView = useCallback(() => {
     if (!wall) return
     const points = [wall.insideLine.start, wall.insideLine.end, wall.outsideLine.start, wall.outsideLine.end]
-    const bounds = boundsFromPoints(points)
+    const bounds = Bounds2D.fromPoints(points)
     viewportActions.fitToView(bounds)
   }, [wall, viewportActions])
 

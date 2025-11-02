@@ -7,7 +7,7 @@ import { useFloorOpeningById, useModelActions } from '@/building/store'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
-import { boundsFromPoints, calculatePolygonArea, polygonPerimeter } from '@/shared/geometry'
+import { Bounds2D, calculatePolygonArea, polygonPerimeter } from '@/shared/geometry'
 import { formatArea, formatLength } from '@/shared/utils/formatting'
 
 interface FloorOpeningInspectorProps {
@@ -31,7 +31,7 @@ export function FloorOpeningInspector({ floorOpeningId }: FloorOpeningInspectorP
 
   const handleFitToView = useCallback(() => {
     if (!opening) return
-    const bounds = boundsFromPoints(opening.area.points)
+    const bounds = Bounds2D.fromPoints(opening.area.points)
     fitToView(bounds)
   }, [opening, fitToView])
 

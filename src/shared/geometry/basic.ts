@@ -11,10 +11,98 @@ export const centimeters = (value: number): Length => value * 100
 export const squareMeters = (value: number): Area => value * 1000 * 1000
 export const cubicMeters = (value: number): Volume => value * 1000 * 1000 * 1000
 
-// Bounds interface
-export interface Bounds2D {
-  min: vec2
-  max: vec2
+export class Bounds2D {
+  static readonly EMPTY = new Bounds2D(vec2.create(), vec2.create())
+
+  static fromPoints(points: readonly vec2[]): Bounds2D {
+    if (points.length === 0) {
+      return Bounds2D.EMPTY
+    }
+
+    let minX = Infinity
+    let minY = Infinity
+    let maxX = -Infinity
+    let maxY = -Infinity
+
+    for (const point of points) {
+      if (point[0] < minX) minX = point[0]
+      if (point[1] < minY) minY = point[1]
+      if (point[0] > maxX) maxX = point[0]
+      if (point[1] > maxY) maxY = point[1]
+    }
+
+    return new Bounds2D(vec2.fromValues(minX, minY), vec2.fromValues(maxX, maxY))
+  }
+
+  static fromMinMax(min: vec2, max: vec2): Bounds2D {
+    if (min[0] >= max[0] && min[1] >= max[1]) {
+      return Bounds2D.EMPTY
+    }
+
+    return new Bounds2D(vec2.clone(min), vec2.clone(max))
+  }
+
+  static merge(...bounds: ReadonlyArray<Bounds2D>): Bounds2D {
+    const nonEmptyBound = bounds.filter(b => !b.isEmpty)
+    if (nonEmptyBound.length === 0) {
+      return Bounds2D.EMPTY
+    }
+
+    let minX = Infinity
+    let minY = Infinity
+    let maxX = -Infinity
+    let maxY = -Infinity
+
+    for (const bound of nonEmptyBound) {
+      if (bound.min[0] < minX) minX = bound.min[0]
+      if (bound.min[1] < minY) minY = bound.min[1]
+      if (bound.max[0] > maxX) maxX = bound.max[0]
+      if (bound.max[1] > maxY) maxY = bound.max[1]
+    }
+
+    return new Bounds2D(vec2.fromValues(minX, minY), vec2.fromValues(maxX, maxY))
+  }
+
+  readonly min: vec2
+  readonly max: vec2
+
+  private constructor(min: vec2, max: vec2) {
+    this.min = min
+    this.max = max
+  }
+
+  get width(): number {
+    return this.max[0] - this.min[0]
+  }
+
+  get height(): number {
+    return this.max[1] - this.min[1]
+  }
+
+  get size(): vec2 {
+    return vec2.fromValues(this.width, this.height)
+  }
+
+  get center(): vec2 {
+    return vec2.fromValues((this.min[0] + this.max[0]) / 2, (this.min[1] + this.max[1]) / 2)
+  }
+
+  get isEmpty(): boolean {
+    return vec2.equals(this.min, this.max)
+  }
+
+  pad(amount: number | vec2): Bounds2D {
+    const padX = typeof amount === 'number' ? amount : amount[0]
+    const padY = typeof amount === 'number' ? amount : amount[1]
+
+    const min = vec2.fromValues(this.min[0] - padX, this.min[1] - padY)
+    const max = vec2.fromValues(this.max[0] + padX, this.max[1] + padY)
+    return new Bounds2D(min, max)
+  }
+
+  contains(point: vec2): boolean {
+    return point[0] >= this.min[0] && point[0] <= this.max[0] && point[1] >= this.min[1] && point[1] <= this.max[1]
+  }
 }
 
 export function midpoint(p1: vec2, p2: vec2): vec2 {
@@ -41,29 +129,6 @@ export function perpendicularCCW(vector: vec2): vec2 {
 
 export function perpendicularCW(vector: vec2): vec2 {
   return vec2.fromValues(vector[1], -vector[0]) // Rotate 90° clockwise
-}
-
-export function boundsFromPoints(points: vec2[]): Bounds2D {
-  if (points.length === 0) {
-    throw new Error('No points for boundary')
-  }
-
-  let minX = Infinity
-  let minY = Infinity
-  let maxX = -Infinity
-  let maxY = -Infinity
-
-  for (const point of points) {
-    minX = Math.min(minX, point[0])
-    minY = Math.min(minY, point[1])
-    maxX = Math.max(maxX, point[0])
-    maxY = Math.max(maxY, point[1])
-  }
-
-  return {
-    min: vec2.fromValues(minX, minY),
-    max: vec2.fromValues(maxX, maxY)
-  }
 }
 
 export type Plane3D = 'xy' | 'xz' | 'yz'

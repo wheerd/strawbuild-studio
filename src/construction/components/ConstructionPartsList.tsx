@@ -7,8 +7,7 @@ import { getMaterialTypeIcon, getMaterialTypeName } from '@/construction/materia
 import type { Material } from '@/construction/materials/material'
 import { useMaterialsMap } from '@/construction/materials/store'
 import type { MaterialPartItem, MaterialPartsList } from '@/construction/parts'
-import { boundsFromPoints } from '@/shared/geometry'
-import type { Polygon2D } from '@/shared/geometry'
+import { Bounds2D, type Polygon2D } from '@/shared/geometry'
 import { formatLengthInMeters, formatVolume } from '@/shared/utils/formatting'
 
 interface ConstructionPartsListProps {
@@ -61,9 +60,9 @@ const SPECIAL_CUT_PREVIEW_PADDING = 6
 
 function SpecialCutTooltip({ polygon }: { polygon: Polygon2D }): React.JSX.Element {
   const preview = useMemo(() => {
-    const bounds = boundsFromPoints(polygon.points)
-    const width = Math.max(bounds.max[0] - bounds.min[0], 1)
-    const height = Math.max(bounds.max[1] - bounds.min[1], 1)
+    const bounds = Bounds2D.fromPoints(polygon.points)
+    const width = Math.max(bounds.width, 1)
+    const height = Math.max(bounds.height, 1)
     const scale = SPECIAL_CUT_PREVIEW_TARGET / Math.max(width, height)
     const scaledWidth = height * scale
     const scaledHeight = width * scale

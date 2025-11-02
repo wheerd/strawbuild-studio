@@ -9,7 +9,7 @@ import { useConfigActions } from '@/construction/config/store'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon, SplitWallIcon } from '@/shared/components/Icons'
-import { type Polygon2D, boundsFromPoints } from '@/shared/geometry'
+import { Bounds2D, type Polygon2D } from '@/shared/geometry'
 import { wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 
 interface PerimeterCornerInspectorProps {
@@ -102,7 +102,7 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
     ]
 
     const points = [corner.insidePoint, corner.outsidePoint, prevMidpoint, nextMidpoint]
-    const bounds = boundsFromPoints(points)
+    const bounds = Bounds2D.fromPoints(points)
     viewportActions.fitToView(bounds)
   }, [corner, previousWall, nextWall, viewportActions])
 

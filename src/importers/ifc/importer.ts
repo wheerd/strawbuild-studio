@@ -50,11 +50,11 @@ import type {
 } from '@/importers/ifc/types'
 import { createIdentityMatrix } from '@/importers/ifc/utils'
 import {
+  Bounds2D,
   type Bounds3D,
   type LineSegment2D,
   type Polygon2D,
   type PolygonWithHoles2D,
-  boundsFromPoints,
   boundsFromPoints3D,
   direction,
   distanceToInfiniteLine,
@@ -426,7 +426,7 @@ export class IfcImporter {
         if (!opening.profile) continue
         const polygon = opening.profile.footprint.outer
         if (polygon.points.length < 3) continue
-        const profileBounds = boundsFromPoints(opening.profile.localOutline.points)
+        const profileBounds = Bounds2D.fromPoints(opening.profile.localOutline.points)
         const sillHeight =
           opening.profile.extrusionDirection[2] !== 0 ? opening.placement[14] - elevation : profileBounds.min[1]
         const height =

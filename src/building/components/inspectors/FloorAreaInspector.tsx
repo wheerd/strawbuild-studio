@@ -7,7 +7,7 @@ import { useFloorAreaById, useModelActions } from '@/building/store'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
-import { boundsFromPoints, calculatePolygonArea, polygonPerimeter } from '@/shared/geometry'
+import { Bounds2D, calculatePolygonArea, polygonPerimeter } from '@/shared/geometry'
 import { formatArea, formatLength } from '@/shared/utils/formatting'
 
 interface FloorAreaInspectorProps {
@@ -31,7 +31,7 @@ export function FloorAreaInspector({ floorAreaId }: FloorAreaInspectorProps): Re
 
   const handleFitToView = useCallback(() => {
     if (!floorArea) return
-    const bounds = boundsFromPoints(floorArea.area.points)
+    const bounds = Bounds2D.fromPoints(floorArea.area.points)
     fitToView(bounds)
   }, [floorArea, fitToView])
 

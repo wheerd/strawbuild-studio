@@ -97,8 +97,8 @@ const viewportStore = create<ViewportStore>()((set, get) => ({
     fitToView: (bounds: Bounds2D): void => {
       const viewport = get()
       // Calculate bounds dimensions
-      const boundsWidth = bounds.max[0] - bounds.min[0]
-      const boundsHeight = bounds.max[1] - bounds.min[1]
+      const boundsWidth = bounds.width
+      const boundsHeight = bounds.height
 
       // If bounds are too small (e.g., single point), use minimum dimensions
       const minDimension = 1000 // 1 meter minimum
@@ -106,8 +106,9 @@ const viewportStore = create<ViewportStore>()((set, get) => ({
       const actualHeight = Math.max(boundsHeight, minDimension)
 
       // Calculate center of bounds
-      const centerX = (bounds.min[0] + bounds.max[0]) / 2
-      const centerY = -(bounds.min[1] + bounds.max[1]) / 2
+      const [centerWorldX, centerWorldY] = bounds.center
+      const centerX = centerWorldX
+      const centerY = -centerWorldY
 
       // Calculate zoom level to fit content with some padding
       const padding = 0.1 // 10% padding around content

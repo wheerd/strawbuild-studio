@@ -27,7 +27,7 @@ import {
   WallToggleIcon
 } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
-import { type Length, boundsFromPoints, calculatePolygonArea } from '@/shared/geometry'
+import { Bounds2D, calculatePolygonArea, type Length } from '@/shared/geometry'
 import { formatArea, formatLength } from '@/shared/utils/formatting'
 
 interface PerimeterInspectorProps {
@@ -121,7 +121,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
   const handleFitToView = useCallback(() => {
     if (!perimeter) return
     const points = perimeter.corners.map(c => c.outsidePoint)
-    const bounds = boundsFromPoints(points)
+    const bounds = Bounds2D.fromPoints(points)
     viewportActions.fitToView(bounds)
   }, [perimeter, viewportActions])
 

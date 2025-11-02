@@ -13,21 +13,14 @@ import {
 } from '@/construction/results'
 import { createExtrudedPolygon } from '@/construction/shapes'
 import { TAG_PERIMETER_INSIDE, TAG_PERIMETER_OUTSIDE } from '@/construction/tags'
-import {
-  type Polygon2D,
-  boundsFromPoints,
-  lineFromPoints,
-  lineIntersection,
-  offsetPolygon,
-  simplifyPolygon
-} from '@/shared/geometry'
+import { Bounds2D, type Polygon2D, lineFromPoints, lineIntersection, offsetPolygon, simplifyPolygon } from '@/shared/geometry'
 
 import type { FullRingBeamConfig, RingBeamAssembly } from './types'
 
 export class FullRingBeamAssembly implements RingBeamAssembly<FullRingBeamConfig> {
   construct(perimeter: Perimeter, config: FullRingBeamConfig): ConstructionModel {
     const aggRes = aggregateResults([...this._constructFullRingBeam(perimeter, config)])
-    const bounds2D = boundsFromPoints(perimeter.corners.map(c => c.outsidePoint))
+    const bounds2D = Bounds2D.fromPoints(perimeter.corners.map(c => c.outsidePoint))
     const bounds3D = {
       min: vec3.fromValues(bounds2D.min[0], bounds2D.min[1], 0),
       max: vec3.fromValues(bounds2D.max[0], bounds2D.max[1], config.height)

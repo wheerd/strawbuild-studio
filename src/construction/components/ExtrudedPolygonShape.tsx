@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 
 import { type Projection } from '@/construction/geometry'
 import { type ExtrudedPolygon, extrudedPolygonFaces } from '@/construction/shapes'
-import { type Polygon2D, type PolygonWithHoles2D, boundsFromPoints } from '@/shared/geometry'
+import { Bounds2D, type Polygon2D, type PolygonWithHoles2D } from '@/shared/geometry'
 
 export interface ExtrudedPolygonShapeProps {
   shape: ExtrudedPolygon
@@ -29,8 +29,8 @@ export function ExtrudedPolygonShape({ shape, projection }: ExtrudedPolygonShape
           }) as PolygonWithHoles2D
       )
       .filter(f => {
-        const bounds = boundsFromPoints(f.outer.points)
-        return bounds.min[0] !== bounds.max[0] && bounds.min[1] !== bounds.max[1]
+        const bounds = Bounds2D.fromPoints(f.outer.points)
+        return bounds.width !== 0 && bounds.height !== 0
       })
   }, [shape, projection])
 
