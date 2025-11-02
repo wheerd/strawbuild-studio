@@ -430,9 +430,7 @@ export class IfcImporter {
         const sillHeight =
           opening.profile.extrusionDirection[2] !== 0 ? opening.placement[14] - elevation : profileBounds.min[1]
         const height =
-          opening.profile.extrusionDirection[2] !== 0
-            ? opening.profile.extrusionDepth
-            : profileBounds.max[1] - profileBounds.min[1]
+          opening.profile.extrusionDirection[2] !== 0 ? opening.profile.extrusionDepth : profileBounds.height
 
         openings.push({
           type: opening.type,

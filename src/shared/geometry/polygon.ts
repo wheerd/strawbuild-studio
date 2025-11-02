@@ -9,7 +9,7 @@ import {
   pathDToPoints
 } from '@/shared/geometry/clipperInstance'
 
-import { Bounds2D, type Area, type Length, direction, perpendicular, radiansToDegrees } from './basic'
+import { type Area, Bounds2D, type Length, direction, perpendicular, radiansToDegrees } from './basic'
 import { type LineSegment2D, lineIntersection } from './line'
 
 const COLINEAR_EPSILON = 1e-9
@@ -560,7 +560,7 @@ function minimumAreaBoundingBoxFromPoints(points: vec2[]): MinimumBoundingBox {
     const rotatedHull = hull.map(p => rotatePoint(p, sinAngle, cosAngle))
     const bounds = Bounds2D.fromPoints(rotatedHull)
 
-    const size = vec2.subtract(vec2.create(), bounds.max, bounds.min)
+    const size = bounds.size
     const area = size[0] * size[1]
 
     if (area < bestArea) {

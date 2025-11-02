@@ -23,11 +23,12 @@ export function Measurements({ model, projection }: MeasurementsProps): React.JS
         if (area.type === 'cuboid') {
           const transformedBounds = transformBounds(area.bounds, area.transform)
           const bounds2D = bounds3Dto2D(transformedBounds, projection)
+          const { min, max } = bounds2D
           return [
-            vec2.fromValues(bounds2D.min[0], bounds2D.min[1]),
-            vec2.fromValues(bounds2D.max[0], bounds2D.min[1]),
-            vec2.fromValues(bounds2D.max[0], bounds2D.max[1]),
-            vec2.fromValues(bounds2D.min[0], bounds2D.max[1])
+            vec2.fromValues(min[0], min[1]),
+            vec2.fromValues(max[0], min[1]),
+            vec2.fromValues(max[0], max[1]),
+            vec2.fromValues(min[0], max[1])
           ]
         } else if (area.type === 'polygon') {
           return area.polygon.points.map(p => {

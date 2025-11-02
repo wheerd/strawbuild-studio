@@ -14,8 +14,9 @@ export interface CuboidAreaShapeProps {
 export function CuboidAreaShape({ cuboid, projection, rotationProjection }: CuboidAreaShapeProps): React.JSX.Element {
   const cuboidId = useId()
   const bounds2D = bounds3Dto2D(cuboid.bounds, projection)
-  const cx = (bounds2D.max[0] + bounds2D.min[0]) / 2
-  const cy = (bounds2D.max[1] + bounds2D.min[1]) / 2
+  const [centerX, centerY] = bounds2D.center
+  const { min } = bounds2D
+  const { width, height } = bounds2D
 
   return (
     <g
@@ -24,22 +25,22 @@ export function CuboidAreaShape({ cuboid, projection, rotationProjection }: Cubo
     >
       <clipPath id={cuboidId}>
         <rect
-          x={bounds2D.min[0]}
-          y={bounds2D.min[1]}
-          width={bounds2D.max[0] - bounds2D.min[0]}
-          height={bounds2D.max[1] - bounds2D.min[1]}
+          x={min[0]}
+          y={min[1]}
+          width={width}
+          height={height}
         />
       </clipPath>
       <rect
-        x={bounds2D.min[0]}
-        y={bounds2D.min[1]}
-        width={bounds2D.max[0] - bounds2D.min[0]}
-        height={bounds2D.max[1] - bounds2D.min[1]}
+        x={min[0]}
+        y={min[1]}
+        width={width}
+        height={height}
         clipPath={`url(#${cuboidId})`}
       />
 
       {cuboid.label && (
-        <g className="text" transform={`translate(${cx} ${cy})`}>
+        <g className="text" transform={`translate(${centerX} ${centerY})`}>
           <text x={0} y={0}>
             {cuboid.label}
           </text>

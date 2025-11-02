@@ -206,46 +206,46 @@ export function ConstructionPlan({
 
         {/* Warnings */}
         {model.warnings?.map((warning, index) => {
-          if (warning.bounds) {
-            const bounds2D = bounds3Dto2D(warning.bounds, projection)
-            return (
-              <rect
-                className="construction-warning"
-                key={`warning-${index}`}
-                x={bounds2D.min[0]}
-                y={bounds2D.min[1]}
-                width={bounds2D.max[0] - bounds2D.min[0]}
-                height={bounds2D.max[1] - bounds2D.min[1]}
-                stroke="var(--color-warning)"
-                strokeWidth={30}
-                fill="var(--color-warning-light)"
-                strokeDasharray="100,100"
-              />
-            )
-          }
-          return null
+          if (!warning.bounds) return null
+          const bounds2D = bounds3Dto2D(warning.bounds, projection)
+          const { min } = bounds2D
+          const { width, height } = bounds2D
+          return (
+            <rect
+              className="construction-warning"
+              key={`warning-${index}`}
+              x={min[0]}
+              y={min[1]}
+              width={width}
+              height={height}
+              stroke="var(--color-warning)"
+              strokeWidth={30}
+              fill="var(--color-warning-light)"
+              strokeDasharray="100,100"
+            />
+          )
         })}
 
         {/* Errors */}
         {model.errors?.map((error, index) => {
-          if (error.bounds) {
-            const bounds2D = bounds3Dto2D(error.bounds, projection)
-            return (
-              <rect
-                className="construction-error"
-                key={`error-${index}`}
-                x={bounds2D.min[0]}
-                y={bounds2D.min[1]}
-                width={bounds2D.max[0] - bounds2D.min[0]}
-                height={bounds2D.max[1] - bounds2D.min[1]}
-                stroke="var(--color-danger)"
-                strokeWidth={50}
-                fill="var(--color-danger-light)"
-                strokeDasharray="100,100"
-              />
-            )
-          }
-          return null
+          if (!error.bounds) return null
+          const bounds2D = bounds3Dto2D(error.bounds, projection)
+          const { min } = bounds2D
+          const { width, height } = bounds2D
+          return (
+            <rect
+              className="construction-error"
+              key={`error-${index}`}
+              x={min[0]}
+              y={min[1]}
+              width={width}
+              height={height}
+              stroke="var(--color-danger)"
+              strokeWidth={50}
+              fill="var(--color-danger-light)"
+              strokeDasharray="100,100"
+            />
+          )
         })}
 
         {/* Measurements */}

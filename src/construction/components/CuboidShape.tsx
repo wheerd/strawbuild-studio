@@ -1,5 +1,3 @@
-import { vec2 } from 'gl-matrix'
-
 import { type Projection, bounds3Dto2D } from '@/construction/geometry'
 import type { Cuboid } from '@/construction/shapes'
 
@@ -12,7 +10,7 @@ export interface CuboidShapeProps {
 export function CuboidShape({ shape, projection, showDebugMarkers = false }: CuboidShapeProps): React.JSX.Element {
   const bounds = bounds3Dto2D(shape.bounds, projection)
   const [x, y] = bounds.min
-  const [length, width] = vec2.subtract(vec2.create(), bounds.max, bounds.min)
+  const [length, width] = bounds.size
 
   return (
     <g>
