@@ -19,6 +19,7 @@ describe('StoreyManagementService', () => {
       adjustAllLevels: vi.fn(),
       getStoreyById: vi.fn(),
       getStoreysOrderedByLevel: vi.fn(),
+      getStoreyAbove: vi.fn(),
       addPerimeter: vi.fn(),
       removePerimeter: vi.fn(),
       getPerimetersByStorey: vi.fn()
@@ -35,6 +36,9 @@ describe('StoreyManagementService', () => {
       ]
 
       mockActions.getStoreysOrderedByLevel.mockReturnValue(storeys)
+      mockActions.getStoreyAbove.mockImplementation((id: StoreyId) =>
+        id === storeys[1].id ? storeys[2] : null
+      )
 
       service.moveStoreyUp('storey-2' as StoreyId)
 
@@ -48,6 +52,7 @@ describe('StoreyManagementService', () => {
       ]
 
       mockActions.getStoreysOrderedByLevel.mockReturnValue(storeys)
+      mockActions.getStoreyAbove.mockReturnValue(null)
 
       service.moveStoreyUp('storey-2' as StoreyId)
 
@@ -61,6 +66,7 @@ describe('StoreyManagementService', () => {
       ]
 
       mockActions.getStoreysOrderedByLevel.mockReturnValue(storeys)
+      mockActions.getStoreyAbove.mockReturnValue(null)
 
       expect(() => service.moveStoreyUp('storey-2' as StoreyId)).toThrow(
         'Cannot move floor up: lowest floor would exceed ground level'
@@ -71,6 +77,7 @@ describe('StoreyManagementService', () => {
       const storeys = [{ id: 'storey-1' as StoreyId, name: 'Ground', level: createStoreyLevel(0), height: 3000 }]
 
       mockActions.getStoreysOrderedByLevel.mockReturnValue(storeys)
+      mockActions.getStoreyAbove.mockReturnValue(null)
 
       service.moveStoreyUp('storey-1' as StoreyId)
 

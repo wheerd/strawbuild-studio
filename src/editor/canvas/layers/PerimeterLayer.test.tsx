@@ -8,6 +8,7 @@ import { usePerimetersOfActiveStorey } from '@/building/store'
 import { PerimeterLayer } from './PerimeterLayer'
 
 const mockGetStoreysOrderedByLevel = vi.fn()
+const mockGetStoreyAbove = vi.fn()
 
 // Mock the model store hook
 vi.mock('@/building/store', () => ({
@@ -15,7 +16,8 @@ vi.mock('@/building/store', () => ({
   useActiveStoreyId: vi.fn(),
   useModelActions: vi.fn(() => ({
     getPerimetersByStorey: vi.fn(),
-    getStoreysOrderedByLevel: mockGetStoreysOrderedByLevel
+    getStoreysOrderedByLevel: mockGetStoreysOrderedByLevel,
+    getStoreyAbove: mockGetStoreyAbove
   }))
 }))
 vi.mock('@/shared/components/FloorPlanEditor/Shapes/PerimeterShape', () => ({
@@ -32,6 +34,7 @@ describe('PerimeterLayer', () => {
     mockUsePerimetersOfActiveStorey.mockReset()
     mockUsePerimetersOfActiveStorey.mockReturnValue([]) // Default to no perimeters
     mockGetStoreysOrderedByLevel.mockReturnValue([])
+    mockGetStoreyAbove.mockReturnValue(null)
   })
 
   it('should render without perimeters', () => {

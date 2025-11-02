@@ -37,9 +37,10 @@ export class StoreyManagementService {
       this.actions.adjustAllLevels(1)
     } else {
       // Find floor above and swap
-      const currentIndex = storeys.findIndex(s => s.id === storeyId)
-      const floorAbove = storeys[currentIndex + 1]
-      this.actions.swapStoreyLevels(storeyId, floorAbove.id)
+      const floorAbove = this.actions.getStoreyAbove(storeyId)
+      if (floorAbove) {
+        this.actions.swapStoreyLevels(storeyId, floorAbove.id)
+      }
     }
   }
 

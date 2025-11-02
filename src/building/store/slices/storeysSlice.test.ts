@@ -296,6 +296,35 @@ describe('StoreysSlice', () => {
     })
   })
 
+  describe('getStoreyAbove', () => {
+    it('should return the storey directly above', () => {
+      const ground = store.actions.addStorey('Ground Floor')
+      const first = store.actions.addStorey('First Floor')
+      store.actions.addStorey('Second Floor')
+
+      const result = store.actions.getStoreyAbove(ground.id)
+
+      expect(result?.id).toBe(first.id)
+    })
+
+    it('should return null when requesting above the highest storey', () => {
+      store.actions.addStorey('Ground Floor')
+      const top = store.actions.addStorey('First Floor')
+
+      const result = store.actions.getStoreyAbove(top.id)
+
+      expect(result).toBeNull()
+    })
+
+    it('should return null when storey does not exist', () => {
+      store.actions.addStorey('Ground Floor')
+
+      const result = store.actions.getStoreyAbove('missing-storey' as StoreyId)
+
+      expect(result).toBeNull()
+    })
+  })
+
   describe('level management operations', () => {
     describe('swapStoreyLevels', () => {
       it('should swap levels between two storeys', () => {

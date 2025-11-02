@@ -136,7 +136,8 @@ describe('constructWall', () => {
     mockModelActions = {
       getPerimeterById: vi.fn(),
       getStoreyById: vi.fn(),
-      getStoreysOrderedByLevel: vi.fn()
+      getStoreysOrderedByLevel: vi.fn(),
+      getStoreyAbove: vi.fn()
     }
 
     mockConfigActions = {
@@ -149,6 +150,7 @@ describe('constructWall', () => {
 
     mockModelActions.getStoreyById.mockReturnValue(createMockStorey())
     mockModelActions.getStoreysOrderedByLevel.mockReturnValue([createMockStorey()])
+    mockModelActions.getStoreyAbove.mockReturnValue(null)
     mockConfigActions.getFloorAssemblyById.mockReturnValue(mockFloorAssembly as any)
     mockConfigActions.getWallAssemblyById.mockReturnValue({
       type: 'infill',

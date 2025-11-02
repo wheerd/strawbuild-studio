@@ -34,6 +34,7 @@ export interface StoreysActions {
 
   // Storey queries
   getStoreyById: (storeyId: StoreyId) => Storey | null
+  getStoreyAbove: (storeyId: StoreyId) => Storey | null
   getStoreysOrderedByLevel: () => Storey[]
 }
 
@@ -190,6 +191,11 @@ export const createStoreysSlice: StateCreator<StoreysSlice, [['zustand/immer', n
 
     // Storey queries
     getStoreyById: (storeyId: StoreyId) => get().storeys[storeyId] ?? null,
+    getStoreyAbove: (storeyId: StoreyId) => {
+      const storeys = Object.values(get().storeys).sort((a, b) => a.level - b.level)
+      const index = storeys.findIndex(storey => storey.id === storeyId)
+      return index >= 0 && index < storeys.length - 1 ? storeys[index + 1] : null
+    },
     getStoreysOrderedByLevel: () => Object.values(get().storeys).sort((a, b) => a.level - b.level)
   }
 })

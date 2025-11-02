@@ -28,7 +28,7 @@ export function constructStoreyFloor(storeyId: StoreyId): ConstructionModel[] {
     getFloorAreasByStorey,
     getFloorOpeningsByStorey,
     getStoreyById,
-    getStoreysOrderedByLevel
+    getStoreyAbove
   } = getModelActions()
   const storey = getStoreyById(storeyId)
   if (!storey) {
@@ -55,9 +55,7 @@ export function constructStoreyFloor(storeyId: StoreyId): ConstructionModel[] {
   const floorAssembly = FLOOR_ASSEMBLIES[floorAssemblyConfig.type]
   const floorModels = floorPolygons.map(p => floorAssembly.construct(p, floorAssemblyConfig))
 
-  const allStoreys = getStoreysOrderedByLevel()
-  const currentIndex = allStoreys.findIndex(s => s.id === storey.id)
-  const nextStorey = currentIndex >= 0 && currentIndex < allStoreys.length - 1 ? allStoreys[currentIndex + 1] : null
+  const nextStorey = getStoreyAbove(storey.id)
   const nextFloorAssemblyConfig = nextStorey ? getFloorAssemblyById(nextStorey.floorAssemblyId) : null
 
   const storeyContext = createWallStoreyContext(storey, floorAssemblyConfig, nextFloorAssemblyConfig ?? null)

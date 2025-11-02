@@ -64,7 +64,7 @@ export function computeFloorConstructionPolygon(perimeter: Perimeter): Polygon2D
 }
 
 export function constructPerimeter(perimeter: Perimeter, includeFloor = true): ConstructionModel {
-  const { getStoreyById, getStoreysOrderedByLevel, getFloorOpeningsByStorey, getPerimetersByStorey } = getModelActions()
+  const { getStoreyById, getStoreyAbove, getFloorOpeningsByStorey, getPerimetersByStorey } = getModelActions()
   const storey = getStoreyById(perimeter.storeyId)
   if (!storey) {
     throw new Error('Invalid storey on perimeter')
@@ -77,9 +77,7 @@ export function constructPerimeter(perimeter: Perimeter, includeFloor = true): C
     throw new Error(`Floor assembly ${storey.floorAssemblyId} not found for storey ${storey.id}`)
   }
 
-  const allStoreys = getStoreysOrderedByLevel()
-  const currentIndex = allStoreys.findIndex(s => s.id === storey.id)
-  const nextStorey = currentIndex >= 0 && currentIndex < allStoreys.length - 1 ? allStoreys[currentIndex + 1] : null
+  const nextStorey = getStoreyAbove(storey.id)
 
   const nextFloorAssembly = nextStorey ? getFloorAssemblyById(nextStorey.floorAssemblyId) : null
 
@@ -203,7 +201,7 @@ export interface PerimeterStats {
 }
 
 export function getPerimeterStats(perimeter: Perimeter): PerimeterStats {
-  const { getStoreyById, getStoreysOrderedByLevel, getFloorOpeningsByStorey } = getModelActions()
+  const { getStoreyById, getStoreyAbove, getFloorOpeningsByStorey } = getModelActions()
   const storey = getStoreyById(perimeter.storeyId)
   if (!storey) {
     throw new Error('Invalid storey on perimeter')
@@ -215,9 +213,7 @@ export function getPerimeterStats(perimeter: Perimeter): PerimeterStats {
     throw new Error(`Floor assembly ${storey.floorAssemblyId} not found for storey ${storey.id}`)
   }
 
-  const allStoreys = getStoreysOrderedByLevel()
-  const currentIndex = allStoreys.findIndex(s => s.id === storey.id)
-  const nextStorey = currentIndex >= 0 && currentIndex < allStoreys.length - 1 ? allStoreys[currentIndex + 1] : null
+  const nextStorey = getStoreyAbove(storey.id)
   const nextFloorAssemblyConfig = nextStorey ? getFloorAssemblyById(nextStorey.floorAssemblyId) : null
 
   const floorAssembly = FLOOR_ASSEMBLIES[floorAssemblyConfig.type]

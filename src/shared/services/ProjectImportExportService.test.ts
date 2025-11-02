@@ -13,6 +13,7 @@ const mockStorey = {
 
 const mockActions = {
   getStoreysOrderedByLevel: vi.fn(() => [mockStorey]),
+  getStoreyAbove: vi.fn(() => null),
   getPerimetersByStorey: vi.fn(() => [
     {
       id: 'perimeter_1',
