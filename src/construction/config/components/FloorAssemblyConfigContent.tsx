@@ -429,20 +429,26 @@ function LayersFields({
   onRemoveBottomLayer: (id: FloorAssemblyId, index: number) => void
   onMoveBottomLayer: (id: FloorAssemblyId, fromIndex: number, toIndex: number) => void
 }) {
+  const topLayers = config.layers.topLayers
+  const displayedTopLayers = [...topLayers].reverse()
+  const mapTopIndex = (displayIndex: number) => topLayers.length - 1 - displayIndex
+
   return (
     <Flex direction="column" gap="3">
       <LayerListEditor
         title="Top Layers"
         measurementInfo={<MeasurementInfo highlightedPart="floorTopLayers" />}
-        layers={config.layers.topLayers}
+        layers={displayedTopLayers}
         onAddLayer={layer => onAddTopLayer(assemblyId, layer)}
-        onReplaceLayers={layers => onSetTopLayers(assemblyId, layers)}
-        onUpdateLayer={(index, updates) => onUpdateTopLayer(assemblyId, index, updates)}
-        onRemoveLayer={index => onRemoveTopLayer(assemblyId, index)}
-        onMoveLayer={(fromIndex, toIndex) => onMoveTopLayer(assemblyId, fromIndex, toIndex)}
+        onReplaceLayers={layers => onSetTopLayers(assemblyId, [...layers].reverse())}
+        onUpdateLayer={(index, updates) => onUpdateTopLayer(assemblyId, mapTopIndex(index), updates)}
+        onRemoveLayer={index => onRemoveTopLayer(assemblyId, mapTopIndex(index))}
+        onMoveLayer={(fromIndex, toIndex) => onMoveTopLayer(assemblyId, mapTopIndex(fromIndex), mapTopIndex(toIndex))}
         addLabel="Add Top Layer"
         emptyHint="No top layers defined"
         layerPresets={DEFAULT_FLOOR_LAYER_SETS}
+        beforeLabel="Finished Top"
+        afterLabel="Floor Construction"
       />
 
       <Separator size="4" />
@@ -459,6 +465,8 @@ function LayersFields({
         addLabel="Add Bottom Layer"
         emptyHint="No bottom layers defined"
         layerPresets={DEFAULT_CEILING_LAYER_SETS}
+        beforeLabel="Floor Construction"
+        afterLabel="Finished Bottom"
       />
     </Flex>
   )

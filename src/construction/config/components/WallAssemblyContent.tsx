@@ -597,6 +597,8 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           addLabel="Add Inside Layer"
           emptyHint="No inside layers defined"
           layerPresets={DEFAULT_WALL_LAYER_SETS}
+          beforeLabel="Wall Construction"
+          afterLabel="Inside"
         />
 
         <Separator size="4" />
@@ -613,6 +615,8 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           addLabel="Add Outside Layer"
           emptyHint="No outside layers defined"
           layerPresets={DEFAULT_WALL_LAYER_SETS}
+          beforeLabel="Wall Construction"
+          afterLabel="Outside"
         />
       </Flex>
     </Flex>

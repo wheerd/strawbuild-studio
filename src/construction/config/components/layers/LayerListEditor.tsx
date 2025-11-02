@@ -66,6 +66,8 @@ interface LayerListEditorProps {
   emptyHint?: string
   layerPresets?: Record<string, LayerConfig[]>
   onReplaceLayers?: (layers: LayerConfig[]) => void
+  beforeLabel: string
+  afterLabel: string
 }
 
 export function LayerListEditor({
@@ -79,7 +81,9 @@ export function LayerListEditor({
   addLabel = 'Add Layer',
   emptyHint = 'No layers yet',
   layerPresets,
-  onReplaceLayers
+  onReplaceLayers,
+  beforeLabel = 'Construction Side',
+  afterLabel
 }: LayerListEditorProps): React.JSX.Element {
   const hasLayers = layers.length > 0
   const totalThickness = useMemo(() => sumThickness(layers), [layers])
@@ -162,7 +166,12 @@ export function LayerListEditor({
       )}
 
       {hasLayers && (
-        <Flex direction="column" gap="2">
+        <Grid columns="1" gap="2" align="center" justify="center">
+          <Flex justify="center">
+            <Text size="1" color="gray">
+              {beforeLabel}
+            </Text>
+          </Flex>
           {layers.map((layer, index) => (
             <LayerCard
               key={`${layer.type}-${index}`}
@@ -175,7 +184,12 @@ export function LayerListEditor({
               onRemoveLayer={onRemoveLayer}
             />
           ))}
-        </Flex>
+          <Flex justify="center">
+            <Text size="1" color="gray">
+              {afterLabel}
+            </Text>
+          </Flex>
+        </Grid>
       )}
     </Flex>
   )
