@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { strawbale, wood120x60, woodwool } from '@/construction/materials/material'
 
-import { applyMigrations } from './migrations'
+import { applyMigrations } from './index'
 
 describe('config migrations', () => {
   it('adds default spacer properties to double modules', () => {
