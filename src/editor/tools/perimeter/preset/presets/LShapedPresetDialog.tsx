@@ -5,7 +5,11 @@ import type { WallAssemblyId } from '@/building/model/ids'
 import type { PerimeterReferenceSide } from '@/building/model/model'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
-import { useConfigActions } from '@/construction/config/store'
+import {
+  useDefaultBaseRingBeamAssemblyId,
+  useDefaultTopRingBeamAssemblyId,
+  useDefaultWallAssemblyId
+} from '@/construction/config/store'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { BaseModal } from '@/shared/components/BaseModal'
 import { LengthField } from '@/shared/components/LengthField'
@@ -17,16 +21,16 @@ import type { LShapedPresetConfig } from './types'
 
 interface LShapedPresetDialogProps {
   onConfirm: (config: LShapedPresetConfig) => void
-  initialConfig?: Partial<LShapedPresetConfig>
   trigger: React.ReactNode
 }
 
 export function LShapedPresetDialog({
   onConfirm,
-  initialConfig,
   trigger
 }: LShapedPresetDialogProps): React.JSX.Element {
-  const configStore = useConfigActions()
+  const defaultWallAssemblyId = useDefaultWallAssemblyId()
+  const defaultBaseRingBeamAssemblyId = useDefaultBaseRingBeamAssemblyId()
+  const defaultTopRingBeamAssemblyId = useDefaultTopRingBeamAssemblyId()
   const preset = useMemo(() => new LShapedPreset(), [])
 
   // Form state with defaults from config store
@@ -37,19 +41,21 @@ export function LShapedPresetDialog({
     length2: 4000, // 4m extension length
     rotation: 0, // 0° rotation
     thickness: 420, // 44cm wall thickness
-    wallAssemblyId: configStore.getDefaultWallAssemblyId(),
-    baseRingBeamAssemblyId: configStore.getDefaultBaseRingBeamAssemblyId(),
-    topRingBeamAssemblyId: configStore.getDefaultTopRingBeamAssemblyId(),
+    wallAssemblyId: defaultWallAssemblyId,
+    baseRingBeamAssemblyId: defaultBaseRingBeamAssemblyId,
+    topRingBeamAssemblyId: defaultTopRingBeamAssemblyId,
     referenceSide: 'inside',
-    ...initialConfig
   }))
 
-  // Update config when initial config changes
-  useEffect(() => {
-    if (initialConfig) {
-      setConfig(prev => ({ ...prev, ...initialConfig }))
-    }
-  }, [initialConfig])
+  useEffect(() => setConfig(prev => ({ ...prev, wallAssemblyId: defaultWallAssemblyId })), [defaultWallAssemblyId])
+  useEffect(
+    () => setConfig(prev => ({ ...prev, baseRingBeamAssemblyId: defaultBaseRingBeamAssemblyId })),
+    [defaultBaseRingBeamAssemblyId]
+  )
+  useEffect(
+    () => setConfig(prev => ({ ...prev, topRingBeamAssemblyId: defaultTopRingBeamAssemblyId })),
+    [defaultTopRingBeamAssemblyId]
+  )
 
   const handleConfirm = useCallback(() => {
     if (preset.validateConfig(config)) {

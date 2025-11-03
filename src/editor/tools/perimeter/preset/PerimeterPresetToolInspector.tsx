@@ -2,7 +2,7 @@ import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { Box, Button, Callout, DataList, Flex, Heading, Separator, Text } from '@radix-ui/themes'
 import { useCallback } from 'react'
 
-import { useDefaultWallAssemblyId, useWallAssemblies } from '@/construction/config/store'
+import { useWallAssemblies } from '@/construction/config/store'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
@@ -18,7 +18,6 @@ import type { LShapedPresetConfig, RectangularPresetConfig } from './presets/typ
 export function PerimeterPresetToolInspector({ tool }: ToolInspectorProps<PerimeterPresetTool>): React.JSX.Element {
   const { state } = useReactiveTool(tool)
   const allWallAssemblies = useWallAssemblies()
-  const defaultWallAssemblyId = useDefaultWallAssemblyId()
 
   // Get available presets
   const availablePresets = tool.getAvailablePresets()
@@ -79,16 +78,6 @@ export function PerimeterPresetToolInspector({ tool }: ToolInspectorProps<Perime
         {/* L-Shaped Preset Dialog */}
         <LShapedPresetDialog
           onConfirm={handleLShapedPresetConfirm}
-          initialConfig={{
-            width1: 8000,
-            length1: 6000,
-            width2: 4000,
-            length2: 3000,
-            rotation: 0,
-            thickness: 420,
-            wallAssemblyId: defaultWallAssemblyId,
-            referenceSide: 'inside'
-          }}
           trigger={
             <Button className="w-full" size="2">
               <LShape0Icon />
