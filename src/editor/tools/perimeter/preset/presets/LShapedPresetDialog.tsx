@@ -34,7 +34,10 @@ function LShapedPreview({ config }: { config: LShapedPresetConfig }) {
 
   let derivedPolygon = referencePolygon
   try {
-    const offset = offsetPolygon(referencePolygon, config.referenceSide === 'inside' ? config.thickness : -config.thickness)
+    const offset = offsetPolygon(
+      referencePolygon,
+      config.referenceSide === 'inside' ? config.thickness : -config.thickness
+    )
     if (offset.points.length > 0) {
       derivedPolygon = offset
     }

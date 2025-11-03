@@ -1,6 +1,18 @@
 import { Cross2Icon, InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Box, Button, Callout, Code, Flex, Grid, IconButton, Kbd, SegmentedControl, Separator, Text } from '@radix-ui/themes'
+import {
+  Box,
+  Button,
+  Callout,
+  Code,
+  Flex,
+  Grid,
+  IconButton,
+  Kbd,
+  SegmentedControl,
+  Separator,
+  Text
+} from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
 
 import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
@@ -39,11 +51,8 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
           </Callout.Icon>
           <Callout.Text>
             <Text size="1">
-              Draw the{' '}
-              <Text weight="bold">
-                {state.referenceSide === 'inside' ? 'inside edge' : 'outside edge'}
-              </Text>{' '}
-              of your building perimeter. Click to place points, and close the shape by clicking the first point or
+              Draw the <Text weight="bold">{state.referenceSide === 'inside' ? 'inside edge' : 'outside edge'}</Text> of
+              your building perimeter. Click to place points, and close the shape by clicking the first point or
               pressing Enter.
             </Text>
           </Callout.Text>

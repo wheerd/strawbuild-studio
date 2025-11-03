@@ -39,28 +39,21 @@ export function PerimeterPresetToolOverlay({
   const scaledCrosshairWidth = 1 / zoom
 
   // Calculate complementary polygon based on reference side
-  const referencePointsFlat = [
-    ...polygon.points.flatMap(p => [p[0], p[1]]),
-    polygon.points[0][0],
-    polygon.points[0][1]
-  ]
+  const referencePointsFlat = [...polygon.points.flatMap(p => [p[0], p[1]]), polygon.points[0][0], polygon.points[0][1]]
 
   let derivedPolygon: number[] | null = null
 
   try {
     const offset = offsetPolygon(polygon, config.referenceSide === 'inside' ? config.thickness : -config.thickness)
     if (offset.points.length > 0) {
-      derivedPolygon = [
-        ...offset.points.flatMap(p => [p[0], p[1]]),
-        offset.points[0][0],
-        offset.points[0][1]
-      ]
+      derivedPolygon = [...offset.points.flatMap(p => [p[0], p[1]]), offset.points[0][0], offset.points[0][1]]
     }
   } catch (error) {
     console.warn('Failed to calculate preset derived polygon:', error)
   }
 
-  const interiorPoints = config.referenceSide === 'inside' ? referencePointsFlat : derivedPolygon ?? referencePointsFlat
+  const interiorPoints =
+    config.referenceSide === 'inside' ? referencePointsFlat : (derivedPolygon ?? referencePointsFlat)
   const exteriorPoints = config.referenceSide === 'inside' ? derivedPolygon : referencePointsFlat
 
   return (

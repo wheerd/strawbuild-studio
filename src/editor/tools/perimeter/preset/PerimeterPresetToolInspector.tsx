@@ -68,13 +68,6 @@ export function PerimeterPresetToolInspector({ tool }: ToolInspectorProps<Perime
         {/* Rectangular Preset Dialog */}
         <RectangularPresetDialog
           onConfirm={handleRectangularPresetConfirm}
-          initialConfig={{
-            width: 4000,
-            length: 6000,
-            thickness: 420,
-            wallAssemblyId: defaultWallAssemblyId,
-            referenceSide: 'inside'
-          }}
           trigger={
             <Button className="w-full" size="2">
               <RectIcon />

@@ -45,11 +45,6 @@ export class RectangularPreset implements PerimeterPreset<RectangularPresetConfi
     const interiorWidth = config.referenceSide === 'inside' ? config.width : config.width - 2 * config.thickness
     const interiorLength = config.referenceSide === 'inside' ? config.length : config.length - 2 * config.thickness
 
-    return (
-      interiorWidth > 0 &&
-      interiorLength > 0 &&
-      config.thickness > 0 &&
-      config.wallAssemblyId.length > 0
-    )
+    return interiorWidth > 0 && interiorLength > 0 && config.thickness > 0 && config.wallAssemblyId.length > 0
   }
 }

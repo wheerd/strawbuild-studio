@@ -1,6 +1,17 @@
 import { ExclamationTriangleIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Box, Callout, DataList, Flex, Heading, IconButton, SegmentedControl, Separator, Text, Tooltip } from '@radix-ui/themes'
+import {
+  Box,
+  Callout,
+  DataList,
+  Flex,
+  Heading,
+  IconButton,
+  SegmentedControl,
+  Separator,
+  Text,
+  Tooltip
+} from '@radix-ui/themes'
 import React, { useCallback, useMemo } from 'react'
 
 import type { PerimeterId, WallAssemblyId } from '@/building/model/ids'

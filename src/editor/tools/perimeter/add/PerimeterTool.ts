@@ -10,8 +10,8 @@ import type { ToolImplementation } from '@/editor/tools/system/types'
 import type { Length, Polygon2D } from '@/shared/geometry'
 import { polygonIsClockwise } from '@/shared/geometry'
 
-import { PerimeterToolOverlay } from './PerimeterToolOverlay'
 import { PerimeterToolInspector } from './PerimeterToolInspector'
+import { PerimeterToolOverlay } from './PerimeterToolOverlay'
 
 interface PerimeterToolState extends PolygonToolStateBase {
   wallAssemblyId: WallAssemblyId

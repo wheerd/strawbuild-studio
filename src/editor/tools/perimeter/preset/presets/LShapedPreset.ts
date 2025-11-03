@@ -1,7 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
 import { offsetPolygon } from '@/shared/geometry'
-import '@/shared/geometry'
 
 import type { LShapedPresetConfig, PerimeterPreset } from './types'
 
@@ -82,7 +81,10 @@ export class LShapedPreset implements PerimeterPreset<LShapedPresetConfig> {
 
     try {
       const referencePolygon = { points: this.getPolygonPoints(config) }
-      const offset = offsetPolygon(referencePolygon, config.referenceSide === 'inside' ? config.thickness : -config.thickness)
+      const offset = offsetPolygon(
+        referencePolygon,
+        config.referenceSide === 'inside' ? config.thickness : -config.thickness
+      )
       return offset.points.length >= 3
     } catch (error) {
       return false

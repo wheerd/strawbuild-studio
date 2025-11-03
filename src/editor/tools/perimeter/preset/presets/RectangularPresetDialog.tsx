@@ -6,12 +6,15 @@ import type { WallAssemblyId } from '@/building/model/ids'
 import type { PerimeterReferenceSide } from '@/building/model/model'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
-import { useConfigActions } from '@/construction/config/store'
+import {
+  useDefaultBaseRingBeamAssemblyId,
+  useDefaultTopRingBeamAssemblyId,
+  useDefaultWallAssemblyId
+} from '@/construction/config/store'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { BaseModal } from '@/shared/components/BaseModal'
 import { LengthField } from '@/shared/components/LengthField'
-import { offsetPolygon } from '@/shared/geometry'
-import '@/shared/geometry'
+import { Bounds2D, offsetPolygon } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
 
 import { RectangularPreset } from './RectangularPreset'
@@ -19,7 +22,6 @@ import type { RectangularPresetConfig } from './types'
 
 interface RectangularPresetDialogProps {
   onConfirm: (config: RectangularPresetConfig) => void
-  initialConfig?: Partial<RectangularPresetConfig>
   trigger: React.ReactNode
 }
 
@@ -33,7 +35,10 @@ function RectangularPreview({ config }: { config: RectangularPresetConfig }) {
 
   let derivedPolygon = referencePolygon
   try {
-    const offset = offsetPolygon(referencePolygon, config.referenceSide === 'inside' ? config.thickness : -config.thickness)
+    const offset = offsetPolygon(
+      referencePolygon,
+      config.referenceSide === 'inside' ? config.thickness : -config.thickness
+    )
     if (offset.points.length > 0) {
       derivedPolygon = offset
     }
@@ -44,35 +49,17 @@ function RectangularPreview({ config }: { config: RectangularPresetConfig }) {
   const interiorPolygon = config.referenceSide === 'inside' ? referencePolygon : derivedPolygon
   const exteriorPolygon = config.referenceSide === 'inside' ? derivedPolygon : referencePolygon
 
-  const interiorWidth =
-    Math.max(...interiorPolygon.points.map(point => point[0])) -
-    Math.min(...interiorPolygon.points.map(point => point[0]))
-  const interiorLength =
-    Math.max(...interiorPolygon.points.map(point => point[1])) -
-    Math.min(...interiorPolygon.points.map(point => point[1]))
-
-  let minX = Infinity
-  let minY = Infinity
-  let maxX = -Infinity
-  let maxY = -Infinity
-
-  exteriorPolygon.points.forEach(point => {
-    minX = Math.min(minX, point[0])
-    minY = Math.min(minY, point[1])
-    maxX = Math.max(maxX, point[0])
-    maxY = Math.max(maxY, point[1])
-  })
-
-  const width = maxX - minX
-  const height = maxY - minY
-  const maxDimension = Math.max(width, height)
+  const innerBounds = Bounds2D.fromPoints(interiorPolygon.points)
+  const bounds = Bounds2D.fromPoints(exteriorPolygon.points)
+  const center = bounds.center
+  const maxDimension = Math.max(...bounds.size)
   const scale = maxDimension > 0 ? 200 / maxDimension : 1
   const centerX = 100
   const centerY = 100
 
   const transformPoint = (point: vec2) => ({
-    x: (point[0] - (minX + maxX) / 2) * scale + centerX,
-    y: -(point[1] - (minY + maxY) / 2) * scale + centerY
+    x: (point[0] - center[0]) * scale + centerX,
+    y: -(point[1] - center[1]) * scale + centerY
   })
 
   const exteriorPath =
@@ -88,65 +75,108 @@ function RectangularPreview({ config }: { config: RectangularPresetConfig }) {
   return (
     <Flex direction="column" align="center">
       <svg width={200} height={200} viewBox="0 0 200 200" className="overflow-visible">
-        <path d={exteriorPath} fill="var(--gray-3)" stroke="var(--gray-8)" strokeWidth="1" strokeDasharray="3,3" />
-        <path d={interiorPath} fill="var(--accent-3)" stroke="var(--accent-8)" strokeWidth="2" />
+        {config.referenceSide === 'inside' ? (
+          <path d={exteriorPath} fill="var(--gray-3)" stroke="var(--gray-8)" strokeWidth="1" strokeDasharray="3,3" />
+        ) : (
+          <path d={exteriorPath} fill="var(--accent-3)" stroke="var(--accent-8)" strokeWidth="2" />
+        )}
+        {config.referenceSide !== 'inside' ? (
+          <path d={interiorPath} fill="var(--gray-2)" stroke="var(--gray-8)" strokeWidth="1" strokeDasharray="3,3" />
+        ) : (
+          <path d={interiorPath} fill="var(--accent-3)" stroke="var(--accent-8)" strokeWidth="2" />
+        )}
 
-        <text
-          fill="var(--gray-12)"
-          className="font-mono"
-          x={100}
-          y={30}
-          textAnchor="middle"
-          fontSize={12}
-          style={{ filter: 'drop-shadow(1px 1px 2px var(--gray-1))' }}
-        >
-          {formatLength(interiorWidth)}
-        </text>
-        <text
-          fill="var(--gray-12)"
-          className="font-mono"
-          x={30}
-          y={100}
-          textAnchor="middle"
-          fontSize={12}
-          transform="rotate(-90 30 100)"
-          style={{ filter: 'drop-shadow(1px 1px 2px var(--gray-1))' }}
-        >
-          {formatLength(interiorLength)}
-        </text>
+        <g transform={`translate(${centerX} ${-(bounds.max[1] - center[1]) * scale + centerY})`}>
+          <text
+            fill="var(--gray-12)"
+            className="font-mono"
+            x={0}
+            y={0}
+            textAnchor="middle"
+            dominantBaseline="text-after-edge"
+            fontSize={12}
+            style={{ filter: 'drop-shadow(1px 1px 2px var(--gray-1))' }}
+          >
+            {formatLength(bounds.width)}
+          </text>
+        </g>
+        <g transform={`translate(${centerX} ${-(innerBounds.max[1] - center[1]) * scale + centerY})`}>
+          <text
+            fill="var(--gray-12)"
+            className="font-mono"
+            x={0}
+            y={0}
+            textAnchor="middle"
+            dominantBaseline="text-before-edge"
+            fontSize={12}
+            style={{ filter: 'drop-shadow(1px 1px 2px var(--gray-1))' }}
+          >
+            {formatLength(innerBounds.width)}
+          </text>
+        </g>
+        <g transform={`translate(${(innerBounds.min[0] - center[0]) * scale + centerX} ${centerY})`}>
+          <text
+            fill="var(--gray-12)"
+            className="font-mono"
+            x={0}
+            y={0}
+            fontSize={12}
+            textAnchor="middle"
+            dominantBaseline="text-before-edge"
+            transform="rotate(-90)"
+            style={{ filter: 'drop-shadow(1px 1px 2px var(--gray-1))' }}
+          >
+            {formatLength(innerBounds.height)}
+          </text>
+        </g>
+        <g transform={`translate(${(bounds.min[0] - center[0]) * scale + centerX} ${centerY})`}>
+          <text
+            fill="var(--gray-12)"
+            className="font-mono"
+            x={0}
+            y={0}
+            fontSize={12}
+            textAnchor="middle"
+            dominantBaseline="text-after-edge"
+            transform="rotate(-90)"
+            style={{ filter: 'drop-shadow(1px 1px 2px var(--gray-1))' }}
+          >
+            {formatLength(bounds.height)}
+          </text>
+        </g>
       </svg>
     </Flex>
   )
 }
 
-export function RectangularPresetDialog({
-  onConfirm,
-  initialConfig,
-  trigger
-}: RectangularPresetDialogProps): React.JSX.Element {
-  const configStore = useConfigActions()
+export function RectangularPresetDialog({ onConfirm, trigger }: RectangularPresetDialogProps): React.JSX.Element {
+  const defaultWallAssemblyId = useDefaultWallAssemblyId()
+  const defaultBaseRingBeamAssemblyId = useDefaultBaseRingBeamAssemblyId()
+  const defaultTopRingBeamAssemblyId = useDefaultTopRingBeamAssemblyId()
 
   // Form state with defaults from config store
   const [config, setConfig] = useState<RectangularPresetConfig>(() => ({
     width: 10000, // 10m default inside width
     length: 7000, // 7m default inside length
-    thickness: 420, // 44cm default
-    wallAssemblyId: configStore.getDefaultWallAssemblyId(),
-    baseRingBeamAssemblyId: configStore.getDefaultBaseRingBeamAssemblyId(),
-    topRingBeamAssemblyId: configStore.getDefaultTopRingBeamAssemblyId(),
-    referenceSide: 'inside',
-    ...initialConfig
+    thickness: 420, // 42cm default
+    wallAssemblyId: defaultWallAssemblyId,
+    baseRingBeamAssemblyId: defaultBaseRingBeamAssemblyId,
+    topRingBeamAssemblyId: defaultTopRingBeamAssemblyId,
+    referenceSide: 'inside'
   }))
 
-  // Update config when initial config changes
-  useEffect(() => {
-    if (initialConfig) {
-      setConfig(prev => ({ ...prev, ...initialConfig }))
-    }
-  }, [initialConfig])
+  // Update config when default config changes
+  useEffect(() => setConfig(prev => ({ ...prev, wallAssemblyId: defaultWallAssemblyId })), [defaultWallAssemblyId])
+  useEffect(
+    () => setConfig(prev => ({ ...prev, baseRingBeamAssemblyId: defaultBaseRingBeamAssemblyId })),
+    [defaultBaseRingBeamAssemblyId]
+  )
+  useEffect(
+    () => setConfig(prev => ({ ...prev, topRingBeamAssemblyId: defaultTopRingBeamAssemblyId })),
+    [defaultTopRingBeamAssemblyId]
+  )
 
-  const effectiveInteriorWidth =
-    config.referenceSide === 'inside' ? config.width : config.width - 2 * config.thickness
+  const effectiveInteriorWidth = config.referenceSide === 'inside' ? config.width : config.width - 2 * config.thickness
   const effectiveInteriorLength =
     config.referenceSide === 'inside' ? config.length : config.length - 2 * config.thickness
 
@@ -163,16 +193,16 @@ export function RectangularPresetDialog({
   }, [config, isValid, onConfirm])
 
   return (
-    <BaseModal title="Rectangular Perimeter" trigger={trigger} size="3" maxWidth="600px">
+    <BaseModal title="Rectangular Perimeter" trigger={trigger} size="3" maxWidth="700px">
       <Flex direction="column" gap="4">
-        <Grid columns="2" gap="4">
+        <Grid columns="1fr auto" gap="5">
           {/* Left Column - Properties in 2x3 Grid */}
           <Flex direction="column" gap="3">
             <Heading size="2" weight="medium">
               Configuration
             </Heading>
 
-            <Grid columns="2" gap="3">
+            <Grid columns="2" gapY="3" gapX="2">
               {/* Width */}
               <Flex direction="column" gap="1">
                 <Text size="1" color="gray">
@@ -181,8 +211,7 @@ export function RectangularPresetDialog({
                 <LengthField
                   value={config.width}
                   onChange={value => setConfig(prev => ({ ...prev, width: value }))}
-                  min={2000}
-                  max={20000}
+                  min={1000}
                   step={100}
                   unit="m"
                   precision={3}
@@ -199,8 +228,7 @@ export function RectangularPresetDialog({
                 <LengthField
                   value={config.length}
                   onChange={value => setConfig(prev => ({ ...prev, length: value }))}
-                  min={2000}
-                  max={20000}
+                  min={1000}
                   step={100}
                   unit="m"
                   precision={3}
@@ -227,23 +255,6 @@ export function RectangularPresetDialog({
                   size="1"
                   style={{ width: '100%' }}
                 />
-              </Flex>
-
-              {/* Reference Side */}
-              <Flex direction="column" gap="1">
-                <Text size="1" color="gray">
-                  Reference Side
-                </Text>
-                <SegmentedControl.Root
-                  size="1"
-                  value={config.referenceSide}
-                  onValueChange={value =>
-                    setConfig(prev => ({ ...prev, referenceSide: value as PerimeterReferenceSide }))
-                  }
-                >
-                  <SegmentedControl.Item value="inside">Inside</SegmentedControl.Item>
-                  <SegmentedControl.Item value="outside">Outside</SegmentedControl.Item>
-                </SegmentedControl.Root>
               </Flex>
 
               {/* Wall Assembly */}
@@ -305,10 +316,28 @@ export function RectangularPresetDialog({
           </Flex>
 
           {/* Right Column - Preview */}
-          <Flex direction="column" gap="2">
+          <Flex direction="column" gap="3">
             <Heading align="center" size="2" weight="medium">
               Preview
             </Heading>
+
+            {/* Reference Side */}
+            <Flex direction="column" gap="1">
+              <Text size="1" color="gray">
+                Reference Side
+              </Text>
+              <SegmentedControl.Root
+                size="1"
+                value={config.referenceSide}
+                onValueChange={value =>
+                  setConfig(prev => ({ ...prev, referenceSide: value as PerimeterReferenceSide }))
+                }
+              >
+                <SegmentedControl.Item value="inside">Inside</SegmentedControl.Item>
+                <SegmentedControl.Item value="outside">Outside</SegmentedControl.Item>
+              </SegmentedControl.Root>
+            </Flex>
+
             <RectangularPreview config={config} />
           </Flex>
         </Grid>
