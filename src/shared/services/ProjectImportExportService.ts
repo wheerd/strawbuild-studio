@@ -243,7 +243,11 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
 
             // Basic wall updates - auto-computes all derived properties
             modelActions.updatePerimeterWallThickness(perimeter.id, wallId, exportedWall.thickness)
-            modelActions.updateWallAssemblyBuilder(perimeter.id, wallId, exportedWall.wallAssemblyId as WallAssemblyId)
+            modelActions.updatePerimeterWallAssembly(
+              perimeter.id,
+              wallId,
+              exportedWall.wallAssemblyId as WallAssemblyId
+            )
 
             // Add openings
             exportedWall.openings.forEach(exportedOpening => {

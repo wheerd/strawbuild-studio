@@ -45,6 +45,8 @@ export interface PerimetersActions {
   ) => Perimeter
   removePerimeter: (perimeterId: PerimeterId) => void
 
+  setPerimeterReferenceSide: (perimeterId: PerimeterId, referenceSide: PerimeterReferenceSide) => void
+
   // Entity deletion operations
   removePerimeterCorner: (perimeterId: PerimeterId, cornerId: PerimeterCornerId) => boolean
   removePerimeterWall: (perimeterId: PerimeterId, wallId: PerimeterWallId) => boolean
@@ -57,7 +59,7 @@ export interface PerimetersActions {
   ) => PerimeterWallId | null
 
   // Updated to use IDs instead of indices
-  updateWallAssemblyBuilder: (perimeterId: PerimeterId, wallId: PerimeterWallId, assemblyId: WallAssemblyId) => void
+  updatePerimeterWallAssembly: (perimeterId: PerimeterId, wallId: PerimeterWallId, assemblyId: WallAssemblyId) => void
   updatePerimeterWallThickness: (perimeterId: PerimeterId, wallId: PerimeterWallId, thickness: Length) => void
 
   // Bulk update actions for all walls in a perimeter
@@ -120,7 +122,6 @@ export interface PerimetersActions {
   setPerimeterTopRingBeam: (perimeterId: PerimeterId, assemblyId: RingBeamAssemblyId) => void
   removePerimeterBaseRingBeam: (perimeterId: PerimeterId) => void
   removePerimeterTopRingBeam: (perimeterId: PerimeterId) => void
-  setPerimeterReferenceSide: (perimeterId: PerimeterId, referenceSide: PerimeterReferenceSide) => void
 }
 
 export type PerimetersSlice = PerimetersState & { actions: PerimetersActions }
@@ -375,7 +376,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
     },
 
     // Update operations
-    updateWallAssemblyBuilder: (perimeterId: PerimeterId, wallId: PerimeterWallId, assemblyId: WallAssemblyId) => {
+    updatePerimeterWallAssembly: (perimeterId: PerimeterId, wallId: PerimeterWallId, assemblyId: WallAssemblyId) => {
       set(state => {
         const perimeter = state.perimeters[perimeterId]
         if (perimeter == null) return

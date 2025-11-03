@@ -29,7 +29,7 @@ interface PerimeterWallInspectorProps {
 export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallInspectorProps): React.JSX.Element {
   const {
     updatePerimeterWallThickness: updateOuterWallThickness,
-    updateWallAssemblyBuilder: updateOuterWallAssembly,
+    updatePerimeterWallAssembly: updateOuterWallAssembly,
     removePerimeterWall
   } = useModelActions()
 

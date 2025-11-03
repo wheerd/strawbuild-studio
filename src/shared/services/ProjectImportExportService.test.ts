@@ -65,7 +65,7 @@ const mockActions = {
     corners: [{ id: 'new_corner_1' }]
   })),
   updatePerimeterWallThickness: vi.fn(),
-  updateWallAssemblyBuilder: vi.fn(),
+  updatePerimeterWallAssembly: vi.fn(),
   addPerimeterWallOpening: vi.fn(),
   updatePerimeterCornerConstructedByWall: vi.fn(),
   addFloorArea: vi.fn(),

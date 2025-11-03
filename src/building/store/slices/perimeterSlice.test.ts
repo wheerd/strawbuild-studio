@@ -324,7 +324,7 @@ describe('perimeterSlice', () => {
       const wallId = perimeter.walls[0].id
       const newAssemblyId = createWallAssemblyId()
 
-      store.actions.updateWallAssemblyBuilder(perimeter.id, wallId, newAssemblyId)
+      store.actions.updatePerimeterWallAssembly(perimeter.id, wallId, newAssemblyId)
 
       const updatedPerimeter = store.perimeters[perimeter.id]!
       const updatedWall = updatedPerimeter.walls.find((s: any) => s.id === wallId)!
@@ -340,7 +340,7 @@ describe('perimeterSlice', () => {
       const fakeWallId = createPerimeterWallId()
       const initialState = Object.fromEntries(Object.entries(store.perimeters))
 
-      store.actions.updateWallAssemblyBuilder(fakePerimeterId, fakeWallId, createWallAssemblyId())
+      store.actions.updatePerimeterWallAssembly(fakePerimeterId, fakeWallId, createWallAssemblyId())
 
       expect(store.perimeters).toEqual(initialState)
     })
@@ -1153,7 +1153,7 @@ describe('perimeterSlice', () => {
       const newAssemblyId = createWallAssemblyId()
 
       // Update properties
-      store.actions.updateWallAssemblyBuilder(perimeter.id, wallId, newAssemblyId)
+      store.actions.updatePerimeterWallAssembly(perimeter.id, wallId, newAssemblyId)
       store.actions.updatePerimeterCornerConstructedByWall(perimeter.id, cornerId, 'previous')
 
       // Verify complex state
