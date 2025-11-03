@@ -1,6 +1,5 @@
 import { Button, Dialog, Flex, Grid, Heading, SegmentedControl, Text } from '@radix-ui/themes'
-import { vec2 } from 'gl-matrix'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import type { WallAssemblyId } from '@/building/model/ids'
 import type { PerimeterReferenceSide } from '@/building/model/model'
@@ -10,11 +9,10 @@ import { useConfigActions } from '@/construction/config/store'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { BaseModal } from '@/shared/components/BaseModal'
 import { LengthField } from '@/shared/components/LengthField'
-import { offsetPolygon } from '@/shared/geometry'
-import { formatLength } from '@/shared/utils/formatting'
 
 import { LShape0Icon, LShape90Icon, LShape180Icon, LShape270Icon } from './Icons'
 import { LShapedPreset } from './LShapedPreset'
+import { PolygonReferencePreview } from './PolygonReferencePreview'
 import type { LShapedPresetConfig } from './types'
 
 interface LShapedPresetDialogProps {
@@ -23,141 +21,13 @@ interface LShapedPresetDialogProps {
   trigger: React.ReactNode
 }
 
-/**
- * Preview component showing L-shape with outer walls and interior measurements
- * Matches the coordinate system used in the actual canvas
- */
-function LShapedPreview({ config }: { config: LShapedPresetConfig }) {
-  const preset = new LShapedPreset()
-
-  const referencePolygon = { points: preset.getPolygonPoints(config) }
-
-  let derivedPolygon = referencePolygon
-  try {
-    const offset = offsetPolygon(
-      referencePolygon,
-      config.referenceSide === 'inside' ? config.thickness : -config.thickness
-    )
-    if (offset.points.length > 0) {
-      derivedPolygon = offset
-    }
-  } catch (error) {
-    console.warn('Failed to compute L-shaped preset preview offset:', error)
-  }
-
-  const interiorPolygon = config.referenceSide === 'inside' ? referencePolygon : derivedPolygon
-  const exteriorPolygon = config.referenceSide === 'inside' ? derivedPolygon : referencePolygon
-  const interiorPoints = interiorPolygon.points
-  const exteriorPoints = exteriorPolygon.points
-
-  // Calculate bounds for scaling (use exterior for proper sizing)
-  let minX = Infinity
-  let minY = Infinity
-  let maxX = -Infinity
-  let maxY = -Infinity
-
-  exteriorPoints.forEach(point => {
-    minX = Math.min(minX, point[0])
-    minY = Math.min(minY, point[1])
-    maxX = Math.max(maxX, point[0])
-    maxY = Math.max(maxY, point[1])
-  })
-
-  const width = maxX - minX
-  const height = maxY - minY
-  const maxDimension = Math.max(width, height)
-  const scale = maxDimension > 0 ? 200 / maxDimension : 1
-  const centerX = 100
-  const centerY = 100
-
-  // Transform points to screen coordinates (flip Y to match canvas)
-  const transformPoint = (point: vec2) => ({
-    x: (point[0] - (minX + maxX) / 2) * scale + centerX,
-    y: -(point[1] - (minY + maxY) / 2) * scale + centerY // Flip Y axis
-  })
-
-  const scaledInteriorPoints = interiorPoints.map(transformPoint)
-  const scaledExteriorPoints = exteriorPoints.map(transformPoint)
-
-  // Create SVG paths
-  const interiorPath =
-    scaledInteriorPoints.reduce((path, point, index) => {
-      return path + (index === 0 ? `M ${point.x} ${point.y}` : ` L ${point.x} ${point.y}`)
-    }, '') + ' Z'
-
-  const exteriorPath =
-    scaledExteriorPoints.reduce((path, point, index) => {
-      return path + (index === 0 ? `M ${point.x} ${point.y}` : ` L ${point.x} ${point.y}`)
-    }, '') + ' Z'
-
-  const labelPositions = scaledInteriorPoints.map((point, index) => {
-    const nextPoint = scaledInteriorPoints[(index + 1) % scaledInteriorPoints.length]
-    const midX = (point.x + nextPoint.x) / 2
-    const midY = (point.y + nextPoint.y) / 2
-
-    const dx = nextPoint.x - point.x
-    const dy = nextPoint.y - point.y
-    const edgeLength = Math.sqrt(dx * dx + dy * dy)
-    const normalX = dy / edgeLength
-    const normalY = -dx / edgeLength
-
-    let textAngle = (Math.atan2(dy, dx) * 180) / Math.PI
-    if (textAngle > 90) {
-      textAngle -= 180
-    } else if (textAngle < -90) {
-      textAngle += 180
-    }
-
-    const offsetDistance = 10
-    const interiorLength = Math.sqrt(Math.pow(nextPoint.x - point.x, 2) + Math.pow(nextPoint.y - point.y, 2)) / scale
-
-    return {
-      x: midX + normalX * offsetDistance,
-      y: midY + normalY * offsetDistance,
-      length: interiorLength,
-      rotation: textAngle
-    }
-  })
-
-  return (
-    <Flex direction="column" align="center">
-      <svg width={200} height={200} viewBox="0 0 200 200" className="overflow-visible">
-        {/* Outer walls (perimeter) */}
-        <path d={exteriorPath} fill="var(--gray-3)" stroke="var(--gray-8)" strokeWidth="1" strokeDasharray="3,3" />
-
-        {/* Interior space */}
-        <path d={interiorPath} fill="var(--accent-3)" stroke="var(--accent-8)" strokeWidth="2" />
-
-        {/* Side length labels (positioned inside the shape and rotated along edges) */}
-        {labelPositions.map((label, index) => (
-          <text
-            key={index}
-            x={label.x}
-            y={label.y}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fontSize={12}
-            fill="var(--gray-12)"
-            className="font-mono"
-            transform={label.rotation !== 0 ? `rotate(${label.rotation} ${label.x} ${label.y})` : undefined}
-            style={{
-              filter: 'drop-shadow(1px 1px 2px var(--gray-1))'
-            }}
-          >
-            {formatLength(label.length)}
-          </text>
-        ))}
-      </svg>
-    </Flex>
-  )
-}
-
 export function LShapedPresetDialog({
   onConfirm,
   initialConfig,
   trigger
 }: LShapedPresetDialogProps): React.JSX.Element {
   const configStore = useConfigActions()
+  const preset = useMemo(() => new LShapedPreset(), [])
 
   // Form state with defaults from config store
   const [config, setConfig] = useState<LShapedPresetConfig>(() => ({
@@ -182,41 +52,26 @@ export function LShapedPresetDialog({
   }, [initialConfig])
 
   const handleConfirm = useCallback(() => {
-    const preset = new LShapedPreset()
     if (preset.validateConfig(config)) {
       onConfirm(config)
     }
-  }, [config, onConfirm])
+  }, [config, onConfirm, preset])
 
-  const preset = new LShapedPreset()
   const isValid = preset.validateConfig(config)
+  const referencePoints = useMemo(
+    () => preset.getPolygonPoints(config),
+    [preset, config.width1, config.length1, config.width2, config.length2, config.rotation]
+  )
 
   return (
     <BaseModal title="L-Shaped Perimeter" trigger={trigger} size="4" maxWidth="800px">
       <Flex direction="column" gap="4">
-        <Grid columns="2" gap="4">
+        <Grid columns="1fr auto" gap="5">
           {/* Left Column - Configuration */}
           <Flex direction="column" gap="3">
             <Heading size="2" weight="medium">
               Configuration
             </Heading>
-
-            {/* Reference Side */}
-            <Flex direction="column" gap="1">
-              <Text size="1" color="gray">
-                Reference Side
-              </Text>
-              <SegmentedControl.Root
-                size="1"
-                value={config.referenceSide}
-                onValueChange={value =>
-                  setConfig(prev => ({ ...prev, referenceSide: value as PerimeterReferenceSide }))
-                }
-              >
-                <SegmentedControl.Item value="inside">Inside</SegmentedControl.Item>
-                <SegmentedControl.Item value="outside">Outside</SegmentedControl.Item>
-              </SegmentedControl.Root>
-            </Flex>
 
             {/* Main Rectangle Dimensions */}
             <Flex direction="column" gap="2">
@@ -412,12 +267,34 @@ export function LShapedPresetDialog({
           </Flex>
 
           {/* Right Column - Preview */}
-          <Flex direction="column" gap="2">
+          <Flex direction="column" gap="3">
             <Heading align="center" size="2" weight="medium">
               Preview
             </Heading>
+
+            {/* Reference Side */}
+            <Flex direction="column" gap="1">
+              <Text size="1" color="gray">
+                Reference Side
+              </Text>
+              <SegmentedControl.Root
+                size="1"
+                value={config.referenceSide}
+                onValueChange={value =>
+                  setConfig(prev => ({ ...prev, referenceSide: value as PerimeterReferenceSide }))
+                }
+              >
+                <SegmentedControl.Item value="inside">Inside</SegmentedControl.Item>
+                <SegmentedControl.Item value="outside">Outside</SegmentedControl.Item>
+              </SegmentedControl.Root>
+            </Flex>
+
             {isValid ? (
-              <LShapedPreview config={config} />
+              <PolygonReferencePreview
+                referencePoints={referencePoints}
+                thickness={config.thickness}
+                referenceSide={config.referenceSide}
+              />
             ) : (
               <Flex align="center" justify="center" style={{ height: '240px' }}>
                 <Text size="1" color="red">

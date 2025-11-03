@@ -86,7 +86,7 @@ export class LShapedPreset implements PerimeterPreset<LShapedPresetConfig> {
         config.referenceSide === 'inside' ? config.thickness : -config.thickness
       )
       return offset.points.length >= 3
-    } catch (error) {
+    } catch (_) {
       return false
     }
   }

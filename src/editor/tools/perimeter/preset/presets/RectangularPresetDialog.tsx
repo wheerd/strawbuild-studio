@@ -1,6 +1,5 @@
 import { Button, Dialog, Flex, Grid, Heading, SegmentedControl, Text } from '@radix-ui/themes'
-import type { vec2 } from 'gl-matrix'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import type { WallAssemblyId } from '@/building/model/ids'
 import type { PerimeterReferenceSide } from '@/building/model/model'
@@ -14,9 +13,8 @@ import {
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { BaseModal } from '@/shared/components/BaseModal'
 import { LengthField } from '@/shared/components/LengthField'
-import { Bounds2D, offsetPolygon } from '@/shared/geometry'
-import { formatLength } from '@/shared/utils/formatting'
 
+import { PolygonReferencePreview } from './PolygonReferencePreview'
 import { RectangularPreset } from './RectangularPreset'
 import type { RectangularPresetConfig } from './types'
 
@@ -25,134 +23,11 @@ interface RectangularPresetDialogProps {
   trigger: React.ReactNode
 }
 
-/**
- * Preview component showing nested rectangles to visualize thickness
- * Shows inside dimensions (interior space) vs outside perimeter
- */
-function RectangularPreview({ config }: { config: RectangularPresetConfig }) {
-  const preset = new RectangularPreset()
-  const referencePolygon = { points: preset.getPolygonPoints(config) }
-
-  let derivedPolygon = referencePolygon
-  try {
-    const offset = offsetPolygon(
-      referencePolygon,
-      config.referenceSide === 'inside' ? config.thickness : -config.thickness
-    )
-    if (offset.points.length > 0) {
-      derivedPolygon = offset
-    }
-  } catch (error) {
-    console.warn('Failed to compute rectangular preset preview offset:', error)
-  }
-
-  const interiorPolygon = config.referenceSide === 'inside' ? referencePolygon : derivedPolygon
-  const exteriorPolygon = config.referenceSide === 'inside' ? derivedPolygon : referencePolygon
-
-  const innerBounds = Bounds2D.fromPoints(interiorPolygon.points)
-  const bounds = Bounds2D.fromPoints(exteriorPolygon.points)
-  const center = bounds.center
-  const maxDimension = Math.max(...bounds.size)
-  const scale = maxDimension > 0 ? 200 / maxDimension : 1
-  const centerX = 100
-  const centerY = 100
-
-  const transformPoint = (point: vec2) => ({
-    x: (point[0] - center[0]) * scale + centerX,
-    y: -(point[1] - center[1]) * scale + centerY
-  })
-
-  const exteriorPath =
-    exteriorPolygon.points
-      .map(transformPoint)
-      .reduce((path, point, index) => `${path}${index === 0 ? 'M' : 'L'} ${point.x} ${point.y} `, '') + 'Z'
-
-  const interiorPath =
-    interiorPolygon.points
-      .map(transformPoint)
-      .reduce((path, point, index) => `${path}${index === 0 ? 'M' : 'L'} ${point.x} ${point.y} `, '') + 'Z'
-
-  return (
-    <Flex direction="column" align="center">
-      <svg width={200} height={200} viewBox="0 0 200 200" className="overflow-visible">
-        {config.referenceSide === 'inside' ? (
-          <path d={exteriorPath} fill="var(--gray-3)" stroke="var(--gray-8)" strokeWidth="1" strokeDasharray="3,3" />
-        ) : (
-          <path d={exteriorPath} fill="var(--accent-3)" stroke="var(--accent-8)" strokeWidth="2" />
-        )}
-        {config.referenceSide !== 'inside' ? (
-          <path d={interiorPath} fill="var(--gray-2)" stroke="var(--gray-8)" strokeWidth="1" strokeDasharray="3,3" />
-        ) : (
-          <path d={interiorPath} fill="var(--accent-3)" stroke="var(--accent-8)" strokeWidth="2" />
-        )}
-
-        <g transform={`translate(${centerX} ${-(bounds.max[1] - center[1]) * scale + centerY})`}>
-          <text
-            fill="var(--gray-12)"
-            className="font-mono"
-            x={0}
-            y={0}
-            textAnchor="middle"
-            dominantBaseline="text-after-edge"
-            fontSize={12}
-            style={{ filter: 'drop-shadow(1px 1px 2px var(--gray-1))' }}
-          >
-            {formatLength(bounds.width)}
-          </text>
-        </g>
-        <g transform={`translate(${centerX} ${-(innerBounds.max[1] - center[1]) * scale + centerY})`}>
-          <text
-            fill="var(--gray-12)"
-            className="font-mono"
-            x={0}
-            y={0}
-            textAnchor="middle"
-            dominantBaseline="text-before-edge"
-            fontSize={12}
-            style={{ filter: 'drop-shadow(1px 1px 2px var(--gray-1))' }}
-          >
-            {formatLength(innerBounds.width)}
-          </text>
-        </g>
-        <g transform={`translate(${(innerBounds.min[0] - center[0]) * scale + centerX} ${centerY})`}>
-          <text
-            fill="var(--gray-12)"
-            className="font-mono"
-            x={0}
-            y={0}
-            fontSize={12}
-            textAnchor="middle"
-            dominantBaseline="text-before-edge"
-            transform="rotate(-90)"
-            style={{ filter: 'drop-shadow(1px 1px 2px var(--gray-1))' }}
-          >
-            {formatLength(innerBounds.height)}
-          </text>
-        </g>
-        <g transform={`translate(${(bounds.min[0] - center[0]) * scale + centerX} ${centerY})`}>
-          <text
-            fill="var(--gray-12)"
-            className="font-mono"
-            x={0}
-            y={0}
-            fontSize={12}
-            textAnchor="middle"
-            dominantBaseline="text-after-edge"
-            transform="rotate(-90)"
-            style={{ filter: 'drop-shadow(1px 1px 2px var(--gray-1))' }}
-          >
-            {formatLength(bounds.height)}
-          </text>
-        </g>
-      </svg>
-    </Flex>
-  )
-}
-
 export function RectangularPresetDialog({ onConfirm, trigger }: RectangularPresetDialogProps): React.JSX.Element {
   const defaultWallAssemblyId = useDefaultWallAssemblyId()
   const defaultBaseRingBeamAssemblyId = useDefaultBaseRingBeamAssemblyId()
   const defaultTopRingBeamAssemblyId = useDefaultTopRingBeamAssemblyId()
+  const preset = useMemo(() => new RectangularPreset(), [])
 
   // Form state with defaults from config store
   const [config, setConfig] = useState<RectangularPresetConfig>(() => ({
@@ -191,6 +66,8 @@ export function RectangularPresetDialog({ onConfirm, trigger }: RectangularPrese
       onConfirm(config)
     }
   }, [config, isValid, onConfirm])
+
+  const referencePoints = useMemo(() => preset.getPolygonPoints(config), [preset, config.width, config.length])
 
   return (
     <BaseModal title="Rectangular Perimeter" trigger={trigger} size="3" maxWidth="700px">
@@ -338,7 +215,11 @@ export function RectangularPresetDialog({ onConfirm, trigger }: RectangularPrese
               </SegmentedControl.Root>
             </Flex>
 
-            <RectangularPreview config={config} />
+            <PolygonReferencePreview
+              referencePoints={referencePoints}
+              thickness={config.thickness}
+              referenceSide={config.referenceSide}
+            />
           </Flex>
         </Grid>
 
