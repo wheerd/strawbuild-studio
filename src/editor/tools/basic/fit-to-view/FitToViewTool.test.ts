@@ -2,7 +2,7 @@ import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { StoreyId } from '@/building/model/ids'
-import type { Perimeter } from '@/building/model/model'
+import type { Perimeter, PerimeterCorner } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
 import '@/shared/geometry/basic'
@@ -55,34 +55,26 @@ describe('FitToViewTool', () => {
   })
 
   it('should perform fit to view and switch to select tool on activation', () => {
-    const mockOuterWalls = [
+    const mockPerimeters = [
       {
         corners: [
           {
-            insidePoint: vec2.fromValues(-1000, -500),
-            outsidePoint: vec2.fromValues(-1100, -600),
-            constructedByWall: 'previous' as const
+            outsidePoint: vec2.fromValues(-1100, -600)
           },
           {
-            insidePoint: vec2.fromValues(1000, -500),
-            outsidePoint: vec2.fromValues(1100, -600),
-            constructedByWall: 'previous' as const
+            outsidePoint: vec2.fromValues(1100, -600)
           },
           {
-            insidePoint: vec2.fromValues(1000, 500),
-            outsidePoint: vec2.fromValues(1100, 600),
-            constructedByWall: 'previous' as const
+            outsidePoint: vec2.fromValues(1100, 600)
           },
           {
-            insidePoint: vec2.fromValues(-1000, 500),
-            outsidePoint: vec2.fromValues(-1100, 600),
-            constructedByWall: 'previous' as const
+            outsidePoint: vec2.fromValues(-1100, 600)
           }
-        ]
+        ] as PerimeterCorner[]
       } as Perimeter
     ]
 
-    mockGetPerimetersByStorey.mockReturnValue(mockOuterWalls)
+    mockGetPerimetersByStorey.mockReturnValue(mockPerimeters)
     mockGetFloorAreasByStorey.mockReturnValue([])
 
     fitToViewTool.onActivate()
@@ -109,34 +101,26 @@ describe('FitToViewTool', () => {
   })
 
   it('should calculate correct zoom and pan for given bounds', () => {
-    const mockOuterWalls = [
+    const mockPerimeters = [
       {
         corners: [
           {
-            insidePoint: vec2.fromValues(0, 0),
-            outsidePoint: vec2.fromValues(-100, -100),
-            constructedByWall: 'previous' as const
+            outsidePoint: vec2.fromValues(-100, -100)
           },
           {
-            insidePoint: vec2.fromValues(2000, 0),
-            outsidePoint: vec2.fromValues(2100, -100),
-            constructedByWall: 'previous' as const
+            outsidePoint: vec2.fromValues(2100, -100)
           },
           {
-            insidePoint: vec2.fromValues(2000, 1000),
-            outsidePoint: vec2.fromValues(2100, 1100),
-            constructedByWall: 'previous' as const
+            outsidePoint: vec2.fromValues(2100, 900)
           },
           {
-            insidePoint: vec2.fromValues(0, 1000),
-            outsidePoint: vec2.fromValues(-100, 1100),
-            constructedByWall: 'previous' as const
+            outsidePoint: vec2.fromValues(-100, 900)
           }
-        ]
+        ] as PerimeterCorner[]
       } as Perimeter
     ]
 
-    mockGetPerimetersByStorey.mockReturnValue(mockOuterWalls)
+    mockGetPerimetersByStorey.mockReturnValue(mockPerimeters)
     mockGetFloorAreasByStorey.mockReturnValue([])
 
     fitToViewTool.onActivate()
@@ -146,7 +130,7 @@ describe('FitToViewTool', () => {
     expect(mockFitToView).toHaveBeenCalledWith(
       expect.objectContaining({
         min: expect.objectContaining({ 0: -100, 1: -100 }),
-        max: expect.objectContaining({ 0: 2100, 1: 1100 })
+        max: expect.objectContaining({ 0: 2100, 1: 900 })
       })
     )
   })
@@ -156,24 +140,16 @@ describe('FitToViewTool', () => {
       {
         corners: [
           {
-            insidePoint: vec2.fromValues(100, 100),
-            outsidePoint: vec2.fromValues(95, 95),
-            constructedByWall: 'previous' as const
+            outsidePoint: vec2.fromValues(95, 95)
           },
           {
-            insidePoint: vec2.fromValues(110, 100),
-            outsidePoint: vec2.fromValues(115, 95),
-            constructedByWall: 'previous' as const
+            outsidePoint: vec2.fromValues(115, 95)
           },
           {
-            insidePoint: vec2.fromValues(110, 110),
-            outsidePoint: vec2.fromValues(115, 115),
-            constructedByWall: 'previous' as const
+            outsidePoint: vec2.fromValues(115, 115)
           },
           {
-            insidePoint: vec2.fromValues(100, 110),
-            outsidePoint: vec2.fromValues(95, 115),
-            constructedByWall: 'previous' as const
+            outsidePoint: vec2.fromValues(95, 115)
           }
         ]
       } as Perimeter

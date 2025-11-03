@@ -29,7 +29,7 @@ interface PerimeterWallInspectorProps {
 export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallInspectorProps): React.JSX.Element {
   const {
     updatePerimeterWallThickness: updateOuterWallThickness,
-    updateWallAssemblyBuilder: updateOuterWallAssembly,
+    updatePerimeterWallAssembly: updateOuterWallAssembly,
     removePerimeterWall
   } = useModelActions()
 
@@ -76,7 +76,7 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
     const wallIndex = outerWall.walls.findIndex(w => w.id === wallId)
     if (wallIndex === -1) return { canDelete: false, reason: 'Wall not found' }
 
-    const newBoundaryPoints: vec2[] = outerWall.corners.map(c => c.insidePoint)
+    const newBoundaryPoints: vec2[] = outerWall.referencePolygon.map(point => vec2.clone(point))
     const cornerIndex1 = wallIndex
     const cornerIndex2 = (wallIndex + 1) % outerWall.corners.length
 

@@ -74,7 +74,8 @@ describe('ProjectImportExportService Integration', () => {
       wallAssemblyId,
       200,
       ringBeamAssemblyId,
-      ringBeamAssemblyId
+      ringBeamAssemblyId,
+      'inside'
     )
 
     // Add openings to walls
@@ -201,6 +202,16 @@ describe('ProjectImportExportService Integration', () => {
         const originalPerimeter = originalPerimeters[j]
         const importedPerimeter = importedPerimeters[j]
 
+        expect(importedPerimeter.referenceSide).toBe(originalPerimeter.referenceSide)
+
+        expect(importedPerimeter.referencePolygon).toHaveLength(originalPerimeter.referencePolygon.length)
+        for (let k = 0; k < originalPerimeter.referencePolygon.length; k++) {
+          const originalPoint = originalPerimeter.referencePolygon[k]
+          const importedPoint = importedPerimeter.referencePolygon[k]
+          expect(importedPoint[0]).toBeCloseTo(originalPoint[0], 5)
+          expect(importedPoint[1]).toBeCloseTo(originalPoint[1], 5)
+        }
+
         // Compare perimeter ring beam settings
         expect(importedPerimeter.baseRingBeamAssemblyId).toBe(originalPerimeter.baseRingBeamAssemblyId)
         expect(importedPerimeter.topRingBeamAssemblyId).toBe(originalPerimeter.topRingBeamAssemblyId)
@@ -211,8 +222,8 @@ describe('ProjectImportExportService Integration', () => {
           const originalCorner = originalPerimeter.corners[k]
           const importedCorner = importedPerimeter.corners[k]
 
-          expect(importedCorner.insidePoint[0]).toBeCloseTo(originalCorner.insidePoint[0], 0)
-          expect(importedCorner.insidePoint[1]).toBeCloseTo(originalCorner.insidePoint[1], 0)
+          expect(importedCorner.insidePoint[0]).toBeCloseTo(originalCorner.insidePoint[0], 5)
+          expect(importedCorner.insidePoint[1]).toBeCloseTo(originalCorner.insidePoint[1], 5)
           expect(importedCorner.constructedByWall).toBe(originalCorner.constructedByWall)
         }
 

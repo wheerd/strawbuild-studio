@@ -1,3 +1,5 @@
+import { vec2 } from 'gl-matrix'
+
 import type { StoreyId } from '@/building/model/ids'
 import type { Storey } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
@@ -92,8 +94,8 @@ export class StoreyManagementService {
     // Duplicate all perimeters from the source storey
     const sourcePerimeters = this.actions.getPerimetersByStorey(sourceStoreyId)
     for (const sourcePerimeter of sourcePerimeters) {
-      // Create boundary from the source perimeter corners
-      const boundary = { points: sourcePerimeter.corners.map(c => c.insidePoint) }
+      // Create boundary from the source perimeter reference polygon
+      const boundary = { points: sourcePerimeter.referencePolygon.map(point => vec2.clone(point)) }
 
       // Get the assembly from the first wall (they should all be the same for a perimeter)
       const wallAssemblyId = sourcePerimeter.walls[0]?.wallAssemblyId
@@ -109,7 +111,8 @@ export class StoreyManagementService {
           wallAssemblyId,
           thickness,
           sourcePerimeter.baseRingBeamAssemblyId,
-          sourcePerimeter.topRingBeamAssemblyId
+          sourcePerimeter.topRingBeamAssemblyId,
+          sourcePerimeter.referenceSide
         )
       }
     }

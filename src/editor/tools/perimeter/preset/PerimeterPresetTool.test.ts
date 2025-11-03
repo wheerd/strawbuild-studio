@@ -38,7 +38,8 @@ describe('PerimeterPresetTool', () => {
       width: 4000,
       length: 6000,
       thickness: 420,
-      wallAssemblyId: 'test-assembly' as any
+      wallAssemblyId: 'test-assembly' as any,
+      referenceSide: 'inside'
     }
 
     it('should set active preset and enter placement mode', () => {
@@ -82,7 +83,8 @@ describe('PerimeterPresetTool', () => {
       width: 4000,
       length: 6000,
       thickness: 420,
-      wallAssemblyId: 'test-assembly' as any
+      wallAssemblyId: 'test-assembly' as any,
+      referenceSide: 'inside'
     }
 
     it('should generate preview polygon when position is set', () => {
@@ -136,7 +138,8 @@ describe('PerimeterPresetTool', () => {
         width: 4000,
         length: 6000,
         thickness: 420,
-        wallAssemblyId: 'test-assembly' as any
+        wallAssemblyId: 'test-assembly' as any,
+        referenceSide: 'inside'
       }
 
       tool.setActivePreset(rectangularPreset, config)
@@ -153,7 +156,8 @@ describe('PerimeterPresetTool', () => {
         width: 4000,
         length: 6000,
         thickness: 420,
-        wallAssemblyId: 'test-assembly' as any
+        wallAssemblyId: 'test-assembly' as any,
+        referenceSide: 'inside'
       }
 
       tool.setActivePreset(rectangularPreset, config)

@@ -12,7 +12,8 @@ describe('RectangularPreset', () => {
     width: 4000,
     length: 6000,
     thickness: 420,
-    wallAssemblyId: 'test-assembly' as any
+    wallAssemblyId: 'test-assembly' as any,
+    referenceSide: 'inside'
   }
 
   describe('getPolygonPoints', () => {
@@ -54,6 +55,22 @@ describe('RectangularPreset', () => {
       expect(points[2][1]).toBe(1500) // +half inside length
       expect(points[3][0]).toBe(-1000) // -half inside width
       expect(points[3][1]).toBe(1500) // +half inside length
+    })
+
+    it('should generate outside dimensions when reference side is outside', () => {
+      const outsideConfig: RectangularPresetConfig = {
+        ...validConfig,
+        referenceSide: 'outside',
+        width: 8000,
+        length: 6000
+      }
+
+      const points = preset.getPolygonPoints(outsideConfig)
+
+      expect(points[0][0]).toBe(-4000)
+      expect(points[0][1]).toBe(-3000)
+      expect(points[2][0]).toBe(4000)
+      expect(points[2][1]).toBe(3000)
     })
   })
 
@@ -98,6 +115,17 @@ describe('RectangularPreset', () => {
 
     it('should reject empty assembly ID', () => {
       const invalidConfig = { ...validConfig, wallAssemblyId: '' as any }
+      expect(preset.validateConfig(invalidConfig)).toBe(false)
+    })
+
+    it('should reject outside reference when thickness exceeds dimensions', () => {
+      const invalidConfig: RectangularPresetConfig = {
+        ...validConfig,
+        referenceSide: 'outside',
+        width: 500,
+        length: 500,
+        thickness: 400
+      }
       expect(preset.validateConfig(invalidConfig)).toBe(false)
     })
   })

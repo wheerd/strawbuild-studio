@@ -208,9 +208,6 @@ export function constructWallLayers(
   const totalConstructionHeight =
     storeyContext.storeyHeight + storeyContext.floorTopOffset + storeyContext.ceilingBottomOffset
 
-  const bottom = -storeyContext.floorConstructionThickness
-  const top = totalConstructionHeight
-
   const baseInsideSpan = computeLayerSpan('inside', 0 as Length, wall, context)
   const baseOutsideSpan = computeLayerSpan('outside', layers.outsideThickness, wall, context)
 
@@ -226,6 +223,8 @@ export function constructWallLayers(
       const span = computeLayerSpan('inside', cumulativeInside, wall, context)
       const start = Math.min(span.start, previousSpan.start)
       const end = Math.max(span.end, previousSpan.end)
+      const bottom = storeyContext.floorTopConstructionOffset
+      const top = totalConstructionHeight - storeyContext.floorTopConstructionOffset
       const polygon = createLayerPolygon(start, end, bottom, top)
       const polygonWithHoles = subtractOpenings(polygon, start, end, bottom, top, wall, storeyContext.floorTopOffset)
       const normalizedPolygon = normalizePolygonWithHoles(polygonWithHoles)
@@ -258,6 +257,8 @@ export function constructWallLayers(
       const span = computeLayerSpan('outside', depth, wall, context)
       const start = Math.min(span.start, previousSpan.start)
       const end = Math.max(span.end, previousSpan.end)
+      const bottom = -storeyContext.floorConstructionThickness
+      const top = totalConstructionHeight
       const polygon = createLayerPolygon(start, end, bottom, top)
       const polygonWithHoles = subtractOpenings(polygon, start, end, bottom, top, wall, storeyContext.floorTopOffset)
       const normalizedPolygon = normalizePolygonWithHoles(polygonWithHoles)

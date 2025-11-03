@@ -58,7 +58,8 @@ export function createCrossShapedPerimeter(): void {
       defaultAssemblyId,
       420,
       defaultBaseId,
-      defaultTopId
+      defaultTopId,
+      'inside'
     )
 
     if (newPerimeter && newPerimeter.walls.length > 0) {

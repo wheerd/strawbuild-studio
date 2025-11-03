@@ -115,7 +115,7 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
     }
 
     // Check if removal would cause self-intersection
-    const newBoundaryPoints: vec2[] = outerWall.corners.map(c => c.insidePoint)
+    const newBoundaryPoints: vec2[] = outerWall.referencePolygon.map(point => vec2.clone(point))
     newBoundaryPoints.splice(cornerIndex, 1)
 
     const newBoundary: Polygon2D = { points: newBoundaryPoints }

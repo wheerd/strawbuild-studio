@@ -1,9 +1,22 @@
 import { Cross2Icon, InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Box, Button, Callout, Code, Flex, Grid, IconButton, Kbd, Separator, Text } from '@radix-ui/themes'
+import {
+  Box,
+  Button,
+  Callout,
+  Code,
+  Flex,
+  Grid,
+  IconButton,
+  Kbd,
+  SegmentedControl,
+  Separator,
+  Text
+} from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
 
 import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
+import type { PerimeterReferenceSide } from '@/building/model/model'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
@@ -38,8 +51,9 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
           </Callout.Icon>
           <Callout.Text>
             <Text size="1">
-              Draw the <Text weight="bold">inside edge</Text> of your building perimeter. Click to place points, and
-              close the shape by clicking the first point or pressing Enter.
+              Draw the <Text weight="bold">{state.referenceSide === 'inside' ? 'inside edge' : 'outside edge'}</Text> of
+              your building perimeter. Click to place points, and close the shape by clicking the first point or
+              pressing Enter.
             </Text>
           </Callout.Text>
         </Callout.Root>
@@ -82,6 +96,22 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
             size="1"
             unit="mm"
           />
+
+          <Flex align="center" gap="1">
+            <Label.Root>
+              <Text size="1" weight="medium" color="gray">
+                Reference Side
+              </Text>
+            </Label.Root>
+          </Flex>
+          <SegmentedControl.Root
+            size="1"
+            value={state.referenceSide}
+            onValueChange={value => tool.setReferenceSide(value as PerimeterReferenceSide)}
+          >
+            <SegmentedControl.Item value="inside">Inside</SegmentedControl.Item>
+            <SegmentedControl.Item value="outside">Outside</SegmentedControl.Item>
+          </SegmentedControl.Root>
 
           {/* Base Ring Beam */}
           <Flex align="center" gap="1">

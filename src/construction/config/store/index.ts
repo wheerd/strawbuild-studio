@@ -96,7 +96,7 @@ export const useWallAssemblies = (): WallAssemblyConfig[] => {
 export const useWallAssemblyById = (id: WallAssemblyId): WallAssemblyConfig | null =>
   useConfigStore(state => state.actions.getWallAssemblyById(id))
 
-export const useDefaultWallAssemblyId = (): WallAssemblyId | undefined =>
+export const useDefaultWallAssemblyId = (): WallAssemblyId =>
   useConfigStore(state => state.actions.getDefaultWallAssemblyId())
 
 // Floor construction config selector hooks

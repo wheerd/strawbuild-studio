@@ -72,6 +72,8 @@ function createMockPerimeter(walls: PerimeterWall[]): Perimeter {
   return {
     id: createPerimeterId(),
     storeyId: 'test-storey' as any,
+    referenceSide: 'inside',
+    referencePolygon: [],
     walls,
     corners: [],
     baseRingBeamAssemblyId: 'base-assembly' as any,
@@ -131,7 +133,9 @@ function createMockStoreyContext(storeyHeight: Length = 2500): WallStoreyContext
     floorConstructionThickness: 0,
     storeyHeight,
     floorTopOffset: 0,
-    ceilingBottomOffset: 0
+    ceilingBottomOffset: 0,
+    ceilingBottomConstructionOffset: 0,
+    floorTopConstructionOffset: 0
   }
 }
 

@@ -74,7 +74,8 @@ describe('PerimeterToolInspector', () => {
       wallThickness: 420,
       baseRingBeamAssemblyId: undefined,
       topRingBeamAssemblyId: undefined,
-      lengthOverride: null
+      lengthOverride: null,
+      referenceSide: 'inside'
     }
 
     // Mock assemblies

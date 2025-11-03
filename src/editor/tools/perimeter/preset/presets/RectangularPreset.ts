@@ -11,9 +11,9 @@ export class RectangularPreset implements PerimeterPreset<RectangularPresetConfi
   readonly name = 'Rectangular'
 
   /**
-   * Generate polygon points for a rectangle centered at origin
-   * Uses inside dimensions - the polygon represents the interior space
-   * Returns points in clockwise order for perimeter creation
+   * Generate polygon points for a rectangle centered at origin.
+   * The polygon represents the configured reference side (inside or outside).
+   * Returns points in clockwise order for perimeter creation.
    */
   getPolygonPoints(config: RectangularPresetConfig): vec2[] {
     const halfWidth = config.width / 2
@@ -42,6 +42,9 @@ export class RectangularPreset implements PerimeterPreset<RectangularPresetConfi
    * Validate rectangular preset configuration
    */
   validateConfig(config: RectangularPresetConfig): boolean {
-    return config.width > 0 && config.length > 0 && config.thickness > 0 && config.wallAssemblyId.length > 0
+    const interiorWidth = config.referenceSide === 'inside' ? config.width : config.width - 2 * config.thickness
+    const interiorLength = config.referenceSide === 'inside' ? config.length : config.length - 2 * config.thickness
+
+    return interiorWidth > 0 && interiorLength > 0 && config.thickness > 0 && config.wallAssemblyId.length > 0
   }
 }

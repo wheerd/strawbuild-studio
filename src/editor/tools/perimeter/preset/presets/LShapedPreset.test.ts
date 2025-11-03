@@ -22,6 +22,7 @@ describe('LShapedPreset', () => {
     rotation: 0,
     thickness: 420,
     wallAssemblyId: createWallAssemblyId(),
+    referenceSide: 'inside',
     ...overrides
   })
 
@@ -91,6 +92,14 @@ describe('LShapedPreset', () => {
 
     it('should reject empty assembly', () => {
       expect(preset.validateConfig(createValidConfig({ wallAssemblyId: '' as any }))).toBe(false)
+    })
+
+    it('should reject outside reference when thickness exceeds dimensions', () => {
+      expect(
+        preset.validateConfig(
+          createValidConfig({ referenceSide: 'outside', width1: 500, length1: 500, thickness: 400 })
+        )
+      ).toBe(false)
     })
   })
 

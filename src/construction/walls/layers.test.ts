@@ -84,6 +84,8 @@ const createWall = (overrides: Partial<PerimeterWall> = {}): PerimeterWall => ({
 const createPerimeter = (wall: PerimeterWall, overrides: Partial<Perimeter> = {}): Perimeter => ({
   id: createPerimeterId(),
   storeyId: createStoreyId(),
+  referenceSide: 'inside',
+  referencePolygon: (overrides.referencePolygon as vec2[] | undefined) ?? ([] as unknown as vec2[]),
   walls: [wall],
   corners: [],
   ...overrides
@@ -101,9 +103,11 @@ const createCorner = (overrides: Partial<PerimeterCorner>): PerimeterCorner => (
 
 const storeyContext: WallStoreyContext = {
   storeyHeight: 3000,
-  floorTopOffset: 0,
-  ceilingBottomOffset: 0,
-  floorConstructionThickness: 0
+  floorTopOffset: 50,
+  ceilingBottomOffset: 40,
+  floorConstructionThickness: 200,
+  floorTopConstructionOffset: 10,
+  ceilingBottomConstructionOffset: 20
 }
 
 const baseLayers: WallLayersConfig = {
@@ -257,8 +261,11 @@ describe('constructWallLayers', () => {
     expect(outsidePolygon.polygon.outer.points[0][0]).toBeCloseTo(-300)
     expect(outsidePolygon.polygon.outer.points[2][0]).toBeCloseTo(3300)
 
-    expect(insidePolygon.polygon.outer.points[0][1]).toBeCloseTo(0)
-    expect(insidePolygon.polygon.outer.points[1][1]).toBeCloseTo(3000)
+    expect(insidePolygon.polygon.outer.points[0][1]).toBeCloseTo(10)
+    expect(insidePolygon.polygon.outer.points[1][1]).toBeCloseTo(3080)
+
+    expect(outsidePolygon.polygon.outer.points[0][1]).toBeCloseTo(-200)
+    expect(outsidePolygon.polygon.outer.points[1][1]).toBeCloseTo(3090)
 
     const layerGroups = model.elements.filter((element): element is GroupOrElement => 'children' in element)
     expect(layerGroups).toHaveLength(2)
@@ -309,9 +316,9 @@ describe('constructWallLayers', () => {
     const ys = hole.points.map(point => point[1])
 
     expect(Math.min(...xs)).toBeCloseTo(1000)
-    expect(Math.max(...xs)).toBeCloseTo(1900)
-    expect(Math.min(...ys)).toBeCloseTo(900)
-    expect(Math.max(...ys)).toBeCloseTo(2100)
+    expect(Math.max(...xs)).toBeCloseTo(1000 + 900)
+    expect(Math.min(...ys)).toBeCloseTo(900 + 50)
+    expect(Math.max(...ys)).toBeCloseTo(900 + 1200 + 50)
   })
 
   it('extends exterior layers when wall constructs the corner', () => {

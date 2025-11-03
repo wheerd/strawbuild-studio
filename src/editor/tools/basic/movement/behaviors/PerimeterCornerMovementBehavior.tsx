@@ -55,8 +55,8 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
 
     const snapLines = this.getSnapLines(wall, cornerIndex)
     const snapContext: SnappingContext = {
-      snapPoints: [wall.corners[cornerIndex].insidePoint],
-      alignPoints: wall.corners.map(c => c.insidePoint),
+      snapPoints: [wall.referencePolygon[cornerIndex]],
+      alignPoints: wall.referencePolygon,
       referenceLineSegments: snapLines
     }
 
@@ -68,8 +68,8 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
     context: MovementContext<CornerEntityContext>
   ): CornerMovementState {
     const { wall, cornerIndex } = context.entity
-    const boundaryPoint = wall.corners[cornerIndex].insidePoint
-    const newBoundary = wall.corners.map(c => c.insidePoint)
+    const boundaryPoint = wall.referencePolygon[cornerIndex]
+    const newBoundary = wall.referencePolygon.map(point => vec2.clone(point))
 
     return {
       position: boundaryPoint,
@@ -84,13 +84,13 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
   ): CornerMovementState {
     const { wall, cornerIndex, snapContext } = context.entity
 
-    const originalPosition = wall.corners[cornerIndex].insidePoint
+    const originalPosition = wall.referencePolygon[cornerIndex]
     const newPosition = vec2.add(vec2.create(), originalPosition, pointerState.delta)
 
     const snapResult = context.snappingService.findSnapResult(newPosition, snapContext)
     const finalPosition = snapResult?.position || newPosition
 
-    const newBoundary = wall.corners.map(c => c.insidePoint)
+    const newBoundary = wall.referencePolygon.map(point => vec2.clone(point))
     newBoundary[cornerIndex] = finalPosition
 
     return {
@@ -116,11 +116,11 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
   applyRelativeMovement(deltaDifference: vec2, context: MovementContext<CornerEntityContext>): boolean {
     const { wall, cornerIndex } = context.entity
 
-    const currentPosition = wall.corners[cornerIndex].insidePoint
+    const currentPosition = wall.referencePolygon[cornerIndex]
     const newPosition = vec2.add(vec2.create(), currentPosition, deltaDifference)
 
     // Create new boundary with updated corner position
-    const newBoundary = wall.corners.map(c => c.insidePoint)
+    const newBoundary = wall.referencePolygon.map(point => vec2.clone(point))
     newBoundary[cornerIndex] = newPosition
 
     // Validate the new boundary
@@ -135,11 +135,11 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
   private getSnapLines(wall: Perimeter, cornerIndex: number): LineSegment2D[] {
     const snapLines: LineSegment2D[] = []
 
-    for (let i = 0; i < wall.corners.length; i++) {
-      const nextIndex = (i + 1) % wall.corners.length
+    for (let i = 0; i < wall.referencePolygon.length; i++) {
+      const nextIndex = (i + 1) % wall.referencePolygon.length
       if (i === cornerIndex || nextIndex === cornerIndex) continue
-      const start = wall.corners[i].insidePoint
-      const end = wall.corners[nextIndex].insidePoint
+      const start = wall.referencePolygon[i]
+      const end = wall.referencePolygon[nextIndex]
       snapLines.push({ start, end })
     }
 

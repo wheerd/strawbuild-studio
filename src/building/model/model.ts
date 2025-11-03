@@ -14,6 +14,8 @@ import type {
 } from '@/building/model/ids'
 import type { Length, LineSegment2D, Polygon2D } from '@/shared/geometry'
 
+export type PerimeterReferenceSide = 'inside' | 'outside'
+
 // Storey level branded type
 export type StoreyLevel = number & { __brand: 'StoreyLevel' }
 
@@ -50,6 +52,8 @@ export interface Storey {
 export interface Perimeter {
   id: PerimeterId
   storeyId: StoreyId
+  referenceSide: PerimeterReferenceSide
+  referencePolygon: vec2[]
 
   // Per-side wall data
   walls: PerimeterWall[] // walls[i] goes from corners[i].insidePoint -> corners[(i + 1) % corners.length].insidePoint

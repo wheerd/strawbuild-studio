@@ -17,11 +17,46 @@ const mockActions = {
   getPerimetersByStorey: vi.fn(() => [
     {
       id: 'perimeter_1',
+      referenceSide: 'inside' as const,
+      referencePolygon: [
+        vec2.fromValues(0, 0),
+        vec2.fromValues(100, 0),
+        vec2.fromValues(100, 100),
+        vec2.fromValues(0, 100)
+      ],
       corners: [
-        { id: 'corner_1', insidePoint: vec2.fromValues(0, 0), constructedByWall: 'next' },
-        { id: 'corner_2', insidePoint: vec2.fromValues(100, 0), constructedByWall: 'next' },
-        { id: 'corner_3', insidePoint: vec2.fromValues(100, 100), constructedByWall: 'next' },
-        { id: 'corner_4', insidePoint: vec2.fromValues(0, 100), constructedByWall: 'next' }
+        {
+          id: 'corner_1',
+          insidePoint: vec2.fromValues(0, 0),
+          outsidePoint: vec2.fromValues(-200, 0),
+          constructedByWall: 'next',
+          interiorAngle: 90,
+          exteriorAngle: 270
+        },
+        {
+          id: 'corner_2',
+          insidePoint: vec2.fromValues(100, 0),
+          outsidePoint: vec2.fromValues(100, -200),
+          constructedByWall: 'next',
+          interiorAngle: 90,
+          exteriorAngle: 270
+        },
+        {
+          id: 'corner_3',
+          insidePoint: vec2.fromValues(100, 100),
+          outsidePoint: vec2.fromValues(300, 100),
+          constructedByWall: 'next',
+          interiorAngle: 90,
+          exteriorAngle: 270
+        },
+        {
+          id: 'corner_4',
+          insidePoint: vec2.fromValues(0, 100),
+          outsidePoint: vec2.fromValues(0, 300),
+          constructedByWall: 'next',
+          interiorAngle: 90,
+          exteriorAngle: 270
+        }
       ],
       walls: [
         {
@@ -59,11 +94,12 @@ const mockActions = {
   })),
   addPerimeter: vi.fn(() => ({
     id: 'new_perimeter',
+    referenceSide: 'inside' as const,
     walls: [{ id: 'new_wall_1' }],
     corners: [{ id: 'new_corner_1' }]
   })),
   updatePerimeterWallThickness: vi.fn(),
-  updateWallAssemblyBuilder: vi.fn(),
+  updatePerimeterWallAssembly: vi.fn(),
   addPerimeterWallOpening: vi.fn(),
   updatePerimeterCornerConstructedByWall: vi.fn(),
   addFloorArea: vi.fn(),
@@ -136,7 +172,7 @@ describe('ProjectImportExportService', () => {
   describe('exportToString', () => {
     it('successfully exports project to string using store getters', async () => {
       const result = await ProjectImportExportService.exportToString()
-
+      expect('error' in result ? result.error : '').toEqual('')
       expect(result.success).toBe(true)
       if (result.success) {
         expect(result.content).toBeDefined()
@@ -155,6 +191,12 @@ describe('ProjectImportExportService', () => {
         expect(parsed.configStore.straw.tolerance).toBe(2)
         expect(parsed.configStore.straw.topCutoffLimit).toBe(50)
         expect(parsed.configStore.straw.flakeSize).toBe(70)
+
+        const exportedStorey = parsed.modelStore.storeys[0]
+        expect(exportedStorey).toBeDefined()
+        if (exportedStorey.perimeters.length > 0) {
+          expect(exportedStorey.perimeters[0].referenceSide).toBeDefined()
+        }
       }
     })
 

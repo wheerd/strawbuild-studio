@@ -1,10 +1,21 @@
 import { ExclamationTriangleIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Box, Callout, DataList, Flex, Heading, IconButton, Separator, Text, Tooltip } from '@radix-ui/themes'
+import {
+  Box,
+  Callout,
+  DataList,
+  Flex,
+  Heading,
+  IconButton,
+  SegmentedControl,
+  Separator,
+  Text,
+  Tooltip
+} from '@radix-ui/themes'
 import React, { useCallback, useMemo } from 'react'
 
 import type { PerimeterId, WallAssemblyId } from '@/building/model/ids'
-import type { PerimeterWall } from '@/building/model/model'
+import type { PerimeterReferenceSide, PerimeterWall } from '@/building/model/model'
 import { useModelActions, usePerimeterById } from '@/building/store'
 import { TOP_VIEW } from '@/construction/components/ConstructionPlan'
 import { ConstructionPlanModal } from '@/construction/components/ConstructionPlanModal'
@@ -80,7 +91,8 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
     removePerimeterTopRingBeam,
     updateAllPerimeterWallsAssembly,
     updateAllPerimeterWallsThickness,
-    removePerimeter
+    removePerimeter,
+    setPerimeterReferenceSide
   } = useModelActions()
   const perimeter = usePerimeterById(selectedId)
   const viewportActions = useViewportActions()
@@ -152,6 +164,20 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             <DataList.Value>{formatArea(totalOuterArea)}</DataList.Value>
           </DataList.Item>
         </DataList.Root>
+
+        <Flex align="center" gap="2">
+          <Text size="1" color="gray" weight="medium">
+            Reference Side
+          </Text>
+          <SegmentedControl.Root
+            size="1"
+            value={perimeter.referenceSide}
+            onValueChange={value => setPerimeterReferenceSide(perimeter.id, value as PerimeterReferenceSide)}
+          >
+            <SegmentedControl.Item value="inside">Inside</SegmentedControl.Item>
+            <SegmentedControl.Item value="outside">Outside</SegmentedControl.Item>
+          </SegmentedControl.Root>
+        </Flex>
 
         {/* Non-standard angle warning */}
         {hasNonStandardAngles && (

@@ -61,11 +61,11 @@ export class PerimeterWallMovementBehavior
     const projectedDistance = vec2.dot(pointerState.delta, wall.outsideDirection)
     const projectedDelta = vec2.scale(vec2.create(), wall.outsideDirection, projectedDistance)
 
-    const newBoundary = perimeter.corners.map(c => c.insidePoint)
-    newBoundary[wallIndex] = vec2.add(vec2.create(), perimeter.corners[wallIndex].insidePoint, projectedDelta)
-    newBoundary[(wallIndex + 1) % perimeter.corners.length] = vec2.add(
+    const newBoundary = perimeter.referencePolygon.map(point => vec2.clone(point))
+    newBoundary[wallIndex] = vec2.add(vec2.create(), perimeter.referencePolygon[wallIndex], projectedDelta)
+    newBoundary[(wallIndex + 1) % perimeter.referencePolygon.length] = vec2.add(
       vec2.create(),
-      perimeter.corners[(wallIndex + 1) % perimeter.corners.length].insidePoint,
+      perimeter.referencePolygon[(wallIndex + 1) % perimeter.referencePolygon.length],
       projectedDelta
     )
     return { movementDelta: projectedDelta, newBoundary }
@@ -79,11 +79,11 @@ export class PerimeterWallMovementBehavior
     const projectedDistance = vec2.dot(pointerState.delta, wall.outsideDirection)
     const projectedDelta = vec2.scale(vec2.create(), wall.outsideDirection, projectedDistance)
 
-    const newBoundary = perimeter.corners.map(c => c.insidePoint)
-    newBoundary[wallIndex] = vec2.add(vec2.create(), perimeter.corners[wallIndex].insidePoint, projectedDelta)
-    newBoundary[(wallIndex + 1) % perimeter.corners.length] = vec2.add(
+    const newBoundary = perimeter.referencePolygon.map(point => vec2.clone(point))
+    newBoundary[wallIndex] = vec2.add(vec2.create(), perimeter.referencePolygon[wallIndex], projectedDelta)
+    newBoundary[(wallIndex + 1) % perimeter.referencePolygon.length] = vec2.add(
       vec2.create(),
-      perimeter.corners[(wallIndex + 1) % perimeter.corners.length].insidePoint,
+      perimeter.referencePolygon[(wallIndex + 1) % perimeter.referencePolygon.length],
       projectedDelta
     )
     return { movementDelta: projectedDelta, newBoundary }
@@ -111,11 +111,11 @@ export class PerimeterWallMovementBehavior
     const projectedDelta = vec2.scale(vec2.create(), wall.outsideDirection, projectedDistance)
 
     // Create new boundary by moving both wall endpoints by the projected delta
-    const newBoundary = perimeter.corners.map(c => c.insidePoint)
-    newBoundary[wallIndex] = vec2.add(vec2.create(), perimeter.corners[wallIndex].insidePoint, projectedDelta)
-    newBoundary[(wallIndex + 1) % perimeter.corners.length] = vec2.add(
+    const newBoundary = perimeter.referencePolygon.map(point => vec2.clone(point))
+    newBoundary[wallIndex] = vec2.add(vec2.create(), perimeter.referencePolygon[wallIndex], projectedDelta)
+    newBoundary[(wallIndex + 1) % perimeter.referencePolygon.length] = vec2.add(
       vec2.create(),
-      perimeter.corners[(wallIndex + 1) % perimeter.corners.length].insidePoint,
+      perimeter.referencePolygon[(wallIndex + 1) % perimeter.referencePolygon.length],
       projectedDelta
     )
 

@@ -105,6 +105,7 @@ describe('perimeterSlice', () => {
       const perimeter = Object.values(store.perimeters)[0]
 
       expect(perimeter.storeyId).toBe(testStoreyId)
+      expect(perimeter.referencePolygon).toEqual(boundary.points)
       expect(perimeter.corners.map(c => c.insidePoint)).toEqual(boundary.points)
       expect(perimeter.walls).toHaveLength(4) // Rectangle has 4 sides
       expect(perimeter.corners).toHaveLength(4) // Rectangle has 4 corners
@@ -324,7 +325,7 @@ describe('perimeterSlice', () => {
       const wallId = perimeter.walls[0].id
       const newAssemblyId = createWallAssemblyId()
 
-      store.actions.updateWallAssemblyBuilder(perimeter.id, wallId, newAssemblyId)
+      store.actions.updatePerimeterWallAssembly(perimeter.id, wallId, newAssemblyId)
 
       const updatedPerimeter = store.perimeters[perimeter.id]!
       const updatedWall = updatedPerimeter.walls.find((s: any) => s.id === wallId)!
@@ -340,7 +341,7 @@ describe('perimeterSlice', () => {
       const fakeWallId = createPerimeterWallId()
       const initialState = Object.fromEntries(Object.entries(store.perimeters))
 
-      store.actions.updateWallAssemblyBuilder(fakePerimeterId, fakeWallId, createWallAssemblyId())
+      store.actions.updatePerimeterWallAssembly(fakePerimeterId, fakeWallId, createWallAssemblyId())
 
       expect(store.perimeters).toEqual(initialState)
     })
@@ -840,6 +841,33 @@ describe('perimeterSlice', () => {
       })
     })
 
+    describe('movePerimeter', () => {
+      it('translates reference polygon and derived points', () => {
+        const boundary = createRectangularBoundary()
+        const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
+
+        const offset = vec2.fromValues(250, -125)
+        const originalReference = perimeter.referencePolygon.map(point => vec2.clone(point))
+        const originalInside = perimeter.corners.map(corner => vec2.clone(corner.insidePoint))
+        const originalOutside = perimeter.corners.map(corner => vec2.clone(corner.outsidePoint))
+
+        store.actions.movePerimeter(perimeter.id, offset)
+
+        const moved = store.perimeters[perimeter.id]!
+        moved.referencePolygon.forEach((point, index) => {
+          const expected = vec2.add(vec2.create(), originalReference[index], offset)
+          expect(Array.from(point)).toEqual(Array.from(expected))
+        })
+
+        moved.corners.forEach((corner, index) => {
+          const expectedInside = vec2.add(vec2.create(), originalInside[index], offset)
+          const expectedOutside = vec2.add(vec2.create(), originalOutside[index], offset)
+          expect(Array.from(corner.insidePoint)).toEqual(Array.from(expectedInside))
+          expect(Array.from(corner.outsidePoint)).toEqual(Array.from(expectedOutside))
+        })
+      })
+    })
+
     describe('updateOpening', () => {
       it('should update opening properties', () => {
         const boundary = createRectangularBoundary()
@@ -1153,7 +1181,7 @@ describe('perimeterSlice', () => {
       const newAssemblyId = createWallAssemblyId()
 
       // Update properties
-      store.actions.updateWallAssemblyBuilder(perimeter.id, wallId, newAssemblyId)
+      store.actions.updatePerimeterWallAssembly(perimeter.id, wallId, newAssemblyId)
       store.actions.updatePerimeterCornerConstructedByWall(perimeter.id, cornerId, 'previous')
 
       // Verify complex state
@@ -1649,6 +1677,44 @@ describe('perimeterSlice', () => {
           expect(Number.isFinite(corner.outsidePoint[0])).toBe(true)
           expect(Number.isFinite(corner.outsidePoint[1])).toBe(true)
         })
+      })
+    })
+
+    describe('splitPerimeterWall', () => {
+      it('updates reference polygon when reference side is inside', () => {
+        const boundary = createRectangularBoundary()
+        const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), 400)
+
+        const initialReferenceLength = perimeter.referencePolygon.length
+        const wall = perimeter.walls[0]
+        const splitPosition = wall.wallLength / 2
+        const expectedPoint = vec2.scaleAndAdd(vec2.create(), wall.insideLine.start, wall.direction, splitPosition)
+
+        const newWallId = store.actions.splitPerimeterWall(perimeter.id, wall.id, splitPosition)
+        expect(newWallId).not.toBeNull()
+
+        const updated = store.perimeters[perimeter.id]!
+        expect(updated.referencePolygon).toHaveLength(initialReferenceLength + 1)
+        expect(Array.from(updated.referencePolygon[1])).toEqual(Array.from(expectedPoint))
+      })
+
+      it('updates reference polygon when reference side is outside', () => {
+        const boundary = createRectangularBoundary()
+        const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), 400)
+        store.actions.setPerimeterReferenceSide(perimeter.id, 'outside')
+
+        const perimeterOutside = store.perimeters[perimeter.id]!
+        const initialReferenceLength = perimeterOutside.referencePolygon.length
+        const wall = perimeterOutside.walls[0]
+        const splitPosition = wall.wallLength / 2
+        const expectedPoint = vec2.scaleAndAdd(vec2.create(), wall.outsideLine.start, wall.direction, splitPosition)
+
+        const newWallId = store.actions.splitPerimeterWall(perimeterOutside.id, wall.id, splitPosition)
+        expect(newWallId).not.toBeNull()
+
+        const updated = store.perimeters[perimeter.id]!
+        expect(updated.referencePolygon).toHaveLength(initialReferenceLength + 1)
+        expect(Array.from(updated.referencePolygon[1])).toEqual(Array.from(expectedPoint))
       })
     })
 
@@ -2297,6 +2363,51 @@ describe('perimeterSlice', () => {
       expect(() => {
         store.actions.updateAllPerimeterWallsThickness(fakePerimeterId, newThickness)
       }).not.toThrow()
+    })
+  })
+
+  describe('setPerimeterReferenceSide', () => {
+    it('updates the reference side and recomputes geometry without changing coordinates', () => {
+      const boundary = createRectangularBoundary()
+      const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), 400)
+
+      const originalInsidePoints = perimeter.corners.map(corner => vec2.clone(corner.insidePoint))
+      const originalOutsidePoints = perimeter.corners.map(corner => vec2.clone(corner.outsidePoint))
+
+      store.actions.setPerimeterReferenceSide(perimeter.id, 'outside')
+
+      const updatedPerimeter = store.perimeters[perimeter.id]!
+      expect(updatedPerimeter.referenceSide).toBe('outside')
+      expect(updatedPerimeter.referencePolygon.map(point => Array.from(point))).toEqual(
+        originalOutsidePoints.map(point => Array.from(point))
+      )
+      updatedPerimeter.corners.forEach((corner, index) => {
+        expect(Array.from(corner.insidePoint)).toEqual(Array.from(originalInsidePoints[index]))
+        expect(Array.from(corner.outsidePoint)).toEqual(Array.from(originalOutsidePoints[index]))
+      })
+    })
+
+    it('applies new boundary updates to the active reference side', () => {
+      const boundary = createRectangularBoundary()
+      const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), 400)
+      store.actions.setPerimeterReferenceSide(perimeter.id, 'outside')
+
+      const expansion = vec2.fromValues(1000, 1000)
+      const newBoundary = perimeter.corners.map(corner => vec2.add(vec2.create(), corner.outsidePoint, expansion))
+
+      const result = store.actions.updatePerimeterBoundary(perimeter.id, newBoundary)
+      expect(result).toBe(true)
+
+      const updated = store.perimeters[perimeter.id]!
+      updated.corners.forEach((corner, index) => {
+        expect(Array.from(corner.outsidePoint)).toEqual(Array.from(newBoundary[index]))
+      })
+      updated.corners.forEach((corner, index) => {
+        expect(Array.from(corner.insidePoint)).not.toEqual(Array.from(newBoundary[index]))
+      })
+      expect(updated.referencePolygon.map(point => Array.from(point))).toEqual(
+        newBoundary.map(point => Array.from(point))
+      )
     })
   })
 })

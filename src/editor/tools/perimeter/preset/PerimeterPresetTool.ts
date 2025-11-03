@@ -127,7 +127,8 @@ export class PerimeterPresetTool extends BaseTool implements ToolImplementation 
         this.state.presetConfig.wallAssemblyId,
         this.state.presetConfig.thickness,
         this.state.presetConfig.baseRingBeamAssemblyId,
-        this.state.presetConfig.topRingBeamAssemblyId
+        this.state.presetConfig.topRingBeamAssemblyId,
+        this.state.presetConfig.referenceSide
       )
 
       // Reset the active preset after successful placement

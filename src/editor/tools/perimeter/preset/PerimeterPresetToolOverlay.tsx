@@ -38,29 +38,29 @@ export function PerimeterPresetToolOverlay({
   const scaledCrosshairSize = 20 / zoom
   const scaledCrosshairWidth = 1 / zoom
 
-  // Calculate outer wall polygon using offsetPolygon helper
-  let outerPolygonPoints: number[] | null = null
+  // Calculate complementary polygon based on reference side
+  const referencePointsFlat = [...polygon.points.flatMap(p => [p[0], p[1]]), polygon.points[0][0], polygon.points[0][1]]
+
+  let derivedPolygon: number[] | null = null
+
   try {
-    // Use offsetPolygon to expand the inner polygon by wall thickness
-    const outerPolygon = offsetPolygon(polygon, config.thickness)
-    if (outerPolygon.points.length > 0) {
-      // Convert to flat array format for Konva Line component and close the polygon
-      outerPolygonPoints = [
-        ...outerPolygon.points.flatMap(p => [p[0], p[1]]),
-        outerPolygon.points[0][0],
-        outerPolygon.points[0][1]
-      ]
+    const offset = offsetPolygon(polygon, config.referenceSide === 'inside' ? config.thickness : -config.thickness)
+    if (offset.points.length > 0) {
+      derivedPolygon = [...offset.points.flatMap(p => [p[0], p[1]]), offset.points[0][0], offset.points[0][1]]
     }
   } catch (error) {
-    console.warn('Failed to calculate outer polygon:', error)
+    console.warn('Failed to calculate preset derived polygon:', error)
   }
+
+  const interiorPoints =
+    config.referenceSide === 'inside' ? referencePointsFlat : (derivedPolygon ?? referencePointsFlat)
+  const exteriorPoints = config.referenceSide === 'inside' ? derivedPolygon : referencePointsFlat
 
   return (
     <Group>
-      {/* Outer wall rectangle (dashed outline, no fill) */}
-      {outerPolygonPoints && (
+      {exteriorPoints && (
         <Line
-          points={outerPolygonPoints}
+          points={exteriorPoints}
           stroke={theme.text}
           strokeWidth={scaledLineWidth}
           dash={scaledDashPattern}
@@ -70,18 +70,19 @@ export function PerimeterPresetToolOverlay({
         />
       )}
 
-      {/* Inner space polygon (interior area with fill) */}
-      <Line
-        points={[...polygon.points.flatMap(p => [p[0], p[1]]), polygon.points[0][0], polygon.points[0][1]]}
-        stroke={theme.primary}
-        strokeWidth={scaledLineWidth}
-        dash={scaledDashPattern}
-        opacity={0.8}
-        fill={theme.primary}
-        fillOpacity={0.1}
-        closed
-        listening={false}
-      />
+      {interiorPoints && (
+        <Line
+          points={interiorPoints}
+          stroke={theme.primary}
+          strokeWidth={scaledLineWidth}
+          dash={scaledDashPattern}
+          opacity={0.8}
+          fill={theme.primary}
+          fillOpacity={0.1}
+          closed
+          listening={false}
+        />
+      )}
 
       {/* Corner points for better visibility */}
       {polygon.points.map((point, index) => (

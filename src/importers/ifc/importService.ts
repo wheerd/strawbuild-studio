@@ -102,7 +102,10 @@ function applyImportedModel(model: ParsedIfcModel): void {
           targetStoreyId,
           perimeterPolygon,
           defaultWallAssemblyId,
-          defaultThicknessFromSegments
+          defaultThicknessFromSegments,
+          undefined,
+          undefined,
+          'inside'
         )
       } catch (e) {
         console.error(e)

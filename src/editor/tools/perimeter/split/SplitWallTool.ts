@@ -162,7 +162,9 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
     const outsideDist = distanceToLineSegment(worldPoint, wall.outsideLine)
     if (Math.max(insideDist, outsideDist) <= wall.thickness) {
       // Get signed distance along wall direction
-      const toPoint = vec2.subtract(vec2.create(), worldPoint, wall.insideLine.start)
+      const referenceSide = this.state.perimeter?.referenceSide ?? 'inside'
+      const baselineStart = referenceSide === 'outside' ? wall.outsideLine.start : wall.insideLine.start
+      const toPoint = vec2.subtract(vec2.create(), worldPoint, baselineStart)
       const signedDistance = vec2.dot(toPoint, wall.direction)
 
       // Clamp to wall bounds

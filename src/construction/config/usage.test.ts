@@ -44,6 +44,8 @@ describe('Assembly Usage Detection', () => {
       const perimeter: Perimeter = {
         id: perimeterId,
         storeyId,
+        referenceSide: 'inside',
+        referencePolygon: [],
         walls: [],
         corners: [],
         baseRingBeamAssemblyId: assemblyId,
@@ -63,6 +65,8 @@ describe('Assembly Usage Detection', () => {
       const perimeter: Perimeter = {
         id: perimeterId,
         storeyId,
+        referenceSide: 'inside',
+        referencePolygon: [],
         walls: [],
         corners: [],
         baseRingBeamAssemblyId: undefined,
@@ -83,6 +87,8 @@ describe('Assembly Usage Detection', () => {
       const perimeter1: Perimeter = {
         id: perimeter1Id,
         storeyId,
+        referenceSide: 'inside',
+        referencePolygon: [],
         walls: [],
         corners: [],
         baseRingBeamAssemblyId: assemblyId,
@@ -92,6 +98,8 @@ describe('Assembly Usage Detection', () => {
       const perimeter2: Perimeter = {
         id: perimeter2Id,
         storeyId,
+        referenceSide: 'inside',
+        referencePolygon: [],
         walls: [],
         corners: [],
         baseRingBeamAssemblyId: undefined,
@@ -124,6 +132,8 @@ describe('Assembly Usage Detection', () => {
       const perimeter: Perimeter = {
         id: perimeterId,
         storeyId,
+        referenceSide: 'inside',
+        referencePolygon: [],
         walls: [
           {
             id: createPerimeterWallId(),

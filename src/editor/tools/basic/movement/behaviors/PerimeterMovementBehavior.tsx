@@ -37,10 +37,10 @@ export class PerimeterMovementBehavior extends PolygonMovementBehavior<Perimeter
     const storeyIndex = storeys.findIndex(s => s.id === activeStorey)
     const lowerStorey = storeyIndex > 0 ? storeys[storeyIndex - 1] : null
     const lowerPerimeters = lowerStorey ? store.getPerimetersByStorey(lowerStorey.id) : []
-    const lowerPerimeterPoints = lowerPerimeters.flatMap(p => p.corners.map(c => c.insidePoint))
+    const lowerPerimeterPoints = lowerPerimeters.flatMap(p => p.referencePolygon)
 
     const otherPerimeters = store.getPerimetersByStorey(activeStorey).filter(p => p.id !== entityId)
-    const otherPerimeterPoints = otherPerimeters.flatMap(p => p.corners.map(c => c.insidePoint))
+    const otherPerimeterPoints = otherPerimeters.flatMap(p => p.referencePolygon)
 
     const snapContext: SnappingContext = {
       snapPoints: lowerPerimeterPoints,
@@ -51,7 +51,7 @@ export class PerimeterMovementBehavior extends PolygonMovementBehavior<Perimeter
   }
 
   protected getPolygonPoints(context: MovementContext<PerimeterEntityContext>): readonly vec2[] {
-    return context.entity.perimeter.corners.map(corner => corner.insidePoint)
+    return context.entity.perimeter.referencePolygon
   }
 
   validatePosition(movementState: PerimeterMovementState, context: MovementContext<PerimeterEntityContext>): boolean {
@@ -79,14 +79,22 @@ export class PerimeterMovementBehavior extends PolygonMovementBehavior<Perimeter
   }
 
   private isDeltaValid(delta: vec2, context: MovementContext<PerimeterEntityContext>): boolean {
-    const previewBoundary = this.translatePoints(this.getPolygonPoints(context), delta)
+    const previewOutside = this.translatePoints(
+      context.entity.perimeter.corners.map(corner => corner.outsidePoint),
+      delta
+    )
 
     const currentWall = context.entity.perimeter
     const allWalls = context.store.getPerimetersByStorey(currentWall.storeyId)
     const otherWalls = allWalls.filter(wall => wall.id !== currentWall.id)
 
     for (const otherWall of otherWalls) {
-      if (arePolygonsIntersecting({ points: previewBoundary }, { points: otherWall.corners.map(c => c.insidePoint) })) {
+      if (
+        arePolygonsIntersecting(
+          { points: previewOutside },
+          { points: otherWall.corners.map(corner => corner.outsidePoint) }
+        )
+      ) {
         return false
       }
     }

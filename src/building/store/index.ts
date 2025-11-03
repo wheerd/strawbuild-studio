@@ -9,6 +9,7 @@ import { immer } from 'zustand/middleware/immer'
 import type { FloorAreaId, FloorOpeningId, PerimeterId, StoreyId } from '@/building/model/ids'
 import type { FloorArea, FloorOpening, Perimeter, Storey } from '@/building/model/model'
 
+import { CURRENT_VERSION, applyMigrations } from './migrations'
 import { getPersistenceActions } from './persistenceStore'
 import { createFloorsSlice } from './slices/floorsSlice'
 import { createPerimetersSlice } from './slices/perimeterSlice'
@@ -73,28 +74,8 @@ const useModelStore = create<Store>()(
     {
       // Persistence configuration
       name: 'strawbaler-model',
-      version: 2,
-      migrate: (persistedState: unknown) => {
-        if (!persistedState || typeof persistedState !== 'object') {
-          return persistedState
-        }
-
-        const state = persistedState as Partial<StoreState>
-        const floorAreas =
-          state.floorAreas && typeof state.floorAreas === 'object' && !Array.isArray(state.floorAreas)
-            ? state.floorAreas
-            : {}
-        const floorOpenings =
-          state.floorOpenings && typeof state.floorOpenings === 'object' && !Array.isArray(state.floorOpenings)
-            ? state.floorOpenings
-            : {}
-
-        return {
-          ...state,
-          floorAreas,
-          floorOpenings
-        }
-      },
+      version: CURRENT_VERSION,
+      migrate: (persistedState: unknown) => applyMigrations(persistedState) as StoreState,
       partialize: state => ({
         storeys: state.storeys,
         perimeters: state.perimeters,

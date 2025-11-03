@@ -1,6 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
+import type { PerimeterReferenceSide } from '@/building/model/model'
 import type { Length } from '@/shared/geometry'
 
 /**
@@ -11,6 +12,7 @@ export interface BasePresetConfig {
   wallAssemblyId: WallAssemblyId
   baseRingBeamAssemblyId?: RingBeamAssemblyId
   topRingBeamAssemblyId?: RingBeamAssemblyId
+  referenceSide: PerimeterReferenceSide
 }
 
 /**

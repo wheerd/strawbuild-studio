@@ -81,6 +81,8 @@ describe('SplitWallTool', () => {
 
     const mockPerimeter = {
       id: perimeterId,
+      referenceSide: 'inside' as const,
+      referencePolygon: [],
       walls: [mockWall],
       corners: []
     }
@@ -133,6 +135,8 @@ describe('SplitWallTool', () => {
 
     const mockPerimeter = {
       id: perimeterId,
+      referenceSide: 'inside' as const,
+      referencePolygon: [],
       walls: [mockWall],
       corners: []
     }

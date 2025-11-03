@@ -1,7 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import type {} from '@/shared/geometry'
-import '@/shared/geometry'
+import { offsetPolygon } from '@/shared/geometry'
 
 import type { LShapedPresetConfig, PerimeterPreset } from './types'
 
@@ -65,7 +64,7 @@ export class LShapedPreset implements PerimeterPreset<LShapedPresetConfig> {
    * Validate L-shaped preset configuration
    */
   validateConfig(config: LShapedPresetConfig): boolean {
-    return (
+    const basicChecks =
       config.width1 > 0 &&
       config.length1 > 0 &&
       config.width2 > 0 &&
@@ -75,7 +74,22 @@ export class LShapedPreset implements PerimeterPreset<LShapedPresetConfig> {
       config.thickness > 0 &&
       config.wallAssemblyId.length > 0 &&
       [0, 90, 180, 270].includes(config.rotation)
-    )
+
+    if (!basicChecks) {
+      return false
+    }
+
+    try {
+      const referencePolygon = { points: this.getPolygonPoints(config) }
+      const offset = offsetPolygon(
+        referencePolygon,
+        config.referenceSide === 'inside' ? config.thickness : -config.thickness
+      )
+      return offset.points.length >= 3
+    } catch (e) {
+      console.error(e)
+      return false
+    }
   }
 
   /**
