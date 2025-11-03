@@ -1,7 +1,7 @@
 /// <reference types="vitest" />
-import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
+import { configDefaults, defineConfig } from 'vitest/config'
 
 export default defineConfig({
   // @ts-ignore
@@ -25,6 +25,7 @@ export default defineConfig({
       deps: {
         inline: ['konva', 'react-konva']
       }
-    }
+    },
+    exclude: [...configDefaults.exclude, 'tests/*']
   }
 })
