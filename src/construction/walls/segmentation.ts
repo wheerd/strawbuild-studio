@@ -171,8 +171,10 @@ function* createPlateAreas(
 export interface WallStoreyContext {
   floorConstructionThickness: Length
   ceilingBottomOffset: Length
+  ceilingBottomConstructionOffset: Length
   storeyHeight: Length
   floorTopOffset: Length
+  floorTopConstructionOffset: Length
 }
 
 export function createWallStoreyContext(
@@ -183,14 +185,16 @@ export function createWallStoreyContext(
   const currentFloorFloorAssembly = FLOOR_ASSEMBLIES[currentFloorAssembly.type]
   const nextFloorFloorAssembly = nextFloorAssembly ? FLOOR_ASSEMBLIES[nextFloorAssembly.type] : null
 
+  const topOffset = currentFloorFloorAssembly.getTopOffset(currentFloorAssembly)
+  const bottomOffset = nextFloorFloorAssembly?.getBottomOffset(nextFloorAssembly) ?? 0
+
   return {
     floorConstructionThickness: currentFloorFloorAssembly.getConstructionThickness(currentFloorAssembly),
     storeyHeight: currentStorey.height,
-    floorTopOffset:
-      currentFloorAssembly.layers.topThickness + currentFloorFloorAssembly.getTopOffset(currentFloorAssembly),
-    ceilingBottomOffset:
-      (nextFloorAssembly?.layers.bottomThickness ?? 0) +
-      (nextFloorFloorAssembly?.getBottomOffset(nextFloorAssembly) ?? 0)
+    floorTopConstructionOffset: topOffset,
+    floorTopOffset: currentFloorAssembly.layers.topThickness + topOffset,
+    ceilingBottomConstructionOffset: bottomOffset,
+    ceilingBottomOffset: (nextFloorAssembly?.layers.bottomThickness ?? 0) + bottomOffset
   }
 }
 
