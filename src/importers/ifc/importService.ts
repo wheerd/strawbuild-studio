@@ -132,7 +132,7 @@ function applyImportedModel(model: ParsedIfcModel): void {
               offsetFromStart: offset,
               width,
               height: opening.height,
-              sillHeight: opening.sill
+              sillHeight: opening.sill ? Math.max(opening.sill, 0) : undefined
             })
           } catch (e) {
             console.error(e)
