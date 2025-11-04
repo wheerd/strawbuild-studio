@@ -171,7 +171,7 @@ describe('generateMaterialPartsList', () => {
     expect(part.polygonPlane).toBe(partInfo.polygonPlane)
   })
 
-  it('ignores elements without part info', () => {
+  it('creates entries for elements without part info', () => {
     const nonPartElement = createConstructionElement(
       wood360x60.id,
       createCuboidShape(vec3.create(), vec3.fromValues(5000, 360, 60))
@@ -180,7 +180,7 @@ describe('generateMaterialPartsList', () => {
     const model = createModel([nonPartElement])
     const partsList = generateMaterialPartsList(model)
 
-    expect(Object.values(partsList)).toHaveLength(0)
+    expect(Object.values(partsList)).toHaveLength(1)
   })
 })
 

@@ -1,6 +1,6 @@
 import { ExclamationTriangleIcon, PinBottomIcon, PinTopIcon } from '@radix-ui/react-icons'
 import { Badge, Card, Flex, Heading, IconButton, Table, Text, Tooltip } from '@radix-ui/themes'
-import type { vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 import React, { useCallback, useMemo, useRef } from 'react'
 
 import { getMaterialTypeIcon, getMaterialTypeName } from '@/construction/materials/components/MaterialSelect'
@@ -211,7 +211,8 @@ function DimensionalPartsTable({ parts, material }: { parts: MaterialPartItem[];
           <Table.ColumnHeaderCell width="5em" justify="center">
             Label
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="10em">Type</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="5em" justify="center">
             Quantity
           </Table.ColumnHeaderCell>
@@ -233,10 +234,10 @@ function DimensionalPartsTable({ parts, material }: { parts: MaterialPartItem[];
               <Table.RowHeaderCell justify="center">
                 <Text weight="medium">{part.label}</Text>
               </Table.RowHeaderCell>
+              <Table.Cell>{part.type}</Table.Cell>
               <Table.Cell>
                 <Flex align="center" gap="2">
-                  <Text>{part.type}</Text>
-
+                  <Text>{part.description}</Text>
                   {part.issue === 'CrossSectionMismatch' && (
                     <Tooltip
                       key="cross-section-mismatch"
@@ -288,7 +289,8 @@ function SheetPartsTable({ parts, material }: { parts: MaterialPartItem[]; mater
           <Table.ColumnHeaderCell width="5em" justify="center">
             Label
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="10em">Type</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="20em" justify="end">
             Dimensions
           </Table.ColumnHeaderCell>
@@ -314,6 +316,7 @@ function SheetPartsTable({ parts, material }: { parts: MaterialPartItem[]; mater
                 <Text weight="medium">{part.label}</Text>
               </Table.RowHeaderCell>
               <Table.Cell>{part.type}</Table.Cell>
+              <Table.Cell>{part.description}</Table.Cell>
               <Table.Cell justify="end">
                 <Flex align="center" gap="2" justify="end">
                   {part.issue === 'ThicknessMismatch' && (
@@ -333,11 +336,11 @@ function SheetPartsTable({ parts, material }: { parts: MaterialPartItem[]; mater
                     </Tooltip>
                   )}
                   {part.polygon && part.polygon.points.length >= 3 && (
-                    <Tooltip key="special-cut" content={<SpecialCutTooltip polygon={part.polygon} />}>
+                    <Tooltip key="special-cut" content="This might have a non-regular shape">
                       <ExclamationTriangleIcon aria-hidden style={{ color: 'var(--amber-9)' }} />
                     </Tooltip>
                   )}
-                  <Text>{formatDimensions(part.size)}</Text>
+                  <Text>{vec3.equals(part.size, [0, 0, 0]) ? '' : formatDimensions(part.size)}</Text>
                 </Flex>
               </Table.Cell>
               <Table.Cell justify="center">{part.quantity}</Table.Cell>
@@ -360,7 +363,8 @@ function VolumePartsTable({ parts }: { parts: MaterialPartItem[]; material: Volu
           <Table.ColumnHeaderCell width="5em" justify="center">
             Label
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="10em">Type</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="5em" justify="center">
             Quantity
           </Table.ColumnHeaderCell>
@@ -383,6 +387,7 @@ function VolumePartsTable({ parts }: { parts: MaterialPartItem[]; material: Volu
                 <Text weight="medium">{part.label}</Text>
               </Table.RowHeaderCell>
               <Table.Cell>{part.type}</Table.Cell>
+              <Table.Cell>{part.description}</Table.Cell>
               <Table.Cell justify="center">{part.quantity}</Table.Cell>
               <Table.Cell justify="end"> {part.area !== undefined ? formatArea(part.area) : '—'}</Table.Cell>
               <Table.Cell justify="end">{part.totalArea !== undefined ? formatArea(part.totalArea) : '—'}</Table.Cell>

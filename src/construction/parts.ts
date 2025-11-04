@@ -1,9 +1,16 @@
 import { vec2, vec3 } from 'gl-matrix'
 
-import type { ConstructionElementId } from '@/construction/elements'
+import type { ConstructionElement, ConstructionElementId } from '@/construction/elements'
 import type { MaterialId, SheetMaterial } from '@/construction/materials/material'
 import { getMaterialById } from '@/construction/materials/store'
 import type { ConstructionModel } from '@/construction/model'
+import {
+  TAG_FLOOR_LAYER_BOTTOM,
+  TAG_FLOOR_LAYER_TOP,
+  TAG_WALL_LAYER_INSIDE,
+  TAG_WALL_LAYER_OUTSIDE,
+  type Tag
+} from '@/construction/tags'
 import {
   type Area,
   Bounds2D,
@@ -12,6 +19,7 @@ import {
   type Polygon2D,
   type Volume,
   calculatePolygonArea,
+  calculatePolygonWithHolesArea,
   canonicalPolygonKey,
   minimumAreaBoundingBox
 } from '@/shared/geometry'
@@ -21,17 +29,23 @@ export type PartId = string & { readonly brand: unique symbol }
 export interface PartInfo {
   partId: PartId
   type: string
+  description?: string
   size: vec3 // Dimensions in millimeters, sorted from smallest to largest
   polygon?: Polygon2D // Normalized within the bounding box defined by width and length
   polygonPlane?: Plane3D // The plane of the polygon relative to the sorted size
 }
 
-export const dimensionalPartInfo = (type: string, size: vec3): PartInfo => {
+export const dimensionalPartInfo = (type: string, size: vec3, description?: string): PartInfo => {
   const sortedDimensions = Array.from(size)
     .map(Math.round)
     .sort((a, b) => a - b)
   const partId = sortedDimensions.join('x') as PartId
-  return { partId, type, size: vec3.fromValues(sortedDimensions[0], sortedDimensions[1], sortedDimensions[2]) }
+  return {
+    partId,
+    type,
+    description,
+    size: vec3.fromValues(sortedDimensions[0], sortedDimensions[1], sortedDimensions[2])
+  }
 }
 
 const isAxisAlignedRect = (polygon: Polygon2D) => {
@@ -52,7 +66,8 @@ export const polygonPartInfo = (
   polygon: Polygon2D,
   plane: Plane3D,
   thickness: Length,
-  simplifyRect: boolean = true
+  description?: string,
+  simplifyRect = true
 ): PartInfo => {
   const { size, angle } = minimumAreaBoundingBox(polygon)
   const width = Math.max(Math.round(size[0]), 0)
@@ -106,6 +121,7 @@ export const polygonPartInfo = (
   return {
     partId,
     type,
+    description,
     size: vec3.fromValues(sortedSize[0], sortedSize[1], sortedSize[2]),
     polygon: isRect ? undefined : normalizedPolygon,
     polygonPlane: isRect ? undefined : newPlane
@@ -125,6 +141,7 @@ export interface MaterialParts {
 export interface PartItem {
   partId: PartId
   type: string
+  description?: string
   label: string // A, B, C, ...
   size: vec3
   elements: ConstructionElementId[]
@@ -253,10 +270,10 @@ export const generateMaterialPartsList = (model: ConstructionModel, excludeTypes
     return entry
   }
 
-  const processElement = (element: ConstructionModel['elements'][number]) => {
+  const processElement = (element: ConstructionModel['elements'][number], tags: Tag[]) => {
     if ('children' in element) {
       for (const child of element.children) {
-        processElement(child)
+        processElement(child, [...tags, ...(element.tags ?? [])])
       }
       return
     }
@@ -269,11 +286,13 @@ export const generateMaterialPartsList = (model: ConstructionModel, excludeTypes
 
     if (partInfo) {
       processPart(partInfo, materialEntry, id, labelCounters)
+    } else {
+      processConstructionElement(element, [...tags, ...(element.tags ?? [])], materialEntry, labelCounters)
     }
   }
 
   for (const element of model.elements) {
-    processElement(element)
+    processElement(element, [])
   }
 
   return partsList
@@ -393,6 +412,7 @@ function processPart(
   const partItem: MaterialPartItem = {
     partId,
     type: partInfo.type,
+    description: partInfo.description,
     label,
     material: materialEntry.material,
     size: vec3.clone(size),
@@ -419,4 +439,109 @@ function processPart(
   materialEntry.parts[partId] = partItem
   materialEntry.totalQuantity += 1
   materialEntry.totalVolume += volume
+}
+
+function processConstructionElement(
+  element: ConstructionElement,
+  tags: Tag[],
+  materialEntry: MaterialParts,
+  labelCounters: Map<MaterialId, number>
+) {
+  let partId: PartId
+  let description: string | undefined
+  let type: string
+
+  const size = Array.from(element.bounds.size).sort()
+
+  const layerTags = tags.filter(t => t.category === 'wall-layer' || t.category === 'floor-layer')
+  if (layerTags.length > 0) {
+    const specificTag = layerTags.find(
+      t =>
+        t.id !== TAG_WALL_LAYER_INSIDE.id &&
+        t.id !== TAG_WALL_LAYER_OUTSIDE.id &&
+        t.id !== TAG_FLOOR_LAYER_TOP.id &&
+        t.id !== TAG_FLOOR_LAYER_BOTTOM.id
+    )
+    const layerTag = specificTag ?? layerTags[0]
+    partId = `auto_${layerTag.id}` as PartId
+    description = layerTag.label
+    type = getLayerType(layerTags)
+  } else {
+    partId = `auto_${size.join('x')}` as PartId
+    type = '-'
+  }
+
+  const polygon = element.shape.type === 'polygon' ? element.shape.polygon : undefined
+  const polygonPlane = element.shape.type === 'polygon' ? element.shape.plane : undefined
+  const thickness = element.shape.type === 'polygon' ? element.shape.thickness : undefined
+
+  let area: Area | undefined
+
+  const materialDefinition = getMaterialById(materialEntry.material)
+  if (materialDefinition?.type === 'sheet') {
+    if (polygon) {
+      area = calculatePolygonWithHolesArea(polygon)
+    } else {
+      const details = computeSheetDetails(size, materialDefinition)
+      area = details.areaSize[0] * details.areaSize[1]
+    }
+  } else if (materialDefinition?.type === 'volume') {
+    if (polygon) {
+      area = calculatePolygonWithHolesArea(polygon)
+    }
+  }
+
+  const existingPart = materialEntry.parts[partId]
+
+  const volume = polygon && thickness ? calculatePolygonWithHolesArea(polygon) * thickness : computeVolume(size)
+
+  if (existingPart) {
+    existingPart.quantity += 1
+    existingPart.totalVolume += volume
+    existingPart.elements.push(element.id)
+    materialEntry.totalQuantity += 1
+    materialEntry.totalVolume += volume
+
+    if (area !== undefined) {
+      existingPart.totalArea = (existingPart.totalArea ?? 0) + area
+      materialEntry.totalArea = (materialEntry.totalArea ?? 0) + area
+    }
+
+    return
+  }
+
+  const labelIndex = labelCounters.get(materialEntry.material) ?? 0
+  const label = indexToLabel(labelIndex)
+  labelCounters.set(materialEntry.material, labelIndex + 1)
+
+  const partItem: MaterialPartItem = {
+    partId,
+    type,
+    description,
+    label,
+    material: materialEntry.material,
+    size: vec3.zero(vec3.create()),
+    elements: [element.id],
+    totalVolume: volume,
+    quantity: 1,
+    polygon: polygon?.outer,
+    polygonPlane
+  }
+
+  if (area !== undefined) {
+    partItem.totalArea = area
+    materialEntry.totalArea = (materialEntry.totalArea ?? 0) + area
+  }
+
+  materialEntry.parts[partId] = partItem
+  materialEntry.totalQuantity += 1
+  materialEntry.totalVolume += volume
+}
+
+function getLayerType(layerTags: Tag[]) {
+  if (layerTags.indexOf(TAG_WALL_LAYER_INSIDE) !== -1) return 'wall-layer-inside'
+  if (layerTags.indexOf(TAG_WALL_LAYER_OUTSIDE) !== -1) return 'wall-layer-outside'
+  if (layerTags.indexOf(TAG_FLOOR_LAYER_TOP) !== -1) return 'floor-layer'
+  if (layerTags.indexOf(TAG_FLOOR_LAYER_BOTTOM) !== -1) return 'ceiling-layer'
+  return 'layer'
 }
