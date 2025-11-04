@@ -2,6 +2,7 @@ import { vec3 } from 'gl-matrix'
 
 import { createConstructionElement } from '@/construction/elements'
 import type { LayerConstruction, MonolithicLayerConfig } from '@/construction/layers/types'
+import { polygonPartInfo } from '@/construction/parts'
 import { type ConstructionResult, yieldElement } from '@/construction/results'
 import { createExtrudedPolygon } from '@/construction/shapes'
 import type { Length, Plane3D, PolygonWithHoles2D } from '@/shared/geometry'
@@ -21,10 +22,16 @@ export class MonolithicLayerConstruction implements LayerConstruction<Monolithic
           : vec3.fromValues(offset, 0, 0)
 
     yield yieldElement(
-      createConstructionElement(config.material, createExtrudedPolygon(polygon, plane, config.thickness), {
-        position,
-        rotation: vec3.fromValues(0, 0, 0)
-      })
+      createConstructionElement(
+        config.material,
+        createExtrudedPolygon(polygon, plane, config.thickness),
+        {
+          position,
+          rotation: vec3.fromValues(0, 0, 0)
+        },
+        undefined,
+        polygonPartInfo('layer', polygon.outer, plane, config.thickness, false)
+      )
     )
   }
 }

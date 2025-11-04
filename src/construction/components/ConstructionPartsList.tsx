@@ -4,11 +4,11 @@ import type { vec3 } from 'gl-matrix'
 import React, { useCallback, useMemo, useRef } from 'react'
 
 import { getMaterialTypeIcon, getMaterialTypeName } from '@/construction/materials/components/MaterialSelect'
-import type { Material } from '@/construction/materials/material'
+import type { DimensionalMaterial, Material, SheetMaterial, VolumeMaterial } from '@/construction/materials/material'
 import { useMaterialsMap } from '@/construction/materials/store'
 import type { MaterialPartItem, MaterialPartsList } from '@/construction/parts'
 import { Bounds2D, type Polygon2D } from '@/shared/geometry'
-import { formatLengthInMeters, formatVolume } from '@/shared/utils/formatting'
+import { formatArea, formatLengthInMeters, formatVolume } from '@/shared/utils/formatting'
 
 interface ConstructionPartsListProps {
   partsList: MaterialPartsList
@@ -18,6 +18,7 @@ interface RowMetrics {
   totalQuantity: number
   totalVolume: number
   totalLength?: number
+  totalArea?: number
 }
 
 const formatCrossSection = ([first, second]: [number, number]) =>
@@ -152,6 +153,9 @@ function MaterialSummaryRow({
         {metrics.totalLength !== undefined ? formatLengthInMeters(metrics.totalLength) : '—'}
       </Table.Cell>
       <Table.Cell width="10em" justify="end">
+        {metrics.totalArea !== undefined ? formatArea(metrics.totalArea) : '—'}
+      </Table.Cell>
+      <Table.Cell width="10em" justify="end">
         {formatVolume(metrics.totalVolume)}
       </Table.Cell>
     </Table.Row>
@@ -191,82 +195,205 @@ const PartsTable = React.forwardRef<HTMLDivElement, PartsTableProps>(function Pa
           </IconButton>
         </Flex>
 
-        <Table.Root variant="surface" size="2" className="min-w-full">
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeaderCell width="5em" justify="center">
-                Label
-              </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="5em" justify="center">
-                Quantity
-              </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="5em" justify="end">
-                Length
-              </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="8em" justify="end">
-                Total Length
-              </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="9em" justify="end">
-                Total Volume
-              </Table.ColumnHeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {parts.map(part => {
-              return (
-                <Table.Row key={part.partId} style={{ background: part.issue ? 'var(--red-3)' : undefined }}>
-                  <Table.RowHeaderCell justify="center">
-                    <Text weight="medium">{part.label}</Text>
-                  </Table.RowHeaderCell>
-                  <Table.Cell>
-                    <Flex align="center" gap="2">
-                      <Text>{part.type}</Text>
-
-                      {part.issue === 'CrossSectionMismatch' && material.type === 'dimensional' && (
-                        <Tooltip
-                          key="cross-section-mismatch"
-                          content={`Part dimensions ${formatDimensions(part.size)} do not match material cross section ${formatCrossSection([material.thickness, material.width])}`}
-                        >
-                          <ExclamationTriangleIcon aria-hidden style={{ color: 'var(--red-9)' }} />
-                        </Tooltip>
-                      )}
-                      {part.polygon && part.polygon.points.length >= 3 && (
-                        <Tooltip key="special-cut" content={<SpecialCutTooltip polygon={part.polygon} />}>
-                          <ExclamationTriangleIcon aria-hidden style={{ color: 'var(--amber-9)' }} />
-                        </Tooltip>
-                      )}
-                    </Flex>
-                  </Table.Cell>
-                  <Table.Cell justify="center">{part.quantity}</Table.Cell>
-                  <Table.Cell justify="end">
-                    <Flex align="center" gap="2" justify="end">
-                      <Text>{part.length !== undefined ? formatLengthInMeters(part.length) : '—'}</Text>
-                      {part.issue === 'LengthExceedsAvailable' && material.type === 'dimensional' && (
-                        <Tooltip
-                          key="length-exceeds-available"
-                          content={`Part length ${
-                            part.length !== undefined ? formatLengthInMeters(part.length) : 'Unknown'
-                          } exceeds material maximum available length ${formatLengthInMeters(Math.max(...material.availableLengths))}`}
-                        >
-                          <ExclamationTriangleIcon style={{ color: 'var(--red-9)' }} />
-                        </Tooltip>
-                      )}
-                    </Flex>
-                  </Table.Cell>
-                  <Table.Cell justify="end">
-                    {part.totalLength !== undefined ? formatLengthInMeters(part.totalLength) : '—'}
-                  </Table.Cell>
-                  <Table.Cell justify="end">{formatVolume(part.totalVolume)}</Table.Cell>
-                </Table.Row>
-              )
-            })}
-          </Table.Body>
-        </Table.Root>
+        {material.type === 'dimensional' && <DimensionalPartsTable parts={parts} material={material} />}
+        {material.type === 'sheet' && <SheetPartsTable parts={parts} material={material} />}
+        {material.type === 'volume' && <VolumePartsTable parts={parts} material={material} />}
       </Flex>
     </Card>
   )
 })
+
+function DimensionalPartsTable({ parts, material }: { parts: MaterialPartItem[]; material: DimensionalMaterial }) {
+  return (
+    <Table.Root variant="surface" size="2" className="min-w-full">
+      <Table.Header>
+        <Table.Row>
+          <Table.ColumnHeaderCell width="5em" justify="center">
+            Label
+          </Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="5em" justify="center">
+            Quantity
+          </Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="5em" justify="end">
+            Length
+          </Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="8em" justify="end">
+            Total Length
+          </Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="9em" justify="end">
+            Total Volume
+          </Table.ColumnHeaderCell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {parts.map(part => {
+          return (
+            <Table.Row key={part.partId} style={{ background: part.issue ? 'var(--red-3)' : undefined }}>
+              <Table.RowHeaderCell justify="center">
+                <Text weight="medium">{part.label}</Text>
+              </Table.RowHeaderCell>
+              <Table.Cell>
+                <Flex align="center" gap="2">
+                  <Text>{part.type}</Text>
+
+                  {part.issue === 'CrossSectionMismatch' && (
+                    <Tooltip
+                      key="cross-section-mismatch"
+                      content={`Part dimensions ${formatDimensions(part.size)} do not match material cross section ${formatCrossSection([material.thickness, material.width])}`}
+                    >
+                      <ExclamationTriangleIcon aria-hidden style={{ color: 'var(--red-9)' }} />
+                    </Tooltip>
+                  )}
+                  {part.polygon && part.polygon.points.length >= 3 && (
+                    <Tooltip key="special-cut" content={<SpecialCutTooltip polygon={part.polygon} />}>
+                      <ExclamationTriangleIcon aria-hidden style={{ color: 'var(--amber-9)' }} />
+                    </Tooltip>
+                  )}
+                </Flex>
+              </Table.Cell>
+              <Table.Cell justify="center">{part.quantity}</Table.Cell>
+              <Table.Cell justify="end">
+                <Flex align="center" gap="2" justify="end">
+                  <Text>{part.length !== undefined ? formatLengthInMeters(part.length) : '—'}</Text>
+                  {part.issue === 'LengthExceedsAvailable' && (
+                    <Tooltip
+                      key="length-exceeds-available"
+                      content={`Part length ${
+                        part.length !== undefined ? formatLengthInMeters(part.length) : 'Unknown'
+                      } exceeds material maximum available length ${formatLengthInMeters(Math.max(...material.availableLengths))}`}
+                    >
+                      <ExclamationTriangleIcon style={{ color: 'var(--red-9)' }} />
+                    </Tooltip>
+                  )}
+                </Flex>
+              </Table.Cell>
+              <Table.Cell justify="end">
+                {part.totalLength !== undefined ? formatLengthInMeters(part.totalLength) : '—'}
+              </Table.Cell>
+              <Table.Cell justify="end">{formatVolume(part.totalVolume)}</Table.Cell>
+            </Table.Row>
+          )
+        })}
+      </Table.Body>
+    </Table.Root>
+  )
+}
+
+function SheetPartsTable({ parts, material }: { parts: MaterialPartItem[]; material: SheetMaterial }) {
+  return (
+    <Table.Root variant="surface" size="2" className="min-w-full">
+      <Table.Header>
+        <Table.Row>
+          <Table.ColumnHeaderCell width="5em" justify="center">
+            Label
+          </Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="20em" justify="end">
+            Dimensions
+          </Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="5em" justify="center">
+            Quantity
+          </Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="5em" justify="end">
+            Area
+          </Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="8em" justify="end">
+            Total Area
+          </Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="9em" justify="end">
+            Total Volume
+          </Table.ColumnHeaderCell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {parts.map(part => {
+          return (
+            <Table.Row key={part.partId} style={{ background: part.issue ? 'var(--red-3)' : undefined }}>
+              <Table.RowHeaderCell justify="center">
+                <Text weight="medium">{part.label}</Text>
+              </Table.RowHeaderCell>
+              <Table.Cell>{part.type}</Table.Cell>
+              <Table.Cell justify="end">
+                <Flex align="center" gap="2" justify="end">
+                  {part.issue === 'ThicknessMismatch' && (
+                    <Tooltip
+                      key="thickness-missmatch"
+                      content={`Dimensions ${formatDimensions(part.size)} do not match thickness ${formatLengthInMeters(material.thickness)}`}
+                    >
+                      <ExclamationTriangleIcon style={{ color: 'var(--red-9)' }} />
+                    </Tooltip>
+                  )}
+                  {part.issue === 'SheetSizeExceeded' && (
+                    <Tooltip
+                      key="sheet-size-exceeded"
+                      content={`Dimensions ${formatDimensions(part.size)} are bigger than material size ${formatCrossSection([material.width, material.length])}`}
+                    >
+                      <ExclamationTriangleIcon aria-hidden style={{ color: 'var(--red-9)' }} />
+                    </Tooltip>
+                  )}
+                  {part.polygon && part.polygon.points.length >= 3 && (
+                    <Tooltip key="special-cut" content={<SpecialCutTooltip polygon={part.polygon} />}>
+                      <ExclamationTriangleIcon aria-hidden style={{ color: 'var(--amber-9)' }} />
+                    </Tooltip>
+                  )}
+                  <Text>{formatDimensions(part.size)}</Text>
+                </Flex>
+              </Table.Cell>
+              <Table.Cell justify="center">{part.quantity}</Table.Cell>
+              <Table.Cell justify="end"> {part.area !== undefined ? formatArea(part.area) : '—'}</Table.Cell>
+              <Table.Cell justify="end">{part.totalArea !== undefined ? formatArea(part.totalArea) : '—'}</Table.Cell>
+              <Table.Cell justify="end">{formatVolume(part.totalVolume)}</Table.Cell>
+            </Table.Row>
+          )
+        })}
+      </Table.Body>
+    </Table.Root>
+  )
+}
+
+function VolumePartsTable({ parts }: { parts: MaterialPartItem[]; material: VolumeMaterial }) {
+  return (
+    <Table.Root variant="surface" size="2" className="min-w-full">
+      <Table.Header>
+        <Table.Row>
+          <Table.ColumnHeaderCell width="5em" justify="center">
+            Label
+          </Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="5em" justify="center">
+            Quantity
+          </Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="5em" justify="end">
+            Area
+          </Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="8em" justify="end">
+            Total Area
+          </Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="9em" justify="end">
+            Total Volume
+          </Table.ColumnHeaderCell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {parts.map(part => {
+          return (
+            <Table.Row key={part.partId} style={{ background: part.issue ? 'var(--red-3)' : undefined }}>
+              <Table.RowHeaderCell justify="center">
+                <Text weight="medium">{part.label}</Text>
+              </Table.RowHeaderCell>
+              <Table.Cell>{part.type}</Table.Cell>
+              <Table.Cell justify="center">{part.quantity}</Table.Cell>
+              <Table.Cell justify="end"> {part.area !== undefined ? formatArea(part.area) : '—'}</Table.Cell>
+              <Table.Cell justify="end">{part.totalArea !== undefined ? formatArea(part.totalArea) : '—'}</Table.Cell>
+              <Table.Cell justify="end">{formatVolume(part.totalVolume)}</Table.Cell>
+            </Table.Row>
+          )
+        })}
+      </Table.Body>
+    </Table.Root>
+  )
+}
 
 export function ConstructionPartsList({ partsList }: ConstructionPartsListProps): React.JSX.Element {
   const materialsMap = useMaterialsMap()
@@ -312,6 +439,7 @@ export function ConstructionPartsList({ partsList }: ConstructionPartsListProps)
         totalQuantity: materialParts.totalQuantity,
         totalVolume: materialParts.totalVolume,
         totalLength: materialParts.totalLength,
+        totalArea: materialParts.totalArea,
         partCount: parts.length
       }
       return { material, metrics }
@@ -331,6 +459,7 @@ export function ConstructionPartsList({ partsList }: ConstructionPartsListProps)
                 <Table.ColumnHeaderCell justify="center">Total Quantity</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell justify="center">Different Parts</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell justify="end">Total Length</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell justify="end">Total Area</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell justify="end">Total Volume</Table.ColumnHeaderCell>
               </Table.Row>
             </Table.Header>

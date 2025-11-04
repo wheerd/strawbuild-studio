@@ -1,15 +1,17 @@
 import { vec2, vec3 } from 'gl-matrix'
 
 import type { ConstructionElementId } from '@/construction/elements'
-import type { MaterialId } from '@/construction/materials/material'
+import type { MaterialId, SheetMaterial } from '@/construction/materials/material'
 import { getMaterialById } from '@/construction/materials/store'
 import type { ConstructionModel } from '@/construction/model'
 import {
+  type Area,
   Bounds2D,
   type Length,
   type Plane3D,
   type Polygon2D,
   type Volume,
+  calculatePolygonArea,
   canonicalPolygonKey,
   minimumAreaBoundingBox
 } from '@/shared/geometry'
@@ -45,7 +47,13 @@ const isAxisAlignedRect = (polygon: Polygon2D) => {
   return true
 }
 
-export const polygonPartInfo = (type: string, polygon: Polygon2D, plane: Plane3D, thickness: Length): PartInfo => {
+export const polygonPartInfo = (
+  type: string,
+  polygon: Polygon2D,
+  plane: Plane3D,
+  thickness: Length,
+  simplifyRect: boolean = true
+): PartInfo => {
   const { size, angle } = minimumAreaBoundingBox(polygon)
   const width = Math.max(Math.round(size[0]), 0)
   const height = Math.max(Math.round(size[1]), 0)
@@ -92,7 +100,7 @@ export const polygonPartInfo = (type: string, polygon: Polygon2D, plane: Plane3D
   }
 
   const dimStr = sortedSize.join('x')
-  const isRect = isAxisAlignedRect(normalizedPolygon)
+  const isRect = isAxisAlignedRect(normalizedPolygon) && simplifyRect
   const partId = (isRect ? dimStr : `${dimStr}:${canonicalPolygonKey(normalizedPolygon.points)}`) as PartId
 
   return {
@@ -108,8 +116,10 @@ export interface MaterialParts {
   material: MaterialId
   totalQuantity: number
   totalVolume: Volume
+  totalArea?: Length
   totalLength?: Length
   parts: Record<PartId, MaterialPartItem>
+  usages: Record<PartId, MaterialPartItem>
 }
 
 export interface PartItem {
@@ -124,11 +134,21 @@ export interface PartItem {
 export interface MaterialPartItem extends PartItem {
   material: MaterialId
   totalVolume: Volume
+  area?: Length
+  totalArea?: Length
   length?: Length
   totalLength?: Length
-  issue?: PartIssue
   polygon?: Polygon2D
   polygonPlane?: Plane3D
+  issue?: PartIssue
+}
+
+export interface MaterialUsage {
+  key: string
+  type: string
+  label: string // A, B, C, ...
+  totalVolume: Volume
+  totalArea?: Area
 }
 
 export type MaterialPartsList = Record<MaterialId, MaterialParts>
@@ -150,7 +170,7 @@ const indexToLabel = (index: number): string => {
 
 const computeVolume = (size: vec3): Volume => size[0] * size[1] * size[2]
 
-export type PartIssue = 'CrossSectionMismatch' | 'LengthExceedsAvailable'
+export type PartIssue = 'CrossSectionMismatch' | 'LengthExceedsAvailable' | 'ThicknessMismatch' | 'SheetSizeExceeded'
 
 const computeDimensionalDetails = (size: vec3, availableLengths: Length[], width: Length, thickness: Length) => {
   const dimensions = Array.from(size) as [number, number, number]
@@ -188,6 +208,32 @@ const computeDimensionalDetails = (size: vec3, availableLengths: Length[], width
   return { length, issue }
 }
 
+const computeSheetDetails = (size: vec3, material: SheetMaterial) => {
+  let issue: PartIssue | undefined
+  const dimensions = Array.from(size) as [number, number, number]
+  const thicknessIndex = dimensions.findIndex(d => d === material.thickness)
+
+  let thickness: Length
+  let areaSize: vec2
+  if (thicknessIndex === -1) {
+    issue = 'ThicknessMismatch'
+    thickness = dimensions[0]
+    areaSize = vec2.fromValues(dimensions[1], dimensions[2])
+  } else {
+    thickness = dimensions[thicknessIndex]
+    const remainingDimensions = dimensions.filter((_, i) => i !== thicknessIndex).sort()
+    if (
+      remainingDimensions[0] > Math.min(material.width, material.length) ||
+      remainingDimensions[1] > Math.max(material.width, material.length)
+    ) {
+      issue = 'SheetSizeExceeded'
+    }
+    areaSize = vec2.fromValues(remainingDimensions[0], remainingDimensions[1])
+  }
+
+  return { thickness, areaSize, issue }
+}
+
 export const generateMaterialPartsList = (model: ConstructionModel, excludeTypes?: string[]): MaterialPartsList => {
   const partsList: MaterialPartsList = {}
   const labelCounters = new Map<MaterialId, number>()
@@ -199,7 +245,8 @@ export const generateMaterialPartsList = (model: ConstructionModel, excludeTypes
         material: materialId,
         totalQuantity: 0,
         totalVolume: 0,
-        parts: {}
+        parts: {},
+        usages: {}
       }
       partsList[materialId] = entry
     }
@@ -216,73 +263,13 @@ export const generateMaterialPartsList = (model: ConstructionModel, excludeTypes
 
     const { material, partInfo, id } = element
 
-    if (!partInfo || excludeTypes?.some(t => t === partInfo.type)) return
+    if (partInfo && excludeTypes?.some(t => t === partInfo.type)) return
 
     const materialEntry = ensureMaterialEntry(material)
-    const partId = partInfo.partId
-    const existingPart = materialEntry.parts[partId]
 
-    const size = partInfo.size
-    const volume = computeVolume(size)
-
-    if (existingPart) {
-      existingPart.quantity += 1
-      existingPart.totalVolume += volume
-      existingPart.elements.push(id)
-      materialEntry.totalQuantity += 1
-      materialEntry.totalVolume += volume
-
-      const length = existingPart.length
-      if (length !== undefined) {
-        existingPart.totalLength = (existingPart.totalLength ?? 0) + length
-        materialEntry.totalLength = (materialEntry.totalLength ?? 0) + length
-      }
-
-      return
+    if (partInfo) {
+      processPart(partInfo, materialEntry, id, labelCounters)
     }
-
-    const materialDefinition = getMaterialById(material)
-    let length: Length | undefined
-    let issue: PartIssue | undefined
-
-    if (materialDefinition?.type === 'dimensional') {
-      const details = computeDimensionalDetails(
-        size,
-        materialDefinition.availableLengths,
-        materialDefinition.width,
-        materialDefinition.thickness
-      )
-      length = details.length
-      issue = details.issue
-    }
-
-    const labelIndex = labelCounters.get(material) ?? 0
-    const label = indexToLabel(labelIndex)
-    labelCounters.set(material, labelIndex + 1)
-
-    const partItem: MaterialPartItem = {
-      partId,
-      type: partInfo.type,
-      label,
-      material,
-      size: vec3.clone(size),
-      elements: [id],
-      totalVolume: volume,
-      quantity: 1,
-      issue,
-      polygon: partInfo.polygon,
-      polygonPlane: partInfo.polygonPlane
-    }
-
-    if (length !== undefined) {
-      partItem.length = length
-      partItem.totalLength = length
-      materialEntry.totalLength = (materialEntry.totalLength ?? 0) + length
-    }
-
-    materialEntry.parts[partId] = partItem
-    materialEntry.totalQuantity += 1
-    materialEntry.totalVolume += volume
   }
 
   for (const element of model.elements) {
@@ -335,4 +322,101 @@ export const generateVirtualPartsList = (model: ConstructionModel): VirtualParts
   }
 
   return partsList
+}
+
+function processPart(
+  partInfo: PartInfo,
+  materialEntry: MaterialParts,
+  id: ConstructionElementId,
+  labelCounters: Map<MaterialId, number>
+) {
+  const partId = partInfo.partId
+  const existingPart = materialEntry.parts[partId]
+
+  const size = partInfo.size
+  const volume = computeVolume(size)
+
+  if (existingPart) {
+    existingPart.quantity += 1
+    existingPart.totalVolume += volume
+    existingPart.elements.push(id)
+    materialEntry.totalQuantity += 1
+    materialEntry.totalVolume += volume
+
+    const length = existingPart.length
+    if (length !== undefined) {
+      existingPart.totalLength = (existingPart.totalLength ?? 0) + length
+      materialEntry.totalLength = (materialEntry.totalLength ?? 0) + length
+    }
+
+    const area = existingPart.area
+    if (area !== undefined) {
+      existingPart.totalArea = (existingPart.totalArea ?? 0) + area
+      materialEntry.totalArea = (materialEntry.totalArea ?? 0) + area
+    }
+
+    return
+  }
+
+  const materialDefinition = getMaterialById(materialEntry.material)
+  let length: Length | undefined
+  let area: Area | undefined
+  let issue: PartIssue | undefined
+
+  if (materialDefinition?.type === 'dimensional') {
+    const details = computeDimensionalDetails(
+      size,
+      materialDefinition.availableLengths,
+      materialDefinition.width,
+      materialDefinition.thickness
+    )
+    length = details.length
+    issue = details.issue
+  } else if (materialDefinition?.type === 'sheet') {
+    const details = computeSheetDetails(size, materialDefinition)
+    if (partInfo.polygon) {
+      area = calculatePolygonArea(partInfo.polygon)
+    } else {
+      area = details.areaSize[0] * details.areaSize[1]
+    }
+    issue = details.issue
+  } else if (materialDefinition?.type === 'volume') {
+    if (partInfo.polygon) {
+      area = calculatePolygonArea(partInfo.polygon)
+    }
+  }
+
+  const labelIndex = labelCounters.get(materialEntry.material) ?? 0
+  const label = indexToLabel(labelIndex)
+  labelCounters.set(materialEntry.material, labelIndex + 1)
+
+  const partItem: MaterialPartItem = {
+    partId,
+    type: partInfo.type,
+    label,
+    material: materialEntry.material,
+    size: vec3.clone(size),
+    elements: [id],
+    totalVolume: volume,
+    quantity: 1,
+    issue,
+    polygon: partInfo.polygon,
+    polygonPlane: partInfo.polygonPlane
+  }
+
+  if (length !== undefined) {
+    partItem.length = length
+    partItem.totalLength = length
+    materialEntry.totalLength = (materialEntry.totalLength ?? 0) + length
+  }
+
+  if (area !== undefined) {
+    partItem.area = area
+    partItem.totalArea = area
+    materialEntry.totalArea = (materialEntry.totalArea ?? 0) + area
+  }
+
+  materialEntry.parts[partId] = partItem
+  materialEntry.totalQuantity += 1
+  materialEntry.totalVolume += volume
 }
