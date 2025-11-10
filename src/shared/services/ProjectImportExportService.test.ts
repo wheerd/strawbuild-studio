@@ -160,6 +160,7 @@ vi.mock('@/construction/config/store', () => ({
         }
       }
     },
+    defaultStrawMaterial: 'material_straw',
     defaultWallAssemblyId: 'assembly_1',
     defaultFloorAssemblyId: 'fa_1'
   })),
@@ -186,11 +187,7 @@ describe('ProjectImportExportService', () => {
         expect(parsed.modelStore.storeys).toBeDefined()
         expect(parsed.modelStore.minLevel).toBeDefined()
         expect(parsed.configStore).toBeDefined()
-        expect(parsed.configStore.straw).toBeDefined()
-        expect(parsed.configStore.straw.material).toBe('material_straw')
-        expect(parsed.configStore.straw.tolerance).toBe(2)
-        expect(parsed.configStore.straw.topCutoffLimit).toBe(50)
-        expect(parsed.configStore.straw.flakeSize).toBe(70)
+        expect(parsed.configStore.defaultStrawMaterial).toBe('material_straw')
 
         const exportedStorey = parsed.modelStore.storeys[0]
         expect(exportedStorey).toBeDefined()

@@ -8,9 +8,35 @@ import type {
   Material,
   MaterialId,
   SheetMaterial,
+  StrawbaleMaterial,
   VolumeMaterial
 } from './material'
-import { DEFAULT_MATERIALS, createMaterialId } from './material'
+import { DEFAULT_MATERIALS, createMaterialId, strawbale } from './material'
+
+type LegacyDimensionalMaterialShape = {
+  id: MaterialId
+  name: string
+  color: string
+  density?: number
+  crossSections?: DimensionalMaterial['crossSections']
+  lengths?: DimensionalMaterial['lengths']
+  width?: number
+  thickness?: number
+  availableLengths?: number[]
+}
+
+type LegacySheetMaterialShape = {
+  id: MaterialId
+  name: string
+  color: string
+  density?: number
+  sizes?: SheetMaterial['sizes']
+  thicknesses?: SheetMaterial['thicknesses']
+  width?: number
+  length?: number
+  thickness?: number
+  sheetType?: SheetMaterial['sheetType']
+}
 
 export interface MaterialsState {
   materials: Record<MaterialId, Material>
@@ -22,6 +48,7 @@ export interface MaterialsActions {
     material:
       | Omit<DimensionalMaterial, 'id'>
       | Omit<SheetMaterial, 'id'>
+      | Omit<StrawbaleMaterial, 'id'>
       | Omit<VolumeMaterial, 'id'>
       | Omit<GenericMaterial, 'id'>
   ) => Material
@@ -51,30 +78,58 @@ const validateMaterialUpdates = (updates: Partial<Omit<Material, 'id' | 'type'>>
     validateMaterialName(updates.name)
   }
 
-  // Type-specific validations with proper type checking
-  if ('width' in updates && updates.width !== undefined && updates.width !== null) {
-    if (typeof updates.width === 'number' && updates.width <= 0) {
-      throw new Error('Width must be positive')
+  if ('crossSections' in updates && updates.crossSections !== undefined) {
+    if (!Array.isArray(updates.crossSections) || updates.crossSections.length === 0) {
+      throw new Error('Cross sections must be a non-empty array')
+    }
+    updates.crossSections.forEach(section => {
+      if (
+        section == null ||
+        typeof section.smallerLength !== 'number' ||
+        typeof section.biggerLength !== 'number' ||
+        section.smallerLength <= 0 ||
+        section.biggerLength <= 0
+      ) {
+        throw new Error('Cross section dimensions must be positive numbers')
+      }
+    })
+  }
+
+  if ('lengths' in updates && updates.lengths !== undefined) {
+    if (!Array.isArray(updates.lengths) || updates.lengths.length === 0) {
+      throw new Error('Lengths must be a non-empty array')
+    }
+    if (updates.lengths.some(length => length <= 0)) {
+      throw new Error('All lengths must be positive')
     }
   }
-  if ('thickness' in updates && updates.thickness !== undefined && updates.thickness !== null) {
-    if (typeof updates.thickness === 'number' && updates.thickness <= 0) {
-      throw new Error('Thickness must be positive')
+
+  if ('sizes' in updates && updates.sizes !== undefined) {
+    if (!Array.isArray(updates.sizes) || updates.sizes.length === 0) {
+      throw new Error('Sheet sizes must be a non-empty array')
+    }
+    updates.sizes.forEach(size => {
+      if (
+        size == null ||
+        typeof size.smallerLength !== 'number' ||
+        typeof size.biggerLength !== 'number' ||
+        size.smallerLength <= 0 ||
+        size.biggerLength <= 0
+      ) {
+        throw new Error('Sheet size dimensions must be positive numbers')
+      }
+    })
+  }
+
+  if ('thicknesses' in updates && updates.thicknesses !== undefined) {
+    if (!Array.isArray(updates.thicknesses) || updates.thicknesses.length === 0) {
+      throw new Error('Sheet thicknesses must be a non-empty array')
+    }
+    if (updates.thicknesses.some(thickness => thickness <= 0)) {
+      throw new Error('All sheet thicknesses must be positive')
     }
   }
-  if ('length' in updates && updates.length !== undefined && updates.length !== null) {
-    if (typeof updates.length === 'number' && updates.length <= 0) {
-      throw new Error('Length must be positive')
-    }
-  }
-  if ('availableLengths' in updates && updates.availableLengths !== undefined) {
-    if (!Array.isArray(updates.availableLengths) || updates.availableLengths.length === 0) {
-      throw new Error('Available lengths must be a non-empty array')
-    }
-    if (updates.availableLengths.some(length => length <= 0)) {
-      throw new Error('All available lengths must be positive')
-    }
-  }
+
   if ('availableVolumes' in updates && updates.availableVolumes !== undefined) {
     if (!Array.isArray(updates.availableVolumes) || updates.availableVolumes.length === 0) {
       throw new Error('Available volumes must be a non-empty array')
@@ -83,6 +138,160 @@ const validateMaterialUpdates = (updates: Partial<Omit<Material, 'id' | 'type'>>
       throw new Error('All available volumes must be positive')
     }
   }
+
+  if ('baleMinLength' in updates && updates.baleMinLength !== undefined && updates.baleMinLength <= 0) {
+    throw new Error('Bale minimum length must be positive')
+  }
+  if ('baleMaxLength' in updates && updates.baleMaxLength !== undefined && updates.baleMaxLength <= 0) {
+    throw new Error('Bale maximum length must be positive')
+  }
+  if (
+    'baleMinLength' in updates &&
+    'baleMaxLength' in updates &&
+    updates.baleMinLength !== undefined &&
+    updates.baleMaxLength !== undefined &&
+    updates.baleMinLength > updates.baleMaxLength
+  ) {
+    throw new Error('Bale minimum length cannot exceed the maximum length')
+  }
+  if ('baleHeight' in updates && updates.baleHeight !== undefined && updates.baleHeight <= 0) {
+    throw new Error('Bale height must be positive')
+  }
+  if ('baleWidth' in updates && updates.baleWidth !== undefined && updates.baleWidth <= 0) {
+    throw new Error('Bale width must be positive')
+  }
+  if ('tolerance' in updates && updates.tolerance !== undefined && updates.tolerance < 0) {
+    throw new Error('Bale tolerance cannot be negative')
+  }
+  if ('topCutoffLimit' in updates && updates.topCutoffLimit !== undefined && updates.topCutoffLimit <= 0) {
+    throw new Error('Top cutoff limit must be positive')
+  }
+  if ('flakeSize' in updates && updates.flakeSize !== undefined && updates.flakeSize <= 0) {
+    throw new Error('Flake size must be positive')
+  }
+}
+
+const normalizeDimensionalMaterial = (material: LegacyDimensionalMaterialShape): DimensionalMaterial => {
+  const crossSections =
+    Array.isArray(material.crossSections) && material.crossSections.length > 0
+      ? material.crossSections.map(section => ({
+          smallerLength: Number(section.smallerLength),
+          biggerLength: Number(section.biggerLength)
+        }))
+      : createLegacyCrossSection(material.width, material.thickness)
+
+  const lengths =
+    Array.isArray(material.lengths) && material.lengths.length > 0
+      ? material.lengths
+      : Array.isArray(material.availableLengths)
+        ? material.availableLengths
+        : []
+
+  return {
+    type: 'dimensional',
+    id: material.id,
+    name: material.name,
+    color: material.color,
+    density: material.density,
+    crossSections,
+    lengths
+  }
+}
+
+const createLegacyCrossSection = (width?: number, thickness?: number): DimensionalMaterial['crossSections'] => {
+  if (typeof width === 'number' && width > 0 && typeof thickness === 'number' && thickness > 0) {
+    const smaller = Math.min(width, thickness)
+    const bigger = Math.max(width, thickness)
+    return [{ smallerLength: smaller, biggerLength: bigger }]
+  }
+  return [{ smallerLength: 0, biggerLength: 0 }]
+}
+
+const normalizeSheetMaterial = (material: LegacySheetMaterialShape): SheetMaterial => {
+  const sizes =
+    Array.isArray(material.sizes) && material.sizes.length > 0
+      ? material.sizes.map(size => ({
+          smallerLength: Number(size.smallerLength),
+          biggerLength: Number(size.biggerLength)
+        }))
+      : createLegacySheetSize(material.width, material.length)
+
+  const thicknesses =
+    Array.isArray(material.thicknesses) && material.thicknesses.length > 0
+      ? material.thicknesses
+      : material.thickness !== undefined
+        ? [material.thickness]
+        : []
+
+  return {
+    type: 'sheet',
+    id: material.id,
+    name: material.name,
+    color: material.color,
+    density: material.density,
+    sizes,
+    thicknesses,
+    sheetType: material.sheetType ?? 'solid'
+  }
+}
+
+const createLegacySheetSize = (width?: number, length?: number): SheetMaterial['sizes'] => {
+  if (typeof width === 'number' && width > 0 && typeof length === 'number' && length > 0) {
+    const smaller = Math.min(width, length)
+    const bigger = Math.max(width, length)
+    return [{ smallerLength: smaller, biggerLength: bigger }]
+  }
+  return [{ smallerLength: 0, biggerLength: 0 }]
+}
+
+const normalizeStrawbaleMaterial = (
+  material: Partial<StrawbaleMaterial> & { id: MaterialId; name: string }
+): StrawbaleMaterial => {
+  const defaults = DEFAULT_MATERIALS[strawbale.id] as StrawbaleMaterial
+  return {
+    type: 'strawbale',
+    id: material.id,
+    name: material.name ?? defaults.name,
+    color: material.color ?? defaults.color,
+    density: material.density ?? defaults.density,
+    baleMinLength: material.baleMinLength ?? defaults.baleMinLength,
+    baleMaxLength: material.baleMaxLength ?? defaults.baleMaxLength,
+    baleHeight: material.baleHeight ?? defaults.baleHeight,
+    baleWidth: material.baleWidth ?? defaults.baleWidth,
+    tolerance: material.tolerance ?? defaults.tolerance,
+    topCutoffLimit: material.topCutoffLimit ?? defaults.topCutoffLimit,
+    flakeSize: material.flakeSize ?? defaults.flakeSize
+  }
+}
+
+const normalizeMaterialsRecord = (
+  materials: Record<MaterialId, Material | Record<string, unknown>>
+): Record<MaterialId, Material> => {
+  const normalized: Record<MaterialId, Material> = {}
+
+  Object.entries(materials).forEach(([id, value]) => {
+    if (!value || typeof value !== 'object') {
+      return
+    }
+
+    const material = value as Material & Record<string, unknown>
+    switch (material.type) {
+      case 'dimensional':
+        normalized[id as MaterialId] = normalizeDimensionalMaterial(material as LegacyDimensionalMaterialShape)
+        break
+      case 'sheet':
+        normalized[id as MaterialId] = normalizeSheetMaterial(material as LegacySheetMaterialShape)
+        break
+      case 'strawbale':
+        normalized[id as MaterialId] = normalizeStrawbaleMaterial(material)
+        break
+      default:
+        normalized[id as MaterialId] = material as Material
+        break
+    }
+  })
+
+  return normalized
 }
 
 const useMaterialsStore = create<MaterialsStore>()(
@@ -90,7 +299,7 @@ const useMaterialsStore = create<MaterialsStore>()(
     devtools(
       (set, get, store) => ({
         // Initialize with default materials
-        materials: { ...DEFAULT_MATERIALS },
+        materials: normalizeMaterialsRecord({ ...DEFAULT_MATERIALS }),
 
         actions: {
           addMaterial: (materialData: Omit<Material, 'id'>) => {
@@ -210,7 +419,15 @@ const useMaterialsStore = create<MaterialsStore>()(
       name: 'strawbaler-materials',
       partialize: state => ({
         materials: state.materials
-      })
+      }),
+      merge: (persisted, current) => {
+        const merged = {
+          ...current,
+          ...(persisted as MaterialsStore)
+        }
+        merged.materials = normalizeMaterialsRecord(merged.materials)
+        return merged
+      }
     }
   )
 )

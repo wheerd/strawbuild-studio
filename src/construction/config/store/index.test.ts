@@ -132,70 +132,18 @@ describe('ConfigStore', () => {
     })
   })
 
-  describe('Straw Configuration', () => {
-    beforeEach(() => {
-      const store = getConfigActions()
-      store.updateStrawConfig({
-        baleMinLength: 800,
-        baleMaxLength: 900,
-        baleHeight: 500,
-        baleWidth: 360,
-        material: strawbale.id,
-        tolerance: 2,
-        topCutoffLimit: 50,
-        flakeSize: 70
-      })
-    })
-
-    it('should expose default straw configuration', () => {
-      const { getStrawConfig } = getConfigActions()
-      const strawConfig = getStrawConfig()
-
-      expect(strawConfig).toMatchObject({
-        baleMinLength: 800,
-        baleMaxLength: 900,
-        baleHeight: 500,
-        baleWidth: 360,
-        material: strawbale.id,
-        tolerance: 2,
-        topCutoffLimit: 50,
-        flakeSize: 70
-      })
-    })
-
-    it('should update straw configuration', () => {
+  describe('Default Straw Material', () => {
+    it('exposes and updates the default straw material id', () => {
       const store = getConfigActions()
 
-      store.updateStrawConfig({ baleMinLength: 850, baleMaxLength: 950 })
-      const strawConfig = store.getStrawConfig()
+      const initialId = store.getDefaultStrawMaterial()
+      expect(initialId).toBe(strawbale.id)
 
-      expect(strawConfig.baleMinLength).toBe(850)
-      expect(strawConfig.baleMaxLength).toBe(950)
-      store.updateStrawConfig({ tolerance: 3, topCutoffLimit: 45, flakeSize: 65 })
-      const updatedStrawConfig = store.getStrawConfig()
-      expect(updatedStrawConfig.tolerance).toBe(3)
-      expect(updatedStrawConfig.topCutoffLimit).toBe(45)
-      expect(updatedStrawConfig.flakeSize).toBe(65)
-    })
+      const customId = createMaterialId()
+      store.updateDefaultStrawMaterial(customId)
 
-    it('should reject invalid straw configuration', () => {
-      const store = getConfigActions()
-
-      expect(() => store.updateStrawConfig({ baleMinLength: -10 })).toThrow(
-        'Minimum straw bale length must be greater than 0'
-      )
-
-      expect(() => store.updateStrawConfig({ baleMaxLength: 500, baleMinLength: 600 })).toThrow(
-        'Minimum straw bale length cannot exceed the maximum straw bale length'
-      )
-
-      expect(() => store.updateStrawConfig({ tolerance: -1 })).toThrow('Straw bale tolerance cannot be negative')
-
-      expect(() => store.updateStrawConfig({ topCutoffLimit: 0 })).toThrow(
-        'Straw top cutoff limit must be greater than 0'
-      )
-
-      expect(() => store.updateStrawConfig({ flakeSize: 0 })).toThrow('Straw flake size must be greater than 0')
+      const updatedId = store.getDefaultStrawMaterial()
+      expect(updatedId).toBe(customId)
     })
   })
 

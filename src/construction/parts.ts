@@ -1,7 +1,7 @@
 import { vec2, vec3 } from 'gl-matrix'
 
 import type { ConstructionElement, ConstructionElementId } from '@/construction/elements'
-import type { MaterialId, SheetMaterial } from '@/construction/materials/material'
+import type { DimensionalMaterial, MaterialId, SheetMaterial } from '@/construction/materials/material'
 import { getMaterialById } from '@/construction/materials/store'
 import type { ConstructionModel } from '@/construction/model'
 import {
@@ -189,34 +189,37 @@ const computeVolume = (size: vec3): Volume => size[0] * size[1] * size[2]
 
 export type PartIssue = 'CrossSectionMismatch' | 'LengthExceedsAvailable' | 'ThicknessMismatch' | 'SheetSizeExceeded'
 
-const computeDimensionalDetails = (size: vec3, availableLengths: Length[], width: Length, thickness: Length) => {
-  const dimensions = Array.from(size) as [number, number, number]
-  const indices = [0, 1, 2]
-  const materialWidth = Math.round(width)
-  const materialThickness = Math.round(thickness)
-
-  const findMatchingIndex = (target: number): number => {
-    for (let i = 0; i < indices.length; i++) {
-      if (dimensions[indices[i]] === target) {
-        indices.splice(i, 1)
-        return i
-      }
-    }
-    return -1
-  }
-
-  const widthIndex = findMatchingIndex(materialWidth)
-  const thicknessIndex = findMatchingIndex(materialThickness)
+const computeDimensionalDetails = (size: vec3, material: DimensionalMaterial) => {
+  const dimensions = [Math.round(size[0]), Math.round(size[1]), Math.round(size[2])] as [number, number, number]
   let issue: PartIssue | undefined
+  let length = dimensions[0]
 
-  if (widthIndex === -1 || thicknessIndex === -1) {
+  const matchesCrossSection = material.crossSections.some(section => {
+    const indices = [0, 1, 2]
+    const findIndex = (target: number): number => {
+      for (let i = 0; i < indices.length; i++) {
+        if (dimensions[indices[i]] === Math.round(target)) {
+          const [removed] = indices.splice(i, 1)
+          return removed
+        }
+      }
+      return -1
+    }
+
+    const smallerIndex = findIndex(section.smallerLength)
+    const biggerIndex = findIndex(section.biggerLength)
+    if (smallerIndex === -1 || biggerIndex === -1) {
+      return false
+    }
+
+    length = dimensions[indices[0] ?? 2]
+    return true
+  })
+
+  if (!matchesCrossSection) {
     issue = 'CrossSectionMismatch'
-  }
-
-  const length = dimensions[indices.length === 1 ? indices[0] : 2]
-
-  if (!issue && availableLengths.length > 0) {
-    const maxAvailableLength = Math.round(Math.max(...availableLengths))
+  } else if (material.lengths.length > 0) {
+    const maxAvailableLength = Math.max(...material.lengths)
     if (length > maxAvailableLength) {
       issue = 'LengthExceedsAvailable'
     }
@@ -227,22 +230,25 @@ const computeDimensionalDetails = (size: vec3, availableLengths: Length[], width
 
 const computeSheetDetails = (size: vec3, material: SheetMaterial) => {
   let issue: PartIssue | undefined
-  const dimensions = Array.from(size) as [number, number, number]
-  const thicknessIndex = dimensions.findIndex(d => d === material.thickness)
+  const dimensions = [Math.round(size[0]), Math.round(size[1]), Math.round(size[2])] as [number, number, number]
 
+  const thicknessIndex = dimensions.findIndex(d => material.thicknesses.includes(d))
   let thickness: Length
   let areaSize: vec2
+
   if (thicknessIndex === -1) {
     issue = 'ThicknessMismatch'
     thickness = dimensions[0]
     areaSize = vec2.fromValues(dimensions[1], dimensions[2])
   } else {
     thickness = dimensions[thicknessIndex]
-    const remainingDimensions = dimensions.filter((_, i) => i !== thicknessIndex).sort()
-    if (
-      remainingDimensions[0] > Math.min(material.width, material.length) ||
-      remainingDimensions[1] > Math.max(material.width, material.length)
-    ) {
+    const remainingDimensions = dimensions.filter((_, i) => i !== thicknessIndex).sort((a, b) => a - b)
+    const fitsSize = material.sizes.some(sizeOption => {
+      const smaller = Math.min(sizeOption.smallerLength, sizeOption.biggerLength)
+      const bigger = Math.max(sizeOption.smallerLength, sizeOption.biggerLength)
+      return remainingDimensions[0] <= smaller && remainingDimensions[1] <= bigger
+    })
+    if (!fitsSize) {
       issue = 'SheetSizeExceeded'
     }
     areaSize = vec2.fromValues(remainingDimensions[0], remainingDimensions[1])
@@ -383,12 +389,7 @@ function processPart(
   let issue: PartIssue | undefined
 
   if (materialDefinition?.type === 'dimensional') {
-    const details = computeDimensionalDetails(
-      size,
-      materialDefinition.availableLengths,
-      materialDefinition.width,
-      materialDefinition.thickness
-    )
+    const details = computeDimensionalDetails(size, materialDefinition)
     length = details.length
     issue = details.issue
   } else if (materialDefinition?.type === 'sheet') {

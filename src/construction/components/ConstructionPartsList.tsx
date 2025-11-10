@@ -168,14 +168,19 @@ interface PartsTableProps {
   onBackToTop: () => void
 }
 
-const PartsTable = React.forwardRef<HTMLDivElement, PartsTableProps>(function PartsTable(
-  { material, parts, onBackToTop },
-  ref
-) {
-  const crossSection =
-    material.type === 'dimensional'
-      ? `${formatLengthInMeters(material.width)} × ${formatLengthInMeters(material.thickness)}`
-      : null
+  const PartsTable = React.forwardRef<HTMLDivElement, PartsTableProps>(function PartsTable(
+    { material, parts, onBackToTop },
+    ref
+  ) {
+    const crossSection =
+      material.type === 'dimensional'
+        ? material.crossSections.length === 1
+          ? formatCrossSection([
+              material.crossSections[0]?.smallerLength ?? 0,
+              material.crossSections[0]?.biggerLength ?? 0
+            ])
+          : `${material.crossSections.length} cross sections`
+        : null
 
   return (
     <Card ref={ref} variant="surface" size="2">
@@ -241,7 +246,7 @@ function DimensionalPartsTable({ parts, material }: { parts: MaterialPartItem[];
                   {part.issue === 'CrossSectionMismatch' && (
                     <Tooltip
                       key="cross-section-mismatch"
-                      content={`Part dimensions ${formatDimensions(part.size)} do not match material cross section ${formatCrossSection([material.thickness, material.width])}`}
+                      content={`Part dimensions ${formatDimensions(part.size)} do not match any available cross section`}
                     >
                       <ExclamationTriangleIcon aria-hidden style={{ color: 'var(--red-9)' }} />
                     </Tooltip>
@@ -257,12 +262,12 @@ function DimensionalPartsTable({ parts, material }: { parts: MaterialPartItem[];
               <Table.Cell justify="end">
                 <Flex align="center" gap="2" justify="end">
                   <Text>{part.length !== undefined ? formatLengthInMeters(part.length) : '—'}</Text>
-                  {part.issue === 'LengthExceedsAvailable' && (
+                  {part.issue === 'LengthExceedsAvailable' && material.lengths.length > 0 && (
                     <Tooltip
                       key="length-exceeds-available"
                       content={`Part length ${
                         part.length !== undefined ? formatLengthInMeters(part.length) : 'Unknown'
-                      } exceeds material maximum available length ${formatLengthInMeters(Math.max(...material.availableLengths))}`}
+                      } exceeds material maximum available length ${formatLengthInMeters(Math.max(...material.lengths))}`}
                     >
                       <ExclamationTriangleIcon style={{ color: 'var(--red-9)' }} />
                     </Tooltip>
@@ -322,7 +327,9 @@ function SheetPartsTable({ parts, material }: { parts: MaterialPartItem[]; mater
                   {part.issue === 'ThicknessMismatch' && (
                     <Tooltip
                       key="thickness-missmatch"
-                      content={`Dimensions ${formatDimensions(part.size)} do not match thickness ${formatLengthInMeters(material.thickness)}`}
+                      content={`Dimensions ${formatDimensions(part.size)} do not match available thicknesses (${material.thicknesses
+                        .map(value => formatLengthInMeters(value))
+                        .join(', ')})`}
                     >
                       <ExclamationTriangleIcon style={{ color: 'var(--red-9)' }} />
                     </Tooltip>
@@ -330,7 +337,9 @@ function SheetPartsTable({ parts, material }: { parts: MaterialPartItem[]; mater
                   {part.issue === 'SheetSizeExceeded' && (
                     <Tooltip
                       key="sheet-size-exceeded"
-                      content={`Dimensions ${formatDimensions(part.size)} are bigger than material size ${formatCrossSection([material.width, material.length])}`}
+                      content={`Dimensions ${formatDimensions(part.size)} exceed available sheet sizes (${material.sizes
+                        .map(size => formatCrossSection([size.smallerLength, size.biggerLength]))
+                        .join(', ')})`}
                     >
                       <ExclamationTriangleIcon aria-hidden style={{ color: 'var(--red-9)' }} />
                     </Tooltip>

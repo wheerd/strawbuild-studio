@@ -28,6 +28,8 @@ export function getMaterialTypeIcon(type: Material['type']) {
       return OpacityIcon
     case 'generic':
       return CircleIcon
+    case 'strawbale':
+      return CubeIcon
   }
 }
 
@@ -41,6 +43,8 @@ export function getMaterialTypeName(type: Material['type']) {
       return 'Volume'
     case 'generic':
       return 'Generic'
+    case 'strawbale':
+      return 'Strawbale'
   }
 }
 
@@ -73,7 +77,7 @@ export function MaterialSelect({
           </Select.Item>
         )}
         {materials.length === 0 ? (
-          <Select.Item value="" disabled>
+          <Select.Item value="-" disabled>
             <Text color="gray">No materials available</Text>
           </Select.Item>
         ) : (

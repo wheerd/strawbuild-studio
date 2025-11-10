@@ -1,46 +1,31 @@
 import { type StateCreator } from 'zustand'
 
-import { strawbale } from '@/construction/materials/material'
-import { type StrawConfig, validateStrawConfig } from '@/construction/materials/straw'
-import '@/shared/geometry'
+import { type MaterialId, strawbale } from '@/construction/materials/material'
 
 export interface StrawState {
-  straw: StrawConfig
+  defaultStrawMaterial: MaterialId
 }
 
 export interface StrawActions {
-  getStrawConfig: () => StrawConfig
-  updateStrawConfig: (updates: Partial<StrawConfig>) => void
+  getDefaultStrawMaterial: () => MaterialId
+  updateDefaultStrawMaterial: (materialId: MaterialId) => void
 }
 
 export type StrawSlice = StrawState & { actions: StrawActions }
 
-// Default straw config
-const createDefaultStrawConfig = (): StrawConfig => ({
-  baleMinLength: 800,
-  baleMaxLength: 900,
-  baleHeight: 500,
-  baleWidth: 360,
-  material: strawbale.id,
-  tolerance: 2,
-  topCutoffLimit: 50,
-  flakeSize: 70
-})
-
 export const createStrawSlice: StateCreator<StrawSlice, [['zustand/immer', never]], [], StrawSlice> = (set, get) => ({
-  straw: createDefaultStrawConfig(),
+  defaultStrawMaterial: strawbale.id,
   actions: {
-    getStrawConfig: () => {
+    getDefaultStrawMaterial: () => {
       const state = get()
-      return state.straw
+      return state.defaultStrawMaterial
     },
 
-    updateStrawConfig: (updates: Partial<StrawConfig>) => {
-      set(state => {
-        const next = { ...state.straw, ...updates }
-        validateStrawConfig(next)
-        return { ...state, straw: next }
-      })
+    updateDefaultStrawMaterial: (materialId: MaterialId) => {
+      set(state => ({
+        ...state,
+        defaultStrawMaterial: materialId
+      }))
     }
   } satisfies StrawActions
 })

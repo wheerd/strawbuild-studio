@@ -13,19 +13,27 @@ import * as Label from '@radix-ui/react-label'
 import { AlertDialog, Badge, Button, DropdownMenu, Flex, Grid, IconButton, Text, TextField } from '@radix-ui/themes'
 import React, { useCallback, useState } from 'react'
 
-import { useRingBeamAssemblies, useStrawConfig, useWallAssemblies } from '@/construction/config/store'
+import {
+  useConfigActions,
+  useDefaultStrawMaterialId,
+  useRingBeamAssemblies,
+  useWallAssemblies
+} from '@/construction/config/store'
 import type {
   DimensionalMaterial,
   GenericMaterial,
   Material,
   MaterialId,
   SheetMaterial,
+  StrawbaleMaterial,
   VolumeMaterial
 } from '@/construction/materials/material'
+import { strawbale } from '@/construction/materials/material'
 import { useMaterialActions, useMaterials } from '@/construction/materials/store'
 import { getMaterialUsage } from '@/construction/materials/usage'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
 import type { Length } from '@/shared/geometry'
+import { formatLengthInMeters } from '@/shared/utils/formatting'
 
 import { MaterialSelect, getMaterialTypeIcon, getMaterialTypeName } from './MaterialSelect'
 
@@ -39,12 +47,16 @@ export interface MaterialsConfigContentProps {
 
 type MaterialType = Material['type']
 
+const formatCrossSectionLabel = (section: { smallerLength: number; biggerLength: number }) =>
+  `${formatLengthInMeters(section.smallerLength)} × ${formatLengthInMeters(section.biggerLength)}`
+
 export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigContentProps): React.JSX.Element {
   const materials = useMaterials()
   const { addMaterial, updateMaterial, removeMaterial, duplicateMaterial, reset } = useMaterialActions()
   const ringBeamAssemblies = useRingBeamAssemblies()
   const wallAssemblies = useWallAssemblies()
-  const strawConfig = useStrawConfig()
+  const defaultStrawMaterialId = useDefaultStrawMaterialId()
+  const { updateDefaultStrawMaterial } = useConfigActions()
 
   const [selectedMaterialId, setSelectedMaterialId] = useState<MaterialId | null>(() => {
     if (initialSelectionId && materials.some(m => m.id === initialSelectionId)) {
@@ -54,17 +66,19 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
   })
 
   const selectedMaterial = materials.find(m => m.id === selectedMaterialId) ?? null
+  const strawMaterials = React.useMemo(() => materials.filter(m => m.type === 'strawbale'), [materials])
 
   const usage = React.useMemo(
     () =>
       selectedMaterial
-        ? getMaterialUsage(selectedMaterial.id, ringBeamAssemblies, wallAssemblies, strawConfig)
+        ? getMaterialUsage(selectedMaterial.id, ringBeamAssemblies, wallAssemblies, defaultStrawMaterialId)
         : { isUsed: false, usedByConfigs: [] },
-    [selectedMaterial, ringBeamAssemblies, wallAssemblies, strawConfig]
+    [selectedMaterial, ringBeamAssemblies, wallAssemblies, defaultStrawMaterialId]
   )
 
   const handleAddNew = useCallback(
     (type: MaterialType) => {
+      const noStrawMaterials = strawMaterials.length === 0
       let newMaterial: Material
 
       switch (type) {
@@ -73,9 +87,13 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             name: 'New dimensional material',
             type: 'dimensional',
             color: '#808080',
-            width: 100,
-            thickness: 50,
-            availableLengths: [3000]
+            crossSections: [
+              {
+                smallerLength: 50,
+                biggerLength: 100
+              }
+            ],
+            lengths: [3000]
           } as Omit<DimensionalMaterial, 'id'>)
           break
         case 'sheet':
@@ -83,9 +101,9 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             name: 'New sheet material',
             type: 'sheet',
             color: '#808080',
-            width: 1000,
-            length: 2000,
-            thickness: 10
+            sizes: [{ smallerLength: 1000, biggerLength: 2000 }],
+            thicknesses: [18],
+            sheetType: 'solid'
           } as Omit<SheetMaterial, 'id'>)
           break
         case 'volume':
@@ -103,11 +121,31 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             color: '#808080'
           } as Omit<GenericMaterial, 'id'>)
           break
+        case 'strawbale':
+          newMaterial = addMaterial({
+            name: 'New strawbale material',
+            type: 'strawbale',
+            color: strawbale.color,
+            baleMinLength: strawbale.baleMinLength,
+            baleMaxLength: strawbale.baleMaxLength,
+            baleHeight: strawbale.baleHeight,
+            baleWidth: strawbale.baleWidth,
+            tolerance: strawbale.tolerance,
+            topCutoffLimit: strawbale.topCutoffLimit,
+            flakeSize: strawbale.flakeSize,
+            density: strawbale.density
+          } as Omit<StrawbaleMaterial, 'id'>)
+          if (noStrawMaterials) {
+            updateDefaultStrawMaterial(newMaterial.id)
+          }
+          break
+        default:
+          return
       }
 
       setSelectedMaterialId(newMaterial.id)
     },
-    [addMaterial]
+    [addMaterial, strawMaterials.length, updateDefaultStrawMaterial]
   )
 
   const handleDuplicate = useCallback(() => {
@@ -165,6 +203,12 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
               <Flex align="center" gap="1">
                 <CubeIcon />
                 Dimensional
+              </Flex>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item onSelect={() => handleAddNew('strawbale')}>
+              <Flex align="center" gap="1">
+                <CubeIcon />
+                Strawbale
               </Flex>
             </DropdownMenu.Item>
             <DropdownMenu.Item onSelect={() => handleAddNew('sheet')}>
@@ -246,6 +290,28 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
         </AlertDialog.Root>
       </Flex>
 
+      <Flex direction="column" gap="1">
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            Default Straw Material
+          </Text>
+        </Label.Root>
+        <MaterialSelect
+          value={defaultStrawMaterialId}
+          onValueChange={materialId => {
+            if (materialId) {
+              updateDefaultStrawMaterial(materialId)
+            }
+          }}
+          placeholder={
+            strawMaterials.length === 0 ? 'Create a strawbale material first' : 'Select straw material...'
+          }
+          size="2"
+          disabled={strawMaterials.length === 0}
+          materials={strawMaterials}
+        />
+      </Flex>
+
       {/* Form */}
       {selectedMaterial && (
         <Flex
@@ -304,6 +370,10 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
           {selectedMaterial.type === 'volume' && (
             <VolumeMaterialFields material={selectedMaterial} onUpdate={handleUpdate} />
           )}
+
+          {selectedMaterial.type === 'strawbale' && (
+            <StrawbaleMaterialFields material={selectedMaterial} onUpdate={handleUpdate} />
+          )}
         </Flex>
       )}
 
@@ -340,78 +410,134 @@ function DimensionalMaterialFields({
   material: DimensionalMaterial
   onUpdate: (updates: Partial<DimensionalMaterial>) => void
 }) {
-  const [newLengthInput, setNewLengthInput] = useState<Length>(3000)
+  const [newWidth, setNewWidth] = useState<Length>(material.crossSections[0]?.smallerLength ?? 50)
+  const [newThickness, setNewThickness] = useState<Length>(material.crossSections[0]?.biggerLength ?? 100)
+  const [newLengthInput, setNewLengthInput] = useState<Length>(material.lengths[0] ?? 3000)
 
-  const handleAddLength = useCallback(() => {
-    if (material.availableLengths.includes(newLengthInput)) {
+  const handleAddCrossSection = useCallback(() => {
+    if (newWidth <= 0 || newThickness <= 0) return
+    const normalized = {
+      smallerLength: Math.min(newWidth, newThickness),
+      biggerLength: Math.max(newWidth, newThickness)
+    }
+    if (
+      material.crossSections.some(
+        section =>
+          section.smallerLength === normalized.smallerLength && section.biggerLength === normalized.biggerLength
+      )
+    ) {
       return
     }
+    const updated = [...material.crossSections, normalized].sort(
+      (a, b) => a.smallerLength - b.smallerLength || a.biggerLength - b.biggerLength
+    )
+    onUpdate({ crossSections: updated })
+  }, [material.crossSections, newThickness, newWidth, onUpdate])
 
-    const updated = [...material.availableLengths, newLengthInput].sort((a, b) => a - b)
-    onUpdate({ availableLengths: updated })
+  const handleRemoveCrossSection = useCallback(
+    (sectionToRemove: DimensionalMaterial['crossSections'][number]) => {
+      const updated = material.crossSections.filter(
+        section =>
+          section.smallerLength !== sectionToRemove.smallerLength ||
+          section.biggerLength !== sectionToRemove.biggerLength
+      )
+      onUpdate({ crossSections: updated })
+    },
+    [material.crossSections, onUpdate]
+  )
+
+  const handleAddLength = useCallback(() => {
+    if (newLengthInput <= 0 || material.lengths.includes(newLengthInput)) {
+      return
+    }
+    const updated = [...material.lengths, newLengthInput].sort((a, b) => a - b)
+    onUpdate({ lengths: updated })
     setNewLengthInput(3000)
-  }, [material.availableLengths, newLengthInput, onUpdate])
+  }, [material.lengths, newLengthInput, onUpdate])
 
   const handleRemoveLength = useCallback(
     (lengthToRemove: Length) => {
-      const updated = material.availableLengths.filter(l => l !== lengthToRemove)
-      onUpdate({ availableLengths: updated })
+      const updated = material.lengths.filter(l => l !== lengthToRemove)
+      onUpdate({ lengths: updated })
     },
-    [material.availableLengths, onUpdate]
+    [material.lengths, onUpdate]
   )
 
   return (
-    <>
-      {/* Compact 2x4 Grid for Width and Thickness */}
-      <Grid columns="4em 1fr 4em 1fr" rows="1" gap="2" gapX="3" align="center">
-        <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            Width
-          </Text>
-        </Label.Root>
-        <LengthField value={material.width} onChange={width => onUpdate({ width })} unit="mm" size="2" />
-
-        <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            Thickness
-          </Text>
-        </Label.Root>
-        <LengthField value={material.thickness} onChange={thickness => onUpdate({ thickness })} unit="mm" size="2" />
-      </Grid>
-
+    <Flex direction="column" gap="3">
       <Flex direction="column" gap="2">
         <Text size="2" weight="medium" color="gray">
-          Available Lengths
+          Cross Sections
         </Text>
-
         <Flex gap="2" wrap="wrap">
-          {material.availableLengths.map(length => (
-            <Badge key={length} size="3" variant="soft">
+          {material.crossSections.map(section => (
+            <Badge key={`${section.smallerLength}x${section.biggerLength}`} size="2" variant="soft">
               <Flex align="center" gap="1">
-                {length}mm
+                {formatCrossSectionLabel(section)}
                 <IconButton
-                  size="2"
+                  size="1"
                   variant="ghost"
                   color="gray"
-                  onClick={() => handleRemoveLength(length)}
-                  style={{ cursor: 'pointer', marginLeft: '4px' }}
+                  onClick={() => handleRemoveCrossSection(section)}
+                  style={{ cursor: 'pointer' }}
                 >
-                  <Cross2Icon width="12" height="12" />
+                  <Cross2Icon width="10" height="10" />
                 </IconButton>
               </Flex>
             </Badge>
           ))}
+          {material.crossSections.length === 0 && <Text color="gray">No cross sections configured</Text>}
         </Flex>
+        <Grid columns="repeat(2, minmax(0, 1fr)) auto" gap="2" align="end">
+          <Flex direction="column" gap="1">
+            <Text size="1" color="gray">
+              Width
+            </Text>
+            <LengthField value={newWidth} onChange={setNewWidth} unit="mm" size="2" />
+          </Flex>
+          <Flex direction="column" gap="1">
+            <Text size="1" color="gray">
+              Thickness
+            </Text>
+            <LengthField value={newThickness} onChange={setNewThickness} unit="mm" size="2" />
+          </Flex>
+          <Button onClick={handleAddCrossSection} variant="surface" size="2">
+            <PlusIcon /> Add
+          </Button>
+        </Grid>
+      </Flex>
 
+      <Flex direction="column" gap="2">
+        <Text size="2" weight="medium" color="gray">
+          Stock Lengths
+        </Text>
+        <Flex gap="2" wrap="wrap">
+          {material.lengths.map(length => (
+            <Badge key={length} size="2" variant="soft">
+              <Flex align="center" gap="1">
+                {formatLengthInMeters(length)}
+                <IconButton
+                  size="1"
+                  variant="ghost"
+                  color="gray"
+                  onClick={() => handleRemoveLength(length)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <Cross2Icon width="10" height="10" />
+                </IconButton>
+              </Flex>
+            </Badge>
+          ))}
+          {material.lengths.length === 0 && <Text color="gray">No lengths configured</Text>}
+        </Flex>
         <Flex gap="2" align="end">
           <LengthField value={newLengthInput} onChange={setNewLengthInput} unit="mm" size="2" style={{ flexGrow: 1 }} />
           <Button onClick={handleAddLength} variant="surface" size="2">
-            <PlusIcon />
-            Add
+            <PlusIcon /> Add
           </Button>
         </Flex>
       </Flex>
-    </>
+    </Flex>
   )
 }
 
@@ -422,33 +548,130 @@ function SheetMaterialFields({
   material: SheetMaterial
   onUpdate: (updates: Partial<SheetMaterial>) => void
 }) {
+  const [newWidth, setNewWidth] = useState<Length>(material.sizes[0]?.smallerLength ?? 600)
+  const [newLength, setNewLength] = useState<Length>(material.sizes[0]?.biggerLength ?? 1200)
+  const [newThickness, setNewThickness] = useState<Length>(material.thicknesses[0] ?? 18)
+
+  const handleAddSize = useCallback(() => {
+    if (newWidth <= 0 || newLength <= 0) return
+    const normalized = {
+      smallerLength: Math.min(newWidth, newLength),
+      biggerLength: Math.max(newWidth, newLength)
+    }
+    if (
+      material.sizes.some(
+        size => size.smallerLength === normalized.smallerLength && size.biggerLength === normalized.biggerLength
+      )
+    ) {
+      return
+    }
+    const updated = [...material.sizes, normalized].sort(
+      (a, b) => a.smallerLength - b.smallerLength || a.biggerLength - b.biggerLength
+    )
+    onUpdate({ sizes: updated })
+  }, [material.sizes, newLength, newWidth, onUpdate])
+
+  const handleRemoveSize = useCallback(
+    (sizeToRemove: SheetMaterial['sizes'][number]) => {
+      const updated = material.sizes.filter(
+        size => size.smallerLength !== sizeToRemove.smallerLength || size.biggerLength !== sizeToRemove.biggerLength
+      )
+      onUpdate({ sizes: updated })
+    },
+    [material.sizes, onUpdate]
+  )
+
+  const handleAddThickness = useCallback(() => {
+    if (newThickness <= 0 || material.thicknesses.includes(newThickness)) {
+      return
+    }
+    const updated = [...material.thicknesses, newThickness].sort((a, b) => a - b)
+    onUpdate({ thicknesses: updated })
+  }, [material.thicknesses, newThickness, onUpdate])
+
+  const handleRemoveThickness = useCallback(
+    (thicknessToRemove: Length) => {
+      const updated = material.thicknesses.filter(t => t !== thicknessToRemove)
+      onUpdate({ thicknesses: updated })
+    },
+    [material.thicknesses, onUpdate]
+  )
+
   return (
-    <Grid columns="4em 1fr 4em 1fr" gap="2" gapX="3" align="center">
-      <Label.Root>
+    <Flex direction="column" gap="3">
+      <Flex direction="column" gap="2">
         <Text size="2" weight="medium" color="gray">
-          Width
+          Sheet Sizes
         </Text>
-      </Label.Root>
-      <LengthField value={material.width} onChange={width => onUpdate({ width })} unit="mm" size="2" />
+        <Flex gap="2" wrap="wrap">
+          {material.sizes.map(size => (
+            <Badge key={`${size.smallerLength}x${size.biggerLength}`} size="2" variant="soft">
+              <Flex align="center" gap="1">
+                {formatCrossSectionLabel(size)}
+                <IconButton
+                  size="1"
+                  variant="ghost"
+                  color="gray"
+                  onClick={() => handleRemoveSize(size)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <Cross2Icon width="10" height="10" />
+                </IconButton>
+              </Flex>
+            </Badge>
+          ))}
+          {material.sizes.length === 0 && <Text color="gray">No sheet sizes configured</Text>}
+        </Flex>
+        <Grid columns="repeat(2, minmax(0, 1fr)) auto" gap="2" align="end">
+          <Flex direction="column" gap="1">
+            <Text size="1" color="gray">
+              Width
+            </Text>
+            <LengthField value={newWidth} onChange={setNewWidth} unit="mm" size="2" />
+          </Flex>
+          <Flex direction="column" gap="1">
+            <Text size="1" color="gray">
+              Length
+            </Text>
+            <LengthField value={newLength} onChange={setNewLength} unit="mm" size="2" />
+          </Flex>
+          <Button onClick={handleAddSize} variant="surface" size="2">
+            <PlusIcon /> Add
+          </Button>
+        </Grid>
+      </Flex>
 
-      <Label.Root>
+      <Flex direction="column" gap="2">
         <Text size="2" weight="medium" color="gray">
-          Length
+          Thicknesses
         </Text>
-      </Label.Root>
-      <LengthField value={material.length} onChange={length => onUpdate({ length })} unit="mm" size="2" />
-
-      <Label.Root>
-        <Text size="2" weight="medium" color="gray">
-          Thickness
-        </Text>
-      </Label.Root>
-      <LengthField value={material.thickness} onChange={thickness => onUpdate({ thickness })} unit="mm" size="2" />
-
-      {/* Empty cell to complete the grid */}
-      <div />
-      <div />
-    </Grid>
+        <Flex gap="2" wrap="wrap">
+          {material.thicknesses.map(thickness => (
+            <Badge key={thickness} size="2" variant="soft">
+              <Flex align="center" gap="1">
+                {formatLengthInMeters(thickness)}
+                <IconButton
+                  size="1"
+                  variant="ghost"
+                  color="gray"
+                  onClick={() => handleRemoveThickness(thickness)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <Cross2Icon width="10" height="10" />
+                </IconButton>
+              </Flex>
+            </Badge>
+          ))}
+          {material.thicknesses.length === 0 && <Text color="gray">No thicknesses configured</Text>}
+        </Flex>
+        <Flex gap="2" align="end">
+          <LengthField value={newThickness} onChange={setNewThickness} unit="mm" size="2" style={{ flexGrow: 1 }} />
+          <Button onClick={handleAddThickness} variant="surface" size="2">
+            <PlusIcon /> Add
+          </Button>
+        </Flex>
+      </Flex>
+    </Flex>
   )
 }
 
@@ -517,6 +740,76 @@ function VolumeMaterialFields({
           Add
         </Button>
       </Flex>
+    </Flex>
+  )
+}
+
+function StrawbaleMaterialFields({
+  material,
+  onUpdate
+}: {
+  material: StrawbaleMaterial
+  onUpdate: (updates: Partial<StrawbaleMaterial>) => void
+}) {
+  return (
+    <Flex direction="column" gap="3">
+      <Grid columns="8em 1fr 8em 1fr" gap="3" gapX="4">
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Min Bale Length
+          </Text>
+        </Label.Root>
+        <LengthField value={material.baleMinLength} onChange={baleMinLength => onUpdate({ baleMinLength })} unit="mm" size="2" />
+
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Max Bale Length
+          </Text>
+        </Label.Root>
+        <LengthField value={material.baleMaxLength} onChange={baleMaxLength => onUpdate({ baleMaxLength })} unit="mm" size="2" />
+
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Bale Height
+          </Text>
+        </Label.Root>
+        <LengthField value={material.baleHeight} onChange={baleHeight => onUpdate({ baleHeight })} unit="mm" size="2" />
+
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Bale Width
+          </Text>
+        </Label.Root>
+        <LengthField value={material.baleWidth} onChange={baleWidth => onUpdate({ baleWidth })} unit="mm" size="2" />
+      </Grid>
+
+      <Grid columns="8em 1fr 8em 1fr" gap="3" gapX="4">
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Tolerance
+          </Text>
+        </Label.Root>
+        <LengthField value={material.tolerance} onChange={tolerance => onUpdate({ tolerance })} unit="mm" size="2" />
+
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Top Cutoff Limit
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={material.topCutoffLimit}
+          onChange={topCutoffLimit => onUpdate({ topCutoffLimit })}
+          unit="mm"
+          size="2"
+        />
+
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Flake Size
+          </Text>
+        </Label.Root>
+        <LengthField value={material.flakeSize} onChange={flakeSize => onUpdate({ flakeSize })} unit="mm" size="2" />
+      </Grid>
     </Flex>
   )
 }

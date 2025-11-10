@@ -24,7 +24,7 @@ import { getWallAssemblyUsage } from '@/construction/config/usage'
 import { DEFAULT_WALL_LAYER_SETS } from '@/construction/layers/defaults'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
-import { wood120x60, woodwool } from '@/construction/materials/material'
+import { wood, woodwool } from '@/construction/materials/material'
 import type { PostConfig } from '@/construction/materials/posts'
 import type {
   InfillWallSegmentConfig,
@@ -228,7 +228,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
                 frameWidth: 'frameWidth' in module ? module.frameWidth : 120,
                 spacerSize: 'spacerSize' in module ? module.spacerSize : 120,
                 spacerCount: 'spacerCount' in module ? module.spacerCount : 3,
-                spacerMaterial: 'spacerMaterial' in module ? module.spacerMaterial : wood120x60.id,
+                spacerMaterial: 'spacerMaterial' in module ? module.spacerMaterial : wood.id,
                 infillMaterial: 'infillMaterial' in module ? module.infillMaterial : woodwool.id
               })
             }

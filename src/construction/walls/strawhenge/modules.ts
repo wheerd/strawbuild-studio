@@ -26,7 +26,7 @@ export interface DoubleFrameModuleConfig extends BaseModuleConfig {
   frameWidth: Length // Default: 120mm
   spacerSize: Length // Default: 120mm
   spacerCount: number // Default: 3
-  spacerMaterial: MaterialId // Default: wood120x60
+  spacerMaterial: MaterialId // Default: wood
   infillMaterial: MaterialId // Default: woodwool
 }
 

@@ -8,7 +8,7 @@ import { TAG_POST } from '@/construction/tags'
 import { Bounds3D, type Length } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
 
-import type { Material, MaterialId } from './material'
+import type { DimensionalMaterial, MaterialId } from './material'
 import { getMaterialById } from './store'
 
 export interface BasePostConfig {
@@ -35,22 +35,21 @@ export type PostConfig = FullPostConfig | DoublePostConfig
  * Checks if two dimensional materials have matching dimensions.
  * Allows for swapped dimensions (e.g., 360x60 matches 60x360).
  */
-const dimensionsMatch = (
-  dim1: { width: Length; thickness: Length },
-  dim2: { width: Length; thickness: Length }
+const materialSupportsCrossSection = (
+  material: DimensionalMaterial,
+  dimensions: { width: Length; thickness: Length }
 ): boolean => {
-  // Direct match
-  if (dim1.width === dim2.width && dim1.thickness === dim2.thickness) {
-    return true
-  }
-
-  // Swapped dimensions match (360x60 === 60x360)
-  if (dim1.width === dim2.thickness && dim1.thickness === dim2.width) {
-    return true
-  }
-
-  return false
+  return material.crossSections.some(section => {
+    const smaller = Math.min(dimensions.width, dimensions.thickness)
+    const bigger = Math.max(dimensions.width, dimensions.thickness)
+    return section.smallerLength === smaller && section.biggerLength === bigger
+  })
 }
+
+const formatAvailableCrossSections = (material: DimensionalMaterial): string =>
+  material.crossSections
+    .map(section => `${formatLength(section.smallerLength)}x${formatLength(section.biggerLength)}`)
+    .join(', ')
 
 function* constructFullPost(position: vec3, size: vec3, config: FullPostConfig): Generator<ConstructionResult> {
   const postSize = vec3.fromValues(config.width, size[1], size[2])
@@ -67,13 +66,14 @@ function* constructFullPost(position: vec3, size: vec3, config: FullPostConfig):
   // Check if material is dimensional and dimensions match
   const material = getMaterialById(config.material)
   if (material && material.type === 'dimensional') {
-    const dimensionalMaterial = material as Material & { type: 'dimensional' }
+    const dimensionalMaterial = material as DimensionalMaterial
     const postDimensions = { width: config.width, thickness: size[1] }
-    const materialDimensions = { width: dimensionalMaterial.width, thickness: dimensionalMaterial.thickness }
 
-    if (!dimensionsMatch(postDimensions, materialDimensions)) {
+    if (!materialSupportsCrossSection(dimensionalMaterial, postDimensions)) {
       yield yieldWarning({
-        description: `Post dimensions (${formatLength(config.width)}x${formatLength(size[1])}) don't match material dimensions (${formatLength(dimensionalMaterial.width)}x${formatLength(dimensionalMaterial.thickness)})`,
+        description: `Post dimensions (${formatLength(config.width)}x${formatLength(
+          size[1]
+        )}) don't match available cross sections (${formatAvailableCrossSections(dimensionalMaterial)})`,
         elements: [postElement.id],
         bounds: postElement.bounds
       })
@@ -135,13 +135,14 @@ function* constructDoublePost(position: vec3, size: vec3, config: DoublePostConf
   // Check if post material is dimensional and dimensions match
   const postMaterial = getMaterialById(config.material)
   if (postMaterial && postMaterial.type === 'dimensional') {
-    const dimensionalMaterial = postMaterial as Material & { type: 'dimensional' }
+    const dimensionalMaterial = postMaterial as DimensionalMaterial
     const postDimensions = { width: config.width, thickness: config.thickness }
-    const materialDimensions = { width: dimensionalMaterial.width, thickness: dimensionalMaterial.thickness }
 
-    if (!dimensionsMatch(postDimensions, materialDimensions)) {
+    if (!materialSupportsCrossSection(dimensionalMaterial, postDimensions)) {
       yield yieldWarning({
-        description: `Post dimensions (${formatLength(config.width)}x${formatLength(config.thickness)}) don't match material dimensions (${formatLength(dimensionalMaterial.width)}x${formatLength(dimensionalMaterial.thickness)})`,
+        description: `Post dimensions (${formatLength(config.width)}x${formatLength(
+          config.thickness
+        )}) don't match available cross sections (${formatAvailableCrossSections(dimensionalMaterial)})`,
         elements: [post1.id, post2.id],
         bounds: Bounds3D.merge(post1.bounds, post2.bounds)
       })
