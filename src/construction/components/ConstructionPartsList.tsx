@@ -7,7 +7,7 @@ import { getMaterialTypeIcon, getMaterialTypeName } from '@/construction/materia
 import type { DimensionalMaterial, Material, SheetMaterial, VolumeMaterial } from '@/construction/materials/material'
 import { useMaterialsMap } from '@/construction/materials/store'
 import type { MaterialPartItem, MaterialPartsList } from '@/construction/parts'
-import { Bounds2D, type Polygon2D } from '@/shared/geometry'
+import { Bounds2D, type Polygon2D, type Volume } from '@/shared/geometry'
 import { formatArea, formatLengthInMeters, formatVolume } from '@/shared/utils/formatting'
 
 interface ConstructionPartsListProps {
@@ -19,6 +19,7 @@ interface RowMetrics {
   totalVolume: number
   totalLength?: number
   totalArea?: number
+  totalWeight?: number
 }
 
 const formatCrossSection = ([first, second]: [number, number]) =>
@@ -26,6 +27,19 @@ const formatCrossSection = ([first, second]: [number, number]) =>
 
 const formatDimensions = (size: vec3) =>
   `${formatLengthInMeters(size[0])} × ${formatLengthInMeters(size[1])} × ${formatLengthInMeters(size[2])}`
+
+const formatWeight = (weight?: number) => {
+  if (weight === undefined) return '—'
+  if (weight > 1000) {
+    return `${new Intl.NumberFormat(undefined, { maximumFractionDigits: 3 }).format(weight / 1000)} t`
+  }
+  return `${new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(weight)} kg`
+}
+
+const calculateWeight = (volume: Volume, material: Material): number | undefined => {
+  if (material.density == null) return undefined
+  return (volume * material.density) / 1_000_000_000
+}
 
 function MaterialTypeIndicator({ material, size = 18 }: { material: Material; size?: number }) {
   const Icon = getMaterialTypeIcon(material.type)
@@ -158,6 +172,9 @@ function MaterialSummaryRow({
       <Table.Cell width="10em" justify="end">
         {formatVolume(metrics.totalVolume)}
       </Table.Cell>
+      <Table.Cell width="10em" justify="end">
+        {formatWeight(metrics.totalWeight)}
+      </Table.Cell>
     </Table.Row>
   )
 }
@@ -230,10 +247,14 @@ function DimensionalPartsTable({ parts, material }: { parts: MaterialPartItem[];
           <Table.ColumnHeaderCell width="9em" justify="end">
             Total Volume
           </Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="9em" justify="end">
+            Total Weight
+          </Table.ColumnHeaderCell>
         </Table.Row>
       </Table.Header>
       <Table.Body>
         {parts.map(part => {
+          const partWeight = calculateWeight(part.totalVolume, material)
           return (
             <Table.Row key={part.partId} style={{ background: part.issue ? 'var(--red-3)' : undefined }}>
               <Table.RowHeaderCell justify="center">
@@ -278,6 +299,7 @@ function DimensionalPartsTable({ parts, material }: { parts: MaterialPartItem[];
                 {part.totalLength !== undefined ? formatLengthInMeters(part.totalLength) : '—'}
               </Table.Cell>
               <Table.Cell justify="end">{formatVolume(part.totalVolume)}</Table.Cell>
+              <Table.Cell justify="end">{formatWeight(partWeight)}</Table.Cell>
             </Table.Row>
           )
         })}
@@ -311,10 +333,14 @@ function SheetPartsTable({ parts, material }: { parts: MaterialPartItem[]; mater
           <Table.ColumnHeaderCell width="9em" justify="end">
             Total Volume
           </Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="9em" justify="end">
+            Total Weight
+          </Table.ColumnHeaderCell>
         </Table.Row>
       </Table.Header>
       <Table.Body>
         {parts.map(part => {
+          const partWeight = calculateWeight(part.totalVolume, material)
           return (
             <Table.Row key={part.partId} style={{ background: part.issue ? 'var(--red-3)' : undefined }}>
               <Table.RowHeaderCell justify="center">
@@ -356,6 +382,7 @@ function SheetPartsTable({ parts, material }: { parts: MaterialPartItem[]; mater
               <Table.Cell justify="end"> {part.area !== undefined ? formatArea(part.area) : '—'}</Table.Cell>
               <Table.Cell justify="end">{part.totalArea !== undefined ? formatArea(part.totalArea) : '—'}</Table.Cell>
               <Table.Cell justify="end">{formatVolume(part.totalVolume)}</Table.Cell>
+              <Table.Cell justify="end">{formatWeight(partWeight)}</Table.Cell>
             </Table.Row>
           )
         })}
@@ -364,7 +391,7 @@ function SheetPartsTable({ parts, material }: { parts: MaterialPartItem[]; mater
   )
 }
 
-function VolumePartsTable({ parts }: { parts: MaterialPartItem[]; material: VolumeMaterial }) {
+function VolumePartsTable({ parts, material }: { parts: MaterialPartItem[]; material: VolumeMaterial }) {
   return (
     <Table.Root variant="surface" size="2" className="min-w-full">
       <Table.Header>
@@ -386,10 +413,14 @@ function VolumePartsTable({ parts }: { parts: MaterialPartItem[]; material: Volu
           <Table.ColumnHeaderCell width="9em" justify="end">
             Total Volume
           </Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="9em" justify="end">
+            Total Weight
+          </Table.ColumnHeaderCell>
         </Table.Row>
       </Table.Header>
       <Table.Body>
         {parts.map(part => {
+          const partWeight = calculateWeight(part.totalVolume, material)
           return (
             <Table.Row key={part.partId} style={{ background: part.issue ? 'var(--red-3)' : undefined }}>
               <Table.RowHeaderCell justify="center">
@@ -401,6 +432,7 @@ function VolumePartsTable({ parts }: { parts: MaterialPartItem[]; material: Volu
               <Table.Cell justify="end"> {part.area !== undefined ? formatArea(part.area) : '—'}</Table.Cell>
               <Table.Cell justify="end">{part.totalArea !== undefined ? formatArea(part.totalArea) : '—'}</Table.Cell>
               <Table.Cell justify="end">{formatVolume(part.totalVolume)}</Table.Cell>
+              <Table.Cell justify="end">{formatWeight(partWeight)}</Table.Cell>
             </Table.Row>
           )
         })}
@@ -449,11 +481,13 @@ export function ConstructionPartsList({ partsList }: ConstructionPartsListProps)
       const parts = Object.values(materialParts.parts)
       const material = materialsMap[materialId]
       if (!material) return null
+      const totalWeight = calculateWeight(materialParts.totalVolume, material)
       const metrics: RowMetrics & { partCount: number } = {
         totalQuantity: materialParts.totalQuantity,
         totalVolume: materialParts.totalVolume,
         totalLength: materialParts.totalLength,
         totalArea: materialParts.totalArea,
+        totalWeight,
         partCount: parts.length
       }
       return { material, metrics }
@@ -475,6 +509,7 @@ export function ConstructionPartsList({ partsList }: ConstructionPartsListProps)
                 <Table.ColumnHeaderCell justify="end">Total Length</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell justify="end">Total Area</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell justify="end">Total Volume</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell justify="end">Total Weight</Table.ColumnHeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
