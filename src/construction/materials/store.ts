@@ -48,6 +48,10 @@ const validateMaterialUpdates = (updates: Partial<UnionOmit<Material, 'id'>>, ma
     validateMaterialName(updates.name)
   }
 
+  if (updates.density !== undefined && updates.density <= 0) {
+    throw new Error('Density must be positive numbers')
+  }
+
   switch (materialType) {
     case 'dimensional': {
       const dimensional = updates as Partial<DimensionalMaterial>

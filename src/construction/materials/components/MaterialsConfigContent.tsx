@@ -336,7 +336,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
               size="2"
             />
           </Grid>
-          <Grid columns="4em 1fr 4em 1fr" gap="2" gapX="3" align="center">
+          <Grid columns="4em 1fr auto 1fr auto auto" gap="2" gapX="3" align="center">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
                 Type
@@ -360,6 +360,31 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
               onChange={e => handleUpdate({ color: e.target.value })}
               style={{ width: '60px', height: '24px', cursor: 'pointer' }}
             />
+            <Label.Root>
+              <Text size="2" weight="medium" color="gray">
+                Density
+              </Text>
+            </Label.Root>
+            <TextField.Root
+              type="number"
+              value={selectedMaterial.density ?? ''}
+              onChange={e => {
+                const next = e.target.value
+                const parsed = Number(next)
+                handleUpdate({ density: Number.isNaN(parsed) || parsed === 0 ? undefined : parsed })
+              }}
+              placeholder="—"
+              size="2"
+              min="0"
+              step="1"
+              style={{ textAlign: 'right', width: '6em' }}
+            >
+              <TextField.Slot side="right" style={{ paddingInline: '6px' }}>
+                <Text size="1" color="gray">
+                  kg/m³
+                </Text>
+              </TextField.Slot>
+            </TextField.Root>
           </Grid>
 
           {selectedMaterial.type === 'dimensional' && (
