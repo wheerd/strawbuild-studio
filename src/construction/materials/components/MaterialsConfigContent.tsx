@@ -45,8 +45,9 @@ import { strawbale } from '@/construction/materials/material'
 import { useMaterialActions, useMaterials } from '@/construction/materials/store'
 import { getMaterialUsage } from '@/construction/materials/usage'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
+import { VolumeField } from '@/shared/components/VolumeField/VolumeField'
 import type { Length } from '@/shared/geometry'
-import { formatLength } from '@/shared/utils/formatting'
+import { formatLength, formatVolume } from '@/shared/utils/formatting'
 
 import { MaterialSelect, getMaterialTypeIcon, getMaterialTypeName } from './MaterialSelect'
 
@@ -723,7 +724,8 @@ function VolumeMaterialFields({
   material: VolumeMaterial
   onUpdate: (updates: Partial<VolumeMaterial>) => void
 }) {
-  const [newVolumeInput, setNewVolumeInput] = useState<number>(1000)
+  const [newVolumeInput, setNewVolumeInput] = useState<number>(1_000_000)
+  const [volumeUnit, setVolumeUnit] = useState<'liter' | 'm3'>('liter')
 
   const handleAddVolume = useCallback(() => {
     if (material.availableVolumes.includes(newVolumeInput)) {
@@ -732,7 +734,7 @@ function VolumeMaterialFields({
 
     const updated = [...material.availableVolumes, newVolumeInput].sort((a, b) => a - b)
     onUpdate({ availableVolumes: updated })
-    setNewVolumeInput(1000)
+    setNewVolumeInput(1000_000)
   }, [material.availableVolumes, newVolumeInput, onUpdate])
 
   const handleRemoveVolume = useCallback(
@@ -744,42 +746,62 @@ function VolumeMaterialFields({
   )
 
   return (
-    <Flex direction="column" gap="2">
-      <Text size="2" weight="medium">
-        Available Volumes
-      </Text>
-
-      <Flex gap="2" wrap="wrap">
-        {material.availableVolumes.map(volume => (
-          <Badge key={volume} size="2" variant="soft">
-            <Flex align="center" gap="1">
-              {volume}
-              <IconButton
-                size="2"
-                variant="ghost"
-                color="gray"
-                onClick={() => handleRemoveVolume(volume)}
-                style={{ cursor: 'pointer', marginLeft: '4px' }}
-              >
-                <Cross2Icon width="12" height="12" />
-              </IconButton>
-            </Flex>
-          </Badge>
-        ))}
-      </Flex>
-
-      <Flex gap="2" align="end">
-        <Flex direction="column" gap="1" flexGrow="1">
-          <TextField.Root
-            type="number"
-            value={newVolumeInput.toString()}
-            onChange={e => setNewVolumeInput(parseFloat(e.target.value) || 0)}
-          />
+    <Flex direction="column" gap="3">
+      <Flex direction="row" justify="between" align="end">
+        <Flex direction="column" gap="2">
+          <Text size="2" weight="medium" color="gray">
+            Available Volumes
+          </Text>
+          <Flex gap="2" wrap="wrap">
+            {material.availableVolumes.map(volume => (
+              <Badge key={volume} size="2" variant="soft">
+                <Flex align="center" gap="1">
+                  {formatVolume(volume)}
+                  <IconButton
+                    size="1"
+                    variant="ghost"
+                    color="gray"
+                    onClick={() => handleRemoveVolume(volume)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <Cross2Icon width="10" height="10" />
+                  </IconButton>
+                </Flex>
+              </Badge>
+            ))}
+            {material.availableVolumes.length === 0 && (
+              <Callout.Root color="amber" size="1">
+                <Callout.Icon>
+                  <ExclamationTriangleIcon />
+                </Callout.Icon>
+                <Callout.Text>No volumes configured</Callout.Text>
+              </Callout.Root>
+            )}
+          </Flex>
         </Flex>
-        <Button onClick={handleAddVolume} variant="surface">
-          <PlusIcon />
-          Add
-        </Button>
+
+        <Flex direction="column" gap="2" align="end" style={{ minWidth: '14em' }}>
+          <SegmentedControl.Root
+            value={volumeUnit}
+            onValueChange={value => setVolumeUnit(value as 'liter' | 'm3')}
+            size="1"
+          >
+            <SegmentedControl.Item value="liter">L</SegmentedControl.Item>
+            <SegmentedControl.Item value="m3">m³</SegmentedControl.Item>
+          </SegmentedControl.Root>
+          <Flex gap="2" align="end">
+            <VolumeField
+              value={newVolumeInput}
+              onChange={setNewVolumeInput}
+              unit={volumeUnit}
+              size="2"
+              style={{ width: '8em' }}
+            />
+            <IconButton title="Add volume" onClick={handleAddVolume} variant="surface" size="2">
+              <PlusIcon />
+            </IconButton>
+          </Flex>
+        </Flex>
       </Flex>
     </Flex>
   )
