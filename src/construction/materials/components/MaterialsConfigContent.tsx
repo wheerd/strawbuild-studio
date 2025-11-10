@@ -20,6 +20,7 @@ import {
   Flex,
   Grid,
   IconButton,
+  SegmentedControl,
   Text,
   TextField
 } from '@radix-ui/themes'
@@ -97,39 +98,34 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             name: 'New dimensional material',
             type: 'dimensional',
             color: '#808080',
-            crossSections: [
-              {
-                smallerLength: 50,
-                biggerLength: 100
-              }
-            ],
-            lengths: [3000]
-          } as Omit<DimensionalMaterial, 'id'>)
+            crossSections: [],
+            lengths: []
+          } satisfies Omit<DimensionalMaterial, 'id'>)
           break
         case 'sheet':
           newMaterial = addMaterial({
             name: 'New sheet material',
             type: 'sheet',
             color: '#808080',
-            sizes: [{ smallerLength: 1000, biggerLength: 2000 }],
-            thicknesses: [18],
+            sizes: [],
+            thicknesses: [],
             sheetType: 'solid'
-          } as Omit<SheetMaterial, 'id'>)
+          } satisfies Omit<SheetMaterial, 'id'>)
           break
         case 'volume':
           newMaterial = addMaterial({
             name: 'New volume material',
             type: 'volume',
             color: '#808080',
-            availableVolumes: [1000]
-          } as Omit<VolumeMaterial, 'id'>)
+            availableVolumes: []
+          } satisfies Omit<VolumeMaterial, 'id'>)
           break
         case 'generic':
           newMaterial = addMaterial({
             name: 'New generic material',
             type: 'generic',
             color: '#808080'
-          } as Omit<GenericMaterial, 'id'>)
+          } satisfies Omit<GenericMaterial, 'id'>)
           break
         case 'strawbale':
           newMaterial = addMaterial({
@@ -416,15 +412,15 @@ function DimensionalMaterialFields({
   material: DimensionalMaterial
   onUpdate: (updates: Partial<DimensionalMaterial>) => void
 }) {
-  const [newWidth, setNewWidth] = useState<Length>(material.crossSections[0]?.smallerLength ?? 50)
-  const [newThickness, setNewThickness] = useState<Length>(material.crossSections[0]?.biggerLength ?? 100)
+  const [newDim1, setNewDim1] = useState<Length>(material.crossSections[0]?.smallerLength ?? 50)
+  const [newDim2, setNewDim2] = useState<Length>(material.crossSections[0]?.biggerLength ?? 100)
   const [newLengthInput, setNewLengthInput] = useState<Length>(material.lengths[0] ?? 3000)
 
   const handleAddCrossSection = useCallback(() => {
-    if (newWidth <= 0 || newThickness <= 0) return
+    if (newDim1 <= 0 || newDim2 <= 0) return
     const normalized = {
-      smallerLength: Math.min(newWidth, newThickness),
-      biggerLength: Math.max(newWidth, newThickness)
+      smallerLength: Math.min(newDim1, newDim2),
+      biggerLength: Math.max(newDim1, newDim2)
     }
     if (
       material.crossSections.some(
@@ -438,7 +434,7 @@ function DimensionalMaterialFields({
       (a, b) => a.smallerLength - b.smallerLength || a.biggerLength - b.biggerLength
     )
     onUpdate({ crossSections: updated })
-  }, [material.crossSections, newThickness, newWidth, onUpdate])
+  }, [material.crossSections, newDim2, newDim1, onUpdate])
 
   const handleRemoveCrossSection = useCallback(
     (sectionToRemove: DimensionalMaterial['crossSections'][number]) => {
@@ -504,9 +500,9 @@ function DimensionalMaterialFields({
           </Flex>
         </Flex>
         <Grid columns="5em auto 5em auto" gap="2" align="center" justify="end">
-          <LengthField value={newWidth} onChange={setNewWidth} unit="cm" size="2" />
+          <LengthField value={newDim1} onChange={setNewDim1} unit="cm" size="2" />
           <Text>x</Text>
-          <LengthField value={newThickness} onChange={setNewThickness} unit="cm" size="2" />
+          <LengthField value={newDim2} onChange={setNewDim2} unit="cm" size="2" />
           <IconButton title="Add" onClick={handleAddCrossSection} variant="surface" size="2">
             <PlusIcon />
           </IconButton>
@@ -700,6 +696,21 @@ function SheetMaterialFields({
             <PlusIcon />
           </IconButton>
         </Flex>
+      </Flex>
+
+      <Flex direction="column" gap="2">
+        <Text size="2" weight="medium" color="gray">
+          Sheet Type
+        </Text>
+        <SegmentedControl.Root
+          value={material.sheetType}
+          onValueChange={value => onUpdate({ sheetType: value as SheetMaterial['sheetType'] })}
+          size="2"
+        >
+          <SegmentedControl.Item value="solid">Solid</SegmentedControl.Item>
+          <SegmentedControl.Item value="tongueAndGroove">Tongue &amp; Groove</SegmentedControl.Item>
+          <SegmentedControl.Item value="flexible">Flexible</SegmentedControl.Item>
+        </SegmentedControl.Root>
       </Flex>
     </Flex>
   )

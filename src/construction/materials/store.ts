@@ -75,9 +75,6 @@ const validateMaterialUpdates = (updates: Partial<UnionOmit<Material, 'id'>>, ma
     case 'sheet': {
       const sheet = updates as Partial<SheetMaterial>
       if (sheet.sizes !== undefined) {
-        if (!Array.isArray(sheet.sizes) || sheet.sizes.length === 0) {
-          throw new Error('Sheet sizes must be a non-empty array')
-        }
         sheet.sizes.forEach(size => {
           if (
             size == null ||
@@ -92,9 +89,6 @@ const validateMaterialUpdates = (updates: Partial<UnionOmit<Material, 'id'>>, ma
       }
 
       if (sheet.thicknesses !== undefined) {
-        if (!Array.isArray(sheet.thicknesses) || sheet.thicknesses.length === 0) {
-          throw new Error('Sheet thicknesses must be a non-empty array')
-        }
         if (sheet.thicknesses.some(thickness => thickness <= 0)) {
           throw new Error('All sheet thicknesses must be positive')
         }
@@ -104,9 +98,6 @@ const validateMaterialUpdates = (updates: Partial<UnionOmit<Material, 'id'>>, ma
     case 'volume': {
       const volumeMaterial = updates as Partial<VolumeMaterial>
       if (volumeMaterial.availableVolumes !== undefined) {
-        if (!Array.isArray(volumeMaterial.availableVolumes) || volumeMaterial.availableVolumes.length === 0) {
-          throw new Error('Available volumes must be a non-empty array')
-        }
         if (volumeMaterial.availableVolumes.some(volume => volume <= 0)) {
           throw new Error('All available volumes must be positive')
         }
