@@ -18,9 +18,12 @@ export interface MaterialSelectProps {
   emptyLabel?: string
 }
 
-type IconComponent = React.ComponentType<React.SVGProps<SVGSVGElement>>
+interface IconProps extends React.SVGAttributes<SVGElement> {
+  children?: never
+}
+type IconComponent = React.ComponentType<IconProps>
 
-function StrawbaleIcon(props: React.SVGProps<SVGSVGElement>) {
+function StrawbaleIcon(props: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"

@@ -14,7 +14,8 @@ const UNIT_CONFIG: Record<VolumeUnit, { label: string; factor: number }> = {
   }
 }
 
-export interface VolumeFieldProps extends Omit<React.ComponentPropsWithoutRef<typeof TextField.Root>, 'value' | 'onChange'> {
+export interface VolumeFieldProps
+  extends Omit<React.ComponentPropsWithoutRef<typeof TextField.Root>, 'value' | 'onChange'> {
   value: number
   onChange: (value: number) => void
   unit?: VolumeUnit
@@ -24,20 +25,7 @@ export interface VolumeFieldProps extends Omit<React.ComponentPropsWithoutRef<ty
 }
 
 export const VolumeField = forwardRef<HTMLInputElement, VolumeFieldProps>(function VolumeField(
-  {
-    value,
-    onChange,
-    unit = 'liter',
-    min,
-    max,
-    step,
-    size = '2',
-    placeholder,
-    disabled,
-    style,
-    className,
-    ...props
-  },
+  { value, onChange, unit = 'liter', min, max, step, size = '2', placeholder, disabled, style, className, ...props },
   ref
 ) {
   const { label, factor } = UNIT_CONFIG[unit]
@@ -87,4 +75,3 @@ export const VolumeField = forwardRef<HTMLInputElement, VolumeFieldProps>(functi
     </TextField.Root>
   )
 })
-

@@ -816,7 +816,7 @@ function StrawbalePartsTable({ parts, material }: { parts: MaterialPartItem[]; m
   const summary = summarizeStrawbaleParts(parts, material)
   const numberFormatter = useMemo(() => new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }), [])
 
-  type StrawTableRow = {
+  interface StrawTableRow {
     key: StrawCategory | 'remaining'
     label: string
     volume: number

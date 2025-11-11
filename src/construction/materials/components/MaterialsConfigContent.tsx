@@ -308,7 +308,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
                 updateDefaultStrawMaterial(materialId)
               }
             }}
-            placeholder={'Select straw material...'}
+            placeholder="Select straw material..."
             size="2"
             materials={materials}
           />
