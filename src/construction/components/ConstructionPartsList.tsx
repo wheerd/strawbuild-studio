@@ -164,8 +164,6 @@ const createMaterialGroups = (material: Material, materialParts: MaterialParts):
       createGroup({
         key: `${material.id}-straw`,
         label: 'Strawbales',
-        badgeLabel: 'Strawbales',
-        badgeColor: 'gray',
         hasIssue: false,
         material,
         parts
@@ -816,8 +814,17 @@ function GenericPartsTable({ parts }: { parts: MaterialPartItem[] }) {
 
 function StrawbalePartsTable({ parts, material }: { parts: MaterialPartItem[]; material: StrawbaleMaterial }) {
   const summary = summarizeStrawbaleParts(parts, material)
+  const numberFormatter = useMemo(() => new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }), [])
 
-  const rows = STRAW_CATEGORY_ORDER.map(category => {
+  type StrawTableRow = {
+    key: StrawCategory | 'remaining'
+    label: string
+    volume: number
+    maxQuantity: number
+    minQuantity: number
+  }
+
+  const rows: StrawTableRow[] = STRAW_CATEGORY_ORDER.map(category => {
     const bucket = summary.buckets[category]
     const label = STRAW_CATEGORY_LABELS[category]
     const volume = bucket.volume
@@ -842,6 +849,19 @@ function StrawbalePartsTable({ parts, material }: { parts: MaterialPartItem[]; m
     minQuantity: summary.minRemainingBaleCount
   })
 
+  const formatCount = (value: number) => numberFormatter.format(value)
+  const formatRange = (min: number, max: number) =>
+    min === max ? formatCount(min) : `${formatCount(min)} – ${formatCount(max)}`
+
+  const totalMinQuantity = rows.reduce(
+    (sum, row) => sum + (row.key === 'remaining' ? -row.maxQuantity : row.minQuantity),
+    0
+  )
+  const totalMaxQuantity = rows.reduce(
+    (sum, row) => sum + (row.key === 'remaining' ? -row.minQuantity : row.maxQuantity),
+    0
+  )
+
   return (
     <Table.Root variant="surface" size="2" className="min-w-full">
       <Table.Header>
@@ -859,14 +879,31 @@ function StrawbalePartsTable({ parts, material }: { parts: MaterialPartItem[]; m
         {rows.map(row => (
           <Table.Row key={row.key}>
             <Table.RowHeaderCell>
-              <Text weight="medium">{row.label}</Text>
+              <Text weight="medium" color={row.key === 'remaining' ? 'gray' : undefined}>
+                {row.label}
+              </Text>
             </Table.RowHeaderCell>
             <Table.Cell justify="center">
-              {row.minQuantity === row.maxQuantity ? row.minQuantity : row.minQuantity + '-' + row.maxQuantity}
+              <Text color={row.key === 'remaining' ? 'gray' : undefined}>
+                {formatRange(row.minQuantity, row.maxQuantity)}
+              </Text>
             </Table.Cell>
-            <Table.Cell justify="end">{formatVolume(row.volume)}</Table.Cell>
+            <Table.Cell justify="end">
+              <Text color={row.key === 'remaining' ? 'gray' : undefined}>{formatVolume(row.volume)}</Text>
+            </Table.Cell>
           </Table.Row>
         ))}
+        <Table.Row>
+          <Table.RowHeaderCell>
+            <Text weight="medium">Total</Text>
+          </Table.RowHeaderCell>
+          <Table.Cell justify="center">
+            <Text weight="medium">{formatRange(totalMinQuantity, totalMaxQuantity)}</Text>
+          </Table.Cell>
+          <Table.Cell justify="end">
+            <Text weight="medium">{formatVolume(summary.totalVolume)}</Text>
+          </Table.Cell>
+        </Table.Row>
       </Table.Body>
     </Table.Root>
   )
