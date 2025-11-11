@@ -95,7 +95,11 @@ export function ConstructionViewer3DModal({
             >
               <OpacityControlProvider>
                 <CanvasThemeProvider>
-                  <ConstructionViewer3DContent modelPromise={modelPromise} containerSize={containerSize} />
+                  <ConstructionViewer3DContent
+                    modelPromise={modelPromise}
+                    containerSize={containerSize}
+                    isOpen={isOpen}
+                  />
                 </CanvasThemeProvider>
               </OpacityControlProvider>
             </Suspense>
@@ -108,12 +112,15 @@ export function ConstructionViewer3DModal({
 
 function ConstructionViewer3DContent({
   modelPromise,
-  containerSize
+  containerSize,
+  isOpen
 }: {
   modelPromise: Promise<ConstructionModel | null>
   containerSize: { width: number; height: number }
+  isOpen: boolean
 }) {
   const constructionModel = use(modelPromise)
+  const shouldRenderCanvas = useDeferredCanvasMount(isOpen && containerSize.width > 0 && containerSize.height > 0)
 
   if (!constructionModel) {
     return (
@@ -127,5 +134,41 @@ function ConstructionViewer3DContent({
     )
   }
 
+  if (!shouldRenderCanvas) {
+    return (
+      <Flex align="center" justify="center" style={{ height: '100%' }}>
+        <Spinner size="3" />
+      </Flex>
+    )
+  }
+
   return <ConstructionViewer3D model={constructionModel} containerSize={containerSize} />
+}
+
+function useDeferredCanvasMount(isEnabled: boolean): boolean {
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
+    if (!isEnabled) {
+      setReady(false)
+      return
+    }
+
+    let cancelled = false
+    let frameId: number | null = requestAnimationFrame(() => {
+      if (!cancelled) {
+        setReady(true)
+      }
+    })
+
+    return () => {
+      cancelled = true
+      if (frameId !== null) {
+        cancelAnimationFrame(frameId)
+        frameId = null
+      }
+    }
+  }, [isEnabled])
+
+  return ready
 }

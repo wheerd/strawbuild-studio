@@ -48,6 +48,12 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
     }
   }
 
+  const maxDevicePixelRatio = useMemo(() => {
+    if (typeof window === 'undefined') return 1
+    const dpr = window.devicePixelRatio || 1
+    return Math.min(dpr, 1.5)
+  }, [])
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <Canvas
@@ -57,6 +63,8 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
           near: 1,
           far: maxSize * 10
         }}
+        dpr={[1, maxDevicePixelRatio]}
+        gl={{ powerPreference: 'low-power' }}
         style={{
           width: `${containerSize.width}px`,
           height: `${containerSize.height}px`,
