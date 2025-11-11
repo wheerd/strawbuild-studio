@@ -18,8 +18,8 @@ import type { CanvasEvent } from '@/editor/tools/system/types'
 import { FloorLayer } from './FloorLayer'
 import { GridLayer } from './GridLayer'
 import { PerimeterLayer } from './PerimeterLayer'
-import { ToolOverlayLayer } from './ToolOverlayLayer'
 import { PlanImageLayer } from './PlanImageLayer'
+import { ToolOverlayLayer } from './ToolOverlayLayer'
 
 interface FloorPlanStageProps {
   width: number

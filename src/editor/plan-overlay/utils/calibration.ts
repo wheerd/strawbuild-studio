@@ -1,4 +1,4 @@
-import type { ImagePoint } from '../types'
+import type { ImagePoint } from '@/editor/plan-overlay/types'
 
 export function calculatePixelDistance(pointA: ImagePoint, pointB: ImagePoint): number {
   const deltaX = pointB.x - pointA.x

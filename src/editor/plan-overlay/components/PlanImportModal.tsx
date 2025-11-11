@@ -2,14 +2,13 @@ import { Button, Flex, Grid, Separator, Text, Tooltip } from '@radix-ui/themes'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import type { StoreyId } from '@/building/model/ids'
+import { PlanCalibrationCanvas } from '@/editor/plan-overlay/components/PlanCalibrationCanvas'
+import { useFloorPlanActions } from '@/editor/plan-overlay/store'
+import type { FloorPlanOverlay, ImagePoint } from '@/editor/plan-overlay/types'
+import { calculatePixelDistance } from '@/editor/plan-overlay/utils/calibration'
 import { BaseModal } from '@/shared/components/BaseModal'
 import { LengthField } from '@/shared/components/LengthField'
 import { formatLength } from '@/shared/utils/formatting'
-
-import { useFloorPlanActions } from '../store'
-import type { FloorPlanOverlay, ImagePoint } from '../types'
-import { calculatePixelDistance } from '../utils/calibration'
-import { PlanCalibrationCanvas } from './PlanCalibrationCanvas'
 
 interface PlanImportModalProps {
   floorId: StoreyId

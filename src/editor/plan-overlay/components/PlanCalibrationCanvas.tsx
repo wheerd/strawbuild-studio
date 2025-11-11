@@ -1,13 +1,11 @@
 import { Box, Button, Card, Flex, Inset, Text } from '@radix-ui/themes'
 import type Konva from 'konva'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Circle, Group, Layer, Line, Rect, Stage } from 'react-konva/lib/ReactKonvaCore'
-import { Image as KonvaImage } from 'react-konva/lib/ReactKonvaCore'
+import { Circle, Group, Image as KonvaImage, Layer, Line, Rect, Stage } from 'react-konva/lib/ReactKonvaCore'
 
+import type { ImagePoint } from '@/editor/plan-overlay/types'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
-
-import type { ImagePoint } from '../types'
 
 export type SelectionMode = 'measure' | 'origin' | 'idle'
 
@@ -173,16 +171,17 @@ export function PlanCalibrationCanvas({
   )
 
   const updatePan = useCallback((event: Konva.KonvaEventObject<PointerEvent>) => {
-    if (!dragOrigin.current) return
+    const origin = dragOrigin.current
+    if (!origin) return
     const pointer = event.target.getStage()?.getPointerPosition()
     if (!pointer) return
-    const deltaX = pointer.x - dragOrigin.current.pointer.x
-    const deltaY = pointer.y - dragOrigin.current.pointer.y
+    const deltaX = pointer.x - origin.pointer.x
+    const deltaY = pointer.y - origin.pointer.y
     setView(prev => ({
       ...prev,
       pan: {
-        x: dragOrigin.current!.pan.x + deltaX,
-        y: dragOrigin.current!.pan.y + deltaY
+        x: origin.pan.x + deltaX,
+        y: origin.pan.y + deltaY
       }
     }))
   }, [])

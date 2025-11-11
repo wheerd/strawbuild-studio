@@ -2,7 +2,13 @@ import { create } from 'zustand'
 
 import type { StoreyId } from '@/building/model/ids'
 
-import { type FloorPlanOverlay, type FloorPlanOrigin, type PlanImportPayload, type ImagePoint, type FloorPlanPlacement } from './types'
+import {
+  type FloorPlanOrigin,
+  type FloorPlanOverlay,
+  type FloorPlanPlacement,
+  type ImagePoint,
+  type PlanImportPayload
+} from './types'
 import { calculateMmPerPixel, calculatePixelDistance } from './utils/calibration'
 
 interface FloorPlanStoreState {
@@ -127,8 +133,7 @@ export const useFloorPlanActions = (): FloorPlanStoreActions => useFloorPlanStor
 
 export const getFloorPlanActions = (): FloorPlanStoreActions => useFloorPlanStore.getState().actions
 
-export const getAllFloorPlans = (): Record<StoreyId, FloorPlanOverlay | undefined> =>
-  useFloorPlanStore.getState().plans
+export const getAllFloorPlans = (): Record<StoreyId, FloorPlanOverlay | undefined> => useFloorPlanStore.getState().plans
 
 export function resetFloorPlanStore(): void {
   const { actions } = useFloorPlanStore.getState()

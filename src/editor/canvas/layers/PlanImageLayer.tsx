@@ -1,6 +1,5 @@
 import 'konva/lib/shapes/Image'
-import { Layer } from 'react-konva/lib/ReactKonvaCore'
-import { Image as KonvaImage } from 'react-konva/lib/ReactKonvaCore'
+import { Image as KonvaImage, Layer } from 'react-konva/lib/ReactKonvaCore'
 import useImage from 'use-image'
 
 import { useActiveStoreyId } from '@/building/store'

@@ -3,9 +3,8 @@ import { AlertDialog, Button, Flex, IconButton, Text } from '@radix-ui/themes'
 import React, { useMemo, useState } from 'react'
 
 import { useActiveStoreyId, useStoreyById } from '@/building/store'
-
-import { useFloorPlanActions, useFloorPlanForStorey } from '../store'
-import { PlanImportModal } from './PlanImportModal'
+import { PlanImportModal } from '@/editor/plan-overlay/components/PlanImportModal'
+import { useFloorPlanActions, useFloorPlanForStorey } from '@/editor/plan-overlay/store'
 
 export function PlanOverlayControls(): React.JSX.Element | null {
   const activeStoreyId = useActiveStoreyId()
