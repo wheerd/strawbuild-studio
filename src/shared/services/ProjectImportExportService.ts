@@ -8,6 +8,7 @@ import { applyMigrations } from '@/construction/config/store/migrations'
 import type { FloorAssemblyConfig, RingBeamAssemblyConfig, WallAssemblyConfig } from '@/construction/config/types'
 import type { Material, MaterialId } from '@/construction/materials/material'
 import { getMaterialsState, setMaterialsState } from '@/construction/materials/store'
+import { MATERIALS_STORE_VERSION, migrateMaterialsState } from '@/construction/materials/store/migrations'
 import type { Polygon2D } from '@/shared/geometry'
 
 export interface ExportedStorey {
@@ -71,7 +72,7 @@ export interface ExportData {
   }
   materialsStore: {
     materials: Record<MaterialId, Material>
-  }
+  } | undefined
 }
 
 export interface ImportResult {
@@ -189,8 +190,14 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
       const configStore = applyMigrations(importResult.data.configStore) as Parameters<typeof setConfigState>[0]
       setConfigState(configStore)
 
-      // 2. Import materials state (if available for backwards compatibility)
-      setMaterialsState(importResult.data.materialsStore)
+      // 2. Import materials state (if available for backwards compatibility) and apply migrations
+      if (importResult.data.materialsStore) {
+        const migratedMaterials = migrateMaterialsState(
+          importResult.data.materialsStore,
+          MATERIALS_STORE_VERSION
+        )
+        setMaterialsState(migratedMaterials)
+      }
 
       // 3. Reset model (creates default "Ground Floor" at level 0)
       modelActions.reset()
