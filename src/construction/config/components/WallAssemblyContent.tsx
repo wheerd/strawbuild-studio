@@ -24,7 +24,7 @@ import { getWallAssemblyUsage } from '@/construction/config/usage'
 import { DEFAULT_WALL_LAYER_SETS } from '@/construction/layers/defaults'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
-import { wood120x60, woodwool } from '@/construction/materials/material'
+import { wood, woodwool } from '@/construction/materials/material'
 import type { PostConfig } from '@/construction/materials/posts'
 import type {
   InfillWallSegmentConfig,
@@ -77,6 +77,21 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
           size="1"
         />
       </Grid>
+
+      <Flex direction="column" gap="1">
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Straw Material (Override)
+          </Text>
+        </Label.Root>
+        <MaterialSelectWithEdit
+          value={config.strawMaterial ?? null}
+          allowEmpty
+          emptyLabel="Use global straw settings"
+          onValueChange={strawMaterial => onUpdate({ ...config, strawMaterial: strawMaterial ?? undefined })}
+          size="1"
+        />
+      </Flex>
 
       <Separator size="4" />
       <PostsConfigSection posts={config.posts} onUpdate={posts => onUpdate({ ...config, posts })} />
@@ -228,7 +243,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
                 frameWidth: 'frameWidth' in module ? module.frameWidth : 120,
                 spacerSize: 'spacerSize' in module ? module.spacerSize : 120,
                 spacerCount: 'spacerCount' in module ? module.spacerCount : 3,
-                spacerMaterial: 'spacerMaterial' in module ? module.spacerMaterial : wood120x60.id,
+                spacerMaterial: 'spacerMaterial' in module ? module.spacerMaterial : wood.id,
                 infillMaterial: 'infillMaterial' in module ? module.infillMaterial : woodwool.id
               })
             }

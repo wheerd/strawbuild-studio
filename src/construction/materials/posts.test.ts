@@ -6,22 +6,18 @@ import { aggregateResults } from '@/construction/results'
 import type { Cuboid } from '@/construction/shapes'
 
 import type { Material, MaterialId } from './material'
-import { DEFAULT_MATERIALS } from './material'
+import { wood } from './material'
 import { type DoublePostConfig, type FullPostConfig, constructPost } from './posts'
 
 const mockWoodMaterial = 'wood-material' as MaterialId
 const mockStrawMaterial = 'straw-material' as MaterialId
 
-// Get a real dimensional material for testing warnings
-const wood120x60 = Object.values(DEFAULT_MATERIALS).find(
-  m => m.type === 'dimensional' && m.width === 120 && m.thickness === 60
-)!
-const dimensionalMaterialId = wood120x60.id
+const dimensionalMaterialId = wood.id
 
 vi.mock('./store', () => ({
   getMaterialById: vi.fn().mockImplementation((materialId: MaterialId): Material | undefined => {
     if (materialId === dimensionalMaterialId) {
-      return wood120x60
+      return wood
     }
     // Return undefined for mock materials (no warnings)
     return undefined

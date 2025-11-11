@@ -26,7 +26,7 @@ export interface DoubleFrameModuleConfig extends BaseModuleConfig {
   frameWidth: Length // Default: 120mm
   spacerSize: Length // Default: 120mm
   spacerCount: number // Default: 3
-  spacerMaterial: MaterialId // Default: wood120x60
+  spacerMaterial: MaterialId // Default: wood
   infillMaterial: MaterialId // Default: woodwool
 }
 
@@ -98,15 +98,7 @@ function* constructSingleFrameModule(
   yield yieldElement(endFrame)
 
   // Straw filling
-  if (config.strawMaterial) {
-    yield yieldElement(
-      createConstructionElement(config.strawMaterial, createCuboidShape(strawPosition, strawSize), undefined, [
-        TAG_STRAW_INFILL
-      ])
-    )
-  } else {
-    yield* constructStraw(strawPosition, strawSize)
-  }
+  yield* constructStraw(strawPosition, strawSize, config.strawMaterial)
 
   yield yieldMeasurement({
     startPoint: position,

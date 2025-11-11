@@ -8,7 +8,6 @@ import { applyMigrations } from '@/construction/config/store/migrations'
 import type { FloorAssemblyConfig, RingBeamAssemblyConfig, WallAssemblyConfig } from '@/construction/config/types'
 import type { Material, MaterialId } from '@/construction/materials/material'
 import { getMaterialsState, setMaterialsState } from '@/construction/materials/store'
-import type { StrawConfig } from '@/construction/materials/straw'
 import type { Polygon2D } from '@/shared/geometry'
 
 export interface ExportedStorey {
@@ -61,7 +60,7 @@ export interface ExportData {
     minLevel: number
   }
   configStore: {
-    straw?: StrawConfig
+    defaultStrawMaterial?: MaterialId
     ringBeamAssemblyConfigs: Record<RingBeamAssemblyId, RingBeamAssemblyConfig>
     wallAssemblyConfigs: Record<WallAssemblyId, WallAssemblyConfig>
     floorAssemblyConfigs?: Record<FloorAssemblyId, FloorAssemblyConfig>
@@ -425,7 +424,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
       return false
     }
 
-    if (configStore.straw !== undefined && !this.isValidStrawConfig(configStore.straw)) {
+    if (configStore.defaultStrawMaterial !== undefined && typeof configStore.defaultStrawMaterial !== 'string') {
       return false
     }
 
@@ -472,30 +471,6 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
         error: error instanceof Error ? error.message : 'Failed to parse file'
       }
     }
-  }
-
-  private isValidStrawConfig(value: unknown): value is StrawConfig {
-    if (typeof value !== 'object' || value === null) {
-      return false
-    }
-
-    const straw = value as Record<string, unknown>
-
-    const requiredNumberFields: (keyof StrawConfig)[] = ['baleMinLength', 'baleMaxLength', 'baleHeight', 'baleWidth']
-    const optionalNumberFields: (keyof StrawConfig)[] = ['tolerance', 'topCutoffLimit', 'flakeSize']
-
-    const hasValidRequiredNumbers = requiredNumberFields.every(field => {
-      const fieldValue = straw[field]
-      return typeof fieldValue === 'number' && Number.isFinite(fieldValue)
-    })
-
-    const hasValidOptionalNumbers = optionalNumberFields.every(field => {
-      const fieldValue = straw[field]
-      return fieldValue === undefined || (typeof fieldValue === 'number' && Number.isFinite(fieldValue))
-    })
-    const hasValidMaterial = typeof straw.material === 'string'
-
-    return hasValidRequiredNumbers && hasValidOptionalNumbers && hasValidMaterial
   }
 }
 

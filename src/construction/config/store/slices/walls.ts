@@ -18,7 +18,7 @@ import type {
 } from '@/construction/config/types'
 import { DEFAULT_WALL_LAYER_SETS } from '@/construction/layers/defaults'
 import type { LayerConfig } from '@/construction/layers/types'
-import { concrete, limePlaster, straw, strawbale, wood120x60, wood360x60 } from '@/construction/materials/material'
+import { concrete, limePlasterBase, limePlasterFine, straw, strawbale, wood } from '@/construction/materials/material'
 import { type WallConfig, validateWallConfig } from '@/construction/walls/types'
 import '@/shared/geometry'
 
@@ -86,14 +86,14 @@ const createDefaultWallAssemblies = (): WallAssemblyConfig[] => [
       width: 60,
       thickness: 120,
       infillMaterial: straw.id,
-      material: wood120x60.id
+      material: wood.id
     },
     openings: {
       padding: 15,
       headerThickness: 60,
-      headerMaterial: wood360x60.id,
+      headerMaterial: wood.id,
       sillThickness: 60,
-      sillMaterial: wood360x60.id
+      sillMaterial: wood.id
     },
     layers: {
       insideThickness: 30,
@@ -110,7 +110,7 @@ const createDefaultWallAssemblies = (): WallAssemblyConfig[] => [
       width: 920,
       type: 'single',
       frameThickness: 60,
-      frameMaterial: wood360x60.id,
+      frameMaterial: wood.id,
       strawMaterial: strawbale.id
     },
     infill: {
@@ -119,15 +119,15 @@ const createDefaultWallAssemblies = (): WallAssemblyConfig[] => [
       posts: {
         type: 'full',
         width: 60,
-        material: wood360x60.id
+        material: wood.id
       }
     },
     openings: {
       padding: 15,
       headerThickness: 60,
-      headerMaterial: wood360x60.id,
+      headerMaterial: wood.id,
       sillThickness: 60,
-      sillMaterial: wood360x60.id
+      sillMaterial: wood.id
     },
     layers: {
       insideThickness: 30,
@@ -144,7 +144,7 @@ const createDefaultWallAssemblies = (): WallAssemblyConfig[] => [
       width: 920,
       type: 'single',
       frameThickness: 60,
-      frameMaterial: wood360x60.id,
+      frameMaterial: wood.id,
       strawMaterial: strawbale.id
     },
     infill: {
@@ -153,15 +153,15 @@ const createDefaultWallAssemblies = (): WallAssemblyConfig[] => [
       posts: {
         type: 'full',
         width: 60,
-        material: wood360x60.id
+        material: wood.id
       }
     },
     openings: {
       padding: 15,
       headerThickness: 60,
-      headerMaterial: wood360x60.id,
+      headerMaterial: wood.id,
       sillThickness: 60,
-      sillMaterial: wood360x60.id
+      sillMaterial: wood.id
     },
     layers: {
       insideThickness: 30,
@@ -179,9 +179,9 @@ const createDefaultWallAssemblies = (): WallAssemblyConfig[] => [
     openings: {
       padding: 15,
       headerThickness: 60,
-      headerMaterial: wood360x60.id,
+      headerMaterial: wood.id,
       sillThickness: 60,
-      sillMaterial: wood360x60.id
+      sillMaterial: wood.id
     },
     layers: {
       insideThickness: 30,
@@ -189,8 +189,8 @@ const createDefaultWallAssemblies = (): WallAssemblyConfig[] => [
       outsideThickness: 160 + 30,
       outsideLayers: [
         { type: 'monolithic', name: 'Insulation', material: 'material_invalid', thickness: 160 },
-        { type: 'monolithic', name: 'Base Plaster (Lime)', material: limePlaster.id, thickness: 20 },
-        { type: 'monolithic', name: 'Fine Plaster (Lime)', material: limePlaster.id, thickness: 10 }
+        { type: 'monolithic', name: 'Base Plaster (Lime)', material: limePlasterBase.id, thickness: 20 },
+        { type: 'monolithic', name: 'Fine Plaster (Lime)', material: limePlasterFine.id, thickness: 10 }
       ]
     }
   } as NonStrawbaleWallAssemblyConfig

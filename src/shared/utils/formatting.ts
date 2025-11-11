@@ -75,5 +75,15 @@ export const formatLengthInMeters = (length: number): string => `${(length / 100
 const MM2_PER_M2 = 1_000_000
 const MM3_PER_M3 = 1_000_000_000
 
+const MM3_PER_LITER = 1_000_000
+
 export const formatArea = (area: Area) => `${(area / MM2_PER_M2).toFixed(2)}m²`
 export const formatVolume = (volume: Volume) => `${(volume / MM3_PER_M3).toFixed(2)}m³`
+
+export const formatVolumeInLiters = (volume: Volume) => {
+  const liters = volume / MM3_PER_LITER
+  if (liters === Math.round(liters)) {
+    return `${liters}L`
+  }
+  return `${liters.toFixed(1)}L`
+}

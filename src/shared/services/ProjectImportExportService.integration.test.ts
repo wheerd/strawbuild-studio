@@ -426,9 +426,8 @@ describe('ProjectImportExportService Integration', () => {
       type: 'dimensional',
       name: 'Custom Wood',
       color: '#ff5500',
-      width: 200,
-      thickness: 80,
-      availableLengths: [4000, 6000]
+      crossSections: [{ smallerLength: 80, biggerLength: 200 }],
+      lengths: [4000, 6000]
     })
 
     // Export the project

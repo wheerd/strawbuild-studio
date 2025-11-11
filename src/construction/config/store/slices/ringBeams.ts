@@ -3,7 +3,7 @@ import { type StateCreator } from 'zustand'
 import type { RingBeamAssemblyId } from '@/building/model/ids'
 import { createRingBeamAssemblyId } from '@/building/model/ids'
 import type { FullRingBeamAssemblyConfig, RingBeamAssemblyConfig } from '@/construction/config/types'
-import { wood360x60 } from '@/construction/materials/material'
+import { wood } from '@/construction/materials/material'
 import { type RingBeamConfig, validateRingBeamConfig } from '@/construction/ringBeams/types'
 import '@/shared/geometry'
 
@@ -47,7 +47,7 @@ const createDefaultRingBeamAssembly = (): FullRingBeamAssemblyConfig => ({
   id: 'ringbeam_default' as RingBeamAssemblyId,
   name: 'Full 36x6cm',
   type: 'full',
-  material: wood360x60.id,
+  material: wood.id,
   height: 60,
   width: 360,
   offsetFromEdge: 30

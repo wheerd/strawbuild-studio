@@ -6,62 +6,62 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { type ConfigActions, getConfigActions } from '@/construction/config'
 import type { ConstructionElement } from '@/construction/elements'
-import type { MaterialId } from '@/construction/materials/material'
+import type { StrawbaleMaterial } from '@/construction/materials/material'
+import { strawbale } from '@/construction/materials/material'
+import { getMaterialsActions } from '@/construction/materials/store'
 import { aggregateResults } from '@/construction/results'
 import { TAG_FULL_BALE, TAG_PARTIAL_BALE, TAG_STRAW_FLAKES, TAG_STRAW_STUFFED } from '@/construction/tags'
 
-import type { StrawConfig } from './straw'
 import { constructStraw } from './straw'
 
 vi.mock('@/construction/config', () => ({
   getConfigActions: vi.fn()
 }))
+vi.mock('@/construction/materials/store', () => ({
+  getMaterialsActions: vi.fn()
+}))
 
-const mockGetStrawConfig = vi.fn()
+const mockGetDefaultStrawMaterial = vi.fn()
+const mockGetMaterialById = vi.fn()
 vi.mocked(getConfigActions).mockReturnValue({
-  getStrawConfig: mockGetStrawConfig
+  getDefaultStrawMaterial: mockGetDefaultStrawMaterial
 } as unknown as ConfigActions)
+vi.mocked(getMaterialsActions).mockReturnValue({
+  getMaterialById: mockGetMaterialById
+} as any)
 
-const defaultConfig: StrawConfig = {
-  baleMinLength: 800,
-  baleMaxLength: 900,
-  baleHeight: 500,
-  baleWidth: 360,
-  material: 'straw-material' as MaterialId,
-  tolerance: 2,
-  topCutoffLimit: 50,
-  flakeSize: 70
-}
+const defaultMaterial: StrawbaleMaterial = { ...strawbale }
 
 beforeEach(() => {
-  mockGetStrawConfig.mockReturnValue(defaultConfig)
+  mockGetDefaultStrawMaterial.mockReturnValue(defaultMaterial.id)
+  mockGetMaterialById.mockReturnValue(defaultMaterial)
 })
 
 const heights = [
-  defaultConfig.flakeSize - 1,
-  defaultConfig.flakeSize,
-  defaultConfig.baleHeight - defaultConfig.tolerance - 1,
-  defaultConfig.baleHeight - defaultConfig.tolerance,
-  defaultConfig.baleHeight + defaultConfig.flakeSize - 1,
-  defaultConfig.baleHeight + defaultConfig.flakeSize,
-  defaultConfig.baleMinLength,
-  defaultConfig.baleMaxLength,
-  2 * defaultConfig.baleHeight - defaultConfig.tolerance - 1,
-  2 * defaultConfig.baleHeight - defaultConfig.tolerance
+  defaultMaterial.flakeSize - 1,
+  defaultMaterial.flakeSize,
+  defaultMaterial.baleHeight - defaultMaterial.tolerance - 1,
+  defaultMaterial.baleHeight - defaultMaterial.tolerance,
+  defaultMaterial.baleHeight + defaultMaterial.flakeSize - 1,
+  defaultMaterial.baleHeight + defaultMaterial.flakeSize,
+  defaultMaterial.baleMinLength,
+  defaultMaterial.baleMaxLength,
+  2 * defaultMaterial.baleHeight - defaultMaterial.tolerance - 1,
+  2 * defaultMaterial.baleHeight - defaultMaterial.tolerance
 ].sort()
 
 const lengths = [
-  defaultConfig.flakeSize - 1,
-  defaultConfig.flakeSize,
-  defaultConfig.baleHeight - defaultConfig.tolerance - 1,
-  defaultConfig.baleHeight,
-  defaultConfig.baleHeight + defaultConfig.tolerance + 1,
-  defaultConfig.baleMinLength - 1,
-  defaultConfig.baleMinLength,
-  defaultConfig.baleMaxLength,
-  defaultConfig.baleMaxLength + 1,
-  defaultConfig.baleMaxLength + defaultConfig.baleMinLength - 1,
-  2 * defaultConfig.baleMaxLength - defaultConfig.tolerance
+  defaultMaterial.flakeSize - 1,
+  defaultMaterial.flakeSize,
+  defaultMaterial.baleHeight - defaultMaterial.tolerance - 1,
+  defaultMaterial.baleHeight,
+  defaultMaterial.baleHeight + defaultMaterial.tolerance + 1,
+  defaultMaterial.baleMinLength - 1,
+  defaultMaterial.baleMinLength,
+  defaultMaterial.baleMaxLength,
+  defaultMaterial.baleMaxLength + 1,
+  defaultMaterial.baleMaxLength + defaultMaterial.baleMinLength - 1,
+  2 * defaultMaterial.baleMaxLength - defaultMaterial.tolerance
 ].sort()
 
 const scenarios = lengths.flatMap(length => heights.map(height => ({ length, height })))
@@ -73,7 +73,7 @@ const fixturesDir = path.resolve(process.cwd(), 'src', 'construction', 'material
 describe.each(scenarios)('constructStraw visual regression - $length x $height', ({ length, height }) => {
   it('matches the expected SVG snapshot', async () => {
     const position = vec3.fromValues(0, 0, 0)
-    const size = vec3.fromValues(length, defaultConfig.baleWidth, height)
+    const size = vec3.fromValues(length, defaultMaterial.baleWidth, height)
 
     const results = [...constructStraw(position, size)]
     const { elements, errors } = aggregateResults(results)

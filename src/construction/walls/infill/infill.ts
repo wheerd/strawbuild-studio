@@ -103,7 +103,7 @@ function* constructInfillRecursive(
   if (baleWidth > 0) {
     const strawElementIds: ConstructionElementId[] = []
 
-    yield* yieldAndCollectElementIds(constructStraw(strawPosition, strawSize), strawElementIds)
+    yield* yieldAndCollectElementIds(constructStraw(strawPosition, strawSize, config.strawMaterial), strawElementIds)
 
     if (baleWidth < config.minStrawSpace) {
       yield yieldWarning({

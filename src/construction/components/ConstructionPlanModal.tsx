@@ -73,7 +73,7 @@ export function ConstructionPlanModal({
       return modelPromise.then(model => {
         if (!model) return null
         return {
-          material: generateMaterialPartsList(model, ['strawbale']),
+          material: generateMaterialPartsList(model),
           virtual: generateVirtualPartsList(model)
         }
       })

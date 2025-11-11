@@ -57,7 +57,7 @@ function* placeStrawhengeSegments(
       yield* infillWallArea(position, size, config.infill, false, false, atStart)
       return
     }
-    yield* constructStraw(strawPosition, strawSize)
+    yield* constructStraw(strawPosition, strawSize, config.infill.strawMaterial)
   }
 
   if (strawWidth + module.width <= size[0]) {

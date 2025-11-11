@@ -1,5 +1,4 @@
 import type { RingBeamAssemblyConfig, WallAssemblyConfig } from '@/construction/config/types'
-import type { StrawConfig } from '@/construction/materials/straw'
 
 import type { MaterialId } from './material'
 
@@ -15,7 +14,7 @@ export function getMaterialUsage(
   materialId: MaterialId,
   ringBeamAssemblies: RingBeamAssemblyConfig[],
   wallAssemblies: WallAssemblyConfig[],
-  strawConfig: StrawConfig
+  defaultStrawMaterialId?: MaterialId
 ): MaterialUsage {
   const usedByConfigs: string[] = []
 
@@ -27,8 +26,8 @@ export function getMaterialUsage(
     }
   })
 
-  if (strawConfig.material === materialId) {
-    usedByConfigs.push('Global Straw Configuration')
+  if (defaultStrawMaterialId === materialId) {
+    usedByConfigs.push('Default Straw Material')
   }
 
   // Check wall assemblies

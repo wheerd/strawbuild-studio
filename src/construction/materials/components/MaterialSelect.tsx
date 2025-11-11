@@ -18,7 +18,35 @@ export interface MaterialSelectProps {
   emptyLabel?: string
 }
 
-export function getMaterialTypeIcon(type: Material['type']) {
+interface IconProps extends React.SVGAttributes<SVGElement> {
+  children?: never
+}
+type IconComponent = React.ComponentType<IconProps>
+
+function StrawbaleIcon(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M6 9 12 6 18 9 12 12 6 9Z" />
+      <path d="M6 9v6l6 3v-6L6 9Z" />
+      <path d="M18 9v6l-6 3v-6l6-3Z" />
+      <path d="M8.5 7.3v6.7" />
+      <path d="M15.5 8.3v6.7" />
+      <path d="M6 12.2l6 2.9 6-2.9" />
+      <path d="M9 15.1l-3-.9" />
+      <path d="m15 15.1 3-.9" />
+    </svg>
+  )
+}
+
+export function getMaterialTypeIcon(type: Material['type']): IconComponent {
   switch (type) {
     case 'dimensional':
       return CubeIcon
@@ -28,6 +56,8 @@ export function getMaterialTypeIcon(type: Material['type']) {
       return OpacityIcon
     case 'generic':
       return CircleIcon
+    case 'strawbale':
+      return StrawbaleIcon
   }
 }
 
@@ -41,6 +71,8 @@ export function getMaterialTypeName(type: Material['type']) {
       return 'Volume'
     case 'generic':
       return 'Generic'
+    case 'strawbale':
+      return 'Strawbale'
   }
 }
 
@@ -73,7 +105,7 @@ export function MaterialSelect({
           </Select.Item>
         )}
         {materials.length === 0 ? (
-          <Select.Item value="" disabled>
+          <Select.Item value="-" disabled>
             <Text color="gray">No materials available</Text>
           </Select.Item>
         ) : (

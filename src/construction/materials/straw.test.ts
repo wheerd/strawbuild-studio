@@ -6,35 +6,43 @@ import type { ConstructionElement } from '@/construction/elements'
 import { aggregateResults } from '@/construction/results'
 import type { Cuboid } from '@/construction/shapes'
 
-import type { MaterialId } from './material'
-import { type StrawConfig, constructStraw } from './straw'
+import type { MaterialId, StrawbaleMaterial } from './material'
+import { strawbale } from './material'
+import { getMaterialsActions } from './store'
+import { constructStraw } from './straw'
 
 vi.mock('@/construction/config', () => ({
   getConfigActions: vi.fn()
 }))
+vi.mock('@/construction/materials/store', () => ({
+  getMaterialsActions: vi.fn()
+}))
 
-const mockGetStrawConfig = vi.fn()
+const mockGetDefaultStrawMaterial = vi.fn()
+const mockGetMaterialById = vi.fn()
+
 vi.mocked(getConfigActions).mockReturnValue({
-  getStrawConfig: mockGetStrawConfig
+  getDefaultStrawMaterial: mockGetDefaultStrawMaterial
 } as any as ConfigActions)
+
+vi.mocked(getMaterialsActions).mockReturnValue({
+  getMaterialById: mockGetMaterialById
+} as any)
 
 const mockMaterialId = 'test-material' as MaterialId
 
-const defaultConfig: StrawConfig = {
-  baleMinLength: 800,
-  baleMaxLength: 900,
-  baleHeight: 500,
-  baleWidth: 360,
-  material: mockMaterialId,
-  tolerance: 2,
-  topCutoffLimit: 50,
-  flakeSize: 70
-}
+const createMaterial = (overrides: Partial<StrawbaleMaterial> = {}): StrawbaleMaterial => ({
+  ...strawbale,
+  id: mockMaterialId,
+  ...overrides
+})
 
 describe('constructStraw', () => {
   beforeEach(() => {
-    mockGetStrawConfig.mockClear()
-    mockGetStrawConfig.mockReturnValue(defaultConfig)
+    mockGetDefaultStrawMaterial.mockReset()
+    mockGetMaterialById.mockReset()
+    mockGetDefaultStrawMaterial.mockReturnValue(mockMaterialId)
+    mockGetMaterialById.mockReturnValue(createMaterial())
   })
 
   describe('perfect fit scenarios', () => {
@@ -107,14 +115,14 @@ describe('constructStraw', () => {
 
   describe('different configurations', () => {
     it('should work with custom bale dimensions', () => {
-      const customConfig: StrawConfig = {
-        ...defaultConfig,
-        baleMinLength: 1000,
-        baleMaxLength: 1000,
-        baleHeight: 400,
-        baleWidth: 300
-      }
-      mockGetStrawConfig.mockReturnValue(customConfig)
+      mockGetMaterialById.mockReturnValue(
+        createMaterial({
+          baleMinLength: 1000,
+          baleMaxLength: 1000,
+          baleHeight: 400,
+          baleWidth: 300
+        })
+      )
 
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1000, 300, 400)
@@ -131,20 +139,17 @@ describe('constructStraw', () => {
     })
 
     it('should use provided material ID', () => {
-      const customMaterial = 'custom-straw-material' as MaterialId
-      const customConfig: StrawConfig = {
-        ...defaultConfig,
-        material: customMaterial
-      }
-      mockGetStrawConfig.mockReturnValue(customConfig)
+      const customMaterialId = 'custom-straw-material' as MaterialId
+      mockGetMaterialById.mockImplementation(id => createMaterial({ id }))
 
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(800, 360, 500)
 
-      const results = [...constructStraw(position, size)]
+      const results = [...constructStraw(position, size, customMaterialId)]
       const { elements } = aggregateResults(results)
 
-      expect((elements[0] as ConstructionElement).material).toBe(customMaterial)
+      expect(mockGetMaterialById).toHaveBeenCalledWith(customMaterialId)
+      expect((elements[0] as ConstructionElement).material).toBe(customMaterialId)
     })
   })
 

@@ -10,7 +10,7 @@ import { createStrawSlice } from '@/construction/config/store/slices/straw'
 import { createWallAssembliesSlice } from '@/construction/config/store/slices/walls'
 import type { ConfigActions, ConfigState, ConfigStore } from '@/construction/config/store/types'
 import type { FloorAssemblyConfig, RingBeamAssemblyConfig, WallAssemblyConfig } from '@/construction/config/types'
-import { type StrawConfig, validateStrawConfig } from '@/construction/materials/straw'
+import type { MaterialId } from '@/construction/materials/material'
 import '@/shared/geometry'
 
 import { CURRENT_VERSION, applyMigrations } from './migrations'
@@ -45,7 +45,7 @@ const useConfigStore = create<ConfigStore>()(
       name: 'strawbaler-config',
       version: CURRENT_VERSION,
       partialize: state => ({
-        straw: state.straw,
+        defaultStrawMaterial: state.defaultStrawMaterial,
         ringBeamAssemblyConfigs: state.ringBeamAssemblyConfigs,
         wallAssemblyConfigs: state.wallAssemblyConfigs,
         floorAssemblyConfigs: state.floorAssemblyConfigs,
@@ -71,7 +71,7 @@ const useConfigStore = create<ConfigStore>()(
 )
 
 // Selector hooks for easier usage
-export const useStrawConfig = (): StrawConfig => useConfigStore(state => state.straw)
+export const useDefaultStrawMaterialId = (): MaterialId => useConfigStore(state => state.defaultStrawMaterial)
 
 export const useRingBeamAssemblies = (): RingBeamAssemblyConfig[] => {
   const ringBeamAssemblies = useConfigStore(state => state.ringBeamAssemblyConfigs)
@@ -120,7 +120,7 @@ export const getConfigActions = (): ConfigActions => useConfigStore.getState().a
 export const getConfigState = () => {
   const state = useConfigStore.getState()
   return {
-    straw: state.straw,
+    defaultStrawMaterial: state.defaultStrawMaterial,
     ringBeamAssemblyConfigs: state.ringBeamAssemblyConfigs,
     wallAssemblyConfigs: state.wallAssemblyConfigs,
     floorAssemblyConfigs: state.floorAssemblyConfigs,
@@ -133,7 +133,7 @@ export const getConfigState = () => {
 
 // Import config state from persistence
 export const setConfigState = (data: {
-  straw?: StrawConfig
+  defaultStrawMaterial?: MaterialId
   ringBeamAssemblyConfigs: Record<RingBeamAssemblyId, RingBeamAssemblyConfig>
   wallAssemblyConfigs: Record<WallAssemblyId, WallAssemblyConfig>
   floorAssemblyConfigs?: Record<FloorAssemblyId, FloorAssemblyConfig>
@@ -143,11 +143,9 @@ export const setConfigState = (data: {
   defaultFloorAssemblyId?: FloorAssemblyId
 }) => {
   const state = useConfigStore.getState()
-  const strawConfig = { ...state.straw, ...(data.straw ?? {}) }
-  validateStrawConfig(strawConfig)
 
   useConfigStore.setState({
-    straw: strawConfig,
+    defaultStrawMaterial: data.defaultStrawMaterial ?? state.defaultStrawMaterial,
     ringBeamAssemblyConfigs: data.ringBeamAssemblyConfigs,
     wallAssemblyConfigs: data.wallAssemblyConfigs,
     floorAssemblyConfigs: data.floorAssemblyConfigs ?? state.floorAssemblyConfigs,

@@ -27,9 +27,8 @@ describe('Materials Store', () => {
         type: 'dimensional',
         name: 'Test Wood',
         color: '#ff0000',
-        width: 100,
-        thickness: 50,
-        availableLengths: [3000, 5000]
+        crossSections: [{ smallerLength: 50, biggerLength: 100 }],
+        lengths: [3000, 5000]
       })
 
       expect(newMaterial.id).toBeDefined()
@@ -70,11 +69,10 @@ describe('Materials Store', () => {
           type: 'dimensional',
           name: 'Invalid Wood',
           color: '#ff0000',
-          width: -100,
-          thickness: 50,
-          availableLengths: [3000]
+          crossSections: [{ smallerLength: -100, biggerLength: 50 }],
+          lengths: [3000]
         })
-      }).toThrow('Width must be positive')
+      }).toThrow('Cross section dimensions must be positive numbers')
     })
   })
 
@@ -126,9 +124,8 @@ describe('Materials Store', () => {
         type: 'dimensional',
         name: 'Original Wood',
         color: '#ff0000',
-        width: 360,
-        thickness: 60,
-        availableLengths: [5000]
+        crossSections: [{ smallerLength: 60, biggerLength: 360 }],
+        lengths: [5000]
       })
 
       const duplicate = actions.duplicateMaterial(original.id, 'Copied Wood')
@@ -138,8 +135,8 @@ describe('Materials Store', () => {
       expect(duplicate.color).toBe(original.color)
       expect(duplicate.type).toBe(original.type)
       if (duplicate.type === 'dimensional') {
-        expect(duplicate.width).toBe(360)
-        expect(duplicate.thickness).toBe(60)
+        expect(duplicate.crossSections).toHaveLength(1)
+        expect(duplicate.crossSections[0]).toEqual({ smallerLength: 60, biggerLength: 360 })
       }
     })
 
@@ -205,9 +202,8 @@ describe('Materials Store', () => {
         type: 'dimensional',
         name: 'Dimensional 1',
         color: '#00ff00',
-        width: 100,
-        thickness: 50,
-        availableLengths: [3000]
+        crossSections: [{ smallerLength: 50, biggerLength: 100 }],
+        lengths: [3000]
       })
 
       actions.addMaterial({

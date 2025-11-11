@@ -13,7 +13,7 @@ import type { FloorAssemblyConfig } from '@/construction/config/types'
 import { type FloorConfig, validateFloorConfig } from '@/construction/floors/types'
 import { DEFAULT_FLOOR_LAYER_SETS } from '@/construction/layers/defaults'
 import type { LayerConfig } from '@/construction/layers/types'
-import { clt180, concrete } from '@/construction/materials/material'
+import { clt, concrete } from '@/construction/materials/material'
 import '@/shared/geometry'
 
 export interface FloorAssembliesState {
@@ -66,7 +66,7 @@ const createDefaultFloorAssemblies = (): FloorAssemblyConfig[] => [
     name: 'CLT 18cm (6m)',
     type: 'monolithic',
     thickness: 180,
-    material: clt180.id,
+    material: clt.id,
     layers: {
       topThickness: 60,
       topLayers: DEFAULT_FLOOR_LAYER_SETS['Screet'],
