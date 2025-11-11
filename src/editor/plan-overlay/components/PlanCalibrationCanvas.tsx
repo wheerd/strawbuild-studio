@@ -50,10 +50,21 @@ export function PlanCalibrationCanvas({
       const y = point.y * canvasSize.scaleY
       ctx.beginPath()
       ctx.arc(x, y, radius, 0, Math.PI * 2)
-      ctx.fillStyle = color
-      ctx.fill()
+      //ctx.fillStyle = color
+      //ctx.fill()
       ctx.lineWidth = 2
+      ctx.strokeStyle = color
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.moveTo(point.x * canvasSize.scaleX - 12, point.y * canvasSize.scaleY)
+      ctx.lineTo(point.x * canvasSize.scaleX + 12, point.y * canvasSize.scaleY)
+      ctx.moveTo(point.x * canvasSize.scaleX, point.y * canvasSize.scaleY - 12)
+      ctx.lineTo(point.x * canvasSize.scaleX, point.y * canvasSize.scaleY + 12)
+      ctx.strokeStyle = 'black'
+      ctx.lineWidth = 2
+      ctx.stroke()
       ctx.strokeStyle = 'white'
+      ctx.lineWidth = 1
       ctx.stroke()
     },
     [canvasSize.scaleX, canvasSize.scaleY]
@@ -88,16 +99,17 @@ export function PlanCalibrationCanvas({
     referencePoints.forEach(point => drawPoint(ctx, point, '#0047AB'))
     if (originPoint) {
       drawPoint(ctx, originPoint, '#9E2A2B')
-      ctx.strokeStyle = '#9E2A2B'
-      ctx.lineWidth = 1
-      ctx.beginPath()
-      ctx.moveTo(originPoint.x * canvasSize.scaleX - 12, originPoint.y * canvasSize.scaleY)
-      ctx.lineTo(originPoint.x * canvasSize.scaleX + 12, originPoint.y * canvasSize.scaleY)
-      ctx.moveTo(originPoint.x * canvasSize.scaleX, originPoint.y * canvasSize.scaleY - 12)
-      ctx.lineTo(originPoint.x * canvasSize.scaleX, originPoint.y * canvasSize.scaleY + 12)
-      ctx.stroke()
     }
-  }, [canvasSize.height, canvasSize.scaleX, canvasSize.scaleY, canvasSize.width, drawPoint, image, originPoint, referencePoints])
+  }, [
+    canvasSize.height,
+    canvasSize.scaleX,
+    canvasSize.scaleY,
+    canvasSize.width,
+    drawPoint,
+    image,
+    originPoint,
+    referencePoints
+  ])
 
   const convertEventToImagePoint = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): ImagePoint | null => {
