@@ -18,6 +18,7 @@ import type { CanvasEvent } from '@/editor/tools/system/types'
 import { FloorLayer } from './FloorLayer'
 import { GridLayer } from './GridLayer'
 import { PerimeterLayer } from './PerimeterLayer'
+import { PlanImageLayer } from './PlanImageLayer'
 import { ToolOverlayLayer } from './ToolOverlayLayer'
 
 interface FloorPlanStageProps {
@@ -268,8 +269,10 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
         draggable={false}
       >
         <GridLayer width={width} height={height} viewport={{ zoom, panX, panY }} />
+        <PlanImageLayer placement="under" />
         <FloorLayer />
         <PerimeterLayer />
+        <PlanImageLayer placement="over" />
         <ToolOverlayLayer />
       </Stage>
     </div>

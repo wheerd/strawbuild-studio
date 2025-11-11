@@ -1,6 +1,8 @@
 import { Box, Flex, Grid } from '@radix-ui/themes'
 import React from 'react'
 
+import { PlanOverlayControls } from '@/editor/plan-overlay/components/PlanOverlayControls'
+
 import { AutoSaveIndicator } from './AutoSaveIndicator'
 import { GridSizeDisplay } from './GridSizeDisplay'
 import { OfflineStatusIndicator } from './OfflineStatusIndicator'
@@ -24,7 +26,7 @@ export function StatusBar(): React.JSX.Element {
       }}
       data-testid="statusbar"
     >
-      <Grid columns="1fr 1fr 1fr" align="center" gap="4" p="1" className="pointer-events-auto">
+      <Grid columns="1fr 1fr 2fr" align="center" gap="4" p="1" className="pointer-events-auto">
         <Flex align="center" gap="3" p="0">
           <OfflineStatusIndicator />
           <AutoSaveIndicator />
@@ -37,6 +39,7 @@ export function StatusBar(): React.JSX.Element {
 
         <Flex align="center" justify="end" gap="3">
           <PointerPositionDisplay />
+          <PlanOverlayControls />
           <GridSizeDisplay />
         </Flex>
       </Grid>

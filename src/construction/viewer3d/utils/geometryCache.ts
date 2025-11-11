@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 
-import type { ConstructionModel } from '@/construction/model'
 import type { GroupOrElement } from '@/construction/elements'
+import type { ConstructionModel } from '@/construction/model'
 import type { Cuboid, ExtrudedPolygon } from '@/construction/shapes'
 
 interface CuboidGeometryEntry {
