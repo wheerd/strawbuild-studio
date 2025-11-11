@@ -414,13 +414,13 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
       {usage.isUsed && (
         <Grid columns="auto 1fr" gap="2" gapX="3" align="baseline">
           <Label.Root>
-            <Text size="2" weight="medium" color="gray">
+            <Text size="2" weight="medium" color="gray" id="material-usage-list">
               Used By:
             </Text>
           </Label.Root>
-          <Flex gap="1" wrap="wrap">
+          <Flex gap="1" wrap="wrap" role="list" aria-labelledby="material-usage-list">
             {usage.usedByConfigs.map((use, index) => (
-              <Badge key={index} size="2" variant="soft">
+              <Badge role="listitem" key={index} size="2" variant="soft">
                 {use}
               </Badge>
             ))}
@@ -495,12 +495,12 @@ function DimensionalMaterialFields({
     <Flex direction="column" gap="3">
       <Flex direction="row" justify="between" align="end">
         <Flex direction="column" gap="2">
-          <Text size="2" weight="medium" color="gray">
+          <Text size="2" weight="medium" color="gray" id="crossSections">
             Cross Sections
           </Text>
-          <Flex gap="2" wrap="wrap">
+          <Flex gap="2" wrap="wrap" role="list" aria-labelledby="crossSections">
             {material.crossSections.map(section => (
-              <Badge key={`${section.smallerLength}x${section.biggerLength}`} size="2" variant="soft">
+              <Badge role="listitem" key={`${section.smallerLength}x${section.biggerLength}`} size="2" variant="soft">
                 <Flex align="center" gap="1">
                   {formatCrossSectionLabel(section)}
                   <IconButton
@@ -509,6 +509,7 @@ function DimensionalMaterialFields({
                     color="gray"
                     onClick={() => handleRemoveCrossSection(section)}
                     style={{ cursor: 'pointer' }}
+                    aria-label="Remove cross section"
                   >
                     <Cross2Icon width="10" height="10" />
                   </IconButton>
@@ -526,10 +527,28 @@ function DimensionalMaterialFields({
           </Flex>
         </Flex>
         <Grid columns="5em auto 5em auto" gap="2" align="center" justify="end">
-          <LengthField value={newDim1} onChange={setNewDim1} unit="cm" size="2" />
+          <LengthField
+            value={newDim1}
+            onChange={setNewDim1}
+            unit="cm"
+            size="2"
+            aria-label="Cross section smaller dimension"
+          />
           <Text>x</Text>
-          <LengthField value={newDim2} onChange={setNewDim2} unit="cm" size="2" />
-          <IconButton title="Add" onClick={handleAddCrossSection} variant="surface" size="2">
+          <LengthField
+            value={newDim2}
+            onChange={setNewDim2}
+            unit="cm"
+            size="2"
+            aria-label="Cross section larger dimension"
+          />
+          <IconButton
+            title="Add"
+            aria-label="Add cross section"
+            onClick={handleAddCrossSection}
+            variant="surface"
+            size="2"
+          >
             <PlusIcon />
           </IconButton>
         </Grid>
@@ -537,12 +556,12 @@ function DimensionalMaterialFields({
 
       <Flex direction="row" justify="between" align="end">
         <Flex direction="column" gap="2">
-          <Text size="2" weight="medium" color="gray">
+          <Text size="2" weight="medium" color="gray" id="stock-lengths">
             Stock Lengths
           </Text>
-          <Flex gap="2" wrap="wrap">
+          <Flex gap="2" wrap="wrap" role="list" aria-labelledby="stock-lengths">
             {material.lengths.map(length => (
-              <Badge key={length} size="2" variant="soft">
+              <Badge role="listitem" key={length} size="2" variant="soft">
                 <Flex align="center" gap="1">
                   {formatLength(length)}
                   <IconButton
@@ -551,6 +570,7 @@ function DimensionalMaterialFields({
                     color="gray"
                     onClick={() => handleRemoveLength(length)}
                     style={{ cursor: 'pointer' }}
+                    aria-label="Remove stock length"
                   >
                     <Cross2Icon width="10" height="10" />
                   </IconButton>
@@ -574,8 +594,9 @@ function DimensionalMaterialFields({
             unit="cm"
             size="2"
             style={{ width: '8em' }}
+            aria-label="Stock length input"
           />
-          <IconButton title="Add" onClick={handleAddLength} variant="surface" size="2">
+          <IconButton title="Add" aria-label="Add stock length" onClick={handleAddLength} variant="surface" size="2">
             <PlusIcon />
           </IconButton>
         </Flex>
@@ -644,12 +665,12 @@ function SheetMaterialFields({
     <Flex direction="column" gap="3">
       <Flex direction="row" justify="between" align="end">
         <Flex direction="column" gap="2">
-          <Text size="2" weight="medium" color="gray">
+          <Text size="2" weight="medium" color="gray" id="sheet-sizes">
             Sheet Sizes
           </Text>
-          <Flex gap="2" wrap="wrap">
+          <Flex gap="2" wrap="wrap" role="list" aria-labelledby="sheet-sizes">
             {material.sizes.map(size => (
-              <Badge key={`${size.smallerLength}x${size.biggerLength}`} size="2" variant="soft">
+              <Badge role="listitem" key={`${size.smallerLength}x${size.biggerLength}`} size="2" variant="soft">
                 <Flex align="center" gap="1">
                   {formatCrossSectionLabel(size)}
                   <IconButton
@@ -658,6 +679,7 @@ function SheetMaterialFields({
                     color="gray"
                     onClick={() => handleRemoveSize(size)}
                     style={{ cursor: 'pointer' }}
+                    aria-label="Remove sheet size"
                   >
                     <Cross2Icon width="10" height="10" />
                   </IconButton>
@@ -675,10 +697,10 @@ function SheetMaterialFields({
           </Flex>
         </Flex>
         <Grid columns="6em auto 6em auto" gap="2" align="center" justify="end">
-          <LengthField value={newWidth} onChange={setNewWidth} unit="cm" size="2" />
+          <LengthField value={newWidth} onChange={setNewWidth} unit="cm" size="2" aria-label="Sheet width" />
           <Text>x</Text>
-          <LengthField value={newLength} onChange={setNewLength} unit="cm" size="2" />
-          <IconButton title="Add size" onClick={handleAddSize} variant="surface" size="2">
+          <LengthField value={newLength} onChange={setNewLength} unit="cm" size="2" aria-label="Sheet length" />
+          <IconButton title="Add size" aria-label="Add sheet size" onClick={handleAddSize} variant="surface" size="2">
             <PlusIcon />
           </IconButton>
         </Grid>
@@ -686,12 +708,12 @@ function SheetMaterialFields({
 
       <Flex direction="row" justify="between" align="end">
         <Flex direction="column" gap="2">
-          <Text size="2" weight="medium" color="gray">
+          <Text size="2" weight="medium" color="gray" id="sheet-thicknesses">
             Thicknesses
           </Text>
-          <Flex gap="2" wrap="wrap">
+          <Flex gap="2" wrap="wrap" role="list" aria-labelledby="sheet-thicknesses">
             {material.thicknesses.map(thickness => (
-              <Badge key={thickness} size="2" variant="soft">
+              <Badge role="listitem" key={thickness} size="2" variant="soft">
                 <Flex align="center" gap="1">
                   {formatLength(thickness)}
                   <IconButton
@@ -700,6 +722,7 @@ function SheetMaterialFields({
                     color="gray"
                     onClick={() => handleRemoveThickness(thickness)}
                     style={{ cursor: 'pointer' }}
+                    aria-label="Remove thickness"
                   >
                     <Cross2Icon width="10" height="10" />
                   </IconButton>
@@ -717,8 +740,21 @@ function SheetMaterialFields({
           </Flex>
         </Flex>
         <Flex gap="2" align="end">
-          <LengthField value={newThickness} onChange={setNewThickness} unit="mm" size="2" style={{ width: '8em' }} />
-          <IconButton title="Add thickness" onClick={handleAddThickness} variant="surface" size="2">
+          <LengthField
+            value={newThickness}
+            onChange={setNewThickness}
+            unit="mm"
+            size="2"
+            style={{ width: '8em' }}
+            aria-label="Thickness input"
+          />
+          <IconButton
+            title="Add thickness"
+            aria-label="Add thickness"
+            onClick={handleAddThickness}
+            variant="surface"
+            size="2"
+          >
             <PlusIcon />
           </IconButton>
         </Flex>
@@ -774,12 +810,12 @@ function VolumeMaterialFields({
     <Flex direction="column" gap="3">
       <Flex direction="row" justify="between" align="end">
         <Flex direction="column" gap="2">
-          <Text size="2" weight="medium" color="gray">
+          <Text size="2" weight="medium" color="gray" id="available-volumes">
             Available Volumes
           </Text>
-          <Flex gap="2" wrap="wrap">
+          <Flex gap="2" wrap="wrap" role="list" aria-labelledby="available-volumes">
             {material.availableVolumes.map(volume => (
-              <Badge key={volume} size="2" variant="soft">
+              <Badge role="listitem" key={volume} size="2" variant="soft">
                 <Flex align="center" gap="1">
                   {volumeUnit === 'liter' ? formatVolumeInLiters(volume) : formatVolume(volume)}
                   <IconButton
@@ -788,6 +824,7 @@ function VolumeMaterialFields({
                     color="gray"
                     onClick={() => handleRemoveVolume(volume)}
                     style={{ cursor: 'pointer' }}
+                    aria-label="Remove volume option"
                   >
                     <Cross2Icon width="10" height="10" />
                   </IconButton>
@@ -821,8 +858,15 @@ function VolumeMaterialFields({
               unit={volumeUnit}
               size="2"
               style={{ width: '8em' }}
+              aria-label="Volume input"
             />
-            <IconButton title="Add volume" onClick={handleAddVolume} variant="surface" size="2">
+            <IconButton
+              title="Add volume"
+              aria-label="Add volume option"
+              onClick={handleAddVolume}
+              variant="surface"
+              size="2"
+            >
               <PlusIcon />
             </IconButton>
           </Flex>
