@@ -1,5 +1,7 @@
 import * as THREE from 'three'
 
+import type { ConstructionModel } from '@/construction/model'
+import type { GroupOrElement } from '@/construction/elements'
 import type { Cuboid, ExtrudedPolygon } from '@/construction/shapes'
 
 interface CuboidGeometryEntry {
@@ -124,4 +126,24 @@ export function getExtrudedPolygonGeometry(shape: ExtrudedPolygon, partId?: stri
   const entry = { cacheKey, geometry, edgesGeometry, matrix }
   extrudedGeometryCache.set(cacheKey, entry)
   return entry
+}
+
+function prewarmElementGeometry(element: GroupOrElement): void {
+  if ('children' in element) {
+    element.children.forEach(child => prewarmElementGeometry(child))
+    return
+  }
+
+  const partId = element.partInfo?.partId
+  if (element.shape.type === 'cuboid') {
+    getCuboidGeometry(element.shape, partId)
+  } else if (element.shape.type === 'polygon') {
+    getExtrudedPolygonGeometry(element.shape, partId)
+  }
+}
+
+export function prewarmGeometryCache(model: ConstructionModel): void {
+  model.elements.forEach(element => {
+    prewarmElementGeometry(element)
+  })
 }
