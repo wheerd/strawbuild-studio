@@ -1,3 +1,4 @@
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { Button, Flex, Grid, Separator, Text, Tooltip } from '@radix-ui/themes'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -123,13 +124,23 @@ export function PlanImportModal({
     return calculatePixelDistance(referencePoints[0], referencePoints[1])
   }, [referencePoints])
 
+  const pixelDistanceWarning = useMemo(() => {
+    if (pixelDistance == null || pixelDistance <= 0) {
+      return null
+    }
+    if (pixelDistance < 100) {
+      return 'Calibration span is small – consider selecting points farther apart for better accuracy.'
+    }
+    return null
+  }, [pixelDistance])
+
   const mmPerPixel = useMemo(() => {
     if (!pixelDistance || realDistance <= 0) return null
     return realDistance / pixelDistance
   }, [pixelDistance, realDistance])
 
   const handleSubmit = useCallback(() => {
-    if (!imageElement || referencePoints.length !== 2 || realDistance <= 0) {
+    if (!imageElement || referencePoints.length !== 2 || realDistance <= 0 || !pixelDistance || pixelDistance <= 0) {
       return
     }
 
@@ -179,6 +190,8 @@ export function PlanImportModal({
     imageElement != null &&
     referencePoints.length === 2 &&
     realDistance > 0 &&
+    pixelDistance != null &&
+    pixelDistance > 0 &&
     (file != null || (existingPlan != null && previewSource != null))
 
   const handleSelectOriginClick = useCallback(() => {
@@ -251,7 +264,7 @@ export function PlanImportModal({
           <Grid columns="1fr 1fr 1fr" align="center" gap="3">
             <Flex direction="row" gap="1" align="center">
               <Text weight="medium" size="2">
-                Real Distance
+                Real Distance:
               </Text>
               <LengthField
                 value={realDistance}
@@ -264,13 +277,18 @@ export function PlanImportModal({
               />
             </Flex>
 
-            <Flex direction="row" gap="1" align="center" justify="center">
+            <Flex align="center" gap="1" justify="center">
               <Text weight="medium" size="2">
                 Pixel distance:
               </Text>
               <Text size="2" color="gray">
-                {pixelDistance ? pixelDistance.toFixed(1) + ' px' : 'Select two points'}
+                {pixelDistance ? `${pixelDistance.toFixed(1)} px` : 'Select two points'}
               </Text>
+              {pixelDistanceWarning && (
+                <Tooltip content={pixelDistanceWarning}>
+                  <ExclamationTriangleIcon width={20} height={20} style={{ color: 'var(--amber-9)' }} />
+                </Tooltip>
+              )}
             </Flex>
 
             <Flex direction="row" gap="1" align="center" justify="end">
