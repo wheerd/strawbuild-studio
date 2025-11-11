@@ -4,6 +4,7 @@ import type { StoreyId } from '@/building/model/ids'
 import type { Storey } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import type { StoreActions } from '@/building/store/types'
+import { clearSelection } from '@/editor/hooks/useSelectionStore'
 
 /**
  * Service for managing storeys with cross-slice orchestration
@@ -131,6 +132,8 @@ export class StoreyManagementService {
 
     // 2. Delete the storey
     this.actions.removeStorey(storeyId)
+
+    clearSelection()
   }
 }
 
