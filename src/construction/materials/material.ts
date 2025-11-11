@@ -143,18 +143,36 @@ export const woodwool: SheetMaterial = {
   density: 50
 }
 
-export const clayPlaster: VolumeMaterial = {
-  id: 'material_clay_plaster' as MaterialId,
-  name: 'Clay Plaster',
+export const clayPlasterBase: VolumeMaterial = {
+  id: 'material_clay_plaster_base' as MaterialId,
+  name: 'Clay Plaster (Base)',
   type: 'volume',
   availableVolumes: [598802395.21, 299401197.605], // 1t, 1/2t
   color: '#927d61',
   density: 1670
 }
 
-export const limePlaster: VolumeMaterial = {
-  id: 'material_lime_plaster' as MaterialId,
-  name: 'Lime Plaster',
+export const clayPlasterFine: VolumeMaterial = {
+  id: 'material_clay_plaster_fine' as MaterialId,
+  name: 'Clay Plaster (Fine)',
+  type: 'volume',
+  availableVolumes: [598802395.21, 299401197.605], // 1t, 1/2t
+  color: '#927d61',
+  density: 1670
+}
+
+export const limePlasterBase: VolumeMaterial = {
+  id: 'material_lime_plaster_base' as MaterialId,
+  name: 'Lime Plaster (Base)',
+  type: 'volume',
+  availableVolumes: [19800000], // 25kg
+  color: '#e5dbd3',
+  density: 1262
+}
+
+export const limePlasterFine: VolumeMaterial = {
+  id: 'material_lime_plaster_fine' as MaterialId,
+  name: 'Lime Plaster (Fine)',
   type: 'volume',
   availableVolumes: [19800000], // 25kg
   color: '#e5dbd3',
@@ -188,8 +206,10 @@ export const DEFAULT_MATERIALS: Record<MaterialId, Material> = {
   [concrete.id]: concrete,
   [clt.id]: clt,
   [woodwool.id]: woodwool,
-  [clayPlaster.id]: clayPlaster,
-  [limePlaster.id]: limePlaster,
+  [clayPlasterBase.id]: clayPlasterBase,
+  [clayPlasterFine.id]: clayPlasterFine,
+  [limePlasterBase.id]: limePlasterBase,
+  [limePlasterFine.id]: limePlasterFine,
   [cementScreed.id]: cementScreed,
   [impactSoundInsulation.id]: impactSoundInsulation
 }

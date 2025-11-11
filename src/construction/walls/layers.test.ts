@@ -11,7 +11,7 @@ import {
 } from '@/building/model/ids'
 import type { Opening, Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model/model'
 import type { ConstructionElement, GroupOrElement } from '@/construction/elements'
-import { clayPlaster, limePlaster } from '@/construction/materials/material'
+import { clayPlasterBase, limePlasterBase } from '@/construction/materials/material'
 import type { ExtrudedPolygon } from '@/construction/shapes'
 import { TAG_LAYERS, TAG_WALL_LAYER_INSIDE, TAG_WALL_LAYER_OUTSIDE } from '@/construction/tags'
 import type { WallCornerInfo } from '@/construction/walls'
@@ -116,7 +116,7 @@ const baseLayers: WallLayersConfig = {
     {
       type: 'monolithic',
       name: 'Inside Layer',
-      material: clayPlaster.id,
+      material: clayPlasterBase.id,
       thickness: 30
     }
   ],
@@ -125,7 +125,7 @@ const baseLayers: WallLayersConfig = {
     {
       type: 'monolithic',
       name: 'Outside Layer',
-      material: limePlaster.id,
+      material: limePlasterBase.id,
       thickness: 20
     }
   ]
