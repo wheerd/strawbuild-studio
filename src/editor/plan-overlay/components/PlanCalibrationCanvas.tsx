@@ -1,8 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import type Konva from 'konva'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Circle, Group, Layer, Line, Rect, Stage } from 'react-konva/lib/ReactKonvaCore'
+import { Image as KonvaImage } from 'react-konva/lib/ReactKonvaCore'
+
+import { elementSizeRef } from '@/shared/hooks/useElementSize'
 
 import type { ImagePoint } from '../types'
 
-type SelectionMode = 'measure' | 'origin' | 'idle'
+export type SelectionMode = 'measure' | 'origin' | 'idle'
 
 export interface PlanCalibrationCanvasProps {
   image: HTMLImageElement | null
@@ -13,8 +18,30 @@ export interface PlanCalibrationCanvasProps {
   mode: SelectionMode
 }
 
-const MAX_CANVAS_WIDTH = 640
-const MAX_CANVAS_HEIGHT = 400
+const DEFAULT_STAGE_WIDTH = 640
+const DEFAULT_STAGE_HEIGHT = 420
+const MIN_STAGE_WIDTH = 360
+const MIN_STAGE_HEIGHT = 260
+const MAX_STAGE_HEIGHT = 520
+const SCALE_STEP = 1.08
+const MIN_SCALE_FACTOR = 0.5
+const MAX_SCALE_FACTOR = 8
+
+interface ViewTransform {
+  scale: number
+  pan: { x: number; y: number }
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
+}
+
+function clampPointToImage(point: ImagePoint, image: HTMLImageElement): ImagePoint {
+  return {
+    x: clamp(point.x, 0, image.naturalWidth),
+    y: clamp(point.y, 0, image.naturalHeight)
+  }
+}
 
 export function PlanCalibrationCanvas({
   image,
@@ -24,111 +51,148 @@ export function PlanCalibrationCanvas({
   onOriginPointChange,
   mode
 }: PlanCalibrationCanvasProps): React.JSX.Element {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const stageRef = useRef<Konva.Stage>(null)
+  const [containerSize, setContainerRef] = elementSizeRef()
+  const [hasInteracted, setHasInteracted] = useState(false)
+  const [baseScale, setBaseScale] = useState(1)
+  const [view, setView] = useState<ViewTransform>(() => ({
+    scale: 1,
+    pan: { x: 0, y: 0 }
+  }))
+  const dragOrigin = useRef<{ pointer: { x: number; y: number }; pan: { x: number; y: number } } | null>(null)
 
-  const canvasSize = useMemo(() => {
+  const stageWidth = useMemo(() => {
+    if (containerSize.width > 0) {
+      return Math.max(MIN_STAGE_WIDTH, containerSize.width)
+    }
+    return DEFAULT_STAGE_WIDTH
+  }, [containerSize.width])
+
+  const stageHeight = useMemo(() => {
     if (!image) {
-      return { width: MAX_CANVAS_WIDTH, height: MAX_CANVAS_HEIGHT, scaleX: 1, scaleY: 1 }
+      return DEFAULT_STAGE_HEIGHT
     }
-    const widthScale = MAX_CANVAS_WIDTH / image.naturalWidth
-    const heightScale = MAX_CANVAS_HEIGHT / image.naturalHeight
-    const scale = Math.min(widthScale, heightScale, 1)
-    const width = Math.max(200, Math.round(image.naturalWidth * scale))
-    const height = Math.max(200, Math.round(image.naturalHeight * scale))
-    return {
-      width,
-      height,
-      scaleX: width / image.naturalWidth,
-      scaleY: height / image.naturalHeight
-    }
-  }, [image])
+    const aspectRatio = image.naturalHeight / image.naturalWidth
+    const targetHeight = stageWidth * aspectRatio
+    return clamp(targetHeight, MIN_STAGE_HEIGHT, MAX_STAGE_HEIGHT)
+  }, [image, stageWidth])
 
-  const drawPoint = useCallback(
-    (ctx: CanvasRenderingContext2D, point: ImagePoint, color: string) => {
-      const radius = 6
-      const x = point.x * canvasSize.scaleX
-      const y = point.y * canvasSize.scaleY
-      ctx.beginPath()
-      ctx.arc(x, y, radius, 0, Math.PI * 2)
-      //ctx.fillStyle = color
-      //ctx.fill()
-      ctx.lineWidth = 2
-      ctx.strokeStyle = color
-      ctx.stroke()
-      ctx.beginPath()
-      ctx.moveTo(point.x * canvasSize.scaleX - 12, point.y * canvasSize.scaleY)
-      ctx.lineTo(point.x * canvasSize.scaleX + 12, point.y * canvasSize.scaleY)
-      ctx.moveTo(point.x * canvasSize.scaleX, point.y * canvasSize.scaleY - 12)
-      ctx.lineTo(point.x * canvasSize.scaleX, point.y * canvasSize.scaleY + 12)
-      ctx.strokeStyle = 'black'
-      ctx.lineWidth = 2
-      ctx.stroke()
-      ctx.strokeStyle = 'white'
-      ctx.lineWidth = 1
-      ctx.stroke()
+  const resetView = useCallback(
+    (overrideInteraction = false) => {
+      if (!image) return
+      const fitScale = Math.min(stageWidth / image.naturalWidth, stageHeight / image.naturalHeight)
+      const nextScale = fitScale > 0 && isFinite(fitScale) ? fitScale : 1
+      const centeredPan = {
+        x: (stageWidth - image.naturalWidth * nextScale) / 2,
+        y: (stageHeight - image.naturalHeight * nextScale) / 2
+      }
+      setBaseScale(nextScale)
+      setView({ scale: nextScale, pan: centeredPan })
+      if (!overrideInteraction) {
+        setHasInteracted(false)
+      }
     },
-    [canvasSize.scaleX, canvasSize.scaleY]
+    [image, stageHeight, stageWidth]
   )
 
   useEffect(() => {
-    if (!canvasRef.current) return
-    const ctx = canvasRef.current.getContext('2d')
-    if (!ctx) return
+    if (!image) return
+    if (hasInteracted) return
+    resetView(true)
+  }, [hasInteracted, image, resetView])
 
-    ctx.clearRect(0, 0, canvasSize.width, canvasSize.height)
-    ctx.fillStyle = '#f5f5f5'
-    ctx.fillRect(0, 0, canvasSize.width, canvasSize.height)
-
-    if (image) {
-      ctx.drawImage(image, 0, 0, canvasSize.width, canvasSize.height)
-    }
-
-    if (referencePoints.length === 2) {
-      const start = referencePoints[0]
-      const end = referencePoints[1]
-      ctx.strokeStyle = '#0057D8'
-      ctx.lineWidth = 2
-      ctx.setLineDash([6, 6])
-      ctx.beginPath()
-      ctx.moveTo(start.x * canvasSize.scaleX, start.y * canvasSize.scaleY)
-      ctx.lineTo(end.x * canvasSize.scaleX, end.y * canvasSize.scaleY)
-      ctx.stroke()
-      ctx.setLineDash([])
-    }
-
-    referencePoints.forEach(point => drawPoint(ctx, point, '#0047AB'))
-    if (originPoint) {
-      drawPoint(ctx, originPoint, '#9E2A2B')
-    }
-  }, [
-    canvasSize.height,
-    canvasSize.scaleX,
-    canvasSize.scaleY,
-    canvasSize.width,
-    drawPoint,
-    image,
-    originPoint,
-    referencePoints
-  ])
-
-  const convertEventToImagePoint = useCallback(
-    (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): ImagePoint | null => {
-      if (!canvasRef.current || !image) {
-        return null
+  const pointerToImagePoint = useCallback(
+    (pointer: { x: number; y: number } | null): ImagePoint | null => {
+      if (!pointer || !image) return null
+      const rawPoint: ImagePoint = {
+        x: (pointer.x - view.pan.x) / view.scale,
+        y: (pointer.y - view.pan.y) / view.scale
       }
-      const rect = canvasRef.current.getBoundingClientRect()
-      const xRatio = image.naturalWidth / rect.width
-      const yRatio = image.naturalHeight / rect.height
-      const x = (event.clientX - rect.left) * xRatio
-      const y = (event.clientY - rect.top) * yRatio
-      return { x, y }
+      return clampPointToImage(rawPoint, image)
     },
-    [image]
+    [image, view.pan.x, view.pan.y, view.scale]
   )
 
-  const handleCanvasClick = useCallback(
-    (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-      const imagePoint = convertEventToImagePoint(event)
+  const handleWheel = useCallback(
+    (event: Konva.KonvaEventObject<WheelEvent>) => {
+      event.evt.preventDefault()
+      if (!image || !stageRef.current) return
+      const pointer = stageRef.current.getPointerPosition()
+      if (!pointer) return
+
+      const direction = event.evt.deltaY > 0 ? -1 : 1
+      const nextScale = clamp(
+        view.scale * (direction > 0 ? SCALE_STEP : 1 / SCALE_STEP),
+        baseScale * MIN_SCALE_FACTOR,
+        baseScale * MAX_SCALE_FACTOR
+      )
+
+      const mousePointTo = {
+        x: (pointer.x - view.pan.x) / view.scale,
+        y: (pointer.y - view.pan.y) / view.scale
+      }
+
+      const newPan = {
+        x: pointer.x - mousePointTo.x * nextScale,
+        y: pointer.y - mousePointTo.y * nextScale
+      }
+
+      setView({ scale: nextScale, pan: newPan })
+      setHasInteracted(true)
+    },
+    [baseScale, image, view.pan.x, view.pan.y, view.scale]
+  )
+
+  const beginPan = useCallback(
+    (event: Konva.KonvaEventObject<PointerEvent>) => {
+      const isPanPointer = event.evt.button === 1 || event.evt.button === 2 || event.evt.shiftKey
+      if (!isPanPointer) {
+        dragOrigin.current = null
+        return
+      }
+      const pointer = event.target.getStage()?.getPointerPosition()
+      if (!pointer) return
+      dragOrigin.current = {
+        pointer,
+        pan: { ...view.pan }
+      }
+      setHasInteracted(true)
+      event.evt.preventDefault()
+    },
+    [view.pan]
+  )
+
+  const updatePan = useCallback((event: Konva.KonvaEventObject<PointerEvent>) => {
+    if (!dragOrigin.current) return
+    const pointer = event.target.getStage()?.getPointerPosition()
+    if (!pointer) return
+    const deltaX = pointer.x - dragOrigin.current.pointer.x
+    const deltaY = pointer.y - dragOrigin.current.pointer.y
+    setView(prev => ({
+      ...prev,
+      pan: {
+        x: dragOrigin.current!.pan.x + deltaX,
+        y: dragOrigin.current!.pan.y + deltaY
+      }
+    }))
+  }, [])
+
+  const endPan = useCallback(() => {
+    dragOrigin.current = null
+  }, [])
+
+  const handlePointerUp = useCallback(
+    (event: Konva.KonvaEventObject<PointerEvent>) => {
+      if (!image) return
+      const usedForPan = event.evt.shiftKey || event.evt.button === 1 || event.evt.button === 2
+      if (dragOrigin.current || usedForPan) {
+        dragOrigin.current = null
+        return
+      }
+      if (event.evt.button !== 0) return
+
+      const pointer = event.target.getStage()?.getPointerPosition()
+      const imagePoint = pointerToImagePoint(pointer ?? null)
       if (!imagePoint) return
 
       if (mode === 'origin') {
@@ -144,18 +208,150 @@ export function PlanCalibrationCanvas({
         }
       }
     },
-    [convertEventToImagePoint, mode, onOriginPointChange, onReferencePointsChange, referencePoints]
+    [image, mode, onOriginPointChange, onReferencePointsChange, pointerToImagePoint, referencePoints]
+  )
+
+  const handleStageClick = useCallback((event: Konva.KonvaEventObject<MouseEvent>) => {
+    if (event.evt.detail > 1) {
+      // Prevent double-click zooming behaviour in browsers
+      event.evt.preventDefault()
+    }
+  }, [])
+
+  const renderReferenceLine = (): React.ReactNode => {
+    if (referencePoints.length < 2) return null
+    const [start, end] = referencePoints
+    return (
+      <Line
+        points={[start.x, start.y, end.x, end.y]}
+        stroke="#1E63D5"
+        strokeWidth={2}
+        dash={[12, 8]}
+        listening={false}
+      />
+    )
+  }
+
+  const renderCrosshair = (point: ImagePoint, color: string): React.ReactNode => (
+    <Group key={`${point.x}-${point.y}`} listening={false}>
+      <Circle x={point.x} y={point.y} radius={8} stroke={color} strokeWidth={3} opacity={0.7} />
+      <Line
+        points={[point.x - 12, point.y - 12, point.x + 12, point.y + 12]}
+        stroke="#060708"
+        strokeWidth={3}
+        opacity={0.4}
+      />
+      <Line
+        points={[point.x - 12, point.y + 12, point.x + 12, point.y - 12]}
+        stroke="#060708"
+        strokeWidth={3}
+        opacity={0.4}
+      />
+      <Line points={[point.x - 12, point.y - 12, point.x + 12, point.y + 12]} stroke="#ffffff" strokeWidth={1.5} />
+      <Line points={[point.x - 12, point.y + 12, point.x + 12, point.y - 12]} stroke="#ffffff" strokeWidth={1.5} />
+    </Group>
   )
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={canvasSize.width}
-      height={canvasSize.height}
-      className="rounded-md border border-gray-5 shadow-sm"
-      style={{ cursor: mode === 'origin' ? 'crosshair' : 'pointer', maxWidth: '100%' }}
-      onClick={handleCanvasClick}
-      data-testid="plan-calibration-canvas"
-    />
+    <div
+      ref={setContainerRef}
+      style={{
+        width: '100%',
+        minHeight: `${MIN_STAGE_HEIGHT}px`,
+        position: 'relative',
+        border: '1px solid var(--gray-5)',
+        borderRadius: '8px',
+        backgroundColor: 'var(--gray-1)',
+        boxShadow: 'var(--shadow-2)'
+      }}
+    >
+      {image ? (
+        <Stage
+          ref={stageRef}
+          width={stageWidth}
+          height={stageHeight}
+          scaleX={view.scale}
+          scaleY={view.scale}
+          x={view.pan.x}
+          y={view.pan.y}
+          draggable={false}
+          onWheel={handleWheel}
+          onPointerDown={beginPan}
+          onPointerMove={updatePan}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={endPan}
+          onClick={handleStageClick}
+          onContextMenu={event => event.evt.preventDefault()}
+        >
+          <Layer listening={false}>
+            <Rect
+              x={-view.pan.x / view.scale}
+              y={-view.pan.y / view.scale}
+              width={stageWidth / view.scale}
+              height={stageHeight / view.scale}
+              fill="#f6f6f6"
+              listening={false}
+            />
+            <KonvaImage image={image} width={image.naturalWidth} height={image.naturalHeight} listening={false} />
+            {renderReferenceLine()}
+            {referencePoints.map(point => renderCrosshair(point, '#0F62FE'))}
+            {originPoint && renderCrosshair(originPoint, '#B42318')}
+          </Layer>
+        </Stage>
+      ) : (
+        <div
+          style={{
+            height: '300px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '0.9rem',
+            color: 'var(--gray-11)'
+          }}
+        >
+          Upload an image to begin
+        </div>
+      )}
+      {image && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '8px',
+            left: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '20px',
+            borderRadius: '6px',
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            color: '#fff',
+            fontSize: '12px',
+            padding: '4px 12px'
+          }}
+        >
+          <span>Scroll to zoom</span>
+          <span>Shift + drag to pan</span>
+          <button
+            type="button"
+            onClick={() => {
+              resetView()
+              setHasInteracted(false)
+            }}
+            style={{
+              border: '1px solid rgba(255,255,255,0.4)',
+              borderRadius: '4px',
+              padding: '2px 8px',
+              textTransform: 'uppercase',
+              fontSize: '11px',
+              letterSpacing: '0.05em',
+              background: 'transparent',
+              color: 'inherit',
+              cursor: 'pointer'
+            }}
+          >
+            Reset
+          </button>
+        </div>
+      )}
+    </div>
   )
 }
