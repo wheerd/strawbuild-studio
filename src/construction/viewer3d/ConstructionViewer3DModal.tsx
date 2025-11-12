@@ -7,7 +7,7 @@ import { elementSizeRef } from '@/shared/hooks/useElementSize'
 import { CanvasThemeProvider } from '@/shared/theme/CanvasThemeContext'
 
 import { OpacityControlProvider } from './context/OpacityControlContext'
-import { prewarmGeometryCache } from './utils/geometryCache'
+import { acquireGeometryCache, prewarmGeometryCache, releaseGeometryCache } from './utils/geometryCache'
 
 const ConstructionViewer3D = lazy(() => import('./ConstructionViewer3D'))
 
@@ -120,6 +120,13 @@ function ConstructionViewer3DContent({
   containerSize: { width: number; height: number }
   isOpen: boolean
 }) {
+  useEffect(() => {
+    acquireGeometryCache()
+    return () => {
+      releaseGeometryCache()
+    }
+  }, [])
+
   const constructionModel = use(modelPromise)
   const geometryReady = useGeometryPrewarm(constructionModel)
   const shouldRenderCanvas = useDeferredCanvasMount(

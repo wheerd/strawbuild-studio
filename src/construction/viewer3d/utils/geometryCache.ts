@@ -4,6 +4,8 @@ import type { GroupOrElement } from '@/construction/elements'
 import type { ConstructionModel } from '@/construction/model'
 import type { Cuboid, ExtrudedPolygon } from '@/construction/shapes'
 
+type IdleCallback = (deadline?: { didTimeout: boolean; timeRemaining(): number }) => void
+
 interface CuboidGeometryEntry {
   cacheKey: string
   geometry: THREE.BoxGeometry
@@ -19,6 +21,19 @@ interface ExtrudedGeometryEntry {
 
 const cuboidGeometryCache = new Map<string, CuboidGeometryEntry>()
 const extrudedGeometryCache = new Map<string, ExtrudedGeometryEntry>()
+let activeGeometryConsumers = 0
+let scheduledClearHandle: number | null = null
+let scheduledClearType: 'idle' | 'timeout' | null = null
+
+function disposeCuboidEntry(entry: CuboidGeometryEntry): void {
+  entry.geometry.dispose()
+  entry.edgesGeometry.dispose()
+}
+
+function disposeExtrudedEntry(entry: ExtrudedGeometryEntry): void {
+  entry.geometry.dispose()
+  entry.edgesGeometry.dispose()
+}
 
 function formatNumber(value: number): string {
   return Number.parseFloat(value.toFixed(6)).toString()
@@ -146,4 +161,84 @@ export function prewarmGeometryCache(model: ConstructionModel): void {
   model.elements.forEach(element => {
     prewarmElementGeometry(element)
   })
+}
+
+export function clearGeometryCache(): void {
+  cuboidGeometryCache.forEach(entry => {
+    disposeCuboidEntry(entry)
+  })
+  cuboidGeometryCache.clear()
+
+  extrudedGeometryCache.forEach(entry => {
+    disposeExtrudedEntry(entry)
+  })
+  extrudedGeometryCache.clear()
+}
+
+export function acquireGeometryCache(): void {
+  cancelScheduledGeometryCacheClear()
+  activeGeometryConsumers += 1
+}
+
+export function releaseGeometryCache(): void {
+  if (activeGeometryConsumers === 0) {
+    return
+  }
+
+  activeGeometryConsumers -= 1
+  if (activeGeometryConsumers === 0) {
+    scheduleGeometryCacheClear()
+  }
+}
+
+function scheduleGeometryCacheClear(): void {
+  if (scheduledClearHandle !== null) {
+    return
+  }
+
+  const run: IdleCallback = () => {
+    scheduledClearHandle = null
+    scheduledClearType = null
+    clearGeometryCache()
+  }
+
+  if (typeof window !== 'undefined' && typeof window.requestIdleCallback === 'function') {
+    scheduledClearType = 'idle'
+    scheduledClearHandle = window.requestIdleCallback(run)
+    return
+  }
+
+  if (typeof globalThis !== 'undefined') {
+    const maybeRequestIdle = (globalThis as { requestIdleCallback?: (cb: IdleCallback) => number }).requestIdleCallback
+    if (typeof maybeRequestIdle === 'function') {
+      scheduledClearType = 'idle'
+      scheduledClearHandle = maybeRequestIdle(run)
+      return
+    }
+  }
+
+  scheduledClearType = 'timeout'
+  scheduledClearHandle = Number(setTimeout(run, 0))
+}
+
+function cancelScheduledGeometryCacheClear(): void {
+  if (scheduledClearHandle === null) {
+    return
+  }
+
+  if (scheduledClearType === 'idle') {
+    if (typeof window !== 'undefined' && typeof window.cancelIdleCallback === 'function') {
+      window.cancelIdleCallback(scheduledClearHandle)
+    } else if (typeof globalThis !== 'undefined') {
+      const maybeCancel = (globalThis as { cancelIdleCallback?: (handle: number) => void }).cancelIdleCallback
+      if (typeof maybeCancel === 'function') {
+        maybeCancel(scheduledClearHandle)
+      }
+    }
+  } else if (scheduledClearType === 'timeout') {
+    clearTimeout(scheduledClearHandle)
+  }
+
+  scheduledClearHandle = null
+  scheduledClearType = null
 }
