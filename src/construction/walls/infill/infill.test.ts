@@ -475,7 +475,7 @@ describe('assembly.construct', () => {
 
     // Mock segmentedWallConstruction to call our wall and opening construction functions
     mockSegmentedWallConstruction.mockImplementation(
-      function* (wall, _perimeter, _storeyContext, _layers, wallConstruction, openingConstruction) {
+      function* (wall, _perimeter, _storeyContext, _layers, wallConstruction, openingConstruction, _padding) {
         // Simulate calling wall construction
         yield* wallConstruction(vec3.fromValues(0, 30, 60), vec3.fromValues(3000, 220, 2380), true, true, false)
 
@@ -539,7 +539,8 @@ describe('assembly.construct', () => {
         createMockStoreyContext(floorHeight),
         config.layers,
         expect.any(Function), // wallConstruction function
-        expect.any(Function) // openingConstruction function
+        expect.any(Function), // openingConstruction function
+        15
       )
     })
 

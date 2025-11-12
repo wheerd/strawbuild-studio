@@ -34,10 +34,10 @@ export const createStoreyLevel = (value: number): StoreyLevel => {
 export interface Opening {
   id: OpeningId
   type: OpeningType
-  offsetFromStart: Length // Offset in mm from wall start point
-  width: Length
-  height: Length
-  sillHeight?: Length // For windows
+  offsetFromStart: Length // Finished offset along the inside wall face
+  width: Length // Finished clear width
+  height: Length // Finished clear height
+  sillHeight?: Length // Finished floor-to-sill height for windows
 }
 
 // Floor/level

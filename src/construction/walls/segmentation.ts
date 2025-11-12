@@ -9,6 +9,7 @@ import { getStoreyCeilingHeight } from '@/construction/storeyHeight'
 import { TAG_OPENING_SPACING, TAG_WALL_LENGTH } from '@/construction/tags'
 import type { WallLayersConfig } from '@/construction/walls'
 import type { Length } from '@/shared/geometry'
+import { convertOpeningToConstruction } from '@/shared/utils/openingDimensions'
 
 import type { WallCornerInfo } from './construction'
 import { calculateWallCornerInfo, getWallContext } from './corners/corners'
@@ -205,11 +206,14 @@ export function* segmentedWallConstruction(
   storeyContext: WallStoreyContext,
   layers: WallLayersConfig,
   wallConstruction: WallSegmentConstruction,
-  openingConstruction: OpeningSegmentConstruction
+  openingConstruction: OpeningSegmentConstruction,
+  openingPadding: Length
 ): Generator<ConstructionResult> {
   const wallContext = getWallContext(wall, perimeter)
   const cornerInfo = calculateWallCornerInfo(wall, wallContext)
   const { constructionLength, extensionStart, extensionEnd } = cornerInfo
+  const padding = Number(openingPadding ?? 0) as Length
+  const openingsWithPadding = wall.openings.map(opening => convertOpeningToConstruction(opening, padding))
 
   const { getRingBeamAssemblyById } = getConfigActions()
   const basePlateAssembly = perimeter.baseRingBeamAssemblyId
@@ -262,7 +266,7 @@ export function* segmentedWallConstruction(
     tags: [TAG_WALL_LENGTH]
   })
 
-  if (wall.openings.length === 0) {
+  if (openingsWithPadding.length === 0) {
     // No openings - just one wall segment for the entire length
     yield* wallConstruction(
       vec3.fromValues(-extensionStart, y, z),
@@ -275,7 +279,7 @@ export function* segmentedWallConstruction(
   }
 
   // Sort openings by position along the wall
-  const sortedOpenings = [...wall.openings].sort((a, b) => a.offsetFromStart - b.offsetFromStart)
+  const sortedOpenings = [...openingsWithPadding].sort((a, b) => a.offsetFromStart - b.offsetFromStart)
 
   // Group adjacent compatible openings
   const openingGroups = mergeAdjacentOpenings(sortedOpenings)

@@ -115,4 +115,67 @@ describe('model store migrations', () => {
     expect(storeys.b.height).toBeUndefined()
     expect(storeys.b.floorHeight).toBe(2300)
   })
+
+  it('converts wall opening dimensions to finished values', () => {
+    const storage = (globalThis as { localStorage?: Storage }).localStorage
+    storage?.setItem(
+      'strawbaler-config',
+      JSON.stringify({
+        state: {
+          wallAssemblyConfigs: {
+            wallA: {
+              id: 'wallA',
+              name: 'Wall',
+              type: 'non-strawbale',
+              material: 'mat',
+              thickness: 300,
+              layers: { insideThickness: 20, insideLayers: [], outsideThickness: 20, outsideLayers: [] },
+              openings: {
+                padding: 25,
+                headerThickness: 60,
+                headerMaterial: 'mat',
+                sillThickness: 60,
+                sillMaterial: 'mat'
+              }
+            }
+          }
+        }
+      })
+    )
+
+    const migrated = applyMigrations({
+      perimeters: {
+        perimeter1: {
+          id: 'perimeter1',
+          storeyId: 'storey1',
+          referenceSide: 'inside',
+          referencePolygon: [],
+          corners: [],
+          walls: [
+            {
+              id: 'wall1',
+              wallAssemblyId: 'wallA',
+              thickness: 300,
+              openings: [
+                {
+                  id: 'opening1',
+                  type: 'door',
+                  offsetFromStart: 500,
+                  width: 1000,
+                  height: 2100,
+                  sillHeight: 100
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }) as Record<string, any>
+
+    const opening = migrated.perimeters.perimeter1.walls[0].openings[0]
+    expect(opening.width).toBe(950)
+    expect(opening.height).toBe(2050)
+    expect(opening.offsetFromStart).toBe(525)
+    expect(opening.sillHeight).toBe(125)
+  })
 })

@@ -228,7 +228,8 @@ describe('segmentedWallConstruction', () => {
           createMockStoreyContext(wallHeight),
           layers,
           mockWallConstruction,
-          mockOpeningConstruction
+          mockOpeningConstruction,
+          0
         )
       ]
       const { elements, measurements, areas } = aggregateResults(results)
@@ -281,7 +282,8 @@ describe('segmentedWallConstruction', () => {
           createMockStoreyContext(wallHeight),
           layers,
           mockWallConstruction,
-          mockOpeningConstruction
+          mockOpeningConstruction,
+          0
         )
       ]
       const { measurements } = aggregateResults(results)
@@ -317,7 +319,8 @@ describe('segmentedWallConstruction', () => {
           createMockStoreyContext(wallHeight),
           layers,
           mockWallConstruction,
-          mockOpeningConstruction
+          mockOpeningConstruction,
+          0
         )
       ]
       aggregateResults(results)
@@ -349,7 +352,8 @@ describe('segmentedWallConstruction', () => {
           createMockStoreyContext(wallHeight),
           layers,
           mockWallConstruction,
-          mockOpeningConstruction
+          mockOpeningConstruction,
+          0
         )
       ]
       const { measurements } = aggregateResults(results)
@@ -405,7 +409,8 @@ describe('segmentedWallConstruction', () => {
           createMockStoreyContext(wallHeight),
           layers,
           mockWallConstruction,
-          mockOpeningConstruction
+          mockOpeningConstruction,
+          0
         )
       ]
       aggregateResults(results)
@@ -443,7 +448,8 @@ describe('segmentedWallConstruction', () => {
           createMockStoreyContext(wallHeight),
           layers,
           mockWallConstruction,
-          mockOpeningConstruction
+          mockOpeningConstruction,
+          0
         )
       ]
       aggregateResults(results)
@@ -482,7 +488,8 @@ describe('segmentedWallConstruction', () => {
           createMockStoreyContext(wallHeight),
           layers,
           mockWallConstruction,
-          mockOpeningConstruction
+          mockOpeningConstruction,
+          0
         )
       ]
       aggregateResults(results)
@@ -512,7 +519,8 @@ describe('segmentedWallConstruction', () => {
           createMockStoreyContext(wallHeight),
           layers,
           mockWallConstruction,
-          mockOpeningConstruction
+          mockOpeningConstruction,
+          0
         )
       ]
       aggregateResults(results)
@@ -550,7 +558,8 @@ describe('segmentedWallConstruction', () => {
           createMockStoreyContext(wallHeight),
           layers,
           mockWallConstruction,
-          mockOpeningConstruction
+          mockOpeningConstruction,
+          0
         )
       ]
       aggregateResults(results)
@@ -575,7 +584,8 @@ describe('segmentedWallConstruction', () => {
           createMockStoreyContext(wallHeight),
           layers,
           mockWallConstruction,
-          mockOpeningConstruction
+          mockOpeningConstruction,
+          0
         )
       ]
       aggregateResults(results)
@@ -617,7 +627,8 @@ describe('segmentedWallConstruction', () => {
           createMockStoreyContext(wallHeight),
           layers,
           mockWallConstruction,
-          mockOpeningConstruction
+          mockOpeningConstruction,
+          0
         )
       ]
       aggregateResults(results)
@@ -649,7 +660,8 @@ describe('segmentedWallConstruction', () => {
           createMockStoreyContext(wallHeight),
           layers,
           mockWallConstruction,
-          mockOpeningConstruction
+          mockOpeningConstruction,
+          0
         )
       ]
       aggregateResults(results)
@@ -676,7 +688,8 @@ describe('segmentedWallConstruction', () => {
           createMockStoreyContext(wallHeight),
           layers,
           mockWallConstruction,
-          mockOpeningConstruction
+          mockOpeningConstruction,
+          0
         )
       ]
       const { areas } = aggregateResults(results)

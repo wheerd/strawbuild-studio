@@ -16,6 +16,14 @@ import { LengthField } from '@/shared/components/LengthField'
 import { DoorIcon, PassageIcon, WindowIcon } from '@/shared/components/OpeningIcons'
 import { Bounds2D, type Polygon2D, offsetPolygon } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
+import {
+  constructionHeightToFinished,
+  constructionSillToFinished,
+  constructionWidthToFinished,
+  finishedHeightToConstruction,
+  finishedSillToConstruction,
+  finishedWidthToConstruction
+} from '@/shared/utils/openingDimensions'
 
 import { OpeningPreview } from './OpeningPreview'
 
@@ -67,7 +75,7 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
   const [focusedField, setFocusedField] = useState<'width' | 'height' | 'sillHeight' | 'topHeight' | undefined>()
 
   // Dimension input mode - whether user is inputting fitting or finished dimensions
-  const [dimensionInputMode, setDimensionInputMode] = useState<'fitting' | 'finished'>('fitting')
+  const [dimensionInputMode, setDimensionInputMode] = useState<'fitting' | 'finished'>('finished')
 
   // Sync dimension input mode with highlight mode
   useEffect(() => {
@@ -76,49 +84,60 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
 
   // Helper functions for dimension conversion
   const getDisplayValue = useCallback(
-    (fittingValue: number, type: 'width' | 'height' | 'sillHeight' | 'topHeight') => {
-      if (!wallAssembly) return fittingValue
+    (value: number, type: 'width' | 'height' | 'sillHeight') => {
+      if (!wallAssembly) return value
       const padding = wallAssembly.openings.padding
 
-      if (dimensionInputMode === 'fitting') {
-        return fittingValue
-      } else {
-        // Convert to finished dimensions
-        if (type === 'sillHeight') {
-          // Sill height: finished = fitting + padding (sill sits on padding)
-          return fittingValue > 0 ? fittingValue + padding : 0
-        } else if (type === 'topHeight') {
-          // Top height: same as fitting since it's a floor-to-top measurement
-          return fittingValue
-        } else {
-          // Width/Height: finished = fitting - 2×padding
-          return Math.max(0, fittingValue - 2 * padding)
-        }
+      if (dimensionInputMode === 'finished') {
+        return value
       }
+
+      if (type === 'width') {
+        return finishedWidthToConstruction(value, padding)
+      }
+      if (type === 'height') {
+        return finishedHeightToConstruction(value, padding)
+      }
+      return finishedSillToConstruction(value, padding) ?? 0
     },
     [wallAssembly, dimensionInputMode]
   )
 
   const convertToFittingValue = useCallback(
-    (inputValue: number, type: 'width' | 'height' | 'sillHeight' | 'topHeight') => {
+    (inputValue: number, type: 'width' | 'height' | 'sillHeight') => {
       if (!wallAssembly) return inputValue
       const padding = wallAssembly.openings.padding
 
-      if (dimensionInputMode === 'fitting') {
+      if (dimensionInputMode === 'finished') {
         return inputValue
-      } else {
-        // Convert from finished to fitting dimensions
-        if (type === 'sillHeight') {
-          // Sill height: fitting = finished - padding (remove padding offset)
-          return Math.max(0, inputValue - padding)
-        } else if (type === 'topHeight') {
-          // Top height: same as fitting since it's a floor-to-top measurement
-          return inputValue
-        } else {
-          // Width/Height: fitting = finished + 2×padding
-          return inputValue + 2 * padding
-        }
       }
+
+      if (type === 'width') {
+        return constructionWidthToFinished(inputValue, padding)
+      }
+      if (type === 'height') {
+        return constructionHeightToFinished(inputValue, padding)
+      }
+      return constructionSillToFinished(inputValue, padding) ?? 0
+    },
+    [wallAssembly, dimensionInputMode]
+  )
+
+  const getTopHeightDisplayValue = useCallback(() => {
+    const sill = opening?.sillHeight ?? 0
+    const height = opening?.height ?? 0
+    if (!wallAssembly || dimensionInputMode === 'finished') {
+      return sill + height
+    }
+    return sill + height + wallAssembly.openings.padding
+  }, [opening?.sillHeight, opening?.height, wallAssembly, dimensionInputMode])
+
+  const convertTopHeightInput = useCallback(
+    (value: number) => {
+      if (!wallAssembly || dimensionInputMode === 'finished') {
+        return value
+      }
+      return Math.max(0, value - wallAssembly.openings.padding)
     },
     [wallAssembly, dimensionInputMode]
   )
@@ -364,11 +383,11 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
 
           {/* Row 2, Column 4: Top Height Input */}
           <LengthField
-            value={getDisplayValue((opening?.sillHeight || 0) + (opening?.height || 0), 'topHeight')}
+            value={getTopHeightDisplayValue()}
             onCommit={value => {
-              const fittingTopHeight = convertToFittingValue(value, 'topHeight')
+              const finishedTopHeight = convertTopHeightInput(value)
               const currentSillHeight = opening?.sillHeight || 0
-              const newOpeningHeight = Math.max(100, fittingTopHeight - currentSillHeight)
+              const newOpeningHeight = Math.max(100, finishedTopHeight - currentSillHeight)
               updateOpening(perimeterId, wallId, openingId, { height: newOpeningHeight })
             }}
             unit="cm"

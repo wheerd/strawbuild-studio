@@ -183,7 +183,8 @@ export class InfillWallAssembly implements WallAssembly<InfillWallConfig> {
         (position: vec3, size: vec3, zOffset: Length, openings: Opening[]) =>
           constructOpeningFrame({ type: 'opening', position, size, zOffset, openings }, config.openings, (p, s) =>
             infillWallArea(p, s, config)
-          )
+          ),
+        config.openings.padding
       )
     )
 

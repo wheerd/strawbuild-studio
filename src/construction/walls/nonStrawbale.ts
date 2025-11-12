@@ -84,7 +84,15 @@ export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallCo
     )
 
     const metadataResults = Array.from(
-      segmentedWallConstruction(wall, perimeter, storeyContext, config.layers, noopWallSegment, noopOpeningSegment)
+      segmentedWallConstruction(
+        wall,
+        perimeter,
+        storeyContext,
+        config.layers,
+        noopWallSegment,
+        noopOpeningSegment,
+        config.openings.padding
+      )
     )
 
     const allResults = [...metadataResults, ...structureElements.map(e => yieldElement(e))]
