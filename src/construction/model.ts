@@ -6,7 +6,7 @@ import { simplifyPolygon, unionPolygons } from '@/shared/geometry/polygon'
 import { type ConstructionGroup, type GroupOrElement, createConstructionElementId } from './elements'
 import { type Transform, transform, transformBounds } from './geometry'
 import type { RawMeasurement } from './measurements'
-import type { ConstructionIssue } from './results'
+import { type ConstructionIssue, mergeConstructionIssues } from './results'
 import type { Tag } from './tags'
 
 export interface ConstructionModel {
@@ -165,8 +165,8 @@ export function mergeModels(...models: ConstructionModel[]): ConstructionModel {
     elements: models.flatMap(m => m.elements),
     measurements: models.flatMap(m => m.measurements),
     areas: [...areasWithoutMergeKey, ...mergedAreas],
-    errors: models.flatMap(m => m.errors),
-    warnings: models.flatMap(m => m.warnings),
+    errors: mergeConstructionIssues(models.flatMap(m => m.errors)),
+    warnings: mergeConstructionIssues(models.flatMap(m => m.warnings)),
     bounds: Bounds3D.merge(...models.map(m => m.bounds))
   }
 }

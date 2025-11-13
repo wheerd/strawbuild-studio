@@ -30,8 +30,8 @@ export type ConstructionResult =
 export const aggregateResults = (results: ConstructionResult[]) => ({
   elements: results.filter(r => r.type === 'element').map(r => r.element),
   measurements: results.filter(r => r.type === 'measurement').map(r => r.measurement),
-  errors: results.filter(r => r.type === 'error').map(r => r.error),
-  warnings: results.filter(r => r.type === 'warning').map(r => r.warning),
+  errors: mergeConstructionIssues(results.filter(r => r.type === 'error').map(r => r.error)),
+  warnings: mergeConstructionIssues(results.filter(r => r.type === 'warning').map(r => r.warning)),
   areas: results.filter(r => r.type === 'area').map(r => r.area)
 })
 
@@ -111,5 +111,47 @@ export function* yieldAsGroup(
       partInfo,
       children
     }
+  }
+}
+
+export function mergeConstructionIssues(issues: ConstructionIssue[]): ConstructionIssue[] {
+  const aggregated: ConstructionIssue[] = []
+  const grouped = new Map<string, ConstructionIssue>()
+
+  for (const issue of issues) {
+    if (!issue.groupKey) {
+      aggregated.push(issue)
+      continue
+    }
+
+    const existing = grouped.get(issue.groupKey)
+    if (!existing) {
+      const cloned: ConstructionIssue = {
+        ...issue,
+        elements: [...issue.elements]
+      }
+      grouped.set(issue.groupKey, cloned)
+      aggregated.push(cloned)
+      continue
+    }
+
+    mergeIssue(existing, issue)
+  }
+
+  return aggregated
+}
+
+function mergeIssue(target: ConstructionIssue, incoming: ConstructionIssue) {
+  const existingIds = new Set(target.elements)
+  for (const elementId of incoming.elements) {
+    if (existingIds.has(elementId)) continue
+    existingIds.add(elementId)
+    target.elements.push(elementId)
+  }
+
+  if (target.bounds && incoming.bounds) {
+    target.bounds = Bounds3D.merge(target.bounds, incoming.bounds)
+  } else if (!target.bounds && incoming.bounds) {
+    target.bounds = incoming.bounds
   }
 }

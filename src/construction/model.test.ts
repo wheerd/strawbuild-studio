@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import { Bounds3D } from '@/shared/geometry'
 
+import type { ConstructionElementId } from './elements'
 import { type ConstructionModel, mergeModels, transformModel } from './model'
 
 describe('mergeModels', () => {
@@ -181,6 +182,78 @@ describe('mergeModels', () => {
     expect(merged.areas).toHaveLength(2)
     expect(merged.areas.filter(a => a.cancelKey === 'corner-1')).toHaveLength(1)
     expect(merged.areas.filter(a => a.cancelKey === 'corner-2')).toHaveLength(1)
+  })
+
+  it('deduplicates warnings by groupKey when merging models', () => {
+    const warningA = {
+      description: 'duplicate warning',
+      elements: ['ce_warning_a' as ConstructionElementId],
+      groupKey: 'shared-warning'
+    }
+    const warningB = {
+      description: 'duplicate warning',
+      elements: ['ce_warning_b' as ConstructionElementId],
+      groupKey: 'shared-warning'
+    }
+
+    const model1: ConstructionModel = {
+      elements: [],
+      measurements: [],
+      areas: [],
+      errors: [],
+      warnings: [warningA],
+      bounds: Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(1, 1, 1))
+    }
+
+    const model2: ConstructionModel = {
+      elements: [],
+      measurements: [],
+      areas: [],
+      errors: [],
+      warnings: [warningB],
+      bounds: Bounds3D.fromMinMax(vec3.fromValues(1, 1, 1), vec3.fromValues(2, 2, 2))
+    }
+
+    const merged = mergeModels(model1, model2)
+
+    expect(merged.warnings).toHaveLength(1)
+    expect(merged.warnings[0].elements).toEqual(['ce_warning_a', 'ce_warning_b'])
+  })
+
+  it('deduplicates errors across models and merges element ids', () => {
+    const errorA = {
+      description: 'duplicate error',
+      elements: ['ce_error_a' as ConstructionElementId, 'ce_error_b' as ConstructionElementId],
+      groupKey: 'shared-error'
+    }
+    const errorB = {
+      description: 'duplicate error',
+      elements: ['ce_error_b' as ConstructionElementId, 'ce_error_c' as ConstructionElementId],
+      groupKey: 'shared-error'
+    }
+
+    const model1: ConstructionModel = {
+      elements: [],
+      measurements: [],
+      areas: [],
+      errors: [errorA],
+      warnings: [],
+      bounds: Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(1, 1, 1))
+    }
+
+    const model2: ConstructionModel = {
+      elements: [],
+      measurements: [],
+      areas: [],
+      errors: [errorB],
+      warnings: [],
+      bounds: Bounds3D.fromMinMax(vec3.fromValues(1, 1, 1), vec3.fromValues(2, 2, 2))
+    }
+
+    const merged = mergeModels(model1, model2)
+
+    expect(merged.errors).toHaveLength(1)
+    expect(merged.errors[0].elements).toEqual(['ce_error_a', 'ce_error_b', 'ce_error_c'])
   })
 })
 
