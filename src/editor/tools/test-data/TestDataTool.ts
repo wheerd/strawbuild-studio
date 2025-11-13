@@ -1,4 +1,5 @@
-import { clearPersistence, getModelActions } from '@/building/store'
+import { clearPersistence as clearModelPersistence, getModelActions } from '@/building/store'
+import { clearPersistence as clearConfigPersistence, getConfigActions } from '@/construction/config'
 import { popTool } from '@/editor/tools/system'
 import type { CursorStyle, ToolImplementation } from '@/editor/tools/system/types'
 
@@ -44,13 +45,13 @@ export class TestDataTool implements ToolImplementation {
    */
   public resetAllData(): void {
     try {
-      const modelStore = getModelActions()
-
       // Clear the model data
-      modelStore.reset()
+      getModelActions().reset()
+      getConfigActions().reset()
 
       // Clear localStorage persistence
-      clearPersistence()
+      clearModelPersistence()
+      clearConfigPersistence()
 
       console.log('✅ Model reset completed - all data cleared')
     } catch (error) {

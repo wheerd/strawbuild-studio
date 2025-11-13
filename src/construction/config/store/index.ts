@@ -116,6 +116,10 @@ export const useConfigActions = (): ConfigActions => useConfigStore(state => sta
 // For non-reactive contexts
 export const getConfigActions = (): ConfigActions => useConfigStore.getState().actions
 
+export const clearPersistence = (): void => {
+  localStorage.removeItem('strawbaler-config')
+}
+
 // Export config state for persistence
 export const getConfigState = () => {
   const state = useConfigStore.getState()
