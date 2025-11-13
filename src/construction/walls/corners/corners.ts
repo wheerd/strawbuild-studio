@@ -40,10 +40,12 @@ export function calculateWallCornerInfo(wall: PerimeterWall, context: WallContex
     throw new Error('Invalid wall assembly')
   }
 
-  const outerStartExtension =
+  const outerStartExtension = Math.round(
     vec2.distance(wall.outsideLine.start, startCorner.outsidePoint) - previousAssembly.layers.outsideThickness
-  const innerStartExtension =
+  )
+  const innerStartExtension = Math.round(
     vec2.distance(wall.insideLine.start, startCorner.insidePoint) - previousAssembly.layers.insideThickness
+  )
   const startExtended = startCorner.constructedByWall === 'next'
   const startExtension = startCorner.exteriorAngle === 180 ? 0 : Math.max(outerStartExtension, innerStartExtension)
   const appliedStartExtension =
@@ -55,10 +57,12 @@ export function calculateWallCornerInfo(wall: PerimeterWall, context: WallContex
           ? previousAssembly.layers.insideThickness
           : previousAssembly.layers.outsideThickness
 
-  const outerEndExtension =
+  const outerEndExtension = Math.round(
     vec2.distance(wall.outsideLine.end, endCorner.outsidePoint) - nextAssembly.layers.outsideThickness
-  const innerEndExtension =
+  )
+  const innerEndExtension = Math.round(
     vec2.distance(wall.insideLine.end, endCorner.insidePoint) - nextAssembly.layers.insideThickness
+  )
   const endExtended = endCorner.constructedByWall === 'previous'
   const endExtension = endCorner.exteriorAngle === 180 ? 0 : Math.max(outerEndExtension, innerEndExtension)
   const appliedEndExtension =
@@ -70,7 +74,7 @@ export function calculateWallCornerInfo(wall: PerimeterWall, context: WallContex
           ? nextAssembly.layers.insideThickness
           : nextAssembly.layers.outsideThickness
 
-  const constructionLength = wall.wallLength + appliedStartExtension + appliedEndExtension
+  const constructionLength = Math.round(wall.wallLength + appliedStartExtension + appliedEndExtension)
 
   return {
     startCorner: {

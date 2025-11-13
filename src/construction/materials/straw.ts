@@ -159,20 +159,26 @@ export function* constructStraw(position: vec3, size: vec3, materialId?: Materia
       }
     }
   } else if (size[1] > material.baleWidth) {
-    const element = createConstructionElement(strawMaterialId, createCuboidShape(position, size))
+    const element = createConstructionElement(strawMaterialId, createCuboidShape(position, size), undefined, [
+      TAG_STRAW_STUFFED
+    ])
     yield yieldElement(element)
     yield yieldError({
       description: 'Wall is too thick for a single strawbale',
       elements: [element.id],
-      bounds: element.bounds
+      bounds: element.bounds,
+      groupKey: `strawbale-thick-${strawMaterialId}`
     })
   } else {
-    const element = createConstructionElement(strawMaterialId, createCuboidShape(position, size))
+    const element = createConstructionElement(strawMaterialId, createCuboidShape(position, size), undefined, [
+      TAG_STRAW_STUFFED
+    ])
     yield yieldElement(element)
     yield yieldWarning({
       description: 'Wall is too thin for a single strawbale',
       elements: [element.id],
-      bounds: element.bounds
+      bounds: element.bounds,
+      groupKey: `strawbale-thin-${strawMaterialId}`
     })
   }
 }

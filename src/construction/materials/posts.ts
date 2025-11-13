@@ -75,7 +75,8 @@ function* constructFullPost(position: vec3, size: vec3, config: FullPostConfig):
           size[1]
         )}) don't match available cross sections (${formatAvailableCrossSections(dimensionalMaterial)})`,
         elements: [postElement.id],
-        bounds: postElement.bounds
+        bounds: postElement.bounds,
+        groupKey: `post-cross-section-${dimensionalMaterial.id}`
       })
     }
   }
@@ -94,7 +95,8 @@ function* constructDoublePost(position: vec3, size: vec3, config: DoublePostConf
     yield yieldError({
       description: `Wall thickness (${formatLength(size[1])}) is not wide enough for double posts requiring ${formatLength(minimumWallThickness)} minimum`,
       elements: [errorElement.id],
-      bounds: errorElement.bounds
+      bounds: errorElement.bounds,
+      groupKey: `double-post-thin-wall-${minimumWallThickness}-${config.material}`
     })
     return
   }
@@ -144,7 +146,8 @@ function* constructDoublePost(position: vec3, size: vec3, config: DoublePostConf
           config.thickness
         )}) don't match available cross sections (${formatAvailableCrossSections(dimensionalMaterial)})`,
         elements: [post1.id, post2.id],
-        bounds: Bounds3D.merge(post1.bounds, post2.bounds)
+        bounds: Bounds3D.merge(post1.bounds, post2.bounds),
+        groupKey: `post-cross-section-${dimensionalMaterial.id}`
       })
     }
   }
