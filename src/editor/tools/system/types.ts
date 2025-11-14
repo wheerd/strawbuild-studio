@@ -15,6 +15,7 @@ export type ToolId =
   | 'perimeter.preset'
   | 'perimeter.add-opening'
   | 'perimeter.split-wall'
+  | 'roofs.add-roof'
   | 'test.data'
 
 export type CursorStyle =

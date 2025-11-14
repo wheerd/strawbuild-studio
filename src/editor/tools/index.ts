@@ -7,6 +7,7 @@ import { AddOpeningTool } from './perimeter/add-opening/AddOpeningTool'
 import { PerimeterTool } from './perimeter/add/PerimeterTool'
 import { PerimeterPresetTool } from './perimeter/preset/PerimeterPresetTool'
 import { SplitWallTool } from './perimeter/split/SplitWallTool'
+import { RoofTool } from './roofs/RoofTool'
 import type { ToolId, ToolImplementation } from './system/types'
 import { TestDataTool } from './test-data/TestDataTool'
 
@@ -25,6 +26,7 @@ const TOOL_IMPLEMENTATIONS: Record<ToolId, ToolImplementation> = {
   'perimeter.preset': new PerimeterPresetTool(),
   'perimeter.add-opening': new AddOpeningTool(),
   'perimeter.split-wall': new SplitWallTool(),
+  'roofs.add-roof': new RoofTool(),
   'test.data': new TestDataTool()
 }
 

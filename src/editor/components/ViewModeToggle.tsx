@@ -14,11 +14,12 @@ export function ViewModeToggle(): React.JSX.Element {
             size="1"
             value={mode}
             onValueChange={value => {
-              setMode(value as 'walls' | 'floors')
+              setMode(value as 'walls' | 'floors' | 'roofs')
             }}
           >
             <SegmentedControl.Item value="walls">Walls</SegmentedControl.Item>
             <SegmentedControl.Item value="floors">Floors</SegmentedControl.Item>
+            <SegmentedControl.Item value="roofs">Roofs</SegmentedControl.Item>
           </SegmentedControl.Root>
         </Flex>
       </Card>

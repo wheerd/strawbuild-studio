@@ -8,5 +8,6 @@ export const MATERIAL_COLORS = {
   woodSupport: '#cd853f',
   door: '#8b4513',
   window: '#87ceeb',
-  concrete: '#555555'
+  concrete: '#555555',
+  roof: '#894347'
 } as const
