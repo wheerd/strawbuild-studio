@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react'
 
-export type ConfigTab = 'materials' | 'ringbeams' | 'walls' | 'floors'
+export type ConfigTab = 'materials' | 'ringbeams' | 'walls' | 'floors' | 'roofs'
 
 export interface ConfigurationModalContextValue {
   openConfiguration: (tab: ConfigTab, itemId?: string) => void
