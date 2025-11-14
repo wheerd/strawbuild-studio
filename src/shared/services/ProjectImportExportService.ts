@@ -1,11 +1,16 @@
 import { vec2 } from 'gl-matrix'
 
-import type { FloorAssemblyId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
+import type { FloorAssemblyId, RingBeamAssemblyId, RoofAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import type { Storey } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { getConfigState, setConfigState } from '@/construction/config/store'
 import { applyMigrations } from '@/construction/config/store/migrations'
-import type { FloorAssemblyConfig, RingBeamAssemblyConfig, WallAssemblyConfig } from '@/construction/config/types'
+import type {
+  FloorAssemblyConfig,
+  RingBeamAssemblyConfig,
+  RoofAssemblyConfig,
+  WallAssemblyConfig
+} from '@/construction/config/types'
 import { FLOOR_ASSEMBLIES } from '@/construction/floors'
 import type { Material, MaterialId } from '@/construction/materials/material'
 import { getMaterialsState, setMaterialsState } from '@/construction/materials/store'
@@ -73,10 +78,12 @@ export interface ExportData {
     ringBeamAssemblyConfigs: Record<RingBeamAssemblyId, RingBeamAssemblyConfig>
     wallAssemblyConfigs: Record<WallAssemblyId, WallAssemblyConfig>
     floorAssemblyConfigs?: Record<FloorAssemblyId, FloorAssemblyConfig>
+    roofAssemblyConfigs?: Record<RoofAssemblyId, RoofAssemblyConfig>
     defaultBaseRingBeamAssemblyId?: RingBeamAssemblyId
     defaultTopRingBeamAssemblyId?: RingBeamAssemblyId
     defaultWallAssemblyId: WallAssemblyId
     defaultFloorAssemblyId?: FloorAssemblyId
+    defaultRoofAssemblyId?: RoofAssemblyId
   }
   materialsStore:
     | {
@@ -111,8 +118,19 @@ export interface IProjectImportExportService {
   importFromString(content: string): Promise<ImportResult | ImportError>
 }
 
-const CURRENT_VERSION = '1.8.0'
-const SUPPORTED_VERSIONS = ['1.0.0', '1.1.0', '1.2.0', '1.3.0', '1.4.0', '1.5.0', '1.6.0', '1.7.0', '1.8.0'] as const
+const CURRENT_VERSION = '1.9.0'
+const SUPPORTED_VERSIONS = [
+  '1.0.0',
+  '1.1.0',
+  '1.2.0',
+  '1.3.0',
+  '1.4.0',
+  '1.5.0',
+  '1.6.0',
+  '1.7.0',
+  '1.8.0',
+  '1.9.0'
+] as const
 
 const polygonToExport = (polygon: Polygon2D): ExportedFloorPolygon => ({
   points: polygon.points.map(point => ({ x: point[0], y: point[1] }))
@@ -506,6 +524,14 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
     }
 
     if (configStore.defaultStrawMaterial !== undefined && typeof configStore.defaultStrawMaterial !== 'string') {
+      return false
+    }
+
+    // Roof assembly configs validation (optional for backward compatibility)
+    if (configStore.roofAssemblyConfigs !== undefined && typeof configStore.roofAssemblyConfigs !== 'object') {
+      return false
+    }
+    if (configStore.defaultRoofAssemblyId !== undefined && typeof configStore.defaultRoofAssemblyId !== 'string') {
       return false
     }
 

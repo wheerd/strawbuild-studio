@@ -1,7 +1,7 @@
 import type { FloorAssemblyId, RingBeamAssemblyId, RoofAssemblyId, WallAssemblyId } from '@/building/model'
 import type { JoistFloorConfig, MonolithicFloorConfig } from '@/construction/floors'
 import type { DoubleRingBeamConfig, FullRingBeamConfig } from '@/construction/ringBeams'
-import type { MonolithicRoofConfig } from '@/construction/roofs'
+import type { MonolithicRoofConfig, PurlinRoofConfig } from '@/construction/roofs'
 import type {
   InfillWallConfig,
   ModulesWallConfig,
@@ -106,5 +106,6 @@ export interface RoofAssemblyIdPart {
 }
 
 export type MonolithicRoofAssemblyConfig = MonolithicRoofConfig & RoofAssemblyIdPart
+export type PurlinRoofAssemblyConfig = PurlinRoofConfig & RoofAssemblyIdPart
 
-export type RoofAssemblyConfig = MonolithicRoofAssemblyConfig // | JoistRoofAssemblyConfig
+export type RoofAssemblyConfig = MonolithicRoofAssemblyConfig | PurlinRoofAssemblyConfig

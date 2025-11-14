@@ -4,6 +4,7 @@ import type { StateCreator } from 'zustand'
 import type { PerimeterId, RoofAssemblyId, RoofId, StoreyId } from '@/building/model/ids'
 import { createRoofId } from '@/building/model/ids'
 import type { Roof, RoofType } from '@/building/model/model'
+import { getConfigActions } from '@/construction/config/store'
 import type { Length, LineSegment2D, Polygon2D } from '@/shared/geometry'
 import {
   direction,
@@ -29,7 +30,7 @@ export interface RoofsActions {
     slope: number,
     verticalOffset: Length,
     overhang: Length,
-    assemblyId: RoofAssemblyId,
+    assemblyId?: RoofAssemblyId,
     referencePerimeter?: PerimeterId
   ) => Roof
 
@@ -209,7 +210,7 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
       slope: number,
       verticalOffset: Length,
       overhang: Length,
-      assemblyId: RoofAssemblyId,
+      assemblyId?: RoofAssemblyId,
       referencePerimeter?: PerimeterId
     ) => {
       const validatedPolygon = ensureRoofPolygon(polygon)
@@ -263,7 +264,7 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
         slope,
         verticalOffset,
         overhang: overhangArray,
-        assemblyId,
+        assemblyId: assemblyId ?? getConfigActions().getDefaultRoofAssemblyId(),
         referencePerimeter
       }
 
