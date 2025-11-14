@@ -1,22 +1,9 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import {
-  Box,
-  Button,
-  Callout,
-  Flex,
-  Grid,
-  Kbd,
-  SegmentedControl,
-  Select,
-  Separator,
-  Text,
-  TextField
-} from '@radix-ui/themes'
-import { useEffect, useMemo, useState } from 'react'
+import { Box, Button, Callout, Flex, Grid, Kbd, SegmentedControl, Separator, Text, TextField } from '@radix-ui/themes'
+import { useEffect, useState } from 'react'
 
-import type { PerimeterId, RoofType } from '@/building/model'
-import { usePerimetersOfActiveStorey } from '@/building/store'
+import type { RoofType } from '@/building/model'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
 import { LengthField } from '@/shared/components/LengthField'
@@ -25,7 +12,6 @@ import type { RoofTool } from './RoofTool'
 
 export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React.JSX.Element {
   const { state } = useReactiveTool(tool)
-  const perimeters = usePerimetersOfActiveStorey()
 
   // Force re-renders when tool state changes
   const [, forceUpdate] = useState({})
@@ -37,13 +23,6 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
       }),
     [tool]
   )
-
-  const perimeterOptions = useMemo(() => {
-    return perimeters.map(p => ({
-      value: p.id,
-      label: `Perimeter ${p.id.slice(0, 8)}...`
-    }))
-  }, [perimeters])
 
   return (
     <Box p="2">
@@ -75,30 +54,6 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
             <SegmentedControl.Item value="gable">Gable</SegmentedControl.Item>
             <SegmentedControl.Item value="shed">Shed</SegmentedControl.Item>
           </SegmentedControl.Root>
-
-          {/* Reference Perimeter */}
-          <Flex align="center" gap="1">
-            <Label.Root>
-              <Text size="1" weight="medium" color="gray">
-                Reference Perimeter
-              </Text>
-            </Label.Root>
-          </Flex>
-          <Select.Root
-            size="1"
-            value={state.referencePerimeter || 'none'}
-            onValueChange={value => tool.setReferencePerimeter(value === 'none' ? undefined : (value as PerimeterId))}
-          >
-            <Select.Trigger placeholder="None" />
-            <Select.Content>
-              <Select.Item value="none">None</Select.Item>
-              {perimeterOptions.map(option => (
-                <Select.Item key={option.value} value={option.value}>
-                  {option.label}
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Root>
 
           {/* Slope */}
           <Flex align="center" gap="1">

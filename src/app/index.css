@@ -37,3 +37,7 @@
   --color-bg-subtle: var(--gray-2);
   --color-bg-canvas: var(--gray-4);
 }
+
+.rt-TextFieldRoot input:focus {
+  outline: none !important;
+}

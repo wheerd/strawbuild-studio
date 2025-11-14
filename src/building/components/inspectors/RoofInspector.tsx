@@ -1,6 +1,6 @@
 import { TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Box, DataList, Flex, Grid, IconButton, Separator, Text, TextField } from '@radix-ui/themes'
+import { Box, DataList, Flex, IconButton, Separator, Text, TextField } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 
 import type { RoofId } from '@/building/model/ids'
@@ -99,80 +99,78 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
             <DataList.Label>Area</DataList.Label>
             <DataList.Value>{formatArea(area)}</DataList.Value>
           </DataList.Item>
-          {roof.referencePerimeter && (
-            <DataList.Item>
-              <DataList.Label>Reference Perimeter</DataList.Label>
-              <DataList.Value>{roof.referencePerimeter.slice(0, 8)}...</DataList.Value>
-            </DataList.Item>
-          )}
         </DataList.Root>
 
         <Separator size="4" />
 
         {/* Editable Properties */}
-        <Grid columns="auto 1fr" gap="2">
+        <Flex direction="column" gap="2">
           {/* Slope */}
-          <Flex align="center" gap="1">
+          <Flex align="center" gap="2" justify="between">
             <Label.Root htmlFor="roof-slope">
               <Text size="1" weight="medium" color="gray">
                 Slope (°)
               </Text>
             </Label.Root>
+            <TextField.Root
+              id="roof-slope"
+              type="number"
+              value={roof.slope.toString()}
+              onChange={e => {
+                const value = parseFloat(e.target.value)
+                if (!isNaN(value)) {
+                  handleSlopeChange(value)
+                }
+              }}
+              size="1"
+              min={0}
+              max={90}
+              step={1}
+              style={{ width: '3em', textAlign: 'right' }}
+            >
+              <TextField.Slot side="right">°</TextField.Slot>
+            </TextField.Root>
           </Flex>
-          <TextField.Root
-            id="roof-slope"
-            type="number"
-            value={roof.slope.toString()}
-            onChange={e => {
-              const value = parseFloat(e.target.value)
-              if (!isNaN(value)) {
-                handleSlopeChange(value)
-              }
-            }}
-            size="1"
-            style={{ width: '5rem' }}
-          />
 
           {/* Ridge Height */}
-          <Flex align="center" gap="1">
+          <Flex align="center" gap="2" justify="between">
             <Label.Root htmlFor="ridge-height">
               <Text size="1" weight="medium" color="gray">
                 Ridge Height
               </Text>
             </Label.Root>
+            <LengthField
+              id="ridge-height"
+              value={roof.ridgeHeight}
+              onCommit={handleRidgeHeightChange}
+              min={0}
+              max={10000}
+              size="1"
+              unit="cm"
+              style={{ width: '7em' }}
+            />
           </Flex>
-          <LengthField
-            id="ridge-height"
-            value={roof.ridgeHeight}
-            onCommit={handleRidgeHeightChange}
-            min={0}
-            max={10000}
-            step={10}
-            size="1"
-            unit="mm"
-            style={{ width: '5rem' }}
-          />
 
           {/* Global Overhang */}
-          <Flex align="center" gap="1">
+          <Flex align="center" gap="2" justify="between">
             <Label.Root htmlFor="roof-overhang">
               <Text size="1" weight="medium" color="gray">
                 Overhang
               </Text>
             </Label.Root>
+            <LengthField
+              id="roof-overhang"
+              value={averageOverhang}
+              onCommit={handleOverhangChange}
+              min={0}
+              max={2000}
+              step={10}
+              size="1"
+              unit="cm"
+              style={{ width: '7em' }}
+            />
           </Flex>
-          <LengthField
-            id="roof-overhang"
-            value={averageOverhang}
-            onCommit={handleOverhangChange}
-            min={0}
-            max={2000}
-            step={10}
-            size="1"
-            unit="mm"
-            style={{ width: '5rem' }}
-          />
-        </Grid>
+        </Flex>
 
         <Separator size="4" />
 

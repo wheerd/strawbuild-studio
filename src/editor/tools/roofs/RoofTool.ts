@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix'
 
-import type { PerimeterId, RoofAssemblyId, RoofType } from '@/building/model'
+import type { RoofAssemblyId, RoofType } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { getViewModeActions } from '@/editor/hooks/useViewMode'
 import type { SnappingContext } from '@/editor/services/snapping/types'
@@ -17,7 +17,6 @@ interface RoofToolState extends PolygonToolStateBase {
   slope: number // degrees
   ridgeHeight: Length
   overhang: Length // single value applied to all sides
-  referencePerimeter?: PerimeterId
 }
 
 const createPolygonSegments = (points: readonly vec2[]) => {
@@ -66,18 +65,12 @@ export class RoofTool extends BasePolygonTool<RoofToolState> implements ToolImpl
     this.triggerRender()
   }
 
-  public setReferencePerimeter(perimeterId: PerimeterId | undefined): void {
-    this.state.referencePerimeter = perimeterId
-    this.triggerRender()
-  }
-
   protected extendSnapContext(context: SnappingContext): SnappingContext {
-    const { getPerimetersByStorey, getRoofsByStorey, getFloorAreasByStorey, getActiveStoreyId } = getModelActions()
+    const { getPerimetersByStorey, getRoofsByStorey, getActiveStoreyId } = getModelActions()
 
     const activeStoreyId = getActiveStoreyId()
     const perimeters = getPerimetersByStorey(activeStoreyId)
     const roofs = getRoofsByStorey(activeStoreyId)
-    const floorAreas = getFloorAreasByStorey(activeStoreyId)
 
     // Only snap to outer points and outer edges of perimeters
     const perimeterPoints = perimeters.flatMap(perimeter => perimeter.corners.map(corner => corner.outsidePoint))
@@ -86,19 +79,10 @@ export class RoofTool extends BasePolygonTool<RoofToolState> implements ToolImpl
     const roofPoints = roofs.flatMap(roof => roof.area.points)
     const roofSegments = roofs.flatMap(roof => createPolygonSegments(roof.area.points))
 
-    const areaPoints = floorAreas.flatMap(area => area.area.points)
-    const areaSegments = floorAreas.flatMap(area => createPolygonSegments(area.area.points))
-
     return {
       ...context,
-      snapPoints: [...context.snapPoints, ...perimeterPoints, ...roofPoints, ...areaPoints],
-      alignPoints: [...(context.alignPoints ?? []), ...perimeterPoints, ...roofPoints, ...areaPoints],
-      referenceLineSegments: [
-        ...(context.referenceLineSegments ?? []),
-        ...perimeterSegments,
-        ...roofSegments,
-        ...areaSegments
-      ]
+      snapPoints: [...context.snapPoints, ...perimeterPoints, ...roofPoints],
+      referenceLineSegments: [...(context.referenceLineSegments ?? []), ...perimeterSegments, ...roofSegments]
     }
   }
 
@@ -138,8 +122,7 @@ export class RoofTool extends BasePolygonTool<RoofToolState> implements ToolImpl
       this.state.slope,
       this.state.ridgeHeight,
       this.state.overhang,
-      assemblyId,
-      this.state.referencePerimeter
+      assemblyId
     )
   }
 }
