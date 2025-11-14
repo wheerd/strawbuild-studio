@@ -1,6 +1,12 @@
 import { vec2 } from 'gl-matrix'
 
-import type { FloorAssemblyId, RingBeamAssemblyId, RoofAssemblyId, WallAssemblyId } from '@/building/model/ids'
+import type {
+  FloorAssemblyId,
+  PerimeterId,
+  RingBeamAssemblyId,
+  RoofAssemblyId,
+  WallAssemblyId
+} from '@/building/model/ids'
 import type { Storey } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { getConfigState, setConfigState } from '@/construction/config/store'
@@ -31,6 +37,7 @@ export interface ExportedStorey {
   perimeters: ExportedPerimeter[]
   floorAreas?: ExportedFloorPolygon[]
   floorOpenings?: ExportedFloorPolygon[]
+  roofs?: ExportedRoof[]
 }
 
 export interface ExportedPerimeter {
@@ -64,6 +71,17 @@ export interface ExportedOpening {
 
 export interface ExportedFloorPolygon {
   points: { x: number; y: number }[]
+}
+
+export interface ExportedRoof {
+  type: 'gable' | 'shed'
+  referencePolygon: ExportedFloorPolygon
+  mainSideIndex: number
+  slope: number
+  verticalOffset: number
+  overhang: number[]
+  assemblyId: string
+  referencePerimeter?: string
 }
 
 export interface ExportData {
@@ -197,6 +215,16 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
         const floorOpenings = modelActions
           .getFloorOpeningsByStorey(storey.id)
           .map(opening => polygonToExport(opening.area))
+        const roofs = modelActions.getRoofsByStorey(storey.id).map(roof => ({
+          type: roof.type,
+          referencePolygon: polygonToExport(roof.referencePolygon),
+          mainSideIndex: roof.mainSideIndex,
+          slope: roof.slope,
+          verticalOffset: Number(roof.verticalOffset),
+          overhang: roof.overhang.map(o => Number(o)),
+          assemblyId: roof.assemblyId,
+          referencePerimeter: roof.referencePerimeter
+        }))
         const perimeters = modelActions.getPerimetersByStorey(storey.id).map(perimeter => ({
           referenceSide: perimeter.referenceSide,
           referencePolygon: polygonToExport({ points: perimeter.referencePolygon }),
@@ -226,7 +254,8 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
           floorAssemblyId: storey.floorAssemblyId,
           perimeters,
           floorAreas: floorAreas.length > 0 ? floorAreas : undefined,
-          floorOpenings: floorOpenings.length > 0 ? floorOpenings : undefined
+          floorOpenings: floorOpenings.length > 0 ? floorOpenings : undefined,
+          roofs: roofs.length > 0 ? roofs : undefined
         }
       })
 
@@ -388,6 +417,31 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
           }
           modelActions.addFloorOpening(targetStorey.id, polygon)
         })
+
+        exportedStorey.roofs?.forEach(exportedRoof => {
+          const polygon: Polygon2D = {
+            points: exportedRoof.referencePolygon.points.map(point => vec2.fromValues(point.x, point.y))
+          }
+          const addedRoof = modelActions.addRoof(
+            targetStorey.id,
+            exportedRoof.type,
+            polygon,
+            exportedRoof.mainSideIndex,
+            exportedRoof.slope,
+            exportedRoof.verticalOffset,
+            exportedRoof.overhang[0] ?? 0, // Use first overhang value as default
+            exportedRoof.assemblyId as RoofAssemblyId,
+            exportedRoof.referencePerimeter ? (exportedRoof.referencePerimeter as PerimeterId) : undefined
+          )
+          // Update individual overhangs if they differ
+          if (addedRoof && exportedRoof.overhang.length === addedRoof.overhang.length) {
+            exportedRoof.overhang.forEach((overhang, index) => {
+              if (index > 0 || overhang !== exportedRoof.overhang[0]) {
+                modelActions.updateRoofOverhang(addedRoof.id, index, overhang)
+              }
+            })
+          }
+        })
       })
 
       // 9. Adjust levels based on minLevel
@@ -471,26 +525,24 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
       return false
     }
 
+    const isValidPolygon = (polygon: unknown): polygon is ExportedFloorPolygon => {
+      if (typeof polygon !== 'object' || polygon === null || !Array.isArray((polygon as { points?: unknown }).points)) {
+        return false
+      }
+      return (polygon as ExportedFloorPolygon).points.every(
+        point =>
+          typeof point === 'object' &&
+          point !== null &&
+          typeof (point as { x?: unknown }).x === 'number' &&
+          typeof (point as { y?: unknown }).y === 'number'
+      )
+    }
+
     const isValidPolygonCollection = (value: unknown): value is ExportedFloorPolygon[] => {
       if (!Array.isArray(value)) {
         return false
       }
-      return value.every(polygon => {
-        if (
-          typeof polygon !== 'object' ||
-          polygon === null ||
-          !Array.isArray((polygon as { points?: unknown }).points)
-        ) {
-          return false
-        }
-        return (polygon as ExportedFloorPolygon).points.every(
-          point =>
-            typeof point === 'object' &&
-            point !== null &&
-            typeof (point as { x?: unknown }).x === 'number' &&
-            typeof (point as { y?: unknown }).y === 'number'
-        )
-      })
+      return value.every(polygon => isValidPolygon(polygon))
     }
 
     for (const storey of modelStore.storeys) {
@@ -511,6 +563,29 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
         !isValidPolygonCollection(storeyRecord.floorOpenings)
       ) {
         return false
+      }
+      if (storeyRecord.roofs !== undefined && storeyRecord.roofs !== null) {
+        if (!Array.isArray(storeyRecord.roofs)) {
+          return false
+        }
+        for (const roof of storeyRecord.roofs) {
+          if (
+            !roof ||
+            typeof roof !== 'object' ||
+            typeof (roof as Record<string, unknown>).type !== 'string' ||
+            typeof (roof as Record<string, unknown>).mainSideIndex !== 'number' ||
+            typeof (roof as Record<string, unknown>).slope !== 'number' ||
+            typeof (roof as Record<string, unknown>).verticalOffset !== 'number' ||
+            !Array.isArray((roof as Record<string, unknown>).overhang) ||
+            typeof (roof as Record<string, unknown>).assemblyId !== 'string'
+          ) {
+            return false
+          }
+          const roofRecord = roof as Record<string, unknown>
+          if (!roofRecord.referencePolygon || !isValidPolygon(roofRecord.referencePolygon)) {
+            return false
+          }
+        }
       }
     }
 
