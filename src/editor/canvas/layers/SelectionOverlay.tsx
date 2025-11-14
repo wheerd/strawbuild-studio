@@ -9,6 +9,7 @@ import type {
   PerimeterCornerId,
   PerimeterId,
   PerimeterWallId,
+  RoofId,
   SelectableId
 } from '@/building/model/ids'
 import {
@@ -17,10 +18,11 @@ import {
   isOpeningId,
   isPerimeterCornerId,
   isPerimeterId,
-  isPerimeterWallId
+  isPerimeterWallId,
+  isRoofId
 } from '@/building/model/ids'
 import type { Perimeter } from '@/building/model/model'
-import { useFloorAreaById, useFloorOpeningById, usePerimeterById } from '@/building/store'
+import { useFloorAreaById, useFloorOpeningById, usePerimeterById, useRoofById } from '@/building/store'
 import { SelectionOutline } from '@/editor/canvas/utils/SelectionOutline'
 import { useCurrentSelection, useSelectionPath } from '@/editor/hooks/useSelectionStore'
 import { direction, perpendicular } from '@/shared/geometry'
@@ -54,6 +56,7 @@ function useSelectionOutlinePoints(
   const perimeter = usePerimeterById(rootEntityId as PerimeterId)
   const floorArea = useFloorAreaById((currentSelection ?? '') as FloorAreaId)
   const floorOpening = useFloorOpeningById((currentSelection ?? '') as FloorOpeningId)
+  const roof = useRoofById((currentSelection ?? '') as RoofId)
 
   return useMemo(() => {
     if (!selectionPath.length || !currentSelection) {
@@ -66,6 +69,10 @@ function useSelectionOutlinePoints(
 
     if (isFloorOpeningId(currentSelection) && floorOpening) {
       return floorOpening.area.points
+    }
+
+    if (isRoofId(currentSelection) && roof) {
+      return roof.area.points
     }
 
     if (isPerimeterId(rootEntityId) && perimeter) {
@@ -85,7 +92,7 @@ function useSelectionOutlinePoints(
       console.warn('SelectionOverlay: Unsupported root entity type:', rootEntityId)
     }
     return null
-  }, [selectionPath, currentSelection, rootEntityId, perimeter, floorArea, floorOpening])
+  }, [selectionPath, currentSelection, rootEntityId, perimeter, floorArea, floorOpening, roof])
 }
 
 export function SelectionOverlay(): React.JSX.Element | null {
