@@ -9,7 +9,7 @@ import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
-import { Bounds2D, calculatePolygonArea, polygonPerimeter } from '@/shared/geometry'
+import { Bounds2D, calculatePolygonArea, degreesToRadians, polygonPerimeter, radiansToDegrees } from '@/shared/geometry'
 import { formatArea, formatLength } from '@/shared/utils/formatting'
 
 interface RoofInspectorProps {
@@ -112,24 +112,45 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
                 Slope (°)
               </Text>
             </Label.Root>
-            <TextField.Root
-              id="roof-slope"
-              type="number"
-              value={roof.slope.toString()}
-              onChange={e => {
-                const value = parseFloat(e.target.value)
-                if (!isNaN(value)) {
-                  handleSlopeChange(value)
-                }
-              }}
-              size="1"
-              min={0}
-              max={90}
-              step={1}
-              style={{ width: '3em', textAlign: 'right' }}
-            >
-              <TextField.Slot side="right">°</TextField.Slot>
-            </TextField.Root>
+
+            <Flex align="center" gap="2">
+              <TextField.Root
+                id="roof-slope"
+                type="number"
+                value={roof.slope.toFixed(3).replace(/\.?0+$/, '')}
+                onChange={e => {
+                  const value = parseFloat(e.target.value)
+                  if (!isNaN(value) && value >= 0 && value <= 90) {
+                    handleSlopeChange(value)
+                  }
+                }}
+                size="1"
+                min={0}
+                max={90}
+                style={{ width: '6em', textAlign: 'right' }}
+              >
+                <TextField.Slot side="right">°</TextField.Slot>
+              </TextField.Root>
+
+              <TextField.Root
+                id="roof-slope"
+                type="number"
+                value={(Math.tan(degreesToRadians(roof.slope)) * 100).toFixed(3).replace(/\.?0+$/, '')}
+                onChange={e => {
+                  const value = parseFloat(e.target.value)
+                  if (!isNaN(value)) {
+                    handleSlopeChange(radiansToDegrees(Math.atan(value / 100)))
+                  }
+                }}
+                size="1"
+                min={0}
+                max={100}
+                step={1}
+                style={{ width: '6em', textAlign: 'right' }}
+              >
+                <TextField.Slot side="right">%</TextField.Slot>
+              </TextField.Root>
+            </Flex>
           </Flex>
 
           {/* Vertical Offset */}
