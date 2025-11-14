@@ -4,6 +4,7 @@ import {
   Box,
   Callout,
   DataList,
+  DropdownMenu,
   Flex,
   Heading,
   IconButton,
@@ -14,8 +15,8 @@ import {
 } from '@radix-ui/themes'
 import React, { useCallback, useMemo } from 'react'
 
-import type { PerimeterId, WallAssemblyId } from '@/building/model/ids'
-import type { PerimeterReferenceSide, PerimeterWall } from '@/building/model/model'
+import type { PerimeterId, RoofAssemblyId, WallAssemblyId } from '@/building/model/ids'
+import type { PerimeterReferenceSide, PerimeterWall, RoofType } from '@/building/model/model'
 import { useModelActions, usePerimeterById } from '@/building/store'
 import { TOP_VIEW } from '@/construction/components/ConstructionPlan'
 import { ConstructionPlanModal } from '@/construction/components/ConstructionPlanModal'
@@ -25,7 +26,8 @@ import { constructPerimeter } from '@/construction/perimeter'
 import { TAG_BASE_PLATE, TAG_TOP_PLATE, TAG_WALLS } from '@/construction/tags'
 import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
-import { popSelection } from '@/editor/hooks/useSelectionStore'
+import { popSelection, pushSelection } from '@/editor/hooks/useSelectionStore'
+import { useViewModeActions } from '@/editor/hooks/useViewMode'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import {
   BasePlateIcon,
@@ -33,12 +35,13 @@ import {
   FitToViewIcon,
   FloorLayersIcon,
   Model3DIcon,
+  RoofIcon,
   TopPlateIcon,
   WallLayersIcon,
   WallToggleIcon
 } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
-import { Bounds2D, type Length, calculatePolygonArea } from '@/shared/geometry'
+import { Bounds2D, type Length, calculatePolygonArea, direction, perpendicular } from '@/shared/geometry'
 import { formatArea, formatLength } from '@/shared/utils/formatting'
 
 interface PerimeterInspectorProps {
@@ -92,10 +95,12 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
     updateAllPerimeterWallsAssembly,
     updateAllPerimeterWallsThickness,
     removePerimeter,
-    setPerimeterReferenceSide
+    setPerimeterReferenceSide,
+    addRoof
   } = useModelActions()
   const perimeter = usePerimeterById(selectedId)
   const viewportActions = useViewportActions()
+  const { setMode } = useViewModeActions()
 
   // Mixed state detection
   const wallAssemblyState = useMemo(
@@ -141,6 +146,50 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
     removePerimeter(selectedId)
     popSelection()
   }, [removePerimeter, selectedId])
+
+  const handleAddRoof = useCallback(
+    (roofType: RoofType) => {
+      if (!perimeter) return
+
+      // Create polygon from perimeter outer points
+      const polygon = {
+        points: perimeter.corners.map(corner => corner.outsidePoint)
+      }
+
+      // Calculate direction perpendicular to first edge
+      if (polygon.points.length < 2) {
+        console.error('Perimeter must have at least 2 points')
+        return
+      }
+
+      const firstEdge = direction(polygon.points[0], polygon.points[1])
+      const roofDirection = perpendicular(firstEdge)
+
+      // Default values for new roof
+      const slope = 30 // degrees
+      const ridgeHeight = 0 // mm
+      const overhang = 300 // mm
+      const assemblyId = '' as RoofAssemblyId // placeholder
+
+      const newRoof = addRoof(
+        perimeter.storeyId,
+        roofType,
+        polygon,
+        roofDirection,
+        slope,
+        ridgeHeight,
+        overhang,
+        assemblyId,
+        selectedId
+      )
+
+      if (newRoof) {
+        setMode('roofs')
+        pushSelection(newRoof.id)
+      }
+    },
+    [perimeter, selectedId, addRoof, setMode]
+  )
 
   return (
     <Box p="2">
@@ -359,6 +408,17 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
 
         {/* Action Buttons */}
         <Flex gap="2" justify="end">
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger>
+              <IconButton size="2" title="Add roof based on perimeter">
+                <RoofIcon />
+              </IconButton>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content>
+              <DropdownMenu.Item onClick={() => handleAddRoof('gable')}>Gable Roof</DropdownMenu.Item>
+              <DropdownMenu.Item onClick={() => handleAddRoof('shed')}>Shed Roof</DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
           <IconButton size="2" title="Fit to view" onClick={handleFitToView}>
             <FitToViewIcon />
           </IconButton>
