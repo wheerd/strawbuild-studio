@@ -12,6 +12,7 @@ const ROOF_ASSEMBLY_ID_PREFIX = 'ra_'
 const FLOOR_AREA_ID_PREFIX = 'floorarea_'
 const FLOOR_OPENING_ID_PREFIX = 'flooropening_'
 const ROOF_ID_PREFIX = 'roof_'
+const ROOF_OVERHANG_ID_PREFIX = 'roofoverhang_'
 
 // Strong typing for entity IDs
 export type StoreyId = `${typeof STOREY_ID_PREFIX}${string}`
@@ -24,6 +25,7 @@ export type RoofId = `${typeof ROOF_ID_PREFIX}${string}`
 export type PerimeterWallId = `${typeof PERIMETER_WALL_ID_PREFIX}${string}`
 export type PerimeterCornerId = `${typeof PERIMETER_CORNER_ID_PREFIX}${string}`
 export type OpeningId = `${typeof OPENING_ID_PREFIX}${string}`
+export type RoofOverhangId = `${typeof ROOF_OVERHANG_ID_PREFIX}${string}`
 
 export type EntityId = PerimeterId | FloorAreaId | FloorOpeningId | RoofId
 export type SelectableId =
@@ -34,6 +36,7 @@ export type SelectableId =
   | PerimeterCornerId
   | OpeningId
   | RoofId
+  | RoofOverhangId
 
 // Config ids
 export type RingBeamAssemblyId = `${typeof RING_BEAM_ID_PREFIX}${string}`
@@ -52,6 +55,7 @@ export const createRoofId = (): RoofId => createId(ROOF_ID_PREFIX)
 export const createPerimeterWallId = (): PerimeterWallId => createId(PERIMETER_WALL_ID_PREFIX)
 export const createPerimeterCornerId = (): PerimeterCornerId => createId(PERIMETER_CORNER_ID_PREFIX)
 export const createOpeningId = (): OpeningId => createId(OPENING_ID_PREFIX)
+export const createRoofOverhangId = (): RoofOverhangId => createId(ROOF_OVERHANG_ID_PREFIX)
 
 // Config ID generators
 export const createRingBeamAssemblyId = (): RingBeamAssemblyId => createId(RING_BEAM_ID_PREFIX)
@@ -76,6 +80,7 @@ export const isRoofId = (id: string): id is RoofId => id.startsWith(ROOF_ID_PREF
 export const isPerimeterWallId = (id: string): id is PerimeterWallId => id.startsWith(PERIMETER_WALL_ID_PREFIX)
 export const isPerimeterCornerId = (id: string): id is PerimeterCornerId => id.startsWith(PERIMETER_CORNER_ID_PREFIX)
 export const isOpeningId = (id: string): id is OpeningId => id.startsWith(OPENING_ID_PREFIX)
+export const isRoofOverhangId = (id: string): id is RoofOverhangId => id.startsWith(ROOF_OVERHANG_ID_PREFIX)
 
 // Config type guards
 export const isRingBeamAssemblyId = (id: string): id is RingBeamAssemblyId => id.startsWith(RING_BEAM_ID_PREFIX)

@@ -1,9 +1,10 @@
-import { ReloadIcon, TrashIcon } from '@radix-ui/react-icons'
+import { ExclamationTriangleIcon, ReloadIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
 import { Box, DataList, Flex, IconButton, Separator, Text, TextField, Tooltip } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 
 import type { RoofId } from '@/building/model/ids'
+import type { RoofOverhang } from '@/building/model/model'
 import { useModelActions, useRoofById } from '@/building/store'
 import { RoofAssemblySelectWithEdit } from '@/construction/config/components/RoofAssemblySelectWithEdit'
 import { useDefaultRoofAssemblyId } from '@/construction/config/store'
@@ -11,16 +12,48 @@ import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
-import { Bounds2D, calculatePolygonArea, degreesToRadians, polygonPerimeter, radiansToDegrees } from '@/shared/geometry'
+import {
+  Bounds2D,
+  type Length,
+  calculatePolygonArea,
+  degreesToRadians,
+  polygonPerimeter,
+  radiansToDegrees
+} from '@/shared/geometry'
 import { formatArea, formatLength } from '@/shared/utils/formatting'
 
 interface RoofInspectorProps {
   roofId: RoofId
 }
 
+interface MixedState<T> {
+  isMixed: boolean
+  value: T | null
+}
+
+function detectMixedOverhangs(overhangs: RoofOverhang[]): MixedState<Length> {
+  if (overhangs.length === 0) return { isMixed: false, value: null }
+
+  const firstValue = overhangs[0].value
+  const allSame = overhangs.every(o => o.value === firstValue)
+
+  return {
+    isMixed: !allSame,
+    value: allSame ? firstValue : null
+  }
+}
+
+function MixedStateIndicator() {
+  return (
+    <Tooltip content="Different values across sides. Changing this will update all sides.">
+      <ExclamationTriangleIcon width={14} height={14} style={{ color: 'var(--amber-9)' }} />
+    </Tooltip>
+  )
+}
+
 export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element | null {
   const roof = useRoofById(roofId)
-  const { removeRoof, updateRoofProperties, updateRoofOverhang, cycleRoofMainSide } = useModelActions()
+  const { removeRoof, updateRoofProperties, setAllRoofOverhangs, cycleRoofMainSide } = useModelActions()
   const { fitToView } = useViewportActions()
   const defaultAssemblyId = useDefaultRoofAssemblyId()
 
@@ -33,6 +66,11 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
     if (!roof) return 0
     return calculatePolygonArea(roof.overhangPolygon)
   }, [roof])
+
+  const overhangState = useMemo(
+    () => (roof ? detectMixedOverhangs(roof.overhangs) : { isMixed: false, value: null }),
+    [roof?.overhangs]
+  )
 
   const handleFitToView = useCallback(() => {
     if (!roof) return
@@ -56,23 +94,6 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
       }
     },
     [roof, updateRoofProperties]
-  )
-
-  // Calculate average overhang (for display/edit)
-  const averageOverhang = useMemo(() => {
-    if (!roof) return 0
-    return roof.overhang.reduce((sum, val) => sum + val, 0) / roof.overhang.length
-  }, [roof])
-
-  const handleOverhangChange = useCallback(
-    (value: number) => {
-      if (!roof || value < 0) return
-      // Update all overhangs to the same value
-      for (let i = 0; i < roof.overhang.length; i++) {
-        updateRoofOverhang(roof.id, i, value)
-      }
-    },
-    [roof, updateRoofOverhang]
   )
 
   if (!roof) {
@@ -191,17 +212,21 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
             />
           </Flex>
 
-          {/* Global Overhang */}
+          {/* Global Overhang with MixedState */}
           <Flex align="center" gap="2" justify="between">
             <Label.Root htmlFor="roof-overhang">
-              <Text size="1" weight="medium" color="gray">
-                Overhang
-              </Text>
+              <Flex align="center" gap="1">
+                <Text size="1" weight="medium" color="gray">
+                  Overhang
+                </Text>
+                {overhangState.isMixed && <MixedStateIndicator />}
+              </Flex>
             </Label.Root>
             <LengthField
               id="roof-overhang"
-              value={averageOverhang}
-              onCommit={handleOverhangChange}
+              value={overhangState.value as Length}
+              onCommit={value => setAllRoofOverhangs(roof.id, value)}
+              placeholder={overhangState.isMixed ? 'Mixed' : undefined}
               min={0}
               max={2000}
               step={10}
@@ -210,6 +235,12 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
               style={{ width: '7em' }}
             />
           </Flex>
+
+          {overhangState.isMixed && (
+            <Text size="1" color="gray">
+              Select individual overhang sides to edit them separately
+            </Text>
+          )}
         </Flex>
 
         <Separator size="4" />

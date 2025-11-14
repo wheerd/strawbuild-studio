@@ -8,6 +8,8 @@ import { Bounds2D, direction, isPointInPolygon, perpendicular } from '@/shared/g
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
 
+import { RoofOverhangShape } from './RoofOverhangShape'
+
 interface RoofShapeProps {
   roof: Roof
 }
@@ -81,10 +83,15 @@ export function RoofShape({ roof }: RoofShapeProps): React.JSX.Element {
     <Group name={`roof-${roof.id}`} entityId={roof.id} entityType="roof" parentIds={[]} listening>
       {/* Main roof polygon - semi-transparent */}
       <Line points={points} closed fill={MATERIAL_COLORS.roof} opacity={0.6} listening />
-      <Line points={points} closed stroke={theme.border} strokeWidth={10} listening />
+      <Line points={points} closed stroke={theme.border} strokeWidth={20} listening />
 
       {/* Eave polygon - dashed outline */}
-      <Line points={eavePolygon} closed stroke={MATERIAL_COLORS.roof} strokeWidth={20} dash={[200, 100]} listening />
+      <Line points={eavePolygon} closed stroke={theme.border} strokeWidth={10} dash={[200, 100]} listening />
+
+      {/* Individual overhang sides - rendered as trapezoids */}
+      {roof.overhangs.map(overhang => (
+        <RoofOverhangShape key={overhang.id} overhang={overhang} roofId={roof.id} />
+      ))}
 
       {/* Ridge line - thicker stroke */}
       <Line points={ridgePoints} stroke={theme.primary} strokeWidth={60} listening={false} />

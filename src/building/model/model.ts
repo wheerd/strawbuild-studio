@@ -11,6 +11,7 @@ import type {
   RingBeamAssemblyId,
   RoofAssemblyId,
   RoofId,
+  RoofOverhangId,
   StoreyId,
   WallAssemblyId
 } from '@/building/model/ids'
@@ -117,6 +118,14 @@ export interface FloorOpening {
 
 export type RoofType = 'shed' | 'gable'
 
+export interface RoofOverhang {
+  id: RoofOverhangId
+  sideIndex: number
+  value: Length
+  // Computed trapezoid geometry (4 points: innerStart, innerEnd, outerEnd, outerStart)
+  area: Polygon2D
+}
+
 export interface Roof {
   id: RoofId
   storeyId: StoreyId
@@ -128,7 +137,7 @@ export interface Roof {
   slope: number // Angle in degrees
   // Added to the floorHeight of the storey to determine the highest point of the roof (outside)
   verticalOffset: Length
-  overhang: Length[] // For each side of the area polygon
+  overhangs: RoofOverhang[] // Overhang for each side with computed geometry
   assemblyId: RoofAssemblyId
   referencePerimeter?: PerimeterId
 }

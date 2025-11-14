@@ -79,7 +79,7 @@ export interface ExportedRoof {
   mainSideIndex: number
   slope: number
   verticalOffset: number
-  overhang: number[]
+  overhangs: number[]
   assemblyId: string
   referencePerimeter?: string
 }
@@ -221,7 +221,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
           mainSideIndex: roof.mainSideIndex,
           slope: roof.slope,
           verticalOffset: Number(roof.verticalOffset),
-          overhang: roof.overhang.map(o => Number(o)),
+          overhangs: roof.overhangs.map(o => Number(o.value)),
           assemblyId: roof.assemblyId,
           referencePerimeter: roof.referencePerimeter
         }))
@@ -429,15 +429,18 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
             exportedRoof.mainSideIndex,
             exportedRoof.slope,
             exportedRoof.verticalOffset,
-            exportedRoof.overhang[0] ?? 0, // Use first overhang value as default
+            exportedRoof.overhangs[0] ?? 0, // Use first overhang value as default
             exportedRoof.assemblyId as RoofAssemblyId,
             exportedRoof.referencePerimeter ? (exportedRoof.referencePerimeter as PerimeterId) : undefined
           )
           // Update individual overhangs if they differ
-          if (addedRoof && exportedRoof.overhang.length === addedRoof.overhang.length) {
-            exportedRoof.overhang.forEach((overhang, index) => {
-              if (index > 0 || overhang !== exportedRoof.overhang[0]) {
-                modelActions.updateRoofOverhang(addedRoof.id, index, overhang)
+          if (addedRoof && exportedRoof.overhangs.length === addedRoof.overhangs.length) {
+            exportedRoof.overhangs.forEach((overhangValue, index) => {
+              if (index > 0 && overhangValue !== exportedRoof.overhangs[0]) {
+                const overhang = addedRoof.overhangs[index]
+                if (overhang) {
+                  modelActions.updateRoofOverhangById(addedRoof.id, overhang.id, overhangValue)
+                }
               }
             })
           }

@@ -77,16 +77,17 @@ describe('roofsSlice', () => {
       expect(roof.verticalOffset).toBe(3000)
       expect(roof.assemblyId).toBe(testAssemblyId)
       expect(roof.referencePolygon.points).toHaveLength(4)
-      expect(roof.overhang).toHaveLength(4)
-      expect(roof.overhang).toEqual([500, 500, 500, 500])
+      expect(roof.overhangs).toHaveLength(4)
+      expect(roof.overhangs.every(o => o.value === 500)).toBe(true)
+      expect(roof.overhangs.every(o => o.area.points.length === 4)).toBe(true)
     })
 
     it('should expand single overhang value to array matching polygon sides', () => {
       const polygon = createTrianglePolygon()
       const roof = store.actions.addRoof(testStoreyId, 'shed', polygon, 0, 30, 2500, 400, testAssemblyId)
 
-      expect(roof.overhang).toHaveLength(3)
-      expect(roof.overhang).toEqual([400, 400, 400])
+      expect(roof.overhangs).toHaveLength(3)
+      expect(roof.overhangs.every(o => o.value === 400)).toBe(true)
     })
 
     it('should normalize polygon to clockwise', () => {
@@ -206,36 +207,65 @@ describe('roofsSlice', () => {
     })
   })
 
-  describe('updateRoofOverhang', () => {
-    it('should update overhang by index', () => {
+  describe('updateRoofOverhangById', () => {
+    it('should update overhang by ID', () => {
       const polygon = createTestPolygon()
       const roof = store.actions.addRoof(testStoreyId, 'gable', polygon, 0, 45, 3000, 500, testAssemblyId)
 
-      const success = store.actions.updateRoofOverhang(roof.id, 1, 750)
+      const overhangId = roof.overhangs[1].id
+      const success = store.actions.updateRoofOverhangById(roof.id, overhangId, 750)
 
       expect(success).toBe(true)
       const updatedRoof = store.roofs[roof.id]
-      expect(updatedRoof.overhang).toEqual([500, 750, 500, 500])
+      expect(updatedRoof.overhangs[0].value).toBe(500)
+      expect(updatedRoof.overhangs[1].value).toBe(750)
+      expect(updatedRoof.overhangs[2].value).toBe(500)
+      expect(updatedRoof.overhangs[3].value).toBe(500)
+      // Check that areas are recomputed
+      expect(updatedRoof.overhangs[1].area.points).toHaveLength(4)
     })
 
-    it('should reject out-of-bounds index (negative)', () => {
+    it('should return false for non-existent overhang ID', () => {
       const polygon = createTestPolygon()
       const roof = store.actions.addRoof(testStoreyId, 'gable', polygon, 0, 45, 3000, 500, testAssemblyId)
 
-      const success = store.actions.updateRoofOverhang(roof.id, -1, 750)
+      const success = store.actions.updateRoofOverhangById(roof.id, 'roofoverhang_fake' as any, 750)
 
       expect(success).toBe(false)
-      expect(store.roofs[roof.id].overhang).toEqual([500, 500, 500, 500])
+      expect(store.roofs[roof.id].overhangs.every(o => o.value === 500)).toBe(true)
     })
 
-    it('should reject out-of-bounds index (too large)', () => {
+    it('should reject negative overhang value', () => {
       const polygon = createTestPolygon()
       const roof = store.actions.addRoof(testStoreyId, 'gable', polygon, 0, 45, 3000, 500, testAssemblyId)
 
-      const success = store.actions.updateRoofOverhang(roof.id, 4, 750)
+      const overhangId = roof.overhangs[0].id
+      expect(() => {
+        store.actions.updateRoofOverhangById(roof.id, overhangId, -100)
+      }).toThrow('Overhang must be non-negative')
+    })
 
+    it('should return false for non-existent roof', () => {
+      const success = store.actions.updateRoofOverhangById('roof_nonexistent' as any, 'roofoverhang_fake' as any, 500)
       expect(success).toBe(false)
-      expect(store.roofs[roof.id].overhang).toEqual([500, 500, 500, 500])
+    })
+  })
+
+  describe('setAllRoofOverhangs', () => {
+    it('should set all overhangs to same value', () => {
+      const polygon = createTestPolygon()
+      const roof = store.actions.addRoof(testStoreyId, 'gable', polygon, 0, 45, 3000, 500, testAssemblyId)
+
+      // First change one to be different
+      const overhangId = roof.overhangs[1].id
+      store.actions.updateRoofOverhangById(roof.id, overhangId, 750)
+
+      // Now set all to 600
+      const success = store.actions.setAllRoofOverhangs(roof.id, 600)
+
+      expect(success).toBe(true)
+      const updatedRoof = store.roofs[roof.id]
+      expect(updatedRoof.overhangs.every(o => o.value === 600)).toBe(true)
     })
 
     it('should reject negative overhang value', () => {
@@ -243,13 +273,44 @@ describe('roofsSlice', () => {
       const roof = store.actions.addRoof(testStoreyId, 'gable', polygon, 0, 45, 3000, 500, testAssemblyId)
 
       expect(() => {
-        store.actions.updateRoofOverhang(roof.id, 0, -100)
+        store.actions.setAllRoofOverhangs(roof.id, -100)
       }).toThrow('Overhang must be non-negative')
     })
 
     it('should return false for non-existent roof', () => {
-      const success = store.actions.updateRoofOverhang('roof_nonexistent' as any, 0, 500)
+      const success = store.actions.setAllRoofOverhangs('roof_nonexistent' as any, 500)
       expect(success).toBe(false)
+    })
+  })
+
+  describe('getRoofOverhangById', () => {
+    it('should return overhang by ID', () => {
+      const polygon = createTestPolygon()
+      const roof = store.actions.addRoof(testStoreyId, 'gable', polygon, 0, 45, 3000, 500, testAssemblyId)
+
+      const overhangId = roof.overhangs[2].id
+      const overhang = store.actions.getRoofOverhangById(roof.id, overhangId)
+
+      expect(overhang).toBeDefined()
+      expect(overhang?.id).toBe(overhangId)
+      expect(overhang?.sideIndex).toBe(2)
+      expect(overhang?.value).toBe(500)
+      expect(overhang?.area.points).toHaveLength(4)
+    })
+
+    it('should return null for non-existent overhang ID', () => {
+      const polygon = createTestPolygon()
+      const roof = store.actions.addRoof(testStoreyId, 'gable', polygon, 0, 45, 3000, 500, testAssemblyId)
+
+      const overhang = store.actions.getRoofOverhangById(roof.id, 'roofoverhang_fake' as any)
+
+      expect(overhang).toBeNull()
+    })
+
+    it('should return null for non-existent roof', () => {
+      const overhang = store.actions.getRoofOverhangById('roof_nonexistent' as any, 'roofoverhang_fake' as any)
+
+      expect(overhang).toBeNull()
     })
   })
 
@@ -364,13 +425,15 @@ describe('roofsSlice', () => {
       expect(updatedRoof.referencePolygon.points[1][0]).toBe(200)
     })
 
-    it('should preserve overhang array when updating area', () => {
+    it('should preserve overhang values when updating area', () => {
       const polygon = createTestPolygon()
       const roof = store.actions.addRoof(testStoreyId, 'gable', polygon, 0, 45, 3000, 500, testAssemblyId)
 
       // Set different overhangs
-      store.actions.updateRoofOverhang(roof.id, 0, 300)
-      store.actions.updateRoofOverhang(roof.id, 1, 400)
+      const overhangId0 = roof.overhangs[0].id
+      const overhangId1 = roof.overhangs[1].id
+      store.actions.updateRoofOverhangById(roof.id, overhangId0, 300)
+      store.actions.updateRoofOverhangById(roof.id, overhangId1, 400)
 
       const newPolygon: Polygon2D = {
         points: [vec2.fromValues(0, 0), vec2.fromValues(200, 0), vec2.fromValues(200, 200), vec2.fromValues(0, 200)]
@@ -380,7 +443,15 @@ describe('roofsSlice', () => {
 
       expect(success).toBe(true)
       const updatedRoof = store.roofs[roof.id]
-      expect(updatedRoof.overhang).toEqual([300, 400, 500, 500])
+      expect(updatedRoof.overhangs[0].value).toBe(300)
+      expect(updatedRoof.overhangs[1].value).toBe(400)
+      expect(updatedRoof.overhangs[2].value).toBe(500)
+      expect(updatedRoof.overhangs[3].value).toBe(500)
+      // Check that IDs are preserved
+      expect(updatedRoof.overhangs[0].id).toBe(overhangId0)
+      expect(updatedRoof.overhangs[1].id).toBe(overhangId1)
+      // Check that areas are recomputed
+      expect(updatedRoof.overhangs[0].area.points).toHaveLength(4)
     })
 
     it('should reject update with different point count', () => {

@@ -1,9 +1,9 @@
 import { vec2 } from 'gl-matrix'
 import type { StateCreator } from 'zustand'
 
-import type { PerimeterId, RoofAssemblyId, RoofId, StoreyId } from '@/building/model/ids'
-import { createRoofId } from '@/building/model/ids'
-import type { Roof, RoofType } from '@/building/model/model'
+import type { PerimeterId, RoofAssemblyId, RoofId, RoofOverhangId, StoreyId } from '@/building/model/ids'
+import { createRoofId, createRoofOverhangId } from '@/building/model/ids'
+import type { Roof, RoofOverhang, RoofType } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config/store'
 import type { Length, LineSegment2D, Polygon2D } from '@/shared/geometry'
 import {
@@ -36,7 +36,11 @@ export interface RoofsActions {
 
   removeRoof: (roofId: RoofId) => void
 
-  updateRoofOverhang: (roofId: RoofId, sideIndex: number, overhang: Length) => boolean
+  updateRoofOverhangById: (roofId: RoofId, overhangId: RoofOverhangId, value: Length) => boolean
+
+  setAllRoofOverhangs: (roofId: RoofId, value: Length) => boolean
+
+  getRoofOverhangById: (roofId: RoofId, overhangId: RoofOverhangId) => RoofOverhang | null
 
   updateRoofProperties: (
     roofId: RoofId,
@@ -77,9 +81,24 @@ const ensureRoofPolygon = (polygon: Polygon2D): Polygon2D => {
   return ensurePolygonIsClockwise(simplified)
 }
 
-// Helper function to compute overhang polygon
-const computeOverhangPolygon = (referencePolygon: Polygon2D, overhangs: Length[]): Polygon2D => {
-  return polygonEdgeOffset(referencePolygon, overhangs)
+// Helper function to compute overhang polygon from RoofOverhang array
+const computeOverhangPolygon = (referencePolygon: Polygon2D, overhangs: RoofOverhang[]): Polygon2D => {
+  const overhangValues = overhangs.map(o => o.value)
+  return polygonEdgeOffset(referencePolygon, overhangValues)
+}
+
+// Helper function to compute trapezoid area for an overhang side
+const computeOverhangArea = (referencePolygon: Polygon2D, overhangPolygon: Polygon2D, sideIndex: number): Polygon2D => {
+  const n = referencePolygon.points.length
+
+  const innerStart = referencePolygon.points[sideIndex]
+  const innerEnd = referencePolygon.points[(sideIndex + 1) % n]
+  const outerStart = overhangPolygon.points[sideIndex]
+  const outerEnd = overhangPolygon.points[(sideIndex + 1) % n]
+
+  return {
+    points: [innerStart, innerEnd, outerEnd, outerStart]
+  }
 }
 
 // Helper function to compute ridge line
@@ -242,11 +261,22 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
       // Note: Reference perimeter validation is deferred to runtime usage
       // The store structure doesn't allow cross-slice validation during creation
 
-      // Create overhang array with same value for all sides
+      // Create overhang array with same value for all sides (for computing overhang polygon)
       const overhangArray = new Array(validatedPolygon.points.length).fill(overhang)
 
-      // Compute overhang polygon
-      const overhangPolygon = computeOverhangPolygon(validatedPolygon, overhangArray)
+      // Compute overhang polygon first (needed for trapezoid computation)
+      const overhangPolygonTemp = polygonEdgeOffset(validatedPolygon, overhangArray)
+
+      // Create overhang objects with IDs and computed geometry
+      const overhangs: RoofOverhang[] = validatedPolygon.points.map((_, index) => ({
+        id: createRoofOverhangId(),
+        sideIndex: index,
+        value: overhang,
+        area: computeOverhangArea(validatedPolygon, overhangPolygonTemp, index)
+      }))
+
+      // Final overhang polygon (same as temp, but now we have RoofOverhang objects)
+      const overhangPolygon = overhangPolygonTemp
 
       // Compute ridge line
       const ridgeLine = computeRidgeLine(validatedPolygon, finalMainSideIndex, type)
@@ -263,7 +293,7 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
         mainSideIndex: finalMainSideIndex,
         slope,
         verticalOffset,
-        overhang: overhangArray,
+        overhangs,
         assemblyId: assemblyId ?? getConfigActions().getDefaultRoofAssemblyId(),
         referencePerimeter
       }
@@ -282,8 +312,8 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
       })
     },
 
-    updateRoofOverhang: (roofId: RoofId, sideIndex: number, overhang: Length): boolean => {
-      if (overhang < 0) {
+    updateRoofOverhangById: (roofId: RoofId, overhangId: RoofOverhangId, value: Length): boolean => {
+      if (value < 0) {
         throw new Error('Overhang must be non-negative')
       }
 
@@ -292,19 +322,58 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
         const roof = state.roofs[roofId]
         if (!roof) return
 
-        // Validate index
-        if (sideIndex < 0 || sideIndex >= roof.overhang.length) {
-          return
-        }
+        const overhangIndex = roof.overhangs.findIndex(o => o.id === overhangId)
+        if (overhangIndex === -1) return
 
-        roof.overhang[sideIndex] = overhang
+        // Update value
+        roof.overhangs[overhangIndex].value = value
 
         // Recompute overhang polygon
-        roof.overhangPolygon = computeOverhangPolygon(roof.referencePolygon, roof.overhang)
+        roof.overhangPolygon = computeOverhangPolygon(roof.referencePolygon, roof.overhangs)
+
+        // Recompute ALL overhang areas (since overhang polygon changed)
+        roof.overhangs.forEach((overhang, idx) => {
+          overhang.area = computeOverhangArea(roof.referencePolygon, roof.overhangPolygon, idx)
+        })
 
         success = true
       })
       return success
+    },
+
+    setAllRoofOverhangs: (roofId: RoofId, value: Length): boolean => {
+      if (value < 0) {
+        throw new Error('Overhang must be non-negative')
+      }
+
+      let success = false
+      set(state => {
+        const roof = state.roofs[roofId]
+        if (!roof) return
+
+        // Update all overhangs to same value
+        roof.overhangs.forEach(overhang => {
+          overhang.value = value
+        })
+
+        // Recompute overhang polygon
+        roof.overhangPolygon = computeOverhangPolygon(roof.referencePolygon, roof.overhangs)
+
+        // Recompute ALL overhang areas
+        roof.overhangs.forEach((overhang, idx) => {
+          overhang.area = computeOverhangArea(roof.referencePolygon, roof.overhangPolygon, idx)
+        })
+
+        success = true
+      })
+      return success
+    },
+
+    getRoofOverhangById: (roofId: RoofId, overhangId: RoofOverhangId): RoofOverhang | null => {
+      const roof = get().roofs[roofId]
+      if (!roof) return null
+
+      return roof.overhangs.find(o => o.id === overhangId) ?? null
     },
 
     updateRoofProperties: (
@@ -387,7 +456,12 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
         roof.referencePolygon = validatedPolygon
 
         // Recompute overhang polygon
-        roof.overhangPolygon = computeOverhangPolygon(validatedPolygon, roof.overhang)
+        roof.overhangPolygon = computeOverhangPolygon(validatedPolygon, roof.overhangs)
+
+        // Recompute ALL overhang areas (geometry changed)
+        roof.overhangs.forEach((overhang, idx) => {
+          overhang.area = computeOverhangArea(validatedPolygon, roof.overhangPolygon, idx)
+        })
 
         // Recompute ridge line
         roof.ridgeLine = computeRidgeLine(validatedPolygon, roof.mainSideIndex, roof.type)

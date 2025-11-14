@@ -19,9 +19,10 @@ import {
   isPerimeterCornerId,
   isPerimeterId,
   isPerimeterWallId,
-  isRoofId
+  isRoofId,
+  isRoofOverhangId
 } from '@/building/model/ids'
-import type { Perimeter } from '@/building/model/model'
+import type { Perimeter, Roof } from '@/building/model/model'
 import { useFloorAreaById, useFloorOpeningById, usePerimeterById, useRoofById } from '@/building/store'
 import { SelectionOutline } from '@/editor/canvas/utils/SelectionOutline'
 import { useCurrentSelection, useSelectionPath } from '@/editor/hooks/useSelectionStore'
@@ -56,7 +57,7 @@ function useSelectionOutlinePoints(
   const perimeter = usePerimeterById(rootEntityId as PerimeterId)
   const floorArea = useFloorAreaById((currentSelection ?? '') as FloorAreaId)
   const floorOpening = useFloorOpeningById((currentSelection ?? '') as FloorOpeningId)
-  const roof = useRoofById((currentSelection ?? '') as RoofId)
+  const roof = useRoofById(rootEntityId as RoofId)
 
   return useMemo(() => {
     if (!selectionPath.length || !currentSelection) {
@@ -71,8 +72,13 @@ function useSelectionOutlinePoints(
       return floorOpening.area.points
     }
 
-    if (isRoofId(currentSelection) && roof) {
-      return roof.overhangPolygon.points
+    if (isRoofId(rootEntityId) && roof) {
+      return getRoofEntityPoints(roof, currentSelection)
+    }
+
+    if (isRoofId(rootEntityId) && !roof) {
+      console.warn('SelectionOverlay: Roof not found:', rootEntityId)
+      return null
     }
 
     if (isPerimeterId(rootEntityId) && perimeter) {
@@ -142,6 +148,24 @@ function getPerimeterEntityPoints(
     if (isPerimeterWallId(wallId)) {
       return getOpeningPoints(perimeter, wallId, currentSelection)
     }
+  }
+
+  return null
+}
+
+/**
+ * Get outline points for entities within an OuterWall hierarchy
+ */
+function getRoofEntityPoints(roof: Roof, currentSelection: SelectableId): vec2[] | null {
+  // Entity type determines the selection path structure and required points
+  if (isRoofId(currentSelection)) {
+    // Path: [roofId]s
+    return roof.overhangPolygon.points
+  }
+
+  if (isRoofOverhangId(currentSelection)) {
+    // Path: [roofId, wallId]
+    return roof.overhangs.find(o => o.id === currentSelection)?.area.points ?? null
   }
 
   return null
