@@ -2,6 +2,7 @@ import { vec2 } from 'gl-matrix'
 
 import type { RoofAssemblyId, RoofType } from '@/building/model'
 import { getModelActions } from '@/building/store'
+import { getConfigActions } from '@/construction/config/store'
 import { getViewModeActions } from '@/editor/hooks/useViewMode'
 import type { SnappingContext } from '@/editor/services/snapping/types'
 import { BasePolygonTool, type PolygonToolStateBase } from '@/editor/tools/shared/polygon/BasePolygonTool'
@@ -17,6 +18,7 @@ interface RoofToolState extends PolygonToolStateBase {
   slope: number // degrees
   verticalOffset: Length
   overhang: Length // single value applied to all sides
+  assemblyId: RoofAssemblyId
 }
 
 const createPolygonSegments = (points: readonly vec2[]) => {
@@ -37,11 +39,13 @@ export class RoofTool extends BasePolygonTool<RoofToolState> implements ToolImpl
   readonly inspectorComponent = RoofToolInspector
 
   constructor() {
+    const defaultAssemblyId = getConfigActions().getDefaultRoofAssemblyId()
     super({
       type: 'gable',
       slope: 30,
       verticalOffset: 0,
-      overhang: 300
+      overhang: 300,
+      assemblyId: defaultAssemblyId
     })
   }
 
@@ -62,6 +66,11 @@ export class RoofTool extends BasePolygonTool<RoofToolState> implements ToolImpl
 
   public setOverhang(overhang: Length): void {
     this.state.overhang = overhang
+    this.triggerRender()
+  }
+
+  public setAssemblyId(assemblyId: RoofAssemblyId): void {
+    this.state.assemblyId = assemblyId
     this.triggerRender()
   }
 
@@ -111,9 +120,6 @@ export class RoofTool extends BasePolygonTool<RoofToolState> implements ToolImpl
     // Use first side (index 0) as main side for direction
     const mainSideIndex = 0
 
-    // Use empty string as placeholder for assemblyId (will be added later)
-    const assemblyId = '' as RoofAssemblyId
-
     addRoof(
       activeStoreyId,
       this.state.type,
@@ -122,7 +128,7 @@ export class RoofTool extends BasePolygonTool<RoofToolState> implements ToolImpl
       this.state.slope,
       this.state.verticalOffset,
       this.state.overhang,
-      assemblyId
+      this.state.assemblyId
     )
   }
 }

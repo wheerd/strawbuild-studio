@@ -4,6 +4,8 @@ import { Box, Button, Callout, Flex, Kbd, SegmentedControl, Separator, Text, Tex
 import { useEffect, useState } from 'react'
 
 import type { RoofType } from '@/building/model'
+import { RoofAssemblySelectWithEdit } from '@/construction/config/components/RoofAssemblySelectWithEdit'
+import { useDefaultRoofAssemblyId } from '@/construction/config/store'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
 import { LengthField } from '@/shared/components/LengthField'
@@ -13,6 +15,7 @@ import type { RoofTool } from './RoofTool'
 
 export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React.JSX.Element {
   const { state } = useReactiveTool(tool)
+  const defaultAssemblyId = useDefaultRoofAssemblyId()
 
   // Force re-renders when tool state changes
   const [, forceUpdate] = useState({})
@@ -43,6 +46,22 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
 
         {/* Tool Properties */}
         <Flex direction="column" gap="2">
+          {/* Assembly */}
+          <Flex direction="column" gap="1">
+            <Label.Root>
+              <Text size="1" weight="medium" color="gray">
+                Assembly
+              </Text>
+            </Label.Root>
+            <RoofAssemblySelectWithEdit
+              value={state.assemblyId}
+              onValueChange={assemblyId => tool.setAssemblyId(assemblyId)}
+              showDefaultIndicator
+              defaultAssemblyId={defaultAssemblyId}
+              size="1"
+            />
+          </Flex>
+
           {/* Roof Type */}
           <Flex align="center" gap="2" justify="between">
             <Label.Root>

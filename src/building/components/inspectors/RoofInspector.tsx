@@ -5,6 +5,8 @@ import { useCallback, useMemo } from 'react'
 
 import type { RoofId } from '@/building/model/ids'
 import { useModelActions, useRoofById } from '@/building/store'
+import { RoofAssemblySelectWithEdit } from '@/construction/config/components/RoofAssemblySelectWithEdit'
+import { useDefaultRoofAssemblyId } from '@/construction/config/store'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
@@ -20,6 +22,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
   const roof = useRoofById(roofId)
   const { removeRoof, updateRoofProperties, updateRoofOverhang, cycleRoofMainSide } = useModelActions()
   const { fitToView } = useViewportActions()
+  const defaultAssemblyId = useDefaultRoofAssemblyId()
 
   const perimeterLength = useMemo(() => {
     if (!roof) return 0
@@ -105,11 +108,27 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
 
         {/* Editable Properties */}
         <Flex direction="column" gap="2">
+          {/* Assembly */}
+          <Flex direction="column" gap="1">
+            <Label.Root>
+              <Text size="1" weight="medium" color="gray">
+                Assembly
+              </Text>
+            </Label.Root>
+            <RoofAssemblySelectWithEdit
+              value={roof.assemblyId}
+              onValueChange={assemblyId => updateRoofProperties(roof.id, { assemblyId })}
+              showDefaultIndicator
+              defaultAssemblyId={defaultAssemblyId}
+              size="1"
+            />
+          </Flex>
+
           {/* Slope */}
           <Flex align="center" gap="2" justify="between">
             <Label.Root htmlFor="roof-slope">
               <Text size="1" weight="medium" color="gray">
-                Slope (°)
+                Slope
               </Text>
             </Label.Root>
 
