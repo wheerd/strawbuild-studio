@@ -9,6 +9,8 @@ import type {
   PerimeterId,
   PerimeterWallId,
   RingBeamAssemblyId,
+  RoofAssemblyId,
+  RoofId,
   StoreyId,
   WallAssemblyId
 } from '@/building/model/ids'
@@ -111,4 +113,20 @@ export interface FloorOpening {
   id: FloorOpeningId
   storeyId: StoreyId
   area: Polygon2D
+}
+
+export type RoofType = 'shed' | 'gable'
+
+export interface Roof {
+  id: RoofId
+  storeyId: StoreyId
+  type: RoofType
+  area: Polygon2D
+  direction: vec2
+  slope: number // Angle in degrees
+  // Added to the floorHeight of the storey to determine the highest point of the roof (outside)
+  ridgeHeight: Length
+  overhang: Length[] // For each side of the area polygon
+  assemblyId: RoofAssemblyId
+  referencePerimeter?: PerimeterId
 }

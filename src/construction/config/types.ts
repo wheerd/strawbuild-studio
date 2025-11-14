@@ -1,6 +1,7 @@
-import type { FloorAssemblyId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model'
+import type { FloorAssemblyId, RingBeamAssemblyId, RoofAssemblyId, WallAssemblyId } from '@/building/model'
 import type { JoistFloorConfig, MonolithicFloorConfig } from '@/construction/floors'
 import type { DoubleRingBeamConfig, FullRingBeamConfig } from '@/construction/ringBeams'
+import type { MonolithicRoofConfig } from '@/construction/roofs'
 import type {
   InfillWallConfig,
   ModulesWallConfig,
@@ -96,3 +97,14 @@ export type MonolithicFloorAssemblyConfig = MonolithicFloorConfig & FloorAssembl
 export type JoistFloorAssemblyConfig = JoistFloorConfig & FloorAssemblyIdPart
 
 export type FloorAssemblyConfig = MonolithicFloorAssemblyConfig | JoistFloorAssemblyConfig
+
+// Roofs
+
+export interface RoofAssemblyIdPart {
+  id: RoofAssemblyId
+  name: string
+}
+
+export type MonolithicRoofAssemblyConfig = MonolithicRoofConfig & RoofAssemblyIdPart
+
+export type RoofAssemblyConfig = MonolithicRoofAssemblyConfig // | JoistRoofAssemblyConfig
