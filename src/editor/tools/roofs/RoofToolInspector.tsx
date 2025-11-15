@@ -3,6 +3,7 @@ import * as Label from '@radix-ui/react-label'
 import { Box, Button, Callout, Flex, Kbd, SegmentedControl, Separator, Text, TextField } from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
 
+import { RoofPreview } from '@/building/components/inspectors/RoofPreview'
 import type { RoofType } from '@/building/model'
 import { RoofAssemblySelectWithEdit } from '@/construction/config/components/RoofAssemblySelectWithEdit'
 import { useDefaultRoofAssemblyId } from '@/construction/config/store'
@@ -46,6 +47,10 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
 
         {/* Tool Properties */}
         <Flex direction="column" gap="2">
+          <Flex justify="center">
+            <RoofPreview slope={state.slope} type={state.type} />
+          </Flex>
+
           {/* Assembly */}
           <Flex direction="column" gap="1">
             <Label.Root>

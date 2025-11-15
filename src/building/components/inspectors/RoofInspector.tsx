@@ -3,6 +3,7 @@ import * as Label from '@radix-ui/react-label'
 import { Box, DataList, Flex, IconButton, Separator, Text, TextField, Tooltip } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 
+import { RoofPreview } from '@/building/components/inspectors/RoofPreview'
 import type { RoofId } from '@/building/model/ids'
 import type { RoofOverhang } from '@/building/model/model'
 import { useModelActions, useRoofById } from '@/building/store'
@@ -109,6 +110,10 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
   return (
     <Box p="2">
       <Flex direction="column" gap="3">
+        <Flex justify="center">
+          <RoofPreview slope={roof.slope} type={roof.type} />
+        </Flex>
+
         {/* Basic Information */}
         <DataList.Root size="1">
           <DataList.Item>

@@ -721,3 +721,19 @@ function rotatePairs(arr: Pair[], start: number): Pair[] {
   }
   return out
 }
+
+export function polygonDiameterInDirection(polygon: Polygon2D, direction: vec2): Length {
+  const dir = vec2.normalize(vec2.create(), direction)
+
+  let minProj = Infinity
+  let maxProj = -Infinity
+
+  for (const p of polygon.points) {
+    const proj = vec2.dot(p, dir)
+
+    if (proj < minProj) minProj = proj
+    if (proj > maxProj) maxProj = proj
+  }
+
+  return maxProj - minProj
+}
