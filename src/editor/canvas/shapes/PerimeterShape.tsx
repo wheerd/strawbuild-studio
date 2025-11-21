@@ -17,7 +17,7 @@ export function PerimeterShape({ perimeter }: PerimeterShapeProps): React.JSX.El
   const innerPoints = perimeter.corners.flatMap(corner => [corner.insidePoint[0], corner.insidePoint[1]])
   const outerPoints = perimeter.corners.flatMap(corner => [corner.outsidePoint[0], corner.outsidePoint[1]])
 
-  if (mode === 'floors') {
+  if (mode !== 'walls') {
     return (
       <Group
         name={`perimeter-${perimeter.id}`}

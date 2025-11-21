@@ -6,13 +6,14 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
-import type { FloorAreaId, FloorOpeningId, PerimeterId, StoreyId } from '@/building/model/ids'
-import type { FloorArea, FloorOpening, Perimeter, Storey } from '@/building/model/model'
+import type { FloorAreaId, FloorOpeningId, PerimeterId, RoofId, StoreyId } from '@/building/model/ids'
+import type { FloorArea, FloorOpening, Perimeter, Roof, Storey } from '@/building/model/model'
 
 import { CURRENT_VERSION, applyMigrations } from './migrations'
 import { getPersistenceActions } from './persistenceStore'
 import { createFloorsSlice } from './slices/floorsSlice'
 import { createPerimetersSlice } from './slices/perimeterSlice'
+import { createRoofsSlice } from './slices/roofsSlice'
 import { createStoreysSlice } from './slices/storeysSlice'
 import type { Store, StoreActions, StoreState } from './types'
 
@@ -49,15 +50,18 @@ const useModelStore = create<Store>()(
         const storeysSlice = immer(createStoreysSlice)(set, get, store)
         const perimetersSlice = immer(createPerimetersSlice)(set, get, store)
         const floorsSlice = immer(createFloorsSlice)(set, get, store)
+        const roofsSlice = immer(createRoofsSlice)(set, get, store)
 
         return {
           ...storeysSlice,
           ...perimetersSlice,
           ...floorsSlice,
+          ...roofsSlice,
           actions: {
             ...storeysSlice.actions,
             ...perimetersSlice.actions,
             ...floorsSlice.actions,
+            ...roofsSlice.actions,
             reset: () => {
               set(store.getInitialState())
             }
@@ -81,6 +85,7 @@ const useModelStore = create<Store>()(
         perimeters: state.perimeters,
         floorAreas: state.floorAreas,
         floorOpenings: state.floorOpenings,
+        roofs: state.roofs,
         activeStoreyId: state.activeStoreyId
       }),
       storage: {
@@ -163,6 +168,21 @@ export const useFloorOpeningsOfActiveStorey = (): FloorOpening[] => {
   const floorOpenings = useModelStore(state => state.floorOpenings)
   const getFloorOpeningsByStorey = useModelStore(state => state.actions.getFloorOpeningsByStorey)
   return useMemo(() => getFloorOpeningsByStorey(activeStoreyId), [floorOpenings, activeStoreyId])
+}
+
+export const useRoofs = (): Record<RoofId, Roof> => useModelStore(state => state.roofs)
+
+export const useRoofById = (id: RoofId): Roof | null => {
+  const roofs = useModelStore(state => state.roofs)
+  const getRoofById = useModelStore(state => state.actions.getRoofById)
+  return useMemo(() => getRoofById(id), [roofs, id])
+}
+
+export const useRoofsOfActiveStorey = (): Roof[] => {
+  const activeStoreyId = useActiveStoreyId()
+  const roofs = useModelStore(state => state.roofs)
+  const getRoofsByStorey = useModelStore(state => state.actions.getRoofsByStorey)
+  return useMemo(() => getRoofsByStorey(activeStoreyId), [roofs, activeStoreyId])
 }
 
 export const useModelActions = (): StoreActions => useModelStore(state => state.actions)

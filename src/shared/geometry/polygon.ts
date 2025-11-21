@@ -517,6 +517,11 @@ function convexHullOfSimplePolygon(points: vec2[]): vec2[] {
   return combined
 }
 
+export function convexHullOfPolygon(polygon: Polygon2D): Polygon2D {
+  const hullPoints = convexHullOfSimplePolygon(polygon.points)
+  return { points: hullPoints }
+}
+
 export function convexHullOfPolygonWithHoles(polygon: PolygonWithHoles2D): Polygon2D {
   const hullPoints = convexHullOfSimplePolygon(polygon.outer.points)
   return { points: hullPoints }
@@ -715,4 +720,20 @@ function rotatePairs(arr: Pair[], start: number): Pair[] {
     out[t] = arr[(start + t) % n]
   }
   return out
+}
+
+export function polygonDiameterInDirection(polygon: Polygon2D, direction: vec2): Length {
+  const dir = vec2.normalize(vec2.create(), direction)
+
+  let minProj = Infinity
+  let maxProj = -Infinity
+
+  for (const p of polygon.points) {
+    const proj = vec2.dot(p, dir)
+
+    if (proj < minProj) minProj = proj
+    if (proj > maxProj) maxProj = proj
+  }
+
+  return maxProj - minProj
 }

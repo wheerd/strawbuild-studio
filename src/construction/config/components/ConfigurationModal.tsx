@@ -2,12 +2,14 @@ import { GearIcon } from '@radix-ui/react-icons'
 import { Flex, Tabs } from '@radix-ui/themes'
 import React from 'react'
 
+import { ROOFS_FEATURE_ENABLED } from '@/construction/config'
 import type { ConfigTab } from '@/construction/config/context/ConfigurationModalContext'
 import { MaterialsConfigContent } from '@/construction/materials/components/MaterialsConfigContent'
 import { BaseModal } from '@/shared/components/BaseModal'
 
 import { FloorAssemblyConfigContent } from './FloorAssemblyConfigContent'
 import { RingBeamAssemblyContent } from './RingBeamAssemblyContent'
+import { RoofAssemblyConfigContent } from './RoofAssemblyConfigContent'
 import { WallAssemblyContent } from './WallAssemblyContent'
 
 export interface ConfigurationModalProps {
@@ -48,6 +50,7 @@ export function ConfigurationModal({
           <Tabs.Trigger value="ringbeams">Ring Beam Assemblies</Tabs.Trigger>
           <Tabs.Trigger value="walls">Wall Assemblies</Tabs.Trigger>
           <Tabs.Trigger value="floors">Floor Assemblies</Tabs.Trigger>
+          {ROOFS_FEATURE_ENABLED && <Tabs.Trigger value="roofs">Roof Assemblies</Tabs.Trigger>}
         </Tabs.List>
 
         <Tabs.Content value="materials">
@@ -71,6 +74,12 @@ export function ConfigurationModal({
         <Tabs.Content value="floors">
           <Flex pt="4" style={{ width: '100%' }}>
             <FloorAssemblyConfigContent initialSelectionId={initialSelectionId} />
+          </Flex>
+        </Tabs.Content>
+
+        <Tabs.Content value="roofs">
+          <Flex pt="4" style={{ width: '100%' }}>
+            <RoofAssemblyConfigContent initialSelectionId={initialSelectionId} />
           </Flex>
         </Tabs.Content>
       </Tabs.Root>

@@ -1,5 +1,6 @@
 import { Box, Card, Flex, SegmentedControl } from '@radix-ui/themes'
 
+import { ROOFS_FEATURE_ENABLED } from '@/construction/config'
 import { useViewMode, useViewModeActions } from '@/editor/hooks/useViewMode'
 
 export function ViewModeToggle(): React.JSX.Element {
@@ -14,11 +15,12 @@ export function ViewModeToggle(): React.JSX.Element {
             size="1"
             value={mode}
             onValueChange={value => {
-              setMode(value as 'walls' | 'floors')
+              setMode(value as 'walls' | 'floors' | 'roofs')
             }}
           >
             <SegmentedControl.Item value="walls">Walls</SegmentedControl.Item>
             <SegmentedControl.Item value="floors">Floors</SegmentedControl.Item>
+            {ROOFS_FEATURE_ENABLED && <SegmentedControl.Item value="roofs">Roofs</SegmentedControl.Item>}
           </SegmentedControl.Root>
         </Flex>
       </Card>

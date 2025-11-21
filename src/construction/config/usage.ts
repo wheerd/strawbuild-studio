@@ -1,5 +1,5 @@
-import type { FloorAssemblyId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
-import type { Perimeter, Storey } from '@/building/model/model'
+import type { FloorAssemblyId, RingBeamAssemblyId, RoofAssemblyId, WallAssemblyId } from '@/building/model/ids'
+import type { Perimeter, Roof, Storey } from '@/building/model/model'
 
 export interface RingBeamAssemblyUsage {
   isUsed: boolean
@@ -94,5 +94,31 @@ export function getFloorAssemblyUsage(assemblyId: FloorAssemblyId, storeys: Stor
   return {
     isUsed: usedByStoreys.length > 0,
     usedByStoreys
+  }
+}
+
+export interface RoofAssemblyUsage {
+  isUsed: boolean
+  usedByRoofs: string[]
+}
+
+/**
+ * Checks if a roof assembly is currently in use by any roofs
+ */
+export function getRoofAssemblyUsage(assemblyId: RoofAssemblyId, roofs: Roof[], storeys: Storey[]): RoofAssemblyUsage {
+  const usedByRoofs = new Set<string>()
+
+  roofs.forEach(roof => {
+    if (roof.assemblyId === assemblyId) {
+      const storey = storeys.find(s => s.id === roof.storeyId)
+      const storeyName = storey?.name ?? 'Unknown Storey'
+      const type = roof.type === 'gable' ? 'Gable Roof' : 'Shed Roof'
+      usedByRoofs.add(`${storeyName} - ${type}`)
+    }
+  })
+
+  return {
+    isUsed: usedByRoofs.size > 0,
+    usedByRoofs: Array.from(usedByRoofs)
   }
 }

@@ -3,7 +3,7 @@ import { vec2 } from 'gl-matrix'
 import { vi } from 'vitest'
 
 import type { Perimeter } from '@/building/model/model'
-import { useFloorAreaById, useFloorOpeningById, usePerimeterById } from '@/building/store'
+import { useFloorAreaById, useFloorOpeningById, usePerimeterById, useRoofById } from '@/building/store'
 import '@/shared/geometry'
 
 import { SelectionOverlay } from './SelectionOverlay'
@@ -20,12 +20,14 @@ vi.mock('@/editor/hooks/useSelectionStore', () => ({
 vi.mock('@/building/store', () => ({
   usePerimeterById: vi.fn(),
   useFloorAreaById: vi.fn(),
-  useFloorOpeningById: vi.fn()
+  useFloorOpeningById: vi.fn(),
+  useRoofById: vi.fn()
 }))
 
 const mockUsePerimeterById = vi.mocked(usePerimeterById)
 const mockUseFloorAreaById = vi.mocked(useFloorAreaById)
 const mockUseFloorOpeningById = vi.mocked(useFloorOpeningById)
+const mockUseRoofById = vi.mocked(useRoofById)
 
 // Mock SelectionOutline component
 vi.mock('@/editor/canvas/utils/SelectionOutline', () => ({
@@ -42,6 +44,7 @@ describe('SelectionOverlay', () => {
     mockUsePerimeterById.mockReturnValue(null)
     mockUseFloorAreaById.mockReturnValue(null)
     mockUseFloorOpeningById.mockReturnValue(null)
+    mockUseRoofById.mockReturnValue(null)
   })
 
   it('renders nothing when no selection', () => {

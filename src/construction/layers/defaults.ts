@@ -4,7 +4,8 @@ import {
   clayPlasterFine,
   impactSoundInsulation,
   limePlasterBase,
-  limePlasterFine
+  limePlasterFine,
+  wood
 } from '@/construction/materials/material'
 import type { MaterialId } from '@/construction/materials/material'
 import type { Length } from '@/shared/geometry'
@@ -44,5 +45,30 @@ export const DEFAULT_CEILING_LAYER_SETS = {
   'Lime Plaster': [
     createMonolithicLayer(limePlasterBase.id, 20, 'Base Plaster (Lime)'),
     createMonolithicLayer(limePlasterFine.id, 10, 'Fine Plaster (Lime)')
+  ]
+} satisfies Record<string, LayerConfig[]>
+
+export const DEFAULT_ROOF_LAYER_SETS = {
+  Tiles: [
+    createMonolithicLayer('material_invalid' as MaterialId, 1, 'Wind Paper'),
+    {
+      type: 'striped',
+      direction: 'colinear',
+      name: 'Battens',
+      gapWidth: 500,
+      thickness: 60,
+      stripeMaterial: wood.id,
+      stripeWidth: 60
+    },
+    {
+      type: 'striped',
+      direction: 'perpendicular',
+      name: 'Counter Battens',
+      gapWidth: 300,
+      thickness: 30,
+      stripeMaterial: wood.id,
+      stripeWidth: 40
+    },
+    createMonolithicLayer('material_invalid' as MaterialId, 35, 'Tiles')
   ]
 } satisfies Record<string, LayerConfig[]>

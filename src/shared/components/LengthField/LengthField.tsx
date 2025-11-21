@@ -2,7 +2,6 @@ import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons'
 import { IconButton, Text, TextField } from '@radix-ui/themes'
 import { forwardRef } from 'react'
 
-import './LengthField.css'
 import { useLengthFieldState } from './hooks/useLengthFieldState'
 import type { LengthFieldProps } from './types'
 

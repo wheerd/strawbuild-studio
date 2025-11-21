@@ -82,6 +82,7 @@ const mockActions = {
   ]),
   getFloorAreasByStorey: vi.fn(() => []),
   getFloorOpeningsByStorey: vi.fn(() => []),
+  getRoofsByStorey: vi.fn(() => []),
   reset: vi.fn(),
   updateStoreyName: vi.fn(),
   updateStoreyFloorHeight: vi.fn(),

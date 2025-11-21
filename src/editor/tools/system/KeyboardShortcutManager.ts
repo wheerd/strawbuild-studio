@@ -5,7 +5,8 @@ import {
   isOpeningId,
   isPerimeterCornerId,
   isPerimeterId,
-  isPerimeterWallId
+  isPerimeterWallId,
+  isRoofId
 } from '@/building/model/ids'
 import { getCanRedo, getCanUndo, getModelActions, getRedoFunction, getUndoFunction } from '@/building/store'
 import { getCurrentSelection, getSelectionPath, popSelection } from '@/editor/hooks/useSelectionStore'
@@ -235,6 +236,9 @@ export class KeyboardShortcutManager {
         return true
       } else if (isFloorOpeningId(selectedId)) {
         modelStore.removeFloorOpening(selectedId)
+        return true
+      } else if (isRoofId(selectedId)) {
+        modelStore.removeRoof(selectedId)
         return true
       } else {
         console.warn(`Unknown sub-entity type for deletion: ${selectedId}`)

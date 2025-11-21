@@ -7,18 +7,23 @@ import {
   OpeningInspector,
   PerimeterCornerInspector,
   PerimeterInspector,
-  PerimeterWallInspector
+  PerimeterWallInspector,
+  RoofInspector,
+  RoofOverhangInspector
 } from '@/building/components/inspectors'
 import { StoreyInspector } from '@/building/components/inspectors/StoreyInspector'
 import {
   type PerimeterId,
   type PerimeterWallId,
+  type RoofId,
   isFloorAreaId,
   isFloorOpeningId,
   isOpeningId,
   isPerimeterCornerId,
   isPerimeterId,
-  isPerimeterWallId
+  isPerimeterWallId,
+  isRoofId,
+  isRoofOverhangId
 } from '@/building/model/ids'
 import { useActiveStoreyId } from '@/building/store'
 import { useCurrentSelection, useSelectionPath } from '@/editor/hooks/useSelectionStore'
@@ -62,6 +67,12 @@ export function SelectToolInspector(): React.JSX.Element {
         <FloorOpeningInspector key={selectedId} floorOpeningId={selectedId} />
       )}
 
+      {selectedId && isRoofId(selectedId) && <RoofInspector key={selectedId} roofId={selectedId} />}
+
+      {selectedId && isRoofOverhangId(selectedId) && (
+        <RoofOverhangInspector key={selectedId} roofId={selectionPath[0] as RoofId} overhangId={selectedId} />
+      )}
+
       {/* Unknown entity type */}
       {selectedId &&
         !isPerimeterId(selectedId) &&
@@ -69,7 +80,9 @@ export function SelectToolInspector(): React.JSX.Element {
         !isPerimeterCornerId(selectedId) &&
         !isOpeningId(selectedId) &&
         !isFloorAreaId(selectedId) &&
-        !isFloorOpeningId(selectedId) && (
+        !isFloorOpeningId(selectedId) &&
+        !isRoofId(selectedId) &&
+        !isRoofOverhangId(selectedId) && (
           <Callout.Root color="amber">
             <Callout.Icon>
               <ExclamationTriangleIcon />

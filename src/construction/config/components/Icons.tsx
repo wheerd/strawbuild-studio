@@ -1,8 +1,9 @@
-import { BoxIcon, SquareIcon, ViewVerticalIcon } from '@radix-ui/react-icons'
+import { BoxIcon, ComponentInstanceIcon, SquareIcon, ViewVerticalIcon } from '@radix-ui/react-icons'
 import React, { type ComponentType } from 'react'
 
 import type { WallAssemblyConfig } from '@/construction/config/types'
 import type { FloorAssemblyType } from '@/construction/floors/types'
+import type { RoofAssemblyType } from '@/construction/roofs/types'
 
 interface IconProps {
   className?: string
@@ -167,5 +168,15 @@ export function getFloorAssemblyTypeIcon(type: FloorAssemblyType): ComponentType
       return BoxIcon
     case 'joist':
       return JoistIcon
+  }
+}
+
+export function getRoofAssemblyTypeIcon(type: RoofAssemblyType): ComponentType<IconProps> {
+  // TODO: Better icons
+  switch (type) {
+    case 'monolithic':
+      return SquareIcon
+    case 'purlin':
+      return ComponentInstanceIcon
   }
 }

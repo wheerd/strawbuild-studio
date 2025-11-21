@@ -3,13 +3,19 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
-import type { FloorAssemblyId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
+import type { FloorAssemblyId, RingBeamAssemblyId, RoofAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import { createFloorAssembliesSlice } from '@/construction/config/store/slices/floors'
 import { createRingBeamAssembliesSlice } from '@/construction/config/store/slices/ringBeams'
+import { createRoofAssembliesSlice } from '@/construction/config/store/slices/roofs'
 import { createStrawSlice } from '@/construction/config/store/slices/straw'
 import { createWallAssembliesSlice } from '@/construction/config/store/slices/walls'
 import type { ConfigActions, ConfigState, ConfigStore } from '@/construction/config/store/types'
-import type { FloorAssemblyConfig, RingBeamAssemblyConfig, WallAssemblyConfig } from '@/construction/config/types'
+import type {
+  FloorAssemblyConfig,
+  RingBeamAssemblyConfig,
+  RoofAssemblyConfig,
+  WallAssemblyConfig
+} from '@/construction/config/types'
 import type { MaterialId } from '@/construction/materials/material'
 import '@/shared/geometry'
 
@@ -24,17 +30,20 @@ const useConfigStore = create<ConfigStore>()(
       const ringBeamSlice = immer(createRingBeamAssembliesSlice)(set, get, store)
       const wallSlice = immer(createWallAssembliesSlice)(set, get, store)
       const floorSlice = immer(createFloorAssembliesSlice)(set, get, store)
+      const roofSlice = immer(createRoofAssembliesSlice)(set, get, store)
 
       return {
         ...strawSlice,
         ...ringBeamSlice,
         ...wallSlice,
         ...floorSlice,
+        ...roofSlice,
         actions: {
           ...strawSlice.actions,
           ...ringBeamSlice.actions,
           ...wallSlice.actions,
           ...floorSlice.actions,
+          ...roofSlice.actions,
           reset: () => {
             set(store.getInitialState())
           }
@@ -49,10 +58,12 @@ const useConfigStore = create<ConfigStore>()(
         ringBeamAssemblyConfigs: state.ringBeamAssemblyConfigs,
         wallAssemblyConfigs: state.wallAssemblyConfigs,
         floorAssemblyConfigs: state.floorAssemblyConfigs,
+        roofAssemblyConfigs: state.roofAssemblyConfigs,
         defaultBaseRingBeamAssemblyId: state.defaultBaseRingBeamAssemblyId,
         defaultTopRingBeamAssemblyId: state.defaultTopRingBeamAssemblyId,
         defaultWallAssemblyId: state.defaultWallAssemblyId,
-        defaultFloorAssemblyId: state.defaultFloorAssemblyId
+        defaultFloorAssemblyId: state.defaultFloorAssemblyId,
+        defaultRoofAssemblyId: state.defaultRoofAssemblyId
       }),
       migrate: (persistedState: unknown, version: number) => {
         if (version === CURRENT_VERSION) {
@@ -111,6 +122,18 @@ export const useFloorAssemblyById = (id: FloorAssemblyId): FloorAssemblyConfig |
 export const useDefaultFloorAssemblyId = (): FloorAssemblyId =>
   useConfigStore(state => state.actions.getDefaultFloorAssemblyId())
 
+// Roof assembly selector hooks
+export const useRoofAssemblies = (): RoofAssemblyConfig[] => {
+  const roofAssemblyConfigs = useConfigStore(state => state.roofAssemblyConfigs)
+  return useMemo(() => Object.values(roofAssemblyConfigs), [roofAssemblyConfigs])
+}
+
+export const useRoofAssemblyById = (id: RoofAssemblyId): RoofAssemblyConfig | null =>
+  useConfigStore(state => state.actions.getRoofAssemblyById(id))
+
+export const useDefaultRoofAssemblyId = (): RoofAssemblyId =>
+  useConfigStore(state => state.actions.getDefaultRoofAssemblyId())
+
 export const useConfigActions = (): ConfigActions => useConfigStore(state => state.actions)
 
 // For non-reactive contexts
@@ -128,10 +151,12 @@ export const getConfigState = () => {
     ringBeamAssemblyConfigs: state.ringBeamAssemblyConfigs,
     wallAssemblyConfigs: state.wallAssemblyConfigs,
     floorAssemblyConfigs: state.floorAssemblyConfigs,
+    roofAssemblyConfigs: state.roofAssemblyConfigs,
     defaultBaseRingBeamAssemblyId: state.defaultBaseRingBeamAssemblyId,
     defaultTopRingBeamAssemblyId: state.defaultTopRingBeamAssemblyId,
     defaultWallAssemblyId: state.defaultWallAssemblyId,
-    defaultFloorAssemblyId: state.defaultFloorAssemblyId
+    defaultFloorAssemblyId: state.defaultFloorAssemblyId,
+    defaultRoofAssemblyId: state.defaultRoofAssemblyId
   }
 }
 
@@ -141,10 +166,12 @@ export const setConfigState = (data: {
   ringBeamAssemblyConfigs: Record<RingBeamAssemblyId, RingBeamAssemblyConfig>
   wallAssemblyConfigs: Record<WallAssemblyId, WallAssemblyConfig>
   floorAssemblyConfigs?: Record<FloorAssemblyId, FloorAssemblyConfig>
+  roofAssemblyConfigs?: Record<RoofAssemblyId, RoofAssemblyConfig>
   defaultBaseRingBeamAssemblyId?: RingBeamAssemblyId
   defaultTopRingBeamAssemblyId?: RingBeamAssemblyId
   defaultWallAssemblyId: WallAssemblyId
   defaultFloorAssemblyId?: FloorAssemblyId
+  defaultRoofAssemblyId?: RoofAssemblyId
 }) => {
   const state = useConfigStore.getState()
 
@@ -153,10 +180,12 @@ export const setConfigState = (data: {
     ringBeamAssemblyConfigs: data.ringBeamAssemblyConfigs,
     wallAssemblyConfigs: data.wallAssemblyConfigs,
     floorAssemblyConfigs: data.floorAssemblyConfigs ?? state.floorAssemblyConfigs,
+    roofAssemblyConfigs: data.roofAssemblyConfigs ?? state.roofAssemblyConfigs,
     defaultBaseRingBeamAssemblyId: data.defaultBaseRingBeamAssemblyId,
     defaultTopRingBeamAssemblyId: data.defaultTopRingBeamAssemblyId,
     defaultWallAssemblyId: data.defaultWallAssemblyId,
-    defaultFloorAssemblyId: data.defaultFloorAssemblyId ?? state.defaultFloorAssemblyId
+    defaultFloorAssemblyId: data.defaultFloorAssemblyId ?? state.defaultFloorAssemblyId,
+    defaultRoofAssemblyId: data.defaultRoofAssemblyId ?? state.defaultRoofAssemblyId
   })
 }
 
@@ -165,5 +194,6 @@ export const _clearAllAssemblies = () =>
   useConfigStore.setState({
     ringBeamAssemblyConfigs: {},
     wallAssemblyConfigs: {},
-    floorAssemblyConfigs: {}
+    floorAssemblyConfigs: {},
+    roofAssemblyConfigs: {}
   })

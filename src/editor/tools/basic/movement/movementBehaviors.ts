@@ -7,6 +7,7 @@ import { OpeningMovementBehavior } from './behaviors/OpeningMovementBehavior'
 import { PerimeterCornerMovementBehavior } from './behaviors/PerimeterCornerMovementBehavior'
 import { PerimeterMovementBehavior } from './behaviors/PerimeterMovementBehavior'
 import { PerimeterWallMovementBehavior } from './behaviors/PerimeterWallMovementBehavior'
+import { RoofMovementBehavior } from './behaviors/RoofMovementBehavior'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const MOVEMENT_BEHAVIORS: Record<EntityType, MovementBehavior<any, any> | null> = {
@@ -15,7 +16,8 @@ const MOVEMENT_BEHAVIORS: Record<EntityType, MovementBehavior<any, any> | null> 
   'perimeter-corner': new PerimeterCornerMovementBehavior(),
   opening: new OpeningMovementBehavior(),
   'floor-area': new FloorAreaMovementBehavior(),
-  'floor-opening': new FloorOpeningMovementBehavior()
+  'floor-opening': new FloorOpeningMovementBehavior(),
+  roof: new RoofMovementBehavior()
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

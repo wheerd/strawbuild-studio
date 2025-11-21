@@ -48,7 +48,7 @@ export function FloorLayer(): React.JSX.Element | null {
     return subtractPolygons([...perimeterPolygons, ...areaPolygons], openingPolygons)
   }, [mode, perimeters, floorAreas, floorOpenings])
 
-  if (mode === 'walls') {
+  if (mode !== 'floors') {
     if (combinedPolygons.length === 0) {
       return null
     }

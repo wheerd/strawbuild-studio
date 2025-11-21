@@ -22,7 +22,13 @@ describe('StoreyManagementService', () => {
       getStoreyAbove: vi.fn(),
       addPerimeter: vi.fn(),
       removePerimeter: vi.fn(),
-      getPerimetersByStorey: vi.fn()
+      getPerimetersByStorey: vi.fn(),
+      getFloorAreasByStorey: vi.fn(),
+      removeFloorArea: vi.fn(),
+      getFloorOpeningsByStorey: vi.fn(),
+      removeFloorOpening: vi.fn(),
+      getRoofsByStorey: vi.fn(),
+      removeRoof: vi.fn()
     }
     service = new StoreyManagementService(mockActions)
   })
@@ -280,6 +286,9 @@ describe('StoreyManagementService', () => {
       const perimeters = [{ id: 'perimeter-1' as PerimeterId }, { id: 'perimeter-2' as PerimeterId }]
 
       mockActions.getPerimetersByStorey.mockReturnValue(perimeters)
+      mockActions.getFloorAreasByStorey.mockReturnValue([])
+      mockActions.getFloorOpeningsByStorey.mockReturnValue([])
+      mockActions.getRoofsByStorey.mockReturnValue([])
 
       service.deleteStorey('storey-1' as StoreyId)
 
