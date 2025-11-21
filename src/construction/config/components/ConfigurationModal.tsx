@@ -2,6 +2,7 @@ import { GearIcon } from '@radix-ui/react-icons'
 import { Flex, Tabs } from '@radix-ui/themes'
 import React from 'react'
 
+import { ROOFS_FEATURE_ENABLED } from '@/construction/config'
 import type { ConfigTab } from '@/construction/config/context/ConfigurationModalContext'
 import { MaterialsConfigContent } from '@/construction/materials/components/MaterialsConfigContent'
 import { BaseModal } from '@/shared/components/BaseModal'
@@ -49,7 +50,7 @@ export function ConfigurationModal({
           <Tabs.Trigger value="ringbeams">Ring Beam Assemblies</Tabs.Trigger>
           <Tabs.Trigger value="walls">Wall Assemblies</Tabs.Trigger>
           <Tabs.Trigger value="floors">Floor Assemblies</Tabs.Trigger>
-          <Tabs.Trigger value="roofs">Roof Assemblies</Tabs.Trigger>
+          {ROOFS_FEATURE_ENABLED && <Tabs.Trigger value="roofs">Roof Assemblies</Tabs.Trigger>}
         </Tabs.List>
 
         <Tabs.Content value="materials">
