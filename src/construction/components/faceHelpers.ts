@@ -74,10 +74,7 @@ export function* geometryFaces(
             zIndex
           }
         })
-        .filter(f => {
-          const bounds = Bounds2D.fromPoints(f.outer.points)
-          return bounds.width !== 0 && bounds.height !== 0
-        })
+        .filter(f => !Bounds2D.fromPoints(f.outer.points).isEmpty)
       for (const { outer, holes, zIndex } of faces2D) {
         yield {
           polygon: {
@@ -97,23 +94,25 @@ export function* geometryFaces(
     )
     allChildFaces.sort((a, b) => a.zIndex - b.zIndex)
     const group = []
+    let isFirst = true
     let lastZIndex = allChildFaces[0]?.zIndex ?? 0
     for (const face of allChildFaces) {
       if (lastZIndex !== face.zIndex && group.length > 0) {
         yield {
           zIndex: lastZIndex,
-          className: getConstructionElementClasses(groupOrElement),
+          className: getConstructionElementClasses(groupOrElement, undefined, isFirst ? 'minZ-in-group' : undefined),
           svgTransform: elementTransform,
           children: group.splice(0, group.length)
         }
         lastZIndex = face.zIndex
+        isFirst = false
       }
       group.push(face)
     }
     if (group.length > 0) {
       yield {
         zIndex: lastZIndex,
-        className: getConstructionElementClasses(groupOrElement),
+        className: getConstructionElementClasses(groupOrElement, undefined, 'maxZ-in-group'),
         svgTransform: elementTransform,
         children: group
       }
