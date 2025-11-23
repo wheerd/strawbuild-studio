@@ -161,6 +161,7 @@ export const createSvgTransform = (
   rotationProjection?: RotationProjection
 ): string | undefined => {
   if (!projection || !rotationProjection) return undefined
+  if (transform === IDENTITY) return undefined
   const position = projection(transform.position)
   const rotation = rotationProjection(transform.rotation)
   return `translate(${position[0]} ${position[1]}) rotate(${rotation})`

@@ -20,12 +20,17 @@ export function* geometryFaces(
   groupOrElement: GroupOrElement,
   projection: Projection,
   rotationProjection: RotationProjection,
-  tags: Tag[] = []
+  tags: Tag[] = [],
+  parentTransform?: string,
+  zOffset: number = 0
 ): Generator<Face> {
+  const elementTransform = createSvgTransform(groupOrElement.transform, projection, rotationProjection)
+  const combinedTransform =
+    parentTransform || elementTransform ? ((parentTransform ?? '') + ' ' + (elementTransform ?? '')).trim() : undefined
   if ('shape' in groupOrElement) {
     const groupTags = getTagClasses(tags)
     const combinedClassName = getConstructionElementClasses(groupOrElement, undefined, groupTags)
-    const transformZ = groupOrElement.transform ? projection(groupOrElement.transform?.position)[2] : 0
+    const transformZ = (groupOrElement.transform ? projection(groupOrElement.transform?.position)[2] : 0) + zOffset
 
     if (groupOrElement.shape.type === 'cuboid') {
       const bounds = bounds3Dto2D(groupOrElement.shape.bounds, projection)
@@ -49,7 +54,7 @@ export function* geometryFaces(
           },
           zIndex,
           className: combinedClassName,
-          svgTransform: createSvgTransform(groupOrElement.transform, projection, rotationProjection)
+          svgTransform: combinedTransform
         }
       }
     } else if (groupOrElement.shape.type === 'polygon') {
@@ -78,13 +83,21 @@ export function* geometryFaces(
           },
           zIndex,
           className: combinedClassName,
-          svgTransform: createSvgTransform(groupOrElement.transform, projection, rotationProjection)
+          svgTransform: combinedTransform
         }
       }
     }
   } else if ('children' in groupOrElement) {
+    const transformZ = (groupOrElement.transform ? projection(groupOrElement.transform?.position)[2] : 0) + zOffset
     for (const child of groupOrElement.children) {
-      yield* geometryFaces(child, projection, rotationProjection, tags.concat(groupOrElement.tags ?? []))
+      yield* geometryFaces(
+        child,
+        projection,
+        rotationProjection,
+        tags.concat(groupOrElement.tags ?? []),
+        combinedTransform,
+        transformZ
+      )
     }
   }
 }
