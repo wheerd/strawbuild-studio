@@ -97,12 +97,7 @@ export function createConstructionGroup(
   transform: Transform,
   tags?: Tag[]
 ): ConstructionGroup {
-  // Calculate bounds from all transformed children
-  const childBounds = children.map(child => {
-    // Apply the group transform to each child's bounds
-    return transformBounds(child.bounds, child.transform)
-  })
-
+  const childBounds = children.map(child => transformBounds(child.bounds, transform))
   const groupBounds = Bounds3D.merge(...childBounds)
 
   return {

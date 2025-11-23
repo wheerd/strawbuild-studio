@@ -5,15 +5,14 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import { CutAreaShape } from '@/construction/components/CutAreaShape'
 import { Measurements } from '@/construction/components/Measurements'
-import { type CutFunction, bounds3Dto2D, createZOrder, project, projectRotation } from '@/construction/geometry'
+import { type Face, geometryFaces } from '@/construction/components/faceHelpers'
+import { bounds3Dto2D, project, projectRotation } from '@/construction/geometry'
 import type { ConstructionModel, HighlightedCuboid, HighlightedCut, HighlightedPolygon } from '@/construction/model'
 import type { TagCategoryId, TagId } from '@/construction/tags'
 import { MidCutXIcon, MidCutYIcon } from '@/shared/components/Icons'
 import { SVGViewport, type SVGViewportRef } from '@/shared/components/SVGViewport'
-import { type Plane3D, complementaryAxis } from '@/shared/geometry'
+import { type Plane3D, type Polygon2D, type PolygonWithHoles2D, complementaryAxis } from '@/shared/geometry'
 
-import { ConstructionElementShape } from './ConstructionElementShape'
-import { ConstructionGroupElement } from './ConstructionGroupElement'
 import { CuboidAreaShape } from './CuboidAreaShape'
 import { PolygonAreaShape } from './PolygonAreaShape'
 import { SVGMaterialStyles } from './SVGMaterialStyles'
@@ -51,6 +50,14 @@ interface ConstructionPlanProps {
   visibilityToggles?: VisibilityToggleConfig[]
 }
 
+function polygonToSvgPath(polygon: Polygon2D) {
+  return `M${polygon.points.map(([px, py]) => `${px},${py}`).join(' L')}`
+}
+
+function polygonWithHolesToSvgPath(polygon: PolygonWithHoles2D) {
+  return [polygon.outer, ...polygon.holes].map(polygonToSvgPath).join(' ')
+}
+
 export function ConstructionPlan({
   model,
   views,
@@ -75,29 +82,29 @@ export function ConstructionPlan({
   const axis = complementaryAxis(currentView.plane)
   const projection = project(currentView.plane)
   const rotationProjection = projectRotation(currentView.plane)
-  const zOrder = createZOrder(axis, currentView.zOrder)
-  const sortedElements = [...model.elements].sort(zOrder)
   const contentBounds = bounds3Dto2D(model.bounds, projection)
 
   // Calculate cut position when enabled
   const zCutOffset = useMemo(() => {
     const axisIndex = axis === 'x' ? 0 : axis === 'y' ? 1 : 2
     // Cut at middle of model depth
-    return (model.bounds.min[axisIndex] + model.bounds.max[axisIndex]) / 2
+    return model.bounds.center[axisIndex]
   }, [axis, model.bounds])
 
-  // Create cut function
-  // Always applies the above-cut class to elements which are then hidden based on midCutEnabled
-  const aboveCut: CutFunction = useMemo(() => {
-    const axisIndex = axis === 'x' ? 0 : axis === 'y' ? 1 : 2
-    if (currentView.zOrder === 'ascending') {
-      // For ascending z-order: hide elements whose front face is beyond cut
-      return element => element.bounds.max[axisIndex] + (element.transform?.position[axisIndex] ?? 0) < zCutOffset
-    } else {
-      // For descending z-order: hide elements whose back face is beyond cut
-      return element => element.bounds.min[axisIndex] + (element.transform?.position[axisIndex] ?? 0) > zCutOffset
-    }
-  }, [zCutOffset, axis, currentView.zOrder])
+  const faces = useMemo(() => {
+    const allFaces = model.elements.flatMap(element =>
+      Array.from(geometryFaces(element, projection, rotationProjection))
+    )
+    const zOrder =
+      currentView.zOrder === 'descending'
+        ? (a: Face, b: Face) => a.zIndex - b.zIndex
+        : (a: Face, b: Face) => b.zIndex - a.zIndex
+    const aboveCut =
+      currentView.zOrder === 'descending' ? (a: Face) => a.zIndex > zCutOffset : (a: Face) => a.zIndex < zCutOffset
+    return allFaces
+      .sort(zOrder)
+      .map(face => ({ ...face, className: face.className + (aboveCut(face) ? ' above-cut' : '') }))
+  }, [model.elements, projection, currentView.zOrder, zCutOffset])
 
   const polygonAreas = model.areas.filter(
     a => a.type === 'polygon' && a.plane === currentView.plane
@@ -182,27 +189,12 @@ export function ConstructionPlan({
             />
           ))}
 
-        {/* Construction elements */}
-        {sortedElements.map(element =>
-          'children' in element ? (
-            <ConstructionGroupElement
-              key={element.id}
-              group={element}
-              projection={projection}
-              zOrder={zOrder}
-              rotationProjection={rotationProjection}
-              aboveCut={aboveCut}
-            />
-          ) : (
-            <ConstructionElementShape
-              key={element.id}
-              projection={projection}
-              rotationProjection={rotationProjection}
-              element={element}
-              aboveCut={aboveCut}
-            />
-          )
-        )}
+        {/* Construction element faces */}
+        {faces.map((face, index) => (
+          <g key={`face${index}`} className={face.className} transform={face.svgTransform}>
+            <path className="apply-material" d={polygonWithHolesToSvgPath(face.polygon)} />
+          </g>
+        ))}
 
         {/* Warnings */}
         {model.warnings?.map((warning, index) => {
