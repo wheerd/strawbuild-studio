@@ -24,7 +24,7 @@ describe('createSvgTransform', () => {
 
     const result = createSvgTransform(IDENTITY, mockProjection, mockRotationProjection)
 
-    expect(result).toBe('translate(0 0) rotate(0)')
+    expect(result).toBe(undefined)
   })
 
   it('should handle negative coordinates and rotation', () => {
