@@ -82,7 +82,8 @@
   display: none;
 }
 
-g.tag__construction_module {
+g.tag__construction_module.minZ-in-group,
+g.tag__construction_module.maxZ-in-group {
   outline: solid 30px var(--accent-a8);
   outline-offset: -30px;
 }
