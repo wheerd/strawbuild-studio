@@ -1,8 +1,11 @@
 import { vec3 } from 'gl-matrix'
 
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
+import { getConfigActions } from '@/construction/config'
 import type { ConstructionElementId } from '@/construction/elements'
+import type { StrawbaleMaterial } from '@/construction/materials/material'
 import { constructPost } from '@/construction/materials/posts'
+import { getMaterialById } from '@/construction/materials/store'
 import { constructStraw } from '@/construction/materials/straw'
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
@@ -67,11 +70,15 @@ export function* infillWallArea(
     width -= postWidth
   }
 
+  const strawMaterialId = config.strawMaterial ?? getConfigActions().getDefaultStrawMaterial()
+  const strawMaterial = getMaterialById(strawMaterialId)
+  const strawbaleMaterial = strawMaterial?.type === 'strawbale' ? strawMaterial : undefined
+
   const inbetweenPosition = vec3.fromValues(left, position[1], position[2])
   const inbetweenSize = vec3.fromValues(width, size[1], size[2])
 
   yield* yieldAndCollectElementIds(
-    constructInfillRecursive(inbetweenPosition, inbetweenSize, config, !startAtEnd),
+    constructInfillRecursive(inbetweenPosition, inbetweenSize, config, !startAtEnd, strawbaleMaterial),
     allElementIds
   )
 
@@ -89,9 +96,10 @@ function* constructInfillRecursive(
   position: vec3,
   size: vec3,
   config: InfillWallSegmentConfig,
-  atStart: boolean
+  atStart: boolean,
+  strawbaleMaterial?: StrawbaleMaterial
 ): Generator<ConstructionResult> {
-  const baleWidth = getBaleWidth(size[0], config)
+  const baleWidth = getBaleWidth(size, config, strawbaleMaterial)
 
   const strawPosition = vec3.fromValues(
     atStart ? position[0] : position[0] + size[0] - baleWidth,
@@ -133,20 +141,29 @@ function* constructInfillRecursive(
   const remainingPosition = [atStart ? postOffset + config.posts.width : position[0], position[1], position[2]]
   const remainingSize = [size[0] - strawSize[0] - config.posts.width, size[1], size[2]]
 
-  yield* constructInfillRecursive(remainingPosition, remainingSize, config, !atStart)
+  yield* constructInfillRecursive(remainingPosition, remainingSize, config, !atStart, strawbaleMaterial)
 }
 
-function getBaleWidth(availableWidth: Length, config: InfillWallSegmentConfig): Length {
+function getBaleWidth(
+  availableSpace: vec3,
+  config: InfillWallSegmentConfig,
+  strawbaleMaterial?: StrawbaleMaterial
+): Length {
+  const [availableWidth, , availableHeight] = availableSpace
   const {
     desiredPostSpacing,
     maxPostSpacing,
     minStrawSpace,
     posts: { width: postWidth }
   } = config
-  const fullBaleAndPost = desiredPostSpacing + postWidth
+  const baleHeight = strawbaleMaterial?.baleHeight ?? 0
+  const topCutoffLimit = strawbaleMaterial?.topCutoffLimit ?? 0
+  const desiredSpacing = baleHeight - topCutoffLimit > availableHeight ? baleHeight : desiredPostSpacing
+  const fullBaleAndPost = desiredSpacing + postWidth
+  const maxSpacing = baleHeight - topCutoffLimit > availableHeight ? baleHeight : maxPostSpacing
 
   // Less space than full bale
-  if (availableWidth < maxPostSpacing) {
+  if (availableWidth < maxSpacing) {
     return availableWidth
   }
 
@@ -162,7 +179,7 @@ function getBaleWidth(availableWidth: Length, config: InfillWallSegmentConfig): 
     return availableWidth - postWidth
   }
 
-  return desiredPostSpacing
+  return desiredSpacing
 }
 
 export class InfillWallAssembly implements WallAssembly<InfillWallConfig> {
