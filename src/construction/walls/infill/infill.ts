@@ -157,10 +157,17 @@ function getBaleWidth(
     posts: { width: postWidth }
   } = config
   const baleHeight = strawbaleMaterial?.baleHeight ?? 0
+  const baleMinLength = strawbaleMaterial?.baleMinLength ?? 0
+  const baleMaxLength = strawbaleMaterial?.baleMaxLength ?? 0
   const topCutoffLimit = strawbaleMaterial?.topCutoffLimit ?? 0
-  const desiredSpacing = baleHeight - topCutoffLimit > availableHeight ? baleHeight : desiredPostSpacing
+  const tolerance = strawbaleMaterial?.tolerance ?? 0
+  const goVertical =
+    baleHeight - topCutoffLimit > availableHeight ||
+    (availableHeight > baleMinLength - tolerance && availableHeight < baleMaxLength + tolerance)
+
+  const desiredSpacing = goVertical ? baleHeight : desiredPostSpacing
   const fullBaleAndPost = desiredSpacing + postWidth
-  const maxSpacing = baleHeight - topCutoffLimit > availableHeight ? baleHeight : maxPostSpacing
+  const maxSpacing = goVertical ? baleHeight : maxPostSpacing
 
   // Less space than full bale
   if (availableWidth < maxSpacing) {

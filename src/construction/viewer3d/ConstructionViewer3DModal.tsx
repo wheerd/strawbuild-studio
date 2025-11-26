@@ -132,12 +132,10 @@ function ConstructionViewer3DContent({
       return
     }
 
-    console.log('aquire')
     acquireGeometryCache()
     acquireMaterialCache()
 
     return () => {
-      console.log('release')
       releaseMaterialCache()
       releaseGeometryCache()
     }

@@ -66,7 +66,6 @@ export function* geometryFaces(
       const faces2D = allFaces
         .map(f => {
           const zPosition = projection(f.outer[0])[2] + transformZ
-          console.log('zPosition', zPosition, 'centerZ', centerZ)
           const zIndex = zPosition < centerZ ? zPosition + EPSILON : zPosition - EPSILON
           return {
             outer: { points: f.outer.map(o => projection(o)) },
