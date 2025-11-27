@@ -117,11 +117,16 @@ export function getCuboidCorner(size: vec3, transform: Transform): vec3 {
 }
 
 /**
- * MIGRATION HELPER: Old createCuboidShape API
- * Converts offset-based API to centered shape + transform
+ * DEPRECATED: Use createCuboidElement() from elements.ts instead.
+ * This helper is kept for test compatibility only.
+ *
+ * Creates a cuboid shape at origin. For positioned cuboids, use:
+ * - createCuboidElement(material, corner, size, tags, partInfo)
+ * - or createCuboidAtCorner(corner, size) then createConstructionElement()
  */
-export function createCuboidShape(offset: vec3, size: vec3): { shape: ManifoldShape; transform: Transform } {
-  return createCuboidAtCorner(offset, size)
+export function createCuboidShape(_offset: vec3, size: vec3): ManifoldShape {
+  // Just create a centered cuboid - caller should use createCuboidElement instead
+  return createCuboid(size)
 }
 
 /**

@@ -35,7 +35,7 @@ export function* geometryFaces(
     const combinedClassName = getConstructionElementClasses(groupOrElement, undefined)
     const transformZ = (groupOrElement.transform ? projection(groupOrElement.transform?.position)[2] : 0) + zOffset
 
-    if (groupOrElement.shape.type === 'cuboid') {
+    if (groupOrElement.shape.params.type === 'cuboid') {
       const bounds = bounds3Dto2D(groupOrElement.shape.bounds, projection)
       const [x, y] = bounds.min
       const [length, width] = bounds.size
@@ -60,7 +60,7 @@ export function* geometryFaces(
           svgTransform: elementTransform
         }
       }
-    } else if (groupOrElement.shape.type === 'polygon') {
+    } else if (groupOrElement.shape.params.type === 'extrusion') {
       const allFaces = Array.from(extrudedPolygonFaces(groupOrElement.shape))
       const centerZ = projection(groupOrElement.bounds.center)[2]
       const faces2D = allFaces

@@ -1,9 +1,8 @@
 import { vec3 } from 'gl-matrix'
 
-import { type ConstructionElement, createConstructionElement } from '@/construction/elements'
+import { type ConstructionElement, createCuboidElement } from '@/construction/elements'
 import { dimensionalPartInfo } from '@/construction/parts'
 import { type ConstructionResult, yieldElement, yieldError, yieldWarning } from '@/construction/results'
-import { createCuboidShape } from '@/construction/shapes'
 import { TAG_POST } from '@/construction/tags'
 import { Bounds3D, type Length } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
@@ -53,10 +52,10 @@ const formatAvailableCrossSections = (material: DimensionalMaterial): string =>
 
 function* constructFullPost(position: vec3, size: vec3, config: FullPostConfig): Generator<ConstructionResult> {
   const postSize = vec3.fromValues(config.width, size[1], size[2])
-  const postElement: ConstructionElement = createConstructionElement(
+  const postElement: ConstructionElement = createCuboidElement(
     config.material,
-    createCuboidShape(position, postSize),
-    undefined,
+    position,
+    postSize,
     [TAG_POST],
     dimensionalPartInfo('post', postSize)
   )
@@ -86,9 +85,10 @@ function* constructDoublePost(position: vec3, size: vec3, config: DoublePostConf
   // Check if wall is wide enough for two posts
   const minimumWallThickness = 2 * config.thickness
   if (size[1] < minimumWallThickness) {
-    const errorElement: ConstructionElement = createConstructionElement(
+    const errorElement: ConstructionElement = createCuboidElement(
       config.material,
-      createCuboidShape(position, vec3.fromValues(config.width, size[1], size[2]))
+      position,
+      vec3.fromValues(config.width, size[1], size[2])
     )
 
     yield yieldElement(errorElement)
@@ -103,19 +103,13 @@ function* constructDoublePost(position: vec3, size: vec3, config: DoublePostConf
 
   const postSize = vec3.fromValues(config.width, config.thickness, size[2])
   const partInfo = dimensionalPartInfo('post', postSize)
-  const post1: ConstructionElement = createConstructionElement(
-    config.material,
-    createCuboidShape(position, postSize),
-    undefined,
-    [TAG_POST],
-    partInfo
-  )
+  const post1: ConstructionElement = createCuboidElement(config.material, position, postSize, [TAG_POST], partInfo)
   yield yieldElement(post1)
 
-  const post2: ConstructionElement = createConstructionElement(
+  const post2: ConstructionElement = createCuboidElement(
     config.material,
-    createCuboidShape(vec3.fromValues(position[0], position[1] + size[1] - config.thickness, position[2]), postSize),
-    undefined,
+    vec3.fromValues(position[0], position[1] + size[1] - config.thickness, position[2]),
+    postSize,
     [TAG_POST],
     partInfo
   )
@@ -124,12 +118,10 @@ function* constructDoublePost(position: vec3, size: vec3, config: DoublePostConf
   // Only add infill if there's space for it
   const infillThickness = size[1] - 2 * config.thickness
   if (infillThickness > 0) {
-    const infill: ConstructionElement = createConstructionElement(
+    const infill: ConstructionElement = createCuboidElement(
       config.infillMaterial,
-      createCuboidShape(
-        vec3.fromValues(position[0], position[1] + config.thickness, position[2]),
-        vec3.fromValues(config.width, infillThickness, size[2])
-      )
+      vec3.fromValues(position[0], position[1] + config.thickness, position[2]),
+      vec3.fromValues(config.width, infillThickness, size[2])
     )
     yield yieldElement(infill)
   }

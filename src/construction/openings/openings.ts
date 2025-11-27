@@ -1,12 +1,11 @@
 import { vec3 } from 'gl-matrix'
 
 import type { Opening } from '@/building/model/model'
-import { type ConstructionElement, createConstructionElement } from '@/construction/elements'
+import { type ConstructionElement, createCuboidElement } from '@/construction/elements'
 import { IDENTITY } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
 import { dimensionalPartInfo } from '@/construction/parts'
 import { type ConstructionResult, yieldArea, yieldElement, yieldError, yieldMeasurement } from '@/construction/results'
-import { createCuboidShape } from '@/construction/shapes'
 import {
   TAG_HEADER,
   TAG_HEADER_HEIGHT,
@@ -75,10 +74,10 @@ export function* constructOpeningFrame(
 
     // Create single header spanning entire segment width
     const headerSize = vec3.fromValues(openingWidth, wallThickness, config.headerThickness)
-    const headerElement: ConstructionElement = createConstructionElement(
+    const headerElement: ConstructionElement = createCuboidElement(
       config.headerMaterial,
-      createCuboidShape([openingLeft, wallFront, headerBottom], headerSize),
-      IDENTITY,
+      vec3.fromValues(openingLeft, wallFront, headerBottom),
+      headerSize,
       [TAG_HEADER],
       dimensionalPartInfo('header', headerSize)
     )
@@ -118,10 +117,10 @@ export function* constructOpeningFrame(
 
     // Create single sill spanning entire segment width
     const sillSize = vec3.fromValues(openingWidth, wallThickness, config.sillThickness)
-    const sillElement = createConstructionElement(
+    const sillElement = createCuboidElement(
       config.sillMaterial,
-      createCuboidShape(vec3.fromValues(openingLeft, wallFront, sillBottom), sillSize),
-      IDENTITY,
+      vec3.fromValues(openingLeft, wallFront, sillBottom),
+      sillSize,
       [TAG_SILL],
       dimensionalPartInfo('sill', sillSize)
     )
