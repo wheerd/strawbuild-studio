@@ -76,7 +76,7 @@ export const DEFAULT_WALL_LAYER_SETS = {
       thickness: 24
     } satisfies LayerConfig,
     createMonolithicLayer(woodPlanking.id, 25, 'Wood Planking')
-  ],
+  ]
 } satisfies Record<string, LayerConfig[]>
 
 export const DEFAULT_FLOOR_LAYER_SETS = {

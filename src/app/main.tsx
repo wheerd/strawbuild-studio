@@ -9,6 +9,7 @@ import { injectMaterialCSS } from '@/construction/materials/materialCSS'
 import { getAllMaterials, subscribeToMaterials } from '@/construction/materials/store'
 import { ErrorFallback } from '@/shared/components/ErrorBoundary'
 import { ensureClipperModule } from '@/shared/geometry/clipperInstance'
+import { ensureManifoldModule } from '@/shared/geometry/manifoldInstance'
 import { registerServiceWorker } from '@/shared/services/serviceWorkerRegistration'
 
 import App from './App.tsx'
@@ -22,7 +23,8 @@ function removeInitialLoadingScreen() {
 }
 
 async function bootstrap() {
-  await ensureClipperModule()
+  // Load both geometry modules in parallel
+  await Promise.all([ensureClipperModule(), ensureManifoldModule()])
 
   // Initialize material CSS styles
   injectMaterialCSS(getAllMaterials())

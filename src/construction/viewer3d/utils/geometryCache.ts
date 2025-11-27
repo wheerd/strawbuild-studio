@@ -1,146 +1,99 @@
 import * as THREE from 'three'
 
 import type { GroupOrElement } from '@/construction/elements'
+import { buildAndCacheManifold } from '@/construction/manifold/builders'
+import { getParamsCacheKey } from '@/construction/manifold/cache'
 import type { ConstructionModel } from '@/construction/model'
-import type { Cuboid, ExtrudedPolygon } from '@/construction/shapes'
+import type { ManifoldShape } from '@/construction/shapes'
+import type { Manifold } from '@/shared/geometry/manifoldInstance'
 
 type IdleCallback = (deadline?: { didTimeout: boolean; timeRemaining(): number }) => void
 
-interface CuboidGeometryEntry {
+interface GeometryEntry {
   cacheKey: string
-  geometry: THREE.BoxGeometry
+  geometry: THREE.BufferGeometry
   edgesGeometry: THREE.EdgesGeometry
 }
 
-interface ExtrudedGeometryEntry {
-  cacheKey: string
-  geometry: THREE.ExtrudeGeometry
-  edgesGeometry: THREE.EdgesGeometry
-  matrix: THREE.Matrix4
-}
-
-const cuboidGeometryCache = new Map<string, CuboidGeometryEntry>()
-const extrudedGeometryCache = new Map<string, ExtrudedGeometryEntry>()
+const geometryCache = new Map<string, GeometryEntry>()
 let activeGeometryConsumers = 0
 let scheduledClearHandle: number | null = null
 let scheduledClearType: 'idle' | 'timeout' | null = null
 
-function disposeCuboidEntry(entry: CuboidGeometryEntry): void {
+function disposeEntry(entry: GeometryEntry): void {
   entry.geometry.dispose()
   entry.edgesGeometry.dispose()
-}
-
-function disposeExtrudedEntry(entry: ExtrudedGeometryEntry): void {
-  entry.geometry.dispose()
-  entry.edgesGeometry.dispose()
-}
-
-function formatNumber(value: number): string {
-  return Number.parseFloat(value.toFixed(6)).toString()
-}
-
-function vectorKey(values: ArrayLike<number>): string {
-  return Array.from(values).map(formatNumber).join(',')
 }
 
 function sanitizePartId(partId?: string): string {
   return partId ?? 'no-part'
 }
 
-function getCuboidCacheKey(shape: Cuboid, partId?: string): string {
-  const sizeKey = vectorKey(shape.size)
-  return `cuboid|${sanitizePartId(partId)}|${sizeKey}`
-}
+/**
+ * Convert Manifold to Three.js BufferGeometry
+ */
+function manifoldToThreeGeometry(manifold: Manifold): THREE.BufferGeometry {
+  const mesh = manifold.getMesh()
 
-function buildExtrudedPolygonGeometry(shape: ExtrudedPolygon): {
-  geometry: THREE.ExtrudeGeometry
-  matrix: THREE.Matrix4
-} {
-  const outerPoints = shape.polygon.outer.points.map(point => new THREE.Vector2(point[0], point[1]))
-  const threeShape = new THREE.Shape(outerPoints)
+  // vertProperties is flat array: [x,y,z, ...props, x,y,z, ...props, ...]
+  // numProp tells us stride (always >= 3)
+  const numVerts = mesh.vertProperties.length / mesh.numProp
+  const positions = new Float32Array(numVerts * 3)
 
-  for (const hole of shape.polygon.holes) {
-    const holePoints = hole.points.map(point => new THREE.Vector2(point[0], point[1]))
-    const holePath = new THREE.Path(holePoints)
-    threeShape.holes.push(holePath)
+  for (let i = 0; i < numVerts; i++) {
+    const baseIdx = i * mesh.numProp
+    const x = mesh.vertProperties[baseIdx]
+    const y = mesh.vertProperties[baseIdx + 1]
+    const z = mesh.vertProperties[baseIdx + 2]
+
+    // Manifold (X,Y,Z) -> Three.js (X,Z,-Y)
+    positions[i * 3] = x
+    positions[i * 3 + 1] = z
+    positions[i * 3 + 2] = -y
   }
 
-  const extrudeSettings: THREE.ExtrudeGeometryOptions = {
-    depth: Math.abs(shape.thickness),
-    bevelEnabled: false,
-    steps: 1,
-    curveSegments: 1
-  }
+  // triVerts is already a Uint32Array
+  const indices = mesh.triVerts
 
-  const geometry = new THREE.ExtrudeGeometry(threeShape, extrudeSettings)
-  const matrix = new THREE.Matrix4()
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+  geometry.setIndex(new THREE.BufferAttribute(indices, 1))
+  geometry.computeVertexNormals()
 
-  if (shape.plane === 'xy') {
-    matrix.makeRotationX(-Math.PI / 2)
-    if (shape.thickness < 0) {
-      matrix.multiply(new THREE.Matrix4().makeTranslation(0, 0, -shape.thickness))
-    }
-  } else if (shape.plane === 'xz') {
-    matrix.makeScale(1, 1, -1)
-    if (shape.thickness < 0) {
-      matrix.multiply(new THREE.Matrix4().makeTranslation(0, 0, -shape.thickness))
-    }
-  } else if (shape.plane === 'yz') {
-    matrix.makeRotationY(Math.PI / 2)
-    matrix.multiply(new THREE.Matrix4().makeRotationZ(-Math.PI / 2))
-    if (shape.thickness < 0) {
-      matrix.multiply(new THREE.Matrix4().makeTranslation(0, 0, -shape.thickness))
-    }
-  }
-
-  return { geometry, matrix }
+  return geometry
 }
 
-function getExtrudedPolygonCacheKey(shape: ExtrudedPolygon, partId?: string): string {
-  const outerKey = shape.polygon.outer.points
-    .map(point => `${formatNumber(point[0])}:${formatNumber(point[1])}`)
-    .join(';')
-  const holesKey =
-    shape.polygon.holes.length === 0
-      ? 'no-holes'
-      : shape.polygon.holes
-          .map(
-            hole =>
-              hole.points.map(point => `${formatNumber(point[0])}:${formatNumber(point[1])}`).join(';') || 'empty-hole'
-          )
-          .join('|')
-  const planeKey = `${shape.plane}:${formatNumber(shape.thickness)}`
-  return `polygon|${sanitizePartId(partId)}|${planeKey}|outer:${outerKey}|holes:${holesKey}`
-}
+/**
+ * Get Three.js geometry for a ManifoldShape
+ */
+export function getShapeGeometry(shape: ManifoldShape, partId?: string): GeometryEntry {
+  // Cache key includes partId for per-part geometry variations
+  const paramKey = getParamsCacheKey(shape.params)
+  const cacheKey = `${paramKey}|${sanitizePartId(partId)}`
 
-export function getCuboidGeometry(shape: Cuboid, partId?: string): CuboidGeometryEntry {
-  const cacheKey = getCuboidCacheKey(shape, partId)
-  const cached = cuboidGeometryCache.get(cacheKey)
+  const cached = geometryCache.get(cacheKey)
   if (cached) return cached
 
-  const width = shape.size[0]
-  const height = shape.size[1]
-  const depth = shape.size[2]
+  // Get or build manifold (from global manifold cache)
+  const manifold = buildAndCacheManifold(shape.params)
 
-  const geometry = new THREE.BoxGeometry(width, depth, height)
+  // Convert to Three.js geometry
+  const geometry = manifoldToThreeGeometry(manifold)
   const edgesGeometry = new THREE.EdgesGeometry(geometry, 1)
 
   const entry = { cacheKey, geometry, edgesGeometry }
-  cuboidGeometryCache.set(cacheKey, entry)
+  geometryCache.set(cacheKey, entry)
+
   return entry
 }
 
-export function getExtrudedPolygonGeometry(shape: ExtrudedPolygon, partId?: string): ExtrudedGeometryEntry {
-  const cacheKey = getExtrudedPolygonCacheKey(shape, partId)
-  const cached = extrudedGeometryCache.get(cacheKey)
-  if (cached) return cached
+// Legacy exports for backwards compatibility during migration
+export function getCuboidGeometry(shape: ManifoldShape, partId?: string): GeometryEntry {
+  return getShapeGeometry(shape, partId)
+}
 
-  const { geometry, matrix } = buildExtrudedPolygonGeometry(shape)
-  const edgesGeometry = new THREE.EdgesGeometry(geometry)
-
-  const entry = { cacheKey, geometry, edgesGeometry, matrix }
-  extrudedGeometryCache.set(cacheKey, entry)
-  return entry
+export function getExtrudedPolygonGeometry(shape: ManifoldShape, partId?: string): GeometryEntry {
+  return getShapeGeometry(shape, partId)
 }
 
 function prewarmElementGeometry(element: GroupOrElement): void {
@@ -150,11 +103,7 @@ function prewarmElementGeometry(element: GroupOrElement): void {
   }
 
   const partId = element.partInfo?.partId
-  if (element.shape.type === 'cuboid') {
-    getCuboidGeometry(element.shape, partId)
-  } else if (element.shape.type === 'polygon') {
-    getExtrudedPolygonGeometry(element.shape, partId)
-  }
+  getShapeGeometry(element.shape, partId)
 }
 
 export function prewarmGeometryCache(model: ConstructionModel): void {
@@ -164,15 +113,10 @@ export function prewarmGeometryCache(model: ConstructionModel): void {
 }
 
 export function clearGeometryCache(): void {
-  cuboidGeometryCache.forEach(entry => {
-    disposeCuboidEntry(entry)
+  geometryCache.forEach(entry => {
+    disposeEntry(entry)
   })
-  cuboidGeometryCache.clear()
-
-  extrudedGeometryCache.forEach(entry => {
-    disposeExtrudedEntry(entry)
-  })
-  extrudedGeometryCache.clear()
+  geometryCache.clear()
 }
 
 export function acquireGeometryCache(): void {
