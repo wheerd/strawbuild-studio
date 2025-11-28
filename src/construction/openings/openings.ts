@@ -60,7 +60,6 @@ export function* constructOpeningFrame(
   const [openingLeft, wallFront, wallBottom] = openingSegment.position
   const [openingRight, , wallTop] = vec3.add(vec3.create(), openingSegment.position, openingSegment.size)
   const [openingWidth, wallThickness] = openingSegment.size
-  const openingCenterX = (openingLeft + openingRight) / 2
 
   const zOffset = openingSegment.zOffset ?? 0
   const { sillTop, headerBottom } = extractUnifiedDimensions(openings, zOffset)
@@ -92,10 +91,11 @@ export function* constructOpeningFrame(
       tags: [TAG_OPENING_WIDTH]
     })
 
-    // Generate header height measurement (vertical, in opening center)
+    // Generate header height measurement (vertical, on opening left)
     yield yieldMeasurement({
-      startPoint: vec3.fromValues(openingCenterX, 0, 0),
-      endPoint: vec3.fromValues(openingCenterX, 0, headerBottom),
+      startPoint: vec3.fromValues(openingLeft, 0, 0),
+      endPoint: vec3.fromValues(openingLeft, 0, headerBottom),
+      size: [openingWidth, wallThickness, headerBottom],
       label: formatLength(headerBottom),
       tags: [TAG_HEADER_HEIGHT],
       offset: -1
@@ -127,10 +127,11 @@ export function* constructOpeningFrame(
 
     yield yieldElement(sillElement)
 
-    // Generate sill height measurement (vertical, in opening center)
+    // Generate sill height measurement (vertical, in opening right)
     yield yieldMeasurement({
-      startPoint: vec3.fromValues(openingCenterX, 0, 0),
-      endPoint: vec3.fromValues(openingCenterX, 0, sillTop),
+      startPoint: vec3.fromValues(openingRight, 0, 0),
+      endPoint: vec3.fromValues(openingRight, 0, sillTop),
+      size: [openingWidth, wallThickness, sillTop],
       label: formatLength(sillTop),
       tags: [TAG_SILL_HEIGHT],
       offset: 1
@@ -141,8 +142,9 @@ export function* constructOpeningFrame(
       const openingHeight = headerBottom - sillTop
       if (openingHeight > 0) {
         yield yieldMeasurement({
-          startPoint: vec3.fromValues(openingCenterX, 0, sillTop),
-          endPoint: vec3.fromValues(openingCenterX, 0, headerBottom),
+          startPoint: vec3.fromValues(openingRight, 0, sillTop),
+          endPoint: vec3.fromValues(openingRight, 0, headerBottom),
+          size: [openingWidth, wallThickness, openingHeight],
           label: formatLength(openingHeight),
           tags: [TAG_OPENING_HEIGHT],
           offset: 1
