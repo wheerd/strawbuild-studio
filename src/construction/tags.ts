@@ -183,6 +183,12 @@ export const TAG_SILL_HEIGHT: Tag = {
   category: 'measurement'
 }
 
+export const TAG_HEADER_FROM_TOP: Tag = {
+  id: 'measurement_header-from-top',
+  label: 'Header From Top',
+  category: 'measurement'
+}
+
 export const TAG_HEADER_HEIGHT: Tag = {
   id: 'measurement_header-height',
   label: 'Header Height',
@@ -210,6 +216,24 @@ export const TAG_RING_BEAM_INNER: Tag = {
 export const TAG_WALL_LENGTH: Tag = {
   id: 'measurement_wall-length',
   label: 'Wall Length',
+  category: 'measurement'
+}
+
+export const TAG_WALL_HEIGHT: Tag = {
+  id: 'measurement_wall-height',
+  label: 'Wall Height',
+  category: 'measurement'
+}
+
+export const TAG_WALL_CONSTRUCTION_HEIGHT: Tag = {
+  id: 'measurement_wall-construction-height',
+  label: 'Wall Construction Height',
+  category: 'measurement'
+}
+
+export const TAG_RING_BEAM_HEIGHT: Tag = {
+  id: 'measurement_ring-beam-height',
+  label: 'Ring Beam Height',
   category: 'measurement'
 }
 

@@ -6,7 +6,13 @@ import type { FloorAssemblyConfig } from '@/construction/config/types'
 import { FLOOR_ASSEMBLIES } from '@/construction/floors'
 import { type ConstructionResult, yieldArea, yieldMeasurement } from '@/construction/results'
 import { getStoreyCeilingHeight } from '@/construction/storeyHeight'
-import { TAG_OPENING_SPACING, TAG_WALL_LENGTH } from '@/construction/tags'
+import {
+  TAG_OPENING_SPACING,
+  TAG_RING_BEAM_HEIGHT,
+  TAG_WALL_CONSTRUCTION_HEIGHT,
+  TAG_WALL_HEIGHT,
+  TAG_WALL_LENGTH
+} from '@/construction/tags'
 import type { WallLayersConfig } from '@/construction/walls'
 import type { Length } from '@/shared/geometry'
 import { convertOpeningToConstruction } from '@/shared/utils/openingDimensions'
@@ -265,6 +271,38 @@ export function* segmentedWallConstruction(
     size: vec3.fromValues(constructionLength, sizeY, sizeZ),
     tags: [TAG_WALL_LENGTH]
   })
+
+  yield yieldMeasurement({
+    startPoint: vec3.fromValues(-extensionStart, y, 0),
+    endPoint: vec3.fromValues(-extensionStart, y, totalConstructionHeight),
+    size: vec3.fromValues(constructionLength, sizeY, totalConstructionHeight),
+    tags: [TAG_WALL_HEIGHT]
+  })
+
+  yield yieldMeasurement({
+    startPoint: vec3.fromValues(-extensionStart, y, z),
+    endPoint: vec3.fromValues(-extensionStart, y, sizeZ),
+    size: vec3.fromValues(constructionLength, sizeY, sizeZ),
+    tags: [TAG_WALL_CONSTRUCTION_HEIGHT]
+  })
+
+  if (basePlateHeight > 0) {
+    yield yieldMeasurement({
+      startPoint: vec3.fromValues(-extensionStart, y, 0),
+      endPoint: vec3.fromValues(-extensionStart, y, basePlateHeight),
+      size: vec3.fromValues(constructionLength, sizeY, basePlateHeight),
+      tags: [TAG_RING_BEAM_HEIGHT]
+    })
+  }
+
+  if (topPlateHeight > 0) {
+    yield yieldMeasurement({
+      startPoint: vec3.fromValues(-extensionStart, y, totalConstructionHeight - topPlateHeight),
+      endPoint: vec3.fromValues(-extensionStart, y, totalConstructionHeight),
+      size: vec3.fromValues(constructionLength, sizeY, topPlateHeight),
+      tags: [TAG_RING_BEAM_HEIGHT]
+    })
+  }
 
   if (openingsWithPadding.length === 0) {
     // No openings - just one wall segment for the entire length

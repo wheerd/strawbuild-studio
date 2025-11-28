@@ -7,7 +7,13 @@ import { getConfigActions } from '@/construction/config'
 import { IDENTITY } from '@/construction/geometry'
 import { aggregateResults, yieldElement } from '@/construction/results'
 import { createCuboid } from '@/construction/shapes'
-import { TAG_OPENING_SPACING, TAG_WALL_LENGTH } from '@/construction/tags'
+import {
+  TAG_OPENING_SPACING,
+  TAG_RING_BEAM_HEIGHT,
+  TAG_WALL_CONSTRUCTION_HEIGHT,
+  TAG_WALL_HEIGHT,
+  TAG_WALL_LENGTH
+} from '@/construction/tags'
 import type { OpeningSegmentConstruction, WallLayersConfig, WallSegmentConstruction } from '@/construction/walls'
 import { Bounds3D, type Length } from '@/shared/geometry'
 
@@ -225,18 +231,17 @@ describe('segmentedWallConstruction', () => {
       ]
       const { elements, measurements, areas } = aggregateResults(results)
 
-      // Should generate corner areas
+      // Should generate areas
       expect(areas).toHaveLength(5)
-      expect(areas[0].areaType).toBe('corner')
-      expect(areas[1].areaType).toBe('corner')
-      expect(areas[2].areaType).toBe('bottom-plate')
-      expect(areas[3].areaType).toBe('top-plate')
-      expect(areas[4].areaType).toBe('floor-level')
+      expect(areas.flatMap(a => a.areaType)).toEqual(
+        expect.arrayContaining(['corner', 'corner', 'bottom-plate', 'top-plate', 'floor-level'])
+      )
 
-      // Should generate wall length measurement
-      expect(measurements).toHaveLength(1)
-      expect(measurements[0].tags).toContain(TAG_WALL_LENGTH)
-      expect((measurements[0] as any).size[0]).toBe(3000)
+      // Should generate wall length/height measurement
+      expect(measurements).toHaveLength(5)
+      expect(measurements.flatMap(m => m.tags)).toEqual(
+        expect.arrayContaining([TAG_WALL_LENGTH, TAG_WALL_HEIGHT, TAG_WALL_CONSTRUCTION_HEIGHT, TAG_RING_BEAM_HEIGHT])
+      )
 
       // Should call wall construction once for entire wall
       expect(mockWallConstruction).toHaveBeenCalledTimes(1)

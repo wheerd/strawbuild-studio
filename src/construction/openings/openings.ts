@@ -8,6 +8,7 @@ import { dimensionalPartInfo } from '@/construction/parts'
 import { type ConstructionResult, yieldArea, yieldElement, yieldError, yieldMeasurement } from '@/construction/results'
 import {
   TAG_HEADER,
+  TAG_HEADER_FROM_TOP,
   TAG_HEADER_HEIGHT,
   TAG_OPENING_DOOR,
   TAG_OPENING_HEIGHT,
@@ -98,6 +99,16 @@ export function* constructOpeningFrame(
       size: [openingWidth, wallThickness, headerBottom],
       label: formatLength(headerBottom),
       tags: [TAG_HEADER_HEIGHT],
+      offset: -1
+    })
+
+    // Above height measurement (vertical, on opening left)
+    yield yieldMeasurement({
+      startPoint: vec3.fromValues(openingLeft, 0, headerBottom),
+      endPoint: vec3.fromValues(openingLeft, 0, wallTop),
+      size: [openingWidth, wallThickness, wallTop - headerBottom],
+      label: formatLength(wallTop - headerBottom),
+      tags: [TAG_HEADER_FROM_TOP],
       offset: -1
     })
 
