@@ -77,7 +77,8 @@ export function constructWallLayers(
     let cumulativeInside: Length = 0
     let previousSpan = baseInsideSpan
 
-    layers.insideLayers.forEach(layer => {
+    const insideLayers = [...layers.insideLayers].reverse()
+    insideLayers.forEach(layer => {
       cumulativeInside = (cumulativeInside + layer.thickness) as Length
       const span = computeLayerSpan('inside', cumulativeInside, wall, context)
       const start = Math.min(span.start, previousSpan.start)
