@@ -96,8 +96,8 @@ export function eigenDecompositionSymmetric3(m: mat3): {
     if (offDiagNorm(A) < EPS) break
 
     // Find largest off-diagonal element
-    let p = 0;
-      let q = 1
+    let p = 0
+    let q = 1
     if (Math.abs(A[0][2]) > Math.abs(A[0][1])) q = 2
     if (Math.abs(A[1][2]) > Math.abs(A[0][q])) {
       p = 1

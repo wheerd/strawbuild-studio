@@ -50,7 +50,6 @@ function* constructSingleFrameModule(
   // Top frame
   const topFrame: ConstructionElement = createCuboidElement(
     frameMaterial,
-
     [position[0], position[1], position[2] + size[2] - frameThickness],
     [size[0], size[1], frameThickness],
     undefined,
@@ -71,7 +70,6 @@ function* constructSingleFrameModule(
   // Start frame (left side)
   const startFrame: ConstructionElement = createCuboidElement(
     frameMaterial,
-
     [position[0], position[1], position[2] + frameThickness],
     [frameThickness, size[1], verticalFrameLength],
     undefined,
@@ -82,7 +80,6 @@ function* constructSingleFrameModule(
   // End frame (right side)
   const endFrame: ConstructionElement = createCuboidElement(
     frameMaterial,
-
     [position[0] + size[0] - frameThickness, position[1], position[2] + frameThickness],
     [frameThickness, size[1], verticalFrameLength],
     undefined,
@@ -128,7 +125,6 @@ function* constructDoubleFrameModule(
   // Top frame - 2 beams
   const topFrame1: ConstructionElement = createCuboidElement(
     frameMaterial,
-
     [position[0], position[1], position[2] + size[2] - frameThickness],
     [size[0], frameWidth, frameThickness],
     undefined,
@@ -138,7 +134,6 @@ function* constructDoubleFrameModule(
 
   const topFrame2: ConstructionElement = createCuboidElement(
     frameMaterial,
-
     [position[0], position[1] + size[1] - frameWidth, position[2] + size[2] - frameThickness],
     [size[0], frameWidth, frameThickness],
     undefined,
@@ -151,7 +146,6 @@ function* constructDoubleFrameModule(
     frameMaterial,
     position,
     [size[0], frameWidth, frameThickness],
-
     undefined,
     horizontalFramePartId
   )
@@ -159,7 +153,6 @@ function* constructDoubleFrameModule(
 
   const bottomFrame2: ConstructionElement = createCuboidElement(
     frameMaterial,
-
     [position[0], position[1] + size[1] - frameWidth, position[2]],
     [size[0], frameWidth, frameThickness],
     undefined,
@@ -170,7 +163,6 @@ function* constructDoubleFrameModule(
   // Start frame (left side) - 2 beams
   const startFrame1: ConstructionElement = createCuboidElement(
     frameMaterial,
-
     [position[0], position[1], position[2] + frameThickness],
     [frameThickness, frameWidth, verticalFrameLength],
     undefined,
@@ -180,7 +172,6 @@ function* constructDoubleFrameModule(
 
   const startFrame2: ConstructionElement = createCuboidElement(
     frameMaterial,
-
     [position[0], position[1] + size[1] - frameWidth, position[2] + frameThickness],
     [frameThickness, frameWidth, verticalFrameLength],
     undefined,
@@ -191,7 +182,6 @@ function* constructDoubleFrameModule(
   // End frame (right side) - 2 beams
   const endFrame1: ConstructionElement = createCuboidElement(
     frameMaterial,
-
     [position[0] + size[0] - frameThickness, position[1], position[2] + frameThickness],
     [frameThickness, frameWidth, verticalFrameLength],
     undefined,
@@ -201,7 +191,6 @@ function* constructDoubleFrameModule(
 
   const endFrame2: ConstructionElement = createCuboidElement(
     frameMaterial,
-
     [position[0] + size[0] - frameThickness, position[1] + size[1] - frameWidth, position[2] + frameThickness],
     [frameThickness, frameWidth, verticalFrameLength],
     undefined,
@@ -265,14 +254,7 @@ function* constructDoubleFrameModule(
 
       // Right spacer
       yield yieldElement(
-        createCuboidElement(
-          spacerMaterial,
-          vec3.fromValues(rightX, y, z),
-          spacerSize,
-
-          undefined,
-          spacerPartId
-        )
+        createCuboidElement(spacerMaterial, vec3.fromValues(rightX, y, z), spacerSize, undefined, spacerPartId)
       )
 
       if (i > 1) {
