@@ -139,22 +139,6 @@ vi.mock('@/shared/geometry/clipperInstance', () => {
   }
 })
 
-/*
-vi.mock('@/shared/geometry/manifoldInstance', () => {
-  const mockModule = {
-    cube: vi.fn(() => ({})),
-    CrossSection: {
-      cube: vi.fn(() => ({}))
-    }
-  }
-
-  return {
-    getManifoldModule: vi.fn(() => mockModule),
-    ensureManifoldModule: vi.fn()
-  }
-})
-*/
-
 // Mock Zustand for consistent testing
 vi.mock('zustand')
 

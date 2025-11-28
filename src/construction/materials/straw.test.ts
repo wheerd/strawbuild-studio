@@ -62,7 +62,7 @@ describe('constructStraw', () => {
       const baleElement = bale as ConstructionElement
       expect(baleElement.material).toBe(mockMaterialId)
       expect(baleElement.shape.base?.type).toBe('cuboid')
-      expect(baleElement.transform.position).toEqual(vec3.fromValues(400, 180, 250))
+      expect(baleElement.transform.position).toEqual(vec3.fromValues(0, 0, 0))
       expect((baleElement.shape.base as CuboidShape).size).toEqual(vec3.fromValues(800, 360, 500))
     })
 
@@ -92,9 +92,7 @@ describe('constructStraw', () => {
       expect(elements).toHaveLength(1)
 
       expect(errors[0].description).toBe('Wall is too thick for a single strawbale')
-      expect((elements[0] as ConstructionElement).transform.position).toEqual(
-        vec3.scaleAndAdd(vec3.create(), position, size, 0.5)
-      )
+      expect((elements[0] as ConstructionElement).transform.position).toEqual(position)
       expect(((elements[0] as ConstructionElement).shape.base as CuboidShape).size).toEqual(size)
     })
 
@@ -110,9 +108,7 @@ describe('constructStraw', () => {
       expect(elements).toHaveLength(1)
 
       expect(warnings[0].description).toBe('Wall is too thin for a single strawbale')
-      expect((elements[0] as ConstructionElement).transform.position).toEqual(
-        vec3.scaleAndAdd(vec3.create(), position, size, 0.5)
-      )
+      expect((elements[0] as ConstructionElement).transform.position).toEqual(position)
       expect(((elements[0] as ConstructionElement).shape.base as CuboidShape).size).toEqual(size)
     })
   })

@@ -25,7 +25,7 @@ export interface Shape {
 }
 
 /**
- * Create a cuboid shape (centered at origin)
+ * Create a cuboid shape with corner at origin
  * Use element transform to position it
  */
 export function createCuboid(size: vec3): Shape {
@@ -36,7 +36,7 @@ export function createCuboid(size: vec3): Shape {
   return {
     manifold: buildAndCacheManifold(base),
     base,
-    bounds: Bounds3D.fromCuboid(vec3.fromValues(-size[0] / 2, -size[1] / 2, -size[2] / 2), size)
+    bounds: Bounds3D.fromCuboid(vec3.fromValues(0, 0, 0), size)
   }
 }
 

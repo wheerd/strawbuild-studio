@@ -32,8 +32,7 @@ export const createConstructionElement = (
 
 /**
  * Convenience helper for creating a cuboid element at a corner position.
- * This matches the old createCuboidShape(offset, size) pattern but properly
- * separates the shape (centered, cacheable) from the transform (positioning).
+ * The cuboid shape has its corner at origin, and the transform positions it.
  */
 export const createCuboidElement = (
   material: MaterialId,
@@ -44,7 +43,7 @@ export const createCuboidElement = (
 ): ConstructionElement => {
   const shape = createCuboid(size)
   const transform: Transform = {
-    position: vec3.fromValues(corner[0] + size[0] / 2, corner[1] + size[1] / 2, corner[2] + size[2] / 2),
+    position: vec3.clone(corner),
     rotation: vec3.fromValues(0, 0, 0)
   }
   return createConstructionElement(material, shape, transform, tags, partInfo)

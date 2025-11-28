@@ -8,7 +8,7 @@ import { cacheManifold, getOrCreateManifold, hasManifold } from './cache'
 
 /**
  * Build manifold from construction parameters
- * All manifolds are centered at origin or positioned according to their params
+ * Cuboids have corner at origin; extrusions positioned according to their plane
  */
 export function buildManifold(params: BaseShape): Manifold {
   switch (params.type) {
@@ -36,8 +36,9 @@ function buildCuboid(params: CuboidShape): Manifold {
   const module = getManifoldModule()
   const [w, h, d] = params.size
 
-  // Manifold.cube is centered at origin - perfect!
-  return module.Manifold.cube([w, h, d], true)
+  // Create cube with corner at origin (center=false)
+  // This aligns with application's corner-based positioning
+  return module.Manifold.cube([w, h, d], false)
 }
 
 function buildExtrusion(params: ExtrudedShape): Manifold {
@@ -62,54 +63,36 @@ function buildExtrusion(params: ExtrudedShape): Manifold {
   // Extrude in Z direction (Manifold extrudes along +Z by default)
   let manifold = crossSection.extrude(thickness)
 
-  // Rotate to match requested plane
-  // Manifold.rotate() takes DEGREES, not radians
-  // Manifold extrudes a 2D polygon (in XY) along +Z
-  // After manifoldToThreeGeometry conversion (X,Y,Z) -> (X,Z,-Y):
-  // - Manifold +Z becomes Three.js +Y
-  // - Manifold +Y becomes Three.js -Z
-  // - Manifold +X stays Three.js +X
-  //
-  // Plane meanings (in application coordinates):
-  // - 'xy': polygon in XY plane, extrude along Z (floor/ceiling)
-  // - 'xz': polygon in XZ plane, extrude along Y (walls)
-  // - 'yz': polygon in YZ plane, extrude along X (walls perpendicular to X)
-
+  // Apply transformation to map Manifold coordinates to application coordinates
+  // Manifold extrudes XY polygon along Z, we need to orient it for each plane
   switch (plane) {
     case 'xy':
-      // XY plane: polygon in XY, extrude along Y (floor/ceiling)
-      // Manifold extruded along Z. After (X,Y,Z)->(X,Z,-Y), Z becomes Y.
-      // This is exactly what we want! No rotation needed.
-      // Just handle negative thickness
-      if (thickness < 0) {
-        manifold = manifold.translate([0, 0, -thickness])
-      }
+      // XY plane: polygon in XY, extrude along Z (up)
+      // Manifold default is already correct: XY polygon extruded along Z
       break
 
     case 'xz':
-      // XZ plane: polygon in XZ, extrude along Y (depth direction)
-      // Manifold has polygon in XY, extruded along Z
-      // Old Three.js code used scale(1,1,-1) to flip extrusion direction
-      // We mirror in Z to reverse extrusion direction
-      manifold = manifold.scale([1, 1, -1])
-      // Now rotate so XY becomes XZ, and extrusion (Z) becomes Y direction
-      // Rotate 90° around X: (X,Y,Z) -> (X, -Z, Y)
-      manifold = manifold.rotate([90, 0, 0])
-      if (thickness < 0) {
-        manifold = manifold.translate([0, thickness, 0])
-      }
+      // XZ plane: polygon in XZ, extrude along Y (depth)
+      // Need: Manifold X→X, Manifold Y→Z, Manifold Z→Y
+      // prettier-ignore
+      manifold = manifold.transform([
+        1,        0,        0,        0, // X stays X
+        0,        0,        1,        0, // Y becomes Z
+        0,        1,        0,        0, // Z becomes Y
+        0,        0,        0,        1
+      ])
       break
 
     case 'yz':
       // YZ plane: polygon in YZ, extrude along X
-      // Manifold has polygon in XY, extruded along Z
-      // Need to rotate so XY becomes YZ, and extrusion (Z) becomes X direction
-      // Rotate -90° around Y: (X,Y,Z) -> (Z, Y, -X)
-      // Then extrusion Z becomes position X ✓
-      manifold = manifold.rotate([0, -90, 0])
-      if (thickness < 0) {
-        manifold = manifold.translate([-thickness, 0, 0])
-      }
+      // Need: Manifold X→Y, Manifold Y→Z, Manifold Z→X
+      // prettier-ignore
+      manifold = manifold.transform([
+        0,        1,        0,        0, // X becomes Y
+        0,        0,        1,        0, // Y becomes Z
+        1,        0,        0,        0, // Z becomes X
+        0,        0,        0,        1
+      ])
       break
   }
 

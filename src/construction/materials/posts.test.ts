@@ -48,7 +48,7 @@ describe('constructPost', () => {
       const postElement = post as ConstructionElement
       expect(postElement.material).toBe(mockWoodMaterial)
       expect(postElement.shape.base?.type).toBe('cuboid')
-      expect(postElement.transform.position).toEqual(vec3.fromValues(130, 230, 1525)) // Transform is offset of center
+      expect(postElement.transform.position).toEqual(vec3.fromValues(100, 50, 25)) // Corner-based positioning
       expect((postElement.shape.base as CuboidShape).size).toEqual(vec3.fromValues(60, 360, 3000))
     })
 
@@ -66,7 +66,7 @@ describe('constructPost', () => {
       const post = elements[0]
       expect('material' in post).toBe(true)
       const postElement = post as ConstructionElement
-      expect(postElement.transform.position).toEqual(vec3.fromValues(30, 180, 1500))
+      expect(postElement.transform.position).toEqual(vec3.fromValues(0, 0, 0))
       expect((postElement.shape.base as CuboidShape).size).toEqual(vec3.fromValues(60, 360, 3000))
     })
 
@@ -85,7 +85,7 @@ describe('constructPost', () => {
       expect('material' in post).toBe(true)
       const postElement = post as ConstructionElement
       const postShape = postElement.shape.base as CuboidShape
-      expect(postElement.transform.position).toEqual(vec3.fromValues(230, 190, 1250))
+      expect(postElement.transform.position).toEqual(vec3.fromValues(200, 100, 0))
       expect(postShape.size).toEqual(vec3.fromValues(60, 180, 2500))
     })
 
@@ -205,7 +205,7 @@ describe('constructPost', () => {
       const firstPost = elements[0] as ConstructionElement
       const firstShape = firstPost.shape.base as CuboidShape
       expect(firstPost.material).toBe(mockWoodMaterial)
-      expect(firstPost.transform.position).toEqual(vec3.fromValues(130, 110, 1525))
+      expect(firstPost.transform.position).toEqual(vec3.fromValues(100, 50, 25))
       expect(firstShape.size).toEqual(vec3.fromValues(60, 120, 3000))
 
       // Second post
@@ -213,7 +213,7 @@ describe('constructPost', () => {
       const secondPost = elements[1] as ConstructionElement
       const secondShape = secondPost.shape.base as CuboidShape
       expect(secondPost.material).toBe(mockWoodMaterial)
-      expect(secondPost.transform.position).toEqual(vec3.fromValues(130, 350, 1525))
+      expect(secondPost.transform.position).toEqual(vec3.fromValues(100, 290, 25))
       expect(secondShape.size).toEqual(vec3.fromValues(60, 120, 3000))
 
       // Infill
@@ -221,7 +221,7 @@ describe('constructPost', () => {
       const infillElement = elements[2] as ConstructionElement
       const infillShape = infillElement.shape.base as CuboidShape
       expect(infillElement.material).toBe(mockStrawMaterial)
-      expect(infillElement.transform.position).toEqual(vec3.fromValues(130, 230, 1525))
+      expect(infillElement.transform.position).toEqual(vec3.fromValues(100, 170, 25))
       expect(infillShape.size).toEqual(vec3.fromValues(60, 120, 3000))
     })
 
@@ -239,9 +239,9 @@ describe('constructPost', () => {
       expect('material' in elements[0]).toBe(true)
       expect('material' in elements[1]).toBe(true)
       expect('material' in elements[2]).toBe(true)
-      expect((elements[0] as ConstructionElement).transform.position).toEqual(vec3.fromValues(30, 60, 1500))
-      expect((elements[1] as ConstructionElement).transform.position).toEqual(vec3.fromValues(30, 300, 1500))
-      expect((elements[2] as ConstructionElement).transform.position).toEqual(vec3.fromValues(30, 180, 1500))
+      expect((elements[0] as ConstructionElement).transform.position).toEqual(vec3.fromValues(0, 0, 0))
+      expect((elements[1] as ConstructionElement).transform.position).toEqual(vec3.fromValues(0, 240, 0))
+      expect((elements[2] as ConstructionElement).transform.position).toEqual(vec3.fromValues(0, 120, 0))
     })
 
     it('should handle different wall dimensions', () => {
@@ -258,9 +258,9 @@ describe('constructPost', () => {
       expect('material' in elements[0]).toBe(true)
       expect('material' in elements[1]).toBe(true)
       expect('material' in elements[2]).toBe(true)
-      expect((elements[0] as ConstructionElement).transform.position).toEqual(vec3.fromValues(230, 160, 1250))
-      expect((elements[1] as ConstructionElement).transform.position).toEqual(vec3.fromValues(230, 440, 1250))
-      expect((elements[2] as ConstructionElement).transform.position).toEqual(vec3.fromValues(230, 300, 1250))
+      expect((elements[0] as ConstructionElement).transform.position).toEqual(vec3.fromValues(200, 100, 0))
+      expect((elements[1] as ConstructionElement).transform.position).toEqual(vec3.fromValues(200, 380, 0))
+      expect((elements[2] as ConstructionElement).transform.position).toEqual(vec3.fromValues(200, 220, 0))
     })
 
     it('should use custom post dimensions', () => {
@@ -483,9 +483,9 @@ describe('constructPost', () => {
       const post = elements[0] as ConstructionElement
       const postShape = post.shape.base as CuboidShape
 
-      expect(post.transform.position[0]).toBe(position[0] + 60 / 2)
-      expect(post.transform.position[1]).toBe(position[1] + size[1] / 2)
-      expect(post.transform.position[2]).toBe(position[2] + size[2] / 2)
+      expect(post.transform.position[0]).toBe(position[0])
+      expect(post.transform.position[1]).toBe(position[1])
+      expect(post.transform.position[2]).toBe(position[2])
       expect(postShape.size[0]).toBe(60) // width from config
       expect(postShape.size[1]).toBe(size[1])
       expect(postShape.size[2]).toBe(size[2])
@@ -506,13 +506,13 @@ describe('constructPost', () => {
       const { elements } = aggregateResults(results)
 
       // First post should be at original position
-      expect((elements[0] as ConstructionElement).transform.position).toEqual(vec3.fromValues(130, 260, 1500))
+      expect((elements[0] as ConstructionElement).transform.position).toEqual(vec3.fromValues(100, 200, 300))
 
       // Second post should be at the far end
-      expect((elements[1] as ConstructionElement).transform.position).toEqual(vec3.fromValues(130, 500, 1500))
+      expect((elements[1] as ConstructionElement).transform.position).toEqual(vec3.fromValues(100, 440, 300))
 
       // Infill should be in between
-      expect((elements[2] as ConstructionElement).transform.position).toEqual(vec3.fromValues(130, 380, 1500))
+      expect((elements[2] as ConstructionElement).transform.position).toEqual(vec3.fromValues(100, 320, 300))
     })
   })
 })
