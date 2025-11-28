@@ -118,7 +118,7 @@ function renderStrawLayoutSvg(elements: ConstructionElement[], options?: { paddi
   const strokeWidth = options?.strokeWidth ?? 5
   const strokeColor = '#333333'
 
-  const bounds = elements.filter(element => element.shape.type === 'cuboid').map(element => element.bounds)
+  const bounds = elements.filter(element => element.shape.params.type === 'cuboid').map(element => element.bounds)
 
   const minX = Math.min(...bounds.map(b => b.min[0]))
   const maxX = Math.max(...bounds.map(b => b.max[0]))
@@ -132,7 +132,7 @@ function renderStrawLayoutSvg(elements: ConstructionElement[], options?: { paddi
   const totalHeight = height + padding * 2
 
   const rectangles = elements
-    .filter(element => element.shape.type === 'cuboid')
+    .filter(element => element.shape.params.type === 'cuboid')
     .map(element => ({
       minX: element.bounds.min[0],
       maxX: element.bounds.max[0],

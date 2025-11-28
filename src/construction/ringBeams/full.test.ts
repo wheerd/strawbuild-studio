@@ -7,7 +7,7 @@ import { type ConstructionElement, type GroupOrElement } from '@/construction/el
 import type { MaterialId } from '@/construction/materials/material'
 import type { HighlightedPolygon } from '@/construction/model'
 import { type PartInfo, polygonPartInfo } from '@/construction/parts'
-import type { ExtrudedPolygon } from '@/construction/shapes'
+import type { ExtrusionParams } from '@/construction/shapes'
 import { TAG_PERIMETER_INSIDE, TAG_PERIMETER_OUTSIDE } from '@/construction/tags'
 import * as geometry from '@/shared/geometry'
 import type { Polygon2D } from '@/shared/geometry'
@@ -132,8 +132,7 @@ describe('FullRingBeamAssembly', () => {
         assertConstructionElement(element)
         const constructionElement = element
         expect(constructionElement.material).toBe(defaultConfig.material)
-        expect(constructionElement.shape.type).toBe('polygon')
-        const shape = constructionElement.shape as ExtrudedPolygon
+        const shape = constructionElement.shape.params as ExtrusionParams
         expect(shape.polygon.outer.points).toHaveLength(4)
         expect(shape.plane).toBe('xy')
         expect(shape.thickness).toBe(defaultConfig.height)
@@ -148,7 +147,7 @@ describe('FullRingBeamAssembly', () => {
 
       model.elements.forEach(element => {
         assertConstructionElement(element)
-        const shape = element.shape as ExtrudedPolygon
+        const shape = element.shape.params as ExtrusionParams
         expect(element.partInfo).toEqual(mockInfo)
         expect(polygonPartInfoMock).toHaveBeenCalledWith('ring-beam', shape.polygon.outer, shape.plane, shape.thickness)
       })

@@ -13,6 +13,7 @@ import type { Perimeter, PerimeterCorner, PerimeterWall, Storey } from '@/buildi
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import type { ConstructionModel } from '@/construction/model'
+import { createCuboid } from '@/construction/shapes'
 import { Bounds3D } from '@/shared/geometry'
 
 import { constructWall } from './construction'
@@ -106,12 +107,7 @@ describe('constructWall', () => {
         transform: { position: vec3.fromValues(0, 0, 0), rotation: vec3.fromValues(0, 0, 0) },
         bounds: Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(1000, 400, 3000)),
         material: 'wood' as any,
-        shape: {
-          type: 'cuboid',
-          size: vec3.fromValues(1000, 400, 3000),
-          offset: vec3.fromValues(0, 0, 0),
-          bounds: Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(1000, 400, 3000))
-        }
+        shape: createCuboid(vec3.fromValues(1000, 400, 3000))
       }
     ],
     measurements: [],

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createOpeningId } from '@/building/model/ids'
 import type { Opening } from '@/building/model/model'
-import { type ConstructionElement, type GroupOrElement, createConstructionElement } from '@/construction/elements'
+import { type ConstructionElement, type GroupOrElement, createCuboidElement } from '@/construction/elements'
 import { createMaterialId } from '@/construction/materials/material'
 import type { RawMeasurement } from '@/construction/measurements'
 import { type ConstructionResult, aggregateResults, yieldElement } from '@/construction/results'
@@ -21,7 +21,6 @@ import {
 import type { InfillMethod } from '@/construction/walls'
 import { infillWallArea } from '@/construction/walls/infill/infill'
 import type { WallSegment3D } from '@/construction/walls/segmentation'
-import { Bounds3D } from '@/shared/geometry'
 
 import { type OpeningConstructionConfig, constructOpeningFrame } from './openings'
 
@@ -79,12 +78,7 @@ const createMockInfillGenerator = function* (numElements = 2): Generator<Constru
   for (let i = 0; i < numElements; i++) {
     const offset = vec3.fromValues(100 * i, 0, 0)
     const size = vec3.fromValues(100, 360, 500)
-    const element = createConstructionElement(createMaterialId(), {
-      type: 'cuboid' as const,
-      offset,
-      size,
-      bounds: Bounds3D.fromCuboid(offset, size)
-    })
+    const element = createCuboidElement(createMaterialId(), offset, size)
     yield yieldElement(element)
   }
 }

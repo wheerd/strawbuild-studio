@@ -1,10 +1,9 @@
 import { vec3 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createConstructionElement } from '@/construction/elements'
+import { createCuboidElement } from '@/construction/elements'
 import { constructStraw } from '@/construction/materials/straw'
 import { aggregateResults, yieldElement } from '@/construction/results'
-import { createCuboidShape } from '@/construction/shapes'
 import type { StrawhengeWallConfig } from '@/construction/walls'
 import { infillWallArea } from '@/construction/walls/infill/infill'
 
@@ -89,17 +88,17 @@ const WALL_LENGTHS = [
 
 // Helper to create mock results for testing
 function* createMockStrawResults(position: vec3, size: vec3, material = 'straw') {
-  const element = createConstructionElement(material as any, createCuboidShape(position, size))
+  const element = createCuboidElement(material as any, position, size)
   yield yieldElement(element)
 }
 
 function* createMockModuleResults(position: vec3, size: vec3, material = 'module') {
-  const element = createConstructionElement(material as any, createCuboidShape(position, size))
+  const element = createCuboidElement(material as any, position, size)
   yield yieldElement(element)
 }
 
 function* createMockInfillResults(position: vec3, size: vec3, material = 'infill') {
-  const element = createConstructionElement(material as any, createCuboidShape(position, size))
+  const element = createCuboidElement(material as any, position, size)
   yield yieldElement(element)
 }
 

@@ -12,7 +12,7 @@ import {
 import type { Opening, Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model/model'
 import type { ConstructionElement, GroupOrElement } from '@/construction/elements'
 import { clayPlasterBase, limePlasterBase } from '@/construction/materials/material'
-import type { ExtrudedPolygon } from '@/construction/shapes'
+import type { ExtrusionParams } from '@/construction/shapes'
 import { TAG_LAYERS, TAG_WALL_LAYER_INSIDE, TAG_WALL_LAYER_OUTSIDE } from '@/construction/tags'
 import type { WallCornerInfo } from '@/construction/walls'
 import type { WallContext } from '@/construction/walls/corners/corners'
@@ -154,11 +154,11 @@ const flattenElements = (items: GroupOrElement[]): ConstructionElement[] => {
   return result
 }
 
-const expectExtrudedPolygon = (element: ConstructionElement): ExtrudedPolygon => {
-  if (element.shape.type !== 'polygon') {
+const expectExtrudedPolygon = (element: ConstructionElement): ExtrusionParams => {
+  if (element.shape.params.type !== 'extrusion') {
     throw new Error('Expected extruded polygon element')
   }
-  return element.shape
+  return element.shape.params
 }
 
 describe('constructWallLayers', () => {
@@ -243,8 +243,12 @@ describe('constructWallLayers', () => {
     const elements = flattenElements(model.elements)
     expect(elements).toHaveLength(2)
 
-    const inside = elements.find(element => element.shape.type === 'polygon' && element.shape.thickness === 30)
-    const outside = elements.find(element => element.shape.type === 'polygon' && element.shape.thickness === 20)
+    const inside = elements.find(
+      element => element.shape.params.type === 'extrusion' && element.shape.params.thickness === 30
+    )
+    const outside = elements.find(
+      element => element.shape.params.type === 'extrusion' && element.shape.params.thickness === 20
+    )
     expect(inside).toBeDefined()
     expect(outside).toBeDefined()
 
@@ -300,7 +304,9 @@ describe('constructWallLayers', () => {
     const model = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
 
     const elements = flattenElements(model.elements)
-    const inside = elements.find(element => element.shape.type === 'polygon' && element.shape.thickness === 30)
+    const inside = elements.find(
+      element => element.shape.params.type === 'extrusion' && element.shape.params.thickness === 30
+    )
     expect(inside).toBeDefined()
 
     if (!inside) {
@@ -328,7 +334,7 @@ describe('constructWallLayers', () => {
     const baselineOutsideStart = (() => {
       const baselineModel = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
       const baselineOutside = flattenElements(baselineModel.elements).find(
-        element => element.shape.type === 'polygon' && element.shape.thickness === 20
+        element => element.shape.params.type === 'extrusion' && element.shape.params.thickness === 20
       )
       if (!baselineOutside) {
         throw new Error('Baseline outside layer missing')
@@ -343,7 +349,9 @@ describe('constructWallLayers', () => {
 
     const model = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
     const elements = flattenElements(model.elements)
-    const outside = elements.find(element => element.shape.type === 'polygon' && element.shape.thickness === 20)
+    const outside = elements.find(
+      element => element.shape.params.type === 'extrusion' && element.shape.params.thickness === 20
+    )
 
     expect(outside).toBeDefined()
     if (!outside) {
@@ -362,7 +370,7 @@ describe('constructWallLayers', () => {
     const baselineInsideStart = (() => {
       const baselineModel = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
       const baselineInside = flattenElements(baselineModel.elements).find(
-        element => element.shape.type === 'polygon' && element.shape.thickness === 30
+        element => element.shape.params.type === 'extrusion' && element.shape.params.thickness === 30
       )
       if (!baselineInside) {
         throw new Error('Baseline inside layer missing')
@@ -377,7 +385,9 @@ describe('constructWallLayers', () => {
 
     const model = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
     const elements = flattenElements(model.elements)
-    const inside = elements.find(element => element.shape.type === 'polygon' && element.shape.thickness === 30)
+    const inside = elements.find(
+      element => element.shape.params.type === 'extrusion' && element.shape.params.thickness === 30
+    )
 
     expect(inside).toBeDefined()
     if (!inside) {

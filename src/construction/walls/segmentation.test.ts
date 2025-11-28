@@ -6,6 +6,7 @@ import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config'
 import { IDENTITY } from '@/construction/geometry'
 import { aggregateResults, yieldElement } from '@/construction/results'
+import { createCuboid } from '@/construction/shapes'
 import { TAG_OPENING_SPACING, TAG_WALL_LENGTH } from '@/construction/tags'
 import type { OpeningSegmentConstruction, WallLayersConfig, WallSegmentConstruction } from '@/construction/walls'
 import { Bounds3D, type Length } from '@/shared/geometry'
@@ -187,12 +188,7 @@ describe('segmentedWallConstruction', () => {
       yield yieldElement({
         id: 'wall-element' as any,
         material: 'material' as any,
-        shape: {
-          type: 'cuboid',
-          offset: vec3.fromValues(0, 0, 0),
-          size: vec3.fromValues(100, 100, 100),
-          bounds: Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(100, 100, 100))
-        },
+        shape: createCuboid(vec3.fromValues(100, 100, 100)),
         transform: IDENTITY,
         bounds: Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(100, 100, 100))
       })
@@ -202,12 +198,7 @@ describe('segmentedWallConstruction', () => {
       yield yieldElement({
         id: 'opening-element' as any,
         material: 'material' as any,
-        shape: {
-          type: 'cuboid',
-          offset: vec3.fromValues(0, 0, 0),
-          size: vec3.fromValues(50, 50, 50),
-          bounds: Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(50, 50, 50))
-        },
+        shape: createCuboid(vec3.fromValues(50, 50, 50)),
         transform: IDENTITY,
         bounds: Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(50, 50, 50))
       })
