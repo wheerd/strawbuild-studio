@@ -14,7 +14,7 @@ export class PurlinRoofAssembly implements RoofAssembly<PurlinRoofConfig> {
     throw new Error('Not implemented')
   }
 
-  getBottomWallOffsets = (_config: PurlinRoofConfig, _wallLine: LineSegment2D): vec2[] => {
+  getBottomOffsets = (_config: PurlinRoofConfig, _Line: LineSegment2D): vec2[] => {
     throw new Error('Not implemented')
   }
 

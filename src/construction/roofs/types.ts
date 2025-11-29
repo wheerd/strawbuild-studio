@@ -10,7 +10,7 @@ export interface RoofAssembly<TConfig extends RoofAssemblyConfigBase> {
   construct: (polygon: Polygon2D, config: TConfig) => ConstructionModel
 
   getTopOffset: (config: TConfig) => Length
-  getBottomWallOffsets: (config: TConfig, wallLine: LineSegment2D) => vec2[]
+  getBottomOffsets: (config: TConfig, line: LineSegment2D) => vec2[]
   getConstructionThickness: (config: TConfig) => Length
 }
 
@@ -34,6 +34,7 @@ export interface MonolithicRoofConfig extends RoofAssemblyConfigBase {
   type: 'monolithic'
   thickness: Length
   material: MaterialId
+  infillMaterial: MaterialId
 }
 
 export interface PurlinRoofConfig extends RoofAssemblyConfigBase {
@@ -44,6 +45,8 @@ export interface PurlinRoofConfig extends RoofAssemblyConfigBase {
   purlinHeight: Length
   purlinWidth: Length
   purlinSpacing: Length
+
+  infillMaterial: MaterialId
 
   rafterMaterial: MaterialId
   rafterWidth: Length
