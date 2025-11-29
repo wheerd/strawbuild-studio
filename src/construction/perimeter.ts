@@ -4,6 +4,7 @@ import type { Perimeter } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { FLOOR_ASSEMBLIES, constructFloorLayerModel } from '@/construction/floors'
 import { IDENTITY } from '@/construction/geometry'
+import { constructRoof } from '@/construction/roof'
 import { applyWallFaceOffsets, createWallFaceOffsets } from '@/construction/storey'
 import { TAG_BASE_PLATE, TAG_TOP_PLATE, TAG_WALLS } from '@/construction/tags'
 import {
@@ -63,8 +64,9 @@ export function computeFloorConstructionPolygon(perimeter: Perimeter): Polygon2D
   return { points }
 }
 
-export function constructPerimeter(perimeter: Perimeter, includeFloor = true): ConstructionModel {
-  const { getStoreyById, getStoreyAbove, getFloorOpeningsByStorey, getPerimetersByStorey } = getModelActions()
+export function constructPerimeter(perimeter: Perimeter, includeFloor = true, includeRoof = true): ConstructionModel {
+  const { getStoreyById, getStoreyAbove, getFloorOpeningsByStorey, getPerimetersByStorey, getRoofsByStorey } =
+    getModelActions()
   const storey = getStoreyById(perimeter.storeyId)
   if (!storey) {
     throw new Error('Invalid storey on perimeter')
@@ -179,6 +181,19 @@ export function constructPerimeter(perimeter: Perimeter, includeFloor = true): C
     if (floorLayerModel) {
       allModels.push(floorLayerModel)
     }
+  }
+
+  if (includeRoof) {
+    const roofs = getRoofsByStorey(perimeter.storeyId)
+    const relevantRoofs = roofs.filter(r => r.referencePerimeter === perimeter.id)
+    allModels.push(
+      ...relevantRoofs.map(roof =>
+        transformModel(constructRoof(roof), {
+          position: vec3.fromValues(0, 0, storey.floorHeight),
+          rotation: vec3.fromValues(0, 0, 0)
+        })
+      )
+    )
   }
 
   return mergeModels(...allModels)
