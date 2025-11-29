@@ -7,11 +7,15 @@ import { RoofPreview } from '@/building/components/inspectors/RoofPreview'
 import type { RoofId } from '@/building/model/ids'
 import type { RoofOverhang } from '@/building/model/model'
 import { useModelActions, useRoofById } from '@/building/store'
+import { FRONT_VIEW, LEFT_VIEW, TOP_VIEW } from '@/construction/components/ConstructionPlan'
+import { ConstructionPlanModal } from '@/construction/components/ConstructionPlanModal'
 import { RoofAssemblySelectWithEdit } from '@/construction/config/components/RoofAssemblySelectWithEdit'
 import { useDefaultRoofAssemblyId } from '@/construction/config/store'
+import { constructRoof } from '@/construction/roof'
+import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
-import { FitToViewIcon } from '@/shared/components/Icons'
+import { ConstructionPlanIcon, FitToViewIcon, Model3DIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
 import {
   Bounds2D,
@@ -246,6 +250,36 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
               Select individual overhang sides to edit them separately
             </Text>
           )}
+        </Flex>
+
+        <Separator size="4" />
+
+        {/* Construction Views */}
+        <Flex direction="row" gap="3" pt="1" align="center" justify="center">
+          <ConstructionPlanModal
+            title="Roof Construction Plan"
+            constructionModelFactory={async () => constructRoof(roof)}
+            views={[
+              { view: TOP_VIEW, label: 'Top' },
+              { view: FRONT_VIEW, label: 'Front' },
+              { view: LEFT_VIEW, label: 'Left' }
+            ]}
+            refreshKey={roof}
+            trigger={
+              <IconButton title="View Construction Plan" size="3">
+                <ConstructionPlanIcon width={24} height={24} />
+              </IconButton>
+            }
+          />
+          <ConstructionViewer3DModal
+            constructionModelFactory={async () => constructRoof(roof)}
+            refreshKey={roof}
+            trigger={
+              <IconButton title="View 3D Construction" size="3" variant="outline">
+                <Model3DIcon width={24} height={24} />
+              </IconButton>
+            }
+          />
         </Flex>
 
         <Separator size="4" />

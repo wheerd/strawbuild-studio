@@ -523,6 +523,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
           type: 'monolithic',
           thickness: 180,
           material: defaultMaterial,
+          infillMaterial: defaultMaterial,
           layers: {
             insideThickness: 0,
             insideLayers: [],
@@ -541,6 +542,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
           purlinHeight: 220,
           purlinWidth: 60,
           purlinSpacing: 1000,
+          infillMaterial: defaultMaterial,
           rafterMaterial: defaultMaterial,
           rafterWidth: 60,
           rafterSpacingMin: 600,

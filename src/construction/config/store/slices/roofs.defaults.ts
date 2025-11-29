@@ -10,6 +10,7 @@ export const createDefaultRoofAssemblies = (): RoofAssemblyConfig[] => {
     type: 'monolithic',
     thickness: 180,
     material: clt.id,
+    infillMaterial: wood.id,
     layers: {
       insideThickness: 30,
       insideLayers: DEFAULT_CEILING_LAYER_SETS['Clay Plaster'],
@@ -29,6 +30,7 @@ export const createDefaultRoofAssemblies = (): RoofAssemblyConfig[] => {
     purlinHeight: 220,
     purlinWidth: 60,
     purlinSpacing: 1000,
+    infillMaterial: strawbale.id,
     rafterMaterial: wood.id,
     rafterWidth: 60,
     rafterSpacingMin: 600,
