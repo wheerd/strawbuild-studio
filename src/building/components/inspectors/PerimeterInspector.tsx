@@ -250,6 +250,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             title="Perimeter Construction Plan"
             constructionModelFactory={async () => constructPerimeter(perimeter)}
             views={[{ view: TOP_VIEW, label: 'Top' }]}
+            midCutActiveDefault
             visibilityToggles={[
               { icon: TopPlateIcon, title: 'Top Plate', tags: [TAG_TOP_PLATE.id] },
               { icon: BasePlateIcon, title: 'Base Plate', tags: [TAG_BASE_PLATE.id] },

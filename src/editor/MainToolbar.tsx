@@ -104,6 +104,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
           title={`Construction Plan for ${activeStorey?.name ?? 'active storey'}`}
           constructionModelFactory={async () => constructStorey(activeStoreyId)}
           views={[{ view: TOP_VIEW, label: 'Top' }]}
+          midCutActiveDefault
           visibilityToggles={[
             { icon: TopPlateIcon, title: 'Top Plate', tags: [TAG_TOP_PLATE.id] },
             { icon: BasePlateIcon, title: 'Base Plate', tags: [TAG_BASE_PLATE.id] },
