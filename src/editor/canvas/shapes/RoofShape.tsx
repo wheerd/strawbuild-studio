@@ -4,7 +4,7 @@ import { Arrow, Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
 import type { Roof } from '@/building/model/model'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
-import { Bounds2D, direction, isPointInPolygon, perpendicular } from '@/shared/geometry'
+import { Bounds2D, direction, perpendicular, perpendicularCW } from '@/shared/geometry'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
 
@@ -42,14 +42,7 @@ export function RoofShape({ roof }: RoofShapeProps): React.JSX.Element {
 
     if (roof.type === 'shed') {
       // Single arrow pointing away from ridge (downslope)
-      const perpDir = perpendicular(ridgeDir)
-
-      // Test which perpendicular direction points into polygon (that's upslope)
-      // Arrow should point the opposite direction (downslope)
-      const testPoint = vec2.scaleAndAdd(vec2.create(), ridgeMidpoint, perpDir, 10)
-      const isInside = isPointInPolygon(testPoint, roof.referencePolygon)
-
-      const arrowDirection = isInside ? perpDir : vec2.negate(vec2.create(), perpDir)
+      const arrowDirection = perpendicularCW(ridgeDir)
       const arrowStart = vec2.scaleAndAdd(vec2.create(), ridgeMidpoint, arrowDirection, arrowOffset)
       const arrowEnd = vec2.scaleAndAdd(vec2.create(), ridgeMidpoint, arrowDirection, arrowLength + arrowOffset)
 

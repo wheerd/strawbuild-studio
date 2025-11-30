@@ -26,8 +26,6 @@ import {
   direction,
   distanceToInfiniteLine,
   intersectPolygon,
-  isPointInPolygon,
-  perpendicular,
   subtractPolygons,
   unionPolygons
 } from '@/shared/geometry'
@@ -198,17 +196,6 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
 
     // Calculate proper ridge height based on geometry and slope
     const ridgeHeight = this.calculateRidgeHeight(roof)
-
-    // Determine slope direction (like in RoofShape.tsx)
-    const perpDir = perpendicular(ridgeDir2D)
-    const ridgeMidpoint = vec2.scale(
-      vec2.create(),
-      vec2.add(vec2.create(), roof.ridgeLine.start, roof.ridgeLine.end),
-      0.5
-    )
-    const testPoint = vec2.scaleAndAdd(vec2.create(), ridgeMidpoint, perpDir, 10)
-    // Check if test point is inside to determine slope direction (for future use)
-    isPointInPolygon(testPoint, roof.referencePolygon)
 
     // Convert to 3D axis-angle rotation
     const rotationAxis = vec3.fromValues(ridgeDir2D[0], ridgeDir2D[1], 0)
