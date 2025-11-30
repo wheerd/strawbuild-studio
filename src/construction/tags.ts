@@ -15,6 +15,7 @@ export const ALL_CATEGORIES = {
   'floor-layer': { label: 'Floor Layers' },
   'wall-layer': { label: 'Wall Layers' },
   'roof-layer': { label: 'Roof Layers' },
+  'roof-side': { label: 'Roof Side' },
   measurement: { label: 'Measurement' },
   opening: { label: 'Opening' },
   area: { label: 'Area' },
@@ -163,6 +164,19 @@ export const TAG_ROOF_LAYER_OVERHANG: Tag = {
   id: 'roof-layer_overhang',
   label: 'Overhang Layers',
   category: 'roof-layer'
+}
+
+// Roof side tags
+export const TAG_ROOF_SIDE_LEFT: Tag = {
+  id: 'roof-side_left',
+  label: 'Left Roof Side',
+  category: 'roof-side'
+}
+
+export const TAG_ROOF_SIDE_RIGHT: Tag = {
+  id: 'roof-side_right',
+  label: 'Right Roof Side',
+  category: 'roof-side'
 }
 
 // Opening tags

@@ -15,9 +15,12 @@ import {
   TAG_ROOF_LAYER_INSIDE,
   TAG_ROOF_LAYER_OVERHANG,
   TAG_ROOF_LAYER_TOP,
+  TAG_ROOF_SIDE_LEFT,
+  TAG_ROOF_SIDE_RIGHT,
   createTag
 } from '@/construction/tags'
 import {
+  Bounds3D,
   type Length,
   type LineSegment2D,
   type Polygon2D,
@@ -29,11 +32,18 @@ import {
   lineFromSegment,
   lineIntersection,
   perpendicularCW,
+  splitPolygonByLine,
   subtractPolygons,
   unionPolygons
 } from '@/shared/geometry'
 
 import type { MonolithicRoofConfig, RoofAssembly } from './types'
+
+interface RoofSide {
+  polygon: Polygon2D
+  side: 'left' | 'right'
+  transform: Transform
+}
 
 export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig> {
   construct = (roof: Roof, config: MonolithicRoofConfig): ConstructionModel => {
@@ -46,35 +56,47 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
 
     const expansionFactor = 1 / Math.cos(slopeAngleRad)
 
-    const elements: GroupOrElement[] = []
+    // STEP 1: Split roof polygon ONCE
+    const roofSides = this.splitRoofPolygon(roof)
 
-    // 1. Build main construction elements
-    const constructionElements = this.constructRoofElements(roof, config, expansionFactor)
-    elements.push(...constructionElements)
+    const allElements: GroupOrElement[] = []
 
-    // 2. Build top layers
-    const topLayerElements = this.constructTopLayers(roof, config, expansionFactor)
-    elements.push(...topLayerElements)
+    // STEP 2: For each side, build all layers
+    for (const roofSide of roofSides) {
+      const sideElements: GroupOrElement[] = []
 
-    // 3. Build ceiling layers
-    const ceilingLayerElements = this.constructCeilingLayers(roof, config, expansionFactor)
-    elements.push(...ceilingLayerElements)
+      // Main construction
+      sideElements.push(...this.constructRoofElements(roof, config, expansionFactor, roofSide))
 
-    // 4. Build overhang layers
-    const overhangLayerElements = this.constructOverhangLayers(roof, config, expansionFactor)
-    elements.push(...overhangLayerElements)
+      // Top layers
+      sideElements.push(...this.constructTopLayers(roof, config, expansionFactor, roofSide))
 
-    // 5. Create group with rotation transform
-    const roofTransform = this.calculateRoofTransform(roof)
-    const roofGroup = createConstructionGroup(elements, roofTransform, [createTag('construction', roof.id)])
+      // Ceiling layers
+      sideElements.push(...this.constructCeilingLayers(roof, config, expansionFactor, roofSide))
+
+      // Overhang layers
+      sideElements.push(...this.constructOverhangLayers(roof, config, expansionFactor, roofSide))
+
+      // Group this side with its transform
+      const sideTag = roofSide.side === 'left' ? TAG_ROOF_SIDE_LEFT : TAG_ROOF_SIDE_RIGHT
+      const sideGroup = createConstructionGroup(sideElements, roofSide.transform, [
+        createTag('construction', roof.id),
+        sideTag
+      ])
+
+      allElements.push(sideGroup)
+    }
+
+    // Compute bounds from all elements
+    const bounds = allElements.length > 0 ? Bounds3D.merge(...allElements.map(el => el.bounds)) : Bounds3D.EMPTY
 
     return {
-      elements: [roofGroup],
+      elements: allElements,
       measurements: [],
       areas: [],
       errors: [],
       warnings: [],
-      bounds: roofGroup.bounds
+      bounds
     }
   }
 
@@ -175,15 +197,54 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
   }
 
   /**
-   * Split roof polygon for gable (two sides) or return single polygon for shed
+   * Split roof polygon for gable (two sides) or return single side for shed
    */
-  private splitRoofPolygon(roof: Roof): Polygon2D[] {
+  private splitRoofPolygon(roof: Roof): RoofSide[] {
     if (roof.type === 'shed') {
-      return [roof.overhangPolygon]
+      return [
+        {
+          polygon: roof.overhangPolygon,
+          side: 'left',
+          transform: this.calculateRoofTransform(roof)
+        }
+      ]
     } else {
-      // Gable: For now, return single polygon
-      // TODO: Implement proper split along ridge line
-      return [roof.overhangPolygon]
+      // Gable: split overhang polygon by ridge line
+      const sides = splitPolygonByLine(roof.overhangPolygon, roof.ridgeLine)
+
+      return sides.map(({ polygon, side }) => ({
+        polygon,
+        side,
+        transform: this.calculateRoofSideTransform(roof, side)
+      }))
+    }
+  }
+
+  /**
+   * Calculate rotation transform for a specific roof side
+   */
+  private calculateRoofSideTransform(roof: Roof, side: 'left' | 'right'): Transform {
+    const ridgeDir2D = direction(roof.ridgeLine.start, roof.ridgeLine.end)
+    const slopeAngleRad = degreesToRadians(roof.slope)
+
+    // Ridge height from FULL polygon (shared by both sides)
+    const ridgeHeight = this.calculateRidgeHeight(roof)
+
+    // Rotation axis along ridge
+    const rotationAxis = vec3.fromValues(ridgeDir2D[0], ridgeDir2D[1], 0)
+    vec3.normalize(rotationAxis, rotationAxis)
+
+    // Opposite rotation for each side
+    // Left side (CCW perpendicular) rotates one way, right side (CW perpendicular) rotates opposite
+    const angle = side === 'left' ? slopeAngleRad : -slopeAngleRad
+
+    const q = quat.create()
+    quat.setAxisAngle(q, rotationAxis, angle)
+    const euler = this.quaternionToEuler(q)
+
+    return {
+      position: vec3.fromValues(roof.ridgeLine.start[0], roof.ridgeLine.start[1], ridgeHeight),
+      rotation: euler
     }
   }
 
@@ -297,13 +358,6 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
   }
 
   /**
-   * Get overhang polygons as difference between overhang and reference polygons
-   */
-  private getOverhangPolygons(roof: Roof): PolygonWithHoles2D[] {
-    return subtractPolygons([roof.overhangPolygon], [roof.referencePolygon])
-  }
-
-  /**
    * Translate polygon to be relative to ridge start (rotation origin)
    */
   private translatePolygonToOrigin(polygon: Polygon2D, ridgeLine: LineSegment2D): Polygon2D {
@@ -359,40 +413,43 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
   /**
    * Construct main roof elements (construction material)
    */
-  private constructRoofElements(roof: Roof, config: MonolithicRoofConfig, expansionFactor: number): GroupOrElement[] {
-    const elements: GroupOrElement[] = []
-    const roofSides = this.splitRoofPolygon(roof)
+  private constructRoofElements(
+    roof: Roof,
+    config: MonolithicRoofConfig,
+    expansionFactor: number,
+    roofSide: RoofSide
+  ): GroupOrElement[] {
+    const preparedPolygon = this.preparePolygonForConstruction(roofSide.polygon, roof.ridgeLine, expansionFactor)
 
-    for (const side of roofSides) {
-      const preparedPolygon = this.preparePolygonForConstruction(side, roof.ridgeLine, expansionFactor)
+    const element = createConstructionElement(
+      config.material,
+      createExtrudedPolygon({ outer: preparedPolygon, holes: [] }, 'xy', config.thickness),
+      {
+        position: vec3.fromValues(0, 0, roof.verticalOffset),
+        rotation: vec3.fromValues(0, 0, 0)
+      },
+      [TAG_ROOF]
+    )
 
-      const element = createConstructionElement(
-        config.material,
-        createExtrudedPolygon({ outer: preparedPolygon, holes: [] }, 'xy', config.thickness),
-        {
-          position: vec3.fromValues(0, 0, roof.verticalOffset),
-          rotation: vec3.fromValues(0, 0, 0)
-        },
-        [TAG_ROOF]
-      )
-
-      elements.push(element)
-    }
-
-    return elements
+    return [element]
   }
 
   /**
-   * Construct top layers (on entire overhang polygon)
+   * Construct top layers (on roof side polygon)
    */
-  private constructTopLayers(roof: Roof, config: MonolithicRoofConfig, expansionFactor: number): GroupOrElement[] {
+  private constructTopLayers(
+    roof: Roof,
+    config: MonolithicRoofConfig,
+    expansionFactor: number,
+    roofSide: RoofSide
+  ): GroupOrElement[] {
     const elements: GroupOrElement[] = []
 
     if (config.layers.topLayers.length === 0) {
       return elements
     }
 
-    const preparedPolygon = this.preparePolygonForConstruction(roof.overhangPolygon, roof.ridgeLine, expansionFactor)
+    const preparedPolygon = this.preparePolygonForConstruction(roofSide.polygon, roof.ridgeLine, expansionFactor)
 
     let zOffset = (roof.verticalOffset + config.thickness) as Length
 
@@ -419,24 +476,32 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
   }
 
   /**
-   * Construct ceiling layers (inside perimeter intersection)
+   * Construct ceiling layers (inside perimeter intersection with roof side)
    */
-  private constructCeilingLayers(roof: Roof, config: MonolithicRoofConfig, expansionFactor: number): GroupOrElement[] {
+  private constructCeilingLayers(
+    roof: Roof,
+    config: MonolithicRoofConfig,
+    expansionFactor: number,
+    roofSide: RoofSide
+  ): GroupOrElement[] {
     const elements: GroupOrElement[] = []
 
     if (config.layers.insideLayers.length === 0) {
       return elements
     }
 
-    const ceilingPolygon = this.getCeilingPolygon(roof)
-    if (!ceilingPolygon) {
+    // Get full ceiling polygon (perimeter inside intersection with reference)
+    const fullCeilingPolygon = this.getCeilingPolygon(roof)
+    if (!fullCeilingPolygon) {
       return elements
     }
 
-    const preparedOuter = this.preparePolygonForConstruction(ceilingPolygon.outer, roof.ridgeLine, expansionFactor)
-    const preparedHoles = ceilingPolygon.holes.map(hole =>
-      this.preparePolygonForConstruction(hole, roof.ridgeLine, expansionFactor)
-    )
+    // Intersect roof side polygon with ceiling polygon
+    const sideCeilingPolygons = intersectPolygon({ outer: roofSide.polygon, holes: [] }, fullCeilingPolygon)
+
+    if (sideCeilingPolygons.length === 0) {
+      return elements
+    }
 
     let zOffset = (roof.verticalOffset - config.layers.insideThickness) as Length
 
@@ -444,19 +509,26 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
     const reversedLayers = [...config.layers.insideLayers].reverse()
 
     for (const layer of reversedLayers) {
-      const results = this.runLayerConstruction({ outer: preparedOuter, holes: preparedHoles }, zOffset, layer)
+      for (const ceilingPoly of sideCeilingPolygons) {
+        const preparedOuter = this.preparePolygonForConstruction(ceilingPoly.outer, roof.ridgeLine, expansionFactor)
+        const preparedHoles = ceilingPoly.holes.map(hole =>
+          this.preparePolygonForConstruction(hole, roof.ridgeLine, expansionFactor)
+        )
 
-      const layerElements: GroupOrElement[] = []
-      for (const result of results) {
-        if (result.type === 'element') {
-          layerElements.push(result.element)
+        const results = this.runLayerConstruction({ outer: preparedOuter, holes: preparedHoles }, zOffset, layer)
+
+        const layerElements: GroupOrElement[] = []
+        for (const result of results) {
+          if (result.type === 'element') {
+            layerElements.push(result.element)
+          }
         }
-      }
 
-      if (layerElements.length > 0) {
-        const customTag = createTag('roof-layer', layer.name)
-        const group = createConstructionGroup(layerElements, IDENTITY, [TAG_ROOF_LAYER_INSIDE, TAG_LAYERS, customTag])
-        elements.push(group)
+        if (layerElements.length > 0) {
+          const customTag = createTag('roof-layer', layer.name)
+          const group = createConstructionGroup(layerElements, IDENTITY, [TAG_ROOF_LAYER_INSIDE, TAG_LAYERS, customTag])
+          elements.push(group)
+        }
       }
 
       zOffset = (zOffset + layer.thickness) as Length
@@ -466,17 +538,24 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
   }
 
   /**
-   * Construct overhang layers (on overhang areas only)
+   * Construct overhang layers (overhang areas for this roof side)
    */
-  private constructOverhangLayers(roof: Roof, config: MonolithicRoofConfig, expansionFactor: number): GroupOrElement[] {
+  private constructOverhangLayers(
+    roof: Roof,
+    config: MonolithicRoofConfig,
+    expansionFactor: number,
+    roofSide: RoofSide
+  ): GroupOrElement[] {
     const elements: GroupOrElement[] = []
 
     if (config.layers.overhangLayers.length === 0) {
       return elements
     }
 
-    const overhangPolygons = this.getOverhangPolygons(roof)
-    if (overhangPolygons.length === 0) {
+    // Subtract reference polygon from this roof side's polygon
+    const sideOverhangPolygons = subtractPolygons([roofSide.polygon], [roof.referencePolygon])
+
+    if (sideOverhangPolygons.length === 0) {
       return elements
     }
 
@@ -486,7 +565,7 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
     const reversedLayers = [...config.layers.overhangLayers].reverse()
 
     for (const layer of reversedLayers) {
-      for (const overhangPoly of overhangPolygons) {
+      for (const overhangPoly of sideOverhangPolygons) {
         const preparedOuter = this.preparePolygonForConstruction(overhangPoly.outer, roof.ridgeLine, expansionFactor)
         const preparedHoles = overhangPoly.holes.map(hole =>
           this.preparePolygonForConstruction(hole, roof.ridgeLine, expansionFactor)

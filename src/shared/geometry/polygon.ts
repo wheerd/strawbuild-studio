@@ -9,7 +9,16 @@ import {
   pathDToPoints
 } from '@/shared/geometry/clipperInstance'
 
-import { type Area, Bounds2D, type Length, direction, perpendicular, radiansToDegrees } from './basic'
+import {
+  type Area,
+  Bounds2D,
+  type Length,
+  direction,
+  perpendicular,
+  perpendicularCCW,
+  perpendicularCW,
+  radiansToDegrees
+} from './basic'
 import { type LineSegment2D, lineIntersection } from './line'
 
 const COLINEAR_EPSILON = 1e-9
@@ -348,6 +357,68 @@ export function subtractPolygons(subject: Polygon2D[], clips: Polygon2D[]): Poly
     subjectPaths.forEach(path => path.delete())
     clipPaths.forEach(path => path.delete())
   }
+}
+
+export interface PolygonSide {
+  polygon: Polygon2D
+  side: 'left' | 'right'
+}
+
+/**
+ * Split a simple polygon by an infinite line defined by a segment.
+ * Left side is perpendicular CCW from line direction, right side is perpendicular CW.
+ * @param polygon - Simple polygon (no holes)
+ * @param line - Line segment defining the split direction
+ * @returns Array of polygon pieces with side tags (typically 0-2)
+ */
+export function splitPolygonByLine(polygon: Polygon2D, line: LineSegment2D): PolygonSide[] {
+  if (polygon.points.length < 3) {
+    return []
+  }
+
+  // Get line direction and perpendiculars
+  const lineDir = direction(line.start, line.end)
+  const perpLeft = perpendicularCCW(lineDir)
+  const perpRight = perpendicularCW(lineDir)
+
+  // Create a large bounding size
+  const bounds = Bounds2D.fromPoints(polygon.points)
+  const largeSize = Math.max(bounds.width, bounds.height) * 3
+
+  // Create two half-plane rectangles on either side of the line
+  // Left half-plane (CCW perpendicular from line)
+  const leftP1 = vec2.scaleAndAdd(vec2.create(), line.start, lineDir, -largeSize)
+  const leftP2 = vec2.scaleAndAdd(vec2.create(), line.start, lineDir, largeSize)
+  const leftP3 = vec2.scaleAndAdd(vec2.create(), leftP2, perpLeft, largeSize)
+  const leftP4 = vec2.scaleAndAdd(vec2.create(), leftP1, perpLeft, largeSize)
+
+  // Right half-plane (CW perpendicular from line)
+  const rightP1 = vec2.scaleAndAdd(vec2.create(), line.start, lineDir, -largeSize)
+  const rightP2 = vec2.scaleAndAdd(vec2.create(), line.start, lineDir, largeSize)
+  const rightP3 = vec2.scaleAndAdd(vec2.create(), rightP2, perpRight, largeSize)
+  const rightP4 = vec2.scaleAndAdd(vec2.create(), rightP1, perpRight, largeSize)
+
+  const leftHalfPlane: Polygon2D = { points: [leftP1, leftP2, leftP3, leftP4] }
+  const rightHalfPlane: Polygon2D = { points: [rightP1, rightP2, rightP3, rightP4] }
+
+  // Use subtract to get the right side (polygon - left half-plane)
+  const rightResults = subtractPolygons([polygon], [leftHalfPlane])
+
+  // Use subtract to get the left side (polygon - right half-plane)
+  const leftResults = subtractPolygons([polygon], [rightHalfPlane])
+
+  // Collect all pieces with side tags
+  const result: PolygonSide[] = []
+
+  for (const poly of leftResults) {
+    result.push({ polygon: poly.outer, side: 'left' })
+  }
+
+  for (const poly of rightResults) {
+    result.push({ polygon: poly.outer, side: 'right' })
+  }
+
+  return result
 }
 
 export function unionPolygonsWithHoles(polygons: Polygon2D[]): PolygonWithHoles2D[] {
