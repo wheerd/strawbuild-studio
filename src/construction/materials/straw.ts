@@ -2,6 +2,7 @@ import { vec3 } from 'gl-matrix'
 
 import { getConfigActions } from '@/construction/config'
 import { createCuboidElement } from '@/construction/elements'
+import type { WallConstructionArea } from '@/construction/geometry'
 import { getMaterialsActions } from '@/construction/materials/store'
 import { dimensionalPartInfo } from '@/construction/parts'
 import { type ConstructionResult, yieldElement, yieldError, yieldWarning } from '@/construction/results'
@@ -45,7 +46,8 @@ function getStrawTags(size: vec3, material: StrawbaleMaterial): Tag[] {
   return [TAG_STRAW_STUFFED]
 }
 
-export function* constructStraw(position: vec3, size: vec3, materialId?: MaterialId): Generator<ConstructionResult> {
+export function* constructStraw(area: WallConstructionArea, materialId?: MaterialId): Generator<ConstructionResult> {
+  const { position, size } = area
   const strawMaterialId = materialId ?? getConfigActions().getDefaultStrawMaterial()
   const material = getMaterialsActions().getMaterialById(strawMaterialId)
 

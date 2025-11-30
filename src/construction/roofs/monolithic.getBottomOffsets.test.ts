@@ -5,7 +5,7 @@ import type { Roof } from '@/building/model'
 import { millimeters } from '@/shared/geometry'
 
 import { MonolithicRoofAssembly } from './monolithic'
-import type { MonolithicRoofConfig } from './types'
+import type { HeightItem, MonolithicRoofConfig } from './types'
 
 describe('MonolithicRoofAssembly.getBottomOffsets', () => {
   const verticalOffset = 420
@@ -75,18 +75,18 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
       expect(offsets).toHaveLength(2)
 
       // First point at t=0
-      expect(offsets[0][0]).toBeCloseTo(0, 5)
+      expect(offsets[0].position).toBeCloseTo(0, 5)
 
       // Last point at t=1
-      expect(offsets[1][0]).toBeCloseTo(1, 5)
+      expect(offsets[1].position).toBeCloseTo(1, 5)
 
       const tan30 = Math.tan((30 * Math.PI) / 180)
       const expectedHeight = 5000 * tan30
 
       // Start (Y=0) is 5000mm from ridge, end (Y=5000) is on ridge
       // End (on ridge) should have highest offset
-      expect(offsets[0][1]).toBeCloseTo(verticalOffset)
-      expect(offsets[1][1]).toBeCloseTo(verticalOffset + expectedHeight)
+      expect((offsets[0] as HeightItem).offset).toBeCloseTo(verticalOffset)
+      expect((offsets[1] as HeightItem).offset).toBeCloseTo(verticalOffset + expectedHeight)
     })
 
     it('should calculate offsets for line parallel to ridge', () => {
@@ -104,15 +104,15 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
 
       // Should have 2 offset points
       expect(offsets).toHaveLength(2)
-      expect(offsets[0][0]).toBeCloseTo(0, 5)
-      expect(offsets[1][0]).toBeCloseTo(1, 5)
+      expect(offsets[0].position).toBeCloseTo(0, 5)
+      expect(offsets[1].position).toBeCloseTo(1, 5)
 
       const tan30 = Math.tan((30 * Math.PI) / 180)
       const expectedHeight = 4000 * tan30
 
       // Both points are same distance from ridge, so same offset
-      expect(offsets[0][1]).toBeCloseTo(verticalOffset + expectedHeight)
-      expect(offsets[1][1]).toBeCloseTo(verticalOffset + expectedHeight)
+      expect((offsets[0] as HeightItem).offset).toBeCloseTo(verticalOffset + expectedHeight)
+      expect((offsets[1] as HeightItem).offset).toBeCloseTo(verticalOffset + expectedHeight)
     })
 
     it('should handle line on the ridge itself', () => {
@@ -135,8 +135,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
       const expectedHeight = 5000 * tan30
 
       // Both points are same distance from ridge, so same offset
-      expect(offsets[0][1]).toBeCloseTo(verticalOffset + expectedHeight)
-      expect(offsets[1][1]).toBeCloseTo(verticalOffset + expectedHeight)
+      expect((offsets[0] as HeightItem).offset).toBeCloseTo(verticalOffset + expectedHeight)
+      expect((offsets[1] as HeightItem).offset).toBeCloseTo(verticalOffset + expectedHeight)
     })
 
     it('should handle overhang beyond reference polygon', () => {
@@ -154,15 +154,15 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
 
       // Should still calculate valid offsets
       expect(offsets).toHaveLength(2)
-      expect(offsets[0][0]).toBeCloseTo(0, 5)
-      expect(offsets[1][0]).toBeCloseTo(1, 5)
+      expect(offsets[0].position).toBeCloseTo(0, 5)
+      expect(offsets[1].position).toBeCloseTo(1, 5)
 
       const tan30 = Math.tan((30 * Math.PI) / 180)
       const expectedBottom = 500 * tan30
       const expectedTop = 5500 * tan30
 
-      expect(offsets[0][1]).toBeCloseTo(verticalOffset - expectedBottom)
-      expect(offsets[1][1]).toBeCloseTo(verticalOffset + expectedTop)
+      expect((offsets[0] as HeightItem).offset).toBeCloseTo(verticalOffset - expectedBottom)
+      expect((offsets[1] as HeightItem).offset).toBeCloseTo(verticalOffset + expectedTop)
     })
 
     it('should handle diagonal line at 45 degrees', () => {
@@ -182,7 +182,7 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
       expect(offsets).toHaveLength(2)
 
       // End should be higher (closer to ridge)
-      expect(offsets[1][1]).toBeGreaterThan(offsets[0][1])
+      expect((offsets[1] as HeightItem).offset).toBeGreaterThan((offsets[0] as HeightItem).offset)
     })
   })
 
@@ -204,13 +204,13 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
       expect(offsets).toHaveLength(3)
 
       // First point at t=0
-      expect(offsets[0][0]).toBeCloseTo(0, 5)
+      expect(offsets[0].position).toBeCloseTo(0, 5)
 
       // Middle point at t=0.5 (ridge is at Y=2500, line goes from 0 to 5000)
-      expect(offsets[1][0]).toBeCloseTo(0.5, 3)
+      expect(offsets[1].position).toBeCloseTo(0.5, 3)
 
       // Last point at t=1
-      expect(offsets[2][0]).toBeCloseTo(1, 5)
+      expect(offsets[2].position).toBeCloseTo(1, 5)
 
       // Calculate expected values:
       // For gable: reference polygon is 10000x5000, ridge at Y=2500
@@ -224,12 +224,12 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
       // End: distance from ridge = 2500mm, offset = ridgeHeight - 2500 * tan(30°)
       const expectedEdgeOffset = ridgeHeight - 2500 * tan30
 
-      expect(offsets[0][1]).toBeCloseTo(expectedEdgeOffset, 1)
-      expect(offsets[1][1]).toBeCloseTo(ridgeHeight, 1)
-      expect(offsets[2][1]).toBeCloseTo(expectedEdgeOffset, 1)
+      expect((offsets[0] as HeightItem).offset).toBeCloseTo(expectedEdgeOffset, 1)
+      expect((offsets[1] as HeightItem).offset).toBeCloseTo(ridgeHeight, 1)
+      expect((offsets[2] as HeightItem).offset).toBeCloseTo(expectedEdgeOffset, 1)
 
       // Start and end should be symmetric (same distance from ridge)
-      expect(offsets[0][1]).toBeCloseTo(offsets[2][1], 1)
+      expect((offsets[0] as HeightItem).offset).toBeCloseTo((offsets[2] as HeightItem).offset, 1)
     })
 
     it('should calculate offsets for line parallel to ridge', () => {
@@ -255,8 +255,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
       const expectedOffset = ridgeHeight - distanceFromRidge * tan30
 
       // Both points same distance from ridge, so same offset
-      expect(offsets[0][1]).toBeCloseTo(expectedOffset, 1)
-      expect(offsets[1][1]).toBeCloseTo(expectedOffset, 1)
+      expect((offsets[0] as HeightItem).offset).toBeCloseTo(expectedOffset, 1)
+      expect((offsets[1] as HeightItem).offset).toBeCloseTo(expectedOffset, 1)
     })
 
     it('should handle line on the ridge itself', () => {
@@ -281,8 +281,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
       const ridgeHeight = 3000 + 2500 * tan30
 
       // Both at ridge height (distance from ridge = 0)
-      expect(offsets[0][1]).toBeCloseTo(ridgeHeight, 1)
-      expect(offsets[1][1]).toBeCloseTo(ridgeHeight, 1)
+      expect((offsets[0] as HeightItem).offset).toBeCloseTo(ridgeHeight, 1)
+      expect((offsets[1] as HeightItem).offset).toBeCloseTo(ridgeHeight, 1)
     })
 
     it('should handle diagonal line crossing ridge at angle', () => {
@@ -310,11 +310,11 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
       const expectedEdgeOffset = ridgeHeight - distanceFromRidge * tan30
 
       // Middle point should be at ridge (t should be 0.5 for symmetric line)
-      expect(offsets[1][0]).toBeCloseTo(0.5, 2)
+      expect(offsets[1].position).toBeCloseTo(0.5, 2)
 
-      expect(offsets[0][1]).toBeCloseTo(expectedEdgeOffset, 1)
-      expect(offsets[1][1]).toBeCloseTo(ridgeHeight, 1)
-      expect(offsets[2][1]).toBeCloseTo(expectedEdgeOffset, 1)
+      expect((offsets[0] as HeightItem).offset).toBeCloseTo(expectedEdgeOffset, 1)
+      expect((offsets[1] as HeightItem).offset).toBeCloseTo(ridgeHeight, 1)
+      expect((offsets[2] as HeightItem).offset).toBeCloseTo(expectedEdgeOffset, 1)
     })
 
     it('should handle line that does not intersect ridge within segment', () => {
@@ -335,8 +335,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
       expect(offsets).toHaveLength(3)
 
       // But we can verify the middle point is at the correct t value
-      expect(offsets[1][0]).toBeGreaterThan(0)
-      expect(offsets[1][0]).toBeLessThan(1)
+      expect(offsets[1].position).toBeGreaterThan(0)
+      expect(offsets[1].position).toBeLessThan(1)
     })
   })
 
@@ -354,7 +354,7 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
 
       expect(offsets).toHaveLength(2)
       // With near-zero slope, offsets should be very similar
-      expect(Math.abs(offsets[0][1] - offsets[1][1])).toBeLessThan(100) // Less than 100mm difference
+      expect(Math.abs((offsets[0] as HeightItem).offset - (offsets[1] as HeightItem).offset)).toBeLessThan(100) // Less than 100mm difference
     })
 
     it('should handle steep slope roof', () => {
@@ -370,7 +370,7 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
 
       expect(offsets).toHaveLength(2)
       // With steep slope, offset difference should be large
-      expect(Math.abs(offsets[0][1] - offsets[1][1])).toBeGreaterThan(4000) // More than 4000mm
+      expect(Math.abs((offsets[0] as HeightItem).offset - (offsets[1] as HeightItem).offset)).toBeGreaterThan(4000) // More than 4000mm
     })
 
     it('should handle very short line segments', () => {
@@ -387,7 +387,7 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
 
       expect(offsets).toHaveLength(2)
       // Offsets should be nearly identical for such a short line
-      expect(Math.abs(offsets[0][1] - offsets[1][1])).toBeLessThan(1)
+      expect(Math.abs((offsets[0] as HeightItem).offset - (offsets[1] as HeightItem).offset)).toBeLessThan(1)
     })
 
     it('should handle ridge at different orientations', () => {
@@ -404,7 +404,7 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
       const offsets = assembly.getBottomOffsets(roof, config, line)
 
       expect(offsets).toHaveLength(2)
-      expect(offsets[0][1]).not.toBeCloseTo(offsets[1][1], 1)
+      expect((offsets[0] as HeightItem).offset).not.toBeCloseTo((offsets[1] as HeightItem).offset, 1)
     })
   })
 })

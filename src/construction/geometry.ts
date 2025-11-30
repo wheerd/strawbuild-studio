@@ -1,7 +1,7 @@
-import { mat4, vec2, vec3 } from 'gl-matrix'
+import { type ReadonlyVec2, type ReadonlyVec3, mat4, vec2, vec3 } from 'gl-matrix'
 
 import type { GroupOrElement } from '@/construction/elements'
-import { Bounds2D } from '@/shared/geometry'
+import { Bounds2D, type Length } from '@/shared/geometry'
 import { type Axis3D, Bounds3D, type Plane3D } from '@/shared/geometry'
 
 export type Transform = mat4
@@ -158,5 +158,63 @@ export function* allPoints(element: GroupOrElement, projection: Projection): Gen
         yield transform(p, element.transform)
       }
     }
+  }
+}
+
+export class WallConstructionArea {
+  public readonly position: ReadonlyVec3
+  public readonly size: ReadonlyVec3
+  public readonly topOffsets?: ReadonlyArray<ReadonlyVec2>
+
+  constructor(position: ReadonlyVec3, size: ReadonlyVec3, topOffsets?: ReadonlyArray<ReadonlyVec2>) {
+    this.position = position
+    this.size = size
+    this.topOffsets = topOffsets
+  }
+
+  public getSubArea(start: Length, length: Length): WallConstructionArea {
+    const end = start + length
+    if (start < this.position[0] || end > this.position[0] + this.size[0]) {
+      throw new Error('Out of bounds')
+    }
+
+    if (!this.topOffsets) {
+      return new WallConstructionArea(
+        vec3.fromValues(start, this.position[1], this.position[2]),
+        vec3.fromValues(length, this.size[1], this.size[2])
+      )
+    }
+    let startIndex = this.topOffsets.findIndex(o => o[0] > start)
+    let endIndex = this.topOffsets.findIndex(o => o[0] > start + length)
+
+    endIndex = Math.max(endIndex === -1 ? this.topOffsets.length - 1 : endIndex - 1, 1)
+    startIndex = Math.max(startIndex === -1 ? endIndex - 1 : startIndex - 1, 0)
+
+    const newTopOffsets = [
+      vec2.fromValues(start, this.topOffsets[startIndex][1]),
+      ...this.topOffsets.slice(startIndex + 1, endIndex),
+      vec2.fromValues(end, this.topOffsets[endIndex][1])
+    ]
+
+    return new WallConstructionArea(
+      vec3.fromValues(start, this.position[1], this.position[2]),
+      vec3.fromValues(length, this.size[1], this.size[2]),
+      newTopOffsets
+    )
+  }
+
+  public getOffsetAt(position: Length): Length {
+    if (!this.topOffsets) return 0
+    let afterIndex = this.topOffsets.findIndex(o => o[0] > position)
+    if (afterIndex < 1) return this.topOffsets[0][1]
+    const before = this.topOffsets[afterIndex - 1]
+    const after = this.topOffsets[afterIndex]
+    const beforeRatio = (position - before[0]) / (after[0] - before[0])
+    const afterRatio = 1 - beforeRatio
+    return beforeRatio * before[1] + afterRatio * after[1]
+  }
+
+  public getMaxHeight(): Length {
+    return this.size[2] + (this.topOffsets ? Math.max(...this.topOffsets.map(o => o[1])) : 0)
   }
 }

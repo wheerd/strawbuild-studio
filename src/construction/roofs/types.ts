@@ -1,5 +1,3 @@
-import type { vec2 } from 'gl-matrix'
-
 import type { Roof } from '@/building/model'
 import { sumLayerThickness } from '@/construction/config/store/layerUtils'
 import type { LayerConfig } from '@/construction/layers/types'
@@ -11,7 +9,7 @@ export interface RoofAssembly<TConfig extends RoofAssemblyConfigBase> {
   construct: (roof: Roof, config: TConfig) => ConstructionModel
 
   getTopOffset: (config: TConfig) => Length
-  getBottomOffsets: (roof: Roof, config: TConfig, line: LineSegment2D) => vec2[]
+  getBottomOffsets: (roof: Roof, config: TConfig, line: LineSegment2D) => HeightLine
   getConstructionThickness: (config: TConfig) => Length
 }
 
@@ -65,6 +63,20 @@ export interface PurlinRoofConfig extends RoofAssemblyConfigBase {
 }
 
 export type RoofConfig = MonolithicRoofConfig | PurlinRoofConfig
+
+export interface HeightJumpItem {
+  position: number // between 0 and 1
+  offset1: Length
+  offset2: Length
+}
+
+export interface HeightItem {
+  position: number // between 0 and 1
+  offset: Length
+  nullAfter: boolean
+}
+
+export type HeightLine = (HeightJumpItem | HeightItem)[]
 
 // Validation
 

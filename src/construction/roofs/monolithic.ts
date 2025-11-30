@@ -38,7 +38,7 @@ import {
   unionPolygons
 } from '@/shared/geometry'
 
-import type { MonolithicRoofConfig, RoofAssembly } from './types'
+import type { HeightLine, MonolithicRoofConfig, RoofAssembly } from './types'
 
 interface RoofSide {
   polygon: Polygon2D
@@ -109,7 +109,7 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
     return config.layers.topThickness
   }
 
-  getBottomOffsets = (roof: Roof, _config: MonolithicRoofConfig, line: LineSegment2D): vec2[] => {
+  getBottomOffsets = (roof: Roof, _config: MonolithicRoofConfig, line: LineSegment2D): HeightLine => {
     const slopeAngleRad = degreesToRadians(roof.slope)
     const tanSlope = Math.tan(slopeAngleRad)
 
@@ -155,14 +155,21 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
 
           // Only add intermediate point if intersection is within the line segment
           if (t >= 0 && t <= 1) {
-            return [vec2.fromValues(0, offsetStart), vec2.fromValues(t, ridgeHeight), vec2.fromValues(1, offsetEnd)]
+            return [
+              { position: 0, offset: offsetStart, nullAfter: false },
+              { position: t, offset: ridgeHeight, nullAfter: false },
+              { position: 1, offset: offsetEnd, nullAfter: false }
+            ]
           }
         }
       }
     }
 
     // Shed roof or gable roof where wall doesn't cross ridge
-    return [vec2.fromValues(0, offsetStart), vec2.fromValues(1, offsetEnd)]
+    return [
+      { position: 0, offset: offsetStart, nullAfter: false },
+      { position: 1, offset: offsetEnd, nullAfter: false }
+    ]
   }
 
   // ============================================================================
