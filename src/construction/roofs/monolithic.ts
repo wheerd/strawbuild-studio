@@ -24,6 +24,7 @@ import {
   type PolygonWithHoles2D,
   degreesToRadians,
   direction,
+  distanceToInfiniteLine,
   intersectPolygon,
   isPointInPolygon,
   perpendicular,
@@ -160,11 +161,43 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
   }
 
   /**
+   * Calculate the ridge elevation based on roof geometry and slope
+   * The ridge must be high enough so that when the roof slopes down,
+   * the edges align with the reference polygon at verticalOffset height
+   */
+  private calculateRidgeHeight(roof: Roof): Length {
+    const slopeAngleRad = degreesToRadians(roof.slope)
+
+    // Find maximum perpendicular distance from ridge to reference polygon
+    let maxDistance = 0
+    const ridgeDir = direction(roof.ridgeLine.start, roof.ridgeLine.end)
+
+    for (const point of roof.referencePolygon.points) {
+      const distance = distanceToInfiniteLine(point, {
+        point: roof.ridgeLine.start,
+        direction: ridgeDir
+      })
+      if (distance > maxDistance) {
+        maxDistance = distance
+      }
+    }
+
+    // Calculate vertical rise from edge to ridge
+    const verticalRise = maxDistance * Math.tan(slopeAngleRad)
+
+    // Ridge height = base height + vertical rise
+    return (roof.verticalOffset + verticalRise) as Length
+  }
+
+  /**
    * Calculate rotation transform for the entire roof assembly
    */
   private calculateRoofTransform(roof: Roof): Transform {
     const ridgeDir2D = direction(roof.ridgeLine.start, roof.ridgeLine.end)
     const slopeAngleRad = degreesToRadians(roof.slope)
+
+    // Calculate proper ridge height based on geometry and slope
+    const ridgeHeight = this.calculateRidgeHeight(roof)
 
     // Determine slope direction (like in RoofShape.tsx)
     const perpDir = perpendicular(ridgeDir2D)
@@ -189,7 +222,7 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
     const euler = this.quaternionToEuler(q)
 
     return {
-      position: vec3.fromValues(roof.ridgeLine.start[0], roof.ridgeLine.start[1], roof.verticalOffset),
+      position: vec3.fromValues(roof.ridgeLine.start[0], roof.ridgeLine.start[1], ridgeHeight),
       rotation: euler
     }
   }
