@@ -91,9 +91,10 @@ export function* constructStraw(area: WallConstructionArea, materialId?: Materia
 
     // Vertical flakes on top
     if (remainderHeight > 0) {
+      const remainingArea = area.withZAdjustment(fullEndZ)
       if (remainderHeight > material.flakeSize) {
         for (let x = 0; x < size[0]; x += material.baleHeight) {
-          const baleArea = area.withXAdjustment(x, material.baleHeight).withZAdjustment(fullEndZ)
+          const baleArea = remainingArea.withXAdjustment(x, material.baleHeight)
 
           yield yieldElement(
             createElementFromArea(baleArea, strawMaterialId, getStrawTags(baleArea.size, material), 'strawbale')

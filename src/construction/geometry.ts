@@ -177,7 +177,8 @@ export class WallConstructionArea {
     if (topOffsets) {
       const maxOffset = Math.max(...topOffsets.map(o => o[1]))
       topOffsets = topOffsets.map(o => vec2.fromValues(o[0], o[1] - maxOffset))
-      size = vec3.fromValues(size[0], size[1], size[2] + maxOffset)
+      const adjustedHeight = Math.max(size[2] + maxOffset, 0)
+      size = vec3.fromValues(size[0], size[1], adjustedHeight)
     }
     this.position = position
     this.size = size
@@ -389,7 +390,7 @@ export class WallConstructionArea {
     const sidePolygonRaw = { outer: { points: pointsList }, holes: [] }
     const sidePolygons = intersectPolygon({ outer: basePolygon, holes: [] }, sidePolygonRaw)
 
-    return sidePolygons[0].outer
+    return sidePolygons.length > 0 ? sidePolygons[0].outer : { points: [] }
   }
 
   public get bounds() {
