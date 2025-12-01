@@ -179,6 +179,13 @@ export class WallConstructionArea {
       topOffsets = topOffsets.map(o => vec2.fromValues(o[0], o[1] - maxOffset))
       const adjustedHeight = Math.max(size[2] + maxOffset, 0)
       size = vec3.fromValues(size[0], size[1], adjustedHeight)
+      if (
+        topOffsets.length === 2 &&
+        vec2.equals(topOffsets[0], vec2.zero(vec2.create())) &&
+        vec2.equals(topOffsets[1], vec2.zero(vec2.create()))
+      ) {
+        topOffsets = undefined
+      }
     }
     this.position = position
     this.size = size

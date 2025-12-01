@@ -18,13 +18,16 @@ import type { WallCornerInfo } from '@/construction/walls'
 import type { WallContext } from '@/construction/walls/corners/corners'
 import type { WallStoreyContext } from '@/construction/walls/segmentation'
 import type { WallLayersConfig } from '@/construction/walls/types'
-import type { Polygon2D } from '@/shared/geometry'
+import type { Polygon2D, PolygonWithHoles2D } from '@/shared/geometry'
 
 import { constructWallLayers } from './layers'
 
 vi.mock('@/shared/geometry', async importOriginal => {
   return {
     ...(await importOriginal()),
+    ensurePolygonIsClockwise: vi.fn(i => i),
+    simplifyPolygon: vi.fn(i => i),
+    intersectPolygon: vi.fn((_subjects: PolygonWithHoles2D[], clips: PolygonWithHoles2D[]) => clips),
     subtractPolygons: vi.fn((subjects: Polygon2D[], clips: Polygon2D[]) => {
       if (subjects.length === 0) {
         return []
@@ -262,17 +265,23 @@ describe('constructWallLayers', () => {
     const insidePolygon = expectExtrudedPolygon(inside)
     const outsidePolygon = expectExtrudedPolygon(outside)
 
-    expect(insidePolygon.polygon.outer.points[0][0]).toBeCloseTo(-30)
-    expect(insidePolygon.polygon.outer.points[2][0]).toBeCloseTo(3030)
+    console.log(insidePolygon)
 
-    expect(outsidePolygon.polygon.outer.points[0][0]).toBeCloseTo(-300)
-    expect(outsidePolygon.polygon.outer.points[2][0]).toBeCloseTo(3300)
+    expect(insidePolygon.polygon.outer.points).toHaveLength(4)
+    expect(insidePolygon.polygon.outer.points).toEqual([
+      vec2.fromValues(-30, 3080),
+      vec2.fromValues(3030, 3080),
+      vec2.fromValues(3030, 10),
+      vec2.fromValues(-30, 10)
+    ])
 
-    expect(insidePolygon.polygon.outer.points[0][1]).toBeCloseTo(10)
-    expect(insidePolygon.polygon.outer.points[1][1]).toBeCloseTo(3080)
-
-    expect(outsidePolygon.polygon.outer.points[0][1]).toBeCloseTo(-200)
-    expect(outsidePolygon.polygon.outer.points[1][1]).toBeCloseTo(3090)
+    expect(outsidePolygon.polygon.outer.points).toHaveLength(4)
+    expect(outsidePolygon.polygon.outer.points).toEqual([
+      vec2.fromValues(-300, 3090),
+      vec2.fromValues(3300, 3090),
+      vec2.fromValues(3300, -200),
+      vec2.fromValues(-300, -200)
+    ])
 
     const layerGroups = model.elements.filter((element): element is GroupOrElement => 'children' in element)
     expect(layerGroups).toHaveLength(2)

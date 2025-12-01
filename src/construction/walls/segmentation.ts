@@ -291,7 +291,7 @@ export function* segmentedWallConstruction(
 
   const totalConstructionHeight =
     storeyContext.ceilingHeight + storeyContext.floorTopOffset + storeyContext.ceilingBottomOffset
-  const ceilingOffset = storeyContext.storeyHeight - totalConstructionHeight + topPlateHeight
+  const ceilingOffset = storeyContext.storeyHeight - totalConstructionHeight
 
   yield* createCornerAreas(cornerInfo, wall.wallLength, totalConstructionHeight)
 

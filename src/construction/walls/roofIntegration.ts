@@ -11,6 +11,7 @@ const POSITION_EPSILON = 0.0001
  * Result of converting height line to wall offsets
  */
 export type WallTopOffsets = readonly ReadonlyVec2[] | undefined
+
 /**
  * Convert a HeightLine (from roof) to wall top offsets array
  * @param heightLine - Height line from roof (should be fully filled, no null regions)
@@ -40,21 +41,6 @@ export function convertHeightLineToWallOffsets(heightLine: HeightLine, wallLengt
   }
 
   return offsets.length > 0 ? offsets : undefined
-}
-
-/**
- * Step 1: Merge height lines from multiple roofs
- * Combines entries and sorts by position
- */
-export function mergeRoofHeightLines(heightLines: HeightLine[]): HeightLine {
-  if (heightLines.length === 0) return []
-  if (heightLines.length === 1) return heightLines[0]
-
-  // Combine all items and sort by position
-  const allItems = heightLines.flat()
-  allItems.sort((a, b) => a.position - b.position)
-
-  return allItems
 }
 
 /**
