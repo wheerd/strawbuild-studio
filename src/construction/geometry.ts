@@ -1,7 +1,7 @@
 import { type ReadonlyVec2, type ReadonlyVec3, mat4, vec2, vec3 } from 'gl-matrix'
 
 import type { GroupOrElement } from '@/construction/elements'
-import { Bounds2D, type Length } from '@/shared/geometry'
+import { Bounds2D, type Length, type Polygon2D } from '@/shared/geometry'
 import { type Axis3D, Bounds3D, type Plane3D } from '@/shared/geometry'
 
 export type Transform = mat4
@@ -167,54 +167,147 @@ export class WallConstructionArea {
   public readonly topOffsets?: ReadonlyArray<ReadonlyVec2>
 
   constructor(position: ReadonlyVec3, size: ReadonlyVec3, topOffsets?: ReadonlyArray<ReadonlyVec2>) {
+    if (topOffsets) {
+      const maxOffset = Math.max(...topOffsets.map(o => o[1]))
+      topOffsets = topOffsets.map(o => vec2.fromValues(o[0], o[1] - maxOffset))
+      size = vec3.fromValues(size[0], size[1], size[2] + maxOffset)
+    }
     this.position = position
     this.size = size
     this.topOffsets = topOffsets
   }
 
-  public getSubArea(start: Length, length: Length): WallConstructionArea {
-    const end = start + length
-    if (start < this.position[0] || end > this.position[0] + this.size[0]) {
-      throw new Error('Out of bounds')
-    }
-
-    if (!this.topOffsets) {
-      return new WallConstructionArea(
-        vec3.fromValues(start, this.position[1], this.position[2]),
-        vec3.fromValues(length, this.size[1], this.size[2])
-      )
-    }
-    let startIndex = this.topOffsets.findIndex(o => o[0] > start)
-    let endIndex = this.topOffsets.findIndex(o => o[0] > start + length)
-
-    endIndex = Math.max(endIndex === -1 ? this.topOffsets.length - 1 : endIndex - 1, 1)
-    startIndex = Math.max(startIndex === -1 ? endIndex - 1 : startIndex - 1, 0)
-
-    const newTopOffsets = [
-      vec2.fromValues(start, this.topOffsets[startIndex][1]),
-      ...this.topOffsets.slice(startIndex + 1, endIndex),
-      vec2.fromValues(end, this.topOffsets[endIndex][1])
-    ]
-
-    return new WallConstructionArea(
-      vec3.fromValues(start, this.position[1], this.position[2]),
-      vec3.fromValues(length, this.size[1], this.size[2]),
-      newTopOffsets
-    )
-  }
-
   public getOffsetAt(position: Length): Length {
-    if (!this.topOffsets) return 0
-    let afterIndex = this.topOffsets.findIndex(o => o[0] > position)
-    if (afterIndex < 1) return this.topOffsets[0][1]
-    const before = this.topOffsets[afterIndex - 1]
+    if (!this.topOffsets || this.topOffsets.length === 0) return 0
+
+    // Find the offset range containing this position
+    let beforeIndex = -1
+    let afterIndex = -1
+
+    for (let i = 0; i < this.topOffsets.length; i++) {
+      if (this.topOffsets[i][0] <= position) {
+        beforeIndex = i
+      }
+      if (this.topOffsets[i][0] >= position && afterIndex === -1) {
+        afterIndex = i
+        break
+      }
+    }
+
+    // Position before first offset
+    if (beforeIndex === -1) return this.topOffsets[0][1]
+
+    // Position after last offset
+    if (afterIndex === -1) return this.topOffsets[this.topOffsets.length - 1][1]
+
+    // Exact match
+    if (Math.abs(this.topOffsets[beforeIndex][0] - position) < 0.001) {
+      return this.topOffsets[beforeIndex][1]
+    }
+
+    // Check for height jump (two offsets at same position)
+    if (Math.abs(this.topOffsets[beforeIndex][0] - this.topOffsets[afterIndex][0]) < 0.001) {
+      // Height jump - return the "after" value
+      return this.topOffsets[afterIndex][1]
+    }
+
+    // Linear interpolation between before and after
+    const before = this.topOffsets[beforeIndex]
     const after = this.topOffsets[afterIndex]
-    const beforeRatio = (position - before[0]) / (after[0] - before[0])
-    const afterRatio = 1 - beforeRatio
-    return beforeRatio * before[1] + afterRatio * after[1]
+    const ratio = (position - before[0]) / (after[0] - before[0])
+    return before[1] + ratio * (after[1] - before[1])
   }
 
-  public getMaxHeight(): Length {
-    return this.size[2] + (this.topOffsets ? Math.max(...this.topOffsets.map(o => o[1])) : 0)
+  /**
+   * Create a copy with adjusted Y position/size (depth adjustment)
+   */
+  public withYAdjustment(yOffset: Length, newDepth?: Length): WallConstructionArea {
+    newDepth = Math.min(newDepth ?? this.size[1], this.size[1] - yOffset)
+    const newPosition = vec3.fromValues(this.position[0], this.position[1] + yOffset, this.position[2])
+    const newSize = vec3.fromValues(this.size[0], newDepth, this.size[2])
+    return new WallConstructionArea(newPosition, newSize, this.topOffsets)
+  }
+
+  /**
+   * Create a copy with adjusted X position (horizontal offset along wall)
+   */
+  public withXAdjustment(xOffset: Length, newWidth?: Length): WallConstructionArea {
+    newWidth = Math.min(newWidth ?? this.size[0], this.size[0] - xOffset)
+    const newPosition = vec3.fromValues(this.position[0] + xOffset, this.position[1], this.position[2])
+    const newSize = vec3.fromValues(newWidth, this.size[1], this.size[2])
+
+    // Adjust topOffsets positions if they exist
+    if (!this.topOffsets) {
+      return new WallConstructionArea(newPosition, newSize)
+    }
+
+    const adjustedOffsets = this.topOffsets
+      .map(offset => vec2.fromValues(offset[0] - xOffset, offset[1]))
+      .filter(offset => offset[0] >= 0 && offset[0] <= newSize[0])
+
+    return new WallConstructionArea(newPosition, newSize, adjustedOffsets.length > 0 ? adjustedOffsets : undefined)
+  }
+
+  public splitInX(xOffset: Length): [WallConstructionArea, WallConstructionArea] {
+    return [this.withXAdjustment(0, xOffset), this.withXAdjustment(xOffset)]
+  }
+
+  /**
+   * Create a copy with adjusted Z position/height
+   */
+  public withZAdjustment(zOffset: Length, newHeight?: Length): WallConstructionArea {
+    newHeight = Math.min(newHeight ?? this.size[2], this.size[2] - zOffset)
+    const newPosition = vec3.fromValues(this.position[0], this.position[1], this.position[2] + zOffset)
+    const newSize = vec3.fromValues(this.size[0], this.size[1], newHeight)
+    return new WallConstructionArea(newPosition, newSize, this.topOffsets)
+  }
+
+  /**
+   * Get side profile polygon (XZ plane)
+   * This polygon can be extruded along Y to create 3D geometry
+   */
+  public getSideProfilePolygon(): Polygon2D {
+    if (!this.topOffsets || this.topOffsets.length === 0) {
+      // Simple rectangle
+      return {
+        points: [
+          vec2.fromValues(this.position[0], this.position[2]), // bottom-left
+          vec2.fromValues(this.position[0] + this.size[0], this.position[2]), // bottom-right
+          vec2.fromValues(this.position[0] + this.size[0], this.position[2] + this.size[2]), // top-right
+          vec2.fromValues(this.position[0], this.position[2] + this.size[2]) // top-left
+        ]
+      }
+    }
+
+    // Complex polygon with sloped top
+    const pointsList: vec2[] = []
+
+    // Bottom edge (left to right)
+    pointsList.push(vec2.fromValues(this.position[0], this.position[2]))
+    pointsList.push(vec2.fromValues(this.position[0] + this.size[0], this.position[2]))
+
+    // Right edge going up
+    const lastOffset = this.topOffsets[this.topOffsets.length - 1]
+    pointsList.push(vec2.fromValues(this.position[0] + this.size[0], this.position[2] + this.size[2] + lastOffset[1]))
+
+    // Top edge (right to left, following slope)
+    for (let i = this.topOffsets.length - 1; i >= 0; i--) {
+      const offset = this.topOffsets[i]
+      pointsList.push(vec2.fromValues(offset[0], this.position[2] + this.size[2] + offset[1]))
+    }
+
+    // Left edge going down
+    const firstOffset = this.topOffsets[0]
+    pointsList.push(vec2.fromValues(this.position[0], this.position[2] + this.size[2] + firstOffset[1]))
+
+    return { points: pointsList }
+  }
+
+  public get bounds() {
+    return Bounds3D.fromCuboid(this.position, this.size)
+  }
+
+  public get minHeight() {
+    return this.size[2] + (this.topOffsets ? Math.min(...this.topOffsets.map(o => o[1])) : 0)
   }
 }

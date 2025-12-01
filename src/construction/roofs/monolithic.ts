@@ -112,8 +112,6 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
   getBottomOffsets = (roof: Roof, _config: MonolithicRoofConfig, line: LineSegment2D): HeightLine => {
     const slopeAngleRad = degreesToRadians(roof.slope)
     const tanSlope = Math.tan(slopeAngleRad)
-
-    // Calculate ridge height (the reference point - highest point)
     const ridgeHeight = this.calculateRidgeHeight(roof)
 
     // Helper to get SIGNED distance from ridge (perpendicular)
@@ -124,16 +122,14 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
       return vec2.dot(toPoint, downSlopeDir)
     }
 
-    const distStart = getSignedDistanceToRidge(line.start)
-    const distEnd = getSignedDistanceToRidge(line.end)
-
-    // Calculate height offsets relative to verticalOffset
-    // Negative signed distance * tan(slope) gives the drop from ridge
-    // Then subtract inside layer thickness (ceiling is below roof construction)
+    // Calculate height offset at a point
     const calculateOffset = (signedDist: number): number => {
       return ridgeHeight - (roof.type === 'shed' ? signedDist : Math.abs(signedDist)) * tanSlope
     }
 
+    // Calculate offsets at start and end of line
+    const distStart = getSignedDistanceToRidge(line.start)
+    const distEnd = getSignedDistanceToRidge(line.end)
     const offsetStart = calculateOffset(distStart)
     const offsetEnd = calculateOffset(distEnd)
 

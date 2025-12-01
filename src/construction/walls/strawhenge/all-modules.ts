@@ -1,6 +1,5 @@
-import { vec3 } from 'gl-matrix'
-
-import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
+import type { Perimeter, PerimeterWall } from '@/building/model/model'
+import { WallConstructionArea } from '@/construction/geometry'
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
 import { constructOpeningFrame } from '@/construction/openings/openings'
@@ -10,13 +9,12 @@ import type { ModulesWallConfig, WallAssembly } from '@/construction/walls'
 import { infillWallArea } from '@/construction/walls/infill/infill'
 import { constructWallLayers } from '@/construction/walls/layers'
 import { type WallStoreyContext, segmentedWallConstruction } from '@/construction/walls/segmentation'
-import { Bounds3D, type Length } from '@/shared/geometry'
+import { Bounds3D } from '@/shared/geometry'
 
 import { constructModule } from './modules'
 
 export function* moduleWallArea(
-  position: vec3,
-  size: vec3,
+  area: WallConstructionArea,
   config: ModulesWallConfig,
   startsWithStand = false,
   endsWithStand = false,
@@ -24,23 +22,15 @@ export function* moduleWallArea(
 ): Generator<ConstructionResult> {
   const { module, infill } = config
 
-  if (size[0] < module.width) {
-    yield* infillWallArea(position, size, infill, startsWithStand, endsWithStand, startAtEnd)
-    return
+  let remainingArea = area
+  while (remainingArea.size[0] >= module.width) {
+    const [a, b] = remainingArea.splitInX(startAtEnd ? remainingArea.size[0] - module.width : module.width)
+    remainingArea = startAtEnd ? a : b
+    const moduleArea = startAtEnd ? b : a
+    yield* constructModule(moduleArea, module)
   }
-
-  const moduleSize = vec3.fromValues(module.width, size[1], size[2])
-  const remainingWidth = size[0] % module.width
-  const start = position[0] + (startAtEnd ? remainingWidth : 0)
-  const end = position[0] + size[0] - (startAtEnd ? 0 : remainingWidth)
-  for (let x = start; x < end; x += module.width) {
-    const modulePosition = vec3.fromValues(x, position[1], position[2])
-    yield* constructModule(modulePosition, moduleSize, module)
-  }
-  if (remainingWidth > 0) {
-    const remainingPosition = vec3.fromValues(startAtEnd ? position[0] : end, position[1], position[2])
-    const remainingSize = vec3.fromValues(remainingWidth, size[1], size[2])
-    yield* infillWallArea(remainingPosition, remainingSize, infill, startsWithStand, endsWithStand, startAtEnd)
+  if (remainingArea.size[0] > 0) {
+    yield* infillWallArea(remainingArea, infill, startsWithStand, endsWithStand, startAtEnd)
   }
 }
 
@@ -57,13 +47,10 @@ export class ModulesWallAssembly implements WallAssembly<ModulesWallConfig> {
         perimeter,
         storeyContext,
         config.layers,
-        (position, size, startsWithStand, endsWithStand, startAtEnd) =>
-          moduleWallArea(position, size, config, startsWithStand, endsWithStand, startAtEnd),
-
-        (position: vec3, size: vec3, zOffset: Length, openings: Opening[]) =>
-          constructOpeningFrame({ type: 'opening', position, size, zOffset, openings }, config.openings, (p, s) =>
-            infillWallArea(p, s, config.infill)
-          ),
+        (area, startsWithStand, endsWithStand, startAtEnd) =>
+          moduleWallArea(area, config, startsWithStand, endsWithStand, startAtEnd),
+        (area, zOffset, openings) =>
+          constructOpeningFrame(area, openings, zOffset, config.openings, a => infillWallArea(a, config.infill)),
         config.openings.padding
       )
     )

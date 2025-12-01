@@ -3,6 +3,7 @@ import { mat4, vec3 } from 'gl-matrix'
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model'
 import { getConfigActions } from '@/construction/config'
 import { createConstructionElement } from '@/construction/elements'
+import type { WallConstructionArea } from '@/construction/geometry'
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
 import { type ConstructionResult, aggregateResults, yieldElement } from '@/construction/results'
@@ -15,8 +16,7 @@ import { type WallStoreyContext, segmentedWallConstruction } from '@/constructio
 import { Bounds3D, type Length } from '@/shared/geometry'
 
 function* noopWallSegment(
-  _position: vec3,
-  _size: vec3,
+  _area: WallConstructionArea,
   _startsWithStand: boolean,
   _endsWithStand: boolean,
   _startAtEnd: boolean
@@ -25,8 +25,7 @@ function* noopWallSegment(
 }
 
 function* noopOpeningSegment(
-  _position: vec3,
-  _size: vec3,
+  _area: WallConstructionArea,
   _zOffset: Length,
   _openings: Opening[]
 ): Generator<ConstructionResult> {

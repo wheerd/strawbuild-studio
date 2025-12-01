@@ -1,8 +1,9 @@
 import { vec3 } from 'gl-matrix'
 
-import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
+import type { Perimeter, PerimeterWall } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config'
 import type { ConstructionElementId } from '@/construction/elements'
+import { WallConstructionArea } from '@/construction/geometry'
 import type { StrawbaleMaterial } from '@/construction/materials/material'
 import { constructPost } from '@/construction/materials/posts'
 import { getMaterialById } from '@/construction/materials/store'
@@ -25,13 +26,13 @@ import { type WallStoreyContext, segmentedWallConstruction } from '@/constructio
 import { Bounds3D, type Length } from '@/shared/geometry'
 
 export function* infillWallArea(
-  position: vec3,
-  size: vec3,
+  area: WallConstructionArea,
   config: InfillWallSegmentConfig,
   startsWithStand = false,
   endsWithStand = false,
   startAtEnd = false
 ): Generator<ConstructionResult> {
+  const { position, size } = area
   const { minStrawSpace } = config
   const { width: postWidth } = config.posts
   let error: string | null = null
@@ -46,39 +47,33 @@ export function* infillWallArea(
     if (size[0] < postWidth) {
       error = 'Not enough space for a post'
     } else if (size[0] === postWidth) {
-      yield* constructPost(position, size, config.posts)
+      yield* constructPost(area, config.posts)
       return
     } else if (startsWithStand && endsWithStand && size[0] < 2 * postWidth) {
       error = 'Space for more than one post, but not enough for two'
     }
   }
 
-  let left = position[0]
-  let width = size[0]
+  let inbetweenArea = area
 
   if (startsWithStand) {
-    yield* yieldAndCollectElementIds(constructPost(position, size, config.posts), allElementIds)
-    left += postWidth
-    width -= postWidth
+    const [postArea, remainingArea] = inbetweenArea.splitInX(config.posts.width)
+    inbetweenArea = remainingArea
+    yield* yieldAndCollectElementIds(constructPost(postArea, config.posts), allElementIds)
   }
 
   if (endsWithStand) {
-    yield* yieldAndCollectElementIds(
-      constructPost([position[0] + size[0] - postWidth, position[1], position[2]], size, config.posts),
-      allElementIds
-    )
-    width -= postWidth
+    const [remainingArea, postArea] = inbetweenArea.splitInX(inbetweenArea.size[0] - config.posts.width)
+    inbetweenArea = remainingArea
+    yield* yieldAndCollectElementIds(constructPost(postArea, config.posts), allElementIds)
   }
 
   const strawMaterialId = config.strawMaterial ?? getConfigActions().getDefaultStrawMaterial()
   const strawMaterial = getMaterialById(strawMaterialId)
   const strawbaleMaterial = strawMaterial?.type === 'strawbale' ? strawMaterial : undefined
 
-  const inbetweenPosition = vec3.fromValues(left, position[1], position[2])
-  const inbetweenSize = vec3.fromValues(width, size[1], size[2])
-
   yield* yieldAndCollectElementIds(
-    constructInfillRecursive(inbetweenPosition, inbetweenSize, config, !startAtEnd, strawbaleMaterial),
+    constructInfillRecursive(inbetweenArea, config, !startAtEnd, strawbaleMaterial),
     allElementIds
   )
 
@@ -93,55 +88,54 @@ export function* infillWallArea(
 }
 
 function* constructInfillRecursive(
-  position: vec3,
-  size: vec3,
+  area: WallConstructionArea,
   config: InfillWallSegmentConfig,
   atStart: boolean,
   strawbaleMaterial?: StrawbaleMaterial
 ): Generator<ConstructionResult> {
+  const { size } = area
   const baleWidth = getBaleWidth(size, config, strawbaleMaterial)
-
-  const strawPosition = vec3.fromValues(
-    atStart ? position[0] : position[0] + size[0] - baleWidth,
-    position[1],
-    position[2]
-  )
-  const strawSize = vec3.fromValues(baleWidth, size[1], size[2])
 
   if (baleWidth > 0) {
     const strawElementIds: ConstructionElementId[] = []
-
-    yield* yieldAndCollectElementIds(constructStraw(strawPosition, strawSize, config.strawMaterial), strawElementIds)
+    const strawArea = area.withXAdjustment(atStart ? 0 : size[0] - baleWidth, baleWidth)
+    yield* yieldAndCollectElementIds(constructStraw(strawArea, config.strawMaterial), strawElementIds)
 
     if (baleWidth < config.minStrawSpace) {
       yield yieldWarning({
         description: 'Not enough space for infilling straw',
         elements: strawElementIds,
-        bounds: Bounds3D.fromCuboid(strawPosition, strawSize)
+        bounds: strawArea.bounds
       })
     }
 
     yield yieldMeasurement({
-      startPoint: strawPosition,
-      endPoint: vec3.fromValues(strawPosition[0] + strawSize[0], strawPosition[1], strawPosition[2]),
-      size: strawSize,
+      startPoint: strawArea.position,
+      endPoint: vec3.fromValues(
+        strawArea.position[0] + strawArea.size[0],
+        strawArea.position[1],
+        strawArea.position[2]
+      ),
+      size: strawArea.size,
       tags: [TAG_POST_SPACING]
     })
   }
 
-  let postOffset: Length
   if (baleWidth + config.posts.width <= size[0]) {
-    postOffset = atStart ? strawPosition[0] + strawSize[0] : strawPosition[0] - config.posts.width
-
-    yield* constructPost([postOffset, position[1], position[2]], size, config.posts)
+    const postArea = area.withXAdjustment(
+      atStart ? baleWidth : size[0] - baleWidth - config.posts.width,
+      config.posts.width
+    )
+    yield* constructPost(postArea, config.posts)
   } else {
     return
   }
 
-  const remainingPosition = [atStart ? postOffset + config.posts.width : position[0], position[1], position[2]]
-  const remainingSize = [size[0] - strawSize[0] - config.posts.width, size[1], size[2]]
+  const remainingArea = atStart
+    ? area.withXAdjustment(baleWidth + config.posts.width)
+    : area.withXAdjustment(0, size[0] - baleWidth - config.posts.width)
 
-  yield* constructInfillRecursive(remainingPosition, remainingSize, config, !atStart, strawbaleMaterial)
+  yield* constructInfillRecursive(remainingArea, config, !atStart, strawbaleMaterial)
 }
 
 function getBaleWidth(
@@ -202,13 +196,10 @@ export class InfillWallAssembly implements WallAssembly<InfillWallConfig> {
         perimeter,
         storeyContext,
         config.layers,
-        (position, size, startsWithStand, endsWithStand, startAtEnd) =>
-          infillWallArea(position, size, config, startsWithStand, endsWithStand, startAtEnd),
-
-        (position: vec3, size: vec3, zOffset: Length, openings: Opening[]) =>
-          constructOpeningFrame({ type: 'opening', position, size, zOffset, openings }, config.openings, (p, s) =>
-            infillWallArea(p, s, config)
-          ),
+        (area, startsWithStand, endsWithStand, startAtEnd) =>
+          infillWallArea(area, config, startsWithStand, endsWithStand, startAtEnd),
+        (area, zOffset, openings) =>
+          constructOpeningFrame(area, openings, zOffset, config.openings, a => infillWallArea(a, config)),
         config.openings.padding
       )
     )

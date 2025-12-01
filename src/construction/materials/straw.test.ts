@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { type ConfigActions, getConfigActions } from '@/construction/config'
 import type { ConstructionElement } from '@/construction/elements'
-import { getPosition } from '@/construction/geometry'
+import { WallConstructionArea, getPosition } from '@/construction/geometry'
 import { aggregateResults } from '@/construction/results'
 import type { CuboidShape } from '@/construction/shapes'
 
@@ -51,7 +51,7 @@ describe('constructStraw', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(800, 360, 500)
 
-      const results = [...constructStraw(position, size)]
+      const results = [...constructStraw(new WallConstructionArea(position, size))]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -71,7 +71,7 @@ describe('constructStraw', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1800, 360, 500) // 2 bales wide
 
-      const results = [...constructStraw(position, size)]
+      const results = [...constructStraw(new WallConstructionArea(position, size))]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -85,7 +85,7 @@ describe('constructStraw', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(800, 400, 500) // Thicker than bale width
 
-      const results = [...constructStraw(position, size)]
+      const results = [...constructStraw(new WallConstructionArea(position, size))]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(1)
@@ -101,7 +101,7 @@ describe('constructStraw', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(800, 300, 500) // Thinner than bale width
 
-      const results = [...constructStraw(position, size)]
+      const results = [...constructStraw(new WallConstructionArea(position, size))]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -128,7 +128,7 @@ describe('constructStraw', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1000, 300, 400)
 
-      const results = [...constructStraw(position, size)]
+      const results = [...constructStraw(new WallConstructionArea(position, size))]
       const { elements, errors, warnings } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -146,7 +146,7 @@ describe('constructStraw', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(800, 360, 500)
 
-      const results = [...constructStraw(position, size, customMaterialId)]
+      const results = [...constructStraw(new WallConstructionArea(position, size), customMaterialId)]
       const { elements } = aggregateResults(results)
 
       expect(mockGetMaterialById).toHaveBeenCalledWith(customMaterialId)
@@ -159,7 +159,7 @@ describe('constructStraw', () => {
       const position = vec3.fromValues(0, 0, 0)
       const size = vec3.fromValues(1600, 360, 500) // 2 bales
 
-      const results = [...constructStraw(position, size)]
+      const results = [...constructStraw(new WallConstructionArea(position, size))]
       const { elements } = aggregateResults(results)
 
       expect(elements).toHaveLength(2)

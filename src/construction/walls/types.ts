@@ -1,6 +1,5 @@
-import type { vec3 } from 'gl-matrix'
-
 import type { Perimeter, PerimeterWall } from '@/building/model'
+import type { WallConstructionArea } from '@/construction/geometry'
 import type { LayerConfig } from '@/construction/layers/types'
 import type { MaterialId } from '@/construction/materials/material'
 import type { PostConfig } from '@/construction/materials/posts'
@@ -68,7 +67,7 @@ export interface NonStrawbaleWallConfig extends WallBaseConfig {
 
 export type WallConfig = InfillWallConfig | ModulesWallConfig | StrawhengeWallConfig | NonStrawbaleWallConfig
 
-export type InfillMethod = (position: vec3, size: vec3) => Generator<ConstructionResult>
+export type InfillMethod = (area: WallConstructionArea) => Generator<ConstructionResult>
 
 // Validation
 

@@ -122,7 +122,7 @@ describe('Strawhenge Wall Construction', () => {
     vi.clearAllMocks()
 
     // Setup default mock implementations
-    mockConstructStraw.mockImplementation((position, size) => createMockStrawResults(position, size))
+    mockConstructStraw.mockImplementation(area => createMockStrawResults(area.position, area.size))
     mockConstructModule.mockImplementation((position, size) => createMockModuleResults(position, size))
     mockInfillWallArea.mockImplementation((position, size) => createMockInfillResults(position, size))
   })

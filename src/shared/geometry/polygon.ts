@@ -19,7 +19,7 @@ import {
   perpendicularCW,
   radiansToDegrees
 } from './basic'
-import { type LineSegment2D, lineIntersection } from './line'
+import { type Line2D, type LineSegment2D, lineIntersection } from './line'
 
 const COLINEAR_EPSILON = 1e-9
 const SIMPLIFY_TOLERANCE = 0.01
@@ -893,4 +893,137 @@ function convexHullAndrew(points: vec2[]): vec2[] {
   upper.pop()
   const hull = lower.concat(upper)
   return ensureCounterClockwiseOrder(hull)
+}
+
+/**
+ * Represents a segment where a line intersects a polygon
+ */
+export interface LinePolygonIntersection {
+  segments: Array<{
+    tStart: number // 0-1 position along line where it enters polygon
+    tEnd: number // 0-1 position along line where it exits polygon
+  }>
+}
+
+/**
+ * Find all segments where a line segment intersects with a polygon.
+ * Returns normalized t values (0-1) along the line segment.
+ */
+export function intersectLineSegmentWithPolygon(
+  line: LineSegment2D,
+  polygon: Polygon2D
+): LinePolygonIntersection | null {
+  if (polygon.points.length < 3) {
+    return null
+  }
+
+  const lineDir = direction(line.start, line.end)
+  const lineLength = vec2.distance(line.start, line.end)
+
+  if (lineLength === 0) {
+    // Degenerate line - just check if point is inside
+    return isPointInPolygon(line.start, polygon) ? { segments: [{ tStart: 0, tEnd: 0 }] } : null
+  }
+
+  // Find all intersection points with polygon edges
+  interface Intersection {
+    t: number
+    crossing: boolean // true if actually crossing (not tangent)
+  }
+
+  const intersections: Intersection[] = []
+  const startInside = isPointInPolygon(line.start, polygon)
+  const endInside = isPointInPolygon(line.end, polygon)
+
+  // Check each edge of the polygon
+  for (let i = 0; i < polygon.points.length; i++) {
+    const p1 = polygon.points[i]
+    const p2 = polygon.points[(i + 1) % polygon.points.length]
+
+    // Solve for intersection: line.start + t * lineDir = p1 + s * (p2 - p1)
+    const edgeDir = direction(p1, p2)
+    const edgeLength = vec2.distance(p1, p2)
+
+    if (edgeLength === 0) continue
+
+    // Use lineIntersection to find intersection point
+    const lineDef: Line2D = { point: line.start, direction: lineDir }
+    const edgeDef: Line2D = { point: p1, direction: edgeDir }
+
+    const intersection = lineIntersection(lineDef, edgeDef)
+
+    if (intersection) {
+      // Calculate t along the line segment
+      const toIntersection = vec2.sub(vec2.create(), intersection, line.start)
+      const t = vec2.dot(toIntersection, lineDir) / lineLength
+
+      // Calculate s along the edge
+      const toIntersectionFromEdge = vec2.sub(vec2.create(), intersection, p1)
+      const s = vec2.dot(toIntersectionFromEdge, edgeDir) / edgeLength
+
+      // Only count if intersection is on both segments (with small epsilon for endpoints)
+      const epsilon = 1e-9
+      if (t >= -epsilon && t <= 1 + epsilon && s >= -epsilon && s <= 1 + epsilon) {
+        // Clamp t to valid range
+        const clampedT = Math.max(0, Math.min(1, t))
+
+        // Check if this is a real crossing (not just tangent)
+        // We determine this by checking if the line crosses from one side to the other
+        const crossing = true // Simplified for now - could improve by checking side change
+
+        intersections.push({ t: clampedT, crossing })
+      }
+    }
+  }
+
+  // Remove duplicate intersections (can happen at vertices)
+  const uniqueIntersections: Intersection[] = []
+  for (const int of intersections) {
+    const isDuplicate = uniqueIntersections.some(existing => Math.abs(existing.t - int.t) < 1e-9)
+    if (!isDuplicate) {
+      uniqueIntersections.push(int)
+    }
+  }
+
+  // Sort by t value
+  uniqueIntersections.sort((a, b) => a.t - b.t)
+
+  // Build segments based on start/end inside status and crossings
+  const segments: { tStart: number; tEnd: number }[] = []
+
+  if (uniqueIntersections.length === 0) {
+    // No edge crossings
+    if (startInside && endInside) {
+      // Entire line is inside
+      return { segments: [{ tStart: 0, tEnd: 1 }] }
+    }
+    // Entire line is outside
+    return null
+  }
+
+  // Build segments by tracking inside/outside status
+  let inside = startInside
+  let segmentStart: number | null = inside ? 0 : null
+
+  for (const intersection of uniqueIntersections) {
+    if (inside) {
+      // We're inside, this intersection is an exit
+      if (segmentStart !== null) {
+        segments.push({ tStart: segmentStart, tEnd: intersection.t })
+      }
+      inside = false
+      segmentStart = null
+    } else {
+      // We're outside, this intersection is an entry
+      inside = true
+      segmentStart = intersection.t
+    }
+  }
+
+  // Close final segment if we end inside
+  if (inside && segmentStart !== null) {
+    segments.push({ tStart: segmentStart, tEnd: 1 })
+  }
+
+  return segments.length > 0 ? { segments } : null
 }

@@ -4,6 +4,7 @@ import type { Opening, Perimeter, PerimeterWall, Storey } from '@/building/model
 import { getConfigActions } from '@/construction/config'
 import type { FloorAssemblyConfig } from '@/construction/config/types'
 import { FLOOR_ASSEMBLIES } from '@/construction/floors'
+import { WallConstructionArea } from '@/construction/geometry'
 import { type ConstructionResult, yieldArea, yieldMeasurement } from '@/construction/results'
 import { getStoreyCeilingHeight } from '@/construction/storeyHeight'
 import {
@@ -73,16 +74,14 @@ function mergeAdjacentOpenings(sortedOpenings: Opening[]): Opening[][] {
 }
 
 export type WallSegmentConstruction = (
-  position: vec3,
-  size: vec3,
+  area: WallConstructionArea,
   startsWithStand: boolean,
   endsWithStand: boolean,
   startAtEnd: boolean
 ) => Generator<ConstructionResult>
 
 export type OpeningSegmentConstruction = (
-  position: vec3,
-  size: vec3,
+  area: WallConstructionArea,
   zOffset: Length,
   openings: Opening[]
 ) => Generator<ConstructionResult>
@@ -307,8 +306,10 @@ export function* segmentedWallConstruction(
   if (openingsWithPadding.length === 0) {
     // No openings - just one wall segment for the entire length
     yield* wallConstruction(
-      vec3.fromValues(-extensionStart, y, z),
-      vec3.fromValues(constructionLength, sizeY, sizeZ),
+      new WallConstructionArea(
+        vec3.fromValues(-extensionStart, y, z),
+        vec3.fromValues(constructionLength, sizeY, sizeZ)
+      ),
       standAtWallStart,
       standAtWallEnd,
       extensionEnd > 0
@@ -333,8 +334,10 @@ export function* segmentedWallConstruction(
     if (groupStart > currentPosition) {
       const wallSegmentWidth = groupStart - currentPosition
       yield* wallConstruction(
-        vec3.fromValues(currentPosition, y, z),
-        vec3.fromValues(wallSegmentWidth, sizeY, sizeZ),
+        new WallConstructionArea(
+          vec3.fromValues(currentPosition, y, z),
+          vec3.fromValues(wallSegmentWidth, sizeY, sizeZ)
+        ),
         currentPosition !== -extensionStart || standAtWallStart,
         true,
         currentPosition > 0
@@ -351,8 +354,7 @@ export function* segmentedWallConstruction(
     // Create opening segment for the group
     const groupWidth = groupEnd - groupStart
     yield* openingConstruction(
-      vec3.fromValues(groupStart, y, z),
-      vec3.fromValues(groupWidth, sizeY, sizeZ),
+      new WallConstructionArea(vec3.fromValues(groupStart, y, z), vec3.fromValues(groupWidth, sizeY, sizeZ)),
       finishedFloorZLevel,
       openingGroup
     )
@@ -364,8 +366,7 @@ export function* segmentedWallConstruction(
   if (currentPosition < constructionLength - extensionStart) {
     const remainingWidth = constructionLength - currentPosition - extensionStart
     yield* wallConstruction(
-      vec3.fromValues(currentPosition, y, z),
-      vec3.fromValues(remainingWidth, sizeY, sizeZ),
+      new WallConstructionArea(vec3.fromValues(currentPosition, y, z), vec3.fromValues(remainingWidth, sizeY, sizeZ)),
       true,
       standAtWallEnd,
       currentPosition > 0

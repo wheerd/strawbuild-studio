@@ -2,7 +2,7 @@ import { vec3 } from 'gl-matrix'
 
 import type { Opening } from '@/building/model/model'
 import { type ConstructionElement, createCuboidElement } from '@/construction/elements'
-import { IDENTITY } from '@/construction/geometry'
+import { IDENTITY, WallConstructionArea } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
 import { dimensionalPartInfo } from '@/construction/parts'
 import { type ConstructionResult, yieldArea, yieldElement, yieldError, yieldMeasurement } from '@/construction/results'
@@ -18,7 +18,6 @@ import {
   TAG_SILL_HEIGHT
 } from '@/construction/tags'
 import type { InfillMethod } from '@/construction/walls'
-import type { WallSegment3D } from '@/construction/walls/segmentation'
 import { Bounds3D, type Length } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
 
@@ -49,20 +48,16 @@ function extractUnifiedDimensions(
 }
 
 export function* constructOpeningFrame(
-  openingSegment: WallSegment3D,
+  area: WallConstructionArea,
+  openings: Opening[],
+  zOffset: Length,
   config: OpeningConstructionConfig,
   infill: InfillMethod
 ): Generator<ConstructionResult> {
-  if (openingSegment.type !== 'opening' || !openingSegment.openings) {
-    throw new Error('constructOpeningFrame requires an opening segment with openings array')
-  }
+  const [openingLeft, wallFront, wallBottom] = area.position
+  const [openingRight, , wallTop] = vec3.add(vec3.create(), area.position, area.size)
+  const [openingWidth, wallThickness] = area.size
 
-  const openings = openingSegment.openings
-  const [openingLeft, wallFront, wallBottom] = openingSegment.position
-  const [openingRight, , wallTop] = vec3.add(vec3.create(), openingSegment.position, openingSegment.size)
-  const [openingWidth, wallThickness] = openingSegment.size
-
-  const zOffset = openingSegment.zOffset ?? 0
   const { sillTop, headerBottom } = extractUnifiedDimensions(openings, zOffset)
 
   // Check if header is required and fits
@@ -204,13 +199,9 @@ export function* constructOpeningFrame(
   // Create wall above header (if space remains)
   if (headerRequired) {
     const wallAboveBottom = headerBottom + config.headerThickness
-    const wallAboveHeight = wallTop - wallAboveBottom
-
-    if (wallAboveHeight > 0) {
-      const wallAbovePosition = vec3.fromValues(openingLeft, wallFront, wallAboveBottom)
-      const wallAboveSize = vec3.fromValues(openingWidth, wallThickness, wallAboveHeight)
-
-      yield* infill(wallAbovePosition, wallAboveSize)
+    if (wallTop > wallAboveBottom) {
+      const aboveArea = area.withZAdjustment(wallAboveBottom)
+      yield* infill(aboveArea)
     }
   }
 
@@ -223,7 +214,7 @@ export function* constructOpeningFrame(
       const wallBelowPosition = vec3.fromValues(openingLeft, wallFront, wallBottom)
       const wallBelowSize = vec3.fromValues(openingWidth, wallThickness, wallBelowHeight)
 
-      yield* infill(wallBelowPosition, wallBelowSize)
+      yield* infill(new WallConstructionArea(wallBelowPosition, wallBelowSize))
     }
   }
 }

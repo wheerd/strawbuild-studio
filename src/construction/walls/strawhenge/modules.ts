@@ -1,6 +1,7 @@
 import { vec3 } from 'gl-matrix'
 
 import { type ConstructionElement, createCuboidElement } from '@/construction/elements'
+import { WallConstructionArea } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
 import { constructStraw } from '@/construction/materials/straw'
 import { type PartId, type PartInfo, dimensionalPartInfo } from '@/construction/parts'
@@ -46,6 +47,7 @@ function* constructSingleFrameModule(
   // Calculate straw area (inset by frameThickness on all sides)
   const strawPosition = vec3.fromValues(position[0] + frameThickness, position[1], position[2] + frameThickness)
   const strawSize = vec3.fromValues(size[0] - 2 * frameThickness, size[1], size[2] - 2 * frameThickness)
+  const strawArea = new WallConstructionArea(strawPosition, strawSize)
 
   // Top frame
   const topFrame: ConstructionElement = createCuboidElement(
@@ -88,7 +90,7 @@ function* constructSingleFrameModule(
   yield yieldElement(endFrame)
 
   // Straw filling
-  yield* constructStraw(strawPosition, strawSize, config.strawMaterial)
+  yield* constructStraw(strawArea, config.strawMaterial)
 
   yield yieldMeasurement({
     startPoint: position,
@@ -116,6 +118,7 @@ function* constructDoubleFrameModule(
   // Calculate straw area (inset by frameThickness on all sides)
   const strawPosition = vec3.fromValues(position[0] + frameThickness, position[1], position[2] + frameThickness)
   const strawSize = vec3.fromValues(size[0] - 2 * frameThickness, size[1], size[2] - 2 * frameThickness)
+  const strawArea = new WallConstructionArea(strawPosition, strawSize)
   const horizontalFrameSize = vec3.fromValues(size[0], frameWidth, frameThickness)
   const horizontalFramePartId = dimensionalPartInfo('module-frame', horizontalFrameSize)
   const verticalFrameLength = size[2] - 2 * frameThickness
@@ -202,7 +205,7 @@ function* constructDoubleFrameModule(
   if (config.strawMaterial) {
     yield yieldElement(createCuboidElement(config.strawMaterial, strawPosition, strawSize, [TAG_STRAW_INFILL]))
   } else {
-    yield* constructStraw(strawPosition, strawSize)
+    yield* constructStraw(strawArea)
   }
 
   const gapWidth = size[1] - 2 * frameWidth
@@ -276,7 +279,8 @@ function* constructDoubleFrameModule(
   })
 }
 
-export function* constructModule(position: vec3, size: vec3, config: ModuleConfig): Generator<ConstructionResult> {
+export function* constructModule(area: WallConstructionArea, config: ModuleConfig): Generator<ConstructionResult> {
+  const size = vec3.fromValues(area.size[0], area.size[1], area.minHeight)
   const configStr = JSON.stringify(config, Object.keys(config).sort())
   const sizeStr = Array.from(size).map(Math.round).join('x')
   const partInfo: PartInfo = {
@@ -285,9 +289,9 @@ export function* constructModule(position: vec3, size: vec3, config: ModuleConfi
     size
   }
   if (config.type === 'single') {
-    yield* yieldAsGroup(constructSingleFrameModule(position, size, config), [TAG_MODULE], undefined, partInfo)
+    yield* yieldAsGroup(constructSingleFrameModule(area.position, size, config), [TAG_MODULE], undefined, partInfo)
   } else if (config.type === 'double') {
-    yield* yieldAsGroup(constructDoubleFrameModule(position, size, config), [TAG_MODULE], undefined, partInfo)
+    yield* yieldAsGroup(constructDoubleFrameModule(area.position, size, config), [TAG_MODULE], undefined, partInfo)
   } else {
     throw new Error('Invalid module type')
   }

@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { type ConfigActions, getConfigActions } from '@/construction/config'
 import type { ConstructionElement } from '@/construction/elements'
+import { WallConstructionArea } from '@/construction/geometry'
 import type { StrawbaleMaterial } from '@/construction/materials/material'
 import { strawbale } from '@/construction/materials/material'
 import { getMaterialsActions } from '@/construction/materials/store'
@@ -75,7 +76,7 @@ describe.each(scenarios)('constructStraw visual regression - $length x $height',
     const position = vec3.fromValues(0, 0, 0)
     const size = vec3.fromValues(length, defaultMaterial.baleWidth, height)
 
-    const results = [...constructStraw(position, size)]
+    const results = [...constructStraw(new WallConstructionArea(position, size))]
     const { elements, errors } = aggregateResults(results)
 
     expect(errors, 'constructStraw should not emit errors for this scenario').toHaveLength(0)
