@@ -35,8 +35,9 @@ export function calculateWallCornerInfo(wall: PerimeterWall, context: WallContex
 
   const previousAssembly = getWallAssemblyById(previousWall.wallAssemblyId)
   const nextAssembly = getWallAssemblyById(nextWall.wallAssemblyId)
+  const currentAssembly = getWallAssemblyById(wall.wallAssemblyId)
 
-  if (!previousAssembly || !nextAssembly) {
+  if (!previousAssembly || !nextAssembly || !currentAssembly) {
     throw new Error('Invalid wall assembly')
   }
 
@@ -76,6 +77,56 @@ export function calculateWallCornerInfo(wall: PerimeterWall, context: WallContex
 
   const constructionLength = Math.round(wall.wallLength + appliedStartExtension + appliedEndExtension)
 
+  // Calculate construction lines adjusted by layer thickness
+  const constructionInsideLine = {
+    start: vec2.scaleAndAdd(
+      vec2.create(),
+      vec2.scaleAndAdd(
+        vec2.create(),
+        wall.insideLine.start,
+        wall.outsideDirection,
+        currentAssembly.layers.insideThickness
+      ),
+      wall.direction,
+      -appliedStartExtension
+    ),
+    end: vec2.scaleAndAdd(
+      vec2.create(),
+      vec2.scaleAndAdd(
+        vec2.create(),
+        wall.insideLine.end,
+        wall.outsideDirection,
+        currentAssembly.layers.insideThickness
+      ),
+      wall.direction,
+      appliedEndExtension
+    )
+  }
+  const constructionOutsideLine = {
+    start: vec2.scaleAndAdd(
+      vec2.create(),
+      vec2.scaleAndAdd(
+        vec2.create(),
+        wall.outsideLine.start,
+        wall.outsideDirection,
+        -currentAssembly.layers.outsideThickness
+      ),
+      wall.direction,
+      -appliedStartExtension
+    ),
+    end: vec2.scaleAndAdd(
+      vec2.create(),
+      vec2.scaleAndAdd(
+        vec2.create(),
+        wall.outsideLine.end,
+        wall.outsideDirection,
+        -currentAssembly.layers.outsideThickness
+      ),
+      wall.direction,
+      appliedEndExtension
+    )
+  }
+
   return {
     startCorner: {
       id: startCorner.id,
@@ -89,6 +140,8 @@ export function calculateWallCornerInfo(wall: PerimeterWall, context: WallContex
     },
     extensionStart: appliedStartExtension,
     extensionEnd: appliedEndExtension,
-    constructionLength
+    constructionLength,
+    constructionInsideLine,
+    constructionOutsideLine
   }
 }

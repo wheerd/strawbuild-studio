@@ -55,7 +55,7 @@ export function constructStoreyFloor(storeyId: StoreyId): ConstructionModel[] {
 
   const storeyContext = createWallStoreyContext(storey, floorAssemblyConfig, nextFloorAssemblyConfig ?? null)
   const ceilingStartHeight = (storeyContext.floorTopOffset +
-    storeyContext.storeyHeight +
+    storeyContext.ceilingHeight +
     storeyContext.ceilingBottomOffset) as Length
 
   let nextFloorOpenings: Polygon2D[] = []

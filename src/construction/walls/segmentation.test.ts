@@ -122,7 +122,15 @@ function createMockCornerInfo(
     },
     extensionStart,
     extensionEnd,
-    constructionLength
+    constructionLength,
+    constructionInsideLine: {
+      start: vec2.fromValues(-extensionStart, 0),
+      end: vec2.fromValues(constructionLength - extensionStart, 0)
+    },
+    constructionOutsideLine: {
+      start: vec2.fromValues(-extensionStart, 300),
+      end: vec2.fromValues(constructionLength - extensionStart, 300)
+    }
   }
 }
 
@@ -138,7 +146,7 @@ function createMockLayers(): WallLayersConfig {
 function createMockStoreyContext(storeyHeight: Length = 2500): WallStoreyContext {
   return {
     floorConstructionThickness: 0,
-    storeyHeight,
+    ceilingHeight: storeyHeight,
     floorTopOffset: 0,
     ceilingBottomOffset: 0,
     ceilingBottomConstructionOffset: 0,

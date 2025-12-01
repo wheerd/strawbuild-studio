@@ -5,7 +5,7 @@ import { type ConstructionElement, createConstructionElement, createCuboidElemen
 import { type WallConstructionArea } from '@/construction/geometry'
 import { buildAndCacheManifold } from '@/construction/manifold/builders'
 import type { MaterialId } from '@/construction/materials/material'
-import { dimensionalPartInfo, polygonPartInfo } from '@/construction/parts'
+import { dimensionalPartInfo } from '@/construction/parts'
 import type { Tag } from '@/construction/tags'
 import { Bounds2D, Bounds3D, type Length, type Plane3D, type PolygonWithHoles2D } from '@/shared/geometry'
 
@@ -78,8 +78,9 @@ export function createElementFromArea(
   partType?: string,
   partDescription?: string
 ): ConstructionElement {
+  const partInfo = partType ? dimensionalPartInfo(partType, area.size, partDescription) : undefined
+
   if (area.minHeight === area.size[2]) {
-    const partInfo = partType ? dimensionalPartInfo(partType, area.size, partDescription) : undefined
     return createCuboidElement(materialId, area.position, area.size, tags, partInfo)
   }
 
@@ -97,8 +98,5 @@ export function createElementFromArea(
   // Create transform to position at area's Y position
   const transform = mat4.fromTranslation(mat4.create(), vec3.fromValues(0, area.position[1], 0))
 
-  const partInfo = partType
-    ? polygonPartInfo(partType, sideProfile, 'xz', area.size[1], partDescription, true)
-    : undefined
   return createConstructionElement(materialId, shape, transform, tags, partInfo)
 }

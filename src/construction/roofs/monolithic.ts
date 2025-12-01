@@ -60,9 +60,6 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
     // STEP 1: Split roof polygon ONCE
     const roofSides = this.splitRoofPolygon(roof)
 
-    console.log(roof.ridgeLine)
-    console.log(roofSides.map(s => [s.side, s.polygon.points.length]))
-
     const allElements: GroupOrElement[] = []
 
     // STEP 2: For each side, build all layers
@@ -256,7 +253,6 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
     // So we need NEGATIVE rotation to make it go DOWN
     const dot = vec3.dot(sidePerp3D, upDirection)
     const angle = dot < 0 ? -slopeAngleRad : slopeAngleRad
-    console.log('angle', rotationAxis, sidePerp, side, dot, angle)
 
     const transform = mat4.rotate(
       mat4.create(),

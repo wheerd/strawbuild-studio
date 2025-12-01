@@ -53,7 +53,7 @@ export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallCo
     const basePlateHeight = basePlateAssembly?.height ?? 0
     const topPlateHeight = topPlateAssembly?.height ?? 0
     const totalConstructionHeight =
-      storeyContext.storeyHeight + storeyContext.floorTopOffset + storeyContext.ceilingBottomOffset
+      storeyContext.ceilingHeight + storeyContext.floorTopOffset + storeyContext.ceilingBottomOffset
 
     const structuralThickness = (wall.thickness -
       config.layers.insideThickness -

@@ -1,7 +1,16 @@
 import { type ReadonlyVec2, type ReadonlyVec3, mat4, vec2, vec3 } from 'gl-matrix'
 
 import type { GroupOrElement } from '@/construction/elements'
-import { type Axis3D, Bounds2D, Bounds3D, type Length, type Plane3D, type Polygon2D } from '@/shared/geometry'
+import {
+  type Axis3D,
+  Bounds2D,
+  Bounds3D,
+  type Length,
+  type Plane3D,
+  type Polygon2D,
+  ensurePolygonIsClockwise,
+  simplifyPolygon
+} from '@/shared/geometry'
 
 export type Transform = mat4
 
@@ -240,11 +249,17 @@ export class WallConstructionArea {
       return new WallConstructionArea(newPosition, newSize)
     }
 
-    const adjustedOffsets = this.topOffsets
+    const inbetweenOffsets = this.topOffsets
       .map(offset => vec2.fromValues(offset[0] - xOffset, offset[1]))
-      .filter(offset => offset[0] >= 0 && offset[0] <= newSize[0])
+      .filter(offset => offset[0] > 0 && offset[0] < newWidth)
 
-    return new WallConstructionArea(newPosition, newSize, adjustedOffsets.length > 0 ? adjustedOffsets : undefined)
+    const newTopOffsets = [
+      vec2.fromValues(0, this.getOffsetAt(xOffset)),
+      ...inbetweenOffsets,
+      vec2.fromValues(newWidth, this.getOffsetAt(xOffset + newWidth))
+    ]
+
+    return new WallConstructionArea(newPosition, newSize, newTopOffsets.length > 0 ? newTopOffsets : undefined)
   }
 
   public splitInX(xOffset: Length): [WallConstructionArea, WallConstructionArea] {
@@ -258,7 +273,13 @@ export class WallConstructionArea {
     newHeight = Math.min(newHeight ?? this.size[2], this.size[2] - zOffset)
     const newPosition = vec3.fromValues(this.position[0], this.position[1], this.position[2] + zOffset)
     const newSize = vec3.fromValues(this.size[0], this.size[1], newHeight)
-    return new WallConstructionArea(newPosition, newSize, this.topOffsets)
+    const newTop = zOffset + newHeight
+    const delta = newTop - this.size[2]
+    const newTopOffsets = this.topOffsets?.map(o => vec2.fromValues(o[0], Math.min(o[1] - delta, 0)))
+    if (this.size[2] - zOffset === newHeight) {
+      console.log(newTopOffsets?.map(o => o[0]))
+    }
+    return new WallConstructionArea(newPosition, newSize, newTopOffsets)
   }
 
   /**
@@ -281,25 +302,32 @@ export class WallConstructionArea {
     // Complex polygon with sloped top
     const pointsList: vec2[] = []
 
+    // M1380,2000 L525,2000
+    // L525,2482.6767578125
+    // L1380,2500
+    // L1380,2000
+
+    const top = this.position[2] + this.size[2]
+
     // Bottom edge (left to right)
     pointsList.push(vec2.fromValues(this.position[0], this.position[2]))
     pointsList.push(vec2.fromValues(this.position[0] + this.size[0], this.position[2]))
 
     // Right edge going up
     const lastOffset = this.topOffsets[this.topOffsets.length - 1]
-    pointsList.push(vec2.fromValues(this.position[0] + this.size[0], this.position[2] + this.size[2] + lastOffset[1]))
+    pointsList.push(vec2.fromValues(this.position[0] + this.size[0], Math.max(top + lastOffset[1], this.position[2])))
 
     // Top edge (right to left, following slope)
     for (let i = this.topOffsets.length - 1; i >= 0; i--) {
       const offset = this.topOffsets[i]
-      pointsList.push(vec2.fromValues(offset[0], this.position[2] + this.size[2] + offset[1]))
+      pointsList.push(vec2.fromValues(this.position[0] + offset[0], Math.max(top + offset[1], this.position[2])))
     }
 
     // Left edge going down
     const firstOffset = this.topOffsets[0]
-    pointsList.push(vec2.fromValues(this.position[0], this.position[2] + this.size[2] + firstOffset[1]))
+    pointsList.push(vec2.fromValues(this.position[0], Math.max(top + firstOffset[1], this.position[2])))
 
-    return { points: pointsList }
+    return ensurePolygonIsClockwise(simplifyPolygon({ points: pointsList }))
   }
 
   public get bounds() {

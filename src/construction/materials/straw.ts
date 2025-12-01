@@ -4,8 +4,8 @@ import { getConfigActions } from '@/construction/config'
 import { createCuboidElement } from '@/construction/elements'
 import type { WallConstructionArea } from '@/construction/geometry'
 import { getMaterialsActions } from '@/construction/materials/store'
-import { dimensionalPartInfo } from '@/construction/parts'
 import { type ConstructionResult, yieldElement, yieldError, yieldWarning } from '@/construction/results'
+import { createElementFromArea } from '@/construction/shapes'
 import { TAG_FULL_BALE, TAG_PARTIAL_BALE, TAG_STRAW_FLAKES, TAG_STRAW_STUFFED, type Tag } from '@/construction/tags'
 
 import type { MaterialId, StrawbaleMaterial } from './material'
@@ -52,43 +52,26 @@ export function* constructStraw(area: WallConstructionArea, materialId?: Materia
   const material = getMaterialsActions().getMaterialById(strawMaterialId)
 
   if (material?.type !== 'strawbale') {
-    yield yieldElement(
-      createCuboidElement(strawMaterialId, position, size, [TAG_STRAW_STUFFED], dimensionalPartInfo('strawbale', size))
-    )
+    yield yieldElement(createElementFromArea(area, strawMaterialId, [TAG_STRAW_STUFFED], 'strawbale'))
     return
   }
 
   if (size[1] === material.baleWidth) {
-    const end = vec3.add(vec3.create(), position, size)
-
     // Gap smaller than a flake: Make it one stuffed fill
     if (size[0] < material.flakeSize || size[2] < material.flakeSize) {
-      yield yieldElement(
-        createCuboidElement(
-          strawMaterialId,
-          position,
-          size,
-          [TAG_STRAW_STUFFED],
-          dimensionalPartInfo('strawbale', size)
-        )
-      )
+      yield yieldElement(createElementFromArea(area, strawMaterialId, [TAG_STRAW_STUFFED], 'strawbale'))
       return
     }
 
     // Vertical bales
     if (Math.abs(size[0] - material.baleHeight) <= material.tolerance) {
-      for (let z = position[2]; z < end[2]; z += material.baleMaxLength) {
-        const balePosition = vec3.fromValues(position[0], position[1], z)
-        const baleSize = vec3.fromValues(size[0], material.baleWidth, Math.min(material.baleMaxLength, end[2] - z))
+      for (let z = 0; z < size[2]; z += material.baleMaxLength) {
+        const adjustedHeight = Math.min(material.baleMaxLength, size[2] - z)
+        const baleArea = area.withYAdjustment(z, adjustedHeight)
 
-        const bale = createCuboidElement(
-          strawMaterialId,
-          balePosition,
-          baleSize,
-          getStrawTags(baleSize, material),
-          dimensionalPartInfo('strawbale', baleSize)
+        yield yieldElement(
+          createElementFromArea(baleArea, strawMaterialId, getStrawTags(baleArea.size, material), 'strawbale')
         )
-        yield yieldElement(bale)
       }
       return
     }
@@ -96,59 +79,32 @@ export function* constructStraw(area: WallConstructionArea, materialId?: Materia
     // Horizontal bales
     let remainderHeight = size[2] % material.baleHeight
     if (material.baleHeight - remainderHeight < material.topCutoffLimit) remainderHeight = 0
-    const fullEndZ = end[2] - remainderHeight
-    for (let z = position[2]; z < fullEndZ; z += material.baleHeight) {
-      for (let x = position[0]; x < end[0]; x += material.baleMaxLength) {
-        const balePosition = vec3.fromValues(x, position[1], z)
-        const baleSize = vec3.fromValues(
-          Math.min(material.baleMaxLength, end[0] - x),
-          material.baleWidth,
-          Math.min(material.baleHeight, end[2] - z)
-        )
+    const fullEndZ = size[2] - remainderHeight
+    for (let z = 0; z < fullEndZ; z += material.baleHeight) {
+      for (let x = 0; x < size[0]; x += material.baleMaxLength) {
+        const baleArea = area.withXAdjustment(x, material.baleMaxLength).withZAdjustment(z, material.baleHeight)
 
-        const bale = createCuboidElement(
-          strawMaterialId,
-          balePosition,
-          baleSize,
-          getStrawTags(baleSize, material),
-          dimensionalPartInfo('strawbale', baleSize)
+        yield yieldElement(
+          createElementFromArea(baleArea, strawMaterialId, getStrawTags(baleArea.size, material), 'strawbale')
         )
-        yield yieldElement(bale)
       }
     }
 
     // Vertical flakes on top
     if (remainderHeight > 0) {
       if (remainderHeight > material.flakeSize) {
-        for (let x = position[0]; x < end[0]; x += material.baleHeight) {
-          const balePosition = vec3.fromValues(x, position[1], fullEndZ)
-          const baleSize = vec3.fromValues(
-            Math.min(material.baleHeight, end[0] - x),
-            material.baleWidth,
-            remainderHeight
-          )
+        for (let x = 0; x < size[0]; x += material.baleHeight) {
+          const baleArea = area.withZAdjustment(fullEndZ).withXAdjustment(x, material.baleHeight)
 
-          const bale = createCuboidElement(
-            strawMaterialId,
-            balePosition,
-            baleSize,
-            getStrawTags(baleSize, material),
-            dimensionalPartInfo('strawbale', baleSize)
+          yield yieldElement(
+            createElementFromArea(baleArea, strawMaterialId, getStrawTags(baleArea.size, material), 'strawbale')
           )
-          yield yieldElement(bale)
         }
       } else {
-        const balePosition = vec3.fromValues(position[0], position[1], fullEndZ)
-        const baleSize = vec3.fromValues(size[0], material.baleWidth, remainderHeight)
+        const baleArea = area.withZAdjustment(fullEndZ)
 
         yield yieldElement(
-          createCuboidElement(
-            strawMaterialId,
-            balePosition,
-            baleSize,
-            getStrawTags(baleSize, material),
-            dimensionalPartInfo('strawbale', baleSize)
-          )
+          createElementFromArea(baleArea, strawMaterialId, getStrawTags(baleArea.size, material), 'strawbale')
         )
       }
     }

@@ -15,8 +15,6 @@ function ConstructionGroup3D({ group, parentOpacity = 1 }: ConstructionGroup3DPr
 
   const { position, rotation, scale } = toThreeTransform(group.transform)
 
-  // console.log(position, rotation, scale, group.tags)
-
   const categories = new Set<TagCategoryId>()
   group.tags?.forEach(tag => categories.add(tag.category))
   let groupOpacity = parentOpacity

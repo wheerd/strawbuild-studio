@@ -195,8 +195,14 @@ describe('Corner Calculations', () => {
 
       const previousAssembly = createMockAssembly('assembly-1', 'Previous Assembly', layers)
       const nextAssembly = createMockAssembly('assembly-2', 'Next Assembly', layers)
+      const currentAssembly = createMockAssembly('assembly-3', 'Current Assembly', layers)
 
-      mockGetWallAssemblyById.mockReturnValueOnce(previousAssembly).mockReturnValueOnce(nextAssembly)
+      // Mock returns: previousAssembly, nextAssembly, currentAssembly
+      mockGetWallAssemblyById
+        .mockReturnValueOnce(previousAssembly)
+        .mockReturnValueOnce(nextAssembly)
+        .mockReturnValueOnce(currentAssembly)
+
       const startCorner = createMockCorner('start-corner', vec2.fromValues(0, 0), vec2.fromValues(-200, 500), 'next')
       const endCorner = createMockCorner('end-corner', vec2.fromValues(3000, 0), vec2.fromValues(3300, 500), 'previous')
       const previousWall = createMockWall('prev-wall', 2000, 300, 'assembly-1')
@@ -365,7 +371,11 @@ describe('Corner Calculations', () => {
       const assembly1 = createMockAssembly('assembly-1', 'Assembly 1', layers)
       const assembly2 = createMockAssembly('assembly-2', 'Assembly 2', layers)
 
-      mockGetWallAssemblyById.mockReturnValueOnce(assembly1).mockReturnValueOnce(assembly2)
+      // Mock returns: previousAssembly, nextAssembly, currentAssembly
+      mockGetWallAssemblyById
+        .mockReturnValueOnce(assembly1) // wall0 (previous)
+        .mockReturnValueOnce(assembly2) // wall2 (next)
+        .mockReturnValueOnce(assembly1) // wall1 (current)
 
       const wall0 = createMockWall('wall-0', 3000, 300, 'assembly-1')
       const wall1 = createMockWall('wall-1', 2000, 300, 'assembly-1')

@@ -5,7 +5,7 @@ import type { PerimeterCornerId, PerimeterId, PerimeterWallId } from '@/building
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model'
-import type { Length } from '@/shared/geometry'
+import type { Length, LineSegment2D } from '@/shared/geometry'
 
 import { WALL_ASSEMBLIES } from './index'
 import { createWallStoreyContext } from './segmentation'
@@ -24,6 +24,9 @@ export interface WallCornerInfo {
   extensionStart: Length
   constructionLength: Length
   extensionEnd: Length
+  // Construction lines for roof queries (adjusted by layer thickness)
+  constructionInsideLine: LineSegment2D
+  constructionOutsideLine: LineSegment2D
 }
 
 function findColinearWalls(perimeter: Perimeter, startWallId: PerimeterWallId): PerimeterWallId[] {

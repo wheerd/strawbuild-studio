@@ -22,8 +22,6 @@ function getStrawWidth(availableWidth: Length, config: StrawhengeWallConfig): Le
   const moduleAndFullFilling = oneModule + maxFilling
   const moduleAndMinFilling = oneModule + minFilling
 
-  console.log(availableWidth, oneModule, maxFilling, minFilling)
-
   if (availableWidth < oneModule) {
     return availableWidth
   } else if (availableWidth === oneModule) {
@@ -45,8 +43,6 @@ function* placeStrawhengeSegments(
   const { size } = area
   const strawWidth = getStrawWidth(size[0], config)
   const { module } = config
-
-  console.log('area', area, strawWidth)
 
   if (strawWidth > 0) {
     if (strawWidth < config.infill.minStrawSpace) {

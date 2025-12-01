@@ -36,7 +36,6 @@ export function* geometryFaces(
     const transformZ =
       (groupOrElement.transform ? projection(mat4.getTranslation(vec3.create(), groupOrElement.transform))[2] : 0) +
       zOffset
-    console.log('z', transformZ)
     const manifold = groupOrElement.shape.manifold
     const centerZ = projection(groupOrElement.bounds.center)[2]
     const faces3D = getPolygonFacesFromManifold(manifold)

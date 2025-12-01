@@ -85,7 +85,7 @@ export function constructPerimeter(perimeter: Perimeter, includeFloor = true, in
 
   const storeyContext = createWallStoreyContext(storey, currentFloorAssembly, nextFloorAssembly)
   const constructionHeight =
-    storeyContext.storeyHeight + storeyContext.floorTopOffset + storeyContext.ceilingBottomOffset
+    storeyContext.ceilingHeight + storeyContext.floorTopOffset + storeyContext.ceilingBottomOffset
 
   const allModels: ConstructionModel[] = []
   if (perimeter.baseRingBeamAssemblyId) {
@@ -171,7 +171,7 @@ export function constructPerimeter(perimeter: Perimeter, includeFloor = true, in
       currentFloorConfig: currentFloorAssembly,
       nextFloorConfig: nextFloorAssembly ?? null,
       floorTopOffset: storeyContext.floorTopOffset,
-      ceilingStartHeight: (storeyContext.storeyHeight +
+      ceilingStartHeight: (storeyContext.ceilingHeight +
         storeyContext.floorTopOffset +
         storeyContext.ceilingBottomOffset) as Length
     })
@@ -233,15 +233,15 @@ export function getPerimeterStats(perimeter: Perimeter): PerimeterStats {
 
   const storeyContext = createWallStoreyContext(storey, floorAssemblyConfig, nextFloorAssemblyConfig)
   const storeyHeight =
-    storeyContext.storeyHeight +
+    storeyContext.ceilingHeight +
     storeyContext.floorTopOffset +
     storeyContext.ceilingBottomOffset +
     floorAssembly.getConstructionThickness(floorAssemblyConfig)
   const constructionHeight =
-    storeyContext.storeyHeight +
+    storeyContext.ceilingHeight +
     floorAssemblyConfig.layers.topThickness +
     (nextFloorAssemblyConfig?.layers.bottomThickness ?? 0)
-  const finishedHeight = storeyContext.storeyHeight
+  const finishedHeight = storeyContext.ceilingHeight
 
   const footprintPolygon: Polygon2D = { points: perimeter.corners.map(corner => corner.outsidePoint) }
   const footprint = calculatePolygonArea(footprintPolygon)

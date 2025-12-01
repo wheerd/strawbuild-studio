@@ -51,8 +51,6 @@ function ConstructionElement3D({ element, parentOpacity = 1 }: ConstructionEleme
 
   const { position, rotation, scale } = toThreeTransform(element.transform)
 
-  // console.log(position, rotation, scale, element.tags)
-
   if (opacity === 0) return null
 
   const partId = element.partInfo?.partId

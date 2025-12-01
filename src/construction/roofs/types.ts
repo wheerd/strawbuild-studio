@@ -66,8 +66,8 @@ export type RoofConfig = MonolithicRoofConfig | PurlinRoofConfig
 
 export interface HeightJumpItem {
   position: number // between 0 and 1
-  offset1: Length
-  offset2: Length
+  offsetBefore: Length // Height offset before this position
+  offsetAfter: Length // Height offset after this position
 }
 
 export interface HeightItem {
