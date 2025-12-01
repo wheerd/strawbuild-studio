@@ -12,7 +12,7 @@
     "typecheck": "tsc -b --noEmit",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\" --list-different",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "lint:format": "pnpm format && pnpm lint:fix",
     "check": "pnpm format:check && pnpm lint",

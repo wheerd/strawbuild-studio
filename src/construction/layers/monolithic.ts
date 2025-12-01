@@ -20,7 +20,7 @@ export class MonolithicLayerConstruction implements LayerConstruction<Monolithic
           ? vec3.fromValues(0, offset, 0)
           : vec3.fromValues(offset, 0, 0)
 
-    yield yieldElement(
+    yield* yieldElement(
       createConstructionElement(
         config.material,
         createExtrudedPolygon(polygon, plane, config.thickness),

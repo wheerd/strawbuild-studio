@@ -87,7 +87,7 @@ export class FullRingBeamAssembly implements RingBeamAssembly<FullRingBeamConfig
       const shape = createExtrudedPolygon(polygon, 'xy', config.height)
       const partInfo = polygonPartInfo('ring-beam', polygon.outer, 'xy', config.height)
 
-      yield yieldElement(createConstructionElement(config.material, shape, undefined, undefined, partInfo))
+      yield* yieldElement(createConstructionElement(config.material, shape, undefined, undefined, partInfo))
 
       yield yieldMeasurement({
         startPoint: [...startInside, 0],

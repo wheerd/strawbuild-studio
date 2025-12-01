@@ -77,7 +77,9 @@ export function createElementFromArea(
   tags?: Tag[],
   partType?: string,
   partDescription?: string
-): ConstructionElement {
+): ConstructionElement | null {
+  if (area.isEmpty) return null
+
   const partInfo = partType ? dimensionalPartInfo(partType, area.size, partDescription) : undefined
 
   if (area.minHeight === area.size[2]) {

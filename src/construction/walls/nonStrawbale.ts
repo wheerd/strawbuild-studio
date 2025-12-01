@@ -91,7 +91,7 @@ export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallCo
       )
     )
 
-    const allResults = [...metadataResults, ...structureElements.map(e => yieldElement(e))]
+    const allResults = [...metadataResults, ...structureElements.flatMap(e => Array.from(yieldElement(e)))]
     const aggRes = aggregateResults(allResults)
     const baseModel: ConstructionModel = {
       bounds: Bounds3D.merge(...aggRes.elements.map(e => e.bounds)),

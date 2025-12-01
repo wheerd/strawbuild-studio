@@ -36,11 +36,45 @@ export const aggregateResults = (results: ConstructionResult[]) => ({
 })
 
 // Helper functions for creating ConstructionResults
-export const yieldElement = (element: ConstructionElement): ConstructionResult => ({ type: 'element', element })
+export function* yieldElement(element: ConstructionElement | null): Generator<ConstructionResult> {
+  if (element) {
+    yield { type: 'element', element }
+  }
+}
 
-export const yieldError = (error: ConstructionIssue): ConstructionResult => ({ type: 'error', error })
+export const yieldError = (
+  description: string,
+  elements: (GroupOrElement | null)[],
+  groupKey?: string
+): ConstructionResult => {
+  const filteredElements = elements.filter(e => e != null)
+  return {
+    type: 'error',
+    error: {
+      description,
+      elements: filteredElements.map(e => e.id),
+      bounds: Bounds3D.merge(...filteredElements.map(e => e.bounds)),
+      groupKey
+    }
+  }
+}
 
-export const yieldWarning = (warning: ConstructionIssue): ConstructionResult => ({ type: 'warning', warning })
+export const yieldWarning = (
+  description: string,
+  elements: (GroupOrElement | null)[],
+  groupKey?: string
+): ConstructionResult => {
+  const filteredElements = elements.filter(e => e != null)
+  return {
+    type: 'warning',
+    warning: {
+      description,
+      elements: filteredElements.map(e => e.id),
+      bounds: Bounds3D.merge(...filteredElements.map(e => e.bounds)),
+      groupKey
+    }
+  }
+}
 
 export const yieldMeasurement = (measurement: RawMeasurement): ConstructionResult => ({
   type: 'measurement',

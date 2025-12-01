@@ -12,13 +12,7 @@ import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
 import { constructOpeningFrame } from '@/construction/openings/openings'
 import type { ConstructionResult } from '@/construction/results'
-import {
-  aggregateResults,
-  yieldAndCollectElementIds,
-  yieldError,
-  yieldMeasurement,
-  yieldWarning
-} from '@/construction/results'
+import { aggregateResults, yieldAndCollectElementIds, yieldMeasurement } from '@/construction/results'
 import { TAG_POST_SPACING } from '@/construction/tags'
 import type { InfillWallConfig, InfillWallSegmentConfig, WallAssembly } from '@/construction/walls'
 import { constructWallLayers } from '@/construction/walls/layers'
@@ -32,7 +26,7 @@ export function* infillWallArea(
   endsWithStand = false,
   startAtEnd = false
 ): Generator<ConstructionResult> {
-  const { position, size } = area
+  const { size } = area
   const { minStrawSpace } = config
   const { width: postWidth } = config.posts
   let error: string | null = null
@@ -79,11 +73,25 @@ export function* infillWallArea(
 
   // Add warning/error with references to all created elements
   if (warning) {
-    yield yieldWarning({ description: warning, elements: allElementIds, bounds: Bounds3D.fromCuboid(position, size) })
+    yield {
+      type: 'warning',
+      warning: {
+        description: warning,
+        elements: allElementIds,
+        bounds: area.bounds
+      }
+    }
   }
 
   if (error) {
-    yield yieldError({ description: error, elements: allElementIds, bounds: Bounds3D.fromCuboid(position, size) })
+    yield {
+      type: 'error',
+      error: {
+        description: error,
+        elements: allElementIds,
+        bounds: area.bounds
+      }
+    }
   }
 }
 
@@ -102,11 +110,14 @@ function* constructInfillRecursive(
     yield* yieldAndCollectElementIds(constructStraw(strawArea, config.strawMaterial), strawElementIds)
 
     if (baleWidth < config.minStrawSpace) {
-      yield yieldWarning({
-        description: 'Not enough space for infilling straw',
-        elements: strawElementIds,
-        bounds: strawArea.bounds
-      })
+      yield {
+        type: 'warning',
+        warning: {
+          description: 'Not enough space for infilling straw',
+          elements: strawElementIds,
+          bounds: strawArea.bounds
+        }
+      }
     }
 
     yield yieldMeasurement({

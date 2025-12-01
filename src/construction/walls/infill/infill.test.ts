@@ -104,19 +104,24 @@ function createMockElement(id: string, position: vec3, size: vec3, material: Mat
   }
 }
 
-function createMockGenerator(elements: any[] = [], measurements: any[] = [], errors: any[] = [], warnings: any[] = []) {
+function createMockGenerator(
+  elements: any[] = [],
+  measurements: any[] = [],
+  errors: string[] = [],
+  warnings: string[] = []
+) {
   return function* () {
     for (const element of elements) {
-      yield yieldElement(element)
+      yield* yieldElement(element)
     }
     for (const measurement of measurements) {
       yield yieldMeasurement(measurement)
     }
     for (const error of errors) {
-      yield yieldError(error)
+      yield yieldError(error, [])
     }
     for (const warning of warnings) {
-      yield yieldWarning(warning)
+      yield yieldWarning(warning, [])
     }
   }
 }
@@ -598,8 +603,8 @@ describe('assembly.construct', () => {
       const floorHeight = 2500
 
       // Mock segmented construction to return errors/warnings
-      const mockError = { description: 'Test error', elements: [] }
-      const mockWarning = { description: 'Test warning', elements: [] }
+      const mockError = 'Test error'
+      const mockWarning = 'Test warning'
       const mockElement = createMockElement(
         'test',
         vec3.fromValues(0, 0, 0),
@@ -615,8 +620,8 @@ describe('assembly.construct', () => {
 
       expect(result.errors).toHaveLength(1)
       expect(result.warnings).toHaveLength(1)
-      expect(result.errors[0]).toBe(mockError)
-      expect(result.warnings[0]).toBe(mockWarning)
+      expect(result.errors[0].description).toBe(mockError)
+      expect(result.warnings[0].description).toBe(mockWarning)
     })
 
     it('should include measurements in the result', () => {

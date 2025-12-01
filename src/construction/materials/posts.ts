@@ -2,7 +2,7 @@ import { WallConstructionArea } from '@/construction/geometry'
 import { type ConstructionResult, yieldElement, yieldError, yieldWarning } from '@/construction/results'
 import { createElementFromArea } from '@/construction/shapes'
 import { TAG_POST } from '@/construction/tags'
-import { Bounds3D, type Length } from '@/shared/geometry'
+import { type Length } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
 
 import type { DimensionalMaterial, MaterialId } from './material'
@@ -52,7 +52,7 @@ function* constructFullPost(area: WallConstructionArea, config: FullPostConfig):
   const { size } = area
   const postElement = createElementFromArea(area, config.material, [TAG_POST], 'post')
 
-  yield yieldElement(postElement)
+  yield* yieldElement(postElement)
 
   // Check if material is dimensional and dimensions match
   const material = getMaterialById(config.material)
@@ -61,14 +61,13 @@ function* constructFullPost(area: WallConstructionArea, config: FullPostConfig):
     const postDimensions = { width: config.width, thickness: size[1] }
 
     if (!materialSupportsCrossSection(dimensionalMaterial, postDimensions)) {
-      yield yieldWarning({
-        description: `Post dimensions (${formatLength(config.width)}x${formatLength(
+      yield yieldWarning(
+        `Post dimensions (${formatLength(config.width)}x${formatLength(
           size[1]
         )}) don't match available cross sections (${formatAvailableCrossSections(dimensionalMaterial)})`,
-        elements: [postElement.id],
-        bounds: postElement.bounds,
-        groupKey: `post-cross-section-${dimensionalMaterial.id}`
-      })
+        [postElement],
+        `post-cross-section-${dimensionalMaterial.id}`
+      )
     }
   }
 }
@@ -81,18 +80,17 @@ function* constructDoublePost(area: WallConstructionArea, config: DoublePostConf
   if (size[1] < minimumWallThickness) {
     const errorElement = createElementFromArea(area, config.material)
 
-    yield yieldElement(errorElement)
-    yield yieldError({
-      description: `Wall thickness (${formatLength(size[1])}) is not wide enough for double posts requiring ${formatLength(minimumWallThickness)} minimum`,
-      elements: [errorElement.id],
-      bounds: errorElement.bounds,
-      groupKey: `double-post-thin-wall-${minimumWallThickness}-${config.material}`
-    })
+    yield* yieldElement(errorElement)
+    yield yieldError(
+      `Wall thickness (${formatLength(size[1])}) is not wide enough for double posts requiring ${formatLength(minimumWallThickness)} minimum`,
+      [errorElement],
+      `double-post-thin-wall-${minimumWallThickness}-${config.material}`
+    )
     return
   }
 
   const post1 = createElementFromArea(area.withYAdjustment(0, config.thickness), config.material, [TAG_POST], 'post')
-  yield yieldElement(post1)
+  yield* yieldElement(post1)
 
   const post2 = createElementFromArea(
     area.withYAdjustment(size[1] - config.thickness, config.thickness),
@@ -100,12 +98,12 @@ function* constructDoublePost(area: WallConstructionArea, config: DoublePostConf
     [TAG_POST],
     'post'
   )
-  yield yieldElement(post2)
+  yield* yieldElement(post2)
 
   // Only add infill if there's space for it
   const infillThickness = size[1] - 2 * config.thickness
   if (infillThickness > 0) {
-    yield yieldElement(
+    yield* yieldElement(
       createElementFromArea(
         area.withYAdjustment(config.thickness, size[1] - minimumWallThickness),
         config.infillMaterial
@@ -119,14 +117,13 @@ function* constructDoublePost(area: WallConstructionArea, config: DoublePostConf
       const postDimensions = { width: config.width, thickness: config.thickness }
 
       if (!materialSupportsCrossSection(dimensionalMaterial, postDimensions)) {
-        yield yieldWarning({
-          description: `Post dimensions (${formatLength(config.width)}x${formatLength(
+        yield yieldWarning(
+          `Post dimensions (${formatLength(config.width)}x${formatLength(
             config.thickness
           )}) don't match available cross sections (${formatAvailableCrossSections(dimensionalMaterial)})`,
-          elements: [post1.id, post2.id],
-          bounds: Bounds3D.merge(post1.bounds, post2.bounds),
-          groupKey: `post-cross-section-${dimensionalMaterial.id}`
-        })
+          [post1, post2],
+          `post-cross-section-${dimensionalMaterial.id}`
+        )
       }
     }
   }

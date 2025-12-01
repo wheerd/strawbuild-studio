@@ -216,7 +216,7 @@ describe('segmentedWallConstruction', () => {
 
     // Mock construction functions
     mockWallConstruction = vi.fn(function* (_area: WallConstructionArea) {
-      yield yieldElement({
+      yield* yieldElement({
         id: 'wall-element' as any,
         material: 'material' as any,
         shape: createCuboid(vec3.fromValues(100, 100, 100)),
@@ -226,7 +226,7 @@ describe('segmentedWallConstruction', () => {
     })
 
     mockOpeningConstruction = vi.fn(function* (_area: WallConstructionArea) {
-      yield yieldElement({
+      yield* yieldElement({
         id: 'opening-element' as any,
         material: 'material' as any,
         shape: createCuboid(vec3.fromValues(50, 50, 50)),

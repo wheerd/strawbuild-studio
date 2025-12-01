@@ -75,7 +75,7 @@ const createMockInfillGenerator = function* (numElements = 2): Generator<Constru
     const offset = vec3.fromValues(100 * i, 0, 0)
     const size = vec3.fromValues(100, 360, 500)
     const element = createCuboidElement(createMaterialId(), offset, size)
-    yield yieldElement(element)
+    yield* yieldElement(element)
   }
 }
 

@@ -90,17 +90,17 @@ const WALL_LENGTHS = [
 // Helper to create mock results for testing
 function* createMockStrawResults(position: vec3, size: vec3, material = 'straw') {
   const element = createCuboidElement(material as any, position, size)
-  yield yieldElement(element)
+  yield* yieldElement(element)
 }
 
 function* createMockModuleResults(position: vec3, size: vec3, material = 'module') {
   const element = createCuboidElement(material as any, position, size)
-  yield yieldElement(element)
+  yield* yieldElement(element)
 }
 
 function* createMockInfillResults(position: vec3, size: vec3, material = 'infill') {
   const element = createCuboidElement(material as any, position, size)
-  yield yieldElement(element)
+  yield* yieldElement(element)
 }
 
 // Helper to extract snapshot data from results

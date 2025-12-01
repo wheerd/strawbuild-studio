@@ -51,14 +51,14 @@ export function* constructStraw(area: WallConstructionArea, materialId?: Materia
   const material = getMaterialsActions().getMaterialById(strawMaterialId)
 
   if (material?.type !== 'strawbale') {
-    yield yieldElement(createElementFromArea(area, strawMaterialId, [TAG_STRAW_STUFFED], 'strawbale'))
+    yield* yieldElement(createElementFromArea(area, strawMaterialId, [TAG_STRAW_STUFFED], 'strawbale'))
     return
   }
 
   if (size[1] === material.baleWidth) {
     // Gap smaller than a flake: Make it one stuffed fill
     if (size[0] < material.flakeSize || size[2] < material.flakeSize) {
-      yield yieldElement(createElementFromArea(area, strawMaterialId, [TAG_STRAW_STUFFED], 'strawbale'))
+      yield* yieldElement(createElementFromArea(area, strawMaterialId, [TAG_STRAW_STUFFED], 'strawbale'))
       return
     }
 
@@ -68,7 +68,7 @@ export function* constructStraw(area: WallConstructionArea, materialId?: Materia
         const adjustedHeight = Math.min(material.baleMaxLength, size[2] - z)
         const baleArea = area.withZAdjustment(z, adjustedHeight)
 
-        yield yieldElement(
+        yield* yieldElement(
           createElementFromArea(baleArea, strawMaterialId, getStrawTags(baleArea.size, material), 'strawbale')
         )
       }
@@ -83,7 +83,7 @@ export function* constructStraw(area: WallConstructionArea, materialId?: Materia
       for (let x = 0; x < size[0]; x += material.baleMaxLength) {
         const baleArea = area.withXAdjustment(x, material.baleMaxLength).withZAdjustment(z, material.baleHeight)
 
-        yield yieldElement(
+        yield* yieldElement(
           createElementFromArea(baleArea, strawMaterialId, getStrawTags(baleArea.size, material), 'strawbale')
         )
       }
@@ -96,35 +96,25 @@ export function* constructStraw(area: WallConstructionArea, materialId?: Materia
         for (let x = 0; x < size[0]; x += material.baleHeight) {
           const baleArea = remainingArea.withXAdjustment(x, material.baleHeight)
 
-          yield yieldElement(
+          yield* yieldElement(
             createElementFromArea(baleArea, strawMaterialId, getStrawTags(baleArea.size, material), 'strawbale')
           )
         }
       } else {
         const baleArea = area.withZAdjustment(fullEndZ)
 
-        yield yieldElement(
+        yield* yieldElement(
           createElementFromArea(baleArea, strawMaterialId, getStrawTags(baleArea.size, material), 'strawbale')
         )
       }
     }
   } else if (size[1] > material.baleWidth) {
     const element = createElementFromArea(area, strawMaterialId, [TAG_STRAW_STUFFED])
-    yield yieldElement(element)
-    yield yieldError({
-      description: 'Wall is too thick for a single strawbale',
-      elements: [element.id],
-      bounds: element.bounds,
-      groupKey: `strawbale-thick-${strawMaterialId}`
-    })
+    yield* yieldElement(element)
+    yield yieldError('Wall is too thick for a single strawbale', [element], `strawbale-thick-${strawMaterialId}`)
   } else {
     const element = createElementFromArea(area, strawMaterialId, [TAG_STRAW_STUFFED])
-    yield yieldElement(element)
-    yield yieldWarning({
-      description: 'Wall is too thin for a single strawbale',
-      elements: [element.id],
-      bounds: element.bounds,
-      groupKey: `strawbale-thin-${strawMaterialId}`
-    })
+    yield* yieldElement(element)
+    yield yieldWarning('Wall is too thin for a single strawbale', [element], `strawbale-thin-${strawMaterialId}`)
   }
 }

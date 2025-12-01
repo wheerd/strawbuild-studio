@@ -400,4 +400,8 @@ export class WallConstructionArea {
   public get minHeight() {
     return this.size[2] + (this.topOffsets ? Math.min(...this.topOffsets.map(o => o[1])) : 0)
   }
+
+  public get isEmpty() {
+    return this.size[0] <= 0 || this.size[1] <= 0 || this.size[2] <= 0
+  }
 }

@@ -77,7 +77,7 @@ export function* constructOpeningFrame(
       dimensionalPartInfo('header', headerSize)
     )
 
-    yield yieldElement(headerElement)
+    yield* yieldElement(headerElement)
 
     // Generate opening width measurement (horizontal, above wall)
     yield yieldMeasurement({
@@ -108,11 +108,10 @@ export function* constructOpeningFrame(
     })
 
     if (headerTop > wallTop) {
-      yield yieldError({
-        description: `Header does not fit: needs ${formatLength(config.headerThickness)} but only ${formatLength(wallTop - headerBottom)} available`,
-        elements: [headerElement.id],
-        bounds: headerElement.bounds
-      })
+      yield yieldError(
+        `Header does not fit: needs ${formatLength(config.headerThickness)} but only ${formatLength(wallTop - headerBottom)} available`,
+        [headerElement]
+      )
     }
   }
 
@@ -131,7 +130,7 @@ export function* constructOpeningFrame(
       dimensionalPartInfo('sill', sillSize)
     )
 
-    yield yieldElement(sillElement)
+    yield* yieldElement(sillElement)
 
     // Generate sill height measurement (vertical, in opening right)
     yield yieldMeasurement({
@@ -159,11 +158,10 @@ export function* constructOpeningFrame(
     }
 
     if (sillBottom < wallBottom) {
-      yield yieldError({
-        description: `Sill does not fit: needs ${formatLength(config.sillThickness)} but only ${formatLength(sillTop)} available`,
-        elements: [sillElement.id],
-        bounds: sillElement.bounds
-      })
+      yield yieldError(
+        `Sill does not fit: needs ${formatLength(config.sillThickness)} but only ${formatLength(sillTop)} available`,
+        [sillElement]
+      )
     }
   }
 

@@ -57,7 +57,7 @@ function* constructSingleFrameModule(
     undefined,
     horizontalFramePartId
   )
-  yield yieldElement(topFrame)
+  yield* yieldElement(topFrame)
 
   // Bottom frame
   const bottomFrame: ConstructionElement = createCuboidElement(
@@ -67,7 +67,7 @@ function* constructSingleFrameModule(
     undefined,
     horizontalFramePartId
   )
-  yield yieldElement(bottomFrame)
+  yield* yieldElement(bottomFrame)
 
   // Start frame (left side)
   const startFrame: ConstructionElement = createCuboidElement(
@@ -77,7 +77,7 @@ function* constructSingleFrameModule(
     undefined,
     verticalFramePartId
   )
-  yield yieldElement(startFrame)
+  yield* yieldElement(startFrame)
 
   // End frame (right side)
   const endFrame: ConstructionElement = createCuboidElement(
@@ -87,7 +87,7 @@ function* constructSingleFrameModule(
     undefined,
     verticalFramePartId
   )
-  yield yieldElement(endFrame)
+  yield* yieldElement(endFrame)
 
   // Straw filling
   yield* constructStraw(strawArea, config.strawMaterial)
@@ -133,7 +133,7 @@ function* constructDoubleFrameModule(
     undefined,
     horizontalFramePartId
   )
-  yield yieldElement(topFrame1)
+  yield* yieldElement(topFrame1)
 
   const topFrame2: ConstructionElement = createCuboidElement(
     frameMaterial,
@@ -142,7 +142,7 @@ function* constructDoubleFrameModule(
     undefined,
     horizontalFramePartId
   )
-  yield yieldElement(topFrame2)
+  yield* yieldElement(topFrame2)
 
   // Bottom frame - 2 beams
   const bottomFrame1: ConstructionElement = createCuboidElement(
@@ -152,7 +152,7 @@ function* constructDoubleFrameModule(
     undefined,
     horizontalFramePartId
   )
-  yield yieldElement(bottomFrame1)
+  yield* yieldElement(bottomFrame1)
 
   const bottomFrame2: ConstructionElement = createCuboidElement(
     frameMaterial,
@@ -161,7 +161,7 @@ function* constructDoubleFrameModule(
     undefined,
     horizontalFramePartId
   )
-  yield yieldElement(bottomFrame2)
+  yield* yieldElement(bottomFrame2)
 
   // Start frame (left side) - 2 beams
   const startFrame1: ConstructionElement = createCuboidElement(
@@ -171,7 +171,7 @@ function* constructDoubleFrameModule(
     undefined,
     verticalFramePartId
   )
-  yield yieldElement(startFrame1)
+  yield* yieldElement(startFrame1)
 
   const startFrame2: ConstructionElement = createCuboidElement(
     frameMaterial,
@@ -180,7 +180,7 @@ function* constructDoubleFrameModule(
     undefined,
     verticalFramePartId
   )
-  yield yieldElement(startFrame2)
+  yield* yieldElement(startFrame2)
 
   // End frame (right side) - 2 beams
   const endFrame1: ConstructionElement = createCuboidElement(
@@ -190,7 +190,7 @@ function* constructDoubleFrameModule(
     undefined,
     verticalFramePartId
   )
-  yield yieldElement(endFrame1)
+  yield* yieldElement(endFrame1)
 
   const endFrame2: ConstructionElement = createCuboidElement(
     frameMaterial,
@@ -199,11 +199,11 @@ function* constructDoubleFrameModule(
     undefined,
     verticalFramePartId
   )
-  yield yieldElement(endFrame2)
+  yield* yieldElement(endFrame2)
 
   // Straw filling
   if (config.strawMaterial) {
-    yield yieldElement(createCuboidElement(config.strawMaterial, strawPosition, strawSize, [TAG_STRAW_INFILL]))
+    yield* yieldElement(createCuboidElement(config.strawMaterial, strawPosition, strawSize, [TAG_STRAW_INFILL]))
   } else {
     yield* constructStraw(strawArea)
   }
@@ -211,7 +211,7 @@ function* constructDoubleFrameModule(
   const gapWidth = size[1] - 2 * frameWidth
   if (gapWidth > 0) {
     // Top infill
-    yield yieldElement(
+    yield* yieldElement(
       createCuboidElement(
         infillMaterial,
         vec3.fromValues(position[0], position[1] + frameWidth, position[2] + size[2] - frameThickness),
@@ -220,7 +220,7 @@ function* constructDoubleFrameModule(
     )
 
     // Bottom infill
-    yield yieldElement(
+    yield* yieldElement(
       createCuboidElement(
         infillMaterial,
         vec3.fromValues(position[0], position[1] + frameWidth, position[2]),
@@ -244,25 +244,25 @@ function* constructDoubleFrameModule(
     let z = verticalStart
     for (let i = spacerCount; i > 0; i--) {
       // Left spacer
-      yield yieldElement(
+      yield* yieldElement(
         createCuboidElement(spacerMaterial, vec3.fromValues(position[0], y, z), spacerSize, undefined, spacerPartId)
       )
 
       if (i > 1) {
         // Left infill
-        yield yieldElement(
+        yield* yieldElement(
           createCuboidElement(infillMaterial, vec3.fromValues(position[0], y, z + spacerHeight), infillSize)
         )
       }
 
       // Right spacer
-      yield yieldElement(
+      yield* yieldElement(
         createCuboidElement(spacerMaterial, vec3.fromValues(rightX, y, z), spacerSize, undefined, spacerPartId)
       )
 
       if (i > 1) {
         // Right infill
-        yield yieldElement(
+        yield* yieldElement(
           createCuboidElement(infillMaterial, vec3.fromValues(rightX, y, z + spacerHeight), infillSize)
         )
       }

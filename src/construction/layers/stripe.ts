@@ -67,10 +67,7 @@ export class StripedLayerConstruction implements LayerConstruction<StripedLayerC
     const intersection = lineIntersection(stripeLine, perpLine)
 
     if (!intersection) {
-      yield yieldWarning({
-        description: 'Could not determine stripe positions due to parallel lines.',
-        elements: []
-      })
+      yield yieldWarning('Could not determine stripe positions due to parallel lines.', [])
       return
     }
 
@@ -86,7 +83,7 @@ export class StripedLayerConstruction implements LayerConstruction<StripedLayerC
       const stripes = intersectPolygon(polygon, { outer: stripePolygon, holes: [] })
 
       for (const stripe of stripes) {
-        yield yieldElement(
+        yield* yieldElement(
           createConstructionElement(
             config.stripeMaterial,
             createExtrudedPolygon(stripe, plane, config.thickness),
@@ -112,7 +109,7 @@ export class StripedLayerConstruction implements LayerConstruction<StripedLayerC
           const gaps = intersectPolygon(polygon, { outer: gapPolygon, holes: [] })
 
           for (const gap of gaps) {
-            yield yieldElement(
+            yield* yieldElement(
               createConstructionElement(
                 config.gapMaterial,
                 createExtrudedPolygon(gap, plane, config.thickness),
