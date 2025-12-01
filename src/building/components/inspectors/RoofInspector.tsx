@@ -92,9 +92,9 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
     [roof, updateRoofProperties]
   )
 
-  const handleRidgeHeightChange = useCallback(
+  const handleVerticalOffsetChange = useCallback(
     (value: number) => {
-      if (roof && value >= 0) {
+      if (roof) {
         updateRoofProperties(roof.id, { verticalOffset: value })
       }
     },
@@ -212,8 +212,8 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
             <LengthField
               id="vertical-offset"
               value={roof.verticalOffset}
-              onCommit={handleRidgeHeightChange}
-              min={0}
+              onCommit={handleVerticalOffsetChange}
+              min={-10000}
               max={10000}
               size="1"
               unit="cm"

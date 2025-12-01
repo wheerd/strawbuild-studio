@@ -50,6 +50,7 @@ interface RoofSide {
 export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig> {
   construct = (roof: Roof, config: MonolithicRoofConfig): ConstructionModel => {
     const slopeAngleRad = degreesToRadians(roof.slope)
+    const ridgeHeight = this.calculateRidgeHeight(roof)
 
     // Avoid division by zero for flat roofs
     if (Math.abs(slopeAngleRad) < 0.001) {
@@ -59,7 +60,7 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
     const expansionFactor = 1 / Math.cos(slopeAngleRad)
 
     // STEP 1: Split roof polygon ONCE
-    const roofSides = this.splitRoofPolygon(roof)
+    const roofSides = this.splitRoofPolygon(roof, ridgeHeight)
 
     const allElements: GroupOrElement[] = []
 
@@ -206,13 +207,13 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
   /**
    * Split roof polygon for gable (two sides) or return single side for shed
    */
-  private splitRoofPolygon(roof: Roof): RoofSide[] {
+  private splitRoofPolygon(roof: Roof, ridgeHeight: Length): RoofSide[] {
     if (roof.type === 'shed') {
       return [
         {
           polygon: roof.overhangPolygon,
           side: 'left',
-          transform: this.calculateRoofTransform(roof)
+          transform: this.calculateRoofTransform(roof, ridgeHeight)
         }
       ]
     } else {
@@ -222,7 +223,7 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
       return sides.map(({ polygon, side }) => ({
         polygon,
         side,
-        transform: this.calculateRoofSideTransform(roof, side)
+        transform: this.calculateRoofSideTransform(roof, side, ridgeHeight)
       }))
     }
   }
@@ -230,12 +231,9 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
   /**
    * Calculate rotation transform for a specific roof side
    */
-  private calculateRoofSideTransform(roof: Roof, side: 'left' | 'right'): Transform {
+  private calculateRoofSideTransform(roof: Roof, side: 'left' | 'right', ridgeHeight: Length): Transform {
     const ridgeDir2D = direction(roof.ridgeLine.start, roof.ridgeLine.end)
     const slopeAngleRad = degreesToRadians(roof.slope)
-
-    // Ridge height from FULL polygon (shared by both sides)
-    const ridgeHeight = this.calculateRidgeHeight(roof)
 
     // Rotation axis along ridge (in 3D)
     const rotationAxis = vec3.normalize(vec3.create(), vec3.fromValues(ridgeDir2D[0], ridgeDir2D[1], 0))
@@ -305,12 +303,9 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
   /**
    * Calculate rotation transform for the entire roof assembly
    */
-  private calculateRoofTransform(roof: Roof): Transform {
+  private calculateRoofTransform(roof: Roof, ridgeHeight: Length): Transform {
     const ridgeDir2D = direction(roof.ridgeLine.start, roof.ridgeLine.end)
     const slopeAngleRad = degreesToRadians(roof.slope)
-
-    // Calculate proper ridge height based on geometry and slope
-    const ridgeHeight = this.calculateRidgeHeight(roof)
 
     // Convert to 3D axis-angle rotation
     const rotationAxis = vec3.fromValues(ridgeDir2D[0], ridgeDir2D[1], 0)
@@ -423,7 +418,7 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
     const element = createConstructionElement(
       config.material,
       createExtrudedPolygon({ outer: preparedPolygon, holes: [] }, 'xy', config.thickness),
-      mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, roof.verticalOffset)),
+      undefined,
       [TAG_ROOF]
     )
 

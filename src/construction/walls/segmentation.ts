@@ -364,7 +364,7 @@ export function* segmentedWallConstruction(
   }
 
   // Query roofs and get merged height line
-  const roofHeightLine = getRoofHeightLineForWall(perimeter.storeyId, cornerInfo, ceilingOffset)
+  const roofHeightLine = getRoofHeightLineForWall(perimeter.storeyId, cornerInfo, -ceilingOffset)
 
   // Convert roof height line to wall offsets
   let roofOffsets

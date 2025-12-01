@@ -248,11 +248,6 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
         throw new Error('Roof slope must be between 0 and 90 degrees')
       }
 
-      // Validate vertical offset
-      if (verticalOffset < 0) {
-        throw new Error('Vertical offset must be non-negative')
-      }
-
       // Validate overhang
       if (overhang < 0) {
         throw new Error('Overhang must be non-negative')
@@ -398,11 +393,6 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
         if (updates.mainSideIndex < 0 || updates.mainSideIndex >= roof.referencePolygon.points.length) {
           throw new Error(`mainSideIndex must be between 0 and ${roof.referencePolygon.points.length - 1}`)
         }
-      }
-
-      // Validate vertical offset if provided
-      if (updates.verticalOffset !== undefined && updates.verticalOffset < 0) {
-        throw new Error('Vertical offset must be non-negative')
       }
 
       let success = false

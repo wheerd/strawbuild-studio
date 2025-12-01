@@ -139,7 +139,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
               id="vertical-offset"
               value={state.verticalOffset}
               onCommit={value => tool.setVerticalOffset(value)}
-              min={0}
+              min={-10000}
               max={10000}
               step={10}
               size="1"
