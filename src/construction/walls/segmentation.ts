@@ -22,8 +22,7 @@ import type { WallLayersConfig } from '@/construction/walls'
 import {
   convertHeightLineToWallOffsets,
   fillNullRegions,
-  mergeInsideOutsideHeightLines,
-  mergeRoofHeightLines
+  mergeInsideOutsideHeightLines
 } from '@/construction/walls/roofIntegration'
 import type { Length } from '@/shared/geometry'
 import { convertOpeningToConstruction } from '@/shared/utils/openingDimensions'
@@ -92,8 +91,8 @@ function getRoofHeightLineForWall(
   if (roofs.length === 0) return undefined
 
   // Get height lines from all roofs for both sides
-  const insideHeightLines: HeightLine[] = []
-  const outsideHeightLines: HeightLine[] = []
+  const insideHeightLine: HeightLine = []
+  const outsideHeightLine: HeightLine = []
 
   for (const roof of roofs) {
     const roofAssembly = getRoofAssemblyById(roof.assemblyId)
@@ -109,21 +108,21 @@ function getRoofHeightLineForWall(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const outsideLine = roofImpl.getBottomOffsets(roof, roofAssembly as any, cornerInfo.constructionOutsideLine)
 
-    if (insideLine.length > 0) insideHeightLines.push(insideLine)
-    if (outsideLine.length > 0) outsideHeightLines.push(outsideLine)
+    insideHeightLine.push(...insideLine)
+    outsideHeightLine.push(...outsideLine)
   }
 
-  if (insideHeightLines.length === 0 && outsideHeightLines.length === 0) {
+  if (insideHeightLine.length === 0 && outsideHeightLine.length === 0) {
     return undefined
   }
 
   // STEP 1: Merge all roof height lines for each side
-  const mergedInside = mergeRoofHeightLines(insideHeightLines)
-  const mergedOutside = mergeRoofHeightLines(outsideHeightLines)
+  insideHeightLine.sort((a, b) => a.position - b.position)
+  outsideHeightLine.sort((a, b) => a.position - b.position)
 
   // STEP 2: Fill null regions with ceiling offset (makes complete 0-1 coverage)
-  const filledInside = fillNullRegions(mergedInside, ceilingBottomOffset)
-  const filledOutside = fillNullRegions(mergedOutside, ceilingBottomOffset)
+  const filledInside = fillNullRegions(insideHeightLine, ceilingBottomOffset)
+  const filledOutside = fillNullRegions(outsideHeightLine, ceilingBottomOffset)
 
   // STEP 3: Merge inside/outside using minimum offsets at all positions
   const finalHeightLine = mergeInsideOutsideHeightLines(filledInside, filledOutside)

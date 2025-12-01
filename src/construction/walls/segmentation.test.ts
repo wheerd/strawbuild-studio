@@ -145,9 +145,9 @@ function createMockLayers(): WallLayersConfig {
 
 function createMockStoreyContext(storeyHeight: Length = 2500, ceilingHeight: Length = 2000): WallStoreyContext {
   return {
-    storeyHeight: storeyHeight,
+    storeyHeight,
     floorConstructionThickness: 0,
-    ceilingHeight: ceilingHeight,
+    ceilingHeight,
     floorTopOffset: 0,
     ceilingBottomOffset: 0,
     ceilingBottomConstructionOffset: 0,

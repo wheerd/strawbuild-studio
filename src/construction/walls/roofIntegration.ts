@@ -152,7 +152,6 @@ export function fillNullRegions(heightLine: HeightLine, ceilingOffset: Length): 
 /**
  * Step 3: Merge inside and outside height lines using minimum offset
  * Both lines should be fully filled (no null regions) before calling this
- * Filters out redundant consecutive points
  */
 export function mergeInsideOutsideHeightLines(insideHeightLine: HeightLine, outsideHeightLine: HeightLine): HeightLine {
   if (insideHeightLine.length === 0 && outsideHeightLine.length === 0) {
@@ -170,136 +169,37 @@ export function mergeInsideOutsideHeightLines(insideHeightLine: HeightLine, outs
     positions.add(item.position)
   }
 
-  // Sort positions
   const sortedPositions = Array.from(positions).sort((a, b) => a - b)
-
-  const rawResult: HeightLine = []
-
+  const merged: HeightLine = []
   for (const pos of sortedPositions) {
-    const insideItem = findItemAtPosition(insideHeightLine, pos)
-    const outsideItem = findItemAtPosition(outsideHeightLine, pos)
+    const [insideBefore, insideAfter] = getOffsetAt(insideHeightLine, pos)
+    const [outsideBefore, outsideAfter] = getOffsetAt(outsideHeightLine, pos)
 
-    if (!insideItem || !outsideItem) continue
+    const beforeOffset = Math.min(insideBefore, outsideBefore)
+    const afterOffset = Math.min(insideAfter, outsideAfter)
 
-    // Check if either is a height jump
-    const insideIsJump = isHeightJumpItem(insideItem)
-    const outsideIsJump = isHeightJumpItem(outsideItem)
-
-    if (insideIsJump || outsideIsJump) {
-      // At least one is a jump - create jump with minimum offsets
-      const insideOffsetBefore = insideIsJump
-        ? insideItem.offsetBefore
-        : getOffsetAt(insideHeightLine, pos - POSITION_EPSILON)
-      const insideOffsetAfter = insideIsJump
-        ? insideItem.offsetAfter
-        : getOffsetAt(insideHeightLine, pos + POSITION_EPSILON)
-
-      const outsideOffsetBefore = outsideIsJump
-        ? outsideItem.offsetBefore
-        : getOffsetAt(outsideHeightLine, pos - POSITION_EPSILON)
-      const outsideOffsetAfter = outsideIsJump
-        ? outsideItem.offsetAfter
-        : getOffsetAt(outsideHeightLine, pos + POSITION_EPSILON)
-
-      const minOffsetBefore = Math.min(insideOffsetBefore, outsideOffsetBefore)
-      const minOffsetAfter = Math.min(insideOffsetAfter, outsideOffsetAfter)
-
-      // Only create jump if offsets differ
-      if (Math.abs(minOffsetBefore - minOffsetAfter) > POSITION_EPSILON) {
-        rawResult.push({
-          position: pos,
-          offsetBefore: minOffsetBefore,
-          offsetAfter: minOffsetAfter
-        } as HeightJumpItem)
-      } else {
-        // Offsets are same - use regular item
-        rawResult.push({
-          position: pos,
-          offset: minOffsetAfter,
-          nullAfter: false
-        })
-      }
-    } else {
-      // Both are regular items - use minimum offset
-      const insideOffset = (insideItem as HeightItem).offset
-      const outsideOffset = (outsideItem as HeightItem).offset
-      const minOffset = Math.min(insideOffset, outsideOffset)
-
-      rawResult.push({
+    if (beforeOffset !== afterOffset) {
+      merged.push({
         position: pos,
-        offset: minOffset,
+        offsetBefore: beforeOffset,
+        offsetAfter: afterOffset
+      } as HeightJumpItem)
+    } else {
+      merged.push({
+        position: pos,
+        offset: beforeOffset,
         nullAfter: false
       })
     }
   }
 
-  // Filter out redundant points
-  return filterRedundantPoints(rawResult)
+  return merged
 }
 
 /**
- * Filter out redundant consecutive points:
- * - Consecutive HeightItems with same offset
- * - HeightJumpItems where offsetBefore == offsetAfter (no-op jumps)
- * - Keep first and last points always
+ * Get offset before/after at position by interpolation
  */
-function filterRedundantPoints(heightLine: HeightLine): HeightLine {
-  if (heightLine.length <= 2) return heightLine
-
-  const result: HeightLine = []
-
-  for (let i = 0; i < heightLine.length; i++) {
-    const item = heightLine[i]
-    const isFirst = i === 0
-    const isLast = i === heightLine.length - 1
-
-    // Always keep first and last
-    if (isFirst || isLast) {
-      result.push(item)
-      continue
-    }
-
-    // Check if jump is no-op
-    if (isHeightJumpItem(item)) {
-      if (Math.abs(item.offsetBefore - item.offsetAfter) < POSITION_EPSILON) {
-        // No-op jump - skip it
-        continue
-      }
-      result.push(item)
-      continue
-    }
-
-    // Check if consecutive HeightItems have same offset
-    const prevItem = result[result.length - 1]
-    if (isHeightItem(item) && isHeightItem(prevItem)) {
-      if (Math.abs(item.offset - prevItem.offset) < POSITION_EPSILON) {
-        // Same offset as previous - skip this one
-        continue
-      }
-    }
-
-    result.push(item)
-  }
-
-  return result
-}
-
-/**
- * Find item at exact position
- */
-function findItemAtPosition(heightLine: HeightLine, position: number): HeightItem | HeightJumpItem | null {
-  for (const item of heightLine) {
-    if (Math.abs(item.position - position) < POSITION_EPSILON) {
-      return item
-    }
-  }
-  return null
-}
-
-/**
- * Get offset at position by interpolation
- */
-function getOffsetAt(heightLine: HeightLine, position: number): Length {
+function getOffsetAt(heightLine: HeightLine, position: number): [Length, Length] {
   // Clamp position
   position = Math.max(0, Math.min(1, position))
 
@@ -318,22 +218,15 @@ function getOffsetAt(heightLine: HeightLine, position: number): Length {
   }
 
   if (!before || !after) {
-    if (before) {
-      return isHeightItem(before) ? before.offset : before.offsetAfter
-    }
-    if (after) {
-      return isHeightItem(after) ? after.offset : after.offsetBefore
-    }
-
-    return 0
+    throw new Error('inconsistent height line (not filled?)')
   }
 
   // Exact match
   if (Math.abs(before.position - position) < POSITION_EPSILON) {
-    return isHeightItem(before) ? before.offset : before.offsetAfter
+    return isHeightItem(before) ? [before.offset, before.offset] : [before.offsetBefore, before.offsetAfter]
   }
   if (Math.abs(after.position - position) < POSITION_EPSILON) {
-    return isHeightItem(after) ? after.offset : after.offsetBefore
+    return isHeightItem(after) ? [after.offset, after.offset] : [after.offsetBefore, after.offsetAfter]
   }
 
   // Interpolate
@@ -341,7 +234,8 @@ function getOffsetAt(heightLine: HeightLine, position: number): Length {
   const afterOffset = isHeightItem(after) ? after.offset : after.offsetBefore
 
   const ratio = (position - before.position) / (after.position - before.position)
-  return beforeOffset + ratio * (afterOffset - beforeOffset)
+  const interpolated = beforeOffset + ratio * (afterOffset - beforeOffset)
+  return [interpolated, interpolated]
 }
 
 /**

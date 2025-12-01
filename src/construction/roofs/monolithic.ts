@@ -28,6 +28,7 @@ import {
   degreesToRadians,
   direction,
   distanceToInfiniteLine,
+  intersectLineSegmentWithPolygon,
   intersectPolygon,
   lineFromSegment,
   lineIntersection,
@@ -107,6 +108,13 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
   }
 
   getBottomOffsets = (roof: Roof, _config: MonolithicRoofConfig, line: LineSegment2D): HeightLine => {
+    // Step 1: Find intersection segments with overhang polygon
+    const intersection = intersectLineSegmentWithPolygon(line, roof.overhangPolygon)
+    if (!intersection || intersection.segments.length === 0) {
+      return [] // Line doesn't intersect roof - no coverage
+    }
+
+    // Step 2: Setup roof geometry calculations
     const slopeAngleRad = degreesToRadians(roof.slope)
     const tanSlope = Math.tan(slopeAngleRad)
     const ridgeHeight = this.calculateRidgeHeight(roof)
@@ -124,45 +132,43 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
       return ridgeHeight - (roof.type === 'shed' ? signedDist : Math.abs(signedDist)) * tanSlope
     }
 
-    // Calculate offsets at start and end of line
-    const distStart = getSignedDistanceToRidge(line.start)
-    const distEnd = getSignedDistanceToRidge(line.end)
-    const offsetStart = calculateOffset(distStart)
-    const offsetEnd = calculateOffset(distEnd)
+    // Calculate offset at a given T position along the line
+    const calculateOffsetAt = (t: number): Length => {
+      const point = vec2.lerp(vec2.create(), line.start, line.end, t)
+      return calculateOffset(getSignedDistanceToRidge(point)) as Length
+    }
 
-    // For gable roofs, check if wall line crosses the ridge
+    // Step 3: Calculate ridge intersection ONCE (for gable roofs)
+    let ridgeT = -1
     if (roof.type === 'gable') {
-      // Find where the wall line intersects the infinite ridge line
       const wallLine = lineFromSegment(line)
       const ridgeLine = lineFromSegment(roof.ridgeLine)
-      const intersection = lineIntersection(wallLine, ridgeLine)
+      const ridgeIntersection = lineIntersection(wallLine, ridgeLine)
 
-      if (intersection) {
-        // Calculate parameter t (0 to 1) along the wall line
-        const lineDir = vec2.sub(vec2.create(), line.end, line.start)
-        const lineLength = vec2.len(lineDir)
-
+      if (ridgeIntersection) {
+        const lineLength = vec2.distance(line.end, line.start)
         if (lineLength > 0.001) {
-          const toIntersection = vec2.sub(vec2.create(), intersection, line.start)
-          const t = vec2.len(toIntersection) / lineLength
-
-          // Only add intermediate point if intersection is within the line segment
-          if (t >= 0 && t <= 1) {
-            return [
-              { position: 0, offset: offsetStart, nullAfter: false },
-              { position: t, offset: ridgeHeight, nullAfter: false },
-              { position: 1, offset: offsetEnd, nullAfter: false }
-            ]
-          }
+          ridgeT = vec2.distance(ridgeIntersection, line.start) / lineLength
         }
       }
     }
 
-    // Shed roof or gable roof where wall doesn't cross ridge
-    return [
-      { position: 0, offset: offsetStart, nullAfter: false },
-      { position: 1, offset: offsetEnd, nullAfter: false }
-    ]
+    // Step 4: Build HeightLine for all segments
+    const result: HeightLine = []
+    for (const segment of intersection.segments) {
+      // Segment start
+      result.push({ position: segment.tStart, offset: calculateOffsetAt(segment.tStart), nullAfter: false })
+
+      // Ridge intersection (if within this segment)
+      if (ridgeT > segment.tStart && ridgeT < segment.tEnd) {
+        result.push({ position: ridgeT, offset: ridgeHeight as Length, nullAfter: false })
+      }
+
+      // Segment end
+      result.push({ position: segment.tEnd, offset: calculateOffsetAt(segment.tEnd), nullAfter: true })
+    }
+
+    return result
   }
 
   // ============================================================================
