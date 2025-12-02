@@ -639,6 +639,7 @@ export function convexHullOfPolygonWithHoles(polygon: PolygonWithHoles2D): Polyg
 export interface MinimumBoundingBox {
   size: vec2
   angle: number
+  smallestDirection: vec2
 }
 
 function minimumAreaBoundingBoxFromPoints(points: vec2[]): MinimumBoundingBox {
@@ -651,6 +652,7 @@ function minimumAreaBoundingBoxFromPoints(points: vec2[]): MinimumBoundingBox {
   let bestArea = Infinity
   let bestSize = vec2.fromValues(0, 0)
   let bestAngle = 0
+  let bestDirection = vec2.fromValues(0, 0)
 
   const rotatePoint = (point: vec2, sinAngle: number, cosAngle: number) => {
     const x = point[0] * cosAngle - point[1] * sinAngle
@@ -681,18 +683,23 @@ function minimumAreaBoundingBoxFromPoints(points: vec2[]): MinimumBoundingBox {
       bestArea = area
       bestSize = size
       bestAngle = angle
+
+      const edgeDir = vec2.fromValues(edgeX, edgeY)
+      vec2.normalize(edgeDir, edgeDir)
+      // size[0] is along the edge direction, size[1] is perpendicular to it
+      if (size[0] < size[1]) {
+        bestDirection = edgeDir
+      } else {
+        bestDirection = perpendicularCCW(edgeDir)
+      }
     }
   }
 
-  return { size: bestSize, angle: bestAngle }
+  return { size: bestSize, angle: bestAngle, smallestDirection: bestDirection }
 }
 
 export function minimumAreaBoundingBox(polygon: Polygon2D): MinimumBoundingBox {
   return minimumAreaBoundingBoxFromPoints(polygon.points)
-}
-
-export function minimumAreaBoundingBoxOfPolygonWithHoles(polygon: PolygonWithHoles2D): MinimumBoundingBox {
-  return minimumAreaBoundingBoxFromPoints(polygon.outer.points)
 }
 
 /**
