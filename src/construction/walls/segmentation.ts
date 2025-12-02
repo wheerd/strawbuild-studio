@@ -79,7 +79,7 @@ function mergeAdjacentOpenings(sortedOpenings: Opening[]): Opening[][] {
  * 2. Fill null regions with ceiling offset
  * 3. Merge inside/outside using minimum offsets
  */
-function getRoofHeightLineForWall(
+export function getRoofHeightLineForWall(
   storeyId: StoreyId,
   cornerInfo: WallCornerInfo,
   ceilingBottomOffset: Length

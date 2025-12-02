@@ -1,6 +1,7 @@
 import { vec2 } from 'gl-matrix'
 
 import type { PerimeterWall } from '@/building/model/model'
+import type { WallConstructionArea } from '@/construction/geometry'
 import {
   type Length,
   type LineSegment2D,
@@ -156,10 +157,16 @@ export interface WallPolygonBounds {
 }
 
 export const createWallPolygonWithOpenings = (
-  bounds: WallPolygonBounds,
+  area: WallConstructionArea,
   wall: PerimeterWall,
   finishedFloorHeight: Length
-): PolygonWithHoles2D[] => {
-  const polygon = createLayerPolygon(bounds.start, bounds.end, bounds.bottom, bounds.top)
-  return subtractWallOpenings(polygon, bounds.start, bounds.end, bounds.bottom, bounds.top, wall, finishedFloorHeight)
-}
+): PolygonWithHoles2D[] =>
+  subtractWallOpenings(
+    area.getSideProfilePolygon(),
+    area.position[0],
+    area.position[0] + area.size[0],
+    area.position[2],
+    area.position[2] + area.size[2],
+    wall,
+    finishedFloorHeight
+  )

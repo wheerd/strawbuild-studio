@@ -1,9 +1,9 @@
-import { vec3 } from 'gl-matrix'
+import { vec2, vec3 } from 'gl-matrix'
 
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model'
 import { getConfigActions } from '@/construction/config'
 import { createConstructionElement } from '@/construction/elements'
-import { type WallConstructionArea, translate } from '@/construction/geometry'
+import { WallConstructionArea, translate } from '@/construction/geometry'
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
 import { type ConstructionResult, aggregateResults, yieldElement } from '@/construction/results'
@@ -12,7 +12,12 @@ import type { NonStrawbaleWallConfig, WallAssembly } from '@/construction/walls'
 import { calculateWallCornerInfo, getWallContext } from '@/construction/walls/corners/corners'
 import { constructWallLayers } from '@/construction/walls/layers'
 import { WALL_POLYGON_PLANE, createWallPolygonWithOpenings } from '@/construction/walls/polygons'
-import { type WallStoreyContext, segmentedWallConstruction } from '@/construction/walls/segmentation'
+import { convertHeightLineToWallOffsets } from '@/construction/walls/roofIntegration'
+import {
+  type WallStoreyContext,
+  getRoofHeightLineForWall,
+  segmentedWallConstruction
+} from '@/construction/walls/segmentation'
 import { Bounds3D, type Length } from '@/shared/geometry'
 
 function* noopWallSegment(
@@ -54,6 +59,7 @@ export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallCo
     const topPlateHeight = topPlateAssembly?.height ?? 0
     const totalConstructionHeight =
       storeyContext.ceilingHeight + storeyContext.floorTopOffset + storeyContext.ceilingBottomOffset
+    const ceilingOffset = storeyContext.storeyHeight - totalConstructionHeight
 
     const structuralThickness = (wall.thickness -
       config.layers.insideThickness -
@@ -62,14 +68,23 @@ export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallCo
       throw new Error('Non-strawbale wall structural thickness must be greater than 0')
     }
 
-    const polygonBounds = {
-      start: -cornerInfo.extensionStart as Length,
-      end: (cornerInfo.constructionLength - cornerInfo.extensionStart) as Length,
-      bottom: basePlateHeight as Length,
-      top: (totalConstructionHeight - topPlateHeight) as Length
+    const roofHeightLine = getRoofHeightLineForWall(perimeter.storeyId, cornerInfo, -ceilingOffset)
+
+    // Convert roof height line to wall offsets
+    let roofOffsets
+    if (roofHeightLine) {
+      roofOffsets = convertHeightLineToWallOffsets(roofHeightLine, cornerInfo.constructionLength)
+    } else {
+      roofOffsets = [vec2.fromValues(0, -ceilingOffset), vec2.fromValues(cornerInfo.constructionLength, -ceilingOffset)]
     }
 
-    const structuralPolygons = createWallPolygonWithOpenings(polygonBounds, wall, storeyContext.floorTopOffset)
+    const wallArea = new WallConstructionArea(
+      vec3.fromValues(-cornerInfo.extensionStart, 0, basePlateHeight),
+      vec3.fromValues(cornerInfo.constructionLength, 0, storeyContext.storeyHeight - basePlateHeight - topPlateHeight),
+      roofOffsets
+    )
+
+    const structuralPolygons = createWallPolygonWithOpenings(wallArea, wall, storeyContext.floorTopOffset)
 
     const structureShapes = structuralPolygons.map(p =>
       createExtrudedPolygon(p, WALL_POLYGON_PLANE, structuralThickness)
