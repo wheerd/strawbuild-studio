@@ -66,9 +66,6 @@ export const createRoofAssemblyId = (): RoofAssemblyId => createId(ROOF_ASSEMBLY
 // Default floor construction config ID constant
 export const DEFAULT_FLOOR_ASSEMBLY_ID = 'fa_clt_default' as FloorAssemblyId
 
-// Default roof construction config ID constant
-export const DEFAULT_ROOF_ASSEMBLY_ID = 'ra_purlin_default' as RoofAssemblyId
-
 // Type guards for runtime ID validation
 export const isStoreyId = (id: string): id is StoreyId => id.startsWith(STOREY_ID_PREFIX)
 export const isPerimeterId = (id: string): id is PerimeterId => id.startsWith(PERIMETER_ID_PREFIX)

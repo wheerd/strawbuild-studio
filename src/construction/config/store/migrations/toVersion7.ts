@@ -1,5 +1,4 @@
-import { DEFAULT_ROOF_ASSEMBLY_ID } from '@/building/model/ids'
-import { createDefaultRoofAssemblies } from '@/construction/config/store/slices/roofs.defaults'
+import { DEFAULT_ROOF_ASSEMBLIES, DEFAULT_ROOF_ASSEMBLY_ID } from '@/construction/config/store/slices/roofs.defaults'
 import { type MaterialId } from '@/construction/materials/material'
 
 import type { MigrationState } from './shared'
@@ -7,8 +6,7 @@ import type { MigrationState } from './shared'
 export function migrateToVersion7(state: MigrationState): void {
   // Add default roof assembly configs if not present
   if (!('roofAssemblyConfigs' in state)) {
-    const defaultAssemblies = createDefaultRoofAssemblies()
-    state.roofAssemblyConfigs = Object.fromEntries(defaultAssemblies.map(config => [config.id, config]))
+    state.roofAssemblyConfigs = Object.fromEntries(DEFAULT_ROOF_ASSEMBLIES.map(config => [config.id, config]))
   }
 
   // Add default roof assembly ID if not present

@@ -1,6 +1,6 @@
 import { type StateCreator } from 'zustand'
 
-import { DEFAULT_ROOF_ASSEMBLY_ID, type RoofAssemblyId, createRoofAssemblyId } from '@/building/model'
+import { type RoofAssemblyId, createRoofAssemblyId } from '@/building/model'
 import {
   appendLayer,
   moveLayer,
@@ -14,7 +14,7 @@ import type { LayerConfig } from '@/construction/layers/types'
 import { type RoofConfig, validateRoofConfig } from '@/construction/roofs/types'
 import '@/shared/geometry'
 
-import { createDefaultRoofAssemblies } from './roofs.defaults'
+import { DEFAULT_ROOF_ASSEMBLIES, DEFAULT_ROOF_ASSEMBLY_ID } from './roofs.defaults'
 
 export interface RoofAssembliesState {
   roofAssemblyConfigs: Record<RoofAssemblyId, RoofAssemblyConfig>
@@ -84,10 +84,9 @@ export const createRoofAssembliesSlice: StateCreator<
   RoofAssembliesSlice
 > = (set, get) => {
   // Initialize with default assemblies
-  const defaultRoofAssemblies = createDefaultRoofAssemblies()
 
   return {
-    roofAssemblyConfigs: Object.fromEntries(defaultRoofAssemblies.map(config => [config.id, config])),
+    roofAssemblyConfigs: Object.fromEntries(DEFAULT_ROOF_ASSEMBLIES.map(config => [config.id, config])),
     defaultRoofAssemblyId: DEFAULT_ROOF_ASSEMBLY_ID,
 
     actions: {
