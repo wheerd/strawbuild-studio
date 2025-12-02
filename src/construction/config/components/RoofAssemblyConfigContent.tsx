@@ -24,6 +24,7 @@ import { DEFAULT_CEILING_LAYER_SETS, DEFAULT_ROOF_LAYER_SETS } from '@/construct
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
 import type { MonolithicRoofConfig, PurlinRoofConfig, RoofAssemblyType, RoofConfig } from '@/construction/roofs/types'
+import { RoofMeasurementInfo } from '@/editor/components/RoofMeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
 
 import { getRoofAssemblyTypeIcon } from './Icons'
@@ -363,6 +364,7 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
       <LayerListEditor
         title="Inside Layers (Ceiling)"
         layers={config.layers.insideLayers}
+        measurementInfo={<RoofMeasurementInfo highlightedPart="roofBottomLayers" />}
         onAddLayer={layer => addRoofAssemblyInsideLayer(assemblyId, layer)}
         onReplaceLayers={layers => setRoofAssemblyInsideLayers(assemblyId, layers)}
         onUpdateLayer={(index, updates) => updateRoofAssemblyInsideLayer(assemblyId, index, updates)}
@@ -380,6 +382,7 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
       <LayerListEditor
         title="Top Layers (Roof Covering)"
         layers={displayedTopLayers}
+        measurementInfo={<RoofMeasurementInfo highlightedPart="roofTopLayers" />}
         onAddLayer={layer => addRoofAssemblyTopLayer(assemblyId, layer)}
         onReplaceLayers={layers => setRoofAssemblyTopLayers(assemblyId, [...layers].reverse())}
         onUpdateLayer={(index, updates) => updateRoofAssemblyTopLayer(assemblyId, mapTopIndex(index), updates)}
@@ -399,6 +402,7 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
       <LayerListEditor
         title="Overhang Layers"
         layers={config.layers.overhangLayers}
+        measurementInfo={<RoofMeasurementInfo highlightedPart="overhangBottomLayers" />}
         onAddLayer={layer => addRoofAssemblyOverhangLayer(assemblyId, layer)}
         onReplaceLayers={layers => setRoofAssemblyOverhangLayers(assemblyId, layers)}
         onUpdateLayer={(index, updates) => updateRoofAssemblyOverhangLayer(assemblyId, index, updates)}
@@ -672,9 +676,12 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
 
           <Grid columns="auto 1fr" gap="2" align="center">
             <Label.Root>
-              <Text size="1" weight="medium" color="gray">
-                Default Roof Assembly
-              </Text>
+              <Flex align="center" gap="1">
+                <Text size="1" weight="medium" color="gray">
+                  Default Roof Assembly
+                </Text>
+                <RoofMeasurementInfo highlightedAssembly="roofAssembly" />
+              </Flex>
             </Label.Root>
             <RoofAssemblySelect
               value={defaultAssemblyId}

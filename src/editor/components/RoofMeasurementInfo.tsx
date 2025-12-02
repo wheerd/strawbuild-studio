@@ -269,8 +269,8 @@ export function ConstructionSchematic({
             v ${overhangBottomThicknessVertical}
             L ${outside} ${roofOutsideCornerY + outsideLayerDelta + overhangBottomThicknessVertical}
             Z`}
-        fill={getPartFill('roofBottomLayers', 'var(--gray-6)')}
-        stroke={getPartStroke('roofBottomLayers')}
+        fill={getPartFill('overhangBottomLayers', 'var(--gray-6)')}
+        stroke={getPartStroke('overhangBottomLayers')}
         strokeWidth="5"
       />
     </g>
@@ -432,7 +432,7 @@ export function ConstructionSchematic({
           fontSize={50}
           text-anchor="middle"
           dominantBaseline="middle"
-          fill={partLabelColor('roofBottomLayers')}
+          fill={partLabelColor('overhangBottomLayers')}
         >
           Overhang Layers
         </text>
