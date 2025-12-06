@@ -21,6 +21,7 @@ import {
   intersectPolygon,
   lineIntersection,
   minimumAreaBoundingBox,
+  offsetLine,
   offsetPolygon,
   perpendicular,
   perpendicularCW
@@ -38,21 +39,28 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
     const insideSideEdges = Array.from(polygonEdges(context.innerPolygon))
       .map(e => ({ point: e.start, direction: direction(e.start, e.end) }) satisfies Line2D)
       .filter(l => 1 - Math.abs(vec2.dot(l.direction, joistDirection)) < EPSILON)
-    const outsideBeamEdges = Array.from(polygonEdges(context.outerPolygon))
-      .map(e => ({ point: e.start, direction: direction(e.start, e.end) }) satisfies Line2D)
-      .filter(l => 1 - Math.abs(vec2.dot(l.direction, joistDirection)) < EPSILON)
+    const outsideBeamEdges = Array.from(polygonEdges(context.outerPolygon)).filter(
+      e => 1 - Math.abs(vec2.dot(direction(e.start, e.end), joistDirection)) < EPSILON
+    )
+
+    const newSides = context.innerLines.map((l, i) =>
+      1 - Math.abs(vec2.dot(l.direction, joistDirection)) < EPSILON
+        ? offsetLine(l, config.wallBeamInsideOffset)
+        : context.outerLines[i]
+    )
+    const newPolygon = polygonFromLineIntersections(newSides)
 
     const expandedHoles = context.openings.map(h => offsetPolygon(h, config.joistThickness))
 
-    const clipPolygon: PolygonWithHoles2D = { outer: context.outerPolygon, holes: expandedHoles }
-    const innerPolygon: PolygonWithHoles2D = { outer: context.innerPolygon, holes: expandedHoles }
+    const outerClipPolygon: PolygonWithHoles2D = { outer: context.outerPolygon, holes: context.openings }
+    const innerClipPolygon: PolygonWithHoles2D = { outer: newPolygon, holes: expandedHoles }
 
     const results = [
       ...insideSideEdges.flatMap(e =>
         Array.from(
-          beam(
+          infiniteBeam(
             e,
-            clipPolygon,
+            outerClipPolygon,
             config.wallBeamInsideOffset,
             config.wallBeamThickness - config.wallBeamInsideOffset,
             config.constructionHeight,
@@ -65,7 +73,7 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
         Array.from(
           beam(
             e,
-            clipPolygon,
+            outerClipPolygon,
             config.wallBeamThickness,
             0,
             config.constructionHeight,
@@ -75,7 +83,7 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
         )
       ),
       ...simpleStripes(
-        innerPolygon,
+        innerClipPolygon,
         joistDirection,
         config.joistThickness,
         config.constructionHeight,
@@ -90,6 +98,7 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
             config.joistThickness,
             config.constructionHeight,
             config.joistMaterial,
+            newPolygon,
             'joist-frame',
             undefined,
             false
@@ -123,7 +132,20 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
   getConstructionThickness = (config: JoistFloorConfig) => config.constructionHeight
 }
 
-function* beam(
+function polygonFromLineIntersections(lines: Line2D[]): Polygon2D {
+  const points: vec2[] = []
+  for (let i = 0; i < lines.length; i++) {
+    const prev = lines[(i - 1 + lines.length) % lines.length]
+    const current = lines[i]
+    const intersection = lineIntersection(prev, current)
+    if (intersection) {
+      points.push(intersection)
+    }
+  }
+  return { points }
+}
+
+function* infiniteBeam(
   line: Line2D,
   clipPolygon: PolygonWithHoles2D,
   thicknessLeft: Length,
@@ -140,6 +162,33 @@ function* beam(
   const p2 = vec2.scaleAndAdd(vec2.create(), lineStart, leftDir, -thicknessRight)
   const p3 = vec2.scaleAndAdd(vec2.create(), lineEnd, leftDir, -thicknessRight)
   const p4 = vec2.scaleAndAdd(vec2.create(), lineEnd, leftDir, thicknessLeft)
+
+  const beamPolygon: Polygon2D = { points: [p1, p2, p3, p4] }
+  const beamParts = intersectPolygon(clipPolygon, { outer: beamPolygon, holes: [] })
+
+  for (const part of beamParts) {
+    const partInfo = partType ? polygonPartInfo(partType, part.outer, 'xy', height) : undefined
+    yield* yieldElement(
+      createConstructionElement(material, createExtrudedPolygon(part, 'xy', height), undefined, tags, partInfo)
+    )
+  }
+}
+
+function* beam(
+  line: LineSegment2D,
+  clipPolygon: PolygonWithHoles2D,
+  thicknessLeft: Length,
+  thicknessRight: Length,
+  height: Length,
+  material: MaterialId,
+  partType?: string,
+  tags?: Tag[]
+): Generator<ConstructionResult> {
+  const leftDir = perpendicularCW(direction(line.start, line.end))
+  const p1 = vec2.scaleAndAdd(vec2.create(), line.start, leftDir, thicknessLeft)
+  const p2 = vec2.scaleAndAdd(vec2.create(), line.start, leftDir, -thicknessRight)
+  const p3 = vec2.scaleAndAdd(vec2.create(), line.end, leftDir, -thicknessRight)
+  const p4 = vec2.scaleAndAdd(vec2.create(), line.end, leftDir, thicknessLeft)
 
   const beamPolygon: Polygon2D = { points: [p1, p2, p3, p4] }
   const beamParts = intersectPolygon(clipPolygon, { outer: beamPolygon, holes: [] })
@@ -212,6 +261,7 @@ function* simplePolygonFrame(
   thickness: Length,
   height: Length,
   material: MaterialId,
+  clipPolygon?: Polygon2D,
   partType?: string,
   tags?: Tag[],
   inside = true
@@ -236,16 +286,16 @@ function* simplePolygonFrame(
         },
         holes: []
       }
-      const partInfo = partType ? polygonPartInfo(partType, elementPolygon.outer, 'xy', height) : undefined
-      yield* yieldElement(
-        createConstructionElement(
-          material,
-          createExtrudedPolygon(elementPolygon, 'xy', height),
-          undefined,
-          tags,
-          partInfo
+      const clipped = clipPolygon
+        ? intersectPolygon(elementPolygon, { outer: clipPolygon, holes: [] })
+        : [elementPolygon]
+
+      for (const clip of clipped) {
+        const partInfo = partType ? polygonPartInfo(partType, clip.outer, 'xy', height) : undefined
+        yield* yieldElement(
+          createConstructionElement(material, createExtrudedPolygon(clip, 'xy', height), undefined, tags, partInfo)
         )
-      )
+      }
     }
   }
 }
