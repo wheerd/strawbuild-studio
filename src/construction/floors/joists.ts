@@ -5,6 +5,7 @@ import { translate } from '@/construction/geometry'
 import {
   infiniteBeamPolygon,
   partitionByAlignedEdges,
+  polygonEdges,
   polygonFromLineIntersections,
   simplePolygonFrame,
   stripesPolygons
@@ -20,7 +21,9 @@ import {
   ensurePolygonIsClockwise,
   intersectPolygon,
   isPointStrictlyInPolygon,
+  midpoint,
   minimumAreaBoundingBox,
+  offsetLine,
   offsetPolygon,
   perpendicular,
   subtractPolygons
@@ -55,27 +58,22 @@ function detectBeamEdges(
   let leftHasBeam = false
   let rightHasBeam = false
 
-  // Check all wall beam polygon edges
   for (const beamPoly of wallBeamPolygons) {
-    for (let i = 0; i < beamPoly.outer.points.length; i++) {
-      const edgeStart = beamPoly.outer.points[i]
-      const edgeEnd = beamPoly.outer.points[(i + 1) % beamPoly.outer.points.length]
-
-      // Calculate midpoint of the edge
-      const midpoint = vec2.scale(vec2.create(), vec2.add(vec2.create(), edgeStart, edgeEnd), 0.5)
-
-      // Check if midpoint is strictly inside the partition
-      if (isPointStrictlyInPolygon(midpoint, partition)) {
-        // Determine which side based on perpendicular projection
-        const projection = vec2.dot(midpoint, perpDir)
+    for (let edge of polygonEdges(beamPoly.outer)) {
+      const mid = midpoint(edge.start, edge.end)
+      if (isPointStrictlyInPolygon(mid, partition)) {
+        const projection = vec2.dot(mid, perpDir)
 
         if (projection < centerProjection) {
           leftHasBeam = true
         } else {
           rightHasBeam = true
         }
+        break
       }
     }
+
+    if (leftHasBeam && rightHasBeam) break
   }
 
   return { leftHasBeam, rightHasBeam }
@@ -116,11 +114,19 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
       }
     }
 
-    const newSides = context.innerLines.map((l, i) =>
-      1 - Math.abs(vec2.dot(l.direction, joistDirection)) < EPSILON ? l : context.outerLines[i]
+    const joistArea = polygonFromLineIntersections(
+      context.innerLines.map((l, i) =>
+        1 - Math.abs(vec2.dot(l.direction, joistDirection)) < EPSILON ? l : context.outerLines[i]
+      )
     )
-    const newPolygon = polygonFromLineIntersections(newSides)
-    const partitions = Array.from(partitionByAlignedEdges(newPolygon, joistDirection))
+    const holeClip = polygonFromLineIntersections(
+      context.innerLines.map((l, i) =>
+        1 - Math.abs(vec2.dot(l.direction, joistDirection)) < EPSILON
+          ? offsetLine(l, config.wallBeamInsideOffset)
+          : context.outerLines[i]
+      )
+    )
+    const partitions = Array.from(partitionByAlignedEdges(joistArea, joistDirection))
 
     const expandedHoles = context.openings.map(h => offsetPolygon(h, config.openingSideThickness))
 
@@ -144,7 +150,7 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
 
     const clippedHoles = expandedHoles
       .map(ensurePolygonIsClockwise)
-      .flatMap(p => intersectPolygon({ outer: p, holes: [] }, { outer: newPolygon, holes: [] }))
+      .flatMap(p => intersectPolygon({ outer: p, holes: [] }, { outer: joistArea, holes: [] }))
       .map(p => p.outer)
 
     const infillPolygons = subtractPolygons(
@@ -152,59 +158,58 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
       [context.innerPolygon, ...joistPolygons.map(p => p.outer), ...wallBeamPolygons.map(p => p.outer), ...clippedHoles]
     )
 
-    const results = [
-      ...wallBeamPolygons.map(
-        p =>
-          ({
-            type: 'element',
-            element: createConstructionElement(
-              config.wallBeamMaterial,
-              createExtrudedPolygon(p, 'xy', config.constructionHeight),
-              undefined,
-              undefined,
-              polygonPartInfo('wall-beam', p.outer, 'xy', config.constructionHeight)
-            )
-          }) satisfies ConstructionResult
-      ),
-      ...joistPolygons.map(
-        p =>
-          ({
-            type: 'element',
-            element: createConstructionElement(
-              config.joistMaterial,
-              createExtrudedPolygon(p, 'xy', config.constructionHeight),
-              undefined,
-              undefined,
-              polygonPartInfo('joist', p.outer, 'xy', config.constructionHeight)
-            )
-          }) satisfies ConstructionResult
-      ),
-      ...infillPolygons.map(
-        p =>
-          ({
-            type: 'element',
-            element: createConstructionElement(
-              config.wallInfillMaterial,
-              createExtrudedPolygon(p, 'xy', config.constructionHeight)
-            )
-          }) satisfies ConstructionResult
-      ),
-      ...context.openings.flatMap(h =>
-        Array.from(
-          simplePolygonFrame(
-            h,
-            config.openingSideThickness,
-            config.constructionHeight,
-            config.openingSideMaterial,
-            newPolygon,
-            'floor-opening-frame',
+    const wallBeams = wallBeamPolygons.map(
+      p =>
+        ({
+          type: 'element',
+          element: createConstructionElement(
+            config.wallBeamMaterial,
+            createExtrudedPolygon(p, 'xy', config.constructionHeight),
             undefined,
-            false
+            undefined,
+            polygonPartInfo('wall-beam', p.outer, 'xy', config.constructionHeight)
           )
+        }) satisfies ConstructionResult
+    )
+    const joists = joistPolygons.map(
+      p =>
+        ({
+          type: 'element',
+          element: createConstructionElement(
+            config.joistMaterial,
+            createExtrudedPolygon(p, 'xy', config.constructionHeight),
+            undefined,
+            undefined,
+            polygonPartInfo('joist', p.outer, 'xy', config.constructionHeight)
+          )
+        }) satisfies ConstructionResult
+    )
+    const wallInfill = infillPolygons.map(
+      p =>
+        ({
+          type: 'element',
+          element: createConstructionElement(
+            config.wallInfillMaterial,
+            createExtrudedPolygon(p, 'xy', config.constructionHeight)
+          )
+        }) satisfies ConstructionResult
+    )
+    const openingFrames = context.openings.flatMap(h =>
+      Array.from(
+        simplePolygonFrame(
+          h,
+          config.openingSideThickness,
+          config.constructionHeight,
+          config.openingSideMaterial,
+          holeClip,
+          'floor-opening-frame',
+          undefined,
+          false
         )
       )
-    ]
+    )
 
+    const results = [...wallBeams, ...joists, ...wallInfill, ...openingFrames]
     const aggregatedResults = aggregateResults(results)
 
     const bounds = Bounds2D.fromPoints(context.outerPolygon.points).toBounds3D('xy', 0, config.constructionHeight)

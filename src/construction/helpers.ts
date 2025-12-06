@@ -133,17 +133,17 @@ export function* stripesPolygons(
   const perpDir = perpendicular(direction)
 
   const dots = polygon.outer.points.map(p => vec2.dot(p, perpDir))
-  const joistStart = polygon.outer.points[dots.indexOf(Math.min(...dots))]
+  const stripeStart = polygon.outer.points[dots.indexOf(Math.min(...dots))]
   const totalSpan = Math.max(...dots) - Math.min(...dots)
 
   const dots2 = polygon.outer.points.map(p => vec2.dot(p, direction))
-  const joistMin = polygon.outer.points[dots2.indexOf(Math.min(...dots2))]
-  const joistLength = Math.max(...dots2) - Math.min(...dots2)
+  const stripeMin = polygon.outer.points[dots2.indexOf(Math.min(...dots2))]
+  const stripeLength = Math.max(...dots2) - Math.min(...dots2)
 
-  const joistLine: Line2D = { point: joistStart, direction: direction }
-  const perpLine: Line2D = { point: joistMin, direction: perpDir }
+  const stripeLine: Line2D = { point: stripeStart, direction: direction }
+  const perpLine: Line2D = { point: stripeMin, direction: perpDir }
 
-  const intersection = lineIntersection(joistLine, perpLine)
+  const intersection = lineIntersection(stripeLine, perpLine)
 
   if (!intersection) {
     return
@@ -152,16 +152,16 @@ export function* stripesPolygons(
   const stepWidth = thickness + spacing
   const end = totalSpan + spacing - endOffset
   for (let offset = startOffset; offset <= end; offset += stepWidth) {
-    const clippedOffset = Math.min(offset, totalSpan - thickness)
+    const clippedOffset = Math.min(offset, totalSpan - thickness - endOffset)
     const p1 = vec2.scaleAndAdd(vec2.create(), intersection, perpDir, clippedOffset)
     const p2 = vec2.scaleAndAdd(vec2.create(), p1, perpDir, thickness)
-    const p3 = vec2.scaleAndAdd(vec2.create(), p2, direction, joistLength)
-    const p4 = vec2.scaleAndAdd(vec2.create(), p1, direction, joistLength)
+    const p3 = vec2.scaleAndAdd(vec2.create(), p2, direction, stripeLength)
+    const p4 = vec2.scaleAndAdd(vec2.create(), p1, direction, stripeLength)
 
-    const joistPolygon: Polygon2D = { points: [p1, p2, p3, p4] }
-    const joistParts = intersectPolygon(polygon, { outer: joistPolygon, holes: [] })
+    const stripePolygon: Polygon2D = { points: [p1, p2, p3, p4] }
+    const stripeParts = intersectPolygon(polygon, { outer: stripePolygon, holes: [] })
 
-    yield* joistParts.filter(p => calculatePolygonArea(p.outer) > minimumArea)
+    yield* stripeParts.filter(p => calculatePolygonArea(p.outer) > minimumArea)
   }
 }
 
@@ -178,24 +178,24 @@ export function* simpleStripes(
   const perpDir = perpendicular(direction)
 
   const dots = polygon.outer.points.map(p => vec2.dot(p, perpDir))
-  const joistStart = polygon.outer.points[dots.indexOf(Math.min(...dots))]
+  const stripeStart = polygon.outer.points[dots.indexOf(Math.min(...dots))]
   const totalSpan = Math.max(...dots) - Math.min(...dots)
 
   const dots2 = polygon.outer.points.map(p => vec2.dot(p, direction))
-  const joistMin = polygon.outer.points[dots2.indexOf(Math.min(...dots2))]
-  const joistLength = Math.max(...dots2) - Math.min(...dots2)
+  const stripeMin = polygon.outer.points[dots2.indexOf(Math.min(...dots2))]
+  const stripeLength = Math.max(...dots2) - Math.min(...dots2)
 
-  const joistLine: Line2D = { point: joistStart, direction: direction }
-  const perpLine: Line2D = { point: joistMin, direction: perpDir }
+  const stripeLine: Line2D = { point: stripeStart, direction: direction }
+  const perpLine: Line2D = { point: stripeMin, direction: perpDir }
 
-  const intersection = lineIntersection(joistLine, perpLine)
+  const intersection = lineIntersection(stripeLine, perpLine)
 
   if (!intersection) {
     yield yieldWarning('Could not determine stripe positions due to parallel lines.', [])
     return
   }
 
-  // Used to filter out tiny joist pieces (which are probably not needed)
+  // Used to filter out tiny stripe pieces (which are probably not needed)
   const minRelevantArea = (thickness * thickness) / 2
 
   const stepWidth = thickness + spacing
@@ -204,13 +204,13 @@ export function* simpleStripes(
     const clippedOffset = Math.min(offset, totalSpan - thickness)
     const p1 = vec2.scaleAndAdd(vec2.create(), intersection, perpDir, clippedOffset)
     const p2 = vec2.scaleAndAdd(vec2.create(), p1, perpDir, thickness)
-    const p3 = vec2.scaleAndAdd(vec2.create(), p2, direction, joistLength)
-    const p4 = vec2.scaleAndAdd(vec2.create(), p1, direction, joistLength)
+    const p3 = vec2.scaleAndAdd(vec2.create(), p2, direction, stripeLength)
+    const p4 = vec2.scaleAndAdd(vec2.create(), p1, direction, stripeLength)
 
-    const joistPolygon: Polygon2D = { points: [p1, p2, p3, p4] }
-    const joistParts = intersectPolygon(polygon, { outer: joistPolygon, holes: [] })
+    const stripePolygon: Polygon2D = { points: [p1, p2, p3, p4] }
+    const stripeParts = intersectPolygon(polygon, { outer: stripePolygon, holes: [] })
 
-    for (const part of joistParts) {
+    for (const part of stripeParts) {
       if (calculatePolygonArea(part.outer) < minRelevantArea) continue
       const partInfo = partType ? polygonPartInfo(partType, part.outer, 'xy', height) : undefined
       yield* yieldElement(
@@ -408,19 +408,17 @@ export function* partitionByAlignedEdges(polygon: Polygon2D, dir: vec2): Generat
       const next = toSplit.points[(i + 2) % pointCount]
       const edgeDir = direction(start, end)
 
-      // Check if edge is aligned with the joist direction (handles both dir and -dir)
+      // Check if edge is aligned with the direction (handles both dir and -dir)
       if (1 - Math.abs(vec2.dot(edgeDir, dir)) > EPSILON) continue
 
       const edgeLine: Line2D = { point: start, direction: dir }
       const perpDir = perpendicularCW(edgeDir)
 
       // Check if we can extend this edge in either direction
-      // Forward: check if next edge has positive perpendicular component (turns right/into polygon)
       const nextDir = direction(end, next)
       const nextPerpComponent = vec2.dot(nextDir, perpDir)
       const canExtendForward = nextPerpComponent < -EPSILON
 
-      // Backward: check if prev edge has negative perpendicular component (turns left when going backward)
       const prevDir = direction(prev, start)
       const prevPerpComponent = vec2.dot(prevDir, perpDir)
       const canExtendBackward = prevPerpComponent > EPSILON
