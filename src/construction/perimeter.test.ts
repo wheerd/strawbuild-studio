@@ -119,8 +119,8 @@ describe('computeFloorConstructionPolygon', () => {
       } as any
     })
 
-    const polygon = computeFloorConstructionPolygon(perimeter)
+    const result = computeFloorConstructionPolygon(perimeter)
 
-    expect(polygon.points).toEqual(expectedPoints)
+    expect(result.polygon.points).toEqual(expectedPoints)
   })
 })

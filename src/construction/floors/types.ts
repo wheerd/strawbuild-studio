@@ -1,15 +1,23 @@
 import type { LayerConfig } from '@/construction/layers/types'
 import type { MaterialId } from '@/construction/materials/material'
 import type { ConstructionModel } from '@/construction/model'
-import type { Length, PolygonWithHoles2D } from '@/shared/geometry'
+import type { Length, Line2D, Polygon2D } from '@/shared/geometry'
 
 export interface FloorAssembly<TConfig extends FloorAssemblyConfigBase> {
-  construct: (polygon: PolygonWithHoles2D, config: TConfig) => ConstructionModel
+  construct: (context: FloorConstructionContext, config: TConfig) => ConstructionModel
 
   getTopOffset: (config: TConfig) => Length
   getBottomOffset: (config: TConfig) => Length
   getConstructionThickness: (config: TConfig) => Length
   getTotalThickness: (config: TConfig) => Length
+}
+
+export interface FloorConstructionContext {
+  outerLines: Line2D[]
+  innerLines: Line2D[]
+  outerPolygon: Polygon2D
+  innerPolygon: Polygon2D
+  openings: Polygon2D[]
 }
 
 export type FloorAssemblyType = 'monolithic' | 'joist'
@@ -34,12 +42,23 @@ export interface MonolithicFloorConfig extends FloorAssemblyConfigBase {
 
 export interface JoistFloorConfig extends FloorAssemblyConfigBase {
   type: 'joist'
+
+  constructionHeight: Length
+
   joistThickness: Length
-  joistHeight: Length
   joistSpacing: Length
   joistMaterial: MaterialId
+
+  wallBeamThickness: Length
+  wallBeamInsideOffset: Length
+  wallBeamMaterial: MaterialId
+  wallInfillMaterial: MaterialId
+
   subfloorThickness: Length
   subfloorMaterial: MaterialId
+
+  openingSideThickness: Length
+  openingSideMaterial: MaterialId
 }
 
 export type FloorConfig = MonolithicFloorConfig | JoistFloorConfig
@@ -67,7 +86,7 @@ const validateMonolithicFloorConfig = (config: MonolithicFloorConfig): void => {
 }
 
 const validateJoistFloorConfig = (config: JoistFloorConfig): void => {
-  if (config.joistHeight <= 0 || config.joistThickness <= 0) {
+  if (config.constructionHeight <= 0 || config.joistThickness <= 0) {
     throw new Error('Joist dimensions must be greater than 0')
   }
   if (config.joistSpacing <= 0) {

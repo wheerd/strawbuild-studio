@@ -80,7 +80,7 @@ export const TOOL_GROUPS: ToolGroup[] = [
   },
   {
     name: 'Floors',
-    tools: ['floors.add-area', 'floors.add-opening'] as const
+    tools: ['floors.add-opening'] as const
   },
   {
     name: 'Roofs',

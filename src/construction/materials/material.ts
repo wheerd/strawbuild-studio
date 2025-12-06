@@ -208,6 +208,21 @@ export const impactSoundInsulation: VolumeMaterial = {
   density: 40
 }
 
+export const osb: SheetMaterial = {
+  id: 'material_osb' as MaterialId,
+  name: 'OSB',
+  sizes: [
+    { smallerLength: 1220, biggerLength: 2440 },
+    { smallerLength: 1250, biggerLength: 2500 },
+    { smallerLength: 915, biggerLength: 2135 }
+  ],
+  thicknesses: [12, 15, 18, 22, 25],
+  sheetType: 'solid',
+  type: 'sheet',
+  color: MATERIAL_COLORS.woodSupport,
+  density: 600
+}
+
 export const DEFAULT_MATERIALS: Record<MaterialId, Material> = {
   [wood.id]: wood,
   [woodPlanking.id]: woodPlanking,
@@ -223,5 +238,6 @@ export const DEFAULT_MATERIALS: Record<MaterialId, Material> = {
   [limePlasterBase.id]: limePlasterBase,
   [limePlasterFine.id]: limePlasterFine,
   [cementScreed.id]: cementScreed,
-  [impactSoundInsulation.id]: impactSoundInsulation
+  [impactSoundInsulation.id]: impactSoundInsulation,
+  [osb.id]: osb
 }

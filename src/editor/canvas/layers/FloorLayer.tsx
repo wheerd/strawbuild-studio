@@ -7,7 +7,6 @@ import {
   useFloorOpeningsOfActiveStorey,
   usePerimetersOfActiveStorey
 } from '@/building/store'
-import { FloorAreaShape } from '@/editor/canvas/shapes/FloorAreaShape'
 import { FloorOpeningShape } from '@/editor/canvas/shapes/FloorOpeningShape'
 import { useViewMode } from '@/editor/hooks/useViewMode'
 import { subtractPolygons } from '@/shared/geometry'
@@ -42,10 +41,9 @@ export function FloorLayer(): React.JSX.Element | null {
     const perimeterPolygons = perimeters.map(perimeter => ({
       points: perimeter.corners.map(corner => corner.outsidePoint)
     }))
-    const areaPolygons = floorAreas.map(area => area.area)
     const openingPolygons = floorOpenings.map(opening => opening.area)
 
-    return subtractPolygons([...perimeterPolygons, ...areaPolygons], openingPolygons)
+    return subtractPolygons([...perimeterPolygons], openingPolygons)
   }, [mode, perimeters, floorAreas, floorOpenings])
 
   if (mode !== 'floors') {
@@ -72,9 +70,6 @@ export function FloorLayer(): React.JSX.Element | null {
 
   return (
     <Layer name="floors">
-      {floorAreas.map(area => (
-        <FloorAreaShape key={area.id} area={area} />
-      ))}
       {floorOpenings.map(opening => (
         <FloorOpeningShape key={opening.id} opening={opening} />
       ))}

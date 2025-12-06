@@ -218,7 +218,8 @@ describe('generateMaterialPartsList', () => {
     canonicalPolygonKeyMock.mockReturnValue('polygon-key')
     minimumAreaBoundingBoxMock.mockImplementation(polygon => ({
       size: Bounds2D.fromPoints(polygon.points).max,
-      angle: 0
+      angle: 0,
+      smallestDirection: vec2.create()
     }))
 
     const polygon = {
@@ -299,7 +300,8 @@ describe('polygonPartInfo', () => {
     canonicalPolygonKeyMock.mockReturnValue('polygon-key')
     minimumAreaBoundingBoxMock.mockImplementation(polygon => ({
       size: Bounds2D.fromPoints(polygon.points).max,
-      angle: 0
+      angle: 0,
+      smallestDirection: vec2.create()
     }))
   })
 

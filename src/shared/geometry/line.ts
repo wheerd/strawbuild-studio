@@ -156,3 +156,10 @@ export function computeBoundsLines(d: vec2, points: vec2[]): { left: LineSegment
     }
   }
 }
+
+export function offsetLine(line: Line2D, offset: Length): Line2D {
+  return {
+    point: vec2.scaleAndAdd(vec2.create(), line.point, perpendicularCW(line.direction), offset),
+    direction: line.direction
+  }
+}

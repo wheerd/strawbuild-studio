@@ -595,8 +595,8 @@ describe.skip('splitPolygonByLine', () => {
     }
 
     const line = {
-      start: vec2.fromValues(50, 0),
-      end: vec2.fromValues(50, 50)
+      point: vec2.fromValues(50, 0),
+      direction: vec2.fromValues(0, 1)
     }
 
     const result = splitPolygonByLine(rect, line)
@@ -625,8 +625,8 @@ describe.skip('splitPolygonByLine', () => {
     }
 
     const line = {
-      start: vec2.fromValues(0, 25),
-      end: vec2.fromValues(100, 25)
+      point: vec2.fromValues(0, 25),
+      direction: vec2.fromValues(1, 0)
     }
 
     const result = splitPolygonByLine(rect, line)
@@ -652,8 +652,8 @@ describe.skip('splitPolygonByLine', () => {
     }
 
     const line = {
-      start: vec2.fromValues(0, 0),
-      end: vec2.fromValues(100, 100)
+      point: vec2.fromValues(0, 0),
+      direction: vec2.normalize(vec2.create(), vec2.fromValues(1, 1))
     }
 
     const result = splitPolygonByLine(rect, line)
@@ -679,8 +679,8 @@ describe.skip('splitPolygonByLine', () => {
     }
 
     const line = {
-      start: vec2.fromValues(200, 0),
-      end: vec2.fromValues(200, 50)
+      point: vec2.fromValues(200, 0),
+      direction: vec2.fromValues(0, 1)
     }
 
     const result = splitPolygonByLine(rect, line)
@@ -700,8 +700,8 @@ describe.skip('splitPolygonByLine', () => {
     }
 
     const line = {
-      start: vec2.fromValues(0, 0),
-      end: vec2.fromValues(0, 50)
+      point: vec2.fromValues(0, 0),
+      direction: vec2.fromValues(0, 1)
     }
 
     const result = splitPolygonByLine(rect, line)
@@ -728,8 +728,8 @@ describe.skip('splitPolygonByLine', () => {
     }
 
     const line = {
-      start: vec2.fromValues(50, -10),
-      end: vec2.fromValues(50, 110)
+      point: vec2.fromValues(50, -10),
+      direction: vec2.fromValues(0, 1)
     }
 
     const result = splitPolygonByLine(lShape, line)
@@ -750,8 +750,8 @@ describe.skip('splitPolygonByLine', () => {
 
     // Vertical line going upward (from y=0 to y=50)
     const line = {
-      start: vec2.fromValues(50, 0),
-      end: vec2.fromValues(50, 50)
+      point: vec2.fromValues(50, 0),
+      direction: vec2.fromValues(0, 1)
     }
 
     const result = splitPolygonByLine(rect, line)

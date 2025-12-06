@@ -13,7 +13,7 @@ import type { FloorAssemblyConfig } from '@/construction/config/types'
 import { type FloorConfig, validateFloorConfig } from '@/construction/floors/types'
 import { DEFAULT_FLOOR_LAYER_SETS } from '@/construction/layers/defaults'
 import type { LayerConfig } from '@/construction/layers/types'
-import { clt, concrete } from '@/construction/materials/material'
+import { clt, concrete, osb, straw, wood } from '@/construction/materials/material'
 import '@/shared/geometry'
 
 export interface FloorAssembliesState {
@@ -63,7 +63,7 @@ const validateFloorAssemblyName = (name: string): void => {
 const createDefaultFloorAssemblies = (): FloorAssemblyConfig[] => [
   {
     id: DEFAULT_FLOOR_ASSEMBLY_ID,
-    name: 'CLT 18cm (6m)',
+    name: 'CLT 18cm (6cm)',
     type: 'monolithic',
     thickness: 180,
     material: clt.id,
@@ -76,10 +76,33 @@ const createDefaultFloorAssemblies = (): FloorAssemblyConfig[] => [
   },
   {
     id: 'fa_concrete_default' as FloorAssemblyId,
-    name: 'Concrete 20cm (6m)',
+    name: 'Concrete 20cm (6cm)',
     type: 'monolithic',
     thickness: 200,
     material: concrete.id,
+    layers: {
+      topThickness: 60,
+      topLayers: DEFAULT_FLOOR_LAYER_SETS['Screet'],
+      bottomThickness: 0,
+      bottomLayers: []
+    }
+  },
+  {
+    id: 'fa_joist_default' as FloorAssemblyId,
+    name: 'Joist 12x24cm (6cm)',
+    type: 'joist',
+    constructionHeight: 240,
+    joistMaterial: wood.id,
+    joistSpacing: 800,
+    joistThickness: 120,
+    wallBeamThickness: 120,
+    wallBeamMaterial: wood.id,
+    wallBeamInsideOffset: 40,
+    wallInfillMaterial: straw.id,
+    subfloorMaterial: osb.id,
+    subfloorThickness: 22,
+    openingSideMaterial: wood.id,
+    openingSideThickness: 60,
     layers: {
       topThickness: 60,
       topLayers: DEFAULT_FLOOR_LAYER_SETS['Screet'],

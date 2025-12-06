@@ -213,7 +213,7 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
       ]
     } else {
       // Gable: split overhang polygon by ridge line
-      const sides = splitPolygonByLine(roof.overhangPolygon, roof.ridgeLine)
+      const sides = splitPolygonByLine(roof.overhangPolygon, lineFromSegment(roof.ridgeLine))
 
       return sides.map(({ polygon, side }) => ({
         polygon,

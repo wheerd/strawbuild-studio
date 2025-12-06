@@ -18,8 +18,9 @@ test('Test Data Screenshot', async ({ page }) => {
       - button "Add Opening"
       - button "Split Wall"
       - separator
-      - button "Floor Area"
       - button "Floor Opening"
+      - separator
+      - button "Roof"
       - separator
       - button "Test Data"
     - button "View Construction Plan"

@@ -19,7 +19,7 @@ import {
   perpendicularCW,
   radiansToDegrees
 } from './basic'
-import { type Line2D, type LineSegment2D, lineIntersection } from './line'
+import { type Line2D, type LineSegment2D, lineIntersection, projectPointOntoLine } from './line'
 
 const COLINEAR_EPSILON = 1e-9
 const SIMPLIFY_TOLERANCE = 0.01
@@ -98,6 +98,19 @@ export function isPointInPolygon(point: vec2, polygon: Polygon2D): boolean {
     const module = getClipperModule()
     const result = module.PointInPolygonD(testPoint, path)
     return result.value !== module.PointInPolygonResult.IsOutside.value
+  } finally {
+    testPoint.delete()
+    path.delete()
+  }
+}
+
+export function isPointStrictlyInPolygon(point: vec2, polygon: Polygon2D): boolean {
+  const testPoint = createPointD(point)
+  const path = createPathD(polygon.points)
+  try {
+    const module = getClipperModule()
+    const result = module.PointInPolygonD(testPoint, path)
+    return result.value === module.PointInPolygonResult.IsInside.value
   } finally {
     testPoint.delete()
     path.delete()
@@ -368,10 +381,10 @@ export interface PolygonSide {
  * Split a simple polygon by an infinite line defined by a segment.
  * Left side is perpendicular CCW from line direction, right side is perpendicular CW.
  * @param polygon - Simple polygon (no holes)
- * @param line - Line segment defining the split direction
- * @returns Array of polygon pieces with side tags (typically 0-2)
+ * @param line - Line defining the split
+ * @returns Array of polygon pieces with side tags
  */
-export function splitPolygonByLine(polygon: Polygon2D, line: LineSegment2D): PolygonSide[] {
+export function splitPolygonByLine(polygon: Polygon2D, line: Line2D): PolygonSide[] {
   if (polygon.points.length < 3) {
     return []
   }
@@ -379,24 +392,24 @@ export function splitPolygonByLine(polygon: Polygon2D, line: LineSegment2D): Pol
   const polygonCW = ensurePolygonIsClockwise(polygon)
 
   // Get line direction and perpendiculars
-  const lineDir = direction(line.start, line.end)
-  const perpLeft = perpendicularCCW(lineDir)
-  const perpRight = perpendicularCW(lineDir)
+  const perpLeft = perpendicularCCW(line.direction)
+  const perpRight = perpendicularCW(line.direction)
 
   // Create a large bounding size
   const bounds = Bounds2D.fromPoints(polygon.points)
+  const basePoint = projectPointOntoLine(bounds.min, line)
   const largeSize = Math.max(bounds.width, bounds.height) * 3
 
   // Create two half-plane rectangles on either side of the line
   // Left half-plane (CCW perpendicular from line)
-  const leftP1 = vec2.scaleAndAdd(vec2.create(), line.start, lineDir, -largeSize)
-  const leftP2 = vec2.scaleAndAdd(vec2.create(), line.start, lineDir, largeSize)
+  const leftP1 = vec2.scaleAndAdd(vec2.create(), basePoint, line.direction, -largeSize)
+  const leftP2 = vec2.scaleAndAdd(vec2.create(), basePoint, line.direction, largeSize)
   const leftP3 = vec2.scaleAndAdd(vec2.create(), leftP2, perpLeft, largeSize)
   const leftP4 = vec2.scaleAndAdd(vec2.create(), leftP1, perpLeft, largeSize)
 
   // Right half-plane (CW perpendicular from line)
-  const rightP1 = vec2.scaleAndAdd(vec2.create(), line.start, lineDir, -largeSize)
-  const rightP2 = vec2.scaleAndAdd(vec2.create(), line.start, lineDir, largeSize)
+  const rightP1 = vec2.scaleAndAdd(vec2.create(), basePoint, line.direction, -largeSize)
+  const rightP2 = vec2.scaleAndAdd(vec2.create(), basePoint, line.direction, largeSize)
   const rightP3 = vec2.scaleAndAdd(vec2.create(), rightP2, perpRight, largeSize)
   const rightP4 = vec2.scaleAndAdd(vec2.create(), rightP1, perpRight, largeSize)
 
@@ -639,6 +652,7 @@ export function convexHullOfPolygonWithHoles(polygon: PolygonWithHoles2D): Polyg
 export interface MinimumBoundingBox {
   size: vec2
   angle: number
+  smallestDirection: vec2
 }
 
 function minimumAreaBoundingBoxFromPoints(points: vec2[]): MinimumBoundingBox {
@@ -651,6 +665,7 @@ function minimumAreaBoundingBoxFromPoints(points: vec2[]): MinimumBoundingBox {
   let bestArea = Infinity
   let bestSize = vec2.fromValues(0, 0)
   let bestAngle = 0
+  let bestDirection = vec2.fromValues(0, 0)
 
   const rotatePoint = (point: vec2, sinAngle: number, cosAngle: number) => {
     const x = point[0] * cosAngle - point[1] * sinAngle
@@ -681,18 +696,23 @@ function minimumAreaBoundingBoxFromPoints(points: vec2[]): MinimumBoundingBox {
       bestArea = area
       bestSize = size
       bestAngle = angle
+
+      const edgeDir = vec2.fromValues(edgeX, edgeY)
+      vec2.normalize(edgeDir, edgeDir)
+      // size[0] is along the edge direction, size[1] is perpendicular to it
+      if (size[0] < size[1]) {
+        bestDirection = edgeDir
+      } else {
+        bestDirection = perpendicularCCW(edgeDir)
+      }
     }
   }
 
-  return { size: bestSize, angle: bestAngle }
+  return { size: bestSize, angle: bestAngle, smallestDirection: bestDirection }
 }
 
 export function minimumAreaBoundingBox(polygon: Polygon2D): MinimumBoundingBox {
   return minimumAreaBoundingBoxFromPoints(polygon.points)
-}
-
-export function minimumAreaBoundingBoxOfPolygonWithHoles(polygon: PolygonWithHoles2D): MinimumBoundingBox {
-  return minimumAreaBoundingBoxFromPoints(polygon.outer.points)
 }
 
 /**
