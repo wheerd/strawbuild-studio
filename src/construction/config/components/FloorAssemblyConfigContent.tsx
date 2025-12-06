@@ -113,6 +113,8 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           wallInfillMaterial: defaultMaterial,
           subfloorThickness: 22,
           subfloorMaterial: defaultMaterial,
+          openingSideThickness: 60,
+          openingSideMaterial: defaultMaterial,
           layers: {
             topThickness: 0,
             topLayers: [],
@@ -566,6 +568,39 @@ function JoistConfigFields({
         <LengthField
           value={config.subfloorThickness}
           onChange={subfloorThickness => onUpdate({ subfloorThickness })}
+          unit="mm"
+          size="2"
+        />
+      </Grid>
+
+      <Separator size="4" />
+
+      {/* Opening Sides Section */}
+      <Heading size="3">Opening Sides</Heading>
+      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            Opening Side Material
+          </Text>
+        </Label.Root>
+        <MaterialSelectWithEdit
+          value={config.openingSideMaterial}
+          onValueChange={openingSideMaterial => {
+            if (!openingSideMaterial) return
+            onUpdate({ openingSideMaterial })
+          }}
+          placeholder="Select opening side material..."
+          size="2"
+        />
+
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            Opening Side Thickness
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={config.openingSideThickness}
+          onChange={openingSideThickness => onUpdate({ openingSideThickness })}
           unit="mm"
           size="2"
         />

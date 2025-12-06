@@ -101,6 +101,8 @@ const createDefaultFloorAssemblies = (): FloorAssemblyConfig[] => [
     wallInfillMaterial: straw.id,
     subfloorMaterial: osb.id,
     subfloorThickness: 22,
+    openingSideMaterial: wood.id,
+    openingSideThickness: 60,
     layers: {
       topThickness: 60,
       topLayers: DEFAULT_FLOOR_LAYER_SETS['Screet'],

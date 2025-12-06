@@ -11,6 +11,8 @@ import type { MigrationState } from './shared'
  * - Add `wallBeamMaterial` (default: wood.id)
  * - Add `wallBeamInsideOffset` (default: 40mm)
  * - Add `wallInfillMaterial` (default: straw.id)
+ * - Add `openingSideThickness` (default: 60mm)
+ * - Add `openingSideMaterial` (default: wood.id)
  */
 export function migrateToVersion9(state: MigrationState): void {
   const assemblies = state.floorAssemblyConfigs
@@ -51,6 +53,15 @@ export function migrateToVersion9(state: MigrationState): void {
 
     if (!('wallInfillMaterial' in assemblyConfig)) {
       assemblyConfig.wallInfillMaterial = straw.id
+    }
+
+    // 3. Add new opening side fields
+    if (!('openingSideThickness' in assemblyConfig)) {
+      assemblyConfig.openingSideThickness = 60
+    }
+
+    if (!('openingSideMaterial' in assemblyConfig)) {
+      assemblyConfig.openingSideMaterial = wood.id
     }
   }
 }

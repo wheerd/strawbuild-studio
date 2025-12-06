@@ -76,7 +76,7 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
     )
     const newPolygon = polygonFromLineIntersections(newSides)
 
-    const expandedHoles = context.openings.map(h => offsetPolygon(h, config.joistThickness))
+    const expandedHoles = context.openings.map(h => offsetPolygon(h, config.openingSideThickness))
 
     const innerClipPolygon: PolygonWithHoles2D = { outer: newPolygon, holes: expandedHoles }
 
@@ -143,11 +143,11 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
         Array.from(
           simplePolygonFrame(
             h,
-            config.joistThickness,
+            config.openingSideThickness,
             config.constructionHeight,
-            config.joistMaterial,
+            config.openingSideMaterial,
             newPolygon,
-            'joist-frame',
+            'opening-side-frame',
             undefined,
             false
           )

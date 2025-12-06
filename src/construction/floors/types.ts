@@ -56,6 +56,9 @@ export interface JoistFloorConfig extends FloorAssemblyConfigBase {
 
   subfloorThickness: Length
   subfloorMaterial: MaterialId
+
+  openingSideThickness: Length
+  openingSideMaterial: MaterialId
 }
 
 export type FloorConfig = MonolithicFloorConfig | JoistFloorConfig
