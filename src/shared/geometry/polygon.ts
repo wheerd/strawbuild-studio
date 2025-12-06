@@ -19,7 +19,7 @@ import {
   perpendicularCW,
   radiansToDegrees
 } from './basic'
-import { type Line2D, type LineSegment2D, lineIntersection } from './line'
+import { type Line2D, type LineSegment2D, lineIntersection, projectPointOntoLine } from './line'
 
 const COLINEAR_EPSILON = 1e-9
 const SIMPLIFY_TOLERANCE = 0.01
@@ -368,10 +368,10 @@ export interface PolygonSide {
  * Split a simple polygon by an infinite line defined by a segment.
  * Left side is perpendicular CCW from line direction, right side is perpendicular CW.
  * @param polygon - Simple polygon (no holes)
- * @param line - Line segment defining the split direction
- * @returns Array of polygon pieces with side tags (typically 0-2)
+ * @param line - Line defining the split
+ * @returns Array of polygon pieces with side tags
  */
-export function splitPolygonByLine(polygon: Polygon2D, line: LineSegment2D): PolygonSide[] {
+export function splitPolygonByLine(polygon: Polygon2D, line: Line2D): PolygonSide[] {
   if (polygon.points.length < 3) {
     return []
   }
@@ -379,24 +379,24 @@ export function splitPolygonByLine(polygon: Polygon2D, line: LineSegment2D): Pol
   const polygonCW = ensurePolygonIsClockwise(polygon)
 
   // Get line direction and perpendiculars
-  const lineDir = direction(line.start, line.end)
-  const perpLeft = perpendicularCCW(lineDir)
-  const perpRight = perpendicularCW(lineDir)
+  const perpLeft = perpendicularCCW(line.direction)
+  const perpRight = perpendicularCW(line.direction)
 
   // Create a large bounding size
   const bounds = Bounds2D.fromPoints(polygon.points)
+  const basePoint = projectPointOntoLine(bounds.min, line)
   const largeSize = Math.max(bounds.width, bounds.height) * 3
 
   // Create two half-plane rectangles on either side of the line
   // Left half-plane (CCW perpendicular from line)
-  const leftP1 = vec2.scaleAndAdd(vec2.create(), line.start, lineDir, -largeSize)
-  const leftP2 = vec2.scaleAndAdd(vec2.create(), line.start, lineDir, largeSize)
+  const leftP1 = vec2.scaleAndAdd(vec2.create(), basePoint, line.direction, -largeSize)
+  const leftP2 = vec2.scaleAndAdd(vec2.create(), basePoint, line.direction, largeSize)
   const leftP3 = vec2.scaleAndAdd(vec2.create(), leftP2, perpLeft, largeSize)
   const leftP4 = vec2.scaleAndAdd(vec2.create(), leftP1, perpLeft, largeSize)
 
   // Right half-plane (CW perpendicular from line)
-  const rightP1 = vec2.scaleAndAdd(vec2.create(), line.start, lineDir, -largeSize)
-  const rightP2 = vec2.scaleAndAdd(vec2.create(), line.start, lineDir, largeSize)
+  const rightP1 = vec2.scaleAndAdd(vec2.create(), basePoint, line.direction, -largeSize)
+  const rightP2 = vec2.scaleAndAdd(vec2.create(), basePoint, line.direction, largeSize)
   const rightP3 = vec2.scaleAndAdd(vec2.create(), rightP2, perpRight, largeSize)
   const rightP4 = vec2.scaleAndAdd(vec2.create(), rightP1, perpRight, largeSize)
 
