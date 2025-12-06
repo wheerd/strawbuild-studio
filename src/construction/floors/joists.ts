@@ -59,7 +59,7 @@ function detectBeamEdges(
   let rightHasBeam = false
 
   for (const beamPoly of wallBeamPolygons) {
-    for (let edge of polygonEdges(beamPoly.outer)) {
+    for (const edge of polygonEdges(beamPoly.outer)) {
       const mid = midpoint(edge.start, edge.end)
       if (isPointStrictlyInPolygon(mid, partition)) {
         const projection = vec2.dot(mid, perpDir)
@@ -209,7 +209,22 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
       )
     )
 
-    const results = [...wallBeams, ...joists, ...wallInfill, ...openingFrames]
+    const subfloorPolygons = subtractPolygons([context.innerPolygon], context.openings)
+    const subfloor = subfloorPolygons.map(
+      p =>
+        ({
+          type: 'element',
+          element: createConstructionElement(
+            config.subfloorMaterial,
+            createExtrudedPolygon(p, 'xy', config.subfloorThickness),
+            translate(vec3.fromValues(0, 0, config.constructionHeight)),
+            undefined,
+            polygonPartInfo('subfloor', p.outer, 'xy', config.subfloorThickness)
+          )
+        }) satisfies ConstructionResult
+    )
+
+    const results = [...wallBeams, ...joists, ...wallInfill, ...openingFrames, ...subfloor]
     const aggregatedResults = aggregateResults(results)
 
     const bounds = Bounds2D.fromPoints(context.outerPolygon.points).toBounds3D('xy', 0, config.constructionHeight)

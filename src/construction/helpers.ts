@@ -140,7 +140,7 @@ export function* stripesPolygons(
   const stripeMin = polygon.outer.points[dots2.indexOf(Math.min(...dots2))]
   const stripeLength = Math.max(...dots2) - Math.min(...dots2)
 
-  const stripeLine: Line2D = { point: stripeStart, direction: direction }
+  const stripeLine: Line2D = { point: stripeStart, direction }
   const perpLine: Line2D = { point: stripeMin, direction: perpDir }
 
   const intersection = lineIntersection(stripeLine, perpLine)
@@ -185,7 +185,7 @@ export function* simpleStripes(
   const stripeMin = polygon.outer.points[dots2.indexOf(Math.min(...dots2))]
   const stripeLength = Math.max(...dots2) - Math.min(...dots2)
 
-  const stripeLine: Line2D = { point: stripeStart, direction: direction }
+  const stripeLine: Line2D = { point: stripeStart, direction }
   const perpLine: Line2D = { point: stripeMin, direction: perpDir }
 
   const intersection = lineIntersection(stripeLine, perpLine)
@@ -386,9 +386,8 @@ export function* partitionByAlignedEdges(polygon: Polygon2D, dir: vec2): Generat
   }
 
   const queue = [ensurePolygonIsClockwise(polygon)]
-
-  while (queue.length > 0) {
-    const toSplit = queue.pop()!
+  let toSplit
+  while ((toSplit = queue.pop())) {
     const pointCount = toSplit.points.length
 
     const area = calculatePolygonArea(toSplit)
