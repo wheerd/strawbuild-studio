@@ -27,34 +27,28 @@ import {
 } from '@/shared/geometry'
 
 import { BaseFloorAssembly } from './base'
-import type { JoistFloorConfig } from './types'
+import type { FloorConstructionContext, JoistFloorConfig } from './types'
 
 const EPSILON = 1e-5
 
 export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
-  construct = (
-    polygon: PolygonWithHoles2D,
-    supportingWalls: PolygonWithHoles2D[],
-    config: JoistFloorConfig
-  ): ConstructionModel => {
-    const bbox = minimumAreaBoundingBox(polygon.outer)
+  construct = (context: FloorConstructionContext, config: JoistFloorConfig): ConstructionModel => {
+    const bbox = minimumAreaBoundingBox(context.outerPolygon)
     const joistDirection = bbox.smallestDirection
-    const insideSideEdges = supportingWalls.flatMap(w =>
-      w.holes.flatMap(h =>
-        Array.from(polygonEdges(h))
-          .map(e => ({ point: e.start, direction: direction(e.start, e.end) }) satisfies Line2D)
-          .filter(l => 1 - Math.abs(vec2.dot(l.direction, joistDirection)) < EPSILON)
-      )
-    )
+    const insideSideEdges = Array.from(polygonEdges(context.innerPolygon))
+      .map(e => ({ point: e.start, direction: direction(e.start, e.end) }) satisfies Line2D)
+      .filter(l => 1 - Math.abs(vec2.dot(l.direction, joistDirection)) < EPSILON)
 
-    const expandedHoles = polygon.holes.map(h => offsetPolygon(h, config.joistThickness))
+    const expandedHoles = context.openings.map(h => offsetPolygon(h, config.joistThickness))
+
+    const clipPolygon: PolygonWithHoles2D = { outer: context.outerPolygon, holes: expandedHoles }
 
     const results = [
       ...insideSideEdges.flatMap(e =>
         Array.from(
           beam(
             e,
-            polygon,
+            clipPolygon,
             config.joistThickness,
             config.joistThickness,
             config.joistHeight,
@@ -64,10 +58,7 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
         )
       ),
       ...simpleStripes(
-        {
-          outer: polygon.outer,
-          holes: expandedHoles
-        },
+        clipPolygon,
         joistDirection,
         config.joistThickness,
         config.joistHeight,
@@ -75,7 +66,7 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
         config.joistMaterial,
         'joist'
       ),
-      ...polygon.holes.flatMap(h =>
+      ...context.openings.flatMap(h =>
         Array.from(
           simplePolygonFrame(
             h,
@@ -87,25 +78,12 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
             false
           )
         )
-      ),
-      ...supportingWalls.flatMap(w =>
-        Array.from(
-          simplePolygonFrame(
-            w.outer,
-            config.joistThickness,
-            config.joistHeight,
-            config.joistMaterial,
-            'joist-frame',
-            undefined,
-            true
-          )
-        )
       )
     ]
 
     const aggregatedResults = aggregateResults(results)
 
-    const bounds = Bounds2D.fromPoints(polygon.outer.points).toBounds3D('xy', 0, config.joistHeight)
+    const bounds = Bounds2D.fromPoints(context.outerPolygon.points).toBounds3D('xy', 0, config.joistHeight)
     return {
       elements: [
         {

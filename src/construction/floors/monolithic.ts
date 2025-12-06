@@ -5,16 +5,15 @@ import { translate } from '@/construction/geometry'
 import type { ConstructionModel } from '@/construction/model'
 import { createExtrudedPolygon } from '@/construction/shapes'
 import { TAG_FLOOR } from '@/construction/tags'
-import { type PolygonWithHoles2D } from '@/shared/geometry'
 
 import { BaseFloorAssembly } from './base'
-import type { MonolithicFloorConfig } from './types'
+import type { FloorConstructionContext, MonolithicFloorConfig } from './types'
 
 export class MonolithicFloorAssembly extends BaseFloorAssembly<MonolithicFloorConfig> {
-  construct = (polygon: PolygonWithHoles2D, _supportingWalls: PolygonWithHoles2D[], config: MonolithicFloorConfig) => {
+  construct = (context: FloorConstructionContext, config: MonolithicFloorConfig) => {
     const floor = createConstructionElement(
       config.material,
-      createExtrudedPolygon(polygon, 'xy', config.thickness),
+      createExtrudedPolygon({ outer: context.outerPolygon, holes: context.openings }, 'xy', config.thickness),
       translate(vec3.fromValues(0, 0, -config.thickness)),
       [TAG_FLOOR]
     )
