@@ -61,13 +61,13 @@ export function computeFloorConstructionPolygon(
 
   const points = filteredLines
     .map((line, index) => {
-      const prevIndex = (index - 1 + offsetLines.length) % offsetLines.length
-      const prevLine = offsetLines[prevIndex]
+      const prevIndex = (index - 1 + filteredLines.length) % filteredLines.length
+      const prevLine = filteredLines[prevIndex]
       return lineIntersection(prevLine, line)
     })
     .filter(p => p != null)
 
-  return { polygon: { points }, lines: offsetLines }
+  return { polygon: { points }, lines: filteredLines }
 }
 
 export const computeFloorConstructionContext = (
