@@ -1,7 +1,7 @@
 import { vec2, vec3 } from 'gl-matrix'
 import { describe, expect, it } from 'vitest'
 
-import type { Projection } from '@/construction/geometry'
+import { type Projection, createProjectionMatrix } from '@/construction/geometry'
 import {
   type AutoMeasurement,
   type DirectMeasurement,
@@ -15,8 +15,8 @@ import {
 import type { Tag } from '@/construction/tags'
 
 describe('measurements', () => {
-  // Simple orthographic projection (x, y, z) -> (x, y)
-  const mockProjection: Projection = (point: vec3): vec2 => vec2.fromValues(point[0], point[1])
+  // Simple orthographic projection (XY plane - top view)
+  const mockProjection: Projection = createProjectionMatrix('xy')
 
   const createMockTag = (id: string): Tag => ({
     id: `measurement_${id}` as const,

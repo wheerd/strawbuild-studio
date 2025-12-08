@@ -1,9 +1,9 @@
-import { vec2, vec3 } from 'gl-matrix'
+import { mat4, vec2, vec3 } from 'gl-matrix'
 import { useMemo } from 'react'
 
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
 import { getTagClasses } from '@/construction/components/cssHelpers'
-import { type Projection, allPoints, bounds3Dto2D, transformBounds } from '@/construction/geometry'
+import { type Projection, allPoints, bounds3Dto2D, projectPoint, transformBounds } from '@/construction/geometry'
 import { type AutoMeasurement, type DirectMeasurement, processMeasurements } from '@/construction/measurements'
 import type { ConstructionModel } from '@/construction/model'
 import { formatLength } from '@/shared/utils/formatting'
@@ -15,7 +15,7 @@ export interface MeasurementsProps {
 
 export function Measurements({ model, projection }: MeasurementsProps): React.JSX.Element {
   const planPoints = useMemo(() => {
-    const elementPoints = model.elements.flatMap(e => Array.from(allPoints(e, projection)))
+    const elementPoints = model.elements.flatMap(e => Array.from(allPoints(e, projection, mat4.create())))
 
     const areaPoints = model.areas
       .filter(area => area.type !== 'cut')
@@ -40,7 +40,8 @@ export function Measurements({ model, projection }: MeasurementsProps): React.JS
             } else {
               p3d = vec3.fromValues(0, p[0], p[1])
             }
-            return projection(p3d)
+            const projected = projectPoint(p3d, projection)
+            return vec2.fromValues(projected[0], projected[1])
           })
         }
         return []
@@ -77,12 +78,16 @@ export function Measurements({ model, projection }: MeasurementsProps): React.JS
 
   const directMeasurements = model.measurements
     .filter((m): m is DirectMeasurement => 'label' in m)
-    .map(m => ({
-      ...m,
-      startPoint: projection(m.startPoint),
-      endPoint: projection(m.endPoint),
-      offset: m.offset * 60
-    }))
+    .map(m => {
+      const startProjected = projectPoint(m.startPoint, projection)
+      const endProjected = projectPoint(m.endPoint, projection)
+      return {
+        ...m,
+        startPoint: vec2.fromValues(startProjected[0], startProjected[1]),
+        endPoint: vec2.fromValues(endProjected[0], endProjected[1]),
+        offset: m.offset * 60
+      }
+    })
 
   return (
     <g>

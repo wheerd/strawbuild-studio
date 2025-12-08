@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { CutAreaShape } from '@/construction/components/CutAreaShape'
 import { Measurements } from '@/construction/components/Measurements'
 import { type FaceTree, geometryFaces } from '@/construction/components/faceHelpers'
-import { bounds3Dto2D, project, projectRotation } from '@/construction/geometry'
+import { bounds3Dto2D, createProjectionMatrix } from '@/construction/geometry'
 import type { ConstructionModel, HighlightedCuboid, HighlightedCut, HighlightedPolygon } from '@/construction/model'
 import type { TagCategoryId, TagId } from '@/construction/tags'
 import { MidCutXIcon, MidCutYIcon } from '@/shared/components/Icons'
@@ -60,7 +60,7 @@ function polygonWithHolesToSvgPath(polygon: PolygonWithHoles2D) {
 
 export function FaceTreeElement({ tree }: { tree: FaceTree }): React.JSX.Element {
   return (
-    <g className={tree.className} transform={tree.svgTransform}>
+    <g className={tree.className}>
       {'polygon' in tree && <path className="apply-material" d={polygonWithHolesToSvgPath(tree.polygon)} />}
       {'children' in tree && tree.children.map((child, index) => <FaceTreeElement key={index} tree={child} />)}
     </g>
@@ -89,9 +89,8 @@ export function ConstructionPlan({
   useEffect(() => viewportRef.current?.fitToContent(), [currentView])
 
   const axis = complementaryAxis(currentView.plane)
-  const projection = project(currentView.plane)
-  const rotationProjection = projectRotation(currentView.plane)
-  const contentBounds = bounds3Dto2D(model.bounds, projection)
+  const projectionMatrix = useMemo(() => createProjectionMatrix(currentView.plane), [currentView.plane])
+  const contentBounds = bounds3Dto2D(model.bounds, projectionMatrix)
 
   // Calculate cut position when enabled
   const zCutOffset = useMemo(() => {
@@ -101,9 +100,7 @@ export function ConstructionPlan({
   }, [axis, model.bounds])
 
   const faces = useMemo(() => {
-    const allFaces = model.elements.flatMap(element =>
-      Array.from(geometryFaces(element, projection, rotationProjection))
-    )
+    const allFaces = model.elements.flatMap(element => Array.from(geometryFaces(element, projectionMatrix)))
     const zOrder =
       currentView.zOrder === 'descending'
         ? (a: FaceTree, b: FaceTree) => a.zIndex - b.zIndex
@@ -115,7 +112,7 @@ export function ConstructionPlan({
     return allFaces
       .sort(zOrder)
       .map(face => ({ ...face, className: face.className + (aboveCut(face) ? ' above-cut' : '') }))
-  }, [model.elements, projection, currentView.zOrder, zCutOffset])
+  }, [model.elements, projectionMatrix, currentView.zOrder, zCutOffset])
 
   const polygonAreas = model.areas.filter(
     a => a.type === 'polygon' && a.plane === currentView.plane
@@ -176,7 +173,7 @@ export function ConstructionPlan({
             <CutAreaShape
               key={`cut-bottom-${index}`}
               cut={area}
-              projection={projection}
+              projection={projectionMatrix}
               viewportBounds={contentBounds}
             />
           ))}
@@ -185,19 +182,14 @@ export function ConstructionPlan({
         {polygonAreas
           .filter(p => p.renderPosition === 'bottom')
           .map((area, index) => (
-            <PolygonAreaShape key={`polygon-bottom-${index}`} polygon={area} projection={projection} />
+            <PolygonAreaShape key={`polygon-bottom-${index}`} polygon={area} projection={projectionMatrix} />
           ))}
 
         {/* Cuboid Areas - Bottom */}
         {cuboidAreas
           .filter(a => a.renderPosition === 'bottom')
           .map((area, index) => (
-            <CuboidAreaShape
-              key={`cuboid-bottom-${index}`}
-              cuboid={area}
-              projection={projection}
-              rotationProjection={rotationProjection}
-            />
+            <CuboidAreaShape key={`cuboid-bottom-${index}`} cuboid={area} projection={projectionMatrix} />
           ))}
 
         {/* Construction element faces */}
@@ -208,7 +200,7 @@ export function ConstructionPlan({
         {/* Warnings */}
         {model.warnings?.map((warning, index) => {
           if (!warning.bounds) return null
-          const bounds2D = bounds3Dto2D(warning.bounds, projection)
+          const bounds2D = bounds3Dto2D(warning.bounds, projectionMatrix)
           const { min } = bounds2D
           const { width, height } = bounds2D
           return (
@@ -230,7 +222,7 @@ export function ConstructionPlan({
         {/* Errors */}
         {model.errors?.map((error, index) => {
           if (!error.bounds) return null
-          const bounds2D = bounds3Dto2D(error.bounds, projection)
+          const bounds2D = bounds3Dto2D(error.bounds, projectionMatrix)
           const { min } = bounds2D
           const { width, height } = bounds2D
           return (
@@ -250,32 +242,32 @@ export function ConstructionPlan({
         })}
 
         {/* Measurements */}
-        <Measurements model={model} projection={projection} />
+        <Measurements model={model} projection={projectionMatrix} />
 
         {/* Cuboid Areas - Top */}
         {cuboidAreas
           .filter(a => a.renderPosition === 'top')
           .map((area, index) => (
-            <CuboidAreaShape
-              key={`cuboid-top-${index}`}
-              cuboid={area}
-              projection={projection}
-              rotationProjection={rotationProjection}
-            />
+            <CuboidAreaShape key={`cuboid-top-${index}`} cuboid={area} projection={projectionMatrix} />
           ))}
 
         {/* Polygon Areas - Top */}
         {polygonAreas
           .filter(p => p.renderPosition === 'top')
           .map((area, index) => (
-            <PolygonAreaShape key={`polygon-top-${index}`} polygon={area} projection={projection} />
+            <PolygonAreaShape key={`polygon-top-${index}`} polygon={area} projection={projectionMatrix} />
           ))}
 
         {/* Cut Areas - Top */}
         {cutAreas
           .filter(p => p.renderPosition === 'top')
           .map((area, index) => (
-            <CutAreaShape key={`cut-top-${index}`} cut={area} projection={projection} viewportBounds={contentBounds} />
+            <CutAreaShape
+              key={`cut-top-${index}`}
+              cut={area}
+              projection={projectionMatrix}
+              viewportBounds={contentBounds}
+            />
           ))}
       </SVGViewport>
 

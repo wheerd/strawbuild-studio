@@ -87,7 +87,7 @@ export const bounds3Dto2D = (bounds: Bounds3D, projection: Projection): Bounds2D
 
   // Project all corners to 2D
   const projectedCorners = corners.map(corner => {
-    const projected = projection(corner)
+    const projected = projectPoint(corner, projection)
     return vec2.fromValues(projected[0], projected[1])
   })
 
@@ -95,75 +95,118 @@ export const bounds3Dto2D = (bounds: Bounds3D, projection: Projection): Bounds2D
   return Bounds2D.fromPoints(projectedCorners)
 }
 
-export type Projection = (p: vec3) => vec3
-export type RotationProjection = (r: vec3) => number
+/**
+ * Projection is now a transformation matrix that converts 3D world coordinates
+ * to 2D view coordinates. The z-component of the result is used for depth ordering.
+ */
+export type Projection = mat4
+
 export type CutFunction = (element: { bounds: Bounds3D; transform?: Transform }) => boolean
 
-export const project = (plane: Plane3D): Projection => {
-  switch (plane) {
-    case 'xy':
-      return (p: vec3): vec3 => vec3.fromValues(p[0], p[1], p[2])
-    case 'xz':
-      return (p: vec3): vec3 => vec3.fromValues(p[0], p[2], p[1])
-    case 'yz':
-      return (p: vec3): vec3 => vec3.fromValues(p[1], p[2], p[0])
-    default:
-      throw new Error(`Unknown plane: ${plane}`)
-  }
-}
+/**
+ * Create a projection matrix that transforms 3D world coordinates to 2D view coordinates
+ * based on the viewing plane. The resulting coordinates are [x, y, depth] where depth is
+ * used for z-ordering.
+ *
+ * @param plane - The viewing plane (xy = top view, xz = front view, yz = side view)
+ * @returns A 4x4 projection matrix
+ */
+export const createProjectionMatrix = (plane: Plane3D): Projection => {
+  const projMatrix = mat4.create()
 
-export const projectRotation = (plane: Plane3D): RotationProjection => {
   switch (plane) {
     case 'xy':
-      return (r: vec3): number => (r[2] / Math.PI) * 180
+      // Top view: X→X, Y→Y, Z→depth (identity matrix)
+      mat4.identity(projMatrix)
+      break
+
     case 'xz':
-      return (r: vec3): number => (r[1] / Math.PI) * 180
+      // Front view: X→X, Z→Y, Y→depth
+      // gl-matrix uses column-major format: mat4.set takes values as m0,m1,m2,m3, m4,m5,m6,m7, ...
+      // out.x = m0*in.x + m4*in.y + m8*in.z
+      // out.y = m1*in.x + m5*in.y + m9*in.z
+      // out.z = m2*in.x + m6*in.y + m10*in.z
+      // prettier-ignore
+      mat4.set(
+        projMatrix,
+        1,  0,  0,  0, // m0,m1,m2,m3   (column 0) - out.x = 1*in.x
+        0,  0,  1,  0, // m4,m5,m6,m7   (column 1) - out.y = 1*in.z  
+        0,  1,  0,  0, // m8,m9,m10,m11 (column 2) - out.z = 1*in.y
+        0,  0,  0,  1  // m12,m13,m14,m15 (column 3)
+      )
+      break
+
     case 'yz':
-      return (r: vec3): number => (r[0] / Math.PI) * 180
+      // Side view: Y→X, Z→Y, X→depth
+      // out.x = in.y (Y becomes horizontal on screen)
+      // out.y = in.z (Z becomes vertical on screen)
+      // out.z = in.x (X becomes depth)
+      // prettier-ignore
+      mat4.set(
+        projMatrix,
+        0,  0,  1,  0, // m0,m1,m2,m3   (column 0) - out.x = 0, out.y = 0, out.z = 1*in.x
+        1,  0,  0,  0, // m4,m5,m6,m7   (column 1) - out.x = 1*in.y
+        0,  1,  0,  0, // m8,m9,m10,m11 (column 2) - out.y = 1*in.z
+        0,  0,  0,  1  // m12,m13,m14,m15 (column 3)
+      )
+      break
+
     default:
       throw new Error(`Unknown plane: ${plane}`)
   }
+
+  return projMatrix
 }
 
 /**
- * Creates an SVG transform string from a Transform object using projection functions.
- * Common pattern used throughout construction plan rendering.
+ * Project a 3D point using a projection matrix.
+ * Returns [x, y, depth] where depth is used for z-ordering.
  *
- * @param transform - Transform object containing position and rotation
- * @param projection - Function to project 3D position to 2D/3D coordinates
- * @param rotationProjection - Function to project 3D rotation to 2D rotation angle
- * @returns SVG transform string in the format "translate(x y) rotate(angle)"
+ * @param point - The 3D point to project
+ * @param matrix - The projection matrix (or combined projection + transform matrix)
+ * @returns Projected point with depth component
  */
-export const createSvgTransform = (
-  transform: Transform,
-  projection?: Projection,
-  rotationProjection?: RotationProjection
-): string | undefined => {
-  if (!projection || !rotationProjection) return undefined
-  if (transform === IDENTITY) return undefined
-  const position = projection(mat4.getTranslation(vec3.create(), transform))
-  const euler = vec3.fromValues(
-    Math.atan2(transform[6], transform[10]),
-    Math.asin(-transform[2]),
-    Math.atan2(transform[1], transform[0])
-  )
-  const rotation = rotationProjection(euler)
-  return `translate(${position[0]} ${position[1]}) rotate(${rotation})`
+export const projectPoint = (point: vec3, matrix: mat4): vec3 => {
+  return vec3.transformMat4(vec3.create(), point, matrix)
 }
 
-export const IDENTITY_PROJECTION: Projection = v => v
+/**
+ * Generate all corner points of an element's bounds, projected to 2D.
+ * Accumulates transforms through the hierarchy.
+ *
+ * @param element - The element or group to get points from
+ * @param projectionMatrix - The projection matrix for the current view
+ * @param parentTransform - Accumulated parent transform (identity for top-level elements)
+ */
+export function* allPoints(
+  element: GroupOrElement,
+  projectionMatrix: Projection,
+  parentTransform: mat4 = mat4.create()
+): Generator<vec2> {
+  // Accumulate transform: parent * element
+  const accumulatedTransform = mat4.multiply(mat4.create(), parentTransform, element.transform)
 
-export function* allPoints(element: GroupOrElement, projection: Projection): Generator<vec2> {
   if ('shape' in element) {
-    yield projection(transform(element.shape.bounds.min, element.transform))
-    yield projection(transform([element.shape.bounds.min[0], element.bounds.max[1]], element.transform))
-    yield projection(transform(element.shape.bounds.max, element.transform))
-    yield projection(transform([element.shape.bounds.max[0], element.bounds.min[1]], element.transform))
+    // Combine projection with accumulated transform
+    const finalTransform = mat4.multiply(mat4.create(), projectionMatrix, accumulatedTransform)
+
+    // Get all 4 corners of the shape bounds (fixing bug: was using element.bounds instead of element.shape.bounds)
+    const corners: vec3[] = [
+      element.shape.bounds.min,
+      vec3.fromValues(element.shape.bounds.min[0], element.shape.bounds.max[1], element.shape.bounds.min[2]),
+      element.shape.bounds.max,
+      vec3.fromValues(element.shape.bounds.max[0], element.shape.bounds.min[1], element.shape.bounds.max[2])
+    ]
+
+    // Project all corners
+    for (const corner of corners) {
+      const projected = projectPoint(corner, finalTransform)
+      yield vec2.fromValues(projected[0], projected[1])
+    }
   } else if ('children' in element) {
+    // Recursively get points from children, passing accumulated transform
     for (const child of element.children) {
-      for (const p of allPoints(child, projection)) {
-        yield transform(p, element.transform)
-      }
+      yield* allPoints(child, projectionMatrix, accumulatedTransform)
     }
   }
 }

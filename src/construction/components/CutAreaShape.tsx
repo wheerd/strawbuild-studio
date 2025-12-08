@@ -1,6 +1,6 @@
 import { vec3 } from 'gl-matrix'
 
-import { type Projection } from '@/construction/geometry'
+import { type Projection, projectPoint } from '@/construction/geometry'
 import type { HighlightedCut } from '@/construction/model'
 import type { Bounds2D } from '@/shared/geometry'
 
@@ -28,8 +28,8 @@ export function CutAreaShape({ cut, projection, viewportBounds }: CutAreaShapePr
         ? vec3.fromValues(viewportBounds.max[0] + EXTENSION, cut.position, viewportBounds.max[1] + EXTENSION)
         : vec3.fromValues(viewportBounds.max[0] + EXTENSION, viewportBounds.max[0] + EXTENSION, cut.position)
 
-  const projectedStart = projection(start)
-  const projectedEnd = projection(end)
+  const projectedStart = projectPoint(start, projection)
+  const projectedEnd = projectPoint(end, projection)
 
   // Axis is not visible in the current projection
   if (projectedStart[0] !== projectedEnd[0] && projectedStart[1] !== projectedEnd[1]) {

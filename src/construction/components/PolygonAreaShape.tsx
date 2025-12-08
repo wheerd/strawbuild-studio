@@ -1,7 +1,7 @@
 import { vec3 } from 'gl-matrix'
 import { useId } from 'react'
 
-import { type Projection } from '@/construction/geometry'
+import { type Projection, projectPoint } from '@/construction/geometry'
 import type { HighlightedPolygon } from '@/construction/model'
 
 import './areas.css'
@@ -33,7 +33,7 @@ export function PolygonAreaShape({ polygon, projection }: PolygonAreaShapeProps)
         default:
           throw new Error(`Unsupported plane: ${polygon.plane}`)
       }
-      const projected = projection(point3D)
+      const projected = projectPoint(point3D, projection)
       return [projected[0], projected[1]]
     })
 

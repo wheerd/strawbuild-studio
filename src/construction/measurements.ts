@@ -1,6 +1,6 @@
 import { vec2, vec3 } from 'gl-matrix'
 
-import { type Projection } from '@/construction/geometry'
+import { type Projection, projectPoint } from '@/construction/geometry'
 import {
   type Length,
   type Line2D,
@@ -80,14 +80,17 @@ function normalizeDirection(d: vec2) {
 function projectMeasurements(measurements: AutoMeasurement[], projection: Projection): ProjectedMeasurement[] {
   return measurements
     .map(m => {
-      const startPointMin = projection(m.startPoint)
-      const endPointMin = projection(m.endPoint)
+      const startPoint3D = projectPoint(m.startPoint, projection)
+      const endPoint3D = projectPoint(m.endPoint, projection)
+      const startPointMin = vec2.fromValues(startPoint3D[0], startPoint3D[1])
+      const endPointMin = vec2.fromValues(endPoint3D[0], endPoint3D[1])
       const measurementDirection = direction(startPointMin, endPointMin)
       const normal = perpendicularCCW(measurementDirection)
 
       // Project the 3D size vector and extract perpendicular component only
       const sizeEnd3D = vec3.add(vec3.create(), m.startPoint, m.size)
-      const sizeEnd2D = projection(sizeEnd3D)
+      const sizeEnd3DProjected = projectPoint(sizeEnd3D, projection)
+      const sizeEnd2D = vec2.fromValues(sizeEnd3DProjected[0], sizeEnd3DProjected[1])
       const size2D = vec2.subtract(vec2.create(), sizeEnd2D, startPointMin)
       const perpendicularRange = vec2.dot(size2D, normal)
 

@@ -1,50 +1,84 @@
 import { mat4, vec2, vec3 } from 'gl-matrix'
 import { describe, expect, it } from 'vitest'
 
-import {
-  IDENTITY,
-  type Projection,
-  type RotationProjection,
-  WallConstructionArea,
-  createSvgTransform
-} from './geometry'
+import { WallConstructionArea, createProjectionMatrix, projectPoint } from './geometry'
 
-describe('createSvgTransform', () => {
-  it('should create correct SVG transform string', () => {
-    const transform = mat4.create()
-    mat4.identity(transform)
-    mat4.translate(transform, transform, vec3.fromValues(100, 200, 0))
-    mat4.rotateZ(transform, transform, Math.PI / 4) // 45 degrees in radians
+describe('createProjectionMatrix', () => {
+  it('should create identity matrix for XY plane (top view)', () => {
+    const projection = createProjectionMatrix('xy')
+    const point = vec3.fromValues(10, 20, 30)
+    const result = projectPoint(point, projection)
 
-    const mockProjection: Projection = pos => vec3.fromValues(pos[0], pos[1], pos[2])
-    const mockRotationProjection: RotationProjection = rot => (rot[2] / Math.PI) * 180 // Convert Z rotation to degrees
-
-    const result = createSvgTransform(transform, mockProjection, mockRotationProjection)
-
-    expect(result).toMatch(/^translate\(100 200\) rotate\(45(\.\d+)?\)$/)
+    // X→X, Y→Y, Z→depth
+    expect(result[0]).toBeCloseTo(10)
+    expect(result[1]).toBeCloseTo(20)
+    expect(result[2]).toBeCloseTo(30)
   })
 
-  it('should handle IDENTITY transform', () => {
-    const mockProjection: Projection = pos => vec3.fromValues(pos[0], pos[1], pos[2])
-    const mockRotationProjection: RotationProjection = _rot => 0
+  it('should create correct matrix for XZ plane (front view)', () => {
+    const projection = createProjectionMatrix('xz')
+    const point = vec3.fromValues(10, 20, 30)
+    const result = projectPoint(point, projection)
 
-    const result = createSvgTransform(IDENTITY, mockProjection, mockRotationProjection)
-
-    expect(result).toBe(undefined)
+    // X→X, Z→Y, Y→depth
+    expect(result[0]).toBeCloseTo(10)
+    expect(result[1]).toBeCloseTo(30)
+    expect(result[2]).toBeCloseTo(20)
   })
 
-  it('should handle negative coordinates and rotation', () => {
-    const transform = mat4.create()
-    mat4.identity(transform)
-    mat4.translate(transform, transform, vec3.fromValues(-50, -75, 10))
-    mat4.rotateZ(transform, transform, -Math.PI / 2) // -90 degrees
+  it('should create correct matrix for YZ plane (side view)', () => {
+    const projection = createProjectionMatrix('yz')
+    const point = vec3.fromValues(10, 20, 30)
+    const result = projectPoint(point, projection)
 
-    const mockProjection: Projection = pos => vec3.fromValues(pos[0], pos[1], pos[2])
-    const mockRotationProjection: RotationProjection = rot => (rot[2] / Math.PI) * 180
+    // Y→X, Z→Y, X→depth
+    expect(result[0]).toBeCloseTo(20)
+    expect(result[1]).toBeCloseTo(30)
+    expect(result[2]).toBeCloseTo(10)
+  })
+})
 
-    const result = createSvgTransform(transform, mockProjection, mockRotationProjection)
+describe('projectPoint', () => {
+  it('should project point with combined transform + projection', () => {
+    // Create a transform: translate by (100, 0, 0)
+    const transform = mat4.fromTranslation(mat4.create(), vec3.fromValues(100, 0, 0))
 
-    expect(result).toMatch(/^translate\(-50 -75\) rotate\(-90(\.\d+)?\)$/)
+    // Create XZ projection (front view)
+    const projection = createProjectionMatrix('xz')
+
+    // Combine them
+    const combined = mat4.multiply(mat4.create(), projection, transform)
+
+    // Project a point at origin
+    const point = vec3.fromValues(0, 0, 0)
+    const result = projectPoint(point, combined)
+
+    // After translation, point is at (100, 0, 0)
+    // After XZ projection: X→X, Z→Y, Y→depth
+    // Result should be (100, 0, 0)
+    expect(result[0]).toBeCloseTo(100)
+    expect(result[1]).toBeCloseTo(0)
+    expect(result[2]).toBeCloseTo(0)
+  })
+
+  it('should handle rotation correctly', () => {
+    // Create a transform: rotate 90° around Z axis
+    const transform = mat4.fromZRotation(mat4.create(), Math.PI / 2)
+
+    // XY projection (top view)
+    const projection = createProjectionMatrix('xy')
+
+    // Combine them
+    const combined = mat4.multiply(mat4.create(), projection, transform)
+
+    // Project a point on the X axis
+    const point = vec3.fromValues(10, 0, 0)
+    const result = projectPoint(point, combined)
+
+    // After 90° rotation around Z, point (10, 0, 0) becomes (0, 10, 0)
+    expect(result[0]).toBeCloseTo(0)
+    expect(result[1]).toBeCloseTo(10)
+    expect(result[2]).toBeCloseTo(0)
   })
 })
 

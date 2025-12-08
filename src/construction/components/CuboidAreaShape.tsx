@@ -1,6 +1,6 @@
 import { useId } from 'react'
 
-import { type Projection, type RotationProjection, bounds3Dto2D, createSvgTransform } from '@/construction/geometry'
+import { type Projection, bounds3Dto2D } from '@/construction/geometry'
 import type { HighlightedCuboid } from '@/construction/model'
 
 import './areas.css'
@@ -8,10 +8,9 @@ import './areas.css'
 export interface CuboidAreaShapeProps {
   cuboid: HighlightedCuboid
   projection: Projection
-  rotationProjection: RotationProjection
 }
 
-export function CuboidAreaShape({ cuboid, projection, rotationProjection }: CuboidAreaShapeProps): React.JSX.Element {
+export function CuboidAreaShape({ cuboid, projection }: CuboidAreaShapeProps): React.JSX.Element {
   const cuboidId = useId()
   const bounds2D = bounds3Dto2D(cuboid.bounds, projection)
   const [centerX, centerY] = bounds2D.center
@@ -19,10 +18,7 @@ export function CuboidAreaShape({ cuboid, projection, rotationProjection }: Cubo
   const { width, height } = bounds2D
 
   return (
-    <g
-      className={`area-cuboid area-cuboid-${cuboid.areaType}`}
-      transform={createSvgTransform(cuboid.transform, projection, rotationProjection)}
-    >
+    <g className={`area-cuboid area-cuboid-${cuboid.areaType}`}>
       <clipPath id={cuboidId}>
         <rect x={min[0]} y={min[1]} width={width} height={height} />
       </clipPath>
