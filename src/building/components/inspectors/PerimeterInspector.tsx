@@ -23,23 +23,12 @@ import { ConstructionPlanModal } from '@/construction/components/ConstructionPla
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import { constructPerimeter } from '@/construction/perimeter'
-import { TAG_BASE_PLATE, TAG_TOP_PLATE, TAG_WALLS } from '@/construction/tags'
 import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { popSelection, pushSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewModeActions } from '@/editor/hooks/useViewMode'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
-import {
-  BasePlateIcon,
-  ConstructionPlanIcon,
-  FitToViewIcon,
-  FloorLayersIcon,
-  Model3DIcon,
-  RoofIcon,
-  TopPlateIcon,
-  WallLayersIcon,
-  WallToggleIcon
-} from '@/shared/components/Icons'
+import { ConstructionPlanIcon, FitToViewIcon, Model3DIcon, RoofIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
 import { Bounds2D, type Length, calculatePolygonArea } from '@/shared/geometry'
 import { formatArea, formatLength } from '@/shared/utils/formatting'
@@ -251,21 +240,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             constructionModelFactory={async () => constructPerimeter(perimeter)}
             views={[{ view: TOP_VIEW, label: 'Top' }]}
             midCutActiveDefault
-            visibilityToggles={[
-              { icon: TopPlateIcon, title: 'Top Plate', tags: [TAG_TOP_PLATE.id] },
-              { icon: BasePlateIcon, title: 'Base Plate', tags: [TAG_BASE_PLATE.id] },
-              { icon: WallToggleIcon, title: 'Wall', tags: [TAG_WALLS.id] },
-              {
-                icon: WallLayersIcon,
-                title: 'Wall Layers',
-                tags: ['wall-layer']
-              },
-              {
-                icon: FloorLayersIcon,
-                title: 'Floor/Ceiling Layers',
-                tags: ['floor-layer']
-              }
-            ]}
+            defaultHiddenTags={['floor-layer', 'wall-layer', 'roof-layer', 'roof-side']}
             refreshKey={perimeter}
             trigger={
               <IconButton title="View Construction Plan" size="3">

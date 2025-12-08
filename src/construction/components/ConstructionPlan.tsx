@@ -1,5 +1,4 @@
 import { ExclamationTriangleIcon, GroupIcon, RulerHorizontalIcon } from '@radix-ui/react-icons'
-import type { IconProps } from '@radix-ui/react-icons/dist/types'
 import { Box, Card, Flex, Grid, IconButton, SegmentedControl } from '@radix-ui/themes'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 
@@ -8,7 +7,6 @@ import { Measurements } from '@/construction/components/Measurements'
 import { type FaceTree, geometryFaces } from '@/construction/components/faceHelpers'
 import { bounds3Dto2D, createProjectionMatrix, projectPoint } from '@/construction/geometry'
 import type { ConstructionModel, HighlightedCuboid, HighlightedCut, HighlightedPolygon } from '@/construction/model'
-import type { TagCategoryId, TagId } from '@/construction/tags'
 import { MidCutXIcon, MidCutYIcon } from '@/shared/components/Icons'
 import { SVGViewport, type SVGViewportRef } from '@/shared/components/SVGViewport'
 import { type Plane3D, type Polygon2D, type PolygonWithHoles2D } from '@/shared/geometry'
@@ -16,6 +14,8 @@ import { type Plane3D, type Polygon2D, type PolygonWithHoles2D } from '@/shared/
 import { CuboidAreaShape } from './CuboidAreaShape'
 import { PolygonAreaShape } from './PolygonAreaShape'
 import { SVGMaterialStyles } from './SVGMaterialStyles'
+import { TagVisibilityMenu } from './TagVisibilityMenu'
+import { useTagVisibility } from './context/TagVisibilityContext'
 
 export interface View {
   plane: Plane3D
@@ -33,21 +33,11 @@ export const FRONT_VIEW: View = { plane: 'xz', xDirection: -1, zOrder: 'descendi
 export const BACK_VIEW: View = { plane: 'xz', xDirection: 1, zOrder: 'ascending' }
 export const LEFT_VIEW: View = { plane: 'yz', xDirection: 1, zOrder: 'ascending' }
 
-type TagOrCategory = TagId | TagCategoryId
-
-export interface VisibilityToggleConfig {
-  icon: React.ComponentType<IconProps>
-  title: string
-  tags: TagOrCategory[]
-  defaultHidden?: boolean
-}
-
 interface ConstructionPlanProps {
   model: ConstructionModel
   views: ViewOption[]
   containerSize: { width: number; height: number }
   midCutActiveDefault?: boolean
-  visibilityToggles?: VisibilityToggleConfig[]
 }
 
 function polygonToSvgPath(polygon: Polygon2D) {
@@ -71,15 +61,12 @@ export function ConstructionPlan({
   model,
   views,
   containerSize,
-  midCutActiveDefault = false,
-  visibilityToggles = []
+  midCutActiveDefault = false
 }: ConstructionPlanProps): React.JSX.Element {
+  const { hiddenTagIds } = useTagVisibility()
   const viewportRef = useRef<SVGViewportRef>(null)
   const [currentViewIndex, setCurrentViewIndex] = useState(0)
   const [midCutEnabled, setMidCutEnabled] = useState(midCutActiveDefault)
-  const [hiddenTagIds, setHiddenTagIds] = useState<Set<TagOrCategory>>(
-    new Set(visibilityToggles.filter(t => t.defaultHidden === true).flatMap(t => t.tags))
-  )
   const [hideAreas, setHideAreas] = useState(false)
   const [hideIssues, setHideIssues] = useState(false)
   const [hideMeasurements, setHideMeasurements] = useState(false)
@@ -116,22 +103,7 @@ export function ConstructionPlan({
   const cuboidAreas = model.areas.filter(a => a.type === 'cuboid') as HighlightedCuboid[]
   const cutAreas = model.areas.filter(a => a.type === 'cut') as HighlightedCut[]
 
-  const getCssClassForTag = (tagId: TagOrCategory): string =>
-    tagId.includes('_') ? `tag__${tagId}` : `tag-cat__${tagId}`
-
-  const toggleTagVisibility = (...tags: TagOrCategory[]) => {
-    setHiddenTagIds(prev => {
-      const next = new Set(prev)
-      for (const tag of tags) {
-        if (next.has(tag)) {
-          next.delete(tag)
-        } else {
-          next.add(tag)
-        }
-      }
-      return next
-    })
-  }
+  const getCssClassForTag = (tagId: string): string => (tagId.includes('_') ? `tag__${tagId}` : `tag-cat__${tagId}`)
 
   const visibilityStyles = Array.from(hiddenTagIds)
     .map(tagId => getCssClassForTag(tagId))
@@ -286,7 +258,7 @@ export function ConstructionPlan({
               </SegmentedControl.Root>
             )}
 
-            <Grid columns="4" gap="1">
+            <Grid columns="5" gap="1">
               {/* Mid-cut toggle */}
               <IconButton
                 variant={midCutEnabled ? 'solid' : 'outline'}
@@ -327,22 +299,8 @@ export function ConstructionPlan({
                 <RulerHorizontalIcon />
               </IconButton>
 
-              {/* Visibility toggles */}
-              {visibilityToggles.map((toggle, index) => {
-                const Icon = toggle.icon
-                const isVisible = toggle.tags.some(tag => !hiddenTagIds.has(tag))
-                return (
-                  <IconButton
-                    key={index}
-                    variant={isVisible ? 'solid' : 'outline'}
-                    size="1"
-                    title={toggle.title}
-                    onClick={() => toggleTagVisibility(...toggle.tags)}
-                  >
-                    <Icon />
-                  </IconButton>
-                )
-              })}
+              {/* Tag visibility menu */}
+              <TagVisibilityMenu model={model} />
             </Grid>
           </Flex>
         </Card>

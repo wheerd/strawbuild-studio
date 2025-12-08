@@ -1,3 +1,4 @@
+import { Theme } from '@radix-ui/themes'
 import { render } from '@testing-library/react'
 import { vec2, vec3 } from 'gl-matrix'
 import { describe, expect, it } from 'vitest'
@@ -7,6 +8,7 @@ import type { ConstructionModel, HighlightedCuboid, HighlightedPolygon } from '@
 import { Bounds3D } from '@/shared/geometry'
 
 import { ConstructionPlan, TOP_VIEW, type ViewOption } from './ConstructionPlan'
+import { TagVisibilityProvider } from './context/TagVisibilityContext'
 
 describe('ConstructionPlan', () => {
   it('should render polygon areas correctly', () => {
@@ -32,7 +34,11 @@ describe('ConstructionPlan', () => {
 
     const views: ViewOption[] = [{ view: TOP_VIEW, label: 'Top' }]
     const { container } = render(
-      <ConstructionPlan model={model} views={views} containerSize={{ width: 800, height: 600 }} />
+      <Theme>
+        <TagVisibilityProvider>
+          <ConstructionPlan model={model} views={views} containerSize={{ width: 800, height: 600 }} />
+        </TagVisibilityProvider>
+      </Theme>
     )
 
     // Check that the polygon path is rendered
@@ -66,7 +72,11 @@ describe('ConstructionPlan', () => {
 
     const views: ViewOption[] = [{ view: TOP_VIEW, label: 'Top' }]
     const { container } = render(
-      <ConstructionPlan model={model} views={views} containerSize={{ width: 800, height: 600 }} />
+      <Theme>
+        <TagVisibilityProvider>
+          <ConstructionPlan model={model} views={views} containerSize={{ width: 800, height: 600 }} />
+        </TagVisibilityProvider>
+      </Theme>
     )
 
     // Check that a path element is rendered
@@ -104,7 +114,11 @@ describe('ConstructionPlan', () => {
 
     const views: ViewOption[] = [{ view: TOP_VIEW, label: 'Top' }]
     const { container } = render(
-      <ConstructionPlan model={model} views={views} containerSize={{ width: 800, height: 600 }} />
+      <Theme>
+        <TagVisibilityProvider>
+          <ConstructionPlan model={model} views={views} containerSize={{ width: 800, height: 600 }} />
+        </TagVisibilityProvider>
+      </Theme>
     )
 
     // Check that rectangles are rendered for both areas

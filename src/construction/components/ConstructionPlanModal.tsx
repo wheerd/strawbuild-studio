@@ -11,8 +11,9 @@ import { generateMaterialPartsList, generateVirtualPartsList } from '@/construct
 import { BaseModal } from '@/shared/components/BaseModal'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 
-import { ConstructionPlan, type ViewOption, type VisibilityToggleConfig } from './ConstructionPlan'
+import { ConstructionPlan, type ViewOption } from './ConstructionPlan'
 import './ConstructionPlanModal.css'
+import { type TagOrCategory, TagVisibilityProvider } from './context/TagVisibilityContext'
 
 interface PartsData {
   material: MaterialPartsList
@@ -25,7 +26,7 @@ export interface ConstructionModalProps {
   views: ViewOption[]
   trigger: React.ReactNode
   refreshKey?: unknown
-  visibilityToggles?: VisibilityToggleConfig[]
+  defaultHiddenTags?: TagOrCategory[]
   midCutActiveDefault?: boolean
 }
 
@@ -35,7 +36,7 @@ export function ConstructionPlanModal({
   views,
   trigger,
   refreshKey,
-  visibilityToggles,
+  defaultHiddenTags,
   midCutActiveDefault
 }: ConstructionModalProps): React.JSX.Element {
   const [modelPromise, setModelPromise] = useState<Promise<ConstructionModel | null> | null>(null)
@@ -121,13 +122,14 @@ export function ConstructionPlanModal({
             >
               {modelPromise ? (
                 <Suspense fallback={<PlanSkeleton />}>
-                  <ConstructionPlanModalContent
-                    modelPromise={modelPromise}
-                    views={views}
-                    containerSize={containerSize}
-                    visibilityToggles={visibilityToggles}
-                    midCutActiveDefault={midCutActiveDefault}
-                  />
+                  <TagVisibilityProvider defaultHidden={defaultHiddenTags}>
+                    <ConstructionPlanModalContent
+                      modelPromise={modelPromise}
+                      views={views}
+                      containerSize={containerSize}
+                      midCutActiveDefault={midCutActiveDefault}
+                    />
+                  </TagVisibilityProvider>
                 </Suspense>
               ) : null}
             </div>
@@ -174,13 +176,11 @@ function ConstructionPlanModalContent({
   modelPromise,
   views,
   containerSize,
-  visibilityToggles,
   midCutActiveDefault
 }: {
   modelPromise: Promise<ConstructionModel | null>
   views: ViewOption[]
   containerSize: { width: number; height: number }
-  visibilityToggles?: VisibilityToggleConfig[]
   midCutActiveDefault?: boolean
 }) {
   const constructionModel = use(modelPromise)
@@ -204,7 +204,6 @@ function ConstructionPlanModalContent({
       views={views}
       containerSize={containerSize}
       midCutActiveDefault={midCutActiveDefault}
-      visibilityToggles={visibilityToggles}
     />
   )
 }

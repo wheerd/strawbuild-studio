@@ -15,7 +15,7 @@ import { constructRoof } from '@/construction/roof'
 import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
-import { ConstructionPlanIcon, FitToViewIcon, FloorLayersIcon, Model3DIcon } from '@/shared/components/Icons'
+import { ConstructionPlanIcon, FitToViewIcon, Model3DIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
 import {
   Bounds2D,
@@ -265,14 +265,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
               { view: FRONT_VIEW, label: 'Front' },
               { view: LEFT_VIEW, label: 'Left' }
             ]}
-            visibilityToggles={[
-              {
-                icon: FloorLayersIcon,
-                title: 'Roof Layers',
-                tags: ['roof-layer'],
-                defaultHidden: true
-              }
-            ]}
+            defaultHiddenTags={['roof-layer']}
             refreshKey={roof}
             trigger={
               <IconButton title="View Construction Plan" size="3">

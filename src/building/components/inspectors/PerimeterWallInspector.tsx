@@ -15,7 +15,7 @@ import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { pushTool } from '@/editor/tools/system/store'
-import { ConstructionPlanIcon, FitToViewIcon, SplitWallIcon, WallLayersIcon } from '@/shared/components/Icons'
+import { ConstructionPlanIcon, FitToViewIcon, SplitWallIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
 import { Bounds2D, type Polygon2D } from '@/shared/geometry'
 import { wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
@@ -259,14 +259,7 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
               { view: BACK_VIEW, label: 'Inside' },
               { view: TOP_VIEW, label: 'Top' }
             ]}
-            visibilityToggles={[
-              {
-                icon: WallLayersIcon,
-                title: 'Wall Layers',
-                tags: ['wall-layer'],
-                defaultHidden: true
-              }
-            ]}
+            defaultHiddenTags={['wall-layer']}
             refreshKey={[perimeterId, wallId]}
             trigger={
               <IconButton title="View Construction Plan" size="2">

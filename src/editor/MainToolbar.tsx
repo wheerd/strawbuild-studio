@@ -15,20 +15,11 @@ import { TOP_VIEW } from '@/construction/components/ConstructionPlan'
 import { ConstructionPlanModal } from '@/construction/components/ConstructionPlanModal'
 import { useConfigurationModal } from '@/construction/config/context/ConfigurationModalContext'
 import { constructModel, constructStorey } from '@/construction/storey'
-import { TAG_BASE_PLATE, TAG_TOP_PLATE, TAG_WALLS } from '@/construction/tags'
 import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
 import { TOOL_GROUPS, getToolInfoById } from '@/editor/tools/system/metadata'
 import { replaceTool, useActiveToolId } from '@/editor/tools/system/store'
 import type { ToolId } from '@/editor/tools/system/types'
-import {
-  BasePlateIcon,
-  ConstructionPlanIcon,
-  FloorLayersIcon,
-  Model3DIcon,
-  TopPlateIcon,
-  WallLayersIcon,
-  WallToggleIcon
-} from '@/shared/components/Icons'
+import { ConstructionPlanIcon, Model3DIcon } from '@/shared/components/Icons'
 import { Logo } from '@/shared/components/Logo'
 
 export interface MainToolbarProps {
@@ -105,21 +96,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
           constructionModelFactory={async () => constructStorey(activeStoreyId)}
           views={[{ view: TOP_VIEW, label: 'Top' }]}
           midCutActiveDefault
-          visibilityToggles={[
-            { icon: TopPlateIcon, title: 'Top Plate', tags: [TAG_TOP_PLATE.id] },
-            { icon: BasePlateIcon, title: 'Base Plate', tags: [TAG_BASE_PLATE.id] },
-            { icon: WallToggleIcon, title: 'Wall', tags: [TAG_WALLS.id] },
-            {
-              icon: WallLayersIcon,
-              title: 'Wall Layers',
-              tags: ['wall-layer']
-            },
-            {
-              icon: FloorLayersIcon,
-              title: 'Floor/Ceiling Layers',
-              tags: ['floor-layer']
-            }
-          ]}
+          defaultHiddenTags={['floor-layer', 'wall-layer', 'roof-layer', 'roof-side']}
           refreshKey={[activeStoreyId, activePerimiters]}
           trigger={
             <IconButton title="View Construction Plan" size="2" variant="solid">
