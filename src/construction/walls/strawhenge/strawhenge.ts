@@ -107,7 +107,7 @@ export function* strawhengeWallArea(
     return
   }
 
-  if (startsWithStand && endsWithStand && size[0] < twoModules) {
+  if (startsWithStand && endsWithStand && size[0] !== 2 * module.width && size[0] < twoModules) {
     // Single module plus remaining space
     if (startAtEnd) {
       const [infillArea, moduleArea] = area.splitInX(size[0] - oneModule)
