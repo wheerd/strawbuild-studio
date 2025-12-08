@@ -81,4 +81,52 @@ describe('getVisibleFacesInViewSpace', () => {
     // Should still see only front-facing faces
     expect(faces.length).toBeGreaterThan(0)
   })
+
+  it('should merge coplanar slim triangles from extruded thin rectangles', () => {
+    const module = getManifoldModule()
+
+    // Simulate a plaster layer: very thin (2mm) but wide (3000mm) extruded rectangle
+    // This creates slim triangles on the top face that should be merged
+    const thinRectangle = module.CrossSection.ofPolygons(
+      [
+        [
+          [0, 0],
+          [3000, 0],
+          [3000, 2],
+          [0, 2]
+        ]
+      ],
+      'EvenOdd'
+    )
+
+    // Extrude to create a thin wall (typical plaster thickness: 30mm)
+    const plasterLayer = thinRectangle.extrude(30)
+
+    // Top view projection (looking down at the thin top face)
+    // XY plane projects down from +Z, so we're looking at the top (z=30)
+    const projection = createProjectionMatrix('xy', 1, 1)
+
+    const faces = getVisibleFacesInViewSpace(plasterLayer, projection, false)
+
+    expect(faces.length).toBe(6)
+
+    // Find the face with the largest area (should be the top)
+    const areas = faces.map(face => {
+      const points = face.outer.points
+      let area = 0
+      for (let i = 0; i < points.length; i++) {
+        const j = (i + 1) % points.length
+        area += points[i][0] * points[j][1] - points[j][0] * points[i][1]
+      }
+      return Math.abs(area) / 2
+    })
+
+    const maxArea = Math.max(...areas)
+    const largestFaceIndex = areas.findIndex(a => a === maxArea)
+    const largestFace = faces[largestFaceIndex]
+
+    // The largest face should be approximately 3000 * 2 = 6000 square units
+    expect(maxArea).toBeCloseTo(6000)
+    expect(largestFace.outer.points.length).toBeGreaterThanOrEqual(4)
+  })
 })

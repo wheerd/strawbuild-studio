@@ -148,19 +148,34 @@ function areCoplanar(
   n2: vec3,
   positions: vec3[],
   t1: [number, number, number],
-  t2: [number, number, number],
-  eps = 1e-5
+  t2: [number, number, number]
 ): boolean {
-  // Normals must match
-  if (vec3.squaredDistance(n1, n2) > eps) return false
+  const normalEps = 1e-3 // ~0.06 degree tolerance for normals (using 1 - cos(angle))
 
-  // Check plane equation consistency
-  const p1 = positions[t1[0]]
-  const p2 = positions[t2[0]]
+  // Check normals using dot product (more numerically stable than squared distance)
+  const dotProduct = vec3.dot(n1, n2)
+  if (dotProduct < 1 - normalEps) return false
 
-  const d1 = vec3.dot(n1, p1)
-  const d2 = vec3.dot(n1, p2)
-  return Math.abs(d1 - d2) < eps
+  // Compute characteristic length scale from both triangles
+  const scale1 = Math.max(
+    vec3.distance(positions[t1[0]], positions[t1[1]]),
+    vec3.distance(positions[t1[1]], positions[t1[2]]),
+    vec3.distance(positions[t1[2]], positions[t1[0]])
+  )
+  const scale2 = Math.max(
+    vec3.distance(positions[t2[0]], positions[t2[1]]),
+    vec3.distance(positions[t2[1]], positions[t2[2]]),
+    vec3.distance(positions[t2[2]], positions[t2[0]])
+  )
+  const scale = Math.max(scale1, scale2)
+  const planeEps = scale * 1e-4 // Relative to geometry size
+
+  // Check plane equation with average of all vertices for robustness
+  // This is more stable for slim triangles with numerical errors
+  const avgD1 = (vec3.dot(n1, positions[t1[0]]) + vec3.dot(n1, positions[t1[1]]) + vec3.dot(n1, positions[t1[2]])) / 3
+  const avgD2 = (vec3.dot(n1, positions[t2[0]]) + vec3.dot(n1, positions[t2[1]]) + vec3.dot(n1, positions[t2[2]])) / 3
+
+  return Math.abs(avgD1 - avgD2) < planeEps
 }
 
 // ---------------------------------------------------------------
