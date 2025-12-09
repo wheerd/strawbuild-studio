@@ -178,7 +178,6 @@ const createDefaultWallAssemblies = (): WallAssemblyConfig[] => [
     name: 'Concrete Wall',
     type: 'non-strawbale',
     material: concrete.id,
-    thickness: 200,
     openings: {
       padding: 15,
       headerThickness: 60,

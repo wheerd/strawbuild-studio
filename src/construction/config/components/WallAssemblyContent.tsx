@@ -26,6 +26,7 @@ import { MaterialSelectWithEdit } from '@/construction/materials/components/Mate
 import type { MaterialId } from '@/construction/materials/material'
 import { wood, woodwool } from '@/construction/materials/material'
 import type { PostConfig } from '@/construction/materials/posts'
+import { useMaterialActions } from '@/construction/materials/store'
 import type {
   InfillWallSegmentConfig,
   ModulesWallConfig,
@@ -37,6 +38,7 @@ import type {
 import type { ModuleConfig } from '@/construction/walls/strawhenge/modules'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField'
+import { formatLength } from '@/shared/utils/formatting'
 
 import { getPerimeterConfigTypeIcon } from './Icons'
 import { WallAssemblySelect } from './WallAssemblySelect'
@@ -469,36 +471,20 @@ function NonStrawbaleConfigForm({ config, onUpdate }: NonStrawbaleConfigFormProp
     <Flex direction="column" gap="3">
       <Heading size="2">Non-Strawbale Configuration</Heading>
 
-      <Grid columns="2" gap="2" gapX="3">
-        <Flex direction="column" gap="1">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Material
-            </Text>
-          </Label.Root>
-          <MaterialSelectWithEdit
-            value={config.material}
-            onValueChange={material => {
-              if (!material) return
-              onUpdate({ ...config, material })
-            }}
-            size="1"
-          />
-        </Flex>
-
-        <Flex direction="column" gap="1">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Thickness
-            </Text>
-          </Label.Root>
-          <LengthField
-            value={config.thickness}
-            onChange={value => onUpdate({ ...config, thickness: value })}
-            unit="mm"
-            size="1"
-          />
-        </Flex>
+      <Grid columns="auto 1fr" gap="2" gapX="3">
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Material
+          </Text>
+        </Label.Root>
+        <MaterialSelectWithEdit
+          value={config.material}
+          onValueChange={material => {
+            if (!material) return
+            onUpdate({ ...config, material })
+          }}
+          size="1"
+        />
       </Grid>
     </Flex>
   )
@@ -667,12 +653,28 @@ interface ConfigFormProps {
 }
 
 function ConfigForm({ assembly, onUpdateName }: ConfigFormProps): React.JSX.Element {
-  const { updateWallAssemblyConfig } = useConfigActions()
+  const { updateWallAssemblyConfig, getDefaultStrawMaterial } = useConfigActions()
+  const { getMaterialById } = useMaterialActions()
 
   const updateConfig = useCallback(
     (updates: Partial<WallConfig>) => updateWallAssemblyConfig(assembly.id, updates),
     [assembly.id, assembly, updateWallAssemblyConfig]
   )
+
+  const totalThickness = useMemo(() => {
+    const strawMaterialId =
+      ('strawMaterial' in assembly
+        ? assembly.strawMaterial
+        : 'infill' in assembly
+          ? assembly.infill.strawMaterial
+          : undefined) ?? getDefaultStrawMaterial()
+    const strawMaterial = getMaterialById(strawMaterialId)
+    const wallConstructionThickness = strawMaterial?.type === 'strawbale' ? strawMaterial.baleWidth : undefined
+    const totalLayerThickness = assembly.layers.insideThickness + assembly.layers.outsideThickness
+    return wallConstructionThickness != null && assembly.type !== 'non-strawbale'
+      ? formatLength(wallConstructionThickness + totalLayerThickness)
+      : `? + ${formatLength(totalLayerThickness)} (Layers)`
+  }, [assembly])
 
   return (
     <Flex
@@ -682,37 +684,53 @@ function ConfigForm({ assembly, onUpdateName }: ConfigFormProps): React.JSX.Elem
       style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
     >
       {/* Basic Info - Full Width */}
-      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
-        <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            Name
-          </Text>
-        </Label.Root>
-        <TextField.Root
-          value={assembly.name}
-          onChange={e => onUpdateName(e.target.value)}
-          placeholder="Assembly name"
-          size="2"
-        />
+      <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
+        <Grid columns="auto 1fr" gapX="2" align="center">
+          <Label.Root>
+            <Text size="2" weight="medium" color="gray">
+              Name
+            </Text>
+          </Label.Root>
+          <TextField.Root
+            value={assembly.name}
+            onChange={e => onUpdateName(e.target.value)}
+            placeholder="Assembly name"
+            size="2"
+          />
+        </Grid>
 
-        <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            Type
-          </Text>
-        </Label.Root>
+        <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
+          <Flex gap="2" align="center">
+            <Label.Root>
+              <Text size="2" weight="medium" color="gray">
+                Type
+              </Text>
+            </Label.Root>
+            <Flex gap="2" align="center">
+              {React.createElement(getPerimeterConfigTypeIcon(assembly.type))}
+              <Text size="2" color="gray">
+                {assembly.type === 'infill'
+                  ? 'Infill'
+                  : assembly.type === 'modules'
+                    ? 'Modules'
+                    : assembly.type === 'strawhenge'
+                      ? 'Strawhenge'
+                      : 'Non-Strawbale'}
+              </Text>
+            </Flex>
+          </Flex>
 
-        <Flex gap="2" align="center">
-          {React.createElement(getPerimeterConfigTypeIcon(assembly.type))}
-          <Text size="2" color="gray">
-            {assembly.type === 'infill'
-              ? 'Infill'
-              : assembly.type === 'modules'
-                ? 'Modules'
-                : assembly.type === 'strawhenge'
-                  ? 'Strawhenge'
-                  : 'Non-Strawbale'}
-          </Text>
-        </Flex>
+          <Flex gap="2" align="center">
+            <Label.Root>
+              <Text size="2" weight="medium" color="gray">
+                Total Thickness
+              </Text>
+            </Label.Root>
+            <Text size="2" color="gray">
+              {totalThickness}
+            </Text>
+          </Flex>
+        </Grid>
       </Grid>
 
       <Separator size="4" />
@@ -855,7 +873,6 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
           config = {
             type: 'non-strawbale',
             material: defaultMaterial,
-            thickness: 200,
             openings: baseOpeningsConfig,
             layers
           }

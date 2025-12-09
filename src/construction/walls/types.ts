@@ -62,7 +62,6 @@ export interface StrawhengeWallConfig extends WallBaseConfig {
 export interface NonStrawbaleWallConfig extends WallBaseConfig {
   type: 'non-strawbale'
   material: MaterialId
-  thickness: number
 }
 
 export type WallConfig = InfillWallConfig | ModulesWallConfig | StrawhengeWallConfig | NonStrawbaleWallConfig
@@ -137,8 +136,8 @@ const validateStrawhengeWallConfig = (config: StrawhengeWallConfig): void => {
   validateInfillSegment(config.infill)
 }
 
-const validateNonStrawbaleWallConfig = (config: NonStrawbaleWallConfig): void => {
-  ensurePositive(config.thickness, 'Wall thickness must be greater than 0')
+const validateNonStrawbaleWallConfig = (_config: NonStrawbaleWallConfig): void => {
+  // No validation needed
 }
 
 export const validateWallConfig = (config: WallConfig): void => {
