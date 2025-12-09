@@ -20,6 +20,7 @@ import type { FloorAssemblyId } from '@/building/model/ids'
 import { useStoreysOrderedByLevel } from '@/building/store'
 import { useConfigActions, useDefaultFloorAssemblyId, useFloorAssemblies } from '@/construction/config/store'
 import { getFloorAssemblyUsage } from '@/construction/config/usage'
+import { FLOOR_ASSEMBLIES } from '@/construction/floors'
 import type {
   FloorAssemblyType,
   FloorConfig,
@@ -33,6 +34,7 @@ import type { MaterialId } from '@/construction/materials/material'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
 import '@/shared/geometry'
+import { formatLength } from '@/shared/utils/formatting'
 
 import { FloorAssemblySelect } from './FloorAssemblySelect'
 import { getFloorAssemblyTypeIcon } from './Icons'
@@ -79,6 +81,12 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
     () => (selectedConfig ? getFloorAssemblyUsage(selectedConfig.id, storeys) : { isUsed: false, usedByStoreys: [] }),
     [selectedConfig, storeys]
   )
+  const totalThickness = useMemo(() => {
+    if (!selectedConfig) return ''
+    const assemby = FLOOR_ASSEMBLIES[selectedConfig.type]
+    const totalThickness = assemby.getTotalThickness(selectedConfig)
+    return formatLength(totalThickness)
+  }, [selectedConfig])
 
   const handleAddNew = useCallback(
     (type: FloorAssemblyType) => {
@@ -260,30 +268,47 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           p="3"
           style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
         >
-          <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
-            <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                Name
-              </Text>
-            </Label.Root>
-            <TextField.Root
-              value={selectedConfig.name}
-              onChange={e => handleUpdateName(e.target.value)}
-              placeholder="Floor assembly name"
-              size="2"
-            />
+          <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
+            <Grid columns="auto 1fr" gapX="2" align="center">
+              <Label.Root>
+                <Text size="2" weight="medium" color="gray">
+                  Name
+                </Text>
+              </Label.Root>
+              <TextField.Root
+                value={selectedConfig.name}
+                onChange={e => handleUpdateName(e.target.value)}
+                placeholder="Floor assembly name"
+                size="2"
+              />
+            </Grid>
 
-            <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                Type
-              </Text>
-            </Label.Root>
-            <Flex gap="2" align="center">
-              {React.createElement(getFloorAssemblyTypeIcon(selectedConfig.type))}
-              <Text size="2" color="gray">
-                {selectedConfig.type === 'monolithic' ? 'Monolithic' : 'Joist'}
-              </Text>
-            </Flex>
+            <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
+              <Flex gap="2" align="center">
+                <Label.Root>
+                  <Text size="2" weight="medium" color="gray">
+                    Type
+                  </Text>
+                </Label.Root>
+                <Flex gap="2" align="center">
+                  {React.createElement(getFloorAssemblyTypeIcon(selectedConfig.type))}
+                  <Text size="2" color="gray">
+                    {selectedConfig.type === 'monolithic' ? 'Monolithic' : 'Joist'}
+                  </Text>
+                </Flex>
+              </Flex>
+
+              <Flex gap="2" align="center">
+                <Label.Root>
+                  <Text size="2" weight="medium" color="gray">
+                    Total Thickness
+                  </Text>
+                </Label.Root>
+                <Text size="2" color="gray">
+                  {totalThickness}
+                </Text>
+              </Flex>
+            </Grid>
           </Grid>
 
           <Separator size="4" />
