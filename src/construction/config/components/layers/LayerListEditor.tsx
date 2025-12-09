@@ -2,6 +2,7 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   ColumnsIcon,
+  CopyIcon,
   HeightIcon,
   MagicWandIcon,
   PlusIcon,
@@ -22,6 +23,7 @@ import type {
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
 import { LengthField } from '@/shared/components/LengthField'
+import type { Length } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
 
 const DEFAULT_MATERIAL = '' as MaterialId
@@ -54,6 +56,12 @@ const getDefaultLayer = (type: LayerType, thickness: number): LayerConfig =>
         gapMaterial: undefined
       }
 
+export interface LayerCopySource {
+  name: string
+  totalThickness: Length
+  layerSource: () => LayerConfig[]
+}
+
 interface LayerListEditorProps {
   title: string
   layers: LayerConfig[]
@@ -65,6 +73,7 @@ interface LayerListEditorProps {
   addLabel?: string
   emptyHint?: string
   layerPresets?: Record<string, LayerConfig[]>
+  layerCopySources?: LayerCopySource[]
   onReplaceLayers?: (layers: LayerConfig[]) => void
   beforeLabel: string
   afterLabel: string
@@ -81,6 +90,7 @@ export function LayerListEditor({
   addLabel = 'Add Layer',
   emptyHint = 'No layers yet',
   layerPresets,
+  layerCopySources,
   onReplaceLayers,
   beforeLabel = 'Construction Side',
   afterLabel
@@ -109,6 +119,29 @@ export function LayerListEditor({
           </Text>
         </Flex>
         <Flex gap="1">
+          {layerCopySources && (
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger>
+                <IconButton title="Copy from..." size="1" variant="soft">
+                  <CopyIcon />
+                </IconButton>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Content>
+                <DropdownMenu.Label>Copy from...</DropdownMenu.Label>
+                {layerCopySources.map(({ name, totalThickness, layerSource }) => (
+                  <DropdownMenu.Item key={name} onSelect={() => applyPreset(layerSource())}>
+                    <Flex align="center" gap="2">
+                      <Text>{name}</Text>
+                      <Text size="1" color="gray">
+                        · {formatLength(totalThickness)}
+                      </Text>
+                    </Flex>
+                  </DropdownMenu.Item>
+                ))}
+              </DropdownMenu.Content>
+            </DropdownMenu.Root>
+          )}
+
           {hasPresetMenu && (
             <DropdownMenu.Root>
               <DropdownMenu.Trigger>

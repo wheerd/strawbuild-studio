@@ -42,7 +42,7 @@ import { formatLength } from '@/shared/utils/formatting'
 
 import { getPerimeterConfigTypeIcon } from './Icons'
 import { WallAssemblySelect } from './WallAssemblySelect'
-import { LayerListEditor } from './layers/LayerListEditor'
+import { type LayerCopySource, LayerListEditor } from './layers/LayerListEditor'
 
 interface InfillConfigFormProps {
   config: InfillWallSegmentConfig
@@ -510,6 +510,33 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
     moveWallAssemblyOutsideLayer
   } = useConfigActions()
 
+  const allAssemblies = useWallAssemblies()
+
+  const insideLayerSources = useMemo(
+    () =>
+      allAssemblies.map(
+        a =>
+          ({
+            name: a.name,
+            totalThickness: a.layers.insideThickness,
+            layerSource: () => a.layers.insideLayers
+          }) satisfies LayerCopySource
+      ),
+    [allAssemblies]
+  )
+  const outsideLayerSources = useMemo(
+    () =>
+      allAssemblies.map(
+        a =>
+          ({
+            name: a.name,
+            totalThickness: a.layers.outsideThickness,
+            layerSource: () => a.layers.outsideLayers
+          }) satisfies LayerCopySource
+      ),
+    [allAssemblies]
+  )
+
   return (
     <Flex direction="column" gap="3">
       {/* Openings Configuration */}
@@ -621,6 +648,7 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           addLabel="Add Inside Layer"
           emptyHint="No inside layers defined"
           layerPresets={DEFAULT_WALL_LAYER_SETS}
+          layerCopySources={insideLayerSources}
           beforeLabel="Wall Construction"
           afterLabel="Inside"
         />
@@ -639,6 +667,7 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           addLabel="Add Outside Layer"
           emptyHint="No outside layers defined"
           layerPresets={DEFAULT_WALL_LAYER_SETS}
+          layerCopySources={outsideLayerSources}
           beforeLabel="Wall Construction"
           afterLabel="Outside"
         />

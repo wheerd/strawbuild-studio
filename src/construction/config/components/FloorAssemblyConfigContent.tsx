@@ -38,7 +38,7 @@ import { formatLength } from '@/shared/utils/formatting'
 
 import { FloorAssemblySelect } from './FloorAssemblySelect'
 import { getFloorAssemblyTypeIcon } from './Icons'
-import { LayerListEditor } from './layers/LayerListEditor'
+import { type LayerCopySource, LayerListEditor } from './layers/LayerListEditor'
 
 export interface FloorAssemblyConfigContentProps {
   initialSelectionId?: string
@@ -665,6 +665,33 @@ function LayersFields({
   const displayedTopLayers = [...topLayers].reverse()
   const mapTopIndex = (displayIndex: number) => topLayers.length - 1 - displayIndex
 
+  const allAssemblies = useFloorAssemblies()
+
+  const topLayerSources = useMemo(
+    () =>
+      allAssemblies.map(
+        a =>
+          ({
+            name: a.name,
+            totalThickness: a.layers.topThickness,
+            layerSource: () => a.layers.topLayers
+          }) satisfies LayerCopySource
+      ),
+    [allAssemblies]
+  )
+  const bottomLayerSources = useMemo(
+    () =>
+      allAssemblies.map(
+        a =>
+          ({
+            name: a.name,
+            totalThickness: a.layers.bottomThickness,
+            layerSource: () => a.layers.bottomLayers
+          }) satisfies LayerCopySource
+      ),
+    [allAssemblies]
+  )
+
   return (
     <Flex direction="column" gap="3">
       <LayerListEditor
@@ -679,6 +706,7 @@ function LayersFields({
         addLabel="Add Top Layer"
         emptyHint="No top layers defined"
         layerPresets={DEFAULT_FLOOR_LAYER_SETS}
+        layerCopySources={topLayerSources}
         beforeLabel="Finished Top"
         afterLabel="Floor Construction"
       />
@@ -697,6 +725,7 @@ function LayersFields({
         addLabel="Add Bottom Layer"
         emptyHint="No bottom layers defined"
         layerPresets={DEFAULT_CEILING_LAYER_SETS}
+        layerCopySources={bottomLayerSources}
         beforeLabel="Floor Construction"
         afterLabel="Finished Bottom"
       />

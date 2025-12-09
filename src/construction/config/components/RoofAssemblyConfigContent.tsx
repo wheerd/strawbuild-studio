@@ -32,19 +32,14 @@ import { DEFAULT_CEILING_LAYER_SETS, DEFAULT_ROOF_LAYER_SETS } from '@/construct
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
 import { ROOF_ASSEMBLIES } from '@/construction/roofs'
-import type {
-  MonolithicRoofConfig,
-  PurlinRoofConfig,
-  RoofAssemblyType,
-  RoofConfig
-} from '@/construction/roofs/types'
+import type { MonolithicRoofConfig, PurlinRoofConfig, RoofAssemblyType, RoofConfig } from '@/construction/roofs/types'
 import { RoofMeasurementInfo } from '@/editor/components/RoofMeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
 import { formatLength } from '@/shared/utils/formatting'
 
 import { getRoofAssemblyTypeIcon } from './Icons'
 import { RoofAssemblySelect } from './RoofAssemblySelect'
-import { LayerListEditor } from './layers/LayerListEditor'
+import { type LayerCopySource, LayerListEditor } from './layers/LayerListEditor'
 
 interface MonolithicRoofConfigFormProps {
   config: MonolithicRoofConfig
@@ -378,6 +373,45 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
     moveRoofAssemblyOverhangLayer
   } = useConfigActions()
 
+  const allAssemblies = useRoofAssemblies()
+
+  const topLayerSources = useMemo(
+    () =>
+      allAssemblies.map(
+        a =>
+          ({
+            name: a.name,
+            totalThickness: a.layers.topThickness,
+            layerSource: () => a.layers.topLayers
+          }) satisfies LayerCopySource
+      ),
+    [allAssemblies]
+  )
+  const insideLayerSources = useMemo(
+    () =>
+      allAssemblies.map(
+        a =>
+          ({
+            name: a.name,
+            totalThickness: a.layers.insideThickness,
+            layerSource: () => a.layers.insideLayers
+          }) satisfies LayerCopySource
+      ),
+    [allAssemblies]
+  )
+  const overhangLayerSources = useMemo(
+    () =>
+      allAssemblies.map(
+        a =>
+          ({
+            name: a.name,
+            totalThickness: a.layers.overhangThickness,
+            layerSource: () => a.layers.overhangLayers
+          }) satisfies LayerCopySource
+      ),
+    [allAssemblies]
+  )
+
   // Reverse top layers for display (top layer = outside, shown first)
   const topLayers = config.layers.topLayers
   const displayedTopLayers = [...topLayers].reverse()
@@ -397,6 +431,7 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
         addLabel="Add Inside Layer"
         emptyHint="No inside layers defined"
         layerPresets={DEFAULT_CEILING_LAYER_SETS}
+        layerCopySources={insideLayerSources}
         beforeLabel="Roof Construction"
         afterLabel="Inside (Ceiling)"
       />
@@ -417,6 +452,7 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
         addLabel="Add Top Layer"
         emptyHint="No top layers defined"
         layerPresets={DEFAULT_ROOF_LAYER_SETS}
+        layerCopySources={topLayerSources}
         beforeLabel="Finished Top"
         afterLabel="Roof Construction"
       />
@@ -435,6 +471,7 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
         addLabel="Add Overhang Layer"
         emptyHint="No overhang layers defined (optional)"
         layerPresets={{}}
+        layerCopySources={overhangLayerSources}
         beforeLabel="Overhang"
         afterLabel="Outside"
       />
