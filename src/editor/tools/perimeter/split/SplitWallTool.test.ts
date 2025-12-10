@@ -114,7 +114,7 @@ describe('SplitWallTool', () => {
           type: 'door',
           width: 800,
           height: 2000,
-          centerOffsetFromWallStart: 200,
+          centerOffsetFromWallStart: 600, // Center at 600mm, spans 200mm to 1000mm
           sillHeight: 0
         }
       ],

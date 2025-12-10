@@ -143,8 +143,9 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
 
     // Check opening intersections
     for (const opening of wall.openings) {
-      const openingStart = opening.centerOffsetFromWallStart
-      const openingEnd = opening.centerOffsetFromWallStart + opening.width
+      // Calculate left and right edges from center position
+      const openingStart = opening.centerOffsetFromWallStart - opening.width / 2
+      const openingEnd = opening.centerOffsetFromWallStart + opening.width / 2
 
       if (position > openingStart && position < openingEnd) {
         return {

@@ -5,10 +5,10 @@ import { isRecord } from './shared'
  * Migration to version 7: Convert opening positions from edge-based to center-based
  *
  * Changes:
- * - Replace `centerOffsetFromWallStart` (left edge) with `centerOffsetFromWallStart` (center)
+ * - Replace `offsetFromStart` (left edge) with `centerOffsetFromWallStart` (center)
  * - Center position is padding-independent and enables simpler collision detection
  *
- * Conversion: centerOffsetFromWallStart = centerOffsetFromWallStart + width / 2
+ * Conversion: centerOffsetFromWallStart = offsetFromStart + width / 2
  */
 export const migrateToVersion7: Migration = state => {
   if (!isRecord(state)) return

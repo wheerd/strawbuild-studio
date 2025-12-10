@@ -513,7 +513,9 @@ class IfcExporter {
     wallId: Handle<IFC4.IfcElement>,
     wallPlacement: Handle<IFC4.IfcPlacement>
   ): void {
-    const axisPlacement = this.createAxisPlacement([opening.centerOffsetFromWallStart, 0, opening.sillHeight ?? 0])
+    // Convert center position to left edge for IFC placement (profile starts at origin)
+    const leftEdge = opening.centerOffsetFromWallStart - opening.width / 2
+    const axisPlacement = this.createAxisPlacement([leftEdge, 0, opening.sillHeight ?? 0])
     const placement = this.writeEntity(new IFC4.IfcLocalPlacement(wallPlacement, axisPlacement))
 
     const profile = this.createRectangleProfile(opening.width, wall.thickness)
