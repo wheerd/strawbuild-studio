@@ -1,7 +1,7 @@
 import { vec2, vec3 } from 'gl-matrix'
 
 import type { OpeningAssemblyId, StoreyId } from '@/building/model/ids'
-import type { Opening, Perimeter, PerimeterWall, Storey } from '@/building/model/model'
+import type { Perimeter, PerimeterWall, Storey } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import type { FloorAssemblyConfig } from '@/construction/config/types'
@@ -26,12 +26,12 @@ import {
   mergeInsideOutsideHeightLines
 } from '@/construction/walls/roofIntegration'
 import type { Length } from '@/shared/geometry'
-import { convertOpeningToConstruction } from '@/shared/utils/openingDimensions'
+import { type OpeningConstructionDimensions, convertOpeningToConstruction } from '@/shared/utils/openingDimensions'
 
 import type { WallCornerInfo } from './construction'
 import { calculateWallCornerInfo, getWallContext } from './corners/corners'
 
-function canMergeOpenings(opening1: Opening, opening2: Opening): boolean {
+function canMergeOpenings(opening1: OpeningConstructionDimensions, opening2: OpeningConstructionDimensions): boolean {
   // Check if openings are adjacent
   const opening1End = opening1.offsetFromStart + opening1.width
   const opening2Start = opening2.offsetFromStart
@@ -51,10 +51,10 @@ function canMergeOpenings(opening1: Opening, opening2: Opening): boolean {
   return true
 }
 
-function mergeAdjacentOpenings(sortedOpenings: Opening[]): Opening[][] {
+function mergeAdjacentOpenings(sortedOpenings: OpeningConstructionDimensions[]): OpeningConstructionDimensions[][] {
   if (sortedOpenings.length === 0) return []
 
-  const groups: Opening[][] = []
+  const groups: OpeningConstructionDimensions[][] = []
   let currentGroup = [sortedOpenings[0]]
 
   for (let i = 1; i < sortedOpenings.length; i++) {

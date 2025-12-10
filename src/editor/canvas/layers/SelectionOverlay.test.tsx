@@ -113,7 +113,7 @@ describe('SelectionOverlay', () => {
           openings: [
             {
               id: openingId,
-              offsetFromStart: 1000,
+              centerOffsetFromWallStart: 1000,
               width: 800
             }
           ]

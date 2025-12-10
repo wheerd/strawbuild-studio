@@ -1,4 +1,3 @@
-import type { Opening } from '@/building/model'
 import { IDENTITY, type WallConstructionArea } from '@/construction/geometry'
 import { yieldMeasurementFromArea } from '@/construction/measurements'
 import type { OpeningAssembly, SimpleOpeningConfig } from '@/construction/openings/types'
@@ -18,11 +17,12 @@ import {
 import type { InfillMethod } from '@/construction/walls'
 import { type Length } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
+import type { OpeningConstructionDimensions } from '@/shared/utils/openingDimensions'
 
 export class SimpleOpeningAssembly implements OpeningAssembly<SimpleOpeningConfig> {
   *construct(
     area: WallConstructionArea,
-    openings: Opening[],
+    openings: OpeningConstructionDimensions[],
     zOffset: Length,
     config: SimpleOpeningConfig,
     infill: InfillMethod
@@ -112,7 +112,7 @@ export class SimpleOpeningAssembly implements OpeningAssembly<SimpleOpeningConfi
   }
 
   private extractUnifiedDimensions(
-    openings: Opening[],
+    openings: OpeningConstructionDimensions[],
     zOffset: Length
   ): {
     sillTop: Length

@@ -20,9 +20,10 @@ export function OpeningMovementPreview({
   // Calculate the opening rectangle in new position
   const wallStart = wall.insideLine.start
   const outsideDirection = wall.outsideDirection
+  const halfWidth = opening.width / 2
 
-  const openingStart = vec2.scaleAndAdd(vec2.create(), wallStart, wall.direction, movementState.newOffset)
-  const openingEnd = vec2.scaleAndAdd(vec2.create(), openingStart, wall.direction, opening.width)
+  const openingStart = vec2.scaleAndAdd(vec2.create(), wallStart, wall.direction, movementState.newOffset - halfWidth)
+  const openingEnd = vec2.scaleAndAdd(vec2.create(), wallStart, wall.direction, movementState.newOffset + halfWidth)
 
   // Create opening rectangle
   const insideStart = openingStart
@@ -31,7 +32,7 @@ export function OpeningMovementPreview({
   const outsideEnd = vec2.scaleAndAdd(vec2.create(), openingEnd, outsideDirection, wall.thickness)
 
   // Original position for movement indicator
-  const originalStart = vec2.scaleAndAdd(vec2.create(), wallStart, wall.direction, opening.offsetFromStart)
+  const originalStart = vec2.scaleAndAdd(vec2.create(), wallStart, wall.direction, opening.centerOffsetFromWallStart)
 
   return (
     <Group>

@@ -68,7 +68,7 @@ const mockActions = {
             {
               id: 'opening_1',
               type: 'door',
-              offsetFromStart: 500,
+              centerOffsetFromWallStart: 500,
               width: 900,
               height: 2100,
               sillHeight: undefined

@@ -302,7 +302,7 @@ describe('constructWallLayers', () => {
     const opening: Opening = {
       id: createOpeningId(),
       type: 'window',
-      offsetFromStart: 1000,
+      centerOffsetFromWallStart: 1450,
       width: 900,
       height: 1200,
       sillHeight: 900

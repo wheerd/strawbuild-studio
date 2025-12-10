@@ -2,7 +2,6 @@ import { vec2 } from 'gl-matrix'
 
 import type {
   FloorAssemblyId,
-  OpeningAssemblyId,
   PerimeterId,
   RingBeamAssemblyId,
   RoofAssemblyId,
@@ -23,12 +22,6 @@ import type { Material, MaterialId } from '@/construction/materials/material'
 import { getMaterialsState, setMaterialsState } from '@/construction/materials/store'
 import { MATERIALS_STORE_VERSION, migrateMaterialsState } from '@/construction/materials/store/migrations'
 import type { Polygon2D } from '@/shared/geometry'
-import {
-  constructionHeightToFinished,
-  constructionOffsetToFinished,
-  constructionSillToFinished,
-  constructionWidthToFinished
-} from '@/shared/utils/openingDimensions'
 
 export interface ExportedStorey {
   name: string
@@ -64,7 +57,8 @@ export interface ExportedWall {
 
 export interface ExportedOpening {
   type: 'door' | 'window' | 'passage'
-  offsetFromStart: number
+  centerOffset: number
+  offsetFromStart?: number
   width: number
   height: number
   sillHeight?: number
@@ -148,24 +142,13 @@ const SUPPORTED_VERSIONS = [
   '1.6.0',
   '1.7.0',
   '1.8.0',
-  '1.9.0'
+  '1.9.0',
+  '1.10.0'
 ] as const
 
 const polygonToExport = (polygon: Polygon2D): ExportedFloorPolygon => ({
   points: polygon.points.map(point => ({ x: point[0], y: point[1] }))
 })
-
-const compareVersions = (a: string, b: string): number => {
-  const pa = a.split('.').map(v => Number(v) || 0)
-  const pb = b.split('.').map(v => Number(v) || 0)
-  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
-    const diff = (pa[i] ?? 0) - (pb[i] ?? 0)
-    if (diff !== 0) {
-      return diff > 0 ? 1 : -1
-    }
-  }
-  return 0
-}
 
 const getFloorAssemblyThicknessFromConfig = (
   configs: Record<FloorAssemblyId, FloorAssemblyConfig> | undefined,
@@ -239,7 +222,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
             wallAssemblyId: wall.wallAssemblyId,
             openings: wall.openings.map(opening => ({
               type: opening.type,
-              offsetFromStart: Number(opening.offsetFromStart),
+              centerOffset: Number(opening.centerOffsetFromWallStart),
               width: Number(opening.width),
               height: Number(opening.height),
               sillHeight: opening.sillHeight ? Number(opening.sillHeight) : undefined
@@ -308,7 +291,6 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
 
       // 5. Process imported storeys
       const exportedStoreys = importResult.data.modelStore.storeys
-      const needsOpeningConversion = compareVersions(importResult.data.version, '1.8.0') < 0
 
       exportedStoreys.forEach((exportedStorey, index, list) => {
         let targetStorey: Storey
@@ -342,13 +324,6 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
           // Get assembly from first wall or use default
           const wallAssemblyId = exportedPerimeter.walls[0]?.wallAssemblyId as WallAssemblyId
           const thickness = exportedPerimeter.walls[0]?.thickness || 200
-          // Get padding from opening assembly (via wall assembly or global default)
-          const wallAssembly = configStore.wallAssemblyConfigs?.[wallAssemblyId]
-          const openingAssemblyId =
-            wallAssembly?.openingAssemblyId ||
-            configStore.defaultOpeningAssemblyId ||
-            ('oa_simple_default' as OpeningAssemblyId)
-          const assemblyPadding = configStore.openingAssemblyConfigs?.[openingAssemblyId]?.padding ?? 0
 
           // Basic perimeter creation - auto-computes geometry, outsidePoints, etc.
           const perimeter = modelActions.addPerimeter(
@@ -373,29 +348,18 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
               exportedWall.wallAssemblyId as WallAssemblyId
             )
 
-            // Get padding from this wall's opening assembly (or fall back to perimeter default)
-            const wallAssembly = configStore.wallAssemblyConfigs?.[exportedWall.wallAssemblyId as WallAssemblyId]
-            const wallOpeningAssemblyId = wallAssembly?.openingAssemblyId || openingAssemblyId
-            const wallPadding = configStore.openingAssemblyConfigs?.[wallOpeningAssemblyId]?.padding ?? assemblyPadding
-
             // Add openings
             exportedWall.openings.forEach(exportedOpening => {
-              const convertedSillHeight = constructionSillToFinished(exportedOpening.sillHeight, wallPadding)
-              const openingParams = needsOpeningConversion
-                ? {
-                    type: exportedOpening.type,
-                    offsetFromStart: constructionOffsetToFinished(exportedOpening.offsetFromStart, wallPadding),
-                    width: constructionWidthToFinished(exportedOpening.width, wallPadding),
-                    height: constructionHeightToFinished(exportedOpening.height, wallPadding),
-                    sillHeight: convertedSillHeight || undefined
-                  }
-                : {
-                    type: exportedOpening.type,
-                    offsetFromStart: exportedOpening.offsetFromStart,
-                    width: exportedOpening.width,
-                    height: exportedOpening.height,
-                    sillHeight: exportedOpening.sillHeight ? exportedOpening.sillHeight : undefined
-                  }
+              const openingParams = {
+                type: exportedOpening.type,
+                centerOffsetFromWallStart:
+                  exportedOpening.offsetFromStart != null
+                    ? exportedOpening.offsetFromStart + exportedOpening.width / 2
+                    : exportedOpening.centerOffset,
+                width: exportedOpening.width,
+                height: exportedOpening.height,
+                sillHeight: exportedOpening.sillHeight ? exportedOpening.sillHeight : undefined
+              }
 
               modelActions.addPerimeterWallOpening(perimeter.id, wallId, openingParams)
             })

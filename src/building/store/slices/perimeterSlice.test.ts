@@ -517,7 +517,7 @@ describe('perimeterSlice', () => {
 
         const openingId = store.actions.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'door',
-          offsetFromStart: 1000,
+          centerOffsetFromWallStart: 1000,
           width: 800,
           height: 2100
         })
@@ -532,7 +532,7 @@ describe('perimeterSlice', () => {
         const opening = updatedWall.openings[0]
         expect(opening.id).toBe(openingId)
         expect(opening.type).toBe('door')
-        expect(opening.offsetFromStart).toBe(1000)
+        expect(opening.centerOffsetFromWallStart).toBe(1000)
         expect(opening.width).toBe(800)
         expect(opening.height).toBe(2100)
         expect(opening.sillHeight).toBeUndefined()
@@ -547,7 +547,7 @@ describe('perimeterSlice', () => {
 
         store.actions.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'window',
-          offsetFromStart: 2000,
+          centerOffsetFromWallStart: 2000,
           width: 1200,
           height: 1000,
           sillHeight: 900
@@ -570,14 +570,14 @@ describe('perimeterSlice', () => {
 
         store.actions.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'door',
-          offsetFromStart: 1000,
+          centerOffsetFromWallStart: 1000,
           width: 800,
           height: 2100
         })
 
         store.actions.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'window',
-          offsetFromStart: 5000,
+          centerOffsetFromWallStart: 5000,
           width: 1200,
           height: 1000,
           sillHeight: 900
@@ -601,11 +601,11 @@ describe('perimeterSlice', () => {
         expect(() =>
           store.actions.addPerimeterWallOpening(perimeter.id, wallId, {
             type: 'door',
-            offsetFromStart: -100,
+            centerOffsetFromWallStart: -100,
             width: 800,
             height: 2100
           })
-        ).toThrow('Opening offset from start must be non-negative')
+        ).toThrow('Opening center offset from start must be non-negative')
       })
 
       it('should throw error for invalid width', () => {
@@ -618,7 +618,7 @@ describe('perimeterSlice', () => {
         expect(() =>
           store.actions.addPerimeterWallOpening(perimeter.id, wallId, {
             type: 'door',
-            offsetFromStart: 1000,
+            centerOffsetFromWallStart: 1000,
             width: 0,
             height: 2100
           })
@@ -635,7 +635,7 @@ describe('perimeterSlice', () => {
         expect(() =>
           store.actions.addPerimeterWallOpening(perimeter.id, wallId, {
             type: 'door',
-            offsetFromStart: 1000,
+            centerOffsetFromWallStart: 1000,
             width: 800,
             height: 0
           })
@@ -652,7 +652,7 @@ describe('perimeterSlice', () => {
         expect(() =>
           store.actions.addPerimeterWallOpening(perimeter.id, wallId, {
             type: 'window',
-            offsetFromStart: 1000,
+            centerOffsetFromWallStart: 1000,
             width: 1200,
             height: 1000,
             sillHeight: -100
@@ -667,7 +667,7 @@ describe('perimeterSlice', () => {
         expect(() =>
           store.actions.addPerimeterWallOpening(fakePerimeterId, fakeWallId, {
             type: 'door',
-            offsetFromStart: 1000,
+            centerOffsetFromWallStart: 1000,
             width: 800,
             height: 2100
           })
@@ -684,7 +684,7 @@ describe('perimeterSlice', () => {
         expect(() =>
           store.actions.addPerimeterWallOpening(perimeter.id, fakeWallId, {
             type: 'door',
-            offsetFromStart: 1000,
+            centerOffsetFromWallStart: 1000,
             width: 800,
             height: 2100
           })
@@ -746,7 +746,7 @@ describe('perimeterSlice', () => {
 
         const openingId = store.actions.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'door',
-          offsetFromStart: 1000,
+          centerOffsetFromWallStart: 1000,
           width: 800,
           height: 2100
         })
@@ -769,14 +769,14 @@ describe('perimeterSlice', () => {
 
         const doorId = store.actions.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'door',
-          offsetFromStart: 1000,
+          centerOffsetFromWallStart: 1000,
           width: 800,
           height: 2100
         })
 
         const windowId = store.actions.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'window',
-          offsetFromStart: 5000,
+          centerOffsetFromWallStart: 5000,
           width: 1200,
           height: 1000,
           sillHeight: 900
@@ -827,7 +827,7 @@ describe('perimeterSlice', () => {
 
         store.actions.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'door',
-          offsetFromStart: 1000,
+          centerOffsetFromWallStart: 1000,
           width: 800,
           height: 2100
         })
@@ -878,7 +878,7 @@ describe('perimeterSlice', () => {
 
         const openingId = store.actions.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'door',
-          offsetFromStart: 1000,
+          centerOffsetFromWallStart: 1000,
           width: 800,
           height: 2100
         })
@@ -895,7 +895,7 @@ describe('perimeterSlice', () => {
         expect(updatedOpening.width).toBe(900)
         expect(updatedOpening.height).toBe(2200)
         expect(updatedOpening.type).toBe('door') // Unchanged
-        expect(updatedOpening.offsetFromStart).toBe(1000) // Unchanged
+        expect(updatedOpening.centerOffsetFromWallStart).toBe(1000) // Unchanged
       })
 
       it('should update window sill height', () => {
@@ -907,7 +907,7 @@ describe('perimeterSlice', () => {
 
         const openingId = store.actions.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'window',
-          offsetFromStart: 1000,
+          centerOffsetFromWallStart: 1000,
           width: 1200,
           height: 1000,
           sillHeight: 900
@@ -962,7 +962,7 @@ describe('perimeterSlice', () => {
 
         store.actions.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'door',
-          offsetFromStart: 1000,
+          centerOffsetFromWallStart: 1000,
           width: 800,
           height: 2100
         })
@@ -1072,7 +1072,7 @@ describe('perimeterSlice', () => {
 
         const openingId = store.actions.addPerimeterWallOpening(perimeter.id, wallId, {
           type: 'door',
-          offsetFromStart: 1000,
+          centerOffsetFromWallStart: 1000,
           width: 800,
           height: 2100
         })
@@ -1165,14 +1165,14 @@ describe('perimeterSlice', () => {
       // Add openings
       const doorId = store.actions.addPerimeterWallOpening(perimeter.id, wallId, {
         type: 'door',
-        offsetFromStart: 1000,
+        centerOffsetFromWallStart: 1000,
         width: 800,
         height: 2100
       })
 
       const windowId = store.actions.addPerimeterWallOpening(perimeter.id, wallId, {
         type: 'window',
-        offsetFromStart: 5000,
+        centerOffsetFromWallStart: 5000,
         width: 1200,
         height: 1000,
         sillHeight: 900
@@ -1220,7 +1220,7 @@ describe('perimeterSlice', () => {
       // Add opening
       store.actions.addPerimeterWallOpening(perimeter.id, wallId, {
         type: 'door',
-        offsetFromStart: 1000,
+        centerOffsetFromWallStart: 1000,
         width: 800,
         height: 2100
       })
@@ -1427,14 +1427,14 @@ describe('perimeterSlice', () => {
 
         store.actions.addPerimeterWallOpening(perimeter.id, wall1.id, {
           type: 'door',
-          offsetFromStart: 0,
+          centerOffsetFromWallStart: 50,
           width: 100,
           height: 2100
         })
 
         store.actions.addPerimeterWallOpening(perimeter.id, wall2.id, {
           type: 'window',
-          offsetFromStart: 0,
+          centerOffsetFromWallStart: 50,
           width: 100,
           height: 1000,
           sillHeight: 900
@@ -1821,31 +1821,46 @@ describe('perimeterSlice', () => {
           const result = store.actions.isPerimeterWallOpeningPlacementValid(perimeterId, wallId, -100, 800)
           expect(result).toBe(false)
         })
+
+        it('should return false for too small offset', () => {
+          const result = store.actions.isPerimeterWallOpeningPlacementValid(perimeterId, wallId, 100, 800)
+          expect(result).toBe(false)
+        })
       })
 
       describe('boundary validation', () => {
         it('should return true for opening that fits within wall', () => {
-          const result = store.actions.isPerimeterWallOpeningPlacementValid(perimeterId, wallId, 0, wallLength)
+          const result = store.actions.isPerimeterWallOpeningPlacementValid(
+            perimeterId,
+            wallId,
+            wallLength / 2,
+            wallLength
+          )
           expect(result).toBe(true)
         })
 
         it('should return false for opening wider than wall', () => {
-          const result = store.actions.isPerimeterWallOpeningPlacementValid(perimeterId, wallId, 0, wallLength + 1)
+          const result = store.actions.isPerimeterWallOpeningPlacementValid(
+            perimeterId,
+            wallId,
+            wallLength / 2,
+            wallLength + 1
+          )
           expect(result).toBe(false)
         })
 
         it('should return false for opening that extends beyond wall end', () => {
-          const result = store.actions.isPerimeterWallOpeningPlacementValid(perimeterId, wallId, wallLength - 400, 800)
+          const result = store.actions.isPerimeterWallOpeningPlacementValid(perimeterId, wallId, wallLength - 200, 800)
           expect(result).toBe(false)
         })
       })
 
       describe('overlap validation', () => {
         beforeEach(() => {
-          // Add an existing door at offset 1000mm, width 800mm (occupies 1000-1800)
+          // Add an existing door at offset 1400mm, width 800mm (occupies 1000-1800)
           store.actions.addPerimeterWallOpening(perimeterId, wallId, {
             type: 'door',
-            offsetFromStart: 1000,
+            centerOffsetFromWallStart: 1400,
             width: 800,
             height: 2100
           })
@@ -1855,7 +1870,7 @@ describe('perimeterSlice', () => {
           const result = store.actions.isPerimeterWallOpeningPlacementValid(
             perimeterId,
             wallId,
-            800, // starts at 800, ends at 1600 (overlaps 1000-1600)
+            1200, // starts at 800, ends at 1600 (overlaps 1000-1600)
             800
           )
           expect(result).toBe(false)
@@ -1865,14 +1880,14 @@ describe('perimeterSlice', () => {
           const result = store.actions.isPerimeterWallOpeningPlacementValid(
             perimeterId,
             wallId,
-            1200, // starts at 1200, ends at 2000 (overlaps 1200-1800)
+            1600, // starts at 1200, ends at 2000 (overlaps 1200-1800)
             800
           )
           expect(result).toBe(false)
         })
 
         it('should return false for opening at same position', () => {
-          const result = store.actions.isPerimeterWallOpeningPlacementValid(perimeterId, wallId, 1000, 800)
+          const result = store.actions.isPerimeterWallOpeningPlacementValid(perimeterId, wallId, 1400, 800)
           expect(result).toBe(false)
         })
 
@@ -1880,7 +1895,7 @@ describe('perimeterSlice', () => {
           const result = store.actions.isPerimeterWallOpeningPlacementValid(
             perimeterId,
             wallId,
-            200, // starts at 200, ends at 1000 (touches at 1000)
+            600, // starts at 200, ends at 1000 (touches at 1000)
             800
           )
           expect(result).toBe(true)
@@ -1890,7 +1905,7 @@ describe('perimeterSlice', () => {
           const result = store.actions.isPerimeterWallOpeningPlacementValid(
             perimeterId,
             wallId,
-            1800, // starts at 1800, ends at 2600 (touches at 1800)
+            2200, // starts at 1800, ends at 2600 (touches at 1800)
             800
           )
           expect(result).toBe(true)
@@ -1900,7 +1915,7 @@ describe('perimeterSlice', () => {
           const result = store.actions.isPerimeterWallOpeningPlacementValid(
             perimeterId,
             wallId,
-            0, // starts at 0, ends at 800 (gap from 800-1000)
+            400, // starts at 0, ends at 800 (gap from 800-1000)
             800
           )
           expect(result).toBe(true)
@@ -1965,19 +1980,24 @@ describe('perimeterSlice', () => {
           expect(result).toBe(1000)
         })
 
-        it('should adjust negative offset to 0', () => {
+        it('should adjust negative offset to half wall width', () => {
           const result = store.actions.findNearestValidPerimeterWallOpeningPosition(perimeterId, wallId, -500, 800)
-          expect(result).toBe(0)
+          expect(result).toBe(400)
+        })
+
+        it('should adjust too small offset to half wall width', () => {
+          const result = store.actions.findNearestValidPerimeterWallOpeningPosition(perimeterId, wallId, 200, 800)
+          expect(result).toBe(400)
         })
 
         it('should adjust position that would extend beyond wall end', () => {
           const result = store.actions.findNearestValidPerimeterWallOpeningPosition(
             perimeterId,
             wallId,
-            wallLength - 400, // would extend beyond by 400
+            wallLength - 200, // would extend beyond by 400
             800
           )
-          expect(result).toBe(wallLength - 800) // adjusted to fit exactly
+          expect(result).toBe(wallLength - 400) // adjusted to fit exactly
         })
       })
 
@@ -1986,7 +2006,7 @@ describe('perimeterSlice', () => {
           // Add an existing door at 2000-2800 (offset 2000, width 800)
           store.actions.addPerimeterWallOpening(perimeterId, wallId, {
             type: 'door',
-            offsetFromStart: 2000,
+            centerOffsetFromWallStart: 2000,
             width: 800,
             height: 2100
           })
@@ -2051,13 +2071,13 @@ describe('perimeterSlice', () => {
           // Add two doors: 1000-1800 and 3000-3800
           store.actions.addPerimeterWallOpening(perimeterId, wallId, {
             type: 'door',
-            offsetFromStart: 1000,
+            centerOffsetFromWallStart: 1400,
             width: 800,
             height: 2100
           })
           store.actions.addPerimeterWallOpening(perimeterId, wallId, {
             type: 'door',
-            offsetFromStart: 3000,
+            centerOffsetFromWallStart: 3400,
             width: 800,
             height: 2100
           })
@@ -2067,42 +2087,42 @@ describe('perimeterSlice', () => {
           const result = store.actions.findNearestValidPerimeterWallOpeningPosition(
             perimeterId,
             wallId,
-            2000, // fits in gap 1800-3000
+            2400, // fits in gap 1800-3000
             800
           )
-          expect(result).toBe(2000)
+          expect(result).toBe(2400)
         })
 
         it('should shift when preferred position overlaps first opening', () => {
           const result = store.actions.findNearestValidPerimeterWallOpeningPosition(
             perimeterId,
             wallId,
-            1200, // overlaps with first opening 1000-1800
+            1500, // overlaps with first opening 1000-1800
             600
           )
-          expect(result).toBe(1800) // shift right after first opening
+          expect(result).toBe(2100) // shift right after first opening
         })
 
         it('should shift when preferred position overlaps second opening', () => {
           const result = store.actions.findNearestValidPerimeterWallOpeningPosition(
             perimeterId,
             wallId,
-            3200, // overlaps with second opening 3000-3800
+            3500, // overlaps with second opening 3000-3800
             600
           )
           // Can shift left to 2400 (distance 800) or right to 3800 (distance 600)
-          expect(result).toBe(3800) // right shift is closer
+          expect(result).toBe(4100) // right shift is closer
         })
 
         it('should find valid position when overlapping both openings', () => {
           const result = store.actions.findNearestValidPerimeterWallOpeningPosition(
             perimeterId,
             wallId,
-            2500, // overlaps with both
+            2800, // overlaps with both
             600
           )
           // Should find closest valid position (before second opening)
-          expect(result).toBe(2400)
+          expect(result).toBe(2700)
         })
 
         it('should handle opening that exactly fills the gap', () => {
@@ -2112,7 +2132,7 @@ describe('perimeterSlice', () => {
             1900, // close to gap center
             1200 // exactly fills gap 1800-3000
           )
-          expect(result).toBe(1800) // exactly at gap start
+          expect(result).toBe(2400) // exactly at gap start
         })
       })
 
@@ -2123,7 +2143,7 @@ describe('perimeterSlice', () => {
           const wallLength = wall.wallLength
 
           const result = store.actions.findNearestValidPerimeterWallOpeningPosition(perimeterId, wallId, 0, wallLength)
-          expect(result).toBe(0)
+          expect(result).toBe(wallLength / 2)
         })
 
         it('should handle very small opening width', () => {
@@ -2144,7 +2164,7 @@ describe('perimeterSlice', () => {
           // Fill most of the wall with a large opening, leaving < 800 units space
           store.actions.addPerimeterWallOpening(perimeterId, wallId, {
             type: 'passage',
-            offsetFromStart: 100,
+            centerOffsetFromWallStart: 100 + (wallLength - 500) / 2,
             width: wallLength - 500, // leaves only 400 units space
             height: 2100
           })
@@ -2179,14 +2199,14 @@ describe('perimeterSlice', () => {
         // Add openings to the first wall
         store.actions.addPerimeterWallOpening(perimeter.id, perimeter.walls[0].id, {
           type: 'door',
-          offsetFromStart: 500,
+          centerOffsetFromWallStart: 500,
           width: 800,
           height: 2100
         })
 
         store.actions.addPerimeterWallOpening(perimeter.id, perimeter.walls[0].id, {
           type: 'window',
-          offsetFromStart: 1500,
+          centerOffsetFromWallStart: 1500,
           width: 600,
           height: 1200
         })
@@ -2194,7 +2214,7 @@ describe('perimeterSlice', () => {
         // Add openings to the second wall
         store.actions.addPerimeterWallOpening(perimeter.id, perimeter.walls[1].id, {
           type: 'window',
-          offsetFromStart: 300,
+          centerOffsetFromWallStart: 300,
           width: 400,
           height: 1200
         })
@@ -2226,20 +2246,22 @@ describe('perimeterSlice', () => {
         expect(mergedWall.openings).toHaveLength(expectedTotalOpenings)
 
         // Verify opening positions are correct
-        const sortedOpenings = mergedWall.openings.sort((a, b) => a.offsetFromStart - b.offsetFromStart)
+        const sortedOpenings = mergedWall.openings.sort(
+          (a, b) => a.centerOffsetFromWallStart - b.centerOffsetFromWallStart
+        )
 
         // First opening should be the door from the original first wall
         expect(sortedOpenings[0].type).toBe('door')
-        expect(sortedOpenings[0].offsetFromStart).toBe(500)
+        expect(sortedOpenings[0].centerOffsetFromWallStart).toBe(500)
 
         // Second opening should be the window from the original first wall
         expect(sortedOpenings[1].type).toBe('window')
-        expect(sortedOpenings[1].offsetFromStart).toBe(1500)
+        expect(sortedOpenings[1].centerOffsetFromWallStart).toBe(1500)
 
         // Third opening should be from the second wall, offset by the first wall's length
         expect(sortedOpenings[2].type).toBe('window')
         // Original offset (300) + first wall length (3000) = 2860
-        expect(sortedOpenings[2].offsetFromStart).toBe(3300)
+        expect(sortedOpenings[2].centerOffsetFromWallStart).toBe(3300)
       })
 
       it('should delete openings when removing non-straight corner (preserves current behavior)', () => {
@@ -2258,14 +2280,14 @@ describe('perimeterSlice', () => {
         // Add openings to walls
         store.actions.addPerimeterWallOpening(perimeter.id, perimeter.walls[0].id, {
           type: 'door',
-          offsetFromStart: 500,
+          centerOffsetFromWallStart: 500,
           width: 800,
           height: 2100
         })
 
         store.actions.addPerimeterWallOpening(perimeter.id, perimeter.walls[1].id, {
           type: 'window',
-          offsetFromStart: 300,
+          centerOffsetFromWallStart: 300,
           width: 400,
           height: 1200
         })

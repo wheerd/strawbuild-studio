@@ -160,7 +160,7 @@ describe('model store migrations', () => {
                 {
                   id: 'opening1',
                   type: 'door',
-                  offsetFromStart: 500,
+                  centerOffsetFromWallStart: 500,
                   width: 1000, // Finished width
                   height: 2100, // Finished height
                   sillHeight: 100 // Finished sill height
@@ -176,7 +176,7 @@ describe('model store migrations', () => {
     // Dimensions are stored as finished and should remain unchanged
     expect(opening.width).toBe(1000)
     expect(opening.height).toBe(2100)
-    expect(opening.offsetFromStart).toBe(500)
+    expect(opening.centerOffsetFromWallStart).toBe(500)
     expect(opening.sillHeight).toBe(100)
   })
 })

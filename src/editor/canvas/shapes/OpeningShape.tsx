@@ -44,7 +44,9 @@ export function OpeningShape({
   const insideStart = wall.insideLine.start
   const outsideStart = wall.outsideLine.start
   const wallVector = wall.direction
-  const offsetDistance = opening.offsetFromStart
+
+  // Calculate left edge from center position
+  const offsetDistance = opening.centerOffsetFromWallStart - opening.width / 2
   const centerStart = midpoint(insideStart, outsideStart)
   const offsetStart = vec2.scale(vec2.create(), wallVector, offsetDistance)
   const offsetEnd = vec2.scaleAndAdd(vec2.create(), offsetStart, wallVector, opening.width)
@@ -63,7 +65,7 @@ export function OpeningShape({
   const isOpeningSelected = select.isCurrentSelection(opening.id)
 
   // Calculate opening-to-opening distances
-  const sortedOpenings = [...wall.openings].sort((a, b) => a.offsetFromStart - b.offsetFromStart)
+  const sortedOpenings = [...wall.openings].sort((a, b) => a.centerOffsetFromWallStart - b.centerOffsetFromWallStart)
 
   const currentIndex = sortedOpenings.findIndex(o => o.id === opening.id)
   const previousOpening = currentIndex > 0 ? sortedOpenings[currentIndex - 1] : null
@@ -88,9 +90,14 @@ export function OpeningShape({
                   vec2.create(),
                   outsideStart,
                   wall.direction,
-                  previousOpening.offsetFromStart + previousOpening.width
+                  previousOpening.centerOffsetFromWallStart + previousOpening.width / 2
                 ),
-                vec2.scaleAndAdd(vec2.create(), outsideStart, wall.direction, opening.offsetFromStart)
+                vec2.scaleAndAdd(
+                  vec2.create(),
+                  outsideStart,
+                  wall.direction,
+                  opening.centerOffsetFromWallStart - opening.width / 2
+                )
               )
             : nextOpening
               ? midpoint(
@@ -98,9 +105,14 @@ export function OpeningShape({
                     vec2.create(),
                     outsideStart,
                     wall.direction,
-                    opening.offsetFromStart + opening.width
+                    opening.centerOffsetFromWallStart + opening.width / 2
                   ),
-                  vec2.scaleAndAdd(vec2.create(), outsideStart, wall.direction, nextOpening.offsetFromStart)
+                  vec2.scaleAndAdd(
+                    vec2.create(),
+                    outsideStart,
+                    wall.direction,
+                    nextOpening.centerOffsetFromWallStart - nextOpening.width / 2
+                  )
                 )
               : vec2.fromValues(0, 0)
 
@@ -125,24 +137,24 @@ export function OpeningShape({
           actualDelta = -rawDelta
         }
 
-        const newOffsetFromStart = opening.offsetFromStart + actualDelta
+        const newCenterOffset = opening.centerOffsetFromWallStart + actualDelta
 
         // Validate the new position
         const isValid = modelActions.isPerimeterWallOpeningPlacementValid(
           perimeterId,
           wall.id,
-          newOffsetFromStart,
+          newCenterOffset,
           opening.width,
           opening.id
         )
 
         if (isValid) {
           modelActions.updatePerimeterWallOpening(perimeterId, wall.id, opening.id, {
-            offsetFromStart: newOffsetFromStart
+            centerOffsetFromWallStart: newCenterOffset
           })
         } else {
           // Could add error feedback here in the future
-          console.warn('Invalid opening position:', formatLength(newOffsetFromStart))
+          console.warn('Invalid opening position:', formatLength(newCenterOffset))
         }
       },
       onCancel: () => {
@@ -189,8 +201,8 @@ export function OpeningShape({
           {previousOpening && (
             <>
               {(() => {
-                const prevEndOffset = previousOpening.offsetFromStart + previousOpening.width
-                const currentStartOffset = opening.offsetFromStart
+                const prevEndOffset = previousOpening.centerOffsetFromWallStart + previousOpening.width / 2
+                const currentStartOffset = opening.centerOffsetFromWallStart - opening.width / 2
                 const prevEndPoint = vec2.scaleAndAdd(vec2.create(), outsideStart, wallVector, prevEndOffset)
                 const currentStartPoint = vec2.scaleAndAdd(vec2.create(), outsideStart, wallVector, currentStartOffset)
                 return (
@@ -211,8 +223,8 @@ export function OpeningShape({
           {nextOpening && (
             <>
               {(() => {
-                const currentEndOffset = opening.offsetFromStart + opening.width
-                const nextStartOffset = nextOpening.offsetFromStart
+                const currentEndOffset = opening.centerOffsetFromWallStart + opening.width / 2
+                const nextStartOffset = nextOpening.centerOffsetFromWallStart - nextOpening.width / 2
                 const currentEndPoint = vec2.scaleAndAdd(vec2.create(), outsideStart, wallVector, currentEndOffset)
                 const nextStartPoint = vec2.scaleAndAdd(vec2.create(), outsideStart, wallVector, nextStartOffset)
                 return (

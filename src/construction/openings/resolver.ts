@@ -1,10 +1,11 @@
-import type { Opening, OpeningAssemblyId } from '@/building/model'
+import type { OpeningAssemblyId } from '@/building/model'
 import { getConfigActions } from '@/construction/config/store'
 import type { WallConstructionArea } from '@/construction/geometry'
 import { SimpleOpeningAssembly } from '@/construction/openings/simple'
 import type { ConstructionResult } from '@/construction/results'
 import type { InfillMethod } from '@/construction/walls'
 import type { Length } from '@/shared/geometry'
+import type { OpeningConstructionDimensions } from '@/shared/utils/openingDimensions'
 
 import type { EmptyOpeningConfig, OpeningAssembly, OpeningConfig } from './types'
 
@@ -55,13 +56,21 @@ export function resolveOpeningAssembly(openingAssemblyId?: OpeningAssemblyId): O
 
   if (config.type === 'simple') {
     return {
-      construct: (area: WallConstructionArea, openings: Opening[], zOffset: Length, infill: InfillMethod) =>
-        simpleAssembly.construct(area, openings, zOffset, config, infill)
+      construct: (
+        area: WallConstructionArea,
+        openings: OpeningConstructionDimensions[],
+        zOffset: Length,
+        infill: InfillMethod
+      ) => simpleAssembly.construct(area, openings, zOffset, config, infill)
     }
   } else if (config.type === 'empty') {
     return {
-      construct: (area: WallConstructionArea, openings: Opening[], zOffset: Length, infill: InfillMethod) =>
-        emptyAssembly.construct(area, openings, zOffset, config, infill)
+      construct: (
+        area: WallConstructionArea,
+        openings: OpeningConstructionDimensions[],
+        zOffset: Length,
+        infill: InfillMethod
+      ) => emptyAssembly.construct(area, openings, zOffset, config, infill)
     }
   }
 
@@ -71,7 +80,7 @@ export function resolveOpeningAssembly(openingAssemblyId?: OpeningAssemblyId): O
 export class EmptyOpeningAssembly implements OpeningAssembly<EmptyOpeningConfig> {
   *construct(
     _area: WallConstructionArea,
-    _openings: Opening[],
+    _openings: OpeningConstructionDimensions[],
     _zOffset: Length,
     _config: EmptyOpeningConfig,
     _infill: InfillMethod
@@ -86,7 +95,7 @@ const emptyAssembly = new EmptyOpeningAssembly()
 interface OpeningAssemblyInstance {
   construct: (
     area: WallConstructionArea,
-    openings: Opening[],
+    openings: OpeningConstructionDimensions[],
     zOffset: Length,
     infill: InfillMethod
   ) => Generator<ConstructionResult>

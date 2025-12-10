@@ -90,14 +90,14 @@ export interface PerimetersActions {
   isPerimeterWallOpeningPlacementValid: (
     perimeterId: PerimeterId,
     wallId: PerimeterWallId,
-    offsetFromStart: Length,
+    centerOffsetFromWallStart: Length,
     width: Length,
     excludedOpening?: OpeningId
   ) => boolean
   findNearestValidPerimeterWallOpeningPosition: (
     perimeterId: PerimeterId,
     wallId: PerimeterWallId,
-    preferredOffset: Length,
+    preferredCenterOffset: Length,
     width: Length,
     excludedOpening?: OpeningId
   ) => Length | null
@@ -296,8 +296,8 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
 
         // Check opening intersections
         for (const opening of originalWall.openings) {
-          const openingStart = opening.offsetFromStart
-          const openingEnd = opening.offsetFromStart + opening.width
+          const openingStart = opening.centerOffsetFromWallStart - opening.width / 2
+          const openingEnd = opening.centerOffsetFromWallStart + opening.width / 2
           if (splitPosition > openingStart && splitPosition < openingEnd) return
         }
 
@@ -320,12 +320,12 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         const firstWallOpenings = []
         const secondWallOpenings = []
         for (const opening of originalWall.openings) {
-          if (opening.offsetFromStart < splitPosition) {
+          if (opening.centerOffsetFromWallStart < splitPosition) {
             firstWallOpenings.push(opening)
           } else {
             secondWallOpenings.push({
               ...opening,
-              offsetFromStart: opening.offsetFromStart - splitPosition
+              centerOffsetFromWallStart: opening.centerOffsetFromWallStart - splitPosition
             })
           }
         }
@@ -471,8 +471,8 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
       }
 
       // Basic validation checks
-      if (openingParams.offsetFromStart < 0) {
-        throw new Error('Opening offset from start must be non-negative')
+      if (openingParams.centerOffsetFromWallStart < 0) {
+        throw new Error('Opening center offset from start must be non-negative')
       }
 
       const wall = get().perimeters[perimeterId]?.walls.find((wall: PerimeterWall) => wall.id === wallId) ?? null
@@ -480,7 +480,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         throw new Error('Wall does not exist')
       }
 
-      if (!validateOpeningOnWall(wall, openingParams.offsetFromStart, openingParams.width)) {
+      if (!validateOpeningOnWall(wall, openingParams.centerOffsetFromWallStart, openingParams.width)) {
         throw new Error('Opening placement is not valid')
       }
 
@@ -568,7 +568,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
             if (
               validateOpeningOnWall(
                 wall,
-                updates.offsetFromStart ?? opening.offsetFromStart,
+                updates.centerOffsetFromWallStart ?? opening.centerOffsetFromWallStart,
                 updates.width ?? opening.width,
                 openingId
               )
@@ -586,7 +586,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
     isPerimeterWallOpeningPlacementValid: (
       perimeterId: PerimeterId,
       wallId: PerimeterWallId,
-      offsetFromStart: Length,
+      centerOffsetFromWallStart: Length,
       width: Length,
       excludedOpening?: OpeningId
     ) => {
@@ -600,13 +600,13 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         throw new Error(`Opening width must be greater than 0, got ${width}`)
       }
 
-      return validateOpeningOnWall(wall, offsetFromStart, width, excludedOpening)
+      return validateOpeningOnWall(wall, centerOffsetFromWallStart, width, excludedOpening)
     },
 
     findNearestValidPerimeterWallOpeningPosition: (
       perimeterId: PerimeterId,
       wallId: PerimeterWallId,
-      preferredStartOffset: Length,
+      preferredCenterOffset: Length,
       width: Length,
       excludedOpening?: OpeningId
     ): Length | null => {
@@ -615,22 +615,21 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
       // wallLength and opening dimensions should be in same units
       if (width > wall.wallLength) return null
 
-      // Snap to wall bounds
-      let start = Math.max(preferredStartOffset, 0)
-      let end = start + width
-      if (end > wall.wallLength) {
-        end = wall.wallLength
-        start = end - width
-      }
+      const halfWidth = width / 2
 
-      if (wall.openings.length === 0) return start
+      // Snap center to wall bounds
+      let center = Math.max(preferredCenterOffset, halfWidth)
+      center = Math.min(center, wall.wallLength - halfWidth)
 
-      // Sort existing openings by position
+      if (wall.openings.length === 0) return center
+
+      // Sort existing openings by center position
       const sortedOpenings = [...wall.openings]
         .filter(o => o.id !== excludedOpening)
-        .sort((a, b) => a.offsetFromStart - b.offsetFromStart)
+        .sort((a, b) => a.centerOffsetFromWallStart - b.centerOffsetFromWallStart)
 
-      const afterIndex = sortedOpenings.findIndex(o => o.offsetFromStart >= start)
+      // Find previous and next openings relative to preferred center
+      const afterIndex = sortedOpenings.findIndex(o => o.centerOffsetFromWallStart >= center)
 
       const previousOpening =
         afterIndex > 0
@@ -640,11 +639,15 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
             : null
       const nextOpening = afterIndex !== -1 ? sortedOpenings[afterIndex] : null
 
-      const intersectsPrevious = previousOpening && start < previousOpening.offsetFromStart + previousOpening.width
-      const intersectsNext = nextOpening && end > nextOpening.offsetFromStart
+      // Check collisions using center-based distance
+      const intersectsPrevious =
+        previousOpening &&
+        Math.abs(center - previousOpening.centerOffsetFromWallStart) < (width + previousOpening.width) / 2
+      const intersectsNext =
+        nextOpening && Math.abs(center - nextOpening.centerOffsetFromWallStart) < (width + nextOpening.width) / 2
 
       if (!intersectsPrevious && !intersectsNext) {
-        return start
+        return center
       }
 
       // If we intersect with both, the gap is too small
@@ -653,40 +656,46 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
       }
 
       // Otherwise find the shortest shift
-      let bestOffset: Length | null = null
+      let bestCenter: Length | null = null
       let bestDistance = Infinity
 
       // If we intersect with previous opening, try shifting right (after previous)
       if (intersectsPrevious && previousOpening) {
-        const shiftedOffset = previousOpening.offsetFromStart + previousOpening.width
-        const shiftDistance = Math.abs(shiftedOffset - preferredStartOffset)
-        const shiftedEnd = shiftedOffset + width
+        const shiftedCenter = previousOpening.centerOffsetFromWallStart + (previousOpening.width + width) / 2
+        const shiftDistance = Math.abs(shiftedCenter - preferredCenterOffset)
 
         // Check if shift is within the wall and doesn't intersect with next
-        if (shiftedEnd <= wall.wallLength && (!nextOpening || shiftedEnd <= nextOpening.offsetFromStart)) {
-          bestOffset = shiftedOffset
+        const shiftedRightEdge = shiftedCenter + halfWidth
+        const validBounds = shiftedRightEdge <= wall.wallLength
+        const noNextCollision =
+          !nextOpening ||
+          Math.abs(shiftedCenter - nextOpening.centerOffsetFromWallStart) >= (width + nextOpening.width) / 2
+
+        if (validBounds && noNextCollision) {
+          bestCenter = shiftedCenter
           bestDistance = shiftDistance
         }
       }
 
       // If we intersect with next opening, try shifting left (before next)
       if (intersectsNext && nextOpening) {
-        const shiftedOffset = nextOpening.offsetFromStart - width
-        const shiftDistance = Math.abs(shiftedOffset - preferredStartOffset)
+        const shiftedCenter = nextOpening.centerOffsetFromWallStart - (nextOpening.width + width) / 2
+        const shiftDistance = Math.abs(shiftedCenter - preferredCenterOffset)
 
         // Check if shift is within the wall and doesn't intersect with previous
-        if (
-          shiftedOffset >= 0 &&
-          (!previousOpening || shiftedOffset >= previousOpening.offsetFromStart + previousOpening.width)
-        ) {
-          if (shiftDistance < bestDistance) {
-            bestOffset = shiftedOffset
-            bestDistance = shiftDistance
-          }
+        const shiftedLeftEdge = shiftedCenter - halfWidth
+        const validBounds = shiftedLeftEdge >= 0
+        const noPrevCollision =
+          !previousOpening ||
+          Math.abs(shiftedCenter - previousOpening.centerOffsetFromWallStart) >= (width + previousOpening.width) / 2
+
+        if (validBounds && noPrevCollision && shiftDistance < bestDistance) {
+          bestCenter = shiftedCenter
+          bestDistance = shiftDistance
         }
       }
 
-      return bestOffset
+      return bestCenter
     },
 
     // Movement operations for MoveTool
@@ -1049,10 +1058,10 @@ const mergeOpeningsForStraightCorner = (wall1: PerimeterWall, wall2: PerimeterWa
   // Keep all openings from wall1 as-is
   const wall1Openings = [...wall1.openings]
 
-  // Adjust wall2 openings by adding wall1's wall length to their offsets
+  // Adjust wall2 openings by adding wall1's wall length to their center offsets
   const wall2Openings = wall2.openings.map(opening => ({
     ...opening,
-    offsetFromStart: opening.offsetFromStart + wall1.wallLength
+    centerOffsetFromWallStart: opening.centerOffsetFromWallStart + wall1.wallLength
   }))
 
   return [...wall1Openings, ...wall2Openings]
@@ -1163,7 +1172,7 @@ const removeWallAndMergeAdjacent = (perimeter: Perimeter, wallIndex: number): vo
 // Private helper function to validate opening placement on a wall
 const validateOpeningOnWall = (
   wall: PerimeterWall,
-  offsetFromStart: Length,
+  centerOffsetFromWallStart: Length,
   width: Length,
   excludedOpening?: OpeningId | undefined
 ): boolean => {
@@ -1172,20 +1181,22 @@ const validateOpeningOnWall = (
     return false
   }
 
-  // Check bounds - wallLength and opening dimensions should be in same units
-  const openingEnd = offsetFromStart + width
-  if (offsetFromStart < 0 || openingEnd > wall.wallLength) {
+  // Check bounds - center must be at least halfWidth from each end
+  const halfWidth = width / 2
+  if (centerOffsetFromWallStart < halfWidth || centerOffsetFromWallStart > wall.wallLength - halfWidth) {
     return false
   }
 
-  // Check overlap with existing openings
+  // Check overlap with existing openings using center-based collision
   for (const existing of wall.openings) {
     if (existing.id === excludedOpening) continue
 
-    const existingStart = existing.offsetFromStart
-    const existingEnd = existing.offsetFromStart + existing.width
+    // Distance between centers
+    const centerDistance = Math.abs(centerOffsetFromWallStart - existing.centerOffsetFromWallStart)
+    // Minimum distance needed to avoid overlap
+    const minDistance = (width + existing.width) / 2
 
-    if (!(openingEnd <= existingStart || offsetFromStart >= existingEnd)) {
+    if (centerDistance < minDistance) {
       return false
     }
   }

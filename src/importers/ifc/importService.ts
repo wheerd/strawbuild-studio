@@ -129,7 +129,7 @@ function applyImportedModel(model: ParsedIfcModel): void {
           try {
             actions.addPerimeterWallOpening(perimeter.id, wall.id, {
               type: opening.type === 'void' ? 'passage' : opening.type,
-              offsetFromStart: offset,
+              centerOffsetFromWallStart: offset,
               width,
               height: opening.height,
               sillHeight: opening.sill ? Math.max(opening.sill, 0) : undefined

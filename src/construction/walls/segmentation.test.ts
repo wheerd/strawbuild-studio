@@ -3,7 +3,7 @@ import { type Mock, type Mocked, beforeEach, describe, expect, it, vi } from 'vi
 
 import { createOpeningId, createPerimeterId, createWallAssemblyId } from '@/building/model/ids'
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
-import { getConfigActions } from '@/construction/config'
+import { type OpeningAssemblyConfig, getConfigActions } from '@/construction/config'
 import { IDENTITY, WallConstructionArea } from '@/construction/geometry'
 import { aggregateResults, yieldElement } from '@/construction/results'
 import { createCuboid } from '@/construction/shapes'
@@ -89,7 +89,7 @@ function createMockPerimeter(walls: PerimeterWall[]): Perimeter {
 }
 
 function createMockOpening(
-  offsetFromStart: Length,
+  centerOffsetFromWallStart: Length,
   width: Length,
   height: Length = 1200,
   sillHeight: Length = 900
@@ -97,7 +97,7 @@ function createMockOpening(
   return {
     id: createOpeningId(),
     type: 'window',
-    offsetFromStart,
+    centerOffsetFromWallStart,
     width,
     height,
     sillHeight
@@ -159,6 +159,7 @@ describe('segmentedWallConstruction', () => {
   let mockWallConstruction: Mocked<WallSegmentConstruction>
   let mockInfillMethod: Mock<InfillMethod>
   let mockGetRingBeamAssemblyById: ReturnType<typeof vi.fn>
+  let mockGetOpeningAssemblyById: Mock<() => OpeningAssemblyConfig>
 
   // Helper to create expected WallConstructionArea matcher
   function expectArea(position: vec3, size: vec3) {
@@ -205,14 +206,21 @@ describe('segmentedWallConstruction', () => {
 
     // Mock config actions
     mockGetRingBeamAssemblyById = vi.fn()
+    mockGetOpeningAssemblyById = vi.fn()
     mockGetConfigActions.mockReturnValue({
-      getRingBeamAssemblyById: mockGetRingBeamAssemblyById
+      getRingBeamAssemblyById: mockGetRingBeamAssemblyById,
+      getOpeningAssemblyById: mockGetOpeningAssemblyById
     } as any)
 
     // Mock ring beam assemblies
     mockGetRingBeamAssemblyById.mockReturnValue({
       height: 60
     })
+
+    // Mock ring beam assemblies
+    mockGetOpeningAssemblyById.mockReturnValue({
+      padding: 15
+    } as any)
 
     // Mock construction functions
     mockWallConstruction = vi.fn(function* (
@@ -590,8 +598,8 @@ describe('segmentedWallConstruction', () => {
 
     it('should sort openings by position', () => {
       // Create openings in wrong order
-      const opening1 = createMockOpening(2000, 600)
-      const opening2 = createMockOpening(500, 800)
+      const opening1 = createMockOpening(2300, 600)
+      const opening2 = createMockOpening(900, 800)
       const wall = createMockWall('wall-1', 4000, 300, [opening1, opening2])
       const perimeter = createMockPerimeter([wall])
       const wallHeight = 2500
@@ -612,15 +620,11 @@ describe('segmentedWallConstruction', () => {
       // Should process opening2 first (at position 500), then opening1 (at position 2000)
       expect(mockInfillMethod).toHaveBeenNthCalledWith(
         1,
-        expectArea(vec3.fromValues(500, 30, 60), vec3.fromValues(800, 220, 2380)),
-        -60,
-        [opening2]
+        expectArea(vec3.fromValues(485, 30, 2175), vec3.fromValues(830, 220, 265))
       )
       expect(mockInfillMethod).toHaveBeenNthCalledWith(
         2,
-        expectArea(vec3.fromValues(2000, 30, 60), vec3.fromValues(600, 220, 2380)),
-        -60,
-        [opening1]
+        expectArea(vec3.fromValues(485, 30, 60), vec3.fromValues(600, 220, 2380))
       )
     })
   })

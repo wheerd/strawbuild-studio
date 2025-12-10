@@ -181,11 +181,10 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
     const startPoint = wall.insideLine.start
     const centerOffset = vec2.distance(startPoint, projectedPoint)
 
-    // Rounded offset of opening start from the start of the wall wall
-    const actualStartOffset = centerOffset - this.state.width / 2
-    const roundedOffset = Math.round(actualStartOffset / 10) * 10
+    // Round center offset to 10mm increments
+    const roundedCenterOffset = Math.round(centerOffset / 10) * 10
 
-    return roundedOffset
+    return roundedCenterOffset
   }
 
   /**
@@ -264,7 +263,9 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
         snappedOffset !== preferredStartOffset ? (snappedOffset > preferredStartOffset ? 'right' : 'left') : undefined
       this.updatePreview(snappedOffset, perimeterWall, true, snapDirection)
     } else {
-      if (preferredStartOffset < 0 || preferredStartOffset > perimeterWall.wall.wallLength - this.state.width) {
+      // Check if center is within valid bounds (at least halfWidth from each end)
+      const halfWidth = this.state.width / 2
+      if (preferredStartOffset < halfWidth || preferredStartOffset > perimeterWall.wall.wallLength - halfWidth) {
         this.clearPreview()
       } else {
         this.updatePreview(preferredStartOffset, perimeterWall, snappedOffset === preferredStartOffset)
@@ -313,7 +314,7 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
     try {
       const openingId = getModelActions().addPerimeterWallOpening(perimeterId, wallId, {
         type: this.state.openingType,
-        offsetFromStart: this.state.offset,
+        centerOffsetFromWallStart: this.state.offset,
         width: finalWidth,
         height: finalHeight,
         sillHeight: finalSillHeight,

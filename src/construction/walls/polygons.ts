@@ -112,7 +112,8 @@ export const subtractWallOpenings = (
 ): PolygonWithHoles2D[] => {
   const holes = wall.openings
     .map(opening => {
-      const openingStart = opening.offsetFromStart
+      // Calculate left edge from center position
+      const openingStart = opening.centerOffsetFromWallStart - opening.width / 2
       const openingEnd = openingStart + opening.width
       const clampedStart = Math.max(openingStart, start)
       const clampedEnd = Math.min(openingEnd, end)

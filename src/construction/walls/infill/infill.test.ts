@@ -565,7 +565,7 @@ describe('assembly.construct', () => {
       const opening = {
         id: createOpeningId(),
         type: 'window' as const,
-        offsetFromStart: 1000,
+        centerOffsetFromWallStart: 1000,
         width: 800,
         height: 1200,
         sillHeight: 900

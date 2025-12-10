@@ -20,6 +20,7 @@ import {
   type Tag
 } from '@/construction/tags'
 import type { InfillMethod } from '@/construction/walls'
+import type { OpeningConstructionDimensions } from '@/shared/utils/openingDimensions'
 
 import { SimpleOpeningAssembly } from './simple'
 import type { SimpleOpeningConfig } from './types'
@@ -40,10 +41,11 @@ const measurementHasTag = (measurement: RawMeasurement, tag: Tag): boolean => {
   return measurement.tags?.some(t => t.id === tag.id) ?? false
 }
 
-const createTestOpening = (overrides: Partial<Opening> = {}): Opening => ({
+const createTestOpening = (overrides: Partial<OpeningConstructionDimensions> = {}): OpeningConstructionDimensions => ({
   id: createOpeningId(),
   type: 'window',
-  offsetFromStart: 1000,
+  centerOffsetFromWallStart: 1000,
+  offsetFromStart: 600,
   width: 800,
   height: 1200,
   sillHeight: 900,
@@ -61,7 +63,10 @@ const createTestConfig = (overrides: Partial<SimpleOpeningConfig> = {}): SimpleO
 })
 
 const createTestOpeningArea = (opening: Opening): WallConstructionArea =>
-  new WallConstructionArea(vec3.fromValues(opening.offsetFromStart, 0, 0), vec3.fromValues(opening.width, 360, 2500))
+  new WallConstructionArea(
+    vec3.fromValues(opening.centerOffsetFromWallStart, 0, 0),
+    vec3.fromValues(opening.width, 360, 2500)
+  )
 
 // Helper to create mock generator for infillWallArea
 const createMockInfillGenerator = function* (numElements = 2): Generator<ConstructionResult> {
@@ -202,7 +207,7 @@ describe('SimpleOpeningAssembly', () => {
       })
 
       const opening = createTestOpening({
-        offsetFromStart: 0,
+        centerOffsetFromWallStart: 0,
         sillHeight: 0,
         width: 800,
         height: 1000
@@ -226,7 +231,7 @@ describe('SimpleOpeningAssembly', () => {
       })
 
       const opening = createTestOpening({
-        offsetFromStart: 0,
+        centerOffsetFromWallStart: 0,
         sillHeight: 600,
         width: 800,
         height: 1900

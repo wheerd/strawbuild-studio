@@ -23,11 +23,13 @@ export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpe
   const wallDirection = wall.direction
   const wallAngle = (Math.atan2(wallDirection[1], wallDirection[0]) * 180) / Math.PI
 
+  const halfWidth = state.width / 2
+
   return (
     <Group x={state.previewPosition[0]} y={state.previewPosition[1]} rotation={wallAngle} listening={false}>
       {/* Opening Preview */}
       <Rect
-        x={0}
+        x={-halfWidth}
         y={0}
         width={state.width}
         height={wall.thickness}
@@ -39,7 +41,7 @@ export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpe
       <Text
         text={tool.getNeedsConversion() ? '⚠' : getOpeningIcon(state.openingType)}
         fontSize={wall.thickness * 0.7}
-        x={0}
+        x={-halfWidth}
         y={wall.thickness}
         width={state.width}
         height={wall.thickness}
@@ -53,7 +55,7 @@ export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpe
       {/* Snap Indicator */}
       {state.snapDirection && (
         <Circle
-          x={state.snapDirection === 'right' ? 0 : state.width}
+          x={state.snapDirection === 'right' ? -halfWidth : halfWidth}
           y={wall.thickness / 2}
           radius={wall.thickness * 0.15}
           fill={theme.primary}

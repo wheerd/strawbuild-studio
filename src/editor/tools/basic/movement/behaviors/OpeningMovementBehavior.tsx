@@ -53,7 +53,7 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
     const { opening } = context.entity
 
     return {
-      newOffset: opening.offsetFromStart,
+      newOffset: opening.centerOffsetFromWallStart,
       movementDelta: vec2.fromValues(0, 0) // Store as [1D_change, 0]
     }
   }
@@ -73,7 +73,7 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
     const currentPosition = vec2.add(
       vec2.create(),
       wallStart,
-      vec2.scale(vec2.create(), wall.direction, opening.offsetFromStart)
+      vec2.scale(vec2.create(), wall.direction, opening.centerOffsetFromWallStart)
     )
     const newPosition = vec2.add(
       vec2.create(),
@@ -103,7 +103,7 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
 
     return {
       newOffset: finalOffset,
-      movementDelta: [finalOffset - opening.offsetFromStart, 0]
+      movementDelta: [finalOffset - opening.centerOffsetFromWallStart, 0]
     }
   }
 
@@ -123,7 +123,7 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
 
     // Update opening position
     context.store.updatePerimeterWallOpening(perimeter.id, wall.id, opening.id, {
-      offsetFromStart: movementState.newOffset
+      centerOffsetFromWallStart: movementState.newOffset
     })
 
     return true
@@ -133,7 +133,7 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
     const { perimeter, wall, opening } = context.entity
 
     // Use deltaDifference[0] as the offset change (1D movement along wall)
-    const newOffset = opening.offsetFromStart + deltaDifference[0]
+    const newOffset = opening.centerOffsetFromWallStart + deltaDifference[0]
 
     // Validate the new position
     if (
@@ -144,7 +144,7 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
 
     // Apply the movement
     context.store.updatePerimeterWallOpening(perimeter.id, wall.id, opening.id, {
-      offsetFromStart: newOffset
+      centerOffsetFromWallStart: newOffset
     })
 
     return true
