@@ -20,22 +20,14 @@ import {
   type Tag
 } from '@/construction/tags'
 import type { InfillMethod } from '@/construction/walls'
-import { infillWallArea } from '@/construction/walls/infill/infill'
 
-import { constructOpeningFrame } from './openings'
+import { SimpleOpeningAssembly } from './simple'
 import type { SimpleOpeningConfig } from './types'
-
-// Mock the infill module
-vi.mock('@/construction/walls/infill/infill', () => ({
-  infillWallArea: vi.fn()
-}))
 
 // Mock the formatLength utility
 vi.mock('@/shared/utils/formatting', () => ({
   formatLength: vi.fn((length: number) => `${length}mm`) // Mock to return simple format for tests
 }))
-
-const mockInfillWallArea = vi.mocked(infillWallArea)
 
 // Helper function to check if an element has a specific tag
 const hasTag = (element: GroupOrElement, tag: Tag): boolean => {
@@ -83,12 +75,12 @@ const createMockInfillGenerator = function* (numElements = 2): Generator<Constru
 
 const mockInfillMethod = vi.fn<InfillMethod>(_area => createMockInfillGenerator())
 
-describe('constructOpeningFrame', () => {
+describe('SimpleOpeningAssembly', () => {
+  const assembly = new SimpleOpeningAssembly()
+
   beforeEach(() => {
     mockInfillMethod.mockReset()
     mockInfillMethod.mockImplementation(_area => createMockInfillGenerator())
-    mockInfillWallArea.mockReset()
-    mockInfillWallArea.mockImplementation((..._args) => createMockInfillGenerator())
   })
 
   describe('basic opening construction', () => {
@@ -100,7 +92,7 @@ describe('constructOpeningFrame', () => {
       const area = createTestOpeningArea(opening)
       const config = createTestConfig()
 
-      const results = [...constructOpeningFrame(area, [opening], 0, config, mockInfillMethod)]
+      const results = [...assembly.construct(area, [opening], 0, config, mockInfillMethod)]
       const { elements, errors, areas } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -124,7 +116,7 @@ describe('constructOpeningFrame', () => {
       const area = createTestOpeningArea(opening)
       const config = createTestConfig()
 
-      const results = [...constructOpeningFrame(area, [opening], 0, config, mockInfillMethod)]
+      const results = [...assembly.construct(area, [opening], 0, config, mockInfillMethod)]
       const { measurements } = aggregateResults(results)
 
       // Should generate measurements inline
@@ -158,7 +150,7 @@ describe('constructOpeningFrame', () => {
       const area = createTestOpeningArea(opening)
       const config = createTestConfig()
 
-      const results = [...constructOpeningFrame(area, [opening], 0, config, mockInfillMethod)]
+      const results = [...assembly.construct(area, [opening], 0, config, mockInfillMethod)]
       const { measurements } = aggregateResults(results)
 
       // Should generate fewer measurements for door (no sill)
@@ -186,7 +178,7 @@ describe('constructOpeningFrame', () => {
       const area = createTestOpeningArea(opening)
       const config = createTestConfig()
 
-      const results = [...constructOpeningFrame(area, [opening], 0, config, mockInfillMethod)]
+      const results = [...assembly.construct(area, [opening], 0, config, mockInfillMethod)]
       const { elements, errors, areas } = aggregateResults(results)
 
       expect(errors).toHaveLength(0)
@@ -221,7 +213,7 @@ describe('constructOpeningFrame', () => {
         sillThickness: 60
       })
 
-      Array.from(constructOpeningFrame(area, [opening], 0, config, mockInfillMethod))
+      Array.from(assembly.construct(area, [opening], 0, config, mockInfillMethod))
 
       expect(mockInfillMethod).toHaveBeenCalledTimes(1)
     })
@@ -245,7 +237,7 @@ describe('constructOpeningFrame', () => {
         sillThickness: 60
       })
 
-      Array.from(constructOpeningFrame(area, [opening], 0, config, mockInfillMethod))
+      Array.from(assembly.construct(area, [opening], 0, config, mockInfillMethod))
 
       expect(mockInfillMethod).toHaveBeenCalledTimes(1)
     })
@@ -262,7 +254,7 @@ describe('constructOpeningFrame', () => {
         headerThickness: 100
       })
 
-      const results = [...constructOpeningFrame(area, [opening], 0, config, mockInfillMethod)]
+      const results = [...assembly.construct(area, [opening], 0, config, mockInfillMethod)]
       const { errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(1)
@@ -279,7 +271,7 @@ describe('constructOpeningFrame', () => {
         sillThickness: 100
       })
 
-      const results = [...constructOpeningFrame(area, [opening], 0, config, mockInfillMethod)]
+      const results = [...assembly.construct(area, [opening], 0, config, mockInfillMethod)]
       const { errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(1)

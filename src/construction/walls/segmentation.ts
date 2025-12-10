@@ -138,12 +138,6 @@ export type WallSegmentConstruction = (
   startAtEnd: boolean
 ) => Generator<ConstructionResult>
 
-export type OpeningSegmentConstruction = (
-  area: WallConstructionArea,
-  zOffset: Length,
-  openings: Opening[]
-) => Generator<ConstructionResult>
-
 function* createCornerAreas(
   cornerInfo: WallCornerInfo,
   wallLength: Length,

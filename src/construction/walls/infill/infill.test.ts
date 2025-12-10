@@ -8,7 +8,6 @@ import type { MaterialId } from '@/construction/materials/material'
 import type { PostConfig } from '@/construction/materials/posts'
 import { constructPost } from '@/construction/materials/posts'
 import { constructStraw } from '@/construction/materials/straw'
-import { constructOpeningFrame } from '@/construction/openings/openings'
 import { aggregateResults, yieldElement, yieldError, yieldMeasurement, yieldWarning } from '@/construction/results'
 import { TAG_POST_SPACING } from '@/construction/tags'
 import type { InfillWallConfig, InfillWallSegmentConfig, WallLayersConfig } from '@/construction/walls'
@@ -81,13 +80,11 @@ vi.mock('@/shared/utils/formatLength', () => ({
 
 const mockConstructPost = vi.mocked(constructPost)
 const mockConstructStraw = vi.mocked(constructStraw)
-const mockConstructOpeningFrame = vi.mocked(constructOpeningFrame)
 const mockSegmentedWallConstruction = vi.mocked(segmentedWallConstruction)
 
 // Test data helpers
 const mockWoodMaterial = 'wood-material' as MaterialId
 const mockStrawMaterial = 'straw-material' as MaterialId
-const mockHeaderMaterial = 'header-material' as MaterialId
 
 function createMockElement(id: string, position: vec3, size: vec3, material: MaterialId) {
   return {
@@ -505,15 +502,15 @@ describe('assembly.construct', () => {
 
     // Mock segmentedWallConstruction to call our wall and opening construction functions
     mockSegmentedWallConstruction.mockImplementation(
-      function* (wall, _perimeter, _storeyContext, _layers, wallConstruction, openingConstruction, _padding) {
+      function* (wall, _perimeter, _storeyContext, _layers, wallConstruction, infill, _padding) {
         const wallArea = new WallConstructionArea(vec3.fromValues(0, 30, 60), vec3.fromValues(3000, 220, 2380))
         // Simulate calling wall construction
         yield* wallConstruction(wallArea, true, true, false)
 
         // Simulate calling opening construction if there are openings
         if (wall.openings.length > 0) {
-          const openingArea = new WallConstructionArea(vec3.fromValues(1000, 30, 60), vec3.fromValues(800, 220, 2380))
-          yield* openingConstruction(openingArea, -60, wall.openings)
+          const openingArea = new WallConstructionArea(vec3.fromValues(1000, 30, 60), vec3.fromValues(800, 220, 900))
+          yield* infill(openingArea)
         }
       }
     )
@@ -527,11 +524,6 @@ describe('assembly.construct', () => {
     mockConstructStraw.mockReturnValue(
       createMockGenerator([
         createMockElement('straw', vec3.fromValues(0, 0, 0), vec3.fromValues(800, 300, 2500), mockStrawMaterial)
-      ])()
-    )
-    mockConstructOpeningFrame.mockReturnValue(
-      createMockGenerator([
-        createMockElement('opening', vec3.fromValues(0, 0, 0), vec3.fromValues(800, 300, 1200), mockHeaderMaterial)
       ])()
     )
   })
@@ -565,7 +557,7 @@ describe('assembly.construct', () => {
         config.layers,
         expect.any(Function), // wallConstruction function
         expect.any(Function), // openingConstruction function
-        15
+        undefined
       )
     })
 
@@ -587,7 +579,6 @@ describe('assembly.construct', () => {
       expect(result.elements.length).toBeGreaterThan(0)
       expect(result.errors).toHaveLength(0)
       expect(result.warnings).toHaveLength(0)
-      expect(mockConstructOpeningFrame).toHaveBeenCalled()
     })
 
     it('should propagate errors and warnings from infill construction', () => {
@@ -685,22 +676,11 @@ describe('assembly.construct', () => {
 
       assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight), config)
 
-      const openingConstructionFn = mockSegmentedWallConstruction.mock.calls[0][5]
-      expect(openingConstructionFn).toBeDefined()
+      const infillFn = mockSegmentedWallConstruction.mock.calls[0][5]
+      expect(infillFn).toBeDefined()
 
-      // Test that the opening construction function works
-      const mockOpening = {
-        id: createOpeningId(),
-        type: 'window' as const,
-        offsetFromStart: 0,
-        width: 800,
-        height: 1200,
-        sillHeight: 900
-      }
-
-      const result = [...openingConstructionFn(area, -60, [mockOpening])]
+      const result = [...infillFn(area)]
       expect(result.length).toBeGreaterThan(0)
-      expect(mockConstructOpeningFrame).toHaveBeenCalled()
     })
   })
 })
