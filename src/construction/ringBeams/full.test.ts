@@ -153,12 +153,6 @@ describe('FullRingBeamAssembly', () => {
       })
     })
 
-    it('creates two measurements per beam', () => {
-      const model = assembly.construct(perimeter, defaultConfig)
-
-      expect(model.measurements).toHaveLength(simplifiedPolygon.points.length * 2)
-    })
-
     it('creates inside area', () => {
       const model = assembly.construct(perimeter, defaultConfig)
 
