@@ -18,6 +18,8 @@ vi.mock('@/building/store/persistenceStore', () => ({
   usePersistenceStore: (f: (p: PersistenceState) => any) => f(mockPersistenceState)
 }))
 
+vi.mock('@/editor/tools/system', () => ({ pushTool: vi.fn() }))
+
 // Mock the ProjectImportExportService
 vi.mock('@/shared/services/ProjectImportExportService', () => ({
   ProjectImportExportService: {

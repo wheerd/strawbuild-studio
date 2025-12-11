@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 
 import { usePersistenceStore } from '@/building/store/persistenceStore'
 import { clearSelection } from '@/editor/hooks/useSelectionStore'
+import { pushTool } from '@/editor/tools/system'
 import { SaveIcon } from '@/shared/components/Icons'
 import { ProjectImportExportService } from '@/shared/services/ProjectImportExportService'
 import { FileInputCancelledError, createBinaryFileInput, createFileInput } from '@/shared/utils/createFileInput'
@@ -66,6 +67,8 @@ export function AutoSaveIndicator(): React.JSX.Element {
 
         if (!result.success) {
           setImportError(result.error)
+        } else {
+          pushTool('basic.fit-to-view')
         }
       })
     } catch (error) {
@@ -88,6 +91,8 @@ export function AutoSaveIndicator(): React.JSX.Element {
         const result = await importIfcIntoModel(content)
         if (!result.success) {
           throw new Error(result.error ?? 'Failed to import IFC file')
+        } else {
+          pushTool('basic.fit-to-view')
         }
       }, '.ifc')
     } catch (error) {
