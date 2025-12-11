@@ -1,4 +1,9 @@
-import { wood } from '@/construction/materials/material'
+import {
+  DEFAULT_EMPTY_ASSEMBLY,
+  DEFAULT_OPENING_ASSEMBLIES,
+  DEFAULT_OPENING_ASSEMBLY_ID,
+  DEFAULT_SIMPLE_ASSEMBLY
+} from '@/construction/config/store/slices/opening.defaults'
 
 import type { MigrationState } from './shared'
 
@@ -12,34 +17,20 @@ import type { MigrationState } from './shared'
  * - Deduplicate identical configs
  */
 export function migrateToVersion10(state: MigrationState): void {
-  const DEFAULT_SIMPLE_CONFIG = {
-    type: 'simple',
-    padding: 15,
-    sillThickness: 60,
-    sillMaterial: wood.id,
-    headerThickness: 60,
-    headerMaterial: wood.id
-  }
-
-  const DEFAULT_EMPTY_CONFIG = {
-    type: 'empty',
-    padding: 15
-  }
-
   // Helper to check if config matches default
   const matchesDefault = (config: Record<string, unknown>): boolean => {
     // If it has sill/header, compare to simple default
     if ('sillMaterial' in config) {
       return (
-        config.padding === DEFAULT_SIMPLE_CONFIG.padding &&
-        config.sillThickness === DEFAULT_SIMPLE_CONFIG.sillThickness &&
-        config.sillMaterial === DEFAULT_SIMPLE_CONFIG.sillMaterial &&
-        config.headerThickness === DEFAULT_SIMPLE_CONFIG.headerThickness &&
-        config.headerMaterial === DEFAULT_SIMPLE_CONFIG.headerMaterial
+        config.padding === DEFAULT_SIMPLE_ASSEMBLY.padding &&
+        config.sillThickness === DEFAULT_SIMPLE_ASSEMBLY.sillThickness &&
+        config.sillMaterial === DEFAULT_SIMPLE_ASSEMBLY.sillMaterial &&
+        config.headerThickness === DEFAULT_SIMPLE_ASSEMBLY.headerThickness &&
+        config.headerMaterial === DEFAULT_SIMPLE_ASSEMBLY.headerMaterial
       )
     }
     // Otherwise compare to empty default (just padding)
-    return config.padding === DEFAULT_EMPTY_CONFIG.padding
+    return config.padding === DEFAULT_EMPTY_ASSEMBLY.padding
   }
 
   // Helper to create config key for deduplication
@@ -50,12 +41,11 @@ export function migrateToVersion10(state: MigrationState): void {
     return `empty:${config.padding}`
   }
 
+  if ('openingAssemblyConfigs' in state) return
+
   // Initialize opening assemblies with defaults
-  state.openingAssemblyConfigs = {
-    oa_simple_default: { ...DEFAULT_SIMPLE_CONFIG, id: 'oa_simple_default', name: 'Standard Opening' },
-    oa_empty_default: { ...DEFAULT_EMPTY_CONFIG, id: 'oa_empty_default', name: 'Empty Opening' }
-  }
-  state.defaultOpeningAssemblyId = 'oa_simple_default'
+  state.openingAssemblyConfigs = DEFAULT_OPENING_ASSEMBLIES
+  state.defaultOpeningAssemblyId = DEFAULT_OPENING_ASSEMBLY_ID
 
   // Track created assemblies for deduplication
   const configToIdMap = new Map<string, string>()

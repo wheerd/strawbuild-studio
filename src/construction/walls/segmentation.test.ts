@@ -268,7 +268,8 @@ describe('segmentedWallConstruction', () => {
 
     mockResolveOpeningAssembly.mockReturnValue({
       construct: mockOpeningConstruction as any,
-      segmentationPadding: 0
+      segmentationPadding: 0,
+      needsWallStands: true
     })
 
     mockResolveOpeningConfig.mockReturnValue({

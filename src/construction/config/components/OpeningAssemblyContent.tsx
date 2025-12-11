@@ -3,18 +3,21 @@ import * as Label from '@radix-ui/react-label'
 import {
   AlertDialog,
   Badge,
+  Box,
   Button,
   Callout,
+  Checkbox,
   DropdownMenu,
   Flex,
   Grid,
   Heading,
   IconButton,
+  Select,
   Separator,
   Text,
   TextField
 } from '@radix-ui/themes'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useId, useMemo, useState } from 'react'
 
 import type { OpeningAssemblyId } from '@/building/model/ids'
 import { usePerimeters, useStoreysOrderedByLevel } from '@/building/store'
@@ -27,7 +30,13 @@ import {
 import { getOpeningAssemblyUsage } from '@/construction/config/usage'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
-import type { OpeningAssemblyType, OpeningConfig } from '@/construction/openings/types'
+import type { PostConfig } from '@/construction/materials/posts'
+import type {
+  OpeningAssemblyType,
+  OpeningConfig,
+  PostOpeningConfig,
+  SimpleOpeningConfig
+} from '@/construction/openings/types'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
 
 import { OpeningAssemblySelect } from './OpeningAssemblySelect'
@@ -92,6 +101,23 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
           sillThickness: 60,
           sillMaterial: defaultMaterial
         }
+      } else if (type === 'post') {
+        config = {
+          type: 'post',
+          padding: 15,
+          headerThickness: 60,
+          headerMaterial: defaultMaterial,
+          sillThickness: 60,
+          sillMaterial: defaultMaterial,
+          posts: {
+            type: 'double',
+            infillMaterial: defaultMaterial,
+            material: defaultMaterial,
+            thickness: 140,
+            width: 100
+          },
+          replacePosts: true
+        }
       } else {
         config = {
           type: 'empty',
@@ -99,7 +125,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
         }
       }
 
-      const newAssembly = addOpeningAssembly(`New ${type} opening`, config)
+      const newAssembly = addOpeningAssembly(`New opening assembly`, config)
       setSelectedAssemblyId(newAssembly.id)
     },
     [addOpeningAssembly]
@@ -154,6 +180,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
               <DropdownMenu.Item onClick={() => handleAddNew('simple')}>Standard Opening</DropdownMenu.Item>
+              <DropdownMenu.Item onClick={() => handleAddNew('post')}>Opening With Posts</DropdownMenu.Item>
               <DropdownMenu.Item onClick={() => handleAddNew('empty')}>Empty Opening</DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Root>
@@ -190,6 +217,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
               <DropdownMenu.Item onClick={() => handleAddNew('simple')}>Standard Opening</DropdownMenu.Item>
+              <DropdownMenu.Item onClick={() => handleAddNew('post')}>Opening With Posts</DropdownMenu.Item>
               <DropdownMenu.Item onClick={() => handleAddNew('empty')}>Empty Opening</DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Root>
@@ -256,7 +284,11 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
                 </Text>
               </Label.Root>
               <Text size="2" color="gray">
-                {config.type === 'simple' ? 'Standard Opening' : 'Empty Opening'}
+                {config.type === 'simple'
+                  ? 'Standard Opening'
+                  : config.type === 'post'
+                    ? 'Opening with Posts'
+                    : 'Empty Opening'}
               </Text>
             </Flex>
           </Grid>
@@ -265,67 +297,9 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
 
           {/* Configuration Fields */}
           {config.type === 'simple' ? (
-            <>
-              <Heading size="2">Standard Opening</Heading>
-              <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
-                <Label.Root>
-                  <Text size="2" weight="medium" color="gray">
-                    Padding
-                  </Text>
-                </Label.Root>
-                <LengthField value={config.padding} onChange={padding => handleUpdateConfig({ padding })} unit="mm" />
-
-                <Label.Root>
-                  <Text size="2" weight="medium" color="gray">
-                    Header Thickness
-                  </Text>
-                </Label.Root>
-                <LengthField
-                  value={config.headerThickness}
-                  onChange={headerThickness => handleUpdateConfig({ headerThickness })}
-                  unit="mm"
-                />
-
-                <Label.Root>
-                  <Text size="2" weight="medium" color="gray">
-                    Header Material
-                  </Text>
-                </Label.Root>
-                <MaterialSelectWithEdit
-                  value={config.headerMaterial}
-                  onValueChange={headerMaterial => {
-                    if (!headerMaterial) return
-                    handleUpdateConfig({ headerMaterial })
-                  }}
-                  size="2"
-                />
-
-                <Label.Root>
-                  <Text size="2" weight="medium" color="gray">
-                    Sill Thickness
-                  </Text>
-                </Label.Root>
-                <LengthField
-                  value={config.sillThickness}
-                  onChange={sillThickness => handleUpdateConfig({ sillThickness })}
-                  unit="mm"
-                />
-
-                <Label.Root>
-                  <Text size="2" weight="medium" color="gray">
-                    Sill Material
-                  </Text>
-                </Label.Root>
-                <MaterialSelectWithEdit
-                  value={config.sillMaterial}
-                  onValueChange={sillMaterial => {
-                    if (!sillMaterial) return
-                    handleUpdateConfig({ sillMaterial })
-                  }}
-                  size="2"
-                />
-              </Grid>
-            </>
+            <SimpleOpeningContent config={config} update={handleUpdateConfig} />
+          ) : config.type === 'post' ? (
+            <PostOpeningContent config={config} update={handleUpdateConfig} />
           ) : (
             <>
               <Heading size="2">Empty Opening</Heading>
@@ -386,6 +360,257 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
           )}
         </Flex>
       )}
+    </Flex>
+  )
+}
+
+const SimpleOpeningContent = ({
+  config,
+  update
+}: {
+  config: SimpleOpeningConfig
+  update: (updates: Partial<SimpleOpeningConfig>) => void
+}) => (
+  <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+    <Label.Root>
+      <Text size="2" weight="medium" color="gray">
+        Padding
+      </Text>
+    </Label.Root>
+    <LengthField value={config.padding} onChange={padding => update({ padding })} unit="mm" />
+
+    <Label.Root>
+      <Text size="2" weight="medium" color="gray">
+        Header Thickness
+      </Text>
+    </Label.Root>
+    <LengthField value={config.headerThickness} onChange={headerThickness => update({ headerThickness })} unit="mm" />
+
+    <Label.Root>
+      <Text size="2" weight="medium" color="gray">
+        Header Material
+      </Text>
+    </Label.Root>
+    <MaterialSelectWithEdit
+      value={config.headerMaterial}
+      onValueChange={headerMaterial => {
+        if (!headerMaterial) return
+        update({ headerMaterial })
+      }}
+      size="2"
+    />
+
+    <Label.Root>
+      <Text size="2" weight="medium" color="gray">
+        Sill Thickness
+      </Text>
+    </Label.Root>
+    <LengthField value={config.sillThickness} onChange={sillThickness => update({ sillThickness })} unit="mm" />
+
+    <Label.Root>
+      <Text size="2" weight="medium" color="gray">
+        Sill Material
+      </Text>
+    </Label.Root>
+    <MaterialSelectWithEdit
+      value={config.sillMaterial}
+      onValueChange={sillMaterial => {
+        if (!sillMaterial) return
+        update({ sillMaterial })
+      }}
+      size="2"
+    />
+  </Grid>
+)
+
+const PostOpeningContent = ({
+  config,
+  update
+}: {
+  config: PostOpeningConfig
+  update: (updates: Partial<PostOpeningConfig>) => void
+}) => (
+  <Flex direction="column" gap="3">
+    <Heading size="2">Opening</Heading>
+    <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+      <Label.Root>
+        <Text size="2" weight="medium" color="gray">
+          Padding
+        </Text>
+      </Label.Root>
+      <LengthField value={config.padding} onChange={padding => update({ padding })} unit="mm" />
+
+      <Label.Root>
+        <Text size="2" weight="medium" color="gray">
+          Header Thickness
+        </Text>
+      </Label.Root>
+      <LengthField value={config.headerThickness} onChange={headerThickness => update({ headerThickness })} unit="mm" />
+
+      <Label.Root>
+        <Text size="2" weight="medium" color="gray">
+          Header Material
+        </Text>
+      </Label.Root>
+      <MaterialSelectWithEdit
+        value={config.headerMaterial}
+        onValueChange={headerMaterial => {
+          if (!headerMaterial) return
+          update({ headerMaterial })
+        }}
+        size="2"
+      />
+
+      <Label.Root>
+        <Text size="2" weight="medium" color="gray">
+          Sill Thickness
+        </Text>
+      </Label.Root>
+      <LengthField value={config.sillThickness} onChange={sillThickness => update({ sillThickness })} unit="mm" />
+
+      <Label.Root>
+        <Text size="2" weight="medium" color="gray">
+          Sill Material
+        </Text>
+      </Label.Root>
+      <MaterialSelectWithEdit
+        value={config.sillMaterial}
+        onValueChange={sillMaterial => {
+          if (!sillMaterial) return
+          update({ sillMaterial })
+        }}
+        size="2"
+      />
+    </Grid>
+
+    <PostsConfigSection config={config} onUpdate={update} />
+  </Flex>
+)
+
+function PostsConfigSection({
+  config,
+  onUpdate
+}: {
+  config: PostOpeningConfig
+  onUpdate: (update: Partial<PostOpeningConfig>) => void
+}): React.JSX.Element {
+  const typeSelectId = useId()
+
+  const posts = config.posts
+  const updatePosts = (posts: PostConfig) => onUpdate({ posts })
+
+  return (
+    <Flex direction="column" gap="3">
+      <Heading size="2">Posts</Heading>
+
+      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+        <Label.Root htmlFor={typeSelectId}>
+          <Text size="2" weight="medium" color="gray">
+            Post Type
+          </Text>
+        </Label.Root>
+        <Select.Root
+          value={posts.type}
+          onValueChange={value => {
+            if (value === 'full') {
+              updatePosts({
+                type: 'full',
+                width: posts.width,
+                material: posts.material
+              })
+            } else {
+              updatePosts({
+                type: 'double',
+                width: posts.width,
+                thickness: 'thickness' in posts ? posts.thickness : 120,
+                infillMaterial: ('infillMaterial' in posts ? posts.infillMaterial : '') as MaterialId,
+                material: posts.material
+              })
+            }
+          }}
+          size="2"
+        >
+          <Select.Trigger id={typeSelectId} />
+          <Select.Content>
+            <Select.Item value="full">Full</Select.Item>
+            <Select.Item value="double">Double</Select.Item>
+          </Select.Content>
+        </Select.Root>
+
+        <Box gridColumn="span 2">
+          <Label.Root>
+            <Flex align="center" gap="1">
+              <Checkbox
+                checked={config.replacePosts}
+                onCheckedChange={value => onUpdate({ replacePosts: value === true })}
+              />
+              <Text size="2" weight="medium" color="gray">
+                Replaces Wall Posts
+              </Text>
+            </Flex>
+          </Label.Root>
+        </Box>
+
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            Width
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={posts.width}
+          onChange={value => updatePosts({ ...posts, width: value })}
+          unit="mm"
+          size="2"
+        />
+
+        {posts.type === 'double' && (
+          <>
+            <Label.Root>
+              <Text size="2" weight="medium" color="gray">
+                Thickness
+              </Text>
+            </Label.Root>
+            <LengthField
+              value={posts.thickness}
+              onChange={value => updatePosts({ ...posts, thickness: value })}
+              unit="mm"
+              size="2"
+            />
+          </>
+        )}
+
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            Material
+          </Text>
+        </Label.Root>
+        <MaterialSelectWithEdit
+          value={'material' in posts ? posts.material : undefined}
+          onValueChange={material => {
+            if (!material) return
+            updatePosts({ ...posts, material })
+          }}
+          size="2"
+        />
+
+        {posts.type === 'double' && (
+          <>
+            <Label.Root>
+              <Text size="2" weight="medium" color="gray">
+                Infill Material
+              </Text>
+            </Label.Root>
+            <MaterialSelectWithEdit
+              value={posts.infillMaterial}
+              onValueChange={infillMaterial => {
+                if (!infillMaterial) return
+                updatePosts({ ...posts, infillMaterial })
+              }}
+              size="2"
+            />
+          </>
+        )}
+      </Grid>
     </Flex>
   )
 }

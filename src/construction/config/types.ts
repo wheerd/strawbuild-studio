@@ -6,7 +6,7 @@ import type {
   WallAssemblyId
 } from '@/building/model'
 import type { JoistFloorConfig, MonolithicFloorConfig } from '@/construction/floors'
-import type { EmptyOpeningConfig, SimpleOpeningConfig } from '@/construction/openings/types'
+import type { EmptyOpeningConfig, PostOpeningConfig, SimpleOpeningConfig } from '@/construction/openings/types'
 import type { DoubleRingBeamConfig, FullRingBeamConfig } from '@/construction/ringBeams'
 import type { MonolithicRoofConfig, PurlinRoofConfig } from '@/construction/roofs'
 import type {
@@ -126,5 +126,6 @@ export interface OpeningAssemblyIdPart {
 
 export type SimpleOpeningAssemblyConfig = SimpleOpeningConfig & OpeningAssemblyIdPart
 export type EmptyOpeningAssemblyConfig = EmptyOpeningConfig & OpeningAssemblyIdPart
+export type PostOpeningAssemblyConfig = PostOpeningConfig & OpeningAssemblyIdPart
 
-export type OpeningAssemblyConfig = SimpleOpeningAssemblyConfig | EmptyOpeningAssemblyConfig
+export type OpeningAssemblyConfig = SimpleOpeningAssemblyConfig | EmptyOpeningAssemblyConfig | PostOpeningAssemblyConfig

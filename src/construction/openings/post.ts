@@ -1,6 +1,7 @@
 import { type WallConstructionArea } from '@/construction/geometry'
+import { constructPost } from '@/construction/materials/posts'
 import { yieldMeasurementFromArea } from '@/construction/measurements'
-import type { OpeningAssembly, SimpleOpeningConfig } from '@/construction/openings/types'
+import type { OpeningAssembly, PostOpeningConfig } from '@/construction/openings/types'
 import { type ConstructionResult, yieldElement, yieldError } from '@/construction/results'
 import { createElementFromArea } from '@/construction/shapes'
 import {
@@ -16,12 +17,12 @@ import type { InfillMethod } from '@/construction/walls'
 import { type Length } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
 
-export class SimpleOpeningAssembly implements OpeningAssembly<SimpleOpeningConfig> {
+export class PostOpeningAssembly implements OpeningAssembly<PostOpeningConfig> {
   *construct(
     area: WallConstructionArea,
     adjustedHeader: Length,
     adjustedSill: Length,
-    config: SimpleOpeningConfig,
+    config: PostOpeningConfig,
     infill: InfillMethod
   ): Generator<ConstructionResult> {
     const wallBottom = area.position[2]
@@ -30,7 +31,13 @@ export class SimpleOpeningAssembly implements OpeningAssembly<SimpleOpeningConfi
     const sillBottom = adjustedSill - config.sillThickness
     const headerTop = adjustedHeader + config.headerThickness
 
-    const [belowHeader, topPart] = area.splitInZ(adjustedHeader)
+    const [leftPost, rest] = area.splitInX(config.posts.width)
+    const [middle, rightPost] = rest.splitInX(rest.size[0] - config.posts.width)
+
+    yield* constructPost(leftPost, config.posts)
+    yield* constructPost(rightPost, config.posts)
+
+    const [belowHeader, topPart] = middle.splitInZ(adjustedHeader)
     const [bottomPart, rawOpeningArea] = belowHeader.splitInZ(adjustedSill)
     const [belowSill, sillArea] = bottomPart.splitInZ(sillBottom)
     const [headerArea, aboveHeader] = topPart.splitInZ(config.headerThickness)
@@ -87,6 +94,6 @@ export class SimpleOpeningAssembly implements OpeningAssembly<SimpleOpeningConfi
     }
   }
 
-  getSegmentationPadding = (_config: SimpleOpeningConfig) => 0
-  needsWallStands = (_config: SimpleOpeningConfig) => true
+  getSegmentationPadding = (config: PostOpeningConfig) => config.posts.width
+  needsWallStands = (config: PostOpeningConfig) => !config.replacePosts
 }

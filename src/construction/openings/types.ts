@@ -1,5 +1,6 @@
 import type { WallConstructionArea } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
+import type { PostConfig } from '@/construction/materials/posts'
 import type { ConstructionResult } from '@/construction/results'
 import type { InfillMethod } from '@/construction/walls/types'
 import type { Length } from '@/shared/geometry'
@@ -14,9 +15,10 @@ export interface OpeningAssembly<TConfig extends OpeningAssemblyConfigBase> {
   ) => Generator<ConstructionResult>
 
   getSegmentationPadding(config: TConfig): Length
+  needsWallStands(config: TConfig): boolean
 }
 
-export type OpeningAssemblyType = 'simple' | 'empty'
+export type OpeningAssemblyType = 'simple' | 'post' | 'empty'
 
 export interface OpeningAssemblyConfigBase {
   type: OpeningAssemblyType
@@ -33,12 +35,25 @@ export interface SimpleOpeningConfig extends OpeningAssemblyConfigBase {
   headerMaterial: MaterialId
 }
 
+export interface PostOpeningConfig extends OpeningAssemblyConfigBase {
+  type: 'post'
+
+  sillThickness: Length // Default: 60mm
+  sillMaterial: MaterialId
+
+  headerThickness: Length // Default: 60mm
+  headerMaterial: MaterialId
+
+  posts: PostConfig
+  replacePosts: boolean
+}
+
 export interface EmptyOpeningConfig extends OpeningAssemblyConfigBase {
   type: 'empty'
   // Only padding, no sill/header materials or thicknesses
 }
 
-export type OpeningConfig = SimpleOpeningConfig | EmptyOpeningConfig
+export type OpeningConfig = SimpleOpeningConfig | EmptyOpeningConfig | PostOpeningConfig
 
 // Validation
 

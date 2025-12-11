@@ -1,6 +1,7 @@
 import type { OpeningAssemblyId } from '@/building/model'
 import { getConfigActions } from '@/construction/config/store'
 import type { WallConstructionArea } from '@/construction/geometry'
+import { PostOpeningAssembly } from '@/construction/openings/post'
 import { SimpleOpeningAssembly } from '@/construction/openings/simple'
 import type { ConstructionResult } from '@/construction/results'
 import type { InfillMethod } from '@/construction/walls'
@@ -59,6 +60,9 @@ export function resolveOpeningAssembly(openingAssemblyId?: OpeningAssemblyId): O
         simpleAssembly.construct(area, adjustedHeader, adjustedSill, config, infill),
       get segmentationPadding() {
         return simpleAssembly.getSegmentationPadding(config)
+      },
+      get needsWallStands() {
+        return simpleAssembly.needsWallStands(config)
       }
     }
   } else if (config.type === 'empty') {
@@ -67,6 +71,20 @@ export function resolveOpeningAssembly(openingAssemblyId?: OpeningAssemblyId): O
         emptyAssembly.construct(area, adjustedHeader, adjustedSill, config, infill),
       get segmentationPadding() {
         return emptyAssembly.getSegmentationPadding(config)
+      },
+      get needsWallStands() {
+        return emptyAssembly.needsWallStands(config)
+      }
+    }
+  } else if (config.type === 'post') {
+    return {
+      construct: (area: WallConstructionArea, adjustedHeader: Length, adjustedSill: Length, infill: InfillMethod) =>
+        postAssembly.construct(area, adjustedHeader, adjustedSill, config, infill),
+      get segmentationPadding() {
+        return postAssembly.getSegmentationPadding(config)
+      },
+      get needsWallStands() {
+        return postAssembly.needsWallStands(config)
       }
     }
   }
@@ -86,10 +104,12 @@ export class EmptyOpeningAssembly implements OpeningAssembly<EmptyOpeningConfig>
   }
 
   getSegmentationPadding = (_config: EmptyOpeningConfig) => 0
+  needsWallStands = (_config: EmptyOpeningConfig) => true
 }
 
 const simpleAssembly = new SimpleOpeningAssembly()
 const emptyAssembly = new EmptyOpeningAssembly()
+const postAssembly = new PostOpeningAssembly()
 
 interface OpeningAssemblyInstance {
   construct: (
@@ -100,4 +120,5 @@ interface OpeningAssemblyInstance {
   ) => Generator<ConstructionResult>
 
   get segmentationPadding(): Length
+  get needsWallStands(): boolean
 }

@@ -1,12 +1,11 @@
 import { type StateCreator } from 'zustand'
 
 import { type OpeningAssemblyId, createOpeningAssemblyId } from '@/building/model/ids'
-import type {
-  EmptyOpeningAssemblyConfig,
-  OpeningAssemblyConfig,
-  SimpleOpeningAssemblyConfig
-} from '@/construction/config/types'
-import { wood } from '@/construction/materials/material'
+import {
+  DEFAULT_OPENING_ASSEMBLIES,
+  DEFAULT_OPENING_ASSEMBLY_ID
+} from '@/construction/config/store/slices/opening.defaults'
+import type { OpeningAssemblyConfig } from '@/construction/config/types'
 import type { OpeningConfig } from '@/construction/openings/types'
 import { validateOpeningConfig } from '@/construction/openings/types'
 
@@ -41,38 +40,15 @@ const validateOpeningAssemblyName = (name: string): void => {
   }
 }
 
-// Default opening assemblies
-const createDefaultOpeningAssemblies = (): OpeningAssemblyConfig[] => [
-  {
-    id: 'oa_simple_default' as OpeningAssemblyId,
-    name: 'Standard Opening',
-    type: 'simple',
-    padding: 15,
-    sillThickness: 60,
-    sillMaterial: wood.id,
-    headerThickness: 60,
-    headerMaterial: wood.id
-  } as SimpleOpeningAssemblyConfig,
-  {
-    id: 'oa_empty_default' as OpeningAssemblyId,
-    name: 'Empty Opening',
-    type: 'empty',
-    padding: 15
-  } as EmptyOpeningAssemblyConfig
-]
-
 export const createOpeningAssembliesSlice: StateCreator<
   OpeningAssembliesSlice,
   [['zustand/immer', never]],
   [],
   OpeningAssembliesSlice
 > = (set, get) => {
-  // Initialize with default assemblies
-  const defaultOpeningAssemblies = createDefaultOpeningAssemblies()
-
   return {
-    openingAssemblyConfigs: Object.fromEntries(defaultOpeningAssemblies.map(assembly => [assembly.id, assembly])),
-    defaultOpeningAssemblyId: defaultOpeningAssemblies[0].id,
+    openingAssemblyConfigs: Object.fromEntries(DEFAULT_OPENING_ASSEMBLIES.map(assembly => [assembly.id, assembly])),
+    defaultOpeningAssemblyId: DEFAULT_OPENING_ASSEMBLY_ID,
 
     actions: {
       // CRUD operations

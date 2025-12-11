@@ -391,6 +391,7 @@ export function* segmentedWallConstruction(
   const sortedOpenings = [...wall.openings].sort((a, b) => a.centerOffsetFromWallStart - b.centerOffsetFromWallStart)
   const openingGroups = mergeAdjacentOpenings(sortedOpenings)
 
+  let startWithStand = standAtWallStart
   let currentX = 0 // Position relative to overallWallArea start
 
   const zAdjustment = finishedFloorZLevel - z
@@ -416,7 +417,7 @@ export function* segmentedWallConstruction(
       const wallSegmentWidth = groupStart - currentX
       const wallSegmentArea = overallWallArea.withXAdjustment(currentX, wallSegmentWidth)
 
-      yield* wallConstruction(wallSegmentArea, currentX === 0 ? standAtWallStart : true, true, currentX > 0)
+      yield* wallConstruction(wallSegmentArea, startWithStand, assembly.needsWallStands, currentX > 0)
 
       const x = overallWallArea.position[0] + currentX
       yield yieldMeasurement({
@@ -427,6 +428,8 @@ export function* segmentedWallConstruction(
         tags: [TAG_OPENING_SPACING]
       })
     }
+
+    startWithStand = assembly.needsWallStands
 
     // Opening segment
     const groupWidth = groupEnd - groupStart
@@ -465,12 +468,7 @@ export function* segmentedWallConstruction(
     const finalSegmentWidth = constructionLength - currentX
     const finalWallArea = overallWallArea.withXAdjustment(currentX, finalSegmentWidth)
 
-    yield* wallConstruction(
-      finalWallArea,
-      true,
-      currentX + finalSegmentWidth >= constructionLength ? standAtWallEnd : true,
-      true
-    )
+    yield* wallConstruction(finalWallArea, startWithStand, standAtWallEnd, true)
 
     const x = overallWallArea.position[0] + currentX
     yield yieldMeasurement({
