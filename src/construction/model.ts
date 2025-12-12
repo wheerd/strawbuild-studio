@@ -6,7 +6,7 @@ import { simplifyPolygon, unionPolygons } from '@/shared/geometry/polygon'
 import { type ConstructionGroup, type GroupOrElement, createConstructionElementId } from './elements'
 import { type Transform, transform, transformBounds } from './geometry'
 import type { RawMeasurement } from './measurements'
-import { type ConstructionIssue, mergeConstructionIssues } from './results'
+import { type ConstructionIssue, type ConstructionIssueId, mergeConstructionIssues } from './results'
 import type { Tag } from './tags'
 
 export interface ConstructionModel {
@@ -73,7 +73,9 @@ export interface HighlightedCut {
  * Returns a minimal construction model with no geometry but a single warning.
  * Useful for guarding unfinished construction paths until the real implementation lands.
  */
-export function createUnsupportedModel(description: string, groupKey?: string): ConstructionModel {
+export function createUnsupportedModel(description: string, issueId?: string): ConstructionModel {
+  const id = (issueId ?? `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`) as ConstructionIssueId
+
   return {
     elements: [],
     measurements: [],
@@ -81,9 +83,9 @@ export function createUnsupportedModel(description: string, groupKey?: string): 
     errors: [],
     warnings: [
       {
+        id,
         description,
-        elements: [],
-        groupKey
+        severity: 'warning' as const
       }
     ],
     bounds: Bounds3D.EMPTY
@@ -184,8 +186,8 @@ export function transformModel(model: ConstructionModel, t: Transform, tags?: Ta
       return { ...m, startPoint, endPoint }
     }),
     areas: model.areas.map(a => transformArea(a, t)),
-    errors: model.errors.map(e => ({ ...e, bounds: e.bounds ? transformBounds(e.bounds, t) : undefined })),
-    warnings: model.warnings.map(w => ({ ...w, bounds: w.bounds ? transformBounds(w.bounds, t) : undefined })),
+    errors: model.errors, // Issues don't need transformation - they're attached to elements
+    warnings: model.warnings, // Issues don't need transformation - they're attached to elements
     bounds: transformBounds(model.bounds, t)
   }
 }

@@ -5,8 +5,11 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { CutAreaShape } from '@/construction/components/CutAreaShape'
 import { Measurements } from '@/construction/components/Measurements'
 import { type FaceTree, geometryFaces } from '@/construction/components/faceHelpers'
+import { accumulateIssueWorldManifolds } from '@/construction/components/issueHelpers'
 import { bounds3Dto2D, createProjectionMatrix, projectPoint } from '@/construction/geometry'
+import { type ProjectedOutline, projectManifoldToView } from '@/construction/manifoldProjection'
 import type { ConstructionModel, HighlightedCuboid, HighlightedCut, HighlightedPolygon } from '@/construction/model'
+import type { ConstructionIssue } from '@/construction/results'
 import { MidCutXIcon, MidCutYIcon } from '@/shared/components/Icons'
 import { SVGViewport, type SVGViewportRef } from '@/shared/components/SVGViewport'
 import { type Plane3D, type Polygon2D, type PolygonWithHoles2D } from '@/shared/geometry'
@@ -43,7 +46,7 @@ interface ConstructionPlanProps {
 }
 
 function polygonToSvgPath(polygon: Polygon2D) {
-  return `M${polygon.points.map(([px, py]) => `${px},${py}`).join(' L')}`
+  return `M${polygon.points.map(([px, py]) => `${px},${py}`).join(' L')} Z`
 }
 
 function polygonWithHolesToSvgPath(polygon: PolygonWithHoles2D) {
@@ -128,6 +131,40 @@ export function ConstructionPlan({
       .map(face => ({ ...face, className: face.className + (aboveCut(face) ? ' above-cut' : '') }))
   }, [model.elements, projectionMatrix, currentView.zOrder, zCutOffset])
 
+  // Stage 1: Accumulate world-space manifolds for issues (view-independent)
+  const issueWorldManifolds = useMemo(() => {
+    return accumulateIssueWorldManifolds(model.elements)
+  }, [model.elements])
+
+  // Stage 2: Project world manifolds to current view (view-dependent)
+  const errorOutlines = useMemo(() => {
+    return model.errors
+      .map(error => {
+        const worldManifold = issueWorldManifolds.get(error.id)
+        if (!worldManifold) return null
+
+        const outline = projectManifoldToView(worldManifold, projectionMatrix)
+        if (!outline) return null
+
+        return { error, outline }
+      })
+      .filter((e): e is { error: ConstructionIssue; outline: ProjectedOutline } => e !== null)
+  }, [model.errors, issueWorldManifolds, projectionMatrix])
+
+  const warningOutlines = useMemo(() => {
+    return model.warnings
+      .map(warning => {
+        const worldManifold = issueWorldManifolds.get(warning.id)
+        if (!worldManifold) return null
+
+        const outline = projectManifoldToView(worldManifold, projectionMatrix)
+        if (!outline) return null
+
+        return { warning, outline }
+      })
+      .filter((w): w is { warning: ConstructionIssue; outline: ProjectedOutline } => w !== null)
+  }, [model.warnings, issueWorldManifolds, projectionMatrix])
+
   const polygonAreas = model.areas.filter(
     a => a.type === 'polygon' && a.plane === currentView.plane
   ) as HighlightedPolygon[]
@@ -197,48 +234,36 @@ export function ConstructionPlan({
         ))}
 
         {/* Warnings */}
-        {model.warnings?.map((warning, index) => {
-          if (!warning.bounds) return null
-          const bounds2D = bounds3Dto2D(warning.bounds, projectionMatrix)
-          const { min } = bounds2D
-          const { width, height } = bounds2D
-          return (
-            <rect
-              className="construction-warning"
-              key={`warning-${index}`}
-              x={min[0]}
-              y={min[1]}
-              width={width}
-              height={height}
-              stroke="var(--color-warning)"
-              strokeWidth={30}
-              fill="var(--color-warning-light)"
-              strokeDasharray="100,100"
-            />
-          )
-        })}
+        {warningOutlines.map(({ warning, outline }) => (
+          <g key={`warning-${warning.id}`} className="construction-warning">
+            {outline.polygons.map((polygon, polyIndex) => (
+              <path
+                key={polyIndex}
+                d={polygonToSvgPath(polygon)}
+                stroke="var(--color-warning)"
+                strokeWidth={30}
+                fill="var(--color-warning-light)"
+                strokeDasharray="100,100"
+              />
+            ))}
+          </g>
+        ))}
 
         {/* Errors */}
-        {model.errors?.map((error, index) => {
-          if (!error.bounds) return null
-          const bounds2D = bounds3Dto2D(error.bounds, projectionMatrix)
-          const { min } = bounds2D
-          const { width, height } = bounds2D
-          return (
-            <rect
-              className="construction-error"
-              key={`error-${index}`}
-              x={min[0]}
-              y={min[1]}
-              width={width}
-              height={height}
-              stroke="var(--color-danger)"
-              strokeWidth={50}
-              fill="var(--color-danger-light)"
-              strokeDasharray="100,100"
-            />
-          )
-        })}
+        {errorOutlines.map(({ error, outline }) => (
+          <g key={`error-${error.id}`} className="construction-error">
+            {outline.polygons.map((polygon, polyIndex) => (
+              <path
+                key={polyIndex}
+                d={polygonToSvgPath(polygon)}
+                stroke="var(--color-danger)"
+                strokeWidth={50}
+                fill="var(--color-danger-light)"
+                strokeDasharray="100,100"
+              />
+            ))}
+          </g>
+        ))}
 
         {/* Measurements */}
         <Measurements model={model} projection={projectionMatrix} />

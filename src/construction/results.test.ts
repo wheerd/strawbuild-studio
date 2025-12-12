@@ -1,15 +1,18 @@
-import { vec3 } from 'gl-matrix'
 import { describe, expect, it } from 'vitest'
 
-import type { ConstructionElementId } from '@/construction/elements'
-import { type ConstructionIssue, type ConstructionResult, aggregateResults } from '@/construction/results'
-import { Bounds3D } from '@/shared/geometry'
+import {
+  type ConstructionIssue,
+  type ConstructionIssueId,
+  type ConstructionResult,
+  aggregateResults
+} from '@/construction/results'
 
-const elementId = (suffix: string): ConstructionElementId => `ce_${suffix}` as ConstructionElementId
+const issueId = (suffix: string): ConstructionIssueId => `ci_${suffix}` as ConstructionIssueId
 
 const createIssue = (overrides: Partial<ConstructionIssue> = {}): ConstructionIssue => ({
+  id: issueId('default'),
   description: 'issue',
-  elements: [elementId('default')],
+  severity: 'error',
   ...overrides
 })
 
@@ -17,20 +20,18 @@ const buildError = (issue: ConstructionIssue): ConstructionResult => ({ type: 'e
 const buildWarning = (issue: ConstructionIssue): ConstructionResult => ({ type: 'warning', warning: issue })
 
 describe('aggregateResults', () => {
-  it('deduplicates errors by groupKey and collects element ids', () => {
+  it('deduplicates errors by id', () => {
     const results: ConstructionResult[] = [
       buildError(
         createIssue({
-          description: 'grouped',
-          groupKey: 'duplicate',
-          elements: [elementId('1'), elementId('2')]
+          id: issueId('duplicate'),
+          description: 'grouped'
         })
       ),
       buildError(
         createIssue({
-          description: 'grouped',
-          groupKey: 'duplicate',
-          elements: [elementId('2'), elementId('3')]
+          id: issueId('duplicate'),
+          description: 'grouped'
         })
       )
     ]
@@ -38,60 +39,51 @@ describe('aggregateResults', () => {
     const aggregated = aggregateResults(results)
 
     expect(aggregated.errors).toHaveLength(1)
-    expect(aggregated.errors[0].elements).toEqual([elementId('1'), elementId('2'), elementId('3')])
+    expect(aggregated.errors[0].id).toBe(issueId('duplicate'))
   })
 
-  it('preserves ordering between grouped and ungrouped issues', () => {
+  it('preserves distinct issues with different ids', () => {
     const results: ConstructionResult[] = [
       buildError(
         createIssue({
-          description: 'first grouped',
-          groupKey: 'A',
-          elements: [elementId('a')]
+          id: issueId('A'),
+          description: 'first'
         })
       ),
       buildError(
         createIssue({
-          description: 'ungrouped',
-          elements: [elementId('b')]
+          id: issueId('B'),
+          description: 'second'
         })
       ),
       buildError(
         createIssue({
-          description: 'first grouped',
-          groupKey: 'A',
-          elements: [elementId('c')]
+          id: issueId('C'),
+          description: 'third'
         })
       )
     ]
 
     const aggregated = aggregateResults(results)
 
-    expect(aggregated.errors).toHaveLength(2)
-    expect(aggregated.errors.map(issue => issue.description)).toEqual(['first grouped', 'ungrouped'])
+    expect(aggregated.errors).toHaveLength(3)
+    expect(aggregated.errors[0].id).toBe(issueId('A'))
+    expect(aggregated.errors[1].id).toBe(issueId('B'))
+    expect(aggregated.errors[2].id).toBe(issueId('C'))
   })
 
-  it('keeps errors and warnings grouped independently', () => {
+  it('keeps first occurrence when deduplicating', () => {
     const results: ConstructionResult[] = [
       buildError(
         createIssue({
-          description: 'error grouped',
-          groupKey: 'shared',
-          elements: [elementId('error-1')]
+          id: issueId('dup'),
+          description: 'first description'
         })
       ),
-      buildWarning(
+      buildError(
         createIssue({
-          description: 'warning grouped',
-          groupKey: 'shared',
-          elements: [elementId('warning-1')]
-        })
-      ),
-      buildWarning(
-        createIssue({
-          description: 'warning grouped',
-          groupKey: 'shared',
-          elements: [elementId('warning-2')]
+          id: issueId('dup'),
+          description: 'second description'
         })
       )
     ]
@@ -99,38 +91,30 @@ describe('aggregateResults', () => {
     const aggregated = aggregateResults(results)
 
     expect(aggregated.errors).toHaveLength(1)
-    expect(aggregated.errors[0].elements).toEqual([elementId('error-1')])
-    expect(aggregated.warnings).toHaveLength(1)
-    expect(aggregated.warnings[0].elements).toEqual([elementId('warning-1'), elementId('warning-2')])
+    expect(aggregated.errors[0].description).toBe('first description')
   })
 
-  it('merges bounds when grouping issues', () => {
-    const boundsA = Bounds3D.fromMinMax(vec3.fromValues(0, 0, 0), vec3.fromValues(1, 1, 1))
-    const boundsB = Bounds3D.fromMinMax(vec3.fromValues(1, 1, 1), vec3.fromValues(2, 2, 2))
-
+  it('handles warnings separately from errors', () => {
     const results: ConstructionResult[] = [
-      buildWarning(
+      buildError(
         createIssue({
-          description: 'grouped',
-          groupKey: 'bounds',
-          elements: [elementId('with-bounds-a')],
-          bounds: boundsA
+          id: issueId('1'),
+          severity: 'error'
         })
       ),
       buildWarning(
         createIssue({
-          description: 'grouped',
-          groupKey: 'bounds',
-          elements: [elementId('with-bounds-b')],
-          bounds: boundsB
+          id: issueId('2'),
+          severity: 'warning'
         })
       )
     ]
 
     const aggregated = aggregateResults(results)
 
+    expect(aggregated.errors).toHaveLength(1)
     expect(aggregated.warnings).toHaveLength(1)
-    expect(aggregated.warnings[0].bounds?.min).toEqual(vec3.fromValues(0, 0, 0))
-    expect(aggregated.warnings[0].bounds?.max).toEqual(vec3.fromValues(2, 2, 2))
+    expect(aggregated.errors[0].severity).toBe('error')
+    expect(aggregated.warnings[0].severity).toBe('warning')
   })
 })

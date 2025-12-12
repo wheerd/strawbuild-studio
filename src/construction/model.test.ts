@@ -2,9 +2,9 @@ import { mat4, vec2, vec3 } from 'gl-matrix'
 import { describe, expect, it } from 'vitest'
 
 import { IDENTITY, translate } from '@/construction/geometry'
+import type { ConstructionIssueId } from '@/construction/results'
 import { Bounds3D } from '@/shared/geometry'
 
-import type { ConstructionElementId } from './elements'
 import { type ConstructionModel, mergeModels, transformModel } from './model'
 
 describe('mergeModels', () => {
@@ -185,16 +185,16 @@ describe('mergeModels', () => {
     expect(merged.areas.filter(a => a.cancelKey === 'corner-2')).toHaveLength(1)
   })
 
-  it('deduplicates warnings by groupKey when merging models', () => {
+  it('deduplicates warnings by id when merging models', () => {
     const warningA = {
+      id: 'ci_shared-warning' as ConstructionIssueId,
       description: 'duplicate warning',
-      elements: ['ce_warning_a' as ConstructionElementId],
-      groupKey: 'shared-warning'
+      severity: 'warning' as const
     }
     const warningB = {
+      id: 'ci_shared-warning' as ConstructionIssueId,
       description: 'duplicate warning',
-      elements: ['ce_warning_b' as ConstructionElementId],
-      groupKey: 'shared-warning'
+      severity: 'warning' as const
     }
 
     const model1: ConstructionModel = {
@@ -218,19 +218,19 @@ describe('mergeModels', () => {
     const merged = mergeModels(model1, model2)
 
     expect(merged.warnings).toHaveLength(1)
-    expect(merged.warnings[0].elements).toEqual(['ce_warning_a', 'ce_warning_b'])
+    expect(merged.warnings[0].id).toBe('ci_shared-warning')
   })
 
-  it('deduplicates errors across models and merges element ids', () => {
+  it('deduplicates errors across models by id', () => {
     const errorA = {
+      id: 'ci_shared-error' as ConstructionIssueId,
       description: 'duplicate error',
-      elements: ['ce_error_a' as ConstructionElementId, 'ce_error_b' as ConstructionElementId],
-      groupKey: 'shared-error'
+      severity: 'error' as const
     }
     const errorB = {
+      id: 'ci_shared-error' as ConstructionIssueId,
       description: 'duplicate error',
-      elements: ['ce_error_b' as ConstructionElementId, 'ce_error_c' as ConstructionElementId],
-      groupKey: 'shared-error'
+      severity: 'error' as const
     }
 
     const model1: ConstructionModel = {
@@ -254,7 +254,7 @@ describe('mergeModels', () => {
     const merged = mergeModels(model1, model2)
 
     expect(merged.errors).toHaveLength(1)
-    expect(merged.errors[0].elements).toEqual(['ce_error_a', 'ce_error_b', 'ce_error_c'])
+    expect(merged.errors[0].id).toBe('ci_shared-error')
   })
 })
 

@@ -2,7 +2,7 @@ import { vec3 } from 'gl-matrix'
 
 import type { Perimeter, PerimeterWall } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config'
-import type { ConstructionElementId } from '@/construction/elements'
+import type { GroupOrElement } from '@/construction/elements'
 import { WallConstructionArea } from '@/construction/geometry'
 import type { StrawbaleMaterial } from '@/construction/materials/material'
 import { constructPost } from '@/construction/materials/posts'
@@ -12,7 +12,13 @@ import { yieldMeasurementFromArea } from '@/construction/measurements'
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
 import type { ConstructionResult } from '@/construction/results'
-import { aggregateResults, yieldAndCollectElementIds, yieldElement } from '@/construction/results'
+import {
+  aggregateResults,
+  yieldAndCollectElements,
+  yieldElement,
+  yieldError,
+  yieldWarning
+} from '@/construction/results'
 import { createElementFromArea } from '@/construction/shapes'
 import { TAG_POST_SPACING } from '@/construction/tags'
 import type { InfillWallConfig, InfillWallSegmentConfig, WallAssembly } from '@/construction/walls'
@@ -32,7 +38,7 @@ export function* infillWallArea(
   const { width: postWidth } = config.posts
   let error: string | null = null
   let warning: string | null = null
-  const allElementIds: ConstructionElementId[] = []
+  const allElements: GroupOrElement[] = []
 
   if (size[2] < minStrawSpace && !config.infillMaterial) {
     warning = 'Not enough vertical space to fill with straw'
@@ -54,13 +60,13 @@ export function* infillWallArea(
   if (startsWithStand) {
     const [postArea, remainingArea] = inbetweenArea.splitInX(config.posts.width)
     inbetweenArea = remainingArea
-    yield* yieldAndCollectElementIds(constructPost(postArea, config.posts), allElementIds)
+    yield* yieldAndCollectElements(constructPost(postArea, config.posts), allElements)
   }
 
   if (endsWithStand) {
     const [remainingArea, postArea] = inbetweenArea.splitInX(inbetweenArea.size[0] - config.posts.width)
     inbetweenArea = remainingArea
-    yield* yieldAndCollectElementIds(constructPost(postArea, config.posts), allElementIds)
+    yield* yieldAndCollectElements(constructPost(postArea, config.posts), allElements)
   }
 
   const strawMaterialId = config.strawMaterial ?? getConfigActions().getDefaultStrawMaterial()
@@ -68,9 +74,9 @@ export function* infillWallArea(
   const strawbaleMaterial = strawMaterial?.type === 'strawbale' ? strawMaterial : undefined
 
   if ((inbetweenArea.size[2] < minStrawSpace || inbetweenArea.size[0] < minStrawSpace) && config.infillMaterial) {
-    yield* yieldAndCollectElementIds(
+    yield* yieldAndCollectElements(
       yieldElement(createElementFromArea(inbetweenArea, config.infillMaterial)),
-      allElementIds
+      allElements
     )
     if (inbetweenArea.size[2] < minStrawSpace) {
       yield* yieldMeasurementFromArea(inbetweenArea, 'height')
@@ -79,33 +85,19 @@ export function* infillWallArea(
       yield* yieldMeasurementFromArea(inbetweenArea, 'width', [TAG_POST_SPACING])
     }
   } else {
-    yield* yieldAndCollectElementIds(
+    yield* yieldAndCollectElements(
       constructInfillRecursive(inbetweenArea, config, !startAtEnd, strawbaleMaterial),
-      allElementIds
+      allElements
     )
   }
 
   // Add warning/error with references to all created elements
   if (warning) {
-    yield {
-      type: 'warning',
-      warning: {
-        description: warning,
-        elements: allElementIds,
-        bounds: area.bounds
-      }
-    }
+    yield yieldWarning(warning, allElements)
   }
 
   if (error) {
-    yield {
-      type: 'error',
-      error: {
-        description: error,
-        elements: allElementIds,
-        bounds: area.bounds
-      }
-    }
+    yield yieldError(error, allElements)
   }
 }
 
@@ -119,19 +111,12 @@ function* constructInfillRecursive(
   const baleWidth = getBaleWidth(size, config, strawbaleMaterial)
 
   if (baleWidth > 0) {
-    const strawElementIds: ConstructionElementId[] = []
+    const strawElements: GroupOrElement[] = []
     const strawArea = area.withXAdjustment(atStart ? 0 : size[0] - baleWidth, baleWidth)
-    yield* yieldAndCollectElementIds(constructStraw(strawArea, config.strawMaterial), strawElementIds)
+    yield* yieldAndCollectElements(constructStraw(strawArea, config.strawMaterial), strawElements)
 
     if (baleWidth < config.minStrawSpace) {
-      yield {
-        type: 'warning',
-        warning: {
-          description: 'Not enough space for infilling straw',
-          elements: strawElementIds,
-          bounds: strawArea.bounds
-        }
-      }
+      yield yieldWarning('Not enough space for infilling straw', strawElements)
     }
 
     yield* yieldMeasurementFromArea(strawArea, 'width', [TAG_POST_SPACING])

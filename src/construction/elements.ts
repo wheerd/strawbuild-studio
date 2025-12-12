@@ -6,6 +6,7 @@ import { createId } from '@/shared/utils/ids'
 
 import { IDENTITY, type Transform, transformBounds, translate } from './geometry'
 import type { PartInfo } from './parts'
+import type { ConstructionIssueId } from './results'
 import { type Shape, createCuboid } from './shapes'
 import type { Tag } from './tags'
 
@@ -57,6 +58,7 @@ export interface ConstructionGroup {
 
   tags?: Tag[]
   partInfo?: PartInfo
+  issueIds?: ConstructionIssueId[]
 }
 
 export interface ConstructionElement {
@@ -69,4 +71,5 @@ export interface ConstructionElement {
 
   tags?: Tag[]
   partInfo?: PartInfo
+  issueIds?: ConstructionIssueId[]
 }

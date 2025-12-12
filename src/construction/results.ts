@@ -12,12 +12,13 @@ import {
 import type { RawMeasurement } from './measurements'
 import type { HighlightedArea } from './model'
 
+export type ConstructionIssueId = string & { readonly brand: unique symbol }
+
 export interface ConstructionIssue {
+  /** Unique ID for this issue. If the same ID is used, issues are grouped/merged */
+  id: ConstructionIssueId
   description: string
-  elements: ConstructionElementId[]
-  bounds?: Bounds3D
-  /** Groups issues in UI - same groupKey shows as single item */
-  groupKey?: string
+  severity: 'error' | 'warning'
 }
 
 export type ConstructionResult =
@@ -45,16 +46,27 @@ export function* yieldElement(element: ConstructionElement | null): Generator<Co
 export const yieldError = (
   description: string,
   elements: (GroupOrElement | null)[],
-  groupKey?: string
+  issueId?: string
 ): ConstructionResult => {
+  const id = (issueId ?? `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`) as ConstructionIssueId
   const filteredElements = elements.filter(e => e != null)
+
+  // Attach issue ID to elements
+  filteredElements.forEach(element => {
+    if (!element.issueIds) {
+      element.issueIds = []
+    }
+    if (!element.issueIds.includes(id)) {
+      element.issueIds.push(id)
+    }
+  })
+
   return {
     type: 'error',
     error: {
+      id,
       description,
-      elements: filteredElements.map(e => e.id),
-      bounds: Bounds3D.merge(...filteredElements.map(e => e.bounds)),
-      groupKey
+      severity: 'error'
     }
   }
 }
@@ -62,16 +74,27 @@ export const yieldError = (
 export const yieldWarning = (
   description: string,
   elements: (GroupOrElement | null)[],
-  groupKey?: string
+  issueId?: string
 ): ConstructionResult => {
+  const id = (issueId ?? `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`) as ConstructionIssueId
   const filteredElements = elements.filter(e => e != null)
+
+  // Attach issue ID to elements
+  filteredElements.forEach(element => {
+    if (!element.issueIds) {
+      element.issueIds = []
+    }
+    if (!element.issueIds.includes(id)) {
+      element.issueIds.push(id)
+    }
+  })
+
   return {
     type: 'warning',
     warning: {
+      id,
       description,
-      elements: filteredElements.map(e => e.id),
-      bounds: Bounds3D.merge(...filteredElements.map(e => e.bounds)),
-      groupKey
+      severity: 'warning'
     }
   }
 }
@@ -91,6 +114,19 @@ export function* yieldAndCollectElementIds(
   for (const result of generator) {
     if (result.type === 'element') {
       collectElementIds(result.element, elementIds)
+    }
+    yield result
+  }
+}
+
+// Helper to yield all results from a generator while collecting elements
+export function* yieldAndCollectElements(
+  generator: Generator<ConstructionResult>,
+  elements: GroupOrElement[]
+): Generator<ConstructionResult> {
+  for (const result of generator) {
+    if (result.type === 'element') {
+      elements.push(result.element)
     }
     yield result
   }
@@ -149,43 +185,14 @@ export function* yieldAsGroup(
 }
 
 export function mergeConstructionIssues(issues: ConstructionIssue[]): ConstructionIssue[] {
-  const aggregated: ConstructionIssue[] = []
-  const grouped = new Map<string, ConstructionIssue>()
+  const seen = new Map<ConstructionIssueId, ConstructionIssue>()
 
   for (const issue of issues) {
-    if (!issue.groupKey) {
-      aggregated.push(issue)
-      continue
+    if (!seen.has(issue.id)) {
+      seen.set(issue.id, issue)
     }
-
-    const existing = grouped.get(issue.groupKey)
-    if (!existing) {
-      const cloned: ConstructionIssue = {
-        ...issue,
-        elements: [...issue.elements]
-      }
-      grouped.set(issue.groupKey, cloned)
-      aggregated.push(cloned)
-      continue
-    }
-
-    mergeIssue(existing, issue)
+    // If already seen, it's a duplicate - just keep the first one
   }
 
-  return aggregated
-}
-
-function mergeIssue(target: ConstructionIssue, incoming: ConstructionIssue) {
-  const existingIds = new Set(target.elements)
-  for (const elementId of incoming.elements) {
-    if (existingIds.has(elementId)) continue
-    existingIds.add(elementId)
-    target.elements.push(elementId)
-  }
-
-  if (target.bounds && incoming.bounds) {
-    target.bounds = Bounds3D.merge(target.bounds, incoming.bounds)
-  } else if (!target.bounds && incoming.bounds) {
-    target.bounds = incoming.bounds
-  }
+  return Array.from(seen.values())
 }
