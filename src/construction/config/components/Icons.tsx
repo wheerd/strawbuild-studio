@@ -1,4 +1,4 @@
-import { BoxIcon, ComponentInstanceIcon, SquareIcon, ViewVerticalIcon } from '@radix-ui/react-icons'
+import { ComponentInstanceIcon, SquareIcon, ViewVerticalIcon } from '@radix-ui/react-icons'
 import React, { type ComponentType } from 'react'
 
 import type { WallAssemblyConfig } from '@/construction/config/types'
@@ -135,9 +135,6 @@ export function MonolithicIcon({ className, width = 15, height = 15, style }: Ic
       style={style}
     >
       <rect x="2" y="5" width="11" height="5" stroke="currentColor" strokeWidth="0.5" />
-      <line x1="5" y1="5" x2="5" y2="10" stroke="currentColor" strokeWidth="0.5" />
-      <line x1="8" y1="5" x2="8" y2="10" stroke="currentColor" strokeWidth="0.5" />
-      <line x1="11" y1="5" x2="11" y2="10" stroke="currentColor" strokeWidth="0.5" />
     </svg>
   )
 }
@@ -147,17 +144,43 @@ export function JoistIcon({ className, width = 15, height = 15, style }: IconPro
     <svg
       width={width}
       height={height}
-      viewBox="0 0 15 15"
+      viewBox="0 40 115 40"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
       style={style}
     >
-      <rect x="2" y="4" width="1.5" height="7" stroke="currentColor" strokeWidth="0.5" />
-      <rect x="5" y="4" width="1.5" height="7" stroke="currentColor" strokeWidth="0.5" />
-      <rect x="8" y="4" width="1.5" height="7" stroke="currentColor" strokeWidth="0.5" />
-      <rect x="11" y="4" width="1.5" height="7" stroke="currentColor" strokeWidth="0.5" />
-      <line x1="2" y1="4" x2="13" y2="4" stroke="currentColor" strokeWidth="0.5" />
+      <rect
+        x="10"
+        y="50"
+        width="15"
+        height="24"
+        stroke="currentColor"
+        fill="currentColor"
+        fillOpacity={0.5}
+        strokeWidth="1"
+      />
+      <rect
+        x="50"
+        y="50"
+        width="15"
+        height="24"
+        stroke="currentColor"
+        fill="currentColor"
+        fillOpacity={0.5}
+        strokeWidth="1"
+      />
+      <rect
+        x="90"
+        y="50"
+        width="15"
+        height="24"
+        stroke="currentColor"
+        fill="currentColor"
+        fillOpacity={0.5}
+        strokeWidth="1"
+      />
+      <line x1="2" y1="50" x2="113" y2="50" stroke="currentColor" strokeWidth="10" />
     </svg>
   )
 }
@@ -167,25 +190,46 @@ export function FilledIcon({ className, width = 15, height = 15, style }: IconPr
     <svg
       width={width}
       height={height}
-      viewBox="0 0 15 15"
+      viewBox="0 40 115 40"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
       style={style}
     >
-      {/* Joists */}
-      <rect x="2" y="4" width="1.5" height="7" stroke="currentColor" strokeWidth="0.5" />
-      <rect x="5" y="4" width="1.5" height="7" stroke="currentColor" strokeWidth="0.5" />
-      <rect x="8" y="4" width="1.5" height="7" stroke="currentColor" strokeWidth="0.5" />
-      <rect x="11" y="4" width="1.5" height="7" stroke="currentColor" strokeWidth="0.5" />
-      {/* Fill pattern between joists */}
-      <circle cx="4.25" cy="7.5" r="0.3" fill="currentColor" />
-      <circle cx="6.75" cy="6.5" r="0.3" fill="currentColor" />
-      <circle cx="9.75" cy="8" r="0.3" fill="currentColor" />
-      {/* Subfloor on top */}
-      <line x1="2" y1="4" x2="13" y2="4" stroke="currentColor" strokeWidth="0.5" />
-      {/* Bottom cladding */}
-      <line x1="2" y1="11" x2="13" y2="11" stroke="currentColor" strokeWidth="0.5" />
+      <rect
+        x="10"
+        y="50"
+        width="15"
+        height="36"
+        stroke="currentColor"
+        fill="currentColor"
+        fillOpacity={0.7}
+        strokeWidth="1"
+      />
+      <rect x="25" y="50" width="25" height="36" fill="currentColor" fillOpacity={0.3} />
+      <rect
+        x="50"
+        y="50"
+        width="15"
+        height="36"
+        stroke="currentColor"
+        fill="currentColor"
+        fillOpacity={0.7}
+        strokeWidth="1"
+      />
+      <rect x="65" y="50" width="25" height="36" fill="currentColor" fillOpacity={0.3} />
+      <rect
+        x="90"
+        y="50"
+        width="15"
+        height="36"
+        stroke="currentColor"
+        fill="currentColor"
+        fillOpacity={0.7}
+        strokeWidth="1"
+      />
+      <line x1="2" y1="50" x2="113" y2="50" stroke="currentColor" strokeWidth="5" />
+      <line x1="2" y1="86" x2="113" y2="86" stroke="currentColor" strokeWidth="5" />
     </svg>
   )
 }
@@ -193,7 +237,7 @@ export function FilledIcon({ className, width = 15, height = 15, style }: IconPr
 export function getFloorAssemblyTypeIcon(type: FloorAssemblyType): ComponentType<IconProps> {
   switch (type) {
     case 'monolithic':
-      return BoxIcon
+      return MonolithicIcon
     case 'joist':
       return JoistIcon
     case 'filled':
