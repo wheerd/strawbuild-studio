@@ -18,8 +18,7 @@ import React, { useCallback, useMemo } from 'react'
 import type { PerimeterId, RoofAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import type { PerimeterReferenceSide, PerimeterWall, RoofType } from '@/building/model/model'
 import { useModelActions, usePerimeterById } from '@/building/store'
-import { TOP_VIEW } from '@/construction/components/ConstructionPlan'
-import { ConstructionPlanModal } from '@/construction/components/ConstructionPlanModal'
+import TopDownPlanModal from '@/construction/components/TopDownPlanModal'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import { constructPerimeter } from '@/construction/perimeter'
@@ -235,12 +234,9 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
         )}
 
         <Flex direction="row" gap="3" pt="1" align="center" justify="center">
-          <ConstructionPlanModal
+          <TopDownPlanModal
             title="Perimeter Construction Plan"
-            constructionModelFactory={async () => constructPerimeter(perimeter)}
-            views={[{ view: TOP_VIEW, label: 'Top' }]}
-            midCutActiveDefault
-            defaultHiddenTags={['floor-layer', 'wall-layer', 'roof-layer', 'roof-side']}
+            factory={async () => constructPerimeter(perimeter)}
             refreshKey={perimeter}
             trigger={
               <IconButton title="View Construction Plan" size="3">
@@ -249,10 +245,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             }
           />
           <ConstructionViewer3DModal
-            constructionModelFactory={async () => {
-              if (!perimeter) return null
-              return constructPerimeter(perimeter)
-            }}
+            constructionModelFactory={async () => constructPerimeter(perimeter)}
             refreshKey={perimeter}
             trigger={
               <IconButton title="View 3D Construction" size="3" variant="outline">

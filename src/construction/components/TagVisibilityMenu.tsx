@@ -65,7 +65,7 @@ function collectTagsFromModel(model: ConstructionModel): Map<TagCategoryId, TagI
 }
 
 export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.Element {
-  const { isTagVisible, isCategoryVisible, getCategoryVisibilityState, toggleTag, toggleCategory } = useTagVisibility()
+  const { isTagOrCategoryVisible, getCategoryVisibilityState, toggleTagOrCategory } = useTagVisibility()
 
   const tagsByCategory = useMemo(() => collectTagsFromModel(model), [model])
 
@@ -128,21 +128,21 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
               </DropdownMenu.SubTrigger>
               <DropdownMenu.SubContent>
                 {/* Category-wide toggle */}
-                <DropdownMenu.Item onClick={() => toggleCategory(categoryId)}>
+                <DropdownMenu.Item onClick={() => toggleTagOrCategory(categoryId)}>
                   <Flex align="center" justify="between" width="100%" gap="2">
                     <Text size="1" weight="bold">
-                      {isCategoryVisible(categoryId) ? 'Hide' : 'Show'} Category
+                      {isTagOrCategoryVisible(categoryId) ? 'Hide' : 'Show'} Category
                     </Text>
-                    {isCategoryVisible(categoryId) ? <EyeOpenIcon /> : <EyeClosedIcon />}
+                    {isTagOrCategoryVisible(categoryId) ? <EyeOpenIcon /> : <EyeClosedIcon />}
                   </Flex>
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator />
                 {/* Individual tag toggles */}
                 {tags.map(tag => (
-                  <DropdownMenu.Item key={tag.id} onClick={() => toggleTag(tag.id)}>
+                  <DropdownMenu.Item key={tag.id} onClick={() => toggleTagOrCategory(tag.id)}>
                     <Flex align="center" justify="between" width="100%" gap="2">
                       <Text size="1">{tag.label}</Text>
-                      {isTagVisible(tag.id) ? <EyeOpenIcon /> : <EyeClosedIcon />}
+                      {isTagOrCategoryVisible(tag.id) ? <EyeOpenIcon /> : <EyeClosedIcon />}
                     </Flex>
                   </DropdownMenu.Item>
                 ))}

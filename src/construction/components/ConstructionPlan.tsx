@@ -15,7 +15,7 @@ import { CuboidAreaShape } from './CuboidAreaShape'
 import { PolygonAreaShape } from './PolygonAreaShape'
 import { SVGMaterialStyles } from './SVGMaterialStyles'
 import { TagVisibilityMenu } from './TagVisibilityMenu'
-import { useTagVisibility } from './context/TagVisibilityContext'
+import { type TagOrCategory, useTagVisibility } from './context/TagVisibilityContext'
 
 export interface View {
   plane: Plane3D
@@ -26,6 +26,8 @@ export interface View {
 export interface ViewOption {
   view: View
   label: string
+  alwaysHiddenTags?: TagOrCategory[]
+  toggleHideTags?: TagOrCategory[]
 }
 
 export const TOP_VIEW: View = { plane: 'xy', xDirection: 1, zOrder: 'descending' }
@@ -63,7 +65,7 @@ export function ConstructionPlan({
   containerSize,
   midCutActiveDefault = false
 }: ConstructionPlanProps): React.JSX.Element {
-  const { hiddenTagIds } = useTagVisibility()
+  const { hiddenTagIds, toggleTagOrCategory, isTagOrCategoryVisible } = useTagVisibility()
   const viewportRef = useRef<SVGViewportRef>(null)
   const [currentViewIndex, setCurrentViewIndex] = useState(0)
   const [midCutEnabled, setMidCutEnabled] = useState(midCutActiveDefault)
@@ -72,6 +74,35 @@ export function ConstructionPlan({
   const [hideMeasurements, setHideMeasurements] = useState(false)
 
   const currentView = views[currentViewIndex]?.view || views[0]?.view
+  const hiddenTagsForView = views[currentViewIndex]?.alwaysHiddenTags ?? []
+
+  const previousViewIndexRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    // Only run this effect when we switch to a different view
+    if (previousViewIndexRef.current === currentViewIndex) {
+      return
+    }
+
+    // Un-toggle tags from the previous view (show them again)
+    const previousToggledTags =
+      previousViewIndexRef.current !== null ? (views[previousViewIndexRef.current]?.toggleHideTags ?? []) : []
+    for (const tag of previousToggledTags) {
+      if (!isTagOrCategoryVisible(tag)) {
+        toggleTagOrCategory(tag)
+      }
+    }
+
+    // Toggle tags for the new view (hide them)
+    const toggledTagsForView = views[currentViewIndex]?.toggleHideTags ?? []
+    for (const tag of toggledTagsForView) {
+      if (isTagOrCategoryVisible(tag)) {
+        toggleTagOrCategory(tag)
+      }
+    }
+
+    previousViewIndexRef.current = currentViewIndex
+  }, [currentViewIndex])
 
   useEffect(() => viewportRef.current?.fitToContent(), [currentView])
 
@@ -106,6 +137,7 @@ export function ConstructionPlan({
   const getCssClassForTag = (tagId: string): string => (tagId.includes('_') ? `tag__${tagId}` : `tag-cat__${tagId}`)
 
   const visibilityStyles = Array.from(hiddenTagIds)
+    .concat(hiddenTagsForView)
     .map(tagId => getCssClassForTag(tagId))
     .concat(hideAreas ? ['area-polygon', 'area-cuboid', 'area-cut'] : [])
     .concat(hideIssues ? ['construction-warning', 'construction-error'] : [])

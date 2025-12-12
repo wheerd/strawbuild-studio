@@ -20,7 +20,8 @@ export const ALL_CATEGORIES = {
   opening: { label: 'Opening' },
   area: { label: 'Area' },
   construction: { label: 'Construction' },
-  'floor-wood': { label: 'Floor Wood' }
+  'floor-wood': { label: 'Floor Wood' },
+  'floor-measurement': { label: 'Floor Measurement' }
 } as const
 
 export const CATEGORIES: Record<TagCategoryId, TagCategory> = ALL_CATEGORIES
@@ -393,4 +394,17 @@ export const TAG_FLOOR_BOTTOM_CLADDING: Tag = {
   id: 'floor-wood_bottom-cladding',
   label: 'Bottom Cladding',
   category: 'floor-wood'
+}
+
+// Floor Measurement tags
+export const TAG_JOIST_SPACING: Tag = {
+  id: 'floor-measurement_joist-spacing',
+  label: 'Joist Spacing',
+  category: 'floor-measurement'
+}
+
+export const TAG_JOIST_LENGTH: Tag = {
+  id: 'floor-measurement_joist-length',
+  label: 'Joist Length',
+  category: 'floor-measurement'
 }

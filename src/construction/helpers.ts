@@ -1,13 +1,16 @@
 import { vec2 } from 'gl-matrix'
 
+import type { RawMeasurement } from '@/construction/measurements'
 import {
   type Area,
   type Length,
   type Line2D,
   type LineSegment2D,
+  type Plane3D,
   type Polygon2D,
   type PolygonWithHoles2D,
   calculatePolygonArea,
+  calculatePolygonWithHolesArea,
   direction,
   ensurePolygonIsClockwise,
   intersectPolygon,
@@ -15,8 +18,10 @@ import {
   offsetPolygon,
   perpendicular,
   perpendicularCW,
+  point2DTo3D,
   simplifyPolygon
 } from '@/shared/geometry'
+import { formatLength } from '@/shared/utils/formatting'
 
 import { createConstructionElement } from './elements'
 import type { MaterialId } from './materials/material'
@@ -203,6 +208,179 @@ export function rotatedRectFromPolygon(polygon: Polygon2D, direction: vec2) {
   }
 }
 
+const EXTENT_EPSILON = 1e-2
+
+export class PolygonWithBoundingRect {
+  readonly polygon: PolygonWithHoles2D
+  readonly dir: vec2
+  readonly perpDir: vec2
+  readonly dirExtent: Length
+  readonly perpExtent: Length
+  readonly minPoint: vec2
+
+  constructor(
+    polygon: PolygonWithHoles2D,
+    dir: vec2,
+    dirExtent: Length,
+    perpDir: vec2,
+    perExtent: Length,
+    minPoint: vec2
+  ) {
+    this.polygon = polygon
+    this.dir = dir
+    this.perpDir = perpDir
+    this.dirExtent = dirExtent
+    this.perpExtent = perExtent
+    this.minPoint = minPoint
+  }
+
+  public static fromPolygon(polygon: PolygonWithHoles2D, direction: vec2): PolygonWithBoundingRect {
+    const dir = vec2.normalize(vec2.create(), direction)
+    const perpDir = perpendicular(dir)
+
+    const perpDots = polygon.outer.points.map(p => vec2.dot(p, perpDir))
+    const perpMinPoint = polygon.outer.points[perpDots.indexOf(Math.min(...perpDots))]
+    const perpExtent = Math.max(...perpDots) - Math.min(...perpDots)
+
+    const dirDots = polygon.outer.points.map(p => vec2.dot(p, dir))
+    const dirMinPoint = polygon.outer.points[dirDots.indexOf(Math.min(...dirDots))]
+    const dirExtent = Math.max(...dirDots) - Math.min(...dirDots)
+
+    const dirLine: Line2D = { point: perpMinPoint, direction: dir }
+    const perpLine: Line2D = { point: dirMinPoint, direction: perpDir }
+
+    const intersection = lineIntersection(dirLine, perpLine)
+
+    if (!intersection) {
+      throw new Error('Could not determine intersection due to parallel lines.')
+    }
+
+    return new PolygonWithBoundingRect(polygon, dir, dirExtent, perpDir, perpExtent, intersection)
+  }
+
+  public *tiled(dirStep: Length, perpStep: Length): Generator<PolygonWithBoundingRect> {
+    for (let offsetDir = 0; offsetDir < this.dirExtent; offsetDir += dirStep) {
+      const clippedLengthDir = Math.min(dirStep, this.dirExtent - offsetDir)
+      const base = vec2.scaleAndAdd(vec2.create(), this.minPoint, this.dir, offsetDir)
+      for (let offsetPerp = 0; offsetPerp < this.perpExtent; offsetPerp += perpStep) {
+        const clippedLengthPerp = Math.min(perpStep, this.perpExtent - offsetPerp)
+        const p1 = vec2.scaleAndAdd(vec2.create(), base, this.perpDir, offsetPerp)
+        const p2 = vec2.scaleAndAdd(vec2.create(), p1, this.perpDir, clippedLengthPerp)
+        const p3 = vec2.scaleAndAdd(vec2.create(), p2, this.dir, clippedLengthDir)
+        const p4 = vec2.scaleAndAdd(vec2.create(), p1, this.dir, clippedLengthDir)
+
+        const rectPolygon: Polygon2D = { points: [p1, p2, p3, p4] }
+        for (const clippedRect of intersectPolygon(this.polygon, { outer: rectPolygon, holes: [] })) {
+          yield PolygonWithBoundingRect.fromPolygon(clippedRect, this.dir)
+        }
+      }
+    }
+  }
+
+  public dirMeasurement(
+    plane: Plane3D,
+    thickness?: Length,
+    tags?: Tag[],
+    offset?: Length,
+    useMin = true
+  ): RawMeasurement | null {
+    if (this.dirExtent <= 0) return null
+
+    const maxInPerp = vec2.scaleAndAdd(vec2.create(), this.minPoint, this.perpDir, this.perpExtent)
+    const start2D = useMin ? this.minPoint : maxInPerp
+    const end2D = vec2.scaleAndAdd(vec2.create(), start2D, this.dir, this.dirExtent)
+    const extent2D = useMin ? maxInPerp : this.minPoint
+
+    const startPoint = point2DTo3D(start2D, plane, 0)
+    const endPoint = point2DTo3D(end2D, plane, 0)
+    const extend1 = point2DTo3D(extent2D, plane, 0)
+    const extend2 = thickness != null ? point2DTo3D(start2D, plane, thickness) : undefined
+    return {
+      startPoint,
+      endPoint,
+      extend1,
+      extend2,
+      label: offset ? formatLength(this.dirExtent) : undefined,
+      tags,
+      offset
+    }
+  }
+
+  public perpMeasurement(
+    plane: Plane3D,
+    thickness?: Length,
+    tags?: Tag[],
+    offset?: Length,
+    useMin = true
+  ): RawMeasurement | null {
+    if (this.perpExtent <= 0) return null
+
+    const maxInDir = vec2.scaleAndAdd(vec2.create(), this.minPoint, this.dir, this.dirExtent)
+    const start2D = useMin ? this.minPoint : maxInDir
+    const end2D = vec2.scaleAndAdd(vec2.create(), start2D, this.perpDir, this.perpExtent)
+    const extent2D = useMin ? maxInDir : this.minPoint
+
+    const startPoint = point2DTo3D(start2D, plane, 0)
+    const endPoint = point2DTo3D(end2D, plane, 0)
+    const extend1 = point2DTo3D(extent2D, plane, 0)
+    const extend2 = thickness != null ? point2DTo3D(start2D, plane, thickness) : undefined
+    return {
+      startPoint,
+      endPoint,
+      extend1,
+      extend2,
+      label: offset ? formatLength(this.perpExtent) : undefined,
+      tags,
+      offset
+    }
+  }
+
+  public *extrude(
+    materialId: MaterialId,
+    thickness: Length,
+    plane: Plane3D,
+    tags?: Tag[],
+    partType?: string,
+    partDescription?: string
+  ): Generator<ConstructionResult> {
+    if (this.isEmpty) {
+      return
+    }
+    const partInfo = partType
+      ? polygonPartInfo(partType, this.polygon.outer, plane, thickness, partDescription)
+      : undefined
+    yield* yieldElement(
+      createConstructionElement(
+        materialId,
+        createExtrudedPolygon(this.polygon, plane, thickness),
+        undefined,
+        tags,
+        partInfo
+      )
+    )
+  }
+
+  get size2D() {
+    return vec2.fromValues(this.dirExtent, this.perpExtent)
+  }
+
+  public size3D(plane: Plane3D, thickness: Length) {
+    return point2DTo3D(this.size2D, plane, thickness)
+  }
+
+  get rectArea() {
+    return this.dirExtent * this.perpExtent
+  }
+
+  get area() {
+    return calculatePolygonWithHolesArea(this.polygon)
+  }
+
+  get isEmpty() {
+    return this.dirExtent <= EXTENT_EPSILON || this.perpExtent <= EXTENT_EPSILON || this.polygon.outer.points.length < 3
+  }
+}
+
 export function* simpleStripes(
   polygon: PolygonWithHoles2D,
   direction: vec2,
@@ -246,7 +424,6 @@ export function* simpleStripes(
     }
   } catch (error) {
     yield yieldWarning(error instanceof Error ? error.message : String(error), [])
-    
   }
 }
 

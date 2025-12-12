@@ -6,11 +6,9 @@ export type TagOrCategory = TagId | TagCategoryId
 
 interface TagVisibilityContextValue {
   hiddenTagIds: Set<TagOrCategory>
-  isTagVisible: (tagId: TagOrCategory) => boolean
-  isCategoryVisible: (categoryId: TagCategoryId) => boolean
+  isTagOrCategoryVisible: (tagId: TagOrCategory) => boolean
   getCategoryVisibilityState: (categoryId: TagCategoryId, tagIds: TagId[]) => 'visible' | 'partial' | 'hidden'
-  toggleTag: (tagId: TagId) => void
-  toggleCategory: (categoryId: TagCategoryId) => void
+  toggleTagOrCategory: (tagId: TagOrCategory) => void
 }
 
 const TagVisibilityContext = createContext<TagVisibilityContextValue | undefined>(undefined)
@@ -23,12 +21,8 @@ export interface TagVisibilityProviderProps {
 export function TagVisibilityProvider({ children, defaultHidden = [] }: TagVisibilityProviderProps): React.JSX.Element {
   const [hiddenTagIds, setHiddenTagIds] = useState<Set<TagOrCategory>>(new Set(defaultHidden))
 
-  const isTagVisible = (tagId: TagOrCategory): boolean => {
+  const isTagOrCategoryVisible = (tagId: TagOrCategory): boolean => {
     return !hiddenTagIds.has(tagId)
-  }
-
-  const isCategoryVisible = (categoryId: TagCategoryId): boolean => {
-    return !hiddenTagIds.has(categoryId)
   }
 
   const getCategoryVisibilityState = (categoryId: TagCategoryId, tagIds: TagId[]): 'visible' | 'partial' | 'hidden' => {
@@ -50,7 +44,7 @@ export function TagVisibilityProvider({ children, defaultHidden = [] }: TagVisib
     }
   }
 
-  const toggleTag = (tagId: TagId): void => {
+  const toggleTagOrCategory = (tagId: TagOrCategory): void => {
     setHiddenTagIds(prev => {
       const next = new Set(prev)
       if (next.has(tagId)) {
@@ -62,26 +56,12 @@ export function TagVisibilityProvider({ children, defaultHidden = [] }: TagVisib
     })
   }
 
-  const toggleCategory = (categoryId: TagCategoryId): void => {
-    setHiddenTagIds(prev => {
-      const next = new Set(prev)
-      if (next.has(categoryId)) {
-        next.delete(categoryId)
-      } else {
-        next.add(categoryId)
-      }
-      return next
-    })
-  }
-
   const value = useMemo(
     () => ({
       hiddenTagIds,
-      isTagVisible,
-      isCategoryVisible,
+      isTagOrCategoryVisible,
       getCategoryVisibilityState,
-      toggleTag,
-      toggleCategory
+      toggleTagOrCategory
     }),
     [hiddenTagIds]
   )

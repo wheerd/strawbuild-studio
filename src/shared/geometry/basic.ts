@@ -160,6 +160,13 @@ export type Axis3D = 'x' | 'y' | 'z'
 
 export const complementaryAxis = (plane: Plane3D): Axis3D => (plane === 'xy' ? 'z' : plane === 'xz' ? 'y' : 'x')
 
+export const point2DTo3D = (point: vec2, plane: Plane3D, offset: Length): vec3 =>
+  plane === 'xy'
+    ? vec3.fromValues(point[0], point[1], offset)
+    : plane === 'xz'
+      ? vec3.fromValues(point[0], offset, point[1])
+      : vec3.fromValues(offset, point[0], point[1])
+
 export class Bounds3D {
   static readonly EMPTY = new Bounds3D(vec3.create(), vec3.create())
 

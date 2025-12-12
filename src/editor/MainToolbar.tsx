@@ -11,8 +11,7 @@ import {
   useStoreysOrderedByLevel
 } from '@/building/store'
 import { ConstructionPartsListModal } from '@/construction/components/ConstructionPartsListModal'
-import { TOP_VIEW } from '@/construction/components/ConstructionPlan'
-import { ConstructionPlanModal } from '@/construction/components/ConstructionPlanModal'
+import TopDownPlanModal from '@/construction/components/TopDownPlanModal'
 import { useConfigurationModal } from '@/construction/config/context/ConfigurationModalContext'
 import { constructModel, constructStorey } from '@/construction/storey'
 import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
@@ -91,12 +90,9 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
 
       {/* Configuration button on the right */}
       <Flex ml="auto" gap="2" align="center">
-        <ConstructionPlanModal
+        <TopDownPlanModal
           title={`Construction Plan for ${activeStorey?.name ?? 'active storey'}`}
-          constructionModelFactory={async () => constructStorey(activeStoreyId)}
-          views={[{ view: TOP_VIEW, label: 'Top' }]}
-          midCutActiveDefault
-          defaultHiddenTags={['floor-layer', 'wall-layer', 'roof-layer', 'roof-side']}
+          factory={async () => constructStorey(activeStoreyId)}
           refreshKey={[activeStoreyId, activePerimiters]}
           trigger={
             <IconButton title="View Construction Plan" size="2" variant="solid">

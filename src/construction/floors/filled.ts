@@ -3,6 +3,7 @@ import { vec2, vec3 } from 'gl-matrix'
 import { createConstructionElement, createConstructionElementId } from '@/construction/elements'
 import { translate } from '@/construction/geometry'
 import {
+  PolygonWithBoundingRect,
   partitionByAlignedEdges,
   polygonEdges,
   polygonFromLineIntersections,
@@ -12,13 +13,15 @@ import {
 import { constructStrawPolygon } from '@/construction/materials/straw'
 import type { ConstructionModel } from '@/construction/model'
 import { polygonPartInfo } from '@/construction/parts'
-import { type ConstructionResult, aggregateResults } from '@/construction/results'
+import { type ConstructionResult, aggregateResults, yieldMeasurement } from '@/construction/results'
 import { createExtrudedPolygon } from '@/construction/shapes'
 import {
   TAG_FLOOR_BOTTOM_CLADDING,
   TAG_FLOOR_FRAME,
   TAG_FLOOR_OPENING_FRAME,
   TAG_JOIST,
+  TAG_JOIST_LENGTH,
+  TAG_JOIST_SPACING,
   TAG_SUBFLOOR
 } from '@/construction/tags'
 import {
@@ -121,10 +124,20 @@ export class FilledFloorAssembly extends BaseFloorAssembly<FilledFloorConfig> {
       )
     })
     const infillArea = offsetPolygon(context.outerPolygon, -config.frameThickness)
-    const infillPolygons = subtractPolygons([infillArea], [...fullJoistPolygons.map(p => p.outer), ...expandedHoles])
+    const infillPolygons = subtractPolygons(
+      [infillArea],
+      [...fullJoistPolygons.map(p => p.outer), ...expandedHoles]
+    ).map(p => PolygonWithBoundingRect.fromPolygon(p, joistDirection))
     const infill = infillPolygons.flatMap(p =>
-      Array.from(constructStrawPolygon(p, joistDirection, 'xy', config.constructionHeight, config.strawMaterial))
+      Array.from(constructStrawPolygon(p, 'xy', config.constructionHeight, config.strawMaterial))
     )
+    const measurements = infillPolygons
+      .flatMap(p => [
+        p.perpMeasurement('xy', config.constructionHeight, [TAG_JOIST_SPACING]),
+        p.dirMeasurement('xy', config.constructionHeight, [TAG_JOIST_LENGTH])
+      ])
+      .filter(m => m != null)
+      .map(yieldMeasurement)
 
     const openingFrames = context.openings.flatMap(h =>
       Array.from(
@@ -173,7 +186,7 @@ export class FilledFloorAssembly extends BaseFloorAssembly<FilledFloorConfig> {
       )
     }
 
-    const floorResults = [...joists, ...frame, ...openingFrames, ...infill]
+    const floorResults = [...joists, ...frame, ...openingFrames, ...infill, ...measurements]
     const aggregatedResults = aggregateResults(floorResults)
 
     return {

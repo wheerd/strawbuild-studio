@@ -1,9 +1,9 @@
-import { vec2, vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 
 import { getConfigActions } from '@/construction/config'
 import { type ConstructionElement, createConstructionElement } from '@/construction/elements'
 import type { WallConstructionArea } from '@/construction/geometry'
-import { rotatedRectFromPolygon, tiledRectPolygons } from '@/construction/helpers'
+import { PolygonWithBoundingRect } from '@/construction/helpers'
 import { getMaterialsActions } from '@/construction/materials/store'
 import { polygonPartInfo } from '@/construction/parts'
 import { type ConstructionResult, yieldElement, yieldError, yieldWarning } from '@/construction/results'
@@ -16,7 +16,7 @@ import {
   TAG_STRAW_STUFFED,
   type Tag
 } from '@/construction/tags'
-import { type Length, type Plane3D, type PolygonWithHoles2D, calculatePolygonWithHolesArea } from '@/shared/geometry'
+import { type Length, type Plane3D } from '@/shared/geometry'
 
 import type { MaterialId, StrawbaleMaterial } from './material'
 
@@ -131,8 +131,7 @@ export function* constructStraw(area: WallConstructionArea, materialId?: Materia
 }
 
 export function* constructStrawPolygon(
-  polygon: PolygonWithHoles2D,
-  direction: vec2,
+  polygon: PolygonWithBoundingRect,
   plane: Plane3D,
   thickness: Length,
   materialId?: MaterialId
@@ -143,10 +142,10 @@ export function* constructStrawPolygon(
   const fullElement = (tags: Tag[]): ConstructionElement =>
     createConstructionElement(
       strawMaterialId,
-      createExtrudedPolygon(polygon, plane, thickness),
+      createExtrudedPolygon(polygon.polygon, plane, thickness),
       undefined,
       tags,
-      polygonPartInfo('strawbale', polygon.outer, plane, thickness)
+      polygonPartInfo('strawbale', polygon.polygon.outer, plane, thickness)
     )
 
   if (material?.type !== 'strawbale') {
@@ -166,59 +165,33 @@ export function* constructStrawPolygon(
     return
   }
 
-  const { perpDir, dirExtent, perpExtent, minPoint } = rotatedRectFromPolygon(polygon.outer, direction)
-
-  if (dirExtent < material.flakeSize || perpExtent < material.flakeSize) {
+  if (polygon.dirExtent < material.flakeSize || polygon.perpExtent < material.flakeSize) {
     yield* yieldElement(fullElement([TAG_STRAW_STUFFED]))
     return
   }
 
-  // Lengthwise along dir
-  if (Math.abs(perpExtent - material.baleHeight) <= material.tolerance) {
-    for (const part of tiledRectPolygons(
-      minPoint,
-      direction,
-      dirExtent,
-      material.baleMaxLength,
-      perpDir,
-      perpExtent,
-      material.baleHeight,
-      polygon
-    )) {
-      yield* baleFromPolygon(part, direction, thickness, material)
+  // Bale length along dir
+  if (Math.abs(polygon.perpExtent - material.baleHeight) <= material.tolerance) {
+    for (const part of polygon.tiled(material.baleMaxLength, material.baleHeight)) {
+      yield* baleFromPolygon(part, thickness, material, plane)
     }
     return
   }
 
-  // Bales perpendicular to dir
-  for (const part of tiledRectPolygons(
-    minPoint,
-    direction,
-    dirExtent,
-    material.baleHeight,
-    perpDir,
-    perpExtent,
-    material.baleMaxLength,
-    polygon
-  )) {
-    yield* baleFromPolygon(part, direction, thickness, material)
+  // Bale length perpendicular to dir
+  for (const part of polygon.tiled(material.baleHeight, material.baleMaxLength)) {
+    yield* baleFromPolygon(part, thickness, material, plane)
   }
 }
 
-function* baleFromPolygon(part: PolygonWithHoles2D, direction: vec2, thickness: Length, material: StrawbaleMaterial) {
-  const partRect = rotatedRectFromPolygon(part.outer, direction)
-  const partSize = vec3.fromValues(partRect.dirExtent, thickness, partRect.perpExtent)
-  const partArea = calculatePolygonWithHolesArea(part)
-  const rectArea = partRect.dirExtent * partRect.perpExtent
-  const fillingRatio = partArea / rectArea
+function* baleFromPolygon(
+  part: PolygonWithBoundingRect,
+  thickness: Length,
+  material: StrawbaleMaterial,
+  plane: Plane3D
+) {
+  const partSize = part.size3D('xz', thickness) // Fake wall dimensions
+  const fillingRatio = part.area / part.rectArea
   const tags = fillingRatio < 0.8 ? [TAG_STRAW_STUFFED] : getStrawTags(partSize, material)
-  yield* yieldElement(
-    createConstructionElement(
-      material.id,
-      createExtrudedPolygon(part, 'xy', thickness),
-      undefined,
-      tags,
-      polygonPartInfo('strawbale', part.outer, 'xy', thickness)
-    )
-  )
+  yield* part.extrude(material.id, thickness, plane, tags, 'strawbale')
 }
