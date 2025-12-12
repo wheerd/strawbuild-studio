@@ -1,4 +1,4 @@
-import { straw, wood } from '@/construction/materials/material'
+import { strawbale, wood } from '@/construction/materials/material'
 
 import type { MigrationState } from './shared'
 
@@ -52,7 +52,7 @@ export function migrateToVersion9(state: MigrationState): void {
     }
 
     if (!('wallInfillMaterial' in assemblyConfig)) {
-      assemblyConfig.wallInfillMaterial = straw.id
+      assemblyConfig.wallInfillMaterial = strawbale.id
     }
 
     // 3. Add new opening side fields

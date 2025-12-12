@@ -1,7 +1,7 @@
 import { DEFAULT_FLOOR_ASSEMBLY_ID, type FloorAssemblyId } from '@/building/model/ids'
 import type { FloorAssemblyConfig } from '@/construction/config/types'
 import { DEFAULT_FLOOR_LAYER_SETS } from '@/construction/layers/defaults'
-import { clt, concrete, osb, straw, wood } from '@/construction/materials/material'
+import { clt, concrete, osb, strawbale, wood } from '@/construction/materials/material'
 
 const cltAssembly: FloorAssemblyConfig = {
   id: DEFAULT_FLOOR_ASSEMBLY_ID,
@@ -42,7 +42,7 @@ const joistAssembly: FloorAssemblyConfig = {
   wallBeamThickness: 120,
   wallBeamMaterial: wood.id,
   wallBeamInsideOffset: 40,
-  wallInfillMaterial: straw.id,
+  wallInfillMaterial: strawbale.id,
   subfloorMaterial: osb.id,
   subfloorThickness: 22,
   openingSideMaterial: wood.id,

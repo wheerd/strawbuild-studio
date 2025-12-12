@@ -23,7 +23,6 @@ import {
   concrete,
   limePlasterBase,
   limePlasterFine,
-  straw,
   strawbale,
   wood
 } from '@/construction/materials/material'
@@ -94,7 +93,7 @@ const createDefaultWallAssemblies = (): WallAssemblyConfig[] => [
       type: 'double',
       width: 60,
       thickness: 120,
-      infillMaterial: straw.id,
+      infillMaterial: strawbale.id,
       material: wood.id
     },
     // No openingAssemblyId - uses global default

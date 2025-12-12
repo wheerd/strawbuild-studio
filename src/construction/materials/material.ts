@@ -100,15 +100,6 @@ export const strawbale: StrawbaleMaterial = {
   density: 110
 }
 
-export const straw: VolumeMaterial = {
-  id: 'material_straw' as MaterialId,
-  name: 'Straw',
-  type: 'volume',
-  availableVolumes: [140000000],
-  color: MATERIAL_COLORS.straw,
-  density: 90
-}
-
 export const window: GenericMaterial = {
   id: 'material_window' as MaterialId,
   name: 'Window',
@@ -219,7 +210,7 @@ export const osb: SheetMaterial = {
   thicknesses: [12, 15, 18, 22, 25],
   sheetType: 'solid',
   type: 'sheet',
-  color: MATERIAL_COLORS.woodSupport,
+  color: '#e2b079',
   density: 600
 }
 
@@ -227,7 +218,6 @@ export const DEFAULT_MATERIALS: Record<MaterialId, Material> = {
   [wood.id]: wood,
   [woodPlanking.id]: woodPlanking,
   [strawbale.id]: strawbale,
-  [straw.id]: straw,
   [window.id]: window,
   [door.id]: door,
   [concrete.id]: concrete,

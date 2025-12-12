@@ -4,7 +4,7 @@ import { createRingBeamAssemblyId, createWallAssemblyId } from '@/building/model
 import type { RingBeamAssemblyConfig, WallAssemblyConfig } from '@/construction/config/types'
 import '@/shared/geometry'
 
-import { createMaterialId, straw, strawbale, wood, woodwool } from './material'
+import { createMaterialId, strawbale, wood, woodwool } from './material'
 import { getMaterialUsage } from './usage'
 
 const defaultStrawMaterialId = strawbale.id
@@ -55,7 +55,7 @@ describe('Material Usage Detection', () => {
           width: 60,
           thickness: 120,
           material: wood.id,
-          infillMaterial: straw.id
+          infillMaterial: strawbale.id
         },
         layers: {
           insideThickness: 30,
