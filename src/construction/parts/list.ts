@@ -200,22 +200,19 @@ function getFullPartInfo(element: GroupOrElement): FullPartInfo | null {
   if ('shape' in element) {
     const mpi = getPartInfoFromManifold(element.shape.manifold)
     const id = `${typePrefix}-${element.material}-${mpi.id}` as PartId
-    const fullInfo = {
-      ...element.partInfo,
-      ...mpi,
-      id
-    }
-    element.partInfo = fullInfo
+    const fullInfo = element.partInfo as FullPartInfo
+    fullInfo.boxSize = mpi.boxSize
+    fullInfo.sideFaces = mpi.sideFaces
+    fullInfo.id = id
     return fullInfo
   }
 
   const dims = [...element.bounds.size].sort()
   const id = `${typePrefix}-group:${dims.join('x')}` as PartId
-  return {
-    ...element.partInfo,
-    boxSize: dims,
-    id
-  }
+  const fullInfo = element.partInfo as FullPartInfo
+  fullInfo.boxSize = dims
+  fullInfo.id = id
+  return fullInfo
 }
 
 export const generateVirtualPartsList = (model: ConstructionModel): VirtualPartsList => {
@@ -286,7 +283,7 @@ function processPart(
   const existingPart = materialEntry.parts[partId]
 
   const size = partInfo.boxSize
-  const volume = computeVolume(size)
+  let volume = computeVolume(size)
 
   if (existingPart) {
     existingPart.quantity += 1
@@ -325,6 +322,8 @@ function processPart(
     const details = computeSheetDetails(size, materialDefinition)
     if (partInfo.sideFaces) {
       area = calculatePolygonWithHolesArea(partInfo.sideFaces[0].polygon)
+      const thickness = partInfo.boxSize[partInfo.sideFaces[0].index]
+      volume = thickness * area
     } else {
       area = details.areaSize[0] * details.areaSize[1]
     }

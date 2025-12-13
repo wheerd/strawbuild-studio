@@ -1,13 +1,14 @@
 import { vec2, vec3 } from 'gl-matrix'
 import type { Manifold } from 'manifold-3d'
 
-import { getFacesFromManifold } from '@/construction/manifold/faces'
+import { type Face3D, getFacesFromManifold } from '@/construction/manifold/faces'
 import type { SideFace } from '@/construction/parts/types'
 import {
   Bounds2D,
   type Length,
   type Polygon2D,
   type PolygonWithHoles2D,
+  type PolygonWithHoles3D,
   canonicalPolygonKey,
   ensurePolygonIsClockwise,
   ensurePolygonIsCounterClockwise,
@@ -89,8 +90,8 @@ function isCuboid(manifold: Manifold): { dims: number[] } | null {
 
   const dims: number[] = []
   for (const n of normals) {
-    let min = Infinity,
-      max = -Infinity
+    let min = Infinity
+    let max = -Infinity
     for (const v of vertices) {
       const d = vec3.dot(v, n)
       min = Math.min(min, d)
@@ -119,32 +120,13 @@ function isExtruded(manifold: Manifold): { dims: number[]; polygon: PolygonWithH
     }
   }
 
-  capLoop: for (const [c1, c2] of capPairs) {
+  for (const [c1, c2] of capPairs) {
     const p1 = faces[c1].polygon
     const p2 = faces[c2].polygon
     const n = faces[c1].normal
-    const outerEdgeCount = polygonEdgeCount(p1.outer)
-    if (outerEdgeCount !== polygonEdgeCount(p2.outer)) continue
-    if (p1.holes.length !== p2.holes.length) continue
 
-    let totalSideFaceCount = outerEdgeCount
-    for (let i = 0; i < p1.holes.length; i++) {
-      const holeEdgeCount = polygonEdgeCount(p1.holes[i])
-      if (holeEdgeCount !== polygonEdgeCount(p2.holes[i])) {
-        continue capLoop
-      }
-      totalSideFaceCount += holeEdgeCount
-    }
-
-    if (totalSideFaceCount != faces.length - 2) continue
-
-    for (let i = 0; i < faces.length; i++) {
-      if (i === c1 || i === c2) continue
-      const faceIsNotPerpendicular = Math.abs(vec3.dot(faces[i].normal, n)) > 0.001
-      if (faceIsNotPerpendicular) {
-        continue capLoop
-      }
-    }
+    if (!checkFaceCounts(p1, p2, faces)) continue
+    if (!checkFacesPerpendiular(c1, c2, faces)) continue
 
     const d1 = vec3.dot(p1.outer.points[0], n)
     const d2 = vec3.dot(p2.outer.points[0], n)
@@ -166,6 +148,35 @@ function isExtruded(manifold: Manifold): { dims: number[]; polygon: PolygonWithH
   return null
 }
 
+function checkFaceCounts(p1: PolygonWithHoles3D, p2: PolygonWithHoles3D, faces: Face3D[]) {
+  const outerEdgeCount = polygonEdgeCount(p1.outer)
+  if (outerEdgeCount !== polygonEdgeCount(p2.outer)) return false
+  if (p1.holes.length !== p2.holes.length) return false
+
+  let totalSideFaceCount = outerEdgeCount
+  for (let i = 0; i < p1.holes.length; i++) {
+    const holeEdgeCount = polygonEdgeCount(p1.holes[i])
+    if (holeEdgeCount !== polygonEdgeCount(p2.holes[i])) {
+      return false
+    }
+    totalSideFaceCount += holeEdgeCount
+  }
+
+  return totalSideFaceCount === faces.length - 2
+}
+
+function checkFacesPerpendiular(c1: number, c2: number, faces: Face3D[]) {
+  for (let i = 0; i < faces.length; i++) {
+    if (i === c1 || i === c2) continue
+    const faceIsNotPerpendicular = Math.abs(vec3.dot(faces[i].normal, faces[c1].normal)) > 0.001
+    if (faceIsNotPerpendicular) {
+      return false
+    }
+  }
+
+  return true
+}
+
 function normalizedPolygon(polygon: PolygonWithHoles2D) {
   const simplifiedPolygon: PolygonWithHoles2D = {
     outer: simplifyPolygon(polygon.outer, 0.1),
@@ -175,10 +186,11 @@ function normalizedPolygon(polygon: PolygonWithHoles2D) {
   const sinAngle = Math.sin(-angle)
   const cosAngle = Math.cos(-angle)
 
+  const flipXY = size[0] > size[1]
   const rotatePoint = (point: vec2) => {
     const x = point[0] * cosAngle - point[1] * sinAngle
     const y = point[0] * sinAngle + point[1] * cosAngle
-    return vec2.fromValues(x, y)
+    return vec2.fromValues(flipXY ? y : x, flipXY ? x : y)
   }
 
   const rotatedPolygon: PolygonWithHoles2D = {

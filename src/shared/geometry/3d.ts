@@ -19,7 +19,7 @@ export function centroid(vertices: vec3[]): vec3 {
 
 export function buildPlaneBasis(n: vec3): [vec3, vec3] {
   // pick an arbitrary vector not parallel to n
-  let tmp = Math.abs(n[0]) < 0.9 ? vec3.fromValues(1, 0, 0) : vec3.fromValues(0, 1, 0)
+  const tmp = Math.abs(n[0]) < 0.9 ? vec3.fromValues(1, 0, 0) : vec3.fromValues(0, 1, 0)
 
   // u = perpendicular to n
   const u = vec3.cross(vec3.create(), tmp, n)

@@ -330,9 +330,9 @@ function trianglesToPolygon(
       if (usedEdges.has(k2)) break
       usedEdges.add(k2)
 
-      loop.push(next)
-
       if (next === startA) break // closed loop
+
+      loop.push(next)
 
       prev = current
       current = next
@@ -366,9 +366,9 @@ function polygonArea3D(points: vec3[]): number {
   // Compute normal direction
   const p0 = points[0]
   const n = vec3.create()
-  for (let i = 1; i < points.length - 1; i++) {
+  for (let i = 1; i < points.length; i++) {
     const v1 = vec3.sub(vec3.create(), points[i], p0)
-    const v2 = vec3.sub(vec3.create(), points[i + 1], p0)
+    const v2 = vec3.sub(vec3.create(), points[(i + 1) % points.length], p0)
     const cross = vec3.cross(vec3.create(), v1, v2)
     vec3.add(n, n, cross)
   }
