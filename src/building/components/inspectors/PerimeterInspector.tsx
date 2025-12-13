@@ -15,10 +15,11 @@ import {
 } from '@radix-ui/themes'
 import React, { useCallback, useMemo } from 'react'
 
-import type { PerimeterId, RoofAssemblyId, WallAssemblyId } from '@/building/model/ids'
+import type { PerimeterId, WallAssemblyId } from '@/building/model/ids'
 import type { PerimeterReferenceSide, PerimeterWall, RoofType } from '@/building/model/model'
 import { useModelActions, usePerimeterById } from '@/building/store'
 import TopDownPlanModal from '@/construction/components/TopDownPlanModal'
+import { useDefaultRoofAssemblyId } from '@/construction/config'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import { constructPerimeter } from '@/construction/perimeter'
@@ -86,6 +87,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
     setPerimeterReferenceSide,
     addRoof
   } = useModelActions()
+  const roofAssemblyId = useDefaultRoofAssemblyId()
   const perimeter = usePerimeterById(selectedId)
   const viewportActions = useViewportActions()
   const { setMode } = useViewModeActions()
@@ -154,10 +156,9 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
       const mainSideIndex = 0
 
       // Default values for new roof
-      const slope = 30 // degrees
+      const slope = roofType === 'shed' ? 5 : 25
       const verticalOffset = 0 // mm
       const overhang = 300 // mm
-      const assemblyId = '' as RoofAssemblyId // placeholder
 
       const newRoof = addRoof(
         perimeter.storeyId,
@@ -167,7 +168,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
         slope,
         verticalOffset,
         overhang,
-        assemblyId,
+        roofAssemblyId,
         selectedId
       )
 
