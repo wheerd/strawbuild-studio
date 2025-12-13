@@ -1,5 +1,6 @@
 import { mat4, vec3 } from 'gl-matrix'
 
+import type { InitialPartInfo } from '@/construction/parts'
 import { type Axis3D, Bounds3D, type Length, type Plane3D, type Polygon2D } from '@/shared/geometry'
 import { simplifyPolygon, unionPolygons } from '@/shared/geometry/polygon'
 
@@ -98,7 +99,8 @@ export function createUnsupportedModel(description: string, issueId?: string): C
 export function createConstructionGroup(
   children: GroupOrElement[],
   transform: Transform,
-  tags?: Tag[]
+  tags?: Tag[],
+  partInfo?: InitialPartInfo
 ): ConstructionGroup {
   const childBounds = children.map(child => transformBounds(child.bounds, transform))
   const groupBounds = Bounds3D.merge(...childBounds)
@@ -108,7 +110,8 @@ export function createConstructionGroup(
     transform,
     bounds: groupBounds,
     children,
-    tags
+    tags,
+    partInfo
   }
 }
 

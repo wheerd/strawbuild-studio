@@ -2,7 +2,7 @@ import { vec2, vec3 } from 'gl-matrix'
 import type { Manifold } from 'manifold-3d'
 
 import { getFacesFromManifold } from '@/construction/manifold/faces'
-import type { SideFace } from '@/construction/parts'
+import type { SideFace } from '@/construction/parts/types'
 import {
   Bounds2D,
   type Length,

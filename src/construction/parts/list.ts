@@ -4,7 +4,6 @@ import type { ConstructionElement, ConstructionElementId, GroupOrElement } from 
 import type { CrossSection, DimensionalMaterial, MaterialId, SheetMaterial } from '@/construction/materials/material'
 import { getMaterialById } from '@/construction/materials/store'
 import type { ConstructionModel } from '@/construction/model'
-import { getPartInfoFromManifold } from '@/construction/parts/pipeline'
 import {
   TAG_FLOOR_LAYER_BOTTOM,
   TAG_FLOOR_LAYER_TOP,
@@ -19,81 +18,20 @@ import {
   TAG_WALL_LAYER_OUTSIDE,
   type Tag
 } from '@/construction/tags'
-import {
-  type Area,
-  type Length,
-  type PolygonWithHoles2D,
-  type Volume,
-  calculatePolygonWithHolesArea
-} from '@/shared/geometry'
+import { type Area, type Length, type Volume, calculatePolygonWithHolesArea } from '@/shared/geometry'
 
-export type PartId = string & { readonly brand: unique symbol }
-
-export interface SideFace {
-  index: number // The index of the side this is for with respect to boxSize
-  polygon: PolygonWithHoles2D // Normalized to fit within [0,0] to [side width,side height]
-}
-
-export interface FullPartInfo {
-  id: PartId
-  type: string
-  description?: string
-  boxSize: vec3
-  sideFaces?: SideFace[]
-}
-
-export interface InitialPartInfo {
-  type: string
-  subtype?: string
-  description?: string
-}
-
-export type PartInfo = InitialPartInfo | FullPartInfo
-
-export interface MaterialParts {
-  material: MaterialId
-  totalQuantity: number
-  totalVolume: Volume
-  totalArea?: Length
-  totalLength?: Length
-  parts: Record<PartId, MaterialPartItem>
-  usages: Record<PartId, MaterialPartItem>
-}
-
-export interface PartItem {
-  partId: PartId
-  type: string
-  description?: string
-  label: string // A, B, C, ...
-  size: vec3
-  elements: ConstructionElementId[]
-  quantity: number
-}
-
-export interface MaterialPartItem extends PartItem {
-  material: MaterialId
-  totalVolume: Volume
-  area?: Length
-  totalArea?: Length
-  length?: Length
-  totalLength?: Length
-  crossSection?: CrossSection
-  thickness?: Length
-  strawCategory?: StrawCategory
-  sideFaces?: SideFace[]
-  issue?: PartIssue
-}
-
-export interface MaterialUsage {
-  key: string
-  type: string
-  label: string // A, B, C, ...
-  totalVolume: Volume
-  totalArea?: Area
-}
-
-export type MaterialPartsList = Record<MaterialId, MaterialParts>
-export type VirtualPartsList = Record<PartId, PartItem>
+import { getPartInfoFromManifold } from './pipeline'
+import type {
+  FullPartInfo,
+  MaterialPartItem,
+  MaterialParts,
+  MaterialPartsList,
+  PartId,
+  PartIssue,
+  PartItem,
+  StrawCategory,
+  VirtualPartsList
+} from './types'
 
 const indexToLabel = (index: number): string => {
   const alphabetLength = 26
@@ -110,10 +48,6 @@ const indexToLabel = (index: number): string => {
 }
 
 const computeVolume = (size: vec3): Volume => size[0] * size[1] * size[2]
-
-export type PartIssue = 'CrossSectionMismatch' | 'LengthExceedsAvailable' | 'ThicknessMismatch' | 'SheetSizeExceeded'
-
-type StrawCategory = 'full' | 'partial' | 'flakes' | 'stuffed'
 
 const STRAW_CATEGORY_BY_TAG: Record<string, StrawCategory> = {
   [TAG_FULL_BALE.id]: 'full',
