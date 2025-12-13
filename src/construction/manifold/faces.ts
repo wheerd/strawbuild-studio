@@ -2,6 +2,7 @@ import { mat4, vec3 } from 'gl-matrix'
 import type { Manifold } from 'manifold-3d'
 
 import type { PolygonWithHoles3D } from '@/shared/geometry'
+import { computeTriangleNormal } from '@/shared/geometry/3d'
 
 /**
  * Extract visible polygon faces from a manifold mesh in view space with backface culling.
@@ -131,17 +132,94 @@ export function getVisibleFacesInViewSpace(m: Manifold, transform: mat4, cullBac
   return components.map(comp => trianglesToPolygon(comp, filteredTriangles, viewSpacePositions))
 }
 
+export interface Face3D {
+  polygon: PolygonWithHoles3D
+  normal: vec3
+}
+
+export function getFacesFromManifold(m: Manifold): Face3D[] {
+  const mesh = m.getMesh()
+
+  const vertices: vec3[] = []
+  for (let i = 0; i < mesh.vertProperties.length; i += 3) {
+    vertices.push(vec3.fromValues(mesh.vertProperties[i], mesh.vertProperties[i + 1], mesh.vertProperties[i + 2]))
+  }
+  // Extract triangle indices
+  const triangles: [number, number, number][] = []
+  for (let i = 0; i < mesh.triVerts.length; i += 3) {
+    triangles.push([mesh.triVerts[i], mesh.triVerts[i + 1], mesh.triVerts[i + 2]])
+  }
+
+  // Compute triangle normals in view space
+  const triangleNormals = triangles.map(t => computeTriangleNormal(vertices[t[0]], vertices[t[1]], vertices[t[2]]))
+
+  // Step 1: Build edge → triangle adjacency (using filtered triangles)
+  const edgeMap = new Map<string, number[]>()
+  const norm = (i: number, j: number) => (i < j ? `${i}_${j}` : `${j}_${i}`)
+
+  triangles.forEach((tri, ti) => {
+    for (let k = 0; k < 3; k++) {
+      const a = tri[k]
+      const b = tri[(k + 1) % 3]
+      const key = norm(a, b)
+      const tris = edgeMap.get(key)
+      if (tris) {
+        tris.push(ti)
+      } else {
+        edgeMap.set(key, [ti])
+      }
+    }
+  })
+
+  // Step 2: Build adjacency graph of coplanar triangles (using filtered data)
+  const adj: number[][] = triangles.map(() => [])
+  for (const [, tris] of edgeMap) {
+    if (tris.length === 2) {
+      const [t1, t2] = tris
+      if (areCoplanar(triangleNormals[t1], triangleNormals[t2], vertices, triangles[t1], triangles[t2])) {
+        adj[t1].push(t2)
+        adj[t2].push(t1)
+      }
+    }
+  }
+
+  // Step 3: BFS to find connected components of coplanar triangles
+  const visited = new Array(triangles.length).fill(false)
+  const components: number[][] = []
+  const compNormals: vec3[] = []
+
+  for (let i = 0; i < triangles.length; i++) {
+    if (visited[i]) continue
+    const comp: number[] = []
+    const queue = [i]
+    visited[i] = true
+
+    while (queue.length > 0) {
+      const t = queue.pop()
+      if (t === undefined) break
+      comp.push(t)
+      for (const nb of adj[t]) {
+        if (!visited[nb]) {
+          visited[nb] = true
+          queue.push(nb)
+        }
+      }
+    }
+    components.push(comp)
+    compNormals.push(triangleNormals[i])
+  }
+
+  // Step 4: For each coplanar component, extract boundary loops and build polygon(s)
+  // Polygons are in view space
+  return components.map((comp, i) => ({
+    polygon: trianglesToPolygon(comp, triangles, vertices),
+    normal: compNormals[i]
+  }))
+}
+
 // ---------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------
-
-function computeTriangleNormal(a: vec3, b: vec3, c: vec3): vec3 {
-  const ab = vec3.sub(vec3.create(), b, a)
-  const ac = vec3.sub(vec3.create(), c, a)
-  const n = vec3.cross(vec3.create(), ab, ac)
-  vec3.normalize(n, n)
-  return n
-}
 
 function areCoplanar(
   n1: vec3,

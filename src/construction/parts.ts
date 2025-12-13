@@ -4,6 +4,7 @@ import type { ConstructionElement, ConstructionElementId } from '@/construction/
 import type { CrossSection, DimensionalMaterial, MaterialId, SheetMaterial } from '@/construction/materials/material'
 import { getMaterialById } from '@/construction/materials/store'
 import type { ConstructionModel } from '@/construction/model'
+import { getPartInfoFromManifold } from '@/construction/parts/pipeline'
 import {
   TAG_FLOOR_LAYER_BOTTOM,
   TAG_FLOOR_LAYER_TOP,
@@ -332,6 +333,10 @@ export const generateMaterialPartsList = (model: ConstructionModel, excludeTypes
 
     if (partInfo) {
       processPart(partInfo, materialEntry, id, labelCounters, elementTags)
+      const mp = getPartInfoFromManifold(element.shape.manifold)
+      if (!mp.id.startsWith('cuboid')) {
+        console.log(partInfo, mp)
+      }
     } else {
       processConstructionElement(element, elementTags, materialEntry, labelCounters)
     }
