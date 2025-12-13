@@ -3,6 +3,7 @@ import { Badge, Card, Flex, Heading, IconButton, Table, Text, Tooltip } from '@r
 import { vec3 } from 'gl-matrix'
 import React, { useCallback, useMemo, useRef } from 'react'
 
+import { PartCutModal } from '@/construction/components/PartCutModal'
 import { getMaterialTypeIcon, getMaterialTypeName } from '@/construction/materials/components/MaterialSelect'
 import type {
   DimensionalMaterial,
@@ -13,6 +14,7 @@ import type {
 } from '@/construction/materials/material'
 import { useMaterialsMap } from '@/construction/materials/store'
 import type { MaterialPartItem, MaterialParts, MaterialPartsList } from '@/construction/parts'
+import { SawIcon } from '@/shared/components/Icons'
 import { Bounds2D, type Polygon2D, type Volume } from '@/shared/geometry'
 import { formatArea, formatLength, formatLengthInMeters, formatVolume } from '@/shared/utils/formatting'
 
@@ -466,6 +468,7 @@ function SpecialCutTooltip({ polygon }: { polygon: Polygon2D }): React.JSX.Eleme
           strokeLinejoin="miter"
         />
       </svg>
+      <Text>Click the "saw" button to see more detailed measurements</Text>
     </Flex>
   )
 }
@@ -613,12 +616,22 @@ function DimensionalPartsTable({ parts, material }: { parts: MaterialPartItem[];
                 <Flex align="center" gap="2">
                   <Text>{part.description}</Text>
                   {part.sideFaces?.length && part.sideFaces[0].polygon.outer.points.length >= 3 && (
-                    <Tooltip
-                      key="special-cut"
-                      content={<SpecialCutTooltip polygon={part.sideFaces[0].polygon.outer} />}
-                    >
-                      <ExclamationTriangleIcon aria-hidden style={{ color: 'var(--amber-9)' }} />
-                    </Tooltip>
+                    <>
+                      <Tooltip
+                        key="special-cut"
+                        content={<SpecialCutTooltip polygon={part.sideFaces[0].polygon.outer} />}
+                      >
+                        <ExclamationTriangleIcon aria-hidden style={{ color: 'var(--amber-9)' }} />
+                      </Tooltip>
+                      <PartCutModal
+                        trigger={
+                          <IconButton size="1" variant="outline" radius="full">
+                            <SawIcon />
+                          </IconButton>
+                        }
+                        polygon={part.sideFaces[0].polygon}
+                      />
+                    </>
                   )}
                 </Flex>
               </Table.Cell>

@@ -1055,8 +1055,12 @@ export function polygonEdgeCount(polygon: Polygon3D) {
 }
 
 export function simplifyPolygonWithHoles(polygon: PolygonWithHoles2D) {
+  const outer = simplifyPolygon(polygon.outer, 0.1)
+  if (outer.points.length < 3 || calculatePolygonArea(outer) < 10) return null
   return {
-    outer: simplifyPolygon(polygon.outer, 0.1),
-    holes: polygon.holes.map(h => simplifyPolygon(h, 0.1))
+    outer,
+    holes: polygon.holes
+      .map(h => simplifyPolygon(h, 0.1))
+      .filter(p => p.points.length > 2 && calculatePolygonArea(p) >= 10)
   }
 }

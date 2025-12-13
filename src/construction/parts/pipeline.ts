@@ -137,6 +137,8 @@ function isExtruded(manifold: Manifold): { dims: number[]; polygon: PolygonWithH
       holes: p1.holes.map(h => ensurePolygonIsCounterClockwise(projectPolygonTo2D(h, u, v)))
     }
     const simplifiedPolygon = simplifyPolygonWithHoles(polygon2D)
+    if (!simplifiedPolygon) continue
+
     const { size, polygon } = normalizedPolygon(simplifiedPolygon)
 
     return {
