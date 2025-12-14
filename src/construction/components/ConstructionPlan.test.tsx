@@ -3,7 +3,7 @@ import { render } from '@testing-library/react'
 import { vec2, vec3 } from 'gl-matrix'
 import { describe, expect, it } from 'vitest'
 
-import { IssueHoverProvider } from '@/construction/components/context/IssueHoverContext'
+import { PlanHighlightProvider } from '@/construction/components/context/PlanHighlightContext'
 import { IDENTITY, translate } from '@/construction/geometry'
 import type { ConstructionModel, HighlightedCuboid, HighlightedPolygon } from '@/construction/model'
 import { Bounds3D } from '@/shared/geometry'
@@ -36,11 +36,11 @@ describe('ConstructionPlan', () => {
     const views: ViewOption[] = [{ view: TOP_VIEW, label: 'Top' }]
     const { container } = render(
       <Theme>
-        <IssueHoverProvider>
+        <PlanHighlightProvider>
           <TagVisibilityProvider>
             <ConstructionPlan model={model} views={views} containerSize={{ width: 800, height: 600 }} />
           </TagVisibilityProvider>
-        </IssueHoverProvider>
+        </PlanHighlightProvider>
       </Theme>
     )
 
@@ -76,11 +76,11 @@ describe('ConstructionPlan', () => {
     const views: ViewOption[] = [{ view: TOP_VIEW, label: 'Top' }]
     const { container } = render(
       <Theme>
-        <IssueHoverProvider>
+        <PlanHighlightProvider>
           <TagVisibilityProvider>
             <ConstructionPlan model={model} views={views} containerSize={{ width: 800, height: 600 }} />
           </TagVisibilityProvider>
-        </IssueHoverProvider>
+        </PlanHighlightProvider>
       </Theme>
     )
 
@@ -122,11 +122,11 @@ describe('ConstructionPlan', () => {
     const views: ViewOption[] = [{ view: TOP_VIEW, label: 'Top' }]
     const { container } = render(
       <Theme>
-        <IssueHoverProvider>
+        <PlanHighlightProvider>
           <TagVisibilityProvider>
             <ConstructionPlan model={model} views={views} containerSize={{ width: 800, height: 600 }} />
           </TagVisibilityProvider>
-        </IssueHoverProvider>
+        </PlanHighlightProvider>
       </Theme>
     )
 

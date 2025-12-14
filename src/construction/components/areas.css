@@ -95,6 +95,19 @@
   }
 }
 
+/* Part highlighting animation */
+@keyframes pulse-part-highlight {
+  0%,
+  100% {
+    stroke-width: 40;
+    filter: drop-shadow(0 0 20px var(--accent-a6));
+  }
+  50% {
+    stroke-width: 50;
+    filter: drop-shadow(0 0 30px var(--accent-a8));
+  }
+}
+
 .construction-error {
   stroke: var(--color-danger-dark);
   stroke-width: 30;

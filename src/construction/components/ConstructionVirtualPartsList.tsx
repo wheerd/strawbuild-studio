@@ -1,14 +1,24 @@
-import { Card, Flex, Heading, Table, Text } from '@radix-ui/themes'
+import { EyeOpenIcon } from '@radix-ui/react-icons'
+import { Card, Flex, Heading, IconButton, Table, Text } from '@radix-ui/themes'
 import type { vec3 } from 'gl-matrix'
 import React, { useMemo } from 'react'
 
-import type { VirtualPartsList } from '@/construction/parts'
+import type { PartId, VirtualPartsList } from '@/construction/parts'
 import { formatLengthInMeters } from '@/shared/utils/formatting'
 
 const formatDimensions = (size: vec3): string =>
   `${formatLengthInMeters(size[0])} × ${formatLengthInMeters(size[1])} × ${formatLengthInMeters(size[2])}`
 
-export function ConstructionVirtualPartsList({ partsList }: { partsList: VirtualPartsList }): React.JSX.Element {
+// Helper to check if part can be highlighted (not auto-generated)
+const canHighlightPart = (partId: PartId): boolean => !partId.startsWith('auto_')
+
+export function ConstructionVirtualPartsList({
+  partsList,
+  onViewInPlan
+}: {
+  partsList: VirtualPartsList
+  onViewInPlan?: (partId: PartId) => void
+}): React.JSX.Element {
   const parts = useMemo(() => Object.values(partsList).sort((a, b) => a.label.localeCompare(b.label)), [partsList])
 
   if (parts.length === 0) {
@@ -38,6 +48,9 @@ export function ConstructionVirtualPartsList({ partsList }: { partsList: Virtual
               <Table.ColumnHeaderCell width="6em" justify="center">
                 Quantity
               </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="3em" justify="center">
+                View
+              </Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -54,6 +67,13 @@ export function ConstructionVirtualPartsList({ partsList }: { partsList: Virtual
                 </Table.Cell>
                 <Table.Cell justify="center">
                   <Text>{part.quantity}</Text>
+                </Table.Cell>
+                <Table.Cell justify="center">
+                  {canHighlightPart(part.partId) && onViewInPlan && (
+                    <IconButton size="1" variant="ghost" onClick={() => onViewInPlan(part.partId)} title="View in plan">
+                      <EyeOpenIcon />
+                    </IconButton>
+                  )}
                 </Table.Cell>
               </Table.Row>
             ))}

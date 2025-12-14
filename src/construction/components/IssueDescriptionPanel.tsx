@@ -4,7 +4,7 @@ import { use } from 'react'
 
 import type { ConstructionModel } from '@/construction/model'
 
-import { useIssueHover } from './context/IssueHoverContext'
+import { usePlanHighlight } from './context/PlanHighlightContext'
 
 interface IssueDescriptionPanelProps {
   modelPromise: Promise<ConstructionModel | null>
@@ -12,7 +12,7 @@ interface IssueDescriptionPanelProps {
 
 export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelProps) => {
   const model = use(modelPromise)
-  const { hoveredIssueId, setHoveredIssueId } = useIssueHover()
+  const { hoveredIssueId, setHoveredIssueId } = usePlanHighlight()
 
   return (
     <Flex direction="column" gap="2" p="2" style={{ maxHeight: '120px', overflowY: 'auto' }}>

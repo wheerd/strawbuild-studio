@@ -16,6 +16,7 @@ import './SVGViewport.css'
 
 export interface SVGViewportRef {
   fitToContent: () => void
+  zoomToBounds: (bounds: Bounds2D, options?: { padding?: number; animate?: boolean }) => void
 }
 
 interface SVGViewportProps extends RefAttributes<SVGViewportRef> {
@@ -147,12 +148,67 @@ export function SVGViewport({
     setViewport(initialViewport)
   }, [])
 
+  // Zoom to specific bounds with optional padding
+  const zoomToBounds = useCallback(
+    (bounds: Bounds2D, options?: { padding?: number; animate?: boolean }) => {
+      if (bounds.isEmpty || svgSize.width <= 0 || svgSize.height <= 0) return
+
+      const targetPadding = options?.padding ?? 0.1
+      const boundsPadding = Math.max(bounds.width, bounds.height) * targetPadding
+
+      // Calculate the zoom level needed to fit the bounds with padding
+      const paddedWidth = bounds.width + boundsPadding * 2
+      const paddedHeight = bounds.height + boundsPadding * 2
+
+      // Generate viewBox to get its dimensions
+      const currentViewBox = generateViewBoxFromBounds(
+        contentBounds,
+        padding,
+        svgSize.width,
+        svgSize.height,
+        flipX,
+        flipY
+      )
+      const viewBoxParts = currentViewBox.split(' ').map(Number)
+      const viewBoxWidth = viewBoxParts[2]
+      const viewBoxHeight = viewBoxParts[3]
+
+      // Calculate zoom based on which dimension constrains us more
+      const zoomX = viewBoxWidth / paddedWidth
+      const zoomY = viewBoxHeight / paddedHeight
+      const newZoom = Math.min(zoomX, zoomY)
+
+      // Calculate pan to center the bounds
+      // Account for flipX and flipY like generateViewBoxFromBounds does
+      const [centerX, centerY] = bounds.center
+      let adjustedCenterX = centerX
+      let adjustedCenterY = centerY
+
+      if (flipX) {
+        // X coordinates get negated: x' = -x
+        adjustedCenterX = -centerX
+      }
+      if (flipY) {
+        // Y coordinates get negated: y' = -y
+        adjustedCenterY = -centerY
+      }
+
+      setViewport({
+        zoom: Math.max(minZoom, Math.min(maxZoom, newZoom)),
+        panX: adjustedCenterX,
+        panY: adjustedCenterY
+      })
+    },
+    [contentBounds, padding, svgSize, flipX, flipY, minZoom, maxZoom]
+  )
+
   useImperativeHandle(
     ref,
     () => ({
-      fitToContent
+      fitToContent,
+      zoomToBounds
     }),
-    []
+    [fitToContent, zoomToBounds]
   )
 
   // Reset viewport when container size changes significantly
