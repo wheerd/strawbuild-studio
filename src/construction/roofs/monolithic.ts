@@ -1,4 +1,5 @@
 import { mat4, vec2, vec3 } from 'gl-matrix'
+import type { Manifold } from 'manifold-3d'
 
 import type { Roof } from '@/building/model'
 import { getModelActions } from '@/building/store'
@@ -6,6 +7,7 @@ import { type GroupOrElement, createConstructionElement } from '@/construction/e
 import { IDENTITY, type Transform } from '@/construction/geometry'
 import { LAYER_CONSTRUCTIONS } from '@/construction/layers'
 import type { LayerConfig, MonolithicLayerConfig, StripedLayerConfig } from '@/construction/layers/types'
+import { getBoundsFromManifold, intersectManifolds, transformManifold } from '@/construction/manifold/operations'
 import { type ConstructionModel, createConstructionGroup } from '@/construction/model'
 import { type ConstructionResult } from '@/construction/results'
 import { createExtrudedPolygon } from '@/construction/shapes'
@@ -32,6 +34,7 @@ import {
   intersectPolygon,
   lineFromSegment,
   lineIntersection,
+  perpendicular,
   perpendicularCCW,
   perpendicularCW,
   splitPolygonByLine,
@@ -74,6 +77,31 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
 
       // Overhang layers
       sideElements.push(...this.constructOverhangLayers(roof, config, expansionFactor, roofSide))
+
+      // STEP 3: Create clipping volume and apply to all elements
+      // Calculate Z-range for clipping volume (doubled for safety margin)
+      const minZ = -ridgeHeight - 2 * config.layers.insideThickness
+      const maxZ = ((config.thickness + config.layers.topThickness) * 2) as Length
+
+      // Get inverse transform to rotate clipping volume into local space
+      const inverseTransform = mat4.invert(mat4.create(), roofSide.transform)
+      if (!inverseTransform) {
+        throw new Error('Failed to invert roof transform')
+      }
+
+      mat4.translate(
+        inverseTransform,
+        inverseTransform,
+        vec3.fromValues(roof.ridgeLine.start[0], roof.ridgeLine.start[1], ridgeHeight)
+      )
+
+      // Create clipping volume from original (unexpanded, unoffset) polygon
+      const clippingVolume = this.createClippingVolume(roofSide.polygon, roof.ridgeLine, minZ, maxZ, inverseTransform)
+
+      // Apply clipping to all elements recursively
+      for (const element of sideElements) {
+        this.applyClippingRecursive(element, clippingVolume)
+      }
 
       // Group this side with its transform
       const sideTag = roofSide.side === 'left' ? TAG_ROOF_SIDE_LEFT : TAG_ROOF_SIDE_RIGHT
@@ -175,31 +203,48 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
   // ============================================================================
 
   /**
-   * Expand polygon perpendicular to ridge line by given factor
+   * Expand polygon perpendicular to ridge line and offset toward ridge
+   * Combines expansion and ridge offset in a single operation
    */
-  private expandPolygonFromRidge(polygon: Polygon2D, ridgeLine: LineSegment2D, factor: number): Polygon2D {
+  private expandAndOffsetPolygonFromRidge(
+    polygon: Polygon2D,
+    ridgeLine: LineSegment2D,
+    expansionFactor: number,
+    additionalExpansion: number
+  ): [Polygon2D, vec2] {
     const ridgeDir = direction(ridgeLine.start, ridgeLine.end)
+    let perpDir = perpendicular(ridgeDir)
 
-    return {
-      points: polygon.points.map(point => {
-        // Project point onto ridge line
-        const toPoint = vec2.sub(vec2.create(), point, ridgeLine.start)
-        const projection = vec2.dot(toPoint, ridgeDir)
-        const closestOnRidge = vec2.scaleAndAdd(vec2.create(), ridgeLine.start, ridgeDir, projection)
+    const expandedPoints = polygon.points.map(point => {
+      // Project point onto ridge line
+      const toPoint = vec2.sub(vec2.create(), point, ridgeLine.start)
+      const projection = vec2.dot(toPoint, ridgeDir)
+      const closestOnRidge = vec2.scaleAndAdd(vec2.create(), ridgeLine.start, ridgeDir, projection)
 
-        // Calculate perpendicular offset from ridge
-        const offset = vec2.sub(vec2.create(), point, closestOnRidge)
-        const offsetLen = vec2.len(offset)
+      // Calculate perpendicular offset from ridge
+      const offset = vec2.sub(vec2.create(), point, closestOnRidge)
+      const offsetLen = vec2.len(offset)
 
-        // Expand point away from ridge
-        if (offsetLen > 0.001) {
-          const offsetDir = vec2.scale(vec2.create(), offset, 1 / offsetLen)
-          const expansion = offsetLen * (factor - 1)
-          return vec2.scaleAndAdd(vec2.create(), point, offsetDir, expansion)
-        }
-        return vec2.clone(point)
-      })
-    }
+      // Place point at new offset distance from ridge
+      if (Math.abs(offsetLen) > 0.001) {
+        const offsetDir = vec2.scale(vec2.create(), offset, 1 / offsetLen)
+        perpDir = offsetDir
+        return vec2.scaleAndAdd(
+          vec2.create(),
+          closestOnRidge,
+          offsetDir,
+          offsetLen * expansionFactor + additionalExpansion
+        )
+      }
+      return vec2.clone(point)
+    })
+
+    return [
+      {
+        points: expandedPoints
+      },
+      perpDir
+    ]
   }
 
   /**
@@ -352,25 +397,107 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
   /**
    * Translate polygon to be relative to ridge start (rotation origin)
    */
-  private translatePolygonToOrigin(polygon: Polygon2D, ridgeLine: LineSegment2D): Polygon2D {
+  private translatePolygonToOrigin(
+    polygon: Polygon2D,
+    ridgeLine: LineSegment2D,
+    offset: vec2 = vec2.create()
+  ): Polygon2D {
+    const combinedOffset = vec2.sub(vec2.create(), ridgeLine.start, offset)
     return {
-      points: polygon.points.map(point => vec2.sub(vec2.create(), point, ridgeLine.start))
+      points: polygon.points.map(point => vec2.sub(vec2.create(), point, combinedOffset))
     }
   }
 
   /**
-   * Expand and translate polygon - combines expansion and translation to origin
+   * Calculate ridge offset distance based on Z position and slope
+   * Positive Z (above rotation axis) returns positive offset (toward ridge)
+   * Negative Z (below rotation axis) returns negative offset (away from ridge)
+   */
+  private calculateRidgeOffset(zPosition: Length, slopeAngleRad: number): Length {
+    return (zPosition * Math.tan(slopeAngleRad)) as Length
+  }
+
+  /**
+   * Create a clipping volume for the roof geometry
+   * The volume is a vertical extrusion of the roof side polygon, transformed by the inverse
+   * of the roof rotation so that after rotation it produces vertical edges
+   */
+  private createClippingVolume(
+    polygon: Polygon2D,
+    ridgeLine: LineSegment2D,
+    minZ: Length,
+    maxZ: Length,
+    inverseTransform: Transform
+  ): Manifold {
+    // Translate polygon to origin (same as for construction)
+    const translatedPolygon = this.translatePolygonToOrigin(polygon, ridgeLine)
+
+    // Create vertical extrusion
+    const extrusionThickness = (2 * (maxZ - minZ)) as Length
+    const shape = createExtrudedPolygon({ outer: translatedPolygon, holes: [] }, 'xy', extrusionThickness)
+
+    // Get the manifold and translate it to start at minZ
+    let manifold = shape.manifold
+    const translateToMinZ = mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, 2 * minZ))
+    manifold = transformManifold(manifold, translateToMinZ)
+
+    // Transform by inverse of roof rotation
+    manifold = transformManifold(manifold, inverseTransform)
+
+    return manifold
+  }
+
+  /**
+   * Apply clipping recursively to elements and groups
+   * Modifies elements in place by clipping their manifolds
+   */
+  private applyClippingRecursive(item: GroupOrElement, clippingVolume: Manifold): void {
+    if ('shape' in item) {
+      // This is an element - apply clipping
+      const invertedTransform = mat4.invert(mat4.create(), item.transform)
+      const clippedManifold = invertedTransform
+        ? transformManifold(
+            intersectManifolds(transformManifold(item.shape.manifold, item.transform), clippingVolume),
+            invertedTransform
+          )
+        : intersectManifolds(item.shape.manifold, clippingVolume)
+      item.shape.manifold = clippedManifold
+      item.shape.bounds = getBoundsFromManifold(clippedManifold)
+      item.bounds = item.shape.bounds
+    } else if ('children' in item) {
+      // This is a group - recursively apply to children
+      for (const child of item.children) {
+        this.applyClippingRecursive(child, clippingVolume)
+      }
+      // Recalculate group bounds from children
+      if (item.children.length > 0) {
+        item.bounds = Bounds3D.merge(...item.children.map(c => c.bounds))
+      }
+    }
+  }
+
+  /**
+   * Expand, offset toward ridge, and translate polygon to origin
    * This prepares the polygon for construction by:
    * 1. Expanding it perpendicular to ridge to compensate for slope angle
-   * 2. Translating it so ridge start is at origin (for rotation)
+   * 2. Offsetting it toward ridge to compensate for rotation gap
+   * 3. Translating it so ridge start is at origin (for rotation)
    */
   private preparePolygonForConstruction(
     polygon: Polygon2D,
     ridgeLine: LineSegment2D,
-    expansionFactor: number
+    expansionFactor: number,
+    ridgeOffsetDistance: Length,
+    additionalExpansion: Length
   ): Polygon2D {
-    const expanded = this.expandPolygonFromRidge(polygon, ridgeLine, expansionFactor)
-    return this.translatePolygonToOrigin(expanded, ridgeLine)
+    const [expandedPolygon, offset] = this.expandAndOffsetPolygonFromRidge(
+      polygon,
+      ridgeLine,
+      expansionFactor,
+      additionalExpansion
+    )
+    const actualOffset = vec2.scale(vec2.create(), offset, -ridgeOffsetDistance)
+    return this.translatePolygonToOrigin(expandedPolygon, ridgeLine, actualOffset)
   }
 
   /**
@@ -411,7 +538,19 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
     expansionFactor: number,
     roofSide: RoofSide
   ): GroupOrElement[] {
-    const preparedPolygon = this.preparePolygonForConstruction(roofSide.polygon, roof.ridgeLine, expansionFactor)
+    const slopeAngleRad = degreesToRadians(roof.slope)
+
+    // Calculate ridge offset for the center of the roof thickness
+    const ridgeOffset = this.calculateRidgeOffset(config.thickness, slopeAngleRad)
+    const additionalExpansion = Math.tan(slopeAngleRad) * config.thickness
+
+    const preparedPolygon = this.preparePolygonForConstruction(
+      roofSide.polygon,
+      roof.ridgeLine,
+      expansionFactor,
+      ridgeOffset,
+      additionalExpansion
+    )
 
     const element = createConstructionElement(
       config.material,
@@ -438,11 +577,22 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
       return elements
     }
 
-    const preparedPolygon = this.preparePolygonForConstruction(roofSide.polygon, roof.ridgeLine, expansionFactor)
-
+    const slopeAngleRad = degreesToRadians(roof.slope)
     let zOffset = config.thickness as Length
 
     for (const layer of config.layers.topLayers) {
+      // Calculate ridge offset for the center of this layer
+      const ridgeOffset = this.calculateRidgeOffset(zOffset + layer.thickness, slopeAngleRad)
+      const additionalExpansion = Math.tan(slopeAngleRad) * layer.thickness
+
+      const preparedPolygon = this.preparePolygonForConstruction(
+        roofSide.polygon,
+        roof.ridgeLine,
+        expansionFactor,
+        ridgeOffset,
+        additionalExpansion
+      )
+
       const results = this.runLayerConstruction({ outer: preparedPolygon, holes: [] }, zOffset, layer)
 
       const layerElements: GroupOrElement[] = []
@@ -458,7 +608,7 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
         elements.push(group)
       }
 
-      zOffset = (zOffset + layer.thickness) as Length
+      zOffset += layer.thickness
     }
 
     return elements
@@ -492,16 +642,26 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
       return elements
     }
 
+    const slopeAngleRad = degreesToRadians(roof.slope)
     let zOffset = -config.layers.insideThickness as Length
 
     // Reverse order: bottom to top
     const reversedLayers = [...config.layers.insideLayers].reverse()
 
     for (const layer of reversedLayers) {
+      const ridgeOffset = this.calculateRidgeOffset(zOffset + layer.thickness, slopeAngleRad) // Will be negative
+      const additionalExpansion = Math.tan(slopeAngleRad) * layer.thickness
+
       for (const ceilingPoly of sideCeilingPolygons) {
-        const preparedOuter = this.preparePolygonForConstruction(ceilingPoly.outer, roof.ridgeLine, expansionFactor)
+        const preparedOuter = this.preparePolygonForConstruction(
+          ceilingPoly.outer,
+          roof.ridgeLine,
+          expansionFactor,
+          ridgeOffset,
+          additionalExpansion
+        )
         const preparedHoles = ceilingPoly.holes.map(hole =>
-          this.preparePolygonForConstruction(hole, roof.ridgeLine, expansionFactor)
+          this.preparePolygonForConstruction(hole, roof.ridgeLine, expansionFactor, ridgeOffset, additionalExpansion)
         )
 
         const results = this.runLayerConstruction({ outer: preparedOuter, holes: preparedHoles }, zOffset, layer)
@@ -519,8 +679,7 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
           elements.push(group)
         }
       }
-
-      zOffset = (zOffset + layer.thickness) as Length
+      zOffset += layer.thickness
     }
 
     return elements
@@ -548,16 +707,26 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
       return elements
     }
 
+    const slopeAngleRad = degreesToRadians(roof.slope)
     let zOffset = -config.layers.overhangThickness as Length
 
     // Reverse order: bottom to top
     const reversedLayers = [...config.layers.overhangLayers].reverse()
 
     for (const layer of reversedLayers) {
+      const ridgeOffset = this.calculateRidgeOffset(zOffset + layer.thickness, slopeAngleRad) // Will be negative
+      const additionalExpansion = Math.tan(slopeAngleRad) * layer.thickness
+
       for (const overhangPoly of sideOverhangPolygons) {
-        const preparedOuter = this.preparePolygonForConstruction(overhangPoly.outer, roof.ridgeLine, expansionFactor)
+        const preparedOuter = this.preparePolygonForConstruction(
+          overhangPoly.outer,
+          roof.ridgeLine,
+          expansionFactor,
+          ridgeOffset,
+          additionalExpansion
+        )
         const preparedHoles = overhangPoly.holes.map(hole =>
-          this.preparePolygonForConstruction(hole, roof.ridgeLine, expansionFactor)
+          this.preparePolygonForConstruction(hole, roof.ridgeLine, expansionFactor, ridgeOffset, additionalExpansion)
         )
 
         const results = this.runLayerConstruction({ outer: preparedOuter, holes: preparedHoles }, zOffset, layer)
@@ -579,8 +748,7 @@ export class MonolithicRoofAssembly implements RoofAssembly<MonolithicRoofConfig
           elements.push(group)
         }
       }
-
-      zOffset = (zOffset + layer.thickness) as Length
+      zOffset += layer.thickness
     }
 
     return elements
