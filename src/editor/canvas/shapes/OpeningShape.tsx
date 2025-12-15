@@ -174,11 +174,10 @@ export function OpeningShape({
       {/* Opening cutout - render as a different colored line */}
       <Line
         points={openingPolygonArray}
-        fill={theme.bgCanvas}
+        fill={theme.bgCanvas80A}
         stroke={theme.border}
         strokeWidth={10}
         lineCap="butt"
-        opacity={0.8}
         closed
         listening
       />

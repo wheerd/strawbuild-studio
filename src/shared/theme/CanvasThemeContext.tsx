@@ -32,6 +32,7 @@ interface CanvasThemeColors {
   // Canvas backgrounds
   bgSubtle: string
   bgCanvas: string
+  bgCanvas80A: string
 
   // Basic colors
   white: string
@@ -72,6 +73,7 @@ function readColorsFromElement(element: HTMLElement | null, isDarkTheme: boolean
     grid: get('--color-grid'),
     bgSubtle: get('--color-bg-subtle'),
     bgCanvas: get('--color-bg-canvas'),
+    bgCanvas80A: `${get('--color-bg-canvas')}AA`, // slightly hacky
     white: get('--gray-1'),
     border: get('--gray-11'),
     black: get('--gray-12'),
