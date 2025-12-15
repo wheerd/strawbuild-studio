@@ -9,9 +9,9 @@ describe('createProjectionMatrix', () => {
     const point = vec3.fromValues(10, 20, 30)
     const result = projectPoint(point, projection)
 
-    // X→X, Y→Y, Z→depth
+    // X→X, Y→-Y (inverted), Z→depth
     expect(result[0]).toBeCloseTo(10)
-    expect(result[1]).toBeCloseTo(20)
+    expect(result[1]).toBeCloseTo(-20)
     expect(result[2]).toBeCloseTo(30)
   })
 
@@ -76,8 +76,9 @@ describe('projectPoint', () => {
     const result = projectPoint(point, combined)
 
     // After 90° rotation around Z, point (10, 0, 0) becomes (0, 10, 0)
+    // After Y-inversion in projection: (0, -10, 0)
     expect(result[0]).toBeCloseTo(0)
-    expect(result[1]).toBeCloseTo(10)
+    expect(result[1]).toBeCloseTo(-10)
     expect(result[2]).toBeCloseTo(0)
   })
 })

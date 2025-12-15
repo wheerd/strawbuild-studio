@@ -149,10 +149,14 @@ export function* yieldMeasurementFromArea(
 }
 
 function normalizeDirection(d: vec2) {
+  let result = d
   if (d[0] < 0 || (Math.abs(d[0]) < DIRECTION_TOLERANCE && d[1] < 0)) {
-    return vec2.scale(vec2.create(), d, -1)
+    result = vec2.scale(vec2.create(), d, -1)
   }
-  return d
+  // Ensure we don't have negative zero (floating-point artifact)
+  if (Object.is(result[0], -0)) result[0] = 0
+  if (Object.is(result[1], -0)) result[1] = 0
+  return result
 }
 
 function projectMeasurements(measurements: AutoMeasurement[], projection: Projection): ProjectedMeasurement[] {

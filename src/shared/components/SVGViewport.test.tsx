@@ -9,7 +9,7 @@ describe('SVGViewport', () => {
   const testContentBounds = Bounds2D.fromMinMax(vec2.fromValues(0, 0), vec2.fromValues(100, 100))
   const TestContent = () => <rect x="10" y="10" width="80" height="80" fill="blue" data-testid="test-rect" />
 
-  test('renders SVG with generated viewBox from content bounds', async () => {
+  test('renders SVG with fixed viewBox based on svgSize', async () => {
     const { container } = render(
       <SVGViewport contentBounds={testContentBounds} svgSize={{ width: 800, height: 600 }}>
         <TestContent />
@@ -17,11 +17,7 @@ describe('SVGViewport', () => {
     )
 
     const svg = container.querySelector('svg')
-    expect(svg).toHaveAttribute('viewBox')
-
-    // Initial viewBox might be fallback, but after container size is determined it should be calculated
-    const viewBox = svg?.getAttribute('viewBox')
-    expect(viewBox).toBeTruthy()
+    expect(svg).toHaveAttribute('viewBox', '0 0 800 600')
   })
 
   test('renders reset button', () => {
@@ -35,7 +31,7 @@ describe('SVGViewport', () => {
     expect(resetButton).toBeInTheDocument()
   })
 
-  test('renders children inside nested transform groups', () => {
+  test('renders children inside transform group', () => {
     render(
       <SVGViewport contentBounds={testContentBounds} svgSize={{ width: 800, height: 600 }}>
         <TestContent />
@@ -45,11 +41,8 @@ describe('SVGViewport', () => {
     const testRect = screen.getByTestId('test-rect')
     expect(testRect).toBeInTheDocument()
 
-    // Check that it's inside nested transform groups
-    const flipGroup = testRect.closest('g')
-    expect(flipGroup).toHaveClass('flipY', 'normalX') // Default flip settings
-
-    const transformGroup = flipGroup?.parentElement
+    // Check that it's inside a transform group
+    const transformGroup = testRect.closest('g')
     expect(transformGroup).toHaveAttribute('transform')
     expect(transformGroup?.getAttribute('transform')).toMatch(/translate\([^)]+\) scale\([^)]+\)/)
   })
@@ -88,7 +81,7 @@ describe('SVGViewport', () => {
 
     const resetButton = screen.getByRole('button', { name: /fit to content/i })
     const testRect = screen.getByTestId('test-rect')
-    const transformGroup = testRect.closest('g')?.parentElement
+    const transformGroup = testRect.closest('g')
 
     // Click fit to content button
     fireEvent.click(resetButton)
@@ -107,7 +100,7 @@ describe('SVGViewport', () => {
 
     const svg = container.querySelector('svg')
     const testRect = screen.getByTestId('test-rect')
-    const transformGroup = testRect.closest('g')?.parentElement
+    const transformGroup = testRect.closest('g')
 
     // Simulate zoom in
     fireEvent.wheel(svg!, { deltaY: -100 })
@@ -117,120 +110,8 @@ describe('SVGViewport', () => {
     expect(transform).toMatch(/scale\([\d.]+\)/)
   })
 
-  describe('flip functionality', () => {
-    test('applies default flip settings (flipY=true, flipX=false)', () => {
-      render(
-        <SVGViewport contentBounds={testContentBounds} svgSize={{ width: 800, height: 600 }}>
-          <TestContent />
-        </SVGViewport>
-      )
-
-      const testRect = screen.getByTestId('test-rect')
-      const flipGroup = testRect.closest('g')
-
-      expect(flipGroup).toHaveClass('flipY', 'normalX')
-    })
-
-    test('applies flipX=true setting', () => {
-      render(
-        <SVGViewport contentBounds={testContentBounds} svgSize={{ width: 800, height: 600 }} flipX flipY={false}>
-          <TestContent />
-        </SVGViewport>
-      )
-
-      const testRect = screen.getByTestId('test-rect')
-      const flipGroup = testRect.closest('g')
-
-      expect(flipGroup).toHaveClass('normalY', 'flipX')
-    })
-
-    test('applies both flipX=true and flipY=true', () => {
-      render(
-        <SVGViewport contentBounds={testContentBounds} svgSize={{ width: 800, height: 600 }} flipX flipY>
-          <TestContent />
-        </SVGViewport>
-      )
-
-      const testRect = screen.getByTestId('test-rect')
-      const flipGroup = testRect.closest('g')
-
-      expect(flipGroup).toHaveClass('flipY', 'flipX')
-    })
-
-    test('applies no flip when both are false', () => {
-      render(
-        <SVGViewport
-          contentBounds={testContentBounds}
-          svgSize={{ width: 800, height: 600 }}
-          flipX={false}
-          flipY={false}
-        >
-          <TestContent />
-        </SVGViewport>
-      )
-
-      const testRect = screen.getByTestId('test-rect')
-      const flipGroup = testRect.closest('g')
-
-      expect(flipGroup).toHaveClass('normalY', 'normalX')
-    })
-
-    test('flip group is inside transform group', () => {
-      render(
-        <SVGViewport contentBounds={testContentBounds} svgSize={{ width: 800, height: 600 }} flipX flipY={false}>
-          <TestContent />
-        </SVGViewport>
-      )
-
-      const testRect = screen.getByTestId('test-rect')
-      const flipGroup = testRect.closest('g')
-      const transformGroup = flipGroup?.parentElement
-
-      // Flip group should be inside transform group
-      expect(flipGroup).toHaveClass('normalY', 'flipX')
-      expect(transformGroup).toHaveAttribute('transform')
-      expect(transformGroup?.tagName).toBe('g')
-    })
-
-    test('maintains flip settings after zoom and pan operations', () => {
-      const { container } = render(
-        <SVGViewport contentBounds={testContentBounds} svgSize={{ width: 800, height: 600 }} flipX flipY>
-          <TestContent />
-        </SVGViewport>
-      )
-
-      const svg = container.querySelector('svg')
-      const testRect = screen.getByTestId('test-rect')
-      const flipGroup = testRect.closest('g')
-
-      // Perform zoom operation
-      fireEvent.wheel(svg!, { deltaY: -100 })
-
-      // Flip classes should remain unchanged
-      expect(flipGroup).toHaveClass('flipY', 'flipX')
-    })
-
-    test('maintains flip settings after fit to content', () => {
-      render(
-        <SVGViewport contentBounds={testContentBounds} svgSize={{ width: 800, height: 600 }} flipX flipY={false}>
-          <TestContent />
-        </SVGViewport>
-      )
-
-      const resetButton = screen.getByRole('button', { name: /fit to content/i })
-      const testRect = screen.getByTestId('test-rect')
-      const flipGroup = testRect.closest('g')
-
-      // Click fit to content
-      fireEvent.click(resetButton)
-
-      // Flip classes should remain unchanged
-      expect(flipGroup).toHaveClass('normalY', 'flipX')
-    })
-  })
-
   describe('viewport transform structure', () => {
-    test('has correct nested group structure', () => {
+    test('has correct group structure', () => {
       render(
         <SVGViewport contentBounds={testContentBounds} svgSize={{ width: 800, height: 600 }}>
           <TestContent />
@@ -238,17 +119,14 @@ describe('SVGViewport', () => {
       )
 
       const testRect = screen.getByTestId('test-rect')
-      const flipGroup = testRect.closest('g')
-      const transformGroup = flipGroup?.parentElement
+      const transformGroup = testRect.closest('g')
       const svg = transformGroup?.parentElement
 
-      // Verify the structure: svg > g[transform] > g[flip-classes] > content
+      // Verify the structure: svg > g[transform] > content
       expect(svg?.tagName).toBe('svg')
       expect(transformGroup?.tagName).toBe('g')
       expect(transformGroup).toHaveAttribute('transform')
-      expect(flipGroup?.tagName).toBe('g')
-      expect(flipGroup).toHaveClass('flipY', 'normalX') // Should have flip classes
-      expect(testRect.parentElement).toBe(flipGroup)
+      expect(testRect.parentElement).toBe(transformGroup)
     })
 
     test('transform group receives viewport transformations', () => {
@@ -260,7 +138,7 @@ describe('SVGViewport', () => {
 
       const svg = container.querySelector('svg')
       const testRect = screen.getByTestId('test-rect')
-      const transformGroup = testRect.closest('g')?.parentElement
+      const transformGroup = testRect.closest('g')
 
       // Initial transform
       expect(transformGroup).toHaveAttribute('transform')
@@ -272,26 +150,28 @@ describe('SVGViewport', () => {
       expect(updatedTransform).toMatch(/translate\([^)]+\) scale\([^)]+\)/)
     })
 
-    test('flip group does not receive viewport transformations', () => {
-      const { container } = render(
-        <SVGViewport contentBounds={testContentBounds} svgSize={{ width: 800, height: 600 }} flipX flipY={false}>
+    test('auto-fits content when contentBounds or svgSize changes', () => {
+      const { rerender } = render(
+        <SVGViewport contentBounds={testContentBounds} svgSize={{ width: 800, height: 600 }}>
           <TestContent />
         </SVGViewport>
       )
 
-      const svg = container.querySelector('svg')
       const testRect = screen.getByTestId('test-rect')
-      const flipGroup = testRect.closest('g')
+      const transformGroup = testRect.closest('g')
+      const initialTransform = transformGroup?.getAttribute('transform')
 
-      // Flip group should only have class attributes, not transform
-      expect(flipGroup).not.toHaveAttribute('transform')
-      expect(flipGroup).toHaveClass('normalY', 'flipX')
+      // Change svgSize
+      rerender(
+        <SVGViewport contentBounds={testContentBounds} svgSize={{ width: 1000, height: 800 }}>
+          <TestContent />
+        </SVGViewport>
+      )
 
-      // After zoom, flip group should still not have transform attribute
-      fireEvent.wheel(svg!, { deltaY: -100 })
-
-      expect(flipGroup).not.toHaveAttribute('transform')
-      expect(flipGroup).toHaveClass('normalY', 'flipX')
+      // Transform should update to fit new size
+      const newTransform = transformGroup?.getAttribute('transform')
+      expect(newTransform).toBeTruthy()
+      expect(newTransform).not.toBe(initialTransform)
     })
   })
 })

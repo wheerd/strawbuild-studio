@@ -116,12 +116,12 @@ export const createProjectionMatrix = (plane: Plane3D, z: -1 | 1, x: -1 | 1): Pr
 
   switch (plane) {
     case 'xy':
-      // Top view: X→X, Y→Y, Z→depth (identity matrix)
+      // Top view: X→X, Y→Y (inverted), Z→depth
       // prettier-ignore
       mat4.set(
         projMatrix,
         x,  0,  0,  0,
-        0,  1,  0,  0,
+        0, -1,  0,  0,
         0,  0,  z,  0,
         0,  0,  0,  1 
       )

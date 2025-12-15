@@ -1,18 +1,8 @@
 import { AllSidesIcon } from '@radix-ui/react-icons'
 import { IconButton } from '@radix-ui/themes'
-import React, {
-  type RefAttributes,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState
-} from 'react'
+import React, { type RefAttributes, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 
 import type { Bounds2D } from '@/shared/geometry'
-
-import './SVGViewport.css'
 
 export interface SVGViewportRef {
   fitToContent: () => void
@@ -28,8 +18,6 @@ interface SVGViewportProps extends RefAttributes<SVGViewportRef> {
   padding?: number // Padding around content (default: 0.1 = 10%)
   minZoom?: number // Minimum zoom level (default: 0.01)
   maxZoom?: number // Maximum zoom level (default: 50)
-  flipY?: boolean
-  flipX?: boolean
 }
 
 interface ViewportState {
@@ -40,70 +28,44 @@ interface ViewportState {
 
 const ZOOM_SCALE = 1.1
 const DEFAULT_PADDING = 0.1
-const DEFAULT_MIN_ZOOM = 0.01
-const DEFAULT_MAX_ZOOM = 50
+const DEFAULT_MIN_ZOOM = 0.00001 // Support very small zoom for large world-space coordinates (mm)
+const DEFAULT_MAX_ZOOM = 1000 // Support very large zoom for detailed views
 
-// Utility functions
-function calculateInitialViewport(): ViewportState {
-  // Start with identity transform - viewBox handles the initial fitting
-  return { zoom: 1, panX: 0, panY: 0 }
-}
-
-function generateViewBoxFromBounds(
+// Utility function to fit bounds to viewport with padding
+function fitBoundsToViewport(
   bounds: Bounds2D,
-  padding: number,
-  containerWidth: number,
-  containerHeight: number,
-  flipX = false,
-  flipY = false
-): string {
-  const contentWidth = bounds.width
-  const contentHeight = bounds.height
-
-  // Calculate content center
-  const [contentCenterX, contentCenterY] = bounds.center
-
-  // Add padding to content dimensions
-  const paddedContentWidth = contentWidth * (1 + padding * 2)
-  const paddedContentHeight = contentHeight * (1 + padding * 2)
-
-  // Calculate container aspect ratio
-  const containerAspectRatio = containerWidth / containerHeight
-
-  // Create viewBox that matches container aspect ratio exactly
-  // Determine which dimension constrains us more
-  let viewBoxWidth: number
-  let viewBoxHeight: number
-
-  if (paddedContentWidth / paddedContentHeight > containerAspectRatio) {
-    // Content is wider relative to container - fit width, expand height
-    viewBoxWidth = paddedContentWidth
-    viewBoxHeight = paddedContentWidth / containerAspectRatio
-  } else {
-    // Content is taller relative to container - fit height, expand width
-    viewBoxHeight = paddedContentHeight
-    viewBoxWidth = paddedContentHeight * containerAspectRatio
+  viewportWidth: number,
+  viewportHeight: number,
+  padding: number
+): ViewportState {
+  if (bounds.isEmpty || viewportWidth <= 0 || viewportHeight <= 0 || bounds.width <= 0 || bounds.height <= 0) {
+    return { zoom: 1, panX: 0, panY: 0 }
   }
 
-  // With transform-origin: 0 0, flips happen around the origin
-  // So we need to adjust the content bounds before calculating the viewBox
-  let adjustedContentCenterX = contentCenterX
-  let adjustedContentCenterY = contentCenterY
+  // Calculate padded dimensions
+  const paddedWidth = bounds.width * (1 + padding * 2)
+  const paddedHeight = bounds.height * (1 + padding * 2)
 
-  if (flipX) {
-    // X coordinates get negated: x' = -x
-    adjustedContentCenterX = -contentCenterX
+  // Calculate zoom to fit content in viewport
+  const zoomX = viewportWidth / paddedWidth
+  const zoomY = viewportHeight / paddedHeight
+  const zoom = Math.min(zoomX, zoomY)
+
+  // Ensure zoom is valid
+  if (!isFinite(zoom) || zoom <= 0) {
+    return { zoom: 1, panX: 0, panY: 0 }
   }
-  if (flipY) {
-    // Y coordinates get negated: y' = -y
-    adjustedContentCenterY = -contentCenterY
-  }
 
-  // Center the viewBox on the adjusted content center
-  const viewBoxX = adjustedContentCenterX - viewBoxWidth / 2
-  const viewBoxY = adjustedContentCenterY - viewBoxHeight / 2
+  // Calculate pan to center content
+  // Transform: viewBox = world * zoom + pan (SVG applies transforms right-to-left)
+  // We want bounds.center to map to viewport center
+  // viewportCenter = boundsCenter * zoom + pan
+  // pan = viewportCenter - boundsCenter * zoom
+  const [boundsCenterX, boundsCenterY] = bounds.center
+  const panX = viewportWidth / 2 - boundsCenterX * zoom
+  const panY = viewportHeight / 2 - boundsCenterY * zoom
 
-  return `${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}`
+  return { zoom, panX, panY }
 }
 
 const getResetButtonPosition = (position: SVGViewportProps['resetButtonPosition']) => {
@@ -129,24 +91,25 @@ export function SVGViewport({
   resetButtonPosition = 'top-right',
   padding = DEFAULT_PADDING,
   minZoom = DEFAULT_MIN_ZOOM,
-  maxZoom = DEFAULT_MAX_ZOOM,
-  flipX = false,
-  flipY = true
+  maxZoom = DEFAULT_MAX_ZOOM
 }: SVGViewportProps): React.JSX.Element {
   const svgRef = useRef<SVGSVGElement>(null)
 
-  const [viewport, setViewport] = useState<ViewportState>({
-    zoom: 1,
-    panX: 0,
-    panY: 0
+  const [viewport, setViewport] = useState<ViewportState>(() => {
+    // Initialize with correct viewport if bounds are available
+    if (!contentBounds.isEmpty && svgSize.width > 0 && svgSize.height > 0) {
+      return fitBoundsToViewport(contentBounds, svgSize.width, svgSize.height, padding)
+    }
+    return { zoom: 1, panX: 0, panY: 0 }
   })
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null)
 
   // Reset to initial viewport and recalculate viewBox
   const fitToContent = useCallback(() => {
-    const initialViewport = calculateInitialViewport()
-    setViewport(initialViewport)
-  }, [])
+    if (contentBounds.isEmpty || svgSize.width <= 0 || svgSize.height <= 0) return
+    const newViewport = fitBoundsToViewport(contentBounds, svgSize.width, svgSize.height, padding)
+    setViewport(newViewport)
+  }, [contentBounds, svgSize.width, svgSize.height, padding])
 
   // Zoom to specific bounds with optional padding
   const zoomToBounds = useCallback(
@@ -154,52 +117,12 @@ export function SVGViewport({
       if (bounds.isEmpty || svgSize.width <= 0 || svgSize.height <= 0) return
 
       const targetPadding = options?.padding ?? 0.1
-      const boundsPadding = Math.max(bounds.width, bounds.height) * targetPadding
+      const newViewport = fitBoundsToViewport(bounds, svgSize.width, svgSize.height, targetPadding)
 
-      // Calculate the zoom level needed to fit the bounds with padding
-      const paddedWidth = bounds.width + boundsPadding * 2
-      const paddedHeight = bounds.height + boundsPadding * 2
-
-      // Generate viewBox to get its dimensions
-      const currentViewBox = generateViewBoxFromBounds(
-        contentBounds,
-        padding,
-        svgSize.width,
-        svgSize.height,
-        flipX,
-        flipY
-      )
-      const viewBoxParts = currentViewBox.split(' ').map(Number)
-      const viewBoxWidth = viewBoxParts[2]
-      const viewBoxHeight = viewBoxParts[3]
-
-      // Calculate zoom based on which dimension constrains us more
-      const zoomX = viewBoxWidth / paddedWidth
-      const zoomY = viewBoxHeight / paddedHeight
-      const newZoom = Math.min(zoomX, zoomY)
-
-      // Calculate pan to center the bounds
-      // Account for flipX and flipY like generateViewBoxFromBounds does
-      const [centerX, centerY] = bounds.center
-      let adjustedCenterX = centerX
-      let adjustedCenterY = centerY
-
-      if (flipX) {
-        // X coordinates get negated: x' = -x
-        adjustedCenterX = -centerX
-      }
-      if (flipY) {
-        // Y coordinates get negated: y' = -y
-        adjustedCenterY = -centerY
-      }
-
-      setViewport({
-        zoom: Math.max(minZoom, Math.min(maxZoom, newZoom)),
-        panX: adjustedCenterX,
-        panY: adjustedCenterY
-      })
+      // Don't clamp zoom for zoomToBounds - allow any zoom level needed to show the content
+      setViewport(newViewport)
     },
-    [contentBounds, padding, svgSize, flipX, flipY, minZoom, maxZoom]
+    [svgSize.width, svgSize.height]
   )
 
   useImperativeHandle(
@@ -211,43 +134,28 @@ export function SVGViewport({
     [fitToContent, zoomToBounds]
   )
 
-  // Reset viewport when container size changes significantly
+  // Auto-fit when contentBounds or svgSize changes
   useEffect(() => {
-    if (svgSize.width <= 0 || svgSize.height <= 0) return
-    // Reset to initial viewport when container changes to ensure proper fit
-    const initialViewport = calculateInitialViewport()
-    setViewport(initialViewport)
-  }, [svgSize])
+    if (contentBounds.isEmpty || svgSize.width <= 0 || svgSize.height <= 0) return
+    const newViewport = fitBoundsToViewport(contentBounds, svgSize.width, svgSize.height, padding)
+    setViewport(newViewport)
+  }, [contentBounds, svgSize.width, svgSize.height, padding])
 
-  // Initialize with default viewport
-  useEffect(() => {
-    fitToContent()
-  }, [fitToContent])
+  // Fixed viewBox based on SVG size
+  const viewBox = `0 0 ${svgSize.width || 100} ${svgSize.height || 100}`
 
-  // Generate dynamic viewBox from content bounds
-  const viewBox = useMemo(
-    () =>
-      svgSize.width > 0 && svgSize.height > 0
-        ? generateViewBoxFromBounds(contentBounds, padding, svgSize.width, svgSize.height, flipX, flipY)
-        : '0 0 100 100', // Fallback viewBox
-    [contentBounds, padding, svgSize, flipX, flipY]
-  )
-
-  // Convert screen coordinates to SVG coordinates using CTM
-  const screenToSVGClient = useCallback((screenX: number, screenY: number) => {
-    if (!svgRef.current) return { x: 0, y: 0 }
-
-    const ctm = svgRef.current.getScreenCTM()
-    if (!ctm) {
-      console.warn('Cannot get SVG screen CTM, returning fallback coordinates')
-      return { x: 0, y: 0 }
-    }
+  // Convert screen coordinates to SVG viewBox coordinates
+  const screenToSVG = useCallback((screenX: number, screenY: number) => {
+    if (!svgRef.current) return null
 
     const pt = svgRef.current.createSVGPoint()
     pt.x = screenX
     pt.y = screenY
-    const result = pt.matrixTransform(ctm.inverse())
-    return { x: result.x, y: result.y }
+    const ctm = svgRef.current.getScreenCTM()
+    if (!ctm) return null
+
+    const svgPt = pt.matrixTransform(ctm.inverse())
+    return { x: svgPt.x, y: svgPt.y }
   }, [])
 
   // Handle wheel zoom with constraints
@@ -255,16 +163,22 @@ export function SVGViewport({
     (e: WheelEvent) => {
       e.preventDefault()
 
+      const svgCoords = screenToSVG(e.clientX, e.clientY)
+      if (!svgCoords) return
+
       const zoomFactor = e.deltaY > 0 ? 1 / ZOOM_SCALE : ZOOM_SCALE
-      const mousePos = screenToSVGClient(e.clientX, e.clientY)
 
       setViewport(prev => {
         const newZoom = Math.max(minZoom, Math.min(maxZoom, prev.zoom * zoomFactor))
-        const zoomRatio = newZoom / prev.zoom
 
-        // Zoom toward mouse position
-        const newPanX = mousePos.x - (mousePos.x - prev.panX) * zoomRatio
-        const newPanY = mousePos.y - (mousePos.y - prev.panY) * zoomRatio
+        // Zoom toward mouse position (keep world point under mouse fixed)
+        // Transform: viewBox = world * zoom + pan (SVG right-to-left order)
+        // Inverse: world = (viewBox - pan) / zoom
+        // Keep world point constant: (viewBox - oldPan) / oldZoom = (viewBox - newPan) / newZoom
+        // Solving: viewBox - newPan = (viewBox - oldPan) * newZoom / oldZoom
+        //          newPan = viewBox - (viewBox - oldPan) * newZoom / oldZoom
+        const newPanX = svgCoords.x - ((svgCoords.x - prev.panX) * newZoom) / prev.zoom
+        const newPanY = svgCoords.y - ((svgCoords.y - prev.panY) * newZoom) / prev.zoom
 
         return {
           zoom: newZoom,
@@ -273,7 +187,7 @@ export function SVGViewport({
         }
       })
     },
-    [screenToSVGClient, minZoom, maxZoom]
+    [screenToSVG, minZoom, maxZoom]
   )
 
   // Handle pointer down (start pan)
@@ -282,11 +196,14 @@ export function SVGViewport({
       // Pan with middle click or shift+left click
       if (e.button === 1 || (e.button === 0 && e.shiftKey)) {
         e.preventDefault()
-        const clientPos = screenToSVGClient(e.clientX, e.clientY)
-        setDragStart(clientPos)
+
+        const svgCoords = screenToSVG(e.clientX, e.clientY)
+        if (!svgCoords) return
+
+        setDragStart(svgCoords)
       }
     },
-    [screenToSVGClient]
+    [screenToSVG]
   )
 
   // Handle pointer move (continue pan)
@@ -301,21 +218,27 @@ export function SVGViewport({
       }
 
       e.preventDefault()
-      const currentPos = screenToSVGClient(e.clientX, e.clientY)
 
-      // Calculate delta and apply pan (same as main editor)
-      const deltaX = currentPos.x - dragStart.x
-      const deltaY = currentPos.y - dragStart.y
+      const svgCoords = screenToSVG(e.clientX, e.clientY)
+      if (!svgCoords) return
 
+      // Calculate viewBox-space delta
+      const deltaViewBoxX = svgCoords.x - dragStart.x
+      const deltaViewBoxY = svgCoords.y - dragStart.y
+
+      // Apply pan in viewBox space
+      // Transform: viewBox = world * zoom + pan
+      // To keep same world point: oldViewBox - oldPan = newViewBox - newPan (after dividing by zoom)
+      // So: newPan = newViewBox - oldViewBox + oldPan = oldPan + deltaViewBox
       setViewport(prev => ({
         ...prev,
-        panX: prev.panX + deltaX,
-        panY: prev.panY + deltaY
+        panX: prev.panX + deltaViewBoxX,
+        panY: prev.panY + deltaViewBoxY
       }))
 
-      setDragStart(currentPos)
+      setDragStart(svgCoords)
     },
-    [dragStart, screenToSVGClient]
+    [dragStart, screenToSVG]
   )
 
   // Handle pointer up (end pan)
@@ -335,6 +258,7 @@ export function SVGViewport({
   const handleTouchMove = useCallback(
     (e: React.TouchEvent) => {
       e.preventDefault()
+
       const currentTouches = Array.from(e.touches)
 
       if (touches.length === 1 && currentTouches.length === 1) {
@@ -342,16 +266,17 @@ export function SVGViewport({
         const prevTouch = touches[0]
         const currentTouch = currentTouches[0]
 
-        const prevPos = screenToSVGClient(prevTouch.clientX, prevTouch.clientY)
-        const currentPos = screenToSVGClient(currentTouch.clientX, currentTouch.clientY)
+        const prevCoords = screenToSVG(prevTouch.clientX, prevTouch.clientY)
+        const currCoords = screenToSVG(currentTouch.clientX, currentTouch.clientY)
+        if (!prevCoords || !currCoords) return
 
-        const deltaX = currentPos.x - prevPos.x
-        const deltaY = currentPos.y - prevPos.y
+        const deltaViewBoxX = currCoords.x - prevCoords.x
+        const deltaViewBoxY = currCoords.y - prevCoords.y
 
         setViewport(prev => ({
           ...prev,
-          panX: prev.panX + deltaX,
-          panY: prev.panY + deltaY
+          panX: prev.panX + deltaViewBoxX,
+          panY: prev.panY + deltaViewBoxY
         }))
       } else if (touches.length === 2 && currentTouches.length === 2) {
         // Two finger pinch zoom
@@ -368,16 +293,22 @@ export function SVGViewport({
           const zoomFactor = currentDistance / prevDistance
           const centerX = (currentTouches[0].clientX + currentTouches[1].clientX) / 2
           const centerY = (currentTouches[0].clientY + currentTouches[1].clientY) / 2
-          const centerPos = screenToSVGClient(centerX, centerY)
+
+          const centerCoords = screenToSVG(centerX, centerY)
+          if (!centerCoords) return
 
           setViewport(prev => {
             const newZoom = Math.max(minZoom, Math.min(maxZoom, prev.zoom * zoomFactor))
-            const zoomRatio = newZoom / prev.zoom
+
+            // Keep touch center fixed in world space
+            // newPan = viewBox - (viewBox - oldPan) * newZoom / oldZoom
+            const newPanX = centerCoords.x - ((centerCoords.x - prev.panX) * newZoom) / prev.zoom
+            const newPanY = centerCoords.y - ((centerCoords.y - prev.panY) * newZoom) / prev.zoom
 
             return {
               zoom: newZoom,
-              panX: centerPos.x - (centerPos.x - prev.panX) * zoomRatio,
-              panY: centerPos.y - (centerPos.y - prev.panY) * zoomRatio
+              panX: newPanX,
+              panY: newPanY
             }
           })
         }
@@ -385,7 +316,7 @@ export function SVGViewport({
 
       setTouches(currentTouches)
     },
-    [touches, screenToSVGClient]
+    [touches, screenToSVG, minZoom, maxZoom]
   )
 
   const handleTouchEnd = useCallback(() => {
@@ -420,9 +351,7 @@ export function SVGViewport({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <g transform={transform}>
-          <g className={`${flipY ? 'flipY' : 'normalY'} ${flipX ? 'flipX' : 'normalX'}`}>{children}</g>
-        </g>
+        <g transform={transform}>{children}</g>
       </svg>
 
       <IconButton
