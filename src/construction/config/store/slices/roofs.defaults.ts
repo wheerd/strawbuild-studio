@@ -1,7 +1,7 @@
 import { type RoofAssemblyId } from '@/building/model/ids'
 import type { RoofAssemblyConfig } from '@/construction/config/types'
 import { DEFAULT_CEILING_LAYER_SETS, DEFAULT_ROOF_LAYER_SETS } from '@/construction/layers/defaults'
-import { clt, strawbale, wood } from '@/construction/materials/material'
+import { clt, osb, strawbale, wood } from '@/construction/materials/material'
 
 const monolithicAssembly: RoofAssemblyConfig = {
   id: 'ra_clt_default' as RoofAssemblyId,
@@ -24,21 +24,22 @@ const purlinAssembly: RoofAssemblyConfig = {
   id: 'ra_purlin_default' as RoofAssemblyId,
   name: 'Purlin Roof (Straw)',
   type: 'purlin',
-  thickness: 500,
+  thickness: 360,
   purlinMaterial: wood.id,
-  purlinHeight: 220,
-  purlinWidth: 60,
-  purlinSpacing: 1000,
+  purlinHeight: 200,
+  purlinWidth: 120,
+  purlinSpacing: 6000,
+  purlinInset: 20,
   infillMaterial: strawbale.id,
   rafterMaterial: wood.id,
   rafterWidth: 60,
-  rafterSpacingMin: 600,
-  rafterSpacing: 800,
-  rafterSpacingMax: 1000,
-  insideCladdingMaterial: wood.id,
+  rafterSpacingMin: 70,
+  rafterSpacing: 500,
+  rafterSpacingMax: 500,
+  insideCladdingMaterial: osb.id,
   insideCladdingThickness: 25,
-  topCladdingMaterial: wood.id,
-  topCladdingThickness: 25,
+  topCladdingMaterial: osb.id,
+  topCladdingThickness: 22,
   strawMaterial: strawbale.id,
   layers: {
     insideThickness: 30,

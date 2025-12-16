@@ -45,6 +45,7 @@ export interface PurlinRoofConfig extends RoofAssemblyConfigBase {
   purlinHeight: Length
   purlinWidth: Length
   purlinSpacing: Length
+  purlinInset: Length
 
   infillMaterial: MaterialId
 

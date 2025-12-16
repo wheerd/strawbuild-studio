@@ -158,6 +158,20 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
+              Inset
+            </Text>
+          </Label.Root>
+          <LengthField
+            value={config.purlinInset}
+            onChange={value => onUpdate({ ...config, purlinInset: value })}
+            unit="mm"
+            size="1"
+          />
+        </Flex>
+
+        <Flex direction="column" gap="1">
+          <Label.Root>
+            <Text size="1" weight="medium" color="gray">
               Width
             </Text>
           </Label.Root>
@@ -625,21 +639,22 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
         name = 'New Purlin Roof'
         config = {
           type: 'purlin',
-          thickness: 500,
+          thickness: 360,
           purlinMaterial: defaultMaterial,
-          purlinHeight: 220,
-          purlinWidth: 60,
-          purlinSpacing: 1000,
+          purlinHeight: 200,
+          purlinWidth: 120,
+          purlinSpacing: 6000,
+          purlinInset: 20,
           infillMaterial: defaultMaterial,
           rafterMaterial: defaultMaterial,
           rafterWidth: 60,
-          rafterSpacingMin: 600,
-          rafterSpacing: 800,
-          rafterSpacingMax: 1000,
+          rafterSpacingMin: 70,
+          rafterSpacing: 500,
+          rafterSpacingMax: 500,
           insideCladdingMaterial: defaultMaterial,
-          insideCladdingThickness: 25,
+          insideCladdingThickness: 40,
           topCladdingMaterial: defaultMaterial,
-          topCladdingThickness: 25,
+          topCladdingThickness: 22,
           layers: {
             insideThickness: 0,
             insideLayers: [],

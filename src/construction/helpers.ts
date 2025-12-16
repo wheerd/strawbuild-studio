@@ -317,7 +317,7 @@ export class PolygonWithBoundingRect {
     const sorted = rawOffsets.filter(o => o >= 0 && o <= this.perpExtent).sort((a, b) => a - b)
     const results: number[] = []
     let lastOffset = -1
-    for (let offset of sorted) {
+    for (const offset of sorted) {
       if (offset - lastOffset > eps) {
         results.push(offset)
         lastOffset = offset

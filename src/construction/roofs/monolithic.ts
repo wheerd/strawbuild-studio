@@ -1,4 +1,5 @@
 import { vec2 } from 'gl-matrix'
+import type { Manifold } from 'manifold-3d'
 
 import type { Roof } from '@/building/model'
 import { type GroupOrElement, createConstructionElement } from '@/construction/elements'
@@ -60,10 +61,11 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
         slopeAngleRad,
         roofSide.side
       )
+      const clip = (m: Manifold) => m.intersect(clippingVolume)
 
       // Apply clipping to all elements recursively
       for (const element of sideElements) {
-        this.applyClippingRecursive(element, clippingVolume)
+        this.applyClippingRecursive(element, clip)
       }
 
       // Group this side with its transform

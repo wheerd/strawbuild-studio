@@ -3,8 +3,9 @@ import { mat4, vec2, vec3 } from 'gl-matrix'
 import type { Roof } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
-import { type GroupOrElement, createConstructionElement } from '@/construction/elements'
+import { type ConstructionElement, type GroupOrElement, createConstructionElement } from '@/construction/elements'
 import { PolygonWithBoundingRect, partitionByAlignedEdges, polygonEdges } from '@/construction/helpers'
+import { transformManifold } from '@/construction/manifold/operations'
 import { type ConstructionModel, createConstructionGroup } from '@/construction/model'
 import { BaseRoofAssembly, type RoofSide } from '@/construction/roofs/base'
 import { createExtrudedPolygon } from '@/construction/shapes'
@@ -29,6 +30,7 @@ import {
   perpendicularCW,
   splitPolygonByLine
 } from '@/shared/geometry'
+import { type Manifold } from '@/shared/geometry/manifoldInstance'
 
 import type { HeightLine, PurlinRoofConfig } from './types'
 
@@ -55,9 +57,13 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
         : [purlinArea]
 
     const purlins = [
-      ...this.constructRidgeBeam(roof, config, ridgeHeight),
+      ...this.constructRidgeBeams(roof, config, ridgeHeight),
       ...purlinAreaParts.flatMap(p => [...this.constructPurlins(roof, config, ridgeHeight, p, purlinCheckPoints)])
     ]
+
+    const purlinClippingVolume = purlins
+      .map(p => transformManifold(p.shape.manifold, p.transform))
+      .reduce((a, b) => a.add(b))
 
     // STEP 2: For each side, build all layers
     for (const roofSide of roofSides) {
@@ -90,9 +96,16 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
         roofSide.side
       )
 
+      const inverseTransform = mat4.create()
+      mat4.invert(inverseTransform, roofSide.transform)
+
+      const purlinClip = transformManifold(purlinClippingVolume, inverseTransform)
+
+      const clip = (m: Manifold) => m.intersect(clippingVolume).subtract(purlinClip)
+
       // Apply clipping to all elements recursively
       for (const element of sideElements) {
-        this.applyClippingRecursive(element, clippingVolume)
+        this.applyClippingRecursive(element, clip)
       }
 
       // Group this side with its transform
@@ -256,13 +269,18 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     return { points }
   }
 
-  private *constructRidgeBeam(roof: Roof, config: PurlinRoofConfig, ridgeHeight: Length): Generator<GroupOrElement> {
+  private *constructRidgeBeams(
+    roof: Roof,
+    config: PurlinRoofConfig,
+    ridgeHeight: Length
+  ): Generator<ConstructionElement> {
     if (roof.type === 'shed') return // Handled as a normal purlin
 
     const line = lineFromSegment(roof.ridgeLine)
     const parts = intersectLineWithPolygon(line, roof.overhangPolygon)
     const perpDir = perpendicular(line.direction)
 
+    const vOffset = ridgeHeight - config.purlinHeight + config.purlinInset
     const halfWidth = config.purlinWidth / 2
     for (const part of parts) {
       const partPolygon: Polygon2D = {
@@ -277,7 +295,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
       yield createConstructionElement(
         config.purlinMaterial,
         createExtrudedPolygon({ outer: partPolygon, holes: [] }, 'xy', config.purlinHeight),
-        mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, ridgeHeight - config.purlinHeight)),
+        mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, vOffset)),
         [TAG_ROOF]
       )
     }
@@ -289,7 +307,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     ridgeHeight: Length,
     polygon: Polygon2D,
     purlinCheckPoints: vec2[]
-  ): Generator<GroupOrElement> {
+  ): Generator<ConstructionElement> {
     const tanSlope = Math.tan(degreesToRadians(roof.slope))
     const ridgeDirection = direction(roof.ridgeLine.start, roof.ridgeLine.end)
     const downSlopeDir = perpendicularCW(ridgeDirection)
@@ -315,7 +333,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
 
     for (const purlin of purlinPolygons) {
       const minDist = Math.min(...purlin.outer.points.map(getDistanceToRidge))
-      const vOffset = ridgeHeight - minDist * tanSlope - config.purlinHeight
+      const vOffset = ridgeHeight - minDist * tanSlope - config.purlinHeight + config.purlinInset
       // Helper to get SIGNED distance from ridge (perpendicular)
 
       yield createConstructionElement(

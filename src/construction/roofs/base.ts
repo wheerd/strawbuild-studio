@@ -4,10 +4,10 @@ import type { Manifold } from 'manifold-3d'
 import type { Roof } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { type GroupOrElement } from '@/construction/elements'
-import { IDENTITY, type Transform } from '@/construction/geometry'
+import { IDENTITY, type Transform, transformBounds } from '@/construction/geometry'
 import { LAYER_CONSTRUCTIONS } from '@/construction/layers'
 import type { LayerConfig, MonolithicLayerConfig, StripedLayerConfig } from '@/construction/layers/types'
-import { getBoundsFromManifold, intersectManifolds, transformManifold } from '@/construction/manifold/operations'
+import { getBoundsFromManifold, transformManifold } from '@/construction/manifold/operations'
 import { type ConstructionModel, createConstructionGroup } from '@/construction/model'
 import { type ConstructionResult } from '@/construction/results'
 import { createExtrudedPolygon } from '@/construction/shapes'
@@ -269,27 +269,24 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
    * Apply clipping recursively to elements and groups
    * Modifies elements in place by clipping their manifolds
    */
-  protected applyClippingRecursive(item: GroupOrElement, clippingVolume: Manifold): void {
+  protected applyClippingRecursive(item: GroupOrElement, clipping: (m: Manifold) => Manifold): void {
     if ('shape' in item) {
       // This is an element - apply clipping
       const invertedTransform = mat4.invert(mat4.create(), item.transform)
       const clippedManifold = invertedTransform
-        ? transformManifold(
-            intersectManifolds(transformManifold(item.shape.manifold, item.transform), clippingVolume),
-            invertedTransform
-          )
-        : intersectManifolds(item.shape.manifold, clippingVolume)
+        ? transformManifold(clipping(transformManifold(item.shape.manifold, item.transform)), invertedTransform)
+        : clipping(item.shape.manifold)
       item.shape.manifold = clippedManifold
       item.shape.bounds = getBoundsFromManifold(clippedManifold)
       item.bounds = item.shape.bounds
     } else if ('children' in item) {
       // This is a group - recursively apply to children
       for (const child of item.children) {
-        this.applyClippingRecursive(child, clippingVolume)
+        this.applyClippingRecursive(child, clipping)
       }
       // Recalculate group bounds from children
       if (item.children.length > 0) {
-        item.bounds = Bounds3D.merge(...item.children.map(c => c.bounds))
+        item.bounds = Bounds3D.merge(...item.children.map(c => transformBounds(c.bounds, item.transform)))
       }
     }
   }

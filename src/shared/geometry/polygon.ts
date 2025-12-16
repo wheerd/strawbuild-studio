@@ -1060,7 +1060,7 @@ export function intersectLineWithPolygon(line: Line2D, polygon: Polygon2D): Line
   }[] = []
 
   // Test each polygon edge
-  for (let edge of polygonEdges(polygon)) {
+  for (const edge of polygonEdges(polygon)) {
     const edgeLength = vec2.distance(edge.start, edge.end)
     if (edgeLength < 1e-5) continue
 
