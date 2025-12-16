@@ -275,6 +275,112 @@ export class PolygonWithBoundingRect {
     }
   }
 
+  private *fixedOffsets(
+    start: number,
+    end: number,
+    spacing: number,
+    minSpacing: number,
+    thickness: number
+  ): Generator<number> {
+    if (end - start < spacing) {
+      yield end
+      return
+    }
+    const offsetEnd = end - thickness - minSpacing
+    let offset = start + spacing
+    for (; offset < offsetEnd; offset += spacing) {
+      yield offset
+    }
+    if (offset < end) {
+      yield offsetEnd
+    }
+    yield end
+  }
+
+  private *equalOffsets(start: number, end: number, maxSpacing: number, thickness: number): Generator<number> {
+    const span = end - start - maxSpacing
+    if (span <= 0) {
+      yield end
+      return
+    }
+    const offsetCount = Math.ceil(span / (maxSpacing + thickness))
+    const adjustedSpacing = (end - start - offsetCount * thickness) / (offsetCount + 1)
+    const offsetStart = start + adjustedSpacing
+    for (let i = 0; i < offsetCount; i++) {
+      yield offsetStart + i * (adjustedSpacing + thickness)
+    }
+    yield end
+  }
+
+  public perpProjectionOffsets(points: vec2[], eps = 1e-6) {
+    const rawOffsets = points.map(p => vec2.dot(vec2.subtract(vec2.create(), p, this.minPoint), this.perpDir))
+    const sorted = rawOffsets.filter(o => o >= 0 && o <= this.perpExtent).sort((a, b) => a - b)
+    const results: number[] = []
+    let lastOffset = -1
+    for (let offset of sorted) {
+      if (offset - lastOffset > eps) {
+        results.push(offset)
+        lastOffset = offset
+      }
+    }
+    return results
+  }
+
+  public *stripes({
+    thickness,
+    spacing,
+    equalSpacing = false,
+    minSpacing = 0,
+    stripeAtMin = true,
+    stripeAtMax = true,
+    minimumArea = 0,
+    requiredStripeMidpoints
+  }: {
+    thickness: Length
+    spacing: Length
+    equalSpacing?: boolean
+    minSpacing?: Length
+    stripeAtMin?: boolean
+    stripeAtMax?: boolean
+    minimumArea?: Area
+    requiredStripeMidpoints?: vec2[]
+  }): Generator<PolygonWithBoundingRect> {
+    let midpoints = this.perpProjectionOffsets(requiredStripeMidpoints ?? [])
+    const halfThickness = thickness / 2
+    if (stripeAtMin) {
+      const start = thickness + halfThickness
+      midpoints = [halfThickness, ...midpoints.filter(p => p > start)]
+    }
+    if (stripeAtMax) {
+      const end = this.perpExtent - thickness - halfThickness
+      midpoints = [...midpoints.filter(p => p > end), this.perpExtent - halfThickness]
+    }
+
+    for (let i = 0; i <= midpoints.length; i++) {
+      const start = i === 0 ? 0 : midpoints[i - 1] + halfThickness
+      const end = i === midpoints.length ? this.perpExtent : midpoints[i] - halfThickness
+
+      const offsets = equalSpacing
+        ? this.equalOffsets(start, end, spacing, thickness)
+        : this.fixedOffsets(start, end, spacing, minSpacing, thickness)
+
+      for (const offset of offsets) {
+        const p1 = vec2.scaleAndAdd(vec2.create(), this.minPoint, this.perpDir, offset)
+        const p2 = vec2.scaleAndAdd(vec2.create(), p1, this.perpDir, thickness)
+        const p3 = vec2.scaleAndAdd(vec2.create(), p2, this.dir, this.dirExtent)
+        const p4 = vec2.scaleAndAdd(vec2.create(), p1, this.dir, this.dirExtent)
+
+        const stripePolygon: Polygon2D = { points: [p1, p2, p3, p4] }
+
+        for (const clippedStripe of intersectPolygon(this.polygon, { outer: stripePolygon, holes: [] })) {
+          if (calculatePolygonWithHolesArea(clippedStripe) > minimumArea) {
+            yield PolygonWithBoundingRect.fromPolygon(clippedStripe, this.dir)
+          }
+        }
+      }
+    }
+  }
+
   public dirMeasurement(
     plane: Plane3D,
     thickness?: Length,
