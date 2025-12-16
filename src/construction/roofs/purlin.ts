@@ -1,6 +1,8 @@
 import { mat4, vec2, vec3 } from 'gl-matrix'
 
 import type { Roof } from '@/building/model'
+import { getModelActions } from '@/building/store'
+import { getConfigActions } from '@/construction/config'
 import { type GroupOrElement, createConstructionElement } from '@/construction/elements'
 import { PolygonWithBoundingRect, partitionByAlignedEdges, polygonEdges } from '@/construction/helpers'
 import { type ConstructionModel, createConstructionGroup } from '@/construction/model'
@@ -17,6 +19,7 @@ import {
   ensurePolygonIsClockwise,
   intersectLineSegmentWithPolygon,
   intersectLineWithPolygon,
+  isPointInPolygon,
   isPointStrictlyInPolygon,
   lineFromSegment,
   lineIntersection,
@@ -42,7 +45,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     // STEP 1: Split roof polygon ONCE
     const roofSides = this.splitRoofPolygon(roof, ridgeHeight)
 
-    const edgeRafterMidpoints = this.getRafterMidpoints(roof, config, slopeAngleRad, ridgeDirection)
+    const edgeRafterMidpoints = this.getRafterMidpoints(roof, config, ridgeDirection)
 
     const purlinArea = this.getPurlinArea(roof)
     const purlinCheckPoints = this.getPurlinCheckPoints(purlinArea, ridgeDirection)
@@ -198,19 +201,40 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     return purlinCheckPoints
   }
 
-  private getRafterMidpoints(roof: Roof, config: PurlinRoofConfig, slopeAngleRad: number, ridgeDirection: vec2) {
-    const rafterEdgePolygon = this.preparePolygonForConstruction(
-      offsetPolygon(roof.overhangPolygon, -config.rafterWidth / 2),
-      roof.ridgeLine,
-      slopeAngleRad,
-      config.thickness,
-      config.thickness,
-      vec2.create()
-    )
+  private getRafterMidpoints(roof: Roof, config: PurlinRoofConfig, ridgeDirection: vec2) {
+    const halfThickness = config.rafterWidth / 2
+
+    const rafterEdgePolygon = offsetPolygon(roof.overhangPolygon, -halfThickness)
     const edgeRafterMidpoints = [...polygonEdges(rafterEdgePolygon)]
       .filter(e => Math.abs(vec2.dot(direction(e.start, e.end), ridgeDirection)) < EPSILON)
       .map(e => midpoint(e.start, e.end))
-    return edgeRafterMidpoints
+      .map(p => vec2.sub(vec2.create(), p, roof.ridgeLine.start))
+
+    const { getPerimetersByStorey } = getModelActions()
+    const { getWallAssemblyById } = getConfigActions()
+
+    const perimeters = getPerimetersByStorey(roof.storeyId)
+    const wallRafterMidpoints = perimeters
+      .flatMap(p =>
+        p.walls
+          .filter(w => Math.abs(vec2.dot(w.direction, ridgeDirection)) < EPSILON)
+          .flatMap(wall => {
+            const assembly = getWallAssemblyById(wall.wallAssemblyId)
+            const outsideOffset = halfThickness - (assembly?.layers.outsideThickness ?? 0)
+            const insideOffset = (assembly?.layers.insideThickness ?? 0) - halfThickness
+
+            const outsideMidpoint = midpoint(wall.outsideLine.start, wall.outsideLine.end)
+            const outsidePoint = vec2.scaleAndAdd(vec2.create(), outsideMidpoint, wall.outsideDirection, outsideOffset)
+            const insideMidpoint = midpoint(wall.insideLine.start, wall.insideLine.end)
+            const insidePoint = vec2.scaleAndAdd(vec2.create(), insideMidpoint, wall.outsideDirection, insideOffset)
+
+            return [outsidePoint, insidePoint]
+          })
+      )
+      .filter(p => isPointInPolygon(p, roof.overhangPolygon))
+      .map(p => vec2.sub(vec2.create(), p, roof.ridgeLine.start))
+
+    return edgeRafterMidpoints.concat(wallRafterMidpoints)
   }
 
   private getPurlinArea(roof: Roof): Polygon2D {

@@ -220,7 +220,7 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
   /**
    * Translate polygon to be relative to ridge start (rotation origin)
    */
-  private translatePolygonToOrigin(
+  protected translatePolygonToOrigin(
     polygon: Polygon2D,
     ridgeLine: LineSegment2D,
     offset: vec2 = vec2.create()
