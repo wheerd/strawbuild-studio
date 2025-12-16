@@ -1,6 +1,7 @@
 import type { PathsD, PolyPathD } from 'clipper2-wasm'
 import { vec2, vec3 } from 'gl-matrix'
 
+import { lineSegmentIntersect, polygonEdges } from '@/construction/helpers'
 import {
   createPathD,
   createPathsD,
@@ -1046,6 +1047,50 @@ export function intersectLineSegmentWithPolygon(
   }
 
   return segments.length > 0 ? { segments } : null
+}
+
+export function intersectLineWithPolygon(line: Line2D, polygon: Polygon2D): LineSegment2D[] {
+  if (polygon.points.length < 3) {
+    return []
+  }
+
+  const intersections: {
+    t: number
+    p: vec2
+  }[] = []
+
+  // Test each polygon edge
+  for (let edge of polygonEdges(polygon)) {
+    const edgeLength = vec2.distance(edge.start, edge.end)
+    if (edgeLength < 1e-5) continue
+
+    const intersection = lineSegmentIntersect(line, edge)
+
+    if (!intersection) continue
+
+    // Compute t on infinite line
+    const toIntersection = vec2.sub(vec2.create(), intersection, line.point)
+    const t = vec2.dot(toIntersection, line.direction)
+    intersections.push({ t, p: intersection })
+  }
+
+  if (intersections.length === 0) {
+    return []
+  }
+
+  intersections.sort((a, b) => a.t - b.t)
+
+  const lines: LineSegment2D[] = []
+
+  for (let i = 1; i < intersections.length; i += 2) {
+    const start = intersections[i - 1].p
+    const end = intersections[i].p
+    if (vec2.squaredDistance(start, end) > 1) {
+      lines.push({ start, end })
+    }
+  }
+
+  return lines
 }
 
 export function polygonEdgeCount(polygon: Polygon3D) {

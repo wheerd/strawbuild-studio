@@ -109,19 +109,16 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
     const slopeAngleRad = degreesToRadians(roof.slope)
     const tanSlope = Math.tan(slopeAngleRad)
     const ridgeHeight = this.calculateRidgeHeight(roof)
+    const ridgeDir = direction(roof.ridgeLine.start, roof.ridgeLine.end)
+    const downSlopeDir = perpendicularCW(ridgeDir)
 
     // Helper to get SIGNED distance from ridge (perpendicular)
-    const getSignedDistanceToRidge = (point: vec2): number => {
-      const ridgeDir = direction(roof.ridgeLine.start, roof.ridgeLine.end)
-      const toPoint = vec2.sub(vec2.create(), point, roof.ridgeLine.start)
-      const downSlopeDir = perpendicularCW(ridgeDir)
-      return vec2.dot(toPoint, downSlopeDir)
-    }
+    const getSignedDistanceToRidge = (point: vec2): number =>
+      vec2.dot(vec2.sub(vec2.create(), point, roof.ridgeLine.start), downSlopeDir)
 
     // Calculate height offset at a point
-    const calculateOffset = (signedDist: number): number => {
-      return ridgeHeight - (roof.type === 'shed' ? signedDist : Math.abs(signedDist)) * tanSlope
-    }
+    const calculateOffset = (signedDist: number): number =>
+      ridgeHeight - (roof.type === 'shed' ? signedDist : Math.abs(signedDist)) * tanSlope
 
     // Calculate offset at a given T position along the line
     const calculateOffsetAt = (t: number): Length => {
