@@ -53,13 +53,12 @@ export interface PurlinRoofConfig extends RoofAssemblyConfigBase {
   rafterWidth: Length
   rafterSpacingMin: Length
   rafterSpacing: Length
-  rafterSpacingMax: Length
 
-  insideCladdingMaterial: MaterialId
-  insideCladdingThickness: Length
+  ceilingSheathingMaterial: MaterialId
+  ceilingSheathingThickness: Length
 
-  topCladdingMaterial: MaterialId
-  topCladdingThickness: Length
+  deckingMaterial: MaterialId
+  deckingThickness: Length
 
   strawMaterial?: MaterialId
 }
@@ -125,18 +124,21 @@ export const validateRoofConfig = (config: RoofConfig): void => {
     if (config.rafterWidth <= 0 || config.rafterSpacing <= 0) {
       throw new Error('Rafter dimensions must be positive')
     }
-    if (config.rafterSpacingMin > config.rafterSpacing || config.rafterSpacing > config.rafterSpacingMax) {
-      throw new Error('Rafter spacing must be between min and max')
+    if (config.rafterSpacingMin > config.rafterSpacing || config.rafterSpacingMin < 0) {
+      throw new Error('Rafter min spacing must be between 0 and desired spacing')
     }
-    if (config.insideCladdingThickness <= 0 || config.topCladdingThickness <= 0) {
-      throw new Error('Cladding thickness must be positive')
+    if (config.ceilingSheathingThickness <= 0) {
+      throw new Error('Ceiling sheathing thickness must be positive')
+    }
+    if (config.deckingThickness <= 0) {
+      throw new Error('Decking thickness must be positive')
     }
     // Validate all material IDs are present
     if (
       !config.purlinMaterial ||
       !config.rafterMaterial ||
-      !config.insideCladdingMaterial ||
-      !config.topCladdingMaterial
+      !config.ceilingSheathingMaterial ||
+      !config.deckingMaterial
     ) {
       throw new Error('Purlin roof must have all required materials')
     }

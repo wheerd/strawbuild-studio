@@ -76,8 +76,8 @@ export interface FilledFloorConfig extends FloorAssemblyConfigBase {
   subfloorThickness: Length
   subfloorMaterial: MaterialId
 
-  bottomCladdingThickness: Length
-  bottomCladdingMaterial: MaterialId
+  ceilingSheathingThickness: Length
+  ceilingSheathingMaterial: MaterialId
 
   openingFrameThickness: Length
   openingFrameMaterial: MaterialId
@@ -136,8 +136,8 @@ const validateFilledFloorConfig = (config: FilledFloorConfig): void => {
   if (config.subfloorThickness <= 0) {
     throw new Error('Subfloor thickness must be greater than 0')
   }
-  if (config.bottomCladdingThickness <= 0) {
-    throw new Error('Bottom cladding thickness must be greater than 0')
+  if (config.ceilingSheathingThickness <= 0) {
+    throw new Error('Ceiling sheathing thickness must be greater than 0')
   }
   if (config.openingFrameThickness <= 0) {
     throw new Error('Opening frame thickness must be greater than 0')

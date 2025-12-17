@@ -1,4 +1,4 @@
-import { ComponentInstanceIcon, SquareIcon, ViewVerticalIcon } from '@radix-ui/react-icons'
+import { SquareIcon, ViewVerticalIcon } from '@radix-ui/react-icons'
 import React, { type ComponentType } from 'react'
 
 import type { WallAssemblyConfig } from '@/construction/config/types'
@@ -246,11 +246,10 @@ export function getFloorAssemblyTypeIcon(type: FloorAssemblyType): ComponentType
 }
 
 export function getRoofAssemblyTypeIcon(type: RoofAssemblyType): ComponentType<IconProps> {
-  // TODO: Better icons
   switch (type) {
     case 'monolithic':
-      return SquareIcon
+      return MonolithicIcon
     case 'purlin':
-      return ComponentInstanceIcon
+      return FilledIcon
   }
 }

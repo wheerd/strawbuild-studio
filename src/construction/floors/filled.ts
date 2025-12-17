@@ -15,7 +15,7 @@ import type { ConstructionModel } from '@/construction/model'
 import { type ConstructionResult, aggregateResults, yieldMeasurement } from '@/construction/results'
 import { createExtrudedPolygon } from '@/construction/shapes'
 import {
-  TAG_FLOOR_BOTTOM_CLADDING,
+  TAG_FLOOR_CEAILING_SHEATHING,
   TAG_FLOOR_FRAME,
   TAG_FLOOR_OPENING_FRAME,
   TAG_JOIST,
@@ -153,7 +153,7 @@ export class FilledFloorAssembly extends BaseFloorAssembly<FilledFloorConfig> {
       )
     )
 
-    const totalThickness = config.bottomCladdingThickness + config.constructionHeight + config.subfloorThickness
+    const totalThickness = config.ceilingSheathingThickness + config.constructionHeight + config.subfloorThickness
     const bounds2D = Bounds2D.fromPoints(context.outerPolygon.points)
     const floorPolygons = subtractPolygons([context.outerPolygon], context.floorOpenings)
     const subfloor = {
@@ -170,17 +170,17 @@ export class FilledFloorAssembly extends BaseFloorAssembly<FilledFloorConfig> {
         )
       )
     }
-    const bottomCladding = {
+    const ceilingSheathing = {
       id: createConstructionElementId(),
-      bounds: bounds2D.toBounds3D('xy', 0, config.bottomCladdingThickness),
+      bounds: bounds2D.toBounds3D('xy', 0, config.ceilingSheathingThickness),
       transform: translate(vec3.fromValues(0, 0, -totalThickness)),
       children: floorPolygons.map(p =>
         createConstructionElement(
-          config.bottomCladdingMaterial,
-          createExtrudedPolygon(p, 'xy', config.bottomCladdingThickness),
+          config.ceilingSheathingMaterial,
+          createExtrudedPolygon(p, 'xy', config.ceilingSheathingThickness),
           undefined,
-          [TAG_FLOOR_BOTTOM_CLADDING],
-          { type: 'bottom-cladding' }
+          [TAG_FLOOR_CEAILING_SHEATHING],
+          { type: 'ceiling-heathing' }
         )
       )
     }
@@ -197,7 +197,7 @@ export class FilledFloorAssembly extends BaseFloorAssembly<FilledFloorConfig> {
           transform: translate(vec3.fromValues(0, 0, -config.constructionHeight - config.subfloorThickness)),
           children: aggregatedResults.elements
         },
-        bottomCladding
+        ceilingSheathing
       ],
       areas: aggregatedResults.areas,
       bounds: bounds2D.toBounds3D('xy', 0, -totalThickness),
@@ -210,7 +210,7 @@ export class FilledFloorAssembly extends BaseFloorAssembly<FilledFloorConfig> {
   getTopOffset = (_config: FilledFloorConfig) => 0
   getBottomOffset = (_config: FilledFloorConfig) => 0
   getConstructionThickness = (config: FilledFloorConfig) =>
-    config.bottomCladdingThickness + config.constructionHeight + config.subfloorThickness
+    config.ceilingSheathingThickness + config.constructionHeight + config.subfloorThickness
 }
 
 function detectBeamEdges(

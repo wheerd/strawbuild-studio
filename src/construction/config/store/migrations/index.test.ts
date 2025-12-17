@@ -156,4 +156,100 @@ describe('config migrations', () => {
     expect(layers.bottomLayers[0].thickness).toBe(12)
     expect(layers.bottomLayers[0].name).toBe('Default Layer')
   })
+
+  it('renames purlin roof config fields from cladding to sheathing/decking', () => {
+    const migrated = applyMigrations({
+      roofAssemblyConfigs: {
+        purlin: {
+          type: 'purlin',
+          thickness: 250,
+          insideCladdingMaterial: 'inside-mat',
+          insideCladdingThickness: 15,
+          topCladdingMaterial: 'top-mat',
+          topCladdingThickness: 20,
+          rafterSpacingMax: 800
+        }
+      }
+    }) as {
+      roofAssemblyConfigs: Record<string, Record<string, unknown>>
+    }
+
+    const roof = migrated.roofAssemblyConfigs.purlin
+    expect(roof.ceilingSheathingMaterial).toBe('inside-mat')
+    expect(roof.ceilingSheathingThickness).toBe(15)
+    expect(roof.deckingMaterial).toBe('top-mat')
+    expect(roof.deckingThickness).toBe(20)
+    expect('insideCladdingMaterial' in roof).toBe(false)
+    expect('insideCladdingThickness' in roof).toBe(false)
+    expect('topCladdingMaterial' in roof).toBe(false)
+    expect('topCladdingThickness' in roof).toBe(false)
+    expect('rafterSpacingMax' in roof).toBe(false)
+  })
+
+  it('renames filled floor config fields from bottomCladding to ceilingSheathing', () => {
+    const migrated = applyMigrations({
+      floorAssemblyConfigs: {
+        filled: {
+          type: 'filled',
+          constructionHeight: 300,
+          bottomCladdingMaterial: 'bottom-mat',
+          bottomCladdingThickness: 18
+        }
+      }
+    }) as {
+      floorAssemblyConfigs: Record<string, Record<string, unknown>>
+    }
+
+    const floor = migrated.floorAssemblyConfigs.filled
+    expect(floor.ceilingSheathingMaterial).toBe('bottom-mat')
+    expect(floor.ceilingSheathingThickness).toBe(18)
+    expect('bottomCladdingMaterial' in floor).toBe(false)
+    expect('bottomCladdingThickness' in floor).toBe(false)
+  })
+
+  it('does not migrate monolithic roof or other floor types', () => {
+    const migrated = applyMigrations({
+      roofAssemblyConfigs: {
+        monolithic: {
+          type: 'monolithic',
+          thickness: 200,
+          insideCladdingMaterial: 'should-not-migrate'
+        }
+      },
+      floorAssemblyConfigs: {
+        joist: {
+          type: 'joist',
+          bottomCladdingMaterial: 'should-not-migrate'
+        }
+      }
+    }) as {
+      roofAssemblyConfigs: Record<string, Record<string, unknown>>
+      floorAssemblyConfigs: Record<string, Record<string, unknown>>
+    }
+
+    const roof = migrated.roofAssemblyConfigs.monolithic
+    expect(roof.insideCladdingMaterial).toBe('should-not-migrate')
+    expect('ceilingSheathingMaterial' in roof).toBe(false)
+
+    const floor = migrated.floorAssemblyConfigs.joist
+    expect(floor.bottomCladdingMaterial).toBe('should-not-migrate')
+    expect('ceilingSheathingMaterial' in floor).toBe(false)
+  })
+
+  it('does not overwrite already migrated fields', () => {
+    const migrated = applyMigrations({
+      roofAssemblyConfigs: {
+        purlin: {
+          type: 'purlin',
+          ceilingSheathingMaterial: 'new-mat',
+          insideCladdingMaterial: 'old-mat'
+        }
+      }
+    }) as {
+      roofAssemblyConfigs: Record<string, Record<string, unknown>>
+    }
+
+    const roof = migrated.roofAssemblyConfigs.purlin
+    expect(roof.ceilingSheathingMaterial).toBe('new-mat')
+  })
 })

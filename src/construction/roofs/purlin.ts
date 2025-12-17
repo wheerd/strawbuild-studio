@@ -149,8 +149,8 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     return config.thickness
   }
 
-  protected getTopLayerOffset = (config: PurlinRoofConfig) => config.topCladdingThickness
-  protected getCeilingLayerOffset = (config: PurlinRoofConfig) => -config.insideCladdingThickness
+  protected getTopLayerOffset = (config: PurlinRoofConfig) => config.deckingThickness
+  protected getCeilingLayerOffset = (config: PurlinRoofConfig) => -config.ceilingSheathingThickness
   protected getOverhangLayerOffset = (_config: PurlinRoofConfig) => 0
 
   getTopOffset = (config: PurlinRoofConfig): Length => {
@@ -307,7 +307,8 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
         config.purlinMaterial,
         createExtrudedPolygon({ outer: partPolygon, holes: [] }, 'xy', config.purlinHeight),
         mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, vOffset)),
-        [TAG_RIDGE_BEAM]
+        [TAG_RIDGE_BEAM],
+        { type: 'roof-purlin' }
       )
     }
   }
@@ -348,7 +349,8 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
         config.purlinMaterial,
         createExtrudedPolygon(purlin, 'xy', config.purlinHeight),
         mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, vOffset)),
-        [TAG_PURLIN]
+        [TAG_PURLIN],
+        { type: 'roof-purlin' }
       )
     }
   }
@@ -394,34 +396,34 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
       downSlopeDir
     )
 
-    const topCladding = this.constructTopCladding(roofSide, roof, slopeAngleRad, config)
-    const bottomCladding = this.constructBottomCladding(roofSide, roof, slopeAngleRad, config, perimeterContexts)
+    const decking = this.constructDecking(roofSide, roof, slopeAngleRad, config)
+    const ceilingSheathing = this.constructCeilingSheathing(roofSide, roof, slopeAngleRad, config, perimeterContexts)
 
-    return bottomCladding.concat(rafters).concat(infill).concat(topCladding)
+    return ceilingSheathing.concat(rafters).concat(infill).concat(decking)
   }
 
-  private constructTopCladding(roofSide: RoofSide, roof: Roof, slopeAngleRad: number, config: PurlinRoofConfig) {
-    const topCladdingArea = this.preparePolygonForConstruction(
+  private constructDecking(roofSide: RoofSide, roof: Roof, slopeAngleRad: number, config: PurlinRoofConfig) {
+    const deckingArea = this.preparePolygonForConstruction(
       roofSide.polygon,
       roof.ridgeLine,
       slopeAngleRad,
-      config.thickness + config.topCladdingThickness,
-      config.topCladdingThickness,
+      config.thickness + config.deckingThickness,
+      config.deckingThickness,
       roofSide.dirToRidge
     )
-    const topCladding = [
+    const decking = [
       createConstructionElement(
-        config.topCladdingMaterial,
-        createExtrudedPolygon({ outer: topCladdingArea, holes: [] }, 'xy', config.topCladdingThickness),
+        config.deckingMaterial,
+        createExtrudedPolygon({ outer: deckingArea, holes: [] }, 'xy', config.deckingThickness),
         mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, config.thickness)),
         [TAG_DECKING],
         { type: 'roof-decking' }
       )
     ]
-    return topCladding
+    return decking
   }
 
-  private constructBottomCladding(
+  private constructCeilingSheathing(
     roofSide: RoofSide,
     roof: Roof,
     slopeAngleRad: number,
@@ -434,8 +436,8 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
           roofSide.polygon,
           roof.ridgeLine,
           slopeAngleRad,
-          -config.insideCladdingThickness,
-          config.insideCladdingThickness,
+          -config.ceilingSheathingThickness,
+          config.ceilingSheathingThickness,
           roofSide.dirToRidge
         )
       ],
@@ -445,23 +447,23 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
             c.innerPolygon,
             roof.ridgeLine,
             slopeAngleRad,
-            -config.insideCladdingThickness,
-            config.insideCladdingThickness,
+            -config.ceilingSheathingThickness,
+            config.ceilingSheathingThickness,
             roofSide.dirToRidge
           )
         )
       )
     )
-    const bottomCladding = innerConstructionAreas.map(p =>
+    const ceilingSheathing = innerConstructionAreas.map(p =>
       createConstructionElement(
-        config.insideCladdingMaterial,
-        createExtrudedPolygon({ outer: p, holes: [] }, 'xy', config.insideCladdingThickness),
-        mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, -config.insideCladdingThickness)),
+        config.ceilingSheathingMaterial,
+        createExtrudedPolygon({ outer: p, holes: [] }, 'xy', config.ceilingSheathingThickness),
+        mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, -config.ceilingSheathingThickness)),
         [TAG_INSIDE_SHEATHING],
         { type: 'roof-inside-sheathing' }
       )
     )
-    return bottomCladding
+    return ceilingSheathing
   }
 
   private constructInfill(

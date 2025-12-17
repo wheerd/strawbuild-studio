@@ -1,17 +1,9 @@
-import {
-  ComponentInstanceIcon,
-  CopyIcon,
-  ExclamationTriangleIcon,
-  PlusIcon,
-  SquareIcon,
-  TrashIcon
-} from '@radix-ui/react-icons'
+import { ComponentInstanceIcon, CopyIcon, PlusIcon, SquareIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
 import {
   AlertDialog,
   Badge,
   Button,
-  Callout,
   DropdownMenu,
   Flex,
   Grid,
@@ -94,31 +86,40 @@ interface PurlinRoofConfigFormProps {
 function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): React.JSX.Element {
   return (
     <Flex direction="column" gap="3">
-      <Heading size="2">Purlin Roof Configuration</Heading>
+      {/* Straw Configuration */}
 
-      <Callout.Root color="amber">
-        <Callout.Icon>
-          <ExclamationTriangleIcon />
-        </Callout.Icon>
-        <Callout.Text>
-          <Text>The construction of purlin roofs is not implemented yet.</Text>
-        </Callout.Text>
-      </Callout.Root>
+      <Heading size="2">Straw</Heading>
 
-      {/* Main Configuration */}
-      <Flex direction="column" gap="1">
-        <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            Straw Layer Thickness
-          </Text>
-        </Label.Root>
-        <LengthField
-          value={config.thickness}
-          onChange={value => onUpdate({ ...config, thickness: value })}
-          unit="mm"
-          size="1"
-        />
-      </Flex>
+      <Grid columns="2" gap="2" gapX="3">
+        <Flex direction="column" gap="1">
+          <Label.Root>
+            <Text size="1" weight="medium" color="gray">
+              Layer Thickness
+            </Text>
+          </Label.Root>
+          <LengthField
+            value={config.thickness}
+            onChange={value => onUpdate({ ...config, thickness: value })}
+            unit="mm"
+            size="1"
+          />
+        </Flex>
+
+        <Flex direction="column" gap="1">
+          <Label.Root>
+            <Text size="1" weight="medium" color="gray">
+              Material (Override)
+            </Text>
+          </Label.Root>
+          <MaterialSelectWithEdit
+            value={config.strawMaterial ?? null}
+            allowEmpty
+            emptyLabel="Use global straw settings"
+            onValueChange={strawMaterial => onUpdate({ ...config, strawMaterial: strawMaterial ?? undefined })}
+            size="1"
+          />
+        </Flex>
+      </Grid>
 
       <Separator size="4" />
 
@@ -260,38 +261,24 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             size="1"
           />
         </Flex>
-
-        <Flex direction="column" gap="1" gridColumnEnd="span 2">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Spacing (Max)
-            </Text>
-          </Label.Root>
-          <LengthField
-            value={config.rafterSpacingMax}
-            onChange={value => onUpdate({ ...config, rafterSpacingMax: value })}
-            unit="mm"
-            size="1"
-          />
-        </Flex>
       </Grid>
 
       <Separator size="4" />
 
-      {/* Cladding Configuration */}
-      <Heading size="2">Cladding</Heading>
+      <Heading size="2">Decking</Heading>
+
       <Grid columns="2" gap="2" gapX="3">
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Inside Material
+              Material
             </Text>
           </Label.Root>
           <MaterialSelectWithEdit
-            value={config.insideCladdingMaterial}
+            value={config.deckingMaterial}
             onValueChange={material => {
               if (!material) return
-              onUpdate({ ...config, insideCladdingMaterial: material })
+              onUpdate({ ...config, deckingMaterial: material })
             }}
             size="1"
           />
@@ -300,42 +287,12 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Inside Thickness
+              Thickness
             </Text>
           </Label.Root>
           <LengthField
-            value={config.insideCladdingThickness}
-            onChange={value => onUpdate({ ...config, insideCladdingThickness: value })}
-            unit="mm"
-            size="1"
-          />
-        </Flex>
-
-        <Flex direction="column" gap="1">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Top Material
-            </Text>
-          </Label.Root>
-          <MaterialSelectWithEdit
-            value={config.topCladdingMaterial}
-            onValueChange={material => {
-              if (!material) return
-              onUpdate({ ...config, topCladdingMaterial: material })
-            }}
-            size="1"
-          />
-        </Flex>
-
-        <Flex direction="column" gap="1">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Top Thickness
-            </Text>
-          </Label.Root>
-          <LengthField
-            value={config.topCladdingThickness}
-            onChange={value => onUpdate({ ...config, topCladdingThickness: value })}
+            value={config.deckingThickness}
+            onChange={value => onUpdate({ ...config, deckingThickness: value })}
             unit="mm"
             size="1"
           />
@@ -344,21 +301,39 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
 
       <Separator size="4" />
 
-      {/* Optional Straw Material */}
-      <Flex direction="column" gap="1">
-        <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            Straw Material (Override)
-          </Text>
-        </Label.Root>
-        <MaterialSelectWithEdit
-          value={config.strawMaterial ?? null}
-          allowEmpty
-          emptyLabel="Use global straw settings"
-          onValueChange={strawMaterial => onUpdate({ ...config, strawMaterial: strawMaterial ?? undefined })}
-          size="1"
-        />
-      </Flex>
+      <Heading size="2">Ceiling Sheathing</Heading>
+
+      <Grid columns="2" gap="2" gapX="3">
+        <Flex direction="column" gap="1">
+          <Label.Root>
+            <Text size="1" weight="medium" color="gray">
+              Material
+            </Text>
+          </Label.Root>
+          <MaterialSelectWithEdit
+            value={config.ceilingSheathingMaterial}
+            onValueChange={material => {
+              if (!material) return
+              onUpdate({ ...config, ceilingSheathingMaterial: material })
+            }}
+            size="1"
+          />
+        </Flex>
+
+        <Flex direction="column" gap="1">
+          <Label.Root>
+            <Text size="1" weight="medium" color="gray">
+              Thickness
+            </Text>
+          </Label.Root>
+          <LengthField
+            value={config.ceilingSheathingThickness}
+            onChange={value => onUpdate({ ...config, ceilingSheathingThickness: value })}
+            unit="mm"
+            size="1"
+          />
+        </Flex>
+      </Grid>
     </Flex>
   )
 }
@@ -650,11 +625,10 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
           rafterWidth: 60,
           rafterSpacingMin: 70,
           rafterSpacing: 500,
-          rafterSpacingMax: 500,
-          insideCladdingMaterial: defaultMaterial,
-          insideCladdingThickness: 40,
-          topCladdingMaterial: defaultMaterial,
-          topCladdingThickness: 22,
+          ceilingSheathingMaterial: defaultMaterial,
+          ceilingSheathingThickness: 40,
+          deckingMaterial: defaultMaterial,
+          deckingThickness: 22,
           layers: {
             insideThickness: 0,
             insideLayers: [],
