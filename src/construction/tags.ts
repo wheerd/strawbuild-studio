@@ -450,3 +450,34 @@ export const TAG_RIDGE_BEAM: Tag = {
   label: 'Ridge Beam',
   category: 'roof-part'
 }
+
+// Roof Measurement tags
+export const TAG_RAFTER_SPACING: Tag = {
+  id: 'roof-measurement_rafter-spacing',
+  label: 'Rafter Spacing',
+  category: 'roof-measurement'
+}
+
+export const TAG_RAFTER_LENGTH: Tag = {
+  id: 'roof-measurement_rafter-length',
+  label: 'Rafter Length',
+  category: 'roof-measurement'
+}
+
+export const TAG_PURLIN_LENGTH: Tag = {
+  id: 'roof-measurement_purlin-length',
+  label: 'Purlin Length',
+  category: 'roof-measurement'
+}
+
+export const TAG_PURLIN_RISE: Tag = {
+  id: 'roof-measurement_purlin-rise',
+  label: 'Purlin Rise',
+  category: 'roof-measurement'
+}
+
+export const TAG_PURLIN_SPACING: Tag = {
+  id: 'roof-measurement_purlin-spacing',
+  label: 'Purlin Spacing',
+  category: 'roof-measurement'
+}

@@ -329,10 +329,12 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
     if (layer.type === 'monolithic') {
       const construction = LAYER_CONSTRUCTIONS.monolithic
       yield* construction.construct(clonedPolygon, offset, 'xy', layer as MonolithicLayerConfig)
+      return
     }
     if (layer.type === 'striped') {
       const construction = LAYER_CONSTRUCTIONS.striped
       yield* construction.construct(clonedPolygon, offset, 'xy', layer as StripedLayerConfig)
+      return
     }
     throw new Error(`Unsupported layer type: ${(layer as { type: string }).type}`)
   }

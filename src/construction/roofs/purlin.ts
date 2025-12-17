@@ -8,7 +8,13 @@ import { PolygonWithBoundingRect, partitionByAlignedEdges, polygonEdges } from '
 import { transformManifold } from '@/construction/manifold/operations'
 import { constructStrawPolygon } from '@/construction/materials/straw'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model'
-import { type ConstructionResult, mergeResults, resultsToModel, yieldElement } from '@/construction/results'
+import {
+  type ConstructionResult,
+  mergeResults,
+  resultsToModel,
+  yieldElement,
+  yieldMeasurement
+} from '@/construction/results'
 import { BaseRoofAssembly, type RoofSide } from '@/construction/roofs/base'
 import { type ExtrudedShape, createExtrudedPolygon } from '@/construction/shapes'
 import {
@@ -16,6 +22,7 @@ import {
   TAG_INSIDE_SHEATHING,
   TAG_PURLIN,
   TAG_RAFTER,
+  TAG_RAFTER_SPACING,
   TAG_RIDGE_BEAM,
   TAG_ROOF,
   TAG_ROOF_SIDE_LEFT,
@@ -528,11 +535,14 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
       rafterPolygons.map(p => p.polygon.outer)
     ).map(p => PolygonWithBoundingRect.fromPolygon(p, roof.downSlopeDirection))
 
-    const infill = infillPolygons
-      .flatMap(p => Array.from(constructStrawPolygon(p, 'xy', config.thickness, config.strawMaterial)))
-      .filter(e => e.type === 'element')
-      .map(e => e.element as ConstructionElement)
-    return infill
+    yield* infillPolygons.flatMap(p =>
+      Array.from(constructStrawPolygon(p, 'xy', config.thickness, config.strawMaterial))
+    )
+
+    yield* infillPolygons
+      .map(p => p.perpMeasurement('xy', config.thickness, [TAG_RAFTER_SPACING]))
+      .filter(m => m != null)
+      .map(yieldMeasurement)
   }
 
   private getRafterPolygons(
