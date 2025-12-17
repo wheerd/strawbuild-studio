@@ -138,7 +138,6 @@ export interface Roof {
   storeyId: StoreyId
   type: RoofType
   referencePolygon: Polygon2D
-  overhangPolygon: Polygon2D
   ridgeLine: LineSegment2D
   mainSideIndex: number
   slope: number // Angle in degrees
@@ -147,4 +146,12 @@ export interface Roof {
   overhangs: RoofOverhang[] // Overhang for each side with computed geometry
   assemblyId: RoofAssemblyId
   referencePerimeter?: PerimeterId
+
+  // Computed
+  overhangPolygon: Polygon2D
+  slopeAngleRad: number
+  ridgeDirection: vec2
+  downSlopeDirection: vec2
+  rise: Length
+  span: Length
 }

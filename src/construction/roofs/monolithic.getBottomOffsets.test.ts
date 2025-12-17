@@ -36,7 +36,13 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
     slope,
     verticalOffset: millimeters(verticalOffset),
     overhangs: [],
-    assemblyId: 'test-assembly' as any
+    assemblyId: 'test-assembly' as any,
+    // Computed properties (not used in these tests, but required by type)
+    slopeAngleRad: 0,
+    ridgeDirection: vec2.fromValues(0, 0),
+    downSlopeDirection: vec2.fromValues(0, 0),
+    rise: 0,
+    span: 0
   })
 
   const createTestConfig = (insideThickness = 0): MonolithicRoofConfig => ({

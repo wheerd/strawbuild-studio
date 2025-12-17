@@ -7,10 +7,12 @@ import type { Roof, RoofOverhang, RoofType } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config/store'
 import type { Length, LineSegment2D, Polygon2D } from '@/shared/geometry'
 import {
+  degreesToRadians,
   direction,
   ensurePolygonIsClockwise,
   lineIntersection,
   perpendicular,
+  perpendicularCW,
   polygonEdgeOffset,
   simplifyPolygon,
   wouldClosingPolygonSelfIntersect
@@ -217,6 +219,20 @@ const getValidMainSideIndices = (polygon: Polygon2D): number[] => {
   return validIndices.length > 0 ? validIndices : Array.from({ length: n }, (_, i) => i)
 }
 
+export const computeRoofDerivedProperties = (roof: Roof): void => {
+  roof.slopeAngleRad = degreesToRadians(roof.slope)
+  roof.ridgeDirection = direction(roof.ridgeLine.start, roof.ridgeLine.end)
+  roof.downSlopeDirection = perpendicularCW(roof.ridgeDirection)
+
+  const projections = roof.referencePolygon.points.map(p => vec2.dot(p, roof.downSlopeDirection))
+  let minProjection = Math.min(...projections)
+  let maxProjection = Math.max(...projections)
+  const maxRun = Math.max(Math.abs(minProjection), Math.abs(maxProjection))
+
+  roof.span = maxProjection - minProjection
+  roof.rise = maxRun * Math.tan(roof.slopeAngleRad)
+}
+
 export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never]], [], RoofsSlice> = (set, get) => ({
   roofs: {},
 
@@ -290,8 +306,17 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
         verticalOffset,
         overhangs,
         assemblyId: assemblyId ?? getConfigActions().getDefaultRoofAssemblyId(),
-        referencePerimeter
+        referencePerimeter,
+        // Initialize computed properties (will be set by helper)
+        slopeAngleRad: 0,
+        ridgeDirection: vec2.fromValues(0, 0),
+        downSlopeDirection: vec2.fromValues(0, 0),
+        rise: 0,
+        span: 0
       }
+
+      // Compute all derived properties
+      computeRoofDerivedProperties(newRoof)
 
       set(state => {
         state.roofs[roofId] = newRoof
@@ -416,6 +441,11 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
           roof.assemblyId = updates.assemblyId
         }
 
+        // Recompute derived properties if slope or mainSideIndex changed
+        if (updates.slope !== undefined || updates.mainSideIndex !== undefined) {
+          computeRoofDerivedProperties(roof)
+        }
+
         success = true
       })
 
@@ -455,6 +485,9 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
 
         // Recompute ridge line
         roof.ridgeLine = computeRidgeLine(validatedPolygon, roof.mainSideIndex, roof.type)
+
+        // Recompute derived properties since geometry changed
+        computeRoofDerivedProperties(roof)
 
         success = true
       })
