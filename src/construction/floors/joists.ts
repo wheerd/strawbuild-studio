@@ -30,7 +30,7 @@ import {
 } from '@/shared/geometry'
 
 import { BaseFloorAssembly } from './base'
-import type { FloorConstructionContext, JoistFloorConfig } from './types'
+import type { JoistFloorConfig, PerimeterConstructionContext } from './types'
 
 const EPSILON = 1e-5
 
@@ -76,7 +76,7 @@ function detectBeamEdges(
 }
 
 export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
-  construct = (context: FloorConstructionContext, config: JoistFloorConfig): ConstructionModel => {
+  construct = (context: PerimeterConstructionContext, config: JoistFloorConfig): ConstructionModel => {
     const bbox = minimumAreaBoundingBox(context.outerPolygon)
     const joistDirection = bbox.smallestDirection
 
@@ -99,7 +99,7 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
       )
 
       if (insideBeam) {
-        const clippedBeam = subtractPolygons([insideBeam], context.openings)
+        const clippedBeam = subtractPolygons([insideBeam], context.floorOpenings)
         wallBeamPolygons.push(...clippedBeam)
         const leftDir = perpendicularCW(insideLine.direction)
         const leftPoints = insideBeam.points.filter(p => vec2.dot(direction(insideLine.point, p), leftDir) > 0)
@@ -109,7 +109,7 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
       const outsideBeam = infiniteBeamPolygon(outsideLine, prevClip, nextClip, config.wallBeamThickness, 0)
 
       if (outsideBeam) {
-        const clippedBeam = subtractPolygons([outsideBeam], context.openings)
+        const clippedBeam = subtractPolygons([outsideBeam], context.floorOpenings)
         wallBeamPolygons.push(...clippedBeam)
       }
     }
@@ -128,7 +128,7 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
     )
     const partitions = Array.from(partitionByAlignedEdges(joistArea, joistDirection))
 
-    const expandedHoles = context.openings.map(h => offsetPolygon(h, config.openingSideThickness))
+    const expandedHoles = context.floorOpenings.map(h => offsetPolygon(h, config.openingSideThickness))
 
     const joistPolygons = partitions.flatMap(p => {
       const { leftHasBeam, rightHasBeam } = detectBeamEdges(p, joistDirection, wallBeamCheckPoints)
@@ -194,7 +194,7 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
           )
         }) satisfies ConstructionResult
     )
-    const openingFrames = context.openings.flatMap(h =>
+    const openingFrames = context.floorOpenings.flatMap(h =>
       Array.from(
         simplePolygonFrame(
           h,
@@ -209,7 +209,7 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
       )
     )
 
-    const subfloorPolygons = subtractPolygons([context.innerPolygon], context.openings)
+    const subfloorPolygons = subtractPolygons([context.innerPolygon], context.floorOpenings)
     const subfloor = subfloorPolygons.map(
       p =>
         ({

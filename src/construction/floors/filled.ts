@@ -38,12 +38,12 @@ import {
 } from '@/shared/geometry'
 
 import { BaseFloorAssembly } from './base'
-import type { FilledFloorConfig, FloorConstructionContext } from './types'
+import type { FilledFloorConfig, PerimeterConstructionContext } from './types'
 
 const EPSILON = 1e-5
 
 export class FilledFloorAssembly extends BaseFloorAssembly<FilledFloorConfig> {
-  construct = (context: FloorConstructionContext, config: FilledFloorConfig): ConstructionModel => {
+  construct = (context: PerimeterConstructionContext, config: FilledFloorConfig): ConstructionModel => {
     const bbox = minimumAreaBoundingBox(context.outerPolygon)
     const joistDirection = bbox.smallestDirection
 
@@ -73,7 +73,7 @@ export class FilledFloorAssembly extends BaseFloorAssembly<FilledFloorConfig> {
     )
 
     const partitions = Array.from(partitionByAlignedEdges(joistArea, joistDirection))
-    const expandedHoles = context.openings
+    const expandedHoles = context.floorOpenings
       .map(h => offsetPolygon(h, config.openingFrameThickness))
       .map(ensurePolygonIsClockwise)
     const joistPolygons = partitions.flatMap(p => {
@@ -138,7 +138,7 @@ export class FilledFloorAssembly extends BaseFloorAssembly<FilledFloorConfig> {
       .filter(m => m != null)
       .map(yieldMeasurement)
 
-    const openingFrames = context.openings.flatMap(h =>
+    const openingFrames = context.floorOpenings.flatMap(h =>
       Array.from(
         simplePolygonFrame(
           h,
@@ -155,7 +155,7 @@ export class FilledFloorAssembly extends BaseFloorAssembly<FilledFloorConfig> {
 
     const totalThickness = config.bottomCladdingThickness + config.constructionHeight + config.subfloorThickness
     const bounds2D = Bounds2D.fromPoints(context.outerPolygon.points)
-    const floorPolygons = subtractPolygons([context.outerPolygon], context.openings)
+    const floorPolygons = subtractPolygons([context.outerPolygon], context.floorOpenings)
     const subfloor = {
       id: createConstructionElementId(),
       bounds: bounds2D.toBounds3D('xy', 0, config.subfloorThickness),

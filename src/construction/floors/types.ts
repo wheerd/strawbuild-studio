@@ -4,7 +4,7 @@ import type { ConstructionModel } from '@/construction/model'
 import type { Length, Line2D, Polygon2D } from '@/shared/geometry'
 
 export interface FloorAssembly<TConfig extends FloorAssemblyConfigBase> {
-  construct: (context: FloorConstructionContext, config: TConfig) => ConstructionModel
+  construct: (context: PerimeterConstructionContext, config: TConfig) => ConstructionModel
 
   getTopOffset: (config: TConfig) => Length
   getBottomOffset: (config: TConfig) => Length
@@ -12,12 +12,12 @@ export interface FloorAssembly<TConfig extends FloorAssemblyConfigBase> {
   getTotalThickness: (config: TConfig) => Length
 }
 
-export interface FloorConstructionContext {
+export interface PerimeterConstructionContext {
   outerLines: Line2D[]
   innerLines: Line2D[]
   outerPolygon: Polygon2D
   innerPolygon: Polygon2D
-  openings: Polygon2D[]
+  floorOpenings: Polygon2D[]
 }
 
 export type FloorAssemblyType = 'monolithic' | 'joist' | 'filled'

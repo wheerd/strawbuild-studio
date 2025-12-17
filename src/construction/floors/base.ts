@@ -1,10 +1,10 @@
 import type { ConstructionModel } from '@/construction/model'
 import { type Length } from '@/shared/geometry'
 
-import type { FloorAssembly, FloorAssemblyConfigBase, FloorConstructionContext } from './types'
+import type { FloorAssembly, FloorAssemblyConfigBase, PerimeterConstructionContext } from './types'
 
 export abstract class BaseFloorAssembly<TConfig extends FloorAssemblyConfigBase> implements FloorAssembly<TConfig> {
-  abstract construct: (context: FloorConstructionContext, config: TConfig) => ConstructionModel
+  abstract construct: (context: PerimeterConstructionContext, config: TConfig) => ConstructionModel
   abstract getTopOffset: (config: TConfig) => Length
   abstract getBottomOffset: (config: TConfig) => Length
   abstract getConstructionThickness: (config: TConfig) => Length

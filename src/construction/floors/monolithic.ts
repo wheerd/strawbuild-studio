@@ -7,13 +7,13 @@ import { createExtrudedPolygon } from '@/construction/shapes'
 import { TAG_FLOOR } from '@/construction/tags'
 
 import { BaseFloorAssembly } from './base'
-import type { FloorConstructionContext, MonolithicFloorConfig } from './types'
+import type { MonolithicFloorConfig, PerimeterConstructionContext } from './types'
 
 export class MonolithicFloorAssembly extends BaseFloorAssembly<MonolithicFloorConfig> {
-  construct = (context: FloorConstructionContext, config: MonolithicFloorConfig) => {
+  construct = (context: PerimeterConstructionContext, config: MonolithicFloorConfig) => {
     const floor = createConstructionElement(
       config.material,
-      createExtrudedPolygon({ outer: context.outerPolygon, holes: context.openings }, 'xy', config.thickness),
+      createExtrudedPolygon({ outer: context.outerPolygon, holes: context.floorOpenings }, 'xy', config.thickness),
       translate(vec3.fromValues(0, 0, -config.thickness)),
       [TAG_FLOOR]
     )

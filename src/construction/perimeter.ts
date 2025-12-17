@@ -2,7 +2,7 @@ import { mat4, vec2, vec3 } from 'gl-matrix'
 
 import type { FloorOpening, Perimeter } from '@/building/model'
 import { getModelActions } from '@/building/store'
-import { FLOOR_ASSEMBLIES, type FloorConstructionContext, constructFloorLayerModel } from '@/construction/floors'
+import { FLOOR_ASSEMBLIES, type PerimeterConstructionContext, constructFloorLayerModel } from '@/construction/floors'
 import { IDENTITY, translate } from '@/construction/geometry'
 import { polygonEdges } from '@/construction/helpers'
 import type { RawMeasurement } from '@/construction/measurements'
@@ -84,10 +84,10 @@ export function computeFloorConstructionPolygon(
   return { polygon: { points }, lines: filteredLines }
 }
 
-export const computeFloorConstructionContext = (
+export const computePerimeterConstructionContext = (
   perimeter: Perimeter,
   openings: FloorOpening[]
-): FloorConstructionContext => {
+): PerimeterConstructionContext => {
   const inner = computeFloorConstructionPolygon(perimeter, false)
   const outer = computeFloorConstructionPolygon(perimeter, true)
 
@@ -102,7 +102,7 @@ export const computeFloorConstructionContext = (
     innerPolygon: inner.polygon,
     outerLines: outer.lines,
     outerPolygon: outer.polygon,
-    openings: mergedHoles
+    floorOpenings: mergedHoles
   }
 }
 
@@ -175,7 +175,7 @@ export function constructPerimeter(perimeter: Perimeter, includeFloor = true, in
     }
   }
 
-  const context = computeFloorConstructionContext(perimeter, getFloorOpeningsByStorey(storey.id))
+  const context = computePerimeterConstructionContext(perimeter, getFloorOpeningsByStorey(storey.id))
 
   allModels.push(createPerimeterMeasurementModel(perimeter, context, storeyContext))
 
@@ -187,7 +187,7 @@ export function constructPerimeter(perimeter: Perimeter, includeFloor = true, in
     const floorModel = floorAssembly.construct(context, currentFloorAssembly)
     allModels.push(floorModel)
 
-    const topHoles = context.openings
+    const topHoles = context.floorOpenings
 
     let ceilingHoles: Polygon2D[] = []
     if (nextStorey && nextFloorAssembly) {
@@ -332,7 +332,7 @@ export function getPerimeterStats(perimeter: Perimeter): PerimeterStats {
 
 function createPerimeterMeasurementModel(
   perimeter: Perimeter,
-  floorContext: FloorConstructionContext,
+  floorContext: PerimeterConstructionContext,
   storeyContext: WallStoreyContext
 ): ConstructionModel {
   const measurements: RawMeasurement[] = []

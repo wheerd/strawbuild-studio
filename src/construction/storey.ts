@@ -19,7 +19,7 @@ import {
 import { getConfigActions } from './config'
 import { FLOOR_ASSEMBLIES, constructFloorLayerModel } from './floors'
 import { type ConstructionModel, mergeModels, transformModel } from './model'
-import { computeFloorConstructionContext, constructPerimeter } from './perimeter'
+import { computePerimeterConstructionContext, constructPerimeter } from './perimeter'
 import { TAG_STOREY } from './tags'
 import { createWallStoreyContext } from './walls'
 
@@ -39,7 +39,7 @@ export function constructStoreyFloor(storeyId: StoreyId): ConstructionModel[] {
   const perimeters = getPerimetersByStorey(storeyId)
   const floorOpenings = getFloorOpeningsByStorey(storeyId)
 
-  const contexts = perimeters.map(p => computeFloorConstructionContext(p, floorOpenings))
+  const contexts = perimeters.map(p => computePerimeterConstructionContext(p, floorOpenings))
 
   const floorAssembly = FLOOR_ASSEMBLIES[floorAssemblyConfig.type]
   const floorModels = contexts.map(c => floorAssembly.construct(c, floorAssemblyConfig))
@@ -65,7 +65,7 @@ export function constructStoreyFloor(storeyId: StoreyId): ConstructionModel[] {
 
   const floorLayerModels: ConstructionModel[] = []
 
-  const topHoles = contexts.flatMap(c => c.openings)
+  const topHoles = contexts.flatMap(c => c.floorOpenings)
   const innerPolygons = perimeters.map(perimeter => ({
     points: perimeter.corners.map(corner => vec2.fromValues(corner.insidePoint[0], corner.insidePoint[1]))
   }))
