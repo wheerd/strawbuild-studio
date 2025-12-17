@@ -3,13 +3,14 @@ import type { Manifold } from 'manifold-3d'
 
 import type { Roof } from '@/building/model'
 import type { PerimeterConstructionContext } from '@/construction/context'
-import { type GroupOrElement, createConstructionElement } from '@/construction/elements'
-import { type ConstructionModel, createConstructionGroup } from '@/construction/model'
+import { createConstructionElement } from '@/construction/elements'
+import { IDENTITY } from '@/construction/geometry'
+import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model'
+import { type ConstructionResult, mergeResults, resultsToModel, yieldElement } from '@/construction/results'
 import { BaseRoofAssembly, type RoofSide } from '@/construction/roofs/base'
 import { createExtrudedPolygon } from '@/construction/shapes'
 import { TAG_ROOF, TAG_ROOF_SIDE_LEFT, TAG_ROOF_SIDE_RIGHT } from '@/construction/tags'
 import {
-  Bounds3D,
   type Length,
   type LineSegment2D,
   intersectLineSegmentWithPolygon,
@@ -30,23 +31,16 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
     // STEP 1: Split roof polygon ONCE
     const roofSides = this.splitRoofPolygon(roof, ridgeHeight)
 
-    const allElements: GroupOrElement[] = []
-
     // STEP 2: For each side, build all layers
-    for (const roofSide of roofSides) {
-      const sideElements: GroupOrElement[] = []
-
-      // Main construction
-      sideElements.push(...this.constructRoofElements(roof, config, roofSide))
-
-      // Top layers
-      sideElements.push(...this.constructTopLayers(roof, config, roofSide))
-
-      // Ceiling layers
-      sideElements.push(...this.constructCeilingLayers(roof, config, roofSide))
-
-      // Overhang layers
-      sideElements.push(...this.constructOverhangLayers(roof, config, roofSide))
+    const roofModels = roofSides.map(roofSide => {
+      const results = Array.from(
+        mergeResults(
+          this.constructRoofElements(roof, config, roofSide),
+          this.constructTopLayers(roof, config, roofSide),
+          this.constructCeilingLayers(roof, config, roofSide),
+          this.constructOverhangLayers(roof, config, roofSide)
+        )
+      )
 
       // STEP 3: Create clipping volume and apply to all elements
       // Calculate Z-range for clipping volume (doubled for safety margin)
@@ -65,28 +59,18 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
       const clip = (m: Manifold) => m.intersect(clippingVolume)
 
       // Apply clipping to all elements recursively
-      for (const element of sideElements) {
-        this.applyClippingRecursive(element, clip)
+      for (const result of results) {
+        if (result.type === 'element') {
+          this.applyClippingRecursive(result.element, clip)
+        }
       }
 
       // Group this side with its transform
       const sideTag = roofSide.side === 'left' ? TAG_ROOF_SIDE_LEFT : TAG_ROOF_SIDE_RIGHT
-      const sideGroup = createConstructionGroup(sideElements, roofSide.transform, [sideTag])
+      return transformModel(resultsToModel(results), roofSide.transform, [sideTag])
+    })
 
-      allElements.push(sideGroup)
-    }
-
-    // Compute bounds from all elements
-    const bounds = allElements.length > 0 ? Bounds3D.merge(...allElements.map(el => el.bounds)) : Bounds3D.EMPTY
-
-    return {
-      elements: allElements,
-      measurements: [],
-      areas: [],
-      errors: [],
-      warnings: [],
-      bounds
-    }
+    return transformModel(mergeModels(...roofModels), IDENTITY, [TAG_ROOF])
   }
 
   getConstructionThickness = (config: MonolithicRoofConfig): Length => {
@@ -162,7 +146,11 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
   getTotalThickness = (config: MonolithicRoofConfig) =>
     config.layers.insideThickness + config.thickness + config.layers.topThickness
 
-  private constructRoofElements(roof: Roof, config: MonolithicRoofConfig, roofSide: RoofSide): GroupOrElement[] {
+  private *constructRoofElements(
+    roof: Roof,
+    config: MonolithicRoofConfig,
+    roofSide: RoofSide
+  ): Generator<ConstructionResult> {
     const preparedPolygon = this.preparePolygonForConstruction(
       roofSide.polygon,
       roof.ridgeLine,
@@ -172,13 +160,13 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
       roofSide.dirToRidge
     )
 
-    const element = createConstructionElement(
-      config.material,
-      createExtrudedPolygon({ outer: preparedPolygon, holes: [] }, 'xy', config.thickness),
-      undefined,
-      [TAG_ROOF]
+    yield* yieldElement(
+      createConstructionElement(
+        config.material,
+        createExtrudedPolygon({ outer: preparedPolygon, holes: [] }, 'xy', config.thickness),
+        undefined,
+        [TAG_ROOF]
+      )
     )
-
-    return [element]
   }
 }

@@ -2,12 +2,13 @@ import { mat4, vec2, vec3 } from 'gl-matrix'
 
 import type { Roof } from '@/building/model'
 import { type PerimeterConstructionContext, applyWallFaceOffsets } from '@/construction/context'
-import { type ConstructionElement, type GroupOrElement, createConstructionElement } from '@/construction/elements'
+import { type ConstructionElement, createConstructionElement } from '@/construction/elements'
 import { IDENTITY } from '@/construction/geometry'
 import { PolygonWithBoundingRect, partitionByAlignedEdges, polygonEdges } from '@/construction/helpers'
 import { transformManifold } from '@/construction/manifold/operations'
 import { constructStrawPolygon } from '@/construction/materials/straw'
-import { type ConstructionModel, createConstructionGroup } from '@/construction/model'
+import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model'
+import { type ConstructionResult, mergeResults, resultsToModel, yieldElement } from '@/construction/results'
 import { BaseRoofAssembly, type RoofSide } from '@/construction/roofs/base'
 import { type ExtrudedShape, createExtrudedPolygon } from '@/construction/shapes'
 import {
@@ -51,34 +52,26 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
   construct = (roof: Roof, config: PurlinRoofConfig, contexts: PerimeterConstructionContext[]): ConstructionModel => {
     const ridgeHeight = this.calculateRidgeHeight(roof)
 
-    const allElements: GroupOrElement[] = []
-
     // STEP 1: Split roof polygon ONCE
     const roofSides = this.splitRoofPolygon(roof, ridgeHeight)
 
     const edgeRafterMidpoints = this.getRafterMidpoints(roof, config, roof.ridgeDirection, contexts)
 
     const purlins = this.getAllPurlins(roof, contexts, config, ridgeHeight)
-
     const purlinClippingVolume = purlins
       .map(p => transformManifold(p.shape.manifold, p.transform))
       .reduce((a, b) => a.add(b))
 
     // STEP 2: For each side, build all layers
-    for (const roofSide of roofSides) {
-      const sideElements: GroupOrElement[] = []
-
-      // Main construction
-      sideElements.push(...this.constructRoof(roof, config, roofSide, edgeRafterMidpoints, contexts))
-
-      // Top layers
-      sideElements.push(...this.constructTopLayers(roof, config, roofSide))
-
-      // Ceiling layers
-      sideElements.push(...this.constructCeilingLayers(roof, config, roofSide))
-
-      // Overhang layers
-      sideElements.push(...this.constructOverhangLayers(roof, config, roofSide))
+    const roofModels = roofSides.map(roofSide => {
+      const results = Array.from(
+        mergeResults(
+          this.constructRoof(roof, config, roofSide, edgeRafterMidpoints, contexts),
+          this.constructTopLayers(roof, config, roofSide),
+          this.constructCeilingLayers(roof, config, roofSide),
+          this.constructOverhangLayers(roof, config, roofSide)
+        )
+      )
 
       // STEP 3: Create clipping volume and apply to all elements
       // Calculate Z-range for clipping volume (doubled for safety margin)
@@ -103,28 +96,20 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
       const clip = (m: Manifold) => m.intersect(clippingVolume).subtract(purlinClip)
 
       // Apply clipping to all elements recursively
-      for (const element of sideElements) {
-        this.applyClippingRecursive(element, clip)
+      for (const result of results) {
+        if (result.type === 'element') {
+          this.applyClippingRecursive(result.element, clip)
+        }
       }
 
       // Group this side with its transform
       const sideTag = roofSide.side === 'left' ? TAG_ROOF_SIDE_LEFT : TAG_ROOF_SIDE_RIGHT
-      const sideGroup = createConstructionGroup(sideElements, roofSide.transform, [sideTag])
+      return transformModel(resultsToModel(results), roofSide.transform, [sideTag])
+    })
 
-      allElements.push(sideGroup)
-    }
+    roofModels.push(resultsToModel(purlins.map(element => ({ type: 'element' as const, element }))))
 
-    allElements.push(...purlins)
-
-    const roofGroup = createConstructionGroup(allElements, IDENTITY, [TAG_ROOF])
-    return {
-      elements: [roofGroup],
-      measurements: [],
-      areas: [],
-      errors: [],
-      warnings: [],
-      bounds: roofGroup.bounds
-    }
+    return transformModel(mergeModels(...roofModels), IDENTITY, [TAG_ROOF])
   }
 
   getConstructionThickness = (config: PurlinRoofConfig): Length => {
@@ -244,8 +229,6 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
       // Segment end
       result.push({ position: segment.tEnd, offset: calculateOffsetAt(segment.tEnd), nullAfter: true })
     }
-
-    console.log('line', result)
 
     return result
   }
@@ -409,13 +392,13 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     }
   }
 
-  private constructRoof(
+  private *constructRoof(
     roof: Roof,
     config: PurlinRoofConfig,
     roofSide: RoofSide,
     rafterMidpoints: vec2[],
     perimeterContexts: PerimeterConstructionContext[]
-  ): GroupOrElement[] {
+  ): Generator<ConstructionResult> {
     const preparedRoofSide = this.preparePolygonForConstruction(
       roofSide.polygon,
       roof.ridgeLine,
@@ -427,24 +410,27 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
 
     const rafterPolygons = this.getRafterPolygons(preparedRoofSide, config, roof.downSlopeDirection, rafterMidpoints)
 
-    const rafters = rafterPolygons.map(p =>
-      createConstructionElement(
-        config.rafterMaterial,
-        createExtrudedPolygon(p.polygon, 'xy', config.thickness),
-        undefined,
-        [TAG_RAFTER],
-        { type: 'rafter' }
-      )
+    yield* rafterPolygons.map(
+      p =>
+        ({
+          type: 'element',
+          element: createConstructionElement(
+            config.rafterMaterial,
+            createExtrudedPolygon(p.polygon, 'xy', config.thickness),
+            undefined,
+            [TAG_RAFTER],
+            { type: 'rafter' }
+          )
+        }) satisfies ConstructionResult
     )
-    const infill = this.constructInfill(perimeterContexts, roof, config, roofSide, rafterPolygons)
 
-    const decking = this.constructDecking(roofSide, roof, config)
-    const ceilingSheathing = this.constructCeilingSheathing(roofSide, roof, config, perimeterContexts)
+    yield* this.constructInfill(perimeterContexts, roof, config, roofSide, rafterPolygons)
 
-    return ceilingSheathing.concat(rafters).concat(infill).concat(decking)
+    yield* this.constructDecking(roofSide, roof, config)
+    yield* this.constructCeilingSheathing(roofSide, roof, config, perimeterContexts)
   }
 
-  private constructDecking(roofSide: RoofSide, roof: Roof, config: PurlinRoofConfig) {
+  private *constructDecking(roofSide: RoofSide, roof: Roof, config: PurlinRoofConfig): Generator<ConstructionResult> {
     const deckingArea = this.preparePolygonForConstruction(
       roofSide.polygon,
       roof.ridgeLine,
@@ -453,7 +439,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
       config.deckingThickness,
       roofSide.dirToRidge
     )
-    const decking = [
+    yield* yieldElement(
       createConstructionElement(
         config.deckingMaterial,
         createExtrudedPolygon({ outer: deckingArea, holes: [] }, 'xy', config.deckingThickness),
@@ -461,16 +447,15 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
         [TAG_DECKING],
         { type: 'roof-decking' }
       )
-    ]
-    return decking
+    )
   }
 
-  private constructCeilingSheathing(
+  private *constructCeilingSheathing(
     roofSide: RoofSide,
     roof: Roof,
     config: PurlinRoofConfig,
     perimeterContexts: PerimeterConstructionContext[]
-  ) {
+  ): Generator<ConstructionResult> {
     const innerConstructionAreas = intersectPolygons(
       [
         this.preparePolygonForConstruction(
@@ -507,13 +492,13 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     return ceilingSheathing
   }
 
-  private constructInfill(
+  private *constructInfill(
     perimeterContexts: PerimeterConstructionContext[],
     roof: Roof,
     config: PurlinRoofConfig,
     roofSide: RoofSide,
     rafterPolygons: PolygonWithBoundingRect[]
-  ) {
+  ): Generator<ConstructionResult> {
     const preparedRoofSide = this.preparePolygonForConstruction(
       roofSide.polygon,
       roof.ridgeLine,

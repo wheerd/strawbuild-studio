@@ -1,4 +1,4 @@
-import { IDENTITY, type Transform } from '@/construction/geometry'
+import { IDENTITY, type Transform, transformBounds } from '@/construction/geometry'
 import type { PartInfo } from '@/construction/parts'
 import type { Tag } from '@/construction/tags'
 import { Bounds3D } from '@/shared/geometry'
@@ -10,7 +10,7 @@ import {
   createConstructionElementId
 } from './elements'
 import type { RawMeasurement } from './measurements'
-import type { HighlightedArea } from './model'
+import type { ConstructionModel, HighlightedArea } from './model'
 
 export type ConstructionIssueId = string & { readonly brand: unique symbol }
 
@@ -36,7 +36,26 @@ export const aggregateResults = (results: ConstructionResult[]) => ({
   areas: results.filter(r => r.type === 'area').map(r => r.area)
 })
 
+export const resultsToModel = (results: ConstructionResult[], bounds?: Bounds3D): ConstructionModel => {
+  const aggregatedResults = aggregateResults(results)
+  return {
+    elements: aggregatedResults.elements,
+    areas: aggregatedResults.areas,
+    bounds: bounds ?? Bounds3D.merge(...aggregatedResults.elements.map(e => transformBounds(e.bounds, e.transform))),
+    errors: aggregatedResults.errors,
+    measurements: aggregatedResults.measurements,
+    warnings: aggregatedResults.warnings
+  }
+}
+
 // Helper functions for creating ConstructionResults
+
+export function* mergeResults(...generators: Generator<ConstructionResult>[]): Generator<ConstructionResult> {
+  for (let gen of generators) {
+    yield* gen
+  }
+}
+
 export function* yieldElement(element: ConstructionElement | null): Generator<ConstructionResult> {
   if (element) {
     yield { type: 'element', element }

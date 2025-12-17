@@ -5,12 +5,12 @@ import type { Roof } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import type { PerimeterConstructionContext } from '@/construction/context'
 import { type GroupOrElement } from '@/construction/elements'
-import { IDENTITY, type Transform, transformBounds } from '@/construction/geometry'
+import { type Transform, transformBounds } from '@/construction/geometry'
 import { LAYER_CONSTRUCTIONS } from '@/construction/layers'
 import type { LayerConfig, MonolithicLayerConfig, StripedLayerConfig } from '@/construction/layers/types'
 import { getBoundsFromManifold, transformManifold } from '@/construction/manifold/operations'
-import { type ConstructionModel, createConstructionGroup } from '@/construction/model'
-import { type ConstructionResult } from '@/construction/results'
+import { type ConstructionModel } from '@/construction/model'
+import { type ConstructionResult, yieldAsGroup } from '@/construction/results'
 import { createExtrudedPolygon } from '@/construction/shapes'
 import {
   TAG_LAYERS,
@@ -311,11 +311,11 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
   /**
    * Run layer construction similar to wall layers
    */
-  protected runLayerConstruction(
+  protected *runLayerConstruction(
     polygon: PolygonWithHoles2D,
     offset: Length,
     layer: LayerConfig
-  ): ConstructionResult[] {
+  ): Generator<ConstructionResult> {
     // Clone polygon to avoid mutations
     const clonedPolygon: PolygonWithHoles2D = {
       outer: {
@@ -328,11 +328,11 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
 
     if (layer.type === 'monolithic') {
       const construction = LAYER_CONSTRUCTIONS.monolithic
-      return Array.from(construction.construct(clonedPolygon, offset, 'xy', layer as MonolithicLayerConfig))
+      yield* construction.construct(clonedPolygon, offset, 'xy', layer as MonolithicLayerConfig)
     }
     if (layer.type === 'striped') {
       const construction = LAYER_CONSTRUCTIONS.striped
-      return Array.from(construction.construct(clonedPolygon, offset, 'xy', layer as StripedLayerConfig))
+      yield* construction.construct(clonedPolygon, offset, 'xy', layer as StripedLayerConfig)
     }
     throw new Error(`Unsupported layer type: ${(layer as { type: string }).type}`)
   }
@@ -344,11 +344,9 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
   /**
    * Construct top layers (on roof side polygon)
    */
-  protected constructTopLayers(roof: Roof, config: T, roofSide: RoofSide): GroupOrElement[] {
-    const elements: GroupOrElement[] = []
-
+  protected *constructTopLayers(roof: Roof, config: T, roofSide: RoofSide): Generator<ConstructionResult> {
     if (config.layers.topLayers.length === 0) {
-      return elements
+      return
     }
 
     let zOffset = (this.getConstructionThickness(config) + this.getTopLayerOffset(config)) as Length
@@ -365,46 +363,32 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
 
       const results = this.runLayerConstruction({ outer: preparedPolygon, holes: [] }, zOffset, layer)
 
-      const layerElements: GroupOrElement[] = []
-      for (const result of results) {
-        if (result.type === 'element') {
-          layerElements.push(result.element)
-        }
-      }
-
-      if (layerElements.length > 0) {
-        const customTag = createTag('roof-layer', layer.name)
-        const group = createConstructionGroup(layerElements, IDENTITY, [TAG_ROOF_LAYER_TOP, TAG_LAYERS, customTag])
-        elements.push(group)
-      }
+      const customTag = createTag('roof-layer', layer.name)
+      yield* yieldAsGroup(results, [TAG_ROOF_LAYER_TOP, TAG_LAYERS, customTag])
 
       zOffset += layer.thickness
     }
-
-    return elements
   }
 
   /**
    * Construct ceiling layers (inside perimeter intersection with roof side)
    */
-  protected constructCeilingLayers(roof: Roof, config: T, roofSide: RoofSide): GroupOrElement[] {
-    const elements: GroupOrElement[] = []
-
+  protected *constructCeilingLayers(roof: Roof, config: T, roofSide: RoofSide): Generator<ConstructionResult> {
     if (config.layers.insideLayers.length === 0) {
-      return elements
+      return
     }
 
     // Get full ceiling polygon (perimeter inside intersection with reference)
     const fullCeilingPolygon = this.getCeilingPolygon(roof)
     if (!fullCeilingPolygon) {
-      return elements
+      return
     }
 
     // Intersect roof side polygon with ceiling polygon
     const sideCeilingPolygons = intersectPolygon({ outer: roofSide.polygon, holes: [] }, fullCeilingPolygon)
 
     if (sideCeilingPolygons.length === 0) {
-      return elements
+      return
     }
 
     let zOffset = (this.getCeilingLayerOffset(config) - config.layers.insideThickness) as Length
@@ -435,40 +419,26 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
 
         const results = this.runLayerConstruction({ outer: preparedOuter, holes: preparedHoles }, zOffset, layer)
 
-        const layerElements: GroupOrElement[] = []
-        for (const result of results) {
-          if (result.type === 'element') {
-            layerElements.push(result.element)
-          }
-        }
-
-        if (layerElements.length > 0) {
-          const customTag = createTag('roof-layer', layer.name)
-          const group = createConstructionGroup(layerElements, IDENTITY, [TAG_ROOF_LAYER_INSIDE, TAG_LAYERS, customTag])
-          elements.push(group)
-        }
+        const customTag = createTag('roof-layer', layer.name)
+        yield* yieldAsGroup(results, [TAG_ROOF_LAYER_INSIDE, TAG_LAYERS, customTag])
       }
       zOffset += layer.thickness
     }
-
-    return elements
   }
 
   /**
    * Construct overhang layers (overhang areas for this roof side)
    */
-  protected constructOverhangLayers(roof: Roof, config: T, roofSide: RoofSide): GroupOrElement[] {
-    const elements: GroupOrElement[] = []
-
+  protected *constructOverhangLayers(roof: Roof, config: T, roofSide: RoofSide): Generator<ConstructionResult> {
     if (config.layers.overhangLayers.length === 0) {
-      return elements
+      return
     }
 
     // Subtract reference polygon from this roof side's polygon
     const sideOverhangPolygons = subtractPolygons([roofSide.polygon], [roof.referencePolygon])
 
     if (sideOverhangPolygons.length === 0) {
-      return elements
+      return
     }
 
     let zOffset = (this.getOverhangLayerOffset(config) - config.layers.overhangThickness) as Length
@@ -499,26 +469,10 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
 
         const results = this.runLayerConstruction({ outer: preparedOuter, holes: preparedHoles }, zOffset, layer)
 
-        const layerElements: GroupOrElement[] = []
-        for (const result of results) {
-          if (result.type === 'element') {
-            layerElements.push(result.element)
-          }
-        }
-
-        if (layerElements.length > 0) {
-          const customTag = createTag('roof-layer', layer.name)
-          const group = createConstructionGroup(layerElements, IDENTITY, [
-            TAG_ROOF_LAYER_OVERHANG,
-            TAG_LAYERS,
-            customTag
-          ])
-          elements.push(group)
-        }
+        const customTag = createTag('roof-layer', layer.name)
+        yield* yieldAsGroup(results, [TAG_ROOF_LAYER_OVERHANG, TAG_LAYERS, customTag])
       }
       zOffset += layer.thickness
     }
-
-    return elements
   }
 }
