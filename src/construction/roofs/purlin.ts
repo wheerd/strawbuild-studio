@@ -9,7 +9,7 @@ import { transformManifold } from '@/construction/manifold/operations'
 import { constructStrawPolygon } from '@/construction/materials/straw'
 import { type ConstructionModel, createConstructionGroup } from '@/construction/model'
 import { BaseRoofAssembly, type RoofSide } from '@/construction/roofs/base'
-import { createExtrudedPolygon } from '@/construction/shapes'
+import { type ExtrudedShape, createExtrudedPolygon } from '@/construction/shapes'
 import {
   TAG_DECKING,
   TAG_INSIDE_SHEATHING,
@@ -58,17 +58,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
 
     const edgeRafterMidpoints = this.getRafterMidpoints(roof, config, roof.ridgeDirection, contexts)
 
-    const purlinArea = this.getPurlinArea(roof, contexts)
-    const purlinCheckPoints = this.getPurlinCheckPoints(purlinArea, roof.ridgeDirection)
-    const purlinAreaParts =
-      roof.type === 'gable'
-        ? splitPolygonByLine(purlinArea, lineFromSegment(roof.ridgeLine)).map(s => s.polygon)
-        : [purlinArea]
-
-    const purlins = [
-      ...this.constructRidgeBeams(roof, config, ridgeHeight),
-      ...purlinAreaParts.flatMap(p => [...this.constructPurlins(roof, config, ridgeHeight, p, purlinCheckPoints)])
-    ]
+    const purlins = this.getAllPurlins(roof, contexts, config, ridgeHeight)
 
     const purlinClippingVolume = purlins
       .map(p => transformManifold(p.shape.manifold, p.transform))
@@ -149,7 +139,12 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     return config.layers.topThickness
   }
 
-  getBottomOffsets = (roof: Roof, _config: PurlinRoofConfig, line: LineSegment2D): HeightLine => {
+  getBottomOffsets = (
+    roof: Roof,
+    config: PurlinRoofConfig,
+    line: LineSegment2D,
+    contexts: PerimeterConstructionContext[]
+  ): HeightLine => {
     // Step 1: Find intersection segments with overhang polygon
     const intersection = intersectLineSegmentWithPolygon(line, roof.overhangPolygon)
     if (!intersection || intersection.segments.length === 0) {
@@ -159,6 +154,33 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     // Step 2: Setup roof geometry calculations
     const tanSlope = Math.tan(roof.slopeAngleRad)
     const ridgeHeight = this.calculateRidgeHeight(roof)
+
+    interface PurlinIntersection {
+      tStart: number
+      tEnd: number
+      offset: Length
+    }
+    const purlins = this.getAllPurlins(roof, contexts, config, ridgeHeight)
+    const purlinIntersections: PurlinIntersection[] = purlins
+      .flatMap(purlin => {
+        const purlinPolygon = (purlin.shape.base as ExtrudedShape).polygon.outer
+        const intersection = intersectLineSegmentWithPolygon(line, purlinPolygon)
+        if (!intersection) return []
+        const offset = purlin.transform[14]
+        return [{ tStart: intersection.segments[0].tStart, tEnd: intersection.segments[0].tEnd, offset }]
+      })
+      .sort((a, b) => b.tStart - a.tStart)
+
+    // Check if entire line runs along a purlin
+    if (purlinIntersections.length === 1) {
+      const purlin = purlinIntersections[0]
+      if (purlin.tStart === 0 && purlin.tEnd === 1) {
+        return [
+          { position: 0, offset: purlin.offset, nullAfter: false },
+          { position: 1, offset: purlin.offset, nullAfter: true }
+        ]
+      }
+    }
 
     // Helper to get SIGNED distance from ridge (perpendicular)
     const getSignedDistanceToRidge = (point: vec2): number =>
@@ -189,6 +211,21 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
       }
     }
 
+    const processPurlinsUntilT = (t: number) => {
+      let lastT = -1
+      while (purlinIntersections.length > 0 && purlinIntersections[purlinIntersections.length - 1].tStart < t) {
+        const purlin = purlinIntersections.pop()!
+        result.push({
+          position: purlin.tStart,
+          offsetBefore: calculateOffsetAt(purlin.tStart),
+          offsetAfter: purlin.offset
+        })
+        result.push({ position: purlin.tEnd, offsetBefore: purlin.offset, offsetAfter: calculateOffsetAt(purlin.tEnd) })
+        lastT = purlin.tEnd
+      }
+      return lastT < t
+    }
+
     // Step 4: Build HeightLine for all segments
     const result: HeightLine = []
     for (const segment of intersection.segments) {
@@ -197,18 +234,44 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
 
       // Ridge intersection (if within this segment)
       if (ridgeT > segment.tStart && ridgeT < segment.tEnd) {
-        result.push({ position: ridgeT, offset: ridgeHeight as Length, nullAfter: false })
+        if (processPurlinsUntilT(ridgeT)) {
+          result.push({ position: ridgeT, offset: ridgeHeight as Length, nullAfter: false })
+        }
       }
+
+      processPurlinsUntilT(segment.tEnd)
 
       // Segment end
       result.push({ position: segment.tEnd, offset: calculateOffsetAt(segment.tEnd), nullAfter: true })
     }
+
+    console.log('line', result)
 
     return result
   }
 
   getTotalThickness = (config: PurlinRoofConfig) =>
     config.layers.insideThickness + config.thickness + config.layers.topThickness
+
+  private getAllPurlins(
+    roof: Roof,
+    contexts: PerimeterConstructionContext[],
+    config: PurlinRoofConfig,
+    ridgeHeight: number
+  ) {
+    const purlinArea = this.getPurlinArea(roof, contexts)
+    const purlinCheckPoints = this.getPurlinCheckPoints(purlinArea, roof.ridgeDirection)
+    const purlinAreaParts =
+      roof.type === 'gable'
+        ? splitPolygonByLine(purlinArea, lineFromSegment(roof.ridgeLine)).map(s => s.polygon)
+        : [purlinArea]
+
+    const purlins = [
+      ...this.constructRidgeBeams(roof, config, ridgeHeight),
+      ...purlinAreaParts.flatMap(p => [...this.constructPurlins(roof, config, ridgeHeight, p, purlinCheckPoints)])
+    ]
+    return purlins
+  }
 
   private getPurlinCheckPoints(polygon: Polygon2D, ridgeDirection: vec2) {
     const insideCheckPolygon = offsetPolygon(ensurePolygonIsClockwise(polygon), -5)

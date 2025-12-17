@@ -30,15 +30,20 @@ export function constructStoreyFloor(storeyId: StoreyId): ConstructionModel[] {
   const perimeters = getPerimetersByStorey(storeyId)
   const floorOpenings = getFloorOpeningsByStorey(storeyId)
 
-  const contexts = perimeters.map(p => computePerimeterConstructionContext(p, floorOpenings))
+  const perimeterContexts = perimeters.map(p => computePerimeterConstructionContext(p, floorOpenings))
 
   const floorAssembly = FLOOR_ASSEMBLIES[floorAssemblyConfig.type]
-  const floorModels = contexts.map(c => floorAssembly.construct(c, floorAssemblyConfig))
+  const floorModels = perimeterContexts.map(c => floorAssembly.construct(c, floorAssemblyConfig))
 
   const nextStorey = getStoreyAbove(storey.id)
   const nextFloorAssemblyConfig = nextStorey ? getFloorAssemblyById(nextStorey.floorAssemblyId) : null
 
-  const storeyContext = createWallStoreyContext(storey, floorAssemblyConfig, nextFloorAssemblyConfig ?? null)
+  const storeyContext = createWallStoreyContext(
+    storey,
+    floorAssemblyConfig,
+    nextFloorAssemblyConfig ?? null,
+    perimeterContexts
+  )
   const ceilingStartHeight = (storeyContext.floorTopOffset +
     storeyContext.ceilingHeight +
     storeyContext.ceilingBottomOffset) as Length
@@ -56,7 +61,7 @@ export function constructStoreyFloor(storeyId: StoreyId): ConstructionModel[] {
 
   const floorLayerModels: ConstructionModel[] = []
 
-  const topHoles = contexts.flatMap(c => c.floorOpenings)
+  const topHoles = perimeterContexts.flatMap(c => c.floorOpenings)
   const innerPolygons = perimeters.map(perimeter => ({
     points: perimeter.corners.map(corner => vec2.fromValues(corner.insidePoint[0], corner.insidePoint[1]))
   }))

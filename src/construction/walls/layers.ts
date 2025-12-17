@@ -4,6 +4,7 @@ import type { StoreyId } from '@/building/model/ids'
 import type { Perimeter, PerimeterWall } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
+import type { PerimeterConstructionContext } from '@/construction/context'
 import type { GroupOrElement } from '@/construction/elements'
 import { IDENTITY, WallConstructionArea } from '@/construction/geometry'
 import { LAYER_CONSTRUCTIONS } from '@/construction/layers'
@@ -75,7 +76,8 @@ function getRoofHeightLineForLayer(
   storeyId: StoreyId,
   layerLine: LineSegment2D,
   wallLength: Length,
-  ceilingBottomOffset: Length
+  ceilingBottomOffset: Length,
+  perimeterContexts: PerimeterConstructionContext[]
 ): WallTopOffsets | undefined {
   const { getRoofsByStorey } = getModelActions()
   const { getRoofAssemblyById } = getConfigActions()
@@ -95,7 +97,7 @@ function getRoofHeightLineForLayer(
     // Get height line for this layer's line
     // TypeScript can't narrow the roofAssembly type properly, so we use 'as any'
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const line = roofImpl.getBottomOffsets(roof, roofAssembly as any, layerLine, []) // TODO: Pass contexts
+    const line = roofImpl.getBottomOffsets(roof, roofAssembly as any, layerLine, perimeterContexts)
     heightLine.push(...line)
   }
 
@@ -153,7 +155,8 @@ export function constructWallLayers(
         perimeter.storeyId,
         span.line,
         span.end - span.start,
-        ceilingOffset
+        ceilingOffset,
+        storeyContext.perimeterContexts
       )
 
       // Create WallConstructionArea with roof-adjusted top
@@ -214,7 +217,8 @@ export function constructWallLayers(
         perimeter.storeyId,
         span.line,
         span.end - span.start,
-        ceilingOffset
+        ceilingOffset,
+        storeyContext.perimeterContexts
       )
 
       // Create WallConstructionArea with roof-adjusted top

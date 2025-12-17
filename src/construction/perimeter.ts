@@ -65,7 +65,8 @@ export function constructPerimeter(perimeter: Perimeter, includeFloor = true, in
 
   const nextFloorAssembly = nextStorey ? getFloorAssemblyById(nextStorey.floorAssemblyId) : null
 
-  const storeyContext = createWallStoreyContext(storey, currentFloorAssembly, nextFloorAssembly)
+  const perimeterContext = computePerimeterConstructionContext(perimeter, getFloorOpeningsByStorey(storey.id))
+  const storeyContext = createWallStoreyContext(storey, currentFloorAssembly, nextFloorAssembly, [perimeterContext])
   const constructionHeight =
     storeyContext.ceilingHeight + storeyContext.floorTopOffset + storeyContext.ceilingBottomOffset
 
@@ -115,19 +116,17 @@ export function constructPerimeter(perimeter: Perimeter, includeFloor = true, in
     }
   }
 
-  const context = computePerimeterConstructionContext(perimeter, getFloorOpeningsByStorey(storey.id))
-
-  allModels.push(createPerimeterMeasurementModel(perimeter, context, storeyContext))
+  allModels.push(createPerimeterMeasurementModel(perimeter, perimeterContext, storeyContext))
 
   if (includeFloor) {
     const finishedFloorPolygon: Polygon2D = {
       points: perimeter.corners.map(corner => vec2.fromValues(corner.insidePoint[0], corner.insidePoint[1]))
     }
     const floorAssembly = FLOOR_ASSEMBLIES[currentFloorAssembly.type]
-    const floorModel = floorAssembly.construct(context, currentFloorAssembly)
+    const floorModel = floorAssembly.construct(perimeterContext, currentFloorAssembly)
     allModels.push(floorModel)
 
-    const topHoles = context.floorOpenings
+    const topHoles = perimeterContext.floorOpenings
 
     let ceilingHoles: Polygon2D[] = []
     if (nextStorey && nextFloorAssembly) {
@@ -166,7 +165,7 @@ export function constructPerimeter(perimeter: Perimeter, includeFloor = true, in
     const relevantRoofs = roofs.filter(r => r.referencePerimeter === perimeter.id)
     allModels.push(
       ...relevantRoofs.map(roof =>
-        transformModel(constructRoof(roof, [context]), translate(vec3.fromValues(0, 0, storey.floorHeight)))
+        transformModel(constructRoof(roof, [perimeterContext]), translate(vec3.fromValues(0, 0, storey.floorHeight)))
       )
     )
   }
@@ -208,7 +207,7 @@ export function getPerimeterStats(perimeter: Perimeter): PerimeterStats {
 
   const floorAssembly = FLOOR_ASSEMBLIES[floorAssemblyConfig.type]
 
-  const storeyContext = createWallStoreyContext(storey, floorAssemblyConfig, nextFloorAssemblyConfig)
+  const storeyContext = createWallStoreyContext(storey, floorAssemblyConfig, nextFloorAssemblyConfig, [])
   const storeyHeight =
     storeyContext.ceilingHeight +
     storeyContext.floorTopOffset +
