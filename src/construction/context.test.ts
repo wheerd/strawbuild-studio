@@ -6,7 +6,7 @@ import type { PerimeterCornerId, PerimeterId, PerimeterWallId, StoreyId, WallAss
 import { type LineSegment2D, direction, lineIntersection, perpendicularCCW } from '@/shared/geometry'
 
 import { getConfigActions } from './config'
-import { computeFloorConstructionPolygon } from './perimeter'
+import { computePerimeterConstructionPolygon } from './context'
 
 vi.mock('./config', () => ({
   getConfigActions: vi.fn()
@@ -18,7 +18,7 @@ vi.mocked(getConfigActions).mockReturnValue({
   getWallAssemblyById: mockedGetWallAssemblyById
 } as any)
 
-describe('computeFloorConstructionPolygon', () => {
+describe('computePerimeterConstructionPolygon', () => {
   it('offsets each wall by its outside layer thickness', () => {
     const insidePoints = [
       vec2.fromValues(0, 0),
@@ -119,7 +119,7 @@ describe('computeFloorConstructionPolygon', () => {
       } as any
     })
 
-    const result = computeFloorConstructionPolygon(perimeter)
+    const result = computePerimeterConstructionPolygon(perimeter)
 
     expect(result.polygon.points).toEqual(expectedPoints)
   })

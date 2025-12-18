@@ -23,6 +23,7 @@ export const ALL_CATEGORIES = {
   'floor-wood': { label: 'Floor Wood' },
   'floor-measurement': { label: 'Floor Measurement' },
 
+  'roof-part': { label: 'Roof Parts' },
   'roof-layer': { label: 'Roof Layers' },
   'roof-side': { label: 'Roof Side' },
   'roof-measurement': { label: 'Roof Measurement' },
@@ -400,9 +401,9 @@ export const TAG_SUBFLOOR: Tag = {
   category: 'floor-wood'
 }
 
-export const TAG_FLOOR_BOTTOM_CLADDING: Tag = {
-  id: 'floor-wood_bottom-cladding',
-  label: 'Bottom Cladding',
+export const TAG_FLOOR_CEAILING_SHEATHING: Tag = {
+  id: 'floor-wood_ceiling-sheathing',
+  label: 'Ceiling Sheathing',
   category: 'floor-wood'
 }
 
@@ -417,4 +418,66 @@ export const TAG_JOIST_LENGTH: Tag = {
   id: 'floor-measurement_joist-length',
   label: 'Joist Length',
   category: 'floor-measurement'
+}
+
+// Roof parts
+export const TAG_PURLIN: Tag = {
+  id: 'roof-part_purlin',
+  label: 'Purlin',
+  category: 'roof-part'
+}
+
+export const TAG_RAFTER: Tag = {
+  id: 'roof-part_rafter',
+  label: 'Rafter',
+  category: 'roof-part'
+}
+
+export const TAG_DECKING: Tag = {
+  id: 'roof-part_decking',
+  label: 'Decking',
+  category: 'roof-part'
+}
+
+export const TAG_INSIDE_SHEATHING: Tag = {
+  id: 'roof-part_inside-sheathing',
+  label: 'Inside Sheathing',
+  category: 'roof-part'
+}
+
+export const TAG_RIDGE_BEAM: Tag = {
+  id: 'roof-part_ridge-beam',
+  label: 'Ridge Beam',
+  category: 'roof-part'
+}
+
+// Roof Measurement tags
+export const TAG_RAFTER_SPACING: Tag = {
+  id: 'roof-measurement_rafter-spacing',
+  label: 'Rafter Spacing',
+  category: 'roof-measurement'
+}
+
+export const TAG_RAFTER_LENGTH: Tag = {
+  id: 'roof-measurement_rafter-length',
+  label: 'Rafter Length',
+  category: 'roof-measurement'
+}
+
+export const TAG_PURLIN_LENGTH: Tag = {
+  id: 'roof-measurement_purlin-length',
+  label: 'Purlin Length',
+  category: 'roof-measurement'
+}
+
+export const TAG_PURLIN_RISE: Tag = {
+  id: 'roof-measurement_purlin-rise',
+  label: 'Purlin Rise',
+  category: 'roof-measurement'
+}
+
+export const TAG_PURLIN_SPACING: Tag = {
+  id: 'roof-measurement_purlin-spacing',
+  label: 'Purlin Spacing',
+  category: 'roof-measurement'
 }

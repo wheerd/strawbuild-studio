@@ -1,6 +1,7 @@
 import type { PathsD, PolyPathD } from 'clipper2-wasm'
 import { vec2, vec3 } from 'gl-matrix'
 
+import { lineSegmentIntersect, polygonEdges } from '@/construction/helpers'
 import {
   createPathD,
   createPathsD,
@@ -268,6 +269,35 @@ export function intersectPolygon(polygon1: PolygonWithHoles2D, polygon2: Polygon
       pathsB.get(i).delete()
     }
     pathsB.delete()
+  }
+}
+
+export function intersectPolygons(subjects: Polygon2D[], clips: Polygon2D[]): Polygon2D[] {
+  const module = getClipperModule()
+  const subjectPaths = createPathsD(subjects.map(s => createPathD(s.points)))
+  const clipPaths = createPathsD(clips.map(c => createPathD(c.points)))
+
+  try {
+    const intersectResult = module.IntersectD(subjectPaths, clipPaths, module.FillRule.NonZero, 2)
+    try {
+      const result: Polygon2D[] = []
+      for (let i = 0; i < intersectResult.size(); i++) {
+        const path = intersectResult.get(i)
+        result.push({ points: pathDToPoints(path) })
+      }
+      return result
+    } finally {
+      intersectResult.delete()
+    }
+  } finally {
+    for (let i = 0; i < subjectPaths.size(); i++) {
+      subjectPaths.get(i).delete()
+    }
+    subjectPaths.delete()
+    for (let i = 0; i < clipPaths.size(); i++) {
+      clipPaths.get(i).delete()
+    }
+    clipPaths.delete()
   }
 }
 
@@ -937,6 +967,8 @@ export function intersectLineSegmentWithPolygon(
     return null
   }
 
+  polygon = simplifyPolygon(polygon)
+
   const lineDir = direction(line.start, line.end)
   const lineLength = vec2.distance(line.start, line.end)
 
@@ -952,8 +984,6 @@ export function intersectLineSegmentWithPolygon(
   }
 
   const intersections: Intersection[] = []
-  const startInside = isPointInPolygon(line.start, polygon)
-  const endInside = isPointInPolygon(line.end, polygon)
 
   // Check each edge of the polygon
   for (let i = 0; i < polygon.points.length; i++) {
@@ -1013,7 +1043,7 @@ export function intersectLineSegmentWithPolygon(
 
   if (uniqueIntersections.length === 0) {
     // No edge crossings
-    if (startInside && endInside) {
+    if (isPointInPolygon(line.start, polygon) && isPointInPolygon(line.end, polygon)) {
       // Entire line is inside
       return { segments: [{ tStart: 0, tEnd: 1 }] }
     }
@@ -1022,7 +1052,7 @@ export function intersectLineSegmentWithPolygon(
   }
 
   // Build segments by tracking inside/outside status
-  let inside = startInside
+  let inside = isPointStrictlyInPolygon(line.start, polygon)
   let segmentStart: number | null = inside ? 0 : null
 
   for (const intersection of uniqueIntersections) {
@@ -1046,6 +1076,50 @@ export function intersectLineSegmentWithPolygon(
   }
 
   return segments.length > 0 ? { segments } : null
+}
+
+export function intersectLineWithPolygon(line: Line2D, polygon: Polygon2D): LineSegment2D[] {
+  if (polygon.points.length < 3) {
+    return []
+  }
+
+  const intersections: {
+    t: number
+    p: vec2
+  }[] = []
+
+  // Test each polygon edge
+  for (const edge of polygonEdges(polygon)) {
+    const edgeLength = vec2.distance(edge.start, edge.end)
+    if (edgeLength < 1e-5) continue
+
+    const intersection = lineSegmentIntersect(line, edge)
+
+    if (!intersection) continue
+
+    // Compute t on infinite line
+    const toIntersection = vec2.sub(vec2.create(), intersection, line.point)
+    const t = vec2.dot(toIntersection, line.direction)
+    intersections.push({ t, p: intersection })
+  }
+
+  if (intersections.length === 0) {
+    return []
+  }
+
+  intersections.sort((a, b) => a.t - b.t)
+
+  const lines: LineSegment2D[] = []
+
+  for (let i = 1; i < intersections.length; i += 2) {
+    const start = intersections[i - 1].p
+    const end = intersections[i].p
+    if (vec2.squaredDistance(start, end) > 1) {
+      lines.push({ start, end })
+    }
+  }
+
+  return lines
 }
 
 export function polygonEdgeCount(polygon: Polygon3D) {

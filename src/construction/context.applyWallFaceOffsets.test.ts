@@ -4,8 +4,9 @@ import { describe, expect, it, vi } from 'vitest'
 import type { Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model'
 import type { PerimeterCornerId, PerimeterId, PerimeterWallId, StoreyId, WallAssemblyId } from '@/building/model/ids'
 import { getConfigActions } from '@/construction/config'
-import { applyWallFaceOffsets, createWallFaceOffsets } from '@/construction/storey'
 import { direction, perpendicular } from '@/shared/geometry'
+
+import { applyWallFaceOffsets, createWallFaceOffsets } from './context'
 
 vi.mock('./config', () => ({
   getConfigActions: vi.fn()

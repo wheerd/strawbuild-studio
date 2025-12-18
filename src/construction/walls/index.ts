@@ -1,4 +1,4 @@
-import { InfillWallAssembly } from './infill/infill'
+import { InfillWallAssembly } from './infill'
 import { NonStrawbaleWallAssembly } from './nonStrawbale'
 import { ModulesWallAssembly } from './strawhenge/all-modules'
 import { StrawhengeWallAssembly } from './strawhenge/strawhenge'

@@ -1,23 +1,16 @@
+import type { PerimeterConstructionContext } from '@/construction/context'
 import type { LayerConfig } from '@/construction/layers/types'
 import type { MaterialId } from '@/construction/materials/material'
 import type { ConstructionModel } from '@/construction/model'
-import type { Length, Line2D, Polygon2D } from '@/shared/geometry'
+import type { Length } from '@/shared/geometry'
 
 export interface FloorAssembly<TConfig extends FloorAssemblyConfigBase> {
-  construct: (context: FloorConstructionContext, config: TConfig) => ConstructionModel
+  construct: (context: PerimeterConstructionContext, config: TConfig) => ConstructionModel
 
   getTopOffset: (config: TConfig) => Length
   getBottomOffset: (config: TConfig) => Length
   getConstructionThickness: (config: TConfig) => Length
   getTotalThickness: (config: TConfig) => Length
-}
-
-export interface FloorConstructionContext {
-  outerLines: Line2D[]
-  innerLines: Line2D[]
-  outerPolygon: Polygon2D
-  innerPolygon: Polygon2D
-  openings: Polygon2D[]
 }
 
 export type FloorAssemblyType = 'monolithic' | 'joist' | 'filled'
@@ -76,8 +69,8 @@ export interface FilledFloorConfig extends FloorAssemblyConfigBase {
   subfloorThickness: Length
   subfloorMaterial: MaterialId
 
-  bottomCladdingThickness: Length
-  bottomCladdingMaterial: MaterialId
+  ceilingSheathingThickness: Length
+  ceilingSheathingMaterial: MaterialId
 
   openingFrameThickness: Length
   openingFrameMaterial: MaterialId
@@ -136,8 +129,8 @@ const validateFilledFloorConfig = (config: FilledFloorConfig): void => {
   if (config.subfloorThickness <= 0) {
     throw new Error('Subfloor thickness must be greater than 0')
   }
-  if (config.bottomCladdingThickness <= 0) {
-    throw new Error('Bottom cladding thickness must be greater than 0')
+  if (config.ceilingSheathingThickness <= 0) {
+    throw new Error('Ceiling sheathing thickness must be greater than 0')
   }
   if (config.openingFrameThickness <= 0) {
     throw new Error('Opening frame thickness must be greater than 0')

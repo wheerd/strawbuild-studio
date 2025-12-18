@@ -4,6 +4,7 @@ import type { Perimeter } from '@/building/model'
 import type { PerimeterCornerId, PerimeterId, PerimeterWallId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
+import { computePerimeterConstructionContext } from '@/construction/context'
 import { translate } from '@/construction/geometry'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model'
 import type { Length, LineSegment2D } from '@/shared/geometry'
@@ -95,7 +96,8 @@ export function constructWall(
   const nextStorey = getStoreyAbove(storey.id)
   const nextFloorAssembly = nextStorey ? getFloorAssemblyById(nextStorey.floorAssemblyId) : null
 
-  const storeyContext = createWallStoreyContext(storey, currentFloorAssembly, nextFloorAssembly)
+  const perimeterContext = computePerimeterConstructionContext(perimeter, [])
+  const storeyContext = createWallStoreyContext(storey, currentFloorAssembly, nextFloorAssembly, [perimeterContext])
 
   const wallIds = includeColinear ? findColinearWalls(perimeter, wallId) : [wallId]
 

@@ -195,5 +195,5 @@ function* baleFromPolygon(
   const partSize = part.size3D('xz', thickness) // Fake wall dimensions
   const fillingRatio = part.area / part.rectArea
   const tags = fillingRatio < 0.8 ? [TAG_STRAW_STUFFED] : getStrawTags(partSize, material)
-  yield* part.extrude(material.id, thickness, plane, tags, { type: 'strawbale' })
+  yield* part.extrude(material.id, thickness, plane, undefined, tags, { type: 'strawbale' })
 }

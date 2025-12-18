@@ -64,7 +64,12 @@ export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallCo
       throw new Error('Non-strawbale wall structural thickness must be greater than 0')
     }
 
-    const roofHeightLine = getRoofHeightLineForWall(perimeter.storeyId, cornerInfo, -ceilingOffset)
+    const roofHeightLine = getRoofHeightLineForWall(
+      perimeter.storeyId,
+      cornerInfo,
+      -ceilingOffset,
+      storeyContext.perimeterContexts
+    )
 
     // Convert roof height line to wall offsets
     let roofOffsets

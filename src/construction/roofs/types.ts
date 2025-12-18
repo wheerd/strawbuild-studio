@@ -1,15 +1,21 @@
 import type { Roof } from '@/building/model'
 import { sumLayerThickness } from '@/construction/config/store/layerUtils'
+import type { PerimeterConstructionContext } from '@/construction/context'
 import type { LayerConfig } from '@/construction/layers/types'
 import type { MaterialId } from '@/construction/materials/material'
 import type { ConstructionModel } from '@/construction/model'
 import type { Length, LineSegment2D } from '@/shared/geometry'
 
 export interface RoofAssembly<TConfig extends RoofAssemblyConfigBase> {
-  construct: (roof: Roof, config: TConfig) => ConstructionModel
+  construct: (roof: Roof, config: TConfig, contexts: PerimeterConstructionContext[]) => ConstructionModel
 
   getTopOffset: (config: TConfig) => Length
-  getBottomOffsets: (roof: Roof, config: TConfig, line: LineSegment2D) => HeightLine
+  getBottomOffsets: (
+    roof: Roof,
+    config: TConfig,
+    line: LineSegment2D,
+    contexts: PerimeterConstructionContext[]
+  ) => HeightLine
   getConstructionThickness: (config: TConfig) => Length
   getTotalThickness: (config: TConfig) => Length
 }
@@ -45,6 +51,7 @@ export interface PurlinRoofConfig extends RoofAssemblyConfigBase {
   purlinHeight: Length
   purlinWidth: Length
   purlinSpacing: Length
+  purlinInset: Length
 
   infillMaterial: MaterialId
 
@@ -52,13 +59,12 @@ export interface PurlinRoofConfig extends RoofAssemblyConfigBase {
   rafterWidth: Length
   rafterSpacingMin: Length
   rafterSpacing: Length
-  rafterSpacingMax: Length
 
-  insideCladdingMaterial: MaterialId
-  insideCladdingThickness: Length
+  ceilingSheathingMaterial: MaterialId
+  ceilingSheathingThickness: Length
 
-  topCladdingMaterial: MaterialId
-  topCladdingThickness: Length
+  deckingMaterial: MaterialId
+  deckingThickness: Length
 
   strawMaterial?: MaterialId
 }
@@ -124,20 +130,14 @@ export const validateRoofConfig = (config: RoofConfig): void => {
     if (config.rafterWidth <= 0 || config.rafterSpacing <= 0) {
       throw new Error('Rafter dimensions must be positive')
     }
-    if (config.rafterSpacingMin > config.rafterSpacing || config.rafterSpacing > config.rafterSpacingMax) {
-      throw new Error('Rafter spacing must be between min and max')
+    if (config.rafterSpacingMin > config.rafterSpacing || config.rafterSpacingMin < 0) {
+      throw new Error('Rafter min spacing must be between 0 and desired spacing')
     }
-    if (config.insideCladdingThickness <= 0 || config.topCladdingThickness <= 0) {
-      throw new Error('Cladding thickness must be positive')
+    if (config.ceilingSheathingThickness <= 0) {
+      throw new Error('Ceiling sheathing thickness must be positive')
     }
-    // Validate all material IDs are present
-    if (
-      !config.purlinMaterial ||
-      !config.rafterMaterial ||
-      !config.insideCladdingMaterial ||
-      !config.topCladdingMaterial
-    ) {
-      throw new Error('Purlin roof must have all required materials')
+    if (config.deckingThickness <= 0) {
+      throw new Error('Decking thickness must be positive')
     }
   }
 }

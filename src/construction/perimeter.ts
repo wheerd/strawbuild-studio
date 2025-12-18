@@ -1,27 +1,11 @@
 import { mat4, vec2, vec3 } from 'gl-matrix'
 
-import type { FloorOpening, Perimeter } from '@/building/model'
+import type { Perimeter } from '@/building/model'
 import { getModelActions } from '@/building/store'
-import { FLOOR_ASSEMBLIES, type FloorConstructionContext, constructFloorLayerModel } from '@/construction/floors'
-import { IDENTITY, translate } from '@/construction/geometry'
-import { polygonEdges } from '@/construction/helpers'
-import type { RawMeasurement } from '@/construction/measurements'
-import { constructRoof } from '@/construction/roof'
-import { applyWallFaceOffsets, createWallFaceOffsets } from '@/construction/storey'
-import {
-  TAG_BASE_PLATE,
-  TAG_TOP_PLATE,
-  TAG_WALLS,
-  TAG_WALL_CONSTRUCTION_LENGTH_INSIDE,
-  TAG_WALL_CONSTRUCTION_LENGTH_OUTSIDE,
-  TAG_WALL_LENGTH_INSIDE,
-  TAG_WALL_LENGTH_OUTSIDE
-} from '@/construction/tags'
 import {
   type Area,
   Bounds3D,
   type Length,
-  type Line2D,
   type Polygon2D,
   type Volume,
   angle,
@@ -29,7 +13,6 @@ import {
   calculatePolygonArea,
   calculatePolygonWithHolesArea,
   direction,
-  lineIntersection,
   perpendicularCCW,
   perpendicularCW,
   polygonPerimeter,
@@ -38,73 +21,30 @@ import {
 } from '@/shared/geometry'
 
 import { getConfigActions } from './config'
+import {
+  type PerimeterConstructionContext,
+  applyWallFaceOffsets,
+  computePerimeterConstructionContext,
+  createWallFaceOffsets
+} from './context'
+import { FLOOR_ASSEMBLIES, constructFloorLayerModel } from './floors'
+import { IDENTITY, translate } from './geometry'
+import { polygonEdges } from './helpers'
+import type { RawMeasurement } from './measurements'
 import { type ConstructionModel, mergeModels, transformModel } from './model'
 import { RING_BEAM_ASSEMBLIES } from './ringBeams'
+import { constructRoof } from './roof'
+import './storey'
+import {
+  TAG_BASE_PLATE,
+  TAG_TOP_PLATE,
+  TAG_WALLS,
+  TAG_WALL_CONSTRUCTION_LENGTH_INSIDE,
+  TAG_WALL_CONSTRUCTION_LENGTH_OUTSIDE,
+  TAG_WALL_LENGTH_INSIDE,
+  TAG_WALL_LENGTH_OUTSIDE
+} from './tags'
 import { WALL_ASSEMBLIES, type WallStoreyContext, createWallStoreyContext } from './walls'
-
-export function computeFloorConstructionPolygon(
-  perimeter: Perimeter,
-  outside = true
-): { polygon: Polygon2D; lines: Line2D[] } {
-  const { getWallAssemblyById } = getConfigActions()
-
-  const offsets = perimeter.walls.map(wall => {
-    const assembly = getWallAssemblyById(wall.wallAssemblyId)
-    const layerThickness = Math.max(
-      (outside ? assembly?.layers.outsideThickness : assembly?.layers.insideThickness) ?? 0,
-      0
-    )
-    const distanceFromEdge = outside ? Math.min(-layerThickness, 0) : Math.max(layerThickness, 0)
-    return distanceFromEdge
-  })
-
-  const offsetLines = perimeter.walls.map((wall, index) => {
-    const offsetDistance = offsets[index]
-    const offsetPoint = vec2.scaleAndAdd(
-      vec2.create(),
-      outside ? wall.outsideLine.start : wall.insideLine.start,
-      wall.outsideDirection,
-      offsetDistance
-    )
-    return { point: offsetPoint, direction: wall.direction }
-  })
-
-  const filteredLines = offsetLines.filter(
-    (l, i) => !vec2.equals(l.direction, offsetLines[(i - 1 + offsetLines.length) % offsetLines.length].direction)
-  )
-
-  const points = filteredLines
-    .map((line, index) => {
-      const prevIndex = (index - 1 + filteredLines.length) % filteredLines.length
-      const prevLine = filteredLines[prevIndex]
-      return lineIntersection(prevLine, line)
-    })
-    .filter(p => p != null)
-
-  return { polygon: { points }, lines: filteredLines }
-}
-
-export const computeFloorConstructionContext = (
-  perimeter: Perimeter,
-  openings: FloorOpening[]
-): FloorConstructionContext => {
-  const inner = computeFloorConstructionPolygon(perimeter, false)
-  const outer = computeFloorConstructionPolygon(perimeter, true)
-
-  const holes = openings.map(opening => opening.area)
-  const relevantHoles = holes.filter(hole => arePolygonsIntersecting(outer.polygon, hole))
-  const wallFaces = createWallFaceOffsets([perimeter])
-  const adjustedHoles = relevantHoles.map(hole => applyWallFaceOffsets(hole, wallFaces))
-  const mergedHoles = unionPolygons(adjustedHoles)
-
-  return {
-    innerLines: inner.lines,
-    innerPolygon: inner.polygon,
-    outerLines: outer.lines,
-    outerPolygon: outer.polygon,
-    openings: mergedHoles
-  }
-}
 
 export function constructPerimeter(perimeter: Perimeter, includeFloor = true, includeRoof = true): ConstructionModel {
   const { getStoreyById, getStoreyAbove, getFloorOpeningsByStorey, getPerimetersByStorey, getRoofsByStorey } =
@@ -125,7 +65,8 @@ export function constructPerimeter(perimeter: Perimeter, includeFloor = true, in
 
   const nextFloorAssembly = nextStorey ? getFloorAssemblyById(nextStorey.floorAssemblyId) : null
 
-  const storeyContext = createWallStoreyContext(storey, currentFloorAssembly, nextFloorAssembly)
+  const perimeterContext = computePerimeterConstructionContext(perimeter, getFloorOpeningsByStorey(storey.id))
+  const storeyContext = createWallStoreyContext(storey, currentFloorAssembly, nextFloorAssembly, [perimeterContext])
   const constructionHeight =
     storeyContext.ceilingHeight + storeyContext.floorTopOffset + storeyContext.ceilingBottomOffset
 
@@ -175,19 +116,17 @@ export function constructPerimeter(perimeter: Perimeter, includeFloor = true, in
     }
   }
 
-  const context = computeFloorConstructionContext(perimeter, getFloorOpeningsByStorey(storey.id))
-
-  allModels.push(createPerimeterMeasurementModel(perimeter, context, storeyContext))
+  allModels.push(createPerimeterMeasurementModel(perimeter, perimeterContext, storeyContext))
 
   if (includeFloor) {
     const finishedFloorPolygon: Polygon2D = {
       points: perimeter.corners.map(corner => vec2.fromValues(corner.insidePoint[0], corner.insidePoint[1]))
     }
     const floorAssembly = FLOOR_ASSEMBLIES[currentFloorAssembly.type]
-    const floorModel = floorAssembly.construct(context, currentFloorAssembly)
+    const floorModel = floorAssembly.construct(perimeterContext, currentFloorAssembly)
     allModels.push(floorModel)
 
-    const topHoles = context.openings
+    const topHoles = perimeterContext.floorOpenings
 
     let ceilingHoles: Polygon2D[] = []
     if (nextStorey && nextFloorAssembly) {
@@ -226,7 +165,7 @@ export function constructPerimeter(perimeter: Perimeter, includeFloor = true, in
     const relevantRoofs = roofs.filter(r => r.referencePerimeter === perimeter.id)
     allModels.push(
       ...relevantRoofs.map(roof =>
-        transformModel(constructRoof(roof), translate(vec3.fromValues(0, 0, storey.floorHeight)))
+        transformModel(constructRoof(roof, [perimeterContext]), translate(vec3.fromValues(0, 0, storey.floorHeight)))
       )
     )
   }
@@ -268,7 +207,7 @@ export function getPerimeterStats(perimeter: Perimeter): PerimeterStats {
 
   const floorAssembly = FLOOR_ASSEMBLIES[floorAssemblyConfig.type]
 
-  const storeyContext = createWallStoreyContext(storey, floorAssemblyConfig, nextFloorAssemblyConfig)
+  const storeyContext = createWallStoreyContext(storey, floorAssemblyConfig, nextFloorAssemblyConfig, [])
   const storeyHeight =
     storeyContext.ceilingHeight +
     storeyContext.floorTopOffset +
@@ -332,7 +271,7 @@ export function getPerimeterStats(perimeter: Perimeter): PerimeterStats {
 
 function createPerimeterMeasurementModel(
   perimeter: Perimeter,
-  floorContext: FloorConstructionContext,
+  floorContext: PerimeterConstructionContext,
   storeyContext: WallStoreyContext
 ): ConstructionModel {
   const measurements: RawMeasurement[] = []

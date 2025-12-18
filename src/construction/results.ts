@@ -1,4 +1,8 @@
-import { IDENTITY, type Transform } from '@/construction/geometry'
+import { mat4 } from 'gl-matrix'
+import type { Manifold } from 'manifold-3d'
+
+import { IDENTITY, type Transform, transformBounds } from '@/construction/geometry'
+import { getBoundsFromManifold, transformManifold } from '@/construction/manifold/operations'
 import type { PartInfo } from '@/construction/parts'
 import type { Tag } from '@/construction/tags'
 import { Bounds3D } from '@/shared/geometry'
@@ -6,11 +10,12 @@ import { Bounds3D } from '@/shared/geometry'
 import {
   type ConstructionElement,
   type ConstructionElementId,
+  type ConstructionGroup,
   type GroupOrElement,
   createConstructionElementId
 } from './elements'
 import type { RawMeasurement } from './measurements'
-import type { HighlightedArea } from './model'
+import type { ConstructionModel, HighlightedArea } from './model'
 
 export type ConstructionIssueId = string & { readonly brand: unique symbol }
 
@@ -36,7 +41,26 @@ export const aggregateResults = (results: ConstructionResult[]) => ({
   areas: results.filter(r => r.type === 'area').map(r => r.area)
 })
 
+export const resultsToModel = (results: ConstructionResult[], bounds?: Bounds3D): ConstructionModel => {
+  const aggregatedResults = aggregateResults(results)
+  return {
+    elements: aggregatedResults.elements,
+    areas: aggregatedResults.areas,
+    bounds: bounds ?? Bounds3D.merge(...aggregatedResults.elements.map(e => transformBounds(e.bounds, e.transform))),
+    errors: aggregatedResults.errors,
+    measurements: aggregatedResults.measurements,
+    warnings: aggregatedResults.warnings
+  }
+}
+
 // Helper functions for creating ConstructionResults
+
+export function* mergeResults(...generators: Generator<ConstructionResult>[]): Generator<ConstructionResult> {
+  for (const gen of generators) {
+    yield* gen
+  }
+}
+
 export function* yieldElement(element: ConstructionElement | null): Generator<ConstructionResult> {
   if (element) {
     yield { type: 'element', element }
@@ -181,6 +205,60 @@ export function* yieldAsGroup(
       partInfo,
       children
     }
+  }
+}
+
+export function* yieldAndClip(
+  results: Generator<ConstructionResult>,
+  clipping: (m: Manifold) => Manifold
+): Generator<ConstructionResult> {
+  for (const result of results) {
+    if (result.type === 'element') {
+      const item = result.element
+      for (const element of withClipping(item, clipping)) {
+        yield { type: 'element', element }
+      }
+    } else {
+      yield result
+    }
+  }
+}
+
+export function* withClipping(item: GroupOrElement, clipping: (m: Manifold) => Manifold): Generator<GroupOrElement> {
+  if ('shape' in item) {
+    // This is an element - apply clipping
+    const invertedTransform = mat4.invert(mat4.create(), item.transform)
+    const clippedManifold = invertedTransform
+      ? transformManifold(clipping(transformManifold(item.shape.manifold, item.transform)), invertedTransform)
+      : clipping(item.shape.manifold)
+
+    const decomposed = clippedManifold.decompose()
+    if (decomposed.length === 1) {
+      if (item.shape.manifold.subtract(decomposed[0]).isEmpty()) {
+        yield item
+        return
+      }
+    }
+
+    for (const manifold of decomposed) {
+      if (!manifold.isEmpty()) {
+        const bounds = getBoundsFromManifold(clippedManifold)
+        yield {
+          ...item,
+          shape: { ...item.shape, manifold, bounds },
+          bounds,
+          id: createConstructionElementId()
+        }
+      }
+    }
+  } else if ('children' in item) {
+    const children = item.children.flatMap(c => Array.from(withClipping(c, clipping)))
+    const bounds = Bounds3D.merge(...children.map(c => transformBounds(c.bounds, item.transform)))
+    yield {
+      ...item,
+      children,
+      bounds
+    } satisfies ConstructionGroup
   }
 }
 

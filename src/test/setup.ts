@@ -124,7 +124,7 @@ vi.mock('@/shared/geometry/clipperInstance', () => {
     IsPositiveD: vi.fn((path: ClipperPath) => polygonArea(path.points) >= 0),
     SimplifyPathD: vi.fn((path: ClipperPath) => ({ delete: noop, points: path.points })),
     UnionSelfD: vi.fn((pathsD: ClipperPaths) => createClipperPaths(pathsD.paths)),
-    IntersectD: vi.fn(() => createClipperPaths([])),
+    IntersectD: vi.fn((pathsD: ClipperPaths) => createClipperPaths(pathsD.paths)),
     InflatePathsD: vi.fn((pathsD: ClipperPaths) => createClipperPaths(pathsD.paths))
   }
 

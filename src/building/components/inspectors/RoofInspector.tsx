@@ -12,6 +12,7 @@ import { ConstructionPlanModal } from '@/construction/components/ConstructionPla
 import { RoofAssemblySelectWithEdit } from '@/construction/config/components/RoofAssemblySelectWithEdit'
 import { useDefaultRoofAssemblyId } from '@/construction/config/store'
 import { constructRoof } from '@/construction/roof'
+import { TAG_DECKING } from '@/construction/tags'
 import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
@@ -261,7 +262,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
             constructionModelFactory={async () => constructRoof(roof)}
             midCutActiveDefault={false}
             views={[
-              { view: TOP_VIEW, label: 'Top' },
+              { view: TOP_VIEW, label: 'Top', toggleHideTags: [TAG_DECKING.id] },
               { view: FRONT_VIEW, label: 'Front' },
               { view: LEFT_VIEW, label: 'Left' }
             ]}

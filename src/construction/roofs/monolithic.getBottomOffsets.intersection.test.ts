@@ -2,6 +2,7 @@ import { vec2 } from 'gl-matrix'
 import { describe, expect, it } from 'vitest'
 
 import type { Roof } from '@/building/model'
+import { computeRoofDerivedProperties } from '@/building/store/slices/roofsSlice'
 import { millimeters } from '@/shared/geometry'
 
 import { MonolithicRoofAssembly } from './monolithic'
@@ -17,30 +18,45 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
     slope: number,
     verticalOffset = 3000,
     overhangPolygon?: { points: vec2[] }
-  ): Roof => ({
-    id: 'test-roof' as any,
-    storeyId: 'test-storey' as any,
-    type,
-    referencePolygon: {
-      points: [vec2.fromValues(0, 0), vec2.fromValues(10000, 0), vec2.fromValues(10000, 5000), vec2.fromValues(0, 5000)]
-    },
-    overhangPolygon:
-      overhangPolygon ||
-      ({
+  ): Roof => {
+    const roof = {
+      id: 'test-roof' as any,
+      storeyId: 'test-storey' as any,
+      type,
+      referencePolygon: {
         points: [
-          vec2.fromValues(-500, -500),
-          vec2.fromValues(10500, -500),
-          vec2.fromValues(10500, 5500),
-          vec2.fromValues(-500, 5500)
+          vec2.fromValues(0, 0),
+          vec2.fromValues(10000, 0),
+          vec2.fromValues(10000, 5000),
+          vec2.fromValues(0, 5000)
         ]
-      } as any),
-    ridgeLine: { start: ridgeStart, end: ridgeEnd },
-    mainSideIndex: 0,
-    slope,
-    verticalOffset: millimeters(verticalOffset),
-    overhangs: [],
-    assemblyId: 'test-assembly' as any
-  })
+      },
+      overhangPolygon:
+        overhangPolygon ||
+        ({
+          points: [
+            vec2.fromValues(-500, -500),
+            vec2.fromValues(10500, -500),
+            vec2.fromValues(10500, 5500),
+            vec2.fromValues(-500, 5500)
+          ]
+        } as any),
+      ridgeLine: { start: ridgeStart, end: ridgeEnd },
+      mainSideIndex: 0,
+      slope,
+      verticalOffset: millimeters(verticalOffset),
+      overhangs: [],
+      assemblyId: 'test-assembly' as any,
+      // Computed properties
+      slopeAngleRad: 0,
+      ridgeDirection: vec2.fromValues(0, 0),
+      downSlopeDirection: vec2.fromValues(0, 0),
+      rise: 0,
+      span: 0
+    }
+    computeRoofDerivedProperties(roof)
+    return roof
+  }
 
   const createTestConfig = (insideThickness = 0): MonolithicRoofConfig => ({
     type: 'monolithic',

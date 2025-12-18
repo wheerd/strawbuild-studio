@@ -5,6 +5,7 @@ import type { Opening, Perimeter, PerimeterWall, Storey } from '@/building/model
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import type { FloorAssemblyConfig } from '@/construction/config/types'
+import type { PerimeterConstructionContext } from '@/construction/context'
 import { FLOOR_ASSEMBLIES } from '@/construction/floors'
 import { WallConstructionArea } from '@/construction/geometry'
 import { resolveOpeningAssembly, resolveOpeningConfig } from '@/construction/openings/resolver'
@@ -86,7 +87,8 @@ function mergeAdjacentOpenings(sortedOpenings: Opening[]): Opening[][] {
 export function getRoofHeightLineForWall(
   storeyId: StoreyId,
   cornerInfo: WallCornerInfo,
-  ceilingBottomOffset: Length
+  ceilingBottomOffset: Length,
+  perimeterContexts: PerimeterConstructionContext[]
 ): HeightLine | undefined {
   const { getRoofsByStorey } = getModelActions()
   const { getRoofAssemblyById } = getConfigActions()
@@ -107,10 +109,18 @@ export function getRoofHeightLineForWall(
 
     // Get height lines for construction lines
     // TypeScript can't narrow the roofAssembly type properly, so we use 'as any'
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const insideLine = roofImpl.getBottomOffsets(roof, roofAssembly as any, cornerInfo.constructionInsideLine)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const outsideLine = roofImpl.getBottomOffsets(roof, roofAssembly as any, cornerInfo.constructionOutsideLine)
+    const insideLine = roofImpl.getBottomOffsets(
+      roof,
+      roofAssembly as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+      cornerInfo.constructionInsideLine,
+      perimeterContexts
+    )
+    const outsideLine = roofImpl.getBottomOffsets(
+      roof,
+      roofAssembly as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+      cornerInfo.constructionOutsideLine,
+      perimeterContexts
+    )
 
     insideHeightLine.push(...insideLine)
     outsideHeightLine.push(...outsideLine)
@@ -238,12 +248,14 @@ export interface WallStoreyContext {
   ceilingHeight: Length
   floorTopOffset: Length
   floorTopConstructionOffset: Length
+  perimeterContexts: PerimeterConstructionContext[]
 }
 
 export function createWallStoreyContext(
   currentStorey: Storey,
   currentFloorAssembly: FloorAssemblyConfig,
-  nextFloorAssembly: FloorAssemblyConfig | null
+  nextFloorAssembly: FloorAssemblyConfig | null,
+  perimeterContexts: PerimeterConstructionContext[]
 ): WallStoreyContext {
   const currentFloorFloorAssembly = FLOOR_ASSEMBLIES[currentFloorAssembly.type]
   const nextFloorFloorAssembly = nextFloorAssembly ? FLOOR_ASSEMBLIES[nextFloorAssembly.type] : null
@@ -258,7 +270,8 @@ export function createWallStoreyContext(
     floorTopConstructionOffset: topOffset,
     floorTopOffset: currentFloorAssembly.layers.topThickness + topOffset,
     ceilingBottomConstructionOffset: bottomOffset,
-    ceilingBottomOffset: (nextFloorAssembly?.layers.bottomThickness ?? 0) + bottomOffset
+    ceilingBottomOffset: (nextFloorAssembly?.layers.bottomThickness ?? 0) + bottomOffset,
+    perimeterContexts
   }
 }
 
@@ -365,7 +378,12 @@ export function* segmentedWallConstruction(
   }
 
   // Query roofs and get merged height line
-  const roofHeightLine = getRoofHeightLineForWall(perimeter.storeyId, cornerInfo, -ceilingOffset)
+  const roofHeightLine = getRoofHeightLineForWall(
+    perimeter.storeyId,
+    cornerInfo,
+    -ceilingOffset,
+    storeyContext.perimeterContexts
+  )
 
   // Convert roof height line to wall offsets
   let roofOffsets

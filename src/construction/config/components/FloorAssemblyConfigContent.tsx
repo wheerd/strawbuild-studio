@@ -143,8 +143,8 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           frameMaterial: defaultMaterial,
           subfloorThickness: 22,
           subfloorMaterial: defaultMaterial,
-          bottomCladdingThickness: 22,
-          bottomCladdingMaterial: defaultMaterial,
+          ceilingSheathingThickness: 22,
+          ceilingSheathingMaterial: defaultMaterial,
           openingFrameThickness: 60,
           openingFrameMaterial: defaultMaterial,
           strawMaterial: undefined,
@@ -819,32 +819,32 @@ function FilledConfigFields({
 
       <Separator size="4" />
 
-      {/* Bottom Cladding Section */}
-      <Heading size="3">Bottom Cladding</Heading>
+      {/* Ceiling Sheathing Section */}
+      <Heading size="3">Ceiling Sheathing</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Bottom Cladding Material
+            Ceiling Sheathing Material
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
-          value={config.bottomCladdingMaterial}
-          onValueChange={bottomCladdingMaterial => {
-            if (!bottomCladdingMaterial) return
-            onUpdate({ bottomCladdingMaterial })
+          value={config.ceilingSheathingMaterial}
+          onValueChange={ceilingSheathingMaterial => {
+            if (!ceilingSheathingMaterial) return
+            onUpdate({ ceilingSheathingMaterial })
           }}
-          placeholder="Select bottom cladding material..."
+          placeholder="Select ceiling sheathing material..."
           size="2"
         />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Bottom Cladding Thickness
+            Ceiling Sheathing Thickness
           </Text>
         </Label.Root>
         <LengthField
-          value={config.bottomCladdingThickness}
-          onChange={bottomCladdingThickness => onUpdate({ bottomCladdingThickness })}
+          value={config.ceilingSheathingThickness}
+          onChange={ceilingSheathingThickness => onUpdate({ ceilingSheathingThickness })}
           unit="mm"
           size="2"
         />

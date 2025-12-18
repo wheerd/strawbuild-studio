@@ -1,7 +1,7 @@
 import type React from 'react'
 
 import type { ConstructionModel } from '@/construction/model'
-import { TAG_BASE_PLATE, TAG_ROOF, TAG_SUBFLOOR, TAG_TOP_PLATE, TAG_WALLS } from '@/construction/tags'
+import { TAG_BASE_PLATE, TAG_DECKING, TAG_ROOF, TAG_SUBFLOOR, TAG_TOP_PLATE, TAG_WALLS } from '@/construction/tags'
 
 import { TOP_VIEW } from './ConstructionPlan'
 import { ConstructionPlanModal } from './ConstructionPlanModal'
@@ -29,7 +29,8 @@ export default ({
       {
         view: TOP_VIEW,
         label: 'Roof',
-        alwaysHiddenTags: ['wall-measurement', 'opening-measurement', 'floor-measurement']
+        alwaysHiddenTags: ['wall-measurement', 'opening-measurement', 'floor-measurement'],
+        toggleHideTags: [TAG_DECKING.id]
       },
       {
         view: TOP_VIEW,
