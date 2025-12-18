@@ -5,8 +5,15 @@ import type { Roof } from '@/building/model'
 import type { PerimeterConstructionContext } from '@/construction/context'
 import { createConstructionElement } from '@/construction/elements'
 import { IDENTITY } from '@/construction/geometry'
+import { transformManifold } from '@/construction/manifold/operations'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model'
-import { type ConstructionResult, mergeResults, resultsToModel, yieldElement } from '@/construction/results'
+import {
+  type ConstructionResult,
+  mergeResults,
+  resultsToModel,
+  yieldAndClip,
+  yieldElement
+} from '@/construction/results'
 import { BaseRoofAssembly, type RoofSide } from '@/construction/roofs/base'
 import { createExtrudedPolygon } from '@/construction/shapes'
 import { TAG_ROOF, TAG_ROOF_SIDE_LEFT, TAG_ROOF_SIDE_RIGHT } from '@/construction/tags'
@@ -27,45 +34,37 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
     _contexts: PerimeterConstructionContext[]
   ): ConstructionModel => {
     const ridgeHeight = this.calculateRidgeHeight(roof)
-
-    // STEP 1: Split roof polygon ONCE
     const roofSides = this.splitRoofPolygon(roof, ridgeHeight)
 
-    // STEP 2: For each side, build all layers
+    // Calculate Z-range for clipping volume (doubled for safety margin)
+    const minZ = (-2 * (ridgeHeight + config.layers.insideThickness)) as Length
+    const maxZ = ((config.thickness + config.layers.topThickness) * 2) as Length
+    const ceilingClippingVolume = this.getCeilingPolygons(roof)
+      .map(c => this.createExtrudedVolume(c, roof.ridgeLine, minZ, maxZ))
+      .reduce((a, b) => a.add(b))
+
     const roofModels = roofSides.map(roofSide => {
-      const results = Array.from(
-        mergeResults(
-          this.constructRoofElements(roof, config, roofSide),
-          this.constructTopLayers(roof, config, roofSide),
-          this.constructCeilingLayers(roof, config, roofSide),
-          this.constructOverhangLayers(roof, config, roofSide)
-        )
-      )
-
-      // STEP 3: Create clipping volume and apply to all elements
-      // Calculate Z-range for clipping volume (doubled for safety margin)
-      const minZ = (-2 * (ridgeHeight + config.layers.insideThickness)) as Length
-      const maxZ = ((config.thickness + config.layers.topThickness) * 2) as Length
-
-      // Create clipping volume from original (unexpanded, unoffset) polygon
-      const clippingVolume = this.createClippingVolume(
-        roofSide.polygon,
+      const roofSideVolume = this.createExtrudedVolume(roofSide.polygon, roof.ridgeLine, minZ, maxZ)
+      const roofSideInverseRotate = this.calculateInverseRotationTransform(
         roof.ridgeLine,
-        minZ,
-        maxZ,
         roof.slopeAngleRad,
         roofSide.side
       )
-      const clip = (m: Manifold) => m.intersect(clippingVolume)
+      const roofSideClip = transformManifold(roofSideVolume, roofSideInverseRotate)
+      const ceilingClip = transformManifold(ceilingClippingVolume, roofSideInverseRotate)
+      const clip = (m: Manifold) => m.intersect(roofSideClip)
 
-      // Apply clipping to all elements recursively
-      for (const result of results) {
-        if (result.type === 'element') {
-          this.applyClippingRecursive(result.element, clip)
-        }
-      }
+      const results = Array.from(
+        mergeResults(
+          yieldAndClip(this.constructRoofElements(roof, config, roofSide), clip),
+          yieldAndClip(this.constructTopLayers(roof, config, roofSide), clip),
+          yieldAndClip(this.constructCeilingLayers(roof, config, roofSide), m =>
+            m.intersect(roofSideClip).intersect(ceilingClip)
+          ),
+          yieldAndClip(this.constructOverhangLayers(roof, config, roofSide), clip)
+        )
+      )
 
-      // Group this side with its transform
       const sideTag = roofSide.side === 'left' ? TAG_ROOF_SIDE_LEFT : TAG_ROOF_SIDE_RIGHT
       return transformModel(resultsToModel(results), roofSide.transform, [sideTag])
     })

@@ -26,7 +26,8 @@ function createMockStoreyContext(storeyHeight: Length = 2500): WallStoreyContext
     floorTopOffset: 0,
     ceilingBottomOffset: 0,
     ceilingBottomConstructionOffset: 0,
-    floorTopConstructionOffset: 0
+    floorTopConstructionOffset: 0,
+    perimeterContexts: []
   }
 }
 

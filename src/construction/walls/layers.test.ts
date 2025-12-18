@@ -111,7 +111,8 @@ const storeyContext: WallStoreyContext = {
   ceilingBottomOffset: 40,
   floorConstructionThickness: 200,
   floorTopConstructionOffset: 10,
-  ceilingBottomConstructionOffset: 20
+  ceilingBottomConstructionOffset: 20,
+  perimeterContexts: []
 }
 
 const baseLayers: WallLayersConfig = {

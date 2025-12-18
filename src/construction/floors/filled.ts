@@ -181,7 +181,7 @@ export class FilledFloorAssembly extends BaseFloorAssembly<FilledFloorConfig> {
           createExtrudedPolygon(p, 'xy', config.ceilingSheathingThickness),
           undefined,
           [TAG_FLOOR_CEAILING_SHEATHING],
-          { type: 'ceiling-heathing' }
+          { type: 'ceiling-sheathing' }
         )
       )
     }

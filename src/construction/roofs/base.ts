@@ -4,11 +4,10 @@ import type { Manifold } from 'manifold-3d'
 import type { Roof } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import type { PerimeterConstructionContext } from '@/construction/context'
-import { type GroupOrElement } from '@/construction/elements'
-import { type Transform, transformBounds } from '@/construction/geometry'
+import { type Transform } from '@/construction/geometry'
 import { LAYER_CONSTRUCTIONS } from '@/construction/layers'
 import type { LayerConfig, MonolithicLayerConfig, StripedLayerConfig } from '@/construction/layers/types'
-import { getBoundsFromManifold, transformManifold } from '@/construction/manifold/operations'
+import { transformManifold } from '@/construction/manifold/operations'
 import { type ConstructionModel } from '@/construction/model'
 import { type ConstructionResult, yieldAsGroup } from '@/construction/results'
 import { createExtrudedPolygon } from '@/construction/shapes'
@@ -20,13 +19,12 @@ import {
   createTag
 } from '@/construction/tags'
 import {
-  Bounds3D,
   type Length,
   type LineSegment2D,
   type Polygon2D,
   type PolygonWithHoles2D,
   direction,
-  intersectPolygon,
+  intersectPolygons,
   lineFromSegment,
   perpendicularCCW,
   perpendicularCW,
@@ -163,17 +161,14 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
     return transform
   }
 
-  private calculateInverseRotationTransform(
+  protected calculateInverseRotationTransform(
     ridgeLine: LineSegment2D,
     slopeAngleRad: number,
     side: 'left' | 'right'
   ): Transform {
     const ridgeDir2D = direction(ridgeLine.start, ridgeLine.end)
-
-    // Rotation axis along ridge (in 3D)
     const rotationAxis = vec3.normalize(vec3.create(), vec3.fromValues(ridgeDir2D[0], ridgeDir2D[1], 0))
     const angle = side === 'right' ? -slopeAngleRad : slopeAngleRad
-
     return mat4.fromRotation(mat4.create(), angle, rotationAxis)
   }
 
@@ -189,28 +184,17 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
   /**
    * Get ceiling polygon as intersection of perimeter inside polygons with roof reference
    */
-  private getCeilingPolygon(roof: Roof): PolygonWithHoles2D | null {
+  protected getCeilingPolygons(roof: Roof): Polygon2D[] {
     const { getPerimetersByStorey } = getModelActions()
     const perimeters = getPerimetersByStorey(roof.storeyId)
 
-    if (perimeters.length === 0) return null
+    if (perimeters.length === 0) return []
 
-    // Combine all inside perimeter polygons
     const insidePolygons: Polygon2D[] = perimeters.map(p => ({
       points: p.corners.map(c => vec2.clone(c.insidePoint))
     }))
 
-    // Union all inside polygons
-    const unionResult = unionPolygons(insidePolygons)
-    if (unionResult.length === 0) return null
-
-    // Intersect with roof reference polygon
-    const intersections = intersectPolygon(
-      { outer: unionResult[0], holes: [] },
-      { outer: roof.referencePolygon, holes: [] }
-    )
-
-    return intersections.length > 0 ? intersections[0] : null
+    return intersectPolygons(unionPolygons(insidePolygons), [roof.referencePolygon])
   }
 
   /**
@@ -236,55 +220,12 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
     return (zPosition * Math.tan(slopeAngleRad)) as Length
   }
 
-  /**
-   * Create a clipping volume for the roof geometry
-   * The volume is a vertical extrusion of the roof side polygon, transformed by the inverse
-   * of the roof rotation so that after rotation it produces vertical edges
-   */
-  protected createClippingVolume(
-    polygon: Polygon2D,
-    ridgeLine: LineSegment2D,
-    minZ: Length,
-    maxZ: Length,
-    slopeAngleRad: number,
-    side: 'left' | 'right'
-  ): Manifold {
+  protected createExtrudedVolume(polygon: Polygon2D, ridgeLine: LineSegment2D, minZ: Length, maxZ: Length): Manifold {
     const translatedPolygon = this.translatePolygonToOrigin(polygon, ridgeLine)
-
     const extrusionThickness = (maxZ - minZ) as Length
     const shape = createExtrudedPolygon({ outer: translatedPolygon, holes: [] }, 'xy', extrusionThickness)
-
     const translateToMinZ = mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, minZ))
-    const inverseRotation = this.calculateInverseRotationTransform(ridgeLine, slopeAngleRad, side)
-    const combinedTransform = mat4.multiply(mat4.create(), inverseRotation, translateToMinZ)
-
-    return transformManifold(shape.manifold, combinedTransform)
-  }
-
-  /**
-   * Apply clipping recursively to elements and groups
-   * Modifies elements in place by clipping their manifolds
-   */
-  protected applyClippingRecursive(item: GroupOrElement, clipping: (m: Manifold) => Manifold): void {
-    if ('shape' in item) {
-      // This is an element - apply clipping
-      const invertedTransform = mat4.invert(mat4.create(), item.transform)
-      const clippedManifold = invertedTransform
-        ? transformManifold(clipping(transformManifold(item.shape.manifold, item.transform)), invertedTransform)
-        : clipping(item.shape.manifold)
-      item.shape.manifold = clippedManifold
-      item.shape.bounds = getBoundsFromManifold(clippedManifold)
-      item.bounds = item.shape.bounds
-    } else if ('children' in item) {
-      // This is a group - recursively apply to children
-      for (const child of item.children) {
-        this.applyClippingRecursive(child, clipping)
-      }
-      // Recalculate group bounds from children
-      if (item.children.length > 0) {
-        item.bounds = Bounds3D.merge(...item.children.map(c => transformBounds(c.bounds, item.transform)))
-      }
-    }
+    return transformManifold(shape.manifold, translateToMinZ)
   }
 
   /**
@@ -380,15 +321,12 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
       return
     }
 
-    // Get full ceiling polygon (perimeter inside intersection with reference)
-    const fullCeilingPolygon = this.getCeilingPolygon(roof)
-    if (!fullCeilingPolygon) {
+    const fullCeilingPolygons = this.getCeilingPolygons(roof)
+    if (fullCeilingPolygons.length === 0) {
       return
     }
 
-    // Intersect roof side polygon with ceiling polygon
-    const sideCeilingPolygons = intersectPolygon({ outer: roofSide.polygon, holes: [] }, fullCeilingPolygon)
-
+    const sideCeilingPolygons = intersectPolygons([roofSide.polygon], fullCeilingPolygons)
     if (sideCeilingPolygons.length === 0) {
       return
     }
@@ -401,25 +339,15 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
     for (const layer of reversedLayers) {
       for (const ceilingPoly of sideCeilingPolygons) {
         const preparedOuter = this.preparePolygonForConstruction(
-          ceilingPoly.outer,
+          ceilingPoly,
           roof.ridgeLine,
           roof.slopeAngleRad,
           zOffset + layer.thickness,
           layer.thickness,
           roofSide.dirToRidge
         )
-        const preparedHoles = ceilingPoly.holes.map(hole =>
-          this.preparePolygonForConstruction(
-            hole,
-            roof.ridgeLine,
-            roof.slopeAngleRad,
-            zOffset + layer.thickness,
-            layer.thickness,
-            roofSide.dirToRidge
-          )
-        )
 
-        const results = this.runLayerConstruction({ outer: preparedOuter, holes: preparedHoles }, zOffset, layer)
+        const results = this.runLayerConstruction({ outer: preparedOuter, holes: [] }, zOffset, layer)
 
         const customTag = createTag('roof-layer', layer.name)
         yield* yieldAsGroup(results, [TAG_ROOF_LAYER_INSIDE, TAG_LAYERS, customTag])

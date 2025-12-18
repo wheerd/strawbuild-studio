@@ -1,4 +1,8 @@
+import { mat4 } from 'gl-matrix'
+import type { Manifold } from 'manifold-3d'
+
 import { IDENTITY, type Transform, transformBounds } from '@/construction/geometry'
+import { getBoundsFromManifold, transformManifold } from '@/construction/manifold/operations'
 import type { PartInfo } from '@/construction/parts'
 import type { Tag } from '@/construction/tags'
 import { Bounds3D } from '@/shared/geometry'
@@ -6,6 +10,7 @@ import { Bounds3D } from '@/shared/geometry'
 import {
   type ConstructionElement,
   type ConstructionElementId,
+  type ConstructionGroup,
   type GroupOrElement,
   createConstructionElementId
 } from './elements'
@@ -51,7 +56,7 @@ export const resultsToModel = (results: ConstructionResult[], bounds?: Bounds3D)
 // Helper functions for creating ConstructionResults
 
 export function* mergeResults(...generators: Generator<ConstructionResult>[]): Generator<ConstructionResult> {
-  for (let gen of generators) {
+  for (const gen of generators) {
     yield* gen
   }
 }
@@ -200,6 +205,61 @@ export function* yieldAsGroup(
       partInfo,
       children
     }
+  }
+}
+
+export function* yieldAndClip(
+  results: Generator<ConstructionResult>,
+  clipping: (m: Manifold) => Manifold
+): Generator<ConstructionResult> {
+  for (const result of results) {
+    if (result.type === 'element') {
+      const item = result.element
+      for (const element of withClipping(item, clipping)) {
+        yield { type: 'element', element }
+      }
+    } else {
+      yield result
+    }
+  }
+}
+
+export function* withClipping(item: GroupOrElement, clipping: (m: Manifold) => Manifold): Generator<GroupOrElement> {
+  if ('shape' in item) {
+    // This is an element - apply clipping
+    const invertedTransform = mat4.invert(mat4.create(), item.transform)
+    const clippedManifold = invertedTransform
+      ? transformManifold(clipping(transformManifold(item.shape.manifold, item.transform)), invertedTransform)
+      : clipping(item.shape.manifold)
+
+    const decomposed = clippedManifold.decompose()
+    if (decomposed.length === 1) {
+      if (item.shape.manifold.subtract(decomposed[0]).isEmpty()) {
+        console.log('unchanged!')
+        yield item
+        return
+      }
+    }
+
+    for (const manifold of decomposed) {
+      if (!manifold.isEmpty()) {
+        const bounds = getBoundsFromManifold(clippedManifold)
+        yield {
+          ...item,
+          shape: { ...item.shape, manifold, bounds },
+          bounds,
+          id: createConstructionElementId()
+        }
+      }
+    }
+  } else if ('children' in item) {
+    const children = item.children.flatMap(c => Array.from(withClipping(c, clipping)))
+    const bounds = Bounds3D.merge(...children.map(c => transformBounds(c.bounds, item.transform)))
+    yield {
+      ...item,
+      children,
+      bounds
+    } satisfies ConstructionGroup
   }
 }
 
