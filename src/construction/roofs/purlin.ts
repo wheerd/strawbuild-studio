@@ -60,6 +60,7 @@ import {
   perpendicular,
   perpendicularCCW,
   perpendicularCW,
+  projectVec2,
   scaleAddVec2,
   splitPolygonByLine,
   subVec2,
@@ -220,7 +221,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
 
     // Helper to get SIGNED distance from ridge (perpendicular)
     const getSignedDistanceToRidge = (point: Vec2): number =>
-      dotVec2(subVec2(point, roof.ridgeLine.start), roof.downSlopeDirection)
+      projectVec2(roof.ridgeLine.start, point, roof.downSlopeDirection)
 
     // Calculate height offset at a point
     const calculateOffset = (signedDist: number): number =>

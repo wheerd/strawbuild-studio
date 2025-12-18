@@ -27,6 +27,9 @@ export const dotAbsVec2 = (a: Vec2, b: Vec2): number => Math.abs(vec2.dot(a, b))
 export const vec2To3 = (a: Vec2): vec3 => vec3.fromValues(a[0], a[1], 0)
 export const vec3To2 = (a: vec3): Vec2 => vec2.copy(vec2.create(), a) as Vec2
 
+export const projectVec2 = (base: Vec2, point: Vec2, dir: Vec2): number =>
+  vec2.dot(vec2.sub(vec2.create(), point, base), dir)
+
 // s
 
 export type Length = number

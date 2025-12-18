@@ -474,11 +474,10 @@ export class IfcImporter {
         const end = points[(i + 1) % points.length]
         const length = distVec2(start, end)
         if (length < 1e-3) continue
-        const direction = normVec2(subVec2(end, start))
         wallEdges.push({
           start: copyVec2(start),
           end: copyVec2(end),
-          direction,
+          direction: direction(start, end),
           length,
           thickness
         })
@@ -539,7 +538,7 @@ export class IfcImporter {
         continue
       }
 
-      const dir = normVec2(subVec2(end, start))
+      const dir = direction(start, end)
       let bestThickness = fallback
       let bestDistance = Number.POSITIVE_INFINITY
 

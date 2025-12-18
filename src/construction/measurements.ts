@@ -10,13 +10,12 @@ import {
   direction,
   distVec2,
   distanceToInfiniteLine,
-  dotVec2,
   newVec2,
   perpendicularCCW,
   projectPointOntoLine,
+  projectVec2,
   scaleAddVec2,
-  scaleVec2,
-  subVec2
+  scaleVec2
 } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
 
@@ -179,14 +178,14 @@ function projectMeasurements(measurements: AutoMeasurement[], projection: Projec
       // Project the 3D size vector and extract perpendicular component only
       const extend1Projected = projectPoint(m.extend1, projection)
       const extend1Projected2D = newVec2(extend1Projected[0], extend1Projected[1])
-      const extend1Range = dotVec2(subVec2(extend1Projected2D, startPointBase), normal)
+      const extend1Range = projectVec2(startPointBase, extend1Projected2D, normal)
       let extendRangeMin = Math.min(extend1Range, 0)
       let extendRangeMax = Math.max(extend1Range, 0)
 
       if (m.extend2) {
         const extend2Projected = projectPoint(m.extend2, projection)
         const extend2Projected2D = newVec2(extend2Projected[0], extend2Projected[1])
-        const extend2Range = dotVec2(subVec2(extend2Projected2D, startPointBase), normal)
+        const extend2Range = projectVec2(startPointBase, extend2Projected2D, normal)
         extendRangeMin = Math.min(extend2Range, extendRangeMin)
         extendRangeMax = Math.max(extend2Range, extendRangeMax)
       }
@@ -267,8 +266,8 @@ function processMeasurementGroup(
       // Use min points for t1/t2 calculation (will be updated in layout)
       const projectedStart = projectPointOntoLine(m.startPointMin, leftLine)
       const projectedEnd = projectPointOntoLine(m.endPointMin, leftLine)
-      const t1 = dotVec2(subVec2(projectedStart, left.start), dir)
-      const t2 = dotVec2(subVec2(projectedEnd, left.start), dir)
+      const t1 = projectVec2(left.start, projectedStart, dir)
+      const t2 = projectVec2(left.start, projectedEnd, dir)
       return {
         ...m,
         startPointMin: t1 < t2 ? m.startPointMin : m.endPointMin,

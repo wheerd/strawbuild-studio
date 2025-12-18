@@ -27,6 +27,7 @@ import {
   perpendicular,
   perpendicularCW,
   point2DTo3D,
+  projectVec2,
   scaleAddVec2,
   simplifyPolygon,
   subVec2
@@ -323,7 +324,7 @@ export class PolygonWithBoundingRect {
   }
 
   public perpProjectionOffsets(points: Vec2[], eps = 1e-6) {
-    const rawOffsets = points.map(p => dotVec2(subVec2(p, this.minPoint), this.perpDir))
+    const rawOffsets = points.map(p => projectVec2(this.minPoint, p, this.perpDir))
     const sorted = rawOffsets.filter(o => o >= 0 && o <= this.perpExtent).sort((a, b) => a - b)
     const results: number[] = []
     let lastOffset = -1

@@ -9,10 +9,10 @@ import {
   type Polygon2D,
   type PolygonWithHoles2D,
   type Vec2,
+  direction,
   dotVec2,
   ensurePolygonIsClockwise,
   newVec2,
-  normVec2,
   scaleAddVec2,
   simplifyPolygon,
   subVec2,
@@ -37,9 +37,9 @@ const computeOffsetLine = (start: Vec2, end: Vec2, normal: Vec2, distance: Lengt
 }
 
 const projectAlongWall = (wall: PerimeterWall, point: Vec2): Length => {
-  const direction = normVec2(subVec2(wall.insideLine.end, wall.insideLine.start))
+  const dir = direction(wall.insideLine.start, wall.insideLine.end)
   const relative = subVec2(point, wall.insideLine.start)
-  return dotVec2(relative, direction)
+  return dotVec2(relative, dir)
 }
 
 const computeCornerIntersection = (

@@ -16,6 +16,7 @@ import {
   eqVec2,
   lenVec2,
   newVec2,
+  projectVec2,
   scaleVec2,
   subVec2
 } from '@/shared/geometry'
@@ -238,7 +239,7 @@ export const computeRoofDerivedProperties = (roof: Roof): void => {
   roof.downSlopeDirection = perpendicularCW(roof.ridgeDirection)
 
   const projections = roof.referencePolygon.points.map(p =>
-    dotVec2(subVec2(p, roof.ridgeLine.start), roof.downSlopeDirection)
+    projectVec2(roof.ridgeLine.start, p, roof.downSlopeDirection)
   )
   const minProjection = Math.min(...projections)
   const maxProjection = Math.max(...projections)

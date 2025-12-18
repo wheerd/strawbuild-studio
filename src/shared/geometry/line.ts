@@ -9,6 +9,7 @@ import {
   normVec2,
   perpendicularCCW,
   perpendicularCW,
+  projectVec2,
   scaleAddVec2,
   subVec2
 } from './basic'
@@ -131,7 +132,7 @@ export function computeBoundsLines(d: Vec2, points: Vec2[]): { left: LineSegment
   let maxProjection = -Infinity
 
   for (const p of points) {
-    const projection = dotVec2(subVec2(p, A), d)
+    const projection = projectVec2(A, p, d)
     if (projection < minProjection) {
       minProjection = projection
     }

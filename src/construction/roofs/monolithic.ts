@@ -21,12 +21,11 @@ import {
   type LineSegment2D,
   type Vec2,
   distVec2,
-  dotVec2,
   intersectLineSegmentWithPolygon,
   lerpVec2,
   lineFromSegment,
   lineIntersection,
-  subVec2
+  projectVec2
 } from '@/shared/geometry'
 
 import type { HeightLine, MonolithicRoofConfig } from './types'
@@ -105,7 +104,7 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
 
     // Helper to get SIGNED distance from ridge (perpendicular)
     const getSignedDistanceToRidge = (point: Vec2): number =>
-      dotVec2(subVec2(point, roof.ridgeLine.start), roof.downSlopeDirection)
+      projectVec2(roof.ridgeLine.start, point, roof.downSlopeDirection)
 
     // Calculate height offset at a point
     const calculateOffset = (signedDist: number): number =>
