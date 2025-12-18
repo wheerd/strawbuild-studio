@@ -10,7 +10,7 @@ import { FLOOR_ASSEMBLIES } from '@/construction/floors'
 import { WallConstructionArea } from '@/construction/geometry'
 import { resolveOpeningAssembly, resolveOpeningConfig } from '@/construction/openings/resolver'
 import { type ConstructionResult, yieldArea, yieldMeasurement } from '@/construction/results'
-import { ROOF_ASSEMBLIES } from '@/construction/roofs'
+import { resolveRoofAssembly } from '@/construction/roofs'
 import type { HeightLine } from '@/construction/roofs/types'
 import { getStoreyCeilingHeight } from '@/construction/storeyHeight'
 import {
@@ -104,23 +104,11 @@ export function getRoofHeightLineForWall(
     const roofAssembly = getRoofAssemblyById(roof.assemblyId)
     if (!roofAssembly) continue
 
-    const roofImpl = ROOF_ASSEMBLIES[roofAssembly.type]
-    if (!roofImpl) continue
+    const roofImpl = resolveRoofAssembly(roofAssembly)
 
     // Get height lines for construction lines
-    // TypeScript can't narrow the roofAssembly type properly, so we use 'as any'
-    const insideLine = roofImpl.getBottomOffsets(
-      roof,
-      roofAssembly as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-      cornerInfo.constructionInsideLine,
-      perimeterContexts
-    )
-    const outsideLine = roofImpl.getBottomOffsets(
-      roof,
-      roofAssembly as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-      cornerInfo.constructionOutsideLine,
-      perimeterContexts
-    )
+    const insideLine = roofImpl.getBottomOffsets(roof, cornerInfo.constructionInsideLine, perimeterContexts)
+    const outsideLine = roofImpl.getBottomOffsets(roof, cornerInfo.constructionOutsideLine, perimeterContexts)
 
     insideHeightLine.push(...insideLine)
     outsideHeightLine.push(...outsideLine)

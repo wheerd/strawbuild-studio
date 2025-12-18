@@ -73,12 +73,11 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
     }
   })
 
-  const assembly = new MonolithicRoofAssembly()
-
   describe('Line completely outside overhang', () => {
     it('should return empty array when line is completely outside overhang', () => {
       const roof = createTestRoof('shed', vec2.fromValues(0, 5000), vec2.fromValues(10000, 5000), 30, verticalOffset)
       const config = createTestConfig(0)
+      const assembly = new MonolithicRoofAssembly(config)
 
       // Line completely outside the overhang polygon
       const line = {
@@ -86,7 +85,7 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
         end: vec2.fromValues(-1000, 2500)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const offsets = assembly.getBottomOffsets(roof, line)
       expect(offsets).toEqual([])
     })
 
@@ -100,7 +99,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
         end: vec2.fromValues(10000, 6000)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
       expect(offsets).toEqual([])
     })
   })
@@ -116,7 +116,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
         end: vec2.fromValues(9000, 1000)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       expect(offsets.length).toBeGreaterThan(0)
       expect(offsets[0].position).toBe(0)
@@ -132,7 +133,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
         end: vec2.fromValues(9000, 1000)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       expect((offsets[0] as HeightItem).nullAfter).toBe(false)
       expect((offsets[offsets.length - 1] as HeightItem).nullAfter).toBe(true)
@@ -150,7 +152,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
         end: vec2.fromValues(5000, 2500)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       expect(offsets.length).toBeGreaterThan(0)
       expect(offsets[0].position).toBeGreaterThan(0) // Doesn't start at 0
@@ -167,7 +170,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
         end: vec2.fromValues(15000, 2500)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       expect(offsets.length).toBeGreaterThan(0)
       expect(offsets[0].position).toBe(0) // Starts at 0
@@ -184,7 +188,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
         end: vec2.fromValues(12000, 2500)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       expect(offsets.length).toBeGreaterThan(0)
       expect(offsets[0].position).toBeGreaterThan(0) // Entry point
@@ -214,7 +219,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
         end: vec2.fromValues(3000, 5000)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       // Should have multiple segments
       expect(offsets.length).toBeGreaterThanOrEqual(4) // At least 2 segments (4 points)
@@ -250,7 +256,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
         end: vec2.fromValues(5000, 5500)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       // Should have at least 2 segments
       expect(offsets.length).toBeGreaterThanOrEqual(4)
@@ -268,7 +275,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
         end: vec2.fromValues(5000, 5000)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       // Should have at least 3 points: start, ridge, end
       expect(offsets.length).toBeGreaterThanOrEqual(3)
@@ -293,7 +301,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
         end: vec2.fromValues(10000, 1000)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       // Should have only start and end points (no ridge crossing)
       expect(offsets.length).toBe(2)
@@ -313,7 +322,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
         end: vec2.fromValues(5000, 4900)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       // Should include ridge crossing since line crosses ridge and both sides are in overhang
       expect(offsets.length).toBeGreaterThanOrEqual(3)
@@ -339,7 +349,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
         end: vec2.fromValues(5000, 5000)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       // All points except last should have nullAfter: false
       for (let i = 0; i < offsets.length - 1; i++) {
@@ -368,7 +379,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
         end: vec2.fromValues(3000, 5000)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       // Assuming we have 2 segments, pattern should be:
       // segment 1 start: nullAfter = false
@@ -397,7 +409,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
         end: vec2.fromValues(5000, 4000)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       // Height should increase as we approach ridge
       const startOffset = (offsets[0] as HeightItem).offset
@@ -414,7 +427,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
         end: vec2.fromValues(5000, 5000)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       // Should have ridge point
       expect(offsets.length).toBeGreaterThanOrEqual(3)

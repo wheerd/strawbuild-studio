@@ -42,28 +42,30 @@ export interface RoofSide {
   dirToRidge: vec2
 }
 
-export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> implements RoofAssembly<T> {
-  abstract getTopOffset: (config: T) => Length
-  abstract getBottomOffsets: (
-    roof: Roof,
-    config: T,
-    line: LineSegment2D,
-    contexts: PerimeterConstructionContext[]
-  ) => HeightLine
+export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> implements RoofAssembly {
+  protected readonly config: T
 
-  abstract getConstructionThickness: (config: T) => Length
-  abstract construct(roof: Roof, config: T, contexts: PerimeterConstructionContext[]): ConstructionModel
+  constructor(config: T) {
+    this.config = config
+  }
 
-  protected abstract getTopLayerOffset: (config: T) => Length
-  protected abstract getCeilingLayerOffset: (config: T) => Length
-  protected abstract getOverhangLayerOffset: (config: T) => Length
+  abstract get topOffset(): Length
+  abstract getBottomOffsets(roof: Roof, line: LineSegment2D, contexts: PerimeterConstructionContext[]): HeightLine
 
-  getTotalThickness = (config: T) =>
-    config.layers.insideThickness +
-    this.getCeilingLayerOffset(config) +
-    this.getConstructionThickness(config) +
-    this.getTopLayerOffset(config) +
-    config.layers.topThickness
+  abstract get constructionThickness(): Length
+  abstract construct(roof: Roof, contexts: PerimeterConstructionContext[]): ConstructionModel
+
+  protected abstract get topLayerOffset(): Length
+  protected abstract get ceilingLayerOffset(): Length
+  protected abstract get overhangLayerOffset(): Length
+
+  get totalThickness(): Length {
+    return (this.config.layers.insideThickness +
+      this.ceilingLayerOffset +
+      this.constructionThickness +
+      this.topLayerOffset +
+      this.config.layers.topThickness) as Length
+  }
 
   // ============================================================================
   // Helper Methods
@@ -288,14 +290,14 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
   /**
    * Construct top layers (on roof side polygon)
    */
-  protected *constructTopLayers(roof: Roof, config: T, roofSide: RoofSide): Generator<ConstructionResult> {
-    if (config.layers.topLayers.length === 0) {
+  protected *constructTopLayers(roof: Roof, roofSide: RoofSide): Generator<ConstructionResult> {
+    if (this.config.layers.topLayers.length === 0) {
       return
     }
 
-    let zOffset = (this.getConstructionThickness(config) + this.getTopLayerOffset(config)) as Length
+    let zOffset = (this.constructionThickness + this.topLayerOffset) as Length
 
-    for (const layer of config.layers.topLayers) {
+    for (const layer of this.config.layers.topLayers) {
       const preparedPolygon = this.preparePolygonForConstruction(
         roofSide.polygon,
         roof.ridgeLine,
@@ -317,8 +319,8 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
   /**
    * Construct ceiling layers (inside perimeter intersection with roof side)
    */
-  protected *constructCeilingLayers(roof: Roof, config: T, roofSide: RoofSide): Generator<ConstructionResult> {
-    if (config.layers.insideLayers.length === 0) {
+  protected *constructCeilingLayers(roof: Roof, roofSide: RoofSide): Generator<ConstructionResult> {
+    if (this.config.layers.insideLayers.length === 0) {
       return
     }
 
@@ -332,10 +334,10 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
       return
     }
 
-    let zOffset = (this.getCeilingLayerOffset(config) - config.layers.insideThickness) as Length
+    let zOffset = (this.ceilingLayerOffset - this.config.layers.insideThickness) as Length
 
     // Reverse order: bottom to top
-    const reversedLayers = [...config.layers.insideLayers].reverse()
+    const reversedLayers = [...this.config.layers.insideLayers].reverse()
 
     for (const layer of reversedLayers) {
       for (const ceilingPoly of sideCeilingPolygons) {
@@ -360,8 +362,8 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
   /**
    * Construct overhang layers (overhang areas for this roof side)
    */
-  protected *constructOverhangLayers(roof: Roof, config: T, roofSide: RoofSide): Generator<ConstructionResult> {
-    if (config.layers.overhangLayers.length === 0) {
+  protected *constructOverhangLayers(roof: Roof, roofSide: RoofSide): Generator<ConstructionResult> {
+    if (this.config.layers.overhangLayers.length === 0) {
       return
     }
 
@@ -372,10 +374,10 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
       return
     }
 
-    let zOffset = (this.getOverhangLayerOffset(config) - config.layers.overhangThickness) as Length
+    let zOffset = (this.overhangLayerOffset - this.config.layers.overhangThickness) as Length
 
     // Reverse order: bottom to top
-    const reversedLayers = [...config.layers.overhangLayers].reverse()
+    const reversedLayers = [...this.config.layers.overhangLayers].reverse()
 
     for (const layer of reversedLayers) {
       for (const overhangPoly of sideOverhangPolygons) {

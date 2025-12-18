@@ -6,18 +6,13 @@ import type { MaterialId } from '@/construction/materials/material'
 import type { ConstructionModel } from '@/construction/model'
 import type { Length, LineSegment2D } from '@/shared/geometry'
 
-export interface RoofAssembly<TConfig extends RoofAssemblyConfigBase> {
-  construct: (roof: Roof, config: TConfig, contexts: PerimeterConstructionContext[]) => ConstructionModel
+export interface RoofAssembly {
+  construct: (roof: Roof, contexts: PerimeterConstructionContext[]) => ConstructionModel
 
-  getTopOffset: (config: TConfig) => Length
-  getBottomOffsets: (
-    roof: Roof,
-    config: TConfig,
-    line: LineSegment2D,
-    contexts: PerimeterConstructionContext[]
-  ) => HeightLine
-  getConstructionThickness: (config: TConfig) => Length
-  getTotalThickness: (config: TConfig) => Length
+  get topOffset(): Length
+  getBottomOffsets: (roof: Roof, line: LineSegment2D, contexts: PerimeterConstructionContext[]) => HeightLine
+  get constructionThickness(): Length
+  get totalThickness(): Length
 }
 
 export type RoofAssemblyType = 'monolithic' | 'purlin'

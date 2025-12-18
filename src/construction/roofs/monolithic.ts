@@ -28,17 +28,13 @@ import {
 import type { HeightLine, MonolithicRoofConfig } from './types'
 
 export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfig> {
-  construct = (
-    roof: Roof,
-    config: MonolithicRoofConfig,
-    _contexts: PerimeterConstructionContext[]
-  ): ConstructionModel => {
+  construct = (roof: Roof, _contexts: PerimeterConstructionContext[]): ConstructionModel => {
     const ridgeHeight = this.calculateRidgeHeight(roof)
     const roofSides = this.splitRoofPolygon(roof, ridgeHeight)
 
     // Calculate Z-range for clipping volume (doubled for safety margin)
-    const minZ = (-2 * (ridgeHeight + config.layers.insideThickness)) as Length
-    const maxZ = ((config.thickness + config.layers.topThickness) * 2) as Length
+    const minZ = (-2 * (ridgeHeight + this.config.layers.insideThickness)) as Length
+    const maxZ = ((this.config.thickness + this.config.layers.topThickness) * 2) as Length
     const ceilingClippingVolume = this.getCeilingPolygons(roof)
       .map(c => this.createExtrudedVolume(c, roof.ridgeLine, minZ, maxZ))
       .reduce((a, b) => a.add(b))
@@ -56,12 +52,12 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
 
       const results = Array.from(
         mergeResults(
-          yieldAndClip(this.constructRoofElements(roof, config, roofSide), clip),
-          yieldAndClip(this.constructTopLayers(roof, config, roofSide), clip),
-          yieldAndClip(this.constructCeilingLayers(roof, config, roofSide), m =>
+          yieldAndClip(this.constructRoofElements(roof, roofSide), clip),
+          yieldAndClip(this.constructTopLayers(roof, roofSide), clip),
+          yieldAndClip(this.constructCeilingLayers(roof, roofSide), m =>
             m.intersect(roofSideClip).intersect(ceilingClip)
           ),
-          yieldAndClip(this.constructOverhangLayers(roof, config, roofSide), clip)
+          yieldAndClip(this.constructOverhangLayers(roof, roofSide), clip)
         )
       )
 
@@ -72,19 +68,27 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
     return transformModel(mergeModels(...roofModels), IDENTITY, [TAG_ROOF])
   }
 
-  getConstructionThickness = (config: MonolithicRoofConfig): Length => {
-    return config.thickness
+  get constructionThickness(): Length {
+    return this.config.thickness
   }
 
-  protected getTopLayerOffset = (_config: MonolithicRoofConfig) => 0
-  protected getCeilingLayerOffset = (_config: MonolithicRoofConfig) => 0
-  protected getOverhangLayerOffset = (_config: MonolithicRoofConfig) => 0
-
-  getTopOffset = (config: MonolithicRoofConfig): Length => {
-    return config.layers.topThickness
+  protected get topLayerOffset(): Length {
+    return 0 as Length
   }
 
-  getBottomOffsets = (roof: Roof, _config: MonolithicRoofConfig, line: LineSegment2D): HeightLine => {
+  protected get ceilingLayerOffset(): Length {
+    return 0 as Length
+  }
+
+  protected get overhangLayerOffset(): Length {
+    return 0 as Length
+  }
+
+  get topOffset(): Length {
+    return this.config.layers.topThickness
+  }
+
+  getBottomOffsets = (roof: Roof, line: LineSegment2D): HeightLine => {
     // Step 1: Find intersection segments with overhang polygon
     const intersection = intersectLineSegmentWithPolygon(line, roof.overhangPolygon)
     if (!intersection || intersection.segments.length === 0) {
@@ -142,27 +146,20 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
     return result
   }
 
-  getTotalThickness = (config: MonolithicRoofConfig) =>
-    config.layers.insideThickness + config.thickness + config.layers.topThickness
-
-  private *constructRoofElements(
-    roof: Roof,
-    config: MonolithicRoofConfig,
-    roofSide: RoofSide
-  ): Generator<ConstructionResult> {
+  private *constructRoofElements(roof: Roof, roofSide: RoofSide): Generator<ConstructionResult> {
     const preparedPolygon = this.preparePolygonForConstruction(
       roofSide.polygon,
       roof.ridgeLine,
       roof.slopeAngleRad,
-      config.thickness,
-      config.thickness,
+      this.config.thickness,
+      this.config.thickness,
       roofSide.dirToRidge
     )
 
     yield* yieldElement(
       createConstructionElement(
-        config.material,
-        createExtrudedPolygon({ outer: preparedPolygon, holes: [] }, 'xy', config.thickness),
+        this.config.material,
+        createExtrudedPolygon({ outer: preparedPolygon, holes: [] }, 'xy', this.config.thickness),
         undefined,
         [TAG_ROOF]
       )

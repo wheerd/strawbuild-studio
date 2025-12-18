@@ -11,7 +11,7 @@ import { LAYER_CONSTRUCTIONS } from '@/construction/layers'
 import type { LayerConfig, MonolithicLayerConfig, StripedLayerConfig } from '@/construction/layers/types'
 import { type ConstructionModel, createConstructionGroup } from '@/construction/model'
 import { type ConstructionResult, aggregateResults } from '@/construction/results'
-import { ROOF_ASSEMBLIES } from '@/construction/roofs'
+import { resolveRoofAssembly } from '@/construction/roofs'
 import type { HeightLine } from '@/construction/roofs/types'
 import { TAG_LAYERS, TAG_WALL_LAYER_INSIDE, TAG_WALL_LAYER_OUTSIDE, createTag } from '@/construction/tags'
 import {
@@ -91,13 +91,10 @@ function getRoofHeightLineForLayer(
     const roofAssembly = getRoofAssemblyById(roof.assemblyId)
     if (!roofAssembly) continue
 
-    const roofImpl = ROOF_ASSEMBLIES[roofAssembly.type]
-    if (!roofImpl) continue
+    const roofImpl = resolveRoofAssembly(roofAssembly)
 
     // Get height line for this layer's line
-    // TypeScript can't narrow the roofAssembly type properly, so we use 'as any'
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const line = roofImpl.getBottomOffsets(roof, roofAssembly as any, layerLine, perimeterContexts)
+    const line = roofImpl.getBottomOffsets(roof, layerLine, perimeterContexts)
     heightLine.push(...line)
   }
 

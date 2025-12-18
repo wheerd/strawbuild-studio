@@ -70,14 +70,13 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
     }
   })
 
-  const assembly = new MonolithicRoofAssembly()
-
   describe('Shed Roof', () => {
     it('should calculate offsets for line perpendicular to ridge', () => {
       // Shed roof: ridge is on the top edge of reference polygon
       // Reference polygon: rectangle from Y=0 to Y=5000, ridge at Y=5000
       const roof = createTestRoof('shed', vec2.fromValues(0, 5000), vec2.fromValues(10000, 5000), 30, verticalOffset)
       const config = createTestConfig(0)
+      const assembly = new MonolithicRoofAssembly(config)
 
       // Wall line perpendicular to ridge (runs north-south)
       const line = {
@@ -85,7 +84,7 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
         end: vec2.fromValues(5000, 5000) // At ridge
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       // Should have 2 offset points for shed roof
       expect(offsets).toHaveLength(2)
@@ -116,7 +115,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
         end: vec2.fromValues(10000, 4000)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       // Should have 2 offset points
       expect(offsets).toHaveLength(2)
@@ -142,7 +142,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
         end: vec2.fromValues(1000, 5000)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       // Should have 2 offset points
       expect(offsets).toHaveLength(2)
@@ -166,7 +167,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
         end: vec2.fromValues(5000, 5500) // In overhang above ridge
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       // Should calculate valid offsets for entire line (it's within overhang)
       // May have multiple points if line crosses polygon boundaries
@@ -194,7 +196,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
         end: vec2.fromValues(7000, 4000) // Closer to ridge
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       // Should have 2 offset points for shed roof
       expect(offsets).toHaveLength(2)
@@ -216,7 +219,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
         end: vec2.fromValues(5000, 5000)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       // Should have 3 offset points: start, ridge intersection, end
       expect(offsets).toHaveLength(3)
@@ -261,7 +265,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
         end: vec2.fromValues(10000, 1500)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       // Should have 2 offset points (doesn't cross ridge)
       expect(offsets).toHaveLength(2)
@@ -288,7 +293,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
         end: vec2.fromValues(10000, 2500)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       // When line is on ridge, no intersection is found (parallel lines)
       // Should return 2 points with maximum offset
@@ -314,7 +320,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
         end: vec2.fromValues(8000, 4000) // 1500mm above ridge
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       // Should have 3 points (crosses ridge)
       expect(offsets).toHaveLength(3)
@@ -346,7 +353,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
         end: vec2.fromValues(12000, 4000)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       // Line is completely outside overhang, should return empty array
       expect(offsets).toHaveLength(0)
@@ -363,7 +371,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
         end: vec2.fromValues(5000, 5000)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       expect(offsets).toHaveLength(2)
       // With near-zero slope, offsets should be very similar
@@ -379,7 +388,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
         end: vec2.fromValues(5000, 5000)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       expect(offsets).toHaveLength(2)
       // With steep slope, offset difference should be large
@@ -396,7 +406,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
         end: vec2.fromValues(5010, 2500)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       expect(offsets).toHaveLength(2)
       // Offsets should be nearly identical for such a short line
@@ -414,7 +425,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
         end: vec2.fromValues(10000, 5000)
       }
 
-      const offsets = assembly.getBottomOffsets(roof, config, line)
+      const assembly = new MonolithicRoofAssembly(config)
+      const offsets = assembly.getBottomOffsets(roof, line)
 
       expect(offsets).toHaveLength(2)
       expect((offsets[0] as HeightItem).offset).not.toBeCloseTo((offsets[1] as HeightItem).offset, 1)

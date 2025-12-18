@@ -23,7 +23,7 @@ import { getRoofAssemblyUsage } from '@/construction/config/usage'
 import { DEFAULT_CEILING_LAYER_SETS, DEFAULT_ROOF_LAYER_SETS } from '@/construction/layers/defaults'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
-import { ROOF_ASSEMBLIES } from '@/construction/roofs'
+import { resolveRoofAssembly } from '@/construction/roofs'
 import type { MonolithicRoofConfig, PurlinRoofConfig, RoofAssemblyType, RoofConfig } from '@/construction/roofs/types'
 import { RoofMeasurementInfo } from '@/editor/components/RoofMeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
@@ -501,10 +501,8 @@ function ConfigForm({ assembly, onUpdateName }: ConfigFormProps): React.JSX.Elem
   )
 
   const totalThickness = useMemo(() => {
-    const assemby = ROOF_ASSEMBLIES[assembly.type]
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const totalThickness = assemby.getTotalThickness(assembly as any)
-    return formatLength(totalThickness)
+    const assemblyImpl = resolveRoofAssembly(assembly)
+    return formatLength(assemblyImpl.totalThickness)
   }, [assembly])
 
   return (
