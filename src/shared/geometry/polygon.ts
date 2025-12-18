@@ -967,6 +967,8 @@ export function intersectLineSegmentWithPolygon(
     return null
   }
 
+  polygon = simplifyPolygon(polygon)
+
   const lineDir = direction(line.start, line.end)
   const lineLength = vec2.distance(line.start, line.end)
 
@@ -982,8 +984,6 @@ export function intersectLineSegmentWithPolygon(
   }
 
   const intersections: Intersection[] = []
-  const startInside = isPointInPolygon(line.start, polygon)
-  const endInside = isPointInPolygon(line.end, polygon)
 
   // Check each edge of the polygon
   for (let i = 0; i < polygon.points.length; i++) {
@@ -1043,7 +1043,7 @@ export function intersectLineSegmentWithPolygon(
 
   if (uniqueIntersections.length === 0) {
     // No edge crossings
-    if (startInside && endInside) {
+    if (isPointInPolygon(line.start, polygon) && isPointInPolygon(line.end, polygon)) {
       // Entire line is inside
       return { segments: [{ tStart: 0, tEnd: 1 }] }
     }
@@ -1052,7 +1052,7 @@ export function intersectLineSegmentWithPolygon(
   }
 
   // Build segments by tracking inside/outside status
-  let inside = startInside
+  let inside = isPointStrictlyInPolygon(line.start, polygon)
   let segmentStart: number | null = inside ? 0 : null
 
   for (const intersection of uniqueIntersections) {

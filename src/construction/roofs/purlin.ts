@@ -255,7 +255,12 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     const result: HeightLine = []
     for (const segment of intersection.segments) {
       // Segment start
-      result.push({ position: segment.tStart, offset: calculateOffsetAt(segment.tStart), nullAfter: false })
+      if (
+        purlinIntersections.length === 0 ||
+        purlinIntersections[purlinIntersections.length - 1].tStart > segment.tStart
+      ) {
+        result.push({ position: segment.tStart, offset: calculateOffsetAt(segment.tStart), nullAfter: false })
+      }
 
       // Ridge intersection (if within this segment)
       if (ridgeT > segment.tStart && ridgeT < segment.tEnd) {
@@ -264,10 +269,27 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
         }
       }
 
-      processPurlinsUntilT(segment.tEnd)
+      if (processPurlinsUntilT(segment.tEnd)) {
+        // Segment end
+        result.push({ position: segment.tEnd, offset: calculateOffsetAt(segment.tEnd), nullAfter: true })
+      }
+    }
 
-      // Segment end
-      result.push({ position: segment.tEnd, offset: calculateOffsetAt(segment.tEnd), nullAfter: true })
+    const first = result[0]
+    if ('offsetBefore' in first) {
+      result[0] = {
+        offset: first.offsetAfter,
+        position: first.position,
+        nullAfter: false
+      }
+    }
+    const last = result[result.length - 1]
+    if ('offsetAfter' in last) {
+      result[result.length - 1] = {
+        offset: last.offsetBefore,
+        position: last.position,
+        nullAfter: true
+      }
     }
 
     return result

@@ -139,14 +139,5 @@ export const validateRoofConfig = (config: RoofConfig): void => {
     if (config.deckingThickness <= 0) {
       throw new Error('Decking thickness must be positive')
     }
-    // Validate all material IDs are present
-    if (
-      !config.purlinMaterial ||
-      !config.rafterMaterial ||
-      !config.ceilingSheathingMaterial ||
-      !config.deckingMaterial
-    ) {
-      throw new Error('Purlin roof must have all required materials')
-    }
   }
 }
