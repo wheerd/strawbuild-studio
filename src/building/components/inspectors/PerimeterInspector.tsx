@@ -17,7 +17,7 @@ import React, { useCallback, useMemo } from 'react'
 
 import type { PerimeterId, WallAssemblyId } from '@/building/model/ids'
 import type { PerimeterReferenceSide, PerimeterWall, RoofType } from '@/building/model/model'
-import { useModelActions, usePerimeterById } from '@/building/store'
+import { useModelActions, usePerimeterById, useRoofsOfActiveStorey } from '@/building/store'
 import TopDownPlanModal from '@/construction/components/TopDownPlanModal'
 import { useDefaultRoofAssemblyId } from '@/construction/config'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
@@ -25,7 +25,7 @@ import { WallAssemblySelectWithEdit } from '@/construction/config/components/Wal
 import { constructPerimeter } from '@/construction/perimeter'
 import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
-import { popSelection, pushSelection } from '@/editor/hooks/useSelectionStore'
+import { popSelection, replaceSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewModeActions } from '@/editor/hooks/useViewMode'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { ConstructionPlanIcon, FitToViewIcon, Model3DIcon, RoofIcon } from '@/shared/components/Icons'
@@ -91,6 +91,13 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
   const perimeter = usePerimeterById(selectedId)
   const viewportActions = useViewportActions()
   const { setMode } = useViewModeActions()
+  const roofsOfStorey = useRoofsOfActiveStorey()
+
+  // Find roof associated with this perimeter
+  const associatedRoof = useMemo(
+    () => roofsOfStorey.find(roof => roof.referencePerimeter === selectedId) ?? null,
+    [roofsOfStorey, selectedId]
+  )
 
   // Mixed state detection
   const wallAssemblyState = useMemo(
@@ -137,6 +144,12 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
     popSelection()
   }, [removePerimeter, selectedId])
 
+  const handleNavigateToRoof = useCallback(() => {
+    if (!associatedRoof) return
+    setMode('roofs')
+    replaceSelection([associatedRoof.id])
+  }, [associatedRoof, setMode])
+
   const handleAddRoof = useCallback(
     (roofType: RoofType) => {
       if (!perimeter) return
@@ -174,7 +187,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
 
       if (newRoof) {
         setMode('roofs')
-        pushSelection(newRoof.id)
+        replaceSelection([newRoof.id])
       }
     },
     [perimeter, selectedId, addRoof, setMode]
@@ -378,17 +391,23 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
 
         {/* Action Buttons */}
         <Flex gap="2" justify="end">
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger>
-              <IconButton size="2" title="Add roof based on perimeter">
-                <RoofIcon />
-              </IconButton>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content>
-              <DropdownMenu.Item onClick={() => handleAddRoof('gable')}>Gable Roof</DropdownMenu.Item>
-              <DropdownMenu.Item onClick={() => handleAddRoof('shed')}>Shed Roof</DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
+          {associatedRoof ? (
+            <IconButton size="2" title="View associated roof" onClick={handleNavigateToRoof}>
+              <RoofIcon />
+            </IconButton>
+          ) : (
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger>
+                <IconButton size="2" title="Add roof based on perimeter">
+                  <RoofIcon />
+                </IconButton>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Content>
+                <DropdownMenu.Item onClick={() => handleAddRoof('gable')}>Gable Roof</DropdownMenu.Item>
+                <DropdownMenu.Item onClick={() => handleAddRoof('shed')}>Shed Roof</DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu.Root>
+          )}
           <IconButton size="2" title="Fit to view" onClick={handleFitToView}>
             <FitToViewIcon />
           </IconButton>
