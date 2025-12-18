@@ -1,7 +1,7 @@
 import { mat4, vec3 } from 'gl-matrix'
 
 import type { InitialPartInfo } from '@/construction/parts'
-import { type Axis3D, Bounds3D, type Length, type Plane3D, type Polygon2D } from '@/shared/geometry'
+import { type Axis3D, Bounds3D, type Length, type Plane3D, type Polygon2D, newVec2 } from '@/shared/geometry'
 import { simplifyPolygon, unionPolygons } from '@/shared/geometry/polygon'
 
 import { type ConstructionGroup, type GroupOrElement, createConstructionElementId } from './elements'
@@ -213,11 +213,11 @@ function transformArea(a: HighlightedArea, t: Transform): HighlightedArea {
       const transformed = transform(p3d, t)
 
       if (a.plane === 'xy') {
-        return [transformed[0], transformed[1]] as [number, number]
+        return newVec2(transformed[0], transformed[1])
       } else if (a.plane === 'xz') {
-        return [transformed[0], transformed[2]] as [number, number]
+        return newVec2(transformed[0], transformed[2])
       } else {
-        return [transformed[1], transformed[2]] as [number, number]
+        return newVec2(transformed[1], transformed[2])
       }
     })
     return { ...a, polygon: { points: transformedPoints } }

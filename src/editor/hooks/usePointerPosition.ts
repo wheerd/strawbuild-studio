@@ -1,13 +1,14 @@
-import { vec2 } from 'gl-matrix'
 import { create } from 'zustand'
+
+import { type Vec2, newVec2 } from '@/shared/geometry'
 
 interface PointerPosition {
   stage: { x: number; y: number } | null
-  world: vec2 | null
+  world: Vec2 | null
 }
 
 interface PointerPositionActions {
-  setPosition: (stage: { x: number; y: number }, world: vec2) => void
+  setPosition: (stage: { x: number; y: number }, world: Vec2) => void
   clear: () => void
 }
 
@@ -24,8 +25,7 @@ const pointerPositionStore = create<PointerPositionStore>()(set => ({
   actions: {
     setPosition: (stage, world) => {
       const stageCopy = { x: stage.x, y: stage.y }
-      // clone vec2 to avoid external mutation before storing
-      const worldCopy = vec2.fromValues(world[0], world[1])
+      const worldCopy = newVec2(world[0], world[1])
       set({ stage: stageCopy, world: worldCopy })
     },
     clear: () => {
@@ -34,7 +34,7 @@ const pointerPositionStore = create<PointerPositionStore>()(set => ({
   }
 }))
 
-export const usePointerWorldPosition = (): vec2 | null => pointerPositionStore(state => state.world)
+export const usePointerWorldPosition = (): Vec2 | null => pointerPositionStore(state => state.world)
 
 export const usePointerStagePosition = (): { x: number; y: number } | null => pointerPositionStore(state => state.stage)
 

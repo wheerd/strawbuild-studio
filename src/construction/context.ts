@@ -1,5 +1,3 @@
-import { vec2 } from 'gl-matrix'
-
 import type { FloorOpening, Perimeter } from '@/building/model'
 import { getConfigActions } from '@/construction/config'
 import {
@@ -7,12 +5,21 @@ import {
   type Line2D,
   type LineSegment2D,
   type Polygon2D,
+  type Vec2,
   arePolygonsIntersecting,
+  copyVec2,
   direction,
+  distVec2,
   distanceToInfiniteLine,
+  dotVec2,
+  eqVec2,
   lineIntersection,
+  negVec2,
+  normVec2,
   perpendicular,
   polygonEdgeOffset,
+  scaleAddVec2,
+  subVec2,
   unionPolygons
 } from '@/shared/geometry'
 
@@ -28,7 +35,7 @@ export interface PerimeterConstructionContext {
 export interface WallFaceOffset {
   line: Line2D
   segment: LineSegment2D
-  normal: vec2
+  normal: Vec2
   distance: Length
   length: Length
 }
@@ -51,8 +58,7 @@ export function computePerimeterConstructionPolygon(
 
   const offsetLines = perimeter.walls.map((wall, index) => {
     const offsetDistance = offsets[index]
-    const offsetPoint = vec2.scaleAndAdd(
-      vec2.create(),
+    const offsetPoint = scaleAddVec2(
       outside ? wall.outsideLine.start : wall.insideLine.start,
       wall.outsideDirection,
       offsetDistance
@@ -61,7 +67,7 @@ export function computePerimeterConstructionPolygon(
   })
 
   const filteredLines = offsetLines.filter(
-    (l, i) => !vec2.equals(l.direction, offsetLines[(i - 1 + offsetLines.length) % offsetLines.length].direction)
+    (l, i) => !eqVec2(l.direction, offsetLines[(i - 1 + offsetLines.length) % offsetLines.length].direction)
   )
 
   const points = filteredLines
@@ -113,41 +119,41 @@ export function createWallFaceOffsets(perimeters: Perimeter[]): WallFaceOffset[]
         continue
       }
 
-      const inwardNormal = vec2.negate(vec2.create(), wall.outsideDirection)
+      const inwardNormal = negVec2(wall.outsideDirection)
 
       const insideThickness = Math.max(assembly.layers.insideThickness ?? 0, 0)
       if (insideThickness > 0) {
         const segment: LineSegment2D = {
-          start: vec2.clone(perimeter.corners[wallIndex].insidePoint),
-          end: vec2.clone(perimeter.corners[(wallIndex + 1) % perimeter.corners.length].insidePoint)
+          start: copyVec2(perimeter.corners[wallIndex].insidePoint),
+          end: copyVec2(perimeter.corners[(wallIndex + 1) % perimeter.corners.length].insidePoint)
         }
         faces.push({
           line: {
             point: segment.start,
             direction: wall.direction
           },
-          normal: vec2.clone(wall.outsideDirection),
+          normal: copyVec2(wall.outsideDirection),
           segment,
           distance: insideThickness,
-          length: vec2.distance(segment.start, segment.end)
+          length: distVec2(segment.start, segment.end)
         })
       }
 
       const outsideThickness = Math.max(assembly.layers.outsideThickness ?? 0, 0)
       if (outsideThickness > 0) {
         const segment: LineSegment2D = {
-          start: vec2.clone(perimeter.corners[wallIndex].outsidePoint),
-          end: vec2.clone(perimeter.corners[(wallIndex + 1) % perimeter.corners.length].outsidePoint)
+          start: copyVec2(perimeter.corners[wallIndex].outsidePoint),
+          end: copyVec2(perimeter.corners[(wallIndex + 1) % perimeter.corners.length].outsidePoint)
         }
         faces.push({
           line: {
             point: segment.start,
             direction: wall.direction
           },
-          normal: vec2.clone(inwardNormal),
+          normal: copyVec2(inwardNormal),
           segment,
           distance: outsideThickness,
-          length: vec2.distance(segment.start, segment.end)
+          length: distVec2(segment.start, segment.end)
         })
       }
     }
@@ -168,12 +174,12 @@ export function applyWallFaceOffsets(polygon: Polygon2D, faces: WallFaceOffset[]
     const start = polygon.points[i]
     const end = polygon.points[(i + 1) % polygon.points.length]
 
-    if (vec2.distance(start, end) < DISTANCE_EPSILON) {
+    if (distVec2(start, end) < DISTANCE_EPSILON) {
       continue
     }
 
     const edgeDirection = direction(start, end)
-    const edgeNormal = vec2.normalize(vec2.create(), perpendicular(edgeDirection))
+    const edgeNormal = normVec2(perpendicular(edgeDirection))
 
     let selectedOffset = 0
 
@@ -197,7 +203,7 @@ export function applyWallFaceOffsets(polygon: Polygon2D, faces: WallFaceOffset[]
         continue
       }
 
-      const alignment = vec2.dot(edgeNormal, face.normal)
+      const alignment = dotVec2(edgeNormal, face.normal)
       if (Math.abs(alignment) < PARALLEL_EPSILON) {
         continue
       }
@@ -221,12 +227,12 @@ export function applyWallFaceOffsets(polygon: Polygon2D, faces: WallFaceOffset[]
   return polygonEdgeOffset(polygon, edgeOffsets)
 }
 
-function segmentsOverlap(edgeStart: vec2, edgeEnd: vec2, face: WallFaceOffset): boolean {
-  const toStart = vec2.subtract(vec2.create(), edgeStart, face.line.point)
-  const toEnd = vec2.subtract(vec2.create(), edgeEnd, face.line.point)
+function segmentsOverlap(edgeStart: Vec2, edgeEnd: Vec2, face: WallFaceOffset): boolean {
+  const toStart = subVec2(edgeStart, face.line.point)
+  const toEnd = subVec2(edgeEnd, face.line.point)
 
-  const edgeProjStart = vec2.dot(toStart, face.line.direction)
-  const edgeProjEnd = vec2.dot(toEnd, face.line.direction)
+  const edgeProjStart = dotVec2(toStart, face.line.direction)
+  const edgeProjEnd = dotVec2(toEnd, face.line.direction)
 
   const edgeMin = Math.min(edgeProjStart, edgeProjEnd)
   const edgeMax = Math.max(edgeProjStart, edgeProjEnd)

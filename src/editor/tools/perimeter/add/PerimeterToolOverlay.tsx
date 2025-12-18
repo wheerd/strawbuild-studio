@@ -1,4 +1,3 @@
-import { vec2 } from 'gl-matrix'
 import React, { useMemo } from 'react'
 import { Circle, Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
@@ -6,6 +5,7 @@ import { SnappingLines } from '@/editor/canvas/utils/SnappingLines'
 import { useZoom } from '@/editor/hooks/useViewportStore'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolOverlayComponentProps } from '@/editor/tools/system/types'
+import { type Vec2, addVec2, copyVec2, scaleVec2 } from '@/shared/geometry'
 import { direction, offsetPolygon, perpendicularCCW } from '@/shared/geometry'
 import { ensurePolygonIsClockwise } from '@/shared/geometry/polygon'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
@@ -26,11 +26,11 @@ interface DerivedSegments {
   segments: SegmentLine[]
 }
 
-function clonePoints(points: readonly vec2[]): vec2[] {
-  return points.map(point => vec2.clone(point))
+function clonePoints(points: readonly Vec2[]): Vec2[] {
+  return points.map(point => copyVec2(point))
 }
 
-function toFlatPoints(points: readonly vec2[], close = false): number[] {
+function toFlatPoints(points: readonly Vec2[], close = false): number[] {
   const flat = points.flatMap(point => [point[0], point[1]])
   if (close && points.length > 0) {
     flat.push(points[0][0], points[0][1])
@@ -39,7 +39,7 @@ function toFlatPoints(points: readonly vec2[], close = false): number[] {
 }
 
 function computeDerivedPolygon(
-  inputPoints: readonly vec2[],
+  inputPoints: readonly Vec2[],
   referenceSide: 'inside' | 'outside',
   thickness: number
 ): DerivedPolygon | null {
@@ -62,7 +62,7 @@ function computeDerivedPolygon(
 }
 
 function computeDerivedSegments(
-  inputPoints: readonly vec2[],
+  inputPoints: readonly Vec2[],
   referenceSide: 'inside' | 'outside',
   thickness: number,
   isClosed: boolean
@@ -81,10 +81,10 @@ function computeDerivedSegments(
 
     const segDirection = direction(start, end)
     const outward = perpendicularCCW(segDirection)
-    const offset = vec2.scale(vec2.create(), outward, thickness * multiplier)
+    const offset = scaleVec2(outward, thickness * multiplier)
 
-    const offsetStart = vec2.add(vec2.create(), start, offset)
-    const offsetEnd = vec2.add(vec2.create(), end, offset)
+    const offsetStart = addVec2(start, offset)
+    const offsetEnd = addVec2(end, offset)
 
     segments.push({ points: [offsetStart[0], offsetStart[1], offsetEnd[0], offsetEnd[1]] })
   }
@@ -108,7 +108,7 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
   const isClosingSnap = tool.isSnappingToFirstPoint()
 
   const workingPoints = useMemo(() => {
-    const points: vec2[] = [...state.points]
+    const points: Vec2[] = [...state.points]
     if (state.points.length > 0 && !isClosingSnap) {
       points.push(previewPos)
     }

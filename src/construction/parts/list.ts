@@ -1,4 +1,4 @@
-import { vec2, vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 
 import type { ConstructionElement, ConstructionElementId, GroupOrElement } from '@/construction/elements'
 import type { CrossSection, DimensionalMaterial, MaterialId, SheetMaterial } from '@/construction/materials/material'
@@ -18,7 +18,14 @@ import {
   TAG_WALL_LAYER_OUTSIDE,
   type Tag
 } from '@/construction/tags'
-import { type Area, type Length, type Volume, calculatePolygonWithHolesArea } from '@/shared/geometry'
+import {
+  type Area,
+  type Length,
+  type Vec2,
+  type Volume,
+  calculatePolygonWithHolesArea,
+  newVec2
+} from '@/shared/geometry'
 
 import { getPartInfoFromManifold } from './pipeline'
 import type {
@@ -119,12 +126,12 @@ const computeSheetDetails = (size: vec3, material: SheetMaterial) => {
 
   const thicknessIndex = dimensions.findIndex(d => material.thicknesses.includes(d))
   let thickness: Length
-  let areaSize: vec2
+  let areaSize: Vec2
 
   if (thicknessIndex === -1) {
     issue = 'ThicknessMismatch'
     thickness = dimensions[0]
-    areaSize = vec2.fromValues(dimensions[1], dimensions[2])
+    areaSize = newVec2(dimensions[1], dimensions[2])
   } else {
     thickness = dimensions[thicknessIndex]
     const remainingDimensions = dimensions.filter((_, i) => i !== thicknessIndex).sort((a, b) => a - b)
@@ -136,7 +143,7 @@ const computeSheetDetails = (size: vec3, material: SheetMaterial) => {
     if (!fitsSize) {
       issue = 'SheetSizeExceeded'
     }
-    areaSize = vec2.fromValues(remainingDimensions[0], remainingDimensions[1])
+    areaSize = newVec2(remainingDimensions[0], remainingDimensions[1])
   }
 
   return { thickness, areaSize, issue }

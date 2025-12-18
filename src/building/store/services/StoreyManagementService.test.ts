@@ -1,9 +1,8 @@
-import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { DEFAULT_FLOOR_ASSEMBLY_ID, type PerimeterId, type StoreyId } from '@/building/model/ids'
 import { createStoreyLevel } from '@/building/model/model'
-import '@/shared/geometry'
+import { newVec2 } from '@/shared/geometry'
 
 import { StoreyManagementService } from './StoreyManagementService'
 
@@ -243,17 +242,12 @@ describe('StoreyManagementService', () => {
         id: 'perimeter-1' as PerimeterId,
         storeyId: 'storey-1' as StoreyId,
         referenceSide: 'inside' as const,
-        referencePolygon: [
-          vec2.fromValues(0, 0),
-          vec2.fromValues(10, 0),
-          vec2.fromValues(10, 10),
-          vec2.fromValues(0, 10)
-        ],
+        referencePolygon: [newVec2(0, 0), newVec2(10, 0), newVec2(10, 10), newVec2(0, 10)],
         corners: [
-          { insidePoint: vec2.fromValues(0, 0) },
-          { insidePoint: vec2.fromValues(10, 0) },
-          { insidePoint: vec2.fromValues(10, 10) },
-          { insidePoint: vec2.fromValues(0, 10) }
+          { insidePoint: newVec2(0, 0) },
+          { insidePoint: newVec2(10, 0) },
+          { insidePoint: newVec2(10, 10) },
+          { insidePoint: newVec2(0, 10) }
         ],
         walls: [{ wallAssemblyId: 'assembly-1' as any, thickness: 400 }],
         baseRingBeamAssemblyId: 'base-assembly' as any,
@@ -270,7 +264,7 @@ describe('StoreyManagementService', () => {
       expect(mockActions.addPerimeter).toHaveBeenCalledWith(
         'storey-2',
         {
-          points: [vec2.fromValues(0, 0), vec2.fromValues(10, 0), vec2.fromValues(10, 10), vec2.fromValues(0, 10)]
+          points: [newVec2(0, 0), newVec2(10, 0), newVec2(10, 10), newVec2(0, 10)]
         },
         'assembly-1',
         400,

@@ -1,0 +1,3 @@
+import {newVec2,copyVec2,roundVec2,eqVec2,normVec2,negVec2,subVec2,addVec2,scaleAddVec2,scaleVec2,lerpVec2,lenVec2,lenSqrVec2,distVec2,distSqrVec2,dotVec2,vec2To3,vec3To2,type Vec2} from "@/shared/geometry"
+/import {newVec2,copyVec2,roundVec2,eqVec2,normVec2,negVec2,subVec2,addVec2,scaleAddVec2,scaleVec2,lerpVec2,lenVec2,lenSqrVec2,distVec2,distSqrVec2,dotVec2,vec2To3,vec3To2,type Vec2} from "@/shared/geometry"
+test

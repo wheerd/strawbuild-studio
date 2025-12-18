@@ -1,4 +1,3 @@
-import { vec2 } from 'gl-matrix'
 import React from 'react'
 import { Circle, Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
@@ -7,7 +6,7 @@ import type {
   PerimeterWallEntityContext,
   PerimeterWallMovementState
 } from '@/editor/tools/basic/movement/behaviors/PerimeterWallMovementBehavior'
-import { midpoint } from '@/shared/geometry'
+import { addVec2, midpoint } from '@/shared/geometry'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 export function PerimeterWallMovementPreview({
@@ -21,7 +20,7 @@ export function PerimeterWallMovementPreview({
 
   // Calculate original and new midpoints for visualization
   const originalMidpoint = midpoint(wall.insideLine.start, wall.insideLine.end)
-  const newMidpoint = vec2.add(vec2.create(), originalMidpoint, movementDelta)
+  const newMidpoint = addVec2(originalMidpoint, movementDelta)
 
   return (
     <Group>

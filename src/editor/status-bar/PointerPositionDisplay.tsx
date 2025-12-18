@@ -3,7 +3,6 @@ import { Code, Flex } from '@radix-ui/themes'
 import React from 'react'
 
 import { usePointerWorldPosition } from '@/editor/hooks/usePointerPosition'
-import '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
 
 export function PointerPositionDisplay(): React.JSX.Element {

@@ -1,8 +1,6 @@
-import { vec2 } from 'gl-matrix'
-
 import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import type { PerimeterReferenceSide } from '@/building/model/model'
-import type { Length } from '@/shared/geometry'
+import { type Length, type Vec2 } from '@/shared/geometry'
 
 /**
  * Base configuration interface for all perimeter presets
@@ -59,7 +57,7 @@ export interface PerimeterPreset<TConfig extends BasePresetConfig = BasePresetCo
    * Get the polygon points for this preset configuration
    * Points should be in clockwise order for perimeters
    */
-  getPolygonPoints(config: TConfig): vec2[]
+  getPolygonPoints(config: TConfig): Vec2[]
 
   /**
    * Get the bounds of the preset for positioning

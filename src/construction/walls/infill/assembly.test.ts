@@ -1,4 +1,4 @@
-import { vec2, vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createOpeningId, createPerimeterId, createWallAssemblyId } from '@/building/model/ids'
@@ -13,8 +13,8 @@ import { TAG_POST_SPACING } from '@/construction/tags'
 import type { InfillWallConfig, InfillWallSegmentConfig, WallLayersConfig } from '@/construction/walls'
 import { type WallStoreyContext } from '@/construction/walls/segmentation'
 import { segmentedWallConstruction } from '@/construction/walls/segmentation'
+import { newVec2 } from '@/shared/geometry'
 import type { Length } from '@/shared/geometry'
-import '@/shared/geometry'
 
 import { InfillWallAssembly } from './assembly'
 
@@ -157,15 +157,15 @@ function createMockWall(
     outsideLength: wallLength,
     openings,
     insideLine: {
-      start: vec2.fromValues(0, 0),
-      end: vec2.fromValues(wallLength, 0)
+      start: newVec2(0, 0),
+      end: newVec2(wallLength, 0)
     },
     outsideLine: {
-      start: vec2.fromValues(0, thickness),
-      end: vec2.fromValues(wallLength, thickness)
+      start: newVec2(0, thickness),
+      end: newVec2(wallLength, thickness)
     },
-    direction: vec2.fromValues(1, 0),
-    outsideDirection: vec2.fromValues(0, 1)
+    direction: newVec2(1, 0),
+    outsideDirection: newVec2(0, 1)
   }
 }
 

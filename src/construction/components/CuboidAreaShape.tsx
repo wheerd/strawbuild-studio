@@ -1,9 +1,9 @@
-import { vec2 } from 'gl-matrix'
 import { useId } from 'react'
 
 import { type Projection } from '@/construction/geometry'
 import { getVisibleFacesInViewSpace } from '@/construction/manifold/faces'
 import type { HighlightedCuboid } from '@/construction/model'
+import { type Vec2, newVec2 } from '@/shared/geometry'
 import { Bounds2D } from '@/shared/geometry'
 import { getManifoldModule } from '@/shared/geometry/manifoldInstance'
 
@@ -14,7 +14,7 @@ export interface CuboidAreaShapeProps {
   projection: Projection
 }
 
-function polygonToSvgPath(points: vec2[]) {
+function polygonToSvgPath(points: Vec2[]) {
   return `M${points.map(([px, py]) => `${px},${py}`).join(' L')}`
 }
 
@@ -26,7 +26,7 @@ export function CuboidAreaShape({ cuboid, projection }: CuboidAreaShapeProps): R
     .Manifold.cube([w, h, d])
     .transform([m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15])
   const faces2D = getVisibleFacesInViewSpace(manifold, projection, true)
-    .map(f => f.outer.points.map(p => vec2.fromValues(p[0], p[1])))
+    .map(f => f.outer.points.map(p => newVec2(p[0], p[1])))
     .filter(f => !Bounds2D.fromPoints(f).isEmpty)
 
   if (faces2D.length === 0) {

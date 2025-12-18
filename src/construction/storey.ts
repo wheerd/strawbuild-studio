@@ -1,9 +1,10 @@
-import { vec2, vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 
 import type { StoreyId } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { translate } from '@/construction/geometry'
 import { constructRoof } from '@/construction/roof'
+import { newVec2 } from '@/shared/geometry'
 import { type Length, type Polygon2D, unionPolygons } from '@/shared/geometry'
 
 import { getConfigActions } from './config'
@@ -63,7 +64,7 @@ export function constructStoreyFloor(storeyId: StoreyId): ConstructionModel[] {
 
   const topHoles = perimeterContexts.flatMap(c => c.floorOpenings)
   const innerPolygons = perimeters.map(perimeter => ({
-    points: perimeter.corners.map(corner => vec2.fromValues(corner.insidePoint[0], corner.insidePoint[1]))
+    points: perimeter.corners.map(corner => newVec2(corner.insidePoint[0], corner.insidePoint[1]))
   }))
   innerPolygons.forEach(finishedPolygon => {
     const floorLayerModel = constructFloorLayerModel({

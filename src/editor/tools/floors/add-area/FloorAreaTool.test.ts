@@ -1,7 +1,7 @@
-import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { FloorArea, FloorOpening, Perimeter } from '@/building/model/model'
+import { type Vec2, newVec2 } from '@/shared/geometry'
 
 import { FloorAreaTool } from './FloorAreaTool'
 
@@ -29,7 +29,7 @@ describe('FloorAreaTool', () => {
 
   it('calls addFloorArea when polygon is completed', () => {
     const tool = new FloorAreaTool()
-    const points = [vec2.fromValues(0, 0), vec2.fromValues(100, 0), vec2.fromValues(100, 100)]
+    const points = [newVec2(0, 0), newVec2(100, 0), newVec2(100, 100)]
     tool.state.points = points
     tool.state.isClosingSegmentValid = true
 
@@ -46,16 +46,16 @@ describe('FloorAreaTool', () => {
       corners: [
         {
           id: 'corner_1',
-          insidePoint: vec2.fromValues(0, 0),
-          outsidePoint: vec2.fromValues(0, 0),
+          insidePoint: newVec2(0, 0),
+          outsidePoint: newVec2(0, 0),
           constructedByWall: 'next',
           interiorAngle: 90,
           exteriorAngle: 270
         },
         {
           id: 'corner_2',
-          insidePoint: vec2.fromValues(200, 0),
-          outsidePoint: vec2.fromValues(200, 0),
+          insidePoint: newVec2(200, 0),
+          outsidePoint: newVec2(200, 0),
           constructedByWall: 'next',
           interiorAngle: 90,
           exteriorAngle: 270
@@ -64,7 +64,7 @@ describe('FloorAreaTool', () => {
       walls: [
         {
           id: 'wall_1',
-          insideLine: { start: vec2.fromValues(0, 0), end: vec2.fromValues(200, 0) }
+          insideLine: { start: newVec2(0, 0), end: newVec2(200, 0) }
         }
       ]
     } as unknown as Perimeter
@@ -73,7 +73,7 @@ describe('FloorAreaTool', () => {
       id: 'floorarea_1',
       storeyId: 'storey_1',
       area: {
-        points: [vec2.fromValues(0, 0), vec2.fromValues(0, 200), vec2.fromValues(200, 200)]
+        points: [newVec2(0, 0), newVec2(0, 200), newVec2(200, 200)]
       }
     } as FloorArea
 
@@ -81,7 +81,7 @@ describe('FloorAreaTool', () => {
       id: 'flooropening_1',
       storeyId: 'storey_1',
       area: {
-        points: [vec2.fromValues(50, 50), vec2.fromValues(80, 50), vec2.fromValues(80, 80)]
+        points: [newVec2(50, 50), newVec2(80, 50), newVec2(80, 80)]
       }
     } as FloorOpening
 
@@ -91,8 +91,8 @@ describe('FloorAreaTool', () => {
 
     const tool = new FloorAreaTool()
     const baseContext = {
-      snapPoints: [] as vec2[],
-      alignPoints: [] as vec2[],
+      snapPoints: [] as Vec2[],
+      alignPoints: [] as Vec2[],
       referenceLineSegments: []
     }
 

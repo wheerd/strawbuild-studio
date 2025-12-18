@@ -1,4 +1,4 @@
-import { vec2, vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 import { describe, expect, it } from 'vitest'
 
 import { type Projection, createProjectionMatrix } from '@/construction/geometry'
@@ -13,6 +13,7 @@ import {
   processMeasurements
 } from '@/construction/measurements'
 import type { Tag } from '@/construction/tags'
+import { type Vec2, newVec2 } from '@/shared/geometry'
 
 describe('measurements', () => {
   // Simple orthographic projection (XY plane - top view)
@@ -67,34 +68,24 @@ describe('measurements', () => {
 
     it('should process single horizontal measurement', () => {
       const measurement = createAutoMeasurement(vec3.fromValues(0, 0, 0), vec3.fromValues(100, 0, 0))
-      const planPoints: vec2[] = [
-        vec2.fromValues(0, 0),
-        vec2.fromValues(200, 0),
-        vec2.fromValues(200, 100),
-        vec2.fromValues(0, 100)
-      ]
+      const planPoints: Vec2[] = [newVec2(0, 0), newVec2(200, 0), newVec2(200, 100), newVec2(0, 100)]
 
       const results = Array.from(processMeasurements([measurement], mockProjection, planPoints))
 
       expect(results).toHaveLength(2) // left and right sides
-      expect(results[0].direction).toEqual(vec2.fromValues(1, 0)) // horizontal direction
-      expect(results[1].direction).toEqual(vec2.fromValues(1, 0))
+      expect(results[0].direction).toEqual(newVec2(1, 0)) // horizontal direction
+      expect(results[1].direction).toEqual(newVec2(1, 0))
     })
 
     it('should process single vertical measurement', () => {
       const measurement = createAutoMeasurement(vec3.fromValues(0, 0, 0), vec3.fromValues(0, 100, 0))
-      const planPoints: vec2[] = [
-        vec2.fromValues(0, 0),
-        vec2.fromValues(200, 0),
-        vec2.fromValues(200, 100),
-        vec2.fromValues(0, 100)
-      ]
+      const planPoints: Vec2[] = [newVec2(0, 0), newVec2(200, 0), newVec2(200, 100), newVec2(0, 100)]
 
       const results = Array.from(processMeasurements([measurement], mockProjection, planPoints))
 
       expect(results).toHaveLength(2) // left and right sides
-      expect(results[0].direction).toEqual(vec2.fromValues(0, 1)) // vertical direction
-      expect(results[1].direction).toEqual(vec2.fromValues(0, 1))
+      expect(results[0].direction).toEqual(newVec2(0, 1)) // vertical direction
+      expect(results[1].direction).toEqual(newVec2(0, 1))
     })
 
     it('should handle measurements with tags', () => {
@@ -106,12 +97,7 @@ describe('measurements', () => {
         vec3.fromValues(0, 0, 30),
         [tag]
       )
-      const planPoints: vec2[] = [
-        vec2.fromValues(0, 0),
-        vec2.fromValues(200, 0),
-        vec2.fromValues(200, 100),
-        vec2.fromValues(0, 100)
-      ]
+      const planPoints: Vec2[] = [newVec2(0, 0), newVec2(200, 0), newVec2(200, 100), newVec2(0, 100)]
 
       const results = Array.from(processMeasurements([measurement], mockProjection, planPoints))
 
@@ -129,12 +115,7 @@ describe('measurements', () => {
         vec3.fromValues(100, 50, 30),
         undefined
       )
-      const planPoints: vec2[] = [
-        vec2.fromValues(0, 0),
-        vec2.fromValues(200, 0),
-        vec2.fromValues(200, 100),
-        vec2.fromValues(0, 100)
-      ]
+      const planPoints: Vec2[] = [newVec2(0, 0), newVec2(200, 0), newVec2(200, 100), newVec2(0, 100)]
 
       const results = Array.from(processMeasurements([measurement], mockProjection, planPoints))
 
@@ -146,12 +127,7 @@ describe('measurements', () => {
     it('should normalize negative directions', () => {
       // Measurement going from right to left (negative direction)
       const measurement = createAutoMeasurement(vec3.fromValues(100, 0, 0), vec3.fromValues(0, 0, 0))
-      const planPoints: vec2[] = [
-        vec2.fromValues(0, 0),
-        vec2.fromValues(200, 0),
-        vec2.fromValues(200, 100),
-        vec2.fromValues(0, 100)
-      ]
+      const planPoints: Vec2[] = [newVec2(0, 0), newVec2(200, 0), newVec2(200, 100), newVec2(0, 100)]
 
       const results = Array.from(processMeasurements([measurement], mockProjection, planPoints))
 
@@ -166,12 +142,7 @@ describe('measurements', () => {
     it('should normalize negative y direction when x is zero', () => {
       // Measurement going from top to bottom (negative y direction)
       const measurement = createAutoMeasurement(vec3.fromValues(0, 100, 0), vec3.fromValues(0, 0, 0))
-      const planPoints: vec2[] = [
-        vec2.fromValues(0, 0),
-        vec2.fromValues(200, 0),
-        vec2.fromValues(200, 100),
-        vec2.fromValues(0, 100)
-      ]
+      const planPoints: Vec2[] = [newVec2(0, 0), newVec2(200, 0), newVec2(200, 100), newVec2(0, 100)]
 
       const results = Array.from(processMeasurements([measurement], mockProjection, planPoints))
 
@@ -186,30 +157,20 @@ describe('measurements', () => {
     it('should group measurements with similar directions', () => {
       const measurement1 = createAutoMeasurement(vec3.fromValues(0, 0, 0), vec3.fromValues(100, 0, 0)) // horizontal
       const measurement2 = createAutoMeasurement(vec3.fromValues(0, 50, 0), vec3.fromValues(100, 50, 0)) // also horizontal
-      const planPoints: vec2[] = [
-        vec2.fromValues(0, 0),
-        vec2.fromValues(200, 0),
-        vec2.fromValues(200, 100),
-        vec2.fromValues(0, 100)
-      ]
+      const planPoints: Vec2[] = [newVec2(0, 0), newVec2(200, 0), newVec2(200, 100), newVec2(0, 100)]
 
       const results = Array.from(processMeasurements([measurement1, measurement2], mockProjection, planPoints))
 
       expect(results).toHaveLength(2) // Should be grouped together, so only 2 sides
       // Both should be horizontal
-      expect(results[0].direction).toEqual(vec2.fromValues(1, 0))
-      expect(results[1].direction).toEqual(vec2.fromValues(1, 0))
+      expect(results[0].direction).toEqual(newVec2(1, 0))
+      expect(results[1].direction).toEqual(newVec2(1, 0))
     })
 
     it('should create separate groups for different directions', () => {
       const measurement1 = createAutoMeasurement(vec3.fromValues(0, 0, 0), vec3.fromValues(100, 0, 0)) // horizontal
       const measurement2 = createAutoMeasurement(vec3.fromValues(0, 0, 0), vec3.fromValues(0, 100, 0)) // vertical
-      const planPoints: vec2[] = [
-        vec2.fromValues(0, 0),
-        vec2.fromValues(200, 0),
-        vec2.fromValues(200, 100),
-        vec2.fromValues(0, 100)
-      ]
+      const planPoints: Vec2[] = [newVec2(0, 0), newVec2(200, 0), newVec2(200, 100), newVec2(0, 100)]
 
       const results = Array.from(processMeasurements([measurement1, measurement2], mockProjection, planPoints))
 
@@ -217,19 +178,14 @@ describe('measurements', () => {
 
       // Check that we have both horizontal and vertical directions
       const directions = results.map(r => r.direction)
-      expect(directions).toContainEqual(vec2.fromValues(1, 0)) // horizontal
-      expect(directions).toContainEqual(vec2.fromValues(0, 1)) // vertical
+      expect(directions).toContainEqual(newVec2(1, 0)) // horizontal
+      expect(directions).toContainEqual(newVec2(0, 1)) // vertical
     })
 
     it('should assign measurements to appropriate sides based on distance', () => {
       // Create a measurement that should clearly go to one side
       const measurement = createAutoMeasurement(vec3.fromValues(50, 10, 0), vec3.fromValues(150, 10, 0)) // horizontal, closer to bottom
-      const planPoints: vec2[] = [
-        vec2.fromValues(0, 0),
-        vec2.fromValues(200, 0),
-        vec2.fromValues(200, 100),
-        vec2.fromValues(0, 100)
-      ] // rectangle
+      const planPoints: Vec2[] = [newVec2(0, 0), newVec2(200, 0), newVec2(200, 100), newVec2(0, 100)] // rectangle
 
       const results = Array.from(processMeasurements([measurement], mockProjection, planPoints))
 
@@ -249,12 +205,7 @@ describe('measurements', () => {
       const measurement1 = createAutoMeasurement(vec3.fromValues(0, 0, 0), vec3.fromValues(50, 0, 0)) // 0-50
       const measurement2 = createAutoMeasurement(vec3.fromValues(25, 0, 0), vec3.fromValues(75, 0, 0)) // 25-75 (overlaps)
       const measurement3 = createAutoMeasurement(vec3.fromValues(80, 0, 0), vec3.fromValues(130, 0, 0)) // 80-130 (no overlap)
-      const planPoints: vec2[] = [
-        vec2.fromValues(0, 0),
-        vec2.fromValues(200, 0),
-        vec2.fromValues(200, 100),
-        vec2.fromValues(0, 100)
-      ]
+      const planPoints: Vec2[] = [newVec2(0, 0), newVec2(200, 0), newVec2(200, 100), newVec2(0, 100)]
 
       const results = Array.from(
         processMeasurements([measurement1, measurement2, measurement3], mockProjection, planPoints)
@@ -273,12 +224,7 @@ describe('measurements', () => {
     it('should place non-overlapping measurements in the same row', () => {
       const measurement1 = createAutoMeasurement(vec3.fromValues(0, 0, 0), vec3.fromValues(50, 0, 0)) // 0-50
       const measurement2 = createAutoMeasurement(vec3.fromValues(60, 0, 0), vec3.fromValues(110, 0, 0)) // 60-110 (no overlap)
-      const planPoints: vec2[] = [
-        vec2.fromValues(0, 0),
-        vec2.fromValues(200, 0),
-        vec2.fromValues(200, 100),
-        vec2.fromValues(0, 100)
-      ]
+      const planPoints: Vec2[] = [newVec2(0, 0), newVec2(200, 0), newVec2(200, 100), newVec2(0, 100)]
 
       const results = Array.from(processMeasurements([measurement1, measurement2], mockProjection, planPoints))
 
@@ -312,12 +258,7 @@ describe('measurements', () => {
         vec3.fromValues(0, 0, 30),
         [tag]
       )
-      const planPoints: vec2[] = [
-        vec2.fromValues(0, 0),
-        vec2.fromValues(200, 0),
-        vec2.fromValues(200, 100),
-        vec2.fromValues(0, 100)
-      ]
+      const planPoints: Vec2[] = [newVec2(0, 0), newVec2(200, 0), newVec2(200, 100), newVec2(0, 100)]
 
       const results = Array.from(processMeasurements([measurement1, measurement2], mockProjection, planPoints))
 
@@ -340,12 +281,7 @@ describe('measurements', () => {
         vec3.fromValues(100, 0, 0),
         vec3.fromValues(100, 80, 30)
       ) // larger perpendicular
-      const planPoints: vec2[] = [
-        vec2.fromValues(0, 0),
-        vec2.fromValues(200, 0),
-        vec2.fromValues(200, 100),
-        vec2.fromValues(0, 100)
-      ]
+      const planPoints: Vec2[] = [newVec2(0, 0), newVec2(200, 0), newVec2(200, 100), newVec2(0, 100)]
 
       const results = Array.from(processMeasurements([measurement1, measurement2], mockProjection, planPoints))
 
@@ -365,12 +301,7 @@ describe('measurements', () => {
         vec3.fromValues(100, 0, 0),
         vec3.fromValues(100, 50, 100)
       ) // significant z component
-      const planPoints: vec2[] = [
-        vec2.fromValues(0, 0),
-        vec2.fromValues(200, 0),
-        vec2.fromValues(200, 100),
-        vec2.fromValues(0, 100)
-      ]
+      const planPoints: Vec2[] = [newVec2(0, 0), newVec2(200, 0), newVec2(200, 100), newVec2(0, 100)]
 
       const results = Array.from(processMeasurements([measurement], mockProjection, planPoints))
 
@@ -390,20 +321,15 @@ describe('measurements', () => {
         vec3.fromValues(100, 0, 150),
         vec3.fromValues(100, 50, 30)
       ) // 3D measurement
-      const planPoints: vec2[] = [
-        vec2.fromValues(0, 0),
-        vec2.fromValues(200, 0),
-        vec2.fromValues(200, 100),
-        vec2.fromValues(0, 100)
-      ]
+      const planPoints: Vec2[] = [newVec2(0, 0), newVec2(200, 0), newVec2(200, 100), newVec2(0, 100)]
 
       const results = Array.from(processMeasurements([measurement], mockProjection, planPoints))
 
       expect(results).toHaveLength(2)
 
       // The z-components should be projected away, leaving horizontal direction
-      expect(results[0].direction).toEqual(vec2.fromValues(1, 0))
-      expect(results[1].direction).toEqual(vec2.fromValues(1, 0))
+      expect(results[0].direction).toEqual(newVec2(1, 0))
+      expect(results[1].direction).toEqual(newVec2(1, 0))
     })
   })
 
@@ -429,23 +355,23 @@ describe('measurements', () => {
   describe('interface compatibility', () => {
     it('should create valid ProjectedMeasurement', () => {
       const projected: ProjectedMeasurement = {
-        startPointMin: vec2.fromValues(0, 0),
-        endPointMin: vec2.fromValues(100, 0),
-        startPointMax: vec2.fromValues(0, 25),
-        endPointMax: vec2.fromValues(100, 25),
+        startPointMin: newVec2(0, 0),
+        endPointMin: newVec2(100, 0),
+        startPointMax: newVec2(0, 25),
+        endPointMax: newVec2(100, 25),
         length: 100,
         tags: [createMockTag('test')]
       }
 
-      expect(projected.startPointMin).toEqual(vec2.fromValues(0, 0))
+      expect(projected.startPointMin).toEqual(newVec2(0, 0))
     })
 
     it('should create valid IntervalMeasurement', () => {
       const interval: IntervalMeasurement = {
-        startPointMin: vec2.fromValues(0, 0),
-        endPointMin: vec2.fromValues(100, 0),
-        startPointMax: vec2.fromValues(0, 25),
-        endPointMax: vec2.fromValues(100, 25),
+        startPointMin: newVec2(0, 0),
+        endPointMin: newVec2(100, 0),
+        startPointMax: newVec2(0, 25),
+        endPointMax: newVec2(100, 25),
         length: 100,
         t1: 0,
         t2: 100,
@@ -460,38 +386,38 @@ describe('measurements', () => {
 
     it('should create valid LineMeasurement', () => {
       const line: LineMeasurement = {
-        startPoint: vec2.fromValues(0, 0),
-        endPoint: vec2.fromValues(100, 0),
-        startOnLine: vec2.fromValues(0, 0),
-        endOnLine: vec2.fromValues(100, 0),
+        startPoint: newVec2(0, 0),
+        endPoint: newVec2(100, 0),
+        startOnLine: newVec2(0, 0),
+        endOnLine: newVec2(100, 0),
         length: 100,
         tags: []
       }
 
-      expect(line.startPoint).toEqual(vec2.fromValues(0, 0))
+      expect(line.startPoint).toEqual(newVec2(0, 0))
       expect(line.length).toBe(100)
     })
 
     it('should create valid MeasurementGroup', () => {
       const group: MeasurementGroup = {
-        direction: vec2.fromValues(1, 0),
-        startLeft: vec2.fromValues(-50, 0),
-        startRight: vec2.fromValues(50, 0),
+        direction: newVec2(1, 0),
+        startLeft: newVec2(-50, 0),
+        startRight: newVec2(50, 0),
         measurements: []
       }
 
-      expect(group.direction).toEqual(vec2.fromValues(1, 0))
+      expect(group.direction).toEqual(newVec2(1, 0))
       expect(group.measurements).toHaveLength(0)
     })
 
     it('should create valid MeasurementLines', () => {
       const lines: MeasurementLines = {
-        direction: vec2.fromValues(1, 0),
-        start: vec2.fromValues(0, 0),
+        direction: newVec2(1, 0),
+        start: newVec2(0, 0),
         lines: []
       }
 
-      expect(lines.direction).toEqual(vec2.fromValues(1, 0))
+      expect(lines.direction).toEqual(newVec2(1, 0))
       expect(lines.lines).toHaveLength(0)
     })
   })

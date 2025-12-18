@@ -1,10 +1,10 @@
-import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { StoreyId } from '@/building/model/ids'
 import type { Perimeter, PerimeterCorner } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
+import { newVec2 } from '@/shared/geometry'
 import '@/shared/geometry/basic'
 
 import { FitToViewTool } from './FitToViewTool'
@@ -62,16 +62,16 @@ describe('FitToViewTool', () => {
       {
         corners: [
           {
-            outsidePoint: vec2.fromValues(-1100, -600)
+            outsidePoint: newVec2(-1100, -600)
           },
           {
-            outsidePoint: vec2.fromValues(1100, -600)
+            outsidePoint: newVec2(1100, -600)
           },
           {
-            outsidePoint: vec2.fromValues(1100, 600)
+            outsidePoint: newVec2(1100, 600)
           },
           {
-            outsidePoint: vec2.fromValues(-1100, 600)
+            outsidePoint: newVec2(-1100, 600)
           }
         ] as PerimeterCorner[]
       } as Perimeter
@@ -112,16 +112,16 @@ describe('FitToViewTool', () => {
       {
         corners: [
           {
-            outsidePoint: vec2.fromValues(-100, -100)
+            outsidePoint: newVec2(-100, -100)
           },
           {
-            outsidePoint: vec2.fromValues(2100, -100)
+            outsidePoint: newVec2(2100, -100)
           },
           {
-            outsidePoint: vec2.fromValues(2100, 900)
+            outsidePoint: newVec2(2100, 900)
           },
           {
-            outsidePoint: vec2.fromValues(-100, 900)
+            outsidePoint: newVec2(-100, 900)
           }
         ] as PerimeterCorner[]
       } as Perimeter
@@ -148,16 +148,16 @@ describe('FitToViewTool', () => {
       {
         corners: [
           {
-            outsidePoint: vec2.fromValues(95, 95)
+            outsidePoint: newVec2(95, 95)
           },
           {
-            outsidePoint: vec2.fromValues(115, 95)
+            outsidePoint: newVec2(115, 95)
           },
           {
-            outsidePoint: vec2.fromValues(115, 115)
+            outsidePoint: newVec2(115, 115)
           },
           {
-            outsidePoint: vec2.fromValues(95, 115)
+            outsidePoint: newVec2(95, 115)
           }
         ]
       } as Perimeter

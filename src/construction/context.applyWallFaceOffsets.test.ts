@@ -1,10 +1,9 @@
-import { vec2 } from 'gl-matrix'
 import { describe, expect, it, vi } from 'vitest'
 
 import type { Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model'
 import type { PerimeterCornerId, PerimeterId, PerimeterWallId, StoreyId, WallAssemblyId } from '@/building/model/ids'
 import { getConfigActions } from '@/construction/config'
-import { direction, perpendicular } from '@/shared/geometry'
+import { copyVec2, direction, distVec2, newVec2, perpendicular, scaleAddVec2 } from '@/shared/geometry'
 
 import { applyWallFaceOffsets, createWallFaceOffsets } from './context'
 
@@ -19,18 +18,13 @@ vi.mocked(getConfigActions).mockReturnValue({
 } as any)
 
 function createRectangularPerimeter(width: number, height: number, wallThickness: number): Perimeter {
-  const insideCorners = [
-    vec2.fromValues(0, 0),
-    vec2.fromValues(0, height),
-    vec2.fromValues(width, height),
-    vec2.fromValues(width, 0)
-  ]
+  const insideCorners = [newVec2(0, 0), newVec2(0, height), newVec2(width, height), newVec2(width, 0)]
 
   const outsideCorners = [
-    vec2.fromValues(-wallThickness, -wallThickness),
-    vec2.fromValues(-wallThickness, height + wallThickness),
-    vec2.fromValues(width + wallThickness, height + wallThickness),
-    vec2.fromValues(width + wallThickness, -wallThickness)
+    newVec2(-wallThickness, -wallThickness),
+    newVec2(-wallThickness, height + wallThickness),
+    newVec2(width + wallThickness, height + wallThickness),
+    newVec2(width + wallThickness, -wallThickness)
   ]
 
   const walls: PerimeterWall[] = insideCorners.map((start, index) => {
@@ -38,8 +32,8 @@ function createRectangularPerimeter(width: number, height: number, wallThickness
     const dir = direction(start, end)
     const outsideDirection = perpendicular(dir)
     const insideLine = { start, end }
-    const outsideStart = vec2.scaleAndAdd(vec2.create(), start, outsideDirection, wallThickness)
-    const outsideEnd = vec2.scaleAndAdd(vec2.create(), end, outsideDirection, wallThickness)
+    const outsideStart = scaleAddVec2(start, outsideDirection, wallThickness)
+    const outsideEnd = scaleAddVec2(end, outsideDirection, wallThickness)
     const outsideLine = { start: outsideStart, end: outsideEnd }
 
     return {
@@ -47,9 +41,9 @@ function createRectangularPerimeter(width: number, height: number, wallThickness
       thickness: wallThickness,
       wallAssemblyId: `assembly-${index}` as WallAssemblyId,
       openings: [],
-      insideLength: vec2.distance(start, end),
-      outsideLength: vec2.distance(outsideStart, outsideEnd),
-      wallLength: vec2.distance(start, end),
+      insideLength: distVec2(start, end),
+      outsideLength: distVec2(outsideStart, outsideEnd),
+      wallLength: distVec2(start, end),
       insideLine,
       outsideLine,
       direction: dir,
@@ -70,7 +64,7 @@ function createRectangularPerimeter(width: number, height: number, wallThickness
     id: 'perimeter-1' as PerimeterId,
     storeyId: 'storey-1' as StoreyId,
     referenceSide: 'inside',
-    referencePolygon: insideCorners.map(point => vec2.clone(point)),
+    referencePolygon: insideCorners.map(point => copyVec2(point)),
     walls,
     corners,
     baseRingBeamAssemblyId: undefined,
@@ -94,16 +88,16 @@ describe('applyWallFaceOffsets', () => {
     const faces = createWallFaceOffsets([perimeter])
 
     const area = {
-      points: [vec2.fromValues(0, 0), vec2.fromValues(0, 3000), vec2.fromValues(4000, 3000), vec2.fromValues(4000, 0)]
+      points: [newVec2(0, 0), newVec2(0, 3000), newVec2(4000, 3000), newVec2(4000, 0)]
     }
 
     const adjusted = applyWallFaceOffsets(area, faces)
 
     const expected = [
-      vec2.fromValues(-insideThickness, -insideThickness),
-      vec2.fromValues(-insideThickness, 3000 + insideThickness),
-      vec2.fromValues(4000 + insideThickness, 3000 + insideThickness),
-      vec2.fromValues(4000 + insideThickness, -insideThickness)
+      newVec2(-insideThickness, -insideThickness),
+      newVec2(-insideThickness, 3000 + insideThickness),
+      newVec2(4000 + insideThickness, 3000 + insideThickness),
+      newVec2(4000 + insideThickness, -insideThickness)
     ]
 
     expect(adjusted.points).toHaveLength(expected.length)
@@ -118,16 +112,16 @@ describe('applyWallFaceOffsets', () => {
     const faces = createWallFaceOffsets([perimeter])
 
     const opening = {
-      points: [vec2.fromValues(0, 0), vec2.fromValues(500, 0), vec2.fromValues(500, 500), vec2.fromValues(0, 500)]
+      points: [newVec2(0, 0), newVec2(500, 0), newVec2(500, 500), newVec2(0, 500)]
     }
 
     const adjusted = applyWallFaceOffsets(opening, faces)
 
     const expected = [
-      vec2.fromValues(-insideThickness, -insideThickness),
-      vec2.fromValues(500, -insideThickness),
-      vec2.fromValues(500, 500),
-      vec2.fromValues(-insideThickness, 500)
+      newVec2(-insideThickness, -insideThickness),
+      newVec2(500, -insideThickness),
+      newVec2(500, 500),
+      newVec2(-insideThickness, 500)
     ]
 
     expect(adjusted.points).toHaveLength(expected.length)
@@ -142,12 +136,7 @@ describe('applyWallFaceOffsets', () => {
     const faces = createWallFaceOffsets([perimeter])
 
     const area = {
-      points: [
-        vec2.fromValues(0, 3100),
-        vec2.fromValues(0, 3500),
-        vec2.fromValues(400, 3500),
-        vec2.fromValues(400, 3100)
-      ]
+      points: [newVec2(0, 3100), newVec2(0, 3500), newVec2(400, 3500), newVec2(400, 3100)]
     }
 
     const adjusted = applyWallFaceOffsets(area, faces)

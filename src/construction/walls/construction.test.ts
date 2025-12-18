@@ -1,4 +1,4 @@
-import { vec2, vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
@@ -15,7 +15,7 @@ import { getConfigActions } from '@/construction/config'
 import { IDENTITY } from '@/construction/geometry'
 import type { ConstructionModel } from '@/construction/model'
 import { createCuboid } from '@/construction/shapes'
-import { Bounds3D } from '@/shared/geometry'
+import { Bounds3D, copyVec2, newVec2 } from '@/shared/geometry'
 
 import { constructWall } from './construction'
 import { WALL_ASSEMBLIES } from './index'
@@ -64,21 +64,21 @@ describe('constructWall', () => {
     outsideLength: insideLength,
     wallLength: insideLength,
     insideLine: {
-      start: vec2.fromValues(0, 0),
-      end: vec2.fromValues(insideLength, 0)
+      start: newVec2(0, 0),
+      end: newVec2(insideLength, 0)
     },
     outsideLine: {
-      start: vec2.fromValues(0, 400),
-      end: vec2.fromValues(insideLength, 400)
+      start: newVec2(0, 400),
+      end: newVec2(insideLength, 400)
     },
-    direction: vec2.fromValues(1, 0),
-    outsideDirection: vec2.fromValues(0, 1)
+    direction: newVec2(1, 0),
+    outsideDirection: newVec2(0, 1)
   })
 
   const createMockCorner = (angle: number): PerimeterCorner => ({
     id: createPerimeterCornerId(),
-    insidePoint: vec2.fromValues(0, 0),
-    outsidePoint: vec2.fromValues(0, 0),
+    insidePoint: newVec2(0, 0),
+    outsidePoint: newVec2(0, 0),
     constructedByWall: 'previous',
     interiorAngle: angle,
     exteriorAngle: 360 - angle
@@ -88,7 +88,7 @@ describe('constructWall', () => {
     id: perimeterId,
     storeyId,
     referenceSide: 'inside',
-    referencePolygon: corners.map(corner => vec2.clone(corner.insidePoint)),
+    referencePolygon: corners.map(corner => copyVec2(corner.insidePoint)),
     walls,
     corners
   })

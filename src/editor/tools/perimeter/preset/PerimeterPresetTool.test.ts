@@ -1,4 +1,3 @@
-import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { type StoreActions, getModelActions } from '@/building/store'
@@ -6,7 +5,7 @@ import { replaceSelection } from '@/editor/hooks/useSelectionStore'
 import { getViewModeActions } from '@/editor/hooks/useViewMode'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
 import { getToolActions } from '@/editor/tools/system'
-import { Bounds2D } from '@/shared/geometry'
+import { Bounds2D, newVec2 } from '@/shared/geometry'
 
 import { PerimeterPresetTool } from './PerimeterPresetTool'
 import { LShapedPreset, RectangularPreset } from './presets'
@@ -30,11 +29,7 @@ describe('PerimeterPresetTool', () => {
 
   const mockPerimeter = {
     id: 'perimeter_mock',
-    corners: [
-      { outsidePoint: vec2.fromValues(1, 1) },
-      { outsidePoint: vec2.fromValues(2, 2) },
-      { outsidePoint: vec2.fromValues(3, 3) }
-    ]
+    corners: [{ outsidePoint: newVec2(1, 1) }, { outsidePoint: newVec2(2, 2) }, { outsidePoint: newVec2(3, 3) }]
   } as any
 
   let tool: PerimeterPresetTool
@@ -96,14 +91,14 @@ describe('PerimeterPresetTool', () => {
 
     it('should create perimeter with normalized preset polygon', () => {
       const mockPreset = {
-        getPolygonPoints: vi.fn(_config => [vec2.fromValues(1, 1), vec2.fromValues(2, 1), vec2.fromValues(1, 3)])
+        getPolygonPoints: vi.fn(_config => [newVec2(1, 1), newVec2(2, 1), newVec2(1, 3)])
       } as any
 
       tool.placePerimeter(mockPreset, config)
 
       expect(mockAddPerimeter).toHaveBeenCalledWith(
         expect.anything(),
-        { points: [vec2.fromValues(0, 2), vec2.fromValues(1, 0), vec2.fromValues(0, 0)] },
+        { points: [newVec2(0, 2), newVec2(1, 0), newVec2(0, 0)] },
         expect.anything(),
         expect.anything(),
         expect.anything(),
@@ -135,7 +130,7 @@ describe('PerimeterPresetTool', () => {
     it('should focus created perimeter', () => {
       tool.placePerimeter(rectangularPreset, config)
 
-      expect(mockFitToView).toHaveBeenCalledWith(Bounds2D.fromMinMax([1, 1], [3, 3]))
+      expect(mockFitToView).toHaveBeenCalledWith(Bounds2D.fromMinMax(newVec2(1, 1), newVec2(3, 3)))
     })
 
     it('should deactivate tool', () => {

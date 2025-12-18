@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { StoreyId } from '@/building/model/ids'
-import '@/shared/geometry'
 
 import { type StoreysSlice, createStoreysSlice } from './storeysSlice'
 

@@ -1,4 +1,4 @@
-import { vec2, vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 
 import type { PerimeterConstructionContext } from '@/construction/context'
 import { createConstructionElement, createConstructionElementId } from '@/construction/elements'
@@ -27,7 +27,9 @@ import {
 import {
   Bounds2D,
   type Polygon2D,
+  type Vec2,
   direction,
+  dotVec2,
   ensurePolygonIsClockwise,
   isPointStrictlyInPolygon,
   midpoint,
@@ -49,12 +51,12 @@ export class FilledFloorAssembly extends BaseFloorAssembly<FilledFloorConfig> {
     const joistDirection = bbox.smallestDirection
 
     const wallBeamCheckPoints = [...polygonEdges(context.innerPolygon)]
-      .filter(e => 1 - Math.abs(vec2.dot(direction(e.start, e.end), joistDirection)) < EPSILON)
+      .filter(e => 1 - Math.abs(dotVec2(direction(e.start, e.end), joistDirection)) < EPSILON)
       .map(e => midpoint(e.start, e.end))
 
     const joistArea = polygonFromLineIntersections(
       context.innerLines.map((l, i) =>
-        1 - Math.abs(vec2.dot(l.direction, joistDirection)) < EPSILON
+        1 - Math.abs(dotVec2(l.direction, joistDirection)) < EPSILON
           ? offsetLine(l, -config.frameThickness)
           : offsetLine(context.outerLines[i], config.frameThickness)
       )
@@ -216,8 +218,8 @@ export class FilledFloorAssembly extends BaseFloorAssembly<FilledFloorConfig> {
 
 function detectBeamEdges(
   partition: Polygon2D,
-  joistDirection: vec2,
-  wallBeamCheckPoints: vec2[]
+  joistDirection: Vec2,
+  wallBeamCheckPoints: Vec2[]
 ): { leftHasBeam: boolean; rightHasBeam: boolean } {
   if (partition.points.length === 0 || wallBeamCheckPoints.length === 0) {
     return { leftHasBeam: false, rightHasBeam: false }
@@ -226,7 +228,7 @@ function detectBeamEdges(
   const perpDir = perpendicular(joistDirection)
 
   // Find left and right boundaries of partition (min/max perpendicular projections)
-  const projections = partition.points.map(p => vec2.dot(p, perpDir))
+  const projections = partition.points.map(p => dotVec2(p, perpDir))
   const leftProjection = Math.min(...projections)
   const rightProjection = Math.max(...projections)
   const centerProjection = (leftProjection + rightProjection) / 2
@@ -236,7 +238,7 @@ function detectBeamEdges(
 
   for (const checkPoint of wallBeamCheckPoints) {
     if (isPointStrictlyInPolygon(checkPoint, partition)) {
-      const projection = vec2.dot(checkPoint, perpDir)
+      const projection = dotVec2(checkPoint, perpDir)
 
       if (projection < centerProjection) {
         leftHasBeam = true

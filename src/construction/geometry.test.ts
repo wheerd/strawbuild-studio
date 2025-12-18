@@ -1,5 +1,7 @@
-import { mat4, vec2, vec3 } from 'gl-matrix'
+import { mat4, vec3 } from 'gl-matrix'
 import { describe, expect, it } from 'vitest'
+
+import { newVec2 } from '@/shared/geometry'
 
 import { WallConstructionArea, createProjectionMatrix, projectPoint } from './geometry'
 
@@ -96,8 +98,8 @@ describe('WallConstructionArea.withZAdjustment', () => {
 
   it('should add intersection points when roof is partially clipped', () => {
     const area = new WallConstructionArea(vec3.fromValues(0, 0, 0), vec3.fromValues(3000, 300, 3000), [
-      vec2.fromValues(0, -200), // Roof at Z=2800
-      vec2.fromValues(3000, -500) // Roof at Z=2500
+      newVec2(0, -200), // Roof at Z=2800
+      newVec2(3000, -500) // Roof at Z=2500
     ])
 
     const adjusted = area.withZAdjustment(0, 2700)
@@ -125,8 +127,8 @@ describe('WallConstructionArea.withZAdjustment', () => {
 
   it('should handle fully clipped roof', () => {
     const area = new WallConstructionArea(vec3.fromValues(0, 0, 0), vec3.fromValues(3000, 300, 3000), [
-      vec2.fromValues(0, -200), // Roof at Z=2800
-      vec2.fromValues(3000, -500) // Roof at Z=2500
+      newVec2(0, -200), // Roof at Z=2800
+      newVec2(3000, -500) // Roof at Z=2500
     ])
 
     const adjusted = area.withZAdjustment(0, 1100)

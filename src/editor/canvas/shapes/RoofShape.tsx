@@ -1,9 +1,9 @@
-import { vec2 } from 'gl-matrix'
 import { useMemo } from 'react'
 import { Arrow, Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
 import type { Roof } from '@/building/model/model'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
+import { type Vec2, addVec2, negVec2, scaleAddVec2, scaleVec2 } from '@/shared/geometry'
 import { Bounds2D, direction, perpendicular, perpendicularCW } from '@/shared/geometry'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
@@ -19,19 +19,15 @@ export function RoofShape({ roof }: RoofShapeProps): React.JSX.Element {
   const theme = useCanvasTheme()
   const isSelected = select.isCurrentSelection(roof.id)
 
-  const points = roof.referencePolygon.points.flatMap((point: vec2) => [point[0], point[1]])
-  const eavePolygon = roof.overhangPolygon.points.flatMap((point: vec2) => [point[0], point[1]])
+  const points = roof.referencePolygon.points.flatMap((point: Vec2) => [point[0], point[1]])
+  const eavePolygon = roof.overhangPolygon.points.flatMap((point: Vec2) => [point[0], point[1]])
 
   // Ridge line points
   const ridgePoints = [roof.ridgeLine.start[0], roof.ridgeLine.start[1], roof.ridgeLine.end[0], roof.ridgeLine.end[1]]
 
   // Calculate arrow positions and directions
   const arrows = useMemo(() => {
-    const ridgeMidpoint = vec2.scale(
-      vec2.create(),
-      vec2.add(vec2.create(), roof.ridgeLine.start, roof.ridgeLine.end),
-      0.5
-    )
+    const ridgeMidpoint = scaleVec2(addVec2(roof.ridgeLine.start, roof.ridgeLine.end), 0.5)
 
     const bounds = Bounds2D.fromPoints(roof.referencePolygon.points)
     const size = bounds.size
@@ -43,8 +39,8 @@ export function RoofShape({ roof }: RoofShapeProps): React.JSX.Element {
     if (roof.type === 'shed') {
       // Single arrow pointing away from ridge (downslope)
       const arrowDirection = perpendicularCW(ridgeDir)
-      const arrowStart = vec2.scaleAndAdd(vec2.create(), ridgeMidpoint, arrowDirection, arrowOffset)
-      const arrowEnd = vec2.scaleAndAdd(vec2.create(), ridgeMidpoint, arrowDirection, arrowLength + arrowOffset)
+      const arrowStart = scaleAddVec2(ridgeMidpoint, arrowDirection, arrowOffset)
+      const arrowEnd = scaleAddVec2(ridgeMidpoint, arrowDirection, arrowLength + arrowOffset)
 
       return [
         {
@@ -55,15 +51,15 @@ export function RoofShape({ roof }: RoofShapeProps): React.JSX.Element {
     } else {
       // Gable: Two arrows, one on each side of ridge
       const perpDir1 = perpendicular(ridgeDir)
-      const perpDir2 = vec2.negate(vec2.create(), perpDir1)
+      const perpDir2 = negVec2(perpDir1)
 
       const offset = 200
 
-      const arrowPos1 = vec2.scaleAndAdd(vec2.create(), ridgeMidpoint, perpDir1, offset)
-      const arrowPos2 = vec2.scaleAndAdd(vec2.create(), ridgeMidpoint, perpDir2, offset)
+      const arrowPos1 = scaleAddVec2(ridgeMidpoint, perpDir1, offset)
+      const arrowPos2 = scaleAddVec2(ridgeMidpoint, perpDir2, offset)
 
-      const arrowEnd1 = vec2.scaleAndAdd(vec2.create(), arrowPos1, perpDir1, arrowLength)
-      const arrowEnd2 = vec2.scaleAndAdd(vec2.create(), arrowPos2, perpDir2, arrowLength)
+      const arrowEnd1 = scaleAddVec2(arrowPos1, perpDir1, arrowLength)
+      const arrowEnd2 = scaleAddVec2(arrowPos2, perpDir2, arrowLength)
 
       return [
         { start: arrowPos1, end: arrowEnd1 },

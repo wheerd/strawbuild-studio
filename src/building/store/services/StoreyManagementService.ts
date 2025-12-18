@@ -1,10 +1,9 @@
-import { vec2 } from 'gl-matrix'
-
 import type { StoreyId } from '@/building/model/ids'
 import type { Storey } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import type { StoreActions } from '@/building/store/types'
 import { clearSelection } from '@/editor/hooks/useSelectionStore'
+import { copyVec2 } from '@/shared/geometry'
 
 /**
  * Service for managing storeys with cross-slice orchestration
@@ -96,7 +95,7 @@ export class StoreyManagementService {
     const sourcePerimeters = this.actions.getPerimetersByStorey(sourceStoreyId)
     for (const sourcePerimeter of sourcePerimeters) {
       // Create boundary from the source perimeter reference polygon
-      const boundary = { points: sourcePerimeter.referencePolygon.map(point => vec2.clone(point)) }
+      const boundary = { points: sourcePerimeter.referencePolygon.map(point => copyVec2(point)) }
 
       // Get the assembly from the first wall (they should all be the same for a perimeter)
       const wallAssemblyId = sourcePerimeter.walls[0]?.wallAssemblyId

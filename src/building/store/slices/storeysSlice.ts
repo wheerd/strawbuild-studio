@@ -5,7 +5,6 @@ import { DEFAULT_FLOOR_ASSEMBLY_ID, createStoreyId } from '@/building/model/ids'
 import type { Storey } from '@/building/model/model'
 import { createStoreyLevel } from '@/building/model/model'
 import type { Length } from '@/shared/geometry'
-import '@/shared/geometry'
 
 export interface StoreysState {
   readonly activeStoreyId: StoreyId

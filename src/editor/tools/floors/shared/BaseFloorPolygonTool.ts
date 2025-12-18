@@ -1,12 +1,10 @@
-import { vec2 } from 'gl-matrix'
-
 import { getModelActions } from '@/building/store'
 import { getViewModeActions } from '@/editor/hooks/useViewMode'
 import type { SnappingContext } from '@/editor/services/snapping/types'
 import { BasePolygonTool, type PolygonToolStateBase } from '@/editor/tools/shared/polygon/BasePolygonTool'
-import type { LineSegment2D } from '@/shared/geometry'
+import type { LineSegment2D, Vec2 } from '@/shared/geometry'
 
-const createPolygonSegments = (points: readonly vec2[]): LineSegment2D[] => {
+const createPolygonSegments = (points: readonly Vec2[]): LineSegment2D[] => {
   if (points.length < 2) return []
 
   const segments: LineSegment2D[] = []

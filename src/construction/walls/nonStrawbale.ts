@@ -1,4 +1,4 @@
-import { vec2, vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 
 import type { Perimeter, PerimeterWall } from '@/building/model'
 import { getConfigActions } from '@/construction/config'
@@ -18,6 +18,7 @@ import {
   getRoofHeightLineForWall,
   segmentedWallConstruction
 } from '@/construction/walls/segmentation'
+import { newVec2 } from '@/shared/geometry'
 import { Bounds3D, type Length } from '@/shared/geometry'
 
 function* noopWallSegment(
@@ -76,7 +77,7 @@ export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallCo
     if (roofHeightLine) {
       roofOffsets = convertHeightLineToWallOffsets(roofHeightLine, cornerInfo.constructionLength)
     } else {
-      roofOffsets = [vec2.fromValues(0, -ceilingOffset), vec2.fromValues(cornerInfo.constructionLength, -ceilingOffset)]
+      roofOffsets = [newVec2(0, -ceilingOffset), newVec2(cornerInfo.constructionLength, -ceilingOffset)]
     }
 
     const wallArea = new WallConstructionArea(

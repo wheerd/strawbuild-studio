@@ -1,10 +1,8 @@
-import { vec2 } from 'gl-matrix'
-
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config/store'
 import { getSelectionActions } from '@/editor/hooks/useSelectionStore'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
-import { Bounds2D, polygonIsClockwise } from '@/shared/geometry'
+import { Bounds2D, newVec2, polygonIsClockwise } from '@/shared/geometry'
 
 import { type DoorSpec, type WindowSpec, addDoors, addWindows } from './openings'
 
@@ -18,18 +16,18 @@ export function createCrossShapedPerimeter(): void {
 
   // Create a T-shaped perimeter (realistic building scale)
   let points = [
-    vec2.fromValues(2000, 12000), // Top-left of vertical bar
-    vec2.fromValues(8000, 12000), // Top-right of vertical bar
-    vec2.fromValues(8000, 8000), // Inner corner (right of horizontal bar)
-    vec2.fromValues(15000, 8000), // Top-right of horizontal bar
-    vec2.fromValues(15000, 3000), // Bottom-right of horizontal bar
-    vec2.fromValues(8000, 3000), // Inner corner (right of vertical bar)
-    vec2.fromValues(8000, 1000), // Bottom-right of vertical bar
-    vec2.fromValues(2000, 1000), // Bottom-left of vertical bar
-    vec2.fromValues(2000, 3000), // Inner corner (left of vertical bar)
-    vec2.fromValues(500, 3000), // Bottom-left of horizontal bar
-    vec2.fromValues(500, 8000), // Top-left of horizontal bar
-    vec2.fromValues(2000, 8000) // Inner corner (left of horizontal bar)
+    newVec2(2000, 12000), // Top-left of vertical bar
+    newVec2(8000, 12000), // Top-right of vertical bar
+    newVec2(8000, 8000), // Inner corner (right of horizontal bar)
+    newVec2(15000, 8000), // Top-right of horizontal bar
+    newVec2(15000, 3000), // Bottom-right of horizontal bar
+    newVec2(8000, 3000), // Inner corner (right of vertical bar)
+    newVec2(8000, 1000), // Bottom-right of vertical bar
+    newVec2(2000, 1000), // Bottom-left of vertical bar
+    newVec2(2000, 3000), // Inner corner (left of vertical bar)
+    newVec2(500, 3000), // Bottom-left of horizontal bar
+    newVec2(500, 8000), // Top-left of horizontal bar
+    newVec2(2000, 8000) // Inner corner (left of horizontal bar)
   ]
 
   // Ensure clockwise order for perimeter creation

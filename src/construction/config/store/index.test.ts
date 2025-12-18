@@ -5,7 +5,6 @@ import type { LayerConfig } from '@/construction/layers/types'
 import { createMaterialId, strawbale } from '@/construction/materials/material'
 import type { RingBeamConfig } from '@/construction/ringBeams'
 import type { InfillWallConfig, WallConfig } from '@/construction/walls'
-import '@/shared/geometry'
 
 import { _clearAllAssemblies, getConfigActions } from '.'
 

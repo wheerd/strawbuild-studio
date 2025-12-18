@@ -1,5 +1,4 @@
 import clipperWasmUrl from 'clipper2-wasm/dist/es/clipper2z.wasm?url'
-import { vec2 } from 'gl-matrix'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { beforeAll, describe, expect, test, vi } from 'vitest'
@@ -14,7 +13,16 @@ import type {
   ImportedStorey,
   ImportedWall
 } from '@/importers/ifc/types'
-import type { Polygon2D, PolygonWithHoles2D } from '@/shared/geometry'
+import {
+  type Polygon2D,
+  type PolygonWithHoles2D,
+  type Vec2,
+  lenVec2,
+  newVec2,
+  scaleAddVec2,
+  scaleVec2,
+  subVec2
+} from '@/shared/geometry'
 import { ensureClipperModule } from '@/shared/geometry/clipperInstance'
 
 const ROUNDING_PRECISION = 4
@@ -186,7 +194,7 @@ async function generateDebugSvgs(model: { storeys: ImportedStorey[] }, prefix: s
 
 function renderStoreyDebugSvg(storey: ImportedStorey): string {
   const polygons: { type: 'wall' | 'slab' | 'perimeter' | 'hole' | 'opening'; polygon: Polygon2D }[] = []
-  const openingLines: { start: vec2; end: vec2; opening: ImportedPerimeterOpening }[] = []
+  const openingLines: { start: Vec2; end: Vec2; opening: ImportedPerimeterOpening }[] = []
 
   for (const wall of storey.walls) {
     const footprint = wall.profile?.footprint.outer
@@ -224,23 +232,23 @@ function renderStoreyDebugSvg(storey: ImportedStorey): string {
     }
 
     for (const segment of candidate.segments) {
-      const start = vec2.fromValues(segment.start[0], segment.start[1])
-      const end = vec2.fromValues(segment.end[0], segment.end[1])
-      const segmentVector = vec2.subtract(vec2.create(), end, start)
-      const length = vec2.length(segmentVector)
+      const start = newVec2(segment.start[0], segment.start[1])
+      const end = newVec2(segment.end[0], segment.end[1])
+      const segmentVector = subVec2(end, start)
+      const length = lenVec2(segmentVector)
       if (length < 1e-3) continue
-      const dir = vec2.scale(vec2.create(), segmentVector, 1 / length)
+      const dir = scaleVec2(segmentVector, 1 / length)
 
       for (const opening of segment.openings) {
         if (opening.width <= 0) continue
-        const openingStart = vec2.scaleAndAdd(vec2.create(), start, dir, opening.offset)
-        const openingEnd = vec2.scaleAndAdd(vec2.create(), openingStart, dir, opening.width)
+        const openingStart = scaleAddVec2(start, dir, opening.offset)
+        const openingEnd = scaleAddVec2(openingStart, dir, opening.width)
         openingLines.push({ start: openingStart, end: openingEnd, opening })
       }
     }
   }
 
-  const allPoints: vec2[] = []
+  const allPoints: Vec2[] = []
   polygons.forEach(entry => entry.polygon.points.forEach(point => allPoints.push(point)))
   openingLines.forEach(line => {
     allPoints.push(line.start)
@@ -262,7 +270,7 @@ function renderStoreyDebugSvg(storey: ImportedStorey): string {
   const width = maxX - minX + padding * 2
   const height = maxY - minY + padding * 2
 
-  const transformPoint = (point: vec2): { x: number; y: number } => {
+  const transformPoint = (point: Vec2): { x: number; y: number } => {
     const x = point[0] - minX + padding
     const y = maxY - point[1] + padding
     return { x, y }

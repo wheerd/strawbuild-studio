@@ -1,4 +1,3 @@
-import { vec2 } from 'gl-matrix'
 import { Handle, IFC4, IfcAPI, type IfcLineObject } from 'web-ifc'
 import wasmUrl from 'web-ifc/web-ifc.wasm?url'
 
@@ -7,7 +6,15 @@ import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import type { FloorAssemblyConfig } from '@/construction/config/types'
 import { FLOOR_ASSEMBLIES } from '@/construction/floors'
-import type { Polygon2D, PolygonWithHoles2D } from '@/shared/geometry'
+import {
+  type Polygon2D,
+  type PolygonWithHoles2D,
+  type Vec2,
+  distVec2,
+  dotVec2,
+  newVec2,
+  subVec2
+} from '@/shared/geometry'
 import { arePolygonsIntersecting, subtractPolygons, unionPolygons } from '@/shared/geometry/polygon'
 import { downloadFile } from '@/shared/utils/downloadFile'
 import { getVersionString } from '@/shared/utils/version'
@@ -692,17 +699,12 @@ class IfcExporter {
   }
 
   private createRectangleProfile(width: number, depth: number): Handle<IFC4.IfcArbitraryClosedProfileDef> {
-    const points: vec2[] = [
-      vec2.fromValues(0, 0),
-      vec2.fromValues(width, 0),
-      vec2.fromValues(width, depth),
-      vec2.fromValues(0, depth)
-    ]
+    const points: Vec2[] = [newVec2(0, 0), newVec2(width, 0), newVec2(width, depth), newVec2(0, depth)]
 
     return this.createRectanglePolyline(points)
   }
 
-  private createRectanglePolyline(points: vec2[]): Handle<IFC4.IfcArbitraryClosedProfileDef> {
+  private createRectanglePolyline(points: Vec2[]): Handle<IFC4.IfcArbitraryClosedProfileDef> {
     const polyline = this.createPolyline({ points })
     return this.writeEntity(new IFC4.IfcArbitraryClosedProfileDef(IFC4.IfcProfileTypeEnum.AREA, null, polyline))
   }
@@ -848,14 +850,14 @@ class IfcExporter {
     return this.api.CreateIFCGloballyUniqueId(this.modelID)
   }
 
-  private toLocal(point: vec2, origin: vec2, direction: vec2, normal: vec2): vec2 {
-    const delta = vec2.subtract(vec2.create(), point, origin)
-    const x = vec2.dot(delta, direction)
-    const y = vec2.dot(delta, normal)
-    return vec2.fromValues(x, y)
+  private toLocal(point: Vec2, origin: Vec2, direction: Vec2, normal: Vec2): Vec2 {
+    const delta = subVec2(point, origin)
+    const x = dotVec2(delta, direction)
+    const y = dotVec2(delta, normal)
+    return newVec2(x, y)
   }
 
-  private normalizePolygonPoints(points: vec2[]): vec2[] {
+  private normalizePolygonPoints(points: Vec2[]): Vec2[] {
     if (points.length <= 1) {
       return points
     }
@@ -863,7 +865,7 @@ class IfcExporter {
     const first = points[0]
     const last = points[points.length - 1]
 
-    if (vec2.distance(first, last) < 1e-6) {
+    if (distVec2(first, last) < 1e-6) {
       return points.slice(0, points.length - 1)
     }
 
@@ -886,11 +888,11 @@ class IfcExporter {
     return { points: [...points].reverse() }
   }
 
-  private isClockwise(points: vec2[]): boolean {
+  private isClockwise(points: Vec2[]): boolean {
     return this.polygonSignedArea(this.normalizePolygonPoints(points)) < 0
   }
 
-  private polygonSignedArea(points: vec2[]): number {
+  private polygonSignedArea(points: Vec2[]): number {
     if (points.length < 3) {
       return 0
     }

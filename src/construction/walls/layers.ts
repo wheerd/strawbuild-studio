@@ -20,7 +20,9 @@ import {
   type LineSegment2D,
   type Plane3D,
   type PolygonWithHoles2D,
+  type Vec2,
   ensurePolygonIsClockwise,
+  newVec2,
   simplifyPolygon
 } from '@/shared/geometry'
 
@@ -34,10 +36,10 @@ const WALL_LAYER_PLANE: Plane3D = 'xz'
 
 const clonePolygon = (polygon: PolygonWithHoles2D): PolygonWithHoles2D => ({
   outer: {
-    points: polygon.outer.points.map(point => vec2.fromValues(point[0], point[1]))
+    points: polygon.outer.points.map(point => newVec2(point[0], point[1]))
   },
   holes: polygon.holes.map(hole => ({
-    points: hole.points.map(point => vec2.fromValues(point[0], point[1]))
+    points: hole.points.map(point => newVec2(point[0], point[1]))
   }))
 })
 
@@ -46,7 +48,7 @@ const runLayerConstruction = (
   offset: Length,
   plane: Plane3D,
   layer: LayerConfig,
-  layerDirection: vec2
+  layerDirection: Vec2
 ): ConstructionResult[] => {
   if (layer.type === 'monolithic') {
     const construction = LAYER_CONSTRUCTIONS.monolithic as (typeof LAYER_CONSTRUCTIONS)['monolithic']
@@ -99,7 +101,7 @@ function getRoofHeightLineForLayer(
   }
 
   if (heightLine.length === 0) {
-    return [vec2.fromValues(0, -ceilingBottomOffset), vec2.fromValues(wallLength, -ceilingBottomOffset)]
+    return [newVec2(0, -ceilingBottomOffset), newVec2(wallLength, -ceilingBottomOffset)]
   }
 
   // STEP 1: Merge (sort by position)
@@ -130,8 +132,8 @@ export function constructWallLayers(
 
   const layerResults: ConstructionResult[] = []
 
-  const wallDirection = vec2.signedAngle(wall.direction, vec2.fromValues(1, 0))
-  const layerDirection = wallDirection < 0 ? vec2.fromValues(0, 1) : vec2.fromValues(0, -1)
+  const wallDirection = vec2.signedAngle(wall.direction, newVec2(1, 0))
+  const layerDirection = wallDirection < 0 ? newVec2(0, 1) : newVec2(0, -1)
 
   if (layers.insideLayers.length > 0) {
     let insideOffset: Length = 0

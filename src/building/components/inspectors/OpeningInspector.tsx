@@ -1,7 +1,6 @@
 import { InfoCircledIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
 import { Box, Callout, Flex, Grid, IconButton, Kbd, SegmentedControl, Separator, Text, Tooltip } from '@radix-ui/themes'
-import { vec2 } from 'gl-matrix'
 import { useCallback, useMemo, useState } from 'react'
 
 import type { OpeningAssemblyId, OpeningId, PerimeterId, PerimeterWallId } from '@/building/model/ids'
@@ -16,7 +15,7 @@ import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
 import { DoorIcon, PassageIcon, WindowIcon } from '@/shared/components/OpeningIcons'
-import { Bounds2D, type Polygon2D, offsetPolygon } from '@/shared/geometry'
+import { Bounds2D, type Polygon2D, addVec2, offsetPolygon, scaleAddVec2, scaleVec2 } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
 
 import { OpeningPreview } from './OpeningPreview'
@@ -175,13 +174,13 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
     const outsideStart = wall.outsideLine.start
     const wallVector = wall.direction
     const leftEdge = opening.centerOffsetFromWallStart - opening.width / 2
-    const offsetStart = vec2.scale(vec2.create(), wallVector, leftEdge)
-    const offsetEnd = vec2.scaleAndAdd(vec2.create(), offsetStart, wallVector, opening.width)
+    const offsetStart = scaleVec2(wallVector, leftEdge)
+    const offsetEnd = scaleAddVec2(offsetStart, wallVector, opening.width)
 
-    const insideOpeningStart = vec2.add(vec2.create(), insideStart, offsetStart)
-    const insideOpeningEnd = vec2.add(vec2.create(), insideStart, offsetEnd)
-    const outsideOpeningStart = vec2.add(vec2.create(), outsideStart, offsetStart)
-    const outsideOpeningEnd = vec2.add(vec2.create(), outsideStart, offsetEnd)
+    const insideOpeningStart = addVec2(insideStart, offsetStart)
+    const insideOpeningEnd = addVec2(insideStart, offsetEnd)
+    const outsideOpeningStart = addVec2(outsideStart, offsetStart)
+    const outsideOpeningEnd = addVec2(outsideStart, offsetEnd)
 
     const openingPolygon: Polygon2D = {
       points: [insideOpeningStart, insideOpeningEnd, outsideOpeningEnd, outsideOpeningStart]

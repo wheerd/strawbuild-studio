@@ -1,4 +1,3 @@
-import type { vec2 } from 'gl-matrix'
 import { useMemo } from 'react'
 import { Layer, Path } from 'react-konva/lib/ReactKonvaCore'
 
@@ -9,12 +8,12 @@ import {
 } from '@/building/store'
 import { FloorOpeningShape } from '@/editor/canvas/shapes/FloorOpeningShape'
 import { useViewMode } from '@/editor/hooks/useViewMode'
+import { type PolygonWithHoles2D, type Vec2 } from '@/shared/geometry'
 import { subtractPolygons } from '@/shared/geometry'
-import type { PolygonWithHoles2D } from '@/shared/geometry'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 function polygonWithHolesToPath(polygon: PolygonWithHoles2D): string {
-  const toPathSegment = (points: vec2[]): string => {
+  const toPathSegment = (points: Vec2[]): string => {
     if (points.length === 0) {
       return ''
     }

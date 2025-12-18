@@ -1,4 +1,4 @@
-import { vec2, vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createConstructionElement } from '@/construction/elements'
@@ -16,6 +16,7 @@ import { setMaterialsState } from '@/construction/materials/store'
 import { type ConstructionModel, createConstructionGroup } from '@/construction/model'
 import { createCuboid, createExtrudedPolygon } from '@/construction/shapes'
 import { TAG_FULL_BALE, TAG_PARTIAL_BALE } from '@/construction/tags'
+import { ZERO_VEC2, newVec2 } from '@/shared/geometry'
 import {
   Bounds2D,
   Bounds3D,
@@ -230,12 +231,12 @@ describe('generateMaterialPartsList', () => {
     minimumAreaBoundingBoxMock.mockImplementation(polygon => ({
       size: Bounds2D.fromPoints(polygon.points).max,
       angle: 0,
-      smallestDirection: vec2.create()
+      smallestDirection: ZERO_VEC2
     }))
 
     const polygon: PolygonWithHoles2D = {
       outer: {
-        points: [vec2.fromValues(800, 1000), vec2.fromValues(200, 1000), vec2.fromValues(0, 0), vec2.fromValues(800, 0)]
+        points: [newVec2(800, 1000), newVec2(200, 1000), newVec2(0, 0), newVec2(800, 0)]
       },
       holes: []
     }

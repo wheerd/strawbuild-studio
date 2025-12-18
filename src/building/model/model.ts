@@ -1,5 +1,3 @@
-import { vec2 } from 'gl-matrix'
-
 import type {
   FloorAreaId,
   FloorAssemblyId,
@@ -16,7 +14,7 @@ import type {
   StoreyId,
   WallAssemblyId
 } from '@/building/model/ids'
-import type { Length, LineSegment2D, Polygon2D } from '@/shared/geometry'
+import { type Length, type LineSegment2D, type Polygon2D, type Vec2 } from '@/shared/geometry'
 
 export type PerimeterReferenceSide = 'inside' | 'outside'
 
@@ -63,7 +61,7 @@ export interface Perimeter {
   id: PerimeterId
   storeyId: StoreyId
   referenceSide: PerimeterReferenceSide
-  referencePolygon: vec2[]
+  referencePolygon: Vec2[]
 
   // Per-side wall data
   walls: PerimeterWall[] // walls[i] goes from corners[i].insidePoint -> corners[(i + 1) % corners.length].insidePoint
@@ -87,19 +85,19 @@ export interface PerimeterWall {
   wallLength: Length
   insideLine: LineSegment2D
   outsideLine: LineSegment2D
-  direction: vec2 // Normalized from start -> end of wall
-  outsideDirection: vec2 // Normal vector pointing outside
+  direction: Vec2 // Normalized from start -> end of wall
+  outsideDirection: Vec2 // Normal vector pointing outside
 }
 
 export interface PerimeterCorner {
   id: PerimeterCornerId
 
   // The inside point defines the inner boundary of the building
-  insidePoint: vec2
+  insidePoint: Vec2
 
   // The outside point defines the outer edge after applying wall thickness
   // Together with the inside points and adjacent wall edge points, these define the corner area
-  outsidePoint: vec2
+  outsidePoint: Vec2
 
   // Which wall "owns" this corner - this is relevant for construction
   constructedByWall: 'previous' | 'next'
@@ -150,8 +148,8 @@ export interface Roof {
   // Computed
   overhangPolygon: Polygon2D
   slopeAngleRad: number
-  ridgeDirection: vec2
-  downSlopeDirection: vec2
+  ridgeDirection: Vec2
+  downSlopeDirection: Vec2
   rise: Length
   span: Length
 }

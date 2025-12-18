@@ -3,6 +3,7 @@ import { HoverCard, IconButton, Inset } from '@radix-ui/themes'
 import { type ComponentProps, type JSX, useId } from 'react'
 
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
+import { newVec2 } from '@/shared/geometry'
 
 export type Measurement =
   | 'storeyHeight'
@@ -478,8 +479,8 @@ e | y +--------------+ s | Floor top layers                 }
   const heightMeasurements = (
     <g key="height-measurements">
       {renderMeasurement('storeyHeight', {
-        startPoint: [marginRightX, marginTop],
-        endPoint: [marginRightX, marginTop + storeyHeight],
+        startPoint: newVec2(marginRightX, marginTop),
+        endPoint: newVec2(marginRightX, marginTop + storeyHeight),
         label: 'Floor Height',
         fontSize: 60,
         offset: 40,
@@ -487,8 +488,8 @@ e | y +--------------+ s | Floor top layers                 }
       })}
 
       {renderMeasurement('roomHeight', {
-        startPoint: [marginRightX, roomHeightStartY],
-        endPoint: [marginRightX, marginTop + storeyHeight],
+        startPoint: newVec2(marginRightX, roomHeightStartY),
+        endPoint: newVec2(marginRightX, marginTop + storeyHeight),
         label: 'Ceiling Height',
         fontSize: 60,
         offset: 120,
@@ -500,8 +501,8 @@ e | y +--------------+ s | Floor top layers                 }
   const floorMeasurements = (
     <g key="floor-measurements">
       {renderMeasurement('floorTopOffset', {
-        startPoint: [wallRight, topFloorConstructionTopY],
-        endPoint: [wallRight, topFloorConstructionTopY + floorConstructionTopOverlap],
+        startPoint: newVec2(wallRight, topFloorConstructionTopY),
+        endPoint: newVec2(wallRight, topFloorConstructionTopY + floorConstructionTopOverlap),
         label: 'Construction Top Offset',
         fontSize: 50,
         offset: wallRight - floorMeasurementX,
@@ -510,8 +511,8 @@ e | y +--------------+ s | Floor top layers                 }
       })}
 
       {renderMeasurement('floorBottomOffset', {
-        startPoint: [wallRight, topFloorConstructionBottomY - floorConstructionBottomOverlap],
-        endPoint: [wallRight, topFloorConstructionBottomY],
+        startPoint: newVec2(wallRight, topFloorConstructionBottomY - floorConstructionBottomOverlap),
+        endPoint: newVec2(wallRight, topFloorConstructionBottomY),
         label: 'Construction Bottom Offset',
         fontSize: 50,
         offset: wallRight - floorMeasurementX,
@@ -636,8 +637,8 @@ e | y +--------------+ s | Floor top layers                 }
       )}
 
       {renderMeasurement('totalFloorThickness', {
-        startPoint: [marginRightX, bottomFloorTopY],
-        endPoint: [marginRightX, bottomFloorBottomLayersBottomY],
+        startPoint: newVec2(marginRightX, bottomFloorTopY),
+        endPoint: newVec2(marginRightX, bottomFloorBottomLayersBottomY),
         label: 'Total\nFloor\nThickness',
         labelOrientation: 'perpendicular',
         offset: 80,
@@ -786,8 +787,8 @@ e | y +--------------+ s | Floor top layers                 }
       )}
 
       {renderMeasurement('wallAssemblyHeight', {
-        startPoint: [wallLeft, wallAssemblyTopY],
-        endPoint: [wallLeft, wallAssemblyBottomY],
+        startPoint: newVec2(wallLeft, wallAssemblyTopY),
+        endPoint: newVec2(wallLeft, wallAssemblyBottomY),
         label: 'Wall Assembly Height',
         fontSize: 60,
         offset: outsideThickness + 160,
@@ -795,8 +796,8 @@ e | y +--------------+ s | Floor top layers                 }
       })}
 
       {renderMeasurement('wallConstructionHeight', {
-        startPoint: [wallLeft, wallCoreTopY],
-        endPoint: [wallLeft, wallCoreBottomY],
+        startPoint: newVec2(wallLeft, wallCoreTopY),
+        endPoint: newVec2(wallLeft, wallCoreBottomY),
         label: 'Wall Construction Height',
         fontSize: 60,
         offset: outsideThickness + 100,
@@ -804,8 +805,8 @@ e | y +--------------+ s | Floor top layers                 }
       })}
 
       {renderMeasurement('totalWallThickness', {
-        startPoint: [outsideLayerX, wallCoreTopY],
-        endPoint: [interiorExtentX, wallCoreTopY],
+        startPoint: newVec2(outsideLayerX, wallCoreTopY),
+        endPoint: newVec2(interiorExtentX, wallCoreTopY),
         label: 'Total\nWall\nThickness',
         offset: 200,
         fontSize: 60,

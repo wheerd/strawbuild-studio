@@ -12,7 +12,6 @@ import {
 import type { RoofAssemblyConfig } from '@/construction/config/types'
 import type { LayerConfig } from '@/construction/layers/types'
 import { type RoofConfig, validateRoofConfig } from '@/construction/roofs/types'
-import '@/shared/geometry'
 
 import { DEFAULT_ROOF_ASSEMBLIES, DEFAULT_ROOF_ASSEMBLY_ID } from './roofs.defaults'
 

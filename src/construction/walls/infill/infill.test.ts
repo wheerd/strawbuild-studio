@@ -10,7 +10,6 @@ import { aggregateResults, yieldElement, yieldError, yieldMeasurement, yieldWarn
 import { TAG_POST_SPACING } from '@/construction/tags'
 import type { InfillWallSegmentConfig } from '@/construction/walls'
 import type { Length } from '@/shared/geometry'
-import '@/shared/geometry'
 
 import { infillWallArea } from './infill'
 

@@ -1,9 +1,8 @@
-import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createPerimeterId, createPerimeterWallId } from '@/building/model/ids'
 import type { PerimeterWall } from '@/building/model/model'
-import '@/shared/geometry'
+import { newVec2 } from '@/shared/geometry'
 
 import { SplitWallTool } from './SplitWallTool'
 
@@ -68,15 +67,15 @@ describe('SplitWallTool', () => {
       outsideLength: 1000,
       wallLength: 1000,
       insideLine: {
-        start: vec2.fromValues(0, 0),
-        end: vec2.fromValues(1000, 0)
+        start: newVec2(0, 0),
+        end: newVec2(1000, 0)
       },
       outsideLine: {
-        start: vec2.fromValues(0, 420),
-        end: vec2.fromValues(1000, 420)
+        start: newVec2(0, 420),
+        end: newVec2(1000, 420)
       },
-      direction: vec2.fromValues(1, 0),
-      outsideDirection: vec2.fromValues(0, 1)
+      direction: newVec2(1, 0),
+      outsideDirection: newVec2(0, 1)
     }
 
     const mockPerimeter = {
@@ -122,15 +121,15 @@ describe('SplitWallTool', () => {
       outsideLength: 2000,
       wallLength: 2000,
       insideLine: {
-        start: vec2.fromValues(0, 0),
-        end: vec2.fromValues(2000, 0)
+        start: newVec2(0, 0),
+        end: newVec2(2000, 0)
       },
       outsideLine: {
-        start: vec2.fromValues(0, 420),
-        end: vec2.fromValues(2000, 420)
+        start: newVec2(0, 420),
+        end: newVec2(2000, 420)
       },
-      direction: vec2.fromValues(1, 0),
-      outsideDirection: vec2.fromValues(0, 1)
+      direction: newVec2(1, 0),
+      outsideDirection: newVec2(0, 1)
     }
 
     const mockPerimeter = {

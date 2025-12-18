@@ -1,5 +1,3 @@
-import { vec2 } from 'gl-matrix'
-
 import type { Perimeter, PerimeterCorner } from '@/building/model/model'
 import { createConstructionElement } from '@/construction/elements'
 import type { ConstructionModel } from '@/construction/model'
@@ -10,6 +8,7 @@ import { TAG_PERIMETER_INSIDE, TAG_PERIMETER_OUTSIDE } from '@/construction/tags
 import {
   Bounds2D,
   type Polygon2D,
+  eqVec2,
   lineFromPoints,
   lineIntersection,
   offsetPolygon,
@@ -47,10 +46,10 @@ export class FullRingBeamAssembly implements RingBeamAssembly<FullRingBeamConfig
       const nextEnd = (currentStart + 2) % numCorners
 
       const startCorner = perimeter.corners.find((c: PerimeterCorner) =>
-        vec2.equals(c.insidePoint, simplifiedPolygon.points[currentStart])
+        eqVec2(c.insidePoint, simplifiedPolygon.points[currentStart])
       )
       const endCorner = perimeter.corners.find((c: PerimeterCorner) =>
-        vec2.equals(c.insidePoint, simplifiedPolygon.points[currentEnd])
+        eqVec2(c.insidePoint, simplifiedPolygon.points[currentEnd])
       )
 
       const previousEdge =

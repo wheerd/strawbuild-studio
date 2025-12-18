@@ -1,8 +1,8 @@
-import { vec2 } from 'gl-matrix'
 import type Konva from 'konva'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createPerimeterId, createPerimeterWallId } from '@/building/model/ids'
+import { newVec2 } from '@/shared/geometry'
 
 import { EntityHitTestService } from './EntityHitTestService'
 
@@ -66,7 +66,7 @@ describe('EntityHitTestService', () => {
     expect(result).not.toBeNull()
     expect(result?.entityType).toBe('perimeter-wall')
     expect(result?.parentIds).toHaveLength(1)
-    expect(result?.stagePoint).toEqual(vec2.fromValues(100, 100))
+    expect(result?.stagePoint).toEqual(newVec2(100, 100))
     expect(result?.konvaNode).toBe(mockNodeWithEntity)
   })
 
@@ -112,7 +112,7 @@ describe('EntityHitTestService', () => {
 
     expect(result).not.toBeNull()
     expect(result?.entityType).toBe('perimeter-wall')
-    expect(result?.stagePoint).toEqual(vec2.fromValues(150, 200))
+    expect(result?.stagePoint).toEqual(newVec2(150, 200))
     expect(mockStage.getIntersection).toHaveBeenCalledWith(pointerCoords)
   })
 

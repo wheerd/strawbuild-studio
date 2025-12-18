@@ -1,10 +1,9 @@
 import { render } from '@testing-library/react'
-import { vec2 } from 'gl-matrix'
 import { vi } from 'vitest'
 
 import type { Perimeter } from '@/building/model/model'
 import { useFloorAreaById, useFloorOpeningById, usePerimeterById, useRoofById } from '@/building/store'
-import '@/shared/geometry'
+import { newVec2 } from '@/shared/geometry'
 
 import { SelectionOverlay } from './SelectionOverlay'
 
@@ -57,10 +56,10 @@ describe('SelectionOverlay', () => {
     const mockWall: Partial<Perimeter> = {
       id: wallId as any,
       corners: [
-        { outsidePoint: vec2.fromValues(0, 0) },
-        { outsidePoint: vec2.fromValues(100, 0) },
-        { outsidePoint: vec2.fromValues(100, 100) },
-        { outsidePoint: vec2.fromValues(0, 100) }
+        { outsidePoint: newVec2(0, 0) },
+        { outsidePoint: newVec2(100, 0) },
+        { outsidePoint: newVec2(100, 100) },
+        { outsidePoint: newVec2(0, 100) }
       ] as any
     }
 
@@ -82,8 +81,8 @@ describe('SelectionOverlay', () => {
       walls: [
         {
           id: wallId,
-          insideLine: { start: vec2.fromValues(0, 0), end: vec2.fromValues(100, 0) },
-          outsideLine: { start: vec2.fromValues(0, 50), end: vec2.fromValues(100, 50) }
+          insideLine: { start: newVec2(0, 0), end: newVec2(100, 0) },
+          outsideLine: { start: newVec2(0, 50), end: newVec2(100, 50) }
         }
       ]
     }
@@ -107,9 +106,9 @@ describe('SelectionOverlay', () => {
       walls: [
         {
           id: wallId,
-          insideLine: { start: vec2.fromValues(0, 0), end: vec2.fromValues(100, 0) },
-          outsideLine: { start: vec2.fromValues(0, 50), end: vec2.fromValues(100, 50) },
-          direction: vec2.fromValues(1, 0),
+          insideLine: { start: newVec2(0, 0), end: newVec2(100, 0) },
+          outsideLine: { start: newVec2(0, 50), end: newVec2(100, 50) },
+          direction: newVec2(1, 0),
           openings: [
             {
               id: openingId,
@@ -150,7 +149,7 @@ describe('SelectionOverlay', () => {
     mockUseFloorAreaById.mockReturnValue({
       id: floorAreaId,
       storeyId,
-      area: { points: [vec2.fromValues(0, 0), vec2.fromValues(200, 0), vec2.fromValues(200, 200)] }
+      area: { points: [newVec2(0, 0), newVec2(200, 0), newVec2(200, 200)] }
     } as any)
 
     const { getByTestId } = render(<SelectionOverlay />)
@@ -168,7 +167,7 @@ describe('SelectionOverlay', () => {
       id: openingId,
       storeyId,
       area: {
-        points: [vec2.fromValues(10, 10), vec2.fromValues(20, 10), vec2.fromValues(20, 20), vec2.fromValues(10, 20)]
+        points: [newVec2(10, 10), newVec2(20, 10), newVec2(20, 20), newVec2(10, 20)]
       }
     } as any)
 

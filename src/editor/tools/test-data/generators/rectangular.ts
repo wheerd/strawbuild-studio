@@ -1,10 +1,8 @@
-import { vec2 } from 'gl-matrix'
-
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config/store'
 import { getSelectionActions } from '@/editor/hooks/useSelectionStore'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
-import { Bounds2D, polygonIsClockwise } from '@/shared/geometry'
+import { Bounds2D, newVec2, polygonIsClockwise } from '@/shared/geometry'
 
 import { CommonDoors, CommonWindows, type DoorSpec, type WindowSpec, addDoors, addWindows } from './openings'
 
@@ -24,10 +22,10 @@ export function createRectangularPerimeter(): void {
 
   // Create points and ensure clockwise order
   let points = [
-    vec2.fromValues(-halfWidth, -halfHeight), // Bottom-left
-    vec2.fromValues(halfWidth, -halfHeight), // Bottom-right
-    vec2.fromValues(halfWidth, halfHeight), // Top-right
-    vec2.fromValues(-halfWidth, halfHeight) // Top-left
+    newVec2(-halfWidth, -halfHeight), // Bottom-left
+    newVec2(halfWidth, -halfHeight), // Bottom-right
+    newVec2(halfWidth, halfHeight), // Top-right
+    newVec2(-halfWidth, halfHeight) // Top-left
   ]
 
   // Ensure clockwise order for perimeter creation

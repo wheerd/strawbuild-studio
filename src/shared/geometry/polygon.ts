@@ -1,5 +1,5 @@
 import type { PathsD, PolyPathD } from 'clipper2-wasm'
-import { vec2, vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 
 import { lineSegmentIntersect, polygonEdges } from '@/construction/helpers'
 import {
@@ -14,11 +14,21 @@ import {
   type Area,
   Bounds2D,
   type Length,
+  type Vec2,
   direction,
+  distSqrVec2,
+  distVec2,
+  dotVec2,
+  eqVec2,
+  lenVec2,
+  newVec2,
+  normVec2,
   perpendicular,
   perpendicularCCW,
   perpendicularCW,
-  radiansToDegrees
+  radiansToDegrees,
+  scaleAddVec2,
+  subVec2
 } from './basic'
 import { type Line2D, type LineSegment2D, lineIntersection, projectPointOntoLine } from './line'
 
@@ -26,7 +36,7 @@ const COLINEAR_EPSILON = 1e-9
 const SIMPLIFY_TOLERANCE = 0.01
 
 export interface Polygon2D {
-  points: vec2[]
+  points: Vec2[]
 }
 
 export interface PolygonWithHoles2D {
@@ -87,12 +97,12 @@ export function polygonPerimeter(polygon: Polygon2D): number {
   for (let i = 0; i < polygon.points.length; i++) {
     const current = polygon.points[i]
     const next = polygon.points[(i + 1) % polygon.points.length]
-    total += vec2.distance(current, next)
+    total += distVec2(current, next)
   }
   return total
 }
 
-export function isPointInPolygon(point: vec2, polygon: Polygon2D): boolean {
+export function isPointInPolygon(point: Vec2, polygon: Polygon2D): boolean {
   const testPoint = createPointD(point)
   const path = createPathD(polygon.points)
   try {
@@ -105,7 +115,7 @@ export function isPointInPolygon(point: vec2, polygon: Polygon2D): boolean {
   }
 }
 
-export function isPointStrictlyInPolygon(point: vec2, polygon: Polygon2D): boolean {
+export function isPointStrictlyInPolygon(point: Vec2, polygon: Polygon2D): boolean {
   const testPoint = createPointD(point)
   const path = createPathD(polygon.points)
   try {
@@ -118,8 +128,8 @@ export function isPointStrictlyInPolygon(point: vec2, polygon: Polygon2D): boole
   }
 }
 
-export function wouldPolygonSelfIntersect(existingPoints: vec2[], newPoint: vec2): boolean {
-  if (existingPoints.some(p => vec2.equals(p, newPoint))) {
+export function wouldPolygonSelfIntersect(existingPoints: Vec2[], newPoint: Vec2): boolean {
+  if (existingPoints.some(p => eqVec2(p, newPoint))) {
     return true
   }
 
@@ -432,16 +442,16 @@ export function splitPolygonByLine(polygon: Polygon2D, line: Line2D): PolygonSid
 
   // Create two half-plane rectangles on either side of the line
   // Left half-plane (CCW perpendicular from line)
-  const leftP1 = vec2.scaleAndAdd(vec2.create(), basePoint, line.direction, -largeSize)
-  const leftP2 = vec2.scaleAndAdd(vec2.create(), basePoint, line.direction, largeSize)
-  const leftP3 = vec2.scaleAndAdd(vec2.create(), leftP2, perpLeft, largeSize)
-  const leftP4 = vec2.scaleAndAdd(vec2.create(), leftP1, perpLeft, largeSize)
+  const leftP1 = scaleAddVec2(basePoint, line.direction, -largeSize)
+  const leftP2 = scaleAddVec2(basePoint, line.direction, largeSize)
+  const leftP3 = scaleAddVec2(leftP2, perpLeft, largeSize)
+  const leftP4 = scaleAddVec2(leftP1, perpLeft, largeSize)
 
   // Right half-plane (CW perpendicular from line)
-  const rightP1 = vec2.scaleAndAdd(vec2.create(), basePoint, line.direction, -largeSize)
-  const rightP2 = vec2.scaleAndAdd(vec2.create(), basePoint, line.direction, largeSize)
-  const rightP3 = vec2.scaleAndAdd(vec2.create(), rightP2, perpRight, largeSize)
-  const rightP4 = vec2.scaleAndAdd(vec2.create(), rightP1, perpRight, largeSize)
+  const rightP1 = scaleAddVec2(basePoint, line.direction, -largeSize)
+  const rightP2 = scaleAddVec2(basePoint, line.direction, largeSize)
+  const rightP3 = scaleAddVec2(rightP2, perpRight, largeSize)
+  const rightP4 = scaleAddVec2(rightP1, perpRight, largeSize)
 
   const leftHalfPlane: Polygon2D = ensurePolygonIsClockwise({ points: [leftP1, leftP2, leftP3, leftP4] })
   const rightHalfPlane: Polygon2D = ensurePolygonIsClockwise({ points: [rightP1, rightP2, rightP3, rightP4] })
@@ -494,7 +504,7 @@ export function polygonEdgeOffset(polygon: Polygon2D, offsets: Length[]): Polygo
     const dir = direction(point, polygon.points[(index + 1) % polygon.points.length])
     const outside = perpendicular(dir)
     const offsetDistance = offsets[index]
-    const offsetPoint = vec2.scaleAndAdd(vec2.create(), point, outside, offsetDistance)
+    const offsetPoint = scaleAddVec2(point, outside, offsetDistance)
     return { point: offsetPoint, direction: dir }
   })
 
@@ -508,7 +518,7 @@ export function polygonEdgeOffset(polygon: Polygon2D, offsets: Length[]): Polygo
 
     const fallbackDistance = (offsets[prevIndex] + offsets[index]) / 2
     // For colinear walls fall back to moving the inside corner along the outward normal.
-    return vec2.scaleAndAdd(vec2.create(), polygon.points[index], perpendicular(line.direction), fallbackDistance)
+    return scaleAddVec2(polygon.points[index], perpendicular(line.direction), fallbackDistance)
   })
 
   return { points }
@@ -524,7 +534,7 @@ const normaliseOrientation = (polygon: Polygon2D, clockwise: boolean): Polygon2D
   }
 }
 
-function segmentsIntersect(p1: vec2, q1: vec2, p2: vec2, q2: vec2): boolean {
+function segmentsIntersect(p1: Vec2, q1: Vec2, p2: Vec2, q2: Vec2): boolean {
   const o1 = orientation(p1, q1, p2)
   const o2 = orientation(p1, q1, q2)
   const o3 = orientation(p2, q2, p1)
@@ -540,13 +550,13 @@ function segmentsIntersect(p1: vec2, q1: vec2, p2: vec2, q2: vec2): boolean {
   return false
 }
 
-function orientation(p: vec2, q: vec2, r: vec2): number {
+function orientation(p: Vec2, q: Vec2, r: Vec2): number {
   const val = (q[1] - p[1]) * (r[0] - q[0]) - (q[0] - p[0]) * (r[1] - q[1])
   if (Math.abs(val) < COLINEAR_EPSILON) return 0
   return val > 0 ? 1 : 2
 }
 
-function onSegment(p: vec2, q: vec2, r: vec2): boolean {
+function onSegment(p: Vec2, q: Vec2, r: Vec2): boolean {
   return (
     q[0] <= Math.max(p[0], r[0]) + COLINEAR_EPSILON &&
     q[0] + COLINEAR_EPSILON >= Math.min(p[0], r[0]) &&
@@ -559,14 +569,14 @@ function onSegment(p: vec2, q: vec2, r: vec2): boolean {
 
 const CONVEX_HULL_EPSILON = 1e-9
 
-const vectorCross = (origin: vec2, a: vec2, b: vec2) => {
+const vectorCross = (origin: Vec2, a: Vec2, b: Vec2) => {
   return (a[0] - origin[0]) * (b[1] - origin[1]) - (a[1] - origin[1]) * (b[0] - origin[0])
 }
 
-const pointsEqual = (a: vec2, b: vec2) =>
+const pointsEqual = (a: Vec2, b: Vec2) =>
   Math.abs(a[0] - b[0]) < CONVEX_HULL_EPSILON && Math.abs(a[1] - b[1]) < CONVEX_HULL_EPSILON
 
-const signedArea = (points: vec2[]): number => {
+const signedArea = (points: Vec2[]): number => {
   if (points.length < 3) return 0
   let sum = 0
   for (let i = 0; i < points.length; i++) {
@@ -577,7 +587,7 @@ const signedArea = (points: vec2[]): number => {
   return sum * 0.5
 }
 
-const ensureCounterClockwiseOrder = (points: vec2[]): vec2[] => {
+const ensureCounterClockwiseOrder = (points: Vec2[]): Vec2[] => {
   if (points.length <= 2) return [...points]
   const area = signedArea(points)
   if (area < 0) {
@@ -589,8 +599,8 @@ const ensureCounterClockwiseOrder = (points: vec2[]): vec2[] => {
 const advanceIndex = (index: number, n: number) => (index + 1) % n
 const retreatIndex = (index: number, n: number) => (index - 1 + n) % n
 
-const buildChain = (chainPoints: vec2[], keepRightTurns: boolean) => {
-  const chain: vec2[] = []
+const buildChain = (chainPoints: Vec2[], keepRightTurns: boolean) => {
+  const chain: Vec2[] = []
   for (const point of chainPoints) {
     while (chain.length >= 2) {
       const cross = vectorCross(chain[chain.length - 2], chain[chain.length - 1], point)
@@ -614,7 +624,7 @@ const buildChain = (chainPoints: vec2[], keepRightTurns: boolean) => {
 }
 
 // Linear-time convex hull for simple polygons (Yao & Graham, 1982)
-function convexHullOfSimplePolygon(points: vec2[]): vec2[] {
+function convexHullOfSimplePolygon(points: Vec2[]): Vec2[] {
   const n = points.length
   if (n <= 3) {
     return ensureCounterClockwiseOrder(points)
@@ -640,7 +650,7 @@ function convexHullOfSimplePolygon(points: vec2[]): vec2[] {
     return [orderedPoints[leftIndex]]
   }
 
-  const upperChainPoints: vec2[] = []
+  const upperChainPoints: Vec2[] = []
   let index = leftIndex
   while (true) {
     upperChainPoints.push(orderedPoints[index])
@@ -648,7 +658,7 @@ function convexHullOfSimplePolygon(points: vec2[]): vec2[] {
     index = advanceIndex(index, orderedPoints.length)
   }
 
-  const lowerChainPoints: vec2[] = []
+  const lowerChainPoints: Vec2[] = []
   index = leftIndex
   while (true) {
     lowerChainPoints.push(orderedPoints[index])
@@ -680,12 +690,12 @@ export function convexHullOfPolygonWithHoles(polygon: PolygonWithHoles2D): Polyg
 // Minimum bounding box
 
 export interface MinimumBoundingBox {
-  size: vec2
+  size: Vec2
   angle: number
-  smallestDirection: vec2
+  smallestDirection: Vec2
 }
 
-function minimumAreaBoundingBoxFromPoints(points: vec2[]): MinimumBoundingBox {
+function minimumAreaBoundingBoxFromPoints(points: Vec2[]): MinimumBoundingBox {
   if (points.length < 3) throw new Error('Polygon requires at least 3 points')
 
   // Use a robust convex hull (Andrew / monotone chain) instead of hull-for-simple-polygons
@@ -693,14 +703,14 @@ function minimumAreaBoundingBoxFromPoints(points: vec2[]): MinimumBoundingBox {
   if (hull.length < 3) throw new Error('Convex hull of polygon requires at least 3 points')
 
   let bestArea = Infinity
-  let bestSize = vec2.fromValues(0, 0)
+  let bestSize = newVec2(0, 0)
   let bestAngle = 0
-  let bestDirection = vec2.fromValues(0, 0)
+  let bestDirection = newVec2(0, 0)
 
-  const rotatePoint = (point: vec2, sinAngle: number, cosAngle: number) => {
+  const rotatePoint = (point: Vec2, sinAngle: number, cosAngle: number) => {
     const x = point[0] * cosAngle - point[1] * sinAngle
     const y = point[0] * sinAngle + point[1] * cosAngle
-    return vec2.fromValues(x, y)
+    return newVec2(x, y)
   }
 
   for (let i = 0; i < hull.length; i++) {
@@ -727,8 +737,7 @@ function minimumAreaBoundingBoxFromPoints(points: vec2[]): MinimumBoundingBox {
       bestSize = size
       bestAngle = angle
 
-      const edgeDir = vec2.fromValues(edgeX, edgeY)
-      vec2.normalize(edgeDir, edgeDir)
+      const edgeDir = normVec2(newVec2(edgeX, edgeY))
       // size[0] is along the edge direction, size[1] is perpendicular to it
       if (size[0] < size[1]) {
         bestDirection = edgeDir
@@ -752,19 +761,19 @@ export function minimumAreaBoundingBox(polygon: Polygon2D): MinimumBoundingBox {
  * @param points Boundary-ordered polygon vertices; last vertex is NOT repeated.
  * @throws Error if polygon has <3 unique points or an edge is (near-)degenerate.
  */
-export function canonicalPolygonKey(points: vec2[]): string {
+export function canonicalPolygonKey(points: Vec2[]): string {
   const minEdge = 1e-12
   const n = points.length
 
   if (n < 3) throw new Error('Need at least 3 vertices.')
   // Build edge vectors and lengths
-  const e: vec2[] = new Array(n)
+  const e: Vec2[] = new Array(n)
   const L: number[] = new Array(n)
 
   for (let i = 0; i < n; i++) {
     const j = (i + 1) % n
-    const ev = vec2.sub(vec2.create(), points[j], points[i])
-    const len = vec2.len(ev)
+    const ev = subVec2(points[j], points[i])
+    const len = lenVec2(ev)
     if (!(len > minEdge)) {
       throw new Error(`Degenerate or near-zero length edge at index ${i}.`)
     }
@@ -881,14 +890,14 @@ function rotatePairs(arr: Pair[], start: number): Pair[] {
   return out
 }
 
-export function polygonDiameterInDirection(polygon: Polygon2D, direction: vec2): Length {
-  const dir = vec2.normalize(vec2.create(), direction)
+export function polygonDiameterInDirection(polygon: Polygon2D, direction: Vec2): Length {
+  const dir = normVec2(direction)
 
   let minProj = Infinity
   let maxProj = -Infinity
 
   for (const p of polygon.points) {
-    const proj = vec2.dot(p, dir)
+    const proj = dotVec2(p, dir)
 
     if (proj < minProj) minProj = proj
     if (proj > maxProj) maxProj = proj
@@ -898,7 +907,7 @@ export function polygonDiameterInDirection(polygon: Polygon2D, direction: vec2):
 }
 
 // Add a robust convex hull implementation (Andrew / monotone chain)
-function convexHullAndrew(points: vec2[]): vec2[] {
+function convexHullAndrew(points: Vec2[]): Vec2[] {
   if (points.length <= 3) return ensureCounterClockwiseOrder([...points])
 
   // Sort by x, then y
@@ -908,7 +917,7 @@ function convexHullAndrew(points: vec2[]): vec2[] {
   })
 
   // Remove duplicates (within epsilon)
-  const uniq: vec2[] = []
+  const uniq: Vec2[] = []
   for (const p of pts) {
     if (uniq.length === 0 || !pointsEqual(uniq[uniq.length - 1], p)) {
       uniq.push(p)
@@ -917,11 +926,11 @@ function convexHullAndrew(points: vec2[]): vec2[] {
 
   if (uniq.length <= 3) return ensureCounterClockwiseOrder(uniq)
 
-  const cross = (a: vec2, b: vec2, c: vec2) => {
+  const cross = (a: Vec2, b: Vec2, c: Vec2) => {
     return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
   }
 
-  const lower: vec2[] = []
+  const lower: Vec2[] = []
   for (const p of uniq) {
     while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= CONVEX_HULL_EPSILON) {
       lower.pop()
@@ -929,7 +938,7 @@ function convexHullAndrew(points: vec2[]): vec2[] {
     lower.push(p)
   }
 
-  const upper: vec2[] = []
+  const upper: Vec2[] = []
   for (let i = uniq.length - 1; i >= 0; i--) {
     const p = uniq[i]
     while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= CONVEX_HULL_EPSILON) {
@@ -970,7 +979,7 @@ export function intersectLineSegmentWithPolygon(
   polygon = simplifyPolygon(polygon)
 
   const lineDir = direction(line.start, line.end)
-  const lineLength = vec2.distance(line.start, line.end)
+  const lineLength = distVec2(line.start, line.end)
 
   if (lineLength === 0) {
     // Degenerate line - just check if point is inside
@@ -992,7 +1001,7 @@ export function intersectLineSegmentWithPolygon(
 
     // Solve for intersection: line.start + t * lineDir = p1 + s * (p2 - p1)
     const edgeDir = direction(p1, p2)
-    const edgeLength = vec2.distance(p1, p2)
+    const edgeLength = distVec2(p1, p2)
 
     if (edgeLength === 0) continue
 
@@ -1004,12 +1013,12 @@ export function intersectLineSegmentWithPolygon(
 
     if (intersection) {
       // Calculate t along the line segment
-      const toIntersection = vec2.sub(vec2.create(), intersection, line.start)
-      const t = vec2.dot(toIntersection, lineDir) / lineLength
+      const toIntersection = subVec2(intersection, line.start)
+      const t = dotVec2(toIntersection, lineDir) / lineLength
 
       // Calculate s along the edge
-      const toIntersectionFromEdge = vec2.sub(vec2.create(), intersection, p1)
-      const s = vec2.dot(toIntersectionFromEdge, edgeDir) / edgeLength
+      const toIntersectionFromEdge = subVec2(intersection, p1)
+      const s = dotVec2(toIntersectionFromEdge, edgeDir) / edgeLength
 
       // Only count if intersection is on both segments (with small epsilon for endpoints)
       const epsilon = 1e-9
@@ -1085,12 +1094,12 @@ export function intersectLineWithPolygon(line: Line2D, polygon: Polygon2D): Line
 
   const intersections: {
     t: number
-    p: vec2
+    p: Vec2
   }[] = []
 
   // Test each polygon edge
   for (const edge of polygonEdges(polygon)) {
-    const edgeLength = vec2.distance(edge.start, edge.end)
+    const edgeLength = distVec2(edge.start, edge.end)
     if (edgeLength < 1e-5) continue
 
     const intersection = lineSegmentIntersect(line, edge)
@@ -1098,8 +1107,8 @@ export function intersectLineWithPolygon(line: Line2D, polygon: Polygon2D): Line
     if (!intersection) continue
 
     // Compute t on infinite line
-    const toIntersection = vec2.sub(vec2.create(), intersection, line.point)
-    const t = vec2.dot(toIntersection, line.direction)
+    const toIntersection = subVec2(intersection, line.point)
+    const t = dotVec2(toIntersection, line.direction)
     intersections.push({ t, p: intersection })
   }
 
@@ -1114,7 +1123,7 @@ export function intersectLineWithPolygon(line: Line2D, polygon: Polygon2D): Line
   for (let i = 1; i < intersections.length; i += 2) {
     const start = intersections[i - 1].p
     const end = intersections[i].p
-    if (vec2.squaredDistance(start, end) > 1) {
+    if (distSqrVec2(start, end) > 1) {
       lines.push({ start, end })
     }
   }

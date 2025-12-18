@@ -1,4 +1,32 @@
-import { vec2, vec3 } from 'gl-matrix'
+import { type ReadonlyVec2, vec2, vec3 } from 'gl-matrix'
+
+export type Vec2 = ReadonlyVec2 & { readonly brand: unique symbol }
+
+export const ZERO_VEC2 = vec2.create() as Vec2
+
+export const newVec2 = (x: number, y: number): Vec2 => vec2.fromValues(x, y) as Vec2
+export const copyVec2 = (v: Vec2): Vec2 => vec2.clone(v) as Vec2
+export const roundVec2 = (v: Vec2): Vec2 => vec2.round(vec2.create(), v) as Vec2
+export const eqVec2 = (a: Vec2, b: Vec2): boolean => vec2.equals(a, b)
+
+export const normVec2 = (v: Vec2): Vec2 => vec2.normalize(vec2.create(), v) as Vec2
+export const negVec2 = (v: Vec2): Vec2 => vec2.negate(vec2.create(), v) as Vec2
+export const subVec2 = (a: Vec2, b: Vec2): Vec2 => vec2.sub(vec2.create(), a, b) as Vec2
+export const addVec2 = (a: Vec2, b: Vec2): Vec2 => vec2.add(vec2.create(), a, b) as Vec2
+export const scaleAddVec2 = (a: Vec2, b: Vec2, c: number): Vec2 => vec2.scaleAndAdd(vec2.create(), a, b, c) as Vec2
+export const scaleVec2 = (a: Vec2, b: number): Vec2 => vec2.scale(vec2.create(), a, b) as Vec2
+export const lerpVec2 = (a: Vec2, b: Vec2, c: number): Vec2 => vec2.lerp(vec2.create(), a, b, c) as Vec2
+
+export const lenVec2 = (a: Vec2): Length => vec2.len(a) as Length
+export const lenSqrVec2 = (a: Vec2): Length => vec2.sqrLen(a) as Length
+export const distVec2 = (a: Vec2, b: Vec2): Length => vec2.dist(a, b) as Length
+export const distSqrVec2 = (a: Vec2, b: Vec2): number => vec2.sqrDist(a, b) as number
+export const dotVec2 = (a: Vec2, b: Vec2): number => vec2.dot(a, b)
+
+export const vec2To3 = (a: Vec2): vec3 => vec3.fromValues(a[0], a[1], 0)
+export const vec3To2 = (a: vec3): Vec2 => vec2.copy(vec2.create(), a) as Vec2
+
+// s
 
 export type Length = number
 export type Area = number
@@ -12,9 +40,9 @@ export const squareMeters = (value: number): Area => value * 1000 * 1000
 export const cubicMeters = (value: number): Volume => value * 1000 * 1000 * 1000
 
 export class Bounds2D {
-  static readonly EMPTY = new Bounds2D(vec2.create(), vec2.create())
+  static readonly EMPTY = new Bounds2D(ZERO_VEC2, ZERO_VEC2)
 
-  static fromPoints(points: readonly vec2[]): Bounds2D {
+  static fromPoints(points: readonly Vec2[]): Bounds2D {
     if (points.length === 0) {
       return Bounds2D.EMPTY
     }
@@ -31,15 +59,15 @@ export class Bounds2D {
       if (point[1] > maxY) maxY = point[1]
     }
 
-    return new Bounds2D(vec2.fromValues(minX, minY), vec2.fromValues(maxX, maxY))
+    return new Bounds2D(newVec2(minX, minY), newVec2(maxX, maxY))
   }
 
-  static fromMinMax(min: vec2, max: vec2): Bounds2D {
+  static fromMinMax(min: Vec2, max: Vec2): Bounds2D {
     if (min[0] >= max[0] && min[1] >= max[1]) {
       return Bounds2D.EMPTY
     }
 
-    return new Bounds2D(vec2.clone(min), vec2.clone(max))
+    return new Bounds2D(copyVec2(min), copyVec2(max))
   }
 
   static merge(...bounds: readonly Bounds2D[]): Bounds2D {
@@ -60,13 +88,13 @@ export class Bounds2D {
       if (bound.max[1] > maxY) maxY = bound.max[1]
     }
 
-    return new Bounds2D(vec2.fromValues(minX, minY), vec2.fromValues(maxX, maxY))
+    return new Bounds2D(newVec2(minX, minY), newVec2(maxX, maxY))
   }
 
-  readonly min: vec2
-  readonly max: vec2
+  readonly min: Vec2
+  readonly max: Vec2
 
-  private constructor(min: vec2, max: vec2) {
+  private constructor(min: Vec2, max: Vec2) {
     this.min = min
     this.max = max
   }
@@ -79,12 +107,12 @@ export class Bounds2D {
     return this.max[1] - this.min[1]
   }
 
-  get size(): vec2 {
-    return vec2.fromValues(this.width, this.height)
+  get size(): Vec2 {
+    return newVec2(this.width, this.height)
   }
 
-  get center(): vec2 {
-    return vec2.fromValues((this.min[0] + this.max[0]) / 2, (this.min[1] + this.max[1]) / 2)
+  get center(): Vec2 {
+    return newVec2((this.min[0] + this.max[0]) / 2, (this.min[1] + this.max[1]) / 2)
   }
 
   get isEmpty(): boolean {
@@ -115,44 +143,43 @@ export class Bounds2D {
     }
   }
 
-  pad(amount: number | vec2): Bounds2D {
+  pad(amount: number | Vec2): Bounds2D {
     const padX = typeof amount === 'number' ? amount : amount[0]
     const padY = typeof amount === 'number' ? amount : amount[1]
 
-    const min = vec2.fromValues(this.min[0] - padX, this.min[1] - padY)
-    const max = vec2.fromValues(this.max[0] + padX, this.max[1] + padY)
+    const min = newVec2(this.min[0] - padX, this.min[1] - padY)
+    const max = newVec2(this.max[0] + padX, this.max[1] + padY)
     return new Bounds2D(min, max)
   }
 
-  contains(point: vec2): boolean {
+  contains(point: Vec2): boolean {
     return point[0] >= this.min[0] && point[0] <= this.max[0] && point[1] >= this.min[1] && point[1] <= this.max[1]
   }
 }
 
-export function midpoint(p1: vec2, p2: vec2): vec2 {
-  return vec2.lerp(vec2.create(), p1, p2, 0.5)
+export function midpoint(p1: Vec2, p2: Vec2): Vec2 {
+  return lerpVec2(p1, p2, 0.5) as Vec2
 }
 
-export function angle(from: vec2, to: vec2): number {
-  const direction = vec2.create()
-  vec2.subtract(direction, to, from)
+export function angle(from: Vec2, to: Vec2): number {
+  const direction = subVec2(to, from)
   return Math.atan2(direction[1], direction[0])
 }
 
-export function direction(source: vec2, target: vec2): vec2 {
-  return vec2.normalize(vec2.create(), vec2.subtract(vec2.create(), target, source))
+export function direction(source: Vec2, target: Vec2): Vec2 {
+  return normVec2(subVec2(target, source)) as Vec2
 }
 
-export function perpendicular(vector: vec2): vec2 {
+export function perpendicular(vector: Vec2): Vec2 {
   return perpendicularCCW(vector) // Default to counter-clockwise
 }
 
-export function perpendicularCCW(vector: vec2): vec2 {
-  return vec2.fromValues(-vector[1], vector[0]) // Rotate 90° counterclockwise
+export function perpendicularCCW(vector: Vec2): Vec2 {
+  return newVec2(-vector[1], vector[0]) // Rotate 90° counterclockwise
 }
 
-export function perpendicularCW(vector: vec2): vec2 {
-  return vec2.fromValues(vector[1], -vector[0]) // Rotate 90° clockwise
+export function perpendicularCW(vector: Vec2): Vec2 {
+  return newVec2(vector[1], -vector[0]) // Rotate 90° clockwise
 }
 
 export type Plane3D = 'xy' | 'xz' | 'yz'
@@ -160,7 +187,7 @@ export type Axis3D = 'x' | 'y' | 'z'
 
 export const complementaryAxis = (plane: Plane3D): Axis3D => (plane === 'xy' ? 'z' : plane === 'xz' ? 'y' : 'x')
 
-export const point2DTo3D = (point: vec2, plane: Plane3D, offset: Length): vec3 =>
+export const point2DTo3D = (point: Vec2, plane: Plane3D, offset: Length): vec3 =>
   plane === 'xy'
     ? vec3.fromValues(point[0], point[1], offset)
     : plane === 'xz'
@@ -274,11 +301,11 @@ export class Bounds3D {
 
     switch (plane) {
       case 'xy':
-        return Bounds2D.fromMinMax(vec2.fromValues(this.min[0], this.min[1]), vec2.fromValues(this.max[0], this.max[1]))
+        return Bounds2D.fromMinMax(newVec2(this.min[0], this.min[1]), newVec2(this.max[0], this.max[1]))
       case 'xz':
-        return Bounds2D.fromMinMax(vec2.fromValues(this.min[0], this.min[2]), vec2.fromValues(this.max[0], this.max[2]))
+        return Bounds2D.fromMinMax(newVec2(this.min[0], this.min[2]), newVec2(this.max[0], this.max[2]))
       case 'yz':
-        return Bounds2D.fromMinMax(vec2.fromValues(this.min[1], this.min[2]), vec2.fromValues(this.max[1], this.max[2]))
+        return Bounds2D.fromMinMax(newVec2(this.min[1], this.min[2]), newVec2(this.max[1], this.max[2]))
     }
   }
 

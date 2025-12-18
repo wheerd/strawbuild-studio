@@ -1,4 +1,4 @@
-import { vec2, vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { PerimeterId } from '@/building/model/ids'
@@ -8,8 +8,8 @@ import type { MaterialId } from '@/construction/materials/material'
 import type { HighlightedPolygon } from '@/construction/model'
 import type { ExtrudedShape } from '@/construction/shapes'
 import { TAG_PERIMETER_INSIDE, TAG_PERIMETER_OUTSIDE } from '@/construction/tags'
+import { type Polygon2D, type Vec2, copyVec2, newVec2 } from '@/shared/geometry'
 import * as geometry from '@/shared/geometry'
-import type { Polygon2D } from '@/shared/geometry'
 
 import { FullRingBeamAssembly } from './full'
 import type { FullRingBeamConfig } from './types'
@@ -43,10 +43,10 @@ let assembly: FullRingBeamAssembly
 beforeEach(() => {
   assembly = new FullRingBeamAssembly()
   simplifyPolygonMock.mockImplementation((polygon: Polygon2D) => ({
-    points: polygon.points.map(point => vec2.clone(point))
+    points: polygon.points.map(point => copyVec2(point))
   }))
   offsetPolygonMock.mockImplementation((polygon: Polygon2D, distance: number) => ({
-    points: polygon.points.map(point => vec2.fromValues(point[0] + distance, point[1] + distance))
+    points: polygon.points.map(point => newVec2(point[0] + distance, point[1] + distance))
   }))
 })
 
@@ -56,8 +56,8 @@ afterEach(() => {
 
 function createMockCorner(
   id: string,
-  insidePoint: vec2,
-  outsidePoint: vec2 = insidePoint,
+  insidePoint: Vec2,
+  outsidePoint: Vec2 = insidePoint,
   constructedByWall: 'previous' | 'next' = 'next'
 ): PerimeterCorner {
   return {
@@ -75,7 +75,7 @@ function createMockPerimeter(corners: PerimeterCorner[]): Perimeter {
     id: 'perimeter-1' as PerimeterId,
     storeyId: 'storey-1' as any,
     referenceSide: 'inside',
-    referencePolygon: corners.map(corner => vec2.clone(corner.insidePoint)),
+    referencePolygon: corners.map(corner => copyVec2(corner.insidePoint)),
     walls: [],
     corners
   }
@@ -93,14 +93,14 @@ describe('FullRingBeamAssembly', () => {
     let perimeter: Perimeter
     let expectedInsidePolygon: Polygon2D
     const simplifiedPolygon = {
-      points: [vec2.fromValues(1000, 1000), vec2.fromValues(2000, 2000), vec2.fromValues(3000, 0)]
+      points: [newVec2(1000, 1000), newVec2(2000, 2000), newVec2(3000, 0)]
     }
     beforeEach(() => {
       corners = [
-        createMockCorner('c1', vec2.fromValues(0, 0)),
-        createMockCorner('c2', vec2.fromValues(0, 3000)),
-        createMockCorner('c3', vec2.fromValues(4000, 3000)),
-        createMockCorner('c4', vec2.fromValues(4000, 0))
+        createMockCorner('c1', newVec2(0, 0)),
+        createMockCorner('c2', newVec2(0, 3000)),
+        createMockCorner('c3', newVec2(4000, 3000)),
+        createMockCorner('c4', newVec2(4000, 0))
       ]
       perimeter = createMockPerimeter(corners)
       expectedInsidePolygon = { points: corners.map(corner => corner.insidePoint) }
@@ -181,10 +181,10 @@ describe('FullRingBeamAssembly', () => {
 
     it('passes through offset distance variations to the geometry helpers', () => {
       const corners = [
-        createMockCorner('c1', vec2.fromValues(0, 0)),
-        createMockCorner('c2', vec2.fromValues(0, 1000)),
-        createMockCorner('c3', vec2.fromValues(1000, 1000)),
-        createMockCorner('c4', vec2.fromValues(1000, 0))
+        createMockCorner('c1', newVec2(0, 0)),
+        createMockCorner('c2', newVec2(0, 1000)),
+        createMockCorner('c3', newVec2(1000, 1000)),
+        createMockCorner('c4', newVec2(1000, 0))
       ]
       const perimeter = createMockPerimeter(corners)
 

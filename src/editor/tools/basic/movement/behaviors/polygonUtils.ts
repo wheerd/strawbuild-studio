@@ -1,8 +1,6 @@
-import { vec2 } from 'gl-matrix'
+import type { LineSegment2D, Vec2 } from '@/shared/geometry'
 
-import type { LineSegment2D } from '@/shared/geometry'
-
-export function createPolygonSegments(points: readonly vec2[]): LineSegment2D[] {
+export function createPolygonSegments(points: readonly Vec2[]): LineSegment2D[] {
   if (points.length < 2) return []
 
   const segments: LineSegment2D[] = []

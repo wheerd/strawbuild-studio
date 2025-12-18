@@ -1,4 +1,4 @@
-import { vec2, vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 import type { Manifold } from 'manifold-3d'
 
 import { type Face3D, getFacesFromManifold } from '@/construction/manifold/faces'
@@ -9,10 +9,12 @@ import {
   type Polygon2D,
   type PolygonWithHoles2D,
   type PolygonWithHoles3D,
+  type Vec2,
   canonicalPolygonKey,
   ensurePolygonIsClockwise,
   ensurePolygonIsCounterClockwise,
   minimumAreaBoundingBox,
+  newVec2,
   polygonEdgeCount,
   simplifyPolygon,
   simplifyPolygonWithHoles
@@ -195,10 +197,10 @@ function normalizedPolygon(polygon: PolygonWithHoles2D) {
   const cosAngle = Math.cos(-angle)
 
   const flipXY = size[0] > size[1]
-  const rotatePoint = (point: vec2) => {
+  const rotatePoint = (point: Vec2) => {
     const x = point[0] * cosAngle - point[1] * sinAngle
     const y = point[0] * sinAngle + point[1] * cosAngle
-    return vec2.fromValues(flipXY ? y : x, flipXY ? x : y)
+    return newVec2(flipXY ? y : x, flipXY ? x : y)
   }
 
   const rotatedPolygon: PolygonWithHoles2D = {
@@ -209,9 +211,7 @@ function normalizedPolygon(polygon: PolygonWithHoles2D) {
 
   const normalizePolygon = (polygon: Polygon2D) => {
     return {
-      points: polygon.points.map(p =>
-        vec2.fromValues(Math.round(p[0] - bounds.min[0]), Math.round(p[1] - bounds.min[1]))
-      )
+      points: polygon.points.map(p => newVec2(Math.round(p[0] - bounds.min[0]), Math.round(p[1] - bounds.min[1])))
     }
   }
   const normalizedPolygon: PolygonWithHoles2D = {

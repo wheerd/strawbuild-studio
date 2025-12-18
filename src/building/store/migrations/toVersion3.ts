@@ -1,5 +1,4 @@
-import { vec2 } from 'gl-matrix'
-
+import { type Vec2, copyVec2 } from '@/shared/geometry'
 import { ensurePolygonIsClockwise } from '@/shared/geometry/polygon'
 
 import type { Migration } from './shared'
@@ -17,14 +16,14 @@ export const migrateToVersion3: Migration = state => {
     if (Array.isArray(perimeter.referencePolygon) && perimeter.referencePolygon.length > 0) {
       perimeter.referencePolygon = perimeter.referencePolygon
         .map(point => toVec2(point))
-        .filter((point): point is vec2 => point !== null)
+        .filter((point): point is Vec2 => point !== null)
       continue
     }
 
     const referenceSide = perimeter.referenceSide === 'outside' ? 'outside' : 'inside'
     const corners = Array.isArray(perimeter.corners) ? perimeter.corners : []
 
-    const candidatePoints: vec2[] = []
+    const candidatePoints: Vec2[] = []
 
     for (const corner of corners) {
       if (!isRecord(corner)) {
@@ -49,6 +48,6 @@ export const migrateToVersion3: Migration = state => {
 
     const canonical = ensurePolygonIsClockwise({ points: candidatePoints })
     perimeter.referenceSide = referenceSide
-    perimeter.referencePolygon = canonical.points.map(point => vec2.clone(point))
+    perimeter.referencePolygon = canonical.points.map(point => copyVec2(point))
   }
 }

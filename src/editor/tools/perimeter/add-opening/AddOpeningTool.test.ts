@@ -1,7 +1,6 @@
-import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import '@/shared/geometry'
+import { newVec2 } from '@/shared/geometry'
 
 import { AddOpeningTool } from './AddOpeningTool'
 
@@ -26,7 +25,7 @@ describe('AddOpeningTool', () => {
   it('should reset state on activation', () => {
     // Set some non-default state
     addOpeningTool.state.hoveredPerimeterWall = {} as any
-    addOpeningTool.state.previewPosition = vec2.fromValues(100, 200)
+    addOpeningTool.state.previewPosition = newVec2(100, 200)
     addOpeningTool.state.canPlace = true
 
     addOpeningTool.onActivate()

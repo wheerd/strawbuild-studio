@@ -1,5 +1,6 @@
-import { vec2 } from 'gl-matrix'
 import { describe, expect, it, vi } from 'vitest'
+
+import { newVec2 } from '@/shared/geometry'
 
 import { applyMigrations } from './index'
 
@@ -41,11 +42,7 @@ describe('model store migrations', () => {
     const perimeter = migrated.perimeters.perimeter1
     expect(Array.isArray(perimeter.referencePolygon)).toBe(true)
     expect(perimeter.referencePolygon).toHaveLength(3)
-    expect(Array.from(perimeter.referencePolygon)).toEqual([
-      vec2.fromValues(100, 0),
-      vec2.fromValues(100, 100),
-      vec2.fromValues(0, 0)
-    ])
+    expect(Array.from(perimeter.referencePolygon)).toEqual([newVec2(100, 0), newVec2(100, 100), newVec2(0, 0)])
   })
 
   it('derives referencePolygon from corners when reference side is outside', () => {
@@ -66,11 +63,7 @@ describe('model store migrations', () => {
     const perimeter = migrated.perimeters.perimeter1
     expect(Array.isArray(perimeter.referencePolygon)).toBe(true)
     expect(perimeter.referencePolygon).toHaveLength(3)
-    expect(Array.from(perimeter.referencePolygon)).toEqual([
-      vec2.fromValues(-10, 0),
-      vec2.fromValues(10, 10),
-      vec2.fromValues(10, 0)
-    ])
+    expect(Array.from(perimeter.referencePolygon)).toEqual([newVec2(-10, 0), newVec2(10, 10), newVec2(10, 0)])
   })
 
   it('renames storey height to floorHeight and adds next floor thickness', () => {

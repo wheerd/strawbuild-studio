@@ -1,4 +1,3 @@
-import type { vec2 } from 'gl-matrix'
 
 import type { SelectableId } from '@/building/model/ids'
 import { isPerimeterId } from '@/building/model/ids'
@@ -6,7 +5,7 @@ import type { Perimeter } from '@/building/model/model'
 import type { StoreActions } from '@/building/store/types'
 import type { SnappingContext } from '@/editor/services/snapping/types'
 import type { MovementContext } from '@/editor/tools/basic/movement/MovementBehavior'
-import type {} from '@/shared/geometry'
+import { type Vec2 } from '@/shared/geometry'
 import { arePolygonsIntersecting } from '@/shared/geometry/polygon'
 
 import {
@@ -50,7 +49,7 @@ export class PerimeterMovementBehavior extends PolygonMovementBehavior<Perimeter
     return { perimeter, snapContext }
   }
 
-  protected getPolygonPoints(context: MovementContext<PerimeterEntityContext>): readonly vec2[] {
+  protected getPolygonPoints(context: MovementContext<PerimeterEntityContext>): readonly Vec2[] {
     return context.entity.perimeter.referencePolygon
   }
 
@@ -65,7 +64,7 @@ export class PerimeterMovementBehavior extends PolygonMovementBehavior<Perimeter
     return super.commitMovement(movementState, context)
   }
 
-  applyRelativeMovement(deltaDifference: vec2, context: MovementContext<PerimeterEntityContext>): boolean {
+  applyRelativeMovement(deltaDifference: Vec2, context: MovementContext<PerimeterEntityContext>): boolean {
     if (!this.isDeltaValid(deltaDifference, context)) {
       return false
     }
@@ -73,12 +72,12 @@ export class PerimeterMovementBehavior extends PolygonMovementBehavior<Perimeter
     return super.applyRelativeMovement(deltaDifference, context)
   }
 
-  protected applyMovementDelta(delta: vec2, context: MovementContext<PerimeterEntityContext>): boolean {
+  protected applyMovementDelta(delta: Vec2, context: MovementContext<PerimeterEntityContext>): boolean {
     const wallId = context.entity.perimeter.id
     return context.store.movePerimeter(wallId, delta)
   }
 
-  private isDeltaValid(delta: vec2, context: MovementContext<PerimeterEntityContext>): boolean {
+  private isDeltaValid(delta: Vec2, context: MovementContext<PerimeterEntityContext>): boolean {
     const previewOutside = this.translatePoints(
       context.entity.perimeter.corners.map(corner => corner.outsidePoint),
       delta

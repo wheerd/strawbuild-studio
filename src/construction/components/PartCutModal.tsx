@@ -1,11 +1,12 @@
 import { Grid } from '@radix-ui/themes'
-import { mat4, vec2, vec3 } from 'gl-matrix'
+import { mat4, vec3 } from 'gl-matrix'
 import React, { useMemo, useRef } from 'react'
 
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
 import { type AutoMeasurement, processMeasurements } from '@/construction/measurements'
 import { BaseModal } from '@/shared/components/BaseModal'
 import { SVGViewport, type SVGViewportRef } from '@/shared/components/SVGViewport'
+import { distVec2, newVec2 } from '@/shared/geometry'
 import { Bounds2D, type Polygon2D, type PolygonWithHoles2D } from '@/shared/geometry'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 import { formatLength } from '@/shared/utils/formatting'
@@ -28,8 +29,8 @@ export function PartCutModal({
   const viewportRef = useRef<SVGViewportRef>(null)
 
   const flippedPolygon: PolygonWithHoles2D = {
-    outer: { points: polygon.outer.points.map(p => vec2.fromValues(p[1], p[0])) },
-    holes: polygon.holes.map(h => ({ points: h.points.map(p => vec2.fromValues(p[1], p[0])) }))
+    outer: { points: polygon.outer.points.map(p => newVec2(p[1], p[0])) },
+    holes: polygon.holes.map(h => ({ points: h.points.map(p => newVec2(p[1], p[0])) }))
   }
 
   const polygonPath = useMemo(() => polygonWithHolesToSvgPath(flippedPolygon), [flippedPolygon])
@@ -79,8 +80,8 @@ function Measurements({ bounds, polygon }: { bounds: Bounds2D; polygon: PolygonW
   const cornerPoints = [
     bounds.min,
     bounds.max,
-    vec2.fromValues(bounds.min[0], bounds.max[1]),
-    vec2.fromValues(bounds.max[0], bounds.min[1])
+    newVec2(bounds.min[0], bounds.max[1]),
+    newVec2(bounds.max[0], bounds.min[1])
   ]
   const bounds3D = bounds.toBounds3D('xy', 0, 1)
 
@@ -167,7 +168,7 @@ function Measurements({ bounds, polygon }: { bounds: Bounds2D; polygon: PolygonW
     group.lines.flatMap((line, rowIndex) =>
       line.map(measurement => {
         // Calculate distance-based offset: distance from chosen point to its projection on line + row offset
-        const baseOffset = vec2.distance(measurement.startPoint, measurement.startOnLine)
+        const baseOffset = distVec2(measurement.startPoint, measurement.startOnLine)
         const rowOffset = 10 * (rowIndex + 1.2)
         const totalOffset = baseOffset + rowOffset
 

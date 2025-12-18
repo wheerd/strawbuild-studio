@@ -1,21 +1,31 @@
-import { vec2 } from 'gl-matrix'
-
-import type { Length } from './basic'
-import { direction, perpendicularCCW, perpendicularCW } from './basic'
+import type { Length, Vec2 } from './basic'
+import {
+  copyVec2,
+  direction,
+  distVec2,
+  dotVec2,
+  lenSqrVec2,
+  lenVec2,
+  normVec2,
+  perpendicularCCW,
+  perpendicularCW,
+  scaleAddVec2,
+  subVec2
+} from './basic'
 
 // Line-related types
 export interface Line2D {
-  point: vec2
-  direction: vec2 // Normalized direction vector
+  point: Vec2
+  direction: Vec2 // Normalized direction vector
 }
 
 export interface LineSegment2D {
-  start: vec2
-  end: vec2
+  start: Vec2
+  end: Vec2
 }
 
 // Line operations
-export function lineIntersection(line1: Line2D, line2: Line2D): vec2 | null {
+export function lineIntersection(line1: Line2D, line2: Line2D): Vec2 | null {
   const { point: p1, direction: d1 } = line1
   const { point: p2, direction: d2 } = line2
 
@@ -26,67 +36,66 @@ export function lineIntersection(line1: Line2D, line2: Line2D): vec2 | null {
   }
 
   // Calculate intersection using parametric form
-  const dp = vec2.subtract(vec2.create(), p2, p1)
+  const dp = subVec2(p2, p1)
   const t1 = (dp[0] * d2[1] - dp[1] * d2[0]) / cross
 
-  return vec2.scaleAndAdd(vec2.create(), p1, d1, t1)
+  return scaleAddVec2(p1, d1, t1)
 }
 
-export function lineFromPoints(p1: vec2, p2: vec2): Line2D | null {
-  const direction = vec2.subtract(vec2.create(), p2, p1)
-  const length = vec2.length(direction)
+export function lineFromPoints(p1: Vec2, p2: Vec2): Line2D | null {
+  const direction = subVec2(p2, p1)
+  const length = lenVec2(direction)
 
   if (length === 0) return null
 
   return {
-    point: vec2.copy(vec2.create(), p1),
-    direction: vec2.normalize(vec2.create(), direction)
+    point: copyVec2(p1),
+    direction: normVec2(direction)
   }
 }
 
-export function distanceToInfiniteLine(point: vec2, line: Line2D): Length {
-  const toPoint = vec2.subtract(vec2.create(), point, line.point)
+export function distanceToInfiniteLine(point: Vec2, line: Line2D): Length {
+  const toPoint = subVec2(point, line.point)
   const crossProduct = Math.abs(toPoint[0] * line.direction[1] - toPoint[1] * line.direction[0])
   return crossProduct
 }
 
-export function projectPointOntoLine(point: vec2, line: Line2D): vec2 {
-  const toPoint = vec2.subtract(vec2.create(), point, line.point)
-  const projection = vec2.dot(toPoint, line.direction)
+export function projectPointOntoLine(point: Vec2, line: Line2D): Vec2 {
+  const toPoint = subVec2(point, line.point)
+  const projection = dotVec2(toPoint, line.direction)
 
-  return vec2.scaleAndAdd(vec2.create(), line.point, line.direction, projection)
+  return scaleAddVec2(line.point, line.direction, projection)
 }
 
 export function lineFromSegment(segment: LineSegment2D): Line2D {
   return {
-    point: vec2.copy(vec2.create(), segment.start),
+    point: copyVec2(segment.start),
     direction: direction(segment.start, segment.end)
   }
 }
 
-export function distanceToLineSegment(point: vec2, line: LineSegment2D): Length {
-  const lineVector = vec2.subtract(vec2.create(), line.end, line.start)
-  const pointVector = vec2.subtract(vec2.create(), point, line.start)
+export function distanceToLineSegment(point: Vec2, line: LineSegment2D): Length {
+  const lineVector = subVec2(line.end, line.start)
+  const pointVector = subVec2(point, line.start)
 
-  const lineLengthSquared = vec2.squaredLength(lineVector)
+  const lineLengthSquared = lenSqrVec2(lineVector)
 
   if (lineLengthSquared === 0) {
     // Line segment is actually a point
-    return vec2.distance(point, line.start)
+    return distVec2(point, line.start)
   }
 
   // Calculate parameter t that represents position along the segment
-  let t = vec2.dot(pointVector, lineVector) / lineLengthSquared
+  let t = dotVec2(pointVector, lineVector) / lineLengthSquared
 
-  // Clamp t to vec2.fromValues(0, 1) to stay within the segment
+  // Clamp t to newVec2(0, 1) to stay within the segment
   t = Math.max(0, Math.min(1, t))
 
   // Find the closest point on the segment
-  const closest = vec2.create()
-  vec2.scaleAndAdd(closest, line.start, lineVector, t)
+  const closest = scaleAddVec2(line.start, lineVector, t)
 
   // Return distance from point to closest point on segment
-  return vec2.distance(point, closest)
+  return distVec2(point, closest)
 }
 
 /**
@@ -94,7 +103,7 @@ export function distanceToLineSegment(point: vec2, line: LineSegment2D): Length 
  * compute two parallel offset line segments with the given direction d
  * so that all the points lie between those two line segments
  */
-export function computeBoundsLines(d: vec2, points: vec2[]): { left: LineSegment2D; right: LineSegment2D } {
+export function computeBoundsLines(d: Vec2, points: Vec2[]): { left: LineSegment2D; right: LineSegment2D } {
   const A = points[0]
   const n1 = perpendicularCCW(d)
   const n2 = perpendicularCW(d)
@@ -103,29 +112,26 @@ export function computeBoundsLines(d: vec2, points: vec2[]): { left: LineSegment
   let maxOffset1 = 0
   let maxOffset2 = 0
   for (const p of points) {
-    const ap = vec2.create()
-    vec2.sub(ap, p, A)
-    const dist1 = vec2.dot(n1, ap) // signed offset along n1
+    const ap = subVec2(p, A)
+    const dist1 = dotVec2(n1, ap) // signed offset along n1
     if (dist1 > maxOffset1) {
       maxOffset1 = dist1
     }
-    const dist2 = vec2.dot(n2, ap) // signed offset along n2
+    const dist2 = dotVec2(n2, ap) // signed offset along n2
     if (dist2 > maxOffset2) {
       maxOffset2 = dist2
     }
   }
 
-  const leftOrigin = vec2.create()
-  vec2.scaleAndAdd(leftOrigin, A, n1, maxOffset1)
-  const rightOrigin = vec2.create()
-  vec2.scaleAndAdd(rightOrigin, A, n2, maxOffset2)
+  const leftOrigin = scaleAddVec2(A, n1, maxOffset1)
+  const rightOrigin = scaleAddVec2(A, n2, maxOffset2)
 
   // Find min and max projections along the direction to create line segments
   let minProjection = Infinity
   let maxProjection = -Infinity
 
   for (const p of points) {
-    const projection = vec2.dot(vec2.subtract(vec2.create(), p, A), d)
+    const projection = dotVec2(subVec2(p, A), d)
     if (projection < minProjection) {
       minProjection = projection
     }
@@ -135,15 +141,11 @@ export function computeBoundsLines(d: vec2, points: vec2[]): { left: LineSegment
   }
 
   // Create line segments with proper start and end points
-  const leftStart = vec2.create()
-  vec2.scaleAndAdd(leftStart, leftOrigin, d, minProjection)
-  const leftEnd = vec2.create()
-  vec2.scaleAndAdd(leftEnd, leftOrigin, d, maxProjection)
+  const leftStart = scaleAddVec2(leftOrigin, d, minProjection)
+  const leftEnd = scaleAddVec2(leftOrigin, d, maxProjection)
 
-  const rightStart = vec2.create()
-  vec2.scaleAndAdd(rightStart, rightOrigin, d, minProjection)
-  const rightEnd = vec2.create()
-  vec2.scaleAndAdd(rightEnd, rightOrigin, d, maxProjection)
+  const rightStart = scaleAddVec2(rightOrigin, d, minProjection)
+  const rightEnd = scaleAddVec2(rightOrigin, d, maxProjection)
 
   return {
     left: {
@@ -159,7 +161,7 @@ export function computeBoundsLines(d: vec2, points: vec2[]): { left: LineSegment
 
 export function offsetLine(line: Line2D, offset: Length): Line2D {
   return {
-    point: vec2.scaleAndAdd(vec2.create(), line.point, perpendicularCW(line.direction), offset),
+    point: scaleAddVec2(line.point, perpendicularCW(line.direction), offset),
     direction: line.direction
   }
 }

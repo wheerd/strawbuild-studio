@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { constructFloorLayers } from '@/construction/floors/layers'
 import type { FloorAssemblyConfigBase, FloorLayersConfig } from '@/construction/floors/types'
 import { TAG_FLOOR_LAYER_BOTTOM, TAG_FLOOR_LAYER_TOP, TAG_LAYERS } from '@/construction/tags'
-import type { Polygon2D } from '@/shared/geometry'
+import { type Polygon2D, newVec2 } from '@/shared/geometry'
 
 vi.mock('@/shared/geometry', async importOriginal => {
   return {
@@ -49,12 +49,7 @@ const createConfig = (layers: FloorLayersConfig): FloorAssemblyConfigBase => ({
   layers
 })
 
-const square = [
-  [0, 0],
-  [3000, 0],
-  [3000, 3000],
-  [0, 3000]
-]
+const square = [newVec2(0, 0), newVec2(3000, 0), newVec2(3000, 3000), newVec2(0, 3000)]
 
 describe('constructFloorLayers', () => {
   it('creates floor finish layers when top layers are configured', () => {

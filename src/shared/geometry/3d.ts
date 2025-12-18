@@ -1,5 +1,6 @@
-import { vec2, vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 
+import { newVec2 } from '@/shared/geometry'
 import type { Polygon2D, Polygon3D } from '@/shared/geometry/polygon'
 
 export function computeTriangleNormal(a: vec3, b: vec3, c: vec3): vec3 {
@@ -33,5 +34,5 @@ export function buildPlaneBasis(n: vec3): [vec3, vec3] {
 }
 
 export const projectPolygonTo2D = (polygon: Polygon3D, u: vec3, v: vec3): Polygon2D => ({
-  points: polygon.points.map(p => vec2.fromValues(vec3.dot(p, u), vec3.dot(p, v)))
+  points: polygon.points.map(p => newVec2(vec3.dot(p, u), vec3.dot(p, v)))
 })

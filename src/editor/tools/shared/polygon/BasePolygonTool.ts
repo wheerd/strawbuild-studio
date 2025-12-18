@@ -1,18 +1,24 @@
-import { vec2 } from 'gl-matrix'
-
 import { viewportActions } from '@/editor/hooks/useViewportStore'
-import { activateLengthInput, deactivateLengthInput } from '@/editor/services/length-input'
 import type { LengthInputPosition } from '@/editor/services/length-input'
+import { activateLengthInput, deactivateLengthInput } from '@/editor/services/length-input'
 import { SnappingService } from '@/editor/services/snapping'
 import type { SnapResult, SnappingContext } from '@/editor/services/snapping/types'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
 import type { CanvasEvent, CursorStyle } from '@/editor/tools/system/types'
-import type { Length, LineSegment2D, Polygon2D } from '@/shared/geometry'
+import {
+  type Length,
+  type LineSegment2D,
+  type Polygon2D,
+  type Vec2,
+  distSqrVec2,
+  newVec2,
+  scaleAddVec2
+} from '@/shared/geometry'
 import { direction, wouldClosingPolygonSelfIntersect, wouldPolygonSelfIntersect } from '@/shared/geometry'
 
 export interface PolygonToolStateBase {
-  points: vec2[]
-  pointer: vec2
+  points: Vec2[]
+  pointer: Vec2
   snapResult?: SnapResult
   snapContext: SnappingContext
   isCurrentSegmentValid: boolean
@@ -33,8 +39,8 @@ export abstract class BasePolygonTool<TState extends PolygonToolStateBase> exten
   protected constructor(initialState: Omit<TState, keyof PolygonToolStateBase>) {
     super()
     this.state = {
-      points: [] as vec2[],
-      pointer: vec2.fromValues(0, 0),
+      points: [] as Vec2[],
+      pointer: newVec2(0, 0),
       snapResult: undefined,
       isCurrentSegmentValid: true,
       isClosingSegmentValid: true,
@@ -65,7 +71,7 @@ export abstract class BasePolygonTool<TState extends PolygonToolStateBase> exten
       if (this.state.lengthOverride && this.state.points.length > 0) {
         const lastPoint = this.state.points[this.state.points.length - 1]
         const dir = direction(lastPoint, snapCoords)
-        pointToAdd = vec2.scaleAndAdd(vec2.create(), lastPoint, dir, this.state.lengthOverride)
+        pointToAdd = scaleAddVec2(lastPoint, dir, this.state.lengthOverride)
       }
 
       this.state.points.push(pointToAdd)
@@ -153,7 +159,7 @@ export abstract class BasePolygonTool<TState extends PolygonToolStateBase> exten
   /**
    * Position used for overlay preview and ghost point rendering.
    */
-  public getPreviewPosition(): vec2 {
+  public getPreviewPosition(): Vec2 {
     const currentPos = this.state.snapResult?.position ?? this.state.pointer
 
     if (!this.state.lengthOverride || this.state.points.length === 0) {
@@ -162,7 +168,7 @@ export abstract class BasePolygonTool<TState extends PolygonToolStateBase> exten
 
     const lastPoint = this.state.points[this.state.points.length - 1]
     const dir = direction(lastPoint, currentPos)
-    return vec2.scaleAndAdd(vec2.create(), lastPoint, dir, this.state.lengthOverride)
+    return scaleAddVec2(lastPoint, dir, this.state.lengthOverride)
   }
 
   /**
@@ -175,7 +181,7 @@ export abstract class BasePolygonTool<TState extends PolygonToolStateBase> exten
     this.triggerRender()
   }
 
-  protected createBaseSnapContext(points: readonly vec2[]): SnappingContext {
+  protected createBaseSnapContext(points: readonly Vec2[]): SnappingContext {
     const referenceLineSegments: LineSegment2D[] = []
     for (let i = 1; i < points.length; i += 1) {
       referenceLineSegments.push({ start: points[i - 1], end: points[i] })
@@ -205,7 +211,7 @@ export abstract class BasePolygonTool<TState extends PolygonToolStateBase> exten
     return distance * distance
   }
 
-  protected buildPolygon(points: vec2[]): Polygon2D {
+  protected buildPolygon(points: Vec2[]): Polygon2D {
     return { points }
   }
 
@@ -227,7 +233,7 @@ export abstract class BasePolygonTool<TState extends PolygonToolStateBase> exten
 
   protected abstract onPolygonCompleted(polygon: Polygon2D): void
 
-  private findSnap(target: vec2): SnapResult | undefined {
+  private findSnap(target: Vec2): SnapResult | undefined {
     const result = this.snappingService.findSnapResult(target, this.state.snapContext)
     return result ?? undefined
   }
@@ -238,7 +244,7 @@ export abstract class BasePolygonTool<TState extends PolygonToolStateBase> exten
     }
     const firstPoint = this.state.points[0]
     const snapPos = this.state.snapResult.position
-    return vec2.squaredDistance(firstPoint, snapPos) < this.getSnapToFirstPointDistanceSquared()
+    return distSqrVec2(firstPoint, snapPos) < this.getSnapToFirstPointDistanceSquared()
   }
 
   private updateValidation(): void {
@@ -314,7 +320,7 @@ export abstract class BasePolygonTool<TState extends PolygonToolStateBase> exten
 
   private resetDrawingState(): void {
     this.state.points = []
-    this.state.pointer = vec2.fromValues(0, 0)
+    this.state.pointer = newVec2(0, 0)
     this.state.snapResult = undefined
     this.state.isCurrentSegmentValid = true
     this.state.isClosingSegmentValid = true

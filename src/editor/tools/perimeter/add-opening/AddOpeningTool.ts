@@ -1,5 +1,3 @@
-import { vec2 } from 'gl-matrix'
-
 import {
   type EntityType,
   type OpeningAssemblyId,
@@ -17,7 +15,7 @@ import { getSelectionActions } from '@/editor/hooks/useSelectionStore'
 import { getViewModeActions } from '@/editor/hooks/useViewMode'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
 import type { CanvasEvent, CursorStyle, ToolImplementation } from '@/editor/tools/system/types'
-import type { Length } from '@/shared/geometry'
+import { type Length, type Vec2, distVec2, newVec2 } from '@/shared/geometry'
 import { lineFromSegment, projectPointOntoLine } from '@/shared/geometry'
 
 import { AddOpeningToolInspector } from './AddOpeningToolInspector'
@@ -45,7 +43,7 @@ interface AddOpeningToolState {
   // Interactive state
   hoveredPerimeterWall?: PerimeterWallHit
   offset?: Length
-  previewPosition?: vec2
+  previewPosition?: Vec2
   canPlace: boolean
   snapDirection?: 'left' | 'right' // Direction the opening was snapped from user's preferred position
 }
@@ -167,7 +165,7 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
   /**
    * Calculate center offset from pointer position projected onto wall
    */
-  private calculateCenterOffsetFromPointerPosition(pointerPos: vec2, wall: PerimeterWall): Length {
+  private calculateCenterOffsetFromPointerPosition(pointerPos: Vec2, wall: PerimeterWall): Length {
     // Convert LineWall2D to Line2D for projection
     const line = lineFromSegment(wall.insideLine)
     if (!line) {
@@ -179,7 +177,7 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
 
     // Calculate offset from wall start to CENTER of opening
     const startPoint = wall.insideLine.start
-    const centerOffset = vec2.distance(startPoint, projectedPoint)
+    const centerOffset = distVec2(startPoint, projectedPoint)
 
     // Round center offset to 10mm increments
     const roundedCenterOffset = Math.round(centerOffset / 10) * 10
@@ -190,11 +188,11 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
   /**
    * Convert offset to actual position on the wall
    */
-  private offsetToPosition(offset: Length, wall: PerimeterWall): vec2 {
+  private offsetToPosition(offset: Length, wall: PerimeterWall): Vec2 {
     const startPoint = wall.insideLine.start
     const direction = wall.direction
 
-    return vec2.fromValues(startPoint[0] + direction[0] * offset, startPoint[1] + direction[1] * offset)
+    return newVec2(startPoint[0] + direction[0] * offset, startPoint[1] + direction[1] * offset)
   }
 
   /**

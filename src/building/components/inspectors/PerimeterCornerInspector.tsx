@@ -1,6 +1,5 @@
 import { ExclamationTriangleIcon, PinLeftIcon, PinRightIcon, TrashIcon } from '@radix-ui/react-icons'
 import { Box, Callout, DataList, Flex, Heading, IconButton, Separator, Text } from '@radix-ui/themes'
-import { vec2 } from 'gl-matrix'
 import { useCallback, useMemo } from 'react'
 
 import type { PerimeterCornerId, PerimeterId } from '@/building/model/ids'
@@ -9,7 +8,7 @@ import { useConfigActions } from '@/construction/config/store'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon, SplitWallIcon } from '@/shared/components/Icons'
-import { Bounds2D, type Polygon2D } from '@/shared/geometry'
+import { Bounds2D, type Polygon2D, type Vec2, copyVec2, midpoint } from '@/shared/geometry'
 import { wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 
 interface PerimeterCornerInspectorProps {
@@ -92,14 +91,8 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
     if (!corner || !previousWall || !nextWall) return
 
     // Calculate midpoints of adjacent walls
-    const prevMidpoint: vec2 = [
-      (previousWall.insideLine.start[0] + previousWall.insideLine.end[0]) / 2,
-      (previousWall.insideLine.start[1] + previousWall.insideLine.end[1]) / 2
-    ]
-    const nextMidpoint: vec2 = [
-      (nextWall.insideLine.start[0] + nextWall.insideLine.end[0]) / 2,
-      (nextWall.insideLine.start[1] + nextWall.insideLine.end[1]) / 2
-    ]
+    const prevMidpoint = midpoint(previousWall.insideLine.start, previousWall.insideLine.end)
+    const nextMidpoint = midpoint(nextWall.insideLine.start, nextWall.insideLine.end)
 
     const points = [corner.insidePoint, corner.outsidePoint, prevMidpoint, nextMidpoint]
     const bounds = Bounds2D.fromPoints(points)
@@ -115,7 +108,7 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
     }
 
     // Check if removal would cause self-intersection
-    const newBoundaryPoints: vec2[] = outerWall.referencePolygon.map(point => vec2.clone(point))
+    const newBoundaryPoints: Vec2[] = outerWall.referencePolygon.map(point => copyVec2(point))
     newBoundaryPoints.splice(cornerIndex, 1)
 
     const newBoundary: Polygon2D = { points: newBoundaryPoints }

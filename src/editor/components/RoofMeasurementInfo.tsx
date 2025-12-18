@@ -4,7 +4,7 @@ import { type ComponentProps, type JSX, useId } from 'react'
 
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
 import { BaseModal } from '@/shared/components/BaseModal'
-import { degreesToRadians } from '@/shared/geometry'
+import { degreesToRadians, newVec2 } from '@/shared/geometry'
 
 export type Measurement = 'roofInsideOverlap' | 'roofOutsideOverlap' | 'totalRoofThickness'
 
@@ -326,7 +326,7 @@ export function ConstructionSchematic({
   const roofMeasurements = (
     <g key="roof-measurements">
       {renderMeasurement('totalRoofThickness', {
-        startPoint: [
+        startPoint: newVec2(
           roofRight - marginRight - (roofAngle > 0 ? totalThicknessDeltaX : 0),
           roofInsideCornerY -
             roofDelta +
@@ -334,8 +334,8 @@ export function ConstructionSchematic({
               ? -roofConstructionThicknessVertical - roofTopThicknessVertical
               : roofBottomThicknessVertical - totalThicknessDeltaY) +
             marginRightDelta
-        ],
-        endPoint: [
+        ),
+        endPoint: newVec2(
           roofRight - marginRight + (roofAngle < 0 ? totalThicknessDeltaX : 0),
           roofInsideCornerY -
             roofDelta +
@@ -343,7 +343,7 @@ export function ConstructionSchematic({
               ? -roofConstructionThicknessVertical - roofTopThicknessVertical + totalThicknessDeltaY
               : roofBottomThicknessVertical) +
             marginRightDelta
-        ],
+        ),
         label: 'Roof\nThickness',
         labelOrientation: 'perpendicular',
         fontSize: 50,
@@ -351,8 +351,8 @@ export function ConstructionSchematic({
       })}
 
       {renderMeasurement('roofInsideOverlap', {
-        startPoint: [wallRight, roofInsideCornerY],
-        endPoint: [wallRight, wallAssemblyTopY],
+        startPoint: newVec2(wallRight, roofInsideCornerY),
+        endPoint: newVec2(wallRight, wallAssemblyTopY),
         label: 'Inside\nOverlap',
         labelOrientation: 'perpendicular',
         offset: 80,
@@ -361,8 +361,8 @@ export function ConstructionSchematic({
       })}
 
       {renderMeasurement('roofOutsideOverlap', {
-        startPoint: [wallLeft, roofOutsideCornerY],
-        endPoint: [wallLeft, wallAssemblyTopY],
+        startPoint: newVec2(wallLeft, roofOutsideCornerY),
+        endPoint: newVec2(wallLeft, wallAssemblyTopY),
         label: 'Outside\nOverlap',
         labelOrientation: 'perpendicular',
         offset: -80,

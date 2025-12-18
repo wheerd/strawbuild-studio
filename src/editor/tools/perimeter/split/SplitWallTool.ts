@@ -1,5 +1,3 @@
-import { vec2 } from 'gl-matrix'
-
 import type { Perimeter, PerimeterWall } from '@/building/model'
 import type { PerimeterId, PerimeterWallId } from '@/building/model/ids'
 import { isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
@@ -10,7 +8,7 @@ import { getViewModeActions } from '@/editor/hooks/useViewMode'
 import { getToolActions } from '@/editor/tools/system'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
 import type { CanvasEvent, ToolImplementation } from '@/editor/tools/system/types'
-import type { Length } from '@/shared/geometry'
+import { type Length, type Vec2, dotVec2, subVec2 } from '@/shared/geometry'
 import { distanceToLineSegment } from '@/shared/geometry'
 
 import { SplitWallToolInspector } from './SplitWallToolInspector'
@@ -158,15 +156,15 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
     return { valid: true }
   }
 
-  private positionFromWorldPoint(wall: PerimeterWall, worldPoint: vec2): Length | null {
+  private positionFromWorldPoint(wall: PerimeterWall, worldPoint: Vec2): Length | null {
     const insideDist = distanceToLineSegment(worldPoint, wall.insideLine)
     const outsideDist = distanceToLineSegment(worldPoint, wall.outsideLine)
     if (Math.max(insideDist, outsideDist) <= wall.thickness) {
       // Get signed distance along wall direction
       const referenceSide = this.state.perimeter?.referenceSide ?? 'inside'
       const baselineStart = referenceSide === 'outside' ? wall.outsideLine.start : wall.insideLine.start
-      const toPoint = vec2.subtract(vec2.create(), worldPoint, baselineStart)
-      const signedDistance = vec2.dot(toPoint, wall.direction)
+      const toPoint = subVec2(worldPoint, baselineStart)
+      const signedDistance = dotVec2(toPoint, wall.direction)
 
       // Clamp to wall bounds
       const clampedDistance = Math.max(0, Math.min(signedDistance, wall.wallLength))

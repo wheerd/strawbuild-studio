@@ -1,9 +1,9 @@
-import { mat4, vec2, vec3 } from 'gl-matrix'
+import { mat4, vec3 } from 'gl-matrix'
 import { describe, expect, it } from 'vitest'
 
 import { IDENTITY, translate } from '@/construction/geometry'
 import type { ConstructionIssueId } from '@/construction/results'
-import { Bounds3D } from '@/shared/geometry'
+import { Bounds3D, newVec2 } from '@/shared/geometry'
 
 import { type ConstructionModel, mergeModels, transformModel } from './model'
 
@@ -18,7 +18,7 @@ describe('mergeModels', () => {
           areaType: 'corner',
           renderPosition: 'top',
           plane: 'xz',
-          polygon: { points: [vec2.fromValues(0, 0), vec2.fromValues(1, 0), vec2.fromValues(1, 1)] },
+          polygon: { points: [newVec2(0, 0), newVec2(1, 0), newVec2(1, 1)] },
           cancelKey: 'corner-1'
         }
       ],
@@ -36,7 +36,7 @@ describe('mergeModels', () => {
           areaType: 'corner',
           renderPosition: 'top',
           plane: 'xz',
-          polygon: { points: [vec2.fromValues(2, 0), vec2.fromValues(3, 0), vec2.fromValues(3, 1)] },
+          polygon: { points: [newVec2(2, 0), newVec2(3, 0), newVec2(3, 1)] },
           cancelKey: 'corner-1'
         }
       ],
@@ -60,7 +60,7 @@ describe('mergeModels', () => {
           areaType: 'corner',
           renderPosition: 'top',
           plane: 'xz',
-          polygon: { points: [vec2.fromValues(0, 0), vec2.fromValues(1, 0), vec2.fromValues(1, 1)] }
+          polygon: { points: [newVec2(0, 0), newVec2(1, 0), newVec2(1, 1)] }
         }
       ],
       errors: [],
@@ -77,7 +77,7 @@ describe('mergeModels', () => {
           areaType: 'corner',
           renderPosition: 'top',
           plane: 'xz',
-          polygon: { points: [vec2.fromValues(2, 0), vec2.fromValues(3, 0), vec2.fromValues(3, 1)] }
+          polygon: { points: [newVec2(2, 0), newVec2(3, 0), newVec2(3, 1)] }
         }
       ],
       errors: [],
@@ -100,7 +100,7 @@ describe('mergeModels', () => {
           areaType: 'corner',
           renderPosition: 'top',
           plane: 'xz',
-          polygon: { points: [vec2.fromValues(0, 0), vec2.fromValues(1, 0), vec2.fromValues(1, 1)] },
+          polygon: { points: [newVec2(0, 0), newVec2(1, 0), newVec2(1, 1)] },
           cancelKey: 'corner-1'
         },
         {
@@ -108,7 +108,7 @@ describe('mergeModels', () => {
           areaType: 'window',
           renderPosition: 'top',
           plane: 'xz',
-          polygon: { points: [vec2.fromValues(0, 0), vec2.fromValues(1, 0), vec2.fromValues(1, 1)] }
+          polygon: { points: [newVec2(0, 0), newVec2(1, 0), newVec2(1, 1)] }
         }
       ],
       errors: [],
@@ -125,7 +125,7 @@ describe('mergeModels', () => {
           areaType: 'corner',
           renderPosition: 'top',
           plane: 'xz',
-          polygon: { points: [vec2.fromValues(2, 0), vec2.fromValues(3, 0), vec2.fromValues(3, 1)] },
+          polygon: { points: [newVec2(2, 0), newVec2(3, 0), newVec2(3, 1)] },
           cancelKey: 'corner-1'
         }
       ],
@@ -151,7 +151,7 @@ describe('mergeModels', () => {
           areaType: 'corner',
           renderPosition: 'top',
           plane: 'xz',
-          polygon: { points: [vec2.fromValues(0, 0), vec2.fromValues(1, 0), vec2.fromValues(1, 1)] },
+          polygon: { points: [newVec2(0, 0), newVec2(1, 0), newVec2(1, 1)] },
           cancelKey: 'corner-1'
         }
       ],
@@ -169,7 +169,7 @@ describe('mergeModels', () => {
           areaType: 'corner',
           renderPosition: 'top',
           plane: 'xz',
-          polygon: { points: [vec2.fromValues(2, 0), vec2.fromValues(3, 0), vec2.fromValues(3, 1)] },
+          polygon: { points: [newVec2(2, 0), newVec2(3, 0), newVec2(3, 1)] },
           cancelKey: 'corner-2'
         }
       ],
@@ -269,7 +269,7 @@ describe('transformModel', () => {
           areaType: 'corner',
           renderPosition: 'top',
           plane: 'xz',
-          polygon: { points: [vec2.fromValues(0, 0), vec2.fromValues(1, 0), vec2.fromValues(1, 1)] }
+          polygon: { points: [newVec2(0, 0), newVec2(1, 0), newVec2(1, 1)] }
         }
       ],
       errors: [],

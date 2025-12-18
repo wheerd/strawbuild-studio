@@ -1,13 +1,12 @@
 import { render } from '@testing-library/react'
-import { vec2 } from 'gl-matrix'
 
-import '@/shared/geometry'
+import { newVec2 } from '@/shared/geometry'
 
 import { LengthIndicator } from './LengthIndicator'
 
 describe('LengthIndicator', () => {
-  const startPoint = vec2.fromValues(0, 0)
-  const endPoint = vec2.fromValues(1000, 0)
+  const startPoint = newVec2(0, 0)
+  const endPoint = newVec2(1000, 0)
 
   it('renders without crashing', () => {
     const { container } = render(<LengthIndicator startPoint={startPoint} endPoint={endPoint} />)
@@ -65,7 +64,7 @@ describe('LengthIndicator', () => {
   })
 
   it('handles zero-length measurements', () => {
-    const samePoint = vec2.fromValues(100, 100)
+    const samePoint = newVec2(100, 100)
     const { container } = render(<LengthIndicator startPoint={samePoint} endPoint={samePoint} />)
 
     expect(container).toBeTruthy()

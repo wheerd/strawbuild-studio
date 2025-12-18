@@ -1,10 +1,9 @@
-import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { RoofAssemblyId, StoreyId } from '@/building/model/ids'
 import { createStoreyId } from '@/building/model/ids'
+import { ensurePolygonIsClockwise, newVec2, wouldClosingPolygonSelfIntersect } from '@/shared/geometry'
 import type { Polygon2D } from '@/shared/geometry'
-import { ensurePolygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/shared/geometry'
 
 import type { RoofsSlice } from './roofsSlice'
 import { createRoofsSlice } from './roofsSlice'
@@ -58,11 +57,11 @@ describe('roofsSlice', () => {
   })
 
   const createTestPolygon = (): Polygon2D => ({
-    points: [vec2.fromValues(0, 0), vec2.fromValues(100, 0), vec2.fromValues(100, 100), vec2.fromValues(0, 100)]
+    points: [newVec2(0, 0), newVec2(100, 0), newVec2(100, 100), newVec2(0, 100)]
   })
 
   const createTrianglePolygon = (): Polygon2D => ({
-    points: [vec2.fromValues(0, 0), vec2.fromValues(100, 0), vec2.fromValues(50, 100)]
+    points: [newVec2(0, 0), newVec2(100, 0), newVec2(50, 100)]
   })
 
   describe('addRoof', () => {
@@ -137,7 +136,7 @@ describe('roofsSlice', () => {
 
     it('should reject polygon with < 3 points', () => {
       const invalidPolygon: Polygon2D = {
-        points: [vec2.fromValues(0, 0), vec2.fromValues(100, 0)]
+        points: [newVec2(0, 0), newVec2(100, 0)]
       }
       expect(() => {
         store.actions.addRoof(testStoreyId, 'gable', invalidPolygon, 0, 45, 3000, 500, testAssemblyId)
@@ -405,7 +404,7 @@ describe('roofsSlice', () => {
       const roof = store.actions.addRoof(testStoreyId, 'gable', polygon, 0, 45, 3000, 500, testAssemblyId)
 
       const newPolygon: Polygon2D = {
-        points: [vec2.fromValues(0, 0), vec2.fromValues(200, 0), vec2.fromValues(200, 200), vec2.fromValues(0, 200)]
+        points: [newVec2(0, 0), newVec2(200, 0), newVec2(200, 200), newVec2(0, 200)]
       }
 
       const success = store.actions.updateRoofArea(roof.id, newPolygon)
@@ -427,7 +426,7 @@ describe('roofsSlice', () => {
       store.actions.updateRoofOverhangById(roof.id, overhangId1, 400)
 
       const newPolygon: Polygon2D = {
-        points: [vec2.fromValues(0, 0), vec2.fromValues(200, 0), vec2.fromValues(200, 200), vec2.fromValues(0, 200)]
+        points: [newVec2(0, 0), newVec2(200, 0), newVec2(200, 200), newVec2(0, 200)]
       }
 
       const success = store.actions.updateRoofArea(roof.id, newPolygon)

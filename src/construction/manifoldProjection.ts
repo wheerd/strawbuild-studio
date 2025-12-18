@@ -1,6 +1,6 @@
 import type { Manifold } from 'manifold-3d'
 
-import type { Polygon2D } from '@/shared/geometry'
+import { type Polygon2D, newVec2 } from '@/shared/geometry'
 
 import type { Projection } from './geometry'
 import { mat4ToManifoldMat4 } from './manifoldUtils'
@@ -38,7 +38,7 @@ export function projectManifoldToView(worldManifold: Manifold, projectionMatrix:
 
     // Convert to our Polygon2D format
     const polygons: Polygon2D[] = simplePolygons.map(sp => ({
-      points: sp.map(([x, y]) => [x, y] as [number, number])
+      points: sp.map(([x, y]) => newVec2(x, y))
     }))
 
     return { polygons }

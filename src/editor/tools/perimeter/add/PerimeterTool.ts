@@ -1,5 +1,3 @@
-import { vec2 } from 'gl-matrix'
-
 import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import type { PerimeterReferenceSide } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
@@ -7,7 +5,7 @@ import { getConfigActions } from '@/construction/config/store'
 import { getViewModeActions } from '@/editor/hooks/useViewMode'
 import { BasePolygonTool, type PolygonToolStateBase } from '@/editor/tools/shared/polygon/BasePolygonTool'
 import type { ToolImplementation } from '@/editor/tools/system/types'
-import type { Length, Polygon2D } from '@/shared/geometry'
+import { type Length, type Polygon2D, type Vec2 } from '@/shared/geometry'
 import { polygonIsClockwise } from '@/shared/geometry'
 
 import { PerimeterToolInspector } from './PerimeterToolInspector'
@@ -68,7 +66,7 @@ export class PerimeterTool extends BasePolygonTool<PerimeterToolState> implement
     this.state.referenceSide = 'inside'
   }
 
-  protected buildPolygon(points: vec2[]): Polygon2D {
+  protected buildPolygon(points: Vec2[]): Polygon2D {
     let polygon: Polygon2D = { points }
     if (!polygonIsClockwise(polygon)) {
       polygon = { points: [...points].reverse() }

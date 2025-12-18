@@ -1,10 +1,9 @@
-import { vec2 } from 'gl-matrix'
 import { Arrow, Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
 import type { PerimeterCorner, PerimeterWall } from '@/building/model/model'
 import { useWallAssemblyById } from '@/construction/config/store'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
-import { direction, midpoint, perpendicular } from '@/shared/geometry'
+import { direction, midpoint, perpendicular, scaleAddVec2, scaleVec2 } from '@/shared/geometry'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
 
@@ -35,10 +34,9 @@ export function PerimeterCornerShape({
   ]
   const polygonArray = cornerPolygon.flatMap(point => [point[0], point[1]])
 
-  const arrowDir =
-    corner.constructedByWall === 'previous' ? previousWall.direction : vec2.scale(vec2.create(), nextWall.direction, -1)
+  const arrowDir = corner.constructedByWall === 'previous' ? previousWall.direction : scaleVec2(nextWall.direction, -1)
   const arrowEnd = midpoint(corner.insidePoint, corner.outsidePoint)
-  const arrowStart = vec2.scaleAndAdd(vec2.create(), arrowEnd, arrowDir, -180)
+  const arrowStart = scaleAddVec2(arrowEnd, arrowDir, -180)
 
   const constructingWall = corner.constructedByWall === 'previous' ? previousWall : nextWall
   const wallAssembly = useWallAssemblyById(constructingWall.wallAssemblyId)

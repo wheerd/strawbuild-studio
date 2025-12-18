@@ -1,11 +1,11 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
-import { vec2 } from 'gl-matrix'
 import manifoldWasmUrl from 'manifold-3d/manifold.wasm?url'
 import path from 'path'
 import { afterEach, beforeAll, vi } from 'vitest'
 import 'vitest-canvas-mock'
 
+import { newVec2 } from '@/shared/geometry/basic'
 import { loadManifoldModule } from '@/shared/geometry/manifoldInstance'
 
 vi.mock('@/shared/utils/version', () => ({
@@ -135,7 +135,7 @@ vi.mock('@/shared/geometry/clipperInstance', () => {
     createPathD: vi.fn((points: ArrayLike<number>[]) => createClipperPath(points.map(point => [point[0], point[1]]))),
     createPathsD: vi.fn((paths: ClipperPath[]) => createClipperPaths(paths)),
     createPointD: vi.fn((point: ArrayLike<number>) => createClipperPoint(point[0], point[1])),
-    pathDToPoints: vi.fn((path: ClipperPath) => path.points.map(([x, y]) => vec2.fromValues(x, y)))
+    pathDToPoints: vi.fn((path: ClipperPath) => path.points.map(([x, y]) => newVec2(x, y)))
   }
 })
 

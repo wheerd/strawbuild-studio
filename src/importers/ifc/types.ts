@@ -1,7 +1,7 @@
-import { mat4, vec2, vec3 } from 'gl-matrix'
+import { mat4, vec3 } from 'gl-matrix'
 import { IFC4 } from 'web-ifc'
 
-import type { Polygon2D, PolygonWithHoles2D } from '@/shared/geometry'
+import type { Polygon2D, PolygonWithHoles2D, Vec2 } from '@/shared/geometry'
 
 export interface ImportedStorey {
   readonly expressId: number
@@ -54,8 +54,8 @@ export interface ImportedPerimeterCandidate {
 }
 
 export interface ImportedPerimeterSegment {
-  readonly start: vec2
-  readonly end: vec2
+  readonly start: Vec2
+  readonly end: Vec2
   readonly thickness?: number
   readonly openings: ImportedPerimeterOpening[]
 }

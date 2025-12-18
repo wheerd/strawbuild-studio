@@ -1,5 +1,3 @@
-import { vec2 } from 'gl-matrix'
-
 import { getModelActions } from '@/building/store'
 import { replaceSelection } from '@/editor/hooks/useSelectionStore'
 import { getViewModeActions } from '@/editor/hooks/useViewMode'
@@ -7,7 +5,7 @@ import { viewportActions } from '@/editor/hooks/useViewportStore'
 import { getToolActions } from '@/editor/tools/system'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
 import type { CursorStyle, ToolImplementation } from '@/editor/tools/system/types'
-import { Bounds2D, ensurePolygonIsClockwise } from '@/shared/geometry'
+import { Bounds2D, ensurePolygonIsClockwise, subVec2 } from '@/shared/geometry'
 
 import { PerimeterPresetToolInspector } from './PerimeterPresetToolInspector'
 import type { BasePresetConfig, PerimeterPreset } from './presets'
@@ -23,7 +21,7 @@ export class PerimeterPresetTool extends BaseTool implements ToolImplementation 
     try {
       // Place polygon so that first point is on origin
       const points = preset.getPolygonPoints(config)
-      const translatedPoints = points.map(point => vec2.sub(vec2.create(), point, points[0]))
+      const translatedPoints = points.map(point => subVec2(point, points[0]))
       const polygon = ensurePolygonIsClockwise({ points: translatedPoints })
 
       const { getActiveStoreyId, addPerimeter } = getModelActions()

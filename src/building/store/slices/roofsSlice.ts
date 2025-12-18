@@ -1,11 +1,24 @@
-import { vec2 } from 'gl-matrix'
 import type { StateCreator } from 'zustand'
 
 import type { PerimeterId, RoofAssemblyId, RoofId, RoofOverhangId, StoreyId } from '@/building/model/ids'
 import { createRoofId, createRoofOverhangId } from '@/building/model/ids'
 import type { Roof, RoofOverhang, RoofType } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config/store'
-import type { Length, LineSegment2D, Polygon2D } from '@/shared/geometry'
+import {
+  type Length,
+  type LineSegment2D,
+  type Polygon2D,
+  type Vec2,
+  addVec2,
+  copyVec2,
+  distVec2,
+  dotVec2,
+  eqVec2,
+  lenVec2,
+  newVec2,
+  scaleVec2,
+  subVec2
+} from '@/shared/geometry'
 import {
   degreesToRadians,
   direction,
@@ -111,11 +124,11 @@ const computeRidgeLine = (polygon: Polygon2D, mainSideIndex: number, roofType: R
 
   if (roofType === 'shed') {
     // Ridge is simply the main side edge
-    return { start: vec2.clone(mainStart), end: vec2.clone(mainEnd) }
+    return { start: copyVec2(mainStart), end: copyVec2(mainEnd) }
   }
 
   // Gable roof: ridge runs from midpoint of gable side perpendicular to opposite edge
-  const midpoint = vec2.scale(vec2.create(), vec2.add(vec2.create(), mainStart, mainEnd), 0.5)
+  const midpoint = scaleVec2(addVec2(mainStart, mainEnd), 0.5)
 
   // Direction perpendicular to main side
   const mainDirection = direction(mainStart, mainEnd)
@@ -128,7 +141,7 @@ const computeRidgeLine = (polygon: Polygon2D, mainSideIndex: number, roofType: R
   }
 
   // Find intersection with polygon edges (excluding main side and adjacent edges)
-  let bestIntersection: vec2 | null = null
+  let bestIntersection: Vec2 | null = null
   let maxDistance = 0
 
   for (let i = 0; i < points.length; i++) {
@@ -154,16 +167,16 @@ const computeRidgeLine = (polygon: Polygon2D, mainSideIndex: number, roofType: R
 
     if (intersection) {
       // Check if intersection is within the edge segment
-      const edgeVector = vec2.subtract(vec2.create(), edgeEnd, edgeStart)
-      const toIntersection = vec2.subtract(vec2.create(), intersection, edgeStart)
-      const edgeLength = vec2.length(edgeVector)
+      const edgeVector = subVec2(edgeEnd, edgeStart)
+      const toIntersection = subVec2(intersection, edgeStart)
+      const edgeLength = lenVec2(edgeVector)
 
       if (edgeLength > 0) {
-        const t = vec2.dot(toIntersection, edgeVector) / (edgeLength * edgeLength)
+        const t = dotVec2(toIntersection, edgeVector) / (edgeLength * edgeLength)
 
         if (t >= -0.001 && t <= 1.001) {
           // Intersection is within edge bounds
-          const dist = vec2.distance(midpoint, intersection)
+          const dist = distVec2(midpoint, intersection)
           if (dist > maxDistance) {
             maxDistance = dist
             bestIntersection = intersection
@@ -175,10 +188,10 @@ const computeRidgeLine = (polygon: Polygon2D, mainSideIndex: number, roofType: R
 
   if (!bestIntersection) {
     // Fallback: ridge is just a point at the midpoint
-    return { start: vec2.clone(midpoint), end: vec2.clone(midpoint) }
+    return { start: copyVec2(midpoint), end: copyVec2(midpoint) }
   }
 
-  return { start: vec2.clone(midpoint), end: bestIntersection }
+  return { start: copyVec2(midpoint), end: bestIntersection }
 }
 
 // Helper function to get valid main side indices (edges on convex hull)
@@ -209,7 +222,7 @@ const getValidMainSideIndices = (polygon: Polygon2D): number[] => {
       const h2 = hullPoints[(j + 1) % hullPoints.length]
 
       // Check if (p1, p2) matches (h1, h2) in either direction
-      if ((vec2.equals(p1, h1) && vec2.equals(p2, h2)) || (vec2.equals(p1, h2) && vec2.equals(p2, h1))) {
+      if ((eqVec2(p1, h1) && eqVec2(p2, h2)) || (eqVec2(p1, h2) && eqVec2(p2, h1))) {
         validIndices.push(i)
         break
       }
@@ -225,7 +238,7 @@ export const computeRoofDerivedProperties = (roof: Roof): void => {
   roof.downSlopeDirection = perpendicularCW(roof.ridgeDirection)
 
   const projections = roof.referencePolygon.points.map(p =>
-    vec2.dot(vec2.sub(vec2.create(), p, roof.ridgeLine.start), roof.downSlopeDirection)
+    dotVec2(subVec2(p, roof.ridgeLine.start), roof.downSlopeDirection)
   )
   const minProjection = Math.min(...projections)
   const maxProjection = Math.max(...projections)
@@ -311,8 +324,8 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
         referencePerimeter,
         // Initialize computed properties (will be set by helper)
         slopeAngleRad: 0,
-        ridgeDirection: vec2.fromValues(0, 0),
-        downSlopeDirection: vec2.fromValues(0, 0),
+        ridgeDirection: newVec2(0, 0),
+        downSlopeDirection: newVec2(0, 0),
         rise: 0,
         span: 0
       }

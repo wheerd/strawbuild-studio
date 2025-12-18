@@ -1,4 +1,6 @@
-import { vec2, vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
+
+import { type Vec2, newVec2 } from '@/shared/geometry'
 
 export type ViewType = 'outside' | 'inside'
 
@@ -45,11 +47,11 @@ export const convertPointToSvg = (
   wallHeight: number,
   wallLength: number,
   view: ViewType = 'outside'
-): vec2 => {
+): Vec2 => {
   let svgX = x
   if (view === 'inside') {
     svgX = wallLength - x
   }
   const svgY = wallHeight - z
-  return vec2.fromValues(svgX, svgY)
+  return newVec2(svgX, svgY)
 }

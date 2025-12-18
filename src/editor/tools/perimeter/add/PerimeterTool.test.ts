@@ -1,10 +1,9 @@
-import { vec2 } from 'gl-matrix'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import * as useViewportStore from '@/editor/hooks/useViewportStore'
 import * as lengthInputService from '@/editor/services/length-input'
 import type { CanvasEvent } from '@/editor/tools/system/types'
-import '@/shared/geometry'
+import { newVec2 } from '@/shared/geometry'
 
 import { PerimeterTool } from './PerimeterTool'
 
@@ -62,7 +61,7 @@ describe('PerimeterTool', () => {
     })
 
     it('should activate length input for next segment after placing second point', () => {
-      tool.state.points = [vec2.fromValues(0, 0), vec2.fromValues(100, 0)]
+      tool.state.points = [newVec2(0, 0), newVec2(100, 0)]
 
       // Call the private method directly for testing
       ;(tool as any).activateLengthInputForNextSegment()
@@ -83,7 +82,7 @@ describe('PerimeterTool', () => {
 
     it('should set length override when length is committed', () => {
       // Set up tool with two points
-      tool.state.points = [vec2.fromValues(0, 0), vec2.fromValues(100, 0)]
+      tool.state.points = [newVec2(0, 0), newVec2(100, 0)]
 
       // Call activateLengthInputForNextSegment to set up the callback
       ;(tool as any).activateLengthInputForNextSegment()
@@ -100,7 +99,7 @@ describe('PerimeterTool', () => {
 
     it('should clear length override when escape is pressed', () => {
       // Set up tool with length override
-      tool.state.points = [vec2.fromValues(0, 0), vec2.fromValues(100, 0)]
+      tool.state.points = [newVec2(0, 0), newVec2(100, 0)]
       tool.state.lengthOverride = 100
 
       // Create mock keyboard event
@@ -131,7 +130,7 @@ describe('PerimeterTool', () => {
     })
 
     it('should calculate position based on last placed point', () => {
-      tool.state.points = [vec2.fromValues(0, 0), vec2.fromValues(100, 50)]
+      tool.state.points = [newVec2(0, 0), newVec2(100, 50)]
 
       const position = (tool as any).getLengthInputPosition()
 
@@ -164,9 +163,9 @@ describe('PerimeterTool', () => {
 
     it('uses length override in the direction of the pointer for preview', () => {
       const tool = new PerimeterTool()
-      tool.state.points = [vec2.fromValues(0, 0)]
+      tool.state.points = [newVec2(0, 0)]
       tool.setLengthOverride(100)
-      tool.state.pointer = vec2.fromValues(0, 50)
+      tool.state.pointer = newVec2(0, 50)
 
       const preview = tool.getPreviewPosition()
 
@@ -175,11 +174,11 @@ describe('PerimeterTool', () => {
 
     it('places new point using length override in pointer direction on click', () => {
       const tool = new PerimeterTool()
-      tool.state.points = [vec2.fromValues(0, 0)]
+      tool.state.points = [newVec2(0, 0)]
       tool.setLengthOverride(120)
 
       const mockEvent = {
-        stageCoordinates: vec2.fromValues(0, 400)
+        stageCoordinates: newVec2(0, 400)
       } as unknown as CanvasEvent
 
       tool.handlePointerDown(mockEvent)

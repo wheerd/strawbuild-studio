@@ -1,4 +1,3 @@
-import { vec2 } from 'gl-matrix'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -11,7 +10,7 @@ import {
 } from '@/building/model/ids'
 import type { Perimeter, Storey } from '@/building/model/model'
 import { createStoreyLevel } from '@/building/model/model'
-import '@/shared/geometry'
+import { newVec2 } from '@/shared/geometry'
 
 import { getRingBeamAssemblyUsage, getWallAssemblyUsage } from './usage'
 
@@ -143,10 +142,10 @@ describe('Assembly Usage Detection', () => {
             insideLength: 1000,
             outsideLength: 1000,
             wallLength: 1000,
-            insideLine: { start: vec2.fromValues(0, 0), end: vec2.fromValues(1000, 0) },
-            outsideLine: { start: vec2.fromValues(0, 420), end: vec2.fromValues(1000, 420) },
-            direction: vec2.fromValues(1, 0),
-            outsideDirection: vec2.fromValues(0, 1)
+            insideLine: { start: newVec2(0, 0), end: newVec2(1000, 0) },
+            outsideLine: { start: newVec2(0, 420), end: newVec2(1000, 420) },
+            direction: newVec2(1, 0),
+            outsideDirection: newVec2(0, 1)
           },
           {
             id: createPerimeterWallId(),
@@ -156,10 +155,10 @@ describe('Assembly Usage Detection', () => {
             insideLength: 1000,
             outsideLength: 1000,
             wallLength: 1000,
-            insideLine: { start: vec2.fromValues(1000, 0), end: vec2.fromValues(1000, 1000) },
-            outsideLine: { start: vec2.fromValues(1440, 0), end: vec2.fromValues(1440, 1000) },
-            direction: vec2.fromValues(0, 1),
-            outsideDirection: vec2.fromValues(1, 0)
+            insideLine: { start: newVec2(1000, 0), end: newVec2(1000, 1000) },
+            outsideLine: { start: newVec2(1440, 0), end: newVec2(1440, 1000) },
+            direction: newVec2(0, 1),
+            outsideDirection: newVec2(1, 0)
           },
           {
             id: createPerimeterWallId(),
@@ -169,10 +168,10 @@ describe('Assembly Usage Detection', () => {
             insideLength: 1000,
             outsideLength: 1000,
             wallLength: 1000,
-            insideLine: { start: vec2.fromValues(1000, 1000), end: vec2.fromValues(0, 1000) },
-            outsideLine: { start: vec2.fromValues(1000, 1440), end: vec2.fromValues(0, 1440) },
-            direction: vec2.fromValues(-1, 0),
-            outsideDirection: vec2.fromValues(0, 1)
+            insideLine: { start: newVec2(1000, 1000), end: newVec2(0, 1000) },
+            outsideLine: { start: newVec2(1000, 1440), end: newVec2(0, 1440) },
+            direction: newVec2(-1, 0),
+            outsideDirection: newVec2(0, 1)
           }
         ],
         corners: []

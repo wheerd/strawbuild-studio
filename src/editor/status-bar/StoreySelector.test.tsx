@@ -5,7 +5,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_FLOOR_ASSEMBLY_ID, type StoreyId } from '@/building/model/ids'
 import { type Storey, createStoreyLevel } from '@/building/model/model'
 import { useActiveStoreyId, useModelActions, useStoreysOrderedByLevel } from '@/building/store'
-import '@/shared/geometry'
 
 import { StoreySelector } from './StoreySelector'
 

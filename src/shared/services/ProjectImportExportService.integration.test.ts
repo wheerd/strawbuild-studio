@@ -1,10 +1,10 @@
-import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigState, setConfigState } from '@/construction/config/store'
 import { getMaterialsState, setMaterialsState } from '@/construction/materials/store'
+import { newVec2 } from '@/shared/geometry'
 import type { Polygon2D } from '@/shared/geometry'
 
 import { ProjectImportExportService } from './ProjectImportExportService'
@@ -62,7 +62,7 @@ describe('ProjectImportExportService Integration', () => {
 
     // Create a perimeter with custom boundary
     const boundary = {
-      points: [vec2.fromValues(0, 0), vec2.fromValues(8000, 0), vec2.fromValues(8000, 6000), vec2.fromValues(0, 6000)]
+      points: [newVec2(0, 0), newVec2(8000, 0), newVec2(8000, 6000), newVec2(0, 6000)]
     }
 
     const wallAssemblyId = Object.keys(getConfigState().wallAssemblyConfigs)[0] as WallAssemblyId
@@ -110,23 +110,13 @@ describe('ProjectImportExportService Integration', () => {
 
     // Add floor area
     const floorAreaPolygon = {
-      points: [
-        vec2.fromValues(500, 500),
-        vec2.fromValues(7000, 500),
-        vec2.fromValues(7000, 5500),
-        vec2.fromValues(500, 5500)
-      ]
+      points: [newVec2(500, 500), newVec2(7000, 500), newVec2(7000, 5500), newVec2(500, 5500)]
     }
     modelActions.addFloorArea(testStorey.id, floorAreaPolygon)
 
     // Add floor opening
     const floorOpeningPolygon = {
-      points: [
-        vec2.fromValues(2000, 2000),
-        vec2.fromValues(3000, 2000),
-        vec2.fromValues(3000, 3000),
-        vec2.fromValues(2000, 3000)
-      ]
+      points: [newVec2(2000, 2000), newVec2(3000, 2000), newVec2(3000, 3000), newVec2(2000, 3000)]
     }
     modelActions.addFloorOpening(testStorey.id, floorOpeningPolygon)
 
@@ -298,16 +288,11 @@ describe('ProjectImportExportService Integration', () => {
 
     // Different shaped perimeters for each floor
     const groundBoundary = {
-      points: [vec2.fromValues(0, 0), vec2.fromValues(10000, 0), vec2.fromValues(10000, 8000), vec2.fromValues(0, 8000)]
+      points: [newVec2(0, 0), newVec2(10000, 0), newVec2(10000, 8000), newVec2(0, 8000)]
     }
 
     const firstFloorBoundary = {
-      points: [
-        vec2.fromValues(1000, 1000),
-        vec2.fromValues(9000, 1000),
-        vec2.fromValues(9000, 7000),
-        vec2.fromValues(1000, 7000)
-      ]
+      points: [newVec2(1000, 1000), newVec2(9000, 1000), newVec2(9000, 7000), newVec2(1000, 7000)]
     }
 
     modelActions.addPerimeter(ground.id, groundBoundary, wallAssemblyId, 200)

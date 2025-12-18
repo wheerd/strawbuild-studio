@@ -1,4 +1,3 @@
-import { vec2 } from 'gl-matrix'
 import type { Manifold } from 'manifold-3d'
 
 import type { Roof } from '@/building/model'
@@ -20,9 +19,14 @@ import { TAG_ROOF, TAG_ROOF_SIDE_LEFT, TAG_ROOF_SIDE_RIGHT } from '@/constructio
 import {
   type Length,
   type LineSegment2D,
+  type Vec2,
+  distVec2,
+  dotVec2,
   intersectLineSegmentWithPolygon,
+  lerpVec2,
   lineFromSegment,
-  lineIntersection
+  lineIntersection,
+  subVec2
 } from '@/shared/geometry'
 
 import type { HeightLine, MonolithicRoofConfig } from './types'
@@ -100,8 +104,8 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
     const ridgeHeight = this.calculateRidgeHeight(roof)
 
     // Helper to get SIGNED distance from ridge (perpendicular)
-    const getSignedDistanceToRidge = (point: vec2): number =>
-      vec2.dot(vec2.sub(vec2.create(), point, roof.ridgeLine.start), roof.downSlopeDirection)
+    const getSignedDistanceToRidge = (point: Vec2): number =>
+      dotVec2(subVec2(point, roof.ridgeLine.start), roof.downSlopeDirection)
 
     // Calculate height offset at a point
     const calculateOffset = (signedDist: number): number =>
@@ -109,7 +113,7 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
 
     // Calculate offset at a given T position along the line
     const calculateOffsetAt = (t: number): Length => {
-      const point = vec2.lerp(vec2.create(), line.start, line.end, t)
+      const point = lerpVec2(line.start, line.end, t)
       return calculateOffset(getSignedDistanceToRidge(point)) as Length
     }
 
@@ -121,9 +125,9 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
       const ridgeIntersection = lineIntersection(wallLine, ridgeLine)
 
       if (ridgeIntersection) {
-        const lineLength = vec2.distance(line.end, line.start)
+        const lineLength = distVec2(line.end, line.start)
         if (lineLength > 0.001) {
-          ridgeT = vec2.distance(ridgeIntersection, line.start) / lineLength
+          ridgeT = distVec2(ridgeIntersection, line.start) / lineLength
         }
       }
     }

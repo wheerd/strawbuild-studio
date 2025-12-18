@@ -1,4 +1,4 @@
-import { mat4, vec2, vec3 } from 'gl-matrix'
+import { mat4, vec3 } from 'gl-matrix'
 import {
   Handle,
   IFC4,
@@ -55,9 +55,22 @@ import {
   type LineSegment2D,
   type Polygon2D,
   type PolygonWithHoles2D,
+  type Vec2,
+  addVec2,
+  copyVec2,
   direction,
+  distVec2,
   distanceToInfiniteLine,
-  distanceToLineSegment
+  distanceToLineSegment,
+  dotVec2,
+  lenVec2,
+  newVec2,
+  normVec2,
+  roundVec2,
+  scaleAddVec2,
+  scaleVec2,
+  subVec2,
+  vec3To2
 } from '@/shared/geometry'
 import {
   type Polygon3D,
@@ -91,9 +104,9 @@ interface OpeningProjection {
 }
 
 interface WallEdgeInfo {
-  readonly start: vec2
-  readonly end: vec2
-  readonly direction: vec2
+  readonly start: Vec2
+  readonly end: Vec2
+  readonly direction: Vec2
   readonly length: number
   readonly thickness: number
 }
@@ -208,7 +221,7 @@ export class IfcImporter {
       .filter((polygon): polygon is Polygon2D => polygon != null && polygon.points.length >= 3)
       .map(p => offsetPolygon(ensurePolygonIsClockwise(simplifyPolygon(p, SIMPLIFY_TOLERANCE)), MERGE_WALL_TOLERANCE))
       .map(p => ({
-        points: p.points.map(p => vec3.round(vec3.create(), p))
+        points: p.points.map(p => roundVec2(p))
       }))
 
     if (wallFootprints.length === 0) {
@@ -340,9 +353,9 @@ export class IfcImporter {
 
         usedPoints.push(points[i0], points[i1], points[i2])
 
-        const p0: vec2 = vec2.fromValues(points[i0][0], -points[i0][2])
-        const p1: vec2 = vec2.fromValues(points[i1][0], -points[i1][2])
-        const p2: vec2 = vec2.fromValues(points[i2][0], -points[i2][2])
+        const p0: Vec2 = newVec2(points[i0][0], -points[i0][2])
+        const p1: Vec2 = newVec2(points[i1][0], -points[i1][2])
+        const p2: Vec2 = newVec2(points[i2][0], -points[i2][2])
 
         const a2 = this.signedArea2([p0, p1, p2])
         if (Math.abs(a2) <= 1e-10) continue // drop degenerate/flat
@@ -383,7 +396,7 @@ export class IfcImporter {
     return points
   }
 
-  private signedArea2(pts: vec2[]): number {
+  private signedArea2(pts: Vec2[]): number {
     let a = 0
     for (let i = 0, n = pts.length; i < n; i++) {
       const [x0, y0] = pts[i]
@@ -458,12 +471,12 @@ export class IfcImporter {
       for (let i = 0; i < points.length; i++) {
         const start = points[i]
         const end = points[(i + 1) % points.length]
-        const length = vec2.distance(start, end)
+        const length = distVec2(start, end)
         if (length < 1e-3) continue
-        const direction = vec2.normalize(vec2.create(), vec2.subtract(vec2.create(), end, start))
+        const direction = normVec2(subVec2(end, start))
         wallEdges.push({
-          start: vec2.clone(start),
-          end: vec2.clone(end),
+          start: copyVec2(start),
+          end: copyVec2(end),
           direction,
           length,
           thickness
@@ -473,7 +486,7 @@ export class IfcImporter {
       const pairedEdges = wallEdges.filter((edge, i) => {
         return wallEdges.some((other, j) => {
           if (j === i) return false
-          const alignment = Math.abs(vec2.dot(edge.direction, other.direction))
+          const alignment = Math.abs(dotVec2(edge.direction, other.direction))
           if (alignment < EDGE_ALIGNMENT_DOT_THRESHOLD) {
             return false
           }
@@ -519,18 +532,18 @@ export class IfcImporter {
     for (let i = 0; i < shell.points.length; i++) {
       const start = shell.points[i]
       const end = shell.points[(i + 1) % shell.points.length]
-      const segmentLength = vec2.distance(start, end)
+      const segmentLength = distVec2(start, end)
       if (segmentLength < 1e-3) {
         thicknesses.push(fallback)
         continue
       }
 
-      const dir = vec2.normalize(vec2.create(), vec2.subtract(vec2.create(), end, start))
+      const dir = normVec2(subVec2(end, start))
       let bestThickness = fallback
       let bestDistance = Number.POSITIVE_INFINITY
 
       for (const edge of wallEdges) {
-        const alignment = Math.abs(vec2.dot(dir, edge.direction))
+        const alignment = Math.abs(dotVec2(dir, edge.direction))
         if (alignment < EDGE_ALIGNMENT_DOT_THRESHOLD) continue
         if (!this.segmentsOverlap(start, end, edge)) continue
 
@@ -572,8 +585,8 @@ export class IfcImporter {
       const thickness = thicknesses[i]
 
       segments.push({
-        start: vec2.clone(start),
-        end: vec2.clone(end),
+        start: copyVec2(start),
+        end: copyVec2(end),
         thickness: Number.isFinite(thickness) ? Math.max(thickness, MINIMUM_THICKNESS) : undefined,
         openings: []
       })
@@ -612,13 +625,13 @@ export class IfcImporter {
         let minProjection = Number.POSITIVE_INFINITY
         let maxProjection = Number.NEGATIVE_INFINITY
         for (const point of opening.polygon.points) {
-          const toPoint = vec2.subtract(vec2.create(), point, segment.start)
-          const value = vec2.dot(toPoint, segmentDir)
+          const toPoint = subVec2(point, segment.start)
+          const value = dotVec2(toPoint, segmentDir)
           minProjection = Math.min(minProjection, value)
           maxProjection = Math.max(maxProjection, value)
         }
 
-        const segmentLength = vec2.distance(segment.start, segment.end)
+        const segmentLength = distVec2(segment.start, segment.end)
         const openingStart = Math.min(segmentLength, Math.max(0, minProjection))
         const openingEnd = Math.max(0, Math.min(segmentLength, maxProjection))
         const width = Math.max(0, openingEnd - openingStart)
@@ -664,7 +677,7 @@ export class IfcImporter {
     return matched
   }
 
-  private calculatePolygonCentroid(polygon: Polygon2D): vec2 | null {
+  private calculatePolygonCentroid(polygon: Polygon2D): Vec2 | null {
     const points = polygon.points
     if (points.length < 3) {
       return null
@@ -685,26 +698,18 @@ export class IfcImporter {
 
     const area = areaSum / 2
     if (Math.abs(area) < 1e-6) {
-      const avg = points.reduce(
-        (acc, point) => {
-          acc[0] += point[0]
-          acc[1] += point[1]
-          return acc
-        },
-        vec2.fromValues(0, 0)
-      )
-      vec2.scale(avg, avg, 1 / points.length)
-      return avg
+      const avg = points.reduce((acc, point) => addVec2(acc, point), newVec2(0, 0))
+      return scaleVec2(avg, 1 / points.length)
     }
 
-    return vec2.fromValues(cx / (6 * area), cy / (6 * area))
+    return newVec2(cx / (6 * area), cy / (6 * area))
   }
 
   private estimatePolygonThickness(polygon: Polygon2D): number | null {
     return Math.min(...minimumAreaBoundingBox(polygon).size)
   }
 
-  private segmentsOverlap(segmentStart: vec2, segmentEnd: vec2, edge: WallEdgeInfo): boolean {
+  private segmentsOverlap(segmentStart: Vec2, segmentEnd: Vec2, edge: WallEdgeInfo): boolean {
     const lineSegment: LineSegment2D = { start: segmentStart, end: segmentEnd }
 
     return (
@@ -957,7 +962,7 @@ export class IfcImporter {
         )
         footprintPolygons.push(
           ensurePolygonIsClockwise({
-            points: [vec2.clone(start3), vec2.clone(end3), vec2.clone(nextEnd3), vec2.clone(nextStart3)]
+            points: [vec3To2(start3), vec3To2(end3), vec3To2(nextEnd3), vec3To2(nextStart3)]
           })
         )
       })
@@ -994,7 +999,7 @@ export class IfcImporter {
 
     const faces = this.extractFaces(context, set.Faces, points, pnIndex)
     const faces2D: Polygon2D[] = faces
-      .map(f => ({ points: f.outer.points.map(p => vec2.copy(vec2.create(), p)) }))
+      .map(f => ({ points: f.outer.points.map(p => vec3To2(p)) }))
       .filter(f => Math.abs(this.signedArea2(f.points)) > 1)
       .map(ensurePolygonIsClockwise)
 
@@ -1058,10 +1063,10 @@ export class IfcImporter {
     return { points }
   }
 
-  private transformPoint(matrix: mat4, point: vec2): vec2 {
+  private transformPoint(matrix: mat4, point: Vec2): Vec2 {
     const vector = vec3.fromValues(point[0], point[1], 0)
     const transformed = vec3.transformMat4(vec3.create(), vector, matrix)
-    return vec2.fromValues(transformed[0], transformed[1])
+    return newVec2(transformed[0], transformed[1])
   }
 
   private transformDirection(matrix: mat4, direction: vec3): vec3 {
@@ -1112,8 +1117,8 @@ export class IfcImporter {
     return null
   }
 
-  private convertPolylineToPoints(context: CachedModelContext, polyline: IFC4.IfcPolyline): vec2[] {
-    const rawPoints: vec2[] = []
+  private convertPolylineToPoints(context: CachedModelContext, polyline: IFC4.IfcPolyline): Vec2[] {
+    const rawPoints: Vec2[] = []
 
     for (const pointRef of this.toArray(polyline.Points)) {
       const point = this.dereferenceLine(context, pointRef)
@@ -1122,7 +1127,7 @@ export class IfcImporter {
       const coords = point.Coordinates ?? []
       const x = this.getNumberValue(coords[0]) * context.unitScale
       const y = this.getNumberValue(coords[1]) * context.unitScale
-      rawPoints.push(vec2.fromValues(x, y))
+      rawPoints.push(newVec2(x, y))
     }
 
     return this.sanitizePolygonPoints(rawPoints)
@@ -1139,12 +1144,7 @@ export class IfcImporter {
     const halfX = xDim / 2
     const halfY = yDim / 2
 
-    const points = [
-      vec2.fromValues(-halfX, -halfY),
-      vec2.fromValues(halfX, -halfY),
-      vec2.fromValues(halfX, halfY),
-      vec2.fromValues(-halfX, halfY)
-    ]
+    const points = [newVec2(-halfX, -halfY), newVec2(halfX, -halfY), newVec2(halfX, halfY), newVec2(-halfX, halfY)]
 
     if (profile.Position) {
       return {
@@ -1155,44 +1155,40 @@ export class IfcImporter {
     return { points }
   }
 
-  private applyAxis2Placement2D(context: CachedModelContext, placementRef: unknown, point: vec2): vec2 {
+  private applyAxis2Placement2D(context: CachedModelContext, placementRef: unknown, point: Vec2): Vec2 {
     const placement = this.dereferenceLine(context, placementRef)
     if (!this.isAxis2Placement2D(placement)) {
-      return vec2.clone(point)
+      return copyVec2(point)
     }
 
     const origin3 = this.getPoint3(context, placement.Location)
-    const origin = vec2.fromValues(origin3[0], origin3[1])
+    const origin = newVec2(origin3[0], origin3[1])
 
-    let xDir = vec2.fromValues(1, 0)
+    let xDir = newVec2(1, 0)
     if (placement.RefDirection) {
       const refDir = this.dereferenceLine(context, placement.RefDirection)
       if (this.isDirection(refDir)) {
         const ratios = refDir.DirectionRatios ?? []
-        xDir = vec2.fromValues(this.getNumberValue(ratios[0]), this.getNumberValue(ratios[1]))
+        xDir = newVec2(this.getNumberValue(ratios[0]), this.getNumberValue(ratios[1]))
       }
     }
 
-    if (vec2.length(xDir) === 0) {
-      xDir = vec2.fromValues(1, 0)
+    if (lenVec2(xDir) === 0) {
+      xDir = newVec2(1, 0)
     } else {
-      vec2.normalize(xDir, xDir)
+      xDir = normVec2(xDir)
     }
 
-    const yDir = vec2.fromValues(-xDir[1], xDir[0])
+    const yDir = newVec2(-xDir[1], xDir[0])
 
-    const transformed = vec2.create()
-    vec2.scaleAndAdd(transformed, transformed, xDir, point[0])
-    vec2.scaleAndAdd(transformed, transformed, yDir, point[1])
-    vec2.add(transformed, transformed, origin)
-    return transformed
+    return addVec2(origin, scaleAddVec2(scaleVec2(xDir, point[0]), yDir, point[1]))
   }
 
   private estimateWallThickness(profile: ExtrudedProfile): number | null {
     return Math.min(...minimumAreaBoundingBox(profile.footprint.outer).size)
   }
 
-  private sanitizePolygonPoints(points: vec2[]): vec2[] {
+  private sanitizePolygonPoints(points: Vec2[]): Vec2[] {
     if (points.length < 2) {
       return points
     }
@@ -1655,6 +1651,6 @@ export class IfcImporter {
 
 function clonePolygon2D(polygon: Polygon2D): Polygon2D {
   return {
-    points: polygon.points.map(point => vec2.clone(point))
+    points: polygon.points.map(point => copyVec2(point))
   }
 }

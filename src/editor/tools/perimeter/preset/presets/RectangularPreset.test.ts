@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 
 import { RectIcon } from '@/editor/tools/perimeter/preset/presets/Icons'
 import { RectangularPresetDialog } from '@/editor/tools/perimeter/preset/presets/RectangularPresetDialog'
-import '@/shared/geometry'
 
 import { RectangularPreset } from './RectangularPreset'
 import type { RectangularPresetConfig } from './types'
@@ -28,7 +27,6 @@ describe('RectangularPreset', () => {
       const halfWidth = validConfig.width / 2 // Inside width
       const halfLength = validConfig.length / 2 // Inside length
 
-      // Check coordinates using array access since vec2 is Float32Array
       expect(points[0][0]).toBe(-halfWidth)
       expect(points[0][1]).toBe(-halfLength)
       expect(points[1][0]).toBe(halfWidth)

@@ -1,7 +1,6 @@
-import { vec2 } from 'gl-matrix'
 import { describe, expect, it } from 'vitest'
 
-import { Bounds2D, type Polygon2D, calculatePolygonArea } from '@/shared/geometry'
+import { Bounds2D, type Polygon2D, type Vec2, calculatePolygonArea, distVec2, newVec2 } from '@/shared/geometry'
 
 import { partitionByAlignedEdges } from './helpers'
 
@@ -26,7 +25,7 @@ function svgVisualisation(shape: Polygon2D, results: Polygon2D[]) {
 
 // Helper function to check if a point is inside a polygon (simple ray casting)
 // Returns true only if the point is strictly inside (not on the boundary)
-function isPointStrictlyInPolygon(point: vec2, polygon: Polygon2D, epsilon = 1e-6): boolean {
+function isPointStrictlyInPolygon(point: Vec2, polygon: Polygon2D, epsilon = 1e-6): boolean {
   const points = polygon.points
   const n = points.length
 
@@ -36,9 +35,9 @@ function isPointStrictlyInPolygon(point: vec2, polygon: Polygon2D, epsilon = 1e-
     const p2 = points[(i + 1) % n]
 
     // Check if point is on the line segment
-    const d1 = vec2.distance(point, p1)
-    const d2 = vec2.distance(point, p2)
-    const edgeLength = vec2.distance(p1, p2)
+    const d1 = distVec2(point, p1)
+    const d2 = distVec2(point, p2)
+    const edgeLength = distVec2(p1, p2)
 
     if (Math.abs(d1 + d2 - edgeLength) < epsilon) {
       return false // Point is on the edge, not strictly inside
@@ -110,10 +109,10 @@ describe('partitionByAlignedEdges', () => {
   describe('optimization: small polygons', () => {
     it('should return triangle unchanged (< 4 points)', () => {
       const triangle: Polygon2D = {
-        points: [vec2.fromValues(0, 0), vec2.fromValues(100, 0), vec2.fromValues(50, 100)]
+        points: [newVec2(0, 0), newVec2(100, 0), newVec2(50, 100)]
       }
 
-      const result = Array.from(partitionByAlignedEdges(triangle, vec2.fromValues(1, 0)))
+      const result = Array.from(partitionByAlignedEdges(triangle, newVec2(1, 0)))
 
       verifyPartitioning(triangle, result, 1, 'Triangle')
       expect(result[0]).toEqual(triangle)
@@ -123,10 +122,10 @@ describe('partitionByAlignedEdges', () => {
   describe('rectangle (no splits)', () => {
     it('should return rectangle unchanged when no aligned edges', () => {
       const rectangle: Polygon2D = {
-        points: [vec2.fromValues(0, 0), vec2.fromValues(100, 0), vec2.fromValues(100, 50), vec2.fromValues(0, 50)]
+        points: [newVec2(0, 0), newVec2(100, 0), newVec2(100, 50), newVec2(0, 50)]
       }
 
-      const result = Array.from(partitionByAlignedEdges(rectangle, vec2.fromValues(1, 0)))
+      const result = Array.from(partitionByAlignedEdges(rectangle, newVec2(1, 0)))
 
       verifyPartitioning(rectangle, result, 1, 'Rectangle (no splits)')
     })
@@ -140,25 +139,18 @@ describe('partitionByAlignedEdges', () => {
     //  │  │
     //  └──┘
     const lShape: Polygon2D = {
-      points: [
-        vec2.fromValues(0, 0),
-        vec2.fromValues(50, 0),
-        vec2.fromValues(50, 50),
-        vec2.fromValues(100, 50),
-        vec2.fromValues(100, 100),
-        vec2.fromValues(0, 100)
-      ]
+      points: [newVec2(0, 0), newVec2(50, 0), newVec2(50, 50), newVec2(100, 50), newVec2(100, 100), newVec2(0, 100)]
     }
 
     it('should split L-shape horizontally into 2 polygons', async () => {
-      const result = Array.from(partitionByAlignedEdges(lShape, vec2.fromValues(1, 0)))
+      const result = Array.from(partitionByAlignedEdges(lShape, newVec2(1, 0)))
 
       await expect(svgVisualisation(lShape, result)).toMatchFileSnapshot('./__snapshots__/lShape.horizontal.svg')
       verifyPartitioning(lShape, result, 2, 'L-shape (horizontal)')
     })
 
     it('should split L-shape vertically into 2 polygons', async () => {
-      const result = Array.from(partitionByAlignedEdges(lShape, vec2.fromValues(0, 1)))
+      const result = Array.from(partitionByAlignedEdges(lShape, newVec2(0, 1)))
 
       await expect(svgVisualisation(lShape, result)).toMatchFileSnapshot('./__snapshots__/lShape.vertical.svg')
       verifyPartitioning(lShape, result, 2, 'L-shape (vertical)')
@@ -174,25 +166,25 @@ describe('partitionByAlignedEdges', () => {
     //  └────────┘
     const uShape: Polygon2D = {
       points: [
-        vec2.fromValues(0, 100),
-        vec2.fromValues(100, 100),
-        vec2.fromValues(100, 0),
-        vec2.fromValues(60, 0),
-        vec2.fromValues(60, 50),
-        vec2.fromValues(40, 50),
-        vec2.fromValues(40, 0),
-        vec2.fromValues(0, 0)
+        newVec2(0, 100),
+        newVec2(100, 100),
+        newVec2(100, 0),
+        newVec2(60, 0),
+        newVec2(60, 50),
+        newVec2(40, 50),
+        newVec2(40, 0),
+        newVec2(0, 0)
       ]
     }
     it('should partition U-shape horizontally', async () => {
-      const result = Array.from(partitionByAlignedEdges(uShape, vec2.fromValues(1, 0)))
+      const result = Array.from(partitionByAlignedEdges(uShape, newVec2(1, 0)))
 
       await expect(svgVisualisation(uShape, result)).toMatchFileSnapshot('./__snapshots__/uShape.horizontal.svg')
       verifyPartitioning(uShape, result, 3, 'U-shape (horizontal)')
     })
 
     it('should partition U-shape vertically', async () => {
-      const result = Array.from(partitionByAlignedEdges(uShape, vec2.fromValues(0, 1)))
+      const result = Array.from(partitionByAlignedEdges(uShape, newVec2(0, 1)))
 
       await expect(svgVisualisation(uShape, result)).toMatchFileSnapshot('./__snapshots__/uShape.vertical.svg')
       verifyPartitioning(uShape, result, 3, 'U-shape (vertical)')
@@ -208,26 +200,26 @@ describe('partitionByAlignedEdges', () => {
     //     └──┘
     const tShape: Polygon2D = {
       points: [
-        vec2.fromValues(40, 0),
-        vec2.fromValues(60, 0),
-        vec2.fromValues(60, 50),
-        vec2.fromValues(100, 50),
-        vec2.fromValues(100, 100),
-        vec2.fromValues(0, 100),
-        vec2.fromValues(0, 50),
-        vec2.fromValues(40, 50)
+        newVec2(40, 0),
+        newVec2(60, 0),
+        newVec2(60, 50),
+        newVec2(100, 50),
+        newVec2(100, 100),
+        newVec2(0, 100),
+        newVec2(0, 50),
+        newVec2(40, 50)
       ]
     }
 
     it('should split T-shape horizontally into multiple polygons', async () => {
-      const result = Array.from(partitionByAlignedEdges(tShape, vec2.fromValues(1, 0)))
+      const result = Array.from(partitionByAlignedEdges(tShape, newVec2(1, 0)))
 
       await expect(svgVisualisation(tShape, result)).toMatchFileSnapshot('./__snapshots__/tShape.horizontal.svg')
       verifyPartitioning(tShape, result, 2, 'T-shape (horizontal)')
     })
 
     it('should split T-shape vertically into multiple polygons', async () => {
-      const result = Array.from(partitionByAlignedEdges(tShape, vec2.fromValues(0, 1)))
+      const result = Array.from(partitionByAlignedEdges(tShape, newVec2(0, 1)))
 
       await expect(svgVisualisation(tShape, result)).toMatchFileSnapshot('./__snapshots__/tShape.vertical.svg')
       verifyPartitioning(tShape, result, 3, 'T-shape (vertical)')
@@ -249,18 +241,18 @@ describe('partitionByAlignedEdges', () => {
     //  └──────────┘
     const eShape: Polygon2D = {
       points: [
-        vec2.fromValues(0, 0),
-        vec2.fromValues(100, 0),
-        vec2.fromValues(100, 10),
-        vec2.fromValues(30, 10),
-        vec2.fromValues(30, 25),
-        vec2.fromValues(90, 25),
-        vec2.fromValues(90, 50),
-        vec2.fromValues(60, 50),
-        vec2.fromValues(60, 80),
-        vec2.fromValues(100, 80),
-        vec2.fromValues(100, 100),
-        vec2.fromValues(0, 100)
+        newVec2(0, 0),
+        newVec2(100, 0),
+        newVec2(100, 10),
+        newVec2(30, 10),
+        newVec2(30, 25),
+        newVec2(90, 25),
+        newVec2(90, 50),
+        newVec2(60, 50),
+        newVec2(60, 80),
+        newVec2(100, 80),
+        newVec2(100, 100),
+        newVec2(0, 100)
       ]
     }
 
@@ -276,7 +268,7 @@ describe('partitionByAlignedEdges', () => {
       //  │────└───┐
       //  │        │
       //  └────────┘
-      const result = Array.from(partitionByAlignedEdges(eShape, vec2.fromValues(1, 0)))
+      const result = Array.from(partitionByAlignedEdges(eShape, newVec2(1, 0)))
 
       await expect(svgVisualisation(eShape, result)).toMatchFileSnapshot('./__snapshots__/eShape.horizontal.svg')
       verifyPartitioning(eShape, result, 5, 'E-shape (horizontal)')
@@ -294,7 +286,7 @@ describe('partitionByAlignedEdges', () => {
       //  │   │  ├───┐
       //  │   │  │   │
       //  └───┴──┴───┘
-      const result = Array.from(partitionByAlignedEdges(eShape, vec2.fromValues(0, 1)))
+      const result = Array.from(partitionByAlignedEdges(eShape, newVec2(0, 1)))
 
       await expect(svgVisualisation(eShape, result)).toMatchFileSnapshot('./__snapshots__/eShape.vertical.svg')
       verifyPartitioning(eShape, result, 5, 'E-shape (vertical)')

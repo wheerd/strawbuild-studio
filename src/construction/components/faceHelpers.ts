@@ -1,9 +1,10 @@
-import { mat4, vec2, vec3 } from 'gl-matrix'
+import { mat4, vec3 } from 'gl-matrix'
 
 import { getConstructionElementClasses } from '@/construction/components/cssHelpers'
 import type { GroupOrElement } from '@/construction/elements'
 import { type Projection, projectPoint } from '@/construction/geometry'
 import { getVisibleFacesInViewSpace } from '@/construction/manifold/faces'
+import { newVec2 } from '@/shared/geometry'
 import { Bounds2D, type PolygonWithHoles2D } from '@/shared/geometry'
 
 export type FaceTree = Face | FaceGroup
@@ -56,9 +57,9 @@ export function* geometryFaces(
     // Faces are already in view space (transformed), so we extract 2D coordinates directly
     const faces2D = faces3D
       .map(f => {
-        const outerPoints = f.outer.points.map(p => vec2.fromValues(p[0], p[1]))
+        const outerPoints = f.outer.points.map(p => newVec2(p[0], p[1]))
         const holes = f.holes.map(h => ({
-          points: h.points.map(p => vec2.fromValues(p[0], p[1]))
+          points: h.points.map(p => newVec2(p[0], p[1]))
         }))
 
         // Use centerZ logic: front faces get slight preference over back faces

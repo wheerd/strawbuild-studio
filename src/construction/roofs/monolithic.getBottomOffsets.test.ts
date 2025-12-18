@@ -1,8 +1,8 @@
-import { vec2 } from 'gl-matrix'
 import { describe, expect, it } from 'vitest'
 
 import type { Roof } from '@/building/model'
 import { computeRoofDerivedProperties } from '@/building/store/slices/roofsSlice'
+import { type Vec2, newVec2 } from '@/shared/geometry'
 import { millimeters } from '@/shared/geometry'
 
 import { MonolithicRoofAssembly } from './monolithic'
@@ -13,8 +13,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
 
   const createTestRoof = (
     type: 'shed' | 'gable',
-    ridgeStart: vec2,
-    ridgeEnd: vec2,
+    ridgeStart: Vec2,
+    ridgeEnd: Vec2,
     slope: number,
     verticalOffset = 3000
   ): Roof => {
@@ -23,20 +23,10 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
       storeyId: 'test-storey' as any,
       type,
       referencePolygon: {
-        points: [
-          vec2.fromValues(0, 0),
-          vec2.fromValues(10000, 0),
-          vec2.fromValues(10000, 5000),
-          vec2.fromValues(0, 5000)
-        ]
+        points: [newVec2(0, 0), newVec2(10000, 0), newVec2(10000, 5000), newVec2(0, 5000)]
       },
       overhangPolygon: {
-        points: [
-          vec2.fromValues(-500, -500),
-          vec2.fromValues(10500, -500),
-          vec2.fromValues(10500, 5500),
-          vec2.fromValues(-500, 5500)
-        ]
+        points: [newVec2(-500, -500), newVec2(10500, -500), newVec2(10500, 5500), newVec2(-500, 5500)]
       },
       ridgeLine: { start: ridgeStart, end: ridgeEnd },
       mainSideIndex: 0,
@@ -46,8 +36,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
       assemblyId: 'test-assembly' as any,
       // Computed properties
       slopeAngleRad: 0,
-      ridgeDirection: vec2.fromValues(0, 0),
-      downSlopeDirection: vec2.fromValues(0, 0),
+      ridgeDirection: newVec2(0, 0),
+      downSlopeDirection: newVec2(0, 0),
       rise: 0,
       span: 0
     }
@@ -74,14 +64,14 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
     it('should calculate offsets for line perpendicular to ridge', () => {
       // Shed roof: ridge is on the top edge of reference polygon
       // Reference polygon: rectangle from Y=0 to Y=5000, ridge at Y=5000
-      const roof = createTestRoof('shed', vec2.fromValues(0, 5000), vec2.fromValues(10000, 5000), 30, verticalOffset)
+      const roof = createTestRoof('shed', newVec2(0, 5000), newVec2(10000, 5000), 30, verticalOffset)
       const config = createTestConfig(0)
       const assembly = new MonolithicRoofAssembly(config)
 
       // Wall line perpendicular to ridge (runs north-south)
       const line = {
-        start: vec2.fromValues(5000, 0), // At low edge (5000mm from ridge)
-        end: vec2.fromValues(5000, 5000) // At ridge
+        start: newVec2(5000, 0), // At low edge (5000mm from ridge)
+        end: newVec2(5000, 5000) // At ridge
       }
 
       const offsets = assembly.getBottomOffsets(roof, line)
@@ -106,13 +96,13 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
 
     it('should calculate offsets for line parallel to ridge', () => {
       // Ridge at Y=5000 (top edge of reference polygon)
-      const roof = createTestRoof('shed', vec2.fromValues(0, 5000), vec2.fromValues(10000, 5000), 30, verticalOffset)
+      const roof = createTestRoof('shed', newVec2(0, 5000), newVec2(10000, 5000), 30, verticalOffset)
       const config = createTestConfig(0)
 
       // Wall line parallel to ridge, 1000mm below it
       const line = {
-        start: vec2.fromValues(0, 4000),
-        end: vec2.fromValues(10000, 4000)
+        start: newVec2(0, 4000),
+        end: newVec2(10000, 4000)
       }
 
       const assembly = new MonolithicRoofAssembly(config)
@@ -133,13 +123,13 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
 
     it('should handle line on the ridge itself', () => {
       // Ridge at Y=5000 (top edge)
-      const roof = createTestRoof('shed', vec2.fromValues(0, 5000), vec2.fromValues(10000, 5000), 30, verticalOffset)
+      const roof = createTestRoof('shed', newVec2(0, 5000), newVec2(10000, 5000), 30, verticalOffset)
       const config = createTestConfig(0)
 
       // Wall line exactly on the ridge
       const line = {
-        start: vec2.fromValues(100, 5000),
-        end: vec2.fromValues(1000, 5000)
+        start: newVec2(100, 5000),
+        end: newVec2(1000, 5000)
       }
 
       const assembly = new MonolithicRoofAssembly(config)
@@ -158,13 +148,13 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
 
     it('should handle overhang beyond reference polygon', () => {
       // Ridge at Y=5000 (top edge)
-      const roof = createTestRoof('shed', vec2.fromValues(0, 5000), vec2.fromValues(10000, 5000), 30, verticalOffset)
+      const roof = createTestRoof('shed', newVec2(0, 5000), newVec2(10000, 5000), 30, verticalOffset)
       const config = createTestConfig(0)
 
       // Line extends beyond reference polygon into overhang area
       const line = {
-        start: vec2.fromValues(5000, -500), // In overhang below building
-        end: vec2.fromValues(5000, 5500) // In overhang above ridge
+        start: newVec2(5000, -500), // In overhang below building
+        end: newVec2(5000, 5500) // In overhang above ridge
       }
 
       const assembly = new MonolithicRoofAssembly(config)
@@ -187,13 +177,13 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
 
     it('should handle diagonal line at 45 degrees', () => {
       // Ridge at Y=5000 (top edge)
-      const roof = createTestRoof('shed', vec2.fromValues(0, 5000), vec2.fromValues(10000, 5000), 30)
+      const roof = createTestRoof('shed', newVec2(0, 5000), newVec2(10000, 5000), 30)
       const config = createTestConfig(0)
 
       // Diagonal line from low side toward ridge
       const line = {
-        start: vec2.fromValues(3000, 1000), // Below ridge
-        end: vec2.fromValues(7000, 4000) // Closer to ridge
+        start: newVec2(3000, 1000), // Below ridge
+        end: newVec2(7000, 4000) // Closer to ridge
       }
 
       const assembly = new MonolithicRoofAssembly(config)
@@ -210,13 +200,13 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
   describe('Gable Roof', () => {
     it('should calculate offsets for line perpendicular to ridge (crossing ridge)', () => {
       // Ridge runs along X-axis at Y=2500 (middle of reference polygon)
-      const roof = createTestRoof('gable', vec2.fromValues(0, 2500), vec2.fromValues(10000, 2500), 30)
+      const roof = createTestRoof('gable', newVec2(0, 2500), newVec2(10000, 2500), 30)
       const config = createTestConfig(0)
 
       // Wall line perpendicular to ridge, crossing it
       const line = {
-        start: vec2.fromValues(5000, 0),
-        end: vec2.fromValues(5000, 5000)
+        start: newVec2(5000, 0),
+        end: newVec2(5000, 5000)
       }
 
       const assembly = new MonolithicRoofAssembly(config)
@@ -256,13 +246,13 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
 
     it('should calculate offsets for line parallel to ridge', () => {
       // Ridge runs along X-axis
-      const roof = createTestRoof('gable', vec2.fromValues(0, 2500), vec2.fromValues(10000, 2500), 30)
+      const roof = createTestRoof('gable', newVec2(0, 2500), newVec2(10000, 2500), 30)
       const config = createTestConfig(0)
 
       // Wall line parallel to ridge, 1000mm away
       const line = {
-        start: vec2.fromValues(0, 1500),
-        end: vec2.fromValues(10000, 1500)
+        start: newVec2(0, 1500),
+        end: newVec2(10000, 1500)
       }
 
       const assembly = new MonolithicRoofAssembly(config)
@@ -284,13 +274,13 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
 
     it('should handle line on the ridge itself', () => {
       // Ridge runs along X-axis
-      const roof = createTestRoof('gable', vec2.fromValues(0, 2500), vec2.fromValues(10000, 2500), 30)
+      const roof = createTestRoof('gable', newVec2(0, 2500), newVec2(10000, 2500), 30)
       const config = createTestConfig(0)
 
       // Wall line exactly on ridge
       const line = {
-        start: vec2.fromValues(0, 2500),
-        end: vec2.fromValues(10000, 2500)
+        start: newVec2(0, 2500),
+        end: newVec2(10000, 2500)
       }
 
       const assembly = new MonolithicRoofAssembly(config)
@@ -311,13 +301,13 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
 
     it('should handle diagonal line crossing ridge at angle', () => {
       // Ridge runs along X-axis at Y=2500
-      const roof = createTestRoof('gable', vec2.fromValues(0, 2500), vec2.fromValues(10000, 2500), 30)
+      const roof = createTestRoof('gable', newVec2(0, 2500), newVec2(10000, 2500), 30)
       const config = createTestConfig(0)
 
       // Diagonal line crossing ridge
       const line = {
-        start: vec2.fromValues(2000, 1000), // 1500mm below ridge
-        end: vec2.fromValues(8000, 4000) // 1500mm above ridge
+        start: newVec2(2000, 1000), // 1500mm below ridge
+        end: newVec2(8000, 4000) // 1500mm above ridge
       }
 
       const assembly = new MonolithicRoofAssembly(config)
@@ -344,13 +334,13 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
 
     it('should handle line that does not intersect overhang', () => {
       // Ridge runs from (0, 2500) to (10000, 2500)
-      const roof = createTestRoof('gable', vec2.fromValues(0, 2500), vec2.fromValues(10000, 2500), 30)
+      const roof = createTestRoof('gable', newVec2(0, 2500), newVec2(10000, 2500), 30)
       const config = createTestConfig(0)
 
       // Line that is completely outside the overhang polygon
       const line = {
-        start: vec2.fromValues(11000, 1000),
-        end: vec2.fromValues(12000, 4000)
+        start: newVec2(11000, 1000),
+        end: newVec2(12000, 4000)
       }
 
       const assembly = new MonolithicRoofAssembly(config)
@@ -363,12 +353,12 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
 
   describe('Edge Cases', () => {
     it('should handle zero slope roof', () => {
-      const roof = createTestRoof('shed', vec2.fromValues(0, 2500), vec2.fromValues(10000, 2500), 0.1) // Nearly flat
+      const roof = createTestRoof('shed', newVec2(0, 2500), newVec2(10000, 2500), 0.1) // Nearly flat
       const config = createTestConfig(0)
 
       const line = {
-        start: vec2.fromValues(5000, 0),
-        end: vec2.fromValues(5000, 5000)
+        start: newVec2(5000, 0),
+        end: newVec2(5000, 5000)
       }
 
       const assembly = new MonolithicRoofAssembly(config)
@@ -380,12 +370,12 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
     })
 
     it('should handle steep slope roof', () => {
-      const roof = createTestRoof('shed', vec2.fromValues(0, 2500), vec2.fromValues(10000, 2500), 60) // Steep
+      const roof = createTestRoof('shed', newVec2(0, 2500), newVec2(10000, 2500), 60) // Steep
       const config = createTestConfig(0)
 
       const line = {
-        start: vec2.fromValues(5000, 0),
-        end: vec2.fromValues(5000, 5000)
+        start: newVec2(5000, 0),
+        end: newVec2(5000, 5000)
       }
 
       const assembly = new MonolithicRoofAssembly(config)
@@ -397,13 +387,13 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
     })
 
     it('should handle very short line segments', () => {
-      const roof = createTestRoof('shed', vec2.fromValues(0, 2500), vec2.fromValues(10000, 2500), 30)
+      const roof = createTestRoof('shed', newVec2(0, 2500), newVec2(10000, 2500), 30)
       const config = createTestConfig(0)
 
       // Very short line (10mm)
       const line = {
-        start: vec2.fromValues(5000, 2500),
-        end: vec2.fromValues(5010, 2500)
+        start: newVec2(5000, 2500),
+        end: newVec2(5010, 2500)
       }
 
       const assembly = new MonolithicRoofAssembly(config)
@@ -416,13 +406,13 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
 
     it('should handle ridge at different orientations', () => {
       // Ridge runs along Y-axis (vertical)
-      const roof = createTestRoof('shed', vec2.fromValues(5000, 0), vec2.fromValues(5000, 10000), 30)
+      const roof = createTestRoof('shed', newVec2(5000, 0), newVec2(5000, 10000), 30)
       const config = createTestConfig(0)
 
       // Wall perpendicular to vertical ridge
       const line = {
-        start: vec2.fromValues(0, 5000),
-        end: vec2.fromValues(10000, 5000)
+        start: newVec2(0, 5000),
+        end: newVec2(10000, 5000)
       }
 
       const assembly = new MonolithicRoofAssembly(config)

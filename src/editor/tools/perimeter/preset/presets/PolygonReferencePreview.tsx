@@ -1,13 +1,19 @@
-import type { vec2 } from 'gl-matrix'
-import { vec2 as Vec2 } from 'gl-matrix'
 import React, { useMemo } from 'react'
 
 import type { PerimeterReferenceSide } from '@/building/model/model'
-import { Bounds2D, type Polygon2D, ensurePolygonIsClockwise, offsetPolygon } from '@/shared/geometry'
+import {
+  Bounds2D,
+  type Polygon2D,
+  type Vec2,
+  copyVec2,
+  distVec2,
+  ensurePolygonIsClockwise,
+  offsetPolygon
+} from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
 
 interface PolygonReferencePreviewProps {
-  referencePoints: readonly vec2[]
+  referencePoints: readonly Vec2[]
   thickness: number
   referenceSide: PerimeterReferenceSide
   size?: number
@@ -29,7 +35,7 @@ function toPath(points: ScaledPoint[]): string {
 
 function generateLabels(
   scaledPoints: ScaledPoint[],
-  originalPoints: readonly vec2[],
+  originalPoints: readonly Vec2[],
   pushDirection: PushDirection,
   color: string
 ): React.ReactNode {
@@ -41,7 +47,7 @@ function generateLabels(
 
     const originalStart = originalPoints[index]
     const originalEnd = originalPoints[nextIndex]
-    const length = Vec2.distance(originalStart, originalEnd)
+    const length = distVec2(originalStart, originalEnd)
 
     const midX = (point.x + nextPoint.x) / 2
     const midY = (point.y + nextPoint.y) / 2
@@ -94,7 +100,7 @@ export function PolygonReferencePreview({
     }
 
     const referencePolygon: Polygon2D = ensurePolygonIsClockwise({
-      points: referencePoints.map(point => Vec2.clone(point))
+      points: referencePoints.map(point => copyVec2(point))
     })
 
     let derivedPolygon: Polygon2D | null = null
@@ -119,7 +125,7 @@ export function PolygonReferencePreview({
     const centerX = size / 2
     const centerY = size / 2
 
-    const transformPoint = (point: vec2): ScaledPoint => ({
+    const transformPoint = (point: Vec2): ScaledPoint => ({
       x: (point[0] - center[0]) * scale + centerX,
       y: -(point[1] - center[1]) * scale + centerY
     })

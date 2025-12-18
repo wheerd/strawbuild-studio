@@ -1,12 +1,10 @@
-import type { vec2 } from 'gl-matrix'
-
 import type { SelectableId } from '@/building/model/ids'
 import { isFloorAreaId } from '@/building/model/ids'
 import type { FloorArea, FloorOpening, Perimeter } from '@/building/model/model'
 import type { StoreActions } from '@/building/store/types'
 import type { SnappingContext } from '@/editor/services/snapping/types'
 import type { MovementContext } from '@/editor/tools/basic/movement/MovementBehavior'
-import { type Polygon2D } from '@/shared/geometry'
+import { type Polygon2D, type Vec2 } from '@/shared/geometry'
 
 import {
   type PolygonEntityContext,
@@ -59,11 +57,11 @@ export class FloorAreaMovementBehavior extends PolygonMovementBehavior<FloorArea
     }
   }
 
-  protected getPolygonPoints(context: MovementContext<FloorAreaEntityContext>): readonly vec2[] {
+  protected getPolygonPoints(context: MovementContext<FloorAreaEntityContext>): readonly Vec2[] {
     return context.entity.floorArea.area.points
   }
 
-  protected applyMovementDelta(delta: vec2, context: MovementContext<FloorAreaEntityContext>): boolean {
+  protected applyMovementDelta(delta: Vec2, context: MovementContext<FloorAreaEntityContext>): boolean {
     const newPolygon: Polygon2D = {
       points: this.translatePoints(context.entity.floorArea.area.points, delta)
     }

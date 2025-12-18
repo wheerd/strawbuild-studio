@@ -1,5 +1,6 @@
-import { vec2 } from 'gl-matrix'
 import { describe, expect, it, vi } from 'vitest'
+
+import { newVec2 } from '@/shared/geometry'
 
 import { ProjectImportExportService } from './ProjectImportExportService'
 
@@ -19,41 +20,36 @@ const mockActions = {
     {
       id: 'perimeter_1',
       referenceSide: 'inside' as const,
-      referencePolygon: [
-        vec2.fromValues(0, 0),
-        vec2.fromValues(100, 0),
-        vec2.fromValues(100, 100),
-        vec2.fromValues(0, 100)
-      ],
+      referencePolygon: [newVec2(0, 0), newVec2(100, 0), newVec2(100, 100), newVec2(0, 100)],
       corners: [
         {
           id: 'corner_1',
-          insidePoint: vec2.fromValues(0, 0),
-          outsidePoint: vec2.fromValues(-200, 0),
+          insidePoint: newVec2(0, 0),
+          outsidePoint: newVec2(-200, 0),
           constructedByWall: 'next',
           interiorAngle: 90,
           exteriorAngle: 270
         },
         {
           id: 'corner_2',
-          insidePoint: vec2.fromValues(100, 0),
-          outsidePoint: vec2.fromValues(100, -200),
+          insidePoint: newVec2(100, 0),
+          outsidePoint: newVec2(100, -200),
           constructedByWall: 'next',
           interiorAngle: 90,
           exteriorAngle: 270
         },
         {
           id: 'corner_3',
-          insidePoint: vec2.fromValues(100, 100),
-          outsidePoint: vec2.fromValues(300, 100),
+          insidePoint: newVec2(100, 100),
+          outsidePoint: newVec2(300, 100),
           constructedByWall: 'next',
           interiorAngle: 90,
           exteriorAngle: 270
         },
         {
           id: 'corner_4',
-          insidePoint: vec2.fromValues(0, 100),
-          outsidePoint: vec2.fromValues(0, 300),
+          insidePoint: newVec2(0, 100),
+          outsidePoint: newVec2(0, 300),
           constructedByWall: 'next',
           interiorAngle: 90,
           exteriorAngle: 270

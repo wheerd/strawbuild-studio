@@ -1,4 +1,4 @@
-import { vec2, vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 import { type Mock, type Mocked, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createOpeningId, createPerimeterId, createWallAssemblyId } from '@/building/model/ids'
@@ -17,6 +17,7 @@ import {
   TAG_WALL_LENGTH
 } from '@/construction/tags'
 import type { InfillMethod, WallLayersConfig, WallSegmentConstruction } from '@/construction/walls'
+import { newVec2 } from '@/shared/geometry'
 import { Bounds3D, type Length } from '@/shared/geometry'
 
 import type { WallCornerInfo } from './construction'
@@ -72,15 +73,15 @@ function createMockWall(id: string, wallLength: Length, thickness: Length, openi
     outsideLength: wallLength,
     openings,
     insideLine: {
-      start: vec2.fromValues(0, 0),
-      end: vec2.fromValues(wallLength, 0)
+      start: newVec2(0, 0),
+      end: newVec2(wallLength, 0)
     },
     outsideLine: {
-      start: vec2.fromValues(0, thickness),
-      end: vec2.fromValues(wallLength, thickness)
+      start: newVec2(0, thickness),
+      end: newVec2(wallLength, thickness)
     },
-    direction: vec2.fromValues(1, 0),
-    outsideDirection: vec2.fromValues(0, 1)
+    direction: newVec2(1, 0),
+    outsideDirection: newVec2(0, 1)
   }
 }
 
@@ -133,12 +134,12 @@ function createMockCornerInfo(
     extensionEnd,
     constructionLength,
     constructionInsideLine: {
-      start: vec2.fromValues(-extensionStart, 0),
-      end: vec2.fromValues(constructionLength - extensionStart, 0)
+      start: newVec2(-extensionStart, 0),
+      end: newVec2(constructionLength - extensionStart, 0)
     },
     constructionOutsideLine: {
-      start: vec2.fromValues(-extensionStart, 300),
-      end: vec2.fromValues(constructionLength - extensionStart, 300)
+      start: newVec2(-extensionStart, 300),
+      end: newVec2(constructionLength - extensionStart, 300)
     }
   }
 }
@@ -195,16 +196,16 @@ describe('segmentedWallConstruction', () => {
     mockGetWallContext.mockReturnValue({
       startCorner: {
         id: 'start' as any,
-        insidePoint: vec2.fromValues(0, 0),
-        outsidePoint: vec2.fromValues(0, 300),
+        insidePoint: newVec2(0, 0),
+        outsidePoint: newVec2(0, 300),
         constructedByWall: 'next',
         interiorAngle: 90,
         exteriorAngle: 270
       },
       endCorner: {
         id: 'end' as any,
-        insidePoint: vec2.fromValues(3000, 0),
-        outsidePoint: vec2.fromValues(3000, 300),
+        insidePoint: newVec2(3000, 0),
+        outsidePoint: newVec2(3000, 300),
         constructedByWall: 'previous',
         interiorAngle: 90,
         exteriorAngle: 270
@@ -751,12 +752,7 @@ describe('segmentedWallConstruction', () => {
         label: 'Corner',
         plane: 'xz',
         polygon: {
-          points: [
-            vec2.fromValues(-100, 0),
-            vec2.fromValues(-100, 2500),
-            vec2.fromValues(0, 2500),
-            vec2.fromValues(0, 0)
-          ]
+          points: [newVec2(-100, 0), newVec2(-100, 2500), newVec2(0, 2500), newVec2(0, 0)]
         },
         cancelKey: 'corner-start-corner'
       })
@@ -769,12 +765,7 @@ describe('segmentedWallConstruction', () => {
         label: 'Corner',
         plane: 'xz',
         polygon: {
-          points: [
-            vec2.fromValues(3000, 0),
-            vec2.fromValues(3000, 2500),
-            vec2.fromValues(3150, 2500),
-            vec2.fromValues(3150, 0)
-          ]
+          points: [newVec2(3000, 0), newVec2(3000, 2500), newVec2(3150, 2500), newVec2(3150, 0)]
         },
         cancelKey: 'corner-end-corner'
       })

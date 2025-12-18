@@ -1,4 +1,3 @@
-import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
@@ -15,7 +14,11 @@ import {
 import {
   type Length,
   type Polygon2D,
+  addVec2,
+  copyVec2,
   ensurePolygonIsClockwise,
+  newVec2,
+  scaleAddVec2,
   wouldClosingPolygonSelfIntersect
 } from '@/shared/geometry'
 
@@ -73,23 +76,23 @@ describe('perimeterSlice', () => {
 
   // Helper function to create a simple rectangular polygon (in millimeters)
   const createRectangularBoundary = (): Polygon2D => ({
-    points: [vec2.fromValues(0, 0), vec2.fromValues(10000, 0), vec2.fromValues(10000, 5000), vec2.fromValues(0, 5000)]
+    points: [newVec2(0, 0), newVec2(10000, 0), newVec2(10000, 5000), newVec2(0, 5000)]
   })
 
   // Helper function to create a triangular polygon
   const createTriangularBoundary = (): Polygon2D => ({
-    points: [vec2.fromValues(0, 0), vec2.fromValues(5, 0), vec2.fromValues(2.5, 4)]
+    points: [newVec2(0, 0), newVec2(5, 0), newVec2(2.5, 4)]
   })
 
   // Helper function to create a shape with reflex angles (like a "C" or "L" shape)
   const createReflexAngleBoundary = (): Polygon2D => ({
     points: [
-      vec2.fromValues(0, 0), // Start
-      vec2.fromValues(10, 0), // Move right
-      vec2.fromValues(10, 5), // Move up
-      vec2.fromValues(5, 5), // Move left (creates reflex angle)
-      vec2.fromValues(5, 10), // Move up (creates reflex angle)
-      vec2.fromValues(0, 10) // Move left
+      newVec2(0, 0), // Start
+      newVec2(10, 0), // Move right
+      newVec2(10, 5), // Move up
+      newVec2(5, 5), // Move left (creates reflex angle)
+      newVec2(5, 10), // Move up (creates reflex angle)
+      newVec2(0, 10) // Move left
       // Back to start
     ]
   })
@@ -174,7 +177,7 @@ describe('perimeterSlice', () => {
 
     it('should throw error for insufficient boundary points', () => {
       const invalidBoundary: Polygon2D = {
-        points: [vec2.fromValues(0, 0), vec2.fromValues(1, 0)] // Only 2 points
+        points: [newVec2(0, 0), newVec2(1, 0)] // Only 2 points
       }
 
       expect(() => store.actions.addPerimeter(testStoreyId, invalidBoundary, createWallAssemblyId())).toThrow(
@@ -205,8 +208,8 @@ describe('perimeterSlice', () => {
       const perimeter = Object.values(store.perimeters)[0]
       const wall = perimeter.walls[0] // First wall from (0,0) to (10,0)
 
-      expect(wall.insideLine.start).toEqual(vec2.fromValues(420, 0))
-      expect(wall.insideLine.end).toEqual(vec2.fromValues(9580, 0))
+      expect(wall.insideLine.start).toEqual(newVec2(420, 0))
+      expect(wall.insideLine.end).toEqual(newVec2(9580, 0))
       expect(wall.insideLength).toBe(10000)
 
       // Check that outside line is offset correctly
@@ -846,22 +849,22 @@ describe('perimeterSlice', () => {
         const boundary = createRectangularBoundary()
         const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
-        const offset = vec2.fromValues(250, -125)
-        const originalReference = perimeter.referencePolygon.map(point => vec2.clone(point))
-        const originalInside = perimeter.corners.map(corner => vec2.clone(corner.insidePoint))
-        const originalOutside = perimeter.corners.map(corner => vec2.clone(corner.outsidePoint))
+        const offset = newVec2(250, -125)
+        const originalReference = perimeter.referencePolygon.map(point => copyVec2(point))
+        const originalInside = perimeter.corners.map(corner => copyVec2(corner.insidePoint))
+        const originalOutside = perimeter.corners.map(corner => copyVec2(corner.outsidePoint))
 
         store.actions.movePerimeter(perimeter.id, offset)
 
         const moved = store.perimeters[perimeter.id]!
         moved.referencePolygon.forEach((point, index) => {
-          const expected = vec2.add(vec2.create(), originalReference[index], offset)
+          const expected = addVec2(originalReference[index], offset)
           expect(Array.from(point)).toEqual(Array.from(expected))
         })
 
         moved.corners.forEach((corner, index) => {
-          const expectedInside = vec2.add(vec2.create(), originalInside[index], offset)
-          const expectedOutside = vec2.add(vec2.create(), originalOutside[index], offset)
+          const expectedInside = addVec2(originalInside[index], offset)
+          const expectedOutside = addVec2(originalOutside[index], offset)
           expect(Array.from(corner.insidePoint)).toEqual(Array.from(expectedInside))
           expect(Array.from(corner.outsidePoint)).toEqual(Array.from(expectedOutside))
         })
@@ -1246,9 +1249,9 @@ describe('perimeterSlice', () => {
       // Create a shape with acute angles (< 90 degrees)
       const acuteAngleBoundary: Polygon2D = {
         points: [
-          vec2.fromValues(0, 0),
-          vec2.fromValues(10, 0),
-          vec2.fromValues(5, 2) // Creates acute angle
+          newVec2(0, 0),
+          newVec2(10, 0),
+          newVec2(5, 2) // Creates acute angle
         ]
       }
 
@@ -1371,13 +1374,7 @@ describe('perimeterSlice', () => {
       it('should remove corner and merge adjacent walls', () => {
         // Create a pentagon (5 corners) so we can safely remove one
         const boundary: Polygon2D = {
-          points: [
-            vec2.fromValues(0, 0),
-            vec2.fromValues(10, 0),
-            vec2.fromValues(15, 5),
-            vec2.fromValues(5, 10),
-            vec2.fromValues(-5, 5)
-          ]
+          points: [newVec2(0, 0), newVec2(10, 0), newVec2(15, 5), newVec2(5, 10), newVec2(-5, 5)]
         }
         store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
@@ -1409,13 +1406,7 @@ describe('perimeterSlice', () => {
 
       it('should delete openings from merged walls', () => {
         const boundary: Polygon2D = {
-          points: [
-            vec2.fromValues(0, 0),
-            vec2.fromValues(2000, 0),
-            vec2.fromValues(2000, 1000),
-            vec2.fromValues(1000, 1000),
-            vec2.fromValues(0, 1000)
-          ]
+          points: [newVec2(0, 0), newVec2(2000, 0), newVec2(2000, 1000), newVec2(1000, 1000), newVec2(0, 1000)]
         }
         const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
@@ -1493,11 +1484,11 @@ describe('perimeterSlice', () => {
         // Create a concave shape where removing a specific corner would cause self-intersection
         const boundary: Polygon2D = {
           points: [
-            vec2.fromValues(0, 0),
-            vec2.fromValues(10, 0),
-            vec2.fromValues(10, 10),
-            vec2.fromValues(5, 5), // This creates a concave shape
-            vec2.fromValues(0, 10)
+            newVec2(0, 0),
+            newVec2(10, 0),
+            newVec2(10, 10),
+            newVec2(5, 5), // This creates a concave shape
+            newVec2(0, 10)
           ]
         }
         store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
@@ -1529,13 +1520,7 @@ describe('perimeterSlice', () => {
       it('should remove wall and its adjacent corners', () => {
         // Create a pentagon so we can safely remove a wall
         const boundary: Polygon2D = {
-          points: [
-            vec2.fromValues(0, 0),
-            vec2.fromValues(10, 0),
-            vec2.fromValues(15, 5),
-            vec2.fromValues(5, 10),
-            vec2.fromValues(-5, 5)
-          ]
+          points: [newVec2(0, 0), newVec2(10, 0), newVec2(15, 5), newVec2(5, 10), newVec2(-5, 5)]
         }
         store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
 
@@ -1608,11 +1593,11 @@ describe('perimeterSlice', () => {
         // Create a shape where removing a specific wall would cause self-intersection
         const boundary: Polygon2D = {
           points: [
-            vec2.fromValues(0, 0),
-            vec2.fromValues(20, 0),
-            vec2.fromValues(20, 10),
-            vec2.fromValues(10, 5), // Creates a potential problem if we remove the wrong wall
-            vec2.fromValues(0, 10)
+            newVec2(0, 0),
+            newVec2(20, 0),
+            newVec2(20, 10),
+            newVec2(10, 5), // Creates a potential problem if we remove the wrong wall
+            newVec2(0, 10)
           ]
         }
         store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId())
@@ -1638,14 +1623,7 @@ describe('perimeterSlice', () => {
 
       it('should preserve geometry integrity after wall removal', () => {
         const boundary: Polygon2D = {
-          points: [
-            vec2.fromValues(0, 0),
-            vec2.fromValues(20, 0),
-            vec2.fromValues(20, 20),
-            vec2.fromValues(10, 20),
-            vec2.fromValues(10, 10),
-            vec2.fromValues(0, 10)
-          ]
+          points: [newVec2(0, 0), newVec2(20, 0), newVec2(20, 20), newVec2(10, 20), newVec2(10, 10), newVec2(0, 10)]
         }
         store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), 200)
 
@@ -1688,7 +1666,7 @@ describe('perimeterSlice', () => {
         const initialReferenceLength = perimeter.referencePolygon.length
         const wall = perimeter.walls[0]
         const splitPosition = wall.wallLength / 2
-        const expectedPoint = vec2.scaleAndAdd(vec2.create(), wall.insideLine.start, wall.direction, splitPosition)
+        const expectedPoint = scaleAddVec2(wall.insideLine.start, wall.direction, splitPosition)
 
         const newWallId = store.actions.splitPerimeterWall(perimeter.id, wall.id, splitPosition)
         expect(newWallId).not.toBeNull()
@@ -1707,7 +1685,7 @@ describe('perimeterSlice', () => {
         const initialReferenceLength = perimeterOutside.referencePolygon.length
         const wall = perimeterOutside.walls[0]
         const splitPosition = wall.wallLength / 2
-        const expectedPoint = vec2.scaleAndAdd(vec2.create(), wall.outsideLine.start, wall.direction, splitPosition)
+        const expectedPoint = scaleAddVec2(wall.outsideLine.start, wall.direction, splitPosition)
 
         const newWallId = store.actions.splitPerimeterWall(perimeterOutside.id, wall.id, splitPosition)
         expect(newWallId).not.toBeNull()
@@ -1723,13 +1701,13 @@ describe('perimeterSlice', () => {
         // Create a complex shape where certain deletions would be problematic
         const complexBoundary: Polygon2D = {
           points: [
-            vec2.fromValues(0, 0),
-            vec2.fromValues(10, 0),
-            vec2.fromValues(10, 10),
-            vec2.fromValues(8, 8),
-            vec2.fromValues(6, 10),
-            vec2.fromValues(2, 8),
-            vec2.fromValues(0, 10)
+            newVec2(0, 0),
+            newVec2(10, 0),
+            newVec2(10, 10),
+            newVec2(8, 8),
+            newVec2(6, 10),
+            newVec2(2, 8),
+            newVec2(0, 10)
           ]
         }
         store.actions.addPerimeter(testStoreyId, complexBoundary, createWallAssemblyId())
@@ -2062,7 +2040,7 @@ describe('perimeterSlice', () => {
             800
           )
           // Should return one of the valid adjacent positions
-          expect(vec2.fromValues(1200, 2800)).toContain(result)
+          expect(newVec2(1200, 2800)).toContain(result)
         })
       })
 
@@ -2184,13 +2162,7 @@ describe('perimeterSlice', () => {
       it('should preserve openings when removing straight corner (180°)', () => {
         // Create a perimeter with a split wall
         const boundary = {
-          points: [
-            vec2.fromValues(0, 0),
-            vec2.fromValues(0, 3000),
-            vec2.fromValues(0, 6000),
-            vec2.fromValues(2000, 6000),
-            vec2.fromValues(2000, 0)
-          ]
+          points: [newVec2(0, 0), newVec2(0, 3000), newVec2(0, 6000), newVec2(2000, 6000), newVec2(2000, 0)]
         }
         const wallAssemblyId = createWallAssemblyId()
 
@@ -2267,12 +2239,7 @@ describe('perimeterSlice', () => {
       it('should delete openings when removing non-straight corner (preserves current behavior)', () => {
         // Create a simple rectangular perimeter
         const boundary = {
-          points: [
-            vec2.fromValues(0, 0),
-            vec2.fromValues(0, 3000),
-            vec2.fromValues(3000, 3000),
-            vec2.fromValues(3000, 0)
-          ]
+          points: [newVec2(0, 0), newVec2(0, 3000), newVec2(3000, 3000), newVec2(3000, 0)]
         }
         const wallAssemblyId = createWallAssemblyId()
         const perimeter = store.actions.addPerimeter(createStoreyId(), boundary, wallAssemblyId)
@@ -2313,7 +2280,7 @@ describe('perimeterSlice', () => {
     it('should update assembly for all walls in perimeter', () => {
       // Add perimeter with multiple walls
       const boundary: Polygon2D = {
-        points: [vec2.fromValues(0, 0), vec2.fromValues(5000, 0), vec2.fromValues(5000, 3000), vec2.fromValues(0, 3000)]
+        points: [newVec2(0, 0), newVec2(5000, 0), newVec2(5000, 3000), newVec2(0, 3000)]
       }
       const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), 360)
 
@@ -2337,7 +2304,7 @@ describe('perimeterSlice', () => {
     it('should update thickness for all walls in perimeter', () => {
       // Add perimeter with multiple walls
       const boundary: Polygon2D = {
-        points: [vec2.fromValues(0, 0), vec2.fromValues(5000, 0), vec2.fromValues(5000, 3000), vec2.fromValues(0, 3000)]
+        points: [newVec2(0, 0), newVec2(5000, 0), newVec2(5000, 3000), newVec2(0, 3000)]
       }
       const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), 360)
 
@@ -2357,7 +2324,7 @@ describe('perimeterSlice', () => {
     it('should throw error for invalid thickness in bulk update', () => {
       // Add perimeter
       const boundary: Polygon2D = {
-        points: [vec2.fromValues(0, 0), vec2.fromValues(5000, 0), vec2.fromValues(5000, 3000), vec2.fromValues(0, 3000)]
+        points: [newVec2(0, 0), newVec2(5000, 0), newVec2(5000, 3000), newVec2(0, 3000)]
       }
       const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), 360)
 
@@ -2393,8 +2360,8 @@ describe('perimeterSlice', () => {
       const boundary = createRectangularBoundary()
       const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), 400)
 
-      const originalInsidePoints = perimeter.corners.map(corner => vec2.clone(corner.insidePoint))
-      const originalOutsidePoints = perimeter.corners.map(corner => vec2.clone(corner.outsidePoint))
+      const originalInsidePoints = perimeter.corners.map(corner => copyVec2(corner.insidePoint))
+      const originalOutsidePoints = perimeter.corners.map(corner => copyVec2(corner.outsidePoint))
 
       store.actions.setPerimeterReferenceSide(perimeter.id, 'outside')
 
@@ -2414,8 +2381,8 @@ describe('perimeterSlice', () => {
       const perimeter = store.actions.addPerimeter(testStoreyId, boundary, createWallAssemblyId(), 400)
       store.actions.setPerimeterReferenceSide(perimeter.id, 'outside')
 
-      const expansion = vec2.fromValues(1000, 1000)
-      const newBoundary = perimeter.corners.map(corner => vec2.add(vec2.create(), corner.outsidePoint, expansion))
+      const expansion = newVec2(1000, 1000)
+      const newBoundary = perimeter.corners.map(corner => addVec2(corner.outsidePoint, expansion))
 
       const result = store.actions.updatePerimeterBoundary(perimeter.id, newBoundary)
       expect(result).toBe(true)

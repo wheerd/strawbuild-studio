@@ -1,11 +1,10 @@
-import { vec2 } from 'gl-matrix'
 import React from 'react'
 
-import type {} from '@/shared/geometry'
+import { type Vec2 } from '@/shared/geometry'
 
 interface SvgMeasurementIndicatorProps {
-  startPoint: vec2 // SVG coordinates [x, y]
-  endPoint: vec2 // SVG coordinates [x, y]
+  startPoint: Vec2 // SVG coordinates [x, y]
+  endPoint: Vec2 // SVG coordinates [x, y]
   label: string
   offset?: number // SVG units offset
   labelOrientation?: 'parallel' | 'perpendicular'

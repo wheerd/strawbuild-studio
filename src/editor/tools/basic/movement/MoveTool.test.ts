@@ -1,5 +1,6 @@
-import { vec2 } from 'gl-matrix'
 import { describe, expect, it, vi } from 'vitest'
+
+import { newVec2 } from '@/shared/geometry'
 
 import { MoveTool } from './MoveTool'
 
@@ -12,7 +13,7 @@ describe('MoveTool', () => {
 
     // Manually set tool state to waiting for movement (simulating pointerdown)
     ;(tool as any).toolState.isWaitingForMovement = true
-    ;(tool as any).toolState.downPosition = vec2.fromValues(100, 100)
+    ;(tool as any).toolState.downPosition = newVec2(100, 100)
     ;(tool as any).toolState.behavior = { mockBehavior: true }
 
     // Press escape key
@@ -38,9 +39,9 @@ describe('MoveTool', () => {
       behavior: { initializeState: vi.fn() },
       context: {},
       pointerState: {
-        startPosition: vec2.fromValues(100, 100),
-        currentPosition: vec2.fromValues(100, 100),
-        delta: vec2.fromValues(0, 0)
+        startPosition: newVec2(100, 100),
+        currentPosition: newVec2(100, 100),
+        delta: newVec2(0, 0)
       },
       currentMovementState: {},
       isValid: true

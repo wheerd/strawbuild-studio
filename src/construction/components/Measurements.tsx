@@ -1,4 +1,4 @@
-import { mat4, vec2, vec3 } from 'gl-matrix'
+import { mat4, vec3 } from 'gl-matrix'
 import { useMemo } from 'react'
 
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
@@ -6,7 +6,7 @@ import { getTagClasses } from '@/construction/components/cssHelpers'
 import { type Projection, allPoints, bounds3Dto2D, projectPoint } from '@/construction/geometry'
 import { type AutoMeasurement, type DirectMeasurement, processMeasurements } from '@/construction/measurements'
 import type { ConstructionModel } from '@/construction/model'
-import { Bounds2D } from '@/shared/geometry'
+import { Bounds2D, distVec2, newVec2 } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
 
 export interface MeasurementsProps {
@@ -24,12 +24,7 @@ export function Measurements({ model, projection }: MeasurementsProps): React.JS
         if (area.type === 'cuboid') {
           const bounds2D = bounds3Dto2D(area.bounds, projection)
           const { min, max } = bounds2D
-          return [
-            vec2.fromValues(min[0], min[1]),
-            vec2.fromValues(max[0], min[1]),
-            vec2.fromValues(max[0], max[1]),
-            vec2.fromValues(min[0], max[1])
-          ]
+          return [newVec2(min[0], min[1]), newVec2(max[0], min[1]), newVec2(max[0], max[1]), newVec2(min[0], max[1])]
         } else if (area.type === 'polygon') {
           const polygonPoints = area.polygon.points.map(p => {
             let p3d: vec3
@@ -41,7 +36,7 @@ export function Measurements({ model, projection }: MeasurementsProps): React.JS
               p3d = vec3.fromValues(0, p[0], p[1])
             }
             const projected = projectPoint(p3d, projection)
-            return vec2.fromValues(projected[0], projected[1])
+            return newVec2(projected[0], projected[1])
           })
           const polygonBounds = Bounds2D.fromPoints(polygonPoints)
           return polygonBounds.isEmpty ? [] : polygonPoints
@@ -63,7 +58,7 @@ export function Measurements({ model, projection }: MeasurementsProps): React.JS
     group.lines.flatMap((line, rowIndex) =>
       line.map(measurement => {
         // Calculate distance-based offset: distance from chosen point to its projection on line + row offset
-        const baseOffset = vec2.distance(measurement.startPoint, measurement.startOnLine)
+        const baseOffset = distVec2(measurement.startPoint, measurement.startOnLine)
         const rowOffset = 60 * (rowIndex + 1.2)
         const totalOffset = baseOffset + rowOffset
 
@@ -86,8 +81,8 @@ export function Measurements({ model, projection }: MeasurementsProps): React.JS
 
       return {
         ...m,
-        startPoint: vec2.fromValues(startProjected[0], startProjected[1]),
-        endPoint: vec2.fromValues(endProjected[0], endProjected[1]),
+        startPoint: newVec2(startProjected[0], startProjected[1]),
+        endPoint: newVec2(endProjected[0], endProjected[1]),
         offset: m.offset * (projection[0] < 0 && startProjected[0] === endProjected[0] ? -60 : 60)
       }
     })

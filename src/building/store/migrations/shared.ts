@@ -1,8 +1,7 @@
-import { vec2 } from 'gl-matrix'
-
 import type { FloorAssemblyId, OpeningAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import type { StoreState } from '@/building/store/types'
 import type { FloorAssemblyConfig, OpeningAssemblyConfig, WallAssemblyConfig } from '@/construction/config/types'
+import { type Vec2, newVec2 } from '@/shared/geometry'
 
 export type MigrationState = Partial<StoreState> & Record<string, unknown>
 export type Migration = (state: MigrationState) => void
@@ -10,13 +9,13 @@ export type Migration = (state: MigrationState) => void
 export const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
-export const toVec2 = (value: unknown): vec2 | null => {
+export const toVec2 = (value: unknown): Vec2 | null => {
   if (!Array.isArray(value) || value.length < 2) return null
   const [x, y] = value
   const numX = Number(x)
   const numY = Number(y)
   if (!Number.isFinite(numX) || !Number.isFinite(numY)) return null
-  return vec2.fromValues(numX, numY)
+  return newVec2(numX, numY)
 }
 
 const CONFIG_STORAGE_KEY = 'strawbaler-config'

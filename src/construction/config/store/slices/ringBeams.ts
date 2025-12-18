@@ -5,7 +5,6 @@ import { createRingBeamAssemblyId } from '@/building/model/ids'
 import type { FullRingBeamAssemblyConfig, RingBeamAssemblyConfig } from '@/construction/config/types'
 import { wood } from '@/construction/materials/material'
 import { type RingBeamConfig, validateRingBeamConfig } from '@/construction/ringBeams/types'
-import '@/shared/geometry'
 
 export interface RingBeamAssembliesState {
   ringBeamAssemblyConfigs: Record<RingBeamAssemblyId, RingBeamAssemblyConfig>

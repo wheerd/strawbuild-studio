@@ -1,8 +1,6 @@
-import type { vec2 } from 'gl-matrix'
-
 import type { MaterialId } from '@/construction/materials/material'
 import type { ConstructionResult } from '@/construction/results'
-import type { Length, Plane3D, PolygonWithHoles2D } from '@/shared/geometry'
+import { type Length, type Plane3D, type PolygonWithHoles2D, type Vec2 } from '@/shared/geometry'
 
 export interface LayerConstruction<TConfig extends BaseLayerConfig> {
   construct(
@@ -10,7 +8,7 @@ export interface LayerConstruction<TConfig extends BaseLayerConfig> {
     offset: Length,
     plane: Plane3D,
     config: TConfig,
-    direction?: vec2
+    direction?: Vec2
   ): Generator<ConstructionResult>
 }
 

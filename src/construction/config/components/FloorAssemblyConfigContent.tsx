@@ -34,7 +34,6 @@ import { MaterialSelectWithEdit } from '@/construction/materials/components/Mate
 import type { MaterialId } from '@/construction/materials/material'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
-import '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
 
 import { FloorAssemblySelect } from './FloorAssemblySelect'

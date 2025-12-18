@@ -1,4 +1,3 @@
-import { vec2 } from 'gl-matrix'
 
 import type { RoofAssemblyId, RoofType } from '@/building/model'
 import { getModelActions } from '@/building/store'
@@ -8,7 +7,7 @@ import type { SnappingContext } from '@/editor/services/snapping/types'
 import { BasePolygonTool, type PolygonToolStateBase } from '@/editor/tools/shared/polygon/BasePolygonTool'
 import { PolygonToolOverlay } from '@/editor/tools/shared/polygon/PolygonToolOverlay'
 import type { ToolImplementation } from '@/editor/tools/system/types'
-import type { Length, Polygon2D } from '@/shared/geometry'
+import { type Length, type Polygon2D, type Vec2 } from '@/shared/geometry'
 import { polygonIsClockwise } from '@/shared/geometry'
 
 import { RoofToolInspector } from './RoofToolInspector'
@@ -21,7 +20,7 @@ interface RoofToolState extends PolygonToolStateBase {
   assemblyId: RoofAssemblyId
 }
 
-const createPolygonSegments = (points: readonly vec2[]) => {
+const createPolygonSegments = (points: readonly Vec2[]) => {
   if (points.length < 2) return []
 
   const segments = []
@@ -99,7 +98,7 @@ export class RoofTool extends BasePolygonTool<RoofToolState> implements ToolImpl
     getViewModeActions().ensureMode('roofs')
   }
 
-  protected buildPolygon(points: vec2[]): Polygon2D {
+  protected buildPolygon(points: Vec2[]): Polygon2D {
     let polygon: Polygon2D = { points }
     if (!polygonIsClockwise(polygon)) {
       polygon = { points: [...points].reverse() }

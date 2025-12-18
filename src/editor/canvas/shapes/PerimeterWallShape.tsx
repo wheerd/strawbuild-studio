@@ -1,4 +1,3 @@
-import { vec2 } from 'gl-matrix'
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
 import type { PerimeterId } from '@/building/model/ids'
@@ -6,6 +5,7 @@ import type { PerimeterWall } from '@/building/model/model'
 import { useWallAssemblyById } from '@/construction/config/store'
 import { LengthIndicator } from '@/editor/canvas/utils/LengthIndicator'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
+import { type Vec2 } from '@/shared/geometry'
 import { direction } from '@/shared/geometry'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
@@ -16,10 +16,10 @@ import { OpeningShape } from './OpeningShape'
 interface PerimeterWallShapeProps {
   wall: PerimeterWall
   perimeterId: PerimeterId
-  insideStartCorner: vec2
-  insideEndCorner: vec2
-  outsideStartCorner: vec2
-  outsideEndCorner: vec2
+  insideStartCorner: Vec2
+  insideEndCorner: Vec2
+  outsideStartCorner: Vec2
+  outsideEndCorner: Vec2
 }
 
 export function PerimeterWallShape({

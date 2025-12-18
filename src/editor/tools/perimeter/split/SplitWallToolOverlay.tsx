@@ -1,4 +1,3 @@
-import { vec2 } from 'gl-matrix'
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
 import { ClickableLengthIndicator } from '@/editor/canvas/utils/ClickableLengthIndicator'
@@ -7,6 +6,7 @@ import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { activateLengthInput } from '@/editor/services/length-input'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolOverlayComponentProps } from '@/editor/tools/system/types'
+import { type Vec2, distVec2, scaleAddVec2 } from '@/shared/geometry'
 import { midpoint } from '@/shared/geometry'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
@@ -23,10 +23,10 @@ export function SplitWallToolOverlay({ tool }: ToolOverlayComponentProps<SplitWa
     return null
   }
 
-  const handleMeasurementClick = (start: vec2, end: vec2, dir: 1 | -1) => () => {
+  const handleMeasurementClick = (start: Vec2, end: Vec2, dir: 1 | -1) => () => {
     const worldPosition = midpoint(start, end)
     const stagePos = worldToStage(worldPosition)
-    const dist = vec2.distance(start, end)
+    const dist = distVec2(start, end)
     activateLengthInput({
       showImmediately: true,
       position: { x: stagePos.x + 20, y: stagePos.y - 30 },
@@ -48,24 +48,16 @@ export function SplitWallToolOverlay({ tool }: ToolOverlayComponentProps<SplitWa
   const insideStart = prevCorner.insidePoint
   const insideEnd = nextCorner.insidePoint
   const insideSplit =
-    state.targetPosition !== null
-      ? vec2.scaleAndAdd(vec2.create(), wall.insideLine.start, wall.direction, state.targetPosition)
-      : null
+    state.targetPosition !== null ? scaleAddVec2(wall.insideLine.start, wall.direction, state.targetPosition) : null
   const outsideSplit =
-    state.targetPosition !== null
-      ? vec2.scaleAndAdd(vec2.create(), wall.outsideLine.start, wall.direction, state.targetPosition)
-      : null
+    state.targetPosition !== null ? scaleAddVec2(wall.outsideLine.start, wall.direction, state.targetPosition) : null
   const outsideStart = prevCorner.outsidePoint
   const outsideEnd = nextCorner.outsidePoint
 
   const insideHover =
-    state.hoverPosition !== null
-      ? vec2.scaleAndAdd(vec2.create(), wall.insideLine.start, wall.direction, state.hoverPosition)
-      : null
+    state.hoverPosition !== null ? scaleAddVec2(wall.insideLine.start, wall.direction, state.hoverPosition) : null
   const outsideHover =
-    state.hoverPosition !== null
-      ? vec2.scaleAndAdd(vec2.create(), wall.outsideLine.start, wall.direction, state.hoverPosition)
-      : null
+    state.hoverPosition !== null ? scaleAddVec2(wall.outsideLine.start, wall.direction, state.hoverPosition) : null
 
   // Colors based on validation state
   const isWallSelected = state.selectedWallId ? isCurrentSelection(state.selectedWallId) : false

@@ -1,4 +1,3 @@
-import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
@@ -18,6 +17,7 @@ import type { WallCornerInfo } from '@/construction/walls'
 import type { WallContext } from '@/construction/walls/corners/corners'
 import type { WallStoreyContext } from '@/construction/walls/segmentation'
 import type { WallLayersConfig } from '@/construction/walls/types'
+import { newVec2 } from '@/shared/geometry'
 import type { Polygon2D, PolygonWithHoles2D } from '@/shared/geometry'
 
 import { constructWallLayers } from './layers'
@@ -72,15 +72,15 @@ const createWall = (overrides: Partial<PerimeterWall> = {}): PerimeterWall => ({
   outsideLength: 3000,
   wallLength: 3000,
   insideLine: {
-    start: vec2.fromValues(0, 0),
-    end: vec2.fromValues(3000, 0)
+    start: newVec2(0, 0),
+    end: newVec2(3000, 0)
   },
   outsideLine: {
-    start: vec2.fromValues(0, 300),
-    end: vec2.fromValues(3000, 300)
+    start: newVec2(0, 300),
+    end: newVec2(3000, 300)
   },
-  direction: vec2.fromValues(1, 0),
-  outsideDirection: vec2.fromValues(0, 1),
+  direction: newVec2(1, 0),
+  outsideDirection: newVec2(0, 1),
   ...overrides
 })
 
@@ -88,7 +88,7 @@ const createPerimeter = (wall: PerimeterWall, overrides: Partial<Perimeter> = {}
   id: createPerimeterId(),
   storeyId: createStoreyId(),
   referenceSide: 'inside',
-  referencePolygon: (overrides.referencePolygon as vec2[] | undefined) ?? ([] as unknown as vec2[]),
+  referencePolygon: overrides.referencePolygon ?? [],
   walls: [wall],
   corners: [],
   ...overrides
@@ -96,8 +96,8 @@ const createPerimeter = (wall: PerimeterWall, overrides: Partial<Perimeter> = {}
 
 const createCorner = (overrides: Partial<PerimeterCorner>): PerimeterCorner => ({
   id: createPerimeterCornerId(),
-  insidePoint: vec2.fromValues(0, 0),
-  outsidePoint: vec2.fromValues(0, 300),
+  insidePoint: newVec2(0, 0),
+  outsidePoint: newVec2(0, 300),
   constructedByWall: 'next',
   interiorAngle: 90,
   exteriorAngle: 270,
@@ -177,43 +177,43 @@ describe('constructWallLayers', () => {
     const nextWall = createWall({ id: createPerimeterWallId(), wallAssemblyId: nextAssemblyId })
 
     previousWall.insideLine = {
-      start: vec2.fromValues(0, -3000),
-      end: vec2.fromValues(0, 0)
+      start: newVec2(0, -3000),
+      end: newVec2(0, 0)
     }
     previousWall.outsideLine = {
-      start: vec2.fromValues(-300, -3000),
-      end: vec2.fromValues(-300, 0)
+      start: newVec2(-300, -3000),
+      end: newVec2(-300, 0)
     }
-    previousWall.direction = vec2.fromValues(0, 1)
-    previousWall.outsideDirection = vec2.fromValues(-1, 0)
+    previousWall.direction = newVec2(0, 1)
+    previousWall.outsideDirection = newVec2(-1, 0)
     previousWall.insideLength = 3000
     previousWall.outsideLength = 3000
     previousWall.wallLength = 3000
 
     nextWall.insideLine = {
-      start: vec2.fromValues(3000, 0),
-      end: vec2.fromValues(3000, 3000)
+      start: newVec2(3000, 0),
+      end: newVec2(3000, 3000)
     }
     nextWall.outsideLine = {
-      start: vec2.fromValues(3300, 0),
-      end: vec2.fromValues(3300, 3000)
+      start: newVec2(3300, 0),
+      end: newVec2(3300, 3000)
     }
-    nextWall.direction = vec2.fromValues(0, 1)
-    nextWall.outsideDirection = vec2.fromValues(1, 0)
+    nextWall.direction = newVec2(0, 1)
+    nextWall.outsideDirection = newVec2(1, 0)
     nextWall.insideLength = 3000
     nextWall.outsideLength = 3000
     nextWall.wallLength = 3000
 
     const startCorner = createCorner({
       id: createPerimeterCornerId(),
-      insidePoint: vec2.fromValues(0, 0),
-      outsidePoint: vec2.fromValues(-300, 300),
+      insidePoint: newVec2(0, 0),
+      outsidePoint: newVec2(-300, 300),
       constructedByWall: 'next'
     })
     const endCorner = createCorner({
       id: createPerimeterCornerId(),
-      insidePoint: vec2.fromValues(3000, 0),
-      outsidePoint: vec2.fromValues(3300, 300),
+      insidePoint: newVec2(3000, 0),
+      outsidePoint: newVec2(3300, 300),
       constructedByWall: 'previous'
     })
 
@@ -270,18 +270,18 @@ describe('constructWallLayers', () => {
 
     expect(insidePolygon.polygon.outer.points).toHaveLength(4)
     expect(insidePolygon.polygon.outer.points).toEqual([
-      vec2.fromValues(-30, 10),
-      vec2.fromValues(3030, 10),
-      vec2.fromValues(3030, 3080),
-      vec2.fromValues(-30, 3080)
+      newVec2(-30, 10),
+      newVec2(3030, 10),
+      newVec2(3030, 3080),
+      newVec2(-30, 3080)
     ])
 
     expect(outsidePolygon.polygon.outer.points).toHaveLength(4)
     expect(outsidePolygon.polygon.outer.points).toEqual([
-      vec2.fromValues(-300, -200),
-      vec2.fromValues(3300, -200),
-      vec2.fromValues(3300, 3080),
-      vec2.fromValues(-300, 3080)
+      newVec2(-300, -200),
+      newVec2(3300, -200),
+      newVec2(3300, 3080),
+      newVec2(-300, 3080)
     ])
 
     const layerGroups = model.elements.filter((element): element is GroupOrElement => 'children' in element)
@@ -356,8 +356,8 @@ describe('constructWallLayers', () => {
     })()
 
     wallContext.previousWall.outsideLine = {
-      start: vec2.fromValues(-360, -3000),
-      end: vec2.fromValues(-360, 0)
+      start: newVec2(-360, -3000),
+      end: newVec2(-360, 0)
     }
 
     const model = constructWallLayers(wall, perimeter, storeyContext, baseLayers, wallConfig)
@@ -392,8 +392,8 @@ describe('constructWallLayers', () => {
     })()
 
     wallContext.previousWall.insideLine = {
-      start: vec2.fromValues(40, -3000),
-      end: vec2.fromValues(40, 0)
+      start: newVec2(40, -3000),
+      end: newVec2(40, 0)
     }
 
     const model = constructWallLayers(wall, perimeter, storeyContext, baseLayers, wallConfig)

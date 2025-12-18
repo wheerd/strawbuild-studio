@@ -3,7 +3,6 @@ import { Box, Button, Callout, Flex, Text } from '@radix-ui/themes'
 
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
-import '@/shared/geometry'
 
 import type { PerimeterPresetTool } from './PerimeterPresetTool'
 

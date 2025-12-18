@@ -1,8 +1,7 @@
-import { vec2 } from 'gl-matrix'
-
 import type { Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config'
 import type { WallCornerInfo } from '@/construction/walls/construction'
+import { distVec2, scaleAddVec2 } from '@/shared/geometry'
 
 export interface WallContext {
   startCorner: PerimeterCorner
@@ -42,10 +41,10 @@ export function calculateWallCornerInfo(wall: PerimeterWall, context: WallContex
   }
 
   const outerStartExtension = Math.round(
-    vec2.distance(wall.outsideLine.start, startCorner.outsidePoint) - previousAssembly.layers.outsideThickness
+    distVec2(wall.outsideLine.start, startCorner.outsidePoint) - previousAssembly.layers.outsideThickness
   )
   const innerStartExtension = Math.round(
-    vec2.distance(wall.insideLine.start, startCorner.insidePoint) - previousAssembly.layers.insideThickness
+    distVec2(wall.insideLine.start, startCorner.insidePoint) - previousAssembly.layers.insideThickness
   )
   const startExtended = startCorner.constructedByWall === 'next'
   const startExtension = startCorner.exteriorAngle === 180 ? 0 : Math.max(outerStartExtension, innerStartExtension)
@@ -59,10 +58,10 @@ export function calculateWallCornerInfo(wall: PerimeterWall, context: WallContex
           : previousAssembly.layers.outsideThickness
 
   const outerEndExtension = Math.round(
-    vec2.distance(wall.outsideLine.end, endCorner.outsidePoint) - nextAssembly.layers.outsideThickness
+    distVec2(wall.outsideLine.end, endCorner.outsidePoint) - nextAssembly.layers.outsideThickness
   )
   const innerEndExtension = Math.round(
-    vec2.distance(wall.insideLine.end, endCorner.insidePoint) - nextAssembly.layers.insideThickness
+    distVec2(wall.insideLine.end, endCorner.insidePoint) - nextAssembly.layers.insideThickness
   )
   const endExtended = endCorner.constructedByWall === 'previous'
   const endExtension = endCorner.exteriorAngle === 180 ? 0 : Math.max(outerEndExtension, innerEndExtension)
@@ -79,49 +78,25 @@ export function calculateWallCornerInfo(wall: PerimeterWall, context: WallContex
 
   // Calculate construction lines adjusted by layer thickness
   const constructionInsideLine = {
-    start: vec2.scaleAndAdd(
-      vec2.create(),
-      vec2.scaleAndAdd(
-        vec2.create(),
-        wall.insideLine.start,
-        wall.outsideDirection,
-        currentAssembly.layers.insideThickness
-      ),
+    start: scaleAddVec2(
+      scaleAddVec2(wall.insideLine.start, wall.outsideDirection, currentAssembly.layers.insideThickness),
       wall.direction,
       -appliedStartExtension
     ),
-    end: vec2.scaleAndAdd(
-      vec2.create(),
-      vec2.scaleAndAdd(
-        vec2.create(),
-        wall.insideLine.end,
-        wall.outsideDirection,
-        currentAssembly.layers.insideThickness
-      ),
+    end: scaleAddVec2(
+      scaleAddVec2(wall.insideLine.end, wall.outsideDirection, currentAssembly.layers.insideThickness),
       wall.direction,
       appliedEndExtension
     )
   }
   const constructionOutsideLine = {
-    start: vec2.scaleAndAdd(
-      vec2.create(),
-      vec2.scaleAndAdd(
-        vec2.create(),
-        wall.outsideLine.start,
-        wall.outsideDirection,
-        -currentAssembly.layers.outsideThickness
-      ),
+    start: scaleAddVec2(
+      scaleAddVec2(wall.outsideLine.start, wall.outsideDirection, -currentAssembly.layers.outsideThickness),
       wall.direction,
       -appliedStartExtension
     ),
-    end: vec2.scaleAndAdd(
-      vec2.create(),
-      vec2.scaleAndAdd(
-        vec2.create(),
-        wall.outsideLine.end,
-        wall.outsideDirection,
-        -currentAssembly.layers.outsideThickness
-      ),
+    end: scaleAddVec2(
+      scaleAddVec2(wall.outsideLine.end, wall.outsideDirection, -currentAssembly.layers.outsideThickness),
       wall.direction,
       appliedEndExtension
     )

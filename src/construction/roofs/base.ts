@@ -1,4 +1,4 @@
-import { mat4, vec2, vec3 } from 'gl-matrix'
+import { mat4, vec3 } from 'gl-matrix'
 import type { Manifold } from 'manifold-3d'
 
 import type { Roof } from '@/building/model'
@@ -23,12 +23,21 @@ import {
   type LineSegment2D,
   type Polygon2D,
   type PolygonWithHoles2D,
+  type Vec2,
+  ZERO_VEC2,
+  copyVec2,
   direction,
+  dotVec2,
   intersectPolygons,
+  lenVec2,
   lineFromSegment,
+  newVec2,
   perpendicularCCW,
   perpendicularCW,
+  scaleAddVec2,
+  scaleVec2,
   splitPolygonByLine,
+  subVec2,
   subtractPolygons,
   unionPolygons
 } from '@/shared/geometry'
@@ -39,7 +48,7 @@ export interface RoofSide {
   polygon: Polygon2D
   side: 'left' | 'right'
   transform: Transform
-  dirToRidge: vec2
+  dirToRidge: Vec2
 }
 
 export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> implements RoofAssembly {
@@ -87,25 +96,20 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
 
     const expandedPoints = polygon.points.map(point => {
       // Project point onto ridge line
-      const toPoint = vec2.sub(vec2.create(), point, ridgeLine.start)
-      const projection = vec2.dot(toPoint, ridgeDir)
-      const closestOnRidge = vec2.scaleAndAdd(vec2.create(), ridgeLine.start, ridgeDir, projection)
+      const toPoint = subVec2(point, ridgeLine.start)
+      const projection = dotVec2(toPoint, ridgeDir)
+      const closestOnRidge = scaleAddVec2(ridgeLine.start, ridgeDir, projection)
 
       // Calculate perpendicular offset from ridge
-      const offset = vec2.sub(vec2.create(), point, closestOnRidge)
-      const offsetLen = vec2.len(offset)
+      const offset = subVec2(point, closestOnRidge)
+      const offsetLen = lenVec2(offset)
 
       // Place point at new offset distance from ridge
       if (Math.abs(offsetLen) > 0.1) {
-        const offsetDir = vec2.scale(vec2.create(), offset, 1 / offsetLen)
-        return vec2.scaleAndAdd(
-          vec2.create(),
-          closestOnRidge,
-          offsetDir,
-          offsetLen * expansionFactor + additionalExpansion
-        )
+        const offsetDir = scaleVec2(offset, 1 / offsetLen)
+        return scaleAddVec2(closestOnRidge, offsetDir, offsetLen * expansionFactor + additionalExpansion)
       }
-      return vec2.clone(point)
+      return copyVec2(point)
     })
 
     return {
@@ -193,7 +197,7 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
     if (perimeters.length === 0) return []
 
     const insidePolygons: Polygon2D[] = perimeters.map(p => ({
-      points: p.corners.map(c => vec2.clone(c.insidePoint))
+      points: p.corners.map(c => copyVec2(c.insidePoint))
     }))
 
     const insides = unionPolygons(insidePolygons)
@@ -206,11 +210,11 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
   protected translatePolygonToOrigin(
     polygon: Polygon2D,
     ridgeLine: LineSegment2D,
-    offset: vec2 = vec2.create()
+    offset: Vec2 = ZERO_VEC2
   ): Polygon2D {
-    const combinedOffset = vec2.sub(vec2.create(), ridgeLine.start, offset)
+    const combinedOffset = subVec2(ridgeLine.start, offset)
     return {
-      points: polygon.points.map(point => vec2.sub(vec2.create(), point, combinedOffset))
+      points: polygon.points.map(point => subVec2(point, combinedOffset))
     }
   }
 
@@ -244,11 +248,11 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
     slopeAngleRad: number,
     verticalOffset: Length,
     thickness: Length,
-    dirToRidge: vec2
+    dirToRidge: Vec2
   ): Polygon2D {
     const expandedPolygon = this.expandPolygonFromRidge(polygon, ridgeLine, slopeAngleRad, thickness)
     const ridgeOffset = this.calculateRidgeOffset(verticalOffset, slopeAngleRad)
-    const directedRidgeOffset = vec2.scale(vec2.create(), dirToRidge, -ridgeOffset)
+    const directedRidgeOffset = scaleVec2(dirToRidge, -ridgeOffset)
     return this.translatePolygonToOrigin(expandedPolygon, ridgeLine, directedRidgeOffset)
   }
 
@@ -263,10 +267,10 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
     // Clone polygon to avoid mutations
     const clonedPolygon: PolygonWithHoles2D = {
       outer: {
-        points: polygon.outer.points.map(point => vec2.fromValues(point[0], point[1]))
+        points: polygon.outer.points.map(point => newVec2(point[0], point[1]))
       },
       holes: polygon.holes.map(hole => ({
-        points: hole.points.map(point => vec2.fromValues(point[0], point[1]))
+        points: hole.points.map(point => newVec2(point[0], point[1]))
       }))
     }
 

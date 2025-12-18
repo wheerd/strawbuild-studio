@@ -1,9 +1,17 @@
-import { vec2 } from 'gl-matrix'
 import { describe, expect, it, vi } from 'vitest'
 
 import type { Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model'
 import type { PerimeterCornerId, PerimeterId, PerimeterWallId, StoreyId, WallAssemblyId } from '@/building/model/ids'
-import { type LineSegment2D, direction, lineIntersection, perpendicularCCW } from '@/shared/geometry'
+import {
+  type LineSegment2D,
+  copyVec2,
+  direction,
+  distVec2,
+  lineIntersection,
+  newVec2,
+  perpendicularCCW,
+  scaleAddVec2
+} from '@/shared/geometry'
 
 import { getConfigActions } from './config'
 import { computePerimeterConstructionPolygon } from './context'
@@ -20,12 +28,7 @@ vi.mocked(getConfigActions).mockReturnValue({
 
 describe('computePerimeterConstructionPolygon', () => {
   it('offsets each wall by its outside layer thickness', () => {
-    const insidePoints = [
-      vec2.fromValues(0, 0),
-      vec2.fromValues(0, 3000),
-      vec2.fromValues(4000, 3000),
-      vec2.fromValues(4000, 0)
-    ]
+    const insidePoints = [newVec2(0, 0), newVec2(0, 3000), newVec2(4000, 3000), newVec2(4000, 0)]
 
     const wallThicknesses = [400, 450, 480, 420]
     const outsideLayerThicknesses = [150, 210, 250, 100]
@@ -34,12 +37,7 @@ describe('computePerimeterConstructionPolygon', () => {
     // x2: 4000 + 480 - 250 = 4230
     // y1: 0 - 420 + 100 = -320
     // y2: 3000 + 450 - 210 = 3240
-    const expectedPoints = [
-      vec2.fromValues(-250, -320),
-      vec2.fromValues(-250, 3240),
-      vec2.fromValues(4230, 3240),
-      vec2.fromValues(4230, -320)
-    ]
+    const expectedPoints = [newVec2(-250, -320), newVec2(-250, 3240), newVec2(4230, 3240), newVec2(4230, -320)]
 
     const walls: PerimeterWall[] = insidePoints.map((insideStart, index) => {
       const nextIndex = (index + 1) % insidePoints.length
@@ -48,17 +46,17 @@ describe('computePerimeterConstructionPolygon', () => {
       const outsideDirection = perpendicularCCW(wallDirection)
       const thickness = wallThicknesses[index]
       const insideLine: LineSegment2D = { start: insideStart, end: insideEnd }
-      const outsideLineStart = vec2.scaleAndAdd(vec2.create(), insideStart, outsideDirection, thickness)
-      const outsideLineEnd = vec2.scaleAndAdd(vec2.create(), insideEnd, outsideDirection, thickness)
+      const outsideLineStart = scaleAddVec2(insideStart, outsideDirection, thickness)
+      const outsideLineEnd = scaleAddVec2(insideEnd, outsideDirection, thickness)
       const outsideLine: LineSegment2D = { start: outsideLineStart, end: outsideLineEnd }
       return {
         id: `wall-${index}` as PerimeterWallId,
         thickness,
         wallAssemblyId: `assembly-${index}` as WallAssemblyId,
         openings: [],
-        insideLength: vec2.distance(insideStart, insideEnd),
-        outsideLength: vec2.distance(outsideLineStart, outsideLineEnd),
-        wallLength: vec2.distance(insideStart, insideEnd),
+        insideLength: distVec2(insideStart, insideEnd),
+        outsideLength: distVec2(outsideLineStart, outsideLineEnd),
+        wallLength: distVec2(insideStart, insideEnd),
         insideLine,
         outsideLine,
         direction: wallDirection,
@@ -77,8 +75,7 @@ describe('computePerimeterConstructionPolygon', () => {
       const currentLine = outsideLines[index]
       const outsideIntersection = lineIntersection(prevLine, currentLine)
       const outsidePoint =
-        outsideIntersection ??
-        vec2.scaleAndAdd(vec2.create(), insidePoint, walls[index].outsideDirection, walls[index].thickness)
+        outsideIntersection ?? scaleAddVec2(insidePoint, walls[index].outsideDirection, walls[index].thickness)
 
       return {
         id: `corner-${index}` as PerimeterCornerId,
@@ -94,7 +91,7 @@ describe('computePerimeterConstructionPolygon', () => {
       id: 'perimeter-1' as PerimeterId,
       storeyId: 'storey-1' as StoreyId,
       referenceSide: 'inside',
-      referencePolygon: insidePoints.map(point => vec2.clone(point)),
+      referencePolygon: insidePoints.map(point => copyVec2(point)),
       walls,
       corners,
       baseRingBeamAssemblyId: undefined,

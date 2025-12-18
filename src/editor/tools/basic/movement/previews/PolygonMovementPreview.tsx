@@ -1,13 +1,13 @@
-import type { vec2 } from 'gl-matrix'
 import React from 'react'
 import { Circle, Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
 import { SnappingLines } from '@/editor/canvas/utils/SnappingLines'
 import type { MovementPreviewComponentProps } from '@/editor/tools/basic/movement/MovementBehavior'
 import type { PolygonMovementState } from '@/editor/tools/basic/movement/behaviors/PolygonMovementBehavior'
+import type { Vec2 } from '@/shared/geometry'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
-function flattenPolygonPoints(points: readonly vec2[]): number[] {
+function flattenPolygonPoints(points: readonly Vec2[]): number[] {
   return points.flatMap(point => [point[0], point[1]])
 }
 

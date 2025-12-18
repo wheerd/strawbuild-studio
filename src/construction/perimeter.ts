@@ -1,4 +1,4 @@
-import { mat4, vec2, vec3 } from 'gl-matrix'
+import { mat4, vec3 } from 'gl-matrix'
 
 import type { Perimeter } from '@/building/model'
 import { getModelActions } from '@/building/store'
@@ -13,9 +13,11 @@ import {
   calculatePolygonArea,
   calculatePolygonWithHolesArea,
   direction,
+  newVec2,
   perpendicularCCW,
   perpendicularCW,
   polygonPerimeter,
+  scaleAddVec2,
   subtractPolygons,
   unionPolygons
 } from '@/shared/geometry'
@@ -120,7 +122,7 @@ export function constructPerimeter(perimeter: Perimeter, includeFloor = true, in
 
   if (includeFloor) {
     const finishedFloorPolygon: Polygon2D = {
-      points: perimeter.corners.map(corner => vec2.fromValues(corner.insidePoint[0], corner.insidePoint[1]))
+      points: perimeter.corners.map(corner => newVec2(corner.insidePoint[0], corner.insidePoint[1]))
     }
     const floorAssembly = FLOOR_ASSEMBLIES[currentFloorAssembly.type]
     const floorModel = floorAssembly.construct(perimeterContext, currentFloorAssembly)
@@ -134,7 +136,7 @@ export function constructPerimeter(perimeter: Perimeter, includeFloor = true, in
       if (nextPerimeters.length > 0) {
         const nextWallFaces = createWallFaceOffsets(nextPerimeters)
         const nextFloorPolygon: Polygon2D = {
-          points: finishedFloorPolygon.points.map(point => vec2.fromValues(point[0], point[1]))
+          points: finishedFloorPolygon.points.map(point => newVec2(point[0], point[1]))
         }
         const nextHolesRaw = getFloorOpeningsByStorey(nextStorey.id).map(opening => opening.area)
         const nextRelevantHoles = nextHolesRaw.filter(hole => arePolygonsIntersecting(nextFloorPolygon, hole))
@@ -284,7 +286,7 @@ function createPerimeterMeasurementModel(
     const insideStart = vec3.fromValues(corner.insidePoint[0], corner.insidePoint[1], 0)
     const insideEnd = vec3.fromValues(nextCorner.insidePoint[0], nextCorner.insidePoint[1], 0)
 
-    const insideExtend1In2D = vec2.scaleAndAdd(vec2.create(), corner.insidePoint, wall.outsideDirection, wall.thickness)
+    const insideExtend1In2D = scaleAddVec2(corner.insidePoint, wall.outsideDirection, wall.thickness)
     const insideExtend1 = vec3.fromValues(insideExtend1In2D[0], insideExtend1In2D[1], 0)
     const insideExtend2 = vec3.fromValues(corner.insidePoint[0], corner.insidePoint[1], storeyContext.ceilingHeight)
 
@@ -299,12 +301,7 @@ function createPerimeterMeasurementModel(
     const outsideStart = vec3.fromValues(corner.outsidePoint[0], corner.outsidePoint[1], 0)
     const outsideEnd = vec3.fromValues(nextCorner.outsidePoint[0], nextCorner.outsidePoint[1], 0)
 
-    const outsideExtend1In2D = vec2.scaleAndAdd(
-      vec2.create(),
-      corner.outsidePoint,
-      wall.outsideDirection,
-      -wall.thickness
-    )
+    const outsideExtend1In2D = scaleAddVec2(corner.outsidePoint, wall.outsideDirection, -wall.thickness)
     const outsideExtend1 = vec3.fromValues(outsideExtend1In2D[0], outsideExtend1In2D[1], 0)
     const outsideExtend2 = vec3.fromValues(corner.outsidePoint[0], corner.outsidePoint[1], storeyContext.ceilingHeight)
 
@@ -319,7 +316,7 @@ function createPerimeterMeasurementModel(
 
   for (const edge of polygonEdges(floorContext.innerPolygon)) {
     const outDirection = perpendicularCCW(direction(edge.start, edge.end))
-    const extend1In2D = vec2.scaleAndAdd(vec2.create(), edge.start, outDirection, 10)
+    const extend1In2D = scaleAddVec2(edge.start, outDirection, 10)
     const extend1 = vec3.fromValues(extend1In2D[0], extend1In2D[1], 0)
     const extend2 = vec3.fromValues(edge.start[0], edge.start[1], storeyContext.ceilingHeight)
 
@@ -334,7 +331,7 @@ function createPerimeterMeasurementModel(
 
   for (const edge of polygonEdges(floorContext.outerPolygon)) {
     const inDirection = perpendicularCW(direction(edge.start, edge.end))
-    const extend1In2D = vec2.scaleAndAdd(vec2.create(), edge.start, inDirection, 10)
+    const extend1In2D = scaleAddVec2(edge.start, inDirection, 10)
     const extend1 = vec3.fromValues(extend1In2D[0], extend1In2D[1], 0)
     const extend2 = vec3.fromValues(edge.start[0], edge.start[1], storeyContext.ceilingHeight)
     measurements.push({

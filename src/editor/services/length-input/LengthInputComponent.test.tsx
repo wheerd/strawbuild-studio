@@ -1,8 +1,6 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import '@/shared/geometry'
-
 import { LengthInputComponent } from './LengthInputComponent'
 import { lengthInputService } from './LengthInputService'
 import type { LengthInputConfig } from './types'

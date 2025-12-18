@@ -1,8 +1,7 @@
 import { render } from '@testing-library/react'
-import { vec2 } from 'gl-matrix'
 import { describe, expect, it, vi } from 'vitest'
 
-import '@/shared/geometry'
+import { newVec2 } from '@/shared/geometry'
 
 import { ClickableLengthIndicator } from './ClickableLengthIndicator'
 
@@ -11,11 +10,7 @@ describe('ClickableLengthIndicator', () => {
 
   it('should render without crashing', () => {
     const { container } = render(
-      <ClickableLengthIndicator
-        startPoint={vec2.fromValues(0, 0)}
-        endPoint={vec2.fromValues(100, 0)}
-        onClick={mockOnClick}
-      />
+      <ClickableLengthIndicator startPoint={newVec2(0, 0)} endPoint={newVec2(100, 0)} onClick={mockOnClick} />
     )
 
     expect(container.firstChild).toBeDefined()
@@ -24,8 +19,8 @@ describe('ClickableLengthIndicator', () => {
   it('should render with custom label', () => {
     const { container } = render(
       <ClickableLengthIndicator
-        startPoint={vec2.fromValues(0, 0)}
-        endPoint={vec2.fromValues(100, 0)}
+        startPoint={newVec2(0, 0)}
+        endPoint={newVec2(100, 0)}
         label="Custom Label"
         onClick={mockOnClick}
       />
@@ -35,20 +30,14 @@ describe('ClickableLengthIndicator', () => {
   })
 
   it('should render without onClick handler (non-clickable)', () => {
-    const { container } = render(
-      <ClickableLengthIndicator startPoint={vec2.fromValues(0, 0)} endPoint={vec2.fromValues(100, 0)} />
-    )
+    const { container } = render(<ClickableLengthIndicator startPoint={newVec2(0, 0)} endPoint={newVec2(100, 0)} />)
 
     expect(container.firstChild).toBeDefined()
   })
 
   it('should handle zero-length measurement', () => {
     const { container } = render(
-      <ClickableLengthIndicator
-        startPoint={vec2.fromValues(0, 0)}
-        endPoint={vec2.fromValues(0, 0)}
-        onClick={mockOnClick}
-      />
+      <ClickableLengthIndicator startPoint={newVec2(0, 0)} endPoint={newVec2(0, 0)} onClick={mockOnClick} />
     )
 
     expect(container.firstChild).toBeDefined()
@@ -57,8 +46,8 @@ describe('ClickableLengthIndicator', () => {
   it('should apply visual styling props', () => {
     const { container } = render(
       <ClickableLengthIndicator
-        startPoint={vec2.fromValues(0, 0)}
-        endPoint={vec2.fromValues(100, 0)}
+        startPoint={newVec2(0, 0)}
+        endPoint={newVec2(100, 0)}
         color="#ff0000"
         fontSize={24}
         strokeWidth={6}

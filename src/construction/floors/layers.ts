@@ -1,11 +1,10 @@
-import { vec2 } from 'gl-matrix'
-
 import type { FloorAssemblyConfigBase, FloorLayersConfig } from '@/construction/floors/types'
 import { LAYER_CONSTRUCTIONS } from '@/construction/layers'
 import type { LayerConfig, MonolithicLayerConfig, StripedLayerConfig } from '@/construction/layers/types'
 import { type ConstructionModel } from '@/construction/model'
 import { type ConstructionResult, aggregateResults, yieldAsGroup } from '@/construction/results'
 import { TAG_FLOOR_LAYER_BOTTOM, TAG_FLOOR_LAYER_TOP, TAG_LAYERS, createTag } from '@/construction/tags'
+import { newVec2 } from '@/shared/geometry'
 import {
   Bounds3D,
   type Length,
@@ -34,10 +33,10 @@ const normalizePolygon = (polygon: Polygon2D, clockwise: boolean): Polygon2D =>
 
 const clonePolygonWithHoles = (polygon: PolygonWithHoles2D): PolygonWithHoles2D => ({
   outer: {
-    points: polygon.outer.points.map(point => vec2.fromValues(point[0], point[1]))
+    points: polygon.outer.points.map(point => newVec2(point[0], point[1]))
   },
   holes: polygon.holes.map(hole => ({
-    points: hole.points.map(point => vec2.fromValues(point[0], point[1]))
+    points: hole.points.map(point => newVec2(point[0], point[1]))
   }))
 })
 

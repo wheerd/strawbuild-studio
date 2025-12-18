@@ -1,7 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import '@/shared/geometry'
-
 import { LengthInputService } from './LengthInputService'
 import type { LengthInputConfig } from './types'
 

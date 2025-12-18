@@ -1,5 +1,3 @@
-import { vec2 } from 'gl-matrix'
-
 import type { PerimeterWall } from '@/building/model/model'
 import type { WallConstructionArea } from '@/construction/geometry'
 import { resolveOpeningConfig } from '@/construction/openings/resolver'
@@ -10,8 +8,14 @@ import {
   type Plane3D,
   type Polygon2D,
   type PolygonWithHoles2D,
+  type Vec2,
+  dotVec2,
   ensurePolygonIsClockwise,
+  newVec2,
+  normVec2,
+  scaleAddVec2,
   simplifyPolygon,
+  subVec2,
   subtractPolygons
 } from '@/shared/geometry'
 import { lineFromSegment, lineIntersection } from '@/shared/geometry/line'
@@ -22,23 +26,20 @@ export type LayerSide = 'inside' | 'outside'
 
 export const WALL_POLYGON_PLANE: Plane3D = 'xz'
 
-const shiftPoint = (point: vec2, direction: vec2, distance: Length): vec2 => {
-  return vec2.scaleAndAdd(vec2.create(), point, direction, distance)
+const shiftPoint = (point: Vec2, direction: Vec2, distance: Length): Vec2 => {
+  return scaleAddVec2(point, direction, distance)
 }
 
-const computeOffsetLine = (start: vec2, end: vec2, normal: vec2, distance: Length) => {
+const computeOffsetLine = (start: Vec2, end: Vec2, normal: Vec2, distance: Length) => {
   const offsetStart = shiftPoint(start, normal, distance)
   const offsetEnd = shiftPoint(end, normal, distance)
   return lineFromSegment({ start: offsetStart, end: offsetEnd })
 }
 
-const projectAlongWall = (wall: PerimeterWall, point: vec2): Length => {
-  const direction = vec2.normalize(
-    vec2.create(),
-    vec2.subtract(vec2.create(), wall.insideLine.end, wall.insideLine.start)
-  )
-  const relative = vec2.subtract(vec2.create(), point, wall.insideLine.start)
-  return vec2.dot(relative, direction)
+const projectAlongWall = (wall: PerimeterWall, point: Vec2): Length => {
+  const direction = normVec2(subVec2(wall.insideLine.end, wall.insideLine.start))
+  const relative = subVec2(point, wall.insideLine.start)
+  return dotVec2(relative, direction)
 }
 
 const computeCornerIntersection = (
@@ -47,7 +48,7 @@ const computeCornerIntersection = (
   depth: Length,
   wall: PerimeterWall,
   context: WallContext
-): vec2 => {
+): Vec2 => {
   const baseSegment = side === 'inside' ? wall.insideLine : wall.outsideLine
   const referenceWall = corner === 'start' ? context.previousWall : context.nextWall
   const referenceSegment = side === 'inside' ? referenceWall.insideLine : referenceWall.outsideLine
@@ -94,12 +95,7 @@ export const computeLayerSpan = (
 export const createLayerPolygon = (start: Length, end: Length, bottom: Length, top: Length): Polygon2D =>
   ensurePolygonIsClockwise(
     simplifyPolygon({
-      points: [
-        vec2.fromValues(start, bottom),
-        vec2.fromValues(start, top),
-        vec2.fromValues(end, top),
-        vec2.fromValues(end, bottom)
-      ]
+      points: [newVec2(start, bottom), newVec2(start, top), newVec2(end, top), newVec2(end, bottom)]
     })
   )
 
@@ -138,15 +134,15 @@ export const subtractWallOpenings = (
       return ensurePolygonIsClockwise(
         simplifyPolygon({
           points: [
-            vec2.fromValues(clampedStart, clampedBottom),
-            vec2.fromValues(clampedStart, clampedTop),
-            vec2.fromValues(clampedEnd, clampedTop),
-            vec2.fromValues(clampedEnd, clampedBottom)
+            newVec2(clampedStart, clampedBottom),
+            newVec2(clampedStart, clampedTop),
+            newVec2(clampedEnd, clampedTop),
+            newVec2(clampedEnd, clampedBottom)
           ]
         })
       )
     })
-    .filter((hole): hole is { points: vec2[] } => hole !== null)
+    .filter((hole): hole is { points: Vec2[] } => hole !== null)
 
   if (holes.length === 0) {
     return [{ outer: polygon, holes: [] }]

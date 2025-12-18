@@ -1,4 +1,4 @@
-import { mat4, vec2, vec3 } from 'gl-matrix'
+import { mat4, vec3 } from 'gl-matrix'
 
 import type { OpeningAssemblyId, StoreyId } from '@/building/model/ids'
 import type { Opening, Perimeter, PerimeterWall, Storey } from '@/building/model/model'
@@ -28,6 +28,7 @@ import {
   fillNullRegions,
   mergeInsideOutsideHeightLines
 } from '@/construction/walls/roofIntegration'
+import { newVec2 } from '@/shared/geometry'
 import type { Length } from '@/shared/geometry'
 
 import type { WallCornerInfo } from './construction'
@@ -153,10 +154,10 @@ function* createCornerAreas(
       plane: 'xz',
       polygon: {
         points: [
-          vec2.fromValues(-cornerInfo.startCorner.extensionDistance, 0),
-          vec2.fromValues(-cornerInfo.startCorner.extensionDistance, wallHeight),
-          vec2.fromValues(0, wallHeight),
-          vec2.fromValues(0, 0)
+          newVec2(-cornerInfo.startCorner.extensionDistance, 0),
+          newVec2(-cornerInfo.startCorner.extensionDistance, wallHeight),
+          newVec2(0, wallHeight),
+          newVec2(0, 0)
         ]
       },
       cancelKey: `corner-${cornerInfo.startCorner.id}`
@@ -171,10 +172,10 @@ function* createCornerAreas(
       plane: 'xz',
       polygon: {
         points: [
-          vec2.fromValues(wallLength, 0),
-          vec2.fromValues(wallLength, wallHeight),
-          vec2.fromValues(wallLength + cornerInfo.endCorner.extensionDistance, wallHeight),
-          vec2.fromValues(wallLength + cornerInfo.endCorner.extensionDistance, 0)
+          newVec2(wallLength, 0),
+          newVec2(wallLength, wallHeight),
+          newVec2(wallLength + cornerInfo.endCorner.extensionDistance, wallHeight),
+          newVec2(wallLength + cornerInfo.endCorner.extensionDistance, 0)
         ]
       },
       cancelKey: `corner-${cornerInfo.endCorner.id}`
@@ -199,10 +200,10 @@ function* createPlateAreas(
       plane: 'xz',
       polygon: {
         points: [
-          vec2.fromValues(start, 0),
-          vec2.fromValues(start + constructionLength, 0),
-          vec2.fromValues(start + constructionLength, basePlateHeight),
-          vec2.fromValues(start, basePlateHeight)
+          newVec2(start, 0),
+          newVec2(start + constructionLength, 0),
+          newVec2(start + constructionLength, basePlateHeight),
+          newVec2(start, basePlateHeight)
         ]
       },
       mergeKey: `bottom-plate-${perimeterId}`
@@ -217,10 +218,10 @@ function* createPlateAreas(
       plane: 'xz',
       polygon: {
         points: [
-          vec2.fromValues(start, totalConstructionHeight - topPlateHeight),
-          vec2.fromValues(start + constructionLength, totalConstructionHeight - topPlateHeight),
-          vec2.fromValues(start + constructionLength, totalConstructionHeight),
-          vec2.fromValues(start, totalConstructionHeight)
+          newVec2(start, totalConstructionHeight - topPlateHeight),
+          newVec2(start + constructionLength, totalConstructionHeight - topPlateHeight),
+          newVec2(start + constructionLength, totalConstructionHeight),
+          newVec2(start, totalConstructionHeight)
         ]
       },
       mergeKey: `top-plate-${perimeterId}`
@@ -378,7 +379,7 @@ export function* segmentedWallConstruction(
   if (roofHeightLine) {
     roofOffsets = convertHeightLineToWallOffsets(roofHeightLine, constructionLength)
   } else {
-    roofOffsets = [vec2.fromValues(0, -ceilingOffset), vec2.fromValues(constructionLength, -ceilingOffset)]
+    roofOffsets = [newVec2(0, -ceilingOffset), newVec2(constructionLength, -ceilingOffset)]
   }
 
   // Create overall wall construction area ONCE with roof offsets

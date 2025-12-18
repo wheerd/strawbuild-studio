@@ -1,7 +1,7 @@
 import type { MainModule, PathD, PathsD } from 'clipper2-wasm'
-import { vec2 } from 'gl-matrix'
 import { type Mocked, afterEach, beforeEach, describe, expect, vi } from 'vitest'
 
+import { type Vec2, copyVec2, newVec2, normVec2 } from '@/shared/geometry/basic'
 import {
   createPathD,
   createPathsD,
@@ -37,13 +37,13 @@ vi.mock('@/shared/geometry/clipperInstance', () => {
 })
 
 describe('convexHullOfPolygonWithHoles', () => {
-  const sortPoints = (points: vec2[]) =>
+  const sortPoints = (points: Vec2[]) =>
     points.map(point => Array.from(point)).sort(([ax, ay], [bx, by]) => (ax === bx ? ay - by : ax - bx))
 
   it('returns the rectangle corners for a convex polygon', () => {
     const rectangle = {
       outer: {
-        points: [vec2.fromValues(0, 0), vec2.fromValues(1000, 0), vec2.fromValues(1000, 500), vec2.fromValues(0, 500)]
+        points: [newVec2(0, 0), newVec2(1000, 0), newVec2(1000, 500), newVec2(0, 500)]
       },
       holes: []
     }
@@ -62,12 +62,12 @@ describe('convexHullOfPolygonWithHoles', () => {
     const concave = {
       outer: {
         points: [
-          vec2.fromValues(0, 0),
-          vec2.fromValues(2000, 0),
-          vec2.fromValues(2000, 500),
-          vec2.fromValues(1000, 250),
-          vec2.fromValues(2000, 1500),
-          vec2.fromValues(0, 1500)
+          newVec2(0, 0),
+          newVec2(2000, 0),
+          newVec2(2000, 500),
+          newVec2(1000, 250),
+          newVec2(2000, 1500),
+          newVec2(0, 1500)
         ]
       },
       holes: []
@@ -85,27 +85,21 @@ describe('convexHullOfPolygonWithHoles', () => {
 })
 
 describe('canonicalPolygonKey', () => {
-  const translate = (points: vec2[], dx: number, dy: number): vec2[] =>
-    points.map(point => vec2.fromValues(point[0] + dx, point[1] + dy))
-  const rotate90 = (points: vec2[]): vec2[] => points.map(point => vec2.fromValues(-point[1], point[0]))
-  const mirrorYAxis = (points: vec2[]): vec2[] => points.map(point => vec2.fromValues(-point[0], point[1]))
-  const changeStartingVertex = (points: vec2[], offset: number): vec2[] => {
+  const translate = (points: Vec2[], dx: number, dy: number): Vec2[] =>
+    points.map(point => newVec2(point[0] + dx, point[1] + dy))
+  const rotate90 = (points: Vec2[]): Vec2[] => points.map(point => newVec2(-point[1], point[0]))
+  const mirrorYAxis = (points: Vec2[]): Vec2[] => points.map(point => newVec2(-point[0], point[1]))
+  const changeStartingVertex = (points: Vec2[], offset: number): Vec2[] => {
     const count = points.length
-    return Array.from({ length: count }, (_, index) => vec2.clone(points[(index + offset) % count]))
+    return Array.from({ length: count }, (_, index) => copyVec2(points[(index + offset) % count]))
   }
-  const reverseOrder = (points: vec2[]): vec2[] =>
+  const reverseOrder = (points: Vec2[]): Vec2[] =>
     points
       .slice()
       .reverse()
-      .map(point => vec2.clone(point))
+      .map(point => copyVec2(point))
 
-  const basePoints: vec2[] = [
-    vec2.fromValues(0, 0),
-    vec2.fromValues(400, 0),
-    vec2.fromValues(500, 300),
-    vec2.fromValues(200, 500),
-    vec2.fromValues(-100, 300)
-  ]
+  const basePoints: Vec2[] = [newVec2(0, 0), newVec2(400, 0), newVec2(500, 300), newVec2(200, 500), newVec2(-100, 300)]
 
   const baseKey = canonicalPolygonKey(basePoints)
 
@@ -135,26 +129,26 @@ describe('canonicalPolygonKey', () => {
   })
 
   it('returns different keys for different polygons', () => {
-    const changedPolygon = [vec2.fromValues(10, 10), ...basePoints.slice(1)]
+    const changedPolygon = [newVec2(10, 10), ...basePoints.slice(1)]
     expect(canonicalPolygonKey(changedPolygon)).not.toBe(baseKey)
   })
 })
 
 describe('minimumAreaBoundingBox', () => {
-  const rotatePoint = (point: vec2, angle: number) => {
+  const rotatePoint = (point: Vec2, angle: number) => {
     const sinAngle = Math.sin(angle)
     const cosAngle = Math.cos(angle)
-    return vec2.fromValues(point[0] * cosAngle - point[1] * sinAngle, point[0] * sinAngle + point[1] * cosAngle)
+    return newVec2(point[0] * cosAngle - point[1] * sinAngle, point[0] * sinAngle + point[1] * cosAngle)
   }
 
-  const createRectangle = (width: number, height: number, angle = 0): vec2[] => {
+  const createRectangle = (width: number, height: number, angle = 0): Vec2[] => {
     const halfWidth = width / 2
     const halfHeight = height / 2
     const corners = [
-      vec2.fromValues(-halfWidth, -halfHeight),
-      vec2.fromValues(halfWidth, -halfHeight),
-      vec2.fromValues(halfWidth, halfHeight),
-      vec2.fromValues(-halfWidth, halfHeight)
+      newVec2(-halfWidth, -halfHeight),
+      newVec2(halfWidth, -halfHeight),
+      newVec2(halfWidth, halfHeight),
+      newVec2(-halfWidth, halfHeight)
     ]
 
     if (angle === 0) {
@@ -164,7 +158,7 @@ describe('minimumAreaBoundingBox', () => {
     return corners.map(corner => rotatePoint(corner, angle))
   }
 
-  const sortedAbsComponents = (vector: vec2) => [Math.abs(vector[0]), Math.abs(vector[1])].sort((a, b) => a - b)
+  const sortedAbsComponents = (vector: Vec2) => [Math.abs(vector[0]), Math.abs(vector[1])].sort((a, b) => a - b)
   const angleDifference = (a: number, b: number) => {
     const twoPi = Math.PI * 2
     let diff = (a - b) % twoPi
@@ -187,7 +181,7 @@ describe('minimumAreaBoundingBox', () => {
 
   it('finds the minimum box for a rotated rectangle', () => {
     const rotation = Math.PI / 6
-    const rectangle = createRectangle(8, 3, rotation).map(point => vec2.fromValues(point[0] + 10, point[1] - 5))
+    const rectangle = createRectangle(8, 3, rotation).map(point => newVec2(point[0] + 10, point[1] - 5))
     const { size, angle } = minimumAreaBoundingBox({ points: rectangle })
 
     const components = sortedAbsComponents(size)
@@ -204,7 +198,7 @@ describe('minimumAreaBoundingBox', () => {
 
   it('finds the minimum box for a rotated trapezoid with axis-aligned legs', () => {
     const trapezoid = {
-      points: [vec2.fromValues(0, 0), vec2.fromValues(4, 4), vec2.fromValues(4, 6), vec2.fromValues(-2, 0)]
+      points: [newVec2(0, 0), newVec2(4, 4), newVec2(4, 6), newVec2(-2, 0)]
     }
 
     const { size, angle } = minimumAreaBoundingBox(trapezoid)
@@ -224,13 +218,13 @@ describe('minimumAreaBoundingBox', () => {
   })
 
   it('throws when the polygon has fewer than three points', () => {
-    const polygon = { points: [vec2.fromValues(0, 0), vec2.fromValues(1, 1)] }
+    const polygon = { points: [newVec2(0, 0), newVec2(1, 1)] }
     expect(() => minimumAreaBoundingBox(polygon)).toThrowError('Polygon requires at least 3 points')
   })
 
   it('throws when the polygon is degenerate after computing the hull', () => {
     const polygon = {
-      points: [vec2.fromValues(0, 0), vec2.fromValues(2, 2), vec2.fromValues(4, 4), vec2.fromValues(6, 6)]
+      points: [newVec2(0, 0), newVec2(2, 2), newVec2(4, 4), newVec2(6, 6)]
     }
     expect(() => minimumAreaBoundingBox(polygon)).toThrowError('Convex hull of polygon requires at least 3 points')
   })
@@ -274,7 +268,7 @@ beforeEach(() => {
   createPointDMock.mockReturnValue({ delete: vi.fn() } as any)
   createPathDMock.mockReturnValue({ delete: vi.fn() } as any)
   createPathsDMock.mockReturnValue({ delete: vi.fn() } as any)
-  pathDToPointsMock.mockReturnValue([new Float32Array(vec2.fromValues(0, 0))])
+  pathDToPointsMock.mockReturnValue([newVec2(0, 0)])
   getClipperModuleMock.mockReturnValue(mockClipperModule())
 })
 
@@ -283,10 +277,8 @@ afterEach(() => {
 })
 
 describe('polygon helpers using Clipper', () => {
-  const samplePolygon = {
-    points: [vec2.fromValues(0, 0), vec2.fromValues(10, 0), vec2.fromValues(10, 10), vec2.fromValues(0, 10)].map(
-      ([x, y]) => new Float32Array([x, y])
-    )
+  const samplePolygon: Polygon2D = {
+    points: [newVec2(0, 0), newVec2(10, 0), newVec2(10, 10), newVec2(0, 10)]
   }
 
   it('calculatePolygonArea delegates to AreaPathD', () => {
@@ -327,7 +319,7 @@ describe('polygon helpers using Clipper', () => {
     createPointDMock.mockReturnValueOnce(pointStub as any)
     createPathDMock.mockReturnValueOnce(pathStub as any)
 
-    const point = new Float32Array(vec2.fromValues(5, 5))
+    const point = newVec2(5, 5)
     const result = isPointInPolygon(point, samplePolygon)
 
     expect(createPointDMock).toHaveBeenCalledWith(point)
@@ -346,7 +338,7 @@ describe('polygon helpers using Clipper', () => {
     const pathsStub = { delete: vi.fn() }
     createPathDMock.mockReturnValueOnce(pathStub as any)
     createPathsDMock.mockReturnValueOnce(pathsStub as any)
-    const pathPoints = [new Float32Array(vec2.fromValues(123, 456))]
+    const pathPoints = [newVec2(123, 456)]
     pathDToPointsMock.mockReturnValueOnce(pathPoints)
 
     const result = simplifyPolygon(samplePolygon, 23)
@@ -373,7 +365,7 @@ describe('polygon helpers using Clipper', () => {
     const pathsStub = { delete: vi.fn() }
     createPathDMock.mockReturnValueOnce(pathStub as any)
     createPathsDMock.mockReturnValueOnce(pathsStub as any)
-    const pathPoints = [new Float32Array(vec2.fromValues(123, 456))]
+    const pathPoints = [newVec2(123, 456)]
     pathDToPointsMock.mockReturnValueOnce(pathPoints)
 
     const result = offsetPolygon(samplePolygon, 5)
@@ -412,7 +404,7 @@ describe('polygon helpers using Clipper', () => {
     createPathsDMock.mockReturnValueOnce(pathsStubA as any).mockReturnValueOnce(pathsStubB as any)
 
     const otherPolygon = {
-      points: [vec2.fromValues(0, 0), vec2.fromValues(1, 1), vec2.fromValues(2, 2)]
+      points: [newVec2(0, 0), newVec2(1, 1), newVec2(2, 2)]
     }
     const result = arePolygonsIntersecting(samplePolygon, otherPolygon)
 
@@ -455,19 +447,14 @@ describe('polygon helpers using Clipper', () => {
 
 describe('polygonEdgeOffset', () => {
   const createClockwiseRectangle = (): Polygon2D => ({
-    points: [vec2.fromValues(0, 0), vec2.fromValues(0, 10), vec2.fromValues(10, 10), vec2.fromValues(10, 0)]
+    points: [newVec2(0, 0), newVec2(0, 10), newVec2(10, 10), newVec2(10, 0)]
   })
 
   it('expands a clockwise polygon when offsets are positive', () => {
     const rectangle = createClockwiseRectangle()
     const result = polygonEdgeOffset(rectangle, [1, 1, 1, 1])
 
-    const expected = [
-      vec2.fromValues(-1, -1),
-      vec2.fromValues(-1, 11),
-      vec2.fromValues(11, 11),
-      vec2.fromValues(11, -1)
-    ]
+    const expected = [newVec2(-1, -1), newVec2(-1, 11), newVec2(11, 11), newVec2(11, -1)]
 
     expect(result.points).toHaveLength(expected.length)
     result.points.forEach((point, index) => {
@@ -481,12 +468,7 @@ describe('polygonEdgeOffset', () => {
     const offsets = [1, 2, 3, 4]
 
     const result = polygonEdgeOffset(rectangle, offsets)
-    const expected = [
-      vec2.fromValues(-1, -4),
-      vec2.fromValues(-1, 12),
-      vec2.fromValues(13, 12),
-      vec2.fromValues(13, -4)
-    ]
+    const expected = [newVec2(-1, -4), newVec2(-1, 12), newVec2(13, 12), newVec2(13, -4)]
 
     result.points.forEach((point, index) => {
       expect(point[0]).toBeCloseTo(expected[index][0], 6)
@@ -496,23 +478,11 @@ describe('polygonEdgeOffset', () => {
 
   it('handles colinear adjacent edges using fallback averaging', () => {
     const polygon: Polygon2D = {
-      points: [
-        vec2.fromValues(0, 0),
-        vec2.fromValues(0, 10),
-        vec2.fromValues(20, 10),
-        vec2.fromValues(20, 0),
-        vec2.fromValues(10, 0)
-      ]
+      points: [newVec2(0, 0), newVec2(0, 10), newVec2(20, 10), newVec2(20, 0), newVec2(10, 0)]
     }
 
     const result = polygonEdgeOffset(polygon, [1, 1, 1, 1, 1])
-    const expected = [
-      vec2.fromValues(-1, -1),
-      vec2.fromValues(-1, 11),
-      vec2.fromValues(21, 11),
-      vec2.fromValues(21, -1),
-      vec2.fromValues(10, -1)
-    ]
+    const expected = [newVec2(-1, -1), newVec2(-1, 11), newVec2(21, 11), newVec2(21, -1), newVec2(10, -1)]
 
     result.points.forEach((point, index) => {
       expect(point[0]).toBeCloseTo(expected[index][0], 6)
@@ -524,7 +494,7 @@ describe('polygonEdgeOffset', () => {
     const rectangle = createClockwiseRectangle()
     const result = polygonEdgeOffset(rectangle, [-1, -1, -1, -1])
 
-    const expected = [vec2.fromValues(1, 1), vec2.fromValues(1, 9), vec2.fromValues(9, 9), vec2.fromValues(9, 1)]
+    const expected = [newVec2(1, 1), newVec2(1, 9), newVec2(9, 9), newVec2(9, 1)]
 
     result.points.forEach((point, index) => {
       expect(point[0]).toBeCloseTo(expected[index][0], 6)
@@ -541,7 +511,7 @@ describe('unionPolygons', () => {
 
   it('should return same polygon for single polygon input', () => {
     const polygon: Polygon2D = {
-      points: [vec2.fromValues(0, 0), vec2.fromValues(10, 0), vec2.fromValues(10, 10), vec2.fromValues(0, 10)]
+      points: [newVec2(0, 0), newVec2(10, 0), newVec2(10, 10), newVec2(0, 10)]
     }
     const result = unionPolygons([polygon])
     expect(result).toEqual([polygon])
@@ -549,10 +519,10 @@ describe('unionPolygons', () => {
 
   it('should union two overlapping polygons', () => {
     const polygon1: Polygon2D = {
-      points: [vec2.fromValues(0, 0), vec2.fromValues(10, 0), vec2.fromValues(10, 10), vec2.fromValues(0, 10)]
+      points: [newVec2(0, 0), newVec2(10, 0), newVec2(10, 10), newVec2(0, 10)]
     }
     const polygon2: Polygon2D = {
-      points: [vec2.fromValues(5, 5), vec2.fromValues(15, 5), vec2.fromValues(15, 15), vec2.fromValues(5, 15)]
+      points: [newVec2(5, 5), newVec2(15, 5), newVec2(15, 15), newVec2(5, 15)]
     }
 
     const unionResultPath = { delete: vi.fn() } as any
@@ -568,7 +538,7 @@ describe('unionPolygons', () => {
     const pathsStub = { delete: vi.fn() }
     createPathDMock.mockReturnValueOnce(pathStub1 as any).mockReturnValueOnce(pathStub2 as any)
     createPathsDMock.mockReturnValueOnce(pathsStub as any)
-    const pathPoints = [new Float32Array(vec2.fromValues(123, 456))]
+    const pathPoints = [newVec2(123, 456)]
     pathDToPointsMock.mockReturnValueOnce(pathPoints)
 
     const result = unionPolygons([polygon1, polygon2])
@@ -591,12 +561,12 @@ describe.skip('splitPolygonByLine', () => {
   // The function is tested via integration tests in the browser
   it('splits a rectangle vertically into two equal halves', () => {
     const rect: Polygon2D = {
-      points: [vec2.fromValues(0, 0), vec2.fromValues(100, 0), vec2.fromValues(100, 50), vec2.fromValues(0, 50)]
+      points: [newVec2(0, 0), newVec2(100, 0), newVec2(100, 50), newVec2(0, 50)]
     }
 
     const line = {
-      point: vec2.fromValues(50, 0),
-      direction: vec2.fromValues(0, 1)
+      point: newVec2(50, 0),
+      direction: newVec2(0, 1)
     }
 
     const result = splitPolygonByLine(rect, line)
@@ -621,12 +591,12 @@ describe.skip('splitPolygonByLine', () => {
 
   it('splits a rectangle horizontally', () => {
     const rect: Polygon2D = {
-      points: [vec2.fromValues(0, 0), vec2.fromValues(100, 0), vec2.fromValues(100, 50), vec2.fromValues(0, 50)]
+      points: [newVec2(0, 0), newVec2(100, 0), newVec2(100, 50), newVec2(0, 50)]
     }
 
     const line = {
-      point: vec2.fromValues(0, 25),
-      direction: vec2.fromValues(1, 0)
+      point: newVec2(0, 25),
+      direction: newVec2(1, 0)
     }
 
     const result = splitPolygonByLine(rect, line)
@@ -648,12 +618,12 @@ describe.skip('splitPolygonByLine', () => {
 
   it('splits a rectangle diagonally', () => {
     const rect: Polygon2D = {
-      points: [vec2.fromValues(0, 0), vec2.fromValues(100, 0), vec2.fromValues(100, 100), vec2.fromValues(0, 100)]
+      points: [newVec2(0, 0), newVec2(100, 0), newVec2(100, 100), newVec2(0, 100)]
     }
 
     const line = {
-      point: vec2.fromValues(0, 0),
-      direction: vec2.normalize(vec2.create(), vec2.fromValues(1, 1))
+      point: newVec2(0, 0),
+      direction: normVec2(newVec2(1, 1))
     }
 
     const result = splitPolygonByLine(rect, line)
@@ -675,12 +645,12 @@ describe.skip('splitPolygonByLine', () => {
 
   it('returns single polygon when line misses the polygon', () => {
     const rect: Polygon2D = {
-      points: [vec2.fromValues(0, 0), vec2.fromValues(100, 0), vec2.fromValues(100, 50), vec2.fromValues(0, 50)]
+      points: [newVec2(0, 0), newVec2(100, 0), newVec2(100, 50), newVec2(0, 50)]
     }
 
     const line = {
-      point: vec2.fromValues(200, 0),
-      direction: vec2.fromValues(0, 1)
+      point: newVec2(200, 0),
+      direction: newVec2(0, 1)
     }
 
     const result = splitPolygonByLine(rect, line)
@@ -696,12 +666,12 @@ describe.skip('splitPolygonByLine', () => {
 
   it('handles line touching polygon vertex', () => {
     const rect: Polygon2D = {
-      points: [vec2.fromValues(0, 0), vec2.fromValues(100, 0), vec2.fromValues(100, 50), vec2.fromValues(0, 50)]
+      points: [newVec2(0, 0), newVec2(100, 0), newVec2(100, 50), newVec2(0, 50)]
     }
 
     const line = {
-      point: vec2.fromValues(0, 0),
-      direction: vec2.fromValues(0, 1)
+      point: newVec2(0, 0),
+      direction: newVec2(0, 1)
     }
 
     const result = splitPolygonByLine(rect, line)
@@ -717,19 +687,12 @@ describe.skip('splitPolygonByLine', () => {
   it('splits an L-shaped polygon into multiple pieces', () => {
     // L-shaped polygon
     const lShape: Polygon2D = {
-      points: [
-        vec2.fromValues(0, 0),
-        vec2.fromValues(100, 0),
-        vec2.fromValues(100, 50),
-        vec2.fromValues(50, 50),
-        vec2.fromValues(50, 100),
-        vec2.fromValues(0, 100)
-      ]
+      points: [newVec2(0, 0), newVec2(100, 0), newVec2(100, 50), newVec2(50, 50), newVec2(50, 100), newVec2(0, 100)]
     }
 
     const line = {
-      point: vec2.fromValues(50, -10),
-      direction: vec2.fromValues(0, 1)
+      point: newVec2(50, -10),
+      direction: newVec2(0, 1)
     }
 
     const result = splitPolygonByLine(lShape, line)
@@ -745,13 +708,13 @@ describe.skip('splitPolygonByLine', () => {
 
   it('correctly tags left and right sides based on line direction', () => {
     const rect: Polygon2D = {
-      points: [vec2.fromValues(0, 0), vec2.fromValues(100, 0), vec2.fromValues(100, 50), vec2.fromValues(0, 50)]
+      points: [newVec2(0, 0), newVec2(100, 0), newVec2(100, 50), newVec2(0, 50)]
     }
 
     // Vertical line going upward (from y=0 to y=50)
     const line = {
-      point: vec2.fromValues(50, 0),
-      direction: vec2.fromValues(0, 1)
+      point: newVec2(50, 0),
+      direction: newVec2(0, 1)
     }
 
     const result = splitPolygonByLine(rect, line)

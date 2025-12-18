@@ -1,7 +1,6 @@
 import { TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
 import { Callout, Card, DataList, Flex, Grid, Heading, IconButton, Separator, Text } from '@radix-ui/themes'
-import { vec2 } from 'gl-matrix'
 import { useCallback, useMemo } from 'react'
 
 import type { PerimeterId, PerimeterWallId, WallAssemblyId } from '@/building/model/ids'
@@ -17,7 +16,7 @@ import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { pushTool } from '@/editor/tools/system/store'
 import { ConstructionPlanIcon, FitToViewIcon, SplitWallIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
-import { Bounds2D, type Polygon2D } from '@/shared/geometry'
+import { Bounds2D, type Polygon2D, type Vec2, copyVec2 } from '@/shared/geometry'
 import { wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 import { formatLength } from '@/shared/utils/formatting'
 
@@ -76,7 +75,7 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
     const wallIndex = outerWall.walls.findIndex(w => w.id === wallId)
     if (wallIndex === -1) return { canDelete: false, reason: 'Wall not found' }
 
-    const newBoundaryPoints: vec2[] = outerWall.referencePolygon.map(point => vec2.clone(point))
+    const newBoundaryPoints: Vec2[] = outerWall.referencePolygon.map(point => copyVec2(point))
     const cornerIndex1 = wallIndex
     const cornerIndex2 = (wallIndex + 1) % outerWall.corners.length
 

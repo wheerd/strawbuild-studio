@@ -1,4 +1,3 @@
-import type { vec2 } from 'gl-matrix'
 
 import type { SelectableId } from '@/building/model/ids'
 import { isRoofId } from '@/building/model/ids'
@@ -6,7 +5,7 @@ import type { Perimeter, Roof } from '@/building/model/model'
 import type { StoreActions } from '@/building/store/types'
 import type { SnappingContext } from '@/editor/services/snapping/types'
 import type { MovementContext } from '@/editor/tools/basic/movement/MovementBehavior'
-import { type Polygon2D } from '@/shared/geometry'
+import { type Polygon2D, type Vec2 } from '@/shared/geometry'
 
 import {
   type PolygonEntityContext,
@@ -55,11 +54,11 @@ export class RoofMovementBehavior extends PolygonMovementBehavior<RoofEntityCont
     }
   }
 
-  protected getPolygonPoints(context: MovementContext<RoofEntityContext>): readonly vec2[] {
+  protected getPolygonPoints(context: MovementContext<RoofEntityContext>): readonly Vec2[] {
     return context.entity.roof.referencePolygon.points
   }
 
-  protected applyMovementDelta(delta: vec2, context: MovementContext<RoofEntityContext>): boolean {
+  protected applyMovementDelta(delta: Vec2, context: MovementContext<RoofEntityContext>): boolean {
     const newPolygon: Polygon2D = {
       points: this.translatePoints(context.entity.roof.referencePolygon.points, delta)
     }

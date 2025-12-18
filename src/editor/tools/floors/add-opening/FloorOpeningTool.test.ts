@@ -1,7 +1,7 @@
-import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { FloorArea, FloorOpening, Perimeter } from '@/building/model/model'
+import { type Vec2, newVec2 } from '@/shared/geometry'
 
 import { FloorOpeningTool } from './FloorOpeningTool'
 
@@ -29,7 +29,7 @@ describe('FloorOpeningTool', () => {
 
   it('calls addFloorOpening when polygon is completed', () => {
     const tool = new FloorOpeningTool()
-    const points = [vec2.fromValues(10, 10), vec2.fromValues(50, 10), vec2.fromValues(50, 50)]
+    const points = [newVec2(10, 10), newVec2(50, 10), newVec2(50, 50)]
     tool.state.points = points
     tool.state.isClosingSegmentValid = true
 
@@ -46,8 +46,8 @@ describe('FloorOpeningTool', () => {
       corners: [
         {
           id: 'corner_a',
-          insidePoint: vec2.fromValues(0, 0),
-          outsidePoint: vec2.fromValues(0, 0),
+          insidePoint: newVec2(0, 0),
+          outsidePoint: newVec2(0, 0),
           constructedByWall: 'next',
           interiorAngle: 90,
           exteriorAngle: 270
@@ -56,7 +56,7 @@ describe('FloorOpeningTool', () => {
       walls: [
         {
           id: 'wall_a',
-          insideLine: { start: vec2.fromValues(0, 0), end: vec2.fromValues(100, 0) }
+          insideLine: { start: newVec2(0, 0), end: newVec2(100, 0) }
         }
       ]
     } as unknown as Perimeter
@@ -64,13 +64,13 @@ describe('FloorOpeningTool', () => {
     const floorArea = {
       id: 'floorarea_existing',
       storeyId: 'storey_opening',
-      area: { points: [vec2.fromValues(0, 0), vec2.fromValues(0, 120), vec2.fromValues(120, 120)] }
+      area: { points: [newVec2(0, 0), newVec2(0, 120), newVec2(120, 120)] }
     } as FloorArea
 
     const floorOpening = {
       id: 'flooropening_existing',
       storeyId: 'storey_opening',
-      area: { points: [vec2.fromValues(20, 20), vec2.fromValues(40, 20), vec2.fromValues(40, 40)] }
+      area: { points: [newVec2(20, 20), newVec2(40, 20), newVec2(40, 40)] }
     } as FloorOpening
 
     mockModelActions.getPerimetersByStorey.mockReturnValue([perimeter])
@@ -79,8 +79,8 @@ describe('FloorOpeningTool', () => {
 
     const tool = new FloorOpeningTool()
     const baseContext = {
-      snapPoints: [] as vec2[],
-      alignPoints: [] as vec2[],
+      snapPoints: [] as Vec2[],
+      alignPoints: [] as Vec2[],
       referenceLineSegments: []
     }
 

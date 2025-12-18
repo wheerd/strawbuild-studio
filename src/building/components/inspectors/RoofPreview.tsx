@@ -1,9 +1,8 @@
-import { vec2 } from 'gl-matrix'
-
 import type { RoofType } from '@/building/model'
+import { type Vec2, newVec2 } from '@/shared/geometry'
 import { Bounds2D, degreesToRadians } from '@/shared/geometry'
 
-function toPath(points: vec2[]): string {
+function toPath(points: Vec2[]): string {
   if (points.length === 0) return ''
   return points
     .reduce((path, point, index) => `${path}${index === 0 ? 'M' : 'L'} ${point[0]} ${point[1]} `, '')
@@ -19,8 +18,8 @@ export function RoofPreview({ slope, type }: { slope: number; type: RoofType }):
 
   const roofPoints =
     type === 'shed'
-      ? [vec2.fromValues(0, 0), vec2.fromValues(svgWidth, height), vec2.fromValues(svgWidth, 0)]
-      : [vec2.fromValues(0, 0), vec2.fromValues(svgWidth / 2, height), vec2.fromValues(svgWidth, 0)]
+      ? [newVec2(0, 0), newVec2(svgWidth, height), newVec2(svgWidth, 0)]
+      : [newVec2(0, 0), newVec2(svgWidth / 2, height), newVec2(svgWidth, 0)]
 
   const bounds = Bounds2D.fromPoints(roofPoints)
   const center = bounds.center
@@ -29,8 +28,8 @@ export function RoofPreview({ slope, type }: { slope: number; type: RoofType }):
   const centerX = svgWidth / 2
   const centerY = svgHeight / 2
 
-  const transformPoint = (point: vec2) =>
-    vec2.fromValues((point[0] - center[0]) * scale + centerX, -(point[1] - center[1]) * scale + centerY)
+  const transformPoint = (point: Vec2) =>
+    newVec2((point[0] - center[0]) * scale + centerX, -(point[1] - center[1]) * scale + centerY)
 
   const scaledRoofPoints = roofPoints.map(transformPoint)
   const roofPath = toPath(scaledRoofPoints)

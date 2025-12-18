@@ -27,7 +27,6 @@ import {
   wood
 } from '@/construction/materials/material'
 import { type WallConfig, validateWallConfig } from '@/construction/walls/types'
-import '@/shared/geometry'
 
 export interface WallAssembliesState {
   wallAssemblyConfigs: Record<WallAssemblyId, WallAssemblyConfig>

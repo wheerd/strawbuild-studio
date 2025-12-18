@@ -1,5 +1,3 @@
-import { vec2 } from 'gl-matrix'
-
 import type {
   FloorAssemblyId,
   OpeningAssemblyId,
@@ -23,6 +21,7 @@ import type { Material, MaterialId } from '@/construction/materials/material'
 import { getMaterialsState, setMaterialsState } from '@/construction/materials/store'
 import { MATERIALS_STORE_VERSION, migrateMaterialsState } from '@/construction/materials/store/migrations'
 import { resolveOpeningConfig } from '@/construction/openings/resolver'
+import { newVec2 } from '@/shared/geometry'
 import type { Polygon2D } from '@/shared/geometry'
 
 export interface ExportedStorey {
@@ -334,8 +333,8 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
         // 6. Recreate perimeters - let store auto-compute all geometry
         exportedStorey.perimeters.forEach(exportedPerimeter => {
           const boundaryPoints =
-            exportedPerimeter.referencePolygon?.points?.map(point => vec2.fromValues(point.x, point.y)) ??
-            exportedPerimeter.corners.map(c => vec2.fromValues(c.insideX, c.insideY))
+            exportedPerimeter.referencePolygon?.points?.map(point => newVec2(point.x, point.y)) ??
+            exportedPerimeter.corners.map(c => newVec2(c.insideX, c.insideY))
           const boundary: Polygon2D = {
             points: boundaryPoints
           }
@@ -416,21 +415,21 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
 
         exportedStorey.floorAreas?.forEach(exportedFloorArea => {
           const polygon: Polygon2D = {
-            points: exportedFloorArea.points.map(point => vec2.fromValues(point.x, point.y))
+            points: exportedFloorArea.points.map(point => newVec2(point.x, point.y))
           }
           modelActions.addFloorArea(targetStorey.id, polygon)
         })
 
         exportedStorey.floorOpenings?.forEach(exportedFloorOpening => {
           const polygon: Polygon2D = {
-            points: exportedFloorOpening.points.map(point => vec2.fromValues(point.x, point.y))
+            points: exportedFloorOpening.points.map(point => newVec2(point.x, point.y))
           }
           modelActions.addFloorOpening(targetStorey.id, polygon)
         })
 
         exportedStorey.roofs?.forEach(exportedRoof => {
           const polygon: Polygon2D = {
-            points: exportedRoof.referencePolygon.points.map(point => vec2.fromValues(point.x, point.y))
+            points: exportedRoof.referencePolygon.points.map(point => newVec2(point.x, point.y))
           }
           const addedRoof = modelActions.addRoof(
             targetStorey.id,

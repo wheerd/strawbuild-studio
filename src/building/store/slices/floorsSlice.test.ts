@@ -1,7 +1,7 @@
-import { vec2 } from 'gl-matrix'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { type StoreyId, createFloorAreaId, createFloorOpeningId, createStoreyId } from '@/building/model/ids'
+import { newVec2 } from '@/shared/geometry'
 import {
   type Polygon2D,
   ensurePolygonIsClockwise,
@@ -61,11 +61,11 @@ describe('floorsSlice', () => {
   })
 
   const createRectangularPolygon = (): Polygon2D => ({
-    points: [vec2.fromValues(0, 0), vec2.fromValues(10, 0), vec2.fromValues(10, 5), vec2.fromValues(0, 5)]
+    points: [newVec2(0, 0), newVec2(10, 0), newVec2(10, 5), newVec2(0, 5)]
   })
 
   const createTriangularPolygon = (): Polygon2D => ({
-    points: [vec2.fromValues(0, 0), vec2.fromValues(5, 0), vec2.fromValues(2.5, 4)]
+    points: [newVec2(0, 0), newVec2(5, 0), newVec2(2.5, 4)]
   })
 
   describe('Floor Areas', () => {
@@ -109,7 +109,7 @@ describe('floorsSlice', () => {
 
       it('should throw error for polygon with less than 3 points', () => {
         const invalidPolygon: Polygon2D = {
-          points: [vec2.fromValues(0, 0), vec2.fromValues(1, 0)]
+          points: [newVec2(0, 0), newVec2(1, 0)]
         }
 
         expect(() => store.actions.addFloorArea(testStoreyId, invalidPolygon)).toThrow(
@@ -199,7 +199,7 @@ describe('floorsSlice', () => {
         const floorArea = store.actions.addFloorArea(testStoreyId, polygon1)
 
         const invalidPolygon: Polygon2D = {
-          points: [vec2.fromValues(0, 0), vec2.fromValues(1, 0)]
+          points: [newVec2(0, 0), newVec2(1, 0)]
         }
 
         expect(() => store.actions.updateFloorArea(floorArea.id, invalidPolygon)).toThrow(
@@ -331,7 +331,7 @@ describe('floorsSlice', () => {
 
       it('should throw error for polygon with less than 3 points', () => {
         const invalidPolygon: Polygon2D = {
-          points: [vec2.fromValues(0, 0), vec2.fromValues(1, 0)]
+          points: [newVec2(0, 0), newVec2(1, 0)]
         }
 
         expect(() => store.actions.addFloorOpening(testStoreyId, invalidPolygon)).toThrow(
@@ -421,7 +421,7 @@ describe('floorsSlice', () => {
         const floorOpening = store.actions.addFloorOpening(testStoreyId, polygon1)
 
         const invalidPolygon: Polygon2D = {
-          points: [vec2.fromValues(0, 0), vec2.fromValues(1, 0)]
+          points: [newVec2(0, 0), newVec2(1, 0)]
         }
 
         expect(() => store.actions.updateFloorOpening(floorOpening.id, invalidPolygon)).toThrow(

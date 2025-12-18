@@ -1,4 +1,3 @@
-import { vec2 } from 'gl-matrix'
 
 import type { SelectableId } from '@/building/model'
 import type { StoreActions } from '@/building/store'
@@ -10,13 +9,14 @@ import type {
   PointerMovementState
 } from '@/editor/tools/basic/movement/MovementBehavior'
 import { PolygonMovementPreview } from '@/editor/tools/basic/movement/previews/PolygonMovementPreview'
+import { type Vec2, addVec2, copyVec2, distSqrVec2, subVec2 } from '@/shared/geometry'
 
 export interface PolygonEntityContext {
   snapContext: SnappingContext
 }
 
 export interface PolygonMovementState extends MovementState {
-  previewPolygon: readonly vec2[]
+  previewPolygon: readonly Vec2[]
   snapResult?: SnapResult
 }
 
@@ -31,31 +31,31 @@ export abstract class PolygonMovementBehavior<TEntity extends PolygonEntityConte
   initializeState(pointerState: PointerMovementState, context: MovementContext<TEntity>): PolygonMovementState {
     return {
       previewPolygon: this.getPolygonPoints(context),
-      movementDelta: vec2.clone(pointerState.delta)
+      movementDelta: copyVec2(pointerState.delta)
     }
   }
 
   constrainAndSnap(pointerState: PointerMovementState, context: MovementContext<TEntity>): PolygonMovementState {
     const originalPoints = this.getPolygonPoints(context)
-    const previewPoints = originalPoints.map(point => vec2.add(vec2.create(), point, pointerState.delta))
+    const previewPoints = originalPoints.map(point => addVec2(point, pointerState.delta))
     const snapContext = this.getSnapContext(context)
 
     let bestSnap: SnapResult | undefined
     let bestScore = Infinity
-    let resultDelta = vec2.clone(pointerState.delta)
+    let resultDelta = copyVec2(pointerState.delta)
 
     for (let index = 0; index < previewPoints.length; index += 1) {
       const snapResult = context.snappingService.findSnapResult(previewPoints[index], snapContext) ?? undefined
       if (!snapResult) continue
 
       const score =
-        vec2.squaredDistance(previewPoints[index], snapResult.position) *
+        distSqrVec2(previewPoints[index], snapResult.position) *
         (snapResult.lines && snapResult.lines.length > 0 ? 5 : 1)
 
       if (score < bestScore) {
         bestScore = score
         bestSnap = snapResult
-        resultDelta = vec2.subtract(vec2.create(), snapResult.position, originalPoints[index])
+        resultDelta = subVec2(snapResult.position, originalPoints[index])
       }
     }
 
@@ -74,7 +74,7 @@ export abstract class PolygonMovementBehavior<TEntity extends PolygonEntityConte
     return this.applyMovementDelta(movementState.movementDelta, context)
   }
 
-  applyRelativeMovement(deltaDifference: vec2, context: MovementContext<TEntity>): boolean {
+  applyRelativeMovement(deltaDifference: Vec2, context: MovementContext<TEntity>): boolean {
     return this.applyMovementDelta(deltaDifference, context)
   }
 
@@ -82,11 +82,11 @@ export abstract class PolygonMovementBehavior<TEntity extends PolygonEntityConte
     return context.entity.snapContext
   }
 
-  protected translatePoints(points: readonly vec2[], delta: vec2): vec2[] {
-    return points.map(point => vec2.add(vec2.create(), point, delta))
+  protected translatePoints(points: readonly Vec2[], delta: Vec2): Vec2[] {
+    return points.map(point => addVec2(point, delta))
   }
 
-  protected abstract getPolygonPoints(context: MovementContext<TEntity>): readonly vec2[]
+  protected abstract getPolygonPoints(context: MovementContext<TEntity>): readonly Vec2[]
 
-  protected abstract applyMovementDelta(delta: vec2, context: MovementContext<TEntity>): boolean
+  protected abstract applyMovementDelta(delta: Vec2, context: MovementContext<TEntity>): boolean
 }

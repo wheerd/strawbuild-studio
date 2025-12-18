@@ -1,15 +1,22 @@
-import { vec2, vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 
 import { type Projection, WallConstructionArea, projectPoint } from '@/construction/geometry'
 import { type ConstructionResult, yieldMeasurement } from '@/construction/results'
 import {
   type Length,
   type Line2D,
+  type Vec2,
   computeBoundsLines,
   direction,
+  distVec2,
   distanceToInfiniteLine,
+  dotVec2,
+  newVec2,
   perpendicularCCW,
-  projectPointOntoLine
+  projectPointOntoLine,
+  scaleAddVec2,
+  scaleVec2,
+  subVec2
 } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
 
@@ -35,10 +42,10 @@ export interface DirectMeasurement {
 
 export interface ProjectedMeasurement {
   // Rectangle corners (measurement area in 2D)
-  startPointMin: vec2 // Original measurement line start
-  endPointMin: vec2 // Original measurement line end
-  startPointMax: vec2 // Extended rectangle start
-  endPointMax: vec2 // Extended rectangle end
+  startPointMin: Vec2 // Original measurement line start
+  endPointMin: Vec2 // Original measurement line end
+  startPointMax: Vec2 // Extended rectangle start
+  endPointMax: Vec2 // Extended rectangle end
   length: Length
   tags?: Tag[]
 }
@@ -51,24 +58,24 @@ export interface IntervalMeasurement extends ProjectedMeasurement {
 }
 
 export interface LineMeasurement {
-  startPoint: vec2
-  endPoint: vec2
-  startOnLine: vec2
-  endOnLine: vec2
+  startPoint: Vec2
+  endPoint: Vec2
+  startOnLine: Vec2
+  endOnLine: Vec2
   length: Length
   tags?: Tag[]
 }
 
 export interface MeasurementGroup {
-  direction: vec2
-  startLeft: vec2
-  startRight: vec2
+  direction: Vec2
+  startLeft: Vec2
+  startRight: Vec2
   measurements: IntervalMeasurement[]
 }
 
 export interface MeasurementLines {
-  direction: vec2
-  start: vec2
+  direction: Vec2
+  start: Vec2
   lines: LineMeasurement[][]
 }
 
@@ -148,14 +155,14 @@ export function* yieldMeasurementFromArea(
   }
 }
 
-function normalizeDirection(d: vec2) {
+function normalizeDirection(d: Vec2) {
   let result = d
   if (d[0] < 0 || (Math.abs(d[0]) < DIRECTION_TOLERANCE && d[1] < 0)) {
-    result = vec2.scale(vec2.create(), d, -1)
+    result = scaleVec2(d, -1)
   }
   // Ensure we don't have negative zero (floating-point artifact)
-  if (Object.is(result[0], -0)) result[0] = 0
-  if (Object.is(result[1], -0)) result[1] = 0
+  if (Object.is(result[0], -0)) result = newVec2(0, result[1])
+  if (Object.is(result[1], -0)) result = newVec2(result[0], 0)
   return result
 }
 
@@ -164,33 +171,33 @@ function projectMeasurements(measurements: AutoMeasurement[], projection: Projec
     .map(m => {
       const startPoint3D = projectPoint(m.startPoint, projection)
       const endPoint3D = projectPoint(m.endPoint, projection)
-      const startPointBase = vec2.fromValues(startPoint3D[0], startPoint3D[1])
-      const endPointBase = vec2.fromValues(endPoint3D[0], endPoint3D[1])
+      const startPointBase = newVec2(startPoint3D[0], startPoint3D[1])
+      const endPointBase = newVec2(endPoint3D[0], endPoint3D[1])
       const measurementDirection = direction(startPointBase, endPointBase)
       const normal = perpendicularCCW(measurementDirection)
 
       // Project the 3D size vector and extract perpendicular component only
       const extend1Projected = projectPoint(m.extend1, projection)
-      const extend1Projected2D = vec2.fromValues(extend1Projected[0], extend1Projected[1])
-      const extend1Range = vec2.dot(vec2.subtract(vec2.create(), extend1Projected2D, startPointBase), normal)
+      const extend1Projected2D = newVec2(extend1Projected[0], extend1Projected[1])
+      const extend1Range = dotVec2(subVec2(extend1Projected2D, startPointBase), normal)
       let extendRangeMin = Math.min(extend1Range, 0)
       let extendRangeMax = Math.max(extend1Range, 0)
 
       if (m.extend2) {
         const extend2Projected = projectPoint(m.extend2, projection)
-        const extend2Projected2D = vec2.fromValues(extend2Projected[0], extend2Projected[1])
-        const extend2Range = vec2.dot(vec2.subtract(vec2.create(), extend2Projected2D, startPointBase), normal)
+        const extend2Projected2D = newVec2(extend2Projected[0], extend2Projected[1])
+        const extend2Range = dotVec2(subVec2(extend2Projected2D, startPointBase), normal)
         extendRangeMin = Math.min(extend2Range, extendRangeMin)
         extendRangeMax = Math.max(extend2Range, extendRangeMax)
       }
 
       // Create rectangle corners using perpendicular offset
-      const startPointMin = vec2.scaleAndAdd(vec2.create(), startPointBase, normal, extendRangeMin)
-      const endPointMin = vec2.scaleAndAdd(vec2.create(), endPointBase, normal, extendRangeMin)
-      const startPointMax = vec2.scaleAndAdd(vec2.create(), startPointBase, normal, extendRangeMax)
-      const endPointMax = vec2.scaleAndAdd(vec2.create(), endPointBase, normal, extendRangeMax)
+      const startPointMin = scaleAddVec2(startPointBase, normal, extendRangeMin)
+      const endPointMin = scaleAddVec2(endPointBase, normal, extendRangeMin)
+      const startPointMax = scaleAddVec2(startPointBase, normal, extendRangeMax)
+      const endPointMax = scaleAddVec2(endPointBase, normal, extendRangeMax)
 
-      const length = vec2.distance(startPointBase, endPointBase)
+      const length = distVec2(startPointBase, endPointBase)
       return {
         startPointMin,
         endPointMin,
@@ -207,7 +214,7 @@ function projectMeasurements(measurements: AutoMeasurement[], projection: Projec
 }
 
 function groupMeasurements(measurements: ProjectedMeasurement[]) {
-  const groupedMeasurements = new Map<vec2, ProjectedMeasurement[]>()
+  const groupedMeasurements = new Map<Vec2, ProjectedMeasurement[]>()
 
   for (const measurement of measurements) {
     const dir = normalizeDirection(direction(measurement.startPointMin, measurement.endPointMin))
@@ -242,9 +249,9 @@ function calculateMinDistance(measurement: ProjectedMeasurement, line: Line2D): 
 }
 
 function processMeasurementGroup(
-  dir: vec2,
+  dir: Vec2,
   measurements: ProjectedMeasurement[],
-  planPoints: vec2[]
+  planPoints: Vec2[]
 ): MeasurementGroup {
   const { left, right } = computeBoundsLines(dir, planPoints)
   const leftLine: Line2D = { point: left.start, direction: dir }
@@ -260,8 +267,8 @@ function processMeasurementGroup(
       // Use min points for t1/t2 calculation (will be updated in layout)
       const projectedStart = projectPointOntoLine(m.startPointMin, leftLine)
       const projectedEnd = projectPointOntoLine(m.endPointMin, leftLine)
-      const t1 = vec2.dot(vec2.sub(vec2.create(), projectedStart, left.start), dir)
-      const t2 = vec2.dot(vec2.sub(vec2.create(), projectedEnd, left.start), dir)
+      const t1 = dotVec2(subVec2(projectedStart, left.start), dir)
+      const t2 = dotVec2(subVec2(projectedEnd, left.start), dir)
       return {
         ...m,
         startPointMin: t1 < t2 ? m.startPointMin : m.endPointMin,
@@ -356,8 +363,8 @@ function selectClosestPoints(
   measurement: ProjectedMeasurement,
   line: Line2D
 ): {
-  startPoint: vec2
-  endPoint: vec2
+  startPoint: Vec2
+  endPoint: Vec2
   baseOffset: number
 } {
   const minDistance = distanceToInfiniteLine(measurement.startPointMin, line)
@@ -380,8 +387,8 @@ function selectClosestPoints(
 
 function convertToLineMeasurements(
   measurements: IntervalMeasurement[],
-  lineStart: vec2,
-  direction: vec2,
+  lineStart: Vec2,
+  direction: Vec2,
   swapDir: boolean
 ): LineMeasurement[] {
   const line: Line2D = { point: lineStart, direction }
@@ -430,7 +437,7 @@ function layout(group: MeasurementGroup): { left: MeasurementLines; right: Measu
 export function* processMeasurements(
   measurements: AutoMeasurement[],
   projection: Projection,
-  planPoints: vec2[]
+  planPoints: Vec2[]
 ): Generator<MeasurementLines> {
   const projected = projectMeasurements(measurements, projection)
   const grouped = groupMeasurements(projected)

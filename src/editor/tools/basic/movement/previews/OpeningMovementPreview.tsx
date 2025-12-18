@@ -1,4 +1,3 @@
-import { vec2 } from 'gl-matrix'
 import React from 'react'
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
@@ -7,6 +6,7 @@ import type {
   OpeningEntityContext,
   OpeningMovementState
 } from '@/editor/tools/basic/movement/behaviors/OpeningMovementBehavior'
+import { scaleAddVec2 } from '@/shared/geometry'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 export function OpeningMovementPreview({
@@ -22,17 +22,17 @@ export function OpeningMovementPreview({
   const outsideDirection = wall.outsideDirection
   const halfWidth = opening.width / 2
 
-  const openingStart = vec2.scaleAndAdd(vec2.create(), wallStart, wall.direction, movementState.newOffset - halfWidth)
-  const openingEnd = vec2.scaleAndAdd(vec2.create(), wallStart, wall.direction, movementState.newOffset + halfWidth)
+  const openingStart = scaleAddVec2(wallStart, wall.direction, movementState.newOffset - halfWidth)
+  const openingEnd = scaleAddVec2(wallStart, wall.direction, movementState.newOffset + halfWidth)
 
   // Create opening rectangle
   const insideStart = openingStart
   const insideEnd = openingEnd
-  const outsideStart = vec2.scaleAndAdd(vec2.create(), openingStart, outsideDirection, wall.thickness)
-  const outsideEnd = vec2.scaleAndAdd(vec2.create(), openingEnd, outsideDirection, wall.thickness)
+  const outsideStart = scaleAddVec2(openingStart, outsideDirection, wall.thickness)
+  const outsideEnd = scaleAddVec2(openingEnd, outsideDirection, wall.thickness)
 
   // Original position for movement indicator
-  const originalStart = vec2.scaleAndAdd(vec2.create(), wallStart, wall.direction, opening.centerOffsetFromWallStart)
+  const originalStart = scaleAddVec2(wallStart, wall.direction, opening.centerOffsetFromWallStart)
 
   return (
     <Group>

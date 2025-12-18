@@ -25,7 +25,6 @@ import type {
   WallAssemblyConfig
 } from '@/construction/config/types'
 import type { MaterialId } from '@/construction/materials/material'
-import '@/shared/geometry'
 
 import { CURRENT_VERSION, applyMigrations } from './migrations'
 

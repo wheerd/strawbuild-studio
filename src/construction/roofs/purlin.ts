@@ -1,4 +1,4 @@
-import { mat4, vec2, vec3 } from 'gl-matrix'
+import { mat4, vec3 } from 'gl-matrix'
 
 import type { Roof } from '@/building/model'
 import { type PerimeterConstructionContext, applyWallFaceOffsets } from '@/construction/context'
@@ -42,12 +42,16 @@ import {
   type Length,
   type LineSegment2D,
   type Polygon2D,
+  type Vec2,
   direction,
+  distVec2,
+  dotVec2,
   ensurePolygonIsClockwise,
   intersectLineSegmentWithPolygon,
   intersectLineWithPolygon,
   intersectPolygons,
   isPointStrictlyInPolygon,
+  lerpVec2,
   lineFromSegment,
   lineIntersection,
   midpoint,
@@ -55,7 +59,9 @@ import {
   perpendicular,
   perpendicularCCW,
   perpendicularCW,
+  scaleAddVec2,
   splitPolygonByLine,
+  subVec2,
   subtractPolygons,
   unionPolygons
 } from '@/shared/geometry'
@@ -212,8 +218,8 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     }
 
     // Helper to get SIGNED distance from ridge (perpendicular)
-    const getSignedDistanceToRidge = (point: vec2): number =>
-      vec2.dot(vec2.sub(vec2.create(), point, roof.ridgeLine.start), roof.downSlopeDirection)
+    const getSignedDistanceToRidge = (point: Vec2): number =>
+      dotVec2(subVec2(point, roof.ridgeLine.start), roof.downSlopeDirection)
 
     // Calculate height offset at a point
     const calculateOffset = (signedDist: number): number =>
@@ -221,7 +227,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
 
     // Calculate offset at a given T position along the line
     const calculateOffsetAt = (t: number): Length => {
-      const point = vec2.lerp(vec2.create(), line.start, line.end, t)
+      const point = lerpVec2(line.start, line.end, t)
       return calculateOffset(getSignedDistanceToRidge(point)) as Length
     }
 
@@ -233,9 +239,9 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
       const ridgeIntersection = lineIntersection(wallLine, ridgeLine)
 
       if (ridgeIntersection) {
-        const lineLength = vec2.distance(line.end, line.start)
+        const lineLength = distVec2(line.end, line.start)
         if (lineLength > 0.001) {
-          ridgeT = vec2.distance(ridgeIntersection, line.start) / lineLength
+          ridgeT = distVec2(ridgeIntersection, line.start) / lineLength
         }
       }
     }
@@ -322,39 +328,39 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     }
   }
 
-  private getPurlinCheckPoints(polygon: Polygon2D, ridgeDirection: vec2) {
+  private getPurlinCheckPoints(polygon: Polygon2D, ridgeDirection: Vec2) {
     const insideCheckPolygon = offsetPolygon(ensurePolygonIsClockwise(polygon), -5)
     const purlinCheckPoints = [...polygonEdges(insideCheckPolygon)]
-      .filter(e => 1 - Math.abs(vec2.dot(direction(e.start, e.end), ridgeDirection)) < EPSILON)
+      .filter(e => 1 - Math.abs(dotVec2(direction(e.start, e.end), ridgeDirection)) < EPSILON)
       .map(e => midpoint(e.start, e.end))
     return purlinCheckPoints
   }
 
-  private getRafterMidpoints(roof: Roof, ridgeDirection: vec2, perimeterContexts: PerimeterConstructionContext[]) {
+  private getRafterMidpoints(roof: Roof, ridgeDirection: Vec2, perimeterContexts: PerimeterConstructionContext[]) {
     const halfThickness = this.config.rafterWidth / 2
 
     const rafterEdgePolygon = offsetPolygon(roof.overhangPolygon, -halfThickness)
     const edgeRafterMidpoints = [...polygonEdges(rafterEdgePolygon)]
-      .filter(e => Math.abs(vec2.dot(direction(e.start, e.end), ridgeDirection)) < EPSILON)
+      .filter(e => Math.abs(dotVec2(direction(e.start, e.end), ridgeDirection)) < EPSILON)
       .map(e => midpoint(e.start, e.end))
 
     const innerRafterPoints = perimeterContexts.flatMap(c =>
       Array.from(polygonEdges(c.innerPolygon))
-        .filter(e => Math.abs(vec2.dot(direction(e.start, e.end), ridgeDirection)) < EPSILON)
+        .filter(e => Math.abs(dotVec2(direction(e.start, e.end), ridgeDirection)) < EPSILON)
         .filter(e => intersectLineSegmentWithPolygon(e, roof.overhangPolygon) != null)
-        .map(e => vec2.scaleAndAdd(vec2.create(), e.start, perpendicularCW(direction(e.start, e.end)), halfThickness))
+        .map(e => scaleAddVec2(e.start, perpendicularCW(direction(e.start, e.end)), halfThickness))
     )
     const outerRafterPoints = perimeterContexts.flatMap(c =>
       Array.from(polygonEdges(c.outerPolygon))
-        .filter(e => Math.abs(vec2.dot(direction(e.start, e.end), ridgeDirection)) < EPSILON)
+        .filter(e => Math.abs(dotVec2(direction(e.start, e.end), ridgeDirection)) < EPSILON)
         .filter(e => intersectLineSegmentWithPolygon(e, roof.overhangPolygon) != null)
-        .map(e => vec2.scaleAndAdd(vec2.create(), e.start, perpendicularCCW(direction(e.start, e.end)), halfThickness))
+        .map(e => scaleAddVec2(e.start, perpendicularCCW(direction(e.start, e.end)), halfThickness))
     )
 
     return innerRafterPoints
       .concat(outerRafterPoints)
       .concat(edgeRafterMidpoints)
-      .map(p => vec2.sub(vec2.create(), p, roof.ridgeLine.start))
+      .map(p => subVec2(p, roof.ridgeLine.start))
   }
 
   private getPurlinArea(roof: Roof, contexts: PerimeterConstructionContext[]): Polygon2D {
@@ -367,7 +373,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     const outerLines = [...polygonEdges(roof.overhangPolygon)].map(lineFromSegment)
 
     const polygonLines = outerLines.map((l, i) =>
-      Math.abs(vec2.dot(l.direction, roof.ridgeDirection)) < EPSILON ? l : innerLines[i]
+      Math.abs(dotVec2(l.direction, roof.ridgeDirection)) < EPSILON ? l : innerLines[i]
     )
     const points = polygonLines
       .map((line, index) => {
@@ -392,10 +398,10 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     for (const part of parts) {
       const partPolygon: Polygon2D = {
         points: [
-          vec2.scaleAndAdd(vec2.create(), part.start, perpDir, -halfWidth),
-          vec2.scaleAndAdd(vec2.create(), part.end, perpDir, -halfWidth),
-          vec2.scaleAndAdd(vec2.create(), part.end, perpDir, halfWidth),
-          vec2.scaleAndAdd(vec2.create(), part.start, perpDir, halfWidth)
+          scaleAddVec2(part.start, perpDir, -halfWidth),
+          scaleAddVec2(part.end, perpDir, -halfWidth),
+          scaleAddVec2(part.end, perpDir, halfWidth),
+          scaleAddVec2(part.start, perpDir, halfWidth)
         ]
       }
 
@@ -427,7 +433,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     roof: Roof,
     ridgeHeight: Length,
     polygon: Polygon2D,
-    purlinCheckPoints: vec2[]
+    purlinCheckPoints: Vec2[]
   ): Generator<ConstructionResult> {
     const partitions = Array.from(partitionByAlignedEdges(polygon, roof.ridgeDirection))
 
@@ -448,8 +454,8 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
       return stripes
     })
 
-    const getDistanceToRidge = (point: vec2): number =>
-      Math.abs(vec2.dot(vec2.sub(vec2.create(), point, roof.ridgeLine.start), roof.downSlopeDirection))
+    const getDistanceToRidge = (point: Vec2): number =>
+      Math.abs(dotVec2(subVec2(point, roof.ridgeLine.start), roof.downSlopeDirection))
 
     const tanSlope = Math.tan(roof.slopeAngleRad)
     for (const purlin of purlinPolygons) {
@@ -615,7 +621,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     )
   }
 
-  private getRafterPolygons(roof: Roof, roofSide: RoofSide, rafterMidpoints: vec2[]) {
+  private getRafterPolygons(roof: Roof, roofSide: RoofSide, rafterMidpoints: Vec2[]) {
     const preparedPolygon = this.preparePolygonForConstruction(
       roofSide.polygon,
       roof.ridgeLine,
@@ -642,8 +648,8 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
 
   private detectRoofEdges(
     partition: Polygon2D,
-    edgeDirection: vec2,
-    checkPoints: vec2[]
+    edgeDirection: Vec2,
+    checkPoints: Vec2[]
   ): { edgeAtStart: boolean; edgeAtEnd: boolean } {
     if (partition.points.length === 0 || checkPoints.length === 0) {
       return { edgeAtStart: false, edgeAtEnd: false }
@@ -652,7 +658,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     const perpDir = perpendicular(edgeDirection)
 
     // Find left and right boundaries of partition (min/max perpendicular projections)
-    const projections = partition.points.map(p => vec2.dot(p, perpDir))
+    const projections = partition.points.map(p => dotVec2(p, perpDir))
     const leftProjection = Math.min(...projections)
     const rightProjection = Math.max(...projections)
     const centerProjection = (leftProjection + rightProjection) / 2
@@ -662,7 +668,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
 
     for (const checkPoint of checkPoints) {
       if (isPointStrictlyInPolygon(checkPoint, partition)) {
-        const projection = vec2.dot(checkPoint, perpDir)
+        const projection = dotVec2(checkPoint, perpDir)
 
         if (projection < centerProjection) {
           edgeAtStart = true

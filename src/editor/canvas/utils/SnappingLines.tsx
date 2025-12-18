@@ -1,9 +1,9 @@
-import { vec2 } from 'gl-matrix'
 import React from 'react'
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
 import { useStageHeight, useStageWidth, useZoom } from '@/editor/hooks/useViewportStore'
 import type { SnapResult } from '@/editor/services/snapping/types'
+import { eqVec2, newVec2 } from '@/shared/geometry'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 interface SnappingLinesProps {
@@ -27,9 +27,9 @@ export function SnappingLines({ snapResult }: SnappingLinesProps): React.JSX.Ele
   return (
     <Group>
       {snapResult.lines.map((line, index) => {
-        const color = vec2.equals(line.direction, vec2.fromValues(0, 1))
+        const color = eqVec2(line.direction, newVec2(0, 1))
           ? theme.gridVertical
-          : vec2.equals(line.direction, vec2.fromValues(1, 0))
+          : eqVec2(line.direction, newVec2(1, 0))
             ? theme.gridHorizontal
             : theme.primary
         return (

@@ -12,7 +12,6 @@ import {
 import type { FloorAssemblyConfig } from '@/construction/config/types'
 import { type FloorConfig, validateFloorConfig } from '@/construction/floors/types'
 import type { LayerConfig } from '@/construction/layers/types'
-import '@/shared/geometry'
 
 import { DEFAULT_FLOOR_ASSEMBLIES, DEFAULT_FLOOR_ASSEMBLY_ID } from './floors.defaults'
 

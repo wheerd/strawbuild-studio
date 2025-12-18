@@ -1,5 +1,3 @@
-import { vec2 } from 'gl-matrix'
-
 import type { Perimeter } from '@/building/model'
 import type { StoreyId } from '@/building/model/ids'
 import { clearPersistence, getModelActions } from '@/building/store'
@@ -11,7 +9,7 @@ import type {
   ImportedStorey,
   ParsedIfcModel
 } from '@/importers/ifc/types'
-import type { Polygon2D } from '@/shared/geometry'
+import { type Polygon2D, copyVec2 } from '@/shared/geometry'
 import { ensureClipperModule } from '@/shared/geometry/clipperInstance'
 
 export interface IfcImportResult {
@@ -221,7 +219,7 @@ function estimateWallThickness(storey: ImportedStorey): number | null {
 
 function clonePolygon(polygon: Polygon2D): Polygon2D {
   return {
-    points: polygon.points.map(point => vec2.clone(point))
+    points: polygon.points.map(point => copyVec2(point))
   }
 }
 

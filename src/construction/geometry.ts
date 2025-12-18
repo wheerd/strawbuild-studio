@@ -1,4 +1,4 @@
-import { type ReadonlyVec2, type ReadonlyVec3, mat4, vec2, vec3 } from 'gl-matrix'
+import { type ReadonlyVec3, mat4, vec3 } from 'gl-matrix'
 
 import type { GroupOrElement } from '@/construction/elements'
 import {
@@ -8,7 +8,10 @@ import {
   type Length,
   type Plane3D,
   type Polygon2D,
-  intersectPolygon
+  type Vec2,
+  eqVec2,
+  intersectPolygon,
+  newVec2
 } from '@/shared/geometry'
 
 export type Transform = mat4
@@ -88,7 +91,7 @@ export const bounds3Dto2D = (bounds: Bounds3D, projection: Projection): Bounds2D
   // Project all corners to 2D
   const projectedCorners = corners.map(corner => {
     const projected = projectPoint(corner, projection)
-    return vec2.fromValues(projected[0], projected[1])
+    return newVec2(projected[0], projected[1])
   })
 
   // Find 2D bounds from projected points
@@ -182,7 +185,7 @@ export function* allPoints(
   element: GroupOrElement,
   projectionMatrix: Projection,
   parentTransform: mat4 = mat4.create()
-): Generator<vec2> {
+): Generator<Vec2> {
   // Accumulate transform: parent * element
   const accumulatedTransform = mat4.multiply(mat4.create(), parentTransform, element.transform)
 
@@ -201,7 +204,7 @@ export function* allPoints(
     // Project all corners
     for (const corner of corners) {
       const projected = projectPoint(corner, finalTransform)
-      yield vec2.fromValues(projected[0], projected[1])
+      yield newVec2(projected[0], projected[1])
     }
   } else if ('children' in element) {
     // Recursively get points from children, passing accumulated transform
@@ -214,19 +217,19 @@ export function* allPoints(
 export class WallConstructionArea {
   public readonly position: ReadonlyVec3
   public readonly size: ReadonlyVec3
-  public readonly topOffsets?: readonly ReadonlyVec2[]
+  public readonly topOffsets?: readonly Vec2[]
 
-  constructor(position: ReadonlyVec3, size: ReadonlyVec3, topOffsets?: readonly ReadonlyVec2[]) {
+  constructor(position: ReadonlyVec3, size: ReadonlyVec3, topOffsets?: readonly Vec2[]) {
     if (topOffsets) {
       const maxOffset = Math.max(...topOffsets.map(o => o[1]))
-      topOffsets = topOffsets.map(o => vec2.fromValues(o[0], o[1] - maxOffset))
+      topOffsets = topOffsets.map(o => newVec2(o[0], o[1] - maxOffset))
       const adjustedHeight = Math.max(size[2] + maxOffset, 0)
       size = vec3.fromValues(size[0], size[1], adjustedHeight)
       // Simplify flat top by removing offsets
       if (
         topOffsets.length === 2 &&
-        vec2.equals(topOffsets[0], vec2.fromValues(0, 0)) &&
-        vec2.equals(topOffsets[1], vec2.fromValues(size[0], 0))
+        eqVec2(topOffsets[0], newVec2(0, 0)) &&
+        eqVec2(topOffsets[1], newVec2(size[0], 0))
       ) {
         topOffsets = undefined
       }
@@ -300,13 +303,13 @@ export class WallConstructionArea {
     }
 
     const inbetweenOffsets = this.topOffsets
-      .map(offset => vec2.fromValues(offset[0] - xOffset, offset[1]))
+      .map(offset => newVec2(offset[0] - xOffset, offset[1]))
       .filter(offset => offset[0] > 0 && offset[0] < newWidth)
 
     const newTopOffsets = [
-      vec2.fromValues(0, this.getOffsetAt(xOffset)),
+      newVec2(0, this.getOffsetAt(xOffset)),
       ...inbetweenOffsets,
-      vec2.fromValues(newWidth, this.getOffsetAt(xOffset + newWidth))
+      newVec2(newWidth, this.getOffsetAt(xOffset + newWidth))
     ]
 
     return new WallConstructionArea(newPosition, newSize, newTopOffsets.length > 0 ? newTopOffsets : undefined)
@@ -333,7 +336,7 @@ export class WallConstructionArea {
     const newBase = newPosition[2]
     const newTop = newPosition[2] + newSize[2]
 
-    const newTopOffsets: vec2[] = []
+    const newTopOffsets: Vec2[] = []
 
     for (let i = 0; i < this.topOffsets.length; i++) {
       const currentOffset = this.topOffsets[i]
@@ -357,12 +360,12 @@ export class WallConstructionArea {
           // If previous wasn't clipped but this is, add entry intersection
           if (prevNewOffset <= newSize[2]) {
             const intersectionX = this.findZIntersectionX(prevX, prevRoofZ, x, topAbsoluteZ, newTop)
-            newTopOffsets.push(vec2.fromValues(intersectionX, 0)) // At new top, offset = 0
+            newTopOffsets.push(newVec2(intersectionX, 0)) // At new top, offset = 0
           }
         }
 
         // Add the clipped point (roof is above new top, so offset = 0)
-        newTopOffsets.push(vec2.fromValues(x, 0))
+        newTopOffsets.push(newVec2(x, 0))
 
         // Check if next point is unclipped (need exit intersection)
         if (i < this.topOffsets.length - 1) {
@@ -374,12 +377,12 @@ export class WallConstructionArea {
 
           if (nextNewOffset <= newSize[2]) {
             const intersectionX = this.findZIntersectionX(x, topAbsoluteZ, nextX, nextRoofZ, newTop)
-            newTopOffsets.push(vec2.fromValues(intersectionX, 0)) // At new top, offset = 0
+            newTopOffsets.push(newVec2(intersectionX, 0)) // At new top, offset = 0
           }
         }
       } else {
         // Not clipped - use adjusted offset
-        newTopOffsets.push(vec2.fromValues(x, newOffset - newSize[2]))
+        newTopOffsets.push(newVec2(x, newOffset - newSize[2]))
       }
     }
 
@@ -408,10 +411,10 @@ export class WallConstructionArea {
   public getSideProfilePolygon(): Polygon2D {
     const basePolygon = {
       points: [
-        vec2.fromValues(this.position[0], this.position[2]), // bottom-left
-        vec2.fromValues(this.position[0] + this.size[0], this.position[2]), // bottom-right
-        vec2.fromValues(this.position[0] + this.size[0], this.position[2] + this.size[2]), // top-right
-        vec2.fromValues(this.position[0], this.position[2] + this.size[2]) // top-left
+        newVec2(this.position[0], this.position[2]), // bottom-left
+        newVec2(this.position[0] + this.size[0], this.position[2]), // bottom-right
+        newVec2(this.position[0] + this.size[0], this.position[2] + this.size[2]), // top-right
+        newVec2(this.position[0], this.position[2] + this.size[2]) // top-left
       ]
     }
     if (!this.topOffsets || this.topOffsets.length === 0) {
@@ -420,27 +423,27 @@ export class WallConstructionArea {
     }
 
     // Complex polygon with sloped top
-    const pointsList: vec2[] = []
+    const pointsList: Vec2[] = []
 
     const top = this.position[2] + this.size[2]
 
     // Bottom edge (left to right)
-    pointsList.push(vec2.fromValues(this.position[0], this.position[2]))
-    pointsList.push(vec2.fromValues(this.position[0] + this.size[0], this.position[2]))
+    pointsList.push(newVec2(this.position[0], this.position[2]))
+    pointsList.push(newVec2(this.position[0] + this.size[0], this.position[2]))
 
     // Right edge going up
     const lastOffset = this.topOffsets[this.topOffsets.length - 1]
-    pointsList.push(vec2.fromValues(this.position[0] + this.size[0], top + lastOffset[1]))
+    pointsList.push(newVec2(this.position[0] + this.size[0], top + lastOffset[1]))
 
     // Top edge (right to left, following slope)
     for (let i = this.topOffsets.length - 1; i >= 0; i--) {
       const offset = this.topOffsets[i]
-      pointsList.push(vec2.fromValues(this.position[0] + offset[0], top + offset[1]))
+      pointsList.push(newVec2(this.position[0] + offset[0], top + offset[1]))
     }
 
     // Left edge going down
     const firstOffset = this.topOffsets[0]
-    pointsList.push(vec2.fromValues(this.position[0], top + firstOffset[1]))
+    pointsList.push(newVec2(this.position[0], top + firstOffset[1]))
 
     const sidePolygonRaw = { outer: { points: pointsList }, holes: [] }
     const sidePolygons = intersectPolygon({ outer: basePolygon, holes: [] }, sidePolygonRaw)

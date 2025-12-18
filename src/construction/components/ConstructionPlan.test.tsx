@@ -1,12 +1,12 @@
 import { Theme } from '@radix-ui/themes'
 import { render } from '@testing-library/react'
-import { vec2, vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 import { describe, expect, it, vi } from 'vitest'
 
 import { PlanHighlightProvider } from '@/construction/components/context/PlanHighlightContext'
 import { IDENTITY, translate } from '@/construction/geometry'
 import type { ConstructionModel, HighlightedCuboid, HighlightedPolygon } from '@/construction/model'
-import { Bounds3D } from '@/shared/geometry'
+import { Bounds3D, newVec2 } from '@/shared/geometry'
 
 import { ConstructionPlan, TOP_VIEW, type ViewOption } from './ConstructionPlan'
 import { TagVisibilityProvider } from './context/TagVisibilityContext'
@@ -18,7 +18,7 @@ describe('ConstructionPlan', () => {
       areaType: 'inner-perimeter',
       label: 'Test Polygon',
       polygon: {
-        points: [vec2.fromValues(0, 0), vec2.fromValues(100, 0), vec2.fromValues(100, 100), vec2.fromValues(0, 100)]
+        points: [newVec2(0, 0), newVec2(100, 0), newVec2(100, 100), newVec2(0, 100)]
       },
       plane: 'xy',
       renderPosition: 'bottom'
@@ -64,7 +64,7 @@ describe('ConstructionPlan', () => {
       type: 'polygon',
       areaType: 'inner-perimeter',
       polygon: {
-        points: [vec2.fromValues(0, 0), vec2.fromValues(50, 0), vec2.fromValues(50, 50)]
+        points: [newVec2(0, 0), newVec2(50, 0), newVec2(50, 50)]
       },
       plane: 'xy',
       renderPosition: 'top'

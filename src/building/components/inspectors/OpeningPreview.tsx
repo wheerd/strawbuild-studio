@@ -2,7 +2,7 @@ import { useId } from 'react'
 
 import type { OpeningType } from '@/building/model/model'
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
-import type { Length } from '@/shared/geometry'
+import { type Length, newVec2 } from '@/shared/geometry'
 import { formatArea, formatLength } from '@/shared/utils/formatting'
 
 export interface OpeningPreviewProps {
@@ -199,8 +199,8 @@ export function OpeningPreview({
 
       {/* Width dimensions - bottom of opening */}
       <SvgMeasurementIndicator
-        startPoint={[openingLeft, openingBottom]}
-        endPoint={[openingLeft + openingWidthSvg, openingBottom]}
+        startPoint={newVec2(openingLeft, openingBottom)}
+        endPoint={newVec2(openingLeft + openingWidthSvg, openingBottom)}
         label={formatLength(fittingWidth)}
         offset={bottomHasSpace ? 16 : -16}
         color={getMeasurementColor('width', 'fitting')}
@@ -209,8 +209,8 @@ export function OpeningPreview({
       />
 
       <SvgMeasurementIndicator
-        startPoint={[finishedLeft, finishedBottom]}
-        endPoint={[finishedRight, finishedBottom]}
+        startPoint={newVec2(finishedLeft, finishedBottom)}
+        endPoint={newVec2(finishedRight, finishedBottom)}
         label={formatLength(finishedWidth)}
         offset={bottomHasSpace ? 8 : -8}
         color={getMeasurementColor('width', 'finished')}
@@ -220,8 +220,8 @@ export function OpeningPreview({
 
       {/* Height dimensions - inside opening when space allows, otherwise on the side */}
       <SvgMeasurementIndicator
-        startPoint={[openingLeft, openingTop]}
-        endPoint={[openingLeft, openingBottom]}
+        startPoint={newVec2(openingLeft, openingTop)}
+        endPoint={newVec2(openingLeft, openingBottom)}
         label={formatLength(fittingHeight)}
         offset={sideHasSpace ? 16 : -16}
         color={getMeasurementColor('height', 'fitting')}
@@ -230,8 +230,8 @@ export function OpeningPreview({
       />
 
       <SvgMeasurementIndicator
-        startPoint={[finishedLeft, finishedTop]}
-        endPoint={[finishedLeft, finishedBottom]}
+        startPoint={newVec2(finishedLeft, finishedTop)}
+        endPoint={newVec2(finishedLeft, finishedBottom)}
         label={formatLength(finishedHeight)}
         offset={sideHasSpace ? 8 : -8}
         color={getMeasurementColor('height', 'finished')}
@@ -243,8 +243,8 @@ export function OpeningPreview({
       {fittingSillHeight > 0 && (
         <>
           <SvgMeasurementIndicator
-            startPoint={[openingLeft, wallBottom]}
-            endPoint={[openingLeft, openingBottom]}
+            startPoint={newVec2(openingLeft, wallBottom)}
+            endPoint={newVec2(openingLeft, openingBottom)}
             label={formatLength(fittingSillHeight)}
             offset={sideHasSpace ? -16 : 16}
             color={getMeasurementColor('sillHeight', 'fitting')}
@@ -252,8 +252,8 @@ export function OpeningPreview({
             strokeWidth={1}
           />
           <SvgMeasurementIndicator
-            startPoint={[openingLeft, wallBottom]}
-            endPoint={[openingLeft, openingBottom]}
+            startPoint={newVec2(openingLeft, wallBottom)}
+            endPoint={newVec2(openingLeft, openingBottom)}
             label={formatLength(finishedSillHeight)}
             offset={sideHasSpace ? -8 : 8}
             color={getMeasurementColor('sillHeight', 'finished')}
@@ -263,8 +263,8 @@ export function OpeningPreview({
 
           {/* Floor to top measurements */}
           <SvgMeasurementIndicator
-            startPoint={[openingLeft + openingWidthSvg, wallBottom]}
-            endPoint={[openingLeft + openingWidthSvg, openingTop]}
+            startPoint={newVec2(openingLeft + openingWidthSvg, wallBottom)}
+            endPoint={newVec2(openingLeft + openingWidthSvg, openingTop)}
             label={formatLength(fittingFloorToTop)}
             offset={sideHasSpace ? 16 : -16}
             color={getMeasurementColor('topHeight', 'fitting')}
@@ -272,8 +272,8 @@ export function OpeningPreview({
             strokeWidth={1}
           />
           <SvgMeasurementIndicator
-            startPoint={[openingLeft + openingWidthSvg, wallBottom]}
-            endPoint={[openingLeft + openingWidthSvg, finishedTop]}
+            startPoint={newVec2(openingLeft + openingWidthSvg, wallBottom)}
+            endPoint={newVec2(openingLeft + openingWidthSvg, finishedTop)}
             label={formatLength(finishedFloorToTop)}
             offset={sideHasSpace ? 8 : -8}
             color={getMeasurementColor('topHeight', 'finished')}

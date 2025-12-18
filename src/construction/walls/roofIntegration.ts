@@ -1,8 +1,8 @@
-import { type ReadonlyVec2, vec2, vec3 } from 'gl-matrix'
+import { vec3 } from 'gl-matrix'
 
 import { WallConstructionArea } from '@/construction/geometry'
 import type { HeightItem, HeightJumpItem, HeightLine } from '@/construction/roofs/types'
-import type { Length } from '@/shared/geometry'
+import { type Length, type Vec2, copyVec2, newVec2 } from '@/shared/geometry'
 
 // Use smaller epsilon for position comparisons
 const POSITION_EPSILON = 0.0001
@@ -10,7 +10,7 @@ const POSITION_EPSILON = 0.0001
 /**
  * Result of converting height line to wall offsets
  */
-export type WallTopOffsets = readonly ReadonlyVec2[] | undefined
+export type WallTopOffsets = readonly Vec2[] | undefined
 
 /**
  * Convert a HeightLine (from roof) to wall top offsets array
@@ -24,7 +24,7 @@ export function convertHeightLineToWallOffsets(heightLine: HeightLine, wallLengt
     return undefined
   }
 
-  const offsets: vec2[] = []
+  const offsets: Vec2[] = []
 
   // Convert each height line item to offset
   for (const item of heightLine) {
@@ -32,11 +32,11 @@ export function convertHeightLineToWallOffsets(heightLine: HeightLine, wallLengt
 
     if (isHeightJumpItem(item)) {
       // HeightJumpItem - add both offsets at same position
-      offsets.push(vec2.fromValues(absoluteX, item.offsetBefore))
-      offsets.push(vec2.fromValues(absoluteX, item.offsetAfter))
+      offsets.push(newVec2(absoluteX, item.offsetBefore))
+      offsets.push(newVec2(absoluteX, item.offsetAfter))
     } else {
       // HeightItem
-      offsets.push(vec2.fromValues(absoluteX, item.offset))
+      offsets.push(newVec2(absoluteX, item.offset))
     }
   }
 
@@ -235,16 +235,16 @@ export function mergeWallSegments(
   }
 
   // Merge all offsets into a single array
-  const mergedOffsets: vec2[] = []
+  const mergedOffsets: Vec2[] = []
 
   for (const segment of segments) {
     if (segment.topOffsets) {
       // Segment with roof coverage - copy offsets
-      mergedOffsets.push(...segment.topOffsets.map(o => vec2.clone(o)))
+      mergedOffsets.push(...segment.topOffsets.map(o => copyVec2(o)))
     } else {
       // Segment without roof - add flat offsets at segment boundaries
-      mergedOffsets.push(vec2.fromValues(segment.position[0], 0))
-      mergedOffsets.push(vec2.fromValues(segment.position[0] + segment.size[0], 0))
+      mergedOffsets.push(newVec2(segment.position[0], 0))
+      mergedOffsets.push(newVec2(segment.position[0] + segment.size[0], 0))
     }
   }
 
@@ -259,8 +259,8 @@ export function mergeWallSegments(
  * Remove duplicate offsets (same X position, different or same heights)
  * Keeps both values if they differ (height jump)
  */
-function removeDuplicateOffsets(offsets: vec2[]): vec2[] {
-  const result: vec2[] = []
+function removeDuplicateOffsets(offsets: Vec2[]): Vec2[] {
+  const result: Vec2[] = []
   const seen = new Map<number, number[]>() // X position -> heights at that position
 
   for (const offset of offsets) {
@@ -295,7 +295,7 @@ export function splitAtHeightJumps(area: WallConstructionArea): WallConstruction
 
   const segments: WallConstructionArea[] = []
   let start = 0
-  const segmentOffsets: vec2[] = []
+  const segmentOffsets: Vec2[] = []
 
   // Find positions where jumps occur (same X position, different offsets)
   for (let i = 0; i < area.topOffsets.length - 1; i++) {
@@ -308,7 +308,7 @@ export function splitAtHeightJumps(area: WallConstructionArea): WallConstruction
         new WallConstructionArea(
           vec3.fromValues(area.position[0] + start, area.position[1], area.position[2]),
           vec3.fromValues(end - start, area.size[1], area.size[2]),
-          segmentOffsets.map(o => vec2.fromValues(o[0] - start, o[1]))
+          segmentOffsets.map(o => newVec2(o[0] - start, o[1]))
         )
       )
       start = end
@@ -321,7 +321,7 @@ export function splitAtHeightJumps(area: WallConstructionArea): WallConstruction
       new WallConstructionArea(
         vec3.fromValues(area.position[0] + start, area.position[1], area.position[2]),
         vec3.fromValues(area.size[0] - start, area.size[1], area.size[2]),
-        segmentOffsets.map(o => vec2.fromValues(o[0] - start, o[1]))
+        segmentOffsets.map(o => newVec2(o[0] - start, o[1]))
       )
     )
   }

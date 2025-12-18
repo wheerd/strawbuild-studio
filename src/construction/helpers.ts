@@ -1,4 +1,4 @@
-import { mat4, vec2 } from 'gl-matrix'
+import { mat4 } from 'gl-matrix'
 
 import type { RawMeasurement } from '@/construction/measurements'
 import {
@@ -9,17 +9,26 @@ import {
   type Plane3D,
   type Polygon2D,
   type PolygonWithHoles2D,
+  type Vec2,
   calculatePolygonArea,
   calculatePolygonWithHolesArea,
+  copyVec2,
   direction,
+  distSqrVec2,
+  distVec2,
+  dotVec2,
   ensurePolygonIsClockwise,
   intersectPolygon,
   lineIntersection,
+  newVec2,
+  normVec2,
   offsetPolygon,
   perpendicular,
   perpendicularCW,
   point2DTo3D,
-  simplifyPolygon
+  scaleAddVec2,
+  simplifyPolygon,
+  subVec2
 } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
 
@@ -31,7 +40,7 @@ import { createExtrudedPolygon } from './shapes'
 import type { Tag } from './tags'
 
 export function polygonFromLineIntersections(lines: Line2D[]): Polygon2D {
-  const points: vec2[] = []
+  const points: Vec2[] = []
   for (let i = 0; i < lines.length; i++) {
     const prev = lines[(i - 1 + lines.length) % lines.length]
     const current = lines[i]
@@ -52,11 +61,11 @@ export function infiniteBeamPolygon(
 ): Polygon2D | null {
   const leftDir = perpendicularCW(line.direction)
   const lineLeft: Line2D = {
-    point: vec2.scaleAndAdd(vec2.create(), line.point, leftDir, thicknessLeft),
+    point: scaleAddVec2(line.point, leftDir, thicknessLeft),
     direction: line.direction
   }
   const lineRight: Line2D = {
-    point: vec2.scaleAndAdd(vec2.create(), line.point, leftDir, -thicknessRight),
+    point: scaleAddVec2(line.point, leftDir, -thicknessRight),
     direction: line.direction
   }
   const p1 = lineIntersection(lineLeft, clipStart)
@@ -81,12 +90,12 @@ export function* infiniteBeam(
   tags?: Tag[]
 ): Generator<ConstructionResult> {
   const leftDir = perpendicularCW(line.direction)
-  const lineStart = vec2.scaleAndAdd(vec2.create(), line.point, line.direction, 1e6)
-  const lineEnd = vec2.scaleAndAdd(vec2.create(), line.point, line.direction, -1e6)
-  const p1 = vec2.scaleAndAdd(vec2.create(), lineStart, leftDir, thicknessLeft)
-  const p2 = vec2.scaleAndAdd(vec2.create(), lineStart, leftDir, -thicknessRight)
-  const p3 = vec2.scaleAndAdd(vec2.create(), lineEnd, leftDir, -thicknessRight)
-  const p4 = vec2.scaleAndAdd(vec2.create(), lineEnd, leftDir, thicknessLeft)
+  const lineStart = scaleAddVec2(line.point, line.direction, 1e6)
+  const lineEnd = scaleAddVec2(line.point, line.direction, -1e6)
+  const p1 = scaleAddVec2(lineStart, leftDir, thicknessLeft)
+  const p2 = scaleAddVec2(lineStart, leftDir, -thicknessRight)
+  const p3 = scaleAddVec2(lineEnd, leftDir, -thicknessRight)
+  const p4 = scaleAddVec2(lineEnd, leftDir, thicknessLeft)
 
   const beamPolygon: Polygon2D = { points: [p1, p2, p3, p4] }
   const beamParts = intersectPolygon(clipPolygon, { outer: beamPolygon, holes: [] })
@@ -109,10 +118,10 @@ export function* beam(
   tags?: Tag[]
 ): Generator<ConstructionResult> {
   const leftDir = perpendicularCW(direction(line.start, line.end))
-  const p1 = vec2.scaleAndAdd(vec2.create(), line.start, leftDir, thicknessLeft)
-  const p2 = vec2.scaleAndAdd(vec2.create(), line.start, leftDir, -thicknessRight)
-  const p3 = vec2.scaleAndAdd(vec2.create(), line.end, leftDir, -thicknessRight)
-  const p4 = vec2.scaleAndAdd(vec2.create(), line.end, leftDir, thicknessLeft)
+  const p1 = scaleAddVec2(line.start, leftDir, thicknessLeft)
+  const p2 = scaleAddVec2(line.start, leftDir, -thicknessRight)
+  const p3 = scaleAddVec2(line.end, leftDir, -thicknessRight)
+  const p4 = scaleAddVec2(line.end, leftDir, thicknessLeft)
 
   const beamPolygon: Polygon2D = { points: [p1, p2, p3, p4] }
   const beamParts = intersectPolygon(clipPolygon, { outer: beamPolygon, holes: [] })
@@ -126,7 +135,7 @@ export function* beam(
 
 export function* stripesPolygons(
   polygon: PolygonWithHoles2D,
-  direction: vec2,
+  direction: Vec2,
   thickness: Length,
   spacing: Length,
   startOffset: Length = 0,
@@ -135,11 +144,11 @@ export function* stripesPolygons(
 ): Generator<PolygonWithHoles2D> {
   const perpDir = perpendicular(direction)
 
-  const dots = polygon.outer.points.map(p => vec2.dot(p, perpDir))
+  const dots = polygon.outer.points.map(p => dotVec2(p, perpDir))
   const stripeStart = polygon.outer.points[dots.indexOf(Math.min(...dots))]
   const totalSpan = Math.max(...dots) - Math.min(...dots)
 
-  const dots2 = polygon.outer.points.map(p => vec2.dot(p, direction))
+  const dots2 = polygon.outer.points.map(p => dotVec2(p, direction))
   const stripeMin = polygon.outer.points[dots2.indexOf(Math.min(...dots2))]
   const stripeLength = Math.max(...dots2) - Math.min(...dots2)
 
@@ -156,10 +165,10 @@ export function* stripesPolygons(
   const end = totalSpan + spacing - endOffset
   for (let offset = startOffset; offset <= end; offset += stepWidth) {
     const clippedOffset = Math.min(offset, totalSpan - thickness - endOffset)
-    const p1 = vec2.scaleAndAdd(vec2.create(), intersection, perpDir, clippedOffset)
-    const p2 = vec2.scaleAndAdd(vec2.create(), p1, perpDir, thickness)
-    const p3 = vec2.scaleAndAdd(vec2.create(), p2, direction, stripeLength)
-    const p4 = vec2.scaleAndAdd(vec2.create(), p1, direction, stripeLength)
+    const p1 = scaleAddVec2(intersection, perpDir, clippedOffset)
+    const p2 = scaleAddVec2(p1, perpDir, thickness)
+    const p3 = scaleAddVec2(p2, direction, stripeLength)
+    const p4 = scaleAddVec2(p1, direction, stripeLength)
 
     const stripePolygon: Polygon2D = { points: [p1, p2, p3, p4] }
     const stripeParts = intersectPolygon(polygon, { outer: stripePolygon, holes: [] })
@@ -169,22 +178,22 @@ export function* stripesPolygons(
 }
 
 export interface RotatedRect {
-  dir: vec2
-  perpDir: vec2
+  dir: Vec2
+  perpDir: Vec2
   dirExtent: Length
   perpExtent: Length
-  minPoint: vec2
+  minPoint: Vec2
 }
 
-export function rotatedRectFromPolygon(polygon: Polygon2D, direction: vec2) {
-  const dir = vec2.normalize(vec2.create(), direction)
+export function rotatedRectFromPolygon(polygon: Polygon2D, direction: Vec2) {
+  const dir = normVec2(direction)
   const perpDir = perpendicular(dir)
 
-  const perpDots = polygon.points.map(p => vec2.dot(p, perpDir))
+  const perpDots = polygon.points.map(p => dotVec2(p, perpDir))
   const perpMinPoint = polygon.points[perpDots.indexOf(Math.min(...perpDots))]
   const perpExtent = Math.max(...perpDots) - Math.min(...perpDots)
 
-  const dirDots = polygon.points.map(p => vec2.dot(p, dir))
+  const dirDots = polygon.points.map(p => dotVec2(p, dir))
   const dirMinPoint = polygon.points[dirDots.indexOf(Math.min(...dirDots))]
   const extent = Math.max(...dirDots) - Math.min(...dirDots)
 
@@ -210,19 +219,19 @@ const EXTENT_EPSILON = 1e-2
 
 export class PolygonWithBoundingRect {
   readonly polygon: PolygonWithHoles2D
-  readonly dir: vec2
-  readonly perpDir: vec2
+  readonly dir: Vec2
+  readonly perpDir: Vec2
   readonly dirExtent: Length
   readonly perpExtent: Length
-  readonly minPoint: vec2
+  readonly minPoint: Vec2
 
   constructor(
     polygon: PolygonWithHoles2D,
-    dir: vec2,
+    dir: Vec2,
     dirExtent: Length,
-    perpDir: vec2,
+    perpDir: Vec2,
     perExtent: Length,
-    minPoint: vec2
+    minPoint: Vec2
   ) {
     this.polygon = polygon
     this.dir = dir
@@ -232,15 +241,15 @@ export class PolygonWithBoundingRect {
     this.minPoint = minPoint
   }
 
-  public static fromPolygon(polygon: PolygonWithHoles2D, direction: vec2): PolygonWithBoundingRect {
-    const dir = vec2.normalize(vec2.create(), direction)
+  public static fromPolygon(polygon: PolygonWithHoles2D, direction: Vec2): PolygonWithBoundingRect {
+    const dir = normVec2(direction)
     const perpDir = perpendicular(dir)
 
-    const perpDots = polygon.outer.points.map(p => vec2.dot(p, perpDir))
+    const perpDots = polygon.outer.points.map(p => dotVec2(p, perpDir))
     const perpMinPoint = polygon.outer.points[perpDots.indexOf(Math.min(...perpDots))]
     const perpExtent = Math.max(...perpDots) - Math.min(...perpDots)
 
-    const dirDots = polygon.outer.points.map(p => vec2.dot(p, dir))
+    const dirDots = polygon.outer.points.map(p => dotVec2(p, dir))
     const dirMinPoint = polygon.outer.points[dirDots.indexOf(Math.min(...dirDots))]
     const dirExtent = Math.max(...dirDots) - Math.min(...dirDots)
 
@@ -259,13 +268,13 @@ export class PolygonWithBoundingRect {
   public *tiled(dirStep: Length, perpStep: Length): Generator<PolygonWithBoundingRect> {
     for (let offsetDir = 0; offsetDir < this.dirExtent; offsetDir += dirStep) {
       const clippedLengthDir = Math.min(dirStep, this.dirExtent - offsetDir)
-      const base = vec2.scaleAndAdd(vec2.create(), this.minPoint, this.dir, offsetDir)
+      const base = scaleAddVec2(this.minPoint, this.dir, offsetDir)
       for (let offsetPerp = 0; offsetPerp < this.perpExtent; offsetPerp += perpStep) {
         const clippedLengthPerp = Math.min(perpStep, this.perpExtent - offsetPerp)
-        const p1 = vec2.scaleAndAdd(vec2.create(), base, this.perpDir, offsetPerp)
-        const p2 = vec2.scaleAndAdd(vec2.create(), p1, this.perpDir, clippedLengthPerp)
-        const p3 = vec2.scaleAndAdd(vec2.create(), p2, this.dir, clippedLengthDir)
-        const p4 = vec2.scaleAndAdd(vec2.create(), p1, this.dir, clippedLengthDir)
+        const p1 = scaleAddVec2(base, this.perpDir, offsetPerp)
+        const p2 = scaleAddVec2(p1, this.perpDir, clippedLengthPerp)
+        const p3 = scaleAddVec2(p2, this.dir, clippedLengthDir)
+        const p4 = scaleAddVec2(p1, this.dir, clippedLengthDir)
 
         const rectPolygon: Polygon2D = { points: [p1, p2, p3, p4] }
         for (const clippedRect of intersectPolygon(this.polygon, { outer: rectPolygon, holes: [] })) {
@@ -312,8 +321,8 @@ export class PolygonWithBoundingRect {
     yield end
   }
 
-  public perpProjectionOffsets(points: vec2[], eps = 1e-6) {
-    const rawOffsets = points.map(p => vec2.dot(vec2.subtract(vec2.create(), p, this.minPoint), this.perpDir))
+  public perpProjectionOffsets(points: Vec2[], eps = 1e-6) {
+    const rawOffsets = points.map(p => dotVec2(subVec2(p, this.minPoint), this.perpDir))
     const sorted = rawOffsets.filter(o => o >= 0 && o <= this.perpExtent).sort((a, b) => a - b)
     const results: number[] = []
     let lastOffset = -1
@@ -365,10 +374,10 @@ export class PolygonWithBoundingRect {
 
       let lastEnd = start
       for (const offset of offsets) {
-        const p1 = vec2.scaleAndAdd(vec2.create(), this.minPoint, this.perpDir, offset)
-        const p2 = vec2.scaleAndAdd(vec2.create(), p1, this.perpDir, thickness)
-        const p3 = vec2.scaleAndAdd(vec2.create(), p2, this.dir, this.dirExtent)
-        const p4 = vec2.scaleAndAdd(vec2.create(), p1, this.dir, this.dirExtent)
+        const p1 = scaleAddVec2(this.minPoint, this.perpDir, offset)
+        const p2 = scaleAddVec2(p1, this.perpDir, thickness)
+        const p3 = scaleAddVec2(p2, this.dir, this.dirExtent)
+        const p4 = scaleAddVec2(p1, this.dir, this.dirExtent)
 
         const stripePolygon: Polygon2D = { points: [p1, p2, p3, p4] }
 
@@ -377,8 +386,8 @@ export class PolygonWithBoundingRect {
             yield PolygonWithBoundingRect.fromPolygon(clippedStripe, this.dir)
 
             if (gapCallback && lastEnd < offset) {
-              const pGap1 = vec2.scaleAndAdd(vec2.create(), this.minPoint, this.perpDir, lastEnd)
-              const pGap2 = vec2.scaleAndAdd(vec2.create(), pGap1, this.dir, this.dirExtent)
+              const pGap1 = scaleAddVec2(this.minPoint, this.perpDir, lastEnd)
+              const pGap2 = scaleAddVec2(pGap1, this.dir, this.dirExtent)
               const gapPolygon: Polygon2D = { points: [p1, pGap1, pGap2, p4] }
               for (const clippedGap of intersectPolygon(this.polygon, { outer: gapPolygon, holes: [] })) {
                 gapCallback(
@@ -400,10 +409,10 @@ export class PolygonWithBoundingRect {
       }
 
       if (gapCallback && lastEnd < end) {
-        const p1 = vec2.scaleAndAdd(vec2.create(), this.minPoint, this.perpDir, lastEnd)
-        const p2 = vec2.scaleAndAdd(vec2.create(), this.minPoint, this.perpDir, end)
-        const p3 = vec2.scaleAndAdd(vec2.create(), p2, this.dir, this.dirExtent)
-        const p4 = vec2.scaleAndAdd(vec2.create(), p1, this.dir, this.dirExtent)
+        const p1 = scaleAddVec2(this.minPoint, this.perpDir, lastEnd)
+        const p2 = scaleAddVec2(this.minPoint, this.perpDir, end)
+        const p3 = scaleAddVec2(p2, this.dir, this.dirExtent)
+        const p4 = scaleAddVec2(p1, this.dir, this.dirExtent)
         const gapPolygon: Polygon2D = { points: [p1, p2, p3, p4] }
         for (const clippedGap of intersectPolygon(this.polygon, { outer: gapPolygon, holes: [] })) {
           gapCallback(
@@ -435,9 +444,9 @@ export class PolygonWithBoundingRect {
   ): RawMeasurement | null {
     if (this.dirExtent <= 0) return null
 
-    const maxInPerp = vec2.scaleAndAdd(vec2.create(), this.minPoint, this.perpDir, this.perpExtent)
+    const maxInPerp = scaleAddVec2(this.minPoint, this.perpDir, this.perpExtent)
     const start2D = useMin ? this.minPoint : maxInPerp
-    const end2D = vec2.scaleAndAdd(vec2.create(), start2D, this.dir, this.dirExtent)
+    const end2D = scaleAddVec2(start2D, this.dir, this.dirExtent)
     const extent2D = useMin ? maxInPerp : this.minPoint
 
     const startPoint = point2DTo3D(start2D, plane, 0)
@@ -464,9 +473,9 @@ export class PolygonWithBoundingRect {
   ): RawMeasurement | null {
     if (this.perpExtent <= 0) return null
 
-    const maxInDir = vec2.scaleAndAdd(vec2.create(), this.minPoint, this.dir, this.dirExtent)
+    const maxInDir = scaleAddVec2(this.minPoint, this.dir, this.dirExtent)
     const start2D = useMin ? this.minPoint : maxInDir
-    const end2D = vec2.scaleAndAdd(vec2.create(), start2D, this.perpDir, this.perpExtent)
+    const end2D = scaleAddVec2(start2D, this.perpDir, this.perpExtent)
     const extent2D = useMin ? maxInDir : this.minPoint
 
     const startPoint = point2DTo3D(start2D, plane, 0)
@@ -508,11 +517,11 @@ export class PolygonWithBoundingRect {
 
   public expandedInDir(extent: Length): PolygonWithBoundingRect {
     const halfExtent = extent / 2
-    const center = vec2.scaleAndAdd(vec2.create(), this.minPoint, this.dir, this.dirExtent / 2)
-    const offsetPoint = (p: vec2) => {
-      const deltaToCenter = vec2.subtract(vec2.create(), p, center)
-      const sign = Math.sign(vec2.dot(deltaToCenter, this.dir))
-      return vec2.scaleAndAdd(vec2.create(), p, this.dir, sign * halfExtent)
+    const center = scaleAddVec2(this.minPoint, this.dir, this.dirExtent / 2)
+    const offsetPoint = (p: Vec2) => {
+      const deltaToCenter = subVec2(p, center)
+      const sign = Math.sign(dotVec2(deltaToCenter, this.dir))
+      return scaleAddVec2(p, this.dir, sign * halfExtent)
     }
 
     const polygon: PolygonWithHoles2D = {
@@ -532,7 +541,7 @@ export class PolygonWithBoundingRect {
   }
 
   get size2D() {
-    return vec2.fromValues(this.dirExtent, this.perpExtent)
+    return newVec2(this.dirExtent, this.perpExtent)
   }
 
   public size3D(plane: Plane3D, thickness: Length) {
@@ -560,7 +569,7 @@ export interface StripesConfig {
   stripeAtMin?: boolean
   stripeAtMax?: boolean
   minimumArea?: Area
-  requiredStripeMidpoints?: vec2[]
+  requiredStripeMidpoints?: Vec2[]
   gapCallback?: (gap: PolygonWithBoundingRect) => void
 }
 
@@ -571,7 +580,7 @@ export interface StripeOrGap {
 
 export function* simpleStripes(
   polygon: PolygonWithHoles2D,
-  direction: vec2,
+  direction: Vec2,
   thickness: Length,
   height: Length,
   spacing: Length,
@@ -594,10 +603,10 @@ export function* simpleStripes(
     const end = totalSpan + spacing
     for (let offset = 0; offset <= end; offset += stepWidth) {
       const clippedOffset = Math.min(offset, totalSpan - thickness)
-      const p1 = vec2.scaleAndAdd(vec2.create(), minPoint, perpDir, clippedOffset)
-      const p2 = vec2.scaleAndAdd(vec2.create(), p1, perpDir, thickness)
-      const p3 = vec2.scaleAndAdd(vec2.create(), p2, direction, stripeLength)
-      const p4 = vec2.scaleAndAdd(vec2.create(), p1, direction, stripeLength)
+      const p1 = scaleAddVec2(minPoint, perpDir, clippedOffset)
+      const p2 = scaleAddVec2(p1, perpDir, thickness)
+      const p3 = scaleAddVec2(p2, direction, stripeLength)
+      const p4 = scaleAddVec2(p1, direction, stripeLength)
 
       const stripePolygon: Polygon2D = { points: [p1, p2, p3, p4] }
       const stripeParts = intersectPolygon(polygon, { outer: stripePolygon, holes: [] })
@@ -615,24 +624,24 @@ export function* simpleStripes(
 }
 
 export function* tiledRectPolygons(
-  basePoint: vec2,
-  direction: vec2,
+  basePoint: Vec2,
+  direction: Vec2,
   dirExtent: Length,
   dirStep: Length,
-  perpDir: vec2,
+  perpDir: Vec2,
   perpExtent: Length,
   perpStep: Length,
   clipPolygon: PolygonWithHoles2D
 ): Generator<PolygonWithHoles2D> {
   for (let offsetDir = 0; offsetDir < dirExtent; offsetDir += dirStep) {
     const clippedLengthDir = Math.min(dirStep, dirExtent - offsetDir)
-    const base = vec2.scaleAndAdd(vec2.create(), basePoint, direction, offsetDir)
+    const base = scaleAddVec2(basePoint, direction, offsetDir)
     for (let offsetPerp = 0; offsetPerp < perpExtent; offsetPerp += perpStep) {
       const clippedLengthPerp = Math.min(perpStep, perpExtent - offsetPerp)
-      const p1 = vec2.scaleAndAdd(vec2.create(), base, perpDir, offsetPerp)
-      const p2 = vec2.scaleAndAdd(vec2.create(), p1, perpDir, clippedLengthPerp)
-      const p3 = vec2.scaleAndAdd(vec2.create(), p2, direction, clippedLengthDir)
-      const p4 = vec2.scaleAndAdd(vec2.create(), p1, direction, clippedLengthDir)
+      const p1 = scaleAddVec2(base, perpDir, offsetPerp)
+      const p2 = scaleAddVec2(p1, perpDir, clippedLengthPerp)
+      const p3 = scaleAddVec2(p2, direction, clippedLengthDir)
+      const p4 = scaleAddVec2(p1, direction, clippedLengthDir)
 
       const rectPolygon: Polygon2D = { points: [p1, p2, p3, p4] }
       yield* intersectPolygon(clipPolygon, { outer: rectPolygon, holes: [] })
@@ -683,24 +692,24 @@ export function* simplePolygonFrame(
   }
 }
 
-export function closestPoint(reference: vec2, points: vec2[]): vec2 {
+export function closestPoint(reference: Vec2, points: Vec2[]): Vec2 {
   if (points.length === 0) {
     throw new Error("closestPoint: 'points' array must not be empty.")
   }
 
   let closest = points[0]
-  let minDistSq = vec2.sqrDist(reference, closest)
+  let minDistSq = distSqrVec2(reference, closest)
 
   for (let i = 1; i < points.length; i++) {
     const p = points[i]
-    const distSq = vec2.sqrDist(reference, p)
+    const distSq = distSqrVec2(reference, p)
     if (distSq < minDistSq) {
       minDistSq = distSq
       closest = p
     }
   }
 
-  return vec2.clone(closest)
+  return copyVec2(closest)
 }
 
 export function* polygonEdges(polygon: Polygon2D): Generator<LineSegment2D> {
@@ -715,7 +724,7 @@ export function* polygonEdges(polygon: Polygon2D): Generator<LineSegment2D> {
 
 const EPSILON = 1e-5
 
-export function lineSegmentIntersect(line: Line2D, segment: LineSegment2D): vec2 | null {
+export function lineSegmentIntersect(line: Line2D, segment: LineSegment2D): Vec2 | null {
   const segmentLine: Line2D = {
     point: segment.start,
     direction: direction(segment.start, segment.end)
@@ -725,9 +734,9 @@ export function lineSegmentIntersect(line: Line2D, segment: LineSegment2D): vec2
   if (!intersection) return null
 
   // Check if intersection is actually on the segment
-  const segmentLength = vec2.distance(segment.start, segment.end)
-  const distFromStart = vec2.distance(segment.start, intersection)
-  const distFromEnd = vec2.distance(segment.end, intersection)
+  const segmentLength = distVec2(segment.start, segment.end)
+  const distFromStart = distVec2(segment.start, intersection)
+  const distFromEnd = distVec2(segment.end, intersection)
 
   // Point is on segment if distances sum to segment length (with epsilon tolerance)
   if (Math.abs(distFromStart + distFromEnd - segmentLength) < EPSILON) {
@@ -741,8 +750,8 @@ export function splitPolygonAtIndices(
   polygon: Polygon2D,
   startIndex: number,
   endIndex: number,
-  cutStart: vec2,
-  cutEnd: vec2
+  cutStart: Vec2,
+  cutEnd: Vec2
 ): [Polygon2D, Polygon2D] {
   const points = polygon.points
   const n = points.length
@@ -751,53 +760,53 @@ export function splitPolygonAtIndices(
   // cutEnd lies on the edge from points[endIndex] to points[(endIndex+1)%n]
 
   // Build first polygon: cutStart -> points along polygon -> cutEnd
-  const poly1Points: vec2[] = []
+  const poly1Points: Vec2[] = []
 
   // Add cutStart (unless it coincides with the next point we'll add)
   const nextAfterStart = points[(startIndex + 1) % n]
-  if (vec2.distance(cutStart, nextAfterStart) > EPSILON) {
-    poly1Points.push(vec2.clone(cutStart))
+  if (distVec2(cutStart, nextAfterStart) > EPSILON) {
+    poly1Points.push(copyVec2(cutStart))
   }
 
   // Add all points from (startIndex+1) to endIndex (inclusive)
   let i = (startIndex + 1) % n
   while (true) {
-    poly1Points.push(vec2.clone(points[i]))
+    poly1Points.push(copyVec2(points[i]))
     if (i === endIndex) break
     i = (i + 1) % n
   }
 
   // Add cutEnd (unless it coincides with the last point we added)
-  if (vec2.distance(cutEnd, poly1Points[poly1Points.length - 1]) > EPSILON) {
-    poly1Points.push(vec2.clone(cutEnd))
+  if (distVec2(cutEnd, poly1Points[poly1Points.length - 1]) > EPSILON) {
+    poly1Points.push(copyVec2(cutEnd))
   }
 
   // Build second polygon: cutEnd -> points along polygon -> cutStart
-  const poly2Points: vec2[] = []
+  const poly2Points: Vec2[] = []
 
   // Add cutEnd (unless it coincides with the next point we'll add)
   const nextAfterEnd = points[(endIndex + 1) % n]
-  if (vec2.distance(cutEnd, nextAfterEnd) > EPSILON) {
-    poly2Points.push(vec2.clone(cutEnd))
+  if (distVec2(cutEnd, nextAfterEnd) > EPSILON) {
+    poly2Points.push(copyVec2(cutEnd))
   }
 
   // Add all points from (endIndex+1) to startIndex (inclusive)
   i = (endIndex + 1) % n
   while (true) {
-    poly2Points.push(vec2.clone(points[i]))
+    poly2Points.push(copyVec2(points[i]))
     if (i === startIndex) break
     i = (i + 1) % n
   }
 
   // Add cutStart (unless it coincides with the last point we added)
-  if (vec2.distance(cutStart, poly2Points[poly2Points.length - 1]) > EPSILON) {
-    poly2Points.push(vec2.clone(cutStart))
+  if (distVec2(cutStart, poly2Points[poly2Points.length - 1]) > EPSILON) {
+    poly2Points.push(copyVec2(cutStart))
   }
 
   return [{ points: poly1Points }, { points: poly2Points }]
 }
 
-export function* partitionByAlignedEdges(polygon: Polygon2D, dir: vec2): Generator<Polygon2D> {
+export function* partitionByAlignedEdges(polygon: Polygon2D, dir: Vec2): Generator<Polygon2D> {
   // Optimization: polygons with less than 4 points cannot be split
   if (polygon.points.length < 4) {
     yield polygon
@@ -827,28 +836,28 @@ export function* partitionByAlignedEdges(polygon: Polygon2D, dir: vec2): Generat
       const edgeDir = direction(start, end)
 
       // Check if edge is aligned with the direction (handles both dir and -dir)
-      if (1 - Math.abs(vec2.dot(edgeDir, dir)) > EPSILON) continue
+      if (1 - Math.abs(dotVec2(edgeDir, dir)) > EPSILON) continue
 
       const edgeLine: Line2D = { point: start, direction: dir }
       const perpDir = perpendicularCW(edgeDir)
 
       // Check if we can extend this edge in either direction
       const nextDir = direction(end, next)
-      const nextPerpComponent = vec2.dot(nextDir, perpDir)
+      const nextPerpComponent = dotVec2(nextDir, perpDir)
       const canExtendForward = nextPerpComponent < -EPSILON
 
       const prevDir = direction(prev, start)
-      const prevPerpComponent = vec2.dot(prevDir, perpDir)
+      const prevPerpComponent = dotVec2(prevDir, perpDir)
       const canExtendBackward = prevPerpComponent > EPSILON
 
       if (!canExtendForward && !canExtendBackward) continue
 
       let bestForwardIndex = -1
-      let bestForwardPoint: vec2 | null = null
+      let bestForwardPoint: Vec2 | null = null
       let smallestForwardDistance = Infinity
 
       let bestBackwardIndex = -1
-      let bestBackwardPoint: vec2 | null = null
+      let bestBackwardPoint: Vec2 | null = null
       let smallestBackwardDistance = Infinity
 
       // Search for intersections (excluding current, next, and previous edges)
@@ -861,7 +870,7 @@ export function* partitionByAlignedEdges(polygon: Polygon2D, dir: vec2): Generat
           const intersection = lineSegmentIntersect(edgeLine, { start: candidateStart, end: candidateEnd })
 
           if (intersection) {
-            const distance = vec2.distance(end, intersection)
+            const distance = distVec2(end, intersection)
             if (distance > EPSILON && distance < smallestForwardDistance) {
               bestForwardIndex = candidateIndex
               bestForwardPoint = intersection
@@ -878,7 +887,7 @@ export function* partitionByAlignedEdges(polygon: Polygon2D, dir: vec2): Generat
           const intersection = lineSegmentIntersect(edgeLine, { start: candidateStart, end: candidateEnd })
 
           if (intersection) {
-            const distance = vec2.distance(start, intersection)
+            const distance = distVec2(start, intersection)
             if (distance > EPSILON && distance < smallestBackwardDistance) {
               bestBackwardIndex = candidateIndex
               bestBackwardPoint = intersection
