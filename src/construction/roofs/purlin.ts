@@ -85,7 +85,14 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     const maxZ = ((config.thickness + config.layers.topThickness) * 2) as Length
 
     const outerConstructionClippingVolume = contexts
-      .map(c => this.createExtrudedVolume(offsetPolygon(c.outerPolygon, -0.01), roof.ridgeLine, minZ, maxZ))
+      .map(c =>
+        this.createExtrudedVolume(
+          offsetPolygon(c.outerPolygon, -0.01), // For avoiding clipping artifacts
+          roof.ridgeLine,
+          minZ,
+          maxZ
+        )
+      )
       .reduce((a, b) => a.add(b))
     const innerConstructionClippingVolume = contexts
       .map(c => this.createExtrudedVolume(c.innerPolygon, roof.ridgeLine, minZ, maxZ))
@@ -441,7 +448,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     const purlinPolygons = partitions.flatMap(p => {
       const { edgeAtStart, edgeAtEnd } = this.detectRoofEdges(p, roof.ridgeDirection, purlinCheckPoints)
       const rect = PolygonWithBoundingRect.fromPolygon({ outer: p, holes: [] }, roof.ridgeDirection)
-      return [
+      const stripes = [
         ...rect.stripes({
           thickness: config.purlinWidth,
           spacing: config.purlinSpacing,
@@ -451,6 +458,8 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
           gapCallback: gap => gapPolygons.push(gap)
         })
       ]
+      const expandedStripes = stripes.map(s => s.expandedInDir(0.01)) // For avoiding clipping artifacts
+      return expandedStripes
     })
 
     const getDistanceToRidge = (point: vec2): number =>

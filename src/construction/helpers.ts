@@ -506,6 +506,31 @@ export class PolygonWithBoundingRect {
     )
   }
 
+  public expandedInDir(extent: Length): PolygonWithBoundingRect {
+    const halfExtent = extent / 2
+    const center = vec2.scaleAndAdd(vec2.create(), this.minPoint, this.dir, this.dirExtent / 2)
+    const offsetPoint = (p: vec2) => {
+      const deltaToCenter = vec2.subtract(vec2.create(), p, center)
+      const sign = Math.sign(vec2.dot(deltaToCenter, this.dir))
+      return vec2.scaleAndAdd(vec2.create(), p, this.dir, sign * halfExtent)
+    }
+
+    const polygon: PolygonWithHoles2D = {
+      outer: { points: this.polygon.outer.points.map(offsetPoint) },
+      holes: this.polygon.holes.map(h => ({
+        points: h.points.map(offsetPoint)
+      }))
+    }
+    return new PolygonWithBoundingRect(
+      polygon,
+      this.dir,
+      this.dirExtent + extent,
+      this.perpDir,
+      this.perpExtent,
+      offsetPoint(this.minPoint)
+    )
+  }
+
   get size2D() {
     return vec2.fromValues(this.dirExtent, this.perpExtent)
   }

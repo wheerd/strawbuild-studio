@@ -18,6 +18,7 @@ import {
   simplifyPolygonWithHoles
 } from '@/shared/geometry'
 import { buildPlaneBasis, computeTriangleNormal, projectPolygonTo2D } from '@/shared/geometry/3d'
+import { createId } from '@/shared/utils/ids'
 
 export interface ManifoldPartInfo {
   id: string
@@ -47,9 +48,14 @@ export function getPartInfoFromManifold(manifold: Manifold): ManifoldPartInfo {
       sideFaces: [{ index: extruded.dims.indexOf(extruded.thickness), polygon: extruded.polygon }]
     }
   }
+  const bounds = manifold.boundingBox()
+  const roundedDims = [bounds.max[0] - bounds.min[0], bounds.max[1] - bounds.min[1], bounds.max[2] - bounds.min[2]]
+    .map(Math.round)
+    .sort((a, b) => a - b)
+  // TODO: Still try to extract faces
   return {
-    id: 'TODO',
-    boxSize: vec3.create()
+    id: createId('unknown-'),
+    boxSize: vec3.fromValues(roundedDims[0], roundedDims[1], roundedDims[2])
   }
 }
 
