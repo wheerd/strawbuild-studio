@@ -2,7 +2,7 @@ import type { OpeningAssemblyId, Perimeter, PerimeterWall } from '@/building/mod
 import type { WallConstructionArea } from '@/construction/geometry'
 import type { LayerConfig } from '@/construction/layers/types'
 import type { MaterialId } from '@/construction/materials/material'
-import type { PostConfig } from '@/construction/materials/posts'
+import { type PostConfig, validatePosts } from '@/construction/materials/posts'
 import type { ConstructionModel } from '@/construction/model'
 import type { ConstructionResult } from '@/construction/results'
 import type { Length } from '@/shared/geometry'
@@ -88,13 +88,6 @@ const validateLayers = (layers: WallLayersConfig): void => {
 }
 
 // Opening validation moved to OpeningConfig in openings/types.ts
-
-const validatePosts = (posts: PostConfig): void => {
-  ensurePositive(posts.width, 'Post width must be greater than 0')
-  if (posts.type === 'double') {
-    ensurePositive(posts.thickness, 'Double post thickness must be greater than 0')
-  }
-}
 
 const validateInfillSegment = (
   config: Pick<InfillWallConfig, 'desiredPostSpacing' | 'maxPostSpacing' | 'minStrawSpace' | 'posts'>

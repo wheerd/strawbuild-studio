@@ -429,7 +429,7 @@ describe('segmentedWallConstruction', () => {
       // First wall segment (before opening)
       expect(mockWallConstruction).toHaveBeenNthCalledWith(
         1,
-        expectArea(newVec3(0, 30, 60), newVec3(985, 220, 2380)),
+        expectArea(newVec3(0, 30, 60), newVec3(1000, 220, 2380)),
         true,
         true,
         false
@@ -439,8 +439,8 @@ describe('segmentedWallConstruction', () => {
       expect(mockWallConstruction).toHaveBeenNthCalledWith(
         2,
         expectArea(
-          newVec3(1815, 30, 60), // 1000 + 800
-          newVec3(1185, 220, 2380) // 3000 - 1800
+          newVec3(1800, 30, 60), // 1000 + 800
+          newVec3(1200, 220, 2380) // 3000 - 1800
         ),
         true,
         true,
@@ -450,9 +450,9 @@ describe('segmentedWallConstruction', () => {
       // Should call opening construction once
       expect(mockOpeningConstruction).toHaveBeenCalledTimes(1)
       expect(mockOpeningConstruction).toHaveBeenCalledWith(
-        expectArea(newVec3(985, 30, 60), newVec3(830, 220, 2380)),
-        2055,
-        825,
+        expectArea(newVec3(1000, 30, 60), newVec3(800, 220, 2380)),
+        2040,
+        840,
         mockInfillMethod
       )
 
@@ -483,7 +483,7 @@ describe('segmentedWallConstruction', () => {
       // Should call wall construction once (after opening)
       expect(mockWallConstruction).toHaveBeenCalledTimes(1)
       expect(mockWallConstruction).toHaveBeenCalledWith(
-        expectArea(newVec3(815, 30, 60), newVec3(2185, 220, 2380)),
+        expectArea(newVec3(800, 30, 60), newVec3(2200, 220, 2380)),
         true,
         true,
         true
@@ -491,9 +491,9 @@ describe('segmentedWallConstruction', () => {
 
       // Should call opening construction once
       expect(mockOpeningConstruction).toHaveBeenCalledWith(
-        expectArea(newVec3(-15, 30, 60), newVec3(830, 220, 2380)),
-        2055,
-        825,
+        expectArea(newVec3(0, 30, 60), newVec3(800, 220, 2380)),
+        2040,
+        840,
         mockInfillMethod
       )
     })
@@ -520,7 +520,7 @@ describe('segmentedWallConstruction', () => {
       // Should call wall construction once (before opening)
       expect(mockWallConstruction).toHaveBeenCalledTimes(1)
       expect(mockWallConstruction).toHaveBeenCalledWith(
-        expectArea(newVec3(0, 30, 60), newVec3(2185, 220, 2380)),
+        expectArea(newVec3(0, 30, 60), newVec3(2200, 220, 2380)),
         true,
         true,
         false
@@ -528,9 +528,9 @@ describe('segmentedWallConstruction', () => {
 
       // Should call opening construction once
       expect(mockOpeningConstruction).toHaveBeenCalledWith(
-        expectArea(newVec3(2185, 30, 60), newVec3(815, 220, 2380)),
-        2055,
-        825,
+        expectArea(newVec3(2200, 30, 60), newVec3(800, 220, 2380)),
+        2040,
+        840,
         mockInfillMethod
       )
     })
@@ -559,11 +559,11 @@ describe('segmentedWallConstruction', () => {
       expect(mockOpeningConstruction).toHaveBeenCalledTimes(1)
       expect(mockOpeningConstruction).toHaveBeenCalledWith(
         expectArea(
-          newVec3(985, 30, 60),
-          newVec3(1430, 220, 2380) // combined width: 800 + 600
+          newVec3(1000, 30, 60),
+          newVec3(1400, 220, 2380) // combined width: 800 + 600
         ),
-        2055,
-        825,
+        2040,
+        840,
         mockInfillMethod
       )
     })
@@ -640,16 +640,16 @@ describe('segmentedWallConstruction', () => {
       // Should process opening2 first (at position 500), then opening1 (at position 2000)
       expect(mockOpeningConstruction).toHaveBeenNthCalledWith(
         1,
-        expectArea(newVec3(485, 30, 60), newVec3(830, 220, 2380)),
-        2055,
-        825,
+        expectArea(newVec3(500, 30, 60), newVec3(800, 220, 2380)),
+        2040,
+        840,
         mockInfillMethod
       )
       expect(mockOpeningConstruction).toHaveBeenNthCalledWith(
         2,
-        expectArea(newVec3(1985, 30, 60), newVec3(630, 220, 2380)),
-        2055,
-        825,
+        expectArea(newVec3(2000, 30, 60), newVec3(600, 220, 2380)),
+        2040,
+        840,
         mockInfillMethod
       )
     })

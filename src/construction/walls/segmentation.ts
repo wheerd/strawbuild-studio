@@ -407,13 +407,11 @@ export function* segmentedWallConstruction(
       extensionStart +
       openingGroup[0].centerOffsetFromWallStart -
       openingGroup[0].width / 2 -
-      config.padding -
       assembly.segmentationPadding
     const groupEnd =
       extensionStart +
       openingGroup[openingGroup.length - 1].centerOffsetFromWallStart +
       openingGroup[openingGroup.length - 1].width / 2 +
-      config.padding +
       assembly.segmentationPadding
 
     // Wall segment before opening (if any)
@@ -439,15 +437,18 @@ export function* segmentedWallConstruction(
     const groupWidth = groupEnd - groupStart
     const openingArea = overallWallArea.withXAdjustment(groupStart, groupWidth)
 
-    const sillHeight = openingGroup[0].sillHeight ?? 0
-    const adjustedSill = Math.max(sillHeight - config.padding, 0) + zAdjustment
-    const adjustedHeader = adjustedSill + openingGroup[0].height + 2 * config.padding
+    const sillHeight = Math.max(openingGroup[0].sillHeight ?? 0)
+    const adjustedSill = sillHeight + zAdjustment
+    const adjustedHeader = adjustedSill + openingGroup[0].height
     yield* assembly.construct(openingArea, adjustedHeader, adjustedSill, infillMethod)
 
     for (const opening of openingGroup) {
       const openingArea = overallWallArea
-        .withXAdjustment(extensionStart + opening.centerOffsetFromWallStart - opening.width / 2, opening.width)
-        .withZAdjustment(adjustedSill + config.padding, opening.height)
+        .withXAdjustment(
+          extensionStart + opening.centerOffsetFromWallStart - opening.width / 2 + config.padding,
+          opening.width - 2 * config.padding
+        )
+        .withZAdjustment(adjustedSill + config.padding, opening.height - 2 * config.padding)
 
       const tags = opening.type === 'door' ? [TAG_OPENING_DOOR] : opening.type === 'window' ? [TAG_OPENING_WINDOW] : []
       const label = opening.type === 'door' ? 'Door' : opening.type === 'window' ? 'Window' : 'Passage'

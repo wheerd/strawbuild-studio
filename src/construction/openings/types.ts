@@ -1,8 +1,8 @@
 import type { WallConstructionArea } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
-import type { PostConfig } from '@/construction/materials/posts'
+import { type PostConfig, validatePosts } from '@/construction/materials/posts'
 import type { ConstructionResult } from '@/construction/results'
-import type { InfillMethod } from '@/construction/walls/types'
+import { type InfillMethod } from '@/construction/walls/types'
 import type { Length } from '@/shared/geometry'
 
 export interface OpeningAssembly<TConfig extends OpeningAssemblyConfigBase> {
@@ -62,7 +62,7 @@ export const validateOpeningConfig = (config: OpeningConfig): void => {
     throw new Error('Padding cannot be negative')
   }
 
-  if (config.type === 'simple') {
+  if (config.type !== 'empty') {
     if (config.sillThickness <= 0) {
       throw new Error('Sill thickness must be positive')
     }
@@ -70,5 +70,8 @@ export const validateOpeningConfig = (config: OpeningConfig): void => {
       throw new Error('Header thickness must be positive')
     }
   }
-  // 'empty' type has no additional validation
+
+  if (config.type === 'post') {
+    validatePosts(config.posts)
+  }
 }

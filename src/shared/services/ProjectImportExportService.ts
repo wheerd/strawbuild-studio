@@ -383,7 +383,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
                     width: exportedOpening.width + 2 * openingConfig.padding,
                     height: exportedOpening.height + 2 * openingConfig.padding,
                     sillHeight: exportedOpening.sillHeight
-                      ? exportedOpening.sillHeight - openingConfig.padding
+                      ? Math.max(exportedOpening.sillHeight - openingConfig.padding, 0)
                       : undefined
                   }
                 : {

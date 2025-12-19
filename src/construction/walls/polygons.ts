@@ -1,7 +1,5 @@
 import type { PerimeterWall } from '@/building/model/model'
 import type { WallConstructionArea } from '@/construction/geometry'
-import { resolveOpeningConfig } from '@/construction/openings/resolver'
-import type { WallConfig } from '@/construction/walls'
 import {
   type Length,
   type LineSegment2D,
@@ -106,25 +104,22 @@ export const subtractWallOpenings = (
   bottom: Length,
   top: Length,
   wall: PerimeterWall,
-  finishedFloorHeight: Length,
-  config: WallConfig
+  finishedFloorHeight: Length
 ): PolygonWithHoles2D[] => {
   const holes = wall.openings
     .map(opening => {
-      const openingConfig = resolveOpeningConfig(opening, config)
-
       // Calculate left edge from center position
-      const openingStart = opening.centerOffsetFromWallStart - opening.width / 2 - openingConfig.padding
-      const openingEnd = openingStart + opening.width + 2 * openingConfig.padding
+      const openingStart = opening.centerOffsetFromWallStart - opening.width / 2
+      const openingEnd = opening.centerOffsetFromWallStart + opening.width / 2
       const clampedStart = Math.max(openingStart, start)
       const clampedEnd = Math.min(openingEnd, end)
       if (clampedEnd <= clampedStart) {
         return null
       }
 
-      const sill = Math.max((opening.sillHeight ?? 0) - openingConfig.padding, 0)
+      const sill = Math.max(opening.sillHeight ?? 0, 0)
       const openingBottom = finishedFloorHeight + sill
-      const openingTop = openingBottom + opening.height + 2 * openingConfig.padding
+      const openingTop = openingBottom + opening.height
       const clampedBottom = Math.max(openingBottom, bottom)
       const clampedTop = Math.min(openingTop, top)
       if (clampedTop <= clampedBottom) {
@@ -161,8 +156,7 @@ export interface WallPolygonBounds {
 export const createWallPolygonWithOpenings = (
   area: WallConstructionArea,
   wall: PerimeterWall,
-  finishedFloorHeight: Length,
-  config: WallConfig
+  finishedFloorHeight: Length
 ): PolygonWithHoles2D[] =>
   subtractWallOpenings(
     area.getSideProfilePolygon(),
@@ -171,6 +165,5 @@ export const createWallPolygonWithOpenings = (
     area.position[2],
     area.position[2] + area.size[2],
     wall,
-    finishedFloorHeight,
-    config
+    finishedFloorHeight
   )

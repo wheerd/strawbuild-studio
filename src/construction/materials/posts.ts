@@ -140,3 +140,16 @@ export function constructPost(area: WallConstructionArea, config: PostConfig): G
     throw new Error('Invalid post type')
   }
 }
+
+const ensurePositive = (value: number, message: string) => {
+  if (Number(value) <= 0) {
+    throw new Error(message)
+  }
+}
+
+export const validatePosts = (posts: PostConfig): void => {
+  ensurePositive(posts.width, 'Post width must be greater than 0')
+  if (posts.type === 'double') {
+    ensurePositive(posts.thickness, 'Double post thickness must be greater than 0')
+  }
+}
