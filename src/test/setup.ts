@@ -5,7 +5,7 @@ import path from 'path'
 import { afterEach, beforeAll, vi } from 'vitest'
 import 'vitest-canvas-mock'
 
-import { newVec2 } from '@/shared/geometry/basic'
+import { newVec2 } from '@/shared/geometry/2d'
 import { loadManifoldModule } from '@/shared/geometry/manifoldInstance'
 
 vi.mock('@/shared/utils/version', () => ({

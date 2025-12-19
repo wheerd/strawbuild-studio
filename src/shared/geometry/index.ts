@@ -2,3 +2,4 @@
 export * from './basic'
 export * from './line'
 export * from './polygon'
+export * from './2d'

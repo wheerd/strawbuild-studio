@@ -1,7 +1,7 @@
 import Clipper2Z, { type MainModule as ClipperModule, type PathD, type PathsD, type PointD } from 'clipper2-wasm'
 import clipperWasmUrl from 'clipper2-wasm/dist/es/clipper2z.wasm?url'
 
-import { type Vec2, newVec2 } from '@/shared/geometry/basic'
+import { type Vec2, newVec2 } from '@/shared/geometry/2d'
 
 let clipperModuleInstance: ClipperModule | null = null
 let clipperModulePromise: Promise<ClipperModule> | null = null

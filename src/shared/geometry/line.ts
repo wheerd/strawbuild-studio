@@ -1,4 +1,4 @@
-import type { Length, Vec2 } from './basic'
+import type { Vec2 } from './2d'
 import {
   copyVec2,
   direction,
@@ -12,7 +12,8 @@ import {
   projectVec2,
   scaleAddVec2,
   subVec2
-} from './basic'
+} from './2d'
+import type { Length } from './basic'
 
 // Line-related types
 export interface Line2D {

@@ -1,7 +1,7 @@
 import type { MainModule, PathD, PathsD } from 'clipper2-wasm'
 import { type Mocked, afterEach, beforeEach, describe, expect, vi } from 'vitest'
 
-import { type Vec2, ZERO_VEC2, copyVec2, newVec2, normVec2 } from '@/shared/geometry/basic'
+import { type Vec2, ZERO_VEC2, copyVec2, newVec2, normVec2 } from '@/shared/geometry/2d'
 import {
   createPathD,
   createPathsD,

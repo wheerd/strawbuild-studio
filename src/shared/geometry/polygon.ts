@@ -11,9 +11,6 @@ import {
 } from '@/shared/geometry/clipperInstance'
 
 import {
-  type Area,
-  Bounds2D,
-  type Length,
   type Vec2,
   ZERO_VEC2,
   direction,
@@ -27,10 +24,10 @@ import {
   perpendicular,
   perpendicularCCW,
   perpendicularCW,
-  radiansToDegrees,
   scaleAddVec2,
   subVec2
-} from './basic'
+} from './2d'
+import { type Area, Bounds2D, type Length, radiansToDegrees } from './basic'
 import { type Line2D, type LineSegment2D, lineIntersection, projectPointOntoLine } from './line'
 
 const COLINEAR_EPSILON = 1e-9

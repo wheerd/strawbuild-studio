@@ -5,7 +5,6 @@ import type { Perimeter, PerimeterCorner } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
 import { newVec2 } from '@/shared/geometry'
-import '@/shared/geometry/basic'
 
 import { FitToViewTool } from './FitToViewTool'
 
