@@ -89,10 +89,13 @@ function createMockPerimeter(walls: PerimeterWall[]): Perimeter {
     storeyId: 'test-storey' as any,
     referenceSide: 'inside',
     referencePolygon: [],
-    walls,
-    corners: [],
-    baseRingBeamAssemblyId: 'base-assembly' as any,
-    topRingBeamAssemblyId: 'top-assembly' as any
+    walls: walls.map(wall => ({
+      ...wall,
+      // Add ring beams by default unless wall already has them explicitly set
+      baseRingBeamAssemblyId: wall.baseRingBeamAssemblyId ?? ('base-assembly' as any),
+      topRingBeamAssemblyId: wall.topRingBeamAssemblyId ?? ('top-assembly' as any)
+    })),
+    corners: []
   } as Perimeter
 }
 
@@ -367,7 +370,11 @@ describe('segmentedWallConstruction', () => {
     })
 
     it('should calculate positions based on ring beam heights', () => {
-      const wall = createMockWall('wall-1', 3000, 300)
+      const wall = {
+        ...createMockWall('wall-1', 3000, 300),
+        baseRingBeamAssemblyId: 'base-assembly' as any,
+        topRingBeamAssemblyId: 'top-assembly' as any
+      }
       const perimeter = createMockPerimeter([wall])
       const wallHeight = 2500
       const layers = createMockLayers()
@@ -657,10 +664,12 @@ describe('segmentedWallConstruction', () => {
 
   describe('ring beam integration', () => {
     it('should handle missing ring beam assemblies gracefully', () => {
-      const wall = createMockWall('wall-1', 3000, 300)
+      const wall = {
+        ...createMockWall('wall-1', 3000, 300),
+        baseRingBeamAssemblyId: undefined,
+        topRingBeamAssemblyId: undefined
+      }
       const perimeter = createMockPerimeter([wall])
-      perimeter.baseRingBeamAssemblyId = undefined
-      perimeter.topRingBeamAssemblyId = undefined
 
       const wallHeight = 2500
       const layers = createMockLayers()
@@ -693,10 +702,12 @@ describe('segmentedWallConstruction', () => {
     })
 
     it('should call getRingBeamAssemblyById with correct IDs', () => {
-      const wall = createMockWall('wall-1', 3000, 300)
+      const wall = {
+        ...createMockWall('wall-1', 3000, 300),
+        baseRingBeamAssemblyId: 'base-assembly-id' as any,
+        topRingBeamAssemblyId: 'top-assembly-id' as any
+      }
       const perimeter = createMockPerimeter([wall])
-      perimeter.baseRingBeamAssemblyId = 'base-assembly-id' as any
-      perimeter.topRingBeamAssemblyId = 'top-assembly-id' as any
 
       const wallHeight = 2500
       const layers = createMockLayers()

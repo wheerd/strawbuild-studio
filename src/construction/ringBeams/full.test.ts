@@ -40,7 +40,7 @@ const defaultConfig: FullRingBeamConfig = {
 let assembly: FullRingBeamAssembly
 
 beforeEach(() => {
-  assembly = new FullRingBeamAssembly()
+  assembly = new FullRingBeamAssembly(defaultConfig)
   simplifyPolygonMock.mockImplementation((polygon: Polygon2D) => ({
     points: polygon.points.map(point => copyVec2(point))
   }))
@@ -107,7 +107,7 @@ describe('FullRingBeamAssembly', () => {
     })
 
     it('creates ring beam for simplified polygon', () => {
-      const model = assembly.construct(perimeter, defaultConfig)
+      const model = assembly.construct(perimeter)
 
       expect(simplifyPolygonMock).toHaveBeenCalledWith(expectedInsidePolygon)
       expect(offsetPolygonMock).toHaveBeenNthCalledWith(1, simplifiedPolygon, defaultConfig.offsetFromEdge)
@@ -121,7 +121,7 @@ describe('FullRingBeamAssembly', () => {
     })
 
     it('creates extruded polygon elements', () => {
-      const model = assembly.construct(perimeter, defaultConfig)
+      const model = assembly.construct(perimeter)
 
       expect(model.elements).toHaveLength(simplifiedPolygon.points.length)
       model.elements.forEach(element => {
@@ -136,7 +136,7 @@ describe('FullRingBeamAssembly', () => {
     })
 
     it('attaches polygon part info to each element', () => {
-      const model = assembly.construct(perimeter, defaultConfig)
+      const model = assembly.construct(perimeter)
 
       model.elements.forEach(element => {
         assertConstructionElement(element)
@@ -145,7 +145,7 @@ describe('FullRingBeamAssembly', () => {
     })
 
     it('creates inside area', () => {
-      const model = assembly.construct(perimeter, defaultConfig)
+      const model = assembly.construct(perimeter)
 
       const area = model.areas.find(
         (a): a is HighlightedPolygon => a.type === 'polygon' && a.areaType === 'inner-perimeter'
@@ -155,7 +155,7 @@ describe('FullRingBeamAssembly', () => {
     })
 
     it('creates outside area', () => {
-      const model = assembly.construct(perimeter, defaultConfig)
+      const model = assembly.construct(perimeter)
 
       const outerPolygonArea = model.areas.find(
         (area): area is HighlightedPolygon => area.type === 'polygon' && area.areaType === 'outer-perimeter'
@@ -165,14 +165,14 @@ describe('FullRingBeamAssembly', () => {
     })
 
     it('model does not have errors or warnings', () => {
-      const model = assembly.construct(perimeter, defaultConfig)
+      const model = assembly.construct(perimeter)
 
       expect(model.errors).toHaveLength(0)
       expect(model.warnings).toHaveLength(0)
     })
 
     it('model has bounds', () => {
-      const model = assembly.construct(perimeter, defaultConfig)
+      const model = assembly.construct(perimeter)
 
       expect(model.bounds.min).toEqual(newVec3(0, 0, 0))
       expect(model.bounds.max).toEqual(newVec3(4000, 3000, defaultConfig.height))
@@ -193,7 +193,8 @@ describe('FullRingBeamAssembly', () => {
         width: 240
       }
 
-      assembly.construct(perimeter, config)
+      const customAssembly = new FullRingBeamAssembly(config)
+      customAssembly.construct(perimeter)
 
       expect(offsetPolygonMock).toHaveBeenNthCalledWith(1, simplifiedPolygon, config.offsetFromEdge)
       expect(offsetPolygonMock).toHaveBeenNthCalledWith(2, simplifiedPolygon, config.offsetFromEdge + config.width)

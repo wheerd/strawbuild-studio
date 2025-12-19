@@ -126,11 +126,17 @@ export interface PerimetersActions {
   movePerimeter: (perimeterId: PerimeterId, offset: Vec2) => boolean
   updatePerimeterBoundary: (perimeterId: PerimeterId, newBoundary: Vec2[]) => boolean
 
-  // Ring beam configuration
-  setPerimeterBaseRingBeam: (perimeterId: PerimeterId, assemblyId: RingBeamAssemblyId) => void
-  setPerimeterTopRingBeam: (perimeterId: PerimeterId, assemblyId: RingBeamAssemblyId) => void
-  removePerimeterBaseRingBeam: (perimeterId: PerimeterId) => void
-  removePerimeterTopRingBeam: (perimeterId: PerimeterId) => void
+  // Ring beam configuration - individual wall
+  setWallBaseRingBeam: (perimeterId: PerimeterId, wallId: PerimeterWallId, assemblyId: RingBeamAssemblyId) => void
+  setWallTopRingBeam: (perimeterId: PerimeterId, wallId: PerimeterWallId, assemblyId: RingBeamAssemblyId) => void
+  removeWallBaseRingBeam: (perimeterId: PerimeterId, wallId: PerimeterWallId) => void
+  removeWallTopRingBeam: (perimeterId: PerimeterId, wallId: PerimeterWallId) => void
+
+  // Ring beam configuration - bulk operations for all walls
+  setAllWallsBaseRingBeam: (perimeterId: PerimeterId, assemblyId: RingBeamAssemblyId) => void
+  setAllWallsTopRingBeam: (perimeterId: PerimeterId, assemblyId: RingBeamAssemblyId) => void
+  removeAllWallsBaseRingBeam: (perimeterId: PerimeterId) => void
+  removeAllWallsTopRingBeam: (perimeterId: PerimeterId) => void
 }
 
 export type PerimetersSlice = PerimetersState & { actions: PerimetersActions }
@@ -202,10 +208,18 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
           referenceSide,
           referencePolygon: boundary.points.map(point => copyVec2(point)),
           walls,
-          corners,
-          baseRingBeamAssemblyId,
-          topRingBeamAssemblyId
+          corners
         }
+
+        // Apply ring beam defaults to all walls
+        walls.forEach(wall => {
+          if (baseRingBeamAssemblyId) {
+            wall.baseRingBeamAssemblyId = baseRingBeamAssemblyId
+          }
+          if (topRingBeamAssemblyId) {
+            wall.topRingBeamAssemblyId = topRingBeamAssemblyId
+          }
+        })
 
         // Calculate all geometry using the mutable helper
         updatePerimeterGeometry(perimeter)
@@ -745,40 +759,97 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
       return success
     },
 
-    // Ring beam configuration
-    setPerimeterBaseRingBeam: (perimeterId: PerimeterId, assemblyId: RingBeamAssemblyId) => {
+    // Ring beam configuration - individual wall
+    setWallBaseRingBeam: (perimeterId: PerimeterId, wallId: PerimeterWallId, assemblyId: RingBeamAssemblyId) => {
       set(state => {
         const perimeter = state.perimeters[perimeterId]
         if (!perimeter) return
 
-        perimeter.baseRingBeamAssemblyId = assemblyId
+        const wall = perimeter.walls.find(w => w.id === wallId)
+        if (!wall) return
+
+        wall.baseRingBeamAssemblyId = assemblyId
       })
     },
 
-    setPerimeterTopRingBeam: (perimeterId: PerimeterId, assemblyId: RingBeamAssemblyId) => {
+    setWallTopRingBeam: (perimeterId: PerimeterId, wallId: PerimeterWallId, assemblyId: RingBeamAssemblyId) => {
       set(state => {
         const perimeter = state.perimeters[perimeterId]
         if (!perimeter) return
 
-        perimeter.topRingBeamAssemblyId = assemblyId
+        const wall = perimeter.walls.find(w => w.id === wallId)
+        if (!wall) return
+
+        wall.topRingBeamAssemblyId = assemblyId
       })
     },
 
-    removePerimeterBaseRingBeam: (perimeterId: PerimeterId) => {
+    removeWallBaseRingBeam: (perimeterId: PerimeterId, wallId: PerimeterWallId) => {
       set(state => {
         const perimeter = state.perimeters[perimeterId]
         if (!perimeter) return
 
-        perimeter.baseRingBeamAssemblyId = undefined
+        const wall = perimeter.walls.find(w => w.id === wallId)
+        if (!wall) return
+
+        wall.baseRingBeamAssemblyId = undefined
       })
     },
 
-    removePerimeterTopRingBeam: (perimeterId: PerimeterId) => {
+    removeWallTopRingBeam: (perimeterId: PerimeterId, wallId: PerimeterWallId) => {
       set(state => {
         const perimeter = state.perimeters[perimeterId]
         if (!perimeter) return
 
-        perimeter.topRingBeamAssemblyId = undefined
+        const wall = perimeter.walls.find(w => w.id === wallId)
+        if (!wall) return
+
+        wall.topRingBeamAssemblyId = undefined
+      })
+    },
+
+    // Ring beam configuration - bulk operations
+    setAllWallsBaseRingBeam: (perimeterId: PerimeterId, assemblyId: RingBeamAssemblyId) => {
+      set(state => {
+        const perimeter = state.perimeters[perimeterId]
+        if (!perimeter) return
+
+        perimeter.walls.forEach(wall => {
+          wall.baseRingBeamAssemblyId = assemblyId
+        })
+      })
+    },
+
+    setAllWallsTopRingBeam: (perimeterId: PerimeterId, assemblyId: RingBeamAssemblyId) => {
+      set(state => {
+        const perimeter = state.perimeters[perimeterId]
+        if (!perimeter) return
+
+        perimeter.walls.forEach(wall => {
+          wall.topRingBeamAssemblyId = assemblyId
+        })
+      })
+    },
+
+    removeAllWallsBaseRingBeam: (perimeterId: PerimeterId) => {
+      set(state => {
+        const perimeter = state.perimeters[perimeterId]
+        if (!perimeter) return
+
+        perimeter.walls.forEach(wall => {
+          wall.baseRingBeamAssemblyId = undefined
+        })
+      })
+    },
+
+    removeAllWallsTopRingBeam: (perimeterId: PerimeterId) => {
+      set(state => {
+        const perimeter = state.perimeters[perimeterId]
+        if (!perimeter) return
+
+        perimeter.walls.forEach(wall => {
+          wall.topRingBeamAssemblyId = undefined
+        })
       })
     },
 

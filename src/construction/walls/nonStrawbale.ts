@@ -42,12 +42,9 @@ export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallCo
     const cornerInfo = calculateWallCornerInfo(wall, wallContext)
 
     const { getRingBeamAssemblyById } = getConfigActions()
-    const basePlateAssembly = perimeter.baseRingBeamAssemblyId
-      ? getRingBeamAssemblyById(perimeter.baseRingBeamAssemblyId)
-      : null
-    const topPlateAssembly = perimeter.topRingBeamAssemblyId
-      ? getRingBeamAssemblyById(perimeter.topRingBeamAssemblyId)
-      : null
+    // Get ring beam assemblies for THIS specific wall
+    const basePlateAssembly = wall.baseRingBeamAssemblyId ? getRingBeamAssemblyById(wall.baseRingBeamAssemblyId) : null
+    const topPlateAssembly = wall.topRingBeamAssemblyId ? getRingBeamAssemblyById(wall.topRingBeamAssemblyId) : null
 
     const basePlateHeight = basePlateAssembly?.height ?? 0
     const topPlateHeight = topPlateAssembly?.height ?? 0

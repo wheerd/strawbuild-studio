@@ -275,13 +275,10 @@ export function* segmentedWallConstruction(
   const { constructionLength, extensionStart, extensionEnd } = cornerInfo
 
   const { getRingBeamAssemblyById } = getConfigActions()
-  const basePlateAssembly = perimeter.baseRingBeamAssemblyId
-    ? getRingBeamAssemblyById(perimeter.baseRingBeamAssemblyId)
-    : null
+  // Get ring beam assemblies for THIS specific wall
+  const basePlateAssembly = wall.baseRingBeamAssemblyId ? getRingBeamAssemblyById(wall.baseRingBeamAssemblyId) : null
   const basePlateHeight = basePlateAssembly?.height ?? 0
-  const topPlateAssembly = perimeter.topRingBeamAssemblyId
-    ? getRingBeamAssemblyById(perimeter.topRingBeamAssemblyId)
-    : null
+  const topPlateAssembly = wall.topRingBeamAssemblyId ? getRingBeamAssemblyById(wall.topRingBeamAssemblyId) : null
   const topPlateHeight = topPlateAssembly?.height ?? 0
 
   const totalConstructionHeight =

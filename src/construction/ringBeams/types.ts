@@ -5,8 +5,9 @@ import type { Length } from '@/shared/geometry'
 
 export type RingBeamAssemblyType = 'full' | 'double'
 
-export interface RingBeamAssembly<TConfig extends RingBeamConfig> {
-  construct: (perimeter: Perimeter, config: TConfig) => ConstructionModel
+export interface RingBeamAssembly {
+  construct: (perimeter: Perimeter) => ConstructionModel
+  get height(): Length
 }
 
 export interface RingBeamConfigBase {

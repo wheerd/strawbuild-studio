@@ -33,21 +33,26 @@ export function getRingBeamAssemblyUsage(
 ): RingBeamAssemblyUsage {
   const usedByPerimeters: string[] = []
 
-  // Check all perimeters for base and top ring beam references
+  // Check all walls in all perimeters for base and top ring beam references
   perimeters.forEach(perimeter => {
     // Get storey name for context
     const storey = storeys.find(s => s.id === perimeter.storeyId)
     const storeyName = storey?.name ?? 'Unknown Floor'
 
-    // Check base ring beam
-    if (perimeter.baseRingBeamAssemblyId === assemblyId) {
-      usedByPerimeters.push(`${storeyName} - Base Ring Beam`)
-    }
+    // Check each wall in the perimeter
+    perimeter.walls.forEach((wall, wallIndex) => {
+      const wallName = `Wall ${wallIndex + 1}`
 
-    // Check top ring beam
-    if (perimeter.topRingBeamAssemblyId === assemblyId) {
-      usedByPerimeters.push(`${storeyName} - Top Ring Beam`)
-    }
+      // Check base ring beam
+      if (wall.baseRingBeamAssemblyId === assemblyId) {
+        usedByPerimeters.push(`${storeyName} - ${wallName} (Base Plate)`)
+      }
+
+      // Check top ring beam
+      if (wall.topRingBeamAssemblyId === assemblyId) {
+        usedByPerimeters.push(`${storeyName} - ${wallName} (Top Plate)`)
+      }
+    })
   })
 
   return {

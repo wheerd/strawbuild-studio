@@ -45,16 +45,30 @@ describe('Assembly Usage Detection', () => {
         storeyId,
         referenceSide: 'inside',
         referencePolygon: [],
-        walls: [],
-        corners: [],
-        baseRingBeamAssemblyId: assemblyId,
-        topRingBeamAssemblyId: undefined
+        walls: [
+          {
+            id: createPerimeterWallId(),
+            thickness: 200,
+            wallAssemblyId: createWallAssemblyId(),
+            openings: [],
+            baseRingBeamAssemblyId: assemblyId,
+            topRingBeamAssemblyId: undefined,
+            insideLength: 100,
+            outsideLength: 100,
+            wallLength: 100,
+            insideLine: { start: ZERO_VEC2, end: newVec2(100, 0) },
+            outsideLine: { start: ZERO_VEC2, end: newVec2(100, 0) },
+            direction: newVec2(1, 0),
+            outsideDirection: newVec2(0, 1)
+          }
+        ],
+        corners: []
       }
 
       const usage = getRingBeamAssemblyUsage(assemblyId, [perimeter], [storey])
 
       expect(usage.isUsed).toBe(true)
-      expect(usage.usedByPerimeters).toEqual(['Test Floor - Base Ring Beam'])
+      expect(usage.usedByPerimeters).toEqual(['Test Floor - Wall 1 (Base Plate)'])
     })
 
     it('should detect ring beam assembly used as top ring beam', () => {
@@ -66,16 +80,30 @@ describe('Assembly Usage Detection', () => {
         storeyId,
         referenceSide: 'inside',
         referencePolygon: [],
-        walls: [],
-        corners: [],
-        baseRingBeamAssemblyId: undefined,
-        topRingBeamAssemblyId: assemblyId
+        walls: [
+          {
+            id: createPerimeterWallId(),
+            thickness: 200,
+            wallAssemblyId: createWallAssemblyId(),
+            openings: [],
+            baseRingBeamAssemblyId: undefined,
+            topRingBeamAssemblyId: assemblyId,
+            insideLength: 100,
+            outsideLength: 100,
+            wallLength: 100,
+            insideLine: { start: ZERO_VEC2, end: newVec2(100, 0) },
+            outsideLine: { start: ZERO_VEC2, end: newVec2(100, 0) },
+            direction: newVec2(1, 0),
+            outsideDirection: newVec2(0, 1)
+          }
+        ],
+        corners: []
       }
 
       const usage = getRingBeamAssemblyUsage(assemblyId, [perimeter], [storey])
 
       expect(usage.isUsed).toBe(true)
-      expect(usage.usedByPerimeters).toEqual(['Test Floor - Top Ring Beam'])
+      expect(usage.usedByPerimeters).toEqual(['Test Floor - Wall 1 (Top Plate)'])
     })
 
     it('should detect ring beam assembly used in multiple places', () => {
@@ -88,10 +116,24 @@ describe('Assembly Usage Detection', () => {
         storeyId,
         referenceSide: 'inside',
         referencePolygon: [],
-        walls: [],
-        corners: [],
-        baseRingBeamAssemblyId: assemblyId,
-        topRingBeamAssemblyId: undefined
+        walls: [
+          {
+            id: createPerimeterWallId(),
+            thickness: 200,
+            wallAssemblyId: createWallAssemblyId(),
+            openings: [],
+            baseRingBeamAssemblyId: assemblyId,
+            topRingBeamAssemblyId: undefined,
+            insideLength: 100,
+            outsideLength: 100,
+            wallLength: 100,
+            insideLine: { start: ZERO_VEC2, end: newVec2(100, 0) },
+            outsideLine: { start: ZERO_VEC2, end: newVec2(100, 0) },
+            direction: newVec2(1, 0),
+            outsideDirection: newVec2(0, 1)
+          }
+        ],
+        corners: []
       }
 
       const perimeter2: Perimeter = {
@@ -99,18 +141,32 @@ describe('Assembly Usage Detection', () => {
         storeyId,
         referenceSide: 'inside',
         referencePolygon: [],
-        walls: [],
-        corners: [],
-        baseRingBeamAssemblyId: undefined,
-        topRingBeamAssemblyId: assemblyId
+        walls: [
+          {
+            id: createPerimeterWallId(),
+            thickness: 200,
+            wallAssemblyId: createWallAssemblyId(),
+            openings: [],
+            baseRingBeamAssemblyId: undefined,
+            topRingBeamAssemblyId: assemblyId,
+            insideLength: 100,
+            outsideLength: 100,
+            wallLength: 100,
+            insideLine: { start: ZERO_VEC2, end: newVec2(100, 0) },
+            outsideLine: { start: ZERO_VEC2, end: newVec2(100, 0) },
+            direction: newVec2(1, 0),
+            outsideDirection: newVec2(0, 1)
+          }
+        ],
+        corners: []
       }
 
       const usage = getRingBeamAssemblyUsage(assemblyId, [perimeter1, perimeter2], [storey])
 
       expect(usage.isUsed).toBe(true)
       expect(usage.usedByPerimeters).toHaveLength(2)
-      expect(usage.usedByPerimeters).toContain('Test Floor - Base Ring Beam')
-      expect(usage.usedByPerimeters).toContain('Test Floor - Top Ring Beam')
+      expect(usage.usedByPerimeters).toContain('Test Floor - Wall 1 (Base Plate)')
+      expect(usage.usedByPerimeters).toContain('Test Floor - Wall 1 (Top Plate)')
     })
   })
 

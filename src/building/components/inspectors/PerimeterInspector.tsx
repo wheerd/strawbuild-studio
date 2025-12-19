@@ -15,7 +15,7 @@ import {
 } from '@radix-ui/themes'
 import React, { useCallback, useMemo } from 'react'
 
-import type { PerimeterId, WallAssemblyId } from '@/building/model/ids'
+import type { PerimeterId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import type { PerimeterReferenceSide, PerimeterWall, RoofType } from '@/building/model/model'
 import { useModelActions, usePerimeterById, useRoofsOfActiveStorey } from '@/building/store'
 import TopDownPlanModal from '@/construction/components/TopDownPlanModal'
@@ -66,6 +66,22 @@ function detectMixedThickness(walls: PerimeterWall[]): MixedState<Length> {
   }
 }
 
+function detectMixedRingBeams(walls: PerimeterWall[], type: 'base' | 'top'): MixedState<RingBeamAssemblyId> {
+  if (walls.length === 0) return { isMixed: false, value: null }
+
+  const firstAssembly = type === 'base' ? walls[0].baseRingBeamAssemblyId : walls[0].topRingBeamAssemblyId
+
+  const allSame = walls.every(wall => {
+    const assemblyId = type === 'base' ? wall.baseRingBeamAssemblyId : wall.topRingBeamAssemblyId
+    return assemblyId === firstAssembly
+  })
+
+  return {
+    isMixed: !allSame,
+    value: allSame ? (firstAssembly ?? null) : null
+  }
+}
+
 function MixedStateIndicator() {
   return (
     <Tooltip content="Different values across walls. Changing this will update all walls.">
@@ -77,10 +93,10 @@ function MixedStateIndicator() {
 export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): React.JSX.Element {
   // Get perimeter data from model store
   const {
-    setPerimeterBaseRingBeam,
-    setPerimeterTopRingBeam,
-    removePerimeterBaseRingBeam,
-    removePerimeterTopRingBeam,
+    setAllWallsBaseRingBeam,
+    setAllWallsTopRingBeam,
+    removeAllWallsBaseRingBeam,
+    removeAllWallsTopRingBeam,
     updateAllPerimeterWallsAssembly,
     updateAllPerimeterWallsThickness,
     removePerimeter,
@@ -107,6 +123,16 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
 
   const thicknessState = useMemo(
     () => (perimeter ? detectMixedThickness(perimeter.walls) : { isMixed: false, value: null }),
+    [perimeter?.walls]
+  )
+
+  const baseRingBeamState = useMemo(
+    () => (perimeter ? detectMixedRingBeams(perimeter.walls, 'base') : { isMixed: false, value: null }),
+    [perimeter?.walls]
+  )
+
+  const topRingBeamState = useMemo(
+    () => (perimeter ? detectMixedRingBeams(perimeter.walls, 'top') : { isMixed: false, value: null }),
     [perimeter?.walls]
   )
 
@@ -339,22 +365,29 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             <Flex align="center" justify="between" gap="3">
               <Flex align="center" gap="1">
                 <Label.Root htmlFor="base-ring-beam">
-                  <Text size="1" weight="medium" color="gray">
-                    Base Plate
-                  </Text>
+                  <Flex align="center" gap="2">
+                    <Text size="1" weight="medium" color="gray">
+                      Base Plate
+                    </Text>
+                    <MeasurementInfo highlightedPart="basePlate" />
+                    {baseRingBeamState.isMixed && <MixedStateIndicator />}
+                  </Flex>
                 </Label.Root>
-                <MeasurementInfo highlightedPart="basePlate" />
               </Flex>
               <RingBeamAssemblySelectWithEdit
-                value={perimeter.baseRingBeamAssemblyId}
+                value={
+                  baseRingBeamState.isMixed
+                    ? ('' as RingBeamAssemblyId)
+                    : (baseRingBeamState.value as RingBeamAssemblyId | undefined)
+                }
                 onValueChange={value => {
                   if (value === undefined) {
-                    removePerimeterBaseRingBeam(selectedId)
+                    removeAllWallsBaseRingBeam(selectedId)
                   } else {
-                    setPerimeterBaseRingBeam(selectedId, value)
+                    setAllWallsBaseRingBeam(selectedId, value)
                   }
                 }}
-                placeholder="None"
+                placeholder={baseRingBeamState.isMixed ? 'Mixed' : 'None'}
                 size="1"
                 allowNone
               />
@@ -364,22 +397,29 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             <Flex align="center" justify="between" gap="3">
               <Flex align="center" gap="1">
                 <Label.Root htmlFor="top-ring-beam">
-                  <Text size="1" weight="medium" color="gray">
-                    Top Plate
-                  </Text>
+                  <Flex align="center" gap="2">
+                    <Text size="1" weight="medium" color="gray">
+                      Top Plate
+                    </Text>
+                    <MeasurementInfo highlightedPart="topPlate" />
+                    {topRingBeamState.isMixed && <MixedStateIndicator />}
+                  </Flex>
                 </Label.Root>
-                <MeasurementInfo highlightedPart="topPlate" />
               </Flex>
               <RingBeamAssemblySelectWithEdit
-                value={perimeter.topRingBeamAssemblyId}
+                value={
+                  topRingBeamState.isMixed
+                    ? ('' as RingBeamAssemblyId)
+                    : (topRingBeamState.value as RingBeamAssemblyId | undefined)
+                }
                 onValueChange={value => {
                   if (value === undefined) {
-                    removePerimeterTopRingBeam(selectedId)
+                    removeAllWallsTopRingBeam(selectedId)
                   } else {
-                    setPerimeterTopRingBeam(selectedId, value)
+                    setAllWallsTopRingBeam(selectedId, value)
                   }
                 }}
-                placeholder="None"
+                placeholder={topRingBeamState.isMixed ? 'Mixed' : 'None'}
                 size="1"
                 allowNone
               />
