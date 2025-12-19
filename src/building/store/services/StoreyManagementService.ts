@@ -105,15 +105,38 @@ export class StoreyManagementService {
 
       if (wallAssemblyId && thickness) {
         // Add the duplicated perimeter to the new storey
-        this.actions.addPerimeter(
+        // Get ring beam defaults from first wall (if all walls have same config)
+        const firstWallBaseRingBeam = sourcePerimeter.walls[0]?.baseRingBeamAssemblyId
+        const firstWallTopRingBeam = sourcePerimeter.walls[0]?.topRingBeamAssemblyId
+        const allWallsHaveSameBase = sourcePerimeter.walls.every(
+          w => w.baseRingBeamAssemblyId === firstWallBaseRingBeam
+        )
+        const allWallsHaveSameTop = sourcePerimeter.walls.every(w => w.topRingBeamAssemblyId === firstWallTopRingBeam)
+
+        const newPerimeter = this.actions.addPerimeter(
           newStorey.id,
           boundary,
           wallAssemblyId,
           thickness,
-          sourcePerimeter.baseRingBeamAssemblyId,
-          sourcePerimeter.topRingBeamAssemblyId,
+          allWallsHaveSameBase ? firstWallBaseRingBeam : undefined,
+          allWallsHaveSameTop ? firstWallTopRingBeam : undefined,
           sourcePerimeter.referenceSide
         )
+
+        // If walls have different ring beams, copy them individually
+        if (!allWallsHaveSameBase || !allWallsHaveSameTop) {
+          sourcePerimeter.walls.forEach((sourceWall, wallIndex) => {
+            const newWallId = newPerimeter.walls[wallIndex]?.id
+            if (!newWallId) return
+
+            if (!allWallsHaveSameBase && sourceWall.baseRingBeamAssemblyId) {
+              this.actions.setWallBaseRingBeam(newPerimeter.id, newWallId, sourceWall.baseRingBeamAssemblyId)
+            }
+            if (!allWallsHaveSameTop && sourceWall.topRingBeamAssemblyId) {
+              this.actions.setWallTopRingBeam(newPerimeter.id, newWallId, sourceWall.topRingBeamAssemblyId)
+            }
+          })
+        }
       }
     }
 

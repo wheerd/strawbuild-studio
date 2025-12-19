@@ -39,8 +39,8 @@ export interface ExportedPerimeter {
   referencePolygon?: ExportedFloorPolygon
   corners: ExportedCorner[]
   walls: ExportedWall[]
-  baseRingBeamAssemblyId?: string
-  topRingBeamAssemblyId?: string
+  baseRingBeamAssemblyId?: string // Obsolete
+  topRingBeamAssemblyId?: string // Obsolete
 }
 
 export interface ExportedCorner {
@@ -52,6 +52,8 @@ export interface ExportedCorner {
 export interface ExportedWall {
   thickness: number
   wallAssemblyId: string
+  baseRingBeamAssemblyId?: string
+  topRingBeamAssemblyId?: string
   openings: ExportedOpening[]
 }
 
@@ -234,6 +236,8 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
           walls: perimeter.walls.map(wall => ({
             thickness: Number(wall.thickness),
             wallAssemblyId: wall.wallAssemblyId,
+            baseRingBeamAssemblyId: wall.baseRingBeamAssemblyId,
+            topRingBeamAssemblyId: wall.topRingBeamAssemblyId,
             openings: wall.openings.map(opening => ({
               type: opening.type,
               centerOffset: Number(opening.centerOffsetFromWallStart),
@@ -242,9 +246,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
               sillHeight: opening.sillHeight ? Number(opening.sillHeight) : undefined,
               openingAssemblyId: opening.openingAssemblyId
             }))
-          })),
-          baseRingBeamAssemblyId: perimeter.baseRingBeamAssemblyId,
-          topRingBeamAssemblyId: perimeter.topRingBeamAssemblyId
+          }))
         }))
 
         return {
@@ -343,13 +345,14 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
           const thickness = exportedPerimeter.walls[0]?.thickness || 200
 
           // Basic perimeter creation - auto-computes geometry, outsidePoints, etc.
+          // Don't pass ring beams here - we'll set them per wall for backward compatibility
           const perimeter = modelActions.addPerimeter(
             targetStorey.id,
             boundary,
             wallAssemblyId,
             thickness,
-            exportedPerimeter.baseRingBeamAssemblyId as RingBeamAssemblyId | undefined,
-            exportedPerimeter.topRingBeamAssemblyId as RingBeamAssemblyId | undefined,
+            undefined, // No default base ring beam
+            undefined, // No default top ring beam
             exportedPerimeter.referenceSide ?? 'inside'
           )
 
@@ -364,6 +367,18 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
               wallId,
               exportedWall.wallAssemblyId as WallAssemblyId
             )
+
+            // Ring beam configuration with backward compatibility
+            // Try wall-level first (new format), fall back to perimeter-level (old format)
+            const baseRingBeam = exportedWall.baseRingBeamAssemblyId ?? exportedPerimeter.baseRingBeamAssemblyId
+            const topRingBeam = exportedWall.topRingBeamAssemblyId ?? exportedPerimeter.topRingBeamAssemblyId
+
+            if (baseRingBeam) {
+              modelActions.setWallBaseRingBeam(perimeter.id, wallId, baseRingBeam as RingBeamAssemblyId)
+            }
+            if (topRingBeam) {
+              modelActions.setWallTopRingBeam(perimeter.id, wallId, topRingBeam as RingBeamAssemblyId)
+            }
 
             const wallAssembly = getConfigActions().getWallAssemblyById(exportedWall.wallAssemblyId as WallAssemblyId)
 

@@ -204,9 +204,16 @@ describe('ProjectImportExportService Integration', () => {
           expect(importedPoint[1]).toBeCloseTo(originalPoint[1], 5)
         }
 
-        // Compare perimeter ring beam settings
-        expect(importedPerimeter.baseRingBeamAssemblyId).toBe(originalPerimeter.baseRingBeamAssemblyId)
-        expect(importedPerimeter.topRingBeamAssemblyId).toBe(originalPerimeter.topRingBeamAssemblyId)
+        // Ring beams are now on walls, not perimeters
+        // Compare wall ring beam settings
+        for (let k = 0; k < originalPerimeter.walls.length; k++) {
+          expect(importedPerimeter.walls[k].baseRingBeamAssemblyId).toBe(
+            originalPerimeter.walls[k].baseRingBeamAssemblyId
+          )
+          expect(importedPerimeter.walls[k].topRingBeamAssemblyId).toBe(
+            originalPerimeter.walls[k].topRingBeamAssemblyId
+          )
+        }
 
         // Compare corners (excluding IDs)
         expect(importedPerimeter.corners).toHaveLength(originalPerimeter.corners.length)

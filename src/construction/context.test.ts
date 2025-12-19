@@ -93,9 +93,7 @@ describe('computePerimeterConstructionPolygon', () => {
       referenceSide: 'inside',
       referencePolygon: insidePoints.map(point => copyVec2(point)),
       walls,
-      corners,
-      baseRingBeamAssemblyId: undefined,
-      topRingBeamAssemblyId: undefined
+      corners
     }
 
     const outsideThicknessByAssembly = new Map<WallAssemblyId, number>()

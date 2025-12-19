@@ -66,10 +66,6 @@ export interface Perimeter {
   // Per-side wall data
   walls: PerimeterWall[] // walls[i] goes from corners[i].insidePoint -> corners[(i + 1) % corners.length].insidePoint
   corners: PerimeterCorner[]
-
-  // Ring beam configuration
-  baseRingBeamAssemblyId?: RingBeamAssemblyId
-  topRingBeamAssemblyId?: RingBeamAssemblyId
 }
 
 export interface PerimeterWall {
@@ -78,6 +74,10 @@ export interface PerimeterWall {
   wallAssemblyId: WallAssemblyId
 
   openings: Opening[]
+
+  // Ring beam configuration
+  baseRingBeamAssemblyId?: RingBeamAssemblyId
+  topRingBeamAssemblyId?: RingBeamAssemblyId
 
   // Geometry, computed from the points automatically
   insideLength: Length

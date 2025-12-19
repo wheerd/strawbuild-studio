@@ -249,9 +249,14 @@ describe('StoreyManagementService', () => {
           { insidePoint: newVec2(10, 10) },
           { insidePoint: newVec2(0, 10) }
         ],
-        walls: [{ wallAssemblyId: 'assembly-1' as any, thickness: 400 }],
-        baseRingBeamAssemblyId: 'base-assembly' as any,
-        topRingBeamAssemblyId: 'top-assembly' as any
+        walls: [
+          {
+            wallAssemblyId: 'assembly-1' as any,
+            thickness: 400,
+            baseRingBeamAssemblyId: 'base-assembly' as any,
+            topRingBeamAssemblyId: 'top-assembly' as any
+          }
+        ]
       }
 
       mockActions.getStoreyById.mockReturnValue(sourceStorey)

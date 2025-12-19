@@ -3,10 +3,11 @@ import * as Label from '@radix-ui/react-label'
 import { Callout, Card, DataList, Flex, Grid, Heading, IconButton, Separator, Text } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 
-import type { PerimeterId, PerimeterWallId, WallAssemblyId } from '@/building/model/ids'
+import type { PerimeterId, PerimeterWallId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import { useModelActions, usePerimeterById } from '@/building/store'
 import { BACK_VIEW, FRONT_VIEW, TOP_VIEW } from '@/construction/components/ConstructionPlan'
 import { ConstructionPlanModal } from '@/construction/components/ConstructionPlanModal'
+import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import { useWallAssemblyById } from '@/construction/config/store'
 import { constructWall } from '@/construction/walls'
@@ -29,6 +30,10 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
   const {
     updatePerimeterWallThickness: updateOuterWallThickness,
     updatePerimeterWallAssembly: updateOuterWallAssembly,
+    setWallBaseRingBeam,
+    setWallTopRingBeam,
+    removeWallBaseRingBeam,
+    removeWallTopRingBeam,
     removePerimeterWall
   } = useModelActions()
 
@@ -107,50 +112,92 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
   return (
     <Flex direction="column" gap="4">
       {/* Basic Properties */}
-      <Flex direction="column" gap="3">
+      <Grid columns="auto 1fr" gap="3">
         {/* Wall Assembly */}
-        <Flex align="center" justify="between" gap="3">
-          <Flex align="center" gap="1">
-            <Label.Root>
-              <Text size="1" weight="medium" color="gray">
-                Wall Assembly
-              </Text>
-            </Label.Root>
-            <MeasurementInfo highlightedAssembly="wallAssembly" />
-          </Flex>
-          <WallAssemblySelectWithEdit
-            value={wall.wallAssemblyId}
-            onValueChange={(value: WallAssemblyId) => {
-              updateOuterWallAssembly(perimeterId, wallId, value)
-            }}
-            placeholder="Select wall assembly"
-            size="1"
-          />
+        <Flex align="center" gap="1">
+          <Label.Root>
+            <Text size="1" weight="medium" color="gray">
+              Wall Assembly
+            </Text>
+          </Label.Root>
+          <MeasurementInfo highlightedAssembly="wallAssembly" />
         </Flex>
+        <WallAssemblySelectWithEdit
+          value={wall.wallAssemblyId}
+          onValueChange={(value: WallAssemblyId) => {
+            updateOuterWallAssembly(perimeterId, wallId, value)
+          }}
+          placeholder="Select wall assembly"
+          size="1"
+        />
 
         {/* Thickness Input */}
-        <Flex align="center" justify="between" gap="3">
-          <Flex align="center" gap="1">
-            <Label.Root htmlFor="wall-thickness">
-              <Text size="1" weight="medium" color="gray">
-                Thickness
-              </Text>
-            </Label.Root>
-            <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
-          </Flex>
-          <LengthField
-            id="perimeter-thickness"
-            value={wall.thickness}
-            onCommit={value => updateOuterWallThickness(perimeterId, wallId, value)}
-            min={50}
-            max={1500}
-            step={10}
-            size="1"
-            unit="cm"
-            style={{ width: '5rem' }}
-          />
+        <Flex align="center" gap="1">
+          <Label.Root htmlFor="wall-thickness">
+            <Text size="1" weight="medium" color="gray">
+              Thickness
+            </Text>
+          </Label.Root>
+          <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
         </Flex>
-      </Flex>
+        <LengthField
+          id="perimeter-thickness"
+          value={wall.thickness}
+          onCommit={value => updateOuterWallThickness(perimeterId, wallId, value)}
+          min={50}
+          max={1500}
+          step={10}
+          size="1"
+          unit="cm"
+          style={{ width: '5rem' }}
+        />
+
+        {/* Base Ring Beam */}
+        <Label.Root>
+          <Flex align="center" gap="1">
+            <Text size="1" weight="medium" color="gray">
+              Base Plate
+            </Text>
+            <MeasurementInfo highlightedPart="basePlate" />
+          </Flex>
+        </Label.Root>
+        <RingBeamAssemblySelectWithEdit
+          value={wall.baseRingBeamAssemblyId}
+          onValueChange={(value: RingBeamAssemblyId | undefined) => {
+            if (value) {
+              setWallBaseRingBeam(perimeterId, wallId, value)
+            } else {
+              removeWallBaseRingBeam(perimeterId, wallId)
+            }
+          }}
+          placeholder="None"
+          size="1"
+          allowNone
+        />
+
+        {/* Top Ring Beam */}
+        <Label.Root>
+          <Flex align="center" gap="1">
+            <Text size="1" weight="medium" color="gray">
+              Top Plate
+            </Text>
+            <MeasurementInfo highlightedPart="topPlate" />
+          </Flex>
+        </Label.Root>
+        <RingBeamAssemblySelectWithEdit
+          value={wall.topRingBeamAssemblyId}
+          onValueChange={(value: RingBeamAssemblyId | undefined) => {
+            if (value) {
+              setWallTopRingBeam(perimeterId, wallId, value)
+            } else {
+              removeWallTopRingBeam(perimeterId, wallId)
+            }
+          }}
+          placeholder="None"
+          size="1"
+          allowNone
+        />
+      </Grid>
 
       <Separator size="4" />
 
