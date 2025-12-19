@@ -6,7 +6,7 @@ import { BaseModal } from '@/shared/components/BaseModal'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 import { CanvasThemeProvider } from '@/shared/theme/CanvasThemeContext'
 
-import { OpacityControlProvider } from './context/OpacityControlContext'
+import { TagOpacityProvider } from './context/TagOpacityContext'
 import { acquireGeometryCache, prewarmGeometryCache, releaseGeometryCache } from './utils/geometryCache'
 import { acquireMaterialCache, releaseMaterialCache } from './utils/materialCache'
 
@@ -95,7 +95,7 @@ export function ConstructionViewer3DModal({
                 </div>
               }
             >
-              <OpacityControlProvider>
+              <TagOpacityProvider>
                 <CanvasThemeProvider>
                   <ConstructionViewer3DContent
                     modelPromise={modelPromise}
@@ -103,7 +103,7 @@ export function ConstructionViewer3DModal({
                     isOpen={isOpen}
                   />
                 </CanvasThemeProvider>
-              </OpacityControlProvider>
+              </TagOpacityProvider>
             </Suspense>
           ) : null}
         </div>

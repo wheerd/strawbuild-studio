@@ -10,8 +10,8 @@ import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 import ConstructionElement3D from './components/ConstructionElement3D'
 import ConstructionGroup3D from './components/ConstructionGroup3D'
 import ExportButton, { type ExportFormat } from './components/ExportButton'
-import OpacityControlButton from './components/OpacityControlButton'
 import SceneExporter from './components/SceneExporter'
+import { TagOpacityMenu } from './components/TagOpacityMenu'
 
 interface ConstructionViewer3DProps {
   model: ConstructionModel
@@ -95,14 +95,8 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
 
       <Box position="absolute" top="3" left="3" style={{ zIndex: 10 }}>
         <Card size="1" variant="surface" className="shadow-md">
-          <Flex direction="column" align="center" gap="2" m="-2" p="2">
-            <Flex direction="column" gap="1">
-              <OpacityControlButton category="straw" label="Straw" />
-              <OpacityControlButton category="wall-layer" label="Wall Layers" />
-              <OpacityControlButton category="floor-layer" label="Floor Layers" />
-              <OpacityControlButton category="roof-layer" label="Roof Layers" />
-              <OpacityControlButton category="roof-side" label="Roof" />
-            </Flex>
+          <Flex direction="column" align="center" gap="2" m="-2" p="0">
+            <TagOpacityMenu model={model} />
           </Flex>
         </Card>
       </Box>
