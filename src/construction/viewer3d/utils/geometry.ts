@@ -35,7 +35,6 @@ export const matAppToThree = transformFromValues(
 
 export const toThreeTransform = (t: Transform) =>
   useMemo(() => {
-    // const threeSrc = composeTransform(t, matAppToThree)
     const threeMat = new Matrix4()
     threeMat.fromArray(t)
     return decompose(threeMat)

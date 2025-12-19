@@ -207,7 +207,7 @@ export function transformModel(model: ConstructionModel, t: Transform, tags?: Ta
 
 function transformArea(a: HighlightedArea, t: Transform): HighlightedArea {
   if (a.type === 'cuboid') {
-    const composedTransform = composeTransform(a.transform, t)
+    const composedTransform = composeTransform(t, a.transform)
     return { ...a, transform: composedTransform, bounds: transformBounds(a.bounds, t) }
   }
   if (a.type === 'polygon') {

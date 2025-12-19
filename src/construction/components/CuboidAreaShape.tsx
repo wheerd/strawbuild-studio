@@ -2,6 +2,7 @@ import { useId } from 'react'
 
 import { type Projection } from '@/construction/geometry'
 import { getVisibleFacesInViewSpace } from '@/construction/manifold/faces'
+import { asManifoldTransform } from '@/construction/manifoldUtils'
 import type { HighlightedCuboid } from '@/construction/model'
 import { Bounds2D, type Vec2, newVec2 } from '@/shared/geometry'
 import { getManifoldModule } from '@/shared/geometry/manifoldInstance'
@@ -20,10 +21,7 @@ function polygonToSvgPath(points: Vec2[]) {
 export function CuboidAreaShape({ cuboid, projection }: CuboidAreaShapeProps): React.JSX.Element | null {
   const cuboidId = useId()
   const [w, h, d] = cuboid.size
-  const [m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15] = cuboid.transform
-  const manifold = getManifoldModule()
-    .Manifold.cube([w, h, d])
-    .transform([m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15])
+  const manifold = getManifoldModule().Manifold.cube([w, h, d]).transform(asManifoldTransform(cuboid.transform))
   const faces2D = getVisibleFacesInViewSpace(manifold, projection, true)
     .map(f => f.outer.points.map(p => newVec2(p[0], p[1])))
     .filter(f => !Bounds2D.fromPoints(f).isEmpty)
