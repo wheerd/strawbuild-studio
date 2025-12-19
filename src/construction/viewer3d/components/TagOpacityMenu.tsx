@@ -142,8 +142,17 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
               </DropdownMenu.SubTrigger>
               <DropdownMenu.SubContent>
                 {/* Category-wide opacity cycle */}
-                <DropdownMenu.Item onClick={() => cycleTagOrCategoryOpacity(categoryId)}>
-                  <Flex align="center" justify="between" width="100%" gap="2">
+                <DropdownMenu.Item onSelect={e => e.preventDefault()}>
+                  <Flex
+                    align="center"
+                    justify="between"
+                    width="100%"
+                    gap="2"
+                    onClick={e => {
+                      e.stopPropagation()
+                      cycleTagOrCategoryOpacity(categoryId)
+                    }}
+                  >
                     <Text size="1" weight="bold">
                       {getOpacityLabel(categoryOpacity)} Category
                     </Text>
@@ -155,8 +164,17 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
                 {tags.map(tag => {
                   const tagOpacity = getTagOrCategoryOpacity(tag.id)
                   return (
-                    <DropdownMenu.Item key={tag.id} onClick={() => cycleTagOrCategoryOpacity(tag.id)}>
-                      <Flex align="center" justify="between" width="100%" gap="2">
+                    <DropdownMenu.Item key={tag.id} onSelect={e => e.preventDefault()}>
+                      <Flex
+                        align="center"
+                        justify="between"
+                        width="100%"
+                        gap="2"
+                        onClick={e => {
+                          e.stopPropagation()
+                          cycleTagOrCategoryOpacity(tag.id)
+                        }}
+                      >
                         <Text size="1">{tag.label}</Text>
                         {renderOpacityIcon(tagOpacity)}
                       </Flex>

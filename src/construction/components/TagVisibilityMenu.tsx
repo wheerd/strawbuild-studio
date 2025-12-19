@@ -128,8 +128,17 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
               </DropdownMenu.SubTrigger>
               <DropdownMenu.SubContent>
                 {/* Category-wide toggle */}
-                <DropdownMenu.Item onClick={() => toggleTagOrCategory(categoryId)}>
-                  <Flex align="center" justify="between" width="100%" gap="2">
+                <DropdownMenu.Item onSelect={e => e.preventDefault()}>
+                  <Flex
+                    align="center"
+                    justify="between"
+                    width="100%"
+                    gap="2"
+                    onClick={e => {
+                      e.stopPropagation()
+                      toggleTagOrCategory(categoryId)
+                    }}
+                  >
                     <Text size="1" weight="bold">
                       {isTagOrCategoryVisible(categoryId) ? 'Hide' : 'Show'} Category
                     </Text>
@@ -139,8 +148,17 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
                 <DropdownMenu.Separator />
                 {/* Individual tag toggles */}
                 {tags.map(tag => (
-                  <DropdownMenu.Item key={tag.id} onClick={() => toggleTagOrCategory(tag.id)}>
-                    <Flex align="center" justify="between" width="100%" gap="2">
+                  <DropdownMenu.Item key={tag.id} onSelect={e => e.preventDefault()}>
+                    <Flex
+                      align="center"
+                      justify="between"
+                      width="100%"
+                      gap="2"
+                      onClick={e => {
+                        e.stopPropagation()
+                        toggleTagOrCategory(tag.id)
+                      }}
+                    >
                       <Text size="1">{tag.label}</Text>
                       {isTagOrCategoryVisible(tag.id) ? <EyeOpenIcon /> : <EyeClosedIcon />}
                     </Flex>
