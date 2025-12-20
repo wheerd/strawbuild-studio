@@ -150,7 +150,7 @@ export abstract class BaseRingBeamAssembly<T extends RingBeamConfigBase> impleme
     let closestLine: Line2D | null = null
     let minDistance = Infinity
     if (debug) console.log('lines', referencePoint, dir, perpDir)
-    for (let edge of edges) {
+    for (const edge of edges) {
       const edgeDir = direction(edge.start, edge.end)
       if (debug) console.log('  parallel', edgeDir, isParallel(edgeDir, dir))
       if (isParallel(edgeDir, dir)) {

@@ -15,6 +15,40 @@ const POSITION_EPSILON = 0.0001
  */
 export type WallTopOffsets = readonly Vec2[] | undefined
 
+export function getRoofHeightLineForLines(
+  storeyId: StoreyId,
+  lines: LineSegment2D[],
+  ceilingBottomOffset: Length,
+  perimeterContexts: PerimeterConstructionContext[]
+): HeightLine {
+  const { getRoofsByStorey } = getModelActions()
+  const { getRoofAssemblyById } = getConfigActions()
+
+  const heightLines: HeightLine[] = []
+  const roofs = getRoofsByStorey(storeyId)
+  for (const line of lines) {
+    const heightLine: HeightLine = []
+
+    // Query each roof
+    for (const roof of roofs) {
+      const roofAssembly = getRoofAssemblyById(roof.assemblyId)
+      if (!roofAssembly) continue
+
+      const roofImpl = resolveRoofAssembly(roofAssembly)
+      const roofLine = roofImpl.getBottomOffsets(roof, line, perimeterContexts)
+      heightLine.push(...roofLine)
+    }
+
+    heightLine.sort((a, b) => a.position - b.position)
+
+    const filled = fillNullRegions(heightLine, ceilingBottomOffset)
+
+    heightLines.push(filled)
+  }
+
+  return mergeHeightLines(...heightLines)
+}
+
 /**
  * Query roofs for height line along any line segment
  * Generalized from getRoofHeightLineForLayer in walls/layers.ts
@@ -163,6 +197,41 @@ export function fillNullRegions(heightLine: HeightLine, ceilingOffset: Length): 
   }
 
   return result
+}
+
+export function mergeHeightLines(...lines: HeightLine[]): HeightLine {
+  if (lines.length === 0 || lines.every(l => l.length === 0)) {
+    return []
+  }
+  const allPositions = lines.flatMap(l => l.map(x => x.position))
+  const uniquePositions = new Set(allPositions)
+  const sortedPositions = Array.from(uniquePositions).sort((a, b) => a - b)
+
+  const merged: HeightLine = []
+  for (const pos of sortedPositions) {
+    const offsets = lines.map(l => getOffsetAt(l, pos))
+    const beforeOffsets = offsets.map(o => o[0])
+    const afterOffsets = offsets.map(o => o[1])
+
+    const beforeOffset = Math.min(...beforeOffsets)
+    const afterOffset = Math.min(...afterOffsets)
+
+    if (beforeOffset !== afterOffset) {
+      merged.push({
+        position: pos,
+        offsetBefore: beforeOffset,
+        offsetAfter: afterOffset
+      } as HeightJumpItem)
+    } else {
+      merged.push({
+        position: pos,
+        offset: beforeOffset,
+        nullAfter: false
+      })
+    }
+  }
+
+  return merged
 }
 
 /**
