@@ -38,6 +38,7 @@ import type {
   SimpleOpeningConfig
 } from '@/construction/openings/types'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
+import { useDebouncedInput } from '@/shared/hooks/useDebouncedInput'
 
 import { OpeningAssemblySelect } from './OpeningAssemblySelect'
 
@@ -50,14 +51,8 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
   const wallAssemblies = useWallAssemblies()
   const perimeters = usePerimeters()
   const storeys = useStoreysOrderedByLevel()
-  const {
-    addOpeningAssembly,
-    updateOpeningAssemblyName,
-    updateOpeningAssemblyConfig,
-    removeOpeningAssembly,
-    duplicateOpeningAssembly,
-    setDefaultOpeningAssembly
-  } = useConfigActions()
+  const { addOpeningAssembly, removeOpeningAssembly, duplicateOpeningAssembly, setDefaultOpeningAssembly } =
+    useConfigActions()
 
   const defaultId = useDefaultOpeningAssemblyId()
 
@@ -152,22 +147,6 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
     }
   }, [selectedAssembly, selectedAssemblyId, allAssemblies, removeOpeningAssembly, usage.isUsed])
 
-  const handleUpdateName = useCallback(
-    (name: string) => {
-      if (!selectedAssembly) return
-      updateOpeningAssemblyName(selectedAssembly.id, name)
-    },
-    [selectedAssembly, updateOpeningAssemblyName]
-  )
-
-  const handleUpdateConfig = useCallback(
-    (updates: Partial<OpeningConfig>) => {
-      if (!selectedAssembly) return
-      updateOpeningAssemblyConfig(selectedAssembly.id as OpeningAssemblyId, updates)
-    },
-    [selectedAssembly, updateOpeningAssemblyConfig]
-  )
-
   if (!selectedAssembly) {
     return (
       <Flex direction="column" gap="4" width="100%">
@@ -192,8 +171,6 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
       </Flex>
     )
   }
-
-  const config = selectedAssembly
 
   return (
     <Flex direction="column" gap="4" width="100%">
@@ -255,110 +232,131 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
       </Flex>
 
       {/* Form */}
-      {selectedAssembly && (
-        <Flex
-          direction="column"
-          gap="3"
-          p="3"
-          style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
-        >
-          <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
-            <Grid columns="auto 1fr" gapX="2" align="center">
-              <Label.Root>
-                <Text size="2" weight="medium" color="gray">
-                  Name
-                </Text>
-              </Label.Root>
-              <TextField.Root
-                value={selectedAssembly.name}
-                onChange={e => handleUpdateName(e.target.value)}
-                placeholder="Opening assembly name"
-                size="2"
-              />
-            </Grid>
+      {selectedAssembly && <ConfigForm assembly={selectedAssembly} />}
 
-            <Flex gap="2" align="center">
-              <Label.Root>
-                <Text size="2" weight="medium" color="gray">
-                  Type
-                </Text>
-              </Label.Root>
-              <Text size="2" color="gray">
-                {config.type === 'simple'
-                  ? 'Standard Opening'
-                  : config.type === 'post'
-                    ? 'Opening with Posts'
-                    : 'Empty Opening'}
-              </Text>
-            </Flex>
-          </Grid>
+      <Separator size="4" />
 
-          <Separator size="4" />
+      <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            Default Opening Assembly
+          </Text>
+        </Label.Root>
+        <OpeningAssemblySelect
+          value={defaultId}
+          onValueChange={assemblyId => {
+            if (assemblyId) setDefaultOpeningAssembly(assemblyId)
+          }}
+          placeholder="Select default..."
+          size="2"
+        />
+      </Grid>
 
-          {/* Configuration Fields */}
-          {config.type === 'simple' ? (
-            <SimpleOpeningContent config={config} update={handleUpdateConfig} />
-          ) : config.type === 'post' ? (
-            <PostOpeningContent config={config} update={handleUpdateConfig} />
-          ) : (
-            <>
-              <Heading size="2">Empty Opening</Heading>
-              <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
-                <Label.Root>
-                  <Text size="2" weight="medium" color="gray">
-                    Padding
-                  </Text>
-                </Label.Root>
-                <LengthField value={config.padding} onChange={padding => handleUpdateConfig({ padding })} unit="mm" />
-              </Grid>
-            </>
-          )}
+      {usage.isUsed && (
+        <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
+          <Label.Root>
+            <Text size="2" weight="medium" color="gray">
+              Used By:
+            </Text>
+          </Label.Root>
+          <Flex gap="1" wrap="wrap">
+            {usage.usedAsGlobalDefault && (
+              <Badge size="2" variant="soft">
+                Global Default
+              </Badge>
+            )}
+            {usage.usedByWallAssemblies.map((use, index) => (
+              <Badge key={index} size="2" variant="soft">
+                {use}
+              </Badge>
+            ))}
+            {usage.usedByOpenings.map((use, index) => (
+              <Badge key={`opening-${index}`} size="2" variant="soft">
+                {use}
+              </Badge>
+            ))}
+          </Flex>
+        </Grid>
+      )}
+    </Flex>
+  )
+}
 
-          <Separator size="4" />
+function ConfigForm({ assembly }: { assembly: OpeningConfig & { id: string; name: string } }): React.JSX.Element {
+  const { updateOpeningAssemblyName, updateOpeningAssemblyConfig } = useConfigActions()
 
+  const nameInput = useDebouncedInput(
+    assembly.name,
+    (name: string) => updateOpeningAssemblyName(assembly.id as OpeningAssemblyId, name),
+    {
+      debounceMs: 1000
+    }
+  )
+
+  const handleUpdateConfig = useCallback(
+    (updates: Partial<OpeningConfig>) => updateOpeningAssemblyConfig(assembly.id as OpeningAssemblyId, updates),
+    [assembly.id, updateOpeningAssemblyConfig]
+  )
+
+  return (
+    <Flex
+      direction="column"
+      gap="3"
+      p="3"
+      style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
+    >
+      <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
+        <Grid columns="auto 1fr" gapX="2" align="center">
+          <Label.Root>
+            <Text size="2" weight="medium" color="gray">
+              Name
+            </Text>
+          </Label.Root>
+          <TextField.Root
+            value={nameInput.value}
+            onChange={e => nameInput.handleChange(e.target.value)}
+            onBlur={nameInput.handleBlur}
+            onKeyDown={nameInput.handleKeyDown}
+            placeholder="Opening assembly name"
+            size="2"
+          />
+        </Grid>
+
+        <Flex gap="2" align="center">
+          <Label.Root>
+            <Text size="2" weight="medium" color="gray">
+              Type
+            </Text>
+          </Label.Root>
+          <Text size="2" color="gray">
+            {assembly.type === 'simple'
+              ? 'Standard Opening'
+              : assembly.type === 'post'
+                ? 'Opening with Posts'
+                : 'Empty Opening'}
+          </Text>
+        </Flex>
+      </Grid>
+
+      <Separator size="4" />
+
+      {/* Configuration Fields */}
+      {assembly.type === 'simple' ? (
+        <SimpleOpeningContent config={assembly} update={handleUpdateConfig} />
+      ) : assembly.type === 'post' ? (
+        <PostOpeningContent config={assembly} update={handleUpdateConfig} />
+      ) : (
+        <>
+          <Heading size="2">Empty Opening</Heading>
           <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Default Opening Assembly
+                Padding
               </Text>
             </Label.Root>
-            <OpeningAssemblySelect
-              value={defaultId}
-              onValueChange={assemblyId => {
-                if (assemblyId) setDefaultOpeningAssembly(assemblyId)
-              }}
-              placeholder="Select default..."
-              size="2"
-            />
+            <LengthField value={assembly.padding} onChange={padding => handleUpdateConfig({ padding })} unit="mm" />
           </Grid>
-
-          {usage.isUsed && (
-            <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
-              <Label.Root>
-                <Text size="2" weight="medium" color="gray">
-                  Used By:
-                </Text>
-              </Label.Root>
-              <Flex gap="1" wrap="wrap">
-                {usage.usedAsGlobalDefault && (
-                  <Badge size="2" variant="soft">
-                    Global Default
-                  </Badge>
-                )}
-                {usage.usedByWallAssemblies.map((use, index) => (
-                  <Badge key={index} size="2" variant="soft">
-                    {use}
-                  </Badge>
-                ))}
-                {usage.usedByOpenings.map((use, index) => (
-                  <Badge key={`opening-${index}`} size="2" variant="soft">
-                    {use}
-                  </Badge>
-                ))}
-              </Flex>
-            </Grid>
-          )}
-        </Flex>
+        </>
       )}
     </Flex>
   )

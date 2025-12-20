@@ -7,8 +7,8 @@ import type { RoofAssemblyType } from '@/construction/roofs/types'
 
 interface IconProps {
   className?: string
-  width?: number
-  height?: number
+  width?: number | string
+  height?: number | string
   style?: React.CSSProperties
 }
 
@@ -114,12 +114,44 @@ export function getPerimeterConfigTypeIcon(type: WallAssemblyConfig['type']) {
   }
 }
 
-export function getRingBeamTypeIcon(type: 'full' | 'double') {
+export function BrickIcon({ className, width = 15, height = 15, style }: IconProps): React.JSX.Element {
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox="0 0 15 15"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      style={style}
+    >
+      {/* Brick pattern - 3 rows of bricks with staggered layout */}
+      <rect x="2" y="2" width="4.5" height="2.5" stroke="currentColor" strokeWidth="0.5" />
+      <rect x="6.5" y="2" width="6.5" height="2.5" stroke="currentColor" strokeWidth="0.5" />
+
+      <rect x="2" y="4.5" width="6.5" height="2.5" stroke="currentColor" strokeWidth="0.5" />
+      <rect x="8.5" y="4.5" width="4.5" height="2.5" stroke="currentColor" strokeWidth="0.5" />
+
+      <rect x="2" y="7" width="4.5" height="2.5" stroke="currentColor" strokeWidth="0.5" />
+      <rect x="6.5" y="7" width="6.5" height="2.5" stroke="currentColor" strokeWidth="0.5" />
+
+      <rect x="2" y="9.5" width="6.5" height="2.5" stroke="currentColor" strokeWidth="0.5" />
+      <rect x="8.5" y="9.5" width="4.5" height="2.5" stroke="currentColor" strokeWidth="0.5" />
+
+      <rect x="2" y="12" width="4.5" height="2.5" stroke="currentColor" strokeWidth="0.5" />
+      <rect x="6.5" y="12" width="6.5" height="2.5" stroke="currentColor" strokeWidth="0.5" />
+    </svg>
+  )
+}
+
+export function getRingBeamTypeIcon(type: 'full' | 'double' | 'brick') {
   switch (type) {
     case 'full':
       return SquareIcon
     case 'double':
       return ViewVerticalIcon
+    case 'brick':
+      return BrickIcon
   }
 }
 

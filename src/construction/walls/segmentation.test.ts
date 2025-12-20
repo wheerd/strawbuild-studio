@@ -7,6 +7,7 @@ import { WallConstructionArea } from '@/construction/geometry'
 import { resolveOpeningAssembly, resolveOpeningConfig } from '@/construction/openings/resolver'
 import type { OpeningAssembly } from '@/construction/openings/types'
 import { aggregateResults, yieldElement } from '@/construction/results'
+import { resolveRingBeamAssembly } from '@/construction/ringBeams'
 import { createCuboid } from '@/construction/shapes'
 import {
   TAG_OPENING_SPACING,
@@ -54,11 +55,16 @@ vi.mock('@/construction/openings/resolver', () => ({
   resolveOpeningConfig: vi.fn()
 }))
 
+vi.mock('@/construction/ringBeams', () => ({
+  resolveRingBeamAssembly: vi.fn()
+}))
+
 const mockResolveOpeningAssembly = vi.mocked(resolveOpeningAssembly)
 const mockResolveOpeningConfig = vi.mocked(resolveOpeningConfig)
 const mockGetWallContext = vi.mocked(getWallContext)
 const mockCalculateWallCornerInfo = vi.mocked(calculateWallCornerInfo)
 const mockGetConfigActions = vi.mocked(getConfigActions)
+const mockResolveRingBeamAssembly = vi.mocked(resolveRingBeamAssembly)
 
 // Test data helpers
 function createMockWall(id: string, wallLength: Length, thickness: Length, openings: Opening[] = []): PerimeterWall {
@@ -227,6 +233,10 @@ describe('segmentedWallConstruction', () => {
 
     // Mock ring beam assemblies
     mockGetRingBeamAssemblyById.mockReturnValue({
+      id: 'ring-beam'
+    })
+    mockResolveRingBeamAssembly.mockReturnValue({
+      construct: vi.fn(),
       height: 60
     })
 
@@ -380,9 +390,9 @@ describe('segmentedWallConstruction', () => {
       const layers = createMockLayers()
 
       // Mock different ring beam heights
-      mockGetRingBeamAssemblyById
-        .mockReturnValueOnce({ height: 80 }) // base
-        .mockReturnValueOnce({ height: 100 }) // top
+      mockResolveRingBeamAssembly
+        .mockReturnValueOnce({ construct: vi.fn(), height: 80 }) // base
+        .mockReturnValueOnce({ construct: vi.fn(), height: 100 }) // top
 
       const results = [
         ...segmentedWallConstruction(

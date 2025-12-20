@@ -3,7 +3,6 @@ import { type ConstructionElement, createConstructionElement } from '@/construct
 import type { WallConstructionArea } from '@/construction/geometry'
 import { PolygonWithBoundingRect } from '@/construction/helpers'
 import { getMaterialsActions } from '@/construction/materials/store'
-import '@/construction/parts'
 import { type ConstructionResult, yieldElement, yieldError, yieldWarning } from '@/construction/results'
 import { createElementFromArea, createExtrudedPolygon } from '@/construction/shapes'
 import {

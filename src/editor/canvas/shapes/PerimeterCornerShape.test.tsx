@@ -4,7 +4,6 @@ import { describe, expect, it, vi } from 'vitest'
 import { createPerimeterCornerId, createPerimeterWallId } from '@/building/model/ids'
 import type { PerimeterCorner, PerimeterWall } from '@/building/model/model'
 import { type Vec2, ZERO_VEC2, newVec2 } from '@/shared/geometry'
-import '@/shared/geometry'
 
 import { PerimeterCornerShape } from './PerimeterCornerShape'
 

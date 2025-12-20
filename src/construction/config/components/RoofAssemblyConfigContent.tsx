@@ -27,6 +27,7 @@ import { resolveRoofAssembly } from '@/construction/roofs'
 import type { MonolithicRoofConfig, PurlinRoofConfig, RoofAssemblyType, RoofConfig } from '@/construction/roofs/types'
 import { RoofMeasurementInfo } from '@/editor/components/RoofMeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
+import { useDebouncedInput } from '@/shared/hooks/useDebouncedInput'
 import { formatLength } from '@/shared/utils/formatting'
 
 import { getRoofAssemblyTypeIcon } from './Icons'
@@ -489,11 +490,14 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
 
 interface ConfigFormProps {
   assembly: RoofAssemblyConfig
-  onUpdateName: (name: string) => void
 }
 
-function ConfigForm({ assembly, onUpdateName }: ConfigFormProps): React.JSX.Element {
-  const { updateRoofAssemblyConfig } = useConfigActions()
+function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
+  const { updateRoofAssemblyName, updateRoofAssemblyConfig } = useConfigActions()
+
+  const nameInput = useDebouncedInput(assembly.name, (name: string) => updateRoofAssemblyName(assembly.id, name), {
+    debounceMs: 1000
+  })
 
   const updateConfig = useCallback(
     (updates: Partial<RoofConfig>) => updateRoofAssemblyConfig(assembly.id, updates),
@@ -521,8 +525,10 @@ function ConfigForm({ assembly, onUpdateName }: ConfigFormProps): React.JSX.Elem
             </Text>
           </Label.Root>
           <TextField.Root
-            value={assembly.name}
-            onChange={e => onUpdateName(e.target.value)}
+            value={nameInput.value}
+            onChange={e => nameInput.handleChange(e.target.value)}
+            onBlur={nameInput.handleBlur}
+            onKeyDown={nameInput.handleKeyDown}
             placeholder="Assembly name"
             size="2"
           />
@@ -583,8 +589,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
   const roofAssemblies = useRoofAssemblies()
   const roofs = useRoofs()
   const storeys = useStoreysOrderedByLevel()
-  const { addRoofAssembly, updateRoofAssemblyName, duplicateRoofAssembly, removeRoofAssembly, setDefaultRoofAssembly } =
-    useConfigActions()
+  const { addRoofAssembly, duplicateRoofAssembly, removeRoofAssembly, setDefaultRoofAssembly } = useConfigActions()
 
   const defaultAssemblyId = useDefaultRoofAssemblyId()
 
@@ -684,14 +689,6 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
     }
   }, [selectedAssembly, selectedAssemblyId, roofAssemblies, removeRoofAssembly, usage.isUsed])
 
-  const handleUpdateName = useCallback(
-    (name: string) => {
-      if (!selectedAssembly) return
-      updateRoofAssemblyName(selectedAssembly.id, name)
-    },
-    [selectedAssembly, updateRoofAssemblyName]
-  )
-
   return (
     <Flex direction="column" gap="4" style={{ width: '100%' }}>
       {/* Selector + Actions */}
@@ -784,7 +781,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
       </Flex>
 
       {/* Form */}
-      {selectedAssembly && <ConfigForm assembly={selectedAssembly} onUpdateName={handleUpdateName} />}
+      {selectedAssembly && <ConfigForm assembly={selectedAssembly} />}
 
       {!selectedAssembly && roofAssemblies.length === 0 && (
         <Flex justify="center" align="center" p="5">

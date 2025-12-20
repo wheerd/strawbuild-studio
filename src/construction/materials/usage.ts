@@ -22,8 +22,37 @@ export function getMaterialUsage(
   // Check ring beam assemblies
 
   ringBeamAssemblies.forEach(assembly => {
-    if (assembly.material === materialId) {
-      usedByConfigs.push(`Ring Beam: ${assembly.name}`)
+    const configUsages: string[] = []
+
+    switch (assembly.type) {
+      case 'full':
+      case 'double':
+        if (assembly.material === materialId) {
+          configUsages.push('beam')
+        }
+        if (assembly.type === 'double' && assembly.infillMaterial === materialId) {
+          configUsages.push('infill')
+        }
+        break
+
+      case 'brick':
+        if (assembly.wallMaterial === materialId) {
+          configUsages.push('wall')
+        }
+        if (assembly.beamMaterial === materialId) {
+          configUsages.push('beam')
+        }
+        if (assembly.waterproofingMaterial === materialId) {
+          configUsages.push('waterproofing')
+        }
+        if (assembly.insulationMaterial === materialId) {
+          configUsages.push('insulation')
+        }
+        break
+    }
+
+    if (configUsages.length > 0) {
+      usedByConfigs.push(`Ring Beam: ${assembly.name} (${configUsages.join(', ')})`)
     }
   })
 

@@ -48,3 +48,6 @@ export const direction = (source: Vec2, target: Vec2): Vec2 => normVec2(subVec2(
 export const perpendicular = (vector: Vec2): Vec2 => perpendicularCCW(vector) // Default to counter-clockwise
 export const perpendicularCCW = (vector: Vec2): Vec2 => newVec2(-vector[1], vector[0]) // Rotate 90° counterclockwise
 export const perpendicularCW = (vector: Vec2): Vec2 => newVec2(vector[1], -vector[0]) // Rotate 90° clockwise
+
+const DOT_EPS = 0.001
+export const isParallel = (a: Vec2, b: Vec2): boolean => 1 - dotAbsVec2(a, b) < DOT_EPS

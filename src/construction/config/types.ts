@@ -7,7 +7,7 @@ import type {
 } from '@/building/model'
 import type { FilledFloorConfig, JoistFloorConfig, MonolithicFloorConfig } from '@/construction/floors'
 import type { EmptyOpeningConfig, PostOpeningConfig, SimpleOpeningConfig } from '@/construction/openings/types'
-import type { DoubleRingBeamConfig, FullRingBeamConfig } from '@/construction/ringBeams'
+import type { BrickRingBeamConfig, DoubleRingBeamConfig, FullRingBeamConfig } from '@/construction/ringBeams'
 import type { MonolithicRoofConfig, PurlinRoofConfig } from '@/construction/roofs'
 import type {
   InfillWallConfig,
@@ -90,8 +90,12 @@ export interface RingBeamAssemblyIdPart {
 
 export type FullRingBeamAssemblyConfig = FullRingBeamConfig & RingBeamAssemblyIdPart
 export type DoubleRingBeamAssemblyConfig = DoubleRingBeamConfig & RingBeamAssemblyIdPart
+export type BrickRingBeamAssemblyConfig = BrickRingBeamConfig & RingBeamAssemblyIdPart
 
-export type RingBeamAssemblyConfig = FullRingBeamAssemblyConfig | DoubleRingBeamAssemblyConfig
+export type RingBeamAssemblyConfig =
+  | FullRingBeamAssemblyConfig
+  | DoubleRingBeamAssemblyConfig
+  | BrickRingBeamAssemblyConfig
 
 // Floors
 

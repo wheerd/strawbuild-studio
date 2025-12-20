@@ -122,12 +122,12 @@ describe('ConfigStore', () => {
       const defaultAssembly = assemblies[0]
       expect(defaultAssembly.name).toBe('Full 36x6cm')
       expect(defaultAssembly.type).toBe('full')
-      expect(defaultAssembly.height).toBe(60)
       if (defaultAssembly.type === 'full') {
+        expect(defaultAssembly.height).toBe(60)
         expect(defaultAssembly.width).toBe(360)
         expect(defaultAssembly.offsetFromEdge).toBe(30)
+        expect(defaultAssembly.material).toBeDefined()
       }
-      expect(defaultAssembly.material).toBeDefined()
     })
   })
 

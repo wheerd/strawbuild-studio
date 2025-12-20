@@ -8,6 +8,7 @@ import { FLOOR_ASSEMBLIES } from '@/construction/floors'
 import { WallConstructionArea } from '@/construction/geometry'
 import { resolveOpeningAssembly, resolveOpeningConfig } from '@/construction/openings/resolver'
 import { type ConstructionResult, yieldArea, yieldMeasurement } from '@/construction/results'
+import { resolveRingBeamAssembly } from '@/construction/ringBeams'
 import { resolveRoofAssembly } from '@/construction/roofs'
 import type { HeightLine } from '@/construction/roofs/types'
 import { getStoreyCeilingHeight } from '@/construction/storeyHeight'
@@ -277,9 +278,9 @@ export function* segmentedWallConstruction(
   const { getRingBeamAssemblyById } = getConfigActions()
   // Get ring beam assemblies for THIS specific wall
   const basePlateAssembly = wall.baseRingBeamAssemblyId ? getRingBeamAssemblyById(wall.baseRingBeamAssemblyId) : null
-  const basePlateHeight = basePlateAssembly?.height ?? 0
+  const basePlateHeight = basePlateAssembly ? resolveRingBeamAssembly(basePlateAssembly).height : 0
   const topPlateAssembly = wall.topRingBeamAssemblyId ? getRingBeamAssemblyById(wall.topRingBeamAssemblyId) : null
-  const topPlateHeight = topPlateAssembly?.height ?? 0
+  const topPlateHeight = topPlateAssembly ? resolveRingBeamAssembly(topPlateAssembly).height : 0
 
   const totalConstructionHeight =
     storeyContext.ceilingHeight + storeyContext.floorTopOffset + storeyContext.ceilingBottomOffset

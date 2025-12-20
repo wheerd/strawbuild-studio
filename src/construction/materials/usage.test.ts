@@ -38,7 +38,7 @@ describe('Material Usage Detection', () => {
       const usage = getMaterialUsage(wood.id, [ringBeamAssembly], [], [], defaultStrawMaterialId)
 
       expect(usage.isUsed).toBe(true)
-      expect(usage.usedByConfigs).toEqual(['Ring Beam: Test Ring Beam'])
+      expect(usage.usedByConfigs).toEqual(['Ring Beam: Test Ring Beam (beam)'])
     })
 
     it('detects wall assembly post materials', () => {
@@ -186,7 +186,7 @@ describe('Material Usage Detection', () => {
 
       expect(usage.isUsed).toBe(true)
       expect(usage.usedByConfigs).toHaveLength(2)
-      expect(usage.usedByConfigs).toContain('Ring Beam: Test Ring Beam')
+      expect(usage.usedByConfigs).toContain('Ring Beam: Test Ring Beam (beam)')
       expect(usage.usedByConfigs).toContain('Wall: Test Infill (posts)')
     })
   })

@@ -2,8 +2,12 @@ import { type StateCreator } from 'zustand'
 
 import type { RingBeamAssemblyId } from '@/building/model/ids'
 import { createRingBeamAssemblyId } from '@/building/model/ids'
-import type { FullRingBeamAssemblyConfig, RingBeamAssemblyConfig } from '@/construction/config/types'
-import { wood } from '@/construction/materials/material'
+import type {
+  BrickRingBeamAssemblyConfig,
+  FullRingBeamAssemblyConfig,
+  RingBeamAssemblyConfig
+} from '@/construction/config/types'
+import { bitumen, brick, cork, wood } from '@/construction/materials/material'
 import { type RingBeamConfig, validateRingBeamConfig } from '@/construction/ringBeams/types'
 
 export interface RingBeamAssembliesState {
@@ -52,6 +56,23 @@ const createDefaultRingBeamAssembly = (): FullRingBeamAssemblyConfig => ({
   offsetFromEdge: 30
 })
 
+// Default brick ring beam assembly
+const createDefaultBrickRingBeamAssembly = (): BrickRingBeamAssemblyConfig => ({
+  id: 'ringbeam_brick_default' as RingBeamAssemblyId,
+  name: 'Brick Ring Beam',
+  type: 'brick',
+  wallHeight: 300,
+  wallWidth: 250,
+  wallMaterial: brick.id,
+  beamThickness: 60,
+  beamWidth: 360,
+  beamMaterial: wood.id,
+  waterproofingThickness: 2,
+  waterproofingMaterial: bitumen.id,
+  insulationThickness: 100,
+  insulationMaterial: cork.id
+})
+
 export const createRingBeamAssembliesSlice: StateCreator<
   RingBeamAssembliesSlice,
   [['zustand/immer', never]],
@@ -60,10 +81,12 @@ export const createRingBeamAssembliesSlice: StateCreator<
 > = (set, get) => {
   // Initialize with default assemblies
   const defaultRingBeamAssembly = createDefaultRingBeamAssembly()
+  const defaultBrickRingBeamAssembly = createDefaultBrickRingBeamAssembly()
 
   return {
     ringBeamAssemblyConfigs: {
-      [defaultRingBeamAssembly.id]: defaultRingBeamAssembly
+      [defaultRingBeamAssembly.id]: defaultRingBeamAssembly,
+      [defaultBrickRingBeamAssembly.id]: defaultBrickRingBeamAssembly
     },
     defaultBaseRingBeamAssemblyId: defaultRingBeamAssembly.id,
     defaultTopRingBeamAssemblyId: defaultRingBeamAssembly.id,

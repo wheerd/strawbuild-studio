@@ -5,6 +5,7 @@ import { WallConstructionArea } from '@/construction/geometry'
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
 import { type ConstructionResult, aggregateResults, yieldElement } from '@/construction/results'
+import { resolveRingBeamAssembly } from '@/construction/ringBeams'
 import { createExtrudedPolygon } from '@/construction/shapes'
 import type { NonStrawbaleWallConfig, WallAssembly } from '@/construction/walls'
 import { calculateWallCornerInfo, getWallContext } from '@/construction/walls/corners/corners'
@@ -46,8 +47,8 @@ export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallCo
     const basePlateAssembly = wall.baseRingBeamAssemblyId ? getRingBeamAssemblyById(wall.baseRingBeamAssemblyId) : null
     const topPlateAssembly = wall.topRingBeamAssemblyId ? getRingBeamAssemblyById(wall.topRingBeamAssemblyId) : null
 
-    const basePlateHeight = basePlateAssembly?.height ?? 0
-    const topPlateHeight = topPlateAssembly?.height ?? 0
+    const basePlateHeight = basePlateAssembly ? resolveRingBeamAssembly(basePlateAssembly).height : 0
+    const topPlateHeight = topPlateAssembly ? resolveRingBeamAssembly(topPlateAssembly).height : 0
     const totalConstructionHeight =
       storeyContext.ceilingHeight + storeyContext.floorTopOffset + storeyContext.ceilingBottomOffset
     const ceilingOffset = storeyContext.storeyHeight - totalConstructionHeight

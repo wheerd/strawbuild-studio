@@ -214,6 +214,38 @@ export const osb: SheetMaterial = {
   density: 600
 }
 
+export const brick: DimensionalMaterial = {
+  id: 'material_aac_brick' as MaterialId,
+  name: 'AAC Brick',
+  type: 'dimensional',
+  color: '#b2b2af',
+  crossSections: [{ smallerLength: 24, biggerLength: 30 }],
+  lengths: [600],
+  density: 750
+}
+
+export const bitumen: SheetMaterial = {
+  id: 'material_bitumen' as MaterialId,
+  name: 'Bitumen Felt',
+  sizes: [{ smallerLength: 1000, biggerLength: 10000 }],
+  thicknesses: [1.2, 1.5, 1.8, 2.0, 3.0, 4.0],
+  sheetType: 'flexible',
+  type: 'sheet',
+  color: '#130f12',
+  density: 1000
+}
+
+export const cork: SheetMaterial = {
+  id: 'material_cork' as MaterialId,
+  name: 'Cork Insulation',
+  sizes: [{ smallerLength: 500, biggerLength: 1000 }],
+  thicknesses: [20],
+  sheetType: 'solid',
+  type: 'sheet',
+  color: '#6b5f4e',
+  density: 110
+}
+
 export const DEFAULT_MATERIALS: Record<MaterialId, Material> = {
   [wood.id]: wood,
   [woodPlanking.id]: woodPlanking,
@@ -229,5 +261,8 @@ export const DEFAULT_MATERIALS: Record<MaterialId, Material> = {
   [limePlasterFine.id]: limePlasterFine,
   [cementScreed.id]: cementScreed,
   [impactSoundInsulation.id]: impactSoundInsulation,
-  [osb.id]: osb
+  [osb.id]: osb,
+  [brick.id]: brick,
+  [bitumen.id]: bitumen,
+  [cork.id]: cork
 }
