@@ -39,7 +39,6 @@ import type { RawMeasurement } from './measurements'
 import { type ConstructionModel, mergeModels, transformModel } from './model'
 import { resolveRingBeamAssembly } from './ringBeams'
 import { constructRoof } from './roof'
-import './storey'
 import {
   TAG_BASE_PLATE,
   TAG_TOP_PLATE,
