@@ -26,7 +26,7 @@ import {
 } from '@/construction/config/store'
 import { getRingBeamAssemblyUsage } from '@/construction/config/usage'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
-import type { MaterialId } from '@/construction/materials/material'
+import { bitumen, brick, cork, wood, woodwool } from '@/construction/materials/material'
 import type { RingBeamConfig } from '@/construction/ringBeams'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
@@ -75,14 +75,12 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
 
   const handleAddNew = useCallback(
     (type: RingBeamType) => {
-      const defaultMaterial = '' as MaterialId
-
       let config: RingBeamConfig
       if (type === 'full') {
         config = {
           type: 'full',
           height: 60,
-          material: defaultMaterial,
+          material: wood.id,
           width: 360,
           offsetFromEdge: 0
         }
@@ -90,9 +88,9 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
         config = {
           type: 'double',
           height: 60,
-          material: defaultMaterial,
+          material: wood.id,
           thickness: 120,
-          infillMaterial: defaultMaterial,
+          infillMaterial: woodwool.id,
           offsetFromEdge: 0,
           spacing: 100
         }
@@ -101,13 +99,14 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
           type: 'brick',
           wallHeight: 300,
           wallWidth: 250,
-          wallMaterial: 'material_aac_brick' as MaterialId,
+          wallMaterial: brick.id,
           beamThickness: 60,
           beamWidth: 360,
-          beamMaterial: 'material_wood' as MaterialId,
+          beamMaterial: wood.id,
           waterproofingThickness: 2,
-          waterproofingMaterial: 'material_bitumen' as MaterialId,
-          insulationMaterial: 'material_cork' as MaterialId
+          waterproofingMaterial: bitumen.id,
+          insulationThickness: 100,
+          insulationMaterial: cork.id
         }
       }
 
@@ -509,12 +508,6 @@ function BrickRingBeamFields({
 }) {
   return (
     <>
-      <Callout.Root color="amber">
-        <Callout.Text>
-          Brick ring beam construction is not yet supported. Configuration is available for planning purposes.
-        </Callout.Text>
-      </Callout.Root>
-
       <Separator size="4" />
 
       <Heading size="2">Stem Wall</Heading>
@@ -560,10 +553,29 @@ function BrickRingBeamFields({
           placeholder="Select wall material..."
           size="2"
         />
+      </Grid>
+
+      <Separator size="4" />
+
+      <Heading size="2">Insulation</Heading>
+
+      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            Thickness
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={config.insulationThickness}
+          onChange={insulationThickness => onUpdate({ insulationThickness })}
+          unit="cm"
+          min={0}
+          size="2"
+        />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Insulation Material
+            Material
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit

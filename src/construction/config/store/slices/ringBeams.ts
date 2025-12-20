@@ -69,6 +69,7 @@ const createDefaultBrickRingBeamAssembly = (): BrickRingBeamAssemblyConfig => ({
   beamMaterial: wood.id,
   waterproofingThickness: 2,
   waterproofingMaterial: bitumen.id,
+  insulationThickness: 100,
   insulationMaterial: cork.id
 })
 

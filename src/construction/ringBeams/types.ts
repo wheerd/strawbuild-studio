@@ -54,6 +54,7 @@ export interface BrickRingBeamConfig extends RingBeamConfigBase {
   waterproofingThickness: Length // Default: 2mm
   waterproofingMaterial: MaterialId // Default: bitumen
 
+  insulationThickness: Length // Default: 10cm
   insulationMaterial: MaterialId // Default: cork
 }
 

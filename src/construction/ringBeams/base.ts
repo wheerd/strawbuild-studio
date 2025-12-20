@@ -1,16 +1,21 @@
 import type { PerimeterCorner, PerimeterWall } from '@/building/model/model'
 import type { PerimeterConstructionContext } from '@/construction/context'
-import { PolygonWithBoundingRect } from '@/construction/helpers'
+import { PolygonWithBoundingRect, polygonEdges } from '@/construction/helpers'
 import { type ConstructionResult } from '@/construction/results'
 import {
   type Length,
   type Line2D,
   type Polygon2D,
   type Vec2,
-  distanceToInfiniteLine,
-  eqVec2,
+  direction,
+  distanceToLineSegment,
+  isParallel,
   lineIntersection,
+  midpoint,
   offsetLine,
+  perpendicular,
+  projectPointOntoLine,
+  projectVec2,
   scaleAddVec2
 } from '@/shared/geometry'
 
@@ -78,8 +83,8 @@ export abstract class BaseRingBeamAssembly<T extends RingBeamConfigBase> impleme
   protected *polygons(
     segment: RingBeamSegment,
     context: PerimeterConstructionContext,
-    offsetFromInside: Length,
-    width: Length
+    offsetFromInside?: Length,
+    width?: Length
   ): Generator<PolygonWithBoundingRect> {
     const { perimeter } = segment
     for (const part of this.colinearParts(segment)) {
@@ -89,8 +94,6 @@ export abstract class BaseRingBeamAssembly<T extends RingBeamConfigBase> impleme
 
       const polygon = this.createBeamPolygon(
         context,
-        offsetFromInside,
-        width,
         wall.direction,
         wall.outsideDirection,
         this.isWallIndexInSegment(prevWallIndex, segment),
@@ -98,7 +101,9 @@ export abstract class BaseRingBeamAssembly<T extends RingBeamConfigBase> impleme
         prevWallDir,
         this.isWallIndexInSegment(nextWallIndex, segment),
         endCorner,
-        nextWallDir
+        nextWallDir,
+        offsetFromInside ?? 0,
+        width
       )
 
       yield PolygonWithBoundingRect.fromPolygon({ outer: polygon, holes: [] }, wall.direction)
@@ -138,21 +143,27 @@ export abstract class BaseRingBeamAssembly<T extends RingBeamConfigBase> impleme
     return (isConvex && isCornerConstructedByThisWall) || (!isConvex && !isCornerConstructedByThisWall)
   }
 
-  protected findLineForWall(referencePoint: Vec2, dir: Vec2, lines: Line2D[]): Line2D {
-    const parallelLines = lines.filter(line => eqVec2(line.direction, dir))
-
-    if (parallelLines.length === 0) {
-      throw new Error(`No parallel lines found for wall`)
+  protected findLineForWall(referencePoint: Vec2, dir: Vec2, perpDir: Vec2, polygon: Polygon2D, debug = false): Line2D {
+    const edges = Array.from(polygonEdges(polygon))
+    let closestLine: Line2D | null = null
+    let minDistance = Infinity
+    if (debug) console.log('lines', referencePoint, dir, perpDir)
+    for (let edge of edges) {
+      const edgeDir = direction(edge.start, edge.end)
+      if (debug) console.log('  parallel', edgeDir, isParallel(edgeDir, dir))
+      if (isParallel(edgeDir, dir)) {
+        const dist = distanceToLineSegment(referencePoint, edge)
+        if (debug) console.log('    edge', edge.start, edge.end, dist)
+        if (dist < minDistance) {
+          if (debug) console.log('      closest', dist, minDistance)
+          closestLine = { point: edge.start, direction: edgeDir }
+          minDistance = dist
+        }
+      }
     }
 
-    let closestLine = parallelLines[0]
-    let minDistance = distanceToInfiniteLine(referencePoint, parallelLines[0])
-    for (let i = 1; i < parallelLines.length; i++) {
-      const distance = distanceToInfiniteLine(referencePoint, parallelLines[i])
-      if (distance < minDistance) {
-        minDistance = distance
-        closestLine = parallelLines[i]
-      }
+    if (!closestLine) {
+      throw new Error(`No parallel lines found for wall`)
     }
 
     return closestLine
@@ -160,8 +171,6 @@ export abstract class BaseRingBeamAssembly<T extends RingBeamConfigBase> impleme
 
   protected createBeamPolygon(
     context: PerimeterConstructionContext,
-    offsetFromInside: Length,
-    width: Length,
     dir: Vec2,
     outsideDir: Vec2,
     prevInSegment: boolean,
@@ -169,7 +178,9 @@ export abstract class BaseRingBeamAssembly<T extends RingBeamConfigBase> impleme
     prevDir: Vec2,
     nextInSegment: boolean,
     endCorner: PerimeterCorner,
-    nextDir: Vec2
+    nextDir: Vec2,
+    offsetFromInside: Length,
+    width?: Length
   ): Polygon2D {
     // Create beam offset lines for start and end walls
     // Note: We use findLineForWall instead of direct indexing because context lines
@@ -177,14 +188,25 @@ export abstract class BaseRingBeamAssembly<T extends RingBeamConfigBase> impleme
     //
     // For inner lines: offsetLine uses perpendicularCW, but outsideDirection = perpendicularCCW,
     // so we need NEGATIVE offsets to move from inner line towards outside
-    const innerLine = this.findLineForWall(startCorner.insidePoint, dir, context.innerLines)
+    const base = midpoint(startCorner.insidePoint, endCorner.insidePoint)
+    const innerLine = this.findLineForWall(base, dir, outsideDir, context.innerPolygon)
+
+    let actualWidth: Length
+    if (width != null) {
+      actualWidth = width
+    } else {
+      const base = midpoint(startCorner.outsidePoint, endCorner.outsidePoint)
+      const outerLine = this.findLineForWall(base, dir, outsideDir, context.outerPolygon, true)
+      const totalThickness = Math.abs(projectVec2(innerLine.point, outerLine.point, outsideDir))
+      actualWidth = Math.max(totalThickness - offsetFromInside, 0)
+    }
 
     const { innerPoint: startInnerPoint, outerPoint: startOuterPoint } = this.determineCornerPoints(
       startCorner,
       prevInSegment,
       outsideDir,
       offsetFromInside,
-      width,
+      actualWidth,
       prevDir,
       context,
       innerLine,
@@ -195,7 +217,7 @@ export abstract class BaseRingBeamAssembly<T extends RingBeamConfigBase> impleme
       nextInSegment,
       outsideDir,
       offsetFromInside,
-      width,
+      actualWidth,
       nextDir,
       context,
       innerLine,
@@ -222,10 +244,13 @@ export abstract class BaseRingBeamAssembly<T extends RingBeamConfigBase> impleme
     let innerPoint: Vec2
     let outerPoint: Vec2
 
+    const perpDir = perpendicular(otherDir)
+
     if (Math.abs(corner.exteriorAngle - 180) < 0.01 && !otherInSegment) {
+      const basePoint = projectPointOntoLine(corner.insidePoint, innerLine)
       // Colinear at segment boundary - offset corner directly
-      innerPoint = scaleAddVec2(corner.insidePoint, outsideDir, offsetFromInside)
-      outerPoint = scaleAddVec2(corner.insidePoint, outsideDir, offsetFromInside + width)
+      innerPoint = scaleAddVec2(basePoint, outsideDir, offsetFromInside)
+      outerPoint = scaleAddVec2(basePoint, outsideDir, offsetFromInside + width)
       return { innerPoint, outerPoint }
     }
 
@@ -233,7 +258,7 @@ export abstract class BaseRingBeamAssembly<T extends RingBeamConfigBase> impleme
     let edge: Line2D
     if (otherInSegment) {
       // Other wall in segment - use its beam line
-      const otherInnerLine = this.findLineForWall(corner.insidePoint, otherDir, context.innerLines)
+      const otherInnerLine = this.findLineForWall(corner.insidePoint, otherDir, perpDir, context.innerPolygon)
       const useInner = this.constructionCutByOuterEdge(corner, side) // Inverted logic for more stability of construction
       const offset = useInner ? 0 : width
       edge = offsetLine(otherInnerLine, -offsetFromInside - offset)
@@ -241,8 +266,8 @@ export abstract class BaseRingBeamAssembly<T extends RingBeamConfigBase> impleme
       // Other wall NOT in segment - use raw construction edge
       const useOuter = this.constructionCutByOuterEdge(corner, side)
       const prevLine = useOuter
-        ? this.findLineForWall(corner.outsidePoint, otherDir, context.outerLines)
-        : this.findLineForWall(corner.insidePoint, otherDir, context.innerLines)
+        ? this.findLineForWall(corner.outsidePoint, otherDir, perpDir, context.outerPolygon)
+        : this.findLineForWall(corner.insidePoint, otherDir, perpDir, context.innerPolygon)
       edge = prevLine
     }
 

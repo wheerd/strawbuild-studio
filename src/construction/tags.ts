@@ -28,7 +28,9 @@ export const ALL_CATEGORIES = {
   'roof-side': { label: 'Roof Side' },
   'roof-measurement': { label: 'Roof Measurement' },
 
+  'ring-beam-part': { label: 'Ring Beam Part' },
   'ring-beam-measurement': { label: 'Ring Beam Measurement' },
+
   'finished-measurement': { label: 'Finished Measurement' },
 
   area: { label: 'Area' },
@@ -88,12 +90,6 @@ export const TAG_STRAW_STUFFED: Tag = {
 export const TAG_POST: Tag = {
   id: 'wall-wood_post',
   label: 'Post',
-  category: 'wall-wood'
-}
-
-export const TAG_PLATE: Tag = {
-  id: 'wall-wood_plate',
-  label: 'Plate',
   category: 'wall-wood'
 }
 
@@ -248,6 +244,8 @@ export const TAG_OPENING_HEIGHT: Tag = {
   category: 'opening-measurement'
 }
 
+// Ring beam measurements
+
 export const TAG_RING_BEAM_OUTER: Tag = {
   id: 'ring-beam-measurement_ring-beam-outer',
   label: 'Ring Beam Outer',
@@ -259,6 +257,34 @@ export const TAG_RING_BEAM_INNER: Tag = {
   label: 'Ring Beam Inner',
   category: 'ring-beam-measurement'
 }
+
+// Ring beam parts
+
+export const TAG_PLATE: Tag = {
+  id: 'ring-beam-part_plate',
+  label: 'Plate',
+  category: 'ring-beam-part'
+}
+
+export const TAG_STUD_WALL: Tag = {
+  id: 'ring-beam-part_stud-wall',
+  label: 'Stud Wall',
+  category: 'ring-beam-part'
+}
+
+export const TAG_WATERPROOFING: Tag = {
+  id: 'ring-beam-part_waterproofing',
+  label: 'Waterproofing Layer',
+  category: 'ring-beam-part'
+}
+
+export const TAG_RB_INSULATION: Tag = {
+  id: 'ring-beam-part_insulation',
+  label: 'Insulation',
+  category: 'ring-beam-part'
+}
+
+// Wall measurements
 
 export const TAG_WALL_LENGTH: Tag = {
   id: 'wall-measurement_wall-length',
