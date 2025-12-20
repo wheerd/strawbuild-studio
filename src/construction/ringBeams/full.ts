@@ -2,8 +2,7 @@ import type { StoreyId } from '@/building/model/ids'
 import type { PerimeterConstructionContext } from '@/construction/context'
 import { createConstructionElement } from '@/construction/elements'
 import { PolygonWithBoundingRect } from '@/construction/helpers'
-import { transformManifold } from '@/construction/manifold/operations'
-import type { MaterialId } from '@/construction/materials/material'
+import { type MaterialId } from '@/construction/materials/material'
 import { type ConstructionResult, yieldAndClip, yieldElement } from '@/construction/results'
 import type { HeightLine } from '@/construction/roofs/types'
 import { createExtrudedPolygon } from '@/construction/shapes'
@@ -16,13 +15,15 @@ import {
   type LineSegment2D,
   type Polygon2D,
   type Vec2,
+  centroidVec2,
   dotVec2,
-  fromRot,
   fromTrans,
   intersectPolygon,
+  newVec2,
   newVec3,
   normVec3,
   perpendicularCW,
+  projectVec2,
   rotate,
   scaleAddVec2,
   subVec2
@@ -241,44 +242,40 @@ export class FullRingBeamAssembly extends BaseRingBeamAssembly<FullRingBeamConfi
   }
 
   /**
-   * Expand polygon along path to compensate for slope
+   * Calculate center point of a polygon
+   */
+  protected getPolygonCenter(polygon: Polygon2D): Vec2 {
+    const sum = polygon.points.reduce((acc, p) => scaleAddVec2(acc, p, 1), newVec2(0, 0))
+    return scaleAddVec2(newVec2(0, 0), sum, 1 / polygon.points.length)
+  }
+
+  /**
+   * Expand polygon from center to compensate for slope
    */
   protected expandPolygonAlongPath(
     polygon: Polygon2D,
-    pathDirection: Vec2,
-    pathStartPoint: Vec2,
-    pathLength: Length,
+    dir: Vec2,
+    center: Vec2,
     slopeAngleRad: number,
     beamHeight: Length
   ): Polygon2D {
     const additionalExpansion = Math.tan(Math.abs(slopeAngleRad)) * beamHeight
+    const expansionFactor = 1 / Math.cos(slopeAngleRad)
+
+    const perpDir = perpendicularCW(dir)
 
     const expandedPoints = polygon.points.map(point => {
-      // Project point onto path
-      const toPoint = subVec2(point, pathStartPoint)
-      const projection = dotVec2(toPoint, pathDirection)
-
-      // Position along path (0 to 1)
-      const t = projection / pathLength
-
-      // Expand symmetrically from center
-      const deltaFromCenter = t - 0.5
-      const sign = Math.sign(deltaFromCenter)
-      const expandedProjection = projection + sign * additionalExpansion
-
-      // Reconstruct point
-      const closestOnPath = scaleAddVec2(pathStartPoint, pathDirection, projection)
-      const expandedClosest = scaleAddVec2(pathStartPoint, pathDirection, expandedProjection)
-      const perpOffset = subVec2(point, closestOnPath)
-
-      return scaleAddVec2(expandedClosest, perpOffset, 1)
+      const projection = projectVec2(center, point, dir)
+      const perpProjection = projectVec2(center, point, perpDir)
+      const newDist = projection * expansionFactor + Math.sign(projection) * additionalExpansion
+      return scaleAddVec2(scaleAddVec2(center, perpDir, perpProjection), dir, newDist)
     })
 
     return { points: expandedPoints }
   }
 
   /**
-   * Extrude with slope using: expand → extrude → inverse transform → clip
+   * Extrude with slope using center-based rotation
    */
   protected *extrudeWithSlope(
     subPolygon: Polygon2D,
@@ -294,48 +291,49 @@ export class FullRingBeamAssembly extends BaseRingBeamAssembly<FullRingBeamConfi
     const heightChange = endHeight - startHeight
     const slopeAngleRad = Math.atan2(heightChange, pathLength)
 
-    // 1. Expand polygon
-    const expandedPolygon = this.expandPolygonAlongPath(
-      subPolygon,
-      pathDirection,
-      pathStartPoint,
-      pathLength,
-      slopeAngleRad,
-      beamHeight
-    )
+    // Early optimization: if flat (no slope), just extrude at the right height
+    if (Math.abs(slopeAngleRad) < 0.0001) {
+      const flatShape = createExtrudedPolygon({ outer: subPolygon, holes: [] }, 'xy', beamHeight)
+      const flatTransform = fromTrans(newVec3(0, 0, startHeight))
+      yield* yieldElement(createConstructionElement(material, flatShape, flatTransform, tags))
+      return
+    }
 
-    // Translate to rotation origin (use start point)
+    // Use polygon center as reference point
+    const center = centroidVec2(subPolygon.points)
+
+    // 1. Expand polygon from center
+    const expandedPolygon = this.expandPolygonAlongPath(subPolygon, pathDirection, center, slopeAngleRad, beamHeight)
+
+    // Translate to origin (center point)
     const translatedExpanded = {
-      points: expandedPolygon.points.map(p => subVec2(p, pathStartPoint))
+      points: expandedPolygon.points.map(p => subVec2(p, center))
     }
 
     // 2. Extrude expanded
     const expandedShape = createExtrudedPolygon({ outer: translatedExpanded, holes: [] }, 'xy', beamHeight)
 
-    // 3. Create clipping volume from original
-    const translatedOriginal = {
-      points: subPolygon.points.map(p => subVec2(p, pathStartPoint))
-    }
-    const clippingShape = createExtrudedPolygon({ outer: translatedOriginal, holes: [] }, 'xy', beamHeight)
-    const clippingVolume = clippingShape.manifold
+    // 3. Create clipping volume from original (un-expanded)
+    const clippingExtent = 2 * (beamHeight + Math.abs(heightChange))
+    const clippingShape = createExtrudedPolygon({ outer: subPolygon, holes: [] }, 'xy', 2 * clippingExtent)
+    const clippingVolume = clippingShape.manifold.translate([0, 0, -clippingExtent])
 
-    // 4. Transform: rotate around perpendicular axis
+    // 4. Calculate height at center
+    const centerDist = dotVec2(subVec2(center, pathStartPoint), pathDirection)
+    const centerT = centerDist / pathLength
+    const centerHeight = startHeight + centerT * heightChange
+
+    // 5. Transform: rotate around perpendicular axis at center
     const perpToPath = perpendicularCW(pathDirection)
     const rotationAxis = normVec3(newVec3(perpToPath[0], perpToPath[1], 0))
 
-    const transform = rotate(
-      fromTrans(newVec3(pathStartPoint[0], pathStartPoint[1], startHeight)),
-      slopeAngleRad,
-      rotationAxis
-    )
+    const transform = rotate(fromTrans(newVec3(center[0], center[1], centerHeight)), slopeAngleRad, rotationAxis)
 
-    // 5. Inverse rotation for clipping
-    const inverseRotation = fromRot(-slopeAngleRad, rotationAxis)
-
-    // 6. Yield with clipping
+    // 7. Yield with clipping
     const element = createConstructionElement(material, expandedShape, transform, tags)
 
-    yield* yieldElement(element) // yieldAndClip(yieldElement(element), m => m.intersect(transformManifold(clippingVolume, inverseRotation)))
+    //yield* yieldElement(element)
+    yield* yieldAndClip(yieldElement(element), m => m.intersect(clippingVolume))
   }
 
   *construct(
