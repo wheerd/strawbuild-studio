@@ -261,8 +261,8 @@ export abstract class BaseRingBeamAssembly<T extends RingBeamConfigBase> impleme
     if (otherInSegment) {
       // Other wall in segment - use its beam line
       const otherInnerLine = this.findLineForWall(corner.insidePoint, otherDir, perpDir, context.innerPolygon)
-      const useInner = this.constructionCutByOuterEdge(corner, side) // Inverted logic for more stability of construction
-      const offset = useInner ? 0 : width
+      const useOuter = this.constructionCutByOuterEdge(corner, side)
+      const offset = useOuter ? width : 0
       edge = offsetLine(otherInnerLine, -offsetFromInside - offset)
     } else {
       // Other wall NOT in segment - use raw construction edge

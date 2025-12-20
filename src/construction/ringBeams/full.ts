@@ -38,7 +38,8 @@ export class FullRingBeamAssembly extends BaseRingBeamAssembly<FullRingBeamConfi
   }
 
   /**
-   * Get height line for a ring beam polygon using its aligned bounds
+   * Get height line for a ring beam polygon using inner and outer edges
+   * Uses the bounding rect's perpendicular direction to get both lines
    */
   protected getHeightLineForBeamPolygon(
     polygon: Polygon2D,
@@ -52,24 +53,45 @@ export class FullRingBeamAssembly extends BaseRingBeamAssembly<FullRingBeamConfi
   } {
     const boundingRect = PolygonWithBoundingRect.fromPolygon({ outer: polygon, holes: [] }, pathDirection)
 
-    // Query along aligned bounds: minPoint to minPoint + dir * dirExtent
-    const referenceLine: LineSegment2D = {
+    // First line: along minPoint in the dir direction
+    const innerLine: LineSegment2D = {
       start: boundingRect.minPoint,
       end: scaleAddVec2(boundingRect.minPoint, boundingRect.dir, boundingRect.dirExtent)
     }
 
-    const offsets = getRoofHeightLineForLine(
+    // Second line: offset by perpExtent in perpDir direction
+    const outerStart = scaleAddVec2(boundingRect.minPoint, boundingRect.perpDir, boundingRect.perpExtent)
+    const outerLine: LineSegment2D = {
+      start: outerStart,
+      end: scaleAddVec2(outerStart, boundingRect.dir, boundingRect.dirExtent)
+    }
+
+    // Query roof for both edges
+    const innerOffsets = getRoofHeightLineForLine(
       storeyId,
-      referenceLine,
+      innerLine,
       boundingRect.dirExtent,
       ceilingBottomOffset,
       perimeterContexts
     )
 
-    const heightLine = this.offsetsToHeightLine(offsets, boundingRect.dirExtent)
+    const outerOffsets = getRoofHeightLineForLine(
+      storeyId,
+      outerLine,
+      boundingRect.dirExtent,
+      ceilingBottomOffset,
+      perimeterContexts
+    )
+
+    // Convert to HeightLine format
+    const innerHeightLine = this.offsetsToHeightLine(innerOffsets, boundingRect.dirExtent)
+    const outerHeightLine = this.offsetsToHeightLine(outerOffsets, boundingRect.dirExtent)
+
+    // Merge using minimum offset at each position (like walls do)
+    const merged = this.mergeInnerOuterHeightLines(innerHeightLine, outerHeightLine)
 
     return {
-      heightLine: heightLine.length > 0 ? heightLine : undefined,
+      heightLine: merged.length > 0 ? merged : undefined,
       boundingRect
     }
   }
@@ -106,6 +128,54 @@ export class FullRingBeamAssembly extends BaseRingBeamAssembly<FullRingBeamConfi
     }
 
     return heightLine
+  }
+
+  /**
+   * Merge inner and outer height lines using minimum offset
+   * Similar to mergeInsideOutsideHeightLines in walls/roofIntegration.ts
+   */
+  protected mergeInnerOuterHeightLines(innerHeightLine: HeightLine, outerHeightLine: HeightLine): HeightLine {
+    if (innerHeightLine.length === 0 && outerHeightLine.length === 0) {
+      return []
+    }
+    if (innerHeightLine.length === 0) return outerHeightLine
+    if (outerHeightLine.length === 0) return innerHeightLine
+
+    // Collect all unique positions from both lines
+    const positions = new Set<number>()
+    for (const item of innerHeightLine) {
+      positions.add(item.position)
+    }
+    for (const item of outerHeightLine) {
+      positions.add(item.position)
+    }
+
+    const sortedPositions = Array.from(positions).sort((a, b) => a - b)
+    const merged: HeightLine = []
+
+    for (const pos of sortedPositions) {
+      const [innerBefore, innerAfter] = this.getOffsetAt(innerHeightLine, pos)
+      const [outerBefore, outerAfter] = this.getOffsetAt(outerHeightLine, pos)
+
+      const beforeOffset = Math.min(innerBefore, outerBefore)
+      const afterOffset = Math.min(innerAfter, outerAfter)
+
+      if (beforeOffset !== afterOffset) {
+        merged.push({
+          position: pos,
+          offsetBefore: beforeOffset,
+          offsetAfter: afterOffset
+        })
+      } else {
+        merged.push({
+          position: pos,
+          offset: beforeOffset,
+          nullAfter: false
+        })
+      }
+    }
+
+    return merged
   }
 
   /**
