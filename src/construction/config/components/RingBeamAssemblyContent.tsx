@@ -18,6 +18,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 
 import type { RingBeamAssemblyId } from '@/building/model/ids'
 import { usePerimeters, useStoreysOrderedByLevel } from '@/building/store'
+import type { RingBeamAssemblyConfig } from '@/construction/config'
 import {
   useConfigActions,
   useDefaultBaseRingBeamAssemblyId,
@@ -30,6 +31,7 @@ import { bitumen, brick, cork, wood, woodwool } from '@/construction/materials/m
 import { type RingBeamConfig, resolveRingBeamAssembly } from '@/construction/ringBeams'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
+import { useDebouncedInput } from '@/shared/hooks/useDebouncedInput'
 import { formatLength } from '@/shared/utils/formatting'
 
 import { getRingBeamTypeIcon } from './Icons'
@@ -45,14 +47,8 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
   const ringBeamAssemblies = useRingBeamAssemblies()
   const perimeters = usePerimeters()
   const storeys = useStoreysOrderedByLevel()
-  const {
-    addRingBeamAssembly,
-    updateRingBeamAssemblyName,
-    updateRingBeamAssemblyConfig,
-    removeRingBeamAssembly,
-    setDefaultBaseRingBeamAssembly,
-    setDefaultTopRingBeamAssembly
-  } = useConfigActions()
+  const { addRingBeamAssembly, removeRingBeamAssembly, setDefaultBaseRingBeamAssembly, setDefaultTopRingBeamAssembly } =
+    useConfigActions()
 
   const defaultBaseId = useDefaultBaseRingBeamAssemblyId()
   const defaultTopId = useDefaultTopRingBeamAssemblyId()
@@ -139,30 +135,6 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
     }
   }, [selectedAssembly, selectedAssemblyId, ringBeamAssemblies, removeRingBeamAssembly, usage.isUsed])
 
-  const handleUpdateName = useCallback(
-    (name: string) => {
-      if (!selectedAssembly) return
-      updateRingBeamAssemblyName(selectedAssembly.id, name)
-    },
-    [selectedAssembly, updateRingBeamAssemblyName]
-  )
-
-  const handleUpdateConfig = useCallback(
-    (updates: Partial<RingBeamConfig>) => {
-      if (!selectedAssembly) return
-      const { id: _id, ...config } = selectedAssembly
-      const updatedConfig = { ...config, ...updates }
-      updateRingBeamAssemblyConfig(selectedAssembly.id, updatedConfig)
-    },
-    [selectedAssembly, updateRingBeamAssemblyConfig]
-  )
-
-  const totalHeight = useMemo(() => {
-    if (!selectedAssembly) return '???'
-    const assemblyImpl = resolveRingBeamAssembly(selectedAssembly)
-    return formatLength(assemblyImpl.height)
-  }, [selectedAssembly])
-
   return (
     <Flex direction="column" gap="4" width="100%">
       {/* Selector + Actions */}
@@ -242,75 +214,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
       </Flex>
 
       {/* Form */}
-      {selectedAssembly && (
-        <Flex
-          direction="column"
-          gap="3"
-          p="3"
-          style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
-        >
-          <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
-            <Grid columns="auto 1fr" gapX="2" align="center">
-              <Label.Root>
-                <Text size="2" weight="medium" color="gray">
-                  Name
-                </Text>
-              </Label.Root>
-              <TextField.Root
-                value={selectedAssembly.name}
-                onChange={e => handleUpdateName(e.target.value)}
-                placeholder="Ring beam assembly name"
-                size="2"
-              />
-            </Grid>
-
-            <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
-              <Flex gap="2" align="center">
-                <Label.Root>
-                  <Text size="2" weight="medium" color="gray">
-                    Type
-                  </Text>
-                </Label.Root>
-                <Flex gap="2" align="center">
-                  {React.createElement(getRingBeamTypeIcon(selectedAssembly.type))}
-                  <Text size="2" color="gray">
-                    {selectedAssembly.type === 'full'
-                      ? 'Full'
-                      : selectedAssembly.type === 'double'
-                        ? 'Double'
-                        : 'Brick'}
-                  </Text>
-                </Flex>
-              </Flex>
-
-              <Flex gap="2" align="center">
-                <Label.Root>
-                  <Text size="2" weight="medium" color="gray">
-                    Total Height
-                  </Text>
-                </Label.Root>
-                <Text size="2" color="gray">
-                  {totalHeight}
-                </Text>
-              </Flex>
-            </Grid>
-          </Grid>
-
-          <Separator size="4" />
-
-          {selectedAssembly.type === 'full' && (
-            <FullRingBeamFields config={selectedAssembly} onUpdate={handleUpdateConfig} />
-          )}
-
-          {selectedAssembly.type === 'double' && (
-            <DoubleRingBeamFields config={selectedAssembly} onUpdate={handleUpdateConfig} />
-          )}
-
-          {selectedAssembly.type === 'brick' && (
-            <BrickRingBeamFields config={selectedAssembly} onUpdate={handleUpdateConfig} />
-          )}
-        </Flex>
-      )}
+      {selectedAssembly && <AssemblyForm assembly={selectedAssembly} />}
 
       {!selectedAssembly && ringBeamAssemblies.length === 0 && (
         <Flex justify="center" align="center" p="5">
@@ -372,6 +276,81 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
           </Grid>
         )}
       </Flex>
+    </Flex>
+  )
+}
+
+function AssemblyForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.ReactNode {
+  const { updateRingBeamAssemblyName, updateRingBeamAssemblyConfig } = useConfigActions()
+
+  const nameInput = useDebouncedInput(assembly.name, (name: string) => updateRingBeamAssemblyName(assembly.id, name), {
+    debounceMs: 1000
+  })
+
+  const handleUpdateConfig = useCallback(
+    (updates: Partial<RingBeamConfig>) => updateRingBeamAssemblyConfig(assembly.id, updates),
+    [assembly, updateRingBeamAssemblyConfig]
+  )
+
+  const totalHeight = useMemo(() => formatLength(resolveRingBeamAssembly(assembly).height), [assembly])
+
+  return (
+    <Flex
+      direction="column"
+      gap="3"
+      p="3"
+      style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
+    >
+      <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
+        <Grid columns="auto 1fr" gapX="2" align="center">
+          <Label.Root>
+            <Text size="2" weight="medium" color="gray">
+              Name
+            </Text>
+          </Label.Root>
+          <TextField.Root
+            value={nameInput.value}
+            onChange={e => nameInput.handleChange(e.target.value)}
+            onBlur={nameInput.handleBlur}
+            onKeyDown={nameInput.handleKeyDown}
+            placeholder="Ring beam assembly name"
+            size="2"
+          />
+        </Grid>
+
+        <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
+          <Flex gap="2" align="center">
+            <Label.Root>
+              <Text size="2" weight="medium" color="gray">
+                Type
+              </Text>
+            </Label.Root>
+            <Flex gap="2" align="center">
+              {React.createElement(getRingBeamTypeIcon(assembly.type))}
+              <Text size="2" color="gray">
+                {assembly.type === 'full' ? 'Full' : assembly.type === 'double' ? 'Double' : 'Brick'}
+              </Text>
+            </Flex>
+          </Flex>
+
+          <Flex gap="2" align="center">
+            <Label.Root>
+              <Text size="2" weight="medium" color="gray">
+                Total Height
+              </Text>
+            </Label.Root>
+            <Text size="2" color="gray">
+              {totalHeight}
+            </Text>
+          </Flex>
+        </Grid>
+      </Grid>
+
+      <Separator size="4" />
+
+      {assembly.type === 'full' && <FullRingBeamFields config={assembly} onUpdate={handleUpdateConfig} />}
+      {assembly.type === 'double' && <DoubleRingBeamFields config={assembly} onUpdate={handleUpdateConfig} />}
+      {assembly.type === 'brick' && <BrickRingBeamFields config={assembly} onUpdate={handleUpdateConfig} />}
     </Flex>
   )
 }
