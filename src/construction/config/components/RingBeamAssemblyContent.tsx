@@ -214,7 +214,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
       </Flex>
 
       {/* Form */}
-      {selectedAssembly && <AssemblyForm assembly={selectedAssembly} />}
+      {selectedAssembly && <ConfigForm assembly={selectedAssembly} />}
 
       {!selectedAssembly && ringBeamAssemblies.length === 0 && (
         <Flex justify="center" align="center" p="5">
@@ -280,7 +280,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
   )
 }
 
-function AssemblyForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.ReactNode {
+function ConfigForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.ReactNode {
   const { updateRingBeamAssemblyName, updateRingBeamAssemblyConfig } = useConfigActions()
 
   const nameInput = useDebouncedInput(assembly.name, (name: string) => updateRingBeamAssemblyName(assembly.id, name), {

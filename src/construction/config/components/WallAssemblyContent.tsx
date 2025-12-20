@@ -40,6 +40,7 @@ import type {
 import type { ModuleConfig } from '@/construction/walls/strawhenge/modules'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField'
+import { useDebouncedInput } from '@/shared/hooks/useDebouncedInput'
 import { formatLength } from '@/shared/utils/formatting'
 
 import { getPerimeterConfigTypeIcon } from './Icons'
@@ -628,12 +629,15 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
 
 interface ConfigFormProps {
   assembly: WallAssemblyConfig
-  onUpdateName: (name: string) => void
 }
 
-function ConfigForm({ assembly, onUpdateName }: ConfigFormProps): React.JSX.Element {
-  const { updateWallAssemblyConfig, getDefaultStrawMaterial } = useConfigActions()
+function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
+  const { updateWallAssemblyName, updateWallAssemblyConfig, getDefaultStrawMaterial } = useConfigActions()
   const { getMaterialById } = useMaterialActions()
+
+  const nameInput = useDebouncedInput(assembly.name, (name: string) => updateWallAssemblyName(assembly.id, name), {
+    debounceMs: 1000
+  })
 
   const updateConfig = useCallback(
     (updates: Partial<WallConfig>) => updateWallAssemblyConfig(assembly.id, updates),
@@ -671,8 +675,10 @@ function ConfigForm({ assembly, onUpdateName }: ConfigFormProps): React.JSX.Elem
             </Text>
           </Label.Root>
           <TextField.Root
-            value={assembly.name}
-            onChange={e => onUpdateName(e.target.value)}
+            value={nameInput.value}
+            onChange={e => nameInput.handleChange(e.target.value)}
+            onBlur={nameInput.handleBlur}
+            onKeyDown={nameInput.handleKeyDown}
             placeholder="Assembly name"
             size="2"
           />
@@ -741,8 +747,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
   const wallAssemblies = useWallAssemblies()
   const perimeters = usePerimeters()
   const storeys = useStoreysOrderedByLevel()
-  const { addWallAssembly, duplicateWallAssembly, updateWallAssemblyName, removeWallAssembly, setDefaultWallAssembly } =
-    useConfigActions()
+  const { addWallAssembly, duplicateWallAssembly, removeWallAssembly, setDefaultWallAssembly } = useConfigActions()
 
   const defaultAssemblyId = useDefaultWallAssemblyId()
 
@@ -875,14 +880,6 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
     }
   }, [selectedAssembly, selectedAssemblyId, wallAssemblies, removeWallAssembly, usage.isUsed])
 
-  const handleUpdateName = useCallback(
-    (name: string) => {
-      if (!selectedAssembly) return
-      updateWallAssemblyName(selectedAssembly.id, name)
-    },
-    [selectedAssembly, updateWallAssemblyName]
-  )
-
   return (
     <Flex direction="column" gap="4" style={{ width: '100%' }}>
       {/* Selector + Actions */}
@@ -987,7 +984,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
       </Flex>
 
       {/* Form */}
-      {selectedAssembly && <ConfigForm assembly={selectedAssembly} onUpdateName={handleUpdateName} />}
+      {selectedAssembly && <ConfigForm assembly={selectedAssembly} />}
 
       {!selectedAssembly && wallAssemblies.length === 0 && (
         <Flex justify="center" align="center" p="5">

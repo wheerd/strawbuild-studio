@@ -18,6 +18,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 
 import type { FloorAssemblyId } from '@/building/model/ids'
 import { useStoreysOrderedByLevel } from '@/building/store'
+import type { FloorAssemblyConfig } from '@/construction/config'
 import { useConfigActions, useDefaultFloorAssemblyId, useFloorAssemblies } from '@/construction/config/store'
 import { getFloorAssemblyUsage } from '@/construction/config/usage'
 import { FLOOR_ASSEMBLIES } from '@/construction/floors'
@@ -29,11 +30,11 @@ import type {
   MonolithicFloorConfig
 } from '@/construction/floors/types'
 import { DEFAULT_CEILING_LAYER_SETS, DEFAULT_FLOOR_LAYER_SETS } from '@/construction/layers/defaults'
-import type { LayerConfig } from '@/construction/layers/types'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
+import { useDebouncedInput } from '@/shared/hooks/useDebouncedInput'
 import { formatLength } from '@/shared/utils/formatting'
 
 import { FloorAssemblySelect } from './FloorAssemblySelect'
@@ -47,24 +48,7 @@ export interface FloorAssemblyConfigContentProps {
 export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssemblyConfigContentProps): React.JSX.Element {
   const floorAssemblies = useFloorAssemblies()
   const storeys = useStoreysOrderedByLevel()
-  const {
-    addFloorAssembly,
-    updateFloorAssemblyName,
-    updateFloorAssemblyConfig,
-    duplicateFloorAssembly,
-    removeFloorAssembly,
-    setDefaultFloorAssembly,
-    addFloorAssemblyTopLayer,
-    setFloorAssemblyTopLayers,
-    updateFloorAssemblyTopLayer,
-    removeFloorAssemblyTopLayer,
-    moveFloorAssemblyTopLayer,
-    addFloorAssemblyBottomLayer,
-    setFloorAssemblyBottomLayers,
-    updateFloorAssemblyBottomLayer,
-    removeFloorAssemblyBottomLayer,
-    moveFloorAssemblyBottomLayer
-  } = useConfigActions()
+  const { addFloorAssembly, duplicateFloorAssembly, removeFloorAssembly, setDefaultFloorAssembly } = useConfigActions()
 
   const defaultConfigId = useDefaultFloorAssemblyId()
 
@@ -81,12 +65,6 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
     () => (selectedConfig ? getFloorAssemblyUsage(selectedConfig.id, storeys) : { isUsed: false, usedByStoreys: [] }),
     [selectedConfig, storeys]
   )
-  const totalThickness = useMemo(() => {
-    if (!selectedConfig) return ''
-    const assemby = FLOOR_ASSEMBLIES[selectedConfig.type]
-    const totalThickness = assemby.getTotalThickness(selectedConfig)
-    return formatLength(totalThickness)
-  }, [selectedConfig])
 
   const handleAddNew = useCallback(
     (type: FloorAssemblyType) => {
@@ -188,22 +166,6 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
     }
   }, [selectedConfig, selectedConfigId, floorAssemblies, removeFloorAssembly, usage.isUsed])
 
-  const handleUpdateName = useCallback(
-    (name: string) => {
-      if (!selectedConfig) return
-      updateFloorAssemblyName(selectedConfig.id, name)
-    },
-    [selectedConfig, updateFloorAssemblyName]
-  )
-
-  const handleUpdateConfig = useCallback(
-    (updates: Partial<FloorConfig>) => {
-      if (!selectedConfig) return
-      updateFloorAssemblyConfig(selectedConfig.id, updates)
-    },
-    [selectedConfig, updateFloorAssemblyConfig]
-  )
-
   return (
     <Flex direction="column" gap="4" width="100%">
       {/* Selector + Actions */}
@@ -291,92 +253,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
       </Flex>
 
       {/* Form */}
-      {selectedConfig && (
-        <Flex
-          direction="column"
-          gap="3"
-          p="3"
-          style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
-        >
-          <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
-            <Grid columns="auto 1fr" gapX="2" align="center">
-              <Label.Root>
-                <Text size="2" weight="medium" color="gray">
-                  Name
-                </Text>
-              </Label.Root>
-              <TextField.Root
-                value={selectedConfig.name}
-                onChange={e => handleUpdateName(e.target.value)}
-                placeholder="Floor assembly name"
-                size="2"
-              />
-            </Grid>
-
-            <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
-              <Flex gap="2" align="center">
-                <Label.Root>
-                  <Text size="2" weight="medium" color="gray">
-                    Type
-                  </Text>
-                </Label.Root>
-                <Flex gap="2" align="center">
-                  {React.createElement(getFloorAssemblyTypeIcon(selectedConfig.type))}
-                  <Text size="2" color="gray">
-                    {selectedConfig.type === 'monolithic'
-                      ? 'Monolithic'
-                      : selectedConfig.type === 'joist'
-                        ? 'Joist'
-                        : 'Straw Filled'}
-                  </Text>
-                </Flex>
-              </Flex>
-
-              <Flex gap="2" align="center">
-                <Label.Root>
-                  <Text size="2" weight="medium" color="gray">
-                    Total Thickness
-                  </Text>
-                </Label.Root>
-                <Text size="2" color="gray">
-                  {totalThickness}
-                </Text>
-              </Flex>
-            </Grid>
-          </Grid>
-
-          <Separator size="4" />
-
-          {selectedConfig.type === 'monolithic' && (
-            <MonolithicConfigFields config={selectedConfig} onUpdate={handleUpdateConfig} />
-          )}
-
-          {selectedConfig.type === 'joist' && (
-            <JoistConfigFields config={selectedConfig} onUpdate={handleUpdateConfig} />
-          )}
-
-          {selectedConfig.type === 'filled' && (
-            <FilledConfigFields config={selectedConfig} onUpdate={handleUpdateConfig} />
-          )}
-
-          <Separator size="4" />
-
-          <LayersFields
-            assemblyId={selectedConfig.id}
-            config={selectedConfig}
-            onAddTopLayer={addFloorAssemblyTopLayer}
-            onSetTopLayers={setFloorAssemblyTopLayers}
-            onUpdateTopLayer={updateFloorAssemblyTopLayer}
-            onRemoveTopLayer={removeFloorAssemblyTopLayer}
-            onMoveTopLayer={moveFloorAssemblyTopLayer}
-            onAddBottomLayer={addFloorAssemblyBottomLayer}
-            onSetBottomLayers={setFloorAssemblyBottomLayers}
-            onUpdateBottomLayer={updateFloorAssemblyBottomLayer}
-            onRemoveBottomLayer={removeFloorAssemblyBottomLayer}
-            onMoveBottomLayer={moveFloorAssemblyBottomLayer}
-          />
-        </Flex>
-      )}
+      {selectedConfig && <ConfigForm assembly={selectedConfig} />}
 
       {!selectedConfig && floorAssemblies.length === 0 && (
         <Flex justify="center" align="center" p="5">
@@ -421,6 +298,89 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           </Grid>
         )}
       </Flex>
+    </Flex>
+  )
+}
+
+function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.Element {
+  const { updateFloorAssemblyName, updateFloorAssemblyConfig } = useConfigActions()
+
+  const nameInput = useDebouncedInput(assembly.name, (name: string) => updateFloorAssemblyName(assembly.id, name), {
+    debounceMs: 1000
+  })
+
+  const handleUpdateConfig = useCallback(
+    (updates: Partial<FloorConfig>) => updateFloorAssemblyConfig(assembly.id, updates),
+    [assembly.id, updateFloorAssemblyConfig]
+  )
+
+  const totalThickness = useMemo(() => {
+    const assemblyImpl = FLOOR_ASSEMBLIES[assembly.type]
+    const totalThickness = assemblyImpl.getTotalThickness(assembly)
+    return formatLength(totalThickness)
+  }, [assembly])
+
+  return (
+    <Flex
+      direction="column"
+      gap="3"
+      p="3"
+      style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
+    >
+      <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
+        <Grid columns="auto 1fr" gapX="2" align="center">
+          <Label.Root>
+            <Text size="2" weight="medium" color="gray">
+              Name
+            </Text>
+          </Label.Root>
+          <TextField.Root
+            value={nameInput.value}
+            onChange={e => nameInput.handleChange(e.target.value)}
+            onBlur={nameInput.handleBlur}
+            onKeyDown={nameInput.handleKeyDown}
+            placeholder="Floor assembly name"
+            size="2"
+          />
+        </Grid>
+
+        <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
+          <Flex gap="2" align="center">
+            <Label.Root>
+              <Text size="2" weight="medium" color="gray">
+                Type
+              </Text>
+            </Label.Root>
+            <Flex gap="2" align="center">
+              {React.createElement(getFloorAssemblyTypeIcon(assembly.type))}
+              <Text size="2" color="gray">
+                {assembly.type === 'monolithic' ? 'Monolithic' : assembly.type === 'joist' ? 'Joist' : 'Straw Filled'}
+              </Text>
+            </Flex>
+          </Flex>
+
+          <Flex gap="2" align="center">
+            <Label.Root>
+              <Text size="2" weight="medium" color="gray">
+                Total Thickness
+              </Text>
+            </Label.Root>
+            <Text size="2" color="gray">
+              {totalThickness}
+            </Text>
+          </Flex>
+        </Grid>
+      </Grid>
+
+      <Separator size="4" />
+
+      {assembly.type === 'monolithic' && <MonolithicConfigFields config={assembly} onUpdate={handleUpdateConfig} />}
+      {assembly.type === 'joist' && <JoistConfigFields config={assembly} onUpdate={handleUpdateConfig} />}
+      {assembly.type === 'filled' && <FilledConfigFields config={assembly} onUpdate={handleUpdateConfig} />}
+
+      <Separator size="4" />
+
+      <LayersFields assemblyId={assembly.id} config={assembly} />
     </Flex>
   )
 }
@@ -912,33 +872,20 @@ function FilledConfigFields({
   )
 }
 
-function LayersFields({
-  assemblyId,
-  config,
-  onAddTopLayer,
-  onSetTopLayers,
-  onUpdateTopLayer,
-  onRemoveTopLayer,
-  onMoveTopLayer,
-  onAddBottomLayer,
-  onSetBottomLayers,
-  onUpdateBottomLayer,
-  onRemoveBottomLayer,
-  onMoveBottomLayer
-}: {
-  assemblyId: FloorAssemblyId
-  config: FloorConfig
-  onAddTopLayer: (id: FloorAssemblyId, layer: LayerConfig) => void
-  onSetTopLayers: (id: FloorAssemblyId, layers: LayerConfig[]) => void
-  onUpdateTopLayer: (id: FloorAssemblyId, index: number, updates: Partial<Omit<LayerConfig, 'type'>>) => void
-  onRemoveTopLayer: (id: FloorAssemblyId, index: number) => void
-  onMoveTopLayer: (id: FloorAssemblyId, fromIndex: number, toIndex: number) => void
-  onAddBottomLayer: (id: FloorAssemblyId, layer: LayerConfig) => void
-  onSetBottomLayers: (id: FloorAssemblyId, layers: LayerConfig[]) => void
-  onUpdateBottomLayer: (id: FloorAssemblyId, index: number, updates: Partial<Omit<LayerConfig, 'type'>>) => void
-  onRemoveBottomLayer: (id: FloorAssemblyId, index: number) => void
-  onMoveBottomLayer: (id: FloorAssemblyId, fromIndex: number, toIndex: number) => void
-}) {
+function LayersFields({ assemblyId, config }: { assemblyId: FloorAssemblyId; config: FloorConfig }) {
+  const {
+    addFloorAssemblyTopLayer,
+    setFloorAssemblyTopLayers,
+    updateFloorAssemblyTopLayer,
+    removeFloorAssemblyTopLayer,
+    moveFloorAssemblyTopLayer,
+    addFloorAssemblyBottomLayer,
+    setFloorAssemblyBottomLayers,
+    updateFloorAssemblyBottomLayer,
+    removeFloorAssemblyBottomLayer,
+    moveFloorAssemblyBottomLayer
+  } = useConfigActions()
+
   const topLayers = config.layers.topLayers
   const displayedTopLayers = [...topLayers].reverse()
   const mapTopIndex = (displayIndex: number) => topLayers.length - 1 - displayIndex
@@ -976,11 +923,13 @@ function LayersFields({
         title="Top Layers"
         measurementInfo={<MeasurementInfo highlightedPart="floorTopLayers" />}
         layers={displayedTopLayers}
-        onAddLayer={layer => onAddTopLayer(assemblyId, layer)}
-        onReplaceLayers={layers => onSetTopLayers(assemblyId, [...layers].reverse())}
-        onUpdateLayer={(index, updates) => onUpdateTopLayer(assemblyId, mapTopIndex(index), updates)}
-        onRemoveLayer={index => onRemoveTopLayer(assemblyId, mapTopIndex(index))}
-        onMoveLayer={(fromIndex, toIndex) => onMoveTopLayer(assemblyId, mapTopIndex(fromIndex), mapTopIndex(toIndex))}
+        onAddLayer={layer => addFloorAssemblyTopLayer(assemblyId, layer)}
+        onReplaceLayers={layers => setFloorAssemblyTopLayers(assemblyId, [...layers].reverse())}
+        onUpdateLayer={(index, updates) => updateFloorAssemblyTopLayer(assemblyId, mapTopIndex(index), updates)}
+        onRemoveLayer={index => removeFloorAssemblyTopLayer(assemblyId, mapTopIndex(index))}
+        onMoveLayer={(fromIndex, toIndex) =>
+          moveFloorAssemblyTopLayer(assemblyId, mapTopIndex(fromIndex), mapTopIndex(toIndex))
+        }
         addLabel="Add Top Layer"
         emptyHint="No top layers defined"
         layerPresets={DEFAULT_FLOOR_LAYER_SETS}
@@ -995,11 +944,11 @@ function LayersFields({
         title="Bottom Layers"
         measurementInfo={<MeasurementInfo highlightedPart="floorBottomLayers" />}
         layers={config.layers.bottomLayers}
-        onAddLayer={layer => onAddBottomLayer(assemblyId, layer)}
-        onReplaceLayers={layers => onSetBottomLayers(assemblyId, layers)}
-        onUpdateLayer={(index, updates) => onUpdateBottomLayer(assemblyId, index, updates)}
-        onRemoveLayer={index => onRemoveBottomLayer(assemblyId, index)}
-        onMoveLayer={(fromIndex, toIndex) => onMoveBottomLayer(assemblyId, fromIndex, toIndex)}
+        onAddLayer={layer => addFloorAssemblyBottomLayer(assemblyId, layer)}
+        onReplaceLayers={layers => setFloorAssemblyBottomLayers(assemblyId, layers)}
+        onUpdateLayer={(index, updates) => updateFloorAssemblyBottomLayer(assemblyId, index, updates)}
+        onRemoveLayer={index => removeFloorAssemblyBottomLayer(assemblyId, index)}
+        onMoveLayer={(fromIndex, toIndex) => moveFloorAssemblyBottomLayer(assemblyId, fromIndex, toIndex)}
         addLabel="Add Bottom Layer"
         emptyHint="No bottom layers defined"
         layerPresets={DEFAULT_CEILING_LAYER_SETS}
