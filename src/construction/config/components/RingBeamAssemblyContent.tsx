@@ -27,9 +27,10 @@ import {
 import { getRingBeamAssemblyUsage } from '@/construction/config/usage'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import { bitumen, brick, cork, wood, woodwool } from '@/construction/materials/material'
-import type { RingBeamConfig } from '@/construction/ringBeams'
+import { type RingBeamConfig, resolveRingBeamAssembly } from '@/construction/ringBeams'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
+import { formatLength } from '@/shared/utils/formatting'
 
 import { getRingBeamTypeIcon } from './Icons'
 import { RingBeamAssemblySelect } from './RingBeamAssemblySelect'
@@ -156,6 +157,12 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
     [selectedAssembly, updateRingBeamAssemblyConfig]
   )
 
+  const totalHeight = useMemo(() => {
+    if (!selectedAssembly) return '???'
+    const assemblyImpl = resolveRingBeamAssembly(selectedAssembly)
+    return formatLength(assemblyImpl.height)
+  }, [selectedAssembly])
+
   return (
     <Flex direction="column" gap="4" width="100%">
       {/* Selector + Actions */}
@@ -242,31 +249,54 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
           p="3"
           style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
         >
-          <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
-            <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                Name
-              </Text>
-            </Label.Root>
-            <TextField.Root
-              value={selectedAssembly.name}
-              onChange={e => handleUpdateName(e.target.value)}
-              placeholder="Ring beam assembly name"
-              size="2"
-            />
+          <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
+            <Grid columns="auto 1fr" gapX="2" align="center">
+              <Label.Root>
+                <Text size="2" weight="medium" color="gray">
+                  Name
+                </Text>
+              </Label.Root>
+              <TextField.Root
+                value={selectedAssembly.name}
+                onChange={e => handleUpdateName(e.target.value)}
+                placeholder="Ring beam assembly name"
+                size="2"
+              />
+            </Grid>
 
-            <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                Type
-              </Text>
-            </Label.Root>
-            <Flex gap="2" align="center">
-              {React.createElement(getRingBeamTypeIcon(selectedAssembly.type))}
-              <Text size="2" color="gray">
-                {selectedAssembly.type === 'full' ? 'Full' : selectedAssembly.type === 'double' ? 'Double' : 'Brick'}
-              </Text>
-            </Flex>
+            <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
+              <Flex gap="2" align="center">
+                <Label.Root>
+                  <Text size="2" weight="medium" color="gray">
+                    Type
+                  </Text>
+                </Label.Root>
+                <Flex gap="2" align="center">
+                  {React.createElement(getRingBeamTypeIcon(selectedAssembly.type))}
+                  <Text size="2" color="gray">
+                    {selectedAssembly.type === 'full'
+                      ? 'Full'
+                      : selectedAssembly.type === 'double'
+                        ? 'Double'
+                        : 'Brick'}
+                  </Text>
+                </Flex>
+              </Flex>
+
+              <Flex gap="2" align="center">
+                <Label.Root>
+                  <Text size="2" weight="medium" color="gray">
+                    Total Height
+                  </Text>
+                </Label.Root>
+                <Text size="2" color="gray">
+                  {totalHeight}
+                </Text>
+              </Flex>
+            </Grid>
           </Grid>
+
+          <Separator size="4" />
 
           {selectedAssembly.type === 'full' && (
             <FullRingBeamFields config={selectedAssembly} onUpdate={handleUpdateConfig} />
@@ -508,8 +538,6 @@ function BrickRingBeamFields({
 }) {
   return (
     <>
-      <Separator size="4" />
-
       <Heading size="2">Stem Wall</Heading>
 
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
