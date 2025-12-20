@@ -1,29 +1,28 @@
-import type { Opening, PerimeterWall } from '@/building/model'
-import type { OpeningAssemblyId, WallAssemblyId } from '@/building/model/ids'
-import type { OpeningAssemblyConfig, WallAssemblyConfig } from '@/construction/config/types'
+import type { Opening, OpeningAssemblyId, PerimeterWall, WallAssemblyId } from '@/building/model'
+import type { OpeningAssemblyConfig, WallAssemblyConfig } from '@/construction/config'
 
 import type { Migration } from './shared'
 import { getPersistedConfigStoreState, isRecord } from './shared'
 
 /**
+ * Migration to version 7: Convert opening positions from edge-based to center-based
  * Migration to version 8: Convert opening dimensions from finished to fitted
  *
  * Changes:
+ * - Replace `offsetFromStart` (left edge) with `centerOffsetFromWallStart` (center)
+ * - Center position is padding-independent and enables simpler collision detection
  * - Opening width/height now include padding (fitted dimensions)
  * - Opening sillHeight now EXCLUDES padding (fitted dimension - starts lower)
- * - Center position UNCHANGED (geometrically invariant to padding)
  *
  * Conversion formulas:
+ * - centerOffsetFromWallStart = offsetFromStart + width / 2
  * - fitted width = finished width + 2 × padding
  * - fitted height = finished height + 2 × padding
  * - fitted sillHeight = max(0, finished sillHeight - padding)
- *
- * Fallback: If padding cannot be determined, uses 0mm (no conversion)
  */
-export const migrateToVersion8: Migration = state => {
+export const migrateToVersion7And8: Migration = state => {
   if (!isRecord(state)) return
 
-  // Get config store state for padding resolution
   const configState = getPersistedConfigStoreState()
   const wallAssemblyConfigs = configState?.wallAssemblyConfigs
   const openingAssemblyConfigs = configState?.openingAssemblyConfigs
@@ -34,12 +33,13 @@ export const migrateToVersion8: Migration = state => {
         for (const wall of perimeter.walls) {
           if (isRecord(wall) && Array.isArray(wall.openings)) {
             for (const opening of wall.openings) {
-              if (isRecord(opening) && typeof opening.width === 'number' && typeof opening.height === 'number') {
-                // Resolve padding for this opening
-                const padding = resolvePaddingForOpening(opening, wall, wallAssemblyConfigs, openingAssemblyConfigs)
+              if (isRecord(opening) && typeof opening.offsetFromStart === 'number') {
+                // Convert from left edge to center
+                opening.centerOffsetFromWallStart = opening.offsetFromStart + opening.width / 2
+                // Remove old property
+                delete opening.offsetFromStart
 
-                // IMPORTANT: centerOffsetFromWallStart UNCHANGED!
-                // It's geometrically invariant to padding
+                const padding = resolvePaddingForOpening(opening, wall, wallAssemblyConfigs, openingAssemblyConfigs)
 
                 // Convert dimensions: add padding to width/height
                 opening.width = opening.width + 2 * padding
