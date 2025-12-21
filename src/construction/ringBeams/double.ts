@@ -1,4 +1,4 @@
-import type { PerimeterConstructionContext } from '@/construction/context'
+import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
 import { type ConstructionResult, yieldError } from '@/construction/results'
 
 import type { DoubleRingBeamConfig, RingBeamAssembly, RingBeamSegment } from './types'

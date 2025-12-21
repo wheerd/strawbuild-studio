@@ -13,7 +13,7 @@ import {
   scaleAddVec2
 } from '@/shared/geometry'
 
-import { getConfigActions } from './config'
+import { getConfigActions } from '../config'
 import { computePerimeterConstructionPolygon } from './context'
 
 vi.mock('./config', () => ({

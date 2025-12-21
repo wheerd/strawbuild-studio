@@ -96,7 +96,12 @@ export function constructWallLayers(
       const start = Math.min(span.start, previousSpan.start)
       const end = Math.max(span.end, previousSpan.end)
       const bottom = storeyContext.floorTopConstructionOffset
-      const top = storeyContext.storeyHeight - storeyContext.floorTopConstructionOffset
+      const top =
+        storeyContext.ceilingHeight +
+        storeyContext.ceilingBottomOffset -
+        storeyContext.ceilingBottomConstructionOffset -
+        storeyContext.floorTopOffset +
+        storeyContext.floorTopConstructionOffset
 
       // Query roof for this layer's height line
       const heightLine = getRoofHeightLineForLines(
@@ -157,7 +162,7 @@ export function constructWallLayers(
       const start = Math.min(span.start, previousSpan.start)
       const end = Math.max(span.end, previousSpan.end)
       const bottom = -storeyContext.floorConstructionThickness
-      const top = storeyContext.storeyHeight - storeyContext.floorTopConstructionOffset
+      const top = storeyContext.ceilingHeight + storeyContext.ceilingBottomOffset + storeyContext.floorTopOffset
 
       // Query roof for this layer's height line
       const heightLine = getRoofHeightLineForLines(

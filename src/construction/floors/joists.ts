@@ -1,4 +1,3 @@
-import type { PerimeterConstructionContext } from '@/construction/context'
 import { createConstructionElement, createConstructionElementId } from '@/construction/elements'
 import {
   infiniteBeamPolygon,
@@ -8,6 +7,7 @@ import {
   stripesPolygons
 } from '@/construction/helpers'
 import { type ConstructionModel } from '@/construction/model'
+import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
 import { type ConstructionResult, aggregateResults } from '@/construction/results'
 import { createExtrudedPolygon } from '@/construction/shapes'
 import {

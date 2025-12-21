@@ -1,5 +1,4 @@
 import type { Roof } from '@/building/model'
-import { type PerimeterConstructionContext, applyWallFaceOffsets } from '@/construction/context'
 import { createConstructionElement } from '@/construction/elements'
 import {
   PolygonWithBoundingRect,
@@ -10,6 +9,7 @@ import {
 import { transformManifold } from '@/construction/manifold/operations'
 import { constructStrawPolygon } from '@/construction/materials/straw'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model'
+import { type PerimeterConstructionContext, applyWallFaceOffsets } from '@/construction/perimeters/context'
 import {
   type ConstructionResult,
   mergeResults,

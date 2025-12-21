@@ -3,7 +3,7 @@ import React from 'react'
 
 import type { StoreyId } from '@/building/model/ids'
 import { usePerimeters, useStoreyById } from '@/building/store'
-import { getPerimeterStats } from '@/construction/perimeter'
+import { getPerimeterStats } from '@/construction/perimeters/perimeter'
 import { getLevelColor } from '@/editor/status-bar/StoreySelector'
 import { formatArea, formatLength, formatVolume } from '@/shared/utils/formatting'
 

@@ -1,6 +1,6 @@
-import type { PerimeterConstructionContext } from '@/construction/context'
 import { createConstructionElement } from '@/construction/elements'
 import type { ConstructionModel } from '@/construction/model'
+import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
 import { createExtrudedPolygon } from '@/construction/shapes'
 import { TAG_FLOOR } from '@/construction/tags'
 import { fromTrans, newVec3 } from '@/shared/geometry'

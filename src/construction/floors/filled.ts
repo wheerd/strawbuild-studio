@@ -1,4 +1,3 @@
-import type { PerimeterConstructionContext } from '@/construction/context'
 import { createConstructionElement, createConstructionElementId } from '@/construction/elements'
 import {
   PolygonWithBoundingRect,
@@ -10,6 +9,7 @@ import {
 } from '@/construction/helpers'
 import { constructStrawPolygon } from '@/construction/materials/straw'
 import type { ConstructionModel } from '@/construction/model'
+import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
 import { type ConstructionResult, aggregateResults, yieldMeasurement } from '@/construction/results'
 import { createExtrudedPolygon } from '@/construction/shapes'
 import {

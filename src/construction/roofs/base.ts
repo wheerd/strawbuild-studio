@@ -2,11 +2,11 @@ import type { Manifold } from 'manifold-3d'
 
 import type { Roof } from '@/building/model'
 import { getModelActions } from '@/building/store'
-import type { PerimeterConstructionContext } from '@/construction/context'
 import { LAYER_CONSTRUCTIONS } from '@/construction/layers'
 import type { LayerConfig, MonolithicLayerConfig, StripedLayerConfig } from '@/construction/layers/types'
 import { transformManifold } from '@/construction/manifold/operations'
 import { type ConstructionModel } from '@/construction/model'
+import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
 import { type ConstructionResult, yieldAsGroup } from '@/construction/results'
 import { createExtrudedPolygon } from '@/construction/shapes'
 import {

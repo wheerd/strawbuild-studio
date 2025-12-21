@@ -13,7 +13,7 @@ import {
 import { ConstructionPartsListModal } from '@/construction/components/ConstructionPartsListModal'
 import TopDownPlanModal from '@/construction/components/TopDownPlanModal'
 import { useConfigurationModal } from '@/construction/config/context/ConfigurationModalContext'
-import { constructModel, constructStorey } from '@/construction/storey'
+import { constructModel, constructStorey } from '@/construction/storeys/storey'
 import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
 import { TOOL_GROUPS, getToolInfoById } from '@/editor/tools/system/metadata'
 import { replaceTool, useActiveToolId } from '@/editor/tools/system/store'

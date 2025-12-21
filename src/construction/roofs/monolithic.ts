@@ -1,10 +1,10 @@
 import type { Manifold } from 'manifold-3d'
 
 import type { Roof } from '@/building/model'
-import type { PerimeterConstructionContext } from '@/construction/context'
 import { createConstructionElement } from '@/construction/elements'
 import { transformManifold } from '@/construction/manifold/operations'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model'
+import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
 import {
   type ConstructionResult,
   mergeResults,

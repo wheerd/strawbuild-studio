@@ -26,19 +26,13 @@ import {
   unionPolygons
 } from '@/shared/geometry'
 
-import { getConfigActions } from './config'
-import {
-  type PerimeterConstructionContext,
-  applyWallFaceOffsets,
-  computePerimeterConstructionContext,
-  createWallFaceOffsets
-} from './context'
-import { FLOOR_ASSEMBLIES, constructFloorLayerModel } from './floors'
-import { polygonEdges } from './helpers'
-import type { RawMeasurement } from './measurements'
-import { type ConstructionModel, mergeModels, transformModel } from './model'
-import { resolveRingBeamAssembly } from './ringBeams'
-import { constructRoof } from './roof'
+import { getConfigActions } from '../config'
+import { FLOOR_ASSEMBLIES, constructFloorLayerModel } from '../floors'
+import { polygonEdges } from '../helpers'
+import type { RawMeasurement } from '../measurements'
+import { type ConstructionModel, mergeModels, transformModel } from '../model'
+import { resolveRingBeamAssembly } from '../ringBeams'
+import { constructRoof } from '../roofs/roof'
 import {
   TAG_BASE_PLATE,
   TAG_TOP_PLATE,
@@ -47,8 +41,14 @@ import {
   TAG_WALL_CONSTRUCTION_LENGTH_OUTSIDE,
   TAG_WALL_LENGTH_INSIDE,
   TAG_WALL_LENGTH_OUTSIDE
-} from './tags'
-import { WALL_ASSEMBLIES, type WallStoreyContext, createWallStoreyContext } from './walls'
+} from '../tags'
+import { WALL_ASSEMBLIES, type WallStoreyContext, createWallStoreyContext } from '../walls'
+import {
+  type PerimeterConstructionContext,
+  applyWallFaceOffsets,
+  computePerimeterConstructionContext,
+  createWallFaceOffsets
+} from './context'
 
 export function constructPerimeter(perimeter: Perimeter, includeFloor = true, includeRoof = true): ConstructionModel {
   const { getStoreyById, getStoreyAbove, getFloorOpeningsByStorey, getPerimetersByStorey, getRoofsByStorey } =

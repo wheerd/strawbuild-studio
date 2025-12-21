@@ -2,13 +2,13 @@ import type { OpeningAssemblyId } from '@/building/model/ids'
 import type { Opening, Perimeter, PerimeterWall, Storey } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config'
 import type { FloorAssemblyConfig } from '@/construction/config/types'
-import type { PerimeterConstructionContext } from '@/construction/context'
 import { FLOOR_ASSEMBLIES } from '@/construction/floors'
 import { WallConstructionArea } from '@/construction/geometry'
 import { resolveOpeningAssembly, resolveOpeningConfig } from '@/construction/openings/resolver'
+import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
 import { type ConstructionResult, yieldArea, yieldMeasurement } from '@/construction/results'
 import { resolveRingBeamAssembly } from '@/construction/ringBeams'
-import { getStoreyCeilingHeight } from '@/construction/storeyHeight'
+import { getStoreyCeilingHeight } from '@/construction/storeys/storeyHeight'
 import {
   TAG_OPENING_DOOR,
   TAG_OPENING_SPACING,

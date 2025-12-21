@@ -1,5 +1,5 @@
-import type { PerimeterConstructionContext } from '@/construction/context'
 import type { ConstructionModel } from '@/construction/model'
+import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
 import { type Length } from '@/shared/geometry'
 
 import type { FloorAssembly, FloorAssemblyConfigBase } from './types'
