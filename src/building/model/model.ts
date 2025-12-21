@@ -12,8 +12,10 @@ import type {
   RoofId,
   RoofOverhangId,
   StoreyId,
-  WallAssemblyId
+  WallAssemblyId,
+  WallPostId
 } from '@/building/model/ids'
+import type { MaterialId } from '@/construction/materials/material'
 import { type Length, type LineSegment2D, type Polygon2D, type Vec2 } from '@/shared/geometry'
 
 export type PerimeterReferenceSide = 'inside' | 'outside'
@@ -48,6 +50,21 @@ export interface Opening {
   openingAssemblyId?: OpeningAssemblyId // Optional override for this specific opening
 }
 
+export type WallPostType = 'single' | 'double'
+
+export interface WallPost {
+  id: WallPostId
+  type: WallPostType
+
+  centerOffsetFromWallStart: Length
+  position: 'center' | 'inside' | 'outside'
+
+  width: Length
+  thickness: Length
+  material: MaterialId
+  infillMaterial: MaterialId
+}
+
 // Floor/level
 export interface Storey {
   readonly id: StoreyId
@@ -74,6 +91,7 @@ export interface PerimeterWall {
   wallAssemblyId: WallAssemblyId
 
   openings: Opening[]
+  posts: WallPost[]
 
   // Ring beam configuration
   baseRingBeamAssemblyId?: RingBeamAssemblyId

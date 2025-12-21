@@ -5,6 +5,7 @@ const PERIMETER_ID_PREFIX = 'perimeter_'
 const PERIMETER_WALL_ID_PREFIX = 'outwall_'
 const PERIMETER_CORNER_ID_PREFIX = 'outcorner_'
 const OPENING_ID_PREFIX = 'opening_'
+const POST_ID_PREFIX = 'post_'
 const RING_BEAM_ID_PREFIX = 'ringbeam_'
 const WALL_ASSEMBLY_ID_PREFIX = 'wa_'
 const FLOOR_ASSEMBLY_ID_PREFIX = 'fa_'
@@ -26,6 +27,7 @@ export type RoofId = `${typeof ROOF_ID_PREFIX}${string}`
 export type PerimeterWallId = `${typeof PERIMETER_WALL_ID_PREFIX}${string}`
 export type PerimeterCornerId = `${typeof PERIMETER_CORNER_ID_PREFIX}${string}`
 export type OpeningId = `${typeof OPENING_ID_PREFIX}${string}`
+export type WallPostId = `${typeof POST_ID_PREFIX}${string}`
 export type RoofOverhangId = `${typeof ROOF_OVERHANG_ID_PREFIX}${string}`
 
 export type EntityId = PerimeterId | FloorAreaId | FloorOpeningId | RoofId
@@ -36,6 +38,7 @@ export type SelectableId =
   | PerimeterWallId
   | PerimeterCornerId
   | OpeningId
+  | WallPostId
   | RoofId
   | RoofOverhangId
 
@@ -57,6 +60,7 @@ export const createRoofId = (): RoofId => createId(ROOF_ID_PREFIX)
 export const createPerimeterWallId = (): PerimeterWallId => createId(PERIMETER_WALL_ID_PREFIX)
 export const createPerimeterCornerId = (): PerimeterCornerId => createId(PERIMETER_CORNER_ID_PREFIX)
 export const createOpeningId = (): OpeningId => createId(OPENING_ID_PREFIX)
+export const createWallPostId = (): WallPostId => createId(POST_ID_PREFIX)
 export const createRoofOverhangId = (): RoofOverhangId => createId(ROOF_OVERHANG_ID_PREFIX)
 
 // Config ID generators
@@ -80,6 +84,7 @@ export const isRoofId = (id: string): id is RoofId => id.startsWith(ROOF_ID_PREF
 export const isPerimeterWallId = (id: string): id is PerimeterWallId => id.startsWith(PERIMETER_WALL_ID_PREFIX)
 export const isPerimeterCornerId = (id: string): id is PerimeterCornerId => id.startsWith(PERIMETER_CORNER_ID_PREFIX)
 export const isOpeningId = (id: string): id is OpeningId => id.startsWith(OPENING_ID_PREFIX)
+export const isWallPostId = (id: string): id is WallPostId => id.startsWith(POST_ID_PREFIX)
 export const isRoofOverhangId = (id: string): id is RoofOverhangId => id.startsWith(ROOF_OVERHANG_ID_PREFIX)
 
 // Config type guards
@@ -95,6 +100,7 @@ export type EntityType =
   | 'perimeter-wall'
   | 'perimeter-corner'
   | 'opening'
+  | 'wall-post'
   | 'floor-area'
   | 'floor-opening'
   | 'roof'
