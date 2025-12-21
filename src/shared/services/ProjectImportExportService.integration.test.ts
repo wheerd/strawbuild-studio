@@ -1,9 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
-import { getConfigState, setConfigState } from '@/construction/config/store'
-import { getMaterialsState, setMaterialsState } from '@/construction/materials/store'
+import { getConfigActions, getConfigState } from '@/construction/config/store'
+import { getMaterialsActions, getMaterialsState } from '@/construction/materials/store'
 import { type Polygon2D, newVec2 } from '@/shared/geometry'
 
 import { ProjectImportExportService } from './ProjectImportExportService'
@@ -34,16 +33,13 @@ vi.mock('@/shared/geometry', async importOriginal => {
 describe('ProjectImportExportService Integration', () => {
   beforeEach(() => {
     // Reset stores to clean state before each test
-    const modelActions = getModelActions()
-    modelActions.reset()
+    getModelActions().reset()
 
     // Ensure we have some default config
-    const defaultConfig = getConfigState()
-    setConfigState(defaultConfig)
+    getConfigActions().reset()
 
     // Ensure we have some default materials
-    const defaultMaterials = getMaterialsState()
-    setMaterialsState(defaultMaterials)
+    getMaterialsActions().reset()
   })
 
   it('exports and imports project data with full fidelity (except IDs)', async () => {
@@ -64,8 +60,8 @@ describe('ProjectImportExportService Integration', () => {
       points: [newVec2(0, 0), newVec2(8000, 0), newVec2(8000, 6000), newVec2(0, 6000)]
     }
 
-    const wallAssemblyId = Object.keys(getConfigState().wallAssemblyConfigs)[0] as WallAssemblyId
-    const ringBeamAssemblyId = Object.keys(getConfigState().ringBeamAssemblyConfigs)[0] as RingBeamAssemblyId
+    const wallAssemblyId = getConfigActions().getDefaultWallAssemblyId()
+    const ringBeamAssemblyId = getConfigActions().getAllRingBeamAssemblies()[0].id
 
     const perimeter = modelActions.addPerimeter(
       testStorey.id,
@@ -290,7 +286,7 @@ describe('ProjectImportExportService Integration', () => {
     modelActions.addStorey('Second Floor', 2600)
 
     // Add perimeters to each storey
-    const wallAssemblyId = Object.keys(getConfigState().wallAssemblyConfigs)[0] as WallAssemblyId
+    const wallAssemblyId = getConfigActions().getDefaultWallAssemblyId()
 
     // Different shaped perimeters for each floor
     const groundBoundary = {
@@ -449,5 +445,111 @@ describe('ProjectImportExportService Integration', () => {
     // Verify custom material was restored
     const restoredMaterial = materialsActions.getMaterialById(customMaterial.id)
     expect(restoredMaterial).toEqual(customMaterial)
+  })
+
+  it('preserves roof perimeter references across export/import', async () => {
+    const modelActions = getModelActions()
+
+    // Use the default ground floor that already exists
+    const existingStoreys = modelActions.getStoreysOrderedByLevel()
+    const testStorey = existingStoreys[0]
+
+    // Create a perimeter
+    const boundary = {
+      points: [newVec2(0, 0), newVec2(8000, 0), newVec2(8000, 6000), newVec2(0, 6000)]
+    }
+
+    const wallAssemblyId = getConfigActions().getDefaultWallAssemblyId()
+    const perimeter = modelActions.addPerimeter(
+      testStorey.id,
+      boundary,
+      wallAssemblyId,
+      200,
+      undefined,
+      undefined,
+      'inside'
+    )
+
+    // Get the roof assembly ID from config
+    const roofAssemblyId = getConfigActions().getDefaultRoofAssemblyId()
+    if (!roofAssemblyId) {
+      throw new Error('No roof assembly config found')
+    }
+
+    // Add a roof that references the perimeter
+    const roofPolygon = {
+      points: [newVec2(0, 0), newVec2(8000, 0), newVec2(8000, 6000), newVec2(0, 6000)]
+    }
+    const roof = modelActions.addRoof(
+      testStorey.id,
+      'gable',
+      roofPolygon,
+      0, // mainSideIndex
+      30, // slope in degrees
+      100, // verticalOffset
+      500, // overhang
+      roofAssemblyId,
+      perimeter.id // reference to the perimeter
+    )
+
+    // Verify the roof has the perimeter reference before export
+    expect(roof.referencePerimeter).toBe(perimeter.id)
+
+    // Capture original data
+    const originalPerimeterId = perimeter.id
+    const originalRoofData = {
+      type: roof.type,
+      mainSideIndex: roof.mainSideIndex,
+      slope: roof.slope,
+      verticalOffset: Number(roof.verticalOffset),
+      assemblyId: roof.assemblyId,
+      referencePerimeterExists: !!roof.referencePerimeter
+    }
+
+    // Export the project
+    const exportResult = await ProjectImportExportService.exportToString()
+    expect(exportResult.success).toBe(true)
+
+    if (!exportResult.success) return
+
+    // Verify the exported data contains the perimeter ID
+    const exportedData = JSON.parse(exportResult.content)
+    const exportedStorey = exportedData.modelStore.storeys[0]
+    expect(exportedStorey.perimeters).toHaveLength(1)
+    expect(exportedStorey.perimeters[0].id).toBe(originalPerimeterId)
+    expect(exportedStorey.roofs).toHaveLength(1)
+    expect(exportedStorey.roofs[0].referencePerimeter).toBe(originalPerimeterId)
+
+    // Reset the stores
+    modelActions.reset()
+
+    // Import the exported data
+    const importResult = await ProjectImportExportService.importFromString(exportResult.content)
+    expect(importResult.success).toBe(true)
+
+    if (!importResult.success) return
+
+    // Verify the imported data
+    const importedStoreys = modelActions.getStoreysOrderedByLevel()
+    const importedPerimeters = modelActions.getPerimetersByStorey(importedStoreys[0].id)
+    const importedRoofs = modelActions.getRoofsByStorey(importedStoreys[0].id)
+
+    expect(importedPerimeters).toHaveLength(1)
+    expect(importedRoofs).toHaveLength(1)
+
+    const importedPerimeter = importedPerimeters[0]
+    const importedRoof = importedRoofs[0]
+
+    // Verify roof properties
+    expect(importedRoof.type).toBe(originalRoofData.type)
+    expect(importedRoof.mainSideIndex).toBe(originalRoofData.mainSideIndex)
+    expect(importedRoof.slope).toBe(originalRoofData.slope)
+    expect(Number(importedRoof.verticalOffset)).toBe(originalRoofData.verticalOffset)
+    expect(importedRoof.assemblyId).toBe(originalRoofData.assemblyId)
+
+    // Most importantly: verify the roof reference points to the imported perimeter
+    // The ID will be different, but the reference should be preserved
+    expect(importedRoof.referencePerimeter).toBeDefined()
+    expect(importedRoof.referencePerimeter).toBe(importedPerimeter.id)
   })
 })
