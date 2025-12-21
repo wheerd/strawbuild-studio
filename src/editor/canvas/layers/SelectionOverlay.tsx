@@ -9,7 +9,8 @@ import type {
   PerimeterId,
   PerimeterWallId,
   RoofId,
-  SelectableId
+  SelectableId,
+  WallPostId
 } from '@/building/model/ids'
 import {
   isFloorAreaId,
@@ -19,7 +20,8 @@ import {
   isPerimeterId,
   isPerimeterWallId,
   isRoofId,
-  isRoofOverhangId
+  isRoofOverhangId,
+  isWallPostId
 } from '@/building/model/ids'
 import type { Perimeter, Roof } from '@/building/model/model'
 import { useFloorAreaById, useFloorOpeningById, usePerimeterById, useRoofById } from '@/building/store'
@@ -127,25 +129,33 @@ function getPerimeterEntityPoints(
 ): Vec2[] | null {
   // Entity type determines the selection path structure and required points
   if (isPerimeterId(currentSelection)) {
-    // Path: [wallId]
+    // Path: [perimeterId]
     return getPerimeterPoints(perimeter)
   }
 
   if (isPerimeterWallId(currentSelection)) {
-    // Path: [wallId, wallId]
+    // Path: [perimeterId, wallId]
     return getPerimeterWallPoints(perimeter, currentSelection)
   }
 
   if (isPerimeterCornerId(currentSelection)) {
-    // Path: [wallId, cornerId]
+    // Path: [perimeterId, cornerId]
     return getPerimeterCornerPoints(perimeter, currentSelection)
   }
 
   if (isOpeningId(currentSelection)) {
-    // Path: [wallId, wallId, openingId]
+    // Path: [perimeterId, wallId, openingId]
     const [, wallId] = selectionPath
     if (isPerimeterWallId(wallId)) {
       return getOpeningPoints(perimeter, wallId, currentSelection)
+    }
+  }
+
+  if (isWallPostId(currentSelection)) {
+    // Path: [perimeterId, wallId, postId]
+    const [, wallId] = selectionPath
+    if (isPerimeterWallId(wallId)) {
+      return getWallPostPoints(perimeter, wallId, currentSelection)
     }
   }
 
@@ -267,6 +277,39 @@ function getOpeningPoints(perimeter: Perimeter, wallId: PerimeterWallId, opening
   const wallVector = wall.direction
   const offsetDistance = opening.centerOffsetFromWallStart
   const halfWidth = opening.width / 2
+  const offsetStart = scaleVec2(wallVector, offsetDistance - halfWidth)
+  const offsetEnd = scaleVec2(wallVector, offsetDistance + halfWidth)
+
+  // Calculate opening polygon corners
+  const insideOpeningStart = addVec2(insideStart, offsetStart)
+  const insideOpeningEnd = addVec2(insideStart, offsetEnd)
+  const outsideOpeningStart = addVec2(outsideStart, offsetStart)
+  const outsideOpeningEnd = addVec2(outsideStart, offsetEnd)
+
+  return [insideOpeningStart, insideOpeningEnd, outsideOpeningEnd, outsideOpeningStart]
+}
+
+function getWallPostPoints(perimeter: Perimeter, wallId: PerimeterWallId, postId: WallPostId): Vec2[] | null {
+  const wall = perimeter.walls.find(s => s.id === wallId)
+
+  if (!wall) {
+    console.warn('SelectionOverlay: Wall not found for post:', wallId)
+    return null
+  }
+
+  const post = wall.posts.find(o => o.id === postId)
+
+  if (!post) {
+    console.warn('SelectionOverlay: Post not found:', postId)
+    return null
+  }
+
+  // Calculate opening geometry (same logic as OpeningShape.tsx lines 33-49)
+  const insideStart = wall.insideLine.start
+  const outsideStart = wall.outsideLine.start
+  const wallVector = wall.direction
+  const offsetDistance = post.centerOffsetFromWallStart
+  const halfWidth = post.width / 2
   const offsetStart = scaleVec2(wallVector, offsetDistance - halfWidth)
   const offsetEnd = scaleVec2(wallVector, offsetDistance + halfWidth)
 

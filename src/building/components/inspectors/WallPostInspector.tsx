@@ -1,18 +1,6 @@
 import { InfoCircledIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import {
-  Box,
-  Callout,
-  Flex,
-  Grid,
-  IconButton,
-  Kbd,
-  SegmentedControl,
-  Select,
-  Separator,
-  Text,
-  Tooltip
-} from '@radix-ui/themes'
+import { Box, Callout, Flex, Grid, IconButton, Kbd, SegmentedControl, Select, Separator, Text } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 
 import type { PerimeterId, PerimeterWallId, WallPostId } from '@/building/model/ids'
@@ -142,30 +130,20 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
       {/* Basic Properties */}
       <Flex direction="column" gap="3">
         <Flex align="center" justify="between" gap="2">
-          <Flex gap="1" align="center">
-            <Text size="1" weight="medium" color="gray">
-              Type
-            </Text>
-            <Tooltip content="Single or double post configuration">
-              <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
-            </Tooltip>
-          </Flex>
-          <SegmentedControl.Root value={post.type} onValueChange={handleTypeChange} size="2">
+          <Text size="1" weight="medium" color="gray">
+            Type
+          </Text>
+          <SegmentedControl.Root value={post.type} onValueChange={handleTypeChange} size="1">
             <SegmentedControl.Item value="single">Single</SegmentedControl.Item>
             <SegmentedControl.Item value="double">Double</SegmentedControl.Item>
           </SegmentedControl.Root>
         </Flex>
 
         <Flex align="center" justify="between" gap="2">
-          <Flex gap="1" align="center">
-            <Text size="1" weight="medium" color="gray">
-              Position
-            </Text>
-            <Tooltip content="Post position relative to wall center">
-              <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
-            </Tooltip>
-          </Flex>
-          <SegmentedControl.Root value={post.position} onValueChange={handlePositionChange} size="2">
+          <Text size="1" weight="medium" color="gray">
+            Position
+          </Text>
+          <SegmentedControl.Root value={post.position} onValueChange={handlePositionChange} size="1">
             <SegmentedControl.Item value="inside">Inside</SegmentedControl.Item>
             <SegmentedControl.Item value="center">Center</SegmentedControl.Item>
             <SegmentedControl.Item value="outside">Outside</SegmentedControl.Item>
@@ -173,7 +151,7 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
         </Flex>
 
         {/* Dimension inputs in Radix Grid layout */}
-        <Grid columns="auto min-content auto min-content" rows="1" gap="2" gapX="3" align="center" flexGrow="1">
+        <Grid columns="auto 1fr auto 1fr" rows="1" gap="2" gapX="3" align="center" flexGrow="1">
           {/* Width Label */}
           <Label.Root htmlFor="post-width">
             <Text size="1" weight="medium" color="gray">
@@ -218,20 +196,13 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
         </Grid>
       </Flex>
 
-      <Separator size="4" />
-
       {/* Material Selection */}
       <Flex direction="column" gap="2">
-        <Flex gap="1" align="center">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Post Material
-            </Text>
-          </Label.Root>
-          <Tooltip content="Material for the structural post">
-            <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
-          </Tooltip>
-        </Flex>
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Post Material
+          </Text>
+        </Label.Root>
         <Select.Root value={post.material} onValueChange={handleMaterialChange} size="1">
           <Select.Trigger />
           <Select.Content>
@@ -246,16 +217,11 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
 
       {/* Infill Material Selection */}
       <Flex direction="column" gap="2">
-        <Flex gap="1" align="center">
-          <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              Infill Material
-            </Text>
-          </Label.Root>
-          <Tooltip content="Material for infill between post sections">
-            <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
-          </Tooltip>
-        </Flex>
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            Infill Material
+          </Text>
+        </Label.Root>
         <Select.Root value={post.infillMaterial} onValueChange={handleInfillMaterialChange} size="1">
           <Select.Trigger />
           <Select.Content>

@@ -6,7 +6,8 @@ import {
   isPerimeterCornerId,
   isPerimeterId,
   isPerimeterWallId,
-  isRoofId
+  isRoofId,
+  isWallPostId
 } from '@/building/model/ids'
 import { getCanRedo, getCanUndo, getModelActions, getRedoFunction, getUndoFunction } from '@/building/store'
 import { getCurrentSelection, getSelectionPath, popSelection } from '@/editor/hooks/useSelectionStore'
@@ -226,6 +227,17 @@ export class KeyboardShortcutManager {
           return true
         } else {
           console.warn(`Could not find parent wall/wall in selection path for opening: ${selectedId}`)
+          return false
+        }
+      } else if (isWallPostId(selectedId)) {
+        const perimeterId = selectionPath[0]
+        const wallId = selectionPath[1]
+
+        if (perimeterId && wallId && isPerimeterId(perimeterId) && isPerimeterWallId(wallId)) {
+          modelStore.removePerimeterWallPost(perimeterId, wallId, selectedId)
+          return true
+        } else {
+          console.warn(`Could not find parent wall/wall in selection path for post: ${selectedId}`)
           return false
         }
       } else if (isPerimeterId(selectedId)) {
