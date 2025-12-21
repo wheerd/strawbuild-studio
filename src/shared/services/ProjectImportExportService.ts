@@ -35,6 +35,7 @@ export interface ExportedStorey {
 }
 
 export interface ExportedPerimeter {
+  id?: string // Added in v1.12.0 to preserve perimeter references in roofs
   referenceSide?: 'inside' | 'outside'
   referencePolygon?: ExportedFloorPolygon
   corners: ExportedCorner[]
@@ -134,7 +135,7 @@ export interface IProjectImportExportService {
   importFromString(content: string): Promise<ImportResult | ImportError>
 }
 
-const CURRENT_VERSION = '1.11.0'
+const CURRENT_VERSION = '1.12.0'
 const SUPPORTED_VERSIONS = [
   '1.0.0',
   '1.1.0',
@@ -147,7 +148,8 @@ const SUPPORTED_VERSIONS = [
   '1.8.0',
   '1.9.0',
   '1.10.0',
-  '1.11.0'
+  '1.11.0',
+  '1.12.0'
 ] as const
 
 const compareVersion = (version1: string, version2: string) => {
@@ -226,6 +228,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
           referencePerimeter: roof.referencePerimeter
         }))
         const perimeters = modelActions.getPerimetersByStorey(storey.id).map(perimeter => ({
+          id: perimeter.id,
           referenceSide: perimeter.referenceSide,
           referencePolygon: polygonToExport({ points: perimeter.referencePolygon }),
           corners: perimeter.corners.map(corner => ({
@@ -311,6 +314,9 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
       // 5. Process imported storeys
       const exportedStoreys = importResult.data.modelStore.storeys
 
+      // Create a mapping from old perimeter IDs to new perimeter IDs (for roof references)
+      const perimeterIdMap = new Map<PerimeterId, PerimeterId>()
+
       exportedStoreys.forEach((exportedStorey, index, list) => {
         let targetStorey: Storey
         const floorAssemblyId = exportedStorey.floorAssemblyId as FloorAssemblyId
@@ -355,6 +361,11 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
             undefined, // No default top ring beam
             exportedPerimeter.referenceSide ?? 'inside'
           )
+
+          // Map old perimeter ID to new perimeter ID (for roof references)
+          if (exportedPerimeter.id) {
+            perimeterIdMap.set(exportedPerimeter.id as PerimeterId, perimeter.id)
+          }
 
           // 7. Update wall properties - auto-recomputes geometry
           exportedPerimeter.walls.forEach((exportedWall, wallIndex) => {
@@ -445,6 +456,12 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
           const polygon: Polygon2D = {
             points: exportedRoof.referencePolygon.points.map(point => newVec2(point.x, point.y))
           }
+          // Map the old perimeter ID to the new one
+          let referencePerimeter: PerimeterId | undefined = undefined
+          if (exportedRoof.referencePerimeter) {
+            const oldPerimeterId = exportedRoof.referencePerimeter as PerimeterId
+            referencePerimeter = perimeterIdMap.get(oldPerimeterId) ?? undefined
+          }
           const addedRoof = modelActions.addRoof(
             targetStorey.id,
             exportedRoof.type,
@@ -454,7 +471,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
             exportedRoof.verticalOffset,
             exportedRoof.overhangs[0] ?? 0, // Use first overhang value as default
             exportedRoof.assemblyId as RoofAssemblyId,
-            exportedRoof.referencePerimeter ? (exportedRoof.referencePerimeter as PerimeterId) : undefined
+            referencePerimeter
           )
           // Update individual overhangs if they differ
           if (addedRoof && exportedRoof.overhangs.length === addedRoof.overhangs.length) {
