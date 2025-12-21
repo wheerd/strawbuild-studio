@@ -26,6 +26,7 @@ describe('PerimeterCornerShape', () => {
     thickness: 420,
     wallAssemblyId: 'assembly1' as any,
     openings: [],
+      posts: [],
     insideLength: 1000,
     outsideLength: 1000,
     wallLength: 1000,

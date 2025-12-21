@@ -11,6 +11,7 @@ import { MATERIAL_COLORS } from '@/shared/theme/colors'
 import { formatLength } from '@/shared/utils/formatting'
 
 import { OpeningShape } from './OpeningShape'
+import { WallPostShape } from './WallPostShape'
 
 interface PerimeterWallShapeProps {
   wall: PerimeterWall
@@ -78,6 +79,20 @@ export function PerimeterWallShape({
         <OpeningShape
           key={`opening-${opening.id}`}
           opening={opening}
+          wall={wall}
+          perimeterId={perimeterId}
+          insideStartCorner={insideStartCorner}
+          insideEndCorner={insideEndCorner}
+          outsideStartCorner={outsideStartCorner}
+          outsideEndCorner={outsideEndCorner}
+        />
+      ))}
+
+      {/* Render posts in this wall */}
+      {wall.posts.map(post => (
+        <WallPostShape
+          key={`post-${post.id}`}
+          post={post}
           wall={wall}
           perimeterId={perimeterId}
           insideStartCorner={insideStartCorner}

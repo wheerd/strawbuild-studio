@@ -63,6 +63,7 @@ describe('SplitWallTool', () => {
       thickness: 420,
       wallAssemblyId: 'assembly1' as any,
       openings: [],
+      posts: [],
       insideLength: 1000,
       outsideLength: 1000,
       wallLength: 1000,
@@ -117,6 +118,7 @@ describe('SplitWallTool', () => {
           sillHeight: 0
         }
       ],
+      posts: [],
       insideLength: 2000,
       outsideLength: 2000,
       wallLength: 2000,

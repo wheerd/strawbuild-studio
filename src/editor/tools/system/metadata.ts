@@ -1,4 +1,4 @@
-import { CursorArrowIcon, MoveIcon, RocketIcon } from '@radix-ui/react-icons'
+import { CursorArrowIcon, MoveIcon, RocketIcon, StretchVerticallyIcon } from '@radix-ui/react-icons'
 
 import {
   FitToViewIcon,
@@ -52,6 +52,11 @@ export const TOOL_METADATA: Record<ToolId, ToolMetadata> = {
     iconComponent: OpeningsIcon,
     hotkey: 'o'
   },
+  'perimeter.add-post': {
+    name: 'Add Post',
+    iconComponent: StretchVerticallyIcon,
+    hotkey: 'shift+p'
+  },
   'perimeter.split-wall': {
     name: 'Split Wall',
     iconComponent: SplitWallIcon,
@@ -76,7 +81,13 @@ export const TOOL_GROUPS: ToolGroup[] = [
   },
   {
     name: 'Perimeter',
-    tools: ['perimeter.add', 'perimeter.preset', 'perimeter.add-opening', 'perimeter.split-wall'] as const
+    tools: [
+      'perimeter.add',
+      'perimeter.preset',
+      'perimeter.add-opening',
+      'perimeter.add-post',
+      'perimeter.split-wall'
+    ] as const
   },
   {
     name: 'Floors',

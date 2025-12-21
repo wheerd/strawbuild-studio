@@ -159,6 +159,7 @@ function createMockWall(
     insideLength: wallLength,
     outsideLength: wallLength,
     openings,
+    posts: [],
     insideLine: {
       start: ZERO_VEC2,
       end: newVec2(wallLength, 0)

@@ -13,6 +13,7 @@ export type ToolId =
   | 'perimeter.add'
   | 'perimeter.preset'
   | 'perimeter.add-opening'
+  | 'perimeter.add-post'
   | 'perimeter.split-wall'
   | 'roofs.add-roof'
   | 'test.data'

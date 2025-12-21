@@ -30,6 +30,7 @@ function createMockWall(id: string, wallLength: Length, thickness: Length, wallA
     insideLength: wallLength,
     outsideLength: wallLength + thickness * 2,
     openings: [],
+      posts: [],
     insideLine: {
       start: startPoint,
       end: endPoint

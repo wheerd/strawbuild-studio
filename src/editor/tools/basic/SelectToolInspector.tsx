@@ -12,6 +12,7 @@ import {
   RoofOverhangInspector
 } from '@/building/components/inspectors'
 import { StoreyInspector } from '@/building/components/inspectors/StoreyInspector'
+import { WallPostInspector } from '@/building/components/inspectors/WallPostInspector'
 import {
   type PerimeterId,
   type PerimeterWallId,
@@ -23,7 +24,8 @@ import {
   isPerimeterId,
   isPerimeterWallId,
   isRoofId,
-  isRoofOverhangId
+  isRoofOverhangId,
+  isWallPostId
 } from '@/building/model/ids'
 import { useActiveStoreyId } from '@/building/store'
 import { useCurrentSelection, useSelectionPath } from '@/editor/hooks/useSelectionStore'
@@ -61,6 +63,15 @@ export function SelectToolInspector(): React.JSX.Element {
         />
       )}
 
+      {selectedId && isWallPostId(selectedId) && (
+        <WallPostInspector
+          key={selectedId}
+          perimeterId={selectionPath[0] as PerimeterId}
+          wallId={selectionPath[1] as PerimeterWallId}
+          postId={selectedId}
+        />
+      )}
+
       {selectedId && isFloorAreaId(selectedId) && <FloorAreaInspector key={selectedId} floorAreaId={selectedId} />}
 
       {selectedId && isFloorOpeningId(selectedId) && (
@@ -79,6 +90,7 @@ export function SelectToolInspector(): React.JSX.Element {
         !isPerimeterWallId(selectedId) &&
         !isPerimeterCornerId(selectedId) &&
         !isOpeningId(selectedId) &&
+        !isWallPostId(selectedId) &&
         !isFloorAreaId(selectedId) &&
         !isFloorOpeningId(selectedId) &&
         !isRoofId(selectedId) &&

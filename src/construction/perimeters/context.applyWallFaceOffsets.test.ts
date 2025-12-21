@@ -41,6 +41,7 @@ function createRectangularPerimeter(width: number, height: number, wallThickness
       thickness: wallThickness,
       wallAssemblyId: `assembly-${index}` as WallAssemblyId,
       openings: [],
+      posts: [],
       insideLength: distVec2(start, end),
       outsideLength: distVec2(outsideStart, outsideEnd),
       wallLength: distVec2(start, end),

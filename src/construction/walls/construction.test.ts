@@ -58,6 +58,7 @@ describe('constructWall', () => {
     thickness: 400,
     wallAssemblyId: wallAssemblyId as any,
     openings: [],
+      posts: [],
     insideLength,
     outsideLength: insideLength,
     wallLength: insideLength,

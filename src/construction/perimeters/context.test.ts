@@ -54,6 +54,7 @@ describe('computePerimeterConstructionPolygon', () => {
         thickness,
         wallAssemblyId: `assembly-${index}` as WallAssemblyId,
         openings: [],
+      posts: [],
         insideLength: distVec2(insideStart, insideEnd),
         outsideLength: distVec2(outsideLineStart, outsideLineEnd),
         wallLength: distVec2(insideStart, insideEnd),
