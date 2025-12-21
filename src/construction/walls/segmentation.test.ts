@@ -1,14 +1,16 @@
 import { type Mock, type Mocked, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createOpeningId, createPerimeterId, createWallAssemblyId } from '@/building/model/ids'
+import { type StoreyId, createOpeningId, createPerimeterId, createWallAssemblyId } from '@/building/model/ids'
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
 import { type OpeningAssemblyConfig, getConfigActions } from '@/construction/config'
+import type { FloorAssembly } from '@/construction/floors'
 import { WallConstructionArea } from '@/construction/geometry'
 import { resolveOpeningAssembly, resolveOpeningConfig } from '@/construction/openings/resolver'
 import type { OpeningAssembly } from '@/construction/openings/types'
 import { aggregateResults, yieldElement } from '@/construction/results'
 import { resolveRingBeamAssembly } from '@/construction/ringBeams'
 import { createCuboid } from '@/construction/shapes'
+import type { StoreyContext } from '@/construction/storeys/context'
 import {
   TAG_OPENING_SPACING,
   TAG_RING_BEAM_HEIGHT,
@@ -21,7 +23,7 @@ import { Bounds3D, IDENTITY, type Length, type Vec3, ZERO_VEC2, newVec2, newVec3
 
 import type { WallCornerInfo } from './construction'
 import { calculateWallCornerInfo, getWallContext } from './corners/corners'
-import { type WallStoreyContext, segmentedWallConstruction } from './segmentation'
+import { segmentedWallConstruction } from './segmentation'
 
 // Mock dependencies
 vi.mock('./corners/corners', () => ({
@@ -160,15 +162,19 @@ function createMockLayers(): WallLayersConfig {
   }
 }
 
-function createMockStoreyContext(storeyHeight: Length = 2500, ceilingHeight: Length = 2000): WallStoreyContext {
+function createMockStoreyContext(storeyHeight: Length = 2500, wallHeight: Length = 2000): StoreyContext {
   return {
+    storeyId: 'storey-id' as StoreyId,
     storeyHeight,
-    floorConstructionThickness: 0,
-    ceilingHeight,
-    floorTopOffset: 0,
-    ceilingBottomOffset: 0,
-    ceilingBottomConstructionOffset: 0,
-    floorTopConstructionOffset: 0,
+    roofBottom: wallHeight + 100,
+    wallTop: wallHeight + 100,
+    ceilingConstructionBottom: wallHeight + 90,
+    finishedCeilingBottom: wallHeight + 80,
+    finishedFloorTop: 120,
+    floorConstructionTop: 110,
+    wallBottom: 100,
+    floorBottom: 0,
+    floorAssembly: {} as FloorAssembly,
     perimeterContexts: []
   }
 }
@@ -468,8 +474,8 @@ describe('segmentedWallConstruction', () => {
       expect(mockOpeningConstruction).toHaveBeenCalledTimes(1)
       expect(mockOpeningConstruction).toHaveBeenCalledWith(
         expectArea(newVec3(1000, 30, 60), newVec3(800, 220, 2380)),
-        2040,
-        840,
+        2060,
+        860,
         mockInfillMethod
       )
 
@@ -509,8 +515,8 @@ describe('segmentedWallConstruction', () => {
       // Should call opening construction once
       expect(mockOpeningConstruction).toHaveBeenCalledWith(
         expectArea(newVec3(0, 30, 60), newVec3(800, 220, 2380)),
-        2040,
-        840,
+        2060,
+        860,
         mockInfillMethod
       )
     })
@@ -546,8 +552,8 @@ describe('segmentedWallConstruction', () => {
       // Should call opening construction once
       expect(mockOpeningConstruction).toHaveBeenCalledWith(
         expectArea(newVec3(2200, 30, 60), newVec3(800, 220, 2380)),
-        2040,
-        840,
+        2060,
+        860,
         mockInfillMethod
       )
     })
@@ -579,8 +585,8 @@ describe('segmentedWallConstruction', () => {
           newVec3(1000, 30, 60),
           newVec3(1400, 220, 2380) // combined width: 800 + 600
         ),
-        2040,
-        840,
+        2060,
+        860,
         mockInfillMethod
       )
     })
@@ -658,15 +664,15 @@ describe('segmentedWallConstruction', () => {
       expect(mockOpeningConstruction).toHaveBeenNthCalledWith(
         1,
         expectArea(newVec3(500, 30, 60), newVec3(800, 220, 2380)),
-        2040,
-        840,
+        2060,
+        860,
         mockInfillMethod
       )
       expect(mockOpeningConstruction).toHaveBeenNthCalledWith(
         2,
         expectArea(newVec3(2000, 30, 60), newVec3(600, 220, 2380)),
-        2040,
-        840,
+        2060,
+        860,
         mockInfillMethod
       )
     })

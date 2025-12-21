@@ -1,30 +1,35 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createOpeningId, createPerimeterId, createWallAssemblyId } from '@/building/model/ids'
+import { type StoreyId, createOpeningId, createPerimeterId, createWallAssemblyId } from '@/building/model/ids'
 import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
+import type { FloorAssembly } from '@/construction/floors'
 import { WallConstructionArea } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
 import type { PostConfig } from '@/construction/materials/posts'
 import { constructPost } from '@/construction/materials/posts'
 import { constructStraw } from '@/construction/materials/straw'
 import { yieldElement, yieldError, yieldMeasurement, yieldWarning } from '@/construction/results'
+import type { StoreyContext } from '@/construction/storeys/context'
 import { TAG_POST_SPACING } from '@/construction/tags'
 import type { InfillWallConfig, InfillWallSegmentConfig, WallLayersConfig } from '@/construction/walls'
-import { type WallStoreyContext } from '@/construction/walls/segmentation'
 import { segmentedWallConstruction } from '@/construction/walls/segmentation'
 import { IDENTITY, type Length, type Vec3, ZERO_VEC2, newVec2, newVec3 } from '@/shared/geometry'
 
 import { InfillWallAssembly } from './assembly'
 
-function createMockStoreyContext(storeyHeight: Length = 2500): WallStoreyContext {
+function createMockStoreyContext(storeyHeight: Length = 2500): StoreyContext {
   return {
-    storeyHeight: 0,
-    floorConstructionThickness: 0,
-    ceilingHeight: storeyHeight,
-    floorTopOffset: 0,
-    ceilingBottomOffset: 0,
-    ceilingBottomConstructionOffset: 0,
-    floorTopConstructionOffset: 0,
+    storeyId: 'storey-id' as StoreyId,
+    storeyHeight,
+    roofBottom: 0,
+    wallTop: 0,
+    ceilingConstructionBottom: 0,
+    finishedCeilingBottom: 0,
+    finishedFloorTop: 0,
+    floorConstructionTop: 0,
+    wallBottom: 0,
+    floorBottom: 0,
+    floorAssembly: {} as FloorAssembly,
     perimeterContexts: []
   }
 }

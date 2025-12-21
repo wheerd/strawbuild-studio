@@ -21,7 +21,7 @@ import { useStoreysOrderedByLevel } from '@/building/store'
 import type { FloorAssemblyConfig } from '@/construction/config'
 import { useConfigActions, useDefaultFloorAssemblyId, useFloorAssemblies } from '@/construction/config/store'
 import { getFloorAssemblyUsage } from '@/construction/config/usage'
-import { FLOOR_ASSEMBLIES } from '@/construction/floors'
+import { resolveFloorAssembly } from '@/construction/floors'
 import type {
   FilledFloorConfig,
   FloorAssemblyType,
@@ -314,11 +314,7 @@ function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.
     [assembly.id, updateFloorAssemblyConfig]
   )
 
-  const totalThickness = useMemo(() => {
-    const assemblyImpl = FLOOR_ASSEMBLIES[assembly.type]
-    const totalThickness = assemblyImpl.getTotalThickness(assembly)
-    return formatLength(totalThickness)
-  }, [assembly])
+  const totalThickness = useMemo(() => formatLength(resolveFloorAssembly(assembly).totalThickness), [assembly])
 
   return (
     <Flex

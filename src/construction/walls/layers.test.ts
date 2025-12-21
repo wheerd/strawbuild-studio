@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
+  type StoreyId,
   createOpeningId,
   createPerimeterCornerId,
   createPerimeterId,
@@ -10,12 +11,13 @@ import {
 } from '@/building/model/ids'
 import type { Opening, Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model/model'
 import type { ConstructionElement, GroupOrElement } from '@/construction/elements'
+import type { FloorAssembly } from '@/construction/floors'
 import { clayPlasterBase, limePlasterBase } from '@/construction/materials/material'
 import type { ExtrudedShape } from '@/construction/shapes'
+import type { StoreyContext } from '@/construction/storeys/context'
 import { TAG_LAYERS, TAG_WALL_LAYER_INSIDE, TAG_WALL_LAYER_OUTSIDE } from '@/construction/tags'
 import type { WallCornerInfo } from '@/construction/walls'
 import type { WallContext } from '@/construction/walls/corners/corners'
-import type { WallStoreyContext } from '@/construction/walls/segmentation'
 import type { WallLayersConfig } from '@/construction/walls/types'
 import { type Polygon2D, type PolygonWithHoles2D, ZERO_VEC2, newVec2 } from '@/shared/geometry'
 
@@ -103,14 +105,18 @@ const createCorner = (overrides: Partial<PerimeterCorner>): PerimeterCorner => (
   ...overrides
 })
 
-const storeyContext: WallStoreyContext = {
-  storeyHeight: 3500,
-  ceilingHeight: 3000,
-  floorTopOffset: 50,
-  ceilingBottomOffset: 40,
-  floorConstructionThickness: 200,
-  floorTopConstructionOffset: 10,
-  ceilingBottomConstructionOffset: 20,
+const storeyContext: StoreyContext = {
+  storeyId: 'storey-id' as StoreyId,
+  storeyHeight: 3250,
+  roofBottom: 3000,
+  wallTop: 3000,
+  ceilingConstructionBottom: 2900,
+  finishedCeilingBottom: 2800,
+  finishedFloorTop: 200,
+  floorConstructionTop: 20,
+  wallBottom: 50,
+  floorBottom: -200,
+  floorAssembly: {} as FloorAssembly,
   perimeterContexts: []
 }
 
@@ -267,18 +273,18 @@ describe('constructWallLayers', () => {
 
     expect(insidePolygon.polygon.outer.points).toHaveLength(4)
     expect(insidePolygon.polygon.outer.points).toEqual([
-      newVec2(-30, 10),
-      newVec2(3030, 10),
-      newVec2(3030, 3080),
-      newVec2(-30, 3080)
+      newVec2(-30, -30),
+      newVec2(3030, -30),
+      newVec2(3030, 2950),
+      newVec2(-30, 2950)
     ])
 
     expect(outsidePolygon.polygon.outer.points).toHaveLength(4)
     expect(outsidePolygon.polygon.outer.points).toEqual([
-      newVec2(-300, -200),
-      newVec2(3300, -200),
-      newVec2(3300, 3080),
-      newVec2(-300, 3080)
+      newVec2(-300, -250),
+      newVec2(3300, -250),
+      newVec2(3300, 2950),
+      newVec2(-300, 2950)
     ])
 
     const layerGroups = model.elements.filter((element): element is GroupOrElement => 'children' in element)
@@ -333,8 +339,8 @@ describe('constructWallLayers', () => {
 
     expect(Math.min(...xs)).toBeCloseTo(1000)
     expect(Math.max(...xs)).toBeCloseTo(1000 + 900)
-    expect(Math.min(...ys)).toBeCloseTo(900 + 50)
-    expect(Math.max(...ys)).toBeCloseTo(900 + 1200 + 50)
+    expect(Math.min(...ys)).toBeCloseTo(900 + 200 - 50)
+    expect(Math.max(...ys)).toBeCloseTo(900 + 1200 + 200 - 50)
   })
 
   it('extends exterior layers when wall constructs the corner', () => {

@@ -1,17 +1,19 @@
 import { FilledFloorAssembly } from './filled'
 import { JoistFloorAssembly } from './joists'
 import { MonolithicFloorAssembly } from './monolithic'
-import type { FloorAssembly, FloorAssemblyType } from './types'
+import type { FloorAssembly, FloorConfig } from './types'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const FLOOR_ASSEMBLIES: Record<FloorAssemblyType, FloorAssembly<any>> = {
-  monolithic: new MonolithicFloorAssembly(),
-  joist: new JoistFloorAssembly(),
-  filled: new FilledFloorAssembly()
+export function resolveFloorAssembly(config: FloorConfig): FloorAssembly {
+  switch (config.type) {
+    case 'monolithic':
+      return new MonolithicFloorAssembly(config)
+    case 'joist':
+      return new JoistFloorAssembly(config)
+    case 'filled':
+      return new FilledFloorAssembly(config)
+    default:
+      throw new Error(`Unknown floor assembly type: ${(config as FloorConfig).type}`)
+  }
 }
 
 export * from './types'
-export * from './monolithic'
-export * from './joists'
-export * from './filled'
-export * from './layers'

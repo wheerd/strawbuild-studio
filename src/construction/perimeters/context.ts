@@ -30,6 +30,9 @@ export interface PerimeterConstructionContext {
   innerPolygon: Polygon2D
   floorOpenings: Polygon2D[]
   wallFaceOffsets: WallFaceOffset[]
+
+  outerFinishedPolygon: Polygon2D
+  innerFinishedPolygon: Polygon2D
 }
 
 export interface WallFaceOffset {
@@ -100,7 +103,9 @@ export const computePerimeterConstructionContext = (
     outerLines: outer.lines,
     outerPolygon: outer.polygon,
     floorOpenings: mergedHoles,
-    wallFaceOffsets: wallFaces
+    wallFaceOffsets: wallFaces,
+    innerFinishedPolygon: { points: perimeter.corners.map(c => c.insidePoint) },
+    outerFinishedPolygon: { points: perimeter.corners.map(c => c.outsidePoint) }
   }
 }
 

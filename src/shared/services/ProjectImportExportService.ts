@@ -16,7 +16,7 @@ import type {
   RoofAssemblyConfig,
   WallAssemblyConfig
 } from '@/construction/config/types'
-import { FLOOR_ASSEMBLIES } from '@/construction/floors'
+import { resolveFloorAssembly } from '@/construction/floors'
 import type { Material, MaterialId } from '@/construction/materials/material'
 import { getMaterialsState, setMaterialsState } from '@/construction/materials/store'
 import { MATERIALS_STORE_VERSION, migrateMaterialsState } from '@/construction/materials/store/migrations'
@@ -173,8 +173,8 @@ const getFloorAssemblyThicknessFromConfig = (
   if (!configs) return 0
   const config = configs[floorAssemblyId]
   if (!config) return 0
-  const assembly = FLOOR_ASSEMBLIES[config.type]
-  return Number(assembly.getTotalThickness(config))
+  const assembly = resolveFloorAssembly(config)
+  return Number(assembly.totalThickness)
 }
 
 const resolveImportedFloorHeight = (

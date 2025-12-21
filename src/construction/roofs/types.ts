@@ -1,9 +1,9 @@
 import type { Roof } from '@/building/model'
 import { sumLayerThickness } from '@/construction/config/store/layerUtils'
-import type { PerimeterConstructionContext } from '@/construction/context'
 import type { LayerConfig } from '@/construction/layers/types'
 import type { MaterialId } from '@/construction/materials/material'
 import type { ConstructionModel } from '@/construction/model'
+import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
 import type { Length, LineSegment2D } from '@/shared/geometry'
 
 export interface RoofAssembly {

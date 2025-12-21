@@ -1,4 +1,3 @@
-import type { PerimeterConstructionContext } from '@/construction/context'
 import { createConstructionElement, createConstructionElementId } from '@/construction/elements'
 import {
   infiniteBeamPolygon,
@@ -8,6 +7,7 @@ import {
   stripesPolygons
 } from '@/construction/helpers'
 import { type ConstructionModel } from '@/construction/model'
+import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
 import { type ConstructionResult, aggregateResults } from '@/construction/results'
 import { createExtrudedPolygon } from '@/construction/shapes'
 import {
@@ -79,7 +79,7 @@ function detectBeamEdges(
 }
 
 export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
-  construct = (context: PerimeterConstructionContext, config: JoistFloorConfig): ConstructionModel => {
+  construct = (context: PerimeterConstructionContext): ConstructionModel => {
     const bbox = minimumAreaBoundingBox(context.outerPolygon)
     const joistDirection = bbox.smallestDirection
 
@@ -97,8 +97,8 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
         insideLine,
         prevClip,
         nextClip,
-        config.wallBeamInsideOffset,
-        config.wallBeamThickness - config.wallBeamInsideOffset
+        this.config.wallBeamInsideOffset,
+        this.config.wallBeamThickness - this.config.wallBeamInsideOffset
       )
 
       if (insideBeam) {
@@ -109,7 +109,7 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
         wallBeamCheckPoints.push(midpoint(leftPoints[0], leftPoints[1]))
       }
 
-      const outsideBeam = infiniteBeamPolygon(outsideLine, prevClip, nextClip, config.wallBeamThickness, 0)
+      const outsideBeam = infiniteBeamPolygon(outsideLine, prevClip, nextClip, this.config.wallBeamThickness, 0)
 
       if (outsideBeam) {
         const clippedBeam = subtractPolygons([outsideBeam], context.floorOpenings)
@@ -125,13 +125,13 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
     const holeClip = polygonFromLineIntersections(
       context.innerLines.map((l, i) =>
         1 - dotAbsVec2(l.direction, joistDirection) < EPSILON
-          ? offsetLine(l, config.wallBeamInsideOffset)
+          ? offsetLine(l, this.config.wallBeamInsideOffset)
           : context.outerLines[i]
       )
     )
     const partitions = Array.from(partitionByAlignedEdges(joistArea, joistDirection))
 
-    const expandedHoles = context.floorOpenings.map(h => offsetPolygon(h, config.openingSideThickness))
+    const expandedHoles = context.floorOpenings.map(h => offsetPolygon(h, this.config.openingSideThickness))
 
     const joistPolygons = partitions.flatMap(p => {
       const { leftHasBeam, rightHasBeam } = detectBeamEdges(p, joistDirection, wallBeamCheckPoints)
@@ -141,10 +141,10 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
           stripesPolygons(
             p,
             joistDirection,
-            config.joistThickness,
-            config.joistSpacing,
-            leftHasBeam ? config.joistSpacing : 0,
-            rightHasBeam ? config.joistSpacing : 0,
+            this.config.joistThickness,
+            this.config.joistSpacing,
+            leftHasBeam ? this.config.joistSpacing : 0,
+            rightHasBeam ? this.config.joistSpacing : 0,
             3000
           )
         )
@@ -166,8 +166,8 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
         ({
           type: 'element',
           element: createConstructionElement(
-            config.wallBeamMaterial,
-            createExtrudedPolygon(p, 'xy', config.constructionHeight),
+            this.config.wallBeamMaterial,
+            createExtrudedPolygon(p, 'xy', this.config.constructionHeight),
             undefined,
             undefined,
             { type: 'wall-beam' }
@@ -179,8 +179,8 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
         ({
           type: 'element',
           element: createConstructionElement(
-            config.joistMaterial,
-            createExtrudedPolygon(p, 'xy', config.constructionHeight),
+            this.config.joistMaterial,
+            createExtrudedPolygon(p, 'xy', this.config.constructionHeight),
             undefined,
             undefined,
             { type: 'joist' }
@@ -192,8 +192,8 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
         ({
           type: 'element',
           element: createConstructionElement(
-            config.wallInfillMaterial,
-            createExtrudedPolygon(p, 'xy', config.constructionHeight)
+            this.config.wallInfillMaterial,
+            createExtrudedPolygon(p, 'xy', this.config.constructionHeight)
           )
         }) satisfies ConstructionResult
     )
@@ -201,9 +201,9 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
       Array.from(
         simplePolygonFrame(
           h,
-          config.openingSideThickness,
-          config.constructionHeight,
-          config.openingSideMaterial,
+          this.config.openingSideThickness,
+          this.config.constructionHeight,
+          this.config.openingSideMaterial,
           holeClip,
           { type: 'floor-opening-frame' },
           undefined,
@@ -218,9 +218,9 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
         ({
           type: 'element',
           element: createConstructionElement(
-            config.subfloorMaterial,
-            createExtrudedPolygon(p, 'xy', config.subfloorThickness),
-            fromTrans(newVec3(0, 0, config.constructionHeight)),
+            this.config.subfloorMaterial,
+            createExtrudedPolygon(p, 'xy', this.config.subfloorThickness),
+            fromTrans(newVec3(0, 0, this.config.constructionHeight)),
             undefined,
             { type: 'subfloor' }
           )
@@ -230,13 +230,13 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
     const results = [...wallBeams, ...joists, ...wallInfill, ...openingFrames, ...subfloor]
     const aggregatedResults = aggregateResults(results)
 
-    const bounds = Bounds2D.fromPoints(context.outerPolygon.points).toBounds3D('xy', 0, config.constructionHeight)
+    const bounds = Bounds2D.fromPoints(context.outerPolygon.points).toBounds3D('xy', 0, this.config.constructionHeight)
     return {
       elements: [
         {
           id: createConstructionElementId(),
           bounds,
-          transform: fromTrans(newVec3(0, 0, -config.constructionHeight)),
+          transform: fromTrans(newVec3(0, 0, -this.config.constructionHeight)),
           children: aggregatedResults.elements
         }
       ],
@@ -248,7 +248,12 @@ export class JoistFloorAssembly extends BaseFloorAssembly<JoistFloorConfig> {
     }
   }
 
-  getTopOffset = (config: JoistFloorConfig) => config.subfloorThickness
-  getBottomOffset = (_config: JoistFloorConfig) => 0
-  getConstructionThickness = (config: JoistFloorConfig) => config.constructionHeight
+  get topOffset() {
+    return this.config.subfloorThickness
+  }
+
+  bottomOffset = 0
+  get constructionThickness() {
+    return this.config.constructionHeight
+  }
 }

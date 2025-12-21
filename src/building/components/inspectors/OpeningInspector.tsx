@@ -9,7 +9,7 @@ import { useModelActions, usePerimeterById } from '@/building/store'
 import { OpeningAssemblySelectWithEdit } from '@/construction/config/components/OpeningAssemblySelectWithEdit'
 import { useWallAssemblyById } from '@/construction/config/store'
 import { resolveOpeningConfig } from '@/construction/openings/resolver'
-import { getStoreyCeilingHeight } from '@/construction/storeyHeight'
+import { createWallStoreyContext } from '@/construction/storeys/context'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
@@ -63,10 +63,9 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
   const viewportActions = useViewportActions()
 
   const wallHeight = useMemo(() => {
-    if (!storey) {
-      return null
-    }
-    return getStoreyCeilingHeight(storey)
+    if (!storey) return null
+    const context = createWallStoreyContext(storey.id, [])
+    return context.finishedCeilingBottom - context.finishedFloorTop
   }, [storey])
 
   // Preview state

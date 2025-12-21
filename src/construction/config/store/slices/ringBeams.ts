@@ -53,7 +53,7 @@ const createDefaultRingBeamAssembly = (): FullRingBeamAssemblyConfig => ({
   material: wood.id,
   height: 60,
   width: 360,
-  offsetFromEdge: 30
+  offsetFromEdge: 0
 })
 
 // Default brick ring beam assembly

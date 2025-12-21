@@ -1,6 +1,11 @@
+import type { StoreyId } from '@/building/model/ids'
+import { getModelActions } from '@/building/store'
+import { getConfigActions } from '@/construction/config'
 import { WallConstructionArea } from '@/construction/geometry'
+import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
+import { resolveRoofAssembly } from '@/construction/roofs'
 import type { HeightItem, HeightJumpItem, HeightLine } from '@/construction/roofs/types'
-import { type Length, type Vec2, type Vec3, copyVec2, newVec2, newVec3 } from '@/shared/geometry'
+import { type Length, type LineSegment2D, type Vec2, newVec2, newVec3 } from '@/shared/geometry'
 
 // Use smaller epsilon for position comparisons
 const POSITION_EPSILON = 0.0001
@@ -10,10 +15,45 @@ const POSITION_EPSILON = 0.0001
  */
 export type WallTopOffsets = readonly Vec2[] | undefined
 
+export function getRoofHeightLineForLines(
+  storeyId: StoreyId,
+  lines: LineSegment2D[],
+  ceilingBottomOffset: Length,
+  perimeterContexts: PerimeterConstructionContext[]
+): HeightLine {
+  const { getRoofsByStorey } = getModelActions()
+  const { getRoofAssemblyById } = getConfigActions()
+
+  const heightLines: HeightLine[] = []
+  const roofs = getRoofsByStorey(storeyId)
+  for (const line of lines) {
+    const heightLine: HeightLine = []
+
+    // Query each roof
+    for (const roof of roofs) {
+      const roofAssembly = getRoofAssemblyById(roof.assemblyId)
+      if (!roofAssembly) continue
+
+      const roofImpl = resolveRoofAssembly(roofAssembly)
+      const roofLine = roofImpl.getBottomOffsets(roof, line, perimeterContexts)
+      heightLine.push(
+        ...roofLine.map(r => ({ ...r, position: Math.round(r.position / POSITION_EPSILON) * POSITION_EPSILON }))
+      )
+    }
+
+    heightLine.sort((a, b) => a.position - b.position)
+
+    const filled = fillNullRegions(heightLine, ceilingBottomOffset)
+
+    heightLines.push(filled)
+  }
+
+  return mergeHeightLines(...heightLines)
+}
+
 /**
  * Convert a HeightLine (from roof) to wall top offsets array
  * @param heightLine - Height line from roof (should be fully filled, no null regions)
- * @param wallStartX - Absolute X position where wall starts in construction coordinates
  * @param wallLength - Length of the wall
  * @returns Wall top offsets with coverage information
  */
@@ -26,7 +66,7 @@ export function convertHeightLineToWallOffsets(heightLine: HeightLine, wallLengt
 
   // Convert each height line item to offset
   for (const item of heightLine) {
-    const absoluteX = item.position * wallLength
+    const absoluteX = Number((item.position * wallLength).toFixed(2))
 
     if (isHeightJumpItem(item)) {
       // HeightJumpItem - add both offsets at same position
@@ -46,7 +86,7 @@ export function convertHeightLineToWallOffsets(heightLine: HeightLine, wallLengt
  * Ensures entire line (0 to 1) is covered with height values
  * Converts nullAfter flags to explicit height jumps
  */
-export function fillNullRegions(heightLine: HeightLine, ceilingOffset: Length): HeightLine {
+function fillNullRegions(heightLine: HeightLine, ceilingOffset: Length): HeightLine {
   if (heightLine.length === 0) {
     // No coverage at all - return flat line at ceiling offset
     return [
@@ -112,34 +152,22 @@ export function fillNullRegions(heightLine: HeightLine, ceilingOffset: Length): 
   return result
 }
 
-/**
- * Step 3: Merge inside and outside height lines using minimum offset
- * Both lines should be fully filled (no null regions) before calling this
- */
-export function mergeInsideOutsideHeightLines(insideHeightLine: HeightLine, outsideHeightLine: HeightLine): HeightLine {
-  if (insideHeightLine.length === 0 && outsideHeightLine.length === 0) {
+function mergeHeightLines(...lines: HeightLine[]): HeightLine {
+  if (lines.length === 0 || lines.every(l => l.length === 0)) {
     return []
   }
-  if (insideHeightLine.length === 0) return outsideHeightLine
-  if (outsideHeightLine.length === 0) return insideHeightLine
+  const allPositions = lines.flatMap(l => l.map(x => x.position))
+  const uniquePositions = new Set(allPositions)
+  const sortedPositions = Array.from(uniquePositions).sort((a, b) => a - b)
 
-  // Collect all unique positions from both lines
-  const positions = new Set<number>()
-  for (const item of insideHeightLine) {
-    positions.add(item.position)
-  }
-  for (const item of outsideHeightLine) {
-    positions.add(item.position)
-  }
-
-  const sortedPositions = Array.from(positions).sort((a, b) => a - b)
   const merged: HeightLine = []
   for (const pos of sortedPositions) {
-    const [insideBefore, insideAfter] = getOffsetAt(insideHeightLine, pos)
-    const [outsideBefore, outsideAfter] = getOffsetAt(outsideHeightLine, pos)
+    const offsets = lines.map(l => getOffsetAt(l, pos))
+    const beforeOffsets = offsets.map(o => o[0])
+    const afterOffsets = offsets.map(o => o[1])
 
-    const beforeOffset = Math.min(insideBefore, outsideBefore)
-    const afterOffset = Math.min(insideAfter, outsideAfter)
+    const beforeOffset = Math.min(...beforeOffsets)
+    const afterOffset = Math.min(...afterOffsets)
 
     if (beforeOffset !== afterOffset) {
       merged.push({
@@ -201,90 +229,19 @@ function getOffsetAt(heightLine: HeightLine, position: number): [Length, Length]
   return [interpolated, interpolated]
 }
 
-/**
- * Type guard for HeightJumpItem
- */
 function isHeightJumpItem(item: HeightJumpItem | HeightItem): item is HeightJumpItem {
   return 'offsetBefore' in item && 'offsetAfter' in item
 }
 
-/**
- * Type guard for HeightItem
- */
 function isHeightItem(item: HeightJumpItem | HeightItem): item is HeightItem {
   return 'offset' in item && 'nullAfter' in item
 }
 
 /**
- * Merge wall segments with different roof coverage into a single WallConstructionArea
- * For segments without roof coverage, adds flat offsets (0) at boundaries
- */
-export function mergeWallSegments(
-  segments: WallConstructionArea[],
-  fullPosition: Vec3,
-  fullSize: Vec3
-): WallConstructionArea {
-  if (segments.length === 0) {
-    return new WallConstructionArea(fullPosition, fullSize)
-  }
-
-  if (segments.length === 1) {
-    return segments[0]
-  }
-
-  // Merge all offsets into a single array
-  const mergedOffsets: Vec2[] = []
-
-  for (const segment of segments) {
-    if (segment.topOffsets) {
-      // Segment with roof coverage - copy offsets
-      mergedOffsets.push(...segment.topOffsets.map(o => copyVec2(o)))
-    } else {
-      // Segment without roof - add flat offsets at segment boundaries
-      mergedOffsets.push(newVec2(segment.position[0], 0))
-      mergedOffsets.push(newVec2(segment.position[0] + segment.size[0], 0))
-    }
-  }
-
-  // Remove duplicates and sort by X position
-  const uniqueOffsets = removeDuplicateOffsets(mergedOffsets)
-  uniqueOffsets.sort((a, b) => a[0] - b[0])
-
-  return new WallConstructionArea(fullPosition, fullSize, uniqueOffsets)
-}
-
-/**
- * Remove duplicate offsets (same X position, different or same heights)
- * Keeps both values if they differ (height jump)
- */
-function removeDuplicateOffsets(offsets: Vec2[]): Vec2[] {
-  const result: Vec2[] = []
-  const seen = new Map<number, number[]>() // X position -> heights at that position
-
-  for (const offset of offsets) {
-    const x = offset[0]
-    const y = offset[1]
-
-    if (!seen.has(x)) {
-      seen.set(x, [y])
-      result.push(offset)
-    } else {
-      const heights = seen.get(x)
-      if (heights && !heights.includes(y)) {
-        // Different height at same position - keep it (height jump)
-        heights.push(y)
-        result.push(offset)
-      }
-      // Otherwise skip - exact duplicate
-    }
-  }
-
-  return result
-}
-
-/**
  * Split a WallConstructionArea at height jumps (discontinuities)
  * Returns array of continuous segments
+ *
+ * TODO: Make use of this
  */
 export function splitAtHeightJumps(area: WallConstructionArea): WallConstructionArea[] {
   if (!area.topOffsets || area.topOffsets.length === 0) {

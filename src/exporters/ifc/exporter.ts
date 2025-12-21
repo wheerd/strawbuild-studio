@@ -4,9 +4,9 @@ import wasmUrl from 'web-ifc/web-ifc.wasm?url'
 import type { Perimeter, PerimeterCorner, PerimeterWall, Storey } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
-import type { FloorAssemblyConfig } from '@/construction/config/types'
-import { FLOOR_ASSEMBLIES } from '@/construction/floors'
+import { type StoreyContext, createWallStoreyContext } from '@/construction/storeys/context'
 import {
+  type Length,
   type Polygon2D,
   type PolygonWithHoles2D,
   type Vec2,
@@ -19,11 +19,9 @@ import { arePolygonsIntersecting, subtractPolygons, unionPolygons } from '@/shar
 import { downloadFile } from '@/shared/utils/downloadFile'
 import { getVersionString } from '@/shared/utils/version'
 
-interface StoreyRuntimeInfo {
-  readonly storey: Storey
-  readonly elevation: number
-  readonly floorConfig: FloorAssemblyConfig
-  readonly wallHeight: number
+interface IfcStoreyContext extends StoreyContext {
+  elevation: Length
+  name: string
 }
 
 interface FloorGeometry {
@@ -79,14 +77,14 @@ class IfcExporter {
 
     const { getStoreysOrderedByLevel, getPerimetersByStorey, getFloorOpeningsByStorey, getFloorAreasByStorey } =
       getModelActions()
-    const { getFloorAssemblyById, getWallAssemblyById } = getConfigActions()
+    const { getWallAssemblyById } = getConfigActions()
 
     const orderedStoreys = getStoreysOrderedByLevel()
     if (orderedStoreys.length === 0) {
       throw new Error('Cannot export IFC without any storeys')
     }
 
-    const storeyInfos = this.buildStoreyRuntimeInfo(orderedStoreys, getFloorAssemblyById)
+    const storeyInfos = this.buildStoreyContext(orderedStoreys)
     const floorGeometry = this.computeFloorGeometry(
       storeyInfos,
       getPerimetersByStorey,
@@ -99,10 +97,10 @@ class IfcExporter {
     const wallMaterialCache = new Map<string, Handle<IFC4.IfcMaterialLayerSetUsage>>()
 
     for (const info of storeyInfos) {
-      const storeyPlacement = this.storeyPlacements.get(info.storey.id)
+      const storeyPlacement = this.storeyPlacements.get(info.storeyId)
       if (storeyPlacement == null) continue
 
-      const perimeters = getPerimetersByStorey(info.storey.id)
+      const perimeters = getPerimetersByStorey(info.storeyId)
       const elements: Handle<IFC4.IfcElement>[] = []
 
       for (const perimeter of perimeters) {
@@ -111,13 +109,13 @@ class IfcExporter {
         )
       }
 
-      for (const floor of floorGeometry.filter(f => f.storeyId === info.storey.id)) {
+      for (const floor of floorGeometry.filter(f => f.storeyId === info.storeyId)) {
         const slabId = this.createFloorSlab(floor, storeyPlacement)
         elements.push(slabId)
       }
 
       if (elements.length > 0) {
-        const storeyId = this.storeyIds.get(info.storey.id)
+        const storeyId = this.storeyIds.get(info.storeyId)
         if (storeyId != null) {
           this.writeEntity(
             new IFC4.IfcRelContainedInSpatialStructure(
@@ -226,7 +224,7 @@ class IfcExporter {
     )
   }
 
-  private createSpatialStructure(storeyInfos: StoreyRuntimeInfo[]): void {
+  private createSpatialStructure(storeyInfos: IfcStoreyContext[]): void {
     this.projectId = this.writeEntity(
       new IFC4.IfcProject(
         this.globalId(),
@@ -295,13 +293,13 @@ class IfcExporter {
       const placement = this.writeEntity(
         new IFC4.IfcLocalPlacement(buildingPlacement, this.createAxisPlacement([0, 0, info.elevation]))
       )
-      this.storeyPlacements.set(info.storey.id, placement)
+      this.storeyPlacements.set(info.storeyId, placement)
 
       const storeyId = this.writeEntity(
         new IFC4.IfcBuildingStorey(
           this.globalId(),
           this.ownerHistory,
-          this.label(info.storey.name),
+          this.label(info.name),
           null,
           null,
           placement,
@@ -311,7 +309,7 @@ class IfcExporter {
           this.lengthMeasure(info.elevation)
         )
       )
-      this.storeyIds.set(info.storey.id, storeyId)
+      this.storeyIds.set(info.storeyId, storeyId)
 
       this.writeEntity(
         new IFC4.IfcRelAggregates(this.globalId(), this.ownerHistory, null, null, this.buildingId, [storeyId])
@@ -336,30 +334,17 @@ class IfcExporter {
     )
   }
 
-  private buildStoreyRuntimeInfo(
-    storeys: Storey[],
-    getFloorAssemblyById: (id: Storey['floorAssemblyId']) => FloorAssemblyConfig | null
-  ): StoreyRuntimeInfo[] {
-    const infos: StoreyRuntimeInfo[] = []
+  private buildStoreyContext(storeys: Storey[]): IfcStoreyContext[] {
+    const infos: IfcStoreyContext[] = []
     let finishedFloorElevation = 0
 
-    for (let index = 0; index < storeys.length; index++) {
-      const storey = storeys[index]
-      const floorConfig = getFloorAssemblyById(storey.floorAssemblyId)
-      if (!floorConfig) {
-        throw new Error(`Missing floor assembly for storey ${storey.id}`)
-      }
-
-      const nextStorey = storeys[index + 1]
-      const nextFloorConfig = nextStorey ? getFloorAssemblyById(nextStorey.floorAssemblyId) : null
-      const nextFloorAssembly = nextFloorConfig ? FLOOR_ASSEMBLIES[nextFloorConfig.type] : null
-      const nextFloorThickness = nextFloorAssembly?.getTotalThickness(nextFloorConfig) ?? 0
+    for (const storey of storeys) {
+      const context = createWallStoreyContext(storey.id, [])
 
       infos.push({
-        storey,
-        elevation: finishedFloorElevation,
-        floorConfig,
-        wallHeight: storey.floorHeight - nextFloorThickness
+        ...context,
+        name: storey.name,
+        elevation: finishedFloorElevation
       })
 
       finishedFloorElevation += storey.floorHeight
@@ -369,7 +354,7 @@ class IfcExporter {
   }
 
   private computeFloorGeometry(
-    storeyInfos: StoreyRuntimeInfo[],
+    storeyInfos: IfcStoreyContext[],
     getPerimetersByStorey: (storeyId: Storey['id']) => Perimeter[],
     getFloorAreasByStorey: (storeyId: Storey['id']) => { area: Polygon2D }[],
     getFloorOpeningsByStorey: (storeyId: Storey['id']) => { area: Polygon2D }[]
@@ -377,20 +362,20 @@ class IfcExporter {
     const geometries: FloorGeometry[] = []
 
     for (const info of storeyInfos) {
-      const perimeters = getPerimetersByStorey(info.storey.id)
+      const perimeters = getPerimetersByStorey(info.storeyId)
       if (perimeters.length === 0) continue
 
       const perimeterPolygons = perimeters.map(perimeter => ({
         points: perimeter.corners.map(corner => corner.outsidePoint)
       }))
 
-      const baseAreas = [...perimeterPolygons, ...getFloorAreasByStorey(info.storey.id).map(area => area.area)]
+      const baseAreas = [...perimeterPolygons, ...getFloorAreasByStorey(info.storeyId).map(area => area.area)]
       const mergedFootprint = unionPolygons(baseAreas)
       if (mergedFootprint.length === 0) {
         continue
       }
 
-      const openings = getFloorOpeningsByStorey(info.storey.id).map(opening => opening.area)
+      const openings = getFloorOpeningsByStorey(info.storeyId).map(opening => opening.area)
       const relevantOpenings = openings.filter(opening =>
         mergedFootprint.some(poly => arePolygonsIntersecting(poly, opening))
       )
@@ -400,12 +385,10 @@ class IfcExporter {
         ? subtractPolygons(mergedFootprint, mergedOpenings)
         : mergedFootprint.map(polygon => ({ outer: polygon, holes: [] }))
 
-      const floorAssembly = FLOOR_ASSEMBLIES[info.floorConfig.type]
-
       geometries.push({
-        storeyId: info.storey.id,
+        storeyId: info.storeyId,
         polygons: polygonsWithHoles,
-        thickness: floorAssembly.getTotalThickness(info.floorConfig)
+        thickness: info.floorAssembly.totalThickness
       })
     }
 
@@ -414,7 +397,7 @@ class IfcExporter {
 
   private createWallsForPerimeter(
     perimeter: Perimeter,
-    info: StoreyRuntimeInfo,
+    info: IfcStoreyContext,
     storeyPlacement: Handle<IFC4.IfcPlacement>,
     getWallAssemblyById: (id: PerimeterWall['wallAssemblyId']) => { type: string } | null,
     materialUsageCache: Map<string, Handle<IFC4.IfcMaterialLayerSetUsage>>
@@ -440,7 +423,7 @@ class IfcExporter {
     wall: PerimeterWall,
     startCorner: PerimeterCorner,
     endCorner: PerimeterCorner,
-    info: StoreyRuntimeInfo,
+    info: IfcStoreyContext,
     storeyPlacement: Handle<IFC4.IfcPlacement>,
     materialUsageCache: Map<string, Handle<IFC4.IfcMaterialLayerSetUsage>>
   ): Handle<IFC4.IfcWall> {
@@ -448,8 +431,9 @@ class IfcExporter {
     const placement = this.createWallPlacement(wall, startCorner, storeyPlacement)
 
     const profilePlacement = this.createAxisPlacement([0, 0, 0])
+    const wallHeight = info.finishedCeilingBottom - info.finishedFloorTop
     const solid = this.writeEntity(
-      new IFC4.IfcExtrudedAreaSolid(profile, profilePlacement, this.zAxis, this.positiveLengthMeasure(info.wallHeight))
+      new IFC4.IfcExtrudedAreaSolid(profile, profilePlacement, this.zAxis, this.positiveLengthMeasure(wallHeight))
     )
 
     const representation = this.writeEntity(

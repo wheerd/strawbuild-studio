@@ -541,6 +541,20 @@ export class PolygonWithBoundingRect {
     )
   }
 
+  *subArea(startOffset: Length, endOffset: Length): Generator<PolygonWithBoundingRect> {
+    const extent = endOffset - startOffset
+    const p1 = scaleAddVec2(this.minPoint, this.dir, startOffset)
+    const p2 = scaleAddVec2(p1, this.perpDir, this.perpExtent)
+    const p3 = scaleAddVec2(p2, this.dir, extent)
+    const p4 = scaleAddVec2(p1, this.dir, extent)
+
+    const rectPolygon: Polygon2D = { points: [p1, p2, p3, p4] }
+
+    for (const part of intersectPolygon(this.polygon, { outer: rectPolygon, holes: [] })) {
+      yield PolygonWithBoundingRect.fromPolygon(part, this.dir)
+    }
+  }
+
   get size2D() {
     return newVec2(this.dirExtent, this.perpExtent)
   }
@@ -555,6 +569,10 @@ export class PolygonWithBoundingRect {
 
   get area() {
     return calculatePolygonWithHolesArea(this.polygon)
+  }
+
+  get center() {
+    return scaleAddVec2(scaleAddVec2(this.minPoint, this.dir, this.dirExtent / 2), this.perpDir, this.perpExtent / 2)
   }
 
   get isEmpty() {

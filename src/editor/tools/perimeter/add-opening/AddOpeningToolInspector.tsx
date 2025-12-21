@@ -20,7 +20,7 @@ import type { OpeningType } from '@/building/model/model'
 import { useActiveStoreyId, useModelActions, usePerimeters } from '@/building/store'
 import { OpeningAssemblySelectWithEdit } from '@/construction/config/components/OpeningAssemblySelectWithEdit'
 import { useDefaultOpeningAssemblyId, useOpeningAssemblyById } from '@/construction/config/store'
-import { getStoreyCeilingHeight } from '@/construction/storeyHeight'
+import { createWallStoreyContext } from '@/construction/storeys/context'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
 import { LengthField } from '@/shared/components/LengthField'
@@ -128,7 +128,9 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
   }, [getStoreyById, activeStoreyId])
 
   const wallHeight = useMemo(() => {
-    return activeStorey ? getStoreyCeilingHeight(activeStorey) : 2500
+    if (!activeStorey) return 2500
+    const context = createWallStoreyContext(activeStorey.id, [])
+    return context.finishedCeilingBottom - context.finishedFloorTop
   }, [activeStorey])
 
   // Opening assembly hooks

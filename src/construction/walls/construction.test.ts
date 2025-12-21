@@ -30,7 +30,7 @@ vi.mock('./index', () => ({
   WALL_ASSEMBLIES: {}
 }))
 
-vi.mock('./segmentation', () => ({
+vi.mock('@/construction/storeys/context', () => ({
   createWallStoreyContext: vi.fn(() => ({
     storeyHeight: 3000,
     floorTopOffset: 0,

@@ -1,6 +1,6 @@
 import type { FloorAssemblyId } from '@/building/model/ids'
 import type { FloorAssemblyConfig } from '@/construction/config/types'
-import { FLOOR_ASSEMBLIES } from '@/construction/floors'
+import { resolveFloorAssembly } from '@/construction/floors'
 
 import type { Migration } from './shared'
 import { getPersistedConfigStoreState, isRecord } from './shared'
@@ -19,8 +19,8 @@ const getThicknessFromConfig = (
   if (!configs || !floorAssemblyId) return 0
   const config = configs[floorAssemblyId]
   if (!config) return 0
-  const assembly = FLOOR_ASSEMBLIES[config.type]
-  return Number(assembly.getTotalThickness(config))
+  const assembly = resolveFloorAssembly(config)
+  return Number(assembly.totalThickness)
 }
 
 export const migrateToVersion4: Migration = state => {

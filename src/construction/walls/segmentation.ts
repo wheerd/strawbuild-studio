@@ -1,17 +1,11 @@
-import type { OpeningAssemblyId, StoreyId } from '@/building/model/ids'
-import type { Opening, Perimeter, PerimeterWall, Storey } from '@/building/model/model'
-import { getModelActions } from '@/building/store'
+import type { OpeningAssemblyId } from '@/building/model/ids'
+import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config'
-import type { FloorAssemblyConfig } from '@/construction/config/types'
-import type { PerimeterConstructionContext } from '@/construction/context'
-import { FLOOR_ASSEMBLIES } from '@/construction/floors'
 import { WallConstructionArea } from '@/construction/geometry'
 import { resolveOpeningAssembly, resolveOpeningConfig } from '@/construction/openings/resolver'
 import { type ConstructionResult, yieldArea, yieldMeasurement } from '@/construction/results'
 import { resolveRingBeamAssembly } from '@/construction/ringBeams'
-import { resolveRoofAssembly } from '@/construction/roofs'
-import type { HeightLine } from '@/construction/roofs/types'
-import { getStoreyCeilingHeight } from '@/construction/storeyHeight'
+import type { StoreyContext } from '@/construction/storeys/context'
 import {
   TAG_OPENING_DOOR,
   TAG_OPENING_SPACING,
@@ -22,11 +16,7 @@ import {
   TAG_WALL_LENGTH
 } from '@/construction/tags'
 import type { InfillMethod, WallLayersConfig } from '@/construction/walls'
-import {
-  convertHeightLineToWallOffsets,
-  fillNullRegions,
-  mergeInsideOutsideHeightLines
-} from '@/construction/walls/roofIntegration'
+import { convertHeightLineToWallOffsets, getRoofHeightLineForLines } from '@/construction/walls/roofIntegration'
 import { type Length, ZERO_VEC2, fromTrans, newVec2, newVec3 } from '@/shared/geometry'
 
 import type { WallCornerInfo } from './construction'
@@ -74,61 +64,6 @@ function mergeAdjacentOpenings(sortedOpenings: Opening[]): Opening[][] {
 
   groups.push(currentGroup)
   return groups
-}
-
-/**
- * Query all roofs for a storey and merge their height lines
- * Three-step process:
- * 1. Merge all roof height lines for each side
- * 2. Fill null regions with ceiling offset
- * 3. Merge inside/outside using minimum offsets
- */
-export function getRoofHeightLineForWall(
-  storeyId: StoreyId,
-  cornerInfo: WallCornerInfo,
-  ceilingBottomOffset: Length,
-  perimeterContexts: PerimeterConstructionContext[]
-): HeightLine | undefined {
-  const { getRoofsByStorey } = getModelActions()
-  const { getRoofAssemblyById } = getConfigActions()
-
-  const roofs = getRoofsByStorey(storeyId)
-  if (roofs.length === 0) return undefined
-
-  // Get height lines from all roofs for both sides
-  const insideHeightLine: HeightLine = []
-  const outsideHeightLine: HeightLine = []
-
-  for (const roof of roofs) {
-    const roofAssembly = getRoofAssemblyById(roof.assemblyId)
-    if (!roofAssembly) continue
-
-    const roofImpl = resolveRoofAssembly(roofAssembly)
-
-    // Get height lines for construction lines
-    const insideLine = roofImpl.getBottomOffsets(roof, cornerInfo.constructionInsideLine, perimeterContexts)
-    const outsideLine = roofImpl.getBottomOffsets(roof, cornerInfo.constructionOutsideLine, perimeterContexts)
-
-    insideHeightLine.push(...insideLine)
-    outsideHeightLine.push(...outsideLine)
-  }
-
-  if (insideHeightLine.length === 0 && outsideHeightLine.length === 0) {
-    return undefined
-  }
-
-  // STEP 1: Merge all roof height lines for each side
-  insideHeightLine.sort((a, b) => a.position - b.position)
-  outsideHeightLine.sort((a, b) => a.position - b.position)
-
-  // STEP 2: Fill null regions with ceiling offset (makes complete 0-1 coverage)
-  const filledInside = fillNullRegions(insideHeightLine, ceilingBottomOffset)
-  const filledOutside = fillNullRegions(outsideHeightLine, ceilingBottomOffset)
-
-  // STEP 3: Merge inside/outside using minimum offsets at all positions
-  const finalHeightLine = mergeInsideOutsideHeightLines(filledInside, filledOutside)
-
-  return finalHeightLine.length > 0 ? finalHeightLine : undefined
 }
 
 export type WallSegmentConstruction = (
@@ -227,45 +162,10 @@ function* createPlateAreas(
   }
 }
 
-export interface WallStoreyContext {
-  floorConstructionThickness: Length
-  ceilingBottomOffset: Length
-  ceilingBottomConstructionOffset: Length
-  storeyHeight: Length
-  ceilingHeight: Length
-  floorTopOffset: Length
-  floorTopConstructionOffset: Length
-  perimeterContexts: PerimeterConstructionContext[]
-}
-
-export function createWallStoreyContext(
-  currentStorey: Storey,
-  currentFloorAssembly: FloorAssemblyConfig,
-  nextFloorAssembly: FloorAssemblyConfig | null,
-  perimeterContexts: PerimeterConstructionContext[]
-): WallStoreyContext {
-  const currentFloorFloorAssembly = FLOOR_ASSEMBLIES[currentFloorAssembly.type]
-  const nextFloorFloorAssembly = nextFloorAssembly ? FLOOR_ASSEMBLIES[nextFloorAssembly.type] : null
-
-  const topOffset = currentFloorFloorAssembly.getTopOffset(currentFloorAssembly)
-  const bottomOffset = nextFloorFloorAssembly?.getBottomOffset(nextFloorAssembly) ?? 0
-
-  return {
-    storeyHeight: currentStorey.floorHeight,
-    floorConstructionThickness: currentFloorFloorAssembly.getConstructionThickness(currentFloorAssembly),
-    ceilingHeight: getStoreyCeilingHeight(currentStorey, nextFloorAssembly),
-    floorTopConstructionOffset: topOffset,
-    floorTopOffset: currentFloorAssembly.layers.topThickness + topOffset,
-    ceilingBottomConstructionOffset: bottomOffset,
-    ceilingBottomOffset: (nextFloorAssembly?.layers.bottomThickness ?? 0) + bottomOffset,
-    perimeterContexts
-  }
-}
-
 export function* segmentedWallConstruction(
   wall: PerimeterWall,
   perimeter: Perimeter,
-  storeyContext: WallStoreyContext,
+  storeyContext: StoreyContext,
   layers: WallLayersConfig,
   wallConstruction: WallSegmentConstruction,
   infillMethod: InfillMethod,
@@ -282,9 +182,8 @@ export function* segmentedWallConstruction(
   const topPlateAssembly = wall.topRingBeamAssemblyId ? getRingBeamAssemblyById(wall.topRingBeamAssemblyId) : null
   const topPlateHeight = topPlateAssembly ? resolveRingBeamAssembly(topPlateAssembly).height : 0
 
-  const totalConstructionHeight =
-    storeyContext.ceilingHeight + storeyContext.floorTopOffset + storeyContext.ceilingBottomOffset
-  const ceilingOffset = storeyContext.storeyHeight - totalConstructionHeight
+  const totalConstructionHeight = storeyContext.wallTop - storeyContext.wallBottom
+  const ceilingOffset = storeyContext.roofBottom - storeyContext.wallTop
 
   yield* createCornerAreas(cornerInfo, wall.wallLength, totalConstructionHeight)
 
@@ -302,7 +201,7 @@ export function* segmentedWallConstruction(
     perimeter.id
   )
 
-  const finishedFloorZLevel = storeyContext.floorTopOffset
+  const finishedFloorZLevel = storeyContext.finishedFloorTop - storeyContext.wallBottom
 
   const standAtWallStart = wallContext.startCorner.exteriorAngle !== 180 || cornerInfo.startCorner.constructedByThisWall
   const standAtWallEnd = wallContext.endCorner.exteriorAngle !== 180 || cornerInfo.endCorner.constructedByThisWall
@@ -362,9 +261,9 @@ export function* segmentedWallConstruction(
   }
 
   // Query roofs and get merged height line
-  const roofHeightLine = getRoofHeightLineForWall(
+  const roofHeightLine = getRoofHeightLineForLines(
     perimeter.storeyId,
-    cornerInfo,
+    [cornerInfo.constructionInsideLine, cornerInfo.constructionOutsideLine],
     -ceilingOffset,
     storeyContext.perimeterContexts
   )
@@ -380,7 +279,7 @@ export function* segmentedWallConstruction(
   // Create overall wall construction area ONCE with roof offsets
   const overallWallArea = new WallConstructionArea(
     newVec3(-extensionStart, y, z),
-    newVec3(constructionLength, sizeY, storeyContext.storeyHeight - z - topPlateHeight),
+    newVec3(constructionLength, sizeY, sizeZ),
     roofOffsets
   )
 

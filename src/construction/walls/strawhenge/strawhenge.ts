@@ -6,11 +6,12 @@ import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
 import type { ConstructionResult } from '@/construction/results'
 import { aggregateResults } from '@/construction/results'
+import type { StoreyContext } from '@/construction/storeys/context'
 import { TAG_POST_SPACING } from '@/construction/tags'
 import type { StrawhengeWallConfig, WallAssembly } from '@/construction/walls'
 import { infillWallArea } from '@/construction/walls/infill/infill'
 import { constructWallLayers } from '@/construction/walls/layers'
-import { type WallStoreyContext, segmentedWallConstruction } from '@/construction/walls/segmentation'
+import { segmentedWallConstruction } from '@/construction/walls/segmentation'
 import { Bounds3D, type Length } from '@/shared/geometry'
 
 import { constructModule } from './modules'
@@ -139,7 +140,7 @@ export class StrawhengeWallAssembly implements WallAssembly<StrawhengeWallConfig
   construct(
     wall: PerimeterWall,
     perimeter: Perimeter,
-    storeyContext: WallStoreyContext,
+    storeyContext: StoreyContext,
     config: StrawhengeWallConfig
   ): ConstructionModel {
     const allResults = Array.from(

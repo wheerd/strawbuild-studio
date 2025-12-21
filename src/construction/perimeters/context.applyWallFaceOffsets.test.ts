@@ -7,7 +7,7 @@ import { copyVec2, direction, distVec2, newVec2, perpendicular, scaleAddVec2 } f
 
 import { applyWallFaceOffsets, createWallFaceOffsets } from './context'
 
-vi.mock('./config', () => ({
+vi.mock('@/construction/config', () => ({
   getConfigActions: vi.fn()
 }))
 

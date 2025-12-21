@@ -1,9 +1,10 @@
-import type { PerimeterConstructionContext } from '@/construction/context'
 import type { PolygonWithBoundingRect } from '@/construction/helpers'
 import type { Material } from '@/construction/materials/material'
 import { getMaterialById } from '@/construction/materials/store'
+import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
 import { type ConstructionResult } from '@/construction/results'
 import { BaseRingBeamAssembly } from '@/construction/ringBeams/base'
+import type { StoreyContext } from '@/construction/storeys/context'
 import { TAG_PLATE, TAG_RB_INSULATION, TAG_STUD_WALL, TAG_WATERPROOFING } from '@/construction/tags'
 import { type Transform, fromTrans, newVec3 } from '@/shared/geometry'
 
@@ -14,7 +15,11 @@ export class BrickRingBeamAssembly extends BaseRingBeamAssembly<BrickRingBeamCon
     return this.config.wallHeight + this.config.beamThickness + this.config.waterproofingThickness
   }
 
-  *construct(segment: RingBeamSegment, context: PerimeterConstructionContext): Generator<ConstructionResult> {
+  *construct(
+    segment: RingBeamSegment,
+    context: PerimeterConstructionContext,
+    _storeyContext?: StoreyContext
+  ): Generator<ConstructionResult> {
     yield* this.constructWallWithWaterproofing(segment, context)
     yield* this.constructInsulation(segment, context)
     yield* this.constructBeam(segment, context)

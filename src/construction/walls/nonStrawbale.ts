@@ -7,16 +7,13 @@ import { mergeModels } from '@/construction/model'
 import { type ConstructionResult, aggregateResults, yieldElement } from '@/construction/results'
 import { resolveRingBeamAssembly } from '@/construction/ringBeams'
 import { createExtrudedPolygon } from '@/construction/shapes'
+import type { StoreyContext } from '@/construction/storeys/context'
 import type { NonStrawbaleWallConfig, WallAssembly } from '@/construction/walls'
 import { calculateWallCornerInfo, getWallContext } from '@/construction/walls/corners/corners'
 import { constructWallLayers } from '@/construction/walls/layers'
 import { WALL_POLYGON_PLANE, createWallPolygonWithOpenings } from '@/construction/walls/polygons'
-import { convertHeightLineToWallOffsets } from '@/construction/walls/roofIntegration'
-import {
-  type WallStoreyContext,
-  getRoofHeightLineForWall,
-  segmentedWallConstruction
-} from '@/construction/walls/segmentation'
+import { convertHeightLineToWallOffsets, getRoofHeightLineForLines } from '@/construction/walls/roofIntegration'
+import { segmentedWallConstruction } from '@/construction/walls/segmentation'
 import { Bounds3D, type Length, fromTrans, newVec2, newVec3 } from '@/shared/geometry'
 
 function* noopWallSegment(
@@ -36,7 +33,7 @@ export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallCo
   construct(
     wall: PerimeterWall,
     perimeter: Perimeter,
-    storeyContext: WallStoreyContext,
+    storeyContext: StoreyContext,
     config: NonStrawbaleWallConfig
   ): ConstructionModel {
     const wallContext = getWallContext(wall, perimeter)
@@ -49,9 +46,9 @@ export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallCo
 
     const basePlateHeight = basePlateAssembly ? resolveRingBeamAssembly(basePlateAssembly).height : 0
     const topPlateHeight = topPlateAssembly ? resolveRingBeamAssembly(topPlateAssembly).height : 0
-    const totalConstructionHeight =
-      storeyContext.ceilingHeight + storeyContext.floorTopOffset + storeyContext.ceilingBottomOffset
-    const ceilingOffset = storeyContext.storeyHeight - totalConstructionHeight
+
+    const totalConstructionHeight = storeyContext.wallTop - storeyContext.wallBottom
+    const ceilingOffset = storeyContext.roofBottom - storeyContext.wallTop
 
     const structuralThickness = (wall.thickness -
       config.layers.insideThickness -
@@ -60,9 +57,9 @@ export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallCo
       throw new Error('Non-strawbale wall structural thickness must be greater than 0')
     }
 
-    const roofHeightLine = getRoofHeightLineForWall(
+    const roofHeightLine = getRoofHeightLineForLines(
       perimeter.storeyId,
-      cornerInfo,
+      [cornerInfo.constructionInsideLine, cornerInfo.constructionOutsideLine],
       -ceilingOffset,
       storeyContext.perimeterContexts
     )
@@ -75,13 +72,19 @@ export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallCo
       roofOffsets = [newVec2(0, -ceilingOffset), newVec2(cornerInfo.constructionLength, -ceilingOffset)]
     }
 
+    // Create overall wall construction area ONCE with roof offsets
     const wallArea = new WallConstructionArea(
       newVec3(-cornerInfo.extensionStart, 0, basePlateHeight),
-      newVec3(cornerInfo.constructionLength, 0, storeyContext.storeyHeight - basePlateHeight - topPlateHeight),
+      newVec3(
+        cornerInfo.constructionLength,
+        wall.thickness,
+        totalConstructionHeight - basePlateHeight - topPlateHeight
+      ),
       roofOffsets
     )
 
-    const structuralPolygons = createWallPolygonWithOpenings(wallArea, wall, storeyContext.floorTopOffset)
+    const finishedFloorZLevel = storeyContext.finishedFloorTop - storeyContext.wallBottom
+    const structuralPolygons = createWallPolygonWithOpenings(wallArea, wall, finishedFloorZLevel)
 
     const structureShapes = structuralPolygons.map(p =>
       createExtrudedPolygon(p, WALL_POLYGON_PLANE, structuralThickness)

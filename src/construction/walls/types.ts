@@ -5,16 +5,16 @@ import type { MaterialId } from '@/construction/materials/material'
 import { type PostConfig, validatePosts } from '@/construction/materials/posts'
 import type { ConstructionModel } from '@/construction/model'
 import type { ConstructionResult } from '@/construction/results'
+import type { StoreyContext } from '@/construction/storeys/context'
 import type { Length } from '@/shared/geometry'
 
-import type { WallStoreyContext } from './segmentation'
 import type { ModuleConfig } from './strawhenge/modules'
 
 export interface WallAssembly<TConfig extends WallBaseConfig> {
   construct: (
     wall: PerimeterWall,
     perimeter: Perimeter,
-    storeyContext: WallStoreyContext,
+    storeyContext: StoreyContext,
     config: TConfig
   ) => ConstructionModel
 }

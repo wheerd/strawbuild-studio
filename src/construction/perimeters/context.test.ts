@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import type { Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model'
 import type { PerimeterCornerId, PerimeterId, PerimeterWallId, StoreyId, WallAssemblyId } from '@/building/model/ids'
+import { getConfigActions } from '@/construction/config'
 import {
   type LineSegment2D,
   copyVec2,
@@ -13,10 +14,9 @@ import {
   scaleAddVec2
 } from '@/shared/geometry'
 
-import { getConfigActions } from './config'
 import { computePerimeterConstructionPolygon } from './context'
 
-vi.mock('./config', () => ({
+vi.mock('@/construction/config', () => ({
   getConfigActions: vi.fn()
 }))
 

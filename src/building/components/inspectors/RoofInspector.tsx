@@ -11,7 +11,7 @@ import { FRONT_VIEW, LEFT_VIEW, TOP_VIEW } from '@/construction/components/Const
 import { ConstructionPlanModal } from '@/construction/components/ConstructionPlanModal'
 import { RoofAssemblySelectWithEdit } from '@/construction/config/components/RoofAssemblySelectWithEdit'
 import { useDefaultRoofAssemblyId } from '@/construction/config/store'
-import { constructRoof } from '@/construction/roof'
+import { constructRoof } from '@/construction/roofs'
 import { TAG_DECKING } from '@/construction/tags'
 import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
 import { popSelection, replaceSelection } from '@/editor/hooks/useSelectionStore'
