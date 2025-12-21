@@ -116,8 +116,6 @@ export function SVGViewport({
     (bounds: Bounds2D, options?: { padding?: number; animate?: boolean }) => {
       if (bounds.isEmpty || svgSize.width <= 0 || svgSize.height <= 0) return
 
-      console.log('vp', contentBounds, bounds)
-
       const targetPadding = options?.padding ?? 0.1
       const newViewport = fitBoundsToViewport(bounds, svgSize.width, svgSize.height, targetPadding)
 

@@ -219,8 +219,8 @@ export class WallConstructionArea {
     this.topOffsets = topOffsets
   }
 
-  public getOffsetAt(position: Length): Length {
-    if (!this.topOffsets || this.topOffsets.length === 0) return 0
+  public getOffsetsAt(position: Length): [Length, Length] {
+    if (!this.topOffsets || this.topOffsets.length === 0) return [0, 0]
 
     // Find the offset range containing this position
     let beforeIndex = -1
@@ -237,27 +237,33 @@ export class WallConstructionArea {
     }
 
     // Position before first offset
-    if (beforeIndex === -1) return this.topOffsets[0][1]
+    if (beforeIndex === -1) return [this.topOffsets[0][1], this.topOffsets[0][1]]
 
     // Position after last offset
-    if (afterIndex === -1) return this.topOffsets[this.topOffsets.length - 1][1]
+    const lastIndex = this.topOffsets.length - 1
+    if (afterIndex === -1) return [this.topOffsets[lastIndex][1], this.topOffsets[lastIndex][1]]
+
+    const before = this.topOffsets[beforeIndex]
+    const after = this.topOffsets[afterIndex]
 
     // Exact match
-    if (Math.abs(this.topOffsets[beforeIndex][0] - position) < 0.001) {
-      return this.topOffsets[beforeIndex][1]
-    }
-
-    // Check for height jump (two offsets at same position)
-    if (Math.abs(this.topOffsets[beforeIndex][0] - this.topOffsets[afterIndex][0]) < 0.001) {
-      // Height jump - return the "after" value
-      return this.topOffsets[afterIndex][1]
+    if (Math.abs(before[0] - position) < 0.001) {
+      let nextPositionIndex = afterIndex
+      // Find potential jump, find last index with the same position
+      while (nextPositionIndex <= lastIndex) {
+        const next = this.topOffsets[nextPositionIndex]
+        if (Math.abs(next[0] - position) > 0.001) break
+        nextPositionIndex++
+      }
+      // Last offset value with the same position
+      const next = this.topOffsets[nextPositionIndex - 1]
+      return [before[1], next[1]]
     }
 
     // Linear interpolation between before and after
-    const before = this.topOffsets[beforeIndex]
-    const after = this.topOffsets[afterIndex]
     const ratio = (position - before[0]) / (after[0] - before[0])
-    return before[1] + ratio * (after[1] - before[1])
+    const interpolated = before[1] + ratio * (after[1] - before[1])
+    return [interpolated, interpolated]
   }
 
   /**
@@ -287,12 +293,14 @@ export class WallConstructionArea {
       .filter(offset => offset[0] > 0 && offset[0] < newWidth)
 
     const newTopOffsets = [
-      newVec2(0, this.getOffsetAt(xOffset)),
+      newVec2(0, this.getOffsetsAt(xOffset)[0]),
       ...inbetweenOffsets,
-      newVec2(newWidth, this.getOffsetAt(xOffset + newWidth))
+      newVec2(newWidth, this.getOffsetsAt(xOffset + newWidth)[1])
     ]
 
-    return new WallConstructionArea(newPosition, newSize, newTopOffsets.length > 0 ? newTopOffsets : undefined)
+    console.log(newTopOffsets)
+
+    return new WallConstructionArea(newPosition, newSize, newTopOffsets)
   }
 
   public splitInX(xOffset: Length): [WallConstructionArea, WallConstructionArea] {

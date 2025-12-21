@@ -1,6 +1,4 @@
-import type { StoreyId } from '@/building/model/ids'
 import type { Perimeter, PerimeterWall } from '@/building/model/model'
-import type { PerimeterConstructionContext } from '@/construction/context'
 import type { GroupOrElement } from '@/construction/elements'
 import { WallConstructionArea } from '@/construction/geometry'
 import { LAYER_CONSTRUCTIONS } from '@/construction/layers'
@@ -12,7 +10,6 @@ import {
   Bounds3D,
   IDENTITY,
   type Length,
-  type LineSegment2D,
   type Plane3D,
   type PolygonWithHoles2D,
   type Vec2,
@@ -25,7 +22,7 @@ import {
 
 import { getWallContext } from './corners/corners'
 import { computeLayerSpan, subtractWallOpenings } from './polygons'
-import { type WallTopOffsets, getRoofHeightLineForLine } from './roofIntegration'
+import { convertHeightLineToWallOffsets, getRoofHeightLineForLines } from './roofIntegration'
 import type { WallStoreyContext } from './segmentation'
 import type { WallLayersConfig } from './types'
 
@@ -67,21 +64,6 @@ const aggregateLayerResults = (results: ConstructionResult[]): ConstructionModel
   return { ...aggregated, bounds: Bounds3D.merge(...aggregated.elements.map(element => element.bounds)) }
 }
 
-/**
- * Query all roofs for a storey and get the height line for a specific layer line
- * Similar to getRoofHeightLineForWall but uses a single line query (no inside/outside merge)
- */
-function getRoofHeightLineForLayer(
-  storeyId: StoreyId,
-  layerLine: LineSegment2D,
-  wallLength: Length,
-  ceilingBottomOffset: Length,
-  perimeterContexts: PerimeterConstructionContext[]
-): WallTopOffsets | undefined {
-  // Delegate to shared function
-  return getRoofHeightLineForLine(storeyId, layerLine, wallLength, ceilingBottomOffset, perimeterContexts)
-}
-
 export function constructWallLayers(
   wall: PerimeterWall,
   perimeter: Perimeter,
@@ -117,13 +99,13 @@ export function constructWallLayers(
       const top = storeyContext.storeyHeight - storeyContext.floorTopConstructionOffset
 
       // Query roof for this layer's height line
-      const layerTopOffsets = getRoofHeightLineForLayer(
+      const heightLine = getRoofHeightLineForLines(
         perimeter.storeyId,
-        span.line,
-        span.end - span.start,
+        [span.line],
         ceilingOffset,
         storeyContext.perimeterContexts
       )
+      const layerTopOffsets = convertHeightLineToWallOffsets(heightLine, span.end - span.start)
 
       // Create WallConstructionArea with roof-adjusted top
       const layerArea = new WallConstructionArea(
@@ -178,13 +160,13 @@ export function constructWallLayers(
       const top = storeyContext.storeyHeight - storeyContext.floorTopConstructionOffset
 
       // Query roof for this layer's height line
-      const layerTopOffsets = getRoofHeightLineForLayer(
+      const heightLine = getRoofHeightLineForLines(
         perimeter.storeyId,
-        span.line,
-        span.end - span.start,
+        [span.line],
         ceilingOffset,
         storeyContext.perimeterContexts
       )
+      const layerTopOffsets = convertHeightLineToWallOffsets(heightLine, span.end - span.start)
 
       // Create WallConstructionArea with roof-adjusted top
       const layerArea = new WallConstructionArea(

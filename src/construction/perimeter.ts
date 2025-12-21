@@ -1,4 +1,4 @@
-import type { Perimeter } from '@/building/model'
+import type { Perimeter, PerimeterWall } from '@/building/model'
 import type { RingBeamAssemblyId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { resultsToModel } from '@/construction/results'
@@ -75,70 +75,6 @@ export function constructPerimeter(perimeter: Perimeter, includeFloor = true, in
     storeyContext.ceilingHeight + storeyContext.floorTopOffset + storeyContext.ceilingBottomOffset
 
   const allModels: ConstructionModel[] = []
-
-  // Group consecutive walls by ring beam assembly for efficient construction
-  interface RingBeamSegment {
-    assemblyId: RingBeamAssemblyId
-    walls: typeof perimeter.walls
-    startIndex: number
-    endIndex: number
-  }
-
-  function groupConsecutiveWallsByRingBeam(
-    walls: typeof perimeter.walls,
-    getRingBeamId: (wall: (typeof walls)[0]) => RingBeamAssemblyId | undefined
-  ): RingBeamSegment[] {
-    if (walls.length === 0) return []
-
-    const segments: RingBeamSegment[] = []
-    let currentAssemblyId = getRingBeamId(walls[0])
-    let currentWalls: typeof walls = currentAssemblyId ? [walls[0]] : []
-    let startIndex = 0
-
-    for (let i = 1; i < walls.length; i++) {
-      const assemblyId = getRingBeamId(walls[i])
-
-      if (assemblyId === currentAssemblyId && assemblyId !== undefined) {
-        // Continue current segment
-        currentWalls.push(walls[i])
-      } else {
-        // Finish current segment if it has an assembly
-        if (currentAssemblyId && currentWalls.length > 0) {
-          segments.push({
-            assemblyId: currentAssemblyId,
-            walls: currentWalls,
-            startIndex,
-            endIndex: i - 1
-          })
-        }
-        // Start new segment
-        currentAssemblyId = assemblyId
-        currentWalls = assemblyId ? [walls[i]] : []
-        startIndex = i
-      }
-    }
-
-    // Handle wrap-around for circular perimeter
-    if (currentAssemblyId && currentWalls.length > 0) {
-      const firstSegmentAssemblyId = getRingBeamId(walls[0])
-
-      if (currentAssemblyId === firstSegmentAssemblyId && segments.length > 0 && segments[0].startIndex === 0) {
-        // Merge with first segment (wrap around)
-        segments[0].walls = [...currentWalls, ...segments[0].walls]
-        segments[0].startIndex = startIndex
-      } else {
-        // Add as separate segment
-        segments.push({
-          assemblyId: currentAssemblyId,
-          walls: currentWalls,
-          startIndex,
-          endIndex: walls.length - 1
-        })
-      }
-    }
-
-    return segments
-  }
 
   // Construct base ring beams
   const baseRingBeamSegments = groupConsecutiveWallsByRingBeam(perimeter.walls, wall => wall.baseRingBeamAssemblyId)
@@ -249,12 +185,75 @@ export function constructPerimeter(perimeter: Perimeter, includeFloor = true, in
     const relevantRoofs = roofs.filter(r => r.referencePerimeter === perimeter.id)
     allModels.push(
       ...relevantRoofs.map(roof =>
-        transformModel(constructRoof(roof, [perimeterContext]), fromTrans(newVec3(0, 0, storey.floorHeight)))
+        transformModel(constructRoof(roof, [perimeterContext]), fromTrans(newVec3(0, 0, storeyContext.storeyHeight)))
       )
     )
   }
 
   return mergeModels(...allModels)
+}
+
+interface RingBeamSegment {
+  assemblyId: RingBeamAssemblyId
+  walls: PerimeterWall[]
+  startIndex: number
+  endIndex: number
+}
+
+function groupConsecutiveWallsByRingBeam(
+  walls: PerimeterWall[],
+  getRingBeamId: (wall: (typeof walls)[0]) => RingBeamAssemblyId | undefined
+): RingBeamSegment[] {
+  if (walls.length === 0) return []
+
+  const segments: RingBeamSegment[] = []
+  let currentAssemblyId = getRingBeamId(walls[0])
+  let currentWalls: typeof walls = currentAssemblyId ? [walls[0]] : []
+  let startIndex = 0
+
+  for (let i = 1; i < walls.length; i++) {
+    const assemblyId = getRingBeamId(walls[i])
+
+    if (assemblyId === currentAssemblyId && assemblyId !== undefined) {
+      // Continue current segment
+      currentWalls.push(walls[i])
+    } else {
+      // Finish current segment if it has an assembly
+      if (currentAssemblyId && currentWalls.length > 0) {
+        segments.push({
+          assemblyId: currentAssemblyId,
+          walls: currentWalls,
+          startIndex,
+          endIndex: i - 1
+        })
+      }
+      // Start new segment
+      currentAssemblyId = assemblyId
+      currentWalls = assemblyId ? [walls[i]] : []
+      startIndex = i
+    }
+  }
+
+  // Handle wrap-around for circular perimeter
+  if (currentAssemblyId && currentWalls.length > 0) {
+    const firstSegmentAssemblyId = getRingBeamId(walls[0])
+
+    if (currentAssemblyId === firstSegmentAssemblyId && segments.length > 0 && segments[0].startIndex === 0) {
+      // Merge with first segment (wrap around)
+      segments[0].walls = [...currentWalls, ...segments[0].walls]
+      segments[0].startIndex = startIndex
+    } else {
+      // Add as separate segment
+      segments.push({
+        assemblyId: currentAssemblyId,
+        walls: currentWalls,
+        startIndex,
+        endIndex: walls.length - 1
+      })
+    }
+  }
+
+  return segments
 }
 
 export interface PerimeterStats {

@@ -66,10 +66,10 @@ export class FullRingBeamAssembly extends BaseRingBeamAssembly<FullRingBeamConfi
         continue
       }
 
-      // Calculate ceiling offset
-      let ceilingOffset = -this.config.height
+      const totalConstructionHeight =
+        storeyContext.ceilingHeight + storeyContext.floorTopOffset + storeyContext.ceilingBottomOffset
+      const ceilingOffset = storeyContext.storeyHeight - totalConstructionHeight
 
-      // Get height line using aligned bounds
       const { heightLine, boundingRect } = this.getHeightLineForBeamPolygon(
         polygon,
         part.wall.direction,
@@ -78,15 +78,11 @@ export class FullRingBeamAssembly extends BaseRingBeamAssembly<FullRingBeamConfi
         storeyContext.perimeterContexts
       )
 
-      // Split by height changes
       const subSegments = this.splitPolygonByHeightLine(boundingRect, heightLine)
 
-      // Construct each piece
       for (const sub of subSegments) {
-        // Heights represent the top of the beam (bottom of roof)
-        // Adjust down by beam thickness to get the bottom position
-        const adjustedStartHeight = (sub.startHeight - this.config.height) as Length
-        const adjustedEndHeight = (sub.endHeight - this.config.height) as Length
+        const adjustedStartHeight = (sub.startHeight + ceilingOffset) as Length
+        const adjustedEndHeight = (sub.endHeight + ceilingOffset) as Length
 
         yield* this.extrudeWithSlope(
           sub.subPolygon,

@@ -11,12 +11,8 @@ import type { NonStrawbaleWallConfig, WallAssembly } from '@/construction/walls'
 import { calculateWallCornerInfo, getWallContext } from '@/construction/walls/corners/corners'
 import { constructWallLayers } from '@/construction/walls/layers'
 import { WALL_POLYGON_PLANE, createWallPolygonWithOpenings } from '@/construction/walls/polygons'
-import { convertHeightLineToWallOffsets } from '@/construction/walls/roofIntegration'
-import {
-  type WallStoreyContext,
-  getRoofHeightLineForWall,
-  segmentedWallConstruction
-} from '@/construction/walls/segmentation'
+import { convertHeightLineToWallOffsets, getRoofHeightLineForLines } from '@/construction/walls/roofIntegration'
+import { type WallStoreyContext, segmentedWallConstruction } from '@/construction/walls/segmentation'
 import { Bounds3D, type Length, fromTrans, newVec2, newVec3 } from '@/shared/geometry'
 
 function* noopWallSegment(
@@ -60,9 +56,9 @@ export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallCo
       throw new Error('Non-strawbale wall structural thickness must be greater than 0')
     }
 
-    const roofHeightLine = getRoofHeightLineForWall(
+    const roofHeightLine = getRoofHeightLineForLines(
       perimeter.storeyId,
-      cornerInfo,
+      [cornerInfo.constructionInsideLine, cornerInfo.constructionOutsideLine],
       -ceilingOffset,
       storeyContext.perimeterContexts
     )
