@@ -1,13 +1,30 @@
-import { InfoCircledIcon } from '@radix-ui/react-icons'
+import { CopyIcon, InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Button, Callout, Flex, Grid, SegmentedControl, Select, Separator, Switch, Text } from '@radix-ui/themes'
-import { useCallback } from 'react'
+import {
+  Button,
+  Callout,
+  DropdownMenu,
+  Flex,
+  Grid,
+  IconButton,
+  SegmentedControl,
+  Select,
+  Separator,
+  Switch,
+  Text
+} from '@radix-ui/themes'
+import { useCallback, useMemo } from 'react'
 
 import type { WallPostType } from '@/building/model/model'
+import { usePerimeters } from '@/building/store'
+import { useWallAssemblies } from '@/construction/config/store'
 import { DEFAULT_MATERIALS, type MaterialId } from '@/construction/materials/material'
+import type { PostConfig } from '@/construction/materials/posts'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
 import { LengthField } from '@/shared/components/LengthField'
+import { type Length } from '@/shared/geometry'
+import { formatLength } from '@/shared/utils/formatting'
 
 import type { AddPostTool } from './AddPostTool'
 
@@ -19,6 +36,21 @@ interface AddPostToolInspectorImplProps {
   tool: AddPostTool
 }
 
+interface ExistingPostConfig {
+  type: WallPostType
+  width: Length
+  thickness: Length
+  material: MaterialId
+  infillMaterial?: MaterialId
+}
+
+const POST_TYPE_LABELS: Record<WallPostType, string> = {
+  center: 'Center',
+  double: 'Double',
+  inside: 'Inside',
+  outside: 'Outside'
+}
+
 function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): React.JSX.Element {
   const { state } = useReactiveTool(tool)
 
@@ -26,6 +58,65 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
   const availableMaterials = Object.values(DEFAULT_MATERIALS).filter(
     m => m.type === 'dimensional' || m.type === 'sheet'
   )
+
+  // Collect all post configurations from model and assemblies
+  const allPerimeters = usePerimeters()
+  const allWallAssemblies = useWallAssemblies()
+
+  const allPostConfigs = useMemo(() => {
+    const existingConfigs: Record<string, ExistingPostConfig> = {}
+
+    // From model posts
+    for (const perimeter of allPerimeters) {
+      for (const wall of perimeter.walls) {
+        for (const post of wall.posts) {
+          const key = `${post.type}:${post.width}:${post.thickness}:${post.material}:${post.infillMaterial}`
+          if (!(key in existingConfigs)) {
+            existingConfigs[key] = {
+              type: post.type,
+              width: post.width,
+              thickness: post.thickness,
+              material: post.material,
+              infillMaterial: post.infillMaterial
+            }
+          }
+        }
+      }
+    }
+
+    // From wall assembly configs
+    for (const assembly of allWallAssemblies) {
+      let postConfig: PostConfig | undefined
+
+      // Extract PostConfig based on assembly type
+      if (assembly.type === 'infill') {
+        postConfig = assembly.posts
+      } else if (assembly.type === 'strawhenge' || assembly.type === 'modules') {
+        postConfig = assembly.infill.posts
+      }
+
+      if (!postConfig) continue
+
+      // Map PostConfig to WallPost-compatible format
+      const mappedType: WallPostType = postConfig.type === 'full' ? 'center' : 'double'
+      const thickness = postConfig.type === 'double' ? postConfig.thickness : 360 // Default 36cm for 'full' posts
+      const infillMaterial = postConfig.type === 'double' ? postConfig.infillMaterial : undefined
+
+      const key = `${mappedType}:${postConfig.width}:${thickness}:${postConfig.material}:${infillMaterial}`
+
+      if (!(key in existingConfigs)) {
+        existingConfigs[key] = {
+          type: mappedType,
+          width: postConfig.width,
+          thickness,
+          material: postConfig.material,
+          infillMaterial
+        }
+      }
+    }
+
+    return Object.values(existingConfigs)
+  }, [allPerimeters, allWallAssemblies])
 
   // Event handlers
   const handleTypeChange = useCallback(
@@ -52,6 +143,17 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
   const handleInfillMaterialChange = useCallback(
     (materialId: MaterialId) => {
       tool.setInfillMaterial(materialId)
+    },
+    [tool]
+  )
+
+  const handleCopyClick = useCallback(
+    (config: ExistingPostConfig) => {
+      tool.setPostType(config.type)
+      tool.setWidth(config.width)
+      tool.setThickness(config.thickness)
+      tool.setMaterial(config.material)
+      if (config.infillMaterial) tool.setInfillMaterial(config.infillMaterial)
     },
     [tool]
   )
@@ -177,9 +279,28 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
 
       {/* Quick presets */}
       <Flex direction="column" gap="2">
-        <Text size="1" weight="medium" color="gray">
-          Quick Presets
-        </Text>
+        {/* Copy Existing Configuration */}
+        <Flex align="center" justify="between" gap="2">
+          <Text size="1" weight="medium" color="gray">
+            Quick Presets
+          </Text>
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger disabled={allPostConfigs.length === 0}>
+              <IconButton size="2" title="Copy existing configuration">
+                <CopyIcon />
+              </IconButton>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content>
+              {allPostConfigs.map((config, index) => (
+                <DropdownMenu.Item key={index} onClick={() => handleCopyClick(config)}>
+                  <Text>
+                    {POST_TYPE_LABELS[config.type]} • {formatLength(config.width)}×{formatLength(config.thickness)}
+                  </Text>
+                </DropdownMenu.Item>
+              ))}
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
+        </Flex>
         <Grid columns="2" gap="2">
           <Button
             size="1"
