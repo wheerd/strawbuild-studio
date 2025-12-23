@@ -54,6 +54,7 @@ export interface HighlightedCuboid {
   renderPosition: 'bottom' | 'top'
   cancelKey?: string
   mergeKey?: string
+  sourceId?: string // Opening ID for wall association
 }
 
 export interface HighlightedPolygon {

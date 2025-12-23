@@ -162,6 +162,9 @@ export interface PerimetersActions {
   ) => Opening | null
   getPerimeterWallPostById: (perimeterId: PerimeterId, wallId: PerimeterWallId, postId: WallPostId) => WallPost | null
   getPerimetersByStorey: (storeyId: StoreyId) => Perimeter[]
+  getWallByOpeningId: (
+    openingId: OpeningId
+  ) => { wallId: PerimeterWallId; perimeterId: PerimeterId; wall: PerimeterWall } | null
 
   // Movement operations for MoveTool
   movePerimeter: (perimeterId: PerimeterId, offset: Vec2) => boolean
@@ -716,6 +719,21 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
     },
 
     getPerimetersByStorey: (storeyId: StoreyId) => Object.values(get().perimeters).filter(p => p.storeyId === storeyId),
+
+    getWallByOpeningId: (openingId: OpeningId) => {
+      for (const perimeter of Object.values(get().perimeters)) {
+        for (const wall of perimeter.walls) {
+          if (wall.openings.some(o => o.id === openingId)) {
+            return {
+              wallId: wall.id,
+              perimeterId: perimeter.id,
+              wall
+            }
+          }
+        }
+      }
+      return null
+    },
 
     // Opening validation methods implementation
     isPerimeterWallOpeningPlacementValid: (

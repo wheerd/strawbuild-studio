@@ -34,7 +34,8 @@ export const ALL_CATEGORIES = {
   'finished-measurement': { label: 'Finished Measurement' },
 
   area: { label: 'Area' },
-  construction: { label: 'Construction' }
+  construction: { label: 'Construction' },
+  'storey-level': { label: 'Storey Level' }
 } as const
 
 export const CATEGORIES: Record<TagCategoryId, TagCategory> = ALL_CATEGORIES
@@ -507,3 +508,10 @@ export const TAG_PURLIN_SPACING: Tag = {
   label: 'Purlin Spacing',
   category: 'roof-measurement'
 }
+
+// Helper to create storey level tags
+export const createStoreyLevelTag = (level: number): Tag => ({
+  id: `storey-level_${level}` as TagId,
+  label: `Level ${level}`,
+  category: 'storey-level'
+})

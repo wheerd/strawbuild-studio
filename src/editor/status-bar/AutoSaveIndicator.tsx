@@ -56,6 +56,20 @@ export function AutoSaveIndicator(): React.JSX.Element {
     }
   }
 
+  const handleIfcGeometryExport = async () => {
+    setIsExporting(true)
+    setExportError(null)
+
+    try {
+      const { exportConstructionGeometryToIfc } = await import('@/exporters/ifc')
+      await exportConstructionGeometryToIfc()
+    } catch (error) {
+      setExportError(error instanceof Error ? error.message : 'Failed to export IFC geometry')
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   const handleImport = async () => {
     setIsImporting(true)
     setImportError(null)
@@ -200,7 +214,12 @@ export function AutoSaveIndicator(): React.JSX.Element {
 
         <DropdownMenu.Item onClick={handleIfcExport} disabled={isExporting || isImporting}>
           <DownloadIcon />
-          Export IFC
+          Export IFC (Building Model)
+        </DropdownMenu.Item>
+
+        <DropdownMenu.Item onClick={handleIfcGeometryExport} disabled={isExporting || isImporting}>
+          <DownloadIcon />
+          Export IFC (Construction Geometry)
         </DropdownMenu.Item>
 
         <DropdownMenu.Item onClick={handleImport} disabled={isExporting || isImporting}>
