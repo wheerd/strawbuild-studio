@@ -34,7 +34,6 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
   const activePerimiters = usePerimetersOfActiveStorey()
   const storeys = useStoreysOrderedByLevel()
   const perimeters = usePerimeters()
-  const activeStoreyLevel = storeys.findIndex(s => s.id === activeStoreyId)
 
   const handleToolSelect = useCallback((toolId: ToolId) => {
     replaceTool(toolId)
@@ -93,7 +92,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
       <Flex ml="auto" gap="2" align="center">
         <TopDownPlanModal
           title={`Construction Plan for ${activeStorey?.name ?? 'active storey'}`}
-          factory={async () => constructStorey(activeStoreyId, activeStoreyLevel)}
+          factory={async () => constructStorey(activeStoreyId)}
           refreshKey={[activeStoreyId, activePerimiters]}
           trigger={
             <IconButton title="View Construction Plan" size="2" variant="solid">

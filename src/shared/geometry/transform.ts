@@ -35,6 +35,24 @@ export const invertTransform = (t: Transform): Transform | null => mat4.invert(m
 
 export const getPosition = (t: Transform) => mat4.getTranslation(vec3.create(), t) as Vec3
 
+/**
+ * Extract the X-axis (right) direction from a transform matrix.
+ * This is the first column of the rotation part of the matrix.
+ */
+export const getXAxis = (t: Transform): Vec3 => vec3.fromValues(t[0], t[1], t[2]) as Vec3
+
+/**
+ * Extract the Y-axis (up) direction from a transform matrix.
+ * This is the second column of the rotation part of the matrix.
+ */
+export const getYAxis = (t: Transform): Vec3 => vec3.fromValues(t[4], t[5], t[6]) as Vec3
+
+/**
+ * Extract the Z-axis (forward) direction from a transform matrix.
+ * This is the third column of the rotation part of the matrix.
+ */
+export const getZAxis = (t: Transform): Vec3 => vec3.fromValues(t[8], t[9], t[10]) as Vec3
+
 export const fromTrans = (v: Vec3) => mat4.fromTranslation(mat4.create(), v) as Transform
 export const fromRot = (angle: number, axis: Vec3) => mat4.fromRotation(mat4.create(), angle, axis) as Transform
 export const fromRotTrans = (r: Transform3, t: Vec3) =>

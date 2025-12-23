@@ -39,7 +39,7 @@ import {
   TAG_WALL_LAYER_INSIDE,
   TAG_WALL_LAYER_OUTSIDE
 } from '@/construction/tags'
-import { type Transform } from '@/shared/geometry'
+import { type Transform, getPosition, getXAxis, getZAxis } from '@/shared/geometry'
 import { downloadFile } from '@/shared/utils/downloadFile'
 import { getVersionString } from '@/shared/utils/version'
 
@@ -96,7 +96,11 @@ export class GeometryIfcExporter {
   private projectId!: Handle<IFC4.IfcProject>
   private siteId!: Handle<IFC4.IfcSite>
   private buildingId!: Handle<IFC4.IfcBuilding>
-  private storeyIds = new Map<number, Handle<IFC4.IfcBuildingStorey>>()
+  private buildingPlacement!: Handle<IFC4.IfcLocalPlacement>
+  private storeyIds = new Map<
+    number,
+    { storey: Handle<IFC4.IfcBuildingStorey>; placement: Handle<IFC4.IfcLocalPlacement> }
+  >()
 
   // Caches
   private shapeRepCache = new WeakMap<Manifold, Handle<IFC4.IfcShapeRepresentation>>()
@@ -270,7 +274,7 @@ export class GeometryIfcExporter {
       )
     )
 
-    const buildingPlacement = this.writeEntity(new IFC4.IfcLocalPlacement(sitePlacement, this.worldPlacement))
+    this.buildingPlacement = this.writeEntity(new IFC4.IfcLocalPlacement(sitePlacement, this.worldPlacement))
 
     this.buildingId = this.writeEntity(
       new IFC4.IfcBuilding(
@@ -279,7 +283,7 @@ export class GeometryIfcExporter {
         this.label('Building'),
         null,
         null,
-        buildingPlacement,
+        this.buildingPlacement,
         null,
         null,
         IFC4.IfcElementCompositionEnum.ELEMENT,
@@ -381,23 +385,23 @@ export class GeometryIfcExporter {
 
   private processStoreyGroup(storeyGroup: ConstructionGroup): void {
     const storeyLevel = this.extractStoreyLevel(storeyGroup)
-    console.log('storey', storeyLevel, storeyGroup)
-    const storeyHandle = this.storeyIds.get(storeyLevel)
+    let storeyInfo = this.storeyIds.get(storeyLevel)
 
-    if (!storeyHandle) {
-      // Create storey on demand
-      const storeyId = this.createStorey(storeyLevel)
-      this.storeyIds.set(storeyLevel, storeyId)
+    if (!storeyInfo) {
+      // Create storey on demand - extract elevation from transform
+      const elevation = storeyGroup.transform[14] // Z translation from 4x4 matrix
+      storeyInfo = this.createStorey(storeyLevel, elevation)
+      this.storeyIds.set(storeyLevel, storeyInfo)
     }
 
-    const storey = this.storeyIds.get(storeyLevel)!
+    const { storey, placement: storeyPlacement } = storeyInfo
 
     const elements: Handle<IFC4.IfcElement>[] = []
     for (const child of storeyGroup.children) {
       if (isGroup(child)) {
-        elements.push(...this.processGroup(child, storey))
+        elements.push(...this.processGroup(child, storey, storeyPlacement))
       } else {
-        elements.push(this.processElement(child, storey))
+        elements.push(this.processElement(child, storey, storeyPlacement))
       }
     }
 
@@ -408,10 +412,12 @@ export class GeometryIfcExporter {
     }
   }
 
-  private createStorey(level: number): Handle<IFC4.IfcBuildingStorey> {
-    const buildingPlacement = this.worldPlacement
+  private createStorey(
+    level: number,
+    elevation: number
+  ): { storey: Handle<IFC4.IfcBuildingStorey>; placement: Handle<IFC4.IfcLocalPlacement> } {
     const placement = this.writeEntity(
-      new IFC4.IfcLocalPlacement(buildingPlacement, this.createAxisPlacement([0, 0, 0]))
+      new IFC4.IfcLocalPlacement(this.buildingPlacement, this.createAxisPlacement([0, 0, elevation]))
     )
 
     const storeyId = this.writeEntity(
@@ -425,7 +431,7 @@ export class GeometryIfcExporter {
         null,
         null,
         IFC4.IfcElementCompositionEnum.ELEMENT,
-        this.lengthMeasure(0)
+        this.lengthMeasure(elevation)
       )
     )
 
@@ -433,12 +439,13 @@ export class GeometryIfcExporter {
       new IFC4.IfcRelAggregates(this.globalId(), this.ownerHistory, null, null, this.buildingId, [storeyId])
     )
 
-    return storeyId
+    return { storey: storeyId, placement }
   }
 
   private processGroup(
     group: ConstructionGroup,
-    storeyHandle: Handle<IFC4.IfcBuildingStorey>
+    storeyHandle: Handle<IFC4.IfcBuildingStorey>,
+    parentPlacement: Handle<IFC4.IfcLocalPlacement>
   ): Handle<IFC4.IfcElement>[] {
     const typeMapping = this.determineIfcType(group)
 
@@ -447,9 +454,9 @@ export class GeometryIfcExporter {
       const elements: Handle<IFC4.IfcElement>[] = []
       for (const child of group.children) {
         if (isGroup(child)) {
-          elements.push(...this.processGroup(child, storeyHandle))
+          elements.push(...this.processGroup(child, storeyHandle, parentPlacement))
         } else {
-          elements.push(this.processElement(child, storeyHandle))
+          elements.push(this.processElement(child, storeyHandle, parentPlacement))
         }
       }
       return elements
@@ -457,16 +464,16 @@ export class GeometryIfcExporter {
 
     // Check if this should be a decomposable element
     if (this.shouldDecompose(group, typeMapping)) {
-      return [this.processDecomposableGroup(group, typeMapping, storeyHandle)]
+      return [this.processDecomposableGroup(group, typeMapping, storeyHandle, parentPlacement)]
     }
 
     // Otherwise, flatten
     const elements: Handle<IFC4.IfcElement>[] = []
     for (const child of group.children) {
       if (isGroup(child)) {
-        elements.push(...this.processGroup(child, storeyHandle))
+        elements.push(...this.processGroup(child, storeyHandle, parentPlacement))
       } else {
-        elements.push(this.processElement(child, storeyHandle))
+        elements.push(this.processElement(child, storeyHandle, parentPlacement))
       }
     }
     return elements
@@ -488,22 +495,26 @@ export class GeometryIfcExporter {
   private processDecomposableGroup(
     group: ConstructionGroup,
     typeMapping: IfcTypeMapping,
-    storeyHandle: Handle<IFC4.IfcBuildingStorey>
+    storeyHandle: Handle<IFC4.IfcBuildingStorey>,
+    parentPlacement: Handle<IFC4.IfcLocalPlacement>
   ): Handle<IFC4.IfcElement> {
-    const parentElement = this.createGroupElement(group, typeMapping)
+    const parentElement = this.createGroupElement(group, typeMapping, parentPlacement)
 
     // Track sourceId for opening association
     if (group.sourceId && group.voidReceiver) {
       this.sourceIdToElementMap.set(group.sourceId, parentElement)
     }
 
+    // Get the placement of the parent element to use for children
+    const groupPlacement = this.createPlacementFromTransform(group.transform, parentPlacement)
+
     // Process children
     const childElements: Handle<IFC4.IfcElement>[] = []
     for (const child of group.children) {
       if (isGroup(child)) {
-        childElements.push(...this.processGroup(child, storeyHandle))
+        childElements.push(...this.processGroup(child, storeyHandle, groupPlacement))
       } else {
-        childElements.push(this.processElement(child, storeyHandle))
+        childElements.push(this.processElement(child, storeyHandle, groupPlacement))
       }
     }
 
@@ -517,8 +528,12 @@ export class GeometryIfcExporter {
     return parentElement
   }
 
-  private createGroupElement(group: ConstructionGroup, typeMapping: IfcTypeMapping): Handle<IFC4.IfcElement> {
-    const placement = this.createPlacementFromTransform(group.transform)
+  private createGroupElement(
+    group: ConstructionGroup,
+    typeMapping: IfcTypeMapping,
+    parentPlacement: Handle<IFC4.IfcLocalPlacement>
+  ): Handle<IFC4.IfcElement> {
+    const placement = this.createPlacementFromTransform(group.transform, parentPlacement)
 
     // Create element WITHOUT geometry (decomposed parent)
     return this.createIfcElementByType(typeMapping, group.id, placement, null)
@@ -526,7 +541,8 @@ export class GeometryIfcExporter {
 
   private processElement(
     element: ConstructionElement,
-    _storeyHandle: Handle<IFC4.IfcBuildingStorey>
+    _storeyHandle: Handle<IFC4.IfcBuildingStorey>,
+    parentPlacement: Handle<IFC4.IfcLocalPlacement>
   ): Handle<IFC4.IfcElement> {
     const typeMapping = this.determineIfcType(element)
 
@@ -534,8 +550,8 @@ export class GeometryIfcExporter {
     const shapeRep = this.getOrCreateShapeRepresentation(element.shape)
     const productDef = this.writeEntity(new IFC4.IfcProductDefinitionShape(null, null, [shapeRep]))
 
-    // Create placement
-    const placement = this.createPlacementFromTransform(element.transform)
+    // Create placement relative to parent
+    const placement = this.createPlacementFromTransform(element.transform, parentPlacement)
 
     // Create IFC element
     const ifcElement = this.createIfcElementByType(typeMapping, element.id, placement, productDef)
@@ -853,26 +869,25 @@ export class GeometryIfcExporter {
 
     // Part info
     if (constructionElement.partInfo) {
-      const partInfo = constructionElement.partInfo
-      properties.push(
-        this.writeEntity(
-          new IFC4.IfcPropertySingleValue(this.identifier('PartType'), null, this.label(partInfo.type), null)
+      const partInfo = constructionElement.partInfo!
+      if ('type' in partInfo && partInfo.type) {
+        properties.push(
+          this.writeEntity(
+            new IFC4.IfcPropertySingleValue(this.identifier('PartType'), null, this.label(partInfo.type), null)
+          )
         )
-      )
+      }
     }
 
     // Tags
-    if (constructionElement.tags && constructionElement.tags.length > 0) {
-      properties.push(
-        this.writeEntity(
-          new IFC4.IfcPropertySingleValue(
-            this.identifier('Tags'),
-            null,
-            this.label(constructionElement.tags.map(t => t.label).join(', ')),
-            null
-          )
+    if (constructionElement.tags) {
+      const tags = constructionElement.tags!
+      if (tags.length > 0) {
+        const tagLabels = tags.map(t => t.label).join(', ')
+        properties.push(
+          this.writeEntity(new IFC4.IfcPropertySingleValue(this.identifier('Tags'), null, this.label(tagLabels), null))
         )
-      )
+      }
     }
 
     const pset = this.writeEntity(
@@ -914,16 +929,26 @@ export class GeometryIfcExporter {
     return vector.map(component => component / length)
   }
 
-  private createPlacementFromTransform(transform: Transform): Handle<IFC4.IfcLocalPlacement> {
+  private createPlacementFromTransform(
+    transform: Transform,
+    parentPlacement: Handle<IFC4.IfcLocalPlacement> | null = null
+  ): Handle<IFC4.IfcLocalPlacement> {
     // Extract translation from transform matrix
-    const translation: [number, number, number] = [transform[12], transform[13], transform[14]]
+    const position = getPosition(transform)
+    const translation: [number, number, number] = [position[0], position[1], position[2]]
 
-    // Extract rotation (simplified - assumes no complex rotations for now)
-    // For proper implementation, would extract full orientation from matrix
+    // Extract rotation axes from transform matrix
+    const xAxis = getXAxis(transform)
+    const zAxis = getZAxis(transform)
+
+    // Create IFC direction vectors
     const location = this.createCartesianPoint(translation)
-    const axisPlacement = this.writeEntity(new IFC4.IfcAxis2Placement3D(location, this.zAxis, this.xAxis))
+    const ifcZAxis = this.createDirection([zAxis[0], zAxis[1], zAxis[2]])
+    const ifcXAxis = this.createDirection([xAxis[0], xAxis[1], xAxis[2]])
 
-    return this.writeEntity(new IFC4.IfcLocalPlacement(null, axisPlacement))
+    const axisPlacement = this.writeEntity(new IFC4.IfcAxis2Placement3D(location, ifcZAxis, ifcXAxis))
+
+    return this.writeEntity(new IFC4.IfcLocalPlacement(parentPlacement, axisPlacement))
   }
 
   private createAxisPlacement(location: [number, number, number]): Handle<IFC4.IfcAxis2Placement3D> {
