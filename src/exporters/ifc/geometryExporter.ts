@@ -802,6 +802,7 @@ export class GeometryIfcExporter {
   // --- Properties ---
 
   private addElementProperties(element: Handle<IFC4.IfcElement>, constructionElement: ConstructionElement): void {
+    return
     const properties: Handle<IFC4.IfcProperty>[] = []
 
     // Volume

@@ -87,7 +87,15 @@ export function constructModel(): ConstructionModel | null {
     const model = constructStorey(storey.id)
     if (model) {
       const storeyLevelTag = createStoreyLevelTag(level)
-      models.push(transformModel(model, fromTrans(newVec3(0, 0, finishedFloorElevation)), [TAG_STOREY, storeyLevelTag]))
+      models.push(
+        transformModel(
+          model,
+          fromTrans(newVec3(0, 0, finishedFloorElevation)),
+          [TAG_STOREY, storeyLevelTag],
+          undefined,
+          storey.id
+        )
+      )
     }
     finishedFloorElevation += storey.floorHeight
   })
