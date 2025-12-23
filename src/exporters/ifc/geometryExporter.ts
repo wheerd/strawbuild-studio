@@ -88,6 +88,9 @@ export class GeometryIfcExporter {
   private modelContext!: Handle<IFC4.IfcGeometricRepresentationContext>
   private bodyContext!: Handle<IFC4.IfcGeometricRepresentationSubContext>
   private unitAssignment!: Handle<IFC4.IfcUnitAssignment>
+  private lengthUnit!: Handle<IFC4.IfcUnit>
+  private volumeUnit!: Handle<IFC4.IfcUnit>
+  private areaUnit!: Handle<IFC4.IfcSIUnit>
   private worldPlacement!: Handle<IFC4.IfcPlacement>
   private zAxis!: Handle<IFC4.IfcDirection>
   private xAxis!: Handle<IFC4.IfcDirection>
@@ -133,7 +136,6 @@ export class GeometryIfcExporter {
     this.initialiseContext()
 
     const model = constructModel()
-    console.log('model', model)
     if (!model) {
       throw new Error('No construction model to export')
     }
@@ -189,19 +191,19 @@ export class GeometryIfcExporter {
       IFC4.IfcSIPrefix.MILLI,
       IFC4.IfcSIUnitName.METRE
     )
-    const lengthUnit = this.writeEntity(lengthUnitEntity)
+    this.lengthUnit = this.writeEntity(lengthUnitEntity)
 
     const areaUnitEntity = new IFC4.IfcSIUnit(IFC4.IfcUnitEnum.AREAUNIT, null, IFC4.IfcSIUnitName.SQUARE_METRE)
-    const areaUnit = this.writeEntity(areaUnitEntity)
+    this.areaUnit = this.writeEntity(areaUnitEntity)
 
     const volumeUnitEntity = new IFC4.IfcSIUnit(IFC4.IfcUnitEnum.VOLUMEUNIT, null, IFC4.IfcSIUnitName.CUBIC_METRE)
-    const volumeUnit = this.writeEntity(volumeUnitEntity)
+    this.volumeUnit = this.writeEntity(volumeUnitEntity)
 
     const planeAngleUnitEntity = new IFC4.IfcSIUnit(IFC4.IfcUnitEnum.PLANEANGLEUNIT, null, IFC4.IfcSIUnitName.RADIAN)
     const planeAngleUnit = this.writeEntity(planeAngleUnitEntity)
 
     this.unitAssignment = this.writeEntity(
-      new IFC4.IfcUnitAssignment([lengthUnit, areaUnit, volumeUnit, planeAngleUnit])
+      new IFC4.IfcUnitAssignment([this.lengthUnit, this.areaUnit, this.volumeUnit, planeAngleUnit])
     )
   }
 
@@ -804,7 +806,6 @@ export class GeometryIfcExporter {
   // --- Properties ---
 
   private addElementProperties(element: Handle<IFC4.IfcElement>, constructionElement: ConstructionElement): void {
-    return
     const properties: Handle<IFC4.IfcProperty>[] = []
 
     // Volume
@@ -814,8 +815,8 @@ export class GeometryIfcExporter {
         new IFC4.IfcPropertySingleValue(
           this.identifier('Volume'),
           this.label('Volume of the element'),
-          this.real(volume),
-          null
+          this.real(volume / (1000 * 1000 * 1000), true),
+          this.volumeUnit
         )
       )
     )
@@ -827,8 +828,8 @@ export class GeometryIfcExporter {
         new IFC4.IfcPropertySingleValue(
           this.identifier('Width'),
           null,
-          this.lengthMeasure(bounds.max[0] - bounds.min[0]),
-          null
+          this.lengthMeasure(bounds.max[0] - bounds.min[0], true),
+          this.lengthUnit
         )
       )
     )
@@ -837,8 +838,8 @@ export class GeometryIfcExporter {
         new IFC4.IfcPropertySingleValue(
           this.identifier('Height'),
           null,
-          this.lengthMeasure(bounds.max[2] - bounds.min[2]),
-          null
+          this.lengthMeasure(bounds.max[2] - bounds.min[2], true),
+          this.lengthUnit
         )
       )
     )
@@ -847,8 +848,8 @@ export class GeometryIfcExporter {
         new IFC4.IfcPropertySingleValue(
           this.identifier('Depth'),
           null,
-          this.lengthMeasure(bounds.max[1] - bounds.min[1]),
-          null
+          this.lengthMeasure(bounds.max[1] - bounds.min[1], true),
+          this.lengthUnit
         )
       )
     )
@@ -950,15 +951,30 @@ export class GeometryIfcExporter {
     return new IFC4.IfcIdentifier(value)
   }
 
-  private real(value: number): IFC4.IfcReal {
+  private real(value: number, force = false): IFC4.IfcReal {
+    if (force) {
+      // To actually get a value like IFCPOSITIVELENGTHMEASURE(42.0) we need to do this:
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return { type: 2, label: 'REAL', valueType: 4, internalValue: value } as any
+    }
     return new IFC4.IfcReal(value)
   }
 
-  private lengthMeasure(value: number): IFC4.IfcLengthMeasure {
+  private lengthMeasure(value: number, force = false): IFC4.IfcLengthMeasure {
+    if (force) {
+      // To actually get a value like IFCLENGTHMEASURE(42.0) we need to do this:
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return { type: 2, label: 'IFCLENGTHMEASURE', valueType: 4, internalValue: value } as any
+    }
     return new IFC4.IfcLengthMeasure(value)
   }
 
-  private positiveLengthMeasure(value: number): IFC4.IfcPositiveLengthMeasure {
+  private positiveLengthMeasure(value: number, force = false): IFC4.IfcPositiveLengthMeasure {
+    if (force) {
+      // To actually get a value like IFCPOSITIVELENGTHMEASURE(42.0) we need to do this:
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return { type: 2, label: 'IFCPOSITIVELENGTHMEASURE', valueType: 4, internalValue: Math.max(value, 0.01) } as any
+    }
     return new IFC4.IfcPositiveLengthMeasure(Math.max(value, 1e-6))
   }
 
