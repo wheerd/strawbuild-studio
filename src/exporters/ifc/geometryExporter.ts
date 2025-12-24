@@ -40,7 +40,7 @@ import {
   TAG_WALL_LAYER_INSIDE,
   TAG_WALL_LAYER_OUTSIDE
 } from '@/construction/tags'
-import { IDENTITY, type Transform, getPosition, getXAxis, getZAxis } from '@/shared/geometry'
+import { type Transform, getPosition, getXAxis, getZAxis } from '@/shared/geometry'
 import { downloadFile } from '@/shared/utils/downloadFile'
 import { getVersionString } from '@/shared/utils/version'
 
@@ -55,6 +55,7 @@ type IfcElementType =
   | 'IfcCovering'
   | 'IfcBuildingElementPart'
   | 'IfcBuildingElementProxy'
+  | 'IfcElementAssembly'
 
 interface IfcTypeMapping {
   elementType: IfcElementType
@@ -347,6 +348,10 @@ export class GeometryIfcExporter {
     if (hasTag(tags, TAG_ROOF_LAYER_TOP)) return { elementType: 'IfcCovering', predefinedType: 'ROOFING' }
     if (hasTag(tags, TAG_ROOF_LAYER_INSIDE)) return { elementType: 'IfcCovering', predefinedType: 'CEILING' }
 
+    if ('children' in element) {
+      return { elementType: 'IfcElementAssembly' }
+    }
+
     // Default fallback
     return { elementType: 'IfcBuildingElementProxy' }
   }
@@ -451,7 +456,7 @@ export class GeometryIfcExporter {
     const elements: Handle<IFC4.IfcElement>[] = []
     for (const child of storeyGroup.children) {
       if (isGroup(child)) {
-        elements.push(...this.processGroup(child, storey, storeyPlacement))
+        elements.push(this.processGroup(child, storey, storeyPlacement))
       } else {
         const element = this.processElement(child, storey, storeyPlacement)
         if (element) elements.push(element) // Skip null elements (filtered artifacts)
@@ -499,64 +504,22 @@ export class GeometryIfcExporter {
     group: ConstructionGroup,
     storeyHandle: Handle<IFC4.IfcBuildingStorey>,
     parentPlacement: Handle<IFC4.IfcLocalPlacement>
-  ): Handle<IFC4.IfcElement>[] {
+  ): Handle<IFC4.IfcElement> {
     const typeMapping = this.determineIfcType(group)
 
-    // Check if this should be a decomposable element
-    if (this.shouldDecompose(group, typeMapping)) {
-      return [this.processDecomposableGroup(group, typeMapping, storeyHandle, parentPlacement)]
-    }
-
-    // Otherwise, flatten
-    const elements: Handle<IFC4.IfcElement>[] = []
-    if (group.transform !== IDENTITY) {
-      parentPlacement = this.createPlacementFromTransform(group.transform, parentPlacement)
-    }
-    for (const child of group.children) {
-      if (isGroup(child)) {
-        elements.push(...this.processGroup(child, storeyHandle, parentPlacement))
-      } else {
-        const element = this.processElement(child, storeyHandle, parentPlacement)
-        if (element) elements.push(element) // Skip null elements (filtered artifacts)
-      }
-    }
-    return elements
-  }
-
-  private shouldDecompose(group: ConstructionGroup, typeMapping: IfcTypeMapping): boolean {
-    if (typeMapping.elementType === 'IfcWall' && hasTag(group.tags, TAG_WALLS)) {
-      return true
-    }
-    if (typeMapping.elementType === 'IfcSlab' && hasTag(group.tags, TAG_FLOOR)) {
-      return true
-    }
-    if (typeMapping.elementType === 'IfcRoof' && hasTag(group.tags, TAG_ROOF)) {
-      return true
-    }
-    return false
-  }
-
-  private processDecomposableGroup(
-    group: ConstructionGroup,
-    typeMapping: IfcTypeMapping,
-    storeyHandle: Handle<IFC4.IfcBuildingStorey>,
-    parentPlacement: Handle<IFC4.IfcLocalPlacement>
-  ): Handle<IFC4.IfcElement> {
-    const parentElement = this.createGroupElement(group, typeMapping, parentPlacement)
-
-    // Track sourceId for opening association
-    if (group.sourceId && group.voidReceiver) {
-      this.sourceIdToElementMap.set(group.sourceId, parentElement)
-    }
-
-    // Get the placement of the parent element to use for children
     const groupPlacement = this.createPlacementFromTransform(group.transform, parentPlacement)
+
+    const groupElement = this.createIfcElementByType(typeMapping, group.id, groupPlacement, null)
+
+    if (group.sourceId && group.voidReceiver) {
+      this.sourceIdToElementMap.set(group.sourceId, groupElement)
+    }
 
     // Process children
     const childElements: Handle<IFC4.IfcElement>[] = []
     for (const child of group.children) {
       if (isGroup(child)) {
-        childElements.push(...this.processGroup(child, storeyHandle, groupPlacement))
+        childElements.push(this.processGroup(child, storeyHandle, groupPlacement))
       } else {
         const element = this.processElement(child, storeyHandle, groupPlacement)
         if (element) childElements.push(element) // Skip null elements (filtered artifacts)
@@ -566,22 +529,11 @@ export class GeometryIfcExporter {
     // Create decomposition relationship if we have children
     if (childElements.length > 0) {
       this.writeEntity(
-        new IFC4.IfcRelAggregates(this.globalId(), this.ownerHistory, null, null, parentElement, childElements)
+        new IFC4.IfcRelAggregates(this.globalId(), this.ownerHistory, null, null, groupElement, childElements)
       )
     }
 
-    return parentElement
-  }
-
-  private createGroupElement(
-    group: ConstructionGroup,
-    typeMapping: IfcTypeMapping,
-    parentPlacement: Handle<IFC4.IfcLocalPlacement>
-  ): Handle<IFC4.IfcElement> {
-    const placement = this.createPlacementFromTransform(group.transform, parentPlacement)
-
-    // Create element WITHOUT geometry (decomposed parent)
-    return this.createIfcElementByType(typeMapping, group.id, placement, null)
+    return groupElement
   }
 
   private processElement(
@@ -743,6 +695,22 @@ export class GeometryIfcExporter {
             IFC4.IfcBuildingElementPartTypeEnum[
               (predefinedType as keyof IFC4.IfcBuildingElementPartTypeEnum) ?? 'NOTDEFINED'
             ]
+          )
+        )
+
+      case 'IfcElementAssembly':
+        return this.writeEntity(
+          new IFC4.IfcElementAssembly(
+            this.globalId(),
+            this.ownerHistory,
+            this.label(elementId),
+            null,
+            null,
+            placement,
+            productDef,
+            null,
+            null,
+            IFC4.IfcElementAssemblyTypeEnum[(predefinedType as keyof IFC4.IfcElementAssemblyTypeEnum) ?? 'NOTDEFINED']
           )
         )
 
