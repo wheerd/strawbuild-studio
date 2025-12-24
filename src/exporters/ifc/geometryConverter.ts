@@ -35,8 +35,9 @@ export class ManifoldToIfcConverter {
   /**
    * Main conversion entry point
    * Uses IfcFacetedBrep with proper topology to satisfy IFC validation rules
+   * Returns null if manifold has no valid faces (e.g., after filtering artifacts)
    */
-  convert(manifold: Manifold): Handle<IFC4.IfcFacetedBrep> {
+  convert(manifold: Manifold): Handle<IFC4.IfcFacetedBrep> | null {
     this.resetCache()
     return this.toFacetedBrepWithTopology(manifold)
   }
@@ -51,10 +52,16 @@ export class ManifoldToIfcConverter {
 
   /**
    * Convert manifold to IfcFacetedBrep with proper edge and vertex topology
+   * Returns null if there are no valid faces after filtering
    */
-  private toFacetedBrepWithTopology(manifold: Manifold): Handle<IFC4.IfcFacetedBrep> {
+  private toFacetedBrepWithTopology(manifold: Manifold): Handle<IFC4.IfcFacetedBrep> | null {
     // Get indexed faces with deduplicated vertices
     const { vertices, faces } = getFacesFromManifoldIndexed(manifold)
+
+    // Return null if no valid faces (e.g., all filtered out as artifacts)
+    if (faces.length === 0) {
+      return null
+    }
 
     // Create IfcCartesianPoint and IfcVertexPoint for each unique vertex
     this.cartesianPoints = vertices.map(v => this.exporter.createCartesianPoint([v[0], v[1], v[2]]))
@@ -65,10 +72,24 @@ export class ManifoldToIfcConverter {
 
     for (const face of faces) {
       const outerBound = this.createEdgeLoopBound(face.outer, true)
-      const innerBounds = face.holes.map(hole => this.createEdgeLoopBound(hole, false))
+
+      // Skip face if outer bound is invalid
+      if (!outerBound) {
+        continue
+      }
+
+      // Filter out invalid hole bounds
+      const innerBounds = face.holes
+        .map(hole => this.createEdgeLoopBound(hole, false))
+        .filter((bound): bound is Handle<IFC4.IfcFaceBound> => bound !== null)
 
       const ifcFace = this.exporter.writeEntity(new IFC4.IfcFace([outerBound, ...innerBounds]))
       ifcFaces.push(ifcFace)
+    }
+
+    // Return null if no valid faces remain
+    if (ifcFaces.length === 0) {
+      return null
     }
 
     // Assemble closed shell and B-Rep
@@ -78,17 +99,33 @@ export class ManifoldToIfcConverter {
 
   /**
    * Create a face bound using IfcEdgeLoop with shared edges
+   * Returns null if loop is invalid (< 3 vertices)
    */
-  private createEdgeLoopBound(loop: number[], isOuter: boolean): Handle<IFC4.IfcFaceBound> {
+  private createEdgeLoopBound(loop: number[], isOuter: boolean): Handle<IFC4.IfcFaceBound> | null {
+    // Validate loop has at least 3 vertices
+    if (loop.length < 3) {
+      return null
+    }
+
     const orientedEdges: Handle<IFC4.IfcOrientedEdge>[] = []
 
     for (let i = 0; i < loop.length; i++) {
       const v1 = loop[i]
       const v2 = loop[(i + 1) % loop.length]
 
+      // Skip degenerate edges (same vertex)
+      if (v1 === v2) {
+        continue
+      }
+
       // Get or create edge (ensuring shared edges between faces)
       const { orientedEdge } = this.getOrCreateEdge(v1, v2)
       orientedEdges.push(orientedEdge)
+    }
+
+    // Validate we have at least 3 edges
+    if (orientedEdges.length < 3) {
+      return null
     }
 
     const edgeLoop = this.exporter.writeEntity(new IFC4.IfcEdgeLoop(orientedEdges))

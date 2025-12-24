@@ -261,6 +261,11 @@ export function getFacesFromManifold(m: Manifold): Face3D[] {
 export function getFacesFromManifoldIndexed(m: Manifold): IndexedFacesResult {
   const mesh = m.getMesh()
 
+  // Early exit for empty manifolds
+  if (mesh.triVerts.length === 0) {
+    return { vertices: [], faces: [] }
+  }
+
   // Step 1: Build deduplicated vertex array
   const vertexMap = new Map<string, number>() // rounded coords -> unique index
   const uniqueVertices: Vec3[] = []
@@ -279,22 +284,35 @@ export function getFacesFromManifoldIndexed(m: Manifold): IndexedFacesResult {
     indexMap[i / 3] = uniqueIdx
   }
 
-  // Step 2: Extract triangle indices
-  const triangles: [number, number, number][] = []
+  // Step 2: Extract triangle indices and map to deduplicated vertices
+  const rawTriangles: [number, number, number][] = []
   for (let i = 0; i < mesh.triVerts.length; i += 3) {
-    triangles.push([mesh.triVerts[i], mesh.triVerts[i + 1], mesh.triVerts[i + 2]])
+    const t0 = mesh.triVerts[i]
+    const t1 = mesh.triVerts[i + 1]
+    const t2 = mesh.triVerts[i + 2]
+
+    // Map to deduplicated indices immediately
+    const d0 = indexMap[t0]
+    const d1 = indexMap[t1]
+    const d2 = indexMap[t2]
+
+    rawTriangles.push([d0, d1, d2])
   }
 
-  // Step 3: Compute triangle normals
+  // Step 2a: Filter degenerate and duplicate triangles
+  const triangles = filterTriangles(rawTriangles)
+
+  // Early exit if no valid triangles remain
+  if (triangles.length === 0) {
+    return { vertices: uniqueVertices, faces: [] }
+  }
+
+  // Step 3: Compute triangle normals (triangles now use deduplicated indices directly)
   const triangleNormals = triangles.map(t =>
-    computeTriangleNormal(
-      uniqueVertices[indexMap[t[0]]],
-      uniqueVertices[indexMap[t[1]]],
-      uniqueVertices[indexMap[t[2]]]
-    )
+    computeTriangleNormal(uniqueVertices[t[0]], uniqueVertices[t[1]], uniqueVertices[t[2]])
   )
 
-  // Step 4: Build edge → triangle adjacency
+  // Step 4: Build edge → triangle adjacency (using deduplicated indices)
   const edgeMap = new Map<string, number[]>()
   const norm = (i: number, j: number) => (i < j ? `${i}_${j}` : `${j}_${i}`)
 
@@ -312,20 +330,12 @@ export function getFacesFromManifoldIndexed(m: Manifold): IndexedFacesResult {
     }
   })
 
-  // Step 5: Build adjacency graph of coplanar triangles
+  // Step 5: Build adjacency graph of coplanar triangles (triangles already use deduplicated indices)
   const adj: number[][] = triangles.map(() => [])
   for (const [, tris] of edgeMap) {
     if (tris.length === 2) {
       const [t1, t2] = tris
-      if (
-        areCoplanar(
-          triangleNormals[t1],
-          triangleNormals[t2],
-          uniqueVertices,
-          triangles[t1].map(i => indexMap[i]) as [number, number, number],
-          triangles[t2].map(i => indexMap[i]) as [number, number, number]
-        )
-      ) {
+      if (areCoplanar(triangleNormals[t1], triangleNormals[t2], uniqueVertices, triangles[t1], triangles[t2])) {
         adj[t1].push(t2)
         adj[t2].push(t1)
       }
@@ -359,20 +369,35 @@ export function getFacesFromManifoldIndexed(m: Manifold): IndexedFacesResult {
   }
 
   // Step 7: For each coplanar component, extract boundary loops and build indexed faces
-  const faces: IndexedFace[] = components.map((comp, i) => {
-    const loops = trianglesToIndexedLoops(comp, triangles, indexMap)
+  const faces: IndexedFace[] = []
+
+  for (let i = 0; i < components.length; i++) {
+    const comp = components[i]
     const normal = compNormals[i]
+
+    // Extract loops (triangles already use deduplicated indices)
+    const loops = trianglesToIndexedLoops(comp, triangles)
+
+    // Skip faces with empty loops (can happen after triangle filtering)
+    if (loops.outer.length < 3) {
+      continue
+    }
 
     // Correct loop winding
     const correctedOuter = ensureConsistentLoopWinding(loops.outer, uniqueVertices, normal)
-    const correctedHoles = loops.holes.map(hole => ensureConsistentLoopWinding(hole, uniqueVertices, normal))
+    const correctedHoles = loops.holes
+      .filter(hole => hole.length >= 3) // Skip degenerate holes
+      .map(hole => ensureConsistentLoopWinding(hole, uniqueVertices, normal))
 
-    return {
-      outer: correctedOuter,
-      holes: correctedHoles,
-      normal
+    // Validate final face has valid outer loop
+    if (correctedOuter.length >= 3) {
+      faces.push({
+        outer: correctedOuter,
+        holes: correctedHoles,
+        normal
+      })
     }
-  })
+  }
 
   return { vertices: uniqueVertices, faces }
 }
@@ -542,14 +567,10 @@ function polygonArea3D(points: Vec3[]): number {
 
 function trianglesToIndexedLoops(
   comp: number[],
-  triangles: [number, number, number][],
-  indexMap: number[]
+  triangles: [number, number, number][]
 ): { outer: number[]; holes: number[][] } {
-  // Map triangles to deduplicated vertex indices first
-  const deduplicatedTriangles = comp.map(ti => {
-    const tri = triangles[ti]
-    return [indexMap[tri[0]], indexMap[tri[1]], indexMap[tri[2]]] as [number, number, number]
-  })
+  // Triangles already use deduplicated vertex indices, just extract the ones in this component
+  const deduplicatedTriangles = comp.map(ti => triangles[ti])
 
   // Find boundary edges (those belonging to exactly one triangle in component)
   // Work with deduplicated indices throughout
@@ -680,4 +701,41 @@ function computeSignedArea(points: Vec3[], normal: Vec3): number {
   const signedArea = dotVec3(areaVec, normal) * 0.5
 
   return signedArea
+}
+
+// ---------------------------------------------------------------
+// Triangle Filtering (for boolean operation artifacts)
+// ---------------------------------------------------------------
+
+/**
+ * Filter out degenerate and duplicate triangles that result from:
+ * - Vertex deduplication collapsing thin artifacts
+ * - Boolean operations creating overlapping geometry
+ */
+function filterTriangles(triangles: [number, number, number][]): [number, number, number][] {
+  const seen = new Set<string>()
+  const valid: [number, number, number][] = []
+
+  for (const tri of triangles) {
+    // 1. Check for degenerate triangle (any two vertices are the same)
+    //    This happens when vertex deduplication merges vertices across a thin gap
+    if (tri[0] === tri[1] || tri[1] === tri[2] || tri[2] === tri[0]) {
+      continue // Skip degenerate
+    }
+
+    // 2. Create normalized signature (sorted indices for duplicate detection)
+    //    Multiple triangles might map to the same deduplicated indices
+    const sorted = [...tri].sort((a, b) => a - b)
+    const signature = sorted.join(',')
+
+    // 3. Skip if we've seen this exact triangle before
+    if (seen.has(signature)) {
+      continue // Skip duplicate
+    }
+
+    seen.add(signature)
+    valid.push(tri)
+  }
+
+  return valid
 }

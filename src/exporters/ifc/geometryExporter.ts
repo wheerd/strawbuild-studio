@@ -356,15 +356,22 @@ export class GeometryIfcExporter {
   /**
    * Get or create an IfcRepresentationMap for reusable geometry.
    * This is cached per manifold to enable proper IFC geometry instancing.
+   * Returns null if manifold has no valid geometry (e.g., filtered artifacts).
    */
-  private getOrCreateRepresentationMap(manifold: Manifold): Handle<IFC4.IfcRepresentationMap> {
+  private getOrCreateRepresentationMap(manifold: Manifold): Handle<IFC4.IfcRepresentationMap> | null {
     // Check cache
     const cached = this.representationMapCache.get(manifold)
     if (cached) return cached
 
-    // Convert manifold to IFC geometry (IfcFacetedBrep or IfcTriangulatedFaceSet)
+    // Convert manifold to IFC geometry
     const geometryHandle = this.geometryConverter.convert(manifold)
-    const repType = 'Brep' // Could detect based on actual type
+
+    // Return null if no valid geometry (all faces filtered out)
+    if (!geometryHandle) {
+      return null
+    }
+
+    const repType = 'Brep'
 
     // Create the mapped representation (the reusable geometry definition)
     const mappedRepresentation = this.writeEntity(
@@ -387,10 +394,16 @@ export class GeometryIfcExporter {
   /**
    * Create a unique IfcShapeRepresentation for each element using IfcMappedItem.
    * This satisfies IFC WR11 rule (each shape representation used by exactly one product).
+   * Returns null if manifold has no valid geometry.
    */
-  private getOrCreateShapeRepresentation(shape: Shape): Handle<IFC4.IfcShapeRepresentation> {
+  private getOrCreateShapeRepresentation(shape: Shape): Handle<IFC4.IfcShapeRepresentation> | null {
     // Get or create the representation map for this manifold (cached)
     const representationMap = this.getOrCreateRepresentationMap(shape.manifold)
+
+    // Return null if no valid geometry
+    if (!representationMap) {
+      return null
+    }
 
     // Create identity transformation operator (no rotation, no translation, scale=1)
     const identityTransform = this.createIdentityTransformationOperator()
@@ -440,7 +453,8 @@ export class GeometryIfcExporter {
       if (isGroup(child)) {
         elements.push(...this.processGroup(child, storey, storeyPlacement))
       } else {
-        elements.push(this.processElement(child, storey, storeyPlacement))
+        const element = this.processElement(child, storey, storeyPlacement)
+        if (element) elements.push(element) // Skip null elements (filtered artifacts)
       }
     }
 
@@ -502,7 +516,8 @@ export class GeometryIfcExporter {
       if (isGroup(child)) {
         elements.push(...this.processGroup(child, storeyHandle, parentPlacement))
       } else {
-        elements.push(this.processElement(child, storeyHandle, parentPlacement))
+        const element = this.processElement(child, storeyHandle, parentPlacement)
+        if (element) elements.push(element) // Skip null elements (filtered artifacts)
       }
     }
     return elements
@@ -543,7 +558,8 @@ export class GeometryIfcExporter {
       if (isGroup(child)) {
         childElements.push(...this.processGroup(child, storeyHandle, groupPlacement))
       } else {
-        childElements.push(this.processElement(child, storeyHandle, groupPlacement))
+        const element = this.processElement(child, storeyHandle, groupPlacement)
+        if (element) childElements.push(element) // Skip null elements (filtered artifacts)
       }
     }
 
@@ -572,11 +588,17 @@ export class GeometryIfcExporter {
     element: ConstructionElement,
     _storeyHandle: Handle<IFC4.IfcBuildingStorey>,
     parentPlacement: Handle<IFC4.IfcLocalPlacement>
-  ): Handle<IFC4.IfcElement> {
+  ): Handle<IFC4.IfcElement> | null {
     const typeMapping = this.determineIfcType(element)
 
     // Get or create geometry (with instancing)
     const shapeRep = this.getOrCreateShapeRepresentation(element.shape)
+
+    // Skip element if no valid geometry (e.g., boolean artifact filtered out)
+    if (!shapeRep) {
+      return null
+    }
+
     const productDef = this.writeEntity(new IFC4.IfcProductDefinitionShape(null, null, [shapeRep]))
 
     // Create placement relative to parent
