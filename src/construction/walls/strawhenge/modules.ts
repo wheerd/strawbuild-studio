@@ -4,7 +4,14 @@ import type { MaterialId } from '@/construction/materials/material'
 import { constructStraw } from '@/construction/materials/straw'
 import { type InitialPartInfo } from '@/construction/parts'
 import { type ConstructionResult, yieldAsGroup, yieldElement, yieldMeasurement } from '@/construction/results'
-import { TAG_MODULE, TAG_MODULE_WIDTH, TAG_STRAW_INFILL } from '@/construction/tags'
+import {
+  TAG_MODULE,
+  TAG_MODULE_FRAME,
+  TAG_MODULE_INFILL,
+  TAG_MODULE_SPACER,
+  TAG_MODULE_WIDTH,
+  TAG_STRAW_INFILL
+} from '@/construction/tags'
 import { type Length, type Vec3, newVec3 } from '@/shared/geometry'
 
 export interface BaseModuleConfig {
@@ -49,7 +56,7 @@ function* constructSingleFrameModule(
     frameMaterial,
     newVec3(position[0], position[1], position[2] + size[2] - frameThickness),
     newVec3(size[0], size[1], frameThickness),
-    undefined,
+    [TAG_MODULE_FRAME],
     { type: 'module-frame' }
   )
   yield* yieldElement(topFrame)
@@ -59,7 +66,7 @@ function* constructSingleFrameModule(
     frameMaterial,
     position,
     newVec3(size[0], size[1], frameThickness),
-    undefined,
+    [TAG_MODULE_FRAME],
     { type: 'module-frame' }
   )
   yield* yieldElement(bottomFrame)
@@ -69,7 +76,7 @@ function* constructSingleFrameModule(
     frameMaterial,
     newVec3(position[0], position[1], position[2] + frameThickness),
     newVec3(frameThickness, size[1], verticalFrameLength),
-    undefined,
+    [TAG_MODULE_FRAME],
     { type: 'module-frame' }
   )
   yield* yieldElement(startFrame)
@@ -79,7 +86,7 @@ function* constructSingleFrameModule(
     frameMaterial,
     newVec3(position[0] + size[0] - frameThickness, position[1], position[2] + frameThickness),
     newVec3(frameThickness, size[1], verticalFrameLength),
-    undefined,
+    [TAG_MODULE_FRAME],
     { type: 'module-frame' }
   )
   yield* yieldElement(endFrame)
@@ -122,7 +129,7 @@ function* constructDoubleFrameModule(
     frameMaterial,
     newVec3(position[0], position[1], position[2] + size[2] - frameThickness),
     newVec3(size[0], frameWidth, frameThickness),
-    undefined,
+    [TAG_MODULE_FRAME],
     { type: 'module-frame' }
   )
   yield* yieldElement(topFrame1)
@@ -131,7 +138,7 @@ function* constructDoubleFrameModule(
     frameMaterial,
     newVec3(position[0], position[1] + size[1] - frameWidth, position[2] + size[2] - frameThickness),
     newVec3(size[0], frameWidth, frameThickness),
-    undefined,
+    [TAG_MODULE_FRAME],
     { type: 'module-frame' }
   )
   yield* yieldElement(topFrame2)
@@ -141,7 +148,7 @@ function* constructDoubleFrameModule(
     frameMaterial,
     position,
     newVec3(size[0], frameWidth, frameThickness),
-    undefined,
+    [TAG_MODULE_FRAME],
     { type: 'module-frame' }
   )
   yield* yieldElement(bottomFrame1)
@@ -150,7 +157,7 @@ function* constructDoubleFrameModule(
     frameMaterial,
     newVec3(position[0], position[1] + size[1] - frameWidth, position[2]),
     newVec3(size[0], frameWidth, frameThickness),
-    undefined,
+    [TAG_MODULE_FRAME],
     { type: 'module-frame' }
   )
   yield* yieldElement(bottomFrame2)
@@ -160,7 +167,7 @@ function* constructDoubleFrameModule(
     frameMaterial,
     newVec3(position[0], position[1], position[2] + frameThickness),
     newVec3(frameThickness, frameWidth, verticalFrameLength),
-    undefined,
+    [TAG_MODULE_FRAME],
     { type: 'module-frame' }
   )
   yield* yieldElement(startFrame1)
@@ -169,7 +176,7 @@ function* constructDoubleFrameModule(
     frameMaterial,
     newVec3(position[0], position[1] + size[1] - frameWidth, position[2] + frameThickness),
     newVec3(frameThickness, frameWidth, verticalFrameLength),
-    undefined,
+    [TAG_MODULE_FRAME],
     { type: 'module-frame' }
   )
   yield* yieldElement(startFrame2)
@@ -179,7 +186,7 @@ function* constructDoubleFrameModule(
     frameMaterial,
     newVec3(position[0] + size[0] - frameThickness, position[1], position[2] + frameThickness),
     newVec3(frameThickness, frameWidth, verticalFrameLength),
-    undefined,
+    [TAG_MODULE_FRAME],
     { type: 'module-frame' }
   )
   yield* yieldElement(endFrame1)
@@ -188,7 +195,7 @@ function* constructDoubleFrameModule(
     frameMaterial,
     newVec3(position[0] + size[0] - frameThickness, position[1] + size[1] - frameWidth, position[2] + frameThickness),
     newVec3(frameThickness, frameWidth, verticalFrameLength),
-    undefined,
+    [TAG_MODULE_FRAME],
     { type: 'module-frame' }
   )
   yield* yieldElement(endFrame2)
@@ -207,7 +214,8 @@ function* constructDoubleFrameModule(
       createCuboidElement(
         infillMaterial,
         newVec3(position[0], position[1] + frameWidth, position[2] + size[2] - frameThickness),
-        newVec3(size[0], gapWidth, frameThickness)
+        newVec3(size[0], gapWidth, frameThickness),
+        [TAG_MODULE_INFILL]
       )
     )
 
@@ -216,7 +224,8 @@ function* constructDoubleFrameModule(
       createCuboidElement(
         infillMaterial,
         newVec3(position[0], position[1] + frameWidth, position[2]),
-        newVec3(size[0], gapWidth, frameThickness)
+        newVec3(size[0], gapWidth, frameThickness),
+        [TAG_MODULE_INFILL]
       )
     )
 
@@ -236,26 +245,32 @@ function* constructDoubleFrameModule(
     for (let i = spacerCount; i > 0; i--) {
       // Left spacer
       yield* yieldElement(
-        createCuboidElement(spacerMaterial, newVec3(position[0], y, z), spacerSize, undefined, {
+        createCuboidElement(spacerMaterial, newVec3(position[0], y, z), spacerSize, [TAG_MODULE_SPACER], {
           type: 'module-spacer'
         })
       )
 
       if (i > 1) {
         // Left infill
-        yield* yieldElement(createCuboidElement(infillMaterial, newVec3(position[0], y, z + spacerHeight), infillSize))
+        yield* yieldElement(
+          createCuboidElement(infillMaterial, newVec3(position[0], y, z + spacerHeight), infillSize, [
+            TAG_MODULE_INFILL
+          ])
+        )
       }
 
       // Right spacer
       yield* yieldElement(
-        createCuboidElement(spacerMaterial, newVec3(rightX, y, z), spacerSize, undefined, {
+        createCuboidElement(spacerMaterial, newVec3(rightX, y, z), spacerSize, [TAG_MODULE_SPACER], {
           type: 'module-spacer'
         })
       )
 
       if (i > 1) {
         // Right infill
-        yield* yieldElement(createCuboidElement(infillMaterial, newVec3(rightX, y, z + spacerHeight), infillSize))
+        yield* yieldElement(
+          createCuboidElement(infillMaterial, newVec3(rightX, y, z + spacerHeight), infillSize, [TAG_MODULE_INFILL])
+        )
       }
 
       z += spacing

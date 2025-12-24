@@ -42,7 +42,12 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
     exportFnRef.current = fn
   }, [])
 
-  const handleExport = (format: ExportFormat): void => {
+  const handleExport = async (format: ExportFormat): Promise<void> => {
+    if (format === 'ifc') {
+      const { exportConstructionGeometryToIfc } = await import('@/exporters/ifc')
+      await exportConstructionGeometryToIfc(model)
+    }
+
     const fn = exportFnRef.current
     if (fn) {
       fn(format)

@@ -11,6 +11,7 @@ import {
   type Vec2,
   calculatePolygonArea,
   calculatePolygonWithHolesArea,
+  composeTransform,
   copyVec2,
   direction,
   distSqrVec2,
@@ -18,6 +19,7 @@ import {
   dotAbsVec2,
   dotVec2,
   ensurePolygonIsClockwise,
+  fromTrans,
   intersectPolygon,
   lineIntersection,
   newVec2,
@@ -29,7 +31,8 @@ import {
   projectVec2,
   scaleAddVec2,
   simplifyPolygon,
-  subVec2
+  subVec2,
+  vec2To3
 } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
 
@@ -505,11 +508,18 @@ export class PolygonWithBoundingRect {
     if (this.isEmpty) {
       return
     }
+    const normalizePoint = (v: Vec2) => subVec2(v, this.minPoint)
+    const normalizedPolygon: PolygonWithHoles2D = {
+      outer: { points: this.polygon.outer.points.map(normalizePoint) },
+      holes: this.polygon.holes.map(h => ({ points: h.points.map(normalizePoint) }))
+    }
+    const translation = fromTrans(vec2To3(this.minPoint))
+    const normalizedTransform = transform ? composeTransform(transform, translation) : translation
     yield* yieldElement(
       createConstructionElement(
         materialId,
-        createExtrudedPolygon(this.polygon, plane, thickness),
-        transform,
+        createExtrudedPolygon(normalizedPolygon, plane, thickness),
+        normalizedTransform,
         tags,
         partInfo
       )

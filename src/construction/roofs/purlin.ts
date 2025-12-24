@@ -453,7 +453,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
           gapCallback: gap => gapPolygons.push(gap)
         })
       ]
-      return stripes
+      return stripes.map(s => s.expandedInDir(0.01))
     })
 
     const getDistanceToRidge = (point: Vec2): number =>

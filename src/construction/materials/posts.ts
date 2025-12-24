@@ -9,7 +9,7 @@ import {
   yieldWarning
 } from '@/construction/results'
 import { createElementFromArea } from '@/construction/shapes'
-import { TAG_POST } from '@/construction/tags'
+import { TAG_INFILL, TAG_POST } from '@/construction/tags'
 import { type Length } from '@/shared/geometry'
 import { formatLength } from '@/shared/utils/formatting'
 
@@ -116,7 +116,8 @@ function* constructDoublePost(area: WallConstructionArea, config: DoublePostConf
     yield* yieldElement(
       createElementFromArea(
         area.withYAdjustment(config.thickness, size[1] - minimumWallThickness),
-        config.infillMaterial
+        config.infillMaterial,
+        [TAG_INFILL]
       )
     )
 
@@ -175,7 +176,7 @@ export function* constructWallPost(area: WallConstructionArea, post: WallPost): 
           postElements
         )
         const infillArea = area.withYAdjustment(post.thickness, infillThickness)
-        yield* yieldElement(createElementFromArea(infillArea, post.infillMaterial))
+        yield* yieldElement(createElementFromArea(infillArea, post.infillMaterial, [TAG_INFILL]))
         const outsideArea = area.withYAdjustment(wallThickness - post.thickness)
         yield* yieldAndCollectElements(
           yieldElement(createElementFromArea(outsideArea, post.material, [TAG_POST], { type: 'post' })),
@@ -188,14 +189,14 @@ export function* constructWallPost(area: WallConstructionArea, post: WallPost): 
       {
         const infillThickness = (wallThickness - post.thickness) / 2
         const infillInside = area.withYAdjustment(0, infillThickness)
-        yield* yieldElement(createElementFromArea(infillInside, post.infillMaterial))
+        yield* yieldElement(createElementFromArea(infillInside, post.infillMaterial, [TAG_INFILL]))
         const centerArea = area.withYAdjustment(infillThickness, post.thickness)
         yield* yieldAndCollectElements(
           yieldElement(createElementFromArea(centerArea, post.material, [TAG_POST], { type: 'post' })),
           postElements
         )
         const infillOutside = area.withYAdjustment(wallThickness - infillThickness)
-        yield* yieldElement(createElementFromArea(infillOutside, post.infillMaterial))
+        yield* yieldElement(createElementFromArea(infillOutside, post.infillMaterial, [TAG_INFILL]))
       }
       break
     case 'inside':
@@ -206,14 +207,14 @@ export function* constructWallPost(area: WallConstructionArea, post: WallPost): 
           postElements
         )
         const infillArea = area.withYAdjustment(post.thickness)
-        yield* yieldElement(createElementFromArea(infillArea, post.infillMaterial))
+        yield* yieldElement(createElementFromArea(infillArea, post.infillMaterial, [TAG_INFILL]))
       }
       break
     case 'outside':
       {
         const infillThickness = wallThickness - post.thickness
         const infillArea = area.withYAdjustment(0, infillThickness)
-        yield* yieldElement(createElementFromArea(infillArea, post.infillMaterial))
+        yield* yieldElement(createElementFromArea(infillArea, post.infillMaterial, [TAG_INFILL]))
         const outsideArea = area.withYAdjustment(infillThickness)
         yield* yieldAndCollectElements(
           yieldElement(createElementFromArea(outsideArea, post.material, [TAG_POST], { type: 'post' })),

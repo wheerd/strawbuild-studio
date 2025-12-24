@@ -11,13 +11,15 @@ export type TagCategoryId = keyof typeof ALL_CATEGORIES
 export const ALL_CATEGORIES = {
   straw: { label: 'Straw' },
 
-  'wall-wood': { label: 'Wall Wood' },
+  'wall-part': { label: 'Wall Wood' },
   'wall-measurement': { label: 'Wall Measurement' },
   'wall-construction-type': { label: 'Wall Construction Type' },
   'wall-layer': { label: 'Wall Layers' },
 
   opening: { label: 'Opening' },
   'opening-measurement': { label: 'Opening Measurement' },
+
+  'module-part': { label: 'Module Parts' },
 
   'floor-layer': { label: 'Floor Layers' },
   'floor-wood': { label: 'Floor Wood' },
@@ -34,7 +36,9 @@ export const ALL_CATEGORIES = {
   'finished-measurement': { label: 'Finished Measurement' },
 
   area: { label: 'Area' },
-  construction: { label: 'Construction' }
+  construction: { label: 'Construction' },
+
+  'storey-name': { label: 'Storey Name' }
 } as const
 
 export const CATEGORIES: Record<TagCategoryId, TagCategory> = ALL_CATEGORIES
@@ -88,27 +92,27 @@ export const TAG_STRAW_STUFFED: Tag = {
 
 // Wall wood tags
 export const TAG_POST: Tag = {
-  id: 'wall-wood_post',
+  id: 'wall-part_post',
   label: 'Post',
-  category: 'wall-wood'
-}
-
-export const TAG_FRAME: Tag = {
-  id: 'wall-wood_frame',
-  label: 'Frame',
-  category: 'wall-wood'
+  category: 'wall-part'
 }
 
 export const TAG_HEADER: Tag = {
-  id: 'wall-wood_header',
+  id: 'wall-part_header',
   label: 'Header',
-  category: 'wall-wood'
+  category: 'wall-part'
 }
 
 export const TAG_SILL: Tag = {
-  id: 'wall-wood_sill',
+  id: 'wall-part_sill',
   label: 'Sill',
-  category: 'wall-wood'
+  category: 'wall-part'
+}
+
+export const TAG_INFILL: Tag = {
+  id: 'wall-part_infill',
+  label: 'Infill',
+  category: 'wall-part'
 }
 
 // Construction type tags
@@ -427,7 +431,7 @@ export const TAG_SUBFLOOR: Tag = {
   category: 'floor-wood'
 }
 
-export const TAG_FLOOR_CEAILING_SHEATHING: Tag = {
+export const TAG_FLOOR_CEILING_SHEATHING: Tag = {
   id: 'floor-wood_ceiling-sheathing',
   label: 'Ceiling Sheathing',
   category: 'floor-wood'
@@ -506,4 +510,23 @@ export const TAG_PURLIN_SPACING: Tag = {
   id: 'roof-measurement_purlin-spacing',
   label: 'Purlin Spacing',
   category: 'roof-measurement'
+}
+
+// Module parts
+export const TAG_MODULE_FRAME: Tag = {
+  id: 'module-part_frame',
+  label: 'Frame',
+  category: 'module-part'
+}
+
+export const TAG_MODULE_SPACER: Tag = {
+  id: 'module-part_spacer',
+  label: 'Spacer',
+  category: 'module-part'
+}
+
+export const TAG_MODULE_INFILL: Tag = {
+  id: 'module-part_infill',
+  label: 'Infill',
+  category: 'module-part'
 }

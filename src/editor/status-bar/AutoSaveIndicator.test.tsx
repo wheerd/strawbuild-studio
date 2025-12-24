@@ -31,6 +31,7 @@ vi.mock('@/shared/services/ProjectImportExportService', () => ({
 vi.mock('@/importers/ifc/importService', () => ({
   importIfcIntoModel: vi.fn()
 }))
+vi.mock('@/exporters/ifc')
 
 function renderAutoSaveIndicator() {
   return render(

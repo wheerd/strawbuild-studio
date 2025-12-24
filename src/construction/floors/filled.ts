@@ -13,7 +13,7 @@ import type { PerimeterConstructionContext } from '@/construction/perimeters/con
 import { type ConstructionResult, aggregateResults, yieldMeasurement } from '@/construction/results'
 import { createExtrudedPolygon } from '@/construction/shapes'
 import {
-  TAG_FLOOR_CEAILING_SHEATHING,
+  TAG_FLOOR_CEILING_SHEATHING,
   TAG_FLOOR_FRAME,
   TAG_FLOOR_OPENING_FRAME,
   TAG_JOIST,
@@ -183,7 +183,7 @@ export class FilledFloorAssembly extends BaseFloorAssembly<FilledFloorConfig> {
           this.config.ceilingSheathingMaterial,
           createExtrudedPolygon(p, 'xy', this.config.ceilingSheathingThickness),
           undefined,
-          [TAG_FLOOR_CEAILING_SHEATHING],
+          [TAG_FLOOR_CEILING_SHEATHING],
           { type: 'ceiling-sheathing' }
         )
       )

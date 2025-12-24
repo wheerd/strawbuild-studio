@@ -9,7 +9,7 @@ import { yieldMeasurementFromArea } from '@/construction/measurements'
 import type { ConstructionResult } from '@/construction/results'
 import { yieldAndCollectElements, yieldElement, yieldError, yieldWarning } from '@/construction/results'
 import { createElementFromArea } from '@/construction/shapes'
-import { TAG_POST_SPACING } from '@/construction/tags'
+import { TAG_INFILL, TAG_POST_SPACING } from '@/construction/tags'
 import type { InfillWallSegmentConfig } from '@/construction/walls'
 import { type Length, type Vec3 } from '@/shared/geometry'
 
@@ -62,7 +62,7 @@ export function* infillWallArea(
 
   if ((inbetweenArea.size[2] < minStrawSpace || inbetweenArea.size[0] < minStrawSpace) && config.infillMaterial) {
     yield* yieldAndCollectElements(
-      yieldElement(createElementFromArea(inbetweenArea, config.infillMaterial)),
+      yieldElement(createElementFromArea(inbetweenArea, config.infillMaterial, [TAG_INFILL])),
       allElements
     )
     if (inbetweenArea.size[2] < minStrawSpace) {

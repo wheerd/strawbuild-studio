@@ -56,6 +56,26 @@ export function AutoSaveIndicator(): React.JSX.Element {
     }
   }
 
+  const handleIfcGeometryExport = async () => {
+    setIsExporting(true)
+    setExportError(null)
+
+    try {
+      const { exportConstructionGeometryToIfc } = await import('@/exporters/ifc')
+      const { constructModel } = await import('@/construction/storeys/storey')
+      const model = constructModel()
+      if (!model) {
+        setExportError('Failed to generate model')
+      } else {
+        await exportConstructionGeometryToIfc(model)
+      }
+    } catch (error) {
+      setExportError(error instanceof Error ? error.message : 'Failed to export IFC geometry')
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   const handleImport = async () => {
     setIsImporting(true)
     setImportError(null)
@@ -193,24 +213,33 @@ export function AutoSaveIndicator(): React.JSX.Element {
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Content>
+        <DropdownMenu.Sub>
+          <DropdownMenu.SubTrigger>Import/Export IFC</DropdownMenu.SubTrigger>
+          <DropdownMenu.SubContent>
+            <DropdownMenu.Item onClick={handleIfcExport} disabled={isExporting || isImporting}>
+              <DownloadIcon />
+              Export Building Model
+            </DropdownMenu.Item>
+
+            <DropdownMenu.Item onClick={handleIfcGeometryExport} disabled={isExporting || isImporting}>
+              <DownloadIcon />
+              Export Construction Model
+            </DropdownMenu.Item>
+
+            <DropdownMenu.Item onClick={handleIfcImport} disabled={isExporting || isImporting}>
+              <UploadIcon />
+              Import
+            </DropdownMenu.Item>
+          </DropdownMenu.SubContent>
+        </DropdownMenu.Sub>
         <DropdownMenu.Item onClick={handleExport} disabled={isExporting || isImporting}>
           <DownloadIcon />
           Save to File
         </DropdownMenu.Item>
 
-        <DropdownMenu.Item onClick={handleIfcExport} disabled={isExporting || isImporting}>
-          <DownloadIcon />
-          Export IFC
-        </DropdownMenu.Item>
-
         <DropdownMenu.Item onClick={handleImport} disabled={isExporting || isImporting}>
           <UploadIcon />
           Load from File
-        </DropdownMenu.Item>
-
-        <DropdownMenu.Item onClick={handleIfcImport} disabled={isExporting || isImporting}>
-          <UploadIcon />
-          Import IFC
         </DropdownMenu.Item>
 
         <DropdownMenu.Separator />

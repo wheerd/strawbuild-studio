@@ -54,6 +54,7 @@ export interface HighlightedCuboid {
   renderPosition: 'bottom' | 'top'
   cancelKey?: string
   mergeKey?: string
+  sourceId?: string // Opening ID for wall association
 }
 
 export interface HighlightedPolygon {
@@ -110,7 +111,8 @@ export function createConstructionGroup(
   children: GroupOrElement[],
   transform: Transform,
   tags?: Tag[],
-  partInfo?: InitialPartInfo
+  partInfo?: InitialPartInfo,
+  sourceId?: string
 ): ConstructionGroup {
   const childBounds = children.map(child => transformBounds(child.bounds, child.transform))
   const groupBounds = Bounds3D.merge(...childBounds)
@@ -121,7 +123,8 @@ export function createConstructionGroup(
     bounds: groupBounds,
     children,
     tags,
-    partInfo
+    partInfo,
+    sourceId
   }
 }
 
@@ -182,9 +185,15 @@ export function mergeModels(...models: ConstructionModel[]): ConstructionModel {
   }
 }
 
-export function transformModel(model: ConstructionModel, t: Transform, tags?: Tag[]): ConstructionModel {
+export function transformModel(
+  model: ConstructionModel,
+  t: Transform,
+  tags?: Tag[],
+  partInfo?: InitialPartInfo,
+  sourceId?: string
+): ConstructionModel {
   // Create a group with properly calculated bounds from transformed children
-  const transformedGroup = createConstructionGroup(model.elements, t, tags)
+  const transformedGroup = createConstructionGroup(model.elements, t, tags, partInfo, sourceId)
 
   return {
     elements: [transformedGroup],

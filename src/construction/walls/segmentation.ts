@@ -448,6 +448,7 @@ export function* segmentedWallConstruction(
           type: 'cuboid',
           areaType: opening.type,
           label,
+          sourceId: opening.id,
           size: openingArea.size,
           bounds: openingArea.bounds,
           transform: fromTrans(openingArea.position),

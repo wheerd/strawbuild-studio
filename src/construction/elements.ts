@@ -56,6 +56,7 @@ export interface ConstructionGroup {
   tags?: Tag[]
   partInfo?: PartInfo
   issueIds?: ConstructionIssueId[]
+  sourceId?: string
 }
 
 export interface ConstructionElement {
@@ -69,4 +70,5 @@ export interface ConstructionElement {
   tags?: Tag[]
   partInfo?: PartInfo
   issueIds?: ConstructionIssueId[]
+  sourceId?: string // Building model ID
 }

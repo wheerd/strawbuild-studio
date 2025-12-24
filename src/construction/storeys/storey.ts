@@ -11,7 +11,7 @@ import { constructPerimeter } from '@/construction/perimeters/perimeter'
 import { resultsToModel } from '@/construction/results'
 import { constructRoof } from '@/construction/roofs'
 import { type StoreyContext, createWallStoreyContext } from '@/construction/storeys/context'
-import { TAG_STOREY } from '@/construction/tags'
+import { TAG_FLOOR, TAG_STOREY, createTag } from '@/construction/tags'
 import { type Polygon2D, fromTrans, newVec3, subtractPolygons, unionPolygons } from '@/shared/geometry'
 
 function constructStoreyFloor(
@@ -22,7 +22,7 @@ function constructStoreyFloor(
 
   const floorModels = perimeterContexts
     .map(c => storeyContext.floorAssembly.construct(c))
-    .map(m => transformModel(m, fromTrans(newVec3(0, 0, storeyContext.wallBottom))))
+    .map(m => transformModel(m, fromTrans(newVec3(0, 0, storeyContext.wallBottom)), [TAG_FLOOR]))
 
   const floorLayerModels: ConstructionModel[] = []
 
@@ -33,7 +33,7 @@ function constructStoreyFloor(
     const floorLayerResults = Array.from(storeyContext.floorAssembly.constructFloorLayers(floorPolygons))
     const floorLayersModel = resultsToModel(floorLayerResults)
     floorLayerModels.push(
-      transformModel(floorLayersModel, fromTrans(newVec3(0, 0, storeyContext.floorConstructionTop)))
+      transformModel(floorLayersModel, fromTrans(newVec3(0, 0, storeyContext.floorConstructionTop)), [TAG_FLOOR])
     )
   }
 
@@ -49,7 +49,7 @@ function constructStoreyFloor(
       const ceilingLayerResults = Array.from(storeyContext.ceilingAssembly.constructCeilingLayers(ceilingPolygons))
       const ceilingLayerModel = resultsToModel(ceilingLayerResults)
       floorLayerModels.push(
-        transformModel(ceilingLayerModel, fromTrans(newVec3(0, 0, storeyContext.finishedCeilingBottom)))
+        transformModel(ceilingLayerModel, fromTrans(newVec3(0, 0, storeyContext.finishedCeilingBottom)), [TAG_FLOOR])
       )
     }
   }
@@ -80,12 +80,24 @@ export function constructModel(): ConstructionModel | null {
   const { getStoreysOrderedByLevel } = getModelActions()
   const models: ConstructionModel[] = []
   let finishedFloorElevation = 0
-  for (const storey of getStoreysOrderedByLevel()) {
+  const storeys = getStoreysOrderedByLevel()
+
+  storeys.forEach(storey => {
     const model = constructStorey(storey.id)
     if (model) {
-      models.push(transformModel(model, fromTrans(newVec3(0, 0, finishedFloorElevation)), [TAG_STOREY]))
+      const storeyNameTag = createTag('storey-name', storey.name)
+      models.push(
+        transformModel(
+          model,
+          fromTrans(newVec3(0, 0, finishedFloorElevation)),
+          [TAG_STOREY, storeyNameTag],
+          undefined,
+          storey.id
+        )
+      )
     }
     finishedFloorElevation += storey.floorHeight
-  }
+  })
+
   return models.length > 0 ? mergeModels(...models) : null
 }
