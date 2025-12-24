@@ -3,7 +3,6 @@ import { Button, DropdownMenu, Flex, Tooltip } from '@radix-ui/themes'
 import React, { useState } from 'react'
 
 import { usePersistenceStore } from '@/building/store/persistenceStore'
-import { constructModel } from '@/construction/storeys/storey'
 import { clearSelection } from '@/editor/hooks/useSelectionStore'
 import { pushTool } from '@/editor/tools/system'
 import { SaveIcon } from '@/shared/components/Icons'
@@ -63,6 +62,7 @@ export function AutoSaveIndicator(): React.JSX.Element {
 
     try {
       const { exportConstructionGeometryToIfc } = await import('@/exporters/ifc')
+      const { constructModel } = await import('@/construction/storeys/storey')
       const model = constructModel()
       if (!model) {
         setExportError('Failed to generate model')

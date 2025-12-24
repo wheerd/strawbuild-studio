@@ -1425,21 +1425,10 @@ export class GeometryIfcExporter {
         quantities.push(
           this.writeEntity(
             new IFC4.IfcQuantityLength(
-              this.identifier('CrossSectionWidth'),
+              this.identifier('CrossSectionArea'),
               null,
               null,
-              this.lengthMeasure(midDim),
-              null // Formula
-            )
-          )
-        )
-        quantities.push(
-          this.writeEntity(
-            new IFC4.IfcQuantityLength(
-              this.identifier('CrossSectionHeight'),
-              null,
-              null,
-              this.lengthMeasure(minDim),
+              this.areaMeasure(midDim * minDim),
               null // Formula
             )
           )
@@ -1589,6 +1578,15 @@ export class GeometryIfcExporter {
       return { type: 2, label: 'IFCLENGTHMEASURE', valueType: 4, internalValue: value } as any
     }
     return new IFC4.IfcLengthMeasure(value)
+  }
+
+  private areaMeasure(value: number, force = false): IFC4.IfcAreaMeasure {
+    if (force) {
+      // To actually get a value like IFCAREAMEASURE(42.0) we need to do this:
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return { type: 2, label: 'IFCAREAMEASURE', valueType: 4, internalValue: value } as any
+    }
+    return new IFC4.IfcAreaMeasure(value)
   }
 
   private positiveLengthMeasure(value: number, force = false): IFC4.IfcPositiveLengthMeasure {

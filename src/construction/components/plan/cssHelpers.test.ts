@@ -15,7 +15,7 @@ describe('getConstructionElementClasses', () => {
       bounds: Bounds3D.EMPTY,
       shape: { type: 'cuboid', bounds: Bounds3D.EMPTY } as any,
       tags: [
-        { id: 'wall-wood_post', label: 'Post', category: 'wall-wood' },
+        { id: 'wall-part_post', label: 'Post', category: 'wall-part' },
         { id: 'construction_top-plate', label: 'Top Plate', category: 'construction' }
       ]
     }
@@ -23,7 +23,7 @@ describe('getConstructionElementClasses', () => {
     const result = getConstructionElementClasses(element)
 
     expect(result).toBe(
-      'tag__wall-wood_post tag-cat__wall-wood tag__construction_top-plate tag-cat__construction wood construction-element'
+      'tag__wall-part_post tag-cat__wall-part tag__construction_top-plate tag-cat__construction wood construction-element'
     )
   })
 
