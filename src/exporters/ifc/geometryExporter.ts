@@ -5,7 +5,14 @@ import wasmUrl from 'web-ifc/web-ifc.wasm?url'
 import { isOpeningId } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import type { ConstructionElement, ConstructionGroup, GroupOrElement } from '@/construction/elements'
-import type { MaterialId } from '@/construction/materials/material'
+import type {
+  DimensionalMaterial,
+  Material,
+  MaterialId,
+  SheetMaterial,
+  StrawbaleMaterial
+} from '@/construction/materials/material'
+import { getMaterialsActions } from '@/construction/materials/store'
 import type { ConstructionModel, HighlightedCuboid } from '@/construction/model'
 import type { Shape } from '@/construction/shapes'
 import { constructModel } from '@/construction/storeys/storey'
@@ -101,6 +108,7 @@ export class GeometryIfcExporter {
   private lengthUnit!: Handle<IFC4.IfcUnit>
   private volumeUnit!: Handle<IFC4.IfcUnit>
   private areaUnit!: Handle<IFC4.IfcSIUnit>
+  private massDensityUnit!: Handle<IFC4.IfcDerivedUnit>
   private worldPlacement!: Handle<IFC4.IfcPlacement>
   private zAxis!: Handle<IFC4.IfcDirection>
   private xAxis!: Handle<IFC4.IfcDirection>
@@ -212,8 +220,32 @@ export class GeometryIfcExporter {
     const planeAngleUnitEntity = new IFC4.IfcSIUnit(IFC4.IfcUnitEnum.PLANEANGLEUNIT, null, IFC4.IfcSIUnitName.RADIAN)
     const planeAngleUnit = this.writeEntity(planeAngleUnitEntity)
 
+    // Mass unit for density calculations
+    const massUnit = this.writeEntity(
+      new IFC4.IfcSIUnit(IFC4.IfcUnitEnum.MASSUNIT, IFC4.IfcSIPrefix.KILO, IFC4.IfcSIUnitName.GRAM)
+    )
+
+    // Create derived unit for mass density (kg/m³)
+    this.massDensityUnit = this.writeEntity(
+      new IFC4.IfcDerivedUnit(
+        [
+          this.writeEntity(new IFC4.IfcDerivedUnitElement(massUnit, new IFC4.IfcInteger(1))), // mass in numerator
+          this.writeEntity(new IFC4.IfcDerivedUnitElement(this.volumeUnit, new IFC4.IfcInteger(-1))) // volume in denominator
+        ],
+        IFC4.IfcDerivedUnitEnum.MASSDENSITYUNIT,
+        null
+      )
+    )
+
     this.unitAssignment = this.writeEntity(
-      new IFC4.IfcUnitAssignment([this.lengthUnit, this.areaUnit, this.volumeUnit, planeAngleUnit])
+      new IFC4.IfcUnitAssignment([
+        this.lengthUnit,
+        this.areaUnit,
+        this.volumeUnit,
+        planeAngleUnit,
+        massUnit,
+        this.massDensityUnit
+      ])
     )
   }
 
@@ -610,11 +642,19 @@ export class GeometryIfcExporter {
       this.sourceIdToElementMap.set(element.sourceId, ifcElement)
     }
 
-    // Associate material
+    // Associate material (with enhanced properties and color)
     this.associateMaterial(ifcElement, element.material)
 
-    // Add properties
+    // Add custom Strawbaler properties
     this.addElementProperties(ifcElement, element)
+
+    // Add standard IFC base quantities
+    this.addElementQuantities(ifcElement, element, typeMapping.elementType)
+
+    // Add standard wall-specific properties
+    if (typeMapping.elementType === 'IfcWall') {
+      this.addWallProperties(ifcElement as Handle<IFC4.IfcWall>)
+    }
 
     return ifcElement
   }
@@ -893,14 +933,224 @@ export class GeometryIfcExporter {
     const cached = this.materialCache.get(materialId)
     if (cached) return cached
 
-    // Use material ID as name for now
-    const material = this.writeEntity(new IFC4.IfcMaterial(this.label(materialId), null, null))
+    // Get material data from materials store
+    const materialData = this.getMaterialData(materialId)
+
+    // Create IFC material with proper name
+    const materialName = materialData?.name ?? materialId
+    const material = this.writeEntity(new IFC4.IfcMaterial(this.label(materialName), null, null))
+
+    // Add material properties if we have data
+    if (materialData) {
+      this.addMaterialProperties(material, materialData)
+
+      // Add visual color representation
+      if (materialData.color) {
+        this.addMaterialColor(material, materialData.color)
+      }
+    }
 
     this.materialCache.set(materialId, material)
     return material
   }
 
-  // --- Properties ---
+  /**
+   * Get material data from the materials store
+   */
+  private getMaterialData(materialId: MaterialId): Material | null {
+    const { getMaterialById } = getMaterialsActions()
+    return getMaterialById(materialId)
+  }
+
+  /**
+   * Add properties to material using IfcMaterialProperties
+   * Associates density and material-specific properties
+   */
+  private addMaterialProperties(material: Handle<IFC4.IfcMaterial>, materialData: Material): void {
+    const properties: Handle<IFC4.IfcProperty>[] = []
+
+    // Density (if available) - kg/m³
+    if (materialData.density !== undefined) {
+      properties.push(
+        this.writeEntity(
+          new IFC4.IfcPropertySingleValue(
+            this.identifier('MassDensity'),
+            this.label('Mass density in kg/m³'),
+            this.massDensityMeasure(materialData.density, true),
+            this.massDensityUnit as Handle<IFC4.IfcUnit>
+          )
+        )
+      )
+    }
+
+    // Material type
+    properties.push(
+      this.writeEntity(
+        new IFC4.IfcPropertySingleValue(
+          this.identifier('MaterialType'),
+          this.label('Strawbaler material type classification'),
+          this.label(materialData.type),
+          null
+        )
+      )
+    )
+
+    // Type-specific properties
+    switch (materialData.type) {
+      case 'strawbale': {
+        const straw = materialData as StrawbaleMaterial
+        properties.push(
+          this.writeEntity(
+            new IFC4.IfcPropertySingleValue(
+              this.identifier('BaleWidth'),
+              this.label('Bale width in mm'),
+              this.lengthMeasure(straw.baleWidth, true),
+              this.lengthUnit
+            )
+          )
+        )
+        properties.push(
+          this.writeEntity(
+            new IFC4.IfcPropertySingleValue(
+              this.identifier('BaleHeight'),
+              this.label('Bale height in mm'),
+              this.lengthMeasure(straw.baleHeight, true),
+              this.lengthUnit
+            )
+          )
+        )
+        properties.push(
+          this.writeEntity(
+            new IFC4.IfcPropertySingleValue(
+              this.identifier('BaleLength'),
+              this.label('Bale length range in mm'),
+              this.label(`${straw.baleMinLength}-${straw.baleMaxLength}`),
+              null
+            )
+          )
+        )
+        break
+      }
+
+      case 'dimensional': {
+        const dim = materialData as DimensionalMaterial
+        if (dim.crossSections.length > 0) {
+          const sections = dim.crossSections.map(cs => `${cs.smallerLength}×${cs.biggerLength}`).join(', ')
+          properties.push(
+            this.writeEntity(
+              new IFC4.IfcPropertySingleValue(
+                this.identifier('AvailableCrossSections'),
+                this.label('Available cross sections in mm'),
+                this.label(sections),
+                null
+              )
+            )
+          )
+        }
+        break
+      }
+
+      case 'sheet': {
+        const sheet = materialData as SheetMaterial
+        properties.push(
+          this.writeEntity(
+            new IFC4.IfcPropertySingleValue(this.identifier('SheetType'), null, this.label(sheet.sheetType), null)
+          )
+        )
+        if (sheet.thicknesses.length > 0) {
+          properties.push(
+            this.writeEntity(
+              new IFC4.IfcPropertySingleValue(
+                this.identifier('AvailableThicknesses'),
+                this.label('Available thicknesses in mm'),
+                this.label(sheet.thicknesses.join(', ')),
+                null
+              )
+            )
+          )
+        }
+        break
+      }
+    }
+
+    // Create IfcMaterialProperties to associate properties with material
+    if (properties.length > 0) {
+      this.writeEntity(
+        new IFC4.IfcMaterialProperties(
+          this.identifier(`${materialData.name}_Properties`),
+          this.label('Strawbaler material properties'),
+          properties,
+          material as Handle<IFC4.IfcMaterialDefinition>
+        )
+      )
+    }
+  }
+
+  /**
+   * Add visual color to material using IfcSurfaceStyle
+   * Allows viewers to display materials with their defined colors
+   */
+  private addMaterialColor(material: Handle<IFC4.IfcMaterial>, colorHex: string): void {
+    // Parse hex color to RGB (0-1 range)
+    const rgb = this.hexToRgb(colorHex)
+    if (!rgb) return
+
+    // Create RGB color
+    const ifcColor = this.writeEntity(new IFC4.IfcColourRgb(null, this.real(rgb.r), this.real(rgb.g), this.real(rgb.b)))
+
+    // Create surface style rendering (FLAT shading for simplicity)
+    const surfaceStyleRendering = this.writeEntity(
+      new IFC4.IfcSurfaceStyleRendering(
+        ifcColor,
+        null, // Transparency
+        null, // DiffuseColour
+        null, // TransmissionColour
+        null, // DiffuseTransmissionColour
+        null, // ReflectionColour
+        null, // SpecularColour
+        null, // SpecularHighlight
+        IFC4.IfcReflectanceMethodEnum.FLAT
+      )
+    )
+
+    // Create surface style
+    const surfaceStyle = this.writeEntity(
+      new IFC4.IfcSurfaceStyle(this.label(`${material}_Color`), IFC4.IfcSurfaceSide.BOTH, [
+        surfaceStyleRendering as Handle<IFC4.IfcSurfaceStyleElementSelect>
+      ])
+    )
+
+    // Create styled item with the surface style
+    const styledItem = this.writeEntity(
+      new IFC4.IfcStyledItem(
+        null, // No specific representation item
+        [surfaceStyle as Handle<IFC4.IfcStyleAssignmentSelect>],
+        null // No name
+      )
+    )
+
+    // Create styled representation (which is a proper IfcRepresentation)
+    const styledRepresentation = this.writeEntity(
+      new IFC4.IfcStyledRepresentation(
+        this.bodyContext, // Use body context for consistency
+        null, // No specific identifier
+        this.label('Style'), // Type
+        [styledItem as Handle<IFC4.IfcRepresentationItem>]
+      )
+    )
+
+    // Associate styled representation with material
+    this.writeEntity(
+      new IFC4.IfcMaterialDefinitionRepresentation(
+        null,
+        null,
+        [styledRepresentation], // Correct type: IfcRepresentation[]
+        material as Handle<IFC4.IfcMaterialDefinition>
+      )
+    )
+  }
+
+  // --- Properties and Quantities ---
 
   private addElementProperties(element: Handle<IFC4.IfcElement>, constructionElement: ConstructionElement): void {
     const properties: Handle<IFC4.IfcProperty>[] = []
@@ -984,6 +1234,248 @@ export class GeometryIfcExporter {
     this.writeEntity(
       new IFC4.IfcRelDefinesByProperties(this.globalId(), this.ownerHistory, null, null, [element], pset)
     )
+  }
+
+  /**
+   * Add standard IFC wall properties (Pset_WallCommon)
+   * Follows IFC4 specification for wall properties
+   */
+  private addWallProperties(element: Handle<IFC4.IfcWall>): void {
+    const properties: Handle<IFC4.IfcProperty>[] = []
+
+    // IsExternal - All perimeter walls are external (defining building envelope)
+    properties.push(
+      this.writeEntity(
+        new IFC4.IfcPropertySingleValue(
+          this.identifier('IsExternal'),
+          this.label('Indicates if wall is an exterior wall'),
+          new IFC4.IfcBoolean(true),
+          null
+        )
+      )
+    )
+
+    // LoadBearing - All strawbale perimeter walls are load-bearing
+    properties.push(
+      this.writeEntity(
+        new IFC4.IfcPropertySingleValue(
+          this.identifier('LoadBearing'),
+          this.label('Indicates if wall is load-bearing'),
+          new IFC4.IfcBoolean(true),
+          null
+        )
+      )
+    )
+
+    const pset = this.writeEntity(
+      new IFC4.IfcPropertySet(
+        this.globalId(),
+        this.ownerHistory,
+        this.label('Pset_WallCommon'),
+        this.label('IFC4 standard property set for walls'),
+        properties
+      )
+    )
+
+    this.writeEntity(
+      new IFC4.IfcRelDefinesByProperties(this.globalId(), this.ownerHistory, null, null, [element], pset)
+    )
+  }
+
+  /**
+   * Add standard IFC base quantities for elements
+   * Uses element bounding box and computed volume
+   */
+  private addElementQuantities(
+    element: Handle<IFC4.IfcElement>,
+    constructionElement: ConstructionElement,
+    elementType: IfcElementType
+  ): void {
+    // Create quantity set with appropriate name
+    const qtoName = this.getQuantitySetName(elementType)
+
+    if (!qtoName) return
+
+    const quantities: Handle<IFC4.IfcPhysicalQuantity>[] = []
+    const bounds = constructionElement.bounds
+    const volume = constructionElement.shape.manifold.volume() // in mm³
+
+    // Calculate dimensions from bounding box
+    const dx = bounds.max[0] - bounds.min[0] // mm
+    const dy = bounds.max[1] - bounds.min[1] // mm
+    const dz = bounds.max[2] - bounds.min[2] // mm
+
+    // Sort to get min, mid, max dimensions
+    const dimensions = [dx, dy, dz].sort((a, b) => a - b)
+    const [minDim, midDim, maxDim] = dimensions
+
+    // Element-specific quantities based on type
+    switch (elementType) {
+      case 'IfcWall':
+        // For walls: Length (longest horizontal), Width (thickness), Height (vertical)
+        quantities.push(
+          this.writeEntity(
+            new IFC4.IfcQuantityLength(
+              this.identifier('Length'),
+              this.label('Wall length along centerline'),
+              null,
+              this.lengthMeasure(Math.max(dx, dy)), // longest horizontal dimension
+              null // Formula
+            )
+          )
+        )
+        quantities.push(
+          this.writeEntity(
+            new IFC4.IfcQuantityLength(
+              this.identifier('Width'),
+              this.label('Wall thickness'),
+              null,
+              this.lengthMeasure(Math.min(dx, dy)), // shortest horizontal dimension
+              null // Formula
+            )
+          )
+        )
+        quantities.push(
+          this.writeEntity(
+            new IFC4.IfcQuantityLength(
+              this.identifier('Height'),
+              this.label('Wall height'),
+              null,
+              this.lengthMeasure(dz), // vertical dimension
+              null // Formula
+            )
+          )
+        )
+        break
+
+      case 'IfcSlab':
+      case 'IfcRoof':
+        // For slabs/roofs: Width, Length (horizontal), Depth (smallest)
+        quantities.push(
+          this.writeEntity(
+            new IFC4.IfcQuantityLength(
+              this.identifier('Width'),
+              null,
+              null,
+              this.lengthMeasure(maxDim),
+              null // Formula
+            )
+          )
+        )
+        quantities.push(
+          this.writeEntity(
+            new IFC4.IfcQuantityLength(
+              this.identifier('Length'),
+              null,
+              null,
+              this.lengthMeasure(midDim),
+              null // Formula
+            )
+          )
+        )
+        quantities.push(
+          this.writeEntity(
+            new IFC4.IfcQuantityLength(
+              this.identifier('Depth'),
+              null,
+              null,
+              this.lengthMeasure(minDim),
+              null // Formula
+            )
+          )
+        )
+        break
+
+      case 'IfcBeam':
+      case 'IfcColumn':
+      case 'IfcMember':
+        // For beams/columns: Length (longest), cross-section dimensions
+        quantities.push(
+          this.writeEntity(
+            new IFC4.IfcQuantityLength(
+              this.identifier('Length'),
+              null,
+              null,
+              this.lengthMeasure(maxDim),
+              null // Formula
+            )
+          )
+        )
+        quantities.push(
+          this.writeEntity(
+            new IFC4.IfcQuantityLength(
+              this.identifier('CrossSectionWidth'),
+              null,
+              null,
+              this.lengthMeasure(midDim),
+              null // Formula
+            )
+          )
+        )
+        quantities.push(
+          this.writeEntity(
+            new IFC4.IfcQuantityLength(
+              this.identifier('CrossSectionHeight'),
+              null,
+              null,
+              this.lengthMeasure(minDim),
+              null // Formula
+            )
+          )
+        )
+        break
+    }
+
+    // GrossVolume - common to all elements
+    // Convert mm³ to m³: divide by 1,000,000,000
+    quantities.push(
+      this.writeEntity(
+        new IFC4.IfcQuantityVolume(
+          this.identifier('GrossVolume'),
+          this.label('Total volume including all voids and openings'),
+          null,
+          this.volumeMeasure(volume / (1000 * 1000 * 1000)),
+          null // Formula
+        )
+      )
+    )
+
+    const qto = this.writeEntity(
+      new IFC4.IfcElementQuantity(
+        this.globalId(),
+        this.ownerHistory,
+        this.label(qtoName),
+        this.label('IFC4 standard base quantities'),
+        this.label('BaseQuantities'),
+        quantities
+      )
+    )
+
+    this.writeEntity(new IFC4.IfcRelDefinesByProperties(this.globalId(), this.ownerHistory, null, null, [element], qto))
+  }
+
+  /**
+   * Get standard quantity set name for element type
+   */
+  private getQuantitySetName(elementType: IfcElementType): string | null {
+    switch (elementType) {
+      case 'IfcWall':
+        return 'Qto_WallBaseQuantities'
+      case 'IfcSlab':
+        return 'Qto_SlabBaseQuantities'
+      case 'IfcBeam':
+        return 'Qto_BeamBaseQuantities'
+      case 'IfcColumn':
+        return 'Qto_ColumnBaseQuantities'
+      case 'IfcRoof':
+        return 'Qto_RoofBaseQuantities'
+      case 'IfcCovering':
+        return 'Qto_CoveringBaseQuantities'
+      case 'IfcMember':
+        return 'Qto_MemberBaseQuantities'
+      default:
+        return null
+    }
   }
 
   // --- Helpers ---
@@ -1089,6 +1581,41 @@ export class GeometryIfcExporter {
 
   private timestampValue(value: number): IFC4.IfcTimeStamp {
     return new IFC4.IfcTimeStamp(value)
+  }
+
+  private massDensityMeasure(value: number, force = false): IFC4.IfcMassDensityMeasure {
+    if (force) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return { type: 2, label: 'IFCMASSDENSITYMEASURE', valueType: 4, internalValue: value } as any
+    }
+    return new IFC4.IfcMassDensityMeasure(value)
+  }
+
+  /**
+   * Convert hex color string to RGB values (0-1 range)
+   */
+  private hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+    // Remove # if present
+    hex = hex.replace(/^#/, '')
+
+    // Parse RGB based on length
+    let r: number, g: number, b: number
+
+    if (hex.length === 6) {
+      // Full hex: #RRGGBB
+      r = parseInt(hex.substring(0, 2), 16) / 255
+      g = parseInt(hex.substring(2, 4), 16) / 255
+      b = parseInt(hex.substring(4, 6), 16) / 255
+    } else if (hex.length === 3) {
+      // Shorthand: #RGB -> #RRGGBB
+      r = parseInt(hex[0] + hex[0], 16) / 255
+      g = parseInt(hex[1] + hex[1], 16) / 255
+      b = parseInt(hex[2] + hex[2], 16) / 255
+    } else {
+      return null
+    }
+
+    return { r, g, b }
   }
 
   private globalId(): IFC4.IfcGloballyUniqueId {
