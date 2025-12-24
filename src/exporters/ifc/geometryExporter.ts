@@ -103,7 +103,7 @@ export class GeometryIfcExporter {
   private buildingPlacement!: Handle<IFC4.IfcLocalPlacement>
 
   // Caches
-  private shapeRepCache = new WeakMap<Manifold, Handle<IFC4.IfcShapeRepresentation>>()
+  private representationMapCache = new WeakMap<Manifold, Handle<IFC4.IfcRepresentationMap>>()
   private materialCache = new Map<MaterialId, Handle<IFC4.IfcMaterial>>()
   private sourceIdToElementMap = new Map<string, Handle<IFC4.IfcElement>>()
 
@@ -353,22 +353,66 @@ export class GeometryIfcExporter {
 
   // --- Geometry Instancing ---
 
-  private getOrCreateShapeRepresentation(shape: Shape): Handle<IFC4.IfcShapeRepresentation> {
-    const cached = this.shapeRepCache.get(shape.manifold)
+  /**
+   * Get or create an IfcRepresentationMap for reusable geometry.
+   * This is cached per manifold to enable proper IFC geometry instancing.
+   */
+  private getOrCreateRepresentationMap(manifold: Manifold): Handle<IFC4.IfcRepresentationMap> {
+    // Check cache
+    const cached = this.representationMapCache.get(manifold)
     if (cached) return cached
 
-    const geometryHandle = this.geometryConverter.convert(shape.manifold)
+    // Convert manifold to IFC geometry (IfcFacetedBrep or IfcTriangulatedFaceSet)
+    const geometryHandle = this.geometryConverter.convert(manifold)
+    const repType = 'Brep' // Could detect based on actual type
 
-    const repType = 'Brep' // Could detect type but both work
-
-    const shapeRep = this.writeEntity(
+    // Create the mapped representation (the reusable geometry definition)
+    const mappedRepresentation = this.writeEntity(
       new IFC4.IfcShapeRepresentation(this.bodyContext, this.label('Body'), this.label(repType), [
         geometryHandle as Handle<IFC4.IfcRepresentationItem>
       ])
     )
 
-    this.shapeRepCache.set(shape.manifold, shapeRep)
+    // Create the origin for the map (at 0,0,0)
+    const mapOrigin = this.createAxisPlacement([0, 0, 0])
+
+    // Create the representation map
+    const representationMap = this.writeEntity(new IFC4.IfcRepresentationMap(mapOrigin, mappedRepresentation))
+
+    // Cache it
+    this.representationMapCache.set(manifold, representationMap)
+    return representationMap
+  }
+
+  /**
+   * Create a unique IfcShapeRepresentation for each element using IfcMappedItem.
+   * This satisfies IFC WR11 rule (each shape representation used by exactly one product).
+   */
+  private getOrCreateShapeRepresentation(shape: Shape): Handle<IFC4.IfcShapeRepresentation> {
+    // Get or create the representation map for this manifold (cached)
+    const representationMap = this.getOrCreateRepresentationMap(shape.manifold)
+
+    // Create identity transformation operator (no rotation, no translation, scale=1)
+    const identityTransform = this.createIdentityTransformationOperator()
+
+    // Create a mapped item referencing the map with identity transform
+    const mappedItem = this.writeEntity(new IFC4.IfcMappedItem(representationMap, identityTransform))
+
+    // Create a NEW shape representation for THIS element that contains the mapped item
+    // Each element gets its own IfcShapeRepresentation, satisfying WR11
+    const shapeRep = this.writeEntity(
+      new IFC4.IfcShapeRepresentation(this.bodyContext, this.label('Body'), this.label('MappedRepresentation'), [
+        mappedItem as Handle<IFC4.IfcRepresentationItem>
+      ])
+    )
+
     return shapeRep
+  }
+
+  private createIdentityTransformationOperator(): Handle<IFC4.IfcCartesianTransformationOperator3D> {
+    // Identity transformation: no axes (null = use default), origin at (0,0,0), scale=1 (null)
+    const origin = this.createCartesianPoint([0, 0, 0])
+    return this.writeEntity(new IFC4.IfcCartesianTransformationOperator3D(null, null, origin, null, null))
   }
 
   // --- Hierarchy Traversal ---
