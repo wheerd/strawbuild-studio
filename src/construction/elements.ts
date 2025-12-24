@@ -56,8 +56,7 @@ export interface ConstructionGroup {
   tags?: Tag[]
   partInfo?: PartInfo
   issueIds?: ConstructionIssueId[]
-  sourceId?: string // Building model ID (wall.id, perimeter.id, etc.)
-  voidReceiver?: boolean // True for walls that should receive opening voids
+  sourceId?: string
 }
 
 export interface ConstructionElement {

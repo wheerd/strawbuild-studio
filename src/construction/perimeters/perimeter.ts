@@ -119,23 +119,15 @@ export function constructPerimeter(perimeter: Perimeter, includeFloor = true, in
     if (wallModel) {
       const segmentAngle = dirAngle(wall.insideLine.start, wall.insideLine.end)
 
-      // Add sourceId and voidReceiver to top-level elements
-      const modelWithSourceId: ConstructionModel = {
-        ...wallModel,
-        elements: wallModel.elements.map(el => ({
-          ...el,
-          sourceId: wall.id,
-          voidReceiver: true
-        }))
-      }
-
       const transformedModel = transformModel(
-        modelWithSourceId,
+        wallModel,
         rotateZ(
           fromTrans(newVec3(wall.insideLine.start[0], wall.insideLine.start[1], storeyContext.wallBottom)),
           segmentAngle
         ),
-        [TAG_WALLS]
+        [TAG_WALLS],
+        undefined,
+        wall.id
       )
       allModels.push(transformedModel)
     }

@@ -555,7 +555,7 @@ export class GeometryIfcExporter {
 
     const groupElement = this.createIfcElementByType(typeMapping, group.id, groupPlacement, null)
 
-    if (group.sourceId && group.voidReceiver) {
+    if (group.sourceId) {
       this.sourceIdToElementMap.set(group.sourceId, groupElement)
     }
 
