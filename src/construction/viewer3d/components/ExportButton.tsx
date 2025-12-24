@@ -1,7 +1,7 @@
 import { DownloadIcon } from '@radix-ui/react-icons'
 import { DropdownMenu, IconButton } from '@radix-ui/themes'
 
-export type ExportFormat = 'collada' | 'gltf' | 'obj' | 'stl'
+export type ExportFormat = 'collada' | 'gltf' | 'obj' | 'stl' | 'ifc'
 
 interface ExportButtonProps {
   onExport: (format: ExportFormat) => void
@@ -20,6 +20,7 @@ function ExportButton({ onExport }: ExportButtonProps): React.JSX.Element {
         <DropdownMenu.Item onClick={() => onExport('gltf')}>GLTF</DropdownMenu.Item>
         <DropdownMenu.Item onClick={() => onExport('obj')}>OBJ</DropdownMenu.Item>
         <DropdownMenu.Item onClick={() => onExport('stl')}>STL</DropdownMenu.Item>
+        <DropdownMenu.Item onClick={() => onExport('ifc')}>IFC</DropdownMenu.Item>
       </DropdownMenu.Content>
     </DropdownMenu.Root>
   )

@@ -15,7 +15,6 @@ import type {
 import { getMaterialsActions } from '@/construction/materials/store'
 import type { ConstructionModel, HighlightedCuboid } from '@/construction/model'
 import type { Shape } from '@/construction/shapes'
-import { constructModel } from '@/construction/storeys/storey'
 import type { Tag } from '@/construction/tags'
 import {
   TAG_BASE_PLATE,
@@ -43,6 +42,7 @@ import {
   TAG_ROOF_LAYER_INSIDE,
   TAG_ROOF_LAYER_TOP,
   TAG_SILL,
+  TAG_STOREY,
   TAG_STRAW_FLAKES,
   TAG_STRAW_INFILL,
   TAG_STRAW_STUFFED,
@@ -89,9 +89,9 @@ function hasAnyTag(tags: Tag[] | undefined, checkTags: Tag[]): boolean {
   return checkTags.some(tag => hasTag(tags, tag))
 }
 
-export async function exportConstructionGeometryToIfc(): Promise<void> {
+export async function exportConstructionGeometryToIfc(model: ConstructionModel): Promise<void> {
   const exporter = new GeometryIfcExporter()
-  const data = await exporter.export()
+  const data = await exporter.export(model)
   const filename = exporter.getFilename()
   downloadFile(data, filename, 'application/octet-stream')
 }
@@ -128,7 +128,7 @@ export class GeometryIfcExporter {
   private geometryConverter!: ManifoldToIfcConverter
   private readonly now = Math.floor(Date.now() / 1000)
 
-  async export(): Promise<Uint8Array> {
+  async export(model: ConstructionModel): Promise<Uint8Array> {
     await this.api.Init((path, prefix) => {
       if (path.endsWith('.wasm')) {
         return wasmUrl
@@ -152,12 +152,6 @@ export class GeometryIfcExporter {
     })
 
     this.initialiseContext()
-
-    const model = constructModel()
-    if (!model) {
-      throw new Error('No construction model to export')
-    }
-
     this.createSpatialStructure()
     this.processConstructionModel(model)
     this.processOpenings(model)
@@ -500,13 +494,40 @@ export class GeometryIfcExporter {
   // --- Hierarchy Traversal ---
 
   private processConstructionModel(model: ConstructionModel): void {
-    for (const element of model.elements) {
-      if (!isGroup(element)) {
-        console.warn('Top-level element is not a group:', element.id)
-        continue
-      }
+    let defaultStorey: Handle<IFC4.IfcBuildingStorey> | null = null
+    let parentPlacement: Handle<IFC4.IfcPlacement> | null = null
+    const children: Handle<IFC4.IfcElement>[] = []
 
-      this.processStoreyGroup(element)
+    for (const element of model.elements) {
+      if (isGroup(element)) {
+        if (hasTag(element.tags, TAG_STOREY)) {
+          this.processStoreyGroup(element)
+        } else {
+          if (!defaultStorey || !parentPlacement) {
+            ;({ storey: defaultStorey, placement: parentPlacement } = this.createStorey('Unknown', 0))
+          }
+          children.push(this.processGroup(element, defaultStorey, parentPlacement))
+        }
+      } else {
+        if (!defaultStorey || !parentPlacement) {
+          ;({ storey: defaultStorey, placement: parentPlacement } = this.createStorey('Unknown', 0))
+        }
+        const handle = this.processElement(element, defaultStorey, parentPlacement)
+        if (handle) children.push(handle)
+      }
+    }
+
+    if (children.length > 0 && defaultStorey) {
+      this.writeEntity(
+        new IFC4.IfcRelContainedInSpatialStructure(
+          this.globalId(),
+          this.ownerHistory,
+          null,
+          null,
+          children,
+          defaultStorey
+        )
+      )
     }
   }
 

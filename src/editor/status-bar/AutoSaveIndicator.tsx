@@ -3,6 +3,7 @@ import { Button, DropdownMenu, Flex, Tooltip } from '@radix-ui/themes'
 import React, { useState } from 'react'
 
 import { usePersistenceStore } from '@/building/store/persistenceStore'
+import { constructModel } from '@/construction/storeys/storey'
 import { clearSelection } from '@/editor/hooks/useSelectionStore'
 import { pushTool } from '@/editor/tools/system'
 import { SaveIcon } from '@/shared/components/Icons'
@@ -62,7 +63,12 @@ export function AutoSaveIndicator(): React.JSX.Element {
 
     try {
       const { exportConstructionGeometryToIfc } = await import('@/exporters/ifc')
-      await exportConstructionGeometryToIfc()
+      const model = constructModel()
+      if (!model) {
+        setExportError('Failed to generate model')
+      } else {
+        await exportConstructionGeometryToIfc(model)
+      }
     } catch (error) {
       setExportError(error instanceof Error ? error.message : 'Failed to export IFC geometry')
     } finally {
@@ -207,29 +213,33 @@ export function AutoSaveIndicator(): React.JSX.Element {
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Content>
+        <DropdownMenu.Sub>
+          <DropdownMenu.SubTrigger>Import/Export IFC</DropdownMenu.SubTrigger>
+          <DropdownMenu.SubContent>
+            <DropdownMenu.Item onClick={handleIfcExport} disabled={isExporting || isImporting}>
+              <DownloadIcon />
+              Export Building Model
+            </DropdownMenu.Item>
+
+            <DropdownMenu.Item onClick={handleIfcGeometryExport} disabled={isExporting || isImporting}>
+              <DownloadIcon />
+              Export Construction Model
+            </DropdownMenu.Item>
+
+            <DropdownMenu.Item onClick={handleIfcImport} disabled={isExporting || isImporting}>
+              <UploadIcon />
+              Import
+            </DropdownMenu.Item>
+          </DropdownMenu.SubContent>
+        </DropdownMenu.Sub>
         <DropdownMenu.Item onClick={handleExport} disabled={isExporting || isImporting}>
           <DownloadIcon />
           Save to File
         </DropdownMenu.Item>
 
-        <DropdownMenu.Item onClick={handleIfcExport} disabled={isExporting || isImporting}>
-          <DownloadIcon />
-          Export IFC (Building Model)
-        </DropdownMenu.Item>
-
-        <DropdownMenu.Item onClick={handleIfcGeometryExport} disabled={isExporting || isImporting}>
-          <DownloadIcon />
-          Export IFC (Construction Geometry)
-        </DropdownMenu.Item>
-
         <DropdownMenu.Item onClick={handleImport} disabled={isExporting || isImporting}>
           <UploadIcon />
           Load from File
-        </DropdownMenu.Item>
-
-        <DropdownMenu.Item onClick={handleIfcImport} disabled={isExporting || isImporting}>
-          <UploadIcon />
-          Import IFC
         </DropdownMenu.Item>
 
         <DropdownMenu.Separator />
