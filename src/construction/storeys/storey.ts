@@ -11,7 +11,7 @@ import { constructPerimeter } from '@/construction/perimeters/perimeter'
 import { resultsToModel } from '@/construction/results'
 import { constructRoof } from '@/construction/roofs'
 import { type StoreyContext, createWallStoreyContext } from '@/construction/storeys/context'
-import { TAG_FLOOR, TAG_STOREY, createStoreyLevelTag } from '@/construction/tags'
+import { TAG_FLOOR, TAG_STOREY, createTag } from '@/construction/tags'
 import { type Polygon2D, fromTrans, newVec3, subtractPolygons, unionPolygons } from '@/shared/geometry'
 
 function constructStoreyFloor(
@@ -82,16 +82,15 @@ export function constructModel(): ConstructionModel | null {
   let finishedFloorElevation = 0
   const storeys = getStoreysOrderedByLevel()
 
-  storeys.forEach((storey, index) => {
-    const level = index // 0-based level
+  storeys.forEach(storey => {
     const model = constructStorey(storey.id)
     if (model) {
-      const storeyLevelTag = createStoreyLevelTag(level)
+      const storeyNameTag = createTag('storey-name', storey.name)
       models.push(
         transformModel(
           model,
           fromTrans(newVec3(0, 0, finishedFloorElevation)),
-          [TAG_STOREY, storeyLevelTag],
+          [TAG_STOREY, storeyNameTag],
           undefined,
           storey.id
         )

@@ -479,11 +479,11 @@ export class GeometryIfcExporter {
   }
 
   private processStoreyGroup(storeyGroup: ConstructionGroup): void {
-    const storeyLevel = this.extractStoreyLevel(storeyGroup)
+    const storeyName = this.extractStoreyName(storeyGroup)
 
     // Create storey on demand - extract elevation from transform
     const elevation = storeyGroup.transform[14] // Z translation from 4x4 matrix
-    const { storey, placement: storeyPlacement } = this.createStorey(storeyLevel, elevation)
+    const { storey, placement: storeyPlacement } = this.createStorey(storeyName, elevation)
 
     const elements: Handle<IFC4.IfcElement>[] = []
     for (const child of storeyGroup.children) {
@@ -503,7 +503,7 @@ export class GeometryIfcExporter {
   }
 
   private createStorey(
-    level: number,
+    name: string,
     elevation: number
   ): { storey: Handle<IFC4.IfcBuildingStorey>; placement: Handle<IFC4.IfcLocalPlacement> } {
     const placement = this.writeEntity(
@@ -514,7 +514,7 @@ export class GeometryIfcExporter {
       new IFC4.IfcBuildingStorey(
         this.globalId(),
         this.ownerHistory,
-        this.label(`Level ${level}`),
+        this.label(name),
         null,
         null,
         placement,
@@ -619,13 +619,9 @@ export class GeometryIfcExporter {
     return ifcElement
   }
 
-  private extractStoreyLevel(group: ConstructionGroup): number {
-    const storeyTag = group.tags?.find(t => t.category === 'storey-level')
-    if (storeyTag) {
-      const match = storeyTag.id.match(/_(\d+)/)
-      if (match) return parseInt(match[1], 10)
-    }
-    return 0
+  private extractStoreyName(group: ConstructionGroup): string {
+    const storeyTag = group.tags?.find(t => t.category === 'storey-name')
+    return storeyTag?.label ?? 'Unknown Storey'
   }
 
   private createIfcElementByType(

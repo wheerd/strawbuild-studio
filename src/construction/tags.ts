@@ -37,7 +37,8 @@ export const ALL_CATEGORIES = {
 
   area: { label: 'Area' },
   construction: { label: 'Construction' },
-  'storey-level': { label: 'Storey Level' }
+
+  'storey-name': { label: 'Storey Name' }
 } as const
 
 export const CATEGORIES: Record<TagCategoryId, TagCategory> = ALL_CATEGORIES
@@ -529,10 +530,3 @@ export const TAG_MODULE_INFILL: Tag = {
   label: 'Infill',
   category: 'module-part'
 }
-
-// Helper to create storey level tags
-export const createStoreyLevelTag = (level: number): Tag => ({
-  id: `storey-level_${level}` as TagId,
-  label: `Level ${level}`,
-  category: 'storey-level'
-})
