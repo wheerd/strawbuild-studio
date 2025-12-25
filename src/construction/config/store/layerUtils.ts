@@ -78,7 +78,7 @@ export const moveLayer = (layers: LayerConfig[], fromIndex: number, toIndex: num
 }
 
 export const sumLayerThickness = (layers: LayerConfig[]): number =>
-  layers.reduce((total, layer) => total + Number(layer.thickness ?? 0), 0)
+  layers.reduce((total, layer) => total + (layer.overlap ? 0 : Number(layer.thickness ?? 0)), 0)
 
 export const sanitizeLayerArray = (layers: LayerConfig[]): LayerConfig[] =>
   layers.reduce<LayerConfig[]>((sanitized, layer) => appendLayer(sanitized, layer), [])

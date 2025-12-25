@@ -18,6 +18,7 @@ interface BaseLayerConfig {
   type: LayerType
   name: string
   thickness: Length
+  overlap?: boolean
 }
 
 export interface MonolithicLayerConfig extends BaseLayerConfig {

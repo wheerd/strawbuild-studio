@@ -82,7 +82,6 @@ export function constructWallLayers(
 
   if (layers.insideLayers.length > 0) {
     let insideOffset: Length = 0
-    let cumulativeInside: Length = 0
     let previousSpan = baseInsideSpan
 
     const bottom = storeyContext.floorConstructionTop - storeyContext.wallBottom
@@ -92,7 +91,7 @@ export function constructWallLayers(
 
     const insideLayers = [...layers.insideLayers].reverse()
     insideLayers.forEach(layer => {
-      cumulativeInside = (cumulativeInside + layer.thickness) as Length
+      const cumulativeInside = (insideOffset + layer.thickness) as Length
       const span = computeLayerSpan('inside', cumulativeInside, wall, context)
       const start = Math.min(span.start, previousSpan.start)
       const end = Math.max(span.end, previousSpan.end)
@@ -132,8 +131,10 @@ export function constructWallLayers(
         const group = createConstructionGroup(layerElements, IDENTITY, [TAG_WALL_LAYER_INSIDE, TAG_LAYERS, customTag])
         layerResults.push({ type: 'element', element: group })
       }
-      insideOffset = (insideOffset + layer.thickness) as Length
-      previousSpan = span
+      if (!layer.overlap) {
+        insideOffset = (insideOffset + layer.thickness) as Length
+        previousSpan = span
+      }
     })
   }
 
@@ -144,10 +145,9 @@ export function constructWallLayers(
     const zAdjustment = storeyContext.finishedFloorTop - storeyContext.wallBottom
 
     let outsideOffset: Length = (wall.thickness - layers.outsideThickness) as Length
-    let remainingOutside: Length = layers.outsideThickness
     let previousSpan = baseOutsideSpan
     layers.outsideLayers.forEach(layer => {
-      remainingOutside = (remainingOutside - layer.thickness) as Length
+      const remainingOutside = wall.thickness - outsideOffset - layer.thickness
       const depth = Math.max(remainingOutside, 0) as Length
       const span = computeLayerSpan('outside', depth, wall, context)
       const start = Math.min(span.start, previousSpan.start)
@@ -188,8 +188,10 @@ export function constructWallLayers(
         const group = createConstructionGroup(layerElements, IDENTITY, [TAG_WALL_LAYER_OUTSIDE, TAG_LAYERS, customTag])
         layerResults.push({ type: 'element', element: group })
       }
-      outsideOffset = (outsideOffset + layer.thickness) as Length
-      previousSpan = span
+      if (!layer.overlap) {
+        outsideOffset = (outsideOffset + layer.thickness) as Length
+        previousSpan = span
+      }
     })
   }
 

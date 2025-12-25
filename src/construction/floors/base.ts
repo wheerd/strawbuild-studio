@@ -42,7 +42,9 @@ export abstract class BaseFloorAssembly<TConfig extends FloorAssemblyConfigBase>
       for (const polygon of basePolygons) {
         yield* yieldAsGroup(runLayerConstruction(polygon, offset, 'xy', layer), [layerTag, TAG_LAYERS, customTag])
       }
-      offset += layer.thickness
+      if (!layer.overlap) {
+        offset += layer.thickness
+      }
     }
   }
 

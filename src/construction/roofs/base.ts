@@ -313,7 +313,9 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
       const customTag = createTag('roof-layer', layer.name)
       yield* yieldAsGroup(results, [TAG_ROOF_LAYER_TOP, TAG_LAYERS, customTag])
 
-      zOffset += layer.thickness
+      if (!layer.overlap) {
+        zOffset += layer.thickness
+      }
     }
   }
 

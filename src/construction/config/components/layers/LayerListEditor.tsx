@@ -10,9 +10,21 @@ import {
   TrashIcon,
   WidthIcon
 } from '@radix-ui/react-icons'
-import { Card, DropdownMenu, Flex, Grid, IconButton, Select, Text, TextField, Tooltip } from '@radix-ui/themes'
+import {
+  Card,
+  Checkbox,
+  DropdownMenu,
+  Flex,
+  Grid,
+  IconButton,
+  Select,
+  Text,
+  TextField,
+  Tooltip
+} from '@radix-ui/themes'
 import React, { useEffect, useMemo, useState } from 'react'
 
+import { sumLayerThickness } from '@/construction/config/store/layerUtils'
 import type {
   LayerConfig,
   LayerType,
@@ -33,9 +45,6 @@ const stripeDirectionLabels: Record<StripeDirection, string> = {
   colinear: 'Colinear',
   diagonal: 'Diagonal'
 }
-
-const sumThickness = (layers: LayerConfig[]): number =>
-  layers.reduce((total, layer) => total + Number(layer.thickness ?? 0), 0)
 
 const getDefaultLayer = (type: LayerType, thickness: number): LayerConfig =>
   type === 'monolithic'
@@ -96,7 +105,7 @@ export function LayerListEditor({
   afterLabel
 }: LayerListEditorProps): React.JSX.Element {
   const hasLayers = layers.length > 0
-  const totalThickness = useMemo(() => sumThickness(layers), [layers])
+  const totalThickness = useMemo(() => sumLayerThickness(layers), [layers])
   const presetEntries = useMemo(() => (layerPresets ? Object.entries(layerPresets) : []), [layerPresets])
   const hasPresetMenu = onReplaceLayers != null && presetEntries.length > 0
 
@@ -155,7 +164,7 @@ export function LayerListEditor({
                     <Flex align="center" gap="2">
                       <Text>{name}</Text>
                       <Text size="1" color="gray">
-                        · {formatLength(sumThickness(presetLayers))}
+                        · {formatLength(sumLayerThickness(presetLayers))}
                       </Text>
                     </Flex>
                   </DropdownMenu.Item>
@@ -275,7 +284,7 @@ function LayerCard({
   return (
     <Card variant="surface" style={{ padding: '0.75rem' }}>
       <Flex direction="column" gap="2">
-        <Grid columns="auto 1fr auto auto" align="center" gap="1">
+        <Grid columns="auto 1fr auto auto auto" align="center" gap="1">
           <LayerTypeIcon type={layer.type} />
           <TextField.Root
             title="Layer Name"
@@ -302,6 +311,12 @@ function LayerCard({
               <HeightIcon />
             </TextField.Slot>
           </LengthField>
+
+          <Checkbox
+            checked={layer.overlap}
+            onCheckedChange={value => onUpdateLayer(index, { overlap: value === true })}
+            title="Overlap with next layer"
+          />
 
           <Flex gap="1">
             <IconButton
