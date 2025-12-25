@@ -26,13 +26,7 @@ import {
 } from '@radix-ui/themes'
 import React, { useCallback, useState } from 'react'
 
-import {
-  useConfigActions,
-  useDefaultStrawMaterialId,
-  useOpeningAssemblies,
-  useRingBeamAssemblies,
-  useWallAssemblies
-} from '@/construction/config/store'
+import { useConfigActions, useDefaultStrawMaterialId } from '@/construction/config/store'
 import type {
   DimensionalMaterial,
   GenericMaterial,
@@ -44,7 +38,7 @@ import type {
 } from '@/construction/materials/material'
 import { strawbale } from '@/construction/materials/material'
 import { useMaterialActions, useMaterials } from '@/construction/materials/store'
-import { getMaterialUsage } from '@/construction/materials/usage'
+import { useMaterialUsage } from '@/construction/materials/usage'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
 import { VolumeField } from '@/shared/components/VolumeField/VolumeField'
 import type { Length } from '@/shared/geometry'
@@ -68,9 +62,6 @@ const formatCrossSectionLabel = (section: { smallerLength: number; biggerLength:
 export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigContentProps): React.JSX.Element {
   const materials = useMaterials()
   const { addMaterial, updateMaterial, removeMaterial, duplicateMaterial, reset } = useMaterialActions()
-  const ringBeamAssemblies = useRingBeamAssemblies()
-  const wallAssemblies = useWallAssemblies()
-  const openingAssemblies = useOpeningAssemblies()
   const defaultStrawMaterialId = useDefaultStrawMaterialId()
   const { updateDefaultStrawMaterial } = useConfigActions()
 
@@ -83,19 +74,8 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
 
   const selectedMaterial = materials.find(m => m.id === selectedMaterialId) ?? null
 
-  const usage = React.useMemo(
-    () =>
-      selectedMaterial
-        ? getMaterialUsage(
-            selectedMaterial.id,
-            ringBeamAssemblies,
-            wallAssemblies,
-            openingAssemblies,
-            defaultStrawMaterialId
-          )
-        : { isUsed: false, usedByConfigs: [] },
-    [selectedMaterial, ringBeamAssemblies, wallAssemblies, openingAssemblies, defaultStrawMaterialId]
-  )
+  // Use the hook to get material usage - it will return empty usage if selectedMaterial is null
+  const usage = useMaterialUsage(selectedMaterial?.id ?? ('' as MaterialId))
 
   const handleAddNew = useCallback(
     (type: MaterialType) => {

@@ -1,27 +1,61 @@
-import { describe, expect, it } from 'vitest'
+import { renderHook } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createRingBeamAssemblyId, createWallAssemblyId } from '@/building/model/ids'
 import type { RingBeamAssemblyConfig, WallAssemblyConfig } from '@/construction/config/types'
 
 import { createMaterialId, roughWood, strawbale, woodwool } from './material'
-import { getMaterialUsage } from './usage'
+import { useMaterialUsage } from './usage'
 
 const defaultStrawMaterialId = strawbale.id
 
-describe('Material Usage Detection', () => {
-  describe('getMaterialUsage', () => {
-    it('detects material not in use', () => {
-      const usage = getMaterialUsage(roughWood.id, [], [], [], defaultStrawMaterialId)
+// Mock the store hooks
+const mockUseRingBeamAssemblies: any = vi.fn(() => [])
+const mockUseWallAssemblies: any = vi.fn(() => [])
+const mockUseFloorAssemblies: any = vi.fn(() => [])
+const mockUseRoofAssemblies: any = vi.fn(() => [])
+const mockUseOpeningAssemblies: any = vi.fn(() => [])
+const mockUseDefaultStrawMaterialId: any = vi.fn(() => defaultStrawMaterialId)
+const mockUsePerimeters: any = vi.fn(() => [])
 
-      expect(usage.isUsed).toBe(false)
-      expect(usage.usedByConfigs).toEqual([])
+vi.mock('@/construction/config/store', () => ({
+  useRingBeamAssemblies: () => mockUseRingBeamAssemblies(),
+  useWallAssemblies: () => mockUseWallAssemblies(),
+  useFloorAssemblies: () => mockUseFloorAssemblies(),
+  useRoofAssemblies: () => mockUseRoofAssemblies(),
+  useOpeningAssemblies: () => mockUseOpeningAssemblies(),
+  useDefaultStrawMaterialId: () => mockUseDefaultStrawMaterialId()
+}))
+
+vi.mock('@/building/store', () => ({
+  usePerimeters: () => mockUsePerimeters()
+}))
+
+describe('Material Usage Detection', () => {
+  describe('useMaterialUsage', () => {
+    beforeEach(() => {
+      // Reset all mocks to return empty arrays
+      mockUseRingBeamAssemblies.mockReturnValue([])
+      mockUseWallAssemblies.mockReturnValue([])
+      mockUseFloorAssemblies.mockReturnValue([])
+      mockUseRoofAssemblies.mockReturnValue([])
+      mockUseOpeningAssemblies.mockReturnValue([])
+      mockUseDefaultStrawMaterialId.mockReturnValue(defaultStrawMaterialId)
+      mockUsePerimeters.mockReturnValue([])
+    })
+
+    it('detects material not in use', () => {
+      const { result } = renderHook(() => useMaterialUsage(roughWood.id))
+
+      expect(result.current.isUsed).toBe(false)
+      expect(result.current.usedByConfigs).toEqual([])
     })
 
     it('detects default straw material usage', () => {
-      const usage = getMaterialUsage(defaultStrawMaterialId, [], [], [], defaultStrawMaterialId)
+      const { result } = renderHook(() => useMaterialUsage(defaultStrawMaterialId))
 
-      expect(usage.isUsed).toBe(true)
-      expect(usage.usedByConfigs).toEqual(['Default Straw Material'])
+      expect(result.current.isUsed).toBe(true)
+      expect(result.current.usedByConfigs).toEqual(['Default Straw Material'])
     })
 
     it('detects ring beam material usage', () => {
@@ -35,10 +69,12 @@ describe('Material Usage Detection', () => {
         offsetFromEdge: 30
       }
 
-      const usage = getMaterialUsage(roughWood.id, [ringBeamAssembly], [], [], defaultStrawMaterialId)
+      mockUseRingBeamAssemblies.mockReturnValue([ringBeamAssembly])
 
-      expect(usage.isUsed).toBe(true)
-      expect(usage.usedByConfigs).toEqual(['Ring Beam: Test Ring Beam (beam)'])
+      const { result } = renderHook(() => useMaterialUsage(roughWood.id))
+
+      expect(result.current.isUsed).toBe(true)
+      expect(result.current.usedByConfigs).toEqual(['Ring Beam: Test Ring Beam (beam)'])
     })
 
     it('detects wall assembly post materials', () => {
@@ -64,10 +100,12 @@ describe('Material Usage Detection', () => {
         }
       }
 
-      const usage = getMaterialUsage(roughWood.id, [], [wallAssembly], [], defaultStrawMaterialId)
+      mockUseWallAssemblies.mockReturnValue([wallAssembly])
 
-      expect(usage.isUsed).toBe(true)
-      expect(usage.usedByConfigs).toEqual(['Wall: Test Infill (posts)'])
+      const { result } = renderHook(() => useMaterialUsage(roughWood.id))
+
+      expect(result.current.isUsed).toBe(true)
+      expect(result.current.usedByConfigs).toEqual(['Wall: Test Infill (posts)'])
     })
 
     it('detects strawhenge module usage', () => {
@@ -101,10 +139,12 @@ describe('Material Usage Detection', () => {
         }
       }
 
-      const usage = getMaterialUsage(roughWood.id, [], [wallAssembly], [], defaultStrawMaterialId)
+      mockUseWallAssemblies.mockReturnValue([wallAssembly])
 
-      expect(usage.isUsed).toBe(true)
-      expect(usage.usedByConfigs).toEqual(['Wall: Test Strawhenge (module frame, infill posts)'])
+      const { result } = renderHook(() => useMaterialUsage(roughWood.id))
+
+      expect(result.current.isUsed).toBe(true)
+      expect(result.current.usedByConfigs).toEqual(['Wall: Test Strawhenge (module frame, infill posts)'])
     })
 
     it('detects spacer and infill materials in double modules', () => {
@@ -144,13 +184,15 @@ describe('Material Usage Detection', () => {
         }
       }
 
-      const spacerUsage = getMaterialUsage(spacerMaterialId, [], [wallAssembly], [], defaultStrawMaterialId)
-      expect(spacerUsage.isUsed).toBe(true)
-      expect(spacerUsage.usedByConfigs).toEqual(['Wall: Double Module Wall (module spacers)'])
+      mockUseWallAssemblies.mockReturnValue([wallAssembly])
 
-      const infillUsage = getMaterialUsage(woodwool.id, [], [wallAssembly], [], defaultStrawMaterialId)
-      expect(infillUsage.isUsed).toBe(true)
-      expect(infillUsage.usedByConfigs).toEqual(['Wall: Double Module Wall (module infill)'])
+      const { result: spacerResult } = renderHook(() => useMaterialUsage(spacerMaterialId))
+      expect(spacerResult.current.isUsed).toBe(true)
+      expect(spacerResult.current.usedByConfigs).toEqual(['Wall: Double Module Wall (module spacers)'])
+
+      const { result: infillResult } = renderHook(() => useMaterialUsage(woodwool.id))
+      expect(infillResult.current.isUsed).toBe(true)
+      expect(infillResult.current.usedByConfigs).toEqual(['Wall: Double Module Wall (module infill)'])
     })
 
     it('detects materials used across multiple configs', () => {
@@ -184,12 +226,15 @@ describe('Material Usage Detection', () => {
         }
       }
 
-      const usage = getMaterialUsage(roughWood.id, [ringBeamAssembly], [wallAssembly], [], defaultStrawMaterialId)
+      mockUseRingBeamAssemblies.mockReturnValue([ringBeamAssembly])
+      mockUseWallAssemblies.mockReturnValue([wallAssembly])
 
-      expect(usage.isUsed).toBe(true)
-      expect(usage.usedByConfigs).toHaveLength(2)
-      expect(usage.usedByConfigs).toContain('Ring Beam: Test Ring Beam (beam)')
-      expect(usage.usedByConfigs).toContain('Wall: Test Infill (posts)')
+      const { result } = renderHook(() => useMaterialUsage(roughWood.id))
+
+      expect(result.current.isUsed).toBe(true)
+      expect(result.current.usedByConfigs).toHaveLength(2)
+      expect(result.current.usedByConfigs).toContain('Ring Beam: Test Ring Beam (beam)')
+      expect(result.current.usedByConfigs).toContain('Wall: Test Infill (posts)')
     })
   })
 })
