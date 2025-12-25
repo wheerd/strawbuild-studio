@@ -1,8 +1,9 @@
-import { ExclamationTriangleIcon, EyeOpenIcon, PinBottomIcon, PinTopIcon } from '@radix-ui/react-icons'
+import { ExclamationTriangleIcon, EyeOpenIcon, Pencil1Icon, PinBottomIcon, PinTopIcon } from '@radix-ui/react-icons'
 import { Badge, Card, Flex, Heading, IconButton, Table, Text, Tooltip } from '@radix-ui/themes'
 import React, { useCallback, useMemo, useRef } from 'react'
 
 import { PartCutModal } from '@/construction/components/parts/PartCutModal'
+import { useConfigurationModal } from '@/construction/config/context/ConfigurationModalContext'
 import { getMaterialTypeIcon, getMaterialTypeName } from '@/construction/materials/components/MaterialSelect'
 import type {
   DimensionalMaterial,
@@ -545,6 +546,8 @@ interface MaterialGroupCardProps {
 }
 
 function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan }: MaterialGroupCardProps) {
+  const { openConfiguration } = useConfigurationModal()
+
   return (
     <Card variant="surface" size="2">
       <Flex direction="column" gap="3">
@@ -552,6 +555,14 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan }: Mater
           <Flex align="center" gap="3">
             <MaterialTypeIndicator material={material} size={24} />
             <Heading size="4">{material.name}</Heading>
+            <IconButton
+              title="Configure Material"
+              variant="ghost"
+              size="1"
+              onClick={() => openConfiguration('materials', material.id)}
+            >
+              <Pencil1Icon />
+            </IconButton>
             <Flex align="center" gap="2">
               {group.badgeLabel && (
                 <Badge variant="soft" color={group.badgeColor ?? 'gray'}>

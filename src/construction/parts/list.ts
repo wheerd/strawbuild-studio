@@ -1,5 +1,10 @@
 import type { ConstructionElement, ConstructionElementId, GroupOrElement } from '@/construction/elements'
-import type { CrossSection, DimensionalMaterial, MaterialId, SheetMaterial } from '@/construction/materials/material'
+import {
+  type CrossSection,
+  type DimensionalMaterial,
+  type MaterialId,
+  type SheetMaterial
+} from '@/construction/materials/material'
 import { getMaterialById } from '@/construction/materials/store'
 import type { ConstructionModel } from '@/construction/model'
 import {
@@ -19,10 +24,10 @@ import {
 import {
   type Area,
   type Length,
+  type PolygonWithHoles2D,
   type Vec2,
   type Vec3,
   type Volume,
-  ZERO_VEC3,
   arrayToVec3,
   calculatePolygonWithHolesArea,
   copyVec3,
@@ -420,31 +425,29 @@ function processConstructionElement(
     type = '-'
   }
 
-  // Extract polygon info from manifold shape params if it's an extrusion
-  const baseShape = element.shape.base?.type === 'extrusion' ? element.shape.base : undefined
-  const polygon = baseShape?.polygon
-  const thickness = baseShape?.thickness
+  const fullInfo = getPartInfoFromManifold(element.shape.manifold)
 
+  let polygon: PolygonWithHoles2D | undefined
   let area: Area | undefined
+  let thickness: Length | undefined
+  if (fullInfo.sideFaces && fullInfo.sideFaces.length === 1) {
+    polygon = fullInfo.sideFaces[0].polygon
+    area = calculatePolygonWithHolesArea(polygon)
+    thickness = fullInfo.boxSize[fullInfo.sideFaces[0].index]
+  }
 
   const materialDefinition = getMaterialById(materialEntry.material)
   if (materialDefinition?.type === 'sheet') {
-    if (polygon) {
-      area = calculatePolygonWithHolesArea(polygon)
-    } else {
+    if (!polygon) {
       const details = computeSheetDetails(arrayToVec3(size), materialDefinition)
       area = details.areaSize[0] * details.areaSize[1]
-    }
-  } else if (materialDefinition?.type === 'volume') {
-    if (polygon) {
-      area = calculatePolygonWithHolesArea(polygon)
+      thickness = details.thickness
     }
   }
 
   const existingPart = materialEntry.parts[partId]
 
-  const volume =
-    polygon && thickness ? calculatePolygonWithHolesArea(polygon) * thickness : computeVolume(arrayToVec3(size))
+  const volume = area != null && thickness != null ? area * thickness : computeVolume(arrayToVec3(size))
 
   if (existingPart) {
     existingPart.quantity += 1
@@ -471,11 +474,11 @@ function processConstructionElement(
     description,
     label,
     material: materialEntry.material,
-    size: ZERO_VEC3,
+    size: fullInfo.boxSize,
     elements: [element.id],
     totalVolume: volume,
     quantity: 1,
-    sideFaces: polygon ? [{ index: 0, polygon }] : [],
+    sideFaces: fullInfo.sideFaces,
     thickness
   }
 

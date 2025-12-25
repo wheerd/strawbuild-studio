@@ -244,6 +244,7 @@ export function* withClipping(item: GroupOrElement, clipping: (m: Manifold) => M
         const bounds = getBoundsFromManifold(clippedManifold)
         yield {
           ...item,
+          partInfo: item.partInfo ? { ...item.partInfo } : undefined,
           shape: { ...item.shape, manifold, bounds },
           bounds,
           id: createConstructionElementId()

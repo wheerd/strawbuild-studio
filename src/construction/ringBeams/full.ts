@@ -2,6 +2,7 @@ import type { StoreyId } from '@/building/model/ids'
 import { createConstructionElement } from '@/construction/elements'
 import { PolygonWithBoundingRect } from '@/construction/helpers'
 import { type MaterialId } from '@/construction/materials/material'
+import type { PartInfo } from '@/construction/parts'
 import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
 import { type ConstructionResult, yieldAndClip, yieldElement } from '@/construction/results'
 import type { HeightLine } from '@/construction/roofs/types'
@@ -88,7 +89,10 @@ export class FullRingBeamAssembly extends BaseRingBeamAssembly<FullRingBeamConfi
           adjustedEndHeight,
           this.config.height,
           this.config.material,
-          [TAG_PLATE]
+          [TAG_PLATE],
+          {
+            type: 'ring-beam'
+          }
         )
       }
     }
@@ -251,7 +255,8 @@ export class FullRingBeamAssembly extends BaseRingBeamAssembly<FullRingBeamConfi
     endHeight: Length,
     beamHeight: Length,
     material: MaterialId,
-    tags?: Tag[]
+    tags?: Tag[],
+    partInfo?: PartInfo
   ): Generator<ConstructionResult> {
     const heightChange = endHeight - startHeight
     const centerHeight = startHeight + heightChange / 2
@@ -260,7 +265,7 @@ export class FullRingBeamAssembly extends BaseRingBeamAssembly<FullRingBeamConfi
     // Early optimization: if flat (no slope), just extrude at the right height
     if (Math.abs(heightChange) < 0.001) {
       const flatTransform = fromTrans(newVec3(0, 0, startHeight))
-      yield* subPolygon.extrude(material, beamHeight, 'xy', flatTransform, tags)
+      yield* subPolygon.extrude(material, beamHeight, 'xy', flatTransform, tags, partInfo)
       return
     }
 
@@ -278,7 +283,7 @@ export class FullRingBeamAssembly extends BaseRingBeamAssembly<FullRingBeamConfi
     const clippingShape = createExtrudedPolygon(subPolygon.polygon, 'xy', 2 * clippingExtent)
     const clippingVolume = clippingShape.manifold.translate([0, 0, -clippingExtent])
 
-    const element = createConstructionElement(material, expandedShape, transform, tags)
+    const element = createConstructionElement(material, expandedShape, transform, tags, partInfo)
     yield* yieldAndClip(yieldElement(element), m => m.intersect(clippingVolume))
   }
 }
