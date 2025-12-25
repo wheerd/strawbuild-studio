@@ -111,12 +111,7 @@ export function* strawhengeWallArea(
   // -> Fit either two modules without gap or one module + infill
   const bothStands = startsWithStand && endsWithStand
   if (bothStands && size[0] !== 2 * module.minWidth && size[0] < twoModules) {
-    if (size[0] >= 2 * module.minWidth && size[0] <= 2 * module.maxWidth) {
-      // Two modules without gap
-      const [module1, module2] = area.splitInX(size[0] / 2)
-      yield* constructModule(module1, module)
-      yield* constructModule(module2, module)
-    } else if (startAtEnd) {
+    if (startAtEnd) {
       // Single module plus remaining space
       const [infillArea, moduleArea] = area.splitInX(size[0] - module.minWidth)
       yield* infillWallArea(infillArea, infill, true, false, false)
