@@ -378,6 +378,7 @@ function FullRingBeamFields({
           }}
           placeholder="Select material..."
           size="2"
+          preferredTypes={['dimensional']}
         />
 
         <Flex align="center" gap="1">
@@ -442,6 +443,7 @@ function DoubleRingBeamFields({
           }}
           placeholder="Select material..."
           size="2"
+          preferredTypes={['dimensional']}
         />
 
         <Label.Root>
@@ -559,6 +561,7 @@ function BrickRingBeamFields({
           }}
           placeholder="Select wall material..."
           size="2"
+          preferredTypes={['dimensional']}
         />
       </Grid>
 
@@ -640,6 +643,7 @@ function BrickRingBeamFields({
           }}
           placeholder="Select beam material..."
           size="2"
+          preferredTypes={['dimensional']}
         />
       </Grid>
 
@@ -674,6 +678,7 @@ function BrickRingBeamFields({
           }}
           placeholder="Select waterproofing material..."
           size="2"
+          preferredTypes={['sheet']}
         />
       </Grid>
     </>

@@ -2,7 +2,7 @@ import { CircleIcon, CubeIcon, LayersIcon, OpacityIcon } from '@radix-ui/react-i
 import { Flex, Select, Text } from '@radix-ui/themes'
 import React from 'react'
 
-import type { Material, MaterialId } from '@/construction/materials/material'
+import type { Material, MaterialId, MaterialType } from '@/construction/materials/material'
 import { useMaterials } from '@/construction/materials/store'
 
 const NONE_VALUE = '__material_none__'
@@ -16,6 +16,7 @@ export interface MaterialSelectProps {
   materials?: Material[]
   allowEmpty?: boolean
   emptyLabel?: string
+  preferredTypes?: MaterialType[]
 }
 
 interface IconProps extends React.SVGAttributes<SVGElement> {
@@ -84,11 +85,25 @@ export function MaterialSelect({
   disabled = false,
   materials: materialsProp,
   allowEmpty = false,
-  emptyLabel = 'None'
+  emptyLabel = 'None',
+  preferredTypes
 }: MaterialSelectProps): React.JSX.Element {
   const materialsFromStore = useMaterials()
   const materials = materialsProp ?? materialsFromStore
   const normalizedValue = value ?? (allowEmpty ? NONE_VALUE : '')
+  const sortedMaterials = [...materials].sort((a, b) => {
+    if (a.type !== b.type) {
+      if (preferredTypes) {
+        const aIndex = preferredTypes.indexOf(a.type)
+        const bIndex = preferredTypes.indexOf(b.type)
+        if (aIndex !== -1 && bIndex !== -1) return aIndex < bIndex ? -1 : 1
+        if (aIndex !== -1) return -1
+        if (bIndex !== -1) return 1
+      }
+      return a.type < b.type ? -1 : 1
+    }
+    return a.name.localeCompare(b.name)
+  })
 
   return (
     <Select.Root
@@ -109,7 +124,7 @@ export function MaterialSelect({
             <Text color="gray">No materials available</Text>
           </Select.Item>
         ) : (
-          materials.map(material => {
+          sortedMaterials.map(material => {
             const Icon = getMaterialTypeIcon(material.type)
             return (
               <Select.Item key={material.id} value={material.id}>

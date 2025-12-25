@@ -58,6 +58,7 @@ function MonolithicRoofConfigForm({ config, onUpdate }: MonolithicRoofConfigForm
               onUpdate({ ...config, material })
             }}
             size="1"
+            preferredTypes={['sheet']}
           />
         </Flex>
 
@@ -122,6 +123,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             emptyLabel="Use global straw settings"
             onValueChange={strawMaterial => onUpdate({ ...config, strawMaterial: strawMaterial ?? undefined })}
             size="1"
+            preferredTypes={['strawbale']}
           />
         </Flex>
       </Grid>
@@ -144,6 +146,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
               onUpdate({ ...config, purlinMaterial: material })
             }}
             size="1"
+            preferredTypes={['dimensional']}
           />
         </Flex>
 
@@ -229,6 +232,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
               onUpdate({ ...config, rafterMaterial: material })
             }}
             size="1"
+            preferredTypes={['dimensional']}
           />
         </Flex>
 
@@ -299,6 +303,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
               onUpdate({ ...config, deckingMaterial: material })
             }}
             size="1"
+            preferredTypes={['sheet']}
           />
         </Flex>
 
@@ -336,6 +341,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
               onUpdate({ ...config, ceilingSheathingMaterial: material })
             }}
             size="1"
+            preferredTypes={['sheet']}
           />
         </Flex>
 

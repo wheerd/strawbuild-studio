@@ -117,6 +117,7 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
             emptyLabel="Use global straw settings"
             onValueChange={strawMaterial => onUpdate({ ...config, strawMaterial: strawMaterial ?? undefined })}
             size="1"
+            preferredTypes={['strawbale']}
           />
         </Flex>
 
@@ -230,6 +231,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
             onUpdate({ ...posts, material })
           }}
           size="1"
+          preferredTypes={['dimensional']}
         />
 
         {posts.type === 'double' && (
@@ -404,6 +406,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
               onUpdate({ ...module, frameMaterial })
             }}
             size="1"
+            preferredTypes={['dimensional']}
           />
         </Flex>
 
@@ -419,6 +422,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
             emptyLabel="Use global straw settings"
             onValueChange={strawMaterial => onUpdate({ ...module, strawMaterial: strawMaterial ?? undefined })}
             size="1"
+            preferredTypes={['strawbale']}
           />
         </Flex>
 
@@ -437,6 +441,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
                   onUpdate({ ...module, spacerMaterial })
                 }}
                 size="1"
+                preferredTypes={['dimensional']}
               />
             </Flex>
 
@@ -521,6 +526,7 @@ function NonStrawbaleConfigForm({ config, onUpdate }: NonStrawbaleConfigFormProp
             onUpdate({ ...config, material })
           }}
           size="1"
+          preferredTypes={['volume']}
         />
       </Grid>
     </Flex>

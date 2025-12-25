@@ -1,24 +1,13 @@
 import { InfoCircledIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import {
-  Box,
-  Callout,
-  Flex,
-  Grid,
-  IconButton,
-  Kbd,
-  SegmentedControl,
-  Select,
-  Separator,
-  Switch,
-  Text
-} from '@radix-ui/themes'
+import { Box, Callout, Flex, Grid, IconButton, Kbd, SegmentedControl, Separator, Switch, Text } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 
 import type { PerimeterId, PerimeterWallId, WallPostId } from '@/building/model/ids'
 import type { WallPostType } from '@/building/model/model'
 import { useModelActions, usePerimeterById } from '@/building/store'
-import { DEFAULT_MATERIALS, type MaterialId } from '@/construction/materials/material'
+import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
+import { type MaterialId } from '@/construction/materials/material'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
@@ -49,12 +38,6 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
   }, [wall, postId])
 
   const viewportActions = useViewportActions()
-
-  // Get available materials
-  const availableMaterials = useMemo(
-    () => Object.values(DEFAULT_MATERIALS).filter(m => m.type === 'dimensional' || m.type === 'sheet'),
-    []
-  )
 
   // If post not found, show error
   if (!post || !wall || !perimeter || !perimeterId || !wallId) {
@@ -87,15 +70,19 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
   )
 
   const handleMaterialChange = useCallback(
-    (materialId: MaterialId) => {
-      updatePost(perimeterId, wallId, postId, { material: materialId })
+    (materialId: MaterialId | null) => {
+      if (materialId) {
+        updatePost(perimeterId, wallId, postId, { material: materialId })
+      }
     },
     [updatePost, perimeterId, wallId, postId]
   )
 
   const handleInfillMaterialChange = useCallback(
-    (materialId: MaterialId) => {
-      updatePost(perimeterId, wallId, postId, { infillMaterial: materialId })
+    (materialId: MaterialId | null) => {
+      if (materialId != null) {
+        updatePost(perimeterId, wallId, postId, { infillMaterial: materialId })
+      }
     },
     [updatePost, perimeterId, wallId, postId]
   )
@@ -221,16 +208,12 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
             Post Material
           </Text>
         </Label.Root>
-        <Select.Root value={post.material} onValueChange={handleMaterialChange} size="1">
-          <Select.Trigger />
-          <Select.Content>
-            {availableMaterials.map(material => (
-              <Select.Item key={material.id} value={material.id}>
-                {material.name}
-              </Select.Item>
-            ))}
-          </Select.Content>
-        </Select.Root>
+        <MaterialSelectWithEdit
+          value={post.material}
+          onValueChange={handleMaterialChange}
+          size="1"
+          preferredTypes={['dimensional']}
+        />
       </Flex>
 
       {/* Infill Material Selection */}
@@ -240,16 +223,7 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
             Infill Material
           </Text>
         </Label.Root>
-        <Select.Root value={post.infillMaterial} onValueChange={handleInfillMaterialChange} size="1">
-          <Select.Trigger />
-          <Select.Content>
-            {availableMaterials.map(material => (
-              <Select.Item key={material.id} value={material.id}>
-                {material.name}
-              </Select.Item>
-            ))}
-          </Select.Content>
-        </Select.Root>
+        <MaterialSelectWithEdit value={post.infillMaterial} onValueChange={handleInfillMaterialChange} size="1" />
       </Flex>
 
       <Separator size="4" />

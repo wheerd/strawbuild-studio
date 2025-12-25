@@ -405,6 +405,7 @@ function MonolithicConfigFields({
           }}
           placeholder="Select material..."
           size="2"
+          preferredTypes={['sheet', 'volume']}
         />
 
         <Flex align="center" gap="1">
@@ -472,6 +473,7 @@ function JoistConfigFields({
           }}
           placeholder="Select joist material..."
           size="2"
+          preferredTypes={['dimensional']}
         />
 
         <Label.Root>
@@ -517,6 +519,7 @@ function JoistConfigFields({
           }}
           placeholder="Select wall beam material..."
           size="2"
+          preferredTypes={['dimensional']}
         />
 
         <Label.Root>
@@ -577,6 +580,7 @@ function JoistConfigFields({
           }}
           placeholder="Select subfloor material..."
           size="2"
+          preferredTypes={['sheet']}
         />
 
         <Label.Root>
@@ -610,6 +614,7 @@ function JoistConfigFields({
           }}
           placeholder="Select opening side material..."
           size="2"
+          preferredTypes={['dimensional']}
         />
 
         <Label.Root>
@@ -679,6 +684,7 @@ function FilledConfigFields({
           }}
           placeholder="Select joist material..."
           size="2"
+          preferredTypes={['dimensional']}
         />
 
         <Label.Root>
@@ -724,6 +730,7 @@ function FilledConfigFields({
           }}
           placeholder="Select frame material..."
           size="2"
+          preferredTypes={['dimensional']}
         />
 
         <Label.Root>
@@ -757,6 +764,7 @@ function FilledConfigFields({
           }}
           placeholder="Select subfloor material..."
           size="2"
+          preferredTypes={['sheet']}
         />
 
         <Label.Root>
@@ -790,6 +798,7 @@ function FilledConfigFields({
           }}
           placeholder="Select ceiling sheathing material..."
           size="2"
+          preferredTypes={['sheet']}
         />
 
         <Label.Root>
@@ -823,6 +832,7 @@ function FilledConfigFields({
           }}
           placeholder="Select opening frame material..."
           size="2"
+          preferredTypes={['dimensional']}
         />
 
         <Label.Root>
@@ -862,6 +872,7 @@ function FilledConfigFields({
           onValueChange={strawMaterial => onUpdate({ strawMaterial: strawMaterial ?? undefined })}
           placeholder="Select straw material..."
           size="2"
+          preferredTypes={['strawbale']}
         />
       </Grid>
     </>

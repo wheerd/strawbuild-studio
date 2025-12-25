@@ -9,8 +9,7 @@ import {
   TAG_MODULE_FRAME,
   TAG_MODULE_INFILL,
   TAG_MODULE_SPACER,
-  TAG_MODULE_WIDTH,
-  TAG_STRAW_INFILL
+  TAG_MODULE_WIDTH
 } from '@/construction/tags'
 import { type Length, type Vec3, newVec3 } from '@/shared/geometry'
 
@@ -201,11 +200,7 @@ function* constructDoubleFrameModule(
   yield* yieldElement(endFrame2)
 
   // Straw filling
-  if (config.strawMaterial) {
-    yield* yieldElement(createCuboidElement(config.strawMaterial, strawPosition, strawSize, [TAG_STRAW_INFILL]))
-  } else {
-    yield* constructStraw(strawArea)
-  }
+  yield* constructStraw(strawArea, config.strawMaterial)
 
   const gapWidth = size[1] - 2 * frameWidth
   if (gapWidth > 0) {

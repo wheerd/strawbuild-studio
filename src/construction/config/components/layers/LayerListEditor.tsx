@@ -370,6 +370,7 @@ function MonolithicLayerFields({
           }}
           placeholder="Select material..."
           size="1"
+          preferredTypes={['sheet', 'volume']}
         />
       }
     />
@@ -433,6 +434,7 @@ function StripedLayerFields({
           }}
           placeholder="Select material..."
           size="1"
+          preferredTypes={['dimensional']}
         />
 
         <Text size="1" color="gray">
@@ -460,6 +462,7 @@ function StripedLayerFields({
           onValueChange={material => onUpdateLayer(index, { gapMaterial: material ?? undefined })}
           placeholder="Select material..."
           size="1"
+          preferredTypes={['sheet', 'volume']}
         />
       </Grid>
     </>

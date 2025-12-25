@@ -8,7 +8,6 @@ import {
   Grid,
   IconButton,
   SegmentedControl,
-  Select,
   Separator,
   Switch,
   Text
@@ -18,7 +17,8 @@ import { useCallback, useMemo } from 'react'
 import type { WallPostType } from '@/building/model/model'
 import { usePerimeters } from '@/building/store'
 import { useWallAssemblies } from '@/construction/config/store'
-import { DEFAULT_MATERIALS, type MaterialId } from '@/construction/materials/material'
+import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
+import { type MaterialId } from '@/construction/materials/material'
 import type { PostConfig } from '@/construction/materials/posts'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
@@ -53,11 +53,6 @@ const POST_TYPE_LABELS: Record<WallPostType, string> = {
 
 function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): React.JSX.Element {
   const { state } = useReactiveTool(tool)
-
-  // Get available materials (filter for structural materials)
-  const availableMaterials = Object.values(DEFAULT_MATERIALS).filter(
-    m => m.type === 'dimensional' || m.type === 'sheet'
-  )
 
   // Collect all post configurations from model and assemblies
   const allPerimeters = usePerimeters()
@@ -134,15 +129,19 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
   )
 
   const handleMaterialChange = useCallback(
-    (materialId: MaterialId) => {
-      tool.setMaterial(materialId)
+    (materialId: MaterialId | null) => {
+      if (materialId) {
+        tool.setMaterial(materialId)
+      }
     },
     [tool]
   )
 
   const handleInfillMaterialChange = useCallback(
-    (materialId: MaterialId) => {
-      tool.setInfillMaterial(materialId)
+    (materialId: MaterialId | null) => {
+      if (materialId) {
+        tool.setInfillMaterial(materialId)
+      }
     },
     [tool]
   )
@@ -246,16 +245,12 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
         <Text size="1" weight="medium" color="gray">
           Post Material
         </Text>
-        <Select.Root value={state.material} onValueChange={handleMaterialChange} size="1">
-          <Select.Trigger />
-          <Select.Content>
-            {availableMaterials.map(material => (
-              <Select.Item key={material.id} value={material.id}>
-                {material.name}
-              </Select.Item>
-            ))}
-          </Select.Content>
-        </Select.Root>
+        <MaterialSelectWithEdit
+          value={state.material}
+          onValueChange={handleMaterialChange}
+          size="1"
+          preferredTypes={['dimensional']}
+        />
       </Flex>
 
       {/* Infill Material Selection */}
@@ -263,16 +258,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
         <Text size="1" weight="medium" color="gray">
           Infill Material
         </Text>
-        <Select.Root value={state.infillMaterial} onValueChange={handleInfillMaterialChange} size="1">
-          <Select.Trigger />
-          <Select.Content>
-            {availableMaterials.map(material => (
-              <Select.Item key={material.id} value={material.id}>
-                {material.name}
-              </Select.Item>
-            ))}
-          </Select.Content>
-        </Select.Root>
+        <MaterialSelectWithEdit value={state.infillMaterial} onValueChange={handleInfillMaterialChange} size="1" />
       </Flex>
 
       <Separator size="4" />

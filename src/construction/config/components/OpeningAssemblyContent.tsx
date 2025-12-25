@@ -396,6 +396,7 @@ const SimpleOpeningContent = ({
         update({ headerMaterial })
       }}
       size="2"
+      preferredTypes={['dimensional']}
     />
 
     <Label.Root>
@@ -417,6 +418,7 @@ const SimpleOpeningContent = ({
         update({ sillMaterial })
       }}
       size="2"
+      preferredTypes={['dimensional']}
     />
   </Grid>
 )
@@ -457,6 +459,7 @@ const PostOpeningContent = ({
           update({ headerMaterial })
         }}
         size="2"
+        preferredTypes={['dimensional']}
       />
 
       <Label.Root>
@@ -478,6 +481,7 @@ const PostOpeningContent = ({
           update({ sillMaterial })
         }}
         size="2"
+        preferredTypes={['dimensional']}
       />
     </Grid>
 
@@ -589,6 +593,7 @@ function PostsConfigSection({
             updatePosts({ ...posts, material })
           }}
           size="2"
+          preferredTypes={['dimensional']}
         />
 
         {posts.type === 'double' && (

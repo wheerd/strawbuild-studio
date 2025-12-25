@@ -8,8 +8,10 @@ export const isMaterialId = (id: string): id is MaterialId => id.startsWith('mat
 
 export type Material = StrawbaleMaterial | DimensionalMaterial | SheetMaterial | VolumeMaterial | GenericMaterial
 
+export type MaterialType = 'strawbale' | 'dimensional' | 'sheet' | 'volume' | 'generic'
+
 export interface BaseMaterial {
-  type: 'strawbale' | 'dimensional' | 'sheet' | 'volume' | 'generic'
+  type: MaterialType
   id: MaterialId
   name: string
   color: string
