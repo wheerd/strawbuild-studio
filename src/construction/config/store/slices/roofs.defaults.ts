@@ -1,7 +1,7 @@
 import { type RoofAssemblyId } from '@/building/model/ids'
 import type { RoofAssemblyConfig } from '@/construction/config/types'
 import { DEFAULT_CEILING_LAYER_SETS, DEFAULT_ROOF_LAYER_SETS } from '@/construction/layers/defaults'
-import { clt, glt, osb, strawbale, woodwool } from '@/construction/materials/material'
+import { clt, fireProtectionBoarding, glt, osb, strawbale, woodwool } from '@/construction/materials/material'
 
 const monolithicAssembly: RoofAssemblyConfig = {
   id: 'ra_clt_default' as RoofAssemblyId,
@@ -35,8 +35,8 @@ const purlinAssembly: RoofAssemblyConfig = {
   rafterWidth: 80,
   rafterSpacingMin: 70,
   rafterSpacing: 500,
-  ceilingSheathingMaterial: osb.id,
-  ceilingSheathingThickness: 25,
+  ceilingSheathingMaterial: fireProtectionBoarding.id,
+  ceilingSheathingThickness: 40,
   deckingMaterial: osb.id,
   deckingThickness: 22,
   strawMaterial: strawbale.id,

@@ -283,6 +283,22 @@ export const osb: SheetMaterial = {
   density: 600
 }
 
+export const dhf: SheetMaterial = {
+  id: 'material_dhf' as MaterialId,
+  name: 'DHF (wood fibre board)',
+  sizes: [
+    { smallerLength: 625, biggerLength: 2500 },
+    { smallerLength: 1220, biggerLength: 2440 },
+    { smallerLength: 1250, biggerLength: 2500 },
+    { smallerLength: 1000, biggerLength: 2500 }
+  ],
+  thicknesses: [15, 16, 18, 22, 25, 35],
+  sheetType: 'tongueAndGroove',
+  type: 'sheet',
+  color: '#c9a36a',
+  density: 250
+}
+
 export const brick: DimensionalMaterial = {
   id: 'material_aac_brick' as MaterialId,
   name: 'AAC Brick',
@@ -345,28 +361,41 @@ export const reed: SheetMaterial = {
   density: 100 // Need to be checked
 }
 
+export const fireProtectionBoarding: SheetMaterial = {
+  id: 'material_fire_boarding' as MaterialId,
+  name: 'Fire Protection Boarding',
+  sizes: [{ smallerLength: 130, biggerLength: 4000 }],
+  thicknesses: [40],
+  sheetType: 'solid',
+  type: 'sheet',
+  color: '#e4c098',
+  density: 500
+}
+
 export const DEFAULT_MATERIALS: Record<MaterialId, Material> = {
-  [roughWood.id]: roughWood,
-  [boards.id]: boards,
-  [structuralWood.id]: structuralWood,
-  [glt.id]: glt,
   [battens.id]: battens,
-  [strawbale.id]: strawbale,
-  [window.id]: window,
-  [door.id]: door,
-  [concrete.id]: concrete,
-  [clt.id]: clt,
-  [woodwool.id]: woodwool,
+  [bitumen.id]: bitumen,
+  [boards.id]: boards,
+  [brick.id]: brick,
+  [cementScreed.id]: cementScreed,
   [clayPlasterBase.id]: clayPlasterBase,
   [clayPlasterFine.id]: clayPlasterFine,
+  [clt.id]: clt,
+  [concrete.id]: concrete,
+  [cork.id]: cork,
+  [dhf.id]: dhf,
+  [door.id]: door,
+  [fireProtectionBoarding.id]: fireProtectionBoarding,
+  [glt.id]: glt,
+  [gypsum.id]: gypsum,
+  [impactSoundInsulation.id]: impactSoundInsulation,
   [limePlasterBase.id]: limePlasterBase,
   [limePlasterFine.id]: limePlasterFine,
-  [cementScreed.id]: cementScreed,
-  [impactSoundInsulation.id]: impactSoundInsulation,
   [osb.id]: osb,
-  [brick.id]: brick,
-  [bitumen.id]: bitumen,
-  [cork.id]: cork,
-  [gypsum.id]: gypsum,
-  [reed.id]: reed
+  [reed.id]: reed,
+  [roughWood.id]: roughWood,
+  [strawbale.id]: strawbale,
+  [structuralWood.id]: structuralWood,
+  [window.id]: window,
+  [woodwool.id]: woodwool
 }
