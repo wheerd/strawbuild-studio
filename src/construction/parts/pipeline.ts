@@ -208,7 +208,7 @@ function normalizedPolygon(polygon: PolygonWithHoles2D) {
 
   const rotatedPolygon: PolygonWithHoles2D = {
     outer: { points: simplifiedPolygon.outer.points.map(rotatePoint) },
-    holes: polygon.holes.map(h => ({ points: h.points.map(rotatePoint) }))
+    holes: simplifiedPolygon.holes.map(h => ({ points: h.points.map(rotatePoint) }))
   }
   const bounds = Bounds2D.fromPoints(rotatedPolygon.outer.points)
 
@@ -219,7 +219,7 @@ function normalizedPolygon(polygon: PolygonWithHoles2D) {
   }
   const normalizedPolygon: PolygonWithHoles2D = {
     outer: normalizePolygon(rotatedPolygon.outer),
-    holes: polygon.holes.map(h => normalizePolygon(h))
+    holes: rotatedPolygon.holes.map(h => normalizePolygon(h))
   }
   return { polygon: normalizedPolygon, size }
 }
