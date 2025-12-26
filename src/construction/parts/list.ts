@@ -24,7 +24,6 @@ import {
 import {
   type Area,
   type Length,
-  type PolygonWithHoles2D,
   type Vec2,
   type Vec3,
   type Volume,
@@ -44,6 +43,7 @@ import type {
   PartId,
   PartIssue,
   PartItem,
+  SideFace,
   StrawCategory,
   VirtualPartsList
 } from './types'
@@ -157,6 +157,201 @@ const computeSheetDetails = (size: Vec3, material: SheetMaterial) => {
   return { thickness, areaSize, issue }
 }
 
+interface MaterialMetrics {
+  volume: Volume
+  area?: Area
+  length?: Length
+  thickness?: Length
+  crossSection?: CrossSection
+  issue?: PartIssue
+  sideFaces?: SideFace[]
+}
+
+function computeMaterialMetrics(
+  geometryInfo: { boxSize: Vec3; sideFaces?: SideFace[] },
+  materialDefinition: ReturnType<typeof getMaterialById>,
+  hasPartInfo: boolean
+): MaterialMetrics {
+  const { boxSize, sideFaces } = geometryInfo
+  let volume: Volume
+  let area: Area | undefined
+  let length: Length | undefined
+  let thickness: Length | undefined
+  let crossSection: CrossSection | undefined
+  let issue: PartIssue | undefined
+
+  if (materialDefinition?.type === 'dimensional') {
+    const details = computeDimensionalDetails(boxSize, materialDefinition)
+    length = details.length
+    issue = hasPartInfo ? details.issue : undefined
+    crossSection = details.crossSection
+    volume = computeVolume(boxSize)
+  } else if (materialDefinition?.type === 'sheet') {
+    const details = computeSheetDetails(boxSize, materialDefinition)
+    issue = hasPartInfo ? details.issue : undefined
+
+    if (hasPartInfo && sideFaces?.[0]) {
+      area = calculatePolygonWithHolesArea(sideFaces[0].polygon)
+      thickness = boxSize[sideFaces[0].index]
+      volume = thickness * area
+    } else {
+      thickness = details.thickness
+      area = details.areaSize[0] * details.areaSize[1]
+      volume = thickness * area
+    }
+  } else if (materialDefinition?.type === 'volume') {
+    if (hasPartInfo && sideFaces?.[0]) {
+      area = calculatePolygonWithHolesArea(sideFaces[0].polygon)
+      thickness = boxSize[sideFaces[0].index]
+      volume = thickness * area
+    } else {
+      const sorted = Array.from(boxSize).sort()
+      area = sorted[1] * sorted[2]
+      thickness = sorted[0]
+      volume = thickness * area
+    }
+  } else {
+    volume = computeVolume(boxSize)
+  }
+
+  return {
+    volume,
+    area,
+    length,
+    thickness,
+    crossSection,
+    issue,
+    sideFaces: hasPartInfo ? sideFaces : undefined
+  }
+}
+
+function computePartIdWithInfo(fullPartInfo: FullPartInfo, tags: Tag[], materialId: MaterialId): PartId {
+  const materialDefinition = getMaterialById(materialId)
+  const isStrawbaleMaterial = materialDefinition?.type === 'strawbale'
+
+  if (isStrawbaleMaterial) {
+    const strawCategory = getStrawCategoryFromTags(tags)
+    return `strawbale:${strawCategory}` as PartId
+  }
+
+  return fullPartInfo.id
+}
+
+function computePartIdWithoutInfo(
+  tags: Tag[],
+  geometryInfo: { boxSize: Vec3 },
+  materialDefinition: ReturnType<typeof getMaterialById>
+): PartId {
+  const layerInfo = findLayerTag(tags)
+  let partId: PartId
+
+  if (layerInfo) {
+    partId = `auto_${layerInfo.tag.id}` as PartId
+  } else {
+    partId = `auto_misc` as PartId
+  }
+
+  // Append material-specific discriminator
+  if (materialDefinition?.type === 'sheet') {
+    const details = computeSheetDetails(geometryInfo.boxSize, materialDefinition)
+    partId = `${partId}_${details.thickness}` as PartId
+  } else if (materialDefinition?.type === 'dimensional') {
+    const details = computeDimensionalDetails(geometryInfo.boxSize, materialDefinition)
+    partId = `${partId}_${details.crossSection.smallerLength}x${details.crossSection.biggerLength}` as PartId
+  } else if (materialDefinition?.type === 'volume') {
+    const sorted = Array.from(geometryInfo.boxSize).sort()
+    const thickness = sorted[0]
+    partId = `${partId}_${thickness}` as PartId
+  }
+
+  return partId
+}
+
+function updateOrCreatePartEntry(
+  partId: PartId,
+  elementId: ConstructionElementId,
+  metrics: MaterialMetrics,
+  hasPartInfo: boolean,
+  fullPartInfo: FullPartInfo | null,
+  tags: Tag[],
+  materialEntry: MaterialParts,
+  labelCounters: Map<MaterialId, number>,
+  geometryInfo: { boxSize: Vec3; sideFaces?: SideFace[] }
+) {
+  const existingPart = materialEntry.parts[partId]
+
+  if (existingPart) {
+    // Update existing part
+    existingPart.quantity += 1
+    existingPart.totalVolume += metrics.volume
+    existingPart.elements.push(elementId)
+    materialEntry.totalQuantity += 1
+    materialEntry.totalVolume += metrics.volume
+
+    // Always update totals (for both with and without part info)
+    if (metrics.length !== undefined) {
+      existingPart.totalLength = (existingPart.totalLength ?? 0) + metrics.length
+      materialEntry.totalLength = (materialEntry.totalLength ?? 0) + metrics.length
+    }
+
+    if (metrics.area !== undefined) {
+      existingPart.totalArea = (existingPart.totalArea ?? 0) + metrics.area
+      materialEntry.totalArea = (materialEntry.totalArea ?? 0) + metrics.area
+    }
+
+    return
+  }
+
+  // Create new part
+  const labelIndex = labelCounters.get(materialEntry.material) ?? 0
+  const label = indexToLabel(labelIndex)
+  labelCounters.set(materialEntry.material, labelIndex + 1)
+
+  const strawCategory = computeStrawCategory(materialEntry.material, tags)
+  const partType = computePartType(fullPartInfo, tags, strawCategory)
+  const description = computePartDescription(fullPartInfo, tags, strawCategory)
+
+  const partItem: MaterialPartItem = {
+    partId,
+    type: partType,
+    description,
+    label,
+    material: materialEntry.material,
+    size: hasPartInfo ? copyVec3(geometryInfo.boxSize) : ZERO_VEC3,
+    elements: [elementId],
+    totalVolume: metrics.volume,
+    quantity: 1,
+    issue: metrics.issue,
+    sideFaces: hasPartInfo ? metrics.sideFaces : undefined,
+    crossSection: metrics.crossSection,
+    thickness: metrics.thickness,
+    strawCategory,
+    requiresSinglePiece: fullPartInfo?.requiresSinglePiece
+  }
+
+  // Set individual fields ONLY for elements WITH part info
+  if (hasPartInfo && metrics.length !== undefined) {
+    partItem.length = metrics.length
+  }
+  if (hasPartInfo && metrics.area !== undefined) {
+    partItem.area = metrics.area
+  }
+
+  // ALWAYS set totals (for both with and without part info)
+  if (metrics.length !== undefined) {
+    partItem.totalLength = metrics.length
+    materialEntry.totalLength = (materialEntry.totalLength ?? 0) + metrics.length
+  }
+  if (metrics.area !== undefined) {
+    partItem.totalArea = metrics.area
+    materialEntry.totalArea = (materialEntry.totalArea ?? 0) + metrics.area
+  }
+
+  materialEntry.parts[partId] = partItem
+  materialEntry.totalQuantity += 1
+  materialEntry.totalVolume += metrics.volume
+}
+
 export const generateMaterialPartsList = (model: ConstructionModel, excludeTypes?: string[]): MaterialPartsList => {
   const partsList: MaterialPartsList = {}
   const labelCounters = new Map<MaterialId, number>()
@@ -184,7 +379,7 @@ export const generateMaterialPartsList = (model: ConstructionModel, excludeTypes
       return
     }
 
-    const { material, id } = element
+    const { material } = element
     const elementTags = [...tags, ...(element.tags ?? [])]
 
     const partType = element.partInfo?.type
@@ -192,12 +387,7 @@ export const generateMaterialPartsList = (model: ConstructionModel, excludeTypes
 
     const materialEntry = ensureMaterialEntry(material)
 
-    const partInfo = getFullPartInfo(element)
-    if (partInfo) {
-      processPart(partInfo, materialEntry, id, labelCounters, elementTags)
-    } else {
-      processConstructionElement(element, elementTags, materialEntry, labelCounters)
-    }
+    processConstructionElement(element, elementTags, materialEntry, labelCounters)
   }
 
   for (const element of model.elements) {
@@ -277,235 +467,115 @@ export const generateVirtualPartsList = (model: ConstructionModel): VirtualParts
   return partsList
 }
 
-function processPart(
-  partInfo: FullPartInfo,
-  materialEntry: MaterialParts,
-  id: ConstructionElementId,
-  labelCounters: Map<MaterialId, number>,
-  tags: Tag[]
-) {
-  const materialDefinition = getMaterialById(materialEntry.material)
-  const isStrawbaleMaterial = materialDefinition?.type === 'strawbale'
-
-  let partId: PartId = partInfo.id
-  let strawCategory: StrawCategory | undefined
-
-  if (isStrawbaleMaterial) {
-    strawCategory = getStrawCategoryFromTags(tags)
-    partId = `strawbale:${strawCategory}` as PartId
-  }
-
-  const existingPart = materialEntry.parts[partId]
-
-  const size = partInfo.boxSize
-  let volume = computeVolume(size)
-
-  if (existingPart) {
-    existingPart.quantity += 1
-    existingPart.totalVolume += volume
-    existingPart.elements.push(id)
-    materialEntry.totalQuantity += 1
-    materialEntry.totalVolume += volume
-
-    const length = existingPart.length
-    if (length !== undefined) {
-      existingPart.totalLength = (existingPart.totalLength ?? 0) + length
-      materialEntry.totalLength = (materialEntry.totalLength ?? 0) + length
-    }
-
-    const area = existingPart.area
-    if (area !== undefined) {
-      existingPart.totalArea = (existingPart.totalArea ?? 0) + area
-      materialEntry.totalArea = (materialEntry.totalArea ?? 0) + area
-    }
-
-    return
-  }
-
-  let length: Length | undefined
-  let area: Area | undefined
-  let issue: PartIssue | undefined
-  let crossSection: CrossSection | undefined
-  let thickness: Length | undefined
-
-  if (materialDefinition?.type === 'dimensional') {
-    const details = computeDimensionalDetails(size, materialDefinition)
-    length = details.length
-    issue = details.issue
-    crossSection = details.crossSection
-  } else if (materialDefinition?.type === 'sheet') {
-    const details = computeSheetDetails(size, materialDefinition)
-    if (partInfo.sideFaces) {
-      area = calculatePolygonWithHolesArea(partInfo.sideFaces[0].polygon)
-      const thickness = partInfo.boxSize[partInfo.sideFaces[0].index]
-      volume = thickness * area
-    } else {
-      area = details.areaSize[0] * details.areaSize[1]
-    }
-    issue = details.issue
-    thickness = details.thickness
-  } else if (materialDefinition?.type === 'volume') {
-    if (partInfo.sideFaces) {
-      area = calculatePolygonWithHolesArea(partInfo.sideFaces[0].polygon)
-    }
-  }
-
-  const labelIndex = labelCounters.get(materialEntry.material) ?? 0
-  const label = indexToLabel(labelIndex)
-  labelCounters.set(materialEntry.material, labelIndex + 1)
-
-  const partType = strawCategory ? `strawbale-${strawCategory}` : partInfo.type
-  const description = strawCategory ? STRAW_CATEGORY_LABELS[strawCategory] : partInfo.description
-
-  const partItem: MaterialPartItem = {
-    partId,
-    type: partType,
-    description,
-    label,
-    material: materialEntry.material,
-    size: copyVec3(size),
-    elements: [id],
-    totalVolume: volume,
-    quantity: 1,
-    issue,
-    sideFaces: partInfo.sideFaces,
-    crossSection,
-    thickness,
-    strawCategory,
-    requiresSinglePiece: partInfo.requiresSinglePiece
-  }
-
-  if (length !== undefined) {
-    partItem.length = length
-    partItem.totalLength = length
-    materialEntry.totalLength = (materialEntry.totalLength ?? 0) + length
-  }
-
-  if (area !== undefined) {
-    partItem.area = area
-    partItem.totalArea = area
-    materialEntry.totalArea = (materialEntry.totalArea ?? 0) + area
-  }
-
-  materialEntry.parts[partId] = partItem
-  materialEntry.totalQuantity += 1
-  materialEntry.totalVolume += volume
-}
-
 function processConstructionElement(
   element: ConstructionElement,
   tags: Tag[],
   materialEntry: MaterialParts,
   labelCounters: Map<MaterialId, number>
 ) {
+  const materialDefinition = getMaterialById(materialEntry.material)
+
+  // Call getPartInfoFromManifold ONCE
+  const geometryInfo = getPartInfoFromManifold(element.shape.manifold)
+
+  // Build fullPartInfo without calling getPartInfoFromManifold again
+  let fullPartInfo: FullPartInfo | null = null
+  const hasPartInfo = !!element.partInfo
+
+  if (hasPartInfo && element.partInfo) {
+    if ('id' in element.partInfo) {
+      fullPartInfo = element.partInfo
+    } else {
+      const typePrefix = `${element.partInfo.type}${element.partInfo.subtype ? `-${element.partInfo.subtype}` : ''}`
+      const id = `${typePrefix}-${element.material}-${geometryInfo.id}` as PartId
+      const partInfoMutable = element.partInfo as FullPartInfo
+      partInfoMutable.id = id
+      partInfoMutable.boxSize = geometryInfo.boxSize
+      partInfoMutable.sideFaces = geometryInfo.sideFaces
+      fullPartInfo = partInfoMutable
+    }
+  }
+
+  // Determine partId based on whether we have part info
   let partId: PartId
-  let description: string | undefined
-  let type: string
+  if (hasPartInfo && fullPartInfo) {
+    partId = computePartIdWithInfo(fullPartInfo, tags, materialEntry.material)
+  } else {
+    partId = computePartIdWithoutInfo(tags, geometryInfo, materialDefinition)
+  }
 
-  const size = Array.from(element.bounds.size).sort()
-  let includeSize = true
+  // Compute material-specific metrics
+  const metrics = computeMaterialMetrics(geometryInfo, materialDefinition, hasPartInfo)
 
+  // Update or create part entry
+  updateOrCreatePartEntry(
+    partId,
+    element.id,
+    metrics,
+    hasPartInfo,
+    fullPartInfo,
+    tags,
+    materialEntry,
+    labelCounters,
+    geometryInfo
+  )
+}
+
+function computeStrawCategory(materialId: MaterialId, tags: Tag[]): StrawCategory | undefined {
+  const materialDefinition = getMaterialById(materialId)
+  if (materialDefinition?.type !== 'strawbale') return undefined
+  return getStrawCategoryFromTags(tags)
+}
+
+function computePartType(fullPartInfo: FullPartInfo | null, tags: Tag[], strawCategory?: StrawCategory): string {
+  if (strawCategory) {
+    return `strawbale-${strawCategory}`
+  }
+  if (fullPartInfo) {
+    return fullPartInfo.type
+  }
+  const layerInfo = findLayerTag(tags)
+  return layerInfo?.type ?? '-'
+}
+
+function computePartDescription(
+  fullPartInfo: FullPartInfo | null,
+  tags: Tag[],
+  strawCategory?: StrawCategory
+): string | undefined {
+  if (strawCategory) {
+    return STRAW_CATEGORY_LABELS[strawCategory]
+  }
+  if (fullPartInfo?.description) {
+    return fullPartInfo.description
+  }
+  const layerInfo = findLayerTag(tags)
+  return layerInfo?.tag.label
+}
+
+function findLayerTag(tags: Tag[]): { tag: Tag; type: string } | null {
   const layerTags = tags.filter(
     t => t.category === 'wall-layer' || t.category === 'floor-layer' || t.category === 'roof-layer'
   )
-  if (layerTags.length > 0) {
-    const specificTag = layerTags.find(
-      t =>
-        t.id !== TAG_WALL_LAYER_INSIDE.id &&
-        t.id !== TAG_WALL_LAYER_OUTSIDE.id &&
-        t.id !== TAG_FLOOR_LAYER_TOP.id &&
-        t.id !== TAG_FLOOR_LAYER_BOTTOM.id &&
-        t.id !== TAG_ROOF_LAYER_TOP.id &&
-        t.id !== TAG_ROOF_LAYER_INSIDE.id &&
-        t.id !== TAG_ROOF_LAYER_OVERHANG.id
-    )
-    const layerTag = specificTag ?? layerTags[0]
-    partId = `auto_${layerTag.id}` as PartId
-    description = layerTag.label
-    type = getLayerType(layerTags)
-    includeSize = false
-  } else {
-    partId = `auto_${size.join('x')}` as PartId
-    type = '-'
-  }
+  if (layerTags.length === 0) return null
 
-  const fullInfo = getPartInfoFromManifold(element.shape.manifold)
+  const specificTag = layerTags.find(
+    t =>
+      t.id !== TAG_WALL_LAYER_INSIDE.id &&
+      t.id !== TAG_WALL_LAYER_OUTSIDE.id &&
+      t.id !== TAG_FLOOR_LAYER_TOP.id &&
+      t.id !== TAG_FLOOR_LAYER_BOTTOM.id &&
+      t.id !== TAG_ROOF_LAYER_TOP.id &&
+      t.id !== TAG_ROOF_LAYER_INSIDE.id &&
+      t.id !== TAG_ROOF_LAYER_OVERHANG.id
+  )
+  const layerTag = specificTag ?? layerTags[0]
+  const type = getLayerType(layerTags)
 
-  let polygon: PolygonWithHoles2D | undefined
-  let area: Area | undefined
-  let thickness: Length | undefined
-  if (fullInfo.sideFaces && fullInfo.sideFaces.length === 1) {
-    polygon = fullInfo.sideFaces[0].polygon
-    area = calculatePolygonWithHolesArea(polygon)
-    thickness = fullInfo.boxSize[fullInfo.sideFaces[0].index]
-  }
-
-  const materialDefinition = getMaterialById(materialEntry.material)
-  if (!polygon) {
-    if (materialDefinition?.type === 'sheet') {
-      const details = computeSheetDetails(arrayToVec3(size), materialDefinition)
-      area = details.areaSize[0] * details.areaSize[1]
-      thickness = details.thickness
-    } else if (materialDefinition?.type === 'volume') {
-      area = size[1] * size[2]
-      thickness = size[0]
-    }
-  } else {
-    includeSize = false
-  }
-
-  if (thickness != null) {
-    partId = `${partId}_${thickness}` as PartId
-  }
-
-  const existingPart = materialEntry.parts[partId]
-
-  const volume = area != null && thickness != null ? area * thickness : computeVolume(arrayToVec3(size))
-
-  if (existingPart) {
-    existingPart.quantity += 1
-    existingPart.totalVolume += volume
-    existingPart.elements.push(element.id)
-    materialEntry.totalQuantity += 1
-    materialEntry.totalVolume += volume
-
-    if (area !== undefined) {
-      existingPart.totalArea = (existingPart.totalArea ?? 0) + area
-      materialEntry.totalArea = (materialEntry.totalArea ?? 0) + area
-    }
-
-    return
-  }
-
-  const labelIndex = labelCounters.get(materialEntry.material) ?? 0
-  const label = indexToLabel(labelIndex)
-  labelCounters.set(materialEntry.material, labelIndex + 1)
-
-  const partItem: MaterialPartItem = {
-    partId,
-    type,
-    description,
-    label,
-    material: materialEntry.material,
-    size: includeSize ? fullInfo.boxSize : ZERO_VEC3,
-    elements: [element.id],
-    totalVolume: volume,
-    quantity: 1,
-    sideFaces: fullInfo.sideFaces,
-    thickness
-  }
-
-  if (area !== undefined) {
-    partItem.totalArea = area
-    materialEntry.totalArea = (materialEntry.totalArea ?? 0) + area
-  }
-
-  materialEntry.parts[partId] = partItem
-  materialEntry.totalQuantity += 1
-  materialEntry.totalVolume += volume
+  return { tag: layerTag, type }
 }
 
-function getLayerType(layerTags: Tag[]) {
+function getLayerType(layerTags: Tag[]): string {
   if (layerTags.indexOf(TAG_WALL_LAYER_INSIDE) !== -1) return 'wall-layer-inside'
   if (layerTags.indexOf(TAG_WALL_LAYER_OUTSIDE) !== -1) return 'wall-layer-outside'
   if (layerTags.indexOf(TAG_FLOOR_LAYER_TOP) !== -1) return 'floor-layer'
