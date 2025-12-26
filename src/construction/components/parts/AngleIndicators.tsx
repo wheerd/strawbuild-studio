@@ -11,21 +11,16 @@ import {
 } from './utils/angleUtils'
 import { type ICoordinateMapper, IdentityCoordinateMapper } from './utils/coordinateMapper'
 
-const ANGLE_CONFIG = {
-  rightAngleSize: 6,
-  arcRadius: 12,
-  fontSize: 6
-} as const
-
 interface AngleIndicatorProps {
   vertex: Vec2
   prevPoint: Vec2
   nextPoint: Vec2
+  scaleFactor: number
 }
 
-function RightAngleIndicator({ vertex, prevPoint, nextPoint }: AngleIndicatorProps): React.JSX.Element {
+function RightAngleIndicator({ vertex, prevPoint, nextPoint, scaleFactor }: AngleIndicatorProps): React.JSX.Element {
   const { dir1, dir2 } = getEdgeDirections(prevPoint, vertex, nextPoint)
-  const size = ANGLE_CONFIG.rightAngleSize
+  const size = 6 * scaleFactor
 
   // Calculate the two perpendicular edges of the square
   const p1 = addVec2(vertex, scaleVec2(dir1, size))
@@ -36,19 +31,21 @@ function RightAngleIndicator({ vertex, prevPoint, nextPoint }: AngleIndicatorPro
     <path
       d={`M ${p1[0]} ${p1[1]} L ${corner[0]} ${corner[1]} L ${p2[0]} ${p2[1]}`}
       stroke="var(--gray-11)"
-      strokeWidth="1"
+      strokeWidth={Math.max(1, scaleFactor)}
       opacity={0.5}
       fill="none"
     />
   )
 }
 
-function AngleArcIndicator({ vertex, prevPoint, nextPoint }: AngleIndicatorProps): React.JSX.Element {
+function AngleArcIndicator({ vertex, prevPoint, nextPoint, scaleFactor }: AngleIndicatorProps): React.JSX.Element {
   const interiorAngle = calculateInteriorAngle(prevPoint, vertex, nextPoint)
   const { angle, useExterior } = getSmallerAngle(interiorAngle)
   const { dir1, dir2 } = getEdgeDirections(prevPoint, vertex, nextPoint)
 
-  const radius = ANGLE_CONFIG.arcRadius
+  const radius = 12 * scaleFactor
+  const fontSize = 6 * scaleFactor
+  const strokeWidth = Math.max(1, scaleFactor)
 
   // Calculate start and end angles for the arc
   const startAngle = Math.atan2(dir1[1], dir1[0])
@@ -73,11 +70,11 @@ function AngleArcIndicator({ vertex, prevPoint, nextPoint }: AngleIndicatorProps
 
   return (
     <g>
-      <path d={arcPath} stroke="var(--gray-11)" strokeWidth="1" fill="none" />
+      <path d={arcPath} stroke="var(--gray-11)" strokeWidth={strokeWidth} fill="none" />
       <text
         x={labelPos[0]}
         y={labelPos[1]}
-        fontSize={ANGLE_CONFIG.fontSize}
+        fontSize={fontSize}
         fill="var(--gray-11)"
         textAnchor="middle"
         dominantBaseline="central"
@@ -88,14 +85,14 @@ function AngleArcIndicator({ vertex, prevPoint, nextPoint }: AngleIndicatorProps
   )
 }
 
-function AngleIndicator({ vertex, prevPoint, nextPoint }: AngleIndicatorProps): React.JSX.Element {
+function AngleIndicator({ vertex, prevPoint, nextPoint, scaleFactor }: AngleIndicatorProps): React.JSX.Element {
   const interiorAngle = calculateInteriorAngle(prevPoint, vertex, nextPoint)
   const { angle } = getSmallerAngle(interiorAngle)
 
   if (isRightAngle(angle)) {
-    return <RightAngleIndicator vertex={vertex} prevPoint={prevPoint} nextPoint={nextPoint} />
+    return <RightAngleIndicator vertex={vertex} prevPoint={prevPoint} nextPoint={nextPoint} scaleFactor={scaleFactor} />
   } else {
-    return <AngleArcIndicator vertex={vertex} prevPoint={prevPoint} nextPoint={nextPoint} />
+    return <AngleArcIndicator vertex={vertex} prevPoint={prevPoint} nextPoint={nextPoint} scaleFactor={scaleFactor} />
   }
 }
 
@@ -141,13 +138,17 @@ function getPolygonAngles(
 
 export function PolygonAngleIndicators({
   polygon,
-  coordinateMapper: providedMapper
+  coordinateMapper: providedMapper,
+  scaleFactor
 }: {
   polygon: PolygonWithHoles2D
   coordinateMapper?: ICoordinateMapper
+  scaleFactor?: number
 }): React.JSX.Element {
   // Use identity mapper if none provided
   const coordinateMapper = useMemo(() => providedMapper ?? new IdentityCoordinateMapper(), [providedMapper])
+  const scale = scaleFactor ?? 1.0
+
   const allAngles = useMemo(() => {
     const angles = getPolygonAngles(polygon.outer, coordinateMapper)
 
@@ -162,7 +163,7 @@ export function PolygonAngleIndicators({
   return (
     <g className="angle-indicators">
       {allAngles.map((angleData, index) => (
-        <AngleIndicator key={`angle-${index}`} {...angleData} />
+        <AngleIndicator key={`angle-${index}`} {...angleData} scaleFactor={scale} />
       ))}
     </g>
   )

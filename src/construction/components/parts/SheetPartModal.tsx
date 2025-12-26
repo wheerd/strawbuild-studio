@@ -45,6 +45,14 @@ export function SheetPartModal({
 
   const displayBounds = useMemo(() => Bounds2D.fromPoints(flippedPolygon.outer.points), [flippedPolygon])
 
+  // Calculate scale factor based on smaller dimension
+  // Baseline: 1000mm → scaleFactor = 1.0
+  // Clamp between 0.8 and 10.0 for reasonable sizing
+  const scaleFactor = useMemo(() => {
+    const smallerDimension = Math.min(displayBounds.width, displayBounds.height)
+    return Math.max(0.8, Math.min(10, smallerDimension / 1000))
+  }, [displayBounds])
+
   // Generate the full polygon path
   const fullPolygonPath = useMemo(() => polygonWithHolesToSvgPath(flippedPolygon), [flippedPolygon])
 
@@ -57,7 +65,7 @@ export function SheetPartModal({
           <SVGViewport
             ref={viewportRef}
             contentBounds={displayBounds}
-            paddingAbsolute={40}
+            paddingAbsolute={40 * scaleFactor}
             resetButtonPosition="top-right"
             svgSize={containerSize}
           >
@@ -69,20 +77,20 @@ export function SheetPartModal({
             <use
               href={`#${polygonId}`}
               stroke="var(--accent-9)"
-              strokeWidth="1"
+              strokeWidth={Math.max(1, scaleFactor)}
               fill="var(--accent-9)"
               fillOpacity="0.5"
               strokeLinejoin="miter"
             />
 
             {/* Render grid and measurements (no coordinate mapper needed) */}
-            <GridMeasurementSystem polygon={flippedPolygon} displayBounds={displayBounds} />
+            <GridMeasurementSystem polygon={flippedPolygon} displayBounds={displayBounds} scaleFactor={scaleFactor} />
 
             {/* Render angle indicators */}
-            <PolygonAngleIndicators polygon={flippedPolygon} />
+            <PolygonAngleIndicators polygon={flippedPolygon} scaleFactor={scaleFactor} />
 
             {/* Render diagonal edge measurements */}
-            <DiagonalEdgeMeasurements polygon={flippedPolygon} />
+            <DiagonalEdgeMeasurements polygon={flippedPolygon} scaleFactor={scaleFactor} />
           </SVGViewport>
         </div>
       </Grid>

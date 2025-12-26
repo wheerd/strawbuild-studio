@@ -9,17 +9,31 @@ interface GridMeasurementSystemProps {
   polygon: PolygonWithHoles2D
   displayBounds: Bounds2D
   coordinateMapper?: ICoordinateMapper
+  scaleFactor?: number
 }
-
-const SIZE_LABEL_THRESHOLD = 20
 
 export function GridMeasurementSystem({
   polygon,
   displayBounds,
-  coordinateMapper: providedMapper
+  coordinateMapper: providedMapper,
+  scaleFactor
 }: GridMeasurementSystemProps): React.JSX.Element {
   // Use identity mapper if none provided
   const coordinateMapper = useMemo(() => providedMapper ?? new IdentityCoordinateMapper(), [providedMapper])
+
+  // Calculate scaled values based on scale factor
+  const scale = scaleFactor ?? 1.0
+  const SCALED = useMemo(
+    () => ({
+      fontSize: 10 * scale,
+      totalOffset: 25 * scale,
+      segmentOffset: 15 * scale,
+      strokeWidth: Math.max(1, 1 * scale),
+      dashArray: `${2 * scale} ${2 * scale}`,
+      labelThreshold: 20 * scale
+    }),
+    [scale]
+  )
   // Extract unique X and Y coordinates from polygon points (in virtual space)
   const { xCoords, yCoords } = useMemo(() => {
     const allPoints = polygon.outer.points.concat(polygon.holes.flatMap(h => h.points))
@@ -65,8 +79,8 @@ export function GridMeasurementSystem({
           x2={coord.displayX}
           y2={displayBounds.max[1]}
           stroke="var(--gray-11)"
-          strokeWidth="1"
-          strokeDasharray="2 2"
+          strokeWidth={SCALED.strokeWidth}
+          strokeDasharray={SCALED.dashArray}
           opacity={0.5}
         />
       )
@@ -82,8 +96,8 @@ export function GridMeasurementSystem({
           x2={displayBounds.max[0]}
           y2={y}
           stroke="var(--gray-11)"
-          strokeWidth="1"
-          strokeDasharray="2 2"
+          strokeWidth={SCALED.strokeWidth}
+          strokeDasharray={SCALED.dashArray}
           opacity={0.5}
         />
       )
@@ -97,10 +111,10 @@ export function GridMeasurementSystem({
           startPoint={newVec2(displayBounds.min[0], displayBounds.max[1])}
           endPoint={newVec2(displayBounds.max[0], displayBounds.max[1])}
           label={totalWidth.toFixed(0)}
-          offset={25}
+          offset={SCALED.totalOffset}
           color="var(--gray-11)"
-          fontSize={10}
-          strokeWidth={1}
+          fontSize={SCALED.fontSize}
+          strokeWidth={SCALED.strokeWidth}
         />,
 
         <SvgMeasurementIndicator
@@ -108,10 +122,10 @@ export function GridMeasurementSystem({
           startPoint={newVec2(displayBounds.min[0], displayBounds.min[1])}
           endPoint={newVec2(displayBounds.max[0], displayBounds.min[1])}
           label={totalWidth.toFixed(0)}
-          offset={-25}
+          offset={-SCALED.totalOffset}
           color="var(--gray-11)"
-          fontSize={10}
-          strokeWidth={1}
+          fontSize={SCALED.fontSize}
+          strokeWidth={SCALED.strokeWidth}
         />
       )
     }
@@ -125,7 +139,7 @@ export function GridMeasurementSystem({
       const distance = next.virtualX - current.virtualX
 
       let labelOrientation: LabelOrientation = 'parallel'
-      if (distance < SIZE_LABEL_THRESHOLD) {
+      if (distance < SCALED.labelThreshold) {
         const prevSpace = i > 0 ? current.virtualX - displayXCoords[i - 1].virtualX : 0
         labelOrientation = prevSpace < 30 ? 'outside-end' : 'outside-start'
       }
@@ -137,10 +151,10 @@ export function GridMeasurementSystem({
           startPoint={newVec2(current.displayX, displayBounds.min[1])}
           endPoint={newVec2(next.displayX, displayBounds.min[1])}
           label={distance.toFixed(0)}
-          offset={-15}
+          offset={-SCALED.segmentOffset}
           color="var(--gray-11)"
-          fontSize={10}
-          strokeWidth={1}
+          fontSize={SCALED.fontSize}
+          strokeWidth={SCALED.strokeWidth}
           labelOrientation={labelOrientation}
         />
       )
@@ -152,10 +166,10 @@ export function GridMeasurementSystem({
           startPoint={newVec2(current.displayX, displayBounds.max[1])}
           endPoint={newVec2(next.displayX, displayBounds.max[1])}
           label={distance.toFixed(0)}
-          offset={15}
+          offset={SCALED.segmentOffset}
           color="var(--gray-11)"
-          fontSize={10}
-          strokeWidth={1}
+          fontSize={SCALED.fontSize}
+          strokeWidth={SCALED.strokeWidth}
           labelOrientation={labelOrientation}
         />
       )
@@ -169,10 +183,10 @@ export function GridMeasurementSystem({
           startPoint={newVec2(displayBounds.min[0], displayBounds.min[1])}
           endPoint={newVec2(displayBounds.min[0], displayBounds.max[1])}
           label={totalHeight.toFixed(0)}
-          offset={25}
+          offset={SCALED.totalOffset}
           color="var(--gray-11)"
-          fontSize={10}
-          strokeWidth={1}
+          fontSize={SCALED.fontSize}
+          strokeWidth={SCALED.strokeWidth}
         />,
 
         <SvgMeasurementIndicator
@@ -180,10 +194,10 @@ export function GridMeasurementSystem({
           startPoint={newVec2(displayBounds.max[0], displayBounds.min[1])}
           endPoint={newVec2(displayBounds.max[0], displayBounds.max[1])}
           label={totalHeight.toFixed(0)}
-          offset={-25}
+          offset={-SCALED.totalOffset}
           color="var(--gray-11)"
-          fontSize={10}
-          strokeWidth={1}
+          fontSize={SCALED.fontSize}
+          strokeWidth={SCALED.strokeWidth}
         />
       )
     }
@@ -195,7 +209,7 @@ export function GridMeasurementSystem({
       const distance = nextY - currentY
 
       let labelOrientation: LabelOrientation = 'parallel'
-      if (distance < SIZE_LABEL_THRESHOLD) {
+      if (distance < SCALED.labelThreshold) {
         const prevSpace = i > 0 ? currentY - yCoords[i - 1] : 0
         labelOrientation = prevSpace < 30 ? 'outside-end' : 'outside-start'
       }
@@ -207,10 +221,10 @@ export function GridMeasurementSystem({
           startPoint={newVec2(displayBounds.min[0], currentY)}
           endPoint={newVec2(displayBounds.min[0], nextY)}
           label={distance.toFixed(0)}
-          offset={15}
+          offset={SCALED.segmentOffset}
           color="var(--gray-11)"
-          fontSize={10}
-          strokeWidth={1}
+          fontSize={SCALED.fontSize}
+          strokeWidth={SCALED.strokeWidth}
           labelOrientation={labelOrientation}
         />
       )
@@ -222,10 +236,10 @@ export function GridMeasurementSystem({
           startPoint={newVec2(displayBounds.max[0], currentY)}
           endPoint={newVec2(displayBounds.max[0], nextY)}
           label={distance.toFixed(0)}
-          offset={-15}
+          offset={-SCALED.segmentOffset}
           color="var(--gray-11)"
-          fontSize={10}
-          strokeWidth={1}
+          fontSize={SCALED.fontSize}
+          strokeWidth={SCALED.strokeWidth}
           labelOrientation={labelOrientation}
         />
       )

@@ -49,13 +49,26 @@ function getDiagonalEdges(polygon: PolygonWithHoles2D, coordinateMapper: ICoordi
 
 export function DiagonalEdgeMeasurements({
   polygon,
-  coordinateMapper: providedMapper
+  coordinateMapper: providedMapper,
+  scaleFactor
 }: {
   polygon: PolygonWithHoles2D
   coordinateMapper?: ICoordinateMapper
+  scaleFactor?: number
 }): React.JSX.Element {
   // Use identity mapper if none provided
   const coordinateMapper = useMemo(() => providedMapper ?? new IdentityCoordinateMapper(), [providedMapper])
+
+  const scale = scaleFactor ?? 1.0
+  const SCALED = useMemo(
+    () => ({
+      offset: 4 * scale,
+      fontSize: 8 * scale,
+      strokeWidth: Math.max(1, 1 * scale)
+    }),
+    [scale]
+  )
+
   const diagonalEdges = useMemo(() => {
     return getDiagonalEdges(polygon, coordinateMapper)
   }, [polygon, coordinateMapper])
@@ -68,10 +81,10 @@ export function DiagonalEdgeMeasurements({
           startPoint={edge.startDisplay}
           endPoint={edge.endDisplay}
           label={edge.length.toFixed(0)}
-          offset={-4}
+          offset={-SCALED.offset}
           color="var(--gray-11)"
-          fontSize={8}
-          strokeWidth={1}
+          fontSize={SCALED.fontSize}
+          strokeWidth={SCALED.strokeWidth}
         />
       ))}
     </g>
