@@ -10,8 +10,10 @@ import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 import ConstructionElement3D from './components/ConstructionElement3D'
 import ConstructionGroup3D from './components/ConstructionGroup3D'
 import ExportButton, { type ExportFormat } from './components/ExportButton'
+import { GridToggleButton } from './components/GridToggleButton'
 import SceneExporter from './components/SceneExporter'
 import { TagOpacityMenu } from './components/TagOpacityMenu'
+import { useShowGrid3D } from './hooks/useGrid3D'
 
 interface ConstructionViewer3DProps {
   model: ConstructionModel
@@ -20,6 +22,7 @@ interface ConstructionViewer3DProps {
 
 function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProps): React.JSX.Element {
   const theme = useCanvasTheme()
+  const showGrid = useShowGrid3D()
   const exportFnRef = useRef<((format: ExportFormat) => void) | null>(null)
 
   const [centerX, centerY, centerZ] = model.bounds.center
@@ -82,7 +85,7 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
         <CanvasBackground color={theme.bgCanvas} />
         <ambientLight intensity={theme.isDarkTheme ? 0.8 : 1.3} />
 
-        <gridHelper args={gridHelperArgs} position={[centerX, 0, -centerY]} />
+        {showGrid && <gridHelper args={gridHelperArgs} position={[centerX, 0, -centerY]} />}
 
         <group position={position} rotation={rotation} scale={scale}>
           {model.elements.map(element =>
@@ -100,8 +103,9 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
 
       <Box position="absolute" top="3" left="3" style={{ zIndex: 10 }}>
         <Card size="1" variant="surface" className="shadow-md">
-          <Flex direction="column" align="center" gap="2" m="-2" p="0">
+          <Flex direction="row" align="center" gap="1" m="-2" p="0">
             <TagOpacityMenu model={model} />
+            <GridToggleButton />
           </Flex>
         </Card>
       </Box>
