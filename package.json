@@ -54,7 +54,7 @@
     "three": "^0.180.0",
     "throttle-debounce": "^5.0.2",
     "use-image": "^1.1.4",
-    "web-ifc": "^0.0.72",
+    "web-ifc": "^0.0.74",
     "workbox-window": "^7.4.0",
     "zundo": "^2.3.0",
     "zustand": "^5.0.9"
