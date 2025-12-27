@@ -1,4 +1,5 @@
 # 🌾 Strawbaler Online
+
 [![CI](https://github.com/wheerd/strawbaler-online/workflows/CI/badge.svg)](https://github.com/wheerd/strawbaler-online/actions/workflows/ci.yml)
 [![Security](https://github.com/wheerd/strawbaler-online/workflows/Security%20&%20Dependencies/badge.svg)](https://github.com/wheerd/strawbaler-online/actions/workflows/security.yml)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/0c31f906-f421-426d-b6af-d0f69ae3ea83/deploy-status)](https://app.netlify.com/projects/strawbaler/deploys)
@@ -150,7 +151,7 @@ This project includes comprehensive CI/CD workflows:
 
 - **CI**: Tests, linting, and builds on every push/PR
 - **Security**: Dependency auditing
-- **Dependencies**: Weekly automated dependency updates
+- **Dependencies**: Automated dependency updates via Dependabot
 
 ## 🐛 Known Issues
 

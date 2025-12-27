@@ -1,0 +1,79 @@
+version: 2
+updates:
+  # npm dependencies
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '03:00'
+      timezone: 'Etc/UTC'
+    open-pull-requests-limit: 10
+
+    # Commit message configuration
+    commit-message:
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps-dev)'
+      include: 'scope'
+
+    # Group updates to reduce PR noise
+    groups:
+      # React ecosystem
+      react:
+        patterns:
+          - 'react'
+          - 'react-dom'
+          - '@types/react*'
+          - 'react-*'
+
+      # Radix UI components
+      radix-ui:
+        patterns:
+          - '@radix-ui/*'
+
+      # Testing tools
+      testing:
+        patterns:
+          - 'vitest*'
+          - '@vitest/*'
+          - '@testing-library/*'
+          - 'jsdom'
+          - 'playwright*'
+          - '@playwright/*'
+
+      # Build and dev tools
+      build-tools:
+        patterns:
+          - 'vite*'
+          - '@vitejs/*'
+          - 'typescript*'
+          - 'eslint*'
+          - 'prettier*'
+          - 'postcss'
+          - 'tailwindcss'
+          - 'autoprefixer'
+
+      # 3D rendering
+      three:
+        patterns:
+          - 'three'
+          - '@react-three/*'
+          - '@types/three'
+
+    # Labels for PRs
+    labels:
+      - 'dependencies'
+
+  # GitHub Actions dependencies
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '03:00'
+      timezone: 'Etc/UTC'
+    commit-message:
+      prefix: 'chore(ci)'
+    labels:
+      - 'dependencies'
+      - 'github-actions'
