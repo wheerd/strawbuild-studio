@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createCuboidElement } from '@/construction/elements'
 import { WallConstructionArea } from '@/construction/geometry'
+import type { MaterialId } from '@/construction/materials/material'
 import { constructStraw } from '@/construction/materials/straw'
 import { aggregateResults, yieldElement } from '@/construction/results'
 import type { StrawhengeWallConfig } from '@/construction/walls'
@@ -52,7 +53,8 @@ const createTestConfig = (): StrawhengeWallConfig => ({
       type: 'full',
       width: POST_WIDTH,
       material: 'wood' as any
-    }
+    },
+    infillMaterial: 'infill-material' as MaterialId
   },
   layers: {
     insideThickness: 0,
@@ -141,7 +143,7 @@ describe('Strawhenge Wall Construction', () => {
       )
 
       // Current implementation creates a module even without stands if size equals module width
-      expect(mockConstructModule).toHaveBeenCalledWith(area, config.module)
+      expect(mockConstructModule).toHaveBeenCalledWith(area, config.module, 'infill-material')
       expect(mockInfillWallArea).not.toHaveBeenCalled()
     })
 
@@ -194,7 +196,7 @@ describe('Strawhenge Wall Construction', () => {
       Array.from(strawhengeWallArea(area, config, true, true, false))
 
       // Should call module construction, not infill
-      expect(mockConstructModule).toHaveBeenCalledWith(area, config.module)
+      expect(mockConstructModule).toHaveBeenCalledWith(area, config.module, 'infill-material')
       expect(mockInfillWallArea).not.toHaveBeenCalled()
     })
   })
@@ -215,28 +217,24 @@ describe('Strawhenge Wall Construction', () => {
   })
 
   describe('Wall Length Snapshots - startAtEnd=false', () => {
-    describe.each(WALL_LENGTHS)('Wall length %s', wallLength => {
-      it(`should produce consistent layout for length ${wallLength}`, () => {
-        const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(wallLength, 360, 2000))
+    it.each(WALL_LENGTHS)('should produce consistent layout for length %s', wallLength => {
+      const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(wallLength, 360, 2000))
 
-        const results = Array.from(strawhengeWallArea(area, config, true, true, false))
+      const results = Array.from(strawhengeWallArea(area, config, true, true, false))
 
-        const snapshotData = extractSnapshotData(results)
-        expect(snapshotData).toMatchSnapshot(`wall-length-${wallLength}-startAtEnd-false`)
-      })
+      const snapshotData = extractSnapshotData(results)
+      expect(snapshotData).toMatchSnapshot(`wall-length-${wallLength}-startAtEnd-false`)
     })
   })
 
   describe('Wall Length Snapshots - startAtEnd=true', () => {
-    describe.each(WALL_LENGTHS)('Wall length %s', wallLength => {
-      it(`should produce consistent layout for length ${wallLength}`, () => {
-        const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(wallLength, 360, 2000))
+    it.each(WALL_LENGTHS)('should produce consistent layout for length %s', wallLength => {
+      const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(wallLength, 360, 2000))
 
-        const results = Array.from(strawhengeWallArea(area, config, true, true, true))
+      const results = Array.from(strawhengeWallArea(area, config, true, true, true))
 
-        const snapshotData = extractSnapshotData(results)
-        expect(snapshotData).toMatchSnapshot(`wall-length-${wallLength}-startAtEnd-true`)
-      })
+      const snapshotData = extractSnapshotData(results)
+      expect(snapshotData).toMatchSnapshot(`wall-length-${wallLength}-startAtEnd-true`)
     })
   })
 

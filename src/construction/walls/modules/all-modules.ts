@@ -22,13 +22,14 @@ export function* moduleWallArea(
   startAtEnd = false
 ): Generator<ConstructionResult> {
   const { module, infill } = config
+  const infillMaterial = config.infill.infillMaterial ?? config.infill.strawMaterial
 
   let remainingArea = area
   while (remainingArea.size[0] >= module.minWidth) {
     const [a, b] = remainingArea.splitInX(startAtEnd ? remainingArea.size[0] - module.maxWidth : module.maxWidth)
     remainingArea = startAtEnd ? a : b
     const moduleArea = startAtEnd ? b : a
-    yield* constructModule(moduleArea, module)
+    yield* constructModule(moduleArea, module, infillMaterial)
   }
   if (remainingArea.size[0] > 0) {
     yield* infillWallArea(remainingArea, infill, startsWithStand, endsWithStand, startAtEnd)

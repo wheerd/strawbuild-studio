@@ -68,7 +68,7 @@ function* placeStrawhengeSegments(
   }
 
   if (!moduleArea.isEmpty) {
-    yield* constructModule(moduleArea, module)
+    yield* constructModule(moduleArea, module, config.infill.infillMaterial ?? config.infill.strawMaterial)
   }
 
   if (!remainingArea.isEmpty) {
@@ -88,6 +88,7 @@ export function* strawhengeWallArea(
   const twoModules = 2 * module.maxWidth + infill.minStrawSpace
   const moduleAndMinFilling = module.minWidth + infill.minStrawSpace
   const postWidth = infill.posts.width
+  const infillMaterial = config.infill.infillMaterial ?? config.infill.strawMaterial
 
   // No space for a module -> fallback to infill
   if (size[0] < module.minWidth) {
@@ -97,7 +98,7 @@ export function* strawhengeWallArea(
 
   // Single module
   if (size[0] >= module.minWidth && size[0] <= module.maxWidth) {
-    yield* constructModule(area, module)
+    yield* constructModule(area, module, infillMaterial)
     return
   }
 
@@ -115,11 +116,11 @@ export function* strawhengeWallArea(
       // Single module plus remaining space
       const [infillArea, moduleArea] = area.splitInX(size[0] - module.minWidth)
       yield* infillWallArea(infillArea, infill, true, false, false)
-      yield* constructModule(moduleArea, module)
+      yield* constructModule(moduleArea, module, infillMaterial)
     } else {
       // Single module plus remaining space
       const [moduleArea, infillArea] = area.splitInX(module.minWidth)
-      yield* constructModule(moduleArea, module)
+      yield* constructModule(moduleArea, module, infillMaterial)
       yield* infillWallArea(infillArea, infill, false, true, true)
     }
     return
@@ -132,14 +133,14 @@ export function* strawhengeWallArea(
   if (startsWithStand) {
     const [moduleArea, remainingArea] = inbetweenArea.splitInX(oneModule)
     inbetweenArea = remainingArea
-    yield* constructModule(moduleArea, module)
+    yield* constructModule(moduleArea, module, infillMaterial)
   }
 
   // Place end module if ends with stand
   if (endsWithStand) {
     const [remainingArea, moduleArea] = inbetweenArea.splitInX(inbetweenArea.size[0] - oneModule)
     inbetweenArea = remainingArea
-    yield* constructModule(moduleArea, module)
+    yield* constructModule(moduleArea, module, infillMaterial)
   }
 
   // Fill the middle section recursively

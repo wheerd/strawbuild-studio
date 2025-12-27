@@ -4,7 +4,9 @@ import type { MaterialId } from '@/construction/materials/material'
 import { constructStraw } from '@/construction/materials/straw'
 import { type InitialPartInfo } from '@/construction/parts'
 import { type ConstructionResult, yieldAsGroup, yieldElement, yieldMeasurement } from '@/construction/results'
+import { createElementFromArea } from '@/construction/shapes'
 import {
+  TAG_INFILL,
   TAG_MODULE,
   TAG_MODULE_FRAME,
   TAG_MODULE_INFILL,
@@ -281,7 +283,11 @@ function* constructDoubleFrameModule(
   })
 }
 
-export function* constructModule(area: WallConstructionArea, config: ModuleConfig): Generator<ConstructionResult> {
+export function* constructModule(
+  area: WallConstructionArea,
+  config: ModuleConfig,
+  fallbackMaterial?: MaterialId
+): Generator<ConstructionResult> {
   const size = newVec3(area.size[0], area.size[1], area.minHeight)
   const configStr = JSON.stringify(config, Object.keys(config).sort())
   const partInfo: InitialPartInfo = {
@@ -294,5 +300,10 @@ export function* constructModule(area: WallConstructionArea, config: ModuleConfi
     yield* yieldAsGroup(constructDoubleFrameModule(area.position, size, config), [TAG_MODULE], undefined, partInfo)
   } else {
     throw new Error('Invalid module type')
+  }
+
+  if (area.minHeight < area.size[2] && fallbackMaterial) {
+    const remainingArea = area.withZAdjustment(area.minHeight)
+    yield* yieldElement(createElementFromArea(remainingArea, fallbackMaterial, [TAG_INFILL]))
   }
 }
