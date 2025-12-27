@@ -240,8 +240,6 @@ function isHeightItem(item: HeightJumpItem | HeightItem): item is HeightItem {
 /**
  * Split a WallConstructionArea at height jumps (discontinuities)
  * Returns array of continuous segments
- *
- * TODO: Make use of this
  */
 export function splitAtHeightJumps(area: WallConstructionArea): WallConstructionArea[] {
   if (!area.topOffsets || area.topOffsets.length === 0) {

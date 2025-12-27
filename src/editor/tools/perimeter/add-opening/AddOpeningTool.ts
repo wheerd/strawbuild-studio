@@ -18,7 +18,6 @@ import type { CanvasEvent, CursorStyle, ToolImplementation } from '@/editor/tool
 import { type Length, type Vec2, distVec2, lineFromSegment, newVec2, projectPointOntoLine } from '@/shared/geometry'
 
 import { AddOpeningToolInspector } from './AddOpeningToolInspector'
-// import { OpeningInspector } from '@/building/components/inspectors/OpeningInspector' // TODO: Fix interface compatibility
 import { AddOpeningToolOverlay } from './AddOpeningToolOverlay'
 
 interface PerimeterWallHit {

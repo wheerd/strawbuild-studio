@@ -1,4 +1,4 @@
-# Strawbaler Codebase Review
+# Strawbaler Codebase Review (from October 2025)
 
 ## Overview
 
@@ -17,7 +17,7 @@
 
 ### State & Persistence
 
-- The building model store (`src/building/store/index.ts:42`) combines slices for storeys and perimeters, wraps them with `immer` for ergonomic mutations, persists state to `localStorage`, and layers undo/redo through `zundo`.
+- The building model store (`src/building/store/index.ts`) combines slices for storeys and perimeters, wraps them with `immer` for ergonomic mutations, persists state to `localStorage`, and layers undo/redo through `zundo`.
 - Perimeter geometry and wall data are maintained in `src/building/store/slices/perimeterSlice.ts`, which recalculates wall directions, offsets, openings, and corner metadata whenever topology changes.
 - Storey management lives in `src/building/store/slices/storeysSlice.ts`, enforcing positive heights, preserving a default ground floor, and exposing helpers such as `adjustAllLevels`.
 - Configuration data (materials, wall methods, floors, ring beams) is centralized in `src/construction/config/store.ts`, persisted with Zustand middleware, and exposed through hooks/context (`ConfigurationModalContext`).
@@ -32,8 +32,8 @@
 
 ### Construction Rendering
 
-- `constructModel` (`src/construction/storey.ts:14`) walks ordered storeys, builds each perimeter via `constructPerimeter`, applies vertical offsets determined by floor configs, and merges results into a single `ConstructionModel`.
-- `constructPerimeter` (`src/construction/perimeter.ts:13`) retrieves the relevant storey, resolves assemblies, builds ring beams, constructs each wall via strategy-specific handlers, and then creates the floor footprint.
+- `constructModel` (`src/construction/storeys/storey.ts`) walks ordered storeys, builds each perimeter via `constructPerimeter`, applies vertical offsets determined by floor configs, and merges results into a single `ConstructionModel`.
+- `constructPerimeter` (`src/construction/perimeters/perimeter.ts`) retrieves the relevant storey, resolves assemblies, builds ring beams, constructs each wall via strategy-specific handlers, and then creates the floor footprint.
 - 2D plan rendering lives in `src/construction/components/ConstructionPlan.tsx`, projecting `ConstructionModel` elements into SVG, layering highlighted areas, errors, warnings, and auto-generated measurements.
 - The 3D viewer (`src/construction/viewer3d/ConstructionViewer3D.tsx`) renders the same construction model using `@react-three/fiber`, with orbit controls, grid helper, opacity controls, and export tooling.
 
@@ -48,26 +48,26 @@
 
 ### Perimeter Geometry & Model Foundation
 
-- Perimeter creation and mutation (`src/building/store/slices/perimeterSlice.ts:170`) generate walls and corners from polygon boundaries, prevent self-intersections, and recalculate wall vectors, offsets, and angles through `updatePerimeterGeometry` (`src/building/store/slices/perimeterSlice.ts:953`).
+- Perimeter creation and mutation (`src/building/store/slices/perimeterSlice.ts`) generate walls and corners from polygon boundaries, prevent self-intersections, and recalculate wall vectors, offsets, and angles through `updatePerimeterGeometry`.
 - Corner removal, wall splitting/merging, and opening validation are all handled in the same slice, guaranteeing consistent geometry before construction routines consume the data.
 
 ### Wall Segmentation & Construction Strategies
 
-- `segmentedWallConstruction` (`src/construction/walls/segmentation.ts:180`) calculates corner extensions, floor/ceiling offsets, plate areas, and partitions each wall into wall segments and opening segments. It emits highlighted areas (corners, plates, floor levels) and measurement tags.
-- Infill walls (`src/construction/walls/infill/infill.ts:6`) recursively place straw bales and posts while respecting max spacing/min straw space, generate measurement tags, and flag insufficient room via warnings/errors.
-- Strawhenge/module strategies (`src/construction/walls/strawhenge/strawhenge.ts:18`, `src/construction/walls/strawhenge/all-modules.ts:18`) layer modular frames with infill logic, tagging modules and recursing until spans are filled.
-- Non-strawbale walls (`src/construction/walls/index.ts:24`) fall back to solid cuboids while still leveraging segmentation for openings and measurement output.
+- `segmentedWallConstruction` (`src/construction/walls/segmentation.ts`) calculates corner extensions, floor/ceiling offsets, plate areas, and partitions each wall into wall segments and opening segments. It emits highlighted areas (corners, plates, floor levels) and measurement tags.
+- Infill walls (`src/construction/walls/infill/infill.ts`) recursively place straw bales and posts while respecting max spacing/min straw space, generate measurement tags, and flag insufficient room via warnings/errors.
+- Strawhenge/module strategies (`src/construction/walls/strawhenge/strawhenge.ts`, `src/construction/walls/strawhenge/all-modules.ts`) layer modular frames with infill logic, tagging modules and recursing until spans are filled.
+- Non-strawbale walls (`src/construction/walls/index.ts`) fall back to solid cuboids while still leveraging segmentation for openings and measurement output.
 
 ### Openings, Ring Beams, and Measurements
 
-- Opening framing (`src/construction/openings/openings.ts:1`) expands merged openings, builds header/sill elements, checks fit clearance, emits measurement lines for widths/heights, and drops highlighted areas per opening type.
-- Ring beams (`src/construction/ringBeams/ringBeams.ts:1`) offset the interior polygon, calculate miter cuts for each segment, and emit measurement/area tags. Full beams are implemented; double beams currently throw (see issues).
+- Opening framing (`src/construction/openings/openings.ts`) expands merged openings, builds header/sill elements, checks fit clearance, emits measurement lines for widths/heights, and drops highlighted areas per opening type.
+- Ring beams (`src/construction/ringBeams/ringBeams.ts`) offset the interior polygon, calculate miter cuts for each segment, and emit measurement/area tags. Full beams are implemented; double beams currently throw (see issues).
 - Measurement utilities (`src/construction/measurements.ts`) project 3D vectors to plan views, group co-linear dimensions, and ensure labels do not overlap by computing offsets from plan bounds.
 
 ### Slabs & Storey Context
 
-- Slab methods (`src/construction/floors`) expose interfaces for construction thickness and offsets. The monolithic implementation extrudes the construction polygon; the joist path is still marked TODO (`src/construction/floors/joists.ts:6`).
-- `createWallStoreyContext` (`src/construction/walls/segmentation.ts:163`) combines floor top/bottom offsets with storey heights to define construction heights for wall segments, informing floor-level cuts and plate placement.
+- Slab methods (`src/construction/floors`) expose interfaces for construction thickness and offsets. The monolithic implementation extrudes the construction polygon; the joist path is still marked TODO (`src/construction/floors/joists.ts`).
+- `createWallStoreyContext` (`src/construction/storeys/context.ts`) combines floor top/bottom offsets with storey heights to define construction heights for wall segments, informing floor-level cuts and plate placement.
 
 ### Materials, Tags, and Results
 

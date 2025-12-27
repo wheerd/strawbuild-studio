@@ -1,5 +1,7 @@
 # Internationalization (i18n) Implementation Plan for Strawbaler
 
+> **Status:** This is a planning document for future internationalization support. i18n is not currently implemented in Strawbaler. This document serves as a roadmap for when the project is ready to add multi-language support.
+
 ## Executive Summary
 
 This document outlines a comprehensive plan for implementing internationalization (i18n) in the Strawbaler application to support multiple languages and locale-specific number formatting. The plan focuses on translation support while maintaining metric units (no imperial unit conversion).

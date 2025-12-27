@@ -1,5 +1,4 @@
 # 🌾 Strawbaler Online
-
 [![CI](https://github.com/wheerd/strawbaler-online/workflows/CI/badge.svg)](https://github.com/wheerd/strawbaler-online/actions/workflows/ci.yml)
 [![Security](https://github.com/wheerd/strawbaler-online/workflows/Security%20&%20Dependencies/badge.svg)](https://github.com/wheerd/strawbaler-online/actions/workflows/security.yml)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/0c31f906-f421-426d-b6af-d0f69ae3ea83/deploy-status)](https://app.netlify.com/projects/strawbaler/deploys)
@@ -68,9 +67,10 @@ pnpm build        # Build for production
 - **Canvas Rendering**: Konva.js with react-konva
 - **3D Rendering**: Three.js via react-three
 - **State Management**: Zustand with immer, persist and zundo middlewares
-- **Geometry**: clipper2-wasm, gl-matrix
+- **Geometry**: clipper2-wasm, gl-matrix, manifold-3d
+- **IFC**: web-ifc
 - **PWA**: with workbox and vite-pwa-plugin
-- **Testing**: Vitest + React Testing Library + jsdom
+- **Testing**: Vitest + React Testing Library + jsdom, Playwright
 - **Build Tool**: Vite
 - **Code Style**: neostandard, prettier, eslint
 
@@ -112,9 +112,6 @@ The application stores data locally in your browser to:
 # Run all tests with coverage
 pnpm test
 
-# Run specific test file
-pnpm test wall-creation.test.tsx
-
 # Run tests in watch mode
 pnpm test:watch
 ```
@@ -153,14 +150,6 @@ This project includes comprehensive CI/CD workflows:
 - **CI**: Tests, linting, and builds on every push/PR
 - **Security**: Dependency auditing
 - **Dependencies**: Weekly automated dependency updates
-
-## 🎯 Roadmap
-
-- [ ] Enhanced room editing tools
-- [ ] Roof and foundation support
-- [ ] Import functionality for CAD files or PDF
-- [ ] Export functionality (PDF, DXF)
-- [ ] Material estimation calculations
 
 ## 🐛 Known Issues
 
