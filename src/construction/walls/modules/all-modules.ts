@@ -15,28 +15,6 @@ import { Bounds3D } from '@/shared/geometry'
 
 import { constructModule } from './modules'
 
-export function* moduleWallArea(
-  area: WallConstructionArea,
-  config: ModulesWallConfig,
-  startsWithStand = false,
-  endsWithStand = false,
-  startAtEnd = false
-): Generator<ConstructionResult> {
-  const { module, infill } = config
-  const infillMaterial = config.infill.infillMaterial ?? config.infill.strawMaterial
-
-  let remainingArea = area
-  while (remainingArea.size[0] >= module.minWidth) {
-    const [a, b] = remainingArea.splitInX(startAtEnd ? remainingArea.size[0] - module.maxWidth : module.maxWidth)
-    remainingArea = startAtEnd ? a : b
-    const moduleArea = startAtEnd ? b : a
-    yield* constructModule(moduleArea, module, infillMaterial)
-  }
-  if (remainingArea.size[0] > 0) {
-    yield* infillWallArea(remainingArea, infill, startsWithStand, endsWithStand, startAtEnd)
-  }
-}
-
 export class ModulesWallAssembly extends BaseWallAssembly<ModulesWallConfig> {
   construct(wall: PerimeterWall, perimeter: Perimeter, storeyContext: StoreyContext): ConstructionModel {
     const allResults = Array.from(
@@ -45,8 +23,7 @@ export class ModulesWallAssembly extends BaseWallAssembly<ModulesWallConfig> {
         perimeter,
         storeyContext,
         this.config.layers,
-        (area, startsWithStand, endsWithStand, startAtEnd) =>
-          moduleWallArea(area, this.config, startsWithStand, endsWithStand, startAtEnd),
+        this.moduleWallArea.bind(this),
         area => infillWallArea(area, this.config.infill),
         this.config.openingAssemblyId
       )
@@ -65,6 +42,27 @@ export class ModulesWallAssembly extends BaseWallAssembly<ModulesWallConfig> {
     const layerModel = constructWallLayers(wall, perimeter, storeyContext, this.config.layers)
 
     return mergeModels(baseModel, layerModel)
+  }
+
+  private *moduleWallArea(
+    area: WallConstructionArea,
+    startsWithStand = false,
+    endsWithStand = false,
+    startAtEnd = false
+  ): Generator<ConstructionResult> {
+    const { module, infill } = this.config
+    const infillMaterial = infill.infillMaterial ?? infill.strawMaterial
+
+    let remainingArea = area
+    while (remainingArea.size[0] >= module.minWidth) {
+      const [a, b] = remainingArea.splitInX(startAtEnd ? remainingArea.size[0] - module.maxWidth : module.maxWidth)
+      remainingArea = startAtEnd ? a : b
+      const moduleArea = startAtEnd ? b : a
+      yield* constructModule(moduleArea, module, infillMaterial)
+    }
+    if (remainingArea.size[0] > 0) {
+      yield* infillWallArea(remainingArea, infill, startsWithStand, endsWithStand, startAtEnd)
+    }
   }
 
   readonly tag = TAG_INFILL_CONSTRUCTION

@@ -10,7 +10,18 @@ import { infillWallArea } from '@/construction/walls/infill/infill'
 import { type Vec3, newVec3 } from '@/shared/geometry'
 
 import { constructModule } from './modules'
-import { strawhengeWallArea } from './strawhenge'
+import { StrawhengeWallAssembly } from './strawhenge'
+
+class TestStrawhengeWallAssembly extends StrawhengeWallAssembly {
+  public strawhengeWallArea(
+    area: WallConstructionArea,
+    startsWithStand = false,
+    endsWithStand = false,
+    startAtEnd = false
+  ) {
+    return super.strawhengeWallArea(area, startsWithStand, endsWithStand, startAtEnd)
+  }
+}
 
 // Mock dependencies
 vi.mock('@/construction/materials/straw', () => ({
@@ -118,6 +129,7 @@ function extractSnapshotData(results: any[]) {
 
 describe('Strawhenge Wall Construction', () => {
   const config = createTestConfig()
+  const assembly = new TestStrawhengeWallAssembly(config)
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -133,9 +145,8 @@ describe('Strawhenge Wall Construction', () => {
       const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(MODULE_WIDTH, 360, 2000))
 
       Array.from(
-        strawhengeWallArea(
+        assembly.strawhengeWallArea(
           area,
-          config,
           false,
           false,
           false // No stands
@@ -154,9 +165,8 @@ describe('Strawhenge Wall Construction', () => {
       )
 
       Array.from(
-        strawhengeWallArea(
+        assembly.strawhengeWallArea(
           area,
-          config,
           false,
           false,
           false // No stands
@@ -174,9 +184,8 @@ describe('Strawhenge Wall Construction', () => {
       )
 
       Array.from(
-        strawhengeWallArea(
+        assembly.strawhengeWallArea(
           area,
-          config,
           true,
           true,
           false // Has stands but too small
@@ -193,7 +202,7 @@ describe('Strawhenge Wall Construction', () => {
     it('should create single module when size equals module width', () => {
       const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(MODULE_WIDTH, 360, 2000))
 
-      Array.from(strawhengeWallArea(area, config, true, true, false))
+      Array.from(assembly.strawhengeWallArea(area, true, true, false))
 
       // Should call module construction, not infill
       expect(mockConstructModule).toHaveBeenCalledWith(area, config.module, 'infill-material')
@@ -208,7 +217,7 @@ describe('Strawhenge Wall Construction', () => {
         newVec3(MODULE_WIDTH + FULL_BALE + MODULE_WIDTH, 360, 2000) // 1400
       )
 
-      Array.from(strawhengeWallArea(area, config, true, true, false))
+      Array.from(assembly.strawhengeWallArea(area, true, true, false))
 
       // Should call both module and straw construction
       expect(mockConstructModule).toHaveBeenCalled()
@@ -220,7 +229,7 @@ describe('Strawhenge Wall Construction', () => {
     it.each(WALL_LENGTHS)('should produce consistent layout for length %s', wallLength => {
       const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(wallLength, 360, 2000))
 
-      const results = Array.from(strawhengeWallArea(area, config, true, true, false))
+      const results = Array.from(assembly.strawhengeWallArea(area, true, true, false))
 
       const snapshotData = extractSnapshotData(results)
       expect(snapshotData).toMatchSnapshot(`wall-length-${wallLength}-startAtEnd-false`)
@@ -231,7 +240,7 @@ describe('Strawhenge Wall Construction', () => {
     it.each(WALL_LENGTHS)('should produce consistent layout for length %s', wallLength => {
       const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(wallLength, 360, 2000))
 
-      const results = Array.from(strawhengeWallArea(area, config, true, true, true))
+      const results = Array.from(assembly.strawhengeWallArea(area, true, true, true))
 
       const snapshotData = extractSnapshotData(results)
       expect(snapshotData).toMatchSnapshot(`wall-length-${wallLength}-startAtEnd-true`)
@@ -243,9 +252,8 @@ describe('Strawhenge Wall Construction', () => {
       const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(MODULE_WIDTH * 2, 360, 2000))
 
       Array.from(
-        strawhengeWallArea(
+        assembly.strawhengeWallArea(
           area,
-          config,
           true,
           false,
           false // Only start stand
@@ -267,9 +275,8 @@ describe('Strawhenge Wall Construction', () => {
       const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(MODULE_WIDTH * 2, 360, 2000))
 
       Array.from(
-        strawhengeWallArea(
+        assembly.strawhengeWallArea(
           area,
-          config,
           false,
           true,
           false // Only end stand
@@ -294,12 +301,12 @@ describe('Strawhenge Wall Construction', () => {
       const smallerArea = new WallConstructionArea(newVec3(0, 0, 0), newVec3(MODULE_WIDTH - 1, 360, 2000))
 
       // Test module construction
-      Array.from(strawhengeWallArea(area, config, true, true, false))
+      Array.from(assembly.strawhengeWallArea(area, true, true, false))
       expect(mockConstructModule).toHaveBeenCalled()
 
       // Reset and test infill fallback
       vi.clearAllMocks()
-      Array.from(strawhengeWallArea(smallerArea, config, true, true, false))
+      Array.from(assembly.strawhengeWallArea(smallerArea, true, true, false))
       expect(mockInfillWallArea).toHaveBeenCalled()
     })
   })

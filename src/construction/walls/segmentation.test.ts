@@ -25,12 +25,12 @@ import {
   TAG_WALL_HEIGHT,
   TAG_WALL_LENGTH
 } from '@/construction/tags'
-import type { InfillMethod, WallLayersConfig, WallSegmentConstruction } from '@/construction/walls'
+import type { InfillMethod, WallLayersConfig } from '@/construction/walls'
 import { Bounds3D, IDENTITY, type Length, type Vec3, ZERO_VEC2, newVec2, newVec3 } from '@/shared/geometry'
 
 import type { WallCornerInfo } from './construction'
 import { calculateWallCornerInfo, getWallContext } from './corners/corners'
-import { segmentedWallConstruction } from './segmentation'
+import { type WallSegmentConstruction, segmentedWallConstruction } from './segmentation'
 
 // Mock dependencies
 vi.mock('./corners/corners', () => ({

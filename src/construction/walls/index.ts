@@ -21,11 +21,3 @@ export function resolveWallAssembly(config: WallConfig): WallAssembly {
 
 export * from './types'
 export * from './construction'
-export * from './segmentation'
-export * from './corners/corners'
-export * from './infill/infill'
-export * from './modules/strawhenge'
-export * from './modules/all-modules'
-export * from './nonStrawbale'
-export * from './layers'
-export { InfillWallAssembly, ModulesWallAssembly, StrawhengeWallAssembly, NonStrawbaleWallAssembly }

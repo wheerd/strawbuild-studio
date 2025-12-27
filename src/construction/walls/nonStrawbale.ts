@@ -18,19 +18,6 @@ import { convertHeightLineToWallOffsets, getRoofHeightLineForLines } from '@/con
 import { segmentedWallConstruction } from '@/construction/walls/segmentation'
 import { Bounds3D, type Length, fromTrans, newVec2, newVec3 } from '@/shared/geometry'
 
-function* noopWallSegment(
-  _area: WallConstructionArea,
-  _startsWithStand: boolean,
-  _endsWithStand: boolean,
-  _startAtEnd: boolean
-): Generator<ConstructionResult> {
-  // Intentionally empty - structural wall handled as a single extruded polygon
-}
-
-function* noopInfill(_area: WallConstructionArea): Generator<ConstructionResult> {
-  // Intentionally empty - openings are handled by polygon holes
-}
-
 export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallConfig> {
   construct(wall: PerimeterWall, perimeter: Perimeter, storeyContext: StoreyContext): ConstructionModel {
     const wallContext = getWallContext(wall, perimeter)
@@ -97,8 +84,8 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
         perimeter,
         storeyContext,
         this.config.layers,
-        noopWallSegment,
-        noopInfill,
+        this.noopWallSegment,
+        this.noopInfill,
         this.config.openingAssemblyId
       )
     )
@@ -120,6 +107,19 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
     const layerModel = constructWallLayers(wall, perimeter, storeyContext, this.config.layers)
 
     return mergeModels(baseModel, layerModel)
+  }
+
+  private *noopWallSegment(
+    _area: WallConstructionArea,
+    _startsWithStand: boolean,
+    _endsWithStand: boolean,
+    _startAtEnd: boolean
+  ): Generator<ConstructionResult> {
+    // Intentionally empty - structural wall handled as a single extruded polygon
+  }
+
+  private *noopInfill(_area: WallConstructionArea): Generator<ConstructionResult> {
+    // Intentionally empty - openings are handled by polygon holes
   }
 
   readonly tag = TAG_NON_STRAWBALE_CONSTRUCTION
