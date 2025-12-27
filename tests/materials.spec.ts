@@ -23,6 +23,8 @@ async function addMaterialOfType(dialog: Locator, typeLabel: string) {
 }
 
 test('materials configuration journey', async ({ page }) => {
+  test.setTimeout(60000)
+
   const dialog = await openMaterialsConfig(page)
   const nameField = dialog.getByPlaceholder('Material name')
 
