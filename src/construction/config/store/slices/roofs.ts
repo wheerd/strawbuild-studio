@@ -66,6 +66,7 @@ export interface RoofAssembliesActions {
   // Default management
   setDefaultRoofAssembly: (configId: RoofAssemblyId) => void
   getDefaultRoofAssemblyId: () => RoofAssemblyId
+  resetRoofAssembliesToDefaults: () => void
 }
 
 export type RoofAssembliesSlice = RoofAssembliesState & { actions: RoofAssembliesActions }
@@ -525,6 +526,32 @@ export const createRoofAssembliesSlice: StateCreator<
           return {
             ...state,
             roofAssemblyConfigs: { ...state.roofAssemblyConfigs, [id]: updatedConfig }
+          }
+        })
+      },
+
+      resetRoofAssembliesToDefaults: () => {
+        set(state => {
+          // Get default assembly IDs
+          const defaultIds = DEFAULT_ROOF_ASSEMBLIES.map(a => a.id)
+
+          // Keep only custom assemblies (non-default)
+          const customAssemblies = Object.fromEntries(
+            Object.entries(state.roofAssemblyConfigs).filter(([id]) => !defaultIds.includes(id as RoofAssemblyId))
+          )
+
+          // Add fresh default assemblies
+          const resetAssemblies = Object.fromEntries(DEFAULT_ROOF_ASSEMBLIES.map(assembly => [assembly.id, assembly]))
+
+          // Preserve user's default assembly choice if it's a custom assembly, otherwise reset to default
+          const newDefaultId = defaultIds.includes(state.defaultRoofAssemblyId)
+            ? DEFAULT_ROOF_ASSEMBLY_ID
+            : state.defaultRoofAssemblyId
+
+          return {
+            ...state,
+            roofAssemblyConfigs: { ...resetAssemblies, ...customAssemblies },
+            defaultRoofAssemblyId: newDefaultId
           }
         })
       }

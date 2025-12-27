@@ -1,4 +1,4 @@
-import { CopyIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons'
+import { CopyIcon, PlusIcon, ResetIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
 import {
   AlertDialog,
@@ -47,8 +47,13 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
   const ringBeamAssemblies = useRingBeamAssemblies()
   const perimeters = usePerimeters()
   const storeys = useStoreysOrderedByLevel()
-  const { addRingBeamAssembly, removeRingBeamAssembly, setDefaultBaseRingBeamAssembly, setDefaultTopRingBeamAssembly } =
-    useConfigActions()
+  const {
+    addRingBeamAssembly,
+    removeRingBeamAssembly,
+    setDefaultBaseRingBeamAssembly,
+    setDefaultTopRingBeamAssembly,
+    resetRingBeamAssembliesToDefaults
+  } = useConfigActions()
 
   const defaultBaseId = useDefaultBaseRingBeamAssemblyId()
   const defaultTopId = useDefaultTopRingBeamAssemblyId()
@@ -135,6 +140,15 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
     }
   }, [selectedAssembly, selectedAssemblyId, ringBeamAssemblies, removeRingBeamAssembly, usage.isUsed])
 
+  const handleReset = useCallback(() => {
+    resetRingBeamAssembliesToDefaults()
+    // Keep selection if it still exists after reset
+    const stillExists = ringBeamAssemblies.some(a => a.id === selectedAssemblyId)
+    if (!stillExists && ringBeamAssemblies.length > 0) {
+      setSelectedAssemblyId(ringBeamAssemblies[0].id)
+    }
+  }, [resetRingBeamAssembliesToDefaults, selectedAssemblyId, ringBeamAssemblies])
+
   return (
     <Flex direction="column" gap="4" width="100%">
       {/* Selector + Actions */}
@@ -205,6 +219,33 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
                 <AlertDialog.Action>
                   <Button variant="solid" color="red" onClick={handleDelete}>
                     Delete
+                  </Button>
+                </AlertDialog.Action>
+              </Flex>
+            </AlertDialog.Content>
+          </AlertDialog.Root>
+
+          <AlertDialog.Root>
+            <AlertDialog.Trigger>
+              <IconButton color="red" variant="outline" title="Reset to Defaults">
+                <ResetIcon />
+              </IconButton>
+            </AlertDialog.Trigger>
+            <AlertDialog.Content>
+              <AlertDialog.Title>Reset Ring Beam Assemblies</AlertDialog.Title>
+              <AlertDialog.Description>
+                Are you sure you want to reset default ring beam assemblies? This will restore the original default
+                assemblies but keep any custom assemblies you've created. This action cannot be undone.
+              </AlertDialog.Description>
+              <Flex gap="3" mt="4" justify="end">
+                <AlertDialog.Cancel>
+                  <Button variant="soft" color="gray">
+                    Cancel
+                  </Button>
+                </AlertDialog.Cancel>
+                <AlertDialog.Action>
+                  <Button variant="solid" color="red" onClick={handleReset}>
+                    Reset
                   </Button>
                 </AlertDialog.Action>
               </Flex>

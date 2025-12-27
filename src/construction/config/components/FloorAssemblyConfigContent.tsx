@@ -1,4 +1,4 @@
-import { CopyIcon, InfoCircledIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons'
+import { CopyIcon, InfoCircledIcon, PlusIcon, ResetIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
 import {
   AlertDialog,
@@ -48,7 +48,13 @@ export interface FloorAssemblyConfigContentProps {
 export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssemblyConfigContentProps): React.JSX.Element {
   const floorAssemblies = useFloorAssemblies()
   const storeys = useStoreysOrderedByLevel()
-  const { addFloorAssembly, duplicateFloorAssembly, removeFloorAssembly, setDefaultFloorAssembly } = useConfigActions()
+  const {
+    addFloorAssembly,
+    duplicateFloorAssembly,
+    removeFloorAssembly,
+    setDefaultFloorAssembly,
+    resetFloorAssembliesToDefaults
+  } = useConfigActions()
 
   const defaultConfigId = useDefaultFloorAssemblyId()
 
@@ -166,6 +172,15 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
     }
   }, [selectedConfig, selectedConfigId, floorAssemblies, removeFloorAssembly, usage.isUsed])
 
+  const handleReset = useCallback(() => {
+    resetFloorAssembliesToDefaults()
+    // Keep selection if it still exists after reset
+    const stillExists = floorAssemblies.some(a => a.id === selectedConfigId)
+    if (!stillExists && floorAssemblies.length > 0) {
+      setSelectedConfigId(floorAssemblies[0].id)
+    }
+  }, [resetFloorAssembliesToDefaults, selectedConfigId, floorAssemblies])
+
   return (
     <Flex direction="column" gap="4" width="100%">
       {/* Selector + Actions */}
@@ -244,6 +259,33 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
                 <AlertDialog.Action>
                   <Button variant="solid" color="red" onClick={handleDelete}>
                     Delete
+                  </Button>
+                </AlertDialog.Action>
+              </Flex>
+            </AlertDialog.Content>
+          </AlertDialog.Root>
+
+          <AlertDialog.Root>
+            <AlertDialog.Trigger>
+              <IconButton color="red" variant="outline" title="Reset to Defaults">
+                <ResetIcon />
+              </IconButton>
+            </AlertDialog.Trigger>
+            <AlertDialog.Content>
+              <AlertDialog.Title>Reset Floor Assemblies</AlertDialog.Title>
+              <AlertDialog.Description>
+                Are you sure you want to reset default floor assemblies? This will restore the original default
+                assemblies but keep any custom assemblies you've created. This action cannot be undone.
+              </AlertDialog.Description>
+              <Flex gap="3" mt="4" justify="end">
+                <AlertDialog.Cancel>
+                  <Button variant="soft" color="gray">
+                    Cancel
+                  </Button>
+                </AlertDialog.Cancel>
+                <AlertDialog.Action>
+                  <Button variant="solid" color="red" onClick={handleReset}>
+                    Reset
                   </Button>
                 </AlertDialog.Action>
               </Flex>

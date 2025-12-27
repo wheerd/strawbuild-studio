@@ -1,4 +1,4 @@
-import { CopyIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons'
+import { CopyIcon, PlusIcon, ResetIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
 import {
   AlertDialog,
@@ -51,8 +51,13 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
   const wallAssemblies = useWallAssemblies()
   const perimeters = usePerimeters()
   const storeys = useStoreysOrderedByLevel()
-  const { addOpeningAssembly, removeOpeningAssembly, duplicateOpeningAssembly, setDefaultOpeningAssembly } =
-    useConfigActions()
+  const {
+    addOpeningAssembly,
+    removeOpeningAssembly,
+    duplicateOpeningAssembly,
+    setDefaultOpeningAssembly,
+    resetOpeningAssembliesToDefaults
+  } = useConfigActions()
 
   const defaultId = useDefaultOpeningAssemblyId()
 
@@ -147,6 +152,15 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
     }
   }, [selectedAssembly, selectedAssemblyId, allAssemblies, removeOpeningAssembly, usage.isUsed])
 
+  const handleReset = useCallback(() => {
+    resetOpeningAssembliesToDefaults()
+    // Keep selection if it still exists after reset
+    const stillExists = allAssemblies.some(a => a.id === selectedAssemblyId)
+    if (!stillExists && allAssemblies.length > 0) {
+      setSelectedAssemblyId(allAssemblies[0].id)
+    }
+  }, [resetOpeningAssembliesToDefaults, selectedAssemblyId, allAssemblies])
+
   if (!selectedAssembly) {
     return (
       <Flex direction="column" gap="4" width="100%">
@@ -223,6 +237,33 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
                 <AlertDialog.Action>
                   <Button variant="solid" color="red" onClick={handleDelete}>
                     Delete
+                  </Button>
+                </AlertDialog.Action>
+              </Flex>
+            </AlertDialog.Content>
+          </AlertDialog.Root>
+
+          <AlertDialog.Root>
+            <AlertDialog.Trigger>
+              <IconButton color="red" variant="outline" title="Reset to Defaults">
+                <ResetIcon />
+              </IconButton>
+            </AlertDialog.Trigger>
+            <AlertDialog.Content>
+              <AlertDialog.Title>Reset Opening Assemblies</AlertDialog.Title>
+              <AlertDialog.Description>
+                Are you sure you want to reset default opening assemblies? This will restore the original default
+                assemblies but keep any custom assemblies you've created. This action cannot be undone.
+              </AlertDialog.Description>
+              <Flex gap="3" mt="4" justify="end">
+                <AlertDialog.Cancel>
+                  <Button variant="soft" color="gray">
+                    Cancel
+                  </Button>
+                </AlertDialog.Cancel>
+                <AlertDialog.Action>
+                  <Button variant="solid" color="red" onClick={handleReset}>
+                    Reset
                   </Button>
                 </AlertDialog.Action>
               </Flex>

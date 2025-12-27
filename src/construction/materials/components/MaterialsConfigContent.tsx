@@ -169,7 +169,13 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
     [selectedMaterial, updateMaterial]
   )
 
-  const handleReset = useCallback(() => reset(), [reset])
+  const handleReset = useCallback(() => {
+    reset()
+    const stillExists = materials.some(a => a.id === selectedMaterialId)
+    if (!stillExists && materials.length > 0) {
+      setSelectedMaterialId(materials[0].id)
+    }
+  }, [reset, setSelectedMaterialId, materials, selectedMaterialId])
 
   const Icon = selectedMaterial ? getMaterialTypeIcon(selectedMaterial.type) : null
 

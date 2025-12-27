@@ -29,6 +29,7 @@ export interface OpeningAssembliesActions {
   // Default opening assembly management
   setDefaultOpeningAssembly: (assemblyId: OpeningAssemblyId) => void
   getDefaultOpeningAssemblyId: () => OpeningAssemblyId
+  resetOpeningAssembliesToDefaults: () => void
 }
 
 export type OpeningAssembliesSlice = OpeningAssembliesState & { actions: OpeningAssembliesActions }
@@ -168,6 +169,34 @@ export const createOpeningAssembliesSlice: StateCreator<
       getDefaultOpeningAssemblyId: () => {
         const state = get()
         return state.defaultOpeningAssemblyId
+      },
+
+      resetOpeningAssembliesToDefaults: () => {
+        set(state => {
+          // Get default assembly IDs
+          const defaultIds = DEFAULT_OPENING_ASSEMBLIES.map(a => a.id)
+
+          // Keep only custom assemblies (non-default)
+          const customAssemblies = Object.fromEntries(
+            Object.entries(state.openingAssemblyConfigs).filter(([id]) => !defaultIds.includes(id as OpeningAssemblyId))
+          )
+
+          // Add fresh default assemblies
+          const resetAssemblies = Object.fromEntries(
+            DEFAULT_OPENING_ASSEMBLIES.map(assembly => [assembly.id, assembly])
+          )
+
+          // Preserve user's default assembly choice if it's a custom assembly, otherwise reset to default
+          const newDefaultId = defaultIds.includes(state.defaultOpeningAssemblyId)
+            ? DEFAULT_OPENING_ASSEMBLY_ID
+            : state.defaultOpeningAssemblyId
+
+          return {
+            ...state,
+            openingAssemblyConfigs: { ...resetAssemblies, ...customAssemblies },
+            defaultOpeningAssemblyId: newDefaultId
+          }
+        })
       }
     } satisfies OpeningAssembliesActions
   }

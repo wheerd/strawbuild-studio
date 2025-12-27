@@ -9,25 +9,11 @@ import {
   sumLayerThickness,
   updateLayerAt
 } from '@/construction/config/store/layerUtils'
-import { DEFAULT_EMPTY_ASSEMBLY } from '@/construction/config/store/slices/opening.defaults'
-import type {
-  InfillWallAssemblyConfig,
-  ModulesWallAssemblyConfig,
-  NonStrawbaleWallAssemblyConfig,
-  StrawhengeWallAssemblyConfig,
-  WallAssemblyConfig
-} from '@/construction/config/types'
-import { DEFAULT_WALL_LAYER_SETS } from '@/construction/layers/defaults'
+import type { WallAssemblyConfig } from '@/construction/config/types'
 import type { LayerConfig } from '@/construction/layers/types'
-import {
-  type MaterialId,
-  concrete,
-  limePlasterBase,
-  limePlasterFine,
-  roughWood,
-  strawbale
-} from '@/construction/materials/material'
 import { type WallConfig, validateWallConfig } from '@/construction/walls/types'
+
+import { DEFAULT_WALL_ASSEMBLIES, DEFAULT_WALL_ASSEMBLY_ID } from './walls.defaults'
 
 export interface WallAssembliesState {
   wallAssemblyConfigs: Record<WallAssemblyId, WallAssemblyConfig>
@@ -69,6 +55,7 @@ export interface WallAssembliesActions {
   // Default wall assembly management
   setDefaultWallAssembly: (assemblyId: WallAssemblyId) => void
   getDefaultWallAssemblyId: () => WallAssemblyId
+  resetWallAssembliesToDefaults: () => void
 }
 
 export type WallAssembliesSlice = WallAssembliesState & { actions: WallAssembliesActions }
@@ -80,121 +67,15 @@ const validateWallAssemblyName = (name: string): void => {
   }
 }
 
-// Default wall assemblies
-const createDefaultWallAssemblies = (): WallAssemblyConfig[] => [
-  {
-    id: 'wa_infill_default' as WallAssemblyId,
-    name: 'Standard Infill',
-    type: 'infill',
-    maxPostSpacing: 900,
-    desiredPostSpacing: 800,
-    minStrawSpace: 70,
-    posts: {
-      type: 'double',
-      width: 60,
-      thickness: 120,
-      infillMaterial: strawbale.id,
-      material: roughWood.id
-    },
-    // No openingAssemblyId - uses global default
-    layers: {
-      insideThickness: 30,
-      insideLayers: DEFAULT_WALL_LAYER_SETS['Clay Plaster'],
-      outsideThickness: 30,
-      outsideLayers: DEFAULT_WALL_LAYER_SETS['Lime Plaster']
-    }
-  } as InfillWallAssemblyConfig,
-  {
-    id: 'wa_strawhenge_default' as WallAssemblyId,
-    name: 'Strawhenge Module',
-    type: 'strawhenge',
-    module: {
-      minWidth: 920,
-      maxWidth: 920,
-      type: 'single',
-      frameThickness: 60,
-      frameMaterial: roughWood.id,
-      strawMaterial: strawbale.id
-    },
-    infill: {
-      maxPostSpacing: 900,
-      desiredPostSpacing: 800,
-      minStrawSpace: 70,
-      posts: {
-        type: 'full',
-        width: 60,
-        material: roughWood.id
-      }
-    },
-    // No openingAssemblyId - uses global default
-    layers: {
-      insideThickness: 30,
-      insideLayers: DEFAULT_WALL_LAYER_SETS['Clay Plaster'],
-      outsideThickness: 30,
-      outsideLayers: DEFAULT_WALL_LAYER_SETS['Lime Plaster']
-    }
-  } as StrawhengeWallAssemblyConfig,
-  {
-    id: 'wa_module_default' as WallAssemblyId,
-    name: 'Default Module',
-    type: 'modules',
-    module: {
-      minWidth: 920,
-      maxWidth: 920,
-      type: 'single',
-      frameThickness: 60,
-      frameMaterial: roughWood.id,
-      strawMaterial: strawbale.id
-    },
-    infill: {
-      maxPostSpacing: 900,
-      desiredPostSpacing: 800,
-      minStrawSpace: 70,
-      posts: {
-        type: 'full',
-        width: 60,
-        material: roughWood.id
-      }
-    },
-    // No openingAssemblyId - uses global default
-    layers: {
-      insideThickness: 30,
-      insideLayers: DEFAULT_WALL_LAYER_SETS['Clay Plaster'],
-      outsideThickness: 30,
-      outsideLayers: DEFAULT_WALL_LAYER_SETS['Lime Plaster']
-    }
-  } as ModulesWallAssemblyConfig,
-  {
-    id: 'wa_non_strawbale_default' as WallAssemblyId,
-    name: 'Concrete Wall',
-    type: 'non-strawbale',
-    material: concrete.id,
-    openingAssemblyId: DEFAULT_EMPTY_ASSEMBLY.id, // Non-strawbale walls use empty opening type
-    layers: {
-      insideThickness: 30,
-      insideLayers: DEFAULT_WALL_LAYER_SETS['Clay Plaster'],
-      outsideThickness: 160 + 30,
-      outsideLayers: [
-        { type: 'monolithic', name: 'Insulation', material: 'material_invalid' as MaterialId, thickness: 160 },
-        { type: 'monolithic', name: 'Base Plaster (Lime)', material: limePlasterBase.id, thickness: 20 },
-        { type: 'monolithic', name: 'Fine Plaster (Lime)', material: limePlasterFine.id, thickness: 10 }
-      ]
-    }
-  } as NonStrawbaleWallAssemblyConfig
-]
-
 export const createWallAssembliesSlice: StateCreator<
   WallAssembliesSlice,
   [['zustand/immer', never]],
   [],
   WallAssembliesSlice
 > = (set, get) => {
-  // Initialize with default assemblies
-  const defaultWallAssemblies = createDefaultWallAssemblies()
-
   return {
-    wallAssemblyConfigs: Object.fromEntries(defaultWallAssemblies.map(assembly => [assembly.id, assembly])),
-    defaultWallAssemblyId: defaultWallAssemblies[0].id,
+    wallAssemblyConfigs: Object.fromEntries(DEFAULT_WALL_ASSEMBLIES.map(assembly => [assembly.id, assembly])),
+    defaultWallAssemblyId: DEFAULT_WALL_ASSEMBLY_ID,
 
     actions: {
       // CRUD operations
@@ -540,6 +421,32 @@ export const createWallAssembliesSlice: StateCreator<
           return {
             ...state,
             wallAssemblyConfigs: { ...state.wallAssemblyConfigs, [id]: updatedAssembly }
+          }
+        })
+      },
+
+      resetWallAssembliesToDefaults: () => {
+        set(state => {
+          // Get default assembly IDs
+          const defaultIds = DEFAULT_WALL_ASSEMBLIES.map(a => a.id)
+
+          // Keep only custom assemblies (non-default)
+          const customAssemblies = Object.fromEntries(
+            Object.entries(state.wallAssemblyConfigs).filter(([id]) => !defaultIds.includes(id as WallAssemblyId))
+          )
+
+          // Add fresh default assemblies
+          const resetAssemblies = Object.fromEntries(DEFAULT_WALL_ASSEMBLIES.map(assembly => [assembly.id, assembly]))
+
+          // Preserve user's default assembly choice if it's a custom assembly, otherwise reset to default
+          const newDefaultId = defaultIds.includes(state.defaultWallAssemblyId)
+            ? DEFAULT_WALL_ASSEMBLY_ID
+            : state.defaultWallAssemblyId
+
+          return {
+            ...state,
+            wallAssemblyConfigs: { ...resetAssemblies, ...customAssemblies },
+            defaultWallAssemblyId: newDefaultId
           }
         })
       }

@@ -2,13 +2,14 @@ import { type StateCreator } from 'zustand'
 
 import type { RingBeamAssemblyId } from '@/building/model/ids'
 import { createRingBeamAssemblyId } from '@/building/model/ids'
-import type {
-  BrickRingBeamAssemblyConfig,
-  FullRingBeamAssemblyConfig,
-  RingBeamAssemblyConfig
-} from '@/construction/config/types'
-import { bitumen, brick, cork, roughWood } from '@/construction/materials/material'
+import type { RingBeamAssemblyConfig } from '@/construction/config/types'
 import { type RingBeamConfig, validateRingBeamConfig } from '@/construction/ringBeams/types'
+
+import {
+  DEFAULT_RING_BEAM_ASSEMBLIES,
+  DEFAULT_RING_BEAM_BASE_ASSEMBLY_ID,
+  DEFAULT_RING_BEAM_TOP_ASSEMBLY_ID
+} from './ringBeams.defaults'
 
 export interface RingBeamAssembliesState {
   ringBeamAssemblyConfigs: Record<RingBeamAssemblyId, RingBeamAssemblyConfig>
@@ -32,6 +33,7 @@ export interface RingBeamAssembliesActions {
   setDefaultTopRingBeamAssembly: (assemblyId: RingBeamAssemblyId | undefined) => void
   getDefaultBaseRingBeamAssemblyId: () => RingBeamAssemblyId | undefined
   getDefaultTopRingBeamAssemblyId: () => RingBeamAssemblyId | undefined
+  resetRingBeamAssembliesToDefaults: () => void
 }
 
 export type RingBeamAssembliesSlice = RingBeamAssembliesState & { actions: RingBeamAssembliesActions }
@@ -43,53 +45,16 @@ const validateRingBeamName = (name: string): void => {
   }
 }
 
-// Config validation is handled by the construction module
-
-// Default ring beam assembly using 360x60 wood
-const createDefaultRingBeamAssembly = (): FullRingBeamAssemblyConfig => ({
-  id: 'ringbeam_default' as RingBeamAssemblyId,
-  name: 'Full 36x6cm',
-  type: 'full',
-  material: roughWood.id,
-  height: 60,
-  width: 360,
-  offsetFromEdge: 0
-})
-
-// Default brick ring beam assembly
-const createDefaultBrickRingBeamAssembly = (): BrickRingBeamAssemblyConfig => ({
-  id: 'ringbeam_brick_default' as RingBeamAssemblyId,
-  name: 'Brick Ring Beam',
-  type: 'brick',
-  wallHeight: 300,
-  wallWidth: 250,
-  wallMaterial: brick.id,
-  beamThickness: 60,
-  beamWidth: 360,
-  beamMaterial: roughWood.id,
-  waterproofingThickness: 2,
-  waterproofingMaterial: bitumen.id,
-  insulationThickness: 100,
-  insulationMaterial: cork.id
-})
-
 export const createRingBeamAssembliesSlice: StateCreator<
   RingBeamAssembliesSlice,
   [['zustand/immer', never]],
   [],
   RingBeamAssembliesSlice
 > = (set, get) => {
-  // Initialize with default assemblies
-  const defaultRingBeamAssembly = createDefaultRingBeamAssembly()
-  const defaultBrickRingBeamAssembly = createDefaultBrickRingBeamAssembly()
-
   return {
-    ringBeamAssemblyConfigs: {
-      [defaultRingBeamAssembly.id]: defaultRingBeamAssembly,
-      [defaultBrickRingBeamAssembly.id]: defaultBrickRingBeamAssembly
-    },
-    defaultBaseRingBeamAssemblyId: defaultRingBeamAssembly.id,
-    defaultTopRingBeamAssemblyId: defaultRingBeamAssembly.id,
+    ringBeamAssemblyConfigs: Object.fromEntries(DEFAULT_RING_BEAM_ASSEMBLIES.map(assembly => [assembly.id, assembly])),
+    defaultBaseRingBeamAssemblyId: DEFAULT_RING_BEAM_BASE_ASSEMBLY_ID,
+    defaultTopRingBeamAssemblyId: DEFAULT_RING_BEAM_TOP_ASSEMBLY_ID,
 
     actions: {
       // CRUD operations
@@ -195,6 +160,43 @@ export const createRingBeamAssembliesSlice: StateCreator<
       getDefaultTopRingBeamAssemblyId: () => {
         const state = get()
         return state.defaultTopRingBeamAssemblyId
+      },
+
+      resetRingBeamAssembliesToDefaults: () => {
+        set(state => {
+          // Get default assembly IDs
+          const defaultIds = DEFAULT_RING_BEAM_ASSEMBLIES.map(a => a.id)
+
+          // Keep only custom assemblies (non-default)
+          const customAssemblies = Object.fromEntries(
+            Object.entries(state.ringBeamAssemblyConfigs).filter(
+              ([id]) => !defaultIds.includes(id as RingBeamAssemblyId)
+            )
+          )
+
+          // Add fresh default assemblies
+          const resetAssemblies = Object.fromEntries(
+            DEFAULT_RING_BEAM_ASSEMBLIES.map(assembly => [assembly.id, assembly])
+          )
+
+          // Preserve user's default assembly choices if they're custom assemblies, otherwise reset to defaults
+          const newDefaultBaseId =
+            state.defaultBaseRingBeamAssemblyId && defaultIds.includes(state.defaultBaseRingBeamAssemblyId)
+              ? DEFAULT_RING_BEAM_BASE_ASSEMBLY_ID
+              : state.defaultBaseRingBeamAssemblyId
+
+          const newDefaultTopId =
+            state.defaultTopRingBeamAssemblyId && defaultIds.includes(state.defaultTopRingBeamAssemblyId)
+              ? DEFAULT_RING_BEAM_TOP_ASSEMBLY_ID
+              : state.defaultTopRingBeamAssemblyId
+
+          return {
+            ...state,
+            ringBeamAssemblyConfigs: { ...resetAssemblies, ...customAssemblies },
+            defaultBaseRingBeamAssemblyId: newDefaultBaseId,
+            defaultTopRingBeamAssemblyId: newDefaultTopId
+          }
+        })
       }
     } satisfies RingBeamAssembliesActions
   }

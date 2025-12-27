@@ -1,4 +1,13 @@
-import { CircleIcon, CopyIcon, CubeIcon, InfoCircledIcon, LayersIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons'
+import {
+  CircleIcon,
+  CopyIcon,
+  CubeIcon,
+  InfoCircledIcon,
+  LayersIcon,
+  PlusIcon,
+  ResetIcon,
+  TrashIcon
+} from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
 import {
   AlertDialog,
@@ -767,7 +776,13 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
   const wallAssemblies = useWallAssemblies()
   const perimeters = usePerimeters()
   const storeys = useStoreysOrderedByLevel()
-  const { addWallAssembly, duplicateWallAssembly, removeWallAssembly, setDefaultWallAssembly } = useConfigActions()
+  const {
+    addWallAssembly,
+    duplicateWallAssembly,
+    removeWallAssembly,
+    setDefaultWallAssembly,
+    resetWallAssembliesToDefaults
+  } = useConfigActions()
 
   const defaultAssemblyId = useDefaultWallAssemblyId()
 
@@ -902,6 +917,15 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
     }
   }, [selectedAssembly, selectedAssemblyId, wallAssemblies, removeWallAssembly, usage.isUsed])
 
+  const handleReset = useCallback(() => {
+    resetWallAssembliesToDefaults()
+    // Keep selection if it still exists after reset
+    const stillExists = wallAssemblies.some(a => a.id === selectedAssemblyId)
+    if (!stillExists && wallAssemblies.length > 0) {
+      setSelectedAssemblyId(wallAssemblies[0].id)
+    }
+  }, [resetWallAssembliesToDefaults, selectedAssemblyId, wallAssemblies])
+
   return (
     <Flex direction="column" gap="4" style={{ width: '100%' }}>
       {/* Selector + Actions */}
@@ -979,6 +1003,33 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                   <AlertDialog.Action>
                     <Button variant="solid" color="red" onClick={handleDelete}>
                       Delete
+                    </Button>
+                  </AlertDialog.Action>
+                </Flex>
+              </AlertDialog.Content>
+            </AlertDialog.Root>
+
+            <AlertDialog.Root>
+              <AlertDialog.Trigger>
+                <IconButton color="red" variant="outline" title="Reset to Defaults">
+                  <ResetIcon />
+                </IconButton>
+              </AlertDialog.Trigger>
+              <AlertDialog.Content>
+                <AlertDialog.Title>Reset Wall Assemblies</AlertDialog.Title>
+                <AlertDialog.Description>
+                  Are you sure you want to reset default wall assemblies? This will restore the original default
+                  assemblies but keep any custom assemblies you've created. This action cannot be undone.
+                </AlertDialog.Description>
+                <Flex gap="3" mt="4" justify="end">
+                  <AlertDialog.Cancel>
+                    <Button variant="soft" color="gray">
+                      Cancel
+                    </Button>
+                  </AlertDialog.Cancel>
+                  <AlertDialog.Action>
+                    <Button variant="solid" color="red" onClick={handleReset}>
+                      Reset
                     </Button>
                   </AlertDialog.Action>
                 </Flex>

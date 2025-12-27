@@ -1,4 +1,4 @@
-import { ComponentInstanceIcon, CopyIcon, PlusIcon, SquareIcon, TrashIcon } from '@radix-ui/react-icons'
+import { ComponentInstanceIcon, CopyIcon, PlusIcon, ResetIcon, SquareIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
 import {
   AlertDialog,
@@ -595,7 +595,13 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
   const roofAssemblies = useRoofAssemblies()
   const roofs = useRoofs()
   const storeys = useStoreysOrderedByLevel()
-  const { addRoofAssembly, duplicateRoofAssembly, removeRoofAssembly, setDefaultRoofAssembly } = useConfigActions()
+  const {
+    addRoofAssembly,
+    duplicateRoofAssembly,
+    removeRoofAssembly,
+    setDefaultRoofAssembly,
+    resetRoofAssembliesToDefaults
+  } = useConfigActions()
 
   const defaultAssemblyId = useDefaultRoofAssemblyId()
 
@@ -695,6 +701,15 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
     }
   }, [selectedAssembly, selectedAssemblyId, roofAssemblies, removeRoofAssembly, usage.isUsed])
 
+  const handleReset = useCallback(() => {
+    resetRoofAssembliesToDefaults()
+    // Keep selection if it still exists after reset
+    const stillExists = roofAssemblies.some(a => a.id === selectedAssemblyId)
+    if (!stillExists && roofAssemblies.length > 0) {
+      setSelectedAssemblyId(roofAssemblies[0].id)
+    }
+  }, [resetRoofAssembliesToDefaults, selectedAssemblyId, roofAssemblies])
+
   return (
     <Flex direction="column" gap="4" style={{ width: '100%' }}>
       {/* Selector + Actions */}
@@ -760,6 +775,33 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
                   <AlertDialog.Action>
                     <Button variant="solid" color="red" onClick={handleDelete}>
                       Delete
+                    </Button>
+                  </AlertDialog.Action>
+                </Flex>
+              </AlertDialog.Content>
+            </AlertDialog.Root>
+
+            <AlertDialog.Root>
+              <AlertDialog.Trigger>
+                <IconButton color="red" variant="outline" title="Reset to Defaults">
+                  <ResetIcon />
+                </IconButton>
+              </AlertDialog.Trigger>
+              <AlertDialog.Content>
+                <AlertDialog.Title>Reset Roof Assemblies</AlertDialog.Title>
+                <AlertDialog.Description>
+                  Are you sure you want to reset default roof assemblies? This will restore the original default
+                  assemblies but keep any custom assemblies you've created. This action cannot be undone.
+                </AlertDialog.Description>
+                <Flex gap="3" mt="4" justify="end">
+                  <AlertDialog.Cancel>
+                    <Button variant="soft" color="gray">
+                      Cancel
+                    </Button>
+                  </AlertDialog.Cancel>
+                  <AlertDialog.Action>
+                    <Button variant="solid" color="red" onClick={handleReset}>
+                      Reset
                     </Button>
                   </AlertDialog.Action>
                 </Flex>

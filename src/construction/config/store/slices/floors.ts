@@ -49,6 +49,7 @@ export interface FloorAssembliesActions {
   // Default management
   setDefaultFloorAssembly: (configId: FloorAssemblyId) => void
   getDefaultFloorAssemblyId: () => FloorAssemblyId
+  resetFloorAssembliesToDefaults: () => void
 }
 
 export type FloorAssembliesSlice = FloorAssembliesState & { actions: FloorAssembliesActions }
@@ -403,6 +404,32 @@ export const createFloorAssembliesSlice: StateCreator<
           return {
             ...state,
             floorAssemblyConfigs: { ...state.floorAssemblyConfigs, [id]: updatedConfig }
+          }
+        })
+      },
+
+      resetFloorAssembliesToDefaults: () => {
+        set(state => {
+          // Get default assembly IDs
+          const defaultIds = DEFAULT_FLOOR_ASSEMBLIES.map(a => a.id)
+
+          // Keep only custom assemblies (non-default)
+          const customAssemblies = Object.fromEntries(
+            Object.entries(state.floorAssemblyConfigs).filter(([id]) => !defaultIds.includes(id as FloorAssemblyId))
+          )
+
+          // Add fresh default assemblies
+          const resetAssemblies = Object.fromEntries(DEFAULT_FLOOR_ASSEMBLIES.map(assembly => [assembly.id, assembly]))
+
+          // Preserve user's default assembly choice if it's a custom assembly, otherwise reset to default
+          const newDefaultId = defaultIds.includes(state.defaultFloorAssemblyId)
+            ? DEFAULT_FLOOR_ASSEMBLY_ID
+            : state.defaultFloorAssemblyId
+
+          return {
+            ...state,
+            floorAssemblyConfigs: { ...resetAssemblies, ...customAssemblies },
+            defaultFloorAssemblyId: newDefaultId
           }
         })
       }
