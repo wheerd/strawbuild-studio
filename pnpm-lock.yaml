@@ -87,8 +87,8 @@ importers:
         specifier: ^1.1.4
         version: 1.1.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       web-ifc:
-        specifier: ^0.0.72
-        version: 0.0.72
+        specifier: ^0.0.74
+        version: 0.0.74
       workbox-window:
         specifier: ^7.4.0
         version: 7.4.0
@@ -4966,8 +4966,8 @@ packages:
     resolution: {integrity: sha512-o8qghlI8NZHU1lLPrpi2+Uq7abh4GGPpYANlalzWxyWteJOCsr/P+oPBA49TOLu5FTZO4d3F9MnWJfiMo4BkmA==}
     engines: {node: '>=18'}
 
-  web-ifc@0.0.72:
-    resolution: {integrity: sha512-tedfOr6X9wMnOtYCRyqnxauVGqMWsNKnfqwLtfLXZBfzN3CrpRlAc+vQyAE3HR4M/UN4+kGeIkjkjMl0epgxmw==}
+  web-ifc@0.0.74:
+    resolution: {integrity: sha512-WFVxKrt81koT0mA1I5gVChc9/xsnqGZ1KzVxLhy+h43cs6z2hy8tuTtXuA/BPVUkzEzWn+EwNOozF+HHo6G6RA==}
 
   webgl-constants@1.1.1:
     resolution: {integrity: sha512-LkBXKjU5r9vAW7Gcu3T5u+5cvSvh5WwINdr0C+9jpzVB41cjQAP5ePArDtk/WHYdVj0GefCgM73BA7FlIiNtdg==}
@@ -10476,7 +10476,7 @@ snapshots:
     dependencies:
       xml-name-validator: 5.0.0
 
-  web-ifc@0.0.72: {}
+  web-ifc@0.0.74: {}
 
   webgl-constants@1.1.1: {}
 
