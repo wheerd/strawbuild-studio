@@ -55,7 +55,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
-    "@opencode-ai/plugin": "^0.14.7",
+    "@opencode-ai/plugin": "^1.0.203",
     "@playwright/test": "^1.57.0",
     "@tailwindcss/forms": "^0.5.10",
     "@testing-library/jest-dom": "^6.9.1",
