@@ -458,7 +458,7 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
         layers={displayedTopLayers}
         measurementInfo={<RoofMeasurementInfo highlightedPart="roofTopLayers" />}
         onAddLayer={layer => addRoofAssemblyTopLayer(assemblyId, layer)}
-        onReplaceLayers={layers => setRoofAssemblyTopLayers(assemblyId, [...layers].reverse())}
+        onReplaceLayers={layers => setRoofAssemblyTopLayers(assemblyId, layers)}
         onUpdateLayer={(index, updates) => updateRoofAssemblyTopLayer(assemblyId, mapTopIndex(index), updates)}
         onRemoveLayer={index => removeRoofAssemblyTopLayer(assemblyId, mapTopIndex(index))}
         onMoveLayer={(fromIndex, toIndex) =>

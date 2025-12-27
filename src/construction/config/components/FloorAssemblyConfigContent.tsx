@@ -973,7 +973,7 @@ function LayersFields({ assemblyId, config }: { assemblyId: FloorAssemblyId; con
         measurementInfo={<MeasurementInfo highlightedPart="floorTopLayers" />}
         layers={displayedTopLayers}
         onAddLayer={layer => addFloorAssemblyTopLayer(assemblyId, layer)}
-        onReplaceLayers={layers => setFloorAssemblyTopLayers(assemblyId, [...layers].reverse())}
+        onReplaceLayers={layers => setFloorAssemblyTopLayers(assemblyId, layers)}
         onUpdateLayer={(index, updates) => updateFloorAssemblyTopLayer(assemblyId, mapTopIndex(index), updates)}
         onRemoveLayer={index => removeFloorAssemblyTopLayer(assemblyId, mapTopIndex(index))}
         onMoveLayer={(fromIndex, toIndex) =>
