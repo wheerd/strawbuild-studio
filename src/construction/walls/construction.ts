@@ -8,7 +8,7 @@ import { createWallStoreyContext } from '@/construction/storeys/context'
 import { TAG_WALLS, createTag } from '@/construction/tags'
 import { type Length, type LineSegment2D, fromTrans, newVec3 } from '@/shared/geometry'
 
-import { WALL_ASSEMBLIES } from './index'
+import { resolveWallAssembly } from './index'
 
 export interface WallCornerInfo {
   startCorner: {
@@ -100,12 +100,8 @@ export function constructWall(
       throw new Error(`Wall assembly with ID ${currentWall.wallAssemblyId} not found for wall ${currentWallId}`)
     }
 
-    const wallAssembly = WALL_ASSEMBLIES[assembly.type]
-    if (!wallAssembly) {
-      throw new Error(`Wall assembly type ${assembly.type} is not registered`)
-    }
-
-    const wallModel = wallAssembly.construct(currentWall, perimeter, storeyContext, assembly)
+    const wallAssembly = resolveWallAssembly(assembly)
+    const wallModel = wallAssembly.construct(currentWall, perimeter, storeyContext)
 
     if (cumulativeOffset > 0) {
       const nameTag = createTag('wall-assembly', assembly.name)

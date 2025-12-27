@@ -6,7 +6,8 @@ import type { ConstructionResult } from '@/construction/results'
 import { aggregateResults } from '@/construction/results'
 import type { StoreyContext } from '@/construction/storeys/context'
 import { TAG_INFILL_CONSTRUCTION } from '@/construction/tags'
-import type { ModulesWallConfig, WallAssembly } from '@/construction/walls'
+import type { ModulesWallConfig } from '@/construction/walls'
+import { BaseWallAssembly } from '@/construction/walls/base'
 import { infillWallArea } from '@/construction/walls/infill/infill'
 import { constructWallLayers } from '@/construction/walls/layers'
 import { segmentedWallConstruction } from '@/construction/walls/segmentation'
@@ -36,23 +37,18 @@ export function* moduleWallArea(
   }
 }
 
-export class ModulesWallAssembly implements WallAssembly<ModulesWallConfig> {
-  construct(
-    wall: PerimeterWall,
-    perimeter: Perimeter,
-    storeyContext: StoreyContext,
-    config: ModulesWallConfig
-  ): ConstructionModel {
+export class ModulesWallAssembly extends BaseWallAssembly<ModulesWallConfig> {
+  construct(wall: PerimeterWall, perimeter: Perimeter, storeyContext: StoreyContext): ConstructionModel {
     const allResults = Array.from(
       segmentedWallConstruction(
         wall,
         perimeter,
         storeyContext,
-        config.layers,
+        this.config.layers,
         (area, startsWithStand, endsWithStand, startAtEnd) =>
-          moduleWallArea(area, config, startsWithStand, endsWithStand, startAtEnd),
-        area => infillWallArea(area, config.infill),
-        config.openingAssemblyId
+          moduleWallArea(area, this.config, startsWithStand, endsWithStand, startAtEnd),
+        area => infillWallArea(area, this.config.infill),
+        this.config.openingAssemblyId
       )
     )
 
@@ -66,7 +62,7 @@ export class ModulesWallAssembly implements WallAssembly<ModulesWallConfig> {
       warnings: aggRes.warnings
     }
 
-    const layerModel = constructWallLayers(wall, perimeter, storeyContext, config.layers)
+    const layerModel = constructWallLayers(wall, perimeter, storeyContext, this.config.layers)
 
     return mergeModels(baseModel, layerModel)
   }

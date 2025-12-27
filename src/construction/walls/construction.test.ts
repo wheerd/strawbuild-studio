@@ -16,7 +16,7 @@ import { createCuboid } from '@/construction/shapes'
 import { Bounds3D, IDENTITY, ZERO_VEC2, copyVec2, newVec2, newVec3 } from '@/shared/geometry'
 
 import { constructWall } from './construction'
-import { WALL_ASSEMBLIES } from './index'
+import { resolveWallAssembly } from './index'
 
 vi.mock('@/building/store', () => ({
   getModelActions: vi.fn()
@@ -27,7 +27,7 @@ vi.mock('@/construction/config', () => ({
 }))
 
 vi.mock('./index', () => ({
-  WALL_ASSEMBLIES: {}
+  resolveWallAssembly: vi.fn()
 }))
 
 vi.mock('@/construction/storeys/context', () => ({
@@ -153,7 +153,7 @@ describe('constructWall', () => {
       }
     } as any)
 
-    WALL_ASSEMBLIES.infill = mockWallAssembly as any
+    vi.mocked(resolveWallAssembly).mockReturnValue(mockWallAssembly as any)
 
     mockWallAssembly.construct.mockImplementation((wall: PerimeterWall) => {
       return createMockConstructionModel(wall.id)
@@ -174,7 +174,7 @@ describe('constructWall', () => {
       const result = constructWall(perimeterId, wallId, false)
 
       expect(mockWallAssembly.construct).toHaveBeenCalledTimes(1)
-      expect(mockWallAssembly.construct).toHaveBeenCalledWith(wall, perimeter, expect.any(Object), expect.any(Object))
+      expect(mockWallAssembly.construct).toHaveBeenCalledWith(wall, perimeter, expect.any(Object))
       expect(result.elements).toHaveLength(1)
       expect(result.elements[0]).toHaveProperty('id', `element-${wallId}`)
     })
@@ -202,9 +202,9 @@ describe('constructWall', () => {
       const result = constructWall(perimeterId, wallId2, true)
 
       expect(mockWallAssembly.construct).toHaveBeenCalledTimes(3)
-      expect(mockWallAssembly.construct).toHaveBeenCalledWith(wall1, perimeter, expect.any(Object), expect.any(Object))
-      expect(mockWallAssembly.construct).toHaveBeenCalledWith(wall2, perimeter, expect.any(Object), expect.any(Object))
-      expect(mockWallAssembly.construct).toHaveBeenCalledWith(wall3, perimeter, expect.any(Object), expect.any(Object))
+      expect(mockWallAssembly.construct).toHaveBeenCalledWith(wall1, perimeter, expect.any(Object))
+      expect(mockWallAssembly.construct).toHaveBeenCalledWith(wall2, perimeter, expect.any(Object))
+      expect(mockWallAssembly.construct).toHaveBeenCalledWith(wall3, perimeter, expect.any(Object))
 
       expect(result.elements).toHaveLength(3)
     })

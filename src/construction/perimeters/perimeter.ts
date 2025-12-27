@@ -20,7 +20,7 @@ import {
   TAG_WALL_LENGTH_OUTSIDE,
   createTag
 } from '@/construction/tags'
-import { WALL_ASSEMBLIES } from '@/construction/walls'
+import { resolveWallAssembly } from '@/construction/walls'
 import {
   type Area,
   Bounds3D,
@@ -113,8 +113,8 @@ export function constructPerimeter(perimeter: Perimeter, includeFloor = true, in
     let wallModel: ConstructionModel | null = null
 
     if (assembly?.type) {
-      const wallAssembly = WALL_ASSEMBLIES[assembly.type]
-      wallModel = wallAssembly.construct(wall, perimeter, storeyContext, assembly)
+      const wallAssembly = resolveWallAssembly(assembly)
+      wallModel = wallAssembly.construct(wall, perimeter, storeyContext)
 
       if (wallModel) {
         const segmentAngle = dirAngle(wall.insideLine.start, wall.insideLine.end)

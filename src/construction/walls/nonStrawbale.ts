@@ -9,7 +9,8 @@ import { resolveRingBeamAssembly } from '@/construction/ringBeams'
 import { createExtrudedPolygon } from '@/construction/shapes'
 import type { StoreyContext } from '@/construction/storeys/context'
 import { TAG_NON_STRAWBALE_CONSTRUCTION } from '@/construction/tags'
-import type { NonStrawbaleWallConfig, WallAssembly } from '@/construction/walls'
+import type { NonStrawbaleWallConfig } from '@/construction/walls'
+import { BaseWallAssembly } from '@/construction/walls/base'
 import { calculateWallCornerInfo, getWallContext } from '@/construction/walls/corners/corners'
 import { constructWallLayers } from '@/construction/walls/layers'
 import { WALL_POLYGON_PLANE, createWallPolygonWithOpenings } from '@/construction/walls/polygons'
@@ -30,13 +31,8 @@ function* noopInfill(_area: WallConstructionArea): Generator<ConstructionResult>
   // Intentionally empty - openings are handled by polygon holes
 }
 
-export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallConfig> {
-  construct(
-    wall: PerimeterWall,
-    perimeter: Perimeter,
-    storeyContext: StoreyContext,
-    config: NonStrawbaleWallConfig
-  ): ConstructionModel {
+export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallConfig> {
+  construct(wall: PerimeterWall, perimeter: Perimeter, storeyContext: StoreyContext): ConstructionModel {
     const wallContext = getWallContext(wall, perimeter)
     const cornerInfo = calculateWallCornerInfo(wall, wallContext)
 
@@ -52,8 +48,8 @@ export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallCo
     const ceilingOffset = storeyContext.roofBottom - storeyContext.wallTop
 
     const structuralThickness = (wall.thickness -
-      config.layers.insideThickness -
-      config.layers.outsideThickness) as Length
+      this.config.layers.insideThickness -
+      this.config.layers.outsideThickness) as Length
     if (structuralThickness <= 0) {
       throw new Error('Non-strawbale wall structural thickness must be greater than 0')
     }
@@ -90,9 +86,9 @@ export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallCo
     const structureShapes = structuralPolygons.map(p =>
       createExtrudedPolygon(p, WALL_POLYGON_PLANE, structuralThickness)
     )
-    const structureTransform = fromTrans(newVec3(0, config.layers.insideThickness, 0))
+    const structureTransform = fromTrans(newVec3(0, this.config.layers.insideThickness, 0))
     const structureElements = structureShapes.map(s =>
-      createConstructionElement(config.material, s, structureTransform)
+      createConstructionElement(this.config.material, s, structureTransform)
     )
 
     const metadataResults = Array.from(
@@ -100,10 +96,10 @@ export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallCo
         wall,
         perimeter,
         storeyContext,
-        config.layers,
+        this.config.layers,
         noopWallSegment,
         noopInfill,
-        config.openingAssemblyId
+        this.config.openingAssemblyId
       )
     )
 
@@ -121,7 +117,7 @@ export class NonStrawbaleWallAssembly implements WallAssembly<NonStrawbaleWallCo
       warnings: aggRes.warnings
     }
 
-    const layerModel = constructWallLayers(wall, perimeter, storeyContext, config.layers)
+    const layerModel = constructWallLayers(wall, perimeter, storeyContext, this.config.layers)
 
     return mergeModels(baseModel, layerModel)
   }

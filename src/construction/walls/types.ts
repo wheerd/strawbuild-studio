@@ -11,13 +11,8 @@ import type { Length } from '@/shared/geometry'
 
 import type { ModuleConfig } from './modules/modules'
 
-export interface WallAssembly<TConfig extends WallBaseConfig> {
-  construct: (
-    wall: PerimeterWall,
-    perimeter: Perimeter,
-    storeyContext: StoreyContext,
-    config: TConfig
-  ) => ConstructionModel
+export interface WallAssembly {
+  construct: (wall: PerimeterWall, perimeter: Perimeter, storeyContext: StoreyContext) => ConstructionModel
 
   get tag(): Tag
 }

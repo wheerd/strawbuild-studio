@@ -222,14 +222,16 @@ describe('assembly.construct', () => {
   })
 
   describe('full wall construction', () => {
-    const assembly = new InfillWallAssembly()
     let config: InfillWallConfig
+    let assembly: InfillWallAssembly
+
     beforeEach(() => {
       config = {
         type: 'infill',
         ...createMockInfillConfig(),
         layers: createMockLayers()
       }
+      assembly = new InfillWallAssembly(config)
     })
 
     it('should construct a complete infill wall with no openings', () => {
@@ -237,7 +239,7 @@ describe('assembly.construct', () => {
       const perimeter = createMockPerimeter([wall])
       const floorHeight = 2500
 
-      const result = assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight), config)
+      const result = assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight))
 
       expect(result.elements.length).toBeGreaterThan(0)
       expect(result.errors).toHaveLength(0)
@@ -267,7 +269,7 @@ describe('assembly.construct', () => {
       const perimeter = createMockPerimeter([wall])
       const floorHeight = 2500
 
-      const result = assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight), config)
+      const result = assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight))
 
       expect(result.elements.length).toBeGreaterThan(0)
       expect(result.errors).toHaveLength(0)
@@ -288,7 +290,7 @@ describe('assembly.construct', () => {
         createMockGenerator([mockElement], [], [mockError], [mockWarning])()
       )
 
-      const result = assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight), config)
+      const result = assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight))
 
       expect(result.errors).toHaveLength(1)
       expect(result.warnings).toHaveLength(1)
@@ -313,7 +315,7 @@ describe('assembly.construct', () => {
       const mockElement = createMockElement('test', newVec3(0, 0, 0), newVec3(100, 100, 100), mockWoodMaterial)
       mockSegmentedWallConstruction.mockReturnValue(createMockGenerator([mockElement], [mockMeasurement])())
 
-      const result = assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight), config)
+      const result = assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight))
 
       expect(result.measurements).toHaveLength(1)
       expect(result.measurements[0]).toBe(mockMeasurement)
@@ -324,7 +326,7 @@ describe('assembly.construct', () => {
       const perimeter = createMockPerimeter([wall])
       const floorHeight = 2500
 
-      const result = assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight), config)
+      const result = assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight))
 
       expect(result.bounds).toBeDefined()
       expect(result.bounds.min).toBeDefined()
@@ -341,7 +343,7 @@ describe('assembly.construct', () => {
       const floorHeight = 2500
       const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(1000, 300, 2500))
 
-      assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight), config)
+      assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight))
 
       const wallConstructionFn = mockSegmentedWallConstruction.mock.calls[0][4]
       expect(wallConstructionFn).toBeDefined()
@@ -357,7 +359,7 @@ describe('assembly.construct', () => {
       const floorHeight = 2500
       const area = new WallConstructionArea(newVec3(1000, 30, 60), newVec3(800, 220, 2380))
 
-      assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight), config)
+      assembly.construct(wall, perimeter, createMockStoreyContext(floorHeight))
 
       const infillFn = mockSegmentedWallConstruction.mock.calls[0][5]
       expect(infillFn).toBeDefined()

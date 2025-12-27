@@ -4,30 +4,26 @@ import { mergeModels } from '@/construction/model'
 import { aggregateResults } from '@/construction/results'
 import type { StoreyContext } from '@/construction/storeys/context'
 import { TAG_INFILL_CONSTRUCTION } from '@/construction/tags'
-import type { InfillWallConfig, WallAssembly } from '@/construction/walls'
+import type { InfillWallConfig } from '@/construction/walls'
+import { BaseWallAssembly } from '@/construction/walls/base'
 import { constructWallLayers } from '@/construction/walls/layers'
 import { segmentedWallConstruction } from '@/construction/walls/segmentation'
 import { Bounds3D } from '@/shared/geometry'
 
 import { infillWallArea } from './infill'
 
-export class InfillWallAssembly implements WallAssembly<InfillWallConfig> {
-  construct(
-    wall: PerimeterWall,
-    perimeter: Perimeter,
-    storeyContext: StoreyContext,
-    config: InfillWallConfig
-  ): ConstructionModel {
+export class InfillWallAssembly extends BaseWallAssembly<InfillWallConfig> {
+  construct(wall: PerimeterWall, perimeter: Perimeter, storeyContext: StoreyContext): ConstructionModel {
     const allResults = Array.from(
       segmentedWallConstruction(
         wall,
         perimeter,
         storeyContext,
-        config.layers,
+        this.config.layers,
         (area, startsWithStand, endsWithStand, startAtEnd) =>
-          infillWallArea(area, config, startsWithStand, endsWithStand, startAtEnd),
-        area => infillWallArea(area, config),
-        config.openingAssemblyId
+          infillWallArea(area, this.config, startsWithStand, endsWithStand, startAtEnd),
+        area => infillWallArea(area, this.config),
+        this.config.openingAssemblyId
       )
     )
 
@@ -41,7 +37,7 @@ export class InfillWallAssembly implements WallAssembly<InfillWallConfig> {
       warnings: aggRes.warnings
     }
 
-    const layerModel = constructWallLayers(wall, perimeter, storeyContext, config.layers)
+    const layerModel = constructWallLayers(wall, perimeter, storeyContext, this.config.layers)
 
     return mergeModels(baseModel, layerModel)
   }

@@ -8,7 +8,8 @@ import type { ConstructionResult } from '@/construction/results'
 import { aggregateResults } from '@/construction/results'
 import type { StoreyContext } from '@/construction/storeys/context'
 import { TAG_POST_SPACING, TAG_STRAWHENGE_CONSTRUCTION } from '@/construction/tags'
-import type { StrawhengeWallConfig, WallAssembly } from '@/construction/walls'
+import type { StrawhengeWallConfig } from '@/construction/walls'
+import { BaseWallAssembly } from '@/construction/walls/base'
 import { infillWallArea } from '@/construction/walls/infill/infill'
 import { constructWallLayers } from '@/construction/walls/layers'
 import { segmentedWallConstruction } from '@/construction/walls/segmentation'
@@ -149,23 +150,18 @@ export function* strawhengeWallArea(
   }
 }
 
-export class StrawhengeWallAssembly implements WallAssembly<StrawhengeWallConfig> {
-  construct(
-    wall: PerimeterWall,
-    perimeter: Perimeter,
-    storeyContext: StoreyContext,
-    config: StrawhengeWallConfig
-  ): ConstructionModel {
+export class StrawhengeWallAssembly extends BaseWallAssembly<StrawhengeWallConfig> {
+  construct(wall: PerimeterWall, perimeter: Perimeter, storeyContext: StoreyContext): ConstructionModel {
     const allResults = Array.from(
       segmentedWallConstruction(
         wall,
         perimeter,
         storeyContext,
-        config.layers,
+        this.config.layers,
         (area, startsWithStand, endsWithStand, startAtEnd) =>
-          strawhengeWallArea(area, config, startsWithStand, endsWithStand, startAtEnd),
-        area => infillWallArea(area, config.infill),
-        config.openingAssemblyId
+          strawhengeWallArea(area, this.config, startsWithStand, endsWithStand, startAtEnd),
+        area => infillWallArea(area, this.config.infill),
+        this.config.openingAssemblyId
       )
     )
 
@@ -179,7 +175,7 @@ export class StrawhengeWallAssembly implements WallAssembly<StrawhengeWallConfig
       warnings: aggRes.warnings
     }
 
-    const layerModel = constructWallLayers(wall, perimeter, storeyContext, config.layers)
+    const layerModel = constructWallLayers(wall, perimeter, storeyContext, this.config.layers)
 
     return mergeModels(baseModel, layerModel)
   }
