@@ -17,6 +17,19 @@ import {
 } from '@/shared/geometry'
 
 // ---------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------
+
+/**
+ * A 3D polygon with holes and its associated face normal.
+ * The normal is in the same coordinate space as the polygon vertices.
+ */
+export interface PolygonWithNormal3D {
+  polygon: PolygonWithHoles3D
+  normal: Vec3 // Normalized face normal
+}
+
+// ---------------------------------------------------------------
 // Vertex Deduplication Helpers
 // ---------------------------------------------------------------
 
@@ -46,9 +59,10 @@ function vertexKey(v: Vec3): string {
  * @param m - The manifold mesh to extract faces from
  * @param t - Combined transform matrix (projectionMatrix * accumulatedTransform)
  *                    that transforms from local manifold space to view space
- * @returns Array of polygons in view space (x, y, depth), with backfaces culled
+ * @param cullBackFaces - Whether to cull back-facing triangles (default: true)
+ * @returns Array of polygons with normalized normals in view space (x, y, depth)
  */
-export function getVisibleFacesInViewSpace(m: Manifold, t: Transform, cullBackFaces = true): PolygonWithHoles3D[] {
+export function getVisibleFacesInViewSpace(m: Manifold, t: Transform, cullBackFaces = true): PolygonWithNormal3D[] {
   const mesh = m.getMesh()
 
   // Extract vertex positions in local manifold space
@@ -136,6 +150,7 @@ export function getVisibleFacesInViewSpace(m: Manifold, t: Transform, cullBackFa
   // Step 3: BFS to find connected components of coplanar triangles
   const visited = new Array(filteredTriangles.length).fill(false)
   const components: number[][] = []
+  const componentNormals: Vec3[] = [] // Track normalized normal for each component
 
   for (let i = 0; i < filteredTriangles.length; i++) {
     if (visited[i]) continue
@@ -155,11 +170,19 @@ export function getVisibleFacesInViewSpace(m: Manifold, t: Transform, cullBackFa
       }
     }
     components.push(comp)
+
+    // Store normalized normal (all triangles in component are coplanar, so use first)
+    const normal = filteredNormals[i]
+    const len = lenVec3(normal)
+    componentNormals.push(len > 0 ? newVec3(normal[0] / len, normal[1] / len, normal[2] / len) : newVec3(0, 0, 1))
   }
 
   // Step 4: For each coplanar component, extract boundary loops and build polygon(s)
-  // Polygons are in view space
-  return components.map(comp => trianglesToPolygon(comp, filteredTriangles, viewSpacePositions))
+  // Polygons are in view space with their normalized normals
+  return components.map((comp, i) => ({
+    polygon: trianglesToPolygon(comp, filteredTriangles, viewSpacePositions),
+    normal: componentNormals[i]
+  }))
 }
 
 export interface Face3D {

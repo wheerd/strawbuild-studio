@@ -1,6 +1,6 @@
 import { getConstructionElementClasses } from '@/construction/components/plan/cssHelpers'
 import type { GroupOrElement } from '@/construction/elements'
-import { type Projection, projectPoint } from '@/construction/geometry'
+import type { Projection } from '@/construction/geometry'
 import { getVisibleFacesInViewSpace } from '@/construction/manifold/faces'
 import {
   Bounds2D,
@@ -8,8 +8,9 @@ import {
   type PolygonWithHoles2D,
   type Transform,
   composeTransform,
+  dotVec3,
   newVec2,
-  transform
+  newVec3
 } from '@/shared/geometry'
 
 export type FaceTree = Face | FaceGroup
@@ -50,10 +51,6 @@ export function* geometryFaces(
     // Combine projection with accumulated transform
     const finalTransform = composeTransform(projectionMatrix, accumulatedTransform)
 
-    // Get element center in world space for z-ordering
-    const worldCenter = transform(groupOrElement.bounds.center, accumulatedTransform)
-    const centerDepth = projectPoint(worldCenter, projectionMatrix)[2]
-
     // Get visible faces in view space with backface culling applied
     // The finalTransform (projection * accumulated) transforms from local manifold space to view space
     const manifold = groupOrElement.shape.manifold
@@ -62,14 +59,20 @@ export function* geometryFaces(
     // Faces are already in view space (transformed), so we extract 2D coordinates directly
     const faces2D = faces3D
       .map(f => {
-        const outerPoints = f.outer.points.map(p => newVec2(p[0], p[1]))
-        const holes = f.holes.map(h => ({
+        const outerPoints = f.polygon.outer.points.map(p => newVec2(p[0], p[1]))
+        const holes = f.polygon.holes.map(h => ({
           points: h.points.map(p => newVec2(p[0], p[1]))
         }))
 
-        // Use centerZ logic: front faces get slight preference over back faces
-        const faceDepth = f.outer.points[0][2]
-        const zIndex = faceDepth < centerDepth ? faceDepth + EPSILON : faceDepth - EPSILON
+        // Determine front vs back face using normal (in view space, camera looks down -Z axis)
+        const viewDirection = newVec3(0, 0, -1)
+        const isFrontFace = dotVec3(f.normal, viewDirection) > 0
+
+        // Use closest point to camera for z-ordering of tilted faces (e.g., roof purlins/rafters)
+        const closestPointDepth = Math.max(...f.polygon.outer.points.map(p => p[2]))
+
+        // Apply EPSILON nudging: front faces render above back faces at same depth
+        const zIndex = isFrontFace ? closestPointDepth + EPSILON : closestPointDepth - EPSILON
 
         return {
           outer: { points: outerPoints },

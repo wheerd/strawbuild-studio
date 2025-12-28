@@ -23,7 +23,7 @@ export function CuboidAreaShape({ cuboid, projection }: CuboidAreaShapeProps): R
   const [w, h, d] = cuboid.size
   const manifold = getManifoldModule().Manifold.cube([w, h, d]).transform(asManifoldTransform(cuboid.transform))
   const faces2D = getVisibleFacesInViewSpace(manifold, projection, true)
-    .map(f => f.outer.points.map(p => newVec2(p[0], p[1])))
+    .map(f => f.polygon.outer.points.map(p => newVec2(p[0], p[1])))
     .filter(f => !Bounds2D.fromPoints(f).isEmpty)
 
   if (faces2D.length === 0) {

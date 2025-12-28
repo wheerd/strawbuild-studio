@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { createProjectionMatrix } from '@/construction/geometry'
-import { IDENTITY, composeTransform, rotateZ } from '@/shared/geometry'
+import { IDENTITY, composeTransform, lenVec3, rotateZ } from '@/shared/geometry'
 import { getManifoldModule } from '@/shared/geometry/manifoldInstance'
 
 import { getVisibleFacesInViewSpace } from './faces'
@@ -23,6 +23,13 @@ describe('getVisibleFacesInViewSpace', () => {
     // With backface culling and excluding perpendicular faces, we should see fewer than all 6 faces
     expect(faces.length).toBeGreaterThan(0)
     expect(faces.length).toBeLessThan(6) // Should not see all faces
+
+    // Verify all faces have normalized normals
+    faces.forEach(face => {
+      expect(face.normal).toBeDefined()
+      expect(face.polygon).toBeDefined()
+      expect(lenVec3(face.normal)).toBeCloseTo(1.0, 5)
+    })
   })
 
   it('should apply backface culling for a cube in front view (XZ)', () => {
@@ -57,6 +64,11 @@ describe('getVisibleFacesInViewSpace', () => {
     // Should only see front-facing faces
     expect(faces.length).toBeGreaterThan(0)
     expect(faces.length).toBeLessThan(6)
+
+    // Verify normals are normalized
+    faces.forEach(face => {
+      expect(lenVec3(face.normal)).toBeCloseTo(1.0, 5)
+    })
   })
 
   it('should handle rotated geometry correctly', () => {
@@ -79,6 +91,11 @@ describe('getVisibleFacesInViewSpace', () => {
 
     // Should still see only front-facing faces
     expect(faces.length).toBeGreaterThan(0)
+
+    // Verify normals are normalized
+    faces.forEach(face => {
+      expect(lenVec3(face.normal)).toBeCloseTo(1.0, 5)
+    })
   })
 
   it('should merge coplanar slim triangles from extruded thin rectangles', () => {
@@ -111,7 +128,7 @@ describe('getVisibleFacesInViewSpace', () => {
 
     // Find the face with the largest area (should be the top)
     const areas = faces.map(face => {
-      const points = face.outer.points
+      const points = face.polygon.outer.points
       let area = 0
       for (let i = 0; i < points.length; i++) {
         const j = (i + 1) % points.length
@@ -126,6 +143,12 @@ describe('getVisibleFacesInViewSpace', () => {
 
     // The largest face should be approximately 3000 * 2 = 6000 square units
     expect(maxArea).toBeCloseTo(6000)
-    expect(largestFace.outer.points.length).toBeGreaterThanOrEqual(4)
+    expect(largestFace.polygon.outer.points.length).toBeGreaterThanOrEqual(4)
+
+    // Verify normals are normalized
+    faces.forEach(face => {
+      expect(face.normal).toBeDefined()
+      expect(lenVec3(face.normal)).toBeCloseTo(1.0, 5)
+    })
   })
 })
