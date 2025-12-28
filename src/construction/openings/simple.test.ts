@@ -21,7 +21,7 @@ import { SimpleOpeningAssembly } from './simple'
 import type { SimpleOpeningConfig } from './types'
 
 // Mock the formatLength utility
-vi.mock('@/shared/utils/formatting', () => ({
+vi.mock('@/shared/i18n/formatters', () => ({
   formatLength: vi.fn((length: number) => `${length}mm`) // Mock to return simple format for tests
 }))
 
