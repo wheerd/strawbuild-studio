@@ -10,9 +10,9 @@ import {
   useSyncExternalStore
 } from 'react'
 
-import type { Tag, TagCategoryId, TagId } from '@/construction/tags'
+import type { Tag, TagCategoryId, TagId, TagOrCategory } from '@/construction/tags'
 
-import { type TagOpacityStore, type TagOrCategory, createTagOpacityStore } from './tagOpacityStore'
+import { type TagOpacityStore, createTagOpacityStore } from './tagOpacityStore'
 
 const TagOpacityStoreContext = createContext<TagOpacityStore | null>(null)
 

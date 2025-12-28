@@ -9,6 +9,8 @@ export type TagId = `${TagCategoryId}_${string}`
 
 export type TagCategoryId = keyof typeof ALL_CATEGORIES
 
+export type TagOrCategory = TagId | TagCategoryId
+
 export const ALL_CATEGORIES = {
   straw: { label: 'Straw' },
 

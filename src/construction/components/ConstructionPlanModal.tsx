@@ -9,13 +9,14 @@ import { PartHighlightPanel } from '@/construction/components/plan/PartHighlight
 import type { ConstructionModel } from '@/construction/model'
 import type { MaterialPartsList, PartId, VirtualPartsList } from '@/construction/parts'
 import { generateMaterialPartsList, generateVirtualPartsList } from '@/construction/parts'
+import type { TagOrCategory } from '@/construction/tags'
 import { BaseModal } from '@/shared/components/BaseModal'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 
 import './ConstructionPlanModal.css'
 import { ConstructionPlan, type ViewOption } from './plan/ConstructionPlan'
 import { PlanHighlightProvider, usePlanHighlight } from './plan/PlanHighlightContext'
-import { type TagOrCategory, TagVisibilityProvider } from './plan/TagVisibilityContext'
+import { TagVisibilityProvider } from './plan/TagVisibilityContext'
 
 interface PartsData {
   material: MaterialPartsList

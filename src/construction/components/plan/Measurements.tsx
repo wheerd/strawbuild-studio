@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
+import { useVisibleItems } from '@/construction/components/plan/TagVisibilityContext'
 import { getTagClasses } from '@/construction/components/plan/cssHelpers'
 import { type Projection, allPoints, bounds3Dto2D, projectPoint } from '@/construction/geometry'
 import { type AutoMeasurement, type DirectMeasurement, processMeasurements } from '@/construction/measurements'
@@ -49,9 +50,12 @@ export function Measurements({ model, projection }: MeasurementsProps): React.JS
   // Filter only AutoMeasurement from model.measurements
   const autoMeasurements = model.measurements.filter((m): m is AutoMeasurement => 'extend1' in m)
 
+  // Filter auto measurements by visibility - only visible measurements will be laid out
+  const visibleAutoMeasurements = useVisibleItems(autoMeasurements)
+
   const processedMeasurements = useMemo(() => {
-    return Array.from(processMeasurements(autoMeasurements, projection, planPoints))
-  }, [autoMeasurements, projection, planPoints])
+    return Array.from(processMeasurements(visibleAutoMeasurements, projection, planPoints))
+  }, [visibleAutoMeasurements, projection, planPoints])
 
   const renderableMeasurements = processedMeasurements.flatMap(group =>
     group.lines.flatMap((line, rowIndex) =>

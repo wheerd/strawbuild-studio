@@ -6,7 +6,7 @@ import type { GroupOrElement } from '@/construction/elements'
 import type { ConstructionModel } from '@/construction/model'
 import { CATEGORIES, type Tag, type TagCategoryId, type TagId } from '@/construction/tags'
 
-import { useTagVisibility } from './TagVisibilityContext'
+import { useTagVisibilityActions, useTagVisibilityForceUpdate } from './TagVisibilityContext'
 
 export interface TagVisibilityMenuProps {
   model: ConstructionModel
@@ -65,7 +65,10 @@ function collectTagsFromModel(model: ConstructionModel): Map<TagCategoryId, TagI
 }
 
 export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.Element {
-  const { isTagOrCategoryVisible, getCategoryVisibilityState, toggleTagOrCategory } = useTagVisibility()
+  // Re-render on any tag visibility change to update the menu UI
+  useTagVisibilityForceUpdate()
+
+  const { isTagOrCategoryVisible, getCategoryVisibilityState, toggleTagOrCategory } = useTagVisibilityActions()
 
   const tagsByCategory = useMemo(() => collectTagsFromModel(model), [model])
 

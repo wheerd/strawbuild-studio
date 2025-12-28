@@ -12,6 +12,7 @@ import { bounds3Dto2D, createProjectionMatrix, projectPoint } from '@/constructi
 import { type ProjectedOutline, projectManifoldToView } from '@/construction/manifoldProjection'
 import type { ConstructionModel, HighlightedCuboid, HighlightedCut, HighlightedPolygon } from '@/construction/model'
 import type { ConstructionIssue } from '@/construction/results'
+import type { TagOrCategory } from '@/construction/tags'
 import { MidCutXIcon, MidCutYIcon } from '@/shared/components/Icons'
 import { SVGViewport, type SVGViewportRef } from '@/shared/components/SVGViewport'
 import {
@@ -28,8 +29,9 @@ import { CuboidAreaShape } from './CuboidAreaShape'
 import { usePlanHighlight } from './PlanHighlightContext'
 import { PolygonAreaShape } from './PolygonAreaShape'
 import { SVGMaterialStyles } from './SVGMaterialStyles'
-import { type TagOrCategory, useTagVisibility } from './TagVisibilityContext'
+import { useTagVisibilityActions } from './TagVisibilityContext'
 import { TagVisibilityMenu } from './TagVisibilityMenu'
+import { VisibilityStyles } from './VisibilityStyles'
 
 export interface View {
   plane: Plane3D
@@ -107,7 +109,7 @@ export function ConstructionPlan({
   currentViewIndex,
   setCurrentViewIndex
 }: ConstructionPlanProps): React.JSX.Element {
-  const { hiddenTagIds, toggleTagOrCategory, isTagOrCategoryVisible } = useTagVisibility()
+  const { toggleTagOrCategory, isTagOrCategoryVisible } = useTagVisibilityActions()
   const { hoveredIssueId, highlightedPartId } = usePlanHighlight()
   const viewportRef = useRef<SVGViewportRef>(null)
   const [midCutEnabled, setMidCutEnabled] = useState(midCutActiveDefault)
@@ -210,17 +212,6 @@ export function ConstructionPlan({
   const cuboidAreas = model.areas.filter(a => a.type === 'cuboid') as HighlightedCuboid[]
   const cutAreas = model.areas.filter(a => a.type === 'cut') as HighlightedCut[]
 
-  const getCssClassForTag = (tagId: string): string => (tagId.includes('_') ? `tag__${tagId}` : `tag-cat__${tagId}`)
-
-  const visibilityStyles = Array.from(hiddenTagIds)
-    .concat(hiddenTagsForView)
-    .map(tagId => getCssClassForTag(tagId))
-    .concat(hideAreas ? ['area-polygon', 'area-cuboid', 'area-cut'] : [])
-    .concat(hideIssues ? ['construction-warning', 'construction-error'] : [])
-    .concat(hideMeasurements ? ['measurement'] : [])
-    .map(cssClass => `.${cssClass} { display: none; }`)
-    .join('\n')
-
   // Generate hover styles for issue highlighting
   const hoverStyles =
     hoveredIssueId && !hideIssues
@@ -251,7 +242,7 @@ export function ConstructionPlan({
   `
     : ''
 
-  const allStyles = [visibilityStyles, hoverStyles, partHighlightStyles].filter(Boolean).join('\n')
+  const otherStyles = [hoverStyles, partHighlightStyles].filter(Boolean).join('\n')
 
   // Auto-zoom to highlighted part
   useEffect(() => {
@@ -289,11 +280,15 @@ export function ConstructionPlan({
         <SVGMaterialStyles />
 
         {/* Dynamic visibility and hover styles */}
-        {allStyles && (
-          <defs>
-            <style>{allStyles}</style>
-          </defs>
-        )}
+        <defs>
+          <VisibilityStyles
+            hiddenTagsForView={hiddenTagsForView}
+            hideAreas={hideAreas}
+            hideIssues={hideIssues}
+            hideMeasurements={hideMeasurements}
+          />
+          {otherStyles && <style>{otherStyles}</style>}
+        </defs>
 
         {/* Cut Areas - Bottom */}
         {cutAreas

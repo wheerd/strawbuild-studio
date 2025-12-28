@@ -1,6 +1,4 @@
-import type { Tag, TagCategoryId, TagId } from '@/construction/tags'
-
-export type TagOrCategory = TagId | TagCategoryId
+import type { Tag, TagCategoryId, TagId, TagOrCategory } from '@/construction/tags'
 
 export type OpacityValue = 0 | 0.5 | 1.0
 

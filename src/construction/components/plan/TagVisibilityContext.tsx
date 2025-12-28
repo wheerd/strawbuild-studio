@@ -1,78 +1,82 @@
-import { type ReactNode, createContext, useContext, useMemo, useState } from 'react'
+import { type ReactNode, createContext, useContext, useEffect, useMemo, useReducer, useRef } from 'react'
 
-import type { TagCategoryId, TagId } from '@/construction/tags'
+import type { Tag, TagCategoryId, TagId, TagOrCategory } from '@/construction/tags'
 
-export type TagOrCategory = TagId | TagCategoryId
+import { type TagVisibilityStore, createTagVisibilityStore } from './tagVisibilityStore'
 
-interface TagVisibilityContextValue {
-  hiddenTagIds: Set<TagOrCategory>
-  isTagOrCategoryVisible: (tagId: TagOrCategory) => boolean
-  getCategoryVisibilityState: (categoryId: TagCategoryId, tagIds: TagId[]) => 'visible' | 'partial' | 'hidden'
-  toggleTagOrCategory: (tagId: TagOrCategory) => void
-}
-
-const TagVisibilityContext = createContext<TagVisibilityContextValue | undefined>(undefined)
+const TagVisibilityStoreContext = createContext<TagVisibilityStore | null>(null)
 
 export interface TagVisibilityProviderProps {
   children: ReactNode
   defaultHidden?: TagOrCategory[]
 }
 
-export function TagVisibilityProvider({ children, defaultHidden = [] }: TagVisibilityProviderProps): React.JSX.Element {
-  const [hiddenTagIds, setHiddenTagIds] = useState<Set<TagOrCategory>>(new Set(defaultHidden))
-
-  const isTagOrCategoryVisible = (tagId: TagOrCategory): boolean => {
-    return !hiddenTagIds.has(tagId)
-  }
-
-  const getCategoryVisibilityState = (categoryId: TagCategoryId, tagIds: TagId[]): 'visible' | 'partial' | 'hidden' => {
-    const categoryHidden = hiddenTagIds.has(categoryId)
-
-    if (categoryHidden) {
-      return 'hidden'
-    }
-
-    // Category is visible, check tag states
-    const hiddenCount = tagIds.filter(id => hiddenTagIds.has(id)).length
-
-    if (hiddenCount === 0) {
-      return 'visible'
-    } else if (hiddenCount === tagIds.length) {
-      return 'hidden'
-    } else {
-      return 'partial'
-    }
-  }
-
-  const toggleTagOrCategory = (tagId: TagOrCategory): void => {
-    setHiddenTagIds(prev => {
-      const next = new Set(prev)
-      if (next.has(tagId)) {
-        next.delete(tagId)
-      } else {
-        next.add(tagId)
-      }
-      return next
+export function TagVisibilityProvider({ children, defaultHidden }: TagVisibilityProviderProps): React.JSX.Element {
+  const storeRef = useRef<TagVisibilityStore>(
+    createTagVisibilityStore({
+      initialHidden: defaultHidden
     })
-  }
-
-  const value = useMemo(
-    () => ({
-      hiddenTagIds,
-      isTagOrCategoryVisible,
-      getCategoryVisibilityState,
-      toggleTagOrCategory
-    }),
-    [hiddenTagIds]
   )
 
-  return <TagVisibilityContext.Provider value={value}>{children}</TagVisibilityContext.Provider>
+  return <TagVisibilityStoreContext.Provider value={storeRef.current}>{children}</TagVisibilityStoreContext.Provider>
 }
 
-export function useTagVisibility(): TagVisibilityContextValue {
-  const context = useContext(TagVisibilityContext)
-  if (!context) {
-    throw new Error('useTagVisibility must be used within TagVisibilityProvider')
+function useTagVisibilityStore(): TagVisibilityStore {
+  const store = useContext(TagVisibilityStoreContext)
+  if (!store) {
+    throw new Error('useTagVisibilityStore must be used within TagVisibilityProvider')
   }
-  return context
+  return store
+}
+
+/**
+ * Hook to get stable action functions for modifying tag visibility.
+ * These functions never change, so they won't cause re-renders.
+ */
+export function useTagVisibilityActions() {
+  const store = useTagVisibilityStore()
+
+  return useMemo(
+    () => ({
+      toggleTagOrCategory: (id: TagOrCategory) => store.toggleVisibility(id),
+      setTagOrCategoryVisibility: (id: TagOrCategory, visible: boolean) => store.setVisibility(id, visible),
+      isTagOrCategoryVisible: (id: TagOrCategory) => store.isVisible(id),
+      getCategoryVisibilityState: (categoryId: TagCategoryId, tagIds: TagId[]) =>
+        store.getCategoryVisibilityState(categoryId, tagIds),
+      getHiddenTagIds: () => store.getHiddenTagIds()
+    }),
+    [store]
+  )
+}
+
+/**
+ * Hook for components that need to re-render on any visibility change (e.g., the menu).
+ * Use sparingly - prefer useVisibleItems for fine-grained subscriptions.
+ */
+export function useTagVisibilityForceUpdate(): void {
+  const store = useTagVisibilityStore()
+  const [, forceUpdate] = useReducer(x => x + 1, 0)
+
+  useEffect(() => {
+    return store.subscribe(forceUpdate)
+  }, [store])
+}
+
+/**
+ * Hook to filter an array of items by their tags' visibility.
+ * Automatically re-renders when tag visibility changes.
+ *
+ * @example
+ * function MyComponent() {
+ *   const visibleItems = useVisibleItems(allItems) // Automatically updates on visibility change
+ *   return <div>{visibleItems.map(...)}</div>
+ * }
+ */
+export function useVisibleItems<T extends { tags?: Tag[] }>(items: T[]): T[] {
+  // Subscribe to visibility changes - component re-renders when any tag visibility changes
+  useTagVisibilityForceUpdate()
+
+  const store = useTagVisibilityStore()
+
+  return useMemo(() => items.filter(item => store.isEffectivelyVisible(item.tags ?? [])), [items, store])
 }
