@@ -14,7 +14,7 @@ A modern web-based floor plan editor specifically designed for strawbale constru
 
 > **Development version:** [development--strawbaler.netlify.app](https://development--strawbaler.netlify.app/) (latest features, may be unstable)
 
-**🎥 [Watch Demo Video](https://www.youtube.com/watch?v=oe9VnhEW0JE)** - See Strawbaler's features in action
+**🎥 Watch the Tool in Action: [Demo Video 0.1](https://www.youtube.com/watch?v=oe9VnhEW0JE) - [Demo Video 0.2](https://youtu.be/7Ed09YNGSn8)**
 
 ## ✨ Features
 
