@@ -253,7 +253,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
       if (ridgeIntersection) {
         const lineLength = distVec2(line.end, line.start)
         if (lineLength > 0.001) {
-          ridgeT = distVec2(ridgeIntersection, line.start) / lineLength
+          ridgeT = projectVec2(line.start, ridgeIntersection, wallLine.direction) / lineLength
         }
       }
     }
