@@ -18,7 +18,8 @@ import { useMaterialsMap } from '@/construction/materials/store'
 import type { MaterialPartItem, MaterialParts, MaterialPartsList, PartId } from '@/construction/parts'
 import { SawIcon } from '@/shared/components/Icons'
 import { Bounds2D, type Polygon2D, type Vec3, type Volume, isZeroVec3 } from '@/shared/geometry'
-import { formatArea, formatLength, formatLengthInMeters, formatVolume } from '@/shared/utils/formatting'
+import i18n from '@/shared/i18n/config'
+import * as i18nFormatters from '@/shared/i18n/formatters'
 
 type BadgeColor = React.ComponentProps<typeof Badge>['color']
 
@@ -59,6 +60,15 @@ const STRAW_CATEGORY_LABELS: Record<StrawCategory, string> = {
   stuffed: 'Stuffed fill'
 }
 
+// Helper functions that use locale-aware formatting
+// These use the current i18n locale to ensure consistency throughout the component
+const getLocale = () => i18n.language || 'en'
+
+const formatLength = (mm: number) => i18nFormatters.formatLength(mm, getLocale())
+const formatLengthInMeters = (mm: number) => i18nFormatters.formatLengthInMeters(mm, getLocale())
+const formatArea = (mm2: number) => i18nFormatters.formatArea(mm2, getLocale())
+const formatVolume = (mm3: number) => i18nFormatters.formatVolume(mm3, getLocale())
+
 const formatCrossSection = ([first, second]: [number, number]) =>
   `${formatLengthInMeters(first)} × ${formatLengthInMeters(second)}`
 
@@ -87,12 +97,9 @@ const formatSheetDimensions = (size: Vec3, thickness?: number) => {
   return formatDimensions(size)
 }
 
-const formatWeight = (weight?: number) => {
+const formatWeight = (weight: number | undefined): string => {
   if (weight === undefined) return '—'
-  if (weight > 1000) {
-    return `${new Intl.NumberFormat(undefined, { maximumFractionDigits: 3 }).format(weight / 1000)} t`
-  }
-  return `${new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(weight)} kg`
+  return i18nFormatters.formatWeight(weight, getLocale())
 }
 
 const getIssueSeverity = (part: MaterialPartItem): 'error' | 'warning' | undefined => {

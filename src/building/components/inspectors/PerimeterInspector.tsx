@@ -31,7 +31,7 @@ import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { ConstructionPlanIcon, FitToViewIcon, Model3DIcon, RoofIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
 import { Bounds2D, type Length, calculatePolygonArea } from '@/shared/geometry'
-import { formatArea, formatLength } from '@/shared/utils/formatting'
+import { useFormatters } from '@/shared/i18n/useFormatters'
 
 interface PerimeterInspectorProps {
   selectedId: PerimeterId
@@ -108,6 +108,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
   const viewportActions = useViewportActions()
   const { setMode } = useViewModeActions()
   const roofsOfStorey = useRoofsOfActiveStorey()
+  const { formatArea, formatLength } = useFormatters()
 
   // Find roof associated with this perimeter
   const associatedRoof = useMemo(

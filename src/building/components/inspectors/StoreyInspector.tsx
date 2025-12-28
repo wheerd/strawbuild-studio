@@ -5,7 +5,7 @@ import type { StoreyId } from '@/building/model/ids'
 import { usePerimeters, useStoreyById } from '@/building/store'
 import { getPerimeterStats } from '@/construction/perimeters/perimeter'
 import { getLevelColor } from '@/editor/status-bar/StoreySelector'
-import { formatArea, formatLength, formatVolume } from '@/shared/utils/formatting'
+import { useFormatters } from '@/shared/i18n/useFormatters'
 
 interface StoreyInspectorProps {
   selectedId: StoreyId
@@ -16,6 +16,7 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
   const storey = useStoreyById(selectedId)
   const perimeters = Object.values(usePerimeters()).filter(perimeter => perimeter.storeyId === selectedId)
   const perimeterStats = perimeters.map(perimeter => getPerimeterStats(perimeter))
+  const { formatArea, formatLength, formatVolume, formatPercentage, formatNumber } = useFormatters()
   const combinedStats = perimeterStats.reduce(
     (acc, stats) => ({
       footprint: acc.footprint + stats.footprint,
@@ -133,7 +134,7 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
             <DataList.Label>Wall-to-window ratio (WWR)</DataList.Label>
             <DataList.Value>
               <Flex justify="end" width="100%">
-                {((combinedStats.totalWindowArea / combinedStats.totalFinishedWallArea) * 100).toFixed(1)}%
+                {formatPercentage((combinedStats.totalWindowArea / combinedStats.totalFinishedWallArea) * 100)}
               </Flex>
             </DataList.Value>
           </DataList.Item>
@@ -157,7 +158,7 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
             <DataList.Label>Surface-area-to-volume ratio (SA:V)</DataList.Label>
             <DataList.Value>
               <Flex justify="end" width="100%">
-                {((combinedStats.totalExteriorWallArea / combinedStats.totalVolume) * 1000).toFixed(2)}
+                {formatNumber((combinedStats.totalExteriorWallArea / combinedStats.totalVolume) * 1000, 2)}
               </Flex>
             </DataList.Value>
           </DataList.Item>

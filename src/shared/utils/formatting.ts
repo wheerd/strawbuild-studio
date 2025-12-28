@@ -1,7 +1,27 @@
+/**
+ * @deprecated This module now re-exports from @/shared/i18n/formatters with default 'en' locale.
+ * For locale-aware formatting in React components, use the useFormatters() hook instead:
+ *
+ * ```typescript
+ * import { useFormatters } from '@/shared/i18n/useFormatters'
+ *
+ * function MyComponent() {
+ *   const { formatLength, formatArea } = useFormatters()
+ *   return <Text>{formatLength(1234)}</Text>
+ * }
+ * ```
+ *
+ * This module maintains backward compatibility for existing code,
+ * but all formatting defaults to English locale ('en').
+ */
 import type { Area, Length, Volume } from '@/shared/geometry'
+import * as i18nFormatters from '@/shared/i18n/formatters'
 
 /**
  * Formats a length value (in mm) to the most appropriate unit with optimal readability.
+ *
+ * **Note**: This function defaults to English locale. For locale-aware formatting,
+ * use the `useFormatters()` hook in React components.
  *
  * **Formatting Rules:**
  *
@@ -25,65 +45,23 @@ import type { Area, Length, Volume } from '@/shared/geometry'
  *
  * @param lengthInMm - Length value in millimeters (will be rounded to nearest integer)
  * @returns Formatted string with appropriate unit (mm, cm, or m)
- *
- * @example
- * ```typescript
- * formatLength(5)    // "5mm"
- * formatLength(23)   // "23mm"
- * formatLength(50)   // "5cm"
- * formatLength(95)   // "95mm" (not divisible by 10)
- * formatLength(100)  // "10cm"
- * formatLength(105)  // "0.105m" (would be 10.5cm with decimal)
- * formatLength(190)  // "19cm"
- * formatLength(200)  // "0.2m" (≥ 200mm uses meters)
- * formatLength(1000) // "1m"
- * formatLength(1300) // "1.3m"
- * formatLength(1250) // "1.25m"
- * formatLength(1234) // "1.234m"
- * ```
  */
 export function formatLength(lengthInMm: Length): string {
-  const value = Math.round(lengthInMm)
-
-  if (value === 0) {
-    return '0m'
-  }
-
-  if (Math.abs(value) < 100 && value % 10 !== 0) {
-    return `${value}mm`
-  }
-
-  if (Math.abs(value) < 200 && value % 10 === 0) {
-    const cm = value / 10
-    return `${cm}cm`
-  }
-
-  const meters = value / 1000
-  if (value % 1000 === 0) {
-    return `${meters}m` // e.g., "2m"
-  } else if (value % 100 === 0) {
-    return `${meters.toFixed(1)}m` // e.g., "1.3m"
-  } else if (value % 10 === 0) {
-    return `${meters.toFixed(2)}m` // e.g., "1.25m"
-  } else {
-    return `${meters.toFixed(3)}m` // e.g., "1.234m"
-  }
+  return i18nFormatters.formatLength(lengthInMm, 'en')
 }
 
-export const formatLengthInMeters = (length: number): string => `${(length / 1000).toFixed(3)}m`
+export function formatLengthInMeters(length: number): string {
+  return i18nFormatters.formatLengthInMeters(length, 'en')
+}
 
-const MM2_PER_M2 = 1_000_000
-const MM3_PER_M3 = 1_000_000_000
+export function formatArea(area: Area): string {
+  return i18nFormatters.formatArea(area, 'en')
+}
 
-const MM3_PER_LITER = 1_000_000
+export function formatVolume(volume: Volume): string {
+  return i18nFormatters.formatVolume(volume, 'en')
+}
 
-export const formatArea = (area: Area) => `${(area / MM2_PER_M2).toFixed(2)}m²`
-export const formatVolume = (volume: Volume) => `${(volume / MM3_PER_M3).toFixed(2)}m³`
-
-export const formatVolumeInLiters = (volume: Volume) => {
-  const liters = volume / MM3_PER_LITER
-  if (liters === Math.round(liters)) {
-    return `${liters}L`
-  }
-  return `${liters.toFixed(1)}L`
+export function formatVolumeInLiters(volume: Volume): string {
+  return i18nFormatters.formatVolumeInLiters(volume, 'en')
 }
