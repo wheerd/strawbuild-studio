@@ -97,9 +97,12 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
               <Flex direction="column" gap="2">
                 <Heading size="3">Demo Video</Heading>
                 <Text size="2">
-                  Watch a quick demonstration of Strawbaler&apos;s features:{' '}
+                  Watch a quick demonstration of Strawbaler&apos;s features on YouTube:{' '}
                   <Link href="https://www.youtube.com/watch?v=oe9VnhEW0JE" target="_blank" rel="noopener noreferrer">
-                    View on YouTube
+                    Demo 0.1
+                  </Link>{' '}
+                  <Link href="https://www.youtube.com/watch?v=7Ed09YNGSn8" target="_blank" rel="noopener noreferrer">
+                    Demo 0.2 
                   </Link>
                 </Text>
                 <Heading size="3">Local Storage</Heading>
