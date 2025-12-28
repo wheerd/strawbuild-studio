@@ -1,5 +1,5 @@
 {
-  "introduction": "Dies ist ein speziell für die Strohballenbauplanning entwickeltes Werkzeug. Erstellen Sie Grundrisse mit Wänden, Öffnungen, Dächern und Böden. Konfigurieren Sie die Konstruktion und generieren Sie Pläne und 3D-Modelle. Erhalten Sie Schätzungen für benötigte Materialien. Exportieren Sie die Konstruktion zur Verwendung in anderen CAD-Werkzeugen.",
+  "introduction": "Dies ist ein speziell für die Strohballenbauplanning entwickeltes Werkzeug. Erstelle Grundrisse mit Wänden, Öffnungen, Dächern und Böden. Konfiguriere die Konstruktion und generiere Pläne und 3D-Modelle. Erhalte Schätzungen für benötigte Materialien. Exportiere die Konstruktion zur Verwendung in anderen CAD-Werkzeugen.",
   "keyFeatures": {
     "title": "Hauptfunktionen",
     "items": [
@@ -23,17 +23,17 @@
   },
   "demoVideo": {
     "title": "Demo-Video",
-    "description": "Sehen Sie sich eine kurze Demonstration der Funktionen von Strawbaler auf YouTube an:",
+    "description": "Schau dir eine kurze Demonstration der Funktionen von Strawbaler auf YouTube an:",
     "demo01": "Demo 0.1",
     "demo02": "Demo 0.2"
   },
   "localStorage": {
     "title": "Lokaler Speicher",
-    "description": "Diese Anwendung speichert Daten lokal in Ihrem Browser, um:",
+    "description": "Diese Anwendung speichert Daten lokal in deinem Browser, um:",
     "items": [
-      "Zu merken, dass Sie diese Willkommensnachricht gesehen haben",
-      "Ihre Grundrisse und Projekte zu speichern",
-      "Ihre Konfigurationseinstellungen zu bewahren"
+      "Zu merken, dass du diese Willkommensnachricht gesehen hast",
+      "Deine Grundrisse und Projekte zu speichern",
+      "Deine Konfigurationseinstellungen zu bewahren"
     ],
     "privacy": "Es werden keine Cookies, Tracking oder Drittanbieter-Analysen verwendet."
   },
@@ -44,12 +44,12 @@
       "Keine Garantie für die Genauigkeit von Berechnungen, Plänen oder 3D-Modellen",
       "Zwischen Versionen können Breaking Changes auftreten",
       "Projektdaten können aufgrund von Browser-Speicherbeschränkungen oder Updates verloren gehen",
-      "Speichern und exportieren Sie Ihre Arbeit regelmäßig",
+      "Speichere und exportiere deine Arbeit regelmäßig",
       "Dieses Werkzeug ersetzt keine professionelle Ingenieurberatung"
     ]
   },
   "continueButton": "Ich verstehe & Fortfahren",
-  "reviewInfo": "Sie können diese Informationen jederzeit über das Info-Symbol in der Symbolleiste einsehen",
+  "reviewInfo": "Du kannst diese Informationen jederzeit über das Info-Symbol in der Symbolleiste einsehen",
   "version": "Version {{version}}",
   "viewOnGitHub": "Auf GitHub ansehen",
   "changeLanguage": "Sprache ändern"
