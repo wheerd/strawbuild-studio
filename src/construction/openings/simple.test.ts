@@ -110,9 +110,9 @@ describe('SimpleOpeningAssembly', () => {
 
       // Verify measurement values
       expect(openingWidthMeasurements[0].endPoint[0] - openingWidthMeasurements[0].startPoint[0]).toBe(1000) // width (AutoMeasurement)
-      expect((sillHeightMeasurements[0] as any).label).toBe('800mm') // sillHeight (DirectMeasurement)
-      expect((headerHeightMeasurements[0] as any).label).toBe('2000mm') // sillHeight + height (DirectMeasurement)
-      expect((openingHeightMeasurements[0] as any).label).toBe('1200mm') // height (DirectMeasurement)
+      expect((sillHeightMeasurements[0] as any).length).toBe(800) // sillHeight (DirectMeasurement)
+      expect((headerHeightMeasurements[0] as any).length).toBe(2000) // sillHeight + height (DirectMeasurement)
+      expect((openingHeightMeasurements[0] as any).length).toBe(1200) // height (DirectMeasurement)
     })
 
     it('generates only header and opening width measurements for door', () => {
@@ -136,7 +136,7 @@ describe('SimpleOpeningAssembly', () => {
 
       // Verify measurement values
       expect(openingWidthMeasurements[0].endPoint[0] - openingWidthMeasurements[0].startPoint[0]).toBe(800) // width (AutoMeasurement)
-      expect((headerHeightMeasurements[0] as any).label).toBe('2000mm') // height (DirectMeasurement)
+      expect((headerHeightMeasurements[0] as any).length).toBe(2000) // height (DirectMeasurement)
     })
 
     it('creates only header for door without sill height', () => {

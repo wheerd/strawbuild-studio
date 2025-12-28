@@ -7,7 +7,7 @@ import { type Projection, allPoints, bounds3Dto2D, projectPoint } from '@/constr
 import { type AutoMeasurement, type DirectMeasurement, processMeasurements } from '@/construction/measurements'
 import type { ConstructionModel } from '@/construction/model'
 import { Bounds2D, IDENTITY, type Vec3, distVec2, newVec2, newVec3 } from '@/shared/geometry'
-import { formatLength } from '@/shared/utils/formatting'
+import { useFormatters } from '@/shared/i18n/useFormatters'
 
 export interface MeasurementsProps {
   model: ConstructionModel
@@ -15,6 +15,8 @@ export interface MeasurementsProps {
 }
 
 export function Measurements({ model, projection }: MeasurementsProps): React.JSX.Element {
+  const { formatLength } = useFormatters()
+
   const planPoints = useMemo(() => {
     const elementPoints = model.elements.flatMap(e => Array.from(allPoints(e, projection, IDENTITY)))
 
@@ -77,16 +79,17 @@ export function Measurements({ model, projection }: MeasurementsProps): React.JS
   )
 
   const directMeasurements = model.measurements
-    .filter((m): m is DirectMeasurement => 'label' in m && m.label != null)
+    .filter((m): m is DirectMeasurement => 'length' in m && m.length != null)
     .map(m => {
       const startProjected = projectPoint(m.startPoint, projection)
       const endProjected = projectPoint(m.endPoint, projection)
 
       return {
-        ...m,
         startPoint: newVec2(startProjected[0], startProjected[1]),
         endPoint: newVec2(endProjected[0], endProjected[1]),
-        offset: m.offset * (projection[0] > 0 && startProjected[0] === endProjected[0] ? -60 : 60)
+        label: m.label ?? formatLength(m.length),
+        offset: m.offset * (projection[0] > 0 && startProjected[0] === endProjected[0] ? -60 : 60),
+        tags: m.tags
       }
     })
 

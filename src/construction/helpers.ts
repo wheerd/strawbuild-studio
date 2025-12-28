@@ -34,7 +34,6 @@ import {
   subVec2,
   vec2To3
 } from '@/shared/geometry'
-import { formatLength } from '@/shared/utils/formatting'
 
 import { createConstructionElement } from './elements'
 import type { MaterialId } from './materials/material'
@@ -462,7 +461,8 @@ export class PolygonWithBoundingRect {
       endPoint,
       extend1,
       extend2,
-      label: offset ? formatLength(this.dirExtent) : undefined,
+      length: this.dirExtent,
+      label: undefined,
       tags,
       offset
     }
@@ -491,7 +491,8 @@ export class PolygonWithBoundingRect {
       endPoint,
       extend1,
       extend2,
-      label: offset ? formatLength(this.perpExtent) : undefined,
+      length: this.perpExtent,
+      label: undefined,
       tags,
       offset
     }
