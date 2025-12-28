@@ -6,7 +6,7 @@ async function openMaterialsConfig(page: Page): Promise<Locator> {
   await page.evaluate(() => {
     localStorage.setItem(
       'strawbaler-welcome-state',
-      '{"accepted":true,"acceptedAt":"2025-10-22T06:21:42.893Z","version":"1.0"}'
+      '{"accepted":true,"acceptedAt":"2025-10-22T06:21:42.893Z","version":"0.2"}'
     )
   })
   await expect(page.getByTestId('main-toolbar')).toBeVisible({ timeout: 10000 })
