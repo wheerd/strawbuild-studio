@@ -1,9 +1,11 @@
 import { Cross2Icon, ExclamationTriangleIcon, GitHubLogoIcon } from '@radix-ui/react-icons'
 import { Button, Callout, Dialog, Flex, Grid, Heading, IconButton, Link, Text } from '@radix-ui/themes'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { VERSION_INFO } from '@/shared/utils/version'
 
+import { LanguageSwitcher } from './LanguageSwitcher'
 import { Logo } from './Logo'
 
 export type OpenMode = 'first-visit' | 'manual'
@@ -16,6 +18,7 @@ export interface WelcomeModalProps {
 }
 
 export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalProps): React.JSX.Element {
+  const { t } = useTranslation('welcome')
   const isFirstVisit = mode === 'first-visit'
 
   const handleOpenChange = (open: boolean): void => {
@@ -47,47 +50,41 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
               <Flex align="center" gap="2">
                 <Logo />
               </Flex>
-              {!isFirstVisit && (
-                <Dialog.Close>
-                  <IconButton variant="ghost" highContrast>
-                    <Cross2Icon />
-                  </IconButton>
-                </Dialog.Close>
-              )}
+              <Flex gap="2" align="center">
+                <LanguageSwitcher />
+                {!isFirstVisit && (
+                  <Dialog.Close>
+                    <IconButton variant="ghost" highContrast>
+                      <Cross2Icon />
+                    </IconButton>
+                  </Dialog.Close>
+                )}
+              </Flex>
             </Flex>
           </Dialog.Title>
 
           <Flex direction="column" mt="-2" p="0" gap="3">
-            <Text>
-              This is a tool specifically designed for strawbale construction planning. Create floor plans with walls,
-              openings, roof and floors. Configure the construction and generate plans and 3D models. Get estimates for
-              required materials. Export construction for use in other CAD tools.
-            </Text>
+            <Text>{t('introduction')}</Text>
 
             <Grid columns="1fr 1fr" gap="4">
               <Flex direction="column" gap="2">
-                <Heading size="3">Key Features</Heading>
+                <Heading size="3">{t('keyFeatures.title')}</Heading>
                 <Text as="div" size="1">
                   <ul style={{ listStyleType: 'disc', margin: 0, paddingLeft: '1.5rem' }}>
-                    <li>Define perimeter walls in finished dimensions (with plasters) with windows and doors</li>
-                    <li>Add gable or shed roofs</li>
-                    <li>Configure your wall, floor and roof assembly (infill, strawhenge, modules)</li>
-                    <li>Generate 2D construction plans for invdividual walls or whole floors</li>
-                    <li>View and export 3D models of the construction (IFC)</li>
-                    <li>Get an overview of materials used in the construction</li>
+                    {(t('keyFeatures.items', { returnObjects: true }) as string[]).map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
                   </ul>
                 </Text>
               </Flex>
 
               <Flex direction="column" gap="2">
-                <Heading size="3">Planned Features</Heading>
+                <Heading size="3">{t('plannedFeatures.title')}</Heading>
                 <Text as="div" size="1">
                   <ul style={{ listStyleType: 'disc', margin: 0, paddingLeft: '1.5rem' }}>
-                    <li>Cost and work hours estimations</li>
-                    <li>Support for intermediate walls and foundations</li>
-                    <li>Translation in more languages</li>
-                    <li>Support for more irregular building shapes</li>
-                    <li>Support for multiple projects</li>
+                    {(t('plannedFeatures.items', { returnObjects: true }) as string[]).map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
                   </ul>
                 </Text>
               </Flex>
@@ -95,8 +92,8 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
 
             <Grid columns="1fr 1fr" gap="4">
               <Flex direction="column" gap="2">
-                <Heading size="3">Demo Video</Heading>
-                <Text size="2">Watch a quick demonstration of Strawbaler&apos;s features on YouTube:</Text>
+                <Heading size="3">{t('demoVideo.title')}</Heading>
+                <Text size="2">{t('demoVideo.description')}</Text>
                 <Flex direction="row" gap="4" align="center">
                   <Link
                     size="2"
@@ -105,7 +102,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Demo 0.1
+                    {t('demoVideo.demo01')}
                   </Link>
                   <Link
                     size="2"
@@ -114,20 +111,20 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Demo 0.2
+                    {t('demoVideo.demo02')}
                   </Link>
                 </Flex>
-                <Heading size="3">Local Storage</Heading>
+                <Heading size="3">{t('localStorage.title')}</Heading>
                 <Text as="div" size="1">
-                  This application stores data locally in your browser to:
+                  {t('localStorage.description')}
                   <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.5rem' }}>
-                    <li>Remember that you&apos;ve seen this welcome message</li>
-                    <li>Save your floor plans and projects</li>
-                    <li>Preserve your configuration preferences</li>
+                    {(t('localStorage.items', { returnObjects: true }) as string[]).map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
                   </ul>
                 </Text>
                 <Text size="2" color="gray">
-                  No cookies, tracking, or third-party analytics are used.
+                  {t('localStorage.privacy')}
                 </Text>
               </Flex>
 
@@ -137,16 +134,12 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                 </Callout.Icon>
                 <Callout.Text>
                   <Flex direction="column" gap="2" as="span">
-                    <Text weight="bold">Important Disclaimer</Text>
-                    <Text>This tool is currently in active development and provided as-is:</Text>
+                    <Text weight="bold">{t('disclaimer.title')}</Text>
+                    <Text>{t('disclaimer.intro')}</Text>
                     <Flex direction="column" ml="4" gap="0" as="span">
-                      <Text>No guarantees for accuracy of calculations, plans, or 3D models</Text>
-                      <Text>Breaking changes may occur between versions</Text>
-                      <Text>Project data may be lost due to browser storage limitations or updates</Text>
-                      <Text>
-                        <strong>Always save and export your work regularly</strong>
-                      </Text>
-                      <Text>This tool does not replace professional engineering consultation</Text>
+                      {(t('disclaimer.items', { returnObjects: true }) as string[]).map((item, index) => (
+                        <Text key={index}>{index === 3 ? <strong>{item}</strong> : item}</Text>
+                      ))}
                     </Flex>
                   </Flex>
                 </Callout.Text>
@@ -155,16 +148,16 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
 
             <Flex direction="column" gap="2" align="center">
               <Button size="3" onClick={onAccept} style={{ width: '100%' }}>
-                I Understand &amp; Continue
+                {t('continueButton')}
               </Button>
               {isFirstVisit && (
                 <Text size="1" color="gray" align="center">
-                  You can review this information anytime via the info icon in the toolbar
+                  {t('reviewInfo')}
                 </Text>
               )}
               <Flex direction="column" gap="1" align="center" style={{ marginTop: 'var(--space-2)' }}>
                 <Text size="1" color="gray" align="center">
-                  Version {VERSION_INFO.version}
+                  {t('version', { version: VERSION_INFO.version })}
                 </Text>
                 <Flex gap="2" align="center" justify="center">
                   <GitHubLogoIcon width="14" height="14" />
@@ -174,7 +167,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    View on GitHub
+                    {t('viewOnGitHub')}
                   </Link>
                 </Flex>
               </Flex>
