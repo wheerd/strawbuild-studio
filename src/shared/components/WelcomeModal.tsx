@@ -96,15 +96,27 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
             <Grid columns="1fr 1fr" gap="4">
               <Flex direction="column" gap="2">
                 <Heading size="3">Demo Video</Heading>
-                <Text size="2">
-                  Watch a quick demonstration of Strawbaler&apos;s features on YouTube:{' '}
-                  <Link href="https://www.youtube.com/watch?v=oe9VnhEW0JE" target="_blank" rel="noopener noreferrer">
+                <Text size="2">Watch a quick demonstration of Strawbaler&apos;s features on YouTube:</Text>
+                <Flex direction="row" gap="4" align="center">
+                  <Link
+                    size="2"
+                    weight="bold"
+                    href="https://www.youtube.com/watch?v=oe9VnhEW0JE"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     Demo 0.1
-                  </Link>{' '}
-                  <Link href="https://www.youtube.com/watch?v=7Ed09YNGSn8" target="_blank" rel="noopener noreferrer">
-                    Demo 0.2 
                   </Link>
-                </Text>
+                  <Link
+                    size="2"
+                    weight="bold"
+                    href="https://www.youtube.com/watch?v=7Ed09YNGSn8"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Demo 0.2
+                  </Link>
+                </Flex>
                 <Heading size="3">Local Storage</Heading>
                 <Text as="div" size="1">
                   This application stores data locally in your browser to:
