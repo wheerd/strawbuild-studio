@@ -769,16 +769,18 @@ function SheetMaterialFields({
 
       <Flex direction="column" gap="2">
         <Text size="2" weight="medium" color="gray">
-          Sheet Type
+          {t('materials.sheetType')}
         </Text>
         <SegmentedControl.Root
           value={material.sheetType}
           onValueChange={value => onUpdate({ sheetType: value as SheetMaterial['sheetType'] })}
           size="2"
         >
-          <SegmentedControl.Item value="solid">Solid</SegmentedControl.Item>
-          <SegmentedControl.Item value="tongueAndGroove">Tongue &amp; Groove</SegmentedControl.Item>
-          <SegmentedControl.Item value="flexible">Flexible</SegmentedControl.Item>
+          <SegmentedControl.Item value="solid">{t('materials.sheetTypeSolid')}</SegmentedControl.Item>
+          <SegmentedControl.Item value="tongueAndGroove">
+            {t('materials.sheetTypeTongueAndGroove')}
+          </SegmentedControl.Item>
+          <SegmentedControl.Item value="flexible">{t('materials.sheetTypeFlexible')}</SegmentedControl.Item>
         </SegmentedControl.Root>
       </Flex>
     </Flex>
@@ -792,6 +794,7 @@ function VolumeMaterialFields({
   material: VolumeMaterial
   onUpdate: (updates: Partial<VolumeMaterial>) => void
 }) {
+  const { t } = useTranslation('config')
   const { formatVolume, formatVolumeInLiters } = useFormatters()
   const [newVolumeInput, setNewVolumeInput] = useState<number>(1_000_000)
   const [volumeUnit, setVolumeUnit] = useState<'liter' | 'm3'>('liter')
@@ -819,7 +822,7 @@ function VolumeMaterialFields({
       <Flex direction="row" justify="between" align="end">
         <Flex direction="column" gap="2">
           <Text size="2" weight="medium" color="gray" id="available-volumes">
-            Available Volumes
+            {t('materials.availableVolumes')}
           </Text>
           <Flex gap="2" wrap="wrap" role="list" aria-labelledby="available-volumes">
             {material.availableVolumes.map(volume => (
@@ -832,7 +835,7 @@ function VolumeMaterialFields({
                     color="gray"
                     onClick={() => handleRemoveVolume(volume)}
                     style={{ cursor: 'pointer' }}
-                    aria-label="Remove volume option"
+                    aria-label={t('materials.removeVolume')}
                   >
                     <Cross2Icon width="10" height="10" />
                   </IconButton>
@@ -844,7 +847,7 @@ function VolumeMaterialFields({
                 <Callout.Icon>
                   <ExclamationTriangleIcon />
                 </Callout.Icon>
-                <Callout.Text>No volumes configured</Callout.Text>
+                <Callout.Text>{t('materials.noVolumes')}</Callout.Text>
               </Callout.Root>
             )}
           </Flex>
@@ -866,11 +869,11 @@ function VolumeMaterialFields({
               unit={volumeUnit}
               size="2"
               style={{ width: '8em' }}
-              aria-label="Volume input"
+              aria-label={t('materials.volumeInput')}
             />
             <IconButton
-              title="Add volume"
-              aria-label="Add volume option"
+              title={t('materials.addVolume')}
+              aria-label={t('materials.addVolumeOption')}
               onClick={handleAddVolume}
               variant="surface"
               size="2"
@@ -891,12 +894,13 @@ function StrawbaleMaterialFields({
   material: StrawbaleMaterial
   onUpdate: (updates: Partial<StrawbaleMaterial>) => void
 }) {
+  const { t } = useTranslation('config')
   return (
     <Flex direction="column" gap="3">
       <Grid columns="8em 1fr 8em 1fr" gap="3" gapX="4">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Min Bale Length
+            {t('materials.minBaleLength')}
           </Text>
         </Label.Root>
         <LengthField
@@ -908,7 +912,7 @@ function StrawbaleMaterialFields({
 
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Max Bale Length
+            {t('materials.maxBaleLength')}
           </Text>
         </Label.Root>
         <LengthField
@@ -920,14 +924,14 @@ function StrawbaleMaterialFields({
 
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Bale Height
+            {t('materials.baleHeight')}
           </Text>
         </Label.Root>
         <LengthField value={material.baleHeight} onChange={baleHeight => onUpdate({ baleHeight })} unit="cm" size="2" />
 
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Bale Width
+            {t('materials.baleWidth')}
           </Text>
         </Label.Root>
         <LengthField value={material.baleWidth} onChange={baleWidth => onUpdate({ baleWidth })} unit="cm" size="2" />
@@ -936,14 +940,14 @@ function StrawbaleMaterialFields({
       <Grid columns="8em 1fr 8em 1fr" gap="3" gapX="4">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Tolerance
+            {t('materials.tolerance')}
           </Text>
         </Label.Root>
         <LengthField value={material.tolerance} onChange={tolerance => onUpdate({ tolerance })} unit="mm" size="2" />
 
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Top Cutoff Limit
+            {t('materials.topCutoffLimit')}
           </Text>
         </Label.Root>
         <LengthField
@@ -955,7 +959,7 @@ function StrawbaleMaterialFields({
 
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Flake Size
+            {t('materials.flakeSize')}
           </Text>
         </Label.Root>
         <LengthField value={material.flakeSize} onChange={flakeSize => onUpdate({ flakeSize })} unit="cm" size="2" />
