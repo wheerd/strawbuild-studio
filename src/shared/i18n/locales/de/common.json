@@ -2,6 +2,24 @@
   "actions": {
     "addNew": "Neu hinzufügen"
   },
+  "autoSave": {
+    "exporting": "Exportiere...",
+    "importing": "Importiere...",
+    "exportFailed": "Export/Import fehlgeschlagen",
+    "autoSaving": "Speichere automatisch...",
+    "autoSaveFailed": "Automatisches Speichern fehlgeschlagen",
+    "autoSaved": "Automatisch gespeichert {{time}}",
+    "notSaved": "Nicht gespeichert",
+    "justNow": "Gerade eben",
+    "minutesAgo": "vor {{minutes}}min",
+    "hoursAgo": "vor {{hours}}h",
+    "importExportIfc": "IFC Import/Export",
+    "exportBuildingModel": "Gebäudemodell exportieren",
+    "exportConstructionModel": "Konstruktionsmodell exportieren",
+    "import": "Importieren",
+    "saveToFile": "In Datei speichern",
+    "loadFromFile": "Aus Datei laden"
+  },
   "storeys": {
     "manageFloors": "Geschosse verwalten",
     "manageFloorsTooltip": "Geschosse verwalten",

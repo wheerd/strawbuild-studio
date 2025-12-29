@@ -2,6 +2,24 @@
   "actions": {
     "addNew": "Add New"
   },
+  "autoSave": {
+    "exporting": "Exporting...",
+    "importing": "Importing...",
+    "exportFailed": "Export/Import failed",
+    "autoSaving": "Auto-saving...",
+    "autoSaveFailed": "Auto-save failed",
+    "autoSaved": "Auto-saved {{time}}",
+    "notSaved": "Not saved",
+    "justNow": "Just now",
+    "minutesAgo": "{{minutes}}m ago",
+    "hoursAgo": "{{hours}}h ago",
+    "importExportIfc": "Import/Export IFC",
+    "exportBuildingModel": "Export Building Model",
+    "exportConstructionModel": "Export Construction Model",
+    "import": "Import",
+    "saveToFile": "Save to File",
+    "loadFromFile": "Load from File"
+  },
   "storeys": {
     "manageFloors": "Manage Floors",
     "manageFloorsTooltip": "Manage floors",
