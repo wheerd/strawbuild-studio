@@ -556,7 +556,7 @@ function DimensionalMaterialFields({
       <Flex direction="row" justify="between" align="end">
         <Flex direction="column" gap="2">
           <Text size="2" weight="medium" color="gray" id="stock-lengths">
-            Stock Lengths
+            {t('materials.stockLengths')}
           </Text>
           <Flex gap="2" wrap="wrap" role="list" aria-labelledby="stock-lengths">
             {material.lengths.map(length => (
@@ -569,7 +569,7 @@ function DimensionalMaterialFields({
                     color="gray"
                     onClick={() => handleRemoveLength(length)}
                     style={{ cursor: 'pointer' }}
-                    aria-label="Remove stock length"
+                    aria-label={t('materials.removeStockLength')}
                   >
                     <Cross2Icon width="10" height="10" />
                   </IconButton>
@@ -581,7 +581,7 @@ function DimensionalMaterialFields({
                 <Callout.Icon>
                   <ExclamationTriangleIcon />
                 </Callout.Icon>
-                <Callout.Text>No lengths configured</Callout.Text>
+                <Callout.Text>{t('materials.noLengths')}</Callout.Text>
               </Callout.Root>
             )}
           </Flex>
@@ -593,9 +593,15 @@ function DimensionalMaterialFields({
             unit="cm"
             size="2"
             style={{ width: '8em' }}
-            aria-label="Stock length input"
+            aria-label={t('materials.stockLengthInput')}
           />
-          <IconButton title="Add" aria-label="Add stock length" onClick={handleAddLength} variant="surface" size="2">
+          <IconButton
+            title={t('materials.add')}
+            aria-label={t('materials.addStockLength')}
+            onClick={handleAddLength}
+            variant="surface"
+            size="2"
+          >
             <PlusIcon />
           </IconButton>
         </Flex>
@@ -611,6 +617,7 @@ function SheetMaterialFields({
   material: SheetMaterial
   onUpdate: (updates: Partial<SheetMaterial>) => void
 }) {
+  const { t } = useTranslation('config')
   const { formatLength, formatDimensions2D } = useFormatters()
   const [newWidth, setNewWidth] = useState<Length>(material.sizes[0]?.smallerLength ?? 600)
   const [newLength, setNewLength] = useState<Length>(material.sizes[0]?.biggerLength ?? 1200)
@@ -666,7 +673,7 @@ function SheetMaterialFields({
       <Flex direction="row" justify="between" align="end">
         <Flex direction="column" gap="2">
           <Text size="2" weight="medium" color="gray" id="sheet-sizes">
-            Sheet Sizes
+            {t('materials.sheetSizes')}
           </Text>
           <Flex gap="2" wrap="wrap" role="list" aria-labelledby="sheet-sizes">
             {material.sizes.map(size => (
@@ -679,7 +686,7 @@ function SheetMaterialFields({
                     color="gray"
                     onClick={() => handleRemoveSize(size)}
                     style={{ cursor: 'pointer' }}
-                    aria-label="Remove sheet size"
+                    aria-label={t('materials.removeSheetSize')}
                   >
                     <Cross2Icon width="10" height="10" />
                   </IconButton>
@@ -691,7 +698,7 @@ function SheetMaterialFields({
                 <Callout.Icon>
                   <ExclamationTriangleIcon />
                 </Callout.Icon>
-                <Callout.Text>No sheet sizes configured</Callout.Text>
+                <Callout.Text>{t('materials.noSizes')}</Callout.Text>
               </Callout.Root>
             )}
           </Flex>
@@ -709,7 +716,7 @@ function SheetMaterialFields({
       <Flex direction="row" justify="between" align="end">
         <Flex direction="column" gap="2">
           <Text size="2" weight="medium" color="gray" id="sheet-thicknesses">
-            Thicknesses
+            {t('materials.thicknesses')}
           </Text>
           <Flex gap="2" wrap="wrap" role="list" aria-labelledby="sheet-thicknesses">
             {material.thicknesses.map(thickness => (
@@ -722,7 +729,7 @@ function SheetMaterialFields({
                     color="gray"
                     onClick={() => handleRemoveThickness(thickness)}
                     style={{ cursor: 'pointer' }}
-                    aria-label="Remove thickness"
+                    aria-label={t('materials.removeThickness')}
                   >
                     <Cross2Icon width="10" height="10" />
                   </IconButton>
@@ -734,7 +741,7 @@ function SheetMaterialFields({
                 <Callout.Icon>
                   <ExclamationTriangleIcon />
                 </Callout.Icon>
-                <Callout.Text>No thicknesses configured</Callout.Text>
+                <Callout.Text>{t('materials.noThicknesses')}</Callout.Text>
               </Callout.Root>
             )}
           </Flex>
@@ -746,11 +753,11 @@ function SheetMaterialFields({
             unit="mm"
             size="2"
             style={{ width: '8em' }}
-            aria-label="Thickness input"
+            aria-label={t('materials.thicknessInput')}
           />
           <IconButton
-            title="Add thickness"
-            aria-label="Add thickness"
+            title={t('materials.addThickness')}
+            aria-label={t('materials.addThickness')}
             onClick={handleAddThickness}
             variant="surface"
             size="2"
