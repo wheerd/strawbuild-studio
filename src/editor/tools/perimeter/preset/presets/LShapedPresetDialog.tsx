@@ -70,18 +70,18 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
           {/* Left Column - Configuration */}
           <Flex direction="column" gap="3">
             <Heading size="2" weight="medium">
-              Configuration
+              {t('Configuration' as never)}
             </Heading>
 
             {/* Main Rectangle Dimensions */}
             <Flex direction="column" gap="2">
               <Text size="2" weight="medium" color="gray">
-                Main Rectangle
+                {t('Main Rectangle' as never)}
               </Text>
               <Grid columns="2" gap="3">
                 <Flex direction="column" gap="1">
                   <Text size="1" color="gray">
-                    Width 1
+                    {t('Width 1' as never)}
                   </Text>
                   <LengthField
                     value={config.width1}
@@ -98,7 +98,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
 
                 <Flex direction="column" gap="1">
                   <Text size="1" color="gray">
-                    Length 1
+                    {t('Length 1' as never)}
                   </Text>
                   <LengthField
                     value={config.length1}
@@ -118,12 +118,12 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
             {/* Extension Rectangle Dimensions */}
             <Flex direction="column" gap="2">
               <Text size="2" weight="medium" color="gray">
-                Extension Rectangle
+                {t('Extension Rectangle' as never)}
               </Text>
               <Grid columns="2" gap="3">
                 <Flex direction="column" gap="1">
                   <Text size="1" color="gray">
-                    Width 2
+                    {t('Width 2' as never)}
                   </Text>
 
                   <LengthField
@@ -141,7 +141,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
 
                 <Flex direction="column" gap="1">
                   <Text size="1" color="gray">
-                    Length 2
+                    {t('Length 2' as never)}
                   </Text>
 
                   <LengthField
@@ -162,7 +162,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
             {/* Rotation */}
             <Flex direction="column" gap="2">
               <Text size="1" color="gray">
-                Rotation
+                {t('Rotation' as never)}
               </Text>
               <SegmentedControl.Root
                 value={config.rotation.toString()}
@@ -192,7 +192,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
               <Flex direction="column" gap="1">
                 <Flex align="center" gap="1">
                   <Text size="1" color="gray">
-                    Wall Thickness
+                    {t('Wall Thickness' as never)}
                   </Text>
                   <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
                 </Flex>
@@ -212,7 +212,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
               <Flex direction="column" gap="1">
                 <Flex align="center" gap="1">
                   <Text size="1" color="gray">
-                    Wall Assembly
+                    {t('Wall Assembly' as never)}
                   </Text>
                   {config.wallAssemblyId && <MeasurementInfo highlightedAssembly="wallAssembly" />}
                 </Flex>
@@ -230,7 +230,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
               <Flex direction="column" gap="1">
                 <Flex align="center" gap="1">
                   <Text size="1" color="gray">
-                    Base Plate
+                    {t('Base Plate' as never)}
                   </Text>
                   <MeasurementInfo highlightedPart="basePlate" />
                 </Flex>
@@ -249,7 +249,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
               <Flex direction="column" gap="1">
                 <Flex align="center" gap="1">
                   <Text size="1" color="gray">
-                    Top Plate
+                    {t('Top Plate' as never)}
                   </Text>
                   <MeasurementInfo highlightedPart="topPlate" />
                 </Flex>
@@ -269,13 +269,13 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
           {/* Right Column - Preview */}
           <Flex direction="column" gap="3">
             <Heading align="center" size="2" weight="medium">
-              Preview
+              {t('Preview' as never)}
             </Heading>
 
             {/* Reference Side */}
             <Flex direction="column" gap="1">
               <Text size="1" color="gray">
-                Reference Side
+                {t('Reference Side' as never)}
               </Text>
               <SegmentedControl.Root
                 size="1"
@@ -298,7 +298,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
             ) : (
               <Flex align="center" justify="center" style={{ height: '240px' }}>
                 <Text size="1" color="red">
-                  Invalid configuration
+                  {t('Invalid configuration' as never)}
                 </Text>
               </Flex>
             )}
@@ -309,16 +309,16 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
         <Flex justify="end" gap="3" mt="4">
           <Dialog.Close>
             <Button variant="soft" color="gray">
-              Cancel
+              {t('Cancel' as never)}
             </Button>
           </Dialog.Close>
           <Dialog.Close>
             <Button onClick={handleConfirm} disabled={!isValid}>
-              Confirm
+              {t('Confirm' as never)}
             </Button>
           </Dialog.Close>
         </Flex>
       </Flex>
     </BaseModal>
-  );
+  )
 }

@@ -154,7 +154,7 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
       <Separator size="4" />
       <PostsConfigSection posts={config.posts} onUpdate={posts => onUpdate({ ...config, posts })} />
     </Flex>
-  );
+  )
 }
 
 interface PostsConfigSectionProps {
@@ -170,7 +170,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
       <Grid columns="5em 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Post Type
+            {t('Post Type' as never)}
           </Text>
         </Label.Root>
         <Select.Root
@@ -204,7 +204,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
       <Grid columns="5em 1fr 5em 1fr" gap="2" gapX="3">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Width
+            {t('Width' as never)}
           </Text>
         </Label.Root>
         <LengthField value={posts.width} onChange={value => onUpdate({ ...posts, width: value })} unit="mm" size="1" />
@@ -213,7 +213,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
           <>
             <Label.Root>
               <Text size="1" weight="medium" color="gray">
-                Thickness
+                {t('Thickness' as never)}
               </Text>
             </Label.Root>
             <LengthField
@@ -228,7 +228,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
       <Grid columns="5em 1fr" gap="2">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Material
+            {t('Material' as never)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -260,7 +260,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
         )}
       </Grid>
     </Flex>
-  );
+  )
 }
 
 interface ModuleConfigSectionProps {
@@ -276,7 +276,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
       <Grid columns="6em 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Module Type
+            {t('Module Type' as never)}
           </Text>
         </Label.Root>
         <Select.Root
@@ -319,7 +319,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
       <Grid columns="6em 1fr 6em 1fr" gap="2" gapX="3">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Min Width
+            {t('Min Width' as never)}
           </Text>
         </Label.Root>
         <LengthField
@@ -331,7 +331,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
 
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Max Width
+            {t('Max Width' as never)}
           </Text>
         </Label.Root>
         <LengthField
@@ -357,7 +357,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
           <>
             <Label.Root>
               <Text size="1" weight="medium" color="gray">
-                Frame Width
+                {t('Frame Width' as never)}
               </Text>
             </Label.Root>
             <LengthField
@@ -469,7 +469,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
         )}
       </Grid>
     </Flex>
-  );
+  )
 }
 
 interface StrawhengeConfigFormProps {
@@ -521,7 +521,7 @@ function NonStrawbaleConfigForm({ config, onUpdate }: NonStrawbaleConfigFormProp
       <Grid columns="auto 1fr" gap="2" gapX="3">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Material
+            {t('Material' as never)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -535,7 +535,7 @@ function NonStrawbaleConfigForm({ config, onUpdate }: NonStrawbaleConfigFormProp
         />
       </Grid>
     </Flex>
-  );
+  )
 }
 
 interface CommonConfigSectionsProps {
@@ -593,7 +593,7 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
       <Flex direction="column" gap="1">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Opening Assembly
+            {t('Opening Assembly' as never)}
           </Text>
         </Label.Root>
         <OpeningAssemblySelectWithEdit
@@ -648,7 +648,7 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
         />
       </Flex>
     </Flex>
-  );
+  )
 }
 
 interface ConfigFormProps {
@@ -697,7 +697,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
         <Grid columns="auto 1fr" gapX="2" align="center">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Name
+              {t('Name' as never)}
             </Text>
           </Label.Root>
           <TextField.Root
@@ -714,7 +714,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
           <Flex gap="2" align="center">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Type
+                {t('Type' as never)}
               </Text>
             </Label.Root>
             <Flex gap="2" align="center">
@@ -734,7 +734,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
           <Flex gap="2" align="center">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Total Thickness
+                {t('Total Thickness' as never)}
               </Text>
             </Label.Root>
             <Text size="2" color="gray">
@@ -760,7 +760,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
         </Flex>
       </Grid>
     </Flex>
-  );
+  )
 }
 
 export interface WallAssemblyContentProps {
@@ -947,19 +947,19 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                 <DropdownMenu.Item onSelect={() => handleAddNew('infill')}>
                   <Flex align="center" gap="1">
                     <LayersIcon />
-                    Infill
+                    {t('Infill' as never)}
                   </Flex>
                 </DropdownMenu.Item>
                 <DropdownMenu.Item onSelect={() => handleAddNew('strawhenge')}>
                   <Flex align="center" gap="1">
                     <CubeIcon />
-                    Strawhenge
+                    {t('Strawhenge' as never)}
                   </Flex>
                 </DropdownMenu.Item>
                 <DropdownMenu.Item onSelect={() => handleAddNew('modules')}>
                   <Flex align="center" gap="1">
                     <CircleIcon />
-                    Modules
+                    {t('Modules' as never)}
                   </Flex>
                 </DropdownMenu.Item>
                 <DropdownMenu.Item onSelect={() => handleAddNew('non-strawbale')}>
@@ -971,7 +971,12 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
               </DropdownMenu.Content>
             </DropdownMenu.Root>
 
-            <IconButton onClick={handleDuplicate} disabled={!selectedAssembly} title={t($ => $.common.duplicate)} variant="soft">
+            <IconButton
+              onClick={handleDuplicate}
+              disabled={!selectedAssembly}
+              title={t($ => $.common.duplicate)}
+              variant="soft"
+            >
               <CopyIcon />
             </IconButton>
 
@@ -993,12 +998,12 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                 <Flex gap="3" mt="4" justify="end">
                   <AlertDialog.Cancel>
                     <Button variant="soft" color="gray">
-                      Cancel
+                      {t('Cancel' as never)}
                     </Button>
                   </AlertDialog.Cancel>
                   <AlertDialog.Action>
                     <Button variant="solid" color="red" onClick={handleDelete}>
-                      Delete
+                      {t('Delete' as never)}
                     </Button>
                   </AlertDialog.Action>
                 </Flex>
@@ -1020,12 +1025,12 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                 <Flex gap="3" mt="4" justify="end">
                   <AlertDialog.Cancel>
                     <Button variant="soft" color="gray">
-                      Cancel
+                      {t('Cancel' as never)}
                     </Button>
                   </AlertDialog.Cancel>
                   <AlertDialog.Action>
                     <Button variant="solid" color="red" onClick={handleReset}>
-                      Reset
+                      {t('Reset' as never)}
                     </Button>
                   </AlertDialog.Action>
                 </Flex>
@@ -1037,7 +1042,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
             <Label.Root>
               <Flex align="center" gap="1">
                 <Text size="1" weight="medium" color="gray">
-                  Default Wall Assembly
+                  {t('Default Wall Assembly' as never)}
                 </Text>
                 <MeasurementInfo highlightedAssembly="wallAssembly" />
               </Flex>
@@ -1075,5 +1080,5 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
         </Grid>
       )}
     </Flex>
-  );
+  )
 }

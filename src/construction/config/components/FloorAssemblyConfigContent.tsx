@@ -260,12 +260,12 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
               <Flex gap="3" mt="4" justify="end">
                 <AlertDialog.Cancel>
                   <Button variant="soft" color="gray">
-                    Cancel
+                    {t('Cancel' as never)}
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
                   <Button variant="solid" color="red" onClick={handleDelete}>
-                    Delete
+                    {t('Delete' as never)}
                   </Button>
                 </AlertDialog.Action>
               </Flex>
@@ -287,12 +287,12 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
               <Flex gap="3" mt="4" justify="end">
                 <AlertDialog.Cancel>
                   <Button variant="soft" color="gray">
-                    Cancel
+                    {t('Cancel' as never)}
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
                   <Button variant="solid" color="red" onClick={handleReset}>
-                    Reset
+                    {t('Reset' as never)}
                   </Button>
                 </AlertDialog.Action>
               </Flex>
@@ -314,7 +314,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           <Flex align="center" gap="1">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Default Floor Assembly
+                {t('Default Floor Assembly' as never)}
               </Text>
             </Label.Root>
             <MeasurementInfo highlightedAssembly="floorAssembly" />
@@ -322,7 +322,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           <FloorAssemblySelect
             value={defaultConfigId}
             onValueChange={setDefaultFloorAssembly}
-            placeholder="Select default..."
+            placeholder={t('Select default...' as never)}
             size="2"
           />
         </Grid>
@@ -349,6 +349,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
 }
 
 function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.Element {
+  const { t } = useTranslation('config')
   const { formatLength } = useFormatters()
   const { updateFloorAssemblyName, updateFloorAssemblyConfig } = useConfigActions()
 
@@ -377,7 +378,7 @@ function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.
         <Grid columns="auto 1fr" gapX="2" align="center">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Name
+              {t('Name' as never)}
             </Text>
           </Label.Root>
           <TextField.Root
@@ -385,7 +386,7 @@ function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.
             onChange={e => nameInput.handleChange(e.target.value)}
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
-            placeholder="Floor assembly name"
+            placeholder={t('Floor assembly name' as never)}
             size="2"
           />
         </Grid>
@@ -394,7 +395,7 @@ function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.
           <Flex gap="2" align="center">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Type
+                {t('Type' as never)}
               </Text>
             </Label.Root>
             <Flex gap="2" align="center">
@@ -408,7 +409,7 @@ function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.
           <Flex gap="2" align="center">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Total Thickness
+                {t('Total Thickness' as never)}
               </Text>
             </Label.Root>
             <Text size="2" color="gray">
@@ -438,13 +439,14 @@ function MonolithicConfigFields({
   config: MonolithicFloorConfig
   onUpdate: (updates: Partial<MonolithicFloorConfig>) => void
 }) {
+  const { t } = useTranslation('config')
   return (
     <>
-      <Heading size="2">Monolithic Floor</Heading>
+      <Heading size="2">{t('Monolithic Floor' as never)}</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Material
+            {t('Material' as never)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -453,7 +455,7 @@ function MonolithicConfigFields({
             if (!material) return
             onUpdate({ material })
           }}
-          placeholder="Select material..."
+          placeholder={t('Select material...' as never)}
           size="2"
           preferredTypes={['sheet', 'volume']}
         />
@@ -461,7 +463,7 @@ function MonolithicConfigFields({
         <Flex align="center" gap="1">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Thickness
+              {t('Thickness' as never)}
             </Text>
           </Label.Root>
           <MeasurementInfo highlightedPart="floorConstruction" />
@@ -482,14 +484,14 @@ function JoistConfigFields({
   const { t } = useTranslation('config')
   return (
     <>
-      <Heading size="2">Joist Floor</Heading>
+      <Heading size="2">{t('Joist Floor' as never)}</Heading>
 
       {/* Beam Height - Full Width */}
       <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
         <Flex align="center" gap="1">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Beam Height
+              {t('Beam Height' as never)}
             </Text>
           </Label.Root>
           <Tooltip content="Height of structural beams. Applies to both joists and wall beams.">
@@ -513,7 +515,7 @@ function JoistConfigFields({
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Joist Material
+            {t('Joist Material' as never)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -522,14 +524,14 @@ function JoistConfigFields({
             if (!joistMaterial) return
             onUpdate({ joistMaterial })
           }}
-          placeholder="Select joist material..."
+          placeholder={t('Select joist material...' as never)}
           size="2"
           preferredTypes={['dimensional']}
         />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Joist Thickness
+            {t('Joist Thickness' as never)}
           </Text>
         </Label.Root>
         <LengthField
@@ -541,7 +543,7 @@ function JoistConfigFields({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Joist Spacing
+            {t('Joist Spacing' as never)}
           </Text>
         </Label.Root>
         <LengthField
@@ -555,11 +557,11 @@ function JoistConfigFields({
       <Separator size="4" />
 
       {/* Wall Beams Section */}
-      <Heading size="3">Wall Beams</Heading>
+      <Heading size="3">{t('Wall Beams' as never)}</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Wall Beam Material
+            {t('Wall Beam Material' as never)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -568,14 +570,14 @@ function JoistConfigFields({
             if (!wallBeamMaterial) return
             onUpdate({ wallBeamMaterial })
           }}
-          placeholder="Select wall beam material..."
+          placeholder={t('Select wall beam material...' as never)}
           size="2"
           preferredTypes={['dimensional']}
         />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Wall Beam Thickness
+            {t('Wall Beam Thickness' as never)}
           </Text>
         </Label.Root>
         <LengthField
@@ -587,7 +589,7 @@ function JoistConfigFields({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Wall Beam Inside Offset
+            {t('Wall Beam Inside Offset' as never)}
           </Text>
         </Label.Root>
         <LengthField
@@ -599,7 +601,7 @@ function JoistConfigFields({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Wall Infill Material
+            {t('Wall Infill Material' as never)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -608,7 +610,7 @@ function JoistConfigFields({
             if (!wallInfillMaterial) return
             onUpdate({ wallInfillMaterial })
           }}
-          placeholder="Select wall infill material..."
+          placeholder={t('Select wall infill material...' as never)}
           size="2"
         />
       </Grid>
@@ -620,7 +622,7 @@ function JoistConfigFields({
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Subfloor Material
+            {t('Subfloor Material' as never)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -629,14 +631,14 @@ function JoistConfigFields({
             if (!subfloorMaterial) return
             onUpdate({ subfloorMaterial })
           }}
-          placeholder="Select subfloor material..."
+          placeholder={t('Select subfloor material...' as never)}
           size="2"
           preferredTypes={['sheet']}
         />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Subfloor Thickness
+            {t('Subfloor Thickness' as never)}
           </Text>
         </Label.Root>
         <LengthField
@@ -650,11 +652,11 @@ function JoistConfigFields({
       <Separator size="4" />
 
       {/* Opening Sides Section */}
-      <Heading size="3">Opening Sides</Heading>
+      <Heading size="3">{t('Opening Sides' as never)}</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Opening Side Material
+            {t('Opening Side Material' as never)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -663,14 +665,14 @@ function JoistConfigFields({
             if (!openingSideMaterial) return
             onUpdate({ openingSideMaterial })
           }}
-          placeholder="Select opening side material..."
+          placeholder={t('Select opening side material...' as never)}
           size="2"
           preferredTypes={['dimensional']}
         />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Opening Side Thickness
+            {t('Opening Side Thickness' as never)}
           </Text>
         </Label.Root>
         <LengthField
@@ -694,14 +696,14 @@ function FilledConfigFields({
   const { t } = useTranslation('config')
   return (
     <>
-      <Heading size="2">Straw Filled Floor</Heading>
+      <Heading size="2">{t('Straw Filled Floor' as never)}</Heading>
 
       {/* Construction Height - Full Width */}
       <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
         <Flex align="center" gap="1">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Construction Height
+              {t('Construction Height' as never)}
             </Text>
           </Label.Root>
           <Tooltip content="Height of the floor structure (joist height).">
@@ -725,7 +727,7 @@ function FilledConfigFields({
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Joist Material
+            {t('Joist Material' as never)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -734,14 +736,14 @@ function FilledConfigFields({
             if (!joistMaterial) return
             onUpdate({ joistMaterial })
           }}
-          placeholder="Select joist material..."
+          placeholder={t('Select joist material...' as never)}
           size="2"
           preferredTypes={['dimensional']}
         />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Joist Thickness
+            {t('Joist Thickness' as never)}
           </Text>
         </Label.Root>
         <LengthField
@@ -753,7 +755,7 @@ function FilledConfigFields({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Joist Spacing
+            {t('Joist Spacing' as never)}
           </Text>
         </Label.Root>
         <LengthField
@@ -767,11 +769,11 @@ function FilledConfigFields({
       <Separator size="4" />
 
       {/* Frame Section */}
-      <Heading size="3">Perimeter Frame</Heading>
+      <Heading size="3">{t('Perimeter Frame' as never)}</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Frame Material
+            {t('Frame Material' as never)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -780,14 +782,14 @@ function FilledConfigFields({
             if (!frameMaterial) return
             onUpdate({ frameMaterial })
           }}
-          placeholder="Select frame material..."
+          placeholder={t('Select frame material...' as never)}
           size="2"
           preferredTypes={['dimensional']}
         />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Frame Thickness
+            {t('Frame Thickness' as never)}
           </Text>
         </Label.Root>
         <LengthField
@@ -805,7 +807,7 @@ function FilledConfigFields({
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Subfloor Material
+            {t('Subfloor Material' as never)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -814,14 +816,14 @@ function FilledConfigFields({
             if (!subfloorMaterial) return
             onUpdate({ subfloorMaterial })
           }}
-          placeholder="Select subfloor material..."
+          placeholder={t('Select subfloor material...' as never)}
           size="2"
           preferredTypes={['sheet']}
         />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Subfloor Thickness
+            {t('Subfloor Thickness' as never)}
           </Text>
         </Label.Root>
         <LengthField
@@ -835,11 +837,11 @@ function FilledConfigFields({
       <Separator size="4" />
 
       {/* Ceiling Sheathing Section */}
-      <Heading size="3">Ceiling Sheathing</Heading>
+      <Heading size="3">{t('Ceiling Sheathing' as never)}</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Ceiling Sheathing Material
+            {t('Ceiling Sheathing Material' as never)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -848,14 +850,14 @@ function FilledConfigFields({
             if (!ceilingSheathingMaterial) return
             onUpdate({ ceilingSheathingMaterial })
           }}
-          placeholder="Select ceiling sheathing material..."
+          placeholder={t('Select ceiling sheathing material...' as never)}
           size="2"
           preferredTypes={['sheet']}
         />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Ceiling Sheathing Thickness
+            {t('Ceiling Sheathing Thickness' as never)}
           </Text>
         </Label.Root>
         <LengthField
@@ -869,11 +871,11 @@ function FilledConfigFields({
       <Separator size="4" />
 
       {/* Opening Frame Section */}
-      <Heading size="3">Opening Frame</Heading>
+      <Heading size="3">{t('Opening Frame' as never)}</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Opening Frame Material
+            {t('Opening Frame Material' as never)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -882,14 +884,14 @@ function FilledConfigFields({
             if (!openingFrameMaterial) return
             onUpdate({ openingFrameMaterial })
           }}
-          placeholder="Select opening frame material..."
+          placeholder={t('Select opening frame material...' as never)}
           size="2"
           preferredTypes={['dimensional']}
         />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Opening Frame Thickness
+            {t('Opening Frame Thickness' as never)}
           </Text>
         </Label.Root>
         <LengthField
@@ -903,7 +905,7 @@ function FilledConfigFields({
       <Separator size="4" />
 
       {/* Straw Infill Section */}
-      <Heading size="3">Straw Infill</Heading>
+      <Heading size="3">{t('Straw Infill' as never)}</Heading>
       <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
         <Flex align="center" gap="1">
           <Label.Root>
@@ -922,7 +924,7 @@ function FilledConfigFields({
           allowEmpty
           emptyLabel="Use global straw settings"
           onValueChange={strawMaterial => onUpdate({ strawMaterial: strawMaterial ?? undefined })}
-          placeholder="Select straw material..."
+          placeholder={t('Select straw material...' as never)}
           size="2"
           preferredTypes={['strawbale']}
         />

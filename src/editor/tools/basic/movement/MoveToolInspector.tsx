@@ -39,10 +39,11 @@ export function MoveToolInspector({ tool }: ToolInspectorProps<MoveTool>): React
             • {t($ => $.move.controlPrecise)}
           </Text>
           <Text size="1" color="gray">
-            • {t($ => $.move.controlCancel, {
-            key: 'Esc'
-          }).replace('{{key}}', '')}
-            <Kbd>Esc</Kbd>
+            •{' '}
+            {t($ => $.move.controlCancel, {
+              key: 'Esc'
+            }).replace('{{key}}', '')}
+            <Kbd>{t('Esc' as never)}</Kbd>
             {' to cancel ongoing movement'}
           </Text>
         </Flex>
@@ -59,5 +60,5 @@ export function MoveToolInspector({ tool }: ToolInspectorProps<MoveTool>): React
         )}
       </Flex>
     </Box>
-  );
+  )
 }

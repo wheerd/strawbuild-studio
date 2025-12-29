@@ -1,6 +1,7 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { HoverCard, IconButton, Inset } from '@radix-ui/themes'
 import { type ComponentProps, type JSX, useId } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
 import { BaseModal } from '@/shared/components/BaseModal'
@@ -77,6 +78,7 @@ export function ConstructionSchematic({
                 | r |              | s |
                 | s |              |   |
 */
+  const { t } = useTranslation('construction')
 
   const marginBottomGradientId = useId()
   const marginRightGradientId = useId()
@@ -383,7 +385,7 @@ export function ConstructionSchematic({
           dominantBaseline="middle"
           fill={partLabelColor('roofTopLayers')}
         >
-          Roof Top Layers
+          {t('Roof Top Layers' as never)}
         </text>
       )}
 
@@ -400,7 +402,7 @@ export function ConstructionSchematic({
           dominantBaseline="middle"
           fill={partLabelColor('roofConstruction')}
         >
-          Roof Construction
+          {t('Roof Construction' as never)}
         </text>
       )}
 
@@ -417,7 +419,7 @@ export function ConstructionSchematic({
           dominantBaseline="middle"
           fill={partLabelColor('roofBottomLayers')}
         >
-          Ceiling Layers
+          {t('Ceiling Layers' as never)}
         </text>
       )}
 
@@ -434,7 +436,7 @@ export function ConstructionSchematic({
           dominantBaseline="middle"
           fill={partLabelColor('overhangBottomLayers')}
         >
-          Overhang Layers
+          {t('Overhang Layers' as never)}
         </text>
       )}
 
@@ -450,7 +452,7 @@ export function ConstructionSchematic({
           dominantBaseline="text-before-edge"
           fill={assemblyOutlineStroke('roofAssembly', 'var(--amber-10)')}
         >
-          Roof Assembly
+          {t('Roof Assembly' as never)}
         </text>
       )}
 
@@ -468,7 +470,7 @@ export function ConstructionSchematic({
             dominantBaseline="text-before-edge"
             fill={finishedLevelColor}
           >
-            Finished Ceiling
+            {t('Finished Ceiling' as never)}
           </text>
           <text
             x={0}
@@ -482,7 +484,7 @@ export function ConstructionSchematic({
             dominantBaseline="text-before-edge"
             fill={finishedLevelColor}
           >
-            Finished Overhang
+            {t('Finished Overhang' as never)}
           </text>
           <text
             x={0}
@@ -496,7 +498,7 @@ export function ConstructionSchematic({
             dominantBaseline="text-after-edge"
             fill={finishedLevelColor}
           >
-            Finished Rooftop
+            {t('Finished Rooftop' as never)}
           </text>
         </>
       )}
@@ -514,7 +516,7 @@ export function ConstructionSchematic({
           dominantBaseline="middle"
           fill={partLabelColor('topPlate')}
         >
-          Top Plate
+          {t('Top Plate' as never)}
         </text>
       )}
 
@@ -527,10 +529,10 @@ export function ConstructionSchematic({
           transform={`translate(${wallCenterX} ${totalHeight - marginBottom - 10})`}
         >
           <tspan x={0} dy="-1.2em">
-            Wall
+            {t('Wall' as never)}
           </tspan>
           <tspan x={0} dy="1.2em">
-            Assembly
+            {t('Assembly' as never)}
           </tspan>
         </text>
       )}
@@ -545,7 +547,7 @@ export function ConstructionSchematic({
           transform={`rotate(-90 ${outsideLayerLabelX} ${outsideLayerLabelY})`}
           fill={partLabelColor('outsideLayer')}
         >
-          Outside Layers
+          {t('Outside Layers' as never)}
         </text>
       )}
 
@@ -559,7 +561,7 @@ export function ConstructionSchematic({
           transform={`rotate(90 ${insideLayerLabelX} ${insideLayerLabelY})`}
           fill={partLabelColor('insideLayer')}
         >
-          Inside Layers
+          {t('Inside Layers' as never)}
         </text>
       )}
 
@@ -573,9 +575,9 @@ export function ConstructionSchematic({
             text-anchor="middle"
             dominantBaseline="middle"
           >
-            <tspan x={0}>Wall</tspan>
+            <tspan x={0}>{t('Wall' as never)}</tspan>
             <tspan x={0} dy="1.2em">
-              Construction
+              {t('Construction' as never)}
             </tspan>
           </text>
         </g>
@@ -645,7 +647,7 @@ export function ConstructionSchematic({
             transform={`translate(${outside - 10} ${wallCenterY}) rotate(-90)`}
             fill={finishedSideColor}
           >
-            Finished Outside
+            {t('Finished Outside' as never)}
           </text>
           <text
             fontSize={60}
@@ -654,7 +656,7 @@ export function ConstructionSchematic({
             transform={`translate(${inside + 10} ${wallCenterY}) rotate(90)`}
             fill={finishedSideColor}
           >
-            Finished Inside
+            {t('Finished Inside' as never)}
           </text>
 
           <line

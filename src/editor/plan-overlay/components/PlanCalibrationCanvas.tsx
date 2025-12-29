@@ -1,6 +1,7 @@
 import { Box, Button, Card, Flex, Inset, Text } from '@radix-ui/themes'
 import type Konva from 'konva'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Circle, Group, Image as KonvaImage, Layer, Line, Rect, Stage } from 'react-konva/lib/ReactKonvaCore'
 
 import type { ImagePoint } from '@/editor/plan-overlay/types'
@@ -51,6 +52,7 @@ export function PlanCalibrationCanvas({
   onOriginPointChange,
   mode
 }: PlanCalibrationCanvasProps): React.JSX.Element {
+  const { t } = useTranslation()
   const stageRef = useRef<Konva.Stage>(null)
   const [containerSize, setContainerRef] = elementSizeRef()
   const [hasInteracted, setHasInteracted] = useState(false)
@@ -300,14 +302,14 @@ export function PlanCalibrationCanvas({
             </Stage>
           ) : (
             <Flex height="300px" align="center" justify="center">
-              <Text color="gray">Upload an image to begin</Text>
+              <Text color="gray">{t('Upload an image to begin' as never)}</Text>
             </Flex>
           )}
           {image && (
             <Box position="absolute" bottom="3" left="3" style={{ zIndex: 10 }}>
               <Card size="1" variant="surface" className="shadow-md">
                 <Flex align="center" gap="3" m="-2" p="1">
-                  <Text size="1">Scroll to zoom</Text>
+                  <Text size="1">{t('Scroll to zoom' as never)}</Text>
                   <Text size="1">Shift + drag to pan</Text>
                   <Button
                     size="1"
@@ -318,7 +320,7 @@ export function PlanCalibrationCanvas({
                       setHasInteracted(false)
                     }}
                   >
-                    Reset view
+                    {t('Reset view' as never)}
                   </Button>
                 </Flex>
               </Card>

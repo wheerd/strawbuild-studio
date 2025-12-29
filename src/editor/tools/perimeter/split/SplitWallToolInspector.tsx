@@ -27,7 +27,7 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
           {t($ => $.splitWall.selectWall)}
         </Text>
       </Flex>
-    );
+    )
   }
 
   return (
@@ -46,10 +46,10 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
       {/* Action Buttons */}
       <Flex direction="column" gap="2">
         <Button onClick={() => tool.commitSplit()} disabled={!state.isValidSplit} size="2">
-          {t($ => $.splitWall.splitWall)} <Kbd>Enter</Kbd>
+          {t($ => $.splitWall.splitWall)} <Kbd>{t('Enter' as never)}</Kbd>
         </Button>
         <Button variant="soft" onClick={() => tool.cancel()} size="2">
-          {t($ => $.splitWall.cancel)} <Kbd>Esc</Kbd>
+          {t($ => $.splitWall.cancel)} <Kbd>{t('Esc' as never)}</Kbd>
         </Button>
       </Flex>
       {/* Instructions */}
@@ -68,5 +68,5 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
         </Text>
       </Flex>
     </Flex>
-  );
+  )
 }

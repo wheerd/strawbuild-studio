@@ -174,9 +174,13 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
               </IconButton>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
-              <DropdownMenu.Item onClick={() => handleAddNew('simple')}>Standard Opening</DropdownMenu.Item>
-              <DropdownMenu.Item onClick={() => handleAddNew('post')}>Opening With Posts</DropdownMenu.Item>
-              <DropdownMenu.Item onClick={() => handleAddNew('empty')}>Empty Opening</DropdownMenu.Item>
+              <DropdownMenu.Item onClick={() => handleAddNew('simple')}>
+                {t('Standard Opening' as never)}
+              </DropdownMenu.Item>
+              <DropdownMenu.Item onClick={() => handleAddNew('post')}>
+                {t('Opening With Posts' as never)}
+              </DropdownMenu.Item>
+              <DropdownMenu.Item onClick={() => handleAddNew('empty')}>{t('Empty Opening' as never)}</DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Root>
         </Flex>
@@ -208,9 +212,13 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
               </IconButton>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
-              <DropdownMenu.Item onClick={() => handleAddNew('simple')}>Standard Opening</DropdownMenu.Item>
-              <DropdownMenu.Item onClick={() => handleAddNew('post')}>Opening With Posts</DropdownMenu.Item>
-              <DropdownMenu.Item onClick={() => handleAddNew('empty')}>Empty Opening</DropdownMenu.Item>
+              <DropdownMenu.Item onClick={() => handleAddNew('simple')}>
+                {t('Standard Opening' as never)}
+              </DropdownMenu.Item>
+              <DropdownMenu.Item onClick={() => handleAddNew('post')}>
+                {t('Opening With Posts' as never)}
+              </DropdownMenu.Item>
+              <DropdownMenu.Item onClick={() => handleAddNew('empty')}>{t('Empty Opening' as never)}</DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Root>
 
@@ -232,12 +240,12 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
               <Flex gap="3" mt="4" justify="end">
                 <AlertDialog.Cancel>
                   <Button variant="soft" color="gray">
-                    Cancel
+                    {t('Cancel' as never)}
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
                   <Button variant="solid" color="red" onClick={handleDelete}>
-                    Delete
+                    {t('Delete' as never)}
                   </Button>
                 </AlertDialog.Action>
               </Flex>
@@ -259,12 +267,12 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
               <Flex gap="3" mt="4" justify="end">
                 <AlertDialog.Cancel>
                   <Button variant="soft" color="gray">
-                    Cancel
+                    {t('Cancel' as never)}
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
                   <Button variant="solid" color="red" onClick={handleReset}>
-                    Reset
+                    {t('Reset' as never)}
                   </Button>
                 </AlertDialog.Action>
               </Flex>
@@ -278,7 +286,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
       <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Default Opening Assembly
+            {t('Default Opening Assembly' as never)}
           </Text>
         </Label.Root>
         <OpeningAssemblySelect
@@ -286,7 +294,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
           onValueChange={assemblyId => {
             if (assemblyId) setDefaultOpeningAssembly(assemblyId)
           }}
-          placeholder="Select default..."
+          placeholder={t('Select default...' as never)}
           size="2"
         />
       </Grid>
@@ -300,7 +308,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
           <Flex gap="1" wrap="wrap">
             {usage.usedAsGlobalDefault && (
               <Badge size="2" variant="soft">
-                Global Default
+                {t('Global Default' as never)}
               </Badge>
             )}
             {usage.usedByWallAssemblies.map((use, index) => (
@@ -321,6 +329,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
 }
 
 function ConfigForm({ assembly }: { assembly: OpeningConfig & { id: string; name: string } }): React.JSX.Element {
+  const { t } = useTranslation('config')
   const { updateOpeningAssemblyName, updateOpeningAssemblyConfig } = useConfigActions()
 
   const nameInput = useDebouncedInput(
@@ -347,7 +356,7 @@ function ConfigForm({ assembly }: { assembly: OpeningConfig & { id: string; name
         <Grid columns="auto 1fr" gapX="2" align="center">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Name
+              {t('Name' as never)}
             </Text>
           </Label.Root>
           <TextField.Root
@@ -355,7 +364,7 @@ function ConfigForm({ assembly }: { assembly: OpeningConfig & { id: string; name
             onChange={e => nameInput.handleChange(e.target.value)}
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
-            placeholder="Opening assembly name"
+            placeholder={t('Opening assembly name' as never)}
             size="2"
           />
         </Grid>
@@ -363,7 +372,7 @@ function ConfigForm({ assembly }: { assembly: OpeningConfig & { id: string; name
         <Flex gap="2" align="center">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Type
+              {t('Type' as never)}
             </Text>
           </Label.Root>
           <Text size="2" color="gray">
@@ -385,11 +394,11 @@ function ConfigForm({ assembly }: { assembly: OpeningConfig & { id: string; name
         <PostOpeningContent config={assembly} update={handleUpdateConfig} />
       ) : (
         <>
-          <Heading size="2">Empty Opening</Heading>
+          <Heading size="2">{t('Empty Opening' as never)}</Heading>
           <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Padding
+                {t('Padding' as never)}
               </Text>
             </Label.Root>
             <LengthField value={assembly.padding} onChange={padding => handleUpdateConfig({ padding })} unit="mm" />
@@ -406,60 +415,63 @@ const SimpleOpeningContent = ({
 }: {
   config: SimpleOpeningConfig
   update: (updates: Partial<SimpleOpeningConfig>) => void
-}) => (
-  <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
-    <Label.Root>
-      <Text size="2" weight="medium" color="gray">
-        Padding
-      </Text>
-    </Label.Root>
-    <LengthField value={config.padding} onChange={padding => update({ padding })} unit="mm" />
+}) => {
+  const { t } = useTranslation('config')
+  return (
+    <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+      <Label.Root>
+        <Text size="2" weight="medium" color="gray">
+          {t('Padding' as never)}
+        </Text>
+      </Label.Root>
+      <LengthField value={config.padding} onChange={padding => update({ padding })} unit="mm" />
 
-    <Label.Root>
-      <Text size="2" weight="medium" color="gray">
-        Header Thickness
-      </Text>
-    </Label.Root>
-    <LengthField value={config.headerThickness} onChange={headerThickness => update({ headerThickness })} unit="mm" />
+      <Label.Root>
+        <Text size="2" weight="medium" color="gray">
+          {t('Header Thickness' as never)}
+        </Text>
+      </Label.Root>
+      <LengthField value={config.headerThickness} onChange={headerThickness => update({ headerThickness })} unit="mm" />
 
-    <Label.Root>
-      <Text size="2" weight="medium" color="gray">
-        Header Material
-      </Text>
-    </Label.Root>
-    <MaterialSelectWithEdit
-      value={config.headerMaterial}
-      onValueChange={headerMaterial => {
-        if (!headerMaterial) return
-        update({ headerMaterial })
-      }}
-      size="2"
-      preferredTypes={['dimensional']}
-    />
+      <Label.Root>
+        <Text size="2" weight="medium" color="gray">
+          {t('Header Material' as never)}
+        </Text>
+      </Label.Root>
+      <MaterialSelectWithEdit
+        value={config.headerMaterial}
+        onValueChange={headerMaterial => {
+          if (!headerMaterial) return
+          update({ headerMaterial })
+        }}
+        size="2"
+        preferredTypes={['dimensional']}
+      />
 
-    <Label.Root>
-      <Text size="2" weight="medium" color="gray">
-        Sill Thickness
-      </Text>
-    </Label.Root>
-    <LengthField value={config.sillThickness} onChange={sillThickness => update({ sillThickness })} unit="mm" />
+      <Label.Root>
+        <Text size="2" weight="medium" color="gray">
+          {t('Sill Thickness' as never)}
+        </Text>
+      </Label.Root>
+      <LengthField value={config.sillThickness} onChange={sillThickness => update({ sillThickness })} unit="mm" />
 
-    <Label.Root>
-      <Text size="2" weight="medium" color="gray">
-        Sill Material
-      </Text>
-    </Label.Root>
-    <MaterialSelectWithEdit
-      value={config.sillMaterial}
-      onValueChange={sillMaterial => {
-        if (!sillMaterial) return
-        update({ sillMaterial })
-      }}
-      size="2"
-      preferredTypes={['dimensional']}
-    />
-  </Grid>
-)
+      <Label.Root>
+        <Text size="2" weight="medium" color="gray">
+          {t('Sill Material' as never)}
+        </Text>
+      </Label.Root>
+      <MaterialSelectWithEdit
+        value={config.sillMaterial}
+        onValueChange={sillMaterial => {
+          if (!sillMaterial) return
+          update({ sillMaterial })
+        }}
+        size="2"
+        preferredTypes={['dimensional']}
+      />
+    </Grid>
+  )
+}
 
 const PostOpeningContent = ({
   config,
@@ -475,14 +487,14 @@ const PostOpeningContent = ({
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Padding
+            {t('Padding' as never)}
           </Text>
         </Label.Root>
         <LengthField value={config.padding} onChange={padding => update({ padding })} unit="mm" />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Header Thickness
+            {t('Header Thickness' as never)}
           </Text>
         </Label.Root>
         <LengthField
@@ -493,7 +505,7 @@ const PostOpeningContent = ({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Header Material
+            {t('Header Material' as never)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -508,14 +520,14 @@ const PostOpeningContent = ({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Sill Thickness
+            {t('Sill Thickness' as never)}
           </Text>
         </Label.Root>
         <LengthField value={config.sillThickness} onChange={sillThickness => update({ sillThickness })} unit="mm" />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Sill Material
+            {t('Sill Material' as never)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -554,7 +566,7 @@ function PostsConfigSection({
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root htmlFor={typeSelectId}>
           <Text size="2" weight="medium" color="gray">
-            Post Type
+            {t('Post Type' as never)}
           </Text>
         </Label.Root>
         <Select.Root
@@ -593,7 +605,7 @@ function PostsConfigSection({
                 onCheckedChange={value => onUpdate({ replacePosts: value === true })}
               />
               <Text size="2" weight="medium" color="gray">
-                Replaces Wall Posts
+                {t('Replaces Wall Posts' as never)}
               </Text>
             </Flex>
           </Label.Root>
@@ -601,7 +613,7 @@ function PostsConfigSection({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Width
+            {t('Width' as never)}
           </Text>
         </Label.Root>
         <LengthField
@@ -615,7 +627,7 @@ function PostsConfigSection({
           <>
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Thickness
+                {t('Thickness' as never)}
               </Text>
             </Label.Root>
             <LengthField
@@ -629,7 +641,7 @@ function PostsConfigSection({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Material
+            {t('Material' as never)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -646,7 +658,7 @@ function PostsConfigSection({
           <>
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Infill Material
+                {t('Infill Material' as never)}
               </Text>
             </Label.Root>
             <MaterialSelectWithEdit

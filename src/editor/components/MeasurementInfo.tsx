@@ -1,6 +1,7 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { HoverCard, IconButton, Inset } from '@radix-ui/themes'
 import { type ComponentProps, type JSX, useId } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
 import { newVec2 } from '@/shared/geometry'
@@ -93,6 +94,7 @@ e | y +--------------+ s | Floor top layers                 }
   |   |              | d |                 .
   |   |              | e |                 .
 */
+  const { t } = useTranslation('construction')
 
   const marginTopGradientId = useId()
   const marginBottomGradientId = useId()
@@ -529,7 +531,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="middle"
           fill={partLabelColor('floorTopLayers')}
         >
-          Floor Top Layers
+          {t('Floor Top Layers' as never)}
         </text>
       )}
 
@@ -542,7 +544,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="middle"
           fill={partLabelColor('floorConstruction')}
         >
-          Floor Construction
+          {t('Floor Construction' as never)}
         </text>
       )}
 
@@ -555,7 +557,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="middle"
           fill={partLabelColor('floorBottomLayers')}
         >
-          Floor Bottom Layers
+          {t('Floor Bottom Layers' as never)}
         </text>
       )}
 
@@ -568,7 +570,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="middle"
           fill={partLabelColor('floorTopLayers')}
         >
-          Floor Top Layers
+          {t('Floor Top Layers' as never)}
         </text>
       )}
 
@@ -581,7 +583,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="middle"
           fill={partLabelColor('floorConstruction')}
         >
-          Floor Construction
+          {t('Floor Construction' as never)}
         </text>
       )}
 
@@ -594,7 +596,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="middle"
           fill={partLabelColor('floorBottomLayers')}
         >
-          Floor Bottom Layers
+          {t('Floor Bottom Layers' as never)}
         </text>
       )}
 
@@ -607,7 +609,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="text-before-edge"
           fill={assemblyOutlineStroke('floorAssembly', 'var(--amber-10)')}
         >
-          Floor Assembly
+          {t('Floor Assembly' as never)}
         </text>
       )}
 
@@ -621,7 +623,7 @@ e | y +--------------+ s | Floor top layers                 }
             dominantBaseline="text-before-edge"
             fill={finishedLevelColor}
           >
-            Finished Ceiling
+            {t('Finished Ceiling' as never)}
           </text>
           <text
             x={floorMeasurementX}
@@ -631,7 +633,7 @@ e | y +--------------+ s | Floor top layers                 }
             dominantBaseline="text-after-edge"
             fill={finishedLevelColor}
           >
-            Finished Floor
+            {t('Finished Floor' as never)}
           </text>
         </>
       )}
@@ -659,7 +661,7 @@ e | y +--------------+ s | Floor top layers                 }
             transform={`translate(${outsidePadding - 10} ${totalHeight / 2}) rotate(-90)`}
             fill={finishedSideColor}
           >
-            Finished Outside
+            {t('Finished Outside' as never)}
           </text>
           <text
             fontSize={60}
@@ -668,7 +670,7 @@ e | y +--------------+ s | Floor top layers                 }
             transform={`translate(${inside + 10} ${totalHeight / 2}) rotate(90)`}
             fill={finishedSideColor}
           >
-            Finished Inside
+            {t('Finished Inside' as never)}
           </text>
           <line
             key="finished-inside"
@@ -700,7 +702,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="middle"
           fill={partLabelColor('basePlate')}
         >
-          Base Plate
+          {t('Base Plate' as never)}
         </text>
       )}
 
@@ -713,7 +715,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="middle"
           fill={partLabelColor('topPlate')}
         >
-          Top Plate
+          {t('Top Plate' as never)}
         </text>
       )}
 
@@ -726,7 +728,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="middle"
           fill={partLabelColor('basePlate')}
         >
-          Base Plate
+          {t('Base Plate' as never)}
         </text>
       )}
 
@@ -739,7 +741,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="middle"
           fill={partLabelColor('topPlate')}
         >
-          Top Plate
+          {t('Top Plate' as never)}
         </text>
       )}
 
@@ -751,9 +753,9 @@ e | y +--------------+ s | Floor top layers                 }
           fill={assemblyOutlineStroke('wallAssembly', 'var(--ruby-10)')}
           transform={`translate(${wallCenterX} ${basePlateTopY - 150})`}
         >
-          <tspan x={0}>Wall</tspan>
+          <tspan x={0}>{t('Wall' as never)}</tspan>
           <tspan x={0} dy="1.2em">
-            Assembly
+            {t('Assembly' as never)}
           </tspan>
         </text>
       )}
@@ -768,7 +770,7 @@ e | y +--------------+ s | Floor top layers                 }
           transform={`rotate(-90 ${outsideLayerLabelX} ${outsideLayerLabelY})`}
           fill={partLabelColor('outsideLayer')}
         >
-          Outside Layers
+          {t('Outside Layers' as never)}
         </text>
       )}
 
@@ -782,7 +784,7 @@ e | y +--------------+ s | Floor top layers                 }
           transform={`rotate(90 ${insideLayerLabelX} ${insideLayerLabelY})`}
           fill={partLabelColor('insideLayer')}
         >
-          Inside Layers
+          {t('Inside Layers' as never)}
         </text>
       )}
 
@@ -823,9 +825,9 @@ e | y +--------------+ s | Floor top layers                 }
             text-anchor="middle"
             dominantBaseline="middle"
           >
-            <tspan x={0}>Wall</tspan>
+            <tspan x={0}>{t('Wall' as never)}</tspan>
             <tspan x={0} dy="1.2em">
-              Construction
+              {t('Construction' as never)}
             </tspan>
           </text>
         </g>

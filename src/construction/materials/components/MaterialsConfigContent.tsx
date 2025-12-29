@@ -187,7 +187,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             <MaterialSelect
               value={selectedMaterialId ?? null}
               onValueChange={materialId => setSelectedMaterialId(materialId ?? null)}
-              placeholder="Select material..."
+              placeholder={t('Select material...' as never)}
             />
           </Flex>
           <DropdownMenu.Root>
@@ -403,9 +403,11 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
       )}
       {!selectedMaterial && materials.length === 0 && (
         <Flex justify="center" align="center" p="5">
-          <Text color="gray">{t($ => $.common.noItemsYet, {
-            items: 'materials'
-          })}</Text>
+          <Text color="gray">
+            {t($ => $.common.noItemsYet, {
+              items: 'materials'
+            })}
+          </Text>
         </Flex>
       )}
       {usage.isUsed && (
@@ -425,7 +427,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
         </Grid>
       )}
     </Flex>
-  );
+  )
 }
 
 function DimensionalMaterialFields({
@@ -607,7 +609,7 @@ function DimensionalMaterialFields({
         </Flex>
       </Flex>
     </Flex>
-  );
+  )
 }
 
 function SheetMaterialFields({
@@ -782,7 +784,7 @@ function SheetMaterialFields({
         </SegmentedControl.Root>
       </Flex>
     </Flex>
-  );
+  )
 }
 
 function VolumeMaterialFields({
@@ -857,8 +859,8 @@ function VolumeMaterialFields({
             onValueChange={value => setVolumeUnit(value as 'liter' | 'm3')}
             size="1"
           >
-            <SegmentedControl.Item value="liter">L</SegmentedControl.Item>
-            <SegmentedControl.Item value="m3">m³</SegmentedControl.Item>
+            <SegmentedControl.Item value="liter">{t('L' as never)}</SegmentedControl.Item>
+            <SegmentedControl.Item value="m3">{t('m³' as never)}</SegmentedControl.Item>
           </SegmentedControl.Root>
           <Flex gap="2" align="end">
             <VolumeField
@@ -882,7 +884,7 @@ function VolumeMaterialFields({
         </Flex>
       </Flex>
     </Flex>
-  );
+  )
 }
 
 function StrawbaleMaterialFields({
@@ -962,5 +964,5 @@ function StrawbaleMaterialFields({
         <LengthField value={material.flakeSize} onChange={flakeSize => onUpdate({ flakeSize })} unit="cm" size="2" />
       </Grid>
     </Flex>
-  );
+  )
 }

@@ -55,7 +55,8 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
           <Callout.Text>
             <Text size="1">
               {t($ => $.perimeter.infoInside, {
-                edge: state.referenceSide === 'inside' ? t($ => $.perimeter.insideEdge) : t($ => $.perimeter.outsideEdge)
+                edge:
+                  state.referenceSide === 'inside' ? t($ => $.perimeter.insideEdge) : t($ => $.perimeter.outsideEdge)
               })}
             </Text>
           </Callout.Text>
@@ -198,23 +199,32 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
           </Text>
           {state.lengthOverride ? (
             <Text size="1" color="gray">
-              • <Kbd>Esc</Kbd> {t($ => $.perimeter.controlEscOverride, {
-              key: ''
-            }).replace('{{key}}', '').trim()}
+              • <Kbd>{t('Esc' as never)}</Kbd>{' '}
+              {t($ => $.perimeter.controlEscOverride, {
+                key: ''
+              })
+                .replace('{{key}}', '')
+                .trim()}
             </Text>
           ) : (
             <Text size="1" color="gray">
-              • <Kbd>Esc</Kbd> {t($ => $.perimeter.controlEscAbort, {
-              key: ''
-            }).replace('{{key}}', '').trim()}
+              • <Kbd>{t('Esc' as never)}</Kbd>{' '}
+              {t($ => $.perimeter.controlEscAbort, {
+                key: ''
+              })
+                .replace('{{key}}', '')
+                .trim()}
             </Text>
           )}
           {state.points.length >= 3 && (
             <>
               <Text size="1" color="gray">
-                • <Kbd>Enter</Kbd> {t($ => $.perimeter.controlEnter, {
-                key: ''
-              }).replace('{{key}}', '').trim()}
+                • <Kbd>{t('Enter' as never)}</Kbd>{' '}
+                {t($ => $.perimeter.controlEnter, {
+                  key: ''
+                })
+                  .replace('{{key}}', '')
+                  .trim()}
               </Text>
               <Text size="1" color="gray">
                 • {t($ => $.perimeter.controlClickFirst)}
@@ -239,7 +249,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
                 >
                   <Text size="1">{t($ => $.perimeter.completePerimeter)}</Text>
                   <Kbd size="1" style={{ marginLeft: 'auto' }}>
-                    Enter
+                    {t('Enter' as never)}
                   </Kbd>
                 </Button>
               )}
@@ -253,7 +263,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
               >
                 <Text size="1">{t($ => $.perimeter.cancelPerimeter)}</Text>
                 <Kbd size="1" style={{ marginLeft: 'auto' }}>
-                  Esc
+                  {t('Esc' as never)}
                 </Kbd>
               </Button>
             </Flex>
@@ -261,5 +271,5 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
         )}
       </Flex>
     </Box>
-  );
+  )
 }

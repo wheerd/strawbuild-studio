@@ -96,20 +96,27 @@ export function SimplePolygonToolInspector<TTool extends BasePolygonTool<Polygon
             • {t($ => $.simplePolygon.controlNumbers)}
           </Text>
           <Text size="1" color="gray">
-            • <Kbd>Esc</Kbd>{' '}
+            • <Kbd>{t('Esc' as never)}</Kbd>{' '}
             {state.lengthOverride
               ? t($ => $.simplePolygon.controlEscOverride, {
-              key: ''
-            }).replace('{{key}}', '').trim()
+                  key: ''
+                })
+                  .replace('{{key}}', '')
+                  .trim()
               : t($ => $.simplePolygon.controlEscCancel, {
-              key: ''
-            }).replace('{{key}}', '').trim()}
+                  key: ''
+                })
+                  .replace('{{key}}', '')
+                  .trim()}
           </Text>
           {state.points.length >= minimumPoints && (
             <Text size="1" color="gray">
-              • <Kbd>Enter</Kbd> {t($ => $.simplePolygon.controlEnter, {
-              key: ''
-            }).replace('{{key}}', '').trim()}
+              • <Kbd>{t('Enter' as never)}</Kbd>{' '}
+              {t($ => $.simplePolygon.controlEnter, {
+                key: ''
+              })
+                .replace('{{key}}', '')
+                .trim()}
             </Text>
           )}
         </Flex>
@@ -129,7 +136,7 @@ export function SimplePolygonToolInspector<TTool extends BasePolygonTool<Polygon
                 >
                   <Text size="1">{completeLabel}</Text>
                   <Kbd size="1" style={{ marginLeft: 'auto' }}>
-                    Enter
+                    {t('Enter' as never)}
                   </Kbd>
                 </Button>
               )}
@@ -143,7 +150,7 @@ export function SimplePolygonToolInspector<TTool extends BasePolygonTool<Polygon
               >
                 <Text size="1">{cancelLabel}</Text>
                 <Kbd size="1" style={{ marginLeft: 'auto' }}>
-                  Esc
+                  {t('Esc' as never)}
                 </Kbd>
               </Button>
             </Flex>
@@ -151,5 +158,5 @@ export function SimplePolygonToolInspector<TTool extends BasePolygonTool<Polygon
         )}
       </Flex>
     </Box>
-  );
+  )
 }

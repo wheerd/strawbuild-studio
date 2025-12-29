@@ -47,17 +47,17 @@ const stripeDirectionLabels: Record<StripeDirection, string> = {
   diagonal: 'Diagonal'
 }
 
-const getDefaultLayer = (type: LayerType, thickness: number): LayerConfig =>
+const getDefaultLayer = (type: LayerType, name: string, thickness: number): LayerConfig =>
   type === 'monolithic'
     ? {
         type: 'monolithic',
-        name: 'New Layer',
+        name: name,
         thickness,
         material: DEFAULT_MATERIAL
       }
     : {
         type: 'striped',
-        name: 'New Layer',
+        name: name,
         thickness,
         direction: 'perpendicular',
         stripeWidth: 50,
@@ -105,6 +105,7 @@ export function LayerListEditor({
   beforeLabel = 'Construction Side',
   afterLabel
 }: LayerListEditorProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   const { formatLength } = useFormatters()
   const hasLayers = layers.length > 0
   const totalThickness = useMemo(() => sumLayerThickness(layers), [layers])
@@ -182,16 +183,36 @@ export function LayerListEditor({
               </IconButton>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
-              <DropdownMenu.Item onSelect={() => onAddLayer(getDefaultLayer('monolithic', 0))}>
+              <DropdownMenu.Item
+                onSelect={() =>
+                  onAddLayer(
+                    getDefaultLayer(
+                      'monolithic',
+                      t($ => $.layers.defaultName_monolithic),
+                      0
+                    )
+                  )
+                }
+              >
                 <Flex align="center" gap="1">
                   <LayerTypeIcon type="monolithic" />
-                  Monolithic Layer
+                  {t('Monolithic Layer' as never)}
                 </Flex>
               </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => onAddLayer(getDefaultLayer('striped', 0))}>
+              <DropdownMenu.Item
+                onSelect={() =>
+                  onAddLayer(
+                    getDefaultLayer(
+                      'striped',
+                      t($ => $.layers.defaultName_striped),
+                      0
+                    )
+                  )
+                }
+              >
                 <Flex align="center" gap="1">
                   <LayerTypeIcon type="striped" />
-                  Striped Layer
+                  {t('Striped Layer' as never)}
                 </Flex>
               </DropdownMenu.Item>
             </DropdownMenu.Content>
@@ -264,6 +285,7 @@ function LayerCard({
   onUpdateLayer,
   onRemoveLayer
 }: LayerCardProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   const [nameInput, setNameInput] = useState(layer.name)
 
   useEffect(() => {
@@ -299,7 +321,7 @@ function LayerCard({
                 event.currentTarget.blur()
               }
             }}
-            placeholder="Enter Layer Name"
+            placeholder={t('Enter Layer Name' as never)}
             required
           />
           <LengthField
@@ -392,7 +414,7 @@ function MonolithicLayerFields({
         />
       }
     />
-  );
+  )
 }
 
 function StripedLayerFields({
@@ -428,7 +450,7 @@ function StripedLayerFields({
       />
       <Grid columns="auto auto auto 1fr" align="center" gapX="2" gapY="2">
         <Text size="1" color="gray">
-          Stripe
+          {t('Stripe' as never)}
         </Text>
         <LengthField
           value={layer.stripeWidth}
@@ -443,7 +465,7 @@ function StripedLayerFields({
         </LengthField>
 
         <Text size="1" color="gray">
-          Material
+          {t('Material' as never)}
         </Text>
         <MaterialSelectWithEdit
           value={layer.stripeMaterial}
@@ -457,7 +479,7 @@ function StripedLayerFields({
         />
 
         <Text size="1" color="gray">
-          Gap
+          {t('Gap' as never)}
         </Text>
         <LengthField
           value={layer.gapWidth}
@@ -472,7 +494,7 @@ function StripedLayerFields({
         </LengthField>
 
         <Text size="1" color="gray">
-          Material
+          {t('Material' as never)}
         </Text>
         <MaterialSelectWithEdit
           value={layer.gapMaterial}
@@ -485,5 +507,5 @@ function StripedLayerFields({
         />
       </Grid>
     </>
-  );
+  )
 }

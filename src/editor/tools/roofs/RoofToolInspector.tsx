@@ -181,16 +181,22 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
             • {t($ => $.roof.controlSnap)}
           </Text>
           <Text size="1" color="gray">
-            • <Kbd>Esc</Kbd> {t($ => $.roof.controlEsc, {
-            key: ''
-          }).replace('{{key}}', '').trim()}
+            • <Kbd>{t('Esc' as never)}</Kbd>{' '}
+            {t($ => $.roof.controlEsc, {
+              key: ''
+            })
+              .replace('{{key}}', '')
+              .trim()}
           </Text>
           {state.points.length >= 3 && (
             <>
               <Text size="1" color="gray">
-                • <Kbd>Enter</Kbd> {t($ => $.roof.controlEnter, {
-                key: ''
-              }).replace('{{key}}', '').trim()}
+                • <Kbd>{t('Enter' as never)}</Kbd>{' '}
+                {t($ => $.roof.controlEnter, {
+                  key: ''
+                })
+                  .replace('{{key}}', '')
+                  .trim()}
               </Text>
               <Text size="1" color="gray">
                 • {t($ => $.roof.controlClickFirst)}
@@ -215,7 +221,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
                 >
                   <Text size="1">{t($ => $.roof.completeRoof)}</Text>
                   <Kbd size="1" style={{ marginLeft: 'auto' }}>
-                    Enter
+                    {t('Enter' as never)}
                   </Kbd>
                 </Button>
               )}
@@ -229,7 +235,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
               >
                 <Text size="1">{t($ => $.roof.cancelRoof)}</Text>
                 <Kbd size="1" style={{ marginLeft: 'auto' }}>
-                  Esc
+                  {t('Esc' as never)}
                 </Kbd>
               </Button>
             </Flex>
@@ -237,5 +243,5 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
         )}
       </Flex>
     </Box>
-  );
+  )
 }
