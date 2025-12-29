@@ -2,6 +2,7 @@ import { InfoCircledIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
 import { Box, Callout, Flex, Grid, IconButton, Kbd, SegmentedControl, Separator, Switch, Text } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { PerimeterId, PerimeterWallId, WallPostId } from '@/building/model/ids'
 import type { WallPostType } from '@/building/model/model'
@@ -21,6 +22,7 @@ interface WallPostInspectorProps {
 }
 
 export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspectorProps): React.JSX.Element {
+  const { t } = useTranslation('inspector')
   // Get model store functions
   const select = useSelectionStore()
   const { updatePerimeterWallPost: updatePost, removePerimeterWallPost: removePost } = useModelActions()
@@ -45,9 +47,9 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
       <Box p="2">
         <Callout.Root color="red">
           <Callout.Text>
-            <Text weight="bold">Post Not Found</Text>
+            <Text weight="bold">{t('wallPost.notFound')}</Text>
             <br />
-            Post with ID {postId} could not be found.
+            {t('wallPost.notFoundMessage', { id: postId })}
           </Callout.Text>
         </Callout.Root>
       </Box>
@@ -88,11 +90,11 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
   )
 
   const handleRemovePost = useCallback(() => {
-    if (confirm('Are you sure you want to remove this post?')) {
+    if (confirm(t('wallPost.confirmDelete'))) {
       select.popSelection()
       removePost(perimeterId, wallId, postId)
     }
-  }, [removePost, perimeterId, wallId, postId, select])
+  }, [removePost, perimeterId, wallId, postId, select, t])
 
   const handleFitToView = useCallback(() => {
     if (!wall || !post) return
@@ -130,27 +132,27 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
       <Flex direction="column" gap="3">
         <Flex align="center" justify="between" gap="2">
           <Text size="1" weight="medium" color="gray">
-            Type
+            {t('wallPost.type')}
           </Text>
           <SegmentedControl.Root value={post.type} onValueChange={handleTypeChange} size="1">
-            <SegmentedControl.Item value="inside">Inside</SegmentedControl.Item>
-            <SegmentedControl.Item value="center">Center</SegmentedControl.Item>
-            <SegmentedControl.Item value="outside">Outside</SegmentedControl.Item>
-            <SegmentedControl.Item value="double">Double</SegmentedControl.Item>
+            <SegmentedControl.Item value="inside">{t('wallPost.typeInside')}</SegmentedControl.Item>
+            <SegmentedControl.Item value="center">{t('wallPost.typeCenter')}</SegmentedControl.Item>
+            <SegmentedControl.Item value="outside">{t('wallPost.typeOutside')}</SegmentedControl.Item>
+            <SegmentedControl.Item value="double">{t('wallPost.typeDouble')}</SegmentedControl.Item>
           </SegmentedControl.Root>
         </Flex>
 
         <Flex align="center" justify="between" gap="2">
           <Text size="1" weight="medium" color="gray">
-            Behavior
+            {t('wallPost.behavior')}
           </Text>
           <Flex align="center" gap="2">
             <Text size="1" color="gray">
-              Acts as Post
+              {t('wallPost.actsAsPost')}
             </Text>
             <Switch checked={!post.replacesPosts} size="1" onCheckedChange={handleReplacesPostsChange} />
             <Text size="1" color="gray">
-              Flanked by Posts
+              {t('wallPost.flankedByPosts')}
             </Text>
           </Flex>
         </Flex>
@@ -160,7 +162,7 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
           {/* Width Label */}
           <Label.Root htmlFor="post-width">
             <Text size="1" weight="medium" color="gray">
-              Width
+              {t('wallPost.width')}
             </Text>
           </Label.Root>
 
@@ -181,7 +183,7 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
           {/* Thickness Label */}
           <Label.Root htmlFor="post-thickness">
             <Text size="1" weight="medium" color="gray">
-              Thickness
+              {t('wallPost.thickness')}
             </Text>
           </Label.Root>
 
@@ -205,7 +207,7 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
       <Flex direction="column" gap="2">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Post Material
+            {t('wallPost.postMaterial')}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -220,7 +222,7 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
       <Flex direction="column" gap="2">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Infill Material
+            {t('wallPost.infillMaterial')}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit value={post.infillMaterial} onValueChange={handleInfillMaterialChange} size="1" />
@@ -230,10 +232,10 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
 
       {/* Action Buttons */}
       <Flex gap="2" justify="end">
-        <IconButton size="2" title="Fit to view" onClick={handleFitToView}>
+        <IconButton size="2" title={t('wallPost.fitToView')} onClick={handleFitToView}>
           <FitToViewIcon />
         </IconButton>
-        <IconButton size="2" color="red" title="Delete post" onClick={handleRemovePost}>
+        <IconButton size="2" color="red" title={t('wallPost.deletePost')} onClick={handleRemovePost}>
           <TrashIcon />
         </IconButton>
       </Flex>

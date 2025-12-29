@@ -2,6 +2,7 @@ import { InfoCircledIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
 import { Box, Callout, Flex, Grid, IconButton, Kbd, SegmentedControl, Separator, Text, Tooltip } from '@radix-ui/themes'
 import { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { OpeningAssemblyId, OpeningId, PerimeterId, PerimeterWallId } from '@/building/model/ids'
 import type { OpeningType } from '@/building/model/model'
@@ -27,6 +28,7 @@ interface OpeningInspectorProps {
 }
 
 export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInspectorProps): React.JSX.Element {
+  const { t } = useTranslation('inspector')
   const { formatLength } = useFormatters()
   // Get model store functions - use specific selectors for stable references
   const select = useSelectionStore()
@@ -140,9 +142,9 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
       <Box p="2">
         <Callout.Root color="red">
           <Callout.Text>
-            <Text weight="bold">Opening Not Found</Text>
+            <Text weight="bold">{t('opening.notFound')}</Text>
             <br />
-            Opening with ID {openingId} could not be found.
+            {t('opening.notFoundMessage', { id: openingId })}
           </Callout.Text>
         </Callout.Root>
       </Box>
@@ -160,11 +162,11 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
   )
 
   const handleRemoveOpening = useCallback(() => {
-    if (confirm('Are you sure you want to remove this opening?')) {
+    if (confirm(t('opening.confirmDelete'))) {
       select.popSelection()
       removeOpeningFromOuterWall(perimeterId, wallId, openingId)
     }
-  }, [removeOpeningFromOuterWall, perimeterId, wallId, openingId, select])
+  }, [removeOpeningFromOuterWall, perimeterId, wallId, openingId, select, t])
 
   const handleFitToView = useCallback(() => {
     if (!wall || !opening) return
@@ -216,9 +218,9 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
         <Flex align="center" justify="between" gap="2">
           <Flex gap="1" align="center">
             <Text size="1" weight="medium" color="gray">
-              Type
+              {t('opening.type')}
             </Text>
-            <Tooltip content="Opening types don't influence the construction yet but are rendered differently.">
+            <Tooltip content={t('opening.typeTooltip')}>
               <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
             </Tooltip>
           </Flex>
@@ -230,7 +232,7 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
             size="2"
           >
             <SegmentedControl.Item value="door">
-              <Tooltip content="Door">
+              <Tooltip content={t('opening.typeDoorTooltip')}>
                 <Box>
                   <DoorIcon width={20} height={20} />
                 </Box>
@@ -238,7 +240,7 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
             </SegmentedControl.Item>
 
             <SegmentedControl.Item value="window">
-              <Tooltip content="Window">
+              <Tooltip content={t('opening.typeWindowTooltip')}>
                 <Box>
                   <WindowIcon width={20} height={20} />
                 </Box>
@@ -246,7 +248,7 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
             </SegmentedControl.Item>
 
             <SegmentedControl.Item value="passage">
-              <Tooltip content="Passage">
+              <Tooltip content={t('opening.typePassageTooltip')}>
                 <Box>
                   <PassageIcon width={20} height={20} />
                 </Box>
@@ -259,13 +261,13 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
         <Flex align="center" justify="between" gap="2">
           <Flex align="center" gap="1">
             <Text size="1" weight="medium" color="gray">
-              Dimension Mode
+              {t('opening.dimensionMode')}
             </Text>
             <Tooltip
               content={
                 dimensionInputMode === 'fitting'
-                  ? 'Raw opening size (construction)'
-                  : 'Actual opening size (with fitting frame)'
+                  ? t('opening.dimensionModeFittingTooltip')
+                  : t('opening.dimensionModeFinishedTooltip')
               }
             >
               <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
@@ -276,13 +278,13 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
             onValueChange={(value: 'fitting' | 'finished') => setDimensionInputMode(value)}
             size="1"
           >
-            <SegmentedControl.Item value="fitting">Fitting</SegmentedControl.Item>
-            <SegmentedControl.Item value="finished">Finished</SegmentedControl.Item>
+            <SegmentedControl.Item value="fitting">{t('opening.dimensionModeFitting')}</SegmentedControl.Item>
+            <SegmentedControl.Item value="finished">{t('opening.dimensionModeFinished')}</SegmentedControl.Item>
           </SegmentedControl.Root>
         </Flex>
         <Flex align="center" justify="between" gap="1">
           <Text size="1" weight="medium" color="gray">
-            Padding
+            {t('opening.padding')}
           </Text>
           <Text size="1" color="gray">
             {formatLength(openingConfig.padding)}
@@ -294,7 +296,7 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
           {/* Row 1, Column 1: Width Label */}
           <Label.Root htmlFor="opening-width">
             <Text size="1" weight="medium" color="gray">
-              Width
+              {t('opening.width')}
             </Text>
           </Label.Root>
 
@@ -318,7 +320,7 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
           {/* Row 1, Column 3: Height Label */}
           <Label.Root htmlFor="opening-height">
             <Text size="1" weight="medium" color="gray">
-              Height
+              {t('opening.height')}
             </Text>
           </Label.Root>
 
@@ -342,7 +344,7 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
           {/* Row 2, Column 1: Sill Height Label */}
           <Label.Root htmlFor="opening-sill-height">
             <Text size="1" weight="medium" color="gray">
-              Sill
+              {t('opening.sill')}
             </Text>
           </Label.Root>
 
@@ -368,7 +370,7 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
           {/* Row 2, Column 3: Top Height Label */}
           <Label.Root htmlFor="opening-top-height">
             <Text size="1" weight="medium" color="gray">
-              Top
+              {t('opening.top')}
             </Text>
           </Label.Root>
 
@@ -398,10 +400,10 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
         <Flex gap="1" align="center">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Opening Assembly
+              {t('opening.openingAssembly')}
             </Text>
           </Label.Root>
-          <Tooltip content="Override the opening assembly for this specific opening. Leave as default to inherit from the wall assembly or global default.">
+          <Tooltip content={t('opening.openingAssemblyTooltip')}>
             <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
           </Tooltip>
         </Flex>
@@ -422,10 +424,10 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
 
       {/* Action Buttons */}
       <Flex gap="2" justify="end">
-        <IconButton size="2" title="Fit to view" onClick={handleFitToView}>
+        <IconButton size="2" title={t('opening.fitToView')} onClick={handleFitToView}>
           <FitToViewIcon />
         </IconButton>
-        <IconButton size="2" color="red" title="Delete opening" onClick={handleRemoveOpening}>
+        <IconButton size="2" color="red" title={t('opening.deleteOpening')} onClick={handleRemoveOpening}>
           <TrashIcon />
         </IconButton>
       </Flex>

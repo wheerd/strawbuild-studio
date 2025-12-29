@@ -1,5 +1,6 @@
 import { Box, Callout, Code, DataList, Flex, Heading, Text } from '@radix-ui/themes'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { StoreyId } from '@/building/model/ids'
 import { usePerimeters, useStoreyById } from '@/building/store'
@@ -12,6 +13,7 @@ interface StoreyInspectorProps {
 }
 
 export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX.Element {
+  const { t } = useTranslation('inspector')
   // Get storey data from model store
   const storey = useStoreyById(selectedId)
   const perimeters = Object.values(usePerimeters()).filter(perimeter => perimeter.storeyId === selectedId)
@@ -50,9 +52,9 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
       <Box p="2">
         <Callout.Root color="red">
           <Callout.Text>
-            <Text weight="bold">Storey Not Found</Text>
+            <Text weight="bold">{t('storey.notFound')}</Text>
             <br />
-            Storey with ID {selectedId} could not be found.
+            {t('storey.notFoundMessage', { id: selectedId })}
           </Callout.Text>
         </Callout.Root>
       </Box>
@@ -63,7 +65,7 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
     return (
       <Box p="2">
         <Callout.Root color="amber">
-          <Callout.Text>No perimeters have been added to this storey yet.</Callout.Text>
+          <Callout.Text>{t('storey.noPerimeters')}</Callout.Text>
         </Callout.Root>
       </Box>
     )
@@ -83,7 +85,7 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
         </Heading>
         <DataList.Root size="1">
           <DataList.Item>
-            <DataList.Label minWidth="100px">Footprint</DataList.Label>
+            <DataList.Label minWidth="100px">{t('storey.footprint')}</DataList.Label>
             <DataList.Value>
               <Flex justify="end" width="100%">
                 {formatArea(combinedStats.footprint)}
@@ -91,7 +93,7 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
             </DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label>Usable Floor Area (GFA)</DataList.Label>
+            <DataList.Label>{t('storey.usableFloorArea')}</DataList.Label>
             <DataList.Value>
               <Flex justify="end" width="100%">
                 {formatArea(combinedStats.totalFloorArea)}
@@ -99,7 +101,7 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
             </DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label>Construction Wall Area</DataList.Label>
+            <DataList.Label>{t('storey.constructionWallArea')}</DataList.Label>
             <DataList.Value>
               <Flex justify="end" width="100%">
                 {formatArea(combinedStats.totalConstructionWallArea)}
@@ -107,7 +109,7 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
             </DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label>Finished Wall Area</DataList.Label>
+            <DataList.Label>{t('storey.finishedWallArea')}</DataList.Label>
             <DataList.Value>
               <Flex justify="end" width="100%">
                 {formatArea(combinedStats.totalFinishedWallArea)}
@@ -115,7 +117,7 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
             </DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label>Exterior Wall Area</DataList.Label>
+            <DataList.Label>{t('storey.exteriorWallArea')}</DataList.Label>
             <DataList.Value>
               <Flex justify="end" width="100%">
                 {formatArea(combinedStats.totalExteriorWallArea)}
@@ -123,7 +125,7 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
             </DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label>Window Area</DataList.Label>
+            <DataList.Label>{t('storey.windowArea')}</DataList.Label>
             <DataList.Value>
               <Flex justify="end" width="100%">
                 {formatArea(combinedStats.totalWindowArea)}
@@ -131,7 +133,7 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
             </DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label>Wall-to-window ratio (WWR)</DataList.Label>
+            <DataList.Label>{t('storey.wallToWindowRatio')}</DataList.Label>
             <DataList.Value>
               <Flex justify="end" width="100%">
                 {formatPercentage((combinedStats.totalWindowArea / combinedStats.totalFinishedWallArea) * 100)}
@@ -139,7 +141,7 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
             </DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label>Door Area</DataList.Label>
+            <DataList.Label>{t('storey.doorArea')}</DataList.Label>
             <DataList.Value>
               <Flex justify="end" width="100%">
                 {formatArea(combinedStats.totalDoorArea)}
@@ -147,7 +149,7 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
             </DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label>Total Volume</DataList.Label>
+            <DataList.Label>{t('storey.totalVolume')}</DataList.Label>
             <DataList.Value>
               <Flex justify="end" width="100%">
                 {formatVolume(combinedStats.totalVolume)}
@@ -155,7 +157,7 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
             </DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label>Surface-area-to-volume ratio (SA:V)</DataList.Label>
+            <DataList.Label>{t('storey.surfaceAreaToVolumeRatio')}</DataList.Label>
             <DataList.Value>
               <Flex justify="end" width="100%">
                 {formatNumber((combinedStats.totalExteriorWallArea / combinedStats.totalVolume) * 1000, 2)}
@@ -164,7 +166,7 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
           </DataList.Item>
 
           <DataList.Item>
-            <DataList.Label>Floor Height</DataList.Label>
+            <DataList.Label>{t('storey.floorHeight')}</DataList.Label>
             <DataList.Value>
               <Flex justify="end" width="100%">
                 {formatLength(combinedStats.storeyHeight)}
@@ -172,7 +174,7 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
             </DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label>Ceiling Height</DataList.Label>
+            <DataList.Label>{t('storey.ceilingHeight')}</DataList.Label>
             <DataList.Value>
               <Flex justify="end" width="100%">
                 {formatLength(combinedStats.ceilingHeight)}

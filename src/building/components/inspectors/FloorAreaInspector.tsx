@@ -1,6 +1,7 @@
 import { TrashIcon } from '@radix-ui/react-icons'
 import { Box, DataList, Flex, IconButton, Separator, Text } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { FloorAreaId } from '@/building/model/ids'
 import { useFloorAreaById, useModelActions } from '@/building/store'
@@ -15,6 +16,7 @@ interface FloorAreaInspectorProps {
 }
 
 export function FloorAreaInspector({ floorAreaId }: FloorAreaInspectorProps): React.JSX.Element | null {
+  const { t } = useTranslation('inspector')
   const { formatArea, formatLength } = useFormatters()
   const floorArea = useFloorAreaById(floorAreaId)
   const { removeFloorArea } = useModelActions()
@@ -40,7 +42,7 @@ export function FloorAreaInspector({ floorAreaId }: FloorAreaInspectorProps): Re
     return (
       <Box p="2">
         <Text size="1" color="red" weight="bold">
-          Floor area not found.
+          {t('floorArea.notFound')}
         </Text>
       </Box>
     )
@@ -51,11 +53,11 @@ export function FloorAreaInspector({ floorAreaId }: FloorAreaInspectorProps): Re
       <Flex direction="column" gap="3">
         <DataList.Root size="1">
           <DataList.Item>
-            <DataList.Label>Perimeter</DataList.Label>
+            <DataList.Label>{t('floorArea.perimeter')}</DataList.Label>
             <DataList.Value>{formatLength(perimeterLength)}</DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label>Area</DataList.Label>
+            <DataList.Label>{t('floorArea.area')}</DataList.Label>
             <DataList.Value>{formatArea(area)}</DataList.Value>
           </DataList.Item>
         </DataList.Root>
@@ -63,13 +65,13 @@ export function FloorAreaInspector({ floorAreaId }: FloorAreaInspectorProps): Re
         <Separator size="4" />
 
         <Flex gap="2" justify="end">
-          <IconButton size="2" title="Fit to view" onClick={handleFitToView}>
+          <IconButton size="2" title={t('floorArea.fitToView')} onClick={handleFitToView}>
             <FitToViewIcon />
           </IconButton>
           <IconButton
             size="2"
             color="red"
-            title="Remove floor area"
+            title={t('floorArea.removeFloorArea')}
             onClick={() => {
               removeFloorArea(floorArea.id)
               popSelection()

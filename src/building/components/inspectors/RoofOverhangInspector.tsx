@@ -1,6 +1,7 @@
 import * as Label from '@radix-ui/react-label'
 import { Box, Callout, Flex, IconButton, Separator, Text } from '@radix-ui/themes'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { RoofId, RoofOverhangId } from '@/building/model/ids'
 import { useModelActions, useRoofById } from '@/building/store'
@@ -15,6 +16,7 @@ interface RoofOverhangInspectorProps {
 }
 
 export function RoofOverhangInspector({ roofId, overhangId }: RoofOverhangInspectorProps): React.JSX.Element {
+  const { t } = useTranslation('inspector')
   const roof = useRoofById(roofId)
   const { updateRoofOverhangById } = useModelActions()
   const { fitToView } = useViewportActions()
@@ -32,7 +34,7 @@ export function RoofOverhangInspector({ roofId, overhangId }: RoofOverhangInspec
       <Box p="2">
         <Callout.Root color="red">
           <Callout.Text>
-            <Text weight="bold">Overhang Not Found</Text>
+            <Text weight="bold">{t('roofOverhang.notFound')}</Text>
           </Callout.Text>
         </Callout.Root>
       </Box>
@@ -43,7 +45,7 @@ export function RoofOverhangInspector({ roofId, overhangId }: RoofOverhangInspec
     <Box p="2">
       <Flex direction="column" gap="3">
         <Text size="2" weight="bold">
-          Roof Overhang - Side {overhang.sideIndex + 1}
+          {t('roofOverhang.title', { side: overhang.sideIndex + 1 })}
         </Text>
 
         <Separator size="4" />
@@ -52,7 +54,7 @@ export function RoofOverhangInspector({ roofId, overhangId }: RoofOverhangInspec
         <Flex align="center" gap="2" justify="between">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Overhang
+              {t('roofOverhang.overhang')}
             </Text>
           </Label.Root>
           <LengthField
@@ -71,7 +73,7 @@ export function RoofOverhangInspector({ roofId, overhangId }: RoofOverhangInspec
 
         {/* Actions */}
         <Flex gap="2" justify="end">
-          <IconButton size="2" title="Fit to view" onClick={handleFitToView}>
+          <IconButton size="2" title={t('roofOverhang.fitToView')} onClick={handleFitToView}>
             <FitToViewIcon />
           </IconButton>
         </Flex>
