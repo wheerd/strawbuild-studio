@@ -9,20 +9,43 @@
   "openings": {
     "useGlobalDefault": "Globalen Standard verwenden",
     "emptyList": "Keine Öffnungsaufbauten verfügbar",
-    "defaultLabel": "{{label}} <gray>(Standard)</gray>"
+    "defaultLabel": "{{label}} <gray>(Standard)</gray>",
+    "sections": {
+      "opening": "",
+      "posts": ""
+    },
+    "postTypes": {
+      "full": "",
+      "double": ""
+    }
   },
   "floors": {
     "emptyList": "Keine Bodenaufbauten verfügbar",
-    "defaultLabel": "{{label}} <gray>(Standard)</gray>"
+    "defaultLabel": "{{label}} <gray>(Standard)</gray>",
+    "sections": {
+      "joists": "",
+      "subfloor": ""
+    }
   },
   "roofs": {
     "emptyList": "Keine Dachaufbauten verfügbar",
-    "defaultLabel": "{{label}} <gray>(Standard)</gray>"
+    "defaultLabel": "{{label}} <gray>(Standard)</gray>",
+    "sections": {
+      "rafters": "",
+      "purlins": "",
+      "decking": "",
+      "straw": ""
+    }
   },
   "ringBeams": {
     "none": "Keine",
     "emptyList": "Keine Ringbalkenaufbauten verfügbar",
-    "defaultLabel": "{{label}} <gray>(Standard)</gray>"
+    "defaultLabel": "{{label}} <gray>(Standard)</gray>",
+    "sections": {
+      "beam": "",
+      "insulation": "",
+      "waterproofing": ""
+    }
   },
   "layers": {}
 }

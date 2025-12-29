@@ -189,7 +189,15 @@
     "noLayers": "No layers defined",
     "useGlobalDefault": "Use global default",
     "emptyList": "No opening assemblies available",
-    "defaultLabel": "{{label}} <gray>(default)</gray>"
+    "defaultLabel": "{{label}} <gray>(default)</gray>",
+    "sections": {
+      "opening": "Opening",
+      "posts": "Posts"
+    },
+    "postTypes": {
+      "full": "Full",
+      "double": "Double"
+    }
   },
   "floors": {
     "title": "Floor Assemblies",
@@ -214,7 +222,11 @@
     "top": "Top",
     "bottom": "Bottom",
     "emptyList": "No floor assemblies available",
-    "defaultLabel": "{{label}} <gray>(default)</gray>"
+    "defaultLabel": "{{label}} <gray>(default)</gray>",
+    "sections": {
+      "joists": "Joists",
+      "subfloor": "Subfloor"
+    }
   },
   "roofs": {
     "title": "Roof Assemblies",
@@ -237,7 +249,13 @@
     "top": "Top",
     "bottom": "Bottom",
     "emptyList": "No roof assemblies available",
-    "defaultLabel": "{{label}} <gray>(default)</gray>"
+    "defaultLabel": "{{label}} <gray>(default)</gray>",
+    "sections": {
+      "rafters": "Rafters",
+      "purlins": "Purlins",
+      "decking": "Decking",
+      "straw": "Straw"
+    }
   },
   "ringBeams": {
     "title": "Ring Beam Assemblies",
@@ -255,7 +273,12 @@
     "noLayers": "No layers defined",
     "none": "None",
     "emptyList": "No ring beam assemblies available",
-    "defaultLabel": "{{label}} <gray>(default)</gray>"
+    "defaultLabel": "{{label}} <gray>(default)</gray>",
+    "sections": {
+      "beam": "Beam",
+      "insulation": "Insulation",
+      "waterproofing": "Waterproofing"
+    }
   },
   "layers": {
     "title": "Layers",

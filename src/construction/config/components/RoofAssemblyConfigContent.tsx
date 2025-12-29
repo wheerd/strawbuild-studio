@@ -89,11 +89,12 @@ interface PurlinRoofConfigFormProps {
 }
 
 function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   return (
     <Flex direction="column" gap="3">
       {/* Straw Configuration */}
 
-      <Heading size="2">Straw</Heading>
+      <Heading size="2">{t($ => $.roofs.sections.straw)}</Heading>
 
       <Grid columns="2" gap="2" gapX="3">
         <Flex direction="column" gap="1">
@@ -132,7 +133,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
       <Separator size="4" />
 
       {/* Purlin Configuration */}
-      <Heading size="2">Purlins</Heading>
+      <Heading size="2">{t($ => $.roofs.sections.purlins)}</Heading>
       <Grid columns="2" gap="2" gapX="3">
         <Flex direction="column" gap="1">
           <Label.Root>
@@ -218,7 +219,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
       <Separator size="4" />
 
       {/* Rafter Configuration */}
-      <Heading size="2">Rafters</Heading>
+      <Heading size="2">{t($ => $.roofs.sections.rafters)}</Heading>
       <Grid columns="2" gap="2" gapX="3">
         <Flex direction="column" gap="1">
           <Label.Root>
@@ -288,7 +289,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
 
       <Separator size="4" />
 
-      <Heading size="2">Decking</Heading>
+      <Heading size="2">{t($ => $.roofs.sections.decking)}</Heading>
 
       <Grid columns="2" gap="2" gapX="3">
         <Flex direction="column" gap="1">
@@ -585,7 +586,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
         </Flex>
       </Grid>
     </Flex>
-  );
+  )
 }
 
 export interface RoofAssemblyConfigContentProps {
@@ -858,5 +859,5 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
         </Grid>
       )}
     </Flex>
-  );
+  )
 }

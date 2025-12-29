@@ -225,7 +225,12 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
             </DropdownMenu.Content>
           </DropdownMenu.Root>
 
-          <IconButton onClick={handleDuplicate} disabled={!selectedConfig} title={t($ => $.common.duplicate)} variant="soft">
+          <IconButton
+            onClick={handleDuplicate}
+            disabled={!selectedConfig}
+            title={t($ => $.common.duplicate)}
+            variant="soft"
+          >
             <CopyIcon />
           </IconButton>
 
@@ -340,7 +345,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
         )}
       </Flex>
     </Flex>
-  );
+  )
 }
 
 function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.Element {
@@ -474,6 +479,7 @@ function JoistConfigFields({
   config: JoistFloorConfig
   onUpdate: (updates: Partial<JoistFloorConfig>) => void
 }) {
+  const { t } = useTranslation('config')
   return (
     <>
       <Heading size="2">Joist Floor</Heading>
@@ -503,7 +509,7 @@ function JoistConfigFields({
       <Separator size="4" />
 
       {/* Joists Section */}
-      <Heading size="3">Joists</Heading>
+      <Heading size="3">{t($ => $.floors.sections.joists)}</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
@@ -610,7 +616,7 @@ function JoistConfigFields({
       <Separator size="4" />
 
       {/* Subfloor Section */}
-      <Heading size="3">Subfloor</Heading>
+      <Heading size="3">{t($ => $.floors.sections.subfloor)}</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
@@ -685,6 +691,7 @@ function FilledConfigFields({
   config: FilledFloorConfig
   onUpdate: (updates: Partial<FilledFloorConfig>) => void
 }) {
+  const { t } = useTranslation('config')
   return (
     <>
       <Heading size="2">Straw Filled Floor</Heading>
@@ -714,7 +721,7 @@ function FilledConfigFields({
       <Separator size="4" />
 
       {/* Joists Section */}
-      <Heading size="3">Joists</Heading>
+      <Heading size="3">{t($ => $.floors.sections.joists)}</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
@@ -794,7 +801,7 @@ function FilledConfigFields({
       <Separator size="4" />
 
       {/* Subfloor Section */}
-      <Heading size="3">Subfloor</Heading>
+      <Heading size="3">{t($ => $.floors.sections.subfloor)}</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">

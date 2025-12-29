@@ -184,7 +184,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
           <Callout.Text>No opening assemblies. Create one to get started.</Callout.Text>
         </Callout.Root>
       </Flex>
-    );
+    )
   }
 
   return (
@@ -317,7 +317,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
         </Grid>
       )}
     </Flex>
-  );
+  )
 }
 
 function ConfigForm({ assembly }: { assembly: OpeningConfig & { id: string; name: string } }): React.JSX.Element {
@@ -467,65 +467,72 @@ const PostOpeningContent = ({
 }: {
   config: PostOpeningConfig
   update: (updates: Partial<PostOpeningConfig>) => void
-}) => (
-  <Flex direction="column" gap="3">
-    <Heading size="2">Opening</Heading>
-    <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
-      <Label.Root>
-        <Text size="2" weight="medium" color="gray">
-          Padding
-        </Text>
-      </Label.Root>
-      <LengthField value={config.padding} onChange={padding => update({ padding })} unit="mm" />
+}) => {
+  const { t } = useTranslation('config')
+  return (
+    <Flex direction="column" gap="3">
+      <Heading size="2">{t($ => $.openings.sections.opening)}</Heading>
+      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            Padding
+          </Text>
+        </Label.Root>
+        <LengthField value={config.padding} onChange={padding => update({ padding })} unit="mm" />
 
-      <Label.Root>
-        <Text size="2" weight="medium" color="gray">
-          Header Thickness
-        </Text>
-      </Label.Root>
-      <LengthField value={config.headerThickness} onChange={headerThickness => update({ headerThickness })} unit="mm" />
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            Header Thickness
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={config.headerThickness}
+          onChange={headerThickness => update({ headerThickness })}
+          unit="mm"
+        />
 
-      <Label.Root>
-        <Text size="2" weight="medium" color="gray">
-          Header Material
-        </Text>
-      </Label.Root>
-      <MaterialSelectWithEdit
-        value={config.headerMaterial}
-        onValueChange={headerMaterial => {
-          if (!headerMaterial) return
-          update({ headerMaterial })
-        }}
-        size="2"
-        preferredTypes={['dimensional']}
-      />
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            Header Material
+          </Text>
+        </Label.Root>
+        <MaterialSelectWithEdit
+          value={config.headerMaterial}
+          onValueChange={headerMaterial => {
+            if (!headerMaterial) return
+            update({ headerMaterial })
+          }}
+          size="2"
+          preferredTypes={['dimensional']}
+        />
 
-      <Label.Root>
-        <Text size="2" weight="medium" color="gray">
-          Sill Thickness
-        </Text>
-      </Label.Root>
-      <LengthField value={config.sillThickness} onChange={sillThickness => update({ sillThickness })} unit="mm" />
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            Sill Thickness
+          </Text>
+        </Label.Root>
+        <LengthField value={config.sillThickness} onChange={sillThickness => update({ sillThickness })} unit="mm" />
 
-      <Label.Root>
-        <Text size="2" weight="medium" color="gray">
-          Sill Material
-        </Text>
-      </Label.Root>
-      <MaterialSelectWithEdit
-        value={config.sillMaterial}
-        onValueChange={sillMaterial => {
-          if (!sillMaterial) return
-          update({ sillMaterial })
-        }}
-        size="2"
-        preferredTypes={['dimensional']}
-      />
-    </Grid>
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            Sill Material
+          </Text>
+        </Label.Root>
+        <MaterialSelectWithEdit
+          value={config.sillMaterial}
+          onValueChange={sillMaterial => {
+            if (!sillMaterial) return
+            update({ sillMaterial })
+          }}
+          size="2"
+          preferredTypes={['dimensional']}
+        />
+      </Grid>
 
-    <PostsConfigSection config={config} onUpdate={update} />
-  </Flex>
-)
+      <PostsConfigSection config={config} onUpdate={update} />
+    </Flex>
+  )
+}
 
 function PostsConfigSection({
   config,
@@ -534,6 +541,7 @@ function PostsConfigSection({
   config: PostOpeningConfig
   onUpdate: (update: Partial<PostOpeningConfig>) => void
 }): React.JSX.Element {
+  const { t } = useTranslation('config')
   const typeSelectId = useId()
 
   const posts = config.posts
@@ -541,7 +549,7 @@ function PostsConfigSection({
 
   return (
     <Flex direction="column" gap="3">
-      <Heading size="2">Posts</Heading>
+      <Heading size="2">{t($ => $.openings.sections.posts)}</Heading>
 
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root htmlFor={typeSelectId}>
@@ -572,8 +580,8 @@ function PostsConfigSection({
         >
           <Select.Trigger id={typeSelectId} />
           <Select.Content>
-            <Select.Item value="full">Full</Select.Item>
-            <Select.Item value="double">Double</Select.Item>
+            <Select.Item value="full">{t($ => $.openings.postTypes.full)}</Select.Item>
+            <Select.Item value="double">{t($ => $.openings.postTypes.double)}</Select.Item>
           </Select.Content>
         </Select.Root>
 

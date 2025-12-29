@@ -322,7 +322,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
         )}
       </Flex>
     </Flex>
-  );
+  )
 }
 
 function ConfigForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.ReactNode {
@@ -563,6 +563,7 @@ function BrickRingBeamFields({
   config: RingBeamConfig & { type: 'brick' }
   onUpdate: (updates: Partial<RingBeamConfig>) => void
 }) {
+  const { t } = useTranslation('config')
   return (
     <>
       <Heading size="2">Stem Wall</Heading>
@@ -613,7 +614,7 @@ function BrickRingBeamFields({
 
       <Separator size="4" />
 
-      <Heading size="2">Insulation</Heading>
+      <Heading size="2">{t($ => $.ringBeams.sections.insulation)}</Heading>
 
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
@@ -647,7 +648,7 @@ function BrickRingBeamFields({
 
       <Separator size="4" />
 
-      <Heading size="2">Beam</Heading>
+      <Heading size="2">{t($ => $.ringBeams.sections.beam)}</Heading>
 
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
@@ -695,7 +696,7 @@ function BrickRingBeamFields({
 
       <Separator size="4" />
 
-      <Heading size="2">Waterproofing</Heading>
+      <Heading size="2">{t($ => $.ringBeams.sections.waterproofing)}</Heading>
 
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>

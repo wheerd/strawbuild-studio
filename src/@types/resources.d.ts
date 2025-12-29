@@ -124,6 +124,10 @@ interface Resources {
       "noTopLayers": "No top layers defined",
       "resetConfirm": "Are you sure you want to reset default floor assemblies? This will restore the original default assemblies but keep any custom assemblies you've created. This action cannot be undone.",
       "resetTitle": "Reset Floor Assemblies",
+      "sections": {
+        "joists": "Joists",
+        "subfloor": "Subfloor"
+      },
       "title": "Floor Assemblies",
       "top": "Top",
       "topLayers": "Top Layers"
@@ -248,8 +252,16 @@ interface Resources {
       "layers": "Layers",
       "noLayers": "No layers defined",
       "padding": "Padding",
+      "postTypes": {
+        "double": "Double",
+        "full": "Full"
+      },
       "resetConfirm": "Are you sure you want to reset default opening assemblies? This will restore the original default assemblies but keep any custom assemblies you've created. This action cannot be undone.",
       "resetTitle": "Reset Opening Assemblies",
+      "sections": {
+        "opening": "Opening",
+        "posts": "Posts"
+      },
       "title": "Opening Assemblies",
       "useGlobalDefault": "Use global default"
     },
@@ -269,6 +281,11 @@ interface Resources {
       "none": "None",
       "resetConfirm": "Are you sure you want to reset default ring beam assemblies? This will restore the original default assemblies but keep any custom assemblies you've created. This action cannot be undone.",
       "resetTitle": "Reset Ring Beam Assemblies",
+      "sections": {
+        "beam": "Beam",
+        "insulation": "Insulation",
+        "waterproofing": "Waterproofing"
+      },
       "title": "Ring Beam Assemblies"
     },
     "roofs": {
@@ -290,6 +307,12 @@ interface Resources {
       "resetConfirm": "Are you sure you want to reset default roof assemblies? This will restore the original default assemblies but keep any custom assemblies you've created. This action cannot be undone.",
       "resetTitle": "Reset Roof Assemblies",
       "roofConstruction": "Roof Construction",
+      "sections": {
+        "decking": "Decking",
+        "purlins": "Purlins",
+        "rafters": "Rafters",
+        "straw": "Straw"
+      },
       "title": "Roof Assemblies",
       "top": "Top",
       "topLayers": "Top Layers"
@@ -467,6 +490,10 @@ interface Resources {
         "noIssuesTitle": "No Issues Found",
         "warningsTitle": "Warnings ({count})"
       },
+      "partHighlight": {
+        "clearHighlight": "Clear highlight",
+        "partHighlighted": "Part highlighted"
+      },
       "tabs": {
         "modules": "Modules",
         "partsList": "Parts List",
@@ -483,6 +510,9 @@ interface Resources {
       "noTags": "No tags available",
       "showCategory": "Show Category",
       "title": "Tag Visibility"
+    },
+    "viewer3DModal": {
+      "title": "3D Construction View"
     }
   },
   "errors": {

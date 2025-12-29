@@ -10,6 +10,9 @@
       "failedModulesList": "Fehler beim Erstellen der Modulliste"
     }
   },
+  "viewer3DModal": {
+    "title": ""
+  },
   "planModal": {
     "tabs": {
       "planIssues": "Plan & Probleme",
@@ -31,6 +34,10 @@
       "warningsTitle": "",
       "noIssuesTitle": "",
       "noIssuesMessage": ""
+    },
+    "partHighlight": {
+      "partHighlighted": "",
+      "clearHighlight": ""
     }
   },
   "tagVisibility": {

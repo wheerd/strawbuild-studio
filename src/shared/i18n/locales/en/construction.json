@@ -10,6 +10,9 @@
       "failedModulesList": "Failed to generate modules list"
     }
   },
+  "viewer3DModal": {
+    "title": "3D Construction View"
+  },
   "planModal": {
     "tabs": {
       "planIssues": "Plan & Issues",
@@ -31,6 +34,10 @@
       "warningsTitle": "Warnings ({count})",
       "noIssuesTitle": "No Issues Found",
       "noIssuesMessage": "Construction plan is valid with no errors or warnings."
+    },
+    "partHighlight": {
+      "partHighlighted": "Part highlighted",
+      "clearHighlight": "Clear highlight"
     }
   },
   "tagVisibility": {
