@@ -11,12 +11,14 @@ import {
   formatWeight
 } from './formatters'
 import commonDE from './locales/de/common.json'
+import configDE from './locales/de/config.json'
 import inspectorDE from './locales/de/inspector.json'
 import toolDE from './locales/de/tool.json'
 import toolbarDE from './locales/de/toolbar.json'
 import welcomeDE from './locales/de/welcome.json'
 // Import translation files
 import commonEN from './locales/en/common.json'
+import configEN from './locales/en/config.json'
 import inspectorEN from './locales/en/inspector.json'
 import toolEN from './locales/en/tool.json'
 import toolbarEN from './locales/en/toolbar.json'
@@ -28,14 +30,16 @@ const resources = {
     welcome: welcomeEN,
     toolbar: toolbarEN,
     inspector: inspectorEN,
-    tool: toolEN
+    tool: toolEN,
+    config: configEN
   },
   de: {
     common: commonDE,
     welcome: welcomeDE,
     toolbar: toolbarDE,
     inspector: inspectorDE,
-    tool: toolDE
+    tool: toolDE,
+    config: configDE
   }
 }
 
@@ -46,7 +50,7 @@ i18n
     resources,
     fallbackLng: 'en',
     defaultNS: 'common',
-    ns: ['common', 'welcome', 'toolbar', 'inspector', 'tool'],
+    ns: ['common', 'welcome', 'toolbar', 'inspector', 'tool', 'config'],
 
     interpolation: {
       escapeValue: false, // React already escapes
