@@ -1,23 +1,170 @@
 {
-  "common": {},
+  "common": {
+    "addNew": "",
+    "cancel": "",
+    "color": "",
+    "delete": "",
+    "density": "",
+    "densityUnit": "",
+    "duplicate": "",
+    "inUseCannotDelete": "",
+    "materialLabel": "",
+    "name": "",
+    "placeholder": "",
+    "placeholders": {
+      "name": "",
+      "selectMaterial": ""
+    },
+    "reset": "",
+    "resetToDefaults": "",
+    "strawMaterialOverride": "",
+    "totalThickness": "",
+    "type": "",
+    "usedBy": "",
+    "useGlobalStrawSettings": ""
+  },
   "floors": {
+    "defaultFloorAssembly": "",
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
+    "delete": {
+      "cannotDeleteInUse": "",
+      "cannotDeleteLast": "",
+      "confirm": "",
+      "confirmTitle": "",
+      "noConfigSelected": ""
+    },
     "emptyList": "Keine Bodenaufbauten verfügbar",
+    "labels": {
+      "beamHeight": "",
+      "ceilingSheathingMaterial": "",
+      "ceilingSheathingThickness": "",
+      "constructionHeight": "",
+      "frameMaterial": "",
+      "frameThickness": "",
+      "joistMaterial": "",
+      "joistSpacing": "",
+      "joistThickness": "",
+      "openingFrameMaterial": "",
+      "openingFrameThickness": "",
+      "openingSideMaterial": "",
+      "openingSideThickness": "",
+      "subfloorMaterial": "",
+      "subfloorThickness": "",
+      "thickness": "",
+      "wallBeamInsideOffset": "",
+      "wallBeamMaterial": "",
+      "wallBeamThickness": "",
+      "wallInfillMaterial": ""
+    },
+    "layers": {
+      "addBottomLayer": "",
+      "addTopLayer": "",
+      "bottomLayers": "",
+      "finishedBottom": "",
+      "finishedTop": "",
+      "floorConstruction": "",
+      "noBottomLayers": "",
+      "noTopLayers": "",
+      "topLayers": ""
+    },
+    "reset": {
+      "confirm": "",
+      "title": ""
+    },
     "sections": {
+      "ceilingSheathing": "",
       "joists": "",
-      "subfloor": ""
+      "openingFrame": "",
+      "openingSides": "",
+      "perimeterFrame": "",
+      "strawInfill": "",
+      "subfloor": "",
+      "wallBeams": ""
+    },
+    "tips": {
+      "beamHeight": "",
+      "constructionHeight": "",
+      "strawMaterialOverride": ""
+    },
+    "types": {
+      "joist": "",
+      "monolithic": "",
+      "straw": ""
     }
   },
-  "layers": {},
-  "materials": {},
-  "modal": {},
+  "layers": {
+    "defaultName_monolithic": "",
+    "defaultName_striped": "",
+    "selectMaterial": ""
+  },
+  "materials": {
+    "add": "",
+    "addStockLength": "",
+    "addThickness": "",
+    "addVolume": "",
+    "addVolumeOption": "",
+    "availableVolumes": "",
+    "baleHeight": "",
+    "baleWidth": "",
+    "crossSections": "",
+    "defaultStrawMaterial": "",
+    "deleteConfirm": "",
+    "deleteTitle": "",
+    "duplicateNamePattern": "",
+    "flakeSize": "",
+    "materialName": "",
+    "maxBaleLength": "",
+    "minBaleLength": "",
+    "noCrossSections": "",
+    "noLengths": "",
+    "noMaterialsYet": "",
+    "noSizes": "",
+    "noThicknesses": "",
+    "noVolumes": "",
+    "removeCrossSection": "",
+    "removeSheetSize": "",
+    "removeStockLength": "",
+    "removeThickness": "",
+    "removeVolume": "",
+    "resetConfirm": "",
+    "resetTitle": "",
+    "selectStrawMaterial": "",
+    "sheetSizes": "",
+    "sheetType": "",
+    "sheetTypeFlexible": "",
+    "sheetTypeSolid": "",
+    "sheetTypeTongueAndGroove": "",
+    "stockLengthInput": "",
+    "stockLengths": "",
+    "thicknesses": "",
+    "thicknessInput": "",
+    "tolerance": "",
+    "topCutoffLimit": "",
+    "typeDimensional": "",
+    "typeGeneric": "",
+    "typeSheet": "",
+    "typeStrawbale": "",
+    "typeVolume": "",
+    "volumeInput": ""
+  },
+  "modal": {
+    "tabFloors": "",
+    "tabMaterials": "",
+    "tabOpenings": "",
+    "tabRingBeams": "",
+    "tabRoofs": "",
+    "tabWalls": "",
+    "title": ""
+  },
   "openings": {
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
+    "deleteTitle": "",
     "emptyList": "Keine Öffnungsaufbauten verfügbar",
     "postTypes": {
       "double": "",
       "full": ""
     },
+    "resetTitle": "",
     "sections": {
       "opening": "",
       "posts": ""
@@ -26,8 +173,10 @@
   },
   "ringBeams": {
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
+    "deleteTitle": "",
     "emptyList": "Keine Ringbalkenaufbauten verfügbar",
     "none": "Keine",
+    "resetTitle": "",
     "sections": {
       "beam": "",
       "insulation": "",
@@ -36,7 +185,9 @@
   },
   "roofs": {
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
+    "deleteTitle": "",
     "emptyList": "Keine Dachaufbauten verfügbar",
+    "resetTitle": "",
     "sections": {
       "decking": "",
       "purlins": "",
@@ -46,6 +197,27 @@
   },
   "walls": {
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
-    "emptyList": "Keine Wandaufbauten verfügbar"
+    "deleteTitle": "",
+    "desiredPostSpacing": "",
+    "emptyList": "Keine Wandaufbauten verfügbar",
+    "frameMaterial": "",
+    "frameThickness": "",
+    "infillConfiguration": "",
+    "infillMaterial": "",
+    "maxPostSpacing": "",
+    "minStrawSpace": "",
+    "moduleConfiguration": "",
+    "moduleTypeDouble": "",
+    "moduleTypeSingle": "",
+    "nonStrawbaleConfiguration": "",
+    "openingsSection": "",
+    "postsConfiguration": "",
+    "postTypeDouble": "",
+    "postTypeFull": "",
+    "resetTitle": "",
+    "selectDefault": "",
+    "spacerCount": "",
+    "spacerMaterial": "",
+    "spacerSize": ""
   }
 }

@@ -153,7 +153,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
           </Callout.Text>
         </Callout.Root>
       </Box>
-    );
+    )
   }
 
   const totalInnerPerimeter = perimeter.walls.reduce((l, s) => l + s.insideLength, 0)
@@ -313,7 +313,9 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                       {t($ => $.perimeter.wallAssembly)}
                     </Text>
                     <MeasurementInfo highlightedAssembly="wallAssembly" />
-                    {wallAssemblyState.isMixed && <MixedStateIndicator tooltip={t($ => $.perimeter.mixedValuesTooltip)} />}
+                    {wallAssemblyState.isMixed && (
+                      <MixedStateIndicator tooltip={t($ => $.perimeter.mixedValuesTooltip)} />
+                    )}
                   </Flex>
                 </Label.Root>
               </Flex>
@@ -323,7 +325,9 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                   updateAllPerimeterWallsAssembly(selectedId, value)
                 }}
                 placeholder={
-                  wallAssemblyState.isMixed ? t($ => $.perimeter.mixedPlaceholder) : t($ => $.perimeter.selectAssemblyPlaceholder)
+                  wallAssemblyState.isMixed
+                    ? t($ => $.perimeter.mixedPlaceholder)
+                    : t($ => $.perimeter.selectAssemblyPlaceholder)
                 }
                 size="1"
               />
@@ -374,7 +378,9 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                       {t($ => $.perimeter.basePlate)}
                     </Text>
                     <MeasurementInfo highlightedPart="basePlate" />
-                    {baseRingBeamState.isMixed && <MixedStateIndicator tooltip={t($ => $.perimeter.mixedValuesTooltip)} />}
+                    {baseRingBeamState.isMixed && (
+                      <MixedStateIndicator tooltip={t($ => $.perimeter.mixedValuesTooltip)} />
+                    )}
                   </Flex>
                 </Label.Root>
               </Flex>
@@ -408,7 +414,9 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                       {t($ => $.perimeter.topPlate)}
                     </Text>
                     <MeasurementInfo highlightedPart="topPlate" />
-                    {topRingBeamState.isMixed && <MixedStateIndicator tooltip={t($ => $.perimeter.mixedValuesTooltip)} />}
+                    {topRingBeamState.isMixed && (
+                      <MixedStateIndicator tooltip={t($ => $.perimeter.mixedValuesTooltip)} />
+                    )}
                   </Flex>
                 </Label.Root>
               </Flex>
@@ -469,5 +477,5 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
         </Flex>
       </Flex>
     </Box>
-  );
+  )
 }

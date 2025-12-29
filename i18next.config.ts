@@ -5,7 +5,14 @@ export default defineConfig({
   extract: {
     input: 'src/**/*.{js,jsx,ts,tsx}',
     output: 'src/shared/i18n/locales/{{language}}/{{namespace}}.json',
-    functions: ['t', '*.t', 'i18next.t', 'yieldError', 'yieldWarning'],
-    preservePatterns: ['errors:construction.*']
+    functions: ['t', '*.t', 'i18next.t'],
+    preservePatterns: [
+      'errors:construction.*',
+      'tool:addOpening.presets.*',
+      'inspector:perimeterCorner.cannotDelete*',
+      'inspector:perimeterWall.cannotDelete*',
+      'config:*.defaults.*'
+    ],
+    removeUnusedKeys: false
   }
 })

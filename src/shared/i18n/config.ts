@@ -1,4 +1,4 @@
-import i18n, { type PostProcessorModule, type TOptions } from 'i18next'
+import i18n, { type PostProcessorModule } from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 
@@ -36,7 +36,7 @@ class XPostProcessor implements PostProcessorModule {
   readonly name = 'x'
   readonly type = 'postProcessor'
 
-  process(_value: string, _key: string | string[], _options: TOptions, _translator: any): string {
+  process(): string {
     return 'X'
   }
 }

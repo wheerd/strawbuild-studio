@@ -60,7 +60,7 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
           })}
         </Callout.Text>
       </Callout.Root>
-    );
+    )
   }
 
   // Get assembly for this wall
@@ -73,17 +73,17 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
     viewportActions.fitToView(bounds)
   }, [wall, viewportActions])
 
-  const canDeleteWall = useMemo(() => {
-    if (!outerWall || !wall) return { canDelete: false, reason: 'Wall not found' }
+  const canDeleteWall = useMemo<{ canDelete: boolean; reason?: Parameters<typeof t>[0] }>(() => {
+    if (!outerWall || !wall) return { canDelete: false, reason: $ => $.perimeterWall.notFound }
 
     // Need at least 5 walls (triangle = 3 walls, removing 1 and merging = min 3 walls remaining, needs 5 to start)
     if (outerWall.walls.length < 5) {
-      return { canDelete: false, reason: 'Cannot delete - perimeter needs at least 3 walls' }
+      return { canDelete: false, reason: $ => $.perimeterWall.cannotDeleteMinWalls }
     }
 
     // Check if removal would cause self-intersection
     const wallIndex = outerWall.walls.findIndex(w => w.id === wallId)
-    if (wallIndex === -1) return { canDelete: false, reason: 'Wall not found' }
+    if (wallIndex === -1) return { canDelete: false, reason: $ => $.perimeterWall.notFound }
 
     const newBoundaryPoints: Vec2[] = outerWall.referencePolygon.map(point => copyVec2(point))
     const cornerIndex1 = wallIndex
@@ -101,10 +101,10 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
     const newBoundaryPolygon: Polygon2D = { points: newBoundaryPoints }
 
     if (wouldClosingPolygonSelfIntersect(newBoundaryPolygon)) {
-      return { canDelete: false, reason: 'Cannot delete - would create self-intersecting polygon' }
+      return { canDelete: false, reason: $ => $.perimeterWall.cannotDeleteSelfIntersect }
     }
 
-    return { canDelete: true, reason: '' }
+    return { canDelete: true }
   }, [outerWall, wall, wallId])
 
   const handleDelete = useCallback(() => {
@@ -313,7 +313,11 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
             }
           />
 
-          <IconButton size="2" title={t($ => $.perimeterWall.splitWall)} onClick={() => pushTool('perimeter.split-wall')}>
+          <IconButton
+            size="2"
+            title={t($ => $.perimeterWall.splitWall)}
+            onClick={() => pushTool('perimeter.split-wall')}
+          >
             <SplitWallIcon width={20} height={20} />
           </IconButton>
           <IconButton size="2" title={t($ => $.perimeterWall.fitToView)} onClick={handleFitToView}>
@@ -322,7 +326,7 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
           <IconButton
             size="2"
             color="red"
-            title={canDeleteWall.canDelete ? t($ => $.perimeterWall.deleteWall) : canDeleteWall.reason}
+            title={canDeleteWall.reason ? t(canDeleteWall.reason) : t($ => $.perimeterWall.deleteWall)}
             onClick={handleDelete}
             disabled={!canDeleteWall.canDelete}
           >
@@ -331,5 +335,5 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
         </Flex>
       </Flex>
     </Flex>
-  );
+  )
 }

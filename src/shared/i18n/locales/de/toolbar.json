@@ -10,12 +10,9 @@
   },
   "offlineStatus": {
     "loading": "",
-    "loadingBadge": "",
     "loadingUnknown": "",
     "offline": "",
-    "offlineBadge": "",
-    "ready": "",
-    "readyBadge": ""
+    "ready": ""
   },
   "partsListForEntireModel": "Teileliste für gesamtes Modell",
   "themeToggle": {

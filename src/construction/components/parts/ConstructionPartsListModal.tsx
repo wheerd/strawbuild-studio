@@ -110,7 +110,7 @@ export function ConstructionPartsListModal({
         </Tabs.Content>
       </Tabs.Root>
     </BaseModal>
-  );
+  )
 }
 
 function MaterialPartsContent({ partsDataPromise }: { partsDataPromise: Promise<PartsData | null> }) {
@@ -127,7 +127,7 @@ function MaterialPartsContent({ partsDataPromise }: { partsDataPromise: Promise<
           <Callout.Text>{t($ => $.partsListModal.errors.failedPartsList)}</Callout.Text>
         </Callout.Root>
       </Flex>
-    );
+    )
   }
 
   return <ConstructionPartsList partsList={partsData.material} />
@@ -147,7 +147,7 @@ function ModulePartsContent({ partsDataPromise }: { partsDataPromise: Promise<Pa
           <Callout.Text>{t($ => $.partsListModal.errors.failedModulesList)}</Callout.Text>
         </Callout.Root>
       </Flex>
-    );
+    )
   }
 
   return <ConstructionVirtualPartsList partsList={partsData.virtual} />

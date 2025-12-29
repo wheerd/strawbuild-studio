@@ -25,7 +25,7 @@ const LANGUAGES: Language[] = [
  * - German (de)
  */
 export function LanguageSwitcher(): React.JSX.Element {
-  const { i18n } = useTranslation()
+  const { i18n, t } = useTranslation('common')
 
   const currentLanguage = LANGUAGES.find(lang => lang.code === i18n.language) ?? LANGUAGES[0]
 
@@ -39,23 +39,23 @@ export function LanguageSwitcher(): React.JSX.Element {
         <IconButton
           variant="soft"
           size="1"
-          title={`Current language: ${currentLanguage.name}`}
-          aria-label="Change language"
+          title={t($ => $.currentLanguageWithLabel, {
+            language: currentLanguage.name,
+            defaultValue: 'Current language: {{language}}'
+          })}
+          aria-label={t('Change language' as never)}
         >
           <GlobeIcon />
         </IconButton>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
-        {LANGUAGES.map(lang => (
-          <DropdownMenu.Item
-            key={lang.code}
-            onClick={() => changeLanguage(lang.code)}
-            disabled={i18n.language === lang.code}
-          >
-            {lang.flag} {lang.name}
-            {i18n.language === lang.code && ' ✓'}
-          </DropdownMenu.Item>
-        ))}
+        <DropdownMenu.RadioGroup value={i18n.language} onValueChange={value => changeLanguage(value)}>
+          {LANGUAGES.map(lang => (
+            <DropdownMenu.RadioItem key={lang.code} value={lang.code}>
+              {lang.flag} {lang.name}
+            </DropdownMenu.RadioItem>
+          ))}
+        </DropdownMenu.RadioGroup>
       </DropdownMenu.Content>
     </DropdownMenu.Root>
   )

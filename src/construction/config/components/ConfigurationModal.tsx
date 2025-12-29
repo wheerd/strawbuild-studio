@@ -93,5 +93,5 @@ export function ConfigurationModal({
         </Tabs.Content>
       </Tabs.Root>
     </BaseModal>
-  );
+  )
 }

@@ -329,5 +329,5 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
         </Grid>
       </Flex>
     </Flex>
-  );
+  )
 }

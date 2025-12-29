@@ -38,19 +38,19 @@
       "strawbales": "Strawbales"
     },
     "issues": {
-      "dimensionsExceedSizeMultiple": "Dimensions {dimensions} exceed available sheet sizes ({sizes}). This part will require multiple sheets.",
-      "dimensionsExceedSizeSingle": "Dimensions {dimensions} exceed available sheet sizes ({sizes})",
-      "dimensionsMismatchThickness": "Dimensions {dimensions} do not match available thicknesses ({thicknesses})",
+      "dimensionsExceedSizeMultiple": "Dimensions exceed available sheet sizes. This part will require multiple sheets.",
+      "dimensionsExceedSizeSingle": "Dimensions exceed available sheet sizes.",
+      "dimensionsMismatchThickness": "Dimensions do not match available thicknesses",
       "groupMismatch": "This group does not match the defined material options",
-      "lengthExceedsMultiple": "Part length {partLength} exceeds material maximum available length {maxLength}. This part will require multiple pieces.",
-      "lengthExceedsSingle": "Part length {partLength} exceeds material maximum available length {maxLength}"
+      "lengthExceedsMultiple": "Part length exceeds maximum available length. This part will require multiple pieces.",
+      "lengthExceedsSingle": "Part length exceeds maximum available length."
     },
     "noPartsAvailable": "No parts available.",
     "other": {
       "crossSectionMismatch": "Cross section does not match available options for this material",
       "crossSections": "Other cross sections",
-      "thicknessMismatch": "Thickness does not match available options for this material",
-      "thicknesses": "Other thicknesses"
+      "thicknesses": "Other thicknesses",
+      "thicknessMismatch": "Thickness does not match available options for this material"
     },
     "straw": {
       "flakes": "Flakes",
@@ -75,7 +75,6 @@
       "material": "Material",
       "quantity": "Qty",
       "thickness": "Thickness",
-      "total": "Total",
       "totalArea": "Total Area",
       "totalLength": "Total Length",
       "totalQuantity": "Total Quantity",
@@ -104,10 +103,12 @@
       "failedPartsList": "Failed to generate parts list"
     },
     "issuesPanel": {
-      "errorsTitle": "Errors ({count})",
+      "errorsTitle_one": "Errors ({{count}})",
+      "errorsTitle_other": "Errors ({{count}})",
       "noIssuesMessage": "Construction plan is valid with no errors or warnings.",
       "noIssuesTitle": "No Issues Found",
-      "warningsTitle": "Warnings ({count})"
+      "warningsTitle_one": "Warnings ({{count}})",
+      "warningsTitle_other": "Warnings ({{count}})"
     },
     "partHighlight": {
       "clearHighlight": "Clear highlight",

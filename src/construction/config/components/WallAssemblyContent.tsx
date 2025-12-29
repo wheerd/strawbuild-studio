@@ -705,7 +705,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
             onChange={e => nameInput.handleChange(e.target.value)}
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
-            placeholder={t($ => $.common.placeholderName)}
+            placeholder={t($ => $.common.placeholders.name)}
             size="2"
           />
         </Grid>

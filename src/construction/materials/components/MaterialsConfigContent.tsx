@@ -144,7 +144,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
 
     const duplicated = duplicateMaterial(
       selectedMaterial.id,
-      t($ => $.materials.duplicateNamePattern, { name: selectedMaterial.name })
+      t($ => $.materials.duplicateNamePattern, { name: selectedMaterial.name, defaultValue: '{{name}} (Copy)' })
     )
     setSelectedMaterialId(duplicated.id)
   }, [selectedMaterial, duplicateMaterial])
@@ -406,11 +406,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
       )}
       {!selectedMaterial && materials.length === 0 && (
         <Flex justify="center" align="center" p="5">
-          <Text color="gray">
-            {t($ => $.common.noItemsYet, {
-              items: 'materials'
-            })}
-          </Text>
+          <Text color="gray">{t($ => $.materials.noMaterialsYet)}</Text>
         </Flex>
       )}
       {usage.isUsed && (
@@ -537,7 +533,7 @@ function DimensionalMaterialFields({
             onChange={setNewDim1}
             unit="cm"
             size="2"
-            aria-label="Cross section smaller dimension"
+            aria-label={t('Cross section smaller dimension' as never)}
           />
           <Text>x</Text>
           <LengthField
@@ -545,11 +541,11 @@ function DimensionalMaterialFields({
             onChange={setNewDim2}
             unit="cm"
             size="2"
-            aria-label="Cross section larger dimension"
+            aria-label={t('Cross section larger dimension' as never)}
           />
           <IconButton
             title={t('Add' as never)}
-            aria-label="Add cross section"
+            aria-label={t('Add cross section' as never)}
             onClick={handleAddCrossSection}
             variant="surface"
             size="2"
@@ -709,12 +705,24 @@ function SheetMaterialFields({
           </Flex>
         </Flex>
         <Grid columns="6em auto 6em auto" gap="2" align="center" justify="end">
-          <LengthField value={newWidth} onChange={setNewWidth} unit="cm" size="2" aria-label="Sheet width" />
+          <LengthField
+            value={newWidth}
+            onChange={setNewWidth}
+            unit="cm"
+            size="2"
+            aria-label={t('Sheet width' as never)}
+          />
           <Text>x</Text>
-          <LengthField value={newLength} onChange={setNewLength} unit="cm" size="2" aria-label="Sheet length" />
+          <LengthField
+            value={newLength}
+            onChange={setNewLength}
+            unit="cm"
+            size="2"
+            aria-label={t('Sheet length' as never)}
+          />
           <IconButton
             title={t('Add size' as never)}
-            aria-label="Add sheet size"
+            aria-label={t('Add sheet size' as never)}
             onClick={handleAddSize}
             variant="surface"
             size="2"

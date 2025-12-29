@@ -414,12 +414,7 @@ function MaterialGroupSummaryRow({
       <Table.Cell>
         <Flex align="center" gap="2" justify="between">
           <Badge color={group.badgeColor}>{group.badgeLabel}</Badge>
-          <IconButton
-            title={t(($: any) => $.partsList.actions.jumpToDetails)}
-            size="1"
-            variant="ghost"
-            onClick={onNavigate}
-          >
+          <IconButton title={t($ => $.partsList.actions.jumpToDetails)} size="1" variant="ghost" onClick={onNavigate}>
             <PinBottomIcon />
           </IconButton>
         </Flex>
@@ -602,12 +597,8 @@ function DimensionalPartsTable({
                       key="length-exceeds-available"
                       content={
                         part.requiresSinglePiece
-                          ? `Part length ${
-                              part.length !== undefined ? formatters.formatLengthInMeters(part.length) : 'Unknown'
-                            } exceeds material maximum available length ${formatters.formatLengthInMeters(Math.max(...material.lengths))}`
-                          : `Part length ${
-                              part.length !== undefined ? formatters.formatLengthInMeters(part.length) : 'Unknown'
-                            } exceeds material maximum available length ${formatters.formatLengthInMeters(Math.max(...material.lengths))}. This part will require multiple pieces.`
+                          ? t($ => $.partsList.issues.lengthExceedsSingle)
+                          : t($ => $.partsList.issues.lengthExceedsMultiple)
                       }
                     >
                       <ExclamationTriangleIcon
@@ -719,12 +710,7 @@ function SheetPartsTable({
               <Table.Cell justify="end">
                 <Flex align="center" gap="2" justify="end">
                   {part.issue === 'ThicknessMismatch' && (
-                    <Tooltip
-                      key="thickness-missmatch"
-                      content={`Dimensions ${formatters.formatDimensions3D([part.size[0], part.size[1], part.size[2]])} do not match available thicknesses (${material.thicknesses
-                        .map(value => formatters.formatLengthInMeters(value))
-                        .join(', ')})`}
-                    >
+                    <Tooltip key="thickness-missmatch" content={t($ => $.partsList.issues.dimensionsMismatchThickness)}>
                       <ExclamationTriangleIcon style={{ color: 'var(--red-9)' }} />
                     </Tooltip>
                   )}
@@ -733,12 +719,8 @@ function SheetPartsTable({
                       key="sheet-size-exceeded"
                       content={
                         part.requiresSinglePiece
-                          ? `Dimensions ${formatters.formatDimensions3D([part.size[0], part.size[1], part.size[2]])} exceed available sheet sizes (${material.sizes
-                              .map(size => formatters.formatDimensions2D([size.smallerLength, size.biggerLength]))
-                              .join(', ')})`
-                          : `Dimensions ${formatters.formatDimensions3D([part.size[0], part.size[1], part.size[2]])} exceed available sheet sizes (${material.sizes
-                              .map(size => formatters.formatDimensions2D([size.smallerLength, size.biggerLength]))
-                              .join(', ')}). This part will require multiple sheets.`
+                          ? t($ => $.partsList.issues.dimensionsExceedSizeSingle)
+                          : t($ => $.partsList.issues.dimensionsExceedSizeMultiple)
                       }
                     >
                       <ExclamationTriangleIcon
@@ -1067,7 +1049,7 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
         const key = `${material.id}|${groupKey}`
         const label = displayCrossSection
           ? formatters.formatDimensions2D([displayCrossSection.smallerLength, displayCrossSection.biggerLength])
-          : t(($: any) => $.partsList.other.crossSections)
+          : t($ => $.partsList.other.crossSections)
         const sortValue = displayCrossSection
           ? displayCrossSection.smallerLength * displayCrossSection.biggerLength
           : Number.MAX_SAFE_INTEGER
@@ -1078,19 +1060,21 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
             cs.biggerLength === displayCrossSection?.biggerLength
         )
 
-        if (!groups.has(key)) {
-          groups.set(key, {
+        let group = groups.get(key)
+        if (group == null) {
+          group = {
             label,
             badgeLabel: label,
             badgeColor: isKnown ? undefined : 'orange',
             parts: [],
             sortValue,
             hasIssue: !isKnown,
-            issueMessage: isKnown ? undefined : t(($: any) => $.partsList.other.crossSectionMismatch)
-          })
+            issueMessage: isKnown ? undefined : t($ => $.partsList.other.crossSectionMismatch)
+          }
+          groups.set(key, group)
         }
 
-        groups.get(key)!.parts.push(part)
+        group.parts.push(part)
       }
 
       return Array.from(groups.entries())
@@ -1119,25 +1103,26 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
         const thickness = part.thickness
         const groupKey = thickness != null ? `sheet:${thickness}` : 'sheet:other'
         const key = `${material.id}|${groupKey}`
-        const label =
-          thickness != null ? formatters.formatLength(thickness) : t(($: any) => $.partsList.other.thicknesses)
+        const label = thickness != null ? formatters.formatLength(thickness) : t($ => $.partsList.other.thicknesses)
         const sortValue = thickness ?? Number.MAX_SAFE_INTEGER
 
         const isKnown = material.thicknesses.includes(thickness ?? -1)
 
-        if (!groups.has(key)) {
-          groups.set(key, {
+        let group = groups.get(key)
+        if (group == null) {
+          group = {
             label,
             badgeLabel: label,
             badgeColor: isKnown ? undefined : 'orange',
             parts: [],
             sortValue,
             hasIssue: !isKnown,
-            issueMessage: isKnown ? undefined : t(($: any) => $.partsList.other.thicknessMismatch)
-          })
+            issueMessage: isKnown ? undefined : t($ => $.partsList.other.thicknessMismatch)
+          }
+          groups.set(key, group)
         }
 
-        groups.get(key)!.parts.push(part)
+        group.parts.push(part)
       }
 
       return Array.from(groups.entries())
@@ -1164,7 +1149,7 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
         return [
           createGroup({
             key: `${material.id}-straw`,
-            label: t(($: any) => $.partsList.groups.strawbales),
+            label: t($ => $.partsList.groups.strawbales),
             hasIssue: false,
             material,
             parts
@@ -1175,7 +1160,7 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
       return [
         createGroup({
           key: `${material.id}-all`,
-          label: t(($: any) => $.partsList.groups.allParts),
+          label: t($ => $.partsList.groups.allParts),
           hasIssue: false,
           material,
           parts

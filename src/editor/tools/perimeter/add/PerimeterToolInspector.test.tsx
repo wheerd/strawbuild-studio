@@ -108,7 +108,7 @@ describe('PerimeterToolInspector', () => {
       expect(screen.getByDisplayValue('420')).toBeInTheDocument()
       // Ring beam selects should show "None" by default
       expect(screen.getAllByRole('combobox')).toHaveLength(3)
-      //.('perimeter.nonePlaceholder')).toHaveLength(2)
+      // .('perimeter.nonePlaceholder')).toHaveLength(2)
     })
   })
 

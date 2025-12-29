@@ -71,9 +71,11 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                 <Heading size="3">{t($ => $.keyFeatures.title)}</Heading>
                 <Text as="div" size="1">
                   <ul style={{ listStyleType: 'disc', margin: 0, paddingLeft: '1.5rem' }}>
-                    {(t($ => $.keyFeatures.items, {
-                      returnObjects: true
-                    }) as string[]).map((item, index) => (
+                    {(
+                      t($ => $.keyFeatures.items, {
+                        returnObjects: true
+                      }) as string[]
+                    ).map((item, index) => (
                       <li key={index}>{item}</li>
                     ))}
                   </ul>
@@ -84,9 +86,11 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                 <Heading size="3">{t($ => $.plannedFeatures.title)}</Heading>
                 <Text as="div" size="1">
                   <ul style={{ listStyleType: 'disc', margin: 0, paddingLeft: '1.5rem' }}>
-                    {(t($ => $.plannedFeatures.items, {
-                      returnObjects: true
-                    }) as string[]).map((item, index) => (
+                    {(
+                      t($ => $.plannedFeatures.items, {
+                        returnObjects: true
+                      }) as string[]
+                    ).map((item, index) => (
                       <li key={index}>{item}</li>
                     ))}
                   </ul>
@@ -122,9 +126,11 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                 <Text as="div" size="1">
                   {t($ => $.localStorage.description)}
                   <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.5rem' }}>
-                    {(t($ => $.localStorage.items, {
-                      returnObjects: true
-                    }) as string[]).map((item, index) => (
+                    {(
+                      t($ => $.localStorage.items, {
+                        returnObjects: true
+                      }) as string[]
+                    ).map((item, index) => (
                       <li key={index}>{item}</li>
                     ))}
                   </ul>
@@ -143,9 +149,11 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                     <Text weight="bold">{t($ => $.disclaimer.title)}</Text>
                     <Text>{t($ => $.disclaimer.intro)}</Text>
                     <Flex direction="column" ml="4" gap="0" as="span">
-                      {(t($ => $.disclaimer.items, {
-                        returnObjects: true
-                      }) as string[]).map((item, index) => (
+                      {(
+                        t($ => $.disclaimer.items, {
+                          returnObjects: true
+                        }) as string[]
+                      ).map((item, index) => (
                         <Text key={index}>{index === 3 ? <strong>{item}</strong> : item}</Text>
                       ))}
                     </Flex>
@@ -186,5 +194,5 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
         </Flex>
       </Dialog.Content>
     </Dialog.Root>
-  );
+  )
 }

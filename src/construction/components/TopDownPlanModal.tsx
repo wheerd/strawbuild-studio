@@ -56,5 +56,5 @@ export default function TopDownPlanModal({
       refreshKey={refreshKey}
       trigger={trigger}
     />
-  );
+  )
 }

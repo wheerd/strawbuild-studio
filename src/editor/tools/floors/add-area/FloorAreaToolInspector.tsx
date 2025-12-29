@@ -16,5 +16,5 @@ export function FloorAreaToolInspector({ tool }: ToolInspectorProps<FloorAreaToo
       completeLabel={t($ => $.floorArea.completeLabel)}
       cancelLabel={t($ => $.floorArea.cancelLabel)}
     />
-  );
+  )
 }

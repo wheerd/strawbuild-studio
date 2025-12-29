@@ -16,5 +16,5 @@ export function FloorOpeningToolInspector({ tool }: ToolInspectorProps<FloorOpen
       completeLabel={t($ => $.floorOpening.completeLabel)}
       cancelLabel={t($ => $.floorOpening.cancelLabel)}
     />
-  );
+  )
 }

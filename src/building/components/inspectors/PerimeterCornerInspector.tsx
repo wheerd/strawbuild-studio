@@ -54,7 +54,7 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
           </Callout.Text>
         </Callout.Root>
       </Box>
-    );
+    )
   }
 
   // Get adjacent walls
@@ -111,12 +111,12 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
     viewportActions.fitToView(bounds)
   }, [corner, previousWall, nextWall, viewportActions])
 
-  const canDeleteCorner = useMemo(() => {
-    if (!outerWall || !corner) return { canDelete: false, reason: 'Corner not found' }
+  const canDeleteCorner = useMemo<{ canDelete: boolean; reason?: Parameters<typeof t>[0] }>(() => {
+    if (!outerWall || !corner) return { canDelete: false, reason: $ => $.perimeterCorner.notFound }
 
     // Need at least 4 corners (triangle = 3 corners minimum)
     if (outerWall.corners.length < 4) {
-      return { canDelete: false, reason: 'Cannot delete - perimeter needs at least 3 corners' }
+      return { canDelete: false, reason: $ => $.perimeterCorner.cannotDeleteMinCorners }
     }
 
     // Check if removal would cause self-intersection
@@ -126,10 +126,10 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
     const newBoundary: Polygon2D = { points: newBoundaryPoints }
 
     if (wouldClosingPolygonSelfIntersect(newBoundary)) {
-      return { canDelete: false, reason: 'Cannot delete - would create self-intersecting polygon' }
+      return { canDelete: false, reason: $ => $.perimeterCorner.cannotDeleteSelfIntersect }
     }
 
-    return { canDelete: true, reason: '' }
+    return { canDelete: true }
   }, [outerWall, corner, cornerIndex])
 
   return (
@@ -182,7 +182,9 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
             size="2"
             onClick={handleToggleConstructedByWall}
             disabled={!canSwitchWall}
-            title={canSwitchWall ? t($ => $.perimeterCorner.switchMainWall) : t($ => $.perimeterCorner.cannotSwitchTooltip)}
+            title={
+              canSwitchWall ? t($ => $.perimeterCorner.switchMainWall) : t($ => $.perimeterCorner.cannotSwitchTooltip)
+            }
           >
             {corner.constructedByWall === 'next' ? <PinLeftIcon /> : <PinRightIcon />}
           </IconButton>
@@ -193,8 +195,8 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
             size="2"
             color={corner.interiorAngle === 180 ? undefined : 'red'}
             title={
-              !canDeleteCorner.canDelete
-                ? canDeleteCorner.reason
+              canDeleteCorner.reason
+                ? t(canDeleteCorner.reason)
                 : corner.interiorAngle === 180
                   ? t($ => $.perimeterCorner.mergeSplit)
                   : t($ => $.perimeterCorner.deleteCorner)
@@ -240,5 +242,5 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
         </Flex>
       )}
     </Flex>
-  );
+  )
 }

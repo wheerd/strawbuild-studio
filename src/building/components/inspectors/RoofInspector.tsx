@@ -120,7 +120,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
           {t($ => $.roof.notFound)}
         </Text>
       </Box>
-    );
+    )
   }
 
   return (
@@ -134,7 +134,9 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
         <DataList.Root size="1">
           <DataList.Item>
             <DataList.Label>{t($ => $.roof.type)}</DataList.Label>
-            <DataList.Value>{roof.type === 'gable' ? t($ => $.roof.typeGable) : t($ => $.roof.typeShed)}</DataList.Value>
+            <DataList.Value>
+              {roof.type === 'gable' ? t($ => $.roof.typeGable) : t($ => $.roof.typeShed)}
+            </DataList.Value>
           </DataList.Item>
           <DataList.Item>
             <DataList.Label>{t($ => $.roof.perimeter)}</DataList.Label>
@@ -327,5 +329,5 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
         </Flex>
       </Flex>
     </Box>
-  );
+  )
 }

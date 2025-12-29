@@ -21,7 +21,7 @@ describe('ClickableLengthIndicator', () => {
       <ClickableLengthIndicator
         startPoint={ZERO_VEC2}
         endPoint={newVec2(100, 0)}
-        label={'Custom Label'}
+        label="Custom Label"
         onClick={mockOnClick}
       />
     )

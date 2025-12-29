@@ -101,5 +101,5 @@ export function SelectToolInspector(): React.JSX.Element {
           </Callout.Root>
         )}
     </Flex>
-  );
+  )
 }

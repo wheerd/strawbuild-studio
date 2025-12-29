@@ -94,8 +94,8 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
           title={
             activeStorey
               ? t($ => $.constructionPlanForStorey, {
-              storeyName: activeStorey.name
-            })
+                  storeyName: activeStorey.name
+                })
               : t($ => $.constructionPlanForActiveStorey)
           }
           factory={async () => constructStorey(activeStoreyId)}
@@ -138,5 +138,5 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
         </IconButton>
       </Flex>
     </Flex>
-  );
+  )
 }

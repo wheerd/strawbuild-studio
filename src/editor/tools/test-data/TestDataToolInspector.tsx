@@ -88,5 +88,5 @@ export function TestDataToolInspector({ tool }: ToolInspectorProps<TestDataTool>
         </Box>
       </Flex>
     </Box>
-  );
+  )
 }

@@ -132,7 +132,7 @@ export function PlanImportModal({
       return null
     }
     if (pixelDistance < 100) {
-      return t($ => $.planImport.step2.warningSmallSpan);
+      return t($ => $.planImport.step2.warningSmallSpan)
     }
     return null
   }, [pixelDistance, t])
@@ -303,8 +303,8 @@ export function PlanImportModal({
               <Text size="2" color="gray">
                 {mmPerPixel
                   ? t($ => $.planImport.step2.scaleValue, {
-                  distance: formatLength(mmPerPixel)
-                })
+                      distance: formatLength(mmPerPixel)
+                    })
                   : t($ => $.planImport.step2.scalePlaceholder)}
               </Text>
             </Flex>
@@ -320,7 +320,9 @@ export function PlanImportModal({
           </Text>
 
           <Flex gap="3" align="center">
-            <Tooltip content={showOriginHint ? t($ => $.planImport.step3.clickHint) : t($ => $.planImport.step3.pickHint)}>
+            <Tooltip
+              content={showOriginHint ? t($ => $.planImport.step3.clickHint) : t($ => $.planImport.step3.pickHint)}
+            >
               <Button
                 size="1"
                 variant={showOriginHint ? 'solid' : 'soft'}
@@ -358,5 +360,5 @@ export function PlanImportModal({
         </Flex>
       </Flex>
     </BaseModal>
-  );
+  )
 }

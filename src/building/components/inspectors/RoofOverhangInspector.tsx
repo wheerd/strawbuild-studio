@@ -38,7 +38,7 @@ export function RoofOverhangInspector({ roofId, overhangId }: RoofOverhangInspec
           </Callout.Text>
         </Callout.Root>
       </Box>
-    );
+    )
   }
 
   return (
@@ -81,5 +81,5 @@ export function RoofOverhangInspector({ roofId, overhangId }: RoofOverhangInspec
         </Flex>
       </Flex>
     </Box>
-  );
+  )
 }

@@ -207,8 +207,12 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                   setConfig(prev => ({ ...prev, referenceSide: value as PerimeterReferenceSide }))
                 }
               >
-                <SegmentedControl.Item value="inside">{t($ => $.presetDialogs.rectangular.inside)}</SegmentedControl.Item>
-                <SegmentedControl.Item value="outside">{t($ => $.presetDialogs.rectangular.outside)}</SegmentedControl.Item>
+                <SegmentedControl.Item value="inside">
+                  {t($ => $.presetDialogs.rectangular.inside)}
+                </SegmentedControl.Item>
+                <SegmentedControl.Item value="outside">
+                  {t($ => $.presetDialogs.rectangular.outside)}
+                </SegmentedControl.Item>
               </SegmentedControl.Root>
             </Flex>
 
@@ -235,5 +239,5 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
         </Flex>
       </Flex>
     </BaseModal>
-  );
+  )
 }

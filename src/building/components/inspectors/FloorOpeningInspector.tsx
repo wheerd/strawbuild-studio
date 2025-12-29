@@ -45,7 +45,7 @@ export function FloorOpeningInspector({ floorOpeningId }: FloorOpeningInspectorP
           {t($ => $.floorOpening.notFound)}
         </Text>
       </Box>
-    );
+    )
   }
 
   return (
@@ -81,5 +81,5 @@ export function FloorOpeningInspector({ floorOpeningId }: FloorOpeningInspectorP
         </Flex>
       </Flex>
     </Box>
-  );
+  )
 }

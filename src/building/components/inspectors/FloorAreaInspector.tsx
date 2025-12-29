@@ -45,7 +45,7 @@ export function FloorAreaInspector({ floorAreaId }: FloorAreaInspectorProps): Re
           {t($ => $.floorArea.notFound)}
         </Text>
       </Box>
-    );
+    )
   }
 
   return (
@@ -82,5 +82,5 @@ export function FloorAreaInspector({ floorAreaId }: FloorAreaInspectorProps): Re
         </Flex>
       </Flex>
     </Box>
-  );
+  )
 }

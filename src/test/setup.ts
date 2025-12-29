@@ -144,12 +144,12 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (i18nKey: any) => keyFromSelector(i18nKey),
     i18n: {
-      changeLanguage: () => new Promise(() => {})
+      changeLanguage: () => new Promise(vi.fn())
     }
   }),
   initReactI18next: {
     type: '3rdParty',
-    init: () => {}
+    init: vi.fn()
   }
 }))
 

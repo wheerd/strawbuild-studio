@@ -60,7 +60,7 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
           </Callout.Text>
         </Callout.Root>
       </Box>
-    );
+    )
   }
 
   if (perimeterStats.length === 0) {
@@ -70,7 +70,7 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
           <Callout.Text>{t($ => $.storey.noPerimeters)}</Callout.Text>
         </Callout.Root>
       </Box>
-    );
+    )
   }
 
   return (
@@ -186,5 +186,5 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
         </DataList.Root>
       </Flex>
     </Box>
-  );
+  )
 }

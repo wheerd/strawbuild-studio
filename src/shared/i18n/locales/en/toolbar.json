@@ -10,12 +10,9 @@
   },
   "offlineStatus": {
     "loading": "Caching assets ({{loaded}}/{{total}})…",
-    "loadingBadge": "Caching",
     "loadingUnknown": "Preparing offline experience…",
     "offline": "Offline. Changes will sync once connection returns.",
-    "offlineBadge": "Offline",
-    "ready": "All assets cached. Ready for offline use.",
-    "readyBadge": "Offline Ready"
+    "ready": "All assets cached. Ready for offline use."
   },
   "partsListForEntireModel": "Parts List for Entire Model",
   "themeToggle": {

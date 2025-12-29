@@ -227,7 +227,7 @@ function ModalContent({
         </Box>
       </Tabs.Content>
     </Tabs.Root>
-  );
+  )
 }
 
 function ConstructionPlanModalContent({
@@ -258,7 +258,7 @@ function ConstructionPlanModalContent({
           <Callout.Text>{t($ => $.planModal.errors.failedModel)}</Callout.Text>
         </Callout.Root>
       </Flex>
-    );
+    )
   }
 
   return (
@@ -293,7 +293,7 @@ function PartsTabContent({
           <Callout.Text>{t($ => $.planModal.errors.failedPartsList)}</Callout.Text>
         </Callout.Root>
       </Flex>
-    );
+    )
   }
 
   return <ConstructionPartsList partsList={partsData.material} onViewInPlan={onViewInPlan} />
@@ -319,7 +319,7 @@ function ModulesTabContent({
           <Callout.Text>{t($ => $.planModal.errors.failedModulesList)}</Callout.Text>
         </Callout.Root>
       </Flex>
-    );
+    )
   }
 
   return <ConstructionVirtualPartsList partsList={partsData.virtual} onViewInPlan={onViewInPlan} />

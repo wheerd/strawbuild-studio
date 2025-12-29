@@ -71,9 +71,9 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
   const { getTagOrCategoryOpacity, getCategoryOpacityState, cycleTagOrCategoryOpacity } = useTagOpacityActions()
 
   const getOpacityLabel = (opacity: number): string => {
-    if (opacity === 1.0) return t($ => $.tagOpacity.full)
-    if (opacity === 0.5) return t($ => $.tagOpacity.semi)
-    return t($ => $.tagOpacity.hide)
+    if (opacity === 1.0) return t($ => $.tagOpacity.fullCategory)
+    if (opacity === 0.5) return t($ => $.tagOpacity.semiCategory)
+    return t($ => $.tagOpacity.hideCategory)
   }
 
   const tagsByCategory = useMemo(() => collectTagsFromModel(model), [model])
@@ -160,7 +160,7 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
                     }}
                   >
                     <Text size="1" weight="bold">
-                      {getOpacityLabel(categoryOpacity)} Category
+                      {getOpacityLabel(categoryOpacity)}
                     </Text>
                     {renderOpacityIcon(categoryOpacity)}
                   </Flex>

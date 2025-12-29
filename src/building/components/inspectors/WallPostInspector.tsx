@@ -2,7 +2,7 @@ import { InfoCircledIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
 import { Box, Callout, Flex, Grid, IconButton, Kbd, SegmentedControl, Separator, Switch, Text } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 
 import type { PerimeterId, PerimeterWallId, WallPostId } from '@/building/model/ids'
 import type { WallPostType } from '@/building/model/model'
@@ -55,7 +55,7 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
           </Callout.Text>
         </Callout.Root>
       </Box>
-    );
+    )
   }
 
   // Event handlers with stable references
@@ -243,11 +243,16 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
         </Callout.Icon>
         <Callout.Text>
           <Text size="1">
-            To move the post, you can use the Move Tool <Kbd>M</Kbd> or click any of the distance measurements shown in
-            the editor to adjust them.
+            <Trans t={t} i18nKey={$ => $.wallPost.moveInstructions} components={{ kbd: <Kbd /> }}>
+              To move the post, you can use the Move Tool{' '}
+              <Kbd>
+                <>{{ hotkey: 'M' }}</>
+              </Kbd>{' '}
+              or click any of the distance measurements shown in the editor to adjust them.
+            </Trans>
           </Text>
         </Callout.Text>
       </Callout.Root>
     </Flex>
-  );
+  )
 }

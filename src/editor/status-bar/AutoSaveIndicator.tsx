@@ -135,7 +135,7 @@ export function AutoSaveIndicator(): React.JSX.Element {
         text: exportError || importError || t($ => $.autoSave.exportFailed),
         icon: <Cross2Icon />,
         color: 'red' as const
-      };
+      }
     }
 
     if (isExporting) {
@@ -143,7 +143,7 @@ export function AutoSaveIndicator(): React.JSX.Element {
         text: t($ => $.autoSave.exporting),
         icon: <UpdateIcon className="animate-spin" />,
         color: 'blue' as const
-      };
+      }
     }
 
     if (isImporting) {
@@ -151,7 +151,7 @@ export function AutoSaveIndicator(): React.JSX.Element {
         text: t($ => $.autoSave.importing),
         icon: <UpdateIcon className="animate-spin" />,
         color: 'blue' as const
-      };
+      }
     }
 
     // Fall back to auto-save states
@@ -160,7 +160,7 @@ export function AutoSaveIndicator(): React.JSX.Element {
         text: t($ => $.autoSave.autoSaveFailed),
         icon: <Cross2Icon />,
         color: 'red' as const
-      };
+      }
     }
 
     if (isSaving) {
@@ -168,7 +168,7 @@ export function AutoSaveIndicator(): React.JSX.Element {
         text: t($ => $.autoSave.autoSaving),
         icon: <UpdateIcon className="animate-spin" />,
         color: 'blue' as const
-      };
+      }
     }
 
     if (lastSaved) {
@@ -196,14 +196,14 @@ export function AutoSaveIndicator(): React.JSX.Element {
         }),
         icon: <CheckIcon />,
         color: 'green' as const
-      };
+      }
     }
 
     return {
       text: t($ => $.autoSave.notSaved),
       icon: <Cross2Icon />,
       color: 'gray' as const
-    };
+    }
   }
 
   const statusInfo = getStatusInfo()
@@ -255,5 +255,5 @@ export function AutoSaveIndicator(): React.JSX.Element {
         <DropdownMenu.Item disabled>{statusInfo.text}</DropdownMenu.Item>
       </DropdownMenu.Content>
     </DropdownMenu.Root>
-  );
+  )
 }

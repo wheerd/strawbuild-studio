@@ -51,13 +51,13 @@ const getDefaultLayer = (type: LayerType, name: string, thickness: number): Laye
   type === 'monolithic'
     ? {
         type: 'monolithic',
-        name: name,
+        name,
         thickness,
         material: DEFAULT_MATERIAL
       }
     : {
         type: 'striped',
-        name: name,
+        name,
         thickness,
         direction: 'perpendicular',
         stripeWidth: 50,

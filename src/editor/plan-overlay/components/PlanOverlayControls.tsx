@@ -42,11 +42,17 @@ export function PlanOverlayControls(): React.JSX.Element | null {
                 value={plan.placement}
                 onValueChange={value => handlePlacementChange(value as FloorPlanPlacement)}
               >
-                <DropdownMenu.RadioItem value="over">{t($ => $.planControls.placement.showOnTop)}</DropdownMenu.RadioItem>
-                <DropdownMenu.RadioItem value="under">{t($ => $.planControls.placement.showUnder)}</DropdownMenu.RadioItem>
+                <DropdownMenu.RadioItem value="over">
+                  {t($ => $.planControls.placement.showOnTop)}
+                </DropdownMenu.RadioItem>
+                <DropdownMenu.RadioItem value="under">
+                  {t($ => $.planControls.placement.showUnder)}
+                </DropdownMenu.RadioItem>
               </DropdownMenu.RadioGroup>
               <DropdownMenu.Separator />
-              <DropdownMenu.Item onSelect={() => setModalOpen(true)}>{t($ => $.planControls.recalibrate)}</DropdownMenu.Item>
+              <DropdownMenu.Item onSelect={() => setModalOpen(true)}>
+                {t($ => $.planControls.recalibrate)}
+              </DropdownMenu.Item>
               <DropdownMenu.Item color="red" onSelect={() => setConfirmOpen(true)}>
                 {t($ => $.planControls.removePlan)}
               </DropdownMenu.Item>
@@ -90,10 +96,15 @@ export function PlanOverlayControls(): React.JSX.Element | null {
           </AlertDialog.Root>
         </>
       ) : (
-        <IconButton size="1" variant="surface" onClick={() => setModalOpen(true)} title={t($ => $.planControls.importPlan)}>
+        <IconButton
+          size="1"
+          variant="surface"
+          onClick={() => setModalOpen(true)}
+          title={t($ => $.planControls.importPlan)}
+        >
           <ImageIcon />
         </IconButton>
       )}
     </Flex>
-  );
+  )
 }

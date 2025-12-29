@@ -40,5 +40,5 @@ export function PerimeterPresetToolInspector({ tool }: ToolInspectorProps<Perime
         ))}
       </Flex>
     </Box>
-  );
+  )
 }
