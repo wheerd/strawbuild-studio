@@ -1,0 +1,56 @@
+{
+  "planImport": {
+    "titleNew": "Import plan image",
+    "titleExisting": "Plan image",
+    "step1": {
+      "title": "1. Select floor plan image",
+      "currentImage": "Using current image ({{name}}). Upload a new file below to replace it.",
+      "uploadHint": "Upload a PNG, JPG, or SVG. The file stays local and is not saved with your project."
+    },
+    "step2": {
+      "title": "2. Calibrate scale",
+      "instructions": "Pick two points with a known distance directly on the image.",
+      "clearPoints": "Clear points",
+      "realDistance": "Real Distance:",
+      "pixelDistance": "Pixel distance:",
+      "pixelDistancePlaceholder": "Select two points",
+      "scale": "Scale:",
+      "scalePlaceholder": "Waiting for calibration",
+      "scaleValue": "{{distance}} per px",
+      "warningSmallSpan": "Calibration span is small – consider selecting points farther apart for better accuracy."
+    },
+    "step3": {
+      "title": "3. Position origin (optional)",
+      "instructions": "Pick a point on the image that should align with the origin in the editor. If you skip this step, the first reference point becomes the origin.",
+      "pickOrigin": "Pick origin on image",
+      "changeOrigin": "Change origin point",
+      "clickImage": "Click image…",
+      "clickHint": "Click on the image to set origin",
+      "pickHint": "Pick origin on the image",
+      "clearOrigin": "Clear origin point"
+    },
+    "footer": {
+      "storageNote": "The plan image is only stored in your browser for this floor.",
+      "cancel": "Cancel",
+      "addPlan": "Add plan",
+      "replacePlan": "Replace plan"
+    }
+  },
+  "planControls": {
+    "label": "Plan Overlay",
+    "ariaLabel": "Plan Overlay",
+    "importPlan": "Import plan image",
+    "placement": {
+      "showOnTop": "Show on top",
+      "showUnder": "Show under layout"
+    },
+    "recalibrate": "Recalibrate",
+    "removePlan": "Remove plan",
+    "confirmRemove": {
+      "title": "Remove plan image",
+      "description": "Remove the plan image for {{floor}}? This cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Remove"
+    }
+  }
+}

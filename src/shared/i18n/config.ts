@@ -13,6 +13,7 @@ import {
 import commonDE from './locales/de/common.json'
 import configDE from './locales/de/config.json'
 import inspectorDE from './locales/de/inspector.json'
+import overlayDE from './locales/de/overlay.json'
 import toolDE from './locales/de/tool.json'
 import toolbarDE from './locales/de/toolbar.json'
 import welcomeDE from './locales/de/welcome.json'
@@ -20,6 +21,7 @@ import welcomeDE from './locales/de/welcome.json'
 import commonEN from './locales/en/common.json'
 import configEN from './locales/en/config.json'
 import inspectorEN from './locales/en/inspector.json'
+import overlayEN from './locales/en/overlay.json'
 import toolEN from './locales/en/tool.json'
 import toolbarEN from './locales/en/toolbar.json'
 import welcomeEN from './locales/en/welcome.json'
@@ -31,7 +33,8 @@ const resources = {
     toolbar: toolbarEN,
     inspector: inspectorEN,
     tool: toolEN,
-    config: configEN
+    config: configEN,
+    overlay: overlayEN
   },
   de: {
     common: commonDE,
@@ -39,7 +42,8 @@ const resources = {
     toolbar: toolbarDE,
     inspector: inspectorDE,
     tool: toolDE,
-    config: configDE
+    config: configDE,
+    overlay: overlayDE
   }
 }
 
@@ -50,7 +54,7 @@ i18n
     resources,
     fallbackLng: 'en',
     defaultNS: 'common',
-    ns: ['common', 'welcome', 'toolbar', 'inspector', 'tool', 'config'],
+    ns: ['common', 'welcome', 'toolbar', 'inspector', 'tool', 'config', 'overlay'],
 
     interpolation: {
       escapeValue: false, // React already escapes

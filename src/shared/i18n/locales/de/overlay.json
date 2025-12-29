@@ -1,0 +1,56 @@
+{
+  "planImport": {
+    "titleNew": "Grundriss importieren",
+    "titleExisting": "Grundriss",
+    "step1": {
+      "title": "1. Grundriss-Bild auswählen",
+      "currentImage": "Aktuelles Bild wird verwendet ({{name}}). Lade eine neue Datei hoch, um es zu ersetzen.",
+      "uploadHint": "Lade ein PNG, JPG oder SVG hoch. Die Datei bleibt lokal und wird nicht mit deinem Projekt gespeichert."
+    },
+    "step2": {
+      "title": "2. Maßstab kalibrieren",
+      "instructions": "Wähle zwei Punkte mit einem bekannten Abstand direkt auf dem Bild.",
+      "clearPoints": "Punkte löschen",
+      "realDistance": "Tatsächlicher Abstand:",
+      "pixelDistance": "Pixel-Abstand:",
+      "pixelDistancePlaceholder": "Zwei Punkte auswählen",
+      "scale": "Maßstab:",
+      "scalePlaceholder": "Warte auf Kalibrierung",
+      "scaleValue": "{{distance}} pro px",
+      "warningSmallSpan": "Kalibrierungsspanne ist klein – wähle weiter auseinander liegende Punkte für bessere Genauigkeit."
+    },
+    "step3": {
+      "title": "3. Ursprung positionieren (optional)",
+      "instructions": "Wähle einen Punkt auf dem Bild, der mit dem Ursprung im Editor übereinstimmen soll. Wenn du diesen Schritt überspringst, wird der erste Referenzpunkt zum Ursprung.",
+      "pickOrigin": "Ursprung auf Bild wählen",
+      "changeOrigin": "Ursprungspunkt ändern",
+      "clickImage": "Auf Bild klicken…",
+      "clickHint": "Klicke auf das Bild, um den Ursprung festzulegen",
+      "pickHint": "Ursprung auf dem Bild wählen",
+      "clearOrigin": "Ursprungspunkt löschen"
+    },
+    "footer": {
+      "storageNote": "Das Grundriss-Bild wird nur in deinem Browser für diese Ebene gespeichert.",
+      "cancel": "Abbrechen",
+      "addPlan": "Grundriss hinzufügen",
+      "replacePlan": "Grundriss ersetzen"
+    }
+  },
+  "planControls": {
+    "label": "Grundriss-Überlagerung",
+    "ariaLabel": "Grundriss-Überlagerung",
+    "importPlan": "Grundriss importieren",
+    "placement": {
+      "showOnTop": "Oben anzeigen",
+      "showUnder": "Unter Layout anzeigen"
+    },
+    "recalibrate": "Neu kalibrieren",
+    "removePlan": "Grundriss entfernen",
+    "confirmRemove": {
+      "title": "Grundriss entfernen",
+      "description": "Grundriss für {{floor}} entfernen? Dies kann nicht rückgängig gemacht werden.",
+      "cancel": "Abbrechen",
+      "confirm": "Entfernen"
+    }
+  }
+}

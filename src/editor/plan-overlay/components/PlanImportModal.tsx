@@ -1,6 +1,7 @@
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { Button, Flex, Grid, Separator, Text, Tooltip } from '@radix-ui/themes'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { StoreyId } from '@/building/model/ids'
 import { PlanCalibrationCanvas } from '@/editor/plan-overlay/components/PlanCalibrationCanvas'
@@ -33,6 +34,7 @@ export function PlanImportModal({
   onOpenChange,
   existingPlan
 }: PlanImportModalProps): React.JSX.Element {
+  const { t } = useTranslation('overlay')
   const { formatLength } = useFormatters()
   const { importPlan, recalibratePlan } = useFloorPlanActions()
   const [file, setFile] = useState<File | null>(null)
@@ -130,10 +132,10 @@ export function PlanImportModal({
       return null
     }
     if (pixelDistance < 100) {
-      return 'Calibration span is small – consider selecting points farther apart for better accuracy.'
+      return t('planImport.step2.warningSmallSpan')
     }
     return null
-  }, [pixelDistance])
+  }, [pixelDistance, t])
 
   const mmPerPixel = useMemo(() => {
     if (!pixelDistance || realDistance <= 0) return null
@@ -215,19 +217,19 @@ export function PlanImportModal({
     <BaseModal
       open={open}
       onOpenChange={onOpenChange}
-      title={existingPlan ? 'Plan image' : 'Import plan image'}
+      title={existingPlan ? t('planImport.titleExisting') : t('planImport.titleNew')}
       maxWidth="720px"
     >
       <Flex direction="column" gap="4">
         <Flex direction="column" gap="2">
-          <Text weight="medium">1. Select floor plan image</Text>
+          <Text weight="medium">{t('planImport.step1.title')}</Text>
           {existingPlan && !file ? (
             <Text size="2" color="gray">
-              Using current image ({existingPlan.image.name}). Upload a new file below to replace it.
+              {t('planImport.step1.currentImage', { name: existingPlan.image.name })}
             </Text>
           ) : (
             <Text size="2" color="gray">
-              Upload a PNG, JPG, or SVG. The file stays local and is not saved with your project.
+              {t('planImport.step1.uploadHint')}
             </Text>
           )}
           <input type="file" accept="image/*" onChange={handleFileChange} />
@@ -236,10 +238,10 @@ export function PlanImportModal({
         <Separator />
 
         <Flex direction="column" gap="2">
-          <Text weight="medium">2. Calibrate scale</Text>
+          <Text weight="medium">{t('planImport.step2.title')}</Text>
           <Flex align="baseline" justify="between">
             <Text size="2" color="gray">
-              Pick two points with a known distance directly on the image.
+              {t('planImport.step2.instructions')}
             </Text>
             <Flex gap="2">
               <Button
@@ -248,7 +250,7 @@ export function PlanImportModal({
                 disabled={referencePoints.length === 0}
                 onClick={() => setReferencePoints([])}
               >
-                Clear points
+                {t('planImport.step2.clearPoints')}
               </Button>
             </Flex>
           </Flex>
@@ -265,7 +267,7 @@ export function PlanImportModal({
           <Grid columns="1fr 1fr 1fr" align="center" gap="3">
             <Flex direction="row" gap="1" align="center">
               <Text weight="medium" size="2">
-                Real Distance:
+                {t('planImport.step2.realDistance')}
               </Text>
               <LengthField
                 value={realDistance}
@@ -280,10 +282,10 @@ export function PlanImportModal({
 
             <Flex align="center" gap="1" justify="center">
               <Text weight="medium" size="2">
-                Pixel distance:
+                {t('planImport.step2.pixelDistance')}
               </Text>
               <Text size="2" color="gray">
-                {pixelDistance ? `${pixelDistance.toFixed(1)} px` : 'Select two points'}
+                {pixelDistance ? `${pixelDistance.toFixed(1)} px` : t('planImport.step2.pixelDistancePlaceholder')}
               </Text>
               {pixelDistanceWarning && (
                 <Tooltip content={pixelDistanceWarning}>
@@ -294,10 +296,12 @@ export function PlanImportModal({
 
             <Flex direction="row" gap="1" align="center" justify="end">
               <Text weight="medium" size="2">
-                Scale:
+                {t('planImport.step2.scale')}
               </Text>
               <Text size="2" color="gray">
-                {mmPerPixel ? `${formatLength(mmPerPixel)} per px` : 'Waiting for calibration'}
+                {mmPerPixel
+                  ? t('planImport.step2.scaleValue', { distance: formatLength(mmPerPixel) })
+                  : t('planImport.step2.scalePlaceholder')}
               </Text>
             </Flex>
           </Grid>
@@ -306,27 +310,30 @@ export function PlanImportModal({
         <Separator />
 
         <Flex direction="column" gap="2">
-          <Text weight="medium">3. Position origin (optional)</Text>
+          <Text weight="medium">{t('planImport.step3.title')}</Text>
           <Text size="2" color="gray">
-            Pick a point on the image that should align with the origin in the editor. If you skip this step, the first
-            reference point becomes the origin.
+            {t('planImport.step3.instructions')}
           </Text>
 
           <Flex gap="3" align="center">
-            <Tooltip content={showOriginHint ? 'Click on the image to set origin' : 'Pick origin on the image'}>
+            <Tooltip content={showOriginHint ? t('planImport.step3.clickHint') : t('planImport.step3.pickHint')}>
               <Button
                 size="1"
                 variant={showOriginHint ? 'solid' : 'soft'}
                 onClick={handleSelectOriginClick}
                 disabled={!imageElement}
               >
-                {showOriginHint ? 'Click image…' : originPoint ? 'Change origin point' : 'Pick origin on image'}
+                {showOriginHint
+                  ? t('planImport.step3.clickImage')
+                  : originPoint
+                    ? t('planImport.step3.changeOrigin')
+                    : t('planImport.step3.pickOrigin')}
               </Button>
             </Tooltip>
 
             {originPoint && (
               <Button size="1" variant="ghost" onClick={() => setOriginPoint(null)}>
-                Clear origin point
+                {t('planImport.step3.clearOrigin')}
               </Button>
             )}
           </Flex>
@@ -334,14 +341,14 @@ export function PlanImportModal({
 
         <Flex justify="between" align="center">
           <Text size="1" color="gray">
-            The plan image is only stored in your browser for this floor.
+            {t('planImport.footer.storageNote')}
           </Text>
           <Flex gap="2">
             <Button variant="soft" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('planImport.footer.cancel')}
             </Button>
             <Button onClick={handleSubmit} disabled={!canSubmit}>
-              {existingPlan ? 'Replace plan' : 'Add plan'}
+              {existingPlan ? t('planImport.footer.replacePlan') : t('planImport.footer.addPlan')}
             </Button>
           </Flex>
         </Flex>
