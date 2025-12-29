@@ -142,7 +142,10 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
   const handleDuplicate = useCallback(() => {
     if (!selectedMaterial) return
 
-    const duplicated = duplicateMaterial(selectedMaterial.id, t($ => $.materials.duplicateNamePattern, {name: selectedMaterial.name})
+    const duplicated = duplicateMaterial(
+      selectedMaterial.id,
+      t($ => $.materials.duplicateNamePattern, { name: selectedMaterial.name })
+    )
     setSelectedMaterialId(duplicated.id)
   }, [selectedMaterial, duplicateMaterial])
 

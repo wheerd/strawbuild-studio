@@ -19,7 +19,7 @@ import type { ConstructionModel, HighlightedArea } from './model'
 
 export type ConstructionIssueId = string & { readonly brand: unique symbol }
 
-export type IssueMessageKey = SelectorFn<Resources['common'], string, SelectorOptions<'common'>>
+export type IssueMessageKey = SelectorFn<Resources['errors'], string, SelectorOptions<'errors'>>
 
 export interface ConstructionIssue {
   /** Unique ID for this issue. If the same ID is used, issues are grouped/merged */

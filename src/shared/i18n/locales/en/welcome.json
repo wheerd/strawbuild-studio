@@ -1,44 +1,13 @@
 {
-  "introduction": "This is a tool specifically designed for strawbale construction planning. Create floor plans with walls, openings, roof and floors. Configure the construction and generate plans and 3D models. Get estimates for required materials. Export construction for use in other CAD tools.",
-  "keyFeatures": {
-    "title": "Key Features",
-    "items": [
-      "Define perimeter walls in finished dimensions (with plasters) with windows and doors",
-      "Add gable or shed roofs",
-      "Configure your wall, floor and roof assembly (infill, strawhenge, modules)",
-      "Generate 2D construction plans for invdividual walls or whole floors",
-      "View and export 3D models of the construction (IFC)",
-      "Get an overview of materials used in the construction"
-    ]
-  },
-  "plannedFeatures": {
-    "title": "Planned Features",
-    "items": [
-      "Cost and work hours estimations",
-      "Support for intermediate walls and foundations",
-      "Translation in more languages",
-      "Support for more irregular building shapes",
-      "Support for multiple projects"
-    ]
-  },
+  "changeLanguage": "Change Language",
+  "continueButton": "I Understand & Continue",
   "demoVideo": {
-    "title": "Demo Video",
-    "description": "Watch a quick demonstration of Strawbaler's features on YouTube:",
     "demo01": "Demo 0.1",
-    "demo02": "Demo 0.2"
-  },
-  "localStorage": {
-    "title": "Local Storage",
-    "description": "This application stores data locally in your browser to:",
-    "items": [
-      "Remember that you've seen this welcome message",
-      "Save your floor plans and projects",
-      "Preserve your configuration preferences"
-    ],
-    "privacy": "No cookies, tracking, or third-party analytics are used."
+    "demo02": "Demo 0.2",
+    "description": "Watch a quick demonstration of Strawbaler's features on YouTube:",
+    "title": "Demo Video"
   },
   "disclaimer": {
-    "title": "Important Disclaimer",
     "intro": "This tool is currently in active development and provided as-is:",
     "items": [
       "No guarantees for accuracy of calculations, plans, or 3D models",
@@ -46,11 +15,42 @@
       "Project data may be lost due to browser storage limitations or updates",
       "Always save and export your work regularly",
       "This tool does not replace professional engineering consultation"
-    ]
+    ],
+    "title": "Important Disclaimer"
   },
-  "continueButton": "I Understand & Continue",
+  "introduction": "This is a tool specifically designed for strawbale construction planning. Create floor plans with walls, openings, roof and floors. Configure the construction and generate plans and 3D models. Get estimates for required materials. Export construction for use in other CAD tools.",
+  "keyFeatures": {
+    "items": [
+      "Define perimeter walls in finished dimensions (with plasters) with windows and doors",
+      "Add gable or shed roofs",
+      "Configure your wall, floor and roof assembly (infill, strawhenge, modules)",
+      "Generate 2D construction plans for invdividual walls or whole floors",
+      "View and export 3D models of the construction (IFC)",
+      "Get an overview of materials used in the construction"
+    ],
+    "title": "Key Features"
+  },
+  "localStorage": {
+    "description": "This application stores data locally in your browser to:",
+    "items": [
+      "Remember that you've seen this welcome message",
+      "Save your floor plans and projects",
+      "Preserve your configuration preferences"
+    ],
+    "privacy": "No cookies, tracking, or third-party analytics are used.",
+    "title": "Local Storage"
+  },
+  "plannedFeatures": {
+    "items": [
+      "Cost and work hours estimations",
+      "Support for intermediate walls and foundations",
+      "Translation in more languages",
+      "Support for more irregular building shapes",
+      "Support for multiple projects"
+    ],
+    "title": "Planned Features"
+  },
   "reviewInfo": "You can review this information anytime via the info icon in the toolbar",
   "version": "Version {{version}}",
-  "viewOnGitHub": "View on GitHub",
-  "changeLanguage": "Change Language"
+  "viewOnGitHub": "View on GitHub"
 }

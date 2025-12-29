@@ -1,51 +1,51 @@
 {
-  "modal": {},
   "common": {},
-  "materials": {},
-  "walls": {
-    "emptyList": "Keine Wandaufbauten verfügbar",
-    "defaultLabel": "{{label}} <gray>(Standard)</gray>"
-  },
-  "openings": {
-    "useGlobalDefault": "Globalen Standard verwenden",
-    "emptyList": "Keine Öffnungsaufbauten verfügbar",
-    "defaultLabel": "{{label}} <gray>(Standard)</gray>",
-    "sections": {
-      "opening": "",
-      "posts": ""
-    },
-    "postTypes": {
-      "full": "",
-      "double": ""
-    }
-  },
   "floors": {
-    "emptyList": "Keine Bodenaufbauten verfügbar",
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
+    "emptyList": "Keine Bodenaufbauten verfügbar",
     "sections": {
       "joists": "",
       "subfloor": ""
     }
   },
-  "roofs": {
-    "emptyList": "Keine Dachaufbauten verfügbar",
+  "layers": {},
+  "materials": {},
+  "modal": {},
+  "openings": {
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
+    "emptyList": "Keine Öffnungsaufbauten verfügbar",
+    "postTypes": {
+      "double": "",
+      "full": ""
+    },
     "sections": {
-      "rafters": "",
-      "purlins": "",
-      "decking": "",
-      "straw": ""
-    }
+      "opening": "",
+      "posts": ""
+    },
+    "useGlobalDefault": "Globalen Standard verwenden"
   },
   "ringBeams": {
-    "none": "Keine",
-    "emptyList": "Keine Ringbalkenaufbauten verfügbar",
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
+    "emptyList": "Keine Ringbalkenaufbauten verfügbar",
+    "none": "Keine",
     "sections": {
       "beam": "",
       "insulation": "",
       "waterproofing": ""
     }
   },
-  "layers": {}
+  "roofs": {
+    "defaultLabel": "{{label}} <gray>(Standard)</gray>",
+    "emptyList": "Keine Dachaufbauten verfügbar",
+    "sections": {
+      "decking": "",
+      "purlins": "",
+      "rafters": "",
+      "straw": ""
+    }
+  },
+  "walls": {
+    "defaultLabel": "{{label}} <gray>(Standard)</gray>",
+    "emptyList": "Keine Wandaufbauten verfügbar"
+  }
 }

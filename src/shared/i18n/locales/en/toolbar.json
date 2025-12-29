@@ -1,28 +1,28 @@
 {
-  "viewConstructionPlan": "View Construction Plan",
-  "viewPartsList": "View Parts List",
-  "view3DConstruction": "View 3D Construction",
-  "configuration": "Configuration",
   "about": "About",
-  "constructionPlanForStorey": "Construction Plan for {{storeyName}}",
+  "configuration": "Configuration",
   "constructionPlanForActiveStorey": "Construction Plan for active storey",
-  "partsListForEntireModel": "Parts List for Entire Model",
+  "constructionPlanForStorey": "Construction Plan for {{storeyName}}",
   "gridSizeDisplay": {
-    "showGrid": "Show Grid",
     "hideGrid": "Hide Grid",
-    "off": "Off"
-  },
-  "themeToggle": {
-    "switchToLight": "Switch to light mode",
-    "switchToDark": "Switch to dark mode"
+    "off": "Off",
+    "showGrid": "Show Grid"
   },
   "offlineStatus": {
+    "loading": "Caching assets ({{loaded}}/{{total}})…",
+    "loadingBadge": "Caching",
+    "loadingUnknown": "Preparing offline experience…",
     "offline": "Offline. Changes will sync once connection returns.",
     "offlineBadge": "Offline",
-    "loading": "Caching assets ({{loaded}}/{{total}})…",
-    "loadingUnknown": "Preparing offline experience…",
-    "loadingBadge": "Caching",
     "ready": "All assets cached. Ready for offline use.",
     "readyBadge": "Offline Ready"
-  }
+  },
+  "partsListForEntireModel": "Parts List for Entire Model",
+  "themeToggle": {
+    "switchToDark": "Switch to dark mode",
+    "switchToLight": "Switch to light mode"
+  },
+  "view3DConstruction": "View 3D Construction",
+  "viewConstructionPlan": "View Construction Plan",
+  "viewPartsList": "View Parts List"
 }

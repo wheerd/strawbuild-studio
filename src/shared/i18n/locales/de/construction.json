@@ -1,136 +1,136 @@
 {
+  "materialSelect": {
+    "noMaterialsAvailable": "",
+    "none": "",
+    "placeholder": ""
+  },
+  "materialTypes": {
+    "dimensional": "",
+    "generic": "",
+    "sheet": "",
+    "strawbale": "",
+    "volume": ""
+  },
+  "modulesList": {
+    "actions": {
+      "viewInPlan": ""
+    },
+    "noModules": "",
+    "tableHeaders": {
+      "dimensions": "",
+      "label": "",
+      "quantity": "",
+      "type": "",
+      "view": ""
+    },
+    "title": ""
+  },
+  "partsList": {
+    "actions": {
+      "backToSummary": "",
+      "configureMaterial": "",
+      "jumpToDetails": "",
+      "specialCutPreview": "",
+      "viewInPlan": ""
+    },
+    "groups": {
+      "allParts": "",
+      "strawbales": ""
+    },
+    "issues": {
+      "dimensionsExceedSizeMultiple": "",
+      "dimensionsExceedSizeSingle": "",
+      "dimensionsMismatchThickness": "",
+      "groupMismatch": "",
+      "lengthExceedsMultiple": "",
+      "lengthExceedsSingle": ""
+    },
+    "noPartsAvailable": "",
+    "other": {
+      "crossSectionMismatch": "",
+      "crossSections": "",
+      "thicknessMismatch": "",
+      "thicknesses": ""
+    },
+    "straw": {
+      "flakes": "",
+      "fullBales": "",
+      "leftoverFromPartialBales": "",
+      "partialBales": "",
+      "rawLengthNote": "",
+      "sawButtonHint": "",
+      "specialCutNote": "",
+      "stuffedFill": ""
+    },
+    "summary": "",
+    "tableHeaders": {
+      "area": "",
+      "baleCount": "",
+      "category": "",
+      "description": "",
+      "differentParts": "",
+      "dimensions": "",
+      "label": "",
+      "length": "",
+      "material": "",
+      "quantity": "",
+      "thickness": "",
+      "total": "",
+      "totalArea": "",
+      "totalLength": "",
+      "totalQuantity": "",
+      "totalVolume": "",
+      "totalWeight": "",
+      "type": "",
+      "view": ""
+    },
+    "totalRow": ""
+  },
   "partsListModal": {
-    "title": "Teileliste",
+    "errors": {
+      "failedModulesList": "Fehler beim Erstellen der Modulliste",
+      "failedPartsList": "Fehler beim Erstellen der Teileliste"
+    },
     "tabs": {
       "materials": "Materialien",
       "modules": "Module"
     },
-    "errors": {
-      "failedPartsList": "Fehler beim Erstellen der Teileliste",
-      "failedModulesList": "Fehler beim Erstellen der Modulliste"
-    }
-  },
-  "viewer3DModal": {
-    "title": ""
+    "title": "Teileliste"
   },
   "planModal": {
-    "tabs": {
-      "planIssues": "Plan & Probleme",
-      "partsList": "Teileliste",
-      "modules": "Module"
-    },
-    "views": {
-      "walls": "Wände",
-      "roof": "Dach",
-      "floor": "Boden"
-    },
     "errors": {
       "failedModel": "Fehler beim Erstellen des Konstruktionsmodells",
-      "failedPartsList": "Fehler beim Erstellen der Teileliste",
-      "failedModulesList": "Fehler beim Erstellen der Modulliste"
+      "failedModulesList": "Fehler beim Erstellen der Modulliste",
+      "failedPartsList": "Fehler beim Erstellen der Teileliste"
     },
     "issuesPanel": {
       "errorsTitle": "",
-      "warningsTitle": "",
+      "noIssuesMessage": "",
       "noIssuesTitle": "",
-      "noIssuesMessage": ""
+      "warningsTitle": ""
     },
     "partHighlight": {
-      "partHighlighted": "",
-      "clearHighlight": ""
+      "clearHighlight": "",
+      "partHighlighted": ""
+    },
+    "tabs": {
+      "modules": "Module",
+      "partsList": "Teileliste",
+      "planIssues": "Plan & Probleme"
+    },
+    "views": {
+      "floor": "Boden",
+      "roof": "Dach",
+      "walls": "Wände"
     }
   },
   "tagVisibility": {
-    "title": "",
+    "hideCategory": "",
     "noTags": "",
     "showCategory": "",
-    "hideCategory": ""
+    "title": ""
   },
-  "partsList": {
-    "tableHeaders": {
-      "category": "",
-      "material": "",
-      "type": "",
-      "description": "",
-      "quantity": "",
-      "total": "",
-      "label": "",
-      "length": "",
-      "totalLength": "",
-      "totalVolume": "",
-      "totalWeight": "",
-      "view": "",
-      "dimensions": "",
-      "area": "",
-      "totalArea": "",
-      "thickness": "",
-      "baleCount": "",
-      "totalQuantity": "",
-      "differentParts": ""
-    },
-    "summary": "",
-    "totalRow": "",
-    "noPartsAvailable": "",
-    "straw": {
-      "fullBales": "",
-      "partialBales": "",
-      "flakes": "",
-      "stuffedFill": "",
-      "leftoverFromPartialBales": "",
-      "specialCutNote": "",
-      "rawLengthNote": "",
-      "sawButtonHint": ""
-    },
-    "groups": {
-      "strawbales": "",
-      "allParts": ""
-    },
-    "other": {
-      "crossSections": "",
-      "thicknesses": "",
-      "crossSectionMismatch": "",
-      "thicknessMismatch": ""
-    },
-    "issues": {
-      "groupMismatch": "",
-      "lengthExceedsSingle": "",
-      "lengthExceedsMultiple": "",
-      "dimensionsMismatchThickness": "",
-      "dimensionsExceedSizeSingle": "",
-      "dimensionsExceedSizeMultiple": ""
-    },
-    "actions": {
-      "viewInPlan": "",
-      "backToSummary": "",
-      "jumpToDetails": "",
-      "specialCutPreview": "",
-      "configureMaterial": ""
-    }
-  },
-  "modulesList": {
-    "title": "",
-    "noModules": "",
-    "tableHeaders": {
-      "label": "",
-      "type": "",
-      "dimensions": "",
-      "quantity": "",
-      "view": ""
-    },
-    "actions": {
-      "viewInPlan": ""
-    }
-  },
-  "materialTypes": {
-    "dimensional": "",
-    "sheet": "",
-    "volume": "",
-    "generic": "",
-    "strawbale": ""
-  },
-  "materialSelect": {
-    "placeholder": "",
-    "noMaterialsAvailable": "",
-    "none": ""
+  "viewer3DModal": {
+    "title": ""
   }
 }

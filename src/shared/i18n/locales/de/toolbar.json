@@ -1,28 +1,28 @@
 {
-  "viewConstructionPlan": "Konstruktionsplan anzeigen",
-  "viewPartsList": "Teileliste anzeigen",
-  "view3DConstruction": "3D-Konstruktion anzeigen",
-  "configuration": "Konfiguration",
   "about": "Über",
-  "constructionPlanForStorey": "Konstruktionsplan für {{storeyName}}",
+  "configuration": "Konfiguration",
   "constructionPlanForActiveStorey": "Konstruktionsplan für aktives Geschoss",
-  "partsListForEntireModel": "Teileliste für gesamtes Modell",
+  "constructionPlanForStorey": "Konstruktionsplan für {{storeyName}}",
   "gridSizeDisplay": {
-    "showGrid": "",
     "hideGrid": "",
-    "off": ""
-  },
-  "themeToggle": {
-    "switchToLight": "",
-    "switchToDark": ""
+    "off": "",
+    "showGrid": ""
   },
   "offlineStatus": {
+    "loading": "",
+    "loadingBadge": "",
+    "loadingUnknown": "",
     "offline": "",
     "offlineBadge": "",
-    "loading": "",
-    "loadingUnknown": "",
-    "loadingBadge": "",
     "ready": "",
     "readyBadge": ""
-  }
+  },
+  "partsListForEntireModel": "Teileliste für gesamtes Modell",
+  "themeToggle": {
+    "switchToDark": "",
+    "switchToLight": ""
+  },
+  "view3DConstruction": "3D-Konstruktion anzeigen",
+  "viewConstructionPlan": "Konstruktionsplan anzeigen",
+  "viewPartsList": "Teileliste anzeigen"
 }

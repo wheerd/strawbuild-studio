@@ -1,84 +1,84 @@
 {
-  "viewMode": {
-    "walls": "",
-    "floors": "",
-    "roofs": ""
-  },
   "actions": {
     "addNew": "Neu hinzufügen",
     "cancel": ""
   },
   "autoSave": {
-    "exporting": "Exportiere...",
-    "importing": "Importiere...",
-    "exportFailed": "Export/Import fehlgeschlagen",
-    "autoSaving": "Speichere automatisch...",
     "autoSaveFailed": "Automatisches Speichern fehlgeschlagen",
     "autoSaved": "Automatisch gespeichert {{time}}",
-    "notSaved": "Nicht gespeichert",
-    "justNow": "Gerade eben",
-    "minutesAgo": "vor {{minutes}}min",
-    "hoursAgo": "vor {{hours}}h",
-    "importExportIfc": "IFC Import/Export",
+    "autoSaving": "Speichere automatisch...",
     "exportBuildingModel": "Gebäudemodell exportieren",
     "exportConstructionModel": "Konstruktionsmodell exportieren",
+    "exportFailed": "Export/Import fehlgeschlagen",
+    "exporting": "Exportiere...",
+    "hoursAgo": "vor {{hours}}h",
     "import": "Importieren",
-    "saveToFile": "In Datei speichern",
-    "loadFromFile": "Aus Datei laden"
-  },
-  "storeys": {
-    "manageFloors": "Geschosse verwalten",
-    "manageFloorsTooltip": "Geschosse verwalten",
-    "addNewFloor": "Neues Geschoss hinzufügen",
-    "newFloor": "Neues Geschoss",
-    "noFloorsYet": "Noch keine Geschosse.",
-    "ground": "",
-    "floor": "",
-    "basement": "",
-    "name": "",
-    "floorName": "",
-    "floorHeight": "",
-    "floorAssembly": "",
-    "moveUp": "",
-    "moveDown": "",
-    "duplicateFloor": "",
-    "deleteFloor": "",
-    "deleteFloorTitle": "",
-    "deleteFloorConfirm": "",
-    "switchToFloor": ""
+    "importExportIfc": "IFC Import/Export",
+    "importing": "Importiere...",
+    "justNow": "Gerade eben",
+    "loadFromFile": "Aus Datei laden",
+    "minutesAgo": "vor {{minutes}}min",
+    "notSaved": "Nicht gespeichert",
+    "saveToFile": "In Datei speichern"
   },
   "construction": {
-    "opening": {
-      "heightExceedsWall": "Öffnung ist höher als die Wand um {{excess, length}}",
-      "headerDoesNotFit": "Sturz passt nicht: benötigt {{required, length}}, aber nur {{available, length}} verfügbar",
-      "sillDoesNotFit": "Schwelle passt nicht: benötigt {{required, length}}, aber nur {{available, length}} verfügbar"
+    "error": {
+      "geometryProcessing": "Ein Fehler ist während der Geometrieverarbeitung aufgetreten"
     },
-    "post": {
-      "dimensionsMismatch": "Pfosten-Abmessungen ({{width, length}}×{{thickness, length}}) stimmen nicht mit verfügbaren Querschnitten überein",
-      "crossSectionMismatch": "Querschnitt stimmt nicht mit den verfügbaren Optionen für dieses Material überein",
-      "wallTooThin": "Wandstärke ({{wallThickness, length}}) ist nicht breit genug für Doppelpfosten, die {{required, length}} Minimum erfordern"
-    },
-    "straw": {
-      "tooThick": "Wand ist zu dick für einen einzelnen Strohballen",
-      "tooThin": "Wand ist zu dünn für einen einzelnen Strohballen"
-    },
-    "ringBeam": {
-      "doubleNotSupported": "Doppelte Ringbalken-Konstruktion wird noch nicht unterstützt."
+    "infill": {
+      "notEnoughSpaceForPost": "Nicht genug Platz für einen Pfosten",
+      "notEnoughSpaceForStraw": "Nicht genug Platz für Ausfüllstroh",
+      "notEnoughSpaceForTwoPosts": "Platz für mehr als einen Pfosten, aber nicht genug für zwei",
+      "notEnoughVerticalSpace": "Nicht genug vertikaler Raum zum Füllen mit Stroh"
     },
     "layer": {
       "parallelLines": "Streifenpositionen konnten aufgrund paralleler Linien nicht bestimmt werden."
     },
-    "infill": {
-      "notEnoughVerticalSpace": "Nicht genug vertikaler Raum zum Füllen mit Stroh",
-      "notEnoughSpaceForPost": "Nicht genug Platz für einen Pfosten",
-      "notEnoughSpaceForTwoPosts": "Platz für mehr als einen Pfosten, aber nicht genug für zwei",
-      "notEnoughSpaceForStraw": "Nicht genug Platz für Ausfüllstroh"
+    "opening": {
+      "headerDoesNotFit": "Sturz passt nicht: benötigt {{required, length}}, aber nur {{available, length}} verfügbar",
+      "heightExceedsWall": "Öffnung ist höher als die Wand um {{excess, length}}",
+      "sillDoesNotFit": "Schwelle passt nicht: benötigt {{required, length}}, aber nur {{available, length}} verfügbar"
     },
-    "error": {
-      "geometryProcessing": "Ein Fehler ist während der Geometrieverarbeitung aufgetreten"
+    "post": {
+      "crossSectionMismatch": "Querschnitt stimmt nicht mit den verfügbaren Optionen für dieses Material überein",
+      "dimensionsMismatch": "Pfosten-Abmessungen ({{width, length}}×{{thickness, length}}) stimmen nicht mit verfügbaren Querschnitten überein",
+      "wallTooThin": "Wandstärke ({{wallThickness, length}}) ist nicht breit genug für Doppelpfosten, die {{required, length}} Minimum erfordern"
+    },
+    "ringBeam": {
+      "doubleNotSupported": "Doppelte Ringbalken-Konstruktion wird noch nicht unterstützt."
     },
     "roof": {
       "invalidAssembly": "Ungültige Dachkonstruktion"
+    },
+    "straw": {
+      "tooThick": "Wand ist zu dick für einen einzelnen Strohballen",
+      "tooThin": "Wand ist zu dünn für einen einzelnen Strohballen"
     }
+  },
+  "storeys": {
+    "addNewFloor": "Neues Geschoss hinzufügen",
+    "basement": "",
+    "deleteFloor": "",
+    "deleteFloorConfirm": "",
+    "deleteFloorTitle": "",
+    "duplicateFloor": "",
+    "floor": "",
+    "floorAssembly": "",
+    "floorHeight": "",
+    "floorName": "",
+    "ground": "",
+    "manageFloors": "Geschosse verwalten",
+    "manageFloorsTooltip": "Geschosse verwalten",
+    "moveDown": "",
+    "moveUp": "",
+    "name": "",
+    "newFloor": "Neues Geschoss",
+    "noFloorsYet": "Noch keine Geschosse.",
+    "switchToFloor": ""
+  },
+  "viewMode": {
+    "floors": "",
+    "roofs": "",
+    "walls": ""
   }
 }

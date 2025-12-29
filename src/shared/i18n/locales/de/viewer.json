@@ -1,24 +1,24 @@
 {
-  "grid": {
-    "show": "",
-    "hide": ""
-  },
-  "tagOpacity": {
-    "title": "",
-    "noTags": "",
-    "fullCategory": "",
-    "semiCategory": "",
-    "hideCategory": "",
-    "full": "",
-    "semi": "",
-    "hide": ""
-  },
   "export": {
-    "title": "",
     "collada": "",
     "gltf": "",
+    "ifc": "",
     "obj": "",
     "stl": "",
-    "ifc": ""
+    "title": ""
+  },
+  "grid": {
+    "hide": "",
+    "show": ""
+  },
+  "tagOpacity": {
+    "full": "",
+    "fullCategory": "",
+    "hide": "",
+    "hideCategory": "",
+    "noTags": "",
+    "semi": "",
+    "semiCategory": "",
+    "title": ""
   }
 }

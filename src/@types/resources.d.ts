@@ -537,6 +537,40 @@ interface Resources {
       "title": "Something went wrong",
       "tryAgain": "Try Again"
     },
+    "construction": {
+      "error": {
+        "geometryProcessing": "An error occurred during geometry processing"
+      },
+      "infill": {
+        "notEnoughSpaceForPost": "Not enough space for a post",
+        "notEnoughSpaceForStraw": "Not enough space for infilling straw",
+        "notEnoughSpaceForTwoPosts": "Space for more than one post, but not enough for two",
+        "notEnoughVerticalSpace": "Not enough vertical space to fill with straw"
+      },
+      "layer": {
+        "parallelLines": "Could not determine stripe positions due to parallel lines."
+      },
+      "opening": {
+        "headerDoesNotFit": "Header does not fit: needs {{required, length}} but only {{available, length}} available",
+        "heightExceedsWall": "Opening is higher than the wall by {{excess, length}}",
+        "sillDoesNotFit": "Sill does not fit: needs {{required, length}} but only {{available, length}} available"
+      },
+      "post": {
+        "crossSectionMismatch": "Cross section does not match available options for this material",
+        "dimensionsMismatch": "Post dimensions ({{width, length}}×{{thickness, length}}) don't match available cross sections",
+        "wallTooThin": "Wall thickness ({{wallThickness, length}}) is not wide enough for double posts requiring {{required, length}} minimum"
+      },
+      "ringBeam": {
+        "doubleNotSupported": "Double ring beam construction is not yet supported."
+      },
+      "roof": {
+        "invalidAssembly": "Invalid roof assembly"
+      },
+      "straw": {
+        "tooThick": "Wall is too thick for a single strawbale",
+        "tooThin": "Wall is too thin for a single strawbale"
+      }
+    },
     "feature": {
       "cancel": "Cancel",
       "confirm": "Delete All Data & Reset",

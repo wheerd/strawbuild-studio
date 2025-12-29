@@ -1,12 +1,12 @@
 {
   "floorArea": {},
   "floorOpening": {},
+  "opening": {},
+  "perimeter": {},
+  "perimeterCorner": {},
+  "perimeterWall": {},
+  "roof": {},
   "roofOverhang": {},
   "storey": {},
-  "roof": {},
-  "wallPost": {},
-  "perimeterCorner": {},
-  "perimeter": {},
-  "perimeterWall": {},
-  "opening": {}
+  "wallPost": {}
 }

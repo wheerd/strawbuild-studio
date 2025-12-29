@@ -1,24 +1,24 @@
 {
-  "grid": {
-    "show": "Show Grid",
-    "hide": "Hide Grid"
-  },
-  "tagOpacity": {
-    "title": "Tag Opacity",
-    "noTags": "No tags available",
-    "fullCategory": "Full Category",
-    "semiCategory": "Semi Category",
-    "hideCategory": "Hide Category",
-    "full": "Full",
-    "semi": "Semi",
-    "hide": "Hide"
-  },
   "export": {
-    "title": "Export",
     "collada": "Collada (DAE)",
     "gltf": "GLTF",
+    "ifc": "IFC",
     "obj": "OBJ",
     "stl": "STL",
-    "ifc": "IFC"
+    "title": "Export"
+  },
+  "grid": {
+    "hide": "Hide Grid",
+    "show": "Show Grid"
+  },
+  "tagOpacity": {
+    "full": "Full",
+    "fullCategory": "Full Category",
+    "hide": "Hide",
+    "hideCategory": "Hide Category",
+    "noTags": "No tags available",
+    "semi": "Semi",
+    "semiCategory": "Semi Category",
+    "title": "Tag Opacity"
   }
 }

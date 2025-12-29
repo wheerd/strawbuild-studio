@@ -1,39 +1,39 @@
 {
   "boundary": {
-    "title": "",
-    "description": "",
-    "errorMessage": "",
-    "errorDetails": "",
-    "noStackTrace": "",
-    "reloadPage": "",
-    "tryAgain": "",
-    "showDetails": "",
-    "hideDetails": "",
     "copyError": "",
     "dataRecovery": {
-      "title": "",
-      "description": "",
-      "hardReset": "",
-      "dialogTitle": "",
-      "dialogDescription": "",
       "cancel": "",
-      "confirm": ""
-    }
+      "confirm": "",
+      "description": "",
+      "dialogDescription": "",
+      "dialogTitle": "",
+      "hardReset": "",
+      "title": ""
+    },
+    "description": "",
+    "errorDetails": "",
+    "errorMessage": "",
+    "hideDetails": "",
+    "noStackTrace": "",
+    "reloadPage": "",
+    "showDetails": "",
+    "title": "",
+    "tryAgain": ""
   },
   "feature": {
-    "title": "",
-    "defaultMessage": "",
-    "retry": "",
-    "reloadPage": "",
-    "hardReset": "",
-    "dialogTitle": "",
-    "dialogDescription": "",
     "cancel": "",
-    "confirm": ""
+    "confirm": "",
+    "defaultMessage": "",
+    "dialogDescription": "",
+    "dialogTitle": "",
+    "hardReset": "",
+    "reloadPage": "",
+    "retry": "",
+    "title": ""
   },
   "modal": {
-    "errorPrefix": "",
     "defaultMessage": "",
+    "errorPrefix": "",
     "retry": ""
   }
 }

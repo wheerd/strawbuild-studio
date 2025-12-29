@@ -1,84 +1,84 @@
 {
-  "viewMode": {
-    "walls": "Walls",
-    "floors": "Floors",
-    "roofs": "Roofs"
-  },
   "actions": {
     "addNew": "Add New",
     "cancel": "Cancel"
   },
   "autoSave": {
-    "exporting": "Exporting...",
-    "importing": "Importing...",
-    "exportFailed": "Export/Import failed",
-    "autoSaving": "Auto-saving...",
     "autoSaveFailed": "Auto-save failed",
     "autoSaved": "Auto-saved {{time}}",
-    "notSaved": "Not saved",
-    "justNow": "Just now",
-    "minutesAgo": "{{minutes}}m ago",
-    "hoursAgo": "{{hours}}h ago",
-    "importExportIfc": "Import/Export IFC",
+    "autoSaving": "Auto-saving...",
     "exportBuildingModel": "Export Building Model",
     "exportConstructionModel": "Export Construction Model",
+    "exportFailed": "Export/Import failed",
+    "exporting": "Exporting...",
+    "hoursAgo": "{{hours}}h ago",
     "import": "Import",
-    "saveToFile": "Save to File",
-    "loadFromFile": "Load from File"
-  },
-  "storeys": {
-    "manageFloors": "Manage Floors",
-    "manageFloorsTooltip": "Manage floors",
-    "addNewFloor": "Add New Floor",
-    "newFloor": "New Floor",
-    "noFloorsYet": "No floors yet.",
-    "ground": "Ground",
-    "floor": "Floor {{level}}",
-    "basement": "B{{level}}",
-    "name": "Name",
-    "floorName": "Floor name",
-    "floorHeight": "Floor Height",
-    "floorAssembly": "Floor Assembly",
-    "moveUp": "Move up",
-    "moveDown": "Move down",
-    "duplicateFloor": "Duplicate floor",
-    "deleteFloor": "Delete floor",
-    "deleteFloorTitle": "Delete Floor",
-    "deleteFloorConfirm": "Are you sure you want to delete the floor?",
-    "switchToFloor": "Switch to floor"
+    "importExportIfc": "Import/Export IFC",
+    "importing": "Importing...",
+    "justNow": "Just now",
+    "loadFromFile": "Load from File",
+    "minutesAgo": "{{minutes}}m ago",
+    "notSaved": "Not saved",
+    "saveToFile": "Save to File"
   },
   "construction": {
-    "opening": {
-      "heightExceedsWall": "Opening is higher than the wall by {{excess, length}}",
-      "headerDoesNotFit": "Header does not fit: needs {{required, length}} but only {{available, length}} available",
-      "sillDoesNotFit": "Sill does not fit: needs {{required, length}} but only {{available, length}} available"
+    "error": {
+      "geometryProcessing": "An error occurred during geometry processing"
     },
-    "post": {
-      "dimensionsMismatch": "Post dimensions ({{width, length}}×{{thickness, length}}) don't match available cross sections",
-      "crossSectionMismatch": "Cross section does not match available options for this material",
-      "wallTooThin": "Wall thickness ({{wallThickness, length}}) is not wide enough for double posts requiring {{required, length}} minimum"
-    },
-    "straw": {
-      "tooThick": "Wall is too thick for a single strawbale",
-      "tooThin": "Wall is too thin for a single strawbale"
-    },
-    "ringBeam": {
-      "doubleNotSupported": "Double ring beam construction is not yet supported."
+    "infill": {
+      "notEnoughSpaceForPost": "Not enough space for a post",
+      "notEnoughSpaceForStraw": "Not enough space for infilling straw",
+      "notEnoughSpaceForTwoPosts": "Space for more than one post, but not enough for two",
+      "notEnoughVerticalSpace": "Not enough vertical space to fill with straw"
     },
     "layer": {
       "parallelLines": "Could not determine stripe positions due to parallel lines."
     },
-    "infill": {
-      "notEnoughVerticalSpace": "Not enough vertical space to fill with straw",
-      "notEnoughSpaceForPost": "Not enough space for a post",
-      "notEnoughSpaceForTwoPosts": "Space for more than one post, but not enough for two",
-      "notEnoughSpaceForStraw": "Not enough space for infilling straw"
+    "opening": {
+      "headerDoesNotFit": "Header does not fit: needs {{required, length}} but only {{available, length}} available",
+      "heightExceedsWall": "Opening is higher than the wall by {{excess, length}}",
+      "sillDoesNotFit": "Sill does not fit: needs {{required, length}} but only {{available, length}} available"
     },
-    "error": {
-      "geometryProcessing": "An error occurred during geometry processing"
+    "post": {
+      "crossSectionMismatch": "Cross section does not match available options for this material",
+      "dimensionsMismatch": "Post dimensions ({{width, length}}×{{thickness, length}}) don't match available cross sections",
+      "wallTooThin": "Wall thickness ({{wallThickness, length}}) is not wide enough for double posts requiring {{required, length}} minimum"
+    },
+    "ringBeam": {
+      "doubleNotSupported": "Double ring beam construction is not yet supported."
     },
     "roof": {
       "invalidAssembly": "Invalid roof assembly"
+    },
+    "straw": {
+      "tooThick": "Wall is too thick for a single strawbale",
+      "tooThin": "Wall is too thin for a single strawbale"
     }
+  },
+  "storeys": {
+    "addNewFloor": "Add New Floor",
+    "basement": "B{{level}}",
+    "deleteFloor": "Delete floor",
+    "deleteFloorConfirm": "Are you sure you want to delete the floor?",
+    "deleteFloorTitle": "Delete Floor",
+    "duplicateFloor": "Duplicate floor",
+    "floor": "Floor {{level}}",
+    "floorAssembly": "Floor Assembly",
+    "floorHeight": "Floor Height",
+    "floorName": "Floor name",
+    "ground": "Ground",
+    "manageFloors": "Manage Floors",
+    "manageFloorsTooltip": "Manage floors",
+    "moveDown": "Move down",
+    "moveUp": "Move up",
+    "name": "Name",
+    "newFloor": "New Floor",
+    "noFloorsYet": "No floors yet.",
+    "switchToFloor": "Switch to floor"
+  },
+  "viewMode": {
+    "floors": "Floors",
+    "roofs": "Roofs",
+    "walls": "Walls"
   }
 }

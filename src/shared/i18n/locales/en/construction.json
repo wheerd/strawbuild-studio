@@ -1,136 +1,136 @@
 {
+  "materialSelect": {
+    "noMaterialsAvailable": "No materials available",
+    "none": "None",
+    "placeholder": "Select material..."
+  },
+  "materialTypes": {
+    "dimensional": "Dimensional",
+    "generic": "Generic",
+    "sheet": "Sheet",
+    "strawbale": "Strawbale",
+    "volume": "Volume"
+  },
+  "modulesList": {
+    "actions": {
+      "viewInPlan": "View in plan"
+    },
+    "noModules": "No modules",
+    "tableHeaders": {
+      "dimensions": "Dimensions",
+      "label": "Label",
+      "quantity": "Quantity",
+      "type": "Type",
+      "view": "View"
+    },
+    "title": "Modules"
+  },
+  "partsList": {
+    "actions": {
+      "backToSummary": "Back to summary",
+      "configureMaterial": "Configure Material",
+      "jumpToDetails": "Jump to details",
+      "specialCutPreview": "Special cut polygon preview",
+      "viewInPlan": "View in plan"
+    },
+    "groups": {
+      "allParts": "All parts",
+      "strawbales": "Strawbales"
+    },
+    "issues": {
+      "dimensionsExceedSizeMultiple": "Dimensions {dimensions} exceed available sheet sizes ({sizes}). This part will require multiple sheets.",
+      "dimensionsExceedSizeSingle": "Dimensions {dimensions} exceed available sheet sizes ({sizes})",
+      "dimensionsMismatchThickness": "Dimensions {dimensions} do not match available thicknesses ({thicknesses})",
+      "groupMismatch": "This group does not match the defined material options",
+      "lengthExceedsMultiple": "Part length {partLength} exceeds material maximum available length {maxLength}. This part will require multiple pieces.",
+      "lengthExceedsSingle": "Part length {partLength} exceeds material maximum available length {maxLength}"
+    },
+    "noPartsAvailable": "No parts available.",
+    "other": {
+      "crossSectionMismatch": "Cross section does not match available options for this material",
+      "crossSections": "Other cross sections",
+      "thicknessMismatch": "Thickness does not match available options for this material",
+      "thicknesses": "Other thicknesses"
+    },
+    "straw": {
+      "flakes": "Flakes",
+      "fullBales": "Full bales",
+      "leftoverFromPartialBales": "Leftover from partial bales",
+      "partialBales": "Partial bales",
+      "rawLengthNote": "The given length is the raw length",
+      "sawButtonHint": "Click the \"saw\" button to see more detailed measurements",
+      "specialCutNote": "This part requires a special cut",
+      "stuffedFill": "Stuffed fill"
+    },
+    "summary": "Summary",
+    "tableHeaders": {
+      "area": "Area",
+      "baleCount": "Bale Count",
+      "category": "Category",
+      "description": "Description",
+      "differentParts": "Different Parts",
+      "dimensions": "Dimensions",
+      "label": "Label",
+      "length": "Length",
+      "material": "Material",
+      "quantity": "Qty",
+      "thickness": "Thickness",
+      "total": "Total",
+      "totalArea": "Total Area",
+      "totalLength": "Total Length",
+      "totalQuantity": "Total Quantity",
+      "totalVolume": "Total Volume",
+      "totalWeight": "Total Weight",
+      "type": "Type",
+      "view": "View"
+    },
+    "totalRow": "Total"
+  },
   "partsListModal": {
-    "title": "Parts List",
+    "errors": {
+      "failedModulesList": "Failed to generate modules list",
+      "failedPartsList": "Failed to generate parts list"
+    },
     "tabs": {
       "materials": "Materials",
       "modules": "Modules"
     },
-    "errors": {
-      "failedPartsList": "Failed to generate parts list",
-      "failedModulesList": "Failed to generate modules list"
-    }
-  },
-  "viewer3DModal": {
-    "title": "3D Construction View"
+    "title": "Parts List"
   },
   "planModal": {
-    "tabs": {
-      "planIssues": "Plan & Issues",
-      "partsList": "Parts List",
-      "modules": "Modules"
-    },
-    "views": {
-      "walls": "Walls",
-      "roof": "Roof",
-      "floor": "Floor"
-    },
     "errors": {
       "failedModel": "Failed to generate construction model",
-      "failedPartsList": "Failed to generate parts list",
-      "failedModulesList": "Failed to generate modules list"
+      "failedModulesList": "Failed to generate modules list",
+      "failedPartsList": "Failed to generate parts list"
     },
     "issuesPanel": {
       "errorsTitle": "Errors ({count})",
-      "warningsTitle": "Warnings ({count})",
+      "noIssuesMessage": "Construction plan is valid with no errors or warnings.",
       "noIssuesTitle": "No Issues Found",
-      "noIssuesMessage": "Construction plan is valid with no errors or warnings."
+      "warningsTitle": "Warnings ({count})"
     },
     "partHighlight": {
-      "partHighlighted": "Part highlighted",
-      "clearHighlight": "Clear highlight"
+      "clearHighlight": "Clear highlight",
+      "partHighlighted": "Part highlighted"
+    },
+    "tabs": {
+      "modules": "Modules",
+      "partsList": "Parts List",
+      "planIssues": "Plan & Issues"
+    },
+    "views": {
+      "floor": "Floor",
+      "roof": "Roof",
+      "walls": "Walls"
     }
   },
   "tagVisibility": {
-    "title": "Tag Visibility",
+    "hideCategory": "Hide Category",
     "noTags": "No tags available",
     "showCategory": "Show Category",
-    "hideCategory": "Hide Category"
+    "title": "Tag Visibility"
   },
-  "partsList": {
-    "tableHeaders": {
-      "category": "Category",
-      "material": "Material",
-      "type": "Type",
-      "description": "Description",
-      "quantity": "Qty",
-      "total": "Total",
-      "label": "Label",
-      "length": "Length",
-      "totalLength": "Total Length",
-      "totalVolume": "Total Volume",
-      "totalWeight": "Total Weight",
-      "view": "View",
-      "dimensions": "Dimensions",
-      "area": "Area",
-      "totalArea": "Total Area",
-      "thickness": "Thickness",
-      "baleCount": "Bale Count",
-      "totalQuantity": "Total Quantity",
-      "differentParts": "Different Parts"
-    },
-    "summary": "Summary",
-    "totalRow": "Total",
-    "noPartsAvailable": "No parts available.",
-    "straw": {
-      "fullBales": "Full bales",
-      "partialBales": "Partial bales",
-      "flakes": "Flakes",
-      "stuffedFill": "Stuffed fill",
-      "leftoverFromPartialBales": "Leftover from partial bales",
-      "specialCutNote": "This part requires a special cut",
-      "rawLengthNote": "The given length is the raw length",
-      "sawButtonHint": "Click the \"saw\" button to see more detailed measurements"
-    },
-    "groups": {
-      "strawbales": "Strawbales",
-      "allParts": "All parts"
-    },
-    "other": {
-      "crossSections": "Other cross sections",
-      "thicknesses": "Other thicknesses",
-      "crossSectionMismatch": "Cross section does not match available options for this material",
-      "thicknessMismatch": "Thickness does not match available options for this material"
-    },
-    "issues": {
-      "groupMismatch": "This group does not match the defined material options",
-      "lengthExceedsSingle": "Part length {partLength} exceeds material maximum available length {maxLength}",
-      "lengthExceedsMultiple": "Part length {partLength} exceeds material maximum available length {maxLength}. This part will require multiple pieces.",
-      "dimensionsMismatchThickness": "Dimensions {dimensions} do not match available thicknesses ({thicknesses})",
-      "dimensionsExceedSizeSingle": "Dimensions {dimensions} exceed available sheet sizes ({sizes})",
-      "dimensionsExceedSizeMultiple": "Dimensions {dimensions} exceed available sheet sizes ({sizes}). This part will require multiple sheets."
-    },
-    "actions": {
-      "viewInPlan": "View in plan",
-      "backToSummary": "Back to summary",
-      "jumpToDetails": "Jump to details",
-      "specialCutPreview": "Special cut polygon preview",
-      "configureMaterial": "Configure Material"
-    }
-  },
-  "modulesList": {
-    "title": "Modules",
-    "noModules": "No modules",
-    "tableHeaders": {
-      "label": "Label",
-      "type": "Type",
-      "dimensions": "Dimensions",
-      "quantity": "Quantity",
-      "view": "View"
-    },
-    "actions": {
-      "viewInPlan": "View in plan"
-    }
-  },
-  "materialTypes": {
-    "dimensional": "Dimensional",
-    "sheet": "Sheet",
-    "volume": "Volume",
-    "generic": "Generic",
-    "strawbale": "Strawbale"
-  },
-  "materialSelect": {
-    "placeholder": "Select material...",
-    "noMaterialsAvailable": "No materials available",
-    "none": "None"
+  "viewer3DModal": {
+    "title": "3D Construction View"
   }
 }
