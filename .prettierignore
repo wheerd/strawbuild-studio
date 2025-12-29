@@ -16,3 +16,6 @@ coverage/
 
 # Generated files
 __snapshots__/
+
+# Generated file
+src/@types/resources.d.ts

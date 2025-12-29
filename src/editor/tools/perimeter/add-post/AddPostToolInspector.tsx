@@ -262,7 +262,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
         {/* Copy Existing Configuration */}
         <Flex align="center" justify="between" gap="2">
           <Text size="1" weight="medium" color="gray">
-            {t($ => $.addPost.presets)}
+            {t($ => $.addPost.presets.title)}
           </Text>
           <DropdownMenu.Root>
             <DropdownMenu.Trigger disabled={allPostConfigs.length === 0}>
@@ -291,7 +291,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
               tool.setThickness(360)
             }}
           >
-            6×36cm Single
+            {t($ => $.addPost.presets.single6x36, { defaultValue: '6×36cm Single' })}
           </Button>
           <Button
             size="1"
@@ -302,7 +302,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
               tool.setThickness(120)
             }}
           >
-            6×12cm Double
+            {t($ => $.addPost.presets.double6x12, { defaultValue: '6×12cm Double' })}
           </Button>
           <Button
             size="1"
@@ -313,7 +313,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
               tool.setThickness(140)
             }}
           >
-            14×14cm Single
+            {t($ => $.addPost.presets.single14x14, { defaultValue: '14×14cm Single' })}
           </Button>
           <Button
             size="1"
@@ -324,7 +324,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
               tool.setThickness(140)
             }}
           >
-            14×14cm Double
+            {t($ => $.addPost.presets.double14x14, { defaultValue: '14×14cm Double' })}
           </Button>
         </Grid>
       </Flex>

@@ -37,7 +37,13 @@
     "infillMaterial": "Infill Material",
     "info": "Click on a wall to place a post. Configure dimensions, type, position, and materials before placement.",
     "postMaterial": "Post Material",
-    "presets": "Presets",
+    "presets": {
+      "double14x14": "14×14cm Double",
+      "double6x12": "6×12cm Double",
+      "single14x14": "14×14cm Single",
+      "single6x36": "6×36cm Single",
+      "title": "Presets"
+    },
     "thickness": "Thickness",
     "type": "Type",
     "typeCenter": "Center",
@@ -194,13 +200,13 @@
   },
   "testData": {
     "confirmReset": "Are you sure you want to reset all data? This will clear all perimeters, openings, and saved work.",
-    "crossShaped": "Cross/T-Shape Perimeter",
+    "crossShaped": "📐 Cross/T-Shape Perimeter",
     "dangerZone": "⚠️ Danger Zone",
     "generationHeading": "Test Data Generation",
-    "hexagonal": "Hexagonal Perimeter (3m sides)",
+    "hexagonal": "⬡ Hexagonal Perimeter (3m sides)",
     "instructions": "Click any button above to generate test data or reset the model. Each test case creates a perimeter with realistic windows and doors to demonstrate the application features.",
-    "rectangular": "Rectangular Perimeter (8×5m)",
-    "resetAll": "Reset All Data",
+    "rectangular": "▭ Rectangular Perimeter (8×5m)",
+    "resetAll": "🗑️ Reset All Data",
     "resetWarning": "⚠️ This will permanently clear all perimeters, openings, and saved work"
   }
 }

@@ -40,19 +40,16 @@ export function TestDataToolInspector({ tool }: ToolInspectorProps<TestDataTool>
           <Flex direction="column" gap="2">
             {/* Cross/T-Shape Perimeter */}
             <Button className="w-full" size="2" onClick={handleCreateCrossShaped}>
-              <span>📐</span>
               {t($ => $.testData.crossShaped)}
             </Button>
 
             {/* Hexagonal Perimeter */}
             <Button className="w-full" size="2" onClick={handleCreateHexagonal}>
-              <span>⬡</span>
               {t($ => $.testData.hexagonal)}
             </Button>
 
             {/* Rectangular Perimeter */}
             <Button className="w-full" size="2" onClick={handleCreateRectangular}>
-              <span>▭</span>
               {t($ => $.testData.rectangular)}
             </Button>
           </Flex>
@@ -69,7 +66,6 @@ export function TestDataToolInspector({ tool }: ToolInspectorProps<TestDataTool>
 
           <Flex direction="column" gap="2">
             <Button className="w-full" size="2" color="red" variant="solid" onClick={handleResetData}>
-              <span>🗑️</span>
               {t($ => $.testData.resetAll)}
             </Button>
 
