@@ -14,7 +14,8 @@ interface IssueDescriptionPanelProps {
 export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelProps) => {
   const model = use(modelPromise)
   const { hoveredIssueId, setHoveredIssueId } = usePlanHighlight()
-  const { t } = useTranslation()
+  const { t } = useTranslation('construction')
+  const { t: tGlobal } = useTranslation()
 
   return (
     <Flex direction="column" gap="2" p="2" style={{ maxHeight: '120px', overflowY: 'auto' }}>
@@ -27,7 +28,7 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
               </Callout.Icon>
               <Flex direction="column" gap="2">
                 <Text weight="medium" size="2">
-                  Errors ({model.errors.length})
+                  {t($ => $.planModal.issuesPanel.errorsTitle, { count: model.errors.length })}
                 </Text>
                 <Flex direction="column" gap="1">
                   {model.errors.map(error => (
@@ -45,7 +46,7 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
                         transition: 'background-color 0.15s ease'
                       }}
                     >
-                      • {t(error.messageKey, error.params)}
+                      • {tGlobal(error.messageKey, error.params)}
                     </Text>
                   ))}
                 </Flex>
@@ -60,7 +61,7 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
               </Callout.Icon>
               <Flex direction="column" gap="2">
                 <Text weight="medium" size="2">
-                  Warnings ({model.warnings.length})
+                  {t($ => $.planModal.issuesPanel.warningsTitle, { count: model.warnings.length })}
                 </Text>
                 <Flex direction="column" gap="1">
                   {model.warnings.map(warning => (
@@ -78,7 +79,7 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
                         transition: 'background-color 0.15s ease'
                       }}
                     >
-                      • {t(warning.messageKey, warning.params)}
+                      • {tGlobal(warning.messageKey, warning.params)}
                     </Text>
                   ))}
                 </Flex>
@@ -93,9 +94,9 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
               </Callout.Icon>
               <Flex direction="column" gap="1">
                 <Text weight="medium" size="2">
-                  No Issues Found
+                  {t($ => $.planModal.issuesPanel.noIssuesTitle)}
                 </Text>
-                <Text size="1">Construction plan is valid with no errors or warnings.</Text>
+                <Text size="1">{t($ => $.planModal.issuesPanel.noIssuesMessage)}</Text>
               </Flex>
             </Callout.Root>
           )}
@@ -105,7 +106,7 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
           <Callout.Icon>
             <CrossCircledIcon />
           </Callout.Icon>
-          <Callout.Text>Failed to generate construction model</Callout.Text>
+          <Callout.Text>{t($ => $.planModal.errors.failedModel)}</Callout.Text>
         </Callout.Root>
       )}
     </Flex>

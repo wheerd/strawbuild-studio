@@ -1,6 +1,12 @@
 {
+  "viewMode": {
+    "walls": "",
+    "floors": "",
+    "roofs": ""
+  },
   "actions": {
-    "addNew": "Neu hinzufügen"
+    "addNew": "Neu hinzufügen",
+    "cancel": ""
   },
   "autoSave": {
     "exporting": "Exportiere...",
@@ -25,7 +31,21 @@
     "manageFloorsTooltip": "Geschosse verwalten",
     "addNewFloor": "Neues Geschoss hinzufügen",
     "newFloor": "Neues Geschoss",
-    "noFloorsYet": "Noch keine Geschosse."
+    "noFloorsYet": "Noch keine Geschosse.",
+    "ground": "",
+    "floor": "",
+    "basement": "",
+    "name": "",
+    "floorName": "",
+    "floorHeight": "",
+    "floorAssembly": "",
+    "moveUp": "",
+    "moveDown": "",
+    "duplicateFloor": "",
+    "deleteFloor": "",
+    "deleteFloorTitle": "",
+    "deleteFloorConfirm": "",
+    "switchToFloor": ""
   },
   "construction": {
     "opening": {

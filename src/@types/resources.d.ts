@@ -1,7 +1,8 @@
 interface Resources {
   "common": {
     "actions": {
-      "addNew": "Add New"
+      "addNew": "Add New",
+      "cancel": "Cancel"
     },
     "autoSave": {
       "autoSaveFailed": "Auto-save failed",
@@ -57,10 +58,29 @@ interface Resources {
     },
     "storeys": {
       "addNewFloor": "Add New Floor",
+      "basement": "B{{level}}",
+      "deleteFloor": "Delete floor",
+      "deleteFloorConfirm": "Are you sure you want to delete the floor?",
+      "deleteFloorTitle": "Delete Floor",
+      "duplicateFloor": "Duplicate floor",
+      "floor": "Floor {{level}}",
+      "floorAssembly": "Floor Assembly",
+      "floorHeight": "Floor Height",
+      "floorName": "Floor name",
+      "ground": "Ground",
       "manageFloors": "Manage Floors",
       "manageFloorsTooltip": "Manage floors",
+      "moveDown": "Move down",
+      "moveUp": "Move up",
+      "name": "Name",
       "newFloor": "New Floor",
-      "noFloorsYet": "No floors yet."
+      "noFloorsYet": "No floors yet.",
+      "switchToFloor": "Switch to floor"
+    },
+    "viewMode": {
+      "floors": "Floors",
+      "roofs": "Roofs",
+      "walls": "Walls"
     }
   },
   "config": {
@@ -337,6 +357,93 @@ interface Resources {
     }
   },
   "construction": {
+    "materialSelect": {
+      "noMaterialsAvailable": "No materials available",
+      "none": "None",
+      "placeholder": "Select material..."
+    },
+    "materialTypes": {
+      "dimensional": "Dimensional",
+      "generic": "Generic",
+      "sheet": "Sheet",
+      "strawbale": "Strawbale",
+      "volume": "Volume"
+    },
+    "modulesList": {
+      "actions": {
+        "viewInPlan": "View in plan"
+      },
+      "noModules": "No modules",
+      "tableHeaders": {
+        "dimensions": "Dimensions",
+        "label": "Label",
+        "quantity": "Quantity",
+        "type": "Type",
+        "view": "View"
+      },
+      "title": "Modules"
+    },
+    "partsList": {
+      "actions": {
+        "backToSummary": "Back to summary",
+        "configureMaterial": "Configure Material",
+        "jumpToDetails": "Jump to details",
+        "specialCutPreview": "Special cut polygon preview",
+        "viewInPlan": "View in plan"
+      },
+      "groups": {
+        "allParts": "All parts",
+        "strawbales": "Strawbales"
+      },
+      "issues": {
+        "dimensionsExceedSizeMultiple": "Dimensions {dimensions} exceed available sheet sizes ({sizes}). This part will require multiple sheets.",
+        "dimensionsExceedSizeSingle": "Dimensions {dimensions} exceed available sheet sizes ({sizes})",
+        "dimensionsMismatchThickness": "Dimensions {dimensions} do not match available thicknesses ({thicknesses})",
+        "groupMismatch": "This group does not match the defined material options",
+        "lengthExceedsMultiple": "Part length {partLength} exceeds material maximum available length {maxLength}. This part will require multiple pieces.",
+        "lengthExceedsSingle": "Part length {partLength} exceeds material maximum available length {maxLength}"
+      },
+      "noPartsAvailable": "No parts available.",
+      "other": {
+        "crossSectionMismatch": "Cross section does not match available options for this material",
+        "crossSections": "Other cross sections",
+        "thicknessMismatch": "Thickness does not match available options for this material",
+        "thicknesses": "Other thicknesses"
+      },
+      "straw": {
+        "flakes": "Flakes",
+        "fullBales": "Full bales",
+        "leftoverFromPartialBales": "Leftover from partial bales",
+        "partialBales": "Partial bales",
+        "rawLengthNote": "The given length is the raw length",
+        "sawButtonHint": "Click the \"saw\" button to see more detailed measurements",
+        "specialCutNote": "This part requires a special cut",
+        "stuffedFill": "Stuffed fill"
+      },
+      "summary": "Summary",
+      "tableHeaders": {
+        "area": "Area",
+        "baleCount": "Bale Count",
+        "category": "Category",
+        "description": "Description",
+        "differentParts": "Different Parts",
+        "dimensions": "Dimensions",
+        "label": "Label",
+        "length": "Length",
+        "material": "Material",
+        "quantity": "Qty",
+        "thickness": "Thickness",
+        "total": "Total",
+        "totalArea": "Total Area",
+        "totalLength": "Total Length",
+        "totalQuantity": "Total Quantity",
+        "totalVolume": "Total Volume",
+        "totalWeight": "Total Weight",
+        "type": "Type",
+        "view": "View"
+      },
+      "totalRow": "Total"
+    },
     "partsListModal": {
       "errors": {
         "failedModulesList": "Failed to generate modules list",
@@ -353,6 +460,12 @@ interface Resources {
         "failedModel": "Failed to generate construction model",
         "failedModulesList": "Failed to generate modules list",
         "failedPartsList": "Failed to generate parts list"
+      },
+      "issuesPanel": {
+        "errorsTitle": "Errors ({count})",
+        "noIssuesMessage": "Construction plan is valid with no errors or warnings.",
+        "noIssuesTitle": "No Issues Found",
+        "warningsTitle": "Warnings ({count})"
       },
       "tabs": {
         "modules": "Modules",

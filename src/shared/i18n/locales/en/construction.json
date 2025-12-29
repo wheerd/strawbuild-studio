@@ -25,6 +25,12 @@
       "failedModel": "Failed to generate construction model",
       "failedPartsList": "Failed to generate parts list",
       "failedModulesList": "Failed to generate modules list"
+    },
+    "issuesPanel": {
+      "errorsTitle": "Errors ({count})",
+      "warningsTitle": "Warnings ({count})",
+      "noIssuesTitle": "No Issues Found",
+      "noIssuesMessage": "Construction plan is valid with no errors or warnings."
     }
   },
   "tagVisibility": {
@@ -32,5 +38,92 @@
     "noTags": "No tags available",
     "showCategory": "Show Category",
     "hideCategory": "Hide Category"
+  },
+  "partsList": {
+    "tableHeaders": {
+      "category": "Category",
+      "material": "Material",
+      "type": "Type",
+      "description": "Description",
+      "quantity": "Qty",
+      "total": "Total",
+      "label": "Label",
+      "length": "Length",
+      "totalLength": "Total Length",
+      "totalVolume": "Total Volume",
+      "totalWeight": "Total Weight",
+      "view": "View",
+      "dimensions": "Dimensions",
+      "area": "Area",
+      "totalArea": "Total Area",
+      "thickness": "Thickness",
+      "baleCount": "Bale Count",
+      "totalQuantity": "Total Quantity",
+      "differentParts": "Different Parts"
+    },
+    "summary": "Summary",
+    "totalRow": "Total",
+    "noPartsAvailable": "No parts available.",
+    "straw": {
+      "fullBales": "Full bales",
+      "partialBales": "Partial bales",
+      "flakes": "Flakes",
+      "stuffedFill": "Stuffed fill",
+      "leftoverFromPartialBales": "Leftover from partial bales",
+      "specialCutNote": "This part requires a special cut",
+      "rawLengthNote": "The given length is the raw length",
+      "sawButtonHint": "Click the \"saw\" button to see more detailed measurements"
+    },
+    "groups": {
+      "strawbales": "Strawbales",
+      "allParts": "All parts"
+    },
+    "other": {
+      "crossSections": "Other cross sections",
+      "thicknesses": "Other thicknesses",
+      "crossSectionMismatch": "Cross section does not match available options for this material",
+      "thicknessMismatch": "Thickness does not match available options for this material"
+    },
+    "issues": {
+      "groupMismatch": "This group does not match the defined material options",
+      "lengthExceedsSingle": "Part length {partLength} exceeds material maximum available length {maxLength}",
+      "lengthExceedsMultiple": "Part length {partLength} exceeds material maximum available length {maxLength}. This part will require multiple pieces.",
+      "dimensionsMismatchThickness": "Dimensions {dimensions} do not match available thicknesses ({thicknesses})",
+      "dimensionsExceedSizeSingle": "Dimensions {dimensions} exceed available sheet sizes ({sizes})",
+      "dimensionsExceedSizeMultiple": "Dimensions {dimensions} exceed available sheet sizes ({sizes}). This part will require multiple sheets."
+    },
+    "actions": {
+      "viewInPlan": "View in plan",
+      "backToSummary": "Back to summary",
+      "jumpToDetails": "Jump to details",
+      "specialCutPreview": "Special cut polygon preview",
+      "configureMaterial": "Configure Material"
+    }
+  },
+  "modulesList": {
+    "title": "Modules",
+    "noModules": "No modules",
+    "tableHeaders": {
+      "label": "Label",
+      "type": "Type",
+      "dimensions": "Dimensions",
+      "quantity": "Quantity",
+      "view": "View"
+    },
+    "actions": {
+      "viewInPlan": "View in plan"
+    }
+  },
+  "materialTypes": {
+    "dimensional": "Dimensional",
+    "sheet": "Sheet",
+    "volume": "Volume",
+    "generic": "Generic",
+    "strawbale": "Strawbale"
+  },
+  "materialSelect": {
+    "placeholder": "Select material...",
+    "noMaterialsAvailable": "No materials available",
+    "none": "None"
   }
 }

@@ -1,6 +1,12 @@
 {
+  "viewMode": {
+    "walls": "Walls",
+    "floors": "Floors",
+    "roofs": "Roofs"
+  },
   "actions": {
-    "addNew": "Add New"
+    "addNew": "Add New",
+    "cancel": "Cancel"
   },
   "autoSave": {
     "exporting": "Exporting...",
@@ -25,7 +31,21 @@
     "manageFloorsTooltip": "Manage floors",
     "addNewFloor": "Add New Floor",
     "newFloor": "New Floor",
-    "noFloorsYet": "No floors yet."
+    "noFloorsYet": "No floors yet.",
+    "ground": "Ground",
+    "floor": "Floor {{level}}",
+    "basement": "B{{level}}",
+    "name": "Name",
+    "floorName": "Floor name",
+    "floorHeight": "Floor Height",
+    "floorAssembly": "Floor Assembly",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "duplicateFloor": "Duplicate floor",
+    "deleteFloor": "Delete floor",
+    "deleteFloorTitle": "Delete Floor",
+    "deleteFloorConfirm": "Are you sure you want to delete the floor?",
+    "switchToFloor": "Switch to floor"
   },
   "construction": {
     "opening": {

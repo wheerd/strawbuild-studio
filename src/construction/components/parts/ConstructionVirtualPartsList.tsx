@@ -1,6 +1,7 @@
 import { EyeOpenIcon } from '@radix-ui/react-icons'
 import { Card, Flex, Heading, IconButton, Table, Text } from '@radix-ui/themes'
 import React, { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { PartId, VirtualPartsList } from '@/construction/parts'
 import { useFormatters } from '@/shared/i18n/useFormatters'
@@ -15,6 +16,7 @@ export function ConstructionVirtualPartsList({
   partsList: VirtualPartsList
   onViewInPlan?: (partId: PartId) => void
 }): React.JSX.Element {
+  const { t } = useTranslation('construction')
   const { formatDimensions3D } = useFormatters()
 
   const parts = useMemo(() => Object.values(partsList).sort((a, b) => a.label.localeCompare(b.label)), [partsList])
@@ -24,7 +26,7 @@ export function ConstructionVirtualPartsList({
       <Card variant="surface" size="2">
         <Flex justify="center">
           <Text size="3" color="gray">
-            No modules
+            {t($ => $.modulesList.noModules)}
           </Text>
         </Flex>
       </Card>
@@ -34,20 +36,22 @@ export function ConstructionVirtualPartsList({
   return (
     <Card variant="surface" size="2">
       <Flex direction="column" gap="3">
-        <Heading size="4">Modules</Heading>
+        <Heading size="4">{t($ => $.modulesList.title)}</Heading>
         <Table.Root variant="surface" size="2" className="min-w-full">
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeaderCell width="5em" justify="center">
-                Label
+                {t($ => $.modulesList.tableHeaders.label)}
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="20em">Dimensions</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>{t($ => $.modulesList.tableHeaders.type)}</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="20em">
+                {t($ => $.modulesList.tableHeaders.dimensions)}
+              </Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell width="6em" justify="center">
-                Quantity
+                {t($ => $.modulesList.tableHeaders.quantity)}
               </Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell width="3em" justify="center">
-                View
+                {t($ => $.modulesList.tableHeaders.view)}
               </Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
@@ -68,7 +72,12 @@ export function ConstructionVirtualPartsList({
                 </Table.Cell>
                 <Table.Cell justify="center">
                   {canHighlightPart(part.partId) && onViewInPlan && (
-                    <IconButton size="1" variant="ghost" onClick={() => onViewInPlan(part.partId)} title="View in plan">
+                    <IconButton
+                      size="1"
+                      variant="ghost"
+                      onClick={() => onViewInPlan(part.partId)}
+                      title={t($ => $.modulesList.actions.viewInPlan)}
+                    >
                       <EyeOpenIcon />
                     </IconButton>
                   )}

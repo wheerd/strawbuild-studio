@@ -25,6 +25,12 @@
       "failedModel": "Fehler beim Erstellen des Konstruktionsmodells",
       "failedPartsList": "Fehler beim Erstellen der Teileliste",
       "failedModulesList": "Fehler beim Erstellen der Modulliste"
+    },
+    "issuesPanel": {
+      "errorsTitle": "",
+      "warningsTitle": "",
+      "noIssuesTitle": "",
+      "noIssuesMessage": ""
     }
   },
   "tagVisibility": {
@@ -32,5 +38,92 @@
     "noTags": "",
     "showCategory": "",
     "hideCategory": ""
+  },
+  "partsList": {
+    "tableHeaders": {
+      "category": "",
+      "material": "",
+      "type": "",
+      "description": "",
+      "quantity": "",
+      "total": "",
+      "label": "",
+      "length": "",
+      "totalLength": "",
+      "totalVolume": "",
+      "totalWeight": "",
+      "view": "",
+      "dimensions": "",
+      "area": "",
+      "totalArea": "",
+      "thickness": "",
+      "baleCount": "",
+      "totalQuantity": "",
+      "differentParts": ""
+    },
+    "summary": "",
+    "totalRow": "",
+    "noPartsAvailable": "",
+    "straw": {
+      "fullBales": "",
+      "partialBales": "",
+      "flakes": "",
+      "stuffedFill": "",
+      "leftoverFromPartialBales": "",
+      "specialCutNote": "",
+      "rawLengthNote": "",
+      "sawButtonHint": ""
+    },
+    "groups": {
+      "strawbales": "",
+      "allParts": ""
+    },
+    "other": {
+      "crossSections": "",
+      "thicknesses": "",
+      "crossSectionMismatch": "",
+      "thicknessMismatch": ""
+    },
+    "issues": {
+      "groupMismatch": "",
+      "lengthExceedsSingle": "",
+      "lengthExceedsMultiple": "",
+      "dimensionsMismatchThickness": "",
+      "dimensionsExceedSizeSingle": "",
+      "dimensionsExceedSizeMultiple": ""
+    },
+    "actions": {
+      "viewInPlan": "",
+      "backToSummary": "",
+      "jumpToDetails": "",
+      "specialCutPreview": "",
+      "configureMaterial": ""
+    }
+  },
+  "modulesList": {
+    "title": "",
+    "noModules": "",
+    "tableHeaders": {
+      "label": "",
+      "type": "",
+      "dimensions": "",
+      "quantity": "",
+      "view": ""
+    },
+    "actions": {
+      "viewInPlan": ""
+    }
+  },
+  "materialTypes": {
+    "dimensional": "",
+    "sheet": "",
+    "volume": "",
+    "generic": "",
+    "strawbale": ""
+  },
+  "materialSelect": {
+    "placeholder": "",
+    "noMaterialsAvailable": "",
+    "none": ""
   }
 }

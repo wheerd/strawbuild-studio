@@ -78,17 +78,39 @@ export function getMaterialTypeName(type: Material['type']) {
   }
 }
 
+/**
+ * Hook to get translated material type names
+ */
+export function useGetMaterialTypeName() {
+  const { t } = useTranslation('construction')
+  return (type: Material['type']) => {
+    switch (type) {
+      case 'dimensional':
+        return t($ => $.materialTypes.dimensional)
+      case 'sheet':
+        return t($ => $.materialTypes.sheet)
+      case 'volume':
+        return t($ => $.materialTypes.volume)
+      case 'generic':
+        return t($ => $.materialTypes.generic)
+      case 'strawbale':
+        return t($ => $.materialTypes.strawbale)
+    }
+  }
+}
+
 export function MaterialSelect({
   value,
   onValueChange,
-  placeholder = 'Select material...',
+  placeholder,
   size = '2',
   disabled = false,
   materials: materialsProp,
   allowEmpty = false,
-  emptyLabel = 'None',
+  emptyLabel,
   preferredTypes
 }: MaterialSelectProps): React.JSX.Element {
+  const { t: tConstruction } = useTranslation('construction')
   const { t } = useTranslation('config')
   const materialsFromStore = useMaterials()
   const materials = materialsProp ?? materialsFromStore
@@ -113,6 +135,9 @@ export function MaterialSelect({
     return getMaterialDisplayName(a).localeCompare(getMaterialDisplayName(b))
   })
 
+  const translatedPlaceholder = placeholder ?? tConstruction($ => $.materialSelect.placeholder)
+  const translatedEmptyLabel = emptyLabel ?? tConstruction($ => $.materialSelect.none)
+
   return (
     <Select.Root
       value={normalizedValue}
@@ -120,16 +145,16 @@ export function MaterialSelect({
       disabled={disabled}
       size={size}
     >
-      <Select.Trigger placeholder={placeholder} />
+      <Select.Trigger placeholder={translatedPlaceholder} />
       <Select.Content>
         {allowEmpty && (
           <Select.Item value={NONE_VALUE}>
-            <Text color="gray">{emptyLabel}</Text>
+            <Text color="gray">{translatedEmptyLabel}</Text>
           </Select.Item>
         )}
         {materials.length === 0 ? (
           <Select.Item value="-" disabled>
-            <Text color="gray">No materials available</Text>
+            <Text color="gray">{tConstruction($ => $.materialSelect.noMaterialsAvailable)}</Text>
           </Select.Item>
         ) : (
           sortedMaterials.map(material => {

@@ -1,8 +1,10 @@
 import { Box, Card, Flex, SegmentedControl } from '@radix-ui/themes'
+import { useTranslation } from 'react-i18next'
 
 import { useViewMode, useViewModeActions } from '@/editor/hooks/useViewMode'
 
 export function ViewModeToggle(): React.JSX.Element {
+  const { t } = useTranslation('common')
   const mode = useViewMode()
   const { setMode } = useViewModeActions()
 
@@ -17,9 +19,9 @@ export function ViewModeToggle(): React.JSX.Element {
               setMode(value as 'walls' | 'floors' | 'roofs')
             }}
           >
-            <SegmentedControl.Item value="walls">Walls</SegmentedControl.Item>
-            <SegmentedControl.Item value="floors">Floors</SegmentedControl.Item>
-            <SegmentedControl.Item value="roofs">Roofs</SegmentedControl.Item>
+            <SegmentedControl.Item value="walls">{t($ => $.viewMode.walls)}</SegmentedControl.Item>
+            <SegmentedControl.Item value="floors">{t($ => $.viewMode.floors)}</SegmentedControl.Item>
+            <SegmentedControl.Item value="roofs">{t($ => $.viewMode.roofs)}</SegmentedControl.Item>
           </SegmentedControl.Root>
         </Flex>
       </Card>

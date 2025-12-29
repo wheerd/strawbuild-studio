@@ -1,6 +1,7 @@
 import { ChevronDownIcon, ChevronUpIcon, CopyIcon, EnterIcon, HeightIcon, TrashIcon } from '@radix-ui/react-icons'
 import { AlertDialog, Button, Card, Code, Flex, IconButton, Text, TextField } from '@radix-ui/themes'
 import React, { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { Storey } from '@/building/model/model'
 import { useActiveStoreyId, useModelActions } from '@/building/store'
@@ -33,6 +34,7 @@ export function StoreyListItem({
   lowestStorey,
   highestStorey
 }: StoreyListItemProps): React.JSX.Element {
+  const { t } = useTranslation('common')
   const { formatLength } = useFormatters()
   const activeStoreyId = useActiveStoreyId()
   const { setActiveStoreyId } = useModelActions()
@@ -134,14 +136,18 @@ export function StoreyListItem({
             L{storey.level}
           </Code>
           <Code variant="ghost" size="1" color="gray">
-            {storey.level === 0 ? 'Ground' : storey.level > 0 ? `Floor ${storey.level}` : `B${Math.abs(storey.level)}`}
+            {storey.level === 0
+              ? t($ => $.storeys.ground)
+              : storey.level > 0
+                ? t($ => $.storeys.floor, { level: storey.level })
+                : t($ => $.storeys.basement, { level: Math.abs(storey.level) })}
           </Code>
         </Flex>
 
         {/* Editable name */}
         <Flex direction="column" gap="1" flexGrow="1">
           <Text size="1" weight="medium" color="gray">
-            Name
+            {t($ => $.storeys.name)}
           </Text>
           <TextField.Root
             ref={nameFieldRef}
@@ -149,7 +155,7 @@ export function StoreyListItem({
             onChange={handleNameChange}
             onBlur={handleNameSave}
             onKeyDown={handleKeyDown}
-            placeholder="Floor name"
+            placeholder={t($ => $.storeys.floorName)}
             required
             style={{ minWidth: '150px', flexGrow: 1 }}
           />
@@ -159,7 +165,7 @@ export function StoreyListItem({
         <Flex direction="column" gap="1">
           <Flex align="center" gap="1">
             <Text size="1" weight="medium" color="gray">
-              Floor Height
+              {t($ => $.storeys.floorHeight)}
             </Text>
             <MeasurementInfo highlightedMeasurement="storeyHeight" />
           </Flex>
@@ -184,7 +190,7 @@ export function StoreyListItem({
         <Flex direction="column" gap="1">
           <Flex align="center" gap="1">
             <Text size="1" weight="medium" color="gray">
-              Floor Assembly
+              {t($ => $.storeys.floorAssembly)}
             </Text>
             <MeasurementInfo highlightedAssembly="floorAssembly" />
           </Flex>
@@ -198,37 +204,37 @@ export function StoreyListItem({
         {/* Action buttons */}
         <Flex gap="1" align="center">
           <Flex direction="column" gap="1">
-            <IconButton size="1" onClick={handleMoveUp} disabled={!canMoveUp} title="Move up">
+            <IconButton size="1" onClick={handleMoveUp} disabled={!canMoveUp} title={t($ => $.storeys.moveUp)}>
               <ChevronUpIcon />
             </IconButton>
 
-            <IconButton size="1" onClick={handleMoveDown} disabled={!canMoveDown} title="Move down">
+            <IconButton size="1" onClick={handleMoveDown} disabled={!canMoveDown} title={t($ => $.storeys.moveDown)}>
               <ChevronDownIcon />
             </IconButton>
           </Flex>
 
-          <IconButton onClick={handleDuplicate} title="Duplicate floor" variant="soft">
+          <IconButton onClick={handleDuplicate} title={t($ => $.storeys.duplicateFloor)} variant="soft">
             <CopyIcon />
           </IconButton>
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <IconButton disabled={isOnlyStorey} title="Delete floor" color="red">
+              <IconButton disabled={isOnlyStorey} title={t($ => $.storeys.deleteFloor)} color="red">
                 <TrashIcon />
               </IconButton>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
-              <AlertDialog.Title>Delete Floor</AlertDialog.Title>
-              <AlertDialog.Description size="2">Are you sure you want to delete the floor?</AlertDialog.Description>
+              <AlertDialog.Title>{t($ => $.storeys.deleteFloorTitle)}</AlertDialog.Title>
+              <AlertDialog.Description size="2">{t($ => $.storeys.deleteFloorConfirm)}</AlertDialog.Description>
 
               <Flex gap="3" justify="end">
                 <AlertDialog.Cancel>
                   <Button variant="soft" color="gray">
-                    Cancel
+                    {t($ => $.actions.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action onClick={handleDelete}>
-                  <Button color="red">Delete Floor</Button>
+                  <Button color="red">{t($ => $.storeys.deleteFloorTitle)}</Button>
                 </AlertDialog.Action>
               </Flex>
             </AlertDialog.Content>
@@ -237,7 +243,7 @@ export function StoreyListItem({
           <IconButton
             onClick={() => setActiveStoreyId(storey.id)}
             disabled={isActive}
-            title="Switch to floor"
+            title={t($ => $.storeys.switchToFloor)}
             color="green"
           >
             <EnterIcon />

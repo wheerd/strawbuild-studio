@@ -1,11 +1,12 @@
 import { ExclamationTriangleIcon, EyeOpenIcon, Pencil1Icon, PinBottomIcon, PinTopIcon } from '@radix-ui/react-icons'
 import { Badge, Card, Flex, Heading, IconButton, Table, Text, Tooltip } from '@radix-ui/themes'
 import React, { useCallback, useMemo, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { PartCutModal } from '@/construction/components/parts/PartCutModal'
 import { SheetPartModal } from '@/construction/components/parts/SheetPartModal'
 import { useConfigurationModal } from '@/construction/config/context/ConfigurationModalContext'
-import { getMaterialTypeIcon, getMaterialTypeName } from '@/construction/materials/components/MaterialSelect'
+import { getMaterialTypeIcon, useGetMaterialTypeName } from '@/construction/materials/components/MaterialSelect'
 import type {
   DimensionalMaterial,
   Material,
@@ -52,12 +53,6 @@ interface MaterialGroup {
 type StrawCategory = NonNullable<MaterialPartItem['strawCategory']>
 
 const STRAW_CATEGORY_ORDER: StrawCategory[] = ['full', 'partial', 'flakes', 'stuffed']
-const STRAW_CATEGORY_LABELS: Record<StrawCategory, string> = {
-  full: 'Full bales',
-  partial: 'Partial bales',
-  flakes: 'Flakes',
-  stuffed: 'Stuffed fill'
-}
 
 // Helper functions that accept formatters and use locale-aware formatting
 interface Formatters {
@@ -108,11 +103,6 @@ const calculateWeight = (volume: Volume, material: Material): number | undefined
   if (material.density == null) return undefined
   return (volume * material.density) / 1_000_000_000
 }
-
-const UNKNOWN_CROSS_SECTION_LABEL = 'Other cross sections'
-const UNKNOWN_THICKNESS_LABEL = 'Other thicknesses'
-const UNKNOWN_CROSS_SECTION_MESSAGE = 'Cross section does not match available options for this material'
-const UNKNOWN_THICKNESS_MESSAGE = 'Thickness does not match available options for this material'
 
 interface StrawSummary {
   buckets: Record<StrawCategory, { volume: number; count: number }>
@@ -184,174 +174,6 @@ const summarizeStrawbaleParts = (parts: MaterialPartItem[], material: StrawbaleM
     totalEstimatedBalesMax,
     totalVolume
   }
-}
-
-const createMaterialGroups = (
-  material: Material,
-  materialParts: MaterialParts,
-  formatters: Formatters
-): MaterialGroup[] => {
-  const parts = Object.values(materialParts.parts)
-  if (parts.length === 0) return []
-
-  if (material.type === 'dimensional') {
-    return groupDimensionalParts(parts, material, formatters)
-  }
-
-  if (material.type === 'sheet') {
-    return groupSheetParts(parts, material, formatters)
-  }
-
-  if (material.type === 'strawbale') {
-    return [
-      createGroup({
-        key: `${material.id}-straw`,
-        label: 'Strawbales',
-        hasIssue: false,
-        material,
-        parts
-      })
-    ]
-  }
-
-  return [
-    createGroup({
-      key: `${material.id}-all`,
-      label: 'All parts',
-      hasIssue: false,
-      material,
-      parts
-    })
-  ]
-}
-
-const groupDimensionalParts = (
-  parts: MaterialPartItem[],
-  material: DimensionalMaterial,
-  formatters: Formatters
-): MaterialGroup[] => {
-  const groups = new Map<
-    string,
-    {
-      label: string
-      badgeLabel: string
-      badgeColor: BadgeColor
-      parts: MaterialPartItem[]
-      sortValue: number
-      hasIssue: boolean
-      issueMessage?: string
-    }
-  >()
-
-  for (const part of parts) {
-    const displayCrossSection = part.crossSection
-    const groupKey = displayCrossSection
-      ? `dimensional:${displayCrossSection.smallerLength}x${displayCrossSection.biggerLength}`
-      : 'dimensional:other'
-    const key = `${material.id}|${groupKey}`
-    const label = displayCrossSection
-      ? formatters.formatDimensions2D([displayCrossSection.smallerLength, displayCrossSection.biggerLength])
-      : UNKNOWN_CROSS_SECTION_LABEL
-    const sortValue = displayCrossSection
-      ? displayCrossSection.smallerLength * displayCrossSection.biggerLength
-      : Number.MAX_SAFE_INTEGER
-
-    const isKnown = material.crossSections.some(
-      cs =>
-        cs.smallerLength === displayCrossSection?.smallerLength && cs.biggerLength === displayCrossSection?.biggerLength
-    )
-    const badgeColor: BadgeColor = displayCrossSection != null ? (isKnown ? 'green' : 'red') : 'gray'
-
-    const entry = groups.get(key)
-    if (entry) {
-      entry.parts.push(part)
-      continue
-    }
-
-    groups.set(key, {
-      label,
-      badgeLabel: label,
-      parts: [part],
-      sortValue,
-      badgeColor,
-      hasIssue: displayCrossSection !== undefined && !isKnown,
-      issueMessage: isKnown ? undefined : UNKNOWN_CROSS_SECTION_MESSAGE
-    })
-  }
-
-  return Array.from(groups.entries())
-    .sort((a, b) => a[1].sortValue - b[1].sortValue || a[0].localeCompare(b[0]))
-    .map(([key, entry]) =>
-      createGroup({
-        key,
-        label: entry.label,
-        badgeLabel: entry.badgeLabel,
-        badgeColor: entry.badgeColor,
-        hasIssue: entry.hasIssue,
-        issueMessage: entry.issueMessage,
-        material,
-        parts: entry.parts
-      })
-    )
-}
-
-const groupSheetParts = (
-  parts: MaterialPartItem[],
-  material: SheetMaterial,
-  formatters: Formatters
-): MaterialGroup[] => {
-  const groups = new Map<
-    string,
-    {
-      label: string
-      badgeLabel: string
-      badgeColor: BadgeColor
-      parts: MaterialPartItem[]
-      sortValue: number
-      hasIssue: boolean
-      issueMessage?: string
-    }
-  >()
-
-  for (const part of parts) {
-    const thickness = part.thickness
-    const key = thickness != null ? `sheet:${thickness}` : 'sheet:other'
-    const label = thickness != null ? formatters.formatLength(thickness) : UNKNOWN_THICKNESS_LABEL
-    const sortValue = thickness ?? Number.MAX_SAFE_INTEGER
-    const isKnown = thickness != null && material.thicknesses.includes(thickness)
-    const badgeColor: BadgeColor = thickness != null ? (isKnown ? 'green' : 'red') : 'gray'
-
-    const entry = groups.get(key)
-    if (entry) {
-      entry.parts.push(part)
-      continue
-    }
-
-    groups.set(key, {
-      label,
-      badgeLabel: label,
-      parts: [part],
-      sortValue,
-      badgeColor,
-      hasIssue: thickness != null && !isKnown,
-      issueMessage: isKnown ? undefined : UNKNOWN_THICKNESS_MESSAGE
-    })
-  }
-
-  return Array.from(groups.entries())
-    .sort((a, b) => a[1].sortValue - b[1].sortValue || a[0].localeCompare(b[0]))
-    .map(([key, entry]) =>
-      createGroup({
-        key,
-        label: entry.label,
-        badgeLabel: entry.badgeLabel,
-        badgeColor: entry.badgeColor,
-        hasIssue: entry.hasIssue,
-        issueMessage: entry.issueMessage,
-        material,
-        parts: entry.parts
-      })
-    )
 }
 
 const createGroup = ({
@@ -427,6 +249,7 @@ const computeGroupMetrics = (parts: MaterialPartItem[], material: Material): Row
 }
 
 function MaterialTypeIndicator({ material, size = 18 }: { material: Material; size?: number }) {
+  const getMaterialTypeName = useGetMaterialTypeName()
   const Icon = getMaterialTypeIcon(material.type)
   if (!Icon) return null
   const iconSize = Math.max(size - 6, 8)
@@ -460,6 +283,7 @@ const SPECIAL_CUT_PREVIEW_TARGET = 300
 const SPECIAL_CUT_PREVIEW_PADDING = 6
 
 function SpecialCutTooltip({ polygon }: { polygon: Polygon2D }): React.JSX.Element {
+  const { t } = useTranslation('construction')
   const preview = useMemo(() => {
     const bounds = Bounds2D.fromPoints(polygon.points)
     const width = Math.max(bounds.width, 1)
@@ -489,14 +313,14 @@ function SpecialCutTooltip({ polygon }: { polygon: Polygon2D }): React.JSX.Eleme
 
   return (
     <Flex direction="column" gap="2">
-      <Text>This part requires a special cut</Text>
-      <Text>The given length is the raw length</Text>
+      <Text>{t($ => $.partsList.straw.specialCutNote)}</Text>
+      <Text>{t($ => $.partsList.straw.rawLengthNote)}</Text>
       <svg
         width={preview.svgWidth}
         height={preview.svgHeight}
         viewBox={`0 0 ${preview.svgWidth} ${preview.svgHeight}`}
         role="img"
-        aria-label="Special cut polygon preview"
+        aria-label={t($ => $.partsList.actions.specialCutPreview)}
       >
         <rect
           x={SPECIAL_CUT_PREVIEW_PADDING}
@@ -517,7 +341,7 @@ function SpecialCutTooltip({ polygon }: { polygon: Polygon2D }): React.JSX.Eleme
           strokeLinejoin="miter"
         />
       </svg>
-      <Text>Click the "saw" button to see more detailed measurements</Text>
+      <Text>{t($ => $.partsList.straw.sawButtonHint)}</Text>
     </Flex>
   )
 }
@@ -533,6 +357,7 @@ function MaterialSummaryRow({
   onNavigate: () => void
   formatters: Formatters
 }) {
+  const { t } = useTranslation('construction')
   const formatWeight = (weight: number | undefined): string => {
     if (weight === undefined) return '—'
     return formatters.formatWeight(weight)
@@ -546,7 +371,7 @@ function MaterialSummaryRow({
       <Table.RowHeaderCell>
         <Flex align="center" gap="2" justify="between">
           <Text weight="medium">{material.name}</Text>
-          <IconButton title="Jump to details" size="1" variant="ghost" onClick={onNavigate}>
+          <IconButton title={t($ => $.partsList.actions.jumpToDetails)} size="1" variant="ghost" onClick={onNavigate}>
             <PinBottomIcon />
           </IconButton>
         </Flex>
@@ -574,6 +399,7 @@ function MaterialGroupSummaryRow({
   onNavigate: () => void
   formatters: Formatters
 }) {
+  const { t } = useTranslation('construction')
   const { metrics } = group
   const formatWeight = (weight: number | undefined): string => {
     if (weight === undefined) return '—'
@@ -588,7 +414,12 @@ function MaterialGroupSummaryRow({
       <Table.Cell>
         <Flex align="center" gap="2" justify="between">
           <Badge color={group.badgeColor}>{group.badgeLabel}</Badge>
-          <IconButton title="Jump to details" size="1" variant="ghost" onClick={onNavigate}>
+          <IconButton
+            title={t(($: any) => $.partsList.actions.jumpToDetails)}
+            size="1"
+            variant="ghost"
+            onClick={onNavigate}
+          >
             <PinBottomIcon />
           </IconButton>
         </Flex>
@@ -616,6 +447,7 @@ interface MaterialGroupCardProps {
 }
 
 function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan, formatters }: MaterialGroupCardProps) {
+  const { t } = useTranslation('construction')
   const { openConfiguration } = useConfigurationModal()
 
   return (
@@ -626,7 +458,7 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan, formatt
             <MaterialTypeIndicator material={material} size={24} />
             <Heading size="4">{material.name}</Heading>
             <IconButton
-              title="Configure Material"
+              title={t($ => $.partsList.actions.configureMaterial)}
               variant="ghost"
               size="1"
               onClick={() => openConfiguration('materials', material.id)}
@@ -640,13 +472,13 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan, formatt
                 </Badge>
               )}
               {group.hasIssue && (
-                <Tooltip content={group.issueMessage ?? 'This group does not match the defined material options'}>
+                <Tooltip content={group.issueMessage ?? t($ => $.partsList.issues.groupMismatch)}>
                   <ExclamationTriangleIcon style={{ color: 'var(--red-9)' }} />
                 </Tooltip>
               )}
             </Flex>
           </Flex>
-          <IconButton title="Back to summary" size="1" variant="ghost" onClick={onBackToTop}>
+          <IconButton title={t($ => $.partsList.actions.backToSummary)} size="1" variant="ghost" onClick={onBackToTop}>
             <PinTopIcon />
           </IconButton>
         </Flex>
@@ -695,6 +527,7 @@ function DimensionalPartsTable({
   onViewInPlan?: (partId: PartId) => void
   formatters: Formatters
 }) {
+  const { t } = useTranslation('construction')
   const formatWeight = (weight: number | undefined): string => {
     if (weight === undefined) return '—'
     return formatters.formatWeight(weight)
@@ -704,27 +537,27 @@ function DimensionalPartsTable({
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell width="5em" justify="center">
-            Label
+            {t($ => $.partsList.tableHeaders.label)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="10em">Type</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="10em">{t($ => $.partsList.tableHeaders.type)}</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell>{t($ => $.partsList.tableHeaders.description)}</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="5em" justify="center">
-            Quantity
+            {t($ => $.partsList.tableHeaders.quantity)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="5em" justify="end">
-            Length
+            {t($ => $.partsList.tableHeaders.length)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="8em" justify="end">
-            Total Length
+            {t($ => $.partsList.tableHeaders.totalLength)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="9em" justify="end">
-            Total Volume
+            {t($ => $.partsList.tableHeaders.totalVolume)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="9em" justify="end">
-            Total Weight
+            {t($ => $.partsList.tableHeaders.totalWeight)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="3em" justify="center">
-            View
+            {t($ => $.partsList.tableHeaders.view)}
           </Table.ColumnHeaderCell>
         </Table.Row>
       </Table.Header>
@@ -792,7 +625,12 @@ function DimensionalPartsTable({
               <Table.Cell justify="end">{formatWeight(partWeight)}</Table.Cell>
               <Table.Cell justify="center">
                 {canHighlightPart(part.partId) && onViewInPlan && (
-                  <IconButton size="1" variant="ghost" onClick={() => onViewInPlan(part.partId)} title="View in plan">
+                  <IconButton
+                    size="1"
+                    variant="ghost"
+                    onClick={() => onViewInPlan(part.partId)}
+                    title={t($ => $.partsList.actions.viewInPlan)}
+                  >
                     <EyeOpenIcon />
                   </IconButton>
                 )}
@@ -816,6 +654,7 @@ function SheetPartsTable({
   onViewInPlan?: (partId: PartId) => void
   formatters: Formatters
 }) {
+  const { t } = useTranslation('construction')
   const formatWeight = (weight: number | undefined): string => {
     if (weight === undefined) return '—'
     return formatters.formatWeight(weight)
@@ -825,30 +664,30 @@ function SheetPartsTable({
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell width="5em" justify="center">
-            Label
+            {t($ => $.partsList.tableHeaders.label)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="10em">Type</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="10em">{t($ => $.partsList.tableHeaders.type)}</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell>{t($ => $.partsList.tableHeaders.description)}</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="20em" justify="end">
-            Dimensions
+            {t($ => $.partsList.tableHeaders.dimensions)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="5em" justify="center">
-            Quantity
+            {t($ => $.partsList.tableHeaders.quantity)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="5em" justify="end">
-            Area
+            {t($ => $.partsList.tableHeaders.area)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="8em" justify="end">
-            Total Area
+            {t($ => $.partsList.tableHeaders.totalArea)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="9em" justify="end">
-            Total Volume
+            {t($ => $.partsList.tableHeaders.totalVolume)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="9em" justify="end">
-            Total Weight
+            {t($ => $.partsList.tableHeaders.totalWeight)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="3em" justify="center">
-            View
+            {t($ => $.partsList.tableHeaders.view)}
           </Table.ColumnHeaderCell>
         </Table.Row>
       </Table.Header>
@@ -922,7 +761,12 @@ function SheetPartsTable({
               <Table.Cell justify="end">{formatWeight(partWeight)}</Table.Cell>
               <Table.Cell justify="center">
                 {canHighlightPart(part.partId) && onViewInPlan && (
-                  <IconButton size="1" variant="ghost" onClick={() => onViewInPlan(part.partId)} title="View in plan">
+                  <IconButton
+                    size="1"
+                    variant="ghost"
+                    onClick={() => onViewInPlan(part.partId)}
+                    title={t($ => $.partsList.actions.viewInPlan)}
+                  >
                     <EyeOpenIcon />
                   </IconButton>
                 )}
@@ -946,6 +790,7 @@ function VolumePartsTable({
   onViewInPlan?: (partId: PartId) => void
   formatters: Formatters
 }) {
+  const { t } = useTranslation('construction')
   const formatWeight = (weight: number | undefined): string => {
     if (weight === undefined) return '—'
     return formatters.formatWeight(weight)
@@ -955,27 +800,27 @@ function VolumePartsTable({
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell width="5em" justify="center">
-            Label
+            {t($ => $.partsList.tableHeaders.label)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="10em">Type</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="10em">{t($ => $.partsList.tableHeaders.type)}</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell>{t($ => $.partsList.tableHeaders.description)}</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="5em" justify="center">
-            Quantity
+            {t($ => $.partsList.tableHeaders.quantity)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="5em" justify="end">
-            Thickness
+            {t($ => $.partsList.tableHeaders.thickness)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="8em" justify="end">
-            Total Area
+            {t($ => $.partsList.tableHeaders.totalArea)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="9em" justify="end">
-            Total Volume
+            {t($ => $.partsList.tableHeaders.totalVolume)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="9em" justify="end">
-            Total Weight
+            {t($ => $.partsList.tableHeaders.totalWeight)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="3em" justify="center">
-            View
+            {t($ => $.partsList.tableHeaders.view)}
           </Table.ColumnHeaderCell>
         </Table.Row>
       </Table.Header>
@@ -1001,7 +846,12 @@ function VolumePartsTable({
               <Table.Cell justify="end">{formatWeight(partWeight)}</Table.Cell>
               <Table.Cell justify="center">
                 {canHighlightPart(part.partId) && onViewInPlan && (
-                  <IconButton size="1" variant="ghost" onClick={() => onViewInPlan(part.partId)} title="View in plan">
+                  <IconButton
+                    size="1"
+                    variant="ghost"
+                    onClick={() => onViewInPlan(part.partId)}
+                    title={t($ => $.partsList.actions.viewInPlan)}
+                  >
                     <EyeOpenIcon />
                   </IconButton>
                 )}
@@ -1021,20 +871,21 @@ function GenericPartsTable({
   parts: MaterialPartItem[]
   onViewInPlan?: (partId: PartId) => void
 }) {
+  const { t } = useTranslation('construction')
   return (
     <Table.Root variant="surface" size="2" className="min-w-full">
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell width="5em" justify="center">
-            Label
+            {t($ => $.partsList.tableHeaders.label)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="10em">Type</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="10em">{t($ => $.partsList.tableHeaders.type)}</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell>{t($ => $.partsList.tableHeaders.description)}</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="5em" justify="center">
-            Quantity
+            {t($ => $.partsList.tableHeaders.quantity)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="3em" justify="center">
-            View
+            {t($ => $.partsList.tableHeaders.view)}
           </Table.ColumnHeaderCell>
         </Table.Row>
       </Table.Header>
@@ -1049,7 +900,12 @@ function GenericPartsTable({
             <Table.Cell justify="center">{part.quantity}</Table.Cell>
             <Table.Cell justify="center">
               {canHighlightPart(part.partId) && onViewInPlan && (
-                <IconButton size="1" variant="ghost" onClick={() => onViewInPlan(part.partId)} title="View in plan">
+                <IconButton
+                  size="1"
+                  variant="ghost"
+                  onClick={() => onViewInPlan(part.partId)}
+                  title={t($ => $.partsList.actions.viewInPlan)}
+                >
                   <EyeOpenIcon />
                 </IconButton>
               )}
@@ -1070,8 +926,22 @@ function StrawbalePartsTable({
   material: StrawbaleMaterial
   formatters: Formatters
 }) {
+  const { t } = useTranslation('construction')
   const summary = summarizeStrawbaleParts(parts, material)
   const numberFormatter = useMemo(() => new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }), [])
+
+  const getStrawCategoryLabel = (category: StrawCategory): string => {
+    switch (category) {
+      case 'full':
+        return t($ => $.partsList.straw.fullBales)
+      case 'partial':
+        return t($ => $.partsList.straw.partialBales)
+      case 'flakes':
+        return t($ => $.partsList.straw.flakes)
+      case 'stuffed':
+        return t($ => $.partsList.straw.stuffedFill)
+    }
+  }
 
   interface StrawTableRow {
     key: StrawCategory | 'remaining'
@@ -1083,7 +953,7 @@ function StrawbalePartsTable({
 
   const rows: StrawTableRow[] = STRAW_CATEGORY_ORDER.map(category => {
     const bucket = summary.buckets[category]
-    const label = STRAW_CATEGORY_LABELS[category]
+    const label = getStrawCategoryLabel(category)
     const volume = bucket.volume
     const maxQuantity =
       category === 'full' || category === 'partial' ? bucket.count : ceilDiv(volume, summary.nominalMinVolume)
@@ -1100,7 +970,7 @@ function StrawbalePartsTable({
 
   rows.splice(2, 0, {
     key: 'remaining',
-    label: 'Leftover from partial bales',
+    label: t($ => $.partsList.straw.leftoverFromPartialBales),
     volume: summary.remainingVolumeMin,
     maxQuantity: summary.maxRemainingBaleCount,
     minQuantity: summary.minRemainingBaleCount
@@ -1123,12 +993,12 @@ function StrawbalePartsTable({
     <Table.Root variant="surface" size="2" className="min-w-full">
       <Table.Header>
         <Table.Row>
-          <Table.ColumnHeaderCell>Category</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell>{t($ => $.partsList.tableHeaders.category)}</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="12em" justify="center">
-            Bale Count
+            {t($ => $.partsList.tableHeaders.baleCount)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="12em" justify="end">
-            Total Volume
+            {t($ => $.partsList.tableHeaders.totalVolume)}
           </Table.ColumnHeaderCell>
         </Table.Row>
       </Table.Header>
@@ -1152,7 +1022,7 @@ function StrawbalePartsTable({
         ))}
         <Table.Row>
           <Table.RowHeaderCell>
-            <Text weight="medium">Total</Text>
+            <Text weight="medium">{t($ => $.partsList.totalRow)}</Text>
           </Table.RowHeaderCell>
           <Table.Cell justify="center">
             <Text weight="medium">{formatRange(totalMinQuantity, totalMaxQuantity)}</Text>
@@ -1167,10 +1037,153 @@ function StrawbalePartsTable({
 }
 
 export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionPartsListProps): React.JSX.Element {
+  const { t } = useTranslation('construction')
   const materialsMap = useMaterialsMap()
   const formatters = useFormatters()
   const topRef = useRef<HTMLDivElement | null>(null)
   const detailRefs = useRef<Record<string, HTMLDivElement | null>>({})
+
+  // Helper functions for grouping parts - defined inside component to access t()
+  const groupDimensionalParts = useCallback(
+    (parts: MaterialPartItem[], material: DimensionalMaterial): MaterialGroup[] => {
+      const groups = new Map<
+        string,
+        {
+          label: string
+          badgeLabel: string
+          badgeColor: BadgeColor
+          parts: MaterialPartItem[]
+          sortValue: number
+          hasIssue: boolean
+          issueMessage?: string
+        }
+      >()
+
+      for (const part of parts) {
+        const displayCrossSection = part.crossSection
+        const groupKey = displayCrossSection
+          ? `dimensional:${displayCrossSection.smallerLength}x${displayCrossSection.biggerLength}`
+          : 'dimensional:other'
+        const key = `${material.id}|${groupKey}`
+        const label = displayCrossSection
+          ? formatters.formatDimensions2D([displayCrossSection.smallerLength, displayCrossSection.biggerLength])
+          : t(($: any) => $.partsList.other.crossSections)
+        const sortValue = displayCrossSection
+          ? displayCrossSection.smallerLength * displayCrossSection.biggerLength
+          : Number.MAX_SAFE_INTEGER
+
+        const isKnown = material.crossSections.some(
+          cs =>
+            cs.smallerLength === displayCrossSection?.smallerLength &&
+            cs.biggerLength === displayCrossSection?.biggerLength
+        )
+
+        if (!groups.has(key)) {
+          groups.set(key, {
+            label,
+            badgeLabel: label,
+            badgeColor: isKnown ? undefined : 'orange',
+            parts: [],
+            sortValue,
+            hasIssue: !isKnown,
+            issueMessage: isKnown ? undefined : t(($: any) => $.partsList.other.crossSectionMismatch)
+          })
+        }
+
+        groups.get(key)!.parts.push(part)
+      }
+
+      return Array.from(groups.entries())
+        .sort(([, a], [, b]) => a.sortValue - b.sortValue)
+        .map(([key, group]) => createGroup({ key, ...group, material, parts: group.parts }))
+    },
+    [formatters, t]
+  )
+
+  const groupSheetParts = useCallback(
+    (parts: MaterialPartItem[], material: SheetMaterial): MaterialGroup[] => {
+      const groups = new Map<
+        string,
+        {
+          label: string
+          badgeLabel: string
+          badgeColor: BadgeColor
+          parts: MaterialPartItem[]
+          sortValue: number
+          hasIssue: boolean
+          issueMessage?: string
+        }
+      >()
+
+      for (const part of parts) {
+        const thickness = part.thickness
+        const groupKey = thickness != null ? `sheet:${thickness}` : 'sheet:other'
+        const key = `${material.id}|${groupKey}`
+        const label =
+          thickness != null ? formatters.formatLength(thickness) : t(($: any) => $.partsList.other.thicknesses)
+        const sortValue = thickness ?? Number.MAX_SAFE_INTEGER
+
+        const isKnown = material.thicknesses.includes(thickness ?? -1)
+
+        if (!groups.has(key)) {
+          groups.set(key, {
+            label,
+            badgeLabel: label,
+            badgeColor: isKnown ? undefined : 'orange',
+            parts: [],
+            sortValue,
+            hasIssue: !isKnown,
+            issueMessage: isKnown ? undefined : t(($: any) => $.partsList.other.thicknessMismatch)
+          })
+        }
+
+        groups.get(key)!.parts.push(part)
+      }
+
+      return Array.from(groups.entries())
+        .sort(([, a], [, b]) => a.sortValue - b.sortValue)
+        .map(([key, group]) => createGroup({ key, ...group, material, parts: group.parts }))
+    },
+    [formatters, t]
+  )
+
+  const createMaterialGroups = useCallback(
+    (material: Material, materialParts: MaterialParts): MaterialGroup[] => {
+      const parts = Object.values(materialParts.parts)
+      if (parts.length === 0) return []
+
+      if (material.type === 'dimensional') {
+        return groupDimensionalParts(parts, material)
+      }
+
+      if (material.type === 'sheet') {
+        return groupSheetParts(parts, material)
+      }
+
+      if (material.type === 'strawbale') {
+        return [
+          createGroup({
+            key: `${material.id}-straw`,
+            label: t(($: any) => $.partsList.groups.strawbales),
+            hasIssue: false,
+            material,
+            parts
+          })
+        ]
+      }
+
+      return [
+        createGroup({
+          key: `${material.id}-all`,
+          label: t(($: any) => $.partsList.groups.allParts),
+          hasIssue: false,
+          material,
+          parts
+        })
+      ]
+    },
+    [groupDimensionalParts, groupSheetParts]
+  )
 
   const setDetailRef = useCallback((groupKey: string) => {
     return (element: HTMLDivElement | null) => {
@@ -1215,7 +1228,7 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
     return (
       <Card variant="ghost" size="2">
         <Text size="2" color="gray">
-          No parts available.
+          {t($ => $.partsList.noPartsAvailable)}
         </Text>
       </Card>
     )
@@ -1240,7 +1253,7 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
         const strawSummary = summarizeStrawbaleParts(parts, material)
         metrics.totalQuantity = strawSummary.totalEstimatedBalesMax
       }
-      const groups = createMaterialGroups(material, materialParts, formatters)
+      const groups = createMaterialGroups(material, materialParts)
       return { material, metrics, groups }
     })
     .filter(
@@ -1252,31 +1265,31 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
     <Flex direction="column" gap="4">
       <Card ref={topRef} variant="surface" size="2">
         <Flex direction="column" gap="3">
-          <Heading size="4">Summary</Heading>
+          <Heading size="4">{t($ => $.partsList.summary)}</Heading>
           <Table.Root variant="surface" size="2" className="min-w-full">
             <Table.Header>
               <Table.Row>
                 <Table.ColumnHeaderCell width="4em" justify="center">
-                  Type
+                  {t($ => $.partsList.tableHeaders.type)}
                 </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>{t($ => $.partsList.tableHeaders.material)}</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell width="10em" justify="center">
-                  Total Quantity
+                  {t($ => $.partsList.tableHeaders.totalQuantity)}
                 </Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell width="10em" justify="center">
-                  Different Parts
+                  {t($ => $.partsList.tableHeaders.differentParts)}
                 </Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell width="10em" justify="end">
-                  Total Length
+                  {t($ => $.partsList.tableHeaders.totalLength)}
                 </Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell width="10em" justify="end">
-                  Total Area
+                  {t($ => $.partsList.tableHeaders.totalArea)}
                 </Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell width="10em" justify="end">
-                  Total Volume
+                  {t($ => $.partsList.tableHeaders.totalVolume)}
                 </Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell width="10em" justify="end">
-                  Total Weight
+                  {t($ => $.partsList.tableHeaders.totalWeight)}
                 </Table.ColumnHeaderCell>
               </Table.Row>
             </Table.Header>
@@ -1310,7 +1323,7 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
           const material = materialsMap[materialId]
           const materialParts = partsList[materialId]
           if (!material || !materialParts) return null
-          const groups = createMaterialGroups(material, materialParts, formatters)
+          const groups = createMaterialGroups(material, materialParts)
           if (groups.length === 0) return null
           return (
             <Flex key={materialId} direction="column" gap="4">
