@@ -15,6 +15,7 @@ import {
   TextField
 } from '@radix-ui/themes'
 import React, { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { RingBeamAssemblyId } from '@/building/model/ids'
 import { usePerimeters, useStoreysOrderedByLevel } from '@/building/store'
@@ -44,6 +45,7 @@ export interface RingBeamAssemblyContentProps {
 }
 
 export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssemblyContentProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   const ringBeamAssemblies = useRingBeamAssemblies()
   const perimeters = usePerimeters()
   const storeys = useStoreysOrderedByLevel()
@@ -165,7 +167,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
 
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
-              <IconButton title="Add New">
+              <IconButton title={t('common.addNew')}>
                 <PlusIcon />
               </IconButton>
             </DropdownMenu.Trigger>
@@ -191,7 +193,12 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
             </DropdownMenu.Content>
           </DropdownMenu.Root>
 
-          <IconButton onClick={handleDuplicate} disabled={!selectedAssembly} title="Duplicate" variant="soft">
+          <IconButton
+            onClick={handleDuplicate}
+            disabled={!selectedAssembly}
+            title={t('common.duplicate')}
+            variant="soft"
+          >
             <CopyIcon />
           </IconButton>
 
@@ -206,7 +213,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
               </IconButton>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
-              <AlertDialog.Title>Delete Ring Beam Assembly</AlertDialog.Title>
+              <AlertDialog.Title>{t('ringBeams.deleteTitle')}</AlertDialog.Title>
               <AlertDialog.Description>
                 Are you sure you want to delete "{selectedAssembly?.name}"? This action cannot be undone.
               </AlertDialog.Description>
@@ -232,7 +239,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
               </IconButton>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
-              <AlertDialog.Title>Reset Ring Beam Assemblies</AlertDialog.Title>
+              <AlertDialog.Title>{t('ringBeams.resetTitle')}</AlertDialog.Title>
               <AlertDialog.Description>
                 Are you sure you want to reset default ring beam assemblies? This will restore the original default
                 assemblies but keep any custom assemblies you've created. This action cannot be undone.

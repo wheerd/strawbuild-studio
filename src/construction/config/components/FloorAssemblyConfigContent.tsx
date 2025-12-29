@@ -15,6 +15,7 @@ import {
   Tooltip
 } from '@radix-ui/themes'
 import React, { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { FloorAssemblyId } from '@/building/model/ids'
 import { useStoreysOrderedByLevel } from '@/building/store'
@@ -46,6 +47,7 @@ export interface FloorAssemblyConfigContentProps {
 }
 
 export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssemblyConfigContentProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   const floorAssemblies = useFloorAssemblies()
   const storeys = useStoreysOrderedByLevel()
   const {
@@ -197,7 +199,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
 
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
-              <IconButton title="Add New">
+              <IconButton title={t('common.addNew')}>
                 <PlusIcon />
               </IconButton>
             </DropdownMenu.Trigger>
@@ -223,7 +225,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
             </DropdownMenu.Content>
           </DropdownMenu.Root>
 
-          <IconButton onClick={handleDuplicate} disabled={!selectedConfig} title="Duplicate" variant="soft">
+          <IconButton onClick={handleDuplicate} disabled={!selectedConfig} title={t('common.duplicate')} variant="soft">
             <CopyIcon />
           </IconButton>
 
@@ -246,7 +248,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
               </IconButton>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
-              <AlertDialog.Title>Delete Floor Assembly</AlertDialog.Title>
+              <AlertDialog.Title>{t('floors.deleteTitle')}</AlertDialog.Title>
               <AlertDialog.Description>
                 Are you sure you want to delete "{selectedConfig?.name}"? This action cannot be undone.
               </AlertDialog.Description>
@@ -272,7 +274,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
               </IconButton>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
-              <AlertDialog.Title>Reset Floor Assemblies</AlertDialog.Title>
+              <AlertDialog.Title>{t('floors.resetTitle')}</AlertDialog.Title>
               <AlertDialog.Description>
                 Are you sure you want to reset default floor assemblies? This will restore the original default
                 assemblies but keep any custom assemblies you've created. This action cannot be undone.

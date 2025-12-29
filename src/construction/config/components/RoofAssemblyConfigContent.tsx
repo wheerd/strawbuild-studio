@@ -14,6 +14,7 @@ import {
   TextField
 } from '@radix-ui/themes'
 import React, { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { RoofAssemblyId } from '@/building/model/ids'
 import { useRoofs, useStoreysOrderedByLevel } from '@/building/store'
@@ -499,6 +500,7 @@ interface ConfigFormProps {
 }
 
 function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   const { formatLength } = useFormatters()
   const { updateRoofAssemblyName, updateRoofAssemblyConfig } = useConfigActions()
 
@@ -536,7 +538,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
             onChange={e => nameInput.handleChange(e.target.value)}
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
-            placeholder="Assembly name"
+            placeholder={t('common.placeholderName')}
             size="2"
           />
         </Grid>
@@ -593,6 +595,7 @@ export interface RoofAssemblyConfigContentProps {
 }
 
 export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyConfigContentProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   const roofAssemblies = useRoofAssemblies()
   const roofs = useRoofs()
   const storeys = useStoreysOrderedByLevel()
@@ -728,7 +731,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
 
             <DropdownMenu.Root>
               <DropdownMenu.Trigger>
-                <IconButton title="Add New">
+                <IconButton title={t('common.addNew')}>
                   <PlusIcon />
                 </IconButton>
               </DropdownMenu.Trigger>
@@ -748,7 +751,12 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
               </DropdownMenu.Content>
             </DropdownMenu.Root>
 
-            <IconButton onClick={handleDuplicate} disabled={!selectedAssembly} title="Duplicate" variant="soft">
+            <IconButton
+              onClick={handleDuplicate}
+              disabled={!selectedAssembly}
+              title={t('common.duplicate')}
+              variant="soft"
+            >
               <CopyIcon />
             </IconButton>
 
@@ -763,7 +771,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
                 </IconButton>
               </AlertDialog.Trigger>
               <AlertDialog.Content>
-                <AlertDialog.Title>Delete Roof Assembly</AlertDialog.Title>
+                <AlertDialog.Title>{t('roofs.deleteTitle')}</AlertDialog.Title>
                 <AlertDialog.Description>
                   Are you sure you want to delete "{selectedAssembly?.name}"? This action cannot be undone.
                 </AlertDialog.Description>
@@ -789,7 +797,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
                 </IconButton>
               </AlertDialog.Trigger>
               <AlertDialog.Content>
-                <AlertDialog.Title>Reset Roof Assemblies</AlertDialog.Title>
+                <AlertDialog.Title>{t('roofs.resetTitle')}</AlertDialog.Title>
                 <AlertDialog.Description>
                   Are you sure you want to reset default roof assemblies? This will restore the original default
                   assemblies but keep any custom assemblies you've created. This action cannot be undone.

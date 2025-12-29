@@ -18,6 +18,7 @@ import {
   TextField
 } from '@radix-ui/themes'
 import React, { useCallback, useId, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { OpeningAssemblyId } from '@/building/model/ids'
 import { usePerimeters, useStoreysOrderedByLevel } from '@/building/store'
@@ -47,6 +48,7 @@ export interface OpeningAssemblyContentProps {
 }
 
 export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyContentProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   const openingAssemblies = useOpeningAssemblies()
   const wallAssemblies = useWallAssemblies()
   const perimeters = usePerimeters()
@@ -167,7 +169,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
         <Flex gap="2" align="end">
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
-              <IconButton title="Add New">
+              <IconButton title={t('common.addNew')}>
                 <PlusIcon />
               </IconButton>
             </DropdownMenu.Trigger>
@@ -202,7 +204,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
 
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
-              <IconButton title="Add New">
+              <IconButton title={t('common.addNew')}>
                 <PlusIcon />
               </IconButton>
             </DropdownMenu.Trigger>
@@ -213,7 +215,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
             </DropdownMenu.Content>
           </DropdownMenu.Root>
 
-          <IconButton onClick={handleDuplicate} variant="soft" title="Duplicate">
+          <IconButton onClick={handleDuplicate} variant="soft" title={t('common.duplicate')}>
             <CopyIcon />
           </IconButton>
 
@@ -224,7 +226,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
               </IconButton>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
-              <AlertDialog.Title>Delete Opening Assembly</AlertDialog.Title>
+              <AlertDialog.Title>{t('openings.deleteTitle')}</AlertDialog.Title>
               <AlertDialog.Description>
                 Are you sure you want to delete &quot;{selectedAssembly.name}&quot;?
               </AlertDialog.Description>
@@ -250,7 +252,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
               </IconButton>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
-              <AlertDialog.Title>Reset Opening Assemblies</AlertDialog.Title>
+              <AlertDialog.Title>{t('openings.resetTitle')}</AlertDialog.Title>
               <AlertDialog.Description>
                 Are you sure you want to reset default opening assemblies? This will restore the original default
                 assemblies but keep any custom assemblies you've created. This action cannot be undone.

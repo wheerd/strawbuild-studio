@@ -23,6 +23,7 @@ import {
   Tooltip
 } from '@radix-ui/themes'
 import React, { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { sumLayerThickness } from '@/construction/config/store/layerUtils'
 import type {
@@ -374,6 +375,7 @@ function MonolithicLayerFields({
   layer: Extract<LayerConfig, { type: 'monolithic' }>
   onUpdateLayer: (index: number, updates: Partial<Omit<MonolithicLayerConfig, 'type'>>) => void
 }): React.JSX.Element {
+  const { t } = useTranslation('config')
   return (
     <Field
       label="Material"
@@ -384,7 +386,7 @@ function MonolithicLayerFields({
             if (!material) return
             onUpdateLayer(index, { material })
           }}
-          placeholder="Select material..."
+          placeholder={t('layers.selectMaterial')}
           size="1"
           preferredTypes={['sheet', 'volume']}
         />
@@ -402,6 +404,7 @@ function StripedLayerFields({
   layer: Extract<LayerConfig, { type: 'striped' }>
   onUpdateLayer: (index: number, updates: Partial<Omit<StripedLayerConfig, 'type'>>) => void
 }): React.JSX.Element {
+  const { t } = useTranslation('config')
   return (
     <>
       <Field
@@ -448,7 +451,7 @@ function StripedLayerFields({
             if (!material) return
             onUpdateLayer(index, { stripeMaterial: material })
           }}
-          placeholder="Select material..."
+          placeholder={t('layers.selectMaterial')}
           size="1"
           preferredTypes={['dimensional']}
         />
@@ -476,7 +479,7 @@ function StripedLayerFields({
           allowEmpty
           emptyLabel="None"
           onValueChange={material => onUpdateLayer(index, { gapMaterial: material ?? undefined })}
-          placeholder="Select material..."
+          placeholder={t('layers.selectMaterial')}
           size="1"
           preferredTypes={['sheet', 'volume']}
         />

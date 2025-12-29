@@ -25,6 +25,7 @@ import {
   Tooltip
 } from '@radix-ui/themes'
 import React, { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { OpeningAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import { usePerimeters, useStoreysOrderedByLevel } from '@/building/store'
@@ -62,15 +63,16 @@ interface InfillConfigFormProps {
 }
 
 function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   return (
     <Flex direction="column" gap="3">
-      <Heading size="2">Infill Configuration</Heading>
+      <Heading size="2">{t('walls.infillConfiguration')}</Heading>
 
       <Grid columns="1fr 1fr" gap="2" gapX="3">
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Desired Post Spacing
+              {t('walls.desiredPostSpacing')}
             </Text>
           </Label.Root>
           <LengthField
@@ -86,7 +88,7 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Max Post Spacing
+              {t('walls.maxPostSpacing')}
             </Text>
           </Label.Root>
           <LengthField
@@ -101,7 +103,7 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Min Straw Space
+              {t('walls.minStrawSpace')}
             </Text>
           </Label.Root>
           <LengthField
@@ -134,7 +136,7 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
           <Flex direction="column" gap="1">
             <Flex gap="1" align="center">
               <Text size="1" weight="medium" color="gray">
-                Infill Material
+                {t('walls.infillMaterial')}
               </Text>
               <Tooltip content="If configured, will be used for gaps which are too small for straw">
                 <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
@@ -163,9 +165,10 @@ interface PostsConfigSectionProps {
 }
 
 function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   return (
     <Flex direction="column" gap="3">
-      <Heading size="2">Posts Configuration</Heading>
+      <Heading size="2">{t('walls.postsConfiguration')}</Heading>
 
       <Grid columns="5em 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
@@ -196,8 +199,8 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
         >
           <Select.Trigger />
           <Select.Content>
-            <Select.Item value="full">Full</Select.Item>
-            <Select.Item value="double">Double</Select.Item>
+            <Select.Item value="full">{t('walls.postTypeFull')}</Select.Item>
+            <Select.Item value="double">{t('walls.postTypeDouble')}</Select.Item>
           </Select.Content>
         </Select.Root>
       </Grid>
@@ -247,7 +250,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
           <>
             <Label.Root>
               <Text size="1" weight="medium" color="gray">
-                Infill Material
+                {t('walls.infillMaterial')}
               </Text>
             </Label.Root>
             <MaterialSelectWithEdit
@@ -271,9 +274,10 @@ interface ModuleConfigSectionProps {
 }
 
 function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   return (
     <Flex direction="column" gap="3">
-      <Heading size="2">Module Configuration</Heading>
+      <Heading size="2">{t('walls.moduleConfiguration')}</Heading>
 
       <Grid columns="6em 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
@@ -313,8 +317,8 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
         >
           <Select.Trigger />
           <Select.Content>
-            <Select.Item value="single">Single Frame</Select.Item>
-            <Select.Item value="double">Double Frame</Select.Item>
+            <Select.Item value="single">{t('walls.moduleTypeSingle')}</Select.Item>
+            <Select.Item value="double">{t('walls.moduleTypeDouble')}</Select.Item>
           </Select.Content>
         </Select.Root>
       </Grid>
@@ -346,7 +350,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
 
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Frame Thickness
+            {t('walls.frameThickness')}
           </Text>
         </Label.Root>
         <LengthField
@@ -372,7 +376,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
 
             <Label.Root>
               <Text size="1" weight="medium" color="gray">
-                Spacer Size
+                {t('walls.spacerSize')}
               </Text>
             </Label.Root>
             <LengthField
@@ -384,7 +388,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
 
             <Label.Root>
               <Text size="1" weight="medium" color="gray">
-                Spacer Count
+                {t('walls.spacerCount')}
               </Text>
             </Label.Root>
             <TextField.Root
@@ -405,7 +409,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Frame Material
+              {t('walls.frameMaterial')}
             </Text>
           </Label.Root>
           <MaterialSelectWithEdit
@@ -440,7 +444,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
             <Flex direction="column" gap="1">
               <Label.Root>
                 <Text size="1" weight="medium" color="gray">
-                  Spacer Material
+                  {t('walls.spacerMaterial')}
                 </Text>
               </Label.Root>
               <MaterialSelectWithEdit
@@ -457,7 +461,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
             <Flex direction="column" gap="1">
               <Label.Root>
                 <Text size="1" weight="medium" color="gray">
-                  Infill Material
+                  {t('walls.infillMaterial')}
                 </Text>
               </Label.Root>
               <MaterialSelectWithEdit
@@ -518,9 +522,10 @@ interface NonStrawbaleConfigFormProps {
 }
 
 function NonStrawbaleConfigForm({ config, onUpdate }: NonStrawbaleConfigFormProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   return (
     <Flex direction="column" gap="3">
-      <Heading size="2">Non-Strawbale Configuration</Heading>
+      <Heading size="2">{t('walls.nonStrawbaleConfiguration')}</Heading>
 
       <Grid columns="auto 1fr" gap="2" gapX="3">
         <Label.Root>
@@ -589,10 +594,11 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
     [allAssemblies]
   )
 
+  const { t } = useTranslation('config')
   return (
     <Flex direction="column" gap="3">
       {/* Opening Assembly Configuration */}
-      <Heading size="2">Openings</Heading>
+      <Heading size="2">{t('walls.openingsSection')}</Heading>
       <Flex direction="column" gap="1">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
@@ -608,7 +614,7 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           }
           allowDefault
           showDefaultIndicator
-          placeholder="Select"
+          placeholder={t('common.placeholder')}
           size="1"
         />
       </Flex>
@@ -665,6 +671,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
   const { updateWallAssemblyName, updateWallAssemblyConfig, getDefaultStrawMaterial } = useConfigActions()
   const { getMaterialById } = useMaterialActions()
 
+  const { t } = useTranslation('config')
   const nameInput = useDebouncedInput(assembly.name, (name: string) => updateWallAssemblyName(assembly.id, name), {
     debounceMs: 1000
   })
@@ -709,7 +716,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
             onChange={e => nameInput.handleChange(e.target.value)}
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
-            placeholder="Assembly name"
+            placeholder={t('common.placeholderName')}
             size="2"
           />
         </Grid>
@@ -787,6 +794,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
 
   const defaultAssemblyId = useDefaultWallAssemblyId()
 
+  const { t } = useTranslation('config')
   const [selectedAssemblyId, setSelectedAssemblyId] = useState<string | null>(() => {
     if (initialSelectionId && wallAssemblies.some(m => m.id === initialSelectionId)) {
       return initialSelectionId
@@ -944,7 +952,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
 
             <DropdownMenu.Root>
               <DropdownMenu.Trigger>
-                <IconButton title="Add New">
+                <IconButton title={t('common.addNew')}>
                   <PlusIcon />
                 </IconButton>
               </DropdownMenu.Trigger>
@@ -976,7 +984,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
               </DropdownMenu.Content>
             </DropdownMenu.Root>
 
-            <IconButton onClick={handleDuplicate} disabled={!selectedAssembly} title="Duplicate" variant="soft">
+            <IconButton onClick={handleDuplicate} disabled={!selectedAssembly} title={t('common.duplicate')} variant="soft">
               <CopyIcon />
             </IconButton>
 
@@ -991,7 +999,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                 </IconButton>
               </AlertDialog.Trigger>
               <AlertDialog.Content>
-                <AlertDialog.Title>Delete Wall Assembly</AlertDialog.Title>
+                <AlertDialog.Title>{t('walls.deleteTitle')}</AlertDialog.Title>
                 <AlertDialog.Description>
                   Are you sure you want to delete "{selectedAssembly?.name}"? This action cannot be undone.
                 </AlertDialog.Description>
@@ -1012,12 +1020,12 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
 
             <AlertDialog.Root>
               <AlertDialog.Trigger>
-                <IconButton color="red" variant="outline" title="Reset to Defaults">
+                <IconButton color="red" variant="outline" title={t('common.resetToDefaults')}>
                   <ResetIcon />
                 </IconButton>
               </AlertDialog.Trigger>
               <AlertDialog.Content>
-                <AlertDialog.Title>Reset Wall Assemblies</AlertDialog.Title>
+                <AlertDialog.Title>{t('walls.resetTitle')}</AlertDialog.Title>
                 <AlertDialog.Description>
                   Are you sure you want to reset default wall assemblies? This will restore the original default
                   assemblies but keep any custom assemblies you've created. This action cannot be undone.
@@ -1050,7 +1058,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
             <WallAssemblySelect
               value={defaultAssemblyId}
               onValueChange={value => setDefaultWallAssembly(value)}
-              placeholder="Select default..."
+              placeholder={t('walls.selectDefault')}
               size="2"
             />
           </Grid>
