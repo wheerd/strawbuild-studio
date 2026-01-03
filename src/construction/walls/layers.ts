@@ -127,7 +127,7 @@ export function constructWallLayers(
         }
       }
       if (layerElements.length > 0) {
-        const customTag = createTag('wall-layer', layer.name)
+        const customTag = createTag('wall-layer', layer.name, layer.nameKey)
         const group = createConstructionGroup(layerElements, IDENTITY, [TAG_WALL_LAYER_INSIDE, TAG_LAYERS, customTag])
         layerResults.push({ type: 'element', element: group })
       }
@@ -184,7 +184,7 @@ export function constructWallLayers(
         }
       }
       if (layerElements.length > 0) {
-        const customTag = createTag('wall-layer', layer.name)
+        const customTag = createTag('wall-layer', layer.name, layer.nameKey)
         const group = createConstructionGroup(layerElements, IDENTITY, [TAG_WALL_LAYER_OUTSIDE, TAG_LAYERS, customTag])
         layerResults.push({ type: 'element', element: group })
       }

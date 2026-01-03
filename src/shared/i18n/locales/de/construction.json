@@ -1,4 +1,15 @@
 {
+  "areaTypes": {
+    "bottom-plate": "",
+    "corner": "",
+    "door": "",
+    "floor-level": "",
+    "inner-perimeter": "",
+    "outer-perimeter": "",
+    "passage": "",
+    "top-plate": "",
+    "window": ""
+  },
   "materialSelect": {
     "noMaterialsAvailable": "",
     "none": "",

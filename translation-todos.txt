@@ -1,7 +1,6 @@
-Labels of measurements in src/editor/components/MeasurementInfo.tsx need translation
 (Exceptions/error handling)
 Storey names
-Config 
 Plan Highlighted Areas
+Layer names
 
 Regexp: '[A-Z][a-zA-Z ]+'

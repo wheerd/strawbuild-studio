@@ -189,6 +189,24 @@ interface Resources {
       "copyLayers": "Copy Layers",
       "defaultName_monolithic": "Monolithic Layer",
       "defaultName_striped": "Striped Layer",
+      "defaults": {
+        "battens": "Battens",
+        "clayPlasterBase": "Base Plaster (Clay)",
+        "clayPlasterFine": "Fine Plaster (Clay)",
+        "counterBattens": "Counter Battens",
+        "dhf": "DHF",
+        "diagonalBracing": "Diagonal Bracing",
+        "gypsumBoards": "Gypsum Boards",
+        "impactSoundInsulation": "Impact Sound Insulation",
+        "limePlasterBase": "Base Plaster (Lime)",
+        "limePlasterFine": "Fine Plaster (Lime)",
+        "plasterGroundReed": "Plaster Ground (Reed)",
+        "screed": "Screed",
+        "tiles": "Tiles",
+        "windBarrier": "Wind Barrier",
+        "windPaper": "Wind Paper",
+        "woodPlanking": "Wood Planking"
+      },
       "direction": "Direction",
       "directions": {
         "colinear": "Colinear",
@@ -200,7 +218,19 @@ interface Resources {
       "moveDown": "Move down",
       "moveUp": "Move up",
       "overlap": "Overlap with next layer",
-      "presets": "Presets",
+      "presets": {
+        "clayPlaster": "Clay Plaster",
+        "clayPlasterDiagonal": "Clay Plaster + Diagonal Bracing",
+        "gypsum": "Gypsum",
+        "limePlaster": "Lime Plaster",
+        "limePlasterDhf": "Lime Plaster + DHF",
+        "limePlasterDiagonal": "Lime Plaster + Diagonal Bracing",
+        "screed": "Screed",
+        "tiles": "Tiles",
+        "woodenPlanking": "Wooden Planking",
+        "woodenPlankingDhf": "Wooden Planking + DHF"
+      },
+      "presetsLabel": "Presets",
       "removeLayer": "Remove layer",
       "selectMaterial": "Select material...",
       "stripe": "Stripe",
@@ -583,6 +613,17 @@ interface Resources {
     }
   },
   "construction": {
+    "areaTypes": {
+      "bottom-plate": "Bottom Ring Beam",
+      "corner": "Corner",
+      "door": "Door",
+      "floor-level": "Finished Floor Level",
+      "inner-perimeter": "Inner Perimeter",
+      "outer-perimeter": "Outer Perimeter",
+      "passage": "Passage",
+      "top-plate": "Top Ring Beam",
+      "window": "Window"
+    },
     "materialSelect": {
       "noMaterialsAvailable": "No materials available",
       "none": "None",

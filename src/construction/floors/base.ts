@@ -39,7 +39,7 @@ export abstract class BaseFloorAssembly<TConfig extends FloorAssemblyConfigBase>
     let offset = 0 as Length
     const actualLayers = reverse ? [...layers].reverse() : layers
     for (const layer of actualLayers) {
-      const customTag = createTag('floor-layer', layer.name)
+      const customTag = createTag('floor-layer', layer.name, layer.nameKey)
       for (const polygon of basePolygons) {
         yield* yieldAsGroup(runLayerConstruction(polygon, offset, 'xy', layer), [layerTag, TAG_LAYERS, customTag])
       }

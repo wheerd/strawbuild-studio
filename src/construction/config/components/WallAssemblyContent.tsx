@@ -34,7 +34,7 @@ import { useConfigActions, useDefaultWallAssemblyId, useWallAssemblies } from '@
 import type { WallAssemblyConfig } from '@/construction/config/types'
 import { type WallAssemblyUsage, getWallAssemblyUsage } from '@/construction/config/usage'
 import { useEntityLabel } from '@/construction/config/useEntityLabel'
-import { DEFAULT_WALL_LAYER_SETS } from '@/construction/layers/defaults'
+import { WALL_LAYER_PRESETS } from '@/construction/layers/defaults'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
 import { roughWood, woodwool } from '@/construction/materials/material'
@@ -623,7 +623,7 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           onMoveLayer={(fromIndex, toIndex) => moveWallAssemblyInsideLayer(assemblyId, fromIndex, toIndex)}
           addLabel={t($ => $.walls.addInsideLayer)}
           emptyHint={t($ => $.walls.noInsideLayers)}
-          layerPresets={DEFAULT_WALL_LAYER_SETS}
+          layerPresets={WALL_LAYER_PRESETS}
           layerCopySources={insideLayerSources}
           beforeLabel={t($ => $.walls.wallConstruction)}
           afterLabel={t($ => $.walls.inside)}
@@ -642,7 +642,7 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           onMoveLayer={(fromIndex, toIndex) => moveWallAssemblyOutsideLayer(assemblyId, fromIndex, toIndex)}
           addLabel={t($ => $.walls.addOutsideLayer)}
           emptyHint={t($ => $.walls.noOutsideLayers)}
-          layerPresets={DEFAULT_WALL_LAYER_SETS}
+          layerPresets={WALL_LAYER_PRESETS}
           layerCopySources={outsideLayerSources}
           beforeLabel={t($ => $.walls.wallConstruction)}
           afterLabel={t($ => $.walls.outside)}

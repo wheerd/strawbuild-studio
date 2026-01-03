@@ -31,7 +31,7 @@ import type {
   JoistFloorConfig,
   MonolithicFloorConfig
 } from '@/construction/floors/types'
-import { DEFAULT_CEILING_LAYER_SETS, DEFAULT_FLOOR_LAYER_SETS } from '@/construction/layers/defaults'
+import { CEILING_LAYER_PRESETS, FLOOR_LAYER_PRESETS } from '@/construction/layers/defaults'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
@@ -1011,7 +1011,7 @@ function LayersFields({ assemblyId, config }: { assemblyId: FloorAssemblyId; con
         }
         addLabel={t($ => $.floors.layers.addTopLayer)}
         emptyHint={t($ => $.floors.layers.noTopLayers)}
-        layerPresets={DEFAULT_FLOOR_LAYER_SETS}
+        layerPresets={FLOOR_LAYER_PRESETS}
         layerCopySources={topLayerSources}
         beforeLabel={t($ => $.floors.layers.finishedTop)}
         afterLabel={t($ => $.floors.layers.floorConstruction)}
@@ -1030,7 +1030,7 @@ function LayersFields({ assemblyId, config }: { assemblyId: FloorAssemblyId; con
         onMoveLayer={(fromIndex, toIndex) => moveFloorAssemblyBottomLayer(assemblyId, fromIndex, toIndex)}
         addLabel={t($ => $.floors.layers.addBottomLayer)}
         emptyHint={t($ => $.floors.layers.noBottomLayers)}
-        layerPresets={DEFAULT_CEILING_LAYER_SETS}
+        layerPresets={CEILING_LAYER_PRESETS}
         layerCopySources={bottomLayerSources}
         beforeLabel={t($ => $.floors.layers.floorConstruction)}
         afterLabel={t($ => $.floors.layers.finishedBottom)}

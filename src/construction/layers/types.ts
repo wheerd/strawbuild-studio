@@ -1,5 +1,6 @@
 import type { MaterialId } from '@/construction/materials/material'
 import type { ConstructionResult } from '@/construction/results'
+import type { LayerNameKey } from '@/construction/tags'
 import { type Length, type Plane3D, type PolygonWithHoles2D, type Vec2 } from '@/shared/geometry'
 
 export interface LayerConstruction<TConfig extends BaseLayerConfig> {
@@ -17,6 +18,7 @@ export type LayerType = 'monolithic' | 'striped'
 interface BaseLayerConfig {
   type: LayerType
   name: string
+  nameKey?: LayerNameKey
   thickness: Length
   overlap?: boolean
 }

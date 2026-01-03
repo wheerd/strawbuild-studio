@@ -1,5 +1,6 @@
 import { type Projection, projectPoint } from '@/construction/geometry'
 import type { HighlightedCut } from '@/construction/model'
+import { useAreaLabel } from '@/construction/useAreaLabel'
 import { type Bounds3D, newVec3 } from '@/shared/geometry'
 
 import './areas.css'
@@ -13,6 +14,7 @@ export interface CutAreaShapeProps {
 const EXTENSION = 500
 
 export function CutAreaShape({ cut, projection, worldBounds }: CutAreaShapeProps): React.JSX.Element {
+  const label = useAreaLabel(cut.areaType)
   // Create line in 3D world space at the cut position, spanning the other two dimensions
   const start =
     cut.axis === 'x'
@@ -38,16 +40,16 @@ export function CutAreaShape({ cut, projection, worldBounds }: CutAreaShapeProps
     <g className={`area-cut area-cut-${cut.areaType}`}>
       <line x1={projectedStart[0]} y1={projectedStart[1]} x2={projectedEnd[0]} y2={projectedEnd[1]} />
 
-      {cut.label && (
+      {label && (
         <>
           <g className="text" transform={`translate(${projectedStart[0]} ${projectedStart[1]})`}>
             <text x={0} y={0} textAnchor="middle" dominantBaseline="middle">
-              {cut.label}
+              {label}
             </text>
           </g>
           <g className="text" transform={`translate(${projectedEnd[0]} ${projectedEnd[1]})`}>
             <text x={0} y={0} textAnchor="middle" dominantBaseline="middle">
-              {cut.label}
+              {label}
             </text>
           </g>
         </>

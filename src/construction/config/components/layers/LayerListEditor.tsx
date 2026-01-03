@@ -26,6 +26,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { sumLayerThickness } from '@/construction/config/store/layerUtils'
+import type { LayerPreset } from '@/construction/layers/defaults'
 import type {
   LayerConfig,
   LayerType,
@@ -76,7 +77,7 @@ interface LayerListEditorProps {
   measurementInfo?: React.ReactNode
   addLabel: string
   emptyHint?: string
-  layerPresets?: Record<string, LayerConfig[]>
+  layerPresets?: LayerPreset[]
   layerCopySources?: LayerCopySource[]
   onReplaceLayers?: (layers: LayerConfig[]) => void
   beforeLabel: string
@@ -103,8 +104,7 @@ export function LayerListEditor({
   const { formatLength } = useFormatters()
   const hasLayers = layers.length > 0
   const totalThickness = useMemo(() => sumLayerThickness(layers), [layers])
-  const presetEntries = useMemo(() => (layerPresets ? Object.entries(layerPresets) : []), [layerPresets])
-  const hasPresetMenu = onReplaceLayers != null && presetEntries.length > 0
+  const hasPresetMenu = onReplaceLayers != null && layerPresets && layerPresets.length > 0
 
   const applyPreset = (presetLayers: LayerConfig[]) => {
     if (!onReplaceLayers) return
@@ -151,17 +151,17 @@ export function LayerListEditor({
           {hasPresetMenu && (
             <DropdownMenu.Root>
               <DropdownMenu.Trigger>
-                <IconButton title={t($ => $.layers.presets)} size="1" variant="soft">
+                <IconButton title={t($ => $.layers.presetsLabel)} size="1" variant="soft">
                   <MagicWandIcon />
                 </IconButton>
               </DropdownMenu.Trigger>
               <DropdownMenu.Content>
-                {presetEntries.map(([name, presetLayers]) => (
-                  <DropdownMenu.Item key={name} onSelect={() => applyPreset(presetLayers)}>
+                {layerPresets.map(preset => (
+                  <DropdownMenu.Item key={t(preset.nameKey)} onSelect={() => applyPreset(preset.layers)}>
                     <Flex align="center" gap="2">
-                      <Text>{name}</Text>
+                      <Text>{t(preset.nameKey)}</Text>
                       <Text size="1" color="gray">
-                        · {formatLength(sumLayerThickness(presetLayers))}
+                        · {formatLength(sumLayerThickness(preset.layers))}
                       </Text>
                     </Flex>
                   </DropdownMenu.Item>
@@ -283,20 +283,24 @@ function LayerCard({
   onRemoveLayer
 }: LayerCardProps): React.JSX.Element {
   const { t } = useTranslation('config')
-  const [nameInput, setNameInput] = useState(layer.name)
+
+  // Display translated name if nameKey exists
+  const displayName = layer.nameKey ? t(layer.nameKey) : layer.name
+  const [nameInput, setNameInput] = useState(displayName)
 
   useEffect(() => {
-    setNameInput(layer.name)
-  }, [layer.name])
+    setNameInput(displayName)
+  }, [displayName])
 
   const commitNameChange = () => {
     const trimmed = nameInput.trim()
     if (trimmed.length === 0) {
-      setNameInput(layer.name)
+      setNameInput(displayName)
       return
     }
-    if (trimmed !== layer.name) {
-      onUpdateLayer(index, { name: trimmed })
+    if (trimmed !== displayName) {
+      // Clear nameKey when user edits the name
+      onUpdateLayer(index, { name: trimmed, nameKey: undefined })
     } else if (trimmed !== nameInput) {
       setNameInput(trimmed)
     }

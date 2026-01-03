@@ -867,7 +867,7 @@ export class GeometryIfcExporter {
 
   private processOpening(opening: HighlightedCuboid): void {
     if (!opening.sourceId) {
-      console.warn('Opening without sourceId, skipping:', opening.label)
+      console.warn('Opening without sourceId, skipping:', opening)
       return
     }
 
@@ -918,7 +918,7 @@ export class GeometryIfcExporter {
       new IFC4.IfcOpeningElement(
         this.globalId(),
         this.ownerHistory,
-        this.label(opening.label ?? `${opening.areaType}-${opening.sourceId}`),
+        this.label(`${opening.areaType}-${opening.sourceId}`),
         null,
         null,
         placement,

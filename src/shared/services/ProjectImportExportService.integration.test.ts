@@ -156,11 +156,23 @@ describe('ProjectImportExportService Integration', () => {
     const importedConfig = getConfigState()
     const importedMaterials = getMaterialsState()
 
-    // Check config state is restored
-    expect(importedConfig).toEqual(originalConfig)
+    // Check config state is restored (excluding nameKey functions which don't serialize)
+    // Helper to recursively strip nameKey functions for comparison
+    const stripNameKeys = (obj: any): any => {
+      if (obj === null || typeof obj !== 'object') return obj
+      if (Array.isArray(obj)) return obj.map(stripNameKeys)
+      const result: any = {}
+      for (const [key, value] of Object.entries(obj)) {
+        if (key === 'nameKey') continue // Skip nameKey functions
+        result[key] = stripNameKeys(value)
+      }
+      return result
+    }
 
-    // Check materials state is restored
-    expect(importedMaterials).toEqual(originalMaterials)
+    expect(stripNameKeys(importedConfig)).toEqual(stripNameKeys(originalConfig))
+
+    // Check materials state is restored (excluding nameKey functions)
+    expect(stripNameKeys(importedMaterials)).toEqual(stripNameKeys(originalMaterials))
 
     // Check storey data
     expect(importedStoreys).toHaveLength(originalData.length)

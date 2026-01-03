@@ -1,4 +1,15 @@
 {
+  "areaTypes": {
+    "bottom-plate": "Bottom Ring Beam",
+    "corner": "Corner",
+    "door": "Door",
+    "floor-level": "Finished Floor Level",
+    "inner-perimeter": "Inner Perimeter",
+    "outer-perimeter": "Outer Perimeter",
+    "passage": "Passage",
+    "top-plate": "Top Ring Beam",
+    "window": "Window"
+  },
   "materialSelect": {
     "noMaterialsAvailable": "No materials available",
     "none": "None",

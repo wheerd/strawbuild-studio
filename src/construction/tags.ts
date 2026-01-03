@@ -1,4 +1,4 @@
-import type { Resources } from 'i18next'
+import type { Resources, SelectorFn, SelectorOptions } from 'i18next'
 
 // Predefined tag IDs must match translation keys
 export type PredefinedTagId = keyof Resources['construction']['tags']
@@ -8,6 +8,9 @@ export type TagCategoryId = keyof Resources['construction']['tagCategories']
 
 // Custom tag IDs follow the template pattern
 export type CustomTagId = `${TagCategoryId}_${string}`
+
+// Type for layer name keys (layers are in config namespace)
+export type LayerNameKey = SelectorFn<Resources['config'], string, SelectorOptions<'config'>>
 
 // TagId is a union of predefined and custom IDs
 export type TagId = PredefinedTagId | CustomTagId
@@ -26,6 +29,7 @@ export interface CustomTag {
   readonly id: CustomTagId
   readonly category: TagCategoryId
   readonly label: string
+  readonly nameKey?: LayerNameKey
 }
 
 // Union type
@@ -79,10 +83,11 @@ export const createTagId = (category: TagCategoryId, name: string): CustomTagId 
     .toLowerCase()
     .replace(/[\W_]+/g, '-')}` as CustomTagId
 
-export const createTag = (category: TagCategoryId, name: string): CustomTag => ({
+export const createTag = (category: TagCategoryId, name: string, nameKey?: LayerNameKey): CustomTag => ({
   category,
   id: createTagId(category, name),
-  label: name
+  label: name,
+  nameKey
 })
 
 // Straw tags

@@ -22,7 +22,7 @@ import { useConfigActions, useDefaultRoofAssemblyId, useRoofAssemblies } from '@
 import type { RoofAssemblyConfig } from '@/construction/config/types'
 import { type RoofAssemblyUsage, getRoofAssemblyUsage } from '@/construction/config/usage'
 import { useEntityLabel } from '@/construction/config/useEntityLabel'
-import { DEFAULT_CEILING_LAYER_SETS, DEFAULT_ROOF_LAYER_SETS } from '@/construction/layers/defaults'
+import { CEILING_LAYER_PRESETS, ROOF_LAYER_PRESETS } from '@/construction/layers/defaults'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
 import { resolveRoofAssembly } from '@/construction/roofs'
@@ -450,7 +450,7 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
         onMoveLayer={(fromIndex, toIndex) => moveRoofAssemblyInsideLayer(assemblyId, fromIndex, toIndex)}
         addLabel={t($ => $.roofs.addInsideLayer)}
         emptyHint={t($ => $.roofs.noInsideLayers)}
-        layerPresets={DEFAULT_CEILING_LAYER_SETS}
+        layerPresets={CEILING_LAYER_PRESETS}
         layerCopySources={insideLayerSources}
         beforeLabel={t($ => $.roofs.roofConstruction)}
         afterLabel={t($ => $.roofs.layers.insideLayers)}
@@ -471,7 +471,7 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
         }
         addLabel={t($ => $.roofs.addTopLayer)}
         emptyHint={t($ => $.roofs.noTopLayers)}
-        layerPresets={DEFAULT_ROOF_LAYER_SETS}
+        layerPresets={ROOF_LAYER_PRESETS}
         layerCopySources={topLayerSources}
         beforeLabel={t($ => $.roofs.finishedTop)}
         afterLabel={t($ => $.roofs.roofConstruction)}
@@ -490,7 +490,7 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
         onMoveLayer={(fromIndex, toIndex) => moveRoofAssemblyOverhangLayer(assemblyId, fromIndex, toIndex)}
         addLabel={t($ => $.roofs.addOverhangLayer)}
         emptyHint={t($ => $.roofs.noOverhangLayers)}
-        layerPresets={{}}
+        layerPresets={[]}
         layerCopySources={overhangLayerSources}
         beforeLabel={t($ => $.roofs.overhang)}
         afterLabel={t($ => $.roofs.outside)}

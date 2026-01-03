@@ -14,7 +14,6 @@ describe('ConstructionPlan', () => {
     const polygonArea: HighlightedPolygon = {
       type: 'polygon',
       areaType: 'inner-perimeter',
-      label: 'Test Polygon',
       polygon: {
         points: [newVec2(0, 0), newVec2(100, 0), newVec2(100, 100), newVec2(0, 100)]
       },
@@ -103,7 +102,6 @@ describe('ConstructionPlan', () => {
     const bottomCuboid: HighlightedCuboid = {
       type: 'cuboid',
       areaType: 'corner',
-      label: 'Bottom Area',
       transform: IDENTITY,
       size: newVec3(50, 50, 10),
       bounds: Bounds3D.fromMinMax(newVec3(0, 0, 0), newVec3(50, 50, 10)),
@@ -113,7 +111,6 @@ describe('ConstructionPlan', () => {
     const topCuboid: HighlightedCuboid = {
       type: 'cuboid',
       areaType: 'corner',
-      label: 'Top Area',
       size: newVec3(50, 50, 10),
       transform: fromTrans(newVec3(60, 0, 0)),
       bounds: Bounds3D.fromMinMax(newVec3(60, 0, 0), newVec3(110, 50, 10)),
@@ -150,11 +147,10 @@ describe('ConstructionPlan', () => {
     const cuboidPaths = container.querySelectorAll('.area-cuboid path')
     expect(cuboidPaths.length).toBeGreaterThanOrEqual(2)
 
-    // Check that labels are rendered
+    // Check that labels are rendered (both have areaType 'corner')
+    // In tests, translations are mocked to return the key path
     const texts = container.querySelectorAll('.area-cuboid text')
-    const labelTexts = Array.from(texts).filter(
-      text => text.textContent === 'Bottom Area' || text.textContent === 'Top Area'
-    )
+    const labelTexts = Array.from(texts).filter(text => text.textContent === 'areaTypes.corner')
     expect(labelTexts.length).toBe(2)
   })
 })

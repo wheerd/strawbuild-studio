@@ -51,7 +51,6 @@ export type HighlightedArea = HighlightedCuboid | HighlightedPolygon | Highlight
 export interface HighlightedCuboid {
   type: 'cuboid'
   areaType: HighlightedAreaType
-  label?: string
   transform: Transform
   size: Vec3
   bounds: Bounds3D
@@ -65,7 +64,6 @@ export interface HighlightedCuboid {
 export interface HighlightedPolygon {
   type: 'polygon'
   areaType: HighlightedAreaType
-  label?: string
   polygon: Polygon2D
   plane: Plane3D
   tags?: Tag[]
@@ -77,7 +75,6 @@ export interface HighlightedPolygon {
 export interface HighlightedCut {
   type: 'cut'
   areaType: HighlightedAreaType
-  label?: string
   position: Length
   axis: Axis3D
   tags?: Tag[]

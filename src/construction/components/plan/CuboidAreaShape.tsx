@@ -4,6 +4,7 @@ import { type Projection } from '@/construction/geometry'
 import { getVisibleFacesInViewSpace } from '@/construction/manifold/faces'
 import { asManifoldTransform } from '@/construction/manifoldUtils'
 import type { HighlightedCuboid } from '@/construction/model'
+import { useAreaLabel } from '@/construction/useAreaLabel'
 import { Bounds2D, type Vec2, newVec2 } from '@/shared/geometry'
 import { getManifoldModule } from '@/shared/geometry/manifoldInstance'
 
@@ -20,6 +21,7 @@ function polygonToSvgPath(points: Vec2[]) {
 
 export function CuboidAreaShape({ cuboid, projection }: CuboidAreaShapeProps): React.JSX.Element | null {
   const cuboidId = useId()
+  const label = useAreaLabel(cuboid.areaType)
   const [w, h, d] = cuboid.size
   const manifold = getManifoldModule().Manifold.cube([w, h, d]).transform(asManifoldTransform(cuboid.transform))
   const faces2D = getVisibleFacesInViewSpace(manifold, projection, true)
@@ -39,10 +41,10 @@ export function CuboidAreaShape({ cuboid, projection }: CuboidAreaShapeProps): R
       </clipPath>
       <path d={polygonToSvgPath(faces2D[0])} clipPath={`url(#${cuboidId})`} />
 
-      {cuboid.label && (
+      {label && (
         <g className="text" transform={`translate(${center[0]} ${center[1]})`}>
           <text x={0} y={0}>
-            {cuboid.label}
+            {label}
           </text>
         </g>
       )}
