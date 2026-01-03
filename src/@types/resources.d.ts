@@ -116,8 +116,8 @@ interface Resources {
       "defaults": {
         "clt18cm": "CLT 18cm (6cm)",
         "concrete20cm": "Concrete 20cm (6cm)",
-        "filledJoist12x24cm": "Filled Joist 12x24cm (6cm)",
-        "joist12x24cm": "Joist 12x24cm (6cm)"
+        "filledJoist8x36cm": "Filled Joist 8x36cm (6cm)",
+        "joist8x24cm": "Joist 8x24cm (6cm)"
       },
       "delete": {
         "cannotDeleteInUse": "In Use - Cannot Delete",

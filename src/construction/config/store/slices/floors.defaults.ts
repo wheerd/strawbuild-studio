@@ -35,8 +35,8 @@ const concreteAssembly: FloorAssemblyConfig = {
 
 const joistAssembly: FloorAssemblyConfig = {
   id: 'fa_joist_default' as FloorAssemblyId,
-  name: 'Joist 12x24cm (6cm)',
-  nameKey: $ => $.floors.defaults.joist12x24cm,
+  name: 'Joist 8x24cm (6cm)',
+  nameKey: $ => $.floors.defaults.joist8x24cm,
   type: 'joist',
   constructionHeight: 240,
   joistMaterial: glt.id,
@@ -60,8 +60,8 @@ const joistAssembly: FloorAssemblyConfig = {
 
 const filledAssembly: FloorAssemblyConfig = {
   id: 'fa_filled_default' as FloorAssemblyId,
-  name: 'Filled Joist 12x24cm (6cm)',
-  nameKey: $ => $.floors.defaults.filledJoist12x24cm,
+  name: 'Filled Joist 8x36cm (6cm)',
+  nameKey: $ => $.floors.defaults.filledJoist8x36cm,
   type: 'filled',
   constructionHeight: 360,
   joistThickness: 80,
