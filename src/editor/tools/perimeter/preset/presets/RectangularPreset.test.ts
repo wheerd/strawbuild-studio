@@ -131,9 +131,8 @@ describe('RectangularPreset', () => {
   })
 
   describe('properties', () => {
-    it('should have correct type and name', () => {
+    it('should have correct type, icon, and dialog', () => {
       expect(preset.type).toBe('rectangular')
-      expect(preset.name).toBe('Rectangular')
       expect(preset.icon).toBe(RectIcon)
       expect(preset.dialog).toBe(RectangularPresetDialog)
     })

@@ -15,60 +15,60 @@ import type { ToolGroup, ToolId, ToolMetadata } from './types'
 
 export const TOOL_METADATA: Record<ToolId, ToolMetadata> = {
   'basic.select': {
-    nameKey: 'basic.select',
+    nameKey: 'basicSelect',
     iconComponent: CursorArrowIcon,
     hotkey: 'v'
   },
   'basic.move': {
-    nameKey: 'basic.move',
+    nameKey: 'basicMove',
     iconComponent: MoveIcon,
     hotkey: 'm'
   },
   'basic.fit-to-view': {
-    nameKey: 'basic.fit-to-view',
+    nameKey: 'basicFitToView',
     iconComponent: FitToViewIcon,
     hotkey: 'f'
   },
   'floors.add-area': {
-    nameKey: 'floors.add-area',
+    nameKey: 'floorsAddArea',
     iconComponent: FloorAreaIcon
   },
   'floors.add-opening': {
-    nameKey: 'floors.add-opening',
+    nameKey: 'floorsAddOpening',
     iconComponent: FloorOpeningIcon
   },
   'perimeter.add': {
-    nameKey: 'perimeter.add',
+    nameKey: 'perimeterAdd',
     iconComponent: PerimeterDrawIcon,
     hotkey: 'w'
   },
   'perimeter.preset': {
-    nameKey: 'perimeter.preset',
+    nameKey: 'perimeterPreset',
     iconComponent: PerimeterPresetsIcon,
     hotkey: 'p'
   },
   'perimeter.add-opening': {
-    nameKey: 'perimeter.add-opening',
+    nameKey: 'perimeterAddOpening',
     iconComponent: OpeningsIcon,
     hotkey: 'o'
   },
   'perimeter.add-post': {
-    nameKey: 'perimeter.add-post',
+    nameKey: 'perimeterAddPost',
     iconComponent: StretchVerticallyIcon,
     hotkey: 'shift+p'
   },
   'perimeter.split-wall': {
-    nameKey: 'perimeter.split-wall',
+    nameKey: 'perimeterSplitWall',
     iconComponent: SplitWallIcon,
     hotkey: 's'
   },
   'roofs.add-roof': {
-    nameKey: 'roofs.add-roof',
+    nameKey: 'roofsAddRoof',
     iconComponent: RoofIcon,
     hotkey: 'r'
   },
   'test.data': {
-    nameKey: 'test.data',
+    nameKey: 'testData',
     iconComponent: RocketIcon,
     hotkey: 't'
   }
