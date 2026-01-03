@@ -11,7 +11,7 @@
   "groups": {
     "basic": "Grundlagen",
     "floors": "Boden",
-    "perimeter": "Umriss",
+    "perimeter": "Gebäudekontur",
     "roofs": "Dächer",
     "test": "Testdaten"
   },
@@ -30,14 +30,14 @@
     "basicFitToView": "Auf Ansicht anpassen",
     "basicMove": "Verschieben",
     "basicSelect": "Auswählen",
-    "floorsAddArea": "Bodenfläche",
-    "floorsAddOpening": "Aussparung",
-    "perimeterAdd": "Gebäudeumriss",
+    "floorsAddArea": "Bodenfläche zeichnen",
+    "floorsAddOpening": "Boden-Aussparung zeichnen",
+    "perimeterAdd": "Gebäudekontur zeichnen",
     "perimeterAddOpening": "Öffnung hinzufügen",
     "perimeterAddPost": "Ständer hinzufügen",
-    "perimeterPreset": "Umriss-Vorlagen",
+    "perimeterPreset": "Gebäudekontur-Vorlagen",
     "perimeterSplitWall": "Wand teilen",
-    "roofsAddRoof": "Dach",
+    "roofsAddRoof": "Dach zeichnen",
     "testData": "Testdaten"
   },
   "view3DConstruction": "3D-Konstruktion anzeigen",

@@ -59,7 +59,7 @@
   "floorArea": {
     "cancelLabel": "Abbrechen",
     "completeLabel": "Bodenfläche fertigstellen",
-    "description": "Klicke, um die Bodenfläche auf dem aktiven Geschoss zu umreißen. Rasten an Umrissecken oder vorhandenen Bodenkanten für präzise Ausrichtung.",
+    "description": "Klicke, um die Bodenfläche auf dem aktiven Geschoss zu umreißen. Rasten an Gebäudeecken oder vorhandenen Bodenkanten für präzise Ausrichtung.",
     "title": "Bodenfläche"
   },
   "floorOpening": {
@@ -84,20 +84,20 @@
   },
   "perimeter": {
     "basePlate": "Fußschwelle",
-    "cancelPerimeter": "✕ Umriss abbrechen",
-    "cancelTooltip": "Umriss-Erstellung abbrechen (Escape)",
+    "cancelPerimeter": "✕ Kontur abbrechen",
+    "cancelTooltip": "Kontur-Erstellung abbrechen (Escape)",
     "clearLengthOverride": "Längenüberschreibung löschen (Escape)",
-    "completePerimeter": "✓ Umriss fertigstellen",
-    "completeTooltip": "Umriss fertigstellen (Eingabe)",
+    "completePerimeter": "✓ Kontur fertigstellen",
+    "completeTooltip": "Kontur fertigstellen (Eingabe)",
     "controlClickFirst": "Auf ersten Punkt klicken zum Schließen",
-    "controlEnter": "{{key}} zum Schließen des Umrisses",
-    "controlEscAbort": "{{key}} zum Abbrechen des Umrisses",
+    "controlEnter": "{{key}} zum Schließen der Kontur",
+    "controlEscAbort": "{{key}} zum Abbrechen der Kontur",
     "controlEscOverride": "{{key}} zum Löschen der Überschreibung",
     "controlNumbers": "Zahlen eingeben, um exakte Wandlänge festzulegen",
     "controlPlace": "Klicken, um Eckpunkte zu platzieren",
     "controlsHeading": "Steuerung:",
     "controlSnap": "Punkte rasten an Raster und vorhandener Geometrie",
-    "infoInside": "Zeichne die {{edge}} deines Gebäudeumrisses. Klicke, um Punkte zu platzieren, und schließe die Form, indem du auf den ersten Punkt klickst oder Eingabe drückst.",
+    "infoInside": "Zeichne die {{edge}} deiner Gebäudekontur. Klicke, um Punkte zu platzieren, und schließe die Form, indem du auf den ersten Punkt klickst oder Eingabe drückst.",
     "insideEdge": "Innenkante",
     "lengthOverride": "Längenüberschreibung",
     "nonePlaceholder": "Keine",
@@ -134,7 +134,7 @@
       "referenceSide": "Referenzseite",
       "rotation": "Drehung",
       "selectAssembly": "Aufbau auswählen",
-      "title": "L-förmiger Umriss",
+      "title": "L-förmige Gebäudekontur",
       "topPlate": "Kopfschwelle",
       "wallAssembly": "Wandaufbau",
       "wallThickness": "Wandstärke",
@@ -153,7 +153,7 @@
       "preview": "Vorschau",
       "referenceSide": "Referenzseite",
       "selectAssembly": "Aufbau auswählen",
-      "title": "Rechteckiger Umriss",
+      "title": "Rechteckige Gebäudekontur",
       "topPlate": "Kopfschwelle",
       "wallAssembly": "Wandaufbau",
       "wallThickness": "Wandstärke",
@@ -194,7 +194,7 @@
     "controlNumbers": "Zahlen eingeben, um exakte Segmentlängen festzulegen",
     "controlPlace": "Klicken, um Polygonpunkte zu platzieren",
     "controlsHeading": "Steuerung:",
-    "controlSnap": "Punkte rasten an Raster, Umrisse und vorhandener Geometrie",
+    "controlSnap": "Punkte richten sich an Raster, Gebäudekonturen und vorhandener Geometrie aus",
     "lengthOverride": "Längenüberschreibung"
   },
   "splitWall": {
@@ -215,15 +215,15 @@
     "title": "Wand teilen"
   },
   "testData": {
-    "confirmReset": "Möchtest du wirklich alle Daten zurücksetzen? Dies löscht alle Umrisse, Öffnungen und gespeicherte Arbeit.",
-    "crossShaped": "📐 Kreuz-/T-Form-Umriss",
+    "confirmReset": "Möchtest du wirklich alle Daten zurücksetzen? Dies löscht dauerhaft alle Stockwerke, Aufbauten und Materialien.",
+    "crossShaped": "📐 Kreuz-/T-Form-Gebäudekontur",
     "dangerZone": "⚠️ Gefahrenzone",
     "generationHeading": "Testdaten-Generierung",
     "hardReset": "Hard-Reset",
-    "hexagonal": "⬡ Sechseckiger Umriss (3m Seiten)",
-    "instructions": "Klicke auf eine beliebige Schaltfläche oben, um Testdaten zu generieren oder das Modell zurückzusetzen. Jeder Testfall erstellt einen Umriss mit realistischen Fenstern und Türen, um die Anwendungsfunktionen zu demonstrieren.",
-    "rectangular": "▭ Rechteckiger Umriss (8×5m)",
+    "hexagonal": "⬡ Sechseckige Gebäudekontur (3m Seiten)",
+    "instructions": "Klicke auf eine beliebige Schaltfläche oben, um Testdaten zu generieren oder das Modell zurückzusetzen. Jeder Testfall erstellt einen Gebäudekontur mit realistischen Fenstern und Türen, um die Anwendungsfunktionen zu demonstrieren.",
+    "rectangular": "▭ Rechteckige Gebäudekontur (8×5m)",
     "resetAll": "🗑️ Alle Daten zurücksetzen",
-    "resetWarning": "⚠️ Dies löscht dauerhaft alle Umrisse, Öffnungen und gespeicherte Arbeit"
+    "resetWarning": "⚠️ Dies löscht dauerhaft alle Stockwerke, Aufbauten und Materialien"
   }
 }
