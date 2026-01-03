@@ -44,7 +44,7 @@
     "deleteFloorTitle": "Geschoss löschen",
     "duplicateFloor": "Geschoss duplizieren",
     "floor": "Geschoss {{level}}",
-    "floorAssembly": "Deckenkonstruktion",
+    "floorAssembly": "Bodenaufbau",
     "floorHeight": "Geschosshöhe",
     "floorName": "Geschossname",
     "ground": "Erdgeschoss",
@@ -62,7 +62,7 @@
     "m3": "m³"
   },
   "viewMode": {
-    "floors": "Decken",
+    "floors": "Boden",
     "roofs": "Dächer",
     "walls": "Wände"
   }

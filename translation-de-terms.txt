@@ -1,14 +1,3 @@
 German Terms:
 
-top plate -> Kopfschwelle
-base plate -> Fußschwelle
-post -> Ständer
-assembly -> Aufbau
-wall assembly -> Wandaufbau
-floor -> Boden (only using "Decke" for ceiling, not for floor)
 perimeter -> Gebäudekontur
-fitting mode (for openings) -> Rohbau(maße)
-floor opening -> Aussparung
-monolithic -> massiv
-ring beam -> Ringanker
-padding (openings) -> Baufuge

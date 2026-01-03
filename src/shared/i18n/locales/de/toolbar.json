@@ -10,7 +10,7 @@
   },
   "groups": {
     "basic": "Grundlagen",
-    "floors": "Decken",
+    "floors": "Boden",
     "perimeter": "Umriss",
     "roofs": "Dächer",
     "test": "Testdaten"
@@ -31,10 +31,10 @@
     "basicMove": "Verschieben",
     "basicSelect": "Auswählen",
     "floorsAddArea": "Bodenfläche",
-    "floorsAddOpening": "Bodenöffnung",
+    "floorsAddOpening": "Aussparung",
     "perimeterAdd": "Gebäudeumriss",
     "perimeterAddOpening": "Öffnung hinzufügen",
-    "perimeterAddPost": "Pfosten hinzufügen",
+    "perimeterAddPost": "Ständer hinzufügen",
     "perimeterPreset": "Umriss-Vorlagen",
     "perimeterSplitWall": "Wand teilen",
     "roofsAddRoof": "Dach",

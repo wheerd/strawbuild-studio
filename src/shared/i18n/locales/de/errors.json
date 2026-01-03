@@ -25,9 +25,9 @@
       "geometryProcessing": "Ein Fehler ist während der Geometrieverarbeitung aufgetreten"
     },
     "infill": {
-      "notEnoughSpaceForPost": "Nicht genug Platz für einen Pfosten",
-      "notEnoughSpaceForStraw": "Nicht genug Platz zum Ausfachen mit Stroh",
-      "notEnoughSpaceForTwoPosts": "Platz für mehr als einen Pfosten, aber nicht genug für zwei",
+      "notEnoughSpaceForPost": "Nicht genug Platz für einen Ständer",
+      "notEnoughSpaceForStraw": "Nicht genug Platz zum Füllen mit Stroh",
+      "notEnoughSpaceForTwoPosts": "Platz für mehr als einen Ständer, aber nicht genug für zwei",
       "notEnoughVerticalSpace": "Nicht genug vertikaler Platz zum Füllen mit Stroh"
     },
     "layer": {
@@ -40,14 +40,14 @@
     },
     "post": {
       "crossSectionMismatch": "Querschnitt stimmt nicht mit verfügbaren Optionen für dieses Material überein",
-      "dimensionsMismatch": "Pfostenabmessungen ({{width, length}}×{{thickness, length}}) stimmen nicht mit verfügbaren Querschnitten überein",
-      "wallTooThin": "Wanddicke ({{wallThickness, length}}) ist nicht breit genug für doppelte Pfosten, benötigt mindestens {{required, length}}"
+      "dimensionsMismatch": "Ständerabmessungen ({{width, length}}×{{thickness, length}}) stimmen nicht mit verfügbaren Querschnitten überein",
+      "wallTooThin": "Wanddicke ({{wallThickness, length}}) ist nicht breit genug für doppelte Ständer, benötigt mindestens {{required, length}}"
     },
     "ringBeam": {
-      "doubleNotSupported": "Doppel-Ringbalkenkonstruktion wird noch nicht unterstützt."
+      "doubleNotSupported": "Doppel-Ringankeraufbau wird noch nicht unterstützt."
     },
     "roof": {
-      "invalidAssembly": "Ungültige Dachkonstruktion"
+      "invalidAssembly": "Ungültiger Dachaufbau"
     },
     "straw": {
       "tooThick": "Wand ist zu dick für einen einzelnen Strohballen",

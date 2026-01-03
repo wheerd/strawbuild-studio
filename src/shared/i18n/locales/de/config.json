@@ -18,7 +18,7 @@
     "none": "Keine",
     "placeholder": "Auswählen",
     "placeholders": {
-      "name": "Name der Konstruktion",
+      "name": "Name des Aufbaus",
       "selectDefault": "Standard auswählen …",
       "selectMaterial": "Material auswählen …"
     },
@@ -34,24 +34,24 @@
     "width": "Breite"
   },
   "floors": {
-    "configure": "Deckenkonstruktion konfigurieren",
+    "configure": "Bodenaufbau konfigurieren",
     "copyNameTemplate": "{{name}} (Kopie)",
-    "defaultFloorAssembly": "Standard-Deckenkonstruktion",
+    "defaultFloorAssembly": "Standard-Bodenaufbau",
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
     "defaults": {
       "clt18cm": "CLT 18 cm (6 cm)",
       "concrete20cm": "Beton 20 cm (6 cm)",
       "filledJoist8x36cm": "Stroh-Bodenplatte 8×36 cm (6 cm)",
-      "joist8x24cm": "Balkendecke 8×24 cm (6 cm)"
+      "joist8x24cm": "Balkenboden 8×24 cm (6 cm)"
     },
     "delete": {
       "cannotDeleteInUse": "In Verwendung – kann nicht gelöscht werden",
       "cannotDeleteLast": "Die letzte Konfiguration kann nicht gelöscht werden",
       "confirm": "Möchten Sie „{{name}}“ wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
-      "confirmTitle": "Deckenkonstruktion löschen",
-      "noConfigSelected": "Keine Konstruktion ausgewählt"
+      "confirmTitle": "Bodenaufbau löschen",
+      "noConfigSelected": "Keine Aufbau ausgewählt"
     },
-    "emptyList": "Keine Deckenkonstruktionen verfügbar",
+    "emptyList": "Keine Bodenaufbauten verfügbar",
     "labels": {
       "beamHeight": "Balkenhöhe",
       "constructionHeight": "Konstruktionshöhe",
@@ -63,19 +63,19 @@
       "bottomLayers": "Untere Schichten",
       "finishedBottom": "Fertig unten",
       "finishedTop": "Fertig oben",
-      "floorConstruction": "Deckenkonstruktion",
+      "floorConstruction": "Bodenaufbau",
       "noBottomLayers": "Keine unteren Schichten definiert",
       "noTopLayers": "Keine oberen Schichten definiert",
       "topLayers": "Obere Schichten"
     },
     "newName": {
-      "filled": "Neue gefüllte Decke",
-      "joist": "Neue Balkendecke",
-      "monolithic": "Neue Massivdecke"
+      "filled": "Neuer gefüllter Boden",
+      "joist": "Neuer Balkenboden",
+      "monolithic": "Neuer Massivboden"
     },
     "reset": {
-      "confirm": "Möchten Sie die Standard-Deckenkonstruktionen wirklich zurücksetzen? Benutzerdefinierte Konstruktionen bleiben erhalten. Diese Aktion kann nicht rückgängig gemacht werden.",
-      "title": "Deckenkonstruktionen zurücksetzen"
+      "confirm": "Möchten Sie die Standard-Bodenaufbauten wirklich zurücksetzen? Benutzerdefinierte Aufbauten bleiben erhalten. Diese Aktion kann nicht rückgängig gemacht werden.",
+      "title": "Bodenaufbauten zurücksetzen"
     },
     "sections": {
       "ceilingSheathing": "Deckenbeplankung",
@@ -88,8 +88,8 @@
       "wallBeams": "Wandträger"
     },
     "tips": {
-      "beamHeight": "Bakenhöhe. Gilt für Balken und Wandträger.",
-      "constructionHeight": "Höhe der Deckenkonstruktion (Balkenhöhe).",
+      "beamHeight": "Balkenhöhe. Gilt für Balken und Wandträger.",
+      "constructionHeight": "Höhe der Bodenkonstruktion (Balkenhöhe).",
       "strawMaterialOverride": "Material zur Füllung zwischen Balken. Leer lassen, um die globalen Stroheinstellungen zu verwenden."
     },
     "types": {
@@ -116,7 +116,7 @@
       "limePlasterFine": "Feinputz (Kalk)",
       "plasterGroundReed": "Putzträger (Schilf)",
       "screed": "Estrich",
-      "tiles": "Fliesen",
+      "tiles": "Dachpfannen",
       "windBarrier": "Windsperre",
       "windPaper": "Windpapier",
       "woodPlanking": "Holzschalung"
@@ -203,7 +203,7 @@
     "materialName": "Materialname",
     "maxBaleLength": "Max. Ballenlänge",
     "minBaleLength": "Min. Ballenlänge",
-    "newName_dimensional": "Neues Schnittholz",
+    "newName_dimensional": "Neues dimensioniertes Material",
     "newName_generic": "Neues generisches Material",
     "newName_sheet": "Neues Plattenmaterial",
     "newName_strawbale": "Neues Strohballenmaterial",
@@ -235,7 +235,7 @@
     "thicknessInput": "Dicke Eingabe",
     "tolerance": "Toleranz",
     "topCutoffLimit": "Obere Schnittgrenze",
-    "typeDimensional": "Schnittholz",
+    "typeDimensional": "Dimensioniert",
     "typeGeneric": "Generisch",
     "typeSheet": "Platte",
     "typeStrawbale": "Strohballen",
@@ -243,80 +243,80 @@
     "volumeInput": "Volumen Eingabe"
   },
   "modal": {
-    "tabFloors": "Deckenkonstruktionen",
+    "tabFloors": "Bodenaufbauten",
     "tabMaterials": "Materialien",
-    "tabOpenings": "Öffnungskonstruktionen",
-    "tabRingBeams": "Ringbalkenkonstruktionen",
-    "tabRoofs": "Dachkonstruktionen",
-    "tabWalls": "Wandkonstruktionen",
+    "tabOpenings": "Öffnungsaufbauten",
+    "tabRingBeams": "Ringankeraufbauten",
+    "tabRoofs": "Dachaufbauten",
+    "tabWalls": "Wandaufbauten",
     "title": "Konfiguration"
   },
   "openings": {
-    "configure": "Öffnungskonstruktion konfigurieren",
+    "configure": "Öffnungsaufbau konfigurieren",
     "copyNameTemplate": "{{name}} (Kopie)",
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
-    "defaultOpeningAssembly": "Standard-Öffnungskonstruktion",
+    "defaultOpeningAssembly": "Standard-Öffnungsaufbau",
     "defaults": {
       "emptyOpening": "Leere Öffnung",
       "standardOpening": "Standard-Öffnung",
-      "standardOpeningWithPosts": "Standard-Öffnung mit Pfosten"
+      "standardOpeningWithPosts": "Standard-Öffnung mit Ständern"
     },
     "deleteConfirm": "Möchtest du \"{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "deleteTitle": "Öffnungskonstruktion löschen",
+    "deleteTitle": "Öffnungsaufbau löschen",
     "emptyList": "Keine Öffnungsaufbauten verfügbar",
     "labels": {
       "headerMaterial": "Sturzmaterial",
       "headerThickness": "Sturzdicke",
-      "padding": "Abstand",
-      "replacesWallPosts": "Ersetzt Wandpfosten",
+      "padding": "Baufuge",
+      "replacesWallPosts": "Ersetzt Wandständer",
       "sillMaterial": "Schwellenmaterial",
       "sillThickness": "Schwellendicke"
     },
     "placeholders": {
-      "name": "Name der Öffnungskonstruktion"
+      "name": "Name der Öffnungsaufbau"
     },
     "postTypes": {
       "double": "Doppelt",
-      "full": "Voll"
+      "full": "Massiv"
     },
-    "resetConfirm": "Möchtest du die Standard-Öffnungskonstruktionen wirklich zurücksetzen? Dies stellt die ursprünglichen Standardkonstruktionen wieder her, behält aber alle benutzerdefinierten Konstruktionen bei. Diese Aktion kann nicht rückgängig gemacht werden.",
-    "resetTitle": "Öffnungskonstruktionen zurücksetzen",
+    "resetConfirm": "Möchtest du die Standard-Öffnungsaufbauten wirklich zurücksetzen? Dies stellt die ursprünglichen Standardaufbauten wieder her, behält aber alle benutzerdefinierten Aufbauten bei. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "resetTitle": "Öffnungsaufbauten zurücksetzen",
     "sections": {
       "opening": "Öffnung",
-      "posts": "Pfosten"
+      "posts": "Ständer"
     },
     "types": {
       "empty": "Leere Öffnung",
-      "post": "Öffnung mit Pfosten",
+      "post": "Öffnung mit Ständern",
       "simple": "Standard-Öffnung"
     },
-    "useGlobalDefault": "Globalen Standard verwenden"
+    "useGlobalDefault": "Standard verwenden"
   },
   "ringBeams": {
-    "configure": "Ringbalken konfigurieren",
+    "configure": "Ringanker konfigurieren",
     "copyNameTemplate": "{{name}} (Kopie)",
-    "defaultBasePlate": "Standard-Fußplatte",
+    "defaultBasePlate": "Standard-Fußschwelle",
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
     "defaults": {
-      "brickRingBeam": "Mauerwerk-Ringbalken",
-      "full36x6cm": "Voll 36×6 cm"
+      "brickRingBeam": "Mauer mit Fußschwelle",
+      "full36x6cm": "Massiv 36×6 cm"
     },
-    "defaultTopPlate": "Standard-Kopfplatte",
+    "defaultTopPlate": "Standard-Kopfschwelle",
     "deleteConfirm": "Möchtest du \"{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "deleteTitle": "Ringbalkenkonstruktion löschen",
-    "emptyList": "Keine Ringbalkenaufbauten verfügbar",
+    "deleteTitle": "Ringankeraufbau löschen",
+    "emptyList": "Keine Ringankeraufbauten verfügbar",
     "labels": {
       "offsetFromInsideEdge": "Versatz von Innenkante"
     },
-    "newName_brick": "Neue Mauerwerk-Konstruktion",
-    "newName_double": "Neue Doppel-Konstruktion",
-    "newName_full": "Neue Voll-Konstruktion",
+    "newName_brick": "Neue Mauerwerk-Aufbau",
+    "newName_double": "Neue Doppel-Aufbau",
+    "newName_full": "Neue Massiv-Aufbau",
     "none": "Keine",
     "placeholders": {
-      "name": "Name der Ringbalkenkonstruktion"
+      "name": "Name der Ringankeraufbau"
     },
-    "resetConfirm": "Möchtest du die Standard-Ringbalkenkonstruktionen wirklich zurücksetzen? Dies stellt die ursprünglichen Standardkonstruktionen wieder her, behält aber alle benutzerdefinierten Konstruktionen bei. Diese Aktion kann nicht rückgängig gemacht werden.",
-    "resetTitle": "Ringbalkenkonstruktionen zurücksetzen",
+    "resetConfirm": "Möchtest du die Standard-Ringankeraufbauten wirklich zurücksetzen? Dies stellt die ursprünglichen Standardaufbauten wieder her, behält aber alle benutzerdefinierten Aufbauten bei. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "resetTitle": "Ringankeraufbauten zurücksetzen",
     "sections": {
       "beam": "Balken",
       "insulation": "Dämmung",
@@ -324,25 +324,25 @@
       "waterproofing": "Abdichtung"
     },
     "types": {
-      "brick": "Mauerwerk-Ringbalken",
-      "double": "Doppel-Ringbalken",
-      "full": "Voll-Ringbalken"
+      "brick": "Mauerwerk-Ringanker",
+      "double": "Doppel-Ringanker",
+      "full": "Massiv-Ringanker"
     }
   },
   "roofs": {
     "addInsideLayer": "Innenschicht hinzufügen",
     "addOverhangLayer": "Traufschicht hinzufügen",
     "addTopLayer": "Obere Schicht hinzufügen",
-    "configure": "Dachkonstruktion konfigurieren",
+    "configure": "Dachaufbau konfigurieren",
     "copyNameTemplate": "{{name}} (Kopie)",
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
-    "defaultRoofAssembly": "Standard-Dachkonstruktion",
+    "defaultRoofAssembly": "Standard-Dachaufbau",
     "defaults": {
       "cltMonolithic18cm": "CLT Massiv 18 cm",
       "purlinRoofStraw": "Pfettendach (Stroh)"
     },
     "deleteConfirm": "Möchtest du \"{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "deleteTitle": "Dachkonstruktion löschen",
+    "deleteTitle": "Dachaufbau löschen",
     "emptyList": "Keine Dachaufbauten verfügbar",
     "finishedTop": "Fertig oben",
     "labels": {
@@ -362,13 +362,13 @@
     "noTopLayers": "Keine oberen Schichten definiert",
     "outside": "Außen",
     "overhang": "Traufe",
-    "resetConfirm": "Möchtest du die Standard-Dachkonstruktionen wirklich zurücksetzen? Dies stellt die ursprünglichen Standardkonstruktionen wieder her, behält aber alle benutzerdefinierten Konstruktionen bei. Diese Aktion kann nicht rückgängig gemacht werden.",
-    "resetTitle": "Dachkonstruktionen zurücksetzen",
-    "roofConstruction": "Dachkonstruktion",
+    "resetConfirm": "Möchtest du die Standard-Dachaufbauten wirklich zurücksetzen? Dies stellt die ursprünglichen Standardaufbauten wieder her, behält aber alle benutzerdefinierten Aufbauten bei. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "resetTitle": "Dachaufbauten zurücksetzen",
+    "roofConstruction": "Dachaufbau",
     "sections": {
       "ceilingSheathing": "Deckenbeplankung",
       "decking": "Dachbeplankung",
-      "monolithicConfiguration": "Massivkonfiguration",
+      "monolithicConfiguration": "Massivdach",
       "purlins": "Pfetten",
       "rafters": "Sparren",
       "straw": "Stroh"
@@ -380,27 +380,27 @@
     }
   },
   "usage": {
-    "globalDefault_floor": "Globaler Standard",
-    "globalDefault_opening": "Globaler Standard",
-    "globalDefault_ringBeamBase": "Globaler Standard (Fußplatte)",
-    "globalDefault_ringBeamTop": "Globaler Standard (Kopfplatte)",
-    "globalDefault_roof": "Globaler Standard",
+    "globalDefault_floor": "Standard Bodenaufbau",
+    "globalDefault_opening": "Standard Öffnungsaufbau",
+    "globalDefault_ringBeamBase": "Standard Fußschwelle",
+    "globalDefault_ringBeamTop": "Standard Kopfschwelle",
+    "globalDefault_roof": "Standard Dachaufbau",
     "globalDefault_straw": "Standard-Strohmaterial",
-    "globalDefault_wall": "Globaler Standard",
+    "globalDefault_wall": "Standard Wandaufbau",
     "unknown": "Unbekannt",
     "usedBy": "Verwendet von:",
-    "usedInFloor": "Decke: {{label}}",
+    "usedInFloor": "Boden: {{label}}",
     "usedInOpening": "Öffnung: {{label}}",
-    "usedInRingBeam": "Ringbalken: {{label}}",
+    "usedInRingBeam": "Ringanker: {{label}}",
     "usedInRoof": "Dach: {{label}}",
     "usedInStorey": "Geschoss: {{label}}",
     "usedInWall": "Wand: {{label}}",
-    "usedInWallPosts": "Wandpfosten"
+    "usedInWallPosts": "Wandständer"
   },
   "walls": {
     "addInsideLayer": "Innenschicht hinzufügen",
     "addOutsideLayer": "Außenschicht hinzufügen",
-    "configure": "Wandkonstruktion konfigurieren",
+    "configure": "Wandaufbau konfigurieren",
     "copyNameTemplate": "{{name}} (Kopie)",
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
     "defaults": {
@@ -409,45 +409,45 @@
       "standardInfill": "Standard-Ausfachung",
       "strawhengeModule": "Strawhenge-Modul"
     },
-    "defaultWallAssembly": "Standard-Wandkonstruktion",
+    "defaultWallAssembly": "Standard-Wandaufbau",
     "deleteConfirm": "Möchtest du \"{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "deleteTitle": "Wandkonstruktion löschen",
-    "desiredPostSpacing": "Gewünschter Pfostenabstand",
+    "deleteTitle": "Wandaufbau löschen",
+    "desiredPostSpacing": "Gewünschter Ständerabstand",
     "emptyList": "Keine Wandaufbauten verfügbar",
     "frameMaterial": "Rahmenmaterial",
     "frameThickness": "Rahmendicke",
     "frameWidth": "Rahmenbreite",
-    "infillConfiguration": "Ausfachungskonfiguration",
+    "infillConfiguration": "Ausfachung",
     "infillMaterial": "Füllmaterial",
     "infillMaterialTooltip": "Falls konfiguriert, wird dies für Lücken verwendet, die zu klein für Stroh sind",
     "inside": "Innen",
     "insideLayers": "Innenschichten",
-    "maxPostSpacing": "Max. Pfostenabstand",
+    "maxPostSpacing": "Max. Ständerabstand",
     "maxWidth": "Max. Breite",
     "minStrawSpace": "Min. Strohraum",
     "minWidth": "Min. Breite",
-    "moduleConfiguration": "Modulkonfiguration",
+    "moduleConfiguration": "Module",
     "moduleType": "Modultyp",
     "moduleTypeDouble": "Doppelrahmen",
     "moduleTypeSingle": "Einzelrahmen",
-    "newName_infill": "Neue Ausfachungskonstruktion",
-    "newName_modules": "Neue Modulkonstruktion",
-    "newName_nonStrawbale": "Neue Nicht-Strohballenkonstruktion",
-    "newName_strawhenge": "Neue Strawhenge-Konstruktion",
+    "newName_infill": "Neuer Ausfachungsaufbau",
+    "newName_modules": "Neuer Modulaufbau",
+    "newName_nonStrawbale": "Neuer Massiv-Aufbau",
+    "newName_strawhenge": "Neuer Strawhenge-Aufbau",
     "noInfillMaterial": "Kein Füllmaterial",
     "noInsideLayers": "Keine Innenschichten definiert",
-    "nonStrawbaleConfiguration": "Nicht-Strohballenkonfiguration",
+    "nonStrawbaleConfiguration": "Massivkonfiguration",
     "noOutsideLayers": "Keine Außenschichten definiert",
-    "openingAssembly": "Öffnungskonstruktion",
+    "openingAssembly": "Öffnungsaufbau",
     "openingsSection": "Öffnungen",
     "outside": "Außen",
     "outsideLayers": "Außenschichten",
-    "postsConfiguration": "Pfostenkonfiguration",
-    "postType": "Pfostentyp",
+    "postsConfiguration": "Ständerkonfiguration",
+    "postType": "Ständertyp",
     "postTypeDouble": "Doppelt",
-    "postTypeFull": "Voll",
-    "resetConfirm": "Möchtest du die Standard-Wandkonstruktionen wirklich zurücksetzen? Dies stellt die ursprünglichen Standardkonstruktionen wieder her, behält aber alle benutzerdefinierten Konstruktionen bei. Diese Aktion kann nicht rückgängig gemacht werden.",
-    "resetTitle": "Wandkonstruktionen zurücksetzen",
+    "postTypeFull": "Massiv",
+    "resetConfirm": "Möchtest du die Standard-Wandaufbauten wirklich zurücksetzen? Dies stellt die ursprünglichen Standardaufbauten wieder her, behält aber alle benutzerdefinierten Aufbauten bei. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "resetTitle": "Wandaufbauten zurücksetzen",
     "selectDefault": "Standard auswählen...",
     "spacerCount": "Anzahl Abstandhalter",
     "spacerMaterial": "Abstandhaltermaterial",
@@ -455,10 +455,10 @@
     "types": {
       "infill": "Ausfachung",
       "modules": "Module",
-      "non-strawbale": "Nicht-Strohballen",
+      "non-strawbale": "Massiv",
       "strawhenge": "Strawhenge"
     },
     "unclearTotalThickness": "? + {{layerThickness, length}} (Schichten)",
-    "wallConstruction": "Wandkonstruktion"
+    "wallConstruction": "Wandaufbau"
   }
 }

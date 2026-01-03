@@ -208,7 +208,7 @@
       "noWall": "No wall selected",
       "outOfBounds": "Split position is not inside the bounds of the wall"
     },
-    "info": "Split walls to create segments with different wall assemblies or to position openings precisely.",
+    "info": "Split walls to create segments with different wall assemblies.",
     "readyToSplit": "Ready to split wall",
     "selectWall": "Click on a wall to select it for splitting",
     "splitWall": "Split Wall",

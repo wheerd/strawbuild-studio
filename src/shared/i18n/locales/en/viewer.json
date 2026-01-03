@@ -12,10 +12,10 @@
     "show": "Show Grid"
   },
   "tagOpacity": {
-    "fullCategory": "Full Category",
-    "hideCategory": "Hide Category",
+    "fullCategory": "Visible Category",
+    "hideCategory": "Hidden Category",
     "noTags": "No tags available",
-    "semiCategory": "Semi Category",
-    "title": "Tag Opacity"
+    "semiCategory": "Semi-transparent Category",
+    "title": "Tag Visibility"
   }
 }

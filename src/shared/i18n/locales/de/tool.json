@@ -3,15 +3,15 @@
     "copyConfigurationTooltip": "Diese Konfiguration kopieren",
     "dimensionMode": "Maßmodus",
     "dimensionModeFinished": "Fertig",
-    "dimensionModeFinishedTooltip": "Einbaumaße für das Fenster",
+    "dimensionModeFinishedTooltip": "Tatsächliche Einbaugröße (ohne Baufuge)",
     "dimensionModeFitting": "Rohbau",
-    "dimensionModeFittingTooltip": "Rohbaumaß inklusive Spielraum für Montage",
+    "dimensionModeFittingTooltip": "Rohbaumaße (Konstruktion, mit Baufuge)",
     "height": "Höhe",
-    "info": "Klicke auf eine Wand, um eine Öffnung zu platzieren. Konfiguriere Typ, Größe, Position und Konstruktion vor der Platzierung.",
-    "openingAssembly": "Öffnungskonstruktion",
-    "openingAssemblyTooltip": "Überschreibe die Öffnungskonstruktion für diese spezifische Öffnung. Lasse auf Standard, um von der Wandkonstruktion oder dem globalen Standard zu erben.",
+    "info": "Klicke auf eine Wand, um eine Öffnung zu platzieren. Konfiguriere Typ, Größe, Position und Aufbau vor der Platzierung.",
+    "openingAssembly": "Öffnungsaufbau",
+    "openingAssemblyTooltip": "Überschreibe den Öffnungsaufbau für diese spezifische Öffnung. Lasse auf Standard, um vom Wandaufbau oder dem globalen Standard zu erben.",
     "openingType": "Öffnungstyp",
-    "padding": "Abstand",
+    "padding": "Baufuge",
     "presets": {
       "buttonLabel": "{{label}}: {{width, length}} × {{height, length}}",
       "buttonLabel_sill": "{{label}}: {{width, length}} × {{height, length}} Schwelle: {{sillHeight, length}}",
@@ -26,19 +26,19 @@
     "sill": "Schwelle",
     "top": "Oben",
     "typeDoor": "Tür",
-    "typePassage": "Durchgang",
+    "typePassage": "Durchbruch",
     "typeWindow": "Fenster",
     "width": "Breite"
   },
   "addPost": {
-    "actsAsPost": "Fungiert als Pfosten",
+    "actsAsPost": "Fungiert als Ständer",
     "behavior": "Verhalten",
     "copyConfigurationTooltip": "Diese Konfiguration kopieren",
     "copyLabel": "{{type}} • {{width, length}}×{{thickness, length}}",
-    "flankedByPosts": "Flankiert von Pfosten",
+    "flankedByPosts": "Flankiert von Ständern",
     "infillMaterial": "Füllmaterial",
-    "info": "Klicke auf eine Wand, um einen Pfosten zu platzieren. Konfiguriere Abmessungen, Typ, Position und Materialien vor der Platzierung.",
-    "postMaterial": "Pfostenmaterial",
+    "info": "Klicke auf eine Wand, um einen Ständer zu platzieren. Konfiguriere Abmessungen, Typ, Position und Materialien vor der Platzierung.",
+    "postMaterial": "Ständermaterial",
     "presets": {
       "double14x14": "14×14 cm Doppelt",
       "double6x12": "6×12 cm Doppelt",
@@ -64,9 +64,9 @@
   },
   "floorOpening": {
     "cancelLabel": "Abbrechen",
-    "completeLabel": "Bodenöffnung fertigstellen",
+    "completeLabel": "Aussparung fertigstellen",
     "description": "Zeichne eine Ausparung in eine vorhandenen Bodenfläche. Die Positionen richten sich automatisch an Bodenkanten oder anderen Öffnungen aus.",
-    "title": "Bodenöffnung"
+    "title": "Aussparung"
   },
   "keyboard": {
     "enter": "Eingabe",
@@ -83,7 +83,7 @@
     "moving": "Verschiebe..."
   },
   "perimeter": {
-    "basePlate": "Fußplatte",
+    "basePlate": "Fußschwelle",
     "cancelPerimeter": "✕ Umriss abbrechen",
     "cancelTooltip": "Umriss-Erstellung abbrechen (Escape)",
     "clearLengthOverride": "Längenüberschreibung löschen (Escape)",
@@ -105,8 +105,8 @@
     "referenceSide": "Referenzseite",
     "referenceSideInside": "Innen",
     "referenceSideOutside": "Außen",
-    "topPlate": "Kopfplatte",
-    "wallAssembly": "Wandkonstruktion",
+    "topPlate": "Kopfschwelle",
+    "wallAssembly": "Wandaufbau",
     "wallThickness": "Wanddicke"
   },
   "perimeterPreset": {
@@ -118,7 +118,7 @@
   },
   "presetDialogs": {
     "lShaped": {
-      "basePlate": "Fußplatte",
+      "basePlate": "Fußschwelle",
       "cancel": "Abbrechen",
       "configuration": "Konfiguration",
       "confirm": "Bestätigen",
@@ -135,14 +135,14 @@
       "rotation": "Drehung",
       "selectAssembly": "Aufbau auswählen",
       "title": "L-förmiger Umriss",
-      "topPlate": "Kopfplatte",
+      "topPlate": "Kopfschwelle",
       "wallAssembly": "Wandaufbau",
       "wallThickness": "Wandstärke",
       "width1": "Breite 1",
       "width2": "Breite 2"
     },
     "rectangular": {
-      "basePlate": "Fußplatte",
+      "basePlate": "Fußschwelle",
       "cancel": "Abbrechen",
       "configuration": "Konfiguration",
       "confirm": "Bestätigen",
@@ -154,14 +154,14 @@
       "referenceSide": "Referenzseite",
       "selectAssembly": "Aufbau auswählen",
       "title": "Rechteckiger Umriss",
-      "topPlate": "Kopfplatte",
+      "topPlate": "Kopfschwelle",
       "wallAssembly": "Wandaufbau",
       "wallThickness": "Wandstärke",
       "width": "Breite"
     }
   },
   "roof": {
-    "assembly": "Konstruktion",
+    "assembly": "Aufbau",
     "cancelRoof": "✕ Dach abbrechen",
     "cancelTooltip": "Dach-Erstellung abbrechen (Escape)",
     "completeRoof": "✓ Dach fertigstellen",
@@ -208,7 +208,7 @@
       "noWall": "Keine Wand ausgewählt",
       "outOfBounds": "Teilungsposition liegt nicht innerhalb der Grenzen der Wand"
     },
-    "info": "Teile Wände, um Segmente mit unterschiedlichen Wandkonstruktionen zu erstellen oder Öffnungen präzise zu positionieren.",
+    "info": "Teile Wände, um Segmente mit unterschiedlichen Wandaufbauten zu erstellen.",
     "readyToSplit": "Bereit, Wand zu teilen",
     "selectWall": "Klicke auf eine Wand, um sie zum Teilen auszuwählen",
     "splitWall": "Wand teilen",

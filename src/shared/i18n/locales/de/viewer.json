@@ -12,10 +12,10 @@
     "show": "Raster anzeigen"
   },
   "tagOpacity": {
-    "fullCategory": "Vollständige Kategorie",
-    "hideCategory": "Kategorie ausblenden",
+    "fullCategory": "Sichtbare Kategorie",
+    "hideCategory": "Kategorie ausgeblendet",
     "noTags": "Keine Tags verfügbar",
-    "semiCategory": "Halbe Kategorie",
-    "title": "Tag-Deckkraft"
+    "semiCategory": "Kategorie halbtransparent",
+    "title": "Sichtbarkeit"
   }
 }
