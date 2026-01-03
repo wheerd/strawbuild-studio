@@ -27,15 +27,8 @@ import {
 import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import {
-  isFloorAssemblyId,
-  isOpeningAssemblyId,
-  isRingBeamAssemblyId,
-  isRoofAssemblyId,
-  isWallAssemblyId
-} from '@/building/model/ids'
+import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import { useConfigActions, useDefaultStrawMaterialId } from '@/construction/config/store'
-import { useEntityLabel } from '@/construction/config/useEntityLabel'
 import type {
   DimensionalMaterial,
   GenericMaterial,
@@ -424,9 +417,17 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
   )
 }
 
+function UsageBadge({ id }: { id: EntityId }) {
+  const label = useEntityLabel(id)
+  return (
+    <Badge key={id} size="2" variant="soft">
+      {label}
+    </Badge>
+  )
+}
+
 function UsageDisplay({ usage }: { usage: MaterialUsage }): React.JSX.Element {
   const { t } = useTranslation('config')
-  const getLabel = useEntityLabel()
 
   return (
     <Grid columns="auto 1fr" gap="2" gapX="3" align="baseline">
@@ -441,44 +442,9 @@ function UsageDisplay({ usage }: { usage: MaterialUsage }): React.JSX.Element {
             {t($ => $.usage.globalDefault_straw)}
           </Badge>
         )}
-        {usage.assemblyIds.map(id => {
-          if (isRingBeamAssemblyId(id)) {
-            return (
-              <Badge key={id} size="2" variant="soft">
-                {t($ => $.usage.usedInRingBeam, { label: getLabel(id) })}
-              </Badge>
-            )
-          }
-          if (isWallAssemblyId(id)) {
-            return (
-              <Badge key={id} size="2" variant="soft">
-                {t($ => $.usage.usedInWall, { label: getLabel(id) })}
-              </Badge>
-            )
-          }
-          if (isFloorAssemblyId(id)) {
-            return (
-              <Badge key={id} size="2" variant="soft">
-                {t($ => $.usage.usedInFloor, { label: getLabel(id) })}
-              </Badge>
-            )
-          }
-          if (isRoofAssemblyId(id)) {
-            return (
-              <Badge key={id} size="2" variant="soft">
-                {t($ => $.usage.usedInRoof, { label: getLabel(id) })}
-              </Badge>
-            )
-          }
-          if (isOpeningAssemblyId(id)) {
-            return (
-              <Badge key={id} size="2" variant="soft">
-                {t($ => $.usage.usedInOpening, { label: getLabel(id) })}
-              </Badge>
-            )
-          }
-          return null
-        })}
+        {usage.assemblyIds.map(id => (
+          <UsageBadge key={id} id={id} />
+        ))}
         {usage.usedInWallPosts && (
           <Badge size="2" variant="soft">
             {t($ => $.usage.usedInWallPosts)}

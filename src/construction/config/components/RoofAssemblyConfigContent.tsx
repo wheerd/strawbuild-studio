@@ -16,12 +16,12 @@ import {
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { RoofAssemblyId, StoreyId } from '@/building/model/ids'
+import type { RoofAssemblyId } from '@/building/model/ids'
 import { useRoofs } from '@/building/store'
+import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import { useConfigActions, useDefaultRoofAssemblyId, useRoofAssemblies } from '@/construction/config/store'
 import type { RoofAssemblyConfig } from '@/construction/config/types'
 import { type RoofAssemblyUsage, getRoofAssemblyUsage } from '@/construction/config/usage'
-import { useEntityLabel } from '@/construction/config/useEntityLabel'
 import { CEILING_LAYER_PRESETS, ROOF_LAYER_PRESETS } from '@/construction/layers/defaults'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
@@ -856,9 +856,17 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
   )
 }
 
+function UsageBadge({ id }: { id: EntityId }) {
+  const label = useEntityLabel(id)
+  return (
+    <Badge key={id} size="2" variant="soft">
+      {label}
+    </Badge>
+  )
+}
+
 function UsageDisplay({ usage }: { usage: RoofAssemblyUsage }): React.JSX.Element {
   const { t } = useTranslation('config')
-  const getLabel = useEntityLabel()
 
   return (
     <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
@@ -873,10 +881,8 @@ function UsageDisplay({ usage }: { usage: RoofAssemblyUsage }): React.JSX.Elemen
             {t($ => $.usage.globalDefault_roof)}
           </Badge>
         )}
-        {usage.storeyIds.map((id: StoreyId) => (
-          <Badge key={id} size="2" variant="soft">
-            {t($ => $.usage.usedInStorey, { label: getLabel(id) })}
-          </Badge>
+        {usage.storeyIds.map(id => (
+          <UsageBadge key={id} id={id} />
         ))}
       </Flex>
     </Grid>

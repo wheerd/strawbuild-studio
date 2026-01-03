@@ -6,6 +6,7 @@ import { clt, fireProtectionBoarding, glt, osb, strawbale, woodwool } from '@/co
 const monolithicAssembly: RoofAssemblyConfig = {
   id: 'ra_clt_default' as RoofAssemblyId,
   name: 'CLT Monolithic 18cm',
+  nameKey: $ => $.roofs.defaults.cltMonolithic18cm,
   type: 'monolithic',
   thickness: 180,
   material: clt.id,
@@ -23,6 +24,7 @@ const monolithicAssembly: RoofAssemblyConfig = {
 const purlinAssembly: RoofAssemblyConfig = {
   id: 'ra_purlin_default' as RoofAssemblyId,
   name: 'Purlin Roof (Straw)',
+  nameKey: $ => $.roofs.defaults.purlinRoofStraw,
   type: 'purlin',
   thickness: 360,
   purlinMaterial: glt.id,

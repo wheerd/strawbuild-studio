@@ -17,9 +17,10 @@ import {
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { RingBeamAssemblyId, StoreyId } from '@/building/model/ids'
+import type { RingBeamAssemblyId } from '@/building/model/ids'
 import { usePerimeters } from '@/building/store'
 import type { RingBeamAssemblyConfig } from '@/construction/config'
+import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import {
   useConfigActions,
   useDefaultBaseRingBeamAssemblyId,
@@ -27,7 +28,6 @@ import {
   useRingBeamAssemblies
 } from '@/construction/config/store'
 import { type RingBeamAssemblyUsage, getRingBeamAssemblyUsage } from '@/construction/config/usage'
-import { useEntityLabel } from '@/construction/config/useEntityLabel'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import { bitumen, brick, cork, roughWood, woodwool } from '@/construction/materials/material'
 import { type RingBeamConfig, resolveRingBeamAssembly } from '@/construction/ringBeams'
@@ -731,9 +731,17 @@ function BrickRingBeamFields({
   )
 }
 
+function UsageBadge({ id }: { id: EntityId }) {
+  const label = useEntityLabel(id)
+  return (
+    <Badge key={id} size="2" variant="soft">
+      {label}
+    </Badge>
+  )
+}
+
 function UsageDisplay({ usage }: { usage: RingBeamAssemblyUsage }): React.JSX.Element {
   const { t } = useTranslation('config')
-  const getLabel = useEntityLabel()
 
   return (
     <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
@@ -753,10 +761,8 @@ function UsageDisplay({ usage }: { usage: RingBeamAssemblyUsage }): React.JSX.El
             {t($ => $.usage.globalDefault_ringBeamTop)}
           </Badge>
         )}
-        {usage.storeyIds.map((id: StoreyId) => (
-          <Badge key={id} size="2" variant="soft">
-            {t($ => $.usage.usedInStorey, { label: getLabel(id) })}
-          </Badge>
+        {usage.storeyIds.map(id => (
+          <UsageBadge key={id} id={id} />
         ))}
       </Flex>
     </Grid>

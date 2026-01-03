@@ -20,9 +20,10 @@ import {
 import React, { useCallback, useId, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { OpeningAssemblyId, StoreyId, WallAssemblyId } from '@/building/model/ids'
+import type { OpeningAssemblyId } from '@/building/model/ids'
 import { usePerimeters } from '@/building/store'
 import type { OpeningAssemblyConfig } from '@/construction/config'
+import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import {
   useConfigActions,
   useDefaultOpeningAssemblyId,
@@ -30,7 +31,6 @@ import {
   useWallAssemblies
 } from '@/construction/config/store'
 import { type OpeningAssemblyUsage, getOpeningAssemblyUsage } from '@/construction/config/usage'
-import { useEntityLabel } from '@/construction/config/useEntityLabel'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
 import type { PostConfig } from '@/construction/materials/posts'
@@ -308,9 +308,17 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
   )
 }
 
+function UsageBadge({ id }: { id: EntityId }) {
+  const label = useEntityLabel(id)
+  return (
+    <Badge key={id} size="2" variant="soft">
+      {label}
+    </Badge>
+  )
+}
+
 function UsageDisplay({ usage }: { usage: OpeningAssemblyUsage }): React.JSX.Element {
   const { t } = useTranslation('config')
-  const getLabel = useEntityLabel()
 
   return (
     <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
@@ -325,15 +333,11 @@ function UsageDisplay({ usage }: { usage: OpeningAssemblyUsage }): React.JSX.Ele
             {t($ => $.usage.globalDefault_opening)}
           </Badge>
         )}
-        {usage.wallAssemblyIds.map((id: WallAssemblyId) => (
-          <Badge key={id} size="2" variant="soft">
-            {t($ => $.usage.usedInWall, { label: getLabel(id) })}
-          </Badge>
+        {usage.wallAssemblyIds.map(id => (
+          <UsageBadge key={id} id={id} />
         ))}
-        {usage.storeyIds.map((id: StoreyId) => (
-          <Badge key={id} size="2" variant="soft">
-            {t($ => $.usage.usedInStorey, { label: getLabel(id) })}
-          </Badge>
+        {usage.storeyIds.map(id => (
+          <UsageBadge key={id} id={id} />
         ))}
       </Flex>
     </Grid>

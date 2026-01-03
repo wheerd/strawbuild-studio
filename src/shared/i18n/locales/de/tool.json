@@ -65,7 +65,7 @@
   "floorOpening": {
     "cancelLabel": "Abbrechen",
     "completeLabel": "Bodenöffnung fertigstellen",
-    "description": "Zeichne eine Öffnung innerhalb einer vorhandenen Bodenfläche. Verwende Rasten, um an Bodenkanten oder anderen Öffnungen auszurichten.",
+    "description": "Zeichne eine Ausparung in eine vorhandenen Bodenfläche. Die Positionen richten sich automatisch an Bodenkanten oder anderen Öffnungen aus.",
     "title": "Bodenöffnung"
   },
   "keyboard": {

@@ -7,3 +7,6 @@ assembly -> Aufbau
 wall assembly -> Wandaufbau
 floor -> Boden
 perimeter -> Gebäudekontur
+fitting mode (for openings) -> Rohbau(maße)
+floor opening -> Aussparung
+monolithic -> massiv
