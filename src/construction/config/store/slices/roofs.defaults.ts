@@ -14,7 +14,7 @@ const monolithicAssembly: RoofAssemblyConfig = {
   layers: {
     insideThickness: 30,
     insideLayers: PRESET_CEILING_CLAY_PLASTER.layers,
-    topThickness: 126,
+    topThickness: 106, // Wind paper (1) + battens (40) + counter battens (30) + tiles (35)
     topLayers: PRESET_ROOF_TILES.layers,
     overhangThickness: 0,
     overhangLayers: []
@@ -45,7 +45,7 @@ const purlinAssembly: RoofAssemblyConfig = {
   layers: {
     insideThickness: 30,
     insideLayers: PRESET_CEILING_CLAY_PLASTER.layers,
-    topThickness: 126,
+    topThickness: 106, // Wind paper (1) + battens (40) + counter battens (30) + tiles (35)
     topLayers: PRESET_ROOF_TILES.layers,
     overhangThickness: 0,
     overhangLayers: []

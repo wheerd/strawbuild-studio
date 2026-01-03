@@ -3,6 +3,15 @@ import { vi } from 'vitest'
 
 import { LengthField } from './LengthField'
 
+// Mock react-i18next
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    i18n: {
+      language: 'en'
+    }
+  })
+}))
+
 describe('LengthField', () => {
   const mockOnChange = vi.fn()
   const mockOnCommit = vi.fn()
@@ -347,6 +356,54 @@ describe('LengthField', () => {
 
       const input = screen.getByRole('textbox')
       expect(input).toHaveValue('1.234') // 3 decimal places
+    })
+  })
+
+  describe('locale-aware formatting', () => {
+    it('accepts comma as decimal separator (lenient input)', () => {
+      render(<LengthField value={100} onChange={mockOnChange} unit="cm" />)
+
+      const input = screen.getByRole('textbox')
+
+      // User types with comma (German style)
+      fireEvent.change(input, { target: { value: '12,5' } })
+      expect(input).toHaveValue('12,5')
+
+      // Should parse correctly and call onChange
+      expect(mockOnChange).toHaveBeenCalledWith(125) // 12.5cm = 125mm
+    })
+
+    it('accepts period as decimal separator (lenient input)', () => {
+      render(<LengthField value={100} onChange={mockOnChange} unit="cm" />)
+
+      const input = screen.getByRole('textbox')
+
+      // User types with period (English style)
+      fireEvent.change(input, { target: { value: '12.5' } })
+      expect(input).toHaveValue('12.5')
+
+      // Should parse correctly and call onChange
+      expect(mockOnChange).toHaveBeenCalledWith(125) // 12.5cm = 125mm
+    })
+
+    it('formats to locale decimal separator on blur', () => {
+      const { rerender } = render(<LengthField value={100} onChange={mockOnChange} unit="cm" />)
+
+      const input = screen.getByRole('textbox')
+
+      // User types with comma
+      fireEvent.change(input, { target: { value: '12,5' } })
+      expect(input).toHaveValue('12,5')
+
+      // On blur, should format to locale (English uses period)
+      fireEvent.blur(input)
+      expect(mockOnChange).toHaveBeenCalledWith(125)
+
+      // Re-render with new value
+      rerender(<LengthField value={125} onChange={mockOnChange} unit="cm" />)
+
+      // Should display with period (English locale)
+      expect(input).toHaveValue('12.5')
     })
   })
 })

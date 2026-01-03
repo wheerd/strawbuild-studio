@@ -57,4 +57,5 @@ export interface LengthFieldOptions {
   max?: Length
   onChange?: (value: Length) => void
   onCommit?: (value: Length) => void
+  locale?: string
 }
