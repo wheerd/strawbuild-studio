@@ -1,7 +1,0 @@
-{
-  "app": {
-    "constructionPlanning": "app.constructionPlanning",
-    "fitToContent": "app.fitToContent",
-    "strawbaler": "app.strawbaler"
-  }
-}

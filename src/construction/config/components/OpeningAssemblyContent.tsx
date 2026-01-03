@@ -264,10 +264,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
             </AlertDialog.Trigger>
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.openings.resetTitle)}</AlertDialog.Title>
-              <AlertDialog.Description>
-                Are you sure you want to reset default opening assemblies? This will restore the original default
-                assemblies but keep any custom assemblies you've created. This action cannot be undone.
-              </AlertDialog.Description>
+              <AlertDialog.Description>{t($ => $.openings.resetConfirm)}</AlertDialog.Description>
               <Flex gap="3" mt="4" justify="end">
                 <AlertDialog.Cancel>
                   <Button variant="soft" color="gray">

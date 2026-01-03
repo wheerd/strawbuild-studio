@@ -641,7 +641,7 @@ e | y +--------------+ s | Floor top layers                 }
       {renderMeasurement('totalFloorThickness', {
         startPoint: newVec2(marginRightX, bottomFloorTopY),
         endPoint: newVec2(marginRightX, bottomFloorBottomLayersBottomY),
-        label: 'Total\nFloor\nThickness',
+        label: t($ => $.measurements.totalFloorThickness),
         labelOrientation: 'perpendicular',
         offset: 80,
         fontSize: 60,
@@ -753,10 +753,13 @@ e | y +--------------+ s | Floor top layers                 }
           fill={assemblyOutlineStroke('wallAssembly', 'var(--ruby-10)')}
           transform={`translate(${wallCenterX} ${basePlateTopY - 150})`}
         >
-          <tspan x={0}>{t($ => $.measurements.wall)}</tspan>
-          <tspan x={0} dy="1.2em">
-            {t($ => $.measurements.assembly)}
-          </tspan>
+          {t($ => $.measurements.wallAssembly)
+            .split('\n')
+            .map((l, i) => (
+              <tspan x={0} dy={`${(1.2 * i).toFixed(1)}em`}>
+                {l}
+              </tspan>
+            ))}
         </text>
       )}
 
@@ -809,7 +812,7 @@ e | y +--------------+ s | Floor top layers                 }
       {renderMeasurement('totalWallThickness', {
         startPoint: newVec2(outsideLayerX, wallCoreTopY),
         endPoint: newVec2(interiorExtentX, wallCoreTopY),
-        label: 'Total\nWall\nThickness',
+        label: t($ => $.measurements.totalWallThickness),
         offset: 200,
         fontSize: 60,
         strokeWidth: 10
@@ -825,10 +828,13 @@ e | y +--------------+ s | Floor top layers                 }
             text-anchor="middle"
             dominantBaseline="middle"
           >
-            <tspan x={0}>{t($ => $.measurements.wall)}</tspan>
-            <tspan x={0} dy="1.2em">
-              {t($ => $.measurements.construction)}
-            </tspan>
+            {t($ => $.measurements.wallConstruction)
+              .split('\n')
+              .map((l, i) => (
+                <tspan x={0} dy={`${(1.2 * i).toFixed(1)}em`}>
+                  {l}
+                </tspan>
+              ))}
           </text>
         </g>
       )}

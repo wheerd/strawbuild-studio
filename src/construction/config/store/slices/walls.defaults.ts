@@ -5,9 +5,9 @@ import type {
   NonStrawbaleWallAssemblyConfig,
   StrawhengeWallAssemblyConfig
 } from '@/construction/config/types'
-import { DEFAULT_WALL_LAYER_SETS } from '@/construction/layers/defaults'
+import { PRESET_WALL_CLAY_PLASTER, PRESET_WALL_LIME_PLASTER } from '@/construction/layers/defaults'
 import type { MaterialId } from '@/construction/materials/material'
-import { concrete, limePlasterBase, limePlasterFine, roughWood, strawbale } from '@/construction/materials/material'
+import { concrete, roughWood, strawbale } from '@/construction/materials/material'
 
 import { DEFAULT_EMPTY_ASSEMBLY } from './opening.defaults'
 
@@ -29,9 +29,9 @@ const infillAssembly: InfillWallAssemblyConfig = {
   // No openingAssemblyId - uses global default
   layers: {
     insideThickness: 30,
-    insideLayers: DEFAULT_WALL_LAYER_SETS['Clay Plaster'],
+    insideLayers: PRESET_WALL_CLAY_PLASTER.layers,
     outsideThickness: 30,
-    outsideLayers: DEFAULT_WALL_LAYER_SETS['Lime Plaster']
+    outsideLayers: PRESET_WALL_LIME_PLASTER.layers
   }
 }
 
@@ -61,9 +61,9 @@ const strawhengeAssembly: StrawhengeWallAssemblyConfig = {
   // No openingAssemblyId - uses global default
   layers: {
     insideThickness: 30,
-    insideLayers: DEFAULT_WALL_LAYER_SETS['Clay Plaster'],
+    insideLayers: PRESET_WALL_CLAY_PLASTER.layers,
     outsideThickness: 30,
-    outsideLayers: DEFAULT_WALL_LAYER_SETS['Lime Plaster']
+    outsideLayers: PRESET_WALL_LIME_PLASTER.layers
   }
 }
 
@@ -93,9 +93,9 @@ const modulesAssembly: ModulesWallAssemblyConfig = {
   // No openingAssemblyId - uses global default
   layers: {
     insideThickness: 30,
-    insideLayers: DEFAULT_WALL_LAYER_SETS['Clay Plaster'],
+    insideLayers: PRESET_WALL_CLAY_PLASTER.layers,
     outsideThickness: 30,
-    outsideLayers: DEFAULT_WALL_LAYER_SETS['Lime Plaster']
+    outsideLayers: PRESET_WALL_LIME_PLASTER.layers
   }
 }
 
@@ -108,12 +108,17 @@ const nonStrawbaleAssembly: NonStrawbaleWallAssemblyConfig = {
   openingAssemblyId: DEFAULT_EMPTY_ASSEMBLY.id, // Non-strawbale walls use empty opening type
   layers: {
     insideThickness: 30,
-    insideLayers: DEFAULT_WALL_LAYER_SETS['Clay Plaster'],
+    insideLayers: PRESET_WALL_CLAY_PLASTER.layers,
     outsideThickness: 160 + 30,
     outsideLayers: [
-      { type: 'monolithic', name: 'Insulation', material: 'material_invalid' as MaterialId, thickness: 160 },
-      { type: 'monolithic', name: 'Base Plaster (Lime)', material: limePlasterBase.id, thickness: 20 },
-      { type: 'monolithic', name: 'Fine Plaster (Lime)', material: limePlasterFine.id, thickness: 10 }
+      {
+        type: 'monolithic',
+        name: 'Insulation',
+        nameKey: $ => $.layers.defaults.insulation,
+        material: 'material_invalid' as MaterialId,
+        thickness: 160
+      },
+      ...PRESET_WALL_LIME_PLASTER.layers
     ]
   }
 }

@@ -76,7 +76,6 @@ interface Resources {
       "density": "Density",
       "densityUnit": "kg/m³",
       "duplicate": "Duplicate",
-      "globalDefault": "Global Default",
       "height": "Height",
       "inUseCannotDelete": "In Use - Cannot Delete",
       "inset": "Inset",
@@ -99,7 +98,6 @@ interface Resources {
       "totalThickness": "Total Thickness",
       "type": "Type",
       "useGlobalStrawSettings": "Use global straw settings",
-      "usedBy": "Used By:",
       "width": "Width"
     },
     "floors": {
@@ -184,9 +182,7 @@ interface Resources {
       }
     },
     "layers": {
-      "addLayer": "Add Layer",
       "copyFrom": "Copy from {{name}}",
-      "copyLayers": "Copy Layers",
       "defaultName_monolithic": "Monolithic Layer",
       "defaultName_striped": "Striped Layer",
       "defaults": {
@@ -198,6 +194,7 @@ interface Resources {
         "diagonalBracing": "Diagonal Bracing",
         "gypsumBoards": "Gypsum Boards",
         "impactSoundInsulation": "Impact Sound Insulation",
+        "insulation": "Insulation",
         "limePlasterBase": "Base Plaster (Lime)",
         "limePlasterFine": "Fine Plaster (Lime)",
         "plasterGroundReed": "Plaster Ground (Reed)",
@@ -214,7 +211,6 @@ interface Resources {
         "perpendicular": "Perpendicular"
       },
       "gap": "Gap",
-      "material": "Material",
       "moveDown": "Move down",
       "moveUp": "Move up",
       "overlap": "Overlap with next layer",
@@ -234,8 +230,6 @@ interface Resources {
       "removeLayer": "Remove layer",
       "selectMaterial": "Select material...",
       "stripe": "Stripe",
-      "thickness": "Thickness",
-      "title": "Layers",
       "totalThicknessLabel": "{{thickness, length}}",
       "types": {
         "monolithic": "Monolithic",
@@ -310,7 +304,6 @@ interface Resources {
       "removeVolume": "Remove volume option",
       "resetConfirm": "Are you sure you want to reset all materials to default? This action cannot be undone.",
       "resetTitle": "Reset Materials",
-      "selectMaterial": "Select material...",
       "selectStrawMaterial": "Select straw material...",
       "sheetLength": "Sheet length",
       "sheetSizes": "Sheet Sizes",
@@ -323,7 +316,6 @@ interface Resources {
       "stockLengths": "Stock Lengths",
       "thicknessInput": "Thickness input",
       "thicknesses": "Thicknesses",
-      "title": "Materials",
       "tolerance": "Tolerance",
       "topCutoffLimit": "Top Cutoff Limit",
       "typeDimensional": "Dimensional",
@@ -343,7 +335,6 @@ interface Resources {
       "title": "Configuration"
     },
     "openings": {
-      "addLayer": "Add Layer",
       "configure": "Configure Opening Assembly",
       "defaultLabel": "{{label}} <gray>(default)</gray>",
       "defaultOpeningAssembly": "Default Opening Assembly",
@@ -351,10 +342,6 @@ interface Resources {
         "emptyOpening": "Empty Opening",
         "standardOpening": "Standard Opening",
         "standardOpeningWithPosts": "Standard Opening with Posts"
-      },
-      "delete": {
-        "confirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
-        "confirmTitle": "Delete Opening Assembly"
       },
       "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
       "deleteTitle": "Delete Opening Assembly",
@@ -367,9 +354,6 @@ interface Resources {
         "sillMaterial": "Sill Material",
         "sillThickness": "Sill Thickness"
       },
-      "layers": "Layers",
-      "noLayers": "No layers defined",
-      "padding": "Padding",
       "placeholders": {
         "name": "Opening assembly name"
       },
@@ -377,18 +361,12 @@ interface Resources {
         "double": "Double",
         "full": "Full"
       },
-      "reset": {
-        "confirm": "Are you sure you want to reset default opening assemblies? This will restore the original default assemblies but keep any custom assemblies you've created. This action cannot be undone.",
-        "title": "Reset Opening Assemblies"
-      },
       "resetConfirm": "Are you sure you want to reset default opening assemblies? This will restore the original default assemblies but keep any custom assemblies you've created. This action cannot be undone.",
       "resetTitle": "Reset Opening Assemblies",
       "sections": {
-        "emptyOpening": "Empty Opening",
         "opening": "Opening",
         "posts": "Posts"
       },
-      "title": "Opening Assemblies",
       "types": {
         "empty": "Empty Opening",
         "post": "Opening With Posts",
@@ -397,38 +375,23 @@ interface Resources {
       "useGlobalDefault": "Use global default"
     },
     "ringBeams": {
-      "addLayer": "Add Layer",
       "configure": "Configure Ring Beam",
       "defaultBasePlate": "Default Base Plate",
       "defaultLabel": "{{label}} <gray>(default)</gray>",
-      "defaultRingBeamAssembly": "Default Ring Beam Assembly",
       "defaultTopPlate": "Default Top Plate",
       "defaults": {
         "brickRingBeam": "Brick Ring Beam",
         "full36x6cm": "Full 36x6cm"
       },
-      "delete": {
-        "confirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
-        "confirmTitle": "Delete Ring Beam Assembly"
-      },
       "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
       "deleteTitle": "Delete Ring Beam Assembly",
       "emptyList": "No ring beam assemblies available",
       "labels": {
-        "height": "Height",
-        "offsetFromInsideEdge": "Offset from Inside Edge",
-        "thickness": "Thickness",
-        "width": "Width"
+        "offsetFromInsideEdge": "Offset from Inside Edge"
       },
-      "layers": "Layers",
-      "noLayers": "No layers defined",
       "none": "None",
       "placeholders": {
         "name": "Ring beam assembly name"
-      },
-      "reset": {
-        "confirm": "Are you sure you want to reset default ring beam assemblies? This will restore the original default assemblies but keep any custom assemblies you've created. This action cannot be undone.",
-        "title": "Reset Ring Beam Assemblies"
       },
       "resetConfirm": "Are you sure you want to reset default ring beam assemblies? This will restore the original default assemblies but keep any custom assemblies you've created. This action cannot be undone.",
       "resetTitle": "Reset Ring Beam Assemblies",
@@ -438,7 +401,6 @@ interface Resources {
         "stemWall": "Stem Wall",
         "waterproofing": "Waterproofing"
       },
-      "title": "Ring Beam Assemblies",
       "types": {
         "brick": "Brick Ring Beam",
         "double": "Double Ring Beam",
@@ -446,12 +408,9 @@ interface Resources {
       }
     },
     "roofs": {
-      "addBottomLayer": "Add Bottom Layer",
       "addInsideLayer": "Add Inside Layer",
       "addOverhangLayer": "Add Overhang Layer",
       "addTopLayer": "Add Top Layer",
-      "bottom": "Bottom",
-      "bottomLayers": "Bottom Layers",
       "configure": "Configure Roof Assembly",
       "defaultLabel": "{{label}} <gray>(default)</gray>",
       "defaultRoofAssembly": "Default Roof Assembly",
@@ -459,46 +418,23 @@ interface Resources {
         "cltMonolithic18cm": "CLT Monolithic 18cm",
         "purlinRoofStraw": "Purlin Roof (Straw)"
       },
-      "delete": {
-        "confirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
-        "confirmTitle": "Delete Roof Assembly"
-      },
       "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
       "deleteTitle": "Delete Roof Assembly",
       "emptyList": "No roof assemblies available",
       "finishedTop": "Finished Top",
-      "labels": {
-        "ceilingSheathing": "Ceiling Sheathing",
-        "height": "Height",
-        "inset": "Inset",
-        "layerThickness": "Layer Thickness",
-        "material": "Material",
-        "spacing": "Spacing",
-        "thickness": "Thickness",
-        "width": "Width"
-      },
       "layers": {
         "insideLayers": "Inside Layers (Ceiling)",
-        "noInsideLayers": "No inside layers defined",
         "overhangLayers": "Overhang Layers"
       },
       "newName": {
         "monolithic": "New Monolithic Roof",
         "purlin": "New Purlin Roof"
       },
-      "noBottomLayers": "No bottom layers defined",
       "noInsideLayers": "No inside layers defined",
       "noOverhangLayers": "No overhang layers defined (optional)",
       "noTopLayers": "No top layers defined",
       "outside": "Outside",
       "overhang": "Overhang",
-      "placeholders": {
-        "name": "Roof assembly name"
-      },
-      "reset": {
-        "confirm": "Are you sure you want to reset default roof assemblies? This will restore the original default assemblies but keep any custom assemblies you've created. This action cannot be undone.",
-        "title": "Reset Roof Assemblies"
-      },
       "resetConfirm": "Are you sure you want to reset default roof assemblies? This will restore the original default assemblies but keep any custom assemblies you've created. This action cannot be undone.",
       "resetTitle": "Reset Roof Assemblies",
       "roofConstruction": "Roof Construction",
@@ -510,8 +446,6 @@ interface Resources {
         "rafters": "Rafters",
         "straw": "Straw"
       },
-      "title": "Roof Assemblies",
-      "top": "Top",
       "topLayers": "Top Layers",
       "types": {
         "monolithic": "Monolithic",
@@ -548,10 +482,6 @@ interface Resources {
         "standardInfill": "Standard Infill",
         "strawhengeModule": "Strawhenge Module"
       },
-      "delete": {
-        "confirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
-        "confirmTitle": "Delete Wall Assembly"
-      },
       "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
       "deleteTitle": "Delete Wall Assembly",
       "desiredPostSpacing": "Desired Post Spacing",
@@ -564,7 +494,6 @@ interface Resources {
       "infillMaterialTooltip": "If configured, will be used for gaps which are too small for straw",
       "inside": "Inside",
       "insideLayers": "Inside Layers",
-      "material": "Material",
       "maxPostSpacing": "Max Post Spacing",
       "maxWidth": "Max Width",
       "minStrawSpace": "Min Straw Space",
@@ -585,26 +514,16 @@ interface Resources {
       "openingsSection": "Openings",
       "outside": "Outside",
       "outsideLayers": "Outside Layers",
-      "placeholders": {
-        "name": "Wall assembly name"
-      },
       "postType": "Post Type",
       "postTypeDouble": "Double",
       "postTypeFull": "Full",
       "postsConfiguration": "Posts Configuration",
-      "reset": {
-        "confirm": "Are you sure you want to reset default wall assemblies? This will restore the original default assemblies but keep any custom assemblies you've created. This action cannot be undone.",
-        "title": "Reset Wall Assemblies"
-      },
       "resetConfirm": "Are you sure you want to reset default wall assemblies? This will restore the original default assemblies but keep any custom assemblies you've created. This action cannot be undone.",
       "resetTitle": "Reset Wall Assemblies",
       "selectDefault": "Select default...",
       "spacerCount": "Spacer Count",
       "spacerMaterial": "Spacer Material",
       "spacerSize": "Spacer Size",
-      "strawMaterialOverride": "Straw Material (Override)",
-      "thickness": "Thickness",
-      "title": "Wall Assemblies",
       "types": {
         "infill": "Infill",
         "modules": "Modules",
@@ -612,9 +531,7 @@ interface Resources {
         "strawhenge": "Strawhenge"
       },
       "unclearTotalThickness": "? + {{layerThickness, length}} (Layers)",
-      "useGlobalStrawSettings": "Use global straw settings",
-      "wallConstruction": "Wall Construction",
-      "width": "Width"
+      "wallConstruction": "Wall Construction"
     }
   },
   "construction": {
@@ -671,7 +588,9 @@ interface Resources {
       "roomHeight": "Ceiling Height",
       "storeyHeight": "Floor Height",
       "topPlate": "Top Plate",
+      "totalFloorThickness": "Total\nFloor\nThickness",
       "totalRoofThickness": "Roof\nThickness",
+      "totalWallThickness": "Total\nWall\nThickness",
       "wall": "Wall",
       "wallAssembly": "Wall Assembly",
       "wallAssemblyHeight": "Wall Assembly Height",
@@ -1505,13 +1424,6 @@ interface Resources {
     "view3DConstruction": "View 3D Construction",
     "viewConstructionPlan": "View Construction Plan",
     "viewPartsList": "View Parts List"
-  },
-  "translation": {
-    "app": {
-      "constructionPlanning": "app.constructionPlanning",
-      "fitToContent": "app.fitToContent",
-      "strawbaler": "app.strawbaler"
-    }
   },
   "viewer": {
     "export": {

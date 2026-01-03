@@ -7,7 +7,7 @@ interface LogoProps {
 }
 
 export function Logo({ className = '', compact = false }: LogoProps): React.JSX.Element {
-  const { t } = useTranslation()
+  const { t } = useTranslation('common')
   const iconSize = compact ? 28 : 32
   const strawbaleId = useId()
   const postId = useId()

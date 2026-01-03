@@ -10,10 +10,17 @@ export default defineConfig({
     preservePatterns: [
       'errors:construction.*',
       'tool:addOpening.presets.*',
+      'tool:splitWall.errors.*',
       'inspector:perimeterCorner.cannotDelete*',
       'inspector:perimeterWall.cannotDelete*',
-      'config:*.defaults.*'
+      'config:*.defaults.*',
+      'config:*.presets.*',
+      'config:*.types.*',
+      'construction:tags.*',
+      'construction:tagCategories.*',
+      'construction:areaTypes.*',
+      'construction:strawCategories.*'
     ],
-    removeUnusedKeys: false
+    removeUnusedKeys: true
   }
 })

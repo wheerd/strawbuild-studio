@@ -3,7 +3,10 @@
     "cancel": ""
   },
   "app": {
-    "changeLanguage": ""
+    "changeLanguage": "",
+    "constructionPlanning": "",
+    "fitToContent": "",
+    "strawbaler": ""
   },
   "autoSave": {
     "autoSaved": "Automatisch gespeichert {{time}}",

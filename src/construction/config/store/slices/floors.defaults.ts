@@ -1,6 +1,6 @@
 import { DEFAULT_FLOOR_ASSEMBLY_ID, type FloorAssemblyId } from '@/building/model/ids'
 import type { FloorAssemblyConfig } from '@/construction/config/types'
-import { DEFAULT_FLOOR_LAYER_SETS } from '@/construction/layers/defaults'
+import { PRESET_FLOOR_SCREED } from '@/construction/layers/defaults'
 import { clt, concrete, glt, osb, roughWood, strawbale } from '@/construction/materials/material'
 
 const cltAssembly: FloorAssemblyConfig = {
@@ -12,7 +12,7 @@ const cltAssembly: FloorAssemblyConfig = {
   material: clt.id,
   layers: {
     topThickness: 60,
-    topLayers: DEFAULT_FLOOR_LAYER_SETS['Screet'],
+    topLayers: PRESET_FLOOR_SCREED.layers,
     bottomThickness: 0,
     bottomLayers: []
   }
@@ -27,7 +27,7 @@ const concreteAssembly: FloorAssemblyConfig = {
   material: concrete.id,
   layers: {
     topThickness: 60,
-    topLayers: DEFAULT_FLOOR_LAYER_SETS['Screet'],
+    topLayers: PRESET_FLOOR_SCREED.layers,
     bottomThickness: 0,
     bottomLayers: []
   }
@@ -52,7 +52,7 @@ const joistAssembly: FloorAssemblyConfig = {
   openingSideThickness: 60,
   layers: {
     topThickness: 60,
-    topLayers: DEFAULT_FLOOR_LAYER_SETS['Screet'],
+    topLayers: PRESET_FLOOR_SCREED.layers,
     bottomThickness: 0,
     bottomLayers: []
   }
@@ -78,7 +78,7 @@ const filledAssembly: FloorAssemblyConfig = {
   strawMaterial: undefined,
   layers: {
     topThickness: 60,
-    topLayers: DEFAULT_FLOOR_LAYER_SETS['Screet'],
+    topLayers: PRESET_FLOOR_SCREED.layers,
     bottomThickness: 0,
     bottomLayers: []
   }

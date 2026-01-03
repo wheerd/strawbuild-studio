@@ -32,13 +32,15 @@
     "infillMaterial": "",
     "info": "",
     "postMaterial": "",
-    "presets": "",
+    "presets": {
+      "double14x14": "",
+      "double6x12": "",
+      "single14x14": "",
+      "single6x36": "",
+      "title": ""
+    },
     "thickness": "",
     "type": "",
-    "typeCenter": "",
-    "typeDouble": "",
-    "typeInside": "",
-    "typeOutside": "",
     "types": {
       "center": "",
       "double": "",
@@ -47,11 +49,6 @@
     },
     "width": ""
   },
-  "addPost.presets.double14x14": "",
-  "addPost.presets.double6x12": "",
-  "addPost.presets.single14x14": "",
-  "addPost.presets.single6x36": "",
-  "addPost.presets.title": "",
   "floorArea": {
     "cancelLabel": "",
     "completeLabel": "",
@@ -196,9 +193,6 @@
     "controlConfirm": "",
     "controlHover": "",
     "controlMeasurements": "",
-    "errors": {
-      "noWall": ""
-    },
     "info": "",
     "readyToSplit": "",
     "selectWall": "",

@@ -97,7 +97,7 @@ export function SVGViewport({
   minZoom = DEFAULT_MIN_ZOOM,
   maxZoom = DEFAULT_MAX_ZOOM
 }: SVGViewportProps): React.JSX.Element {
-  const { t } = useTranslation()
+  const { t } = useTranslation('common')
   const svgRef = useRef<SVGSVGElement>(null)
 
   const [viewport, setViewport] = useState<ViewportState>(() => {

@@ -8,7 +8,6 @@
     "density": "",
     "densityUnit": "",
     "duplicate": "",
-    "globalDefault": "",
     "height": "",
     "inset": "",
     "inUseCannotDelete": "",
@@ -30,7 +29,6 @@
     "totalHeight": "",
     "totalThickness": "",
     "type": "",
-    "usedBy": "",
     "useGlobalStrawSettings": "",
     "width": ""
   },
@@ -116,9 +114,7 @@
     }
   },
   "layers": {
-    "addLayer": "",
     "copyFrom": "{{name}} kopieren",
-    "copyLayers": "",
     "defaultName_monolithic": "",
     "defaultName_striped": "",
     "defaults": {
@@ -146,33 +142,14 @@
       "perpendicular": ""
     },
     "gap": "",
-    "material": "",
     "moveDown": "",
     "moveUp": "",
     "overlap": "",
-    "presets": {
-      "clayPlaster": "",
-      "clayPlasterDiagonal": "",
-      "gypsum": "",
-      "limePlaster": "",
-      "limePlasterDhf": "",
-      "limePlasterDiagonal": "",
-      "screed": "",
-      "tiles": "",
-      "woodenPlanking": "",
-      "woodenPlankingDhf": ""
-    },
     "presetsLabel": "",
     "removeLayer": "",
     "selectMaterial": "",
     "stripe": "",
-    "thickness": "",
-    "title": "",
-    "totalThicknessLabel": "",
-    "types": {
-      "monolithic": "",
-      "striped": ""
-    }
+    "totalThicknessLabel": ""
   },
   "materials": {
     "add": "",
@@ -247,7 +224,6 @@
     "title": ""
   },
   "openings": {
-    "addLayer": "",
     "configure": "",
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
     "defaultOpeningAssembly": "",
@@ -255,10 +231,6 @@
       "emptyOpening": "",
       "standardOpening": "",
       "standardOpeningWithPosts": ""
-    },
-    "delete": {
-      "confirm": "",
-      "confirmTitle": ""
     },
     "deleteConfirm": "",
     "deleteTitle": "",
@@ -271,9 +243,6 @@
       "sillMaterial": "",
       "sillThickness": ""
     },
-    "layers": "",
-    "noLayers": "",
-    "padding": "",
     "placeholders": {
       "name": ""
     },
@@ -281,18 +250,12 @@
       "double": "",
       "full": ""
     },
-    "reset": {
-      "confirm": "",
-      "title": ""
-    },
     "resetConfirm": "",
     "resetTitle": "",
     "sections": {
-      "emptyOpening": "",
       "opening": "",
       "posts": ""
     },
-    "title": "",
     "types": {
       "empty": "",
       "post": "",
@@ -301,38 +264,23 @@
     "useGlobalDefault": "Globalen Standard verwenden"
   },
   "ringBeams": {
-    "addLayer": "",
     "configure": "",
     "defaultBasePlate": "",
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
-    "defaultRingBeamAssembly": "",
     "defaults": {
       "brickRingBeam": "",
       "full36x6cm": ""
     },
     "defaultTopPlate": "",
-    "delete": {
-      "confirm": "",
-      "confirmTitle": ""
-    },
     "deleteConfirm": "",
     "deleteTitle": "",
     "emptyList": "Keine Ringbalkenaufbauten verfügbar",
     "labels": {
-      "height": "",
-      "offsetFromInsideEdge": "",
-      "thickness": "",
-      "width": ""
+      "offsetFromInsideEdge": ""
     },
-    "layers": "",
-    "noLayers": "",
     "none": "Keine",
     "placeholders": {
       "name": ""
-    },
-    "reset": {
-      "confirm": "",
-      "title": ""
     },
     "resetConfirm": "",
     "resetTitle": "",
@@ -342,7 +290,6 @@
       "stemWall": "",
       "waterproofing": ""
     },
-    "title": "",
     "types": {
       "brick": "",
       "double": "",
@@ -350,12 +297,9 @@
     }
   },
   "roofs": {
-    "addBottomLayer": "",
     "addInsideLayer": "",
     "addOverhangLayer": "",
     "addTopLayer": "",
-    "bottom": "",
-    "bottomLayers": "",
     "configure": "",
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
     "defaultRoofAssembly": "",
@@ -363,46 +307,23 @@
       "cltMonolithic18cm": "",
       "purlinRoofStraw": ""
     },
-    "delete": {
-      "confirm": "",
-      "confirmTitle": ""
-    },
     "deleteConfirm": "",
     "deleteTitle": "",
     "emptyList": "Keine Dachaufbauten verfügbar",
     "finishedTop": "",
-    "labels": {
-      "ceilingSheathing": "",
-      "height": "",
-      "inset": "",
-      "layerThickness": "",
-      "material": "",
-      "spacing": "",
-      "thickness": "",
-      "width": ""
-    },
     "layers": {
       "insideLayers": "",
-      "noInsideLayers": "",
       "overhangLayers": ""
     },
     "newName": {
       "monolithic": "",
       "purlin": ""
     },
-    "noBottomLayers": "",
     "noInsideLayers": "",
     "noOverhangLayers": "",
     "noTopLayers": "",
     "outside": "",
     "overhang": "",
-    "placeholders": {
-      "name": ""
-    },
-    "reset": {
-      "confirm": "",
-      "title": ""
-    },
     "resetConfirm": "",
     "resetTitle": "",
     "roofConstruction": "",
@@ -414,15 +335,12 @@
       "rafters": "",
       "straw": ""
     },
-    "title": "",
-    "top": "",
     "topLayers": "",
     "types": {
       "monolithic": "",
       "purlin": ""
     }
   },
-  "todo": "",
   "usage": {
     "globalDefault_floor": "",
     "globalDefault_opening": "",
@@ -453,10 +371,6 @@
       "strawhengeModule": ""
     },
     "defaultWallAssembly": "",
-    "delete": {
-      "confirm": "",
-      "confirmTitle": ""
-    },
     "deleteConfirm": "",
     "deleteTitle": "",
     "desiredPostSpacing": "",
@@ -469,7 +383,6 @@
     "infillMaterialTooltip": "",
     "inside": "",
     "insideLayers": "",
-    "material": "",
     "maxPostSpacing": "",
     "maxWidth": "",
     "minStrawSpace": "",
@@ -490,39 +403,23 @@
     "openingsSection": "",
     "outside": "",
     "outsideLayers": "",
-    "placeholders": {
-      "name": ""
-    },
     "postsConfiguration": "",
     "postType": "",
     "postTypeDouble": "",
     "postTypeFull": "",
-    "reset": {
-      "confirm": "",
-      "title": ""
-    },
     "resetConfirm": "",
     "resetTitle": "",
     "selectDefault": "",
     "spacerCount": "",
     "spacerMaterial": "",
     "spacerSize": "",
-    "strawMaterialOverride": "",
-    "thickness": "",
-    "title": "",
-    "typeInfill": "",
-    "typeModules": "",
-    "typeNonStrawbale": "",
     "types": {
       "infill": "",
       "modules": "",
       "non-strawbale": "",
       "strawhenge": ""
     },
-    "typeStrawhenge": "",
     "unclearTotalThickness": "",
-    "useGlobalStrawSettings": "",
-    "wallConstruction": "",
-    "width": ""
+    "wallConstruction": ""
   }
 }

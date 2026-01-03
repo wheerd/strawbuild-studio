@@ -240,10 +240,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
             </AlertDialog.Trigger>
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.ringBeams.resetTitle)}</AlertDialog.Title>
-              <AlertDialog.Description>
-                Are you sure you want to reset default ring beam assemblies? This will restore the original default
-                assemblies but keep any custom assemblies you've created. This action cannot be undone.
-              </AlertDialog.Description>
+              <AlertDialog.Description>{t($ => $.ringBeams.resetConfirm)}</AlertDialog.Description>
               <Flex gap="3" mt="4" justify="end">
                 <AlertDialog.Cancel>
                   <Button variant="soft" color="gray">

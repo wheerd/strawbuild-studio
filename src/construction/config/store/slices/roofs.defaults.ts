@@ -1,6 +1,6 @@
 import { type RoofAssemblyId } from '@/building/model/ids'
 import type { RoofAssemblyConfig } from '@/construction/config/types'
-import { DEFAULT_CEILING_LAYER_SETS, DEFAULT_ROOF_LAYER_SETS } from '@/construction/layers/defaults'
+import { PRESET_CEILING_CLAY_PLASTER, PRESET_ROOF_TILES } from '@/construction/layers/defaults'
 import { clt, fireProtectionBoarding, glt, osb, strawbale, woodwool } from '@/construction/materials/material'
 
 const monolithicAssembly: RoofAssemblyConfig = {
@@ -12,9 +12,9 @@ const monolithicAssembly: RoofAssemblyConfig = {
   infillMaterial: woodwool.id,
   layers: {
     insideThickness: 30,
-    insideLayers: DEFAULT_CEILING_LAYER_SETS['Clay Plaster'],
+    insideLayers: PRESET_CEILING_CLAY_PLASTER.layers,
     topThickness: 126,
-    topLayers: DEFAULT_ROOF_LAYER_SETS['Tiles'],
+    topLayers: PRESET_ROOF_TILES.layers,
     overhangThickness: 0,
     overhangLayers: []
   }
@@ -42,9 +42,9 @@ const purlinAssembly: RoofAssemblyConfig = {
   strawMaterial: strawbale.id,
   layers: {
     insideThickness: 30,
-    insideLayers: DEFAULT_CEILING_LAYER_SETS['Clay Plaster'],
+    insideLayers: PRESET_CEILING_CLAY_PLASTER.layers,
     topThickness: 126,
-    topLayers: DEFAULT_ROOF_LAYER_SETS['Tiles'],
+    topLayers: PRESET_ROOF_TILES.layers,
     overhangThickness: 0,
     overhangLayers: []
   }
