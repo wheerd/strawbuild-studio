@@ -56,9 +56,9 @@
     "totalRoofThickness": "Dach-\ndicke",
     "totalWallThickness": "Gesamt-\nWand-\ndicke",
     "wall": "Wand",
-    "wallAssembly": "Wandkonstruktion",
+    "wallAssembly": "Wand-\naufbau",
     "wallAssemblyHeight": "Wandkonstruktionshöhe",
-    "wallConstruction": "Wandkonstruktion",
+    "wallConstruction": "Wand-\nkonstruktion",
     "wallConstructionHeight": "Wandkonstruktionshöhe"
   },
   "modulesList": {

@@ -30,9 +30,7 @@ export function PerimeterPresetToolInspector({ tool }: ToolInspectorProps<Perime
             trigger={
               <Button className="w-full" size="2">
                 <preset.icon />
-                {t($ => $.perimeterPreset.presetButton, {
-                  name: preset.name
-                })}
+                {t($ => $.perimeterPreset.types[preset.type])}
               </Button>
             }
             onConfirm={config => tool.placePerimeter(preset, config)}

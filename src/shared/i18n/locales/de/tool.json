@@ -109,8 +109,11 @@
     "wallThickness": "Wanddicke"
   },
   "perimeterPreset": {
-    "info": "Vorlagen erstellen gängige Gebäudeformen mit der von dir gewählten Referenzkante. Wechsle zwischen Innen- oder Außenmaßen und konfiguriere Konstruktionseigenschaften.",
-    "presetButton": "{{name}}-Umriss"
+    "info": "Vorlagen für gängige Gebäudeformen - wechsle zwischen Innen- oder Außenmaßen und konfiguriere Konstruktionseigenschaften.",
+    "types": {
+      "lshaped": "L-förmiger Grundriss",
+      "rectangular": "Rechteckiger Grundriss"
+    }
   },
   "presetDialogs": {
     "lShaped": {

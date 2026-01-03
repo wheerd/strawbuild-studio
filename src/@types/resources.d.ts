@@ -1292,7 +1292,10 @@ interface Resources {
     },
     "perimeterPreset": {
       "info": "Presets create common building shapes with the reference edge you choose. Switch between inside or outside dimensions and configure construction properties.",
-      "presetButton": "{{name}} Perimeter"
+      "types": {
+        "lshaped": "L-Shaped Perimeter",
+        "rectangular": "Rectangular Perimeter"
+      }
     },
     "presetDialogs": {
       "lShaped": {

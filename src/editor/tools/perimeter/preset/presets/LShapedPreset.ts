@@ -9,8 +9,7 @@ import type { LShapedPresetConfig, PerimeterPreset } from './types'
  * Creates an L-shaped perimeter with specified dimensions and rotation
  */
 export class LShapedPreset implements PerimeterPreset<LShapedPresetConfig> {
-  readonly type = 'l-shaped'
-  readonly name = 'L-Shaped'
+  readonly type = 'lshaped'
   readonly icon = LShape0Icon
   readonly dialog = LShapedPresetDialog
 
