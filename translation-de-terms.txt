@@ -1,0 +1,9 @@
+German Terms:
+
+top plate -> Kopfschwelle
+base plate -> Fußschwelle
+post -> Ständer
+assembly -> Aufbau
+wall assembly -> Wandaufbau
+floor -> Boden
+perimeter -> Gebäudekontur

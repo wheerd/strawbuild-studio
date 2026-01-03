@@ -1,4 +1,0 @@
-(Exceptions/error handling)
-Storey names
-
-Regexp: '[A-Z][a-zA-Z ]+'

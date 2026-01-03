@@ -259,7 +259,13 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
           <Text size="1" weight="medium" color="gray">
             {t($ => $.addOpening.dimensionMode)}
           </Text>
-          <Tooltip content={t($ => $.addOpening.dimensionModeFinishedTooltip)}>
+          <Tooltip
+            content={
+              state.dimensionMode === 'finished'
+                ? t($ => $.addOpening.dimensionModeFinishedTooltip)
+                : t($ => $.addOpening.dimensionModeFittingTooltip)
+            }
+          >
             <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
           </Tooltip>
         </Flex>
