@@ -15,8 +15,8 @@ import {
   scaleVec2,
   subVec2
 } from '@/shared/geometry'
+import { useFormatters } from '@/shared/i18n/useFormatters'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
-import { formatLength } from '@/shared/utils/formatting'
 
 interface ClickableLengthIndicatorProps {
   startPoint: Vec2
@@ -39,6 +39,7 @@ export function ClickableLengthIndicator({
   strokeWidth = 10,
   onClick
 }: ClickableLengthIndicatorProps): React.JSX.Element {
+  const { formatLength } = useFormatters()
   const theme = useCanvasTheme()
   const textRef = useRef<Konva.Text>(null)
   const [isHovered, setIsHovered] = useState(false)

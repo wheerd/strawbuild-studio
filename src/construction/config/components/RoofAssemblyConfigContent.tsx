@@ -14,13 +14,15 @@ import {
   TextField
 } from '@radix-ui/themes'
 import React, { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { RoofAssemblyId } from '@/building/model/ids'
-import { useRoofs, useStoreysOrderedByLevel } from '@/building/store'
+import { useRoofs } from '@/building/store'
+import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import { useConfigActions, useDefaultRoofAssemblyId, useRoofAssemblies } from '@/construction/config/store'
 import type { RoofAssemblyConfig } from '@/construction/config/types'
-import { getRoofAssemblyUsage } from '@/construction/config/usage'
-import { DEFAULT_CEILING_LAYER_SETS, DEFAULT_ROOF_LAYER_SETS } from '@/construction/layers/defaults'
+import { type RoofAssemblyUsage, getRoofAssemblyUsage } from '@/construction/config/usage'
+import { CEILING_LAYER_PRESETS, ROOF_LAYER_PRESETS } from '@/construction/layers/defaults'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
 import { resolveRoofAssembly } from '@/construction/roofs'
@@ -28,7 +30,7 @@ import type { MonolithicRoofConfig, PurlinRoofConfig, RoofAssemblyType, RoofConf
 import { RoofMeasurementInfo } from '@/editor/components/RoofMeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
 import { useDebouncedInput } from '@/shared/hooks/useDebouncedInput'
-import { formatLength } from '@/shared/utils/formatting'
+import { useFormatters } from '@/shared/i18n/useFormatters'
 
 import { getRoofAssemblyTypeIcon } from './Icons'
 import { RoofAssemblySelect } from './RoofAssemblySelect'
@@ -40,15 +42,16 @@ interface MonolithicRoofConfigFormProps {
 }
 
 function MonolithicRoofConfigForm({ config, onUpdate }: MonolithicRoofConfigFormProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   return (
     <Flex direction="column" gap="3">
-      <Heading size="2">Monolithic Configuration</Heading>
+      <Heading size="2">{t($ => $.roofs.sections.monolithicConfiguration)}</Heading>
 
       <Grid columns="2" gap="2" gapX="3">
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Material
+              {t($ => $.common.materialLabel)}
             </Text>
           </Label.Root>
           <MaterialSelectWithEdit
@@ -65,7 +68,7 @@ function MonolithicRoofConfigForm({ config, onUpdate }: MonolithicRoofConfigForm
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Thickness
+              {t($ => $.common.thickness)}
             </Text>
           </Label.Root>
           <LengthField
@@ -88,17 +91,18 @@ interface PurlinRoofConfigFormProps {
 }
 
 function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   return (
     <Flex direction="column" gap="3">
       {/* Straw Configuration */}
 
-      <Heading size="2">Straw</Heading>
+      <Heading size="2">{t($ => $.roofs.sections.straw)}</Heading>
 
       <Grid columns="2" gap="2" gapX="3">
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Layer Thickness
+              {t($ => $.common.layerThickness)}
             </Text>
           </Label.Root>
           <LengthField
@@ -114,13 +118,13 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Material (Override)
+              {t($ => $.common.strawMaterialOverride)}
             </Text>
           </Label.Root>
           <MaterialSelectWithEdit
             value={config.strawMaterial ?? null}
             allowEmpty
-            emptyLabel="Use global straw settings"
+            emptyLabel={t($ => $.common.useGlobalStrawSettings)}
             onValueChange={strawMaterial => onUpdate({ ...config, strawMaterial: strawMaterial ?? undefined })}
             size="1"
             preferredTypes={['strawbale']}
@@ -131,12 +135,12 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
       <Separator size="4" />
 
       {/* Purlin Configuration */}
-      <Heading size="2">Purlins</Heading>
+      <Heading size="2">{t($ => $.roofs.sections.purlins)}</Heading>
       <Grid columns="2" gap="2" gapX="3">
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Material
+              {t($ => $.common.materialLabel)}
             </Text>
           </Label.Root>
           <MaterialSelectWithEdit
@@ -153,7 +157,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Height
+              {t($ => $.common.height)}
             </Text>
           </Label.Root>
           <LengthField
@@ -169,7 +173,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Inset
+              {t($ => $.common.inset)}
             </Text>
           </Label.Root>
           <LengthField
@@ -184,7 +188,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Width
+              {t($ => $.common.width)}
             </Text>
           </Label.Root>
           <LengthField
@@ -200,7 +204,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Spacing
+              {t($ => $.common.spacing)}
             </Text>
           </Label.Root>
           <LengthField
@@ -217,12 +221,12 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
       <Separator size="4" />
 
       {/* Rafter Configuration */}
-      <Heading size="2">Rafters</Heading>
+      <Heading size="2">{t($ => $.roofs.sections.rafters)}</Heading>
       <Grid columns="2" gap="2" gapX="3">
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Material
+              {t($ => $.common.materialLabel)}
             </Text>
           </Label.Root>
           <MaterialSelectWithEdit
@@ -239,7 +243,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Width
+              {t($ => $.common.width)}
             </Text>
           </Label.Root>
           <LengthField
@@ -255,7 +259,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Spacing (Min)
+              {t($ => $.roofs.labels.spacingMin)}
             </Text>
           </Label.Root>
           <LengthField
@@ -271,7 +275,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Spacing (Target)
+              {t($ => $.roofs.labels.spacingTarget)}
             </Text>
           </Label.Root>
           <LengthField
@@ -287,13 +291,13 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
 
       <Separator size="4" />
 
-      <Heading size="2">Decking</Heading>
+      <Heading size="2">{t($ => $.roofs.sections.decking)}</Heading>
 
       <Grid columns="2" gap="2" gapX="3">
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Material
+              {t($ => $.common.materialLabel)}
             </Text>
           </Label.Root>
           <MaterialSelectWithEdit
@@ -310,7 +314,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Thickness
+              {t($ => $.common.thickness)}
             </Text>
           </Label.Root>
           <LengthField
@@ -325,13 +329,13 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
 
       <Separator size="4" />
 
-      <Heading size="2">Ceiling Sheathing</Heading>
+      <Heading size="2">{t($ => $.roofs.sections.ceilingSheathing)}</Heading>
 
       <Grid columns="2" gap="2" gapX="3">
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Material
+              {t($ => $.common.materialLabel)}
             </Text>
           </Label.Root>
           <MaterialSelectWithEdit
@@ -348,7 +352,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Thickness
+              {t($ => $.common.thickness)}
             </Text>
           </Label.Root>
           <LengthField
@@ -370,6 +374,7 @@ interface LayerSectionsProps {
 }
 
 function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   const {
     addRoofAssemblyInsideLayer,
     setRoofAssemblyInsideLayers,
@@ -435,7 +440,7 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
   return (
     <Flex direction="column" gap="3">
       <LayerListEditor
-        title="Inside Layers (Ceiling)"
+        title={t($ => $.roofs.layers.insideLayers)}
         layers={config.layers.insideLayers}
         measurementInfo={<RoofMeasurementInfo highlightedPart="roofBottomLayers" />}
         onAddLayer={layer => addRoofAssemblyInsideLayer(assemblyId, layer)}
@@ -443,18 +448,18 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
         onUpdateLayer={(index, updates) => updateRoofAssemblyInsideLayer(assemblyId, index, updates)}
         onRemoveLayer={index => removeRoofAssemblyInsideLayer(assemblyId, index)}
         onMoveLayer={(fromIndex, toIndex) => moveRoofAssemblyInsideLayer(assemblyId, fromIndex, toIndex)}
-        addLabel="Add Inside Layer"
-        emptyHint="No inside layers defined"
-        layerPresets={DEFAULT_CEILING_LAYER_SETS}
+        addLabel={t($ => $.roofs.addInsideLayer)}
+        emptyHint={t($ => $.roofs.noInsideLayers)}
+        layerPresets={CEILING_LAYER_PRESETS}
         layerCopySources={insideLayerSources}
-        beforeLabel="Roof Construction"
-        afterLabel="Inside (Ceiling)"
+        beforeLabel={t($ => $.roofs.roofConstruction)}
+        afterLabel={t($ => $.roofs.layers.insideLayers)}
       />
 
       <Separator size="4" />
 
       <LayerListEditor
-        title="Top Layers (Roof Covering)"
+        title={t($ => $.roofs.topLayers)}
         layers={displayedTopLayers}
         measurementInfo={<RoofMeasurementInfo highlightedPart="roofTopLayers" />}
         onAddLayer={layer => addRoofAssemblyTopLayer(assemblyId, layer)}
@@ -464,18 +469,18 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
         onMoveLayer={(fromIndex, toIndex) =>
           moveRoofAssemblyTopLayer(assemblyId, mapTopIndex(fromIndex), mapTopIndex(toIndex))
         }
-        addLabel="Add Top Layer"
-        emptyHint="No top layers defined"
-        layerPresets={DEFAULT_ROOF_LAYER_SETS}
+        addLabel={t($ => $.roofs.addTopLayer)}
+        emptyHint={t($ => $.roofs.noTopLayers)}
+        layerPresets={ROOF_LAYER_PRESETS}
         layerCopySources={topLayerSources}
-        beforeLabel="Finished Top"
-        afterLabel="Roof Construction"
+        beforeLabel={t($ => $.roofs.finishedTop)}
+        afterLabel={t($ => $.roofs.roofConstruction)}
       />
 
       <Separator size="4" />
 
       <LayerListEditor
-        title="Overhang Layers"
+        title={t($ => $.roofs.layers.overhangLayers)}
         layers={config.layers.overhangLayers}
         measurementInfo={<RoofMeasurementInfo highlightedPart="overhangBottomLayers" />}
         onAddLayer={layer => addRoofAssemblyOverhangLayer(assemblyId, layer)}
@@ -483,12 +488,12 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
         onUpdateLayer={(index, updates) => updateRoofAssemblyOverhangLayer(assemblyId, index, updates)}
         onRemoveLayer={index => removeRoofAssemblyOverhangLayer(assemblyId, index)}
         onMoveLayer={(fromIndex, toIndex) => moveRoofAssemblyOverhangLayer(assemblyId, fromIndex, toIndex)}
-        addLabel="Add Overhang Layer"
-        emptyHint="No overhang layers defined (optional)"
-        layerPresets={{}}
+        addLabel={t($ => $.roofs.addOverhangLayer)}
+        emptyHint={t($ => $.roofs.noOverhangLayers)}
+        layerPresets={[]}
         layerCopySources={overhangLayerSources}
-        beforeLabel="Overhang"
-        afterLabel="Outside"
+        beforeLabel={t($ => $.roofs.overhang)}
+        afterLabel={t($ => $.roofs.outside)}
       />
     </Flex>
   )
@@ -499,11 +504,19 @@ interface ConfigFormProps {
 }
 
 function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
+  const { t } = useTranslation('config')
+  const { formatLength } = useFormatters()
   const { updateRoofAssemblyName, updateRoofAssemblyConfig } = useConfigActions()
 
-  const nameInput = useDebouncedInput(assembly.name, (name: string) => updateRoofAssemblyName(assembly.id, name), {
-    debounceMs: 1000
-  })
+  const nameKey = assembly.nameKey
+
+  const nameInput = useDebouncedInput(
+    nameKey ? t(nameKey) : assembly.name,
+    (name: string) => updateRoofAssemblyName(assembly.id, name),
+    {
+      debounceMs: 1000
+    }
+  )
 
   const updateConfig = useCallback(
     (updates: Partial<RoofConfig>) => updateRoofAssemblyConfig(assembly.id, updates),
@@ -513,7 +526,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
   const totalThickness = useMemo(() => {
     const assemblyImpl = resolveRoofAssembly(assembly)
     return formatLength(assemblyImpl.totalThickness)
-  }, [assembly])
+  }, [assembly, formatLength])
 
   return (
     <Flex
@@ -527,7 +540,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
         <Grid columns="auto 1fr" gapX="2" align="center">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Name
+              {t($ => $.common.name)}
             </Text>
           </Label.Root>
           <TextField.Root
@@ -535,7 +548,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
             onChange={e => nameInput.handleChange(e.target.value)}
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
-            placeholder="Assembly name"
+            placeholder={t($ => $.common.placeholders.name)}
             size="2"
           />
         </Grid>
@@ -544,13 +557,13 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
           <Flex gap="2" align="center">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Type
+                {t($ => $.common.type)}
               </Text>
             </Label.Root>
             <Flex gap="2" align="center">
               {React.createElement(getRoofAssemblyTypeIcon(assembly.type))}
               <Text size="2" color="gray">
-                {assembly.type === 'monolithic' ? 'Monolithic' : 'Purlin'}
+                {t($ => $.roofs.types[assembly.type])}
               </Text>
             </Flex>
           </Flex>
@@ -558,7 +571,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
           <Flex gap="2" align="center">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Total Thickness
+                {t($ => $.common.totalThickness)}
               </Text>
             </Label.Root>
             <Text size="2" color="gray">
@@ -567,9 +580,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
           </Flex>
         </Grid>
       </Grid>
-
       <Separator size="4" />
-
       {/* Two Column Layout */}
       <Grid columns="2" gap="4" style={{ gridTemplateColumns: '1fr 1fr' }}>
         {/* Left Column - Type-specific configuration */}
@@ -592,9 +603,9 @@ export interface RoofAssemblyConfigContentProps {
 }
 
 export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyConfigContentProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   const roofAssemblies = useRoofAssemblies()
   const roofs = useRoofs()
-  const storeys = useStoreysOrderedByLevel()
   const {
     addRoofAssembly,
     duplicateRoofAssembly,
@@ -617,9 +628,9 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
   const usage = useMemo(
     () =>
       selectedAssembly
-        ? getRoofAssemblyUsage(selectedAssembly.id, Object.values(roofs), storeys)
-        : { isUsed: false, usedByRoofs: [] },
-    [selectedAssembly, roofs, storeys]
+        ? getRoofAssemblyUsage(selectedAssembly.id, Object.values(roofs), defaultAssemblyId)
+        : { isUsed: false, isDefault: false, storeyIds: [] },
+    [selectedAssembly, roofs, defaultAssemblyId]
   )
 
   const handleAddNew = useCallback(
@@ -629,7 +640,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
       let name: string
       let config: RoofConfig
       if (type === 'monolithic') {
-        name = 'New Monolithic Roof'
+        name = t($ => $.roofs.newName.monolithic)
         config = {
           type: 'monolithic',
           thickness: 180,
@@ -645,7 +656,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
           }
         }
       } else {
-        name = 'New Purlin Roof'
+        name = t($ => $.roofs.newName.purlin)
         config = {
           type: 'purlin',
           thickness: 360,
@@ -683,7 +694,11 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
   const handleDuplicate = useCallback(() => {
     if (!selectedAssembly) return
 
-    const duplicated = duplicateRoofAssembly(selectedAssembly.id, `${selectedAssembly.name} (Copy)`)
+    const newName = t($ => $.roofs.copyNameTemplate, {
+      defaultValue: `{{name}} (Copy)`,
+      name: selectedAssembly.name
+    })
+    const duplicated = duplicateRoofAssembly(selectedAssembly.id, newName)
     setSelectedAssemblyId(duplicated.id)
   }, [selectedAssembly, duplicateRoofAssembly])
 
@@ -727,7 +742,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
 
             <DropdownMenu.Root>
               <DropdownMenu.Trigger>
-                <IconButton title="Add New">
+                <IconButton title={t($ => $.common.addNew)}>
                   <PlusIcon />
                 </IconButton>
               </DropdownMenu.Trigger>
@@ -735,19 +750,24 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
                 <DropdownMenu.Item onSelect={() => handleAddNew('monolithic')}>
                   <Flex align="center" gap="1">
                     <SquareIcon />
-                    Monolithic
+                    {t($ => $.roofs.types.monolithic)}
                   </Flex>
                 </DropdownMenu.Item>
                 <DropdownMenu.Item onSelect={() => handleAddNew('purlin')}>
                   <Flex align="center" gap="1">
                     <ComponentInstanceIcon />
-                    Purlin
+                    {t($ => $.roofs.types.purlin)}
                   </Flex>
                 </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Root>
 
-            <IconButton onClick={handleDuplicate} disabled={!selectedAssembly} title="Duplicate" variant="soft">
+            <IconButton
+              onClick={handleDuplicate}
+              disabled={!selectedAssembly}
+              title={t($ => $.common.duplicate)}
+              variant="soft"
+            >
               <CopyIcon />
             </IconButton>
 
@@ -756,25 +776,25 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
                 <IconButton
                   disabled={!selectedAssembly || usage.isUsed}
                   color="red"
-                  title={usage.isUsed ? 'In Use - Cannot Delete' : 'Delete'}
+                  title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
                 >
                   <TrashIcon />
                 </IconButton>
               </AlertDialog.Trigger>
               <AlertDialog.Content>
-                <AlertDialog.Title>Delete Roof Assembly</AlertDialog.Title>
+                <AlertDialog.Title>{t($ => $.roofs.deleteTitle)}</AlertDialog.Title>
                 <AlertDialog.Description>
-                  Are you sure you want to delete "{selectedAssembly?.name}"? This action cannot be undone.
+                  {t($ => $.roofs.deleteConfirm, { name: selectedAssembly?.name })}
                 </AlertDialog.Description>
                 <Flex gap="3" mt="4" justify="end">
                   <AlertDialog.Cancel>
                     <Button variant="soft" color="gray">
-                      Cancel
+                      {t($ => $.common.cancel)}
                     </Button>
                   </AlertDialog.Cancel>
                   <AlertDialog.Action>
                     <Button variant="solid" color="red" onClick={handleDelete}>
-                      Delete
+                      {t($ => $.common.delete)}
                     </Button>
                   </AlertDialog.Action>
                 </Flex>
@@ -783,25 +803,22 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
 
             <AlertDialog.Root>
               <AlertDialog.Trigger>
-                <IconButton color="red" variant="outline" title="Reset to Defaults">
+                <IconButton color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
                   <ResetIcon />
                 </IconButton>
               </AlertDialog.Trigger>
               <AlertDialog.Content>
-                <AlertDialog.Title>Reset Roof Assemblies</AlertDialog.Title>
-                <AlertDialog.Description>
-                  Are you sure you want to reset default roof assemblies? This will restore the original default
-                  assemblies but keep any custom assemblies you've created. This action cannot be undone.
-                </AlertDialog.Description>
+                <AlertDialog.Title>{t($ => $.roofs.resetTitle)}</AlertDialog.Title>
+                <AlertDialog.Description>{t($ => $.roofs.resetConfirm)}</AlertDialog.Description>
                 <Flex gap="3" mt="4" justify="end">
                   <AlertDialog.Cancel>
                     <Button variant="soft" color="gray">
-                      Cancel
+                      {t($ => $.common.cancel)}
                     </Button>
                   </AlertDialog.Cancel>
                   <AlertDialog.Action>
                     <Button variant="solid" color="red" onClick={handleReset}>
-                      Reset
+                      {t($ => $.common.reset)}
                     </Button>
                   </AlertDialog.Action>
                 </Flex>
@@ -813,7 +830,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
             <Label.Root>
               <Flex align="center" gap="1">
                 <Text size="1" weight="medium" color="gray">
-                  Default Roof Assembly
+                  {t($ => $.roofs.defaultRoofAssembly)}
                 </Text>
                 <RoofMeasurementInfo highlightedAssembly="roofAssembly" />
               </Flex>
@@ -821,38 +838,53 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
             <RoofAssemblySelect
               value={defaultAssemblyId}
               onValueChange={value => setDefaultRoofAssembly(value)}
-              placeholder="Select default..."
+              placeholder={t($ => $.common.placeholders.selectDefault)}
               size="2"
             />
           </Grid>
         </Grid>
       </Flex>
-
       {/* Form */}
       {selectedAssembly && <ConfigForm assembly={selectedAssembly} />}
-
       {!selectedAssembly && roofAssemblies.length === 0 && (
         <Flex justify="center" align="center" p="5">
-          <Text color="gray">No roof assemblies yet. Create one using the "New" button above.</Text>
+          <Text color="gray">{t($ => $.roofs.emptyList)}</Text>
         </Flex>
       )}
-
-      {usage.isUsed && (
-        <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
-          <Label.Root>
-            <Text size="2" weight="medium" color="gray">
-              Used By:
-            </Text>
-          </Label.Root>
-          <Flex gap="1" wrap="wrap">
-            {usage.usedByRoofs.map((use, index) => (
-              <Badge key={index} size="2" variant="soft">
-                {use}
-              </Badge>
-            ))}
-          </Flex>
-        </Grid>
-      )}
+      {usage.isUsed && <UsageDisplay usage={usage} />}
     </Flex>
+  )
+}
+
+function UsageBadge({ id }: { id: EntityId }) {
+  const label = useEntityLabel(id)
+  return (
+    <Badge key={id} size="2" variant="soft">
+      {label}
+    </Badge>
+  )
+}
+
+function UsageDisplay({ usage }: { usage: RoofAssemblyUsage }): React.JSX.Element {
+  const { t } = useTranslation('config')
+
+  return (
+    <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
+      <Label.Root>
+        <Text size="2" weight="medium" color="gray">
+          {t($ => $.usage.usedBy)}
+        </Text>
+      </Label.Root>
+      <Flex gap="1" wrap="wrap">
+        {usage.isDefault && (
+          <Badge size="2" variant="soft" color="blue">
+            {t($ => $.usage.globalDefault_roof)}
+          </Badge>
+        )}
+        {usage.storeyIds.map(id => (
+          <UsageBadge key={id} id={id} />
+        ))}
+      </Flex>
+    </Grid>
   )
 }

@@ -3,9 +3,10 @@ import { Code, Flex } from '@radix-ui/themes'
 import React from 'react'
 
 import { usePointerWorldPosition } from '@/editor/hooks/usePointerPosition'
-import { formatLength } from '@/shared/utils/formatting'
+import { useFormatters } from '@/shared/i18n/useFormatters'
 
 export function PointerPositionDisplay(): React.JSX.Element {
+  const { formatLength } = useFormatters()
   const pointer = usePointerWorldPosition()
   return (
     <Flex align="center" gap="2">

@@ -1,6 +1,7 @@
 import { AllSidesIcon } from '@radix-ui/react-icons'
 import { IconButton } from '@radix-ui/themes'
 import React, { type RefAttributes, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { type Bounds2D } from '@/shared/geometry'
 
@@ -96,6 +97,7 @@ export function SVGViewport({
   minZoom = DEFAULT_MIN_ZOOM,
   maxZoom = DEFAULT_MAX_ZOOM
 }: SVGViewportProps): React.JSX.Element {
+  const { t } = useTranslation('common')
   const svgRef = useRef<SVGSVGElement>(null)
 
   const [viewport, setViewport] = useState<ViewportState>(() => {
@@ -366,7 +368,7 @@ export function SVGViewport({
         variant="surface"
         onClick={fitToContent}
         className={`absolute ${getResetButtonPosition(resetButtonPosition)}`}
-        title="Fit to content"
+        title={t($ => $.app.fitToContent)}
       >
         <AllSidesIcon />
       </IconButton>

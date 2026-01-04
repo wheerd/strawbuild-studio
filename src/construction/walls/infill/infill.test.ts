@@ -1,3 +1,4 @@
+import { keyFromSelector } from 'i18next'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { WallConstructionArea } from '@/construction/geometry'
@@ -5,7 +6,14 @@ import type { MaterialId } from '@/construction/materials/material'
 import type { PostConfig } from '@/construction/materials/posts'
 import { constructPost } from '@/construction/materials/posts'
 import { constructStraw } from '@/construction/materials/straw'
-import { aggregateResults, yieldElement, yieldError, yieldMeasurement, yieldWarning } from '@/construction/results'
+import {
+  type IssueMessageKey,
+  aggregateResults,
+  yieldElement,
+  yieldError,
+  yieldMeasurement,
+  yieldWarning
+} from '@/construction/results'
 import { TAG_POST_SPACING } from '@/construction/tags'
 import type { InfillWallSegmentConfig } from '@/construction/walls'
 import { IDENTITY, type Length, type Vec3, newVec3 } from '@/shared/geometry'
@@ -50,8 +58,8 @@ function createMockElement(id: string, position: Vec3, size: Vec3, material: Mat
 function createMockGenerator(
   elements: any[] = [],
   measurements: any[] = [],
-  errors: string[] = [],
-  warnings: string[] = []
+  errors: IssueMessageKey[] = [],
+  warnings: IssueMessageKey[] = []
 ) {
   return function* () {
     for (const element of elements) {
@@ -61,10 +69,10 @@ function createMockGenerator(
       yield yieldMeasurement(measurement)
     }
     for (const error of errors) {
-      yield yieldError(error, [])
+      yield yieldError(error, undefined, [])
     }
     for (const warning of warnings) {
-      yield yieldWarning(warning, [])
+      yield yieldWarning(warning, undefined, [])
     }
   }
 }
@@ -189,7 +197,7 @@ describe('infillWallArea', () => {
       const { errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(1)
-      expect(errors[0].description).toBe('Not enough space for a post')
+      expect(keyFromSelector(errors[0].messageKey)).toBe('construction.infill.notEnoughSpaceForPost')
     })
 
     it('should generate error when not enough space for a post with end stand', () => {
@@ -201,7 +209,7 @@ describe('infillWallArea', () => {
       const { errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(1)
-      expect(errors[0].description).toBe('Not enough space for a post')
+      expect(keyFromSelector(errors[0].messageKey)).toBe('construction.infill.notEnoughSpaceForPost')
     })
 
     it('should generate error when space for more than one post but not enough for two', () => {
@@ -213,7 +221,7 @@ describe('infillWallArea', () => {
       const { errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(1)
-      expect(errors[0].description).toBe('Space for more than one post, but not enough for two')
+      expect(keyFromSelector(errors[0].messageKey)).toBe('construction.infill.notEnoughSpaceForTwoPosts')
     })
 
     it('should generate warning when not enough vertical space for straw', () => {
@@ -225,7 +233,7 @@ describe('infillWallArea', () => {
       const { warnings } = aggregateResults(results)
 
       expect(warnings).toHaveLength(1)
-      expect(warnings[0].description).toBe('Not enough vertical space to fill with straw')
+      expect(keyFromSelector(warnings[0].messageKey)).toBe('construction.infill.notEnoughVerticalSpace')
     })
 
     it('should generate warning when not enough space for infilling straw', () => {
@@ -237,7 +245,9 @@ describe('infillWallArea', () => {
       const { warnings } = aggregateResults(results)
 
       expect(warnings.length).toBeGreaterThan(0)
-      expect(warnings.some(w => w.description === 'Not enough space for infilling straw')).toBe(true)
+      expect(warnings.some(w => keyFromSelector(w.messageKey) === 'construction.infill.notEnoughSpaceForStraw')).toBe(
+        true
+      )
     })
   })
 
@@ -349,7 +359,7 @@ describe('infillWallArea', () => {
       const { warnings } = aggregateResults(results)
 
       expect(warnings).toHaveLength(1)
-      expect(warnings[0].description).toBe('Not enough vertical space to fill with straw')
+      expect(keyFromSelector(warnings[0].messageKey)).toBe('construction.infill.notEnoughVerticalSpace')
     })
   })
 

@@ -1,6 +1,7 @@
 import { GearIcon } from '@radix-ui/react-icons'
 import { Flex, Tabs } from '@radix-ui/themes'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { ConfigTab } from '@/construction/config/context/ConfigurationModalContext'
 import { MaterialsConfigContent } from '@/construction/materials/components/MaterialsConfigContent'
@@ -27,6 +28,7 @@ export function ConfigurationModal({
   onTabChange,
   initialSelectionId
 }: ConfigurationModalProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   const setActiveTab = (tab: string) => {
     onTabChange(tab as ConfigTab)
   }
@@ -36,7 +38,7 @@ export function ConfigurationModal({
       open={open}
       onOpenChange={onOpenChange}
       titleIcon={<GearIcon />}
-      title="Configuration"
+      title={t($ => $.modal.title)}
       size="4"
       width="95%"
       maxWidth="95%"
@@ -46,12 +48,12 @@ export function ConfigurationModal({
     >
       <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
         <Tabs.List>
-          <Tabs.Trigger value="materials">Materials</Tabs.Trigger>
-          <Tabs.Trigger value="ringbeams">Ring Beam Assemblies</Tabs.Trigger>
-          <Tabs.Trigger value="walls">Wall Assemblies</Tabs.Trigger>
-          <Tabs.Trigger value="openings">Opening Assemblies</Tabs.Trigger>
-          <Tabs.Trigger value="floors">Floor Assemblies</Tabs.Trigger>
-          <Tabs.Trigger value="roofs">Roof Assemblies</Tabs.Trigger>
+          <Tabs.Trigger value="materials">{t($ => $.modal.tabMaterials)}</Tabs.Trigger>
+          <Tabs.Trigger value="ringbeams">{t($ => $.modal.tabRingBeams)}</Tabs.Trigger>
+          <Tabs.Trigger value="walls">{t($ => $.modal.tabWalls)}</Tabs.Trigger>
+          <Tabs.Trigger value="openings">{t($ => $.modal.tabOpenings)}</Tabs.Trigger>
+          <Tabs.Trigger value="floors">{t($ => $.modal.tabFloors)}</Tabs.Trigger>
+          <Tabs.Trigger value="roofs">{t($ => $.modal.tabRoofs)}</Tabs.Trigger>
         </Tabs.List>
 
         <Tabs.Content value="materials">

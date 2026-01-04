@@ -6,9 +6,9 @@ import { useWallAssemblyById } from '@/construction/config/store'
 import { LengthIndicator } from '@/editor/canvas/utils/LengthIndicator'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { type Vec2, direction } from '@/shared/geometry'
+import { useFormatters } from '@/shared/i18n/useFormatters'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
-import { formatLength } from '@/shared/utils/formatting'
 
 import { OpeningShape } from './OpeningShape'
 import { WallPostShape } from './WallPostShape'
@@ -30,6 +30,7 @@ export function PerimeterWallShape({
   outsideStartCorner,
   outsideEndCorner
 }: PerimeterWallShapeProps): React.JSX.Element {
+  const { formatLength } = useFormatters()
   const select = useSelectionStore()
   const theme = useCanvasTheme()
 

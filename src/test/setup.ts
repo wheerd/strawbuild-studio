@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
+import { keyFromSelector } from 'i18next'
 import manifoldWasmUrl from 'manifold-3d/manifold.wasm?url'
 import path from 'path'
 import { afterEach, beforeAll, vi } from 'vitest'
@@ -138,6 +139,19 @@ vi.mock('@/shared/geometry/clipperInstance', () => {
     pathDToPoints: vi.fn((path: ClipperPath) => path.points.map(([x, y]) => newVec2(x, y)))
   }
 })
+
+vi.mock('react-i18next', () => ({
+  useTranslation: vi.fn(() => ({
+    t: vi.fn((i18nKey: any) => keyFromSelector(i18nKey)),
+    i18n: {
+      changeLanguage: () => new Promise(vi.fn())
+    }
+  })),
+  initReactI18next: {
+    type: '3rdParty',
+    init: vi.fn()
+  }
+}))
 
 // Mock Zustand for consistent testing
 vi.mock('zustand')

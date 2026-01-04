@@ -1,6 +1,7 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons'
 import { IconButton, Text, TextField } from '@radix-ui/themes'
 import { forwardRef } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useLengthFieldState } from './hooks/useLengthFieldState'
 import type { LengthFieldProps } from './types'
@@ -49,13 +50,17 @@ export const LengthField = forwardRef<HTMLInputElement, LengthFieldProps>(functi
   },
   ref
 ) {
+  const { i18n } = useTranslation()
+  const locale = i18n.language
+
   const fieldState = useLengthFieldState(value, unit, {
     step,
     precision,
     min,
     max,
     onChange,
-    onCommit
+    onCommit,
+    locale
   })
 
   const { displayValue, handleChange, handleBlur, handleKeyDown, stepUp, stepDown, isValid, canStepUp, canStepDown } =

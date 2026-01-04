@@ -1,12 +1,15 @@
 import { Pencil1Icon } from '@radix-ui/react-icons'
 import { Flex, IconButton } from '@radix-ui/themes'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useConfigurationModal } from '@/construction/config/context/ConfigurationModalContext'
 
 import { WallAssemblySelect, type WallAssemblySelectProps } from './WallAssemblySelect'
 
 export function WallAssemblySelectWithEdit(props: WallAssemblySelectProps): React.JSX.Element {
+  const { t } = useTranslation('config')
+
   const { openConfiguration } = useConfigurationModal()
 
   return (
@@ -15,7 +18,7 @@ export function WallAssemblySelectWithEdit(props: WallAssemblySelectProps): Reac
         <WallAssemblySelect {...props} />
       </Flex>
       <IconButton
-        title="Configure Wall Assembly"
+        title={t($ => $.walls.configure)}
         variant="ghost"
         size={props.size}
         onClick={() => openConfiguration('walls', props.value ?? undefined)}

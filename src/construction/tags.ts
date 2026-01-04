@@ -1,595 +1,535 @@
-export interface Tag {
-  readonly id: TagId
-  readonly label: string
-  readonly category: TagCategoryId
-  readonly custom?: boolean
-}
+import type { Resources, SelectorFn, SelectorOptions } from 'i18next'
 
-export type TagId = `${TagCategoryId}_${string}`
+// Predefined tag IDs must match translation keys
+export type PredefinedTagId = keyof Resources['construction']['tags']
 
-export type TagCategoryId = keyof typeof ALL_CATEGORIES
+// Tag category IDs from translations
+export type TagCategoryId = keyof Resources['construction']['tagCategories']
 
+// Custom tag IDs follow the template pattern
+export type CustomTagId = `${TagCategoryId}_${string}`
+
+// Type for layer name keys (layers are in config namespace)
+export type LayerNameKey = SelectorFn<Resources['config'], string, SelectorOptions<'config'>>
+
+// TagId is a union of predefined and custom IDs
+export type TagId = PredefinedTagId | CustomTagId
+
+// TagOrCategory type
 export type TagOrCategory = TagId | TagCategoryId
 
+// Predefined tags (built-in, uses translations)
+export interface PredefinedTag {
+  readonly id: PredefinedTagId
+  readonly category: TagCategoryId
+}
+
+// Custom tags (user-created, has label)
+export interface CustomTag {
+  readonly id: CustomTagId
+  readonly category: TagCategoryId
+  readonly label: string
+  readonly nameKey?: LayerNameKey
+}
+
+// Union type
+export type Tag = PredefinedTag | CustomTag
+
+// Type guards
+export function isCustomTag(tag: Tag): tag is CustomTag {
+  return 'label' in tag
+}
+
+export function isPredefinedTag(tag: Tag): tag is PredefinedTag {
+  return !('label' in tag)
+}
+
 export const ALL_CATEGORIES = {
-  straw: { label: 'Straw' },
-
-  'wall-part': { label: 'Wall Wood' },
-  'wall-measurement': { label: 'Wall Measurement' },
-  'wall-assembly': { label: 'Wall Assembly' },
-  'wall-layer': { label: 'Wall Layers' },
-
-  opening: { label: 'Opening' },
-  'opening-measurement': { label: 'Opening Measurement' },
-
-  'module-part': { label: 'Module Parts' },
-
-  'floor-layer': { label: 'Floor Layers' },
-  'floor-part': { label: 'Floor Part' },
-  'floor-assembly': { label: 'Floor Assembly' },
-  'floor-measurement': { label: 'Floor Measurement' },
-
-  'roof-part': { label: 'Roof Parts' },
-  'roof-layer': { label: 'Roof Layers' },
-  'roof-side': { label: 'Roof Side' },
-  'roof-assembly': { label: 'Roof Assembly' },
-  'roof-measurement': { label: 'Roof Measurement' },
-
-  'ring-beam-part': { label: 'Ring Beam Part' },
-  'ring-beam-measurement': { label: 'Ring Beam Measurement' },
-  'ring-beam-assembly': { label: 'Ring Beam Assembly' },
-
-  'finished-measurement': { label: 'Finished Measurement' },
-
-  area: { label: 'Area' },
-  construction: { label: 'Construction' },
-
-  'storey-name': { label: 'Storey Name' }
-} as const
+  straw: { id: 'straw' as const },
+  'wall-part': { id: 'wall-part' as const },
+  'wall-measurement': { id: 'wall-measurement' as const },
+  'wall-assembly': { id: 'wall-assembly' as const },
+  'wall-layer': { id: 'wall-layer' as const },
+  opening: { id: 'opening' as const },
+  'opening-measurement': { id: 'opening-measurement' as const },
+  'module-part': { id: 'module-part' as const },
+  'floor-layer': { id: 'floor-layer' as const },
+  'floor-part': { id: 'floor-part' as const },
+  'floor-assembly': { id: 'floor-assembly' as const },
+  'floor-measurement': { id: 'floor-measurement' as const },
+  'roof-part': { id: 'roof-part' as const },
+  'roof-layer': { id: 'roof-layer' as const },
+  'roof-side': { id: 'roof-side' as const },
+  'roof-assembly': { id: 'roof-assembly' as const },
+  'roof-measurement': { id: 'roof-measurement' as const },
+  'ring-beam-part': { id: 'ring-beam-part' as const },
+  'ring-beam-measurement': { id: 'ring-beam-measurement' as const },
+  'ring-beam-assembly': { id: 'ring-beam-assembly' as const },
+  'finished-measurement': { id: 'finished-measurement' as const },
+  area: { id: 'area' as const },
+  construction: { id: 'construction' as const },
+  'storey-name': { id: 'storey-name' as const }
+} as const satisfies Record<TagCategoryId, TagCategory>
 
 export const CATEGORIES: Record<TagCategoryId, TagCategory> = ALL_CATEGORIES
 
 export interface TagCategory {
-  label: string
+  readonly id: TagCategoryId
 }
 
-export const createTagId = (category: TagCategoryId, name: string): TagId =>
+export const createTagId = (category: TagCategoryId, name: string): CustomTagId =>
   `${category}_${name
     .trim()
     .toLowerCase()
-    .replace(/[\W_]+/g, '-')}`
+    .replace(/[\W_]+/g, '-')}` as CustomTagId
 
-export const createTag = (category: TagCategoryId, name: string): Tag => ({
+export const createTag = (category: TagCategoryId, name: string, nameKey?: LayerNameKey): CustomTag => ({
   category,
   id: createTagId(category, name),
   label: name,
-  custom: true
+  nameKey
 })
 
 // Straw tags
-export const TAG_FULL_BALE: Tag = {
+export const TAG_FULL_BALE: PredefinedTag = {
   id: 'straw_full-bale',
-  label: 'Full Strawbale',
   category: 'straw'
 }
 
-export const TAG_PARTIAL_BALE: Tag = {
+export const TAG_PARTIAL_BALE: PredefinedTag = {
   id: 'straw_partial-bale',
-  label: 'Partial Strawbale',
   category: 'straw'
 }
 
-export const TAG_STRAW_FLAKES: Tag = {
+export const TAG_STRAW_FLAKES: PredefinedTag = {
   id: 'straw_flakes',
-  label: 'Straw Flakes',
   category: 'straw'
 }
 
-export const TAG_STRAW_INFILL: Tag = {
+export const TAG_STRAW_INFILL: PredefinedTag = {
   id: 'straw_infill',
-  label: 'Generic Straw Infill',
   category: 'straw'
 }
 
-export const TAG_STRAW_STUFFED: Tag = {
+export const TAG_STRAW_STUFFED: PredefinedTag = {
   id: 'straw_stuffed',
-  label: 'Stuffed Straw',
   category: 'straw'
 }
 
 // Wall wood tags
-export const TAG_POST: Tag = {
+export const TAG_POST: PredefinedTag = {
   id: 'wall-part_post',
-  label: 'Post',
   category: 'wall-part'
 }
 
-export const TAG_HEADER: Tag = {
+export const TAG_HEADER: PredefinedTag = {
   id: 'wall-part_header',
-  label: 'Header',
   category: 'wall-part'
 }
 
-export const TAG_SILL: Tag = {
+export const TAG_SILL: PredefinedTag = {
   id: 'wall-part_sill',
-  label: 'Sill',
   category: 'wall-part'
 }
 
-export const TAG_INFILL: Tag = {
+export const TAG_INFILL: PredefinedTag = {
   id: 'wall-part_infill',
-  label: 'Infill',
   category: 'wall-part'
 }
 
 // Wall assembly type tags
-export const TAG_INFILL_CONSTRUCTION: Tag = {
+export const TAG_INFILL_CONSTRUCTION: PredefinedTag = {
   id: 'wall-assembly_infill',
-  label: 'Type: Infill',
   category: 'wall-assembly'
 }
 
-export const TAG_MODULE_CONSTRUCTION: Tag = {
+export const TAG_MODULE_CONSTRUCTION: PredefinedTag = {
   id: 'wall-assembly_strawhenge',
-  label: 'Type: Modules',
   category: 'wall-assembly'
 }
 
-export const TAG_STRAWHENGE_CONSTRUCTION: Tag = {
+export const TAG_STRAWHENGE_CONSTRUCTION: PredefinedTag = {
   id: 'wall-assembly_strawhenge',
-  label: 'Type: Strawhenge',
   category: 'wall-assembly'
 }
 
-export const TAG_NON_STRAWBALE_CONSTRUCTION: Tag = {
+export const TAG_NON_STRAWBALE_CONSTRUCTION: PredefinedTag = {
   id: 'wall-assembly_non-strawbale',
-  label: 'Type: Non-Strawbale',
   category: 'wall-assembly'
 }
 
 // Wall layer
-export const TAG_WALL_LAYER_INSIDE: Tag = {
+export const TAG_WALL_LAYER_INSIDE: PredefinedTag = {
   id: 'wall-layer_inside',
-  label: 'Inside Wall Layers',
   category: 'wall-layer'
 }
 
-export const TAG_WALL_LAYER_OUTSIDE: Tag = {
+export const TAG_WALL_LAYER_OUTSIDE: PredefinedTag = {
   id: 'wall-layer_outside',
-  label: 'Outside Wall Layers',
   category: 'wall-layer'
 }
 
 // Floor layer
-export const TAG_FLOOR_LAYER_TOP: Tag = {
+export const TAG_FLOOR_LAYER_TOP: PredefinedTag = {
   id: 'floor-layer_top',
-  label: 'Floor Finish Layers',
   category: 'floor-layer'
 }
 
-export const TAG_FLOOR_LAYER_BOTTOM: Tag = {
+export const TAG_FLOOR_LAYER_BOTTOM: PredefinedTag = {
   id: 'floor-layer_bottom',
-  label: 'Ceiling Finish Layers',
   category: 'floor-layer'
 }
 
 // Roof layer
-export const TAG_ROOF_LAYER_TOP: Tag = {
+export const TAG_ROOF_LAYER_TOP: PredefinedTag = {
   id: 'roof-layer_top',
-  label: 'Roof Top Layers',
   category: 'roof-layer'
 }
 
-export const TAG_ROOF_LAYER_INSIDE: Tag = {
+export const TAG_ROOF_LAYER_INSIDE: PredefinedTag = {
   id: 'roof-layer_inside',
-  label: 'Ceiling Layers',
   category: 'roof-layer'
 }
 
-export const TAG_ROOF_LAYER_OVERHANG: Tag = {
+export const TAG_ROOF_LAYER_OVERHANG: PredefinedTag = {
   id: 'roof-layer_overhang',
-  label: 'Overhang Layers',
   category: 'roof-layer'
 }
 
 // Roof side tags
-export const TAG_ROOF_SIDE_LEFT: Tag = {
+export const TAG_ROOF_SIDE_LEFT: PredefinedTag = {
   id: 'roof-side_left',
-  label: 'Left Roof Side',
   category: 'roof-side'
 }
 
-export const TAG_ROOF_SIDE_RIGHT: Tag = {
+export const TAG_ROOF_SIDE_RIGHT: PredefinedTag = {
   id: 'roof-side_right',
-  label: 'Right Roof Side',
   category: 'roof-side'
 }
 
 // Opening tags
-export const TAG_OPENING_WINDOW: Tag = {
+export const TAG_OPENING_WINDOW: PredefinedTag = {
   id: 'opening_window',
-  label: 'Window',
   category: 'opening'
 }
 
-export const TAG_OPENING_DOOR: Tag = {
+export const TAG_OPENING_DOOR: PredefinedTag = {
   id: 'opening_door',
-  label: 'Door',
   category: 'opening'
 }
 
 // Measurement tags
-export const TAG_POST_SPACING: Tag = {
+export const TAG_POST_SPACING: PredefinedTag = {
   id: 'wall-measurement_post-spacing',
-  label: 'Post Spacing',
   category: 'wall-measurement'
 }
 
-export const TAG_OPENING_SPACING: Tag = {
+export const TAG_OPENING_SPACING: PredefinedTag = {
   id: 'wall-measurement_opening-spacing',
-  label: 'Opening Spacing',
   category: 'wall-measurement'
 }
 
-export const TAG_OPENING_WIDTH: Tag = {
+export const TAG_OPENING_WIDTH: PredefinedTag = {
   id: 'opening-measurement_opening-width',
-  label: 'Opening Width',
   category: 'opening-measurement'
 }
 
-export const TAG_SILL_HEIGHT: Tag = {
+export const TAG_SILL_HEIGHT: PredefinedTag = {
   id: 'opening-measurement_sill-height',
-  label: 'Sill Height',
   category: 'opening-measurement'
 }
 
-export const TAG_HEADER_FROM_TOP: Tag = {
+export const TAG_HEADER_FROM_TOP: PredefinedTag = {
   id: 'opening-measurement_header-from-top',
-  label: 'Header From Top',
   category: 'opening-measurement'
 }
 
-export const TAG_HEADER_HEIGHT: Tag = {
+export const TAG_HEADER_HEIGHT: PredefinedTag = {
   id: 'opening-measurement_header-height',
-  label: 'Header Height',
   category: 'opening-measurement'
 }
 
-export const TAG_OPENING_HEIGHT: Tag = {
+export const TAG_OPENING_HEIGHT: PredefinedTag = {
   id: 'opening-measurement_opening-height',
-  label: 'Opening Height',
   category: 'opening-measurement'
 }
 
 // Ring beam measurements
 
-export const TAG_RING_BEAM_OUTER: Tag = {
+export const TAG_RING_BEAM_OUTER: PredefinedTag = {
   id: 'ring-beam-measurement_ring-beam-outer',
-  label: 'Ring Beam Outer',
   category: 'ring-beam-measurement'
 }
 
-export const TAG_RING_BEAM_INNER: Tag = {
+export const TAG_RING_BEAM_INNER: PredefinedTag = {
   id: 'ring-beam-measurement_ring-beam-inner',
-  label: 'Ring Beam Inner',
   category: 'ring-beam-measurement'
 }
 
 // Ring beam parts
 
-export const TAG_PLATE: Tag = {
+export const TAG_PLATE: PredefinedTag = {
   id: 'ring-beam-part_plate',
-  label: 'Plate',
   category: 'ring-beam-part'
 }
 
-export const TAG_STUD_WALL: Tag = {
+export const TAG_STUD_WALL: PredefinedTag = {
   id: 'ring-beam-part_stud-wall',
-  label: 'Stud Wall',
   category: 'ring-beam-part'
 }
 
-export const TAG_WATERPROOFING: Tag = {
+export const TAG_WATERPROOFING: PredefinedTag = {
   id: 'ring-beam-part_waterproofing',
-  label: 'Waterproofing Layer',
   category: 'ring-beam-part'
 }
 
-export const TAG_RB_INSULATION: Tag = {
+export const TAG_RB_INSULATION: PredefinedTag = {
   id: 'ring-beam-part_insulation',
-  label: 'Insulation',
   category: 'ring-beam-part'
 }
 
 // Wall measurements
 
-export const TAG_WALL_LENGTH: Tag = {
+export const TAG_WALL_LENGTH: PredefinedTag = {
   id: 'wall-measurement_wall-length',
-  label: 'Wall Length',
   category: 'wall-measurement'
 }
 
-export const TAG_WALL_HEIGHT: Tag = {
+export const TAG_WALL_HEIGHT: PredefinedTag = {
   id: 'wall-measurement_wall-height',
-  label: 'Wall Height',
   category: 'wall-measurement'
 }
 
-export const TAG_WALL_CONSTRUCTION_HEIGHT: Tag = {
+export const TAG_WALL_CONSTRUCTION_HEIGHT: PredefinedTag = {
   id: 'wall-measurement_wall-construction-height',
-  label: 'Wall Construction Height',
   category: 'wall-measurement'
 }
 
-export const TAG_RING_BEAM_HEIGHT: Tag = {
+export const TAG_RING_BEAM_HEIGHT: PredefinedTag = {
   id: 'ring-beam-measurement_ring-beam-height',
-  label: 'Ring Beam Height',
   category: 'ring-beam-measurement'
 }
 
-export const TAG_MODULE_WIDTH: Tag = {
+export const TAG_MODULE_WIDTH: PredefinedTag = {
   id: 'wall-measurement_module-width',
-  label: 'Module Width',
   category: 'wall-measurement'
 }
 
-export const TAG_WALL_LENGTH_OUTSIDE: Tag = {
+export const TAG_WALL_LENGTH_OUTSIDE: PredefinedTag = {
   id: 'finished-measurement_wall-length-outside',
-  label: 'Wall Length Outside',
   category: 'finished-measurement'
 }
 
-export const TAG_WALL_LENGTH_INSIDE: Tag = {
+export const TAG_WALL_LENGTH_INSIDE: PredefinedTag = {
   id: 'finished-measurement_wall-length-inside',
-  label: 'Wall Length Inside',
   category: 'finished-measurement'
 }
 
-export const TAG_WALL_CONSTRUCTION_LENGTH_OUTSIDE: Tag = {
+export const TAG_WALL_CONSTRUCTION_LENGTH_OUTSIDE: PredefinedTag = {
   id: 'wall-measurement_wall-construction-length-outside',
-  label: 'Wall Construction Length Outside',
   category: 'wall-measurement'
 }
 
-export const TAG_WALL_CONSTRUCTION_LENGTH_INSIDE: Tag = {
+export const TAG_WALL_CONSTRUCTION_LENGTH_INSIDE: PredefinedTag = {
   id: 'wall-measurement_wall-construction-length-inside',
-  label: 'Wall Construction Length Inside',
   category: 'wall-measurement'
 }
 
 // Area tags
-export const TAG_PERIMETER_INSIDE: Tag = {
+export const TAG_PERIMETER_INSIDE: PredefinedTag = {
   id: 'area_perimeter-inside',
-  label: 'Perimeter Inside',
   category: 'area'
 }
 
-export const TAG_PERIMETER_OUTSIDE: Tag = {
+export const TAG_PERIMETER_OUTSIDE: PredefinedTag = {
   id: 'area_perimeter-outside',
-  label: 'Perimeter Outside',
   category: 'area'
 }
 
 // Construction parts
-export const TAG_BASE_PLATE: Tag = {
+export const TAG_BASE_PLATE: PredefinedTag = {
   id: 'construction_base-plate',
-  label: 'Base Plate',
   category: 'construction'
 }
 
-export const TAG_TOP_PLATE: Tag = {
+export const TAG_TOP_PLATE: PredefinedTag = {
   id: 'construction_top-plate',
-  label: 'Top Plate',
   category: 'construction'
 }
 
-export const TAG_WALLS: Tag = {
+export const TAG_WALLS: PredefinedTag = {
   id: 'construction_walls',
-  label: 'Walls',
   category: 'construction'
 }
 
-export const TAG_MODULE: Tag = {
+export const TAG_MODULE: PredefinedTag = {
   id: 'construction_module',
-  label: 'Module',
   category: 'construction'
 }
 
-export const TAG_FLOOR: Tag = {
+export const TAG_FLOOR: PredefinedTag = {
   id: 'construction_floor',
-  label: 'Floor',
   category: 'construction'
 }
 
-export const TAG_ROOF: Tag = {
+export const TAG_ROOF: PredefinedTag = {
   id: 'construction_roof',
-  label: 'Roof',
   category: 'construction'
 }
 
-export const TAG_STOREY: Tag = {
+export const TAG_STOREY: PredefinedTag = {
   id: 'construction_storey',
-  label: 'Storey',
   category: 'construction'
 }
 
-export const TAG_LAYERS: Tag = {
+export const TAG_LAYERS: PredefinedTag = {
   id: 'construction_layers',
-  label: 'Layers',
   category: 'construction'
 }
 
 // Floor wood
-export const TAG_JOIST: Tag = {
+export const TAG_JOIST: PredefinedTag = {
   id: 'floor-part_joist',
-  label: 'Joist',
   category: 'floor-part'
 }
 
-export const TAG_FLOOR_WALL_BEAM: Tag = {
+export const TAG_FLOOR_WALL_BEAM: PredefinedTag = {
   id: 'floor-part_wall-beam',
-  label: 'Wall Beam',
   category: 'floor-part'
 }
 
-export const TAG_FLOOR_INFILL: Tag = {
+export const TAG_FLOOR_INFILL: PredefinedTag = {
   id: 'floor-part_infill',
-  label: 'Wall Infill',
   category: 'floor-part'
 }
 
-export const TAG_FLOOR_FRAME: Tag = {
+export const TAG_FLOOR_FRAME: PredefinedTag = {
   id: 'floor-part_frame',
-  label: 'Frame',
   category: 'floor-part'
 }
 
-export const TAG_FLOOR_OPENING_FRAME: Tag = {
+export const TAG_FLOOR_OPENING_FRAME: PredefinedTag = {
   id: 'floor-part_opening-frame',
-  label: 'Opening Frame',
   category: 'floor-part'
 }
 
-export const TAG_SUBFLOOR: Tag = {
+export const TAG_SUBFLOOR: PredefinedTag = {
   id: 'floor-part_subfloor',
-  label: 'Subfloor',
   category: 'floor-part'
 }
 
-export const TAG_FLOOR_CEILING_SHEATHING: Tag = {
+export const TAG_FLOOR_CEILING_SHEATHING: PredefinedTag = {
   id: 'floor-part_ceiling-sheathing',
-  label: 'Ceiling Sheathing',
   category: 'floor-part'
 }
 
 // Floor Measurement tags
-export const TAG_JOIST_SPACING: Tag = {
+export const TAG_JOIST_SPACING: PredefinedTag = {
   id: 'floor-measurement_joist-spacing',
-  label: 'Joist Spacing',
   category: 'floor-measurement'
 }
 
-export const TAG_JOIST_LENGTH: Tag = {
+export const TAG_JOIST_LENGTH: PredefinedTag = {
   id: 'floor-measurement_joist-length',
-  label: 'Joist Length',
   category: 'floor-measurement'
 }
 
 // Floor assembly type tags
-export const TAG_MONOLITHIC_FLOOR: Tag = {
+export const TAG_MONOLITHIC_FLOOR: PredefinedTag = {
   id: 'floor-assembly_monolithic',
-  label: 'Type: Monolithic',
   category: 'floor-assembly'
 }
 
-export const TAG_JOIST_FLOOR: Tag = {
+export const TAG_JOIST_FLOOR: PredefinedTag = {
   id: 'floor-assembly_joist',
-  label: 'Type: Joist',
   category: 'floor-assembly'
 }
 
-export const TAG_FILLED_FLOOR: Tag = {
+export const TAG_FILLED_FLOOR: PredefinedTag = {
   id: 'floor-assembly_filled',
-  label: 'Type: Filled',
   category: 'floor-assembly'
 }
 
 // Roof parts
-export const TAG_PURLIN: Tag = {
+export const TAG_PURLIN: PredefinedTag = {
   id: 'roof-part_purlin',
-  label: 'Purlin',
   category: 'roof-part'
 }
 
-export const TAG_RAFTER: Tag = {
+export const TAG_RAFTER: PredefinedTag = {
   id: 'roof-part_rafter',
-  label: 'Rafter',
   category: 'roof-part'
 }
 
-export const TAG_DECKING: Tag = {
+export const TAG_DECKING: PredefinedTag = {
   id: 'roof-part_decking',
-  label: 'Decking',
   category: 'roof-part'
 }
 
-export const TAG_INSIDE_SHEATHING: Tag = {
+export const TAG_INSIDE_SHEATHING: PredefinedTag = {
   id: 'roof-part_inside-sheathing',
-  label: 'Inside Sheathing',
   category: 'roof-part'
 }
 
-export const TAG_RIDGE_BEAM: Tag = {
+export const TAG_RIDGE_BEAM: PredefinedTag = {
   id: 'roof-part_ridge-beam',
-  label: 'Ridge Beam',
   category: 'roof-part'
 }
 
-export const TAG_ROOF_INFILL: Tag = {
+export const TAG_ROOF_INFILL: PredefinedTag = {
   id: 'roof-part_infill',
-  label: 'Infill',
   category: 'roof-part'
 }
 
 // Roof assembly type tags
-export const TAG_MONOLITHIC_ROOF: Tag = {
+export const TAG_MONOLITHIC_ROOF: PredefinedTag = {
   id: 'roof-assembly_monolithic',
-  label: 'Type: Monolithic',
   category: 'roof-assembly'
 }
 
-export const TAG_PURLIN_ROOF: Tag = {
+export const TAG_PURLIN_ROOF: PredefinedTag = {
   id: 'roof-assembly_purlin',
-  label: 'Type: Purlin',
   category: 'roof-assembly'
 }
 
 // Roof Measurement tags
-export const TAG_RAFTER_SPACING: Tag = {
+export const TAG_RAFTER_SPACING: PredefinedTag = {
   id: 'roof-measurement_rafter-spacing',
-  label: 'Rafter Spacing',
   category: 'roof-measurement'
 }
 
-export const TAG_RAFTER_LENGTH: Tag = {
+export const TAG_RAFTER_LENGTH: PredefinedTag = {
   id: 'roof-measurement_rafter-length',
-  label: 'Rafter Length',
   category: 'roof-measurement'
 }
 
-export const TAG_PURLIN_LENGTH: Tag = {
+export const TAG_PURLIN_LENGTH: PredefinedTag = {
   id: 'roof-measurement_purlin-length',
-  label: 'Purlin Length',
   category: 'roof-measurement'
 }
 
-export const TAG_PURLIN_RISE: Tag = {
+export const TAG_PURLIN_RISE: PredefinedTag = {
   id: 'roof-measurement_purlin-rise',
-  label: 'Purlin Rise',
   category: 'roof-measurement'
 }
 
-export const TAG_PURLIN_SPACING: Tag = {
+export const TAG_PURLIN_SPACING: PredefinedTag = {
   id: 'roof-measurement_purlin-spacing',
-  label: 'Purlin Spacing',
   category: 'roof-measurement'
 }
 
 // Module parts
-export const TAG_MODULE_FRAME: Tag = {
+export const TAG_MODULE_FRAME: PredefinedTag = {
   id: 'module-part_frame',
-  label: 'Frame',
   category: 'module-part'
 }
 
-export const TAG_MODULE_SPACER: Tag = {
+export const TAG_MODULE_SPACER: PredefinedTag = {
   id: 'module-part_spacer',
-  label: 'Spacer',
   category: 'module-part'
 }
 
-export const TAG_MODULE_INFILL: Tag = {
+export const TAG_MODULE_INFILL: PredefinedTag = {
   id: 'module-part_infill',
-  label: 'Infill',
   category: 'module-part'
 }

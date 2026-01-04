@@ -8,6 +8,7 @@ import { roughWood, woodwool } from '@/construction/materials/material'
 export const DEFAULT_SIMPLE_ASSEMBLY: SimpleOpeningAssemblyConfig = {
   id: 'oa_simple_default',
   name: 'Standard Opening',
+  nameKey: $ => $.openings.defaults.standardOpening,
   type: 'simple',
   padding: 15,
   sillThickness: 60,
@@ -19,6 +20,7 @@ export const DEFAULT_SIMPLE_ASSEMBLY: SimpleOpeningAssemblyConfig = {
 const postAssembly: PostOpeningAssemblyConfig = {
   id: 'oa_post_default',
   name: 'Standard Opening with Posts',
+  nameKey: $ => $.openings.defaults.standardOpeningWithPosts,
   type: 'post',
   padding: 15,
   sillThickness: 60,
@@ -38,6 +40,7 @@ const postAssembly: PostOpeningAssemblyConfig = {
 export const DEFAULT_EMPTY_ASSEMBLY: EmptyOpeningAssemblyConfig = {
   id: 'oa_empty_default',
   name: 'Empty Opening',
+  nameKey: $ => $.openings.defaults.emptyOpening,
   type: 'empty',
   padding: 15
 }

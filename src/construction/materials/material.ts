@@ -1,3 +1,5 @@
+import type { Resources } from 'i18next'
+
 import type { Length, Volume } from '@/shared/geometry'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
 import { createId } from '@/shared/utils/ids'
@@ -14,6 +16,8 @@ export interface BaseMaterial {
   type: MaterialType
   id: MaterialId
   name: string
+  /** Optional translation key for default materials. If present, use t(nameKey) instead of name for display. Clear when user edits the name. */
+  nameKey?: keyof Resources['config']['materials']['defaults']
   color: string
   density?: number // kg/m³
 }
@@ -64,6 +68,7 @@ export interface GenericMaterial extends BaseMaterial {
 export const roughWood: DimensionalMaterial = {
   id: 'material_rough_wood' as MaterialId,
   name: 'Rough-sawn timber',
+  nameKey: 'roughWood',
   type: 'dimensional',
   color: MATERIAL_COLORS.woodSupport,
   crossSections: [
@@ -84,6 +89,7 @@ export const roughWood: DimensionalMaterial = {
 export const battens: DimensionalMaterial = {
   id: 'material_batten' as MaterialId,
   name: 'Battens',
+  nameKey: 'battens',
   type: 'dimensional',
   color: MATERIAL_COLORS.woodSupport,
   crossSections: [
@@ -102,7 +108,8 @@ export const battens: DimensionalMaterial = {
 
 export const structuralWood: DimensionalMaterial = {
   id: 'material_structural_timber' as MaterialId,
-  name: 'Structural Timber',
+  name: 'Structural timber',
+  nameKey: 'structuralWood',
   type: 'dimensional',
   color: MATERIAL_COLORS.woodSupport,
   crossSections: [
@@ -121,7 +128,8 @@ export const structuralWood: DimensionalMaterial = {
 
 export const glt: DimensionalMaterial = {
   id: 'material_glt' as MaterialId,
-  name: 'Glued Laminated Timber (GLT)',
+  name: 'Glulam (GLT)',
+  nameKey: 'glt',
   type: 'dimensional',
   color: MATERIAL_COLORS.woodSupport,
   crossSections: [
@@ -141,7 +149,8 @@ export const glt: DimensionalMaterial = {
 
 export const boards: SheetMaterial = {
   id: 'material_board' as MaterialId,
-  name: 'Boards / Planks',
+  name: 'Boards',
+  nameKey: 'boards',
   sizes: [
     { smallerLength: 200, biggerLength: 2000 },
     { smallerLength: 200, biggerLength: 2500 },
@@ -160,7 +169,8 @@ export const strawbale: StrawbaleMaterial = {
   id: 'material_strawbale' as MaterialId,
   type: 'strawbale',
   color: MATERIAL_COLORS.strawbale,
-  name: 'Strawbale',
+  name: 'Strawbales',
+  nameKey: 'strawbale',
   baleMinLength: 800,
   baleMaxLength: 900,
   baleHeight: 500,
@@ -174,6 +184,7 @@ export const strawbale: StrawbaleMaterial = {
 export const concrete: VolumeMaterial = {
   id: 'material_concrete' as MaterialId,
   name: 'Concrete',
+  nameKey: 'concrete',
   type: 'volume',
   color: '#97989d',
   availableVolumes: [],
@@ -182,7 +193,8 @@ export const concrete: VolumeMaterial = {
 
 export const clt: SheetMaterial = {
   id: 'material_clt' as MaterialId,
-  name: 'CLT',
+  name: 'Cross-laminated timber (CLT)',
+  nameKey: 'clt',
   sizes: [{ smallerLength: 3500, biggerLength: 16500 }],
   thicknesses: [160, 170, 180, 190, 200, 220, 240, 260, 280, 300, 320],
   sheetType: 'tongueAndGroove',
@@ -193,7 +205,8 @@ export const clt: SheetMaterial = {
 
 export const woodwool: SheetMaterial = {
   id: 'material_woodwool' as MaterialId,
-  name: 'Woodwool Insulation',
+  name: 'Woodwool',
+  nameKey: 'woodwool',
   sizes: [{ smallerLength: 575, biggerLength: 1220 }],
   thicknesses: [30, 40, 50, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240],
   type: 'sheet',
@@ -204,7 +217,8 @@ export const woodwool: SheetMaterial = {
 
 export const clayPlasterBase: VolumeMaterial = {
   id: 'material_clay_plaster_base' as MaterialId,
-  name: 'Clay Plaster (Base)',
+  name: 'Clay plaster (base)',
+  nameKey: 'clayPlasterBase',
   type: 'volume',
   availableVolumes: [598802395.21, 299401197.605], // 1t, 1/2t
   color: '#927d61',
@@ -213,7 +227,8 @@ export const clayPlasterBase: VolumeMaterial = {
 
 export const clayPlasterFine: VolumeMaterial = {
   id: 'material_clay_plaster_fine' as MaterialId,
-  name: 'Clay Plaster (Fine)',
+  name: 'Clay plaster (fine)',
+  nameKey: 'clayPlasterFine',
   type: 'volume',
   availableVolumes: [598802395.21, 299401197.605], // 1t, 1/2t
   color: '#927d61',
@@ -222,7 +237,8 @@ export const clayPlasterFine: VolumeMaterial = {
 
 export const limePlasterBase: VolumeMaterial = {
   id: 'material_lime_plaster_base' as MaterialId,
-  name: 'Lime Plaster (Base)',
+  name: 'Lime plaster (base)',
+  nameKey: 'limePlasterBase',
   type: 'volume',
   availableVolumes: [19800000], // 25kg
   color: '#e5dbd3',
@@ -231,7 +247,8 @@ export const limePlasterBase: VolumeMaterial = {
 
 export const limePlasterFine: VolumeMaterial = {
   id: 'material_lime_plaster_fine' as MaterialId,
-  name: 'Lime Plaster (Fine)',
+  name: 'Lime plaster (fine)',
+  nameKey: 'limePlasterFine',
   type: 'volume',
   availableVolumes: [19800000], // 25kg
   color: '#e5dbd3',
@@ -240,7 +257,8 @@ export const limePlasterFine: VolumeMaterial = {
 
 export const cementScreed: VolumeMaterial = {
   id: 'material_cement_screed' as MaterialId,
-  name: 'Cement Screed',
+  name: 'Cement screed',
+  nameKey: 'cementScreed',
   type: 'volume',
   availableVolumes: [],
   color: '#767773',
@@ -249,7 +267,8 @@ export const cementScreed: VolumeMaterial = {
 
 export const impactSoundInsulation: VolumeMaterial = {
   id: 'material_impact_sound_insulation' as MaterialId,
-  name: 'Impact Sound Insulation',
+  name: 'Impact sound insulation',
+  nameKey: 'impactSoundInsulation',
   type: 'volume',
   availableVolumes: [],
   color: '#CCCC33',
@@ -259,6 +278,7 @@ export const impactSoundInsulation: VolumeMaterial = {
 export const osb: SheetMaterial = {
   id: 'material_osb' as MaterialId,
   name: 'OSB',
+  nameKey: 'osb',
   sizes: [
     { smallerLength: 1220, biggerLength: 2440 },
     { smallerLength: 1250, biggerLength: 2500 },
@@ -273,7 +293,8 @@ export const osb: SheetMaterial = {
 
 export const dhf: SheetMaterial = {
   id: 'material_dhf' as MaterialId,
-  name: 'DHF (wood fibre board)',
+  name: 'DHF (wood fiber board)',
+  nameKey: 'dhf',
   sizes: [
     { smallerLength: 625, biggerLength: 2500 },
     { smallerLength: 1220, biggerLength: 2440 },
@@ -289,7 +310,8 @@ export const dhf: SheetMaterial = {
 
 export const brick: DimensionalMaterial = {
   id: 'material_aac_brick' as MaterialId,
-  name: 'AAC Brick',
+  name: 'Brick',
+  nameKey: 'brick',
   type: 'dimensional',
   color: '#b2b2af',
   crossSections: [{ smallerLength: 240, biggerLength: 300 }],
@@ -299,7 +321,8 @@ export const brick: DimensionalMaterial = {
 
 export const bitumen: SheetMaterial = {
   id: 'material_bitumen' as MaterialId,
-  name: 'Bitumen Felt',
+  name: 'Bitumen',
+  nameKey: 'bitumen',
   sizes: [{ smallerLength: 1000, biggerLength: 10000 }],
   thicknesses: [1.2, 1.5, 1.8, 2.0, 3.0, 4.0],
   sheetType: 'flexible',
@@ -310,7 +333,8 @@ export const bitumen: SheetMaterial = {
 
 export const cork: SheetMaterial = {
   id: 'material_cork' as MaterialId,
-  name: 'Cork Insulation',
+  name: 'Cork',
+  nameKey: 'cork',
   sizes: [{ smallerLength: 500, biggerLength: 1000 }],
   thicknesses: [20],
   sheetType: 'solid',
@@ -321,7 +345,8 @@ export const cork: SheetMaterial = {
 
 export const gypsum: SheetMaterial = {
   id: 'material_gypsum' as MaterialId,
-  name: 'Gypsum Board',
+  name: 'Gypsum board',
+  nameKey: 'gypsum',
   sizes: [
     { smallerLength: 1200, biggerLength: 2000 },
     { smallerLength: 1200, biggerLength: 2400 },
@@ -337,7 +362,8 @@ export const gypsum: SheetMaterial = {
 
 export const reed: SheetMaterial = {
   id: 'material_reed' as MaterialId,
-  name: 'Reed Mat',
+  name: 'Reed matting',
+  nameKey: 'reed',
   sizes: [
     { smallerLength: 180, biggerLength: 10000 },
     { smallerLength: 200, biggerLength: 5000 }
@@ -351,7 +377,8 @@ export const reed: SheetMaterial = {
 
 export const fireProtectionBoarding: SheetMaterial = {
   id: 'material_fire_boarding' as MaterialId,
-  name: 'Fire Protection Boarding',
+  name: 'Fire protection boarding',
+  nameKey: 'fireProtectionBoarding',
   sizes: [{ smallerLength: 130, biggerLength: 4000 }],
   thicknesses: [40],
   sheetType: 'solid',
@@ -362,7 +389,8 @@ export const fireProtectionBoarding: SheetMaterial = {
 
 export const windBarrier: SheetMaterial = {
   id: 'material_wind_barrier' as MaterialId,
-  name: 'Wind Barrier Membrane',
+  name: 'Wind barrier',
+  nameKey: 'windBarrier',
   sizes: [
     { smallerLength: 1500, biggerLength: 25000 },
     { smallerLength: 1500, biggerLength: 50000 }

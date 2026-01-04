@@ -1,5 +1,6 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { Box, Callout, Flex, Kbd, Text } from '@radix-ui/themes'
+import { useTranslation } from 'react-i18next'
 
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
@@ -7,6 +8,7 @@ import type { ToolInspectorProps } from '@/editor/tools/system/types'
 import type { MoveTool } from './MoveTool'
 
 export function MoveToolInspector({ tool }: ToolInspectorProps<MoveTool>): React.JSX.Element {
+  const { t } = useTranslation('tool')
   const toolState = useReactiveTool(tool).getToolState()
 
   return (
@@ -18,29 +20,31 @@ export function MoveToolInspector({ tool }: ToolInspectorProps<MoveTool>): React
             <InfoCircledIcon />
           </Callout.Icon>
           <Callout.Text>
-            <Text size="1">
-              Drag entities to move them. After releasing, you can type a number to adjust the movement distance
-              precisely.
-            </Text>
+            <Text size="1">{t($ => $.move.info)}</Text>
           </Callout.Text>
         </Callout.Root>
 
         {/* Help Text */}
         <Flex direction="column" gap="2">
           <Text size="1" weight="medium">
-            Controls:
+            {t($ => $.move.controlsHeading)}
           </Text>
           <Text size="1" color="gray">
-            • Click and drag to move entities
+            • {t($ => $.move.controlDrag)}
           </Text>
           <Text size="1" color="gray">
-            • Movement snaps to grid and geometry
+            • {t($ => $.move.controlSnap)}
           </Text>
           <Text size="1" color="gray">
-            • After moving, type numbers for precise distance
+            • {t($ => $.move.controlPrecise)}
           </Text>
           <Text size="1" color="gray">
-            • Press <Kbd>Esc</Kbd> to cancel ongoing movement
+            •{' '}
+            {t($ => $.move.controlCancel, {
+              key: 'Esc'
+            }).replace('{{key}}', '')}
+            <Kbd>{t($ => $.keyboard.esc)}</Kbd>
+            {' to cancel ongoing movement'}
           </Text>
         </Flex>
 
@@ -49,7 +53,7 @@ export function MoveToolInspector({ tool }: ToolInspectorProps<MoveTool>): React
           <Callout.Root color={toolState.isValid ? 'green' : 'red'}>
             <Callout.Text>
               <Text size="1" weight="medium">
-                {toolState.isValid ? 'Moving...' : 'Invalid position'}
+                {toolState.isValid ? t($ => $.move.moving) : t($ => $.move.invalidPosition)}
               </Text>
             </Callout.Text>
           </Callout.Root>

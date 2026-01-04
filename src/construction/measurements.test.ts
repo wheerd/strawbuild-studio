@@ -43,10 +43,12 @@ describe('measurements', () => {
     end = newVec3(100, 0, 0),
     label = '100mm',
     offset = 0,
-    tags: Tag[] = []
+    tags: Tag[] = [],
+    length?: number
   ): DirectMeasurement => ({
     startPoint: start,
     endPoint: end,
+    length: length ?? 100,
     label,
     offset,
     tags

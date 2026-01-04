@@ -2,14 +2,16 @@ import { ExclamationTriangleIcon, ReloadIcon } from '@radix-ui/react-icons'
 import { AlertDialog, Button, Callout, Code, Flex, Heading, Text } from '@radix-ui/themes'
 import { useState } from 'react'
 import type { FallbackProps } from 'react-error-boundary'
+import { useTranslation } from 'react-i18next'
 
 import { hardReset } from '@/shared/utils/hardReset'
 
 export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): React.JSX.Element {
+  const { t } = useTranslation('errors')
   const [showDetails, setShowDetails] = useState(false)
 
   const handleCopyError = () => {
-    const errorText = `Error: ${error.message}\n\nStack:\n${error.stack || 'No stack trace available'}`
+    const errorText = `Error: ${error.message}\n\nStack:\n${error.stack || t($ => $.boundary.noStackTrace)}`
     navigator.clipboard.writeText(errorText).catch(console.error)
   }
 
@@ -27,9 +29,9 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): Rea
       <Flex direction="column" gap="4" style={{ maxWidth: '600px', width: '100%' }}>
         <Flex direction="column" gap="2" align="center">
           <ExclamationTriangleIcon width="48" height="48" color="var(--red-9)" />
-          <Heading size="6">Something went wrong</Heading>
+          <Heading size="6">{t($ => $.boundary.title)}</Heading>
           <Text color="gray" align="center">
-            The application encountered an unexpected error and cannot continue.
+            {t($ => $.boundary.description)}
           </Text>
         </Flex>
 
@@ -38,14 +40,14 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): Rea
             <ExclamationTriangleIcon />
           </Callout.Icon>
           <Callout.Text>
-            <strong>{error.message || 'An unexpected error occurred'}</strong>
+            <strong>{error.message || t($ => $.boundary.errorMessage)}</strong>
           </Callout.Text>
         </Callout.Root>
 
         {showDetails && error.stack && (
           <Flex direction="column" gap="2">
             <Text size="2" weight="bold">
-              Error Details:
+              {t($ => $.boundary.errorDetails)}
             </Text>
             <Code
               style={{
@@ -65,21 +67,21 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): Rea
         <Flex direction="column" gap="2">
           <Button size="3" onClick={() => window.location.reload()}>
             <ReloadIcon />
-            Reload Page
+            {t($ => $.boundary.reloadPage)}
           </Button>
 
           {resetErrorBoundary && (
             <Button size="3" variant="soft" onClick={resetErrorBoundary}>
-              Try Again
+              {t($ => $.boundary.tryAgain)}
             </Button>
           )}
 
           <Button size="2" variant="outline" onClick={() => setShowDetails(!showDetails)}>
-            {showDetails ? 'Hide Details' : 'Show Details'}
+            {showDetails ? t($ => $.boundary.hideDetails) : t($ => $.boundary.showDetails)}
           </Button>
 
           <Button size="2" variant="ghost" onClick={handleCopyError}>
-            Copy Error Details
+            {t($ => $.boundary.copyError)}
           </Button>
         </Flex>
 
@@ -89,32 +91,26 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): Rea
           </Callout.Icon>
           <Callout.Text>
             <Flex direction="column" gap="2">
-              <Text weight="bold">Data Recovery Option</Text>
-              <Text size="2">
-                If the error persists, you can perform a hard reset that will clear all stored data and reset the
-                application to its default state. This will delete your floor plans and configurations.
-              </Text>
+              <Text weight="bold">{t($ => $.boundary.dataRecovery.title)}</Text>
+              <Text size="2">{t($ => $.boundary.dataRecovery.description)}</Text>
               <AlertDialog.Root>
                 <AlertDialog.Trigger>
                   <Button size="2" color="orange" variant="soft">
-                    Hard Reset Application
+                    {t($ => $.boundary.dataRecovery.hardReset)}
                   </Button>
                 </AlertDialog.Trigger>
                 <AlertDialog.Content>
-                  <AlertDialog.Title>Reset Application?</AlertDialog.Title>
-                  <AlertDialog.Description>
-                    This will delete all your data including floor plans, configurations, and materials. This action
-                    cannot be undone.
-                  </AlertDialog.Description>
+                  <AlertDialog.Title>{t($ => $.boundary.dataRecovery.dialogTitle)}</AlertDialog.Title>
+                  <AlertDialog.Description>{t($ => $.boundary.dataRecovery.dialogDescription)}</AlertDialog.Description>
                   <Flex gap="3" mt="4" justify="end">
                     <AlertDialog.Cancel>
                       <Button variant="soft" color="gray">
-                        Cancel
+                        {t($ => $.boundary.dataRecovery.cancel)}
                       </Button>
                     </AlertDialog.Cancel>
                     <AlertDialog.Action>
                       <Button variant="solid" color="red" onClick={hardReset}>
-                        Delete All Data & Reset
+                        {t($ => $.boundary.dataRecovery.confirm)}
                       </Button>
                     </AlertDialog.Action>
                   </Flex>

@@ -1,0 +1,314 @@
+{
+  "areaTypes": {
+    "bottom-plate": "Unterer Ringanker",
+    "corner": "Ecke",
+    "door": "Tür",
+    "floor-level": "Fertig-Bodenhöhe",
+    "inner-perimeter": "Innenumfang",
+    "outer-perimeter": "Außenumfang",
+    "passage": "Durchbruch",
+    "top-plate": "Oberer Ringanker",
+    "window": "Fenster"
+  },
+  "materialSelect": {
+    "noMaterialsAvailable": "Keine Materialien verfügbar",
+    "none": "Keine",
+    "placeholder": "Material auswählen..."
+  },
+  "materialTypes": {
+    "dimensional": "Dimensioniert",
+    "generic": "Generisch",
+    "sheet": "Platte",
+    "strawbale": "Strohballen",
+    "volume": "Volumen"
+  },
+  "measurements": {
+    "assembly": "Aufbau",
+    "basePlate": "Fußschwelle",
+    "ceilingLayers": "Deckenschichten",
+    "construction": "Konstruktion",
+    "finishedCeiling": "Fertig-Decke",
+    "finishedFloor": "Fertig-Boden",
+    "finishedInside": "Fertig innen",
+    "finishedOutside": "Fertig außen",
+    "finishedOverhang": "Fertig-Traufe",
+    "finishedRooftop": "Fertig-Dach",
+    "floorAssembly": "Bodenaufbau",
+    "floorBottomLayers": "Deckenschichten",
+    "floorBottomOffset": "Konstruktion Unterversatz",
+    "floorConstruction": "Bodenkonstruktion",
+    "floorTopLayers": "Bodenschichten",
+    "floorTopOffset": "Konstruktion Oberversatz",
+    "insideLayers": "Innenschichten",
+    "measurements": "Maße",
+    "outsideLayers": "Außenschichten",
+    "overhangLayers": "Traufschichten",
+    "roofAssembly": "Dachaufbau",
+    "roofConstruction": "Dachaufbau",
+    "roofInsideOverlap": "Innen-\nÜberlappung",
+    "roofMeasurementDetails": "Dach-Maßdetails",
+    "roofOutsideOverlap": "Außen-\nÜberlappung",
+    "roofTopLayers": "Dach Oberschichten",
+    "roomHeight": "Deckenhöhe",
+    "storeyHeight": "Geschosshöhe",
+    "topPlate": "Kopfschwelle",
+    "totalFloorThickness": "Gesamt-\nBoden-\ndicke",
+    "totalRoofThickness": "Dach-\ndicke",
+    "totalWallThickness": "Gesamt-\nWand-\ndicke",
+    "wall": "Wand",
+    "wallAssembly": "Wand-\naufbau",
+    "wallAssemblyHeight": "Wandaufbauhöhe",
+    "wallConstruction": "Wand-\nkonstruktion",
+    "wallConstructionHeight": "Wandkonstruktionshöhe"
+  },
+  "modulesList": {
+    "actions": {
+      "viewInPlan": "In Plan anzeigen"
+    },
+    "noModules": "Keine Module",
+    "tableHeaders": {
+      "dimensions": "Abmessungen",
+      "label": "Bezeichnung",
+      "quantity": "Menge",
+      "type": "Typ",
+      "view": "Ansicht"
+    },
+    "title": "Module"
+  },
+  "partCutModal": {
+    "partCutDiagram": "Teileschnittdiagramm",
+    "sheetPartDiagram": "Plattendiagramm"
+  },
+  "partsList": {
+    "actions": {
+      "backToSummary": "Zurück zur Übersicht",
+      "configureMaterial": "Material konfigurieren",
+      "jumpToDetails": "Zu Details springen",
+      "specialCutPreview": "Vorschau Sonderschnitt",
+      "viewInPlan": "In Plan anzeigen"
+    },
+    "groups": {
+      "allParts": "Alle Teile",
+      "strawbales": "Strohballen"
+    },
+    "issues": {
+      "dimensionsExceedSizeMultiple": "Abmessungen überschreiten verfügbare Plattengrößen. Für dieses Teil werden mehrere Platten benötigt.",
+      "dimensionsExceedSizeSingle": "Abmessungen überschreiten verfügbare Plattengrößen.",
+      "dimensionsMismatchThickness": "Abmessungen stimmen nicht mit verfügbaren Dicken überein",
+      "groupMismatch": "Diese Gruppe stimmt nicht mit den definierten Materialoptionen überein",
+      "lengthExceedsMultiple": "Teillänge überschreitet maximale verfügbare Länge. Für dieses Teil werden mehrere Stücke benötigt.",
+      "lengthExceedsSingle": "Teillänge überschreitet maximale verfügbare Länge."
+    },
+    "noPartsAvailable": "Keine Teile verfügbar.",
+    "other": {
+      "crossSectionMismatch": "Querschnitt stimmt nicht mit verfügbaren Optionen für dieses Material überein",
+      "crossSections": "Andere Querschnitte",
+      "thicknesses": "Andere Dicken",
+      "thicknessMismatch": "Dicke stimmt nicht mit verfügbaren Optionen für dieses Material überein"
+    },
+    "straw": {
+      "flakes": "Ballen-Schichten (Flakes)",
+      "fullBales": "Ganze Ballen",
+      "leftoverFromPartialBales": "Rest von Teilballen",
+      "partialBales": "Teilballen",
+      "rawLengthNote": "Die angegebene Länge ist die Rohlänge",
+      "sawButtonHint": "Klicke auf die \"Säge\"-Schaltfläche für detailliertere Maße",
+      "specialCutNote": "Dieses Teil erfordert einen Sonderschnitt",
+      "stuffedFill": "Stopffüllung"
+    },
+    "summary": "Übersicht",
+    "tableHeaders": {
+      "area": "Fläche",
+      "baleCount": "Ballenzahl",
+      "category": "Kategorie",
+      "description": "Beschreibung",
+      "differentParts": "Verschiedene Teile",
+      "dimensions": "Abmessungen",
+      "label": "Bezeichnung",
+      "length": "Länge",
+      "material": "Material",
+      "quantity": "Anzahl",
+      "thickness": "Dicke",
+      "totalArea": "Gesamtfläche",
+      "totalLength": "Gesamtlänge",
+      "totalQuantity": "Gesamtanzahl",
+      "totalVolume": "Gesamtvolumen",
+      "totalWeight": "Gesamtgewicht",
+      "type": "Typ",
+      "view": "Ansicht"
+    },
+    "totalRow": "Gesamt"
+  },
+  "partsListModal": {
+    "errors": {
+      "failedModulesList": "Fehler beim Erstellen der Modulliste",
+      "failedPartsList": "Fehler beim Erstellen der Teileliste"
+    },
+    "tabs": {
+      "materials": "Materialien",
+      "modules": "Module"
+    },
+    "title": "Teileliste"
+  },
+  "plan": {
+    "hideAreas": "Bereiche ausblenden",
+    "hideIssues": "Probleme ausblenden",
+    "hideMeasurements": "Maße ausblenden",
+    "midCut": "Mittelschnitt"
+  },
+  "planModal": {
+    "errors": {
+      "failedModel": "Fehler beim Erstellen des Konstruktionsmodells",
+      "failedModulesList": "Fehler beim Erstellen der Modulliste",
+      "failedPartsList": "Fehler beim Erstellen der Teileliste"
+    },
+    "issuesPanel": {
+      "errorsTitle_one": "Fehler ({{count}})",
+      "errorsTitle_other": "Fehler ({{count}})",
+      "noIssuesMessage": "Konstruktionsplan ist gültig ohne Fehler oder Warnungen.",
+      "noIssuesTitle": "Keine Probleme gefunden",
+      "warningsTitle_one": "Warnung ({{count}})",
+      "warningsTitle_other": "Warnungen ({{count}})"
+    },
+    "partHighlight": {
+      "clearHighlight": "Hervorhebung entfernen",
+      "partHighlighted": "Teil hervorgehoben"
+    },
+    "tabs": {
+      "modules": "Module",
+      "partsList": "Teileliste",
+      "planIssues": "Plan & Probleme"
+    },
+    "views": {
+      "floor": "Boden",
+      "roof": "Dach",
+      "walls": "Wände"
+    }
+  },
+  "strawCategories": {
+    "flakes": "Ballen-Schichten (Flakes)",
+    "full": "Ganze Ballen",
+    "partial": "Teilballen",
+    "stuffed": "Stopffüllung"
+  },
+  "tagCategories": {
+    "area": "Bereich",
+    "construction": "Konstruktion",
+    "finished-measurement": "Fertigmaß",
+    "floor-assembly": "Bodenaufbau",
+    "floor-layer": "Bodenschichten",
+    "floor-measurement": "Bodenmaße",
+    "floor-part": "Bodenteil",
+    "module-part": "Modulteile",
+    "opening": "Öffnung",
+    "opening-measurement": "Öffnungsmaße",
+    "ring-beam-assembly": "Ringankeraufbau",
+    "ring-beam-measurement": "Ringankermaße",
+    "ring-beam-part": "Ringankerteil",
+    "roof-assembly": "Dachaufbau",
+    "roof-layer": "Dachschichten",
+    "roof-measurement": "Dachmaße",
+    "roof-part": "Dachteile",
+    "roof-side": "Dachseite",
+    "storey-name": "Geschossname",
+    "straw": "Stroh",
+    "wall-assembly": "Wandaufbau",
+    "wall-layer": "Wandschichten",
+    "wall-measurement": "Wandmaße",
+    "wall-part": "Wandteile"
+  },
+  "tags": {
+    "area_perimeter-inside": "Umfang innen",
+    "area_perimeter-outside": "Umfang außen",
+    "construction_base-plate": "Fußschwelle",
+    "construction_floor": "Boden",
+    "construction_layers": "Schichten",
+    "construction_module": "Modul",
+    "construction_roof": "Dach",
+    "construction_storey": "Geschoss",
+    "construction_top-plate": "Kopfschwelle",
+    "construction_walls": "Wände",
+    "finished-measurement_wall-length-inside": "Wandlänge innen",
+    "finished-measurement_wall-length-outside": "Wandlänge außen",
+    "floor-assembly_filled": "Typ: Gefüllt",
+    "floor-assembly_joist": "Typ: Balken",
+    "floor-assembly_monolithic": "Typ: Massiv",
+    "floor-layer_bottom": "Deckenschichten",
+    "floor-layer_top": "Bodenschichten",
+    "floor-measurement_joist-length": "Balkenlänge",
+    "floor-measurement_joist-spacing": "Balkenabstand",
+    "floor-part_ceiling-sheathing": "Deckenbeplankung",
+    "floor-part_frame": "Rahmen",
+    "floor-part_infill": "Wandfüllung",
+    "floor-part_joist": "Balken",
+    "floor-part_opening-frame": "Öffnungsrahmen",
+    "floor-part_subfloor": "Unterboden",
+    "floor-part_wall-beam": "Wandträger",
+    "module-part_frame": "Rahmen",
+    "module-part_infill": "Füllung",
+    "module-part_spacer": "Abstandhalter",
+    "opening_door": "Tür",
+    "opening_window": "Fenster",
+    "opening-measurement_header-from-top": "Sturz von oben",
+    "opening-measurement_header-height": "Sturzhöhe",
+    "opening-measurement_opening-height": "Öffnungshöhe",
+    "opening-measurement_opening-width": "Öffnungsbreite",
+    "opening-measurement_sill-height": "Schwellenhöhe",
+    "ring-beam-measurement_ring-beam-height": "Ringankerhöhe",
+    "ring-beam-measurement_ring-beam-inner": "Ringanker innen",
+    "ring-beam-measurement_ring-beam-outer": "Ringanker außen",
+    "ring-beam-part_insulation": "Dämmung",
+    "ring-beam-part_plate": "Platte",
+    "ring-beam-part_stud-wall": "Ständerwand",
+    "ring-beam-part_waterproofing": "Abdichtungsschicht",
+    "roof-assembly_monolithic": "Typ: Massiv",
+    "roof-assembly_purlin": "Typ: Pfette",
+    "roof-layer_inside": "Deckenschichten",
+    "roof-layer_overhang": "Traufschichten",
+    "roof-layer_top": "Dach Oberschichten",
+    "roof-measurement_purlin-length": "Pfettenlänge",
+    "roof-measurement_purlin-rise": "Pfettenhöhe",
+    "roof-measurement_purlin-spacing": "Pfettenabstand",
+    "roof-measurement_rafter-length": "Sparrenlänge",
+    "roof-measurement_rafter-spacing": "Sparrenabstand",
+    "roof-part_decking": "Dachbeplankung",
+    "roof-part_infill": "Füllung",
+    "roof-part_inside-sheathing": "Deckenbeplankung",
+    "roof-part_purlin": "Pfette",
+    "roof-part_rafter": "Sparren",
+    "roof-part_ridge-beam": "Firstbalken",
+    "roof-side_left": "Linke Dachseite",
+    "roof-side_right": "Rechte Dachseite",
+    "straw_flakes": "Stroh-Schichten (Flakes)",
+    "straw_full-bale": "Ganzer Strohballen",
+    "straw_infill": "Strohfüllung",
+    "straw_partial-bale": "Teil-Strohballen",
+    "straw_stuffed": "Gestopftes Stroh",
+    "wall-assembly_infill": "Typ: Ausfachung",
+    "wall-assembly_non-strawbale": "Typ: Massiv",
+    "wall-assembly_strawhenge": "Typ: Strawhenge",
+    "wall-layer_inside": "Innere Wandschichten",
+    "wall-layer_outside": "Äußere Wandschichten",
+    "wall-measurement_module-width": "Modulbreite",
+    "wall-measurement_opening-spacing": "Öffnungsabstand",
+    "wall-measurement_post-spacing": "Ständerabstand",
+    "wall-measurement_wall-construction-height": "Wandkonstruktionshöhe",
+    "wall-measurement_wall-construction-length-inside": "Wandkonstruktionslänge innen",
+    "wall-measurement_wall-construction-length-outside": "Wandkonstruktionslänge außen",
+    "wall-measurement_wall-height": "Wandhöhe",
+    "wall-measurement_wall-length": "Wandlänge",
+    "wall-part_header": "Sturz",
+    "wall-part_infill": "Füllung",
+    "wall-part_post": "Ständer",
+    "wall-part_sill": "Schwelle"
+  },
+  "tagVisibility": {
+    "hideCategory": "Kategorie ausblenden",
+    "noTags": "Keine Tags verfügbar",
+    "showCategory": "Kategorie anzeigen",
+    "title": "Tag-Sichtbarkeit"
+  },
+  "viewer3DModal": {
+    "title": "3D-Konstruktionsansicht"
+  }
+}

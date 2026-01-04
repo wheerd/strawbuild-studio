@@ -1,10 +1,13 @@
 import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons'
 import { DropdownMenu, Flex, IconButton, Text } from '@radix-ui/themes'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { GroupOrElement } from '@/construction/elements'
 import type { ConstructionModel } from '@/construction/model'
-import { CATEGORIES, type Tag, type TagCategoryId, type TagId } from '@/construction/tags'
+import { type Tag, type TagCategoryId, type TagId } from '@/construction/tags'
+import { useCategoryLabel } from '@/construction/useCategoryLabel'
+import { useTagLabel } from '@/construction/useTagLabel'
 
 import { useTagVisibilityActions, useTagVisibilityForceUpdate } from './TagVisibilityContext'
 
@@ -12,23 +15,13 @@ export interface TagVisibilityMenuProps {
   model: ConstructionModel
 }
 
-interface TagInfo {
-  id: TagId
-  label: string
-  category: TagCategoryId
-}
-
-function collectTagsFromModel(model: ConstructionModel): Map<TagCategoryId, TagInfo[]> {
-  const tagMap = new Map<TagId, TagInfo>()
+function collectTagsFromModel(model: ConstructionModel): Map<TagCategoryId, Tag[]> {
+  const tagMap = new Map<TagId, Tag>()
 
   const addTags = (tags?: Tag[]) => {
     tags?.forEach(tag => {
       if (!tagMap.has(tag.id)) {
-        tagMap.set(tag.id, {
-          id: tag.id,
-          label: tag.label,
-          category: tag.category
-        })
+        tagMap.set(tag.id, tag)
       }
     })
   }
@@ -46,25 +39,34 @@ function collectTagsFromModel(model: ConstructionModel): Map<TagCategoryId, TagI
   model.measurements.forEach(m => addTags(m.tags))
 
   // Group by category
-  const categoryMap = new Map<TagCategoryId, TagInfo[]>()
-  tagMap.forEach(tagInfo => {
-    const existing = categoryMap.get(tagInfo.category)
+  const categoryMap = new Map<TagCategoryId, Tag[]>()
+  tagMap.forEach(tag => {
+    const existing = categoryMap.get(tag.category)
     if (existing) {
-      existing.push(tagInfo)
+      existing.push(tag)
     } else {
-      categoryMap.set(tagInfo.category, [tagInfo])
+      categoryMap.set(tag.category, [tag])
     }
-  })
-
-  // Sort tags within each category alphabetically
-  categoryMap.forEach(tags => {
-    tags.sort((a, b) => a.label.localeCompare(b.label))
   })
 
   return categoryMap
 }
 
+// Helper component to render a category label using translations
+function CategoryLabel({ categoryId }: { categoryId: TagCategoryId }) {
+  const label = useCategoryLabel(categoryId)
+  return <>{label}</>
+}
+
+// Helper component to render a tag label using translations
+function TagLabel({ tag }: { tag: Tag }) {
+  const label = useTagLabel(tag)
+  return <>{label}</>
+}
+
 export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.Element {
+  const { t } = useTranslation('construction')
+
   // Re-render on any tag visibility change to update the menu UI
   useTagVisibilityForceUpdate()
 
@@ -72,11 +74,9 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
 
   const tagsByCategory = useMemo(() => collectTagsFromModel(model), [model])
 
-  // Sort categories alphabetically by label
+  // Get category IDs (sorted alphabetically by ID for now - will be sorted by translated label in render)
   const sortedCategories = useMemo(() => {
-    return Array.from(tagsByCategory.entries()).sort(([catA], [catB]) =>
-      CATEGORIES[catA].label.localeCompare(CATEGORIES[catB].label)
-    )
+    return Array.from(tagsByCategory.entries()).sort(([catA], [catB]) => String(catA).localeCompare(String(catB)))
   }, [tagsByCategory])
 
   const renderVisibilityIcon = (state: 'visible' | 'partial' | 'hidden') => {
@@ -94,14 +94,14 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
     return (
       <DropdownMenu.Root>
         <DropdownMenu.Trigger>
-          <IconButton size="1" variant="outline" title="Tag Visibility" disabled>
+          <IconButton size="1" variant="outline" title={t($ => $.tagVisibility.title)} disabled>
             <EyeOpenIcon />
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <DropdownMenu.Item disabled>
             <Text size="1" color="gray">
-              No tags available
+              {t($ => $.tagVisibility.noTags)}
             </Text>
           </DropdownMenu.Item>
         </DropdownMenu.Content>
@@ -112,20 +112,22 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
-        <IconButton size="1" variant="solid" title="Tag Visibility">
+        <IconButton size="1" variant="solid" title={t($ => $.tagVisibility.title)}>
           <EyeOpenIcon />
         </IconButton>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
         {sortedCategories.map(([categoryId, tags]) => {
-          const tagIds = tags.map(t => t.id)
+          const tagIds = tags.map(t => t.id as TagId)
           const categoryState = getCategoryVisibilityState(categoryId, tagIds)
 
           return (
-            <DropdownMenu.Sub key={categoryId}>
+            <DropdownMenu.Sub key={String(categoryId)}>
               <DropdownMenu.SubTrigger>
                 <Flex align="center" justify="between" width="100%" gap="2">
-                  <Text size="1">{CATEGORIES[categoryId].label}</Text>
+                  <Text size="1">
+                    <CategoryLabel categoryId={categoryId} />
+                  </Text>
                   {renderVisibilityIcon(categoryState)}
                 </Flex>
               </DropdownMenu.SubTrigger>
@@ -143,7 +145,9 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
                     }}
                   >
                     <Text size="1" weight="bold">
-                      {isTagOrCategoryVisible(categoryId) ? 'Hide' : 'Show'} Category
+                      {isTagOrCategoryVisible(categoryId)
+                        ? t($ => $.tagVisibility.hideCategory)
+                        : t($ => $.tagVisibility.showCategory)}
                     </Text>
                     {isTagOrCategoryVisible(categoryId) ? <EyeOpenIcon /> : <EyeClosedIcon />}
                   </Flex>
@@ -151,7 +155,7 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
                 <DropdownMenu.Separator />
                 {/* Individual tag toggles */}
                 {tags.map(tag => (
-                  <DropdownMenu.Item key={tag.id} onSelect={e => e.preventDefault()}>
+                  <DropdownMenu.Item key={String(tag.id)} onSelect={e => e.preventDefault()}>
                     <Flex
                       align="center"
                       justify="between"
@@ -162,7 +166,9 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
                         toggleTagOrCategory(tag.id)
                       }}
                     >
-                      <Text size="1">{tag.label}</Text>
+                      <Text size="1">
+                        <TagLabel tag={tag} />
+                      </Text>
                       {isTagOrCategoryVisible(tag.id) ? <EyeOpenIcon /> : <EyeClosedIcon />}
                     </Flex>
                   </DropdownMenu.Item>

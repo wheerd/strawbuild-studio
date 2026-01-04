@@ -19,7 +19,10 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "testimporter": "IFCIMPORTER=1 vitest watch src/importers/ifc/importer.integration.test.ts"
+    "testimporter": "IFCIMPORTER=1 vitest watch src/importers/ifc/importer.integration.test.ts",
+    "i18n:interface": "i18next-cli types",
+    "i18n:extract": "i18next-cli extract",
+    "i18n:update": "pnpm i18n:extract && pnpm i18n:interface"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -37,6 +40,8 @@
     "clipper2-wasm": "^0.1.0",
     "fast-deep-equal": "^3.1.3",
     "gl-matrix": "^3.4.4",
+    "i18next": "^25.7.3",
+    "i18next-browser-languagedetector": "^8.2.0",
     "immer": "^10.2.0",
     "konva": "^9.3.22",
     "manifold-3d": "^3.3.2",
@@ -44,6 +49,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-error-boundary": "^6.0.0",
+    "react-i18next": "^16.5.0",
     "react-konva": "^19.2.1",
     "three": "^0.180.0",
     "throttle-debounce": "^5.0.2",
@@ -73,6 +79,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-unused-imports": "^4.3.0",
     "fast-check": "^4.3.0",
+    "i18next-cli": "^1.33.5",
     "jsdom": "^26.1.0",
     "neostandard": "^0.12.2",
     "postcss": "^8.5.6",

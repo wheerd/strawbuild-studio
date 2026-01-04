@@ -14,8 +14,8 @@ import {
   scaleVec2,
   subVec2
 } from '@/shared/geometry'
+import { useFormatters } from '@/shared/i18n/useFormatters'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
-import { formatLength } from '@/shared/utils/formatting'
 
 interface LengthIndicatorProps {
   startPoint: Vec2
@@ -36,6 +36,7 @@ export function LengthIndicator({
   fontSize = 40,
   strokeWidth = 10
 }: LengthIndicatorProps): React.JSX.Element {
+  const { formatLength } = useFormatters()
   const theme = useCanvasTheme()
   const textRef = useRef<Konva.Text>(null)
   const actualColor = color ?? theme.textSecondary

@@ -1,6 +1,7 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { HoverCard, IconButton, Inset } from '@radix-ui/themes'
 import { type ComponentProps, type JSX, useId } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
 import { BaseModal } from '@/shared/components/BaseModal'
@@ -77,6 +78,7 @@ export function ConstructionSchematic({
                 | r |              | s |
                 | s |              |   |
 */
+  const { t } = useTranslation('construction')
 
   const marginBottomGradientId = useId()
   const marginRightGradientId = useId()
@@ -344,7 +346,7 @@ export function ConstructionSchematic({
               : roofBottomThicknessVertical) +
             marginRightDelta
         ),
-        label: 'Roof\nThickness',
+        label: t($ => $.measurements.totalRoofThickness),
         labelOrientation: 'perpendicular',
         fontSize: 50,
         strokeWidth: 10
@@ -353,7 +355,7 @@ export function ConstructionSchematic({
       {renderMeasurement('roofInsideOverlap', {
         startPoint: newVec2(wallRight, roofInsideCornerY),
         endPoint: newVec2(wallRight, wallAssemblyTopY),
-        label: 'Inside\nOverlap',
+        label: t($ => $.measurements.roofInsideOverlap),
         labelOrientation: 'perpendicular',
         offset: 80,
         fontSize: 50,
@@ -363,7 +365,7 @@ export function ConstructionSchematic({
       {renderMeasurement('roofOutsideOverlap', {
         startPoint: newVec2(wallLeft, roofOutsideCornerY),
         endPoint: newVec2(wallLeft, wallAssemblyTopY),
-        label: 'Outside\nOverlap',
+        label: t($ => $.measurements.roofOutsideOverlap),
         labelOrientation: 'perpendicular',
         offset: -80,
         fontSize: 50,
@@ -383,7 +385,7 @@ export function ConstructionSchematic({
           dominantBaseline="middle"
           fill={partLabelColor('roofTopLayers')}
         >
-          Roof Top Layers
+          {t($ => $.measurements.roofTopLayers)}
         </text>
       )}
 
@@ -400,7 +402,7 @@ export function ConstructionSchematic({
           dominantBaseline="middle"
           fill={partLabelColor('roofConstruction')}
         >
-          Roof Construction
+          {t($ => $.measurements.roofConstruction)}
         </text>
       )}
 
@@ -417,7 +419,7 @@ export function ConstructionSchematic({
           dominantBaseline="middle"
           fill={partLabelColor('roofBottomLayers')}
         >
-          Ceiling Layers
+          {t($ => $.measurements.ceilingLayers)}
         </text>
       )}
 
@@ -434,7 +436,7 @@ export function ConstructionSchematic({
           dominantBaseline="middle"
           fill={partLabelColor('overhangBottomLayers')}
         >
-          Overhang Layers
+          {t($ => $.measurements.overhangLayers)}
         </text>
       )}
 
@@ -450,7 +452,7 @@ export function ConstructionSchematic({
           dominantBaseline="text-before-edge"
           fill={assemblyOutlineStroke('roofAssembly', 'var(--amber-10)')}
         >
-          Roof Assembly
+          {t($ => $.measurements.roofAssembly)}
         </text>
       )}
 
@@ -468,7 +470,7 @@ export function ConstructionSchematic({
             dominantBaseline="text-before-edge"
             fill={finishedLevelColor}
           >
-            Finished Ceiling
+            {t($ => $.measurements.finishedCeiling)}
           </text>
           <text
             x={0}
@@ -482,7 +484,7 @@ export function ConstructionSchematic({
             dominantBaseline="text-before-edge"
             fill={finishedLevelColor}
           >
-            Finished Overhang
+            {t($ => $.measurements.finishedOverhang)}
           </text>
           <text
             x={0}
@@ -496,7 +498,7 @@ export function ConstructionSchematic({
             dominantBaseline="text-after-edge"
             fill={finishedLevelColor}
           >
-            Finished Rooftop
+            {t($ => $.measurements.finishedRooftop)}
           </text>
         </>
       )}
@@ -514,7 +516,7 @@ export function ConstructionSchematic({
           dominantBaseline="middle"
           fill={partLabelColor('topPlate')}
         >
-          Top Plate
+          {t($ => $.measurements.topPlate)}
         </text>
       )}
 
@@ -527,10 +529,10 @@ export function ConstructionSchematic({
           transform={`translate(${wallCenterX} ${totalHeight - marginBottom - 10})`}
         >
           <tspan x={0} dy="-1.2em">
-            Wall
+            {t($ => $.measurements.wall)}
           </tspan>
           <tspan x={0} dy="1.2em">
-            Assembly
+            {t($ => $.measurements.assembly)}
           </tspan>
         </text>
       )}
@@ -545,7 +547,7 @@ export function ConstructionSchematic({
           transform={`rotate(-90 ${outsideLayerLabelX} ${outsideLayerLabelY})`}
           fill={partLabelColor('outsideLayer')}
         >
-          Outside Layers
+          {t($ => $.measurements.outsideLayers)}
         </text>
       )}
 
@@ -559,7 +561,7 @@ export function ConstructionSchematic({
           transform={`rotate(90 ${insideLayerLabelX} ${insideLayerLabelY})`}
           fill={partLabelColor('insideLayer')}
         >
-          Inside Layers
+          {t($ => $.measurements.insideLayers)}
         </text>
       )}
 
@@ -573,9 +575,9 @@ export function ConstructionSchematic({
             text-anchor="middle"
             dominantBaseline="middle"
           >
-            <tspan x={0}>Wall</tspan>
+            <tspan x={0}>{t($ => $.measurements.wall)}</tspan>
             <tspan x={0} dy="1.2em">
-              Construction
+              {t($ => $.measurements.construction)}
             </tspan>
           </text>
         </g>
@@ -645,7 +647,7 @@ export function ConstructionSchematic({
             transform={`translate(${outside - 10} ${wallCenterY}) rotate(-90)`}
             fill={finishedSideColor}
           >
-            Finished Outside
+            {t($ => $.measurements.finishedOutside)}
           </text>
           <text
             fontSize={60}
@@ -654,7 +656,7 @@ export function ConstructionSchematic({
             transform={`translate(${inside + 10} ${wallCenterY}) rotate(90)`}
             fill={finishedSideColor}
           >
-            Finished Inside
+            {t($ => $.measurements.finishedInside)}
           </text>
 
           <line
@@ -733,10 +735,19 @@ export function ConstructionSchematic({
 }
 
 export function RoofMeasurementInfo(config: MeasurementDisplayConfig): React.JSX.Element {
+  const { t } = useTranslation('construction')
+
   return (
     <HoverCard.Root>
       <HoverCard.Trigger>
-        <IconButton style={{ cursor: 'help' }} color="gray" radius="full" title="Measurements" variant="ghost" size="1">
+        <IconButton
+          style={{ cursor: 'help' }}
+          color="gray"
+          radius="full"
+          title={t($ => $.measurements.measurements)}
+          variant="ghost"
+          size="1"
+        >
           <InfoCircledIcon width={12} height={12} />
         </IconButton>
       </HoverCard.Trigger>
@@ -750,9 +761,10 @@ export function RoofMeasurementInfo(config: MeasurementDisplayConfig): React.JSX
 }
 
 export function RoofMeasurementModal(): React.JSX.Element {
+  const { t } = useTranslation('construction')
   return (
     <BaseModal
-      title="Roof Measurement Details"
+      title={t($ => $.measurements.roofMeasurementDetails)}
       trigger={
         <IconButton>
           <InfoCircledIcon />

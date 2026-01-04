@@ -18,16 +18,19 @@ import {
   TextField
 } from '@radix-ui/themes'
 import React, { useCallback, useId, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { OpeningAssemblyId } from '@/building/model/ids'
-import { usePerimeters, useStoreysOrderedByLevel } from '@/building/store'
+import { usePerimeters } from '@/building/store'
+import type { OpeningAssemblyConfig } from '@/construction/config'
+import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import {
   useConfigActions,
   useDefaultOpeningAssemblyId,
   useOpeningAssemblies,
   useWallAssemblies
 } from '@/construction/config/store'
-import { getOpeningAssemblyUsage } from '@/construction/config/usage'
+import { type OpeningAssemblyUsage, getOpeningAssemblyUsage } from '@/construction/config/usage'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
 import type { PostConfig } from '@/construction/materials/posts'
@@ -47,10 +50,10 @@ export interface OpeningAssemblyContentProps {
 }
 
 export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyContentProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   const openingAssemblies = useOpeningAssemblies()
   const wallAssemblies = useWallAssemblies()
   const perimeters = usePerimeters()
-  const storeys = useStoreysOrderedByLevel()
   const {
     addOpeningAssembly,
     removeOpeningAssembly,
@@ -76,15 +79,9 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
   const usage = useMemo(
     () =>
       selectedAssembly
-        ? getOpeningAssemblyUsage(
-            selectedAssembly.id as OpeningAssemblyId,
-            perimeters,
-            Object.values(storeys),
-            wallAssemblyArray,
-            defaultId
-          )
-        : { isUsed: false, usedAsGlobalDefault: false, usedByWallAssemblies: [], usedByOpenings: [] },
-    [selectedAssembly, perimeters, storeys, wallAssemblyArray, defaultId]
+        ? getOpeningAssemblyUsage(selectedAssembly.id as OpeningAssemblyId, perimeters, wallAssemblyArray, defaultId)
+        : { isUsed: false, isDefault: false, wallAssemblyIds: [], storeyIds: [] },
+    [selectedAssembly, perimeters, wallAssemblyArray, defaultId]
   )
 
   const handleAddNew = useCallback(
@@ -134,7 +131,11 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
   const handleDuplicate = useCallback(() => {
     if (!selectedAssembly) return
 
-    const duplicated = duplicateOpeningAssembly(selectedAssembly.id, `${selectedAssembly.name} (Copy)`)
+    const newName = t($ => $.openings.copyNameTemplate, {
+      defaultValue: `{{name}} (Copy)`,
+      name: selectedAssembly.name
+    })
+    const duplicated = duplicateOpeningAssembly(selectedAssembly.id, newName)
     setSelectedAssemblyId(duplicated.id)
   }, [selectedAssembly, duplicateOpeningAssembly])
 
@@ -167,20 +168,25 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
         <Flex gap="2" align="end">
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
-              <IconButton title="Add New">
+              <IconButton title={t($ => $.common.addNew)}>
                 <PlusIcon />
               </IconButton>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
-              <DropdownMenu.Item onClick={() => handleAddNew('simple')}>Standard Opening</DropdownMenu.Item>
-              <DropdownMenu.Item onClick={() => handleAddNew('post')}>Opening With Posts</DropdownMenu.Item>
-              <DropdownMenu.Item onClick={() => handleAddNew('empty')}>Empty Opening</DropdownMenu.Item>
+              <DropdownMenu.Item onClick={() => handleAddNew('simple')}>
+                {t($ => $.openings.types.simple)}
+              </DropdownMenu.Item>
+              <DropdownMenu.Item onClick={() => handleAddNew('post')}>
+                {t($ => $.openings.types.post)}
+              </DropdownMenu.Item>
+              <DropdownMenu.Item onClick={() => handleAddNew('empty')}>
+                {t($ => $.openings.types.empty)}
+              </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Root>
         </Flex>
-
         <Callout.Root color="gray">
-          <Callout.Text>No opening assemblies. Create one to get started.</Callout.Text>
+          <Callout.Text>{t($ => $.openings.emptyList)}</Callout.Text>
         </Callout.Root>
       </Flex>
     )
@@ -202,41 +208,52 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
 
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
-              <IconButton title="Add New">
+              <IconButton title={t($ => $.common.addNew)}>
                 <PlusIcon />
               </IconButton>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
-              <DropdownMenu.Item onClick={() => handleAddNew('simple')}>Standard Opening</DropdownMenu.Item>
-              <DropdownMenu.Item onClick={() => handleAddNew('post')}>Opening With Posts</DropdownMenu.Item>
-              <DropdownMenu.Item onClick={() => handleAddNew('empty')}>Empty Opening</DropdownMenu.Item>
+              <DropdownMenu.Item onClick={() => handleAddNew('simple')}>
+                {t($ => $.openings.types.simple)}
+              </DropdownMenu.Item>
+              <DropdownMenu.Item onClick={() => handleAddNew('post')}>
+                {t($ => $.openings.types.post)}
+              </DropdownMenu.Item>
+              <DropdownMenu.Item onClick={() => handleAddNew('empty')}>
+                {t($ => $.openings.types.empty)}
+              </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Root>
 
-          <IconButton onClick={handleDuplicate} variant="soft" title="Duplicate">
+          <IconButton onClick={handleDuplicate} variant="soft" title={t($ => $.common.duplicate)}>
             <CopyIcon />
           </IconButton>
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <IconButton color="red" variant="soft" disabled={usage.isUsed} title="Delete">
+              <IconButton
+                color="red"
+                variant="soft"
+                disabled={usage.isUsed}
+                title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
+              >
                 <TrashIcon />
               </IconButton>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
-              <AlertDialog.Title>Delete Opening Assembly</AlertDialog.Title>
+              <AlertDialog.Title>{t($ => $.openings.deleteTitle)}</AlertDialog.Title>
               <AlertDialog.Description>
-                Are you sure you want to delete &quot;{selectedAssembly.name}&quot;?
+                {t($ => $.openings.deleteConfirm, { name: selectedAssembly.name })}
               </AlertDialog.Description>
               <Flex gap="3" mt="4" justify="end">
                 <AlertDialog.Cancel>
                   <Button variant="soft" color="gray">
-                    Cancel
+                    {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
                   <Button variant="solid" color="red" onClick={handleDelete}>
-                    Delete
+                    {t($ => $.common.delete)}
                   </Button>
                 </AlertDialog.Action>
               </Flex>
@@ -245,25 +262,22 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <IconButton color="red" variant="outline" title="Reset to Defaults">
+              <IconButton color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
                 <ResetIcon />
               </IconButton>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
-              <AlertDialog.Title>Reset Opening Assemblies</AlertDialog.Title>
-              <AlertDialog.Description>
-                Are you sure you want to reset default opening assemblies? This will restore the original default
-                assemblies but keep any custom assemblies you've created. This action cannot be undone.
-              </AlertDialog.Description>
+              <AlertDialog.Title>{t($ => $.openings.resetTitle)}</AlertDialog.Title>
+              <AlertDialog.Description>{t($ => $.openings.resetConfirm)}</AlertDialog.Description>
               <Flex gap="3" mt="4" justify="end">
                 <AlertDialog.Cancel>
                   <Button variant="soft" color="gray">
-                    Cancel
+                    {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
                   <Button variant="solid" color="red" onClick={handleReset}>
-                    Reset
+                    {t($ => $.common.reset)}
                   </Button>
                 </AlertDialog.Action>
               </Flex>
@@ -271,16 +285,13 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
           </AlertDialog.Root>
         </Flex>
       </Flex>
-
       {/* Form */}
       {selectedAssembly && <ConfigForm assembly={selectedAssembly} />}
-
       <Separator size="4" />
-
       <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Default Opening Assembly
+            {t($ => $.openings.defaultOpeningAssembly)}
           </Text>
         </Label.Root>
         <OpeningAssemblySelect
@@ -288,46 +299,59 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
           onValueChange={assemblyId => {
             if (assemblyId) setDefaultOpeningAssembly(assemblyId)
           }}
-          placeholder="Select default..."
+          placeholder={t($ => $.common.placeholders.selectDefault)}
           size="2"
         />
       </Grid>
-
-      {usage.isUsed && (
-        <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
-          <Label.Root>
-            <Text size="2" weight="medium" color="gray">
-              Used By:
-            </Text>
-          </Label.Root>
-          <Flex gap="1" wrap="wrap">
-            {usage.usedAsGlobalDefault && (
-              <Badge size="2" variant="soft">
-                Global Default
-              </Badge>
-            )}
-            {usage.usedByWallAssemblies.map((use, index) => (
-              <Badge key={index} size="2" variant="soft">
-                {use}
-              </Badge>
-            ))}
-            {usage.usedByOpenings.map((use, index) => (
-              <Badge key={`opening-${index}`} size="2" variant="soft">
-                {use}
-              </Badge>
-            ))}
-          </Flex>
-        </Grid>
-      )}
+      {usage.isUsed && <UsageDisplay usage={usage} />}
     </Flex>
   )
 }
 
-function ConfigForm({ assembly }: { assembly: OpeningConfig & { id: string; name: string } }): React.JSX.Element {
+function UsageBadge({ id }: { id: EntityId }) {
+  const label = useEntityLabel(id)
+  return (
+    <Badge key={id} size="2" variant="soft">
+      {label}
+    </Badge>
+  )
+}
+
+function UsageDisplay({ usage }: { usage: OpeningAssemblyUsage }): React.JSX.Element {
+  const { t } = useTranslation('config')
+
+  return (
+    <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
+      <Label.Root>
+        <Text size="2" weight="medium" color="gray">
+          {t($ => $.usage.usedBy)}
+        </Text>
+      </Label.Root>
+      <Flex gap="1" wrap="wrap">
+        {usage.isDefault && (
+          <Badge size="2" variant="soft" color="blue">
+            {t($ => $.usage.globalDefault_opening)}
+          </Badge>
+        )}
+        {usage.wallAssemblyIds.map(id => (
+          <UsageBadge key={id} id={id} />
+        ))}
+        {usage.storeyIds.map(id => (
+          <UsageBadge key={id} id={id} />
+        ))}
+      </Flex>
+    </Grid>
+  )
+}
+
+function ConfigForm({ assembly }: { assembly: OpeningAssemblyConfig }): React.JSX.Element {
+  const { t } = useTranslation('config')
   const { updateOpeningAssemblyName, updateOpeningAssemblyConfig } = useConfigActions()
 
+  const nameKey = assembly.nameKey
+
   const nameInput = useDebouncedInput(
-    assembly.name,
+    nameKey ? t(nameKey) : assembly.name,
     (name: string) => updateOpeningAssemblyName(assembly.id as OpeningAssemblyId, name),
     {
       debounceMs: 1000
@@ -350,7 +374,7 @@ function ConfigForm({ assembly }: { assembly: OpeningConfig & { id: string; name
         <Grid columns="auto 1fr" gapX="2" align="center">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Name
+              {t($ => $.common.name)}
             </Text>
           </Label.Root>
           <TextField.Root
@@ -358,7 +382,7 @@ function ConfigForm({ assembly }: { assembly: OpeningConfig & { id: string; name
             onChange={e => nameInput.handleChange(e.target.value)}
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
-            placeholder="Opening assembly name"
+            placeholder={t($ => $.openings.placeholders.name)}
             size="2"
           />
         </Grid>
@@ -366,15 +390,11 @@ function ConfigForm({ assembly }: { assembly: OpeningConfig & { id: string; name
         <Flex gap="2" align="center">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Type
+              {t($ => $.common.type)}
             </Text>
           </Label.Root>
           <Text size="2" color="gray">
-            {assembly.type === 'simple'
-              ? 'Standard Opening'
-              : assembly.type === 'post'
-                ? 'Opening with Posts'
-                : 'Empty Opening'}
+            {t($ => $.openings.types[assembly.type])}
           </Text>
         </Flex>
       </Grid>
@@ -388,11 +408,11 @@ function ConfigForm({ assembly }: { assembly: OpeningConfig & { id: string; name
         <PostOpeningContent config={assembly} update={handleUpdateConfig} />
       ) : (
         <>
-          <Heading size="2">Empty Opening</Heading>
+          <Heading size="2">{t($ => $.openings.types.empty)}</Heading>
           <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Padding
+                {t($ => $.openings.labels.padding)}
               </Text>
             </Label.Root>
             <LengthField value={assembly.padding} onChange={padding => handleUpdateConfig({ padding })} unit="mm" />
@@ -409,88 +429,27 @@ const SimpleOpeningContent = ({
 }: {
   config: SimpleOpeningConfig
   update: (updates: Partial<SimpleOpeningConfig>) => void
-}) => (
-  <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
-    <Label.Root>
-      <Text size="2" weight="medium" color="gray">
-        Padding
-      </Text>
-    </Label.Root>
-    <LengthField value={config.padding} onChange={padding => update({ padding })} unit="mm" />
-
-    <Label.Root>
-      <Text size="2" weight="medium" color="gray">
-        Header Thickness
-      </Text>
-    </Label.Root>
-    <LengthField value={config.headerThickness} onChange={headerThickness => update({ headerThickness })} unit="mm" />
-
-    <Label.Root>
-      <Text size="2" weight="medium" color="gray">
-        Header Material
-      </Text>
-    </Label.Root>
-    <MaterialSelectWithEdit
-      value={config.headerMaterial}
-      onValueChange={headerMaterial => {
-        if (!headerMaterial) return
-        update({ headerMaterial })
-      }}
-      size="2"
-      preferredTypes={['dimensional']}
-    />
-
-    <Label.Root>
-      <Text size="2" weight="medium" color="gray">
-        Sill Thickness
-      </Text>
-    </Label.Root>
-    <LengthField value={config.sillThickness} onChange={sillThickness => update({ sillThickness })} unit="mm" />
-
-    <Label.Root>
-      <Text size="2" weight="medium" color="gray">
-        Sill Material
-      </Text>
-    </Label.Root>
-    <MaterialSelectWithEdit
-      value={config.sillMaterial}
-      onValueChange={sillMaterial => {
-        if (!sillMaterial) return
-        update({ sillMaterial })
-      }}
-      size="2"
-      preferredTypes={['dimensional']}
-    />
-  </Grid>
-)
-
-const PostOpeningContent = ({
-  config,
-  update
-}: {
-  config: PostOpeningConfig
-  update: (updates: Partial<PostOpeningConfig>) => void
-}) => (
-  <Flex direction="column" gap="3">
-    <Heading size="2">Opening</Heading>
+}) => {
+  const { t } = useTranslation('config')
+  return (
     <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
       <Label.Root>
         <Text size="2" weight="medium" color="gray">
-          Padding
+          {t($ => $.openings.labels.padding)}
         </Text>
       </Label.Root>
       <LengthField value={config.padding} onChange={padding => update({ padding })} unit="mm" />
 
       <Label.Root>
         <Text size="2" weight="medium" color="gray">
-          Header Thickness
+          {t($ => $.openings.labels.headerThickness)}
         </Text>
       </Label.Root>
       <LengthField value={config.headerThickness} onChange={headerThickness => update({ headerThickness })} unit="mm" />
 
       <Label.Root>
         <Text size="2" weight="medium" color="gray">
-          Header Material
+          {t($ => $.openings.labels.headerMaterial)}
         </Text>
       </Label.Root>
       <MaterialSelectWithEdit
@@ -505,14 +464,14 @@ const PostOpeningContent = ({
 
       <Label.Root>
         <Text size="2" weight="medium" color="gray">
-          Sill Thickness
+          {t($ => $.openings.labels.sillThickness)}
         </Text>
       </Label.Root>
       <LengthField value={config.sillThickness} onChange={sillThickness => update({ sillThickness })} unit="mm" />
 
       <Label.Root>
         <Text size="2" weight="medium" color="gray">
-          Sill Material
+          {t($ => $.openings.labels.sillMaterial)}
         </Text>
       </Label.Root>
       <MaterialSelectWithEdit
@@ -525,10 +484,81 @@ const PostOpeningContent = ({
         preferredTypes={['dimensional']}
       />
     </Grid>
+  )
+}
 
-    <PostsConfigSection config={config} onUpdate={update} />
-  </Flex>
-)
+const PostOpeningContent = ({
+  config,
+  update
+}: {
+  config: PostOpeningConfig
+  update: (updates: Partial<PostOpeningConfig>) => void
+}) => {
+  const { t } = useTranslation('config')
+  return (
+    <Flex direction="column" gap="3">
+      <Heading size="2">{t($ => $.openings.sections.opening)}</Heading>
+      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.openings.labels.padding)}
+          </Text>
+        </Label.Root>
+        <LengthField value={config.padding} onChange={padding => update({ padding })} unit="mm" />
+
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.openings.labels.headerThickness)}
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={config.headerThickness}
+          onChange={headerThickness => update({ headerThickness })}
+          unit="mm"
+        />
+
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.openings.labels.headerMaterial)}
+          </Text>
+        </Label.Root>
+        <MaterialSelectWithEdit
+          value={config.headerMaterial}
+          onValueChange={headerMaterial => {
+            if (!headerMaterial) return
+            update({ headerMaterial })
+          }}
+          size="2"
+          preferredTypes={['dimensional']}
+        />
+
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.openings.labels.sillThickness)}
+          </Text>
+        </Label.Root>
+        <LengthField value={config.sillThickness} onChange={sillThickness => update({ sillThickness })} unit="mm" />
+
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.openings.labels.sillMaterial)}
+          </Text>
+        </Label.Root>
+        <MaterialSelectWithEdit
+          value={config.sillMaterial}
+          onValueChange={sillMaterial => {
+            if (!sillMaterial) return
+            update({ sillMaterial })
+          }}
+          size="2"
+          preferredTypes={['dimensional']}
+        />
+      </Grid>
+
+      <PostsConfigSection config={config} onUpdate={update} />
+    </Flex>
+  )
+}
 
 function PostsConfigSection({
   config,
@@ -537,6 +567,7 @@ function PostsConfigSection({
   config: PostOpeningConfig
   onUpdate: (update: Partial<PostOpeningConfig>) => void
 }): React.JSX.Element {
+  const { t } = useTranslation('config')
   const typeSelectId = useId()
 
   const posts = config.posts
@@ -544,12 +575,12 @@ function PostsConfigSection({
 
   return (
     <Flex direction="column" gap="3">
-      <Heading size="2">Posts</Heading>
+      <Heading size="2">{t($ => $.openings.sections.posts)}</Heading>
 
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root htmlFor={typeSelectId}>
           <Text size="2" weight="medium" color="gray">
-            Post Type
+            {t($ => $.common.type)}
           </Text>
         </Label.Root>
         <Select.Root
@@ -575,8 +606,8 @@ function PostsConfigSection({
         >
           <Select.Trigger id={typeSelectId} />
           <Select.Content>
-            <Select.Item value="full">Full</Select.Item>
-            <Select.Item value="double">Double</Select.Item>
+            <Select.Item value="full">{t($ => $.openings.postTypes.full)}</Select.Item>
+            <Select.Item value="double">{t($ => $.openings.postTypes.double)}</Select.Item>
           </Select.Content>
         </Select.Root>
 
@@ -588,7 +619,7 @@ function PostsConfigSection({
                 onCheckedChange={value => onUpdate({ replacePosts: value === true })}
               />
               <Text size="2" weight="medium" color="gray">
-                Replaces Wall Posts
+                {t($ => $.openings.labels.replacesWallPosts)}
               </Text>
             </Flex>
           </Label.Root>
@@ -596,7 +627,7 @@ function PostsConfigSection({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Width
+            {t($ => $.common.width)}
           </Text>
         </Label.Root>
         <LengthField
@@ -610,7 +641,7 @@ function PostsConfigSection({
           <>
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Thickness
+                {t($ => $.common.thickness)}
               </Text>
             </Label.Root>
             <LengthField
@@ -624,7 +655,7 @@ function PostsConfigSection({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Material
+            {t($ => $.common.materialLabel)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -641,7 +672,7 @@ function PostsConfigSection({
           <>
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Infill Material
+                {t($ => $.common.materialLabel)}
               </Text>
             </Label.Root>
             <MaterialSelectWithEdit

@@ -15,12 +15,14 @@ import {
   Tooltip
 } from '@radix-ui/themes'
 import React, { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { FloorAssemblyId } from '@/building/model/ids'
 import { useStoreysOrderedByLevel } from '@/building/store'
 import type { FloorAssemblyConfig } from '@/construction/config'
+import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import { useConfigActions, useDefaultFloorAssemblyId, useFloorAssemblies } from '@/construction/config/store'
-import { getFloorAssemblyUsage } from '@/construction/config/usage'
+import { type FloorAssemblyUsage, getFloorAssemblyUsage } from '@/construction/config/usage'
 import { resolveFloorAssembly } from '@/construction/floors'
 import type {
   FilledFloorConfig,
@@ -29,13 +31,13 @@ import type {
   JoistFloorConfig,
   MonolithicFloorConfig
 } from '@/construction/floors/types'
-import { DEFAULT_CEILING_LAYER_SETS, DEFAULT_FLOOR_LAYER_SETS } from '@/construction/layers/defaults'
+import { CEILING_LAYER_PRESETS, FLOOR_LAYER_PRESETS } from '@/construction/layers/defaults'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
 import { useDebouncedInput } from '@/shared/hooks/useDebouncedInput'
-import { formatLength } from '@/shared/utils/formatting'
+import { useFormatters } from '@/shared/i18n/useFormatters'
 
 import { FloorAssemblySelect } from './FloorAssemblySelect'
 import { getFloorAssemblyTypeIcon } from './Icons'
@@ -46,6 +48,7 @@ export interface FloorAssemblyConfigContentProps {
 }
 
 export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssemblyConfigContentProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   const floorAssemblies = useFloorAssemblies()
   const storeys = useStoreysOrderedByLevel()
   const {
@@ -68,8 +71,11 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
   const selectedConfig = floorAssemblies.find(c => c.id === selectedConfigId) ?? null
 
   const usage = useMemo(
-    () => (selectedConfig ? getFloorAssemblyUsage(selectedConfig.id, storeys) : { isUsed: false, usedByStoreys: [] }),
-    [selectedConfig, storeys]
+    () =>
+      selectedConfig
+        ? getFloorAssemblyUsage(selectedConfig.id, storeys, defaultConfigId)
+        : { isUsed: false, isDefault: false, storeyIds: [] },
+    [selectedConfig, storeys, defaultConfigId]
   )
 
   const handleAddNew = useCallback(
@@ -79,7 +85,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
       let name: string
       let config: FloorConfig
       if (type === 'monolithic') {
-        name = 'New Monolithic Floor'
+        name = t($ => $.floors.newName.monolithic)
         config = {
           type: 'monolithic',
           thickness: 180,
@@ -92,7 +98,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           }
         }
       } else if (type === 'joist') {
-        name = 'New Joist Floor'
+        name = t($ => $.floors.newName.joist)
         config = {
           type: 'joist',
           constructionHeight: 240,
@@ -115,7 +121,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           }
         }
       } else {
-        name = 'New Filled Floor'
+        name = t($ => $.floors.newName.filled)
         config = {
           type: 'filled',
           constructionHeight: 360,
@@ -149,7 +155,11 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
   const handleDuplicate = useCallback(() => {
     if (!selectedConfig) return
 
-    const duplicated = duplicateFloorAssembly(selectedConfig.id, `${selectedConfig.name} (Copy)`)
+    const newName = t($ => $.floors.copyNameTemplate, {
+      defaultValue: `{{name}} (Copy)`,
+      name: selectedConfig.name
+    })
+    const duplicated = duplicateFloorAssembly(selectedConfig.id, newName)
     setSelectedConfigId(duplicated.id)
   }, [selectedConfig, duplicateFloorAssembly])
 
@@ -197,7 +207,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
 
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
-              <IconButton title="Add New">
+              <IconButton title={t($ => $.common.addNew)}>
                 <PlusIcon />
               </IconButton>
             </DropdownMenu.Trigger>
@@ -205,25 +215,30 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
               <DropdownMenu.Item onSelect={() => handleAddNew('monolithic')}>
                 <Flex align="center" gap="1">
                   {React.createElement(getFloorAssemblyTypeIcon('monolithic'))}
-                  Monolithic Floor
+                  {t($ => $.floors.types.monolithic)}
                 </Flex>
               </DropdownMenu.Item>
               <DropdownMenu.Item onSelect={() => handleAddNew('joist')}>
                 <Flex align="center" gap="1">
                   {React.createElement(getFloorAssemblyTypeIcon('joist'))}
-                  Joist Floor
+                  {t($ => $.floors.types.joist)}
                 </Flex>
               </DropdownMenu.Item>
               <DropdownMenu.Item onSelect={() => handleAddNew('filled')}>
                 <Flex align="center" gap="1">
                   {React.createElement(getFloorAssemblyTypeIcon('filled'))}
-                  Straw Filled Floor
+                  {t($ => $.floors.types.straw)}
                 </Flex>
               </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Root>
 
-          <IconButton onClick={handleDuplicate} disabled={!selectedConfig} title="Duplicate" variant="soft">
+          <IconButton
+            onClick={handleDuplicate}
+            disabled={!selectedConfig}
+            title={t($ => $.common.duplicate)}
+            variant="soft"
+          >
             <CopyIcon />
           </IconButton>
 
@@ -234,31 +249,31 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
                 color="red"
                 title={
                   !selectedConfig
-                    ? 'No config selected'
+                    ? t($ => $.floors.delete.noConfigSelected)
                     : floorAssemblies.length === 1
-                      ? 'Cannot delete the last config'
+                      ? t($ => $.floors.delete.cannotDeleteLast)
                       : usage.isUsed
-                        ? 'In Use - Cannot Delete'
-                        : 'Delete'
+                        ? t($ => $.floors.delete.cannotDeleteInUse)
+                        : t($ => $.common.delete)
                 }
               >
                 <TrashIcon />
               </IconButton>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
-              <AlertDialog.Title>Delete Floor Assembly</AlertDialog.Title>
+              <AlertDialog.Title>{t($ => $.floors.delete.confirmTitle)}</AlertDialog.Title>
               <AlertDialog.Description>
-                Are you sure you want to delete "{selectedConfig?.name}"? This action cannot be undone.
+                {t($ => $.floors.delete.confirm, { name: selectedConfig?.name })}
               </AlertDialog.Description>
               <Flex gap="3" mt="4" justify="end">
                 <AlertDialog.Cancel>
                   <Button variant="soft" color="gray">
-                    Cancel
+                    {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
                   <Button variant="solid" color="red" onClick={handleDelete}>
-                    Delete
+                    {t($ => $.common.delete)}
                   </Button>
                 </AlertDialog.Action>
               </Flex>
@@ -267,25 +282,22 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <IconButton color="red" variant="outline" title="Reset to Defaults">
+              <IconButton color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
                 <ResetIcon />
               </IconButton>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
-              <AlertDialog.Title>Reset Floor Assemblies</AlertDialog.Title>
-              <AlertDialog.Description>
-                Are you sure you want to reset default floor assemblies? This will restore the original default
-                assemblies but keep any custom assemblies you've created. This action cannot be undone.
-              </AlertDialog.Description>
+              <AlertDialog.Title>{t($ => $.floors.reset.title)}</AlertDialog.Title>
+              <AlertDialog.Description>{t($ => $.floors.reset.confirm)}</AlertDialog.Description>
               <Flex gap="3" mt="4" justify="end">
                 <AlertDialog.Cancel>
                   <Button variant="soft" color="gray">
-                    Cancel
+                    {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
                   <Button variant="solid" color="red" onClick={handleReset}>
-                    Reset
+                    {t($ => $.common.reset)}
                   </Button>
                 </AlertDialog.Action>
               </Flex>
@@ -293,16 +305,13 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           </AlertDialog.Root>
         </Flex>
       </Flex>
-
       {/* Form */}
       {selectedConfig && <ConfigForm assembly={selectedConfig} />}
-
       {!selectedConfig && floorAssemblies.length === 0 && (
         <Flex justify="center" align="center" p="5">
-          <Text color="gray">No floor assemblies yet. Create one using the "New" button above.</Text>
+          <Text color="gray">{t($ => $.floors.emptyList)}</Text>
         </Flex>
       )}
-
       {/* Defaults Section */}
       <Separator size="4" />
       <Flex direction="column" gap="3">
@@ -310,53 +319,77 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           <Flex align="center" gap="1">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Default Floor Assembly
+                {t($ => $.floors.defaultFloorAssembly)}
               </Text>
             </Label.Root>
             <MeasurementInfo highlightedAssembly="floorAssembly" />
           </Flex>
-          <FloorAssemblySelect
-            value={defaultConfigId}
-            onValueChange={setDefaultFloorAssembly}
-            placeholder="Select default..."
-            size="2"
-          />
+          <FloorAssemblySelect value={defaultConfigId} onValueChange={setDefaultFloorAssembly} size="2" />
         </Grid>
 
-        {usage.isUsed && (
-          <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
-            <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                Used By:
-              </Text>
-            </Label.Root>
-            <Flex gap="1" wrap="wrap">
-              {usage.usedByStoreys.map((use, index) => (
-                <Badge key={index} size="2" variant="soft">
-                  {use}
-                </Badge>
-              ))}
-            </Flex>
-          </Grid>
-        )}
+        {usage.isUsed && <UsageDisplay usage={usage} />}
       </Flex>
     </Flex>
   )
 }
 
+function UsageBadge({ id }: { id: EntityId }) {
+  const label = useEntityLabel(id)
+  return (
+    <Badge key={id} size="2" variant="soft">
+      {label}
+    </Badge>
+  )
+}
+
+function UsageDisplay({ usage }: { usage: FloorAssemblyUsage }): React.JSX.Element {
+  const { t } = useTranslation('config')
+
+  return (
+    <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
+      <Label.Root>
+        <Text size="2" weight="medium" color="gray">
+          {t($ => $.usage.usedBy)}
+        </Text>
+      </Label.Root>
+      <Flex gap="1" wrap="wrap">
+        {usage.isDefault && (
+          <Badge size="2" variant="soft" color="blue">
+            {t($ => $.usage.globalDefault_floor)}
+          </Badge>
+        )}
+        {usage.storeyIds.map(id => (
+          <UsageBadge key={id} id={id} />
+        ))}
+      </Flex>
+    </Grid>
+  )
+}
+
 function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.Element {
+  const { t } = useTranslation('config')
+  const { formatLength } = useFormatters()
   const { updateFloorAssemblyName, updateFloorAssemblyConfig } = useConfigActions()
 
-  const nameInput = useDebouncedInput(assembly.name, (name: string) => updateFloorAssemblyName(assembly.id, name), {
-    debounceMs: 1000
-  })
+  const nameKey = assembly.nameKey
+
+  const nameInput = useDebouncedInput(
+    nameKey ? t(nameKey) : assembly.name,
+    (name: string) => updateFloorAssemblyName(assembly.id, name),
+    {
+      debounceMs: 1000
+    }
+  )
 
   const handleUpdateConfig = useCallback(
     (updates: Partial<FloorConfig>) => updateFloorAssemblyConfig(assembly.id, updates),
     [assembly.id, updateFloorAssemblyConfig]
   )
 
-  const totalThickness = useMemo(() => formatLength(resolveFloorAssembly(assembly).totalThickness), [assembly])
+  const totalThickness = useMemo(
+    () => formatLength(resolveFloorAssembly(assembly).totalThickness),
+    [assembly, formatLength]
+  )
 
   return (
     <Flex
@@ -369,7 +402,7 @@ function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.
         <Grid columns="auto 1fr" gapX="2" align="center">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Name
+              {t($ => $.common.name)}
             </Text>
           </Label.Root>
           <TextField.Root
@@ -377,7 +410,7 @@ function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.
             onChange={e => nameInput.handleChange(e.target.value)}
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
-            placeholder="Floor assembly name"
+            placeholder={t($ => $.common.placeholders.name)}
             size="2"
           />
         </Grid>
@@ -386,13 +419,17 @@ function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.
           <Flex gap="2" align="center">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Type
+                {t($ => $.common.type)}
               </Text>
             </Label.Root>
             <Flex gap="2" align="center">
               {React.createElement(getFloorAssemblyTypeIcon(assembly.type))}
               <Text size="2" color="gray">
-                {assembly.type === 'monolithic' ? 'Monolithic' : assembly.type === 'joist' ? 'Joist' : 'Straw Filled'}
+                {assembly.type === 'monolithic'
+                  ? t($ => $.floors.types.monolithic)
+                  : assembly.type === 'joist'
+                    ? t($ => $.floors.types.joist)
+                    : t($ => $.floors.types.straw)}
               </Text>
             </Flex>
           </Flex>
@@ -400,7 +437,7 @@ function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.
           <Flex gap="2" align="center">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Total Thickness
+                {t($ => $.common.totalThickness)}
               </Text>
             </Label.Root>
             <Text size="2" color="gray">
@@ -430,13 +467,14 @@ function MonolithicConfigFields({
   config: MonolithicFloorConfig
   onUpdate: (updates: Partial<MonolithicFloorConfig>) => void
 }) {
+  const { t } = useTranslation('config')
   return (
     <>
-      <Heading size="2">Monolithic Floor</Heading>
+      <Heading size="3">{t($ => $.floors.types.monolithic)}</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Material
+            {t($ => $.common.materialLabel)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -445,7 +483,7 @@ function MonolithicConfigFields({
             if (!material) return
             onUpdate({ material })
           }}
-          placeholder="Select material..."
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
           preferredTypes={['sheet', 'volume']}
         />
@@ -453,7 +491,7 @@ function MonolithicConfigFields({
         <Flex align="center" gap="1">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Thickness
+              {t($ => $.common.thickness)}
             </Text>
           </Label.Root>
           <MeasurementInfo highlightedPart="floorConstruction" />
@@ -471,19 +509,20 @@ function JoistConfigFields({
   config: JoistFloorConfig
   onUpdate: (updates: Partial<JoistFloorConfig>) => void
 }) {
+  const { t } = useTranslation('config')
   return (
     <>
-      <Heading size="2">Joist Floor</Heading>
+      <Heading size="3">{t($ => $.floors.types.joist)}</Heading>
 
       {/* Beam Height - Full Width */}
       <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
         <Flex align="center" gap="1">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Beam Height
+              {t($ => $.floors.labels.beamHeight)}
             </Text>
           </Label.Root>
-          <Tooltip content="Height of structural beams. Applies to both joists and wall beams.">
+          <Tooltip content={t($ => $.floors.tips.beamHeight)}>
             <IconButton style={{ cursor: 'help' }} color="gray" radius="full" variant="ghost" size="1">
               <InfoCircledIcon width={12} height={12} />
             </IconButton>
@@ -500,11 +539,11 @@ function JoistConfigFields({
       <Separator size="4" />
 
       {/* Joists Section */}
-      <Heading size="3">Joists</Heading>
+      <Heading size="2">{t($ => $.floors.sections.joists)}</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Joist Material
+            {t($ => $.common.materialLabel)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -513,14 +552,14 @@ function JoistConfigFields({
             if (!joistMaterial) return
             onUpdate({ joistMaterial })
           }}
-          placeholder="Select joist material..."
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
           preferredTypes={['dimensional']}
         />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Joist Thickness
+            {t($ => $.common.thickness)}
           </Text>
         </Label.Root>
         <LengthField
@@ -532,7 +571,7 @@ function JoistConfigFields({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Joist Spacing
+            {t($ => $.common.spacing)}
           </Text>
         </Label.Root>
         <LengthField
@@ -546,11 +585,11 @@ function JoistConfigFields({
       <Separator size="4" />
 
       {/* Wall Beams Section */}
-      <Heading size="3">Wall Beams</Heading>
+      <Heading size="2">{t($ => $.floors.sections.wallBeams)}</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Wall Beam Material
+            {t($ => $.common.materialLabel)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -559,14 +598,14 @@ function JoistConfigFields({
             if (!wallBeamMaterial) return
             onUpdate({ wallBeamMaterial })
           }}
-          placeholder="Select wall beam material..."
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
           preferredTypes={['dimensional']}
         />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Wall Beam Thickness
+            {t($ => $.common.thickness)}
           </Text>
         </Label.Root>
         <LengthField
@@ -578,7 +617,7 @@ function JoistConfigFields({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Wall Beam Inside Offset
+            {t($ => $.floors.labels.wallBeamInsideOffset)}
           </Text>
         </Label.Root>
         <LengthField
@@ -590,7 +629,7 @@ function JoistConfigFields({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Wall Infill Material
+            {t($ => $.common.infillMaterial)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -599,7 +638,7 @@ function JoistConfigFields({
             if (!wallInfillMaterial) return
             onUpdate({ wallInfillMaterial })
           }}
-          placeholder="Select wall infill material..."
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
         />
       </Grid>
@@ -607,11 +646,11 @@ function JoistConfigFields({
       <Separator size="4" />
 
       {/* Subfloor Section */}
-      <Heading size="3">Subfloor</Heading>
+      <Heading size="2">{t($ => $.floors.sections.subfloor)}</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Subfloor Material
+            {t($ => $.common.materialLabel)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -620,14 +659,14 @@ function JoistConfigFields({
             if (!subfloorMaterial) return
             onUpdate({ subfloorMaterial })
           }}
-          placeholder="Select subfloor material..."
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
           preferredTypes={['sheet']}
         />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Subfloor Thickness
+            {t($ => $.common.thickness)}
           </Text>
         </Label.Root>
         <LengthField
@@ -641,11 +680,11 @@ function JoistConfigFields({
       <Separator size="4" />
 
       {/* Opening Sides Section */}
-      <Heading size="3">Opening Sides</Heading>
+      <Heading size="2">{t($ => $.floors.sections.openingSides)}</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Opening Side Material
+            {t($ => $.common.materialLabel)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -654,14 +693,14 @@ function JoistConfigFields({
             if (!openingSideMaterial) return
             onUpdate({ openingSideMaterial })
           }}
-          placeholder="Select opening side material..."
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
           preferredTypes={['dimensional']}
         />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Opening Side Thickness
+            {t($ => $.common.thickness)}
           </Text>
         </Label.Root>
         <LengthField
@@ -682,19 +721,19 @@ function FilledConfigFields({
   config: FilledFloorConfig
   onUpdate: (updates: Partial<FilledFloorConfig>) => void
 }) {
+  const { t } = useTranslation('config')
   return (
     <>
-      <Heading size="2">Straw Filled Floor</Heading>
+      <Heading size="3">{t($ => $.floors.types.straw)}</Heading>
 
-      {/* Construction Height - Full Width */}
       <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
         <Flex align="center" gap="1">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Construction Height
+              {t($ => $.floors.labels.constructionHeight)}
             </Text>
           </Label.Root>
-          <Tooltip content="Height of the floor structure (joist height).">
+          <Tooltip content={t($ => $.floors.tips.constructionHeight)}>
             <IconButton style={{ cursor: 'help' }} color="gray" radius="full" variant="ghost" size="1">
               <InfoCircledIcon width={12} height={12} />
             </IconButton>
@@ -711,11 +750,11 @@ function FilledConfigFields({
       <Separator size="4" />
 
       {/* Joists Section */}
-      <Heading size="3">Joists</Heading>
+      <Heading size="2">{t($ => $.floors.sections.joists)}</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Joist Material
+            {t($ => $.common.materialLabel)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -724,14 +763,14 @@ function FilledConfigFields({
             if (!joistMaterial) return
             onUpdate({ joistMaterial })
           }}
-          placeholder="Select joist material..."
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
           preferredTypes={['dimensional']}
         />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Joist Thickness
+            {t($ => $.common.thickness)}
           </Text>
         </Label.Root>
         <LengthField
@@ -743,7 +782,7 @@ function FilledConfigFields({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Joist Spacing
+            {t($ => $.common.spacing)}
           </Text>
         </Label.Root>
         <LengthField
@@ -757,11 +796,11 @@ function FilledConfigFields({
       <Separator size="4" />
 
       {/* Frame Section */}
-      <Heading size="3">Perimeter Frame</Heading>
+      <Heading size="2">{t($ => $.floors.sections.perimeterFrame)}</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Frame Material
+            {t($ => $.common.materialLabel)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -770,14 +809,14 @@ function FilledConfigFields({
             if (!frameMaterial) return
             onUpdate({ frameMaterial })
           }}
-          placeholder="Select frame material..."
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
           preferredTypes={['dimensional']}
         />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Frame Thickness
+            {t($ => $.common.thickness)}
           </Text>
         </Label.Root>
         <LengthField
@@ -791,11 +830,11 @@ function FilledConfigFields({
       <Separator size="4" />
 
       {/* Subfloor Section */}
-      <Heading size="3">Subfloor</Heading>
+      <Heading size="2">{t($ => $.floors.sections.subfloor)}</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Subfloor Material
+            {t($ => $.common.materialLabel)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -804,14 +843,14 @@ function FilledConfigFields({
             if (!subfloorMaterial) return
             onUpdate({ subfloorMaterial })
           }}
-          placeholder="Select subfloor material..."
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
           preferredTypes={['sheet']}
         />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Subfloor Thickness
+            {t($ => $.common.thickness)}
           </Text>
         </Label.Root>
         <LengthField
@@ -825,11 +864,11 @@ function FilledConfigFields({
       <Separator size="4" />
 
       {/* Ceiling Sheathing Section */}
-      <Heading size="3">Ceiling Sheathing</Heading>
+      <Heading size="2">{t($ => $.floors.sections.ceilingSheathing)}</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Ceiling Sheathing Material
+            {t($ => $.common.materialLabel)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -838,14 +877,14 @@ function FilledConfigFields({
             if (!ceilingSheathingMaterial) return
             onUpdate({ ceilingSheathingMaterial })
           }}
-          placeholder="Select ceiling sheathing material..."
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
           preferredTypes={['sheet']}
         />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Ceiling Sheathing Thickness
+            {t($ => $.common.thickness)}
           </Text>
         </Label.Root>
         <LengthField
@@ -859,11 +898,11 @@ function FilledConfigFields({
       <Separator size="4" />
 
       {/* Opening Frame Section */}
-      <Heading size="3">Opening Frame</Heading>
+      <Heading size="2">{t($ => $.floors.sections.openingFrame)}</Heading>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Opening Frame Material
+            {t($ => $.common.materialLabel)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -872,14 +911,14 @@ function FilledConfigFields({
             if (!openingFrameMaterial) return
             onUpdate({ openingFrameMaterial })
           }}
-          placeholder="Select opening frame material..."
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
           preferredTypes={['dimensional']}
         />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Opening Frame Thickness
+            {t($ => $.common.thickness)}
           </Text>
         </Label.Root>
         <LengthField
@@ -893,15 +932,15 @@ function FilledConfigFields({
       <Separator size="4" />
 
       {/* Straw Infill Section */}
-      <Heading size="3">Straw Infill</Heading>
+      <Heading size="2">{t($ => $.floors.sections.strawInfill)}</Heading>
       <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
         <Flex align="center" gap="1">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Straw Material (Override)
+              {t($ => $.common.strawMaterialOverride)}
             </Text>
           </Label.Root>
-          <Tooltip content="Material used to fill spaces between joists. Leave empty to use global straw settings.">
+          <Tooltip content={t($ => $.floors.tips.strawMaterialOverride)}>
             <IconButton style={{ cursor: 'help' }} color="gray" radius="full" variant="ghost" size="1">
               <InfoCircledIcon width={12} height={12} />
             </IconButton>
@@ -910,9 +949,9 @@ function FilledConfigFields({
         <MaterialSelectWithEdit
           value={config.strawMaterial ?? null}
           allowEmpty
-          emptyLabel="Use global straw settings"
+          emptyLabel={t($ => $.common.useGlobalStrawSettings)}
           onValueChange={strawMaterial => onUpdate({ strawMaterial: strawMaterial ?? undefined })}
-          placeholder="Select straw material..."
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
           preferredTypes={['strawbale']}
         />
@@ -922,6 +961,7 @@ function FilledConfigFields({
 }
 
 function LayersFields({ assemblyId, config }: { assemblyId: FloorAssemblyId; config: FloorConfig }) {
+  const { t } = useTranslation('config')
   const {
     addFloorAssemblyTopLayer,
     setFloorAssemblyTopLayers,
@@ -969,7 +1009,7 @@ function LayersFields({ assemblyId, config }: { assemblyId: FloorAssemblyId; con
   return (
     <Flex direction="column" gap="3">
       <LayerListEditor
-        title="Top Layers"
+        title={t($ => $.floors.layers.topLayers)}
         measurementInfo={<MeasurementInfo highlightedPart="floorTopLayers" />}
         layers={displayedTopLayers}
         onAddLayer={layer => addFloorAssemblyTopLayer(assemblyId, layer)}
@@ -979,18 +1019,18 @@ function LayersFields({ assemblyId, config }: { assemblyId: FloorAssemblyId; con
         onMoveLayer={(fromIndex, toIndex) =>
           moveFloorAssemblyTopLayer(assemblyId, mapTopIndex(fromIndex), mapTopIndex(toIndex))
         }
-        addLabel="Add Top Layer"
-        emptyHint="No top layers defined"
-        layerPresets={DEFAULT_FLOOR_LAYER_SETS}
+        addLabel={t($ => $.floors.layers.addTopLayer)}
+        emptyHint={t($ => $.floors.layers.noTopLayers)}
+        layerPresets={FLOOR_LAYER_PRESETS}
         layerCopySources={topLayerSources}
-        beforeLabel="Finished Top"
-        afterLabel="Floor Construction"
+        beforeLabel={t($ => $.floors.layers.finishedTop)}
+        afterLabel={t($ => $.floors.layers.floorConstruction)}
       />
 
       <Separator size="4" />
 
       <LayerListEditor
-        title="Bottom Layers"
+        title={t($ => $.floors.layers.bottomLayers)}
         measurementInfo={<MeasurementInfo highlightedPart="floorBottomLayers" />}
         layers={config.layers.bottomLayers}
         onAddLayer={layer => addFloorAssemblyBottomLayer(assemblyId, layer)}
@@ -998,12 +1038,12 @@ function LayersFields({ assemblyId, config }: { assemblyId: FloorAssemblyId; con
         onUpdateLayer={(index, updates) => updateFloorAssemblyBottomLayer(assemblyId, index, updates)}
         onRemoveLayer={index => removeFloorAssemblyBottomLayer(assemblyId, index)}
         onMoveLayer={(fromIndex, toIndex) => moveFloorAssemblyBottomLayer(assemblyId, fromIndex, toIndex)}
-        addLabel="Add Bottom Layer"
-        emptyHint="No bottom layers defined"
-        layerPresets={DEFAULT_CEILING_LAYER_SETS}
+        addLabel={t($ => $.floors.layers.addBottomLayer)}
+        emptyHint={t($ => $.floors.layers.noBottomLayers)}
+        layerPresets={CEILING_LAYER_PRESETS}
         layerCopySources={bottomLayerSources}
-        beforeLabel="Floor Construction"
-        afterLabel="Finished Bottom"
+        beforeLabel={t($ => $.floors.layers.floorConstruction)}
+        afterLabel={t($ => $.floors.layers.finishedBottom)}
       />
     </Flex>
   )

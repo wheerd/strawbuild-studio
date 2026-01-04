@@ -301,8 +301,8 @@ describe('constructWallLayers', () => {
       tag => tag.category === 'wall-layer' && tag !== TAG_WALL_LAYER_OUTSIDE
     )
 
-    expect(insideCustom?.label).toBe('Inside Layer')
-    expect(outsideCustom?.label).toBe('Outside Layer')
+    expect(insideCustom && 'label' in insideCustom ? insideCustom.label : undefined).toBe('Inside Layer')
+    expect(outsideCustom && 'label' in outsideCustom ? outsideCustom.label : undefined).toBe('Outside Layer')
   })
 
   it('adds holes for openings', () => {

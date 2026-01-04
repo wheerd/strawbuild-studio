@@ -79,17 +79,15 @@ export class StoreyManagementService {
    * Duplicate a storey along with all its perimeters
    * Creates a new storey at the next available level and copies all associated perimeters
    */
-  duplicateStorey(sourceStoreyId: StoreyId, newName?: string): Storey {
+  duplicateStorey(sourceStoreyId: StoreyId): Storey {
     const sourceStorey = this.actions.getStoreyById(sourceStoreyId)
 
     if (!sourceStorey) {
       throw new Error('Source storey not found')
     }
 
-    const duplicateName = newName ?? `${sourceStorey.name} Copy`
-
     // Create the new storey, copying the floor configuration
-    const newStorey = this.actions.addStorey(duplicateName, sourceStorey.floorHeight, sourceStorey.floorAssemblyId)
+    const newStorey = this.actions.addStorey(sourceStorey.floorHeight, sourceStorey.floorAssemblyId)
 
     // Duplicate all perimeters from the source storey
     const sourcePerimeters = this.actions.getPerimetersByStorey(sourceStoreyId)

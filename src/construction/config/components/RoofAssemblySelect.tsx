@@ -1,7 +1,9 @@
 import { Flex, Select, Text } from '@radix-ui/themes'
 import React from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 
 import type { RoofAssemblyId } from '@/building/model/ids'
+import type { NamedAssembly } from '@/construction/config'
 import { useRoofAssemblies } from '@/construction/config/store'
 
 import { getRoofAssemblyTypeIcon } from './Icons'
@@ -26,6 +28,11 @@ export function RoofAssemblySelect({
   defaultAssemblyId
 }: RoofAssemblySelectProps): React.JSX.Element {
   const roofAssemblies = useRoofAssemblies()
+  const { t } = useTranslation('config')
+
+  const getDisplayName = (assembly: NamedAssembly): string => {
+    return assembly.nameKey ? t(assembly.nameKey) : assembly.name
+  }
 
   return (
     <Select.Root
@@ -38,19 +45,25 @@ export function RoofAssemblySelect({
       <Select.Content>
         {roofAssemblies.length === 0 ? (
           <Select.Item value="" disabled>
-            <Text color="gray">No roof assemblies available</Text>
+            <Text color="gray">{t($ => $.roofs.emptyList)}</Text>
           </Select.Item>
         ) : (
           roofAssemblies.map(assembly => {
             const Icon = getRoofAssemblyTypeIcon(assembly.type)
             const isDefault = showDefaultIndicator && assembly.id === defaultAssemblyId
+            const label = getDisplayName(assembly)
             return (
               <Select.Item key={assembly.id} value={assembly.id}>
                 <Flex align="center" gap="2">
                   <Icon style={{ flexShrink: 0 }} />
                   <Text>
-                    {assembly.name}
-                    {isDefault && <Text color="gray"> (default)</Text>}
+                    {isDefault ? (
+                      <Trans t={t} i18nKey={$ => $.roofs.defaultLabel} components={{ gray: <Text color="gray" /> }}>
+                        <>{{ label }}</> <Text color="gray"> (default)</Text>
+                      </Trans>
+                    ) : (
+                      <>{label}</>
+                    )}
                   </Text>
                 </Flex>
               </Select.Item>

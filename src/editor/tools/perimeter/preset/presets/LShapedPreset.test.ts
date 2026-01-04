@@ -28,9 +28,8 @@ describe('LShapedPreset', () => {
   })
 
   describe('basic properties', () => {
-    it('should have correct type and name', () => {
-      expect(preset.type).toBe('l-shaped')
-      expect(preset.name).toBe('L-Shaped')
+    it('should have correct type, icon, and dialog', () => {
+      expect(preset.type).toBe('lshaped')
       expect(preset.icon).toBe(LShape0Icon)
       expect(preset.dialog).toBe(LShapedPresetDialog)
     })

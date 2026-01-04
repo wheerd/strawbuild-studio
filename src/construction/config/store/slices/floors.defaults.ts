@@ -1,17 +1,18 @@
 import { DEFAULT_FLOOR_ASSEMBLY_ID, type FloorAssemblyId } from '@/building/model/ids'
 import type { FloorAssemblyConfig } from '@/construction/config/types'
-import { DEFAULT_FLOOR_LAYER_SETS } from '@/construction/layers/defaults'
+import { PRESET_FLOOR_SCREED } from '@/construction/layers/defaults'
 import { clt, concrete, glt, osb, roughWood, strawbale } from '@/construction/materials/material'
 
 const cltAssembly: FloorAssemblyConfig = {
   id: DEFAULT_FLOOR_ASSEMBLY_ID,
   name: 'CLT 18cm (6cm)',
+  nameKey: $ => $.floors.defaults.clt18cm,
   type: 'monolithic',
   thickness: 180,
   material: clt.id,
   layers: {
     topThickness: 60,
-    topLayers: DEFAULT_FLOOR_LAYER_SETS['Screet'],
+    topLayers: PRESET_FLOOR_SCREED.layers,
     bottomThickness: 0,
     bottomLayers: []
   }
@@ -20,12 +21,13 @@ const cltAssembly: FloorAssemblyConfig = {
 const concreteAssembly: FloorAssemblyConfig = {
   id: 'fa_concrete_default' as FloorAssemblyId,
   name: 'Concrete 20cm (6cm)',
+  nameKey: $ => $.floors.defaults.concrete20cm,
   type: 'monolithic',
   thickness: 200,
   material: concrete.id,
   layers: {
     topThickness: 60,
-    topLayers: DEFAULT_FLOOR_LAYER_SETS['Screet'],
+    topLayers: PRESET_FLOOR_SCREED.layers,
     bottomThickness: 0,
     bottomLayers: []
   }
@@ -33,7 +35,8 @@ const concreteAssembly: FloorAssemblyConfig = {
 
 const joistAssembly: FloorAssemblyConfig = {
   id: 'fa_joist_default' as FloorAssemblyId,
-  name: 'Joist 12x24cm (6cm)',
+  name: 'Joist 8x24cm (6cm)',
+  nameKey: $ => $.floors.defaults.joist8x24cm,
   type: 'joist',
   constructionHeight: 240,
   joistMaterial: glt.id,
@@ -49,7 +52,7 @@ const joistAssembly: FloorAssemblyConfig = {
   openingSideThickness: 60,
   layers: {
     topThickness: 60,
-    topLayers: DEFAULT_FLOOR_LAYER_SETS['Screet'],
+    topLayers: PRESET_FLOOR_SCREED.layers,
     bottomThickness: 0,
     bottomLayers: []
   }
@@ -57,7 +60,8 @@ const joistAssembly: FloorAssemblyConfig = {
 
 const filledAssembly: FloorAssemblyConfig = {
   id: 'fa_filled_default' as FloorAssemblyId,
-  name: 'Filled Joist 12x24cm (6cm)',
+  name: 'Filled Joist 8x36cm (6cm)',
+  nameKey: $ => $.floors.defaults.filledJoist8x36cm,
   type: 'filled',
   constructionHeight: 360,
   joistThickness: 80,
@@ -74,7 +78,7 @@ const filledAssembly: FloorAssemblyConfig = {
   strawMaterial: undefined,
   layers: {
     topThickness: 60,
-    topLayers: DEFAULT_FLOOR_LAYER_SETS['Screet'],
+    topLayers: PRESET_FLOOR_SCREED.layers,
     bottomThickness: 0,
     bottomLayers: []
   }

@@ -69,7 +69,7 @@ export class StripedLayerConstruction implements LayerConstruction<StripedLayerC
     const intersection = lineIntersection(stripeLine, perpLine)
 
     if (!intersection) {
-      yield yieldWarning('Could not determine stripe positions due to parallel lines.', [])
+      yield yieldWarning($ => $.construction.layer.parallelLines, undefined, [])
       return
     }
 

@@ -186,12 +186,12 @@ describe('mergeModels', () => {
   it('deduplicates warnings by id when merging models', () => {
     const warningA = {
       id: 'ci_shared-warning' as ConstructionIssueId,
-      description: 'duplicate warning',
+      messageKey: 'test.duplicateWarning' as any,
       severity: 'warning' as const
     }
     const warningB = {
       id: 'ci_shared-warning' as ConstructionIssueId,
-      description: 'duplicate warning',
+      messageKey: 'test.duplicateWarning' as any,
       severity: 'warning' as const
     }
 
@@ -222,12 +222,12 @@ describe('mergeModels', () => {
   it('deduplicates errors across models by id', () => {
     const errorA = {
       id: 'ci_shared-error' as ConstructionIssueId,
-      description: 'duplicate error',
+      messageKey: 'test.duplicateError' as any,
       severity: 'error' as const
     }
     const errorB = {
       id: 'ci_shared-error' as ConstructionIssueId,
-      description: 'duplicate error',
+      messageKey: 'test.duplicateError' as any,
       severity: 'error' as const
     }
 

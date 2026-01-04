@@ -1,6 +1,7 @@
 import { CheckIcon, Cross2Icon, DownloadIcon, UpdateIcon, UploadIcon } from '@radix-ui/react-icons'
 import { Button, DropdownMenu, Flex, Tooltip } from '@radix-ui/themes'
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { usePersistenceStore } from '@/building/store/persistenceStore'
 import { clearSelection } from '@/editor/hooks/useSelectionStore'
@@ -11,6 +12,8 @@ import { FileInputCancelledError, createBinaryFileInput, createFileInput } from 
 import { downloadFile } from '@/shared/utils/downloadFile'
 
 export function AutoSaveIndicator(): React.JSX.Element {
+  const { t } = useTranslation('common')
+
   // Auto-save state from persistence store
   const isSaving = usePersistenceStore(s => s.isSaving)
   const lastSaved = usePersistenceStore(s => s.lastSaved)
@@ -36,7 +39,7 @@ export function AutoSaveIndicator(): React.JSX.Element {
         downloadFile(result.content, filename)
       }
     } catch (error) {
-      setExportError(error instanceof Error ? error.message : 'Failed to export project')
+      setExportError(error instanceof Error ? error.message : t($ => $.autoSave.errors.failedExport))
     } finally {
       setIsExporting(false)
     }
@@ -50,7 +53,7 @@ export function AutoSaveIndicator(): React.JSX.Element {
       const { exportCurrentModelToIfc } = await import('@/exporters/ifc')
       await exportCurrentModelToIfc()
     } catch (error) {
-      setExportError(error instanceof Error ? error.message : 'Failed to export IFC')
+      setExportError(error instanceof Error ? error.message : t($ => $.autoSave.errors.failedIFCExport))
     } finally {
       setIsExporting(false)
     }
@@ -65,12 +68,12 @@ export function AutoSaveIndicator(): React.JSX.Element {
       const { constructModel } = await import('@/construction/storeys/storey')
       const model = constructModel()
       if (!model) {
-        setExportError('Failed to generate model')
+        setExportError(t($ => $.autoSave.errors.failedGenerateModel))
       } else {
         await exportConstructionGeometryToIfc(model)
       }
     } catch (error) {
-      setExportError(error instanceof Error ? error.message : 'Failed to export IFC geometry')
+      setExportError(error instanceof Error ? error.message : t($ => $.autoSave.errors.failedIFCExport))
     } finally {
       setIsExporting(false)
     }
@@ -93,7 +96,7 @@ export function AutoSaveIndicator(): React.JSX.Element {
       })
     } catch (error) {
       if (!(error instanceof FileInputCancelledError)) {
-        setImportError(error instanceof Error ? error.message : 'Failed to import file')
+        setImportError(error instanceof Error ? error.message : t($ => $.autoSave.errors.failedImport))
         console.error(error)
       }
     } finally {
@@ -111,14 +114,14 @@ export function AutoSaveIndicator(): React.JSX.Element {
         const { importIfcIntoModel } = await import('@/importers/ifc/importService')
         const result = await importIfcIntoModel(content)
         if (!result.success) {
-          throw new Error(result.error ?? 'Failed to import IFC file')
+          throw new Error(result.error ?? t($ => $.autoSave.errors.failedIFCImport))
         } else {
           pushTool('basic.fit-to-view')
         }
       }, '.ifc')
     } catch (error) {
       if (!(error instanceof FileInputCancelledError)) {
-        setImportError(error instanceof Error ? error.message : 'Failed to import IFC file')
+        setImportError(error instanceof Error ? error.message : t($ => $.autoSave.errors.failedIFCImport))
       }
     } finally {
       setIsImporting(false)
@@ -129,7 +132,7 @@ export function AutoSaveIndicator(): React.JSX.Element {
     // Prioritize export/import errors and states
     if (exportError || importError) {
       return {
-        text: exportError || importError || 'Export/Import failed',
+        text: exportError || importError || t($ => $.autoSave.exportFailed),
         icon: <Cross2Icon />,
         color: 'red' as const
       }
@@ -137,7 +140,7 @@ export function AutoSaveIndicator(): React.JSX.Element {
 
     if (isExporting) {
       return {
-        text: 'Exporting...',
+        text: t($ => $.autoSave.exporting),
         icon: <UpdateIcon className="animate-spin" />,
         color: 'blue' as const
       }
@@ -145,7 +148,7 @@ export function AutoSaveIndicator(): React.JSX.Element {
 
     if (isImporting) {
       return {
-        text: 'Importing...',
+        text: t($ => $.autoSave.importing),
         icon: <UpdateIcon className="animate-spin" />,
         color: 'blue' as const
       }
@@ -154,7 +157,7 @@ export function AutoSaveIndicator(): React.JSX.Element {
     // Fall back to auto-save states
     if (saveError) {
       return {
-        text: 'Auto-save failed',
+        text: t($ => $.autoSave.autoSaveFailed),
         icon: <Cross2Icon />,
         color: 'red' as const
       }
@@ -162,7 +165,7 @@ export function AutoSaveIndicator(): React.JSX.Element {
 
     if (isSaving) {
       return {
-        text: 'Auto-saving...',
+        text: t($ => $.autoSave.autoSaving),
         icon: <UpdateIcon className="animate-spin" />,
         color: 'blue' as const
       }
@@ -175,23 +178,29 @@ export function AutoSaveIndicator(): React.JSX.Element {
 
       let timeText: string
       if (diffMinutes < 1) {
-        timeText = 'Just now'
+        timeText = t($ => $.autoSave.justNow)
       } else if (diffMinutes < 60) {
-        timeText = `${diffMinutes}m ago`
+        timeText = t($ => $.autoSave.minutesAgo, {
+          minutes: diffMinutes
+        })
       } else {
         const diffHours = Math.floor(diffMinutes / 60)
-        timeText = `${diffHours}h ago`
+        timeText = t($ => $.autoSave.hoursAgo, {
+          hours: diffHours
+        })
       }
 
       return {
-        text: `Auto-saved ${timeText}`,
+        text: t($ => $.autoSave.autoSaved, {
+          time: timeText
+        }),
         icon: <CheckIcon />,
         color: 'green' as const
       }
     }
 
     return {
-      text: 'Not saved',
+      text: t($ => $.autoSave.notSaved),
       icon: <Cross2Icon />,
       color: 'gray' as const
     }
@@ -211,35 +220,34 @@ export function AutoSaveIndicator(): React.JSX.Element {
           </Tooltip>
         </Button>
       </DropdownMenu.Trigger>
-
       <DropdownMenu.Content>
         <DropdownMenu.Sub>
-          <DropdownMenu.SubTrigger>Import/Export IFC</DropdownMenu.SubTrigger>
+          <DropdownMenu.SubTrigger>{t($ => $.autoSave.importExportIfc)}</DropdownMenu.SubTrigger>
           <DropdownMenu.SubContent>
             <DropdownMenu.Item onClick={handleIfcExport} disabled={isExporting || isImporting}>
               <DownloadIcon />
-              Export Building Model
+              {t($ => $.autoSave.exportBuildingModel)}
             </DropdownMenu.Item>
 
             <DropdownMenu.Item onClick={handleIfcGeometryExport} disabled={isExporting || isImporting}>
               <DownloadIcon />
-              Export Construction Model
+              {t($ => $.autoSave.exportConstructionModel)}
             </DropdownMenu.Item>
 
             <DropdownMenu.Item onClick={handleIfcImport} disabled={isExporting || isImporting}>
               <UploadIcon />
-              Import
+              {t($ => $.autoSave.import)}
             </DropdownMenu.Item>
           </DropdownMenu.SubContent>
         </DropdownMenu.Sub>
         <DropdownMenu.Item onClick={handleExport} disabled={isExporting || isImporting}>
           <DownloadIcon />
-          Save to File
+          {t($ => $.autoSave.saveToFile)}
         </DropdownMenu.Item>
 
         <DropdownMenu.Item onClick={handleImport} disabled={isExporting || isImporting}>
           <UploadIcon />
-          Load from File
+          {t($ => $.autoSave.loadFromFile)}
         </DropdownMenu.Item>
 
         <DropdownMenu.Separator />

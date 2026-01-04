@@ -1,5 +1,6 @@
 import { Grid } from '@radix-ui/themes'
 import React, { useId, useMemo, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { BaseModal } from '@/shared/components/BaseModal'
 import { SVGViewport, type SVGViewportRef } from '@/shared/components/SVGViewport'
@@ -52,6 +53,7 @@ export function PartCutModal({
   polygon: PolygonWithHoles2D
   trigger: React.ReactNode
 }): React.JSX.Element {
+  const { t } = useTranslation('construction')
   const viewportRef = useRef<SVGViewportRef>(null)
   const polygonId = useId()
 
@@ -141,7 +143,14 @@ export function PartCutModal({
   )
 
   return (
-    <BaseModal height="90vh" width="95vw" maxHeight="90vh" maxWidth="95vw" title="Part Cut Diagram" trigger={trigger}>
+    <BaseModal
+      height="90vh"
+      width="95vw"
+      maxHeight="90vh"
+      maxWidth="95vw"
+      title={t($ => $.partCutModal.partCutDiagram)}
+      trigger={trigger}
+    >
       <Grid rows="1fr" p="0">
         <div className="p0 m0" style={{ maxHeight: '80vh' }} ref={containerRef}>
           <SVGViewport

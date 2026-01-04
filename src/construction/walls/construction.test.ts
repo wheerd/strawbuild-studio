@@ -95,6 +95,7 @@ describe('constructWall', () => {
   const createMockStorey = (): Storey => ({
     id: storeyId,
     name: 'Ground Floor',
+    useDefaultName: false,
     level: 0 as any,
     floorHeight: 3000,
     floorAssemblyId

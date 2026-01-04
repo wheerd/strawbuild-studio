@@ -75,7 +75,7 @@ test('materials configuration journey', async ({ page }) => {
 
   await dialog.getByLabel('Volume input').fill('1500')
   await dialog.getByRole('button', { name: 'Add volume option' }).click()
-  await expect(dialog.getByRole('listitem').filter({ hasText: /1500L/ })).toBeVisible()
+  await expect(dialog.getByRole('listitem').filter({ hasText: /1,500L/ })).toBeVisible()
 
   await page.getByRole('radio', { name: 'm³' }).click()
 

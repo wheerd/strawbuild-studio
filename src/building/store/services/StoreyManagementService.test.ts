@@ -143,7 +143,6 @@ describe('StoreyManagementService', () => {
 
       const newStorey = {
         id: 'storey-2' as StoreyId,
-        name: 'Ground Floor Copy',
         level: createStoreyLevel(1),
         floorHeight: 3000,
         floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
@@ -156,7 +155,7 @@ describe('StoreyManagementService', () => {
 
       const result = service.duplicateStorey('storey-1' as StoreyId)
 
-      expect(mockActions.addStorey).toHaveBeenCalledWith('Ground Floor Copy', 3000, DEFAULT_FLOOR_ASSEMBLY_ID)
+      expect(mockActions.addStorey).toHaveBeenCalledWith(3000, DEFAULT_FLOOR_ASSEMBLY_ID)
       expect(result).toEqual(newStorey)
     })
 
@@ -182,9 +181,9 @@ describe('StoreyManagementService', () => {
       mockActions.addStorey.mockReturnValue(newStorey)
       mockActions.getPerimetersByStorey.mockReturnValue([])
 
-      service.duplicateStorey('storey-1' as StoreyId, 'Custom Name')
+      service.duplicateStorey('storey-1' as StoreyId)
 
-      expect(mockActions.addStorey).toHaveBeenCalledWith('Custom Name', 3000, DEFAULT_FLOOR_ASSEMBLY_ID)
+      expect(mockActions.addStorey).toHaveBeenCalledWith(3000, DEFAULT_FLOOR_ASSEMBLY_ID)
     })
 
     it('should throw error for non-existent storey', () => {
@@ -217,7 +216,7 @@ describe('StoreyManagementService', () => {
 
       const result = service.duplicateStorey('storey-1' as StoreyId)
 
-      expect(mockActions.addStorey).toHaveBeenCalledWith('Only Floor Copy', 3000, DEFAULT_FLOOR_ASSEMBLY_ID)
+      expect(mockActions.addStorey).toHaveBeenCalledWith(3000, DEFAULT_FLOOR_ASSEMBLY_ID)
       expect(result).toEqual(newStorey)
     })
 

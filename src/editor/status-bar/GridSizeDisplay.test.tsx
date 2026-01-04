@@ -3,9 +3,11 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { GridSizeDisplay } from './GridSizeDisplay'
 
-// Mock the formatLength utility
-vi.mock('@/shared/utils/formatting', () => ({
-  formatLength: vi.fn((length: number) => `${length}mm`) // Mock to return simple format for tests
+// Mock the i18n formatters hook
+vi.mock('@/shared/i18n/useFormatters', () => ({
+  useFormatters: () => ({
+    formatLength: (length: number) => `${length}mm` // Mock to return simple format for tests
+  })
 }))
 
 // Mock the grid hooks

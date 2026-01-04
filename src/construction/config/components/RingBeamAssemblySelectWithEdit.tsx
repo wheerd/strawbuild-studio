@@ -1,12 +1,14 @@
 import { Pencil1Icon } from '@radix-ui/react-icons'
 import { Flex, IconButton } from '@radix-ui/themes'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useConfigurationModal } from '@/construction/config/context/ConfigurationModalContext'
 
 import { RingBeamAssemblySelect, type RingBeamAssemblySelectProps } from './RingBeamAssemblySelect'
 
 export function RingBeamAssemblySelectWithEdit(props: RingBeamAssemblySelectProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   const { openConfiguration } = useConfigurationModal()
 
   return (
@@ -15,7 +17,7 @@ export function RingBeamAssemblySelectWithEdit(props: RingBeamAssemblySelectProp
         <RingBeamAssemblySelect {...props} />
       </Flex>
       <IconButton
-        title="Configure Ring Beam"
+        title={t($ => $.ringBeams.configure)}
         variant="ghost"
         size={props.size}
         onClick={() => openConfiguration('ringbeams', props.value ?? undefined)}

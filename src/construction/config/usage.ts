@@ -3,6 +3,7 @@ import type {
   OpeningAssemblyId,
   RingBeamAssemblyId,
   RoofAssemblyId,
+  StoreyId,
   WallAssemblyId
 } from '@/building/model/ids'
 import type { Perimeter, Roof, Storey } from '@/building/model/model'
@@ -10,17 +11,34 @@ import type { WallAssemblyConfig } from '@/construction/config/types'
 
 export interface RingBeamAssemblyUsage {
   isUsed: boolean
-  usedByPerimeters: string[]
+  isDefaultBase: boolean
+  isDefaultTop: boolean
+  storeyIds: StoreyId[]
 }
 
 export interface WallAssemblyUsage {
   isUsed: boolean
-  usedByWalls: string[]
+  isDefault: boolean
+  storeyIds: StoreyId[]
 }
 
 export interface FloorAssemblyUsage {
   isUsed: boolean
-  usedByStoreys: string[]
+  isDefault: boolean
+  storeyIds: StoreyId[]
+}
+
+export interface RoofAssemblyUsage {
+  isUsed: boolean
+  isDefault: boolean
+  storeyIds: StoreyId[]
+}
+
+export interface OpeningAssemblyUsage {
+  isUsed: boolean
+  isDefault: boolean
+  wallAssemblyIds: WallAssemblyId[]
+  storeyIds: StoreyId[]
 }
 
 /**
@@ -29,35 +47,27 @@ export interface FloorAssemblyUsage {
 export function getRingBeamAssemblyUsage(
   assemblyId: RingBeamAssemblyId,
   perimeters: Perimeter[],
-  storeys: Storey[]
+  defaultBaseId?: RingBeamAssemblyId,
+  defaultTopId?: RingBeamAssemblyId
 ): RingBeamAssemblyUsage {
-  const usedByPerimeters: string[] = []
+  const storeyIdSet = new Set<StoreyId>()
 
-  // Check all walls in all perimeters for base and top ring beam references
   perimeters.forEach(perimeter => {
-    // Get storey name for context
-    const storey = storeys.find(s => s.id === perimeter.storeyId)
-    const storeyName = storey?.name ?? 'Unknown Floor'
-
-    // Check each wall in the perimeter
-    perimeter.walls.forEach((wall, wallIndex) => {
-      const wallName = `Wall ${wallIndex + 1}`
-
-      // Check base ring beam
-      if (wall.baseRingBeamAssemblyId === assemblyId) {
-        usedByPerimeters.push(`${storeyName} - ${wallName} (Base Plate)`)
-      }
-
-      // Check top ring beam
-      if (wall.topRingBeamAssemblyId === assemblyId) {
-        usedByPerimeters.push(`${storeyName} - ${wallName} (Top Plate)`)
+    perimeter.walls.forEach(wall => {
+      if (wall.baseRingBeamAssemblyId === assemblyId || wall.topRingBeamAssemblyId === assemblyId) {
+        storeyIdSet.add(perimeter.storeyId)
       }
     })
   })
 
+  const isDefaultBase = assemblyId === defaultBaseId
+  const isDefaultTop = assemblyId === defaultTopId
+
   return {
-    isUsed: usedByPerimeters.length > 0,
-    usedByPerimeters
+    isUsed: storeyIdSet.size > 0 || isDefaultBase || isDefaultTop,
+    isDefaultBase,
+    isDefaultTop,
+    storeyIds: Array.from(storeyIdSet)
   }
 }
 
@@ -67,79 +77,75 @@ export function getRingBeamAssemblyUsage(
 export function getWallAssemblyUsage(
   assemblyId: WallAssemblyId,
   perimeters: Perimeter[],
-  storeys: Storey[]
+  defaultWallAssemblyId?: WallAssemblyId
 ): WallAssemblyUsage {
-  const usedByWalls: string[] = []
+  const storeyIdSet = new Set<StoreyId>()
 
-  // Check all perimeters and their walls
   perimeters.forEach(perimeter => {
-    // Get storey name for context
-    const storey = storeys.find(s => s.id === perimeter.storeyId)
-    const storeyName = storey?.name ?? 'Unknown Floor'
-
-    // Check each wall in the perimeter
-    perimeter.walls.forEach((wall, wallIndex) => {
+    perimeter.walls.forEach(wall => {
       if (wall.wallAssemblyId === assemblyId) {
-        usedByWalls.push(`${storeyName} - Wall ${wallIndex + 1}`)
+        storeyIdSet.add(perimeter.storeyId)
       }
     })
   })
 
+  const isDefault = assemblyId === defaultWallAssemblyId
+
   return {
-    isUsed: usedByWalls.length > 0,
-    usedByWalls
+    isUsed: storeyIdSet.size > 0 || isDefault,
+    isDefault,
+    storeyIds: Array.from(storeyIdSet)
   }
 }
 
 /**
  * Checks if a floor assembly is currently in use by any storeys
  */
-export function getFloorAssemblyUsage(assemblyId: FloorAssemblyId, storeys: Storey[]): FloorAssemblyUsage {
-  const usedByStoreys: string[] = []
+export function getFloorAssemblyUsage(
+  assemblyId: FloorAssemblyId,
+  storeys: Storey[],
+  defaultFloorAssemblyId?: FloorAssemblyId
+): FloorAssemblyUsage {
+  const storeyIdSet = new Set<StoreyId>()
 
   storeys.forEach(storey => {
     if (storey.floorAssemblyId === assemblyId) {
-      usedByStoreys.push(storey.name)
+      storeyIdSet.add(storey.id)
     }
   })
 
-  return {
-    isUsed: usedByStoreys.length > 0,
-    usedByStoreys
-  }
-}
+  const isDefault = assemblyId === defaultFloorAssemblyId
 
-export interface RoofAssemblyUsage {
-  isUsed: boolean
-  usedByRoofs: string[]
+  return {
+    isUsed: storeyIdSet.size > 0 || isDefault,
+    isDefault,
+    storeyIds: Array.from(storeyIdSet)
+  }
 }
 
 /**
  * Checks if a roof assembly is currently in use by any roofs
  */
-export function getRoofAssemblyUsage(assemblyId: RoofAssemblyId, roofs: Roof[], storeys: Storey[]): RoofAssemblyUsage {
-  const usedByRoofs = new Set<string>()
+export function getRoofAssemblyUsage(
+  assemblyId: RoofAssemblyId,
+  roofs: Roof[],
+  defaultRoofAssemblyId?: RoofAssemblyId
+): RoofAssemblyUsage {
+  const storeyIdSet = new Set<StoreyId>()
 
   roofs.forEach(roof => {
     if (roof.assemblyId === assemblyId) {
-      const storey = storeys.find(s => s.id === roof.storeyId)
-      const storeyName = storey?.name ?? 'Unknown Storey'
-      const type = roof.type === 'gable' ? 'Gable Roof' : 'Shed Roof'
-      usedByRoofs.add(`${storeyName} - ${type}`)
+      storeyIdSet.add(roof.storeyId)
     }
   })
 
-  return {
-    isUsed: usedByRoofs.size > 0,
-    usedByRoofs: Array.from(usedByRoofs)
-  }
-}
+  const isDefault = assemblyId === defaultRoofAssemblyId
 
-export interface OpeningAssemblyUsage {
-  isUsed: boolean
-  usedAsGlobalDefault: boolean
-  usedByWallAssemblies: string[]
-  usedByOpenings: string[]
+  return {
+    isUsed: storeyIdSet.size > 0 || isDefault,
+    isDefault,
+    storeyIds: Array.from(storeyIdSet)
+  }
 }
 
 /**
@@ -151,39 +157,35 @@ export interface OpeningAssemblyUsage {
 export function getOpeningAssemblyUsage(
   assemblyId: OpeningAssemblyId,
   perimeters: Perimeter[],
-  storeys: Storey[],
   wallAssemblies: WallAssemblyConfig[],
   defaultOpeningAssemblyId: OpeningAssemblyId
 ): OpeningAssemblyUsage {
-  const usedAsGlobalDefault = assemblyId === defaultOpeningAssemblyId
-  const usedByWallAssemblies: string[] = []
-  const usedByOpenings: string[] = []
+  const isDefault = assemblyId === defaultOpeningAssemblyId
+  const wallAssemblyIdSet = new Set<WallAssemblyId>()
+  const storeyIdSet = new Set<StoreyId>()
 
   // Check wall assemblies that reference this opening assembly
   wallAssemblies.forEach(wallAssembly => {
     if (wallAssembly.openingAssemblyId === assemblyId) {
-      usedByWallAssemblies.push(`Wall Assembly: ${wallAssembly.name}`)
+      wallAssemblyIdSet.add(wallAssembly.id)
     }
   })
 
   // Check individual openings that override to use this assembly
   perimeters.forEach(perimeter => {
-    const storey = storeys.find(s => s.id === perimeter.storeyId)
-    const storeyName = storey?.name ?? 'Unknown Floor'
-
-    perimeter.walls.forEach((wall, wallIndex) => {
-      wall.openings.forEach((opening, openingIndex) => {
+    perimeter.walls.forEach(wall => {
+      wall.openings.forEach(opening => {
         if (opening.openingAssemblyId === assemblyId) {
-          usedByOpenings.push(`${storeyName} - Wall ${wallIndex + 1} - Opening ${openingIndex + 1}`)
+          storeyIdSet.add(perimeter.storeyId)
         }
       })
     })
   })
 
   return {
-    isUsed: usedAsGlobalDefault || usedByWallAssemblies.length > 0 || usedByOpenings.length > 0,
-    usedAsGlobalDefault,
-    usedByWallAssemblies,
-    usedByOpenings
+    isUsed: isDefault || wallAssemblyIdSet.size > 0 || storeyIdSet.size > 0,
+    isDefault,
+    wallAssemblyIds: Array.from(wallAssemblyIdSet),
+    storeyIds: Array.from(storeyIdSet)
   }
 }

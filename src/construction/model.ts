@@ -17,7 +17,12 @@ import { simplifyPolygon, unionPolygons } from '@/shared/geometry/polygon'
 import { type ConstructionGroup, type GroupOrElement, createConstructionElementId } from './elements'
 import { transformBounds } from './geometry'
 import type { RawMeasurement } from './measurements'
-import { type ConstructionIssue, type ConstructionIssueId, mergeConstructionIssues } from './results'
+import {
+  type ConstructionIssue,
+  type ConstructionIssueId,
+  type IssueMessageKey,
+  mergeConstructionIssues
+} from './results'
 import type { Tag } from './tags'
 
 export interface ConstructionModel {
@@ -46,7 +51,6 @@ export type HighlightedArea = HighlightedCuboid | HighlightedPolygon | Highlight
 export interface HighlightedCuboid {
   type: 'cuboid'
   areaType: HighlightedAreaType
-  label?: string
   transform: Transform
   size: Vec3
   bounds: Bounds3D
@@ -60,7 +64,6 @@ export interface HighlightedCuboid {
 export interface HighlightedPolygon {
   type: 'polygon'
   areaType: HighlightedAreaType
-  label?: string
   polygon: Polygon2D
   plane: Plane3D
   tags?: Tag[]
@@ -72,7 +75,6 @@ export interface HighlightedPolygon {
 export interface HighlightedCut {
   type: 'cut'
   areaType: HighlightedAreaType
-  label?: string
   position: Length
   axis: Axis3D
   tags?: Tag[]
@@ -85,7 +87,11 @@ export interface HighlightedCut {
  * Returns a minimal construction model with no geometry but a single warning.
  * Useful for guarding unfinished construction paths until the real implementation lands.
  */
-export function createUnsupportedModel(description: string, issueId?: string): ConstructionModel {
+export function createUnsupportedModel(
+  messageKey: IssueMessageKey,
+  params?: Record<string, unknown>,
+  issueId?: string
+): ConstructionModel {
   const id = (issueId ?? `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`) as ConstructionIssueId
 
   return {
@@ -96,7 +102,8 @@ export function createUnsupportedModel(description: string, issueId?: string): C
     warnings: [
       {
         id,
-        description,
+        messageKey,
+        params,
         severity: 'warning' as const
       }
     ],

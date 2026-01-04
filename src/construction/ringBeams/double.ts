@@ -20,6 +20,6 @@ export class DoubleRingBeamAssembly implements RingBeamAssembly {
     _context: PerimeterConstructionContext,
     _storeyContext?: StoreyContext
   ): Generator<ConstructionResult> {
-    yield yieldError('Double ring beam construction is not yet supported.', [], 'unsupported-ring-beam-double')
+    yield yieldError($ => $.construction.ringBeam.doubleNotSupported, undefined, [], 'unsupported-ring-beam-double')
   }
 }

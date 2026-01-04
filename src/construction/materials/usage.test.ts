@@ -48,14 +48,18 @@ describe('Material Usage Detection', () => {
       const { result } = renderHook(() => useMaterialUsage(roughWood.id))
 
       expect(result.current.isUsed).toBe(false)
-      expect(result.current.usedByConfigs).toEqual([])
+      expect(result.current.isDefaultStraw).toBe(false)
+      expect(result.current.assemblyIds).toEqual([])
+      expect(result.current.usedInWallPosts).toBe(false)
     })
 
     it('detects default straw material usage', () => {
       const { result } = renderHook(() => useMaterialUsage(defaultStrawMaterialId))
 
       expect(result.current.isUsed).toBe(true)
-      expect(result.current.usedByConfigs).toEqual(['Default Straw Material'])
+      expect(result.current.isDefaultStraw).toBe(true)
+      expect(result.current.assemblyIds).toEqual([])
+      expect(result.current.usedInWallPosts).toBe(false)
     })
 
     it('detects ring beam material usage', () => {
@@ -74,7 +78,9 @@ describe('Material Usage Detection', () => {
       const { result } = renderHook(() => useMaterialUsage(roughWood.id))
 
       expect(result.current.isUsed).toBe(true)
-      expect(result.current.usedByConfigs).toEqual(['Ring Beam: Test Ring Beam (beam)'])
+      expect(result.current.isDefaultStraw).toBe(false)
+      expect(result.current.assemblyIds).toEqual([ringBeamAssembly.id])
+      expect(result.current.usedInWallPosts).toBe(false)
     })
 
     it('detects wall assembly post materials', () => {
@@ -105,7 +111,9 @@ describe('Material Usage Detection', () => {
       const { result } = renderHook(() => useMaterialUsage(roughWood.id))
 
       expect(result.current.isUsed).toBe(true)
-      expect(result.current.usedByConfigs).toEqual(['Wall: Test Infill (posts)'])
+      expect(result.current.isDefaultStraw).toBe(false)
+      expect(result.current.assemblyIds).toEqual([wallAssembly.id])
+      expect(result.current.usedInWallPosts).toBe(false) // No actual posts in building model
     })
 
     it('detects strawhenge module usage', () => {
@@ -144,7 +152,9 @@ describe('Material Usage Detection', () => {
       const { result } = renderHook(() => useMaterialUsage(roughWood.id))
 
       expect(result.current.isUsed).toBe(true)
-      expect(result.current.usedByConfigs).toEqual(['Wall: Test Strawhenge (module frame, infill posts)'])
+      expect(result.current.isDefaultStraw).toBe(false)
+      expect(result.current.assemblyIds).toEqual([wallAssembly.id])
+      expect(result.current.usedInWallPosts).toBe(false) // No actual posts in building model
     })
 
     it('detects spacer and infill materials in double modules', () => {
@@ -188,11 +198,15 @@ describe('Material Usage Detection', () => {
 
       const { result: spacerResult } = renderHook(() => useMaterialUsage(spacerMaterialId))
       expect(spacerResult.current.isUsed).toBe(true)
-      expect(spacerResult.current.usedByConfigs).toEqual(['Wall: Double Module Wall (module spacers)'])
+      expect(spacerResult.current.isDefaultStraw).toBe(false)
+      expect(spacerResult.current.assemblyIds).toEqual([wallAssembly.id])
+      expect(spacerResult.current.usedInWallPosts).toBe(false)
 
       const { result: infillResult } = renderHook(() => useMaterialUsage(woodwool.id))
       expect(infillResult.current.isUsed).toBe(true)
-      expect(infillResult.current.usedByConfigs).toEqual(['Wall: Double Module Wall (module infill)'])
+      expect(infillResult.current.isDefaultStraw).toBe(false)
+      expect(infillResult.current.assemblyIds).toEqual([wallAssembly.id])
+      expect(infillResult.current.usedInWallPosts).toBe(false)
     })
 
     it('detects materials used across multiple configs', () => {
@@ -232,9 +246,11 @@ describe('Material Usage Detection', () => {
       const { result } = renderHook(() => useMaterialUsage(roughWood.id))
 
       expect(result.current.isUsed).toBe(true)
-      expect(result.current.usedByConfigs).toHaveLength(2)
-      expect(result.current.usedByConfigs).toContain('Ring Beam: Test Ring Beam (beam)')
-      expect(result.current.usedByConfigs).toContain('Wall: Test Infill (posts)')
+      expect(result.current.isDefaultStraw).toBe(false)
+      expect(result.current.assemblyIds).toHaveLength(2)
+      expect(result.current.assemblyIds).toContain(ringBeamAssembly.id)
+      expect(result.current.assemblyIds).toContain(wallAssembly.id)
+      expect(result.current.usedInWallPosts).toBe(false) // No actual posts in building model
     })
   })
 })

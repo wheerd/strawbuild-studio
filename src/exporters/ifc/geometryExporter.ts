@@ -682,7 +682,9 @@ export class GeometryIfcExporter {
 
   private extractStoreyName(group: ConstructionGroup): string {
     const storeyTag = group.tags?.find(t => t.category === 'storey-name')
-    return storeyTag?.label ?? 'Unknown Storey'
+    if (!storeyTag) return 'Unknown Storey'
+    // For custom tags, use label; for predefined tags, use ID (IFC export doesn't need translation)
+    return 'label' in storeyTag ? storeyTag.label : String(storeyTag.id)
   }
 
   private createIfcElementByType(
@@ -865,7 +867,7 @@ export class GeometryIfcExporter {
 
   private processOpening(opening: HighlightedCuboid): void {
     if (!opening.sourceId) {
-      console.warn('Opening without sourceId, skipping:', opening.label)
+      console.warn('Opening without sourceId, skipping:', opening)
       return
     }
 
@@ -916,7 +918,7 @@ export class GeometryIfcExporter {
       new IFC4.IfcOpeningElement(
         this.globalId(),
         this.ownerHistory,
-        this.label(opening.label ?? `${opening.areaType}-${opening.sourceId}`),
+        this.label(`${opening.areaType}-${opening.sourceId}`),
         null,
         null,
         placement,
@@ -1241,7 +1243,8 @@ export class GeometryIfcExporter {
     // Tags
     if (constructionElement.tags) {
       if (constructionElement.tags.length > 0) {
-        const tagLabels = constructionElement.tags.map(t => t.label).join(', ')
+        // For IFC export, use label for custom tags and ID for predefined tags (no translation needed in IFC)
+        const tagLabels = constructionElement.tags.map(t => ('label' in t ? t.label : String(t.id))).join(', ')
         properties.push(
           this.writeEntity(new IFC4.IfcPropertySingleValue(this.identifier('Tags'), null, this.label(tagLabels), null))
         )

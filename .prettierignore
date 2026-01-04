@@ -16,3 +16,7 @@ coverage/
 
 # Generated files
 __snapshots__/
+src/@types/resources.d.ts
+
+# Automatically formatted by i18next-cli
+src/shared/i18n/locales/

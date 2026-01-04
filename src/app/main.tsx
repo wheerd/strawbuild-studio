@@ -10,6 +10,7 @@ import { getAllMaterials, subscribeToMaterials } from '@/construction/materials/
 import { ErrorFallback } from '@/shared/components/ErrorBoundary'
 import { ensureClipperModule } from '@/shared/geometry/clipperInstance'
 import { ensureManifoldModule } from '@/shared/geometry/manifoldInstance'
+import '@/shared/i18n/config'
 import { registerServiceWorker } from '@/shared/services/serviceWorkerRegistration'
 
 import App from './App.tsx'

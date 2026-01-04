@@ -1,6 +1,7 @@
 import { CrossCircledIcon } from '@radix-ui/react-icons'
 import { Box, Callout, Flex, Skeleton, Spinner, Tabs } from '@radix-ui/themes'
 import React, { Suspense, use, useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { ConstructionPartsList } from '@/construction/components/parts/ConstructionPartsList'
 import { ConstructionVirtualPartsList } from '@/construction/components/parts/ConstructionVirtualPartsList'
@@ -22,11 +23,13 @@ export interface ConstructionPartsListModalProps {
 }
 
 export function ConstructionPartsListModal({
-  title = 'Parts List',
+  title,
   constructionModelFactory,
   trigger,
   refreshKey
 }: ConstructionPartsListModalProps): React.JSX.Element {
+  const { t } = useTranslation('construction')
+  const defaultTitle = t($ => $.partsListModal.title)
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'materials' | 'modules'>('materials')
   const [partsDataPromise, setPartsDataPromise] = useState<Promise<PartsData | null> | null>(null)
@@ -65,7 +68,7 @@ export function ConstructionPartsListModal({
     <BaseModal
       open={isOpen}
       onOpenChange={handleOpenChange}
-      title={title}
+      title={title ?? defaultTitle}
       trigger={trigger}
       size="2"
       width="calc(100vw - 2 * var(--space-4))"
@@ -77,8 +80,8 @@ export function ConstructionPartsListModal({
       <Tabs.Root value={activeTab} onValueChange={value => setActiveTab(value as 'materials' | 'modules')}>
         <Box px="4" pt="3">
           <Tabs.List>
-            <Tabs.Trigger value="materials">Materials</Tabs.Trigger>
-            <Tabs.Trigger value="modules">Modules</Tabs.Trigger>
+            <Tabs.Trigger value="materials">{t($ => $.partsListModal.tabs.materials)}</Tabs.Trigger>
+            <Tabs.Trigger value="modules">{t($ => $.partsListModal.tabs.modules)}</Tabs.Trigger>
           </Tabs.List>
         </Box>
 
@@ -111,6 +114,7 @@ export function ConstructionPartsListModal({
 }
 
 function MaterialPartsContent({ partsDataPromise }: { partsDataPromise: Promise<PartsData | null> }) {
+  const { t } = useTranslation('construction')
   const partsData = use(partsDataPromise)
 
   if (!partsData) {
@@ -120,7 +124,7 @@ function MaterialPartsContent({ partsDataPromise }: { partsDataPromise: Promise<
           <Callout.Icon>
             <CrossCircledIcon />
           </Callout.Icon>
-          <Callout.Text>Failed to generate parts list</Callout.Text>
+          <Callout.Text>{t($ => $.partsListModal.errors.failedPartsList)}</Callout.Text>
         </Callout.Root>
       </Flex>
     )
@@ -130,6 +134,7 @@ function MaterialPartsContent({ partsDataPromise }: { partsDataPromise: Promise<
 }
 
 function ModulePartsContent({ partsDataPromise }: { partsDataPromise: Promise<PartsData | null> }) {
+  const { t } = useTranslation('construction')
   const partsData = use(partsDataPromise)
 
   if (!partsData) {
@@ -139,7 +144,7 @@ function ModulePartsContent({ partsDataPromise }: { partsDataPromise: Promise<Pa
           <Callout.Icon>
             <CrossCircledIcon />
           </Callout.Icon>
-          <Callout.Text>Failed to generate modules list</Callout.Text>
+          <Callout.Text>{t($ => $.partsListModal.errors.failedModulesList)}</Callout.Text>
         </Callout.Root>
       </Flex>
     )

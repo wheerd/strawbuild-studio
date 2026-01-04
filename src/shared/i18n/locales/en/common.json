@@ -1,0 +1,75 @@
+{
+  "actions": {
+    "cancel": "Cancel"
+  },
+  "app": {
+    "changeLanguage": "Change language",
+    "constructionPlanning": "Construction Planning",
+    "fitToContent": "Fit to content",
+    "strawbaler": "Strawbaler"
+  },
+  "autoSave": {
+    "autoSaved": "Auto-saved {{time}}",
+    "autoSaveFailed": "Auto-save failed",
+    "autoSaving": "Auto-saving...",
+    "errors": {
+      "failedExport": "Failed to export project",
+      "failedGenerateModel": "Failed to generate model",
+      "failedIFCExport": "Failed to export IFC",
+      "failedIFCImport": "Failed to import IFC file",
+      "failedImport": "Failed to import file"
+    },
+    "exportBuildingModel": "Export Building Model",
+    "exportConstructionModel": "Export Construction Model",
+    "exportFailed": "Export/Import failed",
+    "exporting": "Exporting...",
+    "hoursAgo": "{{hours}}h ago",
+    "import": "Import",
+    "importExportIfc": "Import/Export IFC",
+    "importing": "Importing...",
+    "justNow": "Just now",
+    "loadFromFile": "Load from File",
+    "minutesAgo": "{{minutes}}m ago",
+    "notSaved": "Not saved",
+    "saveToFile": "Save to File"
+  },
+  "currentLanguageWithLabel": "Current language: {{language}}",
+  "storeys": {
+    "addNewFloor": "Add New Floor",
+    "basement": "B{{level}}",
+    "defaultBasementName_ordinal_one": "{{count}}st Basement",
+    "defaultBasementName_ordinal_two": "{{count}}nd Basement",
+    "defaultBasementName_ordinal_few": "{{count}}rd Basement",
+    "defaultBasementName_ordinal_other": "{{count}}th Basement",
+    "defaultName_ordinal_one": "{{count}}st Floor",
+    "defaultName_ordinal_two": "{{count}}nd Floor",
+    "defaultName_ordinal_few": "{{count}}rd Floor",
+    "defaultName_ordinal_other": "{{count}}th Floor",
+    "deleteFloor": "Delete floor",
+    "deleteFloorConfirm": "Are you sure you want to delete the floor?",
+    "deleteFloorTitle": "Delete Floor",
+    "duplicateFloor": "Duplicate floor",
+    "floor": "Floor {{level}}",
+    "floorAssembly": "Floor Assembly",
+    "floorHeight": "Floor Height",
+    "floorName": "Floor name",
+    "ground": "Ground",
+    "groundFloor": "Ground Floor",
+    "manageFloors": "Manage Floors",
+    "manageFloorsTooltip": "Manage floors",
+    "moveDown": "Move down",
+    "moveUp": "Move up",
+    "name": "Name",
+    "noFloorsYet": "No floors yet.",
+    "switchToFloor": "Switch to floor"
+  },
+  "units": {
+    "liter": "L",
+    "m3": "m³"
+  },
+  "viewMode": {
+    "floors": "Floors",
+    "roofs": "Roofs",
+    "walls": "Walls"
+  }
+}

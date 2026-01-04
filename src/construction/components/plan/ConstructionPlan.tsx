@@ -1,6 +1,7 @@
 import { ExclamationTriangleIcon, GroupIcon, RulerHorizontalIcon } from '@radix-ui/react-icons'
 import { Box, Card, Flex, Grid, IconButton, SegmentedControl } from '@radix-ui/themes'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { CutAreaShape } from '@/construction/components/plan/CutAreaShape'
 import { Measurements } from '@/construction/components/plan/Measurements'
@@ -109,6 +110,7 @@ export function ConstructionPlan({
   currentViewIndex,
   setCurrentViewIndex
 }: ConstructionPlanProps): React.JSX.Element {
+  const { t } = useTranslation('construction')
   const { toggleTagOrCategory, isTagOrCategoryVisible } = useTagVisibilityActions()
   const { hoveredIssueId, highlightedPartId } = usePlanHighlight()
   const viewportRef = useRef<SVGViewportRef>(null)
@@ -394,7 +396,7 @@ export function ConstructionPlan({
               <IconButton
                 variant={midCutEnabled ? 'solid' : 'outline'}
                 size="1"
-                title="Mid Cut"
+                title={t($ => $.plan.midCut)}
                 onClick={() => setMidCutEnabled(!midCutEnabled)}
               >
                 {currentView.plane === 'xy' ? <MidCutYIcon /> : <MidCutXIcon />}
@@ -404,7 +406,7 @@ export function ConstructionPlan({
               <IconButton
                 variant={hideAreas ? 'outline' : 'solid'}
                 size="1"
-                title="Hide Areas"
+                title={t($ => $.plan.hideAreas)}
                 onClick={() => setHideAreas(!hideAreas)}
               >
                 <GroupIcon />
@@ -414,7 +416,7 @@ export function ConstructionPlan({
               <IconButton
                 variant={hideIssues ? 'outline' : 'solid'}
                 size="1"
-                title="Hide Issues"
+                title={t($ => $.plan.hideIssues)}
                 onClick={() => setHideIssues(!hideIssues)}
               >
                 <ExclamationTriangleIcon />
@@ -424,7 +426,7 @@ export function ConstructionPlan({
               <IconButton
                 variant={hideMeasurements ? 'outline' : 'solid'}
                 size="1"
-                title="Hide Measurements"
+                title={t($ => $.plan.hideMeasurements)}
                 onClick={() => setHideMeasurements(!hideMeasurements)}
               >
                 <RulerHorizontalIcon />

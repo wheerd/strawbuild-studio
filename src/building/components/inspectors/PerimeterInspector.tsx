@@ -14,6 +14,7 @@ import {
   Tooltip
 } from '@radix-ui/themes'
 import React, { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { PerimeterId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import type { PerimeterReferenceSide, PerimeterWall, RoofType } from '@/building/model/model'
@@ -31,7 +32,7 @@ import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { ConstructionPlanIcon, FitToViewIcon, Model3DIcon, RoofIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
 import { Bounds2D, type Length, calculatePolygonArea } from '@/shared/geometry'
-import { formatArea, formatLength } from '@/shared/utils/formatting'
+import { useFormatters } from '@/shared/i18n/useFormatters'
 
 interface PerimeterInspectorProps {
   selectedId: PerimeterId
@@ -82,15 +83,16 @@ function detectMixedRingBeams(walls: PerimeterWall[], type: 'base' | 'top'): Mix
   }
 }
 
-function MixedStateIndicator() {
+function MixedStateIndicator({ tooltip }: { tooltip: string }) {
   return (
-    <Tooltip content="Different values across walls. Changing this will update all walls.">
+    <Tooltip content={tooltip}>
       <ExclamationTriangleIcon width={14} height={14} style={{ color: 'var(--amber-9)' }} />
     </Tooltip>
   )
 }
 
 export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): React.JSX.Element {
+  const { t } = useTranslation('inspector')
   // Get perimeter data from model store
   const {
     setAllWallsBaseRingBeam,
@@ -108,6 +110,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
   const viewportActions = useViewportActions()
   const { setMode } = useViewModeActions()
   const roofsOfStorey = useRoofsOfActiveStorey()
+  const { formatArea, formatLength } = useFormatters()
 
   // Find roof associated with this perimeter
   const associatedRoof = useMemo(
@@ -142,9 +145,11 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
       <Box p="2">
         <Callout.Root color="red">
           <Callout.Text>
-            <Text weight="bold">Perimeter Not Found</Text>
+            <Text weight="bold">{t($ => $.perimeter.notFound)}</Text>
             <br />
-            Perimeter with ID {selectedId} could not be found.
+            {t($ => $.perimeter.notFoundMessage, {
+              id: selectedId
+            })}
           </Callout.Text>
         </Callout.Root>
       </Box>
@@ -225,34 +230,34 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
         {/* Basic Information */}
         <DataList.Root size="1">
           <DataList.Item>
-            <DataList.Label minWidth="88px">Total Inner Perimeter</DataList.Label>
+            <DataList.Label minWidth="88px">{t($ => $.perimeter.totalInnerPerimeter)}</DataList.Label>
             <DataList.Value>{formatLength(totalInnerPerimeter)}</DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label minWidth="88px">Total Inside Area</DataList.Label>
+            <DataList.Label minWidth="88px">{t($ => $.perimeter.totalInsideArea)}</DataList.Label>
             <DataList.Value>{formatArea(totalInnerArea)}</DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label minWidth="88px">Total Outer Perimeter</DataList.Label>
+            <DataList.Label minWidth="88px">{t($ => $.perimeter.totalOuterPerimeter)}</DataList.Label>
             <DataList.Value>{formatLength(totalOuterPerimeter)}</DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label minWidth="88px">Total Overbuilt Area</DataList.Label>
+            <DataList.Label minWidth="88px">{t($ => $.perimeter.totalOverbuiltArea)}</DataList.Label>
             <DataList.Value>{formatArea(totalOuterArea)}</DataList.Value>
           </DataList.Item>
         </DataList.Root>
 
         <Flex align="center" gap="2">
           <Text size="1" color="gray" weight="medium">
-            Reference Side
+            {t($ => $.perimeter.referenceSide)}
           </Text>
           <SegmentedControl.Root
             size="1"
             value={perimeter.referenceSide}
             onValueChange={value => setPerimeterReferenceSide(perimeter.id, value as PerimeterReferenceSide)}
           >
-            <SegmentedControl.Item value="inside">Inside</SegmentedControl.Item>
-            <SegmentedControl.Item value="outside">Outside</SegmentedControl.Item>
+            <SegmentedControl.Item value="inside">{t($ => $.perimeter.referenceSideInside)}</SegmentedControl.Item>
+            <SegmentedControl.Item value="outside">{t($ => $.perimeter.referenceSideOutside)}</SegmentedControl.Item>
           </SegmentedControl.Root>
         </Flex>
 
@@ -263,23 +268,20 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
               <ExclamationTriangleIcon />
             </Callout.Icon>
             <Callout.Text>
-              <Text weight="bold">Non-right angles detected</Text>
+              <Text weight="bold">{t($ => $.perimeter.nonRightAnglesWarning)}</Text>
               <br />
-              <Text size="1">
-                This perimeter contains corners with angles that are not multiples of 90°. Construction planning for
-                such corners is not fully supported yet.
-              </Text>
+              <Text size="1">{t($ => $.perimeter.nonRightAnglesDescription)}</Text>
             </Callout.Text>
           </Callout.Root>
         )}
 
         <Flex direction="row" gap="3" pt="1" align="center" justify="center">
           <TopDownPlanModal
-            title="Perimeter Construction Plan"
+            title={t($ => $.perimeter.constructionPlanTitle)}
             factory={async () => constructPerimeter(perimeter)}
             refreshKey={perimeter}
             trigger={
-              <IconButton title="View Construction Plan" size="3">
+              <IconButton title={t($ => $.perimeter.viewConstructionPlan)} size="3">
                 <ConstructionPlanIcon width={24} height={24} />
               </IconButton>
             }
@@ -288,7 +290,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             constructionModelFactory={async () => constructPerimeter(perimeter)}
             refreshKey={perimeter}
             trigger={
-              <IconButton title="View 3D Construction" size="3" variant="outline">
+              <IconButton title={t($ => $.perimeter.view3DConstruction)} size="3" variant="outline">
                 <Model3DIcon width={24} height={24} />
               </IconButton>
             }
@@ -298,7 +300,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
         {/* Wall Configuration */}
         <Box pt="1" style={{ borderTop: '1px solid var(--gray-6)' }}>
           <Heading size="2" mb="2">
-            Wall Configuration
+            {t($ => $.perimeter.wallConfiguration)}
           </Heading>
 
           <Flex direction="column" gap="2">
@@ -308,10 +310,12 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                 <Label.Root htmlFor="wall-assembly">
                   <Flex align="center" gap="2">
                     <Text size="1" weight="medium" color="gray">
-                      Wall Assembly
+                      {t($ => $.perimeter.wallAssembly)}
                     </Text>
                     <MeasurementInfo highlightedAssembly="wallAssembly" />
-                    {wallAssemblyState.isMixed && <MixedStateIndicator />}
+                    {wallAssemblyState.isMixed && (
+                      <MixedStateIndicator tooltip={t($ => $.perimeter.mixedValuesTooltip)} />
+                    )}
                   </Flex>
                 </Label.Root>
               </Flex>
@@ -320,7 +324,11 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                 onValueChange={(value: WallAssemblyId) => {
                   updateAllPerimeterWallsAssembly(selectedId, value)
                 }}
-                placeholder={wallAssemblyState.isMixed ? 'Mixed' : 'Select assembly'}
+                placeholder={
+                  wallAssemblyState.isMixed
+                    ? t($ => $.perimeter.mixedPlaceholder)
+                    : t($ => $.perimeter.selectAssemblyPlaceholder)
+                }
                 size="1"
               />
             </Flex>
@@ -331,17 +339,17 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                 <Label.Root htmlFor="perimeter-thickness">
                   <Flex align="center" gap="2">
                     <Text size="1" weight="medium" color="gray">
-                      Wall Thickness
+                      {t($ => $.perimeter.wallThickness)}
                     </Text>
                     <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
-                    {thicknessState.isMixed && <MixedStateIndicator />}
+                    {thicknessState.isMixed && <MixedStateIndicator tooltip={t($ => $.perimeter.mixedValuesTooltip)} />}
                   </Flex>
                 </Label.Root>
               </Flex>
               <LengthField
                 id="perimeter-thickness"
                 value={thicknessState.value as Length}
-                placeholder={thicknessState.isMixed ? 'Mixed' : undefined}
+                placeholder={thicknessState.isMixed ? t($ => $.perimeter.mixedPlaceholder) : undefined}
                 onCommit={value => updateAllPerimeterWallsThickness(selectedId, value)}
                 min={50}
                 max={1500}
@@ -357,7 +365,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
         {/* Ring Beam Configuration */}
         <Box pt="1" style={{ borderTop: '1px solid var(--gray-6)' }}>
           <Heading size="2" mb="2">
-            Ring Beams
+            {t($ => $.perimeter.ringBeams)}
           </Heading>
 
           <Flex direction="column" gap="2">
@@ -367,10 +375,12 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                 <Label.Root htmlFor="base-ring-beam">
                   <Flex align="center" gap="2">
                     <Text size="1" weight="medium" color="gray">
-                      Base Plate
+                      {t($ => $.perimeter.basePlate)}
                     </Text>
                     <MeasurementInfo highlightedPart="basePlate" />
-                    {baseRingBeamState.isMixed && <MixedStateIndicator />}
+                    {baseRingBeamState.isMixed && (
+                      <MixedStateIndicator tooltip={t($ => $.perimeter.mixedValuesTooltip)} />
+                    )}
                   </Flex>
                 </Label.Root>
               </Flex>
@@ -387,7 +397,9 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                     setAllWallsBaseRingBeam(selectedId, value)
                   }
                 }}
-                placeholder={baseRingBeamState.isMixed ? 'Mixed' : 'None'}
+                placeholder={
+                  baseRingBeamState.isMixed ? t($ => $.perimeter.mixedPlaceholder) : t($ => $.perimeter.nonePlaceholder)
+                }
                 size="1"
                 allowNone
               />
@@ -399,10 +411,12 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                 <Label.Root htmlFor="top-ring-beam">
                   <Flex align="center" gap="2">
                     <Text size="1" weight="medium" color="gray">
-                      Top Plate
+                      {t($ => $.perimeter.topPlate)}
                     </Text>
                     <MeasurementInfo highlightedPart="topPlate" />
-                    {topRingBeamState.isMixed && <MixedStateIndicator />}
+                    {topRingBeamState.isMixed && (
+                      <MixedStateIndicator tooltip={t($ => $.perimeter.mixedValuesTooltip)} />
+                    )}
                   </Flex>
                 </Label.Root>
               </Flex>
@@ -419,7 +433,9 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                     setAllWallsTopRingBeam(selectedId, value)
                   }
                 }}
-                placeholder={topRingBeamState.isMixed ? 'Mixed' : 'None'}
+                placeholder={
+                  topRingBeamState.isMixed ? t($ => $.perimeter.mixedPlaceholder) : t($ => $.perimeter.nonePlaceholder)
+                }
                 size="1"
                 allowNone
               />
@@ -432,26 +448,30 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
         {/* Action Buttons */}
         <Flex gap="2" justify="end">
           {associatedRoof ? (
-            <IconButton size="2" title="View associated roof" onClick={handleNavigateToRoof}>
+            <IconButton size="2" title={t($ => $.perimeter.viewAssociatedRoof)} onClick={handleNavigateToRoof}>
               <RoofIcon />
             </IconButton>
           ) : (
             <DropdownMenu.Root>
               <DropdownMenu.Trigger>
-                <IconButton size="2" title="Add roof based on perimeter">
+                <IconButton size="2" title={t($ => $.perimeter.addRoofBasedOnPerimeter)}>
                   <RoofIcon />
                 </IconButton>
               </DropdownMenu.Trigger>
               <DropdownMenu.Content>
-                <DropdownMenu.Item onClick={() => handleAddRoof('gable')}>Gable Roof</DropdownMenu.Item>
-                <DropdownMenu.Item onClick={() => handleAddRoof('shed')}>Shed Roof</DropdownMenu.Item>
+                <DropdownMenu.Item onClick={() => handleAddRoof('gable')}>
+                  {t($ => $.perimeter.addGableRoof)}
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onClick={() => handleAddRoof('shed')}>
+                  {t($ => $.perimeter.addShedRoof)}
+                </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Root>
           )}
-          <IconButton size="2" title="Fit to view" onClick={handleFitToView}>
+          <IconButton size="2" title={t($ => $.perimeter.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
           </IconButton>
-          <IconButton size="2" color="red" title="Delete perimeter" onClick={handleDelete}>
+          <IconButton size="2" color="red" title={t($ => $.perimeter.deletePerimeter)} onClick={handleDelete}>
             <TrashIcon />
           </IconButton>
         </Flex>

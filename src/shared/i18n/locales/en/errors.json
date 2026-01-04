@@ -1,0 +1,73 @@
+{
+  "boundary": {
+    "copyError": "Copy Error Details",
+    "dataRecovery": {
+      "cancel": "Cancel",
+      "confirm": "Delete All Data & Reset",
+      "description": "If the error persists, you can perform a hard reset that will clear all stored data and reset the application to its default state. This will delete your floor plans and configurations.",
+      "dialogDescription": "This will delete all your data including floor plans, configurations, and materials. This action cannot be undone.",
+      "dialogTitle": "Reset Application?",
+      "hardReset": "Hard Reset Application",
+      "title": "Data Recovery Option"
+    },
+    "description": "The application encountered an unexpected error and cannot continue.",
+    "errorDetails": "Error Details:",
+    "errorMessage": "An unexpected error occurred",
+    "hideDetails": "Hide Details",
+    "noStackTrace": "No stack trace available",
+    "reloadPage": "Reload Page",
+    "showDetails": "Show Details",
+    "title": "Something went wrong",
+    "tryAgain": "Try Again"
+  },
+  "construction": {
+    "error": {
+      "geometryProcessing": "An error occurred during geometry processing"
+    },
+    "infill": {
+      "notEnoughSpaceForPost": "Not enough space for a post",
+      "notEnoughSpaceForStraw": "Not enough space for infilling straw",
+      "notEnoughSpaceForTwoPosts": "Space for more than one post, but not enough for two",
+      "notEnoughVerticalSpace": "Not enough vertical space to fill with straw"
+    },
+    "layer": {
+      "parallelLines": "Could not determine stripe positions due to parallel lines."
+    },
+    "opening": {
+      "headerDoesNotFit": "Header does not fit: needs {{required, length}} but only {{available, length}} available",
+      "heightExceedsWall": "Opening is higher than the wall by {{excess, length}}",
+      "sillDoesNotFit": "Sill does not fit: needs {{required, length}} but only {{available, length}} available"
+    },
+    "post": {
+      "crossSectionMismatch": "Cross section does not match available options for this material",
+      "dimensionsMismatch": "Post dimensions ({{width, length}}×{{thickness, length}}) don't match available cross sections",
+      "wallTooThin": "Wall thickness ({{wallThickness, length}}) is not wide enough for double posts requiring {{required, length}} minimum"
+    },
+    "ringBeam": {
+      "doubleNotSupported": "Double ring beam construction is not yet supported."
+    },
+    "roof": {
+      "invalidAssembly": "Invalid roof assembly"
+    },
+    "straw": {
+      "tooThick": "Wall is too thick for a single strawbale",
+      "tooThin": "Wall is too thin for a single strawbale"
+    }
+  },
+  "feature": {
+    "cancel": "Cancel",
+    "confirm": "Delete All Data & Reset",
+    "defaultMessage": "This feature encountered an error and cannot be displayed.",
+    "dialogDescription": "This will delete all your data including floor plans, configurations, and materials. This action cannot be undone.",
+    "dialogTitle": "Reset Application?",
+    "hardReset": "Hard Reset Application",
+    "reloadPage": "Reload Page",
+    "retry": "Retry",
+    "title": "Error"
+  },
+  "modal": {
+    "defaultMessage": "This content could not be displayed due to an error.",
+    "errorPrefix": "Error:",
+    "retry": "Retry"
+  }
+}

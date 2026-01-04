@@ -1,33 +1,26 @@
 import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons'
 import { DropdownMenu, Flex, IconButton, Text } from '@radix-ui/themes'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { GroupOrElement } from '@/construction/elements'
 import type { ConstructionModel } from '@/construction/model'
-import { CATEGORIES, type Tag, type TagCategoryId, type TagId } from '@/construction/tags'
+import { type Tag, type TagCategoryId, type TagId } from '@/construction/tags'
+import { useCategoryLabel } from '@/construction/useCategoryLabel'
+import { useTagLabel } from '@/construction/useTagLabel'
 import { useTagOpacityActions, useTagOpacityForceUpdate } from '@/construction/viewer3d/context/TagOpacityContext'
 
 export interface TagOpacityMenuProps {
   model: ConstructionModel
 }
 
-interface TagInfo {
-  id: TagId
-  label: string
-  category: TagCategoryId
-}
-
-function collectTagsFromModel(model: ConstructionModel): Map<TagCategoryId, TagInfo[]> {
-  const tagMap = new Map<TagId, TagInfo>()
+function collectTagsFromModel(model: ConstructionModel): Map<TagCategoryId, Tag[]> {
+  const tagMap = new Map<TagId, Tag>()
 
   const addTags = (tags?: Tag[]) => {
     tags?.forEach(tag => {
       if (!tagMap.has(tag.id)) {
-        tagMap.set(tag.id, {
-          id: tag.id,
-          label: tag.label,
-          category: tag.category
-        })
+        tagMap.set(tag.id, tag)
       }
     })
   }
@@ -43,43 +36,50 @@ function collectTagsFromModel(model: ConstructionModel): Map<TagCategoryId, TagI
   model.elements.forEach(collectFromElement)
 
   // Group by category
-  const categoryMap = new Map<TagCategoryId, TagInfo[]>()
-  tagMap.forEach(tagInfo => {
-    const existing = categoryMap.get(tagInfo.category)
+  const categoryMap = new Map<TagCategoryId, Tag[]>()
+  tagMap.forEach(tag => {
+    const existing = categoryMap.get(tag.category)
     if (existing) {
-      existing.push(tagInfo)
+      existing.push(tag)
     } else {
-      categoryMap.set(tagInfo.category, [tagInfo])
+      categoryMap.set(tag.category, [tag])
     }
-  })
-
-  // Sort tags within each category alphabetically
-  categoryMap.forEach(tags => {
-    tags.sort((a, b) => a.label.localeCompare(b.label))
   })
 
   return categoryMap
 }
 
-function getOpacityLabel(opacity: number): string {
-  if (opacity === 1.0) return 'Full'
-  if (opacity === 0.5) return 'Semi'
-  return 'Hide'
+// Helper component to render a category label using translations
+function CategoryLabel({ categoryId }: { categoryId: TagCategoryId }) {
+  const label = useCategoryLabel(categoryId)
+  return <>{label}</>
+}
+
+// Helper component to render a tag label using translations
+function TagLabel({ tag }: { tag: Tag }) {
+  const label = useTagLabel(tag)
+  return <>{label}</>
 }
 
 export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Element {
+  const { t } = useTranslation('viewer')
+
   // This component re-renders on any opacity change (to update the UI)
   useTagOpacityForceUpdate()
 
   const { getTagOrCategoryOpacity, getCategoryOpacityState, cycleTagOrCategoryOpacity } = useTagOpacityActions()
 
+  const getOpacityLabel = (opacity: number): string => {
+    if (opacity === 1.0) return t($ => $.tagOpacity.fullCategory)
+    if (opacity === 0.5) return t($ => $.tagOpacity.semiCategory)
+    return t($ => $.tagOpacity.hideCategory)
+  }
+
   const tagsByCategory = useMemo(() => collectTagsFromModel(model), [model])
 
-  // Sort categories alphabetically by label
+  // Get category IDs (sorted alphabetically by ID for now - will be sorted by translated label in render)
   const sortedCategories = useMemo(() => {
-    return Array.from(tagsByCategory.entries()).sort(([catA], [catB]) =>
-      CATEGORIES[catA].label.localeCompare(CATEGORIES[catB].label)
-    )
+    return Array.from(tagsByCategory.entries()).sort(([catA], [catB]) => String(catA).localeCompare(String(catB)))
   }, [tagsByCategory])
 
   const renderOpacityIcon = (opacity: number) => {
@@ -107,14 +107,14 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
     return (
       <DropdownMenu.Root>
         <DropdownMenu.Trigger>
-          <IconButton size="1" variant="outline" title="Tag Opacity" disabled>
+          <IconButton size="1" variant="outline" title={t($ => $.tagOpacity.title)} disabled>
             <EyeOpenIcon />
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <DropdownMenu.Item disabled>
             <Text size="1" color="gray">
-              No tags available
+              {t($ => $.tagOpacity.noTags)}
             </Text>
           </DropdownMenu.Item>
         </DropdownMenu.Content>
@@ -125,21 +125,23 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
-        <IconButton size="1" variant="solid" title="Tag Opacity">
+        <IconButton size="1" variant="solid" title={t($ => $.tagOpacity.title)}>
           <EyeOpenIcon />
         </IconButton>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
         {sortedCategories.map(([categoryId, tags]) => {
-          const tagIds = tags.map(t => t.id)
+          const tagIds = tags.map(t => t.id as TagId)
           const categoryState = getCategoryOpacityState(categoryId, tagIds)
           const categoryOpacity = getTagOrCategoryOpacity(categoryId)
 
           return (
-            <DropdownMenu.Sub key={categoryId}>
+            <DropdownMenu.Sub key={String(categoryId)}>
               <DropdownMenu.SubTrigger>
                 <Flex align="center" justify="between" width="100%" gap="2">
-                  <Text size="1">{CATEGORIES[categoryId].label}</Text>
+                  <Text size="1">
+                    <CategoryLabel categoryId={categoryId} />
+                  </Text>
                   {renderStateIcon(categoryState)}
                 </Flex>
               </DropdownMenu.SubTrigger>
@@ -157,7 +159,7 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
                     }}
                   >
                     <Text size="1" weight="bold">
-                      {getOpacityLabel(categoryOpacity)} Category
+                      {getOpacityLabel(categoryOpacity)}
                     </Text>
                     {renderOpacityIcon(categoryOpacity)}
                   </Flex>
@@ -167,7 +169,7 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
                 {tags.map(tag => {
                   const tagOpacity = getTagOrCategoryOpacity(tag.id)
                   return (
-                    <DropdownMenu.Item key={tag.id} onSelect={e => e.preventDefault()}>
+                    <DropdownMenu.Item key={String(tag.id)} onSelect={e => e.preventDefault()}>
                       <Flex
                         align="center"
                         justify="between"
@@ -178,7 +180,9 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
                           cycleTagOrCategoryOpacity(tag.id)
                         }}
                       >
-                        <Text size="1">{tag.label}</Text>
+                        <Text size="1">
+                          <TagLabel tag={tag} />
+                        </Text>
                         {renderOpacityIcon(tagOpacity)}
                       </Flex>
                     </DropdownMenu.Item>

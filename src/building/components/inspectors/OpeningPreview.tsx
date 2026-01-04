@@ -3,7 +3,7 @@ import { useId } from 'react'
 import type { OpeningType } from '@/building/model/model'
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
 import { type Length, newVec2 } from '@/shared/geometry'
-import { formatArea, formatLength } from '@/shared/utils/formatting'
+import { useFormatters } from '@/shared/i18n/useFormatters'
 
 export interface OpeningPreviewProps {
   opening: {
@@ -25,6 +25,7 @@ export function OpeningPreview({
   highlightMode,
   focusedField
 }: OpeningPreviewProps): React.JSX.Element {
+  const { formatArea, formatLength } = useFormatters()
   // Generate unique IDs for clip paths
   const fittingClipId = useId()
   const finishedClipId = useId()

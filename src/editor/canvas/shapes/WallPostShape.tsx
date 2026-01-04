@@ -18,9 +18,9 @@ import {
   scaleAddVec2,
   scaleVec2
 } from '@/shared/geometry'
+import { useFormatters } from '@/shared/i18n/useFormatters'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
-import { formatLength } from '@/shared/utils/formatting'
 
 interface WallPostShapeProps {
   post: WallPost
@@ -43,6 +43,7 @@ export function WallPostShape({
   outsideStartCorner,
   outsideEndCorner
 }: WallPostShapeProps): React.JSX.Element {
+  const { formatLength } = useFormatters()
   const select = useSelectionStore()
   const theme = useCanvasTheme()
   const modelActions = useModelActions()

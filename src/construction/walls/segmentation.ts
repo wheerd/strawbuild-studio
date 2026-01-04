@@ -292,12 +292,10 @@ function* constructOpeningGroup(
       .withZAdjustment(adjustedSill + config.padding, opening.height - 2 * config.padding)
 
     const tags = opening.type === 'door' ? [TAG_OPENING_DOOR] : opening.type === 'window' ? [TAG_OPENING_WINDOW] : []
-    const label = opening.type === 'door' ? 'Door' : opening.type === 'window' ? 'Window' : 'Passage'
 
     yield yieldArea({
       type: 'cuboid',
       areaType: opening.type,
-      label,
       sourceId: opening.id,
       size: openingArea.size,
       bounds: openingArea.bounds,
@@ -484,7 +482,6 @@ function* createCornerAreas(
       type: 'polygon',
       areaType: 'corner',
       renderPosition: 'top',
-      label: 'Corner',
       plane: 'xz',
       polygon: {
         points: [
@@ -502,7 +499,6 @@ function* createCornerAreas(
       type: 'polygon',
       areaType: 'corner',
       renderPosition: 'top',
-      label: 'Corner',
       plane: 'xz',
       polygon: {
         points: [
@@ -531,7 +527,6 @@ function* createPlateAreas(
       type: 'polygon',
       areaType: 'bottom-plate',
       renderPosition: 'bottom',
-      label: 'Bottom Ring Beam',
       plane: 'xz',
       polygon: {
         points: [
@@ -557,7 +552,6 @@ function* createPlateAreas(
       type: 'polygon',
       areaType: 'top-plate',
       renderPosition: 'bottom',
-      label: 'Top Ring Beam',
       plane: 'xz',
       polygon: {
         points: [...topPoints, ...bottomPoints.reverse()]
@@ -594,7 +588,6 @@ function* generateAreasAndMeasurements(
     type: 'cut',
     areaType: 'floor-level',
     renderPosition: 'top',
-    label: 'Finished Floor Level',
     axis: 'z',
     position: finishedFloorZLevel,
     mergeKey: `floor-level-${storeyId}`

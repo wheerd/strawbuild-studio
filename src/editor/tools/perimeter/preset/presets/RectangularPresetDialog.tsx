@@ -1,5 +1,6 @@
 import { Button, Dialog, Flex, Grid, Heading, SegmentedControl, Text } from '@radix-ui/themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { WallAssemblyId } from '@/building/model/ids'
 import type { PerimeterReferenceSide } from '@/building/model/model'
@@ -19,6 +20,7 @@ import { RectangularPreset } from './RectangularPreset'
 import type { PresetDialogProps, RectangularPresetConfig } from './types'
 
 export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProps): React.JSX.Element {
+  const { t } = useTranslation('tool')
   const defaultWallAssemblyId = useDefaultWallAssemblyId()
   const defaultBaseRingBeamAssemblyId = useDefaultBaseRingBeamAssemblyId()
   const defaultTopRingBeamAssemblyId = useDefaultTopRingBeamAssemblyId()
@@ -65,20 +67,20 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
   const referencePoints = useMemo(() => preset.getPolygonPoints(config), [preset, config.width, config.length])
 
   return (
-    <BaseModal title="Rectangular Perimeter" trigger={trigger} size="3" maxWidth="700px">
+    <BaseModal title={t($ => $.presetDialogs.rectangular.title)} trigger={trigger} size="3" maxWidth="700px">
       <Flex direction="column" gap="4">
         <Grid columns="1fr auto" gap="5">
           {/* Left Column - Properties in 2x3 Grid */}
           <Flex direction="column" gap="3">
             <Heading size="2" weight="medium">
-              Configuration
+              {t($ => $.presetDialogs.rectangular.configuration)}
             </Heading>
 
             <Grid columns="2" gapY="3" gapX="2">
               {/* Width */}
               <Flex direction="column" gap="1">
                 <Text size="1" color="gray">
-                  Width
+                  {t($ => $.presetDialogs.rectangular.width)}
                 </Text>
                 <LengthField
                   value={config.width}
@@ -95,7 +97,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
               {/* Length */}
               <Flex direction="column" gap="1">
                 <Text size="1" color="gray">
-                  Length
+                  {t($ => $.presetDialogs.rectangular.length)}
                 </Text>
                 <LengthField
                   value={config.length}
@@ -113,7 +115,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
               <Flex direction="column" gap="1">
                 <Flex align="center" gap="1">
                   <Text size="1" color="gray">
-                    Wall Thickness
+                    {t($ => $.presetDialogs.rectangular.wallThickness)}
                   </Text>
                   <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
                 </Flex>
@@ -133,7 +135,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
               <Flex direction="column" gap="1">
                 <Flex align="center" gap="1">
                   <Text size="1" color="gray">
-                    Wall Assembly
+                    {t($ => $.presetDialogs.rectangular.wallAssembly)}
                   </Text>
                   {config.wallAssemblyId && <MeasurementInfo highlightedAssembly="wallAssembly" />}
                 </Flex>
@@ -142,7 +144,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                   onValueChange={(value: WallAssemblyId) => {
                     setConfig(prev => ({ ...prev, wallAssemblyId: value }))
                   }}
-                  placeholder="Select assembly"
+                  placeholder={t($ => $.presetDialogs.rectangular.selectAssembly)}
                   size="1"
                 />
               </Flex>
@@ -151,7 +153,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
               <Flex direction="column" gap="1">
                 <Flex align="center" gap="1">
                   <Text size="1" color="gray">
-                    Base Plate
+                    {t($ => $.presetDialogs.rectangular.basePlate)}
                   </Text>
                   <MeasurementInfo highlightedPart="basePlate" />
                 </Flex>
@@ -160,7 +162,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                   onValueChange={value => {
                     setConfig(prev => ({ ...prev, baseRingBeamAssemblyId: value }))
                   }}
-                  placeholder="None"
+                  placeholder={t($ => $.presetDialogs.rectangular.none)}
                   size="1"
                   allowNone
                 />
@@ -170,7 +172,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
               <Flex direction="column" gap="1">
                 <Flex align="center" gap="1">
                   <Text size="1" color="gray">
-                    Top Plate
+                    {t($ => $.presetDialogs.rectangular.topPlate)}
                   </Text>
                   <MeasurementInfo highlightedPart="topPlate" />
                 </Flex>
@@ -179,7 +181,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                   onValueChange={value => {
                     setConfig(prev => ({ ...prev, topRingBeamAssemblyId: value }))
                   }}
-                  placeholder="None"
+                  placeholder={t($ => $.presetDialogs.rectangular.none)}
                   size="1"
                   allowNone
                 />
@@ -190,13 +192,13 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
           {/* Right Column - Preview */}
           <Flex direction="column" gap="3">
             <Heading align="center" size="2" weight="medium">
-              Preview
+              {t($ => $.presetDialogs.rectangular.preview)}
             </Heading>
 
             {/* Reference Side */}
             <Flex direction="column" gap="1">
               <Text size="1" color="gray">
-                Reference Side
+                {t($ => $.presetDialogs.rectangular.referenceSide)}
               </Text>
               <SegmentedControl.Root
                 size="1"
@@ -205,8 +207,12 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                   setConfig(prev => ({ ...prev, referenceSide: value as PerimeterReferenceSide }))
                 }
               >
-                <SegmentedControl.Item value="inside">Inside</SegmentedControl.Item>
-                <SegmentedControl.Item value="outside">Outside</SegmentedControl.Item>
+                <SegmentedControl.Item value="inside">
+                  {t($ => $.presetDialogs.rectangular.inside)}
+                </SegmentedControl.Item>
+                <SegmentedControl.Item value="outside">
+                  {t($ => $.presetDialogs.rectangular.outside)}
+                </SegmentedControl.Item>
               </SegmentedControl.Root>
             </Flex>
 
@@ -222,12 +228,12 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
         <Flex justify="end" gap="3" mt="4">
           <Dialog.Close>
             <Button variant="soft" color="gray">
-              Cancel
+              {t($ => $.presetDialogs.rectangular.cancel)}
             </Button>
           </Dialog.Close>
           <Dialog.Close>
             <Button onClick={handleConfirm} disabled={!isValid}>
-              Confirm
+              {t($ => $.presetDialogs.rectangular.confirm)}
             </Button>
           </Dialog.Close>
         </Flex>

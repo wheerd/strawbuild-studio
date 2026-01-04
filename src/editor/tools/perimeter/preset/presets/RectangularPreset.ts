@@ -10,7 +10,6 @@ import type { PerimeterPreset, RectangularPresetConfig } from './types'
  */
 export class RectangularPreset implements PerimeterPreset<RectangularPresetConfig> {
   readonly type = 'rectangular'
-  readonly name = 'Rectangular'
   readonly icon = RectIcon
   readonly dialog = RectangularPresetDialog
 

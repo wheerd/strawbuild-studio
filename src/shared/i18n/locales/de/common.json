@@ -1,0 +1,69 @@
+{
+  "actions": {
+    "cancel": "Abbrechen"
+  },
+  "app": {
+    "changeLanguage": "Sprache ändern",
+    "constructionPlanning": "Konstruktionsplanung",
+    "fitToContent": "An Inhalt anpassen",
+    "strawbaler": "Strawbaler"
+  },
+  "autoSave": {
+    "autoSaved": "Automatisch gespeichert {{time}}",
+    "autoSaveFailed": "Automatisches Speichern fehlgeschlagen",
+    "autoSaving": "Speichere automatisch...",
+    "errors": {
+      "failedExport": "Fehler beim Exportieren des Projekts",
+      "failedGenerateModel": "Fehler beim Generieren des Modells",
+      "failedIFCExport": "Fehler beim Exportieren der IFC-Datei",
+      "failedIFCImport": "Fehler beim Importieren der IFC-Datei",
+      "failedImport": "Fehler beim Importieren der Datei"
+    },
+    "exportBuildingModel": "Gebäudemodell exportieren",
+    "exportConstructionModel": "Konstruktionsmodell exportieren",
+    "exportFailed": "Export/Import fehlgeschlagen",
+    "exporting": "Exportiere...",
+    "hoursAgo": "vor {{hours}}h",
+    "import": "Importieren",
+    "importExportIfc": "IFC Import/Export",
+    "importing": "Importiere...",
+    "justNow": "Gerade eben",
+    "loadFromFile": "Aus Datei laden",
+    "minutesAgo": "vor {{minutes}}min",
+    "notSaved": "Nicht gespeichert",
+    "saveToFile": "In Datei speichern"
+  },
+  "currentLanguageWithLabel": "Aktuelle Sprache: {{language}}",
+  "storeys": {
+    "addNewFloor": "Neues Geschoss hinzufügen",
+    "basement": "UG{{level}}",
+    "defaultBasementName_ordinal_other": "{{count}}. Untergeschoss",
+    "defaultName_ordinal_other": "{{count}}. Obergeschoss",
+    "deleteFloor": "Geschoss löschen",
+    "deleteFloorConfirm": "Möchtest du das Geschoss wirklich löschen?",
+    "deleteFloorTitle": "Geschoss löschen",
+    "duplicateFloor": "Geschoss duplizieren",
+    "floor": "Geschoss {{level}}",
+    "floorAssembly": "Bodenaufbau",
+    "floorHeight": "Geschosshöhe",
+    "floorName": "Geschossname",
+    "ground": "Erdgeschoss",
+    "groundFloor": "Erdgeschoss",
+    "manageFloors": "Geschosse verwalten",
+    "manageFloorsTooltip": "Geschosse verwalten",
+    "moveDown": "Nach unten verschieben",
+    "moveUp": "Nach oben verschieben",
+    "name": "Name",
+    "noFloorsYet": "Noch keine Geschosse.",
+    "switchToFloor": "Zu Geschoss wechseln"
+  },
+  "units": {
+    "liter": "L",
+    "m3": "m³"
+  },
+  "viewMode": {
+    "floors": "Boden",
+    "roofs": "Dächer",
+    "walls": "Wände"
+  }
+}

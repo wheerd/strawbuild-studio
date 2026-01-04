@@ -1,5 +1,6 @@
 import { Button, Dialog, Flex, Grid, Heading, SegmentedControl, Text } from '@radix-ui/themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { WallAssemblyId } from '@/building/model/ids'
 import type { PerimeterReferenceSide } from '@/building/model/model'
@@ -20,6 +21,7 @@ import { PolygonReferencePreview } from './PolygonReferencePreview'
 import type { LShapedPresetConfig, PresetDialogProps } from './types'
 
 export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): React.JSX.Element {
+  const { t } = useTranslation('tool')
   const defaultWallAssemblyId = useDefaultWallAssemblyId()
   const defaultBaseRingBeamAssemblyId = useDefaultBaseRingBeamAssemblyId()
   const defaultTopRingBeamAssemblyId = useDefaultTopRingBeamAssemblyId()
@@ -62,24 +64,24 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
   )
 
   return (
-    <BaseModal title="L-Shaped Perimeter" trigger={trigger} size="4" maxWidth="800px">
+    <BaseModal title={t($ => $.presetDialogs.lShaped.title)} trigger={trigger} size="4" maxWidth="800px">
       <Flex direction="column" gap="4">
         <Grid columns="1fr auto" gap="5">
           {/* Left Column - Configuration */}
           <Flex direction="column" gap="3">
             <Heading size="2" weight="medium">
-              Configuration
+              {t($ => $.presetDialogs.lShaped.configuration)}
             </Heading>
 
             {/* Main Rectangle Dimensions */}
             <Flex direction="column" gap="2">
               <Text size="2" weight="medium" color="gray">
-                Main Rectangle
+                {t($ => $.presetDialogs.lShaped.mainRectangle)}
               </Text>
               <Grid columns="2" gap="3">
                 <Flex direction="column" gap="1">
                   <Text size="1" color="gray">
-                    Width 1
+                    {t($ => $.presetDialogs.lShaped.width1)}
                   </Text>
                   <LengthField
                     value={config.width1}
@@ -96,7 +98,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
 
                 <Flex direction="column" gap="1">
                   <Text size="1" color="gray">
-                    Length 1
+                    {t($ => $.presetDialogs.lShaped.length1)}
                   </Text>
                   <LengthField
                     value={config.length1}
@@ -116,12 +118,12 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
             {/* Extension Rectangle Dimensions */}
             <Flex direction="column" gap="2">
               <Text size="2" weight="medium" color="gray">
-                Extension Rectangle
+                {t($ => $.presetDialogs.lShaped.extensionRectangle)}
               </Text>
               <Grid columns="2" gap="3">
                 <Flex direction="column" gap="1">
                   <Text size="1" color="gray">
-                    Width 2
+                    {t($ => $.presetDialogs.lShaped.width2)}
                   </Text>
 
                   <LengthField
@@ -139,7 +141,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
 
                 <Flex direction="column" gap="1">
                   <Text size="1" color="gray">
-                    Length 2
+                    {t($ => $.presetDialogs.lShaped.length2)}
                   </Text>
 
                   <LengthField
@@ -160,7 +162,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
             {/* Rotation */}
             <Flex direction="column" gap="2">
               <Text size="1" color="gray">
-                Rotation
+                {t($ => $.presetDialogs.lShaped.rotation)}
               </Text>
               <SegmentedControl.Root
                 value={config.rotation.toString()}
@@ -190,7 +192,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
               <Flex direction="column" gap="1">
                 <Flex align="center" gap="1">
                   <Text size="1" color="gray">
-                    Wall Thickness
+                    {t($ => $.presetDialogs.lShaped.wallThickness)}
                   </Text>
                   <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
                 </Flex>
@@ -210,7 +212,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
               <Flex direction="column" gap="1">
                 <Flex align="center" gap="1">
                   <Text size="1" color="gray">
-                    Wall Assembly
+                    {t($ => $.presetDialogs.lShaped.wallAssembly)}
                   </Text>
                   {config.wallAssemblyId && <MeasurementInfo highlightedAssembly="wallAssembly" />}
                 </Flex>
@@ -219,7 +221,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                   onValueChange={(value: WallAssemblyId) => {
                     setConfig(prev => ({ ...prev, wallAssemblyId: value }))
                   }}
-                  placeholder="Select assembly"
+                  placeholder={t($ => $.presetDialogs.lShaped.selectAssembly)}
                   size="1"
                 />
               </Flex>
@@ -228,7 +230,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
               <Flex direction="column" gap="1">
                 <Flex align="center" gap="1">
                   <Text size="1" color="gray">
-                    Base Plate
+                    {t($ => $.presetDialogs.lShaped.basePlate)}
                   </Text>
                   <MeasurementInfo highlightedPart="basePlate" />
                 </Flex>
@@ -237,7 +239,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                   onValueChange={value => {
                     setConfig(prev => ({ ...prev, baseRingBeamAssemblyId: value }))
                   }}
-                  placeholder="None"
+                  placeholder={t($ => $.presetDialogs.lShaped.none)}
                   size="1"
                   allowNone
                 />
@@ -247,7 +249,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
               <Flex direction="column" gap="1">
                 <Flex align="center" gap="1">
                   <Text size="1" color="gray">
-                    Top Plate
+                    {t($ => $.presetDialogs.lShaped.topPlate)}
                   </Text>
                   <MeasurementInfo highlightedPart="topPlate" />
                 </Flex>
@@ -256,7 +258,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                   onValueChange={value => {
                     setConfig(prev => ({ ...prev, topRingBeamAssemblyId: value }))
                   }}
-                  placeholder="None"
+                  placeholder={t($ => $.presetDialogs.lShaped.none)}
                   size="1"
                   allowNone
                 />
@@ -267,13 +269,13 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
           {/* Right Column - Preview */}
           <Flex direction="column" gap="3">
             <Heading align="center" size="2" weight="medium">
-              Preview
+              {t($ => $.presetDialogs.lShaped.preview)}
             </Heading>
 
             {/* Reference Side */}
             <Flex direction="column" gap="1">
               <Text size="1" color="gray">
-                Reference Side
+                {t($ => $.presetDialogs.lShaped.referenceSide)}
               </Text>
               <SegmentedControl.Root
                 size="1"
@@ -282,8 +284,8 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                   setConfig(prev => ({ ...prev, referenceSide: value as PerimeterReferenceSide }))
                 }
               >
-                <SegmentedControl.Item value="inside">Inside</SegmentedControl.Item>
-                <SegmentedControl.Item value="outside">Outside</SegmentedControl.Item>
+                <SegmentedControl.Item value="inside">{t($ => $.presetDialogs.lShaped.inside)}</SegmentedControl.Item>
+                <SegmentedControl.Item value="outside">{t($ => $.presetDialogs.lShaped.outside)}</SegmentedControl.Item>
               </SegmentedControl.Root>
             </Flex>
 
@@ -296,7 +298,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
             ) : (
               <Flex align="center" justify="center" style={{ height: '240px' }}>
                 <Text size="1" color="red">
-                  Invalid configuration
+                  {t($ => $.presetDialogs.lShaped.invalidConfig)}
                 </Text>
               </Flex>
             )}
@@ -307,12 +309,12 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
         <Flex justify="end" gap="3" mt="4">
           <Dialog.Close>
             <Button variant="soft" color="gray">
-              Cancel
+              {t($ => $.presetDialogs.lShaped.cancel)}
             </Button>
           </Dialog.Close>
           <Dialog.Close>
             <Button onClick={handleConfirm} disabled={!isValid}>
-              Confirm
+              {t($ => $.presetDialogs.lShaped.confirm)}
             </Button>
           </Dialog.Close>
         </Flex>

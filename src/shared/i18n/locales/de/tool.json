@@ -1,0 +1,229 @@
+{
+  "addOpening": {
+    "copyConfigurationTooltip": "Diese Konfiguration kopieren",
+    "dimensionMode": "Maßmodus",
+    "dimensionModeFinished": "Fertig",
+    "dimensionModeFinishedTooltip": "Tatsächliche Einbaugröße (ohne Baufuge)",
+    "dimensionModeFitting": "Rohbau",
+    "dimensionModeFittingTooltip": "Rohbaumaße (Konstruktion, mit Baufuge)",
+    "height": "Höhe",
+    "info": "Klicke auf eine Wand, um eine Öffnung zu platzieren. Konfiguriere Typ, Größe, Position und Aufbau vor der Platzierung.",
+    "openingAssembly": "Öffnungsaufbau",
+    "openingAssemblyTooltip": "Überschreibe den Öffnungsaufbau für diese spezifische Öffnung. Lasse auf Standard, um vom Wandaufbau oder dem globalen Standard zu erben.",
+    "openingType": "Öffnungstyp",
+    "padding": "Baufuge",
+    "presets": {
+      "buttonLabel": "{{label}}: {{width, length}} × {{height, length}}",
+      "buttonLabel_sill": "{{label}}: {{width, length}} × {{height, length}} Schwelle: {{sillHeight, length}}",
+      "doubleDoor": "Doppeltür",
+      "floorWindow": "Bodenfenster",
+      "smallWindow": "Kleines Fenster",
+      "standardDoor": "Standardtür",
+      "standardWindow": "Standardfenster",
+      "title": "Vorlagen",
+      "wideDoor": "Breite Tür"
+    },
+    "sill": "Schwelle",
+    "top": "Oben",
+    "typeDoor": "Tür",
+    "typePassage": "Durchbruch",
+    "typeWindow": "Fenster",
+    "width": "Breite"
+  },
+  "addPost": {
+    "actsAsPost": "Fungiert als Ständer",
+    "behavior": "Verhalten",
+    "copyConfigurationTooltip": "Diese Konfiguration kopieren",
+    "copyLabel": "{{type}} • {{width, length}}×{{thickness, length}}",
+    "flankedByPosts": "Flankiert von Ständern",
+    "infillMaterial": "Füllmaterial",
+    "info": "Klicke auf eine Wand, um einen Ständer zu platzieren. Konfiguriere Abmessungen, Typ, Position und Materialien vor der Platzierung.",
+    "postMaterial": "Ständermaterial",
+    "presets": {
+      "double14x14": "14×14 cm Doppelt",
+      "double6x12": "6×12 cm Doppelt",
+      "single14x14": "14×14 cm Einfach",
+      "single6x36": "6×36 cm Einfach",
+      "title": "Vorlagen"
+    },
+    "thickness": "Dicke",
+    "type": "Typ",
+    "types": {
+      "center": "Mittig",
+      "double": "Doppelt",
+      "inside": "Innen",
+      "outside": "Außen"
+    },
+    "width": "Breite"
+  },
+  "floorArea": {
+    "cancelLabel": "Abbrechen",
+    "completeLabel": "Bodenfläche fertigstellen",
+    "description": "Klicke, um die Bodenfläche auf dem aktiven Geschoss zu umreißen. Rasten an Gebäudeecken oder vorhandenen Bodenkanten für präzise Ausrichtung.",
+    "title": "Bodenfläche"
+  },
+  "floorOpening": {
+    "cancelLabel": "Abbrechen",
+    "completeLabel": "Aussparung fertigstellen",
+    "description": "Zeichne eine Ausparung in eine vorhandenen Bodenfläche. Die Positionen richten sich automatisch an Bodenkanten oder anderen Öffnungen aus.",
+    "title": "Aussparung"
+  },
+  "keyboard": {
+    "enter": "Eingabe",
+    "esc": "Esc"
+  },
+  "move": {
+    "controlCancel": "Drücke {{key}}, um laufende Bewegung abzubrechen",
+    "controlDrag": "Klicken und ziehen, um Elemente zu verschieben",
+    "controlPrecise": "Nach dem Verschieben Zahlen eingeben für präzisen Abstand",
+    "controlsHeading": "Steuerung:",
+    "controlSnap": "Bewegung rastet an Raster und Geometrie",
+    "info": "Ziehe Elemente, um sie zu verschieben. Nach dem Loslassen kannst du eine Zahl eingeben, um den Bewegungsabstand präzise anzupassen.",
+    "invalidPosition": "Ungültige Position",
+    "moving": "Verschiebe..."
+  },
+  "perimeter": {
+    "basePlate": "Fußschwelle",
+    "cancelPerimeter": "✕ Kontur abbrechen",
+    "cancelTooltip": "Kontur-Erstellung abbrechen (Escape)",
+    "clearLengthOverride": "Längenüberschreibung löschen (Escape)",
+    "completePerimeter": "✓ Kontur fertigstellen",
+    "completeTooltip": "Kontur fertigstellen (Eingabe)",
+    "controlClickFirst": "Auf ersten Punkt klicken zum Schließen",
+    "controlEnter": "{{key}} zum Schließen der Kontur",
+    "controlEscAbort": "{{key}} zum Abbrechen der Kontur",
+    "controlEscOverride": "{{key}} zum Löschen der Überschreibung",
+    "controlNumbers": "Zahlen eingeben, um exakte Wandlänge festzulegen",
+    "controlPlace": "Klicken, um Eckpunkte zu platzieren",
+    "controlsHeading": "Steuerung:",
+    "controlSnap": "Punkte rasten an Raster und vorhandener Geometrie",
+    "infoInside": "Zeichne die {{edge}} deiner Gebäudekontur. Klicke, um Punkte zu platzieren, und schließe die Form, indem du auf den ersten Punkt klickst oder Eingabe drückst.",
+    "insideEdge": "Innenkante",
+    "lengthOverride": "Längenüberschreibung",
+    "nonePlaceholder": "Keine",
+    "outsideEdge": "Außenkante",
+    "referenceSide": "Referenzseite",
+    "referenceSideInside": "Innen",
+    "referenceSideOutside": "Außen",
+    "topPlate": "Kopfschwelle",
+    "wallAssembly": "Wandaufbau",
+    "wallThickness": "Wanddicke"
+  },
+  "perimeterPreset": {
+    "info": "Vorlagen für gängige Gebäudeformen - wechsle zwischen Innen- oder Außenmaßen und konfiguriere Konstruktionseigenschaften.",
+    "types": {
+      "lshaped": "L-förmiger Grundriss",
+      "rectangular": "Rechteckiger Grundriss"
+    }
+  },
+  "presetDialogs": {
+    "lShaped": {
+      "basePlate": "Fußschwelle",
+      "cancel": "Abbrechen",
+      "configuration": "Konfiguration",
+      "confirm": "Bestätigen",
+      "extensionRectangle": "Erweiterungsrechteck",
+      "inside": "Innen",
+      "invalidConfig": "Ungültige Konfiguration",
+      "length1": "Länge 1",
+      "length2": "Länge 2",
+      "mainRectangle": "Hauptrechteck",
+      "none": "Keine",
+      "outside": "Außen",
+      "preview": "Vorschau",
+      "referenceSide": "Referenzseite",
+      "rotation": "Drehung",
+      "selectAssembly": "Aufbau auswählen",
+      "title": "L-förmige Gebäudekontur",
+      "topPlate": "Kopfschwelle",
+      "wallAssembly": "Wandaufbau",
+      "wallThickness": "Wandstärke",
+      "width1": "Breite 1",
+      "width2": "Breite 2"
+    },
+    "rectangular": {
+      "basePlate": "Fußschwelle",
+      "cancel": "Abbrechen",
+      "configuration": "Konfiguration",
+      "confirm": "Bestätigen",
+      "inside": "Innen",
+      "length": "Länge",
+      "none": "Keine",
+      "outside": "Außen",
+      "preview": "Vorschau",
+      "referenceSide": "Referenzseite",
+      "selectAssembly": "Aufbau auswählen",
+      "title": "Rechteckige Gebäudekontur",
+      "topPlate": "Kopfschwelle",
+      "wallAssembly": "Wandaufbau",
+      "wallThickness": "Wandstärke",
+      "width": "Breite"
+    }
+  },
+  "roof": {
+    "assembly": "Aufbau",
+    "cancelRoof": "✕ Dach abbrechen",
+    "cancelTooltip": "Dach-Erstellung abbrechen (Escape)",
+    "completeRoof": "✓ Dach fertigstellen",
+    "completeTooltip": "Dach fertigstellen (Eingabe)",
+    "controlClickFirst": "Auf ersten Punkt klicken zum Schließen",
+    "controlEnter": "{{key}} zum Schließen des Dachs",
+    "controlEsc": "{{key}} zum Abbrechen des Dachs",
+    "controlPlace": "Klicken, um Eckpunkte zu platzieren",
+    "controlsHeading": "Steuerung:",
+    "controlSnap": "Punkte rasten an Umrisskanten und anderer Geometrie",
+    "info": "Zeichne den Dachgrundriß, indem du klickst, um Punkte zu platzieren. Die Dachrichtung wird senkrecht zur ersten Kante sein.",
+    "overhang": "Traufe",
+    "slope": "Neigung",
+    "type": "Typ",
+    "typeGable": "Sattel",
+    "typeShed": "Pult",
+    "verticalOffset": "Vertikaler Versatz"
+  },
+  "select": {
+    "unknownEntityMessage": "Entitäts-ID nicht erkannt: {{id}}",
+    "unknownEntityType": "Unbekannter Entitätstyp"
+  },
+  "simplePolygon": {
+    "cancelDrawing": "Zeichnung abbrechen (Escape)",
+    "clearLengthOverride": "Längenüberschreibung löschen (Escape)",
+    "completeShape": "Form fertigstellen (Eingabe)",
+    "controlEnter": "{{key}} zum Fertigstellen der Form",
+    "controlEscCancel": "{{key}} zum Abbrechen der Zeichnung",
+    "controlEscOverride": "{{key}} zum Löschen der Längenüberschreibung",
+    "controlNumbers": "Zahlen eingeben, um exakte Segmentlängen festzulegen",
+    "controlPlace": "Klicken, um Polygonpunkte zu platzieren",
+    "controlsHeading": "Steuerung:",
+    "controlSnap": "Punkte richten sich an Raster, Gebäudekonturen und vorhandener Geometrie aus",
+    "lengthOverride": "Längenüberschreibung"
+  },
+  "splitWall": {
+    "cancel": "Abbrechen",
+    "controlClick": "Klicken, um Teilungsposition festzulegen",
+    "controlConfirm": "Eingabe drücken, um Teilung zu bestätigen",
+    "controlHover": "Über Wand schweben, um Teilungsposition vorab anzuzeigen",
+    "controlMeasurements": "Auf Maße klicken, um präzise Werte einzugeben",
+    "errors": {
+      "intersectsOpening": "Teilungsposition überschneidet sich mit einer Öffnung",
+      "noWall": "Keine Wand ausgewählt",
+      "outOfBounds": "Teilungsposition liegt nicht innerhalb der Grenzen der Wand"
+    },
+    "info": "Teile Wände, um Segmente mit unterschiedlichen Wandaufbauten zu erstellen.",
+    "readyToSplit": "Bereit, Wand zu teilen",
+    "selectWall": "Klicke auf eine Wand, um sie zum Teilen auszuwählen",
+    "splitWall": "Wand teilen",
+    "title": "Wand teilen"
+  },
+  "testData": {
+    "confirmReset": "Möchtest du wirklich alle Daten zurücksetzen? Dies löscht dauerhaft alle Stockwerke, Aufbauten und Materialien.",
+    "crossShaped": "📐 Kreuz-/T-Form-Gebäudekontur",
+    "dangerZone": "⚠️ Gefahrenzone",
+    "generationHeading": "Testdaten-Generierung",
+    "hardReset": "Hard-Reset",
+    "hexagonal": "⬡ Sechseckige Gebäudekontur (3m Seiten)",
+    "instructions": "Klicke auf eine beliebige Schaltfläche oben, um Testdaten zu generieren oder das Modell zurückzusetzen. Jeder Testfall erstellt einen Gebäudekontur mit realistischen Fenstern und Türen, um die Anwendungsfunktionen zu demonstrieren.",
+    "rectangular": "▭ Rechteckige Gebäudekontur (8×5m)",
+    "resetAll": "🗑️ Alle Daten zurücksetzen",
+    "resetWarning": "⚠️ Dies löscht dauerhaft alle Stockwerke, Aufbauten und Materialien"
+  }
+}

@@ -1,5 +1,6 @@
 import { Flex, Skeleton, Spinner, Text } from '@radix-ui/themes'
 import React, { Suspense, lazy, use, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { ConstructionModel } from '@/construction/model'
 import { BaseModal } from '@/shared/components/BaseModal'
@@ -23,6 +24,7 @@ export function ConstructionViewer3DModal({
   trigger,
   refreshKey
 }: ConstructionViewer3DModalProps): React.JSX.Element {
+  const { t } = useTranslation('construction')
   const [containerSize, containerRef, setObserverActive] = elementSizeRef()
   const [modelPromise, setModelPromise] = useState<Promise<ConstructionModel | null> | null>(null)
   const [isOpen, setIsOpen] = useState(false)
@@ -45,7 +47,7 @@ export function ConstructionViewer3DModal({
     <BaseModal
       open={isOpen}
       onOpenChange={handleOpenChange}
-      title="3D Construction View"
+      title={t($ => $.viewer3DModal.title)}
       trigger={trigger}
       size="2"
       width="95%"
@@ -121,6 +123,7 @@ function ConstructionViewer3DContent({
   containerSize: { width: number; height: number }
   isOpen: boolean
 }) {
+  const { t } = useTranslation('construction')
   const constructionModel = use(modelPromise)
   const geometryReady = useGeometryPrewarm(constructionModel)
   const shouldRenderCanvas = useDeferredCanvasMount(
@@ -147,7 +150,7 @@ function ConstructionViewer3DContent({
         <Text align="center" color="gray">
           <Text size="6">⚠</Text>
           <br />
-          <Text size="2">Failed to generate construction model</Text>
+          <Text size="2">{t($ => $.planModal.errors.failedModel)}</Text>
         </Text>
       </Flex>
     )

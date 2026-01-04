@@ -1,3 +1,4 @@
+import { keyFromSelector } from 'i18next'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { type ConstructionElement, type GroupOrElement, createCuboidElement } from '@/construction/elements'
@@ -21,7 +22,7 @@ import { SimpleOpeningAssembly } from './simple'
 import type { SimpleOpeningConfig } from './types'
 
 // Mock the formatLength utility
-vi.mock('@/shared/utils/formatting', () => ({
+vi.mock('@/shared/i18n/formatters', () => ({
   formatLength: vi.fn((length: number) => `${length}mm`) // Mock to return simple format for tests
 }))
 
@@ -110,9 +111,9 @@ describe('SimpleOpeningAssembly', () => {
 
       // Verify measurement values
       expect(openingWidthMeasurements[0].endPoint[0] - openingWidthMeasurements[0].startPoint[0]).toBe(1000) // width (AutoMeasurement)
-      expect((sillHeightMeasurements[0] as any).label).toBe('800mm') // sillHeight (DirectMeasurement)
-      expect((headerHeightMeasurements[0] as any).label).toBe('2000mm') // sillHeight + height (DirectMeasurement)
-      expect((openingHeightMeasurements[0] as any).label).toBe('1200mm') // height (DirectMeasurement)
+      expect((sillHeightMeasurements[0] as any).length).toBe(800) // sillHeight (DirectMeasurement)
+      expect((headerHeightMeasurements[0] as any).length).toBe(2000) // sillHeight + height (DirectMeasurement)
+      expect((openingHeightMeasurements[0] as any).length).toBe(1200) // height (DirectMeasurement)
     })
 
     it('generates only header and opening width measurements for door', () => {
@@ -136,7 +137,7 @@ describe('SimpleOpeningAssembly', () => {
 
       // Verify measurement values
       expect(openingWidthMeasurements[0].endPoint[0] - openingWidthMeasurements[0].startPoint[0]).toBe(800) // width (AutoMeasurement)
-      expect((headerHeightMeasurements[0] as any).label).toBe('2000mm') // height (DirectMeasurement)
+      expect((headerHeightMeasurements[0] as any).length).toBe(2000) // height (DirectMeasurement)
     })
 
     it('creates only header for door without sill height', () => {
@@ -207,7 +208,7 @@ describe('SimpleOpeningAssembly', () => {
       const { errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(1)
-      expect(errors[0].description).toContain('Header does not fit')
+      expect(keyFromSelector(errors[0].messageKey)).toBe('construction.opening.headerDoesNotFit')
     })
 
     it('returns error when sill does not fit', () => {
@@ -221,7 +222,7 @@ describe('SimpleOpeningAssembly', () => {
       const { errors } = aggregateResults(results)
 
       expect(errors).toHaveLength(1)
-      expect(errors[0].description).toContain('Sill does not fit')
+      expect(keyFromSelector(errors[0].messageKey)).toBe('construction.opening.sillDoesNotFit')
     })
   })
 })

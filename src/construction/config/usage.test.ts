@@ -1,39 +1,31 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  DEFAULT_FLOOR_ASSEMBLY_ID,
   createPerimeterId,
   createPerimeterWallId,
   createRingBeamAssemblyId,
   createStoreyId,
   createWallAssemblyId
 } from '@/building/model/ids'
-import type { Perimeter, Storey } from '@/building/model/model'
-import { createStoreyLevel } from '@/building/model/model'
+import type { Perimeter } from '@/building/model/model'
 import { ZERO_VEC2, newVec2 } from '@/shared/geometry'
 
 import { getRingBeamAssemblyUsage, getWallAssemblyUsage } from './usage'
 
 describe('Assembly Usage Detection', () => {
   const storeyId = createStoreyId()
-  const storey: Storey = {
-    id: storeyId,
-    name: 'Test Floor',
-    level: createStoreyLevel(0),
-    floorHeight: 3000,
-    floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
-  }
 
   describe('getRingBeamAssemblyUsage', () => {
     it('should detect ring beam assembly not in use', () => {
       const assemblyId = createRingBeamAssemblyId()
       const perimeters: Perimeter[] = []
-      const storeys = [storey]
 
-      const usage = getRingBeamAssemblyUsage(assemblyId, perimeters, storeys)
+      const usage = getRingBeamAssemblyUsage(assemblyId, perimeters)
 
       expect(usage.isUsed).toBe(false)
-      expect(usage.usedByPerimeters).toEqual([])
+      expect(usage.isDefaultBase).toBe(false)
+      expect(usage.isDefaultTop).toBe(false)
+      expect(usage.storeyIds).toEqual([])
     })
 
     it('should detect ring beam assembly used as base ring beam', () => {
@@ -66,10 +58,12 @@ describe('Assembly Usage Detection', () => {
         corners: []
       }
 
-      const usage = getRingBeamAssemblyUsage(assemblyId, [perimeter], [storey])
+      const usage = getRingBeamAssemblyUsage(assemblyId, [perimeter])
 
       expect(usage.isUsed).toBe(true)
-      expect(usage.usedByPerimeters).toEqual(['Test Floor - Wall 1 (Base Plate)'])
+      expect(usage.isDefaultBase).toBe(false)
+      expect(usage.isDefaultTop).toBe(false)
+      expect(usage.storeyIds).toEqual([storeyId])
     })
 
     it('should detect ring beam assembly used as top ring beam', () => {
@@ -102,10 +96,12 @@ describe('Assembly Usage Detection', () => {
         corners: []
       }
 
-      const usage = getRingBeamAssemblyUsage(assemblyId, [perimeter], [storey])
+      const usage = getRingBeamAssemblyUsage(assemblyId, [perimeter])
 
       expect(usage.isUsed).toBe(true)
-      expect(usage.usedByPerimeters).toEqual(['Test Floor - Wall 1 (Top Plate)'])
+      expect(usage.isDefaultBase).toBe(false)
+      expect(usage.isDefaultTop).toBe(false)
+      expect(usage.storeyIds).toEqual([storeyId])
     })
 
     it('should detect ring beam assembly used in multiple places', () => {
@@ -165,12 +161,12 @@ describe('Assembly Usage Detection', () => {
         corners: []
       }
 
-      const usage = getRingBeamAssemblyUsage(assemblyId, [perimeter1, perimeter2], [storey])
+      const usage = getRingBeamAssemblyUsage(assemblyId, [perimeter1, perimeter2])
 
       expect(usage.isUsed).toBe(true)
-      expect(usage.usedByPerimeters).toHaveLength(2)
-      expect(usage.usedByPerimeters).toContain('Test Floor - Wall 1 (Base Plate)')
-      expect(usage.usedByPerimeters).toContain('Test Floor - Wall 1 (Top Plate)')
+      expect(usage.isDefaultBase).toBe(false)
+      expect(usage.isDefaultTop).toBe(false)
+      expect(usage.storeyIds).toEqual([storeyId])
     })
   })
 
@@ -178,10 +174,11 @@ describe('Assembly Usage Detection', () => {
     it('should detect wall assembly not in use', () => {
       const assemblyId = createWallAssemblyId()
 
-      const usage = getWallAssemblyUsage(assemblyId, [], [storey])
+      const usage = getWallAssemblyUsage(assemblyId, [])
 
       expect(usage.isUsed).toBe(false)
-      expect(usage.usedByWalls).toEqual([])
+      expect(usage.isDefault).toBe(false)
+      expect(usage.storeyIds).toEqual([])
     })
 
     it('should detect wall assembly used by walls', () => {
@@ -240,10 +237,11 @@ describe('Assembly Usage Detection', () => {
         corners: []
       }
 
-      const usage = getWallAssemblyUsage(assemblyId, [perimeter], [storey])
+      const usage = getWallAssemblyUsage(assemblyId, [perimeter])
 
       expect(usage.isUsed).toBe(true)
-      expect(usage.usedByWalls).toEqual(['Test Floor - Wall 1', 'Test Floor - Wall 3'])
+      expect(usage.isDefault).toBe(false)
+      expect(usage.storeyIds).toEqual([storeyId])
     })
   })
 })

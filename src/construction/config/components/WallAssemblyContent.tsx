@@ -25,14 +25,16 @@ import {
   Tooltip
 } from '@radix-ui/themes'
 import React, { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { OpeningAssemblyId, WallAssemblyId } from '@/building/model/ids'
-import { usePerimeters, useStoreysOrderedByLevel } from '@/building/store'
+import { usePerimeters } from '@/building/store'
 import { OpeningAssemblySelectWithEdit } from '@/construction/config/components/OpeningAssemblySelectWithEdit'
+import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import { useConfigActions, useDefaultWallAssemblyId, useWallAssemblies } from '@/construction/config/store'
 import type { WallAssemblyConfig } from '@/construction/config/types'
-import { getWallAssemblyUsage } from '@/construction/config/usage'
-import { DEFAULT_WALL_LAYER_SETS } from '@/construction/layers/defaults'
+import { type WallAssemblyUsage, getWallAssemblyUsage } from '@/construction/config/usage'
+import { WALL_LAYER_PRESETS } from '@/construction/layers/defaults'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
 import { roughWood, woodwool } from '@/construction/materials/material'
@@ -50,7 +52,7 @@ import type { ModuleConfig } from '@/construction/walls/modules/modules'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField'
 import { useDebouncedInput } from '@/shared/hooks/useDebouncedInput'
-import { formatLength } from '@/shared/utils/formatting'
+import { useFormatters } from '@/shared/i18n/useFormatters'
 
 import { getPerimeterConfigTypeIcon } from './Icons'
 import { WallAssemblySelect } from './WallAssemblySelect'
@@ -62,15 +64,15 @@ interface InfillConfigFormProps {
 }
 
 function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   return (
     <Flex direction="column" gap="3">
-      <Heading size="2">Infill Configuration</Heading>
-
+      <Heading size="2">{t($ => $.walls.infillConfiguration)}</Heading>
       <Grid columns="1fr 1fr" gap="2" gapX="3">
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Desired Post Spacing
+              {t($ => $.walls.desiredPostSpacing)}
             </Text>
           </Label.Root>
           <LengthField
@@ -86,7 +88,7 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Max Post Spacing
+              {t($ => $.walls.maxPostSpacing)}
             </Text>
           </Label.Root>
           <LengthField
@@ -101,7 +103,7 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Min Straw Space
+              {t($ => $.walls.minStrawSpace)}
             </Text>
           </Label.Root>
           <LengthField
@@ -117,13 +119,13 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Straw Material (Override)
+              {t($ => $.common.strawMaterialOverride)}
             </Text>
           </Label.Root>
           <MaterialSelectWithEdit
             value={config.strawMaterial ?? null}
             allowEmpty
-            emptyLabel="Use global straw settings"
+            emptyLabel={t($ => $.common.useGlobalStrawSettings)}
             onValueChange={strawMaterial => onUpdate({ ...config, strawMaterial: strawMaterial ?? undefined })}
             size="1"
             preferredTypes={['strawbale']}
@@ -134,23 +136,22 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
           <Flex direction="column" gap="1">
             <Flex gap="1" align="center">
               <Text size="1" weight="medium" color="gray">
-                Infill Material
+                {t($ => $.walls.infillMaterial)}
               </Text>
-              <Tooltip content="If configured, will be used for gaps which are too small for straw">
+              <Tooltip content={t($ => $.walls.infillMaterialTooltip)}>
                 <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
               </Tooltip>
             </Flex>
             <MaterialSelectWithEdit
               value={config.infillMaterial ?? null}
               allowEmpty
-              emptyLabel="No infill material"
+              emptyLabel={t($ => $.walls.noInfillMaterial)}
               onValueChange={infillMaterial => onUpdate({ ...config, infillMaterial: infillMaterial ?? undefined })}
               size="1"
             />
           </Flex>
         </Label.Root>
       </Grid>
-
       <Separator size="4" />
       <PostsConfigSection posts={config.posts} onUpdate={posts => onUpdate({ ...config, posts })} />
     </Flex>
@@ -163,14 +164,14 @@ interface PostsConfigSectionProps {
 }
 
 function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   return (
     <Flex direction="column" gap="3">
-      <Heading size="2">Posts Configuration</Heading>
-
+      <Heading size="2">{t($ => $.walls.postsConfiguration)}</Heading>
       <Grid columns="5em 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Post Type
+            {t($ => $.walls.postType)}
           </Text>
         </Label.Root>
         <Select.Root
@@ -196,16 +197,15 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
         >
           <Select.Trigger />
           <Select.Content>
-            <Select.Item value="full">Full</Select.Item>
-            <Select.Item value="double">Double</Select.Item>
+            <Select.Item value="full">{t($ => $.walls.postTypeFull)}</Select.Item>
+            <Select.Item value="double">{t($ => $.walls.postTypeDouble)}</Select.Item>
           </Select.Content>
         </Select.Root>
       </Grid>
-
       <Grid columns="5em 1fr 5em 1fr" gap="2" gapX="3">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Width
+            {t($ => $.common.width)}
           </Text>
         </Label.Root>
         <LengthField value={posts.width} onChange={value => onUpdate({ ...posts, width: value })} unit="mm" size="1" />
@@ -214,7 +214,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
           <>
             <Label.Root>
               <Text size="1" weight="medium" color="gray">
-                Thickness
+                {t($ => $.common.thickness)}
               </Text>
             </Label.Root>
             <LengthField
@@ -226,11 +226,10 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
           </>
         )}
       </Grid>
-
       <Grid columns="5em 1fr" gap="2">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Material
+            {t($ => $.common.materialLabel)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -247,7 +246,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
           <>
             <Label.Root>
               <Text size="1" weight="medium" color="gray">
-                Infill Material
+                {t($ => $.walls.infillMaterial)}
               </Text>
             </Label.Root>
             <MaterialSelectWithEdit
@@ -271,14 +270,14 @@ interface ModuleConfigSectionProps {
 }
 
 function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   return (
     <Flex direction="column" gap="3">
-      <Heading size="2">Module Configuration</Heading>
-
+      <Heading size="2">{t($ => $.walls.moduleConfiguration)}</Heading>
       <Grid columns="6em 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Module Type
+            {t($ => $.walls.moduleType)}
           </Text>
         </Label.Root>
         <Select.Root
@@ -313,16 +312,15 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
         >
           <Select.Trigger />
           <Select.Content>
-            <Select.Item value="single">Single Frame</Select.Item>
-            <Select.Item value="double">Double Frame</Select.Item>
+            <Select.Item value="single">{t($ => $.walls.moduleTypeSingle)}</Select.Item>
+            <Select.Item value="double">{t($ => $.walls.moduleTypeDouble)}</Select.Item>
           </Select.Content>
         </Select.Root>
       </Grid>
-
       <Grid columns="6em 1fr 6em 1fr" gap="2" gapX="3">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Min Width
+            {t($ => $.walls.minWidth)}
           </Text>
         </Label.Root>
         <LengthField
@@ -334,7 +332,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
 
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Max Width
+            {t($ => $.walls.maxWidth)}
           </Text>
         </Label.Root>
         <LengthField
@@ -346,7 +344,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
 
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Frame Thickness
+            {t($ => $.walls.frameThickness)}
           </Text>
         </Label.Root>
         <LengthField
@@ -360,7 +358,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
           <>
             <Label.Root>
               <Text size="1" weight="medium" color="gray">
-                Frame Width
+                {t($ => $.walls.frameWidth)}
               </Text>
             </Label.Root>
             <LengthField
@@ -372,7 +370,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
 
             <Label.Root>
               <Text size="1" weight="medium" color="gray">
-                Spacer Size
+                {t($ => $.walls.spacerSize)}
               </Text>
             </Label.Root>
             <LengthField
@@ -384,7 +382,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
 
             <Label.Root>
               <Text size="1" weight="medium" color="gray">
-                Spacer Count
+                {t($ => $.walls.spacerCount)}
               </Text>
             </Label.Root>
             <TextField.Root
@@ -400,12 +398,11 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
           </>
         )}
       </Grid>
-
       <Grid columns="2" gap="2" gapX="3">
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Frame Material
+              {t($ => $.walls.frameMaterial)}
             </Text>
           </Label.Root>
           <MaterialSelectWithEdit
@@ -422,13 +419,13 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
         <Flex direction="column" gap="1">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Straw Material (Override)
+              {t($ => $.common.strawMaterialOverride)}
             </Text>
           </Label.Root>
           <MaterialSelectWithEdit
             value={module.strawMaterial}
             allowEmpty
-            emptyLabel="Use global straw settings"
+            emptyLabel={t($ => $.common.useGlobalStrawSettings)}
             onValueChange={strawMaterial => onUpdate({ ...module, strawMaterial: strawMaterial ?? undefined })}
             size="1"
             preferredTypes={['strawbale']}
@@ -440,7 +437,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
             <Flex direction="column" gap="1">
               <Label.Root>
                 <Text size="1" weight="medium" color="gray">
-                  Spacer Material
+                  {t($ => $.walls.spacerMaterial)}
                 </Text>
               </Label.Root>
               <MaterialSelectWithEdit
@@ -457,7 +454,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
             <Flex direction="column" gap="1">
               <Label.Root>
                 <Text size="1" weight="medium" color="gray">
-                  Infill Material
+                  {t($ => $.walls.infillMaterial)}
                 </Text>
               </Label.Root>
               <MaterialSelectWithEdit
@@ -518,14 +515,14 @@ interface NonStrawbaleConfigFormProps {
 }
 
 function NonStrawbaleConfigForm({ config, onUpdate }: NonStrawbaleConfigFormProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   return (
     <Flex direction="column" gap="3">
-      <Heading size="2">Non-Strawbale Configuration</Heading>
-
+      <Heading size="2">{t($ => $.walls.nonStrawbaleConfiguration)}</Heading>
       <Grid columns="auto 1fr" gap="2" gapX="3">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Material
+            {t($ => $.common.materialLabel)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -589,14 +586,15 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
     [allAssemblies]
   )
 
+  const { t } = useTranslation('config')
   return (
     <Flex direction="column" gap="3">
       {/* Opening Assembly Configuration */}
-      <Heading size="2">Openings</Heading>
+      <Heading size="2">{t($ => $.walls.openingsSection)}</Heading>
       <Flex direction="column" gap="1">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Opening Assembly
+            {t($ => $.walls.openingAssembly)}
           </Text>
         </Label.Root>
         <OpeningAssemblySelectWithEdit
@@ -608,16 +606,14 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           }
           allowDefault
           showDefaultIndicator
-          placeholder="Select"
+          placeholder={t($ => $.common.placeholder)}
           size="1"
         />
       </Flex>
-
       <Separator size="4" />
-
       <Flex direction="column" gap="3">
         <LayerListEditor
-          title="Inside Layers"
+          title={t($ => $.walls.insideLayers)}
           measurementInfo={<MeasurementInfo highlightedPart="insideLayer" showFinishedSides />}
           layers={config.layers.insideLayers}
           onAddLayer={layer => addWallAssemblyInsideLayer(assemblyId, layer)}
@@ -625,18 +621,18 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           onUpdateLayer={(index, updates) => updateWallAssemblyInsideLayer(assemblyId, index, updates)}
           onRemoveLayer={index => removeWallAssemblyInsideLayer(assemblyId, index)}
           onMoveLayer={(fromIndex, toIndex) => moveWallAssemblyInsideLayer(assemblyId, fromIndex, toIndex)}
-          addLabel="Add Inside Layer"
-          emptyHint="No inside layers defined"
-          layerPresets={DEFAULT_WALL_LAYER_SETS}
+          addLabel={t($ => $.walls.addInsideLayer)}
+          emptyHint={t($ => $.walls.noInsideLayers)}
+          layerPresets={WALL_LAYER_PRESETS}
           layerCopySources={insideLayerSources}
-          beforeLabel="Wall Construction"
-          afterLabel="Inside"
+          beforeLabel={t($ => $.walls.wallConstruction)}
+          afterLabel={t($ => $.walls.inside)}
         />
 
         <Separator size="4" />
 
         <LayerListEditor
-          title="Outside Layers"
+          title={t($ => $.walls.outsideLayers)}
           measurementInfo={<MeasurementInfo highlightedPart="outsideLayer" showFinishedSides />}
           layers={config.layers.outsideLayers}
           onAddLayer={layer => addWallAssemblyOutsideLayer(assemblyId, layer)}
@@ -644,12 +640,12 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           onUpdateLayer={(index, updates) => updateWallAssemblyOutsideLayer(assemblyId, index, updates)}
           onRemoveLayer={index => removeWallAssemblyOutsideLayer(assemblyId, index)}
           onMoveLayer={(fromIndex, toIndex) => moveWallAssemblyOutsideLayer(assemblyId, fromIndex, toIndex)}
-          addLabel="Add Outside Layer"
-          emptyHint="No outside layers defined"
-          layerPresets={DEFAULT_WALL_LAYER_SETS}
+          addLabel={t($ => $.walls.addOutsideLayer)}
+          emptyHint={t($ => $.walls.noOutsideLayers)}
+          layerPresets={WALL_LAYER_PRESETS}
           layerCopySources={outsideLayerSources}
-          beforeLabel="Wall Construction"
-          afterLabel="Outside"
+          beforeLabel={t($ => $.walls.wallConstruction)}
+          afterLabel={t($ => $.walls.outside)}
         />
       </Flex>
     </Flex>
@@ -661,12 +657,20 @@ interface ConfigFormProps {
 }
 
 function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
+  const { formatLength } = useFormatters()
   const { updateWallAssemblyName, updateWallAssemblyConfig, getDefaultStrawMaterial } = useConfigActions()
   const { getMaterialById } = useMaterialActions()
 
-  const nameInput = useDebouncedInput(assembly.name, (name: string) => updateWallAssemblyName(assembly.id, name), {
-    debounceMs: 1000
-  })
+  const { t } = useTranslation('config')
+  const nameKey = assembly.nameKey
+
+  const nameInput = useDebouncedInput(
+    nameKey ? t(nameKey) : assembly.name,
+    (name: string) => updateWallAssemblyName(assembly.id, name),
+    {
+      debounceMs: 1000
+    }
+  )
 
   const updateConfig = useCallback(
     (updates: Partial<WallConfig>) => updateWallAssemblyConfig(assembly.id, updates),
@@ -685,7 +689,10 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
     const totalLayerThickness = assembly.layers.insideThickness + assembly.layers.outsideThickness
     return wallConstructionThickness != null && assembly.type !== 'non-strawbale'
       ? formatLength(wallConstructionThickness + totalLayerThickness)
-      : `? + ${formatLength(totalLayerThickness)} (Layers)`
+      : t($ => $.walls.unclearTotalThickness, {
+          defaultValue: `? + {{layerThickness, length}} (Layers)`,
+          layerThickness: totalLayerThickness
+        })
   }, [assembly])
 
   return (
@@ -700,7 +707,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
         <Grid columns="auto 1fr" gapX="2" align="center">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Name
+              {t($ => $.common.name)}
             </Text>
           </Label.Root>
           <TextField.Root
@@ -708,7 +715,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
             onChange={e => nameInput.handleChange(e.target.value)}
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
-            placeholder="Assembly name"
+            placeholder={t($ => $.common.placeholders.name)}
             size="2"
           />
         </Grid>
@@ -717,19 +724,13 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
           <Flex gap="2" align="center">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Type
+                {t($ => $.common.type)}
               </Text>
             </Label.Root>
             <Flex gap="2" align="center">
               {React.createElement(getPerimeterConfigTypeIcon(assembly.type))}
               <Text size="2" color="gray">
-                {assembly.type === 'infill'
-                  ? 'Infill'
-                  : assembly.type === 'modules'
-                    ? 'Modules'
-                    : assembly.type === 'strawhenge'
-                      ? 'Strawhenge'
-                      : 'Non-Strawbale'}
+                {t($ => $.walls.types[assembly.type])}
               </Text>
             </Flex>
           </Flex>
@@ -737,7 +738,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
           <Flex gap="2" align="center">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Total Thickness
+                {t($ => $.common.totalThickness)}
               </Text>
             </Label.Root>
             <Text size="2" color="gray">
@@ -746,9 +747,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
           </Flex>
         </Grid>
       </Grid>
-
       <Separator size="4" />
-
       {/* Two Column Layout */}
       <Grid columns="2" gap="4" style={{ gridTemplateColumns: '1fr 1fr' }}>
         {/* Left Column - Type-specific configuration */}
@@ -775,7 +774,6 @@ export interface WallAssemblyContentProps {
 export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentProps): React.JSX.Element {
   const wallAssemblies = useWallAssemblies()
   const perimeters = usePerimeters()
-  const storeys = useStoreysOrderedByLevel()
   const {
     addWallAssembly,
     duplicateWallAssembly,
@@ -786,6 +784,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
 
   const defaultAssemblyId = useDefaultWallAssemblyId()
 
+  const { t } = useTranslation('config')
   const [selectedAssemblyId, setSelectedAssemblyId] = useState<string | null>(() => {
     if (initialSelectionId && wallAssemblies.some(m => m.id === initialSelectionId)) {
       return initialSelectionId
@@ -798,15 +797,16 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
   const usage = useMemo(
     () =>
       selectedAssembly
-        ? getWallAssemblyUsage(selectedAssembly.id, perimeters, storeys)
-        : { isUsed: false, usedByWalls: [] },
-    [selectedAssembly, perimeters, storeys]
+        ? getWallAssemblyUsage(selectedAssembly.id, perimeters, defaultAssemblyId)
+        : { isUsed: false, isDefault: false, storeyIds: [] },
+    [selectedAssembly, perimeters, defaultAssemblyId]
   )
 
   const handleAddNew = useCallback(
     (type: WallAssemblyType) => {
       const defaultMaterial = '' as MaterialId
 
+      let name: string
       let config: WallConfig
       const layers = {
         insideThickness: 30,
@@ -817,6 +817,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
 
       switch (type) {
         case 'infill':
+          name = t($ => $.walls.newName_infill)
           config = {
             type: 'infill',
             maxPostSpacing: 900,
@@ -833,6 +834,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
           }
           break
         case 'strawhenge':
+          name = t($ => $.walls.newName_strawhenge)
           config = {
             type: 'strawhenge',
             module: {
@@ -857,6 +859,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
           }
           break
         case 'modules':
+          name = t($ => $.walls.newName_modules)
           config = {
             type: 'modules',
             module: {
@@ -881,6 +884,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
           }
           break
         case 'non-strawbale':
+          name = t($ => $.walls.newName_nonStrawbale)
           config = {
             type: 'non-strawbale',
             material: defaultMaterial,
@@ -890,7 +894,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
           break
       }
 
-      const newAssembly = addWallAssembly(`New ${type} assembly`, config)
+      const newAssembly = addWallAssembly(name, config)
       setSelectedAssemblyId(newAssembly.id)
     },
     [addWallAssembly]
@@ -899,7 +903,11 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
   const handleDuplicate = useCallback(() => {
     if (!selectedAssembly) return
 
-    const duplicated = duplicateWallAssembly(selectedAssembly.id, `${selectedAssembly.name} (Copy)`)
+    const newName = t($ => $.walls.copyNameTemplate, {
+      defaultValue: `{{name}} (Copy)`,
+      name: selectedAssembly.name
+    })
+    const duplicated = duplicateWallAssembly(selectedAssembly.id, newName)
     setSelectedAssemblyId(duplicated.id)
   }, [selectedAssembly, duplicateWallAssembly])
 
@@ -943,7 +951,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
 
             <DropdownMenu.Root>
               <DropdownMenu.Trigger>
-                <IconButton title="Add New">
+                <IconButton title={t($ => $.common.addNew)}>
                   <PlusIcon />
                 </IconButton>
               </DropdownMenu.Trigger>
@@ -951,31 +959,36 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                 <DropdownMenu.Item onSelect={() => handleAddNew('infill')}>
                   <Flex align="center" gap="1">
                     <LayersIcon />
-                    Infill
+                    {t($ => $.walls.types.infill)}
                   </Flex>
                 </DropdownMenu.Item>
                 <DropdownMenu.Item onSelect={() => handleAddNew('strawhenge')}>
                   <Flex align="center" gap="1">
                     <CubeIcon />
-                    Strawhenge
+                    {t($ => $.walls.types.strawhenge)}
                   </Flex>
                 </DropdownMenu.Item>
                 <DropdownMenu.Item onSelect={() => handleAddNew('modules')}>
                   <Flex align="center" gap="1">
                     <CircleIcon />
-                    Modules
+                    {t($ => $.walls.types.modules)}
                   </Flex>
                 </DropdownMenu.Item>
                 <DropdownMenu.Item onSelect={() => handleAddNew('non-strawbale')}>
                   <Flex align="center" gap="1">
                     <TrashIcon />
-                    Non-Strawbale
+                    {t($ => $.walls.types['non-strawbale'])}
                   </Flex>
                 </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Root>
 
-            <IconButton onClick={handleDuplicate} disabled={!selectedAssembly} title="Duplicate" variant="soft">
+            <IconButton
+              onClick={handleDuplicate}
+              disabled={!selectedAssembly}
+              title={t($ => $.common.duplicate)}
+              variant="soft"
+            >
               <CopyIcon />
             </IconButton>
 
@@ -984,25 +997,25 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                 <IconButton
                   disabled={!selectedAssembly || usage.isUsed}
                   color="red"
-                  title={usage.isUsed ? 'In Use - Cannot Delete' : 'Delete'}
+                  title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
                 >
                   <TrashIcon />
                 </IconButton>
               </AlertDialog.Trigger>
               <AlertDialog.Content>
-                <AlertDialog.Title>Delete Wall Assembly</AlertDialog.Title>
+                <AlertDialog.Title>{t($ => $.walls.deleteTitle)}</AlertDialog.Title>
                 <AlertDialog.Description>
-                  Are you sure you want to delete "{selectedAssembly?.name}"? This action cannot be undone.
+                  {t($ => $.walls.deleteConfirm, { name: selectedAssembly?.name })}
                 </AlertDialog.Description>
                 <Flex gap="3" mt="4" justify="end">
                   <AlertDialog.Cancel>
                     <Button variant="soft" color="gray">
-                      Cancel
+                      {t($ => $.common.cancel)}
                     </Button>
                   </AlertDialog.Cancel>
                   <AlertDialog.Action>
                     <Button variant="solid" color="red" onClick={handleDelete}>
-                      Delete
+                      {t($ => $.common.delete)}
                     </Button>
                   </AlertDialog.Action>
                 </Flex>
@@ -1011,25 +1024,22 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
 
             <AlertDialog.Root>
               <AlertDialog.Trigger>
-                <IconButton color="red" variant="outline" title="Reset to Defaults">
+                <IconButton color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
                   <ResetIcon />
                 </IconButton>
               </AlertDialog.Trigger>
               <AlertDialog.Content>
-                <AlertDialog.Title>Reset Wall Assemblies</AlertDialog.Title>
-                <AlertDialog.Description>
-                  Are you sure you want to reset default wall assemblies? This will restore the original default
-                  assemblies but keep any custom assemblies you've created. This action cannot be undone.
-                </AlertDialog.Description>
+                <AlertDialog.Title>{t($ => $.walls.resetTitle)}</AlertDialog.Title>
+                <AlertDialog.Description>{t($ => $.walls.resetConfirm)}</AlertDialog.Description>
                 <Flex gap="3" mt="4" justify="end">
                   <AlertDialog.Cancel>
                     <Button variant="soft" color="gray">
-                      Cancel
+                      {t($ => $.common.cancel)}
                     </Button>
                   </AlertDialog.Cancel>
                   <AlertDialog.Action>
                     <Button variant="solid" color="red" onClick={handleReset}>
-                      Reset
+                      {t($ => $.common.reset)}
                     </Button>
                   </AlertDialog.Action>
                 </Flex>
@@ -1041,7 +1051,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
             <Label.Root>
               <Flex align="center" gap="1">
                 <Text size="1" weight="medium" color="gray">
-                  Default Wall Assembly
+                  {t($ => $.walls.defaultWallAssembly)}
                 </Text>
                 <MeasurementInfo highlightedAssembly="wallAssembly" />
               </Flex>
@@ -1049,38 +1059,53 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
             <WallAssemblySelect
               value={defaultAssemblyId}
               onValueChange={value => setDefaultWallAssembly(value)}
-              placeholder="Select default..."
+              placeholder={t($ => $.walls.selectDefault)}
               size="2"
             />
           </Grid>
         </Grid>
       </Flex>
-
       {/* Form */}
       {selectedAssembly && <ConfigForm assembly={selectedAssembly} />}
-
       {!selectedAssembly && wallAssemblies.length === 0 && (
         <Flex justify="center" align="center" p="5">
-          <Text color="gray">No wall assemblies yet. Create one using the "New" button above.</Text>
+          <Text color="gray">{t($ => $.walls.emptyList)}</Text>
         </Flex>
       )}
-
-      {usage.isUsed && (
-        <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
-          <Label.Root>
-            <Text size="2" weight="medium" color="gray">
-              Used By:
-            </Text>
-          </Label.Root>
-          <Flex gap="1" wrap="wrap">
-            {usage.usedByWalls.map((use, index) => (
-              <Badge key={index} size="2" variant="soft">
-                {use}
-              </Badge>
-            ))}
-          </Flex>
-        </Grid>
-      )}
+      {usage.isUsed && <UsageDisplay usage={usage} />}
     </Flex>
+  )
+}
+
+function UsageBadge({ id }: { id: EntityId }) {
+  const label = useEntityLabel(id)
+  return (
+    <Badge key={id} size="2" variant="soft">
+      {label}
+    </Badge>
+  )
+}
+
+function UsageDisplay({ usage }: { usage: WallAssemblyUsage }): React.JSX.Element {
+  const { t } = useTranslation('config')
+
+  return (
+    <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
+      <Label.Root>
+        <Text size="2" weight="medium" color="gray">
+          {t($ => $.usage.usedBy)}
+        </Text>
+      </Label.Root>
+      <Flex gap="1" wrap="wrap">
+        {usage.isDefault && (
+          <Badge size="2" variant="soft" color="blue">
+            {t($ => $.usage.globalDefault_wall)}
+          </Badge>
+        )}
+        {usage.storeyIds.map(id => (
+          <UsageBadge key={id} id={id} />
+        ))}
+      </Flex>
+    </Grid>
   )
 }

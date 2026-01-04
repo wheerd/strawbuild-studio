@@ -1,0 +1,314 @@
+{
+  "areaTypes": {
+    "bottom-plate": "Bottom Ring Beam",
+    "corner": "Corner",
+    "door": "Door",
+    "floor-level": "Finished Floor Level",
+    "inner-perimeter": "Inner Perimeter",
+    "outer-perimeter": "Outer Perimeter",
+    "passage": "Passage",
+    "top-plate": "Top Ring Beam",
+    "window": "Window"
+  },
+  "materialSelect": {
+    "noMaterialsAvailable": "No materials available",
+    "none": "None",
+    "placeholder": "Select material..."
+  },
+  "materialTypes": {
+    "dimensional": "Dimensional",
+    "generic": "Generic",
+    "sheet": "Sheet",
+    "strawbale": "Strawbale",
+    "volume": "Volume"
+  },
+  "measurements": {
+    "assembly": "Assembly",
+    "basePlate": "Base Plate",
+    "ceilingLayers": "Ceiling Layers",
+    "construction": "Construction",
+    "finishedCeiling": "Finished Ceiling",
+    "finishedFloor": "Finished Floor",
+    "finishedInside": "Finished Inside",
+    "finishedOutside": "Finished Outside",
+    "finishedOverhang": "Finished Overhang",
+    "finishedRooftop": "Finished Rooftop",
+    "floorAssembly": "Floor Assembly",
+    "floorBottomLayers": "Floor Bottom Layers",
+    "floorBottomOffset": "Construction Bottom Offset",
+    "floorConstruction": "Floor Construction",
+    "floorTopLayers": "Floor Top Layers",
+    "floorTopOffset": "Construction Top Offset",
+    "insideLayers": "Inside Layers",
+    "measurements": "Measurements",
+    "outsideLayers": "Outside Layers",
+    "overhangLayers": "Overhang Layers",
+    "roofAssembly": "Roof Assembly",
+    "roofConstruction": "Roof Construction",
+    "roofInsideOverlap": "Inside\nOverlap",
+    "roofMeasurementDetails": "Roof Measurement Details",
+    "roofOutsideOverlap": "Outside\nOverlap",
+    "roofTopLayers": "Roof Top Layers",
+    "roomHeight": "Ceiling Height",
+    "storeyHeight": "Floor Height",
+    "topPlate": "Top Plate",
+    "totalFloorThickness": "Total\nFloor\nThickness",
+    "totalRoofThickness": "Roof\nThickness",
+    "totalWallThickness": "Total\nWall\nThickness",
+    "wall": "Wall",
+    "wallAssembly": "Wall Assembly",
+    "wallAssemblyHeight": "Wall Assembly Height",
+    "wallConstruction": "Wall Construction",
+    "wallConstructionHeight": "Wall Construction Height"
+  },
+  "modulesList": {
+    "actions": {
+      "viewInPlan": "View in plan"
+    },
+    "noModules": "No modules",
+    "tableHeaders": {
+      "dimensions": "Dimensions",
+      "label": "Label",
+      "quantity": "Quantity",
+      "type": "Type",
+      "view": "View"
+    },
+    "title": "Modules"
+  },
+  "partCutModal": {
+    "partCutDiagram": "Part Cut Diagram",
+    "sheetPartDiagram": "Sheet Part Diagram"
+  },
+  "partsList": {
+    "actions": {
+      "backToSummary": "Back to summary",
+      "configureMaterial": "Configure Material",
+      "jumpToDetails": "Jump to details",
+      "specialCutPreview": "Special cut polygon preview",
+      "viewInPlan": "View in plan"
+    },
+    "groups": {
+      "allParts": "All parts",
+      "strawbales": "Strawbales"
+    },
+    "issues": {
+      "dimensionsExceedSizeMultiple": "Dimensions exceed available sheet sizes. This part will require multiple sheets.",
+      "dimensionsExceedSizeSingle": "Dimensions exceed available sheet sizes.",
+      "dimensionsMismatchThickness": "Dimensions do not match available thicknesses",
+      "groupMismatch": "This group does not match the defined material options",
+      "lengthExceedsMultiple": "Part length exceeds maximum available length. This part will require multiple pieces.",
+      "lengthExceedsSingle": "Part length exceeds maximum available length."
+    },
+    "noPartsAvailable": "No parts available.",
+    "other": {
+      "crossSectionMismatch": "Cross section does not match available options for this material",
+      "crossSections": "Other cross sections",
+      "thicknesses": "Other thicknesses",
+      "thicknessMismatch": "Thickness does not match available options for this material"
+    },
+    "straw": {
+      "flakes": "Flakes",
+      "fullBales": "Full bales",
+      "leftoverFromPartialBales": "Leftover from partial bales",
+      "partialBales": "Partial bales",
+      "rawLengthNote": "The given length is the raw length",
+      "sawButtonHint": "Click the \"saw\" button to see more detailed measurements",
+      "specialCutNote": "This part requires a special cut",
+      "stuffedFill": "Stuffed fill"
+    },
+    "summary": "Summary",
+    "tableHeaders": {
+      "area": "Area",
+      "baleCount": "Bale Count",
+      "category": "Category",
+      "description": "Description",
+      "differentParts": "Different Parts",
+      "dimensions": "Dimensions",
+      "label": "Label",
+      "length": "Length",
+      "material": "Material",
+      "quantity": "Qty",
+      "thickness": "Thickness",
+      "totalArea": "Total Area",
+      "totalLength": "Total Length",
+      "totalQuantity": "Total Quantity",
+      "totalVolume": "Total Volume",
+      "totalWeight": "Total Weight",
+      "type": "Type",
+      "view": "View"
+    },
+    "totalRow": "Total"
+  },
+  "partsListModal": {
+    "errors": {
+      "failedModulesList": "Failed to generate modules list",
+      "failedPartsList": "Failed to generate parts list"
+    },
+    "tabs": {
+      "materials": "Materials",
+      "modules": "Modules"
+    },
+    "title": "Parts List"
+  },
+  "plan": {
+    "hideAreas": "Hide Areas",
+    "hideIssues": "Hide Issues",
+    "hideMeasurements": "Hide Measurements",
+    "midCut": "Mid Cut"
+  },
+  "planModal": {
+    "errors": {
+      "failedModel": "Failed to generate construction model",
+      "failedModulesList": "Failed to generate modules list",
+      "failedPartsList": "Failed to generate parts list"
+    },
+    "issuesPanel": {
+      "errorsTitle_one": "Errors ({{count}})",
+      "errorsTitle_other": "Errors ({{count}})",
+      "noIssuesMessage": "Construction plan is valid with no errors or warnings.",
+      "noIssuesTitle": "No Issues Found",
+      "warningsTitle_one": "Warnings ({{count}})",
+      "warningsTitle_other": "Warnings ({{count}})"
+    },
+    "partHighlight": {
+      "clearHighlight": "Clear highlight",
+      "partHighlighted": "Part highlighted"
+    },
+    "tabs": {
+      "modules": "Modules",
+      "partsList": "Parts List",
+      "planIssues": "Plan & Issues"
+    },
+    "views": {
+      "floor": "Floor",
+      "roof": "Roof",
+      "walls": "Walls"
+    }
+  },
+  "strawCategories": {
+    "flakes": "Flakes",
+    "full": "Full bales",
+    "partial": "Partial bales",
+    "stuffed": "Stuffed fill"
+  },
+  "tagCategories": {
+    "area": "Area",
+    "construction": "Construction",
+    "finished-measurement": "Finished Measurement",
+    "floor-assembly": "Floor Assembly",
+    "floor-layer": "Floor Layers",
+    "floor-measurement": "Floor Measurement",
+    "floor-part": "Floor Part",
+    "module-part": "Module Parts",
+    "opening": "Opening",
+    "opening-measurement": "Opening Measurement",
+    "ring-beam-assembly": "Ring Beam Assembly",
+    "ring-beam-measurement": "Ring Beam Measurement",
+    "ring-beam-part": "Ring Beam Part",
+    "roof-assembly": "Roof Assembly",
+    "roof-layer": "Roof Layers",
+    "roof-measurement": "Roof Measurement",
+    "roof-part": "Roof Parts",
+    "roof-side": "Roof Side",
+    "storey-name": "Storey Name",
+    "straw": "Straw",
+    "wall-assembly": "Wall Assembly",
+    "wall-layer": "Wall Layers",
+    "wall-measurement": "Wall Measurement",
+    "wall-part": "Wall Parts"
+  },
+  "tags": {
+    "area_perimeter-inside": "Perimeter Inside",
+    "area_perimeter-outside": "Perimeter Outside",
+    "construction_base-plate": "Base Plate",
+    "construction_floor": "Floor",
+    "construction_layers": "Layers",
+    "construction_module": "Module",
+    "construction_roof": "Roof",
+    "construction_storey": "Storey",
+    "construction_top-plate": "Top Plate",
+    "construction_walls": "Walls",
+    "finished-measurement_wall-length-inside": "Wall Length Inside",
+    "finished-measurement_wall-length-outside": "Wall Length Outside",
+    "floor-assembly_filled": "Type: Filled",
+    "floor-assembly_joist": "Type: Joist",
+    "floor-assembly_monolithic": "Type: Monolithic",
+    "floor-layer_bottom": "Ceiling Finish Layers",
+    "floor-layer_top": "Floor Finish Layers",
+    "floor-measurement_joist-length": "Joist Length",
+    "floor-measurement_joist-spacing": "Joist Spacing",
+    "floor-part_ceiling-sheathing": "Ceiling Sheathing",
+    "floor-part_frame": "Frame",
+    "floor-part_infill": "Wall Infill",
+    "floor-part_joist": "Joist",
+    "floor-part_opening-frame": "Opening Frame",
+    "floor-part_subfloor": "Subfloor",
+    "floor-part_wall-beam": "Wall Beam",
+    "module-part_frame": "Frame",
+    "module-part_infill": "Infill",
+    "module-part_spacer": "Spacer",
+    "opening_door": "Door",
+    "opening_window": "Window",
+    "opening-measurement_header-from-top": "Header From Top",
+    "opening-measurement_header-height": "Header Height",
+    "opening-measurement_opening-height": "Opening Height",
+    "opening-measurement_opening-width": "Opening Width",
+    "opening-measurement_sill-height": "Sill Height",
+    "ring-beam-measurement_ring-beam-height": "Ring Beam Height",
+    "ring-beam-measurement_ring-beam-inner": "Ring Beam Inner",
+    "ring-beam-measurement_ring-beam-outer": "Ring Beam Outer",
+    "ring-beam-part_insulation": "Insulation",
+    "ring-beam-part_plate": "Plate",
+    "ring-beam-part_stud-wall": "Stud Wall",
+    "ring-beam-part_waterproofing": "Waterproofing Layer",
+    "roof-assembly_monolithic": "Type: Monolithic",
+    "roof-assembly_purlin": "Type: Purlin",
+    "roof-layer_inside": "Ceiling Layers",
+    "roof-layer_overhang": "Overhang Layers",
+    "roof-layer_top": "Roof Top Layers",
+    "roof-measurement_purlin-length": "Purlin Length",
+    "roof-measurement_purlin-rise": "Purlin Rise",
+    "roof-measurement_purlin-spacing": "Purlin Spacing",
+    "roof-measurement_rafter-length": "Rafter Length",
+    "roof-measurement_rafter-spacing": "Rafter Spacing",
+    "roof-part_decking": "Decking",
+    "roof-part_infill": "Infill",
+    "roof-part_inside-sheathing": "Inside Sheathing",
+    "roof-part_purlin": "Purlin",
+    "roof-part_rafter": "Rafter",
+    "roof-part_ridge-beam": "Ridge Beam",
+    "roof-side_left": "Left Roof Side",
+    "roof-side_right": "Right Roof Side",
+    "straw_flakes": "Straw Flakes",
+    "straw_full-bale": "Full Strawbale",
+    "straw_infill": "Generic Straw Infill",
+    "straw_partial-bale": "Partial Strawbale",
+    "straw_stuffed": "Stuffed Straw",
+    "wall-assembly_infill": "Type: Infill",
+    "wall-assembly_non-strawbale": "Type: Non-Strawbale",
+    "wall-assembly_strawhenge": "Type: Strawhenge",
+    "wall-layer_inside": "Inside Wall Layers",
+    "wall-layer_outside": "Outside Wall Layers",
+    "wall-measurement_module-width": "Module Width",
+    "wall-measurement_opening-spacing": "Opening Spacing",
+    "wall-measurement_post-spacing": "Post Spacing",
+    "wall-measurement_wall-construction-height": "Wall Construction Height",
+    "wall-measurement_wall-construction-length-inside": "Wall Construction Length Inside",
+    "wall-measurement_wall-construction-length-outside": "Wall Construction Length Outside",
+    "wall-measurement_wall-height": "Wall Height",
+    "wall-measurement_wall-length": "Wall Length",
+    "wall-part_header": "Header",
+    "wall-part_infill": "Infill",
+    "wall-part_post": "Post",
+    "wall-part_sill": "Sill"
+  },
+  "tagVisibility": {
+    "hideCategory": "Hide Category",
+    "noTags": "No tags available",
+    "showCategory": "Show Category",
+    "title": "Tag Visibility"
+  },
+  "viewer3DModal": {
+    "title": "3D Construction View"
+  }
+}

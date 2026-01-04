@@ -8,7 +8,7 @@ import type { MaterialId } from '@/construction/materials/material'
 import type { PostConfig } from '@/construction/materials/posts'
 import { constructPost } from '@/construction/materials/posts'
 import { constructStraw } from '@/construction/materials/straw'
-import { yieldElement, yieldError, yieldMeasurement, yieldWarning } from '@/construction/results'
+import { type IssueMessageKey, yieldElement, yieldError, yieldMeasurement, yieldWarning } from '@/construction/results'
 import type { StoreyContext } from '@/construction/storeys/context'
 import { TAG_POST_SPACING } from '@/construction/tags'
 import type { InfillWallConfig, InfillWallSegmentConfig, WallLayersConfig } from '@/construction/walls'
@@ -108,8 +108,8 @@ function createMockElement(id: string, position: Vec3, size: Vec3, material: Mat
 function createMockGenerator(
   elements: any[] = [],
   measurements: any[] = [],
-  errors: string[] = [],
-  warnings: string[] = []
+  errors: IssueMessageKey[] = [],
+  warnings: IssueMessageKey[] = []
 ) {
   return function* () {
     for (const element of elements) {
@@ -119,10 +119,10 @@ function createMockGenerator(
       yield yieldMeasurement(measurement)
     }
     for (const error of errors) {
-      yield yieldError(error, [])
+      yield yieldError(error, undefined, [])
     }
     for (const warning of warnings) {
-      yield yieldWarning(warning, [])
+      yield yieldWarning(warning, undefined, [])
     }
   }
 }
@@ -282,8 +282,8 @@ describe('assembly.construct', () => {
       const floorHeight = 2500
 
       // Mock segmented construction to return errors/warnings
-      const mockError = 'Test error'
-      const mockWarning = 'Test warning'
+      const mockError = 'Test error' as any
+      const mockWarning = 'Test warning' as any
       const mockElement = createMockElement('test', newVec3(0, 0, 0), newVec3(100, 100, 100), mockWoodMaterial)
 
       mockSegmentedWallConstruction.mockReturnValue(
@@ -294,8 +294,8 @@ describe('assembly.construct', () => {
 
       expect(result.errors).toHaveLength(1)
       expect(result.warnings).toHaveLength(1)
-      expect(result.errors[0].description).toBe(mockError)
-      expect(result.warnings[0].description).toBe(mockWarning)
+      expect(result.errors[0].messageKey).toBe(mockError)
+      expect(result.warnings[0].messageKey).toBe(mockWarning)
     })
 
     it('should include measurements in the result', () => {

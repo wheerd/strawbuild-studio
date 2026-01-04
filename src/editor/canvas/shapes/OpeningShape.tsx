@@ -9,9 +9,9 @@ import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { activateLengthInput } from '@/editor/services/length-input'
 import { type Length, type Vec2, ZERO_VEC2, addVec2, midpoint, scaleAddVec2, scaleVec2 } from '@/shared/geometry'
+import { useFormatters } from '@/shared/i18n/useFormatters'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
-import { formatLength } from '@/shared/utils/formatting'
 
 interface OpeningShapeProps {
   opening: Opening
@@ -34,6 +34,7 @@ export function OpeningShape({
   outsideStartCorner,
   outsideEndCorner
 }: OpeningShapeProps): React.JSX.Element {
+  const { formatLength } = useFormatters()
   const select = useSelectionStore()
   const theme = useCanvasTheme()
   const modelActions = useModelActions()

@@ -1,0 +1,21 @@
+{
+  "export": {
+    "collada": "Collada (DAE)",
+    "gltf": "GLTF",
+    "ifc": "IFC",
+    "obj": "OBJ",
+    "stl": "STL",
+    "title": "Exportieren"
+  },
+  "grid": {
+    "hide": "Raster ausblenden",
+    "show": "Raster anzeigen"
+  },
+  "tagOpacity": {
+    "fullCategory": "Sichtbare Kategorie",
+    "hideCategory": "Kategorie ausgeblendet",
+    "noTags": "Keine Tags verfügbar",
+    "semiCategory": "Kategorie halbtransparent",
+    "title": "Sichtbarkeit"
+  }
+}

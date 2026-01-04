@@ -101,7 +101,9 @@ export const createRingBeamAssembliesSlice: StateCreator<
 
           const updatedAssembly: RingBeamAssemblyConfig = {
             ...assembly,
-            name: name.trim()
+            name: name.trim(),
+            // Clear nameKey when user edits the name (indicates custom name)
+            nameKey: undefined
           }
 
           return {

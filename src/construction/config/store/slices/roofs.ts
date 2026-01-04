@@ -144,7 +144,9 @@ export const createRoofAssembliesSlice: StateCreator<
 
           const updatedAssembly: RoofAssemblyConfig = {
             ...assembly,
-            name: name.trim()
+            name: name.trim(),
+            // Clear nameKey when user edits the name (indicates custom name)
+            nameKey: undefined
           }
           return {
             ...state,

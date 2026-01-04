@@ -17,7 +17,6 @@ import {
   scaleAddVec2,
   scaleVec2
 } from '@/shared/geometry'
-import { formatLength } from '@/shared/utils/formatting'
 
 import type { Tag } from './tags'
 
@@ -34,7 +33,8 @@ export interface AutoMeasurement {
 export interface DirectMeasurement {
   startPoint: Vec3
   endPoint: Vec3
-  label: string
+  length: Length // Raw length value in mm
+  label?: string // Optional custom text label (overrides formatted length)
   offset: number
   tags?: Tag[]
 }
@@ -121,7 +121,7 @@ export function createMeasurementFromArea(
     endPoint,
     extend1,
     extend2,
-    label: offset ? formatLength(length) : undefined,
+    length: offset != null ? length : undefined,
     tags,
     offset
   }
@@ -137,7 +137,13 @@ export function* yieldMeasurementFromArea(
   if (area.isEmpty) return
   if (type === 'height') {
     if (area.minHeight !== area.size[2]) {
-      const minHeight = createMeasurementFromArea(area, 'minHeight', tags, offset, useMin)
+      const minHeight = createMeasurementFromArea(
+        area,
+        'minHeight',
+        tags,
+        offset ? -offset : undefined,
+        offset ? !useMin : useMin
+      )
       if (minHeight) {
         yield yieldMeasurement(minHeight)
       }

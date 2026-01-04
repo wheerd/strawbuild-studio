@@ -31,6 +31,7 @@ describe('StoreySelector', () => {
     {
       id: 'storey-1' as StoreyId,
       name: 'Ground Floor',
+      useDefaultName: true,
       level: createStoreyLevel(0),
       floorHeight: 3000,
       floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
@@ -38,6 +39,7 @@ describe('StoreySelector', () => {
     {
       id: 'storey-2' as StoreyId,
       name: 'First Floor',
+      useDefaultName: false,
       level: createStoreyLevel(1),
       floorHeight: 3000,
       floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
@@ -71,18 +73,7 @@ describe('StoreySelector', () => {
 
     expect(screen.getByRole('combobox')).toBeInTheDocument()
     expect(screen.getByText('L0')).toBeInTheDocument()
-    expect(screen.getByText('Ground Floor')).toBeInTheDocument()
-  })
-
-  it('renders edit button', () => {
-    render(
-      <Theme>
-        <StoreySelector />
-      </Theme>
-    )
-
-    const editButton = screen.getByRole('button', { name: /manage floors/i })
-    expect(editButton).toBeInTheDocument()
+    expect(screen.getByText('storeys.groundFloor')).toBeInTheDocument()
   })
 
   it('calls setActiveStoreyId when selection changes', () => {

@@ -151,6 +151,79 @@ describe('parseLength', () => {
         value: 500
       })
     })
+
+    it('should accept comma as decimal separator', () => {
+      expect(parseLength('12,5')).toEqual({
+        success: true,
+        value: 13 // Rounded to nearest mm
+      })
+
+      expect(parseLength('100,7')).toEqual({
+        success: true,
+        value: 101
+      })
+    })
+
+    it('should parse centimeter values with comma separator', () => {
+      expect(parseLength('5,5cm')).toEqual({
+        success: true,
+        value: 55
+      })
+
+      expect(parseLength('0,1cm')).toEqual({
+        success: true,
+        value: 1
+      })
+
+      expect(parseLength('10,25cm')).toEqual({
+        success: true,
+        value: 103 // 102.5mm rounded to 103mm
+      })
+    })
+
+    it('should parse meter values with comma separator', () => {
+      expect(parseLength('0,5m')).toEqual({
+        success: true,
+        value: 500
+      })
+
+      expect(parseLength('1,25m')).toEqual({
+        success: true,
+        value: 1250
+      })
+
+      expect(parseLength('2,5 m')).toEqual({
+        success: true,
+        value: 2500
+      })
+
+      expect(parseLength('0,375m')).toEqual({
+        success: true,
+        value: 375
+      })
+    })
+
+    it('should handle negative values with comma separator', () => {
+      expect(parseLength('-5,5cm')).toEqual({
+        success: true,
+        value: -55
+      })
+
+      expect(parseLength('-0,1m')).toEqual({
+        success: true,
+        value: -100
+      })
+
+      expect(parseLength('-12,5')).toEqual({
+        success: true,
+        value: -12 // -12.5mm rounds to -12mm (rounds toward zero for negative)
+      })
+
+      expect(parseLength('-12,6')).toEqual({
+        success: true,
+        value: -13 // -12.6mm rounds to -13mm
+      })
+    })
   })
 
   describe('invalid inputs', () => {
@@ -190,6 +263,30 @@ describe('parseLength', () => {
       })
 
       expect(parseLength('12..34')).toEqual({
+        success: false,
+        value: null,
+        error: 'Invalid format. Use formats like: 500, 50cm, 0.5m'
+      })
+
+      expect(parseLength('12,34,56')).toEqual({
+        success: false,
+        value: null,
+        error: 'Invalid format. Use formats like: 500, 50cm, 0.5m'
+      })
+
+      expect(parseLength('12,,34')).toEqual({
+        success: false,
+        value: null,
+        error: 'Invalid format. Use formats like: 500, 50cm, 0.5m'
+      })
+
+      expect(parseLength('12.34,56')).toEqual({
+        success: false,
+        value: null,
+        error: 'Invalid format. Use formats like: 500, 50cm, 0.5m'
+      })
+
+      expect(parseLength('12,34.56')).toEqual({
         success: false,
         value: null,
         error: 'Invalid format. Use formats like: 500, 50cm, 0.5m'
@@ -268,6 +365,12 @@ describe('parseLengthValue', () => {
     expect(parseLengthValue('0.5m')).toBe(500)
   })
 
+  it('should return value for comma separator', () => {
+    expect(parseLengthValue('0,5m')).toBe(500)
+    expect(parseLengthValue('5,5cm')).toBe(55)
+    expect(parseLengthValue('12,5')).toBe(13)
+  })
+
   it('should return null for invalid input', () => {
     expect(parseLengthValue('invalid')).toBe(null)
     expect(parseLengthValue('')).toBe(null)
@@ -283,10 +386,18 @@ describe('isValidLengthInput', () => {
     expect(isValidLengthInput('-100')).toBe(true)
   })
 
+  it('should return true for comma separator', () => {
+    expect(isValidLengthInput('0,5m')).toBe(true)
+    expect(isValidLengthInput('5,5cm')).toBe(true)
+    expect(isValidLengthInput('12,5')).toBe(true)
+    expect(isValidLengthInput('-10,25cm')).toBe(true)
+  })
+
   it('should return false for invalid inputs', () => {
     expect(isValidLengthInput('invalid')).toBe(false)
     expect(isValidLengthInput('')).toBe(false)
     expect(isValidLengthInput('12ft')).toBe(false)
     expect(isValidLengthInput('12.34.56')).toBe(false)
+    expect(isValidLengthInput('12,34,56')).toBe(false)
   })
 })

@@ -1,11 +1,15 @@
 import { Box, Button, Flex, Heading, Separator, Text } from '@radix-ui/themes'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
+import { hardReset } from '@/shared/utils/hardReset'
 
 import type { TestDataTool } from './TestDataTool'
 
 export function TestDataToolInspector({ tool }: ToolInspectorProps<TestDataTool>): React.JSX.Element {
+  const { t } = useTranslation('tool')
+
   // Handler functions for each test data type
   const handleCreateCrossShaped = useCallback(() => {
     tool.createCrossShapedTestData()
@@ -20,14 +24,10 @@ export function TestDataToolInspector({ tool }: ToolInspectorProps<TestDataTool>
   }, [tool])
 
   const handleResetData = useCallback(() => {
-    if (
-      window.confirm(
-        'Are you sure you want to reset all data? This will clear all perimeters, openings, and saved work.'
-      )
-    ) {
+    if (window.confirm(t($ => $.testData.confirmReset))) {
       tool.resetAllData()
     }
-  }, [tool])
+  }, [tool, t])
 
   return (
     <Box p="2">
@@ -35,26 +35,23 @@ export function TestDataToolInspector({ tool }: ToolInspectorProps<TestDataTool>
         {/* Test Data Generation Section */}
         <Box>
           <Heading size="2" weight="medium" mb="2" color="gray">
-            Test Data Generation
+            {t($ => $.testData.generationHeading)}
           </Heading>
 
           <Flex direction="column" gap="2">
             {/* Cross/T-Shape Perimeter */}
             <Button className="w-full" size="2" onClick={handleCreateCrossShaped}>
-              <span>📐</span>
-              Cross/T-Shape Perimeter
+              {t($ => $.testData.crossShaped)}
             </Button>
 
             {/* Hexagonal Perimeter */}
             <Button className="w-full" size="2" onClick={handleCreateHexagonal}>
-              <span>⬡</span>
-              Hexagonal Perimeter (3m sides)
+              {t($ => $.testData.hexagonal)}
             </Button>
 
             {/* Rectangular Perimeter */}
             <Button className="w-full" size="2" onClick={handleCreateRectangular}>
-              <span>▭</span>
-              Rectangular Perimeter (8×5m)
+              {t($ => $.testData.rectangular)}
             </Button>
           </Flex>
         </Box>
@@ -65,17 +62,19 @@ export function TestDataToolInspector({ tool }: ToolInspectorProps<TestDataTool>
         {/* Danger Zone Section */}
         <Box>
           <Heading size="2" weight="medium" mb="2" color="red">
-            ⚠️ Danger Zone
+            {t($ => $.testData.dangerZone)}
           </Heading>
 
           <Flex direction="column" gap="2">
             <Button className="w-full" size="2" color="red" variant="solid" onClick={handleResetData}>
-              <span>🗑️</span>
-              Reset All Data
+              {t($ => $.testData.resetAll)}
+            </Button>
+            <Button className="w-full" size="2" color="red" variant="solid" onClick={hardReset}>
+              {t($ => $.testData.hardReset)}
             </Button>
 
             <Text size="1" color="gray">
-              ⚠️ This will permanently clear all perimeters, openings, and saved work
+              {t($ => $.testData.resetWarning)}
             </Text>
           </Flex>
         </Box>
@@ -84,8 +83,7 @@ export function TestDataToolInspector({ tool }: ToolInspectorProps<TestDataTool>
         <Separator size="4" />
         <Box>
           <Text size="1" color="gray">
-            Click any button above to generate test data or reset the model. Each test case creates a perimeter with
-            realistic windows and doors to demonstrate the application features.
+            {t($ => $.testData.instructions)}
           </Text>
         </Box>
       </Flex>

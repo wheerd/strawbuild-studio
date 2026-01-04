@@ -1,15 +1,17 @@
 import type { LengthUnit } from '@/shared/components/LengthField/types'
 import type { Length } from '@/shared/geometry'
+import { formatNumberForInputCompact, parseLocaleNumber } from '@/shared/i18n/numberParsing'
 
 /**
- * Convert a length value from millimeters to the specified unit for display
+ * Convert a length value from millimeters to the specified unit for display.
+ * Uses locale-aware formatting for decimal separators.
  */
-export function lengthToDisplayValue(lengthMm: Length, unit: LengthUnit, precision: number): string {
-  let value
-
+export function lengthToDisplayValue(lengthMm: Length, unit: LengthUnit, precision: number, locale: string): string {
   if (typeof lengthMm !== 'number' || isNaN(lengthMm) || !isFinite(lengthMm)) {
     return ''
   }
+
+  let value: number
 
   switch (unit) {
     case 'mm': {
@@ -29,25 +31,25 @@ export function lengthToDisplayValue(lengthMm: Length, unit: LengthUnit, precisi
     }
   }
 
-  const formatted = value.toFixed(precision)
-
-  // Remove trailing zeros after decimal point, but keep at least one decimal if there was one
-  if (formatted.includes('.')) {
-    return formatted.replace(/\.?0+$/, '')
+  // For mm (precision 0), return integer without locale formatting
+  if (unit === 'mm' || precision === 0) {
+    return value.toString()
   }
 
-  return formatted
+  // For cm and m, use locale-aware formatting with trailing zero removal
+  return formatNumberForInputCompact(value, precision, locale)
 }
 
 /**
- * Convert a display value string to a length in millimeters
+ * Convert a display value string to a length in millimeters.
+ * Accepts both . and , as decimal separators.
  */
 export function displayValueToLength(displayValue: string, unit: LengthUnit): Length | null {
   const trimmed = displayValue.trim()
   if (trimmed === '') return null
 
-  const number = parseFloat(trimmed)
-  if (isNaN(number) || !isFinite(number)) return null
+  const number = parseLocaleNumber(trimmed)
+  if (number === null) return null
 
   let valueInMm: number
   switch (unit) {

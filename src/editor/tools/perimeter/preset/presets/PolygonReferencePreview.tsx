@@ -10,7 +10,7 @@ import {
   ensurePolygonIsClockwise,
   offsetPolygon
 } from '@/shared/geometry'
-import { formatLength } from '@/shared/utils/formatting'
+import { useFormatters } from '@/shared/i18n/useFormatters'
 
 interface PolygonReferencePreviewProps {
   referencePoints: readonly Vec2[]
@@ -37,7 +37,8 @@ function generateLabels(
   scaledPoints: ScaledPoint[],
   originalPoints: readonly Vec2[],
   pushDirection: PushDirection,
-  color: string
+  color: string,
+  formatLength: (length: number) => string
 ): React.ReactNode {
   if (scaledPoints.length === 0) return null
 
@@ -89,6 +90,7 @@ export function PolygonReferencePreview({
   referenceSide,
   size = 200
 }: PolygonReferencePreviewProps): React.JSX.Element {
+  const { formatLength } = useFormatters()
   const { referencePath, derivedPath, referenceLabels, derivedLabels } = useMemo(() => {
     if (referencePoints.length < 3 || thickness <= 0) {
       return {
@@ -140,7 +142,8 @@ export function PolygonReferencePreview({
       scaledReferencePoints,
       referencePolygon.points,
       referenceSide === 'inside' ? 'inward' : 'outward',
-      'var(--accent-12)'
+      'var(--accent-12)',
+      formatLength
     )
 
     const derivedLabels =
@@ -149,7 +152,8 @@ export function PolygonReferencePreview({
             scaledDerivedPoints,
             derivedPoints,
             referenceSide === 'inside' ? 'outward' : 'inward',
-            'var(--gray-12)'
+            'var(--gray-12)',
+            formatLength
           )
         : null
 

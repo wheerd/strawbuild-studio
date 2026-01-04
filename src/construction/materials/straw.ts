@@ -121,11 +121,11 @@ export function* constructStraw(area: WallConstructionArea, materialId?: Materia
   } else if (size[1] > material.baleWidth) {
     const element = createElementFromArea(area, strawMaterialId, [TAG_STRAW_STUFFED])
     yield* yieldElement(element)
-    yield yieldError('Wall is too thick for a single strawbale', [element], `strawbale-thick-${strawMaterialId}`)
+    yield yieldError($ => $.construction.straw.tooThick, undefined, [element], `strawbale-thick-${strawMaterialId}`)
   } else {
     const element = createElementFromArea(area, strawMaterialId, [TAG_STRAW_STUFFED])
     yield* yieldElement(element)
-    yield yieldWarning('Wall is too thin for a single strawbale', [element], `strawbale-thin-${strawMaterialId}`)
+    yield yieldWarning($ => $.construction.straw.tooThin, undefined, [element], `strawbale-thin-${strawMaterialId}`)
   }
 }
 
@@ -155,12 +155,12 @@ export function* constructStrawPolygon(
   if (thickness > material.baleWidth) {
     const element = fullElement([TAG_STRAW_INFILL])
     yield* yieldElement(element)
-    yield yieldError('Wall is too thick for a single strawbale', [element], `strawbale-thick-${strawMaterialId}`)
+    yield yieldError($ => $.construction.straw.tooThick, undefined, [element], `strawbale-thick-${strawMaterialId}`)
     return
   } else if (thickness < material.baleWidth) {
     const element = fullElement([TAG_STRAW_INFILL])
     yield* yieldElement(element)
-    yield yieldWarning('Wall is too thin for a single strawbale', [element], `strawbale-thin-${strawMaterialId}`)
+    yield yieldWarning($ => $.construction.straw.tooThin, undefined, [element], `strawbale-thin-${strawMaterialId}`)
     return
   }
 

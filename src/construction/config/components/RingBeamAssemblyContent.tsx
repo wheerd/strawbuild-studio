@@ -15,24 +15,26 @@ import {
   TextField
 } from '@radix-ui/themes'
 import React, { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { RingBeamAssemblyId } from '@/building/model/ids'
-import { usePerimeters, useStoreysOrderedByLevel } from '@/building/store'
+import { usePerimeters } from '@/building/store'
 import type { RingBeamAssemblyConfig } from '@/construction/config'
+import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import {
   useConfigActions,
   useDefaultBaseRingBeamAssemblyId,
   useDefaultTopRingBeamAssemblyId,
   useRingBeamAssemblies
 } from '@/construction/config/store'
-import { getRingBeamAssemblyUsage } from '@/construction/config/usage'
+import { type RingBeamAssemblyUsage, getRingBeamAssemblyUsage } from '@/construction/config/usage'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import { bitumen, brick, cork, roughWood, woodwool } from '@/construction/materials/material'
 import { type RingBeamConfig, resolveRingBeamAssembly } from '@/construction/ringBeams'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
 import { useDebouncedInput } from '@/shared/hooks/useDebouncedInput'
-import { formatLength } from '@/shared/utils/formatting'
+import { useFormatters } from '@/shared/i18n/useFormatters'
 
 import { getRingBeamTypeIcon } from './Icons'
 import { RingBeamAssemblySelect } from './RingBeamAssemblySelect'
@@ -44,9 +46,9 @@ export interface RingBeamAssemblyContentProps {
 }
 
 export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssemblyContentProps): React.JSX.Element {
+  const { t } = useTranslation('config')
   const ringBeamAssemblies = useRingBeamAssemblies()
   const perimeters = usePerimeters()
-  const storeys = useStoreysOrderedByLevel()
   const {
     addRingBeamAssembly,
     removeRingBeamAssembly,
@@ -70,15 +72,17 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
   const usage = useMemo(
     () =>
       selectedAssembly
-        ? getRingBeamAssemblyUsage(selectedAssembly.id, perimeters, Object.values(storeys))
-        : { isUsed: false, usedByPerimeters: [] },
-    [selectedAssembly, perimeters, storeys]
+        ? getRingBeamAssemblyUsage(selectedAssembly.id, perimeters, defaultBaseId, defaultTopId)
+        : { isUsed: false, isDefaultBase: false, isDefaultTop: false, storeyIds: [] },
+    [selectedAssembly, perimeters, defaultBaseId, defaultTopId]
   )
 
   const handleAddNew = useCallback(
     (type: RingBeamType) => {
+      let name: string
       let config: RingBeamConfig
       if (type === 'full') {
+        name = t($ => $.ringBeams.newName_full)
         config = {
           type: 'full',
           height: 60,
@@ -87,6 +91,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
           offsetFromEdge: 0
         }
       } else if (type === 'double') {
+        name = t($ => $.ringBeams.newName_double)
         config = {
           type: 'double',
           height: 60,
@@ -97,6 +102,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
           spacing: 100
         }
       } else {
+        name = t($ => $.ringBeams.newName_brick)
         config = {
           type: 'brick',
           wallHeight: 300,
@@ -112,7 +118,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
         }
       }
 
-      const newAssembly = addRingBeamAssembly(`New ${type} ring beam`, config)
+      const newAssembly = addRingBeamAssembly(name, config)
       setSelectedAssemblyId(newAssembly.id)
     },
     [addRingBeamAssembly]
@@ -122,7 +128,11 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
     if (!selectedAssembly) return
 
     const { id: _id, name: _name, ...config } = selectedAssembly
-    const duplicated = addRingBeamAssembly(`${selectedAssembly.name} (Copy)`, config)
+    const newName = t($ => $.ringBeams.copyNameTemplate, {
+      defaultValue: `{{name}} (Copy)`,
+      name: selectedAssembly.name
+    })
+    const duplicated = addRingBeamAssembly(newName, config)
     setSelectedAssemblyId(duplicated.id)
   }, [selectedAssembly, addRingBeamAssembly])
 
@@ -165,7 +175,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
 
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
-              <IconButton title="Add New">
+              <IconButton title={t($ => $.common.addNew)}>
                 <PlusIcon />
               </IconButton>
             </DropdownMenu.Trigger>
@@ -173,25 +183,30 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
               <DropdownMenu.Item onSelect={() => handleAddNew('full')}>
                 <Flex align="center" gap="1">
                   {React.createElement(getRingBeamTypeIcon('full'))}
-                  Full Ring Beam
+                  {t($ => $.ringBeams.types.full)}
                 </Flex>
               </DropdownMenu.Item>
               <DropdownMenu.Item onSelect={() => handleAddNew('double')}>
                 <Flex align="center" gap="1">
                   {React.createElement(getRingBeamTypeIcon('double'))}
-                  Double Ring Beam
+                  {t($ => $.ringBeams.types.double)}
                 </Flex>
               </DropdownMenu.Item>
               <DropdownMenu.Item onSelect={() => handleAddNew('brick')}>
                 <Flex align="center" gap="1">
                   {React.createElement(getRingBeamTypeIcon('brick'))}
-                  Brick Ring Beam
+                  {t($ => $.ringBeams.types.brick)}
                 </Flex>
               </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Root>
 
-          <IconButton onClick={handleDuplicate} disabled={!selectedAssembly} title="Duplicate" variant="soft">
+          <IconButton
+            onClick={handleDuplicate}
+            disabled={!selectedAssembly}
+            title={t($ => $.common.duplicate)}
+            variant="soft"
+          >
             <CopyIcon />
           </IconButton>
 
@@ -200,25 +215,25 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
               <IconButton
                 disabled={!selectedAssembly || usage.isUsed}
                 color="red"
-                title={usage.isUsed ? 'In Use - Cannot Delete' : 'Delete'}
+                title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
               >
                 <TrashIcon />
               </IconButton>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
-              <AlertDialog.Title>Delete Ring Beam Assembly</AlertDialog.Title>
+              <AlertDialog.Title>{t($ => $.ringBeams.deleteTitle)}</AlertDialog.Title>
               <AlertDialog.Description>
-                Are you sure you want to delete "{selectedAssembly?.name}"? This action cannot be undone.
+                {t($ => $.ringBeams.deleteConfirm, { name: selectedAssembly?.name })}
               </AlertDialog.Description>
               <Flex gap="3" mt="4" justify="end">
                 <AlertDialog.Cancel>
                   <Button variant="soft" color="gray">
-                    Cancel
+                    {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
                   <Button variant="solid" color="red" onClick={handleDelete}>
-                    Delete
+                    {t($ => $.common.delete)}
                   </Button>
                 </AlertDialog.Action>
               </Flex>
@@ -227,25 +242,22 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <IconButton color="red" variant="outline" title="Reset to Defaults">
+              <IconButton color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
                 <ResetIcon />
               </IconButton>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
-              <AlertDialog.Title>Reset Ring Beam Assemblies</AlertDialog.Title>
-              <AlertDialog.Description>
-                Are you sure you want to reset default ring beam assemblies? This will restore the original default
-                assemblies but keep any custom assemblies you've created. This action cannot be undone.
-              </AlertDialog.Description>
+              <AlertDialog.Title>{t($ => $.ringBeams.resetTitle)}</AlertDialog.Title>
+              <AlertDialog.Description>{t($ => $.ringBeams.resetConfirm)}</AlertDialog.Description>
               <Flex gap="3" mt="4" justify="end">
                 <AlertDialog.Cancel>
                   <Button variant="soft" color="gray">
-                    Cancel
+                    {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
                   <Button variant="solid" color="red" onClick={handleReset}>
-                    Reset
+                    {t($ => $.common.reset)}
                   </Button>
                 </AlertDialog.Action>
               </Flex>
@@ -253,16 +265,13 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
           </AlertDialog.Root>
         </Flex>
       </Flex>
-
       {/* Form */}
       {selectedAssembly && <ConfigForm assembly={selectedAssembly} />}
-
       {!selectedAssembly && ringBeamAssemblies.length === 0 && (
         <Flex justify="center" align="center" p="5">
           <Text color="gray">No ring beam assemblies yet. Create one using the "New" button above.</Text>
         </Flex>
       )}
-
       {/* Defaults Section */}
       <Separator size="4" />
       <Flex direction="column" gap="3">
@@ -270,7 +279,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
           <Flex align="center" gap="1">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Default Base Plate
+                {t($ => $.ringBeams.defaultBasePlate)}
               </Text>
             </Label.Root>
             <MeasurementInfo highlightedPart="basePlate" />
@@ -278,7 +287,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
           <RingBeamAssemblySelect
             value={defaultBaseId}
             onValueChange={setDefaultBaseRingBeamAssembly}
-            placeholder="Select default..."
+            placeholder={t($ => $.common.placeholders.selectDefault)}
             size="2"
             allowNone
           />
@@ -286,7 +295,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
           <Flex align="center" gap="1">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Default Top Plate
+                {t($ => $.ringBeams.defaultTopPlate)}
               </Text>
             </Label.Root>
             <MeasurementInfo highlightedPart="topPlate" />
@@ -294,46 +303,39 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
           <RingBeamAssemblySelect
             value={defaultTopId}
             onValueChange={setDefaultTopRingBeamAssembly}
-            placeholder="Select default..."
+            placeholder={t($ => $.common.placeholders.selectDefault)}
             size="2"
             allowNone
           />
         </Grid>
 
-        {usage.isUsed && (
-          <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
-            <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                Used By:
-              </Text>
-            </Label.Root>
-            <Flex gap="1" wrap="wrap">
-              {usage.usedByPerimeters.map((use, index) => (
-                <Badge key={index} size="2" variant="soft">
-                  {use}
-                </Badge>
-              ))}
-            </Flex>
-          </Grid>
-        )}
+        {usage.isUsed && <UsageDisplay usage={usage} />}
       </Flex>
     </Flex>
   )
 }
 
 function ConfigForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.ReactNode {
+  const { t } = useTranslation('config')
+  const { formatLength } = useFormatters()
   const { updateRingBeamAssemblyName, updateRingBeamAssemblyConfig } = useConfigActions()
 
-  const nameInput = useDebouncedInput(assembly.name, (name: string) => updateRingBeamAssemblyName(assembly.id, name), {
-    debounceMs: 1000
-  })
+  const nameKey = assembly.nameKey
+
+  const nameInput = useDebouncedInput(
+    nameKey ? t(nameKey) : assembly.name,
+    (name: string) => updateRingBeamAssemblyName(assembly.id, name),
+    {
+      debounceMs: 1000
+    }
+  )
 
   const handleUpdateConfig = useCallback(
     (updates: Partial<RingBeamConfig>) => updateRingBeamAssemblyConfig(assembly.id, updates),
     [assembly, updateRingBeamAssemblyConfig]
   )
 
-  const totalHeight = useMemo(() => formatLength(resolveRingBeamAssembly(assembly).height), [assembly])
+  const totalHeight = useMemo(() => formatLength(resolveRingBeamAssembly(assembly).height), [assembly, formatLength])
 
   return (
     <Flex
@@ -346,7 +348,7 @@ function ConfigForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.R
         <Grid columns="auto 1fr" gapX="2" align="center">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Name
+              {t($ => $.common.name)}
             </Text>
           </Label.Root>
           <TextField.Root
@@ -354,7 +356,7 @@ function ConfigForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.R
             onChange={e => nameInput.handleChange(e.target.value)}
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
-            placeholder="Ring beam assembly name"
+            placeholder={t($ => $.ringBeams.placeholders.name)}
             size="2"
           />
         </Grid>
@@ -363,13 +365,13 @@ function ConfigForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.R
           <Flex gap="2" align="center">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Type
+                {t($ => $.common.type)}
               </Text>
             </Label.Root>
             <Flex gap="2" align="center">
               {React.createElement(getRingBeamTypeIcon(assembly.type))}
               <Text size="2" color="gray">
-                {assembly.type === 'full' ? 'Full' : assembly.type === 'double' ? 'Double' : 'Brick'}
+                {t($ => $.ringBeams.types[assembly.type])}
               </Text>
             </Flex>
           </Flex>
@@ -377,7 +379,7 @@ function ConfigForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.R
           <Flex gap="2" align="center">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Total Height
+                {t($ => $.common.totalHeight)}
               </Text>
             </Label.Root>
             <Text size="2" color="gray">
@@ -403,12 +405,13 @@ function FullRingBeamFields({
   config: RingBeamConfig & { type: 'full' }
   onUpdate: (updates: Partial<RingBeamConfig>) => void
 }) {
+  const { t } = useTranslation('config')
   return (
     <>
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Material
+            {t($ => $.common.materialLabel)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -417,7 +420,7 @@ function FullRingBeamFields({
             if (!material) return
             onUpdate({ material })
           }}
-          placeholder="Select material..."
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
           preferredTypes={['dimensional']}
         />
@@ -425,7 +428,7 @@ function FullRingBeamFields({
         <Flex align="center" gap="1">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Height
+              {t($ => $.common.height)}
             </Text>
           </Label.Root>
           <MeasurementInfo highlightedPart="plates" />
@@ -434,14 +437,14 @@ function FullRingBeamFields({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Width
+            {t($ => $.common.width)}
           </Text>
         </Label.Root>
         <LengthField value={config.width} onChange={width => onUpdate({ width })} unit="mm" size="2" />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Offset from Inside Edge
+            {t($ => $.ringBeams.labels.offsetFromInsideEdge)}
           </Text>
         </Label.Root>
         <LengthField
@@ -462,6 +465,7 @@ function DoubleRingBeamFields({
   config: RingBeamConfig & { type: 'double' }
   onUpdate: (updates: Partial<RingBeamConfig>) => void
 }) {
+  const { t } = useTranslation('config')
   return (
     <>
       <Callout.Root color="amber">
@@ -473,7 +477,7 @@ function DoubleRingBeamFields({
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Material
+            {t($ => $.common.materialLabel)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -482,14 +486,14 @@ function DoubleRingBeamFields({
             if (!material) return
             onUpdate({ material })
           }}
-          placeholder="Select material..."
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
           preferredTypes={['dimensional']}
         />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Infill Material
+            {t($ => $.common.materialLabel)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -498,14 +502,14 @@ function DoubleRingBeamFields({
             if (!infillMaterial) return
             onUpdate({ infillMaterial })
           }}
-          placeholder="Select infill material..."
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
         />
 
         <Flex align="center" gap="1">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Height
+              {t($ => $.common.height)}
             </Text>
           </Label.Root>
           <MeasurementInfo highlightedPart="plates" />
@@ -515,7 +519,7 @@ function DoubleRingBeamFields({
         <Flex align="center" gap="1">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Thickness
+              {t($ => $.common.thickness)}
             </Text>
           </Label.Root>
           <MeasurementInfo highlightedPart="plates" />
@@ -525,7 +529,7 @@ function DoubleRingBeamFields({
         <Flex align="center" gap="1">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Spacing
+              {t($ => $.common.spacing)}
             </Text>
           </Label.Root>
           <MeasurementInfo highlightedPart="plates" />
@@ -535,7 +539,7 @@ function DoubleRingBeamFields({
         <Flex align="center" gap="1">
           <Label.Root>
             <Text size="2" weight="medium" color="gray">
-              Offset from Edge
+              {t($ => $.ringBeams.labels.offsetFromInsideEdge)}
             </Text>
           </Label.Root>
           <MeasurementInfo highlightedPart="plates" />
@@ -558,14 +562,15 @@ function BrickRingBeamFields({
   config: RingBeamConfig & { type: 'brick' }
   onUpdate: (updates: Partial<RingBeamConfig>) => void
 }) {
+  const { t } = useTranslation('config')
   return (
     <>
-      <Heading size="2">Stem Wall</Heading>
+      <Heading size="2">{t($ => $.ringBeams.sections.stemWall)}</Heading>
 
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Height
+            {t($ => $.common.height)}
           </Text>
         </Label.Root>
         <LengthField
@@ -578,7 +583,7 @@ function BrickRingBeamFields({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Width
+            {t($ => $.common.width)}
           </Text>
         </Label.Root>
         <LengthField
@@ -591,7 +596,7 @@ function BrickRingBeamFields({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Material
+            {t($ => $.common.materialLabel)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -600,7 +605,7 @@ function BrickRingBeamFields({
             if (!wallMaterial) return
             onUpdate({ wallMaterial })
           }}
-          placeholder="Select wall material..."
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
           preferredTypes={['dimensional']}
         />
@@ -608,12 +613,12 @@ function BrickRingBeamFields({
 
       <Separator size="4" />
 
-      <Heading size="2">Insulation</Heading>
+      <Heading size="2">{t($ => $.ringBeams.sections.insulation)}</Heading>
 
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Thickness
+            {t($ => $.common.thickness)}
           </Text>
         </Label.Root>
         <LengthField
@@ -626,7 +631,7 @@ function BrickRingBeamFields({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Material
+            {t($ => $.common.materialLabel)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -635,19 +640,19 @@ function BrickRingBeamFields({
             if (!insulationMaterial) return
             onUpdate({ insulationMaterial })
           }}
-          placeholder="Select insulation material..."
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
         />
       </Grid>
 
       <Separator size="4" />
 
-      <Heading size="2">Beam</Heading>
+      <Heading size="2">{t($ => $.ringBeams.sections.beam)}</Heading>
 
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Thickness
+            {t($ => $.common.thickness)}
           </Text>
         </Label.Root>
         <LengthField
@@ -660,7 +665,7 @@ function BrickRingBeamFields({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Width
+            {t($ => $.common.width)}
           </Text>
         </Label.Root>
         <LengthField
@@ -673,7 +678,7 @@ function BrickRingBeamFields({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Material
+            {t($ => $.common.materialLabel)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -682,7 +687,7 @@ function BrickRingBeamFields({
             if (!beamMaterial) return
             onUpdate({ beamMaterial })
           }}
-          placeholder="Select beam material..."
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
           preferredTypes={['dimensional']}
         />
@@ -690,12 +695,12 @@ function BrickRingBeamFields({
 
       <Separator size="4" />
 
-      <Heading size="2">Waterproofing</Heading>
+      <Heading size="2">{t($ => $.ringBeams.sections.waterproofing)}</Heading>
 
       <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Thickness
+            {t($ => $.common.thickness)}
           </Text>
         </Label.Root>
         <LengthField
@@ -708,7 +713,7 @@ function BrickRingBeamFields({
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            Material
+            {t($ => $.common.materialLabel)}
           </Text>
         </Label.Root>
         <MaterialSelectWithEdit
@@ -717,11 +722,49 @@ function BrickRingBeamFields({
             if (!waterproofingMaterial) return
             onUpdate({ waterproofingMaterial })
           }}
-          placeholder="Select waterproofing material..."
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
           preferredTypes={['sheet']}
         />
       </Grid>
     </>
+  )
+}
+
+function UsageBadge({ id }: { id: EntityId }) {
+  const label = useEntityLabel(id)
+  return (
+    <Badge key={id} size="2" variant="soft">
+      {label}
+    </Badge>
+  )
+}
+
+function UsageDisplay({ usage }: { usage: RingBeamAssemblyUsage }): React.JSX.Element {
+  const { t } = useTranslation('config')
+
+  return (
+    <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
+      <Label.Root>
+        <Text size="2" weight="medium" color="gray">
+          {t($ => $.usage.usedBy)}
+        </Text>
+      </Label.Root>
+      <Flex gap="1" wrap="wrap">
+        {usage.isDefaultBase && (
+          <Badge size="2" variant="soft" color="blue">
+            {t($ => $.usage.globalDefault_ringBeamBase)}
+          </Badge>
+        )}
+        {usage.isDefaultTop && (
+          <Badge size="2" variant="soft" color="blue">
+            {t($ => $.usage.globalDefault_ringBeamTop)}
+          </Badge>
+        )}
+        {usage.storeyIds.map(id => (
+          <UsageBadge key={id} id={id} />
+        ))}
+      </Flex>
+    </Grid>
   )
 }

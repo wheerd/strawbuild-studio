@@ -1,0 +1,73 @@
+{
+  "boundary": {
+    "copyError": "Fehlerdetails kopieren",
+    "dataRecovery": {
+      "cancel": "Abbrechen",
+      "confirm": "Alle Daten löschen & Zurücksetzen",
+      "description": "Falls der Fehler weiterhin besteht, kannst du einen Hard-Reset durchführen, der alle gespeicherten Daten löscht und die Anwendung auf den Standardzustand zurücksetzt. Dies löscht deine Grundrisse und Konfigurationen.",
+      "dialogDescription": "Dies löscht alle deine Daten einschließlich Grundrissen, Konfigurationen und Materialien. Diese Aktion kann nicht rückgängig gemacht werden.",
+      "dialogTitle": "Anwendung zurücksetzen?",
+      "hardReset": "Anwendung hard-resetten",
+      "title": "Datenwiederherstellungsoption"
+    },
+    "description": "Die Anwendung ist auf einen unerwarteten Fehler gestoßen und kann nicht fortfahren.",
+    "errorDetails": "Fehlerdetails:",
+    "errorMessage": "Ein unerwarteter Fehler ist aufgetreten",
+    "hideDetails": "Details ausblenden",
+    "noStackTrace": "Kein Stack-Trace verfügbar",
+    "reloadPage": "Seite neu laden",
+    "showDetails": "Details anzeigen",
+    "title": "Etwas ist schiefgelaufen",
+    "tryAgain": "Erneut versuchen"
+  },
+  "construction": {
+    "error": {
+      "geometryProcessing": "Ein Fehler ist während der Geometrieverarbeitung aufgetreten"
+    },
+    "infill": {
+      "notEnoughSpaceForPost": "Nicht genug Platz für einen Ständer",
+      "notEnoughSpaceForStraw": "Nicht genug Platz zum Füllen mit Stroh",
+      "notEnoughSpaceForTwoPosts": "Platz für mehr als einen Ständer, aber nicht genug für zwei",
+      "notEnoughVerticalSpace": "Nicht genug vertikaler Platz zum Füllen mit Stroh"
+    },
+    "layer": {
+      "parallelLines": "Konnte Streifenpositionen aufgrund paralleler Linien nicht bestimmen."
+    },
+    "opening": {
+      "headerDoesNotFit": "Sturz passt nicht: benötigt {{required, length}}, aber nur {{available, length}} verfügbar",
+      "heightExceedsWall": "Öffnung ist um {{excess, length}} höher als die Wand",
+      "sillDoesNotFit": "Schwelle passt nicht: benötigt {{required, length}}, aber nur {{available, length}} verfügbar"
+    },
+    "post": {
+      "crossSectionMismatch": "Querschnitt stimmt nicht mit verfügbaren Optionen für dieses Material überein",
+      "dimensionsMismatch": "Ständerabmessungen ({{width, length}}×{{thickness, length}}) stimmen nicht mit verfügbaren Querschnitten überein",
+      "wallTooThin": "Wanddicke ({{wallThickness, length}}) ist nicht breit genug für doppelte Ständer, benötigt mindestens {{required, length}}"
+    },
+    "ringBeam": {
+      "doubleNotSupported": "Doppel-Ringankeraufbau wird noch nicht unterstützt."
+    },
+    "roof": {
+      "invalidAssembly": "Ungültiger Dachaufbau"
+    },
+    "straw": {
+      "tooThick": "Wand ist zu dick für einen einzelnen Strohballen",
+      "tooThin": "Wand ist zu dünn für einen einzelnen Strohballen"
+    }
+  },
+  "feature": {
+    "cancel": "Abbrechen",
+    "confirm": "Alle Daten löschen & Zurücksetzen",
+    "defaultMessage": "Diese Funktion ist auf einen Fehler gestoßen und kann nicht angezeigt werden.",
+    "dialogDescription": "Dies löscht alle deine Daten einschließlich Grundrissen, Konfigurationen und Materialien. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "dialogTitle": "Anwendung zurücksetzen?",
+    "hardReset": "Anwendung hard-resetten",
+    "reloadPage": "Seite neu laden",
+    "retry": "Erneut versuchen",
+    "title": "Fehler"
+  },
+  "modal": {
+    "defaultMessage": "Dieser Inhalt konnte aufgrund eines Fehlers nicht angezeigt werden.",
+    "errorPrefix": "Fehler:",
+    "retry": "Erneut versuchen"
+  }
+}

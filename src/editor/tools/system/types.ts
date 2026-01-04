@@ -1,4 +1,5 @@
 import type { IconProps } from '@radix-ui/react-icons/dist/types'
+import type { Resources } from 'i18next'
 import type Konva from 'konva'
 import React from 'react'
 
@@ -31,14 +32,18 @@ export type CursorStyle =
   | 'help'
   | string
 
+type ToolNameKey = keyof Resources['toolbar']['tools']
+
 export interface ToolMetadata {
-  name: string
+  nameKey: ToolNameKey
   iconComponent: React.ComponentType<IconProps>
   hotkey?: string
 }
 
+type ToolGroupNameKey = keyof Resources['toolbar']['groups']
+
 export interface ToolGroup {
-  name: string
+  nameKey: ToolGroupNameKey
   tools: ToolId[]
 }
 

@@ -18,6 +18,7 @@
       "pnpm dev": "allow",
       "pnpm build": "allow",
       "pnpm typecheck": "allow",
+      "pnpm i18n:interface": "allow",
       "npx tsc *": "allow",
       "rg *": "allow"
     }

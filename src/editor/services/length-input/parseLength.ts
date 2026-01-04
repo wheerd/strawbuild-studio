@@ -15,12 +15,14 @@ export interface ParseLengthResult {
 /**
  * Parse user input string into a Length value (in millimeters).
  *
+ * Supports both period (.) and comma (,) as decimal separators for international compatibility.
+ *
  * Supported formats:
  * - Bare numbers: "500" → 500mm (assumes millimeters)
  * - Millimeters: "500mm", "500 mm" → 500mm
- * - Centimeters: "50cm", "50 cm", "5.5cm" → 500mm, 550mm
- * - Meters: "0.5m", "0.5 m", "1.25m" → 500mm, 1250mm
- * - Decimal numbers: "12.5", "0.75m", "2.5cm"
+ * - Centimeters: "50cm", "50 cm", "5.5cm", "5,5cm" → 500mm, 550mm
+ * - Meters: "0.5m", "0,5m", "0.5 m", "1.25m", "1,25m" → 500mm, 1250mm
+ * - Decimal numbers: "12.5", "12,5", "0.75m", "0,75m", "2.5cm", "2,5cm"
  * - Negative values: "-100mm", "-5cm" (for relative movements)
  *
  * @param input - User input string
@@ -31,6 +33,7 @@ export interface ParseLengthResult {
  * parseLength("500")     // { success: true, value: 500 }
  * parseLength("50cm")    // { success: true, value: 500 }
  * parseLength("0.5m")    // { success: true, value: 500 }
+ * parseLength("0,5m")    // { success: true, value: 500 }
  * parseLength("invalid") // { success: false, value: null, error: "..." }
  * ```
  */
@@ -54,8 +57,8 @@ export function parseLength(input: string): ParseLengthResult {
   }
 
   // Regular expression to match number with optional unit
-  // Captures: optional sign, number (with optional decimal), optional whitespace, optional unit
-  const lengthRegex = /^([+-]?)(\d+(?:\.\d+)?)\s*(mm|cm|m)?$/i
+  // Captures: optional sign, number (with optional decimal using . or ,), optional whitespace, optional unit
+  const lengthRegex = /^([+-]?)(\d+(?:[.,]\d+)?)\s*(mm|cm|m)?$/i
   const match = trimmed.match(lengthRegex)
 
   if (!match) {
@@ -67,7 +70,9 @@ export function parseLength(input: string): ParseLengthResult {
   }
 
   const [, sign, numberStr, unit] = match
-  const number = parseFloat(numberStr)
+  // Normalize decimal separator to period for parseFloat
+  const normalizedNumberStr = numberStr.replace(',', '.')
+  const number = parseFloat(normalizedNumberStr)
 
   // Check for valid number
   if (isNaN(number) || !isFinite(number)) {

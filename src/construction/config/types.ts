@@ -1,3 +1,5 @@
+import type { Resources, SelectorFn, SelectorOptions } from 'i18next'
+
 import type {
   FloorAssemblyId,
   OpeningAssemblyId,
@@ -63,11 +65,18 @@ e | y +--------------+ s | Floor top layers                 }
   |   |              | e |                 .
 */
 
+export type AssemblyNameKey = SelectorFn<Resources['config'], string, SelectorOptions<'config'>>
+
+export interface NamedAssembly {
+  name: string
+  /** Optional translation key for default assemblies. If present, use t(nameKey) instead of name for display. Clear when user edits the name. */
+  nameKey?: AssemblyNameKey
+}
+
 // Walls
 
-export interface WallAssemblyIdPart {
+export interface WallAssemblyIdPart extends NamedAssembly {
   id: WallAssemblyId
-  name: string
 }
 
 export type InfillWallAssemblyConfig = InfillWallConfig & WallAssemblyIdPart
@@ -83,9 +92,8 @@ export type WallAssemblyConfig =
 
 // Ring beams
 
-export interface RingBeamAssemblyIdPart {
+export interface RingBeamAssemblyIdPart extends NamedAssembly {
   id: RingBeamAssemblyId
-  name: string
 }
 
 export type FullRingBeamAssemblyConfig = FullRingBeamConfig & RingBeamAssemblyIdPart
@@ -99,9 +107,8 @@ export type RingBeamAssemblyConfig =
 
 // Floors
 
-export interface FloorAssemblyIdPart {
+export interface FloorAssemblyIdPart extends NamedAssembly {
   id: FloorAssemblyId
-  name: string
 }
 
 export type MonolithicFloorAssemblyConfig = MonolithicFloorConfig & FloorAssemblyIdPart
@@ -112,9 +119,8 @@ export type FloorAssemblyConfig = MonolithicFloorAssemblyConfig | JoistFloorAsse
 
 // Roofs
 
-export interface RoofAssemblyIdPart {
+export interface RoofAssemblyIdPart extends NamedAssembly {
   id: RoofAssemblyId
-  name: string
 }
 
 export type MonolithicRoofAssemblyConfig = MonolithicRoofConfig & RoofAssemblyIdPart
@@ -124,9 +130,8 @@ export type RoofAssemblyConfig = MonolithicRoofAssemblyConfig | PurlinRoofAssemb
 
 // Openings
 
-export interface OpeningAssemblyIdPart {
+export interface OpeningAssemblyIdPart extends NamedAssembly {
   id: OpeningAssemblyId
-  name: string
 }
 
 export type SimpleOpeningAssemblyConfig = SimpleOpeningConfig & OpeningAssemblyIdPart

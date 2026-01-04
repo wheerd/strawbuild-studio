@@ -25,6 +25,7 @@ import { type Polygon2D, newVec2 } from '@/shared/geometry'
 
 export interface ExportedStorey {
   name: string
+  useDefaultName?: boolean
   floorHeight?: number
   height?: number // legacy alias retained for backwards compatibility
   floorAssemblyId: string
@@ -278,6 +279,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
 
         return {
           name: storey.name,
+          useDefaultName: storey.useDefaultName,
           floorHeight: Number(storey.floorHeight),
           floorAssemblyId: storey.floorAssemblyId,
           perimeters,
@@ -353,13 +355,16 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
         if (index === 0) {
           // Modify existing default ground floor
           targetStorey = defaultGroundFloor
-          modelActions.updateStoreyName(targetStorey.id, exportedStorey.name)
           modelActions.updateStoreyFloorHeight(targetStorey.id, resolvedFloorHeight)
           modelActions.updateStoreyFloorAssembly(targetStorey.id, floorAssemblyId)
         } else {
           // Add additional storeys with floor config
-          targetStorey = modelActions.addStorey(exportedStorey.name, resolvedFloorHeight, floorAssemblyId)
+          targetStorey = modelActions.addStorey(resolvedFloorHeight, floorAssemblyId)
         }
+        modelActions.updateStoreyName(
+          targetStorey.id,
+          exportedStorey.useDefaultName === true ? null : exportedStorey.name
+        )
 
         // 6. Recreate perimeters - let store auto-compute all geometry
         exportedStorey.perimeters.forEach(exportedPerimeter => {

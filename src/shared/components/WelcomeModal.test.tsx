@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
+import { keyFromSelector } from 'i18next'
 import { describe, expect, it, vi } from 'vitest'
 
 import { WelcomeModal } from './WelcomeModal'
@@ -7,15 +8,32 @@ vi.mock('./Logo', () => ({
   Logo: () => <div data-testid="logo" />
 }))
 
+vi.mock('react-i18next', () => ({
+  useTranslation: vi.fn(() => ({
+    t: vi.fn((k, o) => {
+      const key = keyFromSelector(k)
+      if (o?.returnObjects) {
+        return [`${key}.item1`, `${key}.item2`]
+      }
+      return key
+    }),
+    i18n: {
+      changeLanguage: () => new Promise(vi.fn())
+    }
+  })),
+  initReactI18next: {
+    type: '3rdParty',
+    init: vi.fn()
+  }
+}))
+
 describe('WelcomeModal', () => {
   it('renders when open', () => {
     const onAccept = vi.fn()
     render(<WelcomeModal isOpen mode="first-visit" onAccept={onAccept} />)
 
     expect(screen.getByTestId('logo')).toBeInTheDocument()
-    expect(
-      screen.getByText(/This is a tool specifically designed for strawbale construction planning/)
-    ).toBeInTheDocument()
+    expect(screen.getByText(/introduction/)).toBeInTheDocument()
   })
 
   it('does not render when closed', () => {
@@ -29,24 +47,24 @@ describe('WelcomeModal', () => {
     const onAccept = vi.fn()
     render(<WelcomeModal isOpen mode="first-visit" onAccept={onAccept} />)
 
-    expect(screen.getByText('Important Disclaimer')).toBeInTheDocument()
-    expect(screen.getByText(/No guarantees for accuracy/)).toBeInTheDocument()
-    expect(screen.getByText(/Breaking changes may occur/)).toBeInTheDocument()
+    expect(screen.getByText('disclaimer.title')).toBeInTheDocument()
+    expect(screen.getByText(/disclaimer.items.item1/)).toBeInTheDocument()
+    expect(screen.getByText(/disclaimer.items.item2/)).toBeInTheDocument()
   })
 
   it('shows local storage information', () => {
     const onAccept = vi.fn()
     render(<WelcomeModal isOpen mode="first-visit" onAccept={onAccept} />)
 
-    expect(screen.getByText('Local Storage')).toBeInTheDocument()
-    expect(screen.getByText(/No cookies, tracking, or third-party analytics/)).toBeInTheDocument()
+    expect(screen.getByText('localStorage.title')).toBeInTheDocument()
+    expect(screen.getByText(/localStorage.privacy/)).toBeInTheDocument()
   })
 
   it('calls onAccept when button is clicked', () => {
     const onAccept = vi.fn()
     render(<WelcomeModal isOpen mode="first-visit" onAccept={onAccept} />)
 
-    const button = screen.getByRole('button', { name: /I Understand & Continue/i })
+    const button = screen.getByRole('button', { name: /continueButton/i })
     fireEvent.click(button)
 
     expect(onAccept).toHaveBeenCalledOnce()
@@ -77,13 +95,13 @@ describe('WelcomeModal', () => {
     const onAccept = vi.fn()
     render(<WelcomeModal isOpen mode="first-visit" onAccept={onAccept} />)
 
-    expect(screen.getByText(/You can review this information anytime/)).toBeInTheDocument()
+    expect(screen.getByText(/reviewInfo/)).toBeInTheDocument()
   })
 
   it('does not show helper text in manual mode', () => {
     const onAccept = vi.fn()
     render(<WelcomeModal isOpen mode="manual" onAccept={onAccept} />)
 
-    expect(screen.queryByText(/You can review this information anytime/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/reviewInfo/)).not.toBeInTheDocument()
   })
 })

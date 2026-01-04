@@ -19,11 +19,11 @@ export interface StoreysActions {
   setActiveStoreyId: (storeyId: StoreyId) => void
 
   // CRUD operations
-  addStorey: (name: string, floorHeight?: Length, floorAssemblyId?: FloorAssemblyId) => Storey
+  addStorey: (floorHeight?: Length, floorAssemblyId?: FloorAssemblyId) => Storey
   removeStorey: (storeyId: StoreyId) => void
 
   // Storey modifications
-  updateStoreyName: (storeyId: StoreyId, name: string) => void
+  updateStoreyName: (storeyId: StoreyId, name: string | null) => void
   updateStoreyFloorHeight: (storeyId: StoreyId, floorHeight: Length) => void
   updateStoreyFloorAssembly: (storeyId: StoreyId, floorAssemblyId: FloorAssemblyId) => void
 
@@ -55,6 +55,7 @@ const validateStoreyFloorHeight = (height: Length): void => {
 const groundFloor: Storey = {
   id: 'storey_ground' as StoreyId,
   name: 'Ground Floor',
+  useDefaultName: true,
   level: createStoreyLevel(0),
   floorHeight: 3000,
   floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
@@ -83,8 +84,7 @@ export const createStoreysSlice: StateCreator<StoreysSlice, [['zustand/immer', n
       }),
 
     // CRUD operations
-    addStorey: (name: string, floorHeight?: Length, floorAssemblyId?: FloorAssemblyId) => {
-      validateStoreyName(name)
+    addStorey: (floorHeight?: Length, floorAssemblyId?: FloorAssemblyId) => {
       if (floorHeight !== undefined) validateStoreyFloorHeight(floorHeight)
 
       let storey: Storey | undefined
@@ -94,7 +94,8 @@ export const createStoreysSlice: StateCreator<StoreysSlice, [['zustand/immer', n
 
         storey = {
           id: createStoreyId(),
-          name: name.trim(),
+          name: 'default',
+          useDefaultName: true,
           level,
           floorHeight: floorHeight ?? state.defaultFloorHeight,
           floorAssemblyId: floorAssemblyId ?? DEFAULT_FLOOR_ASSEMBLY_ID
@@ -139,11 +140,19 @@ export const createStoreysSlice: StateCreator<StoreysSlice, [['zustand/immer', n
       }),
 
     // Storey modifications
-    updateStoreyName: (storeyId: StoreyId, name: string) =>
+    updateStoreyName: (storeyId: StoreyId, name: string | null) =>
       set(({ storeys }) => {
-        validateStoreyName(name)
-        if (storeyId in storeys) {
-          storeys[storeyId].name = name.trim()
+        if (name != null) {
+          validateStoreyName(name)
+          if (storeyId in storeys) {
+            storeys[storeyId].name = name.trim()
+            storeys[storeyId].useDefaultName = false
+          }
+        } else {
+          if (storeyId in storeys) {
+            storeys[storeyId].name = 'default'
+            storeys[storeyId].useDefaultName = true
+          }
         }
       }),
 

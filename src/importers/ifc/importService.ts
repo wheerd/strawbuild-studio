@@ -51,7 +51,7 @@ function applyImportedModel(model: ParsedIfcModel): void {
 
   if (importedStoreys.length === 0) {
     // Ensure the default storey has a sensible name after reset
-    actions.updateStoreyName(baseStorey.id, 'Ground Floor')
+    actions.updateStoreyName(baseStorey.id, null)
     actions.updateStoreyFloorAssembly(baseStorey.id, defaultFloorAssemblyId)
     return
   }
@@ -61,7 +61,7 @@ function applyImportedModel(model: ParsedIfcModel): void {
   const storeyIdMap = new Map<ImportedStorey, StoreyId>()
 
   importedStoreys.forEach((importedStorey, index) => {
-    const storeyName = importedStorey.name?.trim() || `Storey ${index + 1}`
+    const storeyName = importedStorey.name?.trim() ?? null
     const resolvedHeight = resolveStoreyFloorHeight(importedStorey, importedStoreys[index + 1], previousHeight)
     previousHeight = resolvedHeight
 
@@ -69,13 +69,13 @@ function applyImportedModel(model: ParsedIfcModel): void {
 
     if (index === 0 && baseStorey) {
       targetStoreyId = baseStorey.id
-      actions.updateStoreyName(targetStoreyId, storeyName)
       actions.updateStoreyFloorHeight(targetStoreyId, resolvedHeight)
       actions.updateStoreyFloorAssembly(targetStoreyId, defaultFloorAssemblyId)
     } else {
-      const newStorey = actions.addStorey(storeyName, resolvedHeight, defaultFloorAssemblyId)
+      const newStorey = actions.addStorey(resolvedHeight, defaultFloorAssemblyId)
       targetStoreyId = newStorey.id
     }
+    actions.updateStoreyName(targetStoreyId, storeyName)
 
     storeyIdMap.set(importedStorey, targetStoreyId)
 

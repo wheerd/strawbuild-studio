@@ -2,6 +2,7 @@ import { Box, Flex, Grid } from '@radix-ui/themes'
 import React from 'react'
 
 import { PlanOverlayControls } from '@/editor/plan-overlay/components/PlanOverlayControls'
+import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher'
 
 import { AutoSaveIndicator } from './AutoSaveIndicator'
 import { GridSizeDisplay } from './GridSizeDisplay'
@@ -31,6 +32,7 @@ export function StatusBar(): React.JSX.Element {
           <OfflineStatusIndicator />
           <AutoSaveIndicator />
           <ThemeToggle />
+          <LanguageSwitcher />
         </Flex>
 
         <Flex align="center" justify="center" gap="3">

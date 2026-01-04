@@ -156,7 +156,7 @@ describe('SplitWallTool', () => {
     // Test invalid position (inside opening: 200-1000mm)
     tool.updateTargetPosition(500)
     expect(tool.state.isValidSplit).toBe(false)
-    expect(tool.state.splitError).toContain('door opening')
+    expect(tool.state.splitError).toBe('intersectsOpening')
 
     // Test valid position (after opening)
     tool.updateTargetPosition(1500)
@@ -166,11 +166,11 @@ describe('SplitWallTool', () => {
     // Test invalid positions at boundaries
     tool.updateTargetPosition(0)
     expect(tool.state.isValidSplit).toBe(false)
-    expect(tool.state.splitError).toContain('wall bounds')
+    expect(tool.state.splitError).toBe('outOfBounds')
 
     tool.updateTargetPosition(2000)
     expect(tool.state.isValidSplit).toBe(false)
-    expect(tool.state.splitError).toContain('wall bounds')
+    expect(tool.state.splitError).toBe('outOfBounds')
   })
 
   it('should have proper tool metadata', () => {

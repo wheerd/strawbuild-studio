@@ -26,7 +26,7 @@ describe('SVGViewport', () => {
       </SVGViewport>
     )
 
-    const resetButton = screen.getByRole('button', { name: /fit to content/i })
+    const resetButton = screen.getByRole('button', { name: /app.fitToContent/i })
     expect(resetButton).toBeInTheDocument()
   })
 
@@ -67,7 +67,7 @@ describe('SVGViewport', () => {
       </SVGViewport>
     )
 
-    const resetButton = screen.getByRole('button', { name: /fit to content/i })
+    const resetButton = screen.getByRole('button', { name: /app.fitToContent/i })
     expect(resetButton).toHaveClass('bottom-2', 'left-2')
   })
 
@@ -78,7 +78,7 @@ describe('SVGViewport', () => {
       </SVGViewport>
     )
 
-    const resetButton = screen.getByRole('button', { name: /fit to content/i })
+    const resetButton = screen.getByRole('button', { name: /app.fitToContent/i })
     const testRect = screen.getByTestId('test-rect')
     const transformGroup = testRect.closest('g')
 

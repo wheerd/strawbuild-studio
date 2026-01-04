@@ -1,6 +1,7 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { HoverCard, IconButton, Inset } from '@radix-ui/themes'
 import { type ComponentProps, type JSX, useId } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
 import { newVec2 } from '@/shared/geometry'
@@ -93,6 +94,7 @@ e | y +--------------+ s | Floor top layers                 }
   |   |              | d |                 .
   |   |              | e |                 .
 */
+  const { t } = useTranslation('construction')
 
   const marginTopGradientId = useId()
   const marginBottomGradientId = useId()
@@ -481,7 +483,7 @@ e | y +--------------+ s | Floor top layers                 }
       {renderMeasurement('storeyHeight', {
         startPoint: newVec2(marginRightX, marginTop),
         endPoint: newVec2(marginRightX, marginTop + storeyHeight),
-        label: 'Floor Height',
+        label: t($ => $.measurements.storeyHeight),
         fontSize: 60,
         offset: 40,
         strokeWidth: 10
@@ -490,7 +492,7 @@ e | y +--------------+ s | Floor top layers                 }
       {renderMeasurement('roomHeight', {
         startPoint: newVec2(marginRightX, roomHeightStartY),
         endPoint: newVec2(marginRightX, marginTop + storeyHeight),
-        label: 'Ceiling Height',
+        label: t($ => $.measurements.roomHeight),
         fontSize: 60,
         offset: 120,
         strokeWidth: 10
@@ -503,7 +505,7 @@ e | y +--------------+ s | Floor top layers                 }
       {renderMeasurement('floorTopOffset', {
         startPoint: newVec2(wallRight, topFloorConstructionTopY),
         endPoint: newVec2(wallRight, topFloorConstructionTopY + floorConstructionTopOverlap),
-        label: 'Construction Top Offset',
+        label: t($ => $.measurements.floorTopOffset),
         fontSize: 50,
         offset: wallRight - floorMeasurementX,
         strokeWidth: 10,
@@ -513,7 +515,7 @@ e | y +--------------+ s | Floor top layers                 }
       {renderMeasurement('floorBottomOffset', {
         startPoint: newVec2(wallRight, topFloorConstructionBottomY - floorConstructionBottomOverlap),
         endPoint: newVec2(wallRight, topFloorConstructionBottomY),
-        label: 'Construction Bottom Offset',
+        label: t($ => $.measurements.floorBottomOffset),
         fontSize: 50,
         offset: wallRight - floorMeasurementX,
         strokeWidth: 10,
@@ -529,7 +531,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="middle"
           fill={partLabelColor('floorTopLayers')}
         >
-          Floor Top Layers
+          {t($ => $.measurements.floorTopLayers)}
         </text>
       )}
 
@@ -542,7 +544,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="middle"
           fill={partLabelColor('floorConstruction')}
         >
-          Floor Construction
+          {t($ => $.measurements.floorConstruction)}
         </text>
       )}
 
@@ -555,7 +557,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="middle"
           fill={partLabelColor('floorBottomLayers')}
         >
-          Floor Bottom Layers
+          {t($ => $.measurements.floorBottomLayers)}
         </text>
       )}
 
@@ -568,7 +570,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="middle"
           fill={partLabelColor('floorTopLayers')}
         >
-          Floor Top Layers
+          {t($ => $.measurements.floorTopLayers)}
         </text>
       )}
 
@@ -581,7 +583,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="middle"
           fill={partLabelColor('floorConstruction')}
         >
-          Floor Construction
+          {t($ => $.measurements.floorConstruction)}
         </text>
       )}
 
@@ -594,7 +596,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="middle"
           fill={partLabelColor('floorBottomLayers')}
         >
-          Floor Bottom Layers
+          {t($ => $.measurements.floorBottomLayers)}
         </text>
       )}
 
@@ -607,7 +609,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="text-before-edge"
           fill={assemblyOutlineStroke('floorAssembly', 'var(--amber-10)')}
         >
-          Floor Assembly
+          {t($ => $.measurements.floorAssembly)}
         </text>
       )}
 
@@ -621,7 +623,7 @@ e | y +--------------+ s | Floor top layers                 }
             dominantBaseline="text-before-edge"
             fill={finishedLevelColor}
           >
-            Finished Ceiling
+            {t($ => $.measurements.finishedCeiling)}
           </text>
           <text
             x={floorMeasurementX}
@@ -631,7 +633,7 @@ e | y +--------------+ s | Floor top layers                 }
             dominantBaseline="text-after-edge"
             fill={finishedLevelColor}
           >
-            Finished Floor
+            {t($ => $.measurements.finishedFloor)}
           </text>
         </>
       )}
@@ -639,7 +641,7 @@ e | y +--------------+ s | Floor top layers                 }
       {renderMeasurement('totalFloorThickness', {
         startPoint: newVec2(marginRightX, bottomFloorTopY),
         endPoint: newVec2(marginRightX, bottomFloorBottomLayersBottomY),
-        label: 'Total\nFloor\nThickness',
+        label: t($ => $.measurements.totalFloorThickness),
         labelOrientation: 'perpendicular',
         offset: 80,
         fontSize: 60,
@@ -659,7 +661,7 @@ e | y +--------------+ s | Floor top layers                 }
             transform={`translate(${outsidePadding - 10} ${totalHeight / 2}) rotate(-90)`}
             fill={finishedSideColor}
           >
-            Finished Outside
+            {t($ => $.measurements.finishedOutside)}
           </text>
           <text
             fontSize={60}
@@ -668,7 +670,7 @@ e | y +--------------+ s | Floor top layers                 }
             transform={`translate(${inside + 10} ${totalHeight / 2}) rotate(90)`}
             fill={finishedSideColor}
           >
-            Finished Inside
+            {t($ => $.measurements.finishedInside)}
           </text>
           <line
             key="finished-inside"
@@ -700,7 +702,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="middle"
           fill={partLabelColor('basePlate')}
         >
-          Base Plate
+          {t($ => $.measurements.basePlate)}
         </text>
       )}
 
@@ -713,7 +715,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="middle"
           fill={partLabelColor('topPlate')}
         >
-          Top Plate
+          {t($ => $.measurements.topPlate)}
         </text>
       )}
 
@@ -726,7 +728,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="middle"
           fill={partLabelColor('basePlate')}
         >
-          Base Plate
+          {t($ => $.measurements.basePlate)}
         </text>
       )}
 
@@ -739,7 +741,7 @@ e | y +--------------+ s | Floor top layers                 }
           dominantBaseline="middle"
           fill={partLabelColor('topPlate')}
         >
-          Top Plate
+          {t($ => $.measurements.topPlate)}
         </text>
       )}
 
@@ -751,10 +753,13 @@ e | y +--------------+ s | Floor top layers                 }
           fill={assemblyOutlineStroke('wallAssembly', 'var(--ruby-10)')}
           transform={`translate(${wallCenterX} ${basePlateTopY - 150})`}
         >
-          <tspan x={0}>Wall</tspan>
-          <tspan x={0} dy="1.2em">
-            Assembly
-          </tspan>
+          {t($ => $.measurements.wallAssembly)
+            .split('\n')
+            .map((l, i) => (
+              <tspan key={i} x={0} dy={`${(1.2 * i).toFixed(1)}em`}>
+                {l}
+              </tspan>
+            ))}
         </text>
       )}
 
@@ -768,7 +773,7 @@ e | y +--------------+ s | Floor top layers                 }
           transform={`rotate(-90 ${outsideLayerLabelX} ${outsideLayerLabelY})`}
           fill={partLabelColor('outsideLayer')}
         >
-          Outside Layers
+          {t($ => $.measurements.outsideLayers)}
         </text>
       )}
 
@@ -782,14 +787,14 @@ e | y +--------------+ s | Floor top layers                 }
           transform={`rotate(90 ${insideLayerLabelX} ${insideLayerLabelY})`}
           fill={partLabelColor('insideLayer')}
         >
-          Inside Layers
+          {t($ => $.measurements.insideLayers)}
         </text>
       )}
 
       {renderMeasurement('wallAssemblyHeight', {
         startPoint: newVec2(wallLeft, wallAssemblyTopY),
         endPoint: newVec2(wallLeft, wallAssemblyBottomY),
-        label: 'Wall Assembly Height',
+        label: t($ => $.measurements.wallAssemblyHeight),
         fontSize: 60,
         offset: outsideThickness + 160,
         strokeWidth: 10
@@ -798,7 +803,7 @@ e | y +--------------+ s | Floor top layers                 }
       {renderMeasurement('wallConstructionHeight', {
         startPoint: newVec2(wallLeft, wallCoreTopY),
         endPoint: newVec2(wallLeft, wallCoreBottomY),
-        label: 'Wall Construction Height',
+        label: t($ => $.measurements.wallConstructionHeight),
         fontSize: 60,
         offset: outsideThickness + 100,
         strokeWidth: 10
@@ -807,7 +812,7 @@ e | y +--------------+ s | Floor top layers                 }
       {renderMeasurement('totalWallThickness', {
         startPoint: newVec2(outsideLayerX, wallCoreTopY),
         endPoint: newVec2(interiorExtentX, wallCoreTopY),
-        label: 'Total\nWall\nThickness',
+        label: t($ => $.measurements.totalWallThickness),
         offset: 200,
         fontSize: 60,
         strokeWidth: 10
@@ -823,10 +828,13 @@ e | y +--------------+ s | Floor top layers                 }
             text-anchor="middle"
             dominantBaseline="middle"
           >
-            <tspan x={0}>Wall</tspan>
-            <tspan x={0} dy="1.2em">
-              Construction
-            </tspan>
+            {t($ => $.measurements.wallConstruction)
+              .split('\n')
+              .map((l, i) => (
+                <tspan key={i} x={0} dy={`${(1.2 * i).toFixed(1)}em`}>
+                  {l}
+                </tspan>
+              ))}
           </text>
         </g>
       )}
@@ -960,10 +968,19 @@ e | y +--------------+ s | Floor top layers                 }
 }
 
 export function MeasurementInfo(config: MeasurementDisplayConfig): React.JSX.Element {
+  const { t } = useTranslation('construction')
+
   return (
     <HoverCard.Root>
       <HoverCard.Trigger>
-        <IconButton style={{ cursor: 'help' }} color="gray" radius="full" title="Measurements" variant="ghost" size="1">
+        <IconButton
+          style={{ cursor: 'help' }}
+          color="gray"
+          radius="full"
+          title={t($ => $.measurements.measurements)}
+          variant="ghost"
+          size="1"
+        >
           <InfoCircledIcon width={12} height={12} />
         </IconButton>
       </HoverCard.Trigger>

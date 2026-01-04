@@ -1,6 +1,7 @@
 import { PlusIcon } from '@radix-ui/react-icons'
 import { Button, Grid, Text } from '@radix-ui/themes'
 import React, { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useModelActions, useStoreysOrderedByLevel } from '@/building/store'
 import { useConfigActions } from '@/construction/config/store'
@@ -12,6 +13,7 @@ export interface StoreyManagementModalProps {
   trigger: React.ReactNode
 }
 export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): React.JSX.Element {
+  const { t } = useTranslation('common')
   const { addStorey, setActiveStoreyId } = useModelActions()
   const { getDefaultFloorAssemblyId } = useConfigActions()
   const storeysOrdered = useStoreysOrderedByLevel()
@@ -22,18 +24,18 @@ export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): 
   const handleAddEmptyStorey = useCallback(() => {
     try {
       const floorAssemblyId = getDefaultFloorAssemblyId()
-      const newStorey = addStorey('New Floor', undefined, floorAssemblyId)
+      const newStorey = addStorey(undefined, floorAssemblyId)
       setActiveStoreyId(newStorey.id) // Switch to new storey
     } catch (error) {
       console.error('Failed to add new floor:', error)
     }
-  }, [addStorey])
+  }, [addStorey, t])
 
   // Display storeys highest to lowest for intuitive UI
   const storeysDisplayOrder = [...storeysOrdered].reverse()
 
   return (
-    <BaseModal title="Manage Floors" trigger={trigger} width="60vw" maxWidth="90vw">
+    <BaseModal title={t($ => $.storeys.manageFloors)} trigger={trigger} width="60vw" maxWidth="90vw">
       <Grid columns="1fr" gap="2">
         {storeysDisplayOrder.length > 0 ? (
           storeysDisplayOrder.map(storey => (
@@ -46,12 +48,12 @@ export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): 
             />
           ))
         ) : (
-          <Text>No floors yet.</Text>
+          <Text>{t($ => $.storeys.noFloorsYet)}</Text>
         )}
 
         <Button onClick={handleAddEmptyStorey}>
           <PlusIcon />
-          Add New Floor
+          {t($ => $.storeys.addNewFloor)}
         </Button>
       </Grid>
     </BaseModal>

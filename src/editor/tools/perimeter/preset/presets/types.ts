@@ -1,3 +1,5 @@
+import type { Resources } from 'i18next'
+
 import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import type { PerimeterReferenceSide } from '@/building/model/model'
 import { type Length, type Vec2 } from '@/shared/geometry'
@@ -48,8 +50,7 @@ type DialogComponent = React.ComponentType<PresetDialogProps>
  * Each preset type provides polygon points for preview and creation
  */
 export interface PerimeterPreset<TConfig extends BasePresetConfig = BasePresetConfig> {
-  readonly type: string
-  readonly name: string
+  readonly type: keyof Resources['tool']['perimeterPreset']['types']
   readonly icon: IconComponent
   readonly dialog: DialogComponent
 

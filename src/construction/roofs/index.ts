@@ -29,7 +29,7 @@ export function constructRoof(roof: Roof, contexts?: PerimeterConstructionContex
   const assemblyConfig = getRoofAssemblyById(roof.assemblyId)
 
   if (!assemblyConfig) {
-    return createUnsupportedModel('Invalid roof assembly', 'invalid-roof-assembly')
+    return createUnsupportedModel($ => $.construction.roof.invalidAssembly, undefined, 'invalid-roof-assembly')
   }
 
   if (!contexts) {

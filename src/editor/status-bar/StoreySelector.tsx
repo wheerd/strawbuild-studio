@@ -1,8 +1,11 @@
 import { Pencil1Icon } from '@radix-ui/react-icons'
 import { Code, Flex, IconButton, Select, Text } from '@radix-ui/themes'
 import React, { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { StoreyManagementModal } from '@/building/components/StoreyManagementModal'
+import { useStoreyName } from '@/building/hooks/useStoreyName'
+import type { Storey } from '@/building/model'
 import type { StoreyId } from '@/building/model/ids'
 import { useActiveStoreyId, useModelActions, useStoreysOrderedByLevel } from '@/building/store'
 import { clearSelection } from '@/editor/hooks/useSelectionStore'
@@ -17,7 +20,13 @@ export function getLevelColor(level: number): 'grass' | 'indigo' | 'brown' {
   }
 }
 
+function StoreyName({ storey }: { storey: Storey }) {
+  const name = useStoreyName(storey)
+  return <Text>{name}</Text>
+}
+
 export function StoreySelector(): React.JSX.Element {
+  const { t } = useTranslation('common')
   const storeysOrdered = useStoreysOrderedByLevel()
   const activeStoreyId = useActiveStoreyId()
   const { setActiveStoreyId } = useModelActions()
@@ -45,7 +54,7 @@ export function StoreySelector(): React.JSX.Element {
                 <Code variant="ghost" size="2" weight="bold" color={getLevelColor(storey.level)}>
                   L{storey.level}
                 </Code>
-                <Text>{storey.name}</Text>
+                <StoreyName storey={storey} />
               </Flex>
             </Select.Item>
           ))}
@@ -54,7 +63,7 @@ export function StoreySelector(): React.JSX.Element {
 
       <StoreyManagementModal
         trigger={
-          <IconButton size="1" title="Manage floors" type="button" variant="soft">
+          <IconButton size="1" title={t($ => $.storeys.manageFloorsTooltip)} type="button" variant="soft">
             <Pencil1Icon />
           </IconButton>
         }

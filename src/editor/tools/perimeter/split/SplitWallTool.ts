@@ -27,8 +27,10 @@ export interface SplitWallToolState {
   // Validation & feedback
   isValidHover: boolean
   isValidSplit: boolean
-  splitError: string | null
+  splitError: SplitError | null
 }
+
+type SplitError = 'noWall' | 'outOfBounds' | 'intersectsOpening'
 
 export class SplitWallTool extends BaseTool implements ToolImplementation {
   readonly id = 'perimeter.split-wall' as const
@@ -129,13 +131,16 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
     this.updateTargetPosition(clampedPosition)
   }
 
-  private validateSplitPosition(position: Length): { valid: boolean; error?: string } {
-    if (!this.state.wall) return { valid: false, error: 'No wall selected' }
+  private validateSplitPosition(position: Length): {
+    valid: boolean
+    error?: SplitError
+  } {
+    if (!this.state.wall) return { valid: false, error: 'noWall' }
     const wall = this.state.wall
 
     // Check bounds
     if (position <= 0 || position >= wall.wallLength) {
-      return { valid: false, error: 'Split must be within wall bounds' }
+      return { valid: false, error: 'outOfBounds' }
     }
 
     // Check opening intersections
@@ -145,10 +150,7 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
       const openingEnd = opening.centerOffsetFromWallStart + opening.width / 2
 
       if (position > openingStart && position < openingEnd) {
-        return {
-          valid: false,
-          error: `Split would intersect ${opening.type} opening`
-        }
+        return { valid: false, error: `intersectsOpening` }
       }
     }
 

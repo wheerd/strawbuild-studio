@@ -1,5 +1,6 @@
 import type { Length } from '@/shared/geometry'
-import { formatLength } from '@/shared/utils/formatting'
+import i18n from '@/shared/i18n/config'
+import * as formatters from '@/shared/i18n/formatters'
 
 import { parseLength } from './parseLength'
 import type { LengthInputConfig, LengthInputPosition, LengthInputState } from './types'
@@ -214,9 +215,10 @@ export class LengthInputService {
   }
 
   private formatInitialValue(length: Length): string {
-    // Use the standard formatLength to include units
+    // Use locale-aware formatting to match the user's language settings
     // This ensures consistency and prevents unit confusion
-    return formatLength(length)
+    const locale = i18n.language || 'en'
+    return formatters.formatLength(length, locale)
   }
 
   private notifyListeners(): void {

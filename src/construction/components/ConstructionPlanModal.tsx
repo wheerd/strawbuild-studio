@@ -1,6 +1,7 @@
 import { CrossCircledIcon } from '@radix-ui/react-icons'
 import { Box, Callout, Flex, Skeleton, Spinner, Tabs } from '@radix-ui/themes'
 import React, { Suspense, use, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { ConstructionPartsList } from '@/construction/components/parts/ConstructionPartsList'
 import { ConstructionVirtualPartsList } from '@/construction/components/parts/ConstructionVirtualPartsList'
@@ -149,6 +150,7 @@ function ModalContent({
   midCutActiveDefault?: boolean
   partsDataPromise: Promise<PartsData | null> | null
 }) {
+  const { t } = useTranslation('construction')
   const { setHighlightedPartId } = usePlanHighlight()
 
   const handleViewInPlan = (partId: string) => {
@@ -164,12 +166,11 @@ function ModalContent({
     >
       <div className="pb-[2px] mr-6">
         <Tabs.List justify="end">
-          <Tabs.Trigger value="plan">Plan & Issues</Tabs.Trigger>
-          <Tabs.Trigger value="parts">Parts List</Tabs.Trigger>
-          <Tabs.Trigger value="modules">Modules</Tabs.Trigger>
+          <Tabs.Trigger value="plan">{t($ => $.planModal.tabs.planIssues)}</Tabs.Trigger>
+          <Tabs.Trigger value="parts">{t($ => $.planModal.tabs.partsList)}</Tabs.Trigger>
+          <Tabs.Trigger value="modules">{t($ => $.planModal.tabs.modules)}</Tabs.Trigger>
         </Tabs.List>
       </div>
-
       <Tabs.Content value="plan">
         <Flex direction="column" gap="3" style={{ flex: 1, minHeight: 0 }} className="overflow-hidden">
           <div
@@ -203,7 +204,6 @@ function ModalContent({
           </Box>
         </Flex>
       </Tabs.Content>
-
       <Tabs.Content value="parts">
         <Box width="100%" height="100%" style={{ overflow: 'auto' }}>
           {partsDataPromise ? (
@@ -215,7 +215,6 @@ function ModalContent({
           )}
         </Box>
       </Tabs.Content>
-
       <Tabs.Content value="modules">
         <Box width="100%" height="100%" style={{ overflow: 'auto' }}>
           {partsDataPromise ? (
@@ -246,6 +245,7 @@ function ConstructionPlanModalContent({
   currentViewIndex: number
   setCurrentViewIndex: (index: number) => void
 }) {
+  const { t } = useTranslation('construction')
   const constructionModel = use(modelPromise)
 
   if (!constructionModel) {
@@ -255,7 +255,7 @@ function ConstructionPlanModalContent({
           <Callout.Icon>
             <CrossCircledIcon />
           </Callout.Icon>
-          <Callout.Text>Failed to generate construction model</Callout.Text>
+          <Callout.Text>{t($ => $.planModal.errors.failedModel)}</Callout.Text>
         </Callout.Root>
       </Flex>
     )
@@ -280,6 +280,7 @@ function PartsTabContent({
   partsDataPromise: Promise<PartsData | null>
   onViewInPlan: (partId: string) => void
 }) {
+  const { t } = useTranslation('construction')
   const partsData = use(partsDataPromise)
 
   if (partsData == null) {
@@ -289,7 +290,7 @@ function PartsTabContent({
           <Callout.Icon>
             <CrossCircledIcon />
           </Callout.Icon>
-          <Callout.Text>Failed to generate parts list</Callout.Text>
+          <Callout.Text>{t($ => $.planModal.errors.failedPartsList)}</Callout.Text>
         </Callout.Root>
       </Flex>
     )
@@ -305,6 +306,7 @@ function ModulesTabContent({
   partsDataPromise: Promise<PartsData | null>
   onViewInPlan: (partId: string) => void
 }) {
+  const { t } = useTranslation('construction')
   const partsData = use(partsDataPromise)
 
   if (partsData == null) {
@@ -314,7 +316,7 @@ function ModulesTabContent({
           <Callout.Icon>
             <CrossCircledIcon />
           </Callout.Icon>
-          <Callout.Text>Failed to generate modules list</Callout.Text>
+          <Callout.Text>{t($ => $.planModal.errors.failedModulesList)}</Callout.Text>
         </Callout.Root>
       </Flex>
     )

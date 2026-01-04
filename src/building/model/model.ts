@@ -67,6 +67,7 @@ export interface WallPost {
 export interface Storey {
   readonly id: StoreyId
   readonly name: string
+  readonly useDefaultName: boolean
   readonly level: StoreyLevel // Floor level (0 = ground floor, 1 = first floor, etc.)
   readonly floorHeight: Length // Finished floor to finished floor
   readonly floorAssemblyId: FloorAssemblyId

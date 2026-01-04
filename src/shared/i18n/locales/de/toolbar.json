@@ -1,0 +1,46 @@
+{
+  "about": "Über",
+  "configuration": "Konfiguration",
+  "constructionPlanForActiveStorey": "Konstruktionsplan für aktives Geschoss",
+  "constructionPlanForStorey": "Konstruktionsplan für {{storeyName}}",
+  "gridSizeDisplay": {
+    "hideGrid": "Raster ausblenden",
+    "off": "Aus",
+    "showGrid": "Raster anzeigen"
+  },
+  "groups": {
+    "basic": "Grundlagen",
+    "floors": "Boden",
+    "perimeter": "Gebäudekontur",
+    "roofs": "Dächer",
+    "test": "Testdaten"
+  },
+  "offlineStatus": {
+    "loading": "Assets werden gecacht ({{loaded}}/{{total}})…",
+    "loadingUnknown": "Offline-Erlebnis wird vorbereitet…",
+    "offline": "Offline. Änderungen werden synchronisiert, sobald die Verbindung wiederhergestellt ist.",
+    "ready": "Alle Assets gecacht. Bereit für Offline-Nutzung."
+  },
+  "partsListForEntireModel": "Teileliste für gesamtes Modell",
+  "themeToggle": {
+    "switchToDark": "Zu dunklem Modus wechseln",
+    "switchToLight": "Zu hellem Modus wechseln"
+  },
+  "tools": {
+    "basicFitToView": "Auf Ansicht anpassen",
+    "basicMove": "Verschieben",
+    "basicSelect": "Auswählen",
+    "floorsAddArea": "Bodenfläche zeichnen",
+    "floorsAddOpening": "Boden-Aussparung zeichnen",
+    "perimeterAdd": "Gebäudekontur zeichnen",
+    "perimeterAddOpening": "Öffnung hinzufügen",
+    "perimeterAddPost": "Ständer hinzufügen",
+    "perimeterPreset": "Gebäudekontur-Vorlagen",
+    "perimeterSplitWall": "Wand teilen",
+    "roofsAddRoof": "Dach zeichnen",
+    "testData": "Testdaten"
+  },
+  "view3DConstruction": "3D-Konstruktion anzeigen",
+  "viewConstructionPlan": "Konstruktionsplan anzeigen",
+  "viewPartsList": "Teileliste anzeigen"
+}

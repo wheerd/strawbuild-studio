@@ -1,5 +1,6 @@
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { Callout, Flex, Text } from '@radix-ui/themes'
+import { useTranslation } from 'react-i18next'
 
 import {
   FloorAreaInspector,
@@ -31,6 +32,7 @@ import { useActiveStoreyId } from '@/building/store'
 import { useCurrentSelection, useSelectionPath } from '@/editor/hooks/useSelectionStore'
 
 export function SelectToolInspector(): React.JSX.Element {
+  const { t } = useTranslation('tool')
   const selectedId = useCurrentSelection()
   const selectionPath = useSelectionPath()
   const storeyId = useActiveStoreyId()
@@ -38,14 +40,11 @@ export function SelectToolInspector(): React.JSX.Element {
   return (
     <Flex direction="column" p="2" gap="2">
       {!selectedId && <StoreyInspector key="storey" selectedId={storeyId} />}
-
       {/* Perimeter entities */}
       {selectedId && isPerimeterId(selectedId) && <PerimeterInspector key={selectedId} selectedId={selectedId} />}
-
       {selectedId && isPerimeterWallId(selectedId) && (
         <PerimeterWallInspector key={selectedId} perimeterId={selectionPath[0] as PerimeterId} wallId={selectedId} />
       )}
-
       {selectedId && isPerimeterCornerId(selectedId) && (
         <PerimeterCornerInspector
           key={selectedId}
@@ -53,7 +52,6 @@ export function SelectToolInspector(): React.JSX.Element {
           cornerId={selectedId}
         />
       )}
-
       {selectedId && isOpeningId(selectedId) && (
         <OpeningInspector
           key={selectedId}
@@ -62,7 +60,6 @@ export function SelectToolInspector(): React.JSX.Element {
           openingId={selectedId}
         />
       )}
-
       {selectedId && isWallPostId(selectedId) && (
         <WallPostInspector
           key={selectedId}
@@ -71,19 +68,14 @@ export function SelectToolInspector(): React.JSX.Element {
           postId={selectedId}
         />
       )}
-
       {selectedId && isFloorAreaId(selectedId) && <FloorAreaInspector key={selectedId} floorAreaId={selectedId} />}
-
       {selectedId && isFloorOpeningId(selectedId) && (
         <FloorOpeningInspector key={selectedId} floorOpeningId={selectedId} />
       )}
-
       {selectedId && isRoofId(selectedId) && <RoofInspector key={selectedId} roofId={selectedId} />}
-
       {selectedId && isRoofOverhangId(selectedId) && (
         <RoofOverhangInspector key={selectedId} roofId={selectionPath[0] as RoofId} overhangId={selectedId} />
       )}
-
       {/* Unknown entity type */}
       {selectedId &&
         !isPerimeterId(selectedId) &&
@@ -100,9 +92,11 @@ export function SelectToolInspector(): React.JSX.Element {
               <ExclamationTriangleIcon />
             </Callout.Icon>
             <Callout.Text>
-              <Text weight="bold">Unknown Entity Type</Text>
+              <Text weight="bold">{t($ => $.select.unknownEntityType)}</Text>
               <br />
-              Entity id not recognized: {selectedId}
+              {t($ => $.select.unknownEntityMessage, {
+                id: selectedId
+              })}
             </Callout.Text>
           </Callout.Root>
         )}

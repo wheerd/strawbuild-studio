@@ -2,6 +2,7 @@ import { useId } from 'react'
 
 import { type Projection, projectPoint } from '@/construction/geometry'
 import type { HighlightedPolygon } from '@/construction/model'
+import { useAreaLabel } from '@/construction/useAreaLabel'
 import { type Vec3, newVec3 } from '@/shared/geometry'
 
 import './areas.css'
@@ -13,6 +14,7 @@ export interface PolygonAreaShapeProps {
 
 export function PolygonAreaShape({ polygon, projection }: PolygonAreaShapeProps): React.JSX.Element {
   const polygonId = useId()
+  const label = useAreaLabel(polygon.areaType)
 
   // Helper function to project polygon points and create SVG path
   const createPolygonPath = (polygon: HighlightedPolygon): { pathData: string; center: [number, number] } => {
@@ -57,10 +59,10 @@ export function PolygonAreaShape({ polygon, projection }: PolygonAreaShapeProps)
       </clipPath>
       <path d={pathData} clipPath={`url(#${polygonId})`} />
 
-      {polygon.label && (
+      {label && (
         <g className="text" transform={`translate(${center[0]} ${center[1]})`}>
           <text x={0} y={0}>
-            {polygon.label}
+            {label}
           </text>
         </g>
       )}

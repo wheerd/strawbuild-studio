@@ -11,7 +11,6 @@ import {
 import { createElementFromArea } from '@/construction/shapes'
 import { TAG_INFILL, TAG_POST } from '@/construction/tags'
 import { type Length } from '@/shared/geometry'
-import { formatLength } from '@/shared/utils/formatting'
 
 import type { DimensionalMaterial, MaterialId } from './material'
 import { getMaterialById } from './store'
@@ -51,11 +50,6 @@ const materialSupportsCrossSection = (
   })
 }
 
-const formatAvailableCrossSections = (material: DimensionalMaterial): string =>
-  material.crossSections
-    .map(section => `${formatLength(section.smallerLength)}x${formatLength(section.biggerLength)}`)
-    .join(', ')
-
 function* constructFullPost(area: WallConstructionArea, config: FullPostConfig): Generator<ConstructionResult> {
   const { size } = area
   const postElement = createElementFromArea(area, config.material, [TAG_POST], {
@@ -73,9 +67,11 @@ function* constructFullPost(area: WallConstructionArea, config: FullPostConfig):
 
     if (!materialSupportsCrossSection(dimensionalMaterial, postDimensions)) {
       yield yieldWarning(
-        `Post dimensions (${formatLength(config.width)}x${formatLength(
-          size[1]
-        )}) don't match available cross sections (${formatAvailableCrossSections(dimensionalMaterial)})`,
+        $ => $.construction.post.dimensionsMismatch,
+        {
+          width: config.width,
+          thickness: size[1]
+        },
         [postElement],
         `post-cross-section-${dimensionalMaterial.id}`
       )
@@ -93,7 +89,11 @@ function* constructDoublePost(area: WallConstructionArea, config: DoublePostConf
 
     yield* yieldElement(errorElement)
     yield yieldError(
-      `Wall thickness (${formatLength(size[1])}) is not wide enough for double posts requiring ${formatLength(minimumWallThickness)} minimum`,
+      $ => $.construction.post.wallTooThin,
+      {
+        wallThickness: size[1],
+        required: minimumWallThickness
+      },
       [errorElement],
       `double-post-thin-wall-${minimumWallThickness}-${config.material}`
     )
@@ -132,9 +132,11 @@ function* constructDoublePost(area: WallConstructionArea, config: DoublePostConf
 
       if (!materialSupportsCrossSection(dimensionalMaterial, postDimensions)) {
         yield yieldWarning(
-          `Post dimensions (${formatLength(config.width)}x${formatLength(
-            config.thickness
-          )}) don't match available cross sections (${formatAvailableCrossSections(dimensionalMaterial)})`,
+          $ => $.construction.post.dimensionsMismatch,
+          {
+            width: config.width,
+            thickness: config.thickness
+          },
           [post1, post2],
           `post-cross-section-${dimensionalMaterial.id}`
         )
@@ -245,7 +247,11 @@ export function* constructWallPost(area: WallConstructionArea, post: WallPost): 
 
     if (!materialSupportsCrossSection(dimensionalMaterial, postDimensions)) {
       yield yieldWarning(
-        `Post dimensions (${formatLength(postDimensions.width)}x${formatLength(postDimensions.thickness)}) don't match available cross sections (${formatAvailableCrossSections(dimensionalMaterial)})`,
+        $ => $.construction.post.dimensionsMismatch,
+        {
+          width: postDimensions.width,
+          thickness: postDimensions.thickness
+        },
         postElements,
         `post-cross-section-${dimensionalMaterial.id}`
       )

@@ -806,7 +806,6 @@ describe('segmentedWallConstruction', () => {
         type: 'polygon',
         areaType: 'corner',
         renderPosition: 'top',
-        label: 'Corner',
         plane: 'xz',
         polygon: {
           points: [newVec2(-100, 0), newVec2(-100, 2500), newVec2(0, 2500), newVec2(0, 0)]
@@ -819,7 +818,6 @@ describe('segmentedWallConstruction', () => {
         type: 'polygon',
         areaType: 'corner',
         renderPosition: 'top',
-        label: 'Corner',
         plane: 'xz',
         polygon: {
           points: [newVec2(3000, 0), newVec2(3000, 2500), newVec2(3150, 2500), newVec2(3150, 0)]

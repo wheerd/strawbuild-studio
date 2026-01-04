@@ -25,7 +25,9 @@ import {
   TextField
 } from '@radix-ui/themes'
 import React, { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
+import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import { useConfigActions, useDefaultStrawMaterialId } from '@/construction/config/store'
 import type {
   DimensionalMaterial,
@@ -38,13 +40,13 @@ import type {
 } from '@/construction/materials/material'
 import { strawbale } from '@/construction/materials/material'
 import { useMaterialActions, useMaterials } from '@/construction/materials/store'
-import { useMaterialUsage } from '@/construction/materials/usage'
+import { type MaterialUsage, useMaterialUsage } from '@/construction/materials/usage'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
 import { VolumeField } from '@/shared/components/VolumeField/VolumeField'
 import type { Length } from '@/shared/geometry'
-import { formatLength, formatVolume, formatVolumeInLiters } from '@/shared/utils/formatting'
+import { useFormatters } from '@/shared/i18n/useFormatters'
 
-import { MaterialSelect, getMaterialTypeIcon, getMaterialTypeName } from './MaterialSelect'
+import { MaterialSelect, getMaterialTypeIcon, useGetMaterialTypeName } from './MaterialSelect'
 
 export interface MaterialsConfigModalProps {
   trigger: React.ReactNode
@@ -56,10 +58,9 @@ export interface MaterialsConfigContentProps {
 
 type MaterialType = Material['type']
 
-const formatCrossSectionLabel = (section: { smallerLength: number; biggerLength: number }) =>
-  `${formatLength(section.smallerLength)} × ${formatLength(section.biggerLength)}`
-
 export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigContentProps): React.JSX.Element {
+  const { t } = useTranslation('config')
+  const getMaterialTypeName = useGetMaterialTypeName()
   const materials = useMaterials()
   const { addMaterial, updateMaterial, removeMaterial, duplicateMaterial, reset } = useMaterialActions()
   const defaultStrawMaterialId = useDefaultStrawMaterialId()
@@ -84,7 +85,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
       switch (type) {
         case 'dimensional':
           newMaterial = addMaterial({
-            name: 'New dimensional material',
+            name: t($ => $.materials.newName_dimensional),
             type: 'dimensional',
             color: '#808080',
             crossSections: [],
@@ -93,7 +94,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
           break
         case 'sheet':
           newMaterial = addMaterial({
-            name: 'New sheet material',
+            name: t($ => $.materials.newName_sheet),
             type: 'sheet',
             color: '#808080',
             sizes: [],
@@ -103,7 +104,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
           break
         case 'volume':
           newMaterial = addMaterial({
-            name: 'New volume material',
+            name: t($ => $.materials.newName_volume),
             type: 'volume',
             color: '#808080',
             availableVolumes: []
@@ -111,14 +112,14 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
           break
         case 'generic':
           newMaterial = addMaterial({
-            name: 'New generic material',
+            name: t($ => $.materials.newName_generic),
             type: 'generic',
             color: '#808080'
           } satisfies Omit<GenericMaterial, 'id'>)
           break
         case 'strawbale':
           newMaterial = addMaterial({
-            name: 'New strawbale material',
+            name: t($ => $.materials.newName_strawbale),
             type: 'strawbale',
             color: strawbale.color,
             baleMinLength: strawbale.baleMinLength,
@@ -143,7 +144,10 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
   const handleDuplicate = useCallback(() => {
     if (!selectedMaterial) return
 
-    const duplicated = duplicateMaterial(selectedMaterial.id, `${selectedMaterial.name} (Copy)`)
+    const duplicated = duplicateMaterial(
+      selectedMaterial.id,
+      t($ => $.materials.duplicateNamePattern, { name: selectedMaterial.name, defaultValue: '{{name}} (Copy)' })
+    )
     setSelectedMaterialId(duplicated.id)
   }, [selectedMaterial, duplicateMaterial])
 
@@ -179,6 +183,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
 
   const Icon = selectedMaterial ? getMaterialTypeIcon(selectedMaterial.type) : null
 
+  const nameKey = selectedMaterial?.nameKey
   return (
     <Flex direction="column" gap="4" style={{ width: '100%' }}>
       <Grid columns="2" gap="2">
@@ -188,12 +193,12 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             <MaterialSelect
               value={selectedMaterialId ?? null}
               onValueChange={materialId => setSelectedMaterialId(materialId ?? null)}
-              placeholder="Select material..."
+              placeholder={t($ => $.common.placeholders.selectMaterial)}
             />
           </Flex>
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
-              <IconButton title="Add New">
+              <IconButton title={t($ => $.common.addNew)}>
                 <PlusIcon />
               </IconButton>
             </DropdownMenu.Trigger>
@@ -201,36 +206,41 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
               <DropdownMenu.Item onSelect={() => handleAddNew('dimensional')}>
                 <Flex align="center" gap="1">
                   <CubeIcon />
-                  Dimensional
+                  {t($ => $.materials.typeDimensional)}
                 </Flex>
               </DropdownMenu.Item>
               <DropdownMenu.Item onSelect={() => handleAddNew('strawbale')}>
                 <Flex align="center" gap="1">
                   <CubeIcon />
-                  Strawbale
+                  {t($ => $.materials.typeStrawbale)}
                 </Flex>
               </DropdownMenu.Item>
               <DropdownMenu.Item onSelect={() => handleAddNew('sheet')}>
                 <Flex align="center" gap="1">
                   <LayersIcon />
-                  Sheet
+                  {t($ => $.materials.typeSheet)}
                 </Flex>
               </DropdownMenu.Item>
               <DropdownMenu.Item onSelect={() => handleAddNew('volume')}>
                 <Flex align="center" gap="1">
                   <OpacityIcon />
-                  Volume
+                  {t($ => $.materials.typeVolume)}
                 </Flex>
               </DropdownMenu.Item>
               <DropdownMenu.Item onSelect={() => handleAddNew('generic')}>
                 <Flex align="center" gap="1">
                   <CircleIcon />
-                  Generic
+                  {t($ => $.materials.typeGeneric)}
                 </Flex>
               </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Root>
-          <IconButton onClick={handleDuplicate} disabled={!selectedMaterial} title="Duplicate" variant="soft">
+          <IconButton
+            onClick={handleDuplicate}
+            disabled={!selectedMaterial}
+            title={t($ => $.common.duplicate)}
+            variant="soft"
+          >
             <CopyIcon />
           </IconButton>
           <AlertDialog.Root>
@@ -238,25 +248,27 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
               <IconButton
                 disabled={!selectedMaterial || usage.isUsed}
                 color="red"
-                title={usage.isUsed ? 'In Use - Cannot Delete' : 'Delete'}
+                title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
               >
                 <TrashIcon />
               </IconButton>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
-              <AlertDialog.Title>Delete Material</AlertDialog.Title>
+              <AlertDialog.Title>{t($ => $.materials.deleteTitle)}</AlertDialog.Title>
               <AlertDialog.Description>
-                Are you sure you want to delete "{selectedMaterial?.name}"? This action cannot be undone.
+                {t($ => $.materials.deleteConfirm, {
+                  name: selectedMaterial?.name
+                })}
               </AlertDialog.Description>
               <Flex gap="3" mt="4" justify="end">
                 <AlertDialog.Cancel>
                   <Button variant="soft" color="gray">
-                    Cancel
+                    {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
                   <Button variant="solid" color="red" onClick={handleDelete}>
-                    Delete
+                    {t($ => $.common.delete)}
                   </Button>
                 </AlertDialog.Action>
               </Flex>
@@ -264,24 +276,22 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
           </AlertDialog.Root>
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <IconButton color="red" variant="outline" title="Reset to Default">
+              <IconButton color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
                 <ResetIcon />
               </IconButton>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
-              <AlertDialog.Title>Reset Materials</AlertDialog.Title>
-              <AlertDialog.Description>
-                Are you sure you want to reset all materials to default? This action cannot be undone.
-              </AlertDialog.Description>
+              <AlertDialog.Title>{t($ => $.materials.resetTitle)}</AlertDialog.Title>
+              <AlertDialog.Description>{t($ => $.materials.resetConfirm)}</AlertDialog.Description>
               <Flex gap="3" mt="4" justify="end">
                 <AlertDialog.Cancel>
                   <Button variant="soft" color="gray">
-                    Cancel
+                    {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
                   <Button variant="solid" color="red" onClick={handleReset}>
-                    Reset
+                    {t($ => $.common.reset)}
                   </Button>
                 </AlertDialog.Action>
               </Flex>
@@ -292,7 +302,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
         <Grid columns="auto 1fr" gap="2" align="center">
           <Label.Root>
             <Text size="1" weight="medium" color="gray">
-              Default Straw Material
+              {t($ => $.materials.defaultStrawMaterial)}
             </Text>
           </Label.Root>
           <MaterialSelect
@@ -302,13 +312,12 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
                 updateDefaultStrawMaterial(materialId)
               }
             }}
-            placeholder="Select straw material..."
+            placeholder={t($ => $.materials.selectStrawMaterial)}
             size="2"
             materials={materials}
           />
         </Grid>
       </Grid>
-
       {/* Form */}
       {selectedMaterial && (
         <Flex
@@ -320,20 +329,20 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
           <Grid columns="4em 1fr" gap="2" gapX="3" align="center">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Name
+                {t($ => $.common.name)}
               </Text>
             </Label.Root>
             <TextField.Root
-              value={selectedMaterial.name}
+              value={nameKey ? t($ => $.materials.defaults[nameKey]) : selectedMaterial.name}
               onChange={e => handleUpdate({ name: e.target.value })}
-              placeholder="Material name"
+              placeholder={t($ => $.materials.materialName)}
               size="2"
             />
           </Grid>
           <Grid columns="4em 1fr auto 1fr auto auto" gap="2" gapX="3" align="center">
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Type
+                {t($ => $.common.type)}
               </Text>
             </Label.Root>
             <Flex gap="2" align="center">
@@ -345,7 +354,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
 
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Color
+                {t($ => $.common.color)}
               </Text>
             </Label.Root>
             <input
@@ -356,7 +365,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             />
             <Label.Root>
               <Text size="2" weight="medium" color="gray">
-                Density
+                {t($ => $.common.density)}
               </Text>
             </Label.Root>
             <TextField.Root
@@ -375,7 +384,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             >
               <TextField.Slot side="right" style={{ paddingInline: '6px' }}>
                 <Text size="1" color="gray">
-                  kg/m³
+                  {t($ => $.common.densityUnit)}
                 </Text>
               </TextField.Slot>
             </TextField.Root>
@@ -398,30 +407,51 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
           )}
         </Flex>
       )}
-
       {!selectedMaterial && materials.length === 0 && (
         <Flex justify="center" align="center" p="5">
-          <Text color="gray">No materials yet. Create one using the "New" button above.</Text>
+          <Text color="gray">{t($ => $.materials.noMaterialsYet)}</Text>
         </Flex>
       )}
-
-      {usage.isUsed && (
-        <Grid columns="auto 1fr" gap="2" gapX="3" align="baseline">
-          <Label.Root>
-            <Text size="2" weight="medium" color="gray" id="material-usage-list">
-              Used By:
-            </Text>
-          </Label.Root>
-          <Flex gap="1" wrap="wrap" role="list" aria-labelledby="material-usage-list">
-            {usage.usedByConfigs.map((use, index) => (
-              <Badge role="listitem" key={index} size="2" variant="soft">
-                {use}
-              </Badge>
-            ))}
-          </Flex>
-        </Grid>
-      )}
+      {usage.isUsed && <UsageDisplay usage={usage} />}
     </Flex>
+  )
+}
+
+function UsageBadge({ id }: { id: EntityId }) {
+  const label = useEntityLabel(id)
+  return (
+    <Badge key={id} size="2" variant="soft">
+      {label}
+    </Badge>
+  )
+}
+
+function UsageDisplay({ usage }: { usage: MaterialUsage }): React.JSX.Element {
+  const { t } = useTranslation('config')
+
+  return (
+    <Grid columns="auto 1fr" gap="2" gapX="3" align="baseline">
+      <Label.Root>
+        <Text size="2" weight="medium" color="gray">
+          {t($ => $.usage.usedBy)}
+        </Text>
+      </Label.Root>
+      <Flex gap="1" wrap="wrap">
+        {usage.isDefaultStraw && (
+          <Badge size="2" variant="soft" color="blue">
+            {t($ => $.usage.globalDefault_straw)}
+          </Badge>
+        )}
+        {usage.assemblyIds.map(id => (
+          <UsageBadge key={id} id={id} />
+        ))}
+        {usage.usedInWallPosts && (
+          <Badge size="2" variant="soft">
+            {t($ => $.usage.usedInWallPosts)}
+          </Badge>
+        )}
+      </Flex>
+    </Grid>
   )
 }
 
@@ -432,6 +462,9 @@ function DimensionalMaterialFields({
   material: DimensionalMaterial
   onUpdate: (updates: Partial<DimensionalMaterial>) => void
 }) {
+  const { t } = useTranslation('config')
+  const { formatLength, formatDimensions2D } = useFormatters()
+
   const [newDim1, setNewDim1] = useState<Length>(material.crossSections[0]?.smallerLength ?? 50)
   const [newDim2, setNewDim2] = useState<Length>(material.crossSections[0]?.biggerLength ?? 100)
   const [newLengthInput, setNewLengthInput] = useState<Length>(material.lengths[0] ?? 3000)
@@ -490,20 +523,20 @@ function DimensionalMaterialFields({
       <Flex direction="row" justify="between" align="end">
         <Flex direction="column" gap="2">
           <Text size="2" weight="medium" color="gray" id="crossSections">
-            Cross Sections
+            {t($ => $.materials.crossSections)}
           </Text>
           <Flex gap="2" wrap="wrap" role="list" aria-labelledby="crossSections">
             {material.crossSections.map(section => (
               <Badge role="listitem" key={`${section.smallerLength}x${section.biggerLength}`} size="2" variant="soft">
                 <Flex align="center" gap="1">
-                  {formatCrossSectionLabel(section)}
+                  {formatDimensions2D([section.smallerLength, section.biggerLength], false)}
                   <IconButton
                     size="1"
                     variant="ghost"
                     color="gray"
                     onClick={() => handleRemoveCrossSection(section)}
                     style={{ cursor: 'pointer' }}
-                    aria-label="Remove cross section"
+                    aria-label={t($ => $.materials.removeCrossSection)}
                   >
                     <Cross2Icon width="10" height="10" />
                   </IconButton>
@@ -515,7 +548,7 @@ function DimensionalMaterialFields({
                 <Callout.Icon>
                   <ExclamationTriangleIcon />
                 </Callout.Icon>
-                <Callout.Text>No cross sections configured</Callout.Text>
+                <Callout.Text>{t($ => $.materials.noCrossSections)}</Callout.Text>
               </Callout.Root>
             )}
           </Flex>
@@ -526,7 +559,7 @@ function DimensionalMaterialFields({
             onChange={setNewDim1}
             unit="cm"
             size="2"
-            aria-label="Cross section smaller dimension"
+            aria-label={t($ => $.materials.crossSectionSmaller)}
           />
           <Text>x</Text>
           <LengthField
@@ -534,11 +567,11 @@ function DimensionalMaterialFields({
             onChange={setNewDim2}
             unit="cm"
             size="2"
-            aria-label="Cross section larger dimension"
+            aria-label={t($ => $.materials.crossSectionLarger)}
           />
           <IconButton
-            title="Add"
-            aria-label="Add cross section"
+            title={t($ => $.common.add)}
+            aria-label={t($ => $.materials.addCrossSection)}
             onClick={handleAddCrossSection}
             variant="surface"
             size="2"
@@ -547,11 +580,10 @@ function DimensionalMaterialFields({
           </IconButton>
         </Grid>
       </Flex>
-
       <Flex direction="row" justify="between" align="end">
         <Flex direction="column" gap="2">
           <Text size="2" weight="medium" color="gray" id="stock-lengths">
-            Stock Lengths
+            {t($ => $.materials.stockLengths)}
           </Text>
           <Flex gap="2" wrap="wrap" role="list" aria-labelledby="stock-lengths">
             {material.lengths.map(length => (
@@ -564,7 +596,7 @@ function DimensionalMaterialFields({
                     color="gray"
                     onClick={() => handleRemoveLength(length)}
                     style={{ cursor: 'pointer' }}
-                    aria-label="Remove stock length"
+                    aria-label={t($ => $.materials.removeStockLength)}
                   >
                     <Cross2Icon width="10" height="10" />
                   </IconButton>
@@ -576,7 +608,7 @@ function DimensionalMaterialFields({
                 <Callout.Icon>
                   <ExclamationTriangleIcon />
                 </Callout.Icon>
-                <Callout.Text>No lengths configured</Callout.Text>
+                <Callout.Text>{t($ => $.materials.noLengths)}</Callout.Text>
               </Callout.Root>
             )}
           </Flex>
@@ -588,9 +620,15 @@ function DimensionalMaterialFields({
             unit="cm"
             size="2"
             style={{ width: '8em' }}
-            aria-label="Stock length input"
+            aria-label={t($ => $.materials.stockLengthInput)}
           />
-          <IconButton title="Add" aria-label="Add stock length" onClick={handleAddLength} variant="surface" size="2">
+          <IconButton
+            title={t($ => $.materials.add)}
+            aria-label={t($ => $.materials.addStockLength)}
+            onClick={handleAddLength}
+            variant="surface"
+            size="2"
+          >
             <PlusIcon />
           </IconButton>
         </Flex>
@@ -606,6 +644,8 @@ function SheetMaterialFields({
   material: SheetMaterial
   onUpdate: (updates: Partial<SheetMaterial>) => void
 }) {
+  const { t } = useTranslation('config')
+  const { formatLength, formatDimensions2D } = useFormatters()
   const [newWidth, setNewWidth] = useState<Length>(material.sizes[0]?.smallerLength ?? 600)
   const [newLength, setNewLength] = useState<Length>(material.sizes[0]?.biggerLength ?? 1200)
   const [newThickness, setNewThickness] = useState<Length>(material.thicknesses[0] ?? 18)
@@ -660,20 +700,20 @@ function SheetMaterialFields({
       <Flex direction="row" justify="between" align="end">
         <Flex direction="column" gap="2">
           <Text size="2" weight="medium" color="gray" id="sheet-sizes">
-            Sheet Sizes
+            {t($ => $.materials.sheetSizes)}
           </Text>
           <Flex gap="2" wrap="wrap" role="list" aria-labelledby="sheet-sizes">
             {material.sizes.map(size => (
               <Badge role="listitem" key={`${size.smallerLength}x${size.biggerLength}`} size="2" variant="soft">
                 <Flex align="center" gap="1">
-                  {formatCrossSectionLabel(size)}
+                  {formatDimensions2D([size.smallerLength, size.biggerLength], false)}
                   <IconButton
                     size="1"
                     variant="ghost"
                     color="gray"
                     onClick={() => handleRemoveSize(size)}
                     style={{ cursor: 'pointer' }}
-                    aria-label="Remove sheet size"
+                    aria-label={t($ => $.materials.removeSheetSize)}
                   >
                     <Cross2Icon width="10" height="10" />
                   </IconButton>
@@ -685,25 +725,42 @@ function SheetMaterialFields({
                 <Callout.Icon>
                   <ExclamationTriangleIcon />
                 </Callout.Icon>
-                <Callout.Text>No sheet sizes configured</Callout.Text>
+                <Callout.Text>{t($ => $.materials.noSizes)}</Callout.Text>
               </Callout.Root>
             )}
           </Flex>
         </Flex>
         <Grid columns="6em auto 6em auto" gap="2" align="center" justify="end">
-          <LengthField value={newWidth} onChange={setNewWidth} unit="cm" size="2" aria-label="Sheet width" />
+          <LengthField
+            value={newWidth}
+            onChange={setNewWidth}
+            unit="cm"
+            size="2"
+            aria-label={t($ => $.materials.sheetWidth)}
+          />
           <Text>x</Text>
-          <LengthField value={newLength} onChange={setNewLength} unit="cm" size="2" aria-label="Sheet length" />
-          <IconButton title="Add size" aria-label="Add sheet size" onClick={handleAddSize} variant="surface" size="2">
+          <LengthField
+            value={newLength}
+            onChange={setNewLength}
+            unit="cm"
+            size="2"
+            aria-label={t($ => $.materials.sheetLength)}
+          />
+          <IconButton
+            title={t($ => $.materials.addSize)}
+            aria-label={t($ => $.materials.addSheetSize)}
+            onClick={handleAddSize}
+            variant="surface"
+            size="2"
+          >
             <PlusIcon />
           </IconButton>
         </Grid>
       </Flex>
-
       <Flex direction="row" justify="between" align="end">
         <Flex direction="column" gap="2">
           <Text size="2" weight="medium" color="gray" id="sheet-thicknesses">
-            Thicknesses
+            {t($ => $.materials.thicknesses)}
           </Text>
           <Flex gap="2" wrap="wrap" role="list" aria-labelledby="sheet-thicknesses">
             {material.thicknesses.map(thickness => (
@@ -716,7 +773,7 @@ function SheetMaterialFields({
                     color="gray"
                     onClick={() => handleRemoveThickness(thickness)}
                     style={{ cursor: 'pointer' }}
-                    aria-label="Remove thickness"
+                    aria-label={t($ => $.materials.removeThickness)}
                   >
                     <Cross2Icon width="10" height="10" />
                   </IconButton>
@@ -728,7 +785,7 @@ function SheetMaterialFields({
                 <Callout.Icon>
                   <ExclamationTriangleIcon />
                 </Callout.Icon>
-                <Callout.Text>No thicknesses configured</Callout.Text>
+                <Callout.Text>{t($ => $.materials.noThicknesses)}</Callout.Text>
               </Callout.Root>
             )}
           </Flex>
@@ -740,11 +797,11 @@ function SheetMaterialFields({
             unit="mm"
             size="2"
             style={{ width: '8em' }}
-            aria-label="Thickness input"
+            aria-label={t($ => $.materials.thicknessInput)}
           />
           <IconButton
-            title="Add thickness"
-            aria-label="Add thickness"
+            title={t($ => $.materials.addThickness)}
+            aria-label={t($ => $.materials.addThickness)}
             onClick={handleAddThickness}
             variant="surface"
             size="2"
@@ -753,19 +810,20 @@ function SheetMaterialFields({
           </IconButton>
         </Flex>
       </Flex>
-
       <Flex direction="column" gap="2">
         <Text size="2" weight="medium" color="gray">
-          Sheet Type
+          {t($ => $.materials.sheetType)}
         </Text>
         <SegmentedControl.Root
           value={material.sheetType}
           onValueChange={value => onUpdate({ sheetType: value as SheetMaterial['sheetType'] })}
           size="2"
         >
-          <SegmentedControl.Item value="solid">Solid</SegmentedControl.Item>
-          <SegmentedControl.Item value="tongueAndGroove">Tongue &amp; Groove</SegmentedControl.Item>
-          <SegmentedControl.Item value="flexible">Flexible</SegmentedControl.Item>
+          <SegmentedControl.Item value="solid">{t($ => $.materials.sheetTypeSolid)}</SegmentedControl.Item>
+          <SegmentedControl.Item value="tongueAndGroove">
+            {t($ => $.materials.sheetTypeTongueAndGroove)}
+          </SegmentedControl.Item>
+          <SegmentedControl.Item value="flexible">{t($ => $.materials.sheetTypeFlexible)}</SegmentedControl.Item>
         </SegmentedControl.Root>
       </Flex>
     </Flex>
@@ -779,6 +837,8 @@ function VolumeMaterialFields({
   material: VolumeMaterial
   onUpdate: (updates: Partial<VolumeMaterial>) => void
 }) {
+  const { t } = useTranslation('config')
+  const { formatVolume, formatVolumeInLiters } = useFormatters()
   const [newVolumeInput, setNewVolumeInput] = useState<number>(1_000_000)
   const [volumeUnit, setVolumeUnit] = useState<'liter' | 'm3'>('liter')
 
@@ -805,7 +865,7 @@ function VolumeMaterialFields({
       <Flex direction="row" justify="between" align="end">
         <Flex direction="column" gap="2">
           <Text size="2" weight="medium" color="gray" id="available-volumes">
-            Available Volumes
+            {t($ => $.materials.availableVolumes)}
           </Text>
           <Flex gap="2" wrap="wrap" role="list" aria-labelledby="available-volumes">
             {material.availableVolumes.map(volume => (
@@ -818,7 +878,7 @@ function VolumeMaterialFields({
                     color="gray"
                     onClick={() => handleRemoveVolume(volume)}
                     style={{ cursor: 'pointer' }}
-                    aria-label="Remove volume option"
+                    aria-label={t($ => $.materials.removeVolume)}
                   >
                     <Cross2Icon width="10" height="10" />
                   </IconButton>
@@ -830,7 +890,7 @@ function VolumeMaterialFields({
                 <Callout.Icon>
                   <ExclamationTriangleIcon />
                 </Callout.Icon>
-                <Callout.Text>No volumes configured</Callout.Text>
+                <Callout.Text>{t($ => $.materials.noVolumes)}</Callout.Text>
               </Callout.Root>
             )}
           </Flex>
@@ -842,8 +902,8 @@ function VolumeMaterialFields({
             onValueChange={value => setVolumeUnit(value as 'liter' | 'm3')}
             size="1"
           >
-            <SegmentedControl.Item value="liter">L</SegmentedControl.Item>
-            <SegmentedControl.Item value="m3">m³</SegmentedControl.Item>
+            <SegmentedControl.Item value="liter">{t($ => $.units.liter, { ns: 'common' })}</SegmentedControl.Item>
+            <SegmentedControl.Item value="m3">{t($ => $.units.m3, { ns: 'common' })}</SegmentedControl.Item>
           </SegmentedControl.Root>
           <Flex gap="2" align="end">
             <VolumeField
@@ -852,11 +912,11 @@ function VolumeMaterialFields({
               unit={volumeUnit}
               size="2"
               style={{ width: '8em' }}
-              aria-label="Volume input"
+              aria-label={t($ => $.materials.volumeInput)}
             />
             <IconButton
-              title="Add volume"
-              aria-label="Add volume option"
+              title={t($ => $.materials.addVolume)}
+              aria-label={t($ => $.materials.addVolumeOption)}
               onClick={handleAddVolume}
               variant="surface"
               size="2"
@@ -877,12 +937,13 @@ function StrawbaleMaterialFields({
   material: StrawbaleMaterial
   onUpdate: (updates: Partial<StrawbaleMaterial>) => void
 }) {
+  const { t } = useTranslation('config')
   return (
     <Flex direction="column" gap="3">
       <Grid columns="8em 1fr 8em 1fr" gap="3" gapX="4">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Min Bale Length
+            {t($ => $.materials.minBaleLength)}
           </Text>
         </Label.Root>
         <LengthField
@@ -894,7 +955,7 @@ function StrawbaleMaterialFields({
 
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Max Bale Length
+            {t($ => $.materials.maxBaleLength)}
           </Text>
         </Label.Root>
         <LengthField
@@ -906,30 +967,29 @@ function StrawbaleMaterialFields({
 
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Bale Height
+            {t($ => $.materials.baleHeight)}
           </Text>
         </Label.Root>
         <LengthField value={material.baleHeight} onChange={baleHeight => onUpdate({ baleHeight })} unit="cm" size="2" />
 
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Bale Width
+            {t($ => $.materials.baleWidth)}
           </Text>
         </Label.Root>
         <LengthField value={material.baleWidth} onChange={baleWidth => onUpdate({ baleWidth })} unit="cm" size="2" />
       </Grid>
-
       <Grid columns="8em 1fr 8em 1fr" gap="3" gapX="4">
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Tolerance
+            {t($ => $.materials.tolerance)}
           </Text>
         </Label.Root>
         <LengthField value={material.tolerance} onChange={tolerance => onUpdate({ tolerance })} unit="mm" size="2" />
 
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Top Cutoff Limit
+            {t($ => $.materials.topCutoffLimit)}
           </Text>
         </Label.Root>
         <LengthField
@@ -941,7 +1001,7 @@ function StrawbaleMaterialFields({
 
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
-            Flake Size
+            {t($ => $.materials.flakeSize)}
           </Text>
         </Label.Root>
         <LengthField value={material.flakeSize} onChange={flakeSize => onUpdate({ flakeSize })} unit="cm" size="2" />

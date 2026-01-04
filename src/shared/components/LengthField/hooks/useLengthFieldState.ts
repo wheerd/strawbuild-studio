@@ -36,7 +36,8 @@ export function useLengthFieldState(
     min,
     max,
     onChange,
-    onCommit
+    onCommit,
+    locale = 'en'
   } = options
 
   // Local input state for immediate UI updates
@@ -49,14 +50,14 @@ export function useLengthFieldState(
   // Sync input value with external value changes when not editing
   useEffect(() => {
     if (!isEditing) {
-      setInputValue(lengthToDisplayValue(value, unit, precision))
+      setInputValue(lengthToDisplayValue(value, unit, precision, locale))
       setLastCommittedValue(value)
     }
-  }, [value, unit, precision, isEditing])
+  }, [value, unit, precision, locale, isEditing])
 
   // Initialize input value on mount
   useEffect(() => {
-    setInputValue(lengthToDisplayValue(value, unit, precision))
+    setInputValue(lengthToDisplayValue(value, unit, precision, locale))
     setLastCommittedValue(value)
   }, []) // Only run on mount
 
@@ -70,7 +71,7 @@ export function useLengthFieldState(
       }
       setLastCommittedValue(value)
     },
-    [onChange, onCommit]
+    [onChange, onCommit, lastCommittedValue]
   )
 
   // Validation function for current input
@@ -125,27 +126,27 @@ export function useLengthFieldState(
 
     if (isCompleteNumber(inputValue)) {
       // Apply formatting (remove trailing zeros, etc.)
-      finalValue = formatDisplayValue(inputValue, unit, precision)
+      finalValue = formatDisplayValue(inputValue, unit, precision, locale)
 
       // Convert to Length and apply bounds/rounding
       const length = displayValueToLength(finalValue, unit)
       if (length !== null) {
         const clampedLength = clampLength(length, min, max)
-        const formattedValue = lengthToDisplayValue(clampedLength, unit, precision)
+        const formattedValue = lengthToDisplayValue(clampedLength, unit, precision, locale)
 
         finalLength = clampedLength
         finalValue = formattedValue
       }
     } else {
       // Invalid or incomplete input - revert to current value
-      finalValue = lengthToDisplayValue(value, unit, precision)
+      finalValue = lengthToDisplayValue(value, unit, precision, locale)
       finalLength = value
     }
 
     doCommit(finalLength)
     setInputValue(finalValue)
     setIsEditing(false)
-  }, [inputValue, isEditing, unit, precision, min, max, value, doCommit])
+  }, [inputValue, isEditing, unit, precision, locale, min, max, value, doCommit])
 
   // Step up function
   const stepUp = useCallback(() => {
@@ -203,13 +204,13 @@ export function useLengthFieldState(
         case 'Escape':
           e.preventDefault()
           // Revert to external value
-          setInputValue(lengthToDisplayValue(value, unit, precision))
+          setInputValue(lengthToDisplayValue(value, unit, precision, locale))
           setIsEditing(false)
           ;(e.target as HTMLInputElement).blur()
           break
       }
     },
-    [value, step, min, max, doCommit, stepUp, stepDown, handleBlur, unit, precision]
+    [value, step, min, max, doCommit, stepUp, stepDown, handleBlur, unit, precision, locale]
   )
 
   // Check if stepping is possible

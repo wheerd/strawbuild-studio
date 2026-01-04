@@ -202,7 +202,9 @@ const useMaterialsStore = create<MaterialsStore>()(
               const updatedMaterial: Material = {
                 ...material,
                 ...updates,
-                name: updates.name?.trim() ?? material.name
+                name: updates.name?.trim() ?? material.name,
+                // Clear nameKey if user is editing the name (indicates custom name)
+                nameKey: updates.name !== undefined ? undefined : material.nameKey
               }
 
               return {

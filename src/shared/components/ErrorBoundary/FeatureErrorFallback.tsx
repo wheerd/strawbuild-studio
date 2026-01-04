@@ -1,10 +1,13 @@
 import { ExclamationTriangleIcon, ReloadIcon } from '@radix-ui/react-icons'
 import { AlertDialog, Button, Callout, Flex, Text } from '@radix-ui/themes'
 import type { FallbackProps } from 'react-error-boundary'
+import { useTranslation } from 'react-i18next'
 
 import { hardReset } from '@/shared/utils/hardReset'
 
 export function FeatureErrorFallback({ error, resetErrorBoundary }: FallbackProps): React.JSX.Element {
+  const { t } = useTranslation('errors')
+
   return (
     <Flex
       direction="column"
@@ -22,8 +25,8 @@ export function FeatureErrorFallback({ error, resetErrorBoundary }: FallbackProp
         </Callout.Icon>
         <Callout.Text>
           <Flex direction="column" gap="2">
-            <Text weight="bold">Error</Text>
-            <Text size="2">{error.message || 'This feature encountered an error and cannot be displayed.'}</Text>
+            <Text weight="bold">{t($ => $.feature.title)}</Text>
+            <Text size="2">{error.message || t($ => $.feature.defaultMessage)}</Text>
           </Flex>
         </Callout.Text>
       </Callout.Root>
@@ -32,35 +35,32 @@ export function FeatureErrorFallback({ error, resetErrorBoundary }: FallbackProp
         {resetErrorBoundary && (
           <Button size="2" onClick={resetErrorBoundary} style={{ flex: 1 }}>
             <ReloadIcon />
-            Retry
+            {t($ => $.feature.retry)}
           </Button>
         )}
         <Button size="2" variant="soft" onClick={() => window.location.reload()} style={{ flex: 1 }}>
-          Reload Page
+          {t($ => $.feature.reloadPage)}
         </Button>
       </Flex>
 
       <AlertDialog.Root>
         <AlertDialog.Trigger>
           <Button size="1" variant="ghost" color="orange">
-            Hard Reset Application
+            {t($ => $.feature.hardReset)}
           </Button>
         </AlertDialog.Trigger>
         <AlertDialog.Content>
-          <AlertDialog.Title>Reset Application?</AlertDialog.Title>
-          <AlertDialog.Description>
-            This will delete all your data including floor plans, configurations, and materials. This action cannot be
-            undone.
-          </AlertDialog.Description>
+          <AlertDialog.Title>{t($ => $.feature.dialogTitle)}</AlertDialog.Title>
+          <AlertDialog.Description>{t($ => $.feature.dialogDescription)}</AlertDialog.Description>
           <Flex gap="3" mt="4" justify="end">
             <AlertDialog.Cancel>
               <Button variant="soft" color="gray">
-                Cancel
+                {t($ => $.feature.cancel)}
               </Button>
             </AlertDialog.Cancel>
             <AlertDialog.Action>
               <Button variant="solid" color="red" onClick={hardReset}>
-                Delete All Data & Reset
+                {t($ => $.feature.confirm)}
               </Button>
             </AlertDialog.Action>
           </Flex>
