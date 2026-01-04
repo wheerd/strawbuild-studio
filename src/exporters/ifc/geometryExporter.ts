@@ -128,7 +128,7 @@ export class GeometryIfcExporter {
   private geometryConverter!: ManifoldToIfcConverter
   private readonly now = Math.floor(Date.now() / 1000)
 
-  async export(model: ConstructionModel): Promise<Uint8Array> {
+  async export(model: ConstructionModel): Promise<Uint8Array<ArrayBuffer>> {
     await this.api.Init((path, prefix) => {
       if (path.endsWith('.wasm')) {
         return wasmUrl
@@ -158,7 +158,10 @@ export class GeometryIfcExporter {
 
     const data = this.api.SaveModel(this.modelID)
     this.api.CloseModel(this.modelID)
-    return data
+    // Explicitly type the return value to satisfy TypeScript 5.8+ typed array constraints
+    // web-ifc returns a standard Uint8Array, but TS 5.8+ infers it as Uint8Array<ArrayBufferLike>
+    // We create a copy with explicit ArrayBuffer type (web-ifc doesn't use SharedArrayBuffer)
+    return new Uint8Array(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer)
   }
 
   getFilename(): string {

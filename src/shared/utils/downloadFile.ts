@@ -1,4 +1,4 @@
-export function downloadFile(content: string | Uint8Array, filename: string, mimeType?: string): void {
+export function downloadFile(content: string | Uint8Array<ArrayBuffer>, filename: string, mimeType?: string): void {
   const type = mimeType ?? (typeof content === 'string' ? 'application/json' : 'application/octet-stream')
   const blob = new Blob([content], { type })
   const url = URL.createObjectURL(blob)

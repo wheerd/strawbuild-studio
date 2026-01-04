@@ -7,12 +7,14 @@ let clipperModuleInstance: ClipperModule | null = null
 let clipperModulePromise: Promise<ClipperModule> | null = null
 
 interface LoadClipperOptions {
-  wasmBinary?: ArrayBuffer | Uint8Array
+  wasmBinary?: ArrayBuffer | Uint8Array<ArrayBuffer>
 }
 
-const normalizeBinary = (binary?: ArrayBuffer | Uint8Array): Uint8Array | undefined => {
+const normalizeBinary = (binary?: ArrayBuffer | Uint8Array<ArrayBuffer>): ArrayBuffer | undefined => {
   if (binary == null) return undefined
-  return binary instanceof Uint8Array ? binary : new Uint8Array(binary)
+  if (binary instanceof ArrayBuffer) return binary
+  // Convert Uint8Array to ArrayBuffer for Emscripten
+  return binary.buffer.slice(binary.byteOffset, binary.byteOffset + binary.byteLength)
 }
 
 export function loadClipperModule(options?: LoadClipperOptions): Promise<ClipperModule> {
