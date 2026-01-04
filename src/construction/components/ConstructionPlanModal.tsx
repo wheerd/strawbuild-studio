@@ -1,8 +1,9 @@
 import { CrossCircledIcon } from '@radix-ui/react-icons'
-import { Box, Callout, Flex, Skeleton, Spinner, Tabs } from '@radix-ui/themes'
+import { Callout, Skeleton, Spinner, Tabs } from '@radix-ui/themes'
 import React, { Suspense, use, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { FullScreenModal } from '@/components/ui/FullScreenModal'
 import { ConstructionPartsList } from '@/construction/components/parts/ConstructionPartsList'
 import { ConstructionVirtualPartsList } from '@/construction/components/parts/ConstructionVirtualPartsList'
 import { IssueDescriptionPanel } from '@/construction/components/plan/IssueDescriptionPanel'
@@ -11,7 +12,6 @@ import type { ConstructionModel } from '@/construction/model'
 import type { MaterialPartsList, PartId, VirtualPartsList } from '@/construction/parts'
 import { generateMaterialPartsList, generateVirtualPartsList } from '@/construction/parts'
 import type { TagOrCategory } from '@/construction/tags'
-import { BaseModal } from '@/shared/components/BaseModal'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 
 import './ConstructionPlanModal.css'
@@ -92,19 +92,12 @@ export function ConstructionPlanModal({
   const [containerSize, containerRef] = elementSizeRef()
 
   return (
-    <BaseModal
+    <FullScreenModal
       open={isOpen}
       onOpenChange={handleOpenChange}
       title={title}
       trigger={trigger}
-      size="2"
-      width="calc(100vw - 2 * var(--space-4))"
-      maxWidth="calc(100vw - 2 * var(--space-4))"
-      height="calc(100vh - 2 * var(--space-6))"
-      maxHeight="calc(100vh - 2 * var(--space-6))"
-      resetKeys={[refreshKey]}
-      style={{ overflow: 'hidden' }}
-      className="plan-modal"
+      aria-describedby={undefined}
     >
       <PlanHighlightProvider>
         <ModalContent
@@ -121,7 +114,7 @@ export function ConstructionPlanModal({
           partsDataPromise={partsDataPromise}
         />
       </PlanHighlightProvider>
-    </BaseModal>
+    </FullScreenModal>
   )
 }
 
@@ -162,24 +155,21 @@ function ModalContent({
     <Tabs.Root
       value={activeTab}
       onValueChange={value => setActiveTab(value as 'plan' | 'parts' | 'modules')}
-      style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}
+      className="flex flex-col h-full -mt-2 "
     >
-      <div className="pb-[2px] mr-6">
-        <Tabs.List justify="end">
+      <div className="flex-shrink-0">
+        <Tabs.List>
           <Tabs.Trigger value="plan">{t($ => $.planModal.tabs.planIssues)}</Tabs.Trigger>
           <Tabs.Trigger value="parts">{t($ => $.planModal.tabs.partsList)}</Tabs.Trigger>
           <Tabs.Trigger value="modules">{t($ => $.planModal.tabs.modules)}</Tabs.Trigger>
         </Tabs.List>
       </div>
-      <Tabs.Content value="plan">
-        <Flex direction="column" gap="3" style={{ flex: 1, minHeight: 0 }} className="overflow-hidden">
+      <Tabs.Content value="plan" className="flex-1 min-h-0 pt-3">
+        <div className="flex flex-col gap-3 h-full overflow-hidden">
           <div
             ref={containerRef}
-            className="overflow-hidden border rounded-md"
+            className="flex-1 min-h-0 overflow-hidden border rounded-md"
             style={{
-              flex: '1 1 100%',
-              minHeight: 0,
-              height: '100%',
               position: 'relative',
               borderColor: 'var(--gray-6)'
             }}
@@ -201,36 +191,32 @@ function ModalContent({
             <PartHighlightPanel />
           </div>
 
-          <Box flexShrink="0" style={{ minHeight: 0 }}>
+          <div className="flex-shrink-0">
             {modelPromise ? (
               <Suspense fallback={<PlanSkeleton />}>
                 <IssueDescriptionPanel modelPromise={modelPromise} />
               </Suspense>
             ) : null}
-          </Box>
-        </Flex>
+          </div>
+        </div>
       </Tabs.Content>
-      <Tabs.Content value="parts">
-        <Box width="100%" height="100%" style={{ overflow: 'auto' }}>
-          {partsDataPromise ? (
-            <Suspense fallback={<PartsSkeleton />}>
-              <PartsTabContent partsDataPromise={partsDataPromise} onViewInPlan={handleViewInPlan} />
-            </Suspense>
-          ) : (
-            <PartsSkeleton />
-          )}
-        </Box>
+      <Tabs.Content value="parts" className="flex-1 min-h-0 overflow-auto pt-3">
+        {partsDataPromise ? (
+          <Suspense fallback={<PartsSkeleton />}>
+            <PartsTabContent partsDataPromise={partsDataPromise} onViewInPlan={handleViewInPlan} />
+          </Suspense>
+        ) : (
+          <PartsSkeleton />
+        )}
       </Tabs.Content>
-      <Tabs.Content value="modules">
-        <Box width="100%" height="100%" style={{ overflow: 'auto' }}>
-          {partsDataPromise ? (
-            <Suspense fallback={<PartsSkeleton />}>
-              <ModulesTabContent partsDataPromise={partsDataPromise} onViewInPlan={handleViewInPlan} />
-            </Suspense>
-          ) : (
-            <PartsSkeleton />
-          )}
-        </Box>
+      <Tabs.Content value="modules" className="flex-1 min-h-0 overflow-auto pt-3">
+        {partsDataPromise ? (
+          <Suspense fallback={<PartsSkeleton />}>
+            <ModulesTabContent partsDataPromise={partsDataPromise} onViewInPlan={handleViewInPlan} />
+          </Suspense>
+        ) : (
+          <PartsSkeleton />
+        )}
       </Tabs.Content>
     </Tabs.Root>
   )
@@ -256,14 +242,14 @@ function ConstructionPlanModalContent({
 
   if (!constructionModel) {
     return (
-      <Flex align="center" justify="center">
+      <div className="flex items-center justify-center">
         <Callout.Root color="red" size="2">
           <Callout.Icon>
             <CrossCircledIcon />
           </Callout.Icon>
           <Callout.Text>{t($ => $.planModal.errors.failedModel)}</Callout.Text>
         </Callout.Root>
-      </Flex>
+      </div>
     )
   }
 
@@ -291,14 +277,14 @@ function PartsTabContent({
 
   if (partsData == null) {
     return (
-      <Flex>
+      <div className="flex">
         <Callout.Root color="red" size="2">
           <Callout.Icon>
             <CrossCircledIcon />
           </Callout.Icon>
           <Callout.Text>{t($ => $.planModal.errors.failedPartsList)}</Callout.Text>
         </Callout.Root>
-      </Flex>
+      </div>
     )
   }
 
@@ -317,14 +303,14 @@ function ModulesTabContent({
 
   if (partsData == null) {
     return (
-      <Flex>
+      <div className="flex">
         <Callout.Root color="red" size="2">
           <Callout.Icon>
             <CrossCircledIcon />
           </Callout.Icon>
           <Callout.Text>{t($ => $.planModal.errors.failedModulesList)}</Callout.Text>
         </Callout.Root>
-      </Flex>
+      </div>
     )
   }
 
@@ -369,10 +355,10 @@ function PlanSkeleton() {
 
 function PartsSkeleton() {
   return (
-    <Flex direction="column" gap="4" height="100%" className="overflow-hidden">
+    <div className="flex flex-col gap-4 h-full overflow-hidden">
       <CardSkeleton />
       <CardSkeleton />
-    </Flex>
+    </div>
   )
 }
 

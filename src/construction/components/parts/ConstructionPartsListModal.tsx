@@ -1,14 +1,14 @@
 import { CrossCircledIcon } from '@radix-ui/react-icons'
-import { Box, Callout, Flex, Skeleton, Spinner, Tabs } from '@radix-ui/themes'
+import { Callout, Skeleton, Spinner, Tabs } from '@radix-ui/themes'
 import React, { Suspense, use, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { FullScreenModal } from '@/components/ui/FullScreenModal'
 import { ConstructionPartsList } from '@/construction/components/parts/ConstructionPartsList'
 import { ConstructionVirtualPartsList } from '@/construction/components/parts/ConstructionVirtualPartsList'
 import type { ConstructionModel } from '@/construction/model'
 import type { MaterialPartsList, VirtualPartsList } from '@/construction/parts'
 import { generateMaterialPartsList, generateVirtualPartsList } from '@/construction/parts'
-import { BaseModal } from '@/shared/components/BaseModal'
 
 interface PartsData {
   material: MaterialPartsList
@@ -65,51 +65,40 @@ export function ConstructionPartsListModal({
   }, [refreshKey, isOpen, loadPartsData])
 
   return (
-    <BaseModal
-      open={isOpen}
-      onOpenChange={handleOpenChange}
-      title={title ?? defaultTitle}
-      trigger={trigger}
-      size="2"
-      width="calc(100vw - 2 * var(--space-4))"
-      maxWidth="calc(100vw - 2 * var(--space-4))"
-      height="calc(100vh - 2 * var(--space-6))"
-      maxHeight="calc(100vh - 2 * var(--space-6))"
-      resetKeys={[refreshKey]}
-    >
-      <Tabs.Root value={activeTab} onValueChange={value => setActiveTab(value as 'materials' | 'modules')}>
-        <Box px="4" pt="3">
+    <FullScreenModal open={isOpen} onOpenChange={handleOpenChange} title={title ?? defaultTitle} trigger={trigger}>
+      <Tabs.Root
+        value={activeTab}
+        onValueChange={value => setActiveTab(value as 'materials' | 'modules')}
+        className="flex flex-col h-full -mt-2"
+      >
+        <div className="flex-shrink-0">
           <Tabs.List>
             <Tabs.Trigger value="materials">{t($ => $.partsListModal.tabs.materials)}</Tabs.Trigger>
             <Tabs.Trigger value="modules">{t($ => $.partsListModal.tabs.modules)}</Tabs.Trigger>
           </Tabs.List>
-        </Box>
+        </div>
 
-        <Tabs.Content value="materials">
-          <Box p="3">
-            {partsDataPromise ? (
-              <Suspense fallback={<PartsSkeleton />}>
-                <MaterialPartsContent partsDataPromise={partsDataPromise} />
-              </Suspense>
-            ) : (
-              <PartsSkeleton />
-            )}
-          </Box>
+        <Tabs.Content value="materials" className="flex-1 min-h-0 overflow-auto pt-3">
+          {partsDataPromise ? (
+            <Suspense fallback={<PartsSkeleton />}>
+              <MaterialPartsContent partsDataPromise={partsDataPromise} />
+            </Suspense>
+          ) : (
+            <PartsSkeleton />
+          )}
         </Tabs.Content>
 
-        <Tabs.Content value="modules">
-          <Box p="3">
-            {partsDataPromise ? (
-              <Suspense fallback={<PartsSkeleton />}>
-                <ModulePartsContent partsDataPromise={partsDataPromise} />
-              </Suspense>
-            ) : (
-              <PartsSkeleton />
-            )}
-          </Box>
+        <Tabs.Content value="modules" className="flex-1 min-h-0 overflow-auto pt-3">
+          {partsDataPromise ? (
+            <Suspense fallback={<PartsSkeleton />}>
+              <ModulePartsContent partsDataPromise={partsDataPromise} />
+            </Suspense>
+          ) : (
+            <PartsSkeleton />
+          )}
         </Tabs.Content>
       </Tabs.Root>
-    </BaseModal>
+    </FullScreenModal>
   )
 }
 
@@ -119,14 +108,14 @@ function MaterialPartsContent({ partsDataPromise }: { partsDataPromise: Promise<
 
   if (!partsData) {
     return (
-      <Flex>
+      <div className="flex">
         <Callout.Root color="red" size="2">
           <Callout.Icon>
             <CrossCircledIcon />
           </Callout.Icon>
           <Callout.Text>{t($ => $.partsListModal.errors.failedPartsList)}</Callout.Text>
         </Callout.Root>
-      </Flex>
+      </div>
     )
   }
 
@@ -139,14 +128,14 @@ function ModulePartsContent({ partsDataPromise }: { partsDataPromise: Promise<Pa
 
   if (!partsData) {
     return (
-      <Flex>
+      <div className="flex">
         <Callout.Root color="red" size="2">
           <Callout.Icon>
             <CrossCircledIcon />
           </Callout.Icon>
           <Callout.Text>{t($ => $.partsListModal.errors.failedModulesList)}</Callout.Text>
         </Callout.Root>
-      </Flex>
+      </div>
     )
   }
 
@@ -155,11 +144,11 @@ function ModulePartsContent({ partsDataPromise }: { partsDataPromise: Promise<Pa
 
 function PartsSkeleton() {
   return (
-    <Flex direction="column" gap="4">
+    <div className="flex flex-col gap-4">
       <CardSkeleton />
       <CardSkeleton />
       <Spinner size="2" style={{ alignSelf: 'center' }} />
-    </Flex>
+    </div>
   )
 }
 

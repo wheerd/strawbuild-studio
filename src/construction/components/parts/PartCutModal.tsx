@@ -1,8 +1,7 @@
-import { Grid } from '@radix-ui/themes'
 import React, { useId, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { BaseModal } from '@/shared/components/BaseModal'
+import { FullScreenModal } from '@/components/ui/FullScreenModal'
 import { SVGViewport, type SVGViewportRef } from '@/shared/components/SVGViewport'
 import { Bounds2D, type Polygon2D, type PolygonWithHoles2D, newVec2 } from '@/shared/geometry'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
@@ -143,81 +142,72 @@ export function PartCutModal({
   )
 
   return (
-    <BaseModal
-      height="90vh"
-      width="95vw"
-      maxHeight="90vh"
-      maxWidth="95vw"
-      title={t($ => $.partCutModal.partCutDiagram)}
-      trigger={trigger}
-    >
-      <Grid rows="1fr" p="0">
-        <div className="p0 m0" style={{ maxHeight: '80vh' }} ref={containerRef}>
-          <SVGViewport
-            ref={viewportRef}
-            contentBounds={displayBounds}
-            paddingAbsolute={40}
-            resetButtonPosition="top-right"
-            svgSize={containerSize}
-          >
-            <defs>
-              <path id={polygonId} d={fullPolygonPath} />
-              {/* Create clip paths for each segment with zigzag edges */}
-              {clipPaths.map(cp => (
-                <clipPath key={cp.id} id={cp.id}>
-                  <path d={cp.path} />
-                </clipPath>
-              ))}
-            </defs>
-
-            {/* Render each segment with clipping - reusing the same polygon with offsets */}
-            {segments.map((segment, index) => {
-              // Calculate X offset to position this segment at its display location
-              const displayStart = coordinateMapper.getSegmentDisplayStart(index)
-              const xOffset = displayStart - segment.start
-
-              return (
-                <g key={`segment-${index}`} clipPath={`url(#${clipPaths[index].id})`}>
-                  <g transform={`translate(${xOffset}, 0)`}>
-                    <use
-                      href={`#${polygonId}`}
-                      stroke="var(--accent-9)"
-                      strokeWidth="1"
-                      fill="var(--accent-9)"
-                      fillOpacity="0.5"
-                      strokeLinejoin="miter"
-                    />
-                  </g>
-                </g>
-              )
-            })}
-
-            {zigzags.map((z, i) => (
-              <path
-                key={`zigzag-${i}`}
-                d={pointsToSvgPath(z, false)}
-                stroke="var(--gray-7)"
-                strokeWidth="5"
-                fill="none"
-                opacity={0.8}
-              />
+    <FullScreenModal title={t($ => $.partCutModal.partCutDiagram)} trigger={trigger}>
+      <div className="h-full" ref={containerRef}>
+        <SVGViewport
+          ref={viewportRef}
+          contentBounds={displayBounds}
+          paddingAbsolute={40}
+          resetButtonPosition="top-right"
+          svgSize={containerSize}
+        >
+          <defs>
+            <path id={polygonId} d={fullPolygonPath} />
+            {/* Create clip paths for each segment with zigzag edges */}
+            {clipPaths.map(cp => (
+              <clipPath key={cp.id} id={cp.id}>
+                <path d={cp.path} />
+              </clipPath>
             ))}
+          </defs>
 
-            {/* Render grid and measurements */}
-            <GridMeasurementSystem
-              polygon={flippedPolygon}
-              displayBounds={displayBounds}
-              coordinateMapper={coordinateMapper}
+          {/* Render each segment with clipping - reusing the same polygon with offsets */}
+          {segments.map((segment, index) => {
+            // Calculate X offset to position this segment at its display location
+            const displayStart = coordinateMapper.getSegmentDisplayStart(index)
+            const xOffset = displayStart - segment.start
+
+            return (
+              <g key={`segment-${index}`} clipPath={`url(#${clipPaths[index].id})`}>
+                <g transform={`translate(${xOffset}, 0)`}>
+                  <use
+                    href={`#${polygonId}`}
+                    stroke="var(--accent-9)"
+                    strokeWidth="1"
+                    fill="var(--accent-9)"
+                    fillOpacity="0.5"
+                    strokeLinejoin="miter"
+                  />
+                </g>
+              </g>
+            )
+          })}
+
+          {zigzags.map((z, i) => (
+            <path
+              key={`zigzag-${i}`}
+              d={pointsToSvgPath(z, false)}
+              stroke="var(--gray-7)"
+              strokeWidth="5"
+              fill="none"
+              opacity={0.8}
             />
+          ))}
 
-            {/* Render angle indicators */}
-            <PolygonAngleIndicators polygon={flippedPolygon} coordinateMapper={coordinateMapper} />
+          {/* Render grid and measurements */}
+          <GridMeasurementSystem
+            polygon={flippedPolygon}
+            displayBounds={displayBounds}
+            coordinateMapper={coordinateMapper}
+          />
 
-            {/* Render diagonal edge measurements */}
-            <DiagonalEdgeMeasurements polygon={flippedPolygon} coordinateMapper={coordinateMapper} />
-          </SVGViewport>
-        </div>
-      </Grid>
-    </BaseModal>
+          {/* Render angle indicators */}
+          <PolygonAngleIndicators polygon={flippedPolygon} coordinateMapper={coordinateMapper} />
+
+          {/* Render diagonal edge measurements */}
+          <DiagonalEdgeMeasurements polygon={flippedPolygon} coordinateMapper={coordinateMapper} />
+        </SVGViewport>
+      </div>
+    </FullScreenModal>
   )
 }

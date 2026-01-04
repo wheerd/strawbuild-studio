@@ -1,8 +1,7 @@
-import { Grid } from '@radix-ui/themes'
 import React, { useId, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { BaseModal } from '@/shared/components/BaseModal'
+import { FullScreenModal } from '@/components/ui/FullScreenModal'
 import { SVGViewport, type SVGViewportRef } from '@/shared/components/SVGViewport'
 import {
   Bounds2D,
@@ -61,48 +60,39 @@ export function SheetPartModal({
   const [containerSize, containerRef] = elementSizeRef()
 
   return (
-    <BaseModal
-      height="90vh"
-      width="95vw"
-      maxHeight="90vh"
-      maxWidth="95vw"
-      title={t($ => $.partCutModal.sheetPartDiagram)}
-      trigger={trigger}
-    >
-      <Grid rows="1fr" p="0">
-        <div className="p0 m0" style={{ maxHeight: '80vh' }} ref={containerRef}>
-          <SVGViewport
-            ref={viewportRef}
-            contentBounds={displayBounds}
-            paddingAbsolute={40 * scaleFactor}
-            resetButtonPosition="top-right"
-            svgSize={containerSize}
-          >
-            <defs>
-              <path id={polygonId} d={fullPolygonPath} />
-            </defs>
+    <FullScreenModal title={t($ => $.partCutModal.sheetPartDiagram)} trigger={trigger}>
+      <div className="h-full" ref={containerRef}>
+        <SVGViewport
+          ref={viewportRef}
+          contentBounds={displayBounds}
+          paddingAbsolute={40 * scaleFactor}
+          resetButtonPosition="top-right"
+          svgSize={containerSize}
+        >
+          <defs>
+            <path id={polygonId} d={fullPolygonPath} />
+          </defs>
 
-            {/* Render the polygon */}
-            <use
-              href={`#${polygonId}`}
-              stroke="var(--accent-9)"
-              strokeWidth={Math.max(1, scaleFactor)}
-              fill="var(--accent-9)"
-              fillOpacity="0.5"
-              strokeLinejoin="miter"
-            />
+          {/* Render the polygon */}
+          <use
+            href={`#${polygonId}`}
+            stroke="var(--accent-9)"
+            strokeWidth={Math.max(1, scaleFactor)}
+            fill="var(--accent-9)"
+            fillOpacity="0.5"
+            strokeLinejoin="miter"
+          />
 
-            {/* Render grid and measurements (no coordinate mapper needed) */}
-            <GridMeasurementSystem polygon={flippedPolygon} displayBounds={displayBounds} scaleFactor={scaleFactor} />
+          {/* Render grid and measurements (no coordinate mapper needed) */}
+          <GridMeasurementSystem polygon={flippedPolygon} displayBounds={displayBounds} scaleFactor={scaleFactor} />
 
-            {/* Render angle indicators */}
-            <PolygonAngleIndicators polygon={flippedPolygon} scaleFactor={scaleFactor} />
+          {/* Render angle indicators */}
+          <PolygonAngleIndicators polygon={flippedPolygon} scaleFactor={scaleFactor} />
 
-            {/* Render diagonal edge measurements */}
-            <DiagonalEdgeMeasurements polygon={flippedPolygon} scaleFactor={scaleFactor} />
-          </SVGViewport>
-        </div>
-      </Grid>
-    </BaseModal>
+          {/* Render diagonal edge measurements */}
+          <DiagonalEdgeMeasurements polygon={flippedPolygon} scaleFactor={scaleFactor} />
+        </SVGViewport>
+      </div>
+    </FullScreenModal>
   )
 }

@@ -1,9 +1,9 @@
-import { Flex, Skeleton, Spinner, Text } from '@radix-ui/themes'
+import { Skeleton, Spinner, Text } from '@radix-ui/themes'
 import React, { Suspense, lazy, use, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { FullScreenModal } from '@/components/ui/FullScreenModal'
 import type { ConstructionModel } from '@/construction/model'
-import { BaseModal } from '@/shared/components/BaseModal'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 import { CanvasThemeProvider } from '@/shared/theme/CanvasThemeContext'
 
@@ -44,22 +44,16 @@ export function ConstructionViewer3DModal({
   }, [refreshKey, isOpen, constructionModelFactory])
 
   return (
-    <BaseModal
+    <FullScreenModal
       open={isOpen}
       onOpenChange={handleOpenChange}
       title={t($ => $.viewer3DModal.title)}
       trigger={trigger}
-      size="2"
-      width="95%"
-      maxWidth="95%"
-      maxHeight="90vh"
-      className="flex flex-col overflow-hidden"
-      resetKeys={[refreshKey]}
     >
-      <Flex direction="column" gap="1" height="100%" className="overflow-hidden">
+      <div className="h-full flex flex-col">
         <div
           ref={containerRef}
-          className="relative flex-1 min-h-[500px] max-h-[calc(90vh-100px)] overflow-hidden border rounded-md"
+          className="relative flex-1 min-h-0 overflow-hidden border rounded-md"
           style={{
             borderColor: 'var(--gray-6)'
           }}
@@ -68,7 +62,7 @@ export function ConstructionViewer3DModal({
             <Suspense
               fallback={
                 <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                  <Skeleton height="95vh" />
+                  <Skeleton height="100%" />
                   <div
                     style={{
                       position: 'absolute',
@@ -112,8 +106,8 @@ export function ConstructionViewer3DModal({
             </Suspense>
           ) : null}
         </div>
-      </Flex>
-    </BaseModal>
+      </div>
+    </FullScreenModal>
   )
 }
 
@@ -149,21 +143,21 @@ function ConstructionViewer3DContent({
 
   if (!constructionModel) {
     return (
-      <Flex align="center" justify="center" style={{ height: '100%' }}>
+      <div className="flex items-center justify-center h-full">
         <Text align="center" color="gray">
           <Text size="6">⚠</Text>
           <br />
           <Text size="2">{t($ => $.planModal.errors.failedModel)}</Text>
         </Text>
-      </Flex>
+      </div>
     )
   }
 
   if (!shouldRenderCanvas) {
     return (
-      <Flex align="center" justify="center" style={{ height: '100%' }}>
+      <div className="flex items-center justify-center h-full">
         <Spinner size="3" />
-      </Flex>
+      </div>
     )
   }
 
