@@ -253,7 +253,7 @@ export function intersectPolygon(polygon1: PolygonWithHoles2D, polygon2: Polygon
   const pathsA = polygonToPathsD(polygon1)
   const pathsB = polygonToPathsD(polygon2)
 
-  const clipper = new module.ClipperD()
+  const clipper = new module.ClipperD(4)
   const polyTree = new module.PolyPathD()
 
   try {
@@ -387,7 +387,7 @@ export function subtractPolygons(subject: Polygon2D[], clips: Polygon2D[]): Poly
   const clipPaths = clips.map(polygon => createPathD(polygon.points))
   const subjectPathsD = createPathsD(subjectPaths)
   const clipPathsD = createPathsD(clipPaths)
-  const clipper = new module.ClipperD()
+  const clipper = new module.ClipperD(4)
   const polyTree = new module.PolyPathD()
 
   try {
@@ -477,7 +477,7 @@ export function unionPolygonsWithHoles(polygons: Polygon2D[]): PolygonWithHoles2
   const module = getClipperModule()
   const paths = polygons.map(polygon => createPathD(polygon.points))
   const pathsD = createPathsD(paths)
-  const clipper = new module.ClipperD()
+  const clipper = new module.ClipperD(4)
   const polyTree = new module.PolyPathD()
 
   try {
