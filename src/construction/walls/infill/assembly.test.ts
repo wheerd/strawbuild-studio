@@ -141,6 +141,13 @@ function createMockInfillConfig(overrides: Partial<InfillWallSegmentConfig> = {}
     desiredPostSpacing: 800,
     minStrawSpace: 70,
     posts: createMockPostConfig(),
+    triangularBattens: {
+      size: 30,
+      material: mockWoodMaterial,
+      inside: false,
+      outside: false,
+      minLength: 100
+    },
     ...overrides
   }
 }

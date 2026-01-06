@@ -13,6 +13,7 @@ import {
   AlertDialog,
   Badge,
   Button,
+  Checkbox,
   DropdownMenu,
   Flex,
   Grid,
@@ -37,9 +38,10 @@ import { type WallAssemblyUsage, getWallAssemblyUsage } from '@/construction/con
 import { WALL_LAYER_PRESETS } from '@/construction/layers/defaults'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import type { MaterialId } from '@/construction/materials/material'
-import { roughWood, woodwool } from '@/construction/materials/material'
+import { battens, roughWood, woodwool } from '@/construction/materials/material'
 import type { PostConfig } from '@/construction/materials/posts'
 import { useMaterialActions } from '@/construction/materials/store'
+import type { TriangularBattenConfig } from '@/construction/materials/triangularBattens'
 import type {
   InfillWallSegmentConfig,
   ModulesWallConfig,
@@ -154,6 +156,11 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
       </Grid>
       <Separator size="4" />
       <PostsConfigSection posts={config.posts} onUpdate={posts => onUpdate({ ...config, posts })} />
+      <Separator size="4" />
+      <TriangularBattensConfigSection
+        triangularBattens={config.triangularBattens}
+        onUpdate={triangularBattens => onUpdate({ ...config, triangularBattens })}
+      />
     </Flex>
   )
 }
@@ -264,6 +271,97 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
   )
 }
 
+interface TriangularBattensConfigSectionProps {
+  triangularBattens: TriangularBattenConfig
+  onUpdate: (config: TriangularBattenConfig) => void
+}
+
+function TriangularBattensConfigSection({
+  triangularBattens,
+  onUpdate
+}: TriangularBattensConfigSectionProps): React.JSX.Element {
+  const { t } = useTranslation('config')
+  return (
+    <Flex direction="column" gap="3">
+      <Flex align="center" gap="2">
+        <Heading size="2">{t($ => $.walls.triangularBattensConfiguration)}</Heading>
+        <Tooltip content={t($ => $.walls.triangularBattensTooltip)}>
+          <InfoCircledIcon style={{ cursor: 'help' }} />
+        </Tooltip>
+      </Flex>
+
+      <Grid columns="5em 1fr 5em 1fr" gap="2" gapX="3" align="center">
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            {t($ => $.walls.battenSize)}
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={triangularBattens.size}
+          onChange={value => onUpdate({ ...triangularBattens, size: value })}
+          unit="mm"
+          size="1"
+        />
+
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            {t($ => $.walls.battenMinLength)}
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={triangularBattens.minLength}
+          onChange={value => onUpdate({ ...triangularBattens, minLength: value })}
+          unit="mm"
+          size="1"
+        />
+      </Grid>
+
+      <Grid columns="5em 1fr" gap="2" gapX="3">
+        <Label.Root>
+          <Text size="1" weight="medium" color="gray">
+            {t($ => $.common.materialLabel)}
+          </Text>
+        </Label.Root>
+        <MaterialSelectWithEdit
+          value={triangularBattens.material}
+          onValueChange={material => {
+            if (!material) return
+            onUpdate({ ...triangularBattens, material })
+          }}
+          size="1"
+          preferredTypes={['dimensional']}
+        />
+      </Grid>
+
+      <Flex gap="3">
+        <Label.Root>
+          <Flex gap="2" align="center">
+            <Checkbox
+              checked={triangularBattens.inside}
+              onCheckedChange={checked => onUpdate({ ...triangularBattens, inside: checked === true })}
+            />
+            <Text size="1" weight="medium">
+              {t($ => $.walls.battenInside)}
+            </Text>
+          </Flex>
+        </Label.Root>
+
+        <Label.Root>
+          <Flex gap="2" align="center">
+            <Checkbox
+              checked={triangularBattens.outside}
+              onCheckedChange={checked => onUpdate({ ...triangularBattens, outside: checked === true })}
+            />
+            <Text size="1" weight="medium">
+              {t($ => $.walls.battenOutside)}
+            </Text>
+          </Flex>
+        </Label.Root>
+      </Flex>
+    </Flex>
+  )
+}
+
 interface ModuleConfigSectionProps {
   module: ModuleConfig
   onUpdate: (module: ModuleConfig) => void
@@ -290,7 +388,8 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
                 maxWidth: module.maxWidth,
                 frameThickness: module.frameThickness,
                 frameMaterial: module.frameMaterial,
-                strawMaterial: module.strawMaterial
+                strawMaterial: module.strawMaterial,
+                triangularBattens: module.triangularBattens
               })
             } else {
               onUpdate({
@@ -300,6 +399,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
                 frameThickness: module.frameThickness,
                 frameMaterial: module.frameMaterial,
                 strawMaterial: module.strawMaterial,
+                triangularBattens: module.triangularBattens,
                 frameWidth: 'frameWidth' in module ? module.frameWidth : 120,
                 spacerSize: 'spacerSize' in module ? module.spacerSize : 120,
                 spacerCount: 'spacerCount' in module ? module.spacerCount : 3,
@@ -469,6 +569,11 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
           </>
         )}
       </Grid>
+      <Separator size="4" />
+      <TriangularBattensConfigSection
+        triangularBattens={module.triangularBattens}
+        onUpdate={triangularBattens => onUpdate({ ...module, triangularBattens })}
+      />
     </Flex>
   )
 }
@@ -830,6 +935,13 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
               infillMaterial: defaultMaterial,
               material: defaultMaterial
             },
+            triangularBattens: {
+              size: 30,
+              material: battens.id,
+              inside: false,
+              outside: false,
+              minLength: 100
+            },
             layers
           }
           break
@@ -843,7 +955,14 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
               maxWidth: 920,
               frameThickness: 60,
               frameMaterial: defaultMaterial,
-              strawMaterial: defaultMaterial
+              strawMaterial: defaultMaterial,
+              triangularBattens: {
+                size: 30,
+                material: battens.id,
+                inside: false,
+                outside: false,
+                minLength: 100
+              }
             },
             infill: {
               maxPostSpacing: 900,
@@ -853,6 +972,13 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                 type: 'full',
                 width: 60,
                 material: defaultMaterial
+              },
+              triangularBattens: {
+                size: 30,
+                material: battens.id,
+                inside: false,
+                outside: false,
+                minLength: 100
               }
             },
             layers
@@ -868,7 +994,14 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
               maxWidth: 920,
               frameThickness: 60,
               frameMaterial: defaultMaterial,
-              strawMaterial: defaultMaterial
+              strawMaterial: defaultMaterial,
+              triangularBattens: {
+                size: 30,
+                material: battens.id,
+                inside: false,
+                outside: false,
+                minLength: 100
+              }
             },
             infill: {
               maxPostSpacing: 900,
@@ -878,6 +1011,13 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                 type: 'full',
                 width: 60,
                 material: defaultMaterial
+              },
+              triangularBattens: {
+                size: 30,
+                material: battens.id,
+                inside: false,
+                outside: false,
+                minLength: 100
               }
             },
             layers

@@ -98,6 +98,13 @@ describe('Material Usage Detection', () => {
           material: roughWood.id,
           infillMaterial: strawbale.id
         },
+        triangularBattens: {
+          size: 30,
+          material: 'batten' as any,
+          inside: false,
+          outside: false,
+          minLength: 100
+        },
         layers: {
           insideThickness: 30,
           insideLayers: [],
@@ -127,7 +134,14 @@ describe('Material Usage Detection', () => {
           type: 'single',
           frameThickness: 60,
           frameMaterial: roughWood.id,
-          strawMaterial: strawbale.id
+          strawMaterial: strawbale.id,
+          triangularBattens: {
+            size: 30,
+            material: 'batten' as any,
+            inside: false,
+            outside: false,
+            minLength: 100
+          }
         },
         infill: {
           maxPostSpacing: 900,
@@ -137,6 +151,13 @@ describe('Material Usage Detection', () => {
             type: 'full',
             width: 60,
             material: roughWood.id
+          },
+          triangularBattens: {
+            size: 30,
+            material: 'batten' as any,
+            inside: false,
+            outside: false,
+            minLength: 100
           }
         },
         layers: {
@@ -174,7 +195,14 @@ describe('Material Usage Detection', () => {
           spacerSize: 120,
           spacerCount: 3,
           spacerMaterial: spacerMaterialId,
-          infillMaterial: woodwool.id
+          infillMaterial: woodwool.id,
+          triangularBattens: {
+            size: 30,
+            material: 'batten' as any,
+            inside: false,
+            outside: false,
+            minLength: 100
+          }
         },
         infill: {
           maxPostSpacing: 900,
@@ -184,6 +212,13 @@ describe('Material Usage Detection', () => {
             type: 'full',
             width: 60,
             material: roughWood.id
+          },
+          triangularBattens: {
+            size: 30,
+            material: 'batten' as any,
+            inside: false,
+            outside: false,
+            minLength: 100
           }
         },
         layers: {
@@ -209,6 +244,107 @@ describe('Material Usage Detection', () => {
       expect(infillResult.current.usedInWallPosts).toBe(false)
     })
 
+    it('detects triangular batten material usage in infill walls', () => {
+      const battenMaterialId = createMaterialId()
+
+      const wallAssembly: WallAssemblyConfig = {
+        id: createWallAssemblyId(),
+        name: 'Infill with Battens',
+        type: 'infill',
+        maxPostSpacing: 900,
+        desiredPostSpacing: 800,
+        minStrawSpace: 70,
+        posts: {
+          type: 'full',
+          width: 60,
+          material: roughWood.id
+        },
+        triangularBattens: {
+          size: 30,
+          material: battenMaterialId,
+          inside: true,
+          outside: true,
+          minLength: 100
+        },
+        layers: {
+          insideThickness: 30,
+          insideLayers: [],
+          outsideThickness: 50,
+          outsideLayers: []
+        }
+      }
+
+      mockUseWallAssemblies.mockReturnValue([wallAssembly])
+
+      const { result } = renderHook(() => useMaterialUsage(battenMaterialId))
+
+      expect(result.current.isUsed).toBe(true)
+      expect(result.current.isDefaultStraw).toBe(false)
+      expect(result.current.assemblyIds).toEqual([wallAssembly.id])
+      expect(result.current.usedInWallPosts).toBe(false)
+    })
+
+    it('detects triangular batten material in module and infill segments', () => {
+      const moduleBattenId = createMaterialId()
+      const infillBattenId = createMaterialId()
+
+      const wallAssembly: WallAssemblyConfig = {
+        id: createWallAssemblyId(),
+        name: 'Modules with Battens',
+        type: 'modules',
+        module: {
+          minWidth: 920,
+          maxWidth: 920,
+          type: 'single',
+          frameThickness: 60,
+          frameMaterial: roughWood.id,
+          strawMaterial: strawbale.id,
+          triangularBattens: {
+            size: 30,
+            material: moduleBattenId,
+            inside: true,
+            outside: true,
+            minLength: 100
+          }
+        },
+        infill: {
+          maxPostSpacing: 900,
+          desiredPostSpacing: 800,
+          minStrawSpace: 70,
+          posts: {
+            type: 'full',
+            width: 60,
+            material: roughWood.id
+          },
+          triangularBattens: {
+            size: 30,
+            material: infillBattenId,
+            inside: true,
+            outside: true,
+            minLength: 100
+          }
+        },
+        layers: {
+          insideThickness: 30,
+          insideLayers: [],
+          outsideThickness: 50,
+          outsideLayers: []
+        }
+      }
+
+      mockUseWallAssemblies.mockReturnValue([wallAssembly])
+
+      // Test module batten material
+      const { result: moduleResult } = renderHook(() => useMaterialUsage(moduleBattenId))
+      expect(moduleResult.current.isUsed).toBe(true)
+      expect(moduleResult.current.assemblyIds).toEqual([wallAssembly.id])
+
+      // Test infill batten material
+      const { result: infillResult } = renderHook(() => useMaterialUsage(infillBattenId))
+      expect(infillResult.current.isUsed).toBe(true)
+      expect(infillResult.current.assemblyIds).toEqual([wallAssembly.id])
+    })
+
     it('detects materials used across multiple configs', () => {
       const ringBeamAssembly: RingBeamAssemblyConfig = {
         id: createRingBeamAssemblyId(),
@@ -231,6 +367,13 @@ describe('Material Usage Detection', () => {
           type: 'full',
           width: 60,
           material: roughWood.id
+        },
+        triangularBattens: {
+          size: 30,
+          material: 'batten' as any,
+          inside: false,
+          outside: false,
+          minLength: 100
         },
         layers: {
           insideThickness: 30,

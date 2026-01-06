@@ -400,6 +400,10 @@
   "walls": {
     "addInsideLayer": "Innenschicht hinzufügen",
     "addOutsideLayer": "Außenschicht hinzufügen",
+    "battenInside": "Innen",
+    "battenMinLength": "Min. Länge",
+    "battenOutside": "Außen",
+    "battenSize": "Größe",
     "configure": "Wandaufbau konfigurieren",
     "copyNameTemplate": "{{name}} (Kopie)",
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
@@ -452,6 +456,8 @@
     "spacerCount": "Anzahl Abstandhalter",
     "spacerMaterial": "Abstandhaltermaterial",
     "spacerSize": "Abstandhaltergröße",
+    "triangularBattensConfiguration": "Dreiecklatten",
+    "triangularBattensTooltip": "Dreiecklatten werden in den Ecken zwischen Ständern und Ballen platziert, um zu verhindern, dass die Ballen rausfallen. Wenn Beplankung verwendet wird, sind die Leisten überflüssig.",
     "types": {
       "infill": "Ausfachung",
       "modules": "Module",

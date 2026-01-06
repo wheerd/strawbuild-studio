@@ -7,7 +7,7 @@ import type {
 } from '@/construction/config/types'
 import { PRESET_WALL_CLAY_PLASTER, PRESET_WALL_LIME_PLASTER } from '@/construction/layers/defaults'
 import type { MaterialId } from '@/construction/materials/material'
-import { concrete, roughWood, strawbale } from '@/construction/materials/material'
+import { battens, concrete, roughWood, strawbale } from '@/construction/materials/material'
 
 import { DEFAULT_EMPTY_ASSEMBLY } from './opening.defaults'
 
@@ -25,6 +25,13 @@ const infillAssembly: InfillWallAssemblyConfig = {
     thickness: 120,
     infillMaterial: strawbale.id,
     material: roughWood.id
+  },
+  triangularBattens: {
+    size: 30,
+    material: battens.id,
+    inside: false,
+    outside: false,
+    minLength: 100
   },
   // No openingAssemblyId - uses global default
   layers: {
@@ -46,7 +53,14 @@ const strawhengeAssembly: StrawhengeWallAssemblyConfig = {
     type: 'single',
     frameThickness: 60,
     frameMaterial: roughWood.id,
-    strawMaterial: strawbale.id
+    strawMaterial: strawbale.id,
+    triangularBattens: {
+      size: 30,
+      material: battens.id,
+      inside: false,
+      outside: false,
+      minLength: 100
+    }
   },
   infill: {
     maxPostSpacing: 900,
@@ -56,6 +70,13 @@ const strawhengeAssembly: StrawhengeWallAssemblyConfig = {
       type: 'full',
       width: 60,
       material: roughWood.id
+    },
+    triangularBattens: {
+      size: 30,
+      material: battens.id,
+      inside: false,
+      outside: false,
+      minLength: 100
     }
   },
   // No openingAssemblyId - uses global default
@@ -78,7 +99,14 @@ const modulesAssembly: ModulesWallAssemblyConfig = {
     type: 'single',
     frameThickness: 60,
     frameMaterial: roughWood.id,
-    strawMaterial: strawbale.id
+    strawMaterial: strawbale.id,
+    triangularBattens: {
+      size: 30,
+      material: battens.id,
+      inside: false,
+      outside: false,
+      minLength: 100
+    }
   },
   infill: {
     maxPostSpacing: 900,
@@ -88,6 +116,13 @@ const modulesAssembly: ModulesWallAssemblyConfig = {
       type: 'full',
       width: 60,
       material: roughWood.id
+    },
+    triangularBattens: {
+      size: 30,
+      material: battens.id,
+      inside: false,
+      outside: false,
+      minLength: 100
     }
   },
   // No openingAssemblyId - uses global default

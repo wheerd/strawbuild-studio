@@ -18,7 +18,14 @@ describe('Module Construction', () => {
       maxWidth: 920,
       frameThickness: 60,
       frameMaterial: 'wood' as any,
-      strawMaterial: 'straw' as any
+      strawMaterial: 'straw' as any,
+      triangularBattens: {
+        size: 30,
+        material: 'batten' as any,
+        inside: false,
+        outside: false,
+        minLength: 100
+      }
     }
 
     it('should create a single frame module with frame elements', () => {
@@ -76,7 +83,14 @@ describe('Module Construction', () => {
       spacerSize: 120,
       spacerCount: 3,
       spacerMaterial: 'spacer-wood' as any,
-      infillMaterial: 'infill' as any
+      infillMaterial: 'infill' as any,
+      triangularBattens: {
+        size: 30,
+        material: 'batten' as any,
+        inside: false,
+        outside: false,
+        minLength: 100
+      }
     }
 
     it('should create a double frame module with more frame elements than single', () => {
@@ -133,7 +147,14 @@ describe('Module Construction', () => {
         maxWidth: 920,
         frameThickness: 60,
         frameMaterial: 'wood' as any,
-        strawMaterial: 'straw' as any
+        strawMaterial: 'straw' as any,
+        triangularBattens: {
+          size: 30,
+          material: 'batten' as any,
+          inside: false,
+          outside: false,
+          minLength: 100
+        }
       }
 
       expect(() => {

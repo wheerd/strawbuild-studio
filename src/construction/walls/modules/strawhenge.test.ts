@@ -54,7 +54,14 @@ const createTestConfig = (): StrawhengeWallConfig => ({
     maxWidth: MODULE_WIDTH,
     frameThickness: 60,
     frameMaterial: 'wood' as any,
-    strawMaterial: 'straw' as any
+    strawMaterial: 'straw' as any,
+    triangularBattens: {
+      size: 30,
+      material: 'batten' as any,
+      inside: false,
+      outside: false,
+      minLength: 100
+    }
   },
   infill: {
     desiredPostSpacing: FULL_BALE,
@@ -64,6 +71,13 @@ const createTestConfig = (): StrawhengeWallConfig => ({
       type: 'full',
       width: POST_WIDTH,
       material: 'wood' as any
+    },
+    triangularBattens: {
+      size: 30,
+      material: 'batten' as any,
+      inside: false,
+      outside: false,
+      minLength: 100
     },
     infillMaterial: 'infill-material' as MaterialId
   },

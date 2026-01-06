@@ -7,7 +7,7 @@ import { type Length, type PolygonWithHoles2D, addVec3, fromTrans, newVec2, newV
 
 import type { MaterialId } from './material'
 
-export interface TriangleBattenConfig {
+export interface TriangularBattenConfig {
   size: Length // Default: 30mm
   material: MaterialId // Default: Battens
   inside: boolean
@@ -15,9 +15,9 @@ export interface TriangleBattenConfig {
   minLength: Length // Default: 10cm
 }
 
-export function* constructTriangleBattens(
+export function* constructTriangularBattens(
   area: WallConstructionArea,
-  config: TriangleBattenConfig
+  config: TriangularBattenConfig
 ): Generator<ConstructionResult> {
   const startHeight = area.getHeightAtStart()
   const startBattenHeight = startHeight - 2 * config.size
@@ -39,7 +39,7 @@ export function* constructTriangleBattens(
           createExtrudedPolygon(startPolygon, 'xy', startBattenHeight),
           fromTrans(addVec3(area.position, newVec3(0, 0, config.size))),
           [TAG_TRIANGLE_BATTEN],
-          { type: 'triangle-batten' }
+          { type: 'triangular-batten' }
         )
       )
     }
@@ -56,7 +56,7 @@ export function* constructTriangleBattens(
           createExtrudedPolygon(endPolygon, 'xy', endBattenHeight),
           fromTrans(addVec3(area.position, newVec3(area.size[0], 0, config.size))),
           [TAG_TRIANGLE_BATTEN],
-          { type: 'triangle-batten' }
+          { type: 'triangular-batten' }
         )
       )
     }
@@ -73,7 +73,7 @@ export function* constructTriangleBattens(
           createExtrudedPolygon(bottomPolygon, 'yz', horizontalBattenLength),
           fromTrans(addVec3(area.position, newVec3(config.size, 0, 0))),
           [TAG_TRIANGLE_BATTEN],
-          { type: 'triangle-batten' }
+          { type: 'triangular-batten' }
         )
       )
       if (area.minHeight === area.size[2]) {
@@ -89,7 +89,7 @@ export function* constructTriangleBattens(
             createExtrudedPolygon(topPolygon, 'yz', horizontalBattenLength),
             fromTrans(addVec3(area.position, newVec3(config.size, 0, startHeight))),
             [TAG_TRIANGLE_BATTEN],
-            { type: 'triangle-batten' }
+            { type: 'triangular-batten' }
           )
         )
       }
@@ -110,7 +110,7 @@ export function* constructTriangleBattens(
           createExtrudedPolygon(startPolygon, 'xy', startBattenHeight),
           fromTrans(addVec3(area.position, newVec3(0, 0, config.size))),
           [TAG_TRIANGLE_BATTEN],
-          { type: 'triangle-batten' }
+          { type: 'triangular-batten' }
         )
       )
     }
@@ -131,7 +131,7 @@ export function* constructTriangleBattens(
           createExtrudedPolygon(endPolygon, 'xy', endBattenHeight),
           fromTrans(addVec3(area.position, newVec3(area.size[0], 0, config.size))),
           [TAG_TRIANGLE_BATTEN],
-          { type: 'triangle-batten' }
+          { type: 'triangular-batten' }
         )
       )
     }
@@ -149,7 +149,7 @@ export function* constructTriangleBattens(
           createExtrudedPolygon(bottomPolygon, 'yz', horizontalBattenLength),
           fromTrans(addVec3(area.position, newVec3(config.size, area.size[1], 0))),
           [TAG_TRIANGLE_BATTEN],
-          { type: 'triangle-batten' }
+          { type: 'triangular-batten' }
         )
       )
       if (area.minHeight === area.size[2]) {
@@ -165,7 +165,7 @@ export function* constructTriangleBattens(
             createExtrudedPolygon(topPolygon, 'yz', horizontalBattenLength),
             fromTrans(addVec3(area.position, newVec3(config.size, area.size[1], startHeight))),
             [TAG_TRIANGLE_BATTEN],
-            { type: 'triangle-batten' }
+            { type: 'triangular-batten' }
           )
         )
       }

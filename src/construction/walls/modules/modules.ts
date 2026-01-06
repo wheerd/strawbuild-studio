@@ -2,7 +2,7 @@ import { type ConstructionElement, createCuboidElement } from '@/construction/el
 import { WallConstructionArea } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
 import { constructStraw } from '@/construction/materials/straw'
-import { type TriangleBattenConfig, constructTriangleBattens } from '@/construction/materials/triangleBattens'
+import { type TriangularBattenConfig, constructTriangularBattens } from '@/construction/materials/triangularBattens'
 import { type InitialPartInfo } from '@/construction/parts'
 import { type ConstructionResult, yieldAsGroup, yieldElement, yieldMeasurement } from '@/construction/results'
 import { createElementFromArea } from '@/construction/shapes'
@@ -23,7 +23,7 @@ export interface BaseModuleConfig {
   frameThickness: Length // Default: 60mm
   frameMaterial: MaterialId
   strawMaterial?: MaterialId
-  triangleBattens: TriangleBattenConfig
+  triangularBattens: TriangularBattenConfig
 }
 
 export interface SingleFrameModuleConfig extends BaseModuleConfig {
@@ -96,7 +96,7 @@ function* constructSingleFrameModule(
 
   // Straw filling
   yield* constructStraw(strawArea, config.strawMaterial)
-  yield* constructTriangleBattens(strawArea, config.triangleBattens)
+  yield* constructTriangularBattens(strawArea, config.triangularBattens)
 
   yield yieldMeasurement({
     startPoint: position,
@@ -206,7 +206,7 @@ function* constructDoubleFrameModule(
 
   // Straw filling
   yield* constructStraw(strawArea, config.strawMaterial)
-  yield* constructTriangleBattens(strawArea, config.triangleBattens)
+  yield* constructTriangularBattens(strawArea, config.triangularBattens)
 
   const gapWidth = size[1] - 2 * frameWidth
   if (gapWidth > 0) {

@@ -84,6 +84,13 @@ function createMockAssembly(id: string, name: string, layers: WallLayersConfig):
       width: 60,
       material: 'wood' as any
     },
+    triangularBattens: {
+      size: 30,
+      material: 'batten' as any,
+      inside: false,
+      outside: false,
+      minLength: 100
+    },
     layers
   }
 }

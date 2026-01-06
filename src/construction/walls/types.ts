@@ -3,7 +3,7 @@ import type { WallConstructionArea } from '@/construction/geometry'
 import type { LayerConfig } from '@/construction/layers/types'
 import type { MaterialId } from '@/construction/materials/material'
 import { type PostConfig, validatePosts } from '@/construction/materials/posts'
-import type { TriangleBattenConfig } from '@/construction/materials/triangleBattens'
+import type { TriangularBattenConfig } from '@/construction/materials/triangularBattens'
 import type { ConstructionModel } from '@/construction/model'
 import type { ConstructionResult } from '@/construction/results'
 import type { StoreyContext } from '@/construction/storeys/context'
@@ -38,7 +38,7 @@ export interface InfillWallSegmentConfig {
   desiredPostSpacing: Length // Default: 800mm
   minStrawSpace: Length // Default: 70mm
   posts: PostConfig // Default: full
-  triangleBattens: TriangleBattenConfig
+  triangularBattens: TriangularBattenConfig
   strawMaterial?: MaterialId
   infillMaterial?: MaterialId
 }
@@ -89,13 +89,22 @@ const validateLayers = (layers: WallLayersConfig): void => {
 
 // Opening validation moved to OpeningConfig in openings/types.ts
 
+const validateTriangularBattens = (config: TriangularBattenConfig): void => {
+  ensurePositive(config.size, 'Triangular batten size must be greater than zero')
+  ensureNonNegative(config.minLength, 'Triangular batten minimum length cannot be negative')
+}
+
 const validateInfillSegment = (
-  config: Pick<InfillWallConfig, 'desiredPostSpacing' | 'maxPostSpacing' | 'minStrawSpace' | 'posts'>
+  config: Pick<
+    InfillWallConfig,
+    'desiredPostSpacing' | 'maxPostSpacing' | 'minStrawSpace' | 'posts' | 'triangularBattens'
+  >
 ): void => {
   ensurePositive(config.desiredPostSpacing, 'Desired post spacing must be greater than 0')
   ensurePositive(config.maxPostSpacing, 'Maximum post spacing must be greater than 0')
   ensurePositive(config.minStrawSpace, 'Minimum straw space must be greater than 0')
   validatePosts(config.posts)
+  validateTriangularBattens(config.triangularBattens)
 }
 
 const validateModule = (module: ModuleConfig): void => {

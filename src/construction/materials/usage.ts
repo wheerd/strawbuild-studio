@@ -150,12 +150,14 @@ function isMaterialUsedInWall(materialId: MaterialId, assembly: WallAssemblyConf
       if ('infillMaterial' in assembly.posts && assembly.posts.infillMaterial === materialId) return true
       if (assembly.strawMaterial === materialId) return true
       if (assembly.infillMaterial === materialId) return true
+      if (assembly.triangularBattens.material === materialId) return true
       break
 
     case 'strawhenge':
     case 'modules':
       if (assembly.module.frameMaterial === materialId) return true
       if (assembly.module.strawMaterial === materialId) return true
+      if (assembly.module.triangularBattens.material === materialId) return true
       if (assembly.module.type === 'double') {
         if (assembly.module.spacerMaterial === materialId) return true
         if (assembly.module.infillMaterial === materialId) return true
@@ -163,6 +165,7 @@ function isMaterialUsedInWall(materialId: MaterialId, assembly: WallAssemblyConf
       if (assembly.infill.posts.material === materialId) return true
       if (assembly.infill.strawMaterial === materialId) return true
       if (assembly.infill.infillMaterial === materialId) return true
+      if (assembly.infill.triangularBattens.material === materialId) return true
       break
 
     case 'non-strawbale':

@@ -252,4 +252,75 @@ describe('config migrations', () => {
     const roof = migrated.roofAssemblyConfigs.purlin
     expect(roof.ceilingSheathingMaterial).toBe('new-mat')
   })
+
+  it('adds triangle batten configuration to wall assemblies', () => {
+    const migrated = applyMigrations({
+      wallAssemblyConfigs: {
+        infillWithoutBattens: {
+          type: 'infill',
+          posts: { type: 'full', width: 60, material: roughWood.id }
+        },
+        strawhengeWithoutBattens: {
+          type: 'strawhenge',
+          module: {
+            type: 'single',
+            minWidth: 920,
+            maxWidth: 920,
+            frameThickness: 60,
+            frameMaterial: roughWood.id,
+            strawMaterial: strawbale.id
+          },
+          infill: {
+            posts: { type: 'full', width: 60, material: roughWood.id }
+          }
+        },
+        modulesWithoutBattens: {
+          type: 'modules',
+          module: {
+            type: 'single',
+            minWidth: 920,
+            maxWidth: 920,
+            frameThickness: 60,
+            frameMaterial: roughWood.id,
+            strawMaterial: strawbale.id
+          },
+          infill: {
+            posts: { type: 'full', width: 60, material: roughWood.id }
+          }
+        }
+      }
+    }) as {
+      wallAssemblyConfigs: Record<
+        string,
+        {
+          triangularBattens?: Record<string, unknown>
+          module?: { triangularBattens?: Record<string, unknown> }
+          infill?: { triangularBattens?: Record<string, unknown> }
+        }
+      >
+    }
+
+    // Check infill assembly
+    const infill = migrated.wallAssemblyConfigs.infillWithoutBattens
+    expect(infill.triangularBattens).toBeDefined()
+    expect(infill.triangularBattens?.size).toBe(30)
+    expect(infill.triangularBattens?.inside).toBe(false)
+    expect(infill.triangularBattens?.outside).toBe(false)
+    expect(infill.triangularBattens?.minLength).toBe(100)
+
+    // Check strawhenge module battens
+    const strawhenge = migrated.wallAssemblyConfigs.strawhengeWithoutBattens
+    expect(strawhenge.module?.triangularBattens).toBeDefined()
+    expect(strawhenge.module?.triangularBattens?.size).toBe(30)
+    expect(strawhenge.module?.triangularBattens?.inside).toBe(false)
+
+    // Check strawhenge infill battens
+    expect(strawhenge.infill?.triangularBattens).toBeDefined()
+    expect(strawhenge.infill?.triangularBattens?.outside).toBe(false)
+
+    // Check modules assembly
+    const modules = migrated.wallAssemblyConfigs.modulesWithoutBattens
+    expect(modules.module?.triangularBattens).toBeDefined()
+    expect(modules.infill?.triangularBattens).toBeDefined()
+  })
 })

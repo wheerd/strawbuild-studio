@@ -477,6 +477,10 @@ interface Resources {
     "walls": {
       "addInsideLayer": "Add Inside Layer",
       "addOutsideLayer": "Add Outside Layer",
+      "battenInside": "Inside",
+      "battenMinLength": "Min Length",
+      "battenOutside": "Outside",
+      "battenSize": "Size",
       "configure": "Configure Wall Assembly",
       "copyNameTemplate": "{{name}} (Copy)",
       "defaultLabel": "{{label}} <gray>(default)</gray>",
@@ -529,6 +533,8 @@ interface Resources {
       "spacerCount": "Spacer Count",
       "spacerMaterial": "Spacer Material",
       "spacerSize": "Spacer Size",
+      "triangularBattensConfiguration": "Triangular Battens",
+      "triangularBattensTooltip": "Triangular battens are placed in the corners between posts and strawbales to prevent them from slipping out. Not needed when there is planking to hold the bales.",
       "types": {
         "infill": "Infill",
         "modules": "Modules",
@@ -848,7 +854,7 @@ interface Resources {
       "wall-part_infill": "Infill",
       "wall-part_post": "Post",
       "wall-part_sill": "Sill",
-      "wall-part_triangle-batten": "Triangular Batten"
+      "wall-part_triangular-batten": "Triangular Batten"
     },
     "viewer3DModal": {
       "title": "3D Construction View"

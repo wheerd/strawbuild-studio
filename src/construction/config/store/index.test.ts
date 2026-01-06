@@ -367,6 +367,13 @@ describe('ConfigStore', () => {
           width: 60,
           material: postMaterial
         },
+        triangularBattens: {
+          size: 30,
+          material: 'batten' as any,
+          inside: false,
+          outside: false,
+          minLength: 100
+        },
         layers: {
           insideThickness: 30,
           insideLayers: [],

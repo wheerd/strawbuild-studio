@@ -138,7 +138,7 @@ export const TAG_INFILL: PredefinedTag = {
 }
 
 export const TAG_TRIANGLE_BATTON: PredefinedTag = {
-  id: 'wall-part_triangle-batten',
+  id: 'wall-part_triangular-batten',
   category: 'wall-part'
 }
 

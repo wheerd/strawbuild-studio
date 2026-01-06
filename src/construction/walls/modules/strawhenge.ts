@@ -1,7 +1,7 @@
 import type { Perimeter, PerimeterWall } from '@/building/model/model'
 import { WallConstructionArea } from '@/construction/geometry'
 import { constructStraw } from '@/construction/materials/straw'
-import { constructTriangleBattens } from '@/construction/materials/triangleBattens'
+import { constructTriangularBattens } from '@/construction/materials/triangularBattens'
 import { yieldMeasurementFromArea } from '@/construction/measurements'
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
@@ -93,7 +93,7 @@ export class StrawhengeWallAssembly extends BaseWallAssembly<StrawhengeWallConfi
       }
       yield* constructStraw(strawArea, infill.strawMaterial)
       yield* yieldMeasurementFromArea(strawArea, 'width', [TAG_POST_SPACING])
-      yield* constructTriangleBattens(strawArea, infill.triangleBattens)
+      yield* constructTriangularBattens(strawArea, infill.triangularBattens)
     }
 
     if (!moduleArea.isEmpty) {

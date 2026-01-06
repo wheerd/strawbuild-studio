@@ -301,7 +301,7 @@
     "wall-part_infill": "Infill",
     "wall-part_post": "Post",
     "wall-part_sill": "Sill",
-    "wall-part_triangle-batten": "Triangular Batten"
+    "wall-part_triangular-batten": "Triangular Batten"
   },
   "tagVisibility": {
     "hideCategory": "Hide Category",
