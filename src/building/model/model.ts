@@ -2,6 +2,7 @@ import type {
   FloorAreaId,
   FloorAssemblyId,
   FloorOpeningId,
+  IntermediateWallId,
   OpeningAssemblyId,
   OpeningId,
   PerimeterCornerId,
@@ -11,12 +12,14 @@ import type {
   RoofAssemblyId,
   RoofId,
   RoofOverhangId,
+  RoomId,
   StoreyId,
   WallAssemblyId,
+  WallNodeId,
   WallPostId
 } from '@/building/model/ids'
 import type { MaterialId } from '@/construction/materials/material'
-import { type Length, type LineSegment2D, type Polygon2D, type Vec2 } from '@/shared/geometry'
+import { type Area, type Length, type LineSegment2D, type Polygon2D, type Vec2 } from '@/shared/geometry'
 
 export type PerimeterReferenceSide = 'inside' | 'outside'
 
@@ -80,8 +83,11 @@ export interface Perimeter {
   referencePolygon: Vec2[]
 
   // Per-side wall data
-  walls: PerimeterWall[] // walls[i] goes from corners[i].insidePoint -> corners[(i + 1) % corners.length].insidePoint
+  walls: PerimeterWall[] // walls[i] goes from corners[i] -> corners[(i + 1) % corners.length]
   corners: PerimeterCorner[]
+
+  roomIds: RoomId[]
+  intermediateWallIds: IntermediateWallId[]
 }
 
 export interface PerimeterWall {
@@ -169,4 +175,101 @@ export interface Roof {
   downSlopeDirection: Vec2
   rise: Length
   span: Length
+}
+
+export type RoomType =
+  | 'living-room'
+  | 'kitchen'
+  | 'dining-room'
+  | 'bedroom'
+  | 'bathroom'
+  | 'wc'
+  | 'hallway'
+  | 'office'
+  | 'storage'
+  | 'utility'
+  | 'service'
+  | 'generic'
+
+export interface BaseWallNode {
+  id: WallNodeId
+  perimeterId: PerimeterId
+  type: 'perimeter' | 'inner'
+}
+
+export interface PerimeterWallNode extends BaseWallNode {
+  type: 'perimeter'
+  wallId: PerimeterWallId
+  offsetFromCornerStart: Length
+
+  // Computed
+  position: Vec2
+}
+
+export interface InnerWallNode extends BaseWallNode {
+  type: 'inner'
+  position: Vec2
+  constructedBy: IntermediateWallId
+
+  // Computed
+  boundary: Polygon2D
+}
+
+export type WallNode = PerimeterWallNode | InnerWallNode
+
+export interface PerimeterWallNode extends BaseWallNode {
+  type: 'perimeter'
+}
+
+export type WallId = PerimeterWallId | IntermediateWallId
+
+export interface Room {
+  id: RoomId
+  perimeterId: PerimeterId
+
+  type: RoomType
+  counter: number // Counts up the rooms per storey and room type (i.e. bedroom 1, bedroom 2, ...)
+  customLabel?: string
+
+  wallIds: WallId[] // Detected automatically
+
+  // Computed geometry
+  boundary: Polygon2D
+  area: Area
+}
+
+export interface WallAttachment {
+  nodeId: WallNodeId
+  axis: 'left' | 'center' | 'right'
+}
+
+export interface IntermediateWall {
+  id: IntermediateWallId
+  perimeterId: PerimeterId
+
+  start: WallAttachment
+  end: WallAttachment
+
+  thickness: Length
+  openings: Opening[]
+
+  // Computed references
+  leftRoomId?: RoomId
+  rightRoomId?: RoomId
+
+  // Computed geometry:
+  boundary: Polygon2D
+
+  centerLine: LineSegment2D
+  wallLength: Length
+
+  leftLength: Length
+  leftLine: LineSegment2D
+  rightLength: Length
+  rightLine: LineSegment2D
+
+  direction: Vec2 // Normalized from start -> end of wall
+  leftDirection: Vec2 // Normalized vector pointing left
+
+  // TODO: wallAssemblyId: WallAssemblyId
 }
