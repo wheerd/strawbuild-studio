@@ -1208,6 +1208,11 @@ const updatePerimeterGeometry = (state: PerimetersState, perimeterId: PerimeterI
     const endCorner = corners[(i + 1) % corners.length]
     updateWallGeometry(wallGeometries[i], thicknesses[i], startCorner, endCorner)
   }
+
+  state._perimeterGeometry[perimeterId] = {
+    innerPolygon: { points: corners.map(c => c.insidePoint) },
+    outerPolygon: { points: corners.map(c => c.outsidePoint) }
+  }
 }
 
 // Helper to remove a corner and merge adjacent walls

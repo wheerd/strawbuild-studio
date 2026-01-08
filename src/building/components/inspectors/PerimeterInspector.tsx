@@ -31,7 +31,7 @@ import { useViewModeActions } from '@/editor/hooks/useViewMode'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { ConstructionPlanIcon, FitToViewIcon, Model3DIcon, RoofIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
-import { Bounds2D, type Length, calculatePolygonArea } from '@/shared/geometry'
+import { Bounds2D, type Length, calculatePolygonArea, polygonPerimeter } from '@/shared/geometry'
 import { useFormatters } from '@/shared/i18n/useFormatters'
 
 interface PerimeterInspectorProps {
@@ -159,17 +159,16 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
     )
   }
 
-  const totalInnerPerimeter = perimeter.walls.reduce((l, s) => l + s.insideLength, 0)
-  const totalOuterPerimeter = perimeter.walls.reduce((l, s) => l + s.outsideLength, 0)
-  const totalInnerArea = calculatePolygonArea({ points: perimeter.corners.map(c => c.insidePoint) })
-  const totalOuterArea = calculatePolygonArea({ points: perimeter.corners.map(c => c.outsidePoint) })
+  const totalInnerPerimeter = polygonPerimeter(perimeter.innerPolygon)
+  const totalOuterPerimeter = polygonPerimeter(perimeter.outerPolygon)
+  const totalInnerArea = calculatePolygonArea(perimeter.innerPolygon)
+  const totalOuterArea = calculatePolygonArea(perimeter.outerPolygon)
 
   const hasNonStandardAngles = perimeter.corners.some(corner => corner.interiorAngle % 90 !== 0)
 
   const handleFitToView = useCallback(() => {
     if (!perimeter) return
-    const points = perimeter.corners.map(c => c.outsidePoint)
-    const bounds = Bounds2D.fromPoints(points)
+    const bounds = Bounds2D.fromPoints(perimeter.outerPolygon.points)
     viewportActions.fitToView(bounds)
   }, [perimeter, viewportActions])
 
@@ -189,9 +188,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
       if (!perimeter) return
 
       // Create polygon from perimeter outer points
-      const polygon = {
-        points: perimeter.corners.map(corner => corner.outsidePoint)
-      }
+      const polygon = perimeter.outerPolygon
 
       // Calculate direction perpendicular to first edge
       if (polygon.points.length < 2) {
