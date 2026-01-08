@@ -1,4 +1,4 @@
-import type { PerimeterCorner, PerimeterWall } from '@/building/model'
+import type { PerimeterCornerWithGeometry, PerimeterWallWithGeometry } from '@/building/model'
 import { PolygonWithBoundingRect, polygonEdges } from '@/construction/helpers'
 import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
 import { type ConstructionResult } from '@/construction/results'
@@ -21,9 +21,9 @@ import {
 import type { RingBeamAssembly, RingBeamConfigBase, RingBeamSegment } from './types'
 
 export interface ColinearPart {
-  startCorner: PerimeterCorner
-  endCorner: PerimeterCorner
-  wall: PerimeterWall
+  startCorner: PerimeterCornerWithGeometry
+  endCorner: PerimeterCornerWithGeometry
+  wall: PerimeterWallWithGeometry
   prevWallIndex: number
   nextWallIndex: number
 }
@@ -47,7 +47,7 @@ export abstract class BaseRingBeamAssembly<T extends RingBeamConfigBase> impleme
 
     // Track colinear segments
     let colinearStartIndex: number | null = null
-    let colinearStartCorner: PerimeterCorner | null = null
+    let colinearStartCorner: PerimeterCornerWithGeometry | null = null
 
     for (let offset = 0; offset < segmentCount; offset++) {
       const wallIndex = (startIndex + offset) % total
@@ -132,7 +132,7 @@ export abstract class BaseRingBeamAssembly<T extends RingBeamConfigBase> impleme
     }
   }
 
-  protected constructionCutByOuterEdge(corner: PerimeterCorner, side: 'start' | 'end'): boolean {
+  protected constructionCutByOuterEdge(corner: PerimeterCornerWithGeometry, side: 'start' | 'end'): boolean {
     const isConvex = corner.interiorAngle < 180
     const isCornerConstructedByThisWall =
       side === 'start' ? corner.constructedByWall === 'next' : corner.constructedByWall === 'previous'
@@ -171,10 +171,10 @@ export abstract class BaseRingBeamAssembly<T extends RingBeamConfigBase> impleme
     dir: Vec2,
     outsideDir: Vec2,
     prevInSegment: boolean,
-    startCorner: PerimeterCorner,
+    startCorner: PerimeterCornerWithGeometry,
     prevDir: Vec2,
     nextInSegment: boolean,
-    endCorner: PerimeterCorner,
+    endCorner: PerimeterCornerWithGeometry,
     nextDir: Vec2,
     offsetFromInside: Length,
     width?: Length
@@ -228,7 +228,7 @@ export abstract class BaseRingBeamAssembly<T extends RingBeamConfigBase> impleme
   }
 
   private determineCornerPoints(
-    corner: PerimeterCorner,
+    corner: PerimeterCornerWithGeometry,
     otherInSegment: boolean,
     outsideDir: Vec2,
     offsetFromInside: Length,

@@ -1,16 +1,16 @@
-import type { Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model'
+import type { Perimeter, PerimeterCornerWithGeometry, PerimeterWallWithGeometry } from '@/building/model'
 import { getConfigActions } from '@/construction/config'
 import type { WallCornerInfo } from '@/construction/walls/construction'
 import { distVec2, scaleAddVec2 } from '@/shared/geometry'
 
 export interface WallContext {
-  startCorner: PerimeterCorner
-  previousWall: PerimeterWall
-  endCorner: PerimeterCorner
-  nextWall: PerimeterWall
+  startCorner: PerimeterCornerWithGeometry
+  previousWall: PerimeterWallWithGeometry
+  endCorner: PerimeterCornerWithGeometry
+  nextWall: PerimeterWallWithGeometry
 }
 
-export function getWallContext(wall: PerimeterWall, perimeter: Perimeter): WallContext {
+export function getWallContext(wall: PerimeterWallWithGeometry, perimeter: PerimeterWithGeometry): WallContext {
   const wallIndex = perimeter.walls.findIndex(w => w.id === wall.id)
   if (wallIndex === -1) {
     throw new Error(`Could not find wall with id ${wall.id}`)
@@ -28,7 +28,7 @@ export function getWallContext(wall: PerimeterWall, perimeter: Perimeter): WallC
   }
 }
 
-export function calculateWallCornerInfo(wall: PerimeterWall, context: WallContext): WallCornerInfo {
+export function calculateWallCornerInfo(wall: PerimeterWallWithGeometry, context: WallContext): WallCornerInfo {
   const { startCorner, endCorner, previousWall, nextWall } = context
   const { getWallAssemblyById } = getConfigActions()
 

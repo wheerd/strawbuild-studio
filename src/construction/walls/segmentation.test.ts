@@ -1,6 +1,6 @@
 import { type Mock, type Mocked, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { Opening, Perimeter, PerimeterWall, WallPost } from '@/building/model'
+import type { Opening, Perimeter, PerimeterWallWithGeometry, WallPost } from '@/building/model'
 import {
   type StoreyId,
   createOpeningId,
@@ -81,7 +81,12 @@ const mockResolveRingBeamAssembly = vi.mocked(resolveRingBeamAssembly)
 const mockConstructWallPost = vi.mocked(constructWallPost)
 
 // Test data helpers
-function createMockWall(id: string, wallLength: Length, thickness: Length, openings: Opening[] = []): PerimeterWall {
+function createMockWall(
+  id: string,
+  wallLength: Length,
+  thickness: Length,
+  openings: Opening[] = []
+): PerimeterWallWithGeometry {
   return {
     id: id as any,
     wallAssemblyId: createWallAssemblyId(),
@@ -104,7 +109,7 @@ function createMockWall(id: string, wallLength: Length, thickness: Length, openi
   }
 }
 
-function createMockPerimeter(walls: PerimeterWall[]): Perimeter {
+function createMockPerimeter(walls: PerimeterWallWithGeometry[]): PerimeterWithGeometry {
   return {
     id: createPerimeterId(),
     storeyId: 'test-storey' as any,

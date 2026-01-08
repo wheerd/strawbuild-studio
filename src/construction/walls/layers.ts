@@ -1,4 +1,4 @@
-import type { Perimeter, PerimeterWall } from '@/building/model'
+import type { Perimeter, PerimeterWallWithGeometry } from '@/building/model'
 import type { GroupOrElement } from '@/construction/elements'
 import { WallConstructionArea } from '@/construction/geometry'
 import { LAYER_CONSTRUCTIONS } from '@/construction/layers'
@@ -65,8 +65,8 @@ const aggregateLayerResults = (results: ConstructionResult[]): ConstructionModel
 }
 
 export function constructWallLayers(
-  wall: PerimeterWall,
-  perimeter: Perimeter,
+  wall: PerimeterWallWithGeometry,
+  perimeter: PerimeterWithGeometry,
   storeyContext: StoreyContext,
   layers: WallLayersConfig
 ): ConstructionModel {

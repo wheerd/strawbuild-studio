@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-import type { PerimeterCorner, PerimeterWall } from '@/building/model'
+import type { PerimeterCornerWithGeometry, PerimeterWallWithGeometry } from '@/building/model'
 import { createPerimeterCornerId, createPerimeterWallId } from '@/building/model/ids'
 import { type Vec2, ZERO_VEC2, newVec2 } from '@/shared/geometry'
 
@@ -21,7 +21,7 @@ vi.mock('@/construction/config/store', () => ({
 }))
 
 describe('PerimeterCornerShape', () => {
-  const createMockWall = (direction: Vec2): PerimeterWall => ({
+  const createMockWall = (direction: Vec2): PerimeterWallWithGeometry => ({
     id: createPerimeterWallId(),
     thickness: 420,
     wallAssemblyId: 'assembly1' as any,
@@ -36,7 +36,7 @@ describe('PerimeterCornerShape', () => {
     outsideDirection: newVec2(-direction[1], direction[0])
   })
 
-  const createMockCorner = (interiorAngleDegrees: number): PerimeterCorner => ({
+  const createMockCorner = (interiorAngleDegrees: number): PerimeterCornerWithGeometry => ({
     id: createPerimeterCornerId(),
     insidePoint: newVec2(100, 100),
     outsidePoint: newVec2(120, 120),

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model'
+import type { Perimeter, PerimeterCornerWithGeometry, PerimeterWallWithGeometry } from '@/building/model'
 import { createPerimeterId, createPerimeterWallId, createWallAssemblyId } from '@/building/model/ids'
 import { type ConfigActions, type WallAssemblyConfig, getConfigActions } from '@/construction/config'
 import type { WallLayersConfig } from '@/construction/walls'
@@ -18,7 +18,12 @@ vi.mock('@/construction/config', () => ({
 const mockGetConfigActions = vi.mocked(getConfigActions)
 
 // Mock data helpers
-function createMockWall(id: string, wallLength: Length, thickness: Length, wallAssemblyId?: string): PerimeterWall {
+function createMockWall(
+  id: string,
+  wallLength: Length,
+  thickness: Length,
+  wallAssemblyId?: string
+): PerimeterWallWithGeometry {
   const startPoint = ZERO_VEC2
   const endPoint = newVec2(wallLength, 0)
 
@@ -49,7 +54,7 @@ function createMockCorner(
   insidePoint: Vec2,
   outsidePoint: Vec2,
   constructedByWall: 'previous' | 'next'
-): PerimeterCorner {
+): PerimeterCornerWithGeometry {
   return {
     id: id as any,
     insidePoint,
@@ -60,7 +65,10 @@ function createMockCorner(
   }
 }
 
-function createMockPerimeter(walls: PerimeterWall[], corners: PerimeterCorner[]): Perimeter {
+function createMockPerimeter(
+  walls: PerimeterWallWithGeometry[],
+  corners: PerimeterCornerWithGeometry[]
+): PerimeterWithGeometry {
   return {
     id: createPerimeterId(),
     storeyId: 'test-storey' as any,

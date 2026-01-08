@@ -21,7 +21,7 @@ export interface DoorSpec {
 /**
  * Add windows to a perimeter based on window specifications
  */
-export function addWindows(perimeter: Perimeter, windowSpecs: WindowSpec[]): void {
+export function addWindows(perimeter: PerimeterWithGeometry, windowSpecs: WindowSpec[]): void {
   const modelStore = getModelActions()
   const walls = perimeter.walls
 
@@ -50,7 +50,7 @@ export function addWindows(perimeter: Perimeter, windowSpecs: WindowSpec[]): voi
 /**
  * Add doors to a perimeter based on door specifications
  */
-export function addDoors(perimeter: Perimeter, doorSpecs: DoorSpec[]): void {
+export function addDoors(perimeter: PerimeterWithGeometry, doorSpecs: DoorSpec[]): void {
   const modelStore = getModelActions()
   const walls = perimeter.walls
 

@@ -50,7 +50,11 @@ import {
   createWallFaceOffsets
 } from './context'
 
-export function constructPerimeter(perimeter: Perimeter, includeFloor = true, includeRoof = true): ConstructionModel {
+export function constructPerimeter(
+  perimeter: PerimeterWithGeometry,
+  includeFloor = true,
+  includeRoof = true
+): ConstructionModel {
   const { getStoreyById, getFloorOpeningsByStorey, getPerimetersByStorey, getRoofsByStorey } = getModelActions()
   const storey = getStoreyById(perimeter.storeyId)
   if (!storey) {
@@ -269,7 +273,7 @@ export interface PerimeterStats {
   ceilingHeight: Length
 }
 
-export function getPerimeterStats(perimeter: Perimeter): PerimeterStats {
+export function getPerimeterStats(perimeter: PerimeterWithGeometry): PerimeterStats {
   const { getFloorOpeningsByStorey } = getModelActions()
 
   const storeyContext = createWallStoreyContext(perimeter.storeyId, [])
@@ -328,7 +332,7 @@ export function getPerimeterStats(perimeter: Perimeter): PerimeterStats {
 }
 
 function createPerimeterMeasurementModel(
-  perimeter: Perimeter,
+  perimeter: PerimeterWithGeometry,
   floorContext: PerimeterConstructionContext,
   storeyContext: StoreyContext
 ): ConstructionModel {

@@ -8,7 +8,7 @@ import { PerimeterCornerShape } from './PerimeterCornerShape'
 import { PerimeterWallShape } from './PerimeterWallShape'
 
 interface PerimeterShapeProps {
-  perimeter: Perimeter
+  perimeter: PerimeterWithGeometry
 }
 
 export function PerimeterShape({ perimeter }: PerimeterShapeProps): React.JSX.Element {

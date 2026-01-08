@@ -1,4 +1,4 @@
-import type { Perimeter, PerimeterWall } from '@/building/model'
+import type { Perimeter, PerimeterWallWithGeometry } from '@/building/model'
 import type { ConstructionModel } from '@/construction/model'
 import type { StoreyContext } from '@/construction/storeys/context'
 import type { Tag } from '@/construction/tags'
@@ -12,7 +12,11 @@ export abstract class BaseWallAssembly<T extends WallBaseConfig> implements Wall
     this.config = config
   }
 
-  abstract construct(wall: PerimeterWall, perimeter: Perimeter, storeyContext: StoreyContext): ConstructionModel
+  abstract construct(
+    wall: PerimeterWallWithGeometry,
+    perimeter: PerimeterWithGeometry,
+    storeyContext: StoreyContext
+  ): ConstructionModel
 
   abstract get tag(): Tag
 }

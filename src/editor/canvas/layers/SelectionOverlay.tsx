@@ -34,8 +34,8 @@ import { type Vec2, addVec2, direction, eqVec2, perpendicular, scaleAddVec2, sca
  *
  * The selection system uses a predictable hierarchical path structure:
  * - Perimeter:     [perimeterId]                          → ["perimeter_123"]
- * - PerimeterWall:   [perimeterId, wallId]               → ["perimeter_123", "outwall_456"]
- * - PerimeterCorner:   [perimeterId, cornerId]                → ["perimeter_123", "outcorner_789"]
+ * - PerimeterWallWithGeometry:   [perimeterId, wallId]               → ["perimeter_123", "outwall_456"]
+ * - PerimeterCornerWithGeometry:   [perimeterId, cornerId]                → ["perimeter_123", "outcorner_789"]
  * - Opening:       [perimeterId, wallId, openingId]    → ["perimeter_123", "outwall_456", "opening_012"]
  *
  * Key Points:
@@ -87,7 +87,7 @@ function useSelectionOutlinePoints(
     }
 
     if (isPerimeterId(rootEntityId) && !perimeter) {
-      console.warn('SelectionOverlay: Perimeter not found:', rootEntityId)
+      console.warn('SelectionOverlay: PerimeterWithGeometry not found:', rootEntityId)
       return null
     }
 
@@ -123,7 +123,7 @@ export function SelectionOverlay(): React.JSX.Element | null {
  * Get outline points for entities within an OuterWall hierarchy
  */
 function getPerimeterEntityPoints(
-  perimeter: Perimeter,
+  perimeter: PerimeterWithGeometry,
   selectionPath: SelectableId[],
   currentSelection: SelectableId
 ): Vec2[] | null {
@@ -184,15 +184,15 @@ function getRoofEntityPoints(roof: Roof, currentSelection: SelectableId): Vec2[]
  * Get selection outline points for an OuterWall
  * Uses the outer boundary polygon formed by corner outside points
  */
-function getPerimeterPoints(perimeter: Perimeter): Vec2[] {
+function getPerimeterPoints(perimeter: PerimeterWithGeometry): Vec2[] {
   return perimeter.corners.map(corner => corner.outsidePoint)
 }
 
 /**
- * Get selection outline points for a PerimeterWall
+ * Get selection outline points for a PerimeterWallWithGeometry
  * Creates a rectangular polygon around the wall using inside/outside lines
  */
-function getPerimeterWallPoints(perimeter: Perimeter, wallId: PerimeterWallId): Vec2[] | null {
+function getPerimeterWallPoints(perimeter: PerimeterWithGeometry, wallId: PerimeterWallId): Vec2[] | null {
   const wall = perimeter.walls.find(s => s.id === wallId)
 
   if (!wall) {
@@ -204,10 +204,10 @@ function getPerimeterWallPoints(perimeter: Perimeter, wallId: PerimeterWallId): 
 }
 
 /**
- * Get selection outline points for an PerimeterCorner
+ * Get selection outline points for an PerimeterCornerWithGeometry
  * Creates a complex polygon using the same logic as PerimeterCornerShape
  */
-function getPerimeterCornerPoints(wall: Perimeter, cornerId: PerimeterCornerId): Vec2[] | null {
+function getPerimeterCornerPoints(wall: PerimeterWithGeometry, cornerId: PerimeterCornerId): Vec2[] | null {
   const cornerIndex = wall.corners.findIndex(c => c.id === cornerId)
 
   if (cornerIndex === -1) {
@@ -256,7 +256,11 @@ function getPerimeterCornerPoints(wall: Perimeter, cornerId: PerimeterCornerId):
  * Get selection outline points for an Opening
  * Creates a rectangular polygon around the opening using the same calculation as OpeningShape
  */
-function getOpeningPoints(perimeter: Perimeter, wallId: PerimeterWallId, openingId: OpeningId): Vec2[] | null {
+function getOpeningPoints(
+  perimeter: PerimeterWithGeometry,
+  wallId: PerimeterWallId,
+  openingId: OpeningId
+): Vec2[] | null {
   const wall = perimeter.walls.find(s => s.id === wallId)
 
   if (!wall) {
@@ -289,7 +293,11 @@ function getOpeningPoints(perimeter: Perimeter, wallId: PerimeterWallId, opening
   return [insideOpeningStart, insideOpeningEnd, outsideOpeningEnd, outsideOpeningStart]
 }
 
-function getWallPostPoints(perimeter: Perimeter, wallId: PerimeterWallId, postId: WallPostId): Vec2[] | null {
+function getWallPostPoints(
+  perimeter: PerimeterWithGeometry,
+  wallId: PerimeterWallId,
+  postId: WallPostId
+): Vec2[] | null {
   const wall = perimeter.walls.find(s => s.id === wallId)
 
   if (!wall) {

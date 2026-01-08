@@ -29,7 +29,7 @@ export interface WallCornerInfo {
   constructionOutsideLine: LineSegment2D
 }
 
-function findColinearWalls(perimeter: Perimeter, startWallId: PerimeterWallId): PerimeterWallId[] {
+function findColinearWalls(perimeter: PerimeterWithGeometry, startWallId: PerimeterWallId): PerimeterWallId[] {
   const startIndex = perimeter.walls.findIndex(w => w.id === startWallId)
   if (startIndex === -1) {
     throw new Error(`Wall ${startWallId} not found in perimeter`)

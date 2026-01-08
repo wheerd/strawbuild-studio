@@ -1,4 +1,4 @@
-import type { Perimeter, PerimeterWall } from '@/building/model'
+import type { Perimeter, PerimeterWallWithGeometry } from '@/building/model'
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
 import { aggregateResults } from '@/construction/results'
@@ -13,7 +13,11 @@ import { Bounds3D } from '@/shared/geometry'
 import { infillWallArea } from './infill'
 
 export class InfillWallAssembly extends BaseWallAssembly<InfillWallConfig> {
-  construct(wall: PerimeterWall, perimeter: Perimeter, storeyContext: StoreyContext): ConstructionModel {
+  construct(
+    wall: PerimeterWallWithGeometry,
+    perimeter: PerimeterWithGeometry,
+    storeyContext: StoreyContext
+  ): ConstructionModel {
     const allResults = Array.from(
       segmentedWallConstruction(
         wall,

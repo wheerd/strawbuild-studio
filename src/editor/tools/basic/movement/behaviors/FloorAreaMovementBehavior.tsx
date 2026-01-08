@@ -19,7 +19,11 @@ export interface FloorAreaEntityContext extends PolygonEntityContext {
 
 export type FloorAreaMovementState = PolygonMovementState
 
-function buildSnapContext(perimeters: Perimeter[], otherAreas: FloorArea[], openings: FloorOpening[]): SnappingContext {
+function buildSnapContext(
+  perimeters: PerimeterWithGeometry[],
+  otherAreas: FloorArea[],
+  openings: FloorOpening[]
+): SnappingContext {
   const perimeterPoints = perimeters.flatMap(perimeter => perimeter.corners.map(corner => corner.insidePoint))
   const perimeterSegments = perimeters.flatMap(perimeter => perimeter.walls.map(wall => wall.insideLine))
 

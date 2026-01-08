@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { Opening, Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model'
+import type { Opening, Perimeter, PerimeterCornerWithGeometry, PerimeterWallWithGeometry } from '@/building/model'
 import {
   type StoreyId,
   createOpeningId,
@@ -64,7 +64,7 @@ vi.mock('@/construction/walls/corners/corners', () => ({
   calculateWallCornerInfo: () => cornerInfo
 }))
 
-const createWall = (overrides: Partial<PerimeterWall> = {}): PerimeterWall => ({
+const createWall = (overrides: Partial<PerimeterWallWithGeometry> = {}): PerimeterWallWithGeometry => ({
   id: createPerimeterWallId(),
   thickness: 300,
   wallAssemblyId: baseAssemblyId,
@@ -86,7 +86,10 @@ const createWall = (overrides: Partial<PerimeterWall> = {}): PerimeterWall => ({
   ...overrides
 })
 
-const createPerimeter = (wall: PerimeterWall, overrides: Partial<Perimeter> = {}): Perimeter => ({
+const createPerimeter = (
+  wall: PerimeterWallWithGeometry,
+  overrides: Partial<Perimeter> = {}
+): PerimeterWithGeometry => ({
   id: createPerimeterId(),
   storeyId: createStoreyId(),
   referenceSide: 'inside',
@@ -96,7 +99,7 @@ const createPerimeter = (wall: PerimeterWall, overrides: Partial<Perimeter> = {}
   ...overrides
 })
 
-const createCorner = (overrides: Partial<PerimeterCorner>): PerimeterCorner => ({
+const createCorner = (overrides: Partial<PerimeterCornerWithGeometry>): PerimeterCornerWithGeometry => ({
   id: createPerimeterCornerId(),
   insidePoint: ZERO_VEC2,
   outsidePoint: newVec2(0, 300),

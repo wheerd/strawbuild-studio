@@ -18,7 +18,7 @@ export interface RingBeamAssembly {
 }
 
 export interface RingBeamSegment {
-  perimeter: Perimeter
+  perimeter: PerimeterWithGeometry
   startIndex: number
   endIndex: number
 }

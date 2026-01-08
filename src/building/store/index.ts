@@ -6,7 +6,14 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
-import type { FloorArea, FloorOpening, Perimeter, Roof, Storey } from '@/building/model'
+import type {
+  FloorArea,
+  FloorOpening,
+  PerimeterWithGeometry,
+  Roof,
+  Storey,
+  WallPostWithGeometry
+} from '@/building/model'
 import type { FloorAreaId, FloorOpeningId, PerimeterId, RoofId, StoreyId } from '@/building/model/ids'
 
 import { CURRENT_VERSION, applyMigrations } from './migrations'
@@ -125,20 +132,26 @@ export const useStoreysOrderedByLevel = (): Storey[] => {
   return useMemo(() => getStoreysOrderedByLevel(), [storeys])
 }
 
-export const usePerimeters = (): Perimeter[] => {
+export const usePerimeters = (): PerimeterWithGeometry[] => {
   const perimeters = useModelStore(state => state.perimeters)
-  return useMemo(() => Object.values(perimeters), [perimeters])
+  const getAllPerimeters = useModelStore(state => state.actions.getAllPerimeters)
+  return useMemo(() => getAllPerimeters(), [perimeters])
 }
-export const usePerimeterById = (id: PerimeterId): Perimeter | null => {
+export const usePerimeterById = (id: PerimeterId): PerimeterWithGeometry | null => {
   const perimeters = useModelStore(state => state.perimeters)
   const getPerimeterById = useModelStore(state => state.actions.getPerimeterById)
   return useMemo(() => getPerimeterById(id), [perimeters, id])
 }
-export const usePerimetersOfActiveStorey = (): Perimeter[] => {
+export const usePerimetersOfActiveStorey = (): PerimeterWithGeometry[] => {
   const activeStoreyId = useActiveStoreyId()
   const perimeters = useModelStore(state => state.perimeters)
   const getPerimetersByStorey = useModelStore(state => state.actions.getPerimetersByStorey)
   return useMemo(() => getPerimetersByStorey(activeStoreyId), [perimeters, activeStoreyId])
+}
+export const useWallPosts = (): WallPostWithGeometry[] => {
+  const wallPosts = useModelStore(state => state.wallPosts)
+  const getAllWallPosts = useModelStore(state => state.actions.getAllWallPosts)
+  return useMemo(() => getAllWallPosts(), [wallPosts])
 }
 
 export const useFloorAreas = (): Record<FloorAreaId, FloorArea> => useModelStore(state => state.floorAreas)

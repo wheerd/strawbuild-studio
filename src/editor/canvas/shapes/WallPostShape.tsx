@@ -1,6 +1,6 @@
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
-import type { PerimeterWall, WallPost } from '@/building/model'
+import type { PerimeterWallWithGeometry, WallPost } from '@/building/model'
 import type { PerimeterId } from '@/building/model/ids'
 import { useModelActions } from '@/building/store'
 import { ClickableLengthIndicator } from '@/editor/canvas/utils/ClickableLengthIndicator'
@@ -24,7 +24,7 @@ import { MATERIAL_COLORS } from '@/shared/theme/colors'
 
 interface WallPostShapeProps {
   post: WallPost
-  wall: PerimeterWall
+  wall: PerimeterWallWithGeometry
   perimeterId: PerimeterId
 
   // Corner reference points (same as wall)

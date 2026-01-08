@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { Opening, Perimeter, PerimeterWall } from '@/building/model'
+import type { Opening, Perimeter, PerimeterWallWithGeometry } from '@/building/model'
 import { type StoreyId, createOpeningId, createPerimeterId, createWallAssemblyId } from '@/building/model/ids'
 import type { FloorAssembly } from '@/construction/floors'
 import { WallConstructionArea } from '@/construction/geometry'
@@ -157,7 +157,7 @@ function createMockWall(
   wallLength: Length = 3000,
   thickness: Length = 300,
   openings: Opening[] = []
-): PerimeterWall {
+): PerimeterWallWithGeometry {
   return {
     id: id as any,
     wallAssemblyId: createWallAssemblyId(),
@@ -180,7 +180,7 @@ function createMockWall(
   }
 }
 
-function createMockPerimeter(walls: PerimeterWall[]): Perimeter {
+function createMockPerimeter(walls: PerimeterWallWithGeometry[]): PerimeterWithGeometry {
   return {
     id: createPerimeterId(),
     storeyId: 'test-storey' as any,

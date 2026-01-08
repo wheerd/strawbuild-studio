@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import type { Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model'
+import type { Perimeter, PerimeterCornerWithGeometry, PerimeterWallWithGeometry } from '@/building/model'
 import type { PerimeterCornerId, PerimeterId, PerimeterWallId, StoreyId, WallAssemblyId } from '@/building/model/ids'
 import { getConfigActions } from '@/construction/config'
 import {
@@ -39,7 +39,7 @@ describe('computePerimeterConstructionPolygon', () => {
     // y2: 3000 + 450 - 210 = 3240
     const expectedPoints = [newVec2(-250, -320), newVec2(-250, 3240), newVec2(4230, 3240), newVec2(4230, -320)]
 
-    const walls: PerimeterWall[] = insidePoints.map((insideStart, index) => {
+    const walls: PerimeterWallWithGeometry[] = insidePoints.map((insideStart, index) => {
       const nextIndex = (index + 1) % insidePoints.length
       const insideEnd = insidePoints[nextIndex]
       const wallDirection = direction(insideStart, insideEnd)
@@ -70,7 +70,7 @@ describe('computePerimeterConstructionPolygon', () => {
       direction: wall.direction
     }))
 
-    const corners: PerimeterCorner[] = insidePoints.map((insidePoint, index) => {
+    const corners: PerimeterCornerWithGeometry[] = insidePoints.map((insidePoint, index) => {
       const prevIndex = (index - 1 + insidePoints.length) % insidePoints.length
       const prevLine = outsideLines[prevIndex]
       const currentLine = outsideLines[index]
@@ -88,7 +88,7 @@ describe('computePerimeterConstructionPolygon', () => {
       }
     })
 
-    const perimeter: Perimeter = {
+    const perimeter: PerimeterWithGeometry = {
       id: 'perimeter-1' as PerimeterId,
       storeyId: 'storey-1' as StoreyId,
       referenceSide: 'inside',

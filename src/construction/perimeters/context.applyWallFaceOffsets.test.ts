@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import type { Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model'
+import type { Perimeter, PerimeterCornerWithGeometry, PerimeterWallWithGeometry } from '@/building/model'
 import type { PerimeterCornerId, PerimeterId, PerimeterWallId, StoreyId, WallAssemblyId } from '@/building/model/ids'
 import { getConfigActions } from '@/construction/config'
 import { copyVec2, direction, distVec2, newVec2, perpendicular, scaleAddVec2 } from '@/shared/geometry'
@@ -17,7 +17,7 @@ vi.mocked(getConfigActions).mockReturnValue({
   getWallAssemblyById: mockedGetWallAssemblyById
 } as any)
 
-function createRectangularPerimeter(width: number, height: number, wallThickness: number): Perimeter {
+function createRectangularPerimeter(width: number, height: number, wallThickness: number): PerimeterWithGeometry {
   const insideCorners = [newVec2(0, 0), newVec2(0, height), newVec2(width, height), newVec2(width, 0)]
 
   const outsideCorners = [
@@ -27,7 +27,7 @@ function createRectangularPerimeter(width: number, height: number, wallThickness
     newVec2(width + wallThickness, -wallThickness)
   ]
 
-  const walls: PerimeterWall[] = insideCorners.map((start, index) => {
+  const walls: PerimeterWallWithGeometry[] = insideCorners.map((start, index) => {
     const end = insideCorners[(index + 1) % insideCorners.length]
     const dir = direction(start, end)
     const outsideDirection = perpendicular(dir)
@@ -52,7 +52,7 @@ function createRectangularPerimeter(width: number, height: number, wallThickness
     }
   })
 
-  const corners: PerimeterCorner[] = insideCorners.map((point, index) => ({
+  const corners: PerimeterCornerWithGeometry[] = insideCorners.map((point, index) => ({
     id: `corner-${index}` as PerimeterCornerId,
     insidePoint: point,
     outsidePoint: outsideCorners[index],

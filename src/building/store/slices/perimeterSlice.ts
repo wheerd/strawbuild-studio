@@ -109,12 +109,10 @@ export interface PerimetersActions {
   updatePerimeterCornerConstructedByWall: (cornerId: PerimeterCornerId, constructedByWall: 'previous' | 'next') => void
   canSwitchCornerConstructedByWall: (cornerId: PerimeterCornerId) => boolean
 
-  // Updated opening actions with ID-based approach and auto-ID generation
+  // Openings
   addWallOpening: (wallId: PerimeterWallId, openingParams: OpeningParams) => Opening | null
   removeWallOpening: (openingId: OpeningId) => void
   updateWallOpening: (openingId: OpeningId, updates: Partial<OpeningParams>) => void
-
-  // Opening validation methods
   isWallOpeningPlacementValid: (
     wallId: PerimeterWallId,
     centerOffsetFromWallStart: Length,
@@ -128,18 +126,32 @@ export interface PerimetersActions {
     excludedOpening?: OpeningId
   ) => Length | null
 
-  // Wall post actions with ID-based approach and auto-ID generation
+  // Wall Posts
   addPerimeterWallPost: (wallId: PerimeterWallId, postParams: WallPostParams) => WallPost | null
   removePerimeterWallPost: (postId: WallPostId) => void
   updatePerimeterWallPost: (postId: WallPostId, updates: Partial<WallPostParams>) => void
+  isWallPostPlacementValid: (
+    wallId: PerimeterWallId,
+    centerOffsetFromWallStart: Length,
+    width: Length,
+    excludedPost?: WallPostId
+  ) => boolean
+  findNearestValidWallPostPosition: (
+    wallId: PerimeterWallId,
+    preferredCenterOffset: Length,
+    width: Length,
+    excludedPost?: WallPostId
+  ) => Length | null
 
-  // Updated getters
+  // Getters
   getPerimeterById: (perimeterId: PerimeterId) => PerimeterWithGeometry | null
   getPerimeterWallById: (wallId: PerimeterWallId) => PerimeterWallWithGeometry | null
   getPerimeterCornerById: (cornerId: PerimeterCornerId) => PerimeterCornerWithGeometry | null
   getWallOpeningById: (openingId: OpeningId) => OpeningWithGeometry | null
   getPerimeterWallPostById: (postId: WallPostId) => WallPostWithGeometry | null
   getPerimetersByStorey: (storeyId: StoreyId) => PerimeterWithGeometry[]
+  getAllPerimeters: () => PerimeterWithGeometry[]
+  getAllWallPosts: () => WallPostWithGeometry[]
 
   // Movement operations for MoveTool
   movePerimeter: (perimeterId: PerimeterId, offset: Vec2) => boolean
@@ -634,6 +646,16 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         .map(p => ({ ...p, ...state._perimeterGeometry[p.id] }))
     },
 
+    getAllPerimeters: () => {
+      const state = get()
+      return Object.values(state.perimeters).map(p => ({ ...p, ...state._perimeterGeometry[p.id] }))
+    },
+
+    getAllWallPosts: () => {
+      const state = get()
+      return Object.values(state.wallPosts).map(p => ({ ...p, ...state._wallPostGeometry[p.id] }))
+    },
+
     // Opening validation methods implementation
     isWallOpeningPlacementValid: (
       wallId: PerimeterWallId,
@@ -737,7 +759,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
       return { ...post, ...geometry }
     },
 
-    isPerimeterWallPostPlacementValid: (
+    isWallPostPlacementValid: (
       wallId: PerimeterWallId,
       centerOffsetFromWallStart: Length,
       width: Length,
@@ -750,7 +772,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
       return validatePostOnWall(get(), wallId, centerOffsetFromWallStart, width, excludedPost)
     },
 
-    findNearestValidPerimeterWallPostPosition: (
+    findNearestValidWallPostPosition: (
       wallId: PerimeterWallId,
       preferredCenterOffset: Length,
       width: Length,

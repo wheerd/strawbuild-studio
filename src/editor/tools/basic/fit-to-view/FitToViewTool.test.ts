@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { Perimeter, PerimeterCorner } from '@/building/model'
+import type { Perimeter, PerimeterCornerWithGeometry } from '@/building/model'
 import type { StoreyId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
@@ -72,7 +72,7 @@ describe('FitToViewTool', () => {
           {
             outsidePoint: newVec2(-1100, 600)
           }
-        ] as PerimeterCorner[]
+        ] as PerimeterCornerWithGeometry[]
       } as Perimeter
     ]
 
@@ -122,7 +122,7 @@ describe('FitToViewTool', () => {
           {
             outsidePoint: newVec2(-100, 900)
           }
-        ] as PerimeterCorner[]
+        ] as PerimeterCornerWithGeometry[]
       } as Perimeter
     ]
 

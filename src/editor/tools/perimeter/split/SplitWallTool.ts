@@ -1,4 +1,4 @@
-import type { Perimeter, PerimeterWall } from '@/building/model'
+import type { PerimeterWallWithGeometry, PerimeterWithGeometry } from '@/building/model'
 import type { PerimeterId, PerimeterWallId } from '@/building/model/ids'
 import { isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
@@ -17,8 +17,8 @@ export interface SplitWallToolState {
   // Target wall
   selectedWallId: PerimeterWallId | null
   selectedPerimeterId: PerimeterId | null
-  wall: PerimeterWall | null
-  perimeter: Perimeter | null
+  wall: PerimeterWallWithGeometry | null
+  perimeter: PerimeterWithGeometry | null
 
   // Split positioning
   hoverPosition: Length | null // Current hover position on wall
@@ -157,7 +157,7 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
     return { valid: true }
   }
 
-  private positionFromWorldPoint(wall: PerimeterWall, worldPoint: Vec2): Length | null {
+  private positionFromWorldPoint(wall: PerimeterWallWithGeometry, worldPoint: Vec2): Length | null {
     const insideDist = distanceToLineSegment(worldPoint, wall.insideLine)
     const outsideDist = distanceToLineSegment(worldPoint, wall.outsideLine)
     if (Math.max(insideDist, outsideDist) <= wall.thickness) {

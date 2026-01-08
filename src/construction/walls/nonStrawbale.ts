@@ -1,4 +1,4 @@
-import type { Perimeter, PerimeterWall } from '@/building/model'
+import type { Perimeter, PerimeterWallWithGeometry } from '@/building/model'
 import { getConfigActions } from '@/construction/config'
 import { createConstructionElement } from '@/construction/elements'
 import { WallConstructionArea } from '@/construction/geometry'
@@ -19,7 +19,11 @@ import { segmentedWallConstruction } from '@/construction/walls/segmentation'
 import { Bounds3D, type Length, fromTrans, newVec2, newVec3 } from '@/shared/geometry'
 
 export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallConfig> {
-  construct(wall: PerimeterWall, perimeter: Perimeter, storeyContext: StoreyContext): ConstructionModel {
+  construct(
+    wall: PerimeterWallWithGeometry,
+    perimeter: PerimeterWithGeometry,
+    storeyContext: StoreyContext
+  ): ConstructionModel {
     const wallContext = getWallContext(wall, perimeter)
     const cornerInfo = calculateWallCornerInfo(wall, wallContext)
 

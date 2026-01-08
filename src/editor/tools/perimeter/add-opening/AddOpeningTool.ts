@@ -1,4 +1,4 @@
-import type { OpeningType, PerimeterWall } from '@/building/model'
+import type { OpeningType, PerimeterWallWithGeometry } from '@/building/model'
 import {
   type EntityType,
   type OpeningAssemblyId,
@@ -23,7 +23,7 @@ import { AddOpeningToolOverlay } from './AddOpeningToolOverlay'
 interface PerimeterWallHit {
   perimeterId: PerimeterId
   wallId: PerimeterWallId
-  wall: PerimeterWall
+  wall: PerimeterWallWithGeometry
   wallOpeningPadding?: Length
 }
 
@@ -82,7 +82,7 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
 
     const { getPerimeterWallById } = getModelActions()
 
-    let wall: PerimeterWall | null = null
+    let wall: PerimeterWallWithGeometry | null = null
     let perimeterId: PerimeterId | null = null
     let wallId: PerimeterWallId | null = null
 
@@ -163,7 +163,7 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
   /**
    * Calculate center offset from pointer position projected onto wall
    */
-  private calculateCenterOffsetFromPointerPosition(pointerPos: Vec2, wall: PerimeterWall): Length {
+  private calculateCenterOffsetFromPointerPosition(pointerPos: Vec2, wall: PerimeterWallWithGeometry): Length {
     // Convert LineWall2D to Line2D for projection
     const line = lineFromSegment(wall.insideLine)
     if (!line) {
@@ -186,7 +186,7 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
   /**
    * Convert offset to actual position on the wall
    */
-  private offsetToPosition(offset: Length, wall: PerimeterWall): Vec2 {
+  private offsetToPosition(offset: Length, wall: PerimeterWallWithGeometry): Vec2 {
     const startPoint = wall.insideLine.start
     const direction = wall.direction
 

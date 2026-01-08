@@ -1,4 +1,4 @@
-import type { Perimeter, PerimeterWall, WallPost } from '@/building/model'
+import type { Perimeter, PerimeterWallWithGeometry, WallPost } from '@/building/model'
 import type { SelectableId } from '@/building/model/ids'
 import { isPerimeterId, isPerimeterWallId, isWallPostId } from '@/building/model/ids'
 import { getWallPostPlacementBounds } from '@/building/store/slices/perimeterSlice'
@@ -14,8 +14,8 @@ import { type Length, type Vec2, ZERO_VEC2, dotVec2, newVec2, projectVec2, scale
 
 // Wall post movement needs access to the wall, wall, and post
 export interface WallPostEntityContext {
-  perimeter: Perimeter
-  wall: PerimeterWall
+  perimeter: PerimeterWithGeometry
+  wall: PerimeterWallWithGeometry
   post: WallPost
 }
 

@@ -1,4 +1,4 @@
-import type { Perimeter, PerimeterCorner } from '@/building/model'
+import type { Perimeter, PerimeterCornerWithGeometry } from '@/building/model'
 import type { SelectableId } from '@/building/model/ids'
 import { isPerimeterCornerId, isPerimeterId } from '@/building/model/ids'
 import type { StoreActions } from '@/building/store/types'
@@ -14,8 +14,8 @@ import { type LineSegment2D, type Vec2, addVec2, copyVec2, wouldClosingPolygonSe
 
 // Corner movement needs access to the wall to update the boundary
 export interface CornerEntityContext {
-  wall: Perimeter
-  corner: PerimeterCorner
+  wall: PerimeterWithGeometry
+  corner: PerimeterCornerWithGeometry
   cornerIndex: number // Index of the boundary point that corresponds to this corner
   snapContext: SnappingContext
 }
@@ -129,7 +129,7 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
     return context.store.updatePerimeterBoundary(wall.id, newBoundary)
   }
 
-  private getSnapLines(wall: Perimeter, cornerIndex: number): LineSegment2D[] {
+  private getSnapLines(wall: PerimeterWithGeometry, cornerIndex: number): LineSegment2D[] {
     const snapLines: LineSegment2D[] = []
 
     for (let i = 0; i < wall.referencePolygon.length; i++) {

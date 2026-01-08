@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { Perimeter, PerimeterCorner, PerimeterWall, Storey } from '@/building/model'
+import type { Perimeter, PerimeterCornerWithGeometry, PerimeterWallWithGeometry, Storey } from '@/building/model'
 import {
   createFloorAssemblyId,
   createPerimeterCornerId,
@@ -53,7 +53,7 @@ describe('constructWall', () => {
     height: 200
   }
 
-  const createMockWall = (id: string, insideLength: number, wallAssemblyId: string): PerimeterWall => ({
+  const createMockWall = (id: string, insideLength: number, wallAssemblyId: string): PerimeterWallWithGeometry => ({
     id: id as any,
     thickness: 400,
     wallAssemblyId: wallAssemblyId as any,
@@ -74,7 +74,7 @@ describe('constructWall', () => {
     outsideDirection: newVec2(0, 1)
   })
 
-  const createMockCorner = (angle: number): PerimeterCorner => ({
+  const createMockCorner = (angle: number): PerimeterCornerWithGeometry => ({
     id: createPerimeterCornerId(),
     insidePoint: ZERO_VEC2,
     outsidePoint: ZERO_VEC2,
@@ -83,7 +83,10 @@ describe('constructWall', () => {
     exteriorAngle: 360 - angle
   })
 
-  const createMockPerimeter = (walls: PerimeterWall[], corners: PerimeterCorner[]): Perimeter => ({
+  const createMockPerimeter = (
+    walls: PerimeterWallWithGeometry[],
+    corners: PerimeterCornerWithGeometry[]
+  ): PerimeterWithGeometry => ({
     id: perimeterId,
     storeyId,
     referenceSide: 'inside',
@@ -156,7 +159,7 @@ describe('constructWall', () => {
 
     vi.mocked(resolveWallAssembly).mockReturnValue(mockWallAssembly as any)
 
-    mockWallAssembly.construct.mockImplementation((wall: PerimeterWall) => {
+    mockWallAssembly.construct.mockImplementation((wall: PerimeterWallWithGeometry) => {
       return createMockConstructionModel(wall.id)
     })
   })

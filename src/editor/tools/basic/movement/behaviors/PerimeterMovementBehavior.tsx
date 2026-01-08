@@ -14,7 +14,7 @@ import {
 } from './PolygonMovementBehavior'
 
 export interface PerimeterEntityContext extends PolygonEntityContext {
-  perimeter: Perimeter
+  perimeter: PerimeterWithGeometry
 }
 
 export type PerimeterMovementState = PolygonMovementState

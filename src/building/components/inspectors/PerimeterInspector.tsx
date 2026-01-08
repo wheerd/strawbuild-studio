@@ -16,7 +16,7 @@ import {
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { PerimeterReferenceSide, PerimeterWall, RoofType } from '@/building/model'
+import type { PerimeterReferenceSide, PerimeterWallWithGeometry, RoofType } from '@/building/model'
 import type { PerimeterId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import { useModelActions, usePerimeterById, useRoofsOfActiveStorey } from '@/building/store'
 import TopDownPlanModal from '@/construction/components/TopDownPlanModal'
@@ -43,7 +43,7 @@ interface MixedState<T> {
   value: T | null
 }
 
-function detectMixedAssemblies(walls: PerimeterWall[]): MixedState<WallAssemblyId> {
+function detectMixedAssemblies(walls: PerimeterWallWithGeometry[]): MixedState<WallAssemblyId> {
   if (walls.length === 0) return { isMixed: false, value: null }
 
   const firstAssembly = walls[0].wallAssemblyId
@@ -55,7 +55,7 @@ function detectMixedAssemblies(walls: PerimeterWall[]): MixedState<WallAssemblyI
   }
 }
 
-function detectMixedThickness(walls: PerimeterWall[]): MixedState<Length> {
+function detectMixedThickness(walls: PerimeterWallWithGeometry[]): MixedState<Length> {
   if (walls.length === 0) return { isMixed: false, value: null }
 
   const firstThickness = walls[0].thickness
@@ -67,7 +67,10 @@ function detectMixedThickness(walls: PerimeterWall[]): MixedState<Length> {
   }
 }
 
-function detectMixedRingBeams(walls: PerimeterWall[], type: 'base' | 'top'): MixedState<RingBeamAssemblyId> {
+function detectMixedRingBeams(
+  walls: PerimeterWallWithGeometry[],
+  type: 'base' | 'top'
+): MixedState<RingBeamAssemblyId> {
   if (walls.length === 0) return { isMixed: false, value: null }
 
   const firstAssembly = type === 'base' ? walls[0].baseRingBeamAssemblyId : walls[0].topRingBeamAssemblyId

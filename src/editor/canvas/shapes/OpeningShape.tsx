@@ -1,6 +1,6 @@
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
-import type { Opening, PerimeterWall } from '@/building/model'
+import type { Opening, PerimeterWallWithGeometry } from '@/building/model'
 import type { PerimeterId } from '@/building/model/ids'
 import { useModelActions } from '@/building/store'
 import { ClickableLengthIndicator } from '@/editor/canvas/utils/ClickableLengthIndicator'
@@ -15,7 +15,7 @@ import { MATERIAL_COLORS } from '@/shared/theme/colors'
 
 interface OpeningShapeProps {
   opening: Opening
-  wall: PerimeterWall
+  wall: PerimeterWallWithGeometry
   perimeterId: PerimeterId
 
   // Corner reference points (same as wall wall)

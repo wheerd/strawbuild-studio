@@ -1,4 +1,4 @@
-import type { Opening, Perimeter, PerimeterWall } from '@/building/model'
+import type { Opening, Perimeter, PerimeterWallWithGeometry } from '@/building/model'
 import type { OpeningAssemblyId, PerimeterId, StoreyId } from '@/building/model/ids'
 import { getConfigActions } from '@/construction/config'
 import { WallConstructionArea } from '@/construction/geometry'
@@ -29,8 +29,8 @@ import type { WallCornerInfo } from './construction'
 import { calculateWallCornerInfo, getWallContext } from './corners/corners'
 
 export function* segmentedWallConstruction(
-  wall: PerimeterWall,
-  perimeter: Perimeter,
+  wall: PerimeterWallWithGeometry,
+  perimeter: PerimeterWithGeometry,
   storeyContext: StoreyContext,
   layers: WallLayersConfig,
   wallConstruction: WallSegmentConstruction,
@@ -158,7 +158,7 @@ interface WallDimensions {
 /**
  * Calculate ring beam heights for wall construction
  */
-function getRingBeamHeights(wall: PerimeterWall): {
+function getRingBeamHeights(wall: PerimeterWallWithGeometry): {
   basePlateHeight: Length
   topPlateHeight: Length
 } {
@@ -177,7 +177,7 @@ function getRingBeamHeights(wall: PerimeterWall): {
  * Calculate all wall dimension parameters
  */
 function calculateWallDimensions(
-  wall: PerimeterWall,
+  wall: PerimeterWallWithGeometry,
   layers: WallLayersConfig,
   storeyContext: StoreyContext,
   basePlateHeight: Length,
@@ -208,7 +208,7 @@ function calculateWallDimensions(
  * Calculate roof offsets for wall construction
  */
 function calculateRoofOffsets(
-  perimeter: Perimeter,
+  perimeter: PerimeterWithGeometry,
   cornerInfo: WallCornerInfo,
   ceilingOffset: Length,
   storeyContext: StoreyContext
@@ -410,7 +410,7 @@ type WallItem =
     }
   | {
       type: 'post'
-      post: PerimeterWall['posts'][number]
+      post: PerimeterWallWithGeometry['posts'][number]
       start: Length
       end: Length
       needsWallStands: boolean
@@ -420,7 +420,7 @@ type WallItem =
  * Combines openings (as groups) and posts into a single sorted list with computed bounds
  */
 function createSortedWallItems(
-  wall: PerimeterWall,
+  wall: PerimeterWallWithGeometry,
   extensionStart: Length,
   wallOpeningAssemblyId?: OpeningAssemblyId
 ): WallItem[] {

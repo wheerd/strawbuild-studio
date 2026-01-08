@@ -1,6 +1,6 @@
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
-import type { PerimeterWall } from '@/building/model'
+import type { PerimeterWallWithGeometry } from '@/building/model'
 import type { PerimeterId } from '@/building/model/ids'
 import { useWallAssemblyById } from '@/construction/config/store'
 import { LengthIndicator } from '@/editor/canvas/utils/LengthIndicator'
@@ -14,7 +14,7 @@ import { OpeningShape } from './OpeningShape'
 import { WallPostShape } from './WallPostShape'
 
 interface PerimeterWallShapeProps {
-  wall: PerimeterWall
+  wall: PerimeterWallWithGeometry
   perimeterId: PerimeterId
   insideStartCorner: Vec2
   insideEndCorner: Vec2

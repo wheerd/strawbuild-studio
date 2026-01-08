@@ -1,4 +1,4 @@
-import type { PerimeterWall } from '@/building/model'
+import type { PerimeterWallWithGeometry } from '@/building/model'
 import type { WallConstructionArea } from '@/construction/geometry'
 import {
   type Length,
@@ -34,7 +34,7 @@ const computeOffsetLine = (start: Vec2, end: Vec2, normal: Vec2, distance: Lengt
   return lineFromSegment({ start: offsetStart, end: offsetEnd })
 }
 
-const projectAlongWall = (wall: PerimeterWall, point: Vec2): Length => {
+const projectAlongWall = (wall: PerimeterWallWithGeometry, point: Vec2): Length => {
   const dir = direction(wall.insideLine.start, wall.insideLine.end)
   const relative = subVec2(point, wall.insideLine.start)
   return dotVec2(relative, dir)
@@ -44,7 +44,7 @@ const computeCornerIntersection = (
   corner: 'start' | 'end',
   side: LayerSide,
   depth: Length,
-  wall: PerimeterWall,
+  wall: PerimeterWallWithGeometry,
   context: WallContext
 ): Vec2 => {
   const baseSegment = side === 'inside' ? wall.insideLine : wall.outsideLine
@@ -76,7 +76,7 @@ const computeCornerIntersection = (
 export const computeLayerSpan = (
   side: LayerSide,
   depth: Length,
-  wall: PerimeterWall,
+  wall: PerimeterWallWithGeometry,
   context: WallContext
 ): { start: Length; end: Length; line: LineSegment2D } => {
   const startPoint = computeCornerIntersection('start', side, depth, wall, context)
@@ -103,7 +103,7 @@ export const subtractWallOpenings = (
   end: Length,
   bottom: Length,
   top: Length,
-  wall: PerimeterWall,
+  wall: PerimeterWallWithGeometry,
   finishedFloorHeight: Length
 ): PolygonWithHoles2D[] => {
   const holes = wall.openings
@@ -155,7 +155,7 @@ export interface WallPolygonBounds {
 
 export const createWallPolygonWithOpenings = (
   area: WallConstructionArea,
-  wall: PerimeterWall,
+  wall: PerimeterWallWithGeometry,
   finishedFloorHeight: Length
 ): PolygonWithHoles2D[] =>
   subtractWallOpenings(

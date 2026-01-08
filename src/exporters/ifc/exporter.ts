@@ -1,7 +1,7 @@
 import { Handle, IFC4, IfcAPI, type IfcLineObject } from 'web-ifc'
 import wasmUrl from 'web-ifc/web-ifc.wasm?url'
 
-import type { Perimeter, PerimeterCorner, PerimeterWall, Storey } from '@/building/model'
+import type { Perimeter, PerimeterCornerWithGeometry, PerimeterWallWithGeometry, Storey } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import { type StoreyContext, createWallStoreyContext } from '@/construction/storeys/context'
@@ -399,10 +399,10 @@ class IfcExporter {
   }
 
   private createWallsForPerimeter(
-    perimeter: Perimeter,
+    perimeter: PerimeterWithGeometry,
     info: IfcStoreyContext,
     storeyPlacement: Handle<IFC4.IfcPlacement>,
-    getWallAssemblyById: (id: PerimeterWall['wallAssemblyId']) => { type: string } | null,
+    getWallAssemblyById: (id: PerimeterWallWithGeometry['wallAssemblyId']) => { type: string } | null,
     materialUsageCache: Map<string, Handle<IFC4.IfcMaterialLayerSetUsage>>
   ): Handle<IFC4.IfcWall>[] {
     const elements: Handle<IFC4.IfcWall>[] = []
@@ -423,9 +423,9 @@ class IfcExporter {
   }
 
   private createWallElement(
-    wall: PerimeterWall,
-    startCorner: PerimeterCorner,
-    endCorner: PerimeterCorner,
+    wall: PerimeterWallWithGeometry,
+    startCorner: PerimeterCornerWithGeometry,
+    endCorner: PerimeterCornerWithGeometry,
     info: IfcStoreyContext,
     storeyPlacement: Handle<IFC4.IfcPlacement>,
     materialUsageCache: Map<string, Handle<IFC4.IfcMaterialLayerSetUsage>>
@@ -502,8 +502,8 @@ class IfcExporter {
   }
 
   private createOpeningElement(
-    opening: PerimeterWall['openings'][number],
-    wall: PerimeterWall,
+    opening: PerimeterWallWithGeometry['openings'][number],
+    wall: PerimeterWallWithGeometry,
     wallId: Handle<IFC4.IfcElement>,
     wallPlacement: Handle<IFC4.IfcPlacement>
   ): void {
@@ -665,9 +665,9 @@ class IfcExporter {
   }
 
   private createWallProfile(
-    wall: PerimeterWall,
-    startCorner: PerimeterCorner,
-    endCorner: PerimeterCorner
+    wall: PerimeterWallWithGeometry,
+    startCorner: PerimeterCornerWithGeometry,
+    endCorner: PerimeterCornerWithGeometry
   ): Handle<IFC4.IfcArbitraryClosedProfileDef> {
     const origin = startCorner.insidePoint
     const direction = wall.direction
@@ -714,8 +714,8 @@ class IfcExporter {
   }
 
   private createWallPlacement(
-    wall: PerimeterWall,
-    startCorner: PerimeterCorner,
+    wall: PerimeterWallWithGeometry,
+    startCorner: PerimeterCornerWithGeometry,
     storeyPlacement: Handle<IFC4.IfcPlacement>
   ): Handle<IFC4.IfcLocalPlacement> {
     const location = this.createCartesianPoint([startCorner.insidePoint[0], startCorner.insidePoint[1], 0])

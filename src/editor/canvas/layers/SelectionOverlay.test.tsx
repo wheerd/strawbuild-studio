@@ -73,7 +73,7 @@ describe('SelectionOverlay', () => {
     expect(outline).toHaveAttribute('data-points', '4') // 4 corner points
   })
 
-  it('renders PerimeterWall selection outline', () => {
+  it('renders PerimeterWallWithGeometry selection outline', () => {
     const perimeterId = 'perimeter_123'
     const wallId = 'outwall_456'
     const mockWall = {

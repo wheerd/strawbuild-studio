@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { PerimeterWall } from '@/building/model'
+import type { PerimeterWallWithGeometry } from '@/building/model'
 import { createPerimeterId, createPerimeterWallId } from '@/building/model/ids'
 import { ZERO_VEC2, newVec2 } from '@/shared/geometry'
 
@@ -58,7 +58,7 @@ describe('SplitWallTool', () => {
     const wallId = createPerimeterWallId()
 
     // Mock wall with 1000mm length
-    const mockWall: PerimeterWall = {
+    const mockWall: PerimeterWallWithGeometry = {
       id: wallId,
       thickness: 420,
       wallAssemblyId: 'assembly1' as any,
@@ -104,7 +104,7 @@ describe('SplitWallTool', () => {
     const perimeterId = createPerimeterId()
     const wallId = createPerimeterWallId()
 
-    const mockWall: PerimeterWall = {
+    const mockWall: PerimeterWallWithGeometry = {
       id: wallId,
       thickness: 420,
       wallAssemblyId: 'assembly1' as any,

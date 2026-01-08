@@ -1,4 +1,4 @@
-import type { Perimeter, PerimeterWall } from '@/building/model'
+import type { Perimeter, PerimeterWallWithGeometry } from '@/building/model'
 import type { SelectableId } from '@/building/model/ids'
 import { isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
 import type { StoreActions } from '@/building/store/types'
@@ -14,8 +14,8 @@ import { wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 
 // Wall wall movement needs access to the wall to update the boundary
 export interface PerimeterWallEntityContext {
-  perimeter: Perimeter
-  wall: PerimeterWall
+  perimeter: PerimeterWithGeometry
+  wall: PerimeterWallWithGeometry
   wallIndex: number // Index of the wall in the wall
 }
 

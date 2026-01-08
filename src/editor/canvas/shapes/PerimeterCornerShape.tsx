@@ -1,6 +1,6 @@
 import { Arrow, Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
-import type { PerimeterCorner, PerimeterWall } from '@/building/model'
+import type { PerimeterCornerWithGeometry, PerimeterWallWithGeometry } from '@/building/model'
 import { useWallAssemblyById } from '@/construction/config/store'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { direction, midpoint, perpendicular, scaleAddVec2, scaleVec2 } from '@/shared/geometry'
@@ -8,9 +8,9 @@ import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
 
 interface PerimeterCornerShapeProps {
-  corner: PerimeterCorner
-  previousWall: PerimeterWall
-  nextWall: PerimeterWall
+  corner: PerimeterCornerWithGeometry
+  previousWall: PerimeterWallWithGeometry
+  nextWall: PerimeterWallWithGeometry
   perimeterId: string
 }
 

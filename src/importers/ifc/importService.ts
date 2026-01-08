@@ -94,7 +94,7 @@ function applyImportedModel(model: ParsedIfcModel): void {
       const perimeterPolygon = clonePolygon(candidate.boundary.outer)
       const defaultThicknessFromSegments = averageSegmentThickness(candidate.segments) ?? wallThickness ?? undefined
 
-      let perimeter: Perimeter
+      let perimeter: PerimeterWithGeometry
       try {
         perimeter = actions.addPerimeter(
           targetStoreyId,

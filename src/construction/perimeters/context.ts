@@ -44,7 +44,7 @@ export interface WallFaceOffset {
 }
 
 export function computePerimeterConstructionPolygon(
-  perimeter: Perimeter,
+  perimeter: PerimeterWithGeometry,
   outside = true
 ): { polygon: Polygon2D; lines: Line2D[] } {
   const { getWallAssemblyById } = getConfigActions()
@@ -85,7 +85,7 @@ export function computePerimeterConstructionPolygon(
 }
 
 export const computePerimeterConstructionContext = (
-  perimeter: Perimeter,
+  perimeter: PerimeterWithGeometry,
   openings: FloorOpening[]
 ): PerimeterConstructionContext => {
   const inner = computePerimeterConstructionPolygon(perimeter, false)
@@ -112,7 +112,7 @@ export const computePerimeterConstructionContext = (
 const PARALLEL_EPSILON = 1e-6
 const DISTANCE_EPSILON = 1e-3
 
-export function createWallFaceOffsets(perimeters: Perimeter[]): WallFaceOffset[] {
+export function createWallFaceOffsets(perimeters: PerimeterWithGeometry[]): WallFaceOffset[] {
   const { getWallAssemblyById } = getConfigActions()
   const faces: WallFaceOffset[] = []
 

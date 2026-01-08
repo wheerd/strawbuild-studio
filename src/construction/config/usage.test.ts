@@ -18,7 +18,7 @@ describe('Assembly Usage Detection', () => {
   describe('getRingBeamAssemblyUsage', () => {
     it('should detect ring beam assembly not in use', () => {
       const assemblyId = createRingBeamAssemblyId()
-      const perimeters: Perimeter[] = []
+      const perimeters: PerimeterWithGeometry[] = []
 
       const usage = getRingBeamAssemblyUsage(assemblyId, perimeters)
 
@@ -32,7 +32,7 @@ describe('Assembly Usage Detection', () => {
       const assemblyId = createRingBeamAssemblyId()
       const perimeterId = createPerimeterId()
 
-      const perimeter: Perimeter = {
+      const perimeter: PerimeterWithGeometry = {
         id: perimeterId,
         storeyId,
         referenceSide: 'inside',
@@ -70,7 +70,7 @@ describe('Assembly Usage Detection', () => {
       const assemblyId = createRingBeamAssemblyId()
       const perimeterId = createPerimeterId()
 
-      const perimeter: Perimeter = {
+      const perimeter: PerimeterWithGeometry = {
         id: perimeterId,
         storeyId,
         referenceSide: 'inside',
@@ -109,7 +109,7 @@ describe('Assembly Usage Detection', () => {
       const perimeter1Id = createPerimeterId()
       const perimeter2Id = createPerimeterId()
 
-      const perimeter1: Perimeter = {
+      const perimeter1: PerimeterWithGeometry = {
         id: perimeter1Id,
         storeyId,
         referenceSide: 'inside',
@@ -135,7 +135,7 @@ describe('Assembly Usage Detection', () => {
         corners: []
       }
 
-      const perimeter2: Perimeter = {
+      const perimeter2: PerimeterWithGeometry = {
         id: perimeter2Id,
         storeyId,
         referenceSide: 'inside',
@@ -185,7 +185,7 @@ describe('Assembly Usage Detection', () => {
       const assemblyId = createWallAssemblyId()
       const perimeterId = createPerimeterId()
 
-      const perimeter: Perimeter = {
+      const perimeter: PerimeterWithGeometry = {
         id: perimeterId,
         storeyId,
         referenceSide: 'inside',

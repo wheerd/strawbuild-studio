@@ -16,7 +16,7 @@ import { PerimeterCornerShape } from './PerimeterCornerShape'
 import { PerimeterShape } from './PerimeterShape'
 
 describe('PerimeterShape', () => {
-  const testPerimeter: Perimeter = {
+  const testPerimeter: PerimeterWithGeometry = {
     id: createPerimeterId(),
     storeyId: createStoreyId(),
     referenceSide: 'inside',

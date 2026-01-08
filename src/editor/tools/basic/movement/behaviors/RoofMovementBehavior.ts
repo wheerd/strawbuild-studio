@@ -19,7 +19,7 @@ export interface RoofEntityContext extends PolygonEntityContext {
 
 export type RoofMovementState = PolygonMovementState
 
-function buildSnapContext(perimeters: Perimeter[], otherRoofs: Roof[]): SnappingContext {
+function buildSnapContext(perimeters: PerimeterWithGeometry[], otherRoofs: Roof[]): SnappingContext {
   // Only snap to outer points and outer edges of perimeters
   const perimeterPoints = perimeters.flatMap(perimeter => perimeter.corners.map(corner => corner.outsidePoint))
   const perimeterSegments = perimeters.flatMap(perimeter => perimeter.walls.map(wall => wall.outsideLine))

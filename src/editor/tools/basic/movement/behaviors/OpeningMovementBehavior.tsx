@@ -1,4 +1,4 @@
-import type { Opening, Perimeter, PerimeterWall } from '@/building/model'
+import type { Opening, Perimeter, PerimeterWallWithGeometry } from '@/building/model'
 import type { SelectableId } from '@/building/model/ids'
 import { isOpeningId, isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
 import type { StoreActions } from '@/building/store/types'
@@ -13,8 +13,8 @@ import { type Length, type Vec2, ZERO_VEC2, dotVec2, newVec2, scaleAddVec2, subV
 
 // Opening movement needs access to the wall, wall, and opening
 export interface OpeningEntityContext {
-  perimeter: Perimeter
-  wall: PerimeterWall
+  perimeter: PerimeterWithGeometry
+  wall: PerimeterWallWithGeometry
   opening: Opening
 }
 

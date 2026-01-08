@@ -4,7 +4,7 @@ import type { Perimeter } from '@/building/model'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 interface PerimeterGhostShapeProps {
-  perimeter: Perimeter
+  perimeter: PerimeterWithGeometry
 }
 
 export function PerimeterGhostShape({ perimeter }: PerimeterGhostShapeProps): React.JSX.Element {

@@ -46,7 +46,7 @@ export interface OpeningAssemblyUsage {
  */
 export function getRingBeamAssemblyUsage(
   assemblyId: RingBeamAssemblyId,
-  perimeters: Perimeter[],
+  perimeters: PerimeterWithGeometry[],
   defaultBaseId?: RingBeamAssemblyId,
   defaultTopId?: RingBeamAssemblyId
 ): RingBeamAssemblyUsage {
@@ -76,7 +76,7 @@ export function getRingBeamAssemblyUsage(
  */
 export function getWallAssemblyUsage(
   assemblyId: WallAssemblyId,
-  perimeters: Perimeter[],
+  perimeters: PerimeterWithGeometry[],
   defaultWallAssemblyId?: WallAssemblyId
 ): WallAssemblyUsage {
   const storeyIdSet = new Set<StoreyId>()
@@ -156,7 +156,7 @@ export function getRoofAssemblyUsage(
  */
 export function getOpeningAssemblyUsage(
   assemblyId: OpeningAssemblyId,
-  perimeters: Perimeter[],
+  perimeters: PerimeterWithGeometry[],
   wallAssemblies: WallAssemblyConfig[],
   defaultOpeningAssemblyId: OpeningAssemblyId
 ): OpeningAssemblyUsage {
