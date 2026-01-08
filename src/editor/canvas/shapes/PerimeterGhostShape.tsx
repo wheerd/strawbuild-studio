@@ -1,6 +1,6 @@
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
-import type { Perimeter } from '@/building/model/model'
+import type { Perimeter } from '@/building/model'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 interface PerimeterGhostShapeProps {

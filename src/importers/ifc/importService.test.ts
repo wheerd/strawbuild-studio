@@ -3,7 +3,7 @@ import fs, { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
-import type { Storey } from '@/building/model/model'
+import type { Storey } from '@/building/model'
 import { clearPersistence, getModelActions } from '@/building/store'
 import { importIfcIntoModel } from '@/importers/ifc/importService'
 import { ensureClipperModule } from '@/shared/geometry/clipperInstance'

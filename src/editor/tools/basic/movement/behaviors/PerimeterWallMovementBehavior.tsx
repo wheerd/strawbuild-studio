@@ -1,6 +1,6 @@
+import type { Perimeter, PerimeterWall } from '@/building/model'
 import type { SelectableId } from '@/building/model/ids'
 import { isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
-import type { Perimeter, PerimeterWall } from '@/building/model/model'
 import type { StoreActions } from '@/building/store/types'
 import type {
   MovementBehavior,

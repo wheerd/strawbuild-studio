@@ -4,8 +4,8 @@ import { Box, Callout, Flex, Grid, IconButton, Kbd, SegmentedControl, Separator,
 import { useCallback, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
+import type { OpeningType } from '@/building/model'
 import type { OpeningAssemblyId, OpeningId, PerimeterId, PerimeterWallId } from '@/building/model/ids'
-import type { OpeningType } from '@/building/model/model'
 import { useModelActions, usePerimeterById } from '@/building/store'
 import { OpeningAssemblySelectWithEdit } from '@/construction/config/components/OpeningAssemblySelectWithEdit'
 import { useWallAssemblyById } from '@/construction/config/store'

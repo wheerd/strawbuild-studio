@@ -1,7 +1,7 @@
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
+import type { Opening, PerimeterWall } from '@/building/model'
 import type { PerimeterId } from '@/building/model/ids'
-import type { Opening, PerimeterWall } from '@/building/model/model'
 import { useModelActions } from '@/building/store'
 import { ClickableLengthIndicator } from '@/editor/canvas/utils/ClickableLengthIndicator'
 import { LengthIndicator } from '@/editor/canvas/utils/LengthIndicator'

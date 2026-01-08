@@ -1,5 +1,5 @@
+import type { Opening, Perimeter, PerimeterWall } from '@/building/model'
 import type { OpeningAssemblyId, PerimeterId, StoreyId } from '@/building/model/ids'
-import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config'
 import { WallConstructionArea } from '@/construction/geometry'
 import { constructWallPost } from '@/construction/materials/posts'

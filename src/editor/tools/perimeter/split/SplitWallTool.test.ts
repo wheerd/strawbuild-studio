@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { PerimeterWall } from '@/building/model'
 import { createPerimeterId, createPerimeterWallId } from '@/building/model/ids'
-import type { PerimeterWall } from '@/building/model/model'
 import { ZERO_VEC2, newVec2 } from '@/shared/geometry'
 
 import { SplitWallTool } from './SplitWallTool'

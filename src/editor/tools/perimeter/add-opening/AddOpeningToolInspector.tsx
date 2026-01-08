@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next'
 
 import { OpeningPreview } from '@/building/components/inspectors/OpeningPreview'
 import type { OpeningAssemblyId } from '@/building/model'
-import type { OpeningType } from '@/building/model/model'
+import type { OpeningType } from '@/building/model'
 import { useActiveStoreyId, useModelActions, usePerimeters } from '@/building/store'
 import { OpeningAssemblySelectWithEdit } from '@/construction/config/components/OpeningAssemblySelectWithEdit'
 import { useDefaultOpeningAssemblyId, useOpeningAssemblyById } from '@/construction/config/store'

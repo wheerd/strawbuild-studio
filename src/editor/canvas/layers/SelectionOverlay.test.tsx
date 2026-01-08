@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react'
 import { vi } from 'vitest'
 
-import type { Perimeter } from '@/building/model/model'
+import type { Perimeter } from '@/building/model'
 import { useFloorAreaById, useFloorOpeningById, usePerimeterById, useRoofById } from '@/building/store'
 import { ZERO_VEC2, newVec2 } from '@/shared/geometry'
 

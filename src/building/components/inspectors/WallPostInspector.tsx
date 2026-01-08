@@ -4,8 +4,8 @@ import { Box, Callout, Flex, Grid, IconButton, Kbd, SegmentedControl, Separator,
 import { useCallback, useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
+import type { WallPostType } from '@/building/model'
 import type { PerimeterId, PerimeterWallId, WallPostId } from '@/building/model/ids'
-import type { WallPostType } from '@/building/model/model'
 import { useModelActions, usePerimeterById } from '@/building/store'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import { type MaterialId } from '@/construction/materials/material'

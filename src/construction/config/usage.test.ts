@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import type { Perimeter } from '@/building/model'
 import {
   createPerimeterId,
   createPerimeterWallId,
@@ -7,7 +8,6 @@ import {
   createStoreyId,
   createWallAssemblyId
 } from '@/building/model/ids'
-import type { Perimeter } from '@/building/model/model'
 import { ZERO_VEC2, newVec2 } from '@/shared/geometry'
 
 import { getRingBeamAssemblyUsage, getWallAssemblyUsage } from './usage'

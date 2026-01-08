@@ -1,3 +1,4 @@
+import type { Storey } from '@/building/model'
 import type {
   FloorAssemblyId,
   OpeningAssemblyId,
@@ -6,7 +7,6 @@ import type {
   RoofAssemblyId,
   WallAssemblyId
 } from '@/building/model/ids'
-import type { Storey } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { getConfigActions, getConfigState, setConfigState } from '@/construction/config/store'
 import { applyMigrations } from '@/construction/config/store/migrations'

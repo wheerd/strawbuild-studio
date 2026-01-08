@@ -1,8 +1,8 @@
 import type { StateCreator } from 'zustand'
 
+import type { Roof, RoofOverhang, RoofType } from '@/building/model'
 import type { PerimeterId, RoofAssemblyId, RoofId, RoofOverhangId, StoreyId } from '@/building/model/ids'
 import { createRoofId, createRoofOverhangId } from '@/building/model/ids'
-import type { Roof, RoofOverhang, RoofType } from '@/building/model/model'
 import { getConfigActions } from '@/construction/config/store'
 import { polygonEdges } from '@/construction/helpers'
 import {

@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Group } from 'react-konva/lib/ReactKonvaCore'
 
+import type { Perimeter, Roof } from '@/building/model'
 import type {
   FloorAreaId,
   FloorOpeningId,
@@ -23,7 +24,6 @@ import {
   isRoofOverhangId,
   isWallPostId
 } from '@/building/model/ids'
-import type { Perimeter, Roof } from '@/building/model/model'
 import { useFloorAreaById, useFloorOpeningById, usePerimeterById, useRoofById } from '@/building/store'
 import { SelectionOutline } from '@/editor/canvas/utils/SelectionOutline'
 import { useCurrentSelection, useSelectionPath } from '@/editor/hooks/useSelectionStore'

@@ -1,4 +1,4 @@
-import type { PerimeterWall } from '@/building/model/model'
+import type { PerimeterWall } from '@/building/model'
 import type { WallConstructionArea } from '@/construction/geometry'
 import {
   type Length,

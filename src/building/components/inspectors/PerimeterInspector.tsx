@@ -16,8 +16,8 @@ import {
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import type { PerimeterReferenceSide, PerimeterWall, RoofType } from '@/building/model'
 import type { PerimeterId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
-import type { PerimeterReferenceSide, PerimeterWall, RoofType } from '@/building/model/model'
 import { useModelActions, usePerimeterById, useRoofsOfActiveStorey } from '@/building/store'
 import TopDownPlanModal from '@/construction/components/TopDownPlanModal'
 import { useDefaultRoofAssemblyId } from '@/construction/config'

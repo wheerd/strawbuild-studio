@@ -1,7 +1,7 @@
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
+import type { PerimeterWall } from '@/building/model'
 import type { PerimeterId } from '@/building/model/ids'
-import type { PerimeterWall } from '@/building/model/model'
 import { useWallAssemblyById } from '@/construction/config/store'
 import { LengthIndicator } from '@/editor/canvas/utils/LengthIndicator'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'

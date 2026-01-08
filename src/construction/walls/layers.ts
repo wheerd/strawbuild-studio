@@ -1,4 +1,4 @@
-import type { Perimeter, PerimeterWall } from '@/building/model/model'
+import type { Perimeter, PerimeterWall } from '@/building/model'
 import type { GroupOrElement } from '@/construction/elements'
 import { WallConstructionArea } from '@/construction/geometry'
 import { LAYER_CONSTRUCTIONS } from '@/construction/layers'

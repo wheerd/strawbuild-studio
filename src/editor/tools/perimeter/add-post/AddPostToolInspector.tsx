@@ -15,7 +15,7 @@ import {
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { WallPostType } from '@/building/model/model'
+import type { WallPostType } from '@/building/model'
 import { usePerimeters } from '@/building/store'
 import { useWallAssemblies } from '@/construction/config/store'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'

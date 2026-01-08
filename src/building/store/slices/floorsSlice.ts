@@ -1,8 +1,8 @@
 import type { StateCreator } from 'zustand'
 
+import type { FloorArea, FloorOpening } from '@/building/model'
 import type { FloorAreaId, FloorOpeningId, StoreyId } from '@/building/model/ids'
 import { createFloorAreaId, createFloorOpeningId } from '@/building/model/ids'
-import type { FloorArea, FloorOpening } from '@/building/model/model'
 import {
   type Polygon2D,
   ensurePolygonIsClockwise,

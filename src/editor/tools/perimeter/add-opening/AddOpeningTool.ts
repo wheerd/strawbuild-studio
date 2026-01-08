@@ -1,3 +1,4 @@
+import type { OpeningType, PerimeterWall } from '@/building/model'
 import {
   type EntityType,
   type OpeningAssemblyId,
@@ -7,7 +8,6 @@ import {
   isPerimeterId,
   isPerimeterWallId
 } from '@/building/model/ids'
-import type { OpeningType, PerimeterWall } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config/store'
 import { entityHitTestService } from '@/editor/canvas/services/EntityHitTestService'

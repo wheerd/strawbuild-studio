@@ -1,6 +1,6 @@
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
-import type { FloorArea } from '@/building/model/model'
+import type { FloorArea } from '@/building/model'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 interface FloorAreaShapeProps {

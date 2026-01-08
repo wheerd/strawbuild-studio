@@ -1,4 +1,4 @@
-import type { Perimeter, PerimeterWall } from '@/building/model/model'
+import type { Perimeter, PerimeterWall } from '@/building/model'
 import { WallConstructionArea } from '@/construction/geometry'
 import { constructStraw } from '@/construction/materials/straw'
 import { constructTriangularBattens } from '@/construction/materials/triangularBattens'

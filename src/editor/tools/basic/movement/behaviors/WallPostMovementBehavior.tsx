@@ -1,6 +1,6 @@
+import type { Perimeter, PerimeterWall, WallPost } from '@/building/model'
 import type { SelectableId } from '@/building/model/ids'
 import { isPerimeterId, isPerimeterWallId, isWallPostId } from '@/building/model/ids'
-import type { Perimeter, PerimeterWall, WallPost } from '@/building/model/model'
 import { getWallPostPlacementBounds } from '@/building/store/slices/perimeterSlice'
 import type { StoreActions } from '@/building/store/types'
 import type {

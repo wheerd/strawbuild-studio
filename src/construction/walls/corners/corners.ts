@@ -1,4 +1,4 @@
-import type { Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model/model'
+import type { Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model'
 import { getConfigActions } from '@/construction/config'
 import type { WallCornerInfo } from '@/construction/walls/construction'
 import { distVec2, scaleAddVec2 } from '@/shared/geometry'

@@ -6,8 +6,8 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
+import type { FloorArea, FloorOpening, Perimeter, Roof, Storey } from '@/building/model'
 import type { FloorAreaId, FloorOpeningId, PerimeterId, RoofId, StoreyId } from '@/building/model/ids'
-import type { FloorArea, FloorOpening, Perimeter, Roof, Storey } from '@/building/model/model'
 
 import { CURRENT_VERSION, applyMigrations } from './migrations'
 import { getPersistenceActions } from './persistenceStore'

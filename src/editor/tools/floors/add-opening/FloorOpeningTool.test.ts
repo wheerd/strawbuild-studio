@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { FloorArea, FloorOpening, Perimeter } from '@/building/model/model'
+import type { FloorArea, FloorOpening, Perimeter } from '@/building/model'
 import { type Vec2, ZERO_VEC2, newVec2 } from '@/shared/geometry'
 
 import { FloorOpeningTool } from './FloorOpeningTool'

@@ -1,6 +1,6 @@
+import type { Perimeter, PerimeterCorner } from '@/building/model'
 import type { SelectableId } from '@/building/model/ids'
 import { isPerimeterCornerId, isPerimeterId } from '@/building/model/ids'
-import type { Perimeter, PerimeterCorner } from '@/building/model/model'
 import type { StoreActions } from '@/building/store/types'
 import type { SnapResult, SnappingContext } from '@/editor/services/snapping/types'
 import type {

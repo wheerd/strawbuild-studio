@@ -1,6 +1,6 @@
 import { Arrow, Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
-import type { PerimeterCorner, PerimeterWall } from '@/building/model/model'
+import type { PerimeterCorner, PerimeterWall } from '@/building/model'
 import { useWallAssemblyById } from '@/construction/config/store'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { direction, midpoint, perpendicular, scaleAddVec2, scaleVec2 } from '@/shared/geometry'

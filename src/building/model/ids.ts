@@ -116,6 +116,13 @@ export type EntityType =
   | 'perimeter-corner'
   | 'opening'
   | 'wall-post'
+  | 'intermediate-wall'
+  | 'room'
+  | 'wall-node'
   | 'floor-area'
   | 'floor-opening'
   | 'roof'
+
+export type WallId = PerimeterWallId | IntermediateWallId
+export type NodeId = PerimeterCornerId | WallNodeId
+export type WallEntityId = OpeningId | WallPostId

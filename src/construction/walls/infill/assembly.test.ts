@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { Opening, Perimeter, PerimeterWall } from '@/building/model'
 import { type StoreyId, createOpeningId, createPerimeterId, createWallAssemblyId } from '@/building/model/ids'
-import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
 import type { FloorAssembly } from '@/construction/floors'
 import { WallConstructionArea } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'

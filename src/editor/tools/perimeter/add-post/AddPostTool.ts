@@ -1,3 +1,4 @@
+import type { PerimeterWall, WallPostType } from '@/building/model'
 import {
   type EntityType,
   type PerimeterCornerId,
@@ -8,7 +9,6 @@ import {
   isPerimeterId,
   isPerimeterWallId
 } from '@/building/model/ids'
-import type { PerimeterWall, WallPostType } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { type MaterialId, roughWood, woodwool } from '@/construction/materials/material'
 import { entityHitTestService } from '@/editor/canvas/services/EntityHitTestService'

@@ -2,8 +2,8 @@ import { Button, Dialog, Flex, Grid, Heading, SegmentedControl, Text } from '@ra
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import type { PerimeterReferenceSide } from '@/building/model'
 import type { WallAssemblyId } from '@/building/model/ids'
-import type { PerimeterReferenceSide } from '@/building/model/model'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import {

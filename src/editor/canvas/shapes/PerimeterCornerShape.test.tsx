@@ -1,8 +1,8 @@
 import { render } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
+import type { PerimeterCorner, PerimeterWall } from '@/building/model'
 import { createPerimeterCornerId, createPerimeterWallId } from '@/building/model/ids'
-import type { PerimeterCorner, PerimeterWall } from '@/building/model/model'
 import { type Vec2, ZERO_VEC2, newVec2 } from '@/shared/geometry'
 
 import { PerimeterCornerShape } from './PerimeterCornerShape'

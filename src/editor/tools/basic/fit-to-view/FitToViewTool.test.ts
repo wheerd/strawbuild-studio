@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { Perimeter, PerimeterCorner } from '@/building/model'
 import type { StoreyId } from '@/building/model/ids'
-import type { Perimeter, PerimeterCorner } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
 import { newVec2 } from '@/shared/geometry'

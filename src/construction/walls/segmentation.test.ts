@@ -1,5 +1,6 @@
 import { type Mock, type Mocked, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { Opening, Perimeter, PerimeterWall, WallPost } from '@/building/model'
 import {
   type StoreyId,
   createOpeningId,
@@ -7,7 +8,6 @@ import {
   createWallAssemblyId,
   createWallPostId
 } from '@/building/model/ids'
-import type { Opening, Perimeter, PerimeterWall, WallPost } from '@/building/model/model'
 import { type OpeningAssemblyConfig, getConfigActions } from '@/construction/config'
 import type { FloorAssembly } from '@/construction/floors'
 import { WallConstructionArea } from '@/construction/geometry'

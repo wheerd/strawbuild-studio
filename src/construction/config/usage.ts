@@ -1,3 +1,4 @@
+import type { Perimeter, Roof, Storey } from '@/building/model'
 import type {
   FloorAssemblyId,
   OpeningAssemblyId,
@@ -6,7 +7,6 @@ import type {
   StoreyId,
   WallAssemblyId
 } from '@/building/model/ids'
-import type { Perimeter, Roof, Storey } from '@/building/model/model'
 import type { WallAssemblyConfig } from '@/construction/config/types'
 
 export interface RingBeamAssemblyUsage {

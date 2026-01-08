@@ -1,4 +1,4 @@
-import type { PerimeterCorner, PerimeterWall } from '@/building/model/model'
+import type { PerimeterCorner, PerimeterWall } from '@/building/model'
 import { PolygonWithBoundingRect, polygonEdges } from '@/construction/helpers'
 import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
 import { type ConstructionResult } from '@/construction/results'

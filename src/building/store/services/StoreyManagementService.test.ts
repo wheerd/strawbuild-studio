@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { createStoreyLevel } from '@/building/model'
 import { DEFAULT_FLOOR_ASSEMBLY_ID, type PerimeterId, type StoreyId } from '@/building/model/ids'
-import { createStoreyLevel } from '@/building/model/model'
 import { ZERO_VEC2, newVec2 } from '@/shared/geometry'
 
 import { StoreyManagementService } from './StoreyManagementService'

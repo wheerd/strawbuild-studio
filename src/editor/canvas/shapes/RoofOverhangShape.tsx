@@ -1,7 +1,7 @@
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
+import type { RoofOverhang } from '@/building/model'
 import type { RoofId } from '@/building/model/ids'
-import type { RoofOverhang } from '@/building/model/model'
 import { offsetPolygon } from '@/shared/geometry'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'

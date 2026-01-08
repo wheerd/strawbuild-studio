@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Arrow, Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
-import type { Roof } from '@/building/model/model'
+import type { Roof } from '@/building/model'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import {
   Bounds2D,

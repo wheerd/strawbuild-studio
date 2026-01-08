@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { Perimeter, PerimeterCorner, PerimeterWall, Storey } from '@/building/model'
 import {
   createFloorAssemblyId,
   createPerimeterCornerId,
@@ -8,7 +9,6 @@ import {
   createStoreyId,
   createWallAssemblyId
 } from '@/building/model/ids'
-import type { Perimeter, PerimeterCorner, PerimeterWall, Storey } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import type { ConstructionModel } from '@/construction/model'

@@ -1,4 +1,4 @@
-import type { Perimeter, PerimeterWall } from '@/building/model/model'
+import type { Perimeter, PerimeterWall } from '@/building/model'
 import { WallConstructionArea } from '@/construction/geometry'
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'

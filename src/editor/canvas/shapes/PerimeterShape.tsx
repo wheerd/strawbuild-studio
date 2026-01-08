@@ -1,6 +1,6 @@
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
-import type { Perimeter } from '@/building/model/model'
+import type { Perimeter } from '@/building/model'
 import { useViewMode } from '@/editor/hooks/useViewMode'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
