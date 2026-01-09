@@ -86,28 +86,16 @@ const createWall = (overrides: Partial<PerimeterWallWithGeometry> = {}): Perimet
   ...overrides
 })
 
-const createPerimeter = (
-  wall: PerimeterWallWithGeometry,
-  overrides: Partial<Perimeter> = {}
-): PerimeterWithGeometry => ({
-  id: createPerimeterId(),
-  storeyId: createStoreyId(),
-  referenceSide: 'inside',
-  referencePolygon: overrides.referencePolygon ?? [],
-  walls: [wall],
-  corners: [],
-  ...overrides
-})
-
-const createCorner = (overrides: Partial<PerimeterCornerWithGeometry>): PerimeterCornerWithGeometry => ({
-  id: createPerimeterCornerId(),
-  insidePoint: ZERO_VEC2,
-  outsidePoint: newVec2(0, 300),
-  constructedByWall: 'next',
-  interiorAngle: 90,
-  exteriorAngle: 270,
-  ...overrides
-})
+const createCorner = (overrides: Partial<PerimeterCornerWithGeometry>): PerimeterCornerWithGeometry =>
+  ({
+    id: createPerimeterCornerId(),
+    insidePoint: ZERO_VEC2,
+    outsidePoint: newVec2(0, 300),
+    constructedByWall: 'next',
+    interiorAngle: 90,
+    exteriorAngle: 270,
+    ...overrides
+  }) as PerimeterCornerWithGeometry
 
 const storeyContext: StoreyContext = {
   storeyId: 'storey-id' as StoreyId,
@@ -252,9 +240,8 @@ describe('constructWallLayers', () => {
 
   it('creates extruded polygons for inside and outside layers', () => {
     const wall = createWall()
-    const perimeter = createPerimeter(wall)
 
-    const model = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
+    const model = constructWallLayers(wall, storeyContext, baseLayers)
 
     const elements = flattenElements(model.elements)
     expect(elements).toHaveLength(2)
@@ -309,19 +296,18 @@ describe('constructWallLayers', () => {
   })
 
   it('adds holes for openings', () => {
-    const opening: Opening = {
+    const opening = {
       id: createOpeningId(),
-      type: 'window',
+      openingType: 'window',
       centerOffsetFromWallStart: 1450,
       width: 900,
       height: 1200,
       sillHeight: 900
-    }
+    } as Opening
 
     const wall = createWall({ openings: [opening] })
-    const perimeter = createPerimeter(wall)
 
-    const model = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
+    const model = constructWallLayers(wall, storeyContext, baseLayers)
 
     const elements = flattenElements(model.elements)
     const inside = elements.find(
@@ -349,10 +335,9 @@ describe('constructWallLayers', () => {
 
   it('extends exterior layers when wall constructs the corner', () => {
     const wall = createWall()
-    const perimeter = createPerimeter(wall)
 
     const baselineOutsideStart = (() => {
-      const baselineModel = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
+      const baselineModel = constructWallLayers(wall, storeyContext, baseLayers)
       const baselineOutside = flattenElements(baselineModel.elements).find(
         element => element.shape.base?.type === 'extrusion' && element.shape.base.thickness === 20
       )
@@ -367,7 +352,7 @@ describe('constructWallLayers', () => {
       end: newVec2(-360, 0)
     }
 
-    const model = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
+    const model = constructWallLayers(wall, storeyContext, baseLayers)
     const elements = flattenElements(model.elements)
     const outside = elements.find(
       element => element.shape.base?.type === 'extrusion' && element.shape.base.thickness === 20
@@ -385,10 +370,9 @@ describe('constructWallLayers', () => {
 
   it('shortens interior layers on inner corners not owned by the wall', () => {
     const wall = createWall()
-    const perimeter = createPerimeter(wall)
 
     const baselineInsideStart = (() => {
-      const baselineModel = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
+      const baselineModel = constructWallLayers(wall, storeyContext, baseLayers)
       const baselineInside = flattenElements(baselineModel.elements).find(
         element => element.shape.base?.type === 'extrusion' && element.shape.base.thickness === 30
       )
@@ -403,7 +387,7 @@ describe('constructWallLayers', () => {
       end: newVec2(40, 0)
     }
 
-    const model = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
+    const model = constructWallLayers(wall, storeyContext, baseLayers)
     const elements = flattenElements(model.elements)
     const inside = elements.find(
       element => element.shape.base?.type === 'extrusion' && element.shape.base.thickness === 30

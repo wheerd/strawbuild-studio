@@ -18,7 +18,7 @@ describe('model store migrations', () => {
     const migrated = applyMigrations({
       floorAreas: null,
       floorOpenings: []
-    }) as Record<string, unknown>
+    }, 8) as Record<string, unknown>
 
     expect(migrated.floorAreas).toEqual({})
     expect(migrated.floorOpenings).toEqual({})
@@ -37,7 +37,7 @@ describe('model store migrations', () => {
           walls: []
         }
       }
-    }) as Record<string, any>
+    }, 8) as Record<string, any>
 
     const perimeter = migrated.perimeters.perimeter1
     expect(Array.isArray(perimeter.referencePolygon)).toBe(true)
@@ -58,7 +58,7 @@ describe('model store migrations', () => {
           walls: []
         }
       }
-    }) as Record<string, any>
+    }, 8) as Record<string, any>
 
     const perimeter = migrated.perimeters.perimeter1
     expect(Array.isArray(perimeter.referencePolygon)).toBe(true)
@@ -95,7 +95,7 @@ describe('model store migrations', () => {
         a: { id: 'a', level: 0, height: 2400, floorAssemblyId: 'floorA' },
         b: { id: 'b', level: 1, height: 2300, floorAssemblyId: 'floorB' }
       }
-    }) as Record<string, any>
+    }, 8) as Record<string, any>
 
     const storeys = migrated.storeys as Record<string, any>
 
@@ -163,7 +163,7 @@ describe('model store migrations', () => {
           ]
         }
       }
-    }) as Record<string, any>
+    }, 8) as Record<string, any>
 
     const opening = migrated.perimeters.perimeter1.walls[0].openings[0]
     // Dimensions are stored as fitted and should remain unchanged

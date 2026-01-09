@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { PerimeterWallWithGeometry } from '@/building/model'
-import { createPerimeterId, createPerimeterWallId } from '@/building/model/ids'
+import { createPerimeterCornerId, createPerimeterId, createPerimeterWallId } from '@/building/model/ids'
 import { ZERO_VEC2, newVec2 } from '@/shared/geometry'
 
 import { SplitWallTool } from './SplitWallTool'
@@ -47,7 +47,6 @@ describe('SplitWallTool', () => {
 
   it('should initialize with correct default state', () => {
     expect(tool.state.selectedWallId).toBeNull()
-    expect(tool.state.selectedPerimeterId).toBeNull()
     expect(tool.state.targetPosition).toBeNull()
     expect(tool.state.isValidSplit).toBe(false)
     expect(tool.state.splitError).toBeNull()
@@ -60,10 +59,12 @@ describe('SplitWallTool', () => {
     // Mock wall with 1000mm length
     const mockWall: PerimeterWallWithGeometry = {
       id: wallId,
+      perimeterId,
+      startCornerId: createPerimeterCornerId(),
+      endCornerId: createPerimeterCornerId(),
       thickness: 420,
       wallAssemblyId: 'assembly1' as any,
-      openings: [],
-      posts: [],
+      entityIds: [],
       insideLength: 1000,
       outsideLength: 1000,
       wallLength: 1000,
@@ -79,29 +80,17 @@ describe('SplitWallTool', () => {
       outsideDirection: newVec2(0, 1)
     }
 
-    const mockPerimeter = {
-      id: perimeterId,
-      referenceSide: 'inside' as const,
-      referencePolygon: [],
-      walls: [mockWall],
-      corners: []
-    }
-
     // Manually set the state to test the logic
-    tool.state.selectedPerimeterId = perimeterId
     tool.state.selectedWallId = wallId
     tool.state.wall = mockWall
-    tool.state.perimeter = mockPerimeter as any
     tool.updateTargetPosition(500)
 
     expect(tool.state.selectedWallId).toBe(wallId)
-    expect(tool.state.selectedPerimeterId).toBe(perimeterId)
     expect(tool.state.targetPosition).toBe(500)
     expect(tool.state.isValidSplit).toBe(true)
   })
 
   it('should validate split positions correctly', () => {
-    const perimeterId = createPerimeterId()
     const wallId = createPerimeterWallId()
 
     const mockWall: PerimeterWallWithGeometry = {
@@ -134,19 +123,9 @@ describe('SplitWallTool', () => {
       outsideDirection: newVec2(0, 1)
     }
 
-    const mockPerimeter = {
-      id: perimeterId,
-      referenceSide: 'inside' as const,
-      referencePolygon: [],
-      walls: [mockWall],
-      corners: []
-    }
-
     // Manually set the state to test validation logic
-    tool.state.selectedPerimeterId = perimeterId
     tool.state.selectedWallId = wallId
     tool.state.wall = mockWall
-    tool.state.perimeter = mockPerimeter as any
 
     // Test valid position (before opening)
     tool.updateTargetPosition(100)

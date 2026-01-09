@@ -107,7 +107,7 @@ function summarizeStorey(storey: ImportedStorey): unknown {
     elevation: round(storey.elevation),
     height: storey.height != null ? round(storey.height) : null,
     placement: Array.from(storey.placement),
-    walls: storey.wallIds.map(summarizeWall),
+    walls: storey.walls.map(summarizeWall),
     slabs: storey.slabs.map(summarizeSlab),
     perimeterCandidates: storey.perimeterCandidates.map(candidate => ({
       source: candidate.source,
@@ -196,7 +196,7 @@ function renderStoreyDebugSvg(storey: ImportedStorey): string {
   const polygons: { type: 'wall' | 'slab' | 'perimeter' | 'hole' | 'opening'; polygon: Polygon2D }[] = []
   const openingLines: { start: Vec2; end: Vec2; opening: ImportedPerimeterOpening }[] = []
 
-  for (const wall of storey.wallIds) {
+  for (const wall of storey.walls) {
     const footprint = wall.profile?.footprint.outer
     if (footprint && footprint.points.length >= 3) {
       polygons.push({ type: 'wall', polygon: footprint })

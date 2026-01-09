@@ -78,8 +78,8 @@ describe('ProjectImportExportService Integration', () => {
     const wall2 = perimeter.wallIds[1]
 
     // Add a door to the first wall
-    modelActions.addWallOpening(perimeter.id, wall1.id, {
-      type: 'door',
+    modelActions.addWallOpening(wall1, {
+      openingType: 'door',
       centerOffsetFromWallStart: 1000,
       width: 900,
       height: 2100,
@@ -87,8 +87,8 @@ describe('ProjectImportExportService Integration', () => {
     })
 
     // Add a window to the second wall
-    modelActions.addWallOpening(perimeter.id, wall2.id, {
-      type: 'window',
+    modelActions.addWallOpening(wall2, {
+      openingType: 'window',
       centerOffsetFromWallStart: 2000,
       width: 1200,
       height: 1500,
@@ -97,11 +97,11 @@ describe('ProjectImportExportService Integration', () => {
 
     // Modify wall thickness on third wall
     const wall3 = perimeter.wallIds[2]
-    modelActions.updatePerimeterWallThickness(perimeter.id, wall3.id, 300)
+    modelActions.updatePerimeterWallThickness(wall3, 300)
 
     // Update corner construction
     const corner1 = perimeter.cornerIds[0]
-    modelActions.updatePerimeterCornerConstructedByWall(perimeter.id, corner1.id, 'previous')
+    modelActions.updatePerimeterCornerConstructedByWall(corner1, 'previous')
 
     // Add floor area
     const floorAreaPolygon = {
@@ -123,6 +123,8 @@ describe('ProjectImportExportService Integration', () => {
       floorAreas: modelActions.getFloorAreasByStorey(storey.id),
       floorOpenings: modelActions.getFloorOpeningsByStorey(storey.id)
     }))
+    const originalWalls = modelActions.getAllPerimeterWalls()
+    const originalCorners = modelActions.getAllPerimeters().flatMap(p => modelActions.getPerimeterCornersById(p.id))
     const originalConfig = getConfigState()
     const originalMaterials = getMaterialsState()
 
@@ -204,30 +206,11 @@ describe('ProjectImportExportService Integration', () => {
 
         expect(importedPerimeter.referenceSide).toBe(originalPerimeter.referenceSide)
 
-        expect(importedPerimeter.referencePolygon).toHaveLength(originalPerimeter.referencePolygon.length)
-        for (let k = 0; k < originalPerimeter.referencePolygon.length; k++) {
-          const originalPoint = originalPerimeter.referencePolygon[k]
-          const importedPoint = importedPerimeter.referencePolygon[k]
-          expect(importedPoint[0]).toBeCloseTo(originalPoint[0], 5)
-          expect(importedPoint[1]).toBeCloseTo(originalPoint[1], 5)
-        }
-
-        // Ring beams are now on walls, not perimeters
-        // Compare wall ring beam settings
-        for (let k = 0; k < originalPerimeter.wallIds.length; k++) {
-          expect(importedPerimeter.wallIds[k].baseRingBeamAssemblyId).toBe(
-            originalPerimeter.wallIds[k].baseRingBeamAssemblyId
-          )
-          expect(importedPerimeter.wallIds[k].topRingBeamAssemblyId).toBe(
-            originalPerimeter.wallIds[k].topRingBeamAssemblyId
-          )
-        }
-
         // Compare corners (excluding IDs)
         expect(importedPerimeter.cornerIds).toHaveLength(originalPerimeter.cornerIds.length)
         for (let k = 0; k < originalPerimeter.cornerIds.length; k++) {
-          const originalCorner = originalPerimeter.cornerIds[k]
-          const importedCorner = importedPerimeter.cornerIds[k]
+          const originalCorner = originalCorners.find(c => c.id === originalPerimeter.cornerIds[k])!
+          const importedCorner = modelActions.getPerimeterCornerById(importedPerimeter.cornerIds[k])
 
           expect(importedCorner.insidePoint[0]).toBeCloseTo(originalCorner.insidePoint[0], 5)
           expect(importedCorner.insidePoint[1]).toBeCloseTo(originalCorner.insidePoint[1], 5)
@@ -237,8 +220,10 @@ describe('ProjectImportExportService Integration', () => {
         // Compare walls (excluding IDs)
         expect(importedPerimeter.wallIds).toHaveLength(originalPerimeter.wallIds.length)
         for (let k = 0; k < originalPerimeter.wallIds.length; k++) {
-          const originalWall = originalPerimeter.wallIds[k]
-          const importedWall = importedPerimeter.wallIds[k]
+          const importedWall = modelActions.getPerimeterWallById(originalPerimeter.wallIds[k])
+          const originalWall = originalWalls.find(w => w.id === originalPerimeter.wallIds[k])!
+          expect(importedWall.baseRingBeamAssemblyId).toBe(originalWall?.baseRingBeamAssemblyId)
+          expect(importedWall.topRingBeamAssemblyId).toBe(originalWall?.topRingBeamAssemblyId)
 
           expect(Number(importedWall.thickness)).toBe(Number(originalWall.thickness))
           expect(importedWall.wallAssemblyId).toBe(originalWall.wallAssemblyId)

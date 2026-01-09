@@ -3,7 +3,7 @@ import { WallConstructionArea } from '@/construction/geometry'
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
 import type { ConstructionResult } from '@/construction/results'
-import { aggregateResults } from '@/construction/results'
+import { resultsToModel } from '@/construction/results'
 import type { StoreyContext } from '@/construction/storeys/context'
 import { TAG_INFILL_CONSTRUCTION } from '@/construction/tags'
 import type { ModulesWallConfig } from '@/construction/walls'
@@ -11,7 +11,6 @@ import { BaseWallAssembly } from '@/construction/walls/base'
 import { infillWallArea } from '@/construction/walls/infill/infill'
 import { constructWallLayers } from '@/construction/walls/layers'
 import { segmentedWallConstruction } from '@/construction/walls/segmentation'
-import { Bounds3D } from '@/shared/geometry'
 
 import { constructModule } from './modules'
 
@@ -29,16 +28,7 @@ export class ModulesWallAssembly extends BaseWallAssembly<ModulesWallConfig> {
       )
     )
 
-    const aggRes = aggregateResults(allResults)
-    const baseModel: ConstructionModel = {
-      bounds: Bounds3D.merge(...aggRes.elements.map(e => e.bounds)),
-      elements: aggRes.elements,
-      measurements: aggRes.measurements,
-      areas: aggRes.areas,
-      errors: aggRes.errors,
-      warnings: aggRes.warnings
-    }
-
+    const baseModel = resultsToModel(allResults)
     const layerModel = constructWallLayers(wall, storeyContext, this.config.layers)
 
     return mergeModels(baseModel, layerModel)
