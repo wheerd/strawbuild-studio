@@ -21,15 +21,7 @@ export function PerimeterCornerShape({ cornerId }: PerimeterCornerShapeProps): R
   const previousWall = usePerimeterWallById(corner.previousWallId)
   const nextWall = usePerimeterWallById(corner.nextWallId)
 
-  const cornerPolygon = [
-    corner.insidePoint,
-    previousWall.insideLine.end,
-    previousWall.outsideLine.end,
-    corner.outsidePoint,
-    nextWall.outsideLine.start,
-    nextWall.insideLine.start
-  ]
-  const polygonArray = cornerPolygon.flatMap(point => [point[0], point[1]])
+  const polygonArray = corner.polygon.points.flatMap(p => [p[0], p[1]])
 
   const arrowDir = corner.constructedByWall === 'previous' ? previousWall.direction : scaleVec2(nextWall.direction, -1)
   const arrowEnd = midpoint(corner.insidePoint, corner.outsidePoint)
@@ -45,7 +37,7 @@ export function PerimeterCornerShape({ cornerId }: PerimeterCornerShapeProps): R
   const isNearStraight = Math.abs(interiorAngleDegrees - 180) <= 5 || Math.abs(exteriorAngleDegrees - 180) <= 5
 
   const normal = perpendicular(direction(corner.insidePoint, corner.outsidePoint))
-  const overlayWidth = 80
+  const overlayHalfWidth = 80 / 2
 
   return (
     <Group
@@ -62,14 +54,14 @@ export function PerimeterCornerShape({ cornerId }: PerimeterCornerShapeProps): R
       {isNearStraight && (
         <Line
           points={[
-            corner.insidePoint[0] - normal[0] * (overlayWidth / 2),
-            corner.insidePoint[1] - (normal[1] * overlayWidth) / 2,
-            corner.insidePoint[0] + (normal[0] * overlayWidth) / 2,
-            corner.insidePoint[1] + (normal[1] * overlayWidth) / 2,
-            corner.outsidePoint[0] + (normal[0] * overlayWidth) / 2,
-            corner.outsidePoint[1] + (normal[1] * overlayWidth) / 2,
-            corner.outsidePoint[0] - (normal[0] * overlayWidth) / 2,
-            corner.outsidePoint[1] - (normal[1] * overlayWidth) / 2
+            corner.insidePoint[0] - normal[0] * overlayHalfWidth,
+            corner.insidePoint[1] - normal[1] * overlayHalfWidth,
+            corner.insidePoint[0] + normal[0] * overlayHalfWidth,
+            corner.insidePoint[1] + normal[1] * overlayHalfWidth,
+            corner.outsidePoint[0] + normal[0] * overlayHalfWidth,
+            corner.outsidePoint[1] + normal[1] * overlayHalfWidth,
+            corner.outsidePoint[0] - normal[0] * overlayHalfWidth,
+            corner.outsidePoint[1] - normal[1] * overlayHalfWidth
           ]}
           fill={cornerColor}
           stroke={theme.border}

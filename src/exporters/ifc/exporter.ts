@@ -535,7 +535,7 @@ class IfcExporter {
       new IFC4.IfcOpeningElement(
         this.globalId(),
         this.ownerHistory,
-        this.label(`${opening.type}-${opening.id}`),
+        this.label(`${opening.openingType}-${opening.id}`),
         null,
         null,
         placement,
@@ -575,7 +575,12 @@ class IfcExporter {
     )
 
     const typeProp = this.writeEntity(
-      new IFC4.IfcPropertySingleValue(this.identifier('Type'), null, this.label(opening.type.toUpperCase()), null)
+      new IFC4.IfcPropertySingleValue(
+        this.identifier('Type'),
+        null,
+        this.label(opening.openingType.toUpperCase()),
+        null
+      )
     )
 
     const propertySet = this.writeEntity(

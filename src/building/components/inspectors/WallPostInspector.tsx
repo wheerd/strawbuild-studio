@@ -82,7 +82,7 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
           <Text size="1" weight="medium" color="gray">
             {t($ => $.wallPost.type)}
           </Text>
-          <SegmentedControl.Root value={post.type} onValueChange={handleTypeChange} size="1">
+          <SegmentedControl.Root value={post.postType} onValueChange={handleTypeChange} size="1">
             <SegmentedControl.Item value="inside">{t($ => $.wallPost.typeInside)}</SegmentedControl.Item>
             <SegmentedControl.Item value="center">{t($ => $.wallPost.typeCenter)}</SegmentedControl.Item>
             <SegmentedControl.Item value="outside">{t($ => $.wallPost.typeOutside)}</SegmentedControl.Item>

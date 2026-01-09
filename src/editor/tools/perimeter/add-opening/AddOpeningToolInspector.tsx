@@ -182,7 +182,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
   const allOpeningConfigs = useMemo(() => {
     const existingConfigs: Record<string, ExistingConfig> = {}
     for (const opening of allOpenings) {
-      const key = `${opening.openingAssemblyId}:${opening.type}:${opening.width}:${opening.height}:${opening.sillHeight}`
+      const key = `${opening.openingAssemblyId}:${opening.openingType}:${opening.width}:${opening.height}:${opening.sillHeight}`
       if (!(key in existingConfigs)) {
         const label = `${formatLength(opening.width)} x ${formatLength(opening.height)}${opening.sillHeight ? ` SH ${formatLength(opening.sillHeight)}` : ''}`
         existingConfigs[key] = {

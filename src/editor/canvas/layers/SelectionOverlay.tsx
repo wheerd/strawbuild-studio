@@ -46,7 +46,7 @@ export function SelectionOverlay(): React.JSX.Element | null {
   )
 }
 
-function getPerimeterCornerPoints(corner: PerimeterCornerGeometry): Vec2[] | null {
+function getPerimeterCornerPoints(corner: PerimeterCornerGeometry): Vec2[] {
   const isNearStraight = Math.abs(corner.interiorAngle - 180) <= 5
   if (isNearStraight) {
     // For near-straight corners, use improved overlay shape (same as PerimeterCornerShape)

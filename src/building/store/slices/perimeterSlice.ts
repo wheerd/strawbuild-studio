@@ -1230,12 +1230,13 @@ const hasPostsInCornerArea = (
 ): boolean => {
   const wall = state.perimeterWalls[wallId]
   const wallGeometry = state._perimeterWallGeometry[wallId]
-  if (wall.entityIds.length === 0) return false
-
   const sortedPosts = wall.entityIds
     .filter(id => isWallPostId(id))
     .map(id => state.wallPosts[id])
     .sort((a, b) => a.centerOffsetFromWallStart - b.centerOffsetFromWallStart)
+
+  if (sortedPosts.length === 0) return false
+
   if (cornerPosition === 'start') {
     // Check first post - is it in the corner (negative offset)?
     const firstPost = sortedPosts[0]

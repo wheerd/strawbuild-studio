@@ -53,14 +53,14 @@ export function PerimeterShape({ perimeter }: PerimeterShapeProps): React.JSX.El
     <Group name={`perimeter-${perimeter.id}`} entityId={perimeter.id} entityType="perimeter" parentIds={[]} listening>
       <Line points={innerPoints} fill="none" opacity={0} closed listening />
 
-      {/* Render corner shapes */}
-      {perimeter.cornerIds.map(id => (
-        <PerimeterCornerShape key={`corner-${id}`} cornerId={id} />
-      ))}
-
       {/* Render each wall */}
       {perimeter.wallIds.map(id => (
         <PerimeterWallShape key={`wall-${id}`} wallId={id} />
+      ))}
+
+      {/* Render corner shapes */}
+      {perimeter.cornerIds.map(id => (
+        <PerimeterCornerShape key={`corner-${id}`} cornerId={id} />
       ))}
     </Group>
   )

@@ -194,7 +194,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             </Tooltip>
           </Flex>
           <SegmentedControl.Root
-            value={opening.type}
+            value={opening.openingType}
             onValueChange={(value: OpeningType) =>
               handleTypeChange({ target: { value } } as React.ChangeEvent<HTMLSelectElement>)
             }

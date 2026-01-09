@@ -57,7 +57,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
 
     // From model posts
     for (const post of allPosts) {
-      const key = `${post.type}:${post.width}:${post.thickness}:${post.material}:${post.infillMaterial}`
+      const key = `${post.postType}:${post.width}:${post.thickness}:${post.material}:${post.infillMaterial}`
       if (!(key in existingConfigs)) {
         existingConfigs[key] = {
           type: post.postType,
