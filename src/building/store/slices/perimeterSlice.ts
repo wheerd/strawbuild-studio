@@ -224,7 +224,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         }))
 
         const perimeter = {
-          id: createPerimeterId(),
+          id: perimeterId,
           storeyId,
           referenceSide,
           wallIds,

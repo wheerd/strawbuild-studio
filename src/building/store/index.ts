@@ -1,5 +1,5 @@
 import isDeepEqual from 'fast-deep-equal'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { debounce } from 'throttle-debounce'
 import { temporal } from 'zundo'
 import { create } from 'zustand'
@@ -17,16 +17,26 @@ import type {
   Storey,
   WallPostWithGeometry
 } from '@/building/model'
-import type {
-  FloorAreaId,
-  FloorOpeningId,
-  OpeningId,
-  PerimeterCornerId,
-  PerimeterId,
-  PerimeterWallId,
-  RoofId,
-  StoreyId,
-  WallPostId
+import {
+  type FloorAreaId,
+  type FloorOpeningId,
+  type OpeningId,
+  type PerimeterCornerId,
+  type PerimeterId,
+  type PerimeterWallId,
+  type RoofId,
+  type SelectableId,
+  type StoreyId,
+  type WallPostId,
+  isFloorAreaId,
+  isFloorOpeningId,
+  isOpeningId,
+  isPerimeterCornerId,
+  isPerimeterId,
+  isPerimeterWallId,
+  isRoofId,
+  isRoofOverhangId,
+  isWallPostId
 } from '@/building/model/ids'
 
 import { CURRENT_VERSION, applyMigrations } from './migrations'
@@ -136,6 +146,77 @@ export const useStoreysOrderedByLevel = (): Storey[] => {
   const storeys = useModelStore(state => state.storeys)
   const getStoreysOrderedByLevel = useModelStore(state => state.actions.getStoreysOrderedByLevel)
   return useMemo(() => getStoreysOrderedByLevel(), [storeys])
+}
+
+export const useModelEntityById = (
+  id: SelectableId | null,
+  parentId?: SelectableId
+):
+  | PerimeterWithGeometry
+  | PerimeterWallWithGeometry
+  | PerimeterCornerWithGeometry
+  | OpeningWithGeometry
+  | WallPostWithGeometry
+  | FloorArea
+  | FloorOpening
+  | Roof
+  | null => {
+  const selector = useCallback(
+    (state: Store) => {
+      if (id == null) return null
+      if (isOpeningId(id)) return state.openings[id]
+      if (isWallPostId(id)) return state.wallPosts[id]
+      if (isPerimeterId(id)) return state.perimeters[id]
+      if (isPerimeterWallId(id)) return state.perimeterWalls[id]
+      if (isPerimeterCornerId(id)) return state.perimeterCorners[id]
+      if (isFloorAreaId(id)) return state.floorAreas[id]
+      if (isFloorOpeningId(id)) return state.floorOpenings[id]
+      if (isRoofId(id)) return state.roofs[id]
+      if (isRoofOverhangId(id)) return state.roofs[parentId as RoofId]
+      return state
+    },
+    [id, parentId]
+  )
+  const geometrySelector = useCallback(
+    (state: Store) => {
+      if (id == null) return null
+      if (isOpeningId(id)) return state._openingGeometry[id]
+      if (isWallPostId(id)) return state._wallPostGeometry[id]
+      if (isPerimeterId(id)) return state._perimeterGeometry[id]
+      if (isPerimeterWallId(id)) return state._perimeterWallGeometry[id]
+      if (isPerimeterCornerId(id)) return state._perimeterCornerGeometry[id]
+      if (isRoofOverhangId(id)) return state.roofs[parentId as RoofId]
+      return state
+    },
+    [id, parentId]
+  )
+  const getterSelector = useCallback(
+    (state: Store) => {
+      if (id == null) return () => null
+      if (isOpeningId(id)) return state.actions.getWallOpeningById
+      if (isWallPostId(id)) return state.actions.getWallPostById
+      if (isPerimeterId(id)) return state.actions.getPerimeterById
+      if (isPerimeterWallId(id)) return state.actions.getPerimeterWallById
+      if (isPerimeterCornerId(id)) return state.actions.getPerimeterCornerById
+      if (isFloorAreaId(id)) return state.actions.getFloorAreaById
+      if (isFloorOpeningId(id)) return state.actions.getFloorOpeningById
+      if (isRoofId(id)) return state.actions.getRoofById
+      if (isRoofOverhangId(id)) return state.actions.getRoofById
+      return () => null
+    },
+    [id]
+  )
+  const entity = useModelStore(selector)
+  const geometry = useModelStore(geometrySelector)
+  const getter = useModelStore(getterSelector)
+  return useMemo(() => {
+    if (id == null) return null
+    if (isRoofOverhangId(id)) {
+      const roof = getter(parentId as RoofId) as Roof | null
+      return roof?.overhangs.find(o => o.id === id) ?? null
+    }
+    return getter(id as any)
+  }, [entity, geometry, getter, id, parentId])
 }
 
 export const usePerimeters = (): PerimeterWithGeometry[] => {

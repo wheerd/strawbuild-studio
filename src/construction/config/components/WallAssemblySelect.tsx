@@ -45,7 +45,7 @@ export function WallAssemblySelect({
       <Select.Content>
         {wallAssemblies.length === 0 ? (
           <Select.Item value="" disabled>
-            <Text color="gray">{t($ => $.wallIds.emptyList)}</Text>
+            <Text color="gray">{t($ => $.walls.emptyList)}</Text>
           </Select.Item>
         ) : (
           wallAssemblies.map(assembly => {
@@ -58,7 +58,7 @@ export function WallAssemblySelect({
                   <Icon style={{ flexShrink: 0 }} />
                   <Text>
                     {isDefault ? (
-                      <Trans t={t} i18nKey={$ => $.wallIds.defaultLabel} components={{ gray: <Text color="gray" /> }}>
+                      <Trans t={t} i18nKey={$ => $.walls.defaultLabel} components={{ gray: <Text color="gray" /> }}>
                         <>{{ label }}</> <Text color="gray"> (default)</Text>
                       </Trans>
                     ) : (

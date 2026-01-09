@@ -1,58 +1,46 @@
+import { useEffect } from 'react'
 import { Group } from 'react-konva/lib/ReactKonvaCore'
 
-import type { PerimeterCornerGeometry } from '@/building/model'
+import type { PerimeterCornerGeometry, PerimeterCornerWithGeometry } from '@/building/model'
 import type { RoofId, SelectableId } from '@/building/model/ids'
-import {
-  isFloorAreaId,
-  isFloorOpeningId,
-  isOpeningId,
-  isPerimeterCornerId,
-  isPerimeterId,
-  isPerimeterWallId,
-  isRoofId,
-  isRoofOverhangId,
-  isWallPostId
-} from '@/building/model/ids'
-import {
-  useFloorAreaById,
-  useFloorOpeningById,
-  usePerimeterById,
-  usePerimeterCornerById,
-  usePerimeterWallById,
-  useRoofById,
-  useWallOpeningById,
-  useWallPostById
-} from '@/building/store'
+import { isPerimeterCornerId, isRoofOverhangId } from '@/building/model/ids'
+import { useModelEntityById } from '@/building/store'
 import { SelectionOutline } from '@/editor/canvas/utils/SelectionOutline'
 import { useCurrentSelection, useSelectionPath } from '@/editor/hooks/useSelectionStore'
 import { type Vec2, direction, perpendicular, scaleAddVec2 } from '@/shared/geometry'
+
+function getOutlinePoints(
+  entity: ReturnType<typeof useModelEntityById>,
+  currentSelection: SelectableId | null
+): Vec2[] | null {
+  if (!entity || !currentSelection) return null
+
+  // Handle special case for perimeter corners
+  if (isPerimeterCornerId(currentSelection)) {
+    return getPerimeterCornerPoints(entity as PerimeterCornerWithGeometry)
+  }
+
+  // Handle roof overhang
+  if (isRoofOverhangId(currentSelection)) {
+    return (entity as any)?.area?.points ?? null
+  }
+
+  // Handle all other entities with polygon or area properties
+  if ('outerPolygon' in entity) return entity.outerPolygon.points
+  if ('polygon' in entity) return entity.polygon.points
+  if ('area' in entity) return entity.area.points
+  if ('overhangPolygon' in entity) return entity.overhangPolygon.points
+
+  return null
+}
 
 function useSelectionOutlinePoints(
   selectionPath: SelectableId[],
   currentSelection: SelectableId | null
 ): Vec2[] | null {
-  return currentSelection == null
-    ? null
-    : isPerimeterId(currentSelection)
-      ? usePerimeterById(currentSelection).outerPolygon.points
-      : isPerimeterWallId(currentSelection)
-        ? usePerimeterWallById(currentSelection).polygon.points
-        : isPerimeterCornerId(currentSelection)
-          ? getPerimeterCornerPoints(usePerimeterCornerById(currentSelection))
-          : isOpeningId(currentSelection)
-            ? useWallOpeningById(currentSelection).polygon.points
-            : isWallPostId(currentSelection)
-              ? useWallPostById(currentSelection).polygon.points
-              : isFloorAreaId(currentSelection)
-                ? (useFloorAreaById(currentSelection)?.area.points ?? null)
-                : isFloorOpeningId(currentSelection)
-                  ? (useFloorOpeningById(currentSelection)?.area.points ?? null)
-                  : isRoofId(currentSelection)
-                    ? (useRoofById(currentSelection)?.overhangPolygon.points ?? null)
-                    : isRoofOverhangId(currentSelection)
-                      ? (useRoofById(selectionPath[0] as RoofId)?.overhangs.find(o => o.id === currentSelection)?.area
-                          .points ?? null)
-                      : null
+  const parentId = isRoofOverhangId(currentSelection) ? selectionPath[0] : undefined
+  const entity = useModelEntityById(currentSelection, parentId)
+  return getOutlinePoints(entity, currentSelection)
 }
 
 export function SelectionOverlay(): React.JSX.Element | null {
