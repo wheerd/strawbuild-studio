@@ -2,7 +2,7 @@ import { expect, vi } from 'vitest'
 
 import type { WallPostParams } from '@/building/model'
 import type { PerimeterId } from '@/building/model/ids'
-import { createStoreyId } from '@/building/model/ids'
+import { createStoreyId, isOpeningId, isWallPostId } from '@/building/model/ids'
 import { NotFoundError } from '@/building/store/errors'
 import type { MaterialId } from '@/construction/materials/material'
 import type { Polygon2D } from '@/shared/geometry'
@@ -175,8 +175,8 @@ export function verifyNoOrphanedEntities(state: PerimetersState): void {
 
   Object.values(state.perimeterWalls).forEach(wall => {
     wall.entityIds.forEach(id => {
-      if (id.startsWith('opening_')) allOpeningIds.add(id)
-      if (id.startsWith('wallpost_')) allPostIds.add(id)
+      if (isOpeningId(id)) allOpeningIds.add(id)
+      if (isWallPostId(id)) allPostIds.add(id)
     })
   })
 

@@ -6,6 +6,7 @@ import { ensurePolygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/sh
 
 import type { PerimetersSlice } from '../perimeterSlice'
 import {
+  createLShapedBoundary,
   createRectangularBoundary,
   expectThrowsForInvalidId,
   setupPerimeterSlice,
@@ -59,7 +60,7 @@ describe('openingSlice', () => {
 
         expect(opening).toBeTruthy()
         expect(opening.wallId).toBe(wallId)
-        expect(opening.type).toBe('door')
+        expect(opening.openingType).toBe('door')
         expect(opening.centerOffsetFromWallStart).toBe(2000)
         expect(opening.width).toBe(900)
         expect(opening.height).toBe(2100)
@@ -150,7 +151,7 @@ describe('openingSlice', () => {
         expect(() =>
           slice.actions.addWallOpening(wallId, {
             openingType: 'door',
-            centerOffsetFromWallStart: wall.insideLength + 1000,
+            centerOffsetFromWallStart: wall.wallLength + 1000,
             width: 900,
             height: 2100
           })
@@ -221,10 +222,10 @@ describe('openingSlice', () => {
         verifyNoOrphanedEntities(slice)
       })
 
-      it('should throw for non-existent opening', () => {
+      it('should not throw for non-existent opening', () => {
         expect(() => {
           slice.actions.removeWallOpening('opening_fake' as any)
-        }).toThrow()
+        }).not.toThrow()
       })
     })
 
@@ -321,7 +322,10 @@ describe('openingSlice', () => {
         const entity = slice.actions.getWallEntityById(opening.id)
 
         expect(entity.id).toBe(opening.id)
-        expect(entity.type).toBe('door')
+        expect(entity.type).toBe('opening')
+        if (entity.type === 'opening') {
+          expect(entity.openingType).toBe('door')
+        }
       })
 
       it('should throw for non-existent entity', () => {
@@ -378,7 +382,7 @@ describe('openingSlice', () => {
       it('should return false when opening extends beyond wall end', () => {
         const wall = slice.actions.getPerimeterWallById(wallId)
 
-        const isValid = slice.actions.isWallOpeningPlacementValid(wallId, wall.insideLength - 200, 900)
+        const isValid = slice.actions.isWallOpeningPlacementValid(wallId, wall.wallLength - 200, 900)
 
         expect(isValid).toBe(false)
       })
@@ -421,15 +425,15 @@ describe('openingSlice', () => {
       it('should adjust position when near wall start', () => {
         const position = slice.actions.findNearestValidWallOpeningPosition(wallId, 200, 900)
 
-        expect(position).toBeGreaterThan(450) // At least half width from start
+        expect(position).toBeGreaterThanOrEqual(450) // At least half width from start
       })
 
       it('should adjust position when near wall end', () => {
         const wall = slice.actions.getPerimeterWallById(wallId)
 
-        const position = slice.actions.findNearestValidWallOpeningPosition(wallId, wall.insideLength - 200, 900)
+        const position = slice.actions.findNearestValidWallOpeningPosition(wallId, wall.wallLength - 200, 900)
 
-        expect(position).toBeLessThan(wall.insideLength - 450) // At least half width from end
+        expect(position).toBeLessThanOrEqual(wall.wallLength - 450) // At least half width from end
       })
 
       it('should return null when no valid position exists', () => {
@@ -438,8 +442,8 @@ describe('openingSlice', () => {
         // Try to place opening wider than wall
         const position = slice.actions.findNearestValidWallOpeningPosition(
           wallId,
-          wall.insideLength / 2,
-          wall.insideLength + 1000
+          wall.wallLength / 2,
+          wall.wallLength + 1000
         )
 
         expect(position).toBeNull()
@@ -458,17 +462,18 @@ describe('openingSlice', () => {
         const position = slice.actions.findNearestValidWallOpeningPosition(wallId, 2200, 900)
 
         // Should find valid position away from existing opening
-        expect(position).not.toBeNull()
-        if (position !== null) {
-          expect(Math.abs(position - 2000)).toBeGreaterThan(900) // At least one width away
-        }
+        expect(position).toBeGreaterThanOrEqual(2900) // At least one width away
       })
     })
   })
 
   describe('Opening Cascade Cleanup', () => {
     it('should remove openings when wall is removed', () => {
-      const opening = slice.actions.addWallOpening(wallId, {
+      const boundary = createLShapedBoundary()
+      const wallAssemblyId = createWallAssemblyId()
+      const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
+
+      const opening = slice.actions.addWallOpening(perimeter.wallIds[0], {
         openingType: 'door',
         centerOffsetFromWallStart: 2000,
         width: 900,
@@ -477,7 +482,7 @@ describe('openingSlice', () => {
 
       expect(slice.openings[opening.id]).toBeDefined()
 
-      slice.actions.removePerimeterWall(wallId)
+      slice.actions.removePerimeterWall(perimeter.wallIds[0])
 
       expect(slice.openings[opening.id]).toBeUndefined()
       expect(slice._openingGeometry[opening.id]).toBeUndefined()
@@ -501,7 +506,7 @@ describe('openingSlice', () => {
 
     it('should redistribute openings when wall is split', () => {
       const wall = slice.actions.getPerimeterWallById(wallId)
-      const splitPosition = wall.insideLength / 2
+      const splitPosition = wall.wallLength / 2
 
       // Add opening before split point
       const opening1 = slice.actions.addWallOpening(wallId, {
@@ -551,7 +556,7 @@ describe('openingSlice', () => {
 
     it('should update wall reference when opening moves to different wall after split', () => {
       const wall = slice.actions.getPerimeterWallById(wallId)
-      const splitPosition = wall.insideLength / 2
+      const splitPosition = wall.wallLength / 2
 
       const opening = slice.actions.addWallOpening(wallId, {
         openingType: 'door',

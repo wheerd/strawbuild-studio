@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { PerimeterCornerId, PerimeterId, StoreyId } from '@/building/model/ids'
 import { createWallAssemblyId } from '@/building/model/ids'
+import { NotFoundError } from '@/building/store/errors'
 import type { MaterialId } from '@/construction/materials/material'
 import { ensurePolygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 
@@ -139,7 +140,7 @@ describe('perimeterCornerSlice', () => {
         const result = slice.actions.canRemovePerimeterCorner(cornerId)
 
         expect(result.canRemove).toBe(false)
-        expect(result.reason).toBe('wouldSelfIntersect')
+        expect(result.reason).toBe('cannotDeleteSelfIntersect')
       })
 
       it('should recalculate perimeter geometry', () => {
@@ -194,7 +195,7 @@ describe('perimeterCornerSlice', () => {
       it('should throw for non-existent corner', () => {
         expect(() => {
           slice.actions.canRemovePerimeterCorner('corner_fake' as any)
-        }).toThrow('Corner not found')
+        }).toThrow(NotFoundError)
       })
     })
   })
@@ -270,7 +271,7 @@ describe('perimeterCornerSlice', () => {
       it('should throw for non-existent corner', () => {
         expect(() => {
           slice.actions.canSwitchCornerConstructedByWall('corner_fake' as any)
-        }).toThrow('Corner not found')
+        }).toThrow(NotFoundError)
       })
     })
   })

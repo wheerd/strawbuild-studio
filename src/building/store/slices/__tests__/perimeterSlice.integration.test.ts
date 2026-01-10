@@ -49,7 +49,7 @@ describe('perimeterIntegration', () => {
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const wallId = perimeter.wallIds[0]
         const wall = slice.actions.getPerimeterWallById(wallId)
-        const splitPosition = wall.insideLength / 2
+        const splitPosition = wall.wallLength / 2
 
         // Add opening before split point
         const opening1 = slice.actions.addWallOpening(wallId, {
@@ -63,7 +63,7 @@ describe('perimeterIntegration', () => {
         const opening2 = slice.actions.addWallOpening(wallId, {
           openingType: 'window',
           centerOffsetFromWallStart: splitPosition + 1000,
-          width: 1200,
+          width: 900,
           height: 1500
         })
 
@@ -71,7 +71,7 @@ describe('perimeterIntegration', () => {
         const post1 = slice.actions.addWallPost(
           wallId,
           mockPost({
-            centerOffsetFromWallStart: splitPosition - 500,
+            centerOffsetFromWallStart: splitPosition - 100,
             width: 100
           })
         )
@@ -80,7 +80,7 @@ describe('perimeterIntegration', () => {
         const post2 = slice.actions.addWallPost(
           wallId,
           mockPost({
-            centerOffsetFromWallStart: splitPosition + 500,
+            centerOffsetFromWallStart: splitPosition + 100,
             width: 100
           })
         )
@@ -373,7 +373,7 @@ describe('perimeterIntegration', () => {
 
         // Perform various operations
         const wall = slice.actions.getPerimeterWallById(wallId)
-        slice.actions.splitPerimeterWall(wallId, wall.insideLength / 2)
+        slice.actions.splitPerimeterWall(wallId, wall.wallLength / 2)
 
         const updatedPerimeter = slice.actions.getPerimeterById(perimeter.id)
         slice.actions.removePerimeterCorner(updatedPerimeter.cornerIds[0])
@@ -476,7 +476,7 @@ describe('perimeterIntegration', () => {
         // Split wall multiple times
         for (let i = 0; i < 3; i++) {
           const wall = slice.actions.getPerimeterWallById(wallId)
-          const splitPosition = wall.insideLength / 2
+          const splitPosition = wall.wallLength / 2
           const newWallId = slice.actions.splitPerimeterWall(wallId, splitPosition)
           expect(newWallId).toBeTruthy()
           wallId = newWallId!

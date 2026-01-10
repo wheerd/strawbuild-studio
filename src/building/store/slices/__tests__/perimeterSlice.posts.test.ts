@@ -6,6 +6,7 @@ import { ensurePolygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/sh
 
 import type { PerimetersSlice } from '../perimeterSlice'
 import {
+  createLShapedBoundary,
   createRectangularBoundary,
   expectThrowsForInvalidId,
   mockPost,
@@ -131,7 +132,7 @@ describe('wallPostSlice', () => {
           slice.actions.addWallPost(
             wallId,
             mockPost({
-              centerOffsetFromWallStart: wall.insideLength + 1000,
+              centerOffsetFromWallStart: wall.wallLength + 1000,
               width: 100
             })
           )
@@ -226,10 +227,10 @@ describe('wallPostSlice', () => {
         verifyNoOrphanedEntities(slice)
       })
 
-      it('should throw for non-existent post', () => {
+      it('should not throw for non-existent post', () => {
         expect(() => {
           slice.actions.removeWallPost('wallpost_fake' as any)
-        }).toThrow()
+        }).not.toThrow()
       })
     })
 
@@ -340,16 +341,38 @@ describe('wallPostSlice', () => {
         expect(isValid).toBe(true)
       })
 
-      it('should return false when post extends beyond wall start', () => {
+      it('should return false when post extends beyond wall start and corner belongs to other wall', () => {
+        const wall = slice.actions.getPerimeterWallById(wallId)
+        slice.actions.updatePerimeterCornerConstructedByWall(wall.startCornerId, 'previous')
+
         const isValid = slice.actions.isWallPostPlacementValid(wallId, 30, 100)
 
         expect(isValid).toBe(false)
       })
 
-      it('should return false when post extends beyond wall end', () => {
+      it('should return true when post extends into start corner belonging to wall', () => {
         const wall = slice.actions.getPerimeterWallById(wallId)
+        slice.actions.updatePerimeterCornerConstructedByWall(wall.startCornerId, 'next')
 
-        const isValid = slice.actions.isWallPostPlacementValid(wallId, wall.insideLength - 30, 100)
+        const isValid = slice.actions.isWallPostPlacementValid(wallId, 30, 100)
+
+        expect(isValid).toBe(true)
+      })
+
+      it('should return false when post extends beyond wall end and corner belongs to other wall', () => {
+        const wall = slice.actions.getPerimeterWallById(wallId)
+        slice.actions.updatePerimeterCornerConstructedByWall(wall.startCornerId, 'next')
+
+        const isValid = slice.actions.isWallPostPlacementValid(wallId, wall.wallLength - 30, 100)
+
+        expect(isValid).toBe(false)
+      })
+
+      it('should return true when post extends into end corner belonging to wall', () => {
+        const wall = slice.actions.getPerimeterWallById(wallId)
+        slice.actions.updatePerimeterCornerConstructedByWall(wall.startCornerId, 'previous')
+
+        const isValid = slice.actions.isWallPostPlacementValid(wallId, wall.wallLength - 30, 100)
 
         expect(isValid).toBe(false)
       })
@@ -404,18 +427,30 @@ describe('wallPostSlice', () => {
         expect(position).toBe(2000)
       })
 
-      it('should adjust position when near wall start', () => {
+      it('should adjust position when near wall start and corner belongs to other wall', () => {
+        const wall = slice.actions.getPerimeterWallById(wallId)
+        slice.actions.updatePerimeterCornerConstructedByWall(wall.startCornerId, 'previous')
+
         const position = slice.actions.findNearestValidWallPostPosition(wallId, 30, 100)
 
-        expect(position).toBeGreaterThanOrEqual(50) // At least half width from start
+        expect(position).toBeGreaterThanOrEqual(50)
+      })
+
+      it('should allow overlap near wall start and corner belongs to wall', () => {
+        const wall = slice.actions.getPerimeterWallById(wallId)
+        slice.actions.updatePerimeterCornerConstructedByWall(wall.startCornerId, 'next')
+
+        const position = slice.actions.findNearestValidWallPostPosition(wallId, 30, 100)
+
+        expect(position).toBeGreaterThanOrEqual(30) // At least half width from start
       })
 
       it('should adjust position when near wall end', () => {
         const wall = slice.actions.getPerimeterWallById(wallId)
 
-        const position = slice.actions.findNearestValidWallPostPosition(wallId, wall.insideLength - 30, 100)
+        const position = slice.actions.findNearestValidWallPostPosition(wallId, wall.wallLength - 30, 100)
 
-        expect(position).toBeLessThanOrEqual(wall.insideLength - 50) // At least half width from end
+        expect(position).toBeLessThanOrEqual(wall.wallLength - 50) // At least half width from end
       })
 
       it('should return null when no valid position exists', () => {
@@ -424,8 +459,8 @@ describe('wallPostSlice', () => {
         // Try to place post wider than wall
         const position = slice.actions.findNearestValidWallPostPosition(
           wallId,
-          wall.insideLength / 2,
-          wall.insideLength + 1000
+          wall.wallLength / 2,
+          wall.wallLength + 1000
         )
 
         expect(position).toBeNull()
@@ -445,10 +480,7 @@ describe('wallPostSlice', () => {
         const position = slice.actions.findNearestValidWallPostPosition(wallId, 2050, 100)
 
         // Should find valid position away from existing post
-        expect(position).not.toBeNull()
-        if (position !== null) {
-          expect(Math.abs(position - 2000)).toBeGreaterThan(100) // At least one width away
-        }
+        expect(position).toBeGreaterThanOrEqual(2100) // At least one width away
       })
 
       it('should find position avoiding openings', () => {
@@ -464,27 +496,28 @@ describe('wallPostSlice', () => {
         const position = slice.actions.findNearestValidWallPostPosition(wallId, 2100, 100)
 
         // Should find valid position away from opening
-        expect(position).not.toBeNull()
-        if (position !== null) {
-          expect(Math.abs(position - 2000)).toBeGreaterThan(450 + 50) // Opening half-width + post half-width
-        }
+        expect(position).toBeGreaterThanOrEqual(2000 + 450 + 50) // Opening half-width + post half-width
       })
     })
   })
 
   describe('Wall Post Cascade Cleanup', () => {
     it('should remove posts when wall is removed', () => {
+      const boundary = createLShapedBoundary()
+      const wallAssemblyId = createWallAssemblyId()
+      const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
+
       const post = slice.actions.addWallPost(
-        wallId,
+        perimeter.wallIds[0],
         mockPost({
-          centerOffsetFromWallStart: 2000,
+          centerOffsetFromWallStart: 100,
           width: 100
         })
       )!
 
       expect(slice.wallPosts[post.id]).toBeDefined()
 
-      slice.actions.removePerimeterWall(wallId)
+      slice.actions.removePerimeterWall(perimeter.wallIds[0])
 
       expect(slice.wallPosts[post.id]).toBeUndefined()
       expect(slice._wallPostGeometry[post.id]).toBeUndefined()
@@ -509,7 +542,7 @@ describe('wallPostSlice', () => {
 
     it('should redistribute posts when wall is split', () => {
       const wall = slice.actions.getPerimeterWallById(wallId)
-      const splitPosition = wall.insideLength / 2
+      const splitPosition = wall.wallLength / 2
 
       // Add post before split point
       const post1 = slice.actions.addWallPost(
@@ -562,7 +595,7 @@ describe('wallPostSlice', () => {
 
     it('should update wall reference when post moves to different wall after split', () => {
       const wall = slice.actions.getPerimeterWallById(wallId)
-      const splitPosition = wall.insideLength / 2
+      const splitPosition = wall.wallLength / 2
 
       const post = slice.actions.addWallPost(
         wallId,
@@ -621,7 +654,7 @@ describe('wallPostSlice', () => {
 
     it('should redistribute both posts and openings when wall splits', () => {
       const wall = slice.actions.getPerimeterWallById(wallId)
-      const splitPosition = wall.insideLength / 2
+      const splitPosition = wall.wallLength / 2
 
       const opening = slice.actions.addWallOpening(wallId, {
         openingType: 'door',

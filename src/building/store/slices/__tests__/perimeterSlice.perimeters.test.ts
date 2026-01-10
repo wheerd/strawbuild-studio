@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { type StoreyId, createStoreyId, createWallAssemblyId } from '@/building/model/ids'
+import { NotFoundError } from '@/building/store/errors'
 import { newVec2 } from '@/shared/geometry'
 import { ensurePolygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 
@@ -239,7 +240,7 @@ describe('perimeterSlice - Basic CRUD', () => {
       const firstWall = slice.actions.getPerimeterWallById(perimeter.wallIds[0])
 
       // First wall should be bottom horizontal wall
-      expect(firstWall.insideLength).toBeGreaterThan(0)
+      expect(firstWall.wallLength).toBeGreaterThan(0)
       expect(firstWall.outsideLength).toBeGreaterThan(0)
       expect(firstWall.wallLength).toBeGreaterThan(0)
       expect(firstWall.direction).toBeDefined()
@@ -459,13 +460,13 @@ describe('perimeterSlice - Basic CRUD', () => {
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
         const originalWalls = perimeter.wallIds.map(id => slice.actions.getPerimeterWallById(id))
-        const originalLengths = originalWalls.map(w => w.insideLength)
+        const originalLengths = originalWalls.map(w => w.wallLength)
 
         slice.actions.movePerimeter(perimeter.id, newVec2(2000, -1000))
 
         const movedWalls = perimeter.wallIds.map(id => slice.actions.getPerimeterWallById(id))
         movedWalls.forEach((wall, i) => {
-          expect(wall.insideLength).toBeCloseTo(originalLengths[i], 1)
+          expect(wall.wallLength).toBeCloseTo(originalLengths[i], 1)
         })
       })
     })
@@ -485,7 +486,7 @@ describe('perimeterSlice - Basic CRUD', () => {
         expect(updatedPerimeter.cornerIds).toHaveLength(4)
       })
 
-      it('should adjust number of walls/corners when point count changes', () => {
+      it('should do nothing when point count changes', () => {
         const boundary = createRectangularBoundary()
         const wallAssemblyId = createWallAssemblyId()
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
@@ -497,8 +498,7 @@ describe('perimeterSlice - Basic CRUD', () => {
         slice.actions.updatePerimeterBoundary(perimeter.id, triangleBoundary)
 
         const updated = slice.actions.getPerimeterById(perimeter.id)
-        expect(updated.wallIds).toHaveLength(3)
-        expect(updated.cornerIds).toHaveLength(3)
+        expect(updated).toEqual(perimeter)
       })
 
       it('should preserve wall properties where possible', () => {
@@ -532,12 +532,10 @@ describe('perimeterSlice - Basic CRUD', () => {
         expect(success).toBe(false)
       })
 
-      it('should return false for non-existent perimeter', () => {
+      it('should return throw for non-existent perimeter', () => {
         const newBoundary = [newVec2(0, 0), newVec2(100, 0), newVec2(50, 100)]
 
-        const success = slice.actions.updatePerimeterBoundary('perimeter_fake' as any, newBoundary)
-
-        expect(success).toBe(false)
+        expect(() => slice.actions.updatePerimeterBoundary('perimeter_fake' as any, newBoundary)).toThrow(NotFoundError)
       })
     })
   })

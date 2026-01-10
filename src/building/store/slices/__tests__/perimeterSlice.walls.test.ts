@@ -2,10 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { PerimeterId, PerimeterWallId, StoreyId } from '@/building/model/ids'
 import { createWallAssemblyId } from '@/building/model/ids'
+import { NotFoundError } from '@/building/store/errors'
 import { ensurePolygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 
 import type { PerimetersSlice } from '../perimeterSlice'
 import {
+  createLShapedBoundary,
   createRectangularBoundary,
   expectThrowsForInvalidId,
   mockPost,
@@ -43,7 +45,7 @@ describe('perimeterWallSlice', () => {
     testStoreyId = setup.testStoreyId
 
     // Create a default perimeter for testing
-    const boundary = createRectangularBoundary()
+    const boundary = createLShapedBoundary()
     const wallAssemblyId = createWallAssemblyId()
     const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
     perimeterId = perimeter.id
@@ -110,7 +112,7 @@ describe('perimeterWallSlice', () => {
         expect(wall.id).toBe(wallId)
         expect(wall.insideLine).toBeDefined()
         expect(wall.outsideLine).toBeDefined()
-        expect(wall.insideLength).toBeGreaterThan(0)
+        expect(wall.wallLength).toBeGreaterThan(0)
         expect(wall.wallLength).toBeGreaterThan(0)
       })
 
@@ -121,9 +123,13 @@ describe('perimeterWallSlice', () => {
 
     describe('getPerimeterWallsById', () => {
       it('should return all walls for perimeter', () => {
+        const boundary = createRectangularBoundary()
+        const wallAssemblyId = createWallAssemblyId()
+        slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
+
         const walls = slice.actions.getPerimeterWallsById(perimeterId)
 
-        expect(walls).toHaveLength(4)
+        expect(walls).toHaveLength(6)
         walls.forEach(wall => {
           expect(wall.perimeterId).toBe(perimeterId)
         })
@@ -203,8 +209,8 @@ describe('perimeterWallSlice', () => {
 
         expect(success).toBe(true)
         const updatedPerimeter = slice.actions.getPerimeterById(perimeterId)
-        expect(updatedPerimeter.wallIds).toHaveLength(3)
-        expect(updatedPerimeter.cornerIds).toHaveLength(3)
+        expect(updatedPerimeter.wallIds).toHaveLength(4)
+        expect(updatedPerimeter.cornerIds).toHaveLength(4)
 
         // Original corners should be removed
         expect(slice.perimeterCorners[startCorner]).toBeUndefined()
@@ -227,12 +233,12 @@ describe('perimeterWallSlice', () => {
       })
 
       it('should return false for minimum walls', () => {
-        // Remove until we have 3 walls
+        // Remove one wall, leaves us with 4 walls
         const perimeter = slice.actions.getPerimeterById(perimeterId)
         slice.actions.removePerimeterWall(perimeter.wallIds[0])
 
         const updated = slice.actions.getPerimeterById(perimeterId)
-        expect(updated.wallIds).toHaveLength(3)
+        expect(updated.wallIds).toHaveLength(4)
 
         // Try to remove one more (would leave only 2)
         const result = slice.actions.canRemovePerimeterWall(updated.wallIds[0])
@@ -292,7 +298,7 @@ describe('perimeterWallSlice', () => {
       it('should throw for non-existent wall', () => {
         expect(() => {
           slice.actions.canRemovePerimeterWall('wall_fake' as any)
-        }).toThrow('Wall not found')
+        }).toThrow(NotFoundError)
       })
     })
   })
@@ -303,7 +309,7 @@ describe('perimeterWallSlice', () => {
         const wall = slice.actions.getPerimeterWallById(wallId)
         const originalWallCount = slice.actions.getPerimeterById(perimeterId).wallIds.length
         const originalCornerCount = slice.actions.getPerimeterById(perimeterId).cornerIds.length
-        const splitPosition = wall.insideLength / 2
+        const splitPosition = wall.wallLength / 2
 
         const newWallId = slice.actions.splitPerimeterWall(wallId, splitPosition)
 
@@ -320,7 +326,7 @@ describe('perimeterWallSlice', () => {
         const ringBeamId = 'rb_test' as any
         slice.actions.setWallBaseRingBeam(wallId, ringBeamId)
 
-        const splitPosition = wall.insideLength / 2
+        const splitPosition = wall.wallLength / 2
         const newWallId = slice.actions.splitPerimeterWall(wallId, splitPosition)
 
         const newWall = slice.actions.getPerimeterWallById(newWallId!)
@@ -331,7 +337,7 @@ describe('perimeterWallSlice', () => {
 
       it('should maintain reference consistency', () => {
         const wall = slice.actions.getPerimeterWallById(wallId)
-        const splitPosition = wall.insideLength / 2
+        const splitPosition = wall.wallLength / 2
 
         slice.actions.splitPerimeterWall(wallId, splitPosition)
 
@@ -340,7 +346,7 @@ describe('perimeterWallSlice', () => {
 
       it('should redistribute openings based on position', () => {
         const wall = slice.actions.getPerimeterWallById(wallId)
-        const splitPosition = wall.insideLength / 2
+        const splitPosition = wall.wallLength / 2
 
         // Add opening before split point
         const opening1 = slice.actions.addWallOpening(wallId, {
@@ -354,7 +360,7 @@ describe('perimeterWallSlice', () => {
         const opening2 = slice.actions.addWallOpening(wallId, {
           openingType: 'window',
           centerOffsetFromWallStart: splitPosition + 500,
-          width: 1200,
+          width: 900,
           height: 1500
         })
 
@@ -378,14 +384,14 @@ describe('perimeterWallSlice', () => {
 
       it('should reject invalid split position (beyond wall length)', () => {
         const wall = slice.actions.getPerimeterWallById(wallId)
-        const result = slice.actions.splitPerimeterWall(wallId, wall.insideLength + 100)
+        const result = slice.actions.splitPerimeterWall(wallId, wall.wallLength + 100)
 
         expect(result).toBeNull()
       })
 
       it('should create geometry for new entities', () => {
         const wall = slice.actions.getPerimeterWallById(wallId)
-        const splitPosition = wall.insideLength / 2
+        const splitPosition = wall.wallLength / 2
 
         const newWallId = slice.actions.splitPerimeterWall(wallId, splitPosition)
 

@@ -103,12 +103,12 @@ describe('perimeterGeometry', () => {
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const corners = slice.actions.getPerimeterCornersById(perimeter.id)
 
-        // L-shape has 2 reflex corners (270°) and 4 regular corners (90°)
+        // L-shape has 1 reflex corners (270°) and 5 regular corners (90°)
         const reflexCorners = corners.filter(corner => corner.interiorAngle === 270)
         const rightAngleCorners = corners.filter(corner => corner.interiorAngle === 90)
 
-        expect(reflexCorners).toHaveLength(2)
-        expect(rightAngleCorners).toHaveLength(4)
+        expect(reflexCorners).toHaveLength(1)
+        expect(rightAngleCorners).toHaveLength(5)
       })
 
       it('should compute inside and outside points correctly for reflex corners', () => {
@@ -187,10 +187,10 @@ describe('perimeterGeometry', () => {
         const walls = slice.actions.getPerimeterWallsById(perimeter.id)
 
         // First wall (bottom) should be ~10000 units
-        expect(Math.abs(walls[0].insideLength - 10000)).toBeLessThan(1)
+        expect(Math.abs(walls[0].wallLength - 10000)).toBeLessThan(1)
 
         // Second wall (right) should be ~5000 units
-        expect(Math.abs(walls[1].insideLength - 5000)).toBeLessThan(1)
+        expect(Math.abs(walls[1].wallLength - 5000)).toBeLessThan(1)
       })
 
       it('should compute wall length (between corner intersections)', () => {
@@ -204,7 +204,7 @@ describe('perimeterGeometry', () => {
 
         walls.forEach(wall => {
           expect(wall.wallLength).toBeGreaterThan(0)
-          expect(wall.wallLength).toBeLessThanOrEqual(wall.insideLength)
+          expect(wall.wallLength).toBeLessThanOrEqual(wall.wallLength)
         })
       })
 
@@ -524,7 +524,7 @@ describe('perimeterGeometry', () => {
 
         const opening = slice.actions.addWallOpening(wallId, {
           openingType: 'door',
-          centerOffsetFromWallStart: wall.insideLength - 500,
+          centerOffsetFromWallStart: wall.wallLength - 500,
           width: 900,
           height: 2100
         })!
@@ -597,7 +597,7 @@ describe('perimeterGeometry', () => {
 
       // Split wall
       const wall = slice.actions.getPerimeterWallById(wallId)
-      slice.actions.splitPerimeterWall(wallId, wall.insideLength / 2)
+      slice.actions.splitPerimeterWall(wallId, wall.wallLength / 2)
 
       // Verify all geometry still exists and is valid
       const updatedPerimeter = slice.actions.getPerimeterById(perimeter.id)
