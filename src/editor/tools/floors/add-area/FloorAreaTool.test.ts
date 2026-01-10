@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { FloorArea, FloorOpening, Perimeter } from '@/building/model'
-import { type Vec2, ZERO_VEC2, newVec2 } from '@/shared/geometry'
+import type { FloorArea, FloorOpening, Perimeter, PerimeterWithGeometry } from '@/building/model'
+import { type Vec2, newVec2 } from '@/shared/geometry'
+import { partial } from '@/test/helpers'
 
 import { FloorAreaTool } from './FloorAreaTool'
 
@@ -40,50 +41,17 @@ describe('FloorAreaTool', () => {
   })
 
   it('extends snapping context with perimeter and floor geometry', () => {
-    const perimeter = {
-      id: 'perimeter_1',
-      storeyId: 'storey_1',
-      corners: [
-        {
-          id: 'corner_1',
-          insidePoint: ZERO_VEC2,
-          outsidePoint: ZERO_VEC2,
-          constructedByWall: 'next',
-          interiorAngle: 90,
-          exteriorAngle: 270
-        },
-        {
-          id: 'corner_2',
-          insidePoint: newVec2(200, 0),
-          outsidePoint: newVec2(200, 0),
-          constructedByWall: 'next',
-          interiorAngle: 90,
-          exteriorAngle: 270
-        }
-      ],
-      walls: [
-        {
-          id: 'wall_1',
-          insideLine: { start: ZERO_VEC2, end: newVec2(200, 0) }
-        }
-      ]
-    } as unknown as Perimeter
+    const perimeter = partial<PerimeterWithGeometry>({
+      outerPolygon: { points: [newVec2(1, 1), newVec2(2, 2), newVec2(3, 3)] }
+    })
 
-    const floorArea = {
-      id: 'floorarea_1',
-      storeyId: 'storey_1',
-      area: {
-        points: [newVec2(0, 0), newVec2(0, 200), newVec2(200, 200)]
-      }
-    } as FloorArea
+    const floorArea = partial<FloorArea>({
+      area: { points: [newVec2(0, 0), newVec2(0, 200), newVec2(200, 200)] }
+    })
 
-    const floorOpening = {
-      id: 'flooropening_1',
-      storeyId: 'storey_1',
-      area: {
-        points: [newVec2(50, 50), newVec2(80, 50), newVec2(80, 80)]
-      }
-    } as FloorOpening
+    const floorOpening = partial<FloorOpening>({
+      area: { points: [newVec2(50, 50), newVec2(80, 50), newVec2(80, 80)] }
+    })
 
     mockModelActions.getPerimetersByStorey.mockReturnValue([perimeter])
     mockModelActions.getFloorAreasByStorey.mockReturnValue([floorArea])
@@ -101,16 +69,11 @@ describe('FloorAreaTool', () => {
     ).extendSnapContext(baseContext)
 
     expect(result.snapPoints).toEqual(
-      expect.arrayContaining([
-        perimeter.cornerIds[0].insidePoint,
-        perimeter.cornerIds[1].insidePoint,
-        ...floorArea.area.points,
-        ...floorOpening.area.points
-      ])
+      expect.arrayContaining([...perimeter.outerPolygon.points, ...floorArea.area.points, ...floorOpening.area.points])
     )
     expect(result.referenceLineSegments).toEqual(
       expect.arrayContaining([
-        perimeter.wallIds[0].insideLine,
+        expect.objectContaining({ start: perimeter.outerPolygon.points[0], end: perimeter.outerPolygon.points[1] }),
         expect.objectContaining({ start: floorArea.area.points[0], end: floorArea.area.points[1] })
       ])
     )

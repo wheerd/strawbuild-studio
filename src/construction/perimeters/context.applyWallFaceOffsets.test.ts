@@ -2,8 +2,10 @@ import { describe, expect, it, vi } from 'vitest'
 
 import type { PerimeterCornerWithGeometry, PerimeterWallWithGeometry, PerimeterWithGeometry } from '@/building/model'
 import type { PerimeterCornerId, PerimeterId, PerimeterWallId, StoreyId, WallAssemblyId } from '@/building/model/ids'
+import { type StoreActions, getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
-import { copyVec2, direction, distVec2, newVec2, perpendicular, scaleAddVec2 } from '@/shared/geometry'
+import { direction, distVec2, newVec2, perpendicular, scaleAddVec2 } from '@/shared/geometry'
+import { partial, partialMock } from '@/test/helpers'
 
 import { applyWallFaceOffsets, createWallFaceOffsets } from './context'
 
@@ -17,7 +19,21 @@ vi.mocked(getConfigActions).mockReturnValue({
   getWallAssemblyById: mockedGetWallAssemblyById
 } as any)
 
-function createRectangularPerimeter(width: number, height: number, wallThickness: number): PerimeterWithGeometry {
+vi.mock('@/building/store', () => ({
+  getModelActions: vi.fn()
+}))
+
+const mockedGetPerimeterCornerById = vi.fn()
+const mockedGetPerimeterWallById = vi.fn()
+
+vi.mocked(getModelActions).mockReturnValue(
+  partialMock<StoreActions>({
+    getPerimeterWallById: mockedGetPerimeterWallById,
+    getPerimeterCornerById: mockedGetPerimeterCornerById
+  })
+)
+
+function createRectangularPerimeter(width: number, height: number, wallThickness: number) {
   const insideCorners = [newVec2(0, 0), newVec2(0, height), newVec2(width, height), newVec2(width, 0)]
 
   const outsideCorners = [
@@ -27,7 +43,7 @@ function createRectangularPerimeter(width: number, height: number, wallThickness
     newVec2(width + wallThickness, -wallThickness)
   ]
 
-  const walls: PerimeterWallWithGeometry[] = insideCorners.map((start, index) => {
+  const walls = insideCorners.map((start, index) => {
     const end = insideCorners[(index + 1) % insideCorners.length]
     const dir = direction(start, end)
     const outsideDirection = perpendicular(dir)
@@ -36,12 +52,12 @@ function createRectangularPerimeter(width: number, height: number, wallThickness
     const outsideEnd = scaleAddVec2(end, outsideDirection, wallThickness)
     const outsideLine = { start: outsideStart, end: outsideEnd }
 
-    return {
+    return partial<PerimeterWallWithGeometry>({
       id: `wall-${index}` as PerimeterWallId,
+      startCornerId: `corner-${index}` as PerimeterCornerId,
+      endCornerId: `corner-${(index + 1) % 4}` as PerimeterCornerId,
       thickness: wallThickness,
       wallAssemblyId: `assembly-${index}` as WallAssemblyId,
-      openings: [],
-      posts: [],
       insideLength: distVec2(start, end),
       outsideLength: distVec2(outsideStart, outsideEnd),
       wallLength: distVec2(start, end),
@@ -49,26 +65,29 @@ function createRectangularPerimeter(width: number, height: number, wallThickness
       outsideLine,
       direction: dir,
       outsideDirection
-    }
+    })
   })
 
-  const corners: PerimeterCornerWithGeometry[] = insideCorners.map((point, index) => ({
-    id: `corner-${index}` as PerimeterCornerId,
-    insidePoint: point,
-    outsidePoint: outsideCorners[index],
-    constructedByWall: 'next',
-    interiorAngle: 90,
-    exteriorAngle: 270
-  }))
+  const corners = insideCorners.map((point, index) =>
+    partial<PerimeterCornerWithGeometry>({
+      id: `corner-${index}` as PerimeterCornerId,
+      insidePoint: point,
+      outsidePoint: outsideCorners[index],
+      constructedByWall: 'next',
+      interiorAngle: 90,
+      exteriorAngle: 270
+    })
+  )
 
-  return {
+  const perimeter = partial<PerimeterWithGeometry>({
     id: 'perimeter-1' as PerimeterId,
     storeyId: 'storey-1' as StoreyId,
     referenceSide: 'inside',
-    referencePolygon: insideCorners.map(point => copyVec2(point)),
-    walls,
-    corners
-  }
+    wallIds: walls.map(w => w.id),
+    cornerIds: corners.map(c => c.id)
+  })
+
+  return { perimeter, walls, corners }
 }
 
 describe('applyWallFaceOffsets', () => {
@@ -83,7 +102,10 @@ describe('applyWallFaceOffsets', () => {
   })
 
   it('shrinks clockwise floor areas along matching inside faces', () => {
-    const perimeter = createRectangularPerimeter(4000, 3000, 400)
+    const { perimeter, walls, corners } = createRectangularPerimeter(4000, 3000, 400)
+    mockedGetPerimeterWallById.mockImplementation(id => walls.find(w => w.id === id))
+    mockedGetPerimeterCornerById.mockImplementation(id => corners.find(c => c.id === id))
+
     const faces = createWallFaceOffsets([perimeter])
 
     const area = {
@@ -107,7 +129,10 @@ describe('applyWallFaceOffsets', () => {
   })
 
   it('shrinks counter-clockwise openings along matching faces', () => {
-    const perimeter = createRectangularPerimeter(4000, 3000, 400)
+    const { perimeter, walls, corners } = createRectangularPerimeter(4000, 3000, 400)
+    mockedGetPerimeterWallById.mockImplementation(id => walls.find(w => w.id === id))
+    mockedGetPerimeterCornerById.mockImplementation(id => corners.find(c => c.id === id))
+
     const faces = createWallFaceOffsets([perimeter])
 
     const opening = {
@@ -131,7 +156,10 @@ describe('applyWallFaceOffsets', () => {
   })
 
   it('does not offset edges that are colinear but not touching the wall face', () => {
-    const perimeter = createRectangularPerimeter(4000, 3000, 400)
+    const { perimeter, walls, corners } = createRectangularPerimeter(4000, 3000, 400)
+    mockedGetPerimeterWallById.mockImplementation(id => walls.find(w => w.id === id))
+    mockedGetPerimeterCornerById.mockImplementation(id => corners.find(c => c.id === id))
+
     const faces = createWallFaceOffsets([perimeter])
 
     const area = {

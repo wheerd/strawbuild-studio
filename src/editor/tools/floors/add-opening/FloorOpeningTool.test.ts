@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { FloorArea, FloorOpening, Perimeter } from '@/building/model'
-import { type Vec2, ZERO_VEC2, newVec2 } from '@/shared/geometry'
+import type { FloorArea, FloorOpening, Perimeter, PerimeterWithGeometry } from '@/building/model'
+import { type Vec2, newVec2 } from '@/shared/geometry'
+import { partial } from '@/test/helpers'
 
 import { FloorOpeningTool } from './FloorOpeningTool'
 
@@ -40,26 +41,9 @@ describe('FloorOpeningTool', () => {
   })
 
   it('reuses floor and perimeter geometry for snapping context', () => {
-    const perimeter = {
-      id: 'perimeter_opening',
-      storeyId: 'storey_opening',
-      corners: [
-        {
-          id: 'corner_a',
-          insidePoint: ZERO_VEC2,
-          outsidePoint: ZERO_VEC2,
-          constructedByWall: 'next',
-          interiorAngle: 90,
-          exteriorAngle: 270
-        }
-      ],
-      walls: [
-        {
-          id: 'wall_a',
-          insideLine: { start: ZERO_VEC2, end: newVec2(100, 0) }
-        }
-      ]
-    } as unknown as Perimeter
+    const perimeter = partial<PerimeterWithGeometry>({
+      outerPolygon: { points: [newVec2(1, 1), newVec2(2, 2), newVec2(3, 3)] }
+    })
 
     const floorArea = {
       id: 'floorarea_existing',
@@ -89,15 +73,11 @@ describe('FloorOpeningTool', () => {
     ).extendSnapContext(baseContext)
 
     expect(result.snapPoints).toEqual(
-      expect.arrayContaining([
-        perimeter.cornerIds[0].insidePoint,
-        ...floorArea.area.points,
-        ...floorOpening.area.points
-      ])
+      expect.arrayContaining([...perimeter.outerPolygon.points, ...floorArea.area.points, ...floorOpening.area.points])
     )
     expect(result.referenceLineSegments).toEqual(
       expect.arrayContaining([
-        perimeter.wallIds[0].insideLine,
+        expect.objectContaining({ start: perimeter.outerPolygon.points[0], end: perimeter.outerPolygon.points[1] }),
         expect.objectContaining({ start: floorOpening.area.points[0], end: floorOpening.area.points[1] })
       ])
     )

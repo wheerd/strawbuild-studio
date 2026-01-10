@@ -1,26 +1,39 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
-import type { Perimeter } from '@/building/model'
-import {
-  createPerimeterId,
-  createPerimeterWallId,
-  createRingBeamAssemblyId,
-  createStoreyId,
-  createWallAssemblyId
-} from '@/building/model/ids'
-import { ZERO_VEC2, newVec2 } from '@/shared/geometry'
+import type { PerimeterWallWithGeometry, PerimeterWithGeometry } from '@/building/model'
+import { createRingBeamAssemblyId, createStoreyId, createWallAssemblyId } from '@/building/model/ids'
+import { getModelActions } from '@/building/store'
+import { partial } from '@/test/helpers'
 
 import { getRingBeamAssemblyUsage, getWallAssemblyUsage } from './usage'
+
+vi.mock('@/building/store', () => ({
+  getModelActions: vi.fn()
+}))
+
+const mockedGetPerimeterById = vi.fn()
+
+vi.mocked(getModelActions).mockReturnValue({
+  getPerimeterById: mockedGetPerimeterById
+} as any)
 
 describe('Assembly Usage Detection', () => {
   const storeyId = createStoreyId()
 
+  beforeEach(() => {
+    mockedGetPerimeterById.mockReturnValue(
+      partial<PerimeterWithGeometry>({
+        storeyId
+      })
+    )
+  })
+
   describe('getRingBeamAssemblyUsage', () => {
     it('should detect ring beam assembly not in use', () => {
       const assemblyId = createRingBeamAssemblyId()
-      const perimeters: PerimeterWithGeometry[] = []
+      const walls: PerimeterWallWithGeometry[] = []
 
-      const usage = getRingBeamAssemblyUsage(assemblyId, perimeters)
+      const usage = getRingBeamAssemblyUsage(assemblyId, walls)
 
       expect(usage.isUsed).toBe(false)
       expect(usage.isDefaultBase).toBe(false)
@@ -30,35 +43,13 @@ describe('Assembly Usage Detection', () => {
 
     it('should detect ring beam assembly used as base ring beam', () => {
       const assemblyId = createRingBeamAssemblyId()
-      const perimeterId = createPerimeterId()
 
-      const perimeter: PerimeterWithGeometry = {
-        id: perimeterId,
-        storeyId,
-        referenceSide: 'inside',
-        referencePolygon: [],
-        walls: [
-          {
-            id: createPerimeterWallId(),
-            thickness: 200,
-            wallAssemblyId: createWallAssemblyId(),
-            openings: [],
-            posts: [],
-            baseRingBeamAssemblyId: assemblyId,
-            topRingBeamAssemblyId: undefined,
-            insideLength: 100,
-            outsideLength: 100,
-            wallLength: 100,
-            insideLine: { start: ZERO_VEC2, end: newVec2(100, 0) },
-            outsideLine: { start: ZERO_VEC2, end: newVec2(100, 0) },
-            direction: newVec2(1, 0),
-            outsideDirection: newVec2(0, 1)
-          }
-        ],
-        corners: []
-      }
+      const wall = partial<PerimeterWallWithGeometry>({
+        baseRingBeamAssemblyId: assemblyId,
+        topRingBeamAssemblyId: undefined
+      })
 
-      const usage = getRingBeamAssemblyUsage(assemblyId, [perimeter])
+      const usage = getRingBeamAssemblyUsage(assemblyId, [wall])
 
       expect(usage.isUsed).toBe(true)
       expect(usage.isDefaultBase).toBe(false)
@@ -68,35 +59,13 @@ describe('Assembly Usage Detection', () => {
 
     it('should detect ring beam assembly used as top ring beam', () => {
       const assemblyId = createRingBeamAssemblyId()
-      const perimeterId = createPerimeterId()
 
-      const perimeter: PerimeterWithGeometry = {
-        id: perimeterId,
-        storeyId,
-        referenceSide: 'inside',
-        referencePolygon: [],
-        walls: [
-          {
-            id: createPerimeterWallId(),
-            thickness: 200,
-            wallAssemblyId: createWallAssemblyId(),
-            openings: [],
-            posts: [],
-            baseRingBeamAssemblyId: undefined,
-            topRingBeamAssemblyId: assemblyId,
-            insideLength: 100,
-            outsideLength: 100,
-            wallLength: 100,
-            insideLine: { start: ZERO_VEC2, end: newVec2(100, 0) },
-            outsideLine: { start: ZERO_VEC2, end: newVec2(100, 0) },
-            direction: newVec2(1, 0),
-            outsideDirection: newVec2(0, 1)
-          }
-        ],
-        corners: []
-      }
+      const wall = partial<PerimeterWallWithGeometry>({
+        baseRingBeamAssemblyId: undefined,
+        topRingBeamAssemblyId: assemblyId
+      })
 
-      const usage = getRingBeamAssemblyUsage(assemblyId, [perimeter])
+      const usage = getRingBeamAssemblyUsage(assemblyId, [wall])
 
       expect(usage.isUsed).toBe(true)
       expect(usage.isDefaultBase).toBe(false)
@@ -106,62 +75,18 @@ describe('Assembly Usage Detection', () => {
 
     it('should detect ring beam assembly used in multiple places', () => {
       const assemblyId = createRingBeamAssemblyId()
-      const perimeter1Id = createPerimeterId()
-      const perimeter2Id = createPerimeterId()
 
-      const perimeter1: PerimeterWithGeometry = {
-        id: perimeter1Id,
-        storeyId,
-        referenceSide: 'inside',
-        referencePolygon: [],
-        walls: [
-          {
-            id: createPerimeterWallId(),
-            thickness: 200,
-            wallAssemblyId: createWallAssemblyId(),
-            openings: [],
-            posts: [],
-            baseRingBeamAssemblyId: assemblyId,
-            topRingBeamAssemblyId: undefined,
-            insideLength: 100,
-            outsideLength: 100,
-            wallLength: 100,
-            insideLine: { start: ZERO_VEC2, end: newVec2(100, 0) },
-            outsideLine: { start: ZERO_VEC2, end: newVec2(100, 0) },
-            direction: newVec2(1, 0),
-            outsideDirection: newVec2(0, 1)
-          }
-        ],
-        corners: []
-      }
+      const wall1 = partial<PerimeterWallWithGeometry>({
+        baseRingBeamAssemblyId: assemblyId,
+        topRingBeamAssemblyId: undefined
+      })
 
-      const perimeter2: PerimeterWithGeometry = {
-        id: perimeter2Id,
-        storeyId,
-        referenceSide: 'inside',
-        referencePolygon: [],
-        walls: [
-          {
-            id: createPerimeterWallId(),
-            thickness: 200,
-            wallAssemblyId: createWallAssemblyId(),
-            openings: [],
-            posts: [],
-            baseRingBeamAssemblyId: undefined,
-            topRingBeamAssemblyId: assemblyId,
-            insideLength: 100,
-            outsideLength: 100,
-            wallLength: 100,
-            insideLine: { start: ZERO_VEC2, end: newVec2(100, 0) },
-            outsideLine: { start: ZERO_VEC2, end: newVec2(100, 0) },
-            direction: newVec2(1, 0),
-            outsideDirection: newVec2(0, 1)
-          }
-        ],
-        corners: []
-      }
+      const wall2 = partial<PerimeterWallWithGeometry>({
+        baseRingBeamAssemblyId: undefined,
+        topRingBeamAssemblyId: assemblyId
+      })
 
-      const usage = getRingBeamAssemblyUsage(assemblyId, [perimeter1, perimeter2])
+      const usage = getRingBeamAssemblyUsage(assemblyId, [wall1, wall2])
 
       expect(usage.isUsed).toBe(true)
       expect(usage.isDefaultBase).toBe(false)
@@ -183,61 +108,20 @@ describe('Assembly Usage Detection', () => {
 
     it('should detect wall assembly used by walls', () => {
       const assemblyId = createWallAssemblyId()
-      const perimeterId = createPerimeterId()
 
-      const perimeter: PerimeterWithGeometry = {
-        id: perimeterId,
-        storeyId,
-        referenceSide: 'inside',
-        referencePolygon: [],
-        walls: [
-          {
-            id: createPerimeterWallId(),
-            thickness: 420,
-            wallAssemblyId: assemblyId,
-            openings: [],
-            posts: [],
-            insideLength: 1000,
-            outsideLength: 1000,
-            wallLength: 1000,
-            insideLine: { start: ZERO_VEC2, end: newVec2(1000, 0) },
-            outsideLine: { start: newVec2(0, 420), end: newVec2(1000, 420) },
-            direction: newVec2(1, 0),
-            outsideDirection: newVec2(0, 1)
-          },
-          {
-            id: createPerimeterWallId(),
-            thickness: 420,
-            wallAssemblyId: createWallAssemblyId(), // Different assembly
-            openings: [],
-            posts: [],
-            insideLength: 1000,
-            outsideLength: 1000,
-            wallLength: 1000,
-            insideLine: { start: newVec2(1000, 0), end: newVec2(1000, 1000) },
-            outsideLine: { start: newVec2(1440, 0), end: newVec2(1440, 1000) },
-            direction: newVec2(0, 1),
-            outsideDirection: newVec2(1, 0)
-          },
-          {
-            id: createPerimeterWallId(),
-            thickness: 420,
-            wallAssemblyId: assemblyId, // Same assembly as first wall
-            openings: [],
-            posts: [],
-            insideLength: 1000,
-            outsideLength: 1000,
-            wallLength: 1000,
-            insideLine: { start: newVec2(1000, 1000), end: newVec2(0, 1000) },
-            outsideLine: { start: newVec2(1000, 1440), end: newVec2(0, 1440) },
-            direction: newVec2(-1, 0),
-            outsideDirection: newVec2(0, 1)
-          }
-        ],
-        corners: []
-      }
+      const walls = [
+        partial<PerimeterWallWithGeometry>({
+          wallAssemblyId: assemblyId
+        }),
+        partial<PerimeterWallWithGeometry>({
+          wallAssemblyId: createWallAssemblyId() // Different assembly
+        }),
+        partial<PerimeterWallWithGeometry>({
+          wallAssemblyId: assemblyId // Same assembly as first wall
+        })
+      ]
 
-      const usage = getWallAssemblyUsage(assemblyId, [perimeter])
+      const usage = getWallAssemblyUsage(assemblyId, walls)
 
       expect(usage.isUsed).toBe(true)
       expect(usage.isDefault).toBe(false)

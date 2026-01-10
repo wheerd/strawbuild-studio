@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { isOpeningId } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { getConfigActions, getConfigState } from '@/construction/config/store'
 import { getMaterialsActions, getMaterialsState } from '@/construction/materials/store'
@@ -127,6 +128,8 @@ describe('ProjectImportExportService Integration', () => {
     const originalCorners = modelActions.getAllPerimeters().flatMap(p => modelActions.getPerimeterCornersById(p.id))
     const originalConfig = getConfigState()
     const originalMaterials = getMaterialsState()
+    const originalOpenings = modelActions.getAllWallOpenings()
+    const originalPosts = modelActions.getAllWallPosts()
 
     // 3. Export the project
     const exportResult = await ProjectImportExportService.exportToString()
@@ -229,22 +232,37 @@ describe('ProjectImportExportService Integration', () => {
           expect(importedWall.wallAssemblyId).toBe(originalWall.wallAssemblyId)
 
           // Compare openings (excluding IDs)
-          expect(importedWall.openings).toHaveLength(originalWall.openings.length)
-          for (let l = 0; l < originalWall.openings.length; l++) {
-            const originalOpening = originalWall.openings[l]
-            const importedOpening = importedWall.openings[l]
+          expect(importedWall.entityIds).toHaveLength(originalWall.entityIds.length)
+          for (let l = 0; l < originalWall.entityIds.length; l++) {
+            const originalId = originalWall.entityIds[l]
+            const originalEntity = isOpeningId(originalId)
+              ? originalOpenings.find(o => o.id === originalId)!
+              : originalPosts.find(p => p.id === originalId)!
+            const importedId = importedWall.entityIds[l]
+            const importedEntity = isOpeningId(importedId)
+              ? modelActions.getWallOpeningById(importedId)
+              : modelActions.getWallPostById(importedId)
 
-            expect(importedOpening.type).toBe(originalOpening.type)
-            expect(Number(importedOpening.centerOffsetFromWallStart)).toBe(
-              Number(originalOpening.centerOffsetFromWallStart)
+            expect(importedEntity.type).toBe(originalEntity.type)
+            expect(Number(importedEntity.centerOffsetFromWallStart)).toBe(
+              Number(originalEntity.centerOffsetFromWallStart)
             )
-            expect(Number(importedOpening.width)).toBe(Number(originalOpening.width))
-            expect(Number(importedOpening.height)).toBe(Number(originalOpening.height))
+            expect(Number(importedEntity.width)).toBe(Number(originalEntity.width))
 
-            if (originalOpening.sillHeight) {
-              expect(Number(importedOpening.sillHeight!)).toBe(Number(originalOpening.sillHeight))
-            } else {
-              expect(importedOpening.sillHeight).toBeUndefined()
+            if (importedEntity.type === 'opening' && originalEntity.type === 'opening') {
+              expect(Number(importedEntity.height)).toBe(Number(originalEntity.height))
+
+              if (originalEntity.sillHeight) {
+                expect(Number(importedEntity.sillHeight!)).toBe(Number(originalEntity.sillHeight))
+              } else {
+                expect(importedEntity.sillHeight).toBeUndefined()
+              }
+            } else if (importedEntity.type === 'post' && originalEntity.type === 'post') {
+              expect(Number(importedEntity.thickness)).toBe(Number(originalEntity.thickness))
+              expect(importedEntity.postType).toBe(originalEntity.postType)
+              expect(importedEntity.replacesPosts).toBe(originalEntity.replacesPosts)
+              expect(importedEntity.infillMaterial).toBe(originalEntity.infillMaterial)
+              expect(importedEntity.material).toBe(originalEntity.material)
             }
           }
         }

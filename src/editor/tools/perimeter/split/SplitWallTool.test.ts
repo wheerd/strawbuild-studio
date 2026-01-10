@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { PerimeterWallWithGeometry } from '@/building/model'
-import { createPerimeterCornerId, createPerimeterId, createPerimeterWallId } from '@/building/model/ids'
-import { ZERO_VEC2, newVec2 } from '@/shared/geometry'
+import type { Opening, PerimeterWallWithGeometry } from '@/building/model'
+import { createPerimeterWallId } from '@/building/model/ids'
+import { partial } from '@/test/helpers'
 
 import { SplitWallTool } from './SplitWallTool'
 
@@ -53,39 +53,15 @@ describe('SplitWallTool', () => {
   })
 
   it('should set target wall and calculate middle position', () => {
-    const perimeterId = createPerimeterId()
-    const wallId = createPerimeterWallId()
-
     // Mock wall with 1000mm length
-    const mockWall: PerimeterWallWithGeometry = {
-      id: wallId,
-      perimeterId,
-      startCornerId: createPerimeterCornerId(),
-      endCornerId: createPerimeterCornerId(),
-      thickness: 420,
-      wallAssemblyId: 'assembly1' as any,
-      entityIds: [],
-      insideLength: 1000,
-      outsideLength: 1000,
-      wallLength: 1000,
-      insideLine: {
-        start: ZERO_VEC2,
-        end: newVec2(1000, 0)
-      },
-      outsideLine: {
-        start: newVec2(0, 420),
-        end: newVec2(1000, 420)
-      },
-      direction: newVec2(1, 0),
-      outsideDirection: newVec2(0, 1)
-    }
+    const mockWall = partial<PerimeterWallWithGeometry>({
+      wallLength: 1000
+    })
 
     // Manually set the state to test the logic
-    tool.state.selectedWallId = wallId
     tool.state.wall = mockWall
     tool.updateTargetPosition(500)
 
-    expect(tool.state.selectedWallId).toBe(wallId)
     expect(tool.state.targetPosition).toBe(500)
     expect(tool.state.isValidSplit).toBe(true)
   })
@@ -93,39 +69,19 @@ describe('SplitWallTool', () => {
   it('should validate split positions correctly', () => {
     const wallId = createPerimeterWallId()
 
-    const mockWall: PerimeterWallWithGeometry = {
-      id: wallId,
-      thickness: 420,
-      wallAssemblyId: 'assembly1' as any,
-      openings: [
-        {
-          id: 'opening1' as any,
-          type: 'door',
-          width: 800,
-          height: 2000,
-          centerOffsetFromWallStart: 600, // Center at 600mm, spans 200mm to 1000mm
-          sillHeight: 0
-        }
-      ],
-      posts: [],
-      insideLength: 2000,
-      outsideLength: 2000,
-      wallLength: 2000,
-      insideLine: {
-        start: ZERO_VEC2,
-        end: newVec2(2000, 0)
-      },
-      outsideLine: {
-        start: newVec2(0, 420),
-        end: newVec2(2000, 420)
-      },
-      direction: newVec2(1, 0),
-      outsideDirection: newVec2(0, 1)
-    }
+    const mockWall = partial<PerimeterWallWithGeometry>({
+      wallLength: 2000
+    })
 
     // Manually set the state to test validation logic
     tool.state.selectedWallId = wallId
     tool.state.wall = mockWall
+    tool.state.wallEntities = [
+      partial<Opening>({
+        width: 800,
+        centerOffsetFromWallStart: 600 // Center at 600mm, spans 200mm to 1000mm
+      })
+    ]
 
     // Test valid position (before opening)
     tool.updateTargetPosition(100)
