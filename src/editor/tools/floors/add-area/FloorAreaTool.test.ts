@@ -42,7 +42,8 @@ describe('FloorAreaTool', () => {
 
   it('extends snapping context with perimeter and floor geometry', () => {
     const perimeter = partial<PerimeterWithGeometry>({
-      outerPolygon: { points: [newVec2(1, 1), newVec2(2, 2), newVec2(3, 3)] }
+      innerPolygon: { points: [newVec2(1, 1), newVec2(2, 2), newVec2(3, 3)] },
+      outerPolygon: { points: [newVec2(4, 4), newVec2(5, 5), newVec2(6, 6)] }
     })
 
     const floorArea = partial<FloorArea>({

@@ -1,17 +1,24 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { type Mocked, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createStoreyLevel } from '@/building/model'
-import { DEFAULT_FLOOR_ASSEMBLY_ID, type PerimeterId, type StoreyId } from '@/building/model/ids'
-import { ZERO_VEC2, newVec2 } from '@/shared/geometry'
+import {
+  type PerimeterWallWithGeometry,
+  type PerimeterWithGeometry,
+  type Storey,
+  createStoreyLevel
+} from '@/building/model'
+import { DEFAULT_FLOOR_ASSEMBLY_ID, type PerimeterId, type PerimeterWallId, type StoreyId } from '@/building/model/ids'
+import type { StoreActions } from '@/building/store/types'
+import { newVec2 } from '@/shared/geometry'
+import { partial, partialMock } from '@/test/helpers'
 
 import { StoreyManagementService } from './StoreyManagementService'
 
 describe('StoreyManagementService', () => {
   let service: StoreyManagementService
-  let mockActions: any
+  let mockActions: Mocked<StoreActions>
 
   beforeEach(() => {
-    mockActions = {
+    mockActions = partialMock<StoreActions>({
       addStorey: vi.fn(),
       removeStorey: vi.fn(),
       swapStoreyLevels: vi.fn(),
@@ -22,22 +29,27 @@ describe('StoreyManagementService', () => {
       addPerimeter: vi.fn(),
       removePerimeter: vi.fn(),
       getPerimetersByStorey: vi.fn(),
+      getPerimeterWallById: vi.fn(),
       getFloorAreasByStorey: vi.fn(),
+      updatePerimeterWallAssembly: vi.fn(),
+      updatePerimeterWallThickness: vi.fn(),
+      setWallTopRingBeam: vi.fn(),
+      setWallBaseRingBeam: vi.fn(),
       removeFloorArea: vi.fn(),
       getFloorOpeningsByStorey: vi.fn(),
       removeFloorOpening: vi.fn(),
       getRoofsByStorey: vi.fn(),
       removeRoof: vi.fn()
-    }
+    })
     service = new StoreyManagementService(mockActions)
   })
 
   describe('moveStoreyUp', () => {
     it('should swap with storey above when not highest', () => {
       const storeys = [
-        { id: 'storey-1' as StoreyId, name: 'Ground', level: createStoreyLevel(0), floorHeight: 3000 },
-        { id: 'storey-2' as StoreyId, name: 'First', level: createStoreyLevel(1), floorHeight: 3000 },
-        { id: 'storey-3' as StoreyId, name: 'Second', level: createStoreyLevel(2), floorHeight: 3000 }
+        partial<Storey>({ id: 'storey-1' as StoreyId, name: 'Ground', level: createStoreyLevel(0), floorHeight: 3000 }),
+        partial<Storey>({ id: 'storey-2' as StoreyId, name: 'First', level: createStoreyLevel(1), floorHeight: 3000 }),
+        partial<Storey>({ id: 'storey-3' as StoreyId, name: 'Second', level: createStoreyLevel(2), floorHeight: 3000 })
       ]
 
       mockActions.getStoreysOrderedByLevel.mockReturnValue(storeys)
@@ -50,8 +62,13 @@ describe('StoreyManagementService', () => {
 
     it('should increase all levels when moving highest storey up', () => {
       const storeys = [
-        { id: 'storey-1' as StoreyId, name: 'Basement', level: createStoreyLevel(-1), floorHeight: 3000 },
-        { id: 'storey-2' as StoreyId, name: 'Ground', level: createStoreyLevel(0), floorHeight: 3000 }
+        partial<Storey>({
+          id: 'storey-1' as StoreyId,
+          name: 'Basement',
+          level: createStoreyLevel(-1),
+          floorHeight: 3000
+        }),
+        partial<Storey>({ id: 'storey-2' as StoreyId, name: 'Ground', level: createStoreyLevel(0), floorHeight: 3000 })
       ]
 
       mockActions.getStoreysOrderedByLevel.mockReturnValue(storeys)
@@ -64,8 +81,8 @@ describe('StoreyManagementService', () => {
 
     it('should throw error when moving highest would make lowest > 0', () => {
       const storeys = [
-        { id: 'storey-1' as StoreyId, name: 'Ground', level: createStoreyLevel(0), floorHeight: 3000 },
-        { id: 'storey-2' as StoreyId, name: 'First', level: createStoreyLevel(1), floorHeight: 3000 }
+        partial<Storey>({ id: 'storey-1' as StoreyId, name: 'Ground', level: createStoreyLevel(0), floorHeight: 3000 }),
+        partial<Storey>({ id: 'storey-2' as StoreyId, name: 'First', level: createStoreyLevel(1), floorHeight: 3000 })
       ]
 
       mockActions.getStoreysOrderedByLevel.mockReturnValue(storeys)
@@ -77,7 +94,9 @@ describe('StoreyManagementService', () => {
     })
 
     it('should do nothing with single storey', () => {
-      const storeys = [{ id: 'storey-1' as StoreyId, name: 'Ground', level: createStoreyLevel(0), floorHeight: 3000 }]
+      const storeys = [
+        partial<Storey>({ id: 'storey-1' as StoreyId, name: 'Ground', level: createStoreyLevel(0), floorHeight: 3000 })
+      ]
 
       mockActions.getStoreysOrderedByLevel.mockReturnValue(storeys)
       mockActions.getStoreyAbove.mockReturnValue(null)
@@ -92,9 +111,9 @@ describe('StoreyManagementService', () => {
   describe('moveStoreyDown', () => {
     it('should swap with storey below when not lowest', () => {
       const storeys = [
-        { id: 'storey-1' as StoreyId, name: 'Ground', level: createStoreyLevel(0), floorHeight: 3000 },
-        { id: 'storey-2' as StoreyId, name: 'First', level: createStoreyLevel(1), floorHeight: 3000 },
-        { id: 'storey-3' as StoreyId, name: 'Second', level: createStoreyLevel(2), floorHeight: 3000 }
+        partial<Storey>({ id: 'storey-1' as StoreyId, name: 'Ground', level: createStoreyLevel(0), floorHeight: 3000 }),
+        partial<Storey>({ id: 'storey-2' as StoreyId, name: 'First', level: createStoreyLevel(1), floorHeight: 3000 }),
+        partial<Storey>({ id: 'storey-3' as StoreyId, name: 'Second', level: createStoreyLevel(2), floorHeight: 3000 })
       ]
 
       mockActions.getStoreysOrderedByLevel.mockReturnValue(storeys)
@@ -106,8 +125,8 @@ describe('StoreyManagementService', () => {
 
     it('should decrease all levels when moving lowest storey down', () => {
       const storeys = [
-        { id: 'storey-1' as StoreyId, name: 'Ground', level: createStoreyLevel(0), floorHeight: 3000 },
-        { id: 'storey-2' as StoreyId, name: 'First', level: createStoreyLevel(1), floorHeight: 3000 }
+        partial<Storey>({ id: 'storey-1' as StoreyId, name: 'Ground', level: createStoreyLevel(0), floorHeight: 3000 }),
+        partial<Storey>({ id: 'storey-2' as StoreyId, name: 'First', level: createStoreyLevel(1), floorHeight: 3000 })
       ]
 
       mockActions.getStoreysOrderedByLevel.mockReturnValue(storeys)
@@ -119,8 +138,13 @@ describe('StoreyManagementService', () => {
 
     it('should throw error when moving lowest would make highest < 0', () => {
       const storeys = [
-        { id: 'storey-1' as StoreyId, name: 'Basement', level: createStoreyLevel(-1), floorHeight: 3000 },
-        { id: 'storey-2' as StoreyId, name: 'Ground', level: createStoreyLevel(0), floorHeight: 3000 }
+        partial<Storey>({
+          id: 'storey-1' as StoreyId,
+          name: 'Basement',
+          level: createStoreyLevel(-1),
+          floorHeight: 3000
+        }),
+        partial<Storey>({ id: 'storey-2' as StoreyId, name: 'Ground', level: createStoreyLevel(0), floorHeight: 3000 })
       ]
 
       mockActions.getStoreysOrderedByLevel.mockReturnValue(storeys)
@@ -133,23 +157,27 @@ describe('StoreyManagementService', () => {
 
   describe('duplicateStorey', () => {
     it('should create a copy with next available level', () => {
-      const sourceStorey = {
+      const sourceStorey = partial<Storey>({
         id: 'storey-1' as StoreyId,
         name: 'Ground Floor',
         level: createStoreyLevel(0),
         floorHeight: 3000,
         floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
-      }
+      })
 
-      const newStorey = {
+      const newStorey = partial<Storey>({
         id: 'storey-2' as StoreyId,
         level: createStoreyLevel(1),
         floorHeight: 3000,
         floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
-      }
+      })
 
       mockActions.getStoreyById.mockReturnValue(sourceStorey)
-      mockActions.getStoreysOrderedByLevel.mockReturnValue([{}, {}, { level: createStoreyLevel(42) }]) // Simulate existing storeys
+      mockActions.getStoreysOrderedByLevel.mockReturnValue([
+        {} as Storey,
+        {} as Storey,
+        { level: createStoreyLevel(42) } as Storey
+      ]) // Simulate existing storeys
       mockActions.addStorey.mockReturnValue(newStorey)
       mockActions.getPerimetersByStorey.mockReturnValue([])
 
@@ -160,21 +188,21 @@ describe('StoreyManagementService', () => {
     })
 
     it('should use custom name when provided', () => {
-      const sourceStorey = {
+      const sourceStorey = partial<Storey>({
         id: 'storey-1' as StoreyId,
         name: 'Ground Floor',
         level: createStoreyLevel(0),
         floorHeight: 3000,
         floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
-      }
+      })
 
-      const newStorey = {
+      const newStorey = partial<Storey>({
         id: 'storey-2' as StoreyId,
         name: 'Custom Name',
         level: createStoreyLevel(1),
         floorHeight: 3000,
         floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
-      }
+      })
 
       mockActions.getStoreyById.mockReturnValue(sourceStorey)
       mockActions.getStoreysOrderedByLevel.mockReturnValue([sourceStorey])
@@ -193,21 +221,21 @@ describe('StoreyManagementService', () => {
     })
 
     it('should handle duplication when only one storey exists', () => {
-      const sourceStorey = {
+      const sourceStorey = partial<Storey>({
         id: 'storey-1' as StoreyId,
         name: 'Only Floor',
         level: createStoreyLevel(0),
         floorHeight: 3000,
         floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
-      }
+      })
 
-      const newStorey = {
+      const newStorey = partial<Storey>({
         id: 'storey-2' as StoreyId,
         name: 'Only Floor Copy',
         level: createStoreyLevel(1),
         floorHeight: 3000,
         floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
-      }
+      })
 
       mockActions.getStoreyById.mockReturnValue(sourceStorey)
       mockActions.getStoreysOrderedByLevel.mockReturnValue([sourceStorey])
@@ -221,67 +249,81 @@ describe('StoreyManagementService', () => {
     })
 
     it('should duplicate perimeters from source storey', () => {
-      const sourceStorey = {
+      const sourceStorey = partial<Storey>({
         id: 'storey-1' as StoreyId,
         name: 'Ground Floor',
         level: createStoreyLevel(0),
         floorHeight: 3000,
         floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
-      }
+      })
 
-      const newStorey = {
+      const newStorey = partial<Storey>({
         id: 'storey-2' as StoreyId,
         name: 'Ground Floor Copy',
         level: createStoreyLevel(1),
         floorHeight: 3000,
         floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
+      })
+
+      const sourceWall = partial<PerimeterWallWithGeometry>({
+        id: 'source-wall-id' as PerimeterWallId,
+        wallAssemblyId: 'assembly-1' as any,
+        thickness: 400,
+        baseRingBeamAssemblyId: 'base-assembly' as any,
+        topRingBeamAssemblyId: 'top-assembly' as any
+      })
+
+      const referencePolygon = {
+        points: [newVec2(0, 0), newVec2(10, 0), newVec2(10, 10), newVec2(0, 10)]
       }
 
-      const sourcePerimeter = {
+      const sourcePerimeter = partial<PerimeterWithGeometry>({
         id: 'perimeter-1' as PerimeterId,
         storeyId: 'storey-1' as StoreyId,
         referenceSide: 'inside' as const,
-        referencePolygon: [newVec2(0, 0), newVec2(10, 0), newVec2(10, 10), newVec2(0, 10)],
-        corners: [
-          { insidePoint: ZERO_VEC2 },
-          { insidePoint: newVec2(10, 0) },
-          { insidePoint: newVec2(10, 10) },
-          { insidePoint: newVec2(0, 10) }
-        ],
-        walls: [
-          {
-            wallAssemblyId: 'assembly-1' as any,
-            thickness: 400,
-            baseRingBeamAssemblyId: 'base-assembly' as any,
-            topRingBeamAssemblyId: 'top-assembly' as any
-          }
-        ]
-      }
+        innerPolygon: referencePolygon,
+        wallIds: [sourceWall.id]
+      })
+
+      const newPerimeter = partial<PerimeterWithGeometry>({
+        id: 'perimeter-1' as PerimeterId,
+        storeyId: 'storey-1' as StoreyId,
+        referenceSide: 'inside' as const,
+        wallIds: ['new-wall-id' as PerimeterWallId]
+      })
 
       mockActions.getStoreyById.mockReturnValue(sourceStorey)
       mockActions.getStoreysOrderedByLevel.mockReturnValue([sourceStorey])
       mockActions.addStorey.mockReturnValue(newStorey)
       mockActions.getPerimetersByStorey.mockReturnValue([sourcePerimeter])
+      mockActions.getPerimeterWallById.mockReturnValue(sourceWall)
+      mockActions.addPerimeter.mockReturnValue(newPerimeter)
 
       service.duplicateStorey('storey-1' as StoreyId)
 
       expect(mockActions.addPerimeter).toHaveBeenCalledWith(
-        'storey-2',
-        {
-          points: [newVec2(0, 0), newVec2(10, 0), newVec2(10, 10), newVec2(0, 10)]
-        },
-        'assembly-1',
-        400,
-        'base-assembly',
-        'top-assembly',
-        'inside'
+        newStorey.id,
+        referencePolygon,
+        expect.any(String),
+        expect.any(Number),
+        undefined,
+        undefined,
+        sourcePerimeter.referenceSide
       )
+
+      expect(mockActions.updatePerimeterWallAssembly).toHaveBeenCalledWith('new-wall-id', sourceWall.wallAssemblyId)
+      expect(mockActions.updatePerimeterWallThickness).toHaveBeenCalledWith('new-wall-id', sourceWall.thickness)
+      expect(mockActions.setWallTopRingBeam).toHaveBeenCalledWith('new-wall-id', sourceWall.topRingBeamAssemblyId)
+      expect(mockActions.setWallBaseRingBeam).toHaveBeenCalledWith('new-wall-id', sourceWall.baseRingBeamAssemblyId)
     })
   })
 
   describe('deleteStorey', () => {
     it('should delete storey and associated perimeters, then compact levels', () => {
-      const perimeters = [{ id: 'perimeter-1' as PerimeterId }, { id: 'perimeter-2' as PerimeterId }]
+      const perimeters = [
+        { id: 'perimeter-1' as PerimeterId } as PerimeterWithGeometry,
+        { id: 'perimeter-2' as PerimeterId } as PerimeterWithGeometry
+      ]
 
       mockActions.getPerimetersByStorey.mockReturnValue(perimeters)
       mockActions.getFloorAreasByStorey.mockReturnValue([])

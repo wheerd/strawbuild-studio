@@ -1,7 +1,14 @@
 import { type Mock, type Mocked, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { Opening, PerimeterWallWithGeometry, WallPost } from '@/building/model'
+import type {
+  OpeningWithGeometry,
+  PerimeterWallWithGeometry,
+  RingBeamAssemblyId,
+  WallEntity,
+  WallPostWithGeometry
+} from '@/building/model'
 import { type StoreyId, createOpeningId, createWallAssemblyId, createWallPostId } from '@/building/model/ids'
+import { type StoreActions, getModelActions } from '@/building/store'
 import { type OpeningAssemblyConfig, getConfigActions } from '@/construction/config'
 import type { FloorAssembly } from '@/construction/floors'
 import { WallConstructionArea } from '@/construction/geometry'
@@ -21,6 +28,7 @@ import {
 } from '@/construction/tags'
 import type { InfillMethod, WallLayersConfig } from '@/construction/walls'
 import { Bounds3D, IDENTITY, type Length, type Vec3, ZERO_VEC2, newVec2, newVec3 } from '@/shared/geometry'
+import { partial } from '@/test/helpers'
 
 import type { WallCornerInfo } from './construction'
 import { calculateWallCornerInfo, getWallContext } from './corners/corners'
@@ -74,12 +82,27 @@ const mockGetConfigActions = vi.mocked(getConfigActions)
 const mockResolveRingBeamAssembly = vi.mocked(resolveRingBeamAssembly)
 const mockConstructWallPost = vi.mocked(constructWallPost)
 
+vi.mock('@/building/store', () => ({
+  getModelActions: vi.fn()
+}))
+
+const mockOpenings: OpeningWithGeometry[] = []
+const mockPosts: WallPostWithGeometry[] = []
+
+vi.mocked(getModelActions).mockReturnValue(
+  partial<StoreActions>({
+    getWallOpeningById: id => mockOpenings.find(o => o.id === id)!,
+    getWallPostById: id => mockPosts.find(p => p.id === id)!,
+    getRoofsByStorey: () => []
+  })
+)
+
 // Test data helpers
 function createMockWall(
   id: string,
   wallLength: Length,
   thickness: Length,
-  openings: Opening[] = []
+  entities: WallEntity[] = []
 ): PerimeterWallWithGeometry {
   return {
     id: id as any,
@@ -88,11 +111,13 @@ function createMockWall(
     endCornerId: 'end-corner' as any,
     polygon: { points: [] },
     wallAssemblyId: createWallAssemblyId(),
+    topRingBeamAssemblyId: 'top-assembly' as RingBeamAssemblyId,
+    baseRingBeamAssemblyId: 'base-assembly' as RingBeamAssemblyId,
     thickness,
     wallLength,
     insideLength: wallLength,
     outsideLength: wallLength,
-    entityIds: openings.map(o => o.id),
+    entityIds: entities.map(e => e.id),
     insideLine: {
       start: ZERO_VEC2,
       end: newVec2(wallLength, 0)
@@ -111,18 +136,16 @@ function createMockOpening(
   width: Length,
   height: Length = 1200,
   sillHeight: Length = 900
-): Opening {
-  return {
+): OpeningWithGeometry {
+  return partial<OpeningWithGeometry>({
     id: createOpeningId(),
-    perimeterId: 'perimeter-id' as any,
-    wallId: 'wall-id' as any,
     type: 'opening',
     openingType: 'window',
     centerOffsetFromWallStart,
     width,
     height,
     sillHeight
-  }
+  })
 }
 
 function createMockPost(
@@ -130,20 +153,15 @@ function createMockPost(
   width: Length = 60,
   thickness: Length = 360,
   replacesPosts = true
-): WallPost {
-  return {
+) {
+  return partial<WallPostWithGeometry>({
     id: createWallPostId(),
-    perimeterId: 'perimeter-id' as any,
-    wallId: 'wall-id' as any,
     type: 'post',
-    postType: 'single' as any,
     centerOffsetFromWallStart,
     width,
     thickness,
-    replacesPosts,
-    material: 'wood' as any,
-    infillMaterial: 'woodwool' as any
-  }
+    replacesPosts
+  })
 }
 
 function createMockCornerInfo(
@@ -455,6 +473,7 @@ describe('segmentedWallConstruction', () => {
   describe('opening handling', () => {
     it('should create segments for wall with single opening in middle', () => {
       const opening = createMockOpening(1400, 800)
+      mockOpenings.push(opening)
       const wall = createMockWall('wall-1', 3000, 300, [opening])
       const wallHeight = 2500
       const layers = createMockLayers()
@@ -510,6 +529,7 @@ describe('segmentedWallConstruction', () => {
 
     it('should handle opening at start of wall', () => {
       const opening = createMockOpening(400, 800)
+      mockOpenings.push(opening)
       const wall = createMockWall('wall-1', 3000, 300, [opening])
       const wallHeight = 2500
       const layers = createMockLayers()
@@ -545,6 +565,7 @@ describe('segmentedWallConstruction', () => {
 
     it('should handle opening at end of wall', () => {
       const opening = createMockOpening(2600, 800)
+      mockOpenings.push(opening)
       const wall = createMockWall('wall-1', 3000, 300, [opening])
       const wallHeight = 2500
       const layers = createMockLayers()
@@ -581,6 +602,7 @@ describe('segmentedWallConstruction', () => {
     it('should merge adjacent openings with same sill and header heights', () => {
       const opening1 = createMockOpening(1400, 800, 1200, 900)
       const opening2 = createMockOpening(2100, 600, 1200, 900)
+      mockOpenings.push(opening1, opening2)
       const wall = createMockWall('wall-1', 4000, 300, [opening1, opening2])
       const wallHeight = 2500
       const layers = createMockLayers()
@@ -612,6 +634,7 @@ describe('segmentedWallConstruction', () => {
     it('should not merge adjacent openings with different sill heights', () => {
       const opening1 = createMockOpening(1000, 800, 1200, 900)
       const opening2 = createMockOpening(1800, 600, 1200, 1000) // different sill
+      mockOpenings.push(opening1, opening2)
       const wall = createMockWall('wall-1', 4000, 300, [opening1, opening2])
       const wallHeight = 2500
       const layers = createMockLayers()
@@ -634,6 +657,7 @@ describe('segmentedWallConstruction', () => {
     it('should not merge adjacent openings with different header heights', () => {
       const opening1 = createMockOpening(1000, 800, 1200, 900)
       const opening2 = createMockOpening(1800, 600, 1300, 900) // different height
+      mockOpenings.push(opening1, opening2)
       const wall = createMockWall('wall-1', 4000, 300, [opening1, opening2])
       const wallHeight = 2500
       const layers = createMockLayers()
@@ -657,6 +681,7 @@ describe('segmentedWallConstruction', () => {
       // Create openings in wrong order
       const opening1 = createMockOpening(2300, 600)
       const opening2 = createMockOpening(900, 800)
+      mockOpenings.push(opening1, opening2)
       const wall = createMockWall('wall-1', 4000, 300, [opening1, opening2])
       const wallHeight = 2500
       const layers = createMockLayers()
@@ -819,7 +844,8 @@ describe('segmentedWallConstruction', () => {
 
     it('should create segments for wall with single post in middle', () => {
       const post = createMockPost(1500, 60, 360, true)
-      const wall = { ...createMockWall('wall-1', 3000, 300), posts: [post] }
+      mockPosts.push(post)
+      const wall = createMockWall('wall-1', 3000, 300, [post])
       const wallHeight = 2500
       const layers = createMockLayers()
 
@@ -872,7 +898,8 @@ describe('segmentedWallConstruction', () => {
 
     it('should handle post with replacesPosts=false (requires wall stands)', () => {
       const post = createMockPost(1500, 60, 360, false) // replacesPosts=false
-      const wall = { ...createMockWall('wall-1', 3000, 300), posts: [post] }
+      mockPosts.push(post)
+      const wall = createMockWall('wall-1', 3000, 300, [post])
       const wallHeight = 2500
       const layers = createMockLayers()
 
@@ -911,8 +938,10 @@ describe('segmentedWallConstruction', () => {
 
     it('should handle wall with post and opening (post before opening)', () => {
       const post = createMockPost(900, 60, 360, true)
+      mockPosts.push(post)
       const opening = createMockOpening(2000, 800)
-      const wall = { ...createMockWall('wall-1', 4000, 300), posts: [post], openings: [opening] }
+      mockOpenings.push(opening)
+      const wall = createMockWall('wall-1', 4000, 300, [post, opening])
       const wallHeight = 2500
       const layers = createMockLayers()
 
@@ -943,8 +972,10 @@ describe('segmentedWallConstruction', () => {
 
     it('should handle wall with post and opening (post after opening)', () => {
       const opening = createMockOpening(1000, 800)
+      mockOpenings.push(opening)
       const post = createMockPost(2500, 60, 360, true)
-      const wall = { ...createMockWall('wall-1', 4000, 300), posts: [post], openings: [opening] }
+      mockPosts.push(post)
+      const wall = createMockWall('wall-1', 4000, 300, [post, opening])
       const wallHeight = 2500
       const layers = createMockLayers()
 
@@ -976,7 +1007,8 @@ describe('segmentedWallConstruction', () => {
     it('should handle multiple posts on wall', () => {
       const post1 = createMockPost(1000, 60, 360, true)
       const post2 = createMockPost(2000, 60, 360, true)
-      const wall = { ...createMockWall('wall-1', 3000, 300), posts: [post1, post2] }
+      mockPosts.push(post1, post2)
+      const wall = createMockWall('wall-1', 3000, 300, [post1, post2])
       const wallHeight = 2500
       const layers = createMockLayers()
 
@@ -1001,8 +1033,10 @@ describe('segmentedWallConstruction', () => {
     it('should process posts and openings in correct position order', () => {
       // Create items in intentionally wrong order to test sorting
       const opening = createMockOpening(2500, 600)
+      mockOpenings.push(opening)
       const post = createMockPost(1000, 60)
-      const wall = { ...createMockWall('wall-1', 4000, 300), posts: [post], openings: [opening] }
+      mockPosts.push(post)
+      const wall = createMockWall('wall-1', 4000, 300, [post, opening])
       const wallHeight = 2500
       const layers = createMockLayers()
 

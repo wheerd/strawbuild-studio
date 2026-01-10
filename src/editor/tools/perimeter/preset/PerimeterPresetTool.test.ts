@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { type PerimeterWithGeometry } from '@/building/model'
 import { type StoreActions, getModelActions } from '@/building/store'
 import { replaceSelection } from '@/editor/hooks/useSelectionStore'
 import { getViewModeActions } from '@/editor/hooks/useViewMode'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
 import { getToolActions } from '@/editor/tools/system'
 import { Bounds2D, newVec2 } from '@/shared/geometry'
+import { partial } from '@/test/helpers'
 
 import { PerimeterPresetTool } from './PerimeterPresetTool'
 import { LShapedPreset, RectangularPreset } from './presets'
@@ -27,10 +29,12 @@ describe('PerimeterPresetTool', () => {
   const mockFitToView = vi.fn()
   const mockPopTool = vi.fn()
 
-  const mockPerimeter = {
+  const mockPerimeter = partial<PerimeterWithGeometry>({
     id: 'perimeter_mock',
-    corners: [{ outsidePoint: newVec2(1, 1) }, { outsidePoint: newVec2(2, 2) }, { outsidePoint: newVec2(3, 3) }]
-  } as any
+    outerPolygon: {
+      points: [newVec2(1, 1), newVec2(2, 2), newVec2(3, 3)]
+    }
+  })
 
   let tool: PerimeterPresetTool
 

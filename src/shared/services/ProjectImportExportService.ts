@@ -5,9 +5,7 @@ import {
   type PerimeterId,
   type RingBeamAssemblyId,
   type RoofAssemblyId,
-  type WallAssemblyId,
-  isOpeningId,
-  isWallPostId
+  type WallAssemblyId
 } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigActions, getConfigState, setConfigState } from '@/construction/config/store'
@@ -246,8 +244,8 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
           }
         })
         const perimeters = modelActions.getPerimetersByStorey(storey.id).map(perimeter => {
-          const corners = perimeter.cornerIds.map(c => modelActions.getPerimeterCornerById(c)).filter(c => c != null)
-          const walls = perimeter.wallIds.map(w => modelActions.getPerimeterWallById(w)).filter(w => w != null)
+          const corners = modelActions.getPerimeterCornersById(perimeter.id)
+          const walls = modelActions.getPerimeterWallsById(perimeter.id)
           return {
             id: perimeter.id,
             referenceSide: perimeter.referenceSide,
@@ -260,14 +258,8 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
               constructedByWall: corner.constructedByWall
             })),
             walls: walls.map(wall => {
-              const openings = wall.entityIds
-                .filter(e => isOpeningId(e))
-                .map(o => modelActions.getWallOpeningById(o))
-                .filter(w => w != null)
-              const posts = wall.entityIds
-                .filter(e => isWallPostId(e))
-                .map(p => modelActions.getWallPostById(p))
-                .filter(w => w != null)
+              const openings = modelActions.getWallOpeningsById(wall.id)
+              const posts = modelActions.getWallPostsById(wall.id)
 
               return {
                 thickness: Number(wall.thickness),

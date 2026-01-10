@@ -223,7 +223,7 @@ describe('ProjectImportExportService Integration', () => {
         // Compare walls (excluding IDs)
         expect(importedPerimeter.wallIds).toHaveLength(originalPerimeter.wallIds.length)
         for (let k = 0; k < originalPerimeter.wallIds.length; k++) {
-          const importedWall = modelActions.getPerimeterWallById(originalPerimeter.wallIds[k])
+          const importedWall = modelActions.getPerimeterWallById(importedPerimeter.wallIds[k])
           const originalWall = originalWalls.find(w => w.id === originalPerimeter.wallIds[k])!
           expect(importedWall.baseRingBeamAssemblyId).toBe(originalWall?.baseRingBeamAssemblyId)
           expect(importedWall.topRingBeamAssemblyId).toBe(originalWall?.topRingBeamAssemblyId)

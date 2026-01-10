@@ -1,6 +1,8 @@
 import type { Mocked } from 'vitest'
 
-type PartialDeep<T> = T extends string | number | bigint | boolean | null | undefined | symbol | Date
+type Procedure = (...args: any[]) => any
+
+type PartialDeep<T> = T extends string | number | bigint | boolean | null | undefined | symbol | Date | Procedure
   ? T | undefined
   : T extends Array<infer ArrayType>
     ? Array<PartialDeep<ArrayType>>

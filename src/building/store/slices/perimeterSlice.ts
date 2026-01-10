@@ -147,6 +147,7 @@ export interface PerimetersActions {
   getWallOpeningById: (openingId: OpeningId) => OpeningWithGeometry
   getWallOpeningsById: (wallId: PerimeterWallId) => OpeningWithGeometry[]
   getWallPostById: (postId: WallPostId) => WallPostWithGeometry
+  getWallPostsById: (wallId: PerimeterWallId) => WallPostWithGeometry[]
   getPerimetersByStorey: (storeyId: StoreyId) => PerimeterWithGeometry[]
   getAllPerimeters: () => PerimeterWithGeometry[]
   getAllWallPosts: () => WallPostWithGeometry[]
@@ -782,6 +783,20 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
           throw new NotFoundError('Wall opening', openingId)
         }
         return { ...opening, ...geometry }
+      })
+      return openings
+    },
+
+    getWallPostsById: (wallId: PerimeterWallId) => {
+      const state = get()
+      const wall = state.perimeterWalls[wallId]
+      const openings = wall.entityIds.filter(isWallPostId).map(postId => {
+        const post = state.wallPosts[postId]
+        const geometry = state._wallPostGeometry[postId]
+        if (!post || !geometry) {
+          throw new NotFoundError('Wall post', postId)
+        }
+        return { ...post, ...geometry }
       })
       return openings
     },
