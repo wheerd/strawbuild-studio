@@ -215,8 +215,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         throw new Error('Wall thickness must be greater than 0')
       }
 
-      let result: PerimeterWithGeometry | undefined
-
+      let result!: PerimeterWithGeometry
       set(state => {
         const perimeterId = createPerimeterId()
         const cornerIds = boundary.points.map(createPerimeterCornerId)
@@ -387,8 +386,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
 
     // Wall splitting operation
     splitPerimeterWall: (wallId: PerimeterWallId, splitPosition: Length): PerimeterWallId | null => {
-      let newWallId: PerimeterWallId | null = null
-
+      let newWallId!: PerimeterWallId
       set(state => {
         const wall = state.perimeterWalls[wallId]
         const wallGeometry = state._perimeterWallGeometry[wallId]
@@ -480,7 +478,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         updatePerimeterGeometry(state, wall.perimeterId)
       })
 
-      return newWallId
+      return newWallId ?? null
     },
 
     // Update operations
@@ -606,7 +604,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         throw new InvalidOperationError('Opening placement is not valid')
       }
 
-      let result: OpeningWithGeometry = null as any
+      let result!: OpeningWithGeometry
       set(state => {
         const wall = state.perimeterWalls[wallId]
 
@@ -615,7 +613,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
           id: createOpeningId(),
           type: 'opening',
           perimeterId: wall.perimeterId,
-          wallId: wallId,
+          wallId,
           ...openingParams
         }
 
@@ -844,7 +842,7 @@ export const createPerimetersSlice: StateCreator<PerimetersSlice, [['zustand/imm
         throw new InvalidOperationError('Post placement is not valid')
       }
 
-      let result: WallPostWithGeometry = null as any
+      let result!: WallPostWithGeometry
       set(state => {
         const wall = state.perimeterWalls[wallId]
 

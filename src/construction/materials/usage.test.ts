@@ -329,7 +329,7 @@ describe('Material Usage Detection', () => {
 
       const wallPost = partial<WallPostWithGeometry>({
         material: postMaterial,
-        infillMaterial: infillMaterial
+        infillMaterial
       })
 
       mockUseWallPosts.mockReturnValue([wallPost])

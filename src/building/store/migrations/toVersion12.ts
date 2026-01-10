@@ -1,6 +1,25 @@
-import { newVec2 } from '@/shared/geometry'
+import type {
+  Opening,
+  OpeningAssemblyId,
+  OpeningId,
+  OpeningType,
+  PerimeterCorner,
+  PerimeterCornerId,
+  PerimeterWall,
+  PerimeterWallId,
+  RingBeamAssemblyId,
+  RoofOverhang,
+  RoofOverhangId,
+  WallAssemblyId,
+  WallPost,
+  WallPostId,
+  WallPostType
+} from '@/building/model'
+import { updatePerimeterGeometry } from '@/building/store/slices/perimeterGeometry'
+import type { StoreState } from '@/building/store/types'
+import type { MaterialId } from '@/construction/materials/material'
+import { type Polygon2D, newVec2 } from '@/shared/geometry'
 
-import { updatePerimeterGeometry } from '../slices/perimeterGeometry'
 import type { Migration } from './shared'
 import { isRecord, toVec2 } from './shared'
 
@@ -35,17 +54,10 @@ export const migrateToVersion12: Migration = state => {
 
   // Initialize new normalized state structures
   if (isRecord(state.perimeters)) {
-    const newPerimeterWalls: Record<string, any> = {}
-    const newPerimeterCorners: Record<string, any> = {}
-    const newOpenings: Record<string, any> = {}
-    const newWallPosts: Record<string, any> = {}
-
-    // Geometry records (will be recalculated)
-    const newPerimeterGeometry: Record<string, any> = {}
-    const newPerimeterWallGeometry: Record<string, any> = {}
-    const newPerimeterCornerGeometry: Record<string, any> = {}
-    const newOpeningGeometry: Record<string, any> = {}
-    const newWallPostGeometry: Record<string, any> = {}
+    const newPerimeterWalls: Record<string, PerimeterWall> = {}
+    const newPerimeterCorners: Record<string, PerimeterCorner> = {}
+    const newOpenings: Record<string, Opening> = {}
+    const newWallPosts: Record<string, WallPost> = {}
 
     try {
       // Process each perimeter
@@ -65,22 +77,22 @@ export const migrateToVersion12: Migration = state => {
         const n = oldWalls.length
 
         // Create corner and wall ID arrays
-        const cornerIds: string[] = []
-        const wallIds: string[] = []
+        const cornerIds: PerimeterCornerId[] = []
+        const wallIds: PerimeterWallId[] = []
 
         for (let i = 0; i < n; i++) {
           const oldCorner = oldCorners[i]
           const oldWall = oldWalls[i]
 
           if (isRecord(oldCorner) && typeof oldCorner.id === 'string') {
-            cornerIds.push(oldCorner.id)
+            cornerIds.push(oldCorner.id as PerimeterCornerId)
           } else {
             console.warn('Skipping perimeter with invalid corner data')
             continue
           }
 
           if (isRecord(oldWall) && typeof oldWall.id === 'string') {
-            wallIds.push(oldWall.id)
+            wallIds.push(oldWall.id as PerimeterWallId)
           } else {
             console.warn('Skipping perimeter with invalid wall data')
             continue
@@ -112,6 +124,9 @@ export const migrateToVersion12: Migration = state => {
             referencePoint = newVec2(0, 0)
           }
 
+          console.log('corner', oldCorner)
+          console.log('inside', oldCorner.insidePoint, insidePoint)
+
           // Create normalized corner
           newPerimeterCorners[cornerId] = {
             id: cornerId,
@@ -120,15 +135,6 @@ export const migrateToVersion12: Migration = state => {
             nextWallId,
             referencePoint,
             constructedByWall: oldCorner.constructedByWall === 'previous' ? 'previous' : 'next'
-          }
-
-          // Placeholder geometry (will be recalculated)
-          newPerimeterCornerGeometry[cornerId] = {
-            insidePoint: insidePoint || newVec2(0, 0),
-            outsidePoint: outsidePoint || newVec2(0, 0),
-            interiorAngle: typeof oldCorner.interiorAngle === 'number' ? oldCorner.interiorAngle : 0,
-            exteriorAngle: typeof oldCorner.exteriorAngle === 'number' ? oldCorner.exteriorAngle : 0,
-            polygon: { points: [] }
           }
         }
 
@@ -143,19 +149,19 @@ export const migrateToVersion12: Migration = state => {
 
           // Extract wall properties
           const thickness = typeof oldWall.thickness === 'number' ? oldWall.thickness : 420
-          const wallAssemblyId = oldWall.wallAssemblyId
-          const baseRingBeamAssemblyId = oldWall.baseRingBeamAssemblyId
-          const topRingBeamAssemblyId = oldWall.topRingBeamAssemblyId
+          const wallAssemblyId = oldWall.wallAssemblyId as WallAssemblyId
+          const baseRingBeamAssemblyId = oldWall.baseRingBeamAssemblyId as RingBeamAssemblyId | undefined
+          const topRingBeamAssemblyId = oldWall.topRingBeamAssemblyId as RingBeamAssemblyId | undefined
 
           // Migrate openings
           const oldOpenings = Array.isArray(oldWall.openings) ? oldWall.openings : []
-          const openingIds: string[] = []
+          const openingIds: OpeningId[] = []
 
           for (const oldOpening of oldOpenings) {
             if (!isRecord(oldOpening)) continue
             if (typeof oldOpening.id !== 'string') continue
 
-            const openingId = oldOpening.id
+            const openingId = oldOpening.id as OpeningId
             openingIds.push(openingId)
 
             newOpenings[openingId] = {
@@ -163,33 +169,25 @@ export const migrateToVersion12: Migration = state => {
               type: 'opening',
               perimeterId: perimeter.id,
               wallId,
-              openingType: oldOpening.type || 'door',
+              openingType: (oldOpening.type || 'door') as OpeningType,
               centerOffsetFromWallStart:
                 typeof oldOpening.centerOffsetFromWallStart === 'number' ? oldOpening.centerOffsetFromWallStart : 0,
               width: typeof oldOpening.width === 'number' ? oldOpening.width : 0,
               height: typeof oldOpening.height === 'number' ? oldOpening.height : 0,
               sillHeight: typeof oldOpening.sillHeight === 'number' ? oldOpening.sillHeight : undefined,
-              openingAssemblyId: oldOpening.openingAssemblyId
-            }
-
-            // Placeholder geometry
-            newOpeningGeometry[openingId] = {
-              insideLine: { start: newVec2(0, 0), end: newVec2(0, 0) },
-              outsideLine: { start: newVec2(0, 0), end: newVec2(0, 0) },
-              polygon: { points: [] },
-              center: newVec2(0, 0)
+              openingAssemblyId: oldOpening.openingAssemblyId as OpeningAssemblyId | undefined
             }
           }
 
           // Migrate posts
           const oldPosts = Array.isArray(oldWall.posts) ? oldWall.posts : []
-          const postIds: string[] = []
+          const postIds: WallPostId[] = []
 
           for (const oldPost of oldPosts) {
             if (!isRecord(oldPost)) continue
             if (typeof oldPost.id !== 'string') continue
 
-            const postId = oldPost.id
+            const postId = oldPost.id as WallPostId
             postIds.push(postId)
 
             newWallPosts[postId] = {
@@ -197,22 +195,14 @@ export const migrateToVersion12: Migration = state => {
               type: 'post',
               perimeterId: perimeter.id,
               wallId,
-              postType: oldPost.type || 'center',
+              postType: (oldPost.type || 'center') as WallPostType,
               centerOffsetFromWallStart:
                 typeof oldPost.centerOffsetFromWallStart === 'number' ? oldPost.centerOffsetFromWallStart : 0,
               width: typeof oldPost.width === 'number' ? oldPost.width : 0,
               thickness: typeof oldPost.thickness === 'number' ? oldPost.thickness : 0,
               replacesPosts: oldPost.replacesPosts === true,
-              material: oldPost.material,
-              infillMaterial: oldPost.infillMaterial
-            }
-
-            // Placeholder geometry
-            newWallPostGeometry[postId] = {
-              insideLine: { start: newVec2(0, 0), end: newVec2(0, 0) },
-              outsideLine: { start: newVec2(0, 0), end: newVec2(0, 0) },
-              polygon: { points: [] },
-              center: newVec2(0, 0)
+              material: oldPost.material as MaterialId,
+              infillMaterial: oldPost.infillMaterial as MaterialId
             }
           }
 
@@ -220,7 +210,7 @@ export const migrateToVersion12: Migration = state => {
           const entityIds = [...openingIds, ...postIds]
 
           // Create normalized wall
-          const newWall: any = {
+          const newWall: PerimeterWall = {
             id: wallId,
             perimeterId: perimeter.id,
             startCornerId,
@@ -238,41 +228,14 @@ export const migrateToVersion12: Migration = state => {
           }
 
           newPerimeterWalls[wallId] = newWall
-
-          // Placeholder wall geometry
-          const insideLine = isRecord(oldWall.insideLine) ? oldWall.insideLine : {}
-          const outsideLine = isRecord(oldWall.outsideLine) ? oldWall.outsideLine : {}
-
-          newPerimeterWallGeometry[wallId] = {
-            insideLength: typeof oldWall.insideLength === 'number' ? oldWall.insideLength : 0,
-            outsideLength: typeof oldWall.outsideLength === 'number' ? oldWall.outsideLength : 0,
-            wallLength: typeof oldWall.wallLength === 'number' ? oldWall.wallLength : 0,
-            insideLine: {
-              start: toVec2(insideLine.start) || newVec2(0, 0),
-              end: toVec2(insideLine.end) || newVec2(0, 0)
-            },
-            outsideLine: {
-              start: toVec2(outsideLine.start) || newVec2(0, 0),
-              end: toVec2(outsideLine.end) || newVec2(0, 0)
-            },
-            direction: toVec2(oldWall.direction) || newVec2(1, 0),
-            outsideDirection: toVec2(oldWall.outsideDirection) || newVec2(0, 1),
-            polygon: { points: [] }
-          }
         }
 
-        // Update perimeter structure (cast to any to avoid branded type issues in migration)
-        perimeter.wallIds = wallIds as any
-        perimeter.cornerIds = cornerIds as any
+        // Update perimeter structure
+        perimeter.wallIds = wallIds
+        perimeter.cornerIds = cornerIds
         perimeter.intermediateWallIds = []
         perimeter.wallNodeIds = []
         perimeter.roomIds = []
-
-        // Placeholder perimeter geometry
-        newPerimeterGeometry[perimeter.id] = {
-          innerPolygon: { points: [] },
-          outerPolygon: { points: [] }
-        }
 
         // Remove old properties
         delete perimeter.walls
@@ -282,14 +245,14 @@ export const migrateToVersion12: Migration = state => {
 
       // Assign new normalized structures to state
       state.perimeterWalls = newPerimeterWalls
-      state._perimeterWallGeometry = newPerimeterWallGeometry
+      state._perimeterWallGeometry = {}
       state.perimeterCorners = newPerimeterCorners
-      state._perimeterCornerGeometry = newPerimeterCornerGeometry
+      state._perimeterCornerGeometry = {}
       state.openings = newOpenings
-      state._openingGeometry = newOpeningGeometry
+      state._openingGeometry = {}
       state.wallPosts = newWallPosts
-      state._wallPostGeometry = newWallPostGeometry
-      state._perimeterGeometry = newPerimeterGeometry
+      state._wallPostGeometry = {}
+      state._perimeterGeometry = {}
 
       // Recalculate geometry for all perimeters
       for (const perimeter of Object.values(state.perimeters)) {
@@ -298,7 +261,7 @@ export const migrateToVersion12: Migration = state => {
 
         try {
           // Cast state to PerimetersState for geometry calculation
-          updatePerimeterGeometry(state as any, perimeter.id)
+          updatePerimeterGeometry(state as unknown as StoreState, perimeter.id)
         } catch (error) {
           console.error(`Failed to recalculate geometry for perimeter ${perimeter.id}:`, error)
           // Continue with other perimeters even if one fails
@@ -322,7 +285,7 @@ export const migrateToVersion12: Migration = state => {
 
   // Migrate roofs: normalize overhang structure
   if (isRecord(state.roofs)) {
-    const newRoofOverhangs: Record<string, any> = {}
+    const newRoofOverhangs: Record<RoofOverhangId, RoofOverhang> = {}
 
     try {
       for (const roof of Object.values(state.roofs)) {
@@ -331,13 +294,13 @@ export const migrateToVersion12: Migration = state => {
 
         // Extract old overhangs array
         const oldOverhangs = Array.isArray(roof.overhangs) ? roof.overhangs : []
-        const overhangIds: string[] = []
+        const overhangIds: RoofOverhangId[] = []
 
         for (const oldOverhang of oldOverhangs) {
           if (!isRecord(oldOverhang)) continue
           if (typeof oldOverhang.id !== 'string') continue
 
-          const overhangId = oldOverhang.id
+          const overhangId = oldOverhang.id as RoofOverhangId
           overhangIds.push(overhangId)
 
           // Create normalized overhang (keep all properties including geometry)
@@ -346,12 +309,15 @@ export const migrateToVersion12: Migration = state => {
             roofId: roof.id,
             sideIndex: typeof oldOverhang.sideIndex === 'number' ? oldOverhang.sideIndex : 0,
             value: typeof oldOverhang.value === 'number' ? oldOverhang.value : 0,
-            area: isRecord(oldOverhang.area) && Array.isArray(oldOverhang.area.points) ? oldOverhang.area : { points: [] }
+            area:
+              isRecord(oldOverhang.area) && 'points' in oldOverhang.area && Array.isArray(oldOverhang.area.points)
+                ? (oldOverhang.area as unknown as Polygon2D)
+                : { points: [] }
           }
         }
 
         // Update roof to use overhangIds instead of overhangs array
-        roof.overhangIds = overhangIds as any
+        roof.overhangIds = overhangIds
         delete roof.overhangs
       }
 

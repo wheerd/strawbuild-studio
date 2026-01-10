@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 
 import type { PerimeterWallGeometry } from '@/building/model'
 import { createStoreyId, createWallAssemblyId } from '@/building/model/ids'
+import { updateEntityGeometry } from '@/building/store/slices/perimeterGeometry'
 import { eqVec2, newVec2 } from '@/shared/geometry'
 
-import { updateEntityGeometry } from '../perimeterGeometry'
 import {
   createLShapedBoundary,
   createRectangularBoundary,

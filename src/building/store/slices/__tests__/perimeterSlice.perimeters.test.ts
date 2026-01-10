@@ -2,10 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { type StoreyId, createStoreyId, createWallAssemblyId } from '@/building/model/ids'
 import { NotFoundError } from '@/building/store/errors'
+import type { PerimetersSlice } from '@/building/store/slices/perimeterSlice'
 import { newVec2 } from '@/shared/geometry'
 import { ensurePolygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 
-import type { PerimetersSlice } from '../perimeterSlice'
 import {
   createLShapedBoundary,
   createRectangularBoundary,

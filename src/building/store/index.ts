@@ -6,8 +6,6 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
-export { InvalidOperationError, NotFoundError } from './errors'
-
 import type {
   FloorArea,
   FloorOpening,
@@ -50,6 +48,8 @@ import { createPerimetersSlice } from './slices/perimeterSlice'
 import { createRoofsSlice } from './slices/roofsSlice'
 import { createStoreysSlice } from './slices/storeysSlice'
 import type { Store, StoreActions, StoreState } from './types'
+
+export { InvalidOperationError, NotFoundError } from './errors'
 
 // Custom debounced save with immediate isSaving feedback
 let saveTimeout: NodeJS.Timeout | null = null
@@ -217,6 +217,7 @@ export const useModelEntityById = (
   const getter = useModelStore(getterSelector)
   return useMemo(() => {
     if (id == null) return null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return getter(id as any)
   }, [entity, geometry, getter, id])
 }

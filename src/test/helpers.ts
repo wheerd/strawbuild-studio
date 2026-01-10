@@ -4,10 +4,10 @@ type Procedure = (...args: any[]) => any
 
 type PartialDeep<T> = T extends string | number | bigint | boolean | null | undefined | symbol | Date | Procedure
   ? T | undefined
-  : T extends Array<infer ArrayType>
-    ? Array<PartialDeep<ArrayType>>
-    : T extends ReadonlyArray<infer ArrayType>
-      ? ReadonlyArray<ArrayType>
+  : T extends (infer ArrayType)[]
+    ? PartialDeep<ArrayType>[]
+    : T extends readonly (infer ArrayType)[]
+      ? readonly ArrayType[]
       : T extends Set<infer SetType>
         ? Set<PartialDeep<SetType>>
         : T extends ReadonlySet<infer SetType>

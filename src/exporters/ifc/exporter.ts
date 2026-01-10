@@ -4,8 +4,8 @@ import wasmUrl from 'web-ifc/web-ifc.wasm?url'
 import {
   type OpeningWithGeometry,
   type PerimeterCornerWithGeometry,
+  type PerimeterId,
   type PerimeterWallWithGeometry,
-  type PerimeterWithGeometry,
   type Storey,
   isOpeningId
 } from '@/building/model'
@@ -110,7 +110,7 @@ class IfcExporter {
       const elements: Handle<IFC4.IfcElement>[] = []
 
       for (const perimeter of perimeters) {
-        elements.push(...this.createWallsForPerimeter(perimeter, info, storeyPlacement, wallMaterialCache))
+        elements.push(...this.createWallsForPerimeter(perimeter.id, info, storeyPlacement, wallMaterialCache))
       }
 
       for (const floor of floorGeometry.filter(f => f.storeyId === info.storeyId)) {
@@ -399,17 +399,14 @@ class IfcExporter {
   }
 
   private createWallsForPerimeter(
-    perimeter: PerimeterWithGeometry,
+    perimeterId: PerimeterId,
     info: IfcStoreyContext,
     storeyPlacement: Handle<IFC4.IfcPlacement>,
     materialUsageCache: Map<string, Handle<IFC4.IfcMaterialLayerSetUsage>>
   ): Handle<IFC4.IfcWall>[] {
     const elements: Handle<IFC4.IfcWall>[] = []
-
-    for (let index = 0; index < perimeter.wallIds.length; index++) {
-      const wall = this.store.getPerimeterWallById(perimeter.wallIds[index])
-      if (!wall) continue
-
+    const walls = this.store.getPerimeterWallsById(perimeterId)
+    for (const wall of walls) {
       const assemblyConfig = this.config.getWallAssemblyById(wall.wallAssemblyId)
       if (!assemblyConfig) continue
 

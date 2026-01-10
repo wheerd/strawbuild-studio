@@ -9,30 +9,36 @@ The perimeter slice has been refactored to use a normalized data structure with 
 This strategy covers all **50+ actions** in the perimeter slice:
 
 **Perimeter Operations:**
+
 - `addPerimeter`, `removePerimeter`, `getPerimeterById`, `getPerimetersByStorey`, `getAllPerimeters`
 - `setPerimeterReferenceSide`, `movePerimeter`, `updatePerimeterBoundary`
 
 **Wall Operations:**
+
 - `getPerimeterWallById`, `getPerimeterWallsById`, `getWallOpeningsById`
 - `updatePerimeterWallAssembly`, `updatePerimeterWallThickness`
 - `updateAllPerimeterWallsAssembly`, `updateAllPerimeterWallsThickness`
 - `removePerimeterWall`, `canRemovePerimeterWall`, `splitPerimeterWall`
 
 **Ring Beam Operations:**
+
 - `setWallBaseRingBeam`, `setWallTopRingBeam`, `removeWallBaseRingBeam`, `removeWallTopRingBeam`
 - `setAllWallsBaseRingBeam`, `setAllWallsTopRingBeam`, `removeAllWallsBaseRingBeam`, `removeAllWallsTopRingBeam`
 
 **Corner Operations:**
+
 - `getPerimeterCornerById`, `getPerimeterCornersById`
 - `updatePerimeterCornerConstructedByWall`, `canSwitchCornerConstructedByWall`
 - `removePerimeterCorner`, `canRemovePerimeterCorner`
 
 **Opening Operations:**
+
 - `addWallOpening`, `removeWallOpening`, `updateWallOpening`
 - `getWallOpeningById`, `getWallEntityById`
 - `isWallOpeningPlacementValid`, `findNearestValidWallOpeningPosition`
 
 **Wall Post Operations:**
+
 - `addWallPost`, `removeWallPost`, `updateWallPost`
 - `getWallPostById`
 - `isWallPostPlacementValid`, `findNearestValidWallPostPosition`
@@ -64,10 +70,12 @@ src/building/store/slices/
 ## 1. Perimeter Tests (`perimeterSlice.test.ts`)
 
 ### Basic CRUD Operations
+
 - ✅ `addPerimeter` creates perimeter with walls and corners
 - ✅ `removePerimeter` deletes perimeter and cascades to all children
 
 ### Reference Consistency
+
 - ✅ Created walls reference correct perimeter ID
 - ✅ Created corners reference correct perimeter ID
 - ✅ Walls reference correct start/end corner IDs
@@ -75,6 +83,7 @@ src/building/store/slices/
 - ✅ `wallIds` and `cornerIds` arrays match created entities
 
 ### Cascade Cleanup
+
 - ✅ Removing perimeter removes all walls
 - ✅ Removing perimeter removes all corners
 - ✅ Removing perimeter removes all openings on walls
@@ -87,21 +96,25 @@ src/building/store/slices/
   - `_wallPostGeometry[postId]` for each post
 
 ### Validation
+
 - ✅ Rejects invalid polygons (< 3 points)
 - ✅ Rejects self-intersecting polygons
 - ✅ Rejects invalid thickness (<= 0)
 - ✅ Normalizes polygon to clockwise
 
 ### Bulk Operations
+
 - ✅ `updateAllPerimeterWallsAssembly` updates all walls
 - ✅ `updateAllPerimeterWallsThickness` updates all walls and recalculates geometry
 
 ### Reference Side
+
 - ✅ `setPerimeterReferenceSide` updates reference side and recalculates geometry
 - ✅ Changing to 'outside' flips the reference polygon
 - ✅ Geometry is recalculated for all walls and corners
 
 ### Movement Operations
+
 - ✅ `movePerimeter` translates all corners by offset vector
 - ✅ `movePerimeter` recalculates geometry after move
 - ✅ `movePerimeter` preserves perimeter shape
@@ -114,6 +127,7 @@ src/building/store/slices/
 - ✅ `updatePerimeterBoundary` returns false for non-existent perimeter
 
 ### Ring Beam Bulk Operations
+
 - ✅ `setAllWallsBaseRingBeam` sets base ring beam for all walls
 - ✅ `setAllWallsTopRingBeam` sets top ring beam for all walls
 - ✅ `removeAllWallsBaseRingBeam` removes base ring beam from all walls
@@ -124,10 +138,12 @@ src/building/store/slices/
 ## 2. Perimeter Wall Tests (`perimeterWallSlice.test.ts`)
 
 ### Basic Operations
+
 - ✅ `updatePerimeterWallAssembly` updates single wall
 - ✅ `updatePerimeterWallThickness` updates wall and recalculates geometry
 
 ### Ring Beam Operations (Individual Wall)
+
 - ✅ `setWallBaseRingBeam` sets base ring beam assembly
 - ✅ `setWallTopRingBeam` sets top ring beam assembly
 - ✅ `removeWallBaseRingBeam` removes base ring beam
@@ -136,6 +152,7 @@ src/building/store/slices/
 - ✅ Operations handle non-existent wall gracefully
 
 ### Wall Removal
+
 - ✅ `removePerimeterWall` returns false for minimum walls (< 3)
 - ✅ `removePerimeterWall` merges adjacent corners correctly
 - ✅ `removePerimeterWall` updates perimeter's `wallIds` array
@@ -144,6 +161,7 @@ src/building/store/slices/
 - ✅ `canRemovePerimeterWall` returns correct validation result
 
 ### Wall Splitting
+
 - ✅ `splitPerimeterWall` creates new wall and corner
 - ✅ `splitPerimeterWall` updates perimeter's `wallIds` and `cornerIds`
 - ✅ `splitPerimeterWall` preserves wall properties (assembly, thickness, ring beams)
@@ -152,6 +170,7 @@ src/building/store/slices/
 - ✅ `splitPerimeterWall` creates geometry for new entities
 
 ### Reference Consistency After Operations
+
 - ✅ Wall removal updates adjacent corners' wall references
 - ✅ Wall splitting updates corner references correctly
 - ✅ Opening/post wall IDs remain valid after split
@@ -161,6 +180,7 @@ src/building/store/slices/
 ## 3. Perimeter Corner Tests (`perimeterCornerSlice.test.ts`)
 
 ### Corner Removal
+
 - ✅ `removePerimeterCorner` returns false for minimum corners (< 3)
 - ✅ `removePerimeterCorner` merges adjacent walls correctly
 - ✅ `removePerimeterCorner` updates perimeter's `cornerIds` array
@@ -169,12 +189,14 @@ src/building/store/slices/
 - ✅ `canRemovePerimeterCorner` returns correct validation result
 
 ### Corner Switching
+
 - ✅ `updatePerimeterCornerConstructedByWall` switches construction ownership
 - ✅ `updatePerimeterCornerConstructedByWall` recalculates geometry
 - ✅ `canSwitchCornerConstructedByWall` returns false when walls have different thicknesses
 - ✅ Corner switching preserves references
 
 ### Reference Consistency
+
 - ✅ Corner removal updates adjacent walls' corner references
 - ✅ Corner references stay consistent after wall operations
 
@@ -183,6 +205,7 @@ src/building/store/slices/
 ## 4. Opening Tests (`openingSlice.test.ts`)
 
 ### Basic CRUD
+
 - ✅ `addWallOpening` creates opening with correct wall reference
 - ✅ `addWallOpening` updates wall's `entityIds` array
 - ✅ `addWallOpening` creates geometry
@@ -192,11 +215,13 @@ src/building/store/slices/
 - ✅ `updateWallOpening` updates opening and recalculates geometry
 
 ### Validation
+
 - ✅ `isWallOpeningPlacementValid` validates position and overlap
 - ✅ `findNearestValidWallOpeningPosition` finds valid position or returns null
 - ✅ `addWallOpening` respects validation and returns null for invalid placements
 
 ### Reference Consistency
+
 - ✅ Opening maintains correct wall ID
 - ✅ Wall's `entityIds` stays in sync with actual openings
 - ✅ Openings are cleaned up when wall is removed
@@ -206,6 +231,7 @@ src/building/store/slices/
 ## 5. Wall Post Tests (`wallPostSlice.test.ts`)
 
 ### Basic CRUD
+
 - ✅ `addWallPost` creates post with correct wall reference
 - ✅ `addWallPost` updates wall's `entityIds` array
 - ✅ `addWallPost` creates geometry
@@ -215,10 +241,12 @@ src/building/store/slices/
 - ✅ `updateWallPost` updates post and recalculates geometry
 
 ### Validation
+
 - ✅ `isWallPostPlacementValid` validates position and overlap
 - ✅ `findNearestValidWallPostPosition` finds valid position or returns null
 
 ### Reference Consistency
+
 - ✅ Post maintains correct wall ID
 - ✅ Wall's `entityIds` stays in sync with actual posts
 - ✅ Posts are cleaned up when wall is removed
@@ -230,6 +258,7 @@ src/building/store/slices/
 This should test the pure geometry calculation functions in `perimeterGeometry.ts`.
 
 ### Corner Geometry
+
 - ✅ `calculateCornerGeometry` computes inside/outside points correctly
 - ✅ Handles right angles (90°, 270°)
 - ✅ Handles acute angles (< 90°)
@@ -238,6 +267,7 @@ This should test the pure geometry calculation functions in `perimeterGeometry.t
 - ✅ Computes interior/exterior angles correctly
 
 ### Wall Geometry
+
 - ✅ `calculateWallGeometry` computes wall lines correctly
 - ✅ Computes inside/outside lengths
 - ✅ Computes wall length (between corner intersection points)
@@ -245,15 +275,18 @@ This should test the pure geometry calculation functions in `perimeterGeometry.t
 - ✅ Computes wall polygon correctly
 
 ### Perimeter Geometry
+
 - ✅ `updatePerimeterGeometry` computes inner/outer polygons
 - ✅ Handles reference side correctly (inside vs outside)
 
 ### Entity Geometry (Opening/Post)
+
 - ✅ `calculateEntityGeometry` positions entities correctly on wall
 - ✅ Computes entity polygons
 - ✅ Handles edge cases (start/end of wall)
 
 ### Edge Cases
+
 - ✅ Handles nearly-collinear corners
 - ✅ Handles very thin walls
 - ✅ Handles walls with different thicknesses at corners
@@ -263,12 +296,14 @@ This should test the pure geometry calculation functions in `perimeterGeometry.t
 ## 7. Integration Tests (`perimeterIntegration.test.ts`)
 
 ### Complex Scenarios
+
 - ✅ Add perimeter → add openings → split wall → verify openings redistributed
 - ✅ Add perimeter → remove corner → verify walls merged and openings preserved
 - ✅ Add perimeter → change all thicknesses → verify all geometry recalculated
 - ✅ Add multiple perimeters on same storey → verify independence
 
 ### Getter Tests
+
 - ✅ `getPerimeterById` throws for non-existent ID
 - ✅ `getPerimeterWallById` throws for non-existent ID
 - ✅ `getPerimeterCornerById` throws for non-existent ID
@@ -278,6 +313,7 @@ This should test the pure geometry calculation functions in `perimeterGeometry.t
 - ✅ `getAllPerimeters` returns all perimeters
 
 ### Reference Integrity
+
 - ✅ After complex operations, all references are valid
 - ✅ No orphaned entities in collections
 - ✅ No orphaned geometry records
@@ -299,22 +335,13 @@ export function createRectangularPerimeter(
   thickness = 420
 ): PerimeterWithGeometry
 
-export function verifyPerimeterReferences(
-  state: PerimetersState,
-  perimeterId: PerimeterId
-): void
+export function verifyPerimeterReferences(state: PerimetersState, perimeterId: PerimeterId): void
 
 export function verifyNoOrphanedEntities(state: PerimetersState): void
 
-export function verifyGeometryExists(
-  state: PerimetersState,
-  perimeterId: PerimeterId
-): void
+export function verifyGeometryExists(state: PerimetersState, perimeterId: PerimeterId): void
 
-export function expectThrowsForInvalidId<T>(
-  getter: () => T,
-  expectedMessage?: string
-): void
+export function expectThrowsForInvalidId<T>(getter: () => T, expectedMessage?: string): void
 ```
 
 ---
@@ -322,6 +349,7 @@ export function expectThrowsForInvalidId<T>(
 ## Migration Considerations
 
 When writing tests, consider:
+
 1. Old test data may still reference old structure
 2. Mock geometry calculation functions for unit tests
 3. Use integration tests for full geometry validation

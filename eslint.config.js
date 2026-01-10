@@ -15,6 +15,11 @@ export default defineConfig(
   }),
   eslintConfigPrettier, // This disables all formatting-related ESLint rules
   {
+    rules: {
+      '@typescript-eslint/no-dynamic-delete': 'off'
+    }
+  },
+  {
     plugins: {
       'unused-imports': unusedImports
     },
@@ -50,7 +55,14 @@ export default defineConfig(
   },
   {
     // Allow any types in test files for now
-    files: ['**/*.test.ts', '**/*.test.tsx', '**/test/**/*.ts', '**/test/**/*.tsx'],
+    files: [
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      '**/test/**/*.ts',
+      '**/test/**/*.tsx',
+      '**/__tests__/**/*.ts',
+      '**/__tests__/**/*.tsx'
+    ],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off'

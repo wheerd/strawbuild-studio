@@ -3,10 +3,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { PerimeterCornerId, PerimeterId, StoreyId } from '@/building/model/ids'
 import { createWallAssemblyId } from '@/building/model/ids'
 import { NotFoundError } from '@/building/store/errors'
+import type { PerimetersSlice } from '@/building/store/slices/perimeterSlice'
 import type { MaterialId } from '@/construction/materials/material'
 import { ensurePolygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 
-import type { PerimetersSlice } from '../perimeterSlice'
 import {
   createRectangularBoundary,
   expectThrowsForInvalidId,

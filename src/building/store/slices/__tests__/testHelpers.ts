@@ -4,12 +4,14 @@ import type { WallPostParams } from '@/building/model'
 import type { PerimeterId } from '@/building/model/ids'
 import { createStoreyId, isOpeningId, isWallPostId } from '@/building/model/ids'
 import { NotFoundError } from '@/building/store/errors'
+import {
+  type PerimetersSlice,
+  type PerimetersState,
+  createPerimetersSlice
+} from '@/building/store/slices/perimeterSlice'
 import type { MaterialId } from '@/construction/materials/material'
 import type { Polygon2D } from '@/shared/geometry'
 import { newVec2 } from '@/shared/geometry'
-
-import type { PerimetersSlice, PerimetersState } from '../perimeterSlice'
-import { createPerimetersSlice } from '../perimeterSlice'
 
 /**
  * Creates a simple rectangular boundary polygon
@@ -50,12 +52,10 @@ export function createLShapedBoundary(): Polygon2D {
  */
 export function setupPerimeterSlice() {
   let slice: PerimetersSlice
-  let mockSet: any
-  let mockGet: any
+  const mockSet = vi.fn()
+  const mockGet = vi.fn()
   const testStoreyId = createStoreyId()
 
-  mockSet = vi.fn()
-  mockGet = vi.fn()
   const mockStore = {} as any
 
   slice = createPerimetersSlice(mockSet, mockGet, mockStore)

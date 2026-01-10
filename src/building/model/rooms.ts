@@ -42,10 +42,6 @@ export interface InnerWallNode extends BaseWallNode {
 
 export type WallNode = PerimeterWallNode | InnerWallNode
 
-export interface PerimeterWallNode extends BaseWallNode {
-  type: 'perimeter'
-}
-
 export interface Room {
   id: RoomId
   perimeterId: PerimeterId

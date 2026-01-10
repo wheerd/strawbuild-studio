@@ -6,15 +6,21 @@
  * both by the perimeter slice and by migrations to ensure consistent geometry.
  */
 import type {
+  Opening,
+  OpeningGeometry,
+  Perimeter,
+  PerimeterCorner,
   PerimeterCornerGeometry,
+  PerimeterGeometry,
   PerimeterReferenceSide,
+  PerimeterWall,
   PerimeterWallGeometry,
   WallEntity,
-  WallEntityGeometry
+  WallEntityGeometry,
+  WallPost,
+  WallPostGeometry
 } from '@/building/model'
-import type { Opening, Perimeter, PerimeterCorner, PerimeterWall, WallPost } from '@/building/model'
-import type { PerimeterId } from '@/building/model/ids'
-import { isOpeningId } from '@/building/model/ids'
+import { type PerimeterId, isOpeningId } from '@/building/model/ids'
 import {
   type Length,
   type Line2D,
@@ -43,15 +49,15 @@ import { ensurePolygonIsClockwise } from '@/shared/geometry/polygon'
 // State interface for perimeter geometry calculations
 export interface PerimetersState {
   perimeters: Record<PerimeterId, Perimeter>
-  _perimeterGeometry: Record<PerimeterId, any>
+  _perimeterGeometry: Record<PerimeterId, PerimeterGeometry>
   perimeterWalls: Record<string, PerimeterWall>
   _perimeterWallGeometry: Record<string, PerimeterWallGeometry>
   perimeterCorners: Record<string, PerimeterCorner>
   _perimeterCornerGeometry: Record<string, PerimeterCornerGeometry>
   openings: Record<string, Opening>
-  _openingGeometry: Record<string, any>
+  _openingGeometry: Record<string, OpeningGeometry>
   wallPosts: Record<string, WallPost>
-  _wallPostGeometry: Record<string, any>
+  _wallPostGeometry: Record<string, WallPostGeometry>
 }
 
 // Step 1: Create infinite inside and outside lines for each wall
@@ -184,7 +190,7 @@ const calculateCornerAngles = (
   const angleBetween = Math.acos(clampedDot) // radians
 
   // Determine orientation using cross product (z-component)
-  let interiorAngleRad =
+  const interiorAngleRad =
     crossVec2(n1, n2) < 0
       ? 2 * Math.PI - angleBetween // Reflex (concave) interior angle
       : angleBetween // Convex interior angle
@@ -269,7 +275,7 @@ const updateWallGeometry = (
     insideLine: { start: finalInsideStart, end: finalInsideEnd },
     outsideLine: { start: finalOutsideStart, end: finalOutsideEnd },
     direction: wallDirection,
-    outsideDirection: outsideDirection,
+    outsideDirection,
     polygon
   }
 }
