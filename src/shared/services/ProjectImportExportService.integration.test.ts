@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { isOpeningId } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { getConfigActions, getConfigState } from '@/construction/config/store'
 import { getMaterialsActions, getMaterialsState } from '@/construction/materials/store'
@@ -74,12 +75,12 @@ describe('ProjectImportExportService Integration', () => {
     )
 
     // Add openings to walls
-    const wall1 = perimeter.walls[0]
-    const wall2 = perimeter.walls[1]
+    const wall1 = perimeter.wallIds[0]
+    const wall2 = perimeter.wallIds[1]
 
     // Add a door to the first wall
-    modelActions.addPerimeterWallOpening(perimeter.id, wall1.id, {
-      type: 'door',
+    modelActions.addWallOpening(wall1, {
+      openingType: 'door',
       centerOffsetFromWallStart: 1000,
       width: 900,
       height: 2100,
@@ -87,8 +88,8 @@ describe('ProjectImportExportService Integration', () => {
     })
 
     // Add a window to the second wall
-    modelActions.addPerimeterWallOpening(perimeter.id, wall2.id, {
-      type: 'window',
+    modelActions.addWallOpening(wall2, {
+      openingType: 'window',
       centerOffsetFromWallStart: 2000,
       width: 1200,
       height: 1500,
@@ -96,12 +97,12 @@ describe('ProjectImportExportService Integration', () => {
     })
 
     // Modify wall thickness on third wall
-    const wall3 = perimeter.walls[2]
-    modelActions.updatePerimeterWallThickness(perimeter.id, wall3.id, 300)
+    const wall3 = perimeter.wallIds[2]
+    modelActions.updatePerimeterWallThickness(wall3, 300)
 
     // Update corner construction
-    const corner1 = perimeter.corners[0]
-    modelActions.updatePerimeterCornerConstructedByWall(perimeter.id, corner1.id, 'previous')
+    const corner1 = perimeter.cornerIds[0]
+    modelActions.updatePerimeterCornerConstructedByWall(corner1, 'previous')
 
     // Add floor area
     const floorAreaPolygon = {
@@ -123,8 +124,12 @@ describe('ProjectImportExportService Integration', () => {
       floorAreas: modelActions.getFloorAreasByStorey(storey.id),
       floorOpenings: modelActions.getFloorOpeningsByStorey(storey.id)
     }))
+    const originalWalls = modelActions.getAllPerimeterWalls()
+    const originalCorners = modelActions.getAllPerimeters().flatMap(p => modelActions.getPerimeterCornersById(p.id))
     const originalConfig = getConfigState()
     const originalMaterials = getMaterialsState()
+    const originalOpenings = modelActions.getAllWallOpenings()
+    const originalPosts = modelActions.getAllWallPosts()
 
     // 3. Export the project
     const exportResult = await ProjectImportExportService.exportToString()
@@ -204,30 +209,11 @@ describe('ProjectImportExportService Integration', () => {
 
         expect(importedPerimeter.referenceSide).toBe(originalPerimeter.referenceSide)
 
-        expect(importedPerimeter.referencePolygon).toHaveLength(originalPerimeter.referencePolygon.length)
-        for (let k = 0; k < originalPerimeter.referencePolygon.length; k++) {
-          const originalPoint = originalPerimeter.referencePolygon[k]
-          const importedPoint = importedPerimeter.referencePolygon[k]
-          expect(importedPoint[0]).toBeCloseTo(originalPoint[0], 5)
-          expect(importedPoint[1]).toBeCloseTo(originalPoint[1], 5)
-        }
-
-        // Ring beams are now on walls, not perimeters
-        // Compare wall ring beam settings
-        for (let k = 0; k < originalPerimeter.walls.length; k++) {
-          expect(importedPerimeter.walls[k].baseRingBeamAssemblyId).toBe(
-            originalPerimeter.walls[k].baseRingBeamAssemblyId
-          )
-          expect(importedPerimeter.walls[k].topRingBeamAssemblyId).toBe(
-            originalPerimeter.walls[k].topRingBeamAssemblyId
-          )
-        }
-
         // Compare corners (excluding IDs)
-        expect(importedPerimeter.corners).toHaveLength(originalPerimeter.corners.length)
-        for (let k = 0; k < originalPerimeter.corners.length; k++) {
-          const originalCorner = originalPerimeter.corners[k]
-          const importedCorner = importedPerimeter.corners[k]
+        expect(importedPerimeter.cornerIds).toHaveLength(originalPerimeter.cornerIds.length)
+        for (let k = 0; k < originalPerimeter.cornerIds.length; k++) {
+          const originalCorner = originalCorners.find(c => c.id === originalPerimeter.cornerIds[k])!
+          const importedCorner = modelActions.getPerimeterCornerById(importedPerimeter.cornerIds[k])
 
           expect(importedCorner.insidePoint[0]).toBeCloseTo(originalCorner.insidePoint[0], 5)
           expect(importedCorner.insidePoint[1]).toBeCloseTo(originalCorner.insidePoint[1], 5)
@@ -235,31 +221,48 @@ describe('ProjectImportExportService Integration', () => {
         }
 
         // Compare walls (excluding IDs)
-        expect(importedPerimeter.walls).toHaveLength(originalPerimeter.walls.length)
-        for (let k = 0; k < originalPerimeter.walls.length; k++) {
-          const originalWall = originalPerimeter.walls[k]
-          const importedWall = importedPerimeter.walls[k]
+        expect(importedPerimeter.wallIds).toHaveLength(originalPerimeter.wallIds.length)
+        for (let k = 0; k < originalPerimeter.wallIds.length; k++) {
+          const importedWall = modelActions.getPerimeterWallById(importedPerimeter.wallIds[k])
+          const originalWall = originalWalls.find(w => w.id === originalPerimeter.wallIds[k])!
+          expect(importedWall.baseRingBeamAssemblyId).toBe(originalWall?.baseRingBeamAssemblyId)
+          expect(importedWall.topRingBeamAssemblyId).toBe(originalWall?.topRingBeamAssemblyId)
 
           expect(Number(importedWall.thickness)).toBe(Number(originalWall.thickness))
           expect(importedWall.wallAssemblyId).toBe(originalWall.wallAssemblyId)
 
           // Compare openings (excluding IDs)
-          expect(importedWall.openings).toHaveLength(originalWall.openings.length)
-          for (let l = 0; l < originalWall.openings.length; l++) {
-            const originalOpening = originalWall.openings[l]
-            const importedOpening = importedWall.openings[l]
+          expect(importedWall.entityIds).toHaveLength(originalWall.entityIds.length)
+          for (let l = 0; l < originalWall.entityIds.length; l++) {
+            const originalId = originalWall.entityIds[l]
+            const originalEntity = isOpeningId(originalId)
+              ? originalOpenings.find(o => o.id === originalId)!
+              : originalPosts.find(p => p.id === originalId)!
+            const importedId = importedWall.entityIds[l]
+            const importedEntity = isOpeningId(importedId)
+              ? modelActions.getWallOpeningById(importedId)
+              : modelActions.getWallPostById(importedId)
 
-            expect(importedOpening.type).toBe(originalOpening.type)
-            expect(Number(importedOpening.centerOffsetFromWallStart)).toBe(
-              Number(originalOpening.centerOffsetFromWallStart)
+            expect(importedEntity.type).toBe(originalEntity.type)
+            expect(Number(importedEntity.centerOffsetFromWallStart)).toBe(
+              Number(originalEntity.centerOffsetFromWallStart)
             )
-            expect(Number(importedOpening.width)).toBe(Number(originalOpening.width))
-            expect(Number(importedOpening.height)).toBe(Number(originalOpening.height))
+            expect(Number(importedEntity.width)).toBe(Number(originalEntity.width))
 
-            if (originalOpening.sillHeight) {
-              expect(Number(importedOpening.sillHeight!)).toBe(Number(originalOpening.sillHeight))
-            } else {
-              expect(importedOpening.sillHeight).toBeUndefined()
+            if (importedEntity.type === 'opening' && originalEntity.type === 'opening') {
+              expect(Number(importedEntity.height)).toBe(Number(originalEntity.height))
+
+              if (originalEntity.sillHeight) {
+                expect(Number(importedEntity.sillHeight!)).toBe(Number(originalEntity.sillHeight))
+              } else {
+                expect(importedEntity.sillHeight).toBeUndefined()
+              }
+            } else if (importedEntity.type === 'post' && originalEntity.type === 'post') {
+              expect(Number(importedEntity.thickness)).toBe(Number(originalEntity.thickness))
+              expect(importedEntity.postType).toBe(originalEntity.postType)
+              expect(importedEntity.replacesPosts).toBe(originalEntity.replacesPosts)
+              expect(importedEntity.infillMaterial).toBe(originalEntity.infillMaterial)
+              expect(importedEntity.material).toBe(originalEntity.material)
             }
           }
         }

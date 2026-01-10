@@ -4,8 +4,8 @@ import { Callout, Card, DataList, Flex, Grid, Heading, IconButton, Separator, Te
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { PerimeterId, PerimeterWallId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
-import { useModelActions, usePerimeterById } from '@/building/store'
+import type { PerimeterWallId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
+import { useModelActions, usePerimeterById, usePerimeterWallById, useWallOpeningsById } from '@/building/store'
 import { ConstructionPlanModal } from '@/construction/components/ConstructionPlanModal'
 import { BACK_VIEW, FRONT_VIEW, TOP_VIEW } from '@/construction/components/plan/ConstructionPlan'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
@@ -18,16 +18,10 @@ import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { pushTool } from '@/editor/tools/system/store'
 import { ConstructionPlanIcon, FitToViewIcon, SplitWallIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
-import { Bounds2D, type Polygon2D, type Vec2, copyVec2 } from '@/shared/geometry'
-import { wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
+import { Bounds2D } from '@/shared/geometry'
 import { useFormatters } from '@/shared/i18n/useFormatters'
 
-interface PerimeterWallInspectorProps {
-  perimeterId: PerimeterId
-  wallId: PerimeterWallId
-}
-
-export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallInspectorProps): React.JSX.Element {
+export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }): React.JSX.Element {
   const { t } = useTranslation('inspector')
   const { formatLength } = useFormatters()
   const {
@@ -37,19 +31,16 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
     setWallTopRingBeam,
     removeWallBaseRingBeam,
     removeWallTopRingBeam,
-    removePerimeterWall
+    removePerimeterWall,
+    canRemovePerimeterWall
   } = useModelActions()
 
-  const outerWall = usePerimeterById(perimeterId)
+  const wall = usePerimeterWallById(wallId)
+  const perimeter = usePerimeterById(wall.perimeterId)
   const viewportActions = useViewportActions()
 
-  // Use useMemo to find wall within the wall object
-  const wall = useMemo(() => {
-    return outerWall?.walls.find(s => s.id === wallId)
-  }, [outerWall, wallId])
-
   // If wall not found, show error
-  if (!wall || !outerWall) {
+  if (!wall || !perimeter) {
     return (
       <Callout.Root color="red">
         <Callout.Text>
@@ -66,6 +57,8 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
   // Get assembly for this wall
   const wallAssembly = wall?.wallAssemblyId ? useWallAssemblyById(wall.wallAssemblyId) : null
 
+  const openings = useWallOpeningsById(wallId)
+
   const handleFitToView = useCallback(() => {
     if (!wall) return
     const points = [wall.insideLine.start, wall.insideLine.end, wall.outsideLine.start, wall.outsideLine.end]
@@ -73,46 +66,21 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
     viewportActions.fitToView(bounds)
   }, [wall, viewportActions])
 
-  const canDeleteWall = useMemo<{ canDelete: boolean; reason?: Parameters<typeof t>[0] }>(() => {
-    if (!outerWall || !wall) return { canDelete: false, reason: $ => $.perimeterWall.notFound }
-
-    // Need at least 5 walls (triangle = 3 walls, removing 1 and merging = min 3 walls remaining, needs 5 to start)
-    if (outerWall.walls.length < 5) {
-      return { canDelete: false, reason: $ => $.perimeterWall.cannotDeleteMinWalls }
+  const canDeleteWall = useMemo(() => {
+    const result = canRemovePerimeterWall(wallId)
+    const reasonKey = result.reason
+    return {
+      canDelete: result.canRemove,
+      reason: reasonKey ? (($ => $.perimeterWall[reasonKey]) as Parameters<typeof t>[0]) : undefined
     }
-
-    // Check if removal would cause self-intersection
-    const wallIndex = outerWall.walls.findIndex(w => w.id === wallId)
-    if (wallIndex === -1) return { canDelete: false, reason: $ => $.perimeterWall.notFound }
-
-    const newBoundaryPoints: Vec2[] = outerWall.referencePolygon.map(point => copyVec2(point))
-    const cornerIndex1 = wallIndex
-    const cornerIndex2 = (wallIndex + 1) % outerWall.corners.length
-
-    // Remove corners to test for self-intersection
-    if (cornerIndex2 > cornerIndex1) {
-      newBoundaryPoints.splice(cornerIndex2, 1)
-      newBoundaryPoints.splice(cornerIndex1, 1)
-    } else {
-      newBoundaryPoints.splice(cornerIndex1, 1)
-      newBoundaryPoints.splice(cornerIndex2, 1)
-    }
-
-    const newBoundaryPolygon: Polygon2D = { points: newBoundaryPoints }
-
-    if (wouldClosingPolygonSelfIntersect(newBoundaryPolygon)) {
-      return { canDelete: false, reason: $ => $.perimeterWall.cannotDeleteSelfIntersect }
-    }
-
-    return { canDelete: true }
-  }, [outerWall, wall, wallId])
+  }, [canRemovePerimeterWall, wallId])
 
   const handleDelete = useCallback(() => {
     if (canDeleteWall.canDelete) {
-      removePerimeterWall(perimeterId, wallId)
+      removePerimeterWall(wallId)
       popSelection()
     }
-  }, [removePerimeterWall, perimeterId, wallId, canDeleteWall.canDelete])
+  }, [removePerimeterWall, wallId, canDeleteWall.canDelete])
 
   return (
     <Flex direction="column" gap="4">
@@ -130,7 +98,7 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
         <WallAssemblySelectWithEdit
           value={wall.wallAssemblyId}
           onValueChange={(value: WallAssemblyId) => {
-            updateOuterWallAssembly(perimeterId, wallId, value)
+            updateOuterWallAssembly(wallId, value)
           }}
           placeholder={t($ => $.perimeterWall.selectAssemblyPlaceholder)}
           size="1"
@@ -148,7 +116,7 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
         <LengthField
           id="perimeter-thickness"
           value={wall.thickness}
-          onCommit={value => updateOuterWallThickness(perimeterId, wallId, value)}
+          onCommit={value => updateOuterWallThickness(wallId, value)}
           min={50}
           max={1500}
           step={10}
@@ -170,9 +138,9 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
           value={wall.baseRingBeamAssemblyId}
           onValueChange={(value: RingBeamAssemblyId | undefined) => {
             if (value) {
-              setWallBaseRingBeam(perimeterId, wallId, value)
+              setWallBaseRingBeam(wallId, value)
             } else {
-              removeWallBaseRingBeam(perimeterId, wallId)
+              removeWallBaseRingBeam(wallId)
             }
           }}
           placeholder={t($ => $.perimeterWall.nonePlaceholder)}
@@ -193,9 +161,9 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
           value={wall.topRingBeamAssemblyId}
           onValueChange={(value: RingBeamAssemblyId | undefined) => {
             if (value) {
-              setWallTopRingBeam(perimeterId, wallId, value)
+              setWallTopRingBeam(wallId, value)
             } else {
-              removeWallTopRingBeam(perimeterId, wallId)
+              removeWallTopRingBeam(wallId)
             }
           }}
           placeholder={t($ => $.perimeterWall.nonePlaceholder)}
@@ -263,7 +231,7 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
           <Card size="1" variant="surface">
             <Flex direction="column" gap="0" m="-1">
               <Text align="center" size="2" weight="bold">
-                {wall.openings.filter(o => o.type === 'door').length}
+                {openings.filter(o => o.openingType === 'door').length}
               </Text>
               <Text align="center" size="1" color="gray">
                 {t($ => $.perimeterWall.doors)}
@@ -273,7 +241,7 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
           <Card size="1" variant="surface">
             <Flex direction="column" gap="0" m="-1">
               <Text align="center" size="2" weight="bold">
-                {wall.openings.filter(o => o.type === 'window').length}
+                {openings.filter(o => o.openingType === 'window').length}
               </Text>
               <Text align="center" size="1" color="gray">
                 {t($ => $.perimeterWall.windows)}
@@ -283,7 +251,7 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
           <Card size="1" variant="surface">
             <Flex direction="column" gap="0" m="-1">
               <Text align="center" size="2" weight="bold">
-                {wall.openings.filter(o => o.type === 'passage').length}
+                {openings.filter(o => o.openingType === 'passage').length}
               </Text>
               <Text align="center" size="1" color="gray">
                 {t($ => $.perimeterWall.passages)}
@@ -298,14 +266,14 @@ export function PerimeterWallInspector({ perimeterId, wallId }: PerimeterWallIns
         <Flex gap="2" justify="end">
           <ConstructionPlanModal
             title={t($ => $.perimeterWall.constructionPlanTitle)}
-            constructionModelFactory={async () => constructWall(perimeterId, wallId, true)}
+            constructionModelFactory={async () => constructWall(wallId, true)}
             views={[
               { view: FRONT_VIEW, label: t($ => $.perimeterWall.viewOutside) },
               { view: BACK_VIEW, label: t($ => $.perimeterWall.viewInside) },
               { view: TOP_VIEW, label: t($ => $.perimeterWall.viewTop) }
             ]}
             defaultHiddenTags={['wall-layer']}
-            refreshKey={[perimeterId, wallId]}
+            refreshKey={[wallId]}
             trigger={
               <IconButton title={t($ => $.perimeterWall.viewConstructionPlan)} size="2">
                 <ConstructionPlanIcon width={20} height={20} />

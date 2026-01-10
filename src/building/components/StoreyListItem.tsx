@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useStoreyName } from '@/building/hooks/useStoreyName'
-import type { Storey } from '@/building/model/model'
+import type { Storey } from '@/building/model'
 import { useActiveStoreyId, useModelActions } from '@/building/store'
 import { defaultStoreyManagementService } from '@/building/store/services/StoreyManagementService'
 import { FloorAssemblySelectWithEdit } from '@/construction/config/components/FloorAssemblySelectWithEdit'

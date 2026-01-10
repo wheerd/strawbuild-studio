@@ -1,9 +1,9 @@
 import type { StateCreator } from 'zustand'
 
+import type { Storey } from '@/building/model'
+import { createStoreyLevel } from '@/building/model'
 import type { FloorAssemblyId, StoreyId } from '@/building/model/ids'
 import { DEFAULT_FLOOR_ASSEMBLY_ID, createStoreyId } from '@/building/model/ids'
-import type { Storey } from '@/building/model/model'
-import { createStoreyLevel } from '@/building/model/model'
 import type { Length } from '@/shared/geometry'
 
 export interface StoreysState {

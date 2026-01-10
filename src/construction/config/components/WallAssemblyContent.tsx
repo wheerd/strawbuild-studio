@@ -29,7 +29,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { OpeningAssemblyId, WallAssemblyId } from '@/building/model/ids'
-import { usePerimeters } from '@/building/store'
+import { usePerimeterWalls } from '@/building/store'
 import { OpeningAssemblySelectWithEdit } from '@/construction/config/components/OpeningAssemblySelectWithEdit'
 import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import { useConfigActions, useDefaultWallAssemblyId, useWallAssemblies } from '@/construction/config/store'
@@ -878,7 +878,7 @@ export interface WallAssemblyContentProps {
 
 export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentProps): React.JSX.Element {
   const wallAssemblies = useWallAssemblies()
-  const perimeters = usePerimeters()
+  const walls = usePerimeterWalls()
   const {
     addWallAssembly,
     duplicateWallAssembly,
@@ -902,9 +902,9 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
   const usage = useMemo(
     () =>
       selectedAssembly
-        ? getWallAssemblyUsage(selectedAssembly.id, perimeters, defaultAssemblyId)
+        ? getWallAssemblyUsage(selectedAssembly.id, walls, defaultAssemblyId)
         : { isUsed: false, isDefault: false, storeyIds: [] },
-    [selectedAssembly, perimeters, defaultAssemblyId]
+    [selectedAssembly, walls, defaultAssemblyId]
   )
 
   const handleAddNew = useCallback(

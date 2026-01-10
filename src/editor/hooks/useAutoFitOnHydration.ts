@@ -19,7 +19,7 @@ export function useAutoFitOnHydration(): void {
         const perimeters = getPerimetersByStorey(activeStoreyId)
 
         if (perimeters.length > 0) {
-          const outerPoints = perimeters.flatMap(p => p.corners.map(c => c.outsidePoint))
+          const outerPoints = perimeters.flatMap(p => p.outerPolygon.points)
           const bounds = Bounds2D.fromPoints(outerPoints)
           viewportActions().fitToView(bounds)
         }

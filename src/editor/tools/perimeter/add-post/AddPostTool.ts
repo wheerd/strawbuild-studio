@@ -1,14 +1,11 @@
+import type { PerimeterWallWithGeometry, WallPostType } from '@/building/model'
 import {
   type EntityType,
   type PerimeterCornerId,
-  type PerimeterId,
   type PerimeterWallId,
   type SelectableId,
-  isPerimeterCornerId,
-  isPerimeterId,
   isPerimeterWallId
 } from '@/building/model/ids'
-import type { PerimeterWall, WallPostType } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { type MaterialId, roughWood, woodwool } from '@/construction/materials/material'
 import { entityHitTestService } from '@/editor/canvas/services/EntityHitTestService'
@@ -22,9 +19,8 @@ import { AddPostToolInspector } from './AddPostToolInspector'
 import { AddPostToolOverlay } from './AddPostToolOverlay'
 
 interface PerimeterWallHit {
-  perimeterId: PerimeterId
   wallId: PerimeterWallId
-  wall: PerimeterWall
+  wall: PerimeterWallWithGeometry
 }
 
 interface AddPostToolState {
@@ -77,69 +73,43 @@ export class AddPostTool extends BaseTool implements ToolImplementation {
   ): PerimeterWallHit | null {
     if (!hitResult) return null
 
-    const { getPerimeterWallById } = getModelActions()
+    const { getPerimeterWallById, getPerimeterCornerById } = getModelActions()
 
-    let wall: PerimeterWall | null = null
-    let perimeterId: PerimeterId | null = null
+    let wall: PerimeterWallWithGeometry | null = null
     let wallId: PerimeterWallId | null = null
 
     // Check if we hit a wall directly
     if (hitResult.entityType === 'perimeter-wall') {
       wallId = hitResult.entityId as PerimeterWallId
-      // Parent should be the perimeter
-      perimeterId = hitResult.parentIds[0] as PerimeterId
-
-      if (perimeterId && wallId) {
-        wall = getPerimeterWallById(perimeterId, wallId)
-      }
+      wall = getPerimeterWallById(wallId)
     }
 
     // Check if we hit an opening or post
     if (hitResult.entityType === 'opening' || hitResult.entityType === 'wall-post') {
-      const [pId, wId] = hitResult.parentIds
+      const [, wId] = hitResult.parentIds
 
-      if (isPerimeterId(pId) && isPerimeterWallId(wId)) {
-        perimeterId = pId
+      if (isPerimeterWallId(wId)) {
         wallId = wId
-        wall = getPerimeterWallById(perimeterId, wallId)
+        wall = getPerimeterWallById(wallId)
       }
     }
 
     // Check if we hit a corner - extract the constructing wall
     if (hitResult.entityType === 'perimeter-corner') {
       const cornerId = hitResult.entityId as PerimeterCornerId
-      perimeterId = hitResult.parentIds[0] as PerimeterId
+      const corner = getPerimeterCornerById(cornerId)
 
-      if (perimeterId && isPerimeterCornerId(cornerId)) {
-        const { getPerimeterById } = getModelActions()
-        const perimeter = getPerimeterById(perimeterId)
-
-        if (perimeter) {
-          // Find the corner
-          const cornerIndex = perimeter.corners.findIndex(c => c.id === cornerId)
-          if (cornerIndex !== -1) {
-            const corner = perimeter.corners[cornerIndex]
-
-            // Determine which wall constructs this corner
-            const constructingWallIndex =
-              corner.constructedByWall === 'previous'
-                ? (cornerIndex - 1 + perimeter.walls.length) % perimeter.walls.length
-                : cornerIndex
-
-            const constructingWall = perimeter.walls[constructingWallIndex]
-            wall = constructingWall
-            wallId = constructingWall.id
-          }
-        }
+      if (corner) {
+        wallId = corner.constructedByWall === 'previous' ? corner.previousWallId : corner.nextWallId
+        wall = getPerimeterWallById(wallId)
       }
     }
 
-    if (!wall || !perimeterId || !wallId) {
+    if (!wall || !wallId) {
       return null
     }
 
     return {
-      perimeterId,
       wallId,
       wall
     }
@@ -148,7 +118,7 @@ export class AddPostTool extends BaseTool implements ToolImplementation {
   /**
    * Calculate center offset from pointer position projected onto wall
    */
-  private calculateCenterOffsetFromPointerPosition(pointerPos: Vec2, wall: PerimeterWall): Length {
+  private calculateCenterOffsetFromPointerPosition(pointerPos: Vec2, wall: PerimeterWallWithGeometry): Length {
     const centerOffset = projectVec2(wall.insideLine.start, pointerPos, wall.direction)
 
     // Round center offset to 10mm increments
@@ -160,7 +130,7 @@ export class AddPostTool extends BaseTool implements ToolImplementation {
   /**
    * Convert offset to actual position on the wall
    */
-  private offsetToPosition(offset: Length, wall: PerimeterWall): Vec2 {
+  private offsetToPosition(offset: Length, wall: PerimeterWallWithGeometry): Vec2 {
     const startPoint = wall.insideLine.start
     const direction = wall.direction
 
@@ -219,8 +189,7 @@ export class AddPostTool extends BaseTool implements ToolImplementation {
     const preferredStartOffset = this.calculateCenterOffsetFromPointerPosition(pointerPos, perimeterWall.wall)
 
     // 3. Check if preferred position is valid and snap if needed
-    const snappedOffset = getModelActions().findNearestValidPerimeterWallPostPosition(
-      perimeterWall.perimeterId,
+    const snappedOffset = getModelActions().findNearestValidWallPostPosition(
       perimeterWall.wallId,
       preferredStartOffset,
       this.state.width
@@ -250,11 +219,11 @@ export class AddPostTool extends BaseTool implements ToolImplementation {
       return true
     }
 
-    const { perimeterId, wallId } = this.state.hoveredPerimeterWall
+    const { wallId } = this.state.hoveredPerimeterWall
 
     try {
-      const postId = getModelActions().addPerimeterWallPost(perimeterId, wallId, {
-        type: this.state.type,
+      const post = getModelActions().addWallPost(wallId, {
+        postType: this.state.type,
         centerOffsetFromWallStart: this.state.offset,
         width: this.state.width,
         thickness: this.state.thickness,
@@ -263,16 +232,18 @@ export class AddPostTool extends BaseTool implements ToolImplementation {
         infillMaterial: this.state.infillMaterial
       })
 
-      const { clearSelection, pushSelection } = getSelectionActions()
+      if (post) {
+        const { clearSelection, pushSelection } = getSelectionActions()
 
-      // Select the newly created post
-      clearSelection()
-      pushSelection(perimeterId)
-      pushSelection(wallId)
-      pushSelection(postId)
+        // Select the newly created post
+        clearSelection()
+        pushSelection(post.perimeterId)
+        pushSelection(post.wallId)
+        pushSelection(post.id)
 
-      // Clear preview after successful placement
-      this.clearPreview()
+        // Clear preview after successful placement
+        this.clearPreview()
+      }
     } catch (error) {
       console.error('Failed to add post:', error)
     }

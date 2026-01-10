@@ -1,6 +1,6 @@
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
-import type { Roof } from '@/building/model/model'
+import type { Roof } from '@/building/model'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 interface RoofGhostShapeProps {

@@ -1,6 +1,7 @@
 import { Arrow, Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
-import type { PerimeterCorner, PerimeterWall } from '@/building/model/model'
+import type { PerimeterCornerId } from '@/building/model'
+import { usePerimeterCornerById, usePerimeterWallById } from '@/building/store'
 import { useWallAssemblyById } from '@/construction/config/store'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { direction, midpoint, perpendicular, scaleAddVec2, scaleVec2 } from '@/shared/geometry'
@@ -8,31 +9,19 @@ import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
 
 interface PerimeterCornerShapeProps {
-  corner: PerimeterCorner
-  previousWall: PerimeterWall
-  nextWall: PerimeterWall
-  perimeterId: string
+  cornerId: PerimeterCornerId
 }
 
-export function PerimeterCornerShape({
-  corner,
-  previousWall,
-  nextWall,
-  perimeterId
-}: PerimeterCornerShapeProps): React.JSX.Element {
+export function PerimeterCornerShape({ cornerId }: PerimeterCornerShapeProps): React.JSX.Element {
   const select = useSelectionStore()
   const theme = useCanvasTheme()
-  const isSelected = select.isCurrentSelection(corner.id)
+  const isSelected = select.isCurrentSelection(cornerId)
 
-  const cornerPolygon = [
-    corner.insidePoint,
-    previousWall.insideLine.end,
-    previousWall.outsideLine.end,
-    corner.outsidePoint,
-    nextWall.outsideLine.start,
-    nextWall.insideLine.start
-  ]
-  const polygonArray = cornerPolygon.flatMap(point => [point[0], point[1]])
+  const corner = usePerimeterCornerById(cornerId)
+  const previousWall = usePerimeterWallById(corner.previousWallId)
+  const nextWall = usePerimeterWallById(corner.nextWallId)
+
+  const polygonArray = corner.polygon.points.flatMap(p => [p[0], p[1]])
 
   const arrowDir = corner.constructedByWall === 'previous' ? previousWall.direction : scaleVec2(nextWall.direction, -1)
   const arrowEnd = midpoint(corner.insidePoint, corner.outsidePoint)
@@ -48,14 +37,14 @@ export function PerimeterCornerShape({
   const isNearStraight = Math.abs(interiorAngleDegrees - 180) <= 5 || Math.abs(exteriorAngleDegrees - 180) <= 5
 
   const normal = perpendicular(direction(corner.insidePoint, corner.outsidePoint))
-  const overlayWidth = 80
+  const overlayHalfWidth = 80 / 2
 
   return (
     <Group
       name={`perimeter-corner-${corner.id}`}
       entityId={corner.id}
       entityType="perimeter-corner"
-      parentIds={[perimeterId]}
+      parentIds={[corner.perimeterId]}
       listening
     >
       {/* Corner polygon fill */}
@@ -65,14 +54,14 @@ export function PerimeterCornerShape({
       {isNearStraight && (
         <Line
           points={[
-            corner.insidePoint[0] - normal[0] * (overlayWidth / 2),
-            corner.insidePoint[1] - (normal[1] * overlayWidth) / 2,
-            corner.insidePoint[0] + (normal[0] * overlayWidth) / 2,
-            corner.insidePoint[1] + (normal[1] * overlayWidth) / 2,
-            corner.outsidePoint[0] + (normal[0] * overlayWidth) / 2,
-            corner.outsidePoint[1] + (normal[1] * overlayWidth) / 2,
-            corner.outsidePoint[0] - (normal[0] * overlayWidth) / 2,
-            corner.outsidePoint[1] - (normal[1] * overlayWidth) / 2
+            corner.insidePoint[0] - normal[0] * overlayHalfWidth,
+            corner.insidePoint[1] - normal[1] * overlayHalfWidth,
+            corner.insidePoint[0] + normal[0] * overlayHalfWidth,
+            corner.insidePoint[1] + normal[1] * overlayHalfWidth,
+            corner.outsidePoint[0] + normal[0] * overlayHalfWidth,
+            corner.outsidePoint[1] + normal[1] * overlayHalfWidth,
+            corner.outsidePoint[0] - normal[0] * overlayHalfWidth,
+            corner.outsidePoint[1] - normal[1] * overlayHalfWidth
           ]}
           fill={cornerColor}
           stroke={theme.border}

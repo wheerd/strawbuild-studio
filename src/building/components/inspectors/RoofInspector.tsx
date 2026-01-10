@@ -5,9 +5,9 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { RoofPreview } from '@/building/components/inspectors/RoofPreview'
+import type { RoofOverhang } from '@/building/model'
 import type { RoofId } from '@/building/model/ids'
-import type { RoofOverhang } from '@/building/model/model'
-import { useModelActions, useRoofById } from '@/building/store'
+import { useModelActions, useRoofById, useRoofOverhangsByRoof } from '@/building/store'
 import { ConstructionPlanModal } from '@/construction/components/ConstructionPlanModal'
 import { FRONT_VIEW, LEFT_VIEW, TOP_VIEW } from '@/construction/components/plan/ConstructionPlan'
 import { RoofAssemblySelectWithEdit } from '@/construction/config/components/RoofAssemblySelectWithEdit'
@@ -63,6 +63,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
   const { t } = useTranslation('inspector')
   const { formatArea, formatLength } = useFormatters()
   const roof = useRoofById(roofId)
+  const overhangs = useRoofOverhangsByRoof(roofId)
   const { removeRoof, updateRoofProperties, setAllRoofOverhangs, cycleRoofMainSide } = useModelActions()
   const { fitToView } = useViewportActions()
   const { setMode } = useViewModeActions()
@@ -78,10 +79,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
     return calculatePolygonArea(roof.overhangPolygon)
   }, [roof])
 
-  const overhangState = useMemo(
-    () => (roof ? detectMixedOverhangs(roof.overhangs) : { isMixed: false, value: null }),
-    [roof?.overhangs]
-  )
+  const overhangState = useMemo(() => detectMixedOverhangs(overhangs), [overhangs])
 
   const handleNavigateToPerimeter = useCallback(() => {
     if (!roof?.referencePerimeter) return

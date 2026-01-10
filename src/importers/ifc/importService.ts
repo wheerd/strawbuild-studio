@@ -1,4 +1,4 @@
-import type { Perimeter } from '@/building/model'
+import type { PerimeterWithGeometry } from '@/building/model'
 import type { StoreyId } from '@/building/model/ids'
 import { clearPersistence, getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
@@ -92,9 +92,9 @@ function applyImportedModel(model: ParsedIfcModel): void {
       }
 
       const perimeterPolygon = clonePolygon(candidate.boundary.outer)
-      const defaultThicknessFromSegments = averageSegmentThickness(candidate.segments) ?? wallThickness ?? undefined
+      const defaultThicknessFromSegments = averageSegmentThickness(candidate.segments) ?? wallThickness ?? 420
 
-      let perimeter: Perimeter
+      let perimeter: PerimeterWithGeometry
       try {
         perimeter = actions.addPerimeter(
           targetStoreyId,
@@ -111,11 +111,11 @@ function applyImportedModel(model: ParsedIfcModel): void {
       }
 
       candidate.segments.forEach((segment, index) => {
-        const wall = perimeter.walls[index]
-        if (!wall) return
+        const wallId = perimeter.wallIds[index]
+        if (!wallId) return
 
         if (segment.thickness && Number.isFinite(segment.thickness)) {
-          actions.updatePerimeterWallThickness(perimeter.id, wall.id, segment.thickness)
+          actions.updatePerimeterWallThickness(wallId, segment.thickness)
         }
 
         for (const opening of segment.openings) {
@@ -125,8 +125,8 @@ function applyImportedModel(model: ParsedIfcModel): void {
           const offset = Math.max(0, opening.offset)
 
           try {
-            actions.addPerimeterWallOpening(perimeter.id, wall.id, {
-              type: opening.type === 'void' ? 'passage' : opening.type,
+            actions.addWallOpening(wallId, {
+              openingType: opening.type === 'void' ? 'passage' : opening.type,
               centerOffsetFromWallStart: offset + width / 2,
               width,
               height: opening.height,

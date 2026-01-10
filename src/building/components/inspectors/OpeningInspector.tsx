@@ -4,9 +4,15 @@ import { Box, Callout, Flex, Grid, IconButton, Kbd, SegmentedControl, Separator,
 import { useCallback, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
-import type { OpeningAssemblyId, OpeningId, PerimeterId, PerimeterWallId } from '@/building/model/ids'
-import type { OpeningType } from '@/building/model/model'
-import { useModelActions, usePerimeterById } from '@/building/store'
+import type { OpeningType } from '@/building/model'
+import type { OpeningAssemblyId, OpeningId } from '@/building/model/ids'
+import {
+  useModelActions,
+  usePerimeterById,
+  usePerimeterWallById,
+  useStoreyById,
+  useWallOpeningById
+} from '@/building/store'
 import { OpeningAssemblySelectWithEdit } from '@/construction/config/components/OpeningAssemblySelectWithEdit'
 import { useWallAssemblyById } from '@/construction/config/store'
 import { resolveOpeningConfig } from '@/construction/openings/resolver'
@@ -21,46 +27,25 @@ import { useFormatters } from '@/shared/i18n/useFormatters'
 
 import { OpeningPreview } from './OpeningPreview'
 
-interface OpeningInspectorProps {
-  perimeterId: PerimeterId
-  wallId: PerimeterWallId
-  openingId: OpeningId
-}
-
-export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInspectorProps): React.JSX.Element {
+export function OpeningInspector({ openingId }: { openingId: OpeningId }): React.JSX.Element {
   const { t } = useTranslation('inspector')
   const { formatLength } = useFormatters()
   // Get model store functions - use specific selectors for stable references
   const select = useSelectionStore()
-  const {
-    updatePerimeterWallOpening: updateOpening,
-    removePerimeterWallOpening: removeOpeningFromOuterWall,
-    getStoreyById
-  } = useModelActions()
+  const { updateWallOpening, removeWallOpening } = useModelActions()
 
   // Get perimeter from store
-  const perimeter = usePerimeterById(perimeterId)
-
-  // Get storey for wall height
-  const storey = useMemo(() => {
-    return perimeter ? getStoreyById(perimeter.storeyId) : null
-  }, [perimeter, getStoreyById])
-
-  // Use useMemo to find wall and opening within the wall object
-  const wall = useMemo(() => {
-    return perimeter?.walls.find(w => w.id === wallId)
-  }, [perimeter, wallId])
-
-  const opening = useMemo(() => {
-    return wall?.openings.find(o => o.id === openingId)
-  }, [wall, openingId])
+  const opening = useWallOpeningById(openingId)
+  const wall = usePerimeterWallById(opening.wallId)
+  const perimeter = usePerimeterById(wall.perimeterId)
+  const storey = useStoreyById(perimeter.storeyId)
 
   // Get assembly for padding config
-  const wallAssembly = wall?.wallAssemblyId && useWallAssemblyById(wall.wallAssemblyId)
+  const wallAssembly = useWallAssemblyById(wall.wallAssemblyId)
 
   const openingConfig = useMemo(
     () => resolveOpeningConfig(opening, wallAssembly ?? undefined),
-    [opening?.openingAssemblyId, wallAssembly?.openingAssemblyId]
+    [opening.openingAssemblyId, wallAssembly?.openingAssemblyId]
   )
 
   const viewportActions = useViewportActions()
@@ -136,39 +121,22 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
     [openingConfig, dimensionInputMode]
   )
 
-  // If opening not found, show error
-  if (!opening || !wall || !perimeter || !perimeterId || !wallId) {
-    return (
-      <Box p="2">
-        <Callout.Root color="red">
-          <Callout.Text>
-            <Text weight="bold">{t($ => $.opening.notFound)}</Text>
-            <br />
-            {t($ => $.opening.notFoundMessage, {
-              id: openingId
-            })}
-          </Callout.Text>
-        </Callout.Root>
-      </Box>
-    )
-  }
-
   // Event handlers with stable references
   const handleTypeChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const newType = e.target.value as OpeningType
       // Selects can update immediately since they don't have focus issues
-      updateOpening(perimeterId, wallId, openingId, { type: newType })
+      updateWallOpening(openingId, { openingType: newType })
     },
-    [updateOpening, perimeterId, wallId, openingId]
+    [updateWallOpening, openingId]
   )
 
   const handleRemoveOpening = useCallback(() => {
     if (confirm(t($ => $.opening.confirmDelete))) {
       select.popSelection()
-      removeOpeningFromOuterWall(perimeterId, wallId, openingId)
+      removeWallOpening(openingId)
     }
-  }, [removeOpeningFromOuterWall, perimeterId, wallId, openingId, select, t])
+  }, [removeWallOpening, openingId, select, t])
 
   const handleFitToView = useCallback(() => {
     if (!wall || !opening) return
@@ -226,7 +194,7 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
             </Tooltip>
           </Flex>
           <SegmentedControl.Root
-            value={opening.type}
+            value={opening.openingType}
             onValueChange={(value: OpeningType) =>
               handleTypeChange({ target: { value } } as React.ChangeEvent<HTMLSelectElement>)
             }
@@ -306,7 +274,7 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
             value={getDisplayValue(opening?.width || 0, 'width')}
             onCommit={value => {
               const fittingValue = convertToFittedValue(value, 'width')
-              updateOpening(perimeterId, wallId, openingId, { width: fittingValue })
+              updateWallOpening(openingId, { width: fittingValue })
             }}
             unit="cm"
             min={dimensionInputMode === 'fitting' ? 100 : 50}
@@ -330,7 +298,7 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
             value={getDisplayValue(opening?.height || 0, 'height')}
             onCommit={value => {
               const fittingValue = convertToFittedValue(value, 'height')
-              updateOpening(perimeterId, wallId, openingId, { height: fittingValue })
+              updateWallOpening(openingId, { height: fittingValue })
             }}
             unit="cm"
             min={dimensionInputMode === 'fitting' ? 100 : 50}
@@ -354,7 +322,7 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
             value={getDisplayValue(opening?.sillHeight || 0, 'sillHeight')}
             onCommit={value => {
               const fittingValue = convertToFittedValue(value, 'sillHeight')
-              updateOpening(perimeterId, wallId, openingId, {
+              updateWallOpening(openingId, {
                 sillHeight: fittingValue === 0 ? undefined : fittingValue
               })
             }}
@@ -382,7 +350,7 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
               const finishedTopHeight = convertTopHeightInput(value)
               const currentSillHeight = opening?.sillHeight || 0
               const newOpeningHeight = Math.max(100, finishedTopHeight - currentSillHeight)
-              updateOpening(perimeterId, wallId, openingId, { height: newOpeningHeight })
+              updateWallOpening(openingId, { height: newOpeningHeight })
             }}
             unit="cm"
             min={Math.max(opening?.sillHeight || 0, 100)}
@@ -410,7 +378,7 @@ export function OpeningInspector({ perimeterId, wallId, openingId }: OpeningInsp
         <OpeningAssemblySelectWithEdit
           value={opening.openingAssemblyId}
           onValueChange={value => {
-            updateOpening(perimeterId, wallId, openingId, {
+            updateWallOpening(openingId, {
               openingAssemblyId: value as OpeningAssemblyId | undefined
             })
           }}

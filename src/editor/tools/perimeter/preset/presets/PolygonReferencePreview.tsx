@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 
-import type { PerimeterReferenceSide } from '@/building/model/model'
+import type { PerimeterReferenceSide } from '@/building/model'
 import {
   Bounds2D,
   type Polygon2D,

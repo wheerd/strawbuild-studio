@@ -1,6 +1,7 @@
 import type { RoofAssemblyId, RoofType } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config/store'
+import { polygonEdges } from '@/construction/helpers'
 import { getViewModeActions } from '@/editor/hooks/useViewMode'
 import type { SnappingContext } from '@/editor/services/snapping/types'
 import { BasePolygonTool, type PolygonToolStateBase } from '@/editor/tools/shared/polygon/BasePolygonTool'
@@ -79,8 +80,8 @@ export class RoofTool extends BasePolygonTool<RoofToolState> implements ToolImpl
     const roofs = getRoofsByStorey(activeStoreyId)
 
     // Only snap to outer points and outer edges of perimeters
-    const perimeterPoints = perimeters.flatMap(perimeter => perimeter.corners.map(corner => corner.outsidePoint))
-    const perimeterSegments = perimeters.flatMap(perimeter => perimeter.walls.map(wall => wall.outsideLine))
+    const perimeterPoints = perimeters.flatMap(perimeter => perimeter.outerPolygon.points)
+    const perimeterSegments = perimeters.flatMap(perimeter => [...polygonEdges(perimeter.outerPolygon)])
 
     const roofPoints = roofs.flatMap(roof => roof.referencePolygon.points)
     const roofSegments = roofs.flatMap(roof => createPolygonSegments(roof.referencePolygon.points))

@@ -1,16 +1,16 @@
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
-import type { Perimeter } from '@/building/model/model'
+import type { PerimeterWithGeometry } from '@/building/model'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 interface PerimeterGhostShapeProps {
-  perimeter: Perimeter
+  perimeter: PerimeterWithGeometry
 }
 
 export function PerimeterGhostShape({ perimeter }: PerimeterGhostShapeProps): React.JSX.Element {
   const theme = useCanvasTheme()
-  const innerPoints = perimeter.corners.flatMap(corner => [corner.insidePoint[0], corner.insidePoint[1]])
-  const outerPoints = perimeter.corners.flatMap(corner => [corner.outsidePoint[0], corner.outsidePoint[1]])
+  const innerPoints = perimeter.innerPolygon.points.flatMap(p => [p[0], p[1]])
+  const outerPoints = perimeter.outerPolygon.points.flatMap(p => [p[0], p[1]])
 
   return (
     <Group listening={false}>

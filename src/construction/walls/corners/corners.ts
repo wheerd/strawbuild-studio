@@ -1,34 +1,31 @@
-import type { Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model/model'
+import type { PerimeterCornerWithGeometry, PerimeterWallWithGeometry } from '@/building/model'
+import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import type { WallCornerInfo } from '@/construction/walls/construction'
 import { distVec2, scaleAddVec2 } from '@/shared/geometry'
 
 export interface WallContext {
-  startCorner: PerimeterCorner
-  previousWall: PerimeterWall
-  endCorner: PerimeterCorner
-  nextWall: PerimeterWall
+  startCorner: PerimeterCornerWithGeometry
+  previousWall: PerimeterWallWithGeometry
+  endCorner: PerimeterCornerWithGeometry
+  nextWall: PerimeterWallWithGeometry
 }
 
-export function getWallContext(wall: PerimeterWall, perimeter: Perimeter): WallContext {
-  const wallIndex = perimeter.walls.findIndex(w => w.id === wall.id)
-  if (wallIndex === -1) {
-    throw new Error(`Could not find wall with id ${wall.id}`)
-  }
-
-  const startWallIndex = (wallIndex - 1 + perimeter.walls.length) % perimeter.walls.length // wall[i-1] is the wall at the start corner for wall[i]
-  const startCornerIndex = wallIndex // corner[i] is the start corner for wall[i]
-  const endCornerIndex = (wallIndex + 1) % perimeter.corners.length // corner[i+1] is the end corner for wall[i]
-
+export function getWallContext(wall: PerimeterWallWithGeometry): WallContext {
+  const { getPerimeterCornerById, getPerimeterWallById } = getModelActions()
+  const startCorner = getPerimeterCornerById(wall.startCornerId)
+  const endCorner = getPerimeterCornerById(wall.endCornerId)
+  const previousWall = getPerimeterWallById(startCorner.previousWallId)
+  const nextWall = getPerimeterWallById(endCorner.nextWallId)
   return {
-    startCorner: perimeter.corners[startCornerIndex],
-    previousWall: perimeter.walls[startWallIndex],
-    endCorner: perimeter.corners[endCornerIndex],
-    nextWall: perimeter.walls[endCornerIndex]
+    startCorner,
+    previousWall,
+    endCorner,
+    nextWall
   }
 }
 
-export function calculateWallCornerInfo(wall: PerimeterWall, context: WallContext): WallCornerInfo {
+export function calculateWallCornerInfo(wall: PerimeterWallWithGeometry, context: WallContext): WallCornerInfo {
   const { startCorner, endCorner, previousWall, nextWall } = context
   const { getWallAssemblyById } = getConfigActions()
 

@@ -1,7 +1,6 @@
+import type { PerimeterWallWithGeometry, WallPost } from '@/building/model'
 import type { SelectableId } from '@/building/model/ids'
 import { isPerimeterId, isPerimeterWallId, isWallPostId } from '@/building/model/ids'
-import type { Perimeter, PerimeterWall, WallPost } from '@/building/model/model'
-import { getWallPostPlacementBounds } from '@/building/store/slices/perimeterSlice'
 import type { StoreActions } from '@/building/store/types'
 import type {
   MovementBehavior,
@@ -14,8 +13,7 @@ import { type Length, type Vec2, ZERO_VEC2, dotVec2, newVec2, projectVec2, scale
 
 // Wall post movement needs access to the wall, wall, and post
 export interface WallPostEntityContext {
-  perimeter: Perimeter
-  wall: PerimeterWall
+  wall: PerimeterWallWithGeometry
   post: WallPost
 }
 
@@ -35,15 +33,14 @@ export class WallPostMovementBehavior implements MovementBehavior<WallPostEntity
       throw new Error(`Invalid entity context for wall post ${entityId}`)
     }
 
-    const perimeter = store.getPerimeterById(perimeterId)
-    const wall = store.getPerimeterWallById(perimeterId, wallId)
-    const post = store.getPerimeterWallPostById(perimeterId, wallId, entityId)
+    const wall = store.getPerimeterWallById(wallId)
+    const post = store.getWallPostById(entityId)
 
-    if (!perimeter || !wall || !post) {
+    if (!wall || !post) {
       throw new Error(`Could not find required entities for wall post ${entityId}`)
     }
 
-    return { perimeter, wall, post }
+    return { wall, post }
   }
 
   initializeState(
@@ -62,7 +59,7 @@ export class WallPostMovementBehavior implements MovementBehavior<WallPostEntity
     pointerState: PointerMovementState,
     context: MovementContext<WallPostEntityContext>
   ): WallPostMovementState {
-    const { perimeter, post, wall } = context.entity
+    const { post, wall } = context.entity
 
     // Constrain to wall direction only - project the pointer delta onto wall direction
     const wallDirection = wall.direction
@@ -77,22 +74,12 @@ export class WallPostMovementBehavior implements MovementBehavior<WallPostEntity
     const signedOffset = projectVec2(wallStart, newPosition, wallDirection)
 
     // Try to snap to nearest valid position
-    const snappedOffset = context.store.findNearestValidPerimeterWallPostPosition(
-      perimeter.id,
-      wall.id,
-      signedOffset,
-      post.width,
-      post.id
-    )
-
-    const bounds = getWallPostPlacementBounds(wall, perimeter, post.width)
+    const snappedOffset = context.store.findNearestValidWallPostPosition(wall.id, signedOffset, post.width, post.id)
 
     // Use snapped position if available and within reasonable distance
     const maxSnapDistance = post.width * 3
     const finalOffset =
-      snappedOffset !== null && Math.abs(snappedOffset - signedOffset) <= maxSnapDistance
-        ? snappedOffset
-        : Math.max(bounds.minOffset, Math.min(signedOffset, bounds.maxOffset)) // Clamp only if no snap
+      snappedOffset !== null && Math.abs(snappedOffset - signedOffset) <= maxSnapDistance ? snappedOffset : signedOffset
 
     return {
       newOffset: finalOffset,
@@ -101,42 +88,32 @@ export class WallPostMovementBehavior implements MovementBehavior<WallPostEntity
   }
 
   validatePosition(movementState: WallPostMovementState, context: MovementContext<WallPostEntityContext>): boolean {
-    const { perimeter, wall, post } = context.entity
-    return context.store.isPerimeterWallPostPlacementValid(
-      perimeter.id,
-      wall.id,
-      movementState.newOffset,
-      post.width,
-      post.id
-    )
+    const { wall, post } = context.entity
+    return context.store.isWallPostPlacementValid(wall.id, movementState.newOffset, post.width, post.id)
   }
 
   commitMovement(movementState: WallPostMovementState, context: MovementContext<WallPostEntityContext>): boolean {
-    const { perimeter, wall, post } = context.entity
+    const { post } = context.entity
 
     // Update post position
-    context.store.updatePerimeterWallPost(perimeter.id, wall.id, post.id, {
-      centerOffsetFromWallStart: movementState.newOffset
-    })
+    context.store.updateWallPost(post.id, { centerOffsetFromWallStart: movementState.newOffset })
 
     return true
   }
 
   applyRelativeMovement(deltaDifference: Vec2, context: MovementContext<WallPostEntityContext>): boolean {
-    const { perimeter, wall, post } = context.entity
+    const { wall, post } = context.entity
 
     // Use deltaDifference[0] as the offset change (1D movement along wall)
     const newOffset = post.centerOffsetFromWallStart + deltaDifference[0]
 
     // Validate the new position
-    if (!context.store.isPerimeterWallPostPlacementValid(perimeter.id, wall.id, newOffset, post.width, post.id)) {
+    if (!context.store.isWallPostPlacementValid(wall.id, newOffset, post.width, post.id)) {
       return false
     }
 
     // Apply the movement
-    context.store.updatePerimeterWallPost(perimeter.id, wall.id, post.id, {
-      centerOffsetFromWallStart: newOffset
-    })
+    context.store.updateWallPost(post.id, { centerOffsetFromWallStart: newOffset })
 
     return true
   }

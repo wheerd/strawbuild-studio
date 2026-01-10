@@ -36,9 +36,7 @@ export function FloorLayer(): React.JSX.Element | null {
     if (mode !== 'walls') {
       return []
     }
-    const perimeterPolygons = perimeters.map(perimeter => ({
-      points: perimeter.corners.map(corner => corner.outsidePoint)
-    }))
+    const perimeterPolygons = perimeters.map(perimeter => perimeter.outerPolygon)
     const openingPolygons = floorOpenings.map(opening => opening.area)
 
     return subtractPolygons([...perimeterPolygons], openingPolygons)

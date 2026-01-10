@@ -10,12 +10,21 @@ export const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
 export const toVec2 = (value: unknown): Vec2 | null => {
-  if (!Array.isArray(value) || value.length < 2) return null
-  const [x, y] = value
-  const numX = Number(x)
-  const numY = Number(y)
-  if (!Number.isFinite(numX) || !Number.isFinite(numY)) return null
-  return newVec2(numX, numY)
+  if (Array.isArray(value)) {
+    if (value.length < 2) return null
+    const [x, y] = value
+    const numX = Number(x)
+    const numY = Number(y)
+    if (!Number.isFinite(numX) || !Number.isFinite(numY)) return null
+    return newVec2(numX, numY)
+  }
+  if (isRecord(value) && 0 in value && 1 in value) {
+    const numX = Number(value[0])
+    const numY = Number(value[1])
+    if (!Number.isFinite(numX) || !Number.isFinite(numY)) return null
+    return newVec2(numX, numY)
+  }
+  return null
 }
 
 const CONFIG_STORAGE_KEY = 'strawbaler-config'

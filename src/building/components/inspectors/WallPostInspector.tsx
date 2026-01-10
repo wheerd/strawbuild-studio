@@ -1,130 +1,76 @@
 import { InfoCircledIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Box, Callout, Flex, Grid, IconButton, Kbd, SegmentedControl, Separator, Switch, Text } from '@radix-ui/themes'
-import { useCallback, useMemo } from 'react'
+import { Callout, Flex, Grid, IconButton, Kbd, SegmentedControl, Separator, Switch, Text } from '@radix-ui/themes'
+import { useCallback } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
-import type { PerimeterId, PerimeterWallId, WallPostId } from '@/building/model/ids'
-import type { WallPostType } from '@/building/model/model'
-import { useModelActions, usePerimeterById } from '@/building/store'
+import type { WallPostType } from '@/building/model'
+import type { WallPostId } from '@/building/model/ids'
+import { useModelActions, usePerimeterWallById, useWallPostById } from '@/building/store'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import { type MaterialId } from '@/construction/materials/material'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
-import { Bounds2D, type Polygon2D, addVec2, offsetPolygon, scaleAddVec2, scaleVec2 } from '@/shared/geometry'
+import { Bounds2D, offsetPolygon } from '@/shared/geometry'
 
-interface WallPostInspectorProps {
-  perimeterId: PerimeterId
-  wallId: PerimeterWallId
-  postId: WallPostId
-}
-
-export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspectorProps): React.JSX.Element {
+export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX.Element {
   const { t } = useTranslation('inspector')
   // Get model store functions
   const select = useSelectionStore()
-  const { updatePerimeterWallPost: updatePost, removePerimeterWallPost: removePost } = useModelActions()
+  const { updateWallPost: updatePost, removeWallPost: removePost } = useModelActions()
 
   // Get perimeter from store
-  const perimeter = usePerimeterById(perimeterId)
-
-  // Use useMemo to find wall and post within the wall object
-  const wall = useMemo(() => {
-    return perimeter?.walls.find(w => w.id === wallId)
-  }, [perimeter, wallId])
-
-  const post = useMemo(() => {
-    return wall?.posts.find(p => p.id === postId)
-  }, [wall, postId])
+  const post = useWallPostById(postId)
+  const wall = usePerimeterWallById(post.wallId)
 
   const viewportActions = useViewportActions()
-
-  // If post not found, show error
-  if (!post || !wall || !perimeter || !perimeterId || !wallId) {
-    return (
-      <Box p="2">
-        <Callout.Root color="red">
-          <Callout.Text>
-            <Text weight="bold">{t($ => $.wallPost.notFound)}</Text>
-            <br />
-            {t($ => $.wallPost.notFoundMessage, {
-              id: postId
-            })}
-          </Callout.Text>
-        </Callout.Root>
-      </Box>
-    )
-  }
 
   // Event handlers with stable references
   const handleTypeChange = useCallback(
     (newType: WallPostType) => {
-      updatePost(perimeterId, wallId, postId, { type: newType })
+      updatePost(postId, { postType: newType })
     },
-    [updatePost, perimeterId, wallId, postId]
+    [updatePost, postId]
   )
 
   const handleReplacesPostsChange = useCallback(
     (replacesPosts: boolean) => {
-      updatePost(perimeterId, wallId, postId, { replacesPosts: !replacesPosts })
+      updatePost(postId, { replacesPosts: !replacesPosts })
     },
-    [updatePost, perimeterId, wallId, postId]
+    [updatePost, postId]
   )
 
   const handleMaterialChange = useCallback(
     (materialId: MaterialId | null) => {
       if (materialId) {
-        updatePost(perimeterId, wallId, postId, { material: materialId })
+        updatePost(postId, { material: materialId })
       }
     },
-    [updatePost, perimeterId, wallId, postId]
+    [updatePost, postId]
   )
 
   const handleInfillMaterialChange = useCallback(
     (materialId: MaterialId | null) => {
       if (materialId != null) {
-        updatePost(perimeterId, wallId, postId, { infillMaterial: materialId })
+        updatePost(postId, { infillMaterial: materialId })
       }
     },
-    [updatePost, perimeterId, wallId, postId]
+    [updatePost, postId]
   )
 
   const handleRemovePost = useCallback(() => {
     if (confirm(t($ => $.wallPost.confirmDelete))) {
       select.popSelection()
-      removePost(perimeterId, wallId, postId)
+      removePost(postId)
     }
-  }, [removePost, perimeterId, wallId, postId, select, t])
+  }, [removePost, postId, select, t])
 
   const handleFitToView = useCallback(() => {
-    if (!wall || !post) return
-
-    // Calculate post polygon (same as WallPostShape.tsx)
-    const insideStart = wall.insideLine.start
-    const outsideStart = wall.outsideLine.start
-    const wallVector = wall.direction
-    const leftEdge = post.centerOffsetFromWallStart - post.width / 2
-    const offsetStart = scaleVec2(wallVector, leftEdge)
-    const offsetEnd = scaleAddVec2(offsetStart, wallVector, post.width)
-
-    const insidePostStart = addVec2(insideStart, offsetStart)
-    const insidePostEnd = addVec2(insideStart, offsetEnd)
-    const outsidePostStart = addVec2(outsideStart, offsetStart)
-    const outsidePostEnd = addVec2(outsideStart, offsetEnd)
-
-    const postPolygon: Polygon2D = {
-      points: [insidePostStart, insidePostEnd, outsidePostEnd, outsidePostStart]
-    }
-
-    // Expand the polygon by 1.5x on each side (3x total area)
     const expandAmount = Math.max(post.width, wall.thickness) * 1.5
-    const expandedPolygon = offsetPolygon(postPolygon, expandAmount)
-
-    // Calculate bounds from expanded polygon
+    const expandedPolygon = offsetPolygon(post.polygon, expandAmount)
     const bounds = Bounds2D.fromPoints(expandedPolygon.points)
-
     viewportActions.fitToView(bounds)
   }, [wall, post, viewportActions])
 
@@ -136,7 +82,7 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
           <Text size="1" weight="medium" color="gray">
             {t($ => $.wallPost.type)}
           </Text>
-          <SegmentedControl.Root value={post.type} onValueChange={handleTypeChange} size="1">
+          <SegmentedControl.Root value={post.postType} onValueChange={handleTypeChange} size="1">
             <SegmentedControl.Item value="inside">{t($ => $.wallPost.typeInside)}</SegmentedControl.Item>
             <SegmentedControl.Item value="center">{t($ => $.wallPost.typeCenter)}</SegmentedControl.Item>
             <SegmentedControl.Item value="outside">{t($ => $.wallPost.typeOutside)}</SegmentedControl.Item>
@@ -172,7 +118,7 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
           <LengthField
             value={post.width}
             onCommit={value => {
-              updatePost(perimeterId, wallId, postId, { width: value })
+              updatePost(postId, { width: value })
             }}
             unit="cm"
             min={10}
@@ -193,7 +139,7 @@ export function WallPostInspector({ perimeterId, wallId, postId }: WallPostInspe
           <LengthField
             value={post.thickness}
             onCommit={value => {
-              updatePost(perimeterId, wallId, postId, { thickness: value })
+              updatePost(postId, { thickness: value })
             }}
             unit="cm"
             min={50}

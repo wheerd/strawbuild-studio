@@ -879,18 +879,18 @@ export class GeometryIfcExporter {
       return
     }
 
-    const { getWallByOpeningId } = getModelActions()
-    const wallInfo = getWallByOpeningId(opening.sourceId)
+    const { getWallOpeningById } = getModelActions()
+    const modelOpening = getWallOpeningById(opening.sourceId)
 
-    if (!wallInfo) {
+    if (!modelOpening) {
       console.warn('No wall found for opening:', opening.sourceId)
       return
     }
 
-    const parentWall = this.sourceIdToElementMap.get(wallInfo.wallId)
+    const parentWall = this.sourceIdToElementMap.get(modelOpening.wallId)
 
     if (!parentWall) {
-      console.warn('No IFC wall element found for:', wallInfo.wallId)
+      console.warn('No IFC wall element found for:', modelOpening.wallId)
       return
     }
 

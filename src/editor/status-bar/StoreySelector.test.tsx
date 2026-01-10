@@ -2,8 +2,8 @@ import { Theme } from '@radix-ui/themes'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { type Storey, createStoreyLevel } from '@/building/model'
 import { DEFAULT_FLOOR_ASSEMBLY_ID, type StoreyId } from '@/building/model/ids'
-import { type Storey, createStoreyLevel } from '@/building/model/model'
 import { useActiveStoreyId, useModelActions, useStoreysOrderedByLevel } from '@/building/store'
 
 import { StoreySelector } from './StoreySelector'

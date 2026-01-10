@@ -15,6 +15,9 @@ const FLOOR_AREA_ID_PREFIX = 'floorarea_'
 const FLOOR_OPENING_ID_PREFIX = 'flooropening_'
 const ROOF_ID_PREFIX = 'roof_'
 const ROOF_OVERHANG_ID_PREFIX = 'roofoverhang_'
+const ROOM_ID_PREFIX = 'room_'
+const WALL_NODE_ID_PREFIX = 'wallnode_'
+const INTERMEDIATE_WALL_ID_PREFIX = 'intermediate_'
 
 // Strong typing for entity IDs
 export type StoreyId = `${typeof STOREY_ID_PREFIX}${string}`
@@ -29,6 +32,9 @@ export type PerimeterCornerId = `${typeof PERIMETER_CORNER_ID_PREFIX}${string}`
 export type OpeningId = `${typeof OPENING_ID_PREFIX}${string}`
 export type WallPostId = `${typeof POST_ID_PREFIX}${string}`
 export type RoofOverhangId = `${typeof ROOF_OVERHANG_ID_PREFIX}${string}`
+export type RoomId = `${typeof ROOM_ID_PREFIX}${string}`
+export type WallNodeId = `${typeof WALL_NODE_ID_PREFIX}${string}`
+export type IntermediateWallId = `${typeof INTERMEDIATE_WALL_ID_PREFIX}${string}`
 
 export type EntityId = PerimeterId | FloorAreaId | FloorOpeningId | RoofId
 export type SelectableId =
@@ -41,6 +47,9 @@ export type SelectableId =
   | WallPostId
   | RoofId
   | RoofOverhangId
+  | RoomId
+  | WallNodeId
+  | IntermediateWallId
 
 // Config ids
 export type RingBeamAssemblyId = `${typeof RING_BEAM_ID_PREFIX}${string}`
@@ -62,6 +71,9 @@ export const createPerimeterCornerId = (): PerimeterCornerId => createId(PERIMET
 export const createOpeningId = (): OpeningId => createId(OPENING_ID_PREFIX)
 export const createWallPostId = (): WallPostId => createId(POST_ID_PREFIX)
 export const createRoofOverhangId = (): RoofOverhangId => createId(ROOF_OVERHANG_ID_PREFIX)
+export const createRoomId = (): RoomId => createId(ROOM_ID_PREFIX)
+export const createWallNodeId = (): WallNodeId => createId(WALL_NODE_ID_PREFIX)
+export const createIntermediateWallId = (): IntermediateWallId => createId(INTERMEDIATE_WALL_ID_PREFIX)
 
 // Config ID generators
 export const createRingBeamAssemblyId = (): RingBeamAssemblyId => createId(RING_BEAM_ID_PREFIX)
@@ -86,6 +98,9 @@ export const isPerimeterCornerId = (id: string): id is PerimeterCornerId => id.s
 export const isOpeningId = (id: string): id is OpeningId => id.startsWith(OPENING_ID_PREFIX)
 export const isWallPostId = (id: string): id is WallPostId => id.startsWith(POST_ID_PREFIX)
 export const isRoofOverhangId = (id: string): id is RoofOverhangId => id.startsWith(ROOF_OVERHANG_ID_PREFIX)
+export const isRoomId = (id: string): id is RoomId => id.startsWith(ROOF_ID_PREFIX)
+export const isWallNodeId = (id: string): id is WallNodeId => id.startsWith(WALL_NODE_ID_PREFIX)
+export const isIntermediateWallId = (id: string): id is IntermediateWallId => id.startsWith(INTERMEDIATE_WALL_ID_PREFIX)
 
 // Config type guards
 export const isRingBeamAssemblyId = (id: string): id is RingBeamAssemblyId => id.startsWith(RING_BEAM_ID_PREFIX)
@@ -101,6 +116,13 @@ export type EntityType =
   | 'perimeter-corner'
   | 'opening'
   | 'wall-post'
+  // | 'intermediate-wall'
+  // | 'room'
+  // | 'wall-node'
   | 'floor-area'
   | 'floor-opening'
   | 'roof'
+
+export type WallId = PerimeterWallId | IntermediateWallId
+export type NodeId = PerimeterCornerId | WallNodeId
+export type WallEntityId = OpeningId | WallPostId

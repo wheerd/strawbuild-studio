@@ -15,8 +15,7 @@ export function PerimeterCornerMovementPreview({
   context
 }: MovementPreviewComponentProps<CornerEntityContext, CornerMovementState>): React.JSX.Element {
   const theme = useCanvasTheme()
-  const { wall, cornerIndex } = context.entity
-  const originalPosition = wall.corners[cornerIndex].insidePoint
+  const { corner } = context.entity
 
   return (
     <Group>
@@ -36,7 +35,12 @@ export function PerimeterCornerMovementPreview({
 
       {/* Show movement line */}
       <Line
-        points={[originalPosition[0], originalPosition[1], movementState.position[0], movementState.position[1]]}
+        points={[
+          corner.referencePoint[0],
+          corner.referencePoint[1],
+          movementState.position[0],
+          movementState.position[1]
+        ]}
         stroke={theme.textSecondary}
         strokeWidth={10}
         dash={[50, 50]}

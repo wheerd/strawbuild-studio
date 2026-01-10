@@ -1,4 +1,4 @@
-import type { Perimeter, PerimeterWall } from '@/building/model/model'
+import type { PerimeterWallWithGeometry } from '@/building/model'
 import { WallConstructionArea } from '@/construction/geometry'
 import { constructStraw } from '@/construction/materials/straw'
 import { constructTriangularBattens } from '@/construction/materials/triangularBattens'
@@ -19,11 +19,10 @@ import { Bounds3D, type Length } from '@/shared/geometry'
 import { constructModule } from './modules'
 
 export class StrawhengeWallAssembly extends BaseWallAssembly<StrawhengeWallConfig> {
-  construct(wall: PerimeterWall, perimeter: Perimeter, storeyContext: StoreyContext): ConstructionModel {
+  construct(wall: PerimeterWallWithGeometry, storeyContext: StoreyContext): ConstructionModel {
     const allResults = Array.from(
       segmentedWallConstruction(
         wall,
-        perimeter,
         storeyContext,
         this.config.layers,
         this.strawhengeWallArea.bind(this),
@@ -43,7 +42,7 @@ export class StrawhengeWallAssembly extends BaseWallAssembly<StrawhengeWallConfi
       warnings: aggRes.warnings
     }
 
-    const layerModel = constructWallLayers(wall, perimeter, storeyContext, this.config.layers)
+    const layerModel = constructWallLayers(wall, storeyContext, this.config.layers)
 
     return mergeModels(baseModel, layerModel)
   }

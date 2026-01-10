@@ -136,5 +136,7 @@ export default defineConfig({
 
     // Target modern browsers for better minification
     target: 'es2020'
-  }
+  },
+
+  assetsInclude: ['clipper2-wasm/dist/**/*.wasm', 'web-ifc/*.wasm', 'manifold-3d/*.wasm']
 })

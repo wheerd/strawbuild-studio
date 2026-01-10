@@ -1,11 +1,11 @@
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
-import type { PerimeterId } from '@/building/model/ids'
-import type { PerimeterWall } from '@/building/model/model'
+import { type PerimeterWallId, isOpeningId } from '@/building/model/ids'
+import { usePerimeterCornerById, usePerimeterWallById } from '@/building/store'
 import { useWallAssemblyById } from '@/construction/config/store'
 import { LengthIndicator } from '@/editor/canvas/utils/LengthIndicator'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
-import { type Vec2, direction } from '@/shared/geometry'
+import { direction } from '@/shared/geometry'
 import { useFormatters } from '@/shared/i18n/useFormatters'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
@@ -13,26 +13,14 @@ import { MATERIAL_COLORS } from '@/shared/theme/colors'
 import { OpeningShape } from './OpeningShape'
 import { WallPostShape } from './WallPostShape'
 
-interface PerimeterWallShapeProps {
-  wall: PerimeterWall
-  perimeterId: PerimeterId
-  insideStartCorner: Vec2
-  insideEndCorner: Vec2
-  outsideStartCorner: Vec2
-  outsideEndCorner: Vec2
-}
-
-export function PerimeterWallShape({
-  wall,
-  perimeterId,
-  insideStartCorner,
-  insideEndCorner,
-  outsideStartCorner,
-  outsideEndCorner
-}: PerimeterWallShapeProps): React.JSX.Element {
+export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): React.JSX.Element {
   const { formatLength } = useFormatters()
   const select = useSelectionStore()
   const theme = useCanvasTheme()
+
+  const wall = usePerimeterWallById(wallId)
+  const startCorner = usePerimeterCornerById(wall.startCornerId)
+  const endCorner = usePerimeterCornerById(wall.endCornerId)
 
   // Calculate wall properties
   const insideStart = wall.insideLine.start
@@ -55,7 +43,13 @@ export function PerimeterWallShape({
   const fillColor = wallAssembly?.type === 'non-strawbale' ? MATERIAL_COLORS.other : MATERIAL_COLORS.strawbale
 
   return (
-    <Group name={`wall-${wall.id}`} entityId={wall.id} entityType="perimeter-wall" parentIds={[perimeterId]} listening>
+    <Group
+      name={`wall-${wall.id}`}
+      entityId={wall.id}
+      entityType="perimeter-wall"
+      parentIds={[wall.perimeterId]}
+      listening
+    >
       {/* Main wall body - fill the area between inside and outside lines */}
       <Line
         points={[
@@ -75,40 +69,21 @@ export function PerimeterWallShape({
         listening
       />
 
-      {/* Render openings in this wall */}
-      {wall.openings.map(opening => (
-        <OpeningShape
-          key={`opening-${opening.id}`}
-          opening={opening}
-          wall={wall}
-          perimeterId={perimeterId}
-          insideStartCorner={insideStartCorner}
-          insideEndCorner={insideEndCorner}
-          outsideStartCorner={outsideStartCorner}
-          outsideEndCorner={outsideEndCorner}
-        />
-      ))}
-
-      {/* Render posts in this wall */}
-      {wall.posts.map(post => (
-        <WallPostShape
-          key={`post-${post.id}`}
-          post={post}
-          wall={wall}
-          perimeterId={perimeterId}
-          insideStartCorner={insideStartCorner}
-          insideEndCorner={insideEndCorner}
-          outsideStartCorner={outsideStartCorner}
-          outsideEndCorner={outsideEndCorner}
-        />
-      ))}
+      {/* Render wall entities in this wall */}
+      {wall.entityIds.map(id =>
+        isOpeningId(id) ? (
+          <OpeningShape key={`opening-${id}`} openingId={id} />
+        ) : (
+          <WallPostShape key={`post-${id}`} postId={id} />
+        )
+      )}
 
       {/* Length indicators when selected */}
       {select.isCurrentSelection(wall.id) && (
         <>
           <LengthIndicator
-            startPoint={insideStartCorner}
-            endPoint={insideEndCorner}
+            startPoint={startCorner.insidePoint}
+            endPoint={endCorner.insidePoint}
             label={formatLength(wall.insideLength)}
             offset={-60}
             color={theme.text}
@@ -116,8 +91,8 @@ export function PerimeterWallShape({
             strokeWidth={5}
           />
           <LengthIndicator
-            startPoint={outsideStartCorner}
-            endPoint={outsideEndCorner}
+            startPoint={startCorner.outsidePoint}
+            endPoint={endCorner.outsidePoint}
             label={formatLength(wall.outsideLength)}
             offset={60}
             color={theme.text}

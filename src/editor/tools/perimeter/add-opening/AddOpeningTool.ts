@@ -1,13 +1,11 @@
+import type { OpeningType, PerimeterWallWithGeometry } from '@/building/model'
 import {
   type EntityType,
   type OpeningAssemblyId,
-  type PerimeterId,
   type PerimeterWallId,
   type SelectableId,
-  isPerimeterId,
   isPerimeterWallId
 } from '@/building/model/ids'
-import type { OpeningType, PerimeterWall } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config/store'
 import { entityHitTestService } from '@/editor/canvas/services/EntityHitTestService'
@@ -21,9 +19,8 @@ import { AddOpeningToolInspector } from './AddOpeningToolInspector'
 import { AddOpeningToolOverlay } from './AddOpeningToolOverlay'
 
 interface PerimeterWallHit {
-  perimeterId: PerimeterId
   wallId: PerimeterWallId
-  wall: PerimeterWall
+  wall: PerimeterWallWithGeometry
   wallOpeningPadding?: Length
 }
 
@@ -82,33 +79,29 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
 
     const { getPerimeterWallById } = getModelActions()
 
-    let wall: PerimeterWall | null = null
-    let perimeterId: PerimeterId | null = null
+    let wall: PerimeterWallWithGeometry | null = null
     let wallId: PerimeterWallId | null = null
 
     // Check if we hit a wall wall directly
     if (hitResult.entityType === 'perimeter-wall') {
       wallId = hitResult.entityId as PerimeterWallId
-      // Parent should be the perimeter
-      perimeterId = hitResult.parentIds[0] as PerimeterId
 
-      if (perimeterId && wallId) {
-        wall = getPerimeterWallById(perimeterId, wallId)
+      if (wallId) {
+        wall = getPerimeterWallById(wallId)
       }
     }
 
     // Check if we hit an opening
     if (hitResult.entityType === 'opening') {
-      const [pId, wId] = hitResult.parentIds
+      const [, wId] = hitResult.parentIds
 
-      if (isPerimeterId(pId) && isPerimeterWallId(wId)) {
-        perimeterId = pId
+      if (isPerimeterWallId(wId)) {
         wallId = wId
-        wall = getPerimeterWallById(perimeterId, wallId)
+        wall = getPerimeterWallById(wallId)
       }
     }
 
-    if (!wall || !perimeterId || !wallId) {
+    if (!wall || !wallId) {
       return null
     }
 
@@ -120,7 +113,6 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
       : null
 
     return {
-      perimeterId,
       wallId,
       wall,
       wallOpeningPadding: openingAssembly?.padding
@@ -163,7 +155,7 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
   /**
    * Calculate center offset from pointer position projected onto wall
    */
-  private calculateCenterOffsetFromPointerPosition(pointerPos: Vec2, wall: PerimeterWall): Length {
+  private calculateCenterOffsetFromPointerPosition(pointerPos: Vec2, wall: PerimeterWallWithGeometry): Length {
     // Convert LineWall2D to Line2D for projection
     const line = lineFromSegment(wall.insideLine)
     if (!line) {
@@ -186,7 +178,7 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
   /**
    * Convert offset to actual position on the wall
    */
-  private offsetToPosition(offset: Length, wall: PerimeterWall): Vec2 {
+  private offsetToPosition(offset: Length, wall: PerimeterWallWithGeometry): Vec2 {
     const startPoint = wall.insideLine.start
     const direction = wall.direction
 
@@ -245,8 +237,7 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
     const preferredStartOffset = this.calculateCenterOffsetFromPointerPosition(pointerPos, perimeterWall.wall)
 
     // 4. Check if preferred position is valid
-    const snappedOffset = getModelActions().findNearestValidPerimeterWallOpeningPosition(
-      perimeterWall.perimeterId,
+    const snappedOffset = getModelActions().findNearestValidWallOpeningPosition(
       perimeterWall.wallId,
       preferredStartOffset,
       this.state.width
@@ -276,7 +267,7 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
       return true
     }
 
-    const { perimeterId, wallId, wallOpeningPadding } = this.state.hoveredPerimeterWall
+    const { wallId, wallOpeningPadding } = this.state.hoveredPerimeterWall
 
     // Stored dimensions are in finished coordinates
     let finalWidth = this.state.width
@@ -308,8 +299,8 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
     }
 
     try {
-      const openingId = getModelActions().addPerimeterWallOpening(perimeterId, wallId, {
-        type: this.state.openingType,
+      const opening = getModelActions().addWallOpening(wallId, {
+        openingType: this.state.openingType,
         centerOffsetFromWallStart: this.state.offset,
         width: finalWidth,
         height: finalHeight,
@@ -317,16 +308,18 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
         openingAssemblyId: this.state.openingAssemblyId
       })
 
-      const { clearSelection, pushSelection } = getSelectionActions()
+      if (opening) {
+        const { clearSelection, pushSelection } = getSelectionActions()
 
-      // Select the newly created opening
-      clearSelection()
-      pushSelection(perimeterId)
-      pushSelection(wallId)
-      pushSelection(openingId)
+        // Select the newly created opening
+        clearSelection()
+        pushSelection(opening.perimeterId)
+        pushSelection(opening.wallId)
+        pushSelection(opening.id)
 
-      // Clear preview after successful placement
-      this.clearPreview()
+        // Clear preview after successful placement
+        this.clearPreview()
+      }
     } catch (error) {
       console.error('Failed to add opening:', error)
     }

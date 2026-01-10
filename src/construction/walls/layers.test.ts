@@ -1,15 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { OpeningWithGeometry, PerimeterCornerWithGeometry, PerimeterWallWithGeometry } from '@/building/model'
 import {
   type StoreyId,
   createOpeningId,
   createPerimeterCornerId,
-  createPerimeterId,
   createPerimeterWallId,
-  createStoreyId,
   createWallAssemblyId
 } from '@/building/model/ids'
-import type { Opening, Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model/model'
 import type { ConstructionElement, GroupOrElement } from '@/construction/elements'
 import type { FloorAssembly } from '@/construction/floors'
 import { clayPlasterBase, limePlasterBase } from '@/construction/materials/material'
@@ -20,6 +18,7 @@ import type { WallCornerInfo } from '@/construction/walls'
 import type { WallContext } from '@/construction/walls/corners/corners'
 import type { WallLayersConfig } from '@/construction/walls/types'
 import { type Polygon2D, type PolygonWithHoles2D, ZERO_VEC2, newVec2 } from '@/shared/geometry'
+import { partial } from '@/test/helpers'
 
 import { constructWallLayers } from './layers'
 
@@ -43,7 +42,9 @@ vi.mock('@/shared/geometry', async importOriginal => {
     })
   }
 })
+
 const mockAssemblies = new Map<string, { layers: WallLayersConfig }>()
+const mockOpenings = new Map<string, OpeningWithGeometry>()
 
 const baseAssemblyId = createWallAssemblyId()
 const previousAssemblyId = createWallAssemblyId()
@@ -59,52 +60,50 @@ vi.mock('@/construction/config', () => ({
   })
 }))
 
+vi.mock('@/building/store', () => ({
+  getModelActions: () => ({
+    getWallOpeningById: (id: string) => mockOpenings.get(id) ?? null,
+    getRoofsByStorey: () => []
+  })
+}))
+
 vi.mock('@/construction/walls/corners/corners', () => ({
   getWallContext: () => wallContext,
   calculateWallCornerInfo: () => cornerInfo
 }))
 
-const createWall = (overrides: Partial<PerimeterWall> = {}): PerimeterWall => ({
-  id: createPerimeterWallId(),
-  thickness: 300,
-  wallAssemblyId: baseAssemblyId,
-  openings: [],
-  posts: [],
-  insideLength: 3000,
-  outsideLength: 3000,
-  wallLength: 3000,
-  insideLine: {
-    start: ZERO_VEC2,
-    end: newVec2(3000, 0)
-  },
-  outsideLine: {
-    start: newVec2(0, 300),
-    end: newVec2(3000, 300)
-  },
-  direction: newVec2(1, 0),
-  outsideDirection: newVec2(0, 1),
-  ...overrides
-})
+const createWall = (overrides: Partial<PerimeterWallWithGeometry> = {}) =>
+  partial<PerimeterWallWithGeometry>({
+    id: createPerimeterWallId(),
+    thickness: 300,
+    wallAssemblyId: baseAssemblyId,
+    insideLength: 3000,
+    outsideLength: 3000,
+    wallLength: 3000,
+    entityIds: [],
+    insideLine: {
+      start: ZERO_VEC2,
+      end: newVec2(3000, 0)
+    },
+    outsideLine: {
+      start: newVec2(0, 300),
+      end: newVec2(3000, 300)
+    },
+    direction: newVec2(1, 0),
+    outsideDirection: newVec2(0, 1),
+    ...overrides
+  })
 
-const createPerimeter = (wall: PerimeterWall, overrides: Partial<Perimeter> = {}): Perimeter => ({
-  id: createPerimeterId(),
-  storeyId: createStoreyId(),
-  referenceSide: 'inside',
-  referencePolygon: overrides.referencePolygon ?? [],
-  walls: [wall],
-  corners: [],
-  ...overrides
-})
-
-const createCorner = (overrides: Partial<PerimeterCorner>): PerimeterCorner => ({
-  id: createPerimeterCornerId(),
-  insidePoint: ZERO_VEC2,
-  outsidePoint: newVec2(0, 300),
-  constructedByWall: 'next',
-  interiorAngle: 90,
-  exteriorAngle: 270,
-  ...overrides
-})
+const createCorner = (overrides: Partial<PerimeterCornerWithGeometry>): PerimeterCornerWithGeometry =>
+  ({
+    id: createPerimeterCornerId(),
+    insidePoint: ZERO_VEC2,
+    outsidePoint: newVec2(0, 300),
+    constructedByWall: 'next',
+    interiorAngle: 90,
+    exteriorAngle: 270,
+    ...overrides
+  }) as PerimeterCornerWithGeometry
 
 const storeyContext: StoreyContext = {
   storeyId: 'storey-id' as StoreyId,
@@ -175,6 +174,7 @@ const expectExtrudedPolygon = (element: ConstructionElement): ExtrudedShape => {
 describe('constructWallLayers', () => {
   beforeEach(() => {
     applyAssemblies()
+    mockOpenings.clear()
 
     const wall = createWall()
     const previousWall = createWall({ id: createPerimeterWallId(), wallAssemblyId: previousAssemblyId })
@@ -249,9 +249,8 @@ describe('constructWallLayers', () => {
 
   it('creates extruded polygons for inside and outside layers', () => {
     const wall = createWall()
-    const perimeter = createPerimeter(wall)
 
-    const model = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
+    const model = constructWallLayers(wall, storeyContext, baseLayers)
 
     const elements = flattenElements(model.elements)
     expect(elements).toHaveLength(2)
@@ -306,19 +305,19 @@ describe('constructWallLayers', () => {
   })
 
   it('adds holes for openings', () => {
-    const opening: Opening = {
+    const opening = partial<OpeningWithGeometry>({
       id: createOpeningId(),
-      type: 'window',
+      openingType: 'window',
       centerOffsetFromWallStart: 1450,
       width: 900,
       height: 1200,
       sillHeight: 900
-    }
+    })
+    mockOpenings.set(opening.id, opening)
 
-    const wall = createWall({ openings: [opening] })
-    const perimeter = createPerimeter(wall)
+    const wall = createWall({ entityIds: [opening.id] })
 
-    const model = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
+    const model = constructWallLayers(wall, storeyContext, baseLayers)
 
     const elements = flattenElements(model.elements)
     const inside = elements.find(
@@ -346,10 +345,9 @@ describe('constructWallLayers', () => {
 
   it('extends exterior layers when wall constructs the corner', () => {
     const wall = createWall()
-    const perimeter = createPerimeter(wall)
 
     const baselineOutsideStart = (() => {
-      const baselineModel = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
+      const baselineModel = constructWallLayers(wall, storeyContext, baseLayers)
       const baselineOutside = flattenElements(baselineModel.elements).find(
         element => element.shape.base?.type === 'extrusion' && element.shape.base.thickness === 20
       )
@@ -364,7 +362,7 @@ describe('constructWallLayers', () => {
       end: newVec2(-360, 0)
     }
 
-    const model = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
+    const model = constructWallLayers(wall, storeyContext, baseLayers)
     const elements = flattenElements(model.elements)
     const outside = elements.find(
       element => element.shape.base?.type === 'extrusion' && element.shape.base.thickness === 20
@@ -382,10 +380,9 @@ describe('constructWallLayers', () => {
 
   it('shortens interior layers on inner corners not owned by the wall', () => {
     const wall = createWall()
-    const perimeter = createPerimeter(wall)
 
     const baselineInsideStart = (() => {
-      const baselineModel = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
+      const baselineModel = constructWallLayers(wall, storeyContext, baseLayers)
       const baselineInside = flattenElements(baselineModel.elements).find(
         element => element.shape.base?.type === 'extrusion' && element.shape.base.thickness === 30
       )
@@ -400,7 +397,7 @@ describe('constructWallLayers', () => {
       end: newVec2(40, 0)
     }
 
-    const model = constructWallLayers(wall, perimeter, storeyContext, baseLayers)
+    const model = constructWallLayers(wall, storeyContext, baseLayers)
     const elements = flattenElements(model.elements)
     const inside = elements.find(
       element => element.shape.base?.type === 'extrusion' && element.shape.base.thickness === 30

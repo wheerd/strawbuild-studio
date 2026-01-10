@@ -1,4 +1,5 @@
-import type { Perimeter, PerimeterWall } from '@/building/model'
+import { type PerimeterWallWithGeometry, isOpeningId } from '@/building/model'
+import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import { createConstructionElement } from '@/construction/elements'
 import { WallConstructionArea } from '@/construction/geometry'
@@ -19,8 +20,8 @@ import { segmentedWallConstruction } from '@/construction/walls/segmentation'
 import { Bounds3D, type Length, fromTrans, newVec2, newVec3 } from '@/shared/geometry'
 
 export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallConfig> {
-  construct(wall: PerimeterWall, perimeter: Perimeter, storeyContext: StoreyContext): ConstructionModel {
-    const wallContext = getWallContext(wall, perimeter)
+  construct(wall: PerimeterWallWithGeometry, storeyContext: StoreyContext): ConstructionModel {
+    const wallContext = getWallContext(wall)
     const cornerInfo = calculateWallCornerInfo(wall, wallContext)
 
     const { getRingBeamAssemblyById } = getConfigActions()
@@ -42,7 +43,7 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
     }
 
     const roofHeightLine = getRoofHeightLineForLines(
-      perimeter.storeyId,
+      storeyContext.storeyId,
       [cornerInfo.constructionInsideLine, cornerInfo.constructionOutsideLine],
       -ceilingOffset,
       storeyContext.perimeterContexts
@@ -67,8 +68,10 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
       roofOffsets
     )
 
+    const { getWallOpeningById } = getModelActions()
+    const openings = wall.entityIds.filter(isOpeningId).map(getWallOpeningById)
     const finishedFloorZLevel = storeyContext.finishedFloorTop - storeyContext.wallBottom
-    const structuralPolygons = createWallPolygonWithOpenings(wallArea, wall, finishedFloorZLevel)
+    const structuralPolygons = createWallPolygonWithOpenings(wallArea, openings, finishedFloorZLevel)
 
     const structureShapes = structuralPolygons.map(p =>
       createExtrudedPolygon(p, WALL_POLYGON_PLANE, structuralThickness)
@@ -81,7 +84,6 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
     const metadataResults = Array.from(
       segmentedWallConstruction(
         wall,
-        perimeter,
         storeyContext,
         this.config.layers,
         this.noopWallSegment,
@@ -104,7 +106,7 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
       warnings: aggRes.warnings
     }
 
-    const layerModel = constructWallLayers(wall, perimeter, storeyContext, this.config.layers)
+    const layerModel = constructWallLayers(wall, storeyContext, this.config.layers)
 
     return mergeModels(baseModel, layerModel)
   }

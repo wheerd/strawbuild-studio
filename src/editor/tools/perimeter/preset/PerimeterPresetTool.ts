@@ -39,8 +39,7 @@ export class PerimeterPresetTool extends BaseTool implements ToolImplementation 
       replaceSelection([perimeter.id])
 
       // And put it into view
-      const perimeterPoints = perimeter.corners.map(c => c.outsidePoint)
-      viewportActions().fitToView(Bounds2D.fromPoints(perimeterPoints))
+      viewportActions().fitToView(Bounds2D.fromPoints(perimeter.outerPolygon.points))
     } catch (error) {
       console.error('Failed to create perimeter from preset:', error)
     } finally {

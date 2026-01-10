@@ -1,12 +1,12 @@
-import type {
-  FloorAssemblyId,
-  OpeningAssemblyId,
-  PerimeterId,
-  RingBeamAssemblyId,
-  RoofAssemblyId,
-  WallAssemblyId
+import type { OpeningParams, Storey, WallPostParams } from '@/building/model'
+import {
+  type FloorAssemblyId,
+  type OpeningAssemblyId,
+  type PerimeterId,
+  type RingBeamAssemblyId,
+  type RoofAssemblyId,
+  type WallAssemblyId
 } from '@/building/model/ids'
-import type { Storey } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { getConfigActions, getConfigState, setConfigState } from '@/construction/config/store'
 import { applyMigrations } from '@/construction/config/store/migrations'
@@ -230,52 +230,63 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
         const floorOpenings = modelActions
           .getFloorOpeningsByStorey(storey.id)
           .map(opening => polygonToExport(opening.area))
-        const roofs = modelActions.getRoofsByStorey(storey.id).map(roof => ({
-          type: roof.type,
-          referencePolygon: polygonToExport(roof.referencePolygon),
-          mainSideIndex: roof.mainSideIndex,
-          slope: roof.slope,
-          verticalOffset: Number(roof.verticalOffset),
-          overhangs: roof.overhangs.map(o => Number(o.value)),
-          assemblyId: roof.assemblyId,
-          referencePerimeter: roof.referencePerimeter
-        }))
-        const perimeters = modelActions.getPerimetersByStorey(storey.id).map(perimeter => ({
-          id: perimeter.id,
-          referenceSide: perimeter.referenceSide,
-          referencePolygon: polygonToExport({ points: perimeter.referencePolygon }),
-          corners: perimeter.corners.map(corner => ({
-            insideX: corner.insidePoint[0],
-            insideY: corner.insidePoint[1],
-            constructedByWall: corner.constructedByWall
-          })),
-          walls: perimeter.walls.map(wall => ({
-            thickness: Number(wall.thickness),
-            wallAssemblyId: wall.wallAssemblyId,
-            baseRingBeamAssemblyId: wall.baseRingBeamAssemblyId,
-            topRingBeamAssemblyId: wall.topRingBeamAssemblyId,
-            openings: wall.openings.map(opening => ({
-              type: opening.type,
-              centerOffset: Number(opening.centerOffsetFromWallStart),
-              width: Number(opening.width),
-              height: Number(opening.height),
-              sillHeight: opening.sillHeight ? Number(opening.sillHeight) : undefined,
-              openingAssemblyId: opening.openingAssemblyId
+        const roofs = modelActions.getRoofsByStorey(storey.id).map(roof => {
+          const overhangs = roof.overhangIds.map(o => modelActions.getRoofOverhangById(o)).filter(c => c != null)
+          return {
+            type: roof.type,
+            referencePolygon: polygonToExport(roof.referencePolygon),
+            mainSideIndex: roof.mainSideIndex,
+            slope: roof.slope,
+            verticalOffset: Number(roof.verticalOffset),
+            overhangs: overhangs.map(o => Number(o.value)),
+            assemblyId: roof.assemblyId,
+            referencePerimeter: roof.referencePerimeter
+          }
+        })
+        const perimeters = modelActions.getPerimetersByStorey(storey.id).map(perimeter => {
+          const corners = modelActions.getPerimeterCornersById(perimeter.id)
+          const walls = modelActions.getPerimeterWallsById(perimeter.id)
+          return {
+            id: perimeter.id,
+            referenceSide: perimeter.referenceSide,
+            referencePolygon: polygonToExport(
+              perimeter.referenceSide === 'inside' ? perimeter.innerPolygon : perimeter.outerPolygon
+            ),
+            corners: corners.map(corner => ({
+              insideX: corner.insidePoint[0],
+              insideY: corner.insidePoint[1],
+              constructedByWall: corner.constructedByWall
             })),
-            posts:
-              wall.posts.length > 0
-                ? wall.posts.map(post => ({
-                    type: post.type,
-                    centerOffset: Number(post.centerOffsetFromWallStart),
-                    width: Number(post.width),
-                    thickness: Number(post.thickness),
-                    replacesPosts: post.replacesPosts,
-                    material: post.material,
-                    infillMaterial: post.infillMaterial
-                  }))
-                : undefined
-          }))
-        }))
+            walls: walls.map(wall => {
+              const openings = modelActions.getWallOpeningsById(wall.id)
+              const posts = modelActions.getWallPostsById(wall.id)
+
+              return {
+                thickness: Number(wall.thickness),
+                wallAssemblyId: wall.wallAssemblyId,
+                baseRingBeamAssemblyId: wall.baseRingBeamAssemblyId,
+                topRingBeamAssemblyId: wall.topRingBeamAssemblyId,
+                openings: openings.map(opening => ({
+                  type: opening.openingType,
+                  centerOffset: Number(opening.centerOffsetFromWallStart),
+                  width: Number(opening.width),
+                  height: Number(opening.height),
+                  sillHeight: opening.sillHeight ? Number(opening.sillHeight) : undefined,
+                  openingAssemblyId: opening.openingAssemblyId
+                })),
+                posts: posts.map(post => ({
+                  type: post.postType,
+                  centerOffset: Number(post.centerOffsetFromWallStart),
+                  width: Number(post.width),
+                  thickness: Number(post.thickness),
+                  replacesPosts: post.replacesPosts,
+                  material: post.material,
+                  infillMaterial: post.infillMaterial
+                }))
+              }
+            })
+          }
+        })
 
         return {
           name: storey.name,
@@ -400,15 +411,11 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
 
           // 7. Update wall properties - auto-recomputes geometry
           exportedPerimeter.walls.forEach((exportedWall, wallIndex) => {
-            const wallId = perimeter.walls[wallIndex].id
+            const wallId = perimeter.wallIds[wallIndex]
 
             // Basic wall updates - auto-computes all derived properties
-            modelActions.updatePerimeterWallThickness(perimeter.id, wallId, exportedWall.thickness)
-            modelActions.updatePerimeterWallAssembly(
-              perimeter.id,
-              wallId,
-              exportedWall.wallAssemblyId as WallAssemblyId
-            )
+            modelActions.updatePerimeterWallThickness(wallId, exportedWall.thickness)
+            modelActions.updatePerimeterWallAssembly(wallId, exportedWall.wallAssemblyId as WallAssemblyId)
 
             // Ring beam configuration with backward compatibility
             // Try wall-level first (new format), fall back to perimeter-level (old format)
@@ -416,10 +423,10 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
             const topRingBeam = exportedWall.topRingBeamAssemblyId ?? exportedPerimeter.topRingBeamAssemblyId
 
             if (baseRingBeam) {
-              modelActions.setWallBaseRingBeam(perimeter.id, wallId, baseRingBeam as RingBeamAssemblyId)
+              modelActions.setWallBaseRingBeam(wallId, baseRingBeam as RingBeamAssemblyId)
             }
             if (topRingBeam) {
-              modelActions.setWallTopRingBeam(perimeter.id, wallId, topRingBeam as RingBeamAssemblyId)
+              modelActions.setWallTopRingBeam(wallId, topRingBeam as RingBeamAssemblyId)
             }
 
             const wallAssembly = getConfigActions().getWallAssemblyById(exportedWall.wallAssemblyId as WallAssemblyId)
@@ -430,9 +437,9 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
                 { openingAssemblyId: exportedOpening.openingAssemblyId as OpeningAssemblyId },
                 { openingAssemblyId: wallAssembly?.openingAssemblyId }
               )
-              const openingParams = migrateOpeningDimensions
+              const openingParams: OpeningParams = migrateOpeningDimensions
                 ? {
-                    type: exportedOpening.type,
+                    openingType: exportedOpening.type,
                     centerOffsetFromWallStart:
                       exportedOpening.offsetFromStart != null
                         ? exportedOpening.offsetFromStart + exportedOpening.width / 2 - openingConfig.padding
@@ -445,7 +452,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
                     openingAssemblyId: exportedOpening.openingAssemblyId as OpeningAssemblyId
                   }
                 : {
-                    type: exportedOpening.type,
+                    openingType: exportedOpening.type,
                     centerOffsetFromWallStart:
                       exportedOpening.offsetFromStart != null
                         ? exportedOpening.offsetFromStart + exportedOpening.width / 2
@@ -457,7 +464,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
                   }
 
               try {
-                modelActions.addPerimeterWallOpening(perimeter.id, wallId, openingParams)
+                modelActions.addWallOpening(wallId, openingParams)
               } catch (error) {
                 console.error(error)
               }
@@ -466,8 +473,8 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
             // Add posts (with backwards compatibility - posts may not exist in old files)
             if (exportedWall.posts) {
               exportedWall.posts.forEach(exportedPost => {
-                const postParams = {
-                  type: exportedPost.type,
+                const postParams: WallPostParams = {
+                  postType: exportedPost.type,
                   centerOffsetFromWallStart: exportedPost.centerOffset,
                   width: exportedPost.width,
                   thickness: exportedPost.thickness,
@@ -477,7 +484,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
                 }
 
                 try {
-                  modelActions.addPerimeterWallPost(perimeter.id, wallId, postParams)
+                  modelActions.addWallPost(wallId, postParams)
                 } catch (error) {
                   console.error(error)
                 }
@@ -487,12 +494,8 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
 
           // 8. Update corner properties - auto-recomputes outsidePoints
           exportedPerimeter.corners.forEach((exportedCorner, cornerIndex) => {
-            const cornerId = perimeter.corners[cornerIndex].id
-            modelActions.updatePerimeterCornerConstructedByWall(
-              perimeter.id,
-              cornerId,
-              exportedCorner.constructedByWall
-            )
+            const cornerId = perimeter.cornerIds[cornerIndex]
+            modelActions.updatePerimeterCornerConstructedByWall(cornerId, exportedCorner.constructedByWall)
           })
         })
 
@@ -532,12 +535,12 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
             referencePerimeter
           )
           // Update individual overhangs if they differ
-          if (addedRoof && exportedRoof.overhangs.length === addedRoof.overhangs.length) {
+          if (addedRoof && exportedRoof.overhangs.length === addedRoof.overhangIds.length) {
             exportedRoof.overhangs.forEach((overhangValue, index) => {
               if (index > 0 && overhangValue !== exportedRoof.overhangs[0]) {
-                const overhang = addedRoof.overhangs[index]
-                if (overhang) {
-                  modelActions.updateRoofOverhangById(addedRoof.id, overhang.id, overhangValue)
+                const overhangId = addedRoof.overhangIds[index]
+                if (overhangId) {
+                  modelActions.updateRoofOverhangById(overhangId, overhangValue)
                 }
               }
             })

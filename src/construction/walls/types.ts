@@ -1,4 +1,4 @@
-import type { OpeningAssemblyId, Perimeter, PerimeterWall } from '@/building/model'
+import type { OpeningAssemblyId, PerimeterWallWithGeometry } from '@/building/model'
 import type { WallConstructionArea } from '@/construction/geometry'
 import type { LayerConfig } from '@/construction/layers/types'
 import type { MaterialId } from '@/construction/materials/material'
@@ -13,7 +13,7 @@ import type { Length } from '@/shared/geometry'
 import type { ModuleConfig } from './modules/modules'
 
 export interface WallAssembly {
-  construct: (wall: PerimeterWall, perimeter: Perimeter, storeyContext: StoreyContext) => ConstructionModel
+  construct: (wall: PerimeterWallWithGeometry, storeyContext: StoreyContext) => ConstructionModel
 
   get tag(): Tag
 }

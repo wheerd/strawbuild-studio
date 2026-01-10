@@ -1,9 +1,8 @@
-import type { StoreyId } from '@/building/model/ids'
-import type { Storey } from '@/building/model/model'
+import type { Storey } from '@/building/model'
+import type { StoreyId, WallAssemblyId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import type { StoreActions } from '@/building/store/types'
 import { clearSelection } from '@/editor/hooks/useSelectionStore'
-import { copyVec2 } from '@/shared/geometry'
 
 /**
  * Service for managing storeys with cross-slice orchestration
@@ -93,49 +92,31 @@ export class StoreyManagementService {
     const sourcePerimeters = this.actions.getPerimetersByStorey(sourceStoreyId)
     for (const sourcePerimeter of sourcePerimeters) {
       // Create boundary from the source perimeter reference polygon
-      const boundary = { points: sourcePerimeter.referencePolygon.map(point => copyVec2(point)) }
+      const boundary =
+        sourcePerimeter.referenceSide === 'inside' ? sourcePerimeter.innerPolygon : sourcePerimeter.outerPolygon
 
-      // Get the assembly from the first wall (they should all be the same for a perimeter)
-      const wallAssemblyId = sourcePerimeter.walls[0]?.wallAssemblyId
+      const newPerimeter = this.actions.addPerimeter(
+        newStorey.id,
+        boundary,
+        'will be overwritten' as WallAssemblyId,
+        42, // will be overwritten for each wall
+        undefined, // will be set for each wall
+        undefined, // will be set for each wall
+        sourcePerimeter.referenceSide
+      )
 
-      // Get the thickness from the first wall (we'll use uniform thickness)
-      const thickness = sourcePerimeter.walls[0]?.thickness
-
-      if (wallAssemblyId && thickness) {
-        // Add the duplicated perimeter to the new storey
-        // Get ring beam defaults from first wall (if all walls have same config)
-        const firstWallBaseRingBeam = sourcePerimeter.walls[0]?.baseRingBeamAssemblyId
-        const firstWallTopRingBeam = sourcePerimeter.walls[0]?.topRingBeamAssemblyId
-        const allWallsHaveSameBase = sourcePerimeter.walls.every(
-          w => w.baseRingBeamAssemblyId === firstWallBaseRingBeam
-        )
-        const allWallsHaveSameTop = sourcePerimeter.walls.every(w => w.topRingBeamAssemblyId === firstWallTopRingBeam)
-
-        const newPerimeter = this.actions.addPerimeter(
-          newStorey.id,
-          boundary,
-          wallAssemblyId,
-          thickness,
-          allWallsHaveSameBase ? firstWallBaseRingBeam : undefined,
-          allWallsHaveSameTop ? firstWallTopRingBeam : undefined,
-          sourcePerimeter.referenceSide
-        )
-
-        // If walls have different ring beams, copy them individually
-        if (!allWallsHaveSameBase || !allWallsHaveSameTop) {
-          sourcePerimeter.walls.forEach((sourceWall, wallIndex) => {
-            const newWallId = newPerimeter.walls[wallIndex]?.id
-            if (!newWallId) return
-
-            if (!allWallsHaveSameBase && sourceWall.baseRingBeamAssemblyId) {
-              this.actions.setWallBaseRingBeam(newPerimeter.id, newWallId, sourceWall.baseRingBeamAssemblyId)
-            }
-            if (!allWallsHaveSameTop && sourceWall.topRingBeamAssemblyId) {
-              this.actions.setWallTopRingBeam(newPerimeter.id, newWallId, sourceWall.topRingBeamAssemblyId)
-            }
-          })
+      sourcePerimeter.wallIds.forEach((sourceWallId, wallIndex) => {
+        const sourceWall = this.actions.getPerimeterWallById(sourceWallId)
+        const newWallId = newPerimeter.wallIds[wallIndex]
+        this.actions.updatePerimeterWallAssembly(newWallId, sourceWall.wallAssemblyId)
+        this.actions.updatePerimeterWallThickness(newWallId, sourceWall.thickness)
+        if (sourceWall.baseRingBeamAssemblyId) {
+          this.actions.setWallBaseRingBeam(newWallId, sourceWall.baseRingBeamAssemblyId)
         }
-      }
+        if (sourceWall.topRingBeamAssemblyId) {
+          this.actions.setWallTopRingBeam(newWallId, sourceWall.topRingBeamAssemblyId)
+        }
+      })
     }
 
     return newStorey

@@ -16,8 +16,8 @@ import {
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import type { PerimeterReferenceSide } from '@/building/model'
 import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
-import type { PerimeterReferenceSide } from '@/building/model/model'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'

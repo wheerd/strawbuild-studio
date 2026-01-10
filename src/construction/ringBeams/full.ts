@@ -1,4 +1,5 @@
 import type { StoreyId } from '@/building/model/ids'
+import { getModelActions } from '@/building/store'
 import { createConstructionElement } from '@/construction/elements'
 import { PolygonWithBoundingRect } from '@/construction/helpers'
 import { type MaterialId } from '@/construction/materials/material'
@@ -37,17 +38,20 @@ export class FullRingBeamAssembly extends BaseRingBeamAssembly<FullRingBeamConfi
     context: PerimeterConstructionContext,
     storeyContext?: StoreyContext
   ): Generator<ConstructionResult> {
+    const { getPerimeterWallById } = getModelActions()
     for (const part of this.colinearParts(segment)) {
+      const prevWall = getPerimeterWallById(segment.perimeter.wallIds[part.prevWallIndex])
+      const nextWall = getPerimeterWallById(segment.perimeter.wallIds[part.nextWallIndex])
       const polygon = this.createBeamPolygon(
         context,
         part.wall.direction,
         part.wall.outsideDirection,
         this.isWallIndexInSegment(part.prevWallIndex, segment),
         part.startCorner,
-        segment.perimeter.walls[part.prevWallIndex].direction,
+        prevWall.direction,
         this.isWallIndexInSegment(part.nextWallIndex, segment),
         part.endCorner,
-        segment.perimeter.walls[part.nextWallIndex].direction,
+        nextWall.direction,
         this.config.offsetFromEdge,
         this.config.width
       )

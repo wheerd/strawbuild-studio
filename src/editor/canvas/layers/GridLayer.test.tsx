@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-import { GridLayer } from './GridLayer'
+import { GridLayer, calculateDynamicGridSize } from './GridLayer'
 
 // Mock the grid hooks
 const mockSetGridSize = vi.fn()
@@ -14,31 +14,17 @@ vi.mock('@/editor/hooks/useGrid', () => ({
   })
 }))
 
-// Test the grid size calculation algorithm
-function calculateDynamicGridSize(zoom: number): number {
-  const targetPixelSpacing = 30
-  const worldSpacing = targetPixelSpacing / zoom
-  const niceValues = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000]
-  const gridSize = niceValues.find(value => value >= worldSpacing) ?? niceValues[niceValues.length - 1]
-  return gridSize
-}
-
 describe('GridLayer', () => {
   describe('dynamic grid sizing', () => {
-    it('should calculate appropriate grid sizes for different zoom levels', () => {
-      // Test various zoom levels and expected grid sizes
-      const testCases = [
-        { zoom: 0.001, expectedSize: 50000 }, // Very zoomed out - 50m grid
-        { zoom: 0.01, expectedSize: 5000 }, // Zoomed out - 5m grid
-        { zoom: 0.1, expectedSize: 500 }, // Medium zoom - 500mm grid
-        { zoom: 1, expectedSize: 50 }, // Close zoom - 50mm grid
-        { zoom: 2, expectedSize: 20 } // Max zoom - 20mm grid
-      ]
-
-      testCases.forEach(({ zoom, expectedSize }) => {
-        const gridSize = calculateDynamicGridSize(zoom)
-        expect(gridSize).toBe(expectedSize)
-      })
+    it.each([
+      { zoom: 0.001, expectedSize: 50000 }, // Very zoomed out - 50m grid
+      { zoom: 0.01, expectedSize: 5000 }, // Zoomed out - 5m grid
+      { zoom: 0.1, expectedSize: 500 }, // Medium zoom - 500mm grid
+      { zoom: 1, expectedSize: 50 }, // Close zoom - 50mm grid
+      { zoom: 2, expectedSize: 20 } // Max zoom - 20mm grid
+    ])('should calculate appropriate grid size for $zoom', ({ zoom, expectedSize }) => {
+      const gridSize = calculateDynamicGridSize(zoom)
+      expect(gridSize).toBe(expectedSize)
     })
 
     it('should always return a nice grid value', () => {

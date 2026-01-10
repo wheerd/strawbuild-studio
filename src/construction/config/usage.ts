@@ -1,3 +1,4 @@
+import type { PerimeterWallWithGeometry, Roof, Storey } from '@/building/model'
 import type {
   FloorAssemblyId,
   OpeningAssemblyId,
@@ -6,8 +7,8 @@ import type {
   StoreyId,
   WallAssemblyId
 } from '@/building/model/ids'
-import type { Perimeter, Roof, Storey } from '@/building/model/model'
-import type { WallAssemblyConfig } from '@/construction/config/types'
+import { getModelActions } from '@/building/store'
+import { getConfigActions } from '@/construction/config'
 
 export interface RingBeamAssemblyUsage {
   isUsed: boolean
@@ -46,18 +47,17 @@ export interface OpeningAssemblyUsage {
  */
 export function getRingBeamAssemblyUsage(
   assemblyId: RingBeamAssemblyId,
-  perimeters: Perimeter[],
+  walls: PerimeterWallWithGeometry[],
   defaultBaseId?: RingBeamAssemblyId,
   defaultTopId?: RingBeamAssemblyId
 ): RingBeamAssemblyUsage {
+  const { getPerimeterById } = getModelActions()
   const storeyIdSet = new Set<StoreyId>()
 
-  perimeters.forEach(perimeter => {
-    perimeter.walls.forEach(wall => {
-      if (wall.baseRingBeamAssemblyId === assemblyId || wall.topRingBeamAssemblyId === assemblyId) {
-        storeyIdSet.add(perimeter.storeyId)
-      }
-    })
+  walls.forEach(wall => {
+    if (wall.baseRingBeamAssemblyId === assemblyId || wall.topRingBeamAssemblyId === assemblyId) {
+      storeyIdSet.add(getPerimeterById(wall.perimeterId).storeyId)
+    }
   })
 
   const isDefaultBase = assemblyId === defaultBaseId
@@ -76,17 +76,16 @@ export function getRingBeamAssemblyUsage(
  */
 export function getWallAssemblyUsage(
   assemblyId: WallAssemblyId,
-  perimeters: Perimeter[],
+  walls: PerimeterWallWithGeometry[],
   defaultWallAssemblyId?: WallAssemblyId
 ): WallAssemblyUsage {
+  const { getPerimeterById } = getModelActions()
   const storeyIdSet = new Set<StoreyId>()
 
-  perimeters.forEach(perimeter => {
-    perimeter.walls.forEach(wall => {
-      if (wall.wallAssemblyId === assemblyId) {
-        storeyIdSet.add(perimeter.storeyId)
-      }
-    })
+  walls.forEach(wall => {
+    if (wall.wallAssemblyId === assemblyId) {
+      storeyIdSet.add(getPerimeterById(wall.perimeterId).storeyId)
+    }
   })
 
   const isDefault = assemblyId === defaultWallAssemblyId
@@ -154,13 +153,13 @@ export function getRoofAssemblyUsage(
  * - As a default in any wall assemblies
  * - By individual openings that override to use this assembly
  */
-export function getOpeningAssemblyUsage(
-  assemblyId: OpeningAssemblyId,
-  perimeters: Perimeter[],
-  wallAssemblies: WallAssemblyConfig[],
-  defaultOpeningAssemblyId: OpeningAssemblyId
-): OpeningAssemblyUsage {
-  const isDefault = assemblyId === defaultOpeningAssemblyId
+export function getOpeningAssemblyUsage(assemblyId: OpeningAssemblyId): OpeningAssemblyUsage {
+  const { getDefaultOpeningAssemblyId, getAllWallAssemblies } = getConfigActions()
+  const { getPerimeterById, getAllWallOpenings } = getModelActions()
+  const wallAssemblies = getAllWallAssemblies()
+  const openings = getAllWallOpenings()
+
+  const isDefault = assemblyId === getDefaultOpeningAssemblyId()
   const wallAssemblyIdSet = new Set<WallAssemblyId>()
   const storeyIdSet = new Set<StoreyId>()
 
@@ -172,14 +171,10 @@ export function getOpeningAssemblyUsage(
   })
 
   // Check individual openings that override to use this assembly
-  perimeters.forEach(perimeter => {
-    perimeter.walls.forEach(wall => {
-      wall.openings.forEach(opening => {
-        if (opening.openingAssemblyId === assemblyId) {
-          storeyIdSet.add(perimeter.storeyId)
-        }
-      })
-    })
+  openings.forEach(opening => {
+    if (opening.openingAssemblyId === assemblyId) {
+      storeyIdSet.add(getPerimeterById(opening.perimeterId).storeyId)
+    }
   })
 
   return {

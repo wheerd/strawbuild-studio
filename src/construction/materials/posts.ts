@@ -171,7 +171,7 @@ export const validatePosts = (posts: PostConfig): void => {
 export function* constructWallPost(area: WallConstructionArea, post: WallPost): Generator<ConstructionResult> {
   const wallThickness = area.size[1]
   const postElements: GroupOrElement[] = []
-  switch (post.type) {
+  switch (post.postType) {
     case 'double':
       {
         const infillThickness = wallThickness - 2 * post.thickness

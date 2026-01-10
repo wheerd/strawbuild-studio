@@ -1,7 +1,8 @@
+import type { FloorArea, FloorOpening, PerimeterWithGeometry } from '@/building/model'
 import type { SelectableId } from '@/building/model/ids'
 import { isFloorAreaId } from '@/building/model/ids'
-import type { FloorArea, FloorOpening, Perimeter } from '@/building/model/model'
 import type { StoreActions } from '@/building/store/types'
+import { polygonEdges } from '@/construction/helpers'
 import type { SnappingContext } from '@/editor/services/snapping/types'
 import type { MovementContext } from '@/editor/tools/basic/movement/MovementBehavior'
 import { type Polygon2D, type Vec2 } from '@/shared/geometry'
@@ -19,9 +20,13 @@ export interface FloorAreaEntityContext extends PolygonEntityContext {
 
 export type FloorAreaMovementState = PolygonMovementState
 
-function buildSnapContext(perimeters: Perimeter[], otherAreas: FloorArea[], openings: FloorOpening[]): SnappingContext {
-  const perimeterPoints = perimeters.flatMap(perimeter => perimeter.corners.map(corner => corner.insidePoint))
-  const perimeterSegments = perimeters.flatMap(perimeter => perimeter.walls.map(wall => wall.insideLine))
+function buildSnapContext(
+  perimeters: PerimeterWithGeometry[],
+  otherAreas: FloorArea[],
+  openings: FloorOpening[]
+): SnappingContext {
+  const perimeterPoints = perimeters.flatMap(perimeter => perimeter.innerPolygon.points)
+  const perimeterSegments = perimeters.flatMap(perimeter => [...polygonEdges(perimeter.innerPolygon)])
 
   const areaPoints = otherAreas.flatMap(area => area.area.points)
   const areaSegments = otherAreas.flatMap(area => createPolygonSegments(area.area.points))

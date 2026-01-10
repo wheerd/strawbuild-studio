@@ -1,4 +1,5 @@
 import { getModelActions } from '@/building/store'
+import { polygonEdges } from '@/construction/helpers'
 import { getViewModeActions } from '@/editor/hooks/useViewMode'
 import type { SnappingContext } from '@/editor/services/snapping/types'
 import { BasePolygonTool, type PolygonToolStateBase } from '@/editor/tools/shared/polygon/BasePolygonTool'
@@ -26,12 +27,11 @@ export abstract class BaseFloorPolygonTool<TState extends PolygonToolStateBase> 
     const floorAreas = getFloorAreasByStorey(activeStoreyId)
     const floorOpenings = getFloorOpeningsByStorey(activeStoreyId)
 
-    const perimeterPoints = perimeters.flatMap(perimeter =>
-      perimeter.corners.flatMap(corner => [corner.insidePoint, corner.outsidePoint])
-    )
-    const perimeterSegments = perimeters.flatMap(perimeter =>
-      perimeter.walls.map(wall => wall.insideLine).concat(perimeter.walls.map(wall => wall.outsideLine))
-    )
+    const perimeterPoints = perimeters.flatMap(perimeter => perimeter.outerPolygon.points)
+    const perimeterSegments = perimeters.flatMap(perimeter => [
+      ...polygonEdges(perimeter.innerPolygon),
+      ...polygonEdges(perimeter.outerPolygon)
+    ])
 
     const areaPoints = floorAreas.flatMap(area => area.area.points)
     const areaSegments = floorAreas.flatMap(area => createPolygonSegments(area.area.points))

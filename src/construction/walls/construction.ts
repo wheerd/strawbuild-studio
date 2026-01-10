@@ -1,5 +1,5 @@
-import type { Perimeter } from '@/building/model'
-import type { PerimeterCornerId, PerimeterId, PerimeterWallId } from '@/building/model/ids'
+import type { PerimeterWallWithGeometry } from '@/building/model'
+import type { PerimeterCornerId, PerimeterWallId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model'
@@ -29,79 +29,57 @@ export interface WallCornerInfo {
   constructionOutsideLine: LineSegment2D
 }
 
-function findColinearWalls(perimeter: Perimeter, startWallId: PerimeterWallId): PerimeterWallId[] {
-  const startIndex = perimeter.walls.findIndex(w => w.id === startWallId)
-  if (startIndex === -1) {
-    throw new Error(`Wall ${startWallId} not found in perimeter`)
-  }
+function findColinearWalls(startWall: PerimeterWallWithGeometry): PerimeterWallWithGeometry[] {
+  const { getPerimeterWallById, getPerimeterCornerById } = getModelActions()
+  const colinearWalls: PerimeterWallWithGeometry[] = [startWall]
 
-  const colinearWallIds: PerimeterWallId[] = [startWallId]
-
-  let currentIndex = startIndex
+  let currentWall = startWall
   while (true) {
-    const cornerIndex = currentIndex
-    const corner = perimeter.corners[cornerIndex]
-
+    const corner = getPerimeterCornerById(currentWall.startCornerId)
     if (corner.interiorAngle !== 180) break
 
-    currentIndex = (currentIndex - 1 + perimeter.walls.length) % perimeter.walls.length
+    currentWall = getPerimeterWallById(corner.previousWallId)
+    if (currentWall.id === startWall.id) break
 
-    if (currentIndex === startIndex) break
-
-    colinearWallIds.unshift(perimeter.walls[currentIndex].id)
+    colinearWalls.unshift(currentWall)
   }
 
-  currentIndex = startIndex
+  currentWall = startWall
   while (true) {
-    const cornerIndex = (currentIndex + 1) % perimeter.corners.length
-    const corner = perimeter.corners[cornerIndex]
-
+    const corner = getPerimeterCornerById(currentWall.endCornerId)
     if (corner.interiorAngle !== 180) break
 
-    currentIndex = (currentIndex + 1) % perimeter.walls.length
+    currentWall = getPerimeterWallById(corner.nextWallId)
+    if (currentWall.id === startWall.id) break
 
-    if (currentIndex === startIndex) break
-
-    colinearWallIds.push(perimeter.walls[currentIndex].id)
+    colinearWalls.push(currentWall)
   }
 
-  return colinearWallIds
+  return colinearWalls
 }
 
-export function constructWall(
-  perimeterId: PerimeterId,
-  wallId: PerimeterWallId,
-  includeColinear = false
-): ConstructionModel {
-  const { getPerimeterById } = getModelActions()
+export function constructWall(wallId: PerimeterWallId, includeColinear = false): ConstructionModel {
+  const { getPerimeterById, getPerimeterWallById } = getModelActions()
   const { getWallAssemblyById } = getConfigActions()
 
-  const perimeter = getPerimeterById(perimeterId)
-  if (!perimeter) {
-    throw new Error(`Perimeter with ID ${perimeterId} not found`)
-  }
+  const wall = getPerimeterWallById(wallId)
+  const perimeter = getPerimeterById(wall.perimeterId)
+  const walls = includeColinear ? findColinearWalls(wall) : [wall]
 
   const perimeterContext = computePerimeterConstructionContext(perimeter, [])
   const storeyContext = createWallStoreyContext(perimeter.storeyId, [perimeterContext])
 
-  const wallIds = includeColinear ? findColinearWalls(perimeter, wallId) : [wallId]
-
   const wallModels: ConstructionModel[] = []
   let cumulativeOffset = 0
 
-  for (const currentWallId of wallIds) {
-    const currentWall = perimeter.walls.find(w => w.id === currentWallId)
-    if (!currentWall) {
-      throw new Error(`Wall with ID ${currentWallId} not found in perimeter ${perimeterId}`)
-    }
-
+  for (const currentWall of walls) {
     const assembly = getWallAssemblyById(currentWall.wallAssemblyId)
     if (!assembly?.type) {
-      throw new Error(`Wall assembly with ID ${currentWall.wallAssemblyId} not found for wall ${currentWallId}`)
+      throw new Error(`Wall assembly with ID ${currentWall.wallAssemblyId} not found for wall ${currentWall.id}`)
     }
 
     const wallAssembly = resolveWallAssembly(assembly)
-    const wallModel = wallAssembly.construct(currentWall, perimeter, storeyContext)
+    const wallModel = wallAssembly.construct(currentWall, storeyContext)
 
     if (cumulativeOffset > 0) {
       const nameTag = createTag('wall-assembly', assembly.name)
@@ -110,7 +88,7 @@ export function constructWall(
         fromTrans(newVec3(cumulativeOffset, 0, 0)),
         [TAG_WALLS, wallAssembly.tag, nameTag],
         undefined,
-        currentWallId
+        currentWall.id
       )
       wallModels.push(transformedModel)
     } else {
