@@ -1,94 +1,46 @@
 import { ExclamationTriangleIcon, PinLeftIcon, PinRightIcon, TrashIcon } from '@radix-ui/react-icons'
-import { Box, Callout, DataList, Flex, Heading, IconButton, Separator, Text } from '@radix-ui/themes'
+import { Callout, DataList, Flex, Heading, IconButton, Separator, Text } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { PerimeterCornerId, PerimeterId } from '@/building/model/ids'
-import { useModelActions, usePerimeterById } from '@/building/store'
+import type { PerimeterCornerId } from '@/building/model/ids'
+import { useModelActions, usePerimeterCornerById, usePerimeterWallById } from '@/building/store'
 import { useConfigActions } from '@/construction/config/store'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon, SplitWallIcon } from '@/shared/components/Icons'
-import { Bounds2D, type Polygon2D, type Vec2, copyVec2, midpoint } from '@/shared/geometry'
-import { wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
+import { Bounds2D, midpoint } from '@/shared/geometry'
 
-interface PerimeterCornerInspectorProps {
-  perimeterId: PerimeterId
-  cornerId: PerimeterCornerId
-}
-
-export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCornerInspectorProps): React.JSX.Element {
+export function PerimeterCornerInspector({ cornerId }: { cornerId: PerimeterCornerId }): React.JSX.Element {
   const { t } = useTranslation('inspector')
-  // Get model store functions - use specific selectors for stable references
   const {
     updatePerimeterCornerConstructedByWall: updateCornerConstructedByWall,
     removePerimeterCorner,
-    canSwitchCornerConstructedByWall
+    canSwitchCornerConstructedByWall,
+    canRemovePerimeterCorner
   } = useModelActions()
   const { getWallAssemblyById } = useConfigActions()
   const viewportActions = useViewportActions()
 
-  // Get perimeter from store
-  const outerWall = usePerimeterById(perimeterId)
+  const corner = usePerimeterCornerById(cornerId)
+  const previousWall = usePerimeterWallById(corner.previousWallId)
+  const nextWall = usePerimeterWallById(corner.nextWallId)
 
-  // Use useMemo to find corner and its index within the wall object
-  const cornerIndex = useMemo(() => {
-    return outerWall?.corners.findIndex(c => c.id === cornerId) ?? -1
-  }, [outerWall, cornerId])
+  const canSwitchWall = useMemo(() => canSwitchCornerConstructedByWall(cornerId), [cornerId])
 
-  const corner = useMemo(() => {
-    return cornerIndex !== -1 ? outerWall?.corners[cornerIndex] : null
-  }, [outerWall, cornerIndex])
-
-  // If corner not found, show error
-  if (!corner || !outerWall || cornerIndex === -1) {
-    return (
-      <Box p="2">
-        <Callout.Root color="red">
-          <Callout.Text>
-            <Text weight="bold">{t($ => $.perimeterCorner.notFound)}</Text>
-            <br />
-            {t($ => $.perimeterCorner.notFoundMessage, {
-              id: cornerId
-            })}
-          </Callout.Text>
-        </Callout.Root>
-      </Box>
-    )
-  }
-
-  // Get adjacent walls
-  const { previousWall, nextWall } = useMemo(() => {
-    const prevIndex = (cornerIndex - 1 + outerWall.walls.length) % outerWall.walls.length
-    const nextIndex = cornerIndex % outerWall.walls.length
-
-    return {
-      previousWall: outerWall.walls[prevIndex],
-      nextWall: outerWall.walls[nextIndex]
-    }
-  }, [outerWall.walls, cornerIndex])
-
-  // Check if we can switch which wall constructs the corner
-  const canSwitchWall = useMemo(() => {
-    return canSwitchCornerConstructedByWall(perimeterId, cornerId)
-  }, [canSwitchCornerConstructedByWall, perimeterId, cornerId])
-
-  // Event handlers with stable references
   const handleToggleConstructedByWall = useCallback(() => {
     const newConstructedByWall = corner.constructedByWall === 'previous' ? 'next' : 'previous'
-    updateCornerConstructedByWall(perimeterId, cornerId, newConstructedByWall)
-  }, [updateCornerConstructedByWall, perimeterId, cornerId, corner.constructedByWall])
+    updateCornerConstructedByWall(cornerId, newConstructedByWall)
+  }, [cornerId, corner.constructedByWall])
 
-  const handleMergeCorner = useCallback(() => {
-    if (removePerimeterCorner(perimeterId, cornerId)) {
+  const handleDeleteCorner = useCallback(() => {
+    if (removePerimeterCorner(cornerId)) {
       popSelection()
     }
-  }, [removePerimeterCorner, perimeterId, cornerId])
+  }, [removePerimeterCorner, cornerId])
 
   // Check if there are construction notes to display
   const hasConstructionNotes = useMemo(() => {
-    if (!previousWall || !nextWall) return false
-
     const prevAssembly = getWallAssemblyById(previousWall.wallAssemblyId)
     const nextAssembly = getWallAssemblyById(nextWall.wallAssemblyId)
     const hasMixedAssembly = prevAssembly?.type !== nextAssembly?.type
@@ -100,8 +52,6 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
   const isNonStandardAngle = corner.interiorAngle % 90 !== 0
 
   const handleFitToView = useCallback(() => {
-    if (!corner || !previousWall || !nextWall) return
-
     // Calculate midpoints of adjacent walls
     const prevMidpoint = midpoint(previousWall.insideLine.start, previousWall.insideLine.end)
     const nextMidpoint = midpoint(nextWall.insideLine.start, nextWall.insideLine.end)
@@ -111,26 +61,14 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
     viewportActions.fitToView(bounds)
   }, [corner, previousWall, nextWall, viewportActions])
 
-  const canDeleteCorner = useMemo<{ canDelete: boolean; reason?: Parameters<typeof t>[0] }>(() => {
-    if (!outerWall || !corner) return { canDelete: false, reason: $ => $.perimeterCorner.notFound }
-
-    // Need at least 4 corners (triangle = 3 corners minimum)
-    if (outerWall.corners.length < 4) {
-      return { canDelete: false, reason: $ => $.perimeterCorner.cannotDeleteMinCorners }
+  const canDeleteCorner = useMemo(() => {
+    const result = canRemovePerimeterCorner(cornerId)
+    const reasonKey = result.reason
+    return {
+      canDelete: result.canRemove,
+      reason: reasonKey ? (($ => $.perimeterCorner[reasonKey]) as Parameters<typeof t>[0]) : undefined
     }
-
-    // Check if removal would cause self-intersection
-    const newBoundaryPoints: Vec2[] = outerWall.referencePolygon.map(point => copyVec2(point))
-    newBoundaryPoints.splice(cornerIndex, 1)
-
-    const newBoundary: Polygon2D = { points: newBoundaryPoints }
-
-    if (wouldClosingPolygonSelfIntersect(newBoundary)) {
-      return { canDelete: false, reason: $ => $.perimeterCorner.cannotDeleteSelfIntersect }
-    }
-
-    return { canDelete: true }
-  }, [outerWall, corner, cornerIndex])
+  }, [canRemovePerimeterCorner, cornerId])
 
   return (
     <Flex direction="column" gap="4">
@@ -201,7 +139,7 @@ export function PerimeterCornerInspector({ perimeterId, cornerId }: PerimeterCor
                   ? t($ => $.perimeterCorner.mergeSplit)
                   : t($ => $.perimeterCorner.deleteCorner)
             }
-            onClick={handleMergeCorner}
+            onClick={handleDeleteCorner}
             disabled={!canDeleteCorner.canDelete}
           >
             {corner.interiorAngle === 180 ? <SplitWallIcon /> : <TrashIcon />}

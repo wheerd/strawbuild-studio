@@ -1,81 +1,102 @@
 import { describe, expect, it, vi } from 'vitest'
 
+import type {
+  OpeningWithGeometry,
+  PerimeterCornerId,
+  PerimeterCornerWithGeometry,
+  PerimeterId,
+  PerimeterWallId,
+  PerimeterWallWithGeometry,
+  PerimeterWithGeometry,
+  Storey,
+  StoreyId,
+  StoreyLevel
+} from '@/building/model'
+import type { StoreActions } from '@/building/store'
 import { ZERO_VEC2, newVec2 } from '@/shared/geometry'
+import { partial } from '@/test/helpers'
 
 import { ProjectImportExportService } from './ProjectImportExportService'
 
 // Create a shared mock that we can control
-const mockStorey = {
+const mockStorey = partial<Storey>({
   id: 'storey_ground',
   name: 'Ground Floor',
-  level: 0,
+  level: 0 as StoreyLevel,
   floorHeight: 2500,
   floorAssemblyId: 'fa_1'
-}
+})
 
-const mockActions = {
+const corners = [
+  partial<PerimeterCornerWithGeometry>({
+    id: 'outcorner_1',
+    insidePoint: ZERO_VEC2,
+    outsidePoint: newVec2(-200, 0),
+    constructedByWall: 'next',
+    interiorAngle: 90,
+    exteriorAngle: 270
+  }),
+  partial<PerimeterCornerWithGeometry>({
+    id: 'outcorner_2',
+    insidePoint: newVec2(100, 0),
+    outsidePoint: newVec2(100, -200),
+    constructedByWall: 'next',
+    interiorAngle: 90,
+    exteriorAngle: 270
+  }),
+  partial<PerimeterCornerWithGeometry>({
+    id: 'outcorner_3',
+    insidePoint: newVec2(100, 100),
+    outsidePoint: newVec2(300, 100),
+    constructedByWall: 'next',
+    interiorAngle: 90,
+    exteriorAngle: 270
+  }),
+  partial<PerimeterCornerWithGeometry>({
+    id: 'outcorner_4',
+    insidePoint: newVec2(0, 100),
+    outsidePoint: newVec2(0, 300),
+    constructedByWall: 'next',
+    interiorAngle: 90,
+    exteriorAngle: 270
+  })
+]
+
+const openings = [
+  partial<OpeningWithGeometry>({
+    id: 'opening_1',
+    openingType: 'door',
+    centerOffsetFromWallStart: 500,
+    width: 900,
+    height: 2100,
+    sillHeight: undefined
+  })
+]
+
+const walls = [
+  partial<PerimeterWallWithGeometry>({
+    id: 'outwall_1',
+    thickness: 200,
+    wallAssemblyId: 'assembly_1' as any,
+    entityIds: openings.map(o => o.id)
+  })
+]
+
+const mockActions = partial<StoreActions>({
   getStoreysOrderedByLevel: vi.fn(() => [mockStorey]),
   getStoreyAbove: vi.fn(() => null),
+  getPerimeterCornersById: vi.fn(() => corners),
+  getPerimeterWallsById: vi.fn(() => walls),
+  getWallOpeningsById: vi.fn(() => openings),
+  getWallPostsById: vi.fn(() => []),
   getPerimetersByStorey: vi.fn(() => [
-    {
+    partial<PerimeterWithGeometry>({
       id: 'perimeter_1',
       referenceSide: 'inside' as const,
-      referencePolygon: [newVec2(0, 0), newVec2(100, 0), newVec2(100, 100), newVec2(0, 100)],
-      corners: [
-        {
-          id: 'corner_1',
-          insidePoint: ZERO_VEC2,
-          outsidePoint: newVec2(-200, 0),
-          constructedByWall: 'next',
-          interiorAngle: 90,
-          exteriorAngle: 270
-        },
-        {
-          id: 'corner_2',
-          insidePoint: newVec2(100, 0),
-          outsidePoint: newVec2(100, -200),
-          constructedByWall: 'next',
-          interiorAngle: 90,
-          exteriorAngle: 270
-        },
-        {
-          id: 'corner_3',
-          insidePoint: newVec2(100, 100),
-          outsidePoint: newVec2(300, 100),
-          constructedByWall: 'next',
-          interiorAngle: 90,
-          exteriorAngle: 270
-        },
-        {
-          id: 'corner_4',
-          insidePoint: newVec2(0, 100),
-          outsidePoint: newVec2(0, 300),
-          constructedByWall: 'next',
-          interiorAngle: 90,
-          exteriorAngle: 270
-        }
-      ],
-      walls: [
-        {
-          id: 'wall_1',
-          thickness: 200,
-          wallAssemblyId: 'assembly_1',
-          openings: [
-            {
-              id: 'opening_1',
-              type: 'door',
-              centerOffsetFromWallStart: 500,
-              width: 900,
-              height: 2100,
-              sillHeight: undefined
-            }
-          ],
-          posts: []
-        }
-      ],
-      baseRingBeamAssemblyId: 'beam_1',
-      topRingBeamAssemblyId: 'beam_1'
-    }
+      innerPolygon: { points: [newVec2(0, 0), newVec2(100, 0), newVec2(100, 100), newVec2(0, 100)] },
+      cornerIds: corners.map(c => c.id),
+      wallIds: walls.map(w => w.id)
+    })
   ]),
   getFloorAreasByStorey: vi.fn(() => []),
   getFloorOpeningsByStorey: vi.fn(() => []),
@@ -85,25 +106,29 @@ const mockActions = {
   updateStoreyFloorHeight: vi.fn(),
   updateStoreyFloorAssembly: vi.fn(),
   adjustAllLevels: vi.fn(),
-  addStorey: vi.fn((name, floorHeight) => ({
-    id: 'new_storey',
-    name,
-    level: 1,
-    floorHeight
-  })),
-  addPerimeter: vi.fn(() => ({
-    id: 'new_perimeter',
-    referenceSide: 'inside' as const,
-    walls: [{ id: 'new_wall_1' }],
-    corners: [{ id: 'new_corner_1' }]
-  })),
+  addStorey: vi.fn((name, floorHeight) =>
+    partial<Storey>({
+      id: 'new_storey' as StoreyId,
+      name,
+      level: 1 as StoreyLevel,
+      floorHeight
+    })
+  ),
+  addPerimeter: vi.fn(() =>
+    partial<PerimeterWithGeometry>({
+      id: 'new_perimeter' as PerimeterId,
+      referenceSide: 'inside' as const,
+      wallIds: ['new_wall_1' as PerimeterWallId],
+      cornerIds: ['new_corner_1' as PerimeterCornerId]
+    })
+  ),
   updatePerimeterWallThickness: vi.fn(),
   updatePerimeterWallAssembly: vi.fn(),
-  addPerimeterWallOpening: vi.fn(),
+  addWallOpening: vi.fn(),
   updatePerimeterCornerConstructedByWall: vi.fn(),
   addFloorArea: vi.fn(),
   addFloorOpening: vi.fn()
-}
+})
 
 // Mock the stores and dependencies
 vi.mock('@/building/store', () => ({

@@ -1,7 +1,8 @@
+import type { PerimeterWithGeometry, Roof } from '@/building/model'
 import type { SelectableId } from '@/building/model/ids'
 import { isRoofId } from '@/building/model/ids'
-import type { Perimeter, Roof } from '@/building/model/model'
 import type { StoreActions } from '@/building/store/types'
+import { polygonEdges } from '@/construction/helpers'
 import type { SnappingContext } from '@/editor/services/snapping/types'
 import type { MovementContext } from '@/editor/tools/basic/movement/MovementBehavior'
 import { type Polygon2D, type Vec2 } from '@/shared/geometry'
@@ -19,10 +20,10 @@ export interface RoofEntityContext extends PolygonEntityContext {
 
 export type RoofMovementState = PolygonMovementState
 
-function buildSnapContext(perimeters: Perimeter[], otherRoofs: Roof[]): SnappingContext {
+function buildSnapContext(perimeters: PerimeterWithGeometry[], otherRoofs: Roof[]): SnappingContext {
   // Only snap to outer points and outer edges of perimeters
-  const perimeterPoints = perimeters.flatMap(perimeter => perimeter.corners.map(corner => corner.outsidePoint))
-  const perimeterSegments = perimeters.flatMap(perimeter => perimeter.walls.map(wall => wall.outsideLine))
+  const perimeterPoints = perimeters.flatMap(perimeter => perimeter.outerPolygon.points)
+  const perimeterSegments = perimeters.flatMap(perimeter => [...polygonEdges(perimeter.outerPolygon)])
 
   const roofPoints = otherRoofs.flatMap(roof => roof.referencePolygon.points)
   const roofSegments = otherRoofs.flatMap(roof => createPolygonSegments(roof.referencePolygon.points))

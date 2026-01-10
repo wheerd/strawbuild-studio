@@ -1,4 +1,5 @@
-import type { Perimeter, PerimeterWall } from '@/building/model/model'
+import { type PerimeterWallWithGeometry, isOpeningId } from '@/building/model'
+import { getModelActions } from '@/building/store'
 import type { GroupOrElement } from '@/construction/elements'
 import { WallConstructionArea } from '@/construction/geometry'
 import { LAYER_CONSTRUCTIONS } from '@/construction/layers'
@@ -65,12 +66,11 @@ const aggregateLayerResults = (results: ConstructionResult[]): ConstructionModel
 }
 
 export function constructWallLayers(
-  wall: PerimeterWall,
-  perimeter: Perimeter,
+  wall: PerimeterWallWithGeometry,
   storeyContext: StoreyContext,
   layers: WallLayersConfig
 ): ConstructionModel {
-  const context = getWallContext(wall, perimeter)
+  const context = getWallContext(wall)
 
   const baseInsideSpan = computeLayerSpan('inside', 0 as Length, wall, context)
   const baseOutsideSpan = computeLayerSpan('outside', layers.outsideThickness, wall, context)
@@ -79,6 +79,9 @@ export function constructWallLayers(
 
   const wallDirection = signedAngleVec2(wall.direction, newVec2(1, 0))
   const layerDirection = wallDirection < 0 ? newVec2(0, 1) : newVec2(0, -1)
+
+  const { getWallOpeningById } = getModelActions()
+  const openings = wall.entityIds.filter(isOpeningId).map(getWallOpeningById)
 
   if (layers.insideLayers.length > 0) {
     let insideOffset: Length = 0
@@ -98,7 +101,7 @@ export function constructWallLayers(
 
       // Query roof for this layer's height line
       const heightLine = getRoofHeightLineForLines(
-        perimeter.storeyId,
+        storeyContext.storeyId,
         [span.line],
         ceilingOffset,
         storeyContext.perimeterContexts
@@ -114,7 +117,7 @@ export function constructWallLayers(
 
       // Extract polygon from area (handles roof slopes)
       const polygon = ensurePolygonIsClockwise(simplifyPolygon(layerArea.getSideProfilePolygon()))
-      const polygonsWithHoles = subtractWallOpenings(polygon, start, end, bottom, top, wall, zAdjustment)
+      const polygonsWithHoles = subtractWallOpenings(polygon, start, end, bottom, top, openings, zAdjustment)
       const results = polygonsWithHoles.flatMap(p =>
         runLayerConstruction(p, insideOffset, WALL_LAYER_PLANE, layer, layerDirection)
       )
@@ -155,7 +158,7 @@ export function constructWallLayers(
 
       // Query roof for this layer's height line
       const heightLine = getRoofHeightLineForLines(
-        perimeter.storeyId,
+        storeyContext.storeyId,
         [span.line],
         -ceilingOffset,
         storeyContext.perimeterContexts
@@ -171,7 +174,7 @@ export function constructWallLayers(
 
       // Extract polygon from area (handles roof slopes)
       const polygon = ensurePolygonIsClockwise(simplifyPolygon(layerArea.getSideProfilePolygon()))
-      const polygonsWithHoles = subtractWallOpenings(polygon, start, end, bottom, top, wall, zAdjustment)
+      const polygonsWithHoles = subtractWallOpenings(polygon, start, end, bottom, top, openings, zAdjustment)
       const results = polygonsWithHoles.flatMap(p =>
         runLayerConstruction(p, outsideOffset, WALL_LAYER_PLANE, layer, layerDirection)
       )

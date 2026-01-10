@@ -16,9 +16,15 @@ import {
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import type { PerimeterReferenceSide, PerimeterWallWithGeometry, RoofType } from '@/building/model'
 import type { PerimeterId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
-import type { PerimeterReferenceSide, PerimeterWall, RoofType } from '@/building/model/model'
-import { useModelActions, usePerimeterById, useRoofsOfActiveStorey } from '@/building/store'
+import {
+  useModelActions,
+  usePerimeterById,
+  usePerimeterCornersById,
+  usePerimeterWallsById,
+  useRoofsOfActiveStorey
+} from '@/building/store'
 import TopDownPlanModal from '@/construction/components/TopDownPlanModal'
 import { useDefaultRoofAssemblyId } from '@/construction/config'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
@@ -31,7 +37,7 @@ import { useViewModeActions } from '@/editor/hooks/useViewMode'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { ConstructionPlanIcon, FitToViewIcon, Model3DIcon, RoofIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
-import { Bounds2D, type Length, calculatePolygonArea } from '@/shared/geometry'
+import { Bounds2D, type Length, calculatePolygonArea, polygonPerimeter } from '@/shared/geometry'
 import { useFormatters } from '@/shared/i18n/useFormatters'
 
 interface PerimeterInspectorProps {
@@ -43,7 +49,7 @@ interface MixedState<T> {
   value: T | null
 }
 
-function detectMixedAssemblies(walls: PerimeterWall[]): MixedState<WallAssemblyId> {
+function detectMixedAssemblies(walls: PerimeterWallWithGeometry[]): MixedState<WallAssemblyId> {
   if (walls.length === 0) return { isMixed: false, value: null }
 
   const firstAssembly = walls[0].wallAssemblyId
@@ -55,7 +61,7 @@ function detectMixedAssemblies(walls: PerimeterWall[]): MixedState<WallAssemblyI
   }
 }
 
-function detectMixedThickness(walls: PerimeterWall[]): MixedState<Length> {
+function detectMixedThickness(walls: PerimeterWallWithGeometry[]): MixedState<Length> {
   if (walls.length === 0) return { isMixed: false, value: null }
 
   const firstThickness = walls[0].thickness
@@ -67,7 +73,10 @@ function detectMixedThickness(walls: PerimeterWall[]): MixedState<Length> {
   }
 }
 
-function detectMixedRingBeams(walls: PerimeterWall[], type: 'base' | 'top'): MixedState<RingBeamAssemblyId> {
+function detectMixedRingBeams(
+  walls: PerimeterWallWithGeometry[],
+  type: 'base' | 'top'
+): MixedState<RingBeamAssemblyId> {
   if (walls.length === 0) return { isMixed: false, value: null }
 
   const firstAssembly = type === 'base' ? walls[0].baseRingBeamAssemblyId : walls[0].topRingBeamAssemblyId
@@ -107,6 +116,8 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
   } = useModelActions()
   const roofAssemblyId = useDefaultRoofAssemblyId()
   const perimeter = usePerimeterById(selectedId)
+  const walls = usePerimeterWallsById(selectedId)
+  const corners = usePerimeterCornersById(selectedId)
   const viewportActions = useViewportActions()
   const { setMode } = useViewModeActions()
   const roofsOfStorey = useRoofsOfActiveStorey()
@@ -119,25 +130,10 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
   )
 
   // Mixed state detection
-  const wallAssemblyState = useMemo(
-    () => (perimeter ? detectMixedAssemblies(perimeter.walls) : { isMixed: false, value: null }),
-    [perimeter?.walls]
-  )
-
-  const thicknessState = useMemo(
-    () => (perimeter ? detectMixedThickness(perimeter.walls) : { isMixed: false, value: null }),
-    [perimeter?.walls]
-  )
-
-  const baseRingBeamState = useMemo(
-    () => (perimeter ? detectMixedRingBeams(perimeter.walls, 'base') : { isMixed: false, value: null }),
-    [perimeter?.walls]
-  )
-
-  const topRingBeamState = useMemo(
-    () => (perimeter ? detectMixedRingBeams(perimeter.walls, 'top') : { isMixed: false, value: null }),
-    [perimeter?.walls]
-  )
+  const wallAssemblyState = useMemo(() => detectMixedAssemblies(walls), [walls])
+  const thicknessState = useMemo(() => detectMixedThickness(walls), [walls])
+  const baseRingBeamState = useMemo(() => detectMixedRingBeams(walls, 'base'), [walls])
+  const topRingBeamState = useMemo(() => detectMixedRingBeams(walls, 'top'), [walls])
 
   // If perimeter not found, show error
   if (!perimeter) {
@@ -156,17 +152,16 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
     )
   }
 
-  const totalInnerPerimeter = perimeter.walls.reduce((l, s) => l + s.insideLength, 0)
-  const totalOuterPerimeter = perimeter.walls.reduce((l, s) => l + s.outsideLength, 0)
-  const totalInnerArea = calculatePolygonArea({ points: perimeter.corners.map(c => c.insidePoint) })
-  const totalOuterArea = calculatePolygonArea({ points: perimeter.corners.map(c => c.outsidePoint) })
+  const totalInnerPerimeter = polygonPerimeter(perimeter.innerPolygon)
+  const totalOuterPerimeter = polygonPerimeter(perimeter.outerPolygon)
+  const totalInnerArea = calculatePolygonArea(perimeter.innerPolygon)
+  const totalOuterArea = calculatePolygonArea(perimeter.outerPolygon)
 
-  const hasNonStandardAngles = perimeter.corners.some(corner => corner.interiorAngle % 90 !== 0)
+  const hasNonStandardAngles = corners.some(corner => corner.interiorAngle % 90 !== 0)
 
   const handleFitToView = useCallback(() => {
     if (!perimeter) return
-    const points = perimeter.corners.map(c => c.outsidePoint)
-    const bounds = Bounds2D.fromPoints(points)
+    const bounds = Bounds2D.fromPoints(perimeter.outerPolygon.points)
     viewportActions.fitToView(bounds)
   }, [perimeter, viewportActions])
 
@@ -186,9 +181,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
       if (!perimeter) return
 
       // Create polygon from perimeter outer points
-      const polygon = {
-        points: perimeter.corners.map(corner => corner.outsidePoint)
-      }
+      const polygon = perimeter.outerPolygon
 
       // Calculate direction perpendicular to first edge
       if (polygon.points.length < 2) {

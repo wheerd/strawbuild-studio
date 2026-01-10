@@ -1,7 +1,7 @@
 import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 import useImage from 'use-image'
 
-import type { FloorOpening } from '@/building/model/model'
+import type { FloorOpening } from '@/building/model'
 import hatchPatternUrl from '@/editor/canvas/assets/floor-opening-hatch.svg?url'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 

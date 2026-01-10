@@ -10,7 +10,7 @@ import {
   isWallPostId
 } from '@/building/model/ids'
 import { getCanRedo, getCanUndo, getModelActions, getRedoFunction, getUndoFunction } from '@/building/store'
-import { getCurrentSelection, getSelectionPath, popSelection } from '@/editor/hooks/useSelectionStore'
+import { getCurrentSelection, popSelection } from '@/editor/hooks/useSelectionStore'
 import { getActiveTool, popTool, replaceTool } from '@/editor/tools/system/store'
 
 import { TOOL_METADATA } from './metadata'
@@ -197,49 +197,14 @@ export class KeyboardShortcutManager {
     const modelStore = getModelActions()
 
     try {
-      // Selection path has fixed structure: [perimeterId, wallId, openingId]
-      const selectionPath = getSelectionPath()
-
       if (isPerimeterWallId(selectedId)) {
-        // Wall is at index 1, parent wall is at index 0
-        const parentWallId = selectionPath[0]
-        if (parentWallId && isPerimeterId(parentWallId)) {
-          return modelStore.removePerimeterWall(parentWallId, selectedId)
-        } else {
-          console.warn(`Could not find parent perimeter in selection path for wall: ${selectedId}`)
-          return false
-        }
+        return modelStore.removePerimeterWall(selectedId)
       } else if (isPerimeterCornerId(selectedId)) {
-        // Corner is at index 1, parent wall is at index 0
-        const parentWallId = selectionPath[0]
-        if (parentWallId && isPerimeterId(parentWallId)) {
-          return modelStore.removePerimeterCorner(parentWallId, selectedId)
-        } else {
-          console.warn(`Could not find parent perimeter in selection path for corner: ${selectedId}`)
-          return false
-        }
+        return modelStore.removePerimeterCorner(selectedId)
       } else if (isOpeningId(selectedId)) {
-        const perimeterId = selectionPath[0]
-        const wallId = selectionPath[1]
-
-        if (perimeterId && wallId && isPerimeterId(perimeterId) && isPerimeterWallId(wallId)) {
-          modelStore.removePerimeterWallOpening(perimeterId, wallId, selectedId)
-          return true
-        } else {
-          console.warn(`Could not find parent wall/wall in selection path for opening: ${selectedId}`)
-          return false
-        }
+        modelStore.removeWallOpening(selectedId)
       } else if (isWallPostId(selectedId)) {
-        const perimeterId = selectionPath[0]
-        const wallId = selectionPath[1]
-
-        if (perimeterId && wallId && isPerimeterId(perimeterId) && isPerimeterWallId(wallId)) {
-          modelStore.removePerimeterWallPost(perimeterId, wallId, selectedId)
-          return true
-        } else {
-          console.warn(`Could not find parent wall/wall in selection path for post: ${selectedId}`)
-          return false
-        }
+        modelStore.removeWallPost(selectedId)
       } else if (isPerimeterId(selectedId)) {
         modelStore.removePerimeter(selectedId)
         return true
@@ -260,6 +225,8 @@ export class KeyboardShortcutManager {
       console.error(`Failed to delete entity ${selectedId}:`, error)
       return false
     }
+
+    return true
   }
 
   private normalizeKey(key: string): string {

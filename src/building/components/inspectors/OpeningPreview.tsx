@@ -1,17 +1,12 @@
 import { useId } from 'react'
 
-import type { OpeningType } from '@/building/model/model'
+import type { OpeningParams } from '@/building/model'
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
 import { type Length, newVec2 } from '@/shared/geometry'
 import { useFormatters } from '@/shared/i18n/useFormatters'
 
 export interface OpeningPreviewProps {
-  opening: {
-    type: OpeningType
-    width: Length // Fitting width (rough opening)
-    height: Length // Fitting height (rough opening)
-    sillHeight?: Length // Fitting sill height (floor to rough sill)
-  }
+  opening: Omit<OpeningParams, 'centerOffsetFromWallStart'>
   wallHeight: Length
   padding: Length
   highlightMode: 'fitting' | 'finished'
@@ -160,7 +155,7 @@ export function OpeningPreview({
       />
 
       {/* Opening type indicator */}
-      {opening.type === 'door' && (
+      {opening.openingType === 'door' && (
         <g>
           {/* Door handle */}
           <circle
@@ -174,7 +169,7 @@ export function OpeningPreview({
         </g>
       )}
 
-      {opening.type === 'window' && (
+      {opening.openingType === 'window' && (
         <g>
           {/* Window mullions */}
           <line

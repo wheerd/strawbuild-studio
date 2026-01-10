@@ -1,7 +1,7 @@
 import type { Resources } from 'i18next'
 
+import type { PerimeterReferenceSide } from '@/building/model'
 import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
-import type { PerimeterReferenceSide } from '@/building/model/model'
 import { type Length, type Vec2 } from '@/shared/geometry'
 
 /**

@@ -30,6 +30,7 @@ export const dotVec2 = (a: Vec2, b: Vec2): number => vec2.dot(a, b)
 export const dotAbsVec2 = (a: Vec2, b: Vec2): number => Math.abs(vec2.dot(a, b))
 export const angleVec2 = (a: Vec2, b: Vec2): number => vec2.angle(a, b)
 export const signedAngleVec2 = (a: Vec2, b: Vec2): number => vec2.signedAngle(a, b)
+export const crossVec2 = (a: Vec2, b: Vec2): number => a[0] * b[1] - a[1] * b[0]
 
 export const vec2To3 = (a: Vec2): Vec3 => vec3.fromValues(a[0], a[1], 0) as Vec3
 export const vec3To2 = (a: Vec3): Vec2 => vec2.copy(vec2.create(), a) as Vec2

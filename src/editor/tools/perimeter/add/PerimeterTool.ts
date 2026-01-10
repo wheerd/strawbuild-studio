@@ -1,5 +1,5 @@
+import type { PerimeterReferenceSide } from '@/building/model'
 import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
-import type { PerimeterReferenceSide } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config/store'
 import { getViewModeActions } from '@/editor/hooks/useViewMode'

@@ -1,9 +1,14 @@
-import type { Perimeter, PerimeterWall } from '@/building/model'
-import type { PerimeterId, PerimeterWallId } from '@/building/model/ids'
-import { isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
+import type {
+  PerimeterCornerWithGeometry,
+  PerimeterReferenceSide,
+  PerimeterWallWithGeometry,
+  WallEntity
+} from '@/building/model'
+import type { PerimeterWallId } from '@/building/model/ids'
+import { isPerimeterWallId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { entityHitTestService } from '@/editor/canvas/services/EntityHitTestService'
-import { getCurrentSelection, getSelectionActions, getSelectionPath } from '@/editor/hooks/useSelectionStore'
+import { getCurrentSelection, getSelectionActions } from '@/editor/hooks/useSelectionStore'
 import { getViewModeActions } from '@/editor/hooks/useViewMode'
 import { getToolActions } from '@/editor/tools/system'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
@@ -16,9 +21,11 @@ import { SplitWallToolOverlay } from './SplitWallToolOverlay'
 export interface SplitWallToolState {
   // Target wall
   selectedWallId: PerimeterWallId | null
-  selectedPerimeterId: PerimeterId | null
-  wall: PerimeterWall | null
-  perimeter: Perimeter | null
+  wall: PerimeterWallWithGeometry | null
+  startCorner: PerimeterCornerWithGeometry | null
+  endCorner: PerimeterCornerWithGeometry | null
+  wallEntities: WallEntity[]
+  referenceSide: PerimeterReferenceSide | null
 
   // Split positioning
   hoverPosition: Length | null // Current hover position on wall
@@ -40,8 +47,10 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
   public state: SplitWallToolState = {
     selectedWallId: null,
     wall: null,
-    selectedPerimeterId: null,
-    perimeter: null,
+    startCorner: null,
+    endCorner: null,
+    wallEntities: [],
+    referenceSide: null,
 
     hoverPosition: null,
     targetPosition: null,
@@ -51,20 +60,19 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
     splitError: null
   }
 
-  public setTargetWall(perimeterId: PerimeterId, wallId: PerimeterWallId): void {
-    const { getPerimeterById } = getModelActions()
-    this.state.selectedPerimeterId = perimeterId
+  public setTargetWall(wallId: PerimeterWallId): void {
+    const { getPerimeterById, getPerimeterWallById, getPerimeterCornerById, getWallEntityById } = getModelActions()
     this.state.selectedWallId = wallId
-    this.state.perimeter = getPerimeterById(perimeterId)
+    const wall = getPerimeterWallById(wallId)
+    this.state.wall = wall
 
-    if (this.state.perimeter) {
-      this.state.wall = this.state.perimeter.walls.find(w => w.id === wallId) ?? null
-    }
+    this.state.startCorner = getPerimeterCornerById(wall.startCornerId)
+    this.state.endCorner = getPerimeterCornerById(wall.endCornerId)
+    this.state.wallEntities = wall.entityIds.map(getWallEntityById)
+    this.state.referenceSide = getPerimeterById(wall.perimeterId).referenceSide
 
-    if (this.state.wall) {
-      const middlePosition = this.state.wall.wallLength / 2
-      this.updateTargetPosition(middlePosition)
-    }
+    const middlePosition = this.state.wall.wallLength / 2
+    this.updateTargetPosition(middlePosition)
 
     this.triggerRender()
   }
@@ -94,21 +102,12 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
   }
 
   public commitSplit(): boolean {
-    if (
-      !this.state.isValidSplit ||
-      !this.state.selectedPerimeterId ||
-      !this.state.selectedWallId ||
-      !this.state.targetPosition
-    ) {
+    if (!this.state.isValidSplit || !this.state.selectedWallId || !this.state.targetPosition) {
       return false
     }
 
     const { splitPerimeterWall } = getModelActions()
-    const newWallId = splitPerimeterWall(
-      this.state.selectedPerimeterId,
-      this.state.selectedWallId,
-      this.state.targetPosition
-    )
+    const newWallId = splitPerimeterWall(this.state.selectedWallId, this.state.targetPosition)
 
     if (newWallId) {
       // Clear selection and deactivate tool
@@ -137,6 +136,7 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
   } {
     if (!this.state.wall) return { valid: false, error: 'noWall' }
     const wall = this.state.wall
+    const entities = this.state.wallEntities
 
     // Check bounds
     if (position <= 0 || position >= wall.wallLength) {
@@ -144,7 +144,7 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
     }
 
     // Check opening intersections
-    for (const opening of wall.openings) {
+    for (const opening of entities) {
       // Calculate left and right edges from center position
       const openingStart = opening.centerOffsetFromWallStart - opening.width / 2
       const openingEnd = opening.centerOffsetFromWallStart + opening.width / 2
@@ -157,12 +157,12 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
     return { valid: true }
   }
 
-  private positionFromWorldPoint(wall: PerimeterWall, worldPoint: Vec2): Length | null {
+  private positionFromWorldPoint(wall: PerimeterWallWithGeometry, worldPoint: Vec2): Length | null {
     const insideDist = distanceToLineSegment(worldPoint, wall.insideLine)
     const outsideDist = distanceToLineSegment(worldPoint, wall.outsideLine)
     if (Math.max(insideDist, outsideDist) <= wall.thickness) {
       // Get signed distance along wall direction
-      const referenceSide = this.state.perimeter?.referenceSide ?? 'inside'
+      const referenceSide = this.state.referenceSide ?? 'inside'
       const baselineStart = referenceSide === 'outside' ? wall.outsideLine.start : wall.insideLine.start
       const toPoint = subVec2(worldPoint, baselineStart)
       const signedDistance = dotVec2(toPoint, wall.direction)
@@ -184,14 +184,10 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
       const hitResult = entityHitTestService.findEntityAt(event.pointerCoordinates)
       const wallId = hitResult?.entityId
       if (wallId && isPerimeterWallId(wallId)) {
-        // Find perimeter ID from parent chain
-        const perimeterId = hitResult.parentIds[0]
-        if (isPerimeterId(perimeterId)) {
-          this.setTargetWall(perimeterId, wallId)
-          if (this.state.wall) {
-            const position = this.positionFromWorldPoint(this.state.wall, event.stageCoordinates)
-            this.updateTargetPosition(position)
-          }
+        this.setTargetWall(wallId)
+        if (this.state.wall) {
+          const position = this.positionFromWorldPoint(this.state.wall, event.stageCoordinates)
+          this.updateTargetPosition(position)
         }
       }
       return true
@@ -237,7 +233,6 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
 
   private resetState() {
     this.state.selectedWallId = null
-    this.state.selectedPerimeterId = null
     this.state.hoverPosition = null
     this.state.targetPosition = null
     this.state.isValidSplit = false
@@ -254,14 +249,7 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
     // Check if there's already a wall selected using selection path
     const currentSelection = getCurrentSelection()
     if (currentSelection && isPerimeterWallId(currentSelection)) {
-      const selectionPath = getSelectionPath()
-
-      // Find the perimeter ID in the selection path
-      const perimeterId = selectionPath[0]
-
-      if (isPerimeterId(perimeterId)) {
-        this.setTargetWall(perimeterId, currentSelection)
-      }
+      this.setTargetWall(currentSelection)
     }
 
     this.triggerRender()

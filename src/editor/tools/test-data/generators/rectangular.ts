@@ -58,7 +58,7 @@ export function createRectangularPerimeter(): void {
       'inside'
     )
 
-    if (newPerimeter && newPerimeter.walls.length > 0) {
+    if (newPerimeter && newPerimeter.wallIds.length > 0) {
       // Add main entrance door on the bottom wall and a back door on top wall
       const doorSpecs: DoorSpec[] = [
         {
@@ -156,8 +156,7 @@ export function createRectangularPerimeter(): void {
       addWindows(newPerimeter, windowSpecs)
 
       // Focus the view on the newly created test data
-      const wallPoints = newPerimeter.corners.map(c => c.outsidePoint)
-      const bounds = Bounds2D.fromPoints(wallPoints)
+      const bounds = Bounds2D.fromPoints(newPerimeter.outerPolygon.points)
       getSelectionActions().replaceSelection([newPerimeter.id])
       viewportActions().fitToView(bounds)
     }

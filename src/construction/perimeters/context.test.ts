@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import type { Perimeter, PerimeterCorner, PerimeterWall } from '@/building/model'
+import type { PerimeterCornerWithGeometry, PerimeterWallWithGeometry, PerimeterWithGeometry } from '@/building/model'
 import type { PerimeterCornerId, PerimeterId, PerimeterWallId, StoreyId, WallAssemblyId } from '@/building/model/ids'
+import { type StoreActions, getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import {
   type LineSegment2D,
-  copyVec2,
   direction,
   distVec2,
   lineIntersection,
@@ -13,6 +13,7 @@ import {
   perpendicularCCW,
   scaleAddVec2
 } from '@/shared/geometry'
+import { partial, partialMock } from '@/test/helpers'
 
 import { computePerimeterConstructionPolygon } from './context'
 
@@ -25,6 +26,20 @@ const mockedGetWallAssemblyById = vi.fn()
 vi.mocked(getConfigActions).mockReturnValue({
   getWallAssemblyById: mockedGetWallAssemblyById
 } as any)
+
+vi.mock('@/building/store', () => ({
+  getModelActions: vi.fn()
+}))
+
+const mockedGetPerimeterCornerById = vi.fn()
+const mockedGetPerimeterWallById = vi.fn()
+
+vi.mocked(getModelActions).mockReturnValue(
+  partialMock<StoreActions>({
+    getPerimeterWallById: mockedGetPerimeterWallById,
+    getPerimeterCornerById: mockedGetPerimeterCornerById
+  })
+)
 
 describe('computePerimeterConstructionPolygon', () => {
   it('offsets each wall by its outside layer thickness', () => {
@@ -39,7 +54,7 @@ describe('computePerimeterConstructionPolygon', () => {
     // y2: 3000 + 450 - 210 = 3240
     const expectedPoints = [newVec2(-250, -320), newVec2(-250, 3240), newVec2(4230, 3240), newVec2(4230, -320)]
 
-    const walls: PerimeterWall[] = insidePoints.map((insideStart, index) => {
+    const walls = insidePoints.map((insideStart, index) => {
       const nextIndex = (index + 1) % insidePoints.length
       const insideEnd = insidePoints[nextIndex]
       const wallDirection = direction(insideStart, insideEnd)
@@ -49,12 +64,10 @@ describe('computePerimeterConstructionPolygon', () => {
       const outsideLineStart = scaleAddVec2(insideStart, outsideDirection, thickness)
       const outsideLineEnd = scaleAddVec2(insideEnd, outsideDirection, thickness)
       const outsideLine: LineSegment2D = { start: outsideLineStart, end: outsideLineEnd }
-      return {
+      return partial<PerimeterWallWithGeometry>({
         id: `wall-${index}` as PerimeterWallId,
         thickness,
         wallAssemblyId: `assembly-${index}` as WallAssemblyId,
-        openings: [],
-        posts: [],
         insideLength: distVec2(insideStart, insideEnd),
         outsideLength: distVec2(outsideLineStart, outsideLineEnd),
         wallLength: distVec2(insideStart, insideEnd),
@@ -62,15 +75,16 @@ describe('computePerimeterConstructionPolygon', () => {
         outsideLine,
         direction: wallDirection,
         outsideDirection
-      }
+      })
     })
+    mockedGetPerimeterWallById.mockImplementation(id => walls.find(w => w.id === id))
 
     const outsideLines = walls.map(wall => ({
       point: wall.outsideLine.start,
       direction: wall.direction
     }))
 
-    const corners: PerimeterCorner[] = insidePoints.map((insidePoint, index) => {
+    const corners = insidePoints.map((insidePoint, index) => {
       const prevIndex = (index - 1 + insidePoints.length) % insidePoints.length
       const prevLine = outsideLines[prevIndex]
       const currentLine = outsideLines[index]
@@ -78,24 +92,22 @@ describe('computePerimeterConstructionPolygon', () => {
       const outsidePoint =
         outsideIntersection ?? scaleAddVec2(insidePoint, walls[index].outsideDirection, walls[index].thickness)
 
-      return {
+      return partial<PerimeterCornerWithGeometry>({
         id: `corner-${index}` as PerimeterCornerId,
         insidePoint,
         outsidePoint,
-        constructedByWall: 'next',
-        interiorAngle: 90,
-        exteriorAngle: 270
-      }
+        constructedByWall: 'next'
+      })
     })
+    mockedGetPerimeterCornerById.mockImplementation(id => corners.find(c => c.id === id))
 
-    const perimeter: Perimeter = {
+    const perimeter = partial<PerimeterWithGeometry>({
       id: 'perimeter-1' as PerimeterId,
       storeyId: 'storey-1' as StoreyId,
       referenceSide: 'inside',
-      referencePolygon: insidePoints.map(point => copyVec2(point)),
-      walls,
-      corners
-    }
+      wallIds: walls.map(w => w.id),
+      cornerIds: corners.map(c => c.id)
+    })
 
     const outsideThicknessByAssembly = new Map<WallAssemblyId, number>()
     outsideLayerThicknesses.forEach((value, index) => {

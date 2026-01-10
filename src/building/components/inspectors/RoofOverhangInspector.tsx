@@ -3,25 +3,18 @@ import { Box, Callout, Flex, IconButton, Separator, Text } from '@radix-ui/theme
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { RoofId, RoofOverhangId } from '@/building/model/ids'
-import { useModelActions, useRoofById } from '@/building/store'
+import type { RoofOverhangId } from '@/building/model/ids'
+import { useModelActions, useRoofOverhangById } from '@/building/store'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
 import { Bounds2D } from '@/shared/geometry'
 
-interface RoofOverhangInspectorProps {
-  roofId: RoofId
-  overhangId: RoofOverhangId
-}
-
-export function RoofOverhangInspector({ roofId, overhangId }: RoofOverhangInspectorProps): React.JSX.Element {
+export function RoofOverhangInspector({ overhangId }: { overhangId: RoofOverhangId }): React.JSX.Element {
   const { t } = useTranslation('inspector')
-  const roof = useRoofById(roofId)
+  const overhang = useRoofOverhangById(overhangId)
   const { updateRoofOverhangById } = useModelActions()
   const { fitToView } = useViewportActions()
-
-  const overhang = roof?.overhangs.find(o => o.id === overhangId)
 
   const handleFitToView = useCallback(() => {
     if (!overhang) return
@@ -29,7 +22,7 @@ export function RoofOverhangInspector({ roofId, overhangId }: RoofOverhangInspec
     fitToView(bounds)
   }, [overhang, fitToView])
 
-  if (!roof || !overhang) {
+  if (!overhang) {
     return (
       <Box p="2">
         <Callout.Root color="red">
@@ -61,7 +54,7 @@ export function RoofOverhangInspector({ roofId, overhangId }: RoofOverhangInspec
           </Label.Root>
           <LengthField
             value={overhang.value}
-            onCommit={value => updateRoofOverhangById(roof.id, overhang.id, value)}
+            onCommit={value => updateRoofOverhangById(overhang.id, value)}
             min={0}
             max={2000}
             step={10}

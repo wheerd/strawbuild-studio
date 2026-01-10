@@ -1,6 +1,6 @@
+import type { Opening, PerimeterWallWithGeometry } from '@/building/model'
 import type { SelectableId } from '@/building/model/ids'
 import { isOpeningId, isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
-import type { Opening, Perimeter, PerimeterWall } from '@/building/model/model'
 import type { StoreActions } from '@/building/store/types'
 import type {
   MovementBehavior,
@@ -13,8 +13,7 @@ import { type Length, type Vec2, ZERO_VEC2, dotVec2, newVec2, scaleAddVec2, subV
 
 // Opening movement needs access to the wall, wall, and opening
 export interface OpeningEntityContext {
-  perimeter: Perimeter
-  wall: PerimeterWall
+  wall: PerimeterWallWithGeometry
   opening: Opening
 }
 
@@ -33,15 +32,14 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
       throw new Error(`Invalid entity context for opening ${entityId}`)
     }
 
-    const perimeter = store.getPerimeterById(perimeterId)
-    const wall = store.getPerimeterWallById(perimeterId, wallId)
-    const opening = store.getPerimeterWallOpeningById(perimeterId, wallId, entityId)
+    const wall = store.getPerimeterWallById(wallId)
+    const opening = store.getWallOpeningById(entityId)
 
-    if (!perimeter || !wall || !opening) {
+    if (!wall || !opening) {
       throw new Error(`Could not find required entities for opening ${entityId}`)
     }
 
-    return { perimeter, wall, opening }
+    return { wall, opening }
   }
 
   initializeState(
@@ -60,7 +58,7 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
     pointerState: PointerMovementState,
     context: MovementContext<OpeningEntityContext>
   ): OpeningMovementState {
-    const { perimeter, opening, wall } = context.entity
+    const { opening, wall } = context.entity
 
     // Constrain to wall direction only - project the pointer delta onto wall direction
     const wallDirection = wall.direction
@@ -76,9 +74,8 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
     const signedOffset = dotVec2(deltaFromStart, wallDirection)
 
     // Try to snap to nearest valid position
-    const snappedOffset = context.store.findNearestValidPerimeterWallOpeningPosition(
-      perimeter.id,
-      wall.id,
+    const snappedOffset = context.store.findNearestValidWallOpeningPosition(
+      opening.wallId,
       signedOffset,
       opening.width,
       opening.id
@@ -98,44 +95,32 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
   }
 
   validatePosition(movementState: OpeningMovementState, context: MovementContext<OpeningEntityContext>): boolean {
-    const { perimeter, wall, opening } = context.entity
-    return context.store.isPerimeterWallOpeningPlacementValid(
-      perimeter.id,
-      wall.id,
-      movementState.newOffset,
-      opening.width,
-      opening.id
-    )
+    const { opening } = context.entity
+    return context.store.isWallOpeningPlacementValid(opening.wallId, movementState.newOffset, opening.width, opening.id)
   }
 
   commitMovement(movementState: OpeningMovementState, context: MovementContext<OpeningEntityContext>): boolean {
-    const { perimeter, wall, opening } = context.entity
+    const { opening } = context.entity
 
     // Update opening position
-    context.store.updatePerimeterWallOpening(perimeter.id, wall.id, opening.id, {
-      centerOffsetFromWallStart: movementState.newOffset
-    })
+    context.store.updateWallOpening(opening.id, { centerOffsetFromWallStart: movementState.newOffset })
 
     return true
   }
 
   applyRelativeMovement(deltaDifference: Vec2, context: MovementContext<OpeningEntityContext>): boolean {
-    const { perimeter, wall, opening } = context.entity
+    const { opening } = context.entity
 
     // Use deltaDifference[0] as the offset change (1D movement along wall)
     const newOffset = opening.centerOffsetFromWallStart + deltaDifference[0]
 
     // Validate the new position
-    if (
-      !context.store.isPerimeterWallOpeningPlacementValid(perimeter.id, wall.id, newOffset, opening.width, opening.id)
-    ) {
+    if (!context.store.isWallOpeningPlacementValid(opening.wallId, newOffset, opening.width, opening.id)) {
       return false
     }
 
     // Apply the movement
-    context.store.updatePerimeterWallOpening(perimeter.id, wall.id, opening.id, {
-      centerOffsetFromWallStart: newOffset
-    })
+    context.store.updateWallOpening(opening.id, { centerOffsetFromWallStart: newOffset })
 
     return true
   }

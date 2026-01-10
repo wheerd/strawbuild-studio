@@ -21,7 +21,6 @@ import React, { useCallback, useId, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { OpeningAssemblyId } from '@/building/model/ids'
-import { usePerimeters } from '@/building/store'
 import type { OpeningAssemblyConfig } from '@/construction/config'
 import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import {
@@ -53,7 +52,6 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
   const { t } = useTranslation('config')
   const openingAssemblies = useOpeningAssemblies()
   const wallAssemblies = useWallAssemblies()
-  const perimeters = usePerimeters()
   const {
     addOpeningAssembly,
     removeOpeningAssembly,
@@ -79,9 +77,9 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
   const usage = useMemo(
     () =>
       selectedAssembly
-        ? getOpeningAssemblyUsage(selectedAssembly.id as OpeningAssemblyId, perimeters, wallAssemblyArray, defaultId)
+        ? getOpeningAssemblyUsage(selectedAssembly.id as OpeningAssemblyId)
         : { isUsed: false, isDefault: false, wallAssemblyIds: [], storeyIds: [] },
-    [selectedAssembly, perimeters, wallAssemblyArray, defaultId]
+    [selectedAssembly, wallAssemblyArray, defaultId]
   )
 
   const handleAddNew = useCallback(

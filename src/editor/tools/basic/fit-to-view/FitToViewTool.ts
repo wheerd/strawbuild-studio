@@ -28,7 +28,7 @@ export class FitToViewTool implements ToolImplementation {
         return
       }
 
-      const perimeterPoints = perimeters.flatMap(p => p.corners.map(c => c.outsidePoint))
+      const perimeterPoints = perimeters.flatMap(p => p.outerPolygon.points)
       const floorAreaPoints = floorAreas.flatMap(area => area.area.points)
       const roofPoints = roofs.flatMap(roof => roof.overhangPolygon.points)
       const allPoints = [...perimeterPoints, ...floorAreaPoints, ...roofPoints]

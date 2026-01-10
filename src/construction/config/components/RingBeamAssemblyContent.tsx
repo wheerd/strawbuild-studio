@@ -18,7 +18,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { RingBeamAssemblyId } from '@/building/model/ids'
-import { usePerimeters } from '@/building/store'
+import { usePerimeterWalls } from '@/building/store'
 import type { RingBeamAssemblyConfig } from '@/construction/config'
 import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import {
@@ -48,7 +48,7 @@ export interface RingBeamAssemblyContentProps {
 export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssemblyContentProps): React.JSX.Element {
   const { t } = useTranslation('config')
   const ringBeamAssemblies = useRingBeamAssemblies()
-  const perimeters = usePerimeters()
+  const walls = usePerimeterWalls()
   const {
     addRingBeamAssembly,
     removeRingBeamAssembly,
@@ -72,9 +72,9 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
   const usage = useMemo(
     () =>
       selectedAssembly
-        ? getRingBeamAssemblyUsage(selectedAssembly.id, perimeters, defaultBaseId, defaultTopId)
+        ? getRingBeamAssemblyUsage(selectedAssembly.id, walls, defaultBaseId, defaultTopId)
         : { isUsed: false, isDefaultBase: false, isDefaultTop: false, storeyIds: [] },
-    [selectedAssembly, perimeters, defaultBaseId, defaultTopId]
+    [selectedAssembly, walls, defaultBaseId, defaultTopId]
   )
 
   const handleAddNew = useCallback(

@@ -14,11 +14,11 @@ import type { SplitWallTool } from './SplitWallTool'
 export function SplitWallToolOverlay({ tool }: ToolOverlayComponentProps<SplitWallTool>): React.JSX.Element | null {
   const { state } = useReactiveTool(tool)
   const theme = useCanvasTheme()
-  const { wall, perimeter } = state
+  const { wall, startCorner, endCorner } = state
   const { worldToStage } = useViewportActions()
   const isCurrentSelection = useSelectionStore(s => s.isCurrentSelection)
 
-  if (!wall || !perimeter) {
+  if (!wall || !startCorner || !endCorner) {
     return null
   }
 
@@ -40,18 +40,14 @@ export function SplitWallToolOverlay({ tool }: ToolOverlayComponentProps<SplitWa
     })
   }
 
-  const wallIndex = perimeter.walls.indexOf(wall)
-  const prevCorner = perimeter.corners[wallIndex]
-  const nextCorner = perimeter.corners[(wallIndex + 1) % perimeter.corners.length]
-
-  const insideStart = prevCorner.insidePoint
-  const insideEnd = nextCorner.insidePoint
+  const insideStart = startCorner.insidePoint
+  const insideEnd = endCorner.insidePoint
   const insideSplit =
     state.targetPosition !== null ? scaleAddVec2(wall.insideLine.start, wall.direction, state.targetPosition) : null
   const outsideSplit =
     state.targetPosition !== null ? scaleAddVec2(wall.outsideLine.start, wall.direction, state.targetPosition) : null
-  const outsideStart = prevCorner.outsidePoint
-  const outsideEnd = nextCorner.outsidePoint
+  const outsideStart = startCorner.outsidePoint
+  const outsideEnd = endCorner.outsidePoint
 
   const insideHover =
     state.hoverPosition !== null ? scaleAddVec2(wall.insideLine.start, wall.direction, state.hoverPosition) : null

@@ -15,9 +15,6 @@ import {
 import { StoreyInspector } from '@/building/components/inspectors/StoreyInspector'
 import { WallPostInspector } from '@/building/components/inspectors/WallPostInspector'
 import {
-  type PerimeterId,
-  type PerimeterWallId,
-  type RoofId,
   isFloorAreaId,
   isFloorOpeningId,
   isOpeningId,
@@ -29,53 +26,32 @@ import {
   isWallPostId
 } from '@/building/model/ids'
 import { useActiveStoreyId } from '@/building/store'
-import { useCurrentSelection, useSelectionPath } from '@/editor/hooks/useSelectionStore'
+import { useCurrentSelection } from '@/editor/hooks/useSelectionStore'
 
 export function SelectToolInspector(): React.JSX.Element {
   const { t } = useTranslation('tool')
   const selectedId = useCurrentSelection()
-  const selectionPath = useSelectionPath()
   const storeyId = useActiveStoreyId()
 
   return (
     <Flex direction="column" p="2" gap="2">
       {!selectedId && <StoreyInspector key="storey" selectedId={storeyId} />}
+
       {/* Perimeter entities */}
       {selectedId && isPerimeterId(selectedId) && <PerimeterInspector key={selectedId} selectedId={selectedId} />}
-      {selectedId && isPerimeterWallId(selectedId) && (
-        <PerimeterWallInspector key={selectedId} perimeterId={selectionPath[0] as PerimeterId} wallId={selectedId} />
-      )}
+      {selectedId && isPerimeterWallId(selectedId) && <PerimeterWallInspector key={selectedId} wallId={selectedId} />}
       {selectedId && isPerimeterCornerId(selectedId) && (
-        <PerimeterCornerInspector
-          key={selectedId}
-          perimeterId={selectionPath[0] as PerimeterId}
-          cornerId={selectedId}
-        />
+        <PerimeterCornerInspector key={selectedId} cornerId={selectedId} />
       )}
-      {selectedId && isOpeningId(selectedId) && (
-        <OpeningInspector
-          key={selectedId}
-          perimeterId={selectionPath[0] as PerimeterId}
-          wallId={selectionPath[1] as PerimeterWallId}
-          openingId={selectedId}
-        />
-      )}
-      {selectedId && isWallPostId(selectedId) && (
-        <WallPostInspector
-          key={selectedId}
-          perimeterId={selectionPath[0] as PerimeterId}
-          wallId={selectionPath[1] as PerimeterWallId}
-          postId={selectedId}
-        />
-      )}
+      {selectedId && isOpeningId(selectedId) && <OpeningInspector key={selectedId} openingId={selectedId} />}
+      {selectedId && isWallPostId(selectedId) && <WallPostInspector key={selectedId} postId={selectedId} />}
       {selectedId && isFloorAreaId(selectedId) && <FloorAreaInspector key={selectedId} floorAreaId={selectedId} />}
       {selectedId && isFloorOpeningId(selectedId) && (
         <FloorOpeningInspector key={selectedId} floorOpeningId={selectedId} />
       )}
       {selectedId && isRoofId(selectedId) && <RoofInspector key={selectedId} roofId={selectedId} />}
-      {selectedId && isRoofOverhangId(selectedId) && (
-        <RoofOverhangInspector key={selectedId} roofId={selectionPath[0] as RoofId} overhangId={selectedId} />
-      )}
+      {selectedId && isRoofOverhangId(selectedId) && <RoofOverhangInspector key={selectedId} overhangId={selectedId} />}
+
       {/* Unknown entity type */}
       {selectedId &&
         !isPerimeterId(selectedId) &&

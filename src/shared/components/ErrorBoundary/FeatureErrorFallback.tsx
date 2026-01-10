@@ -24,7 +24,7 @@ export function FeatureErrorFallback({ error, resetErrorBoundary }: FallbackProp
           <ExclamationTriangleIcon />
         </Callout.Icon>
         <Callout.Text>
-          <Flex direction="column" gap="2">
+          <Flex as="span" direction="column" gap="2">
             <Text weight="bold">{t($ => $.feature.title)}</Text>
             <Text size="2">{error.message || t($ => $.feature.defaultMessage)}</Text>
           </Flex>

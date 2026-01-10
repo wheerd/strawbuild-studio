@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest'
 
 import type { Roof } from '@/building/model'
 import { computeRoofDerivedProperties } from '@/building/store/slices/roofsSlice'
-import { type Vec2, ZERO_VEC2, millimeters, newVec2 } from '@/shared/geometry'
+import { type Vec2, millimeters, newVec2 } from '@/shared/geometry'
+import { partial } from '@/test/helpers'
 
 import { MonolithicRoofAssembly } from './monolithic'
 import type { HeightItem, MonolithicRoofConfig } from './types'
@@ -17,9 +18,7 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
     slope: number,
     verticalOffset = 3000
   ): Roof => {
-    const roof = {
-      id: 'test-roof' as any,
-      storeyId: 'test-storey' as any,
+    const roof = partial<Roof>({
       type,
       referencePolygon: {
         points: [newVec2(0, 0), newVec2(10000, 0), newVec2(10000, 5000), newVec2(0, 5000)]
@@ -30,16 +29,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
       ridgeLine: { start: ridgeStart, end: ridgeEnd },
       mainSideIndex: 0,
       slope,
-      verticalOffset: millimeters(verticalOffset),
-      overhangs: [],
-      assemblyId: 'test-assembly' as any,
-      // Computed properties
-      slopeAngleRad: 0,
-      ridgeDirection: ZERO_VEC2,
-      downSlopeDirection: ZERO_VEC2,
-      rise: 0,
-      span: 0
-    }
+      verticalOffset: millimeters(verticalOffset)
+    })
     computeRoofDerivedProperties(roof)
     return roof
   }

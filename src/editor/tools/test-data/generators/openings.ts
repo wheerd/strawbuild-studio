@@ -1,4 +1,4 @@
-import type { Perimeter } from '@/building/model'
+import type { PerimeterWithGeometry } from '@/building/model'
 import { getModelActions } from '@/building/store'
 
 export interface WindowSpec {
@@ -21,9 +21,9 @@ export interface DoorSpec {
 /**
  * Add windows to a perimeter based on window specifications
  */
-export function addWindows(perimeter: Perimeter, windowSpecs: WindowSpec[]): void {
+export function addWindows(perimeter: PerimeterWithGeometry, windowSpecs: WindowSpec[]): void {
   const modelStore = getModelActions()
-  const walls = perimeter.walls
+  const walls = perimeter.wallIds.map(modelStore.getPerimeterWallById)
 
   windowSpecs.forEach((windowSpec, index) => {
     if (walls.length > windowSpec.wallIndex) {
@@ -33,8 +33,8 @@ export function addWindows(perimeter: Perimeter, windowSpecs: WindowSpec[]): voi
       const offset = Math.floor(wallLength * windowSpec.offset) + windowSpec.width / 2
 
       try {
-        modelStore.addPerimeterWallOpening(perimeter.id, wall.id, {
-          type: 'window',
+        modelStore.addWallOpening(wall.id, {
+          openingType: 'window',
           centerOffsetFromWallStart: offset,
           width: windowWidth,
           height: windowSpec.height,
@@ -50,9 +50,9 @@ export function addWindows(perimeter: Perimeter, windowSpecs: WindowSpec[]): voi
 /**
  * Add doors to a perimeter based on door specifications
  */
-export function addDoors(perimeter: Perimeter, doorSpecs: DoorSpec[]): void {
+export function addDoors(perimeter: PerimeterWithGeometry, doorSpecs: DoorSpec[]): void {
   const modelStore = getModelActions()
-  const walls = perimeter.walls
+  const walls = perimeter.wallIds.map(modelStore.getPerimeterWallById)
 
   doorSpecs.forEach((doorSpec, index) => {
     if (walls.length > doorSpec.wallIndex) {
@@ -62,8 +62,8 @@ export function addDoors(perimeter: Perimeter, doorSpecs: DoorSpec[]): void {
       const offset = Math.floor(wallLength * doorSpec.offset) + doorSpec.width / 2
 
       try {
-        modelStore.addPerimeterWallOpening(perimeter.id, wall.id, {
-          type: 'door',
+        modelStore.addWallOpening(wall.id, {
+          openingType: 'door',
           centerOffsetFromWallStart: offset,
           width: doorWidth,
           height: doorSpec.height

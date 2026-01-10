@@ -15,8 +15,8 @@ import {
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { WallPostType } from '@/building/model/model'
-import { usePerimeters } from '@/building/store'
+import type { WallPostType } from '@/building/model'
+import { useWallPosts } from '@/building/store'
 import { useWallAssemblies } from '@/construction/config/store'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import { type MaterialId } from '@/construction/materials/material'
@@ -49,26 +49,22 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
   const { state } = useReactiveTool(tool)
 
   // Collect all post configurations from model and assemblies
-  const allPerimeters = usePerimeters()
+  const allPosts = useWallPosts()
   const allWallAssemblies = useWallAssemblies()
 
   const allPostConfigs = useMemo(() => {
     const existingConfigs: Record<string, ExistingPostConfig> = {}
 
     // From model posts
-    for (const perimeter of allPerimeters) {
-      for (const wall of perimeter.walls) {
-        for (const post of wall.posts) {
-          const key = `${post.type}:${post.width}:${post.thickness}:${post.material}:${post.infillMaterial}`
-          if (!(key in existingConfigs)) {
-            existingConfigs[key] = {
-              type: post.type,
-              width: post.width,
-              thickness: post.thickness,
-              material: post.material,
-              infillMaterial: post.infillMaterial
-            }
-          }
+    for (const post of allPosts) {
+      const key = `${post.postType}:${post.width}:${post.thickness}:${post.material}:${post.infillMaterial}`
+      if (!(key in existingConfigs)) {
+        existingConfigs[key] = {
+          type: post.postType,
+          width: post.width,
+          thickness: post.thickness,
+          material: post.material,
+          infillMaterial: post.infillMaterial
         }
       }
     }
@@ -105,7 +101,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
     }
 
     return Object.values(existingConfigs)
-  }, [allPerimeters, allWallAssemblies])
+  }, [allPosts, allWallAssemblies])
 
   // Event handlers
   const handleTypeChange = useCallback(

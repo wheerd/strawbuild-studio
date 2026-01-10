@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { PerimeterWithGeometry } from '@/building/model'
 import type { StoreyId } from '@/building/model/ids'
-import type { Perimeter, PerimeterCorner } from '@/building/model/model'
 import { getModelActions } from '@/building/store'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
 import { newVec2 } from '@/shared/geometry'
@@ -59,21 +59,8 @@ describe('FitToViewTool', () => {
   it('should perform fit to view and switch to select tool on activation', () => {
     const mockPerimeters = [
       {
-        corners: [
-          {
-            outsidePoint: newVec2(-1100, -600)
-          },
-          {
-            outsidePoint: newVec2(1100, -600)
-          },
-          {
-            outsidePoint: newVec2(1100, 600)
-          },
-          {
-            outsidePoint: newVec2(-1100, 600)
-          }
-        ] as PerimeterCorner[]
-      } as Perimeter
+        outerPolygon: { points: [newVec2(-1100, -600), newVec2(1100, -600), newVec2(1100, 600), newVec2(-1100, 600)] }
+      } as PerimeterWithGeometry
     ]
 
     mockGetPerimetersByStorey.mockReturnValue(mockPerimeters)
@@ -109,21 +96,8 @@ describe('FitToViewTool', () => {
   it('should calculate correct zoom and pan for given bounds', () => {
     const mockPerimeters = [
       {
-        corners: [
-          {
-            outsidePoint: newVec2(-100, -100)
-          },
-          {
-            outsidePoint: newVec2(2100, -100)
-          },
-          {
-            outsidePoint: newVec2(2100, 900)
-          },
-          {
-            outsidePoint: newVec2(-100, 900)
-          }
-        ] as PerimeterCorner[]
-      } as Perimeter
+        outerPolygon: { points: [newVec2(-100, -100), newVec2(2100, -100), newVec2(2100, 900), newVec2(-100, 900)] }
+      } as PerimeterWithGeometry
     ]
 
     mockGetPerimetersByStorey.mockReturnValue(mockPerimeters)
@@ -143,26 +117,13 @@ describe('FitToViewTool', () => {
   })
 
   it('should enforce minimum dimensions for small bounds', () => {
-    const mockOuterWalls = [
+    const mockPerimeters = [
       {
-        corners: [
-          {
-            outsidePoint: newVec2(95, 95)
-          },
-          {
-            outsidePoint: newVec2(115, 95)
-          },
-          {
-            outsidePoint: newVec2(115, 115)
-          },
-          {
-            outsidePoint: newVec2(95, 115)
-          }
-        ]
-      } as Perimeter
+        outerPolygon: { points: [newVec2(95, 95), newVec2(115, 95), newVec2(115, 115), newVec2(95, 115)] }
+      } as PerimeterWithGeometry
     ]
 
-    mockGetPerimetersByStorey.mockReturnValue(mockOuterWalls)
+    mockGetPerimetersByStorey.mockReturnValue(mockPerimeters)
     mockGetFloorAreasByStorey.mockReturnValue([])
     mockGetRoofsByStorey.mockReturnValue([])
 

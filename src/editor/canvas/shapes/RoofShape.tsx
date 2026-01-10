@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import { Arrow, Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
-import type { Roof } from '@/building/model/model'
+import type { Roof } from '@/building/model'
+import { useRoofOverhangsByRoof } from '@/building/store'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import {
   Bounds2D,
@@ -26,6 +27,7 @@ export function RoofShape({ roof }: RoofShapeProps): React.JSX.Element {
   const select = useSelectionStore()
   const theme = useCanvasTheme()
   const isSelected = select.isCurrentSelection(roof.id)
+  const overhangs = useRoofOverhangsByRoof(roof.id)
 
   const points = roof.referencePolygon.points.flatMap((point: Vec2) => [point[0], point[1]])
   const eavePolygon = roof.overhangPolygon.points.flatMap((point: Vec2) => [point[0], point[1]])
@@ -86,7 +88,7 @@ export function RoofShape({ roof }: RoofShapeProps): React.JSX.Element {
       <Line points={eavePolygon} closed stroke={theme.border} strokeWidth={10} dash={[200, 100]} listening />
 
       {/* Individual overhang sides - rendered as trapezoids */}
-      {roof.overhangs.map(overhang => (
+      {overhangs.map(overhang => (
         <RoofOverhangShape key={overhang.id} overhang={overhang} roofId={roof.id} />
       ))}
 

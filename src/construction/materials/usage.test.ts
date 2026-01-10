@@ -1,10 +1,12 @@
 import { renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { WallPostWithGeometry } from '@/building/model'
 import { createRingBeamAssemblyId, createWallAssemblyId } from '@/building/model/ids'
 import type { RingBeamAssemblyConfig, WallAssemblyConfig } from '@/construction/config/types'
+import { partial } from '@/test/helpers'
 
-import { createMaterialId, roughWood, strawbale, woodwool } from './material'
+import { concrete, createMaterialId, roughWood, strawbale, woodwool } from './material'
 import { useMaterialUsage } from './usage'
 
 const defaultStrawMaterialId = strawbale.id
@@ -16,7 +18,7 @@ const mockUseFloorAssemblies: any = vi.fn(() => [])
 const mockUseRoofAssemblies: any = vi.fn(() => [])
 const mockUseOpeningAssemblies: any = vi.fn(() => [])
 const mockUseDefaultStrawMaterialId: any = vi.fn(() => defaultStrawMaterialId)
-const mockUsePerimeters: any = vi.fn(() => [])
+const mockUseWallPosts: any = vi.fn(() => [])
 
 vi.mock('@/construction/config/store', () => ({
   useRingBeamAssemblies: () => mockUseRingBeamAssemblies(),
@@ -28,7 +30,7 @@ vi.mock('@/construction/config/store', () => ({
 }))
 
 vi.mock('@/building/store', () => ({
-  usePerimeters: () => mockUsePerimeters()
+  useWallPosts: () => mockUseWallPosts()
 }))
 
 describe('Material Usage Detection', () => {
@@ -41,7 +43,7 @@ describe('Material Usage Detection', () => {
       mockUseRoofAssemblies.mockReturnValue([])
       mockUseOpeningAssemblies.mockReturnValue([])
       mockUseDefaultStrawMaterialId.mockReturnValue(defaultStrawMaterialId)
-      mockUsePerimeters.mockReturnValue([])
+      mockUseWallPosts.mockReturnValue([])
     })
 
     it('detects material not in use', () => {
@@ -288,49 +290,25 @@ describe('Material Usage Detection', () => {
       const moduleBattenId = createMaterialId()
       const infillBattenId = createMaterialId()
 
-      const wallAssembly: WallAssemblyConfig = {
+      const wallAssembly = partial<WallAssemblyConfig>({
         id: createWallAssemblyId(),
-        name: 'Modules with Battens',
         type: 'modules',
         module: {
-          minWidth: 920,
-          maxWidth: 920,
-          type: 'single',
-          frameThickness: 60,
           frameMaterial: roughWood.id,
           strawMaterial: strawbale.id,
           triangularBattens: {
-            size: 30,
-            material: moduleBattenId,
-            inside: true,
-            outside: true,
-            minLength: 100
+            material: moduleBattenId
           }
         },
         infill: {
-          maxPostSpacing: 900,
-          desiredPostSpacing: 800,
-          minStrawSpace: 70,
           posts: {
-            type: 'full',
-            width: 60,
             material: roughWood.id
           },
           triangularBattens: {
-            size: 30,
-            material: infillBattenId,
-            inside: true,
-            outside: true,
-            minLength: 100
+            material: infillBattenId
           }
-        },
-        layers: {
-          insideThickness: 30,
-          insideLayers: [],
-          outsideThickness: 50,
-          outsideLayers: []
         }
-      }
+      })
 
       mockUseWallAssemblies.mockReturnValue([wallAssembly])
 
@@ -343,6 +321,30 @@ describe('Material Usage Detection', () => {
       const { result: infillResult } = renderHook(() => useMaterialUsage(infillBattenId))
       expect(infillResult.current.isUsed).toBe(true)
       expect(infillResult.current.assemblyIds).toEqual([wallAssembly.id])
+    })
+
+    it('detects wall post materials', () => {
+      const postMaterial = createMaterialId()
+      const infillMaterial = createMaterialId()
+
+      const wallPost = partial<WallPostWithGeometry>({
+        material: postMaterial,
+        infillMaterial
+      })
+
+      mockUseWallPosts.mockReturnValue([wallPost])
+
+      const { result: postResult } = renderHook(() => useMaterialUsage(postMaterial))
+      expect(postResult.current.isUsed).toBe(true)
+      expect(postResult.current.usedInWallPosts).toBe(true)
+
+      const { result: infillResult } = renderHook(() => useMaterialUsage(infillMaterial))
+      expect(infillResult.current.isUsed).toBe(true)
+      expect(infillResult.current.usedInWallPosts).toBe(true)
+
+      const { result: otherResult } = renderHook(() => useMaterialUsage(concrete.id))
+      expect(otherResult.current.isUsed).toBe(false)
+      expect(otherResult.current.usedInWallPosts).toBe(false)
     })
 
     it('detects materials used across multiple configs', () => {

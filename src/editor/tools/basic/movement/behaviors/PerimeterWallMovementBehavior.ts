@@ -1,6 +1,6 @@
+import type { PerimeterWallWithGeometry, PerimeterWithGeometry } from '@/building/model'
 import type { SelectableId } from '@/building/model/ids'
 import { isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
-import type { Perimeter, PerimeterWall } from '@/building/model/model'
 import type { StoreActions } from '@/building/store/types'
 import type {
   MovementBehavior,
@@ -9,13 +9,13 @@ import type {
   PointerMovementState
 } from '@/editor/tools/basic/movement/MovementBehavior'
 import { PerimeterWallMovementPreview } from '@/editor/tools/basic/movement/previews/PerimeterWallMovementPreview'
-import { type Vec2, addVec2, copyVec2, dotVec2, scaleVec2 } from '@/shared/geometry'
+import { type Vec2, addVec2, dotVec2, scaleVec2 } from '@/shared/geometry'
 import { wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 
 // Wall wall movement needs access to the wall to update the boundary
 export interface PerimeterWallEntityContext {
-  perimeter: Perimeter
-  wall: PerimeterWall
+  perimeter: PerimeterWithGeometry
+  wall: PerimeterWallWithGeometry
   wallIndex: number // Index of the wall in the wall
 }
 
@@ -38,14 +38,14 @@ export class PerimeterWallMovementBehavior implements MovementBehavior<
     }
 
     const perimeter = store.getPerimeterById(perimeterId)
-    const wall = store.getPerimeterWallById(perimeterId, entityId)
+    const wall = store.getPerimeterWallById(entityId)
 
     if (!perimeter || !wall) {
       throw new Error(`Could not find wall or wall ${entityId}`)
     }
 
     // Find which wall index this is
-    const wallIndex = perimeter.walls.findIndex(w => w.id === wall.id)
+    const wallIndex = perimeter.wallIds.indexOf(wall.id)
     if (wallIndex === -1) {
       throw new Error(`Could not find wall index for ${entityId}`)
     }
@@ -61,10 +61,12 @@ export class PerimeterWallMovementBehavior implements MovementBehavior<
     const projectedDistance = dotVec2(pointerState.delta, wall.outsideDirection)
     const projectedDelta = scaleVec2(wall.outsideDirection, projectedDistance)
 
-    const newBoundary = perimeter.referencePolygon.map(point => copyVec2(point))
-    newBoundary[wallIndex] = addVec2(perimeter.referencePolygon[wallIndex], projectedDelta)
-    newBoundary[(wallIndex + 1) % perimeter.referencePolygon.length] = addVec2(
-      perimeter.referencePolygon[(wallIndex + 1) % perimeter.referencePolygon.length],
+    const referencePolygon =
+      perimeter.referenceSide === 'inside' ? perimeter.innerPolygon.points : perimeter.outerPolygon.points
+    const newBoundary = [...referencePolygon]
+    newBoundary[wallIndex] = addVec2(referencePolygon[wallIndex], projectedDelta)
+    newBoundary[(wallIndex + 1) % referencePolygon.length] = addVec2(
+      referencePolygon[(wallIndex + 1) % referencePolygon.length],
       projectedDelta
     )
     return { movementDelta: projectedDelta, newBoundary }
@@ -78,10 +80,12 @@ export class PerimeterWallMovementBehavior implements MovementBehavior<
     const projectedDistance = dotVec2(pointerState.delta, wall.outsideDirection)
     const projectedDelta = scaleVec2(wall.outsideDirection, projectedDistance)
 
-    const newBoundary = perimeter.referencePolygon.map(point => copyVec2(point))
-    newBoundary[wallIndex] = addVec2(perimeter.referencePolygon[wallIndex], projectedDelta)
-    newBoundary[(wallIndex + 1) % perimeter.referencePolygon.length] = addVec2(
-      perimeter.referencePolygon[(wallIndex + 1) % perimeter.referencePolygon.length],
+    const referencePolygon =
+      perimeter.referenceSide === 'inside' ? perimeter.innerPolygon.points : perimeter.outerPolygon.points
+    const newBoundary = [...referencePolygon]
+    newBoundary[wallIndex] = addVec2(referencePolygon[wallIndex], projectedDelta)
+    newBoundary[(wallIndex + 1) % referencePolygon.length] = addVec2(
+      referencePolygon[(wallIndex + 1) % referencePolygon.length],
       projectedDelta
     )
     return { movementDelta: projectedDelta, newBoundary }
@@ -109,10 +113,12 @@ export class PerimeterWallMovementBehavior implements MovementBehavior<
     const projectedDelta = scaleVec2(wall.outsideDirection, projectedDistance)
 
     // Create new boundary by moving both wall endpoints by the projected delta
-    const newBoundary = perimeter.referencePolygon.map(point => copyVec2(point))
-    newBoundary[wallIndex] = addVec2(perimeter.referencePolygon[wallIndex], projectedDelta)
-    newBoundary[(wallIndex + 1) % perimeter.referencePolygon.length] = addVec2(
-      perimeter.referencePolygon[(wallIndex + 1) % perimeter.referencePolygon.length],
+    const referencePolygon =
+      perimeter.referenceSide === 'inside' ? perimeter.innerPolygon.points : perimeter.outerPolygon.points
+    const newBoundary = [...referencePolygon]
+    newBoundary[wallIndex] = addVec2(referencePolygon[wallIndex], projectedDelta)
+    newBoundary[(wallIndex + 1) % referencePolygon.length] = addVec2(
+      referencePolygon[(wallIndex + 1) % referencePolygon.length],
       projectedDelta
     )
 

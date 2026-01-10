@@ -17,7 +17,7 @@ interface GridLayerProps {
 }
 
 // Calculate appropriate grid size based on zoom level
-function calculateDynamicGridSize(zoom: number): number {
+export function calculateDynamicGridSize(zoom: number): number {
   // Target spacing in pixels on screen
   const targetPixelSpacing = 30
 

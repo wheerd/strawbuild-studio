@@ -7,7 +7,7 @@ import type {
   RoofAssemblyId,
   WallAssemblyId
 } from '@/building/model/ids'
-import { usePerimeters } from '@/building/store'
+import { useWallPosts } from '@/building/store'
 import {
   useDefaultStrawMaterialId,
   useFloorAssemblies,
@@ -47,7 +47,7 @@ export function useMaterialUsage(materialId: MaterialId): MaterialUsage {
   const roofAssemblies = useRoofAssemblies()
   const openingAssemblies = useOpeningAssemblies()
   const defaultStrawMaterialId = useDefaultStrawMaterialId()
-  const perimeters = usePerimeters()
+  const wallPosts = useWallPosts()
 
   return useMemo(() => {
     const assemblyIdSet = new Set<MaterialUsageId>()
@@ -89,17 +89,12 @@ export function useMaterialUsage(materialId: MaterialId): MaterialUsage {
     })
 
     // Check wall posts from building model
-    for (const perimeter of perimeters) {
-      for (const wall of perimeter.walls) {
-        for (const post of wall.posts) {
-          if (post.material === materialId || post.infillMaterial === materialId) {
-            usedInWallPosts = true
-            break
-          }
-        }
-        if (usedInWallPosts) break
+
+    for (const post of wallPosts) {
+      if (post.material === materialId || post.infillMaterial === materialId) {
+        usedInWallPosts = true
+        break
       }
-      if (usedInWallPosts) break
     }
 
     const isDefaultStraw = defaultStrawMaterialId === materialId
@@ -118,7 +113,7 @@ export function useMaterialUsage(materialId: MaterialId): MaterialUsage {
     roofAssemblies,
     openingAssemblies,
     defaultStrawMaterialId,
-    perimeters
+    wallPosts
   ])
 }
 
