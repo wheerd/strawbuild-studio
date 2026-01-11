@@ -8,9 +8,9 @@ import { ensurePolygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/sh
 import {
   createLShapedBoundary,
   createRectangularBoundary,
+  expectNoOrphanedEntities,
   expectThrowsForInvalidId,
-  setupPerimeterSlice,
-  verifyNoOrphanedEntities
+  setupPerimeterSlice
 } from './testHelpers'
 
 vi.mock('@/shared/geometry/polygon', async importOriginal => {
@@ -219,7 +219,7 @@ describe('openingSlice', () => {
       it('should have no orphaned entities after removal', () => {
         slice.actions.removeWallOpening(openingId)
 
-        verifyNoOrphanedEntities(slice)
+        expectNoOrphanedEntities(slice)
       })
 
       it('should not throw for non-existent opening', () => {
@@ -323,9 +323,8 @@ describe('openingSlice', () => {
 
         expect(entity.id).toBe(opening.id)
         expect(entity.type).toBe('opening')
-        if (entity.type === 'opening') {
-          expect(entity.openingType).toBe('door')
-        }
+        expect.assert(entity.type === 'opening')
+        expect(entity.openingType).toBe('door')
       })
 
       it('should throw for non-existent entity', () => {

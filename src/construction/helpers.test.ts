@@ -88,7 +88,12 @@ function polygonsOverlap(poly1: Polygon2D, poly2: Polygon2D): boolean {
 }
 
 // Helper function to verify partitioning results
-function verifyPartitioning(original: Polygon2D, partitions: Polygon2D[], expectedCount: number, description: string) {
+function expectValidPartitioning(
+  original: Polygon2D,
+  partitions: Polygon2D[],
+  expectedCount: number,
+  description: string
+) {
   // Check count
   expect(partitions, `${description}: Expected ${expectedCount} partitions`).toHaveLength(expectedCount)
 
@@ -122,7 +127,7 @@ describe('partitionByAlignedEdges', () => {
 
       const result = Array.from(partitionByAlignedEdges(triangle, newVec2(1, 0)))
 
-      verifyPartitioning(triangle, result, 1, 'Triangle')
+      expectValidPartitioning(triangle, result, 1, 'Triangle')
       expect(result[0]).toEqual(triangle)
     })
   })
@@ -135,7 +140,7 @@ describe('partitionByAlignedEdges', () => {
 
       const result = Array.from(partitionByAlignedEdges(rectangle, newVec2(1, 0)))
 
-      verifyPartitioning(rectangle, result, 1, 'Rectangle (no splits)')
+      expectValidPartitioning(rectangle, result, 1, 'Rectangle (no splits)')
     })
   })
 
@@ -154,14 +159,14 @@ describe('partitionByAlignedEdges', () => {
       const result = Array.from(partitionByAlignedEdges(lShape, newVec2(1, 0)))
 
       await expect(svgVisualisation(lShape, result)).toMatchFileSnapshot('./__snapshots__/lShape.horizontal.svg')
-      verifyPartitioning(lShape, result, 2, 'L-shape (horizontal)')
+      expectValidPartitioning(lShape, result, 2, 'L-shape (horizontal)')
     })
 
     it('should split L-shape vertically into 2 polygons', async () => {
       const result = Array.from(partitionByAlignedEdges(lShape, newVec2(0, 1)))
 
       await expect(svgVisualisation(lShape, result)).toMatchFileSnapshot('./__snapshots__/lShape.vertical.svg')
-      verifyPartitioning(lShape, result, 2, 'L-shape (vertical)')
+      expectValidPartitioning(lShape, result, 2, 'L-shape (vertical)')
     })
   })
 
@@ -188,14 +193,14 @@ describe('partitionByAlignedEdges', () => {
       const result = Array.from(partitionByAlignedEdges(uShape, newVec2(1, 0)))
 
       await expect(svgVisualisation(uShape, result)).toMatchFileSnapshot('./__snapshots__/uShape.horizontal.svg')
-      verifyPartitioning(uShape, result, 3, 'U-shape (horizontal)')
+      expectValidPartitioning(uShape, result, 3, 'U-shape (horizontal)')
     })
 
     it('should partition U-shape vertically', async () => {
       const result = Array.from(partitionByAlignedEdges(uShape, newVec2(0, 1)))
 
       await expect(svgVisualisation(uShape, result)).toMatchFileSnapshot('./__snapshots__/uShape.vertical.svg')
-      verifyPartitioning(uShape, result, 3, 'U-shape (vertical)')
+      expectValidPartitioning(uShape, result, 3, 'U-shape (vertical)')
     })
   })
 
@@ -223,14 +228,14 @@ describe('partitionByAlignedEdges', () => {
       const result = Array.from(partitionByAlignedEdges(tShape, newVec2(1, 0)))
 
       await expect(svgVisualisation(tShape, result)).toMatchFileSnapshot('./__snapshots__/tShape.horizontal.svg')
-      verifyPartitioning(tShape, result, 2, 'T-shape (horizontal)')
+      expectValidPartitioning(tShape, result, 2, 'T-shape (horizontal)')
     })
 
     it('should split T-shape vertically into multiple polygons', async () => {
       const result = Array.from(partitionByAlignedEdges(tShape, newVec2(0, 1)))
 
       await expect(svgVisualisation(tShape, result)).toMatchFileSnapshot('./__snapshots__/tShape.vertical.svg')
-      verifyPartitioning(tShape, result, 3, 'T-shape (vertical)')
+      expectValidPartitioning(tShape, result, 3, 'T-shape (vertical)')
     })
   })
 
@@ -279,7 +284,7 @@ describe('partitionByAlignedEdges', () => {
       const result = Array.from(partitionByAlignedEdges(eShape, newVec2(1, 0)))
 
       await expect(svgVisualisation(eShape, result)).toMatchFileSnapshot('./__snapshots__/eShape.horizontal.svg')
-      verifyPartitioning(eShape, result, 5, 'E-shape (horizontal)')
+      expectValidPartitioning(eShape, result, 5, 'E-shape (horizontal)')
     })
 
     it('should split E-shape vertically into multiple polygons', async () => {
@@ -297,7 +302,7 @@ describe('partitionByAlignedEdges', () => {
       const result = Array.from(partitionByAlignedEdges(eShape, newVec2(0, 1)))
 
       await expect(svgVisualisation(eShape, result)).toMatchFileSnapshot('./__snapshots__/eShape.vertical.svg')
-      verifyPartitioning(eShape, result, 5, 'E-shape (vertical)')
+      expectValidPartitioning(eShape, result, 5, 'E-shape (vertical)')
     })
   })
 })

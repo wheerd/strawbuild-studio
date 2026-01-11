@@ -602,63 +602,6 @@ exports[`PolygonToolOverlay > snapping behavior > renders snap lines when snap r
 </div>
 `;
 
-exports[`PolygonToolOverlay > snapping behavior > renders snap lines when snap result has lines 2`] = `
-<div>
-  <div
-    data-testid="konva-group"
-  >
-    <div
-      data-testid="konva-group"
-    >
-      <div
-        data-opacity="0.5"
-        data-points="[-1500,100,1700,100]"
-        data-stroke="var(--color-grid-horizontal)"
-        data-stroke-width="2"
-        data-testid="konva-line"
-        listening="false"
-      />
-      <div
-        data-opacity="0.5"
-        data-points="[200,-1400,200,1800]"
-        data-stroke="var(--color-grid-vertical)"
-        data-stroke-width="2"
-        data-testid="konva-line"
-        listening="false"
-      />
-    </div>
-    <div
-      data-dash="[10,10]"
-      data-points="[50,50,145,145]"
-      data-stroke="var(--color-text-tertiary)"
-      data-stroke-width="2"
-      data-testid="konva-line"
-      listening="false"
-    />
-    <div
-      data-fill="var(--color-primary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="50"
-      data-y="50"
-      listening="false"
-    />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="black"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="145"
-      data-y="145"
-      listening="false"
-    />
-  </div>
-</div>
-`;
-
 exports[`PolygonToolOverlay > snapping behavior > renders snap position when snap result exists 1`] = `
 <div>
   <div

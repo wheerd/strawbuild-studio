@@ -81,7 +81,7 @@ export function setupPerimeterSlice() {
 /**
  * Verifies that all references within a perimeter are consistent
  */
-export function verifyPerimeterReferences(state: PerimetersState, perimeterId: PerimeterId): void {
+export function expectConsistentPerimeterReferences(state: PerimetersState, perimeterId: PerimeterId): void {
   const perimeter = state.perimeters[perimeterId]
   expect(perimeter).toBeDefined()
 
@@ -140,7 +140,7 @@ export function verifyPerimeterReferences(state: PerimetersState, perimeterId: P
 /**
  * Verifies that geometry exists for all entities in a perimeter
  */
-export function verifyGeometryExists(state: PerimetersState, perimeterId: PerimeterId): void {
+export function expectGeometryExists(state: PerimetersState, perimeterId: PerimeterId): void {
   const perimeter = state.perimeters[perimeterId]
 
   // Verify perimeter geometry
@@ -160,7 +160,7 @@ export function verifyGeometryExists(state: PerimetersState, perimeterId: Perime
 /**
  * Verifies that there are no orphaned entities or geometry in the state
  */
-export function verifyNoOrphanedEntities(state: PerimetersState): void {
+export function expectNoOrphanedEntities(state: PerimetersState): void {
   const allPerimeterIds = new Set(Object.keys(state.perimeters))
   const allWallIds = new Set<string>()
   const allCornerIds = new Set<string>()

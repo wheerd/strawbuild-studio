@@ -122,12 +122,11 @@ describe('ConfigStore', () => {
       const defaultAssembly = assemblies[0]
       expect(defaultAssembly.name).toBe('Full 36x6cm')
       expect(defaultAssembly.type).toBe('full')
-      if (defaultAssembly.type === 'full') {
-        expect(defaultAssembly.height).toBe(60)
-        expect(defaultAssembly.width).toBe(360)
-        expect(defaultAssembly.offsetFromEdge).toBe(0)
-        expect(defaultAssembly.material).toBeDefined()
-      }
+      expect.assert(defaultAssembly.type === 'full')
+      expect(defaultAssembly.height).toBe(60)
+      expect(defaultAssembly.width).toBe(360)
+      expect(defaultAssembly.offsetFromEdge).toBe(0)
+      expect(defaultAssembly.material).toBeDefined()
     })
   })
 
@@ -342,9 +341,8 @@ describe('ConfigStore', () => {
       const assembly = store.addRingBeamAssembly('Negative Offset Assembly', config)
 
       expect(assembly.type).toBe('full')
-      if (assembly.type === 'full') {
-        expect(assembly.offsetFromEdge).toBe(-50)
-      }
+      expect.assert(assembly.type === 'full')
+      expect(assembly.offsetFromEdge).toBe(-50)
     })
   })
 
@@ -416,11 +414,9 @@ describe('ConfigStore', () => {
       }).toThrow('Inside layer thickness cannot be negative')
 
       const fetched = store.getWallAssemblyById(assembly.id)
-      if (fetched?.type === 'infill') {
-        expect(fetched.layers.insideThickness).toBe(30)
-      } else {
-        throw new Error('Expected infill wall assembly')
-      }
+      expect(fetched?.type).toBe('infill')
+      expect.assert(fetched?.type === 'infill')
+      expect(fetched.layers.insideThickness).toBe(30)
     })
 
     const createMonolithicLayer = (thickness: number, name = 'Layer'): LayerConfig => ({

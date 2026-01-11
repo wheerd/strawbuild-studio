@@ -10,12 +10,12 @@ import { ensurePolygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/sh
 
 import {
   createRectangularBoundary,
+  expectConsistentPerimeterReferences,
+  expectGeometryExists,
+  expectNoOrphanedEntities,
   expectThrowsForInvalidId,
   mockPost,
-  setupPerimeterSlice,
-  verifyGeometryExists,
-  verifyNoOrphanedEntities,
-  verifyPerimeterReferences
+  setupPerimeterSlice
 } from './testHelpers'
 
 vi.mock('@/shared/geometry/polygon', async importOriginal => {
@@ -117,7 +117,7 @@ describe('perimeterCornerSlice', () => {
       it('should maintain reference consistency', () => {
         slice.actions.removePerimeterCorner(cornerId)
 
-        verifyPerimeterReferences(slice, perimeterId)
+        expectConsistentPerimeterReferences(slice, perimeterId)
       })
 
       it('should return false for minimum corners', () => {
@@ -147,13 +147,13 @@ describe('perimeterCornerSlice', () => {
       it('should recalculate perimeter geometry', () => {
         slice.actions.removePerimeterCorner(cornerId)
 
-        verifyGeometryExists(slice, perimeterId)
+        expectGeometryExists(slice, perimeterId)
       })
 
       it('should have no orphaned entities after removal', () => {
         slice.actions.removePerimeterCorner(cornerId)
 
-        verifyNoOrphanedEntities(slice)
+        expectNoOrphanedEntities(slice)
       })
 
       it('should remove openings on merged wall', () => {
@@ -212,7 +212,7 @@ describe('perimeterCornerSlice', () => {
 
         slice.actions.updatePerimeterCornerConstructedByWall(cornerId, newConstructedBy)
 
-        verifyGeometryExists(slice, perimeterId)
+        expectGeometryExists(slice, perimeterId)
       })
 
       it('should maintain reference consistency', () => {
@@ -222,7 +222,7 @@ describe('perimeterCornerSlice', () => {
 
         slice.actions.updatePerimeterCornerConstructedByWall(cornerId, newConstructedBy)
 
-        verifyPerimeterReferences(slice, perimeterId)
+        expectConsistentPerimeterReferences(slice, perimeterId)
       })
 
       it('should throw for non-existent corner', () => {

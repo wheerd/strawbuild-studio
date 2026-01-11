@@ -231,10 +231,9 @@ describe('measurements', () => {
       const rightSide = results[1]
       const sideWithMeasurements = leftSide.lines.length > 0 ? leftSide : rightSide
 
-      if (sideWithMeasurements.lines.length > 0) {
-        const totalInFirstRow = sideWithMeasurements.lines[0].length
-        expect(totalInFirstRow).toBeGreaterThanOrEqual(1)
-      }
+      expect.assert(sideWithMeasurements.lines.length > 0)
+      const totalInFirstRow = sideWithMeasurements.lines[0].length
+      expect(totalInFirstRow).toBeGreaterThanOrEqual(1)
     })
 
     it('should deduplicate measurements with identical t1, t2, and tags', () => {
@@ -319,16 +318,14 @@ describe('measurements', () => {
       const direct = createDirectMeasurement()
 
       expect('extend1' in auto).toBe(true)
-      if ('extend1' in auto) {
-        expect(auto.extend1).toEqual(newVec3(0, 50, 0))
-        expect(auto.extend2).toEqual(newVec3(0, 0, 30))
-      }
+      expect.assert('extend1' in auto)
+      expect(auto.extend1).toEqual(newVec3(0, 50, 0))
+      expect(auto.extend2).toEqual(newVec3(0, 0, 30))
 
       expect('label' in direct).toBe(true)
-      if ('label' in direct) {
-        expect(direct.label).toBe('100mm')
-        expect(direct.offset).toBe(0)
-      }
+      expect.assert('label' in direct)
+      expect(direct.label).toBe('100mm')
+      expect(direct.offset).toBe(0)
     })
   })
 

@@ -9,12 +9,12 @@ import { ensurePolygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/sh
 import {
   createLShapedBoundary,
   createRectangularBoundary,
+  expectConsistentPerimeterReferences,
+  expectGeometryExists,
+  expectNoOrphanedEntities,
   expectThrowsForInvalidId,
   mockPost,
-  setupPerimeterSlice,
-  verifyGeometryExists,
-  verifyNoOrphanedEntities,
-  verifyPerimeterReferences
+  setupPerimeterSlice
 } from './testHelpers'
 
 vi.mock('@/shared/geometry/polygon', async importOriginal => {
@@ -89,7 +89,7 @@ describe('perimeterWallSlice', () => {
       it('should recalculate geometry', () => {
         slice.actions.updatePerimeterWallThickness(wallId, 300)
 
-        verifyGeometryExists(slice, perimeterId)
+        expectGeometryExists(slice, perimeterId)
       })
 
       it('should reject zero thickness', () => {
@@ -229,7 +229,7 @@ describe('perimeterWallSlice', () => {
       it('should maintain reference consistency', () => {
         slice.actions.removePerimeterWall(wallId)
 
-        verifyPerimeterReferences(slice, perimeterId)
+        expectConsistentPerimeterReferences(slice, perimeterId)
       })
 
       it('should return false for minimum walls', () => {
@@ -283,7 +283,7 @@ describe('perimeterWallSlice', () => {
       it('should have no orphaned entities after removal', () => {
         slice.actions.removePerimeterWall(wallId)
 
-        verifyNoOrphanedEntities(slice)
+        expectNoOrphanedEntities(slice)
       })
     })
 
@@ -341,7 +341,7 @@ describe('perimeterWallSlice', () => {
 
         slice.actions.splitPerimeterWall(wallId, splitPosition)
 
-        verifyPerimeterReferences(slice, perimeterId)
+        expectConsistentPerimeterReferences(slice, perimeterId)
       })
 
       it('should redistribute openings based on position', () => {
@@ -396,7 +396,7 @@ describe('perimeterWallSlice', () => {
         const newWallId = slice.actions.splitPerimeterWall(wallId, splitPosition)
 
         expect(slice._perimeterWallGeometry[newWallId!]).toBeDefined()
-        verifyGeometryExists(slice, perimeterId)
+        expectGeometryExists(slice, perimeterId)
       })
     })
   })

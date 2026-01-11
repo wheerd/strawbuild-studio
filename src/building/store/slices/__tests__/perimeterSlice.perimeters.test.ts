@@ -10,11 +10,11 @@ import {
   createLShapedBoundary,
   createRectangularBoundary,
   createTriangularBoundary,
+  expectConsistentPerimeterReferences,
+  expectGeometryExists,
+  expectNoOrphanedEntities,
   expectThrowsForInvalidId,
-  setupPerimeterSlice,
-  verifyGeometryExists,
-  verifyNoOrphanedEntities,
-  verifyPerimeterReferences
+  setupPerimeterSlice
 } from './testHelpers'
 
 // Mock geometry functions
@@ -208,7 +208,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
-      verifyPerimeterReferences(slice, perimeter.id)
+      expectConsistentPerimeterReferences(slice, perimeter.id)
     })
 
     it('should maintain references for complex polygon', () => {
@@ -217,7 +217,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
-      verifyPerimeterReferences(slice, perimeter.id)
+      expectConsistentPerimeterReferences(slice, perimeter.id)
     })
   })
 
@@ -228,7 +228,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
-      verifyGeometryExists(slice, perimeter.id)
+      expectGeometryExists(slice, perimeter.id)
     })
 
     it('should compute wall geometry correctly', () => {
@@ -340,7 +340,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
       expect(slice.perimeters[perimeter1.id]).toBeUndefined()
       expect(slice.perimeters[perimeter2.id]).toBeDefined()
-      verifyPerimeterReferences(slice, perimeter2.id)
+      expectConsistentPerimeterReferences(slice, perimeter2.id)
     })
   })
 
@@ -351,7 +351,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
       slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
-      verifyNoOrphanedEntities(slice)
+      expectNoOrphanedEntities(slice)
     })
 
     it('should have no orphaned entities after remove', () => {
@@ -361,7 +361,7 @@ describe('perimeterSlice - Basic CRUD', () => {
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
       slice.actions.removePerimeter(perimeter.id)
 
-      verifyNoOrphanedEntities(slice)
+      expectNoOrphanedEntities(slice)
     })
 
     it('should have no orphaned entities with multiple perimeters', () => {
@@ -373,7 +373,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
       slice.actions.removePerimeter(perimeter2.id)
 
-      verifyNoOrphanedEntities(slice)
+      expectNoOrphanedEntities(slice)
     })
   })
 
@@ -448,7 +448,7 @@ describe('perimeterSlice - Basic CRUD', () => {
         slice.actions.movePerimeter(perimeter.id, offset)
 
         // Verify geometry still exists and is valid
-        verifyGeometryExists(slice, perimeter.id)
+        expectGeometryExists(slice, perimeter.id)
         const updatedPerimeter = slice.actions.getPerimeterById(perimeter.id)
         expect(updatedPerimeter.innerPolygon).toBeDefined()
         expect(updatedPerimeter.outerPolygon).toBeDefined()
@@ -572,7 +572,7 @@ describe('perimeterSlice - Basic CRUD', () => {
         })
 
         // Verify geometry was recalculated
-        verifyGeometryExists(slice, perimeter.id)
+        expectGeometryExists(slice, perimeter.id)
       })
 
       it('should reject invalid thickness', () => {
