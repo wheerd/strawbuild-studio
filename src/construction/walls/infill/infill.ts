@@ -161,13 +161,13 @@ function getBaleWidth(
   // Not enough space for full bale and a minimal spacer, but more than a single full bale + post
   // -> Shorten the bale so that a post and a minimal spacer fit
   if (availableWidth < fullBaleAndPost + minStrawSpace && availableWidth > fullBaleAndPost) {
-    return availableWidth - minStrawSpace - postWidth
+    return Math.max(availableWidth - minStrawSpace - postWidth, 0)
   }
 
   // More space than a full bale, but not enough for full bale and post
   // -> Shorten bale to fit a post
   if (availableWidth < fullBaleAndPost) {
-    return availableWidth - postWidth
+    return Math.max(availableWidth - postWidth, 0)
   }
 
   return desiredSpacing
