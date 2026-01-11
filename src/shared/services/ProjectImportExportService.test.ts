@@ -199,26 +199,24 @@ describe('ProjectImportExportService', () => {
       const result = await ProjectImportExportService.exportToString()
       expect('error' in result ? result.error : '').toEqual('')
       expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.content).toBeDefined()
-        expect(typeof result.content).toBe('string')
+      expect.assert(result.success)
+      expect(result.content).toBeDefined()
+      expect(typeof result.content).toBe('string')
 
-        // Verify the content is valid JSON
-        const parsed = JSON.parse(result.content)
-        expect(parsed.version).toBeDefined()
-        expect(parsed.timestamp).toBeDefined()
-        expect(parsed.modelStore).toBeDefined()
-        expect(parsed.modelStore.storeys).toBeDefined()
-        expect(parsed.modelStore.minLevel).toBeDefined()
-        expect(parsed.configStore).toBeDefined()
-        expect(parsed.configStore.defaultStrawMaterial).toBe('material_straw')
+      // Verify the content is valid JSON
+      const parsed = JSON.parse(result.content)
+      expect(parsed.version).toBeDefined()
+      expect(parsed.timestamp).toBeDefined()
+      expect(parsed.modelStore).toBeDefined()
+      expect(parsed.modelStore.storeys).toBeDefined()
+      expect(parsed.modelStore.minLevel).toBeDefined()
+      expect(parsed.configStore).toBeDefined()
+      expect(parsed.configStore.defaultStrawMaterial).toBe('material_straw')
 
-        const exportedStorey = parsed.modelStore.storeys[0]
-        expect(exportedStorey).toBeDefined()
-        if (exportedStorey.perimeters.length > 0) {
-          expect(exportedStorey.perimeters[0].referenceSide).toBeDefined()
-        }
-      }
+      const exportedStorey = parsed.modelStore.storeys[0]
+      expect(exportedStorey).toBeDefined()
+      expect.assert(exportedStorey.perimeters.length > 0)
+      expect(exportedStorey.perimeters[0].referenceSide).toBeDefined()
     })
 
     it('uses store getters for proper encapsulation', async () => {
@@ -353,9 +351,8 @@ describe('ProjectImportExportService', () => {
       const result = await ProjectImportExportService.importFromString('invalid json')
 
       expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.error).toContain('JSON')
-      }
+      expect.assert(!result.success)
+      expect(result.error).toContain('JSON')
     })
 
     it('validates file format', async () => {
@@ -363,9 +360,8 @@ describe('ProjectImportExportService', () => {
       const result = await ProjectImportExportService.importFromString(invalidData)
 
       expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.error).toContain('Invalid file format')
-      }
+      expect.assert(!result.success)
+      expect(result.error).toContain('Invalid file format')
     })
   })
 })

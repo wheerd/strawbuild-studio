@@ -279,10 +279,9 @@ describe('transformModel', () => {
 
     expect(transformed.areas).toHaveLength(1)
     const area = transformed.areas[0]
-    if (area.type === 'polygon') {
-      expect(area.polygon.points[0][0]).toBe(10)
-      expect(area.polygon.points[1][0]).toBe(11)
-    }
+    expect.assert(area.type === 'polygon')
+    expect(area.polygon.points[0][0]).toBe(10)
+    expect(area.polygon.points[1][0]).toBe(11)
   })
 
   it('should transform cuboid areas by composing transforms', () => {
@@ -308,9 +307,8 @@ describe('transformModel', () => {
 
     expect(transformed.areas).toHaveLength(1)
     const area = transformed.areas[0]
-    if (area.type === 'cuboid') {
-      expect(getPosition(area.transform)[0]).toBe(15)
-    }
+    expect.assert(area.type === 'cuboid')
+    expect(getPosition(area.transform)[0]).toBe(15)
   })
 
   it('should transform cut areas', () => {
@@ -335,9 +333,8 @@ describe('transformModel', () => {
 
     expect(transformed.areas).toHaveLength(1)
     const area = transformed.areas[0]
-    if (area.type === 'cut') {
-      expect(area.position).toBe(15)
-    }
+    expect.assert(area.type === 'cut')
+    expect(area.position).toBe(15)
   })
 })
 
@@ -385,11 +382,10 @@ describe('mergeKey functionality', () => {
 
     expect(merged.areas).toHaveLength(1)
     const area = merged.areas[0]
-    if (area.type === 'cuboid') {
-      expect(area.bounds.min[0]).toBe(0)
-      expect(area.bounds.max[0]).toBe(20)
-      expect(area.mergeKey).toBe('floor-1')
-    }
+    expect.assert(area.type === 'cuboid')
+    expect(area.bounds.min[0]).toBe(0)
+    expect(area.bounds.max[0]).toBe(20)
+    expect(area.mergeKey).toBe('floor-1')
   })
 
   it('should keep cuboid areas with unique mergeKeys', () => {

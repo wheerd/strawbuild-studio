@@ -134,10 +134,9 @@ describe('Materials Store', () => {
       expect(duplicate.name).toBe('Copied Wood')
       expect(duplicate.color).toBe(original.color)
       expect(duplicate.type).toBe(original.type)
-      if (duplicate.type === 'dimensional') {
-        expect(duplicate.crossSections).toHaveLength(1)
-        expect(duplicate.crossSections[0]).toEqual({ smallerLength: 60, biggerLength: 360 })
-      }
+      expect.assert(duplicate.type === 'dimensional')
+      expect(duplicate.crossSections).toHaveLength(1)
+      expect(duplicate.crossSections[0]).toEqual({ smallerLength: 60, biggerLength: 360 })
     })
 
     it('should prevent duplicate names when duplicating', () => {

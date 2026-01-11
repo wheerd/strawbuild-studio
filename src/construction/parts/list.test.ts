@@ -259,11 +259,10 @@ describe('generateMaterialPartsList', () => {
     expect(part.elements).toEqual([extrudedElement.id])
     expect(part.size).toEqual(newVec3(50, 800, 1000))
     expect(part.sideFaces).toBeDefined()
-    if (part.sideFaces) {
-      expect(part.sideFaces[0].index).toEqual(0)
-      // Difficult to properly check the face here
-      expect(part.sideFaces[0].polygon.outer.points).toHaveLength(4)
-    }
+    expect.assert(part.sideFaces !== undefined)
+    expect(part.sideFaces[0].index).toEqual(0)
+    // Difficult to properly check the face here
+    expect(part.sideFaces[0].polygon.outer.points).toHaveLength(4)
   })
 
   it('creates entries for elements without part info', () => {

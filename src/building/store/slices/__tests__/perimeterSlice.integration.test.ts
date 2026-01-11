@@ -1,19 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { OpeningId, StoreyId, WallEntityId } from '@/building/model/ids'
-import { createStoreyId, createWallAssemblyId, isOpeningId } from '@/building/model/ids'
+import { createStoreyId, createWallAssemblyId, isOpeningId, isWallPostId } from '@/building/model/ids'
 import type { PerimetersSlice } from '@/building/store/slices/perimeterSlice'
 import { ensurePolygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 
 import {
   createLShapedBoundary,
   createRectangularBoundary,
+  expectConsistentPerimeterReferences,
+  expectGeometryExists,
+  expectNoOrphanedEntities,
   expectThrowsForInvalidId,
   mockPost,
-  setupPerimeterSlice,
-  verifyGeometryExists,
-  verifyNoOrphanedEntities,
-  verifyPerimeterReferences
+  setupPerimeterSlice
 } from './testHelpers'
 
 vi.mock('@/shared/geometry/polygon', async importOriginal => {
@@ -104,8 +104,8 @@ describe('perimeterIntegration', () => {
         expect(slice.wallPosts[post2.id]).toBeDefined()
 
         // Verify reference consistency
-        verifyPerimeterReferences(slice, perimeter.id)
-        verifyNoOrphanedEntities(slice)
+        expectConsistentPerimeterReferences(slice, perimeter.id)
+        expectNoOrphanedEntities(slice)
       })
     })
 
@@ -168,8 +168,8 @@ describe('perimeterIntegration', () => {
         expect(slice.openings[opening2.id]).toBeUndefined()
         expect(slice.wallPosts[post2.id]).toBeUndefined()
 
-        verifyPerimeterReferences(slice, perimeter.id)
-        verifyNoOrphanedEntities(slice)
+        expectConsistentPerimeterReferences(slice, perimeter.id)
+        expectNoOrphanedEntities(slice)
       })
 
       it('should merge walls and preserve entities when corner is removed between two colinear walls', () => {
@@ -243,8 +243,8 @@ describe('perimeterIntegration', () => {
         expect(mergedWall.entityIds).toContain(opening2.id)
         expect(mergedWall.entityIds).toContain(post2.id)
 
-        verifyPerimeterReferences(slice, perimeter.id)
-        verifyNoOrphanedEntities(slice)
+        expectConsistentPerimeterReferences(slice, perimeter.id)
+        expectNoOrphanedEntities(slice)
       })
     })
 
@@ -306,8 +306,8 @@ describe('perimeterIntegration', () => {
         expect(slice._openingGeometry[opening.id]).not.toEqual(originalOpeningGeometry)
         expect(slice._wallPostGeometry[post.id]).not.toEqual(originalPostGeometry)
 
-        verifyGeometryExists(slice, perimeter.id)
-        verifyPerimeterReferences(slice, perimeter.id)
+        expectGeometryExists(slice, perimeter.id)
+        expectConsistentPerimeterReferences(slice, perimeter.id)
       })
     })
 
@@ -349,9 +349,9 @@ describe('perimeterIntegration', () => {
         const hasOpening2 = walls2.some(wall => wall.entityIds.includes(opening1.id))
         expect(hasOpening2).toBe(false)
 
-        verifyPerimeterReferences(slice, perimeter1.id)
-        verifyPerimeterReferences(slice, perimeter2.id)
-        verifyNoOrphanedEntities(slice)
+        expectConsistentPerimeterReferences(slice, perimeter1.id)
+        expectConsistentPerimeterReferences(slice, perimeter2.id)
+        expectNoOrphanedEntities(slice)
       })
     })
   })
@@ -465,9 +465,9 @@ describe('perimeterIntegration', () => {
         slice.actions.updateAllPerimeterWallsThickness(perimeter.id, 600)
 
         // Verify references are still valid
-        verifyPerimeterReferences(slice, perimeter.id)
-        verifyNoOrphanedEntities(slice)
-        verifyGeometryExists(slice, perimeter.id)
+        expectConsistentPerimeterReferences(slice, perimeter.id)
+        expectNoOrphanedEntities(slice)
+        expectGeometryExists(slice, perimeter.id)
       })
     })
 
@@ -493,7 +493,7 @@ describe('perimeterIntegration', () => {
         slice.actions.removePerimeter(perimeter1.id)
 
         // Should have no orphaned entities
-        verifyNoOrphanedEntities(slice)
+        expectNoOrphanedEntities(slice)
 
         // Second perimeter should still exist
         const remaining = slice.actions.getPerimeterById(perimeter2.id)
@@ -543,7 +543,7 @@ describe('perimeterIntegration', () => {
           expect(slice._perimeterCornerGeometry[cId]).toBeUndefined()
         })
 
-        verifyNoOrphanedEntities(slice)
+        expectNoOrphanedEntities(slice)
       })
     })
   })
@@ -569,8 +569,8 @@ describe('perimeterIntegration', () => {
         const updatedPerimeter = slice.actions.getPerimeterById(perimeter.id)
         expect(updatedPerimeter.wallIds.length).toBeGreaterThan(4)
 
-        verifyPerimeterReferences(slice, perimeter.id)
-        verifyNoOrphanedEntities(slice)
+        expectConsistentPerimeterReferences(slice, perimeter.id)
+        expectNoOrphanedEntities(slice)
       })
     })
 
@@ -606,7 +606,7 @@ describe('perimeterIntegration', () => {
           expect(slice.openings[id]).toBeUndefined()
         })
 
-        verifyNoOrphanedEntities(slice)
+        expectNoOrphanedEntities(slice)
       })
     })
 
@@ -648,15 +648,18 @@ describe('perimeterIntegration', () => {
         perimeter.cornerIds.forEach(cornerId => {
           expect(slice.perimeterCorners[cornerId]).toBeUndefined()
         })
-        entityIds.forEach(entityId => {
-          if (isOpeningId(entityId)) {
-            expect(slice.openings[entityId]).toBeUndefined()
-          } else {
-            expect(slice.wallPosts[entityId]).toBeUndefined()
-          }
+
+        const openingIds = entityIds.filter(isOpeningId)
+        openingIds.forEach(entityId => {
+          expect(slice.openings[entityId]).toBeUndefined()
         })
 
-        verifyNoOrphanedEntities(slice)
+        const postIds = entityIds.filter(isWallPostId)
+        postIds.forEach(entityId => {
+          expect(slice.wallPosts[entityId]).toBeUndefined()
+        })
+
+        expectNoOrphanedEntities(slice)
       })
     })
   })

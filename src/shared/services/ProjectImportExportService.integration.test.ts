@@ -231,8 +231,10 @@ describe('ProjectImportExportService Integration', () => {
           expect(importedWall.thickness).toBe(originalWall.thickness)
           expect(importedWall.wallAssemblyId).toBe(originalWall.wallAssemblyId)
 
-          // Compare openings (excluding IDs)
+          // Compare openings and posts (excluding IDs)
           expect(importedWall.entityIds).toHaveLength(originalWall.entityIds.length)
+
+          // Test common properties for all entities
           for (let l = 0; l < originalWall.entityIds.length; l++) {
             const originalId = originalWall.entityIds[l]
             const originalEntity = isOpeningId(originalId)
@@ -246,22 +248,47 @@ describe('ProjectImportExportService Integration', () => {
             expect(importedEntity.type).toBe(originalEntity.type)
             expect(importedEntity.centerOffsetFromWallStart).toBe(originalEntity.centerOffsetFromWallStart)
             expect(importedEntity.width).toBe(originalEntity.width)
+          }
 
-            if (importedEntity.type === 'opening' && originalEntity.type === 'opening') {
-              expect(importedEntity.height).toBe(originalEntity.height)
+          // Test opening-specific properties
+          const openingIndices = originalWall.entityIds
+            .map((id, idx) => ({ id, idx }))
+            .filter(({ id }) => isOpeningId(id))
+            .map(({ idx }) => idx)
 
-              if (originalEntity.sillHeight) {
-                expect(importedEntity.sillHeight!).toBe(originalEntity.sillHeight)
-              } else {
-                expect(importedEntity.sillHeight).toBeUndefined()
-              }
-            } else if (importedEntity.type === 'post' && originalEntity.type === 'post') {
-              expect(importedEntity.thickness).toBe(originalEntity.thickness)
-              expect(importedEntity.postType).toBe(originalEntity.postType)
-              expect(importedEntity.replacesPosts).toBe(originalEntity.replacesPosts)
-              expect(importedEntity.infillMaterial).toBe(originalEntity.infillMaterial)
-              expect(importedEntity.material).toBe(originalEntity.material)
-            }
+          for (const l of openingIndices) {
+            const originalId = originalWall.entityIds[l]
+            const importedId = importedWall.entityIds[l]
+            expect.assert(isOpeningId(originalId))
+            expect.assert(isOpeningId(importedId))
+            const originalEntity = originalOpenings.find(o => o.id === originalId)!
+            const importedEntity = modelActions.getWallOpeningById(importedId)
+
+            expect(importedEntity.height).toBe(originalEntity.height)
+
+            expect.assert(originalEntity.sillHeight !== undefined ? importedEntity.sillHeight !== undefined : true)
+            expect(importedEntity.sillHeight).toBe(originalEntity.sillHeight)
+          }
+
+          // Test post-specific properties
+          const postIndices = originalWall.entityIds
+            .map((id, idx) => ({ id, idx }))
+            .filter(({ id }) => !isOpeningId(id))
+            .map(({ idx }) => idx)
+
+          for (const l of postIndices) {
+            const originalId = originalWall.entityIds[l]
+            const importedId = importedWall.entityIds[l]
+            expect.assert(!isOpeningId(originalId))
+            expect.assert(!isOpeningId(importedId))
+            const originalEntity = originalPosts.find(p => p.id === originalId)!
+            const importedEntity = modelActions.getWallPostById(importedId)
+
+            expect(importedEntity.thickness).toBe(originalEntity.thickness)
+            expect(importedEntity.postType).toBe(originalEntity.postType)
+            expect(importedEntity.replacesPosts).toBe(originalEntity.replacesPosts)
+            expect(importedEntity.infillMaterial).toBe(originalEntity.infillMaterial)
+            expect(importedEntity.material).toBe(originalEntity.material)
           }
         }
       }

@@ -384,13 +384,6 @@ describe('roofsSlice', () => {
       }).toThrow('Roof slope must be between 0 and 90 degrees')
     })
 
-    it('should clone direction vector on update', () => {
-      const polygon = createTestPolygon()
-      const roof = store.actions.addRoof(testStoreyId, 'gable', polygon, 0, 45, 3000, 500, testAssemblyId)
-
-      store.actions.updateRoofProperties(roof.id, { mainSideIndex: 1 })
-    })
-
     it('should return false for non-existent roof', () => {
       const success = store.actions.updateRoofProperties('roof_nonexistent' as any, { slope: 30 })
       expect(success).toBe(false)

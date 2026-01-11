@@ -185,30 +185,6 @@ describe('PolygonToolOverlay', () => {
 
       expect(container).toMatchSnapshot()
     })
-
-    it('renders snap lines when snap result has lines', () => {
-      const snapResult: SnapResult = {
-        position: newVec2(150, 150),
-        lines: [
-          {
-            point: newVec2(100, 100),
-            direction: newVec2(1, 0)
-          },
-          {
-            point: newVec2(200, 200),
-            direction: newVec2(0, 1)
-          }
-        ]
-      }
-
-      mockTool.state.points = [newVec2(50, 50)]
-      mockTool.state.pointer = newVec2(145, 145)
-      mockTool.state.snapResult = snapResult
-
-      const { container } = render(<PolygonToolOverlay tool={mockTool} />)
-
-      expect(container).toMatchSnapshot()
-    })
   })
 
   describe('zoom responsiveness', () => {

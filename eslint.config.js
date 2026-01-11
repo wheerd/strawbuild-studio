@@ -1,4 +1,5 @@
 import eslint from '@eslint/js'
+import vitest from '@vitest/eslint-plugin'
 import eslintConfigPrettier from 'eslint-config-prettier'
 import unusedImports from 'eslint-plugin-unused-imports'
 import { defineConfig } from 'eslint/config'
@@ -89,7 +90,17 @@ export default defineConfig(
       '**/__tests__/**/*.ts',
       '**/__tests__/**/*.tsx'
     ],
+    plugins: {
+      vitest
+    },
     rules: {
+      ...vitest.configs.recommended.rules,
+      'vitest/expect-expect': [
+        'error',
+        {
+          assertFunctionNames: ['expect*']
+        }
+      ],
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',

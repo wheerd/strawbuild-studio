@@ -8,10 +8,10 @@ import { ensurePolygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/sh
 import {
   createLShapedBoundary,
   createRectangularBoundary,
+  expectNoOrphanedEntities,
   expectThrowsForInvalidId,
   mockPost,
-  setupPerimeterSlice,
-  verifyNoOrphanedEntities
+  setupPerimeterSlice
 } from './testHelpers'
 
 vi.mock('@/shared/geometry/polygon', async importOriginal => {
@@ -224,7 +224,7 @@ describe('wallPostSlice', () => {
       it('should have no orphaned entities after removal', () => {
         slice.actions.removeWallPost(postId)
 
-        verifyNoOrphanedEntities(slice)
+        expectNoOrphanedEntities(slice)
       })
 
       it('should not throw for non-existent post', () => {
