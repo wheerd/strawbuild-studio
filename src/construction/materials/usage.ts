@@ -24,6 +24,7 @@ import type {
   WallAssemblyConfig
 } from '@/construction/config/types'
 import type { LayerConfig } from '@/construction/layers/types'
+import { assertUnreachable } from '@/shared/utils'
 
 import type { MaterialId } from './material'
 
@@ -247,11 +248,16 @@ function isMaterialUsedInOpening(materialId: MaterialId, assembly: OpeningAssemb
 
 function checkLayers(layers: LayerConfig[], materialId: MaterialId): boolean {
   for (const layer of layers) {
-    if (layer.type === 'monolithic') {
-      if (layer.material === materialId) return true
-    } else if (layer.type === 'striped') {
-      if (layer.stripeMaterial === materialId) return true
-      if (layer.gapMaterial === materialId) return true
+    switch (layer.type) {
+      case 'monolithic':
+        if (layer.material === materialId) return true
+        break
+      case 'striped':
+        if (layer.stripeMaterial === materialId) return true
+        if (layer.gapMaterial === materialId) return true
+        break
+      default:
+        assertUnreachable(layer, 'Invalid layer type')
     }
   }
   return false

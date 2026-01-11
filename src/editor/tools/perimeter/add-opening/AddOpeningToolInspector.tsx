@@ -337,15 +337,21 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
         {/* Row 1, Column 2: Width Input */}
         <LengthField
           value={getDisplayValue(state.width, 'width')}
-          onCommit={value => tool.setWidth(convertInputToFitting(value, 'width'))}
+          onCommit={value => {
+            tool.setWidth(convertInputToFitting(value, 'width'))
+          }}
           unit="cm"
           min={100}
           max={5000}
           step={100}
           size="1"
           style={{ width: '80px' }}
-          onFocus={() => setFocusedField('width')}
-          onBlur={() => setFocusedField(undefined)}
+          onFocus={() => {
+            setFocusedField('width')
+          }}
+          onBlur={() => {
+            setFocusedField(undefined)
+          }}
         />
 
         {/* Row 1, Column 3: Height Label */}
@@ -358,15 +364,21 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
         {/* Row 1, Column 4: Height Input */}
         <LengthField
           value={getDisplayValue(state.height, 'height')}
-          onCommit={value => tool.setHeight(convertInputToFitting(value, 'height'))}
+          onCommit={value => {
+            tool.setHeight(convertInputToFitting(value, 'height'))
+          }}
           unit="cm"
           min={100}
           max={4000}
           step={100}
           size="1"
           style={{ width: '80px' }}
-          onFocus={() => setFocusedField('height')}
-          onBlur={() => setFocusedField(undefined)}
+          onFocus={() => {
+            setFocusedField('height')
+          }}
+          onBlur={() => {
+            setFocusedField(undefined)
+          }}
         />
 
         {/* Row 2, Column 1: Sill Height Label */}
@@ -379,15 +391,21 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
         {/* Row 2, Column 2: Sill Height Input */}
         <LengthField
           value={getDisplayValue(state.sillHeight ?? 0, 'sillHeight')}
-          onCommit={value => tool.setSillHeight(convertInputToFitting(value, 'sillHeight'))}
+          onCommit={value => {
+            tool.setSillHeight(convertInputToFitting(value, 'sillHeight'))
+          }}
           unit="cm"
           min={0}
           max={2000}
           step={100}
           size="1"
           style={{ width: '80px' }}
-          onFocus={() => setFocusedField('sillHeight')}
-          onBlur={() => setFocusedField(undefined)}
+          onFocus={() => {
+            setFocusedField('sillHeight')
+          }}
+          onBlur={() => {
+            setFocusedField(undefined)
+          }}
         />
 
         {/* Row 2, Column 3: Top Height Label */}
@@ -400,19 +418,23 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
         {/* Row 2, Column 4: Top Height Input */}
         <LengthField
           value={getDisplayValue(state.sillHeight ?? 0, 'sillHeight') + getDisplayValue(state.height, 'height')}
-          onCommit={value =>
+          onCommit={value => {
             tool.setHeight(
               convertInputToFitting(value - getDisplayValue(state.sillHeight ?? 0, 'sillHeight'), 'height')
             )
-          }
+          }}
           unit="cm"
           min={getDisplayValue(state.sillHeight ?? 0, 'sillHeight') + 100}
           max={5000}
           step={100}
           size="1"
           style={{ width: '80px' }}
-          onFocus={() => setFocusedField('topHeight')}
-          onBlur={() => setFocusedField(undefined)}
+          onFocus={() => {
+            setFocusedField('topHeight')
+          }}
+          onBlur={() => {
+            setFocusedField(undefined)
+          }}
         />
       </Grid>
       <Flex align="center" justify="end" gap="2">
@@ -424,7 +446,12 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>
             {allOpeningConfigs.map((config, index) => (
-              <DropdownMenu.Item key={index} onClick={() => handlePresetOrCopyClick(config)}>
+              <DropdownMenu.Item
+                key={index}
+                onClick={() => {
+                  handlePresetOrCopyClick(config)
+                }}
+              >
                 <Flex align="center" gap="2">
                   {(config.type === 'window' ? WindowIcon : config.type === 'door' ? DoorIcon : PassageIcon)({})}
                   <Text>{config.label}</Text>
@@ -446,7 +473,9 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
               key={index}
               variant="surface"
               size="3"
-              onClick={() => handlePresetOrCopyClick(preset)}
+              onClick={() => {
+                handlePresetOrCopyClick(preset)
+              }}
               title={
                 preset.sillHeight == null
                   ? t($ => $.addOpening.presets.buttonLabel, {

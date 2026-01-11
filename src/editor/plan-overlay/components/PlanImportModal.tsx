@@ -63,7 +63,9 @@ export function PlanImportModal({
       return { url, revokeOnDispose }
     })
     const img = new Image()
-    img.onload = () => setImageElement(img)
+    img.onload = () => {
+      setImageElement(img)
+    }
     img.src = url
   }, [])
 
@@ -250,7 +252,9 @@ export function PlanImportModal({
                 size="1"
                 variant="soft"
                 disabled={referencePoints.length === 0}
-                onClick={() => setReferencePoints([])}
+                onClick={() => {
+                  setReferencePoints([])
+                }}
               >
                 {t($ => $.planImport.step2.clearPoints)}
               </Button>
@@ -338,7 +342,13 @@ export function PlanImportModal({
             </Tooltip>
 
             {originPoint && (
-              <Button size="1" variant="ghost" onClick={() => setOriginPoint(null)}>
+              <Button
+                size="1"
+                variant="ghost"
+                onClick={() => {
+                  setOriginPoint(null)
+                }}
+              >
                 {t($ => $.planImport.step3.clearOrigin)}
               </Button>
             )}
@@ -350,7 +360,12 @@ export function PlanImportModal({
             {t($ => $.planImport.footer.storageNote)}
           </Text>
           <Flex gap="2">
-            <Button variant="soft" onClick={() => onOpenChange(false)}>
+            <Button
+              variant="soft"
+              onClick={() => {
+                onOpenChange(false)
+              }}
+            >
               {t($ => $.planImport.footer.cancel)}
             </Button>
             <Button onClick={handleSubmit} disabled={!canSubmit}>

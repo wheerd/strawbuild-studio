@@ -225,11 +225,7 @@ function calculateRoofOffsets(
     storeyContext.perimeterContexts
   )
 
-  if (roofHeightLine) {
-    return convertHeightLineToWallOffsets(roofHeightLine, cornerInfo.constructionLength)
-  } else {
-    return [newVec2(0, -ceilingOffset), newVec2(cornerInfo.constructionLength, -ceilingOffset)]
-  }
+  return convertHeightLineToWallOffsets(roofHeightLine, cornerInfo.constructionLength)
 }
 
 /**
@@ -373,7 +369,7 @@ function* constructWallSegments(
         infillMethod,
         wallOpeningAssemblyId
       )
-    } else if (item.type === 'post') {
+    } else {
       const postWidth = item.end - item.start
       const postArea = overallWallArea.withXAdjustment(item.start, postWidth)
       yield* constructWallPost(postArea, item.post)
@@ -486,40 +482,37 @@ function* createCornerAreas(
   wallHeightStart: Length,
   wallHeightEnd: Length
 ): Generator<ConstructionResult> {
-  if (cornerInfo.startCorner) {
-    yield yieldArea({
-      type: 'polygon',
-      areaType: 'corner',
-      renderPosition: 'top',
-      plane: 'xz',
-      polygon: {
-        points: [
-          newVec2(-cornerInfo.startCorner.extensionDistance, 0),
-          newVec2(-cornerInfo.startCorner.extensionDistance, wallHeightStart),
-          newVec2(0, wallHeightStart),
-          ZERO_VEC2
-        ]
-      },
-      cancelKey: `corner-${cornerInfo.startCorner.id}`
-    })
-  }
-  if (cornerInfo.endCorner) {
-    yield yieldArea({
-      type: 'polygon',
-      areaType: 'corner',
-      renderPosition: 'top',
-      plane: 'xz',
-      polygon: {
-        points: [
-          newVec2(wallLength, 0),
-          newVec2(wallLength, wallHeightEnd),
-          newVec2(wallLength + cornerInfo.endCorner.extensionDistance, wallHeightEnd),
-          newVec2(wallLength + cornerInfo.endCorner.extensionDistance, 0)
-        ]
-      },
-      cancelKey: `corner-${cornerInfo.endCorner.id}`
-    })
-  }
+  yield yieldArea({
+    type: 'polygon',
+    areaType: 'corner',
+    renderPosition: 'top',
+    plane: 'xz',
+    polygon: {
+      points: [
+        newVec2(-cornerInfo.startCorner.extensionDistance, 0),
+        newVec2(-cornerInfo.startCorner.extensionDistance, wallHeightStart),
+        newVec2(0, wallHeightStart),
+        ZERO_VEC2
+      ]
+    },
+    cancelKey: `corner-${cornerInfo.startCorner.id}`
+  })
+
+  yield yieldArea({
+    type: 'polygon',
+    areaType: 'corner',
+    renderPosition: 'top',
+    plane: 'xz',
+    polygon: {
+      points: [
+        newVec2(wallLength, 0),
+        newVec2(wallLength, wallHeightEnd),
+        newVec2(wallLength + cornerInfo.endCorner.extensionDistance, wallHeightEnd),
+        newVec2(wallLength + cornerInfo.endCorner.extensionDistance, 0)
+      ]
+    },
+    cancelKey: `corner-${cornerInfo.endCorner.id}`
+  })
 }
 
 function* createPlateAreas(

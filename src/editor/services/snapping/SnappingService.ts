@@ -129,7 +129,7 @@ export class SnappingService {
     let closestIndex = -1
 
     for (const line of snapLines) {
-      const distance = Number(distanceToInfiniteLine(target, line))
+      const distance = distanceToInfiniteLine(target, line)
       if (distance <= this.snapConfig.lineSnapDistance) {
         const projectedPosition = projectPointOntoLine(target, line)
         if (

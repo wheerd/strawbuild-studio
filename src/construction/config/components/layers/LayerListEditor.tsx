@@ -135,7 +135,12 @@ export function LayerListEditor({
               <DropdownMenu.Content>
                 <DropdownMenu.Label>Copy from...</DropdownMenu.Label>
                 {layerCopySources.map(({ name, totalThickness, layerSource }) => (
-                  <DropdownMenu.Item key={name} onSelect={() => applyPreset(layerSource())}>
+                  <DropdownMenu.Item
+                    key={name}
+                    onSelect={() => {
+                      applyPreset(layerSource())
+                    }}
+                  >
                     <Flex align="center" gap="2">
                       <Text>{name}</Text>
                       <Text size="1" color="gray">
@@ -157,7 +162,12 @@ export function LayerListEditor({
               </DropdownMenu.Trigger>
               <DropdownMenu.Content>
                 {layerPresets.map(preset => (
-                  <DropdownMenu.Item key={t(preset.nameKey)} onSelect={() => applyPreset(preset.layers)}>
+                  <DropdownMenu.Item
+                    key={t(preset.nameKey)}
+                    onSelect={() => {
+                      applyPreset(preset.layers)
+                    }}
+                  >
                     <Flex align="center" gap="2">
                       <Text>{t(preset.nameKey)}</Text>
                       <Text size="1" color="gray">
@@ -178,7 +188,7 @@ export function LayerListEditor({
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
               <DropdownMenu.Item
-                onSelect={() =>
+                onSelect={() => {
                   onAddLayer(
                     getDefaultLayer(
                       'monolithic',
@@ -186,7 +196,7 @@ export function LayerListEditor({
                       0
                     )
                   )
-                }
+                }}
               >
                 <Flex align="center" gap="1">
                   <LayerTypeIcon type="monolithic" />
@@ -194,7 +204,7 @@ export function LayerListEditor({
                 </Flex>
               </DropdownMenu.Item>
               <DropdownMenu.Item
-                onSelect={() =>
+                onSelect={() => {
                   onAddLayer(
                     getDefaultLayer(
                       'striped',
@@ -202,7 +212,7 @@ export function LayerListEditor({
                       0
                     )
                   )
-                }
+                }}
               >
                 <Flex align="center" gap="1">
                   <LayerTypeIcon type="striped" />
@@ -315,7 +325,9 @@ function LayerCard({
             title={t($ => $.common.name)}
             size="1"
             value={nameInput}
-            onChange={event => setNameInput(event.target.value)}
+            onChange={event => {
+              setNameInput(event.target.value)
+            }}
             onBlur={commitNameChange}
             onKeyDown={event => {
               if (event.key === 'Enter') {
@@ -327,7 +339,9 @@ function LayerCard({
           />
           <LengthField
             value={layer.thickness}
-            onChange={value => onUpdateLayer(index, { thickness: value })}
+            onChange={value => {
+              onUpdateLayer(index, { thickness: value })
+            }}
             unit="mm"
             size="1"
             style={{ width: '8em' }}
@@ -339,7 +353,9 @@ function LayerCard({
 
           <Checkbox
             checked={layer.overlap}
-            onCheckedChange={value => onUpdateLayer(index, { overlap: value === true })}
+            onCheckedChange={value => {
+              onUpdateLayer(index, { overlap: value === true })
+            }}
             title={t($ => $.layers.overlap)}
           />
 
@@ -347,7 +363,9 @@ function LayerCard({
             <IconButton
               size="1"
               variant="soft"
-              onClick={() => onMoveLayer(index, index - 1)}
+              onClick={() => {
+                onMoveLayer(index, index - 1)
+              }}
               disabled={isFirst}
               title={t($ => $.layers.moveUp)}
             >
@@ -356,7 +374,9 @@ function LayerCard({
             <IconButton
               size="1"
               variant="soft"
-              onClick={() => onMoveLayer(index, index + 1)}
+              onClick={() => {
+                onMoveLayer(index, index + 1)
+              }}
               disabled={isLast}
               title={t($ => $.layers.moveDown)}
             >
@@ -366,7 +386,9 @@ function LayerCard({
               size="1"
               variant="soft"
               color="red"
-              onClick={() => onRemoveLayer(index)}
+              onClick={() => {
+                onRemoveLayer(index)
+              }}
               title={t($ => $.layers.removeLayer)}
             >
               <TrashIcon />
@@ -441,7 +463,9 @@ function StripedLayerFields({
         control={
           <Select.Root
             value={layer.direction}
-            onValueChange={value => onUpdateLayer(index, { direction: value as StripeDirection })}
+            onValueChange={value => {
+              onUpdateLayer(index, { direction: value as StripeDirection })
+            }}
             size="1"
           >
             <Select.Trigger />
@@ -459,7 +483,9 @@ function StripedLayerFields({
         </Text>
         <LengthField
           value={layer.stripeWidth}
-          onChange={value => onUpdateLayer(index, { stripeWidth: value })}
+          onChange={value => {
+            onUpdateLayer(index, { stripeWidth: value })
+          }}
           unit="mm"
           size="1"
           style={{ width: '8em' }}
@@ -488,7 +514,9 @@ function StripedLayerFields({
         </Text>
         <LengthField
           value={layer.gapWidth}
-          onChange={value => onUpdateLayer(index, { gapWidth: value })}
+          onChange={value => {
+            onUpdateLayer(index, { gapWidth: value })
+          }}
           unit="mm"
           size="1"
           style={{ width: '8em' }}
@@ -505,7 +533,9 @@ function StripedLayerFields({
           value={layer.gapMaterial}
           allowEmpty
           emptyLabel={t($ => $.common.none)}
-          onValueChange={material => onUpdateLayer(index, { gapMaterial: material ?? undefined })}
+          onValueChange={material => {
+            onUpdateLayer(index, { gapMaterial: material ?? undefined })
+          }}
           placeholder={t($ => $.layers.selectMaterial)}
           size="1"
           preferredTypes={['sheet', 'volume']}

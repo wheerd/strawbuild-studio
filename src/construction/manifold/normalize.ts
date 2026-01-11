@@ -288,6 +288,7 @@ function transformMeshVertices(mesh: ReturnType<Manifold['getMesh']>, t: Transfo
 function rebuildManifoldFromMesh(mesh: Mesh, newVertices: Float32Array): Manifold {
   const module = getManifoldModule()
   const outMesh: Mesh = new module.Mesh({
+    // eslint-disable-next-line @typescript-eslint/no-misused-spread
     ...mesh,
     vertProperties: newVertices
   })

@@ -18,7 +18,9 @@ export function PartHighlightPanel() {
           <IconButton
             size="1"
             variant="ghost"
-            onClick={() => setHighlightedPartId(null)}
+            onClick={() => {
+              setHighlightedPartId(null)
+            }}
             title={t($ => $.planModal.partHighlight.clearHighlight)}
           >
             <Cross2Icon />

@@ -74,7 +74,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
             <MeasurementInfo highlightedAssembly="wallAssembly" />
           </Flex>
           <WallAssemblySelectWithEdit
-            value={state.wallAssemblyId ?? undefined}
+            value={state.wallAssemblyId}
             onValueChange={(value: WallAssemblyId) => {
               tool.setAssembly(value)
             }}
@@ -93,7 +93,9 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
           <LengthField
             id="wall-thickness"
             value={state.wallThickness}
-            onCommit={value => tool.setWallThickness(value)}
+            onCommit={value => {
+              tool.setWallThickness(value)
+            }}
             min={50}
             max={1000}
             step={10}
@@ -111,7 +113,9 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
           <SegmentedControl.Root
             size="1"
             value={state.referenceSide}
-            onValueChange={value => tool.setReferenceSide(value as PerimeterReferenceSide)}
+            onValueChange={value => {
+              tool.setReferenceSide(value as PerimeterReferenceSide)
+            }}
           >
             <SegmentedControl.Item value="inside">{t($ => $.perimeter.referenceSideInside)}</SegmentedControl.Item>
             <SegmentedControl.Item value="outside">{t($ => $.perimeter.referenceSideOutside)}</SegmentedControl.Item>
@@ -172,7 +176,9 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
                   size="1"
                   variant="ghost"
                   color="red"
-                  onClick={() => tool.clearLengthOverride()}
+                  onClick={() => {
+                    tool.clearLengthOverride()
+                  }}
                   title={t($ => $.perimeter.clearLengthOverride)}
                 >
                   <Cross2Icon />
@@ -242,7 +248,9 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
                 <Button
                   size="2"
                   color="green"
-                  onClick={() => tool.complete()}
+                  onClick={() => {
+                    tool.complete()
+                  }}
                   disabled={!state.isClosingSegmentValid}
                   title={t($ => $.perimeter.completeTooltip)}
                   style={{ width: '100%' }}
@@ -257,7 +265,9 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
                 size="2"
                 color="red"
                 variant="soft"
-                onClick={() => tool.cancel()}
+                onClick={() => {
+                  tool.cancel()
+                }}
                 title={t($ => $.perimeter.cancelTooltip)}
                 style={{ width: '100%' }}
               >

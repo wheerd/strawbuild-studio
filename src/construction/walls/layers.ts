@@ -3,7 +3,7 @@ import { getModelActions } from '@/building/store'
 import type { GroupOrElement } from '@/construction/elements'
 import { WallConstructionArea } from '@/construction/geometry'
 import { LAYER_CONSTRUCTIONS } from '@/construction/layers'
-import type { LayerConfig, MonolithicLayerConfig, StripedLayerConfig } from '@/construction/layers/types'
+import type { LayerConfig } from '@/construction/layers/types'
 import { type ConstructionModel, createConstructionGroup } from '@/construction/model'
 import { type ConstructionResult, aggregateResults } from '@/construction/results'
 import type { StoreyContext } from '@/construction/storeys/context'
@@ -21,6 +21,7 @@ import {
   signedAngleVec2,
   simplifyPolygon
 } from '@/shared/geometry'
+import { assertUnreachable } from '@/shared/utils'
 
 import { getWallContext } from './corners/corners'
 import { computeLayerSpan, subtractWallOpenings } from './polygons'
@@ -45,19 +46,18 @@ const runLayerConstruction = (
   layer: LayerConfig,
   layerDirection: Vec2
 ): ConstructionResult[] => {
-  if (layer.type === 'monolithic') {
-    const construction = LAYER_CONSTRUCTIONS.monolithic as (typeof LAYER_CONSTRUCTIONS)['monolithic']
-    return Array.from(
-      construction.construct(clonePolygon(polygon), offset, plane, layer as MonolithicLayerConfig, layerDirection)
-    )
+  switch (layer.type) {
+    case 'monolithic': {
+      const construction = LAYER_CONSTRUCTIONS.monolithic
+      return Array.from(construction.construct(clonePolygon(polygon), offset, plane, layer, layerDirection))
+    }
+    case 'striped': {
+      const construction = LAYER_CONSTRUCTIONS.striped
+      return Array.from(construction.construct(clonePolygon(polygon), offset, plane, layer, layerDirection))
+    }
+    default:
+      assertUnreachable(layer, 'Unsupported layer type')
   }
-  if (layer.type === 'striped') {
-    const construction = LAYER_CONSTRUCTIONS.striped as (typeof LAYER_CONSTRUCTIONS)['striped']
-    return Array.from(
-      construction.construct(clonePolygon(polygon), offset, plane, layer as StripedLayerConfig, layerDirection)
-    )
-  }
-  throw new Error(`Unsupported layer type: ${(layer as { type: string }).type}`)
 }
 
 const aggregateLayerResults = (results: ConstructionResult[]): ConstructionModel => {
@@ -94,7 +94,7 @@ export function constructWallLayers(
 
     const insideLayers = [...layers.insideLayers].reverse()
     insideLayers.forEach(layer => {
-      const cumulativeInside = (insideOffset + layer.thickness) as Length
+      const cumulativeInside = insideOffset + layer.thickness
       const span = computeLayerSpan('inside', cumulativeInside, wall, context)
       const start = Math.min(span.start, previousSpan.start)
       const end = Math.max(span.end, previousSpan.end)
@@ -135,7 +135,7 @@ export function constructWallLayers(
         layerResults.push({ type: 'element', element: group })
       }
       if (!layer.overlap) {
-        insideOffset = (insideOffset + layer.thickness) as Length
+        insideOffset = insideOffset + layer.thickness
         previousSpan = span
       }
     })
@@ -147,11 +147,11 @@ export function constructWallLayers(
     const ceilingOffset = storeyContext.roofBottom - storeyContext.wallTop
     const zAdjustment = storeyContext.finishedFloorTop - storeyContext.wallBottom
 
-    let outsideOffset: Length = (wall.thickness - layers.outsideThickness) as Length
+    let outsideOffset: Length = wall.thickness - layers.outsideThickness
     let previousSpan = baseOutsideSpan
     layers.outsideLayers.forEach(layer => {
       const remainingOutside = wall.thickness - outsideOffset - layer.thickness
-      const depth = Math.max(remainingOutside, 0) as Length
+      const depth = Math.max(remainingOutside, 0)
       const span = computeLayerSpan('outside', depth, wall, context)
       const start = Math.min(span.start, previousSpan.start)
       const end = Math.max(span.end, previousSpan.end)
@@ -192,7 +192,7 @@ export function constructWallLayers(
         layerResults.push({ type: 'element', element: group })
       }
       if (!layer.overlap) {
-        outsideOffset = (outsideOffset + layer.thickness) as Length
+        outsideOffset = outsideOffset + layer.thickness
         previousSpan = span
       }
     })

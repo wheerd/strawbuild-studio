@@ -18,7 +18,7 @@ export function getStoreyName<T extends Namespace>(
     if (storey.level === 0) {
       return t($ => $.storeys.groundFloor, { ns: 'common' })
     } else if (storey.level < 0) {
-      return t($ => $.storeys.defaultBasementName, { count: -storey.level, ordinal: true, ns: 'common' })
+      return t($ => $.storeys.defaultBasementName, { count: -Number(storey.level), ordinal: true, ns: 'common' })
     } else {
       return t($ => $.storeys.defaultName, { count: storey.level, ordinal: true, ns: 'common' })
     }

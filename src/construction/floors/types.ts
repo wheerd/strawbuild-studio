@@ -5,6 +5,7 @@ import type { PerimeterConstructionContext } from '@/construction/perimeters/con
 import type { ConstructionResult } from '@/construction/results'
 import type { Tag } from '@/construction/tags'
 import type { Length, PolygonWithHoles2D } from '@/shared/geometry'
+import { assertUnreachable } from '@/shared/utils'
 
 export interface FloorAssembly {
   construct: (context: PerimeterConstructionContext) => ConstructionModel
@@ -95,14 +96,18 @@ export const validateFloorConfig = (config: FloorConfig): void => {
     throw new Error('Layer thicknesses cannot be negative')
   }
 
-  if (config.type === 'monolithic') {
-    validateMonolithicFloorConfig(config)
-  } else if (config.type === 'joist') {
-    validateJoistFloorConfig(config)
-  } else if (config.type === 'filled') {
-    validateFilledFloorConfig(config)
-  } else {
-    throw new Error('Invalid floor assembly type')
+  switch (config.type) {
+    case 'monolithic':
+      validateMonolithicFloorConfig(config)
+      break
+    case 'joist':
+      validateJoistFloorConfig(config)
+      break
+    case 'filled':
+      validateFilledFloorConfig(config)
+      break
+    default:
+      assertUnreachable(config, 'Invalid floor assembly type')
   }
 }
 

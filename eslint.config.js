@@ -7,16 +7,42 @@ import tseslint from 'typescript-eslint'
 
 export default defineConfig(
   eslint.configs.recommended,
-  tseslint.configs.recommended,
-  tseslint.configs.stylistic,
-  tseslint.configs.strict,
+  tseslint.configs.recommendedTypeChecked,
+  tseslint.configs.stylisticTypeChecked,
+  tseslint.configs.strictTypeChecked,
   ...neostandard({
     ts: true
   }),
+  {
+    languageOptions: {
+      parserOptions: {
+        projectService: true
+      }
+    }
+  },
   eslintConfigPrettier, // This disables all formatting-related ESLint rules
   {
     rules: {
-      '@typescript-eslint/no-dynamic-delete': 'off'
+      '@typescript-eslint/no-dynamic-delete': 'off',
+      '@typescript-eslint/no-unnecessary-condition': [
+        'error',
+        {
+          allowConstantLoopConditions: 'only-allowed-literals'
+        }
+      ],
+      '@typescript-eslint/restrict-template-expressions': [
+        'error',
+        {
+          allowNumber: true,
+          allowNever: true
+        }
+      ],
+      'no-void': 'off',
+
+      '@typescript-eslint/no-invalid-void-type': [
+        'error',
+        { allowAsThisParameter: true, allowInGenericTypeArguments: true }
+      ]
     }
   },
   {
@@ -65,7 +91,13 @@ export default defineConfig(
     ],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-non-null-assertion': 'off'
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/unbound-method': 'off'
     }
   }
 )

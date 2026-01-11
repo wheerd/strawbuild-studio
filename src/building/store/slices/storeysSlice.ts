@@ -47,7 +47,7 @@ const validateStoreyName = (name: string): void => {
 }
 
 const validateStoreyFloorHeight = (height: Length): void => {
-  if (Number(height) <= 0) {
+  if (height <= 0) {
     throw new Error('Floor height must be greater than 0')
   }
 }
@@ -78,10 +78,11 @@ export const createStoreysSlice: StateCreator<StoreysSlice, [['zustand/immer', n
       return state.storeys[state.activeStoreyId]
     },
 
-    setActiveStoreyId: (activeStoreyId: StoreyId) =>
+    setActiveStoreyId: (activeStoreyId: StoreyId) => {
       set(state => {
         state.activeStoreyId = activeStoreyId
-      }),
+      })
+    },
 
     // CRUD operations
     addStorey: (floorHeight?: Length, floorAssemblyId?: FloorAssemblyId) => {
@@ -109,7 +110,7 @@ export const createStoreysSlice: StateCreator<StoreysSlice, [['zustand/immer', n
       return storey
     },
 
-    removeStorey: (storeyId: StoreyId) =>
+    removeStorey: (storeyId: StoreyId) => {
       set(state => {
         const { storeys } = state
         if (storeyId in storeys) {
@@ -137,10 +138,11 @@ export const createStoreysSlice: StateCreator<StoreysSlice, [['zustand/immer', n
             }
           }
         }
-      }),
+      })
+    },
 
     // Storey modifications
-    updateStoreyName: (storeyId: StoreyId, name: string | null) =>
+    updateStoreyName: (storeyId: StoreyId, name: string | null) => {
       set(({ storeys }) => {
         if (name != null) {
           validateStoreyName(name)
@@ -154,35 +156,39 @@ export const createStoreysSlice: StateCreator<StoreysSlice, [['zustand/immer', n
             storeys[storeyId].useDefaultName = true
           }
         }
-      }),
+      })
+    },
 
-    updateStoreyFloorHeight: (storeyId: StoreyId, floorHeight: Length) =>
+    updateStoreyFloorHeight: (storeyId: StoreyId, floorHeight: Length) => {
       set(({ storeys }) => {
         validateStoreyFloorHeight(floorHeight)
         if (storeyId in storeys) {
           storeys[storeyId].floorHeight = floorHeight
         }
-      }),
+      })
+    },
 
-    updateStoreyFloorAssembly: (storeyId: StoreyId, floorAssemblyId: FloorAssemblyId) =>
+    updateStoreyFloorAssembly: (storeyId: StoreyId, floorAssemblyId: FloorAssemblyId) => {
       set(({ storeys }) => {
         if (storeyId in storeys) {
           storeys[storeyId].floorAssemblyId = floorAssemblyId
         }
-      }),
+      })
+    },
 
     // Level management operations
-    swapStoreyLevels: (storeyId1: StoreyId, storeyId2: StoreyId) =>
+    swapStoreyLevels: (storeyId1: StoreyId, storeyId2: StoreyId) => {
       set(state => {
-        const storey1 = state.storeys[storeyId1]
-        const storey2 = state.storeys[storeyId2]
+        if (storeyId1 in state.storeys && storeyId2 in state.storeys) {
+          const storey1 = state.storeys[storeyId1]
+          const storey2 = state.storeys[storeyId2]
 
-        if (storey1 && storey2) {
           ;[storey1.level, storey2.level] = [storey2.level, storey1.level]
         }
-      }),
+      })
+    },
 
-    adjustAllLevels: (adjustment: number) =>
+    adjustAllLevels: (adjustment: number) => {
       set(state => {
         let minLevel = Infinity
         let maxLevel = -Infinity
@@ -195,7 +201,8 @@ export const createStoreysSlice: StateCreator<StoreysSlice, [['zustand/immer', n
         if (minLevel > 0 || maxLevel < 0) {
           throw new Error('Adjustment would remove floor 0, which is not allowed')
         }
-      }),
+      })
+    },
 
     // Storey queries
     getStoreyById: (storeyId: StoreyId) => get().storeys[storeyId] ?? null,

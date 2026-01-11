@@ -36,14 +36,14 @@ interface LegacySheetMaterialShape {
 export const MATERIALS_STORE_VERSION = 2
 
 export const migrateMaterialsState = (persistedState: unknown, _version: number): MaterialsState => {
-  const state = (persistedState as MaterialsState) ?? { materials: {} as Record<MaterialId, Material> }
-  if (!state.materials || typeof state.materials !== 'object') {
+  const state = (persistedState ?? { materials: {} as Record<MaterialId, Material> }) as MaterialsState
+  if (typeof state.materials !== 'object') {
     return { materials: {} as Record<MaterialId, Material> }
   }
 
   return {
     ...state,
-    materials: normalizeMaterialsRecord(state.materials as Record<MaterialId, Material>)
+    materials: normalizeMaterialsRecord(state.materials)
   }
 }
 
@@ -53,7 +53,7 @@ export const normalizeMaterialsRecord = (
   const normalized: Record<MaterialId, Material> = {}
 
   Object.entries(materials).forEach(([id, value]) => {
-    if (!value || typeof value !== 'object') {
+    if (typeof value !== 'object') {
       return
     }
 
@@ -81,8 +81,8 @@ const normalizeDimensionalMaterial = (material: LegacyDimensionalMaterialShape):
   const crossSections =
     Array.isArray(material.crossSections) && material.crossSections.length > 0
       ? material.crossSections.map(section => ({
-          smallerLength: Number(section.smallerLength),
-          biggerLength: Number(section.biggerLength)
+          smallerLength: section.smallerLength,
+          biggerLength: section.biggerLength
         }))
       : createLegacyCrossSection(material.width, material.thickness)
 
@@ -117,8 +117,8 @@ const normalizeSheetMaterial = (material: LegacySheetMaterialShape): SheetMateri
   const sizes =
     Array.isArray(material.sizes) && material.sizes.length > 0
       ? material.sizes.map(size => ({
-          smallerLength: Number(size.smallerLength),
-          biggerLength: Number(size.biggerLength)
+          smallerLength: size.smallerLength,
+          biggerLength: size.biggerLength
         }))
       : createLegacySheetSize(material.width, material.length)
 
@@ -157,7 +157,7 @@ const normalizeStrawbaleMaterial = (
   return {
     type: 'strawbale',
     id: material.id,
-    name: material.name ?? defaults.name,
+    name: material.name,
     color: material.color ?? defaults.color,
     density: material.density ?? defaults.density,
     baleMinLength: material.baleMinLength ?? defaults.baleMinLength,

@@ -8,6 +8,7 @@ import { type AutoMeasurement, type DirectMeasurement, processMeasurements } fro
 import type { ConstructionModel } from '@/construction/model'
 import { Bounds2D, IDENTITY, type Vec3, distVec2, newVec2, newVec3 } from '@/shared/geometry'
 import { useFormatters } from '@/shared/i18n/useFormatters'
+import { assertUnreachable } from '@/shared/utils'
 
 export interface MeasurementsProps {
   model: ConstructionModel
@@ -23,27 +24,31 @@ export function Measurements({ model, projection }: MeasurementsProps): React.JS
     const areaPoints = model.areas
       .filter(area => area.type !== 'cut')
       .flatMap(area => {
-        if (area.type === 'cuboid') {
-          const bounds2D = bounds3Dto2D(area.bounds, projection)
-          const { min, max } = bounds2D
-          return [newVec2(min[0], min[1]), newVec2(max[0], min[1]), newVec2(max[0], max[1]), newVec2(min[0], max[1])]
-        } else if (area.type === 'polygon') {
-          const polygonPoints = area.polygon.points.map(p => {
-            let p3d: Vec3
-            if (area.plane === 'xy') {
-              p3d = newVec3(p[0], p[1], 0)
-            } else if (area.plane === 'xz') {
-              p3d = newVec3(p[0], 0, p[1])
-            } else {
-              p3d = newVec3(0, p[0], p[1])
-            }
-            const projected = projectPoint(p3d, projection)
-            return newVec2(projected[0], projected[1])
-          })
-          const polygonBounds = Bounds2D.fromPoints(polygonPoints)
-          return polygonBounds.isEmpty ? [] : polygonPoints
+        switch (area.type) {
+          case 'cuboid': {
+            const bounds2D = bounds3Dto2D(area.bounds, projection)
+            const { min, max } = bounds2D
+            return [newVec2(min[0], min[1]), newVec2(max[0], min[1]), newVec2(max[0], max[1]), newVec2(min[0], max[1])]
+          }
+          case 'polygon': {
+            const polygonPoints = area.polygon.points.map(p => {
+              let p3d: Vec3
+              if (area.plane === 'xy') {
+                p3d = newVec3(p[0], p[1], 0)
+              } else if (area.plane === 'xz') {
+                p3d = newVec3(p[0], 0, p[1])
+              } else {
+                p3d = newVec3(0, p[0], p[1])
+              }
+              const projected = projectPoint(p3d, projection)
+              return newVec2(projected[0], projected[1])
+            })
+            const polygonBounds = Bounds2D.fromPoints(polygonPoints)
+            return polygonBounds.isEmpty ? [] : polygonPoints
+          }
+          default:
+            return assertUnreachable(area, 'Invalid area type')
         }
-        return []
       })
 
     return [...elementPoints, ...areaPoints]
@@ -79,6 +84,7 @@ export function Measurements({ model, projection }: MeasurementsProps): React.JS
   )
 
   const directMeasurements = model.measurements
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     .filter((m): m is DirectMeasurement => 'length' in m && m.length != null)
     .map(m => {
       const startProjected = projectPoint(m.startPoint, projection)

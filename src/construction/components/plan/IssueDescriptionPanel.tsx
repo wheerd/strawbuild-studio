@@ -34,8 +34,12 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
                     <Text
                       key={error.id}
                       size="1"
-                      onMouseEnter={() => setHoveredIssueId(error.id)}
-                      onMouseLeave={() => setHoveredIssueId(null)}
+                      onMouseEnter={() => {
+                        setHoveredIssueId(error.id)
+                      }}
+                      onMouseLeave={() => {
+                        setHoveredIssueId(null)
+                      }}
                       style={{
                         cursor: 'pointer',
                         padding: 'var(--space-1)',
@@ -67,8 +71,12 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
                     <Text
                       key={warning.id}
                       size="1"
-                      onMouseEnter={() => setHoveredIssueId(warning.id)}
-                      onMouseLeave={() => setHoveredIssueId(null)}
+                      onMouseEnter={() => {
+                        setHoveredIssueId(warning.id)
+                      }}
+                      onMouseLeave={() => {
+                        setHoveredIssueId(null)
+                      }}
                       style={{
                         cursor: 'pointer',
                         padding: 'var(--space-1)',

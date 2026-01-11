@@ -13,6 +13,7 @@ import {
   transform
 } from '@/shared/geometry'
 import { simplifyPolygon, unionPolygons } from '@/shared/geometry/polygon'
+import { assertUnreachable } from '@/shared/utils'
 
 import { type ConstructionGroup, type GroupOrElement, createConstructionElementId } from './elements'
 import { transformBounds } from './geometry'
@@ -143,7 +144,7 @@ export function mergeModels(...models: ConstructionModel[]): ConstructionModel {
 
   for (const area of allAreas) {
     if (area.cancelKey) {
-      const count = cancelKeyCounts.get(area.cancelKey) || 0
+      const count = cancelKeyCounts.get(area.cancelKey) ?? 0
       cancelKeyCounts.set(area.cancelKey, count + 1)
     } else {
       areasWithoutCancelKeys.push(area)
@@ -152,7 +153,7 @@ export function mergeModels(...models: ConstructionModel[]): ConstructionModel {
 
   const filteredAreas = allAreas.filter(area => {
     if (!area.cancelKey) return false
-    const count = cancelKeyCounts.get(area.cancelKey) || 0
+    const count = cancelKeyCounts.get(area.cancelKey) ?? 0
     return count === 1
   })
 
@@ -163,7 +164,7 @@ export function mergeModels(...models: ConstructionModel[]): ConstructionModel {
 
   for (const area of remainingAreas) {
     if (area.mergeKey) {
-      const group = mergeGroups.get(area.mergeKey) || []
+      const group = mergeGroups.get(area.mergeKey) ?? []
       group.push(area)
       mergeGroups.set(area.mergeKey, group)
     } else {
@@ -222,43 +223,46 @@ export function transformModel(
 }
 
 function transformArea(a: HighlightedArea, t: Transform): HighlightedArea {
-  if (a.type === 'cuboid') {
-    const composedTransform = composeTransform(t, a.transform)
-    return { ...a, transform: composedTransform, bounds: transformBounds(a.bounds, t) }
-  }
-  if (a.type === 'polygon') {
-    const transformedPoints = a.polygon.points.map(p => {
-      let p3d: Vec3
-      if (a.plane === 'xy') {
-        p3d = newVec3(p[0], p[1], 0)
-      } else if (a.plane === 'xz') {
-        p3d = newVec3(p[0], 0, p[1])
-      } else {
-        p3d = newVec3(0, p[0], p[1])
-      }
-      const transformed = transform(p3d, t)
+  switch (a.type) {
+    case 'cuboid': {
+      const composedTransform = composeTransform(t, a.transform)
+      return { ...a, transform: composedTransform, bounds: transformBounds(a.bounds, t) }
+    }
+    case 'polygon': {
+      const transformedPoints = a.polygon.points.map(p => {
+        let p3d: Vec3
+        if (a.plane === 'xy') {
+          p3d = newVec3(p[0], p[1], 0)
+        } else if (a.plane === 'xz') {
+          p3d = newVec3(p[0], 0, p[1])
+        } else {
+          p3d = newVec3(0, p[0], p[1])
+        }
+        const transformed = transform(p3d, t)
 
-      if (a.plane === 'xy') {
-        return newVec2(transformed[0], transformed[1])
-      } else if (a.plane === 'xz') {
-        return newVec2(transformed[0], transformed[2])
-      } else {
-        return newVec2(transformed[1], transformed[2])
-      }
-    })
-    return { ...a, polygon: { points: transformedPoints } }
+        if (a.plane === 'xy') {
+          return newVec2(transformed[0], transformed[1])
+        } else if (a.plane === 'xz') {
+          return newVec2(transformed[0], transformed[2])
+        } else {
+          return newVec2(transformed[1], transformed[2])
+        }
+      })
+      return { ...a, polygon: { points: transformedPoints } }
+    }
+    case 'cut': {
+      const positionVec = newVec3(
+        a.axis === 'x' ? a.position : 0,
+        a.axis === 'y' ? a.position : 0,
+        a.axis === 'z' ? a.position : 0
+      )
+      const transformed = transform(positionVec, t)
+      const newPosition = a.axis === 'x' ? transformed[0] : a.axis === 'y' ? transformed[1] : transformed[2]
+      return { ...a, position: newPosition }
+    }
+    default:
+      assertUnreachable(a, 'Invalid area type')
   }
-  if (a.type === 'cut') {
-    const positionVec = newVec3(
-      a.axis === 'x' ? a.position : 0,
-      a.axis === 'y' ? a.position : 0,
-      a.axis === 'z' ? a.position : 0
-    )
-    const transformed = transform(positionVec, t)
-    const newPosition = a.axis === 'x' ? transformed[0] : a.axis === 'y' ? transformed[1] : transformed[2]
-    return { ...a, position: newPosition }
-  }
-  return a
 }
 
 function mergeAreaGroup(areas: HighlightedArea[], mergeKey: string): HighlightedArea[] {
@@ -271,19 +275,16 @@ function mergeAreaGroup(areas: HighlightedArea[], mergeKey: string): Highlighted
     throw new Error(`Cannot merge areas with different types for mergeKey ${mergeKey}`)
   }
 
-  if (firstType === 'cuboid') {
-    return [mergeCuboidAreas(areas as HighlightedCuboid[], mergeKey)]
+  switch (firstType) {
+    case 'cuboid':
+      return [mergeCuboidAreas(areas as HighlightedCuboid[], mergeKey)]
+    case 'polygon':
+      return mergePolygonAreas(areas as HighlightedPolygon[], mergeKey)
+    case 'cut':
+      return [mergeCutAreas(areas as HighlightedCut[], mergeKey)]
+    default:
+      assertUnreachable(firstType, 'Invalid area type')
   }
-
-  if (firstType === 'polygon') {
-    return mergePolygonAreas(areas as HighlightedPolygon[], mergeKey)
-  }
-
-  if (firstType === 'cut') {
-    return [mergeCutAreas(areas as HighlightedCut[], mergeKey)]
-  }
-
-  return areas
 }
 
 function mergeCuboidAreas(areas: HighlightedCuboid[], mergeKey: string): HighlightedCuboid {

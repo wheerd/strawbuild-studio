@@ -148,7 +148,7 @@ export function getVisibleFacesInViewSpace(m: Manifold, t: Transform, cullBackFa
   }
 
   // Step 3: BFS to find connected components of coplanar triangles
-  const visited = new Array(filteredTriangles.length).fill(false)
+  const visited = new Array<boolean>(filteredTriangles.length).fill(false)
   const components: number[][] = []
   const componentNormals: Vec3[] = [] // Track normalized normal for each component
 
@@ -248,7 +248,7 @@ export function getFacesFromManifold(m: Manifold): Face3D[] {
   }
 
   // Step 3: BFS to find connected components of coplanar triangles
-  const visited = new Array(triangles.length).fill(false)
+  const visited = new Array<boolean>(triangles.length).fill(false)
   const components: number[][] = []
   const compNormals: Vec3[] = []
 
@@ -366,7 +366,7 @@ export function getFacesFromManifoldIndexed(m: Manifold): IndexedFacesResult {
   }
 
   // Step 6: BFS to find connected components of coplanar triangles
-  const visited = new Array(triangles.length).fill(false)
+  const visited = new Array<boolean>(triangles.length).fill(false)
   const components: number[][] = []
   const compNormals: Vec3[] = []
 
@@ -485,7 +485,7 @@ function trianglesToPolygon(
       const a = tri[k]
       const b = tri[(k + 1) % 3]
       const key = norm(a, b)
-      countMap.set(key, (countMap.get(key) || 0) + 1)
+      countMap.set(key, (countMap.get(key) ?? 0) + 1)
       if (!edgeToVerts.has(key)) edgeToVerts.set(key, [a, b])
     }
   }
@@ -607,7 +607,7 @@ function trianglesToIndexedLoops(
       const a = tri[k]
       const b = tri[(k + 1) % 3]
       const key = norm(a, b)
-      countMap.set(key, (countMap.get(key) || 0) + 1)
+      countMap.set(key, (countMap.get(key) ?? 0) + 1)
       if (!edgeToVerts.has(key)) edgeToVerts.set(key, [a, b])
     }
   }

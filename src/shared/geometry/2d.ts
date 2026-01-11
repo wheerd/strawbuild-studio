@@ -22,10 +22,10 @@ export const lerpVec2 = (a: Vec2, b: Vec2, c: number): Vec2 => vec2.lerp(vec2.cr
 export const rotateVec2 = (a: Vec2, origin: Vec2, angle: number): Vec2 =>
   vec2.rotate(vec2.create(), a, origin, angle) as Vec2
 
-export const lenVec2 = (a: Vec2): Length => vec2.len(a) as Length
-export const lenSqrVec2 = (a: Vec2): Length => vec2.sqrLen(a) as Length
-export const distVec2 = (a: Vec2, b: Vec2): Length => vec2.dist(a, b) as Length
-export const distSqrVec2 = (a: Vec2, b: Vec2): number => vec2.sqrDist(a, b) as number
+export const lenVec2 = (a: Vec2): Length => vec2.len(a)
+export const lenSqrVec2 = (a: Vec2): Length => vec2.sqrLen(a)
+export const distVec2 = (a: Vec2, b: Vec2): Length => vec2.dist(a, b)
+export const distSqrVec2 = (a: Vec2, b: Vec2): number => vec2.sqrDist(a, b)
 export const dotVec2 = (a: Vec2, b: Vec2): number => vec2.dot(a, b)
 export const dotAbsVec2 = (a: Vec2, b: Vec2): number => Math.abs(vec2.dot(a, b))
 export const angleVec2 = (a: Vec2, b: Vec2): number => vec2.angle(a, b)
@@ -45,13 +45,13 @@ export function centroidVec2(vertices: Vec2[]): Vec2 {
   return c as Vec2
 }
 
-export const midpoint = (p1: Vec2, p2: Vec2): Vec2 => lerpVec2(p1, p2, 0.5) as Vec2
+export const midpoint = (p1: Vec2, p2: Vec2): Vec2 => lerpVec2(p1, p2, 0.5)
 
 export const dirAngle = (from: Vec2, to: Vec2): number => {
   const direction = subVec2(to, from)
   return Math.atan2(direction[1], direction[0])
 }
-export const direction = (source: Vec2, target: Vec2): Vec2 => normVec2(subVec2(target, source)) as Vec2
+export const direction = (source: Vec2, target: Vec2): Vec2 => normVec2(subVec2(target, source))
 
 export const perpendicular = (vector: Vec2): Vec2 => perpendicularCCW(vector) // Default to counter-clockwise
 export const perpendicularCCW = (vector: Vec2): Vec2 => newVec2(-vector[1], vector[0]) // Rotate 90° counterclockwise

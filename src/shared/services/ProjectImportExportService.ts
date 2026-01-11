@@ -185,11 +185,10 @@ const getFloorAssemblyThicknessFromConfig = (
   configs: Record<FloorAssemblyId, FloorAssemblyConfig> | undefined,
   floorAssemblyId: FloorAssemblyId
 ): number => {
-  if (!configs) return 0
+  if (!configs || !(floorAssemblyId in configs)) return 0
   const config = configs[floorAssemblyId]
-  if (!config) return 0
   const assembly = resolveFloorAssembly(config)
-  return Number(assembly.totalThickness)
+  return assembly.totalThickness
 }
 
 const resolveImportedFloorHeight = (
@@ -215,7 +214,7 @@ const resolveImportedFloorHeight = (
 }
 
 class ProjectImportExportServiceImpl implements IProjectImportExportService {
-  async exportToString(): Promise<StringExportResult | StringExportError> {
+  exportToString(): Promise<StringExportResult | StringExportError> {
     try {
       const modelActions = getModelActions()
 
@@ -237,8 +236,8 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
             referencePolygon: polygonToExport(roof.referencePolygon),
             mainSideIndex: roof.mainSideIndex,
             slope: roof.slope,
-            verticalOffset: Number(roof.verticalOffset),
-            overhangs: overhangs.map(o => Number(o.value)),
+            verticalOffset: roof.verticalOffset,
+            overhangs: overhangs.map(o => o.value),
             assemblyId: roof.assemblyId,
             referencePerimeter: roof.referencePerimeter
           }
@@ -262,23 +261,23 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
               const posts = modelActions.getWallPostsById(wall.id)
 
               return {
-                thickness: Number(wall.thickness),
+                thickness: wall.thickness,
                 wallAssemblyId: wall.wallAssemblyId,
                 baseRingBeamAssemblyId: wall.baseRingBeamAssemblyId,
                 topRingBeamAssemblyId: wall.topRingBeamAssemblyId,
                 openings: openings.map(opening => ({
                   type: opening.openingType,
-                  centerOffset: Number(opening.centerOffsetFromWallStart),
-                  width: Number(opening.width),
-                  height: Number(opening.height),
-                  sillHeight: opening.sillHeight ? Number(opening.sillHeight) : undefined,
+                  centerOffset: opening.centerOffsetFromWallStart,
+                  width: opening.width,
+                  height: opening.height,
+                  sillHeight: opening.sillHeight ?? undefined,
                   openingAssemblyId: opening.openingAssemblyId
                 })),
                 posts: posts.map(post => ({
                   type: post.postType,
-                  centerOffset: Number(post.centerOffsetFromWallStart),
-                  width: Number(post.width),
-                  thickness: Number(post.thickness),
+                  centerOffset: post.centerOffsetFromWallStart,
+                  width: post.width,
+                  thickness: post.thickness,
                   replacesPosts: post.replacesPosts,
                   material: post.material,
                   infillMaterial: post.infillMaterial
@@ -291,7 +290,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
         return {
           name: storey.name,
           useDefaultName: storey.useDefaultName,
-          floorHeight: Number(storey.floorHeight),
+          floorHeight: storey.floorHeight,
           floorAssemblyId: storey.floorAssemblyId,
           perimeters,
           floorAreas: floorAreas.length > 0 ? floorAreas : undefined,
@@ -304,28 +303,28 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
 
       if (result.success) {
         const content = JSON.stringify(result.data, null, 2)
-        return {
+        return Promise.resolve({
           success: true,
           content
-        }
+        })
       }
 
-      return {
+      return Promise.resolve({
         success: false,
         error: result.error
-      }
+      })
     } catch (error) {
-      return {
+      return Promise.resolve({
         success: false,
         error: error instanceof Error ? error.message : 'Failed to export project'
-      }
+      })
     }
   }
 
-  async importFromString(content: string): Promise<ImportResult | ImportError> {
+  importFromString(content: string): Promise<ImportResult | ImportError> {
     try {
       const importResult = this.importFromJSON(content)
-      if (!importResult.success) return importResult
+      if (!importResult.success) return Promise.resolve(importResult)
 
       const modelActions = getModelActions()
 
@@ -459,7 +458,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
                         : exportedOpening.centerOffset,
                     width: exportedOpening.width,
                     height: exportedOpening.height,
-                    sillHeight: exportedOpening.sillHeight ? exportedOpening.sillHeight : undefined,
+                    sillHeight: exportedOpening.sillHeight ?? undefined,
                     openingAssemblyId: exportedOpening.openingAssemblyId as OpeningAssemblyId
                   }
 
@@ -535,13 +534,11 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
             referencePerimeter
           )
           // Update individual overhangs if they differ
-          if (addedRoof && exportedRoof.overhangs.length === addedRoof.overhangIds.length) {
+          if (exportedRoof.overhangs.length === addedRoof.overhangIds.length) {
             exportedRoof.overhangs.forEach((overhangValue, index) => {
               if (index > 0 && overhangValue !== exportedRoof.overhangs[0]) {
                 const overhangId = addedRoof.overhangIds[index]
-                if (overhangId) {
-                  modelActions.updateRoofOverhangById(overhangId, overhangValue)
-                }
+                modelActions.updateRoofOverhangById(overhangId, overhangValue)
               }
             })
           }
@@ -554,13 +551,13 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
         modelActions.adjustAllLevels(minLevel)
       }
 
-      return { success: true, data: importResult.data }
+      return Promise.resolve({ success: true, data: importResult.data })
     } catch (error) {
       console.error(error)
-      return {
+      return Promise.resolve({
         success: false,
         error: error instanceof Error ? error.message : 'Failed to import project'
-      }
+      })
     }
   }
 
@@ -631,11 +628,11 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
     }
 
     const isValidPolygon = (polygon: unknown): polygon is ExportedFloorPolygon => {
-      if (typeof polygon !== 'object' || polygon === null || !Array.isArray((polygon as { points?: unknown }).points)) {
+      if (typeof polygon !== 'object' || polygon === null || !('points' in polygon) || !Array.isArray(polygon.points)) {
         return false
       }
-      return (polygon as ExportedFloorPolygon).points.every(
-        point =>
+      return polygon.points.every(
+        (point: unknown) =>
           typeof point === 'object' &&
           point !== null &&
           typeof (point as { x?: unknown }).x === 'number' &&
@@ -731,7 +728,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
 
   private importFromJSON(jsonString: string): ImportResult | ImportError {
     try {
-      const parsed = JSON.parse(jsonString)
+      const parsed = JSON.parse(jsonString) as unknown
 
       if (!this.validateImportData(parsed)) {
         return {

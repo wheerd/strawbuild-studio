@@ -81,8 +81,12 @@ export function useTagOpacityActions() {
 
   return useMemo(
     () => ({
-      cycleTagOrCategoryOpacity: (id: TagOrCategory) => store.cycleOpacity(id),
-      setTagOrCategoryOpacity: (id: TagOrCategory, opacity: number) => store.setOpacity(id, opacity),
+      cycleTagOrCategoryOpacity: (id: TagOrCategory) => {
+        store.cycleOpacity(id)
+      },
+      setTagOrCategoryOpacity: (id: TagOrCategory, opacity: number) => {
+        store.setOpacity(id, opacity)
+      },
       getTagOrCategoryOpacity: (id: TagOrCategory) => store.getOpacity(id),
       getCategoryOpacityState: (categoryId: TagCategoryId, tagIds: TagId[]) =>
         store.getCategoryOpacityState(categoryId, tagIds)

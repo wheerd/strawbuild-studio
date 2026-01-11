@@ -25,6 +25,7 @@ import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
 import { LengthField } from '@/shared/components/LengthField'
 import { type Length } from '@/shared/geometry'
+import { assertUnreachable } from '@/shared/utils'
 
 import type { AddPostTool } from './AddPostTool'
 
@@ -74,10 +75,19 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
       let postConfig: PostConfig | undefined
 
       // Extract PostConfig based on assembly type
-      if (assembly.type === 'infill') {
-        postConfig = assembly.posts
-      } else if (assembly.type === 'strawhenge' || assembly.type === 'modules') {
-        postConfig = assembly.infill.posts
+      switch (assembly.type) {
+        case 'infill':
+          postConfig = assembly.posts
+          break
+        case 'strawhenge':
+        case 'modules':
+          postConfig = assembly.infill.posts
+          break
+        case 'non-strawbale':
+          // No post config for non-strawbale walls
+          break
+        default:
+          assertUnreachable(assembly, 'Invalid wall assembly type')
       }
 
       if (!postConfig) continue
@@ -196,7 +206,9 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
         {/* Width Input */}
         <LengthField
           value={state.width}
-          onCommit={value => tool.setWidth(value)}
+          onCommit={value => {
+            tool.setWidth(value)
+          }}
           unit="cm"
           min={10}
           max={500}
@@ -215,7 +227,9 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
         {/* Thickness Input */}
         <LengthField
           value={state.thickness}
-          onCommit={value => tool.setThickness(value)}
+          onCommit={value => {
+            tool.setThickness(value)
+          }}
           unit="cm"
           min={50}
           max={1000}
@@ -259,7 +273,12 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
               {allPostConfigs.map((config, index) => (
-                <DropdownMenu.Item key={index} onClick={() => handleCopyClick(config)}>
+                <DropdownMenu.Item
+                  key={index}
+                  onClick={() => {
+                    handleCopyClick(config)
+                  }}
+                >
                   {t($ => $.addPost.copyLabel, {
                     defaultValue: '{{type}} • {{width, length}}×{{thickness, length}}',
                     type: t($ => $.addPost.types[config.type]),

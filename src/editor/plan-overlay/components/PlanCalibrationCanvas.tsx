@@ -211,12 +211,10 @@ export function PlanCalibrationCanvas({
         return
       }
 
-      if (mode === 'measure' || mode === 'idle') {
-        if (referencePoints.length >= 2) {
-          onReferencePointsChange([imagePoint])
-        } else {
-          onReferencePointsChange([...referencePoints, imagePoint])
-        }
+      if (referencePoints.length >= 2) {
+        onReferencePointsChange([imagePoint])
+      } else {
+        onReferencePointsChange([...referencePoints, imagePoint])
       }
     },
     [image, mode, onOriginPointChange, onReferencePointsChange, pointerToImagePoint, referencePoints]
@@ -283,7 +281,9 @@ export function PlanCalibrationCanvas({
               onPointerUp={handlePointerUp}
               onPointerLeave={endPan}
               onClick={handleStageClick}
-              onContextMenu={event => event.evt.preventDefault()}
+              onContextMenu={event => {
+                event.evt.preventDefault()
+              }}
             >
               <Layer listening={false}>
                 <Rect

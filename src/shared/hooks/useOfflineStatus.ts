@@ -14,8 +14,6 @@ interface OfflineStatusState {
   }
 }
 
-const DEFAULT_PROGRESS = { total: 0, loaded: 0 }
-
 export function useOfflineStatus(): OfflineStatusState {
   const shouldTrackServiceWorker =
     typeof navigator !== 'undefined' && 'serviceWorker' in navigator && !import.meta.env.DEV
@@ -35,8 +33,12 @@ export function useOfflineStatus(): OfflineStatusState {
       return
     }
 
-    const handleOnline = () => setIsOnline(true)
-    const handleOffline = () => setIsOnline(false)
+    const handleOnline = () => {
+      setIsOnline(true)
+    }
+    const handleOffline = () => {
+      setIsOnline(false)
+    }
 
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
@@ -81,6 +83,6 @@ export function useOfflineStatus(): OfflineStatusState {
   return {
     status,
     isOnline,
-    progress: progress || DEFAULT_PROGRESS
+    progress
   }
 }

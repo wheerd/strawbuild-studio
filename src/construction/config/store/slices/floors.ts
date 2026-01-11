@@ -118,8 +118,8 @@ export const createFloorAssembliesSlice: StateCreator<
 
       updateFloorAssemblyName: (id: FloorAssemblyId, name: string) => {
         set(state => {
+          if (!(id in state.floorAssemblyConfigs)) return state
           const assembly = state.floorAssemblyConfigs[id]
-          if (assembly == null) return state
 
           validateFloorAssemblyName(name)
 
@@ -138,8 +138,8 @@ export const createFloorAssembliesSlice: StateCreator<
 
       updateFloorAssemblyConfig: (id: FloorAssemblyId, updates: Partial<Omit<FloorConfig, 'type'>>) => {
         set(state => {
+          if (!(id in state.floorAssemblyConfigs)) return state
           const config = state.floorAssemblyConfigs[id]
-          if (config == null) return state
 
           const updatedConfig: FloorAssemblyConfig = { ...config, ...updates, id }
           validateFloorConfig(updatedConfig)
@@ -153,10 +153,10 @@ export const createFloorAssembliesSlice: StateCreator<
 
       duplicateFloorAssembly: (id: FloorAssemblyId, name: string) => {
         const state = get()
-        const original = state.floorAssemblyConfigs[id]
-        if (original == null) {
+        if (!(id in state.floorAssemblyConfigs)) {
           throw new Error(`Floor assembly with id ${id} not found`)
         }
+        const original = state.floorAssemblyConfigs[id]
 
         validateFloorAssemblyName(name)
 
@@ -186,7 +186,7 @@ export const createFloorAssembliesSlice: StateCreator<
       setDefaultFloorAssembly: (configId: FloorAssemblyId) => {
         set(state => {
           // Validate that the config exists
-          if (state.floorAssemblyConfigs[configId] == null) {
+          if (!(configId in state.floorAssemblyConfigs)) {
             throw new Error(`Floor assembly with id ${configId} not found`)
           }
 
@@ -204,8 +204,8 @@ export const createFloorAssembliesSlice: StateCreator<
 
       addFloorAssemblyTopLayer: (id: FloorAssemblyId, layer: LayerConfig) => {
         set(state => {
+          if (!(id in state.floorAssemblyConfigs)) return state
           const config = state.floorAssemblyConfigs[id]
-          if (config == null) return state
 
           const topLayers = appendLayer(config.layers.topLayers, layer)
           const topThickness = sumLayerThickness(topLayers)
@@ -224,8 +224,8 @@ export const createFloorAssembliesSlice: StateCreator<
 
       setFloorAssemblyTopLayers: (id: FloorAssemblyId, layers: LayerConfig[]) => {
         set(state => {
+          if (!(id in state.floorAssemblyConfigs)) return state
           const config = state.floorAssemblyConfigs[id]
-          if (config == null) return state
 
           const topLayers = sanitizeLayerArray(layers)
           const topThickness = sumLayerThickness(topLayers)
@@ -248,8 +248,8 @@ export const createFloorAssembliesSlice: StateCreator<
         updates: Partial<Omit<LayerConfig, 'type'>>
       ) => {
         set(state => {
+          if (!(id in state.floorAssemblyConfigs)) return state
           const config = state.floorAssemblyConfigs[id]
-          if (config == null) return state
 
           const topLayers = updateLayerAt(config.layers.topLayers, index, updates)
           const topThickness = sumLayerThickness(topLayers)
@@ -268,8 +268,8 @@ export const createFloorAssembliesSlice: StateCreator<
 
       removeFloorAssemblyTopLayer: (id: FloorAssemblyId, index: number) => {
         set(state => {
+          if (!(id in state.floorAssemblyConfigs)) return state
           const config = state.floorAssemblyConfigs[id]
-          if (config == null) return state
 
           const topLayers = removeLayerAt(config.layers.topLayers, index)
           const topThickness = sumLayerThickness(topLayers)
@@ -288,8 +288,8 @@ export const createFloorAssembliesSlice: StateCreator<
 
       moveFloorAssemblyTopLayer: (id: FloorAssemblyId, fromIndex: number, toIndex: number) => {
         set(state => {
+          if (!(id in state.floorAssemblyConfigs)) return state
           const config = state.floorAssemblyConfigs[id]
-          if (config == null) return state
 
           const topLayers = moveLayer(config.layers.topLayers, fromIndex, toIndex)
           const topThickness = sumLayerThickness(topLayers)
@@ -308,8 +308,8 @@ export const createFloorAssembliesSlice: StateCreator<
 
       addFloorAssemblyBottomLayer: (id: FloorAssemblyId, layer: LayerConfig) => {
         set(state => {
+          if (!(id in state.floorAssemblyConfigs)) return state
           const config = state.floorAssemblyConfigs[id]
-          if (config == null) return state
 
           const bottomLayers = appendLayer(config.layers.bottomLayers, layer)
           const bottomThickness = sumLayerThickness(bottomLayers)
@@ -328,8 +328,8 @@ export const createFloorAssembliesSlice: StateCreator<
 
       setFloorAssemblyBottomLayers: (id: FloorAssemblyId, layers: LayerConfig[]) => {
         set(state => {
+          if (!(id in state.floorAssemblyConfigs)) return state
           const config = state.floorAssemblyConfigs[id]
-          if (config == null) return state
 
           const bottomLayers = sanitizeLayerArray(layers)
           const bottomThickness = sumLayerThickness(bottomLayers)
@@ -352,8 +352,8 @@ export const createFloorAssembliesSlice: StateCreator<
         updates: Partial<Omit<LayerConfig, 'type'>>
       ) => {
         set(state => {
+          if (!(id in state.floorAssemblyConfigs)) return state
           const config = state.floorAssemblyConfigs[id]
-          if (config == null) return state
 
           const bottomLayers = updateLayerAt(config.layers.bottomLayers, index, updates)
           const bottomThickness = sumLayerThickness(bottomLayers)
@@ -372,8 +372,8 @@ export const createFloorAssembliesSlice: StateCreator<
 
       removeFloorAssemblyBottomLayer: (id: FloorAssemblyId, index: number) => {
         set(state => {
+          if (!(id in state.floorAssemblyConfigs)) return state
           const config = state.floorAssemblyConfigs[id]
-          if (config == null) return state
 
           const bottomLayers = removeLayerAt(config.layers.bottomLayers, index)
           const bottomThickness = sumLayerThickness(bottomLayers)
@@ -392,8 +392,8 @@ export const createFloorAssembliesSlice: StateCreator<
 
       moveFloorAssemblyBottomLayer: (id: FloorAssemblyId, fromIndex: number, toIndex: number) => {
         set(state => {
+          if (!(id in state.floorAssemblyConfigs)) return state
           const config = state.floorAssemblyConfigs[id]
-          if (config == null) return state
 
           const bottomLayers = moveLayer(config.layers.bottomLayers, fromIndex, toIndex)
           const bottomThickness = sumLayerThickness(bottomLayers)

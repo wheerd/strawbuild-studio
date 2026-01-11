@@ -66,10 +66,10 @@ export const migrateToVersion12: Migration = state => {
         if (typeof perimeter.id !== 'string') continue
 
         // Extract old structure
-        const oldWalls = Array.isArray(perimeter.walls) ? perimeter.walls : []
-        const oldCorners = Array.isArray(perimeter.corners) ? perimeter.corners : []
+        const oldWalls: unknown[] = Array.isArray(perimeter.walls) ? perimeter.walls : []
+        const oldCorners: unknown[] = Array.isArray(perimeter.corners) ? perimeter.corners : []
         const referenceSide = perimeter.referenceSide === 'outside' ? 'outside' : 'inside'
-        const referencePolygon = Array.isArray(perimeter.referencePolygon) ? perimeter.referencePolygon : []
+        const referencePolygon: unknown[] = Array.isArray(perimeter.referencePolygon) ? perimeter.referencePolygon : []
 
         if (oldWalls.length === 0 || oldCorners.length === 0) continue
         if (oldWalls.length !== oldCorners.length) continue
@@ -120,9 +120,7 @@ export const migrateToVersion12: Migration = state => {
             referencePoint = toVec2(referencePolygon[i])
           }
 
-          if (!referencePoint) {
-            referencePoint = newVec2(0, 0)
-          }
+          referencePoint ??= newVec2(0, 0)
 
           console.log('corner', oldCorner)
           console.log('inside', oldCorner.insidePoint, insidePoint)
@@ -169,7 +167,7 @@ export const migrateToVersion12: Migration = state => {
               type: 'opening',
               perimeterId: perimeter.id,
               wallId,
-              openingType: (oldOpening.type || 'door') as OpeningType,
+              openingType: (oldOpening.type ?? 'door') as OpeningType,
               centerOffsetFromWallStart:
                 typeof oldOpening.centerOffsetFromWallStart === 'number' ? oldOpening.centerOffsetFromWallStart : 0,
               width: typeof oldOpening.width === 'number' ? oldOpening.width : 0,
@@ -195,7 +193,7 @@ export const migrateToVersion12: Migration = state => {
               type: 'post',
               perimeterId: perimeter.id,
               wallId,
-              postType: (oldPost.type || 'center') as WallPostType,
+              postType: (oldPost.type ?? 'center') as WallPostType,
               centerOffsetFromWallStart:
                 typeof oldPost.centerOffsetFromWallStart === 'number' ? oldPost.centerOffsetFromWallStart : 0,
               width: typeof oldPost.width === 'number' ? oldPost.width : 0,

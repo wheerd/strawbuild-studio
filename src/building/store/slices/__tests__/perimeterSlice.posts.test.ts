@@ -513,7 +513,7 @@ describe('wallPostSlice', () => {
           centerOffsetFromWallStart: 100,
           width: 100
         })
-      )!
+      )
 
       expect(slice.wallPosts[post.id]).toBeDefined()
 
@@ -530,7 +530,7 @@ describe('wallPostSlice', () => {
           centerOffsetFromWallStart: 2000,
           width: 100
         })
-      )!
+      )
 
       expect(slice.wallPosts[post.id]).toBeDefined()
 
@@ -551,7 +551,7 @@ describe('wallPostSlice', () => {
           centerOffsetFromWallStart: splitPosition - 1000,
           width: 100
         })
-      )!
+      )
 
       // Add post after split point
       const post2 = slice.actions.addWallPost(
@@ -560,7 +560,7 @@ describe('wallPostSlice', () => {
           centerOffsetFromWallStart: splitPosition + 1000,
           width: 100
         })
-      )!
+      )
 
       const newWallId = slice.actions.splitPerimeterWall(wallId, splitPosition)!
 
@@ -584,7 +584,7 @@ describe('wallPostSlice', () => {
           centerOffsetFromWallStart: 2000,
           width: 100
         })
-      )!
+      )
 
       const storedPost = slice.wallPosts[post.id]
       expect(storedPost.wallId).toBe(wallId)
@@ -603,7 +603,7 @@ describe('wallPostSlice', () => {
           centerOffsetFromWallStart: splitPosition + 1000,
           width: 100
         })
-      )!
+      )
 
       const newWallId = slice.actions.splitPerimeterWall(wallId, splitPosition)!
 
@@ -622,7 +622,7 @@ describe('wallPostSlice', () => {
         centerOffsetFromWallStart: 2000,
         width: 900,
         height: 2100
-      })!
+      })
 
       const post = slice.actions.addWallPost(
         wallId,
@@ -630,7 +630,7 @@ describe('wallPostSlice', () => {
           centerOffsetFromWallStart: 4000,
           width: 100
         })
-      )!
+      )
 
       const wall = slice.actions.getPerimeterWallById(wallId)
       expect(wall.entityIds).toContain(opening.id)
@@ -661,7 +661,7 @@ describe('wallPostSlice', () => {
         centerOffsetFromWallStart: splitPosition - 1000,
         width: 900,
         height: 2100
-      })!
+      })
 
       const post = slice.actions.addWallPost(
         wallId,
@@ -669,7 +669,7 @@ describe('wallPostSlice', () => {
           centerOffsetFromWallStart: splitPosition + 1000,
           width: 100
         })
-      )!
+      )
 
       const newWallId = slice.actions.splitPerimeterWall(wallId, splitPosition)!
 

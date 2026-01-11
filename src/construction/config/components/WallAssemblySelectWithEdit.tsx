@@ -21,7 +21,9 @@ export function WallAssemblySelectWithEdit(props: WallAssemblySelectProps): Reac
         title={t($ => $.walls.configure)}
         variant="ghost"
         size={props.size}
-        onClick={() => openConfiguration('walls', props.value ?? undefined)}
+        onClick={() => {
+          openConfiguration('walls', props.value ?? undefined)
+        }}
       >
         <Pencil1Icon />
       </IconButton>

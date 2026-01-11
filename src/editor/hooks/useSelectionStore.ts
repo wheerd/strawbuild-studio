@@ -121,7 +121,15 @@ export const getSelectionPath = () => useSelectionStore.getState().getSelectionP
 export const hasSelection = () => useSelectionStore.getState().hasSelection()
 
 // Non-reactive action functions for direct usage
-export const pushSelection = (id: SelectableId) => useSelectionStore.getState().pushSelection(id)
-export const popSelection = () => useSelectionStore.getState().popSelection()
-export const clearSelection = () => useSelectionStore.getState().clearSelection()
-export const replaceSelection = (stack: SelectableId[]) => useSelectionStore.getState().replaceSelection(stack)
+export const pushSelection = (id: SelectableId) => {
+  useSelectionStore.getState().pushSelection(id)
+}
+export const popSelection = () => {
+  useSelectionStore.getState().popSelection()
+}
+export const clearSelection = () => {
+  useSelectionStore.getState().clearSelection()
+}
+export const replaceSelection = (stack: SelectableId[]) => {
+  useSelectionStore.getState().replaceSelection(stack)
+}

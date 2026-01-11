@@ -88,9 +88,9 @@ describe('StoreyManagementService', () => {
       mockActions.getStoreysOrderedByLevel.mockReturnValue(storeys)
       mockActions.getStoreyAbove.mockReturnValue(null)
 
-      expect(() => service.moveStoreyUp('storey-2' as StoreyId)).toThrow(
-        'Cannot move floor up: lowest floor would exceed ground level'
-      )
+      expect(() => {
+        service.moveStoreyUp('storey-2' as StoreyId)
+      }).toThrow('Cannot move floor up: lowest floor would exceed ground level')
     })
 
     it('should do nothing with single storey', () => {
@@ -149,9 +149,9 @@ describe('StoreyManagementService', () => {
 
       mockActions.getStoreysOrderedByLevel.mockReturnValue(storeys)
 
-      expect(() => service.moveStoreyDown('storey-1' as StoreyId)).toThrow(
-        'Cannot move floor down: highest floor would go below ground level'
-      )
+      expect(() => {
+        service.moveStoreyDown('storey-1' as StoreyId)
+      }).toThrow('Cannot move floor down: highest floor would go below ground level')
     })
   })
 

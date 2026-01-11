@@ -38,8 +38,12 @@ export function useTagVisibilityActions() {
 
   return useMemo(
     () => ({
-      toggleTagOrCategory: (id: TagOrCategory) => store.toggleVisibility(id),
-      setTagOrCategoryVisibility: (id: TagOrCategory, visible: boolean) => store.setVisibility(id, visible),
+      toggleTagOrCategory: (id: TagOrCategory) => {
+        store.toggleVisibility(id)
+      },
+      setTagOrCategoryVisibility: (id: TagOrCategory, visible: boolean) => {
+        store.setVisibility(id, visible)
+      },
       isTagOrCategoryVisible: (id: TagOrCategory) => store.isVisible(id),
       getCategoryVisibilityState: (categoryId: TagCategoryId, tagIds: TagId[]) =>
         store.getCategoryVisibilityState(categoryId, tagIds),

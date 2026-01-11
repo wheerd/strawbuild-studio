@@ -15,7 +15,7 @@ export function PlanImageLayer({ placement }: PlanImageLayerProps): React.JSX.El
 
   const [image] = useImage(plan?.image.url ?? '', 'anonymous')
 
-  if (!plan || plan.placement !== placement || !image) {
+  if (plan?.placement !== placement || !image) {
     return null
   }
 

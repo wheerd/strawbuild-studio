@@ -126,7 +126,9 @@ export function MaterialSelect({
   return (
     <Select.Root
       value={normalizedValue}
-      onValueChange={val => onValueChange(val === NONE_VALUE ? null : (val as MaterialId))}
+      onValueChange={val => {
+        onValueChange(val === NONE_VALUE ? null : (val as MaterialId))
+      }}
       disabled={disabled}
       size={size}
     >

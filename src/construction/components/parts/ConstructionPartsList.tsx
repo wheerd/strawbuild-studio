@@ -252,7 +252,6 @@ const computeGroupMetrics = (parts: MaterialPartItem[], material: Material): Row
 function MaterialTypeIndicator({ material, size = 18 }: { material: Material; size?: number }) {
   const getMaterialTypeName = useGetMaterialTypeName()
   const Icon = getMaterialTypeIcon(material.type)
-  if (!Icon) return null
   const iconSize = Math.max(size - 6, 8)
   return (
     <div
@@ -459,7 +458,9 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan, formatt
               title={t($ => $.partsList.actions.configureMaterial)}
               variant="ghost"
               size="1"
-              onClick={() => openConfiguration('materials', material.id)}
+              onClick={() => {
+                openConfiguration('materials', material.id)
+              }}
             >
               <Pencil1Icon />
             </IconButton>
@@ -622,7 +623,9 @@ function DimensionalPartsTable({
                   <IconButton
                     size="1"
                     variant="ghost"
-                    onClick={() => onViewInPlan(part.partId)}
+                    onClick={() => {
+                      onViewInPlan(part.partId)
+                    }}
                     title={t($ => $.partsList.actions.viewInPlan)}
                   >
                     <EyeOpenIcon />
@@ -749,7 +752,9 @@ function SheetPartsTable({
                   <IconButton
                     size="1"
                     variant="ghost"
-                    onClick={() => onViewInPlan(part.partId)}
+                    onClick={() => {
+                      onViewInPlan(part.partId)
+                    }}
                     title={t($ => $.partsList.actions.viewInPlan)}
                   >
                     <EyeOpenIcon />
@@ -834,7 +839,9 @@ function VolumePartsTable({
                   <IconButton
                     size="1"
                     variant="ghost"
-                    onClick={() => onViewInPlan(part.partId)}
+                    onClick={() => {
+                      onViewInPlan(part.partId)
+                    }}
                     title={t($ => $.partsList.actions.viewInPlan)}
                   >
                     <EyeOpenIcon />
@@ -888,7 +895,9 @@ function GenericPartsTable({
                 <IconButton
                   size="1"
                   variant="ghost"
-                  onClick={() => onViewInPlan(part.partId)}
+                  onClick={() => {
+                    onViewInPlan(part.partId)
+                  }}
                   title={t($ => $.partsList.actions.viewInPlan)}
                 >
                   <EyeOpenIcon />
@@ -1060,7 +1069,7 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
         const isKnown = material.crossSections.some(
           cs =>
             cs.smallerLength === displayCrossSection?.smallerLength &&
-            cs.biggerLength === displayCrossSection?.biggerLength
+            cs.biggerLength === displayCrossSection.biggerLength
         )
 
         let group = groups.get(key)
@@ -1195,8 +1204,8 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
     const MATERIAL_TYPE_ORDER: MaterialType[] = ['strawbale', 'dimensional', 'sheet', 'volume', 'generic']
 
     return (Object.keys(partsList) as Material['id'][])
+      .filter(id => id in materialsMap)
       .map(id => ({ id, material: materialsMap[id] }))
-      .filter((item): item is { id: Material['id']; material: Material } => item.material !== undefined)
       .sort((a, b) => {
         // Sort by type first
         const typeA = a.material.type
@@ -1224,9 +1233,9 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
 
   const summaryRows = materialIds
     .map(materialId => {
+      if (!(materialId in partsList) || !(materialId in materialsMap)) return null
       const materialParts = partsList[materialId]
       const material = materialsMap[materialId]
-      if (!material) return null
       const totalWeight = calculateWeight(materialParts.totalVolume, material)
       const parts = Object.values(materialParts.parts)
       const metrics: RowMetrics & { partCount: number } = {
@@ -1287,7 +1296,9 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
                   <MaterialSummaryRow
                     material={row.material}
                     metrics={row.metrics}
-                    onNavigate={() => scrollToGroup(row.groups[0]?.key)}
+                    onNavigate={() => {
+                      scrollToGroup(row.groups[0]?.key)
+                    }}
                     formatters={formatters}
                   />
                   {row.groups.length > 1 &&
@@ -1295,7 +1306,9 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
                       <MaterialGroupSummaryRow
                         key={group.key}
                         group={group}
-                        onNavigate={() => scrollToGroup(group.key)}
+                        onNavigate={() => {
+                          scrollToGroup(group.key)
+                        }}
                         formatters={formatters}
                       />
                     ))}
@@ -1308,9 +1321,9 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
 
       <Flex direction="column" gap="4">
         {materialIds.map(materialId => {
+          if (!(materialId in materialsMap) || !(materialId in partsList)) return null
           const material = materialsMap[materialId]
           const materialParts = partsList[materialId]
-          if (!material || !materialParts) return null
           const groups = createMaterialGroups(material, materialParts)
           if (groups.length === 0) return null
           return (

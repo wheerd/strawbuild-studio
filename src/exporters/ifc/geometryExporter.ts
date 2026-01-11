@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import type { Manifold } from 'manifold-3d'
 import { Handle, IFC4, IfcAPI, type IfcLineObject } from 'web-ifc'
 import wasmUrl from 'web-ifc/web-ifc.wasm?url'
@@ -5,13 +6,7 @@ import wasmUrl from 'web-ifc/web-ifc.wasm?url'
 import { isOpeningId } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import type { ConstructionElement, ConstructionGroup, GroupOrElement } from '@/construction/elements'
-import type {
-  DimensionalMaterial,
-  Material,
-  MaterialId,
-  SheetMaterial,
-  StrawbaleMaterial
-} from '@/construction/materials/material'
+import type { Material, MaterialId } from '@/construction/materials/material'
 import { getMaterialsActions } from '@/construction/materials/store'
 import type { ConstructionModel, HighlightedCuboid } from '@/construction/model'
 import type { Shape } from '@/construction/shapes'
@@ -687,7 +682,7 @@ export class GeometryIfcExporter {
     const storeyTag = group.tags?.find(t => t.category === 'storey-name')
     if (!storeyTag) return 'Unknown Storey'
     // For custom tags, use label; for predefined tags, use ID (IFC export doesn't need translation)
-    return 'label' in storeyTag ? storeyTag.label : String(storeyTag.id)
+    return 'label' in storeyTag ? storeyTag.label : storeyTag.id
   }
 
   private createIfcElementByType(
@@ -710,7 +705,7 @@ export class GeometryIfcExporter {
             placement,
             productDef,
             null,
-            IFC4.IfcWallTypeEnum[(predefinedType as keyof IFC4.IfcWallTypeEnum) ?? 'NOTDEFINED']
+            IFC4.IfcWallTypeEnum[(predefinedType ?? 'NOTDEFINED') as keyof IFC4.IfcWallTypeEnum]
           )
         )
 
@@ -725,7 +720,7 @@ export class GeometryIfcExporter {
             placement,
             productDef,
             null,
-            IFC4.IfcBeamTypeEnum[(predefinedType as keyof IFC4.IfcBeamTypeEnum) ?? 'NOTDEFINED']
+            IFC4.IfcBeamTypeEnum[(predefinedType ?? 'NOTDEFINED') as keyof IFC4.IfcBeamTypeEnum]
           )
         )
 
@@ -740,7 +735,7 @@ export class GeometryIfcExporter {
             placement,
             productDef,
             null,
-            IFC4.IfcColumnTypeEnum[(predefinedType as keyof IFC4.IfcColumnTypeEnum) ?? 'NOTDEFINED']
+            IFC4.IfcColumnTypeEnum[(predefinedType ?? 'NOTDEFINED') as keyof IFC4.IfcColumnTypeEnum]
           )
         )
 
@@ -755,7 +750,7 @@ export class GeometryIfcExporter {
             placement,
             productDef,
             null,
-            IFC4.IfcSlabTypeEnum[(predefinedType as keyof IFC4.IfcSlabTypeEnum) ?? 'NOTDEFINED']
+            IFC4.IfcSlabTypeEnum[(predefinedType ?? 'NOTDEFINED') as keyof IFC4.IfcSlabTypeEnum]
           )
         )
 
@@ -770,7 +765,7 @@ export class GeometryIfcExporter {
             placement,
             productDef,
             null,
-            IFC4.IfcRoofTypeEnum[(predefinedType as keyof IFC4.IfcRoofTypeEnum) ?? 'NOTDEFINED']
+            IFC4.IfcRoofTypeEnum[(predefinedType ?? 'NOTDEFINED') as keyof IFC4.IfcRoofTypeEnum]
           )
         )
 
@@ -785,7 +780,7 @@ export class GeometryIfcExporter {
             placement,
             productDef,
             null,
-            IFC4.IfcCoveringTypeEnum[(predefinedType as keyof IFC4.IfcCoveringTypeEnum) ?? 'NOTDEFINED']
+            IFC4.IfcCoveringTypeEnum[(predefinedType ?? 'NOTDEFINED') as keyof IFC4.IfcCoveringTypeEnum]
           )
         )
 
@@ -800,7 +795,7 @@ export class GeometryIfcExporter {
             placement,
             productDef,
             null,
-            IFC4.IfcMemberTypeEnum[(predefinedType as keyof IFC4.IfcMemberTypeEnum) ?? 'NOTDEFINED']
+            IFC4.IfcMemberTypeEnum[(predefinedType ?? 'NOTDEFINED') as keyof IFC4.IfcMemberTypeEnum]
           )
         )
 
@@ -816,7 +811,7 @@ export class GeometryIfcExporter {
             productDef,
             null,
             IFC4.IfcBuildingElementPartTypeEnum[
-              (predefinedType as keyof IFC4.IfcBuildingElementPartTypeEnum) ?? 'NOTDEFINED'
+              (predefinedType ?? 'NOTDEFINED') as keyof IFC4.IfcBuildingElementPartTypeEnum
             ]
           )
         )
@@ -833,7 +828,7 @@ export class GeometryIfcExporter {
             productDef,
             null,
             null,
-            IFC4.IfcElementAssemblyTypeEnum[(predefinedType as keyof IFC4.IfcElementAssemblyTypeEnum) ?? 'NOTDEFINED']
+            IFC4.IfcElementAssemblyTypeEnum[(predefinedType ?? 'NOTDEFINED') as keyof IFC4.IfcElementAssemblyTypeEnum]
           )
         )
 
@@ -849,7 +844,7 @@ export class GeometryIfcExporter {
             productDef,
             null,
             IFC4.IfcBuildingElementProxyTypeEnum[
-              (predefinedType as keyof IFC4.IfcBuildingElementProxyTypeEnum) ?? 'NOTDEFINED'
+              (predefinedType ?? 'NOTDEFINED') as keyof IFC4.IfcBuildingElementProxyTypeEnum
             ]
           )
         )
@@ -881,11 +876,6 @@ export class GeometryIfcExporter {
 
     const { getWallOpeningById } = getModelActions()
     const modelOpening = getWallOpeningById(opening.sourceId)
-
-    if (!modelOpening) {
-      console.warn('No wall found for opening:', opening.sourceId)
-      return
-    }
 
     const parentWall = this.sourceIdToElementMap.get(modelOpening.wallId)
 
@@ -1024,7 +1014,7 @@ export class GeometryIfcExporter {
     // Type-specific properties
     switch (materialData.type) {
       case 'strawbale': {
-        const straw = materialData as StrawbaleMaterial
+        const straw = materialData
         properties.push(
           this.writeEntity(
             new IFC4.IfcPropertySingleValue(
@@ -1059,7 +1049,7 @@ export class GeometryIfcExporter {
       }
 
       case 'dimensional': {
-        const dim = materialData as DimensionalMaterial
+        const dim = materialData
         if (dim.crossSections.length > 0) {
           const sections = dim.crossSections.map(cs => `${cs.smallerLength}×${cs.biggerLength}`).join(', ')
           properties.push(
@@ -1077,7 +1067,7 @@ export class GeometryIfcExporter {
       }
 
       case 'sheet': {
-        const sheet = materialData as SheetMaterial
+        const sheet = materialData
         properties.push(
           this.writeEntity(
             new IFC4.IfcPropertySingleValue(this.identifier('SheetType'), null, this.label(sheet.sheetType), null)
@@ -1141,7 +1131,7 @@ export class GeometryIfcExporter {
 
     // Create surface style
     const surfaceStyle = this.writeEntity(
-      new IFC4.IfcSurfaceStyle(this.label(`${material}_Color`), IFC4.IfcSurfaceSide.BOTH, [
+      new IFC4.IfcSurfaceStyle(this.label(`${material.value}_Color`), IFC4.IfcSurfaceSide.BOTH, [
         surfaceStyleRendering as Handle<IFC4.IfcSurfaceStyleElementSelect>
       ])
     )
@@ -1247,7 +1237,7 @@ export class GeometryIfcExporter {
     if (constructionElement.tags) {
       if (constructionElement.tags.length > 0) {
         // For IFC export, use label for custom tags and ID for predefined tags (no translation needed in IFC)
-        const tagLabels = constructionElement.tags.map(t => ('label' in t ? t.label : String(t.id))).join(', ')
+        const tagLabels = constructionElement.tags.map(t => ('label' in t ? t.label : t.id)).join(', ')
         properties.push(
           this.writeEntity(new IFC4.IfcPropertySingleValue(this.identifier('Tags'), null, this.label(tagLabels), null))
         )
@@ -1562,7 +1552,7 @@ export class GeometryIfcExporter {
   private real(value: number, force = false): IFC4.IfcReal {
     if (force) {
       // To actually get a value like IFCPOSITIVELENGTHMEASURE(42.0) we need to do this:
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return
       return { type: 2, label: 'IFCREAL', valueType: 4, internalValue: value } as any
     }
     return new IFC4.IfcReal(value)
@@ -1571,7 +1561,7 @@ export class GeometryIfcExporter {
   private volumeMeasure(value: number, force = false): IFC4.IfcVolumeMeasure {
     if (force) {
       // To actually get a value like IFCVOLUMEMEASURE(42.0) we need to do this:
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return
       return { type: 2, label: 'IFCVOLUMEMEASURE', valueType: 4, internalValue: value } as any
     }
     return new IFC4.IfcVolumeMeasure(value)
@@ -1580,7 +1570,7 @@ export class GeometryIfcExporter {
   private lengthMeasure(value: number, force = false): IFC4.IfcLengthMeasure {
     if (force) {
       // To actually get a value like IFCLENGTHMEASURE(42.0) we need to do this:
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return
       return { type: 2, label: 'IFCLENGTHMEASURE', valueType: 4, internalValue: value } as any
     }
     return new IFC4.IfcLengthMeasure(value)
@@ -1589,7 +1579,7 @@ export class GeometryIfcExporter {
   private areaMeasure(value: number, force = false): IFC4.IfcAreaMeasure {
     if (force) {
       // To actually get a value like IFCAREAMEASURE(42.0) we need to do this:
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return
       return { type: 2, label: 'IFCAREAMEASURE', valueType: 4, internalValue: value } as any
     }
     return new IFC4.IfcAreaMeasure(value)
@@ -1598,7 +1588,7 @@ export class GeometryIfcExporter {
   private positiveLengthMeasure(value: number, force = false): IFC4.IfcPositiveLengthMeasure {
     if (force) {
       // To actually get a value like IFCPOSITIVELENGTHMEASURE(42.0) we need to do this:
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return
       return { type: 2, label: 'IFCPOSITIVELENGTHMEASURE', valueType: 4, internalValue: Math.max(value, 0.01) } as any
     }
     return new IFC4.IfcPositiveLengthMeasure(Math.max(value, 1e-6))
@@ -1610,7 +1600,7 @@ export class GeometryIfcExporter {
 
   private massDensityMeasure(value: number, force = false): IFC4.IfcMassDensityMeasure {
     if (force) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return
       return { type: 2, label: 'IFCMASSDENSITYMEASURE', valueType: 4, internalValue: value } as any
     }
     return new IFC4.IfcMassDensityMeasure(value)
@@ -1644,6 +1634,7 @@ export class GeometryIfcExporter {
   }
 
   private globalId(): IFC4.IfcGloballyUniqueId {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return this.api.CreateIFCGloballyUniqueId(this.modelID)
   }
 }

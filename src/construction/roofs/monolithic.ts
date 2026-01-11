@@ -37,8 +37,8 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
     const roofSides = this.splitRoofPolygon(roof, ridgeHeight)
 
     // Calculate Z-range for clipping volume (doubled for safety margin)
-    const minZ = (-2 * (ridgeHeight + this.config.layers.insideThickness)) as Length
-    const maxZ = ((this.config.thickness + this.config.layers.topThickness) * 2) as Length
+    const minZ = -2 * (ridgeHeight + this.config.layers.insideThickness)
+    const maxZ = (this.config.thickness + this.config.layers.topThickness) * 2
     const ceilingClippingVolume = this.getCeilingPolygons(roof)
       .map(c => this.createExtrudedVolume(c, roof.ridgeLine, minZ, maxZ))
       .reduce((a, b) => a.add(b))
@@ -115,7 +115,7 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
     // Calculate offset at a given T position along the line
     const calculateOffsetAt = (t: number): Length => {
       const point = lerpVec2(line.start, line.end, t)
-      return calculateOffset(getSignedDistanceToRidge(point)) as Length
+      return calculateOffset(getSignedDistanceToRidge(point))
     }
 
     // Step 3: Calculate ridge intersection ONCE (for gable roofs)
@@ -141,7 +141,7 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
 
       // Ridge intersection (if within this segment)
       if (ridgeT > segment.tStart && ridgeT < segment.tEnd) {
-        result.push({ position: ridgeT, offset: ridgeHeight as Length, nullAfter: false })
+        result.push({ position: ridgeT, offset: ridgeHeight, nullAfter: false })
       }
 
       // Segment end

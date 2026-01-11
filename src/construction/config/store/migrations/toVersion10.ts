@@ -36,8 +36,10 @@ export function migrateToVersion10(state: MigrationState): void {
   // Helper to create config key for deduplication
   const getConfigKey = (config: Record<string, unknown>): string => {
     if ('sillMaterial' in config) {
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       return `simple:${config.padding}:${config.sillThickness}:${config.sillMaterial}:${config.headerThickness}:${config.headerMaterial}`
     }
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     return `empty:${config.padding}`
   }
 

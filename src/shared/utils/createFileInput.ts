@@ -5,10 +5,7 @@ export class FileInputCancelledError extends Error {
   }
 }
 
-export function createFileInput(
-  onFileLoaded: (content: string, file: File) => void,
-  accept = '.json'
-): Promise<string> {
+export function createFileInput(accept = '.json'): Promise<string> {
   return new Promise((resolve, reject) => {
     const input = document.createElement('input')
     input.type = 'file'
@@ -23,21 +20,17 @@ export function createFileInput(
       }
 
       const reader = new FileReader()
-      reader.onload = async e => {
+      reader.onload = e => {
         const content = e.target?.result
         if (typeof content === 'string') {
-          try {
-            await onFileLoaded(content, file)
-          } catch (error) {
-            reject(error)
-            return
-          }
           resolve(content)
         } else {
           reject(new Error('Failed to read file content'))
         }
       }
-      reader.onerror = () => reject(new Error('Failed to read file'))
+      reader.onerror = () => {
+        reject(new Error('Failed to read file'))
+      }
       reader.readAsText(file)
     })
 
@@ -81,8 +74,8 @@ export function createBinaryFileInput(
           try {
             await onFileLoaded(content, file)
             resolve(content)
-          } catch (error) {
-            reject(error)
+          } catch (error: unknown) {
+            reject(error instanceof Error ? error : new Error(String(error)))
           } finally {
             cleanup()
           }

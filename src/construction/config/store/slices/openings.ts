@@ -74,10 +74,10 @@ export const createOpeningAssembliesSlice: StateCreator<
 
       duplicateOpeningAssembly: (id: OpeningAssemblyId, name: string) => {
         const state = get()
-        const original = state.openingAssemblyConfigs[id]
-        if (original == null) {
+        if (!(id in state.openingAssemblyConfigs)) {
           throw new Error(`Opening assembly with id ${id} not found`)
         }
+        const original = state.openingAssemblyConfigs[id]
 
         validateOpeningAssemblyName(name)
 
@@ -109,8 +109,8 @@ export const createOpeningAssembliesSlice: StateCreator<
 
       updateOpeningAssemblyName: (id: OpeningAssemblyId, name: string) => {
         set(state => {
+          if (!(id in state.openingAssemblyConfigs)) return state
           const assembly = state.openingAssemblyConfigs[id]
-          if (assembly == null) return state
 
           validateOpeningAssemblyName(name)
 
@@ -130,8 +130,8 @@ export const createOpeningAssembliesSlice: StateCreator<
 
       updateOpeningAssemblyConfig: (id: OpeningAssemblyId, config: Partial<Omit<OpeningConfig, 'type'>>) => {
         set(state => {
+          if (!(id in state.openingAssemblyConfigs)) return state
           const assembly = state.openingAssemblyConfigs[id]
-          if (assembly == null) return state
 
           const updatedAssembly: OpeningAssemblyConfig = {
             ...assembly,

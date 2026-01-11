@@ -521,7 +521,7 @@ describe('perimeterIntegration', () => {
             centerOffsetFromWallStart: 4000,
             width: 100
           })
-        )!
+        )
 
         // Remove entities
         slice.actions.removeWallOpening(opening.id)
@@ -590,7 +590,7 @@ describe('perimeterIntegration', () => {
             width: 300,
             height: 2100
           })
-          if (opening) entityIds.push(opening.id)
+          entityIds.push(opening.id)
         }
 
         expect(entityIds.length).toBeGreaterThan(0)
@@ -625,7 +625,7 @@ describe('perimeterIntegration', () => {
             width: 900,
             height: 2100
           })
-          if (opening) entityIds.push(opening.id)
+          entityIds.push(opening.id)
 
           const post = slice.actions.addWallPost(
             wallId,
@@ -634,7 +634,7 @@ describe('perimeterIntegration', () => {
               width: 100
             })
           )
-          if (post) entityIds.push(post.id)
+          entityIds.push(post.id)
         })
 
         // Remove perimeter (should cascade to all walls and entities)

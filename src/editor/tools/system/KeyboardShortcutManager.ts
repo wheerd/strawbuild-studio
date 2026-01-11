@@ -41,7 +41,7 @@ export class KeyboardShortcutManager {
 
     // Priority 1: Active tool's handleKeyDown (highest priority)
     const activeTool = getActiveTool()
-    if (activeTool?.handleKeyDown) {
+    if (activeTool.handleKeyDown) {
       if (activeTool.handleKeyDown(event)) {
         return true
       }
@@ -67,7 +67,7 @@ export class KeyboardShortcutManager {
 
   handleKeyUp(event: KeyboardEvent): boolean {
     const activeTool = getActiveTool()
-    if (activeTool?.handleKeyUp) {
+    if (activeTool.handleKeyUp) {
       if (activeTool.handleKeyUp(event)) {
         return true
       }
@@ -87,7 +87,9 @@ export class KeyboardShortcutManager {
     for (const [key, toolId] of this.toolActivationShortcuts.entries()) {
       shortcuts.push({
         key,
-        action: () => replaceTool(toolId as ToolId),
+        action: () => {
+          replaceTool(toolId as ToolId)
+        },
         priority: 60,
         scope: 'global',
         source: `tool-activation:${toolId}`,
@@ -149,7 +151,7 @@ export class KeyboardShortcutManager {
         action: () => {
           // Return to select tool if not already active
           const activeTool = getActiveTool()
-          if (activeTool?.id !== 'basic.select') {
+          if (activeTool.id !== 'basic.select') {
             popTool()
           }
         },

@@ -382,7 +382,7 @@ describe('perimeterGeometry', () => {
           centerOffsetFromWallStart: 2000,
           width: 900,
           height: 2100
-        })!
+        })
 
         expect(opening.polygon).toBeDefined()
         expect(opening.polygon.points).toHaveLength(4)
@@ -404,7 +404,7 @@ describe('perimeterGeometry', () => {
           centerOffsetFromWallStart: 2000,
           width,
           height: 2100
-        })!
+        })
 
         const insideStart = opening.insideLine.start
         const insideEnd = opening.insideLine.end
@@ -428,7 +428,7 @@ describe('perimeterGeometry', () => {
           centerOffsetFromWallStart: 2000,
           width: 900,
           height: 2100
-        })!
+        })
 
         const originalPolygon = { ...originalOpening.polygon }
 
@@ -458,7 +458,7 @@ describe('perimeterGeometry', () => {
             centerOffsetFromWallStart: 2000,
             width: 100
           })
-        )!
+        )
 
         expect(post.polygon).toBeDefined()
         expect(post.polygon.points).toHaveLength(4)
@@ -481,7 +481,7 @@ describe('perimeterGeometry', () => {
             centerOffsetFromWallStart: 2000,
             width
           })
-        )!
+        )
 
         const insideStart = post.insideLine.start
         const insideEnd = post.insideLine.end
@@ -507,7 +507,7 @@ describe('perimeterGeometry', () => {
           centerOffsetFromWallStart: 500,
           width: 900,
           height: 2100
-        })!
+        })
 
         expect(opening.polygon).toBeDefined()
         expect(opening.polygon.points).toHaveLength(4)
@@ -528,7 +528,7 @@ describe('perimeterGeometry', () => {
           centerOffsetFromWallStart: wall.wallLength - 500,
           width: 900,
           height: 2100
-        })!
+        })
 
         expect(opening.polygon).toBeDefined()
         expect(opening.polygon.points).toHaveLength(4)

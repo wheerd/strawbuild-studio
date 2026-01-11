@@ -59,7 +59,9 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
             </Label.Root>
             <RoofAssemblySelectWithEdit
               value={state.assemblyId}
-              onValueChange={assemblyId => tool.setAssemblyId(assemblyId)}
+              onValueChange={assemblyId => {
+                tool.setAssemblyId(assemblyId)
+              }}
               showDefaultIndicator
               defaultAssemblyId={defaultAssemblyId}
               size="1"
@@ -73,7 +75,13 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
                 {t($ => $.roof.type)}
               </Text>
             </Label.Root>
-            <SegmentedControl.Root size="1" value={state.type} onValueChange={value => tool.setType(value as RoofType)}>
+            <SegmentedControl.Root
+              size="1"
+              value={state.type}
+              onValueChange={value => {
+                tool.setType(value as RoofType)
+              }}
+            >
               <SegmentedControl.Item value="gable">{t($ => $.roof.typeGable)}</SegmentedControl.Item>
               <SegmentedControl.Item value="shed">{t($ => $.roof.typeShed)}</SegmentedControl.Item>
             </SegmentedControl.Root>
@@ -137,7 +145,9 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
             <LengthField
               id="vertical-offset"
               value={state.verticalOffset}
-              onCommit={value => tool.setVerticalOffset(value)}
+              onCommit={value => {
+                tool.setVerticalOffset(value)
+              }}
               min={-10000}
               max={10000}
               step={10}
@@ -157,7 +167,9 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
             <LengthField
               id="roof-overhang"
               value={state.overhang}
-              onCommit={value => tool.setOverhang(value)}
+              onCommit={value => {
+                tool.setOverhang(value)
+              }}
               min={0}
               max={2000}
               step={10}
@@ -214,7 +226,9 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
                 <Button
                   size="2"
                   color="green"
-                  onClick={() => tool.complete()}
+                  onClick={() => {
+                    tool.complete()
+                  }}
                   disabled={!state.isClosingSegmentValid}
                   title={t($ => $.roof.completeTooltip)}
                   style={{ width: '100%' }}
@@ -229,7 +243,9 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
                 size="2"
                 color="red"
                 variant="soft"
-                onClick={() => tool.cancel()}
+                onClick={() => {
+                  tool.cancel()
+                }}
                 title={t($ => $.roof.cancelTooltip)}
                 style={{ width: '100%' }}
               >

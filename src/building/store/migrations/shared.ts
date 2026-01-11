@@ -11,8 +11,8 @@ export const isRecord = (value: unknown): value is Record<string, unknown> =>
 
 export const toVec2 = (value: unknown): Vec2 | null => {
   if (Array.isArray(value)) {
-    if (value.length < 2) return null
-    const [x, y] = value
+    if (value.length !== 2) return null
+    const [x, y] = value as [unknown, unknown]
     const numX = Number(x)
     const numY = Number(y)
     if (!Number.isFinite(numX) || !Number.isFinite(numY)) return null
@@ -47,11 +47,11 @@ export const getPersistedConfigStoreState = (): PersistedConfigStoreState | null
     if (!raw) {
       return null
     }
-    const parsed = JSON.parse(raw)
+    const parsed = JSON.parse(raw) as unknown
     if (!isRecord(parsed)) {
       return null
     }
-    const state = (parsed as Record<string, unknown>).state
+    const state = parsed.state
     if (!isRecord(state)) {
       return null
     }

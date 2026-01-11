@@ -42,7 +42,7 @@ export function useWelcomeModal(): UseWelcomeModalReturn {
 
   useEffect(() => {
     const state = loadWelcomeState()
-    if (!state || state.version !== CURRENT_VERSION) {
+    if (state?.version !== CURRENT_VERSION) {
       setIsOpen(true)
       setMode('first-visit')
     }

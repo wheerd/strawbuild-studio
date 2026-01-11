@@ -71,7 +71,9 @@ export function SimplePolygonToolInspector<TTool extends BasePolygonTool<Polygon
                   size="1"
                   variant="ghost"
                   color="red"
-                  onClick={() => tool.clearLengthOverride()}
+                  onClick={() => {
+                    tool.clearLengthOverride()
+                  }}
                   title={t($ => $.simplePolygon.clearLengthOverride)}
                 >
                   <Cross2Icon />
@@ -129,7 +131,9 @@ export function SimplePolygonToolInspector<TTool extends BasePolygonTool<Polygon
                 <Button
                   size="2"
                   color="green"
-                  onClick={() => tool.complete()}
+                  onClick={() => {
+                    tool.complete()
+                  }}
                   disabled={!canComplete}
                   title={t($ => $.simplePolygon.completeShape)}
                   style={{ width: '100%' }}
@@ -144,7 +148,9 @@ export function SimplePolygonToolInspector<TTool extends BasePolygonTool<Polygon
                 size="2"
                 color="red"
                 variant="soft"
-                onClick={() => tool.cancel()}
+                onClick={() => {
+                  tool.cancel()
+                }}
                 title={t($ => $.simplePolygon.cancelDrawing)}
                 style={{ width: '100%' }}
               >

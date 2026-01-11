@@ -38,25 +38,21 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
   }))
 
   // Update config when default config changes
-  useEffect(() => setConfig(prev => ({ ...prev, wallAssemblyId: defaultWallAssemblyId })), [defaultWallAssemblyId])
-  useEffect(
-    () => setConfig(prev => ({ ...prev, baseRingBeamAssemblyId: defaultBaseRingBeamAssemblyId })),
-    [defaultBaseRingBeamAssemblyId]
-  )
-  useEffect(
-    () => setConfig(prev => ({ ...prev, topRingBeamAssemblyId: defaultTopRingBeamAssemblyId })),
-    [defaultTopRingBeamAssemblyId]
-  )
+  useEffect(() => {
+    setConfig(prev => ({ ...prev, wallAssemblyId: defaultWallAssemblyId }))
+  }, [defaultWallAssemblyId])
+  useEffect(() => {
+    setConfig(prev => ({ ...prev, baseRingBeamAssemblyId: defaultBaseRingBeamAssemblyId }))
+  }, [defaultBaseRingBeamAssemblyId])
+  useEffect(() => {
+    setConfig(prev => ({ ...prev, topRingBeamAssemblyId: defaultTopRingBeamAssemblyId }))
+  }, [defaultTopRingBeamAssemblyId])
 
   const effectiveInteriorWidth = config.referenceSide === 'inside' ? config.width : config.width - 2 * config.thickness
   const effectiveInteriorLength =
     config.referenceSide === 'inside' ? config.length : config.length - 2 * config.thickness
 
-  const isValid =
-    effectiveInteriorWidth > 0 &&
-    effectiveInteriorLength > 0 &&
-    config.thickness > 0 &&
-    (config.wallAssemblyId?.length ?? 0) > 0
+  const isValid = effectiveInteriorWidth > 0 && effectiveInteriorLength > 0 && config.thickness > 0
 
   const handleConfirm = useCallback(() => {
     if (isValid) {
@@ -84,7 +80,9 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                 </Text>
                 <LengthField
                   value={config.width}
-                  onChange={value => setConfig(prev => ({ ...prev, width: value }))}
+                  onChange={value => {
+                    setConfig(prev => ({ ...prev, width: value }))
+                  }}
                   min={1000}
                   step={100}
                   unit="m"
@@ -101,7 +99,9 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                 </Text>
                 <LengthField
                   value={config.length}
-                  onChange={value => setConfig(prev => ({ ...prev, length: value }))}
+                  onChange={value => {
+                    setConfig(prev => ({ ...prev, length: value }))
+                  }}
                   min={1000}
                   step={100}
                   unit="m"
@@ -121,7 +121,9 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                 </Flex>
                 <LengthField
                   value={config.thickness}
-                  onChange={value => setConfig(prev => ({ ...prev, thickness: value }))}
+                  onChange={value => {
+                    setConfig(prev => ({ ...prev, thickness: value }))
+                  }}
                   min={50}
                   max={1500}
                   step={10}
@@ -137,10 +139,10 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                   <Text size="1" color="gray">
                     {t($ => $.presetDialogs.rectangular.wallAssembly)}
                   </Text>
-                  {config.wallAssemblyId && <MeasurementInfo highlightedAssembly="wallAssembly" />}
+                  <MeasurementInfo highlightedAssembly="wallAssembly" />
                 </Flex>
                 <WallAssemblySelectWithEdit
-                  value={config.wallAssemblyId ?? undefined}
+                  value={config.wallAssemblyId}
                   onValueChange={(value: WallAssemblyId) => {
                     setConfig(prev => ({ ...prev, wallAssemblyId: value }))
                   }}
@@ -203,9 +205,9 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
               <SegmentedControl.Root
                 size="1"
                 value={config.referenceSide}
-                onValueChange={value =>
+                onValueChange={value => {
                   setConfig(prev => ({ ...prev, referenceSide: value as PerimeterReferenceSide }))
-                }
+                }}
               >
                 <SegmentedControl.Item value="inside">
                   {t($ => $.presetDialogs.rectangular.inside)}

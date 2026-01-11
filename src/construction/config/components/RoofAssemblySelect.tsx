@@ -37,7 +37,9 @@ export function RoofAssemblySelect({
   return (
     <Select.Root
       value={value ?? ''}
-      onValueChange={val => onValueChange(val as RoofAssemblyId)}
+      onValueChange={val => {
+        onValueChange(val as RoofAssemblyId)
+      }}
       disabled={disabled}
       size={size}
     >

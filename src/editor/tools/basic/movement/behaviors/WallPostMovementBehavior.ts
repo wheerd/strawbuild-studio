@@ -36,10 +36,6 @@ export class WallPostMovementBehavior implements MovementBehavior<WallPostEntity
     const wall = store.getPerimeterWallById(wallId)
     const post = store.getWallPostById(entityId)
 
-    if (!wall || !post) {
-      throw new Error(`Could not find required entities for wall post ${entityId}`)
-    }
-
     return { wall, post }
   }
 

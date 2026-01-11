@@ -40,7 +40,7 @@ function createMockWall(id: string, wallLength: Length, thickness: Length, wallA
 
   return partial<PerimeterWallWithGeometry>({
     id: (id || createPerimeterWallId()) as PerimeterWallId,
-    wallAssemblyId: (wallAssemblyId || 'defaultAssembly') as any,
+    wallAssemblyId: (wallAssemblyId ?? 'defaultAssembly') as any,
     thickness,
     wallLength,
     insideLength: wallLength,

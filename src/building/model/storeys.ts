@@ -2,7 +2,7 @@ import { type Length } from '@/shared/geometry'
 
 import type { FloorAssemblyId, StoreyId } from './ids'
 
-export type StoreyLevel = number & { __brand: 'StoreyLevel' }
+export type StoreyLevel = number & { readonly brand: unique symbol }
 
 export const createStoreyLevel = (value: number): StoreyLevel => {
   if (!Number.isInteger(value)) {

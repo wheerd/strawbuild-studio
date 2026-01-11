@@ -129,16 +129,24 @@ export class StoreyManagementService {
   deleteStorey(storeyId: StoreyId): void {
     // 1. Delete associated perimeters first
     const perimeters = this.actions.getPerimetersByStorey(storeyId)
-    perimeters.forEach(p => this.actions.removePerimeter(p.id))
+    perimeters.forEach(p => {
+      this.actions.removePerimeter(p.id)
+    })
 
     const floorAreas = this.actions.getFloorAreasByStorey(storeyId)
-    floorAreas.forEach(a => this.actions.removeFloorArea(a.id))
+    floorAreas.forEach(a => {
+      this.actions.removeFloorArea(a.id)
+    })
 
     const floorOpenings = this.actions.getFloorOpeningsByStorey(storeyId)
-    floorOpenings.forEach(o => this.actions.removeFloorOpening(o.id))
+    floorOpenings.forEach(o => {
+      this.actions.removeFloorOpening(o.id)
+    })
 
     const roofs = this.actions.getRoofsByStorey(storeyId)
-    roofs.forEach(r => this.actions.removeRoof(r.id))
+    roofs.forEach(r => {
+      this.actions.removeRoof(r.id)
+    })
 
     // 2. Delete the storey
     this.actions.removeStorey(storeyId)

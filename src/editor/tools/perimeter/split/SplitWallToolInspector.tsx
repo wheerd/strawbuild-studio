@@ -50,7 +50,13 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
         <Button onClick={() => tool.commitSplit()} disabled={!state.isValidSplit} size="2">
           {t($ => $.splitWall.splitWall)} <Kbd>{t($ => $.keyboard.enter)}</Kbd>
         </Button>
-        <Button variant="soft" onClick={() => tool.cancel()} size="2">
+        <Button
+          variant="soft"
+          onClick={() => {
+            tool.cancel()
+          }}
+          size="2"
+        >
           {t($ => $.splitWall.cancel)} <Kbd>{t($ => $.keyboard.esc)}</Kbd>
         </Button>
       </Flex>

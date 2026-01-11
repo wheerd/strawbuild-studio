@@ -53,9 +53,9 @@ export function useCustomTransparentSorting(): void {
       // Get camera-space Z depth
       const getMinDepth = (obj: THREE.Object3D): number => {
         // Check if this is a thin layer (detected geometrically)
-        const isLayer = obj instanceof THREE.Mesh && isThinLayer(obj)
+        const isLayer = isThreeMesh(obj) && isThinLayer(obj)
 
-        if (isLayer && obj instanceof THREE.Mesh && obj.geometry.boundingBox) {
+        if (isLayer && obj.geometry.boundingBox) {
           // For thin layers, use the front face (minimum Z in camera space)
           const box = obj.geometry.boundingBox
           const worldMatrix = obj.matrixWorld
@@ -102,9 +102,9 @@ export function useCustomTransparentSorting(): void {
       const transparentObjects: THREE.Object3D[] = []
 
       scene.traverse(obj => {
-        if (obj instanceof THREE.Mesh) {
+        if (isThreeMesh(obj)) {
           const material = obj.material as THREE.Material
-          if (material && material.transparent && obj.visible) {
+          if (material.transparent && obj.visible) {
             transparentObjects.push(obj)
           }
         }
@@ -127,3 +127,5 @@ export function useCustomTransparentSorting(): void {
     }
   }, [scene])
 }
+
+const isThreeMesh = (x: unknown): x is THREE.Mesh => x instanceof THREE.Mesh

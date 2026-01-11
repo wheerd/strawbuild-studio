@@ -59,7 +59,7 @@ export function parseLength(input: string): ParseLengthResult {
   // Regular expression to match number with optional unit
   // Captures: optional sign, number (with optional decimal using . or ,), optional whitespace, optional unit
   const lengthRegex = /^([+-]?)(\d+(?:[.,]\d+)?)\s*(mm|cm|m)?$/i
-  const match = trimmed.match(lengthRegex)
+  const match = lengthRegex.exec(trimmed)
 
   if (!match) {
     return {

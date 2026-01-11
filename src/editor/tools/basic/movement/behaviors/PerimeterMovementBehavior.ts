@@ -26,9 +26,6 @@ export class PerimeterMovementBehavior extends PolygonMovementBehavior<Perimeter
     }
 
     const perimeter = store.getPerimeterById(entityId)
-    if (!perimeter) {
-      throw new Error(`Could not find wall ${entityId}`)
-    }
 
     const referenceSide = perimeter.referenceSide
     const activeStorey = store.getActiveStoreyId()

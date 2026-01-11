@@ -11,7 +11,7 @@ import { accumulateIssueWorldManifolds } from '@/construction/components/plan/is
 import type { GroupOrElement } from '@/construction/elements'
 import { bounds3Dto2D, createProjectionMatrix, projectPoint } from '@/construction/geometry'
 import { type ProjectedOutline, projectManifoldToView } from '@/construction/manifoldProjection'
-import type { ConstructionModel, HighlightedCuboid, HighlightedCut, HighlightedPolygon } from '@/construction/model'
+import type { ConstructionModel, HighlightedPolygon } from '@/construction/model'
 import type { ConstructionIssue } from '@/construction/results'
 import type { TagOrCategory } from '@/construction/tags'
 import { MidCutXIcon, MidCutYIcon } from '@/shared/components/Icons'
@@ -119,7 +119,7 @@ export function ConstructionPlan({
   const [hideIssues, setHideIssues] = useState(false)
   const [hideMeasurements, setHideMeasurements] = useState(false)
 
-  const currentView = views[currentViewIndex]?.view || views[0]?.view
+  const currentView = views[currentViewIndex]?.view ?? views[0]?.view
   const hiddenTagsForView = views[currentViewIndex]?.alwaysHiddenTags ?? []
 
   const previousViewIndexRef = useRef<number | null>(null)
@@ -211,8 +211,8 @@ export function ConstructionPlan({
   const polygonAreas = model.areas.filter(
     a => a.type === 'polygon' && a.plane === currentView.plane
   ) as HighlightedPolygon[]
-  const cuboidAreas = model.areas.filter(a => a.type === 'cuboid') as HighlightedCuboid[]
-  const cutAreas = model.areas.filter(a => a.type === 'cut') as HighlightedCut[]
+  const cuboidAreas = model.areas.filter(a => a.type === 'cuboid')
+  const cutAreas = model.areas.filter(a => a.type === 'cut')
 
   // Generate hover styles for issue highlighting
   const hoverStyles =
@@ -265,7 +265,9 @@ export function ConstructionPlan({
       viewportRef.current?.zoomToBounds(combinedBounds, { padding: 0.15, animate: false })
     }, 100)
 
-    return () => clearTimeout(timeoutId)
+    return () => {
+      clearTimeout(timeoutId)
+    }
   }, [highlightedPartId])
 
   return (
@@ -380,7 +382,9 @@ export function ConstructionPlan({
             {views.length > 1 && (
               <SegmentedControl.Root
                 value={currentViewIndex.toString()}
-                onValueChange={value => setCurrentViewIndex(parseInt(value, 10))}
+                onValueChange={value => {
+                  setCurrentViewIndex(parseInt(value, 10))
+                }}
                 size="1"
               >
                 {views.map((viewOption, index) => (
@@ -397,7 +401,9 @@ export function ConstructionPlan({
                 variant={midCutEnabled ? 'solid' : 'outline'}
                 size="1"
                 title={t($ => $.plan.midCut)}
-                onClick={() => setMidCutEnabled(!midCutEnabled)}
+                onClick={() => {
+                  setMidCutEnabled(!midCutEnabled)
+                }}
               >
                 {currentView.plane === 'xy' ? <MidCutYIcon /> : <MidCutXIcon />}
               </IconButton>
@@ -407,7 +413,9 @@ export function ConstructionPlan({
                 variant={hideAreas ? 'outline' : 'solid'}
                 size="1"
                 title={t($ => $.plan.hideAreas)}
-                onClick={() => setHideAreas(!hideAreas)}
+                onClick={() => {
+                  setHideAreas(!hideAreas)
+                }}
               >
                 <GroupIcon />
               </IconButton>
@@ -417,7 +425,9 @@ export function ConstructionPlan({
                 variant={hideIssues ? 'outline' : 'solid'}
                 size="1"
                 title={t($ => $.plan.hideIssues)}
-                onClick={() => setHideIssues(!hideIssues)}
+                onClick={() => {
+                  setHideIssues(!hideIssues)
+                }}
               >
                 <ExclamationTriangleIcon />
               </IconButton>
@@ -427,7 +437,9 @@ export function ConstructionPlan({
                 variant={hideMeasurements ? 'outline' : 'solid'}
                 size="1"
                 title={t($ => $.plan.hideMeasurements)}
-                onClick={() => setHideMeasurements(!hideMeasurements)}
+                onClick={() => {
+                  setHideMeasurements(!hideMeasurements)
+                }}
               >
                 <RulerHorizontalIcon />
               </IconButton>

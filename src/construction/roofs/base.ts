@@ -3,7 +3,7 @@ import type { Manifold } from 'manifold-3d'
 import type { Roof } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { LAYER_CONSTRUCTIONS } from '@/construction/layers'
-import type { LayerConfig, MonolithicLayerConfig, StripedLayerConfig } from '@/construction/layers/types'
+import type { LayerConfig } from '@/construction/layers/types'
 import { transformManifold } from '@/construction/manifold/operations'
 import { type ConstructionModel } from '@/construction/model'
 import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
@@ -45,6 +45,7 @@ import {
   subtractPolygons,
   unionPolygons
 } from '@/shared/geometry'
+import { assertUnreachable } from '@/shared/utils'
 
 import type { HeightLine, RoofAssembly, RoofAssemblyConfigBase } from './types'
 
@@ -73,11 +74,13 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
   protected abstract get overhangLayerOffset(): Length
 
   get totalThickness(): Length {
-    return (this.config.layers.insideThickness +
+    return (
+      this.config.layers.insideThickness +
       this.ceilingLayerOffset +
       this.constructionThickness +
       this.topLayerOffset +
-      this.config.layers.topThickness) as Length
+      this.config.layers.topThickness
+    )
   }
 
   // ============================================================================
@@ -181,7 +184,7 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
    * the edges align with the reference polygon at verticalOffset height
    */
   protected calculateRidgeHeight(roof: Roof): Length {
-    return (roof.verticalOffset + roof.rise) as Length
+    return roof.verticalOffset + roof.rise
   }
 
   /**
@@ -219,12 +222,12 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
    * Negative Z (below rotation axis) returns negative offset (away from ridge)
    */
   private calculateRidgeOffset(zPosition: Length, slopeAngleRad: number): Length {
-    return (zPosition * Math.tan(slopeAngleRad)) as Length
+    return zPosition * Math.tan(slopeAngleRad)
   }
 
   protected createExtrudedVolume(polygon: Polygon2D, ridgeLine: LineSegment2D, minZ: Length, maxZ: Length): Manifold {
     const translatedPolygon = this.translatePolygonToOrigin(polygon, ridgeLine)
-    const extrusionThickness = (maxZ - minZ) as Length
+    const extrusionThickness = maxZ - minZ
     const shape = createExtrudedPolygon({ outer: translatedPolygon, holes: [] }, 'xy', extrusionThickness)
     const translateToMinZ = fromTrans(newVec3(0, 0, minZ))
     return transformManifold(shape.manifold, translateToMinZ)
@@ -269,17 +272,20 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
       }))
     }
 
-    if (layer.type === 'monolithic') {
-      const construction = LAYER_CONSTRUCTIONS.monolithic
-      yield* construction.construct(clonedPolygon, offset, 'xy', layer as MonolithicLayerConfig)
-      return
+    switch (layer.type) {
+      case 'monolithic': {
+        const construction = LAYER_CONSTRUCTIONS.monolithic
+        yield* construction.construct(clonedPolygon, offset, 'xy', layer)
+        return
+      }
+      case 'striped': {
+        const construction = LAYER_CONSTRUCTIONS.striped
+        yield* construction.construct(clonedPolygon, offset, 'xy', layer)
+        return
+      }
+      default:
+        assertUnreachable(layer, 'Unsupported layer type')
     }
-    if (layer.type === 'striped') {
-      const construction = LAYER_CONSTRUCTIONS.striped
-      yield* construction.construct(clonedPolygon, offset, 'xy', layer as StripedLayerConfig)
-      return
-    }
-    throw new Error(`Unsupported layer type: ${(layer as { type: string }).type}`)
   }
 
   // ============================================================================
@@ -294,7 +300,7 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
       return
     }
 
-    let zOffset = (this.constructionThickness + this.topLayerOffset) as Length
+    let zOffset = this.constructionThickness + this.topLayerOffset
 
     for (const layer of this.config.layers.topLayers) {
       const preparedPolygon = this.preparePolygonForConstruction(
@@ -335,7 +341,7 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
       return
     }
 
-    let zOffset = (this.ceilingLayerOffset - this.config.layers.insideThickness) as Length
+    let zOffset = this.ceilingLayerOffset - this.config.layers.insideThickness
 
     // Reverse order: bottom to top
     const reversedLayers = [...this.config.layers.insideLayers].reverse()
@@ -375,7 +381,7 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
       return
     }
 
-    let zOffset = (this.overhangLayerOffset - this.config.layers.overhangThickness) as Length
+    let zOffset = this.overhangLayerOffset - this.config.layers.overhangThickness
 
     // Reverse order: bottom to top
     const reversedLayers = [...this.config.layers.overhangLayers].reverse()

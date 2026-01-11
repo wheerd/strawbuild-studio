@@ -5,7 +5,7 @@ import { MATERIAL_COLORS } from '@/shared/theme/colors'
 import { createId } from '@/shared/utils/ids'
 
 export type MaterialId = string & { readonly brand: unique symbol }
-export const createMaterialId = () => createId<MaterialId>('material_')
+export const createMaterialId = () => createId('material_') as MaterialId
 export const isMaterialId = (id: string): id is MaterialId => id.startsWith('material_')
 
 export type Material = StrawbaleMaterial | DimensionalMaterial | SheetMaterial | VolumeMaterial | GenericMaterial

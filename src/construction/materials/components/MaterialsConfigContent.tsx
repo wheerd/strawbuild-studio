@@ -159,6 +159,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
 
     if (materials.length > 1) {
       const nextMaterial = materials[currentIndex + 1] ?? materials[currentIndex - 1]
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       setSelectedMaterialId(nextMaterial?.id ?? null)
     } else {
       setSelectedMaterialId(null)
@@ -192,7 +193,9 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
           <Flex direction="column" flexGrow="1">
             <MaterialSelect
               value={selectedMaterialId ?? null}
-              onValueChange={materialId => setSelectedMaterialId(materialId ?? null)}
+              onValueChange={materialId => {
+                setSelectedMaterialId(materialId ?? null)
+              }}
               placeholder={t($ => $.common.placeholders.selectMaterial)}
             />
           </Flex>
@@ -203,31 +206,51 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
               </IconButton>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
-              <DropdownMenu.Item onSelect={() => handleAddNew('dimensional')}>
+              <DropdownMenu.Item
+                onSelect={() => {
+                  handleAddNew('dimensional')
+                }}
+              >
                 <Flex align="center" gap="1">
                   <CubeIcon />
                   {t($ => $.materials.typeDimensional)}
                 </Flex>
               </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => handleAddNew('strawbale')}>
+              <DropdownMenu.Item
+                onSelect={() => {
+                  handleAddNew('strawbale')
+                }}
+              >
                 <Flex align="center" gap="1">
                   <CubeIcon />
                   {t($ => $.materials.typeStrawbale)}
                 </Flex>
               </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => handleAddNew('sheet')}>
+              <DropdownMenu.Item
+                onSelect={() => {
+                  handleAddNew('sheet')
+                }}
+              >
                 <Flex align="center" gap="1">
                   <LayersIcon />
                   {t($ => $.materials.typeSheet)}
                 </Flex>
               </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => handleAddNew('volume')}>
+              <DropdownMenu.Item
+                onSelect={() => {
+                  handleAddNew('volume')
+                }}
+              >
                 <Flex align="center" gap="1">
                   <OpacityIcon />
                   {t($ => $.materials.typeVolume)}
                 </Flex>
               </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => handleAddNew('generic')}>
+              <DropdownMenu.Item
+                onSelect={() => {
+                  handleAddNew('generic')
+                }}
+              >
                 <Flex align="center" gap="1">
                   <CircleIcon />
                   {t($ => $.materials.typeGeneric)}
@@ -334,7 +357,9 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             </Label.Root>
             <TextField.Root
               value={nameKey ? t($ => $.materials.defaults[nameKey]) : selectedMaterial.name}
-              onChange={e => handleUpdate({ name: e.target.value })}
+              onChange={e => {
+                handleUpdate({ name: e.target.value })
+              }}
               placeholder={t($ => $.materials.materialName)}
               size="2"
             />
@@ -360,7 +385,9 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             <input
               type="color"
               value={selectedMaterial.color}
-              onChange={e => handleUpdate({ color: e.target.value })}
+              onChange={e => {
+                handleUpdate({ color: e.target.value })
+              }}
               style={{ width: '60px', height: '24px', cursor: 'pointer' }}
             />
             <Label.Root>
@@ -534,7 +561,9 @@ function DimensionalMaterialFields({
                     size="1"
                     variant="ghost"
                     color="gray"
-                    onClick={() => handleRemoveCrossSection(section)}
+                    onClick={() => {
+                      handleRemoveCrossSection(section)
+                    }}
                     style={{ cursor: 'pointer' }}
                     aria-label={t($ => $.materials.removeCrossSection)}
                   >
@@ -594,7 +623,9 @@ function DimensionalMaterialFields({
                     size="1"
                     variant="ghost"
                     color="gray"
-                    onClick={() => handleRemoveLength(length)}
+                    onClick={() => {
+                      handleRemoveLength(length)
+                    }}
                     style={{ cursor: 'pointer' }}
                     aria-label={t($ => $.materials.removeStockLength)}
                   >
@@ -711,7 +742,9 @@ function SheetMaterialFields({
                     size="1"
                     variant="ghost"
                     color="gray"
-                    onClick={() => handleRemoveSize(size)}
+                    onClick={() => {
+                      handleRemoveSize(size)
+                    }}
                     style={{ cursor: 'pointer' }}
                     aria-label={t($ => $.materials.removeSheetSize)}
                   >
@@ -771,7 +804,9 @@ function SheetMaterialFields({
                     size="1"
                     variant="ghost"
                     color="gray"
-                    onClick={() => handleRemoveThickness(thickness)}
+                    onClick={() => {
+                      handleRemoveThickness(thickness)
+                    }}
                     style={{ cursor: 'pointer' }}
                     aria-label={t($ => $.materials.removeThickness)}
                   >
@@ -816,7 +851,9 @@ function SheetMaterialFields({
         </Text>
         <SegmentedControl.Root
           value={material.sheetType}
-          onValueChange={value => onUpdate({ sheetType: value as SheetMaterial['sheetType'] })}
+          onValueChange={value => {
+            onUpdate({ sheetType: value as SheetMaterial['sheetType'] })
+          }}
           size="2"
         >
           <SegmentedControl.Item value="solid">{t($ => $.materials.sheetTypeSolid)}</SegmentedControl.Item>
@@ -876,7 +913,9 @@ function VolumeMaterialFields({
                     size="1"
                     variant="ghost"
                     color="gray"
-                    onClick={() => handleRemoveVolume(volume)}
+                    onClick={() => {
+                      handleRemoveVolume(volume)
+                    }}
                     style={{ cursor: 'pointer' }}
                     aria-label={t($ => $.materials.removeVolume)}
                   >
@@ -899,7 +938,9 @@ function VolumeMaterialFields({
         <Flex direction="column" gap="2" align="end" style={{ minWidth: '14em' }}>
           <SegmentedControl.Root
             value={volumeUnit}
-            onValueChange={value => setVolumeUnit(value as 'liter' | 'm3')}
+            onValueChange={value => {
+              setVolumeUnit(value as 'liter' | 'm3')
+            }}
             size="1"
           >
             <SegmentedControl.Item value="liter">{t($ => $.units.liter, { ns: 'common' })}</SegmentedControl.Item>
@@ -948,7 +989,9 @@ function StrawbaleMaterialFields({
         </Label.Root>
         <LengthField
           value={material.baleMinLength}
-          onChange={baleMinLength => onUpdate({ baleMinLength })}
+          onChange={baleMinLength => {
+            onUpdate({ baleMinLength })
+          }}
           unit="cm"
           size="2"
         />
@@ -960,7 +1003,9 @@ function StrawbaleMaterialFields({
         </Label.Root>
         <LengthField
           value={material.baleMaxLength}
-          onChange={baleMaxLength => onUpdate({ baleMaxLength })}
+          onChange={baleMaxLength => {
+            onUpdate({ baleMaxLength })
+          }}
           unit="cm"
           size="2"
         />
@@ -970,14 +1015,28 @@ function StrawbaleMaterialFields({
             {t($ => $.materials.baleHeight)}
           </Text>
         </Label.Root>
-        <LengthField value={material.baleHeight} onChange={baleHeight => onUpdate({ baleHeight })} unit="cm" size="2" />
+        <LengthField
+          value={material.baleHeight}
+          onChange={baleHeight => {
+            onUpdate({ baleHeight })
+          }}
+          unit="cm"
+          size="2"
+        />
 
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
             {t($ => $.materials.baleWidth)}
           </Text>
         </Label.Root>
-        <LengthField value={material.baleWidth} onChange={baleWidth => onUpdate({ baleWidth })} unit="cm" size="2" />
+        <LengthField
+          value={material.baleWidth}
+          onChange={baleWidth => {
+            onUpdate({ baleWidth })
+          }}
+          unit="cm"
+          size="2"
+        />
       </Grid>
       <Grid columns="8em 1fr 8em 1fr" gap="3" gapX="4">
         <Label.Root>
@@ -985,7 +1044,14 @@ function StrawbaleMaterialFields({
             {t($ => $.materials.tolerance)}
           </Text>
         </Label.Root>
-        <LengthField value={material.tolerance} onChange={tolerance => onUpdate({ tolerance })} unit="mm" size="2" />
+        <LengthField
+          value={material.tolerance}
+          onChange={tolerance => {
+            onUpdate({ tolerance })
+          }}
+          unit="mm"
+          size="2"
+        />
 
         <Label.Root>
           <Text size="1" weight="medium" color="gray">
@@ -994,7 +1060,9 @@ function StrawbaleMaterialFields({
         </Label.Root>
         <LengthField
           value={material.topCutoffLimit}
-          onChange={topCutoffLimit => onUpdate({ topCutoffLimit })}
+          onChange={topCutoffLimit => {
+            onUpdate({ topCutoffLimit })
+          }}
           unit="cm"
           size="2"
         />
@@ -1004,7 +1072,14 @@ function StrawbaleMaterialFields({
             {t($ => $.materials.flakeSize)}
           </Text>
         </Label.Root>
-        <LengthField value={material.flakeSize} onChange={flakeSize => onUpdate({ flakeSize })} unit="cm" size="2" />
+        <LengthField
+          value={material.flakeSize}
+          onChange={flakeSize => {
+            onUpdate({ flakeSize })
+          }}
+          unit="cm"
+          size="2"
+        />
       </Grid>
     </Flex>
   )

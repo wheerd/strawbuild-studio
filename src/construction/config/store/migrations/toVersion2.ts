@@ -42,14 +42,10 @@ function ensureDoubleModuleDefaults(module: unknown): void {
   const parsedSpacerCount =
     typeof moduleConfig.spacerCount === 'number'
       ? moduleConfig.spacerCount
-      : Number.parseInt(String(moduleConfig.spacerCount ?? ''), 10)
-  moduleConfig.spacerCount = Number.isFinite(parsedSpacerCount) && parsedSpacerCount >= 2 ? parsedSpacerCount : 3
+      : Number(moduleConfig.spacerCount ?? Number.NaN)
+  moduleConfig.spacerCount =
+    Number.isFinite(parsedSpacerCount) && parsedSpacerCount >= 2 ? Math.round(parsedSpacerCount) : 3
 
-  if (moduleConfig.spacerMaterial == null) {
-    moduleConfig.spacerMaterial = roughWood.id
-  }
-
-  if (moduleConfig.infillMaterial == null) {
-    moduleConfig.infillMaterial = woodwool.id
-  }
+  moduleConfig.spacerMaterial ??= roughWood.id
+  moduleConfig.infillMaterial ??= woodwool.id
 }

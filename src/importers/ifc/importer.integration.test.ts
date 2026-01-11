@@ -249,7 +249,9 @@ function renderStoreyDebugSvg(storey: ImportedStorey): string {
   }
 
   const allPoints: Vec2[] = []
-  polygons.forEach(entry => entry.polygon.points.forEach(point => allPoints.push(point)))
+  polygons.forEach(entry => {
+    entry.polygon.points.forEach(point => allPoints.push(point))
+  })
   openingLines.forEach(line => {
     allPoints.push(line.start)
     allPoints.push(line.end)

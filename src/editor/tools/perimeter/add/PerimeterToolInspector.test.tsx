@@ -143,7 +143,7 @@ describe('PerimeterToolInspector', () => {
     it('handles input validation with min/max values', () => {
       renderInspector()
 
-      const input = screen.getByLabelText('perimeter.wallThickness') as HTMLInputElement
+      const input = screen.getByLabelText<HTMLInputElement>('perimeter.wallThickness')
 
       // LengthField renders the underlying input with these constraints
       expect(input).toBeInTheDocument()
@@ -184,7 +184,7 @@ describe('PerimeterToolInspector', () => {
       expect(screen.getAllByText('ringBeams.none')).toHaveLength(2)
     })
 
-    it('calls setBaseRingBeam when base ring beam selection changes', async () => {
+    it('calls setBaseRingBeam when base ring beam selection changes', () => {
       renderInspector()
 
       // Find the base ring beam select (second combobox)
@@ -197,7 +197,7 @@ describe('PerimeterToolInspector', () => {
       expect(baseRingBeamSelect).toBeInTheDocument()
     })
 
-    it('calls setTopRingBeam when top ring beam selection changes', async () => {
+    it('calls setTopRingBeam when top ring beam selection changes', () => {
       renderInspector()
 
       // Find the top ring beam select (third combobox)

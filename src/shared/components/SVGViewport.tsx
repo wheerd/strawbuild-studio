@@ -39,7 +39,7 @@ function fitBoundsToViewport(
   viewportWidth: number,
   viewportHeight: number,
   padding: number,
-  paddingAbsolute?: number | undefined
+  paddingAbsolute?: number
 ): ViewportState {
   if (bounds.isEmpty || viewportWidth <= 0 || viewportHeight <= 0 || bounds.width <= 0 || bounds.height <= 0) {
     return { zoom: 1, panX: 0, panY: 0 }
@@ -338,7 +338,9 @@ export function SVGViewport({
     if (svgRef.current) {
       const svg = svgRef.current
       svg.addEventListener('wheel', handleWheel, { passive: false })
-      return () => svg.removeEventListener('wheel', handleWheel)
+      return () => {
+        svg.removeEventListener('wheel', handleWheel)
+      }
     }
   }, [svgRef.current])
 

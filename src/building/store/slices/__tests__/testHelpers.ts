@@ -225,7 +225,7 @@ export function verifyNoOrphanedEntities(state: PerimetersState): void {
 /**
  * Verifies that a getter throws for an invalid ID
  */
-export function expectThrowsForInvalidId<T>(getter: () => T, expectedMessage?: string): void {
+export function expectThrowsForInvalidId(getter: () => unknown, expectedMessage?: string): void {
   expect(() => getter()).toThrow(NotFoundError)
   if (expectedMessage) {
     expect(() => getter()).toThrow(expectedMessage)

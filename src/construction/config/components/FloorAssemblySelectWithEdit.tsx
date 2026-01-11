@@ -20,7 +20,9 @@ export function FloorAssemblySelectWithEdit(props: FloorAssemblySelectProps): Re
         title={t($ => $.floors.configure)}
         variant="ghost"
         size={props.size}
-        onClick={() => openConfiguration('floors', props.value ?? undefined)}
+        onClick={() => {
+          openConfiguration('floors', props.value ?? undefined)
+        }}
       >
         <Pencil1Icon />
       </IconButton>

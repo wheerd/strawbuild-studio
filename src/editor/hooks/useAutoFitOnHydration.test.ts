@@ -24,12 +24,16 @@ vi.mock('@/editor/hooks/useViewportStore', () => ({
 describe('useAutoFitOnHydration', () => {
   it('should not crash when called', () => {
     expect(() => {
-      renderHook(() => useAutoFitOnHydration())
+      renderHook(() => {
+        useAutoFitOnHydration()
+      })
     }).not.toThrow()
   })
 
   it('should be callable without parameters', () => {
-    const { result } = renderHook(() => useAutoFitOnHydration())
+    const { result } = renderHook(() => {
+      useAutoFitOnHydration()
+    })
     expect(result.current).toBeUndefined()
   })
 })

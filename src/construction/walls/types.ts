@@ -9,6 +9,7 @@ import type { ConstructionResult } from '@/construction/results'
 import type { StoreyContext } from '@/construction/storeys/context'
 import type { Tag } from '@/construction/tags'
 import type { Length } from '@/shared/geometry'
+import { assertUnreachable } from '@/shared/utils'
 
 import type { ModuleConfig } from './modules/modules'
 
@@ -71,13 +72,13 @@ export type InfillMethod = (area: WallConstructionArea) => Generator<Constructio
 // Validation
 
 const ensurePositive = (value: number, message: string) => {
-  if (Number(value) <= 0) {
+  if (value <= 0) {
     throw new Error(message)
   }
 }
 
 const ensureNonNegative = (value: number, message: string) => {
-  if (Number(value) < 0) {
+  if (value < 0) {
     throw new Error(message)
   }
 }
@@ -145,17 +146,21 @@ const validateNonStrawbaleWallConfig = (_config: NonStrawbaleWallConfig): void =
 
 export const validateWallConfig = (config: WallConfig): void => {
   validateLayers(config.layers)
-  // Opening validation is now done on OpeningConfig in openings/types.ts
 
-  if (config.type === 'infill') {
-    validateInfillWallConfig(config)
-  } else if (config.type === 'modules') {
-    validateModulesWallConfig(config)
-  } else if (config.type === 'strawhenge') {
-    validateStrawhengeWallConfig(config)
-  } else if (config.type === 'non-strawbale') {
-    validateNonStrawbaleWallConfig(config)
-  } else {
-    throw new Error('Invalid wall assembly type')
+  switch (config.type) {
+    case 'infill':
+      validateInfillWallConfig(config)
+      break
+    case 'modules':
+      validateModulesWallConfig(config)
+      break
+    case 'strawhenge':
+      validateStrawhengeWallConfig(config)
+      break
+    case 'non-strawbale':
+      validateNonStrawbaleWallConfig(config)
+      break
+    default:
+      assertUnreachable(config, 'Invalid wall assembly type')
   }
 }

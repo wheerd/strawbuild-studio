@@ -1,6 +1,6 @@
 import type { EntityType } from '@/building/model/ids'
 
-import type { MovementBehavior } from './MovementBehavior'
+import type { MovementBehavior, MovementState } from './MovementBehavior'
 import { FloorAreaMovementBehavior } from './behaviors/FloorAreaMovementBehavior'
 import { FloorOpeningMovementBehavior } from './behaviors/FloorOpeningMovementBehavior'
 import { OpeningMovementBehavior } from './behaviors/OpeningMovementBehavior'
@@ -22,7 +22,6 @@ const MOVEMENT_BEHAVIORS: Record<EntityType, MovementBehavior<any, any> | null> 
   roof: new RoofMovementBehavior()
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getMovementBehavior(entityType: EntityType): MovementBehavior<any, any> | null {
-  return MOVEMENT_BEHAVIORS[entityType] || null
+export function getMovementBehavior(entityType: EntityType): MovementBehavior<unknown, MovementState> | null {
+  return MOVEMENT_BEHAVIORS[entityType]
 }

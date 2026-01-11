@@ -245,7 +245,8 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
             </Label.Root>
             <LengthField
               id="roof-overhang"
-              value={overhangState.value as Length}
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              value={overhangState.value!}
               onCommit={value => setAllRoofOverhangs(roof.id, value)}
               placeholder={overhangState.isMixed ? t($ => $.roof.mixedPlaceholder) : undefined}
               min={0}
@@ -270,7 +271,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
         <Flex direction="row" gap="3" pt="1" align="center" justify="center">
           <ConstructionPlanModal
             title={t($ => $.roof.constructionPlanTitle)}
-            constructionModelFactory={async () => constructRoof(roof)}
+            constructionModelFactory={() => Promise.resolve(constructRoof(roof))}
             midCutActiveDefault={false}
             views={[
               { view: TOP_VIEW, label: t($ => $.roof.viewTop), toggleHideTags: [TAG_DECKING.id] },
@@ -286,7 +287,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
             }
           />
           <ConstructionViewer3DModal
-            constructionModelFactory={async () => constructRoof(roof)}
+            constructionModelFactory={() => Promise.resolve(constructRoof(roof))}
             refreshKey={roof}
             trigger={
               <IconButton title={t($ => $.roof.view3DConstruction)} size="3" variant="outline">

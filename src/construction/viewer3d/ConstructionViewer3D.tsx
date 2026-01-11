@@ -116,7 +116,11 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
       <Box position="absolute" top="3" right="3" style={{ zIndex: 10 }}>
         <Card size="1" variant="surface" className="shadow-md">
           <Flex direction="column" align="center" gap="2" m="-2" p="0">
-            <ExportButton onExport={handleExport} />
+            <ExportButton
+              onExport={format => {
+                void handleExport(format)
+              }}
+            />
           </Flex>
         </Card>
       </Box>

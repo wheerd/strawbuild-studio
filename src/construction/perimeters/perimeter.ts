@@ -42,6 +42,7 @@ import {
   subtractPolygons,
   unionPolygons
 } from '@/shared/geometry'
+import { assertUnreachable } from '@/shared/utils'
 
 import {
   type PerimeterConstructionContext,
@@ -123,22 +124,20 @@ export function constructPerimeter(
       const wallAssembly = resolveWallAssembly(assembly)
       wallModel = wallAssembly.construct(wall, storeyContext)
 
-      if (wallModel) {
-        const segmentAngle = dirAngle(wall.insideLine.start, wall.insideLine.end)
+      const segmentAngle = dirAngle(wall.insideLine.start, wall.insideLine.end)
 
-        const nameTag = createTag('wall-assembly', assembly.name)
-        const transformedModel = transformModel(
-          wallModel,
-          rotateZ(
-            fromTrans(newVec3(wall.insideLine.start[0], wall.insideLine.start[1], storeyContext.wallBottom)),
-            segmentAngle
-          ),
-          [TAG_WALLS, wallAssembly.tag, nameTag],
-          undefined,
-          wall.id
-        )
-        allModels.push(transformedModel)
-      }
+      const nameTag = createTag('wall-assembly', assembly.name)
+      const transformedModel = transformModel(
+        wallModel,
+        rotateZ(
+          fromTrans(newVec3(wall.insideLine.start[0], wall.insideLine.start[1], storeyContext.wallBottom)),
+          segmentAngle
+        ),
+        [TAG_WALLS, wallAssembly.tag, nameTag],
+        undefined,
+        wall.id
+      )
+      allModels.push(transformedModel)
     }
   }
 
@@ -306,10 +305,16 @@ export function getPerimeterStats(perimeter: PerimeterWithGeometry): PerimeterSt
       const opening = getWallOpeningById(entityId)
       const openingArea = opening.width * opening.height
       totalOpeningArea += openingArea
-      if (opening.openingType === 'window') {
-        totalWindowArea += openingArea
-      } else if (opening.openingType === 'door' || opening.openingType === 'passage') {
-        totalDoorArea += openingArea
+      switch (opening.openingType) {
+        case 'window':
+          totalWindowArea += openingArea
+          break
+        case 'door':
+        case 'passage':
+          totalDoorArea += openingArea
+          break
+        default:
+          assertUnreachable(opening.openingType, 'Invalid opening type')
       }
     }
   }

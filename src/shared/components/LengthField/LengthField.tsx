@@ -80,14 +80,16 @@ export const LengthField = forwardRef<HTMLInputElement, LengthFieldProps>(functi
     <TextField.Root
       ref={ref}
       value={displayValue}
-      onChange={e => handleChange(e.target.value)}
+      onChange={e => {
+        handleChange(e.target.value)
+      }}
       onBlur={handleBlurEvent}
       onFocus={handleFocusEvent}
       onKeyDown={handleKeyDown}
       placeholder={placeholder}
       size={size}
       disabled={disabled}
-      className={`${className || ''} length-field`}
+      className={`${className ?? ''} length-field`}
       style={{
         textAlign: 'right',
         ...style

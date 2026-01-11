@@ -301,7 +301,7 @@ describe('LengthField', () => {
       expect(mockOnChange).not.toHaveBeenCalled()
     })
 
-    it('applies bounds and rounding only on blur', async () => {
+    it('applies bounds and rounding only on blur', () => {
       const { rerender } = render(<LengthField value={100} onChange={mockOnChange} unit="mm" min={50} max={200} />)
 
       const input = screen.getByRole('textbox')

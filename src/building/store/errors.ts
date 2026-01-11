@@ -12,7 +12,7 @@ export class NotFoundError extends Error {
     this.entityId = entityId
 
     // Maintains proper stack trace for where our error was thrown (only available on V8)
-    if (Error.captureStackTrace) {
+    if ('captureStackTrace' in Error) {
       Error.captureStackTrace(this, NotFoundError)
     }
   }
@@ -26,7 +26,7 @@ export class InvalidOperationError extends Error {
     super(message)
     this.name = 'InvalidOperationError'
 
-    if (Error.captureStackTrace) {
+    if ('captureStackTrace' in Error) {
       Error.captureStackTrace(this, InvalidOperationError)
     }
   }

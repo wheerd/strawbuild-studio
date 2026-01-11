@@ -137,8 +137,8 @@ export const createRoofAssembliesSlice: StateCreator<
 
       updateRoofAssemblyName: (id: RoofAssemblyId, name: string) => {
         set(state => {
+          if (!(id in state.roofAssemblyConfigs)) return state
           const assembly = state.roofAssemblyConfigs[id]
-          if (assembly == null) return state
 
           validateRoofAssemblyName(name)
 
@@ -157,8 +157,8 @@ export const createRoofAssembliesSlice: StateCreator<
 
       updateRoofAssemblyConfig: (id: RoofAssemblyId, updates: Partial<UnionOmit<RoofConfig, 'type'>>) => {
         set(state => {
+          if (!(id in state.roofAssemblyConfigs)) return state
           const config = state.roofAssemblyConfigs[id]
-          if (config == null) return state
 
           const updatedConfig: RoofAssemblyConfig = { ...config, ...updates, id }
           validateRoofConfig(updatedConfig)
@@ -172,10 +172,10 @@ export const createRoofAssembliesSlice: StateCreator<
 
       duplicateRoofAssembly: (id: RoofAssemblyId, name: string) => {
         const state = get()
-        const original = state.roofAssemblyConfigs[id]
-        if (original == null) {
+        if (!(id in state.roofAssemblyConfigs)) {
           throw new Error(`Roof assembly with id ${id} not found`)
         }
+        const original = state.roofAssemblyConfigs[id]
 
         validateRoofAssemblyName(name)
 
@@ -205,7 +205,7 @@ export const createRoofAssembliesSlice: StateCreator<
       setDefaultRoofAssembly: (configId: RoofAssemblyId) => {
         set(state => {
           // Validate that the config exists
-          if (state.roofAssemblyConfigs[configId] == null) {
+          if (!(configId in state.roofAssemblyConfigs)) {
             throw new Error(`Roof assembly with id ${configId} not found`)
           }
 
@@ -224,8 +224,8 @@ export const createRoofAssembliesSlice: StateCreator<
       // Inside layer operations
       addRoofAssemblyInsideLayer: (id: RoofAssemblyId, layer: LayerConfig) => {
         set(state => {
+          if (!(id in state.roofAssemblyConfigs)) return state
           const config = state.roofAssemblyConfigs[id]
-          if (config == null) return state
 
           const insideLayers = appendLayer(config.layers.insideLayers, layer)
           const insideThickness = sumLayerThickness(insideLayers)
@@ -244,8 +244,8 @@ export const createRoofAssembliesSlice: StateCreator<
 
       setRoofAssemblyInsideLayers: (id: RoofAssemblyId, layers: LayerConfig[]) => {
         set(state => {
+          if (!(id in state.roofAssemblyConfigs)) return state
           const config = state.roofAssemblyConfigs[id]
-          if (config == null) return state
 
           const insideLayers = sanitizeLayerArray(layers)
           const insideThickness = sumLayerThickness(insideLayers)
@@ -268,8 +268,8 @@ export const createRoofAssembliesSlice: StateCreator<
         updates: Partial<Omit<LayerConfig, 'type'>>
       ) => {
         set(state => {
+          if (!(id in state.roofAssemblyConfigs)) return state
           const config = state.roofAssemblyConfigs[id]
-          if (config == null) return state
 
           const insideLayers = updateLayerAt(config.layers.insideLayers, index, updates)
           const insideThickness = sumLayerThickness(insideLayers)
@@ -288,8 +288,8 @@ export const createRoofAssembliesSlice: StateCreator<
 
       removeRoofAssemblyInsideLayer: (id: RoofAssemblyId, index: number) => {
         set(state => {
+          if (!(id in state.roofAssemblyConfigs)) return state
           const config = state.roofAssemblyConfigs[id]
-          if (config == null) return state
 
           const insideLayers = removeLayerAt(config.layers.insideLayers, index)
           const insideThickness = sumLayerThickness(insideLayers)
@@ -308,8 +308,8 @@ export const createRoofAssembliesSlice: StateCreator<
 
       moveRoofAssemblyInsideLayer: (id: RoofAssemblyId, fromIndex: number, toIndex: number) => {
         set(state => {
+          if (!(id in state.roofAssemblyConfigs)) return state
           const config = state.roofAssemblyConfigs[id]
-          if (config == null) return state
 
           const insideLayers = moveLayer(config.layers.insideLayers, fromIndex, toIndex)
           const insideThickness = sumLayerThickness(insideLayers)
@@ -329,8 +329,8 @@ export const createRoofAssembliesSlice: StateCreator<
       // Top layer operations
       addRoofAssemblyTopLayer: (id: RoofAssemblyId, layer: LayerConfig) => {
         set(state => {
+          if (!(id in state.roofAssemblyConfigs)) return state
           const config = state.roofAssemblyConfigs[id]
-          if (config == null) return state
 
           const topLayers = appendLayer(config.layers.topLayers, layer)
           const topThickness = sumLayerThickness(topLayers)
@@ -349,8 +349,8 @@ export const createRoofAssembliesSlice: StateCreator<
 
       setRoofAssemblyTopLayers: (id: RoofAssemblyId, layers: LayerConfig[]) => {
         set(state => {
+          if (!(id in state.roofAssemblyConfigs)) return state
           const config = state.roofAssemblyConfigs[id]
-          if (config == null) return state
 
           const topLayers = sanitizeLayerArray(layers)
           const topThickness = sumLayerThickness(topLayers)
@@ -369,8 +369,8 @@ export const createRoofAssembliesSlice: StateCreator<
 
       updateRoofAssemblyTopLayer: (id: RoofAssemblyId, index: number, updates: Partial<Omit<LayerConfig, 'type'>>) => {
         set(state => {
+          if (!(id in state.roofAssemblyConfigs)) return state
           const config = state.roofAssemblyConfigs[id]
-          if (config == null) return state
 
           const topLayers = updateLayerAt(config.layers.topLayers, index, updates)
           const topThickness = sumLayerThickness(topLayers)
@@ -389,8 +389,8 @@ export const createRoofAssembliesSlice: StateCreator<
 
       removeRoofAssemblyTopLayer: (id: RoofAssemblyId, index: number) => {
         set(state => {
+          if (!(id in state.roofAssemblyConfigs)) return state
           const config = state.roofAssemblyConfigs[id]
-          if (config == null) return state
 
           const topLayers = removeLayerAt(config.layers.topLayers, index)
           const topThickness = sumLayerThickness(topLayers)
@@ -409,8 +409,8 @@ export const createRoofAssembliesSlice: StateCreator<
 
       moveRoofAssemblyTopLayer: (id: RoofAssemblyId, fromIndex: number, toIndex: number) => {
         set(state => {
+          if (!(id in state.roofAssemblyConfigs)) return state
           const config = state.roofAssemblyConfigs[id]
-          if (config == null) return state
 
           const topLayers = moveLayer(config.layers.topLayers, fromIndex, toIndex)
           const topThickness = sumLayerThickness(topLayers)
@@ -430,8 +430,8 @@ export const createRoofAssembliesSlice: StateCreator<
       // Overhang layer operations
       addRoofAssemblyOverhangLayer: (id: RoofAssemblyId, layer: LayerConfig) => {
         set(state => {
+          if (!(id in state.roofAssemblyConfigs)) return state
           const config = state.roofAssemblyConfigs[id]
-          if (config == null) return state
 
           const overhangLayers = appendLayer(config.layers.overhangLayers, layer)
           const overhangThickness = sumLayerThickness(overhangLayers)
@@ -450,8 +450,8 @@ export const createRoofAssembliesSlice: StateCreator<
 
       setRoofAssemblyOverhangLayers: (id: RoofAssemblyId, layers: LayerConfig[]) => {
         set(state => {
+          if (!(id in state.roofAssemblyConfigs)) return state
           const config = state.roofAssemblyConfigs[id]
-          if (config == null) return state
 
           const overhangLayers = sanitizeLayerArray(layers)
           const overhangThickness = sumLayerThickness(overhangLayers)
@@ -474,8 +474,8 @@ export const createRoofAssembliesSlice: StateCreator<
         updates: Partial<Omit<LayerConfig, 'type'>>
       ) => {
         set(state => {
+          if (!(id in state.roofAssemblyConfigs)) return state
           const config = state.roofAssemblyConfigs[id]
-          if (config == null) return state
 
           const overhangLayers = updateLayerAt(config.layers.overhangLayers, index, updates)
           const overhangThickness = sumLayerThickness(overhangLayers)
@@ -494,8 +494,8 @@ export const createRoofAssembliesSlice: StateCreator<
 
       removeRoofAssemblyOverhangLayer: (id: RoofAssemblyId, index: number) => {
         set(state => {
+          if (!(id in state.roofAssemblyConfigs)) return state
           const config = state.roofAssemblyConfigs[id]
-          if (config == null) return state
 
           const overhangLayers = removeLayerAt(config.layers.overhangLayers, index)
           const overhangThickness = sumLayerThickness(overhangLayers)
@@ -514,8 +514,8 @@ export const createRoofAssembliesSlice: StateCreator<
 
       moveRoofAssemblyOverhangLayer: (id: RoofAssemblyId, fromIndex: number, toIndex: number) => {
         set(state => {
+          if (!(id in state.roofAssemblyConfigs)) return state
           const config = state.roofAssemblyConfigs[id]
-          if (config == null) return state
 
           const overhangLayers = moveLayer(config.layers.overhangLayers, fromIndex, toIndex)
           const overhangThickness = sumLayerThickness(overhangLayers)

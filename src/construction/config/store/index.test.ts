@@ -69,9 +69,9 @@ describe('ConfigStore', () => {
 
       store.addFloorAssemblyBottomLayer(assembly.id, createMonolithicLayer(18))
 
-      expect(() => store.updateFloorAssemblyBottomLayer(assembly.id, 2, { thickness: 10 })).toThrow(
-        'Layer index out of bounds'
-      )
+      expect(() => {
+        store.updateFloorAssemblyBottomLayer(assembly.id, 2, { thickness: 10 })
+      }).toThrow('Layer index out of bounds')
 
       const updated = store.getFloorAssemblyById(assembly.id)
       expect(updated?.layers.bottomLayers).toHaveLength(1)
@@ -82,14 +82,14 @@ describe('ConfigStore', () => {
       const store = getConfigActions()
       const assembly = store.addFloorAssembly('Named Floor', createFloorConfig())
 
-      expect(() => store.addFloorAssemblyTopLayer(assembly.id, createMonolithicLayer(12, '   '))).toThrow(
-        'Layer name cannot be empty'
-      )
+      expect(() => {
+        store.addFloorAssemblyTopLayer(assembly.id, createMonolithicLayer(12, '   '))
+      }).toThrow('Layer name cannot be empty')
 
       store.addFloorAssemblyTopLayer(assembly.id, createMonolithicLayer(12, 'Valid Layer'))
-      expect(() => store.updateFloorAssemblyTopLayer(assembly.id, 0, { name: '' })).toThrow(
-        'Layer name cannot be empty'
-      )
+      expect(() => {
+        store.updateFloorAssemblyTopLayer(assembly.id, 0, { name: '' })
+      }).toThrow('Layer name cannot be empty')
     })
 
     it('replaces floor layers from presets', () => {
@@ -344,7 +344,6 @@ describe('ConfigStore', () => {
       expect(assembly.type).toBe('full')
       if (assembly.type === 'full') {
         expect(assembly.offsetFromEdge).toBe(-50)
-        expect(Number(assembly.offsetFromEdge)).toBe(-50)
       }
     })
   })
@@ -410,11 +409,11 @@ describe('ConfigStore', () => {
       const store = getConfigActions()
       const assembly = store.addWallAssembly('Standard Infill', createValidWallConfig())
 
-      expect(() =>
+      expect(() => {
         store.updateWallAssemblyConfig(assembly.id, {
           layers: { insideThickness: -1, insideLayers: [], outsideThickness: 0, outsideLayers: [] }
         })
-      ).toThrow('Inside layer thickness cannot be negative')
+      }).toThrow('Inside layer thickness cannot be negative')
 
       const fetched = store.getWallAssemblyById(assembly.id)
       if (fetched?.type === 'infill') {
@@ -496,21 +495,23 @@ describe('ConfigStore', () => {
       expect(updated?.layers.outsideLayers).toHaveLength(1)
       expect(updated?.layers.outsideThickness).toBe(40)
 
-      expect(() => store.removeWallAssemblyOutsideLayer(assembly.id, 3)).toThrow('Layer index out of bounds')
+      expect(() => {
+        store.removeWallAssemblyOutsideLayer(assembly.id, 3)
+      }).toThrow('Layer index out of bounds')
     })
 
     it('rejects empty wall layer names', () => {
       const store = getConfigActions()
       const assembly = store.addWallAssembly('Wall With Layers', createValidWallConfig())
 
-      expect(() => store.addWallAssemblyInsideLayer(assembly.id, createMonolithicLayer(20, ''))).toThrow(
-        'Layer name cannot be empty'
-      )
+      expect(() => {
+        store.addWallAssemblyInsideLayer(assembly.id, createMonolithicLayer(20, ''))
+      }).toThrow('Layer name cannot be empty')
 
       store.addWallAssemblyInsideLayer(assembly.id, createMonolithicLayer(20, 'Valid Layer'))
-      expect(() => store.updateWallAssemblyInsideLayer(assembly.id, 0, { name: '   ' })).toThrow(
-        'Layer name cannot be empty'
-      )
+      expect(() => {
+        store.updateWallAssemblyInsideLayer(assembly.id, 0, { name: '   ' })
+      }).toThrow('Layer name cannot be empty')
     })
 
     it('replaces wall layers from presets', () => {

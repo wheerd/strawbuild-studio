@@ -81,7 +81,7 @@ export const createTagId = (category: TagCategoryId, name: string): CustomTagId 
   `${category}_${name
     .trim()
     .toLowerCase()
-    .replace(/[\W_]+/g, '-')}` as CustomTagId
+    .replace(/[\W_]+/g, '-')}`
 
 export const createTag = (category: TagCategoryId, name: string, nameKey?: LayerNameKey): CustomTag => ({
   category,

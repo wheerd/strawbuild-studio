@@ -11,6 +11,7 @@ import {
 import { createElementFromArea } from '@/construction/shapes'
 import { TAG_INFILL, TAG_POST } from '@/construction/tags'
 import { type Length } from '@/shared/geometry'
+import { assertUnreachable } from '@/shared/utils'
 
 import type { DimensionalMaterial, MaterialId } from './material'
 import { getMaterialById } from './store'
@@ -61,8 +62,8 @@ function* constructFullPost(area: WallConstructionArea, config: FullPostConfig):
 
   // Check if material is dimensional and dimensions match
   const material = getMaterialById(config.material)
-  if (material && material.type === 'dimensional') {
-    const dimensionalMaterial = material as DimensionalMaterial
+  if (material?.type === 'dimensional') {
+    const dimensionalMaterial = material
     const postDimensions = { width: config.width, thickness: size[1] }
 
     if (!materialSupportsCrossSection(dimensionalMaterial, postDimensions)) {
@@ -126,8 +127,8 @@ function* constructDoublePost(area: WallConstructionArea, config: DoublePostConf
 
     // Check if post material is dimensional and dimensions match
     const postMaterial = getMaterialById(config.material)
-    if (postMaterial && postMaterial.type === 'dimensional') {
-      const dimensionalMaterial = postMaterial as DimensionalMaterial
+    if (postMaterial?.type === 'dimensional') {
+      const dimensionalMaterial = postMaterial
       const postDimensions = { width: config.width, thickness: config.thickness }
 
       if (!materialSupportsCrossSection(dimensionalMaterial, postDimensions)) {
@@ -146,17 +147,18 @@ function* constructDoublePost(area: WallConstructionArea, config: DoublePostConf
 }
 
 export function constructPost(area: WallConstructionArea, config: PostConfig): Generator<ConstructionResult> {
-  if (config.type === 'full') {
-    return constructFullPost(area, config)
-  } else if (config.type === 'double') {
-    return constructDoublePost(area, config)
-  } else {
-    throw new Error('Invalid post type')
+  switch (config.type) {
+    case 'full':
+      return constructFullPost(area, config)
+    case 'double':
+      return constructDoublePost(area, config)
+    default:
+      assertUnreachable(config, 'Invalid post type')
   }
 }
 
 const ensurePositive = (value: number, message: string) => {
-  if (Number(value) <= 0) {
+  if (value <= 0) {
     throw new Error(message)
   }
 }
@@ -241,8 +243,8 @@ export function* constructWallPost(area: WallConstructionArea, post: WallPost): 
 
   // Check if material is dimensional and dimensions match
   const material = getMaterialById(post.material)
-  if (material && material.type === 'dimensional') {
-    const dimensionalMaterial = material as DimensionalMaterial
+  if (material?.type === 'dimensional') {
+    const dimensionalMaterial = material
     const postDimensions = { width: post.width, thickness: post.thickness }
 
     if (!materialSupportsCrossSection(dimensionalMaterial, postDimensions)) {

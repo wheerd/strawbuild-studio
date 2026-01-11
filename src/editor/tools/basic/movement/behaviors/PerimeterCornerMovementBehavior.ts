@@ -76,7 +76,7 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
     const newPosition = addVec2(corner.referencePoint, pointerState.delta)
 
     const snapResult = context.snappingService.findSnapResult(newPosition, snapContext)
-    const finalPosition = snapResult?.position || newPosition
+    const finalPosition = snapResult?.position ?? newPosition
 
     const newBoundary = corners.map(c => c.referencePoint)
     newBoundary[cornerIndex] = finalPosition

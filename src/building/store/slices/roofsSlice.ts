@@ -103,7 +103,7 @@ const computeOverhangPolygon = (
   overhangIds: RoofOverhangId[],
   roofOverhangs: Record<RoofOverhangId, RoofOverhang>
 ): Polygon2D => {
-  const overhangValues = overhangIds.map(id => roofOverhangs[id]?.value ?? 0)
+  const overhangValues = overhangIds.map(id => roofOverhangs[id].value)
   return polygonEdgeOffset(referencePolygon, overhangValues)
 }
 
@@ -273,7 +273,7 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
       const roofId = createRoofId()
 
       // Create overhang array with same value for all sides (for computing overhang polygon)
-      const overhangArray = new Array(validatedPolygon.points.length).fill(overhang)
+      const overhangArray = new Array<number>(validatedPolygon.points.length).fill(overhang)
 
       // Compute overhang polygon first (needed for trapezoid computation)
       const overhangPolygonTemp = polygonEdgeOffset(validatedPolygon, overhangArray)
@@ -329,8 +329,8 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
 
     removeRoof: (roofId: RoofId) => {
       set(state => {
-        const roof = state.roofs[roofId]
-        if (roof) {
+        if (roofId in state.roofs) {
+          const roof = state.roofs[roofId]
           // Remove all associated overhangs
           roof.overhangIds.forEach(overhangId => {
             delete state.roofOverhangs[overhangId]
@@ -350,11 +350,10 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
 
       let success = false
       set(state => {
+        if (!(overhangId in state.roofOverhangs)) return
         const overhang = state.roofOverhangs[overhangId]
-        if (!overhang) return
 
         const roof = state.roofs[overhang.roofId]
-        if (!roof) return
 
         // Update value
         overhang.value = value
@@ -365,9 +364,7 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
         // Recompute ALL overhang areas (since overhang polygon changed)
         roof.overhangIds.forEach(id => {
           const oh = state.roofOverhangs[id]
-          if (oh) {
-            oh.area = computeOverhangArea(roof.referencePolygon, roof.overhangPolygon, oh.sideIndex)
-          }
+          oh.area = computeOverhangArea(roof.referencePolygon, roof.overhangPolygon, oh.sideIndex)
         })
 
         success = true
@@ -382,15 +379,13 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
 
       let success = false
       set(state => {
+        if (!(roofId in state.roofs)) return
         const roof = state.roofs[roofId]
-        if (!roof) return
 
         // Update all overhangs to same value
         roof.overhangIds.forEach(overhangId => {
           const overhang = state.roofOverhangs[overhangId]
-          if (overhang) {
-            overhang.value = value
-          }
+          overhang.value = value
         })
 
         // Recompute overhang polygon
@@ -399,9 +394,7 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
         // Recompute ALL overhang areas
         roof.overhangIds.forEach(overhangId => {
           const overhang = state.roofOverhangs[overhangId]
-          if (overhang) {
-            overhang.area = computeOverhangArea(roof.referencePolygon, roof.overhangPolygon, overhang.sideIndex)
-          }
+          overhang.area = computeOverhangArea(roof.referencePolygon, roof.overhangPolygon, overhang.sideIndex)
         })
 
         success = true
@@ -422,8 +415,9 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
         assemblyId?: RoofAssemblyId
       }
     ): boolean => {
-      const roof = get().roofs[roofId]
-      if (!roof) return false
+      const state = get()
+      if (!(roofId in state.roofs)) return false
+      const roof = state.roofs[roofId]
 
       // Validate slope if provided
       if (updates.slope !== undefined && (updates.slope < 0 || updates.slope > 90)) {
@@ -440,7 +434,6 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
       let success = false
       set(state => {
         const roof = state.roofs[roofId]
-        if (!roof) return
 
         // Apply partial updates
         if (updates.slope !== undefined) {
@@ -472,10 +465,11 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
     updateRoofArea: (roofId: RoofId, newPolygon: Polygon2D): boolean => {
       const validatedPolygon = ensureRoofPolygon(newPolygon)
 
-      const roof = get().roofs[roofId]
-      if (!roof) {
+      const state = get()
+      if (!(roofId in state.roofs)) {
         return false
       }
+      const roof = state.roofs[roofId]
 
       const currentSideCount = roof.referencePolygon.points.length
       const newSideCount = validatedPolygon.points.length
@@ -487,8 +481,8 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
 
       let success = false
       set(state => {
+        if (!(roofId in state.roofs)) return
         const roof = state.roofs[roofId]
-        if (!roof) return
 
         roof.referencePolygon = validatedPolygon
 
@@ -498,9 +492,7 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
         // Recompute ALL overhang areas (geometry changed)
         roof.overhangIds.forEach(overhangId => {
           const overhang = state.roofOverhangs[overhangId]
-          if (overhang) {
-            overhang.area = computeOverhangArea(validatedPolygon, roof.overhangPolygon, overhang.sideIndex)
-          }
+          overhang.area = computeOverhangArea(validatedPolygon, roof.overhangPolygon, overhang.sideIndex)
         })
 
         // Recompute ridge line
@@ -516,27 +508,29 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
     },
 
     cycleRoofMainSide: (roofId: RoofId): boolean => {
-      const roof = get().roofs[roofId]
-      if (!roof) return false
+      const state = get()
+      if (!(roofId in state.roofs)) return false
+      const roof = state.roofs[roofId]
 
-      const validSides = get().actions.getValidMainSides(roofId)
+      const validSides = state.actions.getValidMainSides(roofId)
       if (validSides.length === 0) return false
 
       // Find current index in valid sides array
       const currentIndexInValid = validSides.indexOf(roof.mainSideIndex)
       if (currentIndexInValid === -1) {
         // Current side is invalid, use first valid side
-        return get().actions.updateRoofProperties(roofId, { mainSideIndex: validSides[0] })
+        return state.actions.updateRoofProperties(roofId, { mainSideIndex: validSides[0] })
       }
 
       // Cycle to next valid side
       const nextIndexInValid = (currentIndexInValid + 1) % validSides.length
-      return get().actions.updateRoofProperties(roofId, { mainSideIndex: validSides[nextIndexInValid] })
+      return state.actions.updateRoofProperties(roofId, { mainSideIndex: validSides[nextIndexInValid] })
     },
 
     getValidMainSides: (roofId: RoofId): number[] => {
-      const roof = get().roofs[roofId]
-      if (!roof) return []
+      const state = get()
+      if (!(roofId in state.roofs)) return []
+      const roof = state.roofs[roofId]
 
       return getValidMainSideIndices(roof.referencePolygon)
     },
@@ -550,11 +544,12 @@ export const createRoofsSlice: StateCreator<RoofsSlice, [['zustand/immer', never
     },
 
     getRoofOverhangsByRoof: (roofId: RoofId) => {
-      const roof = get().roofs[roofId]
-      if (!roof) return []
+      const state = get()
+      if (!(roofId in state.roofs)) return []
+      const roof = state.roofs[roofId]
 
-      const overhangs = get().roofOverhangs
-      return roof.overhangIds.map(id => overhangs[id]).filter((oh): oh is RoofOverhang => oh != null)
+      const overhangs = state.roofOverhangs
+      return roof.overhangIds.filter(id => id in overhangs).map(id => overhangs[id])
     },
 
     getAllRoofOverhangs: () => {

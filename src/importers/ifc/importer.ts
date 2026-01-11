@@ -346,8 +346,8 @@ export class IfcImporter {
       const matrix = transformFromArray(placedGeometry.flatTransformation)
       const geometry = this.api.GetGeometry(context.modelID, placedGeometry.geometryExpressID)
 
-      const idx = this.api.GetIndexArray(geometry.GetIndexData(), geometry.GetIndexDataSize()) as Uint32Array
-      const v = this.api.GetVertexArray(geometry.GetVertexData(), geometry.GetVertexDataSize()) as Float32Array
+      const idx = this.api.GetIndexArray(geometry.GetIndexData(), geometry.GetIndexDataSize())
+      const v = this.api.GetVertexArray(geometry.GetVertexData(), geometry.GetVertexDataSize())
       const posArray = this.ifcGeometryToPosArray(v)
       const rawPoints = this.posArrayToVec2(posArray)
       const indices = Array.from(idx)
@@ -377,7 +377,7 @@ export class IfcImporter {
       }
 
       const bounds = Bounds3D.fromPoints(usedPoints)
-      if (!bounds) continue
+      if (bounds.isEmpty) continue
 
       const polygons = unionPolygons(triPolys).map(simplifyPolygon)
 
@@ -742,7 +742,7 @@ export class IfcImporter {
         const element = this.dereferenceLine(context, elementRef)
         if (!this.isWallElement(element)) continue
 
-        const wall = element as IFC4.IfcWall
+        const wall = element
         const placement = this.resolveObjectPlacement(context, wall)
         const profiles = this.extractExtrudedProfiles(context, wall, placement)
         if (profiles.length === 0) {
@@ -768,8 +768,8 @@ export class IfcImporter {
             guid: this.getStringValue(wall.GlobalId),
             name: this.getStringValue(wall.Name),
             placement,
-            height: profile?.extrusionDepth ?? null,
-            thickness: profile != null ? this.estimateWallThickness(profile) : null,
+            height: profile.extrusionDepth,
+            thickness: this.estimateWallThickness(profile),
             profile,
             path: null,
             openings
@@ -793,7 +793,7 @@ export class IfcImporter {
         if (!this.isSlabElement(element)) continue
         if (this.enumEquals(element.PredefinedType, IFC4.IfcSlabTypeEnum.ROOF)) continue
 
-        const slab = element as IFC4.IfcSlab
+        const slab = element
         const placement = this.resolveObjectPlacement(context, slab)
         const profiles = this.extractExtrudedProfiles(context, slab, placement)
         const openings = this.extractOpenings(context, slab)
@@ -805,7 +805,7 @@ export class IfcImporter {
             name: this.getStringValue(slab.Name),
             placement,
             profile,
-            thickness: profile?.extrusionDepth ?? null,
+            thickness: profile.extrusionDepth,
             openings
           }))
         )
@@ -887,9 +887,7 @@ export class IfcImporter {
         }
       }
 
-      if (!fallbackShape) {
-        fallbackShape = shape
-      }
+      fallbackShape ??= shape
     }
 
     if (fallbackShape) {
@@ -991,7 +989,7 @@ export class IfcImporter {
 
     const bounds = Bounds3D.fromPoints(points)
 
-    if (!bounds) return null
+    if (bounds.isEmpty) return null
 
     const faces = this.extractFaces(context, set.Faces, points, pnIndex)
     const faces2D: Polygon2D[] = faces
@@ -1120,7 +1118,7 @@ export class IfcImporter {
       const point = this.dereferenceLine(context, pointRef)
       if (!this.isCartesianPoint(point)) continue
 
-      const coords = point.Coordinates ?? []
+      const coords = point.Coordinates
       const x = this.getNumberValue(coords[0]) * context.unitScale
       const y = this.getNumberValue(coords[1]) * context.unitScale
       rawPoints.push(newVec2(x, y))
@@ -1164,7 +1162,7 @@ export class IfcImporter {
     if (placement.RefDirection) {
       const refDir = this.dereferenceLine(context, placement.RefDirection)
       if (this.isDirection(refDir)) {
-        const ratios = refDir.DirectionRatios ?? []
+        const ratios = refDir.DirectionRatios
         xDir = newVec2(this.getNumberValue(ratios[0]), this.getNumberValue(ratios[1]))
       }
     }
@@ -1225,6 +1223,7 @@ export class IfcImporter {
 
   private isNodeEnvironment(): boolean {
     const proc = globalThis.process as NodeJS.Process | undefined
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     return typeof proc === 'object' && proc?.release?.name === 'node'
   }
 
@@ -1324,11 +1323,10 @@ export class IfcImporter {
       return IDENTITY
     }
 
-    const relativeReference = placement.RelativePlacement ?? null
+    const relativeReference = placement.RelativePlacement
     const parentReference = placement.PlacementRelTo ?? null
 
-    const relativeMatrix =
-      relativeReference != null ? this.resolveAxis2Placement3D(context, relativeReference) : IDENTITY
+    const relativeMatrix = this.resolveAxis2Placement3D(context, relativeReference)
     const parentMatrix = parentReference != null ? this.resolvePlacementRecursive(context, parentReference) : IDENTITY
 
     return composeTransform(parentMatrix, relativeMatrix)
@@ -1367,7 +1365,7 @@ export class IfcImporter {
         return newVec3(0, 0, 0)
       }
 
-      coords = pointLine.Coordinates ?? []
+      coords = pointLine.Coordinates
     }
     return newVec3(
       this.getNumberValue(coords[0]) * context.unitScale,
@@ -1382,22 +1380,22 @@ export class IfcImporter {
       return null
     }
 
-    const ratios = directionLine.DirectionRatios ?? []
+    const ratios = directionLine.DirectionRatios
     return newVec3(this.getNumberValue(ratios[0]), this.getNumberValue(ratios[1]), this.getNumberValue(ratios[2] ?? 0))
   }
 
   private isRelContainedInSpatialStructure(
     value: IfcLineObject | null
   ): value is IFC4.IfcRelContainedInSpatialStructure {
-    return value != null && value.type === IFCRELCONTAINEDINSPATIALSTRUCTURE
+    return value?.type === IFCRELCONTAINEDINSPATIALSTRUCTURE
   }
 
   private isRelVoidsElement(value: IfcLineObject | null): value is IFC4.IfcRelVoidsElement {
-    return value != null && value.type === IFCRELVOIDSELEMENT
+    return value?.type === IFCRELVOIDSELEMENT
   }
 
   private isRelFillsElement(value: IfcLineObject | null): value is IFC4.IfcRelFillsElement {
-    return value != null && value.type === IFCRELFILLSELEMENT
+    return value?.type === IFCRELFILLSELEMENT
   }
 
   private isWallElement(value: IfcLineObject | null): value is IFC4.IfcWall {
@@ -1405,63 +1403,63 @@ export class IfcImporter {
   }
 
   private isSlabElement(value: IfcLineObject | null): value is IFC4.IfcSlab {
-    return value != null && value.type === IFCSLAB
+    return value?.type === IFCSLAB
   }
 
   private isOpeningElement(value: IfcLineObject | null): value is IFC4.IfcOpeningElement {
-    return value != null && value.type === IFCOPENINGELEMENT
+    return value?.type === IFCOPENINGELEMENT
   }
 
   private isDoorElement(value: IfcLineObject | null): value is IFC4.IfcDoor {
-    return value != null && value.type === IFCDOOR
+    return value?.type === IFCDOOR
   }
 
   private isWindowElement(value: IfcLineObject | null): value is IFC4.IfcWindow {
-    return value != null && value.type === IFCWINDOW
+    return value?.type === IFCWINDOW
   }
 
   private isShapeRepresentation(value: IfcLineObject | null): value is IFC4.IfcShapeRepresentation {
-    return value != null && value.type === IFCSHAPEREPRESENTATION
+    return value?.type === IFCSHAPEREPRESENTATION
   }
 
   private isExtrudedAreaSolid(value: IfcLineObject | null): value is IFC4.IfcExtrudedAreaSolid {
-    return value != null && value.type === IFCEXTRUDEDAREASOLID
+    return value?.type === IFCEXTRUDEDAREASOLID
   }
 
   private isExtrudedAreaSolidTapered(value: IfcLineObject | null): value is IFC4.IfcExtrudedAreaSolidTapered {
-    return value != null && value.type === IFCEXTRUDEDAREASOLIDTAPERED
+    return value?.type === IFCEXTRUDEDAREASOLIDTAPERED
   }
 
   private isPolygonalFaceSet(value: IfcLineObject | null): value is IFC4.IfcPolygonalFaceSet {
-    return value != null && value.type === IFCPOLYGONALFACESET
+    return value?.type === IFCPOLYGONALFACESET
   }
 
   private isCartesianPointList3D(value: IfcLineObject | null): value is IFC4.IfcCartesianPointList3D {
-    return value != null && value.type === IFCCARTESIANPOINTLIST3D
+    return value?.type === IFCCARTESIANPOINTLIST3D
   }
 
   private isIndexedPolygonalFace(value: IfcLineObject | null): value is IFC4.IfcIndexedPolygonalFace {
-    return value != null && value.type === IFCINDEXEDPOLYGONALFACE
+    return value?.type === IFCINDEXEDPOLYGONALFACE
   }
 
   private isIndexedPolygonalFaceWithVoids(value: IfcLineObject | null): value is IFC4.IfcIndexedPolygonalFaceWithVoids {
-    return value != null && value.type === IFCINDEXEDPOLYGONALFACEWITHVOIDS
+    return value?.type === IFCINDEXEDPOLYGONALFACEWITHVOIDS
   }
 
   private isArbitraryClosedProfile(value: IfcLineObject | null): value is IFC4.IfcArbitraryClosedProfileDef {
-    return value != null && value.type === IFCARBITRARYCLOSEDPROFILEDEF
+    return value?.type === IFCARBITRARYCLOSEDPROFILEDEF
   }
 
   private isArbitraryProfileWithVoids(value: IfcLineObject | null): value is IFC4.IfcArbitraryProfileDefWithVoids {
-    return value != null && value.type === IFCARBITRARYPROFILEDEFWITHVOIDS
+    return value?.type === IFCARBITRARYPROFILEDEFWITHVOIDS
   }
 
   private isRectangleProfile(value: IfcLineObject | null): value is IFC4.IfcRectangleProfileDef {
-    return value != null && value.type === IFCRECTANGLEPROFILEDEF
+    return value?.type === IFCRECTANGLEPROFILEDEF
   }
 
   private isPolyline(value: IfcLineObject | null): value is IFC4.IfcPolyline {
-    return value != null && value.type === IFCPOLYLINE
+    return value?.type === IFCPOLYLINE
   }
 
   private toArray<T>(value: T | Iterable<T> | Vector<T> | null | undefined): T[] {
@@ -1470,7 +1468,7 @@ export class IfcImporter {
     }
 
     if (Array.isArray(value)) {
-      return value
+      return value as T[]
     }
 
     if (typeof value === 'object') {
@@ -1598,15 +1596,15 @@ export class IfcImporter {
   }
 
   private isLocalPlacement(value: IfcLineObject | null): value is IFC4.IfcLocalPlacement {
-    return value != null && value.type === IFCLOCALPLACEMENT
+    return value?.type === IFCLOCALPLACEMENT
   }
 
   private isAxis2Placement3D(value: IfcLineObject | null): value is IFC4.IfcAxis2Placement3D {
-    return value != null && value.type === IFCAXIS2PLACEMENT3D
+    return value?.type === IFCAXIS2PLACEMENT3D
   }
 
   private isAxis2Placement2D(value: IfcLineObject | null): value is IFC4.IfcAxis2Placement2D {
-    return value != null && value.type === IFCAXIS2PLACEMENT2D
+    return value?.type === IFCAXIS2PLACEMENT2D
   }
 
   private isCartesianPoint(value: IfcLineObject | null): value is IFC4.IfcCartesianPoint {
@@ -1618,11 +1616,11 @@ export class IfcImporter {
   }
 
   private isSiUnit(value: IfcLineObject | null): value is IFC4.IfcSIUnit {
-    return value != null && value.type === IFCSIUNIT
+    return value?.type === IFCSIUNIT
   }
 
   private isConversionBasedUnit(value: IfcLineObject | null): value is IFC4.IfcConversionBasedUnit {
-    return value != null && value.type === IFCCONVERSIONBASEDUNIT
+    return value?.type === IFCCONVERSIONBASEDUNIT
   }
 }
 
