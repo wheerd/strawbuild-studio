@@ -139,7 +139,9 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
               color={theme.textSecondary}
               fontSize={50}
               strokeWidth={4}
-              onClick={measurement => handleMeasurementClick(measurement, 'prevOpening')}
+              onClick={measurement => {
+                handleMeasurementClick(measurement, 'prevOpening')
+              }}
             />
           )}
 
@@ -151,7 +153,9 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
               color={theme.textSecondary}
               fontSize={50}
               strokeWidth={4}
-              onClick={measurement => handleMeasurementClick(measurement, 'nextOpening')}
+              onClick={measurement => {
+                handleMeasurementClick(measurement, 'nextOpening')
+              }}
             />
           )}
 
@@ -183,7 +187,9 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
             color={theme.text}
             fontSize={50}
             strokeWidth={4}
-            onClick={measurement => handleMeasurementClick(measurement, 'startCorner')}
+            onClick={measurement => {
+              handleMeasurementClick(measurement, 'startCorner')
+            }}
           />
           <ClickableLengthIndicator
             startPoint={opening.insideLine.end}
@@ -192,7 +198,9 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
             color={theme.text}
             fontSize={50}
             strokeWidth={4}
-            onClick={measurement => handleMeasurementClick(measurement, 'endCorner')}
+            onClick={measurement => {
+              handleMeasurementClick(measurement, 'endCorner')
+            }}
           />
           <ClickableLengthIndicator
             startPoint={startCorner.outsidePoint}
@@ -201,7 +209,9 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
             color={theme.text}
             fontSize={50}
             strokeWidth={4}
-            onClick={measurement => handleMeasurementClick(measurement, 'startCorner')}
+            onClick={measurement => {
+              handleMeasurementClick(measurement, 'startCorner')
+            }}
           />
           <ClickableLengthIndicator
             startPoint={opening.outsideLine.end}
@@ -210,7 +220,9 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
             color={theme.text}
             fontSize={50}
             strokeWidth={4}
-            onClick={measurement => handleMeasurementClick(measurement, 'endCorner')}
+            onClick={measurement => {
+              handleMeasurementClick(measurement, 'endCorner')
+            }}
           />
         </>
       )}

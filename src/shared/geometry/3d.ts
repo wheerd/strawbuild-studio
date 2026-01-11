@@ -23,10 +23,10 @@ export const scaleAddVec3 = (a: Vec3, b: Vec3, c: number): Vec3 => vec3.scaleAnd
 export const scaleVec3 = (a: Vec3, b: number): Vec3 => vec3.scale(vec3.create(), a, b) as Vec3
 export const lerpVec3 = (a: Vec3, b: Vec3, c: number): Vec3 => vec3.lerp(vec3.create(), a, b, c) as Vec3
 
-export const lenVec3 = (a: Vec3): Length => vec3.len(a) as Length
-export const lenSqrVec3 = (a: Vec3): Length => vec3.sqrLen(a) as Length
-export const distVec3 = (a: Vec3, b: Vec3): Length => vec3.dist(a, b) as Length
-export const distSqrVec3 = (a: Vec3, b: Vec3): number => vec3.sqrDist(a, b) as number
+export const lenVec3 = (a: Vec3): Length => vec3.len(a)
+export const lenSqrVec3 = (a: Vec3): Length => vec3.sqrLen(a)
+export const distVec3 = (a: Vec3, b: Vec3): Length => vec3.dist(a, b)
+export const distSqrVec3 = (a: Vec3, b: Vec3): number => vec3.sqrDist(a, b)
 export const dotVec3 = (a: Vec3, b: Vec3): number => vec3.dot(a, b)
 export const dotAbsVec3 = (a: Vec3, b: Vec3): number => Math.abs(vec3.dot(a, b))
 export const crossVec3 = (a: Vec3, b: Vec3): Vec3 => vec3.cross(vec3.create(), a, b) as Vec3
@@ -34,9 +34,9 @@ export const crossVec3 = (a: Vec3, b: Vec3): Vec3 => vec3.cross(vec3.create(), a
 export const projectVec3 = (base: Vec3, point: Vec3, dir: Vec3): number =>
   vec3.dot(vec3.sub(vec3.create(), point, base), dir)
 
-export const midVec3 = (p1: Vec3, p2: Vec3): Vec3 => lerpVec3(p1, p2, 0.5) as Vec3
+export const midVec3 = (p1: Vec3, p2: Vec3): Vec3 => lerpVec3(p1, p2, 0.5)
 
-export const dirVec3 = (source: Vec3, target: Vec3): Vec3 => normVec3(subVec3(target, source)) as Vec3
+export const dirVec3 = (source: Vec3, target: Vec3): Vec3 => normVec3(subVec3(target, source))
 
 export function computeTriangleNormal(a: Vec3, b: Vec3, c: Vec3): Vec3 {
   const ab = vec3.sub(vec3.create(), b, a)

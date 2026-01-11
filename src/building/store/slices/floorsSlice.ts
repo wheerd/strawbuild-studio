@@ -92,8 +92,8 @@ export const createFloorsSlice: StateCreator<FloorsSlice, [['zustand/immer', nev
 
       let success = false
       set(state => {
-        const floorArea = state.floorAreas[floorAreaId]
-        if (floorArea) {
+        if (floorAreaId in state.floorAreas) {
+          const floorArea = state.floorAreas[floorAreaId]
           floorArea.area = validatedPolygon
           success = true
         }
@@ -142,8 +142,8 @@ export const createFloorsSlice: StateCreator<FloorsSlice, [['zustand/immer', nev
 
       let success = false
       set(state => {
-        const floorOpening = state.floorOpenings[floorOpeningId]
-        if (floorOpening) {
+        if (floorOpeningId in state.floorOpenings) {
+          const floorOpening = state.floorOpenings[floorOpeningId]
           floorOpening.area = validatedPolygon
           success = true
         }

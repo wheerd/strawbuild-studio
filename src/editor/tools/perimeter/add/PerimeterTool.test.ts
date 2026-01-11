@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as useViewportStore from '@/editor/hooks/useViewportStore'
 import * as lengthInputService from '@/editor/services/length-input'
 import type { CanvasEvent } from '@/editor/tools/system/types'
-import { ZERO_VEC2, newVec2 } from '@/shared/geometry'
+import { type Vec2, ZERO_VEC2, newVec2 } from '@/shared/geometry'
 
 import { PerimeterTool } from './PerimeterTool'
 
@@ -40,7 +40,7 @@ describe('PerimeterTool', () => {
 
       // Mock viewport transformations
       vi.spyOn(useViewportStore, 'viewportActions').mockReturnValue({
-        worldToStage: vi.fn(worldPos => ({
+        worldToStage: vi.fn((worldPos: Vec2) => ({
           x: worldPos[0] + 50, // Simple linear transformation for testing
           y: worldPos[1] + 100
         })),

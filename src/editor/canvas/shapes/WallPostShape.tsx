@@ -186,7 +186,9 @@ export function WallPostShape({ postId }: { postId: WallPostId }): React.JSX.Ele
               color={theme.textSecondary}
               fontSize={50}
               strokeWidth={4}
-              onClick={measurement => handleMeasurementClick(measurement, 'prevObstacle')}
+              onClick={measurement => {
+                handleMeasurementClick(measurement, 'prevObstacle')
+              }}
             />
           )}
 
@@ -198,7 +200,9 @@ export function WallPostShape({ postId }: { postId: WallPostId }): React.JSX.Ele
               color={theme.textSecondary}
               fontSize={50}
               strokeWidth={4}
-              onClick={measurement => handleMeasurementClick(measurement, 'nextObstacle')}
+              onClick={measurement => {
+                handleMeasurementClick(measurement, 'nextObstacle')
+              }}
             />
           )}
 
@@ -230,7 +234,9 @@ export function WallPostShape({ postId }: { postId: WallPostId }): React.JSX.Ele
             color={theme.text}
             fontSize={50}
             strokeWidth={4}
-            onClick={measurement => handleMeasurementClick(measurement, 'startCorner')}
+            onClick={measurement => {
+              handleMeasurementClick(measurement, 'startCorner')
+            }}
           />
           <ClickableLengthIndicator
             startPoint={insidePostEnd}
@@ -239,7 +245,9 @@ export function WallPostShape({ postId }: { postId: WallPostId }): React.JSX.Ele
             color={theme.text}
             fontSize={50}
             strokeWidth={4}
-            onClick={measurement => handleMeasurementClick(measurement, 'endCorner')}
+            onClick={measurement => {
+              handleMeasurementClick(measurement, 'endCorner')
+            }}
           />
           <ClickableLengthIndicator
             startPoint={startCorner.outsidePoint}
@@ -248,7 +256,9 @@ export function WallPostShape({ postId }: { postId: WallPostId }): React.JSX.Ele
             color={theme.text}
             fontSize={50}
             strokeWidth={4}
-            onClick={measurement => handleMeasurementClick(measurement, 'startCorner')}
+            onClick={measurement => {
+              handleMeasurementClick(measurement, 'startCorner')
+            }}
           />
           <ClickableLengthIndicator
             startPoint={outsidePostEnd}
@@ -257,7 +267,9 @@ export function WallPostShape({ postId }: { postId: WallPostId }): React.JSX.Ele
             color={theme.text}
             fontSize={50}
             strokeWidth={4}
-            onClick={measurement => handleMeasurementClick(measurement, 'endCorner')}
+            onClick={measurement => {
+              handleMeasurementClick(measurement, 'endCorner')
+            }}
           />
         </>
       )}

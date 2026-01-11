@@ -15,13 +15,11 @@ export async function loadManifoldModule(
     return Promise.resolve(manifoldModuleInstance)
   }
 
-  if (!manifoldModulePromise) {
-    manifoldModulePromise = manifoldModule({ locateFile: () => options?.wasmUrl ?? manifoldWasmUrl }).then(instance => {
-      instance.setup()
-      manifoldModuleInstance = instance
-      return instance
-    })
-  }
+  manifoldModulePromise ??= manifoldModule({ locateFile: () => options?.wasmUrl ?? manifoldWasmUrl }).then(instance => {
+    instance.setup()
+    manifoldModuleInstance = instance
+    return instance
+  })
 
   return manifoldModulePromise
 }

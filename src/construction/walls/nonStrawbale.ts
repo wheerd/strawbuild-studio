@@ -17,7 +17,7 @@ import { constructWallLayers } from '@/construction/walls/layers'
 import { WALL_POLYGON_PLANE, createWallPolygonWithOpenings } from '@/construction/walls/polygons'
 import { convertHeightLineToWallOffsets, getRoofHeightLineForLines } from '@/construction/walls/roofIntegration'
 import { segmentedWallConstruction } from '@/construction/walls/segmentation'
-import { Bounds3D, type Length, fromTrans, newVec2, newVec3 } from '@/shared/geometry'
+import { Bounds3D, fromTrans, newVec2, newVec3 } from '@/shared/geometry'
 
 export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallConfig> {
   construct(wall: PerimeterWallWithGeometry, storeyContext: StoreyContext): ConstructionModel {
@@ -35,9 +35,8 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
     const totalConstructionHeight = storeyContext.wallTop - storeyContext.wallBottom
     const ceilingOffset = storeyContext.roofBottom - storeyContext.wallTop
 
-    const structuralThickness = (wall.thickness -
-      this.config.layers.insideThickness -
-      this.config.layers.outsideThickness) as Length
+    const structuralThickness =
+      wall.thickness - this.config.layers.insideThickness - this.config.layers.outsideThickness
     if (structuralThickness <= 0) {
       throw new Error('Non-strawbale wall structural thickness must be greater than 0')
     }
@@ -51,7 +50,7 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
 
     // Convert roof height line to wall offsets
     let roofOffsets
-    if (roofHeightLine) {
+    if (roofHeightLine.length === 0) {
       roofOffsets = convertHeightLineToWallOffsets(roofHeightLine, cornerInfo.constructionLength)
     } else {
       roofOffsets = [newVec2(0, -ceilingOffset), newVec2(cornerInfo.constructionLength, -ceilingOffset)]
@@ -112,6 +111,7 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
   }
 
   private *noopWallSegment(
+    this: void,
     _area: WallConstructionArea,
     _startsWithStand: boolean,
     _endsWithStand: boolean,
@@ -120,7 +120,7 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
     // Intentionally empty - structural wall handled as a single extruded polygon
   }
 
-  private *noopInfill(_area: WallConstructionArea): Generator<ConstructionResult> {
+  private *noopInfill(this: void, _area: WallConstructionArea): Generator<ConstructionResult> {
     // Intentionally empty - openings are handled by polygon holes
   }
 

@@ -84,8 +84,8 @@ export class FullRingBeamAssembly extends BaseRingBeamAssembly<FullRingBeamConfi
       const subSegments = this.splitPolygonByHeightLine(boundingRect, heightLine)
 
       for (const sub of subSegments) {
-        const adjustedStartHeight = (sub.startHeight + ceilingOffset) as Length
-        const adjustedEndHeight = (sub.endHeight + ceilingOffset) as Length
+        const adjustedStartHeight = sub.startHeight + ceilingOffset
+        const adjustedEndHeight = sub.endHeight + ceilingOffset
 
         yield* this.extrudeWithSlope(
           sub.subPolygon,

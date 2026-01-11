@@ -77,7 +77,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
   const usage = useMemo(
     () =>
       selectedAssembly
-        ? getOpeningAssemblyUsage(selectedAssembly.id as OpeningAssemblyId)
+        ? getOpeningAssemblyUsage(selectedAssembly.id)
         : { isUsed: false, isDefault: false, wallAssemblyIds: [], storeyIds: [] },
     [selectedAssembly, wallAssemblyArray, defaultId]
   )
@@ -145,6 +145,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
 
     if (allAssemblies.length > 1) {
       const nextAssembly = allAssemblies[currentIndex + 1] ?? allAssemblies[currentIndex - 1]
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       setSelectedAssemblyId(nextAssembly?.id ?? null)
     } else {
       setSelectedAssemblyId(null)
@@ -171,13 +172,25 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
               </IconButton>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
-              <DropdownMenu.Item onClick={() => handleAddNew('simple')}>
+              <DropdownMenu.Item
+                onClick={() => {
+                  handleAddNew('simple')
+                }}
+              >
                 {t($ => $.openings.types.simple)}
               </DropdownMenu.Item>
-              <DropdownMenu.Item onClick={() => handleAddNew('post')}>
+              <DropdownMenu.Item
+                onClick={() => {
+                  handleAddNew('post')
+                }}
+              >
                 {t($ => $.openings.types.post)}
               </DropdownMenu.Item>
-              <DropdownMenu.Item onClick={() => handleAddNew('empty')}>
+              <DropdownMenu.Item
+                onClick={() => {
+                  handleAddNew('empty')
+                }}
+              >
                 {t($ => $.openings.types.empty)}
               </DropdownMenu.Item>
             </DropdownMenu.Content>
@@ -197,8 +210,10 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
         <Flex gap="2" align="end">
           <Flex direction="column" gap="1" flexGrow="1">
             <OpeningAssemblySelect
-              value={(selectedAssemblyId as OpeningAssemblyId) || undefined}
-              onValueChange={value => setSelectedAssemblyId(value || null)}
+              value={(selectedAssemblyId as OpeningAssemblyId | null) ?? undefined}
+              onValueChange={value => {
+                setSelectedAssemblyId(value ?? null)
+              }}
               showDefaultIndicator
               size="2"
             />
@@ -211,13 +226,25 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
               </IconButton>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
-              <DropdownMenu.Item onClick={() => handleAddNew('simple')}>
+              <DropdownMenu.Item
+                onClick={() => {
+                  handleAddNew('simple')
+                }}
+              >
                 {t($ => $.openings.types.simple)}
               </DropdownMenu.Item>
-              <DropdownMenu.Item onClick={() => handleAddNew('post')}>
+              <DropdownMenu.Item
+                onClick={() => {
+                  handleAddNew('post')
+                }}
+              >
                 {t($ => $.openings.types.post)}
               </DropdownMenu.Item>
-              <DropdownMenu.Item onClick={() => handleAddNew('empty')}>
+              <DropdownMenu.Item
+                onClick={() => {
+                  handleAddNew('empty')
+                }}
+              >
                 {t($ => $.openings.types.empty)}
               </DropdownMenu.Item>
             </DropdownMenu.Content>
@@ -284,7 +311,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
         </Flex>
       </Flex>
       {/* Form */}
-      {selectedAssembly && <ConfigForm assembly={selectedAssembly} />}
+      <ConfigForm assembly={selectedAssembly} />
       <Separator size="4" />
       <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
         <Label.Root>
@@ -350,14 +377,18 @@ function ConfigForm({ assembly }: { assembly: OpeningAssemblyConfig }): React.JS
 
   const nameInput = useDebouncedInput(
     nameKey ? t(nameKey) : assembly.name,
-    (name: string) => updateOpeningAssemblyName(assembly.id as OpeningAssemblyId, name),
+    (name: string) => {
+      updateOpeningAssemblyName(assembly.id, name)
+    },
     {
       debounceMs: 1000
     }
   )
 
   const handleUpdateConfig = useCallback(
-    (updates: Partial<OpeningConfig>) => updateOpeningAssemblyConfig(assembly.id as OpeningAssemblyId, updates),
+    (updates: Partial<OpeningConfig>) => {
+      updateOpeningAssemblyConfig(assembly.id, updates)
+    },
     [assembly.id, updateOpeningAssemblyConfig]
   )
 
@@ -377,7 +408,9 @@ function ConfigForm({ assembly }: { assembly: OpeningAssemblyConfig }): React.JS
           </Label.Root>
           <TextField.Root
             value={nameInput.value}
-            onChange={e => nameInput.handleChange(e.target.value)}
+            onChange={e => {
+              nameInput.handleChange(e.target.value)
+            }}
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
             placeholder={t($ => $.openings.placeholders.name)}
@@ -413,7 +446,13 @@ function ConfigForm({ assembly }: { assembly: OpeningAssemblyConfig }): React.JS
                 {t($ => $.openings.labels.padding)}
               </Text>
             </Label.Root>
-            <LengthField value={assembly.padding} onChange={padding => handleUpdateConfig({ padding })} unit="mm" />
+            <LengthField
+              value={assembly.padding}
+              onChange={padding => {
+                handleUpdateConfig({ padding })
+              }}
+              unit="mm"
+            />
           </Grid>
         </>
       )}
@@ -436,14 +475,26 @@ const SimpleOpeningContent = ({
           {t($ => $.openings.labels.padding)}
         </Text>
       </Label.Root>
-      <LengthField value={config.padding} onChange={padding => update({ padding })} unit="mm" />
+      <LengthField
+        value={config.padding}
+        onChange={padding => {
+          update({ padding })
+        }}
+        unit="mm"
+      />
 
       <Label.Root>
         <Text size="2" weight="medium" color="gray">
           {t($ => $.openings.labels.headerThickness)}
         </Text>
       </Label.Root>
-      <LengthField value={config.headerThickness} onChange={headerThickness => update({ headerThickness })} unit="mm" />
+      <LengthField
+        value={config.headerThickness}
+        onChange={headerThickness => {
+          update({ headerThickness })
+        }}
+        unit="mm"
+      />
 
       <Label.Root>
         <Text size="2" weight="medium" color="gray">
@@ -465,7 +516,13 @@ const SimpleOpeningContent = ({
           {t($ => $.openings.labels.sillThickness)}
         </Text>
       </Label.Root>
-      <LengthField value={config.sillThickness} onChange={sillThickness => update({ sillThickness })} unit="mm" />
+      <LengthField
+        value={config.sillThickness}
+        onChange={sillThickness => {
+          update({ sillThickness })
+        }}
+        unit="mm"
+      />
 
       <Label.Root>
         <Text size="2" weight="medium" color="gray">
@@ -502,7 +559,13 @@ const PostOpeningContent = ({
             {t($ => $.openings.labels.padding)}
           </Text>
         </Label.Root>
-        <LengthField value={config.padding} onChange={padding => update({ padding })} unit="mm" />
+        <LengthField
+          value={config.padding}
+          onChange={padding => {
+            update({ padding })
+          }}
+          unit="mm"
+        />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
@@ -511,7 +574,9 @@ const PostOpeningContent = ({
         </Label.Root>
         <LengthField
           value={config.headerThickness}
-          onChange={headerThickness => update({ headerThickness })}
+          onChange={headerThickness => {
+            update({ headerThickness })
+          }}
           unit="mm"
         />
 
@@ -535,7 +600,13 @@ const PostOpeningContent = ({
             {t($ => $.openings.labels.sillThickness)}
           </Text>
         </Label.Root>
-        <LengthField value={config.sillThickness} onChange={sillThickness => update({ sillThickness })} unit="mm" />
+        <LengthField
+          value={config.sillThickness}
+          onChange={sillThickness => {
+            update({ sillThickness })
+          }}
+          unit="mm"
+        />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
@@ -569,7 +640,9 @@ function PostsConfigSection({
   const typeSelectId = useId()
 
   const posts = config.posts
-  const updatePosts = (posts: PostConfig) => onUpdate({ posts })
+  const updatePosts = (posts: PostConfig) => {
+    onUpdate({ posts })
+  }
 
   return (
     <Flex direction="column" gap="3">
@@ -614,7 +687,9 @@ function PostsConfigSection({
             <Flex align="center" gap="1">
               <Checkbox
                 checked={config.replacePosts}
-                onCheckedChange={value => onUpdate({ replacePosts: value === true })}
+                onCheckedChange={value => {
+                  onUpdate({ replacePosts: value === true })
+                }}
               />
               <Text size="2" weight="medium" color="gray">
                 {t($ => $.openings.labels.replacesWallPosts)}
@@ -630,7 +705,9 @@ function PostsConfigSection({
         </Label.Root>
         <LengthField
           value={posts.width}
-          onChange={value => updatePosts({ ...posts, width: value })}
+          onChange={value => {
+            updatePosts({ ...posts, width: value })
+          }}
           unit="mm"
           size="2"
         />
@@ -644,7 +721,9 @@ function PostsConfigSection({
             </Label.Root>
             <LengthField
               value={posts.thickness}
-              onChange={value => updatePosts({ ...posts, thickness: value })}
+              onChange={value => {
+                updatePosts({ ...posts, thickness: value })
+              }}
               unit="mm"
               size="2"
             />

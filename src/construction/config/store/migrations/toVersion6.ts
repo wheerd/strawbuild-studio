@@ -1,4 +1,4 @@
-import { type MaterialId, strawbale } from '@/construction/materials/material'
+import { strawbale } from '@/construction/materials/material'
 
 import type { MigrationState } from './shared'
 
@@ -7,6 +7,6 @@ export function migrateToVersion6(state: MigrationState): void {
     return
   }
 
-  state.defaultStrawMaterial = strawbale.id as MaterialId
+  state.defaultStrawMaterial = strawbale.id
   delete state.straw
 }

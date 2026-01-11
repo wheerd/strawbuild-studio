@@ -1,3 +1,5 @@
+import type { RingBeamAssemblyId } from '@/building/model'
+
 import type { Migration } from './shared'
 import { isRecord } from './shared'
 
@@ -16,10 +18,8 @@ export const migrateToVersion10: Migration = state => {
     for (const perimeter of Object.values(state.perimeters)) {
       if (!isRecord(perimeter)) continue
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const baseRingBeam = (perimeter as any).baseRingBeamAssemblyId
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const topRingBeam = (perimeter as any).topRingBeamAssemblyId
+      const baseRingBeam = perimeter.baseRingBeamAssemblyId as RingBeamAssemblyId | undefined
+      const topRingBeam = perimeter.topRingBeamAssemblyId as RingBeamAssemblyId | undefined
 
       // Apply to all walls
       if (Array.isArray(perimeter.walls)) {
@@ -32,10 +32,8 @@ export const migrateToVersion10: Migration = state => {
       }
 
       // Remove from perimeter level
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      delete (perimeter as any).baseRingBeamAssemblyId
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      delete (perimeter as any).topRingBeamAssemblyId
+      delete perimeter.baseRingBeamAssemblyId
+      delete perimeter.topRingBeamAssemblyId
     }
   }
 }

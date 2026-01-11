@@ -79,7 +79,7 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
 
   // Get category IDs (sorted alphabetically by ID for now - will be sorted by translated label in render)
   const sortedCategories = useMemo(() => {
-    return Array.from(tagsByCategory.entries()).sort(([catA], [catB]) => String(catA).localeCompare(String(catB)))
+    return Array.from(tagsByCategory.entries()).sort(([catA], [catB]) => catA.localeCompare(catB))
   }, [tagsByCategory])
 
   const renderOpacityIcon = (opacity: number) => {
@@ -136,7 +136,7 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
           const categoryOpacity = getTagOrCategoryOpacity(categoryId)
 
           return (
-            <DropdownMenu.Sub key={String(categoryId)}>
+            <DropdownMenu.Sub key={categoryId}>
               <DropdownMenu.SubTrigger>
                 <Flex align="center" justify="between" width="100%" gap="2">
                   <Text size="1">
@@ -147,7 +147,11 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
               </DropdownMenu.SubTrigger>
               <DropdownMenu.SubContent>
                 {/* Category-wide opacity cycle */}
-                <DropdownMenu.Item onSelect={e => e.preventDefault()}>
+                <DropdownMenu.Item
+                  onSelect={e => {
+                    e.preventDefault()
+                  }}
+                >
                   <Flex
                     align="center"
                     justify="between"
@@ -169,7 +173,12 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
                 {tags.map(tag => {
                   const tagOpacity = getTagOrCategoryOpacity(tag.id)
                   return (
-                    <DropdownMenu.Item key={String(tag.id)} onSelect={e => e.preventDefault()}>
+                    <DropdownMenu.Item
+                      key={tag.id}
+                      onSelect={e => {
+                        e.preventDefault()
+                      }}
+                    >
                       <Flex
                         align="center"
                         justify="between"

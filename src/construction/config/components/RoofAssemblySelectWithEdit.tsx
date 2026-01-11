@@ -20,7 +20,9 @@ export function RoofAssemblySelectWithEdit(props: RoofAssemblySelectProps): Reac
         title={t($ => $.roofs.configure)}
         variant="ghost"
         size={props.size}
-        onClick={() => openConfiguration('roofs', props.value ?? undefined)}
+        onClick={() => {
+          openConfiguration('roofs', props.value ?? undefined)
+        }}
       >
         <Pencil1Icon />
       </IconButton>

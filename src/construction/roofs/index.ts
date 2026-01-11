@@ -32,11 +32,9 @@ export function constructRoof(roof: Roof, contexts?: PerimeterConstructionContex
     return createUnsupportedModel($ => $.construction.roof.invalidAssembly, undefined, 'invalid-roof-assembly')
   }
 
-  if (!contexts) {
-    contexts = getModelActions()
-      .getPerimetersByStorey(roof.storeyId)
-      .map(p => computePerimeterConstructionContext(p, []))
-  }
+  contexts ??= getModelActions()
+    .getPerimetersByStorey(roof.storeyId)
+    .map(p => computePerimeterConstructionContext(p, []))
 
   const roofAssembly = resolveRoofAssembly(assemblyConfig)
   return roofAssembly.construct(roof, contexts)

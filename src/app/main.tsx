@@ -18,9 +18,7 @@ import './index.css'
 
 function removeInitialLoadingScreen() {
   const loadingScreen = document.querySelector('[data-loading-screen]')
-  if (loadingScreen && loadingScreen.parentElement) {
-    loadingScreen.parentElement.removeChild(loadingScreen)
-  }
+  loadingScreen?.parentElement?.removeChild(loadingScreen)
 }
 
 async function bootstrap() {
@@ -64,4 +62,4 @@ async function bootstrap() {
   })
 }
 
-bootstrap()
+void bootstrap()

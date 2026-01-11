@@ -184,7 +184,9 @@ export function StoreyListItem({
             step={100}
             style={{ width: '6.5rem' }}
             value={storey.floorHeight}
-            onCommit={value => updateStoreyFloorHeight(storey.id, value)}
+            onCommit={value => {
+              updateStoreyFloorHeight(storey.id, value)
+            }}
             title={`Floor height: ${formatLength(storey.floorHeight)}`}
           >
             <TextField.Slot side="left" className="pl-1 pr-0">
@@ -203,7 +205,9 @@ export function StoreyListItem({
           </Flex>
           <FloorAssemblySelectWithEdit
             value={storey.floorAssemblyId}
-            onValueChange={value => updateStoreyFloorAssembly(storey.id, value)}
+            onValueChange={value => {
+              updateStoreyFloorAssembly(storey.id, value)
+            }}
             size="2"
           />
         </Flex>
@@ -248,7 +252,9 @@ export function StoreyListItem({
           </AlertDialog.Root>
 
           <IconButton
-            onClick={() => setActiveStoreyId(storey.id)}
+            onClick={() => {
+              setActiveStoreyId(storey.id)
+            }}
             disabled={isActive}
             title={t($ => $.storeys.switchToFloor)}
             color="green"

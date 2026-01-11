@@ -44,10 +44,6 @@ export function createCrossShapedPerimeter(): void {
     const defaultBaseId = configStore.getDefaultBaseRingBeamAssemblyId()
     const defaultTopId = configStore.getDefaultTopRingBeamAssemblyId()
     const defaultAssemblyId = configStore.getDefaultWallAssemblyId()
-    if (!defaultAssemblyId) {
-      console.error('No default wall assembly available')
-      return
-    }
 
     // Add the perimeter to the store with default assemblies
     const newPerimeter = modelStore.addPerimeter(
@@ -60,7 +56,7 @@ export function createCrossShapedPerimeter(): void {
       'inside'
     )
 
-    if (newPerimeter && newPerimeter.wallIds.length > 0) {
+    if (newPerimeter.wallIds.length > 0) {
       // Add main entrance door
       const doorSpecs: DoorSpec[] = [{ wallIndex: 6, offset: 0.4, width: 900, height: 2100, type: 'main-entrance' }]
 

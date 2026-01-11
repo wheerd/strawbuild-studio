@@ -67,14 +67,14 @@ describe('StoreysSlice', () => {
       expect(Object.keys(store.storeys).length).toBe(1)
 
       const addedStorey = store.storeys[storey.id]
-      expect(addedStorey?.floorHeight).toBe(floorHeight)
+      expect(addedStorey.floorHeight).toBe(floorHeight)
     })
 
     it('should trim storey name whitespace', () => {
       const storey = store.actions.addStorey()
 
       const addedStorey = store.storeys[storey.id]
-      expect(addedStorey?.useDefaultName).toBe(true)
+      expect(addedStorey.useDefaultName).toBe(true)
     })
 
     it('should throw error for invalid floor height', () => {
@@ -102,11 +102,11 @@ describe('StoreysSlice', () => {
 
       // Second floor should be adjusted from level 2 to level 1
       const adjustedSecondFloor = store.storeys[secondFloor.id]
-      expect(adjustedSecondFloor?.level).toBe(1)
+      expect(adjustedSecondFloor.level).toBe(1)
 
       // Ground floor should remain at level 0
       const groundFloorAfter = store.storeys[groundFloor.id]
-      expect(groundFloorAfter?.level).toBe(0)
+      expect(groundFloorAfter.level).toBe(0)
     })
 
     it('should handle removing non-existent storey gracefully', () => {
@@ -122,7 +122,9 @@ describe('StoreysSlice', () => {
     it('should prevent removing the last remaining storey', () => {
       const groundFloor = store.actions.addStorey()
 
-      expect(() => store.actions.removeStorey(groundFloor.id)).toThrow('Cannot remove the last remaining storey')
+      expect(() => {
+        store.actions.removeStorey(groundFloor.id)
+      }).toThrow('Cannot remove the last remaining storey')
       expect(Object.keys(store.storeys).length).toBe(1)
       expect(groundFloor.id in store.storeys).toBe(true)
     })
@@ -171,8 +173,8 @@ describe('StoreysSlice', () => {
       store.actions.updateStoreyName(storey.id, 'Updated Name')
 
       const updatedStorey = store.storeys[storey.id]
-      expect(updatedStorey?.name).toBe('Updated Name')
-      expect(updatedStorey?.useDefaultName).toBe(false)
+      expect(updatedStorey.name).toBe('Updated Name')
+      expect(updatedStorey.useDefaultName).toBe(false)
     })
 
     it('should trim storey name whitespace when updating', () => {
@@ -181,14 +183,18 @@ describe('StoreysSlice', () => {
       store.actions.updateStoreyName(storey.id, '  Updated Name  ')
 
       const updatedStorey = store.storeys[storey.id]
-      expect(updatedStorey?.name).toBe('Updated Name')
+      expect(updatedStorey.name).toBe('Updated Name')
     })
 
     it('should throw error for empty storey name', () => {
       const storey = store.actions.addStorey()
 
-      expect(() => store.actions.updateStoreyName(storey.id, '')).toThrow('Storey name cannot be empty')
-      expect(() => store.actions.updateStoreyName(storey.id, '   ')).toThrow('Storey name cannot be empty')
+      expect(() => {
+        store.actions.updateStoreyName(storey.id, '')
+      }).toThrow('Storey name cannot be empty')
+      expect(() => {
+        store.actions.updateStoreyName(storey.id, '   ')
+      }).toThrow('Storey name cannot be empty')
     })
 
     it('should do nothing if storey does not exist', () => {
@@ -204,11 +210,11 @@ describe('StoreysSlice', () => {
 
       const updatedStorey = store.storeys[storey.id]
       store.actions.updateStoreyName(storey.id, 'Updated Name')
-      expect(updatedStorey?.useDefaultName).toBe(false)
+      expect(updatedStorey.useDefaultName).toBe(false)
 
       const updatedStorey2 = store.storeys[storey.id]
       store.actions.updateStoreyName(storey.id, null)
-      expect(updatedStorey2?.useDefaultName).toBe(true)
+      expect(updatedStorey2.useDefaultName).toBe(true)
     })
   })
 
@@ -220,21 +226,23 @@ describe('StoreysSlice', () => {
       store.actions.updateStoreyFloorHeight(storey.id, newHeight)
 
       const updatedStorey = store.storeys[storey.id]
-      expect(updatedStorey?.floorHeight).toBe(newHeight)
+      expect(updatedStorey.floorHeight).toBe(newHeight)
     })
 
     it('should throw error for invalid floor height', () => {
       const storey = store.actions.addStorey()
 
-      expect(() => store.actions.updateStoreyFloorHeight(storey.id, 0)).toThrow('Floor height must be greater than 0')
+      expect(() => {
+        store.actions.updateStoreyFloorHeight(storey.id, 0)
+      }).toThrow('Floor height must be greater than 0')
     })
 
     it('should throw error for negative floor height', () => {
       const storey = store.actions.addStorey()
 
-      expect(() => store.actions.updateStoreyFloorHeight(storey.id, -1000)).toThrow(
-        'Floor height must be greater than 0'
-      )
+      expect(() => {
+        store.actions.updateStoreyFloorHeight(storey.id, -1000)
+      }).toThrow('Floor height must be greater than 0')
     })
 
     it('should do nothing if storey does not exist', () => {
@@ -345,8 +353,8 @@ describe('StoreysSlice', () => {
         const swappedGround = store.storeys[groundFloor.id]
         const swappedFirst = store.storeys[firstFloor.id]
 
-        expect(swappedGround?.level).toBe(1)
-        expect(swappedFirst?.level).toBe(0)
+        expect(swappedGround.level).toBe(1)
+        expect(swappedFirst.level).toBe(0)
       })
 
       it('should do nothing if either storey does not exist', () => {
@@ -356,7 +364,7 @@ describe('StoreysSlice', () => {
         store.actions.swapStoreyLevels(groundFloor.id, 'non-existent' as StoreyId)
 
         const unchangedGround = store.storeys[groundFloor.id]
-        expect(unchangedGround?.level).toBe(originalLevel)
+        expect(unchangedGround.level).toBe(originalLevel)
       })
     })
 
@@ -374,8 +382,8 @@ describe('StoreysSlice', () => {
         const adjustedBasement = store.storeys[basementFloor.id]
         const adjustedGround = store.storeys[groundFloor.id]
 
-        expect(adjustedBasement?.level).toBe(0)
-        expect(adjustedGround?.level).toBe(1)
+        expect(adjustedBasement.level).toBe(0)
+        expect(adjustedGround.level).toBe(1)
       })
 
       it('should decrease all levels by 1', () => {
@@ -387,8 +395,8 @@ describe('StoreysSlice', () => {
         const adjustedGround = store.storeys[groundFloor.id]
         const adjustedFirst = store.storeys[firstFloor.id]
 
-        expect(adjustedGround?.level).toBe(-1)
-        expect(adjustedFirst?.level).toBe(0)
+        expect(adjustedGround.level).toBe(-1)
+        expect(adjustedFirst.level).toBe(0)
       })
 
       it('should throw error if adjustment would create invalid state', () => {
@@ -398,7 +406,9 @@ describe('StoreysSlice', () => {
         // This would result in levels 2, 3 which removes level 0
         // Note: The current implementation doesn't actually prevent this case
         // This test may need to be updated based on the actual validation logic
-        expect(() => store.actions.adjustAllLevels(2)).toThrow('Adjustment would remove floor 0, which is not allowed')
+        expect(() => {
+          store.actions.adjustAllLevels(2)
+        }).toThrow('Adjustment would remove floor 0, which is not allowed')
       })
     })
   })

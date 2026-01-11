@@ -56,7 +56,7 @@ function applyImportedModel(model: ParsedIfcModel): void {
     return
   }
 
-  let previousHeight = baseStorey.floorHeight ?? DEFAULT_STOREY_HEIGHT
+  let previousHeight = baseStorey.floorHeight
 
   const storeyIdMap = new Map<ImportedStorey, StoreyId>()
 
@@ -67,7 +67,7 @@ function applyImportedModel(model: ParsedIfcModel): void {
 
     let targetStoreyId: StoreyId
 
-    if (index === 0 && baseStorey) {
+    if (index === 0) {
       targetStoreyId = baseStorey.id
       actions.updateStoreyFloorHeight(targetStoreyId, resolvedHeight)
       actions.updateStoreyFloorAssembly(targetStoreyId, defaultFloorAssemblyId)
@@ -112,7 +112,6 @@ function applyImportedModel(model: ParsedIfcModel): void {
 
       candidate.segments.forEach((segment, index) => {
         const wallId = perimeter.wallIds[index]
-        if (!wallId) return
 
         if (segment.thickness && Number.isFinite(segment.thickness)) {
           actions.updatePerimeterWallThickness(wallId, segment.thickness)
@@ -157,10 +156,11 @@ function applyImportedModel(model: ParsedIfcModel): void {
     }
   })
 
-  const firstStorey = importedStoreys[0]
-  const firstStoreyId = firstStorey ? storeyIdMap.get(firstStorey) : undefined
-  if (firstStoreyId) {
-    actions.setActiveStoreyId(firstStoreyId)
+  if (importedStoreys.length > 0) {
+    const firstStoreyId = storeyIdMap.get(importedStoreys[0])
+    if (firstStoreyId != null) {
+      actions.setActiveStoreyId(firstStoreyId)
+    }
   }
 }
 

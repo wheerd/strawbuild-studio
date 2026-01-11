@@ -38,7 +38,7 @@ export function addWindows(perimeter: PerimeterWithGeometry, windowSpecs: Window
           centerOffsetFromWallStart: offset,
           width: windowWidth,
           height: windowSpec.height,
-          sillHeight: windowSpec.sillHeight || (windowSpec.height < 900 ? 1000 : 900)
+          sillHeight: windowSpec.sillHeight ?? (windowSpec.height < 900 ? 1000 : 900)
         })
       } catch (error) {
         console.warn(`Window ${index} (${windowSpec.type}) on wall ${windowSpec.wallIndex} failed:`, error)

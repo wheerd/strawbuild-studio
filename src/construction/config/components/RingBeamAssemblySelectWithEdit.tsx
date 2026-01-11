@@ -20,7 +20,9 @@ export function RingBeamAssemblySelectWithEdit(props: RingBeamAssemblySelectProp
         title={t($ => $.ringBeams.configure)}
         variant="ghost"
         size={props.size}
-        onClick={() => openConfiguration('ringbeams', props.value ?? undefined)}
+        onClick={() => {
+          openConfiguration('ringbeams', props.value ?? undefined)
+        }}
       >
         <Pencil1Icon />
       </IconButton>

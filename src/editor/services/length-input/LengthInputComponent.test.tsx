@@ -46,7 +46,7 @@ describe('LengthInputComponent', () => {
 
       render(<LengthInputComponent />)
 
-      const input = screen.getByRole('textbox')
+      const input = screen.getByRole<HTMLInputElement>('textbox')
       expect(input).toBeInTheDocument()
     })
 
@@ -76,7 +76,7 @@ describe('LengthInputComponent', () => {
 
       // Wait for re-render
       await waitFor(() => {
-        expect(screen.getByRole('textbox')).toBeInTheDocument()
+        expect(screen.getByRole<HTMLInputElement>('textbox')).toBeInTheDocument()
       })
     })
   })
@@ -92,7 +92,7 @@ describe('LengthInputComponent', () => {
 
       render(<LengthInputComponent />)
 
-      const input = screen.getByRole('textbox') as HTMLInputElement
+      const input = screen.getByRole<HTMLInputElement>('textbox')
       expect(input.value).toBe('0.5m') // formatLength converts 500mm to 0.5m
     })
 
@@ -106,7 +106,7 @@ describe('LengthInputComponent', () => {
 
       render(<LengthInputComponent />)
 
-      const input = screen.getByRole('textbox') as HTMLInputElement
+      const input = screen.getByRole<HTMLInputElement>('textbox')
       expect(input.placeholder).toBe('Enter length...')
     })
   })
@@ -125,7 +125,7 @@ describe('LengthInputComponent', () => {
       fireEvent.keyDown(document, { key: '5' })
 
       // Should now be visible with the typed character
-      const input = screen.getByRole('textbox') as HTMLInputElement
+      const input = screen.getByRole<HTMLInputElement>('textbox')
       expect(input).toBeInTheDocument()
       expect(input.value).toBe('5')
     })
@@ -133,14 +133,14 @@ describe('LengthInputComponent', () => {
     it('should show input on decimal point', () => {
       fireEvent.keyDown(document, { key: '.' })
 
-      const input = screen.getByRole('textbox') as HTMLInputElement
+      const input = screen.getByRole<HTMLInputElement>('textbox')
       expect(input.value).toBe('.')
     })
 
     it('should show input on minus sign', () => {
       fireEvent.keyDown(document, { key: '-' })
 
-      const input = screen.getByRole('textbox') as HTMLInputElement
+      const input = screen.getByRole<HTMLInputElement>('textbox')
       expect(input.value).toBe('-')
     })
 
@@ -170,15 +170,15 @@ describe('LengthInputComponent', () => {
 
       // Wait for component to render
       await waitFor(() => {
-        expect(screen.getByRole('textbox')).toBeInTheDocument()
+        expect(screen.getByRole<HTMLInputElement>('textbox')).toBeInTheDocument()
       })
 
       // Global keyboard events should not affect it
-      const initialValue = (screen.getByRole('textbox') as HTMLInputElement).value
+      const initialValue = screen.getByRole<HTMLInputElement>('textbox').value
       fireEvent.keyDown(document, { key: '5' })
 
       // Value should not change from global handler
-      expect((screen.getByRole('textbox') as HTMLInputElement).value).toBe(initialValue)
+      expect(screen.getByRole<HTMLInputElement>('textbox').value).toBe(initialValue)
     })
 
     it('should remove global handler when input becomes active', async () => {
@@ -189,7 +189,7 @@ describe('LengthInputComponent', () => {
 
       // Wait for input to be visible
       await waitFor(() => {
-        expect(screen.getByRole('textbox')).toBeInTheDocument()
+        expect(screen.getByRole<HTMLInputElement>('textbox')).toBeInTheDocument()
       })
 
       // Global keyboard events should not trigger again
@@ -223,7 +223,7 @@ describe('LengthInputComponent', () => {
     })
 
     it('should handle input changes', () => {
-      const input = screen.getByRole('textbox') as HTMLInputElement
+      const input = screen.getByRole<HTMLInputElement>('textbox')
 
       fireEvent.change(input, { target: { value: '100mm' } })
 
@@ -231,7 +231,7 @@ describe('LengthInputComponent', () => {
     })
 
     it('should handle Enter key to commit', () => {
-      const input = screen.getByRole('textbox') as HTMLInputElement
+      const input = screen.getByRole<HTMLInputElement>('textbox')
 
       fireEvent.change(input, { target: { value: '500' } })
       fireEvent.keyDown(input, { key: 'Enter' })
@@ -241,7 +241,7 @@ describe('LengthInputComponent', () => {
     })
 
     it('should handle Escape key to cancel', () => {
-      const input = screen.getByRole('textbox') as HTMLInputElement
+      const input = screen.getByRole<HTMLInputElement>('textbox')
 
       fireEvent.keyDown(input, { key: 'Escape' })
 
@@ -261,7 +261,7 @@ describe('LengthInputComponent', () => {
 
       render(<LengthInputComponent />)
 
-      const input = screen.getByRole('textbox') as HTMLInputElement
+      const input = screen.getByRole<HTMLInputElement>('textbox')
 
       // Wait for auto-focus to happen
       await new Promise(resolve => setTimeout(resolve, 10))
@@ -271,7 +271,7 @@ describe('LengthInputComponent', () => {
   })
 
   describe('blur behavior', () => {
-    it('should cancel when input loses focus', async () => {
+    it('should cancel when input loses focus', () => {
       const mockConfig = {
         position: { x: 100, y: 100 },
         showImmediately: true,
@@ -283,7 +283,7 @@ describe('LengthInputComponent', () => {
 
       render(<LengthInputComponent />)
 
-      const input = screen.getByRole('textbox')
+      const input = screen.getByRole<HTMLInputElement>('textbox')
 
       // Simulate blur event
       fireEvent.blur(input)

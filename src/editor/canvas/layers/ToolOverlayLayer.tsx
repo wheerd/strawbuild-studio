@@ -13,7 +13,7 @@ export function ToolOverlayLayer(): React.JSX.Element {
       <SelectionOverlay />
 
       {/* Tool overlay component  */}
-      {activeTool?.overlayComponent && <activeTool.overlayComponent tool={activeTool} />}
+      {activeTool.overlayComponent && <activeTool.overlayComponent tool={activeTool} />}
     </Layer>
   )
 }

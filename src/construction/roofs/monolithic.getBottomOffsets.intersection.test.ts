@@ -25,7 +25,7 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
         points: [newVec2(0, 0), newVec2(10000, 0), newVec2(10000, 5000), newVec2(0, 5000)]
       },
       overhangPolygon:
-        overhangPolygon ||
+        overhangPolygon ??
         ({
           points: [newVec2(-500, -500), newVec2(10500, -500), newVec2(10500, 5500), newVec2(-500, 5500)]
         } as any),

@@ -5,6 +5,7 @@ import type { MaterialId } from '@/construction/materials/material'
 import type { ConstructionModel } from '@/construction/model'
 import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
 import type { Length, LineSegment2D } from '@/shared/geometry'
+import { assertUnreachable } from '@/shared/utils'
 
 export interface RoofAssembly {
   construct: (roof: Roof, contexts: PerimeterConstructionContext[]) => ConstructionModel
@@ -83,11 +84,6 @@ export type HeightLine = (HeightJumpItem | HeightItem)[]
 // Validation
 
 export const validateRoofConfig = (config: RoofConfig): void => {
-  // Validate type
-  if (config.type !== 'monolithic' && config.type !== 'purlin') {
-    throw new Error(`Invalid roof type: ${(config as RoofConfig).type}`)
-  }
-
   const { layers } = config
 
   // Validate layer thicknesses match layer arrays
@@ -107,32 +103,37 @@ export const validateRoofConfig = (config: RoofConfig): void => {
   }
 
   // Type-specific validation
-  if (config.type === 'monolithic') {
-    if (config.thickness <= 0) {
-      throw new Error('Monolithic roof thickness must be positive')
-    }
-    if (!config.material) {
-      throw new Error('Monolithic roof must have a material')
-    }
-  } else if (config.type === 'purlin') {
-    // Validate purlin dimensions
-    if (config.thickness <= 0) {
-      throw new Error('Purlin roof thickness must be positive')
-    }
-    if (config.purlinHeight <= 0 || config.purlinWidth <= 0 || config.purlinSpacing <= 0) {
-      throw new Error('Purlin dimensions must be positive')
-    }
-    if (config.rafterWidth <= 0 || config.rafterSpacing <= 0) {
-      throw new Error('Rafter dimensions must be positive')
-    }
-    if (config.rafterSpacingMin > config.rafterSpacing || config.rafterSpacingMin < 0) {
-      throw new Error('Rafter min spacing must be between 0 and desired spacing')
-    }
-    if (config.ceilingSheathingThickness <= 0) {
-      throw new Error('Ceiling sheathing thickness must be positive')
-    }
-    if (config.deckingThickness <= 0) {
-      throw new Error('Decking thickness must be positive')
-    }
+  switch (config.type) {
+    case 'monolithic':
+      if (config.thickness <= 0) {
+        throw new Error('Monolithic roof thickness must be positive')
+      }
+      if (!config.material) {
+        throw new Error('Monolithic roof must have a material')
+      }
+      break
+    case 'purlin':
+      // Validate purlin dimensions
+      if (config.thickness <= 0) {
+        throw new Error('Purlin roof thickness must be positive')
+      }
+      if (config.purlinHeight <= 0 || config.purlinWidth <= 0 || config.purlinSpacing <= 0) {
+        throw new Error('Purlin dimensions must be positive')
+      }
+      if (config.rafterWidth <= 0 || config.rafterSpacing <= 0) {
+        throw new Error('Rafter dimensions must be positive')
+      }
+      if (config.rafterSpacingMin > config.rafterSpacing || config.rafterSpacingMin < 0) {
+        throw new Error('Rafter min spacing must be between 0 and desired spacing')
+      }
+      if (config.ceilingSheathingThickness <= 0) {
+        throw new Error('Ceiling sheathing thickness must be positive')
+      }
+      if (config.deckingThickness <= 0) {
+        throw new Error('Decking thickness must be positive')
+      }
+      break
+    default:
+      assertUnreachable(config, 'Invalid roof type')
   }
 }

@@ -73,7 +73,9 @@ function MonolithicRoofConfigForm({ config, onUpdate }: MonolithicRoofConfigForm
           </Label.Root>
           <LengthField
             value={config.thickness}
-            onChange={value => onUpdate({ ...config, thickness: value })}
+            onChange={value => {
+              onUpdate({ ...config, thickness: value })
+            }}
             unit="cm"
             min={0}
             step={10}
@@ -107,7 +109,9 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
           </Label.Root>
           <LengthField
             value={config.thickness}
-            onChange={value => onUpdate({ ...config, thickness: value })}
+            onChange={value => {
+              onUpdate({ ...config, thickness: value })
+            }}
             unit="cm"
             min={0}
             step={10}
@@ -125,7 +129,9 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             value={config.strawMaterial ?? null}
             allowEmpty
             emptyLabel={t($ => $.common.useGlobalStrawSettings)}
-            onValueChange={strawMaterial => onUpdate({ ...config, strawMaterial: strawMaterial ?? undefined })}
+            onValueChange={strawMaterial => {
+              onUpdate({ ...config, strawMaterial: strawMaterial ?? undefined })
+            }}
             size="1"
             preferredTypes={['strawbale']}
           />
@@ -162,7 +168,9 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
           </Label.Root>
           <LengthField
             value={config.purlinHeight}
-            onChange={value => onUpdate({ ...config, purlinHeight: value })}
+            onChange={value => {
+              onUpdate({ ...config, purlinHeight: value })
+            }}
             unit="cm"
             min={0}
             step={10}
@@ -178,7 +186,9 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
           </Label.Root>
           <LengthField
             value={config.purlinInset}
-            onChange={value => onUpdate({ ...config, purlinInset: value })}
+            onChange={value => {
+              onUpdate({ ...config, purlinInset: value })
+            }}
             unit="mm"
             min={0}
             size="1"
@@ -193,7 +203,9 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
           </Label.Root>
           <LengthField
             value={config.purlinWidth}
-            onChange={value => onUpdate({ ...config, purlinWidth: value })}
+            onChange={value => {
+              onUpdate({ ...config, purlinWidth: value })
+            }}
             unit="cm"
             min={0}
             step={10}
@@ -209,7 +221,9 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
           </Label.Root>
           <LengthField
             value={config.purlinSpacing}
-            onChange={value => onUpdate({ ...config, purlinSpacing: value })}
+            onChange={value => {
+              onUpdate({ ...config, purlinSpacing: value })
+            }}
             unit="cm"
             min={0}
             step={100}
@@ -248,7 +262,9 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
           </Label.Root>
           <LengthField
             value={config.rafterWidth}
-            onChange={value => onUpdate({ ...config, rafterWidth: value })}
+            onChange={value => {
+              onUpdate({ ...config, rafterWidth: value })
+            }}
             unit="cm"
             min={0}
             step={10}
@@ -264,7 +280,9 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
           </Label.Root>
           <LengthField
             value={config.rafterSpacingMin}
-            onChange={value => onUpdate({ ...config, rafterSpacingMin: value })}
+            onChange={value => {
+              onUpdate({ ...config, rafterSpacingMin: value })
+            }}
             unit="cm"
             min={0}
             step={10}
@@ -280,7 +298,9 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
           </Label.Root>
           <LengthField
             value={config.rafterSpacing}
-            onChange={value => onUpdate({ ...config, rafterSpacing: value })}
+            onChange={value => {
+              onUpdate({ ...config, rafterSpacing: value })
+            }}
             unit="cm"
             min={0}
             step={100}
@@ -319,7 +339,9 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
           </Label.Root>
           <LengthField
             value={config.deckingThickness}
-            onChange={value => onUpdate({ ...config, deckingThickness: value })}
+            onChange={value => {
+              onUpdate({ ...config, deckingThickness: value })
+            }}
             unit="mm"
             min={0}
             size="1"
@@ -357,7 +379,9 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
           </Label.Root>
           <LengthField
             value={config.ceilingSheathingThickness}
-            onChange={value => onUpdate({ ...config, ceilingSheathingThickness: value })}
+            onChange={value => {
+              onUpdate({ ...config, ceilingSheathingThickness: value })
+            }}
             unit="mm"
             min={0}
             size="1"
@@ -443,11 +467,21 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
         title={t($ => $.roofs.layers.insideLayers)}
         layers={config.layers.insideLayers}
         measurementInfo={<RoofMeasurementInfo highlightedPart="roofBottomLayers" />}
-        onAddLayer={layer => addRoofAssemblyInsideLayer(assemblyId, layer)}
-        onReplaceLayers={layers => setRoofAssemblyInsideLayers(assemblyId, layers)}
-        onUpdateLayer={(index, updates) => updateRoofAssemblyInsideLayer(assemblyId, index, updates)}
-        onRemoveLayer={index => removeRoofAssemblyInsideLayer(assemblyId, index)}
-        onMoveLayer={(fromIndex, toIndex) => moveRoofAssemblyInsideLayer(assemblyId, fromIndex, toIndex)}
+        onAddLayer={layer => {
+          addRoofAssemblyInsideLayer(assemblyId, layer)
+        }}
+        onReplaceLayers={layers => {
+          setRoofAssemblyInsideLayers(assemblyId, layers)
+        }}
+        onUpdateLayer={(index, updates) => {
+          updateRoofAssemblyInsideLayer(assemblyId, index, updates)
+        }}
+        onRemoveLayer={index => {
+          removeRoofAssemblyInsideLayer(assemblyId, index)
+        }}
+        onMoveLayer={(fromIndex, toIndex) => {
+          moveRoofAssemblyInsideLayer(assemblyId, fromIndex, toIndex)
+        }}
         addLabel={t($ => $.roofs.addInsideLayer)}
         emptyHint={t($ => $.roofs.noInsideLayers)}
         layerPresets={CEILING_LAYER_PRESETS}
@@ -462,13 +496,21 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
         title={t($ => $.roofs.topLayers)}
         layers={displayedTopLayers}
         measurementInfo={<RoofMeasurementInfo highlightedPart="roofTopLayers" />}
-        onAddLayer={layer => addRoofAssemblyTopLayer(assemblyId, layer)}
-        onReplaceLayers={layers => setRoofAssemblyTopLayers(assemblyId, layers)}
-        onUpdateLayer={(index, updates) => updateRoofAssemblyTopLayer(assemblyId, mapTopIndex(index), updates)}
-        onRemoveLayer={index => removeRoofAssemblyTopLayer(assemblyId, mapTopIndex(index))}
-        onMoveLayer={(fromIndex, toIndex) =>
+        onAddLayer={layer => {
+          addRoofAssemblyTopLayer(assemblyId, layer)
+        }}
+        onReplaceLayers={layers => {
+          setRoofAssemblyTopLayers(assemblyId, layers)
+        }}
+        onUpdateLayer={(index, updates) => {
+          updateRoofAssemblyTopLayer(assemblyId, mapTopIndex(index), updates)
+        }}
+        onRemoveLayer={index => {
+          removeRoofAssemblyTopLayer(assemblyId, mapTopIndex(index))
+        }}
+        onMoveLayer={(fromIndex, toIndex) => {
           moveRoofAssemblyTopLayer(assemblyId, mapTopIndex(fromIndex), mapTopIndex(toIndex))
-        }
+        }}
         addLabel={t($ => $.roofs.addTopLayer)}
         emptyHint={t($ => $.roofs.noTopLayers)}
         layerPresets={ROOF_LAYER_PRESETS}
@@ -483,11 +525,21 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
         title={t($ => $.roofs.layers.overhangLayers)}
         layers={config.layers.overhangLayers}
         measurementInfo={<RoofMeasurementInfo highlightedPart="overhangBottomLayers" />}
-        onAddLayer={layer => addRoofAssemblyOverhangLayer(assemblyId, layer)}
-        onReplaceLayers={layers => setRoofAssemblyOverhangLayers(assemblyId, layers)}
-        onUpdateLayer={(index, updates) => updateRoofAssemblyOverhangLayer(assemblyId, index, updates)}
-        onRemoveLayer={index => removeRoofAssemblyOverhangLayer(assemblyId, index)}
-        onMoveLayer={(fromIndex, toIndex) => moveRoofAssemblyOverhangLayer(assemblyId, fromIndex, toIndex)}
+        onAddLayer={layer => {
+          addRoofAssemblyOverhangLayer(assemblyId, layer)
+        }}
+        onReplaceLayers={layers => {
+          setRoofAssemblyOverhangLayers(assemblyId, layers)
+        }}
+        onUpdateLayer={(index, updates) => {
+          updateRoofAssemblyOverhangLayer(assemblyId, index, updates)
+        }}
+        onRemoveLayer={index => {
+          removeRoofAssemblyOverhangLayer(assemblyId, index)
+        }}
+        onMoveLayer={(fromIndex, toIndex) => {
+          moveRoofAssemblyOverhangLayer(assemblyId, fromIndex, toIndex)
+        }}
         addLabel={t($ => $.roofs.addOverhangLayer)}
         emptyHint={t($ => $.roofs.noOverhangLayers)}
         layerPresets={[]}
@@ -512,14 +564,18 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
 
   const nameInput = useDebouncedInput(
     nameKey ? t(nameKey) : assembly.name,
-    (name: string) => updateRoofAssemblyName(assembly.id, name),
+    (name: string) => {
+      updateRoofAssemblyName(assembly.id, name)
+    },
     {
       debounceMs: 1000
     }
   )
 
   const updateConfig = useCallback(
-    (updates: Partial<RoofConfig>) => updateRoofAssemblyConfig(assembly.id, updates),
+    (updates: Partial<RoofConfig>) => {
+      updateRoofAssemblyConfig(assembly.id, updates)
+    },
     [assembly.id, updateRoofAssemblyConfig]
   )
 
@@ -545,7 +601,9 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
           </Label.Root>
           <TextField.Root
             value={nameInput.value}
-            onChange={e => nameInput.handleChange(e.target.value)}
+            onChange={e => {
+              nameInput.handleChange(e.target.value)
+            }}
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
             placeholder={t($ => $.common.placeholders.name)}
@@ -710,6 +768,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
 
     if (roofAssemblies.length > 1) {
       const nextAssembly = roofAssemblies[currentIndex + 1] ?? roofAssemblies[currentIndex - 1]
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       setSelectedAssemblyId(nextAssembly?.id ?? null)
     } else {
       setSelectedAssemblyId(null)
@@ -747,13 +806,21 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
                 </IconButton>
               </DropdownMenu.Trigger>
               <DropdownMenu.Content>
-                <DropdownMenu.Item onSelect={() => handleAddNew('monolithic')}>
+                <DropdownMenu.Item
+                  onSelect={() => {
+                    handleAddNew('monolithic')
+                  }}
+                >
                   <Flex align="center" gap="1">
                     <SquareIcon />
                     {t($ => $.roofs.types.monolithic)}
                   </Flex>
                 </DropdownMenu.Item>
-                <DropdownMenu.Item onSelect={() => handleAddNew('purlin')}>
+                <DropdownMenu.Item
+                  onSelect={() => {
+                    handleAddNew('purlin')
+                  }}
+                >
                   <Flex align="center" gap="1">
                     <ComponentInstanceIcon />
                     {t($ => $.roofs.types.purlin)}
@@ -837,7 +904,9 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
             </Label.Root>
             <RoofAssemblySelect
               value={defaultAssemblyId}
-              onValueChange={value => setDefaultRoofAssembly(value)}
+              onValueChange={value => {
+                setDefaultRoofAssembly(value)
+              }}
               placeholder={t($ => $.common.placeholders.selectDefault)}
               size="2"
             />

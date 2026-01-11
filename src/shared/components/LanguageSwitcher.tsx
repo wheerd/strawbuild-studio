@@ -30,7 +30,7 @@ export function LanguageSwitcher(): React.JSX.Element {
   const currentLanguage = LANGUAGES.find(lang => lang.code === i18n.language) ?? LANGUAGES[0]
 
   const changeLanguage = (languageCode: string) => {
-    i18n.changeLanguage(languageCode)
+    void i18n.changeLanguage(languageCode)
   }
 
   return (
@@ -49,7 +49,12 @@ export function LanguageSwitcher(): React.JSX.Element {
         </IconButton>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
-        <DropdownMenu.RadioGroup value={i18n.language} onValueChange={value => changeLanguage(value)}>
+        <DropdownMenu.RadioGroup
+          value={i18n.language}
+          onValueChange={value => {
+            changeLanguage(value)
+          }}
+        >
           {LANGUAGES.map(lang => (
             <DropdownMenu.RadioItem key={lang.code} value={lang.code}>
               {lang.flag} {lang.name}

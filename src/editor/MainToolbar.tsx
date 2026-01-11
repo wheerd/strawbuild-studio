@@ -75,7 +75,9 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
                           aria-label={t($ => $.tools[toolInfo.nameKey])}
                           size="2"
                           variant={activeToolId === toolId ? 'solid' : 'surface'}
-                          onClick={() => handleToolSelect(toolId)}
+                          onClick={() => {
+                            handleToolSelect(toolId)
+                          }}
                         >
                           <toolInfo.iconComponent width={20} height={20} aria-hidden />
                         </IconButton>
@@ -98,7 +100,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
                 })
               : t($ => $.constructionPlanForActiveStorey)
           }
-          factory={async () => constructStorey(activeStoreyId)}
+          factory={() => Promise.resolve(constructStorey(activeStoreyId))}
           refreshKey={[activeStoreyId, activePerimiters]}
           trigger={
             <IconButton title={t($ => $.viewConstructionPlan)} size="2" variant="solid">
@@ -108,7 +110,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
         />
         <ConstructionPartsListModal
           title={t($ => $.partsListForEntireModel)}
-          constructionModelFactory={async () => constructModel()}
+          constructionModelFactory={() => Promise.resolve(constructModel())}
           refreshKey={[storeys, perimeters]}
           trigger={
             <IconButton title={t($ => $.viewPartsList)} size="2" variant="solid">
@@ -117,7 +119,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
           }
         />
         <ConstructionViewer3DModal
-          constructionModelFactory={async () => constructModel()}
+          constructionModelFactory={() => Promise.resolve(constructModel())}
           refreshKey={[storeys, perimeters]}
           trigger={
             <IconButton title={t($ => $.view3DConstruction)} size="2" variant="solid">
@@ -129,7 +131,9 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
           title={t($ => $.configuration)}
           variant="surface"
           size="2"
-          onClick={() => openConfiguration('materials')}
+          onClick={() => {
+            openConfiguration('materials')
+          }}
         >
           <GearIcon width={20} height={20} aria-hidden />
         </IconButton>

@@ -42,10 +42,6 @@ export function createRectangularPerimeter(): void {
     const defaultBaseId = configStore.getDefaultBaseRingBeamAssemblyId()
     const defaultTopId = configStore.getDefaultTopRingBeamAssemblyId()
     const defaultAssemblyId = configStore.getDefaultWallAssemblyId()
-    if (!defaultAssemblyId) {
-      console.error('No default wall assembly available')
-      return
-    }
 
     // Add the perimeter to the store with default assemblies
     const newPerimeter = modelStore.addPerimeter(
@@ -58,7 +54,7 @@ export function createRectangularPerimeter(): void {
       'inside'
     )
 
-    if (newPerimeter && newPerimeter.wallIds.length > 0) {
+    if (newPerimeter.wallIds.length > 0) {
       // Add main entrance door on the bottom wall and a back door on top wall
       const doorSpecs: DoorSpec[] = [
         {

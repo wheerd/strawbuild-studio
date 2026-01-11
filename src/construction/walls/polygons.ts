@@ -61,11 +61,9 @@ const computeCornerIntersection = (
     offsetDistance
   )
 
-  if (baseLine && referenceLine) {
-    const intersection = lineIntersection(baseLine, referenceLine)
-    if (intersection) {
-      return intersection
-    }
+  const intersection = lineIntersection(baseLine, referenceLine)
+  if (intersection) {
+    return intersection
   }
 
   return corner === 'start'

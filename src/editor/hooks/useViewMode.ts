@@ -20,16 +20,21 @@ const useViewModeStore = create<ViewModeStore>()(
     set => ({
       mode: 'walls',
       actions: {
-        setMode: mode => set(state => (state.mode === mode ? {} : { mode }), false, 'view-mode/set'),
-        toggleMode: () =>
+        setMode: mode => {
+          set(state => (state.mode === mode ? {} : { mode }), false, 'view-mode/set')
+        },
+        toggleMode: () => {
           set(
             state => ({
               mode: state.mode === 'walls' ? 'floors' : 'walls'
             }),
             false,
             'view-mode/toggle'
-          ),
-        ensureMode: mode => set(state => (state.mode === mode ? {} : { mode }), false, 'view-mode/ensure')
+          )
+        },
+        ensureMode: mode => {
+          set(state => (state.mode === mode ? {} : { mode }), false, 'view-mode/ensure')
+        }
       }
     }),
     { name: 'view-mode-store' }

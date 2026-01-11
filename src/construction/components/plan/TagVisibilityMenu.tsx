@@ -35,8 +35,12 @@ function collectTagsFromModel(model: ConstructionModel): Map<TagCategoryId, Tag[
   }
 
   model.elements.forEach(collectFromElement)
-  model.areas.forEach(area => addTags(area.tags))
-  model.measurements.forEach(m => addTags(m.tags))
+  model.areas.forEach(area => {
+    addTags(area.tags)
+  })
+  model.measurements.forEach(m => {
+    addTags(m.tags)
+  })
 
   // Group by category
   const categoryMap = new Map<TagCategoryId, Tag[]>()
@@ -76,7 +80,7 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
 
   // Get category IDs (sorted alphabetically by ID for now - will be sorted by translated label in render)
   const sortedCategories = useMemo(() => {
-    return Array.from(tagsByCategory.entries()).sort(([catA], [catB]) => String(catA).localeCompare(String(catB)))
+    return Array.from(tagsByCategory.entries()).sort(([catA], [catB]) => catA.localeCompare(catB))
   }, [tagsByCategory])
 
   const renderVisibilityIcon = (state: 'visible' | 'partial' | 'hidden') => {
@@ -122,7 +126,7 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
           const categoryState = getCategoryVisibilityState(categoryId, tagIds)
 
           return (
-            <DropdownMenu.Sub key={String(categoryId)}>
+            <DropdownMenu.Sub key={categoryId}>
               <DropdownMenu.SubTrigger>
                 <Flex align="center" justify="between" width="100%" gap="2">
                   <Text size="1">
@@ -133,7 +137,11 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
               </DropdownMenu.SubTrigger>
               <DropdownMenu.SubContent>
                 {/* Category-wide toggle */}
-                <DropdownMenu.Item onSelect={e => e.preventDefault()}>
+                <DropdownMenu.Item
+                  onSelect={e => {
+                    e.preventDefault()
+                  }}
+                >
                   <Flex
                     align="center"
                     justify="between"
@@ -155,7 +163,12 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
                 <DropdownMenu.Separator />
                 {/* Individual tag toggles */}
                 {tags.map(tag => (
-                  <DropdownMenu.Item key={String(tag.id)} onSelect={e => e.preventDefault()}>
+                  <DropdownMenu.Item
+                    key={tag.id}
+                    onSelect={e => {
+                      e.preventDefault()
+                    }}
+                  >
                     <Flex
                       align="center"
                       justify="between"

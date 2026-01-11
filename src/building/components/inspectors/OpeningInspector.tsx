@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
 import type { OpeningType } from '@/building/model'
-import type { OpeningAssemblyId, OpeningId } from '@/building/model/ids'
+import type { OpeningId } from '@/building/model/ids'
 import {
   useModelActions,
   usePerimeterById,
@@ -103,13 +103,13 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
   )
 
   const getTopHeightDisplayValue = useCallback(() => {
-    const sill = opening?.sillHeight ?? 0
-    const height = opening?.height ?? 0
+    const sill = opening.sillHeight ?? 0
+    const height = opening.height
     if (dimensionInputMode === 'fitting') {
       return sill + height
     }
     return sill + height - openingConfig.padding
-  }, [opening?.sillHeight, opening?.height, openingConfig, dimensionInputMode])
+  }, [opening.sillHeight, opening.height, openingConfig, dimensionInputMode])
 
   const convertTopHeightInput = useCallback(
     (value: number) => {
@@ -139,8 +139,6 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
   }, [removeWallOpening, openingId, select, t])
 
   const handleFitToView = useCallback(() => {
-    if (!wall || !opening) return
-
     // Calculate opening polygon (same as OpeningShape.tsx)
     const insideStart = wall.insideLine.start
     const outsideStart = wall.outsideLine.start
@@ -195,9 +193,9 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
           </Flex>
           <SegmentedControl.Root
             value={opening.openingType}
-            onValueChange={(value: OpeningType) =>
+            onValueChange={(value: OpeningType) => {
               handleTypeChange({ target: { value } } as React.ChangeEvent<HTMLSelectElement>)
-            }
+            }}
             size="2"
           >
             <SegmentedControl.Item value="door">
@@ -244,7 +242,9 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
           </Flex>
           <SegmentedControl.Root
             value={dimensionInputMode}
-            onValueChange={(value: 'fitting' | 'finished') => setDimensionInputMode(value)}
+            onValueChange={(value: 'fitting' | 'finished') => {
+              setDimensionInputMode(value)
+            }}
             size="1"
           >
             <SegmentedControl.Item value="fitting">{t($ => $.opening.dimensionModeFitting)}</SegmentedControl.Item>
@@ -271,7 +271,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
 
           {/* Row 1, Column 2: Width Input */}
           <LengthField
-            value={getDisplayValue(opening?.width || 0, 'width')}
+            value={getDisplayValue(opening.width || 0, 'width')}
             onCommit={value => {
               const fittingValue = convertToFittedValue(value, 'width')
               updateWallOpening(openingId, { width: fittingValue })
@@ -282,8 +282,12 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             step={100}
             size="1"
             style={{ width: '80px' }}
-            onFocus={() => setFocusedField('width')}
-            onBlur={() => setFocusedField(undefined)}
+            onFocus={() => {
+              setFocusedField('width')
+            }}
+            onBlur={() => {
+              setFocusedField(undefined)
+            }}
           />
 
           {/* Row 1, Column 3: Height Label */}
@@ -295,7 +299,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
 
           {/* Row 1, Column 4: Height Input */}
           <LengthField
-            value={getDisplayValue(opening?.height || 0, 'height')}
+            value={getDisplayValue(opening.height || 0, 'height')}
             onCommit={value => {
               const fittingValue = convertToFittedValue(value, 'height')
               updateWallOpening(openingId, { height: fittingValue })
@@ -306,8 +310,12 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             step={100}
             size="1"
             style={{ width: '80px' }}
-            onFocus={() => setFocusedField('height')}
-            onBlur={() => setFocusedField(undefined)}
+            onFocus={() => {
+              setFocusedField('height')
+            }}
+            onBlur={() => {
+              setFocusedField(undefined)
+            }}
           />
 
           {/* Row 2, Column 1: Sill Height Label */}
@@ -319,7 +327,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
 
           {/* Row 2, Column 2: Sill Height Input */}
           <LengthField
-            value={getDisplayValue(opening?.sillHeight || 0, 'sillHeight')}
+            value={getDisplayValue(opening.sillHeight ?? 0, 'sillHeight')}
             onCommit={value => {
               const fittingValue = convertToFittedValue(value, 'sillHeight')
               updateWallOpening(openingId, {
@@ -332,8 +340,12 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             step={100}
             size="1"
             style={{ width: '80px' }}
-            onFocus={() => setFocusedField('sillHeight')}
-            onBlur={() => setFocusedField(undefined)}
+            onFocus={() => {
+              setFocusedField('sillHeight')
+            }}
+            onBlur={() => {
+              setFocusedField(undefined)
+            }}
           />
 
           {/* Row 2, Column 3: Top Height Label */}
@@ -348,18 +360,22 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             value={getTopHeightDisplayValue()}
             onCommit={value => {
               const finishedTopHeight = convertTopHeightInput(value)
-              const currentSillHeight = opening?.sillHeight || 0
+              const currentSillHeight = opening.sillHeight ?? 0
               const newOpeningHeight = Math.max(100, finishedTopHeight - currentSillHeight)
               updateWallOpening(openingId, { height: newOpeningHeight })
             }}
             unit="cm"
-            min={Math.max(opening?.sillHeight || 0, 100)}
+            min={Math.max(opening.sillHeight ?? 0, 100)}
             max={5000}
             step={100}
             size="1"
             style={{ width: '80px' }}
-            onFocus={() => setFocusedField('topHeight')}
-            onBlur={() => setFocusedField(undefined)}
+            onFocus={() => {
+              setFocusedField('topHeight')
+            }}
+            onBlur={() => {
+              setFocusedField(undefined)
+            }}
           />
         </Grid>
       </Flex>
@@ -379,7 +395,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
           value={opening.openingAssemblyId}
           onValueChange={value => {
             updateWallOpening(openingId, {
-              openingAssemblyId: value as OpeningAssemblyId | undefined
+              openingAssemblyId: value
             })
           }}
           allowDefault

@@ -25,6 +25,7 @@ import {
   unionPolygons,
   wouldClosingPolygonSelfIntersect
 } from '@/shared/geometry/polygon'
+import { partialMock } from '@/test/helpers'
 
 vi.mock('@/shared/geometry/clipperInstance', () => {
   return {
@@ -353,12 +354,12 @@ describe('polygon helpers using Clipper', () => {
   })
 
   it('offsetPolygon delegates to InflatePathsD and unwraps points', () => {
-    const inflatedPath = { delete: vi.fn() }
-    const inflatedPaths = {
+    const inflatedPath = partialMock<PathD>({ delete: vi.fn() })
+    const inflatedPaths = partialMock<PathsD>({
       get: vi.fn(() => inflatedPath),
       size: vi.fn(() => 1),
       delete: vi.fn()
-    } as any as PathsD
+    })
     const module = mockClipperModule({ InflatePathsD: vi.fn((_1, _2, _3, _4, _5, _6, _7) => inflatedPaths) })
     getClipperModuleMock.mockReturnValue(module)
     const pathStub = { delete: vi.fn() }

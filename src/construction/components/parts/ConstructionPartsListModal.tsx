@@ -68,7 +68,9 @@ export function ConstructionPartsListModal({
     <FullScreenModal open={isOpen} onOpenChange={handleOpenChange} title={title ?? defaultTitle} trigger={trigger}>
       <Tabs.Root
         value={activeTab}
-        onValueChange={value => setActiveTab(value as 'materials' | 'modules')}
+        onValueChange={value => {
+          setActiveTab(value as 'materials' | 'modules')
+        }}
         className="flex flex-col h-full -mt-2"
       >
         <div className="flex-shrink-0">

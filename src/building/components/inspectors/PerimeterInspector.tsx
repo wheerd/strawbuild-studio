@@ -135,23 +135,6 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
   const baseRingBeamState = useMemo(() => detectMixedRingBeams(walls, 'base'), [walls])
   const topRingBeamState = useMemo(() => detectMixedRingBeams(walls, 'top'), [walls])
 
-  // If perimeter not found, show error
-  if (!perimeter) {
-    return (
-      <Box p="2">
-        <Callout.Root color="red">
-          <Callout.Text>
-            <Text weight="bold">{t($ => $.perimeter.notFound)}</Text>
-            <br />
-            {t($ => $.perimeter.notFoundMessage, {
-              id: selectedId
-            })}
-          </Callout.Text>
-        </Callout.Root>
-      </Box>
-    )
-  }
-
   const totalInnerPerimeter = polygonPerimeter(perimeter.innerPolygon)
   const totalOuterPerimeter = polygonPerimeter(perimeter.outerPolygon)
   const totalInnerArea = calculatePolygonArea(perimeter.innerPolygon)
@@ -160,7 +143,6 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
   const hasNonStandardAngles = corners.some(corner => corner.interiorAngle % 90 !== 0)
 
   const handleFitToView = useCallback(() => {
-    if (!perimeter) return
     const bounds = Bounds2D.fromPoints(perimeter.outerPolygon.points)
     viewportActions.fitToView(bounds)
   }, [perimeter, viewportActions])
@@ -178,8 +160,6 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
 
   const handleAddRoof = useCallback(
     (roofType: RoofType) => {
-      if (!perimeter) return
-
       // Create polygon from perimeter outer points
       const polygon = perimeter.outerPolygon
 
@@ -209,10 +189,8 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
         selectedId
       )
 
-      if (newRoof) {
-        setMode('roofs')
-        replaceSelection([newRoof.id])
-      }
+      setMode('roofs')
+      replaceSelection([newRoof.id])
     },
     [perimeter, selectedId, addRoof, setMode]
   )
@@ -247,7 +225,9 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
           <SegmentedControl.Root
             size="1"
             value={perimeter.referenceSide}
-            onValueChange={value => setPerimeterReferenceSide(perimeter.id, value as PerimeterReferenceSide)}
+            onValueChange={value => {
+              setPerimeterReferenceSide(perimeter.id, value as PerimeterReferenceSide)
+            }}
           >
             <SegmentedControl.Item value="inside">{t($ => $.perimeter.referenceSideInside)}</SegmentedControl.Item>
             <SegmentedControl.Item value="outside">{t($ => $.perimeter.referenceSideOutside)}</SegmentedControl.Item>
@@ -271,7 +251,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
         <Flex direction="row" gap="3" pt="1" align="center" justify="center">
           <TopDownPlanModal
             title={t($ => $.perimeter.constructionPlanTitle)}
-            factory={async () => constructPerimeter(perimeter)}
+            factory={() => Promise.resolve(constructPerimeter(perimeter))}
             refreshKey={perimeter}
             trigger={
               <IconButton title={t($ => $.perimeter.viewConstructionPlan)} size="3">
@@ -280,7 +260,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             }
           />
           <ConstructionViewer3DModal
-            constructionModelFactory={async () => constructPerimeter(perimeter)}
+            constructionModelFactory={() => Promise.resolve(constructPerimeter(perimeter))}
             refreshKey={perimeter}
             trigger={
               <IconButton title={t($ => $.perimeter.view3DConstruction)} size="3" variant="outline">
@@ -341,9 +321,12 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
               </Flex>
               <LengthField
                 id="perimeter-thickness"
-                value={thicknessState.value as Length}
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                value={thicknessState.value!}
                 placeholder={thicknessState.isMixed ? t($ => $.perimeter.mixedPlaceholder) : undefined}
-                onCommit={value => updateAllPerimeterWallsThickness(selectedId, value)}
+                onCommit={value => {
+                  updateAllPerimeterWallsThickness(selectedId, value)
+                }}
                 min={50}
                 max={1500}
                 step={10}
@@ -452,10 +435,18 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                 </IconButton>
               </DropdownMenu.Trigger>
               <DropdownMenu.Content>
-                <DropdownMenu.Item onClick={() => handleAddRoof('gable')}>
+                <DropdownMenu.Item
+                  onClick={() => {
+                    handleAddRoof('gable')
+                  }}
+                >
                   {t($ => $.perimeter.addGableRoof)}
                 </DropdownMenu.Item>
-                <DropdownMenu.Item onClick={() => handleAddRoof('shed')}>
+                <DropdownMenu.Item
+                  onClick={() => {
+                    handleAddRoof('shed')
+                  }}
+                >
                   {t($ => $.perimeter.addShedRoof)}
                 </DropdownMenu.Item>
               </DropdownMenu.Content>

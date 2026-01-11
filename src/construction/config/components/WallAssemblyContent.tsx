@@ -79,7 +79,9 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
           </Label.Root>
           <LengthField
             value={config.desiredPostSpacing}
-            onChange={value => onUpdate({ ...config, desiredPostSpacing: value })}
+            onChange={value => {
+              onUpdate({ ...config, desiredPostSpacing: value })
+            }}
             unit="mm"
             size="1"
             min={config.minStrawSpace}
@@ -95,7 +97,9 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
           </Label.Root>
           <LengthField
             value={config.maxPostSpacing}
-            onChange={value => onUpdate({ ...config, maxPostSpacing: value })}
+            onChange={value => {
+              onUpdate({ ...config, maxPostSpacing: value })
+            }}
             unit="mm"
             size="1"
             min={config.desiredPostSpacing}
@@ -110,7 +114,9 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
           </Label.Root>
           <LengthField
             value={config.minStrawSpace}
-            onChange={value => onUpdate({ ...config, minStrawSpace: value })}
+            onChange={value => {
+              onUpdate({ ...config, minStrawSpace: value })
+            }}
             unit="mm"
             size="1"
             min={0}
@@ -128,7 +134,9 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
             value={config.strawMaterial ?? null}
             allowEmpty
             emptyLabel={t($ => $.common.useGlobalStrawSettings)}
-            onValueChange={strawMaterial => onUpdate({ ...config, strawMaterial: strawMaterial ?? undefined })}
+            onValueChange={strawMaterial => {
+              onUpdate({ ...config, strawMaterial: strawMaterial ?? undefined })
+            }}
             size="1"
             preferredTypes={['strawbale']}
           />
@@ -148,18 +156,27 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
               value={config.infillMaterial ?? null}
               allowEmpty
               emptyLabel={t($ => $.walls.noInfillMaterial)}
-              onValueChange={infillMaterial => onUpdate({ ...config, infillMaterial: infillMaterial ?? undefined })}
+              onValueChange={infillMaterial => {
+                onUpdate({ ...config, infillMaterial: infillMaterial ?? undefined })
+              }}
               size="1"
             />
           </Flex>
         </Label.Root>
       </Grid>
       <Separator size="4" />
-      <PostsConfigSection posts={config.posts} onUpdate={posts => onUpdate({ ...config, posts })} />
+      <PostsConfigSection
+        posts={config.posts}
+        onUpdate={posts => {
+          onUpdate({ ...config, posts })
+        }}
+      />
       <Separator size="4" />
       <TriangularBattensConfigSection
         triangularBattens={config.triangularBattens}
-        onUpdate={triangularBattens => onUpdate({ ...config, triangularBattens })}
+        onUpdate={triangularBattens => {
+          onUpdate({ ...config, triangularBattens })
+        }}
       />
     </Flex>
   )
@@ -215,7 +232,14 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
             {t($ => $.common.width)}
           </Text>
         </Label.Root>
-        <LengthField value={posts.width} onChange={value => onUpdate({ ...posts, width: value })} unit="mm" size="1" />
+        <LengthField
+          value={posts.width}
+          onChange={value => {
+            onUpdate({ ...posts, width: value })
+          }}
+          unit="mm"
+          size="1"
+        />
 
         {posts.type === 'double' && (
           <>
@@ -226,7 +250,9 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
             </Label.Root>
             <LengthField
               value={posts.thickness}
-              onChange={value => onUpdate({ ...posts, thickness: value })}
+              onChange={value => {
+                onUpdate({ ...posts, thickness: value })
+              }}
               unit="mm"
               size="1"
             />
@@ -298,7 +324,9 @@ function TriangularBattensConfigSection({
         </Label.Root>
         <LengthField
           value={triangularBattens.size}
-          onChange={value => onUpdate({ ...triangularBattens, size: value })}
+          onChange={value => {
+            onUpdate({ ...triangularBattens, size: value })
+          }}
           unit="mm"
           size="1"
         />
@@ -310,7 +338,9 @@ function TriangularBattensConfigSection({
         </Label.Root>
         <LengthField
           value={triangularBattens.minLength}
-          onChange={value => onUpdate({ ...triangularBattens, minLength: value })}
+          onChange={value => {
+            onUpdate({ ...triangularBattens, minLength: value })
+          }}
           unit="mm"
           size="1"
         />
@@ -338,7 +368,9 @@ function TriangularBattensConfigSection({
           <Flex gap="2" align="center">
             <Checkbox
               checked={triangularBattens.inside}
-              onCheckedChange={checked => onUpdate({ ...triangularBattens, inside: checked === true })}
+              onCheckedChange={checked => {
+                onUpdate({ ...triangularBattens, inside: checked === true })
+              }}
             />
             <Text size="1" weight="medium">
               {t($ => $.walls.battenInside)}
@@ -350,7 +382,9 @@ function TriangularBattensConfigSection({
           <Flex gap="2" align="center">
             <Checkbox
               checked={triangularBattens.outside}
-              onCheckedChange={checked => onUpdate({ ...triangularBattens, outside: checked === true })}
+              onCheckedChange={checked => {
+                onUpdate({ ...triangularBattens, outside: checked === true })
+              }}
             />
             <Text size="1" weight="medium">
               {t($ => $.walls.battenOutside)}
@@ -425,7 +459,9 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
         </Label.Root>
         <LengthField
           value={module.minWidth}
-          onChange={value => onUpdate({ ...module, minWidth: value })}
+          onChange={value => {
+            onUpdate({ ...module, minWidth: value })
+          }}
           unit="mm"
           size="1"
         />
@@ -437,7 +473,9 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
         </Label.Root>
         <LengthField
           value={module.maxWidth}
-          onChange={value => onUpdate({ ...module, maxWidth: value })}
+          onChange={value => {
+            onUpdate({ ...module, maxWidth: value })
+          }}
           unit="mm"
           size="1"
         />
@@ -449,7 +487,9 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
         </Label.Root>
         <LengthField
           value={module.frameThickness}
-          onChange={value => onUpdate({ ...module, frameThickness: value })}
+          onChange={value => {
+            onUpdate({ ...module, frameThickness: value })
+          }}
           unit="mm"
           size="1"
         />
@@ -463,7 +503,9 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
             </Label.Root>
             <LengthField
               value={module.frameWidth}
-              onChange={value => onUpdate({ ...module, frameWidth: value })}
+              onChange={value => {
+                onUpdate({ ...module, frameWidth: value })
+              }}
               unit="mm"
               size="1"
             />
@@ -475,7 +517,9 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
             </Label.Root>
             <LengthField
               value={module.spacerSize}
-              onChange={value => onUpdate({ ...module, spacerSize: value })}
+              onChange={value => {
+                onUpdate({ ...module, spacerSize: value })
+              }}
               unit="mm"
               size="1"
             />
@@ -526,7 +570,9 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
             value={module.strawMaterial}
             allowEmpty
             emptyLabel={t($ => $.common.useGlobalStrawSettings)}
-            onValueChange={strawMaterial => onUpdate({ ...module, strawMaterial: strawMaterial ?? undefined })}
+            onValueChange={strawMaterial => {
+              onUpdate({ ...module, strawMaterial: strawMaterial ?? undefined })
+            }}
             size="1"
             preferredTypes={['strawbale']}
           />
@@ -572,7 +618,9 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
       <Separator size="4" />
       <TriangularBattensConfigSection
         triangularBattens={module.triangularBattens}
-        onUpdate={triangularBattens => onUpdate({ ...module, triangularBattens })}
+        onUpdate={triangularBattens => {
+          onUpdate({ ...module, triangularBattens })
+        }}
       />
     </Flex>
   )
@@ -586,11 +634,18 @@ interface StrawhengeConfigFormProps {
 function StrawhengeConfigForm({ config, onUpdate }: StrawhengeConfigFormProps): React.JSX.Element {
   return (
     <Flex direction="column" gap="3">
-      <ModuleConfigSection module={config.module} onUpdate={module => onUpdate({ ...config, module })} />
+      <ModuleConfigSection
+        module={config.module}
+        onUpdate={module => {
+          onUpdate({ ...config, module })
+        }}
+      />
       <Separator size="4" />
       <InfillConfigForm
         config={config.infill}
-        onUpdate={updates => onUpdate({ ...config, infill: { ...config.infill, ...updates } })}
+        onUpdate={updates => {
+          onUpdate({ ...config, infill: { ...config.infill, ...updates } })
+        }}
       />
     </Flex>
   )
@@ -604,11 +659,18 @@ interface ModulesConfigFormProps {
 function ModulesConfigForm({ config, onUpdate }: ModulesConfigFormProps): React.JSX.Element {
   return (
     <Flex direction="column" gap="3">
-      <ModuleConfigSection module={config.module} onUpdate={module => onUpdate({ ...config, module })} />
+      <ModuleConfigSection
+        module={config.module}
+        onUpdate={module => {
+          onUpdate({ ...config, module })
+        }}
+      />
       <Separator size="4" />
       <InfillConfigForm
         config={config.infill}
-        onUpdate={infill => onUpdate({ ...config, infill: infill as typeof config.infill })}
+        onUpdate={infill => {
+          onUpdate({ ...config, infill: infill as typeof config.infill })
+        }}
       />
     </Flex>
   )
@@ -704,11 +766,11 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
         </Label.Root>
         <OpeningAssemblySelectWithEdit
           value={config.openingAssemblyId}
-          onValueChange={value =>
+          onValueChange={value => {
             updateWallAssemblyConfig(assemblyId, {
               openingAssemblyId: value
             })
-          }
+          }}
           allowDefault
           showDefaultIndicator
           placeholder={t($ => $.common.placeholder)}
@@ -721,11 +783,21 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           title={t($ => $.walls.insideLayers)}
           measurementInfo={<MeasurementInfo highlightedPart="insideLayer" showFinishedSides />}
           layers={config.layers.insideLayers}
-          onAddLayer={layer => addWallAssemblyInsideLayer(assemblyId, layer)}
-          onReplaceLayers={layers => setWallAssemblyInsideLayers(assemblyId, layers)}
-          onUpdateLayer={(index, updates) => updateWallAssemblyInsideLayer(assemblyId, index, updates)}
-          onRemoveLayer={index => removeWallAssemblyInsideLayer(assemblyId, index)}
-          onMoveLayer={(fromIndex, toIndex) => moveWallAssemblyInsideLayer(assemblyId, fromIndex, toIndex)}
+          onAddLayer={layer => {
+            addWallAssemblyInsideLayer(assemblyId, layer)
+          }}
+          onReplaceLayers={layers => {
+            setWallAssemblyInsideLayers(assemblyId, layers)
+          }}
+          onUpdateLayer={(index, updates) => {
+            updateWallAssemblyInsideLayer(assemblyId, index, updates)
+          }}
+          onRemoveLayer={index => {
+            removeWallAssemblyInsideLayer(assemblyId, index)
+          }}
+          onMoveLayer={(fromIndex, toIndex) => {
+            moveWallAssemblyInsideLayer(assemblyId, fromIndex, toIndex)
+          }}
           addLabel={t($ => $.walls.addInsideLayer)}
           emptyHint={t($ => $.walls.noInsideLayers)}
           layerPresets={WALL_LAYER_PRESETS}
@@ -740,11 +812,21 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           title={t($ => $.walls.outsideLayers)}
           measurementInfo={<MeasurementInfo highlightedPart="outsideLayer" showFinishedSides />}
           layers={config.layers.outsideLayers}
-          onAddLayer={layer => addWallAssemblyOutsideLayer(assemblyId, layer)}
-          onReplaceLayers={layers => setWallAssemblyOutsideLayers(assemblyId, layers)}
-          onUpdateLayer={(index, updates) => updateWallAssemblyOutsideLayer(assemblyId, index, updates)}
-          onRemoveLayer={index => removeWallAssemblyOutsideLayer(assemblyId, index)}
-          onMoveLayer={(fromIndex, toIndex) => moveWallAssemblyOutsideLayer(assemblyId, fromIndex, toIndex)}
+          onAddLayer={layer => {
+            addWallAssemblyOutsideLayer(assemblyId, layer)
+          }}
+          onReplaceLayers={layers => {
+            setWallAssemblyOutsideLayers(assemblyId, layers)
+          }}
+          onUpdateLayer={(index, updates) => {
+            updateWallAssemblyOutsideLayer(assemblyId, index, updates)
+          }}
+          onRemoveLayer={index => {
+            removeWallAssemblyOutsideLayer(assemblyId, index)
+          }}
+          onMoveLayer={(fromIndex, toIndex) => {
+            moveWallAssemblyOutsideLayer(assemblyId, fromIndex, toIndex)
+          }}
           addLabel={t($ => $.walls.addOutsideLayer)}
           emptyHint={t($ => $.walls.noOutsideLayers)}
           layerPresets={WALL_LAYER_PRESETS}
@@ -771,14 +853,18 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
 
   const nameInput = useDebouncedInput(
     nameKey ? t(nameKey) : assembly.name,
-    (name: string) => updateWallAssemblyName(assembly.id, name),
+    (name: string) => {
+      updateWallAssemblyName(assembly.id, name)
+    },
     {
       debounceMs: 1000
     }
   )
 
   const updateConfig = useCallback(
-    (updates: Partial<WallConfig>) => updateWallAssemblyConfig(assembly.id, updates),
+    (updates: Partial<WallConfig>) => {
+      updateWallAssemblyConfig(assembly.id, updates)
+    },
     [assembly.id, assembly, updateWallAssemblyConfig]
   )
 
@@ -817,7 +903,9 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
           </Label.Root>
           <TextField.Root
             value={nameInput.value}
-            onChange={e => nameInput.handleChange(e.target.value)}
+            onChange={e => {
+              nameInput.handleChange(e.target.value)
+            }}
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
             placeholder={t($ => $.common.placeholders.name)}
@@ -1059,6 +1147,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
 
     if (wallAssemblies.length > 1) {
       const nextAssembly = wallAssemblies[currentIndex + 1] ?? wallAssemblies[currentIndex - 1]
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       setSelectedAssemblyId(nextAssembly?.id ?? null)
     } else {
       setSelectedAssemblyId(null)
@@ -1096,25 +1185,41 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                 </IconButton>
               </DropdownMenu.Trigger>
               <DropdownMenu.Content>
-                <DropdownMenu.Item onSelect={() => handleAddNew('infill')}>
+                <DropdownMenu.Item
+                  onSelect={() => {
+                    handleAddNew('infill')
+                  }}
+                >
                   <Flex align="center" gap="1">
                     <LayersIcon />
                     {t($ => $.walls.types.infill)}
                   </Flex>
                 </DropdownMenu.Item>
-                <DropdownMenu.Item onSelect={() => handleAddNew('strawhenge')}>
+                <DropdownMenu.Item
+                  onSelect={() => {
+                    handleAddNew('strawhenge')
+                  }}
+                >
                   <Flex align="center" gap="1">
                     <CubeIcon />
                     {t($ => $.walls.types.strawhenge)}
                   </Flex>
                 </DropdownMenu.Item>
-                <DropdownMenu.Item onSelect={() => handleAddNew('modules')}>
+                <DropdownMenu.Item
+                  onSelect={() => {
+                    handleAddNew('modules')
+                  }}
+                >
                   <Flex align="center" gap="1">
                     <CircleIcon />
                     {t($ => $.walls.types.modules)}
                   </Flex>
                 </DropdownMenu.Item>
-                <DropdownMenu.Item onSelect={() => handleAddNew('non-strawbale')}>
+                <DropdownMenu.Item
+                  onSelect={() => {
+                    handleAddNew('non-strawbale')
+                  }}
+                >
                   <Flex align="center" gap="1">
                     <TrashIcon />
                     {t($ => $.walls.types['non-strawbale'])}
@@ -1198,7 +1303,9 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
             </Label.Root>
             <WallAssemblySelect
               value={defaultAssemblyId}
-              onValueChange={value => setDefaultWallAssembly(value)}
+              onValueChange={value => {
+                setDefaultWallAssembly(value)
+              }}
               placeholder={t($ => $.walls.selectDefault)}
               size="2"
             />

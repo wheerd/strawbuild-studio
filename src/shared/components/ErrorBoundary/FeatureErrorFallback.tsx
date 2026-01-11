@@ -38,7 +38,14 @@ export function FeatureErrorFallback({ error, resetErrorBoundary }: FallbackProp
             {t($ => $.feature.retry)}
           </Button>
         )}
-        <Button size="2" variant="soft" onClick={() => window.location.reload()} style={{ flex: 1 }}>
+        <Button
+          size="2"
+          variant="soft"
+          onClick={() => {
+            window.location.reload()
+          }}
+          style={{ flex: 1 }}
+        >
           {t($ => $.feature.reloadPage)}
         </Button>
       </Flex>

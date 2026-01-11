@@ -194,7 +194,7 @@ describe('ProjectImportExportService Integration', () => {
       // Compare storey properties (excluding IDs)
       expect(importedStorey.name).toBe(originalStorey.name)
       expect(importedStorey.level).toBe(originalStorey.level)
-      expect(Number(importedStorey.floorHeight)).toBe(Number(originalStorey.floorHeight))
+      expect(importedStorey.floorHeight).toBe(originalStorey.floorHeight)
 
       // Get imported perimeters for comparison
       const importedPerimeters = modelActions.getPerimetersByStorey(importedStorey.id)
@@ -225,10 +225,10 @@ describe('ProjectImportExportService Integration', () => {
         for (let k = 0; k < originalPerimeter.wallIds.length; k++) {
           const importedWall = modelActions.getPerimeterWallById(importedPerimeter.wallIds[k])
           const originalWall = originalWalls.find(w => w.id === originalPerimeter.wallIds[k])!
-          expect(importedWall.baseRingBeamAssemblyId).toBe(originalWall?.baseRingBeamAssemblyId)
-          expect(importedWall.topRingBeamAssemblyId).toBe(originalWall?.topRingBeamAssemblyId)
+          expect(importedWall.baseRingBeamAssemblyId).toBe(originalWall.baseRingBeamAssemblyId)
+          expect(importedWall.topRingBeamAssemblyId).toBe(originalWall.topRingBeamAssemblyId)
 
-          expect(Number(importedWall.thickness)).toBe(Number(originalWall.thickness))
+          expect(importedWall.thickness).toBe(originalWall.thickness)
           expect(importedWall.wallAssemblyId).toBe(originalWall.wallAssemblyId)
 
           // Compare openings (excluding IDs)
@@ -244,21 +244,19 @@ describe('ProjectImportExportService Integration', () => {
               : modelActions.getWallPostById(importedId)
 
             expect(importedEntity.type).toBe(originalEntity.type)
-            expect(Number(importedEntity.centerOffsetFromWallStart)).toBe(
-              Number(originalEntity.centerOffsetFromWallStart)
-            )
-            expect(Number(importedEntity.width)).toBe(Number(originalEntity.width))
+            expect(importedEntity.centerOffsetFromWallStart).toBe(originalEntity.centerOffsetFromWallStart)
+            expect(importedEntity.width).toBe(originalEntity.width)
 
             if (importedEntity.type === 'opening' && originalEntity.type === 'opening') {
-              expect(Number(importedEntity.height)).toBe(Number(originalEntity.height))
+              expect(importedEntity.height).toBe(originalEntity.height)
 
               if (originalEntity.sillHeight) {
-                expect(Number(importedEntity.sillHeight!)).toBe(Number(originalEntity.sillHeight))
+                expect(importedEntity.sillHeight!).toBe(originalEntity.sillHeight)
               } else {
                 expect(importedEntity.sillHeight).toBeUndefined()
               }
             } else if (importedEntity.type === 'post' && originalEntity.type === 'post') {
-              expect(Number(importedEntity.thickness)).toBe(Number(originalEntity.thickness))
+              expect(importedEntity.thickness).toBe(originalEntity.thickness)
               expect(importedEntity.postType).toBe(originalEntity.postType)
               expect(importedEntity.replacesPosts).toBe(originalEntity.replacesPosts)
               expect(importedEntity.infillMaterial).toBe(originalEntity.infillMaterial)
@@ -485,11 +483,7 @@ describe('ProjectImportExportService Integration', () => {
       'inside'
     )
 
-    // Get the roof assembly ID from config
     const roofAssemblyId = getConfigActions().getDefaultRoofAssemblyId()
-    if (!roofAssemblyId) {
-      throw new Error('No roof assembly config found')
-    }
 
     // Add a roof that references the perimeter
     const roofPolygon = {
@@ -516,7 +510,7 @@ describe('ProjectImportExportService Integration', () => {
       type: roof.type,
       mainSideIndex: roof.mainSideIndex,
       slope: roof.slope,
-      verticalOffset: Number(roof.verticalOffset),
+      verticalOffset: roof.verticalOffset,
       assemblyId: roof.assemblyId,
       referencePerimeterExists: !!roof.referencePerimeter
     }
@@ -559,7 +553,7 @@ describe('ProjectImportExportService Integration', () => {
     expect(importedRoof.type).toBe(originalRoofData.type)
     expect(importedRoof.mainSideIndex).toBe(originalRoofData.mainSideIndex)
     expect(importedRoof.slope).toBe(originalRoofData.slope)
-    expect(Number(importedRoof.verticalOffset)).toBe(originalRoofData.verticalOffset)
+    expect(importedRoof.verticalOffset).toBe(originalRoofData.verticalOffset)
     expect(importedRoof.assemblyId).toBe(originalRoofData.assemblyId)
 
     // Most importantly: verify the roof reference points to the imported perimeter

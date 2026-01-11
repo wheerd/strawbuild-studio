@@ -49,7 +49,7 @@ function formatFloat(value: number): string {
 function attributeToArray(attribute: BufferAttribute | InterleavedBufferAttribute): number[] {
   if (attribute instanceof InterleavedBufferAttribute) {
     const { itemSize, count } = attribute
-    const values: number[] = new Array(count * itemSize)
+    const values = new Array<number>(count * itemSize)
 
     for (let index = 0; index < count; index += 1) {
       for (let component = 0; component < itemSize; component += 1) {
@@ -61,7 +61,7 @@ function attributeToArray(attribute: BufferAttribute | InterleavedBufferAttribut
     return values
   }
 
-  return Array.from(attribute.array as ArrayLike<number>, element => Number(element))
+  return Array.from(attribute.array as ArrayLike<unknown>, element => Number(element))
 }
 
 function extractGeometryData(geometry: BufferGeometry): GeometryData | null {
@@ -72,17 +72,12 @@ function extractGeometryData(geometry: BufferGeometry): GeometryData | null {
     cloned.dispose()
   }
 
-  if (!processed.getAttribute('normal')) {
+  if (!processed.hasAttribute('normal')) {
     processed.computeVertexNormals()
   }
 
   const positionAttribute = processed.getAttribute('position')
   const normalAttribute = processed.getAttribute('normal')
-
-  if (positionAttribute == null || normalAttribute == null) {
-    processed.dispose()
-    return null
-  }
 
   const positionValues = attributeToArray(positionAttribute)
   const normalValues = attributeToArray(normalAttribute)
@@ -102,7 +97,7 @@ function numberArrayToString(values: number[]): string {
 }
 
 function buildTrianglesIndexString(vertexCount: number): string {
-  const indices: string[] = new Array(vertexCount)
+  const indices = new Array<string>(vertexCount)
 
   for (let index = 0; index < vertexCount; index += 1) {
     indices[index] = `${index} ${index}`
@@ -189,7 +184,7 @@ function collectRenderableMeshes(objects: Object3D[]): Mesh[] {
       return
     }
 
-    if (object instanceof Mesh) {
+    if (isThreeMesh(object)) {
       if (
         object.geometry instanceof BufferGeometry &&
         !(object instanceof Line) &&
@@ -200,7 +195,9 @@ function collectRenderableMeshes(objects: Object3D[]): Mesh[] {
       }
     }
 
-    object.children.forEach(child => collect(child))
+    object.children.forEach(child => {
+      collect(child)
+    })
   }
 
   objects.forEach(object => {
@@ -232,7 +229,7 @@ export function generateCollada(objects: Object3D[]): string | null {
       return
     }
 
-    const geometryKey = typeof mesh.userData?.geometryKey === 'string' ? mesh.userData.geometryKey : mesh.uuid
+    const geometryKey = typeof mesh.userData.geometryKey === 'string' ? mesh.userData.geometryKey : mesh.uuid
 
     let geometryId: string | undefined
     const existingGeometry = geometryMap.get(geometryKey)
@@ -284,3 +281,5 @@ export function generateCollada(objects: Object3D[]): string | null {
 
   return `<?xml version="1.0" encoding="UTF-8" standalone="no" ?><COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1"><asset><contributor><authoring_tool>'Strawbaler Online Collada Exporter</authoring_tool></contributor><created>${now}</created><modified>${now}</modified><up_axis>Y_UP</up_axis></asset><library_effects>${effectsXml}</library_effects><library_materials>${materialsXml}</library_materials><library_geometries>${geometriesXml}</library_geometries><library_visual_scenes><visual_scene id="Scene" name="Scene">${nodesXml}</visual_scene></library_visual_scenes><scene><instance_visual_scene url="#Scene" /></scene></COLLADA>`
 }
+
+const isThreeMesh = (x: unknown): x is Mesh => x instanceof Mesh

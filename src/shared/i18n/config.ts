@@ -59,7 +59,7 @@ const resources = {
   }
 }
 
-i18n
+void i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
@@ -100,7 +100,7 @@ i18n.services.formatter?.add('dimensions2D', (value, lng, _options) => {
   // Expects value to be array [width, height]
   const locale = lng ?? 'en'
   if (Array.isArray(value) && value.length === 2) {
-    return formatDimensions2D([value[0], value[1]], true, locale)
+    return formatDimensions2D([Number(value[0]), Number(value[1])], true, locale)
   }
   return String(value)
 })

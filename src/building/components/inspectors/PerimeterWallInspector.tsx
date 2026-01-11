@@ -1,11 +1,11 @@
 import { TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Callout, Card, DataList, Flex, Grid, Heading, IconButton, Separator, Text } from '@radix-ui/themes'
+import { Card, DataList, Flex, Grid, Heading, IconButton, Separator, Text } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { PerimeterWallId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
-import { useModelActions, usePerimeterById, usePerimeterWallById, useWallOpeningsById } from '@/building/store'
+import { useModelActions, usePerimeterWallById, useWallOpeningsById } from '@/building/store'
 import { ConstructionPlanModal } from '@/construction/components/ConstructionPlanModal'
 import { BACK_VIEW, FRONT_VIEW, TOP_VIEW } from '@/construction/components/plan/ConstructionPlan'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
@@ -36,31 +36,12 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
   } = useModelActions()
 
   const wall = usePerimeterWallById(wallId)
-  const perimeter = usePerimeterById(wall.perimeterId)
+  const wallAssembly = useWallAssemblyById(wall.wallAssemblyId)
   const viewportActions = useViewportActions()
-
-  // If wall not found, show error
-  if (!wall || !perimeter) {
-    return (
-      <Callout.Root color="red">
-        <Callout.Text>
-          <Text weight="bold">{t($ => $.perimeterWall.notFound)}</Text>
-          <br />
-          {t($ => $.perimeterWall.notFoundMessage, {
-            id: wallId
-          })}
-        </Callout.Text>
-      </Callout.Root>
-    )
-  }
-
-  // Get assembly for this wall
-  const wallAssembly = wall?.wallAssemblyId ? useWallAssemblyById(wall.wallAssemblyId) : null
 
   const openings = useWallOpeningsById(wallId)
 
   const handleFitToView = useCallback(() => {
-    if (!wall) return
     const points = [wall.insideLine.start, wall.insideLine.end, wall.outsideLine.start, wall.outsideLine.end]
     const bounds = Bounds2D.fromPoints(points)
     viewportActions.fitToView(bounds)
@@ -116,7 +97,9 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
         <LengthField
           id="perimeter-thickness"
           value={wall.thickness}
-          onCommit={value => updateOuterWallThickness(wallId, value)}
+          onCommit={value => {
+            updateOuterWallThickness(wallId, value)
+          }}
           min={50}
           max={1500}
           step={10}
@@ -266,7 +249,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
         <Flex gap="2" justify="end">
           <ConstructionPlanModal
             title={t($ => $.perimeterWall.constructionPlanTitle)}
-            constructionModelFactory={async () => constructWall(wallId, true)}
+            constructionModelFactory={() => Promise.resolve(constructWall(wallId, true))}
             views={[
               { view: FRONT_VIEW, label: t($ => $.perimeterWall.viewOutside) },
               { view: BACK_VIEW, label: t($ => $.perimeterWall.viewInside) },
@@ -284,7 +267,9 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
           <IconButton
             size="2"
             title={t($ => $.perimeterWall.splitWall)}
-            onClick={() => pushTool('perimeter.split-wall')}
+            onClick={() => {
+              pushTool('perimeter.split-wall')
+            }}
           >
             <SplitWallIcon width={20} height={20} />
           </IconButton>

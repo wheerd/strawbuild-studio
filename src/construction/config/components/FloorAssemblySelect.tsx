@@ -37,7 +37,9 @@ export function FloorAssemblySelect({
   return (
     <Select.Root
       value={value ?? ''}
-      onValueChange={val => onValueChange(val as FloorAssemblyId)}
+      onValueChange={val => {
+        onValueChange(val as FloorAssemblyId)
+      }}
       disabled={disabled}
       size={size}
     >

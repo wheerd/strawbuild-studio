@@ -11,7 +11,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): Rea
   const [showDetails, setShowDetails] = useState(false)
 
   const handleCopyError = () => {
-    const errorText = `Error: ${error.message}\n\nStack:\n${error.stack || t($ => $.boundary.noStackTrace)}`
+    const errorText = `Error: ${error.message}\n\nStack:\n${error.stack ?? t($ => $.boundary.noStackTrace)}`
     navigator.clipboard.writeText(errorText).catch(console.error)
   }
 
@@ -65,7 +65,12 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): Rea
         )}
 
         <Flex direction="column" gap="2">
-          <Button size="3" onClick={() => window.location.reload()}>
+          <Button
+            size="3"
+            onClick={() => {
+              window.location.reload()
+            }}
+          >
             <ReloadIcon />
             {t($ => $.boundary.reloadPage)}
           </Button>
@@ -76,7 +81,13 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): Rea
             </Button>
           )}
 
-          <Button size="2" variant="outline" onClick={() => setShowDetails(!showDetails)}>
+          <Button
+            size="2"
+            variant="outline"
+            onClick={() => {
+              setShowDetails(!showDetails)
+            }}
+          >
             {showDetails ? t($ => $.boundary.hideDetails) : t($ => $.boundary.showDetails)}
           </Button>
 

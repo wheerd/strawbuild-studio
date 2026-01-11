@@ -406,7 +406,7 @@ describe('openingSlice', () => {
           centerOffsetFromWallStart: 2000,
           width: 900,
           height: 2100
-        })!
+        })
 
         // Should be valid because we're excluding the existing opening
         const isValid = slice.actions.isWallOpeningPlacementValid(wallId, 2200, 900, opening.id)
@@ -478,7 +478,7 @@ describe('openingSlice', () => {
         centerOffsetFromWallStart: 2000,
         width: 900,
         height: 2100
-      })!
+      })
 
       expect(slice.openings[opening.id]).toBeDefined()
 
@@ -494,7 +494,7 @@ describe('openingSlice', () => {
         centerOffsetFromWallStart: 2000,
         width: 900,
         height: 2100
-      })!
+      })
 
       expect(slice.openings[opening.id]).toBeDefined()
 
@@ -514,7 +514,7 @@ describe('openingSlice', () => {
         centerOffsetFromWallStart: splitPosition - 1000,
         width: 900,
         height: 2100
-      })!
+      })
 
       // Add opening after split point
       const opening2 = slice.actions.addWallOpening(wallId, {
@@ -522,7 +522,7 @@ describe('openingSlice', () => {
         centerOffsetFromWallStart: splitPosition + 1000,
         width: 1200,
         height: 1500
-      })!
+      })
 
       const newWallId = slice.actions.splitPerimeterWall(wallId, splitPosition)!
 
@@ -545,7 +545,7 @@ describe('openingSlice', () => {
         centerOffsetFromWallStart: 2000,
         width: 900,
         height: 2100
-      })!
+      })
 
       const storedOpening = slice.openings[opening.id]
       expect(storedOpening.wallId).toBe(wallId)
@@ -563,7 +563,7 @@ describe('openingSlice', () => {
         centerOffsetFromWallStart: splitPosition + 1000,
         width: 900,
         height: 2100
-      })!
+      })
 
       const newWallId = slice.actions.splitPerimeterWall(wallId, splitPosition)!
 

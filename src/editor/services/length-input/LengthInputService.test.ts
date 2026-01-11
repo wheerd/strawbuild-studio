@@ -153,7 +153,9 @@ describe('LengthInputService', () => {
       }
       service.activate(configWithoutCancel)
 
-      expect(() => service.cancel()).not.toThrow()
+      expect(() => {
+        service.cancel()
+      }).not.toThrow()
       expect(service.getState().isActive).toBe(false)
     })
 
@@ -274,7 +276,9 @@ describe('LengthInputService', () => {
 
       service.subscribe(errorListener)
 
-      expect(() => service.activate(mockConfig)).not.toThrow()
+      expect(() => {
+        service.activate(mockConfig)
+      }).not.toThrow()
       expect(consoleError).toHaveBeenCalledWith('Error in length input listener:', expect.any(Error))
 
       consoleError.mockRestore()

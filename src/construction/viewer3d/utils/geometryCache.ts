@@ -82,7 +82,9 @@ export function getShapeGeometry(shape: Shape): GeometryEntry {
 
 function prewarmElementGeometry(element: GroupOrElement): void {
   if ('children' in element) {
-    element.children.forEach(child => prewarmElementGeometry(child))
+    element.children.forEach(child => {
+      prewarmElementGeometry(child)
+    })
     return
   }
 

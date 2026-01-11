@@ -18,7 +18,9 @@ export function GridSizeDisplay(): React.JSX.Element {
       title={showGrid ? t($ => $.gridSizeDisplay.hideGrid) : t($ => $.gridSizeDisplay.showGrid)}
       variant={showGrid ? 'soft' : 'outline'}
       size="1"
-      onClick={() => setShowGrid(!showGrid)}
+      onClick={() => {
+        setShowGrid(!showGrid)
+      }}
       style={{ minWidth: '6em' }}
     >
       <Flex align="center" justify="end" gap="2">

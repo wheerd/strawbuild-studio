@@ -46,6 +46,8 @@ export abstract class BaseTool implements Pick<ToolImplementation, 'onRenderNeed
    * React components re-render appropriately.
    */
   protected triggerRender(): void {
-    this.listeners.forEach(listener => listener())
+    this.listeners.forEach(listener => {
+      listener()
+    })
   }
 }

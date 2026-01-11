@@ -106,16 +106,14 @@ async function prepareQueue(): Promise<void> {
 }
 
 async function loadManifest(): Promise<ViteManifest | null> {
-  if (manifestPromise === null) {
-    manifestPromise = fetch(MANIFEST_URL, { cache: 'no-cache' })
-      .then(async response => {
-        if (!response.ok) {
-          return null
-        }
-        return (await response.json()) as ViteManifest
-      })
-      .catch(() => null)
-  }
+  manifestPromise ??= fetch(MANIFEST_URL, { cache: 'no-cache' })
+    .then(async response => {
+      if (!response.ok) {
+        return null
+      }
+      return (await response.json()) as ViteManifest
+    })
+    .catch(() => null)
 
   return manifestPromise
 }
@@ -184,7 +182,9 @@ function scheduleProcessing(): void {
   if (typeof globalWindow.requestIdleCallback === 'function') {
     globalWindow.requestIdleCallback(callback, { timeout: 1000 })
   } else {
-    globalWindow.setTimeout(() => callback({ didTimeout: true, timeRemaining: () => 0 }), 200)
+    globalWindow.setTimeout(() => {
+      callback({ didTimeout: true, timeRemaining: () => 0 })
+    }, 200)
   }
 }
 
@@ -219,6 +219,7 @@ function prefetchResource(item: PreloadItem): void {
 
   const supportsPrefetch = (() => {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       return link.relList?.supports?.('prefetch') ?? false
     } catch {
       return false

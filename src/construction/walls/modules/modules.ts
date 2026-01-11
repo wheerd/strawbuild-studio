@@ -15,6 +15,7 @@ import {
   TAG_MODULE_WIDTH
 } from '@/construction/tags'
 import { type Length, type Vec3, newVec3 } from '@/shared/geometry'
+import { assertUnreachable } from '@/shared/utils'
 
 export interface BaseModuleConfig {
   type: 'single' | 'double'
@@ -298,12 +299,16 @@ export function* constructModule(
     type: `module-${config.type}`,
     subtype: configStr
   }
-  if (config.type === 'single') {
-    yield* yieldAsGroup(constructSingleFrameModule(area.position, size, config), [TAG_MODULE], undefined, partInfo)
-  } else if (config.type === 'double') {
-    yield* yieldAsGroup(constructDoubleFrameModule(area.position, size, config), [TAG_MODULE], undefined, partInfo)
-  } else {
-    throw new Error('Invalid module type')
+
+  switch (config.type) {
+    case 'single':
+      yield* yieldAsGroup(constructSingleFrameModule(area.position, size, config), [TAG_MODULE], undefined, partInfo)
+      break
+    case 'double':
+      yield* yieldAsGroup(constructDoubleFrameModule(area.position, size, config), [TAG_MODULE], undefined, partInfo)
+      break
+    default:
+      assertUnreachable(config, 'Invalid module type')
   }
 
   if (area.minHeight < area.size[2] && fallbackMaterial) {

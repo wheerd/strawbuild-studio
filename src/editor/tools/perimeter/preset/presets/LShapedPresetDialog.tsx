@@ -41,15 +41,15 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
     referenceSide: 'inside'
   }))
 
-  useEffect(() => setConfig(prev => ({ ...prev, wallAssemblyId: defaultWallAssemblyId })), [defaultWallAssemblyId])
-  useEffect(
-    () => setConfig(prev => ({ ...prev, baseRingBeamAssemblyId: defaultBaseRingBeamAssemblyId })),
-    [defaultBaseRingBeamAssemblyId]
-  )
-  useEffect(
-    () => setConfig(prev => ({ ...prev, topRingBeamAssemblyId: defaultTopRingBeamAssemblyId })),
-    [defaultTopRingBeamAssemblyId]
-  )
+  useEffect(() => {
+    setConfig(prev => ({ ...prev, wallAssemblyId: defaultWallAssemblyId }))
+  }, [defaultWallAssemblyId])
+  useEffect(() => {
+    setConfig(prev => ({ ...prev, baseRingBeamAssemblyId: defaultBaseRingBeamAssemblyId }))
+  }, [defaultBaseRingBeamAssemblyId])
+  useEffect(() => {
+    setConfig(prev => ({ ...prev, topRingBeamAssemblyId: defaultTopRingBeamAssemblyId }))
+  }, [defaultTopRingBeamAssemblyId])
 
   const handleConfirm = useCallback(() => {
     if (preset.validateConfig(config)) {
@@ -85,7 +85,9 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                   </Text>
                   <LengthField
                     value={config.width1}
-                    onChange={value => setConfig(prev => ({ ...prev, width1: value }))}
+                    onChange={value => {
+                      setConfig(prev => ({ ...prev, width1: value }))
+                    }}
                     min={2000}
                     max={20000}
                     step={100}
@@ -102,7 +104,9 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                   </Text>
                   <LengthField
                     value={config.length1}
-                    onChange={value => setConfig(prev => ({ ...prev, length1: value }))}
+                    onChange={value => {
+                      setConfig(prev => ({ ...prev, length1: value }))
+                    }}
                     min={2000}
                     max={20000}
                     step={100}
@@ -128,7 +132,9 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
 
                   <LengthField
                     value={config.width2}
-                    onChange={value => setConfig(prev => ({ ...prev, width2: value }))}
+                    onChange={value => {
+                      setConfig(prev => ({ ...prev, width2: value }))
+                    }}
                     min={2000}
                     max={20000}
                     step={100}
@@ -146,7 +152,9 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
 
                   <LengthField
                     value={config.length2}
-                    onChange={value => setConfig(prev => ({ ...prev, length2: value }))}
+                    onChange={value => {
+                      setConfig(prev => ({ ...prev, length2: value }))
+                    }}
                     min={2000}
                     max={20000}
                     step={100}
@@ -166,9 +174,9 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
               </Text>
               <SegmentedControl.Root
                 value={config.rotation.toString()}
-                onValueChange={value =>
+                onValueChange={value => {
                   setConfig(prev => ({ ...prev, rotation: parseInt(value) as 0 | 90 | 180 | 270 }))
-                }
+                }}
                 size="1"
               >
                 <SegmentedControl.Item value="0">
@@ -198,7 +206,9 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                 </Flex>
                 <LengthField
                   value={config.thickness}
-                  onChange={value => setConfig(prev => ({ ...prev, thickness: value }))}
+                  onChange={value => {
+                    setConfig(prev => ({ ...prev, thickness: value }))
+                  }}
                   min={50}
                   max={1500}
                   step={10}
@@ -214,10 +224,10 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                   <Text size="1" color="gray">
                     {t($ => $.presetDialogs.lShaped.wallAssembly)}
                   </Text>
-                  {config.wallAssemblyId && <MeasurementInfo highlightedAssembly="wallAssembly" />}
+                  <MeasurementInfo highlightedAssembly="wallAssembly" />
                 </Flex>
                 <WallAssemblySelectWithEdit
-                  value={config.wallAssemblyId ?? undefined}
+                  value={config.wallAssemblyId}
                   onValueChange={(value: WallAssemblyId) => {
                     setConfig(prev => ({ ...prev, wallAssemblyId: value }))
                   }}
@@ -280,9 +290,9 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
               <SegmentedControl.Root
                 size="1"
                 value={config.referenceSide}
-                onValueChange={value =>
+                onValueChange={value => {
                   setConfig(prev => ({ ...prev, referenceSide: value as PerimeterReferenceSide }))
-                }
+                }}
               >
                 <SegmentedControl.Item value="inside">{t($ => $.presetDialogs.lShaped.inside)}</SegmentedControl.Item>
                 <SegmentedControl.Item value="outside">{t($ => $.presetDialogs.lShaped.outside)}</SegmentedControl.Item>

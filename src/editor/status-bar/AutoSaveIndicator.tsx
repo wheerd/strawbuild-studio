@@ -84,16 +84,15 @@ export function AutoSaveIndicator(): React.JSX.Element {
     setImportError(null)
 
     try {
-      await createFileInput(async (content: string) => {
-        clearSelection()
-        const result = await ProjectImportExportService.importFromString(content)
+      const content = await createFileInput()
+      clearSelection()
+      const result = await ProjectImportExportService.importFromString(content)
 
-        if (!result.success) {
-          setImportError(result.error)
-        } else {
-          pushTool('basic.fit-to-view')
-        }
-      })
+      if (!result.success) {
+        setImportError(result.error)
+      } else {
+        pushTool('basic.fit-to-view')
+      }
     } catch (error) {
       if (!(error instanceof FileInputCancelledError)) {
         setImportError(error instanceof Error ? error.message : t($ => $.autoSave.errors.failedImport))
@@ -132,7 +131,7 @@ export function AutoSaveIndicator(): React.JSX.Element {
     // Prioritize export/import errors and states
     if (exportError || importError) {
       return {
-        text: exportError || importError || t($ => $.autoSave.exportFailed),
+        text: exportError ?? importError ?? t($ => $.autoSave.exportFailed),
         icon: <Cross2Icon />,
         color: 'red' as const
       }
@@ -224,28 +223,53 @@ export function AutoSaveIndicator(): React.JSX.Element {
         <DropdownMenu.Sub>
           <DropdownMenu.SubTrigger>{t($ => $.autoSave.importExportIfc)}</DropdownMenu.SubTrigger>
           <DropdownMenu.SubContent>
-            <DropdownMenu.Item onClick={handleIfcExport} disabled={isExporting || isImporting}>
+            <DropdownMenu.Item
+              onClick={() => {
+                void handleIfcExport()
+              }}
+              disabled={isExporting || isImporting}
+            >
               <DownloadIcon />
               {t($ => $.autoSave.exportBuildingModel)}
             </DropdownMenu.Item>
 
-            <DropdownMenu.Item onClick={handleIfcGeometryExport} disabled={isExporting || isImporting}>
+            <DropdownMenu.Item
+              onClick={() => {
+                void handleIfcGeometryExport()
+              }}
+              disabled={isExporting || isImporting}
+            >
               <DownloadIcon />
               {t($ => $.autoSave.exportConstructionModel)}
             </DropdownMenu.Item>
 
-            <DropdownMenu.Item onClick={handleIfcImport} disabled={isExporting || isImporting}>
+            <DropdownMenu.Item
+              onClick={() => {
+                void handleIfcImport()
+              }}
+              disabled={isExporting || isImporting}
+            >
               <UploadIcon />
               {t($ => $.autoSave.import)}
             </DropdownMenu.Item>
           </DropdownMenu.SubContent>
         </DropdownMenu.Sub>
-        <DropdownMenu.Item onClick={handleExport} disabled={isExporting || isImporting}>
+        <DropdownMenu.Item
+          onClick={() => {
+            void handleExport()
+          }}
+          disabled={isExporting || isImporting}
+        >
           <DownloadIcon />
           {t($ => $.autoSave.saveToFile)}
         </DropdownMenu.Item>
 
-        <DropdownMenu.Item onClick={handleImport} disabled={isExporting || isImporting}>
+        <DropdownMenu.Item
+          onClick={() => {
+            void handleImport()
+          }}
+          disabled={isExporting || isImporting}
+        >
           <UploadIcon />
           {t($ => $.autoSave.loadFromFile)}
         </DropdownMenu.Item>

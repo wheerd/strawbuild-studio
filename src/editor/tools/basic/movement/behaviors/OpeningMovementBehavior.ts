@@ -35,10 +35,6 @@ export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityCo
     const wall = store.getPerimeterWallById(wallId)
     const opening = store.getWallOpeningById(entityId)
 
-    if (!wall || !opening) {
-      throw new Error(`Could not find required entities for opening ${entityId}`)
-    }
-
     return { wall, opening }
   }
 

@@ -88,7 +88,9 @@ export function CanvasThemeProvider({ children }: { children: ReactNode }): Reac
 
   useEffect(() => {
     if (containerRef.current) {
-      setTimeout(() => setColors(readColorsFromElement(containerRef.current, resolvedTheme === 'dark')), 0)
+      setTimeout(() => {
+        setColors(readColorsFromElement(containerRef.current, resolvedTheme === 'dark'))
+      }, 0)
     }
   }, [resolvedTheme, containerRef.current])
 

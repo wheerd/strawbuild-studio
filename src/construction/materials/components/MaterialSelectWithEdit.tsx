@@ -20,7 +20,9 @@ export function MaterialSelectWithEdit(props: MaterialSelectProps): React.JSX.El
         title={t($ => $.materials.configure)}
         variant="ghost"
         size={props.size}
-        onClick={() => openConfiguration('materials', props.value ?? undefined)}
+        onClick={() => {
+          openConfiguration('materials', props.value ?? undefined)
+        }}
       >
         <Pencil1Icon />
       </IconButton>

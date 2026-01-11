@@ -14,7 +14,7 @@ describe('SVGMaterialStyles', () => {
     const styleElement = container.querySelector('style')
     expect(styleElement).toBeInTheDocument()
 
-    const cssContent = styleElement?.innerHTML || ''
+    const cssContent = styleElement?.innerHTML ?? ''
     expect(cssContent).toContain('Construction Material Styles')
     expect(cssContent).toContain('.material_')
     expect(cssContent).toContain('fill:')

@@ -75,7 +75,9 @@ export function ConstructionVirtualPartsList({
                     <IconButton
                       size="1"
                       variant="ghost"
-                      onClick={() => onViewInPlan(part.partId)}
+                      onClick={() => {
+                        onViewInPlan(part.partId)
+                      }}
                       title={t($ => $.modulesList.actions.viewInPlan)}
                     >
                       <EyeOpenIcon />

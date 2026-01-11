@@ -96,8 +96,8 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
       .reduce((a, b) => a.add(b))
 
     // Calculate Z-range for clipping volume (doubled for safety margin)
-    const minZ = (-2 * (roof.rise + this.config.layers.insideThickness)) as Length
-    const maxZ = ((this.config.thickness + this.config.layers.topThickness) * 2) as Length
+    const minZ = -2 * (roof.rise + this.config.layers.insideThickness)
+    const maxZ = (this.config.thickness + this.config.layers.topThickness) * 2
 
     const outerConstructionClippingVolume = contexts
       .map(c =>
@@ -174,7 +174,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
   }
 
   protected get ceilingLayerOffset(): Length {
-    return -this.config.ceilingSheathingThickness as Length
+    return -this.config.ceilingSheathingThickness
   }
 
   protected get overhangLayerOffset(): Length {
@@ -240,7 +240,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     // Calculate offset at a given T position along the line
     const calculateOffsetAt = (t: number): Length => {
       const point = lerpVec2(line.start, line.end, t)
-      return calculateOffset(getSignedDistanceToRidge(point)) as Length
+      return calculateOffset(getSignedDistanceToRidge(point))
     }
 
     // Step 3: Calculate ridge intersection ONCE (for gable roofs)
@@ -291,7 +291,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
       // Ridge intersection (if within this segment)
       if (ridgeT > segment.tStart && ridgeT < segment.tEnd) {
         if (processPurlinsUntilT(ridgeT)) {
-          result.push({ position: ridgeT, offset: ridgeHeight as Length, nullAfter: false })
+          result.push({ position: ridgeT, offset: ridgeHeight, nullAfter: false })
         }
       }
 

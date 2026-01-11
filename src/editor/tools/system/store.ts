@@ -156,7 +156,6 @@ export const useToolStore = create<ToolStore>()(
       // Canvas event handling
       handleCanvasEvent: (event: CanvasEvent) => {
         const tool = get().getActiveTool()
-        if (!tool) return false
 
         try {
           switch (event.type) {
@@ -188,10 +187,18 @@ export const canPopTool = () => useToolStore.getState().canPop()
 export const getToolStackDepth = () => useToolStore.getState().getStackDepth()
 
 // Non-reactive action functions for direct usage
-export const pushTool = (toolId: ToolId) => useToolStore.getState().pushTool(toolId)
-export const popTool = () => useToolStore.getState().popTool()
-export const clearToDefaultTool = () => useToolStore.getState().clearToDefault()
-export const replaceTool = (toolId: ToolId) => useToolStore.getState().replaceTool(toolId)
+export const pushTool = (toolId: ToolId) => {
+  useToolStore.getState().pushTool(toolId)
+}
+export const popTool = () => {
+  useToolStore.getState().popTool()
+}
+export const clearToDefaultTool = () => {
+  useToolStore.getState().clearToDefault()
+}
+export const replaceTool = (toolId: ToolId) => {
+  useToolStore.getState().replaceTool(toolId)
+}
 export const handleCanvasEvent = (event: CanvasEvent) => useToolStore.getState().handleCanvasEvent(event)
 
 // Convenience hooks

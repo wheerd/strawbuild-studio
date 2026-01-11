@@ -37,11 +37,15 @@ export function createTagOpacityStore(options?: CreateTagOpacityStoreOptions): T
     // Notify listeners for this specific tag/category
     const tagListeners = listeners.get(id)
     if (tagListeners) {
-      tagListeners.forEach(listener => listener())
+      tagListeners.forEach(listener => {
+        listener()
+      })
     }
 
     // Notify global listeners
-    globalListeners.forEach(listener => listener())
+    globalListeners.forEach(listener => {
+      listener()
+    })
   }
 
   return {

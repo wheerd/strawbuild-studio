@@ -82,9 +82,7 @@ export const yieldError = (
 
   // Attach issue ID to elements
   filteredElements.forEach(element => {
-    if (!element.issueIds) {
-      element.issueIds = []
-    }
+    element.issueIds ??= []
     if (!element.issueIds.includes(id)) {
       element.issueIds.push(id)
     }
@@ -112,9 +110,7 @@ export const yieldWarning = (
 
   // Attach issue ID to elements
   filteredElements.forEach(element => {
-    if (!element.issueIds) {
-      element.issueIds = []
-    }
+    element.issueIds ??= []
     if (!element.issueIds.includes(id)) {
       element.issueIds.push(id)
     }
@@ -171,18 +167,6 @@ export function collectElementIds(element: GroupOrElement, elementIds: Construct
     }
   } else {
     elementIds.push(element.id)
-  }
-}
-
-export function* yieldAndCollectBounds(
-  generator: Generator<ConstructionResult>,
-  boundsRef: [Bounds3D]
-): Generator<ConstructionResult> {
-  for (const result of generator) {
-    if (result.type === 'element') {
-      boundsRef[0] = boundsRef[0] ? Bounds3D.merge(boundsRef[0], result.element.bounds) : result.element.bounds
-    }
-    yield result
   }
 }
 

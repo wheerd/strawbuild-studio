@@ -20,7 +20,9 @@ export function OpeningAssemblySelectWithEdit(props: OpeningAssemblySelectProps)
         title={t($ => $.openings.configure)}
         variant="ghost"
         size={props.size}
-        onClick={() => openConfiguration('openings', props.value ?? undefined)}
+        onClick={() => {
+          openConfiguration('openings', props.value ?? undefined)
+        }}
       >
         <Pencil1Icon />
       </IconButton>

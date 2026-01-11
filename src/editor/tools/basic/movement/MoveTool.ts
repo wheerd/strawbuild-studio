@@ -9,12 +9,11 @@ import { type Length, type Vec2, ZERO_VEC2, distSqrVec2, normVec2, scaleVec2, su
 
 import { MoveToolInspector } from './MoveToolInspector'
 import { MoveToolOverlay } from './MoveToolOverlay'
-import type { MovementBehavior, MovementContext, PointerMovementState } from './MovementBehavior'
+import type { MovementBehavior, MovementContext, MovementState, PointerMovementState } from './MovementBehavior'
 import { getMovementBehavior } from './movementBehaviors'
 
 interface LastMovementRecord {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  behavior: MovementBehavior<any, any>
+  behavior: MovementBehavior<unknown, MovementState>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   context: MovementContext<any>
   movementDelta: Vec2 // The actual movement delta applied
@@ -34,13 +33,10 @@ export class MoveTool extends BaseTool implements ToolImplementation {
 
     // Phase 2: Actually moving
     isMoving: boolean
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    behavior: MovementBehavior<any, any> | null
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    context: MovementContext<any> | null
+    behavior: MovementBehavior<unknown, MovementState> | null
+    context: MovementContext<unknown> | null
     pointerState: PointerMovementState | null
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    currentMovementState: any // Generic state from behavior
+    currentMovementState: MovementState | null // Generic state from behavior
     isValid: boolean
 
     // Last completed movement for length input modification
@@ -285,11 +281,9 @@ export class MoveTool extends BaseTool implements ToolImplementation {
 
     try {
       // Refresh entity data in case it changed
-      const freshEntity = behavior.getEntity(context.entityId, context.parentIds, context.store)
-
       return {
         ...context,
-        entity: freshEntity
+        entity: behavior.getEntity(context.entityId, context.parentIds, context.store)
       }
     } catch (error) {
       console.warn('Failed to refresh movement context:', error)

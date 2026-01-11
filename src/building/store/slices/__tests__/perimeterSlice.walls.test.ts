@@ -255,12 +255,12 @@ describe('perimeterWallSlice', () => {
           height: 2100
         })
 
-        expect(slice.openings[opening!.id]).toBeDefined()
+        expect(slice.openings[opening.id]).toBeDefined()
 
         slice.actions.removePerimeterWall(wallId)
 
-        expect(slice.openings[opening!.id]).toBeUndefined()
-        expect(slice._openingGeometry[opening!.id]).toBeUndefined()
+        expect(slice.openings[opening.id]).toBeUndefined()
+        expect(slice._openingGeometry[opening.id]).toBeUndefined()
       })
 
       it('should cascade to wall posts', () => {
@@ -272,12 +272,12 @@ describe('perimeterWallSlice', () => {
           })
         )
 
-        expect(slice.wallPosts[post!.id]).toBeDefined()
+        expect(slice.wallPosts[post.id]).toBeDefined()
 
         slice.actions.removePerimeterWall(wallId)
 
-        expect(slice.wallPosts[post!.id]).toBeUndefined()
-        expect(slice._wallPostGeometry[post!.id]).toBeUndefined()
+        expect(slice.wallPosts[post.id]).toBeUndefined()
+        expect(slice._wallPostGeometry[post.id]).toBeUndefined()
       })
 
       it('should have no orphaned entities after removal', () => {
@@ -370,10 +370,10 @@ describe('perimeterWallSlice', () => {
         const secondWall = slice.actions.getPerimeterWallById(newWallId!)
 
         // First opening should be on first wall
-        expect(firstWall.entityIds).toContain(opening1!.id)
+        expect(firstWall.entityIds).toContain(opening1.id)
 
         // Second opening should be on second wall
-        expect(secondWall.entityIds).toContain(opening2!.id)
+        expect(secondWall.entityIds).toContain(opening2.id)
       })
 
       it('should reject invalid split position (negative)', () => {

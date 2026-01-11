@@ -400,8 +400,12 @@ export function subtractPolygons(subject: Polygon2D[], clips: Polygon2D[]): Poly
     polyTree.delete()
     subjectPathsD.delete()
     clipPathsD.delete()
-    subjectPaths.forEach(path => path.delete())
-    clipPaths.forEach(path => path.delete())
+    subjectPaths.forEach(path => {
+      path.delete()
+    })
+    clipPaths.forEach(path => {
+      path.delete()
+    })
   }
 }
 
@@ -488,7 +492,9 @@ export function unionPolygonsWithHoles(polygons: Polygon2D[]): PolygonWithHoles2
     clipper.delete()
     polyTree.delete()
     pathsD.delete()
-    paths.forEach(path => path.delete())
+    paths.forEach(path => {
+      path.delete()
+    })
   }
 }
 
@@ -760,8 +766,8 @@ export function canonicalPolygonKey(points: Vec2[]): string {
 
   if (n < 3) throw new Error('Need at least 3 vertices.')
   // Build edge vectors and lengths
-  const e: Vec2[] = new Array(n)
-  const L: number[] = new Array(n)
+  const e = new Array<Vec2>(n)
+  const L = new Array<number>(n)
 
   for (let i = 0; i < n; i++) {
     const j = (i + 1) % n
@@ -775,7 +781,7 @@ export function canonicalPolygonKey(points: Vec2[]): string {
   }
 
   // Turn angles alpha_i between e_i and e_{i+1}
-  const A: number[] = new Array(n)
+  const A = new Array<number>(n)
   for (let i = 0; i < n; i++) {
     const a = e[i]
     const b = e[(i + 1) % n]
@@ -786,7 +792,7 @@ export function canonicalPolygonKey(points: Vec2[]): string {
   }
 
   // Build paired sequence S = [(L0, A0), ..., (L_{n-1}, A_{n-1})]
-  const S: Pair[] = new Array(n)
+  const S = new Array<Pair>(n)
   for (let i = 0; i < n; i++) {
     S[i] = {
       l: Math.round(L[i]),
@@ -795,7 +801,7 @@ export function canonicalPolygonKey(points: Vec2[]): string {
   }
 
   // Reversed-orientation sequence: rev(S) = [(L_{n-1}, -A_{n-1}), ..., (L_0, -A_0)]
-  const R: Pair[] = new Array(n)
+  const R = new Array<Pair>(n)
   for (let i = 0; i < n; i++) {
     const k = n - 1 - i
     R[i] = {
@@ -805,7 +811,7 @@ export function canonicalPolygonKey(points: Vec2[]): string {
   }
 
   // Mirrored sequence M = [(L0, -A0), ..., (L_{n-1}, -A_{n-1})]
-  const M: Pair[] = new Array(n)
+  const M = new Array<Pair>(n)
   for (let i = 0; i < n; i++) {
     M[i] = {
       l: Math.round(L[i]),

@@ -37,7 +37,9 @@ export function WallAssemblySelect({
   return (
     <Select.Root
       value={value ?? ''}
-      onValueChange={val => onValueChange(val as WallAssemblyId)}
+      onValueChange={val => {
+        onValueChange(val as WallAssemblyId)
+      }}
       disabled={disabled}
       size={size}
     >

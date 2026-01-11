@@ -94,8 +94,8 @@ export const createRingBeamAssembliesSlice: StateCreator<
 
       updateRingBeamAssemblyName: (id: RingBeamAssemblyId, name: string) => {
         set(state => {
+          if (!(id in state.ringBeamAssemblyConfigs)) return state
           const assembly = state.ringBeamAssemblyConfigs[id]
-          if (assembly == null) return state
 
           validateRingBeamName(name)
 
@@ -115,8 +115,8 @@ export const createRingBeamAssembliesSlice: StateCreator<
 
       updateRingBeamAssemblyConfig: (id: RingBeamAssemblyId, config: Partial<Omit<RingBeamConfig, 'type'>>) => {
         set(state => {
+          if (!(id in state.ringBeamAssemblyConfigs)) return state
           const assembly = state.ringBeamAssemblyConfigs[id]
-          if (assembly == null) return state
 
           const updatedAssembly: RingBeamAssemblyConfig = { ...assembly, ...config, id }
           validateRingBeamConfig(updatedAssembly)

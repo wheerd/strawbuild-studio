@@ -132,7 +132,7 @@ vi.mock('@/shared/geometry/clipperInstance', () => {
   return {
     getClipperModule: vi.fn(() => mockModule),
     ensureClipperModule: vi.fn(),
-    loadClipperModule: vi.fn(async () => mockModule),
+    loadClipperModule: vi.fn(() => mockModule),
     createPathD: vi.fn((points: ArrayLike<number>[]) => createClipperPath(points.map(point => [point[0], point[1]]))),
     createPathsD: vi.fn((paths: ClipperPath[]) => createClipperPaths(paths)),
     createPointD: vi.fn((point: ArrayLike<number>) => createClipperPoint(point[0], point[1])),

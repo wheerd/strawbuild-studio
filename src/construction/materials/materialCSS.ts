@@ -27,7 +27,7 @@ export function injectMaterialCSS(materials: Material[]): void {
   const css = generateMaterialCSS(materials)
   const styleId = 'construction-materials'
 
-  let styleElement = document.getElementById(styleId) as HTMLStyleElement
+  let styleElement = document.getElementById(styleId) as HTMLStyleElement | null
   if (!styleElement) {
     styleElement = document.createElement('style')
     styleElement.id = styleId

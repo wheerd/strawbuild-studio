@@ -58,7 +58,7 @@ export function ConstructionPlanModal({
       return
     }
 
-    if (open && !modelPromise) {
+    if (!modelPromise) {
       const nextModelPromise = constructionModelFactory()
       setModelPromise(nextModelPromise)
       setPartsDataPromise(null)
@@ -154,7 +154,9 @@ function ModalContent({
   return (
     <Tabs.Root
       value={activeTab}
-      onValueChange={value => setActiveTab(value as 'plan' | 'parts' | 'modules')}
+      onValueChange={value => {
+        setActiveTab(value as 'plan' | 'parts' | 'modules')
+      }}
       className="flex flex-col h-full -mt-2 "
     >
       <div className="flex-shrink-0">

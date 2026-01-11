@@ -141,7 +141,7 @@ export function LengthInputComponent(): React.JSX.Element | null {
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
-        placeholder={placeholder || 'Enter length...'}
+        placeholder={placeholder ?? 'Enter length...'}
         size="3"
         variant="surface"
         color={state.isValid ? undefined : 'red'}

@@ -134,7 +134,7 @@ export function createWallFaceOffsets(perimeters: PerimeterWithGeometry[]): Wall
 
       const inwardNormal = negVec2(wall.outsideDirection)
 
-      const insideThickness = Math.max(assembly.layers.insideThickness ?? 0, 0)
+      const insideThickness = Math.max(assembly.layers.insideThickness, 0)
       if (insideThickness > 0) {
         const segment: LineSegment2D = {
           start: copyVec2(startCorner.insidePoint),
@@ -152,7 +152,7 @@ export function createWallFaceOffsets(perimeters: PerimeterWithGeometry[]): Wall
         })
       }
 
-      const outsideThickness = Math.max(assembly.layers.outsideThickness ?? 0, 0)
+      const outsideThickness = Math.max(assembly.layers.outsideThickness, 0)
       if (outsideThickness > 0) {
         const segment: LineSegment2D = {
           start: copyVec2(startCorner.outsidePoint),

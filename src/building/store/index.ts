@@ -118,10 +118,13 @@ const useModelStore = create<Store>()(
       storage: {
         getItem: name => {
           const item = localStorage.getItem(name)
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           return item ? JSON.parse(item) : null
         },
         setItem: createDebouncedSave(),
-        removeItem: name => localStorage.removeItem(name)
+        removeItem: name => {
+          localStorage.removeItem(name)
+        }
       },
       onRehydrateStorage: () => state => {
         if (state) {
@@ -217,7 +220,7 @@ export const useModelEntityById = (
   const getter = useModelStore(getterSelector)
   return useMemo(() => {
     if (id == null) return null
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
     return getter(id as any)
   }, [entity, geometry, getter, id])
 }

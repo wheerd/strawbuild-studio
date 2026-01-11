@@ -69,9 +69,11 @@ export function registerServiceWorker(): void {
         .then(() => {
           setServiceWorkerReady(true)
         })
-        .catch(() => setServiceWorkerReady(false))
+        .catch(() => {
+          setServiceWorkerReady(false)
+        })
     })
-    .catch(error => {
+    .catch((error: unknown) => {
       console.error('Service worker registration failed', error)
     })
 }

@@ -31,7 +31,7 @@ export interface MaterialsActions {
   getAllMaterials: () => Material[]
   getMaterialsByType: (type: Material['type']) => Material[]
 
-  reset(): void
+  reset(this: void): void
 }
 
 export type MaterialsStore = MaterialsState & { actions: MaterialsActions }
@@ -58,7 +58,6 @@ const validateMaterialUpdates = (updates: Partial<UnionOmit<Material, 'id'>>, ma
       if (dimensional.crossSections !== undefined) {
         dimensional.crossSections.forEach(section => {
           if (
-            section == null ||
             typeof section.smallerLength !== 'number' ||
             typeof section.biggerLength !== 'number' ||
             section.smallerLength <= 0 ||
@@ -78,10 +77,9 @@ const validateMaterialUpdates = (updates: Partial<UnionOmit<Material, 'id'>>, ma
     }
     case 'sheet': {
       const sheet = updates as Partial<SheetMaterial>
-      if (sheet.sizes !== undefined) {
+      if (sheet.sizes != null) {
         sheet.sizes.forEach(size => {
           if (
-            size == null ||
             typeof size.smallerLength !== 'number' ||
             typeof size.biggerLength !== 'number' ||
             size.smallerLength <= 0 ||
@@ -92,7 +90,7 @@ const validateMaterialUpdates = (updates: Partial<UnionOmit<Material, 'id'>>, ma
         })
       }
 
-      if (sheet.thicknesses !== undefined) {
+      if (sheet.thicknesses != null) {
         if (sheet.thicknesses.some(thickness => thickness <= 0)) {
           throw new Error('All sheet thicknesses must be positive')
         }
@@ -184,8 +182,8 @@ const useMaterialsStore = create<MaterialsStore>()(
 
           updateMaterial: (id: MaterialId, updates: Partial<UnionOmit<Material, 'id' | 'type'>>) => {
             set(state => {
+              if (!(id in state.materials)) return state
               const material = state.materials[id]
-              if (material == null) return state
 
               validateMaterialUpdates(updates, material.type)
 
@@ -216,10 +214,8 @@ const useMaterialsStore = create<MaterialsStore>()(
 
           duplicateMaterial: (id: MaterialId, newName: string) => {
             const state = get()
+            if (!(id in state.materials)) throw new Error('Material not found')
             const originalMaterial = state.materials[id]
-            if (originalMaterial == null) {
-              throw new Error('Material not found')
-            }
 
             validateMaterialName(newName)
 

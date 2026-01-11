@@ -27,13 +27,15 @@ export function formatLength(lengthInMm: Length, locale: string): string {
 
   // For small values, use mm
   if (Math.abs(value) < 100 && value % 10 !== 0) {
-    return `${value}mm`
+    const formatter = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 })
+    return `${formatter.format(value)}mm`
   }
 
   // For medium values divisible by 10, use cm
   if (Math.abs(value) < 200 && value % 10 === 0) {
+    const formatter = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 })
     const cm = value / 10
-    return `${cm}cm`
+    return `${formatter.format(cm)}cm`
   }
 
   // For larger values, use meters with locale-aware formatting

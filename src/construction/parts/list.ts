@@ -88,8 +88,9 @@ const STRAW_CATEGORY_LABELS: Record<StrawCategory, string> = {
 const getStrawCategoryFromTags = (tags?: Tag[]): StrawCategory => {
   if (!tags) return 'stuffed'
   for (const tag of tags) {
-    const category = STRAW_CATEGORY_BY_TAG[tag.id as string]
-    if (category) return category
+    if (tag.id in STRAW_CATEGORY_BY_TAG) {
+      return STRAW_CATEGORY_BY_TAG[tag.id]
+    }
   }
   return 'stuffed'
 }
@@ -279,7 +280,7 @@ function computePartIdWithoutInfo(
 
   const mappedInfo = findMappedTag(tags)
   if (mappedInfo) {
-    partId = `auto_${String(mappedInfo.tag.id)}` as PartId
+    partId = `auto_${mappedInfo.tag.id}` as PartId
   } else {
     partId = `auto_misc` as PartId
   }
@@ -311,9 +312,9 @@ function updateOrCreatePartEntry(
   labelCounters: Map<MaterialId, number>,
   geometryInfo: { boxSize: Vec3; sideFaces?: SideFace[] }
 ) {
-  const existingPart = materialEntry.parts[partId]
+  if (partId in materialEntry.parts) {
+    const existingPart = materialEntry.parts[partId]
 
-  if (existingPart) {
     // Update existing part
     existingPart.quantity += 1
     existingPart.totalVolume += metrics.volume
@@ -390,18 +391,16 @@ export const generateMaterialPartsList = (model: ConstructionModel, excludeTypes
   const labelCounters = new Map<MaterialId, number>()
 
   const ensureMaterialEntry = (materialId: MaterialId): MaterialParts => {
-    let entry = partsList[materialId]
-    if (!entry) {
-      entry = {
+    if (!(materialId in partsList)) {
+      partsList[materialId] = {
         material: materialId,
         totalQuantity: 0,
         totalVolume: 0,
         parts: {},
         usages: {}
       }
-      partsList[materialId] = entry
     }
-    return entry
+    return partsList[materialId]
   }
 
   const processElement = (element: ConstructionModel['elements'][number], tags: Tag[]) => {
@@ -471,9 +470,9 @@ export const generateVirtualPartsList = (model: ConstructionModel): VirtualParts
     if (!partInfo) return
 
     const partId = partInfo.id
-    const existingPart = partsList[partId]
 
-    if (existingPart) {
+    if (partId in partsList) {
+      const existingPart = partsList[partId]
       existingPart.quantity += 1
       existingPart.elements.push(id)
       return
@@ -586,8 +585,8 @@ function computePartDescription(
 
 function findMappedTag(tags: Tag[]): { tag: Tag; type: string; description?: string } | null {
   for (const tag of tags) {
-    const mapping = TAG_MAPPING[tag.id as string]
-    if (mapping) {
+    if (tag.id in TAG_MAPPING) {
+      const mapping = TAG_MAPPING[tag.id]
       const customTag = tags.find(t => t.category === mapping.descriptionTagCategory && isCustomTag(t))
       const description = customTag && isCustomTag(customTag) ? customTag.label : undefined
       return { tag: customTag ?? tag, type: mapping.type, description }

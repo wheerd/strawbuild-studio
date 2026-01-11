@@ -42,9 +42,7 @@ export function resolveOpeningConfig(
 export function resolveOpeningAssembly(openingAssemblyId?: OpeningAssemblyId): OpeningAssembly {
   const configActions = getConfigActions()
 
-  if (!openingAssemblyId) {
-    openingAssemblyId = configActions.getDefaultOpeningAssemblyId()
-  }
+  openingAssemblyId ??= configActions.getDefaultOpeningAssemblyId()
   const config = configActions.getOpeningAssemblyById(openingAssemblyId)
 
   if (!config) {

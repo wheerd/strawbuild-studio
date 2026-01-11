@@ -22,26 +22,20 @@ import {
 
 export function transformBounds(bounds: Bounds3D, t: Transform): Bounds3D {
   // Transform all 8 corner points of the bounding box
-  const corners: Vec3[] = [
-    [bounds.min[0], bounds.min[1], bounds.min[2]], // min corner
-    [bounds.max[0], bounds.min[1], bounds.min[2]],
-    [bounds.min[0], bounds.max[1], bounds.min[2]],
-    [bounds.min[0], bounds.min[1], bounds.max[2]],
-    [bounds.max[0], bounds.max[1], bounds.min[2]],
-    [bounds.max[0], bounds.min[1], bounds.max[2]],
-    [bounds.min[0], bounds.max[1], bounds.max[2]],
-    [bounds.max[0], bounds.max[1], bounds.max[2]] // max corner
-  ].map(corner => newVec3(corner[0], corner[1], corner[2]))
+  const corners = [
+    newVec3(bounds.min[0], bounds.min[1], bounds.min[2]), // min corner
+    newVec3(bounds.max[0], bounds.min[1], bounds.min[2]),
+    newVec3(bounds.min[0], bounds.max[1], bounds.min[2]),
+    newVec3(bounds.min[0], bounds.min[1], bounds.max[2]),
+    newVec3(bounds.max[0], bounds.max[1], bounds.min[2]),
+    newVec3(bounds.max[0], bounds.min[1], bounds.max[2]),
+    newVec3(bounds.min[0], bounds.max[1], bounds.max[2]),
+    newVec3(bounds.max[0], bounds.max[1], bounds.max[2]) // max corner
+  ]
 
-  // Transform all corners
   const transformedCorners = corners.map(corner => transform(corner, t))
 
-  // Use boundsFromPoints3D to compute new bounds
-  const result = Bounds3D.fromPoints(transformedCorners)
-  if (!result) {
-    throw new Error('Failed to compute transformed bounds')
-  }
-  return result
+  return Bounds3D.fromPoints(transformedCorners)
 }
 
 export type ZOrder = (

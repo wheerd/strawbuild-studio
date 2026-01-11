@@ -8,7 +8,7 @@ describe('SVGViewport', () => {
   const testContentBounds = Bounds2D.fromMinMax(newVec2(0, 0), newVec2(100, 100))
   const TestContent = () => <rect x="10" y="10" width="80" height="80" fill="blue" data-testid="test-rect" />
 
-  test('renders SVG with fixed viewBox based on svgSize', async () => {
+  test('renders SVG with fixed viewBox based on svgSize', () => {
     const { container } = render(
       <SVGViewport contentBounds={testContentBounds} svgSize={{ width: 800, height: 600 }}>
         <TestContent />

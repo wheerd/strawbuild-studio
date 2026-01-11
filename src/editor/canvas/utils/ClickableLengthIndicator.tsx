@@ -76,12 +76,12 @@ export function ClickableLengthIndicator({
     estimatedTextWidth > maxTextWidth ? Math.max(12, fontSize * (maxTextWidth / estimatedTextWidth)) : fontSize
 
   const textSize: { width: number; height: number } = useMemo(() => {
-    if (textRef?.current) {
+    if (textRef.current) {
       return textRef.current.measureSize(displayLabel)
     }
     // Fallback estimate if ref not available yet
     return { width: displayLabel.length * scaledFontSize * 0.6, height: scaledFontSize }
-  }, [textRef?.current, displayLabel, scaledFontSize])
+  }, [textRef.current, displayLabel, scaledFontSize])
 
   // Fixed line widths and sizes
   const connectionStrokeWidth = strokeWidth / 2

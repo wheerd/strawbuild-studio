@@ -202,7 +202,7 @@ function getOffsetAt(heightLine: HeightLine, position: number): [Length, Length]
     if (item.position <= position) {
       before = item
     }
-    if (item.position >= position && after === null) {
+    if (item.position >= position) {
       after = item
       break
     }

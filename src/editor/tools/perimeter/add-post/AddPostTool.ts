@@ -98,11 +98,8 @@ export class AddPostTool extends BaseTool implements ToolImplementation {
     if (hitResult.entityType === 'perimeter-corner') {
       const cornerId = hitResult.entityId as PerimeterCornerId
       const corner = getPerimeterCornerById(cornerId)
-
-      if (corner) {
-        wallId = corner.constructedByWall === 'previous' ? corner.previousWallId : corner.nextWallId
-        wall = getPerimeterWallById(wallId)
-      }
+      wallId = corner.constructedByWall === 'previous' ? corner.previousWallId : corner.nextWallId
+      wall = getPerimeterWallById(wallId)
     }
 
     if (!wall || !wallId) {
@@ -120,11 +117,7 @@ export class AddPostTool extends BaseTool implements ToolImplementation {
    */
   private calculateCenterOffsetFromPointerPosition(pointerPos: Vec2, wall: PerimeterWallWithGeometry): Length {
     const centerOffset = projectVec2(wall.insideLine.start, pointerPos, wall.direction)
-
-    // Round center offset to 10mm increments
-    const roundedCenterOffset = Math.round(centerOffset / 10) * 10
-
-    return roundedCenterOffset
+    return Math.round(centerOffset / 10) * 10 // Round center offset to 10mm increments
   }
 
   /**
@@ -232,18 +225,16 @@ export class AddPostTool extends BaseTool implements ToolImplementation {
         infillMaterial: this.state.infillMaterial
       })
 
-      if (post) {
-        const { clearSelection, pushSelection } = getSelectionActions()
+      const { clearSelection, pushSelection } = getSelectionActions()
 
-        // Select the newly created post
-        clearSelection()
-        pushSelection(post.perimeterId)
-        pushSelection(post.wallId)
-        pushSelection(post.id)
+      // Select the newly created post
+      clearSelection()
+      pushSelection(post.perimeterId)
+      pushSelection(post.wallId)
+      pushSelection(post.id)
 
-        // Clear preview after successful placement
-        this.clearPreview()
-      }
+      // Clear preview after successful placement
+      this.clearPreview()
     } catch (error) {
       console.error('Failed to add post:', error)
     }

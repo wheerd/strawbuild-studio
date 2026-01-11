@@ -1,9 +1,10 @@
 import type { LayerConfig } from '@/construction/layers/types'
+import { assertUnreachable } from '@/shared/utils'
 
 const sanitizeLayerName = (name: string): string => name.trim()
 
 const ensureNonNegative = (value: number, message: string): void => {
-  if (Number(value) < 0) {
+  if (value < 0) {
     throw new Error(message)
   }
 }
@@ -20,9 +21,16 @@ export const validateLayerConfig = (layer: LayerConfig): void => {
   }
   ensureNonNegative(layer.thickness, 'Layer thickness cannot be negative')
 
-  if (layer.type === 'striped') {
-    ensureNonNegative(layer.stripeWidth, 'Layer stripe width cannot be negative')
-    ensureNonNegative(layer.gapWidth, 'Layer gap width cannot be negative')
+  switch (layer.type) {
+    case 'monolithic':
+      // No additional validation needed
+      break
+    case 'striped':
+      ensureNonNegative(layer.stripeWidth, 'Layer stripe width cannot be negative')
+      ensureNonNegative(layer.gapWidth, 'Layer gap width cannot be negative')
+      break
+    default:
+      assertUnreachable(layer, 'Invalid layer type')
   }
 }
 
@@ -78,7 +86,7 @@ export const moveLayer = (layers: LayerConfig[], fromIndex: number, toIndex: num
 }
 
 export const sumLayerThickness = (layers: LayerConfig[]): number =>
-  layers.reduce((total, layer) => total + (layer.overlap ? 0 : Number(layer.thickness ?? 0)), 0)
+  layers.reduce((total, layer) => total + (layer.overlap ? 0 : layer.thickness), 0)
 
 export const sanitizeLayerArray = (layers: LayerConfig[]): LayerConfig[] =>
   layers.reduce<LayerConfig[]>((sanitized, layer) => appendLayer(sanitized, layer), [])

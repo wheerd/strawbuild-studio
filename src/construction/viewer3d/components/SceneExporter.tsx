@@ -52,7 +52,7 @@ function SceneExporter({ onExportReady }: SceneExporterProps): null {
       } else if (format === 'stl') {
         const exporter = new STLExporter()
         const result = exporter.parse(scene, { binary: false })
-        downloadFile(result as string, `construction-${timestamp}.stl`, 'text/plain')
+        downloadFile(result, `construction-${timestamp}.stl`, 'text/plain')
       }
     },
     [scene]

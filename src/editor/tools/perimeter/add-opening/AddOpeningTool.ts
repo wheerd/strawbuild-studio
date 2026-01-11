@@ -13,7 +13,7 @@ import { getSelectionActions } from '@/editor/hooks/useSelectionStore'
 import { getViewModeActions } from '@/editor/hooks/useViewMode'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
 import type { CanvasEvent, CursorStyle, ToolImplementation } from '@/editor/tools/system/types'
-import { type Length, type Vec2, distVec2, lineFromSegment, newVec2, projectPointOntoLine } from '@/shared/geometry'
+import { type Length, type Vec2, newVec2, projectVec2 } from '@/shared/geometry'
 
 import { AddOpeningToolInspector } from './AddOpeningToolInspector'
 import { AddOpeningToolOverlay } from './AddOpeningToolOverlay'
@@ -85,10 +85,7 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
     // Check if we hit a wall wall directly
     if (hitResult.entityType === 'perimeter-wall') {
       wallId = hitResult.entityId as PerimeterWallId
-
-      if (wallId) {
-        wall = getPerimeterWallById(wallId)
-      }
+      wall = getPerimeterWallById(wallId)
     }
 
     // Check if we hit an opening
@@ -149,30 +146,15 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
       return false
     }
 
-    return Math.abs(defaultAssembly?.padding - this.state.hoveredPerimeterWall.wallOpeningPadding) > 0.1
+    return Math.abs(defaultAssembly.padding - this.state.hoveredPerimeterWall.wallOpeningPadding) > 0.1
   }
 
   /**
    * Calculate center offset from pointer position projected onto wall
    */
   private calculateCenterOffsetFromPointerPosition(pointerPos: Vec2, wall: PerimeterWallWithGeometry): Length {
-    // Convert LineWall2D to Line2D for projection
-    const line = lineFromSegment(wall.insideLine)
-    if (!line) {
-      throw new Error('Cannot create line from wall')
-    }
-
-    // Project pointer position onto wall's inside line
-    const projectedPoint = projectPointOntoLine(pointerPos, line)
-
-    // Calculate offset from wall start to CENTER of opening
-    const startPoint = wall.insideLine.start
-    const centerOffset = distVec2(startPoint, projectedPoint)
-
-    // Round center offset to 10mm increments
-    const roundedCenterOffset = Math.round(centerOffset / 10) * 10
-
-    return roundedCenterOffset
+    const centerOffset = projectVec2(wall.insideLine.start, pointerPos, wall.direction)
+    return Math.round(centerOffset / 10) * 10 // Round center offset to 10mm increments
   }
 
   /**
@@ -308,18 +290,16 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
         openingAssemblyId: this.state.openingAssemblyId
       })
 
-      if (opening) {
-        const { clearSelection, pushSelection } = getSelectionActions()
+      const { clearSelection, pushSelection } = getSelectionActions()
 
-        // Select the newly created opening
-        clearSelection()
-        pushSelection(opening.perimeterId)
-        pushSelection(opening.wallId)
-        pushSelection(opening.id)
+      // Select the newly created opening
+      clearSelection()
+      pushSelection(opening.perimeterId)
+      pushSelection(opening.wallId)
+      pushSelection(opening.id)
 
-        // Clear preview after successful placement
-        this.clearPreview()
-      }
+      // Clear preview after successful placement
+      this.clearPreview()
     } catch (error) {
       console.error('Failed to add opening:', error)
     }

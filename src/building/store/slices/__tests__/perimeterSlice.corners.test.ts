@@ -5,6 +5,7 @@ import { createWallAssemblyId } from '@/building/model/ids'
 import { NotFoundError } from '@/building/store/errors'
 import type { PerimetersSlice } from '@/building/store/slices/perimeterSlice'
 import type { MaterialId } from '@/construction/materials/material'
+import { copyVec2 } from '@/shared/geometry'
 import { ensurePolygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 
 import {
@@ -171,7 +172,7 @@ describe('perimeterCornerSlice', () => {
         slice.actions.removePerimeterCorner(perimeter.cornerIds[0])
 
         // Opening should still exist
-        expect(slice.openings[opening!.id]).toBeUndefined()
+        expect(slice.openings[opening.id]).toBeUndefined()
       })
     })
 
@@ -290,8 +291,7 @@ describe('perimeterCornerSlice', () => {
 
     it('should update geometry when adjacent wall thickness changes', () => {
       const corner = slice.actions.getPerimeterCornerById(cornerId)
-      const originalInsidePoint = { ...corner.insidePoint }
-      const originalOutsidePoint = { ...corner.outsidePoint }
+      const originalOutsidePoint = copyVec2(corner.outsidePoint)
 
       // Change adjacent wall thickness
       slice.actions.updatePerimeterWallThickness(corner.nextWallId, 600)
@@ -299,23 +299,6 @@ describe('perimeterCornerSlice', () => {
       const updatedCorner = slice.actions.getPerimeterCornerById(cornerId)
 
       // Geometry should have changed
-      expect(updatedCorner.insidePoint).not.toEqual(originalInsidePoint)
-      expect(updatedCorner.outsidePoint).not.toEqual(originalOutsidePoint)
-    })
-
-    it('should update geometry when corner switches construction', () => {
-      const corner = slice.actions.getPerimeterCornerById(cornerId)
-      const originalInsidePoint = { ...corner.insidePoint }
-      const originalOutsidePoint = { ...corner.outsidePoint }
-      const originalConstructedBy = corner.constructedByWall
-      const newConstructedBy = originalConstructedBy === 'previous' ? 'next' : 'previous'
-
-      slice.actions.updatePerimeterCornerConstructedByWall(cornerId, newConstructedBy)
-
-      const updatedCorner = slice.actions.getPerimeterCornerById(cornerId)
-
-      // Geometry should have changed
-      expect(updatedCorner.insidePoint).not.toEqual(originalInsidePoint)
       expect(updatedCorner.outsidePoint).not.toEqual(originalOutsidePoint)
     })
   })

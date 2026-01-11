@@ -172,6 +172,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
 
       if (floorAssemblies.length > 1) {
         const nextConfig = floorAssemblies[currentIndex + 1] ?? floorAssemblies[currentIndex - 1]
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         setSelectedConfigId(nextConfig?.id ?? null)
       } else {
         setSelectedConfigId(null)
@@ -199,7 +200,9 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           <Flex direction="column" gap="1" flexGrow="1">
             <FloorAssemblySelect
               value={selectedConfigId as FloorAssemblyId | undefined}
-              onValueChange={value => setSelectedConfigId(value ?? null)}
+              onValueChange={value => {
+                setSelectedConfigId(value)
+              }}
               showDefaultIndicator
               defaultConfigId={defaultConfigId}
             />
@@ -212,19 +215,31 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
               </IconButton>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
-              <DropdownMenu.Item onSelect={() => handleAddNew('monolithic')}>
+              <DropdownMenu.Item
+                onSelect={() => {
+                  handleAddNew('monolithic')
+                }}
+              >
                 <Flex align="center" gap="1">
                   {React.createElement(getFloorAssemblyTypeIcon('monolithic'))}
                   {t($ => $.floors.types.monolithic)}
                 </Flex>
               </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => handleAddNew('joist')}>
+              <DropdownMenu.Item
+                onSelect={() => {
+                  handleAddNew('joist')
+                }}
+              >
                 <Flex align="center" gap="1">
                   {React.createElement(getFloorAssemblyTypeIcon('joist'))}
                   {t($ => $.floors.types.joist)}
                 </Flex>
               </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => handleAddNew('filled')}>
+              <DropdownMenu.Item
+                onSelect={() => {
+                  handleAddNew('filled')
+                }}
+              >
                 <Flex align="center" gap="1">
                   {React.createElement(getFloorAssemblyTypeIcon('filled'))}
                   {t($ => $.floors.types.straw)}
@@ -375,14 +390,18 @@ function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.
 
   const nameInput = useDebouncedInput(
     nameKey ? t(nameKey) : assembly.name,
-    (name: string) => updateFloorAssemblyName(assembly.id, name),
+    (name: string) => {
+      updateFloorAssemblyName(assembly.id, name)
+    },
     {
       debounceMs: 1000
     }
   )
 
   const handleUpdateConfig = useCallback(
-    (updates: Partial<FloorConfig>) => updateFloorAssemblyConfig(assembly.id, updates),
+    (updates: Partial<FloorConfig>) => {
+      updateFloorAssemblyConfig(assembly.id, updates)
+    },
     [assembly.id, updateFloorAssemblyConfig]
   )
 
@@ -407,7 +426,9 @@ function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.
           </Label.Root>
           <TextField.Root
             value={nameInput.value}
-            onChange={e => nameInput.handleChange(e.target.value)}
+            onChange={e => {
+              nameInput.handleChange(e.target.value)
+            }}
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
             placeholder={t($ => $.common.placeholders.name)}
@@ -496,7 +517,14 @@ function MonolithicConfigFields({
           </Label.Root>
           <MeasurementInfo highlightedPart="floorConstruction" />
         </Flex>
-        <LengthField value={config.thickness} onChange={thickness => onUpdate({ thickness })} unit="mm" size="2" />
+        <LengthField
+          value={config.thickness}
+          onChange={thickness => {
+            onUpdate({ thickness })
+          }}
+          unit="mm"
+          size="2"
+        />
       </Grid>
     </>
   )
@@ -530,7 +558,9 @@ function JoistConfigFields({
         </Flex>
         <LengthField
           value={config.constructionHeight}
-          onChange={constructionHeight => onUpdate({ constructionHeight })}
+          onChange={constructionHeight => {
+            onUpdate({ constructionHeight })
+          }}
           unit="mm"
           size="2"
         />
@@ -564,7 +594,9 @@ function JoistConfigFields({
         </Label.Root>
         <LengthField
           value={config.joistThickness}
-          onChange={joistThickness => onUpdate({ joistThickness })}
+          onChange={joistThickness => {
+            onUpdate({ joistThickness })
+          }}
           unit="mm"
           size="2"
         />
@@ -576,7 +608,9 @@ function JoistConfigFields({
         </Label.Root>
         <LengthField
           value={config.joistSpacing}
-          onChange={joistSpacing => onUpdate({ joistSpacing })}
+          onChange={joistSpacing => {
+            onUpdate({ joistSpacing })
+          }}
           unit="mm"
           size="2"
         />
@@ -610,7 +644,9 @@ function JoistConfigFields({
         </Label.Root>
         <LengthField
           value={config.wallBeamThickness}
-          onChange={wallBeamThickness => onUpdate({ wallBeamThickness })}
+          onChange={wallBeamThickness => {
+            onUpdate({ wallBeamThickness })
+          }}
           unit="mm"
           size="2"
         />
@@ -622,7 +658,9 @@ function JoistConfigFields({
         </Label.Root>
         <LengthField
           value={config.wallBeamInsideOffset}
-          onChange={wallBeamInsideOffset => onUpdate({ wallBeamInsideOffset })}
+          onChange={wallBeamInsideOffset => {
+            onUpdate({ wallBeamInsideOffset })
+          }}
           unit="mm"
           size="2"
         />
@@ -671,7 +709,9 @@ function JoistConfigFields({
         </Label.Root>
         <LengthField
           value={config.subfloorThickness}
-          onChange={subfloorThickness => onUpdate({ subfloorThickness })}
+          onChange={subfloorThickness => {
+            onUpdate({ subfloorThickness })
+          }}
           unit="mm"
           size="2"
         />
@@ -705,7 +745,9 @@ function JoistConfigFields({
         </Label.Root>
         <LengthField
           value={config.openingSideThickness}
-          onChange={openingSideThickness => onUpdate({ openingSideThickness })}
+          onChange={openingSideThickness => {
+            onUpdate({ openingSideThickness })
+          }}
           unit="mm"
           size="2"
         />
@@ -741,7 +783,9 @@ function FilledConfigFields({
         </Flex>
         <LengthField
           value={config.constructionHeight}
-          onChange={constructionHeight => onUpdate({ constructionHeight })}
+          onChange={constructionHeight => {
+            onUpdate({ constructionHeight })
+          }}
           unit="mm"
           size="2"
         />
@@ -775,7 +819,9 @@ function FilledConfigFields({
         </Label.Root>
         <LengthField
           value={config.joistThickness}
-          onChange={joistThickness => onUpdate({ joistThickness })}
+          onChange={joistThickness => {
+            onUpdate({ joistThickness })
+          }}
           unit="mm"
           size="2"
         />
@@ -787,7 +833,9 @@ function FilledConfigFields({
         </Label.Root>
         <LengthField
           value={config.joistSpacing}
-          onChange={joistSpacing => onUpdate({ joistSpacing })}
+          onChange={joistSpacing => {
+            onUpdate({ joistSpacing })
+          }}
           unit="mm"
           size="2"
         />
@@ -821,7 +869,9 @@ function FilledConfigFields({
         </Label.Root>
         <LengthField
           value={config.frameThickness}
-          onChange={frameThickness => onUpdate({ frameThickness })}
+          onChange={frameThickness => {
+            onUpdate({ frameThickness })
+          }}
           unit="mm"
           size="2"
         />
@@ -855,7 +905,9 @@ function FilledConfigFields({
         </Label.Root>
         <LengthField
           value={config.subfloorThickness}
-          onChange={subfloorThickness => onUpdate({ subfloorThickness })}
+          onChange={subfloorThickness => {
+            onUpdate({ subfloorThickness })
+          }}
           unit="mm"
           size="2"
         />
@@ -889,7 +941,9 @@ function FilledConfigFields({
         </Label.Root>
         <LengthField
           value={config.ceilingSheathingThickness}
-          onChange={ceilingSheathingThickness => onUpdate({ ceilingSheathingThickness })}
+          onChange={ceilingSheathingThickness => {
+            onUpdate({ ceilingSheathingThickness })
+          }}
           unit="mm"
           size="2"
         />
@@ -923,7 +977,9 @@ function FilledConfigFields({
         </Label.Root>
         <LengthField
           value={config.openingFrameThickness}
-          onChange={openingFrameThickness => onUpdate({ openingFrameThickness })}
+          onChange={openingFrameThickness => {
+            onUpdate({ openingFrameThickness })
+          }}
           unit="mm"
           size="2"
         />
@@ -950,7 +1006,9 @@ function FilledConfigFields({
           value={config.strawMaterial ?? null}
           allowEmpty
           emptyLabel={t($ => $.common.useGlobalStrawSettings)}
-          onValueChange={strawMaterial => onUpdate({ strawMaterial: strawMaterial ?? undefined })}
+          onValueChange={strawMaterial => {
+            onUpdate({ strawMaterial: strawMaterial ?? undefined })
+          }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
           preferredTypes={['strawbale']}
@@ -1012,13 +1070,21 @@ function LayersFields({ assemblyId, config }: { assemblyId: FloorAssemblyId; con
         title={t($ => $.floors.layers.topLayers)}
         measurementInfo={<MeasurementInfo highlightedPart="floorTopLayers" />}
         layers={displayedTopLayers}
-        onAddLayer={layer => addFloorAssemblyTopLayer(assemblyId, layer)}
-        onReplaceLayers={layers => setFloorAssemblyTopLayers(assemblyId, layers)}
-        onUpdateLayer={(index, updates) => updateFloorAssemblyTopLayer(assemblyId, mapTopIndex(index), updates)}
-        onRemoveLayer={index => removeFloorAssemblyTopLayer(assemblyId, mapTopIndex(index))}
-        onMoveLayer={(fromIndex, toIndex) =>
+        onAddLayer={layer => {
+          addFloorAssemblyTopLayer(assemblyId, layer)
+        }}
+        onReplaceLayers={layers => {
+          setFloorAssemblyTopLayers(assemblyId, layers)
+        }}
+        onUpdateLayer={(index, updates) => {
+          updateFloorAssemblyTopLayer(assemblyId, mapTopIndex(index), updates)
+        }}
+        onRemoveLayer={index => {
+          removeFloorAssemblyTopLayer(assemblyId, mapTopIndex(index))
+        }}
+        onMoveLayer={(fromIndex, toIndex) => {
           moveFloorAssemblyTopLayer(assemblyId, mapTopIndex(fromIndex), mapTopIndex(toIndex))
-        }
+        }}
         addLabel={t($ => $.floors.layers.addTopLayer)}
         emptyHint={t($ => $.floors.layers.noTopLayers)}
         layerPresets={FLOOR_LAYER_PRESETS}
@@ -1033,11 +1099,21 @@ function LayersFields({ assemblyId, config }: { assemblyId: FloorAssemblyId; con
         title={t($ => $.floors.layers.bottomLayers)}
         measurementInfo={<MeasurementInfo highlightedPart="floorBottomLayers" />}
         layers={config.layers.bottomLayers}
-        onAddLayer={layer => addFloorAssemblyBottomLayer(assemblyId, layer)}
-        onReplaceLayers={layers => setFloorAssemblyBottomLayers(assemblyId, layers)}
-        onUpdateLayer={(index, updates) => updateFloorAssemblyBottomLayer(assemblyId, index, updates)}
-        onRemoveLayer={index => removeFloorAssemblyBottomLayer(assemblyId, index)}
-        onMoveLayer={(fromIndex, toIndex) => moveFloorAssemblyBottomLayer(assemblyId, fromIndex, toIndex)}
+        onAddLayer={layer => {
+          addFloorAssemblyBottomLayer(assemblyId, layer)
+        }}
+        onReplaceLayers={layers => {
+          setFloorAssemblyBottomLayers(assemblyId, layers)
+        }}
+        onUpdateLayer={(index, updates) => {
+          updateFloorAssemblyBottomLayer(assemblyId, index, updates)
+        }}
+        onRemoveLayer={index => {
+          removeFloorAssemblyBottomLayer(assemblyId, index)
+        }}
+        onMoveLayer={(fromIndex, toIndex) => {
+          moveFloorAssemblyBottomLayer(assemblyId, fromIndex, toIndex)
+        }}
         addLabel={t($ => $.floors.layers.addBottomLayer)}
         emptyHint={t($ => $.floors.layers.noBottomLayers)}
         layerPresets={CEILING_LAYER_PRESETS}

@@ -35,7 +35,7 @@ export class EntityHitTestService {
    * @returns EntityHitResult if an entity is found, null otherwise
    */
   findEntityAt(pointerCoordinates: { x: number; y: number }): EntityHitResult | null {
-    const stage = this.stage || stageReference.getStage()
+    const stage = this.stage ?? stageReference.getStage()
     if (!stage) {
       return null
     }
@@ -64,7 +64,7 @@ export class EntityHitTestService {
         return {
           entityId: attrs.entityId as SelectableId,
           entityType: attrs.entityType as EntityType,
-          parentIds: (attrs.parentIds as SelectableId[]) || [],
+          parentIds: (attrs.parentIds ?? []) as SelectableId[],
           konvaNode: currentNode,
           stagePoint: point
         }

@@ -13,7 +13,9 @@ export function ThemeToggle(): React.JSX.Element {
     <IconButton
       variant="soft"
       size="1"
-      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      onClick={() => {
+        setTheme(isDark ? 'light' : 'dark')
+      }}
       title={isDark ? t($ => $.themeToggle.switchToLight) : t($ => $.themeToggle.switchToDark)}
       aria-pressed={isDark}
     >

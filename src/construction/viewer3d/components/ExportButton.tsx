@@ -19,11 +19,41 @@ function ExportButton({ onExport }: ExportButtonProps): React.JSX.Element {
         </IconButton>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
-        <DropdownMenu.Item onClick={() => onExport('collada')}>{t($ => $.export.collada)}</DropdownMenu.Item>
-        <DropdownMenu.Item onClick={() => onExport('gltf')}>{t($ => $.export.gltf)}</DropdownMenu.Item>
-        <DropdownMenu.Item onClick={() => onExport('obj')}>{t($ => $.export.obj)}</DropdownMenu.Item>
-        <DropdownMenu.Item onClick={() => onExport('stl')}>{t($ => $.export.stl)}</DropdownMenu.Item>
-        <DropdownMenu.Item onClick={() => onExport('ifc')}>{t($ => $.export.ifc)}</DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            onExport('collada')
+          }}
+        >
+          {t($ => $.export.collada)}
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            onExport('gltf')
+          }}
+        >
+          {t($ => $.export.gltf)}
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            onExport('obj')
+          }}
+        >
+          {t($ => $.export.obj)}
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            onExport('stl')
+          }}
+        >
+          {t($ => $.export.stl)}
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            onExport('ifc')
+          }}
+        >
+          {t($ => $.export.ifc)}
+        </DropdownMenu.Item>
       </DropdownMenu.Content>
     </DropdownMenu.Root>
   )

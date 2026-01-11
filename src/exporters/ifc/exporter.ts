@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Handle, IFC4, IfcAPI, type IfcLineObject } from 'web-ifc'
 import wasmUrl from 'web-ifc/web-ifc.wasm?url'
 
@@ -412,7 +413,6 @@ class IfcExporter {
 
       const startCorner = this.store.getPerimeterCornerById(wall.startCornerId)
       const endCorner = this.store.getPerimeterCornerById(wall.endCornerId)
-      if (!startCorner || !endCorner) continue
 
       const wallId = this.createWallElement(wall, startCorner, endCorner, info, storeyPlacement, materialUsageCache)
       elements.push(wallId)
@@ -474,12 +474,7 @@ class IfcExporter {
     )
 
     const assemblyProperty = this.writeEntity(
-      new IFC4.IfcPropertySingleValue(
-        this.identifier('AssemblyId'),
-        null,
-        this.identifier(wall.wallAssemblyId ?? 'unknown'),
-        null
-      )
+      new IFC4.IfcPropertySingleValue(this.identifier('AssemblyId'), null, this.identifier(wall.wallAssemblyId), null)
     )
 
     const propertySet = this.writeEntity(
@@ -496,9 +491,7 @@ class IfcExporter {
     for (const entityId of wall.entityIds) {
       if (isOpeningId(entityId)) {
         const opening = this.store.getWallOpeningById(entityId)
-        if (opening) {
-          this.createOpeningElement(opening, wall, wallId, placement)
-        }
+        this.createOpeningElement(opening, wall, wallId, placement)
       }
     }
 
@@ -823,7 +816,7 @@ class IfcExporter {
   private positiveLengthMeasure(value: number, force = false): IFC4.IfcPositiveLengthMeasure {
     if (force) {
       // To actually get a value like IFCPOSITIVELENGTHMEASURE(42.0) we need to do this:
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return
       return { type: 2, label: 'IFCPOSITIVELENGTHMEASURE', valueType: 4, internalValue: Math.max(value, 0.01) } as any
     }
     return new IFC4.IfcPositiveLengthMeasure(Math.max(value, 1e-6))
@@ -832,7 +825,7 @@ class IfcExporter {
   private nonNegativeLengthMeasure(value: number, force = false): IFC4.IfcNonNegativeLengthMeasure {
     if (force) {
       // To actually get a value like IFCNONNEGATIVELENGTHMEASURE(42.0) we need to do this:
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return
       return { type: 2, label: 'IFCNONNEGATIVELENGTHMEASURE', valueType: 4, internalValue: Math.max(value, 0) } as any
     }
     return new IFC4.IfcNonNegativeLengthMeasure(Math.max(value, 0))
@@ -843,7 +836,7 @@ class IfcExporter {
   }
 
   private globalId(): IFC4.IfcGloballyUniqueId {
-    return this.api.CreateIFCGloballyUniqueId(this.modelID)
+    return this.api.CreateIFCGloballyUniqueId(this.modelID) as IFC4.IfcGloballyUniqueId
   }
 
   private toLocal(point: Vec2, origin: Vec2, direction: Vec2, normal: Vec2): Vec2 {

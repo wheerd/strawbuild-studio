@@ -28,7 +28,7 @@ export function OpeningPreview({
   // Opening dimensions are stored as FITTING (rough opening size with padding)
   const fittingWidth = opening.width
   const fittingHeight = opening.height
-  const fittingSillHeight = opening.sillHeight || 0
+  const fittingSillHeight = opening.sillHeight ?? 0
 
   // Calculate FINISHED dimensions (clear opening size)
   const finishedWidth = fittingWidth - 2 * padding

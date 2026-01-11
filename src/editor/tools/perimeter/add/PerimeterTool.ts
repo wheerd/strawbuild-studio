@@ -77,11 +77,6 @@ export class PerimeterTool extends BasePolygonTool<PerimeterToolState> implement
     const { addPerimeter, getActiveStoreyId } = getModelActions()
     const activeStoreyId = getActiveStoreyId()
 
-    if (!this.state.wallAssemblyId) {
-      console.error('No wall assembly selected')
-      return
-    }
-
     addPerimeter(
       activeStoreyId,
       polygon,

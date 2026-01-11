@@ -40,10 +40,6 @@ export class PerimeterWallMovementBehavior implements MovementBehavior<
     const perimeter = store.getPerimeterById(perimeterId)
     const wall = store.getPerimeterWallById(entityId)
 
-    if (!perimeter || !wall) {
-      throw new Error(`Could not find wall or wall ${entityId}`)
-    }
-
     // Find which wall index this is
     const wallIndex = perimeter.wallIds.indexOf(wall.id)
     if (wallIndex === -1) {

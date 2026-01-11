@@ -144,6 +144,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
 
     if (ringBeamAssemblies.length > 1) {
       const nextAssembly = ringBeamAssemblies[currentIndex + 1] ?? ringBeamAssemblies[currentIndex - 1]
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       setSelectedAssemblyId(nextAssembly?.id ?? null)
     } else {
       setSelectedAssemblyId(null)
@@ -167,7 +168,9 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
           <Flex direction="column" gap="1" flexGrow="1">
             <RingBeamAssemblySelect
               value={selectedAssemblyId as RingBeamAssemblyId | undefined}
-              onValueChange={value => setSelectedAssemblyId(value ?? null)}
+              onValueChange={value => {
+                setSelectedAssemblyId(value ?? null)
+              }}
               showDefaultIndicator
               defaultAssemblyIds={[defaultBaseId, defaultTopId].filter(Boolean) as RingBeamAssemblyId[]}
             />
@@ -180,19 +183,31 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
               </IconButton>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
-              <DropdownMenu.Item onSelect={() => handleAddNew('full')}>
+              <DropdownMenu.Item
+                onSelect={() => {
+                  handleAddNew('full')
+                }}
+              >
                 <Flex align="center" gap="1">
                   {React.createElement(getRingBeamTypeIcon('full'))}
                   {t($ => $.ringBeams.types.full)}
                 </Flex>
               </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => handleAddNew('double')}>
+              <DropdownMenu.Item
+                onSelect={() => {
+                  handleAddNew('double')
+                }}
+              >
                 <Flex align="center" gap="1">
                   {React.createElement(getRingBeamTypeIcon('double'))}
                   {t($ => $.ringBeams.types.double)}
                 </Flex>
               </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => handleAddNew('brick')}>
+              <DropdownMenu.Item
+                onSelect={() => {
+                  handleAddNew('brick')
+                }}
+              >
                 <Flex align="center" gap="1">
                   {React.createElement(getRingBeamTypeIcon('brick'))}
                   {t($ => $.ringBeams.types.brick)}
@@ -324,14 +339,18 @@ function ConfigForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.R
 
   const nameInput = useDebouncedInput(
     nameKey ? t(nameKey) : assembly.name,
-    (name: string) => updateRingBeamAssemblyName(assembly.id, name),
+    (name: string) => {
+      updateRingBeamAssemblyName(assembly.id, name)
+    },
     {
       debounceMs: 1000
     }
   )
 
   const handleUpdateConfig = useCallback(
-    (updates: Partial<RingBeamConfig>) => updateRingBeamAssemblyConfig(assembly.id, updates),
+    (updates: Partial<RingBeamConfig>) => {
+      updateRingBeamAssemblyConfig(assembly.id, updates)
+    },
     [assembly, updateRingBeamAssemblyConfig]
   )
 
@@ -353,7 +372,9 @@ function ConfigForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.R
           </Label.Root>
           <TextField.Root
             value={nameInput.value}
-            onChange={e => nameInput.handleChange(e.target.value)}
+            onChange={e => {
+              nameInput.handleChange(e.target.value)
+            }}
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
             placeholder={t($ => $.ringBeams.placeholders.name)}
@@ -433,14 +454,28 @@ function FullRingBeamFields({
           </Label.Root>
           <MeasurementInfo highlightedPart="plates" />
         </Flex>
-        <LengthField value={config.height} onChange={height => onUpdate({ height })} unit="mm" size="2" />
+        <LengthField
+          value={config.height}
+          onChange={height => {
+            onUpdate({ height })
+          }}
+          unit="mm"
+          size="2"
+        />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
             {t($ => $.common.width)}
           </Text>
         </Label.Root>
-        <LengthField value={config.width} onChange={width => onUpdate({ width })} unit="mm" size="2" />
+        <LengthField
+          value={config.width}
+          onChange={width => {
+            onUpdate({ width })
+          }}
+          unit="mm"
+          size="2"
+        />
 
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
@@ -449,7 +484,9 @@ function FullRingBeamFields({
         </Label.Root>
         <LengthField
           value={config.offsetFromEdge}
-          onChange={offsetFromEdge => onUpdate({ offsetFromEdge })}
+          onChange={offsetFromEdge => {
+            onUpdate({ offsetFromEdge })
+          }}
           unit="mm"
           size="2"
         />
@@ -514,7 +551,14 @@ function DoubleRingBeamFields({
           </Label.Root>
           <MeasurementInfo highlightedPart="plates" />
         </Flex>
-        <LengthField value={config.height} onChange={height => onUpdate({ height })} unit="mm" size="2" />
+        <LengthField
+          value={config.height}
+          onChange={height => {
+            onUpdate({ height })
+          }}
+          unit="mm"
+          size="2"
+        />
 
         <Flex align="center" gap="1">
           <Label.Root>
@@ -524,7 +568,14 @@ function DoubleRingBeamFields({
           </Label.Root>
           <MeasurementInfo highlightedPart="plates" />
         </Flex>
-        <LengthField value={config.thickness} onChange={thickness => onUpdate({ thickness })} unit="mm" size="2" />
+        <LengthField
+          value={config.thickness}
+          onChange={thickness => {
+            onUpdate({ thickness })
+          }}
+          unit="mm"
+          size="2"
+        />
 
         <Flex align="center" gap="1">
           <Label.Root>
@@ -534,7 +585,14 @@ function DoubleRingBeamFields({
           </Label.Root>
           <MeasurementInfo highlightedPart="plates" />
         </Flex>
-        <LengthField value={config.spacing} onChange={spacing => onUpdate({ spacing })} unit="mm" size="2" />
+        <LengthField
+          value={config.spacing}
+          onChange={spacing => {
+            onUpdate({ spacing })
+          }}
+          unit="mm"
+          size="2"
+        />
 
         <Flex align="center" gap="1">
           <Label.Root>
@@ -546,7 +604,9 @@ function DoubleRingBeamFields({
         </Flex>
         <LengthField
           value={config.offsetFromEdge}
-          onChange={offsetFromEdge => onUpdate({ offsetFromEdge })}
+          onChange={offsetFromEdge => {
+            onUpdate({ offsetFromEdge })
+          }}
           unit="mm"
           size="2"
         />
@@ -575,7 +635,9 @@ function BrickRingBeamFields({
         </Label.Root>
         <LengthField
           value={config.wallHeight}
-          onChange={wallHeight => onUpdate({ wallHeight })}
+          onChange={wallHeight => {
+            onUpdate({ wallHeight })
+          }}
           unit="cm"
           min={0}
           size="2"
@@ -588,7 +650,9 @@ function BrickRingBeamFields({
         </Label.Root>
         <LengthField
           value={config.wallWidth}
-          onChange={wallWidth => onUpdate({ wallWidth })}
+          onChange={wallWidth => {
+            onUpdate({ wallWidth })
+          }}
           unit="cm"
           min={0}
           size="2"
@@ -623,7 +687,9 @@ function BrickRingBeamFields({
         </Label.Root>
         <LengthField
           value={config.insulationThickness}
-          onChange={insulationThickness => onUpdate({ insulationThickness })}
+          onChange={insulationThickness => {
+            onUpdate({ insulationThickness })
+          }}
           unit="cm"
           min={0}
           size="2"
@@ -657,7 +723,9 @@ function BrickRingBeamFields({
         </Label.Root>
         <LengthField
           value={config.beamThickness}
-          onChange={beamThickness => onUpdate({ beamThickness })}
+          onChange={beamThickness => {
+            onUpdate({ beamThickness })
+          }}
           unit="cm"
           min={0}
           size="2"
@@ -670,7 +738,9 @@ function BrickRingBeamFields({
         </Label.Root>
         <LengthField
           value={config.beamWidth}
-          onChange={beamWidth => onUpdate({ beamWidth })}
+          onChange={beamWidth => {
+            onUpdate({ beamWidth })
+          }}
           unit="cm"
           min={0}
           size="2"
@@ -705,7 +775,9 @@ function BrickRingBeamFields({
         </Label.Root>
         <LengthField
           value={config.waterproofingThickness}
-          onChange={waterproofingThickness => onUpdate({ waterproofingThickness })}
+          onChange={waterproofingThickness => {
+            onUpdate({ waterproofingThickness })
+          }}
           unit="mm"
           min={0}
           size="2"

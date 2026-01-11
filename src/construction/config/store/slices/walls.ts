@@ -100,10 +100,10 @@ export const createWallAssembliesSlice: StateCreator<
 
       duplicateWallAssembly: (id: WallAssemblyId, name: string) => {
         const state = get()
-        const original = state.wallAssemblyConfigs[id]
-        if (original == null) {
+        if (!(id in state.wallAssemblyConfigs)) {
           throw new Error(`Wall assembly with id ${id} not found`)
         }
+        const original = state.wallAssemblyConfigs[id]
 
         validateWallAssemblyName(name)
 
@@ -135,8 +135,8 @@ export const createWallAssembliesSlice: StateCreator<
 
       updateWallAssemblyName: (id: WallAssemblyId, name: string) => {
         set(state => {
+          if (!(id in state.wallAssemblyConfigs)) return state
           const assembly = state.wallAssemblyConfigs[id]
-          if (assembly == null) return state
 
           validateWallAssemblyName(name)
 
@@ -156,8 +156,8 @@ export const createWallAssembliesSlice: StateCreator<
 
       updateWallAssemblyConfig: (id: WallAssemblyId, config: Partial<Omit<WallConfig, 'type'>>) => {
         set(state => {
+          if (!(id in state.wallAssemblyConfigs)) return state
           const assembly = state.wallAssemblyConfigs[id]
-          if (assembly == null) return state
 
           const updatedAssembly: WallAssemblyConfig = {
             ...assembly,
@@ -201,8 +201,8 @@ export const createWallAssembliesSlice: StateCreator<
 
       addWallAssemblyInsideLayer: (id: WallAssemblyId, layer: LayerConfig) => {
         set(state => {
+          if (!(id in state.wallAssemblyConfigs)) return state
           const assembly = state.wallAssemblyConfigs[id]
-          if (assembly == null) return state
 
           const insideLayers = appendLayer(assembly.layers.insideLayers, layer)
           const insideThickness = sumLayerThickness(insideLayers)
@@ -223,8 +223,8 @@ export const createWallAssembliesSlice: StateCreator<
 
       setWallAssemblyInsideLayers: (id: WallAssemblyId, layers: LayerConfig[]) => {
         set(state => {
+          if (!(id in state.wallAssemblyConfigs)) return state
           const assembly = state.wallAssemblyConfigs[id]
-          if (assembly == null) return state
 
           const insideLayers = sanitizeLayerArray(layers)
           const insideThickness = sumLayerThickness(insideLayers)
@@ -249,8 +249,8 @@ export const createWallAssembliesSlice: StateCreator<
         updates: Partial<Omit<LayerConfig, 'type'>>
       ) => {
         set(state => {
+          if (!(id in state.wallAssemblyConfigs)) return state
           const assembly = state.wallAssemblyConfigs[id]
-          if (assembly == null) return state
 
           const insideLayers = updateLayerAt(assembly.layers.insideLayers, index, updates)
           const insideThickness = sumLayerThickness(insideLayers)
@@ -271,8 +271,8 @@ export const createWallAssembliesSlice: StateCreator<
 
       removeWallAssemblyInsideLayer: (id: WallAssemblyId, index: number) => {
         set(state => {
+          if (!(id in state.wallAssemblyConfigs)) return state
           const assembly = state.wallAssemblyConfigs[id]
-          if (assembly == null) return state
 
           const insideLayers = removeLayerAt(assembly.layers.insideLayers, index)
           const insideThickness = sumLayerThickness(insideLayers)
@@ -293,8 +293,8 @@ export const createWallAssembliesSlice: StateCreator<
 
       moveWallAssemblyInsideLayer: (id: WallAssemblyId, fromIndex: number, toIndex: number) => {
         set(state => {
+          if (!(id in state.wallAssemblyConfigs)) return state
           const assembly = state.wallAssemblyConfigs[id]
-          if (assembly == null) return state
 
           const insideLayers = moveLayer(assembly.layers.insideLayers, fromIndex, toIndex)
           const insideThickness = sumLayerThickness(insideLayers)
@@ -315,8 +315,8 @@ export const createWallAssembliesSlice: StateCreator<
 
       addWallAssemblyOutsideLayer: (id: WallAssemblyId, layer: LayerConfig) => {
         set(state => {
+          if (!(id in state.wallAssemblyConfigs)) return state
           const assembly = state.wallAssemblyConfigs[id]
-          if (assembly == null) return state
 
           const outsideLayers = appendLayer(assembly.layers.outsideLayers, layer)
           const outsideThickness = sumLayerThickness(outsideLayers)
@@ -337,8 +337,8 @@ export const createWallAssembliesSlice: StateCreator<
 
       setWallAssemblyOutsideLayers: (id: WallAssemblyId, layers: LayerConfig[]) => {
         set(state => {
+          if (!(id in state.wallAssemblyConfigs)) return state
           const assembly = state.wallAssemblyConfigs[id]
-          if (assembly == null) return state
 
           const outsideLayers = sanitizeLayerArray(layers)
           const outsideThickness = sumLayerThickness(outsideLayers)
@@ -363,8 +363,8 @@ export const createWallAssembliesSlice: StateCreator<
         updates: Partial<Omit<LayerConfig, 'type'>>
       ) => {
         set(state => {
+          if (!(id in state.wallAssemblyConfigs)) return state
           const assembly = state.wallAssemblyConfigs[id]
-          if (assembly == null) return state
 
           const outsideLayers = updateLayerAt(assembly.layers.outsideLayers, index, updates)
           const outsideThickness = sumLayerThickness(outsideLayers)
@@ -385,8 +385,8 @@ export const createWallAssembliesSlice: StateCreator<
 
       removeWallAssemblyOutsideLayer: (id: WallAssemblyId, index: number) => {
         set(state => {
+          if (!(id in state.wallAssemblyConfigs)) return state
           const assembly = state.wallAssemblyConfigs[id]
-          if (assembly == null) return state
 
           const outsideLayers = removeLayerAt(assembly.layers.outsideLayers, index)
           const outsideThickness = sumLayerThickness(outsideLayers)
@@ -407,8 +407,8 @@ export const createWallAssembliesSlice: StateCreator<
 
       moveWallAssemblyOutsideLayer: (id: WallAssemblyId, fromIndex: number, toIndex: number) => {
         set(state => {
+          if (!(id in state.wallAssemblyConfigs)) return state
           const assembly = state.wallAssemblyConfigs[id]
-          if (assembly == null) return state
 
           const outsideLayers = moveLayer(assembly.layers.outsideLayers, fromIndex, toIndex)
           const outsideThickness = sumLayerThickness(outsideLayers)

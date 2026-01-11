@@ -57,12 +57,13 @@ export function elementSizeRef(): [
     (element: Element) => {
       cleanupObserver()
       observer.current = new ResizeObserver(entries => {
-        const entry = entries[0]
-        if (!entry || !isActive.current) return
-        queueSize({
-          width: entry.contentRect.width,
-          height: entry.contentRect.height
-        })
+        if (entries.length > 0 && isActive.current) {
+          const entry = entries[0]
+          queueSize({
+            width: entry.contentRect.width,
+            height: entry.contentRect.height
+          })
+        }
       })
       observer.current.observe(element)
 
@@ -121,8 +122,8 @@ export function useElementSize(element: RefObject<HTMLElement | null>): Size {
     if (!element.current) return
 
     const resizeObserver = new ResizeObserver(entries => {
-      const entry = entries[0]
-      if (entry) {
+      if (entries.length > 0) {
+        const entry = entries[0]
         setSize({
           width: entry.contentRect.width,
           height: entry.contentRect.height
@@ -136,7 +137,9 @@ export function useElementSize(element: RefObject<HTMLElement | null>): Size {
     const rect = element.current.getBoundingClientRect()
     setSize({ width: rect.width, height: rect.height })
 
-    return () => resizeObserver.disconnect()
+    return () => {
+      resizeObserver.disconnect()
+    }
   }, [element.current])
 
   return size

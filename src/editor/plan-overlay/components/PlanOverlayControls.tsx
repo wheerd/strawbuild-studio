@@ -17,10 +17,6 @@ export function PlanOverlayControls(): React.JSX.Element | null {
   const [modalOpen, setModalOpen] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
 
-  if (!activeStoreyId) {
-    return null
-  }
-
   const handlePlacementChange = (placement: FloorPlanPlacement) => {
     setPlacement(activeStoreyId, placement)
   }
@@ -40,7 +36,9 @@ export function PlanOverlayControls(): React.JSX.Element | null {
               <DropdownMenu.Label>{t($ => $.planControls.label)}</DropdownMenu.Label>
               <DropdownMenu.RadioGroup
                 value={plan.placement}
-                onValueChange={value => handlePlacementChange(value as FloorPlanPlacement)}
+                onValueChange={value => {
+                  handlePlacementChange(value as FloorPlanPlacement)
+                }}
               >
                 <DropdownMenu.RadioItem value="over">
                   {t($ => $.planControls.placement.showOnTop)}
@@ -50,10 +48,19 @@ export function PlanOverlayControls(): React.JSX.Element | null {
                 </DropdownMenu.RadioItem>
               </DropdownMenu.RadioGroup>
               <DropdownMenu.Separator />
-              <DropdownMenu.Item onSelect={() => setModalOpen(true)}>
+              <DropdownMenu.Item
+                onSelect={() => {
+                  setModalOpen(true)
+                }}
+              >
                 {t($ => $.planControls.recalibrate)}
               </DropdownMenu.Item>
-              <DropdownMenu.Item color="red" onSelect={() => setConfirmOpen(true)}>
+              <DropdownMenu.Item
+                color="red"
+                onSelect={() => {
+                  setConfirmOpen(true)
+                }}
+              >
                 {t($ => $.planControls.removePlan)}
               </DropdownMenu.Item>
             </DropdownMenu.Content>
@@ -75,7 +82,12 @@ export function PlanOverlayControls(): React.JSX.Element | null {
                 </AlertDialog.Description>
                 <Flex justify="end" gap="2">
                   <AlertDialog.Cancel>
-                    <Button variant="soft" onClick={() => setConfirmOpen(false)}>
+                    <Button
+                      variant="soft"
+                      onClick={() => {
+                        setConfirmOpen(false)
+                      }}
+                    >
                       {t($ => $.planControls.confirmRemove.cancel)}
                     </Button>
                   </AlertDialog.Cancel>
@@ -99,7 +111,9 @@ export function PlanOverlayControls(): React.JSX.Element | null {
         <IconButton
           size="1"
           variant="surface"
-          onClick={() => setModalOpen(true)}
+          onClick={() => {
+            setModalOpen(true)
+          }}
           title={t($ => $.planControls.importPlan)}
         >
           <ImageIcon />

@@ -30,6 +30,7 @@ export interface MeasurementDisplayConfig {
   highlightedMeasurement?: Measurement
   highlightedAssembly?: Assembly
   highlightedPart?: ConstructionPart
+  roofAngle?: number
 }
 
 export function ConstructionSchematic({
@@ -40,7 +41,8 @@ export function ConstructionSchematic({
   showMeasurements = false,
   showAssemblyOutlines = false,
   showFinishedLevels = false,
-  showFinishedSides = false
+  showFinishedSides = false,
+  roofAngle = 30
 }: MeasurementDisplayConfig = {}): JSX.Element {
   /*
                                       ╱ ╱   ╱ ╱
@@ -98,7 +100,6 @@ export function ConstructionSchematic({
   const outsideThickness = 100
   const insideThickness = 100
 
-  const roofAngle = 30
   const roofWidth = 1100
   const overhang = 600
   const roofConstructionThickness = 300

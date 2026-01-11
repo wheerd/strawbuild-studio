@@ -30,7 +30,6 @@ export type CursorStyle =
   | 'text'
   | 'wait'
   | 'help'
-  | string
 
 type ToolNameKey = keyof Resources['toolbar']['tools']
 
