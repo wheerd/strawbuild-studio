@@ -1,4 +1,4 @@
-import type { Resources, SelectorFn, SelectorOptions } from 'i18next'
+import type { Resources, TFunction } from 'i18next'
 
 // Predefined tag IDs must match translation keys
 export type PredefinedTagId = keyof Resources['construction']['tags']
@@ -10,7 +10,7 @@ export type TagCategoryId = keyof Resources['construction']['tagCategories']
 export type CustomTagId = `${TagCategoryId}_${string}`
 
 // Type for layer name keys (layers are in config namespace)
-export type LayerNameKey = SelectorFn<Resources['config'], string, SelectorOptions<'config'>>
+export type CustomTagTranslation = (t: TFunction) => string
 
 // TagId is a union of predefined and custom IDs
 export type TagId = PredefinedTagId | CustomTagId
@@ -29,7 +29,7 @@ export interface CustomTag {
   readonly id: CustomTagId
   readonly category: TagCategoryId
   readonly label: string
-  readonly nameKey?: LayerNameKey
+  readonly translation?: CustomTagTranslation
 }
 
 // Union type
@@ -83,11 +83,11 @@ export const createTagId = (category: TagCategoryId, name: string): CustomTagId 
     .toLowerCase()
     .replace(/[\W_]+/g, '-')}`
 
-export const createTag = (category: TagCategoryId, name: string, nameKey?: LayerNameKey): CustomTag => ({
+export const createTag = (category: TagCategoryId, name: string, translation?: CustomTagTranslation): CustomTag => ({
   category,
   id: createTagId(category, name),
   label: name,
-  nameKey
+  translation
 })
 
 // Straw tags
@@ -139,6 +139,11 @@ export const TAG_INFILL: PredefinedTag = {
 
 export const TAG_TRIANGLE_BATTON: PredefinedTag = {
   id: 'wall-part_triangular-batten',
+  category: 'wall-part'
+}
+
+export const TAG_OPENING_SIDE_PLANK: PredefinedTag = {
+  id: 'wall-part_opening-side-plank',
   category: 'wall-part'
 }
 
