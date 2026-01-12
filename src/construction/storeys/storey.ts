@@ -1,3 +1,4 @@
+import { getStoreyName } from '@/building/hooks/useStoreyName'
 import type { StoreyId } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model'
@@ -96,7 +97,11 @@ export function constructModel(): ConstructionModel | null {
   storeys.forEach(storey => {
     const model = constructStorey(storey.id)
     if (model) {
-      const storeyNameTag = createTag('storey-name', storey.name)
+      const storeyNameTag = createTag(
+        'storey-name',
+        storey.useDefaultName ? `level${storey.level}` : storey.name,
+        storey.useDefaultName ? t => getStoreyName(storey, t) : undefined
+      )
       models.push(
         transformModel(
           model,

@@ -1,6 +1,7 @@
+import type { Resources, SelectorFn, SelectorOptions } from 'i18next'
+
 import type { MaterialId } from '@/construction/materials/material'
 import type { ConstructionResult } from '@/construction/results'
-import type { LayerNameKey } from '@/construction/tags'
 import { type Length, type Plane3D, type PolygonWithHoles2D, type Vec2 } from '@/shared/geometry'
 
 export interface LayerConstruction<TConfig extends BaseLayerConfig> {
@@ -14,6 +15,8 @@ export interface LayerConstruction<TConfig extends BaseLayerConfig> {
 }
 
 export type LayerType = 'monolithic' | 'striped'
+
+export type LayerNameKey = SelectorFn<Resources['config'], string, SelectorOptions<'config'>>
 
 interface BaseLayerConfig {
   type: LayerType

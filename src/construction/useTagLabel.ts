@@ -10,12 +10,12 @@ import { isCustomTag } from './tags'
  * - Custom tags without nameKey: uses the custom label property
  */
 export function useTagLabel(tag: Tag | null | undefined): string {
-  const { t } = useTranslation('construction')
+  const { t } = useTranslation()
 
   if (!tag) return ''
   if (isCustomTag(tag)) {
-    return tag.nameKey ? t(tag.nameKey, { ns: 'config' }) : tag.label
+    return tag.translation ? tag.translation(t) : tag.label
   }
 
-  return t($ => $.tags[tag.id])
+  return t($ => $.tags[tag.id], { ns: 'construction' })
 }

@@ -13,10 +13,9 @@ import {
   windBarrier
 } from '@/construction/materials/material'
 import type { MaterialId } from '@/construction/materials/material'
-import type { LayerNameKey } from '@/construction/tags'
 import type { Length } from '@/shared/geometry'
 
-import type { LayerConfig } from './types'
+import type { LayerConfig, LayerNameKey } from './types'
 
 const createMonolithicLayer = (
   material: MaterialId,
