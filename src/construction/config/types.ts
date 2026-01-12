@@ -8,7 +8,12 @@ import type {
   WallAssemblyId
 } from '@/building/model'
 import type { FilledFloorConfig, JoistFloorConfig, MonolithicFloorConfig } from '@/construction/floors'
-import type { EmptyOpeningConfig, PostOpeningConfig, SimpleOpeningConfig } from '@/construction/openings/types'
+import type {
+  EmptyOpeningConfig,
+  PlankedOpeningConfig,
+  PostOpeningConfig,
+  SimpleOpeningConfig
+} from '@/construction/openings/types'
 import type { BrickRingBeamConfig, DoubleRingBeamConfig, FullRingBeamConfig } from '@/construction/ringBeams'
 import type { MonolithicRoofConfig, PurlinRoofConfig } from '@/construction/roofs'
 import type {
@@ -137,5 +142,10 @@ export interface OpeningAssemblyIdPart extends NamedAssembly {
 export type SimpleOpeningAssemblyConfig = SimpleOpeningConfig & OpeningAssemblyIdPart
 export type EmptyOpeningAssemblyConfig = EmptyOpeningConfig & OpeningAssemblyIdPart
 export type PostOpeningAssemblyConfig = PostOpeningConfig & OpeningAssemblyIdPart
+export type PlankedOpeningAssemblyConfig = PlankedOpeningConfig & OpeningAssemblyIdPart
 
-export type OpeningAssemblyConfig = SimpleOpeningAssemblyConfig | EmptyOpeningAssemblyConfig | PostOpeningAssemblyConfig
+export type OpeningAssemblyConfig =
+  | SimpleOpeningAssemblyConfig
+  | EmptyOpeningAssemblyConfig
+  | PostOpeningAssemblyConfig
+  | PlankedOpeningAssemblyConfig

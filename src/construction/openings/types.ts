@@ -17,16 +17,14 @@ export interface OpeningAssembly {
   get needsWallStands(): boolean
 }
 
-export type OpeningAssemblyType = 'simple' | 'post' | 'empty'
+export type OpeningAssemblyType = 'simple' | 'post' | 'empty' | 'planked'
 
 export interface OpeningAssemblyConfigBase {
   type: OpeningAssemblyType
   padding: Length
 }
 
-export interface SimpleOpeningConfig extends OpeningAssemblyConfigBase {
-  type: 'simple'
-
+export interface HeaderAndSillConfigBase extends OpeningAssemblyConfigBase {
   sillThickness: Length // Default: 60mm
   sillMaterial: MaterialId
 
@@ -34,17 +32,20 @@ export interface SimpleOpeningConfig extends OpeningAssemblyConfigBase {
   headerMaterial: MaterialId
 }
 
-export interface PostOpeningConfig extends OpeningAssemblyConfigBase {
+export interface SimpleOpeningConfig extends HeaderAndSillConfigBase {
+  type: 'simple'
+}
+
+export interface PostOpeningConfig extends HeaderAndSillConfigBase {
   type: 'post'
-
-  sillThickness: Length // Default: 60mm
-  sillMaterial: MaterialId
-
-  headerThickness: Length // Default: 60mm
-  headerMaterial: MaterialId
-
   posts: PostConfig
   replacePosts: boolean
+}
+
+export interface PlankedOpeningConfig extends HeaderAndSillConfigBase {
+  type: 'planked'
+  plankThickness: Length
+  plankMaterial: MaterialId
 }
 
 export interface EmptyOpeningConfig extends OpeningAssemblyConfigBase {
@@ -52,7 +53,7 @@ export interface EmptyOpeningConfig extends OpeningAssemblyConfigBase {
   // Only padding, no sill/header materials or thicknesses
 }
 
-export type OpeningConfig = SimpleOpeningConfig | EmptyOpeningConfig | PostOpeningConfig
+export type OpeningConfig = SimpleOpeningConfig | EmptyOpeningConfig | PostOpeningConfig | PlankedOpeningConfig
 
 // Validation
 

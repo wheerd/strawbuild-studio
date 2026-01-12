@@ -36,6 +36,7 @@ import type { PostConfig } from '@/construction/materials/posts'
 import type {
   OpeningAssemblyType,
   OpeningConfig,
+  PlankedOpeningConfig,
   PostOpeningConfig,
   SimpleOpeningConfig
 } from '@/construction/openings/types'
@@ -113,6 +114,17 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
           },
           replacePosts: true
         }
+      } else if (type === 'planked') {
+        config = {
+          type: 'planked',
+          padding: 15,
+          headerThickness: 60,
+          headerMaterial: defaultMaterial,
+          sillThickness: 60,
+          sillMaterial: defaultMaterial,
+          plankMaterial: defaultMaterial,
+          plankThickness: 16
+        }
       } else {
         config = {
           type: 'empty',
@@ -164,38 +176,6 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
   if (!selectedAssembly) {
     return (
       <Flex direction="column" gap="4" width="100%">
-        <Flex gap="2" align="end">
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger>
-              <IconButton title={t($ => $.common.addNew)}>
-                <PlusIcon />
-              </IconButton>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content>
-              <DropdownMenu.Item
-                onClick={() => {
-                  handleAddNew('simple')
-                }}
-              >
-                {t($ => $.openings.types.simple)}
-              </DropdownMenu.Item>
-              <DropdownMenu.Item
-                onClick={() => {
-                  handleAddNew('post')
-                }}
-              >
-                {t($ => $.openings.types.post)}
-              </DropdownMenu.Item>
-              <DropdownMenu.Item
-                onClick={() => {
-                  handleAddNew('empty')
-                }}
-              >
-                {t($ => $.openings.types.empty)}
-              </DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
-        </Flex>
         <Callout.Root color="gray">
           <Callout.Text>{t($ => $.openings.emptyList)}</Callout.Text>
         </Callout.Root>
@@ -239,6 +219,13 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
                 }}
               >
                 {t($ => $.openings.types.post)}
+              </DropdownMenu.Item>
+              <DropdownMenu.Item
+                onClick={() => {
+                  handleAddNew('planked')
+                }}
+              >
+                {t($ => $.openings.types.planked)}
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onClick={() => {
@@ -437,6 +424,8 @@ function ConfigForm({ assembly }: { assembly: OpeningAssemblyConfig }): React.JS
         <SimpleOpeningContent config={assembly} update={handleUpdateConfig} />
       ) : assembly.type === 'post' ? (
         <PostOpeningContent config={assembly} update={handleUpdateConfig} />
+      ) : assembly.type === 'planked' ? (
+        <PlankedOpeningContent config={assembly} update={handleUpdateConfig} />
       ) : (
         <>
           <Heading size="2">{t($ => $.openings.types.empty)}</Heading>
@@ -762,6 +751,121 @@ function PostsConfigSection({
             />
           </>
         )}
+      </Grid>
+    </Flex>
+  )
+}
+
+const PlankedOpeningContent = ({
+  config,
+  update
+}: {
+  config: PlankedOpeningConfig
+  update: (updates: Partial<PlankedOpeningConfig>) => void
+}) => {
+  const { t } = useTranslation('config')
+  return (
+    <Flex direction="column" gap="3">
+      <Heading size="2">{t($ => $.openings.sections.opening)}</Heading>
+      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.openings.labels.padding)}
+          </Text>
+        </Label.Root>
+        <Box gridColumn="span 3">
+          <LengthField
+            value={config.padding}
+            onChange={padding => {
+              update({ padding })
+            }}
+            unit="mm"
+          />
+        </Box>
+
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.openings.labels.headerThickness)}
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={config.headerThickness}
+          onChange={headerThickness => {
+            update({ headerThickness })
+          }}
+          unit="mm"
+        />
+
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.openings.labels.headerMaterial)}
+          </Text>
+        </Label.Root>
+        <MaterialSelectWithEdit
+          value={config.headerMaterial}
+          onValueChange={headerMaterial => {
+            if (!headerMaterial) return
+            update({ headerMaterial })
+          }}
+          size="2"
+          preferredTypes={['dimensional']}
+        />
+
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.openings.labels.sillThickness)}
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={config.sillThickness}
+          onChange={sillThickness => {
+            update({ sillThickness })
+          }}
+          unit="mm"
+        />
+
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.openings.labels.sillMaterial)}
+          </Text>
+        </Label.Root>
+        <MaterialSelectWithEdit
+          value={config.sillMaterial}
+          onValueChange={sillMaterial => {
+            if (!sillMaterial) return
+            update({ sillMaterial })
+          }}
+          size="2"
+          preferredTypes={['dimensional']}
+        />
+
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.openings.labels.plankThickness)}
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={config.plankThickness}
+          onChange={plankThickness => {
+            update({ plankThickness })
+          }}
+          unit="mm"
+        />
+
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.openings.labels.plankMaterial)}
+          </Text>
+        </Label.Root>
+        <MaterialSelectWithEdit
+          value={config.plankMaterial}
+          onValueChange={plankMaterial => {
+            if (!plankMaterial) return
+            update({ plankMaterial })
+          }}
+          size="2"
+          preferredTypes={['dimensional']}
+        />
       </Grid>
     </Flex>
   )
