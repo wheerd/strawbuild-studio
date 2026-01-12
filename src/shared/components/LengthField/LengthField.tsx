@@ -112,7 +112,7 @@ export const LengthField = forwardRef<HTMLInputElement, LengthFieldProps>(functi
             disabled={disabled || !canStepUp}
             onClick={stepUp}
             className="h-[10px] p-0 leading-none m-0"
-            style={{ fontSize: '10px', minHeight: '10px', minWidth: '12px' }}
+            style={{ fontSize: '10px', minHeight: '10px', minWidth: '12px', padding: '0 2px' }}
             tabIndex={-1}
           >
             <ChevronUpIcon />
@@ -125,7 +125,7 @@ export const LengthField = forwardRef<HTMLInputElement, LengthFieldProps>(functi
             disabled={disabled || !canStepDown}
             onClick={stepDown}
             className="h-[10px] p-0 leading-none m-0"
-            style={{ fontSize: '10px', minHeight: '10px', minWidth: '12px' }}
+            style={{ fontSize: '10px', minHeight: '10px', minWidth: '12px', padding: '0 2px' }}
             tabIndex={-1}
           >
             <ChevronDownIcon />
