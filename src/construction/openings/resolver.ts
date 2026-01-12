@@ -1,6 +1,7 @@
 import type { OpeningAssemblyId } from '@/building/model'
 import { getConfigActions } from '@/construction/config/store'
 import { EmptyOpeningAssembly } from '@/construction/openings/empty'
+import { PlankedOpeningAssembly } from '@/construction/openings/planked'
 import { PostOpeningAssembly } from '@/construction/openings/post'
 import { SimpleOpeningAssembly } from '@/construction/openings/simple'
 
@@ -56,6 +57,8 @@ export function resolveOpeningAssembly(openingAssemblyId?: OpeningAssemblyId): O
       return new EmptyOpeningAssembly(config)
     case 'post':
       return new PostOpeningAssembly(config)
+    case 'planked':
+      return new PlankedOpeningAssembly(config)
     default:
       throw new Error(`Unknown opening assembly type: ${(config as OpeningConfig).type}`)
   }
