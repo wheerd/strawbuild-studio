@@ -259,6 +259,7 @@
     "defaults": {
       "emptyOpening": "Leere Öffnung",
       "standardOpening": "Standard-Öffnung",
+      "standardOpeningWithPlanking": "Standard-Öffnung mit Beplankung",
       "standardOpeningWithPosts": "Standard-Öffnung mit Ständern"
     },
     "deleteConfirm": "Möchtest du \"{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",

@@ -336,6 +336,7 @@ interface Resources {
       "defaults": {
         "emptyOpening": "Empty Opening",
         "standardOpening": "Standard Opening",
+        "standardOpeningWithPlanking": "Standard Opening with Planking",
         "standardOpeningWithPosts": "Standard Opening with Posts"
       },
       "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
