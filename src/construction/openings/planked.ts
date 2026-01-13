@@ -11,6 +11,7 @@ import {
   TAG_OPENING_HEIGHT,
   TAG_OPENING_SIDE_PLANK,
   TAG_OPENING_WIDTH,
+  TAG_POST_SPACING,
   TAG_SILL,
   TAG_SILL_HEIGHT
 } from '@/construction/tags'
@@ -53,6 +54,7 @@ export class PlankedOpeningAssembly extends BaseOpeningAssembly<PlankedOpeningCo
     }
 
     yield* yieldMeasurementFromArea(middle, 'width', [TAG_OPENING_WIDTH])
+    yield* yieldMeasurementFromArea(area, 'width', [TAG_POST_SPACING])
 
     if (!headerArea.isEmpty) {
       const headerElement = createElementFromArea(headerArea, this.config.headerMaterial, [TAG_HEADER], {
