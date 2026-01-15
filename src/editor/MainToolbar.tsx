@@ -14,7 +14,6 @@ import {
 import TopDownPlanModal from '@/construction/components/TopDownPlanModal'
 import { ConstructionPartsListModal } from '@/construction/components/parts/ConstructionPartsListModal'
 import { useConfigurationModal } from '@/construction/config/context/ConfigurationModalContext'
-import { constructModel, constructStorey } from '@/construction/storeys/storey'
 import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
 import { TOOL_GROUPS, getToolInfoById } from '@/editor/tools/system/metadata'
 import { replaceTool, useActiveToolId } from '@/editor/tools/system/store'
@@ -100,7 +99,10 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
                 })
               : t($ => $.constructionPlanForActiveStorey)
           }
-          factory={() => Promise.resolve(constructStorey(activeStoreyId))}
+          factory={async () => {
+            const { constructStorey } = await import('@/construction/storeys/storey')
+            return constructStorey(activeStoreyId)
+          }}
           refreshKey={[activeStoreyId, activePerimiters]}
           trigger={
             <IconButton title={t($ => $.viewConstructionPlan)} size="2" variant="solid">
@@ -110,7 +112,10 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
         />
         <ConstructionPartsListModal
           title={t($ => $.partsListForEntireModel)}
-          constructionModelFactory={() => Promise.resolve(constructModel())}
+          constructionModelFactory={async () => {
+            const { constructModel } = await import('@/construction/storeys/storey')
+            return constructModel()
+          }}
           refreshKey={[storeys, perimeters]}
           trigger={
             <IconButton title={t($ => $.viewPartsList)} size="2" variant="solid">
@@ -119,7 +124,10 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
           }
         />
         <ConstructionViewer3DModal
-          constructionModelFactory={() => Promise.resolve(constructModel())}
+          constructionModelFactory={async () => {
+            const { constructModel } = await import('@/construction/storeys/storey')
+            return constructModel()
+          }}
           refreshKey={[storeys, perimeters]}
           trigger={
             <IconButton title={t($ => $.view3DConstruction)} size="2" variant="solid">

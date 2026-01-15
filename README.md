@@ -106,7 +106,7 @@ pnpm build        # Build for production
 
 - **Frontend**: React 19 with TypeScript
 - **UI**: Radix UI Themes and tailwind
-- **Canvas Rendering**: Konva.js with react-konva
+- **2D Rendering (Plans, Editor)**: SVG
 - **3D Rendering**: Three.js via react-three
 - **State Management**: Zustand with immer, persist and zundo middlewares
 - **Geometry**: clipper2-wasm, gl-matrix, manifold-3d

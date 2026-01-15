@@ -21,11 +21,6 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     css: true,
-    server: {
-      deps: {
-        inline: ['konva', 'react-konva']
-      }
-    },
     exclude: [...configDefaults.exclude, 'tests/*']
   }
 })
