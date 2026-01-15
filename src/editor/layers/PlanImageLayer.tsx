@@ -20,10 +20,10 @@ export function PlanImageLayer({ placement }: { placement: 'under' | 'over' }): 
       <image
         href={plan.image.url}
         x={worldX}
-        y={worldY}
+        y={-worldY}
         width={worldWidth}
         height={worldHeight}
-        transform={`scale(1, -1) translate(0, ${-2 * worldY - worldHeight})`}
+        transform="scale(1, -1)"
         crossOrigin="anonymous"
       />
     </g>
