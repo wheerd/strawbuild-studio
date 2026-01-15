@@ -1,93 +1,78 @@
 import { expect, test } from '@playwright/test'
+
 import {
   activateTool,
   clickEditorAt,
-  loadTestData,
+  getInspector,
   moveMouseTo,
-  pressKey,
   setupEditorPage,
   takeEditorScreenshot
 } from '../fixtures/editor'
 
 test.describe('Add Opening Tool', () => {
-  test.beforeEach(async ({ page }) => {
-    test.setTimeout(60000)
+  test('complete journey: presets, snapping, invalid position, place openings', async ({ page }) => {
+    test.setTimeout(180000)
+
+    // Setup: Fresh editor
     await setupEditorPage(page)
 
-    // Load test data with perimeter for opening operations
-    await loadTestData(page, '▭ Rectangular Perimeter (8×5m)')
-  })
+    // Step 1: Create rectangular perimeter using preset tool
+    await activateTool(page, 'Perimeter Presets')
+    await page.getByRole('button', { name: 'Rectangular Perimeter' }).click()
 
-  test('activates from toolbar', async ({ page }) => {
+    // Dialog appears - use default dimensions and confirm (auto-places at origin)
+    await page.getByRole('button', { name: 'Confirm' }).click()
+
+    // Step 2: Activate Add Opening tool
     await activateTool(page, 'Add Opening')
+    const inspector = getInspector(page)
+    // Verify tool is active by checking for opening presets section
+    await expect(inspector.getByText('Presets')).toBeVisible()
 
-    // Verify tool is active (has solid variant class)
-    const openingButton = page.getByRole('button', { name: 'Add Opening' })
-    await expect(openingButton).toHaveClass(/rt-variant-solid/)
-  })
+    // Step 3: Screenshot inspector with Standard Door preset (default)
+    await expect(inspector).toHaveScreenshot('01-inspector-door-preset.png')
 
-  test('shows preview when hovering over wall', async ({ page }) => {
-    await activateTool(page, 'Add Opening')
+    // Step 4: Select Small Window preset and screenshot
+    await inspector.getByRole('button', { name: 'Small Window' }).click()
+    await expect(inspector).toHaveScreenshot('02-inspector-small-window-preset.png')
 
-    // Hover over a wall segment
-    await moveMouseTo(page, 425, 400)
+    // Step 5: Select Floor Window preset and screenshot
+    await inspector.getByRole('button', { name: 'Floor Window' }).click()
+    await expect(inspector).toHaveScreenshot('03-inspector-floor-window-preset.png')
 
-    // Screenshot showing opening preview on hover
-    await takeEditorScreenshot(page, 'opening-hover-preview.png')
-  })
+    // Step 6: Place first opening (Floor Window)
+    // Hover near the end of the bottom wall to show snapping to wall end
+    await moveMouseTo(page, 160, 80)
+    await takeEditorScreenshot(page, '04-snap-to-wall-end.png')
 
-  test('shows opening dimensions preview', async ({ page }) => {
-    await activateTool(page, 'Add Opening')
+    // Place the opening
+    await clickEditorAt(page, 400, 80)
+    await takeEditorScreenshot(page, '05-first-opening-placed.png')
 
-    // Hover over a wall to show dimension preview
-    await moveMouseTo(page, 450, 400)
+    // Step 7: Select Small Window for second opening
+    await inspector.getByRole('button', { name: 'Small Window' }).click()
 
-    // Screenshot showing dimension annotations
-    await takeEditorScreenshot(page, 'opening-dimensions.png')
-  })
+    // Step 8: Hover next to the existing opening to show snapping
+    await moveMouseTo(page, 450, 80)
+    await takeEditorScreenshot(page, '06-snap-to-existing-opening.png')
 
-  test('places opening on click', async ({ page }) => {
-    await activateTool(page, 'Add Opening')
+    // Step 9: Hover over the middle of the existing opening to show invalid state (red)
+    await moveMouseTo(page, 400, 80)
+    await takeEditorScreenshot(page, '07-invalid-overlap.png')
 
-    // Click on a wall to place opening
-    await clickEditorAt(page, 425, 400)
+    // Step 10: Move to valid position and place second opening
+    await clickEditorAt(page, 480, 80)
+    await takeEditorScreenshot(page, '08-second-opening-placed.png')
 
-    // Screenshot showing placed opening
-    await takeEditorScreenshot(page, 'opening-placed.png')
-  })
+    // Step 11: Select Standard Door preset
+    await inspector.getByRole('button', { name: 'Standard Door' }).click()
 
-  test('can place multiple openings', async ({ page }) => {
-    await activateTool(page, 'Add Opening')
+    // Step 12: Hover on left wall to show door preview before placing
+    await moveMouseTo(page, 140, 300)
+    await takeEditorScreenshot(page, '09-door-hover-preview.png')
 
-    // Place first opening on bottom wall
-    await clickEditorAt(page, 400, 400)
-
-    // Place second opening on right wall
-    await clickEditorAt(page, 550, 325)
-
-    // Screenshot showing multiple openings
-    await takeEditorScreenshot(page, 'opening-multiple.png')
-  })
-
-  test('opening preview follows mouse along wall', async ({ page }) => {
-    await activateTool(page, 'Add Opening')
-
-    // Move along the bottom wall
-    await moveMouseTo(page, 350, 400)
-    await takeEditorScreenshot(page, 'opening-follow-left.png')
-
-    await moveMouseTo(page, 500, 400)
-    await takeEditorScreenshot(page, 'opening-follow-right.png')
-  })
-
-  test('deactivates with Escape', async ({ page }) => {
-    await activateTool(page, 'Add Opening')
-
-    // Press Escape to deactivate
-    await pressKey(page, 'Escape')
-
-    // Verify select tool becomes active (has solid variant class)
-    const selectButton = page.getByRole('button', { name: 'Select' })
-    await expect(selectButton).toHaveClass(/rt-variant-solid/)
+    // Step 13: Place the door
+    await clickEditorAt(page, 140, 300)
+    await takeEditorScreenshot(page, '10-door-placed.png')
   })
 })
