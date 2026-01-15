@@ -1,5 +1,3 @@
-import { Group } from 'react-konva/lib/ReactKonvaCore'
-
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolOverlayComponentProps } from '@/editor/tools/system/types'
 
@@ -19,8 +17,8 @@ export function MoveToolOverlay({ tool }: ToolOverlayComponentProps<MoveTool>) {
   const PreviewComponent = behavior.previewComponent
 
   return (
-    <Group>
+    <g>
       <PreviewComponent movementState={currentMovementState} isValid={isValid} context={context} />
-    </Group>
+    </g>
   )
 }

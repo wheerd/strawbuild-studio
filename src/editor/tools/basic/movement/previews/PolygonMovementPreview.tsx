@@ -1,57 +1,43 @@
 import React from 'react'
-import { Circle, Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
-import { SnappingLines } from '@/editor/canvas/utils/SnappingLines'
 import type { MovementPreviewComponentProps } from '@/editor/tools/basic/movement/MovementBehavior'
 import type { PolygonMovementState } from '@/editor/tools/basic/movement/behaviors/PolygonMovementBehavior'
+import { SnappingLines } from '@/editor/utils/SnappingLines'
 import type { Vec2 } from '@/shared/geometry'
-import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
-
-function flattenPolygonPoints(points: readonly Vec2[]): number[] {
-  return points.flatMap(point => [point[0], point[1]])
-}
+import { polygonToSvgPath } from '@/shared/utils/svg'
 
 export function PolygonMovementPreview<TEntity>({
   movementState,
   isValid
 }: MovementPreviewComponentProps<TEntity, PolygonMovementState>): React.JSX.Element {
-  const theme = useCanvasTheme()
-  const flattenedPoints = flattenPolygonPoints(movementState.previewPolygon)
+  const pathData = polygonToSvgPath({ points: movementState.previewPolygon as Vec2[] })
 
   return (
-    <Group>
+    <g pointerEvents="none">
       <SnappingLines snapResult={movementState.snapResult} />
 
       {movementState.snapResult?.position && (
-        <Circle
-          x={movementState.snapResult.position[0]}
-          y={movementState.snapResult.position[1]}
-          radius={50}
-          fill={theme.info}
-          stroke={'var(--gray-1)'}
+        <circle
+          cx={movementState.snapResult.position[0]}
+          cy={movementState.snapResult.position[1]}
+          r={50}
+          fill="var(--blue-9)"
+          stroke="var(--gray-1)"
           strokeWidth={5}
           opacity={0.8}
-          listening={false}
         />
       )}
 
-      <Line
-        points={flattenedPoints}
-        closed
-        stroke={isValid ? theme.success : theme.danger}
+      <path
+        d={pathData}
+        fill="none"
+        stroke={isValid ? 'var(--green-9)' : 'var(--red-9)'}
         strokeWidth={20}
-        dash={[80, 40]}
+        strokeDasharray="80 40"
         opacity={0.6}
-        listening={false}
       />
 
-      <Line
-        points={flattenedPoints}
-        closed
-        fill={isValid ? theme.success : theme.danger}
-        opacity={0.3}
-        listening={false}
-      />
-    </Group>
+      <path d={pathData} fill={isValid ? 'var(--green-9)' : 'var(--red-9)'} stroke="none" opacity={0.3} />
+    </g>
   )
 }

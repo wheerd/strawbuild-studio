@@ -6,7 +6,6 @@ import { Circle, Group, Image as KonvaImage, Layer, Line, Rect, Stage } from 're
 
 import type { ImagePoint } from '@/editor/plan-overlay/types'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
-import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 export type SelectionMode = 'measure' | 'origin' | 'idle'
 
@@ -62,7 +61,6 @@ export function PlanCalibrationCanvas({
     pan: { x: 0, y: 0 }
   }))
   const dragOrigin = useRef<{ pointer: { x: number; y: number }; pan: { x: number; y: number } } | null>(null)
-  const theme = useCanvasTheme()
 
   const handleContainerRef = useCallback(
     (element: HTMLDivElement | null) => {
@@ -233,7 +231,7 @@ export function PlanCalibrationCanvas({
     return (
       <Line
         points={[start.x, start.y, end.x, end.y]}
-        stroke="var(--color-primary)"
+        stroke="var(--accent-9)"
         strokeWidth={2}
         dash={[12, 8]}
         listening={false}
@@ -299,13 +297,13 @@ export function PlanCalibrationCanvas({
                   y={-view.pan.y / view.scale}
                   width={stageWidth / view.scale}
                   height={stageHeight / view.scale}
-                  fill="var(--color-bg-subtle)"
+                  fill="var(--gray-2)"
                   listening={false}
                 />
                 <KonvaImage image={image} width={image.naturalWidth} height={image.naturalHeight} listening={false} />
                 {renderReferenceLine()}
-                {referencePoints.map(point => renderCrosshair(point, 'var(--color-primary)'))}
-                {originPoint && renderCrosshair(originPoint, theme.danger)}
+                {referencePoints.map(point => renderCrosshair(point, 'var(--accent-9)'))}
+                {originPoint && renderCrosshair(originPoint, 'var(--red-9)')}
               </Layer>
             </Stage>
           ) : (

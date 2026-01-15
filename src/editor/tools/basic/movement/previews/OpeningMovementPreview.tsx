@@ -1,5 +1,4 @@
 import React from 'react'
-import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
 import type { MovementPreviewComponentProps } from '@/editor/tools/basic/movement/MovementBehavior'
 import type {
@@ -7,14 +6,13 @@ import type {
   OpeningMovementState
 } from '@/editor/tools/basic/movement/behaviors/OpeningMovementBehavior'
 import { scaleAddVec2 } from '@/shared/geometry'
-import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
+import { polygonToSvgPath } from '@/shared/utils/svg'
 
 export function OpeningMovementPreview({
   movementState,
   isValid,
   context
 }: MovementPreviewComponentProps<OpeningEntityContext, OpeningMovementState>): React.JSX.Element {
-  const theme = useCanvasTheme()
   const { wall, opening } = context.entity
 
   // Calculate the opening rectangle in new position
@@ -34,28 +32,30 @@ export function OpeningMovementPreview({
   // Original position for movement indicator
   const originalStart = scaleAddVec2(wallStart, wall.direction, opening.centerOffsetFromWallStart)
 
+  const pathData = polygonToSvgPath({ points: [insideStart, insideEnd, outsideEnd, outsideStart] })
+
   return (
-    <Group>
+    <g pointerEvents="none">
       {/* Show opening rectangle */}
-      <Line
-        points={[insideStart, insideEnd, outsideEnd, outsideStart].flatMap(p => [p[0], p[1]])}
-        closed
-        fill={isValid ? theme.success : theme.danger}
-        stroke={'var(--gray-1)'}
+      <path
+        d={pathData}
+        fill={isValid ? 'var(--green-9)' : 'var(--red-9)'}
+        stroke="var(--gray-1)"
         strokeWidth={5}
         opacity={0.6}
-        listening={false}
       />
 
       {/* Show movement indicator */}
-      <Line
-        points={[originalStart[0], originalStart[1], openingStart[0], openingStart[1]]}
-        stroke={'var(--color-text-secondary)'}
+      <line
+        x1={originalStart[0]}
+        y1={originalStart[1]}
+        x2={openingStart[0]}
+        y2={openingStart[1]}
+        stroke="var(--gray-11)"
         strokeWidth={10}
-        dash={[20, 20]}
+        strokeDasharray="20 20"
         opacity={0.7}
-        listening={false}
       />
-    </Group>
+    </g>
   )
 }

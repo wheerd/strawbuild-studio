@@ -1,23 +1,21 @@
 import React, { useMemo } from 'react'
-import { Circle, Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
-import { SnappingLines } from '@/editor/canvas/utils/SnappingLines'
 import { useZoom } from '@/editor/hooks/useViewportStore'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolOverlayComponentProps } from '@/editor/tools/system/types'
+import { SnappingLines } from '@/editor/utils/SnappingLines'
 import { type Vec2, addVec2, copyVec2, direction, offsetPolygon, perpendicularCCW, scaleVec2 } from '@/shared/geometry'
 import { ensurePolygonIsClockwise } from '@/shared/geometry/polygon'
-import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 import type { PerimeterTool } from './PerimeterTool'
 
 interface SegmentLine {
-  points: number[]
+  points: string
 }
 
 interface DerivedPolygon {
   type: 'polygon'
-  points: number[]
+  points: string
 }
 
 interface DerivedSegments {
@@ -29,12 +27,12 @@ function clonePoints(points: readonly Vec2[]): Vec2[] {
   return points.map(point => copyVec2(point))
 }
 
-function toFlatPoints(points: readonly Vec2[], close = false): number[] {
-  const flat = points.flatMap(point => [point[0], point[1]])
+function toSvgPoints(points: readonly Vec2[], close = false): string {
+  let result = points.map(point => `${point[0]},${point[1]}`).join(' ')
   if (close && points.length > 0) {
-    flat.push(points[0][0], points[0][1])
+    result += ` ${points[0][0]},${points[0][1]}`
   }
-  return flat
+  return result
 }
 
 function computeDerivedPolygon(
@@ -52,7 +50,7 @@ function computeDerivedPolygon(
     const offset = offsetPolygon(oriented, referenceSide === 'inside' ? thickness : -thickness)
     return {
       type: 'polygon',
-      points: toFlatPoints(offset.points, true)
+      points: toSvgPoints(offset.points, true)
     }
   } catch (error) {
     console.warn('Failed to compute derived perimeter polygon preview:', error)
@@ -85,7 +83,7 @@ function computeDerivedSegments(
     const offsetStart = addVec2(start, offset)
     const offsetEnd = addVec2(end, offset)
 
-    segments.push({ points: [offsetStart[0], offsetStart[1], offsetEnd[0], offsetEnd[1]] })
+    segments.push({ points: `${offsetStart[0]},${offsetStart[1]} ${offsetEnd[0]},${offsetEnd[1]}` })
   }
 
   return { type: 'segments', segments }
@@ -94,12 +92,11 @@ function computeDerivedSegments(
 export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<PerimeterTool>): React.JSX.Element | null {
   const { state } = useReactiveTool(tool)
   const zoom = useZoom()
-  const theme = useCanvasTheme()
 
   const scaledLineWidth = Math.max(1, 2 / zoom)
   const dashSize = 10 / zoom
-  const scaledDashPattern = [dashSize, dashSize]
-  const scaledDashPattern2 = [3 / zoom, 10 / zoom]
+  const scaledDashPattern = `${dashSize} ${dashSize}`
+  const scaledDashPattern2 = `${3 / zoom} ${10 / zoom}`
   const scaledPointRadius = 5 / zoom
   const scaledPointStrokeWidth = 1 / zoom
 
@@ -131,112 +128,106 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
   }, [workingPoints, state.referenceSide, state.wallThickness, tool])
 
   return (
-    <Group>
+    <g pointerEvents="none">
       <SnappingLines snapResult={state.snapResult} />
 
       {derivedGeometry?.type === 'polygon' && (
-        <Line
+        <polyline
           points={derivedGeometry.points}
-          stroke={'var(--color-text-secondary)'}
+          fill="none"
+          stroke="var(--gray-11)"
           strokeWidth={scaledLineWidth}
-          dash={scaledDashPattern2}
-          lineCap="round"
-          lineJoin="round"
+          strokeDasharray={scaledDashPattern2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
           opacity={0.8}
-          listening={false}
         />
       )}
 
       {derivedGeometry?.type === 'segments' &&
         derivedGeometry.segments.map((segment, index) => (
-          <Line
+          <polyline
             key={`offset-segment-${index}`}
             points={segment.points}
-            stroke={'var(--color-text-secondary)'}
+            fill="none"
+            stroke="var(--gray-11)"
             strokeWidth={scaledLineWidth}
-            dash={scaledDashPattern2}
-            lineCap="round"
-            lineJoin="round"
+            strokeDasharray={scaledDashPattern2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
             opacity={0.8}
-            listening={false}
           />
         ))}
 
       {state.points.length > 1 && (
-        <Line
-          points={state.points.flatMap(point => [point[0], point[1]])}
-          stroke={theme.secondary}
+        <polyline
+          points={toSvgPoints(state.points)}
+          fill="none"
+          stroke="var(--gray-9)"
           strokeWidth={scaledLineWidth}
-          lineCap="round"
-          lineJoin="round"
-          listening={false}
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
       )}
 
       {state.points.length > 0 && !isClosingSnap && (
-        <Line
-          points={[
-            state.points[state.points.length - 1][0],
-            state.points[state.points.length - 1][1],
-            previewPos[0],
-            previewPos[1]
-          ]}
-          stroke={state.isCurrentSegmentValid ? theme.textTertiary : theme.danger}
+        <line
+          x1={state.points[state.points.length - 1][0]}
+          y1={state.points[state.points.length - 1][1]}
+          x2={previewPos[0]}
+          y2={previewPos[1]}
+          stroke={state.isCurrentSegmentValid ? 'var(--gray-10)' : 'var(--red-9)'}
           strokeWidth={scaledLineWidth}
-          dash={scaledDashPattern}
-          listening={false}
+          strokeDasharray={scaledDashPattern}
         />
       )}
 
       {state.points.length >= 2 && !isClosingSnap && (
-        <Line
-          points={[previewPos[0], previewPos[1], state.points[0][0], state.points[0][1]]}
-          stroke={theme.textTertiary}
+        <line
+          x1={previewPos[0]}
+          y1={previewPos[1]}
+          x2={state.points[0][0]}
+          y2={state.points[0][1]}
+          stroke="var(--gray-10)"
           strokeWidth={scaledLineWidth}
-          dash={scaledDashPattern2}
+          strokeDasharray={scaledDashPattern2}
           opacity={0.8}
-          listening={false}
         />
       )}
 
       {state.points.length >= tool.getMinimumPointCount() && isClosingSnap && (
-        <Line
-          points={[
-            state.points[state.points.length - 1][0],
-            state.points[state.points.length - 1][1],
-            state.points[0][0],
-            state.points[0][1]
-          ]}
-          stroke={state.isClosingSegmentValid ? theme.success : theme.danger}
+        <line
+          x1={state.points[state.points.length - 1][0]}
+          y1={state.points[state.points.length - 1][1]}
+          x2={state.points[0][0]}
+          y2={state.points[0][1]}
+          stroke={state.isClosingSegmentValid ? 'var(--green-9)' : 'var(--red-9)'}
           strokeWidth={scaledLineWidth}
-          dash={scaledDashPattern}
-          listening={false}
+          strokeDasharray={scaledDashPattern}
         />
       )}
 
       {state.points.map((point, index) => (
-        <Circle
+        <circle
           key={`point-${index}`}
-          x={point[0]}
-          y={point[1]}
-          radius={scaledPointRadius}
-          fill={index === 0 ? 'var(--color-primary)' : theme.secondary}
-          stroke={'var(--gray-1)'}
+          cx={point[0]}
+          cy={point[1]}
+          r={scaledPointRadius}
+          fill={index === 0 ? 'var(--accent-9)' : 'var(--gray-9)'}
+          stroke="var(--gray-1)"
           strokeWidth={scaledPointStrokeWidth}
-          listening={false}
         />
       ))}
 
-      <Circle
+      <circle
         key="snap-point"
-        x={previewPos[0]}
-        y={previewPos[1]}
-        radius={scaledPointRadius}
-        fill={state.lengthOverride ? 'var(--color-primary)' : theme.secondary}
+        cx={previewPos[0]}
+        cy={previewPos[1]}
+        r={scaledPointRadius}
+        fill={state.lengthOverride ? 'var(--accent-9)' : 'var(--gray-9)'}
         stroke={state.lengthOverride ? 'var(--gray-1)' : 'var(--gray-12)'}
         strokeWidth={scaledPointStrokeWidth}
-        listening={false}
       />
-    </Group>
+    </g>
   )
 }

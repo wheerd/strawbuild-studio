@@ -4,7 +4,7 @@ import { activateLengthInput, deactivateLengthInput } from '@/editor/services/le
 import { SnappingService } from '@/editor/services/snapping'
 import type { SnapResult, SnappingContext } from '@/editor/services/snapping/types'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
-import type { CanvasEvent, CursorStyle } from '@/editor/tools/system/types'
+import type { CursorStyle, EditorEvent } from '@/editor/tools/system/types'
 import {
   type Length,
   type LineSegment2D,
@@ -53,11 +53,10 @@ export abstract class BasePolygonTool<TState extends PolygonToolStateBase> exten
     this.snappingService = new SnappingService()
   }
 
-  handlePointerDown(event: CanvasEvent): boolean {
-    const stageCoords = event.stageCoordinates
-    this.state.pointer = stageCoords
-    this.state.snapResult = this.findSnap(stageCoords)
-    const snapCoords = this.state.snapResult?.position ?? stageCoords
+  handlePointerDown(event: EditorEvent): boolean {
+    this.state.pointer = event.worldCoordinates
+    this.state.snapResult = this.findSnap(event.worldCoordinates)
+    const snapCoords = this.state.snapResult?.position ?? event.worldCoordinates
 
     if (this.state.points.length >= this.getMinimumPointCount()) {
       if (this.isSnappingToFirstPoint()) {
@@ -89,8 +88,8 @@ export abstract class BasePolygonTool<TState extends PolygonToolStateBase> exten
     return true
   }
 
-  handlePointerMove(event: CanvasEvent): boolean {
-    const stageCoords = event.stageCoordinates
+  handlePointerMove(event: EditorEvent): boolean {
+    const stageCoords = event.worldCoordinates
     this.state.pointer = stageCoords
     this.state.snapResult = this.findSnap(stageCoords)
 
@@ -315,8 +314,8 @@ export abstract class BasePolygonTool<TState extends PolygonToolStateBase> exten
     const stageCoords = worldToStage(lastPoint)
 
     return {
-      x: stageCoords.x + 20,
-      y: stageCoords.y - 30
+      x: stageCoords[0] + 20,
+      y: stageCoords[1] - 30
     }
   }
 

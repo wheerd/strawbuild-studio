@@ -1,14 +1,14 @@
 import { create } from 'zustand'
 
-import { type Vec2, newVec2 } from '@/shared/geometry'
+import { type Vec2 } from '@/shared/geometry'
 
 interface PointerPosition {
-  stage: { x: number; y: number } | null
+  stage: Vec2 | null
   world: Vec2 | null
 }
 
 interface PointerPositionActions {
-  setPosition: (stage: { x: number; y: number }, world: Vec2) => void
+  setPosition: (stage: Vec2, world: Vec2) => void
   clear: () => void
 }
 
@@ -24,9 +24,7 @@ const pointerPositionStore = create<PointerPositionStore>()(set => ({
 
   actions: {
     setPosition: (stage, world) => {
-      const stageCopy = { x: stage.x, y: stage.y }
-      const worldCopy = newVec2(world[0], world[1])
-      set({ stage: stageCopy, world: worldCopy })
+      set({ stage, world })
     },
     clear: () => {
       set(INITIAL_STATE)
@@ -36,7 +34,7 @@ const pointerPositionStore = create<PointerPositionStore>()(set => ({
 
 export const usePointerWorldPosition = (): Vec2 | null => pointerPositionStore(state => state.world)
 
-export const usePointerStagePosition = (): { x: number; y: number } | null => pointerPositionStore(state => state.stage)
+export const usePointerStagePosition = (): Vec2 | null => pointerPositionStore(state => state.stage)
 
 export const usePointerPositionActions = (): PointerPositionActions => pointerPositionStore(state => state.actions)
 

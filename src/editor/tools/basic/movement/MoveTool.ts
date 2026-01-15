@@ -1,10 +1,10 @@
 import { getModelActions } from '@/building/store'
-import { entityHitTestService } from '@/editor/canvas/services/EntityHitTestService'
 import type { LengthInputConfig } from '@/editor/services/length-input'
 import { activateLengthInput, deactivateLengthInput } from '@/editor/services/length-input'
 import { defaultSnappingService } from '@/editor/services/snapping/SnappingService'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
-import type { CanvasEvent, CursorStyle, ToolImplementation } from '@/editor/tools/system/types'
+import type { CursorStyle, EditorEvent, ToolImplementation } from '@/editor/tools/system/types'
+import { findEditorEntityAt } from '@/editor/utils/editorHitTesting'
 import { type Length, type Vec2, ZERO_VEC2, distSqrVec2, normVec2, scaleVec2, subVec2 } from '@/shared/geometry'
 
 import { MoveToolInspector } from './MoveToolInspector'
@@ -53,13 +53,8 @@ export class MoveTool extends BaseTool implements ToolImplementation {
     lastMovement: null
   }
 
-  handlePointerDown(event: CanvasEvent): boolean {
-    if (!event.pointerCoordinates) {
-      console.warn('No pointer coordinates available for movement')
-      return false
-    }
-
-    const hitResult = entityHitTestService.findEntityAtPointer(event.pointerCoordinates)
+  handlePointerDown(event: EditorEvent): boolean {
+    const hitResult = findEditorEntityAt(event.originalEvent)
     if (!hitResult) return false
 
     const behavior = getMovementBehavior(hitResult.entityType)
@@ -71,7 +66,7 @@ export class MoveTool extends BaseTool implements ToolImplementation {
 
     // Start waiting for movement - don't begin actual move yet
     this.toolState.isWaitingForMovement = true
-    this.toolState.downPosition = event.stageCoordinates
+    this.toolState.downPosition = event.worldCoordinates
     this.toolState.behavior = behavior
     this.toolState.context = {
       entityId: hitResult.entityId,
@@ -83,8 +78,8 @@ export class MoveTool extends BaseTool implements ToolImplementation {
 
     // Initialize pointer state and movement state
     this.toolState.pointerState = {
-      startPosition: event.stageCoordinates,
-      currentPosition: event.stageCoordinates,
+      startPosition: event.worldCoordinates,
+      currentPosition: event.worldCoordinates,
       delta: ZERO_VEC2
     }
 
@@ -93,11 +88,11 @@ export class MoveTool extends BaseTool implements ToolImplementation {
     return true
   }
 
-  handlePointerMove(event: CanvasEvent): boolean {
+  handlePointerMove(event: EditorEvent): boolean {
     if (this.toolState.isWaitingForMovement) {
       // Check if we've moved beyond threshold
       const distance = this.toolState.downPosition
-        ? distSqrVec2(event.stageCoordinates, this.toolState.downPosition)
+        ? distSqrVec2(event.worldCoordinates, this.toolState.downPosition)
         : 0
 
       if (distance >= MoveTool.MOVEMENT_THRESHOLD ** 2) {
@@ -140,8 +135,8 @@ export class MoveTool extends BaseTool implements ToolImplementation {
     // Update pointer state with current position and delta
     const updatedPointerState = {
       ...pointerState,
-      currentPosition: event.stageCoordinates,
-      delta: subVec2(event.stageCoordinates, pointerState.startPosition)
+      currentPosition: event.worldCoordinates,
+      delta: subVec2(event.worldCoordinates, pointerState.startPosition)
     }
 
     // Apply constraints and snapping to get new movement state
@@ -156,7 +151,7 @@ export class MoveTool extends BaseTool implements ToolImplementation {
     return true
   }
 
-  handlePointerUp(_event: CanvasEvent): boolean {
+  handlePointerUp(_event: EditorEvent): boolean {
     if (this.toolState.isWaitingForMovement) {
       // User just clicked without dragging - treat as selection, not movement
       this.resetTransientState()

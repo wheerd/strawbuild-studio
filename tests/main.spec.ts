@@ -32,7 +32,7 @@ test('Test Data Screenshot', async ({ page }) => {
     `)
   await page.getByRole('button', { name: 'Test Data' }).click()
   await page.getByRole('button', { name: '📐 Cross/T-Shape Perimeter' }).click()
-  await expect(page.getByTestId('konva-canvas')).toHaveScreenshot({
+  await expect(page.getByTestId('editor-svg')).toHaveScreenshot({
     animations: 'disabled',
     scale: 'css',
     stylePath: path.resolve(import.meta.dirname, 'hide-overlays.css')

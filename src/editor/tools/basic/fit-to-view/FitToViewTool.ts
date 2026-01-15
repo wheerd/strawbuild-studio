@@ -1,7 +1,7 @@
 import { getModelActions } from '@/building/store'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
 import { getToolActions } from '@/editor/tools/system'
-import { type CanvasEvent, DummyToolInspector, type ToolImplementation } from '@/editor/tools/system/types'
+import { DummyToolInspector, type EditorEvent, type ToolImplementation } from '@/editor/tools/system/types'
 import { Bounds2D } from '@/shared/geometry'
 
 export class FitToViewTool implements ToolImplementation {
@@ -9,7 +9,7 @@ export class FitToViewTool implements ToolImplementation {
   readonly inspectorComponent = DummyToolInspector
 
   // Event handlers - not needed for this tool
-  handlePointerDown(_event: CanvasEvent): boolean {
+  handlePointerDown(_event: EditorEvent): boolean {
     return false
   }
 

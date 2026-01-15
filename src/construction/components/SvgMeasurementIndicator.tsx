@@ -23,7 +23,7 @@ export function SvgMeasurementIndicator({
   className,
   offset = 50,
   labelOrientation = 'parallel',
-  color = 'var(--color-primary)',
+  color = 'var(--accent-9)',
   fontSize = 40,
   strokeWidth = 10
 }: SvgMeasurementIndicatorProps): React.JSX.Element {
@@ -93,7 +93,7 @@ export function SvgMeasurementIndicator({
   // Calculate connection line stroke width
   const connectionStrokeWidth = strokeWidth / 2
 
-  // Calculate line gap for text similar to canvas version
+  // Calculate line gap for text
   const TEXT_WIDTH_FACTOR = 0.6
   const GAP_FACTOR = 0.6
   const LINE_HEIGHT_FACTOR = 1.2

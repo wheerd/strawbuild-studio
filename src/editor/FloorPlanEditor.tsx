@@ -7,13 +7,12 @@ import { type ConfigTab, ConfigurationModalContext } from '@/construction/config
 import { FeatureErrorFallback } from '@/shared/components/ErrorBoundary'
 import { WelcomeModal } from '@/shared/components/WelcomeModal'
 import { useWelcomeModal } from '@/shared/hooks/useWelcomeModal'
-import { CanvasThemeProvider } from '@/shared/theme/CanvasThemeContext'
 
 import { MainToolbar } from './MainToolbar'
 import { SidePanel } from './SidePanel'
-import { FloorPlanStage } from './canvas/layers/FloorPlanStage'
 import { ViewModeToggle } from './components/ViewModeToggle'
 import { useAutoFitOnHydration } from './hooks/useAutoFitOnHydration'
+import { FloorPlanStage } from './layers/FloorPlanStage'
 import { LengthInputComponent } from './services/length-input'
 import { StatusBar } from './status-bar/StatusBar'
 import { keyboardShortcutManager } from './tools/system/KeyboardShortcutManager'
@@ -125,22 +124,6 @@ export function FloorPlanEditor(): React.JSX.Element {
     }
   }, [updateDimensions])
 
-  const handleClick = useCallback((event: React.MouseEvent) => {
-    // Only steal focus if clicking on the canvas area, not on UI elements like inputs
-    const target = event.target as HTMLElement
-
-    // Check if the click target is an input, select, button, or other interactive element
-    const isInteractiveElement = target.matches('input, select, button, textarea, [contenteditable="true"]')
-
-    // Check if the click target is inside the side panel
-    const isInSidePanel = target.closest('.side-panel')
-
-    // Only focus the container if we're clicking on the canvas area
-    if (!isInteractiveElement && !isInSidePanel && containerRef.current) {
-      containerRef.current.focus()
-    }
-  }, [])
-
   return (
     <ConfigurationModalContext.Provider value={{ openConfiguration }}>
       <Grid
@@ -154,7 +137,6 @@ export function FloorPlanEditor(): React.JSX.Element {
           backgroundColor: 'var(--gray-2)'
         }}
         tabIndex={0}
-        onClick={handleClick}
         data-testid="floor-plan-editor"
       >
         {/* Top Toolbar - Tabs for tool groups + tools */}
@@ -174,9 +156,9 @@ export function FloorPlanEditor(): React.JSX.Element {
         {/* Welcome Modal */}
         <WelcomeModal isOpen={isOpen} mode={mode} onAccept={handleAccept} />
 
-        {/* Main Content Area - Canvas + Side Panel */}
+        {/* Main Content Area - Editor + Side Panel */}
         <Grid p="0" gap="0" columns="1fr 320px" style={{ overflow: 'hidden' }}>
-          {/* Canvas Area */}
+          {/* Editor Area */}
           <Box
             style={{
               position: 'relative',
@@ -186,12 +168,10 @@ export function FloorPlanEditor(): React.JSX.Element {
             }}
           >
             <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
-              <CanvasThemeProvider>
-                <ViewModeToggle />
-                <FloorPlanStage width={dimensions.width} height={dimensions.height} />
-                <StatusBar />
-                <LengthInputComponent />
-              </CanvasThemeProvider>
+              <ViewModeToggle />
+              <FloorPlanStage width={dimensions.width} height={dimensions.height} />
+              <StatusBar />
+              <LengthInputComponent />
             </ErrorBoundary>
           </Box>
 

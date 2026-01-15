@@ -1,19 +1,16 @@
-import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
-
 import type { MovementPreviewComponentProps } from '@/editor/tools/basic/movement/MovementBehavior'
 import type {
   WallPostEntityContext,
   WallPostMovementState
 } from '@/editor/tools/basic/movement/behaviors/WallPostMovementBehavior'
 import { addVec2, midpoint, scaleAddVec2, scaleVec2 } from '@/shared/geometry'
-import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
+import { polygonToSvgPath } from '@/shared/utils/svg'
 
 export function WallPostMovementPreview({
   movementState,
   context,
   isValid
 }: MovementPreviewComponentProps<WallPostEntityContext, WallPostMovementState>): React.JSX.Element {
-  const theme = useCanvasTheme()
   const { wall, post } = context.entity
 
   // Extract wall geometry
@@ -33,38 +30,31 @@ export function WallPostMovementPreview({
   const outsidePostEnd = addVec2(outsideStart, offsetEnd)
 
   const postPolygon = [insidePostStart, insidePostEnd, outsidePostEnd, outsidePostStart]
-  const postPolygonArray = postPolygon.flatMap(point => [point[0], point[1]])
+  const pathData = polygonToSvgPath({ points: postPolygon })
 
   // Movement indicator
   const base = midpoint(insideStart, outsideStart)
   const originalMid = scaleAddVec2(base, wall.direction, post.centerOffsetFromWallStart)
   const previewMid = scaleAddVec2(base, wall.direction, movementState.newOffset)
 
-  const fillColor = isValid ? theme.success : theme.danger
+  const fillColor = isValid ? 'var(--green-9)' : 'var(--red-9)'
 
   return (
-    <Group listening={false}>
+    <g pointerEvents="none">
       {/* Post preview */}
-      <Line
-        points={postPolygonArray}
-        fill={fillColor}
-        opacity={0.6}
-        stroke={'var(--gray-1)'}
-        strokeWidth={5}
-        lineCap="butt"
-        closed
-        listening={false}
-      />
+      <path d={pathData} fill={fillColor} opacity={0.6} stroke="var(--gray-1)" strokeWidth={5} strokeLinejoin="miter" />
 
       {/* Show movement indicator */}
-      <Line
-        points={[originalMid[0], originalMid[1], previewMid[0], previewMid[1]]}
-        stroke={'var(--color-text-secondary)'}
+      <line
+        x1={originalMid[0]}
+        y1={originalMid[1]}
+        x2={previewMid[0]}
+        y2={previewMid[1]}
+        stroke="var(--gray-11)"
         strokeWidth={10}
-        dash={[20, 20]}
+        strokeDasharray="20 20"
         opacity={0.7}
-        listening={false}
       />
-    </Group>
+    </g>
   )
 }

@@ -152,7 +152,7 @@ describe('SnappingService', () => {
   })
 
   describe('Line Wall Snapping', () => {
-    it('should snap to extension line of wall wall', () => {
+    it('should snap to extension line of perimeter wall', () => {
       const wall: LineSegment2D = {
         start: newVec2(100, 100),
         end: newVec2(200, 100)
@@ -171,7 +171,7 @@ describe('SnappingService', () => {
       expect(result?.position[0]).toBe(300) // X should remain
     })
 
-    it('should snap to perpendicular line of wall wall', () => {
+    it('should snap to perpendicular line of perimeter wall', () => {
       const wall: LineSegment2D = {
         start: newVec2(100, 100),
         end: newVec2(200, 100)

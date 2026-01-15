@@ -8,11 +8,11 @@ import {
 } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { type MaterialId, roughWood, woodwool } from '@/construction/materials/material'
-import { entityHitTestService } from '@/editor/canvas/services/EntityHitTestService'
 import { getSelectionActions } from '@/editor/hooks/useSelectionStore'
 import { getViewModeActions } from '@/editor/hooks/useViewMode'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
-import type { CanvasEvent, CursorStyle, ToolImplementation } from '@/editor/tools/system/types'
+import type { CursorStyle, EditorEvent, ToolImplementation } from '@/editor/tools/system/types'
+import { findEditorEntityAt } from '@/editor/utils/editorHitTesting'
 import { type Length, type Vec2, newVec2, projectVec2 } from '@/shared/geometry'
 
 import { AddPostToolInspector } from './AddPostToolInspector'
@@ -161,16 +161,11 @@ export class AddPostTool extends BaseTool implements ToolImplementation {
 
   // Event Handlers
 
-  handlePointerMove(event: CanvasEvent): boolean {
-    const pointerPos = event.stageCoordinates
+  handlePointerMove(event: EditorEvent): boolean {
+    const pointerPos = event.worldCoordinates
 
     // 1. Detect wall under cursor
-    if (!event.pointerCoordinates) {
-      this.clearPreview()
-      return true
-    }
-
-    const hitResult = entityHitTestService.findEntityAtPointer(event.pointerCoordinates)
+    const hitResult = findEditorEntityAt(event.originalEvent)
     const perimeterWall = this.extractPerimeterWallFromHitResult(hitResult)
 
     if (!perimeterWall) {
@@ -207,7 +202,7 @@ export class AddPostTool extends BaseTool implements ToolImplementation {
     return true
   }
 
-  handlePointerDown(_event: CanvasEvent): boolean {
+  handlePointerDown(_event: EditorEvent): boolean {
     if (!this.state.canPlace || !this.state.hoveredPerimeterWall || !this.state.offset) {
       return true
     }

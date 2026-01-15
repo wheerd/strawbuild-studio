@@ -108,7 +108,7 @@ export function Measurements({ model, projection }: MeasurementsProps): React.JS
           endPoint={measurement.endPoint}
           label={measurement.label}
           offset={measurement.offset}
-          color="var(--color-text)"
+          color="var(--gray-12)"
           fontSize={60}
           strokeWidth={10}
           className={getTagClasses(measurement.tags, 'measurement')}
@@ -122,7 +122,7 @@ export function Measurements({ model, projection }: MeasurementsProps): React.JS
           endPoint={measurement.endPoint}
           label={measurement.label}
           offset={measurement.offset}
-          color="var(--color-text)"
+          color="var(--gray-12)"
           fontSize={60}
           strokeWidth={10}
           className={getTagClasses(measurement.tags, 'measurement')}

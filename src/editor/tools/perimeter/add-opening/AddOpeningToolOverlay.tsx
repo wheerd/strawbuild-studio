@@ -1,9 +1,7 @@
 import React from 'react'
-import { Circle, Group, Rect, Text } from 'react-konva/lib/ReactKonvaCore'
 
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolOverlayComponentProps } from '@/editor/tools/system/types'
-import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 import type { AddOpeningTool } from './AddOpeningTool'
 
@@ -12,7 +10,6 @@ import type { AddOpeningTool } from './AddOpeningTool'
  */
 export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpeningTool>): React.JSX.Element | null {
   const { state } = useReactiveTool(tool)
-  const theme = useCanvasTheme()
 
   // Don't render anything if no preview state
   if (!state.hoveredPerimeterWall || !state.previewPosition) {
@@ -26,45 +23,48 @@ export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpe
   const halfWidth = state.width / 2
 
   return (
-    <Group x={state.previewPosition[0]} y={state.previewPosition[1]} rotation={wallAngle} listening={false}>
+    <g
+      transform={`translate(${state.previewPosition[0]} ${state.previewPosition[1]}) rotate(${wallAngle})`}
+      pointerEvents="none"
+    >
       {/* Opening Preview */}
-      <Rect
+      <rect
         x={-halfWidth}
         y={0}
         width={state.width}
         height={wall.thickness}
-        fill={state.canPlace ? (tool.getNeedsConversion() ? theme.warning : theme.success) : theme.danger}
+        fill={state.canPlace ? (tool.getNeedsConversion() ? 'var(--amber-10)' : 'var(--green-9)') : 'var(--red-9)'}
         opacity={0.6}
-        stroke={'var(--gray-1)'}
+        stroke="var(--gray-1)"
         strokeWidth={3}
       />
-      <Text
-        text={tool.getNeedsConversion() ? '⚠' : getOpeningIcon(state.openingType)}
-        fontSize={wall.thickness * 0.7}
-        x={-halfWidth}
-        y={wall.thickness}
-        width={state.width}
-        height={wall.thickness}
-        align="center"
-        verticalAlign="middle"
-        fill={'var(--gray-1)'}
-        fontFamily="Arial"
-        scaleY={-1}
-      />
+      <g transform={`translate(0 ${wall.thickness}) scale(1, -1)`}>
+        <text
+          x={0}
+          y={wall.thickness / 2}
+          fontSize={wall.thickness * 0.7}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fill="var(--gray-1)"
+          fontFamily="Arial"
+        >
+          {tool.getNeedsConversion() ? '⚠' : getOpeningIcon(state.openingType)}
+        </text>
+      </g>
 
       {/* Snap Indicator */}
       {state.snapDirection && (
-        <Circle
-          x={state.snapDirection === 'right' ? -halfWidth : halfWidth}
-          y={wall.thickness / 2}
-          radius={wall.thickness * 0.15}
-          fill={'var(--color-primary)'}
-          stroke={'var(--gray-1)'}
+        <circle
+          cx={state.snapDirection === 'right' ? -halfWidth : halfWidth}
+          cy={wall.thickness / 2}
+          r={wall.thickness * 0.15}
+          fill="var(--accent-9)"
+          stroke="var(--gray-1)"
           strokeWidth={2}
           opacity={0.9}
         />
       )}
-    </Group>
+    </g>
   )
 }
 

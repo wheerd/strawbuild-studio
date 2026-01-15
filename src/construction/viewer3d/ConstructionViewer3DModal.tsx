@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next'
 import { FullScreenModal } from '@/components/ui/FullScreenModal'
 import type { ConstructionModel } from '@/construction/model'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
-import { CanvasThemeProvider } from '@/shared/theme/CanvasThemeContext'
 
 import { TagOpacityProvider } from './context/TagOpacityContext'
 import { acquireGeometryCache, prewarmGeometryCache, releaseGeometryCache } from './utils/geometryCache'
@@ -95,13 +94,11 @@ export function ConstructionViewer3DModal({
               }
             >
               <TagOpacityProvider>
-                <CanvasThemeProvider>
-                  <ConstructionViewer3DContent
-                    modelPromise={modelPromise}
-                    containerSize={containerSize}
-                    isOpen={isOpen}
-                  />
-                </CanvasThemeProvider>
+                <ConstructionViewer3DContent
+                  modelPromise={modelPromise}
+                  containerSize={containerSize}
+                  isOpen={isOpen}
+                />
               </TagOpacityProvider>
             </Suspense>
           ) : null}
