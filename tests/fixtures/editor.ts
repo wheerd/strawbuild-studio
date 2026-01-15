@@ -123,5 +123,5 @@ export async function dragInEditor(
  * Get the inspector panel (sidebar)
  */
 export function getInspector(page: Page): Locator {
-  return page.getByTestId('inspector')
+  return page.getByTestId('side-panel')
 }

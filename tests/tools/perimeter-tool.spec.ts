@@ -1,7 +1,9 @@
 import { expect, test } from '@playwright/test'
+
 import {
   activateTool,
   clickEditorAt,
+  getInspector,
   moveMouseTo,
   pressKey,
   setupEditorPage,
@@ -9,89 +11,98 @@ import {
 } from '../fixtures/editor'
 
 test.describe('Perimeter Tool', () => {
-  test.beforeEach(async ({ page }) => {
-    test.setTimeout(60000)
+  test('complete journey: draw, snap, invalid, cancel, change params, complete, verify', async ({ page }) => {
+    test.setTimeout(180000)
+
+    // Setup: Fresh editor
     await setupEditorPage(page)
-  })
 
-  test('activates from toolbar', async ({ page }) => {
+    // Step 1: Activate tool and verify inspector shows default values
     await activateTool(page, 'Building Perimeter')
-
-    // Verify tool is active by checking inspector shows perimeter tool content
     await expect(page.getByText('Building Perimeter')).toBeVisible()
-  })
 
-  test('draws first segment with wall thickness preview', async ({ page }) => {
-    await activateTool(page, 'Building Perimeter')
+    // Verify default values in inspector
+    const inspector = getInspector(page)
+    await expect(inspector.getByText('Wall Thickness')).toBeVisible()
+    // Reference side defaults to Inside
+    await expect(inspector.getByRole('radio', { name: 'Inside' })).toBeChecked()
 
-    // Click to place first point
-    await clickEditorAt(page, 300, 300)
-
-    // Move mouse to show preview line
-    await moveMouseTo(page, 500, 300)
-
-    // Screenshot showing wall thickness offset preview
-    await takeEditorScreenshot(page, 'perimeter-first-segment.png')
-  })
-
-  test('draws L-shape showing offset polygon', async ({ page }) => {
-    await activateTool(page, 'Building Perimeter')
-
-    // Draw L-shape
+    // Step 2: First point
     await clickEditorAt(page, 300, 400)
-    await clickEditorAt(page, 500, 400)
-    await clickEditorAt(page, 500, 250)
+    await takeEditorScreenshot(page, '01-first-point.png')
 
-    // Move to show preview
-    await moveMouseTo(page, 350, 250)
-
-    // Screenshot showing multi-segment offset polygon
-    await takeEditorScreenshot(page, 'perimeter-l-shape.png')
-  })
-
-  test('shows closing indicator near first point', async ({ page }) => {
-    await activateTool(page, 'Building Perimeter')
-
-    // Draw rectangle shape
-    await clickEditorAt(page, 300, 400)
+    // Step 3: Second point with wall preview
     await clickEditorAt(page, 550, 400)
-    await clickEditorAt(page, 550, 200)
-    await clickEditorAt(page, 300, 200)
+    await moveMouseTo(page, 550, 250)
+    await takeEditorScreenshot(page, '02-wall-preview.png')
 
-    // Move near first point to show closing indicator
-    await moveMouseTo(page, 305, 395)
+    // Step 4: Snapping test - hover near perpendicular position
+    // The snapping should show guides when near 90-degree angle
+    await moveMouseTo(page, 548, 250) // Slightly off perpendicular to trigger snap
+    await takeEditorScreenshot(page, '03-snap-to-perpendicular.png')
 
-    // Screenshot showing closing indicator
-    await takeEditorScreenshot(page, 'perimeter-closing.png')
-  })
+    // Step 5: Click third point (snapped to perpendicular)
+    await clickEditorAt(page, 550, 250)
+    await takeEditorScreenshot(page, '04-l-shape.png')
 
-  test('completes polygon on close', async ({ page }) => {
-    await activateTool(page, 'Building Perimeter')
+    // Step 6: Invalid hover - move to position that would create self-intersection
+    // Line from (550, 250) crossing the first segment (300, 400) to (550, 400)
+    await moveMouseTo(page, 400, 450)
+    await takeEditorScreenshot(page, '05-invalid-position.png')
 
-    // Draw and close rectangle
-    await clickEditorAt(page, 300, 400)
-    await clickEditorAt(page, 550, 400)
-    await clickEditorAt(page, 550, 200)
-    await clickEditorAt(page, 300, 200)
-
-    // Click near first point to close
-    await clickEditorAt(page, 305, 395)
-
-    // Screenshot showing completed perimeter
-    await takeEditorScreenshot(page, 'perimeter-completed.png')
-  })
-
-  test('cancels drawing with Escape', async ({ page }) => {
-    await activateTool(page, 'Building Perimeter')
-
-    // Start drawing
-    await clickEditorAt(page, 300, 300)
-    await clickEditorAt(page, 500, 300)
-
-    // Cancel with Escape
+    // Step 7: Cancel drawing
     await pressKey(page, 'Escape')
+    await takeEditorScreenshot(page, '06-cancelled.png')
 
-    // Screenshot showing cancelled state (no perimeter)
-    await takeEditorScreenshot(page, 'perimeter-cancelled.png')
+    // Step 8: Change parameters in inspector
+    // Switch reference side to "Outside"
+    await inspector.getByRole('radio', { name: 'Outside' }).click()
+    await expect(inspector.getByRole('radio', { name: 'Outside' })).toBeChecked()
+
+    // Change wall thickness to 200mm
+    const thicknessInput = inspector.locator('#wall-thickness')
+    await thicknessInput.fill('200')
+    await thicknessInput.press('Enter')
+
+    // Change wall assembly to Strawhenge
+    await inspector.getByRole('combobox').first().click()
+    await page.getByRole('option', { name: 'Strawhenge' }).click()
+
+    // Step 9: Restart drawing with new parameters
+    await clickEditorAt(page, 300, 400)
+    await takeEditorScreenshot(page, '07-restarted-outside-ref.png')
+
+    // Step 10: Show offset difference with outside reference
+    await clickEditorAt(page, 550, 400)
+    await moveMouseTo(page, 550, 250)
+    await takeEditorScreenshot(page, '08-outside-ref-preview.png')
+
+    // Step 11-12: Draw remaining points for rectangle
+    await clickEditorAt(page, 550, 200)
+    await clickEditorAt(page, 300, 200)
+
+    // Step 13: Near close - hover near first point to show green closing line
+    await moveMouseTo(page, 305, 395)
+    await takeEditorScreenshot(page, '09-near-close.png')
+
+    // Step 14: Complete polygon
+    await clickEditorAt(page, 305, 395)
+    await takeEditorScreenshot(page, '10-completed.png')
+
+    // Step 15: Select and verify - switch to Select tool
+    await activateTool(page, 'Select')
+
+    // Click on a wall segment to select the perimeter
+    await clickEditorAt(page, 425, 400)
+
+    // Verify inspector shows wall properties (wall inspector, not perimeter inspector)
+    // Note: Reference side is perimeter-level, not wall-level, so we can't check it here
+    // The wall inspector uses #perimeter-thickness for the thickness field
+    await expect(inspector.locator('#perimeter-thickness')).toHaveValue('20') // 200mm = 20cm
+
+    // Verify wall assembly shows Strawhenge
+    await expect(inspector.getByText('Strawhenge')).toBeVisible()
+
+    await expect(inspector).toHaveScreenshot('11-selected-inspector.png')
   })
 })
