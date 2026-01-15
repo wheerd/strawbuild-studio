@@ -1,86 +1,70 @@
-import type Konva from 'konva'
-
 import type { EntityType, SelectableId } from '@/building/model/ids'
 import { type Vec2, newVec2 } from '@/shared/geometry'
 
-import { stageReference } from './StageReference'
+import { findSvgEntityAt } from './svgHitTesting'
 
 export interface EntityHitResult {
   entityId: SelectableId
   entityType: EntityType
   parentIds: SelectableId[] // Complete parent chain from root to immediate parent
-  konvaNode: Konva.Node
+  svgElement?: SVGElement // SVG element for the entity
   stagePoint: Vec2
+  clientPoint: { x: number; y: number }
 }
 
 /**
- * Service for entity hit testing using Konva's built-in intersection detection.
- * Provides on-demand entity discovery at specific stage coordinates.
+ * Service for entity hit testing using DOM-based intersection detection.
+ * Provides on-demand entity discovery at specific client coordinates.
  */
 export class EntityHitTestService {
-  private stage: Konva.Stage | null = null
-
   /**
-   * Initialize the service with a Konva stage reference.
-   */
-  initialize(stage: Konva.Stage): void {
-    this.stage = stage
-  }
-
-  /**
-   * Find the topmost entity at the given pointer coordinates.
-   * Uses Konva's getIntersection() for precise hit detection.
+   * Find the topmost entity at the given client coordinates.
+   * Uses document.elementsFromPoint() for DOM-based hit detection.
    *
-   * @param pointerCoordinates - Original pointer coordinates (not transformed)
+   * @param clientX - Client X coordinate (screen space)
+   * @param clientY - Client Y coordinate (screen space)
    * @returns EntityHitResult if an entity is found, null otherwise
    */
-  findEntityAt(pointerCoordinates: { x: number; y: number }): EntityHitResult | null {
-    const stage = this.stage ?? stageReference.getStage()
-    if (!stage) {
+  findEntityAt(clientX: number, clientY: number): EntityHitResult | null {
+    const result = findSvgEntityAt(clientX, clientY)
+
+    if (!result) {
       return null
     }
 
-    // Use Konva's built-in intersection detection with original pointer coordinates
-    const intersectedNode = stage.getIntersection(pointerCoordinates)
-
-    return this.processIntersectedNode(intersectedNode, newVec2(pointerCoordinates.x, pointerCoordinates.y))
+    return {
+      entityId: result.entityId,
+      entityType: result.entityType,
+      parentIds: result.parentIds,
+      svgElement: result.svgElement,
+      stagePoint: newVec2(result.clientPoint.x, result.clientPoint.y),
+      clientPoint: result.clientPoint
+    }
   }
 
   /**
-   * Process the intersected node and walk up the tree to find entity attributes.
+   * Backward compatibility method - converts pointer coordinates to client coordinates
+   * @deprecated Use findEntityAt with client coordinates instead
    */
-  private processIntersectedNode(intersectedNode: Konva.Node | null, point: Vec2): EntityHitResult | null {
-    if (!intersectedNode) {
-      return null
-    }
-
-    // Walk up the node tree to find the first node with entity attributes
-    let currentNode: Konva.Node | null = intersectedNode
-    while (currentNode) {
-      const attrs = currentNode.getAttrs()
-
-      // Check if this node has entity identification attributes
-      if (attrs.entityId && attrs.entityType) {
-        return {
-          entityId: attrs.entityId as SelectableId,
-          entityType: attrs.entityType as EntityType,
-          parentIds: (attrs.parentIds ?? []) as SelectableId[],
-          konvaNode: currentNode,
-          stagePoint: point
-        }
-      }
-
-      currentNode = currentNode.getParent()
-    }
-
-    return null
+  findEntityAtPointer(pointerCoordinates: { x: number; y: number }): EntityHitResult | null {
+    // For backward compatibility, assume pointer coordinates are client coordinates
+    return this.findEntityAt(pointerCoordinates.x, pointerCoordinates.y)
   }
 
   /**
    * Check if the service is properly initialized.
+   * @deprecated No longer needed for SVG-based implementation
    */
   isInitialized(): boolean {
-    return this.stage !== null
+    return true
+  }
+
+  /**
+   * Initialize the service (no-op for SVG implementation)
+   * @deprecated No longer needed for SVG-based implementation
+   */
+  initialize(): void {
+    // No initialization needed for DOM-based hit testing
   }
 }
 

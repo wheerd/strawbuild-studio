@@ -233,7 +233,7 @@ export function PlanCalibrationCanvas({
     return (
       <Line
         points={[start.x, start.y, end.x, end.y]}
-        stroke={theme.primary}
+        stroke="var(--color-primary)"
         strokeWidth={2}
         dash={[12, 8]}
         listening={false}
@@ -246,18 +246,26 @@ export function PlanCalibrationCanvas({
       <Circle x={point.x} y={point.y} radius={8} stroke={color} strokeWidth={3} opacity={0.7} />
       <Line
         points={[point.x - 12, point.y - 12, point.x + 12, point.y + 12]}
-        stroke={theme.black}
+        stroke="var(--gray-12)"
         strokeWidth={3}
         opacity={0.4}
       />
       <Line
         points={[point.x - 12, point.y + 12, point.x + 12, point.y - 12]}
-        stroke={theme.black}
+        stroke="var(--gray-12)"
         strokeWidth={3}
         opacity={0.4}
       />
-      <Line points={[point.x - 12, point.y - 12, point.x + 12, point.y + 12]} stroke={theme.white} strokeWidth={1.5} />
-      <Line points={[point.x - 12, point.y + 12, point.x + 12, point.y - 12]} stroke={theme.white} strokeWidth={1.5} />
+      <Line
+        points={[point.x - 12, point.y - 12, point.x + 12, point.y + 12]}
+        stroke="var(--gray-1)"
+        strokeWidth={1.5}
+      />
+      <Line
+        points={[point.x - 12, point.y + 12, point.x + 12, point.y - 12]}
+        stroke="var(--gray-1)"
+        strokeWidth={1.5}
+      />
     </Group>
   )
 
@@ -291,12 +299,12 @@ export function PlanCalibrationCanvas({
                   y={-view.pan.y / view.scale}
                   width={stageWidth / view.scale}
                   height={stageHeight / view.scale}
-                  fill={theme.bgSubtle}
+                  fill="var(--color-bg-subtle)"
                   listening={false}
                 />
                 <KonvaImage image={image} width={image.naturalWidth} height={image.naturalHeight} listening={false} />
                 {renderReferenceLine()}
-                {referencePoints.map(point => renderCrosshair(point, theme.primary))}
+                {referencePoints.map(point => renderCrosshair(point, 'var(--color-primary)'))}
                 {originPoint && renderCrosshair(originPoint, theme.danger)}
               </Layer>
             </Stage>

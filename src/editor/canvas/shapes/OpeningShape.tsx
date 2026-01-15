@@ -1,5 +1,3 @@
-import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
-
 import { type OpeningId, isOpeningId } from '@/building/model/ids'
 import { useModelActions, usePerimeterCornerById, usePerimeterWallById, useWallOpeningById } from '@/building/store'
 import { ClickableLengthIndicator } from '@/editor/canvas/utils/ClickableLengthIndicator'
@@ -7,15 +5,14 @@ import { LengthIndicator } from '@/editor/canvas/utils/LengthIndicator'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { activateLengthInput } from '@/editor/services/length-input'
-import { type Length, type Vec2, ZERO_VEC2, midpoint } from '@/shared/geometry'
+import { type Length, ZERO_VEC2, midpoint } from '@/shared/geometry'
 import { useFormatters } from '@/shared/i18n/useFormatters'
-import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
+import { polygonToSvgPath } from '@/shared/utils/svg'
 
 export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX.Element {
   const { formatLength } = useFormatters()
   const select = useSelectionStore()
-  const theme = useCanvasTheme()
   const modelActions = useModelActions()
   const viewportActions = useViewportActions()
 
@@ -24,7 +21,7 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
   const startCorner = usePerimeterCornerById(wall.startCornerId)
   const endCorner = usePerimeterCornerById(wall.endCornerId)
 
-  const openingPolygonArray = opening.polygon.points.flatMap((p: Vec2) => [p[0], p[1]])
+  const openingPath = polygonToSvgPath(opening.polygon)
   const centerLineStart = midpoint(opening.insideLine.start, opening.outsideLine.start)
   const centerLineEnd = midpoint(opening.insideLine.end, opening.outsideLine.end)
 
@@ -98,32 +95,25 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
   }
 
   return (
-    <Group
+    <g
       name={`opening-${opening.id}`}
-      entityId={opening.id}
-      entityType="opening"
-      parentIds={[opening.perimeterId, opening.wallId]}
-      listening
+      data-entity-id={opening.id}
+      data-entity-type="opening"
+      data-parent-ids={JSON.stringify([opening.perimeterId, opening.wallId])}
     >
       {/* Opening cutout - render as a different colored line */}
-      <Line
-        points={openingPolygonArray}
-        fill={theme.bgCanvas80A}
-        stroke={theme.border}
-        strokeWidth={10}
-        lineCap="butt"
-        closed
-        listening
-      />
+      <path d={openingPath} fill="var(--color-bg-canvas)" fillOpacity={0.7} stroke="var(--gray-11)" strokeWidth={10} />
 
       {/* Door/Window indicator line */}
       {opening.openingType !== 'passage' && (
-        <Line
-          points={[centerLineStart[0], centerLineStart[1], centerLineEnd[0], centerLineEnd[1]]}
+        <line
+          x1={centerLineStart[0]}
+          y1={centerLineStart[1]}
+          x2={centerLineEnd[0]}
+          y2={centerLineEnd[1]}
           stroke={opening.openingType === 'door' ? MATERIAL_COLORS.door : MATERIAL_COLORS.window}
           strokeWidth={60}
-          lineCap="butt"
-          listening
+          strokeLinecap="butt"
         />
       )}
 
@@ -136,7 +126,7 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
               startPoint={previousObstacle.outsideLine.end}
               endPoint={opening.outsideLine.start}
               offset={60}
-              color={theme.textSecondary}
+              color="var(--color-text-secondary)"
               fontSize={50}
               strokeWidth={4}
               onClick={measurement => {
@@ -150,7 +140,7 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
               startPoint={opening.outsideLine.end}
               endPoint={nextObstacle.outsideLine.start}
               offset={60}
-              color={theme.textSecondary}
+              color="var(--color-text-secondary)"
               fontSize={50}
               strokeWidth={4}
               onClick={measurement => {
@@ -165,7 +155,7 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
             endPoint={opening.insideLine.end}
             label={formatLength(opening.width)}
             offset={-60}
-            color={theme.primary}
+            color="var(--color-primary)"
             fontSize={50}
             strokeWidth={4}
           />
@@ -174,7 +164,7 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
             endPoint={opening.outsideLine.end}
             label={formatLength(opening.width)}
             offset={hasNeighbors ? 90 : 60}
-            color={theme.primary}
+            color="var(--color-primary)"
             fontSize={50}
             strokeWidth={4}
           />
@@ -184,7 +174,7 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
             startPoint={startCorner.insidePoint}
             endPoint={opening.insideLine.start}
             offset={-60}
-            color={theme.text}
+            color="var(--color-text)"
             fontSize={50}
             strokeWidth={4}
             onClick={measurement => {
@@ -195,7 +185,7 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
             startPoint={opening.insideLine.end}
             endPoint={endCorner.insidePoint}
             offset={-60}
-            color={theme.text}
+            color="var(--color-text)"
             fontSize={50}
             strokeWidth={4}
             onClick={measurement => {
@@ -206,7 +196,7 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
             startPoint={startCorner.outsidePoint}
             endPoint={opening.outsideLine.start}
             offset={hasNeighbors ? 120 : 60}
-            color={theme.text}
+            color="var(--color-text)"
             fontSize={50}
             strokeWidth={4}
             onClick={measurement => {
@@ -217,7 +207,7 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
             startPoint={opening.outsideLine.end}
             endPoint={endCorner.outsidePoint}
             offset={hasNeighbors ? 120 : 60}
-            color={theme.text}
+            color="var(--color-text)"
             fontSize={50}
             strokeWidth={4}
             onClick={measurement => {
@@ -226,6 +216,6 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
           />
         </>
       )}
-    </Group>
+    </g>
   )
 }

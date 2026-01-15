@@ -1,7 +1,5 @@
-import { Layer } from 'react-konva/lib/ReactKonvaCore'
-
 import { useRoofsOfActiveStorey } from '@/building/store'
-import { RoofGhostShape } from '@/editor/canvas/shapes/RoofGhostShape'
+import { SvgRoofGhostShape } from '@/editor/canvas/shapes/RoofGhostShape'
 import { RoofShape } from '@/editor/canvas/shapes/RoofShape'
 import { useViewMode } from '@/editor/hooks/useViewMode'
 
@@ -16,22 +14,22 @@ export function RoofLayer(): React.JSX.Element | null {
     }
 
     return (
-      <Layer name="roofs">
+      <g data-layer="roofs">
         {roofs.map(roof => (
-          <RoofGhostShape key={roof.id} roof={roof} />
+          <SvgRoofGhostShape key={roof.id} roof={roof} />
         ))}
-      </Layer>
+      </g>
     )
   }
 
   // In roofs mode, show full details
   if (mode === 'roofs') {
     return (
-      <Layer name="roofs">
+      <g data-layer="roofs">
         {roofs.map(roof => (
           <RoofShape key={roof.id} roof={roof} />
         ))}
-      </Layer>
+      </g>
     )
   }
 

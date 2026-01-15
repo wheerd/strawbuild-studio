@@ -1,29 +1,22 @@
-import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
-
 import type { PerimeterWithGeometry } from '@/building/model'
-import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
+import { polygonToSvgPath } from '@/shared/utils/svg'
 
-interface PerimeterGhostShapeProps {
-  perimeter: PerimeterWithGeometry
-}
-
-export function PerimeterGhostShape({ perimeter }: PerimeterGhostShapeProps): React.JSX.Element {
-  const theme = useCanvasTheme()
-  const innerPoints = perimeter.innerPolygon.points.flatMap(p => [p[0], p[1]])
-  const outerPoints = perimeter.outerPolygon.points.flatMap(p => [p[0], p[1]])
+export function PerimeterGhostShape({ perimeter }: { perimeter: PerimeterWithGeometry }): React.JSX.Element {
+  const innerPath = polygonToSvgPath(perimeter.innerPolygon)
+  const outerPath = polygonToSvgPath(perimeter.outerPolygon)
 
   return (
-    <Group listening={false}>
-      <Line
-        points={innerPoints}
-        stroke={theme.black}
-        fill={theme.bgSubtle}
+    <g className="pointer-events-none">
+      <path
+        d={innerPath}
+        stroke="var(--gray-12)"
+        fill="var(--color-bg-subtle)"
         strokeWidth={20}
-        dash={[40, 80]}
+        strokeDasharray="40 80"
         opacity={0.3}
-        closed
       />
-      <Line points={outerPoints} stroke={theme.black} strokeWidth={20} dash={[40, 80]} opacity={0.3} closed />
-    </Group>
+
+      <path d={outerPath} stroke="var(--gray-12)" fill="none" strokeWidth={20} strokeDasharray="40 80" opacity={0.3} />
+    </g>
   )
 }

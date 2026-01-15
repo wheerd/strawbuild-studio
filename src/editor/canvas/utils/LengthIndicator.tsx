@@ -1,6 +1,4 @@
-import type Konva from 'konva'
 import { useMemo, useRef } from 'react'
-import { Group, Line, Text } from 'react-konva/lib/ReactKonvaCore'
 
 import {
   type Vec2,
@@ -15,7 +13,6 @@ import {
   subVec2
 } from '@/shared/geometry'
 import { useFormatters } from '@/shared/i18n/useFormatters'
-import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 interface LengthIndicatorProps {
   startPoint: Vec2
@@ -37,9 +34,8 @@ export function LengthIndicator({
   strokeWidth = 10
 }: LengthIndicatorProps): React.JSX.Element {
   const { formatLength } = useFormatters()
-  const theme = useCanvasTheme()
-  const textRef = useRef<Konva.Text>(null)
-  const actualColor = color ?? theme.textSecondary
+  const textRef = useRef<SVGTextElement>(null)
+  const actualColor = color ?? 'var(--color-text-secondary)'
 
   // Calculate the measurement vector and length
   const measurementVector = subVec2(endPoint, startPoint)
@@ -65,6 +61,9 @@ export function LengthIndicator({
 
   // Auto-generate label if not provided
   const displayLabel = label ?? formatLength(measurementLength)
+  const lines = displayLabel.split('\n')
+  const lineCount = lines.length
+  const longestLineLength = lines.reduce((max, line) => Math.max(max, line.length), 0)
 
   // Calculate optimal font size (max 1/3 of line width)
   const maxTextWidth = measurementLength / 3
@@ -74,10 +73,10 @@ export function LengthIndicator({
 
   const textSize: { width: number; height: number } = useMemo(() => {
     if (textRef.current) {
-      return textRef.current.measureSize(displayLabel)
+      return textRef.current.getBBox()
     }
     // Fallback estimate if ref not available yet
-    return { width: displayLabel.length * scaledFontSize * 0.6, height: scaledFontSize }
+    return { width: longestLineLength * scaledFontSize * 0.6, height: lineCount * scaledFontSize }
   }, [textRef.current, displayLabel, scaledFontSize])
 
   // Fixed line widths and sizes
@@ -99,89 +98,98 @@ export function LengthIndicator({
   const leftEndpoint = scaleAddVec2(lineMidpoint, dir, -textSize.width * 0.6)
   const rightEndpoint = scaleAddVec2(lineMidpoint, dir, textSize.width * 0.6)
 
+  const verticalOffset = ((lines.length - 1) * scaledFontSize * 1.2) / 2
+
   return (
-    <Group listening={false}>
+    <g pointerEvents="none">
       {/* Main dimension line */}
-      <Line
-        points={[offsetStartPoint[0], offsetStartPoint[1], leftEndpoint[0], leftEndpoint[1]]}
+      <line
+        x1={offsetStartPoint[0]}
+        y1={offsetStartPoint[1]}
+        x2={leftEndpoint[0]}
+        y2={leftEndpoint[1]}
         stroke={actualColor}
         strokeWidth={strokeWidth}
-        lineCap="butt"
-        listening={false}
+        strokeLinecap="butt"
       />
-      <Line
-        points={[rightEndpoint[0], rightEndpoint[1], offsetEndPoint[0], offsetEndPoint[1]]}
+      <line
+        x1={rightEndpoint[0]}
+        y1={rightEndpoint[1]}
+        x2={offsetEndPoint[0]}
+        y2={offsetEndPoint[1]}
         stroke={actualColor}
         strokeWidth={strokeWidth}
-        lineCap="butt"
-        listening={false}
+        strokeLinecap="butt"
       />
 
       {/* Connection lines from measurement points to dimension line */}
-      <Line
-        points={[startPoint[0], startPoint[1], offsetStartPoint[0], offsetStartPoint[1]]}
+      <line
+        x1={startPoint[0]}
+        y1={startPoint[1]}
+        x2={offsetStartPoint[0]}
+        y2={offsetStartPoint[1]}
         stroke={actualColor}
         strokeWidth={connectionStrokeWidth}
-        lineCap="butt"
+        strokeLinecap="butt"
         opacity={0.5}
-        listening={false}
       />
-      <Line
-        points={[endPoint[0], endPoint[1], offsetEndPoint[0], offsetEndPoint[1]]}
+      <line
+        x1={endPoint[0]}
+        y1={endPoint[1]}
+        x2={offsetEndPoint[0]}
+        y2={offsetEndPoint[1]}
         stroke={actualColor}
         strokeWidth={connectionStrokeWidth}
-        lineCap="butt"
+        strokeLinecap="butt"
         opacity={0.5}
-        listening={false}
       />
 
       {/* End markers (small perpendicular lines) */}
-      <Line
-        points={[
-          offsetStartPoint[0] - endMarkerDirection[0],
-          offsetStartPoint[1] - endMarkerDirection[1],
-          offsetStartPoint[0] + endMarkerDirection[0],
-          offsetStartPoint[1] + endMarkerDirection[1]
-        ]}
+      <line
+        x1={offsetStartPoint[0] - endMarkerDirection[0]}
+        y1={offsetStartPoint[1] - endMarkerDirection[1]}
+        x2={offsetStartPoint[0] + endMarkerDirection[0]}
+        y2={offsetStartPoint[1] + endMarkerDirection[1]}
         stroke={actualColor}
         strokeWidth={strokeWidth}
-        lineCap="butt"
-        listening={false}
+        strokeLinecap="butt"
       />
-      <Line
-        points={[
-          offsetEndPoint[0] - endMarkerDirection[0],
-          offsetEndPoint[1] - endMarkerDirection[1],
-          offsetEndPoint[0] + endMarkerDirection[0],
-          offsetEndPoint[1] + endMarkerDirection[1]
-        ]}
+      <line
+        x1={offsetEndPoint[0] - endMarkerDirection[0]}
+        y1={offsetEndPoint[1] - endMarkerDirection[1]}
+        x2={offsetEndPoint[0] + endMarkerDirection[0]}
+        y2={offsetEndPoint[1] + endMarkerDirection[1]}
         stroke={actualColor}
         strokeWidth={strokeWidth}
-        lineCap="butt"
-        listening={false}
+        strokeLinecap="butt"
       />
 
       {/* Label text */}
-      <Text
-        ref={textRef}
-        x={offsetStartPoint[0]}
-        y={offsetStartPoint[1]}
-        text={displayLabel}
-        fontSize={scaledFontSize}
-        fontFamily="Arial"
-        fontStyle="bold"
-        fill={actualColor}
-        align="center"
-        verticalAlign="middle"
-        width={measurementLength}
-        offsetY={scaledFontSize / 2}
-        rotation={angleDegrees}
-        scaleY={-1}
-        shadowColor={theme.white}
-        shadowBlur={4}
-        shadowOpacity={0.8}
-        listening={false}
-      />
-    </Group>
+      <g
+        className="text"
+        transform={`translate(${lineMidpoint[0]} ${lineMidpoint[1]}) rotate(${angleDegrees}) scale(1, -1)`}
+      >
+        <text
+          ref={textRef}
+          y={0}
+          fontSize={scaledFontSize}
+          fontFamily="Arial"
+          fontWeight="bold"
+          fill={color}
+          textAnchor="middle"
+          dominantBaseline="central"
+          transform={`translate(0 ${-verticalOffset})`}
+          style={{
+            filter: 'drop-shadow(0 0 0.1em var(--gray-1))'
+          }}
+        >
+          {lines.map((line, index) => (
+            <tspan key={`line-${index}`} x={0} dy={index === 0 ? 0 : `1.2em`}>
+              {line}
+            </tspan>
+          ))}
+        </text>
+      </g>
+    </g>
   )
 }

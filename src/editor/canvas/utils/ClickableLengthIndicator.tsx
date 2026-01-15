@@ -1,6 +1,4 @@
-import type Konva from 'konva'
 import { useMemo, useRef, useState } from 'react'
-import { Group, Line, Text } from 'react-konva/lib/ReactKonvaCore'
 
 import {
   type Length,
@@ -16,7 +14,6 @@ import {
   subVec2
 } from '@/shared/geometry'
 import { useFormatters } from '@/shared/i18n/useFormatters'
-import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 interface ClickableLengthIndicatorProps {
   startPoint: Vec2
@@ -26,7 +23,7 @@ interface ClickableLengthIndicatorProps {
   color?: string
   fontSize?: number
   strokeWidth?: number
-  onClick?: (currentMeasurement: Length) => void
+  onClick: (currentMeasurement: Length) => void
 }
 
 export function ClickableLengthIndicator({
@@ -40,8 +37,7 @@ export function ClickableLengthIndicator({
   onClick
 }: ClickableLengthIndicatorProps): React.JSX.Element {
   const { formatLength } = useFormatters()
-  const theme = useCanvasTheme()
-  const textRef = useRef<Konva.Text>(null)
+  const textRef = useRef<SVGTextElement>(null)
   const [isHovered, setIsHovered] = useState(false)
 
   // Calculate the measurement vector and length
@@ -77,7 +73,7 @@ export function ClickableLengthIndicator({
 
   const textSize: { width: number; height: number } = useMemo(() => {
     if (textRef.current) {
-      return textRef.current.measureSize(displayLabel)
+      return textRef.current.getBBox()
     }
     // Fallback estimate if ref not available yet
     return { width: displayLabel.length * scaledFontSize * 0.6, height: scaledFontSize }
@@ -103,130 +99,124 @@ export function ClickableLengthIndicator({
   const rightEndpoint = scaleAddVec2(lineMidpoint, dir, textSize.width * 0.6)
 
   // Visual feedback colors
-  const actualColor = color ?? theme.textSecondary
-  const displayColor = isHovered ? theme.primary : actualColor
+  const actualColor = color ?? 'var(--color-text-secondary)'
+  const displayColor = isHovered ? 'var(--color-primary)' : actualColor
 
   const handleClick = () => {
-    if (onClick) {
-      onClick(measurementLength)
-    }
+    onClick(measurementLength)
   }
 
   const handleMouseEnter = () => {
-    if (onClick) {
-      setIsHovered(true)
-    }
+    setIsHovered(true)
   }
 
   const handleMouseLeave = () => {
-    if (onClick) {
-      setIsHovered(false)
-    }
+    setIsHovered(false)
   }
 
+  // Build hit area polygon points
+  const hitAreaPoints = [
+    `${offsetStartPoint[0] - endMarkerDirection[0]},${offsetStartPoint[1] - endMarkerDirection[1]}`,
+    `${offsetStartPoint[0] + endMarkerDirection[0]},${offsetStartPoint[1] + endMarkerDirection[1]}`,
+    `${offsetEndPoint[0] + endMarkerDirection[0]},${offsetEndPoint[1] + endMarkerDirection[1]}`,
+    `${offsetEndPoint[0] - endMarkerDirection[0]},${offsetEndPoint[1] - endMarkerDirection[1]}`
+  ].join(' ')
+
+  const displayStrokeWidth = isHovered ? strokeWidth + 2 : strokeWidth
+
   return (
-    <Group listening={!!onClick} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onClick={handleClick}>
+    <g
+      style={{ cursor: 'pointer' }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onClick={handleClick}
+    >
       {/* Invisible hit area covering the entire indicator */}
-      {onClick && (
-        <Line
-          points={[
-            offsetStartPoint[0] - endMarkerDirection[0],
-            offsetStartPoint[1] - endMarkerDirection[1],
-            offsetStartPoint[0] + endMarkerDirection[0],
-            offsetStartPoint[1] + endMarkerDirection[1],
-            offsetEndPoint[0] + endMarkerDirection[0],
-            offsetEndPoint[1] + endMarkerDirection[1],
-            offsetEndPoint[0] - endMarkerDirection[0],
-            offsetEndPoint[1] - endMarkerDirection[1]
-          ]}
-          fill="transparent"
-          stroke="transparent"
-          closed
-          listening
-        />
-      )}
+      <polygon points={hitAreaPoints} fill="transparent" stroke="transparent" />
 
       {/* Main dimension line */}
-      <Line
-        points={[offsetStartPoint[0], offsetStartPoint[1], leftEndpoint[0], leftEndpoint[1]]}
+      <line
+        x1={offsetStartPoint[0]}
+        y1={offsetStartPoint[1]}
+        x2={leftEndpoint[0]}
+        y2={leftEndpoint[1]}
         stroke={displayColor}
-        strokeWidth={isHovered ? strokeWidth + 2 : strokeWidth}
-        lineCap="butt"
-        listening={!!onClick}
+        strokeWidth={displayStrokeWidth}
+        strokeLinecap="butt"
       />
-      <Line
-        points={[rightEndpoint[0], rightEndpoint[1], offsetEndPoint[0], offsetEndPoint[1]]}
+      <line
+        x1={rightEndpoint[0]}
+        y1={rightEndpoint[1]}
+        x2={offsetEndPoint[0]}
+        y2={offsetEndPoint[1]}
         stroke={displayColor}
-        strokeWidth={isHovered ? strokeWidth + 2 : strokeWidth}
-        lineCap="butt"
-        listening={!!onClick}
+        strokeWidth={displayStrokeWidth}
+        strokeLinecap="butt"
       />
 
       {/* Connection lines from measurement points to dimension line */}
-      <Line
-        points={[startPoint[0], startPoint[1], offsetStartPoint[0], offsetStartPoint[1]]}
+      <line
+        x1={startPoint[0]}
+        y1={startPoint[1]}
+        x2={offsetStartPoint[0]}
+        y2={offsetStartPoint[1]}
         stroke={displayColor}
         strokeWidth={connectionStrokeWidth}
-        lineCap="butt"
+        strokeLinecap="butt"
         opacity={0.5}
-        listening={!!onClick}
       />
-      <Line
-        points={[endPoint[0], endPoint[1], offsetEndPoint[0], offsetEndPoint[1]]}
+      <line
+        x1={endPoint[0]}
+        y1={endPoint[1]}
+        x2={offsetEndPoint[0]}
+        y2={offsetEndPoint[1]}
         stroke={displayColor}
         strokeWidth={connectionStrokeWidth}
-        lineCap="butt"
+        strokeLinecap="butt"
         opacity={0.5}
-        listening={!!onClick}
       />
 
       {/* End markers (small perpendicular lines) */}
-      <Line
-        points={[
-          offsetStartPoint[0] - endMarkerDirection[0],
-          offsetStartPoint[1] - endMarkerDirection[1],
-          offsetStartPoint[0] + endMarkerDirection[0],
-          offsetStartPoint[1] + endMarkerDirection[1]
-        ]}
+      <line
+        x1={offsetStartPoint[0] - endMarkerDirection[0]}
+        y1={offsetStartPoint[1] - endMarkerDirection[1]}
+        x2={offsetStartPoint[0] + endMarkerDirection[0]}
+        y2={offsetStartPoint[1] + endMarkerDirection[1]}
         stroke={displayColor}
-        strokeWidth={isHovered ? strokeWidth + 2 : strokeWidth}
-        lineCap="butt"
-        listening={!!onClick}
+        strokeWidth={displayStrokeWidth}
+        strokeLinecap="butt"
       />
-      <Line
-        points={[
-          offsetEndPoint[0] - endMarkerDirection[0],
-          offsetEndPoint[1] - endMarkerDirection[1],
-          offsetEndPoint[0] + endMarkerDirection[0],
-          offsetEndPoint[1] + endMarkerDirection[1]
-        ]}
+      <line
+        x1={offsetEndPoint[0] - endMarkerDirection[0]}
+        y1={offsetEndPoint[1] - endMarkerDirection[1]}
+        x2={offsetEndPoint[0] + endMarkerDirection[0]}
+        y2={offsetEndPoint[1] + endMarkerDirection[1]}
         stroke={displayColor}
-        strokeWidth={isHovered ? strokeWidth + 2 : strokeWidth}
-        lineCap="butt"
-        listening={!!onClick}
+        strokeWidth={displayStrokeWidth}
+        strokeLinecap="butt"
       />
 
       {/* Label text */}
-      <Text
-        ref={textRef}
-        x={offsetStartPoint[0]}
-        y={offsetStartPoint[1]}
-        text={displayLabel}
-        fontSize={scaledFontSize}
-        fontFamily="Arial"
-        fontStyle="bold"
-        fill={displayColor}
-        align="center"
-        verticalAlign="middle"
-        width={measurementLength}
-        offsetY={scaledFontSize / 2}
-        rotation={angleDegrees}
-        scaleY={-1}
-        shadowColor={theme.white}
-        shadowBlur={4}
-        shadowOpacity={0.8}
-        listening={!!onClick}
-      />
-    </Group>
+      <g
+        className="text"
+        transform={`translate(${lineMidpoint[0]} ${lineMidpoint[1]}) rotate(${angleDegrees}) scale(1, -1)`}
+      >
+        <text
+          ref={textRef}
+          y={0}
+          fontSize={scaledFontSize}
+          fontFamily="Arial"
+          fontWeight="bold"
+          fill={displayColor}
+          textAnchor="middle"
+          dominantBaseline="central"
+          style={{
+            filter: 'drop-shadow(0 0 0.1em var(--gray-1))'
+          }}
+        >
+          {displayLabel}
+        </text>
+      </g>
+    </g>
   )
 }

@@ -1,39 +1,21 @@
 import { useMemo } from 'react'
-import { Arrow, Group, Line } from 'react-konva/lib/ReactKonvaCore'
 
 import type { Roof } from '@/building/model'
 import { useRoofOverhangsByRoof } from '@/building/store'
+import { RoofOverhangShape } from '@/editor/canvas/shapes/RoofOverhangShape'
+import { Arrow } from '@/editor/components/Arrow'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
-import {
-  Bounds2D,
-  type Vec2,
-  direction,
-  midpoint,
-  negVec2,
-  perpendicular,
-  perpendicularCW,
-  scaleAddVec2
-} from '@/shared/geometry'
-import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
+import { Bounds2D, direction, midpoint, negVec2, perpendicular, perpendicularCW, scaleAddVec2 } from '@/shared/geometry'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
+import { polygonToSvgPath } from '@/shared/utils/svg'
 
-import { RoofOverhangShape } from './RoofOverhangShape'
-
-interface RoofShapeProps {
-  roof: Roof
-}
-
-export function RoofShape({ roof }: RoofShapeProps): React.JSX.Element {
+export function RoofShape({ roof }: { roof: Roof }): React.JSX.Element {
   const select = useSelectionStore()
-  const theme = useCanvasTheme()
   const isSelected = select.isCurrentSelection(roof.id)
   const overhangs = useRoofOverhangsByRoof(roof.id)
 
-  const points = roof.referencePolygon.points.flatMap((point: Vec2) => [point[0], point[1]])
-  const eavePolygon = roof.overhangPolygon.points.flatMap((point: Vec2) => [point[0], point[1]])
-
-  // Ridge line points
-  const ridgePoints = [roof.ridgeLine.start[0], roof.ridgeLine.start[1], roof.ridgeLine.end[0], roof.ridgeLine.end[1]]
+  const roofPath = polygonToSvgPath(roof.referencePolygon)
+  const eavePath = polygonToSvgPath(roof.overhangPolygon)
 
   // Calculate arrow positions and directions
   const arrows = useMemo(() => {
@@ -79,36 +61,41 @@ export function RoofShape({ roof }: RoofShapeProps): React.JSX.Element {
   }, [roof.ridgeLine, roof.type, roof.referencePolygon])
 
   return (
-    <Group name={`roof-${roof.id}`} entityId={roof.id} entityType="roof" parentIds={[]} listening>
-      {/* Main roof polygon - semi-transparent */}
-      <Line points={points} closed fill={MATERIAL_COLORS.roof} opacity={0.6} listening />
-      <Line points={points} closed stroke={theme.border} strokeWidth={20} listening />
+    <g data-entity-id={roof.id} data-entity-type="roof" data-parent-ids="[]">
+      <path d={roofPath} fill={MATERIAL_COLORS.roof} opacity={0.6} />
+      <path d={roofPath} fill="none" stroke="var(--gray-11)" strokeWidth={20} />
 
       {/* Eave polygon - dashed outline */}
-      <Line points={eavePolygon} closed stroke={theme.border} strokeWidth={10} dash={[200, 100]} listening />
+      <path d={eavePath} fill="none" stroke="var(--gray-11)" strokeWidth={10} strokeDasharray="200 100" />
 
       {/* Individual overhang sides - rendered as trapezoids */}
       {overhangs.map(overhang => (
-        <RoofOverhangShape key={overhang.id} overhang={overhang} roofId={roof.id} />
+        <RoofOverhangShape key={overhang.id} overhang={overhang} />
       ))}
 
-      {/* Ridge line - thicker stroke */}
-      <Line points={ridgePoints} stroke={theme.primary} strokeWidth={60} listening={false} />
+      {/* Ridge line */}
+      <line
+        x1={roof.ridgeLine.start[0]}
+        y1={roof.ridgeLine.start[1]}
+        x2={roof.ridgeLine.end[0]}
+        y2={roof.ridgeLine.end[1]}
+        stroke="var(--color-primary)"
+        strokeWidth={60}
+      />
 
       {/* Direction arrows */}
       {isSelected &&
         arrows.map((arrow, index) => (
           <Arrow
             key={index}
-            points={[arrow.start[0], arrow.start[1], arrow.end[0], arrow.end[1]]}
-            stroke={theme.white}
+            arrowStart={arrow.start}
+            arrowEnd={arrow.end}
+            color="var(--gray-1)"
             strokeWidth={400}
-            fill={theme.white}
             pointerLength={200}
             pointerWidth={200}
-            listening={false}
           />
         ))}
-    </Group>
+    </g>
   )
 }

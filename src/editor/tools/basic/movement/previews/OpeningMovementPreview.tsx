@@ -41,7 +41,7 @@ export function OpeningMovementPreview({
         points={[insideStart, insideEnd, outsideEnd, outsideStart].flatMap(p => [p[0], p[1]])}
         closed
         fill={isValid ? theme.success : theme.danger}
-        stroke={theme.white}
+        stroke={'var(--gray-1)'}
         strokeWidth={5}
         opacity={0.6}
         listening={false}
@@ -50,7 +50,7 @@ export function OpeningMovementPreview({
       {/* Show movement indicator */}
       <Line
         points={[originalStart[0], originalStart[1], openingStart[0], openingStart[1]]}
-        stroke={theme.textSecondary}
+        stroke={'var(--color-text-secondary)'}
         strokeWidth={10}
         dash={[20, 20]}
         opacity={0.7}

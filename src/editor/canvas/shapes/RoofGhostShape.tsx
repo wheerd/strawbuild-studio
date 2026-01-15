@@ -1,21 +1,14 @@
-import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
-
 import type { Roof } from '@/building/model'
-import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
+import { polygonToSvgPath } from '@/shared/utils/svg'
 
-interface RoofGhostShapeProps {
-  roof: Roof
-}
-
-export function RoofGhostShape({ roof }: RoofGhostShapeProps): React.JSX.Element {
-  const theme = useCanvasTheme()
-  const points = roof.referencePolygon.points.flatMap(point => [point[0], point[1]])
-  const eavePolygon = roof.overhangPolygon.points.flatMap(point => [point[0], point[1]])
+export function SvgRoofGhostShape({ roof }: { roof: Roof }): React.JSX.Element {
+  const roofPath = polygonToSvgPath(roof.referencePolygon)
+  const eavePath = polygonToSvgPath(roof.overhangPolygon)
 
   return (
-    <Group listening={false}>
-      <Line points={points} stroke={theme.black} strokeWidth={20} dash={[40, 80]} opacity={0.3} closed />
-      <Line points={eavePolygon} stroke={theme.black} strokeWidth={20} dash={[40, 80]} opacity={0.3} closed />
-    </Group>
+    <g className="pointer-events-none">
+      <path d={roofPath} stroke="var(--gray-12)" fill="none" strokeWidth={20} strokeDasharray="40 80" opacity={0.3} />
+      <path d={eavePath} stroke="var(--gray-12)" fill="none" strokeWidth={20} strokeDasharray="40 80" opacity={0.3} />
+    </g>
   )
 }

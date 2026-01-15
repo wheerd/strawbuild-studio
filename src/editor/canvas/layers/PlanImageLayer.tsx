@@ -1,21 +1,11 @@
-import 'konva/lib/shapes/Image'
-import { Image as KonvaImage, Layer } from 'react-konva/lib/ReactKonvaCore'
-import useImage from 'use-image'
-
 import { useActiveStoreyId } from '@/building/store'
 import { useFloorPlanForStorey } from '@/editor/plan-overlay/store'
 
-interface PlanImageLayerProps {
-  placement: 'under' | 'over'
-}
-
-export function PlanImageLayer({ placement }: PlanImageLayerProps): React.JSX.Element | null {
+export function PlanImageLayer({ placement }: { placement: 'under' | 'over' }): React.JSX.Element | null {
   const activeStoreyId = useActiveStoreyId()
   const plan = useFloorPlanForStorey(activeStoreyId)
 
-  const [image] = useImage(plan?.image.url ?? '', 'anonymous')
-
-  if (plan?.placement !== placement || !image) {
+  if (plan?.placement !== placement || !plan.image.url) {
     return null
   }
 
@@ -26,16 +16,16 @@ export function PlanImageLayer({ placement }: PlanImageLayerProps): React.JSX.El
   const worldY = plan.origin.world.y + plan.origin.image.y * mmPerPixel
 
   return (
-    <Layer name={`plan-image-${placement}`} listening={false} opacity={plan.opacity}>
-      <KonvaImage
-        image={image}
+    <g data-layer={`plan-image-${placement}`} className="pointer-events-none" opacity={plan.opacity}>
+      <image
+        href={plan.image.url}
         x={worldX}
         y={worldY}
         width={worldWidth}
         height={worldHeight}
-        scaleY={-1}
-        listening={false}
+        transform={`scale(1, -1) translate(0, ${-2 * worldY - worldHeight})`}
+        crossOrigin="anonymous"
       />
-    </Layer>
+    </g>
   )
 }

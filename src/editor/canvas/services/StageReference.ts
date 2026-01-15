@@ -1,22 +1,31 @@
-import type Konva from 'konva'
-
 /**
- * Global stage reference for entity hit testing.
+ * Global stage/SVG reference for entity hit testing.
  * This is a simple singleton to avoid complex prop drilling.
  */
 class StageReference {
-  private stage: Konva.Stage | null = null
+  private svgElement: SVGSVGElement | null = null
 
-  setStage(stage: Konva.Stage): void {
-    this.stage = stage
+  setSvg(svg: SVGSVGElement): void {
+    this.svgElement = svg
   }
 
-  getStage(): Konva.Stage | null {
-    return this.stage
+  getSvg(): SVGSVGElement | null {
+    return this.svgElement
   }
 
   clearStage(): void {
-    this.stage = null
+    this.svgElement = null
+  }
+
+  // Deprecated - for backward compatibility during transition
+  getStage(): any {
+    console.warn('getStage() is deprecated, use getSvg() instead')
+    return null
+  }
+
+  // Deprecated - for backward compatibility during transition
+  setStage(): void {
+    console.warn('setStage() is deprecated, use setSvg() instead')
   }
 }
 

@@ -30,7 +30,7 @@ export function PerimeterWallMovementPreview({
         y={newMidpoint[1]}
         radius={20}
         fill={isValid ? theme.success : theme.danger}
-        stroke={theme.white}
+        stroke={'var(--gray-1)'}
         strokeWidth={2}
         opacity={0.8}
         listening={false}
@@ -39,7 +39,7 @@ export function PerimeterWallMovementPreview({
       {/* Show movement line */}
       <Line
         points={[originalMidpoint[0], originalMidpoint[1], newMidpoint[0], newMidpoint[1]]}
-        stroke={theme.textSecondary}
+        stroke={'var(--color-text-secondary)'}
         strokeWidth={10}
         dash={[50, 50]}
         opacity={0.7}

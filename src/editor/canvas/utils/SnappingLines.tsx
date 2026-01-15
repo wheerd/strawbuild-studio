@@ -31,7 +31,7 @@ export function SnappingLines({ snapResult }: SnappingLinesProps): React.JSX.Ele
           ? theme.gridVertical
           : eqVec2(line.direction, newVec2(1, 0))
             ? theme.gridHorizontal
-            : theme.primary
+            : 'var(--color-primary)'
         return (
           <Line
             key={`snap-line-${index}`}

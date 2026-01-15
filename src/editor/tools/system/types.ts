@@ -99,7 +99,8 @@ export interface CanvasEvent {
   type: 'pointerdown' | 'pointermove' | 'pointerup' | 'wheel'
   originalEvent: PointerEvent | WheelEvent
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  konvaEvent: Konva.KonvaEventObject<any>
+  konvaEvent?: Konva.KonvaEventObject<any> // Deprecated - for backward compatibility
+  svgEvent?: React.PointerEvent // SVG pointer event (for SVG implementation)
   stageCoordinates: Vec2 // Transformed coordinates (accounting for pan/zoom)
   pointerCoordinates?: { x: number; y: number } // Original pointer coordinates for hit testing
 }

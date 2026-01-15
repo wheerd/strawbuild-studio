@@ -1,47 +1,33 @@
-import { Line } from 'react-konva/lib/ReactKonvaCore'
+import { useMemo } from 'react'
 
 import { useZoom } from '@/editor/hooks/useViewportStore'
 import { type Polygon2D, type Vec2, offsetPolygon } from '@/shared/geometry'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
+import { polygonToSvgPath } from '@/shared/utils/svg'
 
-interface SelectionOutlineProps {
-  points: Vec2[]
-}
-
-/**
- * Generic selection outline component that creates a consistent selection visual
- * for all entities. Automatically handles zoom-responsive stroke width and dash patterns.
- */
-export function SelectionOutline({ points }: SelectionOutlineProps): React.JSX.Element | null {
+export function SelectionOutline({ points }: { points: Vec2[] }): React.JSX.Element | null {
   const zoom = useZoom()
   const theme = useCanvasTheme()
 
   // Calculate offset polygon
   const offset = 4 / zoom
-  const offsetPolygonResult: Polygon2D = offsetPolygon({ points }, offset)
-  const offsetPoints = offsetPolygonResult.points
-
-  // If offsetting failed or produced invalid polygon, don't render
-  if (offsetPoints.length < 3) {
-    return null
-  }
-
-  const flatPoints = offsetPoints.flatMap(point => [point[0], point[1]])
+  const polygon: Polygon2D = useMemo(() => offsetPolygon({ points }, offset), [points, offset])
+  const path = polygonToSvgPath(polygon)
 
   // Calculate zoom-responsive values
   const strokeWidth = 4 / zoom
-  const dashPattern = [10 / zoom, 10 / zoom]
+  const dashPattern = `${10 / zoom} ${10 / zoom}`
 
   return (
-    <Line
-      points={flatPoints}
+    <path
+      d={path}
+      fill="none"
       stroke={theme.primaryDark}
       strokeWidth={strokeWidth}
-      dash={dashPattern}
-      lineCap="round"
+      strokeDasharray={dashPattern}
+      strokeLinecap="round"
       opacity={0.8}
-      closed
-      listening={false}
+      className="pointer-events-none"
     />
   )
 }

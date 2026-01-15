@@ -207,7 +207,7 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
       return true
     }
 
-    const hitResult = entityHitTestService.findEntityAt(event.pointerCoordinates)
+    const hitResult = entityHitTestService.findEntityAtPointer(event.pointerCoordinates)
     const perimeterWall = this.extractPerimeterWallFromHitResult(hitResult)
 
     if (!perimeterWall) {

@@ -137,7 +137,7 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
       {derivedGeometry?.type === 'polygon' && (
         <Line
           points={derivedGeometry.points}
-          stroke={theme.textSecondary}
+          stroke={'var(--color-text-secondary)'}
           strokeWidth={scaledLineWidth}
           dash={scaledDashPattern2}
           lineCap="round"
@@ -152,7 +152,7 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
           <Line
             key={`offset-segment-${index}`}
             points={segment.points}
-            stroke={theme.textSecondary}
+            stroke={'var(--color-text-secondary)'}
             strokeWidth={scaledLineWidth}
             dash={scaledDashPattern2}
             lineCap="round"
@@ -220,8 +220,8 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
           x={point[0]}
           y={point[1]}
           radius={scaledPointRadius}
-          fill={index === 0 ? theme.primary : theme.secondary}
-          stroke={theme.white}
+          fill={index === 0 ? 'var(--color-primary)' : theme.secondary}
+          stroke={'var(--gray-1)'}
           strokeWidth={scaledPointStrokeWidth}
           listening={false}
         />
@@ -232,8 +232,8 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
         x={previewPos[0]}
         y={previewPos[1]}
         radius={scaledPointRadius}
-        fill={state.lengthOverride ? theme.primary : theme.secondary}
-        stroke={state.lengthOverride ? theme.white : theme.black}
+        fill={state.lengthOverride ? 'var(--color-primary)' : theme.secondary}
+        stroke={state.lengthOverride ? 'var(--gray-1)' : 'var(--gray-12)'}
         strokeWidth={scaledPointStrokeWidth}
         listening={false}
       />

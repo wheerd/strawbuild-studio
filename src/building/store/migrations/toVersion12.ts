@@ -122,9 +122,6 @@ export const migrateToVersion12: Migration = state => {
 
           referencePoint ??= newVec2(0, 0)
 
-          console.log('corner', oldCorner)
-          console.log('inside', oldCorner.insidePoint, insidePoint)
-
           // Create normalized corner
           newPerimeterCorners[cornerId] = {
             id: cornerId,

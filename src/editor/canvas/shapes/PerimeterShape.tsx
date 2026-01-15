@@ -1,57 +1,57 @@
-import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
-
 import type { PerimeterWithGeometry } from '@/building/model'
+import { PerimeterWallEntitiesShape } from '@/editor/canvas/shapes/PerimeterWallEntitiesShape'
 import { useViewMode } from '@/editor/hooks/useViewMode'
-import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
+import { polygonToSvgPath } from '@/shared/utils/svg'
 
 import { PerimeterCornerShape } from './PerimeterCornerShape'
 import { PerimeterWallShape } from './PerimeterWallShape'
 
-interface PerimeterShapeProps {
-  perimeter: PerimeterWithGeometry
-}
-
-export function PerimeterShape({ perimeter }: PerimeterShapeProps): React.JSX.Element {
+export function PerimeterShape({ perimeter }: { perimeter: PerimeterWithGeometry }): React.JSX.Element {
   const mode = useViewMode()
-  const theme = useCanvasTheme()
-  const innerPoints = perimeter.innerPolygon.points.flatMap(p => [p[0], p[1]])
-  const outerPoints = perimeter.outerPolygon.points.flatMap(p => [p[0], p[1]])
 
+  const innerPath = polygonToSvgPath(perimeter.innerPolygon)
+  const outerPath = polygonToSvgPath(perimeter.outerPolygon)
+
+  // In non-walls mode, show simplified dashed outlines
   if (mode !== 'walls') {
     return (
-      <Group
-        name={`perimeter-${perimeter.id}`}
-        entityId={perimeter.id}
-        entityType="perimeter"
-        parentIds={[]}
-        listening={false}
+      <g
+        data-entity-id={perimeter.id}
+        data-entity-type="perimeter"
+        data-parent-ids="[]"
+        className="pointer-events-none"
       >
-        <Line points={outerPoints} closed opacity={0.3} fill={theme.secondaryLight} listening={false} />
-        <Line
-          points={outerPoints}
-          closed
-          stroke={theme.border}
+        {/* Outer polygon fill */}
+        <path d={outerPath} opacity={0.3} fill="var(--color-secondary-light)" />
+
+        {/* Outer polygon stroke */}
+        <path
+          d={outerPath}
+          fill="none"
+          stroke="var(--gray-11)"
           strokeWidth={40}
-          dash={[120, 60]}
+          strokeDasharray="120 60"
           opacity={0.6}
-          listening={false}
         />
-        <Line
-          points={innerPoints}
-          closed
-          stroke={theme.border}
+
+        {/* Inner polygon stroke */}
+        <path
+          d={innerPath}
+          fill="none"
+          stroke="var(--gray-11)"
           strokeWidth={40}
-          dash={[120, 60]}
+          strokeDasharray="120 60"
           opacity={0.6}
-          listening={false}
         />
-      </Group>
+      </g>
     )
   }
 
+  // In walls mode, render detailed walls and corners
   return (
-    <Group name={`perimeter-${perimeter.id}`} entityId={perimeter.id} entityType="perimeter" parentIds={[]} listening>
-      <Line points={innerPoints} fill="none" opacity={0} closed listening />
+    <g data-entity-id={perimeter.id} data-entity-type="perimeter" data-parent-ids="[]">
+      {/* Invisible hit area for perimeter selection */}
+      <path d={innerPath} fill="black" opacity={0} />
 
       {/* Render each wall */}
       {perimeter.wallIds.map(id => (
@@ -62,6 +62,11 @@ export function PerimeterShape({ perimeter }: PerimeterShapeProps): React.JSX.El
       {perimeter.cornerIds.map(id => (
         <PerimeterCornerShape key={`corner-${id}`} cornerId={id} />
       ))}
-    </Group>
+
+      {/* Render each walls entities */}
+      {perimeter.wallIds.map(id => (
+        <PerimeterWallEntitiesShape key={`wall-entities-${id}`} wallId={id} />
+      ))}
+    </g>
   )
 }

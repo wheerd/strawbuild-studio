@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { Layer } from 'react-konva/lib/ReactKonvaCore'
 
 import { useActiveStoreyId, useModelActions, usePerimetersOfActiveStorey } from '@/building/store'
 import { PerimeterGhostShape } from '@/editor/canvas/shapes/PerimeterGhostShape'
@@ -18,13 +17,16 @@ export function PerimeterLayer(): React.JSX.Element {
   }, [activeStorey, getPerimetersByStorey, getStoreysOrderedByLevel])
 
   return (
-    <Layer name="perimeters">
+    <g data-layer="perimeters">
+      {/* Render lower storey perimeters as ghosts */}
       {lowerPerimeters.map(perimeter => (
         <PerimeterGhostShape key={perimeter.id} perimeter={perimeter} />
       ))}
+
+      {/* Render active storey perimeters */}
       {perimeters.map(perimeter => (
         <PerimeterShape key={perimeter.id} perimeter={perimeter} />
       ))}
-    </Layer>
+    </g>
   )
 }

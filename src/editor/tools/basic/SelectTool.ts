@@ -22,7 +22,7 @@ export class SelectTool implements ToolImplementation {
       return false
     }
 
-    const hitResult = entityHitTestService.findEntityAt(event.pointerCoordinates)
+    const hitResult = entityHitTestService.findEntityAt(event.originalEvent.clientX, event.originalEvent.clientY)
 
     if (hitResult) {
       const clickSelectionPath = hitResult.parentIds.concat([hitResult.entityId])

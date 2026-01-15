@@ -1,42 +1,23 @@
-import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
-
 import type { RoofOverhang } from '@/building/model'
-import type { RoofId } from '@/building/model/ids'
 import { offsetPolygon } from '@/shared/geometry'
-import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
+import { polygonToSvgPath } from '@/shared/utils/svg'
 
-interface RoofOverhangShapeProps {
-  overhang: RoofOverhang
-  roofId: RoofId
-}
-
-export function RoofOverhangShape({ overhang, roofId }: RoofOverhangShapeProps): React.JSX.Element {
-  const theme = useCanvasTheme()
-
-  const points = overhang.area.points.flatMap(p => [p[0], p[1]])
-  const triggerArea = offsetPolygon(overhang.area, 100).points.flatMap(p => [p[0], p[1]])
+export function RoofOverhangShape({ overhang }: { overhang: RoofOverhang }): React.JSX.Element {
+  const pathD = polygonToSvgPath(overhang.area)
+  const triggerArea = polygonToSvgPath(offsetPolygon(overhang.area, 100))
 
   return (
-    <Group
+    <g
       name={`roof-overhang-${overhang.id}`}
-      entityId={overhang.id}
-      entityType="roof-overhang"
-      parentIds={[roofId]}
-      listening
+      data-entity-id={overhang.id}
+      data-entity-type="roof-overhang"
+      data-parent-ids={JSON.stringify([overhang.roofId])}
     >
-      <Line
-        points={points}
-        fill={MATERIAL_COLORS.roof}
-        opacity={0.3}
-        stroke={theme.border}
-        strokeWidth={10}
-        closed
-        listening
-      />
+      <path d={pathD} fill={MATERIAL_COLORS.roof} opacity={0.3} stroke="var(--gray-11)" strokeWidth={10} />
 
       {/* Invisible trigger area when overhang is 0 so that side can still be selected */}
-      <Line points={triggerArea} closed listening />
-    </Group>
+      <path d={triggerArea} fill="black" opacity={0} />
+    </g>
   )
 }

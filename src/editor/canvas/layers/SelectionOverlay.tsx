@@ -1,5 +1,3 @@
-import { Group } from 'react-konva/lib/ReactKonvaCore'
-
 import type { PerimeterCornerGeometry, PerimeterCornerWithGeometry, RoofOverhang } from '@/building/model'
 import type { SelectableId } from '@/building/model/ids'
 import { isPerimeterCornerId, isRoofOverhangId } from '@/building/model/ids'
@@ -40,9 +38,9 @@ export function SelectionOverlay(): React.JSX.Element | null {
   }
 
   return (
-    <Group name="selection-overlay">
+    <g data-layer="selection-overlay">
       <SelectionOutline points={outlinePoints} />
-    </Group>
+    </g>
   )
 }
 

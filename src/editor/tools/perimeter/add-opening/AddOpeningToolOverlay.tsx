@@ -35,7 +35,7 @@ export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpe
         height={wall.thickness}
         fill={state.canPlace ? (tool.getNeedsConversion() ? theme.warning : theme.success) : theme.danger}
         opacity={0.6}
-        stroke={theme.white}
+        stroke={'var(--gray-1)'}
         strokeWidth={3}
       />
       <Text
@@ -47,7 +47,7 @@ export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpe
         height={wall.thickness}
         align="center"
         verticalAlign="middle"
-        fill={theme.white}
+        fill={'var(--gray-1)'}
         fontFamily="Arial"
         scaleY={-1}
       />
@@ -58,8 +58,8 @@ export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpe
           x={state.snapDirection === 'right' ? -halfWidth : halfWidth}
           y={wall.thickness / 2}
           radius={wall.thickness * 0.15}
-          fill={theme.primary}
-          stroke={theme.white}
+          fill={'var(--color-primary)'}
+          stroke={'var(--gray-1)'}
           strokeWidth={2}
           opacity={0.9}
         />

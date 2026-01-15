@@ -59,7 +59,7 @@ export class MoveTool extends BaseTool implements ToolImplementation {
       return false
     }
 
-    const hitResult = entityHitTestService.findEntityAt(event.pointerCoordinates)
+    const hitResult = entityHitTestService.findEntityAtPointer(event.pointerCoordinates)
     if (!hitResult) return false
 
     const behavior = getMovementBehavior(hitResult.entityType)

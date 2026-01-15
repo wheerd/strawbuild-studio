@@ -181,7 +181,7 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
   handlePointerDown(event: CanvasEvent): boolean {
     // If no wall selected, try to select one
     if (!this.state.selectedWallId && event.pointerCoordinates) {
-      const hitResult = entityHitTestService.findEntityAt(event.pointerCoordinates)
+      const hitResult = entityHitTestService.findEntityAtPointer(event.pointerCoordinates)
       const wallId = hitResult?.entityId
       if (wallId && isPerimeterWallId(wallId)) {
         this.setTargetWall(wallId)

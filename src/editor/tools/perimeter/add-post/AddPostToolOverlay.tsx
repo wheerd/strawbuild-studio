@@ -21,7 +21,7 @@ export function AddPostToolOverlay({ tool }: ToolOverlayComponentProps<AddPostTo
 
   const halfWidth = state.width / 2
 
-  const fillColor = state.canPlace ? theme.white : theme.danger
+  const fillColor = state.canPlace ? 'var(--gray-1)' : theme.danger
 
   return (
     <Group x={state.previewPosition[0]} y={state.previewPosition[1]} rotation={wallAngle} listening={false}>
@@ -33,7 +33,7 @@ export function AddPostToolOverlay({ tool }: ToolOverlayComponentProps<AddPostTo
         width={state.width}
         height={wall.thickness}
         fill={fillColor}
-        stroke={theme.border}
+        stroke={'var(--gray-11)'}
         strokeWidth={3}
       />
 
@@ -45,7 +45,7 @@ export function AddPostToolOverlay({ tool }: ToolOverlayComponentProps<AddPostTo
           width={state.width}
           height={wall.thickness / 3}
           fill={MATERIAL_COLORS.woodSupport}
-          stroke={theme.border}
+          stroke={'var(--gray-11)'}
           strokeWidth={2}
           listening={false}
         />
@@ -58,7 +58,7 @@ export function AddPostToolOverlay({ tool }: ToolOverlayComponentProps<AddPostTo
           width={state.width}
           height={wall.thickness / 3}
           fill={MATERIAL_COLORS.woodSupport}
-          stroke={theme.border}
+          stroke={'var(--gray-11)'}
           strokeWidth={2}
           listening={false}
         />
@@ -71,7 +71,7 @@ export function AddPostToolOverlay({ tool }: ToolOverlayComponentProps<AddPostTo
           width={state.width}
           height={wall.thickness / 3}
           fill={MATERIAL_COLORS.woodSupport}
-          stroke={theme.border}
+          stroke={'var(--gray-11)'}
           strokeWidth={2}
           listening={false}
         />
@@ -83,8 +83,8 @@ export function AddPostToolOverlay({ tool }: ToolOverlayComponentProps<AddPostTo
           x={state.snapDirection === 'right' ? -halfWidth : halfWidth}
           y={wall.thickness / 2}
           radius={wall.thickness * 0.15}
-          fill={theme.primary}
-          stroke={theme.white}
+          fill={'var(--color-primary)'}
+          stroke={'var(--gray-1)'}
           strokeWidth={2}
           opacity={0.9}
         />

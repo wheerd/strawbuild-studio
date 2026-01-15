@@ -49,7 +49,7 @@ export function WallPostMovementPreview({
         points={postPolygonArray}
         fill={fillColor}
         opacity={0.6}
-        stroke={theme.white}
+        stroke={'var(--gray-1)'}
         strokeWidth={5}
         lineCap="butt"
         closed
@@ -59,7 +59,7 @@ export function WallPostMovementPreview({
       {/* Show movement indicator */}
       <Line
         points={[originalMid[0], originalMid[1], previewMid[0], previewMid[1]]}
-        stroke={theme.textSecondary}
+        stroke={'var(--color-text-secondary)'}
         strokeWidth={10}
         dash={[20, 20]}
         opacity={0.7}

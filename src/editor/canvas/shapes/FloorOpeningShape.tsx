@@ -1,39 +1,19 @@
-import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
-import useImage from 'use-image'
-
 import type { FloorOpening } from '@/building/model'
-import hatchPatternUrl from '@/editor/canvas/assets/floor-opening-hatch.svg?url'
-import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
+import { polygonToSvgPath } from '@/shared/utils/svg'
 
-interface FloorOpeningShapeProps {
-  opening: FloorOpening
-}
-
-export function FloorOpeningShape({ opening }: FloorOpeningShapeProps): React.JSX.Element {
-  const theme = useCanvasTheme()
-  const points = opening.area.points.flatMap(point => [point[0], point[1]])
-  const [hatchPattern] = useImage(hatchPatternUrl)
+export function FloorOpeningShape({ opening }: { opening: FloorOpening }): React.JSX.Element {
+  const d = polygonToSvgPath(opening.area)
 
   return (
-    <Group
-      name={`floor-opening-${opening.id}`}
-      entityId={opening.id}
-      entityType="floor-opening"
-      parentIds={[]}
-      listening
-    >
-      <Line
-        points={points}
-        closed
-        fill={hatchPattern ? undefined : theme.bgCanvas}
-        fillPatternImage={hatchPattern ?? undefined}
-        fillPatternRepeat="repeat"
-        fillPatternScale={{ x: 3, y: 3 }}
-        stroke={theme.warning}
-        dash={[80, 40]}
-        strokeWidth={10}
-        listening
-      />
-    </Group>
+    <path
+      d={d}
+      fill="url(#hatch)"
+      stroke="var(--color-warning)"
+      strokeWidth={10}
+      strokeDasharray="80 40"
+      data-entity-id={opening.id}
+      data-entity-type="floor-opening"
+      data-parent-ids="[]"
+    />
   )
 }

@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react'
-import { Layer, Line } from 'react-konva/lib/ReactKonvaCore'
+import { useEffect } from 'react'
 
 import { useGridActions, useShowGrid } from '@/editor/hooks/useGrid'
 import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
@@ -10,7 +9,7 @@ interface ViewportState {
   panY: number
 }
 
-interface GridLayerProps {
+interface SvgGridLayerProps {
   width?: number
   height?: number
   viewport: ViewportState
@@ -32,8 +31,7 @@ export function calculateDynamicGridSize(zoom: number): number {
 
   return gridSize
 }
-
-export function GridLayer({ width = 800, height = 600, viewport }: GridLayerProps): React.JSX.Element {
+export function GridLayer({ width = 800, height = 600, viewport }: SvgGridLayerProps): React.JSX.Element {
   const showGrid = useShowGrid()
   const theme = useCanvasTheme()
   const { setGridSize } = useGridActions()
@@ -47,11 +45,13 @@ export function GridLayer({ width = 800, height = 600, viewport }: GridLayerProp
   }, [dynamicGridSize, setGridSize])
 
   if (!showGrid) {
-    return <Layer name="grid" />
+    return <g data-layer="grid" />
   }
 
   const lines: React.JSX.Element[] = []
 
+  // Calculate visible range in world coordinates
+  // Same calculation as GridLayer.tsx
   const startX = Math.floor(-viewport.panX / viewport.zoom / dynamicGridSize) * dynamicGridSize
   const endX = Math.ceil((width - viewport.panX) / viewport.zoom / dynamicGridSize) * dynamicGridSize
   const startY = -Math.floor(-viewport.panY / viewport.zoom / dynamicGridSize) * dynamicGridSize
@@ -61,33 +61,41 @@ export function GridLayer({ width = 800, height = 600, viewport }: GridLayerProp
   const baseStrokeWidth = 1
   const strokeWidth = Math.max(0.5, baseStrokeWidth / viewport.zoom)
 
+  // Vertical lines
   for (let x = startX; x <= endX; x += dynamicGridSize) {
+    const isAxis = x === 0
     lines.push(
-      <Line
+      <line
         key={`v-${x}`}
-        points={[x, startY, x, endY]}
-        stroke={x === 0 ? theme.gridVertical : theme.grid}
-        strokeWidth={x === 0 ? strokeWidth * 2 : strokeWidth}
-        listening={false}
+        x1={x}
+        y1={startY}
+        x2={x}
+        y2={endY}
+        stroke={isAxis ? theme.gridVertical : theme.grid}
+        strokeWidth={isAxis ? strokeWidth * 2 : strokeWidth}
       />
     )
   }
 
+  // Horizontal lines
   for (let y = startY; y >= endY; y -= dynamicGridSize) {
+    const isAxis = y === 0
     lines.push(
-      <Line
+      <line
         key={`h-${y}`}
-        points={[startX, y, endX, y]}
-        stroke={y === 0 ? theme.gridHorizontal : theme.grid}
-        strokeWidth={y === 0 ? strokeWidth * 2 : strokeWidth}
-        listening={false}
+        x1={startX}
+        y1={y}
+        x2={endX}
+        y2={y}
+        stroke={isAxis ? theme.gridHorizontal : theme.grid}
+        strokeWidth={isAxis ? strokeWidth * 2 : strokeWidth}
       />
     )
   }
 
   return (
-    <Layer name="grid" listening={false}>
+    <g data-layer="grid" className="pointer-events-none">
       {lines}
-    </Layer>
+    </g>
   )
 }

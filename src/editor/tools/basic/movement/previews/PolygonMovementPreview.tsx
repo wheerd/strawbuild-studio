@@ -28,7 +28,7 @@ export function PolygonMovementPreview<TEntity>({
           y={movementState.snapResult.position[1]}
           radius={50}
           fill={theme.info}
-          stroke={theme.white}
+          stroke={'var(--gray-1)'}
           strokeWidth={5}
           opacity={0.8}
           listening={false}
