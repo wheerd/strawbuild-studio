@@ -96,9 +96,6 @@ export default defineConfig({
           // Vendor chunk for React and related libraries
           'vendor-react': ['react', 'react-dom', 'react/jsx-runtime'],
 
-          // Canvas chunk for Konva and react-konva
-          'vendor-canvas': ['konva', 'react-konva'],
-
           // State management chunk
           'vendor-store': ['zustand', 'zundo'],
 
@@ -120,6 +117,8 @@ export default defineConfig({
 
           // Three.js chunk (lazy loaded for 3D viewer)
           'vendor-three': ['three', '@react-three/fiber', '@react-three/drei'],
+
+          'vendor-manifold': ['manifold-3d'],
 
           // IFC
           'vendor-ifc': ['web-ifc']

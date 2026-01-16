@@ -1,11 +1,11 @@
 import { Box, Card, Flex } from '@radix-ui/themes'
 import { OrbitControls } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
+import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
 import type { ConstructionModel } from '@/construction/model'
 import { matAppToThree, toThreeTransform } from '@/construction/viewer3d/utils/geometry'
-import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 import ConstructionElement3D from './components/ConstructionElement3D'
 import ConstructionGroup3D from './components/ConstructionGroup3D'
@@ -22,7 +22,8 @@ interface ConstructionViewer3DProps {
 }
 
 function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProps): React.JSX.Element {
-  const theme = useCanvasTheme()
+  const { resolvedTheme } = useTheme()
+  const isDarkTheme = resolvedTheme === 'dark'
   const showGrid = useShowGrid3D()
   const exportFnRef = useRef<((format: ExportFormat) => void) | null>(null)
 
@@ -36,10 +37,10 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
   const cameraThreeZ = -centerY + cameraDistance * 0.7
 
   const gridSize = Math.max(maxSize * 3, 10000)
-
+  const gridColor = isDarkTheme ? '#EEEEEE' : '#111111'
   const gridHelperArgs = useMemo<[number, number, string, string]>(
-    () => [gridSize, 50, theme.grid, theme.grid],
-    [gridSize, theme.grid]
+    () => [gridSize, 50, gridColor, gridColor],
+    [gridSize, gridColor]
   )
 
   const handleExportReady = useCallback((fn: (format: ExportFormat) => void) => {
@@ -81,12 +82,12 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
         style={{
           width: `${containerSize.width}px`,
           height: `${containerSize.height}px`,
-          background: theme.bgCanvas
+          background: isDarkTheme ? '#111111' : '#EEEEEE'
         }}
       >
         <CustomSorting />
-        <CanvasBackground color={theme.bgCanvas} />
-        <ambientLight intensity={theme.isDarkTheme ? 0.8 : 1.3} />
+        <CanvasBackground color={isDarkTheme ? '#111111' : '#EEEEEE'} />
+        <ambientLight intensity={isDarkTheme ? 0.8 : 1.3} />
 
         {showGrid && <gridHelper args={gridHelperArgs} position={[centerX, 0, -centerY]} />}
 

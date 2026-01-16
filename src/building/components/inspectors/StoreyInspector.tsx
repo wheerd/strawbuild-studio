@@ -1,4 +1,4 @@
-import { Box, Callout, Code, DataList, Flex, Heading, Text } from '@radix-ui/themes'
+import { Box, Callout, Code, Flex, Grid, Heading, Text } from '@radix-ui/themes'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -87,105 +87,111 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
             <Text>{storeyName}</Text>
           </Flex>
         </Heading>
-        <DataList.Root size="1">
-          <DataList.Item>
-            <DataList.Label minWidth="100px">{t($ => $.storey.footprint)}</DataList.Label>
-            <DataList.Value>
-              <Flex justify="end" width="100%">
-                {formatArea(combinedStats.footprint)}
-              </Flex>
-            </DataList.Value>
-          </DataList.Item>
-          <DataList.Item>
-            <DataList.Label>{t($ => $.storey.usableFloorArea)}</DataList.Label>
-            <DataList.Value>
-              <Flex justify="end" width="100%">
-                {formatArea(combinedStats.totalFloorArea)}
-              </Flex>
-            </DataList.Value>
-          </DataList.Item>
-          <DataList.Item>
-            <DataList.Label>{t($ => $.storey.constructionWallArea)}</DataList.Label>
-            <DataList.Value>
-              <Flex justify="end" width="100%">
-                {formatArea(combinedStats.totalConstructionWallArea)}
-              </Flex>
-            </DataList.Value>
-          </DataList.Item>
-          <DataList.Item>
-            <DataList.Label>{t($ => $.storey.finishedWallArea)}</DataList.Label>
-            <DataList.Value>
-              <Flex justify="end" width="100%">
-                {formatArea(combinedStats.totalFinishedWallArea)}
-              </Flex>
-            </DataList.Value>
-          </DataList.Item>
-          <DataList.Item>
-            <DataList.Label>{t($ => $.storey.exteriorWallArea)}</DataList.Label>
-            <DataList.Value>
-              <Flex justify="end" width="100%">
-                {formatArea(combinedStats.totalExteriorWallArea)}
-              </Flex>
-            </DataList.Value>
-          </DataList.Item>
-          <DataList.Item>
-            <DataList.Label>{t($ => $.storey.windowArea)}</DataList.Label>
-            <DataList.Value>
-              <Flex justify="end" width="100%">
-                {formatArea(combinedStats.totalWindowArea)}
-              </Flex>
-            </DataList.Value>
-          </DataList.Item>
-          <DataList.Item>
-            <DataList.Label>{t($ => $.storey.wallToWindowRatio)}</DataList.Label>
-            <DataList.Value>
-              <Flex justify="end" width="100%">
-                {formatPercentage((combinedStats.totalWindowArea / combinedStats.totalFinishedWallArea) * 100)}
-              </Flex>
-            </DataList.Value>
-          </DataList.Item>
-          <DataList.Item>
-            <DataList.Label>{t($ => $.storey.doorArea)}</DataList.Label>
-            <DataList.Value>
-              <Flex justify="end" width="100%">
-                {formatArea(combinedStats.totalDoorArea)}
-              </Flex>
-            </DataList.Value>
-          </DataList.Item>
-          <DataList.Item>
-            <DataList.Label>{t($ => $.storey.totalVolume)}</DataList.Label>
-            <DataList.Value>
-              <Flex justify="end" width="100%">
-                {formatVolume(combinedStats.totalVolume)}
-              </Flex>
-            </DataList.Value>
-          </DataList.Item>
-          <DataList.Item>
-            <DataList.Label>{t($ => $.storey.surfaceAreaToVolumeRatio)}</DataList.Label>
-            <DataList.Value>
-              <Flex justify="end" width="100%">
-                {formatNumber((combinedStats.totalExteriorWallArea / combinedStats.totalVolume) * 1000, 2)}
-              </Flex>
-            </DataList.Value>
-          </DataList.Item>
+        <Grid columns="auto 1fr" gapY="2" gapX="1">
+          <Text size="1" weight="medium">
+            {t($ => $.storey.footprint)}
+          </Text>
+          <Text size="1">{formatArea(combinedStats.footprint)}</Text>
 
-          <DataList.Item>
-            <DataList.Label>{t($ => $.storey.floorHeight)}</DataList.Label>
-            <DataList.Value>
-              <Flex justify="end" width="100%">
-                {formatLength(combinedStats.storeyHeight)}
-              </Flex>
-            </DataList.Value>
-          </DataList.Item>
-          <DataList.Item>
-            <DataList.Label>{t($ => $.storey.ceilingHeight)}</DataList.Label>
-            <DataList.Value>
-              <Flex justify="end" width="100%">
-                {formatLength(combinedStats.ceilingHeight)}
-              </Flex>
-            </DataList.Value>
-          </DataList.Item>
-        </DataList.Root>
+          <Text size="1" weight="medium">
+            {t($ => $.storey.usableFloorArea)}
+          </Text>
+          <Text size="1">
+            <Flex justify="end" width="100%">
+              {formatArea(combinedStats.totalFloorArea)}
+            </Flex>
+          </Text>
+
+          <Text size="1" weight="medium">
+            {t($ => $.storey.constructionWallArea)}
+          </Text>
+          <Text size="1">
+            <Flex justify="end" width="100%">
+              {formatArea(combinedStats.totalConstructionWallArea)}
+            </Flex>
+          </Text>
+
+          <Text size="1" weight="medium">
+            {t($ => $.storey.finishedWallArea)}
+          </Text>
+          <Text size="1">
+            <Flex justify="end" width="100%">
+              {formatArea(combinedStats.totalFinishedWallArea)}
+            </Flex>
+          </Text>
+
+          <Text size="1" weight="medium">
+            {t($ => $.storey.exteriorWallArea)}
+          </Text>
+          <Text size="1">
+            <Flex justify="end" width="100%">
+              {formatArea(combinedStats.totalExteriorWallArea)}
+            </Flex>
+          </Text>
+
+          <Text size="1" weight="medium">
+            {t($ => $.storey.windowArea)}
+          </Text>
+          <Text size="1">
+            <Flex justify="end" width="100%">
+              {formatArea(combinedStats.totalWindowArea)}
+            </Flex>
+          </Text>
+
+          <Text size="1" weight="medium">
+            {t($ => $.storey.wallToWindowRatio)}
+          </Text>
+          <Text size="1">
+            <Flex justify="end" width="100%">
+              {formatPercentage((combinedStats.totalWindowArea / combinedStats.totalFinishedWallArea) * 100)}
+            </Flex>
+          </Text>
+
+          <Text size="1" weight="medium">
+            {t($ => $.storey.doorArea)}
+          </Text>
+          <Text size="1">
+            <Flex justify="end" width="100%">
+              {formatArea(combinedStats.totalDoorArea)}
+            </Flex>
+          </Text>
+
+          <Text size="1" weight="medium">
+            {t($ => $.storey.totalVolume)}
+          </Text>
+          <Text size="1">
+            <Flex justify="end" width="100%">
+              {formatVolume(combinedStats.totalVolume)}
+            </Flex>
+          </Text>
+
+          <Text size="1" weight="medium">
+            {t($ => $.storey.surfaceAreaToVolumeRatio)}
+          </Text>
+          <Text size="1">
+            <Flex justify="end" width="100%">
+              {formatNumber((combinedStats.totalExteriorWallArea / combinedStats.totalVolume) * 1000, 2)}
+            </Flex>
+          </Text>
+
+          <Text size="1" weight="medium">
+            {t($ => $.storey.floorHeight)}
+          </Text>
+          <Text size="1">
+            <Flex justify="end" width="100%">
+              {formatLength(combinedStats.storeyHeight)}
+            </Flex>
+          </Text>
+
+          <Text size="1" weight="medium">
+            {t($ => $.storey.ceilingHeight)}
+          </Text>
+          <Text size="1">
+            <Flex justify="end" width="100%">
+              {formatLength(combinedStats.ceilingHeight)}
+            </Flex>
+          </Text>
+        </Grid>
       </Flex>
     </Box>
   )

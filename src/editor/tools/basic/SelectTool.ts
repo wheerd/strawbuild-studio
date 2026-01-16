@@ -1,4 +1,3 @@
-import { entityHitTestService } from '@/editor/canvas/services/EntityHitTestService'
 import {
   clearSelection,
   getCurrentSelection,
@@ -7,7 +6,8 @@ import {
   pushSelection,
   replaceSelection
 } from '@/editor/hooks/useSelectionStore'
-import type { CanvasEvent, ToolImplementation } from '@/editor/tools/system/types'
+import type { EditorEvent, ToolImplementation } from '@/editor/tools/system/types'
+import { findEditorEntityAt } from '@/editor/utils/editorHitTesting'
 
 import { SelectToolInspector } from './SelectToolInspector'
 
@@ -16,13 +16,8 @@ export class SelectTool implements ToolImplementation {
   readonly inspectorComponent = SelectToolInspector
 
   // Event handlers
-  handlePointerDown(event: CanvasEvent): boolean {
-    if (!event.pointerCoordinates) {
-      console.warn('No pointer coordinates available for selection')
-      return false
-    }
-
-    const hitResult = entityHitTestService.findEntityAt(event.pointerCoordinates)
+  handlePointerDown(event: EditorEvent): boolean {
+    const hitResult = findEditorEntityAt(event.originalEvent)
 
     if (hitResult) {
       const clickSelectionPath = hitResult.parentIds.concat([hitResult.entityId])

@@ -2,782 +2,704 @@
 
 exports[`PolygonToolOverlay > closing polygon behavior > does not render closing line when not snapping to first point 1`] = `
 <div>
-  <div
-    data-testid="konva-group"
+  <g
+    pointer-events="none"
   >
-    <div
-      data-line-cap="round"
-      data-line-join="round"
-      data-points="[100,100,200,100,200,200]"
-      data-stroke="var(--color-secondary)"
-      data-stroke-width="2"
-      data-testid="konva-line"
-      listening="false"
+    <polyline
+      fill="none"
+      points="100,100 200,100 200,200"
+      stroke="var(--gray-9)"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
     />
-    <div
-      data-dash="[10,10]"
-      data-points="[200,200,300,300]"
-      data-stroke="var(--color-text-tertiary)"
-      data-stroke-width="2"
-      data-testid="konva-line"
-      listening="false"
+    <line
+      stroke="var(--gray-10)"
+      stroke-dasharray="10 10"
+      stroke-width="2"
+      x1="200"
+      x2="300"
+      y1="200"
+      y2="300"
     />
-    <div
-      data-fill="var(--color-primary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="100"
-      data-y="100"
-      listening="false"
+    <circle
+      cx="100"
+      cy="100"
+      fill="var(--accent-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="200"
-      data-y="100"
-      listening="false"
+    <circle
+      cx="200"
+      cy="100"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="200"
-      data-y="200"
-      listening="false"
+    <circle
+      cx="200"
+      cy="200"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="black"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="300"
-      data-y="300"
-      listening="false"
+    <circle
+      cx="300"
+      cy="300"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-12)"
+      stroke-width="1"
     />
-  </div>
+  </g>
 </div>
 `;
 
 exports[`PolygonToolOverlay > closing polygon behavior > renders closing line when snapping to first point with invalid closure 1`] = `
 <div>
-  <div
-    data-testid="konva-group"
+  <g
+    pointer-events="none"
   >
-    <div
-      data-line-cap="round"
-      data-line-join="round"
-      data-points="[100,100,200,100,200,200]"
-      data-stroke="var(--color-secondary)"
-      data-stroke-width="2"
-      data-testid="konva-line"
-      listening="false"
+    <polyline
+      fill="none"
+      points="100,100 200,100 200,200"
+      stroke="var(--gray-9)"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
     />
-    <div
-      data-dash="[10,10]"
-      data-points="[200,200,100,100]"
-      data-stroke="var(--color-danger)"
-      data-stroke-width="2"
-      data-testid="konva-line"
-      listening="false"
+    <line
+      stroke="var(--red-9)"
+      stroke-dasharray="10 10"
+      stroke-width="2"
+      x1="200"
+      x2="100"
+      y1="200"
+      y2="100"
     />
-    <div
-      data-fill="var(--color-primary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="100"
-      data-y="100"
-      listening="false"
+    <circle
+      cx="100"
+      cy="100"
+      fill="var(--accent-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="200"
-      data-y="100"
-      listening="false"
+    <circle
+      cx="200"
+      cy="100"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="200"
-      data-y="200"
-      listening="false"
+    <circle
+      cx="200"
+      cy="200"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="black"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="0"
-      data-y="0"
-      listening="false"
+    <circle
+      cx="0"
+      cy="0"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-12)"
+      stroke-width="1"
     />
-  </div>
+  </g>
 </div>
 `;
 
 exports[`PolygonToolOverlay > closing polygon behavior > renders closing line when snapping to first point with valid closure 1`] = `
 <div>
-  <div
-    data-testid="konva-group"
+  <g
+    pointer-events="none"
   >
-    <div
-      data-line-cap="round"
-      data-line-join="round"
-      data-points="[100,100,200,100,200,200]"
-      data-stroke="var(--color-secondary)"
-      data-stroke-width="2"
-      data-testid="konva-line"
-      listening="false"
+    <polyline
+      fill="none"
+      points="100,100 200,100 200,200"
+      stroke="var(--gray-9)"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
     />
-    <div
-      data-dash="[10,10]"
-      data-points="[200,200,100,100]"
-      data-stroke="var(--color-success)"
-      data-stroke-width="2"
-      data-testid="konva-line"
-      listening="false"
+    <line
+      stroke="var(--green-9)"
+      stroke-dasharray="10 10"
+      stroke-width="2"
+      x1="200"
+      x2="100"
+      y1="200"
+      y2="100"
     />
-    <div
-      data-fill="var(--color-primary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="100"
-      data-y="100"
-      listening="false"
+    <circle
+      cx="100"
+      cy="100"
+      fill="var(--accent-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="200"
-      data-y="100"
-      listening="false"
+    <circle
+      cx="200"
+      cy="100"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="200"
-      data-y="200"
-      listening="false"
+    <circle
+      cx="200"
+      cy="200"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="black"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="0"
-      data-y="0"
-      listening="false"
+    <circle
+      cx="0"
+      cy="0"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-12)"
+      stroke-width="1"
     />
-  </div>
+  </g>
 </div>
 `;
 
 exports[`PolygonToolOverlay > edge cases > handles empty points array gracefully 1`] = `
 <div>
-  <div
-    data-testid="konva-group"
+  <g
+    pointer-events="none"
   >
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="black"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="0"
-      data-y="0"
-      listening="false"
+    <circle
+      cx="0"
+      cy="0"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-12)"
+      stroke-width="1"
     />
-  </div>
+  </g>
 </div>
 `;
 
 exports[`PolygonToolOverlay > edge cases > handles exactly two points (minimum for line rendering) 1`] = `
 <div>
-  <div
-    data-testid="konva-group"
+  <g
+    pointer-events="none"
   >
-    <div
-      data-line-cap="round"
-      data-line-join="round"
-      data-points="[0,0,100,100]"
-      data-stroke="var(--color-secondary)"
-      data-stroke-width="2"
-      data-testid="konva-line"
-      listening="false"
+    <polyline
+      fill="none"
+      points="0,0 100,100"
+      stroke="var(--gray-9)"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
     />
-    <div
-      data-dash="[10,10]"
-      data-points="[100,100,200,0]"
-      data-stroke="var(--color-text-tertiary)"
-      data-stroke-width="2"
-      data-testid="konva-line"
-      listening="false"
+    <line
+      stroke="var(--gray-10)"
+      stroke-dasharray="10 10"
+      stroke-width="2"
+      x1="100"
+      x2="200"
+      y1="100"
+      y2="0"
     />
-    <div
-      data-fill="var(--color-primary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="0"
-      data-y="0"
-      listening="false"
+    <circle
+      cx="0"
+      cy="0"
+      fill="var(--accent-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="100"
-      data-y="100"
-      listening="false"
+    <circle
+      cx="100"
+      cy="100"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="black"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="200"
-      data-y="0"
-      listening="false"
+    <circle
+      cx="200"
+      cy="0"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-12)"
+      stroke-width="1"
     />
-  </div>
+  </g>
 </div>
 `;
 
 exports[`PolygonToolOverlay > rendering with multiple points > differentiates first point styling from other points 1`] = `
 <div>
-  <div
-    data-testid="konva-group"
+  <g
+    pointer-events="none"
   >
-    <div
-      data-line-cap="round"
-      data-line-join="round"
-      data-points="[0,0,100,0,100,100,0,100]"
-      data-stroke="var(--color-secondary)"
-      data-stroke-width="2"
-      data-testid="konva-line"
-      listening="false"
+    <polyline
+      fill="none"
+      points="0,0 100,0 100,100 0,100"
+      stroke="var(--gray-9)"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
     />
-    <div
-      data-dash="[10,10]"
-      data-points="[0,100,50,50]"
-      data-stroke="var(--color-text-tertiary)"
-      data-stroke-width="2"
-      data-testid="konva-line"
-      listening="false"
+    <line
+      stroke="var(--gray-10)"
+      stroke-dasharray="10 10"
+      stroke-width="2"
+      x1="0"
+      x2="50"
+      y1="100"
+      y2="50"
     />
-    <div
-      data-fill="var(--color-primary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="0"
-      data-y="0"
-      listening="false"
+    <circle
+      cx="0"
+      cy="0"
+      fill="var(--accent-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="100"
-      data-y="0"
-      listening="false"
+    <circle
+      cx="100"
+      cy="0"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="100"
-      data-y="100"
-      listening="false"
+    <circle
+      cx="100"
+      cy="100"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="0"
-      data-y="100"
-      listening="false"
+    <circle
+      cx="0"
+      cy="100"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="black"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="50"
-      data-y="50"
-      listening="false"
+    <circle
+      cx="50"
+      cy="50"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-12)"
+      stroke-width="1"
     />
-  </div>
+  </g>
 </div>
 `;
 
 exports[`PolygonToolOverlay > rendering with multiple points > renders polygon with connected lines and points 1`] = `
 <div>
-  <div
-    data-testid="konva-group"
+  <g
+    pointer-events="none"
   >
-    <div
-      data-line-cap="round"
-      data-line-join="round"
-      data-points="[100,100,200,100,200,200]"
-      data-stroke="var(--color-secondary)"
-      data-stroke-width="2"
-      data-testid="konva-line"
-      listening="false"
+    <polyline
+      fill="none"
+      points="100,100 200,100 200,200"
+      stroke="var(--gray-9)"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
     />
-    <div
-      data-dash="[10,10]"
-      data-points="[200,200,100,200]"
-      data-stroke="var(--color-text-tertiary)"
-      data-stroke-width="2"
-      data-testid="konva-line"
-      listening="false"
+    <line
+      stroke="var(--gray-10)"
+      stroke-dasharray="10 10"
+      stroke-width="2"
+      x1="200"
+      x2="100"
+      y1="200"
+      y2="200"
     />
-    <div
-      data-fill="var(--color-primary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="100"
-      data-y="100"
-      listening="false"
+    <circle
+      cx="100"
+      cy="100"
+      fill="var(--accent-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="200"
-      data-y="100"
-      listening="false"
+    <circle
+      cx="200"
+      cy="100"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="200"
-      data-y="200"
-      listening="false"
+    <circle
+      cx="200"
+      cy="200"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="black"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="100"
-      data-y="200"
-      listening="false"
+    <circle
+      cx="100"
+      cy="200"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-12)"
+      stroke-width="1"
     />
-  </div>
+  </g>
 </div>
 `;
 
 exports[`PolygonToolOverlay > rendering with no points > renders only snap point when no polygon points exist 1`] = `
 <div>
-  <div
-    data-testid="konva-group"
+  <g
+    pointer-events="none"
   >
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="black"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="100"
-      data-y="200"
-      listening="false"
+    <circle
+      cx="100"
+      cy="200"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-12)"
+      stroke-width="1"
     />
-  </div>
+  </g>
 </div>
 `;
 
 exports[`PolygonToolOverlay > rendering with single point > renders first point and snap point 1`] = `
 <div>
-  <div
-    data-testid="konva-group"
+  <g
+    pointer-events="none"
   >
-    <div
-      data-dash="[10,10]"
-      data-points="[100,100,200,200]"
-      data-stroke="var(--color-text-tertiary)"
-      data-stroke-width="2"
-      data-testid="konva-line"
-      listening="false"
+    <line
+      stroke="var(--gray-10)"
+      stroke-dasharray="10 10"
+      stroke-width="2"
+      x1="100"
+      x2="200"
+      y1="100"
+      y2="200"
     />
-    <div
-      data-fill="var(--color-primary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="100"
-      data-y="100"
-      listening="false"
+    <circle
+      cx="100"
+      cy="100"
+      fill="var(--accent-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="black"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="200"
-      data-y="200"
-      listening="false"
+    <circle
+      cx="200"
+      cy="200"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-12)"
+      stroke-width="1"
     />
-  </div>
+  </g>
 </div>
 `;
 
 exports[`PolygonToolOverlay > rendering with single point > renders line to pointer position with invalid styling 1`] = `
 <div>
-  <div
-    data-testid="konva-group"
+  <g
+    pointer-events="none"
   >
-    <div
-      data-dash="[10,10]"
-      data-points="[50,50,150,150]"
-      data-stroke="var(--color-danger)"
-      data-stroke-width="2"
-      data-testid="konva-line"
-      listening="false"
+    <line
+      stroke="var(--red-9)"
+      stroke-dasharray="10 10"
+      stroke-width="2"
+      x1="50"
+      x2="150"
+      y1="50"
+      y2="150"
     />
-    <div
-      data-fill="var(--color-primary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="50"
-      data-y="50"
-      listening="false"
+    <circle
+      cx="50"
+      cy="50"
+      fill="var(--accent-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="black"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="150"
-      data-y="150"
-      listening="false"
+    <circle
+      cx="150"
+      cy="150"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-12)"
+      stroke-width="1"
     />
-  </div>
+  </g>
 </div>
 `;
 
 exports[`PolygonToolOverlay > rendering with single point > renders line to pointer position with valid styling 1`] = `
 <div>
-  <div
-    data-testid="konva-group"
+  <g
+    pointer-events="none"
   >
-    <div
-      data-dash="[10,10]"
-      data-points="[50,50,150,150]"
-      data-stroke="var(--color-text-tertiary)"
-      data-stroke-width="2"
-      data-testid="konva-line"
-      listening="false"
+    <line
+      stroke="var(--gray-10)"
+      stroke-dasharray="10 10"
+      stroke-width="2"
+      x1="50"
+      x2="150"
+      y1="50"
+      y2="150"
     />
-    <div
-      data-fill="var(--color-primary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="50"
-      data-y="50"
-      listening="false"
+    <circle
+      cx="50"
+      cy="50"
+      fill="var(--accent-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="black"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="150"
-      data-y="150"
-      listening="false"
+    <circle
+      cx="150"
+      cy="150"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-12)"
+      stroke-width="1"
     />
-  </div>
+  </g>
 </div>
 `;
 
 exports[`PolygonToolOverlay > snapping behavior > renders snap lines when snap result has lines 1`] = `
 <div>
-  <div
-    data-testid="konva-group"
+  <g
+    pointer-events="none"
   >
-    <div
-      data-testid="konva-group"
+    <g
+      pointer-events="none"
     >
-      <div
-        data-opacity="0.5"
-        data-points="[-1500,100,1700,100]"
-        data-stroke="var(--color-grid-horizontal)"
-        data-stroke-width="2"
-        data-testid="konva-line"
-        listening="false"
+      <line
+        opacity="0.5"
+        stroke="var(--green-8)"
+        stroke-width="2"
+        x1="-1500"
+        x2="1700"
+        y1="100"
+        y2="100"
       />
-      <div
-        data-opacity="0.5"
-        data-points="[200,-1400,200,1800]"
-        data-stroke="var(--color-grid-vertical)"
-        data-stroke-width="2"
-        data-testid="konva-line"
-        listening="false"
+      <line
+        opacity="0.5"
+        stroke="var(--red-8)"
+        stroke-width="2"
+        x1="200"
+        x2="200"
+        y1="-1400"
+        y2="1800"
       />
-    </div>
-    <div
-      data-dash="[10,10]"
-      data-points="[50,50,145,145]"
-      data-stroke="var(--color-text-tertiary)"
-      data-stroke-width="2"
-      data-testid="konva-line"
-      listening="false"
+    </g>
+    <line
+      stroke="var(--gray-10)"
+      stroke-dasharray="10 10"
+      stroke-width="2"
+      x1="50"
+      x2="145"
+      y1="50"
+      y2="145"
     />
-    <div
-      data-fill="var(--color-primary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="50"
-      data-y="50"
-      listening="false"
+    <circle
+      cx="50"
+      cy="50"
+      fill="var(--accent-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="black"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="145"
-      data-y="145"
-      listening="false"
+    <circle
+      cx="145"
+      cy="145"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-12)"
+      stroke-width="1"
     />
-  </div>
+  </g>
 </div>
 `;
 
 exports[`PolygonToolOverlay > snapping behavior > renders snap position when snap result exists 1`] = `
 <div>
-  <div
-    data-testid="konva-group"
+  <g
+    pointer-events="none"
   >
-    <div
-      data-dash="[10,10]"
-      data-points="[100,100,120,120]"
-      data-stroke="var(--color-text-tertiary)"
-      data-stroke-width="2"
-      data-testid="konva-line"
-      listening="false"
+    <line
+      stroke="var(--gray-10)"
+      stroke-dasharray="10 10"
+      stroke-width="2"
+      x1="100"
+      x2="120"
+      y1="100"
+      y2="120"
     />
-    <div
-      data-fill="var(--color-primary)"
-      data-radius="5"
-      data-stroke="white"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="100"
-      data-y="100"
-      listening="false"
+    <circle
+      cx="100"
+      cy="100"
+      fill="var(--accent-9)"
+      r="5"
+      stroke="var(--gray-1)"
+      stroke-width="1"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="5"
-      data-stroke="black"
-      data-stroke-width="1"
-      data-testid="konva-circle"
-      data-x="120"
-      data-y="120"
-      listening="false"
+    <circle
+      cx="120"
+      cy="120"
+      fill="var(--gray-9)"
+      r="5"
+      stroke="var(--gray-12)"
+      stroke-width="1"
     />
-  </div>
+  </g>
 </div>
 `;
 
 exports[`PolygonToolOverlay > zoom responsiveness > adjusts line extension based on stage dimensions 1`] = `
 <div>
-  <div
-    data-testid="konva-group"
+  <g
+    pointer-events="none"
   >
-    <div
-      data-testid="konva-group"
+    <g
+      pointer-events="none"
     >
-      <div
-        data-opacity="0.5"
-        data-points="[-1500,100,1700,100]"
-        data-stroke="var(--color-grid-horizontal)"
-        data-stroke-width="1"
-        data-testid="konva-line"
-        listening="false"
+      <line
+        opacity="0.5"
+        stroke="var(--green-8)"
+        stroke-width="1"
+        x1="-1500"
+        x2="1700"
+        y1="100"
+        y2="100"
       />
-    </div>
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="2.5"
-      data-stroke="black"
-      data-stroke-width="0.5"
-      data-testid="konva-circle"
-      data-x="0"
-      data-y="0"
-      listening="false"
+    </g>
+    <circle
+      cx="0"
+      cy="0"
+      fill="var(--gray-9)"
+      r="2.5"
+      stroke="var(--gray-12)"
+      stroke-width="0.5"
     />
-  </div>
+  </g>
 </div>
 `;
 
 exports[`PolygonToolOverlay > zoom responsiveness > scales elements appropriately at high zoom 1`] = `
 <div>
-  <div
-    data-testid="konva-group"
+  <g
+    pointer-events="none"
   >
-    <div
-      data-line-cap="round"
-      data-line-join="round"
-      data-points="[100,100,200,100]"
-      data-stroke="var(--color-secondary)"
-      data-stroke-width="1"
-      data-testid="konva-line"
-      listening="false"
+    <polyline
+      fill="none"
+      points="100,100 200,100"
+      stroke="var(--gray-9)"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="1"
     />
-    <div
-      data-dash="[2.5,2.5]"
-      data-points="[200,100,200,200]"
-      data-stroke="var(--color-text-tertiary)"
-      data-stroke-width="1"
-      data-testid="konva-line"
-      listening="false"
+    <line
+      stroke="var(--gray-10)"
+      stroke-dasharray="2.5 2.5"
+      stroke-width="1"
+      x1="200"
+      x2="200"
+      y1="100"
+      y2="200"
     />
-    <div
-      data-fill="var(--color-primary)"
-      data-radius="1.25"
-      data-stroke="white"
-      data-stroke-width="0.25"
-      data-testid="konva-circle"
-      data-x="100"
-      data-y="100"
-      listening="false"
+    <circle
+      cx="100"
+      cy="100"
+      fill="var(--accent-9)"
+      r="1.25"
+      stroke="var(--gray-1)"
+      stroke-width="0.25"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="1.25"
-      data-stroke="white"
-      data-stroke-width="0.25"
-      data-testid="konva-circle"
-      data-x="200"
-      data-y="100"
-      listening="false"
+    <circle
+      cx="200"
+      cy="100"
+      fill="var(--gray-9)"
+      r="1.25"
+      stroke="var(--gray-1)"
+      stroke-width="0.25"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="1.25"
-      data-stroke="black"
-      data-stroke-width="0.25"
-      data-testid="konva-circle"
-      data-x="200"
-      data-y="200"
-      listening="false"
+    <circle
+      cx="200"
+      cy="200"
+      fill="var(--gray-9)"
+      r="1.25"
+      stroke="var(--gray-12)"
+      stroke-width="0.25"
     />
-  </div>
+  </g>
 </div>
 `;
 
 exports[`PolygonToolOverlay > zoom responsiveness > scales elements appropriately at low zoom 1`] = `
 <div>
-  <div
-    data-testid="konva-group"
+  <g
+    pointer-events="none"
   >
-    <div
-      data-line-cap="round"
-      data-line-join="round"
-      data-points="[100,100,200,100]"
-      data-stroke="var(--color-secondary)"
-      data-stroke-width="8"
-      data-testid="konva-line"
-      listening="false"
+    <polyline
+      fill="none"
+      points="100,100 200,100"
+      stroke="var(--gray-9)"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="8"
     />
-    <div
-      data-dash="[40,40]"
-      data-points="[200,100,200,200]"
-      data-stroke="var(--color-text-tertiary)"
-      data-stroke-width="8"
-      data-testid="konva-line"
-      listening="false"
+    <line
+      stroke="var(--gray-10)"
+      stroke-dasharray="40 40"
+      stroke-width="8"
+      x1="200"
+      x2="200"
+      y1="100"
+      y2="200"
     />
-    <div
-      data-fill="var(--color-primary)"
-      data-radius="20"
-      data-stroke="white"
-      data-stroke-width="4"
-      data-testid="konva-circle"
-      data-x="100"
-      data-y="100"
-      listening="false"
+    <circle
+      cx="100"
+      cy="100"
+      fill="var(--accent-9)"
+      r="20"
+      stroke="var(--gray-1)"
+      stroke-width="4"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="20"
-      data-stroke="white"
-      data-stroke-width="4"
-      data-testid="konva-circle"
-      data-x="200"
-      data-y="100"
-      listening="false"
+    <circle
+      cx="200"
+      cy="100"
+      fill="var(--gray-9)"
+      r="20"
+      stroke="var(--gray-1)"
+      stroke-width="4"
     />
-    <div
-      data-fill="var(--color-secondary)"
-      data-radius="20"
-      data-stroke="black"
-      data-stroke-width="4"
-      data-testid="konva-circle"
-      data-x="200"
-      data-y="200"
-      listening="false"
+    <circle
+      cx="200"
+      cy="200"
+      fill="var(--gray-9)"
+      r="20"
+      stroke="var(--gray-12)"
+      stroke-width="4"
     />
-  </div>
+  </g>
 </div>
 `;

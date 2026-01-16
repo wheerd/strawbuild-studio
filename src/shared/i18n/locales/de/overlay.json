@@ -1,6 +1,5 @@
 {
   "canvas": {
-    "resetView": "Ansicht zurücksetzen",
     "scrollToZoom": "Scrollen zum Zoomen",
     "uploadToBegin": "Lade ein Bild hoch, um zu beginnen"
   },
@@ -25,19 +24,17 @@
     "footer": {
       "addPlan": "Grundriss hinzufügen",
       "cancel": "Abbrechen",
-      "replacePlan": "Grundriss ersetzen",
-      "storageNote": "Das Grundriss-Bild wird nur in deinem Browser für diese Ebene gespeichert."
+      "replacePlan": "Grundriss ersetzen"
     },
     "step1": {
       "currentImage": "Aktuelles Bild wird verwendet ({{name}}). Lade eine neue Datei hoch, um es zu ersetzen.",
       "title": "1. Grundriss-Bild auswählen",
+      "uploadButton": "Bild auswählen",
       "uploadHint": "Lade ein PNG, JPG oder SVG hoch. Die Datei bleibt lokal und wird nicht mit deinem Projekt gespeichert."
     },
     "step2": {
       "clearPoints": "Punkte löschen",
       "instructions": "Wähle zwei Punkte mit einem bekannten Abstand direkt auf dem Bild.",
-      "pixelDistance": "Pixel-Abstand:",
-      "pixelDistancePlaceholder": "Zwei Punkte auswählen",
       "realDistance": "Tatsächlicher Abstand:",
       "scale": "Maßstab:",
       "scalePlaceholder": "Warte auf Kalibrierung",

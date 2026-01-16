@@ -7,12 +7,12 @@ import type {
 import type { PerimeterWallId } from '@/building/model/ids'
 import { isPerimeterWallId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
-import { entityHitTestService } from '@/editor/canvas/services/EntityHitTestService'
 import { getCurrentSelection, getSelectionActions } from '@/editor/hooks/useSelectionStore'
 import { getViewModeActions } from '@/editor/hooks/useViewMode'
 import { getToolActions } from '@/editor/tools/system'
 import { BaseTool } from '@/editor/tools/system/BaseTool'
-import type { CanvasEvent, ToolImplementation } from '@/editor/tools/system/types'
+import type { EditorEvent, ToolImplementation } from '@/editor/tools/system/types'
+import { findEditorEntityAt } from '@/editor/utils/editorHitTesting'
 import { type Length, type Vec2, distanceToLineSegment, dotVec2, subVec2 } from '@/shared/geometry'
 
 import { SplitWallToolInspector } from './SplitWallToolInspector'
@@ -178,15 +178,15 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
     getToolActions().popTool()
   }
 
-  handlePointerDown(event: CanvasEvent): boolean {
+  handlePointerDown(event: EditorEvent): boolean {
     // If no wall selected, try to select one
-    if (!this.state.selectedWallId && event.pointerCoordinates) {
-      const hitResult = entityHitTestService.findEntityAt(event.pointerCoordinates)
+    if (!this.state.selectedWallId) {
+      const hitResult = findEditorEntityAt(event.originalEvent)
       const wallId = hitResult?.entityId
       if (wallId && isPerimeterWallId(wallId)) {
         this.setTargetWall(wallId)
         if (this.state.wall) {
-          const position = this.positionFromWorldPoint(this.state.wall, event.stageCoordinates)
+          const position = this.positionFromWorldPoint(this.state.wall, event.worldCoordinates)
           this.updateTargetPosition(position)
         }
       }
@@ -194,7 +194,7 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
     }
 
     if (this.state.wall) {
-      const position = this.positionFromWorldPoint(this.state.wall, event.stageCoordinates)
+      const position = this.positionFromWorldPoint(this.state.wall, event.worldCoordinates)
       if (position !== null) {
         this.updateTargetPosition(position)
         return true
@@ -204,11 +204,11 @@ export class SplitWallTool extends BaseTool implements ToolImplementation {
     return false
   }
 
-  handlePointerMove(event: CanvasEvent): boolean {
+  handlePointerMove(event: EditorEvent): boolean {
     if (!this.state.selectedWallId) return false
 
     if (this.state.wall) {
-      const position = this.positionFromWorldPoint(this.state.wall, event.stageCoordinates)
+      const position = this.positionFromWorldPoint(this.state.wall, event.worldCoordinates)
       this.updateHoverPosition(position)
     }
 

@@ -1,0 +1,32 @@
+import { useMemo } from 'react'
+
+import { useActiveStoreyId, useModelActions, usePerimetersOfActiveStorey } from '@/building/store'
+import { PerimeterGhostShape } from '@/editor/shapes/PerimeterGhostShape'
+import { PerimeterShape } from '@/editor/shapes/PerimeterShape'
+
+export function PerimeterLayer(): React.JSX.Element {
+  const { getPerimetersByStorey, getStoreysOrderedByLevel } = useModelActions()
+  const perimeters = usePerimetersOfActiveStorey()
+  const activeStorey = useActiveStoreyId()
+
+  const lowerPerimeters = useMemo(() => {
+    const storeys = getStoreysOrderedByLevel()
+    const storeyIndex = storeys.findIndex(s => s.id === activeStorey)
+    const lowerStorey = storeyIndex > 0 ? storeys[storeyIndex - 1] : null
+    return lowerStorey ? getPerimetersByStorey(lowerStorey.id) : []
+  }, [activeStorey, getPerimetersByStorey, getStoreysOrderedByLevel])
+
+  return (
+    <g data-layer="perimeters">
+      {/* Render lower storey perimeters as ghosts */}
+      {lowerPerimeters.map(perimeter => (
+        <PerimeterGhostShape key={perimeter.id} perimeter={perimeter} />
+      ))}
+
+      {/* Render active storey perimeters */}
+      {perimeters.map(perimeter => (
+        <PerimeterShape key={perimeter.id} perimeter={perimeter} />
+      ))}
+    </g>
+  )
+}

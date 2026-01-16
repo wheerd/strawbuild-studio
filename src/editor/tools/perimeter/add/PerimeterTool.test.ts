@@ -2,8 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import * as useViewportStore from '@/editor/hooks/useViewportStore'
 import * as lengthInputService from '@/editor/services/length-input'
-import type { CanvasEvent } from '@/editor/tools/system/types'
+import type { EditorEvent } from '@/editor/tools/system/types'
 import { type Vec2, ZERO_VEC2, newVec2 } from '@/shared/geometry'
+import { partial } from '@/test/helpers'
 
 import { PerimeterTool } from './PerimeterTool'
 
@@ -40,10 +41,12 @@ describe('PerimeterTool', () => {
 
       // Mock viewport transformations
       vi.spyOn(useViewportStore, 'viewportActions').mockReturnValue({
-        worldToStage: vi.fn((worldPos: Vec2) => ({
-          x: worldPos[0] + 50, // Simple linear transformation for testing
-          y: worldPos[1] + 100
-        })),
+        worldToStage: vi.fn((worldPos: Vec2) =>
+          newVec2(
+            worldPos[0] + 50, // Simple linear transformation for testing
+            worldPos[1] + 100
+          )
+        ),
         stageToWorld: vi.fn(),
         setViewport: vi.fn(),
         setStageDimensions: vi.fn(),
@@ -177,9 +180,9 @@ describe('PerimeterTool', () => {
       tool.state.points = [ZERO_VEC2]
       tool.setLengthOverride(120)
 
-      const mockEvent = {
-        stageCoordinates: newVec2(0, 400)
-      } as unknown as CanvasEvent
+      const mockEvent = partial<EditorEvent>({
+        worldCoordinates: newVec2(0, 400)
+      })
 
       tool.handlePointerDown(mockEvent)
 

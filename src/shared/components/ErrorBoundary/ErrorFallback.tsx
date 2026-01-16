@@ -75,11 +75,9 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): Rea
             {t($ => $.boundary.reloadPage)}
           </Button>
 
-          {resetErrorBoundary && (
-            <Button size="3" variant="soft" onClick={resetErrorBoundary}>
-              {t($ => $.boundary.tryAgain)}
-            </Button>
-          )}
+          <Button size="3" variant="soft" onClick={resetErrorBoundary}>
+            {t($ => $.boundary.tryAgain)}
+          </Button>
 
           <Button
             size="2"

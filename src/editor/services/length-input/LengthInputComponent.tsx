@@ -147,7 +147,7 @@ export function LengthInputComponent(): React.JSX.Element | null {
         color={state.isValid ? undefined : 'red'}
         className="w-20 text-center shadow-lg"
         style={{
-          border: state.isValid ? '2px solid var(--color-primary)' : '2px solid var(--color-danger)'
+          border: state.isValid ? '2px solid var(--accent-9)' : '2px solid var(--red-9)'
         }}
       />
 
@@ -156,7 +156,7 @@ export function LengthInputComponent(): React.JSX.Element | null {
         <Box
           className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-1 text-white text-xs rounded whitespace-nowrap shadow-md"
           style={{
-            backgroundColor: 'var(--color-danger)'
+            backgroundColor: 'var(--red-9)'
           }}
         >
           {state.errorMessage}

@@ -11,7 +11,7 @@ import {
 } from '@/building/model/ids'
 import { getCanRedo, getCanUndo, getModelActions, getRedoFunction, getUndoFunction } from '@/building/store'
 import { getCurrentSelection, popSelection } from '@/editor/hooks/useSelectionStore'
-import { getActiveTool, popTool, replaceTool } from '@/editor/tools/system/store'
+import { getActiveTool, popTool, pushTool, replaceTool } from '@/editor/tools/system/store'
 
 import { TOOL_METADATA } from './metadata'
 import type { ShortcutDefinition, ToolId } from './types'
@@ -58,7 +58,7 @@ export class KeyboardShortcutManager {
     // Priority 4: Tool activation shortcuts
     const toolId = this.toolActivationShortcuts.get(key)
     if (toolId) {
-      replaceTool(toolId as ToolId)
+      pushTool(toolId as ToolId)
       return true
     }
 

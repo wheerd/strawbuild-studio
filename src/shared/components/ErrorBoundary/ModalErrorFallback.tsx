@@ -19,12 +19,10 @@ export function ModalErrorFallback({ error, resetErrorBoundary }: FallbackProps)
         </Callout.Text>
       </Callout.Root>
 
-      {resetErrorBoundary && (
-        <Button size="2" onClick={resetErrorBoundary}>
-          <ReloadIcon />
-          {t($ => $.modal.retry)}
-        </Button>
-      )}
+      <Button size="2" onClick={resetErrorBoundary}>
+        <ReloadIcon />
+        {t($ => $.modal.retry)}
+      </Button>
     </Flex>
   )
 }

@@ -1,5 +1,6 @@
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config/store'
+import { roughWood, woodwool } from '@/construction/materials/material'
 import { getSelectionActions } from '@/editor/hooks/useSelectionStore'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
 import { Bounds2D, newVec2, polygonIsClockwise } from '@/shared/geometry'
@@ -150,6 +151,36 @@ export function createRectangularPerimeter(): void {
       // Add all openings
       addDoors(newPerimeter, doorSpecs)
       addWindows(newPerimeter, windowSpecs)
+
+      // Add a wall post on wall 2 (top wall)
+      modelStore.addWallPost(newPerimeter.wallIds[2], {
+        centerOffsetFromWallStart: 3900, // middle of wall
+        width: 200,
+        thickness: 200,
+        postType: 'inside',
+        replacesPosts: true,
+        material: roughWood.id,
+        infillMaterial: woodwool.id
+      })
+
+      // Add a roof
+      const defaultRoofAssemblyId = configStore.getDefaultRoofAssemblyId()
+      modelStore.addRoof(
+        activeStoreyId,
+        'gable',
+        newPerimeter.outerPolygon,
+        0, // mainSideIndex
+        30, // slope degrees
+        0, // verticalOffset
+        500, // overhang
+        defaultRoofAssemblyId,
+        newPerimeter.id
+      )
+
+      // Add a floor opening (small rectangle in lower-left area)
+      modelStore.addFloorOpening(activeStoreyId, {
+        points: [newVec2(-3500, -2000), newVec2(-2500, -2000), newVec2(-2500, -1000), newVec2(-3500, -1000)]
+      })
 
       // Focus the view on the newly created test data
       const bounds = Bounds2D.fromPoints(newPerimeter.outerPolygon.points)

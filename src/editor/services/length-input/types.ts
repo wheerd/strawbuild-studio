@@ -4,9 +4,9 @@ import type { Length } from '@/shared/geometry'
  * Position for the length input component on screen
  */
 export interface LengthInputPosition {
-  /** X coordinate in pixels relative to the canvas */
+  /** X coordinate in pixels relative to the editor */
   x: number
-  /** Y coordinate in pixels relative to the canvas */
+  /** Y coordinate in pixels relative to the editor */
   y: number
 }
 

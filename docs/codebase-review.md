@@ -4,7 +4,7 @@
 
 - React 19 single-page app that loads the editor shell via suspense (`src/app/App.tsx`) and bootstraps theming, material styling, and service worker support in `src/app/main.tsx`.
 - Core state lives in Zustand stores with undo/redo, local persistence, and configuration repositories for materials, floors, ring beams, and wall assemblies.
-- Editors present a 2D plan canvas (Konva) backed by a modular tool system and provide SVG construction plans plus a Three.js 3D viewer generated from construction models.
+- Editors present a 2D plan canvas (SVG) backed by a modular tool system and provide SVG construction plans plus a Three.js 3D viewer generated from construction models.
 - Business logic focuses on generating wall segments, openings, ring beams, and floors for strawbale-centric construction strategies before merging them into renderable construction models.
 
 ## Architecture
@@ -13,7 +13,7 @@
 
 - `src/app/App.tsx` lazy-loads the editor while prefetching chunks via `startChunkPreloading` and shows a skeleton during suspense.
 - `src/app/main.tsx` wires Radix + next-themes providers, injects dynamic material CSS, subscribes to material updates, and registers the Workbox-powered service worker for offline readiness.
-- Vite configuration (`vite.config.ts`) adds custom HTML transforms for non-blocking CSS, PWA caching via `vite-plugin-pwa`, and manual chunking to isolate large vendors (Konva, Three).
+- Vite configuration (`vite.config.ts`) adds custom HTML transforms for non-blocking CSS, PWA caching via `vite-plugin-pwa`, and manual chunking to isolate large vendors (Three).
 
 ### State & Persistence
 
@@ -25,8 +25,8 @@
 
 ### Editor Experience
 
-- `src/editor/FloorPlanEditor.tsx` orchestrates the layout: toolbar, configuration modal, welcome modal, Konva stage, side inspector, and status bar. It manages viewport sizing, keyboard shortcuts, and focus handling.
-- Canvas rendering is handled by `FloorPlanStage` (`src/editor/canvas/layers/FloorPlanStage.tsx`), which translates Konva events into tool actions, supports wheel/pinch zoom, panning, and keeps pointer state in sync.
+- `src/editor/FloorPlanEditor.tsx` orchestrates the layout: toolbar, configuration modal, welcome modal, editor SVG viewport, side inspector, and status bar. It manages viewport sizing, keyboard shortcuts, and focus handling.
+- Canvas rendering is handled by `FloorPlanStage` (`src/editor/canvas/layers/FloorPlanStage.tsx`), which translates events into tool actions, supports wheel/pinch zoom, panning, and keeps pointer state in sync.
 - The tool system (`src/editor/tools/system/store.ts`) maintains a stack of active tools, offers programmatic push/pop/replace APIs, and routes pointer events to tool implementations described in `metadata.ts`.
 - Side panels and tool inspectors render tool-specific UI by reading the active tool’s inspector component (`src/editor/SidePanel.tsx`).
 
@@ -78,10 +78,9 @@
 ## Third-Party Dependencies
 
 | Package(s)                                                                             | Purpose in Project                                                         | Notes                                                                                                                         |
-| -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --- |
 | `react`, `react-dom`, `@radix-ui/react-*`, `@radix-ui/themes`, `tailwindcss`           | UI rendering, layout primitives, theming                                   | Radix provides consistent design tokens/components; Tailwind mainly supplies utility classes.                                 |
-| `zustand`, `zundo`, `immer`, `fast-deep-equal`, `throttle-debounce`                    | State management, undo/redo, persistence throttling                        | `zundo` wraps Zustand to capture history, `immer` simplifies mutations, `fast-deep-equal` prevents redundant history entries. |
-| `konva`, `react-konva`                                                                 | 2D canvas stage for the plan editor                                        | Provides performant vector drawing and event handling for tools.                                                              |
+| `zustand`, `zundo`, `immer`, `fast-deep-equal`, `throttle-debounce`                    | State management, undo/redo, persistence throttling                        | `zundo` wraps Zustand to capture history, `immer` simplifies mutations, `fast-deep-equal` prevents redundant history entries. |     |
 | `three`, `@react-three/fiber`, `@react-three/drei`                                     | 3D construction viewer                                                     | Lazy-loaded into a dedicated chunk; Drei supplies OrbitControls and exporters.                                                |
 | `gl-matrix`                                                                            | Vector/matrix math shared across geometry computations                     | Used heavily for vec2/vec3 operations, projections, and transformations.                                                      |
 | `clipper2-wasm`                                                                        | Polygon predicates, area/orientation, validity checks                      | For containment, winding order, area, and simplification helpers.                                                             |

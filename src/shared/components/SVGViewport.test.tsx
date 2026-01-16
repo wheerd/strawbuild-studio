@@ -68,7 +68,7 @@ describe('SVGViewport', () => {
     )
 
     const resetButton = screen.getByRole('button', { name: /app.fitToContent/i })
-    expect(resetButton).toHaveClass('bottom-2', 'left-2')
+    expect(resetButton.parentNode).toHaveClass('bottom-2', 'left-2')
   })
 
   test('fit to content button fits content when clicked', () => {

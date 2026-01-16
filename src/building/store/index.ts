@@ -40,6 +40,7 @@ import {
   isRoofOverhangId,
   isWallPostId
 } from '@/building/model/ids'
+import { assertUnreachable } from '@/shared/utils'
 
 import { CURRENT_VERSION, applyMigrations } from './migrations'
 import { getPersistenceActions } from './persistenceStore'
@@ -156,6 +157,7 @@ export const useStoreysOrderedByLevel = (): Storey[] => {
 }
 
 const nullGetter = () => null
+const emptyGeometry = {}
 
 export const useModelEntityById = (
   id: SelectableId | null
@@ -182,7 +184,8 @@ export const useModelEntityById = (
       if (isFloorOpeningId(id)) return state.floorOpenings[id]
       if (isRoofId(id)) return state.roofs[id]
       if (isRoofOverhangId(id)) return state.roofOverhangs[id]
-      throw new Error('Unsupported entity')
+      if (isOpeningId(id)) return state.openings[id]
+      assertUnreachable(id, `Unsupported entity: ${id}`)
     },
     [id]
   )
@@ -195,7 +198,7 @@ export const useModelEntityById = (
       if (isPerimeterWallId(id)) return state._perimeterWallGeometry[id]
       if (isPerimeterCornerId(id)) return state._perimeterCornerGeometry[id]
       if (isRoofOverhangId(id)) return state.roofOverhangs[id]
-      throw new Error('Unsupported entity')
+      return emptyGeometry
     },
     [id]
   )
@@ -211,7 +214,7 @@ export const useModelEntityById = (
       if (isFloorOpeningId(id)) return state.actions.getFloorOpeningById
       if (isRoofId(id)) return state.actions.getRoofById
       if (isRoofOverhangId(id)) return state.actions.getRoofOverhangById
-      return nullGetter
+      assertUnreachable(id, `Unsupported entity: ${id}`)
     },
     [id]
   )
