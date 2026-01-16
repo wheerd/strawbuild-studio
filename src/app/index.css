@@ -1,35 +1,12 @@
 @config "../../tailwind.config.js";
 @import 'tailwindcss';
 
-/* global.css */
-@font-face {
-  font-family: Inter;
-  src: url('/fonts/Inter-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: Inter;
-  src: url('/fonts/Inter-Medium.woff2') format('woff2');
-  font-weight: 500;
-}
-
-@font-face {
-  font-family: Inter;
-  src: url('/fonts/Inter-SemiBold.woff2') format('woff2');
-  font-weight: 600;
-}
-
-@font-face {
-  font-family: Inter;
-  src: url('/fonts/Inter-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-}
+@import './fonts.css';
 
 .radix-themes {
   --default-font-family: 'Inter', system-ui, sans-serif;
+  --heading-font-family: 'Inter', system-ui, sans-serif;
+  --code-font-family: 'JetBrains Mono', monospace;
   font-synthesis: none;
 }
 
