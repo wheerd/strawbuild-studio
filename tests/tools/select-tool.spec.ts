@@ -1,80 +1,113 @@
 import { expect, test } from '@playwright/test'
+
 import {
-  activateTool,
-  clickEditorAt,
   getEditorSvg,
+  getInspector,
   loadTestData,
+  pressKey,
   setupEditorPage,
   takeEditorScreenshot
 } from '../fixtures/editor'
 
 test.describe('Select Tool', () => {
-  test.beforeEach(async ({ page }) => {
-    test.setTimeout(60000)
+  test('complete journey: selection drill-down, inspectors, fit-to-view across view modes', async ({ page }) => {
+    test.setTimeout(120000)
     await setupEditorPage(page)
-
-    // Load test data with geometry to select
     await loadTestData(page, '▭ Rectangular Perimeter (8×5m)')
+    await pressKey(page, 'Escape') // Clear initial selection
+    await pressKey(page, 'F') // Fit to view to ensure entities are visible
 
-    // Ensure select tool is active (it's the default)
-    await activateTool(page, 'Select')
-  })
+    const inspector = getInspector(page)
+    const editorSvg = getEditorSvg(page)
+    const viewModeToggle = page.getByTestId('viewmode-toggle')
 
-  test('is active by default', async ({ page }) => {
-    // Select tool should be the default active tool
-    const selectButton = page.getByRole('button', { name: 'Select' })
-    await expect(selectButton).toHaveClass(/rt-variant-solid/)
-  })
+    // Helper to click fit-to-view and take screenshot
+    async function fitToViewAndScreenshot(name: string) {
+      await inspector.getByRole('button', { name: /fit to view/i }).click()
+      await takeEditorScreenshot(page, name)
+      await pressKey(page, 'F') // Reset view
+    }
 
-  test('activates from toolbar', async ({ page }) => {
-    // First switch to another tool
-    await activateTool(page, 'Move')
+    // === PHASE 1: Wall Mode - Opening drill-down ===
 
-    // Then switch back to select
-    await activateTool(page, 'Select')
+    // Click on an opening - first click selects perimeter
+    await editorSvg.locator('[data-entity-type="opening"]').first().click()
+    await expect(inspector).toHaveScreenshot('01-perimeter-inspector.png')
+    await fitToViewAndScreenshot('02-perimeter-fit-to-view.png')
 
-    // Verify select is active (has solid variant class)
-    const selectButton = page.getByRole('button', { name: 'Select' })
-    await expect(selectButton).toHaveClass(/rt-variant-solid/)
-  })
+    // Click again - selects wall
+    await editorSvg.locator('[data-entity-type="opening"]').first().click()
+    await expect(inspector).toHaveScreenshot('03-wall-inspector.png')
+    await fitToViewAndScreenshot('04-wall-fit-to-view.png')
 
-  test('selects wall on click', async ({ page }) => {
-    // Click on a wall segment (center of the rectangular perimeter)
-    await clickEditorAt(page, 425, 350)
+    // Click again - selects opening
+    await editorSvg.locator('[data-entity-type="opening"]').first().click()
+    await expect(inspector).toHaveScreenshot('05-opening-inspector.png')
+    await fitToViewAndScreenshot('06-opening-fit-to-view.png')
 
-    // Screenshot showing selection highlight
-    await takeEditorScreenshot(page, 'select-wall-selected.png')
-  })
+    // === PHASE 2: Opening - ClickableLengthIndicator interaction ===
 
-  test('shows selection overlay for selected entity', async ({ page }) => {
-    // Click to select a wall
-    await clickEditorAt(page, 425, 400)
+    // Hover over a length indicator (the SVG g element with cursor: pointer style)
+    const lengthIndicator = editorSvg.getByTestId('clickable-length-indicator').first()
+    await lengthIndicator.hover()
+    await takeEditorScreenshot(page, '07-opening-length-hover.png')
 
-    // Verify selection overlay is visible (use first() since there may be multiple overlay groups)
-    await expect(getEditorSvg(page).locator('[data-layer="selection-overlay"]').first()).toBeVisible()
+    // Click the length indicator to open the input
+    await lengthIndicator.click()
+    await takeEditorScreenshot(page, '08-opening-length-input.png')
 
-    // Screenshot showing selection overlay
-    await takeEditorScreenshot(page, 'select-overlay-visible.png')
-  })
+    // Type a new value and press Enter
+    const lengthInput = page.getByPlaceholder('Enter distance...')
+    await lengthInput.fill('1.5m')
+    await lengthInput.press('Enter')
+    await takeEditorScreenshot(page, '09-opening-moved.png')
 
-  test('deselects on click elsewhere', async ({ page }) => {
-    // First select a wall
-    await clickEditorAt(page, 425, 350)
+    // === PHASE 3: Corner Selection ===
 
-    // Then click on empty area
-    await clickEditorAt(page, 200, 200)
+    // Click on a corner - selects corner
+    await editorSvg.locator('[data-entity-type="perimeter-corner"]').first().click()
+    await expect(inspector).toHaveScreenshot('10-corner-inspector.png')
+    await fitToViewAndScreenshot('11-corner-fit-to-view.png')
 
-    // Screenshot showing deselected state
-    await takeEditorScreenshot(page, 'select-deselected.png')
-  })
+    // Click "Switch main wall" button and screenshot
+    const switchMainWallButton = inspector.getByRole('button', { name: /switch main wall/i })
+    await expect(switchMainWallButton).toBeEnabled()
+    await switchMainWallButton.click()
+    await takeEditorScreenshot(page, '12-corner-switched.png')
 
-  test('can select different entity types', async ({ page }) => {
-    // Click on top wall
-    await clickEditorAt(page, 425, 250)
-    await takeEditorScreenshot(page, 'select-top-wall.png')
+    // === PHASE 4: Wall Post Selection ===
 
-    // Click on side wall
-    await clickEditorAt(page, 550, 325)
-    await takeEditorScreenshot(page, 'select-side-wall.png')
+    // Click on wall post 2 times to drill down (already same perimeter so first click selects wall)
+    await editorSvg.locator('[data-entity-type="wall-post"]').first().click()
+    await editorSvg.locator('[data-entity-type="wall-post"]').first().click()
+    await expect(inspector).toHaveText(/post material/i)
+    await expect(inspector).toHaveScreenshot('13-wall-post-inspector.png')
+    await fitToViewAndScreenshot('14-wall-post-fit-to-view.png')
+
+    // === PHASE 5: Roof Mode ===
+
+    await viewModeToggle.getByRole('radio', { name: 'Roofs' }).click()
+    await editorSvg.locator('[data-entity-type="roof"]').first().click()
+    await expect(inspector).toHaveScreenshot('15-roof-inspector.png')
+    await fitToViewAndScreenshot('16-roof-fit-to-view.png')
+
+    // Click on roof overhang to drill down
+    await editorSvg.locator('[data-entity-type="roof-overhang"]').first().click()
+    await expect(inspector).toHaveScreenshot('17-roof-overhang-inspector.png')
+    await fitToViewAndScreenshot('18-roof-overhang-fit-to-view.png')
+
+    // === PHASE 7: Floor Mode ===
+
+    await viewModeToggle.getByRole('radio', { name: 'Floors' }).click()
+    await editorSvg.locator('[data-entity-type="floor-opening"]').first().click()
+    await expect(inspector).toHaveScreenshot('19-floor-opening-inspector.png')
+    await inspector.getByRole('button', { name: /fit to view/i }).click()
+    await takeEditorScreenshot(page, '20-floor-opening-fit-to-view.png')
+
+    // === PHASE 8: Storey Inspector ===
+
+    await editorSvg.click({ position: { x: 1, y: 1 } })
+    await expect(inspector).toHaveText(/Ground Floor/i)
+    await expect(inspector).toHaveScreenshot('21-storey-inspector.png')
   })
 })

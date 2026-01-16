@@ -130,6 +130,7 @@ export function ClickableLengthIndicator({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
+      data-testid="clickable-length-indicator"
     >
       {/* Invisible hit area covering the entire indicator */}
       <polygon points={hitAreaPoints} fill="transparent" stroke="transparent" />

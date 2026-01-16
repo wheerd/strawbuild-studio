@@ -25,7 +25,7 @@ export function SelectionOutline({ points }: { points: Vec2[] }): React.JSX.Elem
       strokeDasharray={dashPattern}
       strokeLinecap="round"
       opacity={0.8}
-      className="pointer-events-none"
+      pointerEvents="none"
     />
   )
 }

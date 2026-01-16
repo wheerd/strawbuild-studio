@@ -122,6 +122,7 @@ export type EntityType =
   | 'floor-area'
   | 'floor-opening'
   | 'roof'
+  | 'roof-overhang'
 
 export type WallId = PerimeterWallId | IntermediateWallId
 export type NodeId = PerimeterCornerId | WallNodeId
