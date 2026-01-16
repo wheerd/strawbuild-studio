@@ -74,7 +74,6 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
           opacity={0.5}
           strokeWidth={8}
           strokeDasharray="20 20"
-          className="pointer-events-none"
         />
       )}
 

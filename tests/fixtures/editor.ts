@@ -71,10 +71,7 @@ export async function activateTool(
 /**
  * Load test data from the test data tool
  */
-export async function loadTestData(
-  page: Page,
-  presetName: string
-): Promise<void> {
+export async function loadTestData(page: Page, presetName: string): Promise<void> {
   await activateTool(page, 'Test Data')
   await page.getByRole('button', { name: presetName }).click()
 }
@@ -83,14 +80,12 @@ export async function loadTestData(
  * Take a screenshot of the editor SVG area
  * Uses the hide-overlays.css to remove UI chrome
  */
-export async function takeEditorScreenshot(
-  page: Page,
-  name: string
-): Promise<void> {
+export async function takeEditorScreenshot(page: Page, name: string, maxDiffPixelRatio?: number): Promise<void> {
   await expect(getEditorSvg(page)).toHaveScreenshot(name, {
     animations: 'disabled',
     scale: 'css',
-    stylePath: path.resolve(import.meta.dirname, '../hide-overlays.css')
+    stylePath: path.resolve(import.meta.dirname, '../hide-overlays.css'),
+    maxDiffPixelRatio
   })
 }
 
@@ -117,6 +112,25 @@ export async function dragInEditor(
   await page.mouse.down()
   await page.mouse.move(box.x + to.x, box.y + to.y)
   await page.mouse.up()
+}
+
+/**
+ * Drag from one position to another in the editor SVG
+ */
+export async function dragEntityInEditor(
+  page: Page,
+  entity: Locator,
+  delta: { dx: number; dy: number }
+): Promise<void> {
+  const box = await entity.boundingBox()
+  if (!box) throw new Error('Could not get entity bounding box')
+
+  const centerX = box.x + box.width / 2
+  const centerY = box.y + box.height / 2
+  await entity.hover({ position: { x: box.width / 2, y: box.height / 2 } })
+  // await page.mouse.move(centerX, centerY)
+  await page.mouse.down()
+  await page.mouse.move(centerX + delta.dx, centerY + delta.dy, { steps: 3 })
 }
 
 /**

@@ -16,7 +16,7 @@ import { ConstructionPartsListModal } from '@/construction/components/parts/Cons
 import { useConfigurationModal } from '@/construction/config/context/ConfigurationModalContext'
 import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
 import { TOOL_GROUPS, getToolInfoById } from '@/editor/tools/system/metadata'
-import { replaceTool, useActiveToolId } from '@/editor/tools/system/store'
+import { pushTool, useActiveToolId } from '@/editor/tools/system/store'
 import type { ToolId } from '@/editor/tools/system/types'
 import { ConstructionPlanIcon, Model3DIcon } from '@/shared/components/Icons'
 import { Logo } from '@/shared/components/Logo'
@@ -37,7 +37,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
   const perimeters = usePerimeters()
 
   const handleToolSelect = useCallback((toolId: ToolId) => {
-    replaceTool(toolId)
+    pushTool(toolId)
   }, [])
 
   return (

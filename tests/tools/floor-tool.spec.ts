@@ -3,7 +3,6 @@ import { expect, test } from '@playwright/test'
 import {
   activateTool,
   clickEditorAt,
-  loadTestData,
   moveMouseTo,
   pressKey,
   setupEditorPage,
@@ -16,8 +15,6 @@ test.describe('Floor Opening Tool', () => {
 
     // Setup: Load rectangular perimeter test data
     await setupEditorPage(page)
-    await loadTestData(page, '▭ Rectangular Perimeter (8×5m)')
-    await pressKey(page, 'Escape')
 
     // Step 1: Activate tool and verify inspector
     await activateTool(page, 'Floor Opening')
