@@ -34,15 +34,15 @@ test.describe('Add Opening Tool', () => {
     await expect(inspector.getByText('Presets')).toBeVisible()
 
     // Step 3: Screenshot inspector with Standard Door preset (default)
-    // await expect(inspector).toHaveScreenshot('01-inspector-door-preset.png')
+    await expect(inspector).toHaveScreenshot('01-inspector-door-preset.png')
 
     // Step 4: Select Small Window preset and screenshot
     await inspector.getByRole('button', { name: 'Small Window' }).click()
-    // await expect(inspector).toHaveScreenshot('02-inspector-small-window-preset.png')
+    await expect(inspector).toHaveScreenshot('02-inspector-small-window-preset.png')
 
     // Step 5: Select Floor Window preset and screenshot
     await inspector.getByRole('button', { name: 'Floor Window' }).click()
-    // await expect(inspector).toHaveScreenshot('03-inspector-floor-window-preset.png')
+    await expect(inspector).toHaveScreenshot('03-inspector-floor-window-preset.png')
 
     // Step 6: Place first opening (Floor Window)
     // Hover near the end of the bottom wall to show snapping to wall end

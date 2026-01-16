@@ -107,6 +107,6 @@ test.describe('Perimeter Tool', () => {
     // Verify wall assembly shows Strawhenge
     await expect(inspector.getByText('Strawhenge')).toBeVisible()
 
-    // await expect(inspector).toHaveScreenshot('11-selected-inspector.png')
+    await expect(inspector).toHaveScreenshot('11-selected-inspector.png')
   })
 })
