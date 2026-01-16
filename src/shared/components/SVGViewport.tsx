@@ -8,6 +8,7 @@ import { type Bounds2D } from '@/shared/geometry'
 export interface SVGViewportRef {
   fitToContent: () => void
   zoomToBounds: (bounds: Bounds2D, options?: { padding?: number; animate?: boolean }) => void
+  screenToWorld: (screenX: number, screenY: number) => { x: number; y: number } | null
 }
 
 interface SVGViewportProps extends RefAttributes<SVGViewportRef> {
@@ -130,13 +131,39 @@ export function SVGViewport({
     [svgSize.width, svgSize.height]
   )
 
+  // Convert screen coordinates to SVG viewBox coordinates
+  const screenToSVG = useCallback((screenX: number, screenY: number) => {
+    if (!svgRef.current) return null
+
+    const pt = svgRef.current.createSVGPoint()
+    pt.x = screenX
+    pt.y = screenY
+    const ctm = svgRef.current.getScreenCTM()
+    if (!ctm) return null
+
+    const svgPt = pt.matrixTransform(ctm.inverse())
+    return { x: svgPt.x, y: svgPt.y }
+  }, [])
+
+  const screenToWorld = useCallback(
+    (screenX: number, screenY: number) => {
+      const svgCoords = screenToSVG(screenX, screenY)
+      if (!svgCoords) return null
+      const x = (svgCoords.x - viewport.panX) / viewport.zoom
+      const y = (svgCoords.y - viewport.panY) / viewport.zoom
+      return { x, y }
+    },
+    [viewport]
+  )
+
   useImperativeHandle(
     ref,
     () => ({
       fitToContent,
-      zoomToBounds
+      zoomToBounds,
+      screenToWorld
     }),
-    [fitToContent, zoomToBounds]
+    [fitToContent, zoomToBounds, screenToWorld]
   )
 
   // Auto-fit when contentBounds or svgSize changes
@@ -153,20 +180,6 @@ export function SVGViewport({
 
   // Fixed viewBox based on SVG size
   const viewBox = `0 0 ${svgSize.width || 100} ${svgSize.height || 100}`
-
-  // Convert screen coordinates to SVG viewBox coordinates
-  const screenToSVG = useCallback((screenX: number, screenY: number) => {
-    if (!svgRef.current) return null
-
-    const pt = svgRef.current.createSVGPoint()
-    pt.x = screenX
-    pt.y = screenY
-    const ctm = svgRef.current.getScreenCTM()
-    if (!ctm) return null
-
-    const svgPt = pt.matrixTransform(ctm.inverse())
-    return { x: svgPt.x, y: svgPt.y }
-  }, [])
 
   // Handle wheel zoom with constraints
   const handleWheel = useCallback(
@@ -366,14 +379,11 @@ export function SVGViewport({
         <g transform={transform}>{children}</g>
       </svg>
 
-      <IconButton
-        variant="surface"
-        onClick={fitToContent}
-        className={`absolute ${getResetButtonPosition(resetButtonPosition)}`}
-        title={t($ => $.app.fitToContent)}
-      >
-        <AllSidesIcon />
-      </IconButton>
+      <div className={`absolute ${getResetButtonPosition(resetButtonPosition)}`}>
+        <IconButton variant="surface" onClick={fitToContent} title={t($ => $.app.fitToContent)}>
+          <AllSidesIcon />
+        </IconButton>
+      </div>
     </div>
   )
 }

@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.playwright.tsbuildinfo",
+
+    /* Language & runtime */
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+
+    /* Node / Playwright environment */
+    "moduleResolution": "bundler",
+    "types": ["node", "@playwright/test"],
+
+    /* Type checking */
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+
+    /* Module behavior */
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+
+    /* Linting */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+
+  "include": ["tests/**/*.ts", "playwright.config.ts"]
+}

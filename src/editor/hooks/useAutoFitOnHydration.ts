@@ -23,7 +23,7 @@ export function useAutoFitOnHydration(): void {
           const bounds = Bounds2D.fromPoints(outerPoints)
           viewportActions().fitToView(bounds)
         }
-      }, 100) // Small delay so that the viewport canvas size has time to adjust
+      }, 100) // Small delay so that the viewport size has time to adjust
     }
   }, [isHydrated])
 }

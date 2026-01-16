@@ -1,19 +1,15 @@
-import { Group, Line } from 'react-konva/lib/ReactKonvaCore'
-
-import { ClickableLengthIndicator } from '@/editor/canvas/utils/ClickableLengthIndicator'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { activateLengthInput } from '@/editor/services/length-input'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolOverlayComponentProps } from '@/editor/tools/system/types'
+import { ClickableLengthIndicator } from '@/editor/utils/ClickableLengthIndicator'
 import { type Vec2, distVec2, midpoint, scaleAddVec2 } from '@/shared/geometry'
-import { useCanvasTheme } from '@/shared/theme/CanvasThemeContext'
 
 import type { SplitWallTool } from './SplitWallTool'
 
 export function SplitWallToolOverlay({ tool }: ToolOverlayComponentProps<SplitWallTool>): React.JSX.Element | null {
   const { state } = useReactiveTool(tool)
-  const theme = useCanvasTheme()
   const { wall, startCorner, endCorner } = state
   const { worldToStage } = useViewportActions()
   const isCurrentSelection = useSelectionStore(s => s.isCurrentSelection)
@@ -28,7 +24,7 @@ export function SplitWallToolOverlay({ tool }: ToolOverlayComponentProps<SplitWa
     const dist = distVec2(start, end)
     activateLengthInput({
       showImmediately: true,
-      position: { x: stagePos.x + 20, y: stagePos.y - 30 },
+      position: { x: stagePos[0] + 20, y: stagePos[0] - 30 },
       initialValue: dist,
       onCommit: enteredValue => {
         const rawDelta = enteredValue - dist
@@ -56,30 +52,34 @@ export function SplitWallToolOverlay({ tool }: ToolOverlayComponentProps<SplitWa
 
   // Colors based on validation state
   const isWallSelected = state.selectedWallId ? isCurrentSelection(state.selectedWallId) : false
-  const hoverColor = state.isValidHover ? (isWallSelected ? theme.secondary : theme.primary) : theme.danger
-  const splitColor = state.isValidSplit ? theme.success : theme.danger
+  const hoverColor = state.isValidHover ? (isWallSelected ? 'var(--gray-9)' : 'var(--accent-9)') : 'var(--red-9)'
+  const splitColor = state.isValidSplit ? 'var(--green-9)' : 'var(--red-9)'
 
   return (
-    <Group>
+    <g pointerEvents="none">
       {/* Hover Line (perpendicular to wall) */}
       {insideHover && outsideHover ? (
-        <Line
-          points={[insideHover[0], insideHover[1], outsideHover[0], outsideHover[1]]}
+        <line
+          x1={insideHover[0]}
+          y1={insideHover[1]}
+          x2={outsideHover[0]}
+          y2={outsideHover[1]}
           stroke={hoverColor}
           strokeWidth={20}
-          dash={[50, 50]}
-          listening={false}
+          strokeDasharray="50 50"
         />
       ) : null}
 
       {insideSplit && outsideSplit ? (
         <>
           {/* Split Line (perpendicular to wall) */}
-          <Line
-            points={[insideSplit[0], insideSplit[1], outsideSplit[0], outsideSplit[1]]}
+          <line
+            x1={insideSplit[0]}
+            y1={insideSplit[1]}
+            x2={outsideSplit[0]}
+            y2={outsideSplit[1]}
             stroke={splitColor}
             strokeWidth={30}
-            listening={false}
           />
 
           {/* Clickable Distance Measurements */}
@@ -109,6 +109,6 @@ export function SplitWallToolOverlay({ tool }: ToolOverlayComponentProps<SplitWa
           />
         </>
       ) : null}
-    </Group>
+    </g>
   )
 }

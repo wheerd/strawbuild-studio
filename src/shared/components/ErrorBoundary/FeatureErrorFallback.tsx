@@ -32,12 +32,11 @@ export function FeatureErrorFallback({ error, resetErrorBoundary }: FallbackProp
       </Callout.Root>
 
       <Flex gap="2" style={{ width: '100%', maxWidth: '500px' }}>
-        {resetErrorBoundary && (
-          <Button size="2" onClick={resetErrorBoundary} style={{ flex: 1 }}>
-            <ReloadIcon />
-            {t($ => $.feature.retry)}
-          </Button>
-        )}
+        <Button size="2" onClick={resetErrorBoundary} style={{ flex: 1 }}>
+          <ReloadIcon />
+          {t($ => $.feature.retry)}
+        </Button>
+
         <Button
           size="2"
           variant="soft"

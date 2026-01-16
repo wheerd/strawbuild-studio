@@ -85,6 +85,7 @@ export default defineConfig(
     files: [
       '**/*.test.ts',
       '**/*.test.tsx',
+      '**/*.spec.ts',
       '**/test/**/*.ts',
       '**/test/**/*.tsx',
       '**/__tests__/**/*.ts',
@@ -108,7 +109,8 @@ export default defineConfig(
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/unbound-method': 'off'
+      '@typescript-eslint/unbound-method': 'off',
+      'no-restricted-imports': 'off'
     }
   }
 )

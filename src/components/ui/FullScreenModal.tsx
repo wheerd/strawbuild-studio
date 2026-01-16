@@ -64,7 +64,7 @@ export function FullScreenModal({
             >
               <div className="flex items-center gap-2">
                 {titleIcon}
-                <DialogPrimitive.Title className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+                <DialogPrimitive.Title className="text-lg font-semibold" style={{ color: 'var(--gray-12)' }}>
                   {title}
                 </DialogPrimitive.Title>
               </div>
@@ -72,7 +72,7 @@ export function FullScreenModal({
               <DialogPrimitive.Close
                 className="rounded-sm opacity-70 hover:opacity-100 transition-opacity h-8 w-8 inline-flex items-center justify-center"
                 style={{
-                  color: 'var(--color-text)'
+                  color: 'var(--gray-12)'
                 }}
               >
                 <Cross2Icon className="h-4 w-4" />

@@ -18,8 +18,8 @@ interface ViewportActions {
   zoomBy: (factor: number) => number
   panBy: (deltaX: number, deltaY: number) => void
 
-  worldToStage: (worldPos: Vec2) => { x: number; y: number }
-  stageToWorld: (stagePos: { x: number; y: number }) => Vec2
+  worldToStage: (worldPos: Vec2) => Vec2
+  stageToWorld: (stagePos: Vec2) => Vec2
   fitToView: (bounds: Bounds2D) => void
 
   reset: () => void
@@ -77,17 +77,14 @@ const viewportStore = create<ViewportStore>()((set, get) => ({
       })
     },
 
-    worldToStage: (worldPos: Vec2): { x: number; y: number } => {
+    worldToStage: (worldPos: Vec2): Vec2 => {
       const viewport = get()
-      return {
-        x: worldPos[0] * viewport.zoom + viewport.panX,
-        y: -(worldPos[1] * viewport.zoom) + viewport.panY
-      }
+      return newVec2(worldPos[0] * viewport.zoom + viewport.panX, -(worldPos[1] * viewport.zoom) + viewport.panY)
     },
 
-    stageToWorld: (stagePos: { x: number; y: number }): Vec2 => {
+    stageToWorld: (stagePos: Vec2): Vec2 => {
       const viewport = get()
-      return newVec2((stagePos.x - viewport.panX) / viewport.zoom, -(stagePos.y - viewport.panY) / viewport.zoom)
+      return newVec2((stagePos[0] - viewport.panX) / viewport.zoom, -(stagePos[1] - viewport.panY) / viewport.zoom)
     },
 
     fitToView: (bounds: Bounds2D): void => {

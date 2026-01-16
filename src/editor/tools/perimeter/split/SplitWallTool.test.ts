@@ -23,11 +23,6 @@ vi.mock('@/editor/hooks/useSelectionStore', () => ({
 vi.mock('@/editor/services/length-input', () => ({
   activateLengthInput: vi.fn()
 }))
-vi.mock('@/editor/canvas/services/EntityHitTestService', () => ({
-  entityHitTestService: {
-    findEntityAt: vi.fn()
-  }
-}))
 vi.mock('@/editor/tools/system', () => ({
   getToolActions: vi.fn(() => ({
     popTool: vi.fn(),

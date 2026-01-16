@@ -1,6 +1,5 @@
 import type { IconProps } from '@radix-ui/react-icons/dist/types'
 import type { Resources } from 'i18next'
-import type Konva from 'konva'
 import React from 'react'
 
 import { type Vec2 } from '@/shared/geometry'
@@ -56,9 +55,9 @@ export interface ToolImplementation {
   onRenderNeeded?(listener: () => void): () => void
 
   // Event handlers
-  handlePointerDown?(event: CanvasEvent): boolean
-  handlePointerMove?(event: CanvasEvent): boolean
-  handlePointerUp?(event: CanvasEvent): boolean
+  handlePointerDown?(event: EditorEvent): boolean
+  handlePointerMove?(event: EditorEvent): boolean
+  handlePointerUp?(event: EditorEvent): boolean
   handleKeyDown?(event: KeyboardEvent): boolean
   handleKeyUp?(event: KeyboardEvent): boolean
 
@@ -95,11 +94,9 @@ export interface ShortcutDefinition {
   label?: string // For UI display
 }
 
-export interface CanvasEvent {
+export interface EditorEvent {
   type: 'pointerdown' | 'pointermove' | 'pointerup' | 'wheel'
   originalEvent: PointerEvent | WheelEvent
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  konvaEvent: Konva.KonvaEventObject<any>
-  stageCoordinates: Vec2 // Transformed coordinates (accounting for pan/zoom)
-  pointerCoordinates?: { x: number; y: number } // Original pointer coordinates for hit testing
+  worldCoordinates: Vec2 // Transformed coordinates (accounting for pan/zoom)
+  stageCoordinates: Vec2
 }

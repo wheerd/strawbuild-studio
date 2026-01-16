@@ -47,9 +47,9 @@ export type SelectableId =
   | WallPostId
   | RoofId
   | RoofOverhangId
-  | RoomId
-  | WallNodeId
-  | IntermediateWallId
+// | RoomId
+// | WallNodeId
+// | IntermediateWallId
 
 // Config ids
 export type RingBeamAssemblyId = `${typeof RING_BEAM_ID_PREFIX}${string}`
@@ -122,6 +122,7 @@ export type EntityType =
   | 'floor-area'
   | 'floor-opening'
   | 'roof'
+  | 'roof-overhang'
 
 export type WallId = PerimeterWallId | IntermediateWallId
 export type NodeId = PerimeterCornerId | WallNodeId

@@ -57,7 +57,6 @@ export function StoreyListItem({
 
   const handleNameSave = useCallback(() => {
     if (editName.trim() !== storeyName && editName.trim() !== '') {
-      console.log('update', editName, storeyName, storey)
       try {
         updateStoreyName(storey.id, editName.trim())
       } catch (error) {

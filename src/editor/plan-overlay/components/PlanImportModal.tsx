@@ -1,14 +1,15 @@
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import { Label } from '@radix-ui/react-label'
 import { Button, Flex, Grid, Separator, Text, Tooltip } from '@radix-ui/themes'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { StoreyId } from '@/building/model/ids'
+import { FullScreenModal } from '@/components/ui/FullScreenModal'
 import { PlanCalibrationCanvas } from '@/editor/plan-overlay/components/PlanCalibrationCanvas'
 import { useFloorPlanActions } from '@/editor/plan-overlay/store'
 import type { FloorPlanOverlay, ImagePoint } from '@/editor/plan-overlay/types'
 import { calculatePixelDistance } from '@/editor/plan-overlay/utils/calibration'
-import { BaseModal } from '@/shared/components/BaseModal'
 import { LengthField } from '@/shared/components/LengthField'
 import { useFormatters } from '@/shared/i18n/useFormatters'
 
@@ -216,38 +217,40 @@ export function PlanImportModal({
   const showOriginHint = selectionMode === 'origin'
 
   return (
-    <BaseModal
+    <FullScreenModal
       open={open}
       onOpenChange={onOpenChange}
       title={existingPlan ? t($ => $.planImport.titleExisting) : t($ => $.planImport.titleNew)}
-      maxWidth="720px"
     >
-      <Flex direction="column" gap="4">
-        <Flex direction="column" gap="2">
-          <Text weight="medium">{t($ => $.planImport.step1.title)}</Text>
-          {existingPlan && !file ? (
-            <Text size="2" color="gray">
-              {t($ => $.planImport.step1.currentImage, {
-                name: existingPlan.image.name
-              })}
-            </Text>
-          ) : (
-            <Text size="2" color="gray">
-              {t($ => $.planImport.step1.uploadHint)}
-            </Text>
-          )}
-          <input type="file" accept="image/*" onChange={handleFileChange} />
-        </Flex>
+      <Grid columns="30em 1fr" gapX="2" height="100%">
+        <Flex direction="column" gap="3">
+          <Flex direction="column" gap="2">
+            <Text weight="medium">{t($ => $.planImport.step1.title)}</Text>
+            {existingPlan && !file ? (
+              <Text size="2" color="gray">
+                {t($ => $.planImport.step1.currentImage, {
+                  name: existingPlan.image.name
+                })}
+              </Text>
+            ) : (
+              <Text size="2" color="gray">
+                {t($ => $.planImport.step1.uploadHint)}
+              </Text>
+            )}
+            <Button asChild>
+              <Label htmlFor="fileInput">{t($ => $.planImport.step1.uploadButton)}</Label>
+            </Button>
+            <input id="fileInput" type="file" accept="image/*" onChange={handleFileChange} className="opacity-0 h-0" />
+          </Flex>
 
-        <Separator />
+          <Separator size="4" />
 
-        <Flex direction="column" gap="2">
-          <Text weight="medium">{t($ => $.planImport.step2.title)}</Text>
-          <Flex align="baseline" justify="between">
-            <Text size="2" color="gray">
-              {t($ => $.planImport.step2.instructions)}
-            </Text>
-            <Flex gap="2">
+          <Flex direction="column" gap="2">
+            <Text weight="medium">{t($ => $.planImport.step2.title)}</Text>
+            <Flex align="baseline" justify="between">
+              <Text size="2" color="gray">
+                {t($ => $.planImport.step2.instructions)}
+              </Text>
               <Button
                 size="1"
                 variant="soft"
@@ -259,121 +262,108 @@ export function PlanImportModal({
                 {t($ => $.planImport.step2.clearPoints)}
               </Button>
             </Flex>
+
+            <Flex justify="between">
+              <Flex direction="row" gap="1" align="center">
+                <Text weight="medium" size="2">
+                  {t($ => $.planImport.step2.realDistance)}
+                </Text>
+                <LengthField
+                  value={realDistance}
+                  onCommit={handleDistanceCommit}
+                  unit="m"
+                  min={1}
+                  max={1000_000}
+                  precision={3}
+                  style={{ width: '7em' }}
+                />
+              </Flex>
+
+              <Flex direction="row" gap="1" align="center" justify="end">
+                <Text weight="medium" size="2">
+                  {t($ => $.planImport.step2.scale)}
+                </Text>
+                <Text size="2" color="gray">
+                  {mmPerPixel
+                    ? t($ => $.planImport.step2.scaleValue, {
+                        distance: formatLength(mmPerPixel)
+                      })
+                    : t($ => $.planImport.step2.scalePlaceholder)}
+                </Text>
+                {pixelDistanceWarning && (
+                  <Tooltip content={pixelDistanceWarning}>
+                    <ExclamationTriangleIcon width={20} height={20} style={{ color: 'var(--amber-9)' }} />
+                  </Tooltip>
+                )}
+              </Flex>
+            </Flex>
           </Flex>
 
-          <PlanCalibrationCanvas
-            image={imageElement}
-            referencePoints={referencePoints}
-            onReferencePointsChange={setReferencePoints}
-            originPoint={originPoint}
-            onOriginPointChange={handleOriginPointChange}
-            mode={selectionMode}
-          />
+          <Separator size="4" />
 
-          <Grid columns="1fr 1fr 1fr" align="center" gap="3">
-            <Flex direction="row" gap="1" align="center">
-              <Text weight="medium" size="2">
-                {t($ => $.planImport.step2.realDistance)}
-              </Text>
-              <LengthField
-                value={realDistance}
-                onCommit={handleDistanceCommit}
-                unit="m"
-                min={1}
-                max={1000_000}
-                precision={3}
-                style={{ width: '7em' }}
-              />
-            </Flex>
+          <Flex direction="column" gap="2">
+            <Text weight="medium">{t($ => $.planImport.step3.title)}</Text>
+            <Text size="2" color="gray">
+              {t($ => $.planImport.step3.instructions)}
+            </Text>
 
-            <Flex align="center" gap="1" justify="center">
-              <Text weight="medium" size="2">
-                {t($ => $.planImport.step2.pixelDistance)}
-              </Text>
-              <Text size="2" color="gray">
-                {pixelDistance ? `${pixelDistance.toFixed(1)} px` : t($ => $.planImport.step2.pixelDistancePlaceholder)}
-              </Text>
-              {pixelDistanceWarning && (
-                <Tooltip content={pixelDistanceWarning}>
-                  <ExclamationTriangleIcon width={20} height={20} style={{ color: 'var(--amber-9)' }} />
-                </Tooltip>
+            <Flex gap="3" align="center">
+              <Tooltip
+                content={showOriginHint ? t($ => $.planImport.step3.clickHint) : t($ => $.planImport.step3.pickHint)}
+              >
+                <Button
+                  size="1"
+                  variant={showOriginHint ? 'solid' : 'soft'}
+                  onClick={handleSelectOriginClick}
+                  disabled={!imageElement}
+                >
+                  {showOriginHint
+                    ? t($ => $.planImport.step3.clickImage)
+                    : originPoint
+                      ? t($ => $.planImport.step3.changeOrigin)
+                      : t($ => $.planImport.step3.pickOrigin)}
+                </Button>
+              </Tooltip>
+
+              {originPoint && (
+                <Button
+                  size="1"
+                  variant="ghost"
+                  onClick={() => {
+                    setOriginPoint(null)
+                  }}
+                >
+                  {t($ => $.planImport.step3.clearOrigin)}
+                </Button>
               )}
             </Flex>
+          </Flex>
 
-            <Flex direction="row" gap="1" align="center" justify="end">
-              <Text weight="medium" size="2">
-                {t($ => $.planImport.step2.scale)}
-              </Text>
-              <Text size="2" color="gray">
-                {mmPerPixel
-                  ? t($ => $.planImport.step2.scaleValue, {
-                      distance: formatLength(mmPerPixel)
-                    })
-                  : t($ => $.planImport.step2.scalePlaceholder)}
-              </Text>
-            </Flex>
-          </Grid>
-        </Flex>
-
-        <Separator />
-
-        <Flex direction="column" gap="2">
-          <Text weight="medium">{t($ => $.planImport.step3.title)}</Text>
-          <Text size="2" color="gray">
-            {t($ => $.planImport.step3.instructions)}
-          </Text>
-
-          <Flex gap="3" align="center">
-            <Tooltip
-              content={showOriginHint ? t($ => $.planImport.step3.clickHint) : t($ => $.planImport.step3.pickHint)}
-            >
+          <Flex justify="between" align="center">
+            <Flex gap="2">
               <Button
-                size="1"
-                variant={showOriginHint ? 'solid' : 'soft'}
-                onClick={handleSelectOriginClick}
-                disabled={!imageElement}
-              >
-                {showOriginHint
-                  ? t($ => $.planImport.step3.clickImage)
-                  : originPoint
-                    ? t($ => $.planImport.step3.changeOrigin)
-                    : t($ => $.planImport.step3.pickOrigin)}
-              </Button>
-            </Tooltip>
-
-            {originPoint && (
-              <Button
-                size="1"
-                variant="ghost"
+                variant="soft"
                 onClick={() => {
-                  setOriginPoint(null)
+                  onOpenChange(false)
                 }}
               >
-                {t($ => $.planImport.step3.clearOrigin)}
+                {t($ => $.planImport.footer.cancel)}
               </Button>
-            )}
+              <Button onClick={handleSubmit} disabled={!canSubmit}>
+                {existingPlan ? t($ => $.planImport.footer.replacePlan) : t($ => $.planImport.footer.addPlan)}
+              </Button>
+            </Flex>
           </Flex>
         </Flex>
-
-        <Flex justify="between" align="center">
-          <Text size="1" color="gray">
-            {t($ => $.planImport.footer.storageNote)}
-          </Text>
-          <Flex gap="2">
-            <Button
-              variant="soft"
-              onClick={() => {
-                onOpenChange(false)
-              }}
-            >
-              {t($ => $.planImport.footer.cancel)}
-            </Button>
-            <Button onClick={handleSubmit} disabled={!canSubmit}>
-              {existingPlan ? t($ => $.planImport.footer.replacePlan) : t($ => $.planImport.footer.addPlan)}
-            </Button>
-          </Flex>
-        </Flex>
-      </Flex>
-    </BaseModal>
+        <PlanCalibrationCanvas
+          image={imageElement}
+          referencePoints={referencePoints}
+          onReferencePointsChange={setReferencePoints}
+          originPoint={originPoint}
+          onOriginPointChange={handleOriginPointChange}
+          mode={selectionMode}
+        />
+      </Grid>
+    </FullScreenModal>
   )
 }

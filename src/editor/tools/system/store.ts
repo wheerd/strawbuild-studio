@@ -4,7 +4,7 @@ import { devtools } from 'zustand/middleware'
 import { getToolById } from '@/editor/tools'
 
 import { DEFAULT_TOOL } from './metadata'
-import type { CanvasEvent, ToolId, ToolImplementation } from './types'
+import type { EditorEvent, ToolId, ToolImplementation } from './types'
 
 interface ToolState {
   // Stack with select tool always at bottom - cannot be popped
@@ -25,8 +25,8 @@ interface ToolActions {
   canPop: () => boolean
   getStackDepth: () => number
 
-  // Canvas event handling
-  handleCanvasEvent: (event: CanvasEvent) => boolean
+  // Editor event handling
+  handleEditorEvent: (event: EditorEvent) => boolean
 }
 
 type ToolStore = ToolState & ToolActions
@@ -153,8 +153,8 @@ export const useToolStore = create<ToolStore>()(
 
       getStackDepth: () => get().toolStack.length,
 
-      // Canvas event handling
-      handleCanvasEvent: (event: CanvasEvent) => {
+      // Editor event handling
+      handleEditorEvent: (event: EditorEvent) => {
         const tool = get().getActiveTool()
 
         try {
@@ -199,7 +199,7 @@ export const clearToDefaultTool = () => {
 export const replaceTool = (toolId: ToolId) => {
   useToolStore.getState().replaceTool(toolId)
 }
-export const handleCanvasEvent = (event: CanvasEvent) => useToolStore.getState().handleCanvasEvent(event)
+export const handleEditorEvent = (event: EditorEvent) => useToolStore.getState().handleEditorEvent(event)
 
 // Convenience hooks
 export const useActiveTool = () => useToolStore(state => state.getActiveTool())

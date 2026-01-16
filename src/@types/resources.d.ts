@@ -1124,7 +1124,6 @@ interface Resources {
   },
   "overlay": {
     "canvas": {
-      "resetView": "Reset view",
       "scrollToZoom": "Scroll to zoom",
       "uploadToBegin": "Upload an image to begin"
     },
@@ -1149,19 +1148,17 @@ interface Resources {
       "footer": {
         "addPlan": "Add plan",
         "cancel": "Cancel",
-        "replacePlan": "Replace plan",
-        "storageNote": "The plan image is only stored in your browser for this floor."
+        "replacePlan": "Replace plan"
       },
       "step1": {
         "currentImage": "Using current image ({{name}}). Upload a new file below to replace it.",
         "title": "1. Select floor plan image",
+        "uploadButton": "planImport.step1.uploadButton",
         "uploadHint": "Upload a PNG, JPG, or SVG. The file stays local and is not saved with your project."
       },
       "step2": {
         "clearPoints": "Clear points",
         "instructions": "Pick two points with a known distance directly on the image.",
-        "pixelDistance": "Pixel distance:",
-        "pixelDistancePlaceholder": "Select two points",
         "realDistance": "Real Distance:",
         "scale": "Scale:",
         "scalePlaceholder": "Waiting for calibration",

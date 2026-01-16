@@ -12,14 +12,14 @@ import { PerimeterWallMovementPreview } from '@/editor/tools/basic/movement/prev
 import { type Vec2, addVec2, dotVec2, scaleVec2 } from '@/shared/geometry'
 import { wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 
-// Wall wall movement needs access to the wall to update the boundary
+// Perimeter wall movement needs access to the wall to update the boundary
 export interface PerimeterWallEntityContext {
   perimeter: PerimeterWithGeometry
   wall: PerimeterWallWithGeometry
   wallIndex: number // Index of the wall in the wall
 }
 
-// Wall wall movement state - projected delta along perpendicular
+// Perimeter wall movement state - projected delta along perpendicular
 export interface PerimeterWallMovementState extends MovementState {
   movementDelta: Vec2 // The projected delta (perpendicular to wall)
   newBoundary: Vec2[]
