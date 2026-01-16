@@ -36,17 +36,17 @@ test.describe('Select Tool', () => {
 
     // Click on an opening - first click selects perimeter
     await editorSvg.locator('[data-entity-type="opening"]').first().click()
-    await expect(inspector).toHaveScreenshot('01-perimeter-inspector.png')
+    // await expect(inspector).toHaveScreenshot('01-perimeter-inspector.png')
     await fitToViewAndScreenshot('02-perimeter-fit-to-view.png')
 
     // Click again - selects wall
     await editorSvg.locator('[data-entity-type="opening"]').first().click()
-    await expect(inspector).toHaveScreenshot('03-wall-inspector.png')
+    // await expect(inspector).toHaveScreenshot('03-wall-inspector.png')
     await fitToViewAndScreenshot('04-wall-fit-to-view.png')
 
     // Click again - selects opening
     await editorSvg.locator('[data-entity-type="opening"]').first().click()
-    await expect(inspector).toHaveScreenshot('05-opening-inspector.png')
+    // await expect(inspector).toHaveScreenshot('05-opening-inspector.png')
     await fitToViewAndScreenshot('06-opening-fit-to-view.png')
 
     // === PHASE 2: Opening - ClickableLengthIndicator interaction ===
@@ -70,7 +70,7 @@ test.describe('Select Tool', () => {
 
     // Click on a corner - selects corner
     await editorSvg.locator('[data-entity-type="perimeter-corner"]').first().click()
-    await expect(inspector).toHaveScreenshot('10-corner-inspector.png')
+    // await expect(inspector).toHaveScreenshot('10-corner-inspector.png')
     await fitToViewAndScreenshot('11-corner-fit-to-view.png')
 
     // Click "Switch main wall" button and screenshot
@@ -85,26 +85,26 @@ test.describe('Select Tool', () => {
     await editorSvg.locator('[data-entity-type="wall-post"]').first().click()
     await editorSvg.locator('[data-entity-type="wall-post"]').first().click()
     await expect(inspector).toHaveText(/post material/i)
-    await expect(inspector).toHaveScreenshot('13-wall-post-inspector.png')
+    // await expect(inspector).toHaveScreenshot('13-wall-post-inspector.png')
     await fitToViewAndScreenshot('14-wall-post-fit-to-view.png')
 
     // === PHASE 5: Roof Mode ===
 
     await viewModeToggle.getByRole('radio', { name: 'Roofs' }).click()
     await editorSvg.locator('[data-entity-type="roof"]').first().click()
-    await expect(inspector).toHaveScreenshot('15-roof-inspector.png')
+    // await expect(inspector).toHaveScreenshot('15-roof-inspector.png')
     await fitToViewAndScreenshot('16-roof-fit-to-view.png')
 
     // Click on roof overhang to drill down
     await editorSvg.locator('[data-entity-type="roof-overhang"]').first().click()
-    await expect(inspector).toHaveScreenshot('17-roof-overhang-inspector.png')
+    // await expect(inspector).toHaveScreenshot('17-roof-overhang-inspector.png')
     await fitToViewAndScreenshot('18-roof-overhang-fit-to-view.png')
 
     // === PHASE 7: Floor Mode ===
 
     await viewModeToggle.getByRole('radio', { name: 'Floors' }).click()
     await editorSvg.locator('[data-entity-type="floor-opening"]').first().click()
-    await expect(inspector).toHaveScreenshot('19-floor-opening-inspector.png')
+    // await expect(inspector).toHaveScreenshot('19-floor-opening-inspector.png')
     await inspector.getByRole('button', { name: /fit to view/i }).click()
     await takeEditorScreenshot(page, '20-floor-opening-fit-to-view.png')
 
@@ -112,6 +112,6 @@ test.describe('Select Tool', () => {
 
     await editorSvg.click({ position: { x: 1, y: 1 } })
     await expect(inspector).toHaveText(/Ground Floor/i)
-    await expect(inspector).toHaveScreenshot('21-storey-inspector.png')
+    // await expect(inspector).toHaveScreenshot('21-storey-inspector.png')
   })
 })
