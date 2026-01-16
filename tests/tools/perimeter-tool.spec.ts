@@ -11,6 +11,10 @@ import {
 } from '../fixtures/editor'
 
 test.describe('Perimeter Tool', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.evaluate('document.fonts.ready')
+  })
+
   test('complete journey: draw, snap, invalid, cancel, change params, complete, verify', async ({ page }) => {
     test.setTimeout(180000)
 

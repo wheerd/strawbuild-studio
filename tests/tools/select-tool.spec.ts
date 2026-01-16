@@ -10,6 +10,10 @@ import {
 } from '../fixtures/editor'
 
 test.describe('Select Tool', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.evaluate('document.fonts.ready')
+  })
+
   test('complete journey: selection drill-down, inspectors, fit-to-view across view modes', async ({ page }) => {
     test.setTimeout(120000)
     await setupEditorPage(page)

@@ -10,6 +10,10 @@ import {
 } from '../fixtures/editor'
 
 test.describe('Add Opening Tool', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.evaluate('document.fonts.ready')
+  })
+
   test('complete journey: presets, snapping, invalid position, place openings', async ({ page }) => {
     test.setTimeout(180000)
 
