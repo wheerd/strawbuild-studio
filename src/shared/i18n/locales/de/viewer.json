@@ -4,6 +4,7 @@
     "gltf": "GLTF",
     "ifc": "IFC",
     "obj": "OBJ",
+    "sketchup": "SketchUp",
     "stl": "STL",
     "title": "Exportieren"
   },

@@ -20,9 +20,11 @@ import type {
   Vector3
 } from './api'
 
+export const SKETCHUP_ENABLED = !!import.meta.env.VITE_SKETCHUP_API_URL
+
 export async function exportToSketchUp(model: ConstructionModel): Promise<void> {
   const request = convertModelToDto(model)
-  const response = await fetch('http://localhost:5000/api/SketchUp/generate', {
+  const response = await fetch(`${import.meta.env.VITE_SKETCHUP_API_URL}/api/SketchUp/generate`, {
     method: 'post',
     headers: {
       'Content-Type': 'application/json'

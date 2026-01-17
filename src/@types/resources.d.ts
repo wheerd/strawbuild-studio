@@ -1153,7 +1153,7 @@ interface Resources {
       "step1": {
         "currentImage": "Using current image ({{name}}). Upload a new file below to replace it.",
         "title": "1. Select floor plan image",
-        "uploadButton": "planImport.step1.uploadButton",
+        "uploadButton": "Select Image",
         "uploadHint": "Upload a PNG, JPG, or SVG. The file stays local and is not saved with your project."
       },
       "step2": {
@@ -1461,6 +1461,7 @@ interface Resources {
       "gltf": "GLTF",
       "ifc": "IFC",
       "obj": "OBJ",
+      "sketchup": "SketchUp",
       "stl": "STL",
       "title": "Export"
     },
