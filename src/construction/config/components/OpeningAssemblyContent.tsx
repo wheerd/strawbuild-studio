@@ -14,6 +14,7 @@ import {
   IconButton,
   Select,
   Separator,
+  Switch,
   Text,
   TextField
 } from '@radix-ui/themes'
@@ -112,7 +113,8 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
             thickness: 140,
             width: 100
           },
-          replacePosts: true
+          replacePosts: true,
+          postsSupportHeader: false
         }
       } else if (type === 'planked') {
         config = {
@@ -751,6 +753,25 @@ function PostsConfigSection({
             />
           </>
         )}
+
+        <Box gridColumn="span 2">
+          <Label.Root>
+            <Flex align="center" gap="2">
+              <Text size="2" weight="medium" color="gray">
+                {t($ => $.openings.labels.postsHaveFullHeight)}
+              </Text>
+              <Switch
+                checked={config.postsSupportHeader}
+                onCheckedChange={value => {
+                  onUpdate({ postsSupportHeader: value })
+                }}
+              />
+              <Text size="2" weight="medium" color="gray">
+                {t($ => $.openings.labels.postsSupportHeader)}
+              </Text>
+            </Flex>
+          </Label.Root>
+        </Box>
       </Grid>
     </Flex>
   )

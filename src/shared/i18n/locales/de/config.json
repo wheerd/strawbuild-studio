@@ -271,6 +271,8 @@
       "padding": "Baufuge",
       "plankMaterial": "Beplankungsmaterial",
       "plankThickness": "Beplankungsdicke",
+      "postsHaveFullHeight": "Ständer haben volle Höhe",
+      "postsSupportHeader": "Ständer stützen Sturz",
       "replacesWallPosts": "Ersetzt Wandständer",
       "sillMaterial": "Schwellenmaterial",
       "sillThickness": "Schwellendicke"

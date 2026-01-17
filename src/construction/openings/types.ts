@@ -40,6 +40,7 @@ export interface PostOpeningConfig extends HeaderAndSillConfigBase {
   type: 'post'
   posts: PostConfig
   replacePosts: boolean
+  postsSupportHeader?: boolean
 }
 
 export interface PlankedOpeningConfig extends HeaderAndSillConfigBase {

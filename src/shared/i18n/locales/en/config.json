@@ -271,6 +271,8 @@
       "padding": "Padding",
       "plankMaterial": "Planking Material",
       "plankThickness": "Planking Thickness",
+      "postsHaveFullHeight": "Posts have full height",
+      "postsSupportHeader": "Posts support header",
       "replacesWallPosts": "Replaces Wall Posts",
       "sillMaterial": "Sill Material",
       "sillThickness": "Sill Thickness"

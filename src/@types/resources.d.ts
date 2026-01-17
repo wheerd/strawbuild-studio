@@ -348,6 +348,8 @@ interface Resources {
         "padding": "Padding",
         "plankMaterial": "Planking Material",
         "plankThickness": "Planking Thickness",
+        "postsHaveFullHeight": "openings.labels.postsHaveFullHeight",
+        "postsSupportHeader": "Posts Support Header",
         "replacesWallPosts": "Replaces Wall Posts",
         "sillMaterial": "Sill Material",
         "sillThickness": "Sill Thickness"

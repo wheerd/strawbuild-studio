@@ -29,13 +29,22 @@ export class PostOpeningAssembly extends BaseOpeningAssembly<PostOpeningConfig> 
     const sillBottom = adjustedSill - this.config.sillThickness
     const headerTop = adjustedHeader + this.config.headerThickness
 
-    const [leftPost, rest] = area.splitInX(this.config.posts.width)
-    const [middle, rightPost] = rest.splitInX(rest.size[0] - this.config.posts.width)
+    let leftPost, rightPost, topPart, belowHeader
+    if (this.config.postsSupportHeader === true) {
+      let bottom, rest
+      ;[bottom, topPart] = area.splitInZ(adjustedHeader)
+      ;[leftPost, rest] = bottom.splitInX(this.config.posts.width)
+      ;[belowHeader, rightPost] = rest.splitInX(rest.size[0] - this.config.posts.width)
+    } else {
+      let middle, rest
+      ;[leftPost, rest] = area.splitInX(this.config.posts.width)
+      ;[middle, rightPost] = rest.splitInX(rest.size[0] - this.config.posts.width)
+      ;[belowHeader, topPart] = middle.splitInZ(adjustedHeader)
+    }
 
     yield* constructPost(leftPost, this.config.posts)
     yield* constructPost(rightPost, this.config.posts)
 
-    const [belowHeader, topPart] = middle.splitInZ(adjustedHeader)
     const [bottomPart, rawOpeningArea] = belowHeader.splitInZ(adjustedSill)
     const [belowSill, sillArea] = bottomPart.splitInZ(sillBottom)
     const [headerArea, aboveHeader] = topPart.splitInZ(this.config.headerThickness)
