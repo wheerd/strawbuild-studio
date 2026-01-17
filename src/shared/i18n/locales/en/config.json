@@ -312,6 +312,9 @@
     "deleteTitle": "Delete Ring Beam Assembly",
     "emptyList": "No ring beam assemblies available",
     "labels": {
+      "cornerHandling": "Corners",
+      "cornerHandlingCut": "Cut",
+      "cornerHandlingInterweave": "Stepped",
       "offsetFromInsideEdge": "Offset from Inside Edge"
     },
     "newName_brick": "New Brick Assembly",

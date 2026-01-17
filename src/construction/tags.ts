@@ -298,6 +298,11 @@ export const TAG_RB_INSULATION: PredefinedTag = {
   category: 'ring-beam-part'
 }
 
+export const TAG_RB_INFILL: PredefinedTag = {
+  id: 'ring-beam-part_infill',
+  category: 'ring-beam-part'
+}
+
 // Wall measurements
 
 export const TAG_WALL_LENGTH: PredefinedTag = {

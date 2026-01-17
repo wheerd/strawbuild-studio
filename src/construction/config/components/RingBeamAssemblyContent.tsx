@@ -3,13 +3,14 @@ import * as Label from '@radix-ui/react-label'
 import {
   AlertDialog,
   Badge,
+  Box,
   Button,
-  Callout,
   DropdownMenu,
   Flex,
   Grid,
   Heading,
   IconButton,
+  SegmentedControl,
   Separator,
   Text,
   TextField
@@ -30,7 +31,7 @@ import {
 import { type RingBeamAssemblyUsage, getRingBeamAssemblyUsage } from '@/construction/config/usage'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import { bitumen, brick, cork, roughWood, woodwool } from '@/construction/materials/material'
-import { type RingBeamConfig, resolveRingBeamAssembly } from '@/construction/ringBeams'
+import { type CornerHandling, type RingBeamConfig, resolveRingBeamAssembly } from '@/construction/ringBeams'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
 import { useDebouncedInput } from '@/shared/hooks/useDebouncedInput'
@@ -99,7 +100,8 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
           thickness: 120,
           infillMaterial: woodwool.id,
           offsetFromEdge: 0,
-          spacing: 100
+          spacing: 100,
+          cornerHandling: 'interweave'
         }
       } else {
         name = t($ => $.ringBeams.newName_brick)
@@ -504,114 +506,125 @@ function DoubleRingBeamFields({
 }) {
   const { t } = useTranslation('config')
   return (
-    <>
-      <Callout.Root color="amber">
-        <Callout.Text>
-          Double ring beam construction is not yet supported. Please use a full ring beam configuration for now.
-        </Callout.Text>
-      </Callout.Root>
+    <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+      <Label.Root>
+        <Text size="2" weight="medium" color="gray">
+          {t($ => $.common.materialLabel)}
+        </Text>
+      </Label.Root>
+      <MaterialSelectWithEdit
+        value={config.material}
+        onValueChange={material => {
+          if (!material) return
+          onUpdate({ material })
+        }}
+        placeholder={t($ => $.common.placeholders.selectMaterial)}
+        size="2"
+        preferredTypes={['dimensional']}
+      />
 
-      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+      <Label.Root>
+        <Text size="2" weight="medium" color="gray">
+          {t($ => $.common.materialLabel)}
+        </Text>
+      </Label.Root>
+      <MaterialSelectWithEdit
+        value={config.infillMaterial}
+        onValueChange={infillMaterial => {
+          if (!infillMaterial) return
+          onUpdate({ infillMaterial })
+        }}
+        placeholder={t($ => $.common.placeholders.selectMaterial)}
+        size="2"
+      />
+
+      <Flex align="center" gap="1">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            {t($ => $.common.materialLabel)}
+            {t($ => $.common.height)}
           </Text>
         </Label.Root>
-        <MaterialSelectWithEdit
-          value={config.material}
-          onValueChange={material => {
-            if (!material) return
-            onUpdate({ material })
-          }}
-          placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
-          preferredTypes={['dimensional']}
-        />
+        <MeasurementInfo highlightedPart="plates" />
+      </Flex>
+      <LengthField
+        value={config.height}
+        onChange={height => {
+          onUpdate({ height })
+        }}
+        unit="mm"
+        size="2"
+      />
 
+      <Flex align="center" gap="1">
         <Label.Root>
           <Text size="2" weight="medium" color="gray">
-            {t($ => $.common.materialLabel)}
+            {t($ => $.common.thickness)}
           </Text>
         </Label.Root>
-        <MaterialSelectWithEdit
-          value={config.infillMaterial}
-          onValueChange={infillMaterial => {
-            if (!infillMaterial) return
-            onUpdate({ infillMaterial })
-          }}
-          placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
-        />
+        <MeasurementInfo highlightedPart="plates" />
+      </Flex>
+      <LengthField
+        value={config.thickness}
+        onChange={thickness => {
+          onUpdate({ thickness })
+        }}
+        unit="mm"
+        size="2"
+      />
 
-        <Flex align="center" gap="1">
-          <Label.Root>
-            <Text size="2" weight="medium" color="gray">
-              {t($ => $.common.height)}
-            </Text>
-          </Label.Root>
-          <MeasurementInfo highlightedPart="plates" />
-        </Flex>
-        <LengthField
-          value={config.height}
-          onChange={height => {
-            onUpdate({ height })
-          }}
-          unit="mm"
-          size="2"
-        />
+      <Flex align="center" gap="1">
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.common.spacing)}
+          </Text>
+        </Label.Root>
+        <MeasurementInfo highlightedPart="plates" />
+      </Flex>
+      <LengthField
+        value={config.spacing}
+        onChange={spacing => {
+          onUpdate({ spacing })
+        }}
+        unit="mm"
+        size="2"
+      />
 
-        <Flex align="center" gap="1">
-          <Label.Root>
-            <Text size="2" weight="medium" color="gray">
-              {t($ => $.common.thickness)}
-            </Text>
-          </Label.Root>
-          <MeasurementInfo highlightedPart="plates" />
-        </Flex>
-        <LengthField
-          value={config.thickness}
-          onChange={thickness => {
-            onUpdate({ thickness })
-          }}
-          unit="mm"
-          size="2"
-        />
+      <Flex align="center" gap="1">
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.ringBeams.labels.offsetFromInsideEdge)}
+          </Text>
+        </Label.Root>
+        <MeasurementInfo highlightedPart="plates" />
+      </Flex>
+      <LengthField
+        value={config.offsetFromEdge}
+        onChange={offsetFromEdge => {
+          onUpdate({ offsetFromEdge })
+        }}
+        unit="mm"
+        size="2"
+      />
 
-        <Flex align="center" gap="1">
-          <Label.Root>
-            <Text size="2" weight="medium" color="gray">
-              {t($ => $.common.spacing)}
-            </Text>
-          </Label.Root>
-          <MeasurementInfo highlightedPart="plates" />
-        </Flex>
-        <LengthField
-          value={config.spacing}
-          onChange={spacing => {
-            onUpdate({ spacing })
-          }}
-          unit="mm"
-          size="2"
-        />
+      <Text size="2" weight="medium" color="gray">
+        {t($ => $.ringBeams.labels.cornerHandling)}
+      </Text>
 
-        <Flex align="center" gap="1">
-          <Label.Root>
-            <Text size="2" weight="medium" color="gray">
-              {t($ => $.ringBeams.labels.offsetFromInsideEdge)}
-            </Text>
-          </Label.Root>
-          <MeasurementInfo highlightedPart="plates" />
-        </Flex>
-        <LengthField
-          value={config.offsetFromEdge}
-          onChange={offsetFromEdge => {
-            onUpdate({ offsetFromEdge })
+      <Box gridColumn="span 3">
+        <SegmentedControl.Root
+          value={config.cornerHandling}
+          onValueChange={value => {
+            onUpdate({ cornerHandling: value as CornerHandling })
           }}
-          unit="mm"
           size="2"
-        />
-      </Grid>
-    </>
+        >
+          <SegmentedControl.Item value="cut">{t($ => $.ringBeams.labels.cornerHandlingCut)}</SegmentedControl.Item>
+          <SegmentedControl.Item value="interweave">
+            {t($ => $.ringBeams.labels.cornerHandlingInterweave)}
+          </SegmentedControl.Item>
+        </SegmentedControl.Root>
+      </Box>
+    </Grid>
   )
 }
 

@@ -183,7 +183,8 @@ describe('ConfigStore', () => {
         material,
         infillMaterial,
         offsetFromEdge: 50,
-        spacing: 100
+        spacing: 100,
+        cornerHandling: 'interweave'
       }
 
       const assembly = store.addRingBeamAssembly('Double Ring Beam', config)

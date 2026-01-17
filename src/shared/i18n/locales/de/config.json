@@ -312,6 +312,9 @@
     "deleteTitle": "Ringankeraufbau löschen",
     "emptyList": "Keine Ringankeraufbauten verfügbar",
     "labels": {
+      "cornerHandling": "Ecken",
+      "cornerHandlingCut": "Abgeschnitten",
+      "cornerHandlingInterweave": "Abgestuft",
       "offsetFromInsideEdge": "Versatz von Innenkante"
     },
     "newName_brick": "Neue Mauerwerk-Aufbau",

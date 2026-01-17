@@ -36,6 +36,8 @@ export interface FullRingBeamConfig extends RingBeamConfigBase {
   offsetFromEdge: Length // From inside construction edge of wall
 }
 
+export type CornerHandling = 'interweave' | 'cut'
+
 export interface DoubleRingBeamConfig extends RingBeamConfigBase {
   type: 'double'
   height: Length // Default: 60mm
@@ -44,6 +46,7 @@ export interface DoubleRingBeamConfig extends RingBeamConfigBase {
   infillMaterial: MaterialId // Default: straw
   offsetFromEdge: Length // From inside construction edge of wall
   spacing: Length // In between the two beams
+  cornerHandling: CornerHandling
 }
 
 export interface BrickRingBeamConfig extends RingBeamConfigBase {

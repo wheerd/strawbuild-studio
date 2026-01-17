@@ -348,8 +348,8 @@ interface Resources {
         "padding": "Padding",
         "plankMaterial": "Planking Material",
         "plankThickness": "Planking Thickness",
-        "postsHaveFullHeight": "openings.labels.postsHaveFullHeight",
-        "postsSupportHeader": "Posts Support Header",
+        "postsHaveFullHeight": "Posts have full height",
+        "postsSupportHeader": "Posts support header",
         "replacesWallPosts": "Replaces Wall Posts",
         "sillMaterial": "Sill Material",
         "sillThickness": "Sill Thickness"
@@ -389,6 +389,9 @@ interface Resources {
       "deleteTitle": "Delete Ring Beam Assembly",
       "emptyList": "No ring beam assemblies available",
       "labels": {
+        "cornerHandling": "Corners",
+        "cornerHandlingCut": "Cut",
+        "cornerHandlingInterweave": "Stepped",
         "offsetFromInsideEdge": "Offset from Inside Edge"
       },
       "newName_brick": "New Brick Assembly",
@@ -816,6 +819,7 @@ interface Resources {
       "ring-beam-measurement_ring-beam-height": "Ring Beam Height",
       "ring-beam-measurement_ring-beam-inner": "Ring Beam Inner",
       "ring-beam-measurement_ring-beam-outer": "Ring Beam Outer",
+      "ring-beam-part_infill": "Infill",
       "ring-beam-part_insulation": "Insulation",
       "ring-beam-part_plate": "Plate",
       "ring-beam-part_stud-wall": "Stud Wall",
