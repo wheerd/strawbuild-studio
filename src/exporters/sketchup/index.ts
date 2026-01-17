@@ -38,7 +38,7 @@ export async function exportToSketchUp(model: ConstructionModel): Promise<void> 
 // Context for collecting unique materials and components during traversal
 interface ConversionContext {
   materials: Map<MaterialId, MaterialDto>
-  components: Map<Manifold, string> // Manifold -> component name (manifolds are already deduplicated/cached)
+  components: Map<Manifold, Map<MaterialId, string>> // Manifold + Material -> component name
   componentDefinitions: ComponentDefinitionDto[]
   componentCounter: number
 }
@@ -55,7 +55,7 @@ function convertModelToDto(model: ConstructionModel): GenerateRequest {
   const rootGroup = convertElementsToGroup(model.elements, 'Root', context)
 
   return {
-    materials: Array.from(context.materials.values()),
+    materials: Object.fromEntries(context.materials),
     components: context.componentDefinitions,
     rootGroup
   }
@@ -119,13 +119,9 @@ function convertElementToInstance(element: ConstructionElement, context: Convers
   // Get or create component for this shape
   const componentName = getOrCreateComponent(element.shape, element.material, context)
 
-  // Get material name for the instance
-  const materialDto = context.materials.get(element.material)
-
   return {
     componentName,
     transform: convertTransform(element.transform),
-    materialOverride: materialDto?.name,
     layer: getLayerFromTags(element.tags)
   }
 }
@@ -158,13 +154,19 @@ function getOrCreateComponent(
 ): string {
   const manifold = shape.manifold
 
-  // Check if we already have a component for this manifold
-  const existing = context.components.get(manifold)
+  // Check if we already have a component for this manifold + material
+  let materialMap = context.components.get(manifold)
+  if (!materialMap) {
+    materialMap = new Map()
+    context.components.set(manifold, materialMap)
+  }
+
+  const existing = materialMap.get(materialId)
   if (existing) return existing
 
   // Create new component
   const componentName = `Component_${context.componentCounter++}`
-  context.components.set(manifold, componentName)
+  materialMap.set(materialId, componentName)
 
   // Extract geometry using proper n-gon face extraction
   const { vertices: verts, faces: indexedFaces } = getFacesFromManifoldIndexed(manifold)
@@ -178,14 +180,11 @@ function getOrCreateComponent(
     innerLoops: f.holes.map(h => ({ vertexIndices: h }))
   }))
 
-  // Get material name
-  const materialDto = context.materials.get(materialId)
-
   context.componentDefinitions.push({
     name: componentName,
     vertices,
     faces,
-    materialName: materialDto?.name
+    materialId
   })
 
   return componentName

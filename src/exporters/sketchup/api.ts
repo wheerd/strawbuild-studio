@@ -41,13 +41,12 @@ export interface ComponentDefinitionDto {
   name: string
   vertices: Vector3[]
   faces: FaceDto[]
-  materialName?: string
+  materialId: string
 }
 
 export interface ComponentInstanceDto {
   componentName: string
   transform: Transform
-  materialOverride?: string
   layer?: string
 }
 
@@ -60,7 +59,7 @@ export interface GroupDto {
 }
 
 export interface GenerateRequest {
-  materials: MaterialDto[]
+  materials: Record<string, MaterialDto>
   components: ComponentDefinitionDto[]
   rootGroup: GroupDto
   fileName?: string
