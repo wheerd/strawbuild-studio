@@ -1,9 +1,21 @@
 {
   "export": {
     "collada": "Collada (DAE)",
+    "exportError": {
+      "close": "Schließen",
+      "details": "Details",
+      "network_error": "Verbindung zum Export-Service konnte nicht hergestellt werden. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+      "payload_too_large": "Das Modell ist zu groß für den Export. Versuchen Sie, Ihr Design zu vereinfachen.",
+      "rate_limited": "Zu viele Export-Anfragen. Bitte warten Sie einen Moment und versuchen Sie es erneut.",
+      "server_error": "Der Export-Service hat einen Fehler festgestellt. Bitte versuchen Sie es später erneut.",
+      "title": "Export fehlgeschlagen",
+      "unknown_error": "Beim Export ist ein unerwarteter Fehler aufgetreten.",
+      "validation_error": "Die Modelldaten sind ungültig und konnten nicht verarbeitet werden."
+    },
     "gltf": "GLTF",
     "ifc": "IFC",
     "obj": "OBJ",
+    "sketchup": "SketchUp",
     "stl": "STL",
     "title": "Exportieren"
   },

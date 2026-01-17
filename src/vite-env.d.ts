@@ -11,3 +11,11 @@ declare global {
   declare const __GIT_TAG__: string | null
   declare const __GIT_COMMITS_SINCE_TAG__: number
 }
+
+interface ImportMetaEnv {
+  readonly VITE_SKETCHUP_API_URL?: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}

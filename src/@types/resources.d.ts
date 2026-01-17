@@ -1153,7 +1153,7 @@ interface Resources {
       "step1": {
         "currentImage": "Using current image ({{name}}). Upload a new file below to replace it.",
         "title": "1. Select floor plan image",
-        "uploadButton": "planImport.step1.uploadButton",
+        "uploadButton": "Select Image",
         "uploadHint": "Upload a PNG, JPG, or SVG. The file stays local and is not saved with your project."
       },
       "step2": {
@@ -1458,9 +1458,21 @@ interface Resources {
   "viewer": {
     "export": {
       "collada": "Collada (DAE)",
+      "exportError": {
+        "close": "Close",
+        "details": "Details",
+        "network_error": "Could not connect to the export service. Please check your connection and try again.",
+        "payload_too_large": "The model is too large to export. Try simplifying your design.",
+        "rate_limited": "Too many export requests. Please wait a moment and try again.",
+        "server_error": "The export service encountered an error. Please try again later.",
+        "title": "Export Failed",
+        "unknown_error": "An unexpected error occurred during export.",
+        "validation_error": "The model data is invalid and could not be processed."
+      },
       "gltf": "GLTF",
       "ifc": "IFC",
       "obj": "OBJ",
+      "sketchup": "SketchUp",
       "stl": "STL",
       "title": "Export"
     },

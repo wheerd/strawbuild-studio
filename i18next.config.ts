@@ -22,7 +22,8 @@ export default defineConfig({
       'construction:tags.*',
       'construction:tagCategories.*',
       'construction:areaTypes.*',
-      'construction:strawCategories.*'
+      'construction:strawCategories.*',
+      'viewer:export.exportError.*'
     ],
     removeUnusedKeys: true
   }

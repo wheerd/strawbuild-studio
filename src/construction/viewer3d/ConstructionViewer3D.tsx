@@ -1,11 +1,14 @@
-import { Box, Card, Flex } from '@radix-ui/themes'
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import { AlertDialog, Box, Button, Card, Code, Flex, Text } from '@radix-ui/themes'
 import { OrbitControls } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
 import { useTheme } from 'next-themes'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { ConstructionModel } from '@/construction/model'
 import { matAppToThree, toThreeTransform } from '@/construction/viewer3d/utils/geometry'
+import { type SketchUpErrorCode, SketchUpExportError } from '@/exporters/sketchup'
 
 import ConstructionElement3D from './components/ConstructionElement3D'
 import ConstructionGroup3D from './components/ConstructionGroup3D'
@@ -21,11 +24,19 @@ interface ConstructionViewer3DProps {
   containerSize: { width: number; height: number }
 }
 
+interface ExportError {
+  code: SketchUpErrorCode
+  message: string
+  details?: string
+}
+
 function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProps): React.JSX.Element {
+  const { t } = useTranslation('viewer')
   const { resolvedTheme } = useTheme()
   const isDarkTheme = resolvedTheme === 'dark'
   const showGrid = useShowGrid3D()
   const exportFnRef = useRef<((format: ExportFormat) => void) | null>(null)
+  const [exportError, setExportError] = useState<ExportError | null>(null)
 
   const [centerX, centerY, centerZ] = model.bounds.center
   const maxSize = Math.max(...model.bounds.size)
@@ -48,14 +59,35 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
   }, [])
 
   const handleExport = async (format: ExportFormat): Promise<void> => {
-    if (format === 'ifc') {
-      const { exportConstructionGeometryToIfc } = await import('@/exporters/ifc')
-      await exportConstructionGeometryToIfc(model)
-    }
+    try {
+      if (format === 'ifc') {
+        const { exportConstructionGeometryToIfc } = await import('@/exporters/ifc')
+        await exportConstructionGeometryToIfc(model)
+      }
 
-    const fn = exportFnRef.current
-    if (fn) {
-      fn(format)
+      if (format === 'sketchup') {
+        const { exportToSketchUp } = await import('@/exporters/sketchup')
+        await exportToSketchUp(model)
+      }
+
+      const fn = exportFnRef.current
+      if (fn) {
+        fn(format)
+      }
+    } catch (error) {
+      if (error instanceof SketchUpExportError) {
+        setExportError({
+          code: error.code,
+          message: error.message,
+          details: error.details
+        })
+      } else {
+        setExportError({
+          code: 'unknown_error',
+          message: error instanceof Error ? error.message : 'Unknown error',
+          details: undefined
+        })
+      }
     }
   }
 
@@ -125,6 +157,42 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
           </Flex>
         </Card>
       </Box>
+
+      <AlertDialog.Root
+        open={exportError !== null}
+        onOpenChange={open => {
+          if (!open) setExportError(null)
+        }}
+      >
+        <AlertDialog.Content maxWidth="450px">
+          <AlertDialog.Title>
+            <Flex align="center" gap="2">
+              <ExclamationTriangleIcon color="var(--red-9)" />
+              <Text color="red">{t($ => $.export.exportError.title)}</Text>
+            </Flex>
+          </AlertDialog.Title>
+          <AlertDialog.Description>
+            <Flex direction="column" gap="3">
+              <Text>{exportError && t($ => $.export.exportError[exportError.code])}</Text>
+              {exportError?.details && (
+                <Flex direction="column" gap="1">
+                  <Text size="2" weight="bold">
+                    {t($ => $.export.exportError.details)}
+                  </Text>
+                  <Code size="1" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                    {exportError.details}
+                  </Code>
+                </Flex>
+              )}
+            </Flex>
+          </AlertDialog.Description>
+          <Flex gap="3" mt="4" justify="end">
+            <AlertDialog.Cancel>
+              <Button variant="solid">{t($ => $.export.exportError.close)}</Button>
+            </AlertDialog.Cancel>
+          </Flex>
+        </AlertDialog.Content>
+      </AlertDialog.Root>
     </div>
   )
 }
