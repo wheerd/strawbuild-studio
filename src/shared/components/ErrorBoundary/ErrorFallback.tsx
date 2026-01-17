@@ -10,8 +10,11 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): Rea
   const { t } = useTranslation('errors')
   const [showDetails, setShowDetails] = useState(false)
 
+  const message = error instanceof Error ? error.message : t($ => $.boundary.errorMessage)
+  const stack = error instanceof Error ? error.stack : t($ => $.boundary.noStackTrace)
+
   const handleCopyError = () => {
-    const errorText = `Error: ${error.message}\n\nStack:\n${error.stack ?? t($ => $.boundary.noStackTrace)}`
+    const errorText = `Error: ${message}\n\nStack:\n${stack}`
     navigator.clipboard.writeText(errorText).catch(console.error)
   }
 
@@ -40,11 +43,11 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): Rea
             <ExclamationTriangleIcon />
           </Callout.Icon>
           <Callout.Text>
-            <strong>{error.message || t($ => $.boundary.errorMessage)}</strong>
+            <strong>{message}</strong>
           </Callout.Text>
         </Callout.Root>
 
-        {showDetails && error.stack && (
+        {showDetails && stack && (
           <Flex direction="column" gap="2">
             <Text size="2" weight="bold">
               {t($ => $.boundary.errorDetails)}
@@ -59,7 +62,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): Rea
                 overflow: 'auto'
               }}
             >
-              {error.stack}
+              {stack}
             </Code>
           </Flex>
         )}
