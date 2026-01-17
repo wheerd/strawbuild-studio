@@ -26,7 +26,7 @@ export function FeatureErrorFallback({ error, resetErrorBoundary }: FallbackProp
         <Callout.Text>
           <Flex as="span" direction="column" gap="2">
             <Text weight="bold">{t($ => $.feature.title)}</Text>
-            <Text size="2">{error.message || t($ => $.feature.defaultMessage)}</Text>
+            <Text size="2">{error instanceof Error ? error.message : t($ => $.feature.defaultMessage)}</Text>
           </Flex>
         </Callout.Text>
       </Callout.Root>

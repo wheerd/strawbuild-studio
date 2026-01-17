@@ -14,7 +14,7 @@ export function ModalErrorFallback({ error, resetErrorBoundary }: FallbackProps)
         </Callout.Icon>
         <Callout.Text>
           <Text size="2">
-            {t($ => $.modal.errorPrefix)} {error.message || t($ => $.modal.defaultMessage)}
+            {t($ => $.modal.errorPrefix)} {error instanceof Error ? error.message : t($ => $.modal.defaultMessage)}
           </Text>
         </Callout.Text>
       </Callout.Root>
