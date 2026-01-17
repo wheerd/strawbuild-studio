@@ -2,7 +2,7 @@ import { DownloadIcon } from '@radix-ui/react-icons'
 import { DropdownMenu, IconButton } from '@radix-ui/themes'
 import { useTranslation } from 'react-i18next'
 
-export type ExportFormat = 'collada' | 'gltf' | 'obj' | 'stl' | 'ifc'
+export type ExportFormat = 'collada' | 'gltf' | 'obj' | 'stl' | 'ifc' | 'sketchup'
 
 interface ExportButtonProps {
   onExport: (format: ExportFormat) => void
@@ -53,6 +53,13 @@ function ExportButton({ onExport }: ExportButtonProps): React.JSX.Element {
           }}
         >
           {t($ => $.export.ifc)}
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            onExport('sketchup')
+          }}
+        >
+          SketchUp
         </DropdownMenu.Item>
       </DropdownMenu.Content>
     </DropdownMenu.Root>

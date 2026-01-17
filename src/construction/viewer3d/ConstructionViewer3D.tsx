@@ -53,6 +53,11 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
       await exportConstructionGeometryToIfc(model)
     }
 
+    if (format === 'sketchup') {
+      const { exportToSketchUp } = await import('@/exporters/sketchup')
+      await exportToSketchUp(model)
+    }
+
     const fn = exportFnRef.current
     if (fn) {
       fn(format)
