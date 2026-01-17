@@ -180,7 +180,7 @@ export const createRoofAssembliesSlice: StateCreator<
         validateRoofAssemblyName(name)
 
         const newId = createRoofAssemblyId()
-        const duplicated = { ...original, id: newId, name: name.trim() } as RoofAssemblyConfig
+        const duplicated = { ...original, id: newId, name: name.trim(), nameKey: undefined } as RoofAssemblyConfig
 
         set(state => ({
           ...state,

@@ -111,7 +111,8 @@ export const createWallAssembliesSlice: StateCreator<
         const duplicated = {
           ...original,
           id: newId,
-          name: name.trim()
+          name: name.trim(),
+          nameKey: undefined
         } as WallAssemblyConfig
 
         set(state => ({

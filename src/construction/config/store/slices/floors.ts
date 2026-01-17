@@ -161,7 +161,7 @@ export const createFloorAssembliesSlice: StateCreator<
         validateFloorAssemblyName(name)
 
         const newId = createFloorAssemblyId()
-        const duplicated = { ...original, id: newId, name: name.trim() } as FloorAssemblyConfig
+        const duplicated = { ...original, id: newId, name: name.trim(), nameKey: undefined } as FloorAssemblyConfig
 
         set(state => ({
           ...state,

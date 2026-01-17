@@ -85,7 +85,8 @@ export const createOpeningAssembliesSlice: StateCreator<
         const duplicated = {
           ...original,
           id: newId,
-          name: name.trim()
+          name: name.trim(),
+          nameKey: undefined
         } as OpeningAssemblyConfig
 
         set(state => ({
