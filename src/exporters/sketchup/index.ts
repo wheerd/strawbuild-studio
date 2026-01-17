@@ -1,3 +1,4 @@
+import type { Resources } from 'i18next'
 import type { Manifold } from 'manifold-3d'
 
 import type { ConstructionElement, ConstructionGroup, GroupOrElement } from '@/construction/elements'
@@ -22,19 +23,74 @@ import type {
 
 export const SKETCHUP_ENABLED = !!import.meta.env.VITE_SKETCHUP_API_URL
 
+export type SketchUpErrorCode = Exclude<
+  keyof Resources['viewer']['export']['exportError'],
+  'close' | 'details' | 'title'
+>
+
+export class SketchUpExportError extends Error {
+  readonly code: SketchUpErrorCode
+  readonly details?: string
+
+  constructor(code: SketchUpErrorCode, message: string, details?: string) {
+    super(message)
+    this.name = 'SketchUpExportError'
+    this.code = code
+    this.details = details
+  }
+}
+
 export async function exportToSketchUp(model: ConstructionModel): Promise<void> {
   const request = convertModelToDto(model)
-  const response = await fetch(`${import.meta.env.VITE_SKETCHUP_API_URL}/api/SketchUp/generate`, {
-    method: 'post',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(request)
-  })
-  if (!response.ok) {
-    throw new Error('Invalid response')
+
+  let response: Response
+  try {
+    response = await fetch(`${import.meta.env.VITE_SKETCHUP_API_URL}/api/SketchUp/generate`, {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request) + 'XD'
+    })
+  } catch (error) {
+    throw new SketchUpExportError(
+      'network_error',
+      'Failed to connect to SketchUp export service',
+      error instanceof Error ? error.message : undefined
+    )
   }
+
+  if (!response.ok) {
+    const errorDetails = await getErrorDetails(response)
+
+    switch (response.status) {
+      case 429:
+        throw new SketchUpExportError('rate_limited', 'Too many requests. Please try again later.', errorDetails)
+      case 413:
+        throw new SketchUpExportError('payload_too_large', 'Model is too large to export.', errorDetails)
+      case 400:
+        throw new SketchUpExportError('validation_error', 'Invalid model data.', errorDetails)
+      case 500:
+      case 502:
+      case 503:
+        throw new SketchUpExportError('server_error', 'SketchUp export service error.', errorDetails)
+      default:
+        throw new SketchUpExportError('unknown_error', `Export failed (HTTP ${response.status}).`, errorDetails)
+    }
+  }
+
   downloadFile(await response.bytes(), 'model.skp', 'application/octet-stream')
+}
+
+async function getErrorDetails(response: Response): Promise<string | undefined> {
+  try {
+    const text = await response.text()
+    // Try to parse as JSON and extract message
+    const json = JSON.parse(text) as { message?: string; title?: string; detail?: string }
+    return json.message ?? json.title ?? json.detail ?? text
+  } catch {
+    return undefined
+  }
 }
 
 // Context for collecting unique materials and components during traversal
