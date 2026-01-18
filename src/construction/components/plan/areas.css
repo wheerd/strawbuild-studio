@@ -111,17 +111,17 @@
 }
 
 .construction-error {
-  stroke: var(--color-danger-dark);
+  stroke: var(--red-11);
   stroke-width: 30;
-  fill: var(--color-danger);
+  fill: var(--red-9);
   fill-opacity: 0.4;
   stroke-dasharray: 50, 50;
 }
 
 .construction-warning {
-  stroke: var(--color-warning-dark);
+  stroke: var(--amber-10);
   stroke-width: 30;
-  fill: var(--color-warning);
+  fill: var(--amber-9);
   fill-opacity: 0.4;
   stroke-dasharray: 50, 50;
 }
