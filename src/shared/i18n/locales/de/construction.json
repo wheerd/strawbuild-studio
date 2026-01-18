@@ -154,7 +154,15 @@
     "hideAreas": "Bereiche ausblenden",
     "hideIssues": "Probleme ausblenden",
     "hideMeasurements": "Maße ausblenden",
-    "midCut": "Mittelschnitt"
+    "midCut": "Mittelschnitt",
+    "showStrawTypes": "Zeige Strohfüllung Details",
+    "strawTypes": {
+      "flakes": "Stroh-Flakes",
+      "fullBale": "Voller Ballen",
+      "partialBale": "Teil-Ballen",
+      "stuffed": "Gestopftes Stroh"
+    },
+    "strawTypesHeading": "Strohfüllung Details"
   },
   "planModal": {
     "errors": {

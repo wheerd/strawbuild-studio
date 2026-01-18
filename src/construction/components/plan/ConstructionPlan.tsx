@@ -1,5 +1,5 @@
-import { ExclamationTriangleIcon, GroupIcon, RulerHorizontalIcon } from '@radix-ui/react-icons'
-import { Box, Card, Flex, Grid, IconButton, SegmentedControl } from '@radix-ui/themes'
+import { CubeIcon, ExclamationTriangleIcon, GroupIcon, RulerHorizontalIcon } from '@radix-ui/react-icons'
+import { Box, Card, Flex, Grid, Heading, IconButton, SegmentedControl, Text } from '@radix-ui/themes'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -118,6 +118,7 @@ export function ConstructionPlan({
   const [hideAreas, setHideAreas] = useState(false)
   const [hideIssues, setHideIssues] = useState(false)
   const [hideMeasurements, setHideMeasurements] = useState(false)
+  const [showStrawTypes, setShowStrawTypes] = useState(false)
 
   const currentView = views[currentViewIndex]?.view ?? views[0]?.view
   const hiddenTagsForView = views[currentViewIndex]?.alwaysHiddenTags ?? []
@@ -276,7 +277,7 @@ export function ConstructionPlan({
         ref={viewportRef}
         contentBounds={contentBounds}
         padding={0.05} // 5% padding for wall construction
-        className={`w-full h-full ${midCutEnabled ? 'mid-cut-enabled' : ''}`}
+        className={`w-full h-full ${midCutEnabled ? 'mid-cut-enabled' : ''} ${showStrawTypes ? 'show-straw-types' : ''}`}
         resetButtonPosition="top-right"
         svgSize={containerSize}
       >
@@ -395,7 +396,7 @@ export function ConstructionPlan({
               </SegmentedControl.Root>
             )}
 
-            <Grid columns="5" gap="1">
+            <Grid columns="6" gap="1" align="center" justify="center">
               {/* Mid-cut toggle */}
               <IconButton
                 variant={midCutEnabled ? 'solid' : 'outline'}
@@ -444,9 +445,41 @@ export function ConstructionPlan({
                 <RulerHorizontalIcon />
               </IconButton>
 
+              {/* Straw types toggle */}
+              <IconButton
+                variant={showStrawTypes ? 'solid' : 'outline'}
+                size="1"
+                title={t($ => $.plan.showStrawTypes)}
+                onClick={() => {
+                  setShowStrawTypes(!showStrawTypes)
+                }}
+              >
+                <CubeIcon />
+              </IconButton>
+
               {/* Tag visibility menu */}
               <TagVisibilityMenu model={model} />
             </Grid>
+
+            {showStrawTypes && (
+              <Flex direction="column" p="2" mt="-2">
+                <Heading size="1">{t($ => $.plan.strawTypesHeading)}</Heading>
+                <Grid columns="1fr 1fr">
+                  <Text size="1" color="grass">
+                    {t($ => $.plan.strawTypes.fullBale)}
+                  </Text>
+                  <Text size="1" color="purple">
+                    {t($ => $.plan.strawTypes.partialBale)}
+                  </Text>
+                  <Text size="1" color="blue">
+                    {t($ => $.plan.strawTypes.flakes)}
+                  </Text>
+                  <Text size="1" color="red">
+                    {t($ => $.plan.strawTypes.stuffed)}
+                  </Text>
+                </Grid>
+              </Flex>
+            )}
           </Flex>
         </Card>
       </Box>

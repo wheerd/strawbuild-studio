@@ -126,24 +126,22 @@
   stroke-dasharray: 50, 50;
 }
 
-/*
-g.tag__straw_full-bale {
+.show-straw-types g.tag__straw_full-bale {
   outline: solid 20px var(--grass-a8);
-  outline-offset: -20px;
+  outline-offset: -30px;
 }
 
-g.tag__straw_partial-bale {
-  outline: solid 20px var(--lime-a8);
-  outline-offset: -20px;
-}
-
-g.tag__straw_flakes {
+.show-straw-types g.tag__straw_partial-bale {
   outline: solid 20px var(--blue-a8);
-  outline-offset: -20px;
+  outline-offset: -30px;
 }
 
-g.tag__straw_stuffed {
-  outline: solid 20px var(--red-a8);
-  outline-offset: -20px;
+.show-straw-types g.tag__straw_flakes {
+  outline: solid 20px var(--purple-a8);
+  outline-offset: -30px;
 }
-  */
+
+.show-straw-types g.tag__straw_stuffed {
+  outline: solid 20px var(--red-a8);
+  outline-offset: -30px;
+}

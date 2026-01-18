@@ -716,7 +716,15 @@ interface Resources {
       "hideAreas": "Hide Areas",
       "hideIssues": "Hide Issues",
       "hideMeasurements": "Hide Measurements",
-      "midCut": "Mid Cut"
+      "midCut": "Mid Cut",
+      "showStrawTypes": "Show Straw Types",
+      "strawTypes": {
+        "flakes": "Flakes",
+        "fullBale": "Full Bale",
+        "partialBale": "Partial Bale",
+        "stuffed": "Stuffed"
+      },
+      "strawTypesHeading": "Straw Types"
     },
     "planModal": {
       "errors": {
