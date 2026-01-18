@@ -119,6 +119,7 @@ interface Resources {
         "clt18cm": "CLT 18cm (6cm)",
         "concrete20cm": "Concrete 20cm (6cm)",
         "filledJoist8x36cm": "Filled Joist 8x36cm (6cm)",
+        "hangingJoist8x24cm": "Hanging Joist 8x24cm (6cm)",
         "joist8x24cm": "Joist 8x24cm (6cm)"
       },
       "delete": {
@@ -132,6 +133,7 @@ interface Resources {
       "labels": {
         "beamHeight": "Beam Height",
         "constructionHeight": "Construction Height",
+        "verticalOffset": "Vertical Offset",
         "wallBeamInsideOffset": "Inside Offset"
       },
       "layers": {
@@ -147,6 +149,7 @@ interface Resources {
       },
       "newName": {
         "filled": "New Filled Floor",
+        "hangingJoist": "New Hanging Joist Floor",
         "joist": "New Joist Floor",
         "monolithic": "New Monolithic Floor"
       },
@@ -167,9 +170,12 @@ interface Resources {
       "tips": {
         "beamHeight": "Height of structural beams. Applies to both joists and wall beams.",
         "constructionHeight": "Height of the floor structure (joist height).",
-        "strawMaterialOverride": "Material used to fill spaces between joists. Leave empty to use global straw settings."
+        "joistHeight": "Height of the hanging joists.",
+        "strawMaterialOverride": "Material used to fill spaces between joists. Leave empty to use global straw settings.",
+        "verticalOffset": "Vertical offset of the top of the joists relative to the bottom of the base plate. Positive values move the floor up."
       },
       "types": {
+        "hangingJoist": "Hanging Joist Floor",
         "joist": "Joist Floor",
         "monolithic": "Monolithic Floor",
         "straw": "Straw Filled Floor"
@@ -793,6 +799,7 @@ interface Resources {
       "finished-measurement_wall-length-inside": "Wall Length Inside",
       "finished-measurement_wall-length-outside": "Wall Length Outside",
       "floor-assembly_filled": "Type: Filled",
+      "floor-assembly_hanging-joist": "Type: Hanging Joist",
       "floor-assembly_joist": "Type: Joist",
       "floor-assembly_monolithic": "Type: Monolithic",
       "floor-layer_bottom": "Ceiling Finish Layers",

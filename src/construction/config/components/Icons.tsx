@@ -274,6 +274,8 @@ export function getFloorAssemblyTypeIcon(type: FloorAssemblyType): ComponentType
       return JoistIcon
     case 'filled':
       return FilledIcon
+    case 'hanging-joist':
+      return JoistIcon
   }
 }
 

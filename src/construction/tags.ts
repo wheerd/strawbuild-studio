@@ -465,6 +465,11 @@ export const TAG_FILLED_FLOOR: PredefinedTag = {
   category: 'floor-assembly'
 }
 
+export const TAG_HANGING_JOIST_FLOOR: PredefinedTag = {
+  id: 'floor-assembly_hanging-joist',
+  category: 'floor-assembly'
+}
+
 // Roof parts
 export const TAG_PURLIN: PredefinedTag = {
   id: 'roof-part_purlin',

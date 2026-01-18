@@ -231,6 +231,7 @@
     "finished-measurement_wall-length-inside": "Wall Length Inside",
     "finished-measurement_wall-length-outside": "Wall Length Outside",
     "floor-assembly_filled": "Type: Filled",
+    "floor-assembly_hanging-joist": "Type: Hanging Joist",
     "floor-assembly_joist": "Type: Joist",
     "floor-assembly_monolithic": "Type: Monolithic",
     "floor-layer_bottom": "Ceiling Finish Layers",

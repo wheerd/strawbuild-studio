@@ -58,6 +58,28 @@ const joistAssembly: FloorAssemblyConfig = {
   }
 }
 
+const hangingJoistAssembly: FloorAssemblyConfig = {
+  id: 'fa_hanging_joist_default' as FloorAssemblyId,
+  name: 'Hanging Joist 8x24cm (6cm)',
+  nameKey: $ => $.floors.defaults.hangingJoist8x24cm,
+  type: 'hanging-joist',
+  joistHeight: 240,
+  joistMaterial: glt.id,
+  joistSpacing: 800,
+  joistThickness: 80,
+  subfloorMaterial: osb.id,
+  subfloorThickness: 22,
+  openingSideMaterial: roughWood.id,
+  openingSideThickness: 60,
+  verticalOffset: 0,
+  layers: {
+    topThickness: 60,
+    topLayers: PRESET_FLOOR_SCREED.layers,
+    bottomThickness: 0,
+    bottomLayers: []
+  }
+}
+
 const filledAssembly: FloorAssemblyConfig = {
   id: 'fa_filled_default' as FloorAssemblyId,
   name: 'Filled Joist 8x36cm (6cm)',
@@ -84,5 +106,11 @@ const filledAssembly: FloorAssemblyConfig = {
   }
 }
 
-export const DEFAULT_FLOOR_ASSEMBLIES = [cltAssembly, concreteAssembly, joistAssembly, filledAssembly]
+export const DEFAULT_FLOOR_ASSEMBLIES = [
+  cltAssembly,
+  concreteAssembly,
+  joistAssembly,
+  filledAssembly,
+  hangingJoistAssembly
+]
 export { DEFAULT_FLOOR_ASSEMBLY_ID }

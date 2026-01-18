@@ -7,7 +7,12 @@ import type {
   RoofAssemblyId,
   WallAssemblyId
 } from '@/building/model'
-import type { FilledFloorConfig, JoistFloorConfig, MonolithicFloorConfig } from '@/construction/floors'
+import type {
+  FilledFloorConfig,
+  HangingJoistFloorConfig,
+  JoistFloorConfig,
+  MonolithicFloorConfig
+} from '@/construction/floors'
 import type {
   EmptyOpeningConfig,
   PlankedOpeningConfig,
@@ -119,8 +124,13 @@ export interface FloorAssemblyIdPart extends NamedAssembly {
 export type MonolithicFloorAssemblyConfig = MonolithicFloorConfig & FloorAssemblyIdPart
 export type JoistFloorAssemblyConfig = JoistFloorConfig & FloorAssemblyIdPart
 export type FilledFloorAssemblyConfig = FilledFloorConfig & FloorAssemblyIdPart
+export type HangingJoistFloorAssemblyConfig = HangingJoistFloorConfig & FloorAssemblyIdPart
 
-export type FloorAssemblyConfig = MonolithicFloorAssemblyConfig | JoistFloorAssemblyConfig | FilledFloorAssemblyConfig
+export type FloorAssemblyConfig =
+  | MonolithicFloorAssemblyConfig
+  | JoistFloorAssemblyConfig
+  | FilledFloorAssemblyConfig
+  | HangingJoistFloorAssemblyConfig
 
 // Roofs
 

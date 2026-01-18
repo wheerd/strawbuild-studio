@@ -28,6 +28,7 @@ import type {
   FilledFloorConfig,
   FloorAssemblyType,
   FloorConfig,
+  HangingJoistFloorConfig,
   JoistFloorConfig,
   MonolithicFloorConfig
 } from '@/construction/floors/types'
@@ -120,7 +121,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
             bottomLayers: []
           }
         }
-      } else {
+      } else if (type === 'filled') {
         name = t($ => $.floors.newName.filled)
         config = {
           type: 'filled',
@@ -137,6 +138,26 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           openingFrameThickness: 60,
           openingFrameMaterial: defaultMaterial,
           strawMaterial: undefined,
+          layers: {
+            topThickness: 0,
+            topLayers: [],
+            bottomThickness: 0,
+            bottomLayers: []
+          }
+        }
+      } else {
+        name = t($ => $.floors.newName.hangingJoist)
+        config = {
+          type: 'hanging-joist',
+          joistHeight: 240,
+          joistThickness: 120,
+          joistSpacing: 800,
+          joistMaterial: defaultMaterial,
+          subfloorThickness: 22,
+          subfloorMaterial: defaultMaterial,
+          openingSideThickness: 60,
+          openingSideMaterial: defaultMaterial,
+          verticalOffset: 0,
           layers: {
             topThickness: 0,
             topLayers: [],
@@ -243,6 +264,16 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
                 <Flex align="center" gap="1">
                   {React.createElement(getFloorAssemblyTypeIcon('filled'))}
                   {t($ => $.floors.types.straw)}
+                </Flex>
+              </DropdownMenu.Item>
+              <DropdownMenu.Item
+                onSelect={() => {
+                  handleAddNew('hanging-joist')
+                }}
+              >
+                <Flex align="center" gap="1">
+                  {React.createElement(getFloorAssemblyTypeIcon('hanging-joist'))}
+                  {t($ => $.floors.types.hangingJoist)}
                 </Flex>
               </DropdownMenu.Item>
             </DropdownMenu.Content>
@@ -450,7 +481,9 @@ function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.
                   ? t($ => $.floors.types.monolithic)
                   : assembly.type === 'joist'
                     ? t($ => $.floors.types.joist)
-                    : t($ => $.floors.types.straw)}
+                    : assembly.type === 'hanging-joist'
+                      ? t($ => $.floors.types.hangingJoist)
+                      : t($ => $.floors.types.straw)}
               </Text>
             </Flex>
           </Flex>
@@ -473,6 +506,9 @@ function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.
       {assembly.type === 'monolithic' && <MonolithicConfigFields config={assembly} onUpdate={handleUpdateConfig} />}
       {assembly.type === 'joist' && <JoistConfigFields config={assembly} onUpdate={handleUpdateConfig} />}
       {assembly.type === 'filled' && <FilledConfigFields config={assembly} onUpdate={handleUpdateConfig} />}
+      {assembly.type === 'hanging-joist' && (
+        <HangingJoistConfigFields config={assembly} onUpdate={handleUpdateConfig} />
+      )}
 
       <Separator size="4" />
 
@@ -1012,6 +1048,186 @@ function FilledConfigFields({
           placeholder={t($ => $.common.placeholders.selectMaterial)}
           size="2"
           preferredTypes={['strawbale']}
+        />
+      </Grid>
+    </>
+  )
+}
+
+function HangingJoistConfigFields({
+  config,
+  onUpdate
+}: {
+  config: HangingJoistFloorConfig
+  onUpdate: (updates: Partial<HangingJoistFloorConfig>) => void
+}) {
+  const { t } = useTranslation('config')
+  return (
+    <>
+      <Heading size="3">{t($ => $.floors.types.hangingJoist)}</Heading>
+
+      {/* Joists Section */}
+      <Heading size="2">{t($ => $.floors.sections.joists)}</Heading>
+      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.common.materialLabel)}
+          </Text>
+        </Label.Root>
+        <MaterialSelectWithEdit
+          value={config.joistMaterial}
+          onValueChange={joistMaterial => {
+            if (!joistMaterial) return
+            onUpdate({ joistMaterial })
+          }}
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
+          size="2"
+          preferredTypes={['dimensional']}
+        />
+
+        <Flex align="center" gap="1">
+          <Label.Root>
+            <Text size="2" weight="medium" color="gray">
+              {t($ => $.common.height)}
+            </Text>
+          </Label.Root>
+          <Tooltip content={t($ => $.floors.tips.joistHeight)}>
+            <IconButton style={{ cursor: 'help' }} color="gray" radius="full" variant="ghost" size="1">
+              <InfoCircledIcon width={12} height={12} />
+            </IconButton>
+          </Tooltip>
+        </Flex>
+        <LengthField
+          value={config.joistHeight}
+          onChange={joistHeight => {
+            onUpdate({ joistHeight })
+          }}
+          unit="mm"
+          size="2"
+        />
+
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.common.thickness)}
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={config.joistThickness}
+          onChange={joistThickness => {
+            onUpdate({ joistThickness })
+          }}
+          unit="mm"
+          size="2"
+        />
+
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.common.spacing)}
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={config.joistSpacing}
+          onChange={joistSpacing => {
+            onUpdate({ joistSpacing })
+          }}
+          unit="mm"
+          size="2"
+        />
+      </Grid>
+
+      {/* Vertical Offset Section */}
+      <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
+        <Flex align="center" gap="1">
+          <Label.Root>
+            <Text size="2" weight="medium" color="gray">
+              {t($ => $.floors.labels.verticalOffset)}
+            </Text>
+          </Label.Root>
+          <Tooltip content={t($ => $.floors.tips.verticalOffset)}>
+            <IconButton style={{ cursor: 'help' }} color="gray" radius="full" variant="ghost" size="1">
+              <InfoCircledIcon width={12} height={12} />
+            </IconButton>
+          </Tooltip>
+        </Flex>
+        <LengthField
+          value={config.verticalOffset}
+          onChange={verticalOffset => {
+            onUpdate({ verticalOffset })
+          }}
+          unit="mm"
+          size="2"
+        />
+      </Grid>
+
+      <Separator size="4" />
+
+      {/* Subfloor Section */}
+      <Heading size="2">{t($ => $.floors.sections.subfloor)}</Heading>
+      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.common.materialLabel)}
+          </Text>
+        </Label.Root>
+        <MaterialSelectWithEdit
+          value={config.subfloorMaterial}
+          onValueChange={subfloorMaterial => {
+            if (!subfloorMaterial) return
+            onUpdate({ subfloorMaterial })
+          }}
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
+          size="2"
+          preferredTypes={['sheet']}
+        />
+
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.common.thickness)}
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={config.subfloorThickness}
+          onChange={subfloorThickness => {
+            onUpdate({ subfloorThickness })
+          }}
+          unit="mm"
+          size="2"
+        />
+      </Grid>
+
+      <Separator size="4" />
+
+      {/* Opening Sides Section */}
+      <Heading size="2">{t($ => $.floors.sections.openingSides)}</Heading>
+      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.common.materialLabel)}
+          </Text>
+        </Label.Root>
+        <MaterialSelectWithEdit
+          value={config.openingSideMaterial}
+          onValueChange={openingSideMaterial => {
+            if (!openingSideMaterial) return
+            onUpdate({ openingSideMaterial })
+          }}
+          placeholder={t($ => $.common.placeholders.selectMaterial)}
+          size="2"
+          preferredTypes={['dimensional']}
+        />
+
+        <Label.Root>
+          <Text size="2" weight="medium" color="gray">
+            {t($ => $.common.thickness)}
+          </Text>
+        </Label.Root>
+        <LengthField
+          value={config.openingSideThickness}
+          onChange={openingSideThickness => {
+            onUpdate({ openingSideThickness })
+          }}
+          unit="mm"
+          size="2"
         />
       </Grid>
     </>

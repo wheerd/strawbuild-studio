@@ -42,6 +42,7 @@
       "clt18cm": "CLT 18 cm (6 cm)",
       "concrete20cm": "Beton 20 cm (6 cm)",
       "filledJoist8x36cm": "Stroh-Bodenplatte 8×36 cm (6 cm)",
+      "hangingJoist8x24cm": "Aufgehängter Balkenboden 8×24cm (6 cm)",
       "joist8x24cm": "Balkenboden 8×24 cm (6 cm)"
     },
     "delete": {
@@ -55,6 +56,7 @@
     "labels": {
       "beamHeight": "Balkenhöhe",
       "constructionHeight": "Konstruktionshöhe",
+      "verticalOffset": "Vertikaler Versatz",
       "wallBeamInsideOffset": "Innenversatz"
     },
     "layers": {
@@ -70,6 +72,7 @@
     },
     "newName": {
       "filled": "Neuer gefüllter Boden",
+      "hangingJoist": "Neuer aufgehängter Balkenboden",
       "joist": "Neuer Balkenboden",
       "monolithic": "Neuer Massivboden"
     },
@@ -90,9 +93,12 @@
     "tips": {
       "beamHeight": "Balkenhöhe. Gilt für Balken und Wandträger.",
       "constructionHeight": "Höhe der Bodenkonstruktion (Balkenhöhe).",
-      "strawMaterialOverride": "Material zur Füllung zwischen Balken. Leer lassen, um die globalen Stroheinstellungen zu verwenden."
+      "joistHeight": "Höhe der Balken.",
+      "strawMaterialOverride": "Material zur Füllung zwischen Balken. Leer lassen, um die globalen Stroheinstellungen zu verwenden.",
+      "verticalOffset": "Vertikaler Versatz zwischen Oberkante der Balken und Unterkante der Fußschwelle. Positive Werte verschieben den Boden nach oben."
     },
     "types": {
+      "hangingJoist": "Aufgehängter Balkenboden",
       "joist": "Balkenboden",
       "monolithic": "Massivboden",
       "straw": "Strohgefüllter Boden"

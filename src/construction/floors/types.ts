@@ -22,7 +22,7 @@ export interface FloorAssembly {
   get tags(): Tag[]
 }
 
-export type FloorAssemblyType = 'monolithic' | 'joist' | 'filled'
+export type FloorAssemblyType = 'monolithic' | 'joist' | 'filled' | 'hanging-joist'
 
 export interface FloorAssemblyConfigBase {
   type: FloorAssemblyType
@@ -63,6 +63,23 @@ export interface JoistFloorConfig extends FloorAssemblyConfigBase {
   openingSideMaterial: MaterialId
 }
 
+export interface HangingJoistFloorConfig extends FloorAssemblyConfigBase {
+  type: 'hanging-joist'
+
+  joistHeight: Length
+  joistThickness: Length
+  joistSpacing: Length
+  joistMaterial: MaterialId
+
+  subfloorThickness: Length
+  subfloorMaterial: MaterialId
+
+  openingSideThickness: Length
+  openingSideMaterial: MaterialId
+
+  verticalOffset: Length
+}
+
 export interface FilledFloorConfig extends FloorAssemblyConfigBase {
   type: 'filled'
 
@@ -87,7 +104,7 @@ export interface FilledFloorConfig extends FloorAssemblyConfigBase {
   strawMaterial?: MaterialId
 }
 
-export type FloorConfig = MonolithicFloorConfig | JoistFloorConfig | FilledFloorConfig
+export type FloorConfig = MonolithicFloorConfig | JoistFloorConfig | FilledFloorConfig | HangingJoistFloorConfig
 
 // Validation
 
@@ -105,6 +122,9 @@ export const validateFloorConfig = (config: FloorConfig): void => {
       break
     case 'filled':
       validateFilledFloorConfig(config)
+      break
+    case 'hanging-joist':
+      validateHangingJoistFloorConfig(config)
       break
     default:
       assertUnreachable(config, 'Invalid floor assembly type')
@@ -147,5 +167,17 @@ const validateFilledFloorConfig = (config: FilledFloorConfig): void => {
   }
   if (config.openingFrameThickness <= 0) {
     throw new Error('Opening frame thickness must be greater than 0')
+  }
+}
+
+const validateHangingJoistFloorConfig = (config: HangingJoistFloorConfig): void => {
+  if (config.joistHeight <= 0 || config.joistThickness <= 0) {
+    throw new Error('Joist dimensions must be greater than 0')
+  }
+  if (config.joistSpacing <= 0) {
+    throw new Error('Joist spacing must be greater than 0')
+  }
+  if (config.subfloorThickness <= 0) {
+    throw new Error('Subfloor thickness must be greater than 0')
   }
 }
