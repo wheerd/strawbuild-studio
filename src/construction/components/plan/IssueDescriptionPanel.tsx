@@ -1,5 +1,5 @@
 import { CheckCircledIcon, CrossCircledIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
-import { Callout, Flex, Text } from '@radix-ui/themes'
+import { Callout } from '@radix-ui/themes'
 import { use } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -17,7 +17,7 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
   const { t } = useTranslation('construction')
 
   return (
-    <Flex direction="column" gap="2" p="2" style={{ maxHeight: '120px', overflowY: 'auto' }}>
+    <div className="flex-col gap-2 p-2" style={{ maxHeight: '120px', overflowY: 'auto' }}>
       {model ? (
         <>
           {model.errors.length > 0 && (
@@ -25,21 +25,21 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
               <Callout.Icon>
                 <CrossCircledIcon />
               </Callout.Icon>
-              <Flex direction="column" gap="2">
-                <Text weight="medium" size="2">
+              <div className="flex flex-col gap-2">
+                <span className="font-medium text-base">
                   {t($ => $.planModal.issuesPanel.errorsTitle, { count: model.errors.length })}
-                </Text>
-                <Flex direction="column" gap="1">
+                </span>
+                <div className="flex flex-col gap-1">
                   {model.errors.map(error => (
-                    <Text
+                    <span
                       key={error.id}
-                      size="1"
                       onMouseEnter={() => {
                         setHoveredIssueId(error.id)
                       }}
                       onMouseLeave={() => {
                         setHoveredIssueId(null)
                       }}
+                      className="text-sm"
                       style={{
                         cursor: 'pointer',
                         padding: 'var(--space-1)',
@@ -50,10 +50,10 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
                       }}
                     >
                       • {t(error.messageKey, { ...error.params, ns: 'errors' })}
-                    </Text>
+                    </span>
                   ))}
-                </Flex>
-              </Flex>
+                </div>
+              </div>
             </Callout.Root>
           )}
 
@@ -62,15 +62,15 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
               <Callout.Icon>
                 <ExclamationTriangleIcon />
               </Callout.Icon>
-              <Flex direction="column" gap="2">
-                <Text weight="medium" size="2">
+              <div className="flex flex-col gap-2">
+                <span className="font-medium text-base">
                   {t($ => $.planModal.issuesPanel.warningsTitle, { count: model.warnings.length })}
-                </Text>
-                <Flex direction="column" gap="1">
+                </span>
+                <div className="flex flex-col gap-1">
                   {model.warnings.map(warning => (
-                    <Text
+                    <span
                       key={warning.id}
-                      size="1"
+                      className="text-sm"
                       onMouseEnter={() => {
                         setHoveredIssueId(warning.id)
                       }}
@@ -87,10 +87,10 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
                       }}
                     >
                       • {t(warning.messageKey, { ...warning.params, ns: 'errors' })}
-                    </Text>
+                    </span>
                   ))}
-                </Flex>
-              </Flex>
+                </div>
+              </div>
             </Callout.Root>
           )}
 
@@ -99,12 +99,10 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
               <Callout.Icon>
                 <CheckCircledIcon />
               </Callout.Icon>
-              <Flex direction="column" gap="1">
-                <Text weight="medium" size="2">
-                  {t($ => $.planModal.issuesPanel.noIssuesTitle)}
-                </Text>
-                <Text size="1">{t($ => $.planModal.issuesPanel.noIssuesMessage)}</Text>
-              </Flex>
+              <div className="flex flex-col gap-1">
+                <span className="font-medium text-base">{t($ => $.planModal.issuesPanel.noIssuesTitle)}</span>
+                <span className="text-sm">{t($ => $.planModal.issuesPanel.noIssuesMessage)}</span>
+              </div>
             </Callout.Root>
           )}
         </>
@@ -116,6 +114,6 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
           <Callout.Text>{t($ => $.planModal.errors.failedModel)}</Callout.Text>
         </Callout.Root>
       )}
-    </Flex>
+    </div>
   )
 }

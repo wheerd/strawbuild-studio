@@ -1,7 +1,8 @@
-import { Box, Button, Flex, Heading, Separator, Text } from '@radix-ui/themes'
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
 import { hardReset } from '@/shared/utils/hardReset'
 
@@ -30,63 +31,55 @@ export function TestDataToolInspector({ tool }: ToolInspectorProps<TestDataTool>
   }, [tool, t])
 
   return (
-    <Box p="2">
-      <Flex direction="column" gap="3">
+    <div className="p-2">
+      <div className="flex flex-col gap-3">
         {/* Test Data Generation Section */}
-        <Box>
-          <Heading size="2" weight="medium" mb="2" color="gray">
-            {t($ => $.testData.generationHeading)}
-          </Heading>
+        <div>
+          <h2 className="text-sm font-medium mb-2 text-muted-foreground">{t($ => $.testData.generationHeading)}</h2>
 
-          <Flex direction="column" gap="2">
+          <div className="flex flex-col gap-2">
             {/* Cross/T-Shape Perimeter */}
-            <Button className="w-full" size="2" onClick={handleCreateCrossShaped}>
+            <Button className="w-full" size="sm" onClick={handleCreateCrossShaped}>
               {t($ => $.testData.crossShaped)}
             </Button>
 
             {/* Hexagonal Perimeter */}
-            <Button className="w-full" size="2" onClick={handleCreateHexagonal}>
+            <Button className="w-full" size="sm" onClick={handleCreateHexagonal}>
               {t($ => $.testData.hexagonal)}
             </Button>
 
             {/* Rectangular Perimeter */}
-            <Button className="w-full" size="2" onClick={handleCreateRectangular}>
+            <Button className="w-full" size="sm" onClick={handleCreateRectangular}>
               {t($ => $.testData.rectangular)}
             </Button>
-          </Flex>
-        </Box>
+          </div>
+        </div>
 
         {/* Separator */}
-        <Separator size="4" />
+        <Separator />
 
         {/* Danger Zone Section */}
-        <Box>
-          <Heading size="2" weight="medium" mb="2" color="red">
-            {t($ => $.testData.dangerZone)}
-          </Heading>
+        <div>
+          <h2 className="text-sm font-medium mb-2 text-destructive">{t($ => $.testData.dangerZone)}</h2>
 
-          <Flex direction="column" gap="2">
-            <Button className="w-full" size="2" color="red" variant="solid" onClick={handleResetData}>
+          <div className="flex flex-col gap-2">
+            <Button className="w-full" size="sm" variant="destructive" onClick={handleResetData}>
               {t($ => $.testData.resetAll)}
             </Button>
-            <Button className="w-full" size="2" color="red" variant="solid" onClick={hardReset}>
+            <Button className="w-full" size="sm" variant="destructive" onClick={hardReset}>
               {t($ => $.testData.hardReset)}
             </Button>
 
-            <Text size="1" color="gray">
-              {t($ => $.testData.resetWarning)}
-            </Text>
-          </Flex>
-        </Box>
+            <span className="text-xs text-muted-foreground">{t($ => $.testData.resetWarning)}</span>
+          </div>
+        </div>
 
         {/* Instructions */}
-        <Separator size="4" />
-        <Box>
-          <Text size="1" color="gray">
-            {t($ => $.testData.instructions)}
-          </Text>
-        </Box>
-      </Flex>
-    </Box>
+        <Separator />
+        <div>
+          <span className="text-xs text-muted-foreground">{t($ => $.testData.instructions)}</span>
+        </div>
+      </div>
+    </div>
   )
 }

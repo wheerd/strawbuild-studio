@@ -1,5 +1,5 @@
 import { ChevronDownIcon, ChevronUpIcon, CopyIcon, EnterIcon, HeightIcon, TrashIcon } from '@radix-ui/react-icons'
-import { AlertDialog, Button, Card, Code, Flex, IconButton, Text, TextField } from '@radix-ui/themes'
+import { AlertDialog, Button, Card, Code, IconButton, TextField } from '@radix-ui/themes'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -135,26 +135,24 @@ export function StoreyListItem({
 
   return (
     <Card style={isActive ? { background: 'var(--accent-5)' } : {}}>
-      <Flex align="center" gap="2">
+      <div className="flex items-center gap-2">
         {/* Level indicator */}
-        <Flex direction="column" align="center" gap="0" width="4rem">
-          <Code variant="ghost" size="2" color={getLevelColor(storey.level)} weight="bold">
+        <div className="flex-col items-center gap-0 w-[4rem]">
+          <Code variant="ghost" size="2" color={getLevelColor(storey.level)} font-bold>
             L{storey.level}
           </Code>
-          <Code variant="ghost" size="1" color="gray">
+          <Code variant="ghost" size="1" text-gray-900>
             {storey.level === 0
               ? t($ => $.storeys.ground)
               : storey.level > 0
                 ? t($ => $.storeys.floor, { level: storey.level })
                 : t($ => $.storeys.basement, { level: Math.abs(storey.level) })}
           </Code>
-        </Flex>
+        </div>
 
         {/* Editable name */}
-        <Flex direction="column" gap="1" flexGrow="1">
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.storeys.name)}
-          </Text>
+        <div className="flex-col gap-1 grow-1">
+          <span className="text-sm font-medium text-gray-900">{t($ => $.storeys.name)}</span>
           <TextField.Root
             ref={nameFieldRef}
             value={editName}
@@ -165,16 +163,14 @@ export function StoreyListItem({
             required
             style={{ minWidth: '150px', flexGrow: 1 }}
           />
-        </Flex>
+        </div>
 
         {/* Floor height input */}
-        <Flex direction="column" gap="1">
-          <Flex align="center" gap="1">
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.storeys.floorHeight)}
-            </Text>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1">
+            <span className="text-sm font-medium text-gray-900">{t($ => $.storeys.floorHeight)}</span>
             <MeasurementInfo highlightedMeasurement="storeyHeight" />
-          </Flex>
+          </div>
           <LengthField
             min={1000}
             max={10000}
@@ -192,16 +188,14 @@ export function StoreyListItem({
               <HeightIcon />
             </TextField.Slot>
           </LengthField>
-        </Flex>
+        </div>
 
         {/* Floor Assembly Configuration */}
-        <Flex direction="column" gap="1">
-          <Flex align="center" gap="1">
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.storeys.floorAssembly)}
-            </Text>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1">
+            <span className="text-sm font-medium text-gray-900">{t($ => $.storeys.floorAssembly)}</span>
             <MeasurementInfo highlightedAssembly="floorAssembly" />
-          </Flex>
+          </div>
           <FloorAssemblySelectWithEdit
             value={storey.floorAssemblyId}
             onValueChange={value => {
@@ -209,11 +203,11 @@ export function StoreyListItem({
             }}
             size="2"
           />
-        </Flex>
+        </div>
 
         {/* Action buttons */}
-        <Flex gap="1" align="center">
-          <Flex direction="column" gap="1">
+        <div className="gap-1 items-center">
+          <div className="flex flex-col gap-1">
             <IconButton size="1" onClick={handleMoveUp} disabled={!canMoveUp} title={t($ => $.storeys.moveUp)}>
               <ChevronUpIcon />
             </IconButton>
@@ -221,7 +215,7 @@ export function StoreyListItem({
             <IconButton size="1" onClick={handleMoveDown} disabled={!canMoveDown} title={t($ => $.storeys.moveDown)}>
               <ChevronDownIcon />
             </IconButton>
-          </Flex>
+          </div>
 
           <IconButton onClick={handleDuplicate} title={t($ => $.storeys.duplicateFloor)} variant="soft">
             <CopyIcon />
@@ -237,16 +231,16 @@ export function StoreyListItem({
               <AlertDialog.Title>{t($ => $.storeys.deleteFloorTitle)}</AlertDialog.Title>
               <AlertDialog.Description size="2">{t($ => $.storeys.deleteFloorConfirm)}</AlertDialog.Description>
 
-              <Flex gap="3" justify="end">
+              <div className="gap-3 justify-end">
                 <AlertDialog.Cancel>
-                  <Button variant="soft" color="gray">
+                  <Button variant="soft" text-gray-900>
                     {t($ => $.actions.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action onClick={handleDelete}>
                   <Button color="red">{t($ => $.storeys.deleteFloorTitle)}</Button>
                 </AlertDialog.Action>
-              </Flex>
+              </div>
             </AlertDialog.Content>
           </AlertDialog.Root>
 
@@ -260,8 +254,8 @@ export function StoreyListItem({
           >
             <EnterIcon />
           </IconButton>
-        </Flex>
-      </Flex>
+        </div>
+      </div>
     </Card>
   )
 }

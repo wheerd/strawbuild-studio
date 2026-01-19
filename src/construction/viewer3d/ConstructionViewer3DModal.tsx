@@ -1,4 +1,4 @@
-import { Skeleton, Spinner, Text } from '@radix-ui/themes'
+import { Skeleton, Spinner } from '@radix-ui/themes'
 import React, { Suspense, lazy, use, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -141,11 +141,11 @@ function ConstructionViewer3DContent({
   if (!constructionModel) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Text align="center" color="gray">
-          <Text size="6">⚠</Text>
+        <span className="items-center text-gray-900">
+          <span className="text-6xl">⚠</span>
           <br />
-          <Text size="2">{t($ => $.planModal.errors.failedModel)}</Text>
-        </Text>
+          <span className="text-base">{t($ => $.planModal.errors.failedModel)}</span>
+        </span>
       </div>
     )
   }

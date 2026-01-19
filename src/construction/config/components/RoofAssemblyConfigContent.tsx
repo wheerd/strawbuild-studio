@@ -1,18 +1,6 @@
 import { ComponentInstanceIcon, CopyIcon, PlusIcon, ResetIcon, SquareIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import {
-  AlertDialog,
-  Badge,
-  Button,
-  DropdownMenu,
-  Flex,
-  Grid,
-  Heading,
-  IconButton,
-  Separator,
-  Text,
-  TextField
-} from '@radix-ui/themes'
+import { AlertDialog, Badge, Button, DropdownMenu, Heading, IconButton, Separator, TextField } from '@radix-ui/themes'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -44,15 +32,13 @@ interface MonolithicRoofConfigFormProps {
 function MonolithicRoofConfigForm({ config, onUpdate }: MonolithicRoofConfigFormProps): React.JSX.Element {
   const { t } = useTranslation('config')
   return (
-    <Flex direction="column" gap="3">
+    <div className="flex flex-col gap-3">
       <Heading size="2">{t($ => $.roofs.sections.monolithicConfiguration)}</Heading>
 
-      <Grid columns="2" gap="2" gapX="3">
-        <Flex direction="column" gap="1">
+      <div className="grid-cols-2 gap-2 gap-x-3">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.common.materialLabel)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
           </Label.Root>
           <MaterialSelectWithEdit
             value={config.material}
@@ -63,13 +49,11 @@ function MonolithicRoofConfigForm({ config, onUpdate }: MonolithicRoofConfigForm
             size="1"
             preferredTypes={['sheet']}
           />
-        </Flex>
+        </div>
 
-        <Flex direction="column" gap="1">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.common.thickness)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.common.thickness)}</span>
           </Label.Root>
           <LengthField
             value={config.thickness}
@@ -81,9 +65,9 @@ function MonolithicRoofConfigForm({ config, onUpdate }: MonolithicRoofConfigForm
             step={10}
             size="1"
           />
-        </Flex>
-      </Grid>
-    </Flex>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -95,17 +79,15 @@ interface PurlinRoofConfigFormProps {
 function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): React.JSX.Element {
   const { t } = useTranslation('config')
   return (
-    <Flex direction="column" gap="3">
+    <div className="flex flex-col gap-3">
       {/* Straw Configuration */}
 
       <Heading size="2">{t($ => $.roofs.sections.straw)}</Heading>
 
-      <Grid columns="2" gap="2" gapX="3">
-        <Flex direction="column" gap="1">
+      <div className="grid-cols-2 gap-2 gap-x-3">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.common.layerThickness)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.common.layerThickness)}</span>
           </Label.Root>
           <LengthField
             value={config.thickness}
@@ -117,13 +99,11 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             step={10}
             size="1"
           />
-        </Flex>
+        </div>
 
-        <Flex direction="column" gap="1">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.common.strawMaterialOverride)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.common.strawMaterialOverride)}</span>
           </Label.Root>
           <MaterialSelectWithEdit
             value={config.strawMaterial ?? null}
@@ -135,19 +115,17 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             size="1"
             preferredTypes={['strawbale']}
           />
-        </Flex>
-      </Grid>
+        </div>
+      </div>
 
       <Separator size="4" />
 
       {/* Purlin Configuration */}
       <Heading size="2">{t($ => $.roofs.sections.purlins)}</Heading>
-      <Grid columns="2" gap="2" gapX="3">
-        <Flex direction="column" gap="1">
+      <div className="grid-cols-2 gap-2 gap-x-3">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.common.materialLabel)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
           </Label.Root>
           <MaterialSelectWithEdit
             value={config.purlinMaterial}
@@ -158,13 +136,11 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             size="1"
             preferredTypes={['dimensional']}
           />
-        </Flex>
+        </div>
 
-        <Flex direction="column" gap="1">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.common.height)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.common.height)}</span>
           </Label.Root>
           <LengthField
             value={config.purlinHeight}
@@ -176,13 +152,11 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             step={10}
             size="1"
           />
-        </Flex>
+        </div>
 
-        <Flex direction="column" gap="1">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.common.inset)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.common.inset)}</span>
           </Label.Root>
           <LengthField
             value={config.purlinInset}
@@ -193,13 +167,11 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             min={0}
             size="1"
           />
-        </Flex>
+        </div>
 
-        <Flex direction="column" gap="1">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.common.width)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.common.width)}</span>
           </Label.Root>
           <LengthField
             value={config.purlinWidth}
@@ -211,13 +183,11 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             step={10}
             size="1"
           />
-        </Flex>
+        </div>
 
-        <Flex direction="column" gap="1">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.common.spacing)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.common.spacing)}</span>
           </Label.Root>
           <LengthField
             value={config.purlinSpacing}
@@ -229,19 +199,17 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             step={100}
             size="1"
           />
-        </Flex>
-      </Grid>
+        </div>
+      </div>
 
       <Separator size="4" />
 
       {/* Rafter Configuration */}
       <Heading size="2">{t($ => $.roofs.sections.rafters)}</Heading>
-      <Grid columns="2" gap="2" gapX="3">
-        <Flex direction="column" gap="1">
+      <div className="grid-cols-2 gap-2 gap-x-3">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.common.materialLabel)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
           </Label.Root>
           <MaterialSelectWithEdit
             value={config.rafterMaterial}
@@ -252,13 +220,11 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             size="1"
             preferredTypes={['dimensional']}
           />
-        </Flex>
+        </div>
 
-        <Flex direction="column" gap="1">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.common.width)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.common.width)}</span>
           </Label.Root>
           <LengthField
             value={config.rafterWidth}
@@ -270,13 +236,11 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             step={10}
             size="1"
           />
-        </Flex>
+        </div>
 
-        <Flex direction="column" gap="1">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.roofs.labels.spacingMin)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.roofs.labels.spacingMin)}</span>
           </Label.Root>
           <LengthField
             value={config.rafterSpacingMin}
@@ -288,13 +252,11 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             step={10}
             size="1"
           />
-        </Flex>
+        </div>
 
-        <Flex direction="column" gap="1">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.roofs.labels.spacingTarget)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.roofs.labels.spacingTarget)}</span>
           </Label.Root>
           <LengthField
             value={config.rafterSpacing}
@@ -306,19 +268,17 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             step={100}
             size="1"
           />
-        </Flex>
-      </Grid>
+        </div>
+      </div>
 
       <Separator size="4" />
 
       <Heading size="2">{t($ => $.roofs.sections.decking)}</Heading>
 
-      <Grid columns="2" gap="2" gapX="3">
-        <Flex direction="column" gap="1">
+      <div className="grid-cols-2 gap-2 gap-x-3">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.common.materialLabel)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
           </Label.Root>
           <MaterialSelectWithEdit
             value={config.deckingMaterial}
@@ -329,13 +289,11 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             size="1"
             preferredTypes={['sheet']}
           />
-        </Flex>
+        </div>
 
-        <Flex direction="column" gap="1">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.common.thickness)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.common.thickness)}</span>
           </Label.Root>
           <LengthField
             value={config.deckingThickness}
@@ -346,19 +304,17 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             min={0}
             size="1"
           />
-        </Flex>
-      </Grid>
+        </div>
+      </div>
 
       <Separator size="4" />
 
       <Heading size="2">{t($ => $.roofs.sections.ceilingSheathing)}</Heading>
 
-      <Grid columns="2" gap="2" gapX="3">
-        <Flex direction="column" gap="1">
+      <div className="grid-cols-2 gap-2 gap-x-3">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.common.materialLabel)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
           </Label.Root>
           <MaterialSelectWithEdit
             value={config.ceilingSheathingMaterial}
@@ -369,13 +325,11 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             size="1"
             preferredTypes={['sheet']}
           />
-        </Flex>
+        </div>
 
-        <Flex direction="column" gap="1">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.common.thickness)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.common.thickness)}</span>
           </Label.Root>
           <LengthField
             value={config.ceilingSheathingThickness}
@@ -386,9 +340,9 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             min={0}
             size="1"
           />
-        </Flex>
-      </Grid>
-    </Flex>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -462,7 +416,7 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
   const mapTopIndex = (displayIndex: number) => topLayers.length - 1 - displayIndex
 
   return (
-    <Flex direction="column" gap="3">
+    <div className="flex flex-col gap-3">
       <LayerListEditor
         title={t($ => $.roofs.layers.insideLayers)}
         layers={config.layers.insideLayers}
@@ -547,7 +501,7 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
         beforeLabel={t($ => $.roofs.overhang)}
         afterLabel={t($ => $.roofs.outside)}
       />
-    </Flex>
+    </div>
   )
 }
 
@@ -585,19 +539,18 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
   }, [assembly, formatLength])
 
   return (
-    <Flex
-      direction="column"
-      gap="3"
-      p="3"
+    <div
+      className="flex-col
+      gap-3
+      p-3
+      "
       style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
     >
       {/* Basic Info - Full Width */}
-      <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
-        <Grid columns="auto 1fr" gapX="2" align="center">
+      <div className="grid-cols-2 gap-2 gap-x-3 items-center">
+        <div className="grid-cols-[auto_1fr] gap-x-2 items-center">
           <Label.Root>
-            <Text size="2" weight="medium" color="gray">
-              {t($ => $.common.name)}
-            </Text>
+            <span className="text-base font-medium text-gray-900">{t($ => $.common.name)}</span>
           </Label.Root>
           <TextField.Root
             value={nameInput.value}
@@ -609,50 +562,42 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
             placeholder={t($ => $.common.placeholders.name)}
             size="2"
           />
-        </Grid>
+        </div>
 
-        <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
-          <Flex gap="2" align="center">
+        <div className="grid-cols-2 gap-2 gap-x-3 items-center">
+          <div className="gap-2 items-center">
             <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                {t($ => $.common.type)}
-              </Text>
+              <span className="text-base font-medium text-gray-900">{t($ => $.common.type)}</span>
             </Label.Root>
-            <Flex gap="2" align="center">
+            <div className="gap-2 items-center">
               {React.createElement(getRoofAssemblyTypeIcon(assembly.type))}
-              <Text size="2" color="gray">
-                {t($ => $.roofs.types[assembly.type])}
-              </Text>
-            </Flex>
-          </Flex>
+              <span className="text-base text-gray-900">{t($ => $.roofs.types[assembly.type])}</span>
+            </div>
+          </div>
 
-          <Flex gap="2" align="center">
+          <div className="gap-2 items-center">
             <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                {t($ => $.common.totalThickness)}
-              </Text>
+              <span className="text-base font-medium text-gray-900">{t($ => $.common.totalThickness)}</span>
             </Label.Root>
-            <Text size="2" color="gray">
-              {totalThickness}
-            </Text>
-          </Flex>
-        </Grid>
-      </Grid>
+            <span className="text-base text-gray-900">{totalThickness}</span>
+          </div>
+        </div>
+      </div>
       <Separator size="4" />
       {/* Two Column Layout */}
-      <Grid columns="2" gap="4" style={{ gridTemplateColumns: '1fr 1fr' }}>
+      <div className="grid-cols-2 gap-4 style={{ gridTemplateColumns: '1fr 1fr' }}">
         {/* Left Column - Type-specific configuration */}
-        <Flex direction="column" gap="3">
+        <div className="flex flex-col gap-3">
           {assembly.type === 'monolithic' && <MonolithicRoofConfigForm config={assembly} onUpdate={updateConfig} />}
           {assembly.type === 'purlin' && <PurlinRoofConfigForm config={assembly} onUpdate={updateConfig} />}
-        </Flex>
+        </div>
 
         {/* Right Column - Layer sections */}
-        <Flex direction="column" gap="3">
+        <div className="flex flex-col gap-3">
           <LayerSections assemblyId={assembly.id} config={assembly} />
-        </Flex>
-      </Grid>
-    </Flex>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -785,19 +730,19 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
   }, [resetRoofAssembliesToDefaults, selectedAssemblyId, roofAssemblies])
 
   return (
-    <Flex direction="column" gap="4" style={{ width: '100%' }}>
+    <div className="flex-col gap-4" style={{ width: '100%' }}>
       {/* Selector + Actions */}
-      <Flex direction="column" gap="2">
-        <Grid columns="2" gap="2">
-          <Flex gap="2" align="end">
-            <Flex direction="column" gap="1" flexGrow="1">
+      <div className="flex flex-col gap-2">
+        <div className="grid-cols-2 gap-2">
+          <div className="gap-2 items-end">
+            <div className="flex-col gap-1 grow-1">
               <RoofAssemblySelect
                 value={selectedAssemblyId as RoofAssemblyId | undefined}
                 onValueChange={setSelectedAssemblyId}
                 showDefaultIndicator
                 defaultAssemblyId={defaultAssemblyId}
               />
-            </Flex>
+            </div>
 
             <DropdownMenu.Root>
               <DropdownMenu.Trigger>
@@ -811,20 +756,20 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
                     handleAddNew('monolithic')
                   }}
                 >
-                  <Flex align="center" gap="1">
+                  <div className="flex items-center gap-1">
                     <SquareIcon />
                     {t($ => $.roofs.types.monolithic)}
-                  </Flex>
+                  </div>
                 </DropdownMenu.Item>
                 <DropdownMenu.Item
                   onSelect={() => {
                     handleAddNew('purlin')
                   }}
                 >
-                  <Flex align="center" gap="1">
+                  <div className="flex items-center gap-1">
                     <ComponentInstanceIcon />
                     {t($ => $.roofs.types.purlin)}
-                  </Flex>
+                  </div>
                 </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Root>
@@ -853,9 +798,9 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
                 <AlertDialog.Description>
                   {t($ => $.roofs.deleteConfirm, { name: selectedAssembly?.name })}
                 </AlertDialog.Description>
-                <Flex gap="3" mt="4" justify="end">
+                <div className="gap-3 mt-4 justify-end">
                   <AlertDialog.Cancel>
-                    <Button variant="soft" color="gray">
+                    <Button variant="soft" text-gray-900>
                       {t($ => $.common.cancel)}
                     </Button>
                   </AlertDialog.Cancel>
@@ -864,7 +809,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
                       {t($ => $.common.delete)}
                     </Button>
                   </AlertDialog.Action>
-                </Flex>
+                </div>
               </AlertDialog.Content>
             </AlertDialog.Root>
 
@@ -877,9 +822,9 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
               <AlertDialog.Content>
                 <AlertDialog.Title>{t($ => $.roofs.resetTitle)}</AlertDialog.Title>
                 <AlertDialog.Description>{t($ => $.roofs.resetConfirm)}</AlertDialog.Description>
-                <Flex gap="3" mt="4" justify="end">
+                <div className="gap-3 mt-4 justify-end">
                   <AlertDialog.Cancel>
-                    <Button variant="soft" color="gray">
+                    <Button variant="soft" text-gray-900>
                       {t($ => $.common.cancel)}
                     </Button>
                   </AlertDialog.Cancel>
@@ -888,19 +833,17 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
                       {t($ => $.common.reset)}
                     </Button>
                   </AlertDialog.Action>
-                </Flex>
+                </div>
               </AlertDialog.Content>
             </AlertDialog.Root>
-          </Flex>
+          </div>
 
-          <Grid columns="auto 1fr" gap="2" align="center">
+          <div className="grid-cols-[auto_1fr] gap-2 items-center">
             <Label.Root>
-              <Flex align="center" gap="1">
-                <Text size="1" weight="medium" color="gray">
-                  {t($ => $.roofs.defaultRoofAssembly)}
-                </Text>
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-medium text-gray-900">{t($ => $.roofs.defaultRoofAssembly)}</span>
                 <RoofMeasurementInfo highlightedAssembly="roofAssembly" />
-              </Flex>
+              </div>
             </Label.Root>
             <RoofAssemblySelect
               value={defaultAssemblyId}
@@ -910,18 +853,18 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
               placeholder={t($ => $.common.placeholders.selectDefault)}
               size="2"
             />
-          </Grid>
-        </Grid>
-      </Flex>
+          </div>
+        </div>
+      </div>
       {/* Form */}
       {selectedAssembly && <ConfigForm assembly={selectedAssembly} />}
       {!selectedAssembly && roofAssemblies.length === 0 && (
-        <Flex justify="center" align="center" p="5">
-          <Text color="gray">{t($ => $.roofs.emptyList)}</Text>
-        </Flex>
+        <div className="justify-center items-center p-5">
+          <span className="text-gray-900">{t($ => $.roofs.emptyList)}</span>
+        </div>
       )}
       {usage.isUsed && <UsageDisplay usage={usage} />}
-    </Flex>
+    </div>
   )
 }
 
@@ -938,13 +881,11 @@ function UsageDisplay({ usage }: { usage: RoofAssemblyUsage }): React.JSX.Elemen
   const { t } = useTranslation('config')
 
   return (
-    <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
+    <div className="grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
       <Label.Root>
-        <Text size="2" weight="medium" color="gray">
-          {t($ => $.usage.usedBy)}
-        </Text>
+        <span className="text-base font-medium text-gray-900">{t($ => $.usage.usedBy)}</span>
       </Label.Root>
-      <Flex gap="1" wrap="wrap">
+      <div className="gap-1 flex-wrap">
         {usage.isDefault && (
           <Badge size="2" variant="soft" color="blue">
             {t($ => $.usage.globalDefault_roof)}
@@ -953,7 +894,7 @@ function UsageDisplay({ usage }: { usage: RoofAssemblyUsage }): React.JSX.Elemen
         {usage.storeyIds.map(id => (
           <UsageBadge key={id} id={id} />
         ))}
-      </Flex>
-    </Grid>
+      </div>
+    </div>
   )
 }

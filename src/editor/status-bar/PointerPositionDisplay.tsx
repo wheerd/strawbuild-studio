@@ -1,5 +1,4 @@
 import { CursorArrowIcon } from '@radix-ui/react-icons'
-import { Code, Flex } from '@radix-ui/themes'
 import React from 'react'
 
 import { usePointerWorldPosition } from '@/editor/hooks/usePointerPosition'
@@ -9,11 +8,11 @@ export function PointerPositionDisplay(): React.JSX.Element {
   const { formatLength } = useFormatters()
   const pointer = usePointerWorldPosition()
   return (
-    <Flex align="center" gap="2">
-      <CursorArrowIcon />
-      <Code size="1" variant="ghost">
+    <div className="flex items-center gap-2">
+      <CursorArrowIcon className="h-4 w-4" />
+      <code className="text-xs font-mono text-muted-foreground">
         {pointer ? `${formatLength(pointer[0])},${formatLength(pointer[1])}` : '--'}
-      </Code>
-    </Flex>
+      </code>
+    </div>
   )
 }

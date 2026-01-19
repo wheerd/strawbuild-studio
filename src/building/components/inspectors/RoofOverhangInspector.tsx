@@ -1,5 +1,5 @@
 import * as Label from '@radix-ui/react-label'
-import { Box, Callout, Flex, IconButton, Separator, Text } from '@radix-ui/themes'
+import { Callout, IconButton, Separator } from '@radix-ui/themes'
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -24,33 +24,31 @@ export function RoofOverhangInspector({ overhangId }: { overhangId: RoofOverhang
 
   if (!overhang) {
     return (
-      <Box p="2">
+      <div className="p-2">
         <Callout.Root color="red">
           <Callout.Text>
-            <Text weight="bold">{t($ => $.roofOverhang.notFound)}</Text>
+            <span className="font-bold">{t($ => $.roofOverhang.notFound)}</span>
           </Callout.Text>
         </Callout.Root>
-      </Box>
+      </div>
     )
   }
 
   return (
-    <Box p="2">
-      <Flex direction="column" gap="3">
-        <Text size="2" weight="bold">
+    <div className="p-2">
+      <div className="flex flex-col gap-3">
+        <span className="text-base font-bold">
           {t($ => $.roofOverhang.title, {
             side: overhang.sideIndex + 1
           })}
-        </Text>
+        </span>
 
         <Separator size="4" />
 
         {/* Overhang Value */}
-        <Flex align="center" gap="2" justify="between">
+        <div className="items-center gap-2 justify-between">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.roofOverhang.overhang)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.roofOverhang.overhang)}</span>
           </Label.Root>
           <LengthField
             value={overhang.value}
@@ -62,17 +60,17 @@ export function RoofOverhangInspector({ overhangId }: { overhangId: RoofOverhang
             unit="cm"
             style={{ width: '7em' }}
           />
-        </Flex>
+        </div>
 
         <Separator size="4" />
 
         {/* Actions */}
-        <Flex gap="2" justify="end">
+        <div className="flex justify-end gap-2">
           <IconButton size="2" title={t($ => $.roofOverhang.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
           </IconButton>
-        </Flex>
-      </Flex>
-    </Box>
+        </div>
+      </div>
+    </div>
   )
 }

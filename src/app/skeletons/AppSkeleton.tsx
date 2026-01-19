@@ -1,11 +1,10 @@
-import { Box, Flex } from '@radix-ui/themes'
 import React from 'react'
 
 import { EditorSkeleton, SidePanelSkeleton, ToolbarSkeleton } from '.'
 
 export function AppSkeleton(): React.JSX.Element {
   return (
-    <Box
+    <div
       style={{
         width: '100vw',
         height: '100vh',
@@ -16,14 +15,14 @@ export function AppSkeleton(): React.JSX.Element {
       }}
       data-testid="app-skeleton"
     >
-      <Box style={{ flexShrink: 0, zIndex: 100, borderBottom: '1px solid var(--gray-6)' }}>
+      <div style={{ flexShrink: 0, zIndex: 100, borderBottom: '1px solid var(--gray-6)' }}>
         <ToolbarSkeleton />
-      </Box>
+      </div>
 
-      <Flex style={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
+      <div className="flex" style={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
         <EditorSkeleton />
 
-        <Box
+        <div
           style={{
             width: '320px',
             flexShrink: 0,
@@ -32,8 +31,8 @@ export function AppSkeleton(): React.JSX.Element {
           }}
         >
           <SidePanelSkeleton />
-        </Box>
-      </Flex>
-    </Box>
+        </div>
+      </div>
+    </div>
   )
 }

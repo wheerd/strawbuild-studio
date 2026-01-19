@@ -1,5 +1,5 @@
 import { CubeIcon, ExclamationTriangleIcon, GroupIcon, RulerHorizontalIcon } from '@radix-ui/react-icons'
-import { Box, Card, Flex, Grid, Heading, IconButton, SegmentedControl, Text } from '@radix-ui/themes'
+import { Card, Heading, IconButton, SegmentedControl } from '@radix-ui/themes'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -376,9 +376,9 @@ export function ConstructionPlan({
 
       {/* Overlay controls in top-left corner */}
 
-      <Box position="absolute" top="3" left="3" className="z-10">
+      <div className="absolute top-3 left-3 z-10">
         <Card size="1" variant="surface" className="shadow-md">
-          <Flex direction="column" gap="2" m="-2">
+          <div className="flex-col gap-2 m--2">
             {/* View selector - only show if multiple views */}
             {views.length > 1 && (
               <SegmentedControl.Root
@@ -396,7 +396,7 @@ export function ConstructionPlan({
               </SegmentedControl.Root>
             )}
 
-            <Grid columns="6" gap="1" align="center" justify="center">
+            <div className="grid-cols-6 gap-1 items-center justify-center">
               {/* Mid-cut toggle */}
               <IconButton
                 variant={midCutEnabled ? 'solid' : 'outline'}
@@ -459,30 +459,22 @@ export function ConstructionPlan({
 
               {/* Tag visibility menu */}
               <TagVisibilityMenu model={model} />
-            </Grid>
+            </div>
 
             {showStrawTypes && (
-              <Flex direction="column" p="2" mt="-2">
+              <div className="flex-col p-2 mt--2">
                 <Heading size="1">{t($ => $.plan.strawTypesHeading)}</Heading>
-                <Grid columns="1fr 1fr">
-                  <Text size="1" color="grass">
-                    {t($ => $.plan.strawTypes.fullBale)}
-                  </Text>
-                  <Text size="1" color="purple">
-                    {t($ => $.plan.strawTypes.partialBale)}
-                  </Text>
-                  <Text size="1" color="blue">
-                    {t($ => $.plan.strawTypes.flakes)}
-                  </Text>
-                  <Text size="1" color="red">
-                    {t($ => $.plan.strawTypes.stuffed)}
-                  </Text>
-                </Grid>
-              </Flex>
+                <div className="grid-cols-2">
+                  <span className="text-sm text-lime-600">{t($ => $.plan.strawTypes.fullBale)}</span>
+                  <span className="text-sm text-purple-600">{t($ => $.plan.strawTypes.partialBale)}</span>
+                  <span className="text-sm text-sky-600">{t($ => $.plan.strawTypes.flakes)}</span>
+                  <span className="text-sm text-red-800">{t($ => $.plan.strawTypes.stuffed)}</span>
+                </div>
+              </div>
             )}
-          </Flex>
+          </div>
         </Card>
-      </Box>
+      </div>
     </div>
   )
 }

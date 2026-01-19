@@ -1,7 +1,9 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons'
-import { IconButton, Text, TextField } from '@radix-ui/themes'
 import { forwardRef } from 'react'
 import { useTranslation } from 'react-i18next'
+
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 import { useLengthFieldState } from './hooks/useLengthFieldState'
 import type { LengthFieldProps } from './types'
@@ -76,62 +78,67 @@ export const LengthField = forwardRef<HTMLInputElement, LengthFieldProps>(functi
     onFocus?.(e)
   }
 
+  const sizeClasses = {
+    '1': 'h-7 text-xs',
+    '2': 'h-9 <Text text-sm',
+    '3': 'h-10 <Text text-base'
+  }
+
   return (
-    <TextField.Root
-      ref={ref}
-      value={displayValue}
-      onChange={e => {
-        handleChange(e.target.value)
-      }}
-      onBlur={handleBlurEvent}
-      onFocus={handleFocusEvent}
-      onKeyDown={handleKeyDown}
-      placeholder={placeholder}
-      size={size}
-      disabled={disabled}
-      className={`${className ?? ''} length-field`}
-      style={{
-        textAlign: 'right',
-        ...style
-      }}
-      color={isValid ? undefined : 'red'}
-      {...props}
+    <div
+      className={cn(
+        'flex items-center rounded-md border border-input bg-background ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
+        sizeClasses[size],
+        !isValid && 'border-destructive',
+        disabled && 'cursor-not-allowed opacity-50',
+        className
+      )}
+      style={style}
     >
       {children}
+      <input
+        ref={ref}
+        value={displayValue}
+        onChange={e => {
+          handleChange(e.target.value)
+        }}
+        onBlur={handleBlurEvent}
+        onFocus={handleFocusEvent}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        disabled={disabled}
+        className={cn('flex-1 bg-transparent px-2 text-right outline-none min-w-0', sizeClasses[size])}
+        {...props}
+      />
+      <div className="flex items-center gap-px px-1">
+        <span className="text-xs text-muted-foreground">{unit}</span>
 
-      <TextField.Slot side="right" style={{ display: 'flex', alignItems: 'center', gap: '1px', padding: '0 4px' }}>
-        <Text size="1" color="gray">
-          {unit}
-        </Text>
-
-        <div className="flex flex-col" style={{ marginLeft: '4px' }}>
-          <IconButton
+        <div className="flex flex-col ml-1">
+          <Button
             type="button"
-            size="1"
             variant="ghost"
+            size="icon"
             disabled={disabled || !canStepUp}
             onClick={stepUp}
-            className="h-[10px] p-0 leading-none m-0"
-            style={{ fontSize: '10px', minHeight: '10px', minWidth: '12px', padding: '0 2px' }}
+            className="h-[10px] w-3 p-0 leading-none"
             tabIndex={-1}
           >
-            <ChevronUpIcon />
-          </IconButton>
+            <ChevronUpIcon className="h-2.5 w-2.5" />
+          </Button>
 
-          <IconButton
+          <Button
             type="button"
-            size="1"
             variant="ghost"
+            size="icon"
             disabled={disabled || !canStepDown}
             onClick={stepDown}
-            className="h-[10px] p-0 leading-none m-0"
-            style={{ fontSize: '10px', minHeight: '10px', minWidth: '12px', padding: '0 2px' }}
+            className="h-[10px] w-3 p-0 leading-none"
             tabIndex={-1}
           >
-            <ChevronDownIcon />
-          </IconButton>
+            <ChevronDownIcon className="h-2.5 w-2.5" />
+          </Button>
         </div>
-      </TextField.Slot>
-    </TextField.Root>
+      </div>
+    </div>
   )
 })

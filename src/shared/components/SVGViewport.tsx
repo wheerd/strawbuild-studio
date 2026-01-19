@@ -1,8 +1,8 @@
 import { AllSidesIcon } from '@radix-ui/react-icons'
-import { IconButton } from '@radix-ui/themes'
 import React, { type RefAttributes, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
 import { type Bounds2D } from '@/shared/geometry'
 
 export interface SVGViewportRef {
@@ -380,9 +380,9 @@ export function SVGViewport({
       </svg>
 
       <div className={`absolute ${getResetButtonPosition(resetButtonPosition)}`}>
-        <IconButton variant="surface" onClick={fitToContent} title={t($ => $.app.fitToContent)}>
+        <Button variant="outline" size="icon" onClick={fitToContent} title={t($ => $.app.fitToContent)}>
           <AllSidesIcon />
-        </IconButton>
+        </Button>
       </div>
     </div>
   )

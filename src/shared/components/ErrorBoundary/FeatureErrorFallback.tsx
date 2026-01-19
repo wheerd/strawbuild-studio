@@ -1,77 +1,72 @@
 import { ExclamationTriangleIcon, ReloadIcon } from '@radix-ui/react-icons'
-import { AlertDialog, Button, Callout, Flex, Text } from '@radix-ui/themes'
 import type { FallbackProps } from 'react-error-boundary'
 import { useTranslation } from 'react-i18next'
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 import { hardReset } from '@/shared/utils/hardReset'
 
 export function FeatureErrorFallback({ error, resetErrorBoundary }: FallbackProps): React.JSX.Element {
   const { t } = useTranslation('errors')
 
   return (
-    <Flex
-      direction="column"
-      align="center"
-      justify="center"
-      gap="3"
-      style={{
-        padding: 'var(--space-4)',
-        minHeight: '200px'
-      }}
-    >
-      <Callout.Root color="red" style={{ width: '100%', maxWidth: '500px' }}>
-        <Callout.Icon>
+    <div className="flex flex-col items-center justify-center gap-3 p-4 min-h-[200px]">
+      <Callout color="red" className="w-full max-w-[500px]">
+        <CalloutIcon>
           <ExclamationTriangleIcon />
-        </Callout.Icon>
-        <Callout.Text>
-          <Flex as="span" direction="column" gap="2">
-            <Text weight="bold">{t($ => $.feature.title)}</Text>
-            <Text size="2">{error instanceof Error ? error.message : t($ => $.feature.defaultMessage)}</Text>
-          </Flex>
-        </Callout.Text>
-      </Callout.Root>
+        </CalloutIcon>
+        <CalloutText>
+          <span className="flex flex-col gap-2">
+            <span className="font-bold">{t($ => $.feature.title)}</span>
+            <span className="text-sm">{error instanceof Error ? error.message : t($ => $.feature.defaultMessage)}</span>
+          </span>
+        </CalloutText>
+      </Callout>
 
-      <Flex gap="2" style={{ width: '100%', maxWidth: '500px' }}>
-        <Button size="2" onClick={resetErrorBoundary} style={{ flex: 1 }}>
-          <ReloadIcon />
+      <div className="flex gap-2 w-full max-w-[500px]">
+        <Button className="flex-1" onClick={resetErrorBoundary}>
+          <ReloadIcon className="mr-2" />
           {t($ => $.feature.retry)}
         </Button>
 
         <Button
-          size="2"
-          variant="soft"
+          variant="secondary"
+          className="flex-1"
           onClick={() => {
             window.location.reload()
           }}
-          style={{ flex: 1 }}
         >
           {t($ => $.feature.reloadPage)}
         </Button>
-      </Flex>
+      </div>
 
-      <AlertDialog.Root>
-        <AlertDialog.Trigger>
-          <Button size="1" variant="ghost" color="orange">
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button variant="ghost" size="sm" className="text-orange-600 dark:text-orange-400">
             {t($ => $.feature.hardReset)}
           </Button>
-        </AlertDialog.Trigger>
-        <AlertDialog.Content>
-          <AlertDialog.Title>{t($ => $.feature.dialogTitle)}</AlertDialog.Title>
-          <AlertDialog.Description>{t($ => $.feature.dialogDescription)}</AlertDialog.Description>
-          <Flex gap="3" mt="4" justify="end">
-            <AlertDialog.Cancel>
-              <Button variant="soft" color="gray">
-                {t($ => $.feature.cancel)}
-              </Button>
-            </AlertDialog.Cancel>
-            <AlertDialog.Action>
-              <Button variant="solid" color="red" onClick={hardReset}>
-                {t($ => $.feature.confirm)}
-              </Button>
-            </AlertDialog.Action>
-          </Flex>
-        </AlertDialog.Content>
-      </AlertDialog.Root>
-    </Flex>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogTitle>{t($ => $.feature.dialogTitle)}</AlertDialogTitle>
+          <AlertDialogDescription>{t($ => $.feature.dialogDescription)}</AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t($ => $.feature.cancel)}</AlertDialogCancel>
+            <AlertDialogAction onClick={hardReset} className="bg-red-600 hover:bg-red-700">
+              {t($ => $.feature.confirm)}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   )
 }

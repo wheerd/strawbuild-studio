@@ -1,5 +1,5 @@
 import { TrashIcon } from '@radix-ui/react-icons'
-import { Box, DataList, Flex, IconButton, Separator, Text } from '@radix-ui/themes'
+import { DataList, IconButton, Separator } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -40,17 +40,15 @@ export function FloorAreaInspector({ floorAreaId }: FloorAreaInspectorProps): Re
 
   if (!floorArea) {
     return (
-      <Box p="2">
-        <Text size="1" color="red" weight="bold">
-          {t($ => $.floorArea.notFound)}
-        </Text>
-      </Box>
+      <div className="p-2">
+        <span className="text-sm text-red-800 font-bold">{t($ => $.floorArea.notFound)}</span>
+      </div>
     )
   }
 
   return (
-    <Box p="2">
-      <Flex direction="column" gap="3">
+    <div className="p-2">
+      <div className="flex flex-col gap-3">
         <DataList.Root size="1">
           <DataList.Item>
             <DataList.Label>{t($ => $.floorArea.perimeter)}</DataList.Label>
@@ -64,7 +62,7 @@ export function FloorAreaInspector({ floorAreaId }: FloorAreaInspectorProps): Re
 
         <Separator size="4" />
 
-        <Flex gap="2" justify="end">
+        <div className="flex justify-end gap-2">
           <IconButton size="2" title={t($ => $.floorArea.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
           </IconButton>
@@ -79,8 +77,8 @@ export function FloorAreaInspector({ floorAreaId }: FloorAreaInspectorProps): Re
           >
             <TrashIcon />
           </IconButton>
-        </Flex>
-      </Flex>
-    </Box>
+        </div>
+      </div>
+    </div>
   )
 }

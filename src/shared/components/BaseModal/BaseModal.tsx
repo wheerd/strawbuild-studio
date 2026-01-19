@@ -1,8 +1,10 @@
 import { Cross2Icon } from '@radix-ui/react-icons'
-import { Dialog, Flex, IconButton } from '@radix-ui/themes'
 import React from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { cn } from '@/lib/utils'
 import { FeatureErrorFallback } from '@/shared/components/ErrorBoundary'
 
 export interface BaseModalProps {
@@ -25,6 +27,13 @@ export interface BaseModalProps {
   style?: React.CSSProperties
 }
 
+const sizeClasses = {
+  '1': 'max-w-sm',
+  '2': 'max-w-lg',
+  '3': 'max-w-2xl',
+  '4': 'max-w-4xl'
+}
+
 export function BaseModal({
   open,
   onOpenChange,
@@ -32,7 +41,7 @@ export function BaseModal({
   titleIcon,
   children,
   trigger,
-  size,
+  size = '2',
   width,
   maxWidth,
   height,
@@ -45,44 +54,41 @@ export function BaseModal({
   style
 }: BaseModalProps): React.JSX.Element {
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      {trigger && <Dialog.Trigger>{trigger}</Dialog.Trigger>}
-      <Dialog.Content
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {trigger}
+      <DialogContent
         aria-describedby={ariaDescribedBy}
-        size={size}
-        width={width}
-        maxWidth={maxWidth}
-        height={height}
-        maxHeight={maxHeight}
-        className={className}
+        className={cn(sizeClasses[size], className)}
         onEscapeKeyDown={e => {
           if (onEscapeKeyDown) {
             onEscapeKeyDown(e)
           }
           e.stopPropagation()
         }}
-        style={style}
+        style={{
+          width,
+          maxWidth: maxWidth ?? undefined,
+          height,
+          maxHeight: maxHeight ?? undefined,
+          ...style
+        }}
       >
-        <Dialog.Title>
-          <Flex justify="between" align="center">
-            <Flex align="center" gap="2">
-              {titleIcon}
-              {title}
-            </Flex>
-            {showCloseButton && (
-              <Dialog.Close>
-                <IconButton variant="ghost" highContrast>
-                  <Cross2Icon />
-                </IconButton>
-              </Dialog.Close>
-            )}
-          </Flex>
-        </Dialog.Title>
+        <DialogTitle className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            {titleIcon}
+            {title}
+          </div>
+          {showCloseButton && (
+            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onOpenChange?.(false)}>
+              <Cross2Icon className="h-4 w-4" />
+            </Button>
+          )}
+        </DialogTitle>
 
         <ErrorBoundary FallbackComponent={FeatureErrorFallback} resetKeys={[open, ...resetKeys]}>
           {children}
         </ErrorBoundary>
-      </Dialog.Content>
-    </Dialog.Root>
+      </DialogContent>
+    </Dialog>
   )
 }

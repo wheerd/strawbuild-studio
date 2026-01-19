@@ -1,6 +1,6 @@
 import { TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Card, DataList, Flex, Grid, Heading, IconButton, Separator, Text } from '@radix-ui/themes'
+import { Card, DataList, Heading, IconButton, Separator } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -64,18 +64,16 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
   }, [removePerimeterWall, wallId, canDeleteWall.canDelete])
 
   return (
-    <Flex direction="column" gap="4">
+    <div className="flex flex-col gap-4">
       {/* Basic Properties */}
-      <Grid columns="auto 1fr" gap="3">
+      <div className="grid-cols-[auto_1fr] gap-3">
         {/* Wall Assembly */}
-        <Flex align="center" gap="1">
+        <div className="flex items-center gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.perimeterWall.wallAssembly)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.perimeterWall.wallAssembly)}</span>
           </Label.Root>
           <MeasurementInfo highlightedAssembly="wallAssembly" />
-        </Flex>
+        </div>
         <WallAssemblySelectWithEdit
           value={wall.wallAssemblyId}
           onValueChange={(value: WallAssemblyId) => {
@@ -86,14 +84,12 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
         />
 
         {/* Thickness Input */}
-        <Flex align="center" gap="1">
+        <div className="flex items-center gap-1">
           <Label.Root htmlFor="wall-thickness">
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.perimeterWall.thickness)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.perimeterWall.thickness)}</span>
           </Label.Root>
           <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
-        </Flex>
+        </div>
         <LengthField
           id="perimeter-thickness"
           value={wall.thickness}
@@ -110,12 +106,10 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
 
         {/* Base Ring Beam */}
         <Label.Root>
-          <Flex align="center" gap="1">
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.perimeterWall.basePlate)}
-            </Text>
+          <div className="flex items-center gap-1">
+            <span className="text-sm font-medium text-gray-900">{t($ => $.perimeterWall.basePlate)}</span>
             <MeasurementInfo highlightedPart="basePlate" />
-          </Flex>
+          </div>
         </Label.Root>
         <RingBeamAssemblySelectWithEdit
           value={wall.baseRingBeamAssemblyId}
@@ -133,12 +127,10 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
 
         {/* Top Ring Beam */}
         <Label.Root>
-          <Flex align="center" gap="1">
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.perimeterWall.topPlate)}
-            </Text>
+          <div className="flex items-center gap-1">
+            <span className="text-sm font-medium text-gray-900">{t($ => $.perimeterWall.topPlate)}</span>
             <MeasurementInfo highlightedPart="topPlate" />
-          </Flex>
+          </div>
         </Label.Root>
         <RingBeamAssemblySelectWithEdit
           value={wall.topRingBeamAssemblyId}
@@ -153,10 +145,10 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
           size="1"
           allowNone
         />
-      </Grid>
+      </div>
       <Separator size="4" />
       {/* Measurements */}
-      <Flex direction="column" gap="2">
+      <div className="flex flex-col gap-2">
         <Heading size="2">{t($ => $.perimeterWall.measurements)}</Heading>
         <DataList.Root size="1">
           <DataList.Item>
@@ -171,28 +163,28 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
             <>
               <DataList.Item>
                 <DataList.Label minWidth="88px">
-                  <Flex align="center" gap="1">
+                  <div className="flex items-center gap-1">
                     {t($ => $.perimeterWall.insideLayersThickness)}
                     <MeasurementInfo highlightedPart="insideLayer" />
-                  </Flex>
+                  </div>
                 </DataList.Label>
                 <DataList.Value>{formatLength(wallAssembly.layers.insideThickness)}</DataList.Value>
               </DataList.Item>
               <DataList.Item>
                 <DataList.Label minWidth="88px">
-                  <Flex align="center" gap="1">
+                  <div className="flex items-center gap-1">
                     {t($ => $.perimeterWall.outsideLayersThickness)}
                     <MeasurementInfo highlightedPart="outsideLayer" />
-                  </Flex>
+                  </div>
                 </DataList.Label>
                 <DataList.Value>{formatLength(wallAssembly.layers.outsideThickness)}</DataList.Value>
               </DataList.Item>
               <DataList.Item>
                 <DataList.Label minWidth="88px">
-                  <Flex align="center" gap="1">
+                  <div className="flex items-center gap-1">
                     {t($ => $.perimeterWall.constructionThickness)}
                     <MeasurementInfo highlightedPart="wallConstruction" />
-                  </Flex>
+                  </div>
                 </DataList.Label>
                 <DataList.Value>
                   {formatLength(
@@ -205,48 +197,42 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
             <></>
           )}
         </DataList.Root>
-      </Flex>
+      </div>
       <Separator size="4" />
       {/* Openings */}
-      <Flex direction="column" gap="2">
+      <div className="flex flex-col gap-2">
         <Heading size="2">{t($ => $.perimeterWall.openings)}</Heading>
-        <Grid columns="3" gap="2">
+        <div className="grid-cols-3 gap-2">
           <Card size="1" variant="surface">
-            <Flex direction="column" gap="0" m="-1">
-              <Text align="center" size="2" weight="bold">
+            <div className="flex-col gap-0 m--1">
+              <span className="items-center text-base font-bold">
                 {openings.filter(o => o.openingType === 'door').length}
-              </Text>
-              <Text align="center" size="1" color="gray">
-                {t($ => $.perimeterWall.doors)}
-              </Text>
-            </Flex>
+              </span>
+              <span className="items-center text-sm text-gray-900">{t($ => $.perimeterWall.doors)}</span>
+            </div>
           </Card>
           <Card size="1" variant="surface">
-            <Flex direction="column" gap="0" m="-1">
-              <Text align="center" size="2" weight="bold">
+            <div className="flex-col gap-0 m--1">
+              <span className="items-center text-base font-bold">
                 {openings.filter(o => o.openingType === 'window').length}
-              </Text>
-              <Text align="center" size="1" color="gray">
-                {t($ => $.perimeterWall.windows)}
-              </Text>
-            </Flex>
+              </span>
+              <span className="items-center text-sm text-gray-900">{t($ => $.perimeterWall.windows)}</span>
+            </div>
           </Card>
           <Card size="1" variant="surface">
-            <Flex direction="column" gap="0" m="-1">
-              <Text align="center" size="2" weight="bold">
+            <div className="flex-col gap-0 m--1">
+              <span className="items-center text-base font-bold">
                 {openings.filter(o => o.openingType === 'passage').length}
-              </Text>
-              <Text align="center" size="1" color="gray">
-                {t($ => $.perimeterWall.passages)}
-              </Text>
-            </Flex>
+              </span>
+              <span className="items-center text-sm text-gray-900">{t($ => $.perimeterWall.passages)}</span>
+            </div>
           </Card>
-        </Grid>
-      </Flex>
+        </div>
+      </div>
       <Separator size="4" />
       {/* Actions */}
-      <Flex direction="column" gap="2">
-        <Flex gap="2" justify="end">
+      <div className="flex flex-col gap-2">
+        <div className="flex justify-end gap-2">
           <ConstructionPlanModal
             title={t($ => $.perimeterWall.constructionPlanTitle)}
             constructionModelFactory={() => Promise.resolve(constructWall(wallId, true))}
@@ -285,8 +271,8 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
           >
             <TrashIcon width={20} height={20} />
           </IconButton>
-        </Flex>
-      </Flex>
-    </Flex>
+        </div>
+      </div>
+    </div>
   )
 }

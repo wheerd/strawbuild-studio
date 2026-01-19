@@ -1,4 +1,4 @@
-import { Box, TextField } from '@radix-ui/themes'
+import { TextField } from '@radix-ui/themes'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useStageHeight, useStageWidth } from '@/editor/hooks/useViewportStore'
@@ -127,7 +127,7 @@ export function LengthInputComponent(): React.JSX.Element | null {
   }
 
   return (
-    <Box
+    <div
       className="absolute z-1000 pointer-events-auto"
       style={{
         left: constrainedPosition.x,
@@ -153,16 +153,11 @@ export function LengthInputComponent(): React.JSX.Element | null {
 
       {/* Error message */}
       {!state.isValid && state.errorMessage && (
-        <Box
-          className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-1 text-white text-xs rounded whitespace-nowrap shadow-md"
-          style={{
-            backgroundColor: 'var(--red-9)'
-          }}
-        >
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-1 text-white text-xs rounded whitespace-nowrap shadow-md bg-red-900">
           {state.errorMessage}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   )
 }
 

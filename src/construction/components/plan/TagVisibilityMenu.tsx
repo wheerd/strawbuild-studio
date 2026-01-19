@@ -1,5 +1,5 @@
 import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons'
-import { DropdownMenu, Flex, IconButton, Text } from '@radix-ui/themes'
+import { DropdownMenu, IconButton } from '@radix-ui/themes'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -104,9 +104,7 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <DropdownMenu.Item disabled>
-            <Text size="1" color="gray">
-              {t($ => $.tagVisibility.noTags)}
-            </Text>
+            <span className="text-sm text-gray-900">{t($ => $.tagVisibility.noTags)}</span>
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
@@ -128,12 +126,12 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
           return (
             <DropdownMenu.Sub key={categoryId}>
               <DropdownMenu.SubTrigger>
-                <Flex align="center" justify="between" width="100%" gap="2">
-                  <Text size="1">
+                <div className="items-center justify-between w-full gap-2">
+                  <span className="text-sm">
                     <CategoryLabel categoryId={categoryId} />
-                  </Text>
+                  </span>
                   {renderVisibilityIcon(categoryState)}
-                </Flex>
+                </div>
               </DropdownMenu.SubTrigger>
               <DropdownMenu.SubContent>
                 {/* Category-wide toggle */}
@@ -142,23 +140,20 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
                     e.preventDefault()
                   }}
                 >
-                  <Flex
-                    align="center"
-                    justify="between"
-                    width="100%"
-                    gap="2"
+                  <div
+                    className="items-center                    justify-between                    w-full                    gap-2"
                     onClick={e => {
                       e.stopPropagation()
                       toggleTagOrCategory(categoryId)
                     }}
                   >
-                    <Text size="1" weight="bold">
+                    <span className="text-sm font-bold">
                       {isTagOrCategoryVisible(categoryId)
                         ? t($ => $.tagVisibility.hideCategory)
                         : t($ => $.tagVisibility.showCategory)}
-                    </Text>
+                    </span>
                     {isTagOrCategoryVisible(categoryId) ? <EyeOpenIcon /> : <EyeClosedIcon />}
-                  </Flex>
+                  </div>
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator />
                 {/* Individual tag toggles */}
@@ -169,21 +164,18 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
                       e.preventDefault()
                     }}
                   >
-                    <Flex
-                      align="center"
-                      justify="between"
-                      width="100%"
-                      gap="2"
+                    <div
+                      className="items-center                      justify-between                      w-full                      gap-2"
                       onClick={e => {
                         e.stopPropagation()
                         toggleTagOrCategory(tag.id)
                       }}
                     >
-                      <Text size="1">
+                      <span className="text-sm">
                         <TagLabel tag={tag} />
-                      </Text>
+                      </span>
                       {isTagOrCategoryVisible(tag.id) ? <EyeOpenIcon /> : <EyeClosedIcon />}
-                    </Flex>
+                    </div>
                   </DropdownMenu.Item>
                 ))}
               </DropdownMenu.SubContent>

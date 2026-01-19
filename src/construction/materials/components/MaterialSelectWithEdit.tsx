@@ -1,5 +1,5 @@
 import { Pencil1Icon } from '@radix-ui/react-icons'
-import { Flex, IconButton } from '@radix-ui/themes'
+import { IconButton } from '@radix-ui/themes'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -12,10 +12,10 @@ export function MaterialSelectWithEdit(props: MaterialSelectProps): React.JSX.El
   const { openConfiguration } = useConfigurationModal()
 
   return (
-    <Flex gap="1" align="center">
-      <Flex direction="column" gap="1" flexGrow="1" mr="1">
+    <div className="gap-1 items-center">
+      <div className="flex-col gap-1 grow-1 mr-1">
         <MaterialSelect {...props} />
-      </Flex>
+      </div>
       <IconButton
         title={t($ => $.materials.configure)}
         variant="ghost"
@@ -26,6 +26,6 @@ export function MaterialSelectWithEdit(props: MaterialSelectProps): React.JSX.El
       >
         <Pencil1Icon />
       </IconButton>
-    </Flex>
+    </div>
   )
 }

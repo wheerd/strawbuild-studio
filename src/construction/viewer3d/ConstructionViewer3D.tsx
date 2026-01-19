@@ -1,5 +1,5 @@
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
-import { AlertDialog, Box, Button, Card, Code, Flex, Text } from '@radix-ui/themes'
+import { AlertDialog, Button, Card, Code } from '@radix-ui/themes'
 import { OrbitControls } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
 import { useTheme } from 'next-themes'
@@ -137,26 +137,26 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
         <SceneExporter onExportReady={handleExportReady} />
       </Canvas>
 
-      <Box position="absolute" top="3" left="3" style={{ zIndex: 10 }}>
+      <div className="absolute top-3 left-3 z-10">
         <Card size="1" variant="surface" className="shadow-md">
-          <Flex direction="row" align="center" gap="1" m="-2" p="0">
+          <div className="flex-row items-center gap-1 m--2 p-0">
             <TagOpacityMenu model={model} />
             <GridToggleButton />
-          </Flex>
+          </div>
         </Card>
-      </Box>
+      </div>
 
-      <Box position="absolute" top="3" right="3" style={{ zIndex: 10 }}>
+      <div className="absolute top-3 right-3 z-10">
         <Card size="1" variant="surface" className="shadow-md">
-          <Flex direction="column" align="center" gap="2" m="-2" p="0">
+          <div className="flex-col items-center gap-2 m--2 p-0">
             <ExportButton
               onExport={format => {
                 void handleExport(format)
               }}
             />
-          </Flex>
+          </div>
         </Card>
-      </Box>
+      </div>
 
       <AlertDialog.Root
         open={exportError !== null}
@@ -166,31 +166,29 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
       >
         <AlertDialog.Content maxWidth="450px">
           <AlertDialog.Title>
-            <Flex align="center" gap="2">
+            <div className="flex items-center gap-2">
               <ExclamationTriangleIcon color="var(--red-9)" />
-              <Text color="red">{t($ => $.export.exportError.title)}</Text>
-            </Flex>
+              <span className="text-red-800">{t($ => $.export.exportError.title)}</span>
+            </div>
           </AlertDialog.Title>
           <AlertDialog.Description>
-            <Flex direction="column" gap="3">
-              <Text>{exportError && t($ => $.export.exportError[exportError.code])}</Text>
+            <div className="flex flex-col gap-3">
+              <span>{exportError && t($ => $.export.exportError[exportError.code])}</span>
               {exportError?.details && (
-                <Flex direction="column" gap="1">
-                  <Text size="2" weight="bold">
-                    {t($ => $.export.exportError.details)}
-                  </Text>
+                <div className="flex flex-col gap-1">
+                  <span className="text-base font-bold">{t($ => $.export.exportError.details)}</span>
                   <Code size="1" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                     {exportError.details}
                   </Code>
-                </Flex>
+                </div>
               )}
-            </Flex>
+            </div>
           </AlertDialog.Description>
-          <Flex gap="3" mt="4" justify="end">
+          <div className="gap-3 mt-4 justify-end">
             <AlertDialog.Cancel>
               <Button variant="solid">{t($ => $.export.exportError.close)}</Button>
             </AlertDialog.Cancel>
-          </Flex>
+          </div>
         </AlertDialog.Content>
       </AlertDialog.Root>
     </div>

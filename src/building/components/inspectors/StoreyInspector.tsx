@@ -1,12 +1,13 @@
-import { Box, Callout, Code, Flex, Grid, Heading, Text } from '@radix-ui/themes'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useStoreyName } from '@/building/hooks/useStoreyName'
 import type { StoreyId } from '@/building/model/ids'
 import { usePerimeters, useStoreyById } from '@/building/store'
+import { Callout, CalloutText } from '@/components/ui/callout'
 import { getPerimeterStats } from '@/construction/perimeters/perimeter'
 import { getLevelColor } from '@/editor/status-bar/StoreySelector'
+import { cn } from '@/lib/utils'
 import { useFormatters } from '@/shared/i18n/useFormatters'
 
 interface StoreyInspectorProps {
@@ -51,148 +52,104 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
   // If storey not found, show error
   if (!storey) {
     return (
-      <Box p="2">
-        <Callout.Root color="red">
-          <Callout.Text>
-            <Text weight="bold">{t($ => $.storey.notFound)}</Text>
+      <div className="p-2">
+        <Callout color="red">
+          <CalloutText>
+            <span className="font-bold">{t($ => $.storey.notFound)}</span>
             <br />
             {t($ => $.storey.notFoundMessage, {
               id: selectedId
             })}
-          </Callout.Text>
-        </Callout.Root>
-      </Box>
+          </CalloutText>
+        </Callout>
+      </div>
     )
   }
 
   if (perimeterStats.length === 0) {
     return (
-      <Box p="2">
-        <Callout.Root color="amber">
-          <Callout.Text>{t($ => $.storey.noPerimeters)}</Callout.Text>
-        </Callout.Root>
-      </Box>
+      <div className="p-2">
+        <Callout color="yellow">
+          <CalloutText>{t($ => $.storey.noPerimeters)}</CalloutText>
+        </Callout>
+      </div>
     )
   }
 
   return (
-    <Box p="2">
-      <Flex direction="column" gap="3">
+    <div className="p-2">
+      <div className="flex flex-col gap-3">
         {/* Basic Information */}
-        <Heading size="2">
-          <Flex align="center" gap="2" as="span">
-            <Code variant="ghost" size="2" weight="bold" color={getLevelColor(storey.level)}>
-              L{storey.level}
-            </Code>
-            <Text>{storeyName}</Text>
-          </Flex>
-        </Heading>
-        <Grid columns="auto 1fr" gapY="2" gapX="1">
-          <Text size="1" weight="medium">
-            {t($ => $.storey.footprint)}
-          </Text>
-          <Text size="1">{formatArea(combinedStats.footprint)}</Text>
+        <h2 className="text-sm font-semibold">
+          <span className="flex items-center gap-2">
+            <code className={cn('font-mono font-bold text-sm', getLevelColor(storey.level))}>L{storey.level}</code>
+            <span>{storeyName}</span>
+          </span>
+        </h2>
+        <div className="grid grid-cols-[auto_1fr] gap-y-2 gap-x-1">
+          <span className="text-xs font-medium">{t($ => $.storey.footprint)}</span>
+          <span className="text-xs">{formatArea(combinedStats.footprint)}</span>
 
-          <Text size="1" weight="medium">
-            {t($ => $.storey.usableFloorArea)}
-          </Text>
-          <Text size="1">
-            <Flex justify="end" width="100%">
-              {formatArea(combinedStats.totalFloorArea)}
-            </Flex>
-          </Text>
+          <span className="text-xs font-medium">{t($ => $.storey.usableFloorArea)}</span>
+          <span className="text-xs">
+            <span className="flex justify-end w-full">{formatArea(combinedStats.totalFloorArea)}</span>
+          </span>
 
-          <Text size="1" weight="medium">
-            {t($ => $.storey.constructionWallArea)}
-          </Text>
-          <Text size="1">
-            <Flex justify="end" width="100%">
-              {formatArea(combinedStats.totalConstructionWallArea)}
-            </Flex>
-          </Text>
+          <span className="text-xs font-medium">{t($ => $.storey.constructionWallArea)}</span>
+          <span className="text-xs">
+            <span className="flex justify-end w-full">{formatArea(combinedStats.totalConstructionWallArea)}</span>
+          </span>
 
-          <Text size="1" weight="medium">
-            {t($ => $.storey.finishedWallArea)}
-          </Text>
-          <Text size="1">
-            <Flex justify="end" width="100%">
-              {formatArea(combinedStats.totalFinishedWallArea)}
-            </Flex>
-          </Text>
+          <span className="text-xs font-medium">{t($ => $.storey.finishedWallArea)}</span>
+          <span className="text-xs">
+            <span className="flex justify-end w-full">{formatArea(combinedStats.totalFinishedWallArea)}</span>
+          </span>
 
-          <Text size="1" weight="medium">
-            {t($ => $.storey.exteriorWallArea)}
-          </Text>
-          <Text size="1">
-            <Flex justify="end" width="100%">
-              {formatArea(combinedStats.totalExteriorWallArea)}
-            </Flex>
-          </Text>
+          <span className="text-xs font-medium">{t($ => $.storey.exteriorWallArea)}</span>
+          <span className="text-xs">
+            <span className="flex justify-end w-full">{formatArea(combinedStats.totalExteriorWallArea)}</span>
+          </span>
 
-          <Text size="1" weight="medium">
-            {t($ => $.storey.windowArea)}
-          </Text>
-          <Text size="1">
-            <Flex justify="end" width="100%">
-              {formatArea(combinedStats.totalWindowArea)}
-            </Flex>
-          </Text>
+          <span className="text-xs font-medium">{t($ => $.storey.windowArea)}</span>
+          <span className="text-xs">
+            <span className="flex justify-end w-full">{formatArea(combinedStats.totalWindowArea)}</span>
+          </span>
 
-          <Text size="1" weight="medium">
-            {t($ => $.storey.wallToWindowRatio)}
-          </Text>
-          <Text size="1">
-            <Flex justify="end" width="100%">
+          <span className="text-xs font-medium">{t($ => $.storey.wallToWindowRatio)}</span>
+          <span className="text-xs">
+            <span className="flex justify-end w-full">
               {formatPercentage((combinedStats.totalWindowArea / combinedStats.totalFinishedWallArea) * 100)}
-            </Flex>
-          </Text>
+            </span>
+          </span>
 
-          <Text size="1" weight="medium">
-            {t($ => $.storey.doorArea)}
-          </Text>
-          <Text size="1">
-            <Flex justify="end" width="100%">
-              {formatArea(combinedStats.totalDoorArea)}
-            </Flex>
-          </Text>
+          <span className="text-xs font-medium">{t($ => $.storey.doorArea)}</span>
+          <span className="text-xs">
+            <span className="flex justify-end w-full">{formatArea(combinedStats.totalDoorArea)}</span>
+          </span>
 
-          <Text size="1" weight="medium">
-            {t($ => $.storey.totalVolume)}
-          </Text>
-          <Text size="1">
-            <Flex justify="end" width="100%">
-              {formatVolume(combinedStats.totalVolume)}
-            </Flex>
-          </Text>
+          <span className="text-xs font-medium">{t($ => $.storey.totalVolume)}</span>
+          <span className="text-xs">
+            <span className="flex justify-end w-full">{formatVolume(combinedStats.totalVolume)}</span>
+          </span>
 
-          <Text size="1" weight="medium">
-            {t($ => $.storey.surfaceAreaToVolumeRatio)}
-          </Text>
-          <Text size="1">
-            <Flex justify="end" width="100%">
+          <span className="text-xs font-medium">{t($ => $.storey.surfaceAreaToVolumeRatio)}</span>
+          <span className="text-xs">
+            <span className="flex justify-end w-full">
               {formatNumber((combinedStats.totalExteriorWallArea / combinedStats.totalVolume) * 1000, 2)}
-            </Flex>
-          </Text>
+            </span>
+          </span>
 
-          <Text size="1" weight="medium">
-            {t($ => $.storey.floorHeight)}
-          </Text>
-          <Text size="1">
-            <Flex justify="end" width="100%">
-              {formatLength(combinedStats.storeyHeight)}
-            </Flex>
-          </Text>
+          <span className="text-xs font-medium">{t($ => $.storey.floorHeight)}</span>
+          <span className="text-xs">
+            <span className="flex justify-end w-full">{formatLength(combinedStats.storeyHeight)}</span>
+          </span>
 
-          <Text size="1" weight="medium">
-            {t($ => $.storey.ceilingHeight)}
-          </Text>
-          <Text size="1">
-            <Flex justify="end" width="100%">
-              {formatLength(combinedStats.ceilingHeight)}
-            </Flex>
-          </Text>
-        </Grid>
-      </Flex>
-    </Box>
+          <span className="text-xs font-medium">{t($ => $.storey.ceilingHeight)}</span>
+          <span className="text-xs">
+            <span className="flex justify-end w-full">{formatLength(combinedStats.ceilingHeight)}</span>
+          </span>
+        </div>
+      </div>
+    </div>
   )
 }

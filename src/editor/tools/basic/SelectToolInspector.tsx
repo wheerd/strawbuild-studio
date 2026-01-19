@@ -1,5 +1,4 @@
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
-import { Callout, Flex, Text } from '@radix-ui/themes'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -26,6 +25,7 @@ import {
   isWallPostId
 } from '@/building/model/ids'
 import { useActiveStoreyId } from '@/building/store'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 import { useCurrentSelection } from '@/editor/hooks/useSelectionStore'
 
 export function SelectToolInspector(): React.JSX.Element {
@@ -34,7 +34,7 @@ export function SelectToolInspector(): React.JSX.Element {
   const storeyId = useActiveStoreyId()
 
   return (
-    <Flex direction="column" p="2" gap="2">
+    <div className="flex flex-col p-2 gap-2">
       {!selectedId && <StoreyInspector key="storey" selectedId={storeyId} />}
 
       {/* Perimeter entities */}
@@ -63,19 +63,19 @@ export function SelectToolInspector(): React.JSX.Element {
         !isFloorOpeningId(selectedId) &&
         !isRoofId(selectedId) &&
         !isRoofOverhangId(selectedId) && (
-          <Callout.Root color="amber">
-            <Callout.Icon>
+          <Callout color="yellow">
+            <CalloutIcon>
               <ExclamationTriangleIcon />
-            </Callout.Icon>
-            <Callout.Text>
-              <Text weight="bold">{t($ => $.select.unknownEntityType)}</Text>
+            </CalloutIcon>
+            <CalloutText>
+              <span className="font-bold">{t($ => $.select.unknownEntityType)}</span>
               <br />
               {t($ => $.select.unknownEntityMessage, {
                 id: selectedId
               })}
-            </Callout.Text>
-          </Callout.Root>
+            </CalloutText>
+          </Callout>
         )}
-    </Flex>
+    </div>
   )
 }

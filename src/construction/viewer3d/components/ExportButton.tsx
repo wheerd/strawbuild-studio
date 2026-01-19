@@ -1,7 +1,8 @@
 import { DownloadIcon } from '@radix-ui/react-icons'
-import { DropdownMenu, IconButton } from '@radix-ui/themes'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { SKETCHUP_ENABLED } from '@/exporters/sketchup'
 
 export type ExportFormat = 'collada' | 'gltf' | 'obj' | 'stl' | 'ifc' | 'sketchup'
@@ -14,59 +15,59 @@ function ExportButton({ onExport }: ExportButtonProps): React.JSX.Element {
   const { t } = useTranslation('viewer')
 
   return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger>
-        <IconButton size="2" title={t($ => $.export.title)}>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="icon" title={t($ => $.export.title)}>
           <DownloadIcon />
-        </IconButton>
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Content>
-        <DropdownMenu.Item
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem
           onClick={() => {
             onExport('collada')
           }}
         >
           {t($ => $.export.collada)}
-        </DropdownMenu.Item>
-        <DropdownMenu.Item
+        </DropdownMenuItem>
+        <DropdownMenuItem
           onClick={() => {
             onExport('gltf')
           }}
         >
           {t($ => $.export.gltf)}
-        </DropdownMenu.Item>
-        <DropdownMenu.Item
+        </DropdownMenuItem>
+        <DropdownMenuItem
           onClick={() => {
             onExport('obj')
           }}
         >
           {t($ => $.export.obj)}
-        </DropdownMenu.Item>
-        <DropdownMenu.Item
+        </DropdownMenuItem>
+        <DropdownMenuItem
           onClick={() => {
             onExport('stl')
           }}
         >
           {t($ => $.export.stl)}
-        </DropdownMenu.Item>
-        <DropdownMenu.Item
+        </DropdownMenuItem>
+        <DropdownMenuItem
           onClick={() => {
             onExport('ifc')
           }}
         >
           {t($ => $.export.ifc)}
-        </DropdownMenu.Item>
+        </DropdownMenuItem>
         {SKETCHUP_ENABLED && (
-          <DropdownMenu.Item
+          <DropdownMenuItem
             onClick={() => {
               onExport('sketchup')
             }}
           >
             {t($ => $.export.sketchup)}
-          </DropdownMenu.Item>
+          </DropdownMenuItem>
         )}
-      </DropdownMenu.Content>
-    </DropdownMenu.Root>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 

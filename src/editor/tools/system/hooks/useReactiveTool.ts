@@ -19,7 +19,7 @@ import type { ToolImplementation } from '@/editor/tools/system/types'
  *
  *   return (
  *     <Group>
- *       <Text text={state.someValue} />
+ *       <span className="text={state.someValue} /">
  *     </Group>
  *   )
  * }

@@ -975,7 +975,7 @@ export function MeasurementInfo(config: MeasurementDisplayConfig): React.JSX.Ele
       <HoverCard.Trigger>
         <IconButton
           style={{ cursor: 'help' }}
-          color="gray"
+          text-gray-900
           radius="full"
           title={t($ => $.measurements.measurements)}
           variant="ghost"

@@ -1,4 +1,3 @@
-import { Box, Grid } from '@radix-ui/themes'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 
@@ -126,23 +125,16 @@ export function FloorPlanEditor(): React.JSX.Element {
 
   return (
     <ConfigurationModalContext.Provider value={{ openConfiguration }}>
-      <Grid
+      <div
         ref={containerRef}
-        rows="auto 1fr"
-        style={{
-          width: '100vw',
-          height: '100vh',
-          margin: 0,
-          padding: 0,
-          backgroundColor: 'var(--gray-2)'
-        }}
+        className="grid grid-rows-[auto_1fr] w-screen h-screen m-0 p-0 bg-muted"
         tabIndex={0}
         data-testid="floor-plan-editor"
       >
         {/* Top Toolbar - Tabs for tool groups + tools */}
-        <Box style={{ zIndex: 100, borderBottom: '1px solid var(--gray-6)' }}>
+        <div className="z-[100] border-b border-border">
           <MainToolbar onInfoClick={openManually} />
-        </Box>
+        </div>
 
         {/* Configuration Modal - Rendered at app level */}
         <ConfigurationModal
@@ -157,30 +149,23 @@ export function FloorPlanEditor(): React.JSX.Element {
         <WelcomeModal isOpen={isOpen} mode={mode} onAccept={handleAccept} />
 
         {/* Main Content Area - Editor + Side Panel */}
-        <Grid p="0" gap="0" columns="1fr 320px" style={{ overflow: 'hidden' }}>
+        <div className="grid grid-cols-[1fr_320px] p-0 gap-0 overflow-hidden">
           {/* Editor Area */}
-          <Box
-            style={{
-              position: 'relative',
-              overflow: 'hidden',
-              backgroundColor: 'var(--color-background)',
-              borderRight: '1px solid var(--gray-6)'
-            }}
-          >
+          <div className="relative overflow-hidden bg-background border-r border-border">
             <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
               <ViewModeToggle />
               <FloorPlanStage width={dimensions.width} height={dimensions.height} />
               <StatusBar />
               <LengthInputComponent />
             </ErrorBoundary>
-          </Box>
+          </div>
 
           {/* Right Side Panel */}
           <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
             <SidePanel />
           </ErrorBoundary>
-        </Grid>
-      </Grid>
+        </div>
+      </div>
     </ConfigurationModalContext.Provider>
   )
 }

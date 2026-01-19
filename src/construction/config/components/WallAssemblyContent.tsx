@@ -15,13 +15,10 @@ import {
   Button,
   Checkbox,
   DropdownMenu,
-  Flex,
-  Grid,
   Heading,
   IconButton,
   Select,
   Separator,
-  Text,
   TextField,
   Tooltip
 } from '@radix-ui/themes'
@@ -68,14 +65,12 @@ interface InfillConfigFormProps {
 function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JSX.Element {
   const { t } = useTranslation('config')
   return (
-    <Flex direction="column" gap="3">
+    <div className="flex flex-col gap-3">
       <Heading size="2">{t($ => $.walls.infillConfiguration)}</Heading>
-      <Grid columns="1fr 1fr" gap="2" gapX="3">
-        <Flex direction="column" gap="1">
+      <div className="grid-cols-2 gap-2 gap-x-3">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.walls.desiredPostSpacing)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.walls.desiredPostSpacing)}</span>
           </Label.Root>
           <LengthField
             value={config.desiredPostSpacing}
@@ -87,13 +82,11 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
             min={config.minStrawSpace}
             max={config.maxPostSpacing}
           />
-        </Flex>
+        </div>
 
-        <Flex direction="column" gap="1">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.walls.maxPostSpacing)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.walls.maxPostSpacing)}</span>
           </Label.Root>
           <LengthField
             value={config.maxPostSpacing}
@@ -104,13 +97,11 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
             size="1"
             min={config.desiredPostSpacing}
           />
-        </Flex>
+        </div>
 
-        <Flex direction="column" gap="1">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.walls.minStrawSpace)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.walls.minStrawSpace)}</span>
           </Label.Root>
           <LengthField
             value={config.minStrawSpace}
@@ -122,13 +113,11 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
             min={0}
             max={config.desiredPostSpacing}
           />
-        </Flex>
+        </div>
 
-        <Flex direction="column" gap="1">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.common.strawMaterialOverride)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.common.strawMaterialOverride)}</span>
           </Label.Root>
           <MaterialSelectWithEdit
             value={config.strawMaterial ?? null}
@@ -140,18 +129,16 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
             size="1"
             preferredTypes={['strawbale']}
           />
-        </Flex>
+        </div>
 
         <Label.Root>
-          <Flex direction="column" gap="1">
-            <Flex gap="1" align="center">
-              <Text size="1" weight="medium" color="gray">
-                {t($ => $.walls.infillMaterial)}
-              </Text>
+          <div className="flex flex-col gap-1">
+            <div className="gap-1 items-center">
+              <span className="text-sm font-medium text-gray-900">{t($ => $.walls.infillMaterial)}</span>
               <Tooltip content={t($ => $.walls.infillMaterialTooltip)}>
                 <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
               </Tooltip>
-            </Flex>
+            </div>
             <MaterialSelectWithEdit
               value={config.infillMaterial ?? null}
               allowEmpty
@@ -161,9 +148,9 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
               }}
               size="1"
             />
-          </Flex>
+          </div>
         </Label.Root>
-      </Grid>
+      </div>
       <Separator size="4" />
       <PostsConfigSection
         posts={config.posts}
@@ -178,7 +165,7 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
           onUpdate({ ...config, triangularBattens })
         }}
       />
-    </Flex>
+    </div>
   )
 }
 
@@ -190,13 +177,11 @@ interface PostsConfigSectionProps {
 function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React.JSX.Element {
   const { t } = useTranslation('config')
   return (
-    <Flex direction="column" gap="3">
+    <div className="flex flex-col gap-3">
       <Heading size="2">{t($ => $.walls.postsConfiguration)}</Heading>
-      <Grid columns="5em 1fr" gap="2" gapX="3" align="center">
+      <div className="grid-cols-[5em_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.walls.postType)}
-          </Text>
+          <span className="text-sm font-medium text-gray-900">{t($ => $.walls.postType)}</span>
         </Label.Root>
         <Select.Root
           value={posts.type}
@@ -225,12 +210,10 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
             <Select.Item value="double">{t($ => $.walls.postTypeDouble)}</Select.Item>
           </Select.Content>
         </Select.Root>
-      </Grid>
-      <Grid columns="5em 1fr 5em 1fr" gap="2" gapX="3">
+      </div>
+      <div className="grid-cols-[5em_1fr_5em_1fr] gap-2 gap-x-3">
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.common.width)}
-          </Text>
+          <span className="text-sm font-medium text-gray-900">{t($ => $.common.width)}</span>
         </Label.Root>
         <LengthField
           value={posts.width}
@@ -244,9 +227,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
         {posts.type === 'double' && (
           <>
             <Label.Root>
-              <Text size="1" weight="medium" color="gray">
-                {t($ => $.common.thickness)}
-              </Text>
+              <span className="text-sm font-medium text-gray-900">{t($ => $.common.thickness)}</span>
             </Label.Root>
             <LengthField
               value={posts.thickness}
@@ -258,12 +239,10 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
             />
           </>
         )}
-      </Grid>
-      <Grid columns="5em 1fr" gap="2">
+      </div>
+      <div className="grid-cols-[5em_1fr] gap-2">
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.common.materialLabel)}
-          </Text>
+          <span className="text-sm font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={'material' in posts ? posts.material : undefined}
@@ -278,9 +257,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
         {posts.type === 'double' && (
           <>
             <Label.Root>
-              <Text size="1" weight="medium" color="gray">
-                {t($ => $.walls.infillMaterial)}
-              </Text>
+              <span className="text-sm font-medium text-gray-900">{t($ => $.walls.infillMaterial)}</span>
             </Label.Root>
             <MaterialSelectWithEdit
               value={posts.infillMaterial}
@@ -292,8 +269,8 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
             />
           </>
         )}
-      </Grid>
-    </Flex>
+      </div>
+    </div>
   )
 }
 
@@ -308,19 +285,17 @@ function TriangularBattensConfigSection({
 }: TriangularBattensConfigSectionProps): React.JSX.Element {
   const { t } = useTranslation('config')
   return (
-    <Flex direction="column" gap="3">
-      <Flex align="center" gap="2">
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
         <Heading size="2">{t($ => $.walls.triangularBattensConfiguration)}</Heading>
         <Tooltip content={t($ => $.walls.triangularBattensTooltip)}>
           <InfoCircledIcon style={{ cursor: 'help' }} />
         </Tooltip>
-      </Flex>
+      </div>
 
-      <Grid columns="5em 1fr 5em 1fr" gap="2" gapX="3" align="center">
+      <div className="grid-cols-[5em_1fr_5em_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.walls.battenSize)}
-          </Text>
+          <span className="text-sm font-medium text-gray-900">{t($ => $.walls.battenSize)}</span>
         </Label.Root>
         <LengthField
           value={triangularBattens.size}
@@ -332,9 +307,7 @@ function TriangularBattensConfigSection({
         />
 
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.walls.battenMinLength)}
-          </Text>
+          <span className="text-sm font-medium text-gray-900">{t($ => $.walls.battenMinLength)}</span>
         </Label.Root>
         <LengthField
           value={triangularBattens.minLength}
@@ -344,13 +317,11 @@ function TriangularBattensConfigSection({
           unit="mm"
           size="1"
         />
-      </Grid>
+      </div>
 
-      <Grid columns="5em 1fr" gap="2" gapX="3">
+      <div className="grid-cols-[5em_1fr] gap-2 gap-x-3">
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.common.materialLabel)}
-          </Text>
+          <span className="text-sm font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={triangularBattens.material}
@@ -361,38 +332,34 @@ function TriangularBattensConfigSection({
           size="1"
           preferredTypes={['dimensional']}
         />
-      </Grid>
+      </div>
 
-      <Flex gap="3">
+      <div className="gap-3">
         <Label.Root>
-          <Flex gap="2" align="center">
+          <div className="gap-2 items-center">
             <Checkbox
               checked={triangularBattens.inside}
               onCheckedChange={checked => {
                 onUpdate({ ...triangularBattens, inside: checked === true })
               }}
             />
-            <Text size="1" weight="medium">
-              {t($ => $.walls.battenInside)}
-            </Text>
-          </Flex>
+            <span className="text-sm font-medium">{t($ => $.walls.battenInside)}</span>
+          </div>
         </Label.Root>
 
         <Label.Root>
-          <Flex gap="2" align="center">
+          <div className="gap-2 items-center">
             <Checkbox
               checked={triangularBattens.outside}
               onCheckedChange={checked => {
                 onUpdate({ ...triangularBattens, outside: checked === true })
               }}
             />
-            <Text size="1" weight="medium">
-              {t($ => $.walls.battenOutside)}
-            </Text>
-          </Flex>
+            <span className="text-sm font-medium">{t($ => $.walls.battenOutside)}</span>
+          </div>
         </Label.Root>
-      </Flex>
-    </Flex>
+      </div>
+    </div>
   )
 }
 
@@ -404,13 +371,11 @@ interface ModuleConfigSectionProps {
 function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): React.JSX.Element {
   const { t } = useTranslation('config')
   return (
-    <Flex direction="column" gap="3">
+    <div className="flex flex-col gap-3">
       <Heading size="2">{t($ => $.walls.moduleConfiguration)}</Heading>
-      <Grid columns="6em 1fr" gap="2" gapX="3" align="center">
+      <div className="grid-cols-[6em_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.walls.moduleType)}
-          </Text>
+          <span className="text-sm font-medium text-gray-900">{t($ => $.walls.moduleType)}</span>
         </Label.Root>
         <Select.Root
           value={module.type}
@@ -450,12 +415,10 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
             <Select.Item value="double">{t($ => $.walls.moduleTypeDouble)}</Select.Item>
           </Select.Content>
         </Select.Root>
-      </Grid>
-      <Grid columns="6em 1fr 6em 1fr" gap="2" gapX="3">
+      </div>
+      <div className="grid-cols-[6em_1fr_6em_1fr] gap-2 gap-x-3">
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.walls.minWidth)}
-          </Text>
+          <span className="text-sm font-medium text-gray-900">{t($ => $.walls.minWidth)}</span>
         </Label.Root>
         <LengthField
           value={module.minWidth}
@@ -467,9 +430,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
         />
 
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.walls.maxWidth)}
-          </Text>
+          <span className="text-sm font-medium text-gray-900">{t($ => $.walls.maxWidth)}</span>
         </Label.Root>
         <LengthField
           value={module.maxWidth}
@@ -481,9 +442,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
         />
 
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.walls.frameThickness)}
-          </Text>
+          <span className="text-sm font-medium text-gray-900">{t($ => $.walls.frameThickness)}</span>
         </Label.Root>
         <LengthField
           value={module.frameThickness}
@@ -497,9 +456,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
         {module.type === 'double' && (
           <>
             <Label.Root>
-              <Text size="1" weight="medium" color="gray">
-                {t($ => $.walls.frameWidth)}
-              </Text>
+              <span className="text-sm font-medium text-gray-900">{t($ => $.walls.frameWidth)}</span>
             </Label.Root>
             <LengthField
               value={module.frameWidth}
@@ -511,9 +468,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
             />
 
             <Label.Root>
-              <Text size="1" weight="medium" color="gray">
-                {t($ => $.walls.spacerSize)}
-              </Text>
+              <span className="text-sm font-medium text-gray-900">{t($ => $.walls.spacerSize)}</span>
             </Label.Root>
             <LengthField
               value={module.spacerSize}
@@ -525,9 +480,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
             />
 
             <Label.Root>
-              <Text size="1" weight="medium" color="gray">
-                {t($ => $.walls.spacerCount)}
-              </Text>
+              <span className="text-sm font-medium text-gray-900">{t($ => $.walls.spacerCount)}</span>
             </Label.Root>
             <TextField.Root
               type="number"
@@ -541,13 +494,11 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
             />
           </>
         )}
-      </Grid>
-      <Grid columns="2" gap="2" gapX="3">
-        <Flex direction="column" gap="1">
+      </div>
+      <div className="grid-cols-2 gap-2 gap-x-3">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.walls.frameMaterial)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.walls.frameMaterial)}</span>
           </Label.Root>
           <MaterialSelectWithEdit
             value={module.frameMaterial}
@@ -558,13 +509,11 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
             size="1"
             preferredTypes={['dimensional']}
           />
-        </Flex>
+        </div>
 
-        <Flex direction="column" gap="1">
+        <div className="flex flex-col gap-1">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.common.strawMaterialOverride)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.common.strawMaterialOverride)}</span>
           </Label.Root>
           <MaterialSelectWithEdit
             value={module.strawMaterial}
@@ -576,15 +525,13 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
             size="1"
             preferredTypes={['strawbale']}
           />
-        </Flex>
+        </div>
 
         {module.type === 'double' && (
           <>
-            <Flex direction="column" gap="1">
+            <div className="flex flex-col gap-1">
               <Label.Root>
-                <Text size="1" weight="medium" color="gray">
-                  {t($ => $.walls.spacerMaterial)}
-                </Text>
+                <span className="text-sm font-medium text-gray-900">{t($ => $.walls.spacerMaterial)}</span>
               </Label.Root>
               <MaterialSelectWithEdit
                 value={module.spacerMaterial}
@@ -595,13 +542,11 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
                 size="1"
                 preferredTypes={['dimensional']}
               />
-            </Flex>
+            </div>
 
-            <Flex direction="column" gap="1">
+            <div className="flex flex-col gap-1">
               <Label.Root>
-                <Text size="1" weight="medium" color="gray">
-                  {t($ => $.walls.infillMaterial)}
-                </Text>
+                <span className="text-sm font-medium text-gray-900">{t($ => $.walls.infillMaterial)}</span>
               </Label.Root>
               <MaterialSelectWithEdit
                 value={module.infillMaterial}
@@ -611,10 +556,10 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
                 }}
                 size="1"
               />
-            </Flex>
+            </div>
           </>
         )}
-      </Grid>
+      </div>
       <Separator size="4" />
       <TriangularBattensConfigSection
         triangularBattens={module.triangularBattens}
@@ -622,7 +567,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
           onUpdate({ ...module, triangularBattens })
         }}
       />
-    </Flex>
+    </div>
   )
 }
 
@@ -633,7 +578,7 @@ interface StrawhengeConfigFormProps {
 
 function StrawhengeConfigForm({ config, onUpdate }: StrawhengeConfigFormProps): React.JSX.Element {
   return (
-    <Flex direction="column" gap="3">
+    <div className="flex flex-col gap-3">
       <ModuleConfigSection
         module={config.module}
         onUpdate={module => {
@@ -647,7 +592,7 @@ function StrawhengeConfigForm({ config, onUpdate }: StrawhengeConfigFormProps): 
           onUpdate({ ...config, infill: { ...config.infill, ...updates } })
         }}
       />
-    </Flex>
+    </div>
   )
 }
 
@@ -658,7 +603,7 @@ interface ModulesConfigFormProps {
 
 function ModulesConfigForm({ config, onUpdate }: ModulesConfigFormProps): React.JSX.Element {
   return (
-    <Flex direction="column" gap="3">
+    <div className="flex flex-col gap-3">
       <ModuleConfigSection
         module={config.module}
         onUpdate={module => {
@@ -672,7 +617,7 @@ function ModulesConfigForm({ config, onUpdate }: ModulesConfigFormProps): React.
           onUpdate({ ...config, infill: infill as typeof config.infill })
         }}
       />
-    </Flex>
+    </div>
   )
 }
 
@@ -684,13 +629,11 @@ interface NonStrawbaleConfigFormProps {
 function NonStrawbaleConfigForm({ config, onUpdate }: NonStrawbaleConfigFormProps): React.JSX.Element {
   const { t } = useTranslation('config')
   return (
-    <Flex direction="column" gap="3">
+    <div className="flex flex-col gap-3">
       <Heading size="2">{t($ => $.walls.nonStrawbaleConfiguration)}</Heading>
-      <Grid columns="auto 1fr" gap="2" gapX="3">
+      <div className="grid-cols-[auto_1fr] gap-2 gap-x-3">
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.common.materialLabel)}
-          </Text>
+          <span className="text-sm font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.material}
@@ -701,8 +644,8 @@ function NonStrawbaleConfigForm({ config, onUpdate }: NonStrawbaleConfigFormProp
           size="1"
           preferredTypes={['volume']}
         />
-      </Grid>
-    </Flex>
+      </div>
+    </div>
   )
 }
 
@@ -755,14 +698,12 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
 
   const { t } = useTranslation('config')
   return (
-    <Flex direction="column" gap="3">
+    <div className="flex flex-col gap-3">
       {/* Opening Assembly Configuration */}
       <Heading size="2">{t($ => $.walls.openingsSection)}</Heading>
-      <Flex direction="column" gap="1">
+      <div className="flex flex-col gap-1">
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.walls.openingAssembly)}
-          </Text>
+          <span className="text-sm font-medium text-gray-900">{t($ => $.walls.openingAssembly)}</span>
         </Label.Root>
         <OpeningAssemblySelectWithEdit
           value={config.openingAssemblyId}
@@ -776,9 +717,9 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           placeholder={t($ => $.common.placeholder)}
           size="1"
         />
-      </Flex>
+      </div>
       <Separator size="4" />
-      <Flex direction="column" gap="3">
+      <div className="flex flex-col gap-3">
         <LayerListEditor
           title={t($ => $.walls.insideLayers)}
           measurementInfo={<MeasurementInfo highlightedPart="insideLayer" showFinishedSides />}
@@ -834,8 +775,8 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           beforeLabel={t($ => $.walls.wallConstruction)}
           afterLabel={t($ => $.walls.outside)}
         />
-      </Flex>
-    </Flex>
+      </div>
+    </div>
   )
 }
 
@@ -887,19 +828,18 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
   }, [assembly])
 
   return (
-    <Flex
-      direction="column"
-      gap="3"
-      p="3"
+    <div
+      className="flex-col
+      gap-3
+      p-3
+      "
       style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
     >
       {/* Basic Info - Full Width */}
-      <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
-        <Grid columns="auto 1fr" gapX="2" align="center">
+      <div className="grid-cols-2 gap-2 gap-x-3 items-center">
+        <div className="grid-cols-[auto_1fr] gap-x-2 items-center">
           <Label.Root>
-            <Text size="2" weight="medium" color="gray">
-              {t($ => $.common.name)}
-            </Text>
+            <span className="text-base font-medium text-gray-900">{t($ => $.common.name)}</span>
           </Label.Root>
           <TextField.Root
             value={nameInput.value}
@@ -911,52 +851,44 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
             placeholder={t($ => $.common.placeholders.name)}
             size="2"
           />
-        </Grid>
+        </div>
 
-        <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
-          <Flex gap="2" align="center">
+        <div className="grid-cols-2 gap-2 gap-x-3 items-center">
+          <div className="gap-2 items-center">
             <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                {t($ => $.common.type)}
-              </Text>
+              <span className="text-base font-medium text-gray-900">{t($ => $.common.type)}</span>
             </Label.Root>
-            <Flex gap="2" align="center">
+            <div className="gap-2 items-center">
               {React.createElement(getPerimeterConfigTypeIcon(assembly.type))}
-              <Text size="2" color="gray">
-                {t($ => $.walls.types[assembly.type])}
-              </Text>
-            </Flex>
-          </Flex>
+              <span className="text-base text-gray-900">{t($ => $.walls.types[assembly.type])}</span>
+            </div>
+          </div>
 
-          <Flex gap="2" align="center">
+          <div className="gap-2 items-center">
             <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                {t($ => $.common.totalThickness)}
-              </Text>
+              <span className="text-base font-medium text-gray-900">{t($ => $.common.totalThickness)}</span>
             </Label.Root>
-            <Text size="2" color="gray">
-              {totalThickness}
-            </Text>
-          </Flex>
-        </Grid>
-      </Grid>
+            <span className="text-base text-gray-900">{totalThickness}</span>
+          </div>
+        </div>
+      </div>
       <Separator size="4" />
       {/* Two Column Layout */}
-      <Grid columns="2" gap="4" style={{ gridTemplateColumns: '1fr 1fr' }}>
+      <div className="grid-cols-2 gap-4 style={{ gridTemplateColumns: '1fr 1fr' }}">
         {/* Left Column - Type-specific configuration */}
-        <Flex direction="column" gap="3">
+        <div className="flex flex-col gap-3">
           {assembly.type === 'infill' && <InfillConfigForm config={assembly} onUpdate={updateConfig} />}
           {assembly.type === 'strawhenge' && <StrawhengeConfigForm config={assembly} onUpdate={updateConfig} />}
           {assembly.type === 'modules' && <ModulesConfigForm config={assembly} onUpdate={updateConfig} />}
           {assembly.type === 'non-strawbale' && <NonStrawbaleConfigForm config={assembly} onUpdate={updateConfig} />}
-        </Flex>
+        </div>
 
         {/* Right Column - Common sections (Openings, Straw, Layers) */}
-        <Flex direction="column" gap="3">
+        <div className="flex flex-col gap-3">
           <CommonConfigSections assemblyId={assembly.id} config={assembly} />
-        </Flex>
-      </Grid>
-    </Flex>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -1164,19 +1096,19 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
   }, [resetWallAssembliesToDefaults, selectedAssemblyId, wallAssemblies])
 
   return (
-    <Flex direction="column" gap="4" style={{ width: '100%' }}>
+    <div className="flex-col gap-4" style={{ width: '100%' }}>
       {/* Selector + Actions */}
-      <Flex direction="column" gap="2">
-        <Grid columns="2" gap="2">
-          <Flex gap="2" align="end">
-            <Flex direction="column" gap="1" flexGrow="1">
+      <div className="flex flex-col gap-2">
+        <div className="grid-cols-2 gap-2">
+          <div className="gap-2 items-end">
+            <div className="flex-col gap-1 grow-1">
               <WallAssemblySelect
                 value={selectedAssemblyId as WallAssemblyId | undefined}
                 onValueChange={setSelectedAssemblyId}
                 showDefaultIndicator
                 defaultAssemblyId={defaultAssemblyId}
               />
-            </Flex>
+            </div>
 
             <DropdownMenu.Root>
               <DropdownMenu.Trigger>
@@ -1190,40 +1122,40 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                     handleAddNew('infill')
                   }}
                 >
-                  <Flex align="center" gap="1">
+                  <div className="flex items-center gap-1">
                     <LayersIcon />
                     {t($ => $.walls.types.infill)}
-                  </Flex>
+                  </div>
                 </DropdownMenu.Item>
                 <DropdownMenu.Item
                   onSelect={() => {
                     handleAddNew('strawhenge')
                   }}
                 >
-                  <Flex align="center" gap="1">
+                  <div className="flex items-center gap-1">
                     <CubeIcon />
                     {t($ => $.walls.types.strawhenge)}
-                  </Flex>
+                  </div>
                 </DropdownMenu.Item>
                 <DropdownMenu.Item
                   onSelect={() => {
                     handleAddNew('modules')
                   }}
                 >
-                  <Flex align="center" gap="1">
+                  <div className="flex items-center gap-1">
                     <CircleIcon />
                     {t($ => $.walls.types.modules)}
-                  </Flex>
+                  </div>
                 </DropdownMenu.Item>
                 <DropdownMenu.Item
                   onSelect={() => {
                     handleAddNew('non-strawbale')
                   }}
                 >
-                  <Flex align="center" gap="1">
+                  <div className="flex items-center gap-1">
                     <TrashIcon />
                     {t($ => $.walls.types['non-strawbale'])}
-                  </Flex>
+                  </div>
                 </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Root>
@@ -1252,9 +1184,9 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                 <AlertDialog.Description>
                   {t($ => $.walls.deleteConfirm, { name: selectedAssembly?.name })}
                 </AlertDialog.Description>
-                <Flex gap="3" mt="4" justify="end">
+                <div className="gap-3 mt-4 justify-end">
                   <AlertDialog.Cancel>
-                    <Button variant="soft" color="gray">
+                    <Button variant="soft" text-gray-900>
                       {t($ => $.common.cancel)}
                     </Button>
                   </AlertDialog.Cancel>
@@ -1263,7 +1195,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                       {t($ => $.common.delete)}
                     </Button>
                   </AlertDialog.Action>
-                </Flex>
+                </div>
               </AlertDialog.Content>
             </AlertDialog.Root>
 
@@ -1276,9 +1208,9 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
               <AlertDialog.Content>
                 <AlertDialog.Title>{t($ => $.walls.resetTitle)}</AlertDialog.Title>
                 <AlertDialog.Description>{t($ => $.walls.resetConfirm)}</AlertDialog.Description>
-                <Flex gap="3" mt="4" justify="end">
+                <div className="gap-3 mt-4 justify-end">
                   <AlertDialog.Cancel>
-                    <Button variant="soft" color="gray">
+                    <Button variant="soft" text-gray-900>
                       {t($ => $.common.cancel)}
                     </Button>
                   </AlertDialog.Cancel>
@@ -1287,19 +1219,17 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                       {t($ => $.common.reset)}
                     </Button>
                   </AlertDialog.Action>
-                </Flex>
+                </div>
               </AlertDialog.Content>
             </AlertDialog.Root>
-          </Flex>
+          </div>
 
-          <Grid columns="auto 1fr" gap="2" align="center">
+          <div className="grid-cols-[auto_1fr] gap-2 items-center">
             <Label.Root>
-              <Flex align="center" gap="1">
-                <Text size="1" weight="medium" color="gray">
-                  {t($ => $.walls.defaultWallAssembly)}
-                </Text>
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-medium text-gray-900">{t($ => $.walls.defaultWallAssembly)}</span>
                 <MeasurementInfo highlightedAssembly="wallAssembly" />
-              </Flex>
+              </div>
             </Label.Root>
             <WallAssemblySelect
               value={defaultAssemblyId}
@@ -1309,18 +1239,18 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
               placeholder={t($ => $.walls.selectDefault)}
               size="2"
             />
-          </Grid>
-        </Grid>
-      </Flex>
+          </div>
+        </div>
+      </div>
       {/* Form */}
       {selectedAssembly && <ConfigForm assembly={selectedAssembly} />}
       {!selectedAssembly && wallAssemblies.length === 0 && (
-        <Flex justify="center" align="center" p="5">
-          <Text color="gray">{t($ => $.walls.emptyList)}</Text>
-        </Flex>
+        <div className="justify-center items-center p-5">
+          <span className="text-gray-900">{t($ => $.walls.emptyList)}</span>
+        </div>
       )}
       {usage.isUsed && <UsageDisplay usage={usage} />}
-    </Flex>
+    </div>
   )
 }
 
@@ -1337,13 +1267,11 @@ function UsageDisplay({ usage }: { usage: WallAssemblyUsage }): React.JSX.Elemen
   const { t } = useTranslation('config')
 
   return (
-    <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
+    <div className="grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
       <Label.Root>
-        <Text size="2" weight="medium" color="gray">
-          {t($ => $.usage.usedBy)}
-        </Text>
+        <span className="text-base font-medium text-gray-900">{t($ => $.usage.usedBy)}</span>
       </Label.Root>
-      <Flex gap="1" wrap="wrap">
+      <div className="gap-1 flex-wrap">
         {usage.isDefault && (
           <Badge size="2" variant="soft" color="blue">
             {t($ => $.usage.globalDefault_wall)}
@@ -1352,7 +1280,7 @@ function UsageDisplay({ usage }: { usage: WallAssemblyUsage }): React.JSX.Elemen
         {usage.storeyIds.map(id => (
           <UsageBadge key={id} id={id} />
         ))}
-      </Flex>
-    </Grid>
+      </div>
+    </div>
   )
 }

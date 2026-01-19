@@ -1,10 +1,11 @@
-import { Select, Text } from '@radix-ui/themes'
 import React from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
 import type { OpeningAssemblyId } from '@/building/model/ids'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import type { NamedAssembly } from '@/construction/config'
 import { useDefaultOpeningAssemblyId, useOpeningAssemblies } from '@/construction/config/store'
+import { cn } from '@/lib/utils'
 
 export interface OpeningAssemblySelectProps {
   value: OpeningAssemblyId | null | undefined
@@ -14,6 +15,12 @@ export interface OpeningAssemblySelectProps {
   disabled?: boolean
   allowDefault?: boolean
   showDefaultIndicator?: boolean
+}
+
+const sizeClasses = {
+  '1': 'h-7 text-xs',
+  '2': 'h-9 <Text text-sm',
+  '3': 'h-10 <Text text-base'
 }
 
 export function OpeningAssemblySelect({
@@ -36,7 +43,7 @@ export function OpeningAssemblySelect({
   const assemblies = Object.values(openingAssemblies)
 
   return (
-    <Select.Root
+    <Select
       value={value ?? (allowDefault ? '__default__' : '')}
       onValueChange={val => {
         if (val === '__default__') {
@@ -46,39 +53,44 @@ export function OpeningAssemblySelect({
         }
       }}
       disabled={disabled}
-      size={size}
     >
-      <Select.Trigger placeholder={placeholder} />
-      <Select.Content>
+      <SelectTrigger className={cn(sizeClasses[size])}>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
         {allowDefault && (
-          <Select.Item value="__default__">
-            <Text color="gray">{t($ => $.openings.useGlobalDefault)}</Text>
-          </Select.Item>
+          <SelectItem value="__default__">
+            <span className="text-muted-foreground">{t($ => $.openings.useGlobalDefault)}</span>
+          </SelectItem>
         )}
         {assemblies.length === 0 ? (
-          <Select.Item value="__none__" disabled>
-            <Text color="gray">{t($ => $.openings.emptyList)}</Text>
-          </Select.Item>
+          <SelectItem value="__none__" disabled>
+            <span className="text-muted-foreground">{t($ => $.openings.emptyList)}</span>
+          </SelectItem>
         ) : (
           assemblies.map(assembly => {
             const isDefault = showDefaultIndicator && assembly.id === defaultAssemblyId
             const label = getDisplayName(assembly)
             return (
-              <Select.Item key={assembly.id} value={assembly.id}>
-                <Text>
+              <SelectItem key={assembly.id} value={assembly.id}>
+                <span>
                   {isDefault ? (
-                    <Trans t={t} i18nKey={$ => $.openings.defaultLabel} components={{ gray: <Text color="gray" /> }}>
-                      <>{{ label }}</> <Text color="gray"> (default)</Text>
+                    <Trans
+                      t={t}
+                      i18nKey={$ => $.openings.defaultLabel}
+                      components={{ gray: <span className="text-muted-foreground" /> }}
+                    >
+                      <>{label}</> <span className="text-muted-foreground"> (default)</span>
                     </Trans>
                   ) : (
                     <>{label}</>
                   )}
-                </Text>
-              </Select.Item>
+                </span>
+              </SelectItem>
             )
           })
         )}
-      </Select.Content>
-    </Select.Root>
+      </SelectContent>
+    </Select>
   )
 }

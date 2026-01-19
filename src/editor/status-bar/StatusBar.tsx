@@ -1,4 +1,3 @@
-import { Box, Flex, Grid } from '@radix-ui/themes'
 import React from 'react'
 
 import { PlanOverlayControls } from '@/editor/plan-overlay/components/PlanOverlayControls'
@@ -13,38 +12,28 @@ import { ThemeToggle } from './ThemeToggle'
 
 export function StatusBar(): React.JSX.Element {
   return (
-    <Box
-      className="absolute z-10 pointer-events-none"
-      left="0"
-      right="0"
-      bottom="0"
-      height="32px"
-      p="0"
-      m="0"
-      style={{
-        backgroundColor: 'var(--color-panel-solid)',
-        borderTop: '1px solid var(--gray-6)'
-      }}
+    <div
+      className="absolute z-10 pointer-events-none left-0 right-0 bottom-0 h-8 p-0 m-0 bg-card border-t border-border"
       data-testid="statusbar"
     >
-      <Grid columns="1fr 1fr 2fr" align="center" gap="4" p="1" className="pointer-events-auto">
-        <Flex align="center" gap="3" p="0">
+      <div className="grid grid-cols-[1fr_1fr_2fr] items-center gap-4 p-1 pointer-events-auto">
+        <div className="flex items-center gap-3 p-0">
           <OfflineStatusIndicator />
           <AutoSaveIndicator />
           <ThemeToggle />
           <LanguageSwitcher />
-        </Flex>
+        </div>
 
-        <Flex align="center" justify="center" gap="3">
+        <div className="flex items-center justify-center gap-3">
           <StoreySelector />
-        </Flex>
+        </div>
 
-        <Flex align="center" justify="end" gap="3">
+        <div className="flex items-center justify-end gap-3">
           <PointerPositionDisplay />
           <PlanOverlayControls />
           <GridSizeDisplay />
-        </Flex>
-      </Grid>
-    </Box>
+        </div>
+      </div>
+    </div>
   )
 }

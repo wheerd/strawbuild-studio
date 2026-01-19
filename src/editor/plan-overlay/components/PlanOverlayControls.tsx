@@ -1,5 +1,5 @@
 import { ExclamationTriangleIcon, ImageIcon } from '@radix-ui/react-icons'
-import { AlertDialog, Button, DropdownMenu, Flex, IconButton, Text } from '@radix-ui/themes'
+import { AlertDialog, Button, DropdownMenu, IconButton } from '@radix-ui/themes'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -22,7 +22,7 @@ export function PlanOverlayControls(): React.JSX.Element | null {
   }
 
   return (
-    <Flex align="center" gap="2">
+    <div className="flex items-center gap-2">
       <PlanImportModal floorId={activeStoreyId} open={modalOpen} onOpenChange={setModalOpen} existingPlan={plan} />
       {plan ? (
         <>
@@ -68,19 +68,19 @@ export function PlanOverlayControls(): React.JSX.Element | null {
 
           <AlertDialog.Root open={confirmOpen} onOpenChange={setConfirmOpen}>
             <AlertDialog.Content maxWidth="400px">
-              <Flex direction="column" gap="3">
+              <div className="flex flex-col gap-3">
                 <AlertDialog.Title>
-                  <Flex align="center" gap="2">
+                  <div className="flex items-center gap-2">
                     <ExclamationTriangleIcon />
-                    <Text>{t($ => $.planControls.confirmRemove.title)}</Text>
-                  </Flex>
+                    <span>{t($ => $.planControls.confirmRemove.title)}</span>
+                  </div>
                 </AlertDialog.Title>
                 <AlertDialog.Description>
                   {t($ => $.planControls.confirmRemove.description, {
                     floor: storey?.name ?? 'this floor'
                   })}
                 </AlertDialog.Description>
-                <Flex justify="end" gap="2">
+                <div className="justify-end gap-2">
                   <AlertDialog.Cancel>
                     <Button
                       variant="soft"
@@ -102,8 +102,8 @@ export function PlanOverlayControls(): React.JSX.Element | null {
                       {t($ => $.planControls.confirmRemove.confirm)}
                     </Button>
                   </AlertDialog.Action>
-                </Flex>
-              </Flex>
+                </div>
+              </div>
             </AlertDialog.Content>
           </AlertDialog.Root>
         </>
@@ -119,6 +119,6 @@ export function PlanOverlayControls(): React.JSX.Element | null {
           <ImageIcon />
         </IconButton>
       )}
-    </Flex>
+    </div>
   )
 }

@@ -3,19 +3,15 @@ import * as Label from '@radix-ui/react-label'
 import {
   AlertDialog,
   Badge,
-  Box,
   Button,
   Callout,
   Checkbox,
   DropdownMenu,
-  Flex,
-  Grid,
   Heading,
   IconButton,
   Select,
   Separator,
   Switch,
-  Text,
   TextField
 } from '@radix-ui/themes'
 import React, { useCallback, useId, useMemo, useState } from 'react'
@@ -177,20 +173,20 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
 
   if (!selectedAssembly) {
     return (
-      <Flex direction="column" gap="4" width="100%">
-        <Callout.Root color="gray">
+      <div className="flex-col gap-4 w-full">
+        <Callout.Root text-gray-900>
           <Callout.Text>{t($ => $.openings.emptyList)}</Callout.Text>
         </Callout.Root>
-      </Flex>
+      </div>
     )
   }
 
   return (
-    <Flex direction="column" gap="4" width="100%">
+    <div className="flex-col gap-4 w-full">
       {/* Selector + Actions */}
-      <Flex direction="column" gap="2">
-        <Flex gap="2" align="end">
-          <Flex direction="column" gap="1" flexGrow="1">
+      <div className="flex flex-col gap-2">
+        <div className="gap-2 items-end">
+          <div className="flex-col gap-1 grow-1">
             <OpeningAssemblySelect
               value={(selectedAssemblyId as OpeningAssemblyId | null) ?? undefined}
               onValueChange={value => {
@@ -199,7 +195,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
               showDefaultIndicator
               size="2"
             />
-          </Flex>
+          </div>
 
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
@@ -259,9 +255,9 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
               <AlertDialog.Description>
                 {t($ => $.openings.deleteConfirm, { name: selectedAssembly.name })}
               </AlertDialog.Description>
-              <Flex gap="3" mt="4" justify="end">
+              <div className="gap-3 mt-4 justify-end">
                 <AlertDialog.Cancel>
-                  <Button variant="soft" color="gray">
+                  <Button variant="soft" text-gray-900>
                     {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
@@ -270,7 +266,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
                     {t($ => $.common.delete)}
                   </Button>
                 </AlertDialog.Action>
-              </Flex>
+              </div>
             </AlertDialog.Content>
           </AlertDialog.Root>
 
@@ -283,9 +279,9 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.openings.resetTitle)}</AlertDialog.Title>
               <AlertDialog.Description>{t($ => $.openings.resetConfirm)}</AlertDialog.Description>
-              <Flex gap="3" mt="4" justify="end">
+              <div className="gap-3 mt-4 justify-end">
                 <AlertDialog.Cancel>
-                  <Button variant="soft" color="gray">
+                  <Button variant="soft" text-gray-900>
                     {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
@@ -294,19 +290,17 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
                     {t($ => $.common.reset)}
                   </Button>
                 </AlertDialog.Action>
-              </Flex>
+              </div>
             </AlertDialog.Content>
           </AlertDialog.Root>
-        </Flex>
-      </Flex>
+        </div>
+      </div>
       {/* Form */}
       <ConfigForm assembly={selectedAssembly} />
       <Separator size="4" />
-      <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
+      <div className="grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.openings.defaultOpeningAssembly)}
-          </Text>
+          <span className="text-base font-medium text-gray-900">{t($ => $.openings.defaultOpeningAssembly)}</span>
         </Label.Root>
         <OpeningAssemblySelect
           value={defaultId}
@@ -316,9 +310,9 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
           placeholder={t($ => $.common.placeholders.selectDefault)}
           size="2"
         />
-      </Grid>
+      </div>
       {usage.isUsed && <UsageDisplay usage={usage} />}
-    </Flex>
+    </div>
   )
 }
 
@@ -335,13 +329,11 @@ function UsageDisplay({ usage }: { usage: OpeningAssemblyUsage }): React.JSX.Ele
   const { t } = useTranslation('config')
 
   return (
-    <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
+    <div className="grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
       <Label.Root>
-        <Text size="2" weight="medium" color="gray">
-          {t($ => $.usage.usedBy)}
-        </Text>
+        <span className="text-base font-medium text-gray-900">{t($ => $.usage.usedBy)}</span>
       </Label.Root>
-      <Flex gap="1" wrap="wrap">
+      <div className="gap-1 flex-wrap">
         {usage.isDefault && (
           <Badge size="2" variant="soft" color="blue">
             {t($ => $.usage.globalDefault_opening)}
@@ -353,8 +345,8 @@ function UsageDisplay({ usage }: { usage: OpeningAssemblyUsage }): React.JSX.Ele
         {usage.storeyIds.map(id => (
           <UsageBadge key={id} id={id} />
         ))}
-      </Flex>
-    </Grid>
+      </div>
+    </div>
   )
 }
 
@@ -382,18 +374,17 @@ function ConfigForm({ assembly }: { assembly: OpeningAssemblyConfig }): React.JS
   )
 
   return (
-    <Flex
-      direction="column"
-      gap="3"
-      p="3"
+    <div
+      className="flex-col
+      gap-3
+      p-3
+      "
       style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
     >
-      <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
-        <Grid columns="auto 1fr" gapX="2" align="center">
+      <div className="grid-cols-2 gap-2 gap-x-3 items-center">
+        <div className="grid-cols-[auto_1fr] gap-x-2 items-center">
           <Label.Root>
-            <Text size="2" weight="medium" color="gray">
-              {t($ => $.common.name)}
-            </Text>
+            <span className="text-base font-medium text-gray-900">{t($ => $.common.name)}</span>
           </Label.Root>
           <TextField.Root
             value={nameInput.value}
@@ -405,19 +396,15 @@ function ConfigForm({ assembly }: { assembly: OpeningAssemblyConfig }): React.JS
             placeholder={t($ => $.openings.placeholders.name)}
             size="2"
           />
-        </Grid>
+        </div>
 
-        <Flex gap="2" align="center">
+        <div className="gap-2 items-center">
           <Label.Root>
-            <Text size="2" weight="medium" color="gray">
-              {t($ => $.common.type)}
-            </Text>
+            <span className="text-base font-medium text-gray-900">{t($ => $.common.type)}</span>
           </Label.Root>
-          <Text size="2" color="gray">
-            {t($ => $.openings.types[assembly.type])}
-          </Text>
-        </Flex>
-      </Grid>
+          <span className="text-base text-gray-900">{t($ => $.openings.types[assembly.type])}</span>
+        </div>
+      </div>
 
       <Separator size="4" />
 
@@ -431,11 +418,9 @@ function ConfigForm({ assembly }: { assembly: OpeningAssemblyConfig }): React.JS
       ) : (
         <>
           <Heading size="2">{t($ => $.openings.types.empty)}</Heading>
-          <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
+          <div className="grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
             <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                {t($ => $.openings.labels.padding)}
-              </Text>
+              <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.padding)}</span>
             </Label.Root>
             <LengthField
               value={assembly.padding}
@@ -444,10 +429,10 @@ function ConfigForm({ assembly }: { assembly: OpeningAssemblyConfig }): React.JS
               }}
               unit="mm"
             />
-          </Grid>
+          </div>
         </>
       )}
-    </Flex>
+    </div>
   )
 }
 
@@ -460,11 +445,9 @@ const SimpleOpeningContent = ({
 }) => {
   const { t } = useTranslation('config')
   return (
-    <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+    <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
       <Label.Root>
-        <Text size="2" weight="medium" color="gray">
-          {t($ => $.openings.labels.padding)}
-        </Text>
+        <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.padding)}</span>
       </Label.Root>
       <LengthField
         value={config.padding}
@@ -475,9 +458,7 @@ const SimpleOpeningContent = ({
       />
 
       <Label.Root>
-        <Text size="2" weight="medium" color="gray">
-          {t($ => $.openings.labels.headerThickness)}
-        </Text>
+        <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.headerThickness)}</span>
       </Label.Root>
       <LengthField
         value={config.headerThickness}
@@ -488,9 +469,7 @@ const SimpleOpeningContent = ({
       />
 
       <Label.Root>
-        <Text size="2" weight="medium" color="gray">
-          {t($ => $.openings.labels.headerMaterial)}
-        </Text>
+        <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.headerMaterial)}</span>
       </Label.Root>
       <MaterialSelectWithEdit
         value={config.headerMaterial}
@@ -503,9 +482,7 @@ const SimpleOpeningContent = ({
       />
 
       <Label.Root>
-        <Text size="2" weight="medium" color="gray">
-          {t($ => $.openings.labels.sillThickness)}
-        </Text>
+        <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.sillThickness)}</span>
       </Label.Root>
       <LengthField
         value={config.sillThickness}
@@ -516,9 +493,7 @@ const SimpleOpeningContent = ({
       />
 
       <Label.Root>
-        <Text size="2" weight="medium" color="gray">
-          {t($ => $.openings.labels.sillMaterial)}
-        </Text>
+        <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.sillMaterial)}</span>
       </Label.Root>
       <MaterialSelectWithEdit
         value={config.sillMaterial}
@@ -529,7 +504,7 @@ const SimpleOpeningContent = ({
         size="2"
         preferredTypes={['dimensional']}
       />
-    </Grid>
+    </div>
   )
 }
 
@@ -542,13 +517,11 @@ const PostOpeningContent = ({
 }) => {
   const { t } = useTranslation('config')
   return (
-    <Flex direction="column" gap="3">
+    <div className="flex flex-col gap-3">
       <Heading size="2">{t($ => $.openings.sections.opening)}</Heading>
-      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+      <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.openings.labels.padding)}
-          </Text>
+          <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.padding)}</span>
         </Label.Root>
         <LengthField
           value={config.padding}
@@ -559,9 +532,7 @@ const PostOpeningContent = ({
         />
 
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.openings.labels.headerThickness)}
-          </Text>
+          <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.headerThickness)}</span>
         </Label.Root>
         <LengthField
           value={config.headerThickness}
@@ -572,9 +543,7 @@ const PostOpeningContent = ({
         />
 
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.openings.labels.headerMaterial)}
-          </Text>
+          <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.headerMaterial)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.headerMaterial}
@@ -587,9 +556,7 @@ const PostOpeningContent = ({
         />
 
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.openings.labels.sillThickness)}
-          </Text>
+          <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.sillThickness)}</span>
         </Label.Root>
         <LengthField
           value={config.sillThickness}
@@ -600,9 +567,7 @@ const PostOpeningContent = ({
         />
 
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.openings.labels.sillMaterial)}
-          </Text>
+          <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.sillMaterial)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.sillMaterial}
@@ -613,10 +578,10 @@ const PostOpeningContent = ({
           size="2"
           preferredTypes={['dimensional']}
         />
-      </Grid>
+      </div>
 
       <PostsConfigSection config={config} onUpdate={update} />
-    </Flex>
+    </div>
   )
 }
 
@@ -636,14 +601,12 @@ function PostsConfigSection({
   }
 
   return (
-    <Flex direction="column" gap="3">
+    <div className="flex flex-col gap-3">
       <Heading size="2">{t($ => $.openings.sections.posts)}</Heading>
 
-      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+      <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root htmlFor={typeSelectId}>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.common.type)}
-          </Text>
+          <span className="text-base font-medium text-gray-900">{t($ => $.common.type)}</span>
         </Label.Root>
         <Select.Root
           value={posts.type}
@@ -673,26 +636,22 @@ function PostsConfigSection({
           </Select.Content>
         </Select.Root>
 
-        <Box gridColumn="span 2">
+        <div className="col-span-2">
           <Label.Root>
-            <Flex align="center" gap="1">
+            <div className="flex items-center gap-1">
               <Checkbox
                 checked={config.replacePosts}
                 onCheckedChange={value => {
                   onUpdate({ replacePosts: value === true })
                 }}
               />
-              <Text size="2" weight="medium" color="gray">
-                {t($ => $.openings.labels.replacesWallPosts)}
-              </Text>
-            </Flex>
+              <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.replacesWallPosts)}</span>
+            </div>
           </Label.Root>
-        </Box>
+        </div>
 
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.common.width)}
-          </Text>
+          <span className="text-base font-medium text-gray-900">{t($ => $.common.width)}</span>
         </Label.Root>
         <LengthField
           value={posts.width}
@@ -706,9 +665,7 @@ function PostsConfigSection({
         {posts.type === 'double' && (
           <>
             <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                {t($ => $.common.thickness)}
-              </Text>
+              <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
             </Label.Root>
             <LengthField
               value={posts.thickness}
@@ -722,9 +679,7 @@ function PostsConfigSection({
         )}
 
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.common.materialLabel)}
-          </Text>
+          <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={'material' in posts ? posts.material : undefined}
@@ -739,9 +694,7 @@ function PostsConfigSection({
         {posts.type === 'double' && (
           <>
             <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                {t($ => $.common.materialLabel)}
-              </Text>
+              <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
             </Label.Root>
             <MaterialSelectWithEdit
               value={posts.infillMaterial}
@@ -754,26 +707,26 @@ function PostsConfigSection({
           </>
         )}
 
-        <Box gridColumn="span 2">
+        <div className="col-span-2">
           <Label.Root>
-            <Flex align="center" gap="2">
-              <Text size="2" weight="medium" color="gray">
+            <div className="flex items-center gap-2">
+              <span className="text-base font-medium text-gray-900">
                 {t($ => $.openings.labels.postsHaveFullHeight)}
-              </Text>
+              </span>
               <Switch
                 checked={config.postsSupportHeader}
                 onCheckedChange={value => {
                   onUpdate({ postsSupportHeader: value })
                 }}
               />
-              <Text size="2" weight="medium" color="gray">
+              <span className="text-base font-medium text-gray-900">
                 {t($ => $.openings.labels.postsSupportHeader)}
-              </Text>
-            </Flex>
+              </span>
+            </div>
           </Label.Root>
-        </Box>
-      </Grid>
-    </Flex>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -786,15 +739,13 @@ const PlankedOpeningContent = ({
 }) => {
   const { t } = useTranslation('config')
   return (
-    <Flex direction="column" gap="3">
+    <div className="flex flex-col gap-3">
       <Heading size="2">{t($ => $.openings.sections.opening)}</Heading>
-      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+      <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.openings.labels.padding)}
-          </Text>
+          <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.padding)}</span>
         </Label.Root>
-        <Box gridColumn="span 3">
+        <div className="col-span-3">
           <LengthField
             value={config.padding}
             onChange={padding => {
@@ -802,12 +753,10 @@ const PlankedOpeningContent = ({
             }}
             unit="mm"
           />
-        </Box>
+        </div>
 
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.openings.labels.headerThickness)}
-          </Text>
+          <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.headerThickness)}</span>
         </Label.Root>
         <LengthField
           value={config.headerThickness}
@@ -818,9 +767,7 @@ const PlankedOpeningContent = ({
         />
 
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.openings.labels.headerMaterial)}
-          </Text>
+          <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.headerMaterial)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.headerMaterial}
@@ -833,9 +780,7 @@ const PlankedOpeningContent = ({
         />
 
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.openings.labels.sillThickness)}
-          </Text>
+          <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.sillThickness)}</span>
         </Label.Root>
         <LengthField
           value={config.sillThickness}
@@ -846,9 +791,7 @@ const PlankedOpeningContent = ({
         />
 
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.openings.labels.sillMaterial)}
-          </Text>
+          <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.sillMaterial)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.sillMaterial}
@@ -861,9 +804,7 @@ const PlankedOpeningContent = ({
         />
 
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.openings.labels.plankThickness)}
-          </Text>
+          <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.plankThickness)}</span>
         </Label.Root>
         <LengthField
           value={config.plankThickness}
@@ -874,9 +815,7 @@ const PlankedOpeningContent = ({
         />
 
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.openings.labels.plankMaterial)}
-          </Text>
+          <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.plankMaterial)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.plankMaterial}
@@ -887,7 +826,7 @@ const PlankedOpeningContent = ({
           size="2"
           preferredTypes={['dimensional']}
         />
-      </Grid>
-    </Flex>
+      </div>
+    </div>
   )
 }

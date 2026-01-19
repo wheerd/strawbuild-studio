@@ -1,10 +1,11 @@
-import { Flex, Select, Text } from '@radix-ui/themes'
 import React from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
 import type { WallAssemblyId } from '@/building/model/ids'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import type { NamedAssembly } from '@/construction/config'
 import { useWallAssemblies } from '@/construction/config/store'
+import { cn } from '@/lib/utils'
 
 import { getPerimeterConfigTypeIcon } from './Icons'
 
@@ -16,6 +17,12 @@ export interface WallAssemblySelectProps {
   disabled?: boolean
   showDefaultIndicator?: boolean
   defaultAssemblyId?: WallAssemblyId
+}
+
+const sizeClasses = {
+  '1': 'h-7 text-xs',
+  '2': 'h-9 <Text text-sm',
+  '3': 'h-10 <Text text-base'
 }
 
 export function WallAssemblySelect({
@@ -35,44 +42,49 @@ export function WallAssemblySelect({
   }
 
   return (
-    <Select.Root
+    <Select
       value={value ?? ''}
       onValueChange={val => {
         onValueChange(val as WallAssemblyId)
       }}
       disabled={disabled}
-      size={size}
     >
-      <Select.Trigger placeholder={placeholder} />
-      <Select.Content>
+      <SelectTrigger className={cn(sizeClasses[size])}>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
         {wallAssemblies.length === 0 ? (
-          <Select.Item value="" disabled>
-            <Text color="gray">{t($ => $.walls.emptyList)}</Text>
-          </Select.Item>
+          <SelectItem value="" disabled>
+            <span className="text-muted-foreground">{t($ => $.walls.emptyList)}</span>
+          </SelectItem>
         ) : (
           wallAssemblies.map(assembly => {
             const Icon = getPerimeterConfigTypeIcon(assembly.type)
             const isDefault = showDefaultIndicator && assembly.id === defaultAssemblyId
             const label = getDisplayName(assembly)
             return (
-              <Select.Item key={assembly.id} value={assembly.id}>
-                <Flex align="center" gap="2">
-                  <Icon style={{ flexShrink: 0 }} />
-                  <Text>
+              <SelectItem key={assembly.id} value={assembly.id}>
+                <div className="flex items-center gap-2">
+                  <Icon className="shrink-0" />
+                  <span>
                     {isDefault ? (
-                      <Trans t={t} i18nKey={$ => $.walls.defaultLabel} components={{ gray: <Text color="gray" /> }}>
-                        <>{{ label }}</> <Text color="gray"> (default)</Text>
+                      <Trans
+                        t={t}
+                        i18nKey={$ => $.walls.defaultLabel}
+                        components={{ gray: <span className="text-muted-foreground" /> }}
+                      >
+                        <>{label}</> <span className="text-muted-foreground"> (default)</span>
                       </Trans>
                     ) : (
                       <>{label}</>
                     )}
-                  </Text>
-                </Flex>
-              </Select.Item>
+                  </span>
+                </div>
+              </SelectItem>
             )
           })
         )}
-      </Select.Content>
-    </Select.Root>
+      </SelectContent>
+    </Select>
   )
 }

@@ -1,11 +1,23 @@
 import { CheckIcon, Cross2Icon, DownloadIcon, UpdateIcon, UploadIcon } from '@radix-ui/react-icons'
-import { Button, DropdownMenu, Flex, Tooltip } from '@radix-ui/themes'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { usePersistenceStore } from '@/building/store/persistenceStore'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { clearSelection } from '@/editor/hooks/useSelectionStore'
 import { pushTool } from '@/editor/tools/system'
+import { cn } from '@/lib/utils'
 import { SaveIcon } from '@/shared/components/Icons'
 import { ProjectImportExportService } from '@/shared/services/ProjectImportExportService'
 import { FileInputCancelledError, createBinaryFileInput, createFileInput } from '@/shared/utils/createFileInput'
@@ -132,24 +144,24 @@ export function AutoSaveIndicator(): React.JSX.Element {
     if (exportError || importError) {
       return {
         text: exportError ?? importError ?? t($ => $.autoSave.exportFailed),
-        icon: <Cross2Icon />,
-        color: 'red' as const
+        icon: <Cross2Icon className="h-3 w-3" />,
+        colorClass: 'text-red-600 dark:text-red-400'
       }
     }
 
     if (isExporting) {
       return {
         text: t($ => $.autoSave.exporting),
-        icon: <UpdateIcon className="animate-spin" />,
-        color: 'blue' as const
+        icon: <UpdateIcon className="h-3 w-3 animate-spin" />,
+        colorClass: 'text-blue-600 dark:text-blue-400'
       }
     }
 
     if (isImporting) {
       return {
         text: t($ => $.autoSave.importing),
-        icon: <UpdateIcon className="animate-spin" />,
-        color: 'blue' as const
+        icon: <UpdateIcon className="h-3 w-3 animate-spin" />,
+        colorClass: 'text-blue-600 dark:text-blue-400'
       }
     }
 
@@ -157,16 +169,16 @@ export function AutoSaveIndicator(): React.JSX.Element {
     if (saveError) {
       return {
         text: t($ => $.autoSave.autoSaveFailed),
-        icon: <Cross2Icon />,
-        color: 'red' as const
+        icon: <Cross2Icon className="h-3 w-3" />,
+        colorClass: 'text-red-600 dark:text-red-400'
       }
     }
 
     if (isSaving) {
       return {
         text: t($ => $.autoSave.autoSaving),
-        icon: <UpdateIcon className="animate-spin" />,
-        color: 'blue' as const
+        icon: <UpdateIcon className="h-3 w-3 animate-spin" />,
+        colorClass: 'text-blue-600 dark:text-blue-400'
       }
     }
 
@@ -193,91 +205,92 @@ export function AutoSaveIndicator(): React.JSX.Element {
         text: t($ => $.autoSave.autoSaved, {
           time: timeText
         }),
-        icon: <CheckIcon />,
-        color: 'green' as const
+        icon: <CheckIcon className="h-3 w-3" />,
+        colorClass: 'text-green-600 dark:text-green-400'
       }
     }
 
     return {
       text: t($ => $.autoSave.notSaved),
-      icon: <Cross2Icon />,
-      color: 'gray' as const
+      icon: <Cross2Icon className="h-3 w-3" />,
+      colorClass: 'text-muted-foreground'
     }
   }
 
   const statusInfo = getStatusInfo()
 
   return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger>
-        <Button size="1" variant="soft" color={statusInfo.color}>
-          <Tooltip content={statusInfo.text}>
-            <Flex gap="1">
+    <DropdownMenu>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" variant="secondary" className={cn('h-7 gap-1', statusInfo.colorClass)}>
               <SaveIcon />
               {statusInfo.icon}
-            </Flex>
-          </Tooltip>
-        </Button>
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Content>
-        <DropdownMenu.Sub>
-          <DropdownMenu.SubTrigger>{t($ => $.autoSave.importExportIfc)}</DropdownMenu.SubTrigger>
-          <DropdownMenu.SubContent>
-            <DropdownMenu.Item
+            </Button>
+          </DropdownMenuTrigger>
+        </TooltipTrigger>
+        <TooltipContent>{statusInfo.text}</TooltipContent>
+      </Tooltip>
+      <DropdownMenuContent>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>{t($ => $.autoSave.importExportIfc)}</DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuItem
               onClick={() => {
                 void handleIfcExport()
               }}
               disabled={isExporting || isImporting}
             >
-              <DownloadIcon />
+              <DownloadIcon className="mr-2 h-4 w-4" />
               {t($ => $.autoSave.exportBuildingModel)}
-            </DropdownMenu.Item>
+            </DropdownMenuItem>
 
-            <DropdownMenu.Item
+            <DropdownMenuItem
               onClick={() => {
                 void handleIfcGeometryExport()
               }}
               disabled={isExporting || isImporting}
             >
-              <DownloadIcon />
+              <DownloadIcon className="mr-2 h-4 w-4" />
               {t($ => $.autoSave.exportConstructionModel)}
-            </DropdownMenu.Item>
+            </DropdownMenuItem>
 
-            <DropdownMenu.Item
+            <DropdownMenuItem
               onClick={() => {
                 void handleIfcImport()
               }}
               disabled={isExporting || isImporting}
             >
-              <UploadIcon />
+              <UploadIcon className="mr-2 h-4 w-4" />
               {t($ => $.autoSave.import)}
-            </DropdownMenu.Item>
-          </DropdownMenu.SubContent>
-        </DropdownMenu.Sub>
-        <DropdownMenu.Item
+            </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        <DropdownMenuItem
           onClick={() => {
             void handleExport()
           }}
           disabled={isExporting || isImporting}
         >
-          <DownloadIcon />
+          <DownloadIcon className="mr-2 h-4 w-4" />
           {t($ => $.autoSave.saveToFile)}
-        </DropdownMenu.Item>
+        </DropdownMenuItem>
 
-        <DropdownMenu.Item
+        <DropdownMenuItem
           onClick={() => {
             void handleImport()
           }}
           disabled={isExporting || isImporting}
         >
-          <UploadIcon />
+          <UploadIcon className="mr-2 h-4 w-4" />
           {t($ => $.autoSave.loadFromFile)}
-        </DropdownMenu.Item>
+        </DropdownMenuItem>
 
-        <DropdownMenu.Separator />
+        <DropdownMenuSeparator />
 
-        <DropdownMenu.Item disabled>{statusInfo.text}</DropdownMenu.Item>
-      </DropdownMenu.Content>
-    </DropdownMenu.Root>
+        <DropdownMenuItem disabled>{statusInfo.text}</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

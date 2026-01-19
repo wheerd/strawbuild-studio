@@ -1,8 +1,8 @@
 import { GearIcon } from '@radix-ui/react-icons'
-import { Flex, Tabs } from '@radix-ui/themes'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { ConfigTab } from '@/construction/config/context/ConfigurationModalContext'
 import { MaterialsConfigContent } from '@/construction/materials/components/MaterialsConfigContent'
 import { BaseModal } from '@/shared/components/BaseModal'
@@ -46,52 +46,52 @@ export function ConfigurationModal({
       maxHeight="90vh"
       resetKeys={[initialSelectionId]}
     >
-      <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
-        <Tabs.List>
-          <Tabs.Trigger value="materials">{t($ => $.modal.tabMaterials)}</Tabs.Trigger>
-          <Tabs.Trigger value="ringbeams">{t($ => $.modal.tabRingBeams)}</Tabs.Trigger>
-          <Tabs.Trigger value="walls">{t($ => $.modal.tabWalls)}</Tabs.Trigger>
-          <Tabs.Trigger value="openings">{t($ => $.modal.tabOpenings)}</Tabs.Trigger>
-          <Tabs.Trigger value="floors">{t($ => $.modal.tabFloors)}</Tabs.Trigger>
-          <Tabs.Trigger value="roofs">{t($ => $.modal.tabRoofs)}</Tabs.Trigger>
-        </Tabs.List>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="materials">{t($ => $.modal.tabMaterials)}</TabsTrigger>
+          <TabsTrigger value="ringbeams">{t($ => $.modal.tabRingBeams)}</TabsTrigger>
+          <TabsTrigger value="walls">{t($ => $.modal.tabWalls)}</TabsTrigger>
+          <TabsTrigger value="openings">{t($ => $.modal.tabOpenings)}</TabsTrigger>
+          <TabsTrigger value="floors">{t($ => $.modal.tabFloors)}</TabsTrigger>
+          <TabsTrigger value="roofs">{t($ => $.modal.tabRoofs)}</TabsTrigger>
+        </TabsList>
 
-        <Tabs.Content value="materials">
-          <Flex pt="4" style={{ width: '100%' }}>
+        <TabsContent value="materials">
+          <div className="flex pt-4 w-full">
             <MaterialsConfigContent initialSelectionId={initialSelectionId} />
-          </Flex>
-        </Tabs.Content>
+          </div>
+        </TabsContent>
 
-        <Tabs.Content value="ringbeams">
-          <Flex pt="4" style={{ width: '100%' }}>
+        <TabsContent value="ringbeams">
+          <div className="flex pt-4 w-full">
             <RingBeamAssemblyContent initialSelectionId={initialSelectionId} />
-          </Flex>
-        </Tabs.Content>
+          </div>
+        </TabsContent>
 
-        <Tabs.Content value="walls">
-          <Flex pt="4" style={{ width: '100%' }}>
+        <TabsContent value="walls">
+          <div className="flex pt-4 w-full">
             <WallAssemblyContent initialSelectionId={initialSelectionId} />
-          </Flex>
-        </Tabs.Content>
+          </div>
+        </TabsContent>
 
-        <Tabs.Content value="openings">
-          <Flex pt="4" style={{ width: '100%' }}>
+        <TabsContent value="openings">
+          <div className="flex pt-4 w-full">
             <OpeningAssemblyContent initialSelectionId={initialSelectionId} />
-          </Flex>
-        </Tabs.Content>
+          </div>
+        </TabsContent>
 
-        <Tabs.Content value="floors">
-          <Flex pt="4" style={{ width: '100%' }}>
+        <TabsContent value="floors">
+          <div className="flex pt-4 w-full">
             <FloorAssemblyConfigContent initialSelectionId={initialSelectionId} />
-          </Flex>
-        </Tabs.Content>
+          </div>
+        </TabsContent>
 
-        <Tabs.Content value="roofs">
-          <Flex pt="4" style={{ width: '100%' }}>
+        <TabsContent value="roofs">
+          <div className="flex pt-4 w-full">
             <RoofAssemblyConfigContent initialSelectionId={initialSelectionId} />
-          </Flex>
-        </Tabs.Content>
-      </Tabs.Root>
+          </div>
+        </TabsContent>
+      </Tabs>
     </BaseModal>
   )
 }

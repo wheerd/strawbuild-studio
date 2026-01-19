@@ -1,6 +1,5 @@
 import { FileTextIcon, GearIcon, InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Toolbar from '@radix-ui/react-toolbar'
-import { Flex, IconButton, Kbd, Separator, Text, Tooltip } from '@radix-ui/themes'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -11,6 +10,10 @@ import {
   usePerimetersOfActiveStorey,
   useStoreysOrderedByLevel
 } from '@/building/store'
+import { Button } from '@/components/ui/button'
+import { Kbd } from '@/components/ui/kbd'
+import { Separator } from '@/components/ui/separator'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import TopDownPlanModal from '@/construction/components/TopDownPlanModal'
 import { ConstructionPartsListModal } from '@/construction/components/parts/ConstructionPartsListModal'
 import { useConfigurationModal } from '@/construction/config/context/ConfigurationModalContext'
@@ -41,56 +44,56 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
   }, [])
 
   return (
-    <Flex align="center" gap="4" style={{ borderBottom: '1px solid var(--gray-6)' }} data-testid="main-toolbar" p="3">
+    <div className="flex items-center gap-4 border-b border-border p-3" data-testid="main-toolbar">
       {/* Logo - Compact version */}
       <Logo />
       {/* Tools positioned next to logo on the left */}
       <Toolbar.Root>
-        <Flex align="center" gap="2">
+        <div className="flex items-center gap-2">
           {TOOL_GROUPS.map((group, groupIndex) => (
             <React.Fragment key={groupIndex}>
               {groupIndex > 0 && (
                 <Toolbar.Separator orientation="vertical">
-                  <Separator orientation="vertical" size="2" />
+                  <Separator orientation="vertical" className="h-6" />
                 </Toolbar.Separator>
               )}
 
-              <Flex align="center" gap="1">
+              <div className="flex items-center gap-1">
                 {/* Group of tools */}
                 {group.tools.map(toolId => {
                   const toolInfo = getToolInfoById(toolId)
                   return (
-                    <Tooltip
-                      key={toolId}
-                      content={
-                        <Flex align="center" justify="between" gap="2" as="span">
-                          <Text>{t($ => $.tools[toolInfo.nameKey])}</Text>
+                    <Tooltip key={toolId}>
+                      <TooltipTrigger asChild>
+                        <Toolbar.Button asChild>
+                          <Button
+                            aria-label={t($ => $.tools[toolInfo.nameKey])}
+                            size="icon"
+                            variant={activeToolId === toolId ? 'default' : 'outline'}
+                            onClick={() => {
+                              handleToolSelect(toolId)
+                            }}
+                          >
+                            <toolInfo.iconComponent width={20} height={20} aria-hidden />
+                          </Button>
+                        </Toolbar.Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <span className="flex items-center justify-between gap-2">
+                          <span>{t($ => $.tools[toolInfo.nameKey])}</span>
                           {toolInfo.hotkey && <Kbd>{toolInfo.hotkey.toUpperCase()}</Kbd>}
-                        </Flex>
-                      }
-                    >
-                      <Toolbar.Button asChild>
-                        <IconButton
-                          aria-label={t($ => $.tools[toolInfo.nameKey])}
-                          size="2"
-                          variant={activeToolId === toolId ? 'solid' : 'surface'}
-                          onClick={() => {
-                            handleToolSelect(toolId)
-                          }}
-                        >
-                          <toolInfo.iconComponent width={20} height={20} aria-hidden />
-                        </IconButton>
-                      </Toolbar.Button>
+                        </span>
+                      </TooltipContent>
                     </Tooltip>
                   )
                 })}
-              </Flex>
+              </div>
             </React.Fragment>
           ))}
-        </Flex>
+        </div>
       </Toolbar.Root>
       {/* Configuration button on the right */}
-      <Flex ml="auto" gap="2" align="center">
+      <div className="ml-auto flex gap-2 items-center">
         <TopDownPlanModal
           title={
             activeStorey
@@ -105,9 +108,9 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
           }}
           refreshKey={[activeStoreyId, activePerimiters]}
           trigger={
-            <IconButton title={t($ => $.viewConstructionPlan)} size="2" variant="solid">
+            <Button title={t($ => $.viewConstructionPlan)} size="icon" variant="default">
               <ConstructionPlanIcon width={20} height={20} aria-hidden />
-            </IconButton>
+            </Button>
           }
         />
         <ConstructionPartsListModal
@@ -118,9 +121,9 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
           }}
           refreshKey={[storeys, perimeters]}
           trigger={
-            <IconButton title={t($ => $.viewPartsList)} size="2" variant="solid">
+            <Button title={t($ => $.viewPartsList)} size="icon" variant="default">
               <FileTextIcon width={20} height={20} aria-hidden />
-            </IconButton>
+            </Button>
           }
         />
         <ConstructionViewer3DModal
@@ -130,25 +133,25 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
           }}
           refreshKey={[storeys, perimeters]}
           trigger={
-            <IconButton title={t($ => $.view3DConstruction)} size="2" variant="solid">
+            <Button title={t($ => $.view3DConstruction)} size="icon" variant="default">
               <Model3DIcon width={20} height={20} aria-hidden />
-            </IconButton>
+            </Button>
           }
         />
-        <IconButton
+        <Button
           title={t($ => $.configuration)}
-          variant="surface"
-          size="2"
+          variant="outline"
+          size="icon"
           onClick={() => {
             openConfiguration('materials')
           }}
         >
           <GearIcon width={20} height={20} aria-hidden />
-        </IconButton>
-        <IconButton title={t($ => $.about)} variant="ghost" size="2" onClick={onInfoClick}>
+        </Button>
+        <Button title={t($ => $.about)} variant="ghost" size="icon" onClick={onInfoClick}>
           <InfoCircledIcon aria-hidden />
-        </IconButton>
-      </Flex>
-    </Flex>
+        </Button>
+      </div>
+    </div>
   )
 }

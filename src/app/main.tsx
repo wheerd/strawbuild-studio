@@ -1,10 +1,9 @@
-import { Theme } from '@radix-ui/themes'
-import '@radix-ui/themes/styles.css'
 import { ThemeProvider } from 'next-themes'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ErrorBoundary } from 'react-error-boundary'
 
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { injectMaterialCSS } from '@/construction/materials/materialCSS'
 import { getAllMaterials, subscribeToMaterials } from '@/construction/materials/store'
 import { ErrorFallback } from '@/shared/components/ErrorBoundary'
@@ -44,11 +43,11 @@ async function bootstrap() {
     <StrictMode>
       <ErrorBoundary fallback={<div>An error occurred</div>}>
         <ThemeProvider attribute="class">
-          <Theme>
+          <TooltipProvider>
             <ErrorBoundary FallbackComponent={ErrorFallback}>
               <App />
             </ErrorBoundary>
-          </Theme>
+          </TooltipProvider>
         </ThemeProvider>
       </ErrorBoundary>
     </StrictMode>

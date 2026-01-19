@@ -1,5 +1,5 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
-import { Button, Callout, Flex, Heading, Kbd, Text } from '@radix-ui/themes'
+import { Button, Callout, Heading, Kbd } from '@radix-ui/themes'
 import { useTranslation } from 'react-i18next'
 
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
@@ -13,27 +13,25 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
 
   if (!state.selectedWallId) {
     return (
-      <Flex direction="column" gap="3">
+      <div className="flex flex-col gap-3">
         <Heading size="2">{t($ => $.splitWall.title)}</Heading>
         <Callout.Root color="blue">
           <Callout.Icon>
             <InfoCircledIcon />
           </Callout.Icon>
           <Callout.Text>
-            <Text size="1">{t($ => $.splitWall.info)}</Text>
+            <span className="text-sm">{t($ => $.splitWall.info)}</span>
           </Callout.Text>
         </Callout.Root>
-        <Text size="2" color="gray">
-          {t($ => $.splitWall.selectWall)}
-        </Text>
-      </Flex>
+        <span className="text-base text-gray-900">{t($ => $.splitWall.selectWall)}</span>
+      </div>
     )
   }
 
   const splitError = state.splitError
 
   return (
-    <Flex direction="column" gap="4">
+    <div className="flex flex-col gap-4">
       <Heading size="2">{t($ => $.splitWall.title)}</Heading>
       {state.isValidSplit && (
         <Callout.Root color="green">
@@ -46,7 +44,7 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
         </Callout.Root>
       )}
       {/* Action Buttons */}
-      <Flex direction="column" gap="2">
+      <div className="flex flex-col gap-2">
         <Button onClick={() => tool.commitSplit()} disabled={!state.isValidSplit} size="2">
           {t($ => $.splitWall.splitWall)} <Kbd>{t($ => $.keyboard.enter)}</Kbd>
         </Button>
@@ -59,22 +57,14 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
         >
           {t($ => $.splitWall.cancel)} <Kbd>{t($ => $.keyboard.esc)}</Kbd>
         </Button>
-      </Flex>
+      </div>
       {/* Instructions */}
-      <Flex direction="column" gap="1">
-        <Text size="1" color="gray">
-          • {t($ => $.splitWall.controlHover)}
-        </Text>
-        <Text size="1" color="gray">
-          • {t($ => $.splitWall.controlClick)}
-        </Text>
-        <Text size="1" color="gray">
-          • {t($ => $.splitWall.controlMeasurements)}
-        </Text>
-        <Text size="1" color="gray">
-          • {t($ => $.splitWall.controlConfirm)}
-        </Text>
-      </Flex>
-    </Flex>
+      <div className="flex flex-col gap-1">
+        <span className="text-sm text-gray-900">• {t($ => $.splitWall.controlHover)}</span>
+        <span className="text-sm text-gray-900">• {t($ => $.splitWall.controlClick)}</span>
+        <span className="text-sm text-gray-900">• {t($ => $.splitWall.controlMeasurements)}</span>
+        <span className="text-sm text-gray-900">• {t($ => $.splitWall.controlConfirm)}</span>
+      </div>
+    </div>
   )
 }

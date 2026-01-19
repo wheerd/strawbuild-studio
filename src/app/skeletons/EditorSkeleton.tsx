@@ -1,9 +1,10 @@
-import { Box, Flex, Skeleton, Text } from '@radix-ui/themes'
 import React from 'react'
+
+import { Skeleton } from '@/components/ui/skeleton'
 
 export function EditorSkeleton(): React.JSX.Element {
   return (
-    <Box
+    <div
       style={{
         flex: 1,
         position: 'relative',
@@ -13,9 +14,8 @@ export function EditorSkeleton(): React.JSX.Element {
       }}
       data-testid="editor-skeleton"
     >
-      <Flex
-        align="center"
-        justify="center"
+      <div
+        className="flex items-center justify-center"
         style={{
           position: 'absolute',
           top: 0,
@@ -25,14 +25,12 @@ export function EditorSkeleton(): React.JSX.Element {
           backgroundColor: 'var(--gray-1)'
         }}
       >
-        <Flex direction="column" align="center" gap="3">
-          <Skeleton width="200px" height="200px" style={{ borderRadius: 'var(--radius-3)' }} />
+        <div className="flex flex-col items-center gap-3">
+          <Skeleton className="w-[200px] h-[200px] rounded-lg" />
 
-          <Text size="3" color="gray">
-            Loading editor...
-          </Text>
-        </Flex>
-      </Flex>
-    </Box>
+          <span className="text-base text-muted-foreground">Loading editor...</span>
+        </div>
+      </div>
+    </div>
   )
 }

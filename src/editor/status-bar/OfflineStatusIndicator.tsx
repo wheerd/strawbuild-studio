@@ -1,7 +1,7 @@
-import { Tooltip } from '@radix-ui/themes'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useOfflineStatus } from '@/shared/hooks/useOfflineStatus'
 
 export function OfflineStatusIndicator(): React.JSX.Element {
@@ -13,7 +13,7 @@ export function OfflineStatusIndicator(): React.JSX.Element {
       case 'offline':
         return {
           label: t($ => $.offlineStatus.offline),
-          color: 'var(--red-9)'
+          colorClass: 'bg-red-500'
         }
       case 'loading':
         return {
@@ -21,12 +21,12 @@ export function OfflineStatusIndicator(): React.JSX.Element {
             progress.total > 0
               ? t($ => $.offlineStatus.loading, { loaded: progress.loaded, total: progress.total })
               : t($ => $.offlineStatus.loadingUnknown),
-          color: 'var(--amber-9)'
+          colorClass: 'bg-amber-500'
         }
       case 'ready':
         return {
           label: t($ => $.offlineStatus.ready),
-          color: 'var(--grass-9)'
+          colorClass: 'bg-green-500'
         }
     }
   }
@@ -34,18 +34,16 @@ export function OfflineStatusIndicator(): React.JSX.Element {
   const meta = getStatusMeta()
 
   return (
-    <Tooltip content={meta.label} side="top" align="start">
-      <span
-        aria-hidden="true"
-        className="m-1"
-        style={{
-          width: '12px',
-          height: '12px',
-          borderRadius: '50%',
-          backgroundColor: meta.color,
-          boxShadow: '0 0 0 1px var(--gray-4)'
-        }}
-      />
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span
+          aria-hidden="true"
+          className={`m-1 w-3 h-3 rounded-full shadow-[0_0_0_1px] shadow-border ${meta.colorClass}`}
+        />
+      </TooltipTrigger>
+      <TooltipContent side="top" items-start>
+        {meta.label}
+      </TooltipContent>
     </Tooltip>
   )
 }

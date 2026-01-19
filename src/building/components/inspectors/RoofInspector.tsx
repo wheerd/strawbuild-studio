@@ -1,6 +1,6 @@
 import { ExclamationTriangleIcon, ReloadIcon, SquareIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Box, DataList, Flex, IconButton, Separator, Text, TextField, Tooltip } from '@radix-ui/themes'
+import { DataList, IconButton, Separator, TextField, Tooltip } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -113,20 +113,18 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
 
   if (!roof) {
     return (
-      <Box p="2">
-        <Text size="1" color="red" weight="bold">
-          {t($ => $.roof.notFound)}
-        </Text>
-      </Box>
+      <div className="p-2">
+        <span className="text-sm text-red-800 font-bold">{t($ => $.roof.notFound)}</span>
+      </div>
     )
   }
 
   return (
-    <Box p="2">
-      <Flex direction="column" gap="3">
-        <Flex justify="center">
+    <div className="p-2">
+      <div className="flex flex-col gap-3">
+        <div className="flex justify-center">
           <RoofPreview slope={roof.slope} type={roof.type} />
-        </Flex>
+        </div>
 
         {/* Basic Information */}
         <DataList.Root size="1">
@@ -149,13 +147,11 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
         <Separator size="4" />
 
         {/* Editable Properties */}
-        <Flex direction="column" gap="2">
+        <div className="flex flex-col gap-2">
           {/* Assembly */}
-          <Flex direction="column" gap="1">
+          <div className="flex flex-col gap-1">
             <Label.Root>
-              <Text size="1" weight="medium" color="gray">
-                {t($ => $.roof.assembly)}
-              </Text>
+              <span className="text-sm font-medium text-gray-900">{t($ => $.roof.assembly)}</span>
             </Label.Root>
             <RoofAssemblySelectWithEdit
               value={roof.assemblyId}
@@ -164,17 +160,15 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
               defaultAssemblyId={defaultAssemblyId}
               size="1"
             />
-          </Flex>
+          </div>
 
           {/* Slope */}
-          <Flex align="center" gap="2" justify="between">
+          <div className="items-center gap-2 justify-between">
             <Label.Root htmlFor="roof-slope">
-              <Text size="1" weight="medium" color="gray">
-                {t($ => $.roof.slope)}
-              </Text>
+              <span className="text-sm font-medium text-gray-900">{t($ => $.roof.slope)}</span>
             </Label.Root>
 
-            <Flex align="center" gap="2">
+            <div className="flex items-center gap-2">
               <TextField.Root
                 id="roof-slope"
                 type="number"
@@ -211,15 +205,13 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
               >
                 <TextField.Slot side="right">%</TextField.Slot>
               </TextField.Root>
-            </Flex>
-          </Flex>
+            </div>
+          </div>
 
           {/* Vertical Offset */}
-          <Flex align="center" gap="2" justify="between">
+          <div className="items-center gap-2 justify-between">
             <Label.Root htmlFor="vertical-offset">
-              <Text size="1" weight="medium" color="gray">
-                {t($ => $.roof.verticalOffset)}
-              </Text>
+              <span className="text-sm font-medium text-gray-900">{t($ => $.roof.verticalOffset)}</span>
             </Label.Root>
             <LengthField
               id="vertical-offset"
@@ -231,17 +223,15 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
               unit="cm"
               style={{ width: '7em' }}
             />
-          </Flex>
+          </div>
 
           {/* Global Overhang with MixedState */}
-          <Flex align="center" gap="2" justify="between">
+          <div className="items-center gap-2 justify-between">
             <Label.Root htmlFor="roof-overhang">
-              <Flex align="center" gap="1">
-                <Text size="1" weight="medium" color="gray">
-                  {t($ => $.roof.overhang)}
-                </Text>
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-medium text-gray-900">{t($ => $.roof.overhang)}</span>
                 {overhangState.isMixed && <MixedStateIndicator tooltip={t($ => $.roof.mixedValuesTooltip)} />}
-              </Flex>
+              </div>
             </Label.Root>
             <LengthField
               id="roof-overhang"
@@ -256,19 +246,15 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
               unit="cm"
               style={{ width: '7em' }}
             />
-          </Flex>
+          </div>
 
-          {overhangState.isMixed && (
-            <Text size="1" color="gray">
-              {t($ => $.roof.mixedWarning)}
-            </Text>
-          )}
-        </Flex>
+          {overhangState.isMixed && <span className="text-sm text-gray-900">{t($ => $.roof.mixedWarning)}</span>}
+        </div>
 
         <Separator size="4" />
 
         {/* Construction Views */}
-        <Flex direction="row" gap="3" pt="1" align="center" justify="center">
+        <div className="flex-row gap-3 pt-1 items-center justify-center">
           <ConstructionPlanModal
             title={t($ => $.roof.constructionPlanTitle)}
             constructionModelFactory={() => Promise.resolve(constructRoof(roof))}
@@ -295,12 +281,12 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
               </IconButton>
             }
           />
-        </Flex>
+        </div>
 
         <Separator size="4" />
 
         {/* Action Buttons */}
-        <Flex gap="2" justify="end">
+        <div className="flex justify-end gap-2">
           {roof.referencePerimeter && (
             <IconButton size="2" title={t($ => $.roof.viewAssociatedPerimeter)} onClick={handleNavigateToPerimeter}>
               <SquareIcon />
@@ -325,8 +311,8 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
           >
             <TrashIcon />
           </IconButton>
-        </Flex>
-      </Flex>
-    </Box>
+        </div>
+      </div>
+    </div>
   )
 }

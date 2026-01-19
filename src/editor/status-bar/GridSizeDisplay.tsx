@@ -1,8 +1,8 @@
 import { FrameIcon } from '@radix-ui/react-icons'
-import { Button, Flex, Text } from '@radix-ui/themes'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
 import { useGridActions, useGridSize, useShowGrid } from '@/editor/hooks/useGrid'
 import { useFormatters } from '@/shared/i18n/useFormatters'
 
@@ -16,17 +16,17 @@ export function GridSizeDisplay(): React.JSX.Element {
   return (
     <Button
       title={showGrid ? t($ => $.gridSizeDisplay.hideGrid) : t($ => $.gridSizeDisplay.showGrid)}
-      variant={showGrid ? 'soft' : 'outline'}
-      size="1"
+      variant={showGrid ? 'secondary' : 'outline'}
+      size="sm"
+      className="h-7 min-w-[6em]"
       onClick={() => {
         setShowGrid(!showGrid)
       }}
-      style={{ minWidth: '6em' }}
     >
-      <Flex align="center" justify="end" gap="2">
-        <Text>{showGrid ? formatLength(gridSize) : t($ => $.gridSizeDisplay.off)}</Text>
-        <FrameIcon />
-      </Flex>
+      <span className="flex items-center justify-end gap-2">
+        <span className="text-xs">{showGrid ? formatLength(gridSize) : t($ => $.gridSizeDisplay.off)}</span>
+        <FrameIcon className="h-4 w-4" />
+      </span>
     </Button>
   )
 }

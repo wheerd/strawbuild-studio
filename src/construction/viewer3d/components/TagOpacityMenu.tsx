@@ -1,5 +1,5 @@
 import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons'
-import { DropdownMenu, Flex, IconButton, Text } from '@radix-ui/themes'
+import { DropdownMenu, IconButton } from '@radix-ui/themes'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -113,9 +113,7 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <DropdownMenu.Item disabled>
-            <Text size="1" color="gray">
-              {t($ => $.tagOpacity.noTags)}
-            </Text>
+            <span className="text-sm text-gray-900">{t($ => $.tagOpacity.noTags)}</span>
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
@@ -138,12 +136,12 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
           return (
             <DropdownMenu.Sub key={categoryId}>
               <DropdownMenu.SubTrigger>
-                <Flex align="center" justify="between" width="100%" gap="2">
-                  <Text size="1">
+                <div className="items-center justify-between w-full gap-2">
+                  <span className="text-sm">
                     <CategoryLabel categoryId={categoryId} />
-                  </Text>
+                  </span>
                   {renderStateIcon(categoryState)}
-                </Flex>
+                </div>
               </DropdownMenu.SubTrigger>
               <DropdownMenu.SubContent>
                 {/* Category-wide opacity cycle */}
@@ -152,21 +150,20 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
                     e.preventDefault()
                   }}
                 >
-                  <Flex
-                    align="center"
-                    justify="between"
-                    width="100%"
-                    gap="2"
+                  <div
+                    className="items-center
+                    justify-between
+                    w-full
+                    gap-2
+                    "
                     onClick={e => {
                       e.stopPropagation()
                       cycleTagOrCategoryOpacity(categoryId)
                     }}
                   >
-                    <Text size="1" weight="bold">
-                      {getOpacityLabel(categoryOpacity)}
-                    </Text>
+                    <span className="text-sm font-bold">{getOpacityLabel(categoryOpacity)}</span>
                     {renderOpacityIcon(categoryOpacity)}
-                  </Flex>
+                  </div>
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator />
                 {/* Individual tag opacity controls */}
@@ -179,21 +176,22 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
                         e.preventDefault()
                       }}
                     >
-                      <Flex
-                        align="center"
-                        justify="between"
-                        width="100%"
-                        gap="2"
+                      <div
+                        className="items-center
+                        justify-between
+                        w-full
+                        gap-2
+                        "
                         onClick={e => {
                           e.stopPropagation()
                           cycleTagOrCategoryOpacity(tag.id)
                         }}
                       >
-                        <Text size="1">
+                        <span className="text-sm">
                           <TagLabel tag={tag} />
-                        </Text>
+                        </span>
                         {renderOpacityIcon(tagOpacity)}
-                      </Flex>
+                      </div>
                     </DropdownMenu.Item>
                   )
                 })}

@@ -1,6 +1,6 @@
 import { InfoCircledIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Callout, Flex, Grid, IconButton, Kbd, SegmentedControl, Separator, Switch, Text } from '@radix-ui/themes'
+import { Callout, IconButton, Kbd, SegmentedControl, Separator, Switch } from '@radix-ui/themes'
 import { useCallback } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
@@ -75,43 +75,33 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
   }, [wall, post, viewportActions])
 
   return (
-    <Flex direction="column" gap="4">
+    <div className="flex flex-col gap-4">
       {/* Basic Properties */}
-      <Flex direction="column" gap="3">
-        <Flex align="center" justify="between" gap="2">
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.wallPost.type)}
-          </Text>
+      <div className="flex flex-col gap-3">
+        <div className="items-center justify-between gap-2">
+          <span className="text-sm font-medium text-gray-900">{t($ => $.wallPost.type)}</span>
           <SegmentedControl.Root value={post.postType} onValueChange={handleTypeChange} size="1">
             <SegmentedControl.Item value="inside">{t($ => $.wallPost.typeInside)}</SegmentedControl.Item>
             <SegmentedControl.Item value="center">{t($ => $.wallPost.typeCenter)}</SegmentedControl.Item>
             <SegmentedControl.Item value="outside">{t($ => $.wallPost.typeOutside)}</SegmentedControl.Item>
             <SegmentedControl.Item value="double">{t($ => $.wallPost.typeDouble)}</SegmentedControl.Item>
           </SegmentedControl.Root>
-        </Flex>
+        </div>
 
-        <Flex align="center" justify="between" gap="2">
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.wallPost.behavior)}
-          </Text>
-          <Flex align="center" gap="2">
-            <Text size="1" color="gray">
-              {t($ => $.wallPost.actsAsPost)}
-            </Text>
+        <div className="items-center justify-between gap-2">
+          <span className="text-sm font-medium text-gray-900">{t($ => $.wallPost.behavior)}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-900">{t($ => $.wallPost.actsAsPost)}</span>
             <Switch checked={!post.replacesPosts} size="1" onCheckedChange={handleReplacesPostsChange} />
-            <Text size="1" color="gray">
-              {t($ => $.wallPost.flankedByPosts)}
-            </Text>
-          </Flex>
-        </Flex>
+            <span className="text-sm text-gray-900">{t($ => $.wallPost.flankedByPosts)}</span>
+          </div>
+        </div>
 
         {/* Dimension inputs in Radix Grid layout */}
-        <Grid columns="auto 1fr auto 1fr" rows="1" gap="2" gapX="3" align="center" flexGrow="1">
+        <div className="grid-cols-[auto_1fr_auto_1fr] grid-rows-1 gap-2 gap-x-3 items-center grow-1">
           {/* Width Label */}
           <Label.Root htmlFor="post-width">
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.wallPost.width)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.wallPost.width)}</span>
           </Label.Root>
 
           {/* Width Input */}
@@ -130,9 +120,7 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
 
           {/* Thickness Label */}
           <Label.Root htmlFor="post-thickness">
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.wallPost.thickness)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.wallPost.thickness)}</span>
           </Label.Root>
 
           {/* Thickness Input */}
@@ -148,14 +136,12 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
             size="1"
             style={{ width: '80px' }}
           />
-        </Grid>
-      </Flex>
+        </div>
+      </div>
       {/* Material Selection */}
-      <Flex direction="column" gap="2">
+      <div className="flex flex-col gap-2">
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.wallPost.postMaterial)}
-          </Text>
+          <span className="text-sm font-medium text-gray-900">{t($ => $.wallPost.postMaterial)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={post.material}
@@ -163,32 +149,30 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
           size="1"
           preferredTypes={['dimensional']}
         />
-      </Flex>
+      </div>
       {/* Infill Material Selection */}
-      <Flex direction="column" gap="2">
+      <div className="flex flex-col gap-2">
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.wallPost.infillMaterial)}
-          </Text>
+          <span className="text-sm font-medium text-gray-900">{t($ => $.wallPost.infillMaterial)}</span>
         </Label.Root>
         <MaterialSelectWithEdit value={post.infillMaterial} onValueChange={handleInfillMaterialChange} size="1" />
-      </Flex>
+      </div>
       <Separator size="4" />
       {/* Action Buttons */}
-      <Flex gap="2" justify="end">
+      <div className="flex justify-end gap-2">
         <IconButton size="2" title={t($ => $.wallPost.fitToView)} onClick={handleFitToView}>
           <FitToViewIcon />
         </IconButton>
         <IconButton size="2" color="red" title={t($ => $.wallPost.deletePost)} onClick={handleRemovePost}>
           <TrashIcon />
         </IconButton>
-      </Flex>
+      </div>
       <Callout.Root color="blue">
         <Callout.Icon>
           <InfoCircledIcon />
         </Callout.Icon>
         <Callout.Text>
-          <Text size="1">
+          <span className="text-sm">
             <Trans t={t} i18nKey={$ => $.wallPost.moveInstructions} components={{ kbd: <Kbd /> }}>
               To move the post, you can use the Move Tool{' '}
               <Kbd>
@@ -196,9 +180,9 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
               </Kbd>{' '}
               or click any of the distance measurements shown in the editor to adjust them.
             </Trans>
-          </Text>
+          </span>
         </Callout.Text>
       </Callout.Root>
-    </Flex>
+    </div>
   )
 }

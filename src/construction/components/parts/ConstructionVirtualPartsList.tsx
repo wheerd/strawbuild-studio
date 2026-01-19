@@ -1,5 +1,5 @@
 import { EyeOpenIcon } from '@radix-ui/react-icons'
-import { Card, Flex, Heading, IconButton, Table, Text } from '@radix-ui/themes'
+import { Card, Heading, IconButton, Table } from '@radix-ui/themes'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -24,33 +24,31 @@ export function ConstructionVirtualPartsList({
   if (parts.length === 0) {
     return (
       <Card variant="surface" size="2">
-        <Flex justify="center">
-          <Text size="3" color="gray">
-            {t($ => $.modulesList.noModules)}
-          </Text>
-        </Flex>
+        <div className="flex justify-center">
+          <span className="text-lg text-gray-900">{t($ => $.modulesList.noModules)}</span>
+        </div>
       </Card>
     )
   }
 
   return (
     <Card variant="surface" size="2">
-      <Flex direction="column" gap="3">
+      <div className="flex flex-col gap-3">
         <Heading size="4">{t($ => $.modulesList.title)}</Heading>
         <Table.Root variant="surface" size="2" className="min-w-full">
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeaderCell width="5em" justify="center">
+              <Table.ColumnHeaderCell width="5em" justify-center>
                 {t($ => $.modulesList.tableHeaders.label)}
               </Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>{t($ => $.modulesList.tableHeaders.type)}</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell width="20em">
                 {t($ => $.modulesList.tableHeaders.dimensions)}
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="6em" justify="center">
+              <Table.ColumnHeaderCell width="6em" justify-center>
                 {t($ => $.modulesList.tableHeaders.quantity)}
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="3em" justify="center">
+              <Table.ColumnHeaderCell width="3em" justify-center>
                 {t($ => $.modulesList.tableHeaders.view)}
               </Table.ColumnHeaderCell>
             </Table.Row>
@@ -58,19 +56,19 @@ export function ConstructionVirtualPartsList({
           <Table.Body>
             {parts.map(part => (
               <Table.Row key={part.partId}>
-                <Table.RowHeaderCell justify="center">
-                  <Text weight="medium">{part.label}</Text>
+                <Table.RowHeaderCell justify-center>
+                  <span className="font-medium">{part.label}</span>
                 </Table.RowHeaderCell>
                 <Table.Cell>
-                  <Text>{part.type}</Text>
+                  <span>{part.type}</span>
                 </Table.Cell>
                 <Table.Cell>
-                  <Text>{formatDimensions3D([part.size[0], part.size[1], part.size[2]])}</Text>
+                  <span>{formatDimensions3D([part.size[0], part.size[1], part.size[2]])}</span>
                 </Table.Cell>
-                <Table.Cell justify="center">
-                  <Text>{part.quantity}</Text>
+                <Table.Cell justify-center>
+                  <span>{part.quantity}</span>
                 </Table.Cell>
-                <Table.Cell justify="center">
+                <Table.Cell justify-center>
                   {canHighlightPart(part.partId) && onViewInPlan && (
                     <IconButton
                       size="1"
@@ -88,7 +86,7 @@ export function ConstructionVirtualPartsList({
             ))}
           </Table.Body>
         </Table.Root>
-      </Flex>
+      </div>
     </Card>
   )
 }

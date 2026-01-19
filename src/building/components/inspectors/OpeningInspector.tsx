@@ -1,6 +1,6 @@
 import { InfoCircledIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Box, Callout, Flex, Grid, IconButton, Kbd, SegmentedControl, Separator, Text, Tooltip } from '@radix-ui/themes'
+import { Callout, IconButton, Kbd, SegmentedControl, Separator, Tooltip } from '@radix-ui/themes'
 import { useCallback, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
@@ -167,10 +167,10 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
   }, [wall, opening, viewportActions])
 
   return (
-    <Flex direction="column" gap="4">
+    <div className="flex flex-col gap-4">
       {/* Preview */}
       {storey && wallHeight !== null && (
-        <Flex direction="column" align="center">
+        <div className="flex-col items-center">
           <OpeningPreview
             opening={opening}
             wallHeight={wallHeight}
@@ -178,19 +178,17 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             highlightMode={dimensionInputMode}
             focusedField={focusedField}
           />
-        </Flex>
+        </div>
       )}
       {/* Basic Properties */}
-      <Flex direction="column" gap="3">
-        <Flex align="center" justify="between" gap="2">
-          <Flex gap="1" align="center">
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.opening.type)}
-            </Text>
+      <div className="flex flex-col gap-3">
+        <div className="items-center justify-between gap-2">
+          <div className="gap-1 items-center">
+            <span className="text-sm font-medium text-gray-900">{t($ => $.opening.type)}</span>
             <Tooltip content={t($ => $.opening.typeTooltip)}>
               <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
             </Tooltip>
-          </Flex>
+          </div>
           <SegmentedControl.Root
             value={opening.openingType}
             onValueChange={(value: OpeningType) => {
@@ -200,36 +198,34 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
           >
             <SegmentedControl.Item value="door">
               <Tooltip content={t($ => $.opening.typeDoorTooltip)}>
-                <Box>
+                <div>
                   <DoorIcon width={20} height={20} />
-                </Box>
+                </div>
               </Tooltip>
             </SegmentedControl.Item>
 
             <SegmentedControl.Item value="window">
               <Tooltip content={t($ => $.opening.typeWindowTooltip)}>
-                <Box>
+                <div>
                   <WindowIcon width={20} height={20} />
-                </Box>
+                </div>
               </Tooltip>
             </SegmentedControl.Item>
 
             <SegmentedControl.Item value="passage">
               <Tooltip content={t($ => $.opening.typePassageTooltip)}>
-                <Box>
+                <div>
                   <PassageIcon width={20} height={20} />
-                </Box>
+                </div>
               </Tooltip>
             </SegmentedControl.Item>
           </SegmentedControl.Root>
-        </Flex>
+        </div>
 
         {/* Dimension Input Mode Toggle - Compact Layout */}
-        <Flex align="center" justify="between" gap="2">
-          <Flex align="center" gap="1">
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.opening.dimensionMode)}
-            </Text>
+        <div className="items-center justify-between gap-2">
+          <div className="flex items-center gap-1">
+            <span className="text-sm font-medium text-gray-900">{t($ => $.opening.dimensionMode)}</span>
             <Tooltip
               content={
                 dimensionInputMode === 'fitting'
@@ -239,7 +235,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             >
               <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
             </Tooltip>
-          </Flex>
+          </div>
           <SegmentedControl.Root
             value={dimensionInputMode}
             onValueChange={(value: 'fitting' | 'finished') => {
@@ -250,23 +246,17 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             <SegmentedControl.Item value="fitting">{t($ => $.opening.dimensionModeFitting)}</SegmentedControl.Item>
             <SegmentedControl.Item value="finished">{t($ => $.opening.dimensionModeFinished)}</SegmentedControl.Item>
           </SegmentedControl.Root>
-        </Flex>
-        <Flex align="center" justify="between" gap="1">
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.opening.padding)}
-          </Text>
-          <Text size="1" color="gray">
-            {formatLength(openingConfig.padding)}
-          </Text>
-        </Flex>
+        </div>
+        <div className="items-center justify-between gap-1">
+          <span className="text-sm font-medium text-gray-900">{t($ => $.opening.padding)}</span>
+          <span className="text-sm text-gray-900">{formatLength(openingConfig.padding)}</span>
+        </div>
 
         {/* Dimension inputs in Radix Grid layout */}
-        <Grid columns="auto min-content auto min-content" rows="2" gap="2" gapX="3" align="center" flexGrow="1">
+        <div className="grid-cols-[auto_min-content_auto_min-content] grid-rows-2 gap-2 gap-x-3 items-center grow-1">
           {/* Row 1, Column 1: Width Label */}
           <Label.Root htmlFor="opening-width">
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.opening.width)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.opening.width)}</span>
           </Label.Root>
 
           {/* Row 1, Column 2: Width Input */}
@@ -292,9 +282,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
 
           {/* Row 1, Column 3: Height Label */}
           <Label.Root htmlFor="opening-height">
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.opening.height)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.opening.height)}</span>
           </Label.Root>
 
           {/* Row 1, Column 4: Height Input */}
@@ -320,9 +308,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
 
           {/* Row 2, Column 1: Sill Height Label */}
           <Label.Root htmlFor="opening-sill-height">
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.opening.sill)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.opening.sill)}</span>
           </Label.Root>
 
           {/* Row 2, Column 2: Sill Height Input */}
@@ -350,9 +336,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
 
           {/* Row 2, Column 3: Top Height Label */}
           <Label.Root htmlFor="opening-top-height">
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.opening.top)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.opening.top)}</span>
           </Label.Root>
 
           {/* Row 2, Column 4: Top Height Input */}
@@ -377,20 +361,18 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
               setFocusedField(undefined)
             }}
           />
-        </Grid>
-      </Flex>
+        </div>
+      </div>
       {/* Opening Assembly Override */}
-      <Flex direction="column" gap="1">
-        <Flex gap="1" align="center">
+      <div className="flex flex-col gap-1">
+        <div className="gap-1 items-center">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.opening.openingAssembly)}
-            </Text>
+            <span className="text-sm font-medium text-gray-900">{t($ => $.opening.openingAssembly)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.opening.openingAssemblyTooltip)}>
             <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
           </Tooltip>
-        </Flex>
+        </div>
         <OpeningAssemblySelectWithEdit
           value={opening.openingAssemblyId}
           onValueChange={value => {
@@ -402,23 +384,23 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
           showDefaultIndicator
           size="1"
         />
-      </Flex>
+      </div>
       <Separator size="4" />
       {/* Action Buttons */}
-      <Flex gap="2" justify="end">
+      <div className="flex justify-end gap-2">
         <IconButton size="2" title={t($ => $.opening.fitToView)} onClick={handleFitToView}>
           <FitToViewIcon />
         </IconButton>
         <IconButton size="2" color="red" title={t($ => $.opening.deleteOpening)} onClick={handleRemoveOpening}>
           <TrashIcon />
         </IconButton>
-      </Flex>
+      </div>
       <Callout.Root color="blue">
         <Callout.Icon>
           <InfoCircledIcon />
         </Callout.Icon>
         <Callout.Text>
-          <Text size="1">
+          <span className="text-sm">
             <Trans t={t} i18nKey={$ => $.opening.moveInstructions} components={{ kbd: <Kbd /> }}>
               To move the opening, you can use the Move Tool{' '}
               <Kbd>
@@ -426,9 +408,9 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
               </Kbd>{' '}
               or click any of the distance measurements shown in the editor to adjust them.
             </Trans>
-          </Text>
+          </span>
         </Callout.Text>
       </Callout.Root>
-    </Flex>
+    </div>
   )
 }

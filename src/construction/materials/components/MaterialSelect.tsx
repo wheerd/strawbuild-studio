@@ -1,5 +1,5 @@
 import { CircleIcon, CubeIcon, LayersIcon, OpacityIcon } from '@radix-ui/react-icons'
-import { Flex, Select, Text } from '@radix-ui/themes'
+import { Select } from '@radix-ui/themes'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -136,12 +136,12 @@ export function MaterialSelect({
       <Select.Content>
         {allowEmpty && (
           <Select.Item value={NONE_VALUE}>
-            <Text color="gray">{translatedEmptyLabel}</Text>
+            <span className="text-gray-900">{translatedEmptyLabel}</span>
           </Select.Item>
         )}
         {materials.length === 0 ? (
           <Select.Item value="-" disabled>
-            <Text color="gray">{tConstruction($ => $.materialSelect.noMaterialsAvailable)}</Text>
+            <span className="text-gray-900">{tConstruction($ => $.materialSelect.noMaterialsAvailable)}</span>
           </Select.Item>
         ) : (
           sortedMaterials.map(material => {
@@ -149,7 +149,7 @@ export function MaterialSelect({
             const displayName = getMaterialDisplayName(material)
             return (
               <Select.Item key={material.id} value={material.id}>
-                <Flex align="center" gap="2">
+                <div className="flex items-center gap-2">
                   <div
                     style={{
                       width: '16px',
@@ -169,8 +169,8 @@ export function MaterialSelect({
                       style={{ color: 'white', filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.5))' }}
                     />
                   </div>
-                  <Text>{displayName}</Text>
-                </Flex>
+                  <span>{displayName}</span>
+                </div>
               </Select.Item>
             )
           })

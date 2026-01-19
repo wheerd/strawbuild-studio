@@ -1,5 +1,5 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
-import { Box, Button, Callout, Flex, Text } from '@radix-ui/themes'
+import { Button, Callout } from '@radix-ui/themes'
 import { useTranslation } from 'react-i18next'
 
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
@@ -12,15 +12,15 @@ export function PerimeterPresetToolInspector({ tool }: ToolInspectorProps<Perime
   useReactiveTool(tool)
 
   return (
-    <Box p="2">
-      <Flex direction="column" gap="3">
+    <div className="p-2">
+      <div className="flex flex-col gap-3">
         {/* Informational Note */}
         <Callout.Root color="blue">
           <Callout.Icon>
             <InfoCircledIcon />
           </Callout.Icon>
           <Callout.Text>
-            <Text size="1">{t($ => $.perimeterPreset.info)}</Text>
+            <span className="text-sm">{t($ => $.perimeterPreset.info)}</span>
           </Callout.Text>
         </Callout.Root>
 
@@ -36,7 +36,7 @@ export function PerimeterPresetToolInspector({ tool }: ToolInspectorProps<Perime
             onConfirm={config => tool.placePerimeter(preset, config)}
           />
         ))}
-      </Flex>
-    </Box>
+      </div>
+    </div>
   )
 }

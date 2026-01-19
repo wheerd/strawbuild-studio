@@ -1,17 +1,6 @@
 import { CopyIcon, InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import {
-  Button,
-  Callout,
-  DropdownMenu,
-  Flex,
-  Grid,
-  IconButton,
-  SegmentedControl,
-  Separator,
-  Switch,
-  Text
-} from '@radix-ui/themes'
+import { Button, Callout, DropdownMenu, IconButton, SegmentedControl, Separator, Switch } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -158,49 +147,39 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
   )
 
   return (
-    <Flex direction="column" gap="4">
+    <div className="flex flex-col gap-4">
       {/* Informational Note */}
       <Callout.Root color="blue">
         <Callout.Icon>
           <InfoCircledIcon />
         </Callout.Icon>
         <Callout.Text>
-          <Text size="1">{t($ => $.addPost.info)}</Text>
+          <span className="text-sm">{t($ => $.addPost.info)}</span>
         </Callout.Text>
       </Callout.Root>
       {/* Type Selection */}
-      <Flex align="center" justify="between" gap="2">
-        <Text size="1" weight="medium" color="gray">
-          {t($ => $.addPost.type)}
-        </Text>
+      <div className="items-center justify-between gap-2">
+        <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.type)}</span>
         <SegmentedControl.Root value={state.type} onValueChange={handleTypeChange} size="1">
           <SegmentedControl.Item value="inside">{t($ => $.addPost.types.inside)}</SegmentedControl.Item>
           <SegmentedControl.Item value="center">{t($ => $.addPost.types.center)}</SegmentedControl.Item>
           <SegmentedControl.Item value="outside">{t($ => $.addPost.types.outside)}</SegmentedControl.Item>
           <SegmentedControl.Item value="double">{t($ => $.addPost.types.double)}</SegmentedControl.Item>
         </SegmentedControl.Root>
-      </Flex>
-      <Flex align="center" justify="between" gap="2">
-        <Text size="1" weight="medium" color="gray">
-          {t($ => $.addPost.behavior)}
-        </Text>
-        <Flex align="center" gap="2">
-          <Text size="1" color="gray">
-            {t($ => $.addPost.actsAsPost)}
-          </Text>
+      </div>
+      <div className="items-center justify-between gap-2">
+        <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.behavior)}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-900">{t($ => $.addPost.actsAsPost)}</span>
           <Switch checked={!state.replacesPosts} size="1" onCheckedChange={handleReplacesPostsChange} />
-          <Text size="1" color="gray">
-            {t($ => $.addPost.flankedByPosts)}
-          </Text>
-        </Flex>
-      </Flex>
+          <span className="text-sm text-gray-900">{t($ => $.addPost.flankedByPosts)}</span>
+        </div>
+      </div>
       {/* Dimension inputs */}
-      <Grid columns="auto 1fr auto 1fr" rows="1" gap="2" gapX="3" align="center">
+      <div className="grid-cols-[auto_1fr_auto_1fr] grid-rows-1 gap-2 gap-x-3 items-center">
         {/* Width Label */}
         <Label.Root htmlFor="post-width">
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.addPost.width)}
-          </Text>
+          <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.width)}</span>
         </Label.Root>
 
         {/* Width Input */}
@@ -219,9 +198,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
 
         {/* Thickness Label */}
         <Label.Root htmlFor="post-thickness">
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.addPost.thickness)}
-          </Text>
+          <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.thickness)}</span>
         </Label.Root>
 
         {/* Thickness Input */}
@@ -237,34 +214,28 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
           size="1"
           style={{ width: '80px' }}
         />
-      </Grid>
+      </div>
       {/* Material Selection */}
-      <Flex direction="column" gap="2">
-        <Text size="1" weight="medium" color="gray">
-          {t($ => $.addPost.postMaterial)}
-        </Text>
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.postMaterial)}</span>
         <MaterialSelectWithEdit
           value={state.material}
           onValueChange={handleMaterialChange}
           size="1"
           preferredTypes={['dimensional']}
         />
-      </Flex>
+      </div>
       {/* Infill Material Selection */}
-      <Flex direction="column" gap="2">
-        <Text size="1" weight="medium" color="gray">
-          {t($ => $.addPost.infillMaterial)}
-        </Text>
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.infillMaterial)}</span>
         <MaterialSelectWithEdit value={state.infillMaterial} onValueChange={handleInfillMaterialChange} size="1" />
-      </Flex>
+      </div>
       <Separator size="4" />
       {/* Quick presets */}
-      <Flex direction="column" gap="2">
+      <div className="flex flex-col gap-2">
         {/* Copy Existing Configuration */}
-        <Flex align="center" justify="between" gap="2">
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.addPost.presets.title)}
-          </Text>
+        <div className="items-center justify-between gap-2">
+          <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.presets.title)}</span>
           <DropdownMenu.Root>
             <DropdownMenu.Trigger disabled={allPostConfigs.length === 0}>
               <IconButton size="2" title={t($ => $.addPost.copyConfigurationTooltip)}>
@@ -289,8 +260,8 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
               ))}
             </DropdownMenu.Content>
           </DropdownMenu.Root>
-        </Flex>
-        <Grid columns="2" gap="2">
+        </div>
+        <div className="grid-cols-2 gap-2">
           <Button
             size="1"
             variant="surface"
@@ -335,8 +306,8 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
           >
             {t($ => $.addPost.presets.double14x14)}
           </Button>
-        </Grid>
-      </Flex>
-    </Flex>
+        </div>
+      </div>
+    </div>
   )
 }

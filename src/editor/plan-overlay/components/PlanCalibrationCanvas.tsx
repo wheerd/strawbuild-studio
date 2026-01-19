@@ -1,4 +1,4 @@
-import { Box, Card, Flex, Text } from '@radix-ui/themes'
+import { Card } from '@radix-ui/themes'
 import React, { type PointerEvent, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -169,17 +169,17 @@ export function PlanCalibrationCanvas({
           {originPoint && renderCrosshair(originPoint, 'var(--red-9)')}
         </SVGViewport>
       ) : (
-        <Text color="gray">{t($ => $.canvas.uploadToBegin)}</Text>
+        <span className="text-gray-900">{t($ => $.canvas.uploadToBegin)}</span>
       )}
       {image && (
-        <Box position="absolute" bottom="3" right="3" style={{ zIndex: 10 }}>
+        <div className="absolute bottom-3 right-3 z-10">
           <Card size="1" variant="surface" className="shadow-md">
-            <Flex align="center" gap="3" m="-2" p="1">
-              <Text size="1">{t($ => $.canvas.scrollToZoom)}</Text>
-              <Text size="1">Shift + drag to pan</Text>
-            </Flex>
+            <div className="items-center gap-3 m--2 p-1">
+              <span className="text-sm">{t($ => $.canvas.scrollToZoom)}</span>
+              <span className="text-sm">Shift + drag to pan</span>
+            </div>
           </Card>
-        </Box>
+        </div>
       )}
     </div>
   )
