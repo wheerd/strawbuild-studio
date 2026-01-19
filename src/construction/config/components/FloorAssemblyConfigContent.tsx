@@ -287,7 +287,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
               <Button
                 size="icon"
                 disabled={!selectedConfig || usage.isUsed || floorAssemblies.length === 1}
-                className="text-destructive"
+                variant="destructive"
                 title={
                   !selectedConfig
                     ? t($ => $.floors.delete.noConfigSelected)
@@ -323,12 +323,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <Button
-                size="icon"
-                className="text-destructive"
-                variant="outline"
-                title={t($ => $.common.resetToDefaults)}
-              >
+              <Button size="icon" variant="destructive" variant="outline" title={t($ => $.common.resetToDefaults)}>
                 <ResetIcon />
               </Button>
             </AlertDialog.Trigger>

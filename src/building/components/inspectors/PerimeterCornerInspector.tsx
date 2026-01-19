@@ -133,6 +133,7 @@ export function PerimeterCornerInspector({ cornerId }: { cornerId: PerimeterCorn
             <FitToViewIcon />
           </Button>
           <Button
+            variant="destructive"
             size="icon"
             color={corner.interiorAngle === 180 ? undefined : 'red'}
             title={

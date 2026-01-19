@@ -70,7 +70,7 @@ export function FloorAreaInspector({ floorAreaId }: FloorAreaInspectorProps): Re
           </Button>
           <Button
             size="icon"
-            className="text-destructive"
+            variant="destructive"
             title={t($ => $.floorArea.removeFloorArea)}
             onClick={() => {
               removeFloorArea(floorArea.id)

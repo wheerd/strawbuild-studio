@@ -110,7 +110,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
   // Event handlers
   const handleTypeChange = useCallback(
     (newType: string) => {
-      if (value) {
+      if (newType) {
         tool.setPostType(newType as WallPostType)
       }
     },

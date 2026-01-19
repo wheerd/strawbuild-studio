@@ -36,12 +36,12 @@ export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpe
         fill={
           state.canPlace
             ? tool.getNeedsConversion()
-              ? 'var(--color-orange-1000)'
-              : 'var(--color-green-900)'
-            : 'var(--color-red-900)'
+              ? 'var(--color-orange-600)'
+              : 'var(--color-green-600)'
+            : 'var(--color-red-600)'
         }
         opacity={0.6}
-        stroke="var(--color-gray-100)"
+        stroke="var(--color-border)"
         strokeWidth={3}
       />
       <g transform={`translate(0 ${wall.thickness}) scale(1, -1)`}>

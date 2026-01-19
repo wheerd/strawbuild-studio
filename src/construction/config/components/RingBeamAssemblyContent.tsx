@@ -225,7 +225,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
               <Button
                 size="icon"
                 disabled={!selectedAssembly || usage.isUsed}
-                className="text-destructive"
+                variant="destructive"
                 title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
               >
                 <TrashIcon />

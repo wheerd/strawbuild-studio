@@ -135,7 +135,7 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
         <polyline
           points={derivedGeometry.points}
           fill="none"
-          stroke="var(--color-gray-900)"
+          stroke="var(--color-gray-500)"
           strokeWidth={scaledLineWidth}
           strokeDasharray={scaledDashPattern2}
           strokeLinecap="round"
@@ -150,7 +150,7 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
             key={`offset-segment-${index}`}
             points={segment.points}
             fill="none"
-            stroke="var(--color-gray-900)"
+            stroke="var(--color-gray-500)"
             strokeWidth={scaledLineWidth}
             strokeDasharray={scaledDashPattern2}
             strokeLinecap="round"
@@ -163,7 +163,7 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
         <polyline
           points={toSvgPoints(state.points)}
           fill="none"
-          stroke="var(--color-gray-900)"
+          stroke="var(--color-gray-700)"
           strokeWidth={scaledLineWidth}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -176,7 +176,7 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
           y1={state.points[state.points.length - 1][1]}
           x2={previewPos[0]}
           y2={previewPos[1]}
-          stroke={state.isCurrentSegmentValid ? 'var(--color-gray-1000)' : 'var(--color-red-900)'}
+          stroke={state.isCurrentSegmentValid ? 'var(--color-gray-800)' : 'var(--color-red-600)'}
           strokeWidth={scaledLineWidth}
           strokeDasharray={scaledDashPattern}
         />
@@ -188,7 +188,7 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
           y1={previewPos[1]}
           x2={state.points[0][0]}
           y2={state.points[0][1]}
-          stroke="var(--color-gray-1000)"
+          stroke="var(--color-gray-900)"
           strokeWidth={scaledLineWidth}
           strokeDasharray={scaledDashPattern2}
           opacity={0.8}
@@ -201,7 +201,7 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
           y1={state.points[state.points.length - 1][1]}
           x2={state.points[0][0]}
           y2={state.points[0][1]}
-          stroke={state.isClosingSegmentValid ? 'var(--color-green-900)' : 'var(--color-red-900)'}
+          stroke={state.isClosingSegmentValid ? 'var(--color-green-600)' : 'var(--color-red-600)'}
           strokeWidth={scaledLineWidth}
           strokeDasharray={scaledDashPattern}
         />
@@ -213,7 +213,7 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
           cx={point[0]}
           cy={point[1]}
           r={scaledPointRadius}
-          fill={index === 0 ? 'var(--color-primary)' : 'var(--color-gray-900)'}
+          fill={index === 0 ? 'var(--color-blue-600)' : 'var(--color-gray-600)'}
           stroke="var(--color-gray-100)"
           strokeWidth={scaledPointStrokeWidth}
         />

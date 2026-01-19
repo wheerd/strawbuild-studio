@@ -221,7 +221,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
 
   const handleDimensionModeChange = useCallback(
     (mode: 'fitting' | 'finished' | '') => {
-      if (value) {
+      if (mode) {
         tool.setDimensionMode(mode)
       }
     },
@@ -428,7 +428,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
       <div className="flex items-center justify-end gap-2">
         <DropdownMenu>
           <DropdownMenu.Trigger disabled={allOpeningConfigs.length === 0}>
-            <Button size="icon" title={t($ => $.addOpening.copyConfigurationTooltip)}>
+            <Button size="icon-sm" title={t($ => $.addOpening.copyConfigurationTooltip)}>
               <CopyIcon />
             </Button>
           </DropdownMenu.Trigger>

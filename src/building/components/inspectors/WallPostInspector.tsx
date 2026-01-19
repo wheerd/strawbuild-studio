@@ -170,12 +170,7 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
         <Button size="icon" title={t($ => $.wallPost.fitToView)} onClick={handleFitToView}>
           <FitToViewIcon />
         </Button>
-        <Button
-          size="icon"
-          className="text-destructive"
-          title={t($ => $.wallPost.deletePost)}
-          onClick={handleRemovePost}
-        >
+        <Button size="icon" variant="destructive" title={t($ => $.wallPost.deletePost)} onClick={handleRemovePost}>
           <TrashIcon />
         </Button>
       </div>

@@ -368,7 +368,7 @@ function LayerCard({
             <Button
               size="icon"
               variant="soft"
-              className="text-destructive"
+              variant="destructive"
               onClick={() => {
                 onRemoveLayer(index)
               }}

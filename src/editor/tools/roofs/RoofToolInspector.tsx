@@ -14,8 +14,8 @@ import { RoofAssemblySelectWithEdit } from '@/construction/config/components/Roo
 import { useDefaultRoofAssemblyId } from '@/construction/config/store'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
-import { cn } from '@/lib/utils'
 import { LengthField } from '@/shared/components/LengthField'
+import { NumberField } from '@/shared/components/NumberField'
 import { degreesToRadians, radiansToDegrees } from '@/shared/geometry'
 
 import type { RoofTool } from './RoofTool'
@@ -99,53 +99,35 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
             </Label.Root>
 
             <div className="flex items-center gap-2">
-              <div
-                className={cn(
-                  'border-input bg-background flex h-7 items-center rounded-md border text-xs',
-                  'focus-within:ring-ring focus-within:ring-2 focus-within:ring-offset-2'
-                )}
-                style={{ width: '6em' }}
+              <NumberField.Root
+                value={state.slope}
+                onChange={value => {
+                  if (value != null && value >= 0 && value <= 90) {
+                    tool.setSlope(value)
+                  }
+                }}
+                precision={2}
+                size="sm"
               >
-                <input
-                  id="roof-slope"
-                  type="number"
-                  value={state.slope.toFixed(3).replace(/\.?0+$/, '')}
-                  onChange={e => {
-                    const value = parseFloat(e.target.value)
-                    if (!isNaN(value) && value >= 0 && value <= 90) {
-                      tool.setSlope(value)
-                    }
-                  }}
-                  min={0}
-                  max={90}
-                  className="flex h-full min-w-0 flex-1 bg-transparent px-2 text-right text-xs outline-none"
-                />
-                <span className="text-muted-foreground px-1">°</span>
-              </div>
+                <NumberField.Input id="roof-slope" className="w-15" min={0} max={90} />
+                <NumberField.Slot side="right">°</NumberField.Slot>
+                <NumberField.Spinner />
+              </NumberField.Root>
 
-              <div
-                className={cn(
-                  'border-input bg-background flex h-7 items-center rounded-md border text-xs',
-                  'focus-within:ring-ring focus-within:ring-2 focus-within:ring-offset-2'
-                )}
-                style={{ width: '6em' }}
+              <NumberField.Root
+                value={Math.tan(degreesToRadians(state.slope)) * 100}
+                onChange={value => {
+                  if (value != null) {
+                    tool.setSlope(radiansToDegrees(Math.atan(value / 100)))
+                  }
+                }}
+                precision={2}
+                size="sm"
               >
-                <input
-                  type="number"
-                  value={(Math.tan(degreesToRadians(state.slope)) * 100).toFixed(3).replace(/\.?0+$/, '')}
-                  onChange={e => {
-                    const value = parseFloat(e.target.value)
-                    if (!isNaN(value)) {
-                      tool.setSlope(radiansToDegrees(Math.atan(value / 100)))
-                    }
-                  }}
-                  min={0}
-                  max={100}
-                  step={1}
-                  className="flex h-full min-w-0 flex-1 bg-transparent px-2 text-right text-xs outline-none"
-                />
-                <span className="text-muted-foreground px-1">%</span>
-              </div>
+                <NumberField.Input className="w-15" min={0} max={100} step={1} />
+                <NumberField.Slot side="right">%</NumberField.Slot>
+                <NumberField.Spinner />
+              </NumberField.Root>
             </div>
           </div>
 
@@ -164,8 +146,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
               max={10000}
               step={10}
               size="sm"
-              unit="mm"
-              style={{ width: '5rem' }}
+              unit="cm"
             />
           </div>
 
@@ -184,8 +165,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
               max={2000}
               step={10}
               size="sm"
-              unit="mm"
-              style={{ width: '5rem' }}
+              unit="cm"
             />
           </div>
         </div>

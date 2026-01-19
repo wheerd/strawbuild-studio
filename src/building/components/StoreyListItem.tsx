@@ -238,7 +238,7 @@ export function StoreyListItem({
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action onClick={handleDelete}>
-                  <Button className="text-destructive">{t($ => $.storeys.deleteFloorTitle)}</Button>
+                  <Button variant="destructive">{t($ => $.storeys.deleteFloorTitle)}</Button>
                 </AlertDialog.Action>
               </div>
             </AlertDialog.Content>

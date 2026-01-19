@@ -70,7 +70,7 @@ export function FloorOpeningInspector({ floorOpeningId }: FloorOpeningInspectorP
           </Button>
           <Button
             size="icon"
-            className="text-destructive"
+            variant="destructive"
             title={t($ => $.floorOpening.removeFloorOpening)}
             onClick={() => {
               removeFloorOpening(opening.id)

@@ -71,16 +71,14 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
         <div className="flex flex-row gap-5">
           {/* Left Column - Configuration */}
           <div className="flex grow flex-col gap-3">
-            <h2 font-medium>{t($ => $.presetDialogs.lShaped.configuration)}</h2>
+            <h2 className="font-medium">{t($ => $.presetDialogs.lShaped.configuration)}</h2>
 
             {/* Main Rectangle Dimensions */}
             <div className="flex flex-col gap-2">
-              <span className="text-base font-medium text-gray-900">
-                {t($ => $.presetDialogs.lShaped.mainRectangle)}
-              </span>
+              <span className="text-sm font-medium text-gray-700">{t($ => $.presetDialogs.lShaped.mainRectangle)}</span>
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-auto flex flex-col gap-1">
-                  <span className="text-sm text-gray-900">{t($ => $.presetDialogs.lShaped.width1)}</span>
+                  <span className="text-sm text-gray-700">{t($ => $.presetDialogs.lShaped.width1)}</span>
                   <LengthField
                     value={config.width1}
                     onChange={value => {
@@ -97,7 +95,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                 </div>
 
                 <div className="col-auto flex flex-col gap-1">
-                  <span className="text-sm text-gray-900">{t($ => $.presetDialogs.lShaped.length1)}</span>
+                  <span className="text-sm text-gray-700">{t($ => $.presetDialogs.lShaped.length1)}</span>
                   <LengthField
                     value={config.length1}
                     onChange={value => {
@@ -117,12 +115,12 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
 
             {/* Extension Rectangle Dimensions */}
             <div className="flex flex-col gap-2">
-              <span className="text-base font-medium text-gray-900">
+              <span className="text-sm font-medium text-gray-700">
                 {t($ => $.presetDialogs.lShaped.extensionRectangle)}
               </span>
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <span className="text-sm text-gray-900">{t($ => $.presetDialogs.lShaped.width2)}</span>
+                  <span className="text-sm text-gray-700">{t($ => $.presetDialogs.lShaped.width2)}</span>
 
                   <LengthField
                     value={config.width2}
@@ -140,7 +138,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <span className="text-sm text-gray-900">{t($ => $.presetDialogs.lShaped.length2)}</span>
+                  <span className="text-sm text-gray-700">{t($ => $.presetDialogs.lShaped.length2)}</span>
 
                   <LengthField
                     value={config.length2}
@@ -161,7 +159,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
 
             {/* Rotation */}
             <div className="flex flex-col gap-2">
-              <span className="text-sm text-gray-900">{t($ => $.presetDialogs.lShaped.rotation)}</span>
+              <span className="text-sm text-gray-700">{t($ => $.presetDialogs.lShaped.rotation)}</span>
               <ToggleGroup
                 type="single"
                 variant="outline"
@@ -193,7 +191,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
               {/* Wall Thickness */}
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-1">
-                  <span className="text-sm text-gray-900">{t($ => $.presetDialogs.lShaped.wallThickness)}</span>
+                  <span className="text-sm text-gray-700">{t($ => $.presetDialogs.lShaped.wallThickness)}</span>
                   <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
                 </div>
                 <LengthField
@@ -213,7 +211,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
               {/* Wall Assembly */}
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-1">
-                  <span className="text-sm text-gray-900">{t($ => $.presetDialogs.lShaped.wallAssembly)}</span>
+                  <span className="text-sm text-gray-700">{t($ => $.presetDialogs.lShaped.wallAssembly)}</span>
                   <MeasurementInfo highlightedAssembly="wallAssembly" />
                 </div>
                 <WallAssemblySelectWithEdit
@@ -229,7 +227,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
               {/* Base Plate */}
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-1">
-                  <span className="text-sm text-gray-900">{t($ => $.presetDialogs.lShaped.basePlate)}</span>
+                  <span className="text-sm text-gray-700">{t($ => $.presetDialogs.lShaped.basePlate)}</span>
                   <MeasurementInfo highlightedPart="basePlate" />
                 </div>
                 <RingBeamAssemblySelectWithEdit
@@ -246,7 +244,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
               {/* Top Plate */}
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-1">
-                  <span className="text-sm text-gray-900">{t($ => $.presetDialogs.lShaped.topPlate)}</span>
+                  <span className="text-sm text-gray-700">{t($ => $.presetDialogs.lShaped.topPlate)}</span>
                   <MeasurementInfo highlightedPart="topPlate" />
                 </div>
                 <RingBeamAssemblySelectWithEdit
@@ -263,12 +261,12 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
           </div>
 
           {/* Right Column - Preview */}
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 pl-5">
             <h2 className="text-center font-medium">{t($ => $.presetDialogs.lShaped.preview)}</h2>
 
             {/* Reference Side */}
-            <div className="flex flex-col gap-1">
-              <span className="text-sm text-gray-900">{t($ => $.presetDialogs.lShaped.referenceSide)}</span>
+            <div className="flex flex-col gap-1 pb-5">
+              <span className="text-sm text-gray-700">{t($ => $.presetDialogs.lShaped.referenceSide)}</span>
               <ToggleGroup
                 type="single"
                 variant="outline"
@@ -300,9 +298,9 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
         </div>
 
         {/* Actions */}
-        <div className="mt-4 justify-end gap-3">
+        <div className="mt-4 flex justify-end gap-3">
           <DialogClose asChild>
-            <Button variant="ghost">{t($ => $.presetDialogs.lShaped.cancel)}</Button>
+            <Button variant="soft">{t($ => $.presetDialogs.lShaped.cancel)}</Button>
           </DialogClose>
           <DialogClose asChild>
             <Button onClick={handleConfirm} disabled={!isValid}>

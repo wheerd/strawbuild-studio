@@ -32,7 +32,7 @@ export function PolygonToolOverlay<TTool extends BasePolygonTool<PolygonToolStat
         <polyline
           points={pointsString}
           fill="none"
-          stroke="var(--color-gray-900)"
+          stroke="var(--color-gray-700)"
           strokeWidth={scaledLineWidth}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -45,7 +45,7 @@ export function PolygonToolOverlay<TTool extends BasePolygonTool<PolygonToolStat
           y1={state.points[state.points.length - 1][1]}
           x2={previewPos[0]}
           y2={previewPos[1]}
-          stroke={state.isCurrentSegmentValid ? 'var(--color-gray-1000)' : 'var(--color-red-900)'}
+          stroke={state.isCurrentSegmentValid ? 'var(--color-gray-800)' : 'var(--color-red-600)'}
           strokeWidth={scaledLineWidth}
           strokeDasharray={scaledDashPattern}
         />
@@ -57,7 +57,7 @@ export function PolygonToolOverlay<TTool extends BasePolygonTool<PolygonToolStat
           y1={state.points[state.points.length - 1][1]}
           x2={state.points[0][0]}
           y2={state.points[0][1]}
-          stroke={state.isClosingSegmentValid ? 'var(--color-green-900)' : 'var(--color-red-900)'}
+          stroke={state.isClosingSegmentValid ? 'var(--color-green-600)' : 'var(--color-red-600)'}
           strokeWidth={scaledLineWidth}
           strokeDasharray={scaledDashPattern}
         />
@@ -69,7 +69,7 @@ export function PolygonToolOverlay<TTool extends BasePolygonTool<PolygonToolStat
           cx={point[0]}
           cy={point[1]}
           r={scaledPointRadius}
-          fill={index === 0 ? 'var(--color-primary)' : 'var(--color-gray-900)'}
+          fill={index === 0 ? 'var(--color-blue-600)' : 'var(--color-gray-800)'}
           stroke="var(--color-gray-100)"
           strokeWidth={scaledPointStrokeWidth}
         />
@@ -80,8 +80,8 @@ export function PolygonToolOverlay<TTool extends BasePolygonTool<PolygonToolStat
         cx={previewPos[0]}
         cy={previewPos[1]}
         r={scaledPointRadius}
-        fill={state.lengthOverride ? 'var(--color-primary)' : 'var(--color-gray-900)'}
-        stroke={state.lengthOverride ? 'var(--color-gray-100)' : 'var(--color-gray-900)'}
+        fill={state.lengthOverride ? 'var(--color-blue-600)' : 'var(--color-gray-800)'}
+        stroke={state.lengthOverride ? 'var(--color-gray-100)' : 'var(--color-gray-800)'}
         strokeWidth={scaledPointStrokeWidth}
       />
     </g>

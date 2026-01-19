@@ -207,27 +207,21 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
         <h2>{t($ => $.perimeterWall.openings)}</h2>
         <div className="grid grid-cols-3 gap-2">
           <Card size="sm" variant="soft">
-            <div className="m--1 flex flex-col gap-0">
-              <span className="flex items-center text-base font-bold">
-                {openings.filter(o => o.openingType === 'door').length}
-              </span>
-              <span className="flex items-center text-sm text-gray-900">{t($ => $.perimeterWall.doors)}</span>
+            <div className="m--1 flex flex-col items-center gap-0">
+              <span className="text-base font-bold">{openings.filter(o => o.openingType === 'door').length}</span>
+              <span className="text-card-foreground/70 text-sm">{t($ => $.perimeterWall.doors)}</span>
             </div>
           </Card>
           <Card size="sm" variant="soft">
-            <div className="m--1 flex flex-col gap-0">
-              <span className="flex items-center text-base font-bold">
-                {openings.filter(o => o.openingType === 'window').length}
-              </span>
-              <span className="flex items-center text-sm text-gray-900">{t($ => $.perimeterWall.windows)}</span>
+            <div className="m--1 flex flex-col items-center gap-0">
+              <span className="text-base font-bold">{openings.filter(o => o.openingType === 'window').length}</span>
+              <span className="text-card-foreground/70 text-sm">{t($ => $.perimeterWall.windows)}</span>
             </div>
           </Card>
           <Card size="sm" variant="soft">
-            <div className="m--1 flex flex-col gap-0">
-              <span className="flex items-center text-base font-bold">
-                {openings.filter(o => o.openingType === 'passage').length}
-              </span>
-              <span className="flex items-center text-sm text-gray-900">{t($ => $.perimeterWall.passages)}</span>
+            <div className="m--1 flex flex-col items-center gap-0">
+              <span className="text-base font-bold">{openings.filter(o => o.openingType === 'passage').length}</span>
+              <span className="text-card-foreground/70 text-sm">{t($ => $.perimeterWall.passages)}</span>
             </div>
           </Card>
         </div>
@@ -267,7 +261,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
           </Button>
           <Button
             size="icon"
-            className="text-destructive"
+            variant="destructive"
             title={canDeleteWall.reason ? t(canDeleteWall.reason) : t($ => $.perimeterWall.deleteWall)}
             onClick={handleDelete}
             disabled={!canDeleteWall.canDelete}

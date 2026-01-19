@@ -69,7 +69,7 @@ export function GridLayer({ width = 800, height = 600, viewport }: SvgGridLayerP
         y1={startY}
         x2={x}
         y2={endY}
-        className={isAxis ? 'stroke-red-600/50' : 'stroke-gray-600/50'}
+        className={isAxis ? 'stroke-red-600/50' : 'stroke-gray-500/30'}
         strokeWidth={isAxis ? strokeWidth * 2 : strokeWidth}
       />
     )
@@ -85,7 +85,7 @@ export function GridLayer({ width = 800, height = 600, viewport }: SvgGridLayerP
         y1={y}
         x2={endX}
         y2={y}
-        className={isAxis ? 'stroke-green-600/50' : 'stroke-gray-600/50'}
+        className={isAxis ? 'stroke-green-600/50' : 'stroke-gray-500/30'}
         strokeWidth={isAxis ? strokeWidth * 2 : strokeWidth}
       />
     )

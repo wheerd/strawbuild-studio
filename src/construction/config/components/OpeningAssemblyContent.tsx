@@ -238,7 +238,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
             <AlertDialog.Trigger>
               <Button
                 size="icon"
-                className="text-destructive"
+                variant="destructive"
                 variant="soft"
                 disabled={usage.isUsed}
                 title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}

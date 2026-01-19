@@ -177,12 +177,7 @@ const NumberFieldSlot = forwardRef<HTMLDivElement, NumberFieldSlotProps>(functio
   return (
     <div
       ref={ref}
-      className={cn(
-        'text-muted-foreground flex items-center',
-        side === 'left' && 'pl-2',
-        side === 'right' && 'pr-2',
-        className
-      )}
+      className={cn('text-muted-foreground flex items-center', side === 'left' && 'pl-2', className)}
       {...props}
     />
   )

@@ -1166,7 +1166,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                 <Button
                   size="icon"
                   disabled={!selectedAssembly || usage.isUsed}
-                  className="text-destructive"
+                  variant="destructive"
                   title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
                 >
                   <TrashIcon />

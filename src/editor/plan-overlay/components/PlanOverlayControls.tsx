@@ -95,7 +95,7 @@ export function PlanOverlayControls(): React.JSX.Element | null {
                   </AlertDialog.Cancel>
                   <AlertDialog.Action>
                     <Button
-                      className="text-destructive"
+                      variant="destructive"
                       onClick={() => {
                         clearPlan(activeStoreyId)
                         setConfirmOpen(false)
