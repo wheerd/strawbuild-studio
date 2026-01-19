@@ -1,4 +1,4 @@
-import { Button, Dialog, Heading, SegmentedControl } from '@radix-ui/themes'
+import { Button, Dialog, SegmentedControl } from '@radix-ui/themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -68,9 +68,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
         <div className="grid-cols-[1fr_auto] gap-5">
           {/* Left Column - Properties in 2x3 Grid */}
           <div className="flex flex-col gap-3">
-            <Heading size="2" font-medium>
-              {t($ => $.presetDialogs.rectangular.configuration)}
-            </Heading>
+            <h2 font-medium>{t($ => $.presetDialogs.rectangular.configuration)}</h2>
 
             <div className="grid-cols-2 gap-y-3 gap-x-2">
               {/* Width */}
@@ -181,9 +179,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
 
           {/* Right Column - Preview */}
           <div className="flex flex-col gap-3">
-            <Heading items-center size="2" font-medium>
-              {t($ => $.presetDialogs.rectangular.preview)}
-            </Heading>
+            <h2 className="text-center font-medium">{t($ => $.presetDialogs.rectangular.preview)}</h2>
 
             {/* Reference Side */}
             <div className="flex flex-col gap-1">

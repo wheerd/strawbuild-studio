@@ -7,7 +7,6 @@ import {
   Callout,
   Checkbox,
   DropdownMenu,
-  Heading,
   IconButton,
   Select,
   Separator,
@@ -417,7 +416,7 @@ function ConfigForm({ assembly }: { assembly: OpeningAssemblyConfig }): React.JS
         <PlankedOpeningContent config={assembly} update={handleUpdateConfig} />
       ) : (
         <>
-          <Heading size="2">{t($ => $.openings.types.empty)}</Heading>
+          <h2>{t($ => $.openings.types.empty)}</h2>
           <div className="grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
             <Label.Root>
               <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.padding)}</span>
@@ -518,7 +517,7 @@ const PostOpeningContent = ({
   const { t } = useTranslation('config')
   return (
     <div className="flex flex-col gap-3">
-      <Heading size="2">{t($ => $.openings.sections.opening)}</Heading>
+      <h2>{t($ => $.openings.sections.opening)}</h2>
       <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.padding)}</span>
@@ -602,7 +601,7 @@ function PostsConfigSection({
 
   return (
     <div className="flex flex-col gap-3">
-      <Heading size="2">{t($ => $.openings.sections.posts)}</Heading>
+      <h2>{t($ => $.openings.sections.posts)}</h2>
 
       <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root htmlFor={typeSelectId}>
@@ -740,7 +739,7 @@ const PlankedOpeningContent = ({
   const { t } = useTranslation('config')
   return (
     <div className="flex flex-col gap-3">
-      <Heading size="2">{t($ => $.openings.sections.opening)}</Heading>
+      <h2>{t($ => $.openings.sections.opening)}</h2>
       <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.padding)}</span>

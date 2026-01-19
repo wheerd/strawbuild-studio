@@ -15,7 +15,6 @@ import {
   Button,
   Checkbox,
   DropdownMenu,
-  Heading,
   IconButton,
   Select,
   Separator,
@@ -66,7 +65,7 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
   const { t } = useTranslation('config')
   return (
     <div className="flex flex-col gap-3">
-      <Heading size="2">{t($ => $.walls.infillConfiguration)}</Heading>
+      <h2>{t($ => $.walls.infillConfiguration)}</h2>
       <div className="grid-cols-2 gap-2 gap-x-3">
         <div className="flex flex-col gap-1">
           <Label.Root>
@@ -178,7 +177,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
   const { t } = useTranslation('config')
   return (
     <div className="flex flex-col gap-3">
-      <Heading size="2">{t($ => $.walls.postsConfiguration)}</Heading>
+      <h2>{t($ => $.walls.postsConfiguration)}</h2>
       <div className="grid-cols-[5em_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-sm font-medium text-gray-900">{t($ => $.walls.postType)}</span>
@@ -287,7 +286,7 @@ function TriangularBattensConfigSection({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
-        <Heading size="2">{t($ => $.walls.triangularBattensConfiguration)}</Heading>
+        <h2>{t($ => $.walls.triangularBattensConfiguration)}</h2>
         <Tooltip content={t($ => $.walls.triangularBattensTooltip)}>
           <InfoCircledIcon style={{ cursor: 'help' }} />
         </Tooltip>
@@ -372,7 +371,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
   const { t } = useTranslation('config')
   return (
     <div className="flex flex-col gap-3">
-      <Heading size="2">{t($ => $.walls.moduleConfiguration)}</Heading>
+      <h2>{t($ => $.walls.moduleConfiguration)}</h2>
       <div className="grid-cols-[6em_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-sm font-medium text-gray-900">{t($ => $.walls.moduleType)}</span>
@@ -630,7 +629,7 @@ function NonStrawbaleConfigForm({ config, onUpdate }: NonStrawbaleConfigFormProp
   const { t } = useTranslation('config')
   return (
     <div className="flex flex-col gap-3">
-      <Heading size="2">{t($ => $.walls.nonStrawbaleConfiguration)}</Heading>
+      <h2>{t($ => $.walls.nonStrawbaleConfiguration)}</h2>
       <div className="grid-cols-[auto_1fr] gap-2 gap-x-3">
         <Label.Root>
           <span className="text-sm font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
@@ -700,7 +699,7 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
   return (
     <div className="flex flex-col gap-3">
       {/* Opening Assembly Configuration */}
-      <Heading size="2">{t($ => $.walls.openingsSection)}</Heading>
+      <h2>{t($ => $.walls.openingsSection)}</h2>
       <div className="flex flex-col gap-1">
         <Label.Root>
           <span className="text-sm font-medium text-gray-900">{t($ => $.walls.openingAssembly)}</span>

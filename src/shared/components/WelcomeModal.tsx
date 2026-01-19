@@ -1,5 +1,5 @@
 import { Cross2Icon, ExclamationTriangleIcon, GitHubLogoIcon } from '@radix-ui/react-icons'
-import { Button, Callout, Dialog, Heading, IconButton, Link } from '@radix-ui/themes'
+import { Button, Callout, Dialog, IconButton, Link } from '@radix-ui/themes'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -68,7 +68,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
 
             <div className="grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
-                <Heading size="3">{t($ => $.keyFeatures.title)}</Heading>
+                <h3>{t($ => $.keyFeatures.title)}</h3>
                 <div className="text-sm">
                   <ul style={{ listStyleType: 'disc', margin: 0, paddingLeft: '1.5rem' }}>
                     {(
@@ -83,7 +83,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
               </div>
 
               <div className="flex flex-col gap-2">
-                <Heading size="3">{t($ => $.plannedFeatures.title)}</Heading>
+                <h3>{t($ => $.plannedFeatures.title)}</h3>
                 <div className="text-sm">
                   <ul style={{ listStyleType: 'disc', margin: 0, paddingLeft: '1.5rem' }}>
                     {(
@@ -100,7 +100,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
 
             <div className="grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
-                <Heading size="3">{t($ => $.demoVideo.title)}</Heading>
+                <h3>{t($ => $.demoVideo.title)}</h3>
                 <span className="text-base">{t($ => $.demoVideo.description)}</span>
                 <div className="flex-row gap-4 items-center">
                   <Link
@@ -122,7 +122,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                     {t($ => $.demoVideo.demo02)}
                   </Link>
                 </div>
-                <Heading size="3">{t($ => $.localStorage.title)}</Heading>
+                <h3>{t($ => $.localStorage.title)}</h3>
                 <div className="text-sm">
                   {t($ => $.localStorage.description)}
                   <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.5rem' }}>

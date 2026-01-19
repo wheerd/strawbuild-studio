@@ -1,4 +1,4 @@
-import { Button, Dialog, Heading, SegmentedControl } from '@radix-ui/themes'
+import { Button, Dialog, SegmentedControl } from '@radix-ui/themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -69,9 +69,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
         <div className="grid-cols-[1fr_auto] gap-5">
           {/* Left Column - Configuration */}
           <div className="flex flex-col gap-3">
-            <Heading size="2" font-medium>
-              {t($ => $.presetDialogs.lShaped.configuration)}
-            </Heading>
+            <h2 font-medium>{t($ => $.presetDialogs.lShaped.configuration)}</h2>
 
             {/* Main Rectangle Dimensions */}
             <div className="flex flex-col gap-2">
@@ -260,9 +258,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
 
           {/* Right Column - Preview */}
           <div className="flex flex-col gap-3">
-            <Heading items-center size="2" font-medium>
-              {t($ => $.presetDialogs.lShaped.preview)}
-            </Heading>
+            <h2 className="text-center font-medium">{t($ => $.presetDialogs.lShaped.preview)}</h2>
 
             {/* Reference Side */}
             <div className="flex flex-col gap-1">

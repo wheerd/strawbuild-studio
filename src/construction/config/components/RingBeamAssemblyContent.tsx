@@ -5,7 +5,6 @@ import {
   Badge,
   Button,
   DropdownMenu,
-  Heading,
   IconButton,
   SegmentedControl,
   Separator,
@@ -599,7 +598,7 @@ function BrickRingBeamFields({
   const { t } = useTranslation('config')
   return (
     <>
-      <Heading size="2">{t($ => $.ringBeams.sections.stemWall)}</Heading>
+      <h2>{t($ => $.ringBeams.sections.stemWall)}</h2>
 
       <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
@@ -645,7 +644,7 @@ function BrickRingBeamFields({
 
       <Separator size="4" />
 
-      <Heading size="2">{t($ => $.ringBeams.sections.insulation)}</Heading>
+      <h2>{t($ => $.ringBeams.sections.insulation)}</h2>
 
       <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
@@ -677,7 +676,7 @@ function BrickRingBeamFields({
 
       <Separator size="4" />
 
-      <Heading size="2">{t($ => $.ringBeams.sections.beam)}</Heading>
+      <h2>{t($ => $.ringBeams.sections.beam)}</h2>
 
       <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
@@ -723,7 +722,7 @@ function BrickRingBeamFields({
 
       <Separator size="4" />
 
-      <Heading size="2">{t($ => $.ringBeams.sections.waterproofing)}</Heading>
+      <h2>{t($ => $.ringBeams.sections.waterproofing)}</h2>
 
       <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>

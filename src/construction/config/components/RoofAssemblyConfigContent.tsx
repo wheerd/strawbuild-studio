@@ -1,6 +1,6 @@
 import { ComponentInstanceIcon, CopyIcon, PlusIcon, ResetIcon, SquareIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { AlertDialog, Badge, Button, DropdownMenu, Heading, IconButton, Separator, TextField } from '@radix-ui/themes'
+import { AlertDialog, Badge, Button, DropdownMenu, IconButton, Separator, TextField } from '@radix-ui/themes'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -33,7 +33,7 @@ function MonolithicRoofConfigForm({ config, onUpdate }: MonolithicRoofConfigForm
   const { t } = useTranslation('config')
   return (
     <div className="flex flex-col gap-3">
-      <Heading size="2">{t($ => $.roofs.sections.monolithicConfiguration)}</Heading>
+      <h2>{t($ => $.roofs.sections.monolithicConfiguration)}</h2>
 
       <div className="grid-cols-2 gap-2 gap-x-3">
         <div className="flex flex-col gap-1">
@@ -82,7 +82,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
     <div className="flex flex-col gap-3">
       {/* Straw Configuration */}
 
-      <Heading size="2">{t($ => $.roofs.sections.straw)}</Heading>
+      <h2>{t($ => $.roofs.sections.straw)}</h2>
 
       <div className="grid-cols-2 gap-2 gap-x-3">
         <div className="flex flex-col gap-1">
@@ -121,7 +121,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
       <Separator size="4" />
 
       {/* Purlin Configuration */}
-      <Heading size="2">{t($ => $.roofs.sections.purlins)}</Heading>
+      <h2>{t($ => $.roofs.sections.purlins)}</h2>
       <div className="grid-cols-2 gap-2 gap-x-3">
         <div className="flex flex-col gap-1">
           <Label.Root>
@@ -205,7 +205,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
       <Separator size="4" />
 
       {/* Rafter Configuration */}
-      <Heading size="2">{t($ => $.roofs.sections.rafters)}</Heading>
+      <h2>{t($ => $.roofs.sections.rafters)}</h2>
       <div className="grid-cols-2 gap-2 gap-x-3">
         <div className="flex flex-col gap-1">
           <Label.Root>
@@ -273,7 +273,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
 
       <Separator size="4" />
 
-      <Heading size="2">{t($ => $.roofs.sections.decking)}</Heading>
+      <h2>{t($ => $.roofs.sections.decking)}</h2>
 
       <div className="grid-cols-2 gap-2 gap-x-3">
         <div className="flex flex-col gap-1">
@@ -309,7 +309,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
 
       <Separator size="4" />
 
-      <Heading size="2">{t($ => $.roofs.sections.ceilingSheathing)}</Heading>
+      <h2>{t($ => $.roofs.sections.ceilingSheathing)}</h2>
 
       <div className="grid-cols-2 gap-2 gap-x-3">
         <div className="flex flex-col gap-1">

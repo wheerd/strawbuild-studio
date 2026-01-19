@@ -1,5 +1,5 @@
 import { CubeIcon, ExclamationTriangleIcon, GroupIcon, RulerHorizontalIcon } from '@radix-ui/react-icons'
-import { Card, Heading, IconButton, SegmentedControl } from '@radix-ui/themes'
+import { Card, IconButton, SegmentedControl } from '@radix-ui/themes'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -463,7 +463,7 @@ export function ConstructionPlan({
 
             {showStrawTypes && (
               <div className="flex-col p-2 mt--2">
-                <Heading size="1">{t($ => $.plan.strawTypesHeading)}</Heading>
+                <h4>{t($ => $.plan.strawTypesHeading)}</h4>
                 <div className="grid-cols-2">
                   <span className="text-sm text-lime-600">{t($ => $.plan.strawTypes.fullBale)}</span>
                   <span className="text-sm text-purple-600">{t($ => $.plan.strawTypes.partialBale)}</span>

@@ -1,5 +1,5 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
-import { Button, Callout, Heading, Kbd } from '@radix-ui/themes'
+import { Button, Callout, Kbd } from '@radix-ui/themes'
 import { useTranslation } from 'react-i18next'
 
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
@@ -14,7 +14,7 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
   if (!state.selectedWallId) {
     return (
       <div className="flex flex-col gap-3">
-        <Heading size="2">{t($ => $.splitWall.title)}</Heading>
+        <h2>{t($ => $.splitWall.title)}</h2>
         <Callout.Root color="blue">
           <Callout.Icon>
             <InfoCircledIcon />
@@ -32,7 +32,7 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
 
   return (
     <div className="flex flex-col gap-4">
-      <Heading size="2">{t($ => $.splitWall.title)}</Heading>
+      <h2>{t($ => $.splitWall.title)}</h2>
       {state.isValidSplit && (
         <Callout.Root color="green">
           <Callout.Text>{t($ => $.splitWall.readyToSplit)}</Callout.Text>

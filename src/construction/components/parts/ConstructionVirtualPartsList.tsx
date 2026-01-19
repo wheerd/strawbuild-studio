@@ -1,5 +1,5 @@
 import { EyeOpenIcon } from '@radix-ui/react-icons'
-import { Card, Heading, IconButton, Table } from '@radix-ui/themes'
+import { Card, IconButton, Table } from '@radix-ui/themes'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -34,7 +34,7 @@ export function ConstructionVirtualPartsList({
   return (
     <Card variant="surface" size="2">
       <div className="flex flex-col gap-3">
-        <Heading size="4">{t($ => $.modulesList.title)}</Heading>
+        <h4>{t($ => $.modulesList.title)}</h4>
         <Table.Root variant="surface" size="2" className="min-w-full">
           <Table.Header>
             <Table.Row>

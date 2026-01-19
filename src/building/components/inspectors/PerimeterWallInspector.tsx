@@ -1,6 +1,6 @@
 import { TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Card, DataList, Heading, IconButton, Separator } from '@radix-ui/themes'
+import { Card, DataList, IconButton, Separator } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -149,7 +149,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
       <Separator size="4" />
       {/* Measurements */}
       <div className="flex flex-col gap-2">
-        <Heading size="2">{t($ => $.perimeterWall.measurements)}</Heading>
+        <h2>{t($ => $.perimeterWall.measurements)}</h2>
         <DataList.Root size="1">
           <DataList.Item>
             <DataList.Label minWidth="88px">{t($ => $.perimeterWall.insideLength)}</DataList.Label>
@@ -201,7 +201,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
       <Separator size="4" />
       {/* Openings */}
       <div className="flex flex-col gap-2">
-        <Heading size="2">{t($ => $.perimeterWall.openings)}</Heading>
+        <h2>{t($ => $.perimeterWall.openings)}</h2>
         <div className="grid-cols-3 gap-2">
           <Card size="1" variant="surface">
             <div className="flex-col gap-0 m--1">

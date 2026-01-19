@@ -1,15 +1,6 @@
 import { ExclamationTriangleIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import {
-  Callout,
-  DataList,
-  DropdownMenu,
-  Heading,
-  IconButton,
-  SegmentedControl,
-  Separator,
-  Tooltip
-} from '@radix-ui/themes'
+import { Callout, DataList, DropdownMenu, IconButton, SegmentedControl, Separator, Tooltip } from '@radix-ui/themes'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -267,9 +258,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
 
         {/* Wall Configuration */}
         <div className="pt-1 border-t border-gray-600">
-          <Heading size="2" mb="2">
-            {t($ => $.perimeter.wallConfiguration)}
-          </Heading>
+          <h2 className="mb-2">{t($ => $.perimeter.wallConfiguration)}</h2>
 
           <div className="flex flex-col gap-2">
             {/* Wall Assembly */}
@@ -331,9 +320,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
 
         {/* Ring Beam Configuration */}
         <div className="pt-1 border-t border-gray-600">
-          <Heading size="2" mb="2">
-            {t($ => $.perimeter.ringBeams)}
-          </Heading>
+          <h2 className="mb-2">{t($ => $.perimeter.ringBeams)}</h2>
 
           <div className="flex flex-col gap-2">
             {/* Base Ring Beam */}

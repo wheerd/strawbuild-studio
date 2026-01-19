@@ -1,5 +1,5 @@
 import { ExclamationTriangleIcon, PinLeftIcon, PinRightIcon, TrashIcon } from '@radix-ui/react-icons'
-import { Callout, DataList, Heading, IconButton, Separator } from '@radix-ui/themes'
+import { Callout, DataList, IconButton, Separator } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -74,7 +74,7 @@ export function PerimeterCornerInspector({ cornerId }: { cornerId: PerimeterCorn
     <div className="flex flex-col gap-4">
       {/* Geometry Information */}
       <div className="flex flex-col gap-2">
-        <Heading size="2">{t($ => $.perimeterCorner.geometry)}</Heading>
+        <h2>{t($ => $.perimeterCorner.geometry)}</h2>
         <DataList.Root>
           <DataList.Item>
             <DataList.Label minWidth="88px">{t($ => $.perimeterCorner.interiorAngle)}</DataList.Label>
@@ -150,7 +150,7 @@ export function PerimeterCornerInspector({ cornerId }: { cornerId: PerimeterCorn
       {/* Construction Notes */}
       {hasConstructionNotes && (
         <div className="flex flex-col gap-2">
-          <Heading size="2">{t($ => $.perimeterCorner.constructionNotes)}</Heading>
+          <h2>{t($ => $.perimeterCorner.constructionNotes)}</h2>
 
           {(() => {
             const prevAssembly = getWallAssemblyById(previousWall.wallAssemblyId)

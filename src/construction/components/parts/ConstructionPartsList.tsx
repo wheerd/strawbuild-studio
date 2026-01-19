@@ -1,5 +1,5 @@
 import { ExclamationTriangleIcon, EyeOpenIcon, Pencil1Icon, PinBottomIcon, PinTopIcon } from '@radix-ui/react-icons'
-import { Badge, Card, Heading, IconButton, Table, Tooltip } from '@radix-ui/themes'
+import { Badge, Card, IconButton, Table, Tooltip } from '@radix-ui/themes'
 import React, { useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -453,7 +453,7 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan, formatt
         <div className="items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <MaterialTypeIndicator material={material} size={24} />
-            <Heading size="4">{materialName}</Heading>
+            <h4>{materialName}</h4>
             <IconButton
               title={t($ => $.partsList.actions.configureMaterial)}
               variant="ghost"
@@ -1260,7 +1260,7 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
     <div className="flex flex-col gap-4">
       <Card ref={topRef} variant="surface" size="2">
         <div className="flex flex-col gap-3">
-          <Heading size="4">{t($ => $.partsList.summary)}</Heading>
+          <h4>{t($ => $.partsList.summary)}</h4>
           <Table.Root variant="surface" size="2" className="min-w-full">
             <Table.Header>
               <Table.Row>

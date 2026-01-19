@@ -5,7 +5,6 @@ import {
   Badge,
   Button,
   DropdownMenu,
-  Heading,
   IconButton,
   Separator,
   TextField,
@@ -510,7 +509,7 @@ function MonolithicConfigFields({
   const { t } = useTranslation('config')
   return (
     <>
-      <Heading size="3">{t($ => $.floors.types.monolithic)}</Heading>
+      <h3>{t($ => $.floors.types.monolithic)}</h3>
       <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
@@ -555,7 +554,7 @@ function JoistConfigFields({
   const { t } = useTranslation('config')
   return (
     <>
-      <Heading size="3">{t($ => $.floors.types.joist)}</Heading>
+      <h3>{t($ => $.floors.types.joist)}</h3>
 
       {/* Beam Height - Full Width */}
       <div className="grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
@@ -582,7 +581,7 @@ function JoistConfigFields({
       <Separator size="4" />
 
       {/* Joists Section */}
-      <Heading size="2">{t($ => $.floors.sections.joists)}</Heading>
+      <h2>{t($ => $.floors.sections.joists)}</h2>
       <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
@@ -626,7 +625,7 @@ function JoistConfigFields({
       <Separator size="4" />
 
       {/* Wall Beams Section */}
-      <Heading size="2">{t($ => $.floors.sections.wallBeams)}</Heading>
+      <h2>{t($ => $.floors.sections.wallBeams)}</h2>
       <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
@@ -683,7 +682,7 @@ function JoistConfigFields({
       <Separator size="4" />
 
       {/* Subfloor Section */}
-      <Heading size="2">{t($ => $.floors.sections.subfloor)}</Heading>
+      <h2>{t($ => $.floors.sections.subfloor)}</h2>
       <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
@@ -715,7 +714,7 @@ function JoistConfigFields({
       <Separator size="4" />
 
       {/* Opening Sides Section */}
-      <Heading size="2">{t($ => $.floors.sections.openingSides)}</Heading>
+      <h2>{t($ => $.floors.sections.openingSides)}</h2>
       <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
@@ -757,7 +756,7 @@ function FilledConfigFields({
   const { t } = useTranslation('config')
   return (
     <>
-      <Heading size="3">{t($ => $.floors.types.straw)}</Heading>
+      <h3>{t($ => $.floors.types.straw)}</h3>
 
       <div className="grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
         <div className="flex items-center gap-1">
@@ -783,7 +782,7 @@ function FilledConfigFields({
       <Separator size="4" />
 
       {/* Joists Section */}
-      <Heading size="2">{t($ => $.floors.sections.joists)}</Heading>
+      <h2>{t($ => $.floors.sections.joists)}</h2>
       <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
@@ -827,7 +826,7 @@ function FilledConfigFields({
       <Separator size="4" />
 
       {/* Frame Section */}
-      <Heading size="2">{t($ => $.floors.sections.perimeterFrame)}</Heading>
+      <h2>{t($ => $.floors.sections.perimeterFrame)}</h2>
       <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
@@ -859,7 +858,7 @@ function FilledConfigFields({
       <Separator size="4" />
 
       {/* Subfloor Section */}
-      <Heading size="2">{t($ => $.floors.sections.subfloor)}</Heading>
+      <h2>{t($ => $.floors.sections.subfloor)}</h2>
       <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
@@ -891,7 +890,7 @@ function FilledConfigFields({
       <Separator size="4" />
 
       {/* Ceiling Sheathing Section */}
-      <Heading size="2">{t($ => $.floors.sections.ceilingSheathing)}</Heading>
+      <h2>{t($ => $.floors.sections.ceilingSheathing)}</h2>
       <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
@@ -923,7 +922,7 @@ function FilledConfigFields({
       <Separator size="4" />
 
       {/* Opening Frame Section */}
-      <Heading size="2">{t($ => $.floors.sections.openingFrame)}</Heading>
+      <h2>{t($ => $.floors.sections.openingFrame)}</h2>
       <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
@@ -955,7 +954,7 @@ function FilledConfigFields({
       <Separator size="4" />
 
       {/* Straw Infill Section */}
-      <Heading size="2">{t($ => $.floors.sections.strawInfill)}</Heading>
+      <h2>{t($ => $.floors.sections.strawInfill)}</h2>
       <div className="grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
         <div className="flex items-center gap-1">
           <Label.Root>
@@ -993,10 +992,10 @@ function HangingJoistConfigFields({
   const { t } = useTranslation('config')
   return (
     <>
-      <Heading size="3">{t($ => $.floors.types.hangingJoist)}</Heading>
+      <h3>{t($ => $.floors.types.hangingJoist)}</h3>
 
       {/* Joists Section */}
-      <Heading size="2">{t($ => $.floors.sections.joists)}</Heading>
+      <h2>{t($ => $.floors.sections.joists)}</h2>
       <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
@@ -1081,7 +1080,7 @@ function HangingJoistConfigFields({
       <Separator size="4" />
 
       {/* Subfloor Section */}
-      <Heading size="2">{t($ => $.floors.sections.subfloor)}</Heading>
+      <h2>{t($ => $.floors.sections.subfloor)}</h2>
       <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
@@ -1113,7 +1112,7 @@ function HangingJoistConfigFields({
       <Separator size="4" />
 
       {/* Opening Sides Section */}
-      <Heading size="2">{t($ => $.floors.sections.openingSides)}</Heading>
+      <h2>{t($ => $.floors.sections.openingSides)}</h2>
       <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
