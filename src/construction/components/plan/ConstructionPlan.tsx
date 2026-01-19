@@ -378,7 +378,7 @@ export function ConstructionPlan({
 
       <div className="absolute top-3 left-3 z-10">
         <Card size="1" variant="surface" className="shadow-md">
-          <div className="flex-col gap-2 m--2">
+          <div className="flex flex-col gap-2 m--2">
             {/* View selector - only show if multiple views */}
             {views.length > 1 && (
               <SegmentedControl.Root
@@ -396,7 +396,7 @@ export function ConstructionPlan({
               </SegmentedControl.Root>
             )}
 
-            <div className="grid-cols-6 gap-1 items-center justify-center">
+            <div className="grid grid-cols-6 gap-1 items-center justify-center">
               {/* Mid-cut toggle */}
               <IconButton
                 variant={midCutEnabled ? 'solid' : 'outline'}
@@ -462,9 +462,9 @@ export function ConstructionPlan({
             </div>
 
             {showStrawTypes && (
-              <div className="flex-col p-2 mt--2">
+              <div className="flex flex-col p-2 mt--2">
                 <h4>{t($ => $.plan.strawTypesHeading)}</h4>
-                <div className="grid-cols-2">
+                <div className="grid grid-cols-2">
                   <span className="text-sm text-lime-600">{t($ => $.plan.strawTypes.fullBale)}</span>
                   <span className="text-sm text-purple-600">{t($ => $.plan.strawTypes.partialBale)}</span>
                   <span className="text-sm text-sky-600">{t($ => $.plan.strawTypes.flakes)}</span>

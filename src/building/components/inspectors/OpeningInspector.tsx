@@ -170,7 +170,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
     <div className="flex flex-col gap-4">
       {/* Preview */}
       {storey && wallHeight !== null && (
-        <div className="flex-col items-center">
+        <div className="flex flex-col items-center">
           <OpeningPreview
             opening={opening}
             wallHeight={wallHeight}
@@ -183,7 +183,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
       {/* Basic Properties */}
       <div className="flex flex-col gap-3">
         <div className="items-center justify-between gap-2">
-          <div className="gap-1 items-center">
+          <div className="flex gap-1 items-center">
             <span className="text-sm font-medium text-gray-900">{t($ => $.opening.type)}</span>
             <Tooltip content={t($ => $.opening.typeTooltip)}>
               <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
@@ -253,7 +253,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
         </div>
 
         {/* Dimension inputs in Radix Grid layout */}
-        <div className="grid-cols-[auto_min-content_auto_min-content] grid-rows-2 gap-2 gap-x-3 items-center grow-1">
+        <div className="grid grid-cols-[auto_min-content_auto_min-content] grid-rows-2 gap-2 gap-x-3 items-center grow-1">
           {/* Row 1, Column 1: Width Label */}
           <Label.Root htmlFor="opening-width">
             <span className="text-sm font-medium text-gray-900">{t($ => $.opening.width)}</span>
@@ -365,7 +365,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
       </div>
       {/* Opening Assembly Override */}
       <div className="flex flex-col gap-1">
-        <div className="gap-1 items-center">
+        <div className="flex gap-1 items-center">
           <Label.Root>
             <span className="text-sm font-medium text-gray-900">{t($ => $.opening.openingAssembly)}</span>
           </Label.Root>

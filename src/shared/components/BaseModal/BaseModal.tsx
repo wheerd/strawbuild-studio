@@ -1,8 +1,7 @@
-import { Cross2Icon } from '@radix-ui/react-icons'
+import { DialogTrigger } from '@radix-ui/react-dialog'
 import React from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 
-import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import { FeatureErrorFallback } from '@/shared/components/ErrorBoundary'
@@ -46,7 +45,6 @@ export function BaseModal({
   maxWidth,
   height,
   maxHeight,
-  showCloseButton = true,
   onEscapeKeyDown,
   'aria-describedby': ariaDescribedBy,
   resetKeys = [],
@@ -55,7 +53,7 @@ export function BaseModal({
 }: BaseModalProps): React.JSX.Element {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {trigger}
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent
         aria-describedby={ariaDescribedBy}
         className={cn(sizeClasses[size], className)}
@@ -78,11 +76,6 @@ export function BaseModal({
             {titleIcon}
             {title}
           </div>
-          {showCloseButton && (
-            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onOpenChange?.(false)}>
-              <Cross2Icon className="h-4 w-4" />
-            </Button>
-          )}
         </DialogTitle>
 
         <ErrorBoundary FallbackComponent={FeatureErrorFallback} resetKeys={[open, ...resetKeys]}>

@@ -2,7 +2,7 @@ import { Skeleton, Spinner } from '@radix-ui/themes'
 import React, { Suspense, lazy, use, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { FullScreenModal } from '@/components/ui/FullScreenModal'
+import { FullScreenModal } from '@/components/ui/full-screen-modal'
 import type { ConstructionModel } from '@/construction/model'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 

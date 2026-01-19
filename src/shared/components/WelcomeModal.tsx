@@ -50,7 +50,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
               <div className="flex items-center gap-2">
                 <Logo />
               </div>
-              <div className="gap-2 items-center">
+              <div className="flex gap-2 items-center">
                 <LanguageSwitcher />
                 {!isFirstVisit && (
                   <Dialog.Close>
@@ -63,10 +63,10 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
             </div>
           </Dialog.Title>
 
-          <div className="flex-col mt--2 p-0 gap-3">
+          <div className="flex flex-col mt--2 p-0 gap-3">
             <span>{t($ => $.introduction)}</span>
 
-            <div className="grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
                 <h3>{t($ => $.keyFeatures.title)}</h3>
                 <div className="text-sm">
@@ -98,11 +98,11 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
               </div>
             </div>
 
-            <div className="grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
                 <h3>{t($ => $.demoVideo.title)}</h3>
                 <span className="text-base">{t($ => $.demoVideo.description)}</span>
-                <div className="flex-row gap-4 items-center">
+                <div className="flex flex-row gap-4 items-center">
                   <Link
                     size="2"
                     font-bold
@@ -143,10 +143,10 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                   <ExclamationTriangleIcon />
                 </Callout.Icon>
                 <Callout.Text>
-                  <span className="flex-col gap-2">
+                  <span className="flex flex-col gap-2">
                     <span className="font-bold">{t($ => $.disclaimer.title)}</span>
                     <span>{t($ => $.disclaimer.intro)}</span>
-                    <span className="flex-col ml-4 gap-0">
+                    <span className="flex flex-col ml-4 gap-0">
                       {(
                         t($ => $.disclaimer.items, {
                           returnObjects: true
@@ -160,18 +160,18 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
               </Callout.Root>
             </div>
 
-            <div className="flex-col gap-2 items-center">
+            <div className="flex flex-col gap-2 items-center">
               <Button size="3" onClick={onAccept} style={{ width: '100%' }}>
                 {t($ => $.continueButton)}
               </Button>
               {isFirstVisit && <span className="text-sm text-gray-900 items-center">{t($ => $.reviewInfo)}</span>}
-              <div className="flex-col gap-1 items-center mt-2">
+              <div className="flex flex-col gap-1 items-center mt-2">
                 <span className="text-sm text-gray-900 items-center">
                   {t($ => $.version, {
                     version: VERSION_INFO.version
                   })}
                 </span>
-                <div className="gap-2 items-center justify-center">
+                <div className="flex gap-2 items-center justify-center">
                   <GitHubLogoIcon width="14" height="14" />
                   <Link
                     size="1"

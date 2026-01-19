@@ -132,7 +132,7 @@ export function FloorPlanEditor(): React.JSX.Element {
         data-testid="floor-plan-editor"
       >
         {/* Top Toolbar - Tabs for tool groups + tools */}
-        <div className="z-[100] border-b border-border">
+        <div className="border-b border-border">
           <MainToolbar onInfoClick={openManually} />
         </div>
 

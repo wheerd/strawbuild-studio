@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { StoreyId } from '@/building/model/ids'
-import { FullScreenModal } from '@/components/ui/FullScreenModal'
+import { FullScreenModal } from '@/components/ui/full-screen-modal'
 import { PlanCalibrationCanvas } from '@/editor/plan-overlay/components/PlanCalibrationCanvas'
 import { useFloorPlanActions } from '@/editor/plan-overlay/store'
 import type { FloorPlanOverlay, ImagePoint } from '@/editor/plan-overlay/types'
@@ -222,7 +222,7 @@ export function PlanImportModal({
       onOpenChange={onOpenChange}
       title={existingPlan ? t($ => $.planImport.titleExisting) : t($ => $.planImport.titleNew)}
     >
-      <div className="grid-cols-[30em_1fr] gap-x-2 h-full">
+      <div className="grid grid-cols-[30em_1fr] gap-x-2 h-full">
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-2">
             <span className="font-medium">{t($ => $.planImport.step1.title)}</span>
@@ -260,7 +260,7 @@ export function PlanImportModal({
             </div>
 
             <div className="flex justify-between">
-              <div className="flex-row gap-1 items-center">
+              <div className="flex flex-row gap-1 items-center">
                 <span className="font-medium text-base">{t($ => $.planImport.step2.realDistance)}</span>
                 <LengthField
                   value={realDistance}
@@ -273,7 +273,7 @@ export function PlanImportModal({
                 />
               </div>
 
-              <div className="flex-row gap-1 items-center justify-end">
+              <div className="flex flex-row gap-1 items-center justify-end">
                 <span className="font-medium text-base">{t($ => $.planImport.step2.scale)}</span>
                 <span className="text-base text-gray-900">
                   {mmPerPixel
@@ -297,7 +297,7 @@ export function PlanImportModal({
             <span className="font-medium">{t($ => $.planImport.step3.title)}</span>
             <span className="text-base text-gray-900">{t($ => $.planImport.step3.instructions)}</span>
 
-            <div className="gap-3 items-center">
+            <div className="flex gap-3 items-center">
               <Tooltip
                 content={showOriginHint ? t($ => $.planImport.step3.clickHint) : t($ => $.planImport.step3.pickHint)}
               >
@@ -330,7 +330,7 @@ export function PlanImportModal({
           </div>
 
           <div className="justify-between items-center">
-            <div className="gap-2">
+            <div className="flex gap-2">
               <Button
                 variant="soft"
                 onClick={() => {

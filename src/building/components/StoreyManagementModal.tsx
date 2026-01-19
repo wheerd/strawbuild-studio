@@ -36,7 +36,7 @@ export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): 
 
   return (
     <BaseModal title={t($ => $.storeys.manageFloors)} trigger={trigger} width="60vw" maxWidth="90vw">
-      <div className="grid-cols-1 gap-2">
+      <div className="grid grid-cols-1 gap-2">
         {storeysDisplayOrder.length > 0 ? (
           storeysDisplayOrder.map(storey => (
             <StoreyListItem

@@ -3,7 +3,7 @@ import { Callout, Skeleton, Spinner, Tabs } from '@radix-ui/themes'
 import React, { Suspense, use, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { FullScreenModal } from '@/components/ui/FullScreenModal'
+import { FullScreenModal } from '@/components/ui/full-screen-modal'
 import { ConstructionPartsList } from '@/construction/components/parts/ConstructionPartsList'
 import { ConstructionVirtualPartsList } from '@/construction/components/parts/ConstructionVirtualPartsList'
 import type { ConstructionModel } from '@/construction/model'
@@ -73,14 +73,14 @@ export function ConstructionPartsListModal({
         }}
         className="flex flex-col h-full -mt-2"
       >
-        <div className="flex-shrink-0">
+        <div className="flex flex-shrink-0">
           <Tabs.List>
             <Tabs.Trigger value="materials">{t($ => $.partsListModal.tabs.materials)}</Tabs.Trigger>
             <Tabs.Trigger value="modules">{t($ => $.partsListModal.tabs.modules)}</Tabs.Trigger>
           </Tabs.List>
         </div>
 
-        <Tabs.Content value="materials" className="flex-1 min-h-0 overflow-auto pt-3">
+        <Tabs.Content value="materials" className="flex flex-1 min-h-0 overflow-auto pt-3">
           {partsDataPromise ? (
             <Suspense fallback={<PartsSkeleton />}>
               <MaterialPartsContent partsDataPromise={partsDataPromise} />
@@ -90,7 +90,7 @@ export function ConstructionPartsListModal({
           )}
         </Tabs.Content>
 
-        <Tabs.Content value="modules" className="flex-1 min-h-0 overflow-auto pt-3">
+        <Tabs.Content value="modules" className="flex flex-1 min-h-0 overflow-auto pt-3">
           {partsDataPromise ? (
             <Suspense fallback={<PartsSkeleton />}>
               <ModulePartsContent partsDataPromise={partsDataPromise} />

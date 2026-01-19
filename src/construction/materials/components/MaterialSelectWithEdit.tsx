@@ -12,8 +12,8 @@ export function MaterialSelectWithEdit(props: MaterialSelectProps): React.JSX.El
   const { openConfiguration } = useConfigurationModal()
 
   return (
-    <div className="gap-1 items-center">
-      <div className="flex-col gap-1 grow-1 mr-1">
+    <div className="flex gap-1 items-center">
+      <div className="flex flex-col gap-1 grow-1 mr-1">
         <MaterialSelect {...props} />
       </div>
       <IconButton

@@ -65,12 +65,12 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
   return (
     <BaseModal title={t($ => $.presetDialogs.rectangular.title)} trigger={trigger} size="3" maxWidth="700px">
       <div className="flex flex-col gap-4">
-        <div className="grid-cols-[1fr_auto] gap-5">
+        <div className="grid grid-cols-[1fr_auto] gap-5">
           {/* Left Column - Properties in 2x3 Grid */}
           <div className="flex flex-col gap-3">
             <h2 font-medium>{t($ => $.presetDialogs.rectangular.configuration)}</h2>
 
-            <div className="grid-cols-2 gap-y-3 gap-x-2">
+            <div className="grid grid-cols-2 gap-y-3 gap-x-2">
               {/* Width */}
               <div className="flex flex-col gap-1">
                 <span className="text-sm text-gray-900">{t($ => $.presetDialogs.rectangular.width)}</span>
@@ -211,7 +211,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
         {/* Actions */}
         <div className="justify-end gap-3 mt-4">
           <Dialog.Close>
-            <Button variant="soft" text-gray-900>
+            <Button variant="soft" className="text-gray-900">
               {t($ => $.presetDialogs.rectangular.cancel)}
             </Button>
           </Dialog.Close>

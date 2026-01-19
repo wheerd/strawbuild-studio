@@ -254,7 +254,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
         <Separator size="4" />
 
         {/* Construction Views */}
-        <div className="flex-row gap-3 pt-1 items-center justify-center">
+        <div className="flex flex-row gap-3 pt-1 items-center justify-center">
           <ConstructionPlanModal
             title={t($ => $.roof.constructionPlanTitle)}
             constructionModelFactory={() => Promise.resolve(constructRoof(roof))}

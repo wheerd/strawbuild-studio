@@ -183,11 +183,11 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
 
   const nameKey = selectedMaterial?.nameKey
   return (
-    <div className="flex-col gap-4" style={{ width: '100%' }}>
-      <div className="grid-cols-2 gap-2">
+    <div className="flex flex-col gap-4" style={{ width: '100%' }}>
+      <div className="grid grid-cols-2 gap-2">
         {/* Selector + Actions */}
-        <div className="gap-2 items-center w-full">
-          <div className="flex-col grow-1">
+        <div className="flex gap-2 items-center w-full">
+          <div className="flex flex-col grow-1">
             <MaterialSelect
               value={selectedMaterialId ?? null}
               onValueChange={materialId => {
@@ -280,9 +280,9 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
                   name: selectedMaterial?.name
                 })}
               </AlertDialog.Description>
-              <div className="gap-3 mt-4 justify-end">
+              <div className="flex gap-3 mt-4 justify-end">
                 <AlertDialog.Cancel>
-                  <Button variant="soft" text-gray-900>
+                  <Button variant="soft" className="text-gray-900">
                     {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
@@ -303,9 +303,9 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.materials.resetTitle)}</AlertDialog.Title>
               <AlertDialog.Description>{t($ => $.materials.resetConfirm)}</AlertDialog.Description>
-              <div className="gap-3 mt-4 justify-end">
+              <div className="flex gap-3 mt-4 justify-end">
                 <AlertDialog.Cancel>
-                  <Button variant="soft" text-gray-900>
+                  <Button variant="soft" className="text-gray-900">
                     {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
@@ -319,7 +319,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
           </AlertDialog.Root>
         </div>
 
-        <div className="grid-cols-[auto_1fr] gap-2 items-center">
+        <div className="grid grid-cols-[auto_1fr] gap-2 items-center">
           <Label.Root>
             <span className="text-sm font-medium text-gray-900">{t($ => $.materials.defaultStrawMaterial)}</span>
           </Label.Root>
@@ -339,13 +339,13 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
       {/* Form */}
       {selectedMaterial && (
         <div
-          className="flex-col
+          className="flex flex-col
           gap-3
           p-3
           "
           style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
         >
-          <div className="grid-cols-[4em_1fr] gap-2 gap-x-3 items-center">
+          <div className="grid grid-cols-[4em_1fr] gap-2 gap-x-3 items-center">
             <Label.Root>
               <span className="text-base font-medium text-gray-900">{t($ => $.common.name)}</span>
             </Label.Root>
@@ -358,11 +358,11 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
               size="2"
             />
           </div>
-          <div className="grid-cols-[4em_1fr_auto_1fr_auto_auto] gap-2 gap-x-3 items-center">
+          <div className="grid grid-cols-[4em_1fr_auto_1fr_auto_auto] gap-2 gap-x-3 items-center">
             <Label.Root>
               <span className="text-base font-medium text-gray-900">{t($ => $.common.type)}</span>
             </Label.Root>
-            <div className="gap-2 items-center">
+            <div className="flex gap-2 items-center">
               {Icon && <Icon width="12" height="12" />}
               <span className="text-base text-gray-900">{getMaterialTypeName(selectedMaterial.type)}</span>
             </div>
@@ -441,11 +441,11 @@ function UsageDisplay({ usage }: { usage: MaterialUsage }): React.JSX.Element {
   const { t } = useTranslation('config')
 
   return (
-    <div className="grid-cols-[auto_1fr] gap-2 gap-x-3 items-baseline">
+    <div className="grid grid-cols-[auto_1fr] gap-2 gap-x-3 items-baseline">
       <Label.Root>
         <span className="text-base font-medium text-gray-900">{t($ => $.usage.usedBy)}</span>
       </Label.Root>
-      <div className="gap-1 flex-wrap">
+      <div className="flex gap-1 flex-wrap">
         {usage.isDefaultStraw && (
           <Badge size="2" variant="soft" color="blue">
             {t($ => $.usage.globalDefault_straw)}
@@ -529,12 +529,12 @@ function DimensionalMaterialFields({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex-row justify-between items-end">
+      <div className="flex flex-row justify-between items-end">
         <div className="flex flex-col gap-2">
           <span className="text-base font-medium text-gray-900" id="crossSections">
             {t($ => $.materials.crossSections)}
           </span>
-          <div className="gap-2 flex-wrap" role="list" aria-labelledby="crossSections">
+          <div className="flex gap-2 flex-wrap" role="list" aria-labelledby="crossSections">
             {material.crossSections.map(section => (
               <Badge role="listitem" key={`${section.smallerLength}x${section.biggerLength}`} size="2" variant="soft">
                 <div className="flex items-center gap-1">
@@ -564,7 +564,7 @@ function DimensionalMaterialFields({
             )}
           </div>
         </div>
-        <div className="grid-cols-[5em_auto_5em_auto] gap-2 items-center justify-end">
+        <div className="grid grid-cols-[5em_auto_5em_auto] gap-2 items-center justify-end">
           <LengthField
             value={newDim1}
             onChange={setNewDim1}
@@ -591,12 +591,12 @@ function DimensionalMaterialFields({
           </IconButton>
         </div>
       </div>
-      <div className="flex-row justify-between items-end">
+      <div className="flex flex-row justify-between items-end">
         <div className="flex flex-col gap-2">
           <span className="text-base font-medium text-gray-900" id="stock-lengths">
             {t($ => $.materials.stockLengths)}
           </span>
-          <div className="gap-2 flex-wrap" role="list" aria-labelledby="stock-lengths">
+          <div className="flex gap-2 flex-wrap" role="list" aria-labelledby="stock-lengths">
             {material.lengths.map(length => (
               <Badge role="listitem" key={length} size="2" variant="soft">
                 <div className="flex items-center gap-1">
@@ -626,7 +626,7 @@ function DimensionalMaterialFields({
             )}
           </div>
         </div>
-        <div className="gap-2 items-end">
+        <div className="flex gap-2 items-end">
           <LengthField
             value={newLengthInput}
             onChange={setNewLengthInput}
@@ -710,12 +710,12 @@ function SheetMaterialFields({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex-row justify-between items-end">
+      <div className="flex flex-row justify-between items-end">
         <div className="flex flex-col gap-2">
           <span className="text-base font-medium text-gray-900" id="sheet-sizes">
             {t($ => $.materials.sheetSizes)}
           </span>
-          <div className="gap-2 flex-wrap" role="list" aria-labelledby="sheet-sizes">
+          <div className="flex gap-2 flex-wrap" role="list" aria-labelledby="sheet-sizes">
             {material.sizes.map(size => (
               <Badge role="listitem" key={`${size.smallerLength}x${size.biggerLength}`} size="2" variant="soft">
                 <div className="flex items-center gap-1">
@@ -745,7 +745,7 @@ function SheetMaterialFields({
             )}
           </div>
         </div>
-        <div className="grid-cols-[6em_auto_6em_auto] gap-2 items-center justify-end">
+        <div className="grid grid-cols-[6em_auto_6em_auto] gap-2 items-center justify-end">
           <LengthField
             value={newWidth}
             onChange={setNewWidth}
@@ -772,12 +772,12 @@ function SheetMaterialFields({
           </IconButton>
         </div>
       </div>
-      <div className="flex-row justify-between items-end">
+      <div className="flex flex-row justify-between items-end">
         <div className="flex flex-col gap-2">
           <span className="text-base font-medium text-gray-900" id="sheet-thicknesses">
             {t($ => $.materials.thicknesses)}
           </span>
-          <div className="gap-2 flex-wrap" role="list" aria-labelledby="sheet-thicknesses">
+          <div className="flex gap-2 flex-wrap" role="list" aria-labelledby="sheet-thicknesses">
             {material.thicknesses.map(thickness => (
               <Badge role="listitem" key={thickness} size="2" variant="soft">
                 <div className="flex items-center gap-1">
@@ -807,7 +807,7 @@ function SheetMaterialFields({
             )}
           </div>
         </div>
-        <div className="gap-2 items-end">
+        <div className="flex gap-2 items-end">
           <LengthField
             value={newThickness}
             onChange={setNewThickness}
@@ -879,12 +879,12 @@ function VolumeMaterialFields({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex-row justify-between items-end">
+      <div className="flex flex-row justify-between items-end">
         <div className="flex flex-col gap-2">
           <span className="text-base font-medium text-gray-900" id="available-volumes">
             {t($ => $.materials.availableVolumes)}
           </span>
-          <div className="gap-2 flex-wrap" role="list" aria-labelledby="available-volumes">
+          <div className="flex gap-2 flex-wrap" role="list" aria-labelledby="available-volumes">
             {material.availableVolumes.map(volume => (
               <Badge role="listitem" key={volume} size="2" variant="soft">
                 <div className="flex items-center gap-1">
@@ -915,7 +915,7 @@ function VolumeMaterialFields({
           </div>
         </div>
 
-        <div className="flex-col gap-2 items-end" style={{ minWidth: '14em' }}>
+        <div className="flex flex-col gap-2 items-end" style={{ minWidth: '14em' }}>
           <SegmentedControl.Root
             value={volumeUnit}
             onValueChange={value => {
@@ -926,7 +926,7 @@ function VolumeMaterialFields({
             <SegmentedControl.Item value="liter">{t($ => $.units.liter, { ns: 'common' })}</SegmentedControl.Item>
             <SegmentedControl.Item value="m3">{t($ => $.units.m3, { ns: 'common' })}</SegmentedControl.Item>
           </SegmentedControl.Root>
-          <div className="gap-2 items-end">
+          <div className="flex gap-2 items-end">
             <VolumeField
               value={newVolumeInput}
               onChange={setNewVolumeInput}
@@ -961,7 +961,7 @@ function StrawbaleMaterialFields({
   const { t } = useTranslation('config')
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid-cols-[8em_1fr_8em_1fr] gap-3 gap-x-4">
+      <div className="grid grid-cols-[8em_1fr_8em_1fr] gap-3 gap-x-4">
         <Label.Root>
           <span className="text-sm font-medium text-gray-900">{t($ => $.materials.minBaleLength)}</span>
         </Label.Root>
@@ -1010,7 +1010,7 @@ function StrawbaleMaterialFields({
           size="2"
         />
       </div>
-      <div className="grid-cols-[8em_1fr_8em_1fr] gap-3 gap-x-4">
+      <div className="grid grid-cols-[8em_1fr_8em_1fr] gap-3 gap-x-4">
         <Label.Root>
           <span className="text-sm font-medium text-gray-900">{t($ => $.materials.tolerance)}</span>
         </Label.Root>

@@ -57,7 +57,7 @@ export function FullScreenModal({
           >
             {/* Header - fixed at top */}
             <div
-              className="flex items-center justify-between px-4 py-2 flex-shrink-0"
+              className="flex items-center justify-between px-4 py-2 shrink-0"
               style={{
                 borderBottom: '1px solid var(--gray-6)'
               }}
@@ -81,7 +81,7 @@ export function FullScreenModal({
             </div>
 
             {/* Content - fills remaining space */}
-            <div className="flex-1 min-h-0 overflow-hidden px-4 py-2">{children}</div>
+            <div className="flex flex-1 min-h-0 overflow-hidden px-4 py-2">{children}</div>
           </DialogPrimitive.Content>
         </Theme>
       </DialogPrimitive.Portal>

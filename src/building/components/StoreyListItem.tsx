@@ -137,11 +137,11 @@ export function StoreyListItem({
     <Card style={isActive ? { background: 'var(--accent-5)' } : {}}>
       <div className="flex items-center gap-2">
         {/* Level indicator */}
-        <div className="flex-col items-center gap-0 w-[4rem]">
+        <div className="flex flex-col items-center gap-0 w-[4rem]">
           <Code variant="ghost" size="2" color={getLevelColor(storey.level)} font-bold>
             L{storey.level}
           </Code>
-          <Code variant="ghost" size="1" text-gray-900>
+          <Code variant="ghost" size="1" className="text-gray-900">
             {storey.level === 0
               ? t($ => $.storeys.ground)
               : storey.level > 0
@@ -151,7 +151,7 @@ export function StoreyListItem({
         </div>
 
         {/* Editable name */}
-        <div className="flex-col gap-1 grow-1">
+        <div className="flex flex-col gap-1 grow-1">
           <span className="text-sm font-medium text-gray-900">{t($ => $.storeys.name)}</span>
           <TextField.Root
             ref={nameFieldRef}
@@ -206,7 +206,7 @@ export function StoreyListItem({
         </div>
 
         {/* Action buttons */}
-        <div className="gap-1 items-center">
+        <div className="flex gap-1 items-center">
           <div className="flex flex-col gap-1">
             <IconButton size="1" onClick={handleMoveUp} disabled={!canMoveUp} title={t($ => $.storeys.moveUp)}>
               <ChevronUpIcon />
@@ -231,9 +231,9 @@ export function StoreyListItem({
               <AlertDialog.Title>{t($ => $.storeys.deleteFloorTitle)}</AlertDialog.Title>
               <AlertDialog.Description size="2">{t($ => $.storeys.deleteFloorConfirm)}</AlertDialog.Description>
 
-              <div className="gap-3 justify-end">
+              <div className="flex gap-3 justify-end">
                 <AlertDialog.Cancel>
-                  <Button variant="soft" text-gray-900>
+                  <Button variant="soft" className="text-gray-900">
                     {t($ => $.actions.cancel)}
                   </Button>
                 </AlertDialog.Cancel>

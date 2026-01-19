@@ -1325,7 +1325,7 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
           const groups = createMaterialGroups(material, materialParts)
           if (groups.length === 0) return null
           return (
-            <div key={materialId} className="flex-col gap-4">
+            <div key={materialId} className="flex flex-col gap-4">
               {groups.map(group => (
                 <div key={group.key} ref={setDetailRef(group.key)}>
                   <MaterialGroupCard

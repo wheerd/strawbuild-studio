@@ -66,7 +66,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
   return (
     <div className="flex flex-col gap-4">
       {/* Basic Properties */}
-      <div className="grid-cols-[auto_1fr] gap-3">
+      <div className="grid grid-cols-[auto_1fr] gap-3">
         {/* Wall Assembly */}
         <div className="flex items-center gap-1">
           <Label.Root>
@@ -202,9 +202,9 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
       {/* Openings */}
       <div className="flex flex-col gap-2">
         <h2>{t($ => $.perimeterWall.openings)}</h2>
-        <div className="grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <Card size="1" variant="surface">
-            <div className="flex-col gap-0 m--1">
+            <div className="flex flex-col gap-0 m--1">
               <span className="items-center text-base font-bold">
                 {openings.filter(o => o.openingType === 'door').length}
               </span>
@@ -212,7 +212,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
             </div>
           </Card>
           <Card size="1" variant="surface">
-            <div className="flex-col gap-0 m--1">
+            <div className="flex flex-col gap-0 m--1">
               <span className="items-center text-base font-bold">
                 {openings.filter(o => o.openingType === 'window').length}
               </span>
@@ -220,7 +220,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
             </div>
           </Card>
           <Card size="1" variant="surface">
-            <div className="flex-col gap-0 m--1">
+            <div className="flex flex-col gap-0 m--1">
               <span className="items-center text-base font-bold">
                 {openings.filter(o => o.openingType === 'passage').length}
               </span>

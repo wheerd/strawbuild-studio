@@ -3,7 +3,7 @@ import { Callout, Skeleton, Spinner, Tabs } from '@radix-ui/themes'
 import React, { Suspense, use, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { FullScreenModal } from '@/components/ui/FullScreenModal'
+import { FullScreenModal } from '@/components/ui/full-screen-modal'
 import { ConstructionPartsList } from '@/construction/components/parts/ConstructionPartsList'
 import { ConstructionVirtualPartsList } from '@/construction/components/parts/ConstructionVirtualPartsList'
 import { IssueDescriptionPanel } from '@/construction/components/plan/IssueDescriptionPanel'
@@ -159,18 +159,18 @@ function ModalContent({
       }}
       className="flex flex-col h-full -mt-2 "
     >
-      <div className="flex-shrink-0">
+      <div className="flex flex-shrink-0">
         <Tabs.List>
           <Tabs.Trigger value="plan">{t($ => $.planModal.tabs.planIssues)}</Tabs.Trigger>
           <Tabs.Trigger value="parts">{t($ => $.planModal.tabs.partsList)}</Tabs.Trigger>
           <Tabs.Trigger value="modules">{t($ => $.planModal.tabs.modules)}</Tabs.Trigger>
         </Tabs.List>
       </div>
-      <Tabs.Content value="plan" className="flex-1 min-h-0 pt-3">
+      <Tabs.Content value="plan" className="flex flex-1 min-h-0 pt-3">
         <div className="flex flex-col gap-3 h-full overflow-hidden">
           <div
             ref={containerRef}
-            className="flex-1 min-h-0 overflow-hidden border rounded-md"
+            className="flex flex-1 min-h-0 overflow-hidden border rounded-md"
             style={{
               position: 'relative',
               borderColor: 'var(--gray-6)'
@@ -193,7 +193,7 @@ function ModalContent({
             <PartHighlightPanel />
           </div>
 
-          <div className="flex-shrink-0">
+          <div className="flex flex-shrink-0">
             {modelPromise ? (
               <Suspense fallback={<PlanSkeleton />}>
                 <IssueDescriptionPanel modelPromise={modelPromise} />
@@ -202,7 +202,7 @@ function ModalContent({
           </div>
         </div>
       </Tabs.Content>
-      <Tabs.Content value="parts" className="flex-1 min-h-0 overflow-auto pt-3">
+      <Tabs.Content value="parts" className="flex flex-1 min-h-0 overflow-auto pt-3">
         {partsDataPromise ? (
           <Suspense fallback={<PartsSkeleton />}>
             <PartsTabContent partsDataPromise={partsDataPromise} onViewInPlan={handleViewInPlan} />
@@ -211,7 +211,7 @@ function ModalContent({
           <PartsSkeleton />
         )}
       </Tabs.Content>
-      <Tabs.Content value="modules" className="flex-1 min-h-0 overflow-auto pt-3">
+      <Tabs.Content value="modules" className="flex flex-1 min-h-0 overflow-auto pt-3">
         {partsDataPromise ? (
           <Suspense fallback={<PartsSkeleton />}>
             <ModulesTabContent partsDataPromise={partsDataPromise} onViewInPlan={handleViewInPlan} />

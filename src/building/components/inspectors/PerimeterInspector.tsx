@@ -234,7 +234,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
           </Callout.Root>
         )}
 
-        <div className="flex-row gap-3 pt-1 items-center justify-center">
+        <div className="flex flex-row gap-3 pt-1 items-center justify-center">
           <TopDownPlanModal
             title={t($ => $.perimeter.constructionPlanTitle)}
             factory={() => Promise.resolve(constructPerimeter(perimeter))}

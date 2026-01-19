@@ -34,14 +34,14 @@ export function FeatureErrorFallback({ error, resetErrorBoundary }: FallbackProp
       </Callout>
 
       <div className="flex gap-2 w-full max-w-[500px]">
-        <Button className="flex-1" onClick={resetErrorBoundary}>
+        <Button className="flex flex-1" onClick={resetErrorBoundary}>
           <ReloadIcon className="mr-2" />
           {t($ => $.feature.retry)}
         </Button>
 
         <Button
           variant="secondary"
-          className="flex-1"
+          className="flex flex-1"
           onClick={() => {
             window.location.reload()
           }}

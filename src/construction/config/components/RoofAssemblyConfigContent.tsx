@@ -35,7 +35,7 @@ function MonolithicRoofConfigForm({ config, onUpdate }: MonolithicRoofConfigForm
     <div className="flex flex-col gap-3">
       <h2>{t($ => $.roofs.sections.monolithicConfiguration)}</h2>
 
-      <div className="grid-cols-2 gap-2 gap-x-3">
+      <div className="grid grid-cols-2 gap-2 gap-x-3">
         <div className="flex flex-col gap-1">
           <Label.Root>
             <span className="text-sm font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
@@ -84,7 +84,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
 
       <h2>{t($ => $.roofs.sections.straw)}</h2>
 
-      <div className="grid-cols-2 gap-2 gap-x-3">
+      <div className="grid grid-cols-2 gap-2 gap-x-3">
         <div className="flex flex-col gap-1">
           <Label.Root>
             <span className="text-sm font-medium text-gray-900">{t($ => $.common.layerThickness)}</span>
@@ -122,7 +122,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
 
       {/* Purlin Configuration */}
       <h2>{t($ => $.roofs.sections.purlins)}</h2>
-      <div className="grid-cols-2 gap-2 gap-x-3">
+      <div className="grid grid-cols-2 gap-2 gap-x-3">
         <div className="flex flex-col gap-1">
           <Label.Root>
             <span className="text-sm font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
@@ -206,7 +206,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
 
       {/* Rafter Configuration */}
       <h2>{t($ => $.roofs.sections.rafters)}</h2>
-      <div className="grid-cols-2 gap-2 gap-x-3">
+      <div className="grid grid-cols-2 gap-2 gap-x-3">
         <div className="flex flex-col gap-1">
           <Label.Root>
             <span className="text-sm font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
@@ -275,7 +275,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
 
       <h2>{t($ => $.roofs.sections.decking)}</h2>
 
-      <div className="grid-cols-2 gap-2 gap-x-3">
+      <div className="grid grid-cols-2 gap-2 gap-x-3">
         <div className="flex flex-col gap-1">
           <Label.Root>
             <span className="text-sm font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
@@ -311,7 +311,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
 
       <h2>{t($ => $.roofs.sections.ceilingSheathing)}</h2>
 
-      <div className="grid-cols-2 gap-2 gap-x-3">
+      <div className="grid grid-cols-2 gap-2 gap-x-3">
         <div className="flex flex-col gap-1">
           <Label.Root>
             <span className="text-sm font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
@@ -540,15 +540,15 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
 
   return (
     <div
-      className="flex-col
+      className="flex flex-col
       gap-3
       p-3
       "
       style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
     >
       {/* Basic Info - Full Width */}
-      <div className="grid-cols-2 gap-2 gap-x-3 items-center">
-        <div className="grid-cols-[auto_1fr] gap-x-2 items-center">
+      <div className="grid grid-cols-2 gap-2 gap-x-3 items-center">
+        <div className="grid grid-cols-[auto_1fr] gap-x-2 items-center">
           <Label.Root>
             <span className="text-base font-medium text-gray-900">{t($ => $.common.name)}</span>
           </Label.Root>
@@ -564,18 +564,18 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
           />
         </div>
 
-        <div className="grid-cols-2 gap-2 gap-x-3 items-center">
-          <div className="gap-2 items-center">
+        <div className="grid grid-cols-2 gap-2 gap-x-3 items-center">
+          <div className="flex gap-2 items-center">
             <Label.Root>
               <span className="text-base font-medium text-gray-900">{t($ => $.common.type)}</span>
             </Label.Root>
-            <div className="gap-2 items-center">
+            <div className="flex gap-2 items-center">
               {React.createElement(getRoofAssemblyTypeIcon(assembly.type))}
               <span className="text-base text-gray-900">{t($ => $.roofs.types[assembly.type])}</span>
             </div>
           </div>
 
-          <div className="gap-2 items-center">
+          <div className="flex gap-2 items-center">
             <Label.Root>
               <span className="text-base font-medium text-gray-900">{t($ => $.common.totalThickness)}</span>
             </Label.Root>
@@ -585,7 +585,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
       </div>
       <Separator size="4" />
       {/* Two Column Layout */}
-      <div className="grid-cols-2 gap-4 style={{ gridTemplateColumns: '1fr 1fr' }}">
+      <div className="grid grid-cols-2 gap-4 style={{ gridTemplateColumns: '1fr 1fr' }}">
         {/* Left Column - Type-specific configuration */}
         <div className="flex flex-col gap-3">
           {assembly.type === 'monolithic' && <MonolithicRoofConfigForm config={assembly} onUpdate={updateConfig} />}
@@ -730,12 +730,12 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
   }, [resetRoofAssembliesToDefaults, selectedAssemblyId, roofAssemblies])
 
   return (
-    <div className="flex-col gap-4" style={{ width: '100%' }}>
+    <div className="flex flex-col gap-4" style={{ width: '100%' }}>
       {/* Selector + Actions */}
       <div className="flex flex-col gap-2">
-        <div className="grid-cols-2 gap-2">
-          <div className="gap-2 items-end">
-            <div className="flex-col gap-1 grow-1">
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex gap-2 items-end">
+            <div className="flex flex-col gap-1 grow-1">
               <RoofAssemblySelect
                 value={selectedAssemblyId as RoofAssemblyId | undefined}
                 onValueChange={setSelectedAssemblyId}
@@ -798,9 +798,9 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
                 <AlertDialog.Description>
                   {t($ => $.roofs.deleteConfirm, { name: selectedAssembly?.name })}
                 </AlertDialog.Description>
-                <div className="gap-3 mt-4 justify-end">
+                <div className="flex gap-3 mt-4 justify-end">
                   <AlertDialog.Cancel>
-                    <Button variant="soft" text-gray-900>
+                    <Button variant="soft" className="text-gray-900">
                       {t($ => $.common.cancel)}
                     </Button>
                   </AlertDialog.Cancel>
@@ -822,9 +822,9 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
               <AlertDialog.Content>
                 <AlertDialog.Title>{t($ => $.roofs.resetTitle)}</AlertDialog.Title>
                 <AlertDialog.Description>{t($ => $.roofs.resetConfirm)}</AlertDialog.Description>
-                <div className="gap-3 mt-4 justify-end">
+                <div className="flex gap-3 mt-4 justify-end">
                   <AlertDialog.Cancel>
-                    <Button variant="soft" text-gray-900>
+                    <Button variant="soft" className="text-gray-900">
                       {t($ => $.common.cancel)}
                     </Button>
                   </AlertDialog.Cancel>
@@ -838,7 +838,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
             </AlertDialog.Root>
           </div>
 
-          <div className="grid-cols-[auto_1fr] gap-2 items-center">
+          <div className="grid grid-cols-[auto_1fr] gap-2 items-center">
             <Label.Root>
               <div className="flex items-center gap-1">
                 <span className="text-sm font-medium text-gray-900">{t($ => $.roofs.defaultRoofAssembly)}</span>
@@ -881,11 +881,11 @@ function UsageDisplay({ usage }: { usage: RoofAssemblyUsage }): React.JSX.Elemen
   const { t } = useTranslation('config')
 
   return (
-    <div className="grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
+    <div className="grid grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
       <Label.Root>
         <span className="text-base font-medium text-gray-900">{t($ => $.usage.usedBy)}</span>
       </Label.Root>
-      <div className="gap-1 flex-wrap">
+      <div className="flex gap-1 flex-wrap">
         {usage.isDefault && (
           <Badge size="2" variant="soft" color="blue">
             {t($ => $.usage.globalDefault_roof)}

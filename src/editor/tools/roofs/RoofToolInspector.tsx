@@ -114,7 +114,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
                   }}
                   min={0}
                   max={90}
-                  className="flex-1 bg-transparent px-2 text-right outline-none min-w-0 h-full text-xs"
+                  className="flex flex-1 bg-transparent px-2 text-right outline-none min-w-0 h-full text-xs"
                 />
                 <span className="text-muted-foreground px-1">°</span>
               </div>
@@ -138,7 +138,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
                   min={0}
                   max={100}
                   step={1}
-                  className="flex-1 bg-transparent px-2 text-right outline-none min-w-0 h-full text-xs"
+                  className="flex flex-1 bg-transparent px-2 text-right outline-none min-w-0 h-full text-xs"
                 />
                 <span className="text-muted-foreground px-1">%</span>
               </div>

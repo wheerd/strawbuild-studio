@@ -239,7 +239,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
       </Callout.Root>
       {/* Dimension Mode Toggle */}
       <div className="items-center justify-between gap-2">
-        <div className="gap-1 items-center">
+        <div className="flex gap-1 items-center">
           <span className="text-sm font-medium text-gray-900">{t($ => $.addOpening.dimensionMode)}</span>
           <Tooltip
             content={
@@ -257,7 +257,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
         </SegmentedControl.Root>
       </div>
       {/* Preview */}
-      <div className="flex-col items-center">
+      <div className="flex flex-col items-center">
         <OpeningPreview
           opening={{
             openingType: state.openingType,
@@ -273,7 +273,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
       </div>
       {/* Type Selection */}
       <div className="items-center justify-between gap-2">
-        <div className="gap-1 items-center">
+        <div className="flex gap-1 items-center">
           <span className="text-sm font-medium text-gray-900">{t($ => $.addOpening.openingType)}</span>
         </div>
         <SegmentedControl.Root value={state.openingType} onValueChange={handleTypeChange} size="2">
@@ -307,7 +307,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
         <span className="text-sm text-gray-900">{formatLength(currentPadding)}</span>
       </div>
       {/* Dimension inputs in Radix Grid layout */}
-      <div className="grid-cols-[auto_min-content_auto_min-content] grid-rows-2 gap-2 gap-x-3 items-center">
+      <div className="grid grid-cols-[auto_min-content_auto_min-content] grid-rows-2 gap-2 gap-x-3 items-center">
         {/* Row 1, Column 1: Width Label */}
         <Label.Root htmlFor="opening-width">
           <span className="text-sm font-medium text-gray-900">{t($ => $.addOpening.width)}</span>
@@ -438,7 +438,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
       {/* Presets Section */}
       <div className="flex flex-col gap-2">
         <span className="text-sm font-medium text-gray-900">{t($ => $.addOpening.presets.title)}</span>
-        <div className="grid-cols-6 gap-1">
+        <div className="grid grid-cols-6 gap-1">
           {ALL_OPENING_PRESETS.map((preset: PresetConfig, index: number) => (
             <IconButton
               key={index}
@@ -470,7 +470,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
       <Separator size="4" />
       {/* Opening Assembly Selector */}
       <div className="flex flex-col gap-1">
-        <div className="gap-1 items-center">
+        <div className="flex gap-1 items-center">
           <span className="text-sm font-medium text-gray-900">{t($ => $.addOpening.openingAssembly)}</span>
           <Tooltip content={t($ => $.addOpening.openingAssemblyTooltip)}>
             <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />

@@ -1,9 +1,11 @@
-import { Button, Dialog, SegmentedControl } from '@radix-ui/themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { PerimeterReferenceSide } from '@/building/model'
 import type { WallAssemblyId } from '@/building/model/ids'
+import { Button } from '@/components/ui/button'
+import { DialogClose } from '@/components/ui/dialog'
+import { SegmentedControl } from '@/components/ui/segmented-control'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import {
@@ -66,9 +68,9 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
   return (
     <BaseModal title={t($ => $.presetDialogs.lShaped.title)} trigger={trigger} size="4" maxWidth="800px">
       <div className="flex flex-col gap-4">
-        <div className="grid-cols-[1fr_auto] gap-5">
+        <div className="flex flex-row gap-5">
           {/* Left Column - Configuration */}
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 grow">
             <h2 font-medium>{t($ => $.presetDialogs.lShaped.configuration)}</h2>
 
             {/* Main Rectangle Dimensions */}
@@ -76,8 +78,8 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
               <span className="text-base font-medium text-gray-900">
                 {t($ => $.presetDialogs.lShaped.mainRectangle)}
               </span>
-              <div className="grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1 col-auto">
                   <span className="text-sm text-gray-900">{t($ => $.presetDialogs.lShaped.width1)}</span>
                   <LengthField
                     value={config.width1}
@@ -94,7 +96,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                   />
                 </div>
 
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 col-auto">
                   <span className="text-sm text-gray-900">{t($ => $.presetDialogs.lShaped.length1)}</span>
                   <LengthField
                     value={config.length1}
@@ -118,7 +120,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
               <span className="text-base font-medium text-gray-900">
                 {t($ => $.presetDialogs.lShaped.extensionRectangle)}
               </span>
-              <div className="grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
                   <span className="text-sm text-gray-900">{t($ => $.presetDialogs.lShaped.width2)}</span>
 
@@ -183,7 +185,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
             </div>
 
             {/* Construction Settings */}
-            <div className="grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               {/* Wall Thickness */}
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-1">
@@ -291,16 +293,14 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
 
         {/* Actions */}
         <div className="justify-end gap-3 mt-4">
-          <Dialog.Close>
-            <Button variant="soft" text-gray-900>
-              {t($ => $.presetDialogs.lShaped.cancel)}
-            </Button>
-          </Dialog.Close>
-          <Dialog.Close>
+          <DialogClose asChild>
+            <Button variant="ghost">{t($ => $.presetDialogs.lShaped.cancel)}</Button>
+          </DialogClose>
+          <DialogClose asChild>
             <Button onClick={handleConfirm} disabled={!isValid}>
               {t($ => $.presetDialogs.lShaped.confirm)}
             </Button>
-          </Dialog.Close>
+          </DialogClose>
         </div>
       </div>
     </BaseModal>

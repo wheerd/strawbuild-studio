@@ -158,11 +158,11 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
   }, [resetRingBeamAssembliesToDefaults, selectedAssemblyId, ringBeamAssemblies])
 
   return (
-    <div className="flex-col gap-4 w-full">
+    <div className="flex flex-col gap-4 w-full">
       {/* Selector + Actions */}
       <div className="flex flex-col gap-2">
-        <div className="gap-2 items-end">
-          <div className="flex-col gap-1 grow-1">
+        <div className="flex gap-2 items-end">
+          <div className="flex flex-col gap-1 grow-1">
             <RingBeamAssemblySelect
               value={selectedAssemblyId as RingBeamAssemblyId | undefined}
               onValueChange={value => {
@@ -237,9 +237,9 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
               <AlertDialog.Description>
                 {t($ => $.ringBeams.deleteConfirm, { name: selectedAssembly?.name })}
               </AlertDialog.Description>
-              <div className="gap-3 mt-4 justify-end">
+              <div className="flex gap-3 mt-4 justify-end">
                 <AlertDialog.Cancel>
-                  <Button variant="soft" text-gray-900>
+                  <Button variant="soft" className="text-gray-900">
                     {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
@@ -261,9 +261,9 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.ringBeams.resetTitle)}</AlertDialog.Title>
               <AlertDialog.Description>{t($ => $.ringBeams.resetConfirm)}</AlertDialog.Description>
-              <div className="gap-3 mt-4 justify-end">
+              <div className="flex gap-3 mt-4 justify-end">
                 <AlertDialog.Cancel>
-                  <Button variant="soft" text-gray-900>
+                  <Button variant="soft" className="text-gray-900">
                     {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
@@ -287,7 +287,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
       {/* Defaults Section */}
       <Separator size="4" />
       <div className="flex flex-col gap-3">
-        <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
+        <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
           <div className="flex items-center gap-1">
             <Label.Root>
               <span className="text-base font-medium text-gray-900">{t($ => $.ringBeams.defaultBasePlate)}</span>
@@ -351,14 +351,14 @@ function ConfigForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.R
 
   return (
     <div
-      className="flex-col
+      className="flex flex-col
       gap-3
       p-3
       "
       style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
     >
-      <div className="grid-cols-2 gap-2 gap-x-3 items-center">
-        <div className="grid-cols-[auto_1fr] gap-x-2 items-center">
+      <div className="grid grid-cols-2 gap-2 gap-x-3 items-center">
+        <div className="grid grid-cols-[auto_1fr] gap-x-2 items-center">
           <Label.Root>
             <span className="text-base font-medium text-gray-900">{t($ => $.common.name)}</span>
           </Label.Root>
@@ -374,18 +374,18 @@ function ConfigForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.R
           />
         </div>
 
-        <div className="grid-cols-2 gap-2 gap-x-3 items-center">
-          <div className="gap-2 items-center">
+        <div className="grid grid-cols-2 gap-2 gap-x-3 items-center">
+          <div className="flex gap-2 items-center">
             <Label.Root>
               <span className="text-base font-medium text-gray-900">{t($ => $.common.type)}</span>
             </Label.Root>
-            <div className="gap-2 items-center">
+            <div className="flex gap-2 items-center">
               {React.createElement(getRingBeamTypeIcon(assembly.type))}
               <span className="text-base text-gray-900">{t($ => $.ringBeams.types[assembly.type])}</span>
             </div>
           </div>
 
-          <div className="gap-2 items-center">
+          <div className="flex gap-2 items-center">
             <Label.Root>
               <span className="text-base font-medium text-gray-900">{t($ => $.common.totalHeight)}</span>
             </Label.Root>
@@ -413,7 +413,7 @@ function FullRingBeamFields({
   const { t } = useTranslation('config')
   return (
     <>
-      <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
+      <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
@@ -480,7 +480,7 @@ function DoubleRingBeamFields({
 }) {
   const { t } = useTranslation('config')
   return (
-    <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
+    <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
       <Label.Root>
         <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
       </Label.Root>
@@ -600,7 +600,7 @@ function BrickRingBeamFields({
     <>
       <h2>{t($ => $.ringBeams.sections.stemWall)}</h2>
 
-      <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
+      <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.common.height)}</span>
         </Label.Root>
@@ -646,7 +646,7 @@ function BrickRingBeamFields({
 
       <h2>{t($ => $.ringBeams.sections.insulation)}</h2>
 
-      <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
+      <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
         </Label.Root>
@@ -678,7 +678,7 @@ function BrickRingBeamFields({
 
       <h2>{t($ => $.ringBeams.sections.beam)}</h2>
 
-      <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
+      <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
         </Label.Root>
@@ -724,7 +724,7 @@ function BrickRingBeamFields({
 
       <h2>{t($ => $.ringBeams.sections.waterproofing)}</h2>
 
-      <div className="grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
+      <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
         </Label.Root>
@@ -769,11 +769,11 @@ function UsageDisplay({ usage }: { usage: RingBeamAssemblyUsage }): React.JSX.El
   const { t } = useTranslation('config')
 
   return (
-    <div className="grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
+    <div className="grid grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
       <Label.Root>
         <span className="text-base font-medium text-gray-900">{t($ => $.usage.usedBy)}</span>
       </Label.Root>
-      <div className="gap-1 flex-wrap">
+      <div className="flex gap-1 flex-wrap">
         {usage.isDefaultBase && (
           <Badge size="2" variant="soft" color="blue">
             {t($ => $.usage.globalDefault_ringBeamBase)}

@@ -111,7 +111,7 @@ export function LayerListEditor({
             {t($ => $.layers.totalThicknessLabel, { thickness: totalThickness })}
           </span>
         </div>
-        <div className="gap-1">
+        <div className="flex gap-1">
           {layerCopySources && (
             <DropdownMenu.Root>
               <DropdownMenu.Trigger>
@@ -216,7 +216,7 @@ export function LayerListEditor({
       )}
 
       {hasLayers && (
-        <div className="grid-cols-1 gap-2 items-center justify-center">
+        <div className="grid grid-cols-1 gap-2 items-center justify-center">
           <div className="flex justify-center">
             <span className="text-sm text-gray-900">{beforeLabel}</span>
           </div>
@@ -296,7 +296,7 @@ function LayerCard({
   return (
     <Card variant="surface" style={{ padding: '0.75rem' }}>
       <div className="flex flex-col gap-2">
-        <div className="grid-cols-[auto_1fr_auto_auto_auto] items-center gap-1">
+        <div className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-1">
           <LayerTypeIcon type={layer.type} />
           <TextField.Root
             title={t($ => $.common.name)}
@@ -336,7 +336,7 @@ function LayerCard({
             title={t($ => $.layers.overlap)}
           />
 
-          <div className="gap-1">
+          <div className="flex gap-1">
             <IconButton
               size="1"
               variant="soft"
@@ -385,7 +385,7 @@ function LayerCard({
 
 function Field({ label, control }: { label: string; control: React.ReactNode }): React.JSX.Element {
   return (
-    <div className="grid-cols-[auto_1fr] gap-2 items-center">
+    <div className="grid grid-cols-[auto_1fr] gap-2 items-center">
       <span className="text-sm text-gray-900">{label}</span>
       {control}
     </div>
@@ -452,7 +452,7 @@ function StripedLayerFields({
           </Select.Root>
         }
       />
-      <div className="grid-cols-[auto_auto_auto_1fr] items-center gap-x-2 gap-y-2">
+      <div className="grid grid-cols-[auto_auto_auto_1fr] items-center gap-x-2 gap-y-2">
         <span className="text-sm text-gray-900">{t($ => $.layers.stripe)}</span>
         <LengthField
           value={layer.stripeWidth}
