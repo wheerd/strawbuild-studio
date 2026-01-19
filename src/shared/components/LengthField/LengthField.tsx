@@ -87,7 +87,7 @@ export const LengthField = forwardRef<HTMLInputElement, LengthFieldProps>(functi
   return (
     <div
       className={cn(
-        'border-input bg-background ring-offset-background focus-within:ring-ring flex items-center rounded-md border focus-within:ring-2 focus-within:ring-offset-2',
+        'border-input bg-background ring-offset-background focus-within:ring-ring flex min-w-25 items-center rounded-md border focus-within:ring-2 focus-within:ring-offset-2',
         sizeClasses[size],
         !isValid && 'border-destructive',
         disabled && 'cursor-not-allowed opacity-50',
@@ -107,20 +107,20 @@ export const LengthField = forwardRef<HTMLInputElement, LengthFieldProps>(functi
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         disabled={disabled}
-        className={cn('min-w-0 flex-1 bg-transparent px-2 text-right outline-none', sizeClasses[size])}
+        className={cn('w-[5em] min-w-0 flex-1 bg-transparent px-2 text-right outline-none', sizeClasses[size])}
         {...props}
       />
-      <div className="flex items-center gap-px pl-1">
+      <div className="ml--4 flex h-full items-center gap-px">
         <span className="text-muted-foreground text-xs">{unit}</span>
 
-        <div className="ml-1 flex flex-col">
+        <div className="ml-1 flex h-full flex-col">
           <Button
             type="button"
             variant="outline"
             size="icon"
             disabled={disabled || !canStepUp}
             onClick={stepUp}
-            className="border-input h-1/2 w-8 rounded-l-none rounded-br-none border-b-[0.5px] border-l focus-visible:relative"
+            className="border-input h-1/2 w-6 rounded-l-none rounded-br-none border-b-[0.5px] border-l focus-visible:relative"
             tabIndex={-1}
           >
             <ChevronUpIcon className="h-2.5 w-2.5" />
@@ -128,7 +128,7 @@ export const LengthField = forwardRef<HTMLInputElement, LengthFieldProps>(functi
 
           <Button
             type="button"
-            className="border-input h-1/2 w-8 rounded-l-none rounded-tr-none border-t-[0.5px] border-l focus-visible:relative"
+            className="border-input h-1/2 w-6 rounded-l-none rounded-tr-none border-t-[0.5px] border-l focus-visible:relative"
             variant="outline"
             size="icon"
             disabled={disabled || !canStepDown}

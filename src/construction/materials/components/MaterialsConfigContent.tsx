@@ -18,6 +18,7 @@ import { AlertDialog } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { Card } from '@/components/ui/card'
 import { DropdownMenu } from '@/components/ui/dropdown-menu'
 import { SegmentedControl } from '@/components/ui/segmented-control'
 import { TextField } from '@/components/ui/text-field'
@@ -36,6 +37,7 @@ import { strawbale } from '@/construction/materials/material'
 import { useMaterialActions, useMaterials } from '@/construction/materials/store'
 import { type MaterialUsage, useMaterialUsage } from '@/construction/materials/usage'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
+import { NumberField } from '@/shared/components/NumberField'
 import { VolumeField } from '@/shared/components/VolumeField/VolumeField'
 import type { Length } from '@/shared/geometry'
 import { useFormatters } from '@/shared/i18n/useFormatters'
@@ -341,10 +343,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
       </div>
       {/* Form */}
       {selectedMaterial && (
-        <div
-          className="flex flex-col gap-3 p-3"
-          style={{ border: '1px solid var(--color-gray-600)', borderRadius: 'var(--radius-2)' }}
-        >
+        <Card className="flex flex-col gap-3 p-3">
           <div className="grid grid-cols-[4em_1fr] items-center gap-2 gap-x-3">
             <Label.Root>
               <span className="text-base font-medium text-gray-900">{t($ => $.common.name)}</span>
@@ -380,22 +379,20 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             <Label.Root>
               <span className="text-base font-medium text-gray-900">{t($ => $.common.density)}</span>
             </Label.Root>
-            <TextField.Root
-              type="number"
-              value={selectedMaterial.density?.toString() ?? ''}
-              onChange={e => {
-                const next = e.target.value
-                const parsed = Number(next)
-                handleUpdate({ density: Number.isNaN(parsed) || parsed === 0 ? undefined : parsed })
+            <NumberField.Root
+              value={selectedMaterial.density}
+              onChange={value => {
+                handleUpdate({ density: value })
               }}
               placeholder="—"
-              style={{ textAlign: 'right', width: '6em' }}
             >
-              <TextField.Input min="0" step="1" />
-              <TextField.Slot side="right" style={{ paddingInline: '6px', pointerEvents: 'none' }}>
-                <span className="pointer-events-none text-sm text-gray-900">{t($ => $.common.densityUnit)}</span>
-              </TextField.Slot>
-            </TextField.Root>
+              <NumberField.Input min="0" step="1" className="w-20 text-right" />
+              <NumberField.Slot side="right" className="ml--4 pointer-events-none px-1">
+                <span className="text-muted-foreground pointer-events-none text-sm">
+                  {t($ => $.common.densityUnit)}
+                </span>
+              </NumberField.Slot>
+            </NumberField.Root>
           </div>
 
           {selectedMaterial.type === 'dimensional' && (
@@ -413,7 +410,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
           {selectedMaterial.type === 'strawbale' && (
             <StrawbaleMaterialFields material={selectedMaterial} onUpdate={handleUpdate} />
           )}
-        </div>
+        </Card>
       )}
       {!selectedMaterial && materials.length === 0 && (
         <div className="items-center justify-center p-5">
@@ -527,7 +524,7 @@ function DimensionalMaterialFields({
           <span className="text-base font-medium text-gray-900" id="crossSections">
             {t($ => $.materials.crossSections)}
           </span>
-          <div className="flex flex-wrap gap-2" role="list" aria-labelledby="crossSections">
+          <div className="flex grow flex-wrap gap-2" role="list" aria-labelledby="crossSections">
             {material.crossSections.map(section => (
               <Badge size="sm" role="listitem" key={`${section.smallerLength}x${section.biggerLength}`} variant="soft">
                 <div className="flex items-center gap-1">
@@ -557,7 +554,7 @@ function DimensionalMaterialFields({
             )}
           </div>
         </div>
-        <div className="grid grid-cols-[5em_auto_5em_auto] items-center justify-end gap-2">
+        <div className="grid grow-0 grid-cols-[auto_auto_auto_auto] items-center justify-end gap-2">
           <LengthField
             value={newDim1}
             onChange={setNewDim1}

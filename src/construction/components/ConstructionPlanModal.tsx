@@ -160,7 +160,7 @@ function ModalContent({
       onValueChange={value => {
         setActiveTab(value as 'plan' | 'parts' | 'modules')
       }}
-      className="-mt-2 flex h-full flex-col"
+      className="-mt-2 flex h-full w-full flex-col"
     >
       <div className="flex flex-shrink-0">
         <Tabs.List>
@@ -170,7 +170,7 @@ function ModalContent({
         </Tabs.List>
       </div>
       <Tabs.Content value="plan" className="flex min-h-0 flex-1 pt-3">
-        <div className="flex h-full flex-col gap-3 overflow-hidden">
+        <div className="flex h-full w-full flex-col gap-3 overflow-hidden">
           <div
             ref={containerRef}
             className="flex min-h-0 flex-1 overflow-hidden rounded-md border"
