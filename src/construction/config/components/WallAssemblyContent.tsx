@@ -150,14 +150,14 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
           </div>
         </Label.Root>
       </div>
-      <Separator size="4" />
+      <Separator />
       <PostsConfigSection
         posts={config.posts}
         onUpdate={posts => {
           onUpdate({ ...config, posts })
         }}
       />
-      <Separator size="4" />
+      <Separator />
       <TriangularBattensConfigSection
         triangularBattens={config.triangularBattens}
         onUpdate={triangularBattens => {
@@ -559,7 +559,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
           </>
         )}
       </div>
-      <Separator size="4" />
+      <Separator />
       <TriangularBattensConfigSection
         triangularBattens={module.triangularBattens}
         onUpdate={triangularBattens => {
@@ -584,7 +584,7 @@ function StrawhengeConfigForm({ config, onUpdate }: StrawhengeConfigFormProps): 
           onUpdate({ ...config, module })
         }}
       />
-      <Separator size="4" />
+      <Separator />
       <InfillConfigForm
         config={config.infill}
         onUpdate={updates => {
@@ -609,7 +609,7 @@ function ModulesConfigForm({ config, onUpdate }: ModulesConfigFormProps): React.
           onUpdate({ ...config, module })
         }}
       />
-      <Separator size="4" />
+      <Separator />
       <InfillConfigForm
         config={config.infill}
         onUpdate={infill => {
@@ -717,7 +717,7 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           size="1"
         />
       </div>
-      <Separator size="4" />
+      <Separator />
       <div className="flex flex-col gap-3">
         <LayerListEditor
           title={t($ => $.walls.insideLayers)}
@@ -746,7 +746,7 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           afterLabel={t($ => $.walls.inside)}
         />
 
-        <Separator size="4" />
+        <Separator />
 
         <LayerListEditor
           title={t($ => $.walls.outsideLayers)}
@@ -871,7 +871,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
           </div>
         </div>
       </div>
-      <Separator size="4" />
+      <Separator />
       {/* Two Column Layout */}
       <div className="grid grid-cols-2 gap-4 style={{ gridTemplateColumns: '1fr 1fr' }}">
         {/* Left Column - Type-specific configuration */}
@@ -1109,11 +1109,11 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
               />
             </div>
 
-            <DropdownMenu.Root>
+            <DropdownMenu>
               <DropdownMenu.Trigger>
-                <IconButton title={t($ => $.common.addNew)}>
+                <Button variant="icon" title={t($ => $.common.addNew)}>
                   <PlusIcon />
-                </IconButton>
+                </Button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Content>
                 <DropdownMenu.Item
@@ -1157,26 +1157,28 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                   </div>
                 </DropdownMenu.Item>
               </DropdownMenu.Content>
-            </DropdownMenu.Root>
+            </DropdownMenu>
 
-            <IconButton
+            <Button
+              variant="icon"
               onClick={handleDuplicate}
               disabled={!selectedAssembly}
               title={t($ => $.common.duplicate)}
               variant="soft"
             >
               <CopyIcon />
-            </IconButton>
+            </Button>
 
             <AlertDialog.Root>
               <AlertDialog.Trigger>
-                <IconButton
+                <Button
+                  variant="icon"
                   disabled={!selectedAssembly || usage.isUsed}
                   color="red"
                   title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
                 >
                   <TrashIcon />
-                </IconButton>
+                </Button>
               </AlertDialog.Trigger>
               <AlertDialog.Content>
                 <AlertDialog.Title>{t($ => $.walls.deleteTitle)}</AlertDialog.Title>
@@ -1200,9 +1202,9 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
 
             <AlertDialog.Root>
               <AlertDialog.Trigger>
-                <IconButton color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
+                <Button variant="icon" color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
                   <ResetIcon />
-                </IconButton>
+                </Button>
               </AlertDialog.Trigger>
               <AlertDialog.Content>
                 <AlertDialog.Title>{t($ => $.walls.resetTitle)}</AlertDialog.Title>

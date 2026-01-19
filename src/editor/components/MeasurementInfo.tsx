@@ -1,5 +1,4 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
-import { HoverCard, IconButton, Inset } from '@radix-ui/themes'
 import { type ComponentProps, type JSX, useId } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -973,7 +972,8 @@ export function MeasurementInfo(config: MeasurementDisplayConfig): React.JSX.Ele
   return (
     <HoverCard.Root>
       <HoverCard.Trigger>
-        <IconButton
+        <Button
+          variant="icon"
           style={{ cursor: 'help' }}
           text-gray-900
           radius="full"
@@ -982,7 +982,7 @@ export function MeasurementInfo(config: MeasurementDisplayConfig): React.JSX.Ele
           size="1"
         >
           <InfoCircledIcon width={12} height={12} />
-        </IconButton>
+        </Button>
       </HoverCard.Trigger>
       <HoverCard.Content side="right">
         <Inset>

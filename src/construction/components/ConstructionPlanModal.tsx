@@ -1,5 +1,4 @@
 import { CrossCircledIcon } from '@radix-ui/react-icons'
-import { Callout, Skeleton, Spinner, Tabs } from '@radix-ui/themes'
 import React, { Suspense, use, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -245,12 +244,12 @@ function ConstructionPlanModalContent({
   if (!constructionModel) {
     return (
       <div className="flex items-center justify-center">
-        <Callout.Root color="red" size="2">
-          <Callout.Icon>
+        <Callout color="red" size="2">
+          <CalloutIcon>
             <CrossCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>{t($ => $.planModal.errors.failedModel)}</Callout.Text>
-        </Callout.Root>
+          </CalloutIcon>
+          <CalloutText>{t($ => $.planModal.errors.failedModel)}</CalloutText>
+        </Callout>
       </div>
     )
   }
@@ -280,12 +279,12 @@ function PartsTabContent({
   if (partsData == null) {
     return (
       <div className="flex">
-        <Callout.Root color="red" size="2">
-          <Callout.Icon>
+        <Callout color="red" size="2">
+          <CalloutIcon>
             <CrossCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>{t($ => $.planModal.errors.failedPartsList)}</Callout.Text>
-        </Callout.Root>
+          </CalloutIcon>
+          <CalloutText>{t($ => $.planModal.errors.failedPartsList)}</CalloutText>
+        </Callout>
       </div>
     )
   }
@@ -306,12 +305,12 @@ function ModulesTabContent({
   if (partsData == null) {
     return (
       <div className="flex">
-        <Callout.Root color="red" size="2">
-          <Callout.Icon>
+        <Callout color="red" size="2">
+          <CalloutIcon>
             <CrossCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>{t($ => $.planModal.errors.failedModulesList)}</Callout.Text>
-        </Callout.Root>
+          </CalloutIcon>
+          <CalloutText>{t($ => $.planModal.errors.failedModulesList)}</CalloutText>
+        </Callout>
       </div>
     )
   }

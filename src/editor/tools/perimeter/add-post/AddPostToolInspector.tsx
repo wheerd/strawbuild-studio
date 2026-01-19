@@ -1,11 +1,16 @@
 import { CopyIcon, InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Button, Callout, DropdownMenu, IconButton, SegmentedControl, Separator, Switch } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { WallPostType } from '@/building/model'
 import { useWallPosts } from '@/building/store'
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { SegmentedControl } from '@/components/ui/segmented-control'
+import { Separator } from '@/components/ui/separator'
+import { Switch } from '@/components/ui/switch'
 import { useWallAssemblies } from '@/construction/config/store'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import { type MaterialId } from '@/construction/materials/material'
@@ -149,14 +154,14 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
   return (
     <div className="flex flex-col gap-4">
       {/* Informational Note */}
-      <Callout.Root color="blue">
-        <Callout.Icon>
+      <Callout color="blue">
+        <CalloutIcon>
           <InfoCircledIcon />
-        </Callout.Icon>
-        <Callout.Text>
+        </CalloutIcon>
+        <CalloutText>
           <span className="text-sm">{t($ => $.addPost.info)}</span>
-        </Callout.Text>
-      </Callout.Root>
+        </CalloutText>
+      </Callout>
       {/* Type Selection */}
       <div className="items-center justify-between gap-2">
         <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.type)}</span>
@@ -230,21 +235,21 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
         <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.infillMaterial)}</span>
         <MaterialSelectWithEdit value={state.infillMaterial} onValueChange={handleInfillMaterialChange} size="1" />
       </div>
-      <Separator size="4" />
+      <Separator />
       {/* Quick presets */}
       <div className="flex flex-col gap-2">
         {/* Copy Existing Configuration */}
         <div className="items-center justify-between gap-2">
           <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.presets.title)}</span>
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger disabled={allPostConfigs.length === 0}>
-              <IconButton size="2" title={t($ => $.addPost.copyConfigurationTooltip)}>
+          <DropdownMenu>
+            <DropdownMenuTrigger disabled={allPostConfigs.length === 0}>
+              <Button variant="icon" title={t($ => $.addPost.copyConfigurationTooltip)}>
                 <CopyIcon />
-              </IconButton>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
               {allPostConfigs.map((config, index) => (
-                <DropdownMenu.Item
+                <DropdownMenuItem
                   key={index}
                   onClick={() => {
                     handleCopyClick(config)
@@ -256,14 +261,14 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
                     width: config.width,
                     thickness: config.thickness
                   })}
-                </DropdownMenu.Item>
+                </DropdownMenuItem>
               ))}
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         <div className="grid grid-cols-2 gap-2">
           <Button
-            size="1"
+            size="sm"
             variant="surface"
             onClick={() => {
               tool.setPostType('center')
@@ -274,7 +279,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
             {t($ => $.addPost.presets.single6x36)}
           </Button>
           <Button
-            size="1"
+            size="sm"
             variant="surface"
             onClick={() => {
               tool.setPostType('double')
@@ -285,7 +290,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
             {t($ => $.addPost.presets.double6x12)}
           </Button>
           <Button
-            size="1"
+            size="sm"
             variant="surface"
             onClick={() => {
               tool.setPostType('outside')
@@ -296,7 +301,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
             {t($ => $.addPost.presets.single14x14)}
           </Button>
           <Button
-            size="1"
+            size="sm"
             variant="surface"
             onClick={() => {
               tool.setPostType('double')

@@ -1,5 +1,4 @@
 import { CheckCircledIcon, CrossCircledIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
-import { Callout } from '@radix-ui/themes'
 import { use } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -21,10 +20,10 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
       {model ? (
         <>
           {model.errors.length > 0 && (
-            <Callout.Root color="red" size="1">
-              <Callout.Icon>
+            <Callout color="red" size="1">
+              <CalloutIcon>
                 <CrossCircledIcon />
-              </Callout.Icon>
+              </CalloutIcon>
               <div className="flex flex-col gap-2">
                 <span className="font-medium text-base">
                   {t($ => $.planModal.issuesPanel.errorsTitle, { count: model.errors.length })}
@@ -54,14 +53,14 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
                   ))}
                 </div>
               </div>
-            </Callout.Root>
+            </Callout>
           )}
 
           {model.warnings.length > 0 && (
-            <Callout.Root color="amber" size="1">
-              <Callout.Icon>
+            <Callout color="amber" size="1">
+              <CalloutIcon>
                 <ExclamationTriangleIcon />
-              </Callout.Icon>
+              </CalloutIcon>
               <div className="flex flex-col gap-2">
                 <span className="font-medium text-base">
                   {t($ => $.planModal.issuesPanel.warningsTitle, { count: model.warnings.length })}
@@ -91,28 +90,28 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
                   ))}
                 </div>
               </div>
-            </Callout.Root>
+            </Callout>
           )}
 
           {model.errors.length === 0 && model.warnings.length === 0 && (
-            <Callout.Root color="green" size="1">
-              <Callout.Icon>
+            <Callout color="green" size="1">
+              <CalloutIcon>
                 <CheckCircledIcon />
-              </Callout.Icon>
+              </CalloutIcon>
               <div className="flex flex-col gap-1">
                 <span className="font-medium text-base">{t($ => $.planModal.issuesPanel.noIssuesTitle)}</span>
                 <span className="text-sm">{t($ => $.planModal.issuesPanel.noIssuesMessage)}</span>
               </div>
-            </Callout.Root>
+            </Callout>
           )}
         </>
       ) : (
-        <Callout.Root color="red" size="1">
-          <Callout.Icon>
+        <Callout color="red" size="1">
+          <CalloutIcon>
             <CrossCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>{t($ => $.planModal.errors.failedModel)}</Callout.Text>
-        </Callout.Root>
+          </CalloutIcon>
+          <CalloutText>{t($ => $.planModal.errors.failedModel)}</CalloutText>
+        </Callout>
       )}
     </div>
   )

@@ -1,5 +1,4 @@
 import { Pencil1Icon } from '@radix-ui/react-icons'
-import { IconButton } from '@radix-ui/themes'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -16,7 +15,8 @@ export function RingBeamAssemblySelectWithEdit(props: RingBeamAssemblySelectProp
       <div className="flex flex-col gap-1 grow-1 mr-1">
         <RingBeamAssemblySelect {...props} />
       </div>
-      <IconButton
+      <Button
+        variant="icon"
         title={t($ => $.ringBeams.configure)}
         variant="ghost"
         size={props.size}
@@ -25,7 +25,7 @@ export function RingBeamAssemblySelectWithEdit(props: RingBeamAssemblySelectProp
         }}
       >
         <Pencil1Icon />
-      </IconButton>
+      </Button>
     </div>
   )
 }

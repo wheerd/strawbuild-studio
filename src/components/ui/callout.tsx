@@ -38,7 +38,7 @@ export interface CalloutProps extends Omit<React.HTMLAttributes<HTMLDivElement>,
 const Callout = React.forwardRef<HTMLDivElement, CalloutProps>(({ className, color, size, ...props }, ref) => (
   <div ref={ref} className={cn(calloutVariants({ color, size }), className)} {...props} />
 ))
-Callout.displayName = 'Callout'
+CalloutdisplayName = 'Callout'
 
 const CalloutIcon = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => <div ref={ref} className={cn('shrink-0', className)} {...props} />

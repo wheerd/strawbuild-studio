@@ -1,5 +1,4 @@
 import { TrashIcon } from '@radix-ui/react-icons'
-import { DataList, IconButton, Separator } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -60,13 +59,14 @@ export function FloorOpeningInspector({ floorOpeningId }: FloorOpeningInspectorP
           </DataList.Item>
         </DataList.Root>
 
-        <Separator size="4" />
+        <Separator />
 
         <div className="flex justify-end gap-2">
-          <IconButton size="2" title={t($ => $.floorOpening.fitToView)} onClick={handleFitToView}>
+          <Button variant="icon" title={t($ => $.floorOpening.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
-          </IconButton>
-          <IconButton
+          </Button>
+          <Button
+            variant="icon"
             color="red"
             title={t($ => $.floorOpening.removeFloorOpening)}
             onClick={() => {
@@ -75,7 +75,7 @@ export function FloorOpeningInspector({ floorOpeningId }: FloorOpeningInspectorP
             }}
           >
             <TrashIcon />
-          </IconButton>
+          </Button>
         </div>
       </div>
     </div>

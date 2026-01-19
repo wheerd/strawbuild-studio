@@ -1,5 +1,4 @@
 import { CircleIcon, CubeIcon, LayersIcon, OpacityIcon } from '@radix-ui/react-icons'
-import { Select } from '@radix-ui/themes'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 

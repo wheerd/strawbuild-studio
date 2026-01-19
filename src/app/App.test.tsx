@@ -1,4 +1,3 @@
-import { Theme } from '@radix-ui/themes'
 import { render, screen, waitFor } from '@testing-library/react'
 import { vi } from 'vitest'
 

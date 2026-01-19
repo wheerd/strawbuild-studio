@@ -1,8 +1,10 @@
 import { Cross2Icon, ExclamationTriangleIcon, GitHubLogoIcon } from '@radix-ui/react-icons'
-import { Button, Callout, Dialog, IconButton, Link } from '@radix-ui/themes'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { VERSION_INFO } from '@/shared/utils/version'
 
 import { LanguageSwitcher } from './LanguageSwitcher'
@@ -28,11 +30,10 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
   }
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={handleOpenChange}>
-      {trigger && <Dialog.Trigger>{trigger}</Dialog.Trigger>}
-      <Dialog.Content
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
+      <DialogContent
         aria-describedby={undefined}
-        size="3"
         maxWidth="90vw"
         onEscapeKeyDown={e => {
           if (isFirstVisit) e.preventDefault()
@@ -45,7 +46,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
         }}
       >
         <div className="flex flex-col gap-4">
-          <Dialog.Title>
+          <DialogTitle>
             <div className="justify-between items-center">
               <div className="flex items-center gap-2">
                 <Logo />
@@ -53,15 +54,15 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
               <div className="flex gap-2 items-center">
                 <LanguageSwitcher />
                 {!isFirstVisit && (
-                  <Dialog.Close>
-                    <IconButton variant="ghost" highContrast>
+                  <DialogClose asChild>
+                    <Button variant="ghost">
                       <Cross2Icon />
-                    </IconButton>
-                  </Dialog.Close>
+                    </Button>
+                  </DialogClose>
                 )}
               </div>
             </div>
-          </Dialog.Title>
+          </DialogTitle>
 
           <div className="flex flex-col mt--2 p-0 gap-3">
             <span>{t($ => $.introduction)}</span>
@@ -103,24 +104,22 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                 <h3>{t($ => $.demoVideo.title)}</h3>
                 <span className="text-base">{t($ => $.demoVideo.description)}</span>
                 <div className="flex flex-row gap-4 items-center">
-                  <Link
-                    size="2"
-                    font-bold
+                  <a
+                    className="font-bold"
                     href="https://www.youtube.com/watch?v=oe9VnhEW0JE"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     {t($ => $.demoVideo.demo01)}
-                  </Link>
-                  <Link
-                    size="2"
-                    font-bold
+                  </a>
+                  <a
+                    className="font-bold"
                     href="https://www.youtube.com/watch?v=7Ed09YNGSn8"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     {t($ => $.demoVideo.demo02)}
-                  </Link>
+                  </a>
                 </div>
                 <h3>{t($ => $.localStorage.title)}</h3>
                 <div className="text-sm">
@@ -138,11 +137,11 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                 <span className="text-base text-gray-900">{t($ => $.localStorage.privacy)}</span>
               </div>
 
-              <Callout.Root color="orange" variant="surface">
-                <Callout.Icon>
+              <Callout color="orange" variant="surface">
+                <CalloutIcon>
                   <ExclamationTriangleIcon />
-                </Callout.Icon>
-                <Callout.Text>
+                </CalloutIcon>
+                <CalloutText>
                   <span className="flex flex-col gap-2">
                     <span className="font-bold">{t($ => $.disclaimer.title)}</span>
                     <span>{t($ => $.disclaimer.intro)}</span>
@@ -156,12 +155,12 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                       ))}
                     </span>
                   </span>
-                </Callout.Text>
-              </Callout.Root>
+                </CalloutText>
+              </Callout>
             </div>
 
             <div className="flex flex-col gap-2 items-center">
-              <Button size="3" onClick={onAccept} style={{ width: '100%' }}>
+              <Button size="lg" onClick={onAccept} style={{ width: '100%' }}>
                 {t($ => $.continueButton)}
               </Button>
               {isFirstVisit && <span className="text-sm text-gray-900 items-center">{t($ => $.reviewInfo)}</span>}
@@ -173,20 +172,20 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                 </span>
                 <div className="flex gap-2 items-center justify-center">
                   <GitHubLogoIcon width="14" height="14" />
-                  <Link
-                    size="1"
+                  <a
+                    className="text-sm"
                     href="https://github.com/wheerd/strawbaler-online"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     {t($ => $.viewOnGitHub)}
-                  </Link>
+                  </a>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </Dialog.Content>
-    </Dialog.Root>
+      </DialogContent>
+    </Dialog>
   )
 }

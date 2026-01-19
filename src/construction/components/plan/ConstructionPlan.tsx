@@ -1,5 +1,4 @@
 import { CubeIcon, ExclamationTriangleIcon, GroupIcon, RulerHorizontalIcon } from '@radix-ui/react-icons'
-import { Card, IconButton, SegmentedControl } from '@radix-ui/themes'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -398,64 +397,69 @@ export function ConstructionPlan({
 
             <div className="grid grid-cols-6 gap-1 items-center justify-center">
               {/* Mid-cut toggle */}
-              <IconButton
+              <Button
+                variant="icon"
                 variant={midCutEnabled ? 'solid' : 'outline'}
-                size="1"
+                size="sm"
                 title={t($ => $.plan.midCut)}
                 onClick={() => {
                   setMidCutEnabled(!midCutEnabled)
                 }}
               >
                 {currentView.plane === 'xy' ? <MidCutYIcon /> : <MidCutXIcon />}
-              </IconButton>
+              </Button>
 
               {/* Area toggle */}
-              <IconButton
+              <Button
+                variant="icon"
                 variant={hideAreas ? 'outline' : 'solid'}
-                size="1"
+                size="sm"
                 title={t($ => $.plan.hideAreas)}
                 onClick={() => {
                   setHideAreas(!hideAreas)
                 }}
               >
                 <GroupIcon />
-              </IconButton>
+              </Button>
 
               {/* Issues toggle */}
-              <IconButton
+              <Button
+                variant="icon"
                 variant={hideIssues ? 'outline' : 'solid'}
-                size="1"
+                size="sm"
                 title={t($ => $.plan.hideIssues)}
                 onClick={() => {
                   setHideIssues(!hideIssues)
                 }}
               >
                 <ExclamationTriangleIcon />
-              </IconButton>
+              </Button>
 
               {/* Measurements toggle */}
-              <IconButton
+              <Button
+                variant="icon"
                 variant={hideMeasurements ? 'outline' : 'solid'}
-                size="1"
+                size="sm"
                 title={t($ => $.plan.hideMeasurements)}
                 onClick={() => {
                   setHideMeasurements(!hideMeasurements)
                 }}
               >
                 <RulerHorizontalIcon />
-              </IconButton>
+              </Button>
 
               {/* Straw types toggle */}
-              <IconButton
+              <Button
+                variant="icon"
                 variant={showStrawTypes ? 'solid' : 'outline'}
-                size="1"
+                size="sm"
                 title={t($ => $.plan.showStrawTypes)}
                 onClick={() => {
                   setShowStrawTypes(!showStrawTypes)
                 }}
               >
                 <CubeIcon />
-              </IconButton>
+              </Button>
 
               {/* Tag visibility menu */}
               <TagVisibilityMenu model={model} />

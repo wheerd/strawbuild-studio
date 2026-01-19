@@ -1,5 +1,4 @@
 import { PlusIcon } from '@radix-ui/react-icons'
-import { Button } from '@radix-ui/themes'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 

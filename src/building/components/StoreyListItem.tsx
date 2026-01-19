@@ -1,5 +1,4 @@
 import { ChevronDownIcon, ChevronUpIcon, CopyIcon, EnterIcon, HeightIcon, TrashIcon } from '@radix-ui/react-icons'
-import { AlertDialog, Button, Card, Code, IconButton, TextField } from '@radix-ui/themes'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -208,24 +207,36 @@ export function StoreyListItem({
         {/* Action buttons */}
         <div className="flex gap-1 items-center">
           <div className="flex flex-col gap-1">
-            <IconButton size="1" onClick={handleMoveUp} disabled={!canMoveUp} title={t($ => $.storeys.moveUp)}>
+            <Button
+              variant="icon"
+              size="sm"
+              onClick={handleMoveUp}
+              disabled={!canMoveUp}
+              title={t($ => $.storeys.moveUp)}
+            >
               <ChevronUpIcon />
-            </IconButton>
+            </Button>
 
-            <IconButton size="1" onClick={handleMoveDown} disabled={!canMoveDown} title={t($ => $.storeys.moveDown)}>
+            <Button
+              variant="icon"
+              size="sm"
+              onClick={handleMoveDown}
+              disabled={!canMoveDown}
+              title={t($ => $.storeys.moveDown)}
+            >
               <ChevronDownIcon />
-            </IconButton>
+            </Button>
           </div>
 
-          <IconButton onClick={handleDuplicate} title={t($ => $.storeys.duplicateFloor)} variant="soft">
+          <Button variant="icon" onClick={handleDuplicate} title={t($ => $.storeys.duplicateFloor)} variant="soft">
             <CopyIcon />
-          </IconButton>
+          </Button>
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <IconButton disabled={isOnlyStorey} title={t($ => $.storeys.deleteFloor)} color="red">
+              <Button variant="icon" disabled={isOnlyStorey} title={t($ => $.storeys.deleteFloor)} color="red">
                 <TrashIcon />
-              </IconButton>
+              </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.storeys.deleteFloorTitle)}</AlertDialog.Title>
@@ -244,7 +255,8 @@ export function StoreyListItem({
             </AlertDialog.Content>
           </AlertDialog.Root>
 
-          <IconButton
+          <Button
+            variant="icon"
             onClick={() => {
               setActiveStoreyId(storey.id)
             }}
@@ -253,7 +265,7 @@ export function StoreyListItem({
             color="green"
           >
             <EnterIcon />
-          </IconButton>
+          </Button>
         </div>
       </div>
     </Card>

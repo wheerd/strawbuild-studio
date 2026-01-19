@@ -1,4 +1,3 @@
-import { Card } from '@radix-ui/themes'
 import React, { type PointerEvent, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 

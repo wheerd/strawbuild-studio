@@ -1,4 +1,3 @@
-import { TextField } from '@radix-ui/themes'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useStageHeight, useStageWidth } from '@/editor/hooks/useViewportStore'

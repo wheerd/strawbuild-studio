@@ -1,5 +1,4 @@
 import { ExclamationTriangleIcon, EyeOpenIcon, Pencil1Icon, PinBottomIcon, PinTopIcon } from '@radix-ui/react-icons'
-import { Badge, Card, IconButton, Table, Tooltip } from '@radix-ui/themes'
 import React, { useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -372,9 +371,15 @@ function MaterialSummaryRow({
       <Table.RowHeaderCell>
         <div className="items-center gap-2 justify-between">
           <span className="font-medium">{materialName}</span>
-          <IconButton title={t($ => $.partsList.actions.jumpToDetails)} size="1" variant="ghost" onClick={onNavigate}>
+          <Button
+            variant="icon"
+            title={t($ => $.partsList.actions.jumpToDetails)}
+            size="1"
+            variant="ghost"
+            onClick={onNavigate}
+          >
             <PinBottomIcon />
-          </IconButton>
+          </Button>
         </div>
       </Table.RowHeaderCell>
       <Table.Cell justify-center>{metrics.totalQuantity}</Table.Cell>
@@ -415,9 +420,15 @@ function MaterialGroupSummaryRow({
       <Table.Cell>
         <div className="items-center gap-2 justify-between">
           <Badge color={group.badgeColor}>{group.badgeLabel}</Badge>
-          <IconButton title={t($ => $.partsList.actions.jumpToDetails)} size="1" variant="ghost" onClick={onNavigate}>
+          <Button
+            variant="icon"
+            title={t($ => $.partsList.actions.jumpToDetails)}
+            size="1"
+            variant="ghost"
+            onClick={onNavigate}
+          >
             <PinBottomIcon />
-          </IconButton>
+          </Button>
         </div>
       </Table.Cell>
       <Table.Cell justify-center>{metrics.totalQuantity}</Table.Cell>
@@ -454,7 +465,8 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan, formatt
           <div className="flex items-center gap-3">
             <MaterialTypeIndicator material={material} size={24} />
             <h4>{materialName}</h4>
-            <IconButton
+            <Button
+              variant="icon"
               title={t($ => $.partsList.actions.configureMaterial)}
               variant="ghost"
               size="1"
@@ -463,7 +475,7 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan, formatt
               }}
             >
               <Pencil1Icon />
-            </IconButton>
+            </Button>
             <div className="flex items-center gap-2">
               {group.badgeLabel && (
                 <Badge variant="soft" color={group.badgeColor ?? 'gray'}>
@@ -477,9 +489,15 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan, formatt
               )}
             </div>
           </div>
-          <IconButton title={t($ => $.partsList.actions.backToSummary)} size="1" variant="ghost" onClick={onBackToTop}>
+          <Button
+            variant="icon"
+            title={t($ => $.partsList.actions.backToSummary)}
+            size="1"
+            variant="ghost"
+            onClick={onBackToTop}
+          >
             <PinTopIcon />
-          </IconButton>
+          </Button>
         </div>
 
         {material.type === 'dimensional' && (
@@ -583,9 +601,9 @@ function DimensionalPartsTable({
                       </Tooltip>
                       <PartCutModal
                         trigger={
-                          <IconButton size="1" variant="outline" radius="full">
+                          <Button variant="icon" size="sm" variant="outline" radius="full">
                             <SawIcon />
-                          </IconButton>
+                          </Button>
                         }
                         polygon={part.sideFaces[0].polygon}
                       />
@@ -620,8 +638,9 @@ function DimensionalPartsTable({
               <Table.Cell justify-end>{formatWeight(partWeight)}</Table.Cell>
               <Table.Cell justify-center>
                 {canHighlightPart(part.partId) && onViewInPlan && (
-                  <IconButton
-                    size="1"
+                  <Button
+                    variant="icon"
+                    size="sm"
                     variant="ghost"
                     onClick={() => {
                       onViewInPlan(part.partId)
@@ -629,7 +648,7 @@ function DimensionalPartsTable({
                     title={t($ => $.partsList.actions.viewInPlan)}
                   >
                     <EyeOpenIcon />
-                  </IconButton>
+                  </Button>
                 )}
               </Table.Cell>
             </Table.Row>
@@ -704,9 +723,9 @@ function SheetPartsTable({
                   {part.sideFaces?.length && part.sideFaces[0].polygon.outer.points.length >= 3 && (
                     <SheetPartModal
                       trigger={
-                        <IconButton size="1" variant="outline" radius="full">
+                        <Button variant="icon" size="sm" variant="outline" radius="full">
                           <SawIcon />
-                        </IconButton>
+                        </Button>
                       }
                       polygon={part.sideFaces[0].polygon}
                     />
@@ -749,8 +768,9 @@ function SheetPartsTable({
               <Table.Cell justify-end>{formatWeight(partWeight)}</Table.Cell>
               <Table.Cell justify-center>
                 {canHighlightPart(part.partId) && onViewInPlan && (
-                  <IconButton
-                    size="1"
+                  <Button
+                    variant="icon"
+                    size="sm"
                     variant="ghost"
                     onClick={() => {
                       onViewInPlan(part.partId)
@@ -758,7 +778,7 @@ function SheetPartsTable({
                     title={t($ => $.partsList.actions.viewInPlan)}
                   >
                     <EyeOpenIcon />
-                  </IconButton>
+                  </Button>
                 )}
               </Table.Cell>
             </Table.Row>
@@ -836,8 +856,9 @@ function VolumePartsTable({
               <Table.Cell justify-end>{formatWeight(partWeight)}</Table.Cell>
               <Table.Cell justify-center>
                 {canHighlightPart(part.partId) && onViewInPlan && (
-                  <IconButton
-                    size="1"
+                  <Button
+                    variant="icon"
+                    size="sm"
                     variant="ghost"
                     onClick={() => {
                       onViewInPlan(part.partId)
@@ -845,7 +866,7 @@ function VolumePartsTable({
                     title={t($ => $.partsList.actions.viewInPlan)}
                   >
                     <EyeOpenIcon />
-                  </IconButton>
+                  </Button>
                 )}
               </Table.Cell>
             </Table.Row>
@@ -892,8 +913,9 @@ function GenericPartsTable({
             <Table.Cell justify-center>{part.quantity}</Table.Cell>
             <Table.Cell justify-center>
               {canHighlightPart(part.partId) && onViewInPlan && (
-                <IconButton
-                  size="1"
+                <Button
+                  variant="icon"
+                  size="sm"
                   variant="ghost"
                   onClick={() => {
                     onViewInPlan(part.partId)
@@ -901,7 +923,7 @@ function GenericPartsTable({
                   title={t($ => $.partsList.actions.viewInPlan)}
                 >
                   <EyeOpenIcon />
-                </IconButton>
+                </Button>
               )}
             </Table.Cell>
           </Table.Row>

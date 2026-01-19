@@ -1,6 +1,5 @@
 import { CopyIcon, InfoCircledIcon, PlusIcon, ResetIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { AlertDialog, Badge, Button, DropdownMenu, IconButton, Separator, TextField, Tooltip } from '@radix-ui/themes'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -216,11 +215,11 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
             />
           </div>
 
-          <DropdownMenu.Root>
+          <DropdownMenu>
             <DropdownMenu.Trigger>
-              <IconButton title={t($ => $.common.addNew)}>
+              <Button variant="icon" title={t($ => $.common.addNew)}>
                 <PlusIcon />
-              </IconButton>
+              </Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
               <DropdownMenu.Item
@@ -264,20 +263,22 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
                 </div>
               </DropdownMenu.Item>
             </DropdownMenu.Content>
-          </DropdownMenu.Root>
+          </DropdownMenu>
 
-          <IconButton
+          <Button
+            variant="icon"
             onClick={handleDuplicate}
             disabled={!selectedConfig}
             title={t($ => $.common.duplicate)}
             variant="soft"
           >
             <CopyIcon />
-          </IconButton>
+          </Button>
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <IconButton
+              <Button
+                variant="icon"
                 disabled={!selectedConfig || usage.isUsed || floorAssemblies.length === 1}
                 color="red"
                 title={
@@ -291,7 +292,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
                 }
               >
                 <TrashIcon />
-              </IconButton>
+              </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.floors.delete.confirmTitle)}</AlertDialog.Title>
@@ -315,9 +316,9 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <IconButton color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
+              <Button variant="icon" color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
                 <ResetIcon />
-              </IconButton>
+              </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.floors.reset.title)}</AlertDialog.Title>
@@ -346,7 +347,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
         </div>
       )}
       {/* Defaults Section */}
-      <Separator size="4" />
+      <Separator />
       <div className="flex flex-col gap-3">
         <div className="grid grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
           <div className="flex items-center gap-1">
@@ -474,7 +475,7 @@ function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.
         </div>
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       {assembly.type === 'monolithic' && <MonolithicConfigFields config={assembly} onUpdate={handleUpdateConfig} />}
       {assembly.type === 'joist' && <JoistConfigFields config={assembly} onUpdate={handleUpdateConfig} />}
@@ -483,7 +484,7 @@ function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.
         <HangingJoistConfigFields config={assembly} onUpdate={handleUpdateConfig} />
       )}
 
-      <Separator size="4" />
+      <Separator />
 
       <LayersFields assemblyId={assembly.id} config={assembly} />
     </div>
@@ -554,9 +555,9 @@ function JoistConfigFields({
             <span className="text-base font-medium text-gray-900">{t($ => $.floors.labels.beamHeight)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.beamHeight)}>
-            <IconButton style={{ cursor: 'help' }} text-gray-900 radius="full" variant="ghost" size="1">
+            <Button variant="icon" style={{ cursor: 'help' }} text-gray-900 radius="full" variant="ghost" size="sm">
               <InfoCircledIcon width={12} height={12} />
-            </IconButton>
+            </Button>
           </Tooltip>
         </div>
         <LengthField
@@ -569,7 +570,7 @@ function JoistConfigFields({
         />
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       {/* Joists Section */}
       <h2>{t($ => $.floors.sections.joists)}</h2>
@@ -613,7 +614,7 @@ function JoistConfigFields({
         />
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       {/* Wall Beams Section */}
       <h2>{t($ => $.floors.sections.wallBeams)}</h2>
@@ -670,7 +671,7 @@ function JoistConfigFields({
         />
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       {/* Subfloor Section */}
       <h2>{t($ => $.floors.sections.subfloor)}</h2>
@@ -702,7 +703,7 @@ function JoistConfigFields({
         />
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       {/* Opening Sides Section */}
       <h2>{t($ => $.floors.sections.openingSides)}</h2>
@@ -755,9 +756,9 @@ function FilledConfigFields({
             <span className="text-base font-medium text-gray-900">{t($ => $.floors.labels.constructionHeight)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.constructionHeight)}>
-            <IconButton style={{ cursor: 'help' }} text-gray-900 radius="full" variant="ghost" size="1">
+            <Button variant="icon" style={{ cursor: 'help' }} text-gray-900 radius="full" variant="ghost" size="sm">
               <InfoCircledIcon width={12} height={12} />
-            </IconButton>
+            </Button>
           </Tooltip>
         </div>
         <LengthField
@@ -770,7 +771,7 @@ function FilledConfigFields({
         />
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       {/* Joists Section */}
       <h2>{t($ => $.floors.sections.joists)}</h2>
@@ -814,7 +815,7 @@ function FilledConfigFields({
         />
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       {/* Frame Section */}
       <h2>{t($ => $.floors.sections.perimeterFrame)}</h2>
@@ -846,7 +847,7 @@ function FilledConfigFields({
         />
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       {/* Subfloor Section */}
       <h2>{t($ => $.floors.sections.subfloor)}</h2>
@@ -878,7 +879,7 @@ function FilledConfigFields({
         />
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       {/* Ceiling Sheathing Section */}
       <h2>{t($ => $.floors.sections.ceilingSheathing)}</h2>
@@ -910,7 +911,7 @@ function FilledConfigFields({
         />
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       {/* Opening Frame Section */}
       <h2>{t($ => $.floors.sections.openingFrame)}</h2>
@@ -942,7 +943,7 @@ function FilledConfigFields({
         />
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       {/* Straw Infill Section */}
       <h2>{t($ => $.floors.sections.strawInfill)}</h2>
@@ -952,9 +953,9 @@ function FilledConfigFields({
             <span className="text-base font-medium text-gray-900">{t($ => $.common.strawMaterialOverride)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.strawMaterialOverride)}>
-            <IconButton style={{ cursor: 'help' }} text-gray-900 radius="full" variant="ghost" size="1">
+            <Button variant="icon" style={{ cursor: 'help' }} text-gray-900 radius="full" variant="ghost" size="sm">
               <InfoCircledIcon width={12} height={12} />
-            </IconButton>
+            </Button>
           </Tooltip>
         </div>
         <MaterialSelectWithEdit
@@ -1007,9 +1008,9 @@ function HangingJoistConfigFields({
             <span className="text-base font-medium text-gray-900">{t($ => $.common.height)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.joistHeight)}>
-            <IconButton style={{ cursor: 'help' }} text-gray-900 radius="full" variant="ghost" size="1">
+            <Button variant="icon" style={{ cursor: 'help' }} text-gray-900 radius="full" variant="ghost" size="sm">
               <InfoCircledIcon width={12} height={12} />
-            </IconButton>
+            </Button>
           </Tooltip>
         </div>
         <LengthField
@@ -1053,9 +1054,9 @@ function HangingJoistConfigFields({
             <span className="text-base font-medium text-gray-900">{t($ => $.floors.labels.verticalOffset)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.verticalOffset)}>
-            <IconButton style={{ cursor: 'help' }} text-gray-900 radius="full" variant="ghost" size="1">
+            <Button variant="icon" style={{ cursor: 'help' }} text-gray-900 radius="full" variant="ghost" size="sm">
               <InfoCircledIcon width={12} height={12} />
-            </IconButton>
+            </Button>
           </Tooltip>
         </div>
         <LengthField
@@ -1068,7 +1069,7 @@ function HangingJoistConfigFields({
         />
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       {/* Subfloor Section */}
       <h2>{t($ => $.floors.sections.subfloor)}</h2>
@@ -1100,7 +1101,7 @@ function HangingJoistConfigFields({
         />
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       {/* Opening Sides Section */}
       <h2>{t($ => $.floors.sections.openingSides)}</h2>
@@ -1210,7 +1211,7 @@ function LayersFields({ assemblyId, config }: { assemblyId: FloorAssemblyId; con
         afterLabel={t($ => $.floors.layers.floorConstruction)}
       />
 
-      <Separator size="4" />
+      <Separator />
 
       <LayerListEditor
         title={t($ => $.floors.layers.bottomLayers)}

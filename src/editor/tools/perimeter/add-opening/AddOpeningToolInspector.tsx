@@ -1,6 +1,5 @@
 import { CopyIcon, InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Callout, DropdownMenu, IconButton, SegmentedControl, Separator, Tooltip } from '@radix-ui/themes'
 import type { Resources } from 'i18next'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -229,14 +228,14 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
   return (
     <div className="flex flex-col gap-4">
       {/* Informational Note */}
-      <Callout.Root color="blue">
-        <Callout.Icon>
+      <Callout color="blue">
+        <CalloutIcon>
           <InfoCircledIcon />
-        </Callout.Icon>
-        <Callout.Text>
+        </CalloutIcon>
+        <CalloutText>
           <span className="text-sm">{t($ => $.addOpening.info)}</span>
-        </Callout.Text>
-      </Callout.Root>
+        </CalloutText>
+      </Callout>
       {/* Dimension Mode Toggle */}
       <div className="items-center justify-between gap-2">
         <div className="flex gap-1 items-center">
@@ -411,11 +410,11 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
         />
       </div>
       <div className="items-center justify-end gap-2">
-        <DropdownMenu.Root>
+        <DropdownMenu>
           <DropdownMenu.Trigger disabled={allOpeningConfigs.length === 0}>
-            <IconButton size="2" title={t($ => $.addOpening.copyConfigurationTooltip)}>
+            <Button variant="icon" title={t($ => $.addOpening.copyConfigurationTooltip)}>
               <CopyIcon />
-            </IconButton>
+            </Button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>
             {allOpeningConfigs.map((config, index) => (
@@ -432,15 +431,16 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
               </DropdownMenu.Item>
             ))}
           </DropdownMenu.Content>
-        </DropdownMenu.Root>
+        </DropdownMenu>
       </div>
-      <Separator size="4" />
+      <Separator />
       {/* Presets Section */}
       <div className="flex flex-col gap-2">
         <span className="text-sm font-medium text-gray-900">{t($ => $.addOpening.presets.title)}</span>
         <div className="grid grid-cols-6 gap-1">
           {ALL_OPENING_PRESETS.map((preset: PresetConfig, index: number) => (
-            <IconButton
+            <Button
+              variant="icon"
               key={index}
               variant="surface"
               size="3"
@@ -463,11 +463,11 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
               }
             >
               {preset.icon}
-            </IconButton>
+            </Button>
           ))}
         </div>
       </div>
-      <Separator size="4" />
+      <Separator />
       {/* Opening Assembly Selector */}
       <div className="flex flex-col gap-1">
         <div className="flex gap-1 items-center">

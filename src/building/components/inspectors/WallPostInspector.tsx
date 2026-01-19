@@ -1,6 +1,5 @@
 import { InfoCircledIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Callout, IconButton, Kbd, SegmentedControl, Separator, Switch } from '@radix-ui/themes'
 import { useCallback } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
@@ -157,21 +156,21 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
         </Label.Root>
         <MaterialSelectWithEdit value={post.infillMaterial} onValueChange={handleInfillMaterialChange} size="1" />
       </div>
-      <Separator size="4" />
+      <Separator />
       {/* Action Buttons */}
       <div className="flex justify-end gap-2">
-        <IconButton size="2" title={t($ => $.wallPost.fitToView)} onClick={handleFitToView}>
+        <Button variant="icon" title={t($ => $.wallPost.fitToView)} onClick={handleFitToView}>
           <FitToViewIcon />
-        </IconButton>
-        <IconButton size="2" color="red" title={t($ => $.wallPost.deletePost)} onClick={handleRemovePost}>
+        </Button>
+        <Button variant="icon" color="red" title={t($ => $.wallPost.deletePost)} onClick={handleRemovePost}>
           <TrashIcon />
-        </IconButton>
+        </Button>
       </div>
-      <Callout.Root color="blue">
-        <Callout.Icon>
+      <Callout color="blue">
+        <CalloutIcon>
           <InfoCircledIcon />
-        </Callout.Icon>
-        <Callout.Text>
+        </CalloutIcon>
+        <CalloutText>
           <span className="text-sm">
             <Trans t={t} i18nKey={$ => $.wallPost.moveInstructions} components={{ kbd: <Kbd /> }}>
               To move the post, you can use the Move Tool{' '}
@@ -181,8 +180,8 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
               or click any of the distance measurements shown in the editor to adjust them.
             </Trans>
           </span>
-        </Callout.Text>
-      </Callout.Root>
+        </CalloutText>
+      </Callout>
     </div>
   )
 }

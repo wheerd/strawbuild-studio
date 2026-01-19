@@ -1,6 +1,5 @@
 import { ExclamationTriangleIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Callout, DataList, DropdownMenu, IconButton, SegmentedControl, Separator, Tooltip } from '@radix-ui/themes'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -222,16 +221,16 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
 
         {/* Non-standard angle warning */}
         {hasNonStandardAngles && (
-          <Callout.Root color="amber">
-            <Callout.Icon>
+          <Callout color="amber">
+            <CalloutIcon>
               <ExclamationTriangleIcon />
-            </Callout.Icon>
-            <Callout.Text>
+            </CalloutIcon>
+            <CalloutText>
               <span className="font-bold">{t($ => $.perimeter.nonRightAnglesWarning)}</span>
               <br />
               <span className="text-sm">{t($ => $.perimeter.nonRightAnglesDescription)}</span>
-            </Callout.Text>
-          </Callout.Root>
+            </CalloutText>
+          </Callout>
         )}
 
         <div className="flex flex-row gap-3 pt-1 items-center justify-center">
@@ -240,18 +239,18 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             factory={() => Promise.resolve(constructPerimeter(perimeter))}
             refreshKey={perimeter}
             trigger={
-              <IconButton title={t($ => $.perimeter.viewConstructionPlan)} size="3">
+              <Button variant="icon" title={t($ => $.perimeter.viewConstructionPlan)} size="3">
                 <ConstructionPlanIcon width={24} height={24} />
-              </IconButton>
+              </Button>
             }
           />
           <ConstructionViewer3DModal
             constructionModelFactory={() => Promise.resolve(constructPerimeter(perimeter))}
             refreshKey={perimeter}
             trigger={
-              <IconButton title={t($ => $.perimeter.view3DConstruction)} size="3" variant="outline">
+              <Button variant="icon" title={t($ => $.perimeter.view3DConstruction)} size="3" variant="outline">
                 <Model3DIcon width={24} height={24} />
-              </IconButton>
+              </Button>
             }
           />
         </div>
@@ -393,20 +392,25 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
           </div>
         </div>
 
-        <Separator size="4" />
+        <Separator />
 
         {/* Action Buttons */}
         <div className="flex justify-end gap-2">
           {associatedRoof ? (
-            <IconButton size="2" title={t($ => $.perimeter.viewAssociatedRoof)} onClick={handleNavigateToRoof}>
+            <Button
+              variant="icon"
+              size="2"
+              title={t($ => $.perimeter.viewAssociatedRoof)}
+              onClick={handleNavigateToRoof}
+            >
               <RoofIcon />
-            </IconButton>
+            </Button>
           ) : (
-            <DropdownMenu.Root>
+            <DropdownMenu>
               <DropdownMenu.Trigger>
-                <IconButton size="2" title={t($ => $.perimeter.addRoofBasedOnPerimeter)}>
+                <Button variant="icon" title={t($ => $.perimeter.addRoofBasedOnPerimeter)}>
                   <RoofIcon />
-                </IconButton>
+                </Button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Content>
                 <DropdownMenu.Item
@@ -424,14 +428,20 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                   {t($ => $.perimeter.addShedRoof)}
                 </DropdownMenu.Item>
               </DropdownMenu.Content>
-            </DropdownMenu.Root>
+            </DropdownMenu>
           )}
-          <IconButton size="2" title={t($ => $.perimeter.fitToView)} onClick={handleFitToView}>
+          <Button variant="icon" title={t($ => $.perimeter.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
-          </IconButton>
-          <IconButton size="2" color="red" title={t($ => $.perimeter.deletePerimeter)} onClick={handleDelete}>
+          </Button>
+          <Button
+            variant="icon"
+            size="2"
+            color="red"
+            title={t($ => $.perimeter.deletePerimeter)}
+            onClick={handleDelete}
+          >
             <TrashIcon />
-          </IconButton>
+          </Button>
         </div>
       </div>
     </div>

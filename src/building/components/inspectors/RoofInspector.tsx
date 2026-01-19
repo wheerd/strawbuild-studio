@@ -1,6 +1,5 @@
 import { ExclamationTriangleIcon, ReloadIcon, SquareIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { DataList, IconButton, Separator, TextField, Tooltip } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -144,7 +143,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
           </DataList.Item>
         </DataList.Root>
 
-        <Separator size="4" />
+        <Separator />
 
         {/* Editable Properties */}
         <div className="flex flex-col gap-2">
@@ -251,7 +250,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
           {overhangState.isMixed && <span className="text-sm text-gray-900">{t($ => $.roof.mixedWarning)}</span>}
         </div>
 
-        <Separator size="4" />
+        <Separator />
 
         {/* Construction Views */}
         <div className="flex flex-row gap-3 pt-1 items-center justify-center">
@@ -267,40 +266,46 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
             defaultHiddenTags={['roof-layer']}
             refreshKey={roof}
             trigger={
-              <IconButton title={t($ => $.roof.viewConstructionPlan)} size="3">
+              <Button variant="icon" title={t($ => $.roof.viewConstructionPlan)} size="3">
                 <ConstructionPlanIcon width={24} height={24} />
-              </IconButton>
+              </Button>
             }
           />
           <ConstructionViewer3DModal
             constructionModelFactory={() => Promise.resolve(constructRoof(roof))}
             refreshKey={roof}
             trigger={
-              <IconButton title={t($ => $.roof.view3DConstruction)} size="3" variant="outline">
+              <Button variant="icon" title={t($ => $.roof.view3DConstruction)} size="3" variant="outline">
                 <Model3DIcon width={24} height={24} />
-              </IconButton>
+              </Button>
             }
           />
         </div>
 
-        <Separator size="4" />
+        <Separator />
 
         {/* Action Buttons */}
         <div className="flex justify-end gap-2">
           {roof.referencePerimeter && (
-            <IconButton size="2" title={t($ => $.roof.viewAssociatedPerimeter)} onClick={handleNavigateToPerimeter}>
+            <Button
+              variant="icon"
+              size="2"
+              title={t($ => $.roof.viewAssociatedPerimeter)}
+              onClick={handleNavigateToPerimeter}
+            >
               <SquareIcon />
-            </IconButton>
+            </Button>
           )}
           <Tooltip content={t($ => $.roof.cycleMainSide)}>
-            <IconButton size="2" onClick={() => cycleRoofMainSide(roofId)}>
+            <Button variant="icon" onClick={() => cycleRoofMainSide(roofId)}>
               <ReloadIcon />
-            </IconButton>
+            </Button>
           </Tooltip>
-          <IconButton size="2" title={t($ => $.roof.fitToView)} onClick={handleFitToView}>
+          <Button variant="icon" title={t($ => $.roof.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
-          </IconButton>
-          <IconButton
+          </Button>
+          <Button
+            variant="icon"
             size="2"
             color="red"
             title={t($ => $.roof.removeRoof)}
@@ -310,7 +315,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
             }}
           >
             <TrashIcon />
-          </IconButton>
+          </Button>
         </div>
       </div>
     </div>

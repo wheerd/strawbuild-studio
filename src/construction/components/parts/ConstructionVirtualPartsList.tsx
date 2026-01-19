@@ -1,5 +1,4 @@
 import { EyeOpenIcon } from '@radix-ui/react-icons'
-import { Card, IconButton, Table } from '@radix-ui/themes'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -70,8 +69,9 @@ export function ConstructionVirtualPartsList({
                 </Table.Cell>
                 <Table.Cell justify-center>
                   {canHighlightPart(part.partId) && onViewInPlan && (
-                    <IconButton
-                      size="1"
+                    <Button
+                      variant="icon"
+                      size="sm"
                       variant="ghost"
                       onClick={() => {
                         onViewInPlan(part.partId)
@@ -79,7 +79,7 @@ export function ConstructionVirtualPartsList({
                       title={t($ => $.modulesList.actions.viewInPlan)}
                     >
                       <EyeOpenIcon />
-                    </IconButton>
+                    </Button>
                   )}
                 </Table.Cell>
               </Table.Row>

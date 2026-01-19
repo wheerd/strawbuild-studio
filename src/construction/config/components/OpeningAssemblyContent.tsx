@@ -173,9 +173,9 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
   if (!selectedAssembly) {
     return (
       <div className="flex flex-col gap-4 w-full">
-        <Callout.Root className="text-gray-900">
-          <Callout.Text>{t($ => $.openings.emptyList)}</Callout.Text>
-        </Callout.Root>
+        <Callout className="text-gray-900">
+          <CalloutText>{t($ => $.openings.emptyList)}</CalloutText>
+        </Callout>
       </div>
     )
   }
@@ -196,11 +196,11 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
             />
           </div>
 
-          <DropdownMenu.Root>
+          <DropdownMenu>
             <DropdownMenu.Trigger>
-              <IconButton title={t($ => $.common.addNew)}>
+              <Button variant="icon" title={t($ => $.common.addNew)}>
                 <PlusIcon />
-              </IconButton>
+              </Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
               <DropdownMenu.Item
@@ -232,22 +232,23 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
                 {t($ => $.openings.types.empty)}
               </DropdownMenu.Item>
             </DropdownMenu.Content>
-          </DropdownMenu.Root>
+          </DropdownMenu>
 
-          <IconButton onClick={handleDuplicate} variant="soft" title={t($ => $.common.duplicate)}>
+          <Button variant="icon" onClick={handleDuplicate} variant="soft" title={t($ => $.common.duplicate)}>
             <CopyIcon />
-          </IconButton>
+          </Button>
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <IconButton
+              <Button
+                variant="icon"
                 color="red"
                 variant="soft"
                 disabled={usage.isUsed}
                 title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
               >
                 <TrashIcon />
-              </IconButton>
+              </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.openings.deleteTitle)}</AlertDialog.Title>
@@ -271,9 +272,9 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <IconButton color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
+              <Button variant="icon" color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
                 <ResetIcon />
-              </IconButton>
+              </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.openings.resetTitle)}</AlertDialog.Title>
@@ -296,7 +297,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
       </div>
       {/* Form */}
       <ConfigForm assembly={selectedAssembly} />
-      <Separator size="4" />
+      <Separator />
       <div className="grid grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.openings.defaultOpeningAssembly)}</span>
@@ -405,7 +406,7 @@ function ConfigForm({ assembly }: { assembly: OpeningAssemblyConfig }): React.JS
         </div>
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       {/* Configuration Fields */}
       {assembly.type === 'simple' ? (

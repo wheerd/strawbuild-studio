@@ -1,4 +1,3 @@
-import { Theme } from '@radix-ui/themes'
 import { render } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 

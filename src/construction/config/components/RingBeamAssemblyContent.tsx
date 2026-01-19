@@ -173,11 +173,11 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
             />
           </div>
 
-          <DropdownMenu.Root>
+          <DropdownMenu>
             <DropdownMenu.Trigger>
-              <IconButton title={t($ => $.common.addNew)}>
+              <Button variant="icon" title={t($ => $.common.addNew)}>
                 <PlusIcon />
-              </IconButton>
+              </Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
               <DropdownMenu.Item
@@ -211,26 +211,28 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
                 </div>
               </DropdownMenu.Item>
             </DropdownMenu.Content>
-          </DropdownMenu.Root>
+          </DropdownMenu>
 
-          <IconButton
+          <Button
+            variant="icon"
             onClick={handleDuplicate}
             disabled={!selectedAssembly}
             title={t($ => $.common.duplicate)}
             variant="soft"
           >
             <CopyIcon />
-          </IconButton>
+          </Button>
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <IconButton
+              <Button
+                variant="icon"
                 disabled={!selectedAssembly || usage.isUsed}
                 color="red"
                 title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
               >
                 <TrashIcon />
-              </IconButton>
+              </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.ringBeams.deleteTitle)}</AlertDialog.Title>
@@ -254,9 +256,9 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <IconButton color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
+              <Button variant="icon" color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
                 <ResetIcon />
-              </IconButton>
+              </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.ringBeams.resetTitle)}</AlertDialog.Title>
@@ -285,7 +287,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
         </div>
       )}
       {/* Defaults Section */}
-      <Separator size="4" />
+      <Separator />
       <div className="flex flex-col gap-3">
         <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
           <div className="flex items-center gap-1">
@@ -394,7 +396,7 @@ function ConfigForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.R
         </div>
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       {assembly.type === 'full' && <FullRingBeamFields config={assembly} onUpdate={handleUpdateConfig} />}
       {assembly.type === 'double' && <DoubleRingBeamFields config={assembly} onUpdate={handleUpdateConfig} />}
@@ -642,7 +644,7 @@ function BrickRingBeamFields({
         />
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       <h2>{t($ => $.ringBeams.sections.insulation)}</h2>
 
@@ -674,7 +676,7 @@ function BrickRingBeamFields({
         />
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       <h2>{t($ => $.ringBeams.sections.beam)}</h2>
 
@@ -720,7 +722,7 @@ function BrickRingBeamFields({
         />
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       <h2>{t($ => $.ringBeams.sections.waterproofing)}</h2>
 

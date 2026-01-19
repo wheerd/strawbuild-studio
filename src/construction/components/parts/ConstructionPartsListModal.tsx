@@ -1,5 +1,4 @@
 import { CrossCircledIcon } from '@radix-ui/react-icons'
-import { Callout, Skeleton, Spinner, Tabs } from '@radix-ui/themes'
 import React, { Suspense, use, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -111,12 +110,12 @@ function MaterialPartsContent({ partsDataPromise }: { partsDataPromise: Promise<
   if (!partsData) {
     return (
       <div className="flex">
-        <Callout.Root color="red" size="2">
-          <Callout.Icon>
+        <Callout color="red" size="2">
+          <CalloutIcon>
             <CrossCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>{t($ => $.partsListModal.errors.failedPartsList)}</Callout.Text>
-        </Callout.Root>
+          </CalloutIcon>
+          <CalloutText>{t($ => $.partsListModal.errors.failedPartsList)}</CalloutText>
+        </Callout>
       </div>
     )
   }
@@ -131,12 +130,12 @@ function ModulePartsContent({ partsDataPromise }: { partsDataPromise: Promise<Pa
   if (!partsData) {
     return (
       <div className="flex">
-        <Callout.Root color="red" size="2">
-          <Callout.Icon>
+        <Callout color="red" size="2">
+          <CalloutIcon>
             <CrossCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>{t($ => $.partsListModal.errors.failedModulesList)}</Callout.Text>
-        </Callout.Root>
+          </CalloutIcon>
+          <CalloutText>{t($ => $.partsListModal.errors.failedModulesList)}</CalloutText>
+        </Callout>
       </div>
     )
   }

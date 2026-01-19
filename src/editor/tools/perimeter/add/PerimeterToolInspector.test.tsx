@@ -1,4 +1,3 @@
-import { Theme } from '@radix-ui/themes'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { type Mock, vi } from 'vitest'
 
@@ -90,9 +89,7 @@ describe('PerimeterToolInspector', () => {
     const mockOpenConfiguration = vi.fn()
     return render(
       <ConfigurationModalContext.Provider value={{ openConfiguration: mockOpenConfiguration }}>
-        <Theme>
-          <PerimeterToolInspector tool={tool} />
-        </Theme>
+        <PerimeterToolInspector tool={tool} />
       </ConfigurationModalContext.Provider>
     )
   }

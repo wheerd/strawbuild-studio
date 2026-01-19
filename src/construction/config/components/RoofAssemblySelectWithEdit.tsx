@@ -1,5 +1,4 @@
 import { Pencil1Icon } from '@radix-ui/react-icons'
-import { IconButton } from '@radix-ui/themes'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -16,7 +15,8 @@ export function RoofAssemblySelectWithEdit(props: RoofAssemblySelectProps): Reac
       <div className="flex flex-col gap-1 grow-1 mr-1">
         <RoofAssemblySelect {...props} />
       </div>
-      <IconButton
+      <Button
+        variant="icon"
         title={t($ => $.roofs.configure)}
         variant="ghost"
         size={props.size}
@@ -25,7 +25,7 @@ export function RoofAssemblySelectWithEdit(props: RoofAssemblySelectProps): Reac
         }}
       >
         <Pencil1Icon />
-      </IconButton>
+      </Button>
     </div>
   )
 }

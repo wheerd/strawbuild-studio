@@ -1,5 +1,4 @@
 import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons'
-import { DropdownMenu, IconButton } from '@radix-ui/themes'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -96,27 +95,27 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
 
   if (sortedCategories.length === 0) {
     return (
-      <DropdownMenu.Root>
+      <DropdownMenu>
         <DropdownMenu.Trigger>
-          <IconButton size="1" variant="outline" title={t($ => $.tagVisibility.title)} disabled>
+          <Button variant="icon" size="sm" variant="outline" title={t($ => $.tagVisibility.title)} disabled>
             <EyeOpenIcon />
-          </IconButton>
+          </Button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <DropdownMenu.Item disabled>
             <span className="text-sm text-gray-900">{t($ => $.tagVisibility.noTags)}</span>
           </DropdownMenu.Item>
         </DropdownMenu.Content>
-      </DropdownMenu.Root>
+      </DropdownMenu>
     )
   }
 
   return (
-    <DropdownMenu.Root>
+    <DropdownMenu>
       <DropdownMenu.Trigger>
-        <IconButton size="1" variant="solid" title={t($ => $.tagVisibility.title)}>
+        <Button variant="icon" size="sm" variant="solid" title={t($ => $.tagVisibility.title)}>
           <EyeOpenIcon />
-        </IconButton>
+        </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
         {sortedCategories.map(([categoryId, tags]) => {
@@ -183,6 +182,6 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
           )
         })}
       </DropdownMenu.Content>
-    </DropdownMenu.Root>
+    </DropdownMenu>
   )
 }

@@ -1,9 +1,11 @@
-import { Button, Dialog, SegmentedControl } from '@radix-ui/themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { PerimeterReferenceSide } from '@/building/model'
 import type { WallAssemblyId } from '@/building/model/ids'
+import { Button } from '@/components/ui/button'
+import { DialogClose } from '@/components/ui/dialog'
+import { SegmentedControl } from '@/components/ui/segmented-control'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import {
@@ -210,16 +212,16 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
 
         {/* Actions */}
         <div className="justify-end gap-3 mt-4">
-          <Dialog.Close>
+          <DialogClose>
             <Button variant="soft" className="text-gray-900">
               {t($ => $.presetDialogs.rectangular.cancel)}
             </Button>
-          </Dialog.Close>
-          <Dialog.Close>
+          </DialogClose>
+          <DialogClose asChild>
             <Button onClick={handleConfirm} disabled={!isValid}>
               {t($ => $.presetDialogs.rectangular.confirm)}
             </Button>
-          </Dialog.Close>
+          </DialogClose>
         </div>
       </div>
     </BaseModal>

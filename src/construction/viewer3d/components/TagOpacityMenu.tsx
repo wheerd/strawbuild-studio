@@ -1,5 +1,4 @@
 import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons'
-import { DropdownMenu, IconButton } from '@radix-ui/themes'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -105,27 +104,27 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
 
   if (sortedCategories.length === 0) {
     return (
-      <DropdownMenu.Root>
+      <DropdownMenu>
         <DropdownMenu.Trigger>
-          <IconButton size="1" variant="outline" title={t($ => $.tagOpacity.title)} disabled>
+          <Button variant="icon" size="sm" variant="outline" title={t($ => $.tagOpacity.title)} disabled>
             <EyeOpenIcon />
-          </IconButton>
+          </Button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <DropdownMenu.Item disabled>
             <span className="text-sm text-gray-900">{t($ => $.tagOpacity.noTags)}</span>
           </DropdownMenu.Item>
         </DropdownMenu.Content>
-      </DropdownMenu.Root>
+      </DropdownMenu>
     )
   }
 
   return (
-    <DropdownMenu.Root>
+    <DropdownMenu>
       <DropdownMenu.Trigger>
-        <IconButton size="1" variant="solid" title={t($ => $.tagOpacity.title)}>
+        <Button variant="icon" size="sm" variant="solid" title={t($ => $.tagOpacity.title)}>
           <EyeOpenIcon />
-        </IconButton>
+        </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
         {sortedCategories.map(([categoryId, tags]) => {
@@ -200,6 +199,6 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
           )
         })}
       </DropdownMenu.Content>
-    </DropdownMenu.Root>
+    </DropdownMenu>
   )
 }

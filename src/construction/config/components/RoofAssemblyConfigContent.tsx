@@ -1,6 +1,5 @@
 import { ComponentInstanceIcon, CopyIcon, PlusIcon, ResetIcon, SquareIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { AlertDialog, Badge, Button, DropdownMenu, IconButton, Separator, TextField } from '@radix-ui/themes'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -118,7 +117,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
         </div>
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       {/* Purlin Configuration */}
       <h2>{t($ => $.roofs.sections.purlins)}</h2>
@@ -202,7 +201,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
         </div>
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       {/* Rafter Configuration */}
       <h2>{t($ => $.roofs.sections.rafters)}</h2>
@@ -271,7 +270,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
         </div>
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       <h2>{t($ => $.roofs.sections.decking)}</h2>
 
@@ -307,7 +306,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
         </div>
       </div>
 
-      <Separator size="4" />
+      <Separator />
 
       <h2>{t($ => $.roofs.sections.ceilingSheathing)}</h2>
 
@@ -444,7 +443,7 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
         afterLabel={t($ => $.roofs.layers.insideLayers)}
       />
 
-      <Separator size="4" />
+      <Separator />
 
       <LayerListEditor
         title={t($ => $.roofs.topLayers)}
@@ -473,7 +472,7 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
         afterLabel={t($ => $.roofs.roofConstruction)}
       />
 
-      <Separator size="4" />
+      <Separator />
 
       <LayerListEditor
         title={t($ => $.roofs.layers.overhangLayers)}
@@ -583,7 +582,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
           </div>
         </div>
       </div>
-      <Separator size="4" />
+      <Separator />
       {/* Two Column Layout */}
       <div className="grid grid-cols-2 gap-4 style={{ gridTemplateColumns: '1fr 1fr' }}">
         {/* Left Column - Type-specific configuration */}
@@ -744,11 +743,11 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
               />
             </div>
 
-            <DropdownMenu.Root>
+            <DropdownMenu>
               <DropdownMenu.Trigger>
-                <IconButton title={t($ => $.common.addNew)}>
+                <Button variant="icon" title={t($ => $.common.addNew)}>
                   <PlusIcon />
-                </IconButton>
+                </Button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Content>
                 <DropdownMenu.Item
@@ -772,26 +771,28 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
                   </div>
                 </DropdownMenu.Item>
               </DropdownMenu.Content>
-            </DropdownMenu.Root>
+            </DropdownMenu>
 
-            <IconButton
+            <Button
+              variant="icon"
               onClick={handleDuplicate}
               disabled={!selectedAssembly}
               title={t($ => $.common.duplicate)}
               variant="soft"
             >
               <CopyIcon />
-            </IconButton>
+            </Button>
 
             <AlertDialog.Root>
               <AlertDialog.Trigger>
-                <IconButton
+                <Button
+                  variant="icon"
                   disabled={!selectedAssembly || usage.isUsed}
                   color="red"
                   title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
                 >
                   <TrashIcon />
-                </IconButton>
+                </Button>
               </AlertDialog.Trigger>
               <AlertDialog.Content>
                 <AlertDialog.Title>{t($ => $.roofs.deleteTitle)}</AlertDialog.Title>
@@ -815,9 +816,9 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
 
             <AlertDialog.Root>
               <AlertDialog.Trigger>
-                <IconButton color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
+                <Button variant="icon" color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
                   <ResetIcon />
-                </IconButton>
+                </Button>
               </AlertDialog.Trigger>
               <AlertDialog.Content>
                 <AlertDialog.Title>{t($ => $.roofs.resetTitle)}</AlertDialog.Title>

@@ -10,7 +10,6 @@ import {
   TrashIcon,
   WidthIcon
 } from '@radix-ui/react-icons'
-import { Card, Checkbox, DropdownMenu, IconButton, Select, TextField, Tooltip } from '@radix-ui/themes'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -113,11 +112,11 @@ export function LayerListEditor({
         </div>
         <div className="flex gap-1">
           {layerCopySources && (
-            <DropdownMenu.Root>
+            <DropdownMenu>
               <DropdownMenu.Trigger>
-                <IconButton title={t($ => $.layers.copyFrom)} size="1" variant="soft">
+                <Button variant="icon" title={t($ => $.layers.copyFrom)} size="1" variant="soft">
                   <CopyIcon />
-                </IconButton>
+                </Button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Content>
                 <DropdownMenu.Label>Copy from...</DropdownMenu.Label>
@@ -135,15 +134,15 @@ export function LayerListEditor({
                   </DropdownMenu.Item>
                 ))}
               </DropdownMenu.Content>
-            </DropdownMenu.Root>
+            </DropdownMenu>
           )}
 
           {hasPresetMenu && (
-            <DropdownMenu.Root>
+            <DropdownMenu>
               <DropdownMenu.Trigger>
-                <IconButton title={t($ => $.layers.presetsLabel)} size="1" variant="soft">
+                <Button variant="icon" title={t($ => $.layers.presetsLabel)} size="1" variant="soft">
                   <MagicWandIcon />
-                </IconButton>
+                </Button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Content>
                 {layerPresets.map(preset => (
@@ -160,14 +159,14 @@ export function LayerListEditor({
                   </DropdownMenu.Item>
                 ))}
               </DropdownMenu.Content>
-            </DropdownMenu.Root>
+            </DropdownMenu>
           )}
 
-          <DropdownMenu.Root>
+          <DropdownMenu>
             <DropdownMenu.Trigger>
-              <IconButton title={addLabel} size="1" variant="soft">
+              <Button variant="icon" title={addLabel} size="sm" variant="soft">
                 <PlusIcon />
-              </IconButton>
+              </Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
               <DropdownMenu.Item
@@ -203,7 +202,7 @@ export function LayerListEditor({
                 </div>
               </DropdownMenu.Item>
             </DropdownMenu.Content>
-          </DropdownMenu.Root>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -337,8 +336,9 @@ function LayerCard({
           />
 
           <div className="flex gap-1">
-            <IconButton
-              size="1"
+            <Button
+              variant="icon"
+              size="sm"
               variant="soft"
               onClick={() => {
                 onMoveLayer(index, index - 1)
@@ -347,9 +347,10 @@ function LayerCard({
               title={t($ => $.layers.moveUp)}
             >
               <ChevronUpIcon />
-            </IconButton>
-            <IconButton
-              size="1"
+            </Button>
+            <Button
+              variant="icon"
+              size="sm"
               variant="soft"
               onClick={() => {
                 onMoveLayer(index, index + 1)
@@ -358,9 +359,10 @@ function LayerCard({
               title={t($ => $.layers.moveDown)}
             >
               <ChevronDownIcon />
-            </IconButton>
-            <IconButton
-              size="1"
+            </Button>
+            <Button
+              variant="icon"
+              size="sm"
               variant="soft"
               color="red"
               onClick={() => {
@@ -369,7 +371,7 @@ function LayerCard({
               title={t($ => $.layers.removeLayer)}
             >
               <TrashIcon />
-            </IconButton>
+            </Button>
           </div>
         </div>
 

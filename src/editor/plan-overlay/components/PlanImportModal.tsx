@@ -1,11 +1,13 @@
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { Label } from '@radix-ui/react-label'
-import { Button, Separator, Tooltip } from '@radix-ui/themes'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { StoreyId } from '@/building/model/ids'
+import { Button } from '@/components/ui/button'
 import { FullScreenModal } from '@/components/ui/full-screen-modal'
+import { Separator } from '@/components/ui/separator'
+import { Tooltip } from '@/components/ui/tooltip'
 import { PlanCalibrationCanvas } from '@/editor/plan-overlay/components/PlanCalibrationCanvas'
 import { useFloorPlanActions } from '@/editor/plan-overlay/store'
 import type { FloorPlanOverlay, ImagePoint } from '@/editor/plan-overlay/types'
@@ -241,14 +243,14 @@ export function PlanImportModal({
             <input id="fileInput" type="file" accept="image/*" onChange={handleFileChange} className="opacity-0 h-0" />
           </div>
 
-          <Separator size="4" />
+          <Separator />
 
           <div className="flex flex-col gap-2">
             <span className="font-medium">{t($ => $.planImport.step2.title)}</span>
             <div className="items-baseline justify-between">
               <span className="text-base text-gray-900">{t($ => $.planImport.step2.instructions)}</span>
               <Button
-                size="1"
+                size="sm"
                 variant="soft"
                 disabled={referencePoints.length === 0}
                 onClick={() => {
@@ -291,7 +293,7 @@ export function PlanImportModal({
             </div>
           </div>
 
-          <Separator size="4" />
+          <Separator />
 
           <div className="flex flex-col gap-2">
             <span className="font-medium">{t($ => $.planImport.step3.title)}</span>
@@ -302,7 +304,7 @@ export function PlanImportModal({
                 content={showOriginHint ? t($ => $.planImport.step3.clickHint) : t($ => $.planImport.step3.pickHint)}
               >
                 <Button
-                  size="1"
+                  size="sm"
                   variant={showOriginHint ? 'solid' : 'soft'}
                   onClick={handleSelectOriginClick}
                   disabled={!imageElement}
@@ -317,7 +319,7 @@ export function PlanImportModal({
 
               {originPoint && (
                 <Button
-                  size="1"
+                  size="sm"
                   variant="ghost"
                   onClick={() => {
                     setOriginPoint(null)

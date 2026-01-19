@@ -1,5 +1,4 @@
 import { ExclamationTriangleIcon, ImageIcon } from '@radix-ui/react-icons'
-import { AlertDialog, Button, DropdownMenu, IconButton } from '@radix-ui/themes'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -26,11 +25,11 @@ export function PlanOverlayControls(): React.JSX.Element | null {
       <PlanImportModal floorId={activeStoreyId} open={modalOpen} onOpenChange={setModalOpen} existingPlan={plan} />
       {plan ? (
         <>
-          <DropdownMenu.Root>
+          <DropdownMenu>
             <DropdownMenu.Trigger>
-              <IconButton size="1" variant="soft" aria-label={t($ => $.planControls.ariaLabel)}>
+              <Button variant="icon" size="sm" variant="soft" aria-label={t($ => $.planControls.ariaLabel)}>
                 <ImageIcon />
-              </IconButton>
+              </Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
               <DropdownMenu.Label>{t($ => $.planControls.label)}</DropdownMenu.Label>
@@ -64,7 +63,7 @@ export function PlanOverlayControls(): React.JSX.Element | null {
                 {t($ => $.planControls.removePlan)}
               </DropdownMenu.Item>
             </DropdownMenu.Content>
-          </DropdownMenu.Root>
+          </DropdownMenu>
 
           <AlertDialog.Root open={confirmOpen} onOpenChange={setConfirmOpen}>
             <AlertDialog.Content maxWidth="400px">
@@ -108,8 +107,9 @@ export function PlanOverlayControls(): React.JSX.Element | null {
           </AlertDialog.Root>
         </>
       ) : (
-        <IconButton
-          size="1"
+        <Button
+          variant="icon"
+          size="sm"
           variant="surface"
           onClick={() => {
             setModalOpen(true)
@@ -117,7 +117,7 @@ export function PlanOverlayControls(): React.JSX.Element | null {
           title={t($ => $.planControls.importPlan)}
         >
           <ImageIcon />
-        </IconButton>
+        </Button>
       )}
     </div>
   )

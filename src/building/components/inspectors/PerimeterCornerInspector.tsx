@@ -1,5 +1,4 @@
 import { ExclamationTriangleIcon, PinLeftIcon, PinRightIcon, TrashIcon } from '@radix-ui/react-icons'
-import { Callout, DataList, IconButton, Separator } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -88,35 +87,36 @@ export function PerimeterCornerInspector({ cornerId }: { cornerId: PerimeterCorn
       </div>
       {/* Non-standard angle warning */}
       {isNonStandardAngle && (
-        <Callout.Root color="amber">
-          <Callout.Icon>
+        <Callout color="amber">
+          <CalloutIcon>
             <ExclamationTriangleIcon />
-          </Callout.Icon>
-          <Callout.Text>
+          </CalloutIcon>
+          <CalloutText>
             <span className="font-bold">{t($ => $.perimeterCorner.nonRightAngleWarning)}</span>
             <br />
             <span className="text-sm">{t($ => $.perimeterCorner.nonRightAngleDescription)}</span>
-          </Callout.Text>
-        </Callout.Root>
+          </CalloutText>
+        </Callout>
       )}
       {/* Corner switching locked warning */}
       {!canSwitchWall && (
-        <Callout.Root color="blue">
-          <Callout.Icon>
+        <Callout color="blue">
+          <CalloutIcon>
             <ExclamationTriangleIcon />
-          </Callout.Icon>
-          <Callout.Text>
+          </CalloutIcon>
+          <CalloutText>
             <span className="font-bold">{t($ => $.perimeterCorner.cornerLockedWarning)}</span>
             <br />
             <span className="text-sm">{t($ => $.perimeterCorner.cornerLockedDescription)}</span>
-          </Callout.Text>
-        </Callout.Root>
+          </CalloutText>
+        </Callout>
       )}
-      <Separator size="4" />
+      <Separator />
       {/* Actions */}
       <div className="flex flex-col gap-2">
         <div className="flex justify-end gap-2">
-          <IconButton
+          <Button
+            variant="icon"
             size="2"
             onClick={handleToggleConstructedByWall}
             disabled={!canSwitchWall}
@@ -125,11 +125,12 @@ export function PerimeterCornerInspector({ cornerId }: { cornerId: PerimeterCorn
             }
           >
             {corner.constructedByWall === 'next' ? <PinLeftIcon /> : <PinRightIcon />}
-          </IconButton>
-          <IconButton size="2" title={t($ => $.perimeterCorner.fitToView)} onClick={handleFitToView}>
+          </Button>
+          <Button variant="icon" title={t($ => $.perimeterCorner.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
-          </IconButton>
-          <IconButton
+          </Button>
+          <Button
+            variant="icon"
             size="2"
             color={corner.interiorAngle === 180 ? undefined : 'red'}
             title={
@@ -143,10 +144,10 @@ export function PerimeterCornerInspector({ cornerId }: { cornerId: PerimeterCorn
             disabled={!canDeleteCorner.canDelete}
           >
             {corner.interiorAngle === 180 ? <SplitWallIcon /> : <TrashIcon />}
-          </IconButton>
+          </Button>
         </div>
       </div>
-      <Separator size="4" />
+      <Separator />
       {/* Construction Notes */}
       {hasConstructionNotes && (
         <div className="flex flex-col gap-2">
@@ -157,25 +158,25 @@ export function PerimeterCornerInspector({ cornerId }: { cornerId: PerimeterCorn
             const nextAssembly = getWallAssemblyById(nextWall.wallAssemblyId)
             return prevAssembly?.type !== nextAssembly?.type
           })() && (
-            <Callout.Root color="amber">
-              <Callout.Text>
+            <Callout color="amber">
+              <CalloutText>
                 <span className="font-bold">{t($ => $.perimeterCorner.mixedAssembliesWarning)}</span>
                 <br />
                 {t($ => $.perimeterCorner.mixedAssembliesDescription)}
-              </Callout.Text>
-            </Callout.Root>
+              </CalloutText>
+            </Callout>
           )}
 
           {Math.abs(previousWall.thickness - nextWall.thickness) > 5 && (
-            <Callout.Root color="amber">
-              <Callout.Text>
+            <Callout color="amber">
+              <CalloutText>
                 <span className="font-bold">{t($ => $.perimeterCorner.thicknessDifferenceWarning)}</span>
                 <br />
                 {t($ => $.perimeterCorner.thicknessDifferenceDescription, {
                   difference: Math.abs(previousWall.thickness - nextWall.thickness)
                 })}
-              </Callout.Text>
-            </Callout.Root>
+              </CalloutText>
+            </Callout>
           )}
         </div>
       )}

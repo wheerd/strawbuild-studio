@@ -1,5 +1,4 @@
 import { Pencil1Icon } from '@radix-ui/react-icons'
-import { IconButton } from '@radix-ui/themes'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -16,7 +15,8 @@ export function MaterialSelectWithEdit(props: MaterialSelectProps): React.JSX.El
       <div className="flex flex-col gap-1 grow-1 mr-1">
         <MaterialSelect {...props} />
       </div>
-      <IconButton
+      <Button
+        variant="icon"
         title={t($ => $.materials.configure)}
         variant="ghost"
         size={props.size}
@@ -25,7 +25,7 @@ export function MaterialSelectWithEdit(props: MaterialSelectProps): React.JSX.El
         }}
       >
         <Pencil1Icon />
-      </IconButton>
+      </Button>
     </div>
   )
 }

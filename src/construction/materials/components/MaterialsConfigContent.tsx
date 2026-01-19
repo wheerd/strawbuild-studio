@@ -196,11 +196,11 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
               placeholder={t($ => $.common.placeholders.selectMaterial)}
             />
           </div>
-          <DropdownMenu.Root>
+          <DropdownMenu>
             <DropdownMenu.Trigger>
-              <IconButton title={t($ => $.common.addNew)}>
+              <Button variant="icon" title={t($ => $.common.addNew)}>
                 <PlusIcon />
-              </IconButton>
+              </Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
               <DropdownMenu.Item
@@ -254,24 +254,26 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
                 </div>
               </DropdownMenu.Item>
             </DropdownMenu.Content>
-          </DropdownMenu.Root>
-          <IconButton
+          </DropdownMenu>
+          <Button
+            variant="icon"
             onClick={handleDuplicate}
             disabled={!selectedMaterial}
             title={t($ => $.common.duplicate)}
             variant="soft"
           >
             <CopyIcon />
-          </IconButton>
+          </Button>
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <IconButton
+              <Button
+                variant="icon"
                 disabled={!selectedMaterial || usage.isUsed}
                 color="red"
                 title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
               >
                 <TrashIcon />
-              </IconButton>
+              </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.materials.deleteTitle)}</AlertDialog.Title>
@@ -296,9 +298,9 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
           </AlertDialog.Root>
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <IconButton color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
+              <Button variant="icon" color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
                 <ResetIcon />
-              </IconButton>
+              </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.materials.resetTitle)}</AlertDialog.Title>
@@ -539,8 +541,9 @@ function DimensionalMaterialFields({
               <Badge role="listitem" key={`${section.smallerLength}x${section.biggerLength}`} size="2" variant="soft">
                 <div className="flex items-center gap-1">
                   {formatDimensions2D([section.smallerLength, section.biggerLength], false)}
-                  <IconButton
-                    size="1"
+                  <Button
+                    variant="icon"
+                    size="sm"
                     variant="ghost"
                     text-gray-900
                     onClick={() => {
@@ -550,17 +553,17 @@ function DimensionalMaterialFields({
                     aria-label={t($ => $.materials.removeCrossSection)}
                   >
                     <Cross2Icon width="10" height="10" />
-                  </IconButton>
+                  </Button>
                 </div>
               </Badge>
             ))}
             {material.crossSections.length === 0 && (
-              <Callout.Root color="amber" size="1">
-                <Callout.Icon>
+              <Callout color="amber" size="1">
+                <CalloutIcon>
                   <ExclamationTriangleIcon />
-                </Callout.Icon>
-                <Callout.Text>{t($ => $.materials.noCrossSections)}</Callout.Text>
-              </Callout.Root>
+                </CalloutIcon>
+                <CalloutText>{t($ => $.materials.noCrossSections)}</CalloutText>
+              </Callout>
             )}
           </div>
         </div>
@@ -580,7 +583,8 @@ function DimensionalMaterialFields({
             size="2"
             aria-label={t($ => $.materials.crossSectionLarger)}
           />
-          <IconButton
+          <Button
+            variant="icon"
             title={t($ => $.common.add)}
             aria-label={t($ => $.materials.addCrossSection)}
             onClick={handleAddCrossSection}
@@ -588,7 +592,7 @@ function DimensionalMaterialFields({
             size="2"
           >
             <PlusIcon />
-          </IconButton>
+          </Button>
         </div>
       </div>
       <div className="flex flex-row justify-between items-end">
@@ -601,8 +605,9 @@ function DimensionalMaterialFields({
               <Badge role="listitem" key={length} size="2" variant="soft">
                 <div className="flex items-center gap-1">
                   {formatLength(length)}
-                  <IconButton
-                    size="1"
+                  <Button
+                    variant="icon"
+                    size="sm"
                     variant="ghost"
                     text-gray-900
                     onClick={() => {
@@ -612,17 +617,17 @@ function DimensionalMaterialFields({
                     aria-label={t($ => $.materials.removeStockLength)}
                   >
                     <Cross2Icon width="10" height="10" />
-                  </IconButton>
+                  </Button>
                 </div>
               </Badge>
             ))}
             {material.lengths.length === 0 && (
-              <Callout.Root color="amber" size="1">
-                <Callout.Icon>
+              <Callout color="amber" size="1">
+                <CalloutIcon>
                   <ExclamationTriangleIcon />
-                </Callout.Icon>
-                <Callout.Text>{t($ => $.materials.noLengths)}</Callout.Text>
-              </Callout.Root>
+                </CalloutIcon>
+                <CalloutText>{t($ => $.materials.noLengths)}</CalloutText>
+              </Callout>
             )}
           </div>
         </div>
@@ -635,7 +640,8 @@ function DimensionalMaterialFields({
             style={{ width: '8em' }}
             aria-label={t($ => $.materials.stockLengthInput)}
           />
-          <IconButton
+          <Button
+            variant="icon"
             title={t($ => $.materials.add)}
             aria-label={t($ => $.materials.addStockLength)}
             onClick={handleAddLength}
@@ -643,7 +649,7 @@ function DimensionalMaterialFields({
             size="2"
           >
             <PlusIcon />
-          </IconButton>
+          </Button>
         </div>
       </div>
     </div>
@@ -720,8 +726,9 @@ function SheetMaterialFields({
               <Badge role="listitem" key={`${size.smallerLength}x${size.biggerLength}`} size="2" variant="soft">
                 <div className="flex items-center gap-1">
                   {formatDimensions2D([size.smallerLength, size.biggerLength], false)}
-                  <IconButton
-                    size="1"
+                  <Button
+                    variant="icon"
+                    size="sm"
                     variant="ghost"
                     text-gray-900
                     onClick={() => {
@@ -731,17 +738,17 @@ function SheetMaterialFields({
                     aria-label={t($ => $.materials.removeSheetSize)}
                   >
                     <Cross2Icon width="10" height="10" />
-                  </IconButton>
+                  </Button>
                 </div>
               </Badge>
             ))}
             {material.sizes.length === 0 && (
-              <Callout.Root color="amber" size="1">
-                <Callout.Icon>
+              <Callout color="amber" size="1">
+                <CalloutIcon>
                   <ExclamationTriangleIcon />
-                </Callout.Icon>
-                <Callout.Text>{t($ => $.materials.noSizes)}</Callout.Text>
-              </Callout.Root>
+                </CalloutIcon>
+                <CalloutText>{t($ => $.materials.noSizes)}</CalloutText>
+              </Callout>
             )}
           </div>
         </div>
@@ -761,7 +768,8 @@ function SheetMaterialFields({
             size="2"
             aria-label={t($ => $.materials.sheetLength)}
           />
-          <IconButton
+          <Button
+            variant="icon"
             title={t($ => $.materials.addSize)}
             aria-label={t($ => $.materials.addSheetSize)}
             onClick={handleAddSize}
@@ -769,7 +777,7 @@ function SheetMaterialFields({
             size="2"
           >
             <PlusIcon />
-          </IconButton>
+          </Button>
         </div>
       </div>
       <div className="flex flex-row justify-between items-end">
@@ -782,8 +790,9 @@ function SheetMaterialFields({
               <Badge role="listitem" key={thickness} size="2" variant="soft">
                 <div className="flex items-center gap-1">
                   {formatLength(thickness)}
-                  <IconButton
-                    size="1"
+                  <Button
+                    variant="icon"
+                    size="sm"
                     variant="ghost"
                     text-gray-900
                     onClick={() => {
@@ -793,17 +802,17 @@ function SheetMaterialFields({
                     aria-label={t($ => $.materials.removeThickness)}
                   >
                     <Cross2Icon width="10" height="10" />
-                  </IconButton>
+                  </Button>
                 </div>
               </Badge>
             ))}
             {material.thicknesses.length === 0 && (
-              <Callout.Root color="amber" size="1">
-                <Callout.Icon>
+              <Callout color="amber" size="1">
+                <CalloutIcon>
                   <ExclamationTriangleIcon />
-                </Callout.Icon>
-                <Callout.Text>{t($ => $.materials.noThicknesses)}</Callout.Text>
-              </Callout.Root>
+                </CalloutIcon>
+                <CalloutText>{t($ => $.materials.noThicknesses)}</CalloutText>
+              </Callout>
             )}
           </div>
         </div>
@@ -816,7 +825,8 @@ function SheetMaterialFields({
             style={{ width: '8em' }}
             aria-label={t($ => $.materials.thicknessInput)}
           />
-          <IconButton
+          <Button
+            variant="icon"
             title={t($ => $.materials.addThickness)}
             aria-label={t($ => $.materials.addThickness)}
             onClick={handleAddThickness}
@@ -824,7 +834,7 @@ function SheetMaterialFields({
             size="2"
           >
             <PlusIcon />
-          </IconButton>
+          </Button>
         </div>
       </div>
       <div className="flex flex-col gap-2">
@@ -889,8 +899,9 @@ function VolumeMaterialFields({
               <Badge role="listitem" key={volume} size="2" variant="soft">
                 <div className="flex items-center gap-1">
                   {volumeUnit === 'liter' ? formatVolumeInLiters(volume) : formatVolume(volume)}
-                  <IconButton
-                    size="1"
+                  <Button
+                    variant="icon"
+                    size="sm"
                     variant="ghost"
                     text-gray-900
                     onClick={() => {
@@ -900,17 +911,17 @@ function VolumeMaterialFields({
                     aria-label={t($ => $.materials.removeVolume)}
                   >
                     <Cross2Icon width="10" height="10" />
-                  </IconButton>
+                  </Button>
                 </div>
               </Badge>
             ))}
             {material.availableVolumes.length === 0 && (
-              <Callout.Root color="amber" size="1">
-                <Callout.Icon>
+              <Callout color="amber" size="1">
+                <CalloutIcon>
                   <ExclamationTriangleIcon />
-                </Callout.Icon>
-                <Callout.Text>{t($ => $.materials.noVolumes)}</Callout.Text>
-              </Callout.Root>
+                </CalloutIcon>
+                <CalloutText>{t($ => $.materials.noVolumes)}</CalloutText>
+              </Callout>
             )}
           </div>
         </div>
@@ -935,7 +946,8 @@ function VolumeMaterialFields({
               style={{ width: '8em' }}
               aria-label={t($ => $.materials.volumeInput)}
             />
-            <IconButton
+            <Button
+              variant="icon"
               title={t($ => $.materials.addVolume)}
               aria-label={t($ => $.materials.addVolumeOption)}
               onClick={handleAddVolume}
@@ -943,7 +955,7 @@ function VolumeMaterialFields({
               size="2"
             >
               <PlusIcon />
-            </IconButton>
+            </Button>
           </div>
         </div>
       </div>

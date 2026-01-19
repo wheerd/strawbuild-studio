@@ -1,8 +1,10 @@
+import { HoverCardTrigger } from '@radix-ui/react-hover-card'
 import { InfoCircledIcon } from '@radix-ui/react-icons'
-import { HoverCard, IconButton, Inset } from '@radix-ui/themes'
 import { type ComponentProps, type JSX, useId } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
+import { HoverCard, HoverCardContent } from '@/components/ui/hover-card'
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
 import { BaseModal } from '@/shared/components/BaseModal'
 import { degreesToRadians, newVec2 } from '@/shared/geometry'
@@ -739,9 +741,10 @@ export function RoofMeasurementInfo(config: MeasurementDisplayConfig): React.JSX
   const { t } = useTranslation('construction')
 
   return (
-    <HoverCard.Root>
-      <HoverCard.Trigger>
-        <IconButton
+    <HoverCard>
+      <HoverCardTrigger>
+        <Button
+          variant="icon"
           style={{ cursor: 'help' }}
           text-gray-900
           radius="full"
@@ -750,14 +753,14 @@ export function RoofMeasurementInfo(config: MeasurementDisplayConfig): React.JSX
           size="1"
         >
           <InfoCircledIcon width={12} height={12} />
-        </IconButton>
-      </HoverCard.Trigger>
-      <HoverCard.Content side="right">
+        </Button>
+      </HoverCardTrigger>
+      <HoverCardContent side="right">
         <Inset>
           <ConstructionSchematic {...config} />
         </Inset>
-      </HoverCard.Content>
-    </HoverCard.Root>
+      </HoverCardContent>
+    </HoverCard>
   )
 }
 
@@ -767,9 +770,9 @@ export function RoofMeasurementModal(): React.JSX.Element {
     <BaseModal
       title={t($ => $.measurements.roofMeasurementDetails)}
       trigger={
-        <IconButton>
+        <Button variant="icon">
           <InfoCircledIcon />
-        </IconButton>
+        </Button>
       }
     >
       <ConstructionSchematic

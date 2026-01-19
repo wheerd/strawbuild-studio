@@ -1,5 +1,4 @@
 import * as Label from '@radix-ui/react-label'
-import { Callout, IconButton, Separator } from '@radix-ui/themes'
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -25,11 +24,11 @@ export function RoofOverhangInspector({ overhangId }: { overhangId: RoofOverhang
   if (!overhang) {
     return (
       <div className="p-2">
-        <Callout.Root color="red">
-          <Callout.Text>
+        <Callout color="red">
+          <CalloutText>
             <span className="font-bold">{t($ => $.roofOverhang.notFound)}</span>
-          </Callout.Text>
-        </Callout.Root>
+          </CalloutText>
+        </Callout>
       </div>
     )
   }
@@ -43,7 +42,7 @@ export function RoofOverhangInspector({ overhangId }: { overhangId: RoofOverhang
           })}
         </span>
 
-        <Separator size="4" />
+        <Separator />
 
         {/* Overhang Value */}
         <div className="items-center gap-2 justify-between">
@@ -62,13 +61,13 @@ export function RoofOverhangInspector({ overhangId }: { overhangId: RoofOverhang
           />
         </div>
 
-        <Separator size="4" />
+        <Separator />
 
         {/* Actions */}
         <div className="flex justify-end gap-2">
-          <IconButton size="2" title={t($ => $.roofOverhang.fitToView)} onClick={handleFitToView}>
+          <Button variant="icon" title={t($ => $.roofOverhang.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
-          </IconButton>
+          </Button>
         </div>
       </div>
     </div>

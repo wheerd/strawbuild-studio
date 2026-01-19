@@ -1,7 +1,9 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
-import { Button, Callout, Kbd } from '@radix-ui/themes'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { Kbd } from '@/components/ui/kbd'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
 
@@ -15,14 +17,14 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
     return (
       <div className="flex flex-col gap-3">
         <h2>{t($ => $.splitWall.title)}</h2>
-        <Callout.Root color="blue">
-          <Callout.Icon>
+        <Callout color="blue">
+          <CalloutIcon>
             <InfoCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>
+          </CalloutIcon>
+          <CalloutText>
             <span className="text-sm">{t($ => $.splitWall.info)}</span>
-          </Callout.Text>
-        </Callout.Root>
+          </CalloutText>
+        </Callout>
         <span className="text-base text-gray-900">{t($ => $.splitWall.selectWall)}</span>
       </div>
     )
@@ -34,14 +36,14 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
     <div className="flex flex-col gap-4">
       <h2>{t($ => $.splitWall.title)}</h2>
       {state.isValidSplit && (
-        <Callout.Root color="green">
-          <Callout.Text>{t($ => $.splitWall.readyToSplit)}</Callout.Text>
-        </Callout.Root>
+        <Callout color="green">
+          <CalloutText>{t($ => $.splitWall.readyToSplit)}</CalloutText>
+        </Callout>
       )}
       {!state.isValidSplit && splitError != null && (
-        <Callout.Root color="red">
-          <Callout.Text>{t($ => $.splitWall.errors[splitError])}</Callout.Text>
-        </Callout.Root>
+        <Callout color="red">
+          <CalloutText>{t($ => $.splitWall.errors[splitError])}</CalloutText>
+        </Callout>
       )}
       {/* Action Buttons */}
       <div className="flex flex-col gap-2">

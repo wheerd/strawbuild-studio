@@ -1,6 +1,5 @@
 import { TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Card, DataList, IconButton, Separator } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -146,7 +145,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
           allowNone
         />
       </div>
-      <Separator size="4" />
+      <Separator />
       {/* Measurements */}
       <div className="flex flex-col gap-2">
         <h2>{t($ => $.perimeterWall.measurements)}</h2>
@@ -198,7 +197,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
           )}
         </DataList.Root>
       </div>
-      <Separator size="4" />
+      <Separator />
       {/* Openings */}
       <div className="flex flex-col gap-2">
         <h2>{t($ => $.perimeterWall.openings)}</h2>
@@ -229,7 +228,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
           </Card>
         </div>
       </div>
-      <Separator size="4" />
+      <Separator />
       {/* Actions */}
       <div className="flex flex-col gap-2">
         <div className="flex justify-end gap-2">
@@ -244,13 +243,14 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
             defaultHiddenTags={['wall-layer']}
             refreshKey={[wallId]}
             trigger={
-              <IconButton title={t($ => $.perimeterWall.viewConstructionPlan)} size="2">
+              <Button variant="icon" title={t($ => $.perimeterWall.viewConstructionPlan)} size="2">
                 <ConstructionPlanIcon width={20} height={20} />
-              </IconButton>
+              </Button>
             }
           />
 
-          <IconButton
+          <Button
+            variant="icon"
             size="2"
             title={t($ => $.perimeterWall.splitWall)}
             onClick={() => {
@@ -258,11 +258,12 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
             }}
           >
             <SplitWallIcon width={20} height={20} />
-          </IconButton>
-          <IconButton size="2" title={t($ => $.perimeterWall.fitToView)} onClick={handleFitToView}>
+          </Button>
+          <Button variant="icon" title={t($ => $.perimeterWall.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon width={20} height={20} />
-          </IconButton>
-          <IconButton
+          </Button>
+          <Button
+            variant="icon"
             size="2"
             color="red"
             title={canDeleteWall.reason ? t(canDeleteWall.reason) : t($ => $.perimeterWall.deleteWall)}
@@ -270,7 +271,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
             disabled={!canDeleteWall.canDelete}
           >
             <TrashIcon width={20} height={20} />
-          </IconButton>
+          </Button>
         </div>
       </div>
     </div>

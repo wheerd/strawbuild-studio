@@ -1,5 +1,4 @@
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
-import { AlertDialog, Button, Card, Code } from '@radix-ui/themes'
 import { OrbitControls } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
 import { useTheme } from 'next-themes'
