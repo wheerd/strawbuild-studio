@@ -129,8 +129,22 @@ const SelectSeparator = React.forwardRef<
 ))
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName
 
+// Compound component for Radix Themes compatibility
+const SelectCompound = Object.assign(SelectPrimitive.Root, {
+  Root: SelectPrimitive.Root,
+  Trigger: SelectTrigger,
+  Content: SelectContent,
+  Item: SelectItem,
+  Group: SelectGroup,
+  Value: SelectValue,
+  Label: SelectLabel,
+  Separator: SelectSeparator,
+  ScrollUpButton: SelectScrollUpButton,
+  ScrollDownButton: SelectScrollDownButton
+})
+
 export {
-  Select,
+  SelectCompound as Select,
   SelectGroup,
   SelectValue,
   SelectTrigger,

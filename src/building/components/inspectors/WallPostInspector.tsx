@@ -159,10 +159,10 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
       <Separator />
       {/* Action Buttons */}
       <div className="flex justify-end gap-2">
-        <Button variant="icon" title={t($ => $.wallPost.fitToView)} onClick={handleFitToView}>
+        <Button size="icon" title={t($ => $.wallPost.fitToView)} onClick={handleFitToView}>
           <FitToViewIcon />
         </Button>
-        <Button variant="icon" color="red" title={t($ => $.wallPost.deletePost)} onClick={handleRemovePost}>
+        <Button size="icon"className="text-destructive" title={t($ => $.wallPost.deletePost)} onClick={handleRemovePost}>
           <TrashIcon />
         </Button>
       </div>

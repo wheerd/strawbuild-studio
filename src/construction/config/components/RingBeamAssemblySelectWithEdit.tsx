@@ -16,7 +16,7 @@ export function RingBeamAssemblySelectWithEdit(props: RingBeamAssemblySelectProp
         <RingBeamAssemblySelect {...props} />
       </div>
       <Button
-        variant="icon"
+        size="icon"
         title={t($ => $.ringBeams.configure)}
         variant="ghost"
         size={props.size}

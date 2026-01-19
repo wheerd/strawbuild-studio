@@ -244,7 +244,7 @@ function ConstructionPlanModalContent({
   if (!constructionModel) {
     return (
       <div className="flex items-center justify-center">
-        <Callout color="red" size="2">
+        <Callout className="text-destructive" size="2">
           <CalloutIcon>
             <CrossCircledIcon />
           </CalloutIcon>
@@ -279,7 +279,7 @@ function PartsTabContent({
   if (partsData == null) {
     return (
       <div className="flex">
-        <Callout color="red" size="2">
+        <Callout className="text-destructive" size="2">
           <CalloutIcon>
             <CrossCircledIcon />
           </CalloutIcon>
@@ -305,7 +305,7 @@ function ModulesTabContent({
   if (partsData == null) {
     return (
       <div className="flex">
-        <Callout color="red" size="2">
+        <Callout className="text-destructive" size="2">
           <CalloutIcon>
             <CrossCircledIcon />
           </CalloutIcon>

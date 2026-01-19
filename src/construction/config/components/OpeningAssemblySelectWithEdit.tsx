@@ -16,7 +16,7 @@ export function OpeningAssemblySelectWithEdit(props: OpeningAssemblySelectProps)
         <OpeningAssemblySelect {...props} />
       </div>
       <Button
-        variant="icon"
+        size="icon"
         title={t($ => $.openings.configure)}
         variant="ghost"
         size={props.size}

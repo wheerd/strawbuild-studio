@@ -26,4 +26,12 @@ const DataListValue = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLEle
 )
 DataListValue.displayName = 'DataListValue'
 
-export { DataList, DataListItem, DataListLabel, DataListValue }
+// Compound component for Radix Themes compatibility
+const DataListCompound = Object.assign(DataList, {
+  Root: DataList,
+  Item: DataListItem,
+  Label: DataListLabel,
+  Value: DataListValue
+})
+
+export { DataListCompound as DataList, DataListItem, DataListLabel, DataListValue }

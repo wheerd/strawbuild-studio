@@ -116,7 +116,7 @@ export function PerimeterCornerInspector({ cornerId }: { cornerId: PerimeterCorn
       <div className="flex flex-col gap-2">
         <div className="flex justify-end gap-2">
           <Button
-            variant="icon"
+            size="icon"
             size="2"
             onClick={handleToggleConstructedByWall}
             disabled={!canSwitchWall}
@@ -126,11 +126,11 @@ export function PerimeterCornerInspector({ cornerId }: { cornerId: PerimeterCorn
           >
             {corner.constructedByWall === 'next' ? <PinLeftIcon /> : <PinRightIcon />}
           </Button>
-          <Button variant="icon" title={t($ => $.perimeterCorner.fitToView)} onClick={handleFitToView}>
+          <Button size="icon" title={t($ => $.perimeterCorner.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
           </Button>
           <Button
-            variant="icon"
+            size="icon"
             size="2"
             color={corner.interiorAngle === 180 ? undefined : 'red'}
             title={

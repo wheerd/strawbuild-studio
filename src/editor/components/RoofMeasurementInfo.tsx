@@ -744,10 +744,10 @@ export function RoofMeasurementInfo(config: MeasurementDisplayConfig): React.JSX
     <HoverCard>
       <HoverCardTrigger>
         <Button
-          variant="icon"
+          size="icon"
           style={{ cursor: 'help' }}
-          text-gray-900
-          radius="full"
+          
+          className="rounded-full"
           title={t($ => $.measurements.measurements)}
           variant="ghost"
           size="1"
@@ -756,9 +756,9 @@ export function RoofMeasurementInfo(config: MeasurementDisplayConfig): React.JSX
         </Button>
       </HoverCardTrigger>
       <HoverCardContent side="right">
-        <Inset>
+        <div className="-m-4">
           <ConstructionSchematic {...config} />
-        </Inset>
+        </div>
       </HoverCardContent>
     </HoverCard>
   )
@@ -770,7 +770,7 @@ export function RoofMeasurementModal(): React.JSX.Element {
     <BaseModal
       title={t($ => $.measurements.roofMeasurementDetails)}
       trigger={
-        <Button variant="icon">
+        <Button size="icon">
           <InfoCircledIcon />
         </Button>
       }

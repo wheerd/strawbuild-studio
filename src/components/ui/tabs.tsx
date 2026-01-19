@@ -50,4 +50,12 @@ const TabsContent = React.forwardRef<
 ))
 TabsContent.displayName = TabsPrimitive.Content.displayName
 
-export { Tabs, TabsList, TabsTrigger, TabsContent }
+// Compound component for Radix Themes compatibility
+const TabsCompound = Object.assign(TabsPrimitive.Root, {
+  Root: TabsPrimitive.Root,
+  List: TabsList,
+  Trigger: TabsTrigger,
+  Content: TabsContent
+})
+
+export { TabsCompound as Tabs, TabsList, TabsTrigger, TabsContent }

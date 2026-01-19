@@ -107,7 +107,7 @@ describe('LengthField', () => {
       const textFieldRoot = input.closest('.rt-TextFieldRoot')
       expect(textFieldRoot).toHaveClass('rt-variant-surface')
       // Note: We can't easily test the color prop in this test environment,
-      // but the isValid state should be false which sets color="red"
+      // but the isValid state should be false which setsclassName="text-destructive"
     })
   })
 

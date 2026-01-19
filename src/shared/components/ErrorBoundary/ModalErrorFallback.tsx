@@ -10,7 +10,7 @@ export function ModalErrorFallback({ error, resetErrorBoundary }: FallbackProps)
 
   return (
     <div className="flex flex-col items-center justify-center gap-3 p-4 min-h-[150px]">
-      <Callout color="red" className="w-full">
+      <Callout className="text-destructive" className="w-full">
         <CalloutIcon>
           <ExclamationTriangleIcon />
         </CalloutIcon>

@@ -22,7 +22,7 @@ export function ConstructionVirtualPartsList({
 
   if (parts.length === 0) {
     return (
-      <Card variant="surface" size="2">
+      <Card variant="soft" size="2">
         <div className="flex justify-center">
           <span className="text-lg text-gray-900">{t($ => $.modulesList.noModules)}</span>
         </div>
@@ -31,10 +31,10 @@ export function ConstructionVirtualPartsList({
   }
 
   return (
-    <Card variant="surface" size="2">
+    <Card variant="soft" size="2">
       <div className="flex flex-col gap-3">
         <h4>{t($ => $.modulesList.title)}</h4>
-        <Table.Root variant="surface" size="2" className="min-w-full">
+        <Table.Root variant="soft" size="2" className="min-w-full">
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeaderCell width="5em" justify-center>
@@ -70,7 +70,7 @@ export function ConstructionVirtualPartsList({
                 <Table.Cell justify-center>
                   {canHighlightPart(part.partId) && onViewInPlan && (
                     <Button
-                      variant="icon"
+                      size="icon"
                       size="sm"
                       variant="ghost"
                       onClick={() => {

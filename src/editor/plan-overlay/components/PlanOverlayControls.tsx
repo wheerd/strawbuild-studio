@@ -27,7 +27,7 @@ export function PlanOverlayControls(): React.JSX.Element | null {
         <>
           <DropdownMenu>
             <DropdownMenu.Trigger>
-              <Button variant="icon" size="sm" variant="soft" aria-label={t($ => $.planControls.ariaLabel)}>
+              <Button size="icon" variant="soft" aria-label={t($ => $.planControls.ariaLabel)}>
                 <ImageIcon />
               </Button>
             </DropdownMenu.Trigger>
@@ -55,7 +55,7 @@ export function PlanOverlayControls(): React.JSX.Element | null {
                 {t($ => $.planControls.recalibrate)}
               </DropdownMenu.Item>
               <DropdownMenu.Item
-                color="red"
+               className="text-destructive"
                 onSelect={() => {
                   setConfirmOpen(true)
                 }}
@@ -92,7 +92,7 @@ export function PlanOverlayControls(): React.JSX.Element | null {
                   </AlertDialog.Cancel>
                   <AlertDialog.Action>
                     <Button
-                      color="red"
+                     className="text-destructive"
                       onClick={() => {
                         clearPlan(activeStoreyId)
                         setConfirmOpen(false)
@@ -108,9 +108,9 @@ export function PlanOverlayControls(): React.JSX.Element | null {
         </>
       ) : (
         <Button
-          variant="icon"
+          size="icon"
           size="sm"
-          variant="surface"
+          variant="soft"
           onClick={() => {
             setModalOpen(true)
           }}

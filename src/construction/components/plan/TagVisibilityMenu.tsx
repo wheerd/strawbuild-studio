@@ -97,13 +97,13 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
     return (
       <DropdownMenu>
         <DropdownMenu.Trigger>
-          <Button variant="icon" size="sm" variant="outline" title={t($ => $.tagVisibility.title)} disabled>
+          <Button size="icon" variant="outline" title={t($ => $.tagVisibility.title)} disabled>
             <EyeOpenIcon />
           </Button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <DropdownMenu.Item disabled>
-            <span className="text-sm text-gray-900">{t($ => $.tagVisibility.noTags)}</span>
+            <span className="text-sm ">{t($ => $.tagVisibility.noTags)}</span>
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu>
@@ -113,7 +113,7 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
   return (
     <DropdownMenu>
       <DropdownMenu.Trigger>
-        <Button variant="icon" size="sm" variant="solid" title={t($ => $.tagVisibility.title)}>
+        <Button size="icon" variant="default" title={t($ => $.tagVisibility.title)}>
           <EyeOpenIcon />
         </Button>
       </DropdownMenu.Trigger>

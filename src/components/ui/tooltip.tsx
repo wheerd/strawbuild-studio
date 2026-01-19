@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 
 const TooltipProvider = TooltipPrimitive.Provider
 
-const Tooltip = TooltipPrimitive.Root
+const TooltipRoot = TooltipPrimitive.Root
 
 const TooltipTrigger = TooltipPrimitive.Trigger
 
@@ -27,4 +27,32 @@ const TooltipContent = React.forwardRef<
 ))
 TooltipContent.displayName = TooltipPrimitive.Content.displayName
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
+// Wrapper component that provides Radix Themes-compatible API
+interface TooltipProps {
+  children: React.ReactNode
+  content?: React.ReactNode
+  side?: 'top' | 'right' | 'bottom' | 'left'
+  align?: 'start' | 'center' | 'end'
+  delayDuration?: number
+}
+
+const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
+  ({ children, content, side, align, delayDuration, ...props }, _ref) => {
+    // If content prop is provided, use Radix Themes-compatible pattern
+    if (content !== undefined) {
+      return (
+        <TooltipRoot delayDuration={delayDuration}>
+          <TooltipTrigger asChild>{children}</TooltipTrigger>
+          <TooltipContent side={side} align={align} {...props}>
+            {content}
+          </TooltipContent>
+        </TooltipRoot>
+      )
+    }
+    // Otherwise, pass through to Root for manual composition
+    return <TooltipRoot delayDuration={delayDuration} {...props}>{children}</TooltipRoot>
+  }
+)
+Tooltip.displayName = 'Tooltip'
+
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider, TooltipRoot }

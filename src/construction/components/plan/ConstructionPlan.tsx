@@ -376,7 +376,7 @@ export function ConstructionPlan({
       {/* Overlay controls in top-left corner */}
 
       <div className="absolute top-3 left-3 z-10">
-        <Card size="1" variant="surface" className="shadow-md">
+        <Card size="1" variant="soft" className="shadow-md">
           <div className="flex flex-col gap-2 m--2">
             {/* View selector - only show if multiple views */}
             {views.length > 1 && (
@@ -398,7 +398,7 @@ export function ConstructionPlan({
             <div className="grid grid-cols-6 gap-1 items-center justify-center">
               {/* Mid-cut toggle */}
               <Button
-                variant="icon"
+                size="icon"
                 variant={midCutEnabled ? 'solid' : 'outline'}
                 size="sm"
                 title={t($ => $.plan.midCut)}
@@ -411,7 +411,7 @@ export function ConstructionPlan({
 
               {/* Area toggle */}
               <Button
-                variant="icon"
+                size="icon"
                 variant={hideAreas ? 'outline' : 'solid'}
                 size="sm"
                 title={t($ => $.plan.hideAreas)}
@@ -424,7 +424,7 @@ export function ConstructionPlan({
 
               {/* Issues toggle */}
               <Button
-                variant="icon"
+                size="icon"
                 variant={hideIssues ? 'outline' : 'solid'}
                 size="sm"
                 title={t($ => $.plan.hideIssues)}
@@ -437,7 +437,7 @@ export function ConstructionPlan({
 
               {/* Measurements toggle */}
               <Button
-                variant="icon"
+                size="icon"
                 variant={hideMeasurements ? 'outline' : 'solid'}
                 size="sm"
                 title={t($ => $.plan.hideMeasurements)}
@@ -450,7 +450,7 @@ export function ConstructionPlan({
 
               {/* Straw types toggle */}
               <Button
-                variant="icon"
+                size="icon"
                 variant={showStrawTypes ? 'solid' : 'outline'}
                 size="sm"
                 title={t($ => $.plan.showStrawTypes)}

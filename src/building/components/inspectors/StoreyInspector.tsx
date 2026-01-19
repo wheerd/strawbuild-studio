@@ -53,7 +53,7 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
   if (!storey) {
     return (
       <div className="p-2">
-        <Callout color="red">
+        <Callout className="text-destructive">
           <CalloutText>
             <span className="font-bold">{t($ => $.storey.notFound)}</span>
             <br />

@@ -1,14 +1,33 @@
+import { type VariantProps, cva } from 'class-variance-authority'
 import * as React from 'react'
 
 import { cn } from '@/lib/utils'
 
-const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
-  ({ className, ...props }, ref) => (
-    <div className="relative w-full overflow-auto">
-      <table ref={ref} className={cn('w-full caption-bottom text-sm', className)} {...props} />
-    </div>
-  )
-)
+const tableVariants = cva('w-full caption-bottom text-sm', {
+  variants: {
+    variant: {
+      ghost: '',
+      surface: 'border rounded-lg'
+    },
+    size: {
+      '1': 'text-xs [&_th]:h-8 [&_th]:px-2 [&_td]:p-2',
+      '2': 'text-sm [&_th]:h-10 [&_th]:px-3 [&_td]:p-3',
+      '3': 'text-base [&_th]:h-12 [&_th]:px-4 [&_td]:p-4'
+    }
+  },
+  defaultVariants: {
+    variant: 'ghost',
+    size: '2'
+  }
+})
+
+interface TableProps extends React.HTMLAttributes<HTMLTableElement>, VariantProps<typeof tableVariants> {}
+
+const Table = React.forwardRef<HTMLTableElement, TableProps>(({ className, variant, size, ...props }, ref) => (
+  <div className="relative w-full overflow-auto">
+    <table ref={ref} className={cn(tableVariants({ variant, size }), className)} {...props} />
+  </div>
+))
 Table.displayName = 'Table'
 
 const TableHeader = React.forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(
@@ -41,23 +60,48 @@ const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTML
 )
 TableRow.displayName = 'TableRow'
 
-const TableHead = React.forwardRef<HTMLTableCellElement, React.ThHTMLAttributes<HTMLTableCellElement>>(
-  ({ className, ...props }, ref) => (
+type JustifyValue = 'start' | 'center' | 'end'
+
+interface TableHeadProps extends React.ThHTMLAttributes<HTMLTableCellElement> {
+  justify?: JustifyValue
+  width?: string
+}
+
+const TableHead = React.forwardRef<HTMLTableCellElement, TableHeadProps>(
+  ({ className, justify, width, style, ...props }, ref) => (
     <th
       ref={ref}
       className={cn(
         'h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0',
+        justify === 'center' && 'text-center',
+        justify === 'end' && 'text-right',
         className
       )}
+      style={{ ...style, width }}
       {...props}
     />
   )
 )
 TableHead.displayName = 'TableHead'
 
-const TableCell = React.forwardRef<HTMLTableCellElement, React.TdHTMLAttributes<HTMLTableCellElement>>(
-  ({ className, ...props }, ref) => (
-    <td ref={ref} className={cn('p-4 align-middle [&:has([role=checkbox])]:pr-0', className)} {...props} />
+interface TableCellProps extends React.TdHTMLAttributes<HTMLTableCellElement> {
+  justify?: JustifyValue
+  width?: string
+}
+
+const TableCell = React.forwardRef<HTMLTableCellElement, TableCellProps>(
+  ({ className, justify, width, style, ...props }, ref) => (
+    <td
+      ref={ref}
+      className={cn(
+        'p-4 align-middle [&:has([role=checkbox])]:pr-0',
+        justify === 'center' && 'text-center',
+        justify === 'end' && 'text-right',
+        className
+      )}
+      style={{ ...style, width }}
+      {...props}
+    />
   )
 )
 TableCell.displayName = 'TableCell'
@@ -69,4 +113,26 @@ const TableCaption = React.forwardRef<HTMLTableCaptionElement, React.HTMLAttribu
 )
 TableCaption.displayName = 'TableCaption'
 
-export { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption }
+// Compound component for Radix Themes compatibility
+const TableCompound = Object.assign(Table, {
+  Root: Table,
+  Header: TableHeader,
+  Body: TableBody,
+  Footer: TableFooter,
+  Row: TableRow,
+  Cell: TableCell,
+  ColumnHeaderCell: TableHead,
+  RowHeaderCell: TableHead,
+  Caption: TableCaption
+})
+
+export {
+  TableCompound as Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableCaption
+}

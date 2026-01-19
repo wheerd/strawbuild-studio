@@ -239,7 +239,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             factory={() => Promise.resolve(constructPerimeter(perimeter))}
             refreshKey={perimeter}
             trigger={
-              <Button variant="icon" title={t($ => $.perimeter.viewConstructionPlan)} size="3">
+              <Button size="icon" title={t($ => $.perimeter.viewConstructionPlan)}>
                 <ConstructionPlanIcon width={24} height={24} />
               </Button>
             }
@@ -248,7 +248,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             constructionModelFactory={() => Promise.resolve(constructPerimeter(perimeter))}
             refreshKey={perimeter}
             trigger={
-              <Button variant="icon" title={t($ => $.perimeter.view3DConstruction)} size="3" variant="outline">
+              <Button size="icon" title={t($ => $.perimeter.view3DConstruction)} variant="outline">
                 <Model3DIcon width={24} height={24} />
               </Button>
             }
@@ -398,7 +398,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
         <div className="flex justify-end gap-2">
           {associatedRoof ? (
             <Button
-              variant="icon"
+              size="icon"
               size="2"
               title={t($ => $.perimeter.viewAssociatedRoof)}
               onClick={handleNavigateToRoof}
@@ -408,7 +408,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
           ) : (
             <DropdownMenu>
               <DropdownMenu.Trigger>
-                <Button variant="icon" title={t($ => $.perimeter.addRoofBasedOnPerimeter)}>
+                <Button size="icon" title={t($ => $.perimeter.addRoofBasedOnPerimeter)}>
                   <RoofIcon />
                 </Button>
               </DropdownMenu.Trigger>
@@ -430,13 +430,13 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
               </DropdownMenu.Content>
             </DropdownMenu>
           )}
-          <Button variant="icon" title={t($ => $.perimeter.fitToView)} onClick={handleFitToView}>
+          <Button size="icon" title={t($ => $.perimeter.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
           </Button>
           <Button
-            variant="icon"
+            size="icon"
             size="2"
-            color="red"
+           className="text-destructive"
             title={t($ => $.perimeter.deletePerimeter)}
             onClick={handleDelete}
           >

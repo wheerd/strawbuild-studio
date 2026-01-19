@@ -34,7 +34,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent
         aria-describedby={undefined}
-        maxWidth="90vw"
+        className="max-w-[90vw]"
         onEscapeKeyDown={e => {
           if (isFirstVisit) e.preventDefault()
         }}
@@ -137,7 +137,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                 <span className="text-base text-gray-900">{t($ => $.localStorage.privacy)}</span>
               </div>
 
-              <Callout color="orange" variant="surface">
+              <Callout color="orange" variant="soft">
                 <CalloutIcon>
                   <ExclamationTriangleIcon />
                 </CalloutIcon>

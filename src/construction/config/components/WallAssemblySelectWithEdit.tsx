@@ -17,7 +17,7 @@ export function WallAssemblySelectWithEdit(props: WallAssemblySelectProps): Reac
         <WallAssemblySelect {...props} />
       </div>
       <Button
-        variant="icon"
+        size="icon"
         title={t($ => $.walls.configure)}
         variant="ghost"
         size={props.size}

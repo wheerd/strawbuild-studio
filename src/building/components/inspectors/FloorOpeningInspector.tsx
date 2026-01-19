@@ -62,12 +62,12 @@ export function FloorOpeningInspector({ floorOpeningId }: FloorOpeningInspectorP
         <Separator />
 
         <div className="flex justify-end gap-2">
-          <Button variant="icon" title={t($ => $.floorOpening.fitToView)} onClick={handleFitToView}>
+          <Button size="icon" title={t($ => $.floorOpening.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
           </Button>
           <Button
-            variant="icon"
-            color="red"
+            size="icon"
+           className="text-destructive"
             title={t($ => $.floorOpening.removeFloorOpening)}
             onClick={() => {
               removeFloorOpening(opening.id)

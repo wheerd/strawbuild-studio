@@ -114,7 +114,7 @@ export function LayerListEditor({
           {layerCopySources && (
             <DropdownMenu>
               <DropdownMenu.Trigger>
-                <Button variant="icon" title={t($ => $.layers.copyFrom)} size="1" variant="soft">
+                <Button size="icon" title={t($ => $.layers.copyFrom)} variant="soft">
                   <CopyIcon />
                 </Button>
               </DropdownMenu.Trigger>
@@ -140,7 +140,7 @@ export function LayerListEditor({
           {hasPresetMenu && (
             <DropdownMenu>
               <DropdownMenu.Trigger>
-                <Button variant="icon" title={t($ => $.layers.presetsLabel)} size="1" variant="soft">
+                <Button size="icon" title={t($ => $.layers.presetsLabel)} variant="soft">
                   <MagicWandIcon />
                 </Button>
               </DropdownMenu.Trigger>
@@ -164,7 +164,7 @@ export function LayerListEditor({
 
           <DropdownMenu>
             <DropdownMenu.Trigger>
-              <Button variant="icon" title={addLabel} size="sm" variant="soft">
+              <Button size="icon" title={addLabel} variant="soft">
                 <PlusIcon />
               </Button>
             </DropdownMenu.Trigger>
@@ -207,7 +207,7 @@ export function LayerListEditor({
       </div>
 
       {!hasLayers && (
-        <Card variant="surface">
+        <Card variant="soft">
           <div className="items-center justify-center min-h-[3.5rem]">
             <span className="text-sm text-gray-900">{emptyHint}</span>
           </div>
@@ -293,7 +293,7 @@ function LayerCard({
   }
 
   return (
-    <Card variant="surface" style={{ padding: '0.75rem' }}>
+    <Card variant="soft" style={{ padding: '0.75rem' }}>
       <div className="flex flex-col gap-2">
         <div className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-1">
           <LayerTypeIcon type={layer.type} />
@@ -337,7 +337,7 @@ function LayerCard({
 
           <div className="flex gap-1">
             <Button
-              variant="icon"
+              size="icon"
               size="sm"
               variant="soft"
               onClick={() => {
@@ -349,7 +349,7 @@ function LayerCard({
               <ChevronUpIcon />
             </Button>
             <Button
-              variant="icon"
+              size="icon"
               size="sm"
               variant="soft"
               onClick={() => {
@@ -361,10 +361,10 @@ function LayerCard({
               <ChevronDownIcon />
             </Button>
             <Button
-              variant="icon"
+              size="icon"
               size="sm"
               variant="soft"
-              color="red"
+             className="text-destructive"
               onClick={() => {
                 onRemoveLayer(index)
               }}

@@ -198,7 +198,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
           </div>
           <DropdownMenu>
             <DropdownMenu.Trigger>
-              <Button variant="icon" title={t($ => $.common.addNew)}>
+              <Button size="icon" title={t($ => $.common.addNew)}>
                 <PlusIcon />
               </Button>
             </DropdownMenu.Trigger>
@@ -256,7 +256,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             </DropdownMenu.Content>
           </DropdownMenu>
           <Button
-            variant="icon"
+            size="icon"
             onClick={handleDuplicate}
             disabled={!selectedMaterial}
             title={t($ => $.common.duplicate)}
@@ -267,9 +267,9 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
           <AlertDialog.Root>
             <AlertDialog.Trigger>
               <Button
-                variant="icon"
+                size="icon"
                 disabled={!selectedMaterial || usage.isUsed}
-                color="red"
+               className="text-destructive"
                 title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
               >
                 <TrashIcon />
@@ -289,7 +289,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
-                  <Button variant="solid" color="red" onClick={handleDelete}>
+                  <Button variant="destructive" onClick={handleDelete}>
                     {t($ => $.common.delete)}
                   </Button>
                 </AlertDialog.Action>
@@ -298,7 +298,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
           </AlertDialog.Root>
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <Button variant="icon" color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
+              <Button size="icon"className="text-destructive" variant="outline" title={t($ => $.common.resetToDefaults)}>
                 <ResetIcon />
               </Button>
             </AlertDialog.Trigger>
@@ -312,7 +312,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
-                  <Button variant="solid" color="red" onClick={handleReset}>
+                  <Button variant="destructive" onClick={handleReset}>
                     {t($ => $.common.reset)}
                   </Button>
                 </AlertDialog.Action>
@@ -542,7 +542,7 @@ function DimensionalMaterialFields({
                 <div className="flex items-center gap-1">
                   {formatDimensions2D([section.smallerLength, section.biggerLength], false)}
                   <Button
-                    variant="icon"
+                    size="icon"
                     size="sm"
                     variant="ghost"
                     text-gray-900
@@ -584,11 +584,11 @@ function DimensionalMaterialFields({
             aria-label={t($ => $.materials.crossSectionLarger)}
           />
           <Button
-            variant="icon"
+            size="icon"
             title={t($ => $.common.add)}
             aria-label={t($ => $.materials.addCrossSection)}
             onClick={handleAddCrossSection}
-            variant="surface"
+            variant="soft"
             size="2"
           >
             <PlusIcon />
@@ -606,7 +606,7 @@ function DimensionalMaterialFields({
                 <div className="flex items-center gap-1">
                   {formatLength(length)}
                   <Button
-                    variant="icon"
+                    size="icon"
                     size="sm"
                     variant="ghost"
                     text-gray-900
@@ -641,11 +641,11 @@ function DimensionalMaterialFields({
             aria-label={t($ => $.materials.stockLengthInput)}
           />
           <Button
-            variant="icon"
+            size="icon"
             title={t($ => $.materials.add)}
             aria-label={t($ => $.materials.addStockLength)}
             onClick={handleAddLength}
-            variant="surface"
+            variant="soft"
             size="2"
           >
             <PlusIcon />
@@ -727,7 +727,7 @@ function SheetMaterialFields({
                 <div className="flex items-center gap-1">
                   {formatDimensions2D([size.smallerLength, size.biggerLength], false)}
                   <Button
-                    variant="icon"
+                    size="icon"
                     size="sm"
                     variant="ghost"
                     text-gray-900
@@ -769,11 +769,11 @@ function SheetMaterialFields({
             aria-label={t($ => $.materials.sheetLength)}
           />
           <Button
-            variant="icon"
+            size="icon"
             title={t($ => $.materials.addSize)}
             aria-label={t($ => $.materials.addSheetSize)}
             onClick={handleAddSize}
-            variant="surface"
+            variant="soft"
             size="2"
           >
             <PlusIcon />
@@ -791,7 +791,7 @@ function SheetMaterialFields({
                 <div className="flex items-center gap-1">
                   {formatLength(thickness)}
                   <Button
-                    variant="icon"
+                    size="icon"
                     size="sm"
                     variant="ghost"
                     text-gray-900
@@ -826,11 +826,11 @@ function SheetMaterialFields({
             aria-label={t($ => $.materials.thicknessInput)}
           />
           <Button
-            variant="icon"
+            size="icon"
             title={t($ => $.materials.addThickness)}
             aria-label={t($ => $.materials.addThickness)}
             onClick={handleAddThickness}
-            variant="surface"
+            variant="soft"
             size="2"
           >
             <PlusIcon />
@@ -900,7 +900,7 @@ function VolumeMaterialFields({
                 <div className="flex items-center gap-1">
                   {volumeUnit === 'liter' ? formatVolumeInLiters(volume) : formatVolume(volume)}
                   <Button
-                    variant="icon"
+                    size="icon"
                     size="sm"
                     variant="ghost"
                     text-gray-900
@@ -947,11 +947,11 @@ function VolumeMaterialFields({
               aria-label={t($ => $.materials.volumeInput)}
             />
             <Button
-              variant="icon"
+              size="icon"
               title={t($ => $.materials.addVolume)}
               aria-label={t($ => $.materials.addVolumeOption)}
               onClick={handleAddVolume}
-              variant="surface"
+              variant="soft"
               size="2"
             >
               <PlusIcon />

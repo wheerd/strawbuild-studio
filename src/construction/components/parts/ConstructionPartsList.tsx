@@ -2,6 +2,11 @@ import { ExclamationTriangleIcon, EyeOpenIcon, Pencil1Icon, PinBottomIcon, PinTo
 import React, { useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Table } from '@/components/ui/table'
+import { Tooltip } from '@/components/ui/tooltip'
 import { PartCutModal } from '@/construction/components/parts/PartCutModal'
 import { SheetPartModal } from '@/construction/components/parts/SheetPartModal'
 import { useConfigurationModal } from '@/construction/config/context/ConfigurationModalContext'
@@ -372,7 +377,7 @@ function MaterialSummaryRow({
         <div className="items-center gap-2 justify-between">
           <span className="font-medium">{materialName}</span>
           <Button
-            variant="icon"
+            size="icon"
             title={t($ => $.partsList.actions.jumpToDetails)}
             size="1"
             variant="ghost"
@@ -421,7 +426,7 @@ function MaterialGroupSummaryRow({
         <div className="items-center gap-2 justify-between">
           <Badge color={group.badgeColor}>{group.badgeLabel}</Badge>
           <Button
-            variant="icon"
+            size="icon"
             title={t($ => $.partsList.actions.jumpToDetails)}
             size="1"
             variant="ghost"
@@ -459,14 +464,14 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan, formatt
   const materialName = useMaterialName(material)
 
   return (
-    <Card variant="surface" size="2">
+    <Card variant="soft" size="2">
       <div className="flex flex-col gap-3">
         <div className="items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <MaterialTypeIndicator material={material} size={24} />
             <h4>{materialName}</h4>
             <Button
-              variant="icon"
+              size="icon"
               title={t($ => $.partsList.actions.configureMaterial)}
               variant="ghost"
               size="1"
@@ -490,7 +495,7 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan, formatt
             </div>
           </div>
           <Button
-            variant="icon"
+            size="icon"
             title={t($ => $.partsList.actions.backToSummary)}
             size="1"
             variant="ghost"
@@ -550,7 +555,7 @@ function DimensionalPartsTable({
     return formatters.formatWeight(weight)
   }
   return (
-    <Table.Root variant="surface" size="2" className="min-w-full">
+    <Table.Root variant="soft" size="2" className="min-w-full">
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell width="5em" justify-center>
@@ -601,7 +606,7 @@ function DimensionalPartsTable({
                       </Tooltip>
                       <PartCutModal
                         trigger={
-                          <Button variant="icon" size="sm" variant="outline" radius="full">
+                          <Button size="icon" variant="outline" className="rounded-full">
                             <SawIcon />
                           </Button>
                         }
@@ -639,7 +644,7 @@ function DimensionalPartsTable({
               <Table.Cell justify-center>
                 {canHighlightPart(part.partId) && onViewInPlan && (
                   <Button
-                    variant="icon"
+                    size="icon"
                     size="sm"
                     variant="ghost"
                     onClick={() => {
@@ -676,7 +681,7 @@ function SheetPartsTable({
     return formatters.formatWeight(weight)
   }
   return (
-    <Table.Root variant="surface" size="2" className="min-w-full">
+    <Table.Root variant="soft" size="2" className="min-w-full">
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell width="5em" justify-center>
@@ -723,7 +728,7 @@ function SheetPartsTable({
                   {part.sideFaces?.length && part.sideFaces[0].polygon.outer.points.length >= 3 && (
                     <SheetPartModal
                       trigger={
-                        <Button variant="icon" size="sm" variant="outline" radius="full">
+                        <Button size="icon" variant="outline" className="rounded-full">
                           <SawIcon />
                         </Button>
                       }
@@ -769,7 +774,7 @@ function SheetPartsTable({
               <Table.Cell justify-center>
                 {canHighlightPart(part.partId) && onViewInPlan && (
                   <Button
-                    variant="icon"
+                    size="icon"
                     size="sm"
                     variant="ghost"
                     onClick={() => {
@@ -806,7 +811,7 @@ function VolumePartsTable({
     return formatters.formatWeight(weight)
   }
   return (
-    <Table.Root variant="surface" size="2" className="min-w-full">
+    <Table.Root variant="soft" size="2" className="min-w-full">
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell width="5em" justify-center>
@@ -857,7 +862,7 @@ function VolumePartsTable({
               <Table.Cell justify-center>
                 {canHighlightPart(part.partId) && onViewInPlan && (
                   <Button
-                    variant="icon"
+                    size="icon"
                     size="sm"
                     variant="ghost"
                     onClick={() => {
@@ -886,7 +891,7 @@ function GenericPartsTable({
 }) {
   const { t } = useTranslation('construction')
   return (
-    <Table.Root variant="surface" size="2" className="min-w-full">
+    <Table.Root variant="soft" size="2" className="min-w-full">
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell width="5em" justify-center>
@@ -914,7 +919,7 @@ function GenericPartsTable({
             <Table.Cell justify-center>
               {canHighlightPart(part.partId) && onViewInPlan && (
                 <Button
-                  variant="icon"
+                  size="icon"
                   size="sm"
                   variant="ghost"
                   onClick={() => {
@@ -1006,7 +1011,7 @@ function StrawbalePartsTable({
   )
 
   return (
-    <Table.Root variant="surface" size="2" className="min-w-full">
+    <Table.Root variant="soft" size="2" className="min-w-full">
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell>{t($ => $.partsList.tableHeaders.category)}</Table.ColumnHeaderCell>
@@ -1280,10 +1285,10 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
 
   return (
     <div className="flex flex-col gap-4">
-      <Card ref={topRef} variant="surface" size="2">
+      <Card ref={topRef} variant="soft" size="2">
         <div className="flex flex-col gap-3">
           <h4>{t($ => $.partsList.summary)}</h4>
-          <Table.Root variant="surface" size="2" className="min-w-full">
+          <Table.Root variant="soft" size="2" className="min-w-full">
             <Table.Header>
               <Table.Row>
                 <Table.ColumnHeaderCell width="4em" justify-center>

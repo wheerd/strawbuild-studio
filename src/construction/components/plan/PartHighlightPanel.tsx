@@ -11,11 +11,11 @@ export function PartHighlightPanel() {
 
   return (
     <div className="absolute bottom-3 left-3 z-10">
-      <Card size="1" variant="surface" className="shadow-md">
+      <Card size="1" variant="soft" className="shadow-md">
         <div className="flex items-center gap-2">
           <span className="text-base">{t($ => $.planModal.partHighlight.partHighlighted)}</span>
           <Button
-            variant="icon"
+            size="icon"
             size="sm"
             variant="ghost"
             onClick={() => {

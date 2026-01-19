@@ -20,7 +20,7 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
       {model ? (
         <>
           {model.errors.length > 0 && (
-            <Callout color="red" size="1">
+            <Callout className="text-destructive" size="1">
               <CalloutIcon>
                 <CrossCircledIcon />
               </CalloutIcon>
@@ -106,7 +106,7 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
           )}
         </>
       ) : (
-        <Callout color="red" size="1">
+        <Callout className="text-destructive" size="1">
           <CalloutIcon>
             <CrossCircledIcon />
           </CalloutIcon>

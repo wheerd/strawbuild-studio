@@ -4,7 +4,7 @@ import * as React from 'react'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
-const AlertDialog = AlertDialogPrimitive.Root
+const _AlertDialogRoot = AlertDialogPrimitive.Root
 
 const AlertDialogTrigger = AlertDialogPrimitive.Trigger
 
@@ -89,8 +89,23 @@ const AlertDialogCancel = React.forwardRef<
 ))
 AlertDialogCancel.displayName = AlertDialogPrimitive.Cancel.displayName
 
+// Compound component for Radix Themes compatibility
+const AlertDialogCompound = Object.assign(AlertDialogPrimitive.Root, {
+  Root: AlertDialogPrimitive.Root,
+  Trigger: AlertDialogTrigger,
+  Content: AlertDialogContent,
+  Header: AlertDialogHeader,
+  Footer: AlertDialogFooter,
+  Title: AlertDialogTitle,
+  Description: AlertDialogDescription,
+  Action: AlertDialogAction,
+  Cancel: AlertDialogCancel,
+  Portal: AlertDialogPortal,
+  Overlay: AlertDialogOverlay
+})
+
 export {
-  AlertDialog,
+  AlertDialogCompound as AlertDialog,
   AlertDialogPortal,
   AlertDialogOverlay,
   AlertDialogTrigger,

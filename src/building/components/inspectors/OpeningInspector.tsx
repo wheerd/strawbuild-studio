@@ -387,13 +387,13 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
       <Separator />
       {/* Action Buttons */}
       <div className="flex justify-end gap-2">
-        <Button variant="icon" title={t($ => $.opening.fitToView)} onClick={handleFitToView}>
+        <Button size="icon" title={t($ => $.opening.fitToView)} onClick={handleFitToView}>
           <FitToViewIcon />
         </Button>
         <Button
-          variant="icon"
+          size="icon"
           size="2"
-          color="red"
+         className="text-destructive"
           title={t($ => $.opening.deleteOpening)}
           onClick={handleRemoveOpening}
         >

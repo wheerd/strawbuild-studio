@@ -106,13 +106,13 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
     return (
       <DropdownMenu>
         <DropdownMenu.Trigger>
-          <Button variant="icon" size="sm" variant="outline" title={t($ => $.tagOpacity.title)} disabled>
+          <Button size="icon" variant="outline" title={t($ => $.tagOpacity.title)} disabled>
             <EyeOpenIcon />
           </Button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <DropdownMenu.Item disabled>
-            <span className="text-sm text-gray-900">{t($ => $.tagOpacity.noTags)}</span>
+            <span className="text-sm ">{t($ => $.tagOpacity.noTags)}</span>
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu>
@@ -122,7 +122,7 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
   return (
     <DropdownMenu>
       <DropdownMenu.Trigger>
-        <Button variant="icon" size="sm" variant="solid" title={t($ => $.tagOpacity.title)}>
+        <Button size="icon" variant="default" title={t($ => $.tagOpacity.title)}>
           <EyeOpenIcon />
         </Button>
       </DropdownMenu.Trigger>

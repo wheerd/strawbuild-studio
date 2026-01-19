@@ -16,7 +16,7 @@ export function MaterialSelectWithEdit(props: MaterialSelectProps): React.JSX.El
         <MaterialSelect {...props} />
       </div>
       <Button
-        variant="icon"
+        size="icon"
         title={t($ => $.materials.configure)}
         variant="ghost"
         size={props.size}

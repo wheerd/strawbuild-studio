@@ -266,7 +266,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
             defaultHiddenTags={['roof-layer']}
             refreshKey={roof}
             trigger={
-              <Button variant="icon" title={t($ => $.roof.viewConstructionPlan)} size="3">
+              <Button size="icon" title={t($ => $.roof.viewConstructionPlan)}>
                 <ConstructionPlanIcon width={24} height={24} />
               </Button>
             }
@@ -275,7 +275,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
             constructionModelFactory={() => Promise.resolve(constructRoof(roof))}
             refreshKey={roof}
             trigger={
-              <Button variant="icon" title={t($ => $.roof.view3DConstruction)} size="3" variant="outline">
+              <Button size="icon" title={t($ => $.roof.view3DConstruction)} variant="outline">
                 <Model3DIcon width={24} height={24} />
               </Button>
             }
@@ -288,7 +288,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
         <div className="flex justify-end gap-2">
           {roof.referencePerimeter && (
             <Button
-              variant="icon"
+              size="icon"
               size="2"
               title={t($ => $.roof.viewAssociatedPerimeter)}
               onClick={handleNavigateToPerimeter}
@@ -297,17 +297,17 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
             </Button>
           )}
           <Tooltip content={t($ => $.roof.cycleMainSide)}>
-            <Button variant="icon" onClick={() => cycleRoofMainSide(roofId)}>
+            <Button size="icon" onClick={() => cycleRoofMainSide(roofId)}>
               <ReloadIcon />
             </Button>
           </Tooltip>
-          <Button variant="icon" title={t($ => $.roof.fitToView)} onClick={handleFitToView}>
+          <Button size="icon" title={t($ => $.roof.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
           </Button>
           <Button
-            variant="icon"
+            size="icon"
             size="2"
-            color="red"
+           className="text-destructive"
             title={t($ => $.roof.removeRoof)}
             onClick={() => {
               removeRoof(roof.id)

@@ -3,6 +3,11 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useStoreyName } from '@/building/hooks/useStoreyName'
+import { AlertDialog } from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Code } from '@/components/ui/code'
+import { TextField } from '@/components/ui/text-field'
 import type { Storey } from '@/building/model'
 import { useActiveStoreyId, useModelActions } from '@/building/store'
 import { defaultStoreyManagementService } from '@/building/store/services/StoreyManagementService'
@@ -208,7 +213,7 @@ export function StoreyListItem({
         <div className="flex gap-1 items-center">
           <div className="flex flex-col gap-1">
             <Button
-              variant="icon"
+              size="icon"
               size="sm"
               onClick={handleMoveUp}
               disabled={!canMoveUp}
@@ -218,7 +223,7 @@ export function StoreyListItem({
             </Button>
 
             <Button
-              variant="icon"
+              size="icon"
               size="sm"
               onClick={handleMoveDown}
               disabled={!canMoveDown}
@@ -228,13 +233,13 @@ export function StoreyListItem({
             </Button>
           </div>
 
-          <Button variant="icon" onClick={handleDuplicate} title={t($ => $.storeys.duplicateFloor)} variant="soft">
+          <Button size="icon" onClick={handleDuplicate} title={t($ => $.storeys.duplicateFloor)} variant="soft">
             <CopyIcon />
           </Button>
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <Button variant="icon" disabled={isOnlyStorey} title={t($ => $.storeys.deleteFloor)} color="red">
+              <Button size="icon" disabled={isOnlyStorey} title={t($ => $.storeys.deleteFloor)}className="text-destructive">
                 <TrashIcon />
               </Button>
             </AlertDialog.Trigger>
@@ -249,14 +254,14 @@ export function StoreyListItem({
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action onClick={handleDelete}>
-                  <Button color="red">{t($ => $.storeys.deleteFloorTitle)}</Button>
+                  <Button className="text-destructive">{t($ => $.storeys.deleteFloorTitle)}</Button>
                 </AlertDialog.Action>
               </div>
             </AlertDialog.Content>
           </AlertDialog.Root>
 
           <Button
-            variant="icon"
+            size="icon"
             onClick={() => {
               setActiveStoreyId(storey.id)
             }}

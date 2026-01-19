@@ -33,12 +33,15 @@ type CalloutSize = '1' | '2' | '3'
 export interface CalloutProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'color'> {
   color?: CalloutColor | null
   size?: CalloutSize | null
+  variant?: 'soft' | 'surface' | 'outline' // Ignored - for Radix Themes compatibility
 }
 
-const Callout = React.forwardRef<HTMLDivElement, CalloutProps>(({ className, color, size, ...props }, ref) => (
-  <div ref={ref} className={cn(calloutVariants({ color, size }), className)} {...props} />
-))
-CalloutdisplayName = 'Callout'
+const Callout = React.forwardRef<HTMLDivElement, CalloutProps>(
+  ({ className, color, size, variant: _variant, ...props }, ref) => (
+    <div ref={ref} className={cn(calloutVariants({ color, size }), className)} {...props} />
+  )
+)
+Callout.displayName = 'Callout'
 
 const CalloutIcon = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => <div ref={ref} className={cn('shrink-0', className)} {...props} />

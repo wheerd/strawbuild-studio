@@ -217,7 +217,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
 
           <DropdownMenu>
             <DropdownMenu.Trigger>
-              <Button variant="icon" title={t($ => $.common.addNew)}>
+              <Button size="icon" title={t($ => $.common.addNew)}>
                 <PlusIcon />
               </Button>
             </DropdownMenu.Trigger>
@@ -266,7 +266,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           </DropdownMenu>
 
           <Button
-            variant="icon"
+            size="icon"
             onClick={handleDuplicate}
             disabled={!selectedConfig}
             title={t($ => $.common.duplicate)}
@@ -278,9 +278,9 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           <AlertDialog.Root>
             <AlertDialog.Trigger>
               <Button
-                variant="icon"
+                size="icon"
                 disabled={!selectedConfig || usage.isUsed || floorAssemblies.length === 1}
-                color="red"
+               className="text-destructive"
                 title={
                   !selectedConfig
                     ? t($ => $.floors.delete.noConfigSelected)
@@ -306,7 +306,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
-                  <Button variant="solid" color="red" onClick={handleDelete}>
+                  <Button variant="destructive" onClick={handleDelete}>
                     {t($ => $.common.delete)}
                   </Button>
                 </AlertDialog.Action>
@@ -316,7 +316,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <Button variant="icon" color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
+              <Button size="icon"className="text-destructive" variant="outline" title={t($ => $.common.resetToDefaults)}>
                 <ResetIcon />
               </Button>
             </AlertDialog.Trigger>
@@ -330,7 +330,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
-                  <Button variant="solid" color="red" onClick={handleReset}>
+                  <Button variant="destructive" onClick={handleReset}>
                     {t($ => $.common.reset)}
                   </Button>
                 </AlertDialog.Action>
@@ -352,7 +352,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
         <div className="grid grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
           <div className="flex items-center gap-1">
             <Label.Root>
-              <span className="text-base font-medium text-gray-900">{t($ => $.floors.defaultFloorAssembly)}</span>
+              <span className="text-base font-medium ">{t($ => $.floors.defaultFloorAssembly)}</span>
             </Label.Root>
             <MeasurementInfo highlightedAssembly="floorAssembly" />
           </div>
@@ -380,7 +380,7 @@ function UsageDisplay({ usage }: { usage: FloorAssemblyUsage }): React.JSX.Eleme
   return (
     <div className="grid grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
       <Label.Root>
-        <span className="text-base font-medium text-gray-900">{t($ => $.usage.usedBy)}</span>
+        <span className="text-base font-medium ">{t($ => $.usage.usedBy)}</span>
       </Label.Root>
       <div className="flex gap-1 flex-wrap">
         {usage.isDefault && (
@@ -433,7 +433,7 @@ function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.
       <div className="grid grid-cols-2 gap-2 gap-x-3 items-center">
         <div className="grid grid-cols-[auto_1fr] gap-x-2 items-center">
           <Label.Root>
-            <span className="text-base font-medium text-gray-900">{t($ => $.common.name)}</span>
+            <span className="text-base font-medium ">{t($ => $.common.name)}</span>
           </Label.Root>
           <TextField.Root
             value={nameInput.value}
@@ -450,11 +450,11 @@ function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.
         <div className="grid grid-cols-2 gap-2 gap-x-3 items-center">
           <div className="flex gap-2 items-center">
             <Label.Root>
-              <span className="text-base font-medium text-gray-900">{t($ => $.common.type)}</span>
+              <span className="text-base font-medium ">{t($ => $.common.type)}</span>
             </Label.Root>
             <div className="flex gap-2 items-center">
               {React.createElement(getFloorAssemblyTypeIcon(assembly.type))}
-              <span className="text-base text-gray-900">
+              <span className="text-base ">
                 {assembly.type === 'monolithic'
                   ? t($ => $.floors.types.monolithic)
                   : assembly.type === 'joist'
@@ -468,9 +468,9 @@ function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.
 
           <div className="flex gap-2 items-center">
             <Label.Root>
-              <span className="text-base font-medium text-gray-900">{t($ => $.common.totalThickness)}</span>
+              <span className="text-base font-medium ">{t($ => $.common.totalThickness)}</span>
             </Label.Root>
-            <span className="text-base text-gray-900">{totalThickness}</span>
+            <span className="text-base ">{totalThickness}</span>
           </div>
         </div>
       </div>
@@ -504,7 +504,7 @@ function MonolithicConfigFields({
       <h3>{t($ => $.floors.types.monolithic)}</h3>
       <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.material}
@@ -519,7 +519,7 @@ function MonolithicConfigFields({
 
         <div className="flex items-center gap-1">
           <Label.Root>
-            <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
+            <span className="text-base font-medium ">{t($ => $.common.thickness)}</span>
           </Label.Root>
           <MeasurementInfo highlightedPart="floorConstruction" />
         </div>
@@ -552,10 +552,10 @@ function JoistConfigFields({
       <div className="grid grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
         <div className="flex items-center gap-1">
           <Label.Root>
-            <span className="text-base font-medium text-gray-900">{t($ => $.floors.labels.beamHeight)}</span>
+            <span className="text-base font-medium ">{t($ => $.floors.labels.beamHeight)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.beamHeight)}>
-            <Button variant="icon" style={{ cursor: 'help' }} text-gray-900 radius="full" variant="ghost" size="sm">
+            <Button size="icon" style={{ cursor: 'help' }}  className="rounded-full" variant="ghost">
               <InfoCircledIcon width={12} height={12} />
             </Button>
           </Tooltip>
@@ -576,7 +576,7 @@ function JoistConfigFields({
       <h2>{t($ => $.floors.sections.joists)}</h2>
       <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.joistMaterial}
@@ -590,7 +590,7 @@ function JoistConfigFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.thickness)}</span>
         </Label.Root>
         <LengthField
           value={config.joistThickness}
@@ -602,7 +602,7 @@ function JoistConfigFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.spacing)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.spacing)}</span>
         </Label.Root>
         <LengthField
           value={config.joistSpacing}
@@ -620,7 +620,7 @@ function JoistConfigFields({
       <h2>{t($ => $.floors.sections.wallBeams)}</h2>
       <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.wallBeamMaterial}
@@ -634,7 +634,7 @@ function JoistConfigFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.thickness)}</span>
         </Label.Root>
         <LengthField
           value={config.wallBeamThickness}
@@ -646,7 +646,7 @@ function JoistConfigFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.floors.labels.wallBeamInsideOffset)}</span>
+          <span className="text-base font-medium ">{t($ => $.floors.labels.wallBeamInsideOffset)}</span>
         </Label.Root>
         <LengthField
           value={config.wallBeamInsideOffset}
@@ -658,7 +658,7 @@ function JoistConfigFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.infillMaterial)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.infillMaterial)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.wallInfillMaterial}
@@ -677,7 +677,7 @@ function JoistConfigFields({
       <h2>{t($ => $.floors.sections.subfloor)}</h2>
       <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.subfloorMaterial}
@@ -691,7 +691,7 @@ function JoistConfigFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.thickness)}</span>
         </Label.Root>
         <LengthField
           value={config.subfloorThickness}
@@ -709,7 +709,7 @@ function JoistConfigFields({
       <h2>{t($ => $.floors.sections.openingSides)}</h2>
       <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.openingSideMaterial}
@@ -723,7 +723,7 @@ function JoistConfigFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.thickness)}</span>
         </Label.Root>
         <LengthField
           value={config.openingSideThickness}
@@ -753,10 +753,10 @@ function FilledConfigFields({
       <div className="grid grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
         <div className="flex items-center gap-1">
           <Label.Root>
-            <span className="text-base font-medium text-gray-900">{t($ => $.floors.labels.constructionHeight)}</span>
+            <span className="text-base font-medium ">{t($ => $.floors.labels.constructionHeight)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.constructionHeight)}>
-            <Button variant="icon" style={{ cursor: 'help' }} text-gray-900 radius="full" variant="ghost" size="sm">
+            <Button size="icon" style={{ cursor: 'help' }}  className="rounded-full" variant="ghost">
               <InfoCircledIcon width={12} height={12} />
             </Button>
           </Tooltip>
@@ -777,7 +777,7 @@ function FilledConfigFields({
       <h2>{t($ => $.floors.sections.joists)}</h2>
       <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.joistMaterial}
@@ -791,7 +791,7 @@ function FilledConfigFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.thickness)}</span>
         </Label.Root>
         <LengthField
           value={config.joistThickness}
@@ -803,7 +803,7 @@ function FilledConfigFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.spacing)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.spacing)}</span>
         </Label.Root>
         <LengthField
           value={config.joistSpacing}
@@ -821,7 +821,7 @@ function FilledConfigFields({
       <h2>{t($ => $.floors.sections.perimeterFrame)}</h2>
       <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.frameMaterial}
@@ -835,7 +835,7 @@ function FilledConfigFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.thickness)}</span>
         </Label.Root>
         <LengthField
           value={config.frameThickness}
@@ -853,7 +853,7 @@ function FilledConfigFields({
       <h2>{t($ => $.floors.sections.subfloor)}</h2>
       <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.subfloorMaterial}
@@ -867,7 +867,7 @@ function FilledConfigFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.thickness)}</span>
         </Label.Root>
         <LengthField
           value={config.subfloorThickness}
@@ -885,7 +885,7 @@ function FilledConfigFields({
       <h2>{t($ => $.floors.sections.ceilingSheathing)}</h2>
       <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.ceilingSheathingMaterial}
@@ -899,7 +899,7 @@ function FilledConfigFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.thickness)}</span>
         </Label.Root>
         <LengthField
           value={config.ceilingSheathingThickness}
@@ -917,7 +917,7 @@ function FilledConfigFields({
       <h2>{t($ => $.floors.sections.openingFrame)}</h2>
       <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.openingFrameMaterial}
@@ -931,7 +931,7 @@ function FilledConfigFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.thickness)}</span>
         </Label.Root>
         <LengthField
           value={config.openingFrameThickness}
@@ -950,10 +950,10 @@ function FilledConfigFields({
       <div className="grid grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
         <div className="flex items-center gap-1">
           <Label.Root>
-            <span className="text-base font-medium text-gray-900">{t($ => $.common.strawMaterialOverride)}</span>
+            <span className="text-base font-medium ">{t($ => $.common.strawMaterialOverride)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.strawMaterialOverride)}>
-            <Button variant="icon" style={{ cursor: 'help' }} text-gray-900 radius="full" variant="ghost" size="sm">
+            <Button size="icon" style={{ cursor: 'help' }}  className="rounded-full" variant="ghost">
               <InfoCircledIcon width={12} height={12} />
             </Button>
           </Tooltip>
@@ -990,7 +990,7 @@ function HangingJoistConfigFields({
       <h2>{t($ => $.floors.sections.joists)}</h2>
       <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.joistMaterial}
@@ -1005,10 +1005,10 @@ function HangingJoistConfigFields({
 
         <div className="flex items-center gap-1">
           <Label.Root>
-            <span className="text-base font-medium text-gray-900">{t($ => $.common.height)}</span>
+            <span className="text-base font-medium ">{t($ => $.common.height)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.joistHeight)}>
-            <Button variant="icon" style={{ cursor: 'help' }} text-gray-900 radius="full" variant="ghost" size="sm">
+            <Button size="icon" style={{ cursor: 'help' }}  className="rounded-full" variant="ghost">
               <InfoCircledIcon width={12} height={12} />
             </Button>
           </Tooltip>
@@ -1023,7 +1023,7 @@ function HangingJoistConfigFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.thickness)}</span>
         </Label.Root>
         <LengthField
           value={config.joistThickness}
@@ -1035,7 +1035,7 @@ function HangingJoistConfigFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.spacing)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.spacing)}</span>
         </Label.Root>
         <LengthField
           value={config.joistSpacing}
@@ -1051,10 +1051,10 @@ function HangingJoistConfigFields({
       <div className="grid grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
         <div className="flex items-center gap-1">
           <Label.Root>
-            <span className="text-base font-medium text-gray-900">{t($ => $.floors.labels.verticalOffset)}</span>
+            <span className="text-base font-medium ">{t($ => $.floors.labels.verticalOffset)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.verticalOffset)}>
-            <Button variant="icon" style={{ cursor: 'help' }} text-gray-900 radius="full" variant="ghost" size="sm">
+            <Button size="icon" style={{ cursor: 'help' }}  className="rounded-full" variant="ghost">
               <InfoCircledIcon width={12} height={12} />
             </Button>
           </Tooltip>
@@ -1075,7 +1075,7 @@ function HangingJoistConfigFields({
       <h2>{t($ => $.floors.sections.subfloor)}</h2>
       <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.subfloorMaterial}
@@ -1089,7 +1089,7 @@ function HangingJoistConfigFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.thickness)}</span>
         </Label.Root>
         <LengthField
           value={config.subfloorThickness}
@@ -1107,7 +1107,7 @@ function HangingJoistConfigFields({
       <h2>{t($ => $.floors.sections.openingSides)}</h2>
       <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.openingSideMaterial}
@@ -1121,7 +1121,7 @@ function HangingJoistConfigFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
+          <span className="text-base font-medium ">{t($ => $.common.thickness)}</span>
         </Label.Root>
         <LengthField
           value={config.openingSideThickness}

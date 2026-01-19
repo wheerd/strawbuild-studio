@@ -38,7 +38,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): Rea
           <p className="text-muted-foreground text-center">{t($ => $.boundary.description)}</p>
         </div>
 
-        <Callout color="red">
+        <Callout className="text-destructive">
           <CalloutIcon>
             <ExclamationTriangleIcon />
           </CalloutIcon>

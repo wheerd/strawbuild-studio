@@ -24,4 +24,11 @@ const HoverCardContent = React.forwardRef<
 ))
 HoverCardContent.displayName = HoverCardPrimitive.Content.displayName
 
-export { HoverCard, HoverCardTrigger, HoverCardContent }
+// Compound component for Radix Themes compatibility
+const HoverCardCompound = Object.assign(HoverCardPrimitive.Root, {
+  Root: HoverCardPrimitive.Root,
+  Trigger: HoverCardTrigger,
+  Content: HoverCardContent
+})
+
+export { HoverCardCompound as HoverCard, HoverCardTrigger, HoverCardContent }

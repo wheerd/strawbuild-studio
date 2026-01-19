@@ -110,7 +110,7 @@ function MaterialPartsContent({ partsDataPromise }: { partsDataPromise: Promise<
   if (!partsData) {
     return (
       <div className="flex">
-        <Callout color="red" size="2">
+        <Callout className="text-destructive" size="2">
           <CalloutIcon>
             <CrossCircledIcon />
           </CalloutIcon>
@@ -130,7 +130,7 @@ function ModulePartsContent({ partsDataPromise }: { partsDataPromise: Promise<Pa
   if (!partsData) {
     return (
       <div className="flex">
-        <Callout color="red" size="2">
+        <Callout className="text-destructive" size="2">
           <CalloutIcon>
             <CrossCircledIcon />
           </CalloutIcon>

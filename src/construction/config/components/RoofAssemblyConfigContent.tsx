@@ -745,7 +745,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
 
             <DropdownMenu>
               <DropdownMenu.Trigger>
-                <Button variant="icon" title={t($ => $.common.addNew)}>
+                <Button size="icon" title={t($ => $.common.addNew)}>
                   <PlusIcon />
                 </Button>
               </DropdownMenu.Trigger>
@@ -774,7 +774,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
             </DropdownMenu>
 
             <Button
-              variant="icon"
+              size="icon"
               onClick={handleDuplicate}
               disabled={!selectedAssembly}
               title={t($ => $.common.duplicate)}
@@ -786,9 +786,9 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
             <AlertDialog.Root>
               <AlertDialog.Trigger>
                 <Button
-                  variant="icon"
+                  size="icon"
                   disabled={!selectedAssembly || usage.isUsed}
-                  color="red"
+                 className="text-destructive"
                   title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
                 >
                   <TrashIcon />
@@ -806,7 +806,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
                     </Button>
                   </AlertDialog.Cancel>
                   <AlertDialog.Action>
-                    <Button variant="solid" color="red" onClick={handleDelete}>
+                    <Button variant="destructive" onClick={handleDelete}>
                       {t($ => $.common.delete)}
                     </Button>
                   </AlertDialog.Action>
@@ -816,7 +816,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
 
             <AlertDialog.Root>
               <AlertDialog.Trigger>
-                <Button variant="icon" color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
+                <Button size="icon"className="text-destructive" variant="outline" title={t($ => $.common.resetToDefaults)}>
                   <ResetIcon />
                 </Button>
               </AlertDialog.Trigger>
@@ -830,7 +830,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
                     </Button>
                   </AlertDialog.Cancel>
                   <AlertDialog.Action>
-                    <Button variant="solid" color="red" onClick={handleReset}>
+                    <Button variant="destructive" onClick={handleReset}>
                       {t($ => $.common.reset)}
                     </Button>
                   </AlertDialog.Action>

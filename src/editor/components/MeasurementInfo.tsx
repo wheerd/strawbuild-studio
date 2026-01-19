@@ -973,10 +973,10 @@ export function MeasurementInfo(config: MeasurementDisplayConfig): React.JSX.Ele
     <HoverCard.Root>
       <HoverCard.Trigger>
         <Button
-          variant="icon"
+          size="icon"
           style={{ cursor: 'help' }}
-          text-gray-900
-          radius="full"
+          
+          className="rounded-full"
           title={t($ => $.measurements.measurements)}
           variant="ghost"
           size="1"
@@ -985,9 +985,9 @@ export function MeasurementInfo(config: MeasurementDisplayConfig): React.JSX.Ele
         </Button>
       </HoverCard.Trigger>
       <HoverCard.Content side="right">
-        <Inset>
+        <div className="-m-4">
           <ConstructionSchematic {...config} />
-        </Inset>
+        </div>
       </HoverCard.Content>
     </HoverCard.Root>
   )

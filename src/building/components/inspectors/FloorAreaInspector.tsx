@@ -62,13 +62,13 @@ export function FloorAreaInspector({ floorAreaId }: FloorAreaInspectorProps): Re
         <Separator />
 
         <div className="flex justify-end gap-2">
-          <Button variant="icon" title={t($ => $.floorArea.fitToView)} onClick={handleFitToView}>
+          <Button size="icon" title={t($ => $.floorArea.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
           </Button>
           <Button
-            variant="icon"
+            size="icon"
             size="2"
-            color="red"
+           className="text-destructive"
             title={t($ => $.floorArea.removeFloorArea)}
             onClick={() => {
               removeFloorArea(floorArea.id)

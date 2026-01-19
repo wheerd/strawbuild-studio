@@ -172,7 +172,7 @@ export function PlanCalibrationCanvas({
       )}
       {image && (
         <div className="absolute bottom-3 right-3 z-10">
-          <Card size="1" variant="surface" className="shadow-md">
+          <Card size="1" variant="soft" className="shadow-md">
             <div className="items-center gap-3 m--2 p-1">
               <span className="text-sm">{t($ => $.canvas.scrollToZoom)}</span>
               <span className="text-sm">Shift + drag to pan</span>

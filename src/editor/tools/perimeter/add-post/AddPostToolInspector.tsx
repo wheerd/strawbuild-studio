@@ -243,7 +243,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
           <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.presets.title)}</span>
           <DropdownMenu>
             <DropdownMenuTrigger disabled={allPostConfigs.length === 0}>
-              <Button variant="icon" title={t($ => $.addPost.copyConfigurationTooltip)}>
+              <Button size="icon" title={t($ => $.addPost.copyConfigurationTooltip)}>
                 <CopyIcon />
               </Button>
             </DropdownMenuTrigger>
@@ -269,7 +269,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
         <div className="grid grid-cols-2 gap-2">
           <Button
             size="sm"
-            variant="surface"
+            variant="soft"
             onClick={() => {
               tool.setPostType('center')
               tool.setWidth(60)
@@ -280,7 +280,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
           </Button>
           <Button
             size="sm"
-            variant="surface"
+            variant="soft"
             onClick={() => {
               tool.setPostType('double')
               tool.setWidth(60)
@@ -291,7 +291,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
           </Button>
           <Button
             size="sm"
-            variant="surface"
+            variant="soft"
             onClick={() => {
               tool.setPostType('outside')
               tool.setWidth(140)
@@ -302,7 +302,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
           </Button>
           <Button
             size="sm"
-            variant="surface"
+            variant="soft"
             onClick={() => {
               tool.setPostType('double')
               tool.setWidth(140)

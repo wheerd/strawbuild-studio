@@ -21,7 +21,7 @@ export function FeatureErrorFallback({ error, resetErrorBoundary }: FallbackProp
 
   return (
     <div className="flex flex-col items-center justify-center gap-3 p-4 min-h-[200px]">
-      <Callout color="red" className="w-full max-w-[500px]">
+      <Callout className="text-destructive" className="w-full max-w-[500px]">
         <CalloutIcon>
           <ExclamationTriangleIcon />
         </CalloutIcon>

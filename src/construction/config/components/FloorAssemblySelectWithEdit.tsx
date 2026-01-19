@@ -16,7 +16,7 @@ export function FloorAssemblySelectWithEdit(props: FloorAssemblySelectProps): Re
         <FloorAssemblySelect {...props} />
       </div>
       <Button
-        variant="icon"
+        size="icon"
         title={t($ => $.floors.configure)}
         variant="ghost"
         size={props.size}

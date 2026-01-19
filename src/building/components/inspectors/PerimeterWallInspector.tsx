@@ -202,7 +202,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
       <div className="flex flex-col gap-2">
         <h2>{t($ => $.perimeterWall.openings)}</h2>
         <div className="grid grid-cols-3 gap-2">
-          <Card size="1" variant="surface">
+          <Card size="1" variant="soft">
             <div className="flex flex-col gap-0 m--1">
               <span className="items-center text-base font-bold">
                 {openings.filter(o => o.openingType === 'door').length}
@@ -210,7 +210,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
               <span className="items-center text-sm text-gray-900">{t($ => $.perimeterWall.doors)}</span>
             </div>
           </Card>
-          <Card size="1" variant="surface">
+          <Card size="1" variant="soft">
             <div className="flex flex-col gap-0 m--1">
               <span className="items-center text-base font-bold">
                 {openings.filter(o => o.openingType === 'window').length}
@@ -218,7 +218,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
               <span className="items-center text-sm text-gray-900">{t($ => $.perimeterWall.windows)}</span>
             </div>
           </Card>
-          <Card size="1" variant="surface">
+          <Card size="1" variant="soft">
             <div className="flex flex-col gap-0 m--1">
               <span className="items-center text-base font-bold">
                 {openings.filter(o => o.openingType === 'passage').length}
@@ -243,14 +243,14 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
             defaultHiddenTags={['wall-layer']}
             refreshKey={[wallId]}
             trigger={
-              <Button variant="icon" title={t($ => $.perimeterWall.viewConstructionPlan)} size="2">
+              <Button size="icon" title={t($ => $.perimeterWall.viewConstructionPlan)}>
                 <ConstructionPlanIcon width={20} height={20} />
               </Button>
             }
           />
 
           <Button
-            variant="icon"
+            size="icon"
             size="2"
             title={t($ => $.perimeterWall.splitWall)}
             onClick={() => {
@@ -259,13 +259,13 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
           >
             <SplitWallIcon width={20} height={20} />
           </Button>
-          <Button variant="icon" title={t($ => $.perimeterWall.fitToView)} onClick={handleFitToView}>
+          <Button size="icon" title={t($ => $.perimeterWall.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon width={20} height={20} />
           </Button>
           <Button
-            variant="icon"
+            size="icon"
             size="2"
-            color="red"
+           className="text-destructive"
             title={canDeleteWall.reason ? t(canDeleteWall.reason) : t($ => $.perimeterWall.deleteWall)}
             onClick={handleDelete}
             disabled={!canDeleteWall.canDelete}

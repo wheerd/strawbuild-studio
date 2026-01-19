@@ -24,7 +24,7 @@ export function RoofOverhangInspector({ overhangId }: { overhangId: RoofOverhang
   if (!overhang) {
     return (
       <div className="p-2">
-        <Callout color="red">
+        <Callout className="text-destructive">
           <CalloutText>
             <span className="font-bold">{t($ => $.roofOverhang.notFound)}</span>
           </CalloutText>
@@ -65,7 +65,7 @@ export function RoofOverhangInspector({ overhangId }: { overhangId: RoofOverhang
 
         {/* Actions */}
         <div className="flex justify-end gap-2">
-          <Button variant="icon" title={t($ => $.roofOverhang.fitToView)} onClick={handleFitToView}>
+          <Button size="icon" title={t($ => $.roofOverhang.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
           </Button>
         </div>

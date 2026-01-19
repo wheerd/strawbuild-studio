@@ -16,7 +16,7 @@ export function RoofAssemblySelectWithEdit(props: RoofAssemblySelectProps): Reac
         <RoofAssemblySelect {...props} />
       </div>
       <Button
-        variant="icon"
+        size="icon"
         title={t($ => $.roofs.configure)}
         variant="ghost"
         size={props.size}

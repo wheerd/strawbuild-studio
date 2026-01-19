@@ -41,7 +41,7 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
         </Callout>
       )}
       {!state.isValidSplit && splitError != null && (
-        <Callout color="red">
+        <Callout className="text-destructive">
           <CalloutText>{t($ => $.splitWall.errors[splitError])}</CalloutText>
         </Callout>
       )}

@@ -5,6 +5,17 @@ import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { OpeningPreview } from '@/building/components/inspectors/OpeningPreview'
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
+import { SegmentedControl } from '@/components/ui/segmented-control'
+import { Separator } from '@/components/ui/separator'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import type { OpeningAssemblyId, OpeningType } from '@/building/model'
 import { useActiveStoreyId, useModelActions, useWallOpenings } from '@/building/store'
 import { OpeningAssemblySelectWithEdit } from '@/construction/config/components/OpeningAssemblySelectWithEdit'
@@ -412,7 +423,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
       <div className="items-center justify-end gap-2">
         <DropdownMenu>
           <DropdownMenu.Trigger disabled={allOpeningConfigs.length === 0}>
-            <Button variant="icon" title={t($ => $.addOpening.copyConfigurationTooltip)}>
+            <Button size="icon" title={t($ => $.addOpening.copyConfigurationTooltip)}>
               <CopyIcon />
             </Button>
           </DropdownMenu.Trigger>
@@ -440,9 +451,9 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
         <div className="grid grid-cols-6 gap-1">
           {ALL_OPENING_PRESETS.map((preset: PresetConfig, index: number) => (
             <Button
-              variant="icon"
+              size="icon"
               key={index}
-              variant="surface"
+              variant="soft"
               size="3"
               onClick={() => {
                 handlePresetOrCopyClick(preset)

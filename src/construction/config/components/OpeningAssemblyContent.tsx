@@ -198,7 +198,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
 
           <DropdownMenu>
             <DropdownMenu.Trigger>
-              <Button variant="icon" title={t($ => $.common.addNew)}>
+              <Button size="icon" title={t($ => $.common.addNew)}>
                 <PlusIcon />
               </Button>
             </DropdownMenu.Trigger>
@@ -234,15 +234,15 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
             </DropdownMenu.Content>
           </DropdownMenu>
 
-          <Button variant="icon" onClick={handleDuplicate} variant="soft" title={t($ => $.common.duplicate)}>
+          <Button size="icon" onClick={handleDuplicate} variant="soft" title={t($ => $.common.duplicate)}>
             <CopyIcon />
           </Button>
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
               <Button
-                variant="icon"
-                color="red"
+                size="icon"
+               className="text-destructive"
                 variant="soft"
                 disabled={usage.isUsed}
                 title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
@@ -262,7 +262,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
-                  <Button variant="solid" color="red" onClick={handleDelete}>
+                  <Button variant="destructive" onClick={handleDelete}>
                     {t($ => $.common.delete)}
                   </Button>
                 </AlertDialog.Action>
@@ -272,7 +272,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <Button variant="icon" color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
+              <Button size="icon"className="text-destructive" variant="outline" title={t($ => $.common.resetToDefaults)}>
                 <ResetIcon />
               </Button>
             </AlertDialog.Trigger>
@@ -286,7 +286,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
-                  <Button variant="solid" color="red" onClick={handleReset}>
+                  <Button variant="destructive" onClick={handleReset}>
                     {t($ => $.common.reset)}
                   </Button>
                 </AlertDialog.Action>

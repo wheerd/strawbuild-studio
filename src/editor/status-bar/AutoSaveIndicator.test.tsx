@@ -33,11 +33,7 @@ vi.mock('@/importers/ifc/importService', () => ({
 vi.mock('@/exporters/ifc')
 
 function renderAutoSaveIndicator() {
-  return render(
-    <Theme>
-      <AutoSaveIndicator />
-    </Theme>
-  )
+  return render(<AutoSaveIndicator />)
 }
 
 describe('AutoSaveIndicator', () => {
